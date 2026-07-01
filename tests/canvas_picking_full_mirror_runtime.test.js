@@ -4,6 +4,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { createRequire } from 'node:module';
+import {
+  buildDoorVisualOwnerAliasKeys,
+  resolveDoorVisualSegmentIdentity,
+} from '../esm/native/features/door_authoring/api.ts';
 
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
@@ -74,6 +78,8 @@ const { applyPaintPartMutation } = loadTsModule(
       resolveGlassFrameStylePaintSelection(value) {
         return value === 'glass' ? 'profile' : null;
       },
+      buildDoorVisualOwnerAliasKeys,
+      resolveDoorVisualSegmentIdentity,
     },
     './canvas_picking_core_helpers.js': {
       __wp_canonDoorPartKeyForMaps(value) {

@@ -111,7 +111,6 @@ test('door authoring facade exposes only audited public symbols', () => {
     'isCabinetBodyDoorTrimSurfacePartId',
     'isDoorStyleOverridePaintToken',
     'isDoorStyleOverrideValue',
-    'isDoorVisualSegmentPartId',
     'isGlassPaintSelection',
     'isRemoveDoorModeFromSnapshot',
     'mapDoorTrimSurfaceLocalPoint',
@@ -150,8 +149,6 @@ test('door authoring facade exposes only audited public symbols', () => {
     'resolveMirrorPlacementInRect',
     'resolveMirrorPlacementListInRect',
     'resolveRemoveDoorsEnabledFromSnapshots',
-    'stripDoorVisualSurfaceSuffix',
-    'toDoorStyleOverrideMapKey',
   ]);
   assert.doesNotMatch(api, /export\s+\*/);
   for (const narrowHelper of [
@@ -161,6 +158,9 @@ test('door authoring facade exposes only audited public symbols', () => {
     'mapDoorTrimSurfaceLogicalToLocalPoint',
     'cloneMirrorLayoutList',
     'mirrorLayoutListEquals',
+    'stripDoorVisualSurfaceSuffix',
+    'toDoorStyleOverrideMapKey',
+    'isDoorVisualSegmentPartId',
   ]) {
     assert.equal(symbols.includes(narrowHelper), false, `${narrowHelper} should stay internal`);
   }

@@ -8,7 +8,6 @@ import {
   buildDoorVisualOwnerAliasKeys,
   resolveDoorStylePaintTargetKey,
   resolveDoorVisualSegmentIdentity,
-  toDoorStyleOverrideMapKey,
 } from '../esm/native/features/door_authoring/api.ts';
 
 const require = createRequire(import.meta.url);
@@ -99,6 +98,16 @@ function loadDoorStyleOverridesModule() {
 
 test('[door-style-overrides] tokens, map normalization, and effective style resolution stay canonical', () => {
   const mod = loadDoorStyleOverridesModule();
+  const resolvePaintTarget = (partId, activeStack = 'top') =>
+    resolveDoorStylePaintTargetKey({
+      foundPartId: partId,
+      effectiveDoorId: partId,
+      foundDrawerId: null,
+      activeStack,
+      isDoorOrDrawerLikePartId: value => /(?:door|drawer|draw|^d\d+)/.test(String(value || '')),
+      scopePartKeyForStack: (value, stack) =>
+        stack === 'bottom' && !value.startsWith('lower_') ? `lower_${value}` : value,
+    });
 
   assert.equal(mod.encodeDoorStyleOverridePaintToken('profile'), '__wp_door_style__:profile');
   assert.equal(mod.parseDoorStyleOverridePaintToken('__wp_door_style__:double_profile'), 'double_profile');
@@ -115,20 +124,161 @@ test('[door-style-overrides] tokens, map normalization, and effective style reso
   assert.equal(map.d1_full, 'profile');
   assert.equal(map.drawer_1, 'double_profile');
 
-  assert.equal(toDoorStyleOverrideMapKey('d7'), 'd7_full');
-  assert.equal(toDoorStyleOverrideMapKey('drawer_9'), 'drawer_9');
-  assert.deepEqual(resolveDoorVisualSegmentIdentity('d7_mid2_accent_top'), {
-    partId: 'd7_mid2',
-    basePartId: 'd7',
-    fullPartId: 'd7_full',
-    isSegment: true,
-    lookupKeys: ['d7_mid2', 'd7_full', 'd7'],
-  });
+  assert.equal(resolvePaintTarget('d7'), 'd7_full');
+  assert.equal(resolvePaintTarget('d7_full'), 'd7_full');
+  assert.equal(resolvePaintTarget('d7_top'), 'd7_top');
+  assert.equal(resolvePaintTarget('drawer_9'), 'drawer_9');
+  for (const [partId, expected] of [
+    [
+      'd7',
+      {
+        partId: 'd7',
+        basePartId: 'd7',
+        fullPartId: 'd7_full',
+        isSegment: false,
+        lookupKeys: ['d7', 'd7_full'],
+      },
+    ],
+    [
+      'd7_full',
+      {
+        partId: 'd7_full',
+        basePartId: 'd7',
+        fullPartId: 'd7_full',
+        isSegment: false,
+        lookupKeys: ['d7_full', 'd7'],
+      },
+    ],
+    [
+      'd7_top',
+      {
+        partId: 'd7_top',
+        basePartId: 'd7',
+        fullPartId: 'd7_full',
+        isSegment: true,
+        lookupKeys: ['d7_top', 'd7_full', 'd7'],
+      },
+    ],
+    [
+      'd7_bot',
+      {
+        partId: 'd7_bot',
+        basePartId: 'd7',
+        fullPartId: 'd7_full',
+        isSegment: true,
+        lookupKeys: ['d7_bot', 'd7_full', 'd7'],
+      },
+    ],
+    [
+      'd7_mid2',
+      {
+        partId: 'd7_mid2',
+        basePartId: 'd7',
+        fullPartId: 'd7_full',
+        isSegment: true,
+        lookupKeys: ['d7_mid2', 'd7_full', 'd7'],
+      },
+    ],
+    [
+      'd7_mid2_accent_top',
+      {
+        partId: 'd7_mid2',
+        basePartId: 'd7',
+        fullPartId: 'd7_full',
+        isSegment: true,
+        lookupKeys: ['d7_mid2', 'd7_full', 'd7'],
+      },
+    ],
+    [
+      'd7_mid2_groove_left',
+      {
+        partId: 'd7_mid2',
+        basePartId: 'd7',
+        fullPartId: 'd7_full',
+        isSegment: true,
+        lookupKeys: ['d7_mid2', 'd7_full', 'd7'],
+      },
+    ],
+    [
+      'lower_d7_top',
+      {
+        partId: 'lower_d7_top',
+        basePartId: 'lower_d7',
+        fullPartId: 'lower_d7_full',
+        isSegment: true,
+        lookupKeys: ['lower_d7_top', 'lower_d7_full', 'lower_d7'],
+      },
+    ],
+    [
+      'corner_door_7_top',
+      {
+        partId: 'corner_door_7_top',
+        basePartId: 'corner_door_7',
+        fullPartId: 'corner_door_7_full',
+        isSegment: true,
+        lookupKeys: ['corner_door_7_top', 'corner_door_7_full', 'corner_door_7'],
+      },
+    ],
+    [
+      'lower_corner_door_7_top',
+      {
+        partId: 'lower_corner_door_7_top',
+        basePartId: 'lower_corner_door_7',
+        fullPartId: 'lower_corner_door_7_full',
+        isSegment: true,
+        lookupKeys: ['lower_corner_door_7_top', 'lower_corner_door_7_full', 'lower_corner_door_7'],
+      },
+    ],
+    [
+      'corner_pent_door_7_top',
+      {
+        partId: 'corner_pent_door_7_top',
+        basePartId: 'corner_pent_door_7',
+        fullPartId: 'corner_pent_door_7_full',
+        isSegment: true,
+        lookupKeys: ['corner_pent_door_7_top', 'corner_pent_door_7_full', 'corner_pent_door_7'],
+      },
+    ],
+    [
+      'sketch_box_0_boxA_door_left_top',
+      {
+        partId: 'sketch_box_0_boxA_door_left_top',
+        basePartId: 'sketch_box_0_boxA_door_left',
+        fullPartId: 'sketch_box_0_boxA_door_left_full',
+        isSegment: true,
+        lookupKeys: [
+          'sketch_box_0_boxA_door_left_top',
+          'sketch_box_0_boxA_door_left_full',
+          'sketch_box_0_boxA_door_left',
+        ],
+      },
+    ],
+    [
+      'sketch_box_free_0_boxA_door_sbdr_1_bot',
+      {
+        partId: 'sketch_box_free_0_boxA_door_sbdr_1_bot',
+        basePartId: 'sketch_box_free_0_boxA_door_sbdr_1',
+        fullPartId: 'sketch_box_free_0_boxA_door_sbdr_1_full',
+        isSegment: true,
+        lookupKeys: [
+          'sketch_box_free_0_boxA_door_sbdr_1_bot',
+          'sketch_box_free_0_boxA_door_sbdr_1_full',
+          'sketch_box_free_0_boxA_door_sbdr_1',
+        ],
+      },
+    ],
+  ]) {
+    assert.deepEqual(resolveDoorVisualSegmentIdentity(partId), expected);
+  }
   assert.deepEqual(buildDoorVisualOwnerAliasKeys('d7_full'), ['d7_full', 'd7']);
+  assert.deepEqual(buildDoorVisualOwnerAliasKeys('d7'), ['d7', 'd7_full']);
+  assert.deepEqual(buildDoorVisualOwnerAliasKeys('d7_top'), ['d7_top']);
   assert.deepEqual(buildDoorVisualOwnerAliasKeys('sketch_box_free_0_boxStyle_door_main'), [
     'sketch_box_free_0_boxStyle_door_main',
     'sketch_box_free_0_boxStyle_door_main_full',
   ]);
+  assert.equal(resolvePaintTarget('corner_door_7', 'bottom'), 'lower_corner_door_7_full');
+  assert.equal(resolvePaintTarget('corner_door_7_top', 'bottom'), 'lower_corner_door_7_top');
   assert.equal(
     resolveDoorStylePaintTargetKey({
       foundPartId: 'corner_door_7',

@@ -64,7 +64,6 @@ export {
   buildDoorVisualLookupKeys,
   buildDoorVisualOwnerAliasKeys,
   hasAnyDoorVisualSegmentMapEntry,
-  isDoorVisualSegmentPartId,
   readDoorVisualMapEntry,
   readDoorVisualMapValue,
   readDoorVisualMirrorLayout,
@@ -73,6 +72,4 @@ export {
   readDoorVisualSegmentBasePartId,
   resolveDoorStylePaintTargetKey,
   resolveDoorVisualSegmentIdentity,
-  stripDoorVisualSurfaceSuffix,
-  toDoorStyleOverrideMapKey,
 } from './internal/visual_keys.js';
