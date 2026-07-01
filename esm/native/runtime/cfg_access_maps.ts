@@ -14,7 +14,8 @@ import {
 } from './cfg_access_shared.js';
 import { applyConfigPatchReplaceKeys } from './cfg_access_scalars.js';
 import { normalizeDoorStyleMap } from './maps_access_normalizers_shared.js';
-import { isVisualKeyedMapName, type VisualKeyedMapName } from './visual_keyed_map_names.js';
+import { isVisualKeyedMapName } from './visual_keyed_map_names.js';
+import { setCfgVisualKeyedMapFromOwner } from './visual_keyed_map_writer_owner.js';
 
 type CfgMap = {
   <K extends KnownMapName>(App: unknown, mapName: K): MapsByName[K];
@@ -72,15 +73,6 @@ export const cfgSetMap: CfgSetMap = (
   if (isVisualKeyedMapName(name)) throw readVisualKeyedMapWriteError('cfgSetMap', name);
   return cfgSetMapFromOwner(App, name, nextMap, meta);
 };
-
-export function setCfgVisualKeyedMapFromOwner<K extends VisualKeyedMapName>(
-  App: unknown,
-  mapName: K,
-  nextMap: unknown,
-  meta?: ActionMetaLike
-): MapsByName[K] {
-  return cfgSetMapFromOwner(App, mapName, nextMap, meta) as MapsByName[K];
-}
 
 type PatchConfigMap = {
   <K extends KnownMapName>(

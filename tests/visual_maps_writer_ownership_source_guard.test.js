@@ -19,11 +19,23 @@ const VISUAL_KEYED_MAPS = [
   'splitDoorsBottomMap',
 ];
 
-const DIRECT_WRITE_OWNER_FILES = new Set([
-  'esm/native/runtime/maps_access_writers.ts',
+const VISUAL_KEYED_OWNER_MODULE = 'esm/native/runtime/visual_keyed_map_writer_owner.ts';
+
+const DIRECT_WRITE_OWNER_FILES = new Set([VISUAL_KEYED_OWNER_MODULE]);
+
+const OWNER_HELPER_IMPORT_ALLOWLIST = new Set([
   'esm/native/runtime/cfg_access_maps.ts',
+  'esm/native/runtime/maps_access_writers.ts',
   'esm/native/kernel/maps_api_named_maps.ts',
+  'esm/native/services/canvas_picking_door_hinge_groove_click.ts',
+  'esm/native/services/canvas_picking_door_trim_click.ts',
 ]);
+
+const OWNER_HELPER_NAMES = [
+  'setCfgVisualKeyedMapFromOwner',
+  'patchVisualKeyedMapEntriesFromOwner',
+  'toggleVisualKeyedMapEntryFromOwner',
+];
 
 const MAP_ALIAS_READERS = {
   doorStyleMap: ['readDoorStyleMap'],
@@ -37,12 +49,7 @@ const MAP_ALIAS_READERS = {
 };
 
 const ASSIGNMENT_OPERATOR_PATTERN = String.raw`(?:=(?!=|>)|\+=|-=|\*=|/=|%=|&&=|\|\|=|\?\?=)`;
-const GENERIC_MAP_WRITE_APIS = [
-  'cfgSetMap',
-  'patchConfigMap',
-  'writeMapKey',
-  'setCfgVisualKeyedMapFromOwner',
-];
+const GENERIC_MAP_WRITE_APIS = ['cfgSetMap', 'patchConfigMap', 'writeMapKey'];
 
 function readSourceFile(relPath) {
   return fs.readFileSync(path.join(PROJECT_ROOT, relPath), 'utf8');
@@ -258,6 +265,44 @@ function formatViolation(violation) {
   return `${violation.file}:${violation.line} ${violation.mapName} ${violation.kind} :: ${violation.source}`;
 }
 
+function collectOwnerHelperImportViolations() {
+  const violations = [];
+  const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
+  const helperPattern = new RegExp(String.raw`\b(?:${OWNER_HELPER_NAMES.map(escapeRegExp).join('|')})\b`);
+
+  for (const file of files) {
+    if (file === VISUAL_KEYED_OWNER_MODULE) continue;
+    const source = stripCommentsPreserveLines(readSourceFile(file));
+    if (!helperPattern.test(source)) continue;
+    if (!OWNER_HELPER_IMPORT_ALLOWLIST.has(file)) violations.push(file);
+  }
+
+  return violations;
+}
+
+function collectDuplicatedOwnerPatchLogicViolations() {
+  const violations = [];
+  const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
+  const duplicatedPatchPatterns = [
+    /function\s+patchCanonicalOwnerMapEntries\b/,
+    /function\s+patchVisualKeyedMapEntry\b/,
+    /function\s+patchCanonicalPrefixedMapEntry\b/,
+    /\bnormalizedEntryMap\b/,
+    /delete\s+nextMap\[canonicalKey\]/,
+    /nextMap\[canonicalKey\]\s*=/,
+  ];
+
+  for (const file of files) {
+    if (file === VISUAL_KEYED_OWNER_MODULE) continue;
+    const source = stripCommentsPreserveLines(readSourceFile(file));
+    for (const pattern of duplicatedPatchPatterns) {
+      if (pattern.test(source)) violations.push(`${file}: ${pattern}`);
+    }
+  }
+
+  return violations;
+}
+
 test('visual/keyed config maps are written only by canonical owner files', () => {
   const missingOwners = Array.from(DIRECT_WRITE_OWNER_FILES).filter(
     file => !fs.existsSync(path.join(PROJECT_ROOT, file))
@@ -269,5 +314,45 @@ test('visual/keyed config maps are written only by canonical owner files', () =>
     violations,
     [],
     `Visual/keyed map writes must go through owner helpers. Forbidden writes found:\n${violations.join('\n')}`
+  );
+});
+
+test('visual/keyed owner helpers stay out of broad runtime facades', () => {
+  const cfgAccessFacade = readSourceFile('esm/native/runtime/cfg_access.ts');
+  const mapsAccessFacade = readSourceFile('esm/native/runtime/maps_access.ts');
+
+  assert.doesNotMatch(cfgAccessFacade, /setCfgVisualKeyedMapFromOwner/);
+  assert.doesNotMatch(mapsAccessFacade, /patchVisualKeyedMapEntriesFromOwner/);
+  assert.doesNotMatch(mapsAccessFacade, /patchCanonicalVisualMapEntries/);
+  assert.match(mapsAccessFacade, /writeMapKey/);
+});
+
+test('visual/keyed owner helpers are imported only by approved owners', () => {
+  const violations = collectOwnerHelperImportViolations();
+  assert.deepEqual(
+    violations,
+    [],
+    `Owner-only visual/keyed helpers may only be imported by approved owners:\n${violations.join('\n')}`
+  );
+});
+
+test('visual/keyed patch implementation is centralized in the owner module', () => {
+  const owner = readSourceFile(VISUAL_KEYED_OWNER_MODULE);
+  const mapsWriters = readSourceFile('esm/native/runtime/maps_access_writers.ts');
+  const mapsApiNamedMaps = readSourceFile('esm/native/kernel/maps_api_named_maps.ts');
+
+  assert.match(owner, /export function patchVisualKeyedMapEntriesFromOwner\(/);
+  assert.match(owner, /export function setCfgVisualKeyedMapFromOwner(?:<[^>]+>)?\(/);
+  assert.match(owner, /export function toggleVisualKeyedMapEntryFromOwner\(/);
+  assert.match(mapsWriters, /visual_keyed_map_writer_owner\.js/);
+  assert.match(mapsApiNamedMaps, /visual_keyed_map_writer_owner\.js/);
+  assert.doesNotMatch(mapsWriters, /function\s+patchCanonicalOwnerMapEntries\b/);
+  assert.doesNotMatch(mapsApiNamedMaps, /function\s+patchVisualKeyedMapEntry\b/);
+
+  const violations = collectDuplicatedOwnerPatchLogicViolations();
+  assert.deepEqual(
+    violations,
+    [],
+    `Visual/keyed patch logic must stay in ${VISUAL_KEYED_OWNER_MODULE}:\n${violations.join('\n')}`
   );
 });

@@ -34,7 +34,6 @@ export {
 export {
   VISUAL_KEYED_MAP_NAMES,
   isVisualKeyedMapName,
-  patchCanonicalVisualMapEntries,
   toggleDivider,
   toggleGrooveKey,
   writeHandle,

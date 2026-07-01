@@ -4,30 +4,13 @@ import { ensureMapRecord, mapsAccessReportNonFatal, readOwn, writeOwn } from './
 import { splitBottomKey, splitKey, splitPosKey } from './maps_access_split_helpers.js';
 import type { HandleValue, HingeValue, KnownMapValue } from './maps_access_shared.js';
 import { readMapsBagOrNull, trySetKey } from './maps_access_runtime.js';
-import { cfgMap, setCfgVisualKeyedMapFromOwner } from './cfg_access_maps.js';
-import { normalizeKnownMapSnapshot } from './maps_access_normalizers.js';
-import {
-  toCanonicalGrooveLinesCountMapKey,
-  toCanonicalGroovesMapKey,
-} from '../../shared/door_groove_key_contracts_shared.js';
-import { toCanonicalDoorTrimTargetKey } from '../../shared/door_trim_key_contracts_shared.js';
 import { toCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
+import { VISUAL_KEYED_MAP_NAMES, isVisualKeyedMapName } from './visual_keyed_map_names.js';
 import {
-  VISUAL_KEYED_MAP_NAMES,
-  isVisualKeyedMapName,
-  type VisualKeyedMapName,
-} from './visual_keyed_map_names.js';
-
-type GrooveContractMapName = 'groovesMap' | 'grooveLinesCountMap';
-type CanonicalVisualPatchMapName = GrooveContractMapName | 'doorTrimMap';
-type CanonicalOwnerPatchMapName =
-  | CanonicalVisualPatchMapName
-  | Extract<VisualKeyedMapName, 'removedDoorsMap' | 'splitDoorsMap' | 'splitDoorsBottomMap'>;
-
-export type CanonicalVisualMapPatchEntry = Readonly<{
-  key: unknown;
-  value: unknown;
-}>;
+  patchVisualKeyedMapEntriesFromOwner,
+  toggleVisualKeyedMapEntryFromOwner,
+  type VisualKeyedOwnerPatchMapName,
+} from './visual_keyed_map_writer_owner.js';
 
 export { VISUAL_KEYED_MAP_NAMES, isVisualKeyedMapName };
 
@@ -35,81 +18,14 @@ function readMapKey(value: unknown): string {
   return String(value || '').trim();
 }
 
-function replaceMapRecord(target: Record<string, unknown>, next: Record<string, unknown>): void {
-  for (const key of Object.keys(target)) delete target[key];
-  for (const key of Object.keys(next)) writeOwn(target, key, next[key]);
-}
-
-function readGrooveContractMapKey(mapName: GrooveContractMapName, key: unknown): string {
-  return mapName === 'groovesMap' ? toCanonicalGroovesMapKey(key) : toCanonicalGrooveLinesCountMapKey(key);
-}
-
-function readCanonicalVisualPatchKey(mapName: CanonicalVisualPatchMapName, key: unknown): string {
-  if (mapName === 'doorTrimMap') return toCanonicalDoorTrimTargetKey(key);
-  return readGrooveContractMapKey(mapName, key);
-}
-
-function readCanonicalOwnerPatchKey(mapName: CanonicalOwnerPatchMapName, key: unknown): string {
-  if (mapName === 'removedDoorsMap') return toCanonicalRemovedDoorsMapKey(key);
-  if (mapName === 'splitDoorsMap' || mapName === 'splitDoorsBottomMap') return String(key || '').trim();
-  return readCanonicalVisualPatchKey(mapName, key);
-}
-
-function patchCanonicalOwnerMapEntries(
+function writeVisualKeyedMapEntryFromOwner(
   App: unknown,
-  mapName: CanonicalOwnerPatchMapName,
-  entries: readonly CanonicalVisualMapPatchEntry[],
-  meta?: ActionMetaLike
-): boolean {
-  if (!entries.length) return false;
-  const maps = readMapsBagOrNull(App);
-  const current = cfgMap(App, mapName);
-  const nextMap = { ...(normalizeKnownMapSnapshot(mapName, current) as Record<string, unknown>) };
-
-  for (let i = 0; i < entries.length; i += 1) {
-    const entry = entries[i];
-    const canonicalKey = readCanonicalOwnerPatchKey(mapName, entry.key);
-    if (!canonicalKey) continue;
-    if (entry.value == null) {
-      delete nextMap[canonicalKey];
-    } else {
-      const normalizedEntryMap = normalizeKnownMapSnapshot(mapName, {
-        [canonicalKey]: entry.value,
-      }) as Record<string, unknown>;
-      if (Object.prototype.hasOwnProperty.call(normalizedEntryMap, canonicalKey)) {
-        nextMap[canonicalKey] = normalizedEntryMap[canonicalKey];
-      } else {
-        delete nextMap[canonicalKey];
-      }
-    }
-  }
-
-  try {
-    setCfgVisualKeyedMapFromOwner(App, mapName, nextMap, meta);
-    return true;
-  } catch {
-    if (maps) replaceMapRecord(ensureMapRecord(maps, mapName), nextMap);
-  }
-  return !!maps;
-}
-
-export function patchCanonicalVisualMapEntries(
-  App: unknown,
-  mapName: CanonicalVisualPatchMapName,
-  entries: readonly CanonicalVisualMapPatchEntry[],
-  meta?: ActionMetaLike
-): boolean {
-  return patchCanonicalOwnerMapEntries(App, mapName, entries, meta);
-}
-
-function writeGrooveContractMapKey(
-  App: unknown,
-  mapName: GrooveContractMapName,
+  mapName: Extract<VisualKeyedOwnerPatchMapName, 'doorTrimMap' | 'groovesMap' | 'grooveLinesCountMap'>,
   key: unknown,
   value: unknown,
   meta?: ActionMetaLike
 ): boolean {
-  return patchCanonicalVisualMapEntries(App, mapName, [{ key, value }], meta);
+  return patchVisualKeyedMapEntriesFromOwner(App, mapName, [{ key, value }], meta);
 }
 
 export function writeHandle(
@@ -174,11 +90,8 @@ export function writeMapKey<K extends string>(
 ): boolean {
   const name = String(mapName || '');
   if (!name) return false;
-  if (name === 'doorTrimMap') {
-    return patchCanonicalVisualMapEntries(App, name, [{ key, value: val }], meta);
-  }
-  if (name === 'groovesMap' || name === 'grooveLinesCountMap') {
-    return writeGrooveContractMapKey(App, name, key, val, meta);
+  if (name === 'doorTrimMap' || name === 'groovesMap' || name === 'grooveLinesCountMap') {
+    return writeVisualKeyedMapEntryFromOwner(App, name, key, val, meta);
   }
   if (isVisualKeyedMapName(name)) {
     mapsAccessReportNonFatal(
@@ -221,7 +134,7 @@ export function writeSplit(App: unknown, doorId: unknown, isSplit: boolean, meta
     mapsAccessReportNonFatal('maps_access.writeSplit.ownerRejected', err, App);
   }
 
-  return patchCanonicalOwnerMapEntries(
+  return patchVisualKeyedMapEntriesFromOwner(
     App,
     'splitDoorsMap',
     [{ key: canonicalKey, value: !!isSplit ? true : false }],
@@ -253,7 +166,7 @@ export function writeSplitBottom(
     mapsAccessReportNonFatal('maps_access.writeSplitBottom.ownerRejected', err, App);
   }
 
-  return patchCanonicalOwnerMapEntries(
+  return patchVisualKeyedMapEntriesFromOwner(
     App,
     'splitDoorsBottomMap',
     [{ key: canonicalKey, value: !!isOn ? true : null }],
@@ -270,7 +183,7 @@ export function writeSplitPositionList(
   const canonicalKey = splitPosKey(doorId);
   if (!canonicalKey) return false;
   const nextList = Array.isArray(positions) ? positions.filter(Number.isFinite) : [];
-  return patchCanonicalOwnerMapEntries(
+  return patchVisualKeyedMapEntriesFromOwner(
     App,
     'splitDoorsMap',
     [{ key: canonicalKey, value: nextList.length ? nextList : null }],
@@ -286,7 +199,7 @@ export function writeRemoved(
 ): boolean {
   const canonicalKey = toCanonicalRemovedDoorsMapKey(partId);
   if (!canonicalKey) return false;
-  return patchCanonicalOwnerMapEntries(
+  return patchVisualKeyedMapEntriesFromOwner(
     App,
     'removedDoorsMap',
     [{ key: canonicalKey, value: isRemoved ? true : null }],
@@ -330,24 +243,9 @@ function toggleCanonicalGrooveKeyInMap(
   key: unknown,
   meta?: ActionMetaLike
 ): boolean {
-  const canonicalKey = toCanonicalGroovesMapKey(key);
-  if (!canonicalKey) return false;
   const maps = readMapsBagOrNull(App);
   if (!maps) return false;
-
-  const current = ensureMapRecord(maps, mapName);
-  const nextMap = { ...normalizeKnownMapSnapshot(mapName, current) };
-  if (nextMap[canonicalKey] === true) delete nextMap[canonicalKey];
-  else nextMap[canonicalKey] = true;
-
-  try {
-    setCfgVisualKeyedMapFromOwner(App, mapName, nextMap, meta);
-    return true;
-  } catch {
-    replaceMapRecord(current, nextMap);
-  }
-
-  return true;
+  return toggleVisualKeyedMapEntryFromOwner(App, mapName, key, meta);
 }
 
 export function toggleDivider(App: unknown, dividerKey: unknown, meta?: ActionMetaLike): boolean {
