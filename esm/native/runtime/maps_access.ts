@@ -32,12 +32,16 @@ export {
   readMapOrEmpty,
 } from './maps_access_readers.js';
 export {
+  SIMPLE_WRITABLE_MAP_NAMES,
   VISUAL_KEYED_MAP_NAMES,
+  isSimpleWritableMapName,
   isVisualKeyedMapName,
   patchDoorGrooveLinesCountEntries,
   patchDoorGrooveMapEntries,
   toggleDivider,
   toggleGrooveKey,
+  writeCurtainPreset,
+  writeDividerState,
   writeDoorTrimListForPart,
   writeHandle,
   writeHinge,

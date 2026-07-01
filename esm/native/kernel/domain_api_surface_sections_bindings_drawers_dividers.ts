@@ -2,7 +2,7 @@ import type { ActionMetaLike, DrawersOpenIdLike, UnknownRecord } from '../../../
 
 import { getTools } from '../runtime/service_access.js';
 import { patchRuntime } from '../runtime/runtime_write_access.js';
-import { toggleDivider } from '../runtime/maps_access.js';
+import { toggleDivider, writeDividerState } from '../runtime/maps_access.js';
 import {
   shouldSkipSimpleMapWrite,
   toggleSimpleBooleanMapValue,
@@ -69,6 +69,7 @@ function createDividersActionBindings(state: DomainApiSurfaceSectionsState): Unk
     },
     set(dividerKey: unknown, isOn: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:dividers:set');
+      if (writeDividerState(state.App, dividerKey, !!isOn, nextMeta)) return;
       return writeSimpleMapValue(state, 'drawerDividersMap', dividerKey, !!isOn ? true : null, nextMeta);
     },
   };

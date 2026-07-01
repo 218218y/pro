@@ -321,6 +321,10 @@ test('domain api surface sections generic map writers reject visual maps and kee
       h.mapActions.setKey('splitDoorsBottomMap', 'splitb_d1', true, { source: 'test:generic:split-bottom' }),
     /writeSimpleMapValue cannot write visual\/keyed map "splitDoorsBottomMap"/
   );
+  assert.throws(
+    () => h.mapActions.setKey('unknownMap', 'd1', true, { source: 'test:generic:unknown' }),
+    /writeSimpleMapValue cannot write map "unknownMap"; use a semantic writer or SIMPLE_WRITABLE_MAP_NAMES/
+  );
 
   h.mapActions.setKey('hingeMap', 'd1', 'left', { source: 'test:generic:hinge' });
   h.mapActions.setKey('handlesMap', 'd1', 'bar', { source: 'test:generic:handle' });

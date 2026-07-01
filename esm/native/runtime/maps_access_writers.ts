@@ -14,6 +14,24 @@ import {
 
 export { VISUAL_KEYED_MAP_NAMES, isVisualKeyedMapName };
 
+export const SIMPLE_WRITABLE_MAP_NAMES = [
+  'handlesMap',
+  'hingeMap',
+  'curtainMap',
+  'doorSpecialMap',
+  'individualColors',
+  'drawerDividersMap',
+  'roundedFrameSideShelvesMap',
+] as const;
+
+export type SimpleWritableMapName = (typeof SIMPLE_WRITABLE_MAP_NAMES)[number];
+
+const SIMPLE_WRITABLE_MAP_NAME_SET: ReadonlySet<string> = new Set(SIMPLE_WRITABLE_MAP_NAMES);
+
+export function isSimpleWritableMapName(mapName: unknown): mapName is SimpleWritableMapName {
+  return SIMPLE_WRITABLE_MAP_NAME_SET.has(String(mapName || ''));
+}
+
 function readMapKey(value: unknown): string {
   return String(value || '').trim();
 }
@@ -58,6 +76,41 @@ export function patchDoorGrooveLinesCountEntries(
   meta?: ActionMetaLike
 ): boolean {
   return patchVisualKeyedMapEntriesFromOwner(App, 'grooveLinesCountMap', entries, meta);
+}
+
+function readRuntimeGenericMapWriteError(apiName: string, mapName: string): Error {
+  return new Error(
+    `[WardrobePro] ${apiName} cannot write map "${mapName}"; use a semantic writer or SIMPLE_WRITABLE_MAP_NAMES`
+  );
+}
+
+function reportRuntimeGenericMapWriteRejected(App: unknown, apiName: string, mapName: string): void {
+  mapsAccessReportNonFatal(
+    apiName + '.simpleWritableMapRejected',
+    readRuntimeGenericMapWriteError(apiName, mapName),
+    App
+  );
+}
+
+function writeSimpleWritableMapEntry<K extends SimpleWritableMapName>(
+  App: unknown,
+  mapName: K,
+  key: unknown,
+  val: unknown,
+  meta?: ActionMetaLike,
+  reportOp = 'maps_access.writeSimpleWritableMapEntry.setKey'
+): boolean {
+  const maps = readMapsBagOrNull(App);
+  if (!maps) return false;
+
+  const k = String(key || '');
+  if (!k) return false;
+
+  if (trySetKey(App, maps, mapName, k, val, meta, reportOp)) return true;
+
+  const m = ensureMapRecord(maps, mapName);
+  writeOwn(m, k, val);
+  return true;
 }
 
 export function writeHandle(
@@ -113,6 +166,39 @@ export function writeHinge(
   return true;
 }
 
+export function writeCurtainPreset(
+  App: unknown,
+  partId: unknown,
+  preset: unknown,
+  meta?: ActionMetaLike
+): boolean {
+  const value = preset === undefined || preset === null ? null : String(preset || 'none');
+  return writeSimpleWritableMapEntry(
+    App,
+    'curtainMap',
+    partId,
+    value,
+    meta,
+    'maps_access.writeCurtainPreset.setKey'
+  );
+}
+
+export function writeDividerState(
+  App: unknown,
+  dividerKey: unknown,
+  isOn: unknown,
+  meta?: ActionMetaLike
+): boolean {
+  return writeSimpleWritableMapEntry(
+    App,
+    'drawerDividersMap',
+    dividerKey,
+    isOn ? true : null,
+    meta,
+    'maps_access.writeDividerState.setKey'
+  );
+}
+
 export function writeMapKey<K extends string>(
   App: unknown,
   mapName: K,
@@ -133,18 +219,12 @@ export function writeMapKey<K extends string>(
     );
     return false;
   }
+  if (!isSimpleWritableMapName(name)) {
+    reportRuntimeGenericMapWriteRejected(App, 'maps_access.writeMapKey', name);
+    return false;
+  }
 
-  const maps = readMapsBagOrNull(App);
-  if (!maps) return false;
-
-  const k = String(key || '');
-  if (!k) return false;
-
-  if (trySetKey(App, maps, name, k, val, meta)) return true;
-
-  const m = ensureMapRecord(maps, name);
-  writeOwn(m, k, val);
-  return true;
+  return writeSimpleWritableMapEntry(App, name, key, val, meta, 'maps_access.trySetKey');
 }
 
 export function writeSplit(App: unknown, doorId: unknown, isSplit: boolean, meta?: ActionMetaLike): boolean {

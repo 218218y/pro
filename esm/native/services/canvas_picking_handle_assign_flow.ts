@@ -22,7 +22,7 @@ import type { HitObjectLike } from './canvas_picking_engine.js';
 import { getTools } from '../runtime/service_access.js';
 import { getMode } from '../kernel/api.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
-import { readMapOrEmpty, writeHandle, writeMapKey } from '../runtime/maps_access.js';
+import { readMapOrEmpty, writeHandle } from '../runtime/maps_access.js';
 import { readDoorLeafRectFromUserData, resolveDoorHitOwnerByPartId } from './canvas_picking_door_shared.js';
 import { createCanvasPickingHandleAssignStructuralMeta } from './canvas_picking_handle_assign_meta.js';
 import {
@@ -92,13 +92,7 @@ function clearManualHandlePositionIfPresent(App: AppContainer, partId: string): 
   const key = manualHandlePositionKey(partId);
   const handlesMap = asRecord<UnknownRecord>(readMapOrEmpty(App, 'handlesMap'));
   if (!handlesMap || !Object.prototype.hasOwnProperty.call(handlesMap, key)) return;
-  writeMapKey(
-    App,
-    'handlesMap',
-    key,
-    null,
-    createCanvasPickingHandleAssignStructuralMeta('handles:clearManualPosition')
-  );
+  writeHandle(App, key, null, createCanvasPickingHandleAssignStructuralMeta('handles:clearManualPosition'));
 }
 
 function readUserDataPartId(userData: UnknownRecord | null | undefined): string {
@@ -159,18 +153,16 @@ function writeSelectedHandleConfig(args: {
 
   if (handleType === 'edge') {
     const edgeVariant = __normEdgeHandleVariant(modeOpts ? modeOpts.edgeHandleVariant : undefined);
-    writeMapKey(
+    writeHandle(
       App,
-      'handlesMap',
       __edgeHandleVariantPartKey(partId),
       edgeVariant,
       createCanvasPickingHandleAssignStructuralMeta('handles:assignEdgeVariant')
     );
   }
 
-  writeMapKey(
+  writeHandle(
     App,
-    'handlesMap',
     handleColorPartKey(partId),
     normalizeHandleFinishColor(modeOpts ? modeOpts.handleColor : DEFAULT_HANDLE_FINISH_COLOR),
     createCanvasPickingHandleAssignStructuralMeta('handles:assignColor')
@@ -221,9 +213,8 @@ function tryHandleManualHandlePositionClick(
 
   const handleType = readManualHandleType(App);
   writeSelectedHandleConfig({ App, partId, handleType, modeOpts });
-  writeMapKey(
+  writeHandle(
     App,
-    'handlesMap',
     manualHandlePositionKey(partId),
     serializeManualHandlePosition(position),
     createCanvasPickingHandleAssignStructuralMeta('handles:assignManualPosition')
@@ -263,9 +254,8 @@ export function tryHandleCanvasHandleAssignClick(args: CanvasHandleAssignClickAr
       if (__ht === 'edge') {
         const __edgeVariant = __normEdgeHandleVariant(__modeOpts ? __modeOpts.edgeHandleVariant : undefined);
 
-        writeMapKey(
+        writeHandle(
           App,
-          'handlesMap',
           __edgeHandleVariantPartKey(partId),
           __edgeVariant,
           createCanvasPickingHandleAssignStructuralMeta('handles:assignEdgeVariant')
@@ -273,9 +263,8 @@ export function tryHandleCanvasHandleAssignClick(args: CanvasHandleAssignClickAr
       }
 
       if (__ht !== 'none') {
-        writeMapKey(
+        writeHandle(
           App,
-          'handlesMap',
           handleColorPartKey(partId),
           normalizeHandleFinishColor(__modeOpts ? __modeOpts.handleColor : undefined),
           createCanvasPickingHandleAssignStructuralMeta('handles:assignColor')

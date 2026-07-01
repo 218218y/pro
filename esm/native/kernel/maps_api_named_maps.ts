@@ -1,7 +1,12 @@
 import type { AppContainer, ActionMetaLike } from '../../../types';
 
 import { patchConfigMap } from '../runtime/cfg_access.js';
-import { isVisualKeyedMapName, splitBottomKey, splitKey } from '../runtime/maps_access.js';
+import {
+  isSimpleWritableMapName,
+  isVisualKeyedMapName,
+  splitBottomKey,
+  splitKey,
+} from '../runtime/maps_access.js';
 import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
 import {
   patchVisualKeyedMapEntriesFromOwner,
@@ -45,6 +50,16 @@ export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared
       reportNonFatal(
         'maps.setKey.visualKeyedMapRejected',
         new Error(`maps.setKey cannot write visual/keyed map "${cleanMapName}"; use the map owner writer`),
+        6000
+      );
+      return undefined;
+    }
+    if (!isSimpleWritableMapName(cleanMapName)) {
+      reportNonFatal(
+        'maps.setKey.simpleWritableMapRejected',
+        new Error(
+          `maps.setKey cannot write map "${cleanMapName}"; use a semantic writer or SIMPLE_WRITABLE_MAP_NAMES`
+        ),
         6000
       );
       return undefined;

@@ -263,6 +263,7 @@ test('generic map writers reject visual keyed maps unless routed through an owne
     assert.equal(writeMapKey(App, 'removedDoorsMap', 'removed_d1_full', true), false);
     assert.equal(writeMapKey(App, 'splitDoorsMap', 'split_d1', true), false);
     assert.equal(writeMapKey(App, 'splitDoorsBottomMap', 'splitb_d1', true), false);
+    assert.equal(writeMapKey(App, 'unknownMap', 'd1', true), false);
   });
 
   assert.equal(state.config.doorStyleMap, undefined);
@@ -273,8 +274,10 @@ test('generic map writers reject visual keyed maps unless routed through an owne
 
   withSuppressedConsoleWarn(() => {
     App.maps.setKey('doorStyleMap', 'd1_full', 'profile', { source: 'test:maps:setKey:style' });
+    App.maps.setKey('unknownMap', 'd1', true, { source: 'test:maps:setKey:unknown' });
   });
   assert.equal(state.config.doorStyleMap, undefined);
+  assert.equal(state.config.unknownMap, undefined);
 
   setCfgDoorStyleMap(App, { d1_full: 'PROFILE', d1_mid2_accent_top: 'flat' }, { source: 'test:styleOwner' });
   assert.deepEqual({ ...state.config.doorStyleMap }, { d1_full: 'profile' });

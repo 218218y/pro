@@ -1,6 +1,6 @@
 import type { ActionMetaLike, UnknownRecord } from '../../../types';
 
-import { patchDoorGrooveMapEntries, toggleGrooveKey } from '../runtime/maps_access.js';
+import { patchDoorGrooveMapEntries, toggleGrooveKey, writeCurtainPreset } from '../runtime/maps_access.js';
 import {
   areDomainMapValuesEquivalent,
   normalizePrefixedMapKey,
@@ -62,6 +62,7 @@ function createCurtainsActionBindings(state: DomainApiSurfaceSectionsState): Unk
     set(partId: unknown, preset: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:curtains:set');
       const value = preset === undefined || preset === null ? null : String(preset || 'none');
+      if (writeCurtainPreset(state.App, partId, value, nextMeta)) return;
       return writeSimpleMapValue(state, 'curtainMap', partId, value, nextMeta);
     },
   };

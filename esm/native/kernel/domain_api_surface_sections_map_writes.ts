@@ -1,5 +1,5 @@
 import type { ActionMetaLike, AppContainer, UnknownRecord } from '../../../types';
-import { isVisualKeyedMapName, writeMapKey } from '../runtime/maps_access.js';
+import { isSimpleWritableMapName, isVisualKeyedMapName, writeMapKey } from '../runtime/maps_access.js';
 import type { DomainApiSurfaceSectionsState } from './domain_api_surface_sections_contracts.js';
 import {
   normalizePrefixedMapKey,
@@ -94,8 +94,16 @@ function readDomainGenericVisualMapWriteError(apiName: string, mapName: string):
   );
 }
 
+function readDomainGenericUnsupportedMapWriteError(apiName: string, mapName: string): Error {
+  return new Error(
+    `[WardrobePro] ${apiName} cannot write map "${mapName}"; use a semantic writer or SIMPLE_WRITABLE_MAP_NAMES`
+  );
+}
+
 export function assertDomainGenericMapWriteAllowed(apiName: string, mapName: string): void {
+  if (!mapName) return;
   if (isVisualKeyedMapName(mapName)) throw readDomainGenericVisualMapWriteError(apiName, mapName);
+  if (!isSimpleWritableMapName(mapName)) throw readDomainGenericUnsupportedMapWriteError(apiName, mapName);
 }
 
 function isDomainGenericMapWriteAllowed(apiName: string, mapName: string): boolean {
