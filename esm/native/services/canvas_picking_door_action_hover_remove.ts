@@ -28,7 +28,14 @@ function readDoorActionHoverFamilyPartIds(args: {
 }): string[] {
   const { hoverArgs, state, clickedKey, fullId, base } = args;
   const out = new Set<string>([`${base}_top`, `${base}_bot`]);
-  if (clickedKey && clickedKey !== fullId && clickedKey.startsWith(base + '_')) out.add(clickedKey);
+  const clickedIdentity = resolveRemovedDoorPartIdentity(clickedKey);
+  if (
+    clickedIdentity.isSegment &&
+    clickedIdentity.partId &&
+    clickedIdentity.partId !== fullId &&
+    clickedIdentity.basePartId === base
+  )
+    out.add(clickedIdentity.partId);
 
   try {
     const doorsArray = getDoorsArray(hoverArgs.App);

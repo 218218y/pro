@@ -24,7 +24,10 @@ const hoverModesSrc = [
 test('remove-door segmented family logic stays in the canonical door-edit flow and is driven by actual door-part ids', () => {
   assert.match(clickFlowSrc, /tryHandleCanvasDoorEditClick\(\{/);
   assert.match(doorEditSrc, /const familyPartIds = \(\(\) => \{/);
-  assert.match(doorEditSrc, /pid\.startsWith\(base \+ '_'/);
+  assert.match(doorEditSrc, /resolveRemovedDoorPartIdentity\(/);
+  assert.match(doorEditSrc, /identity\.basePartId !== base/);
+  assert.match(doorEditSrc, /identity\.isSegment/);
+  assert.doesNotMatch(doorEditSrc, /pid\.startsWith\(base \+ '_'/);
   assert.doesNotMatch(
     doorEditSrc,
     /const hasMid = base\.startsWith\('corner_pent_door_'\) \|\| base\.startsWith\('lower_corner_pent_door_'\);/
@@ -34,6 +37,10 @@ test('remove-door segmented family logic stays in the canonical door-edit flow a
 test('remove-door hover preview uses the same family-part detection strategy', () => {
   assert.match(hoverModesSrc, /const familyPartIds = readDoorActionHoverFamilyPartIds\(/);
   assert.match(hoverModesSrc, /getDoorsArray\(hoverArgs\.App\)/);
+  assert.match(hoverModesSrc, /resolveRemovedDoorPartIdentity\(/);
+  assert.match(hoverModesSrc, /identity\.basePartId !== base/);
+  assert.match(hoverModesSrc, /identity\.isSegment/);
+  assert.doesNotMatch(hoverModesSrc, /clickedKey\.startsWith\(base \+ '_'/);
   assert.doesNotMatch(
     hoverModesSrc,
     /const hasMid =\s*base\.startsWith\('corner_pent_door_'\) \|\| base\.startsWith\('lower_corner_pent_door_'\);/
