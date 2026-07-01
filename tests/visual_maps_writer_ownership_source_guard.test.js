@@ -46,6 +46,18 @@ const SERVICE_SEMANTIC_WRITER_EXPECTATIONS = [
   },
 ];
 
+const DOMAIN_API_MAP_WRITES_FILE = 'esm/native/kernel/domain_api_surface_sections_map_writes.ts';
+const DOMAIN_API_DOOR_BINDINGS_FILE = 'esm/native/kernel/domain_api_surface_sections_bindings_doors.ts';
+const DOMAIN_API_GROOVE_BINDINGS_FILE =
+  'esm/native/kernel/domain_api_surface_sections_bindings_grooves_curtains.ts';
+const DOMAIN_GENERIC_MAP_WRITE_HELPERS = [
+  'commitCanonicalMapValue',
+  'commitCanonicalPrefixedMapValue',
+  'writeCanonicalMapValueDirect',
+  'patchCanonicalPrefixedMapViaCfg',
+  'writeSimpleMapValue',
+];
+
 const MAP_ALIAS_READERS = {
   doorStyleMap: ['readDoorStyleMap'],
   mirrorLayoutMap: ['readMirrorLayoutConfigMap', 'readMirrorLayoutMap'],
@@ -289,6 +301,36 @@ function collectOwnerHelperImportViolations() {
   return violations;
 }
 
+function collectDomainGenericVisualWriteHelperViolations() {
+  const violations = [];
+  const files = walkSourceFiles('esm/native/kernel').filter(file =>
+    file.startsWith('esm/native/kernel/domain_api_surface_sections')
+  );
+
+  for (const file of files) {
+    const rawSource = readSourceFile(file);
+    const strippedSource = stripCommentsPreserveLines(rawSource);
+    for (const helper of DOMAIN_GENERIC_MAP_WRITE_HELPERS) {
+      for (const mapName of VISUAL_KEYED_MAPS) {
+        const regex = new RegExp(
+          String.raw`\b${escapeRegExp(helper)}\s*\([^\n)]*['"]${escapeRegExp(mapName)}['"]`,
+          'g'
+        );
+        pushRegexMatches(violations, {
+          file,
+          rawSource,
+          strippedSource,
+          mapName,
+          kind: `domain generic ${helper}`,
+          regex,
+        });
+      }
+    }
+  }
+
+  return violations;
+}
+
 function collectDuplicatedOwnerPatchLogicViolations() {
   const violations = [];
   const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
@@ -342,6 +384,43 @@ test('visual/keyed owner helpers are imported only by approved owners', () => {
     violations,
     [],
     `Owner-only visual/keyed helpers may only be imported by approved owners:\n${violations.join('\n')}`
+  );
+});
+
+test('domain api visual writes are blocked from generic helpers and routed through semantic writers', () => {
+  const mapWrites = readSourceFile(DOMAIN_API_MAP_WRITES_FILE);
+  const doorBindings = readSourceFile(DOMAIN_API_DOOR_BINDINGS_FILE);
+  const grooveBindings = readSourceFile(DOMAIN_API_GROOVE_BINDINGS_FILE);
+
+  assert.match(mapWrites, /isVisualKeyedMapName/);
+  assert.match(mapWrites, /assertDomainGenericMapWriteAllowed/);
+  for (const helper of DOMAIN_GENERIC_MAP_WRITE_HELPERS) {
+    assert.match(
+      mapWrites,
+      new RegExp(String.raw`\b${escapeRegExp(helper)}\s*\(`),
+      `${helper} should remain centralized in ${DOMAIN_API_MAP_WRITES_FILE}`
+    );
+  }
+
+  assert.doesNotMatch(doorBindings, /commitCanonicalMapValue\(\s*state\s*,\s*['"]removedDoorsMap['"]/);
+  assert.doesNotMatch(doorBindings, /commitCanonicalPrefixedMapValue\(\s*state\s*,\s*['"]splitDoorsMap['"]/);
+  assert.doesNotMatch(
+    doorBindings,
+    /patchCanonicalPrefixedMapViaCfg\(\s*state\s*,\s*['"]splitDoorsBottomMap['"]/
+  );
+  assert.match(doorBindings, /writeRemoved\(state\.App/);
+  assert.match(doorBindings, /writeSplit\(state\.App/);
+  assert.match(doorBindings, /writeSplitBottom\(state\.App/);
+
+  assert.doesNotMatch(grooveBindings, /commitCanonicalPrefixedMapValue\(\s*state\s*,\s*['"]groovesMap['"]/);
+  assert.match(grooveBindings, /patchDoorGrooveMapEntries\(state\.App/);
+  assert.match(grooveBindings, /toggleGrooveKey\(state\.App/);
+
+  const violations = collectDomainGenericVisualWriteHelperViolations().map(formatViolation);
+  assert.deepEqual(
+    violations,
+    [],
+    `Domain generic map helpers must not receive visual/keyed map names: ${violations.join('\n')}`
   );
 });
 

@@ -18,14 +18,10 @@ import {
 } from '../runtime/maps_access.js';
 import { readCanonicalUiRawIntFromSnapshot } from '../runtime/ui_raw_selectors.js';
 import {
+  areDomainMapValuesEquivalent,
   canonicalRemovedDoorPartId,
-  commitCanonicalMapValue,
   listRemovedDoorLookupKeys,
-  patchCanonicalPrefixedMapViaCfg,
-  shouldSkipCanonicalPrefixedMapCommit,
   shouldSkipSimpleMapWrite,
-  splitDoorBottomMapSemantics,
-  splitDoorMapSemantics,
   type DomainApiSurfaceSectionBindings,
   type DomainApiSurfaceSectionBindingFactory,
   type DomainApiSurfaceSectionKey,
@@ -106,60 +102,24 @@ function createDoorsActionBindings(state: DomainApiSurfaceSectionsState): Unknow
       if (!canonicalPartId) return;
       const removedKey = 'removed_' + canonicalPartId;
       const value = !!isRemoved ? true : null;
-      if (writeRemoved(state.App, doorId, !!isRemoved, nextMeta)) return;
-      return commitCanonicalMapValue(state, 'removedDoorsMap', removedKey, value, nextMeta);
+      if (areDomainMapValuesEquivalent(state.readDoorsRemovedMap()[removedKey], value)) return;
+      return writeRemoved(state.App, doorId, !!isRemoved, nextMeta);
     },
     setSplit(doorId: unknown, isSplit: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setSplit');
       const value = !!isSplit ? true : false;
       const canonicalKey = splitKey(doorId);
-      if (
-        shouldSkipCanonicalPrefixedMapCommit(
-          state,
-          'splitDoorsMap',
-          doorId,
-          splitDoorMapSemantics,
-          value,
-          canonicalKey
-        )
-      )
-        return;
-      if (writeSplit(state.App, doorId, !!isSplit, nextMeta)) return;
-      return patchCanonicalPrefixedMapViaCfg(
-        state,
-        'splitDoorsMap',
-        doorId,
-        splitDoorMapSemantics,
-        value,
-        nextMeta,
-        canonicalKey
-      );
+      if (!canonicalKey) return;
+      if (areDomainMapValuesEquivalent(state.readDoorsSplitMap()[canonicalKey], value)) return;
+      return writeSplit(state.App, doorId, !!isSplit, nextMeta);
     },
     setSplitBottom(doorId: unknown, isOn: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setSplitBottom');
       const value = !!isOn ? true : null;
       const canonicalKey = splitBottomKey(doorId);
-      if (
-        shouldSkipCanonicalPrefixedMapCommit(
-          state,
-          'splitDoorsBottomMap',
-          doorId,
-          splitDoorBottomMapSemantics,
-          value,
-          canonicalKey
-        )
-      )
-        return;
-      if (writeSplitBottom(state.App, doorId, !!isOn, nextMeta)) return;
-      return patchCanonicalPrefixedMapViaCfg(
-        state,
-        'splitDoorsBottomMap',
-        doorId,
-        splitDoorBottomMapSemantics,
-        value,
-        nextMeta,
-        canonicalKey
-      );
+      if (!canonicalKey) return;
+      if (areDomainMapValuesEquivalent(state.readDoorsSplitBottomMap()[canonicalKey], value)) return;
+      return writeSplitBottom(state.App, doorId, !!isOn, nextMeta);
     },
     setHinge(doorId: unknown, hinge: HingeDir | UnknownRecord | string, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setHinge');

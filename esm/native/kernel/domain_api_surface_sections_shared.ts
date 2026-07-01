@@ -22,6 +22,7 @@ export {
 export type { PrefixedMapSemantics } from './domain_api_surface_sections_prefixed_maps.js';
 export {
   areDomainMapValuesEquivalent,
+  assertDomainGenericMapWriteAllowed,
   commitCanonicalMapValue,
   commitCanonicalPrefixedMapValue,
   patchCanonicalMapValue,

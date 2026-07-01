@@ -1,11 +1,9 @@
 import type { ActionMetaLike, UnknownRecord } from '../../../types';
 
-import { toggleGrooveKey } from '../runtime/maps_access.js';
+import { patchDoorGrooveMapEntries, toggleGrooveKey } from '../runtime/maps_access.js';
 import {
-  commitCanonicalPrefixedMapValue,
-  grooveMapSemantics,
+  areDomainMapValuesEquivalent,
   normalizePrefixedMapKey,
-  shouldSkipCanonicalPrefixedMapCommit,
   type DomainApiSurfaceSectionBindings,
   type DomainApiSurfaceSectionBindingFactory,
   type DomainApiSurfaceSectionKey,
@@ -33,42 +31,16 @@ function createGroovesActionBindings(state: DomainApiSurfaceSectionsState): Unkn
       const grooveKey = normalizePrefixedMapKey(partIdOrKey, 'groove_');
       if (!grooveKey) return;
       const next = !state.readGrooveIsOn(partIdOrKey);
-      if (
-        shouldSkipCanonicalPrefixedMapCommit(
-          state,
-          'groovesMap',
-          partIdOrKey,
-          grooveMapSemantics,
-          next ? true : null,
-          grooveKey
-        )
-      )
-        return;
-      if (toggleGrooveKey(state.App, grooveKey, nextMeta)) return;
-      return commitCanonicalPrefixedMapValue(
-        state,
-        'groovesMap',
-        partIdOrKey,
-        grooveMapSemantics,
-        next ? true : null,
-        nextMeta,
-        grooveKey
-      );
+      if (areDomainMapValuesEquivalent(state.readGroovesMap()[grooveKey], next ? true : null)) return;
+      return toggleGrooveKey(state.App, grooveKey, nextMeta);
     },
     set(partIdOrKey: unknown, isOn: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:grooves:set');
       const grooveKey = normalizePrefixedMapKey(partIdOrKey, 'groove_');
       if (!grooveKey) return;
       const value = !!isOn ? true : null;
-      return commitCanonicalPrefixedMapValue(
-        state,
-        'groovesMap',
-        partIdOrKey,
-        grooveMapSemantics,
-        value,
-        nextMeta,
-        grooveKey
-      );
+      if (areDomainMapValuesEquivalent(state.readGroovesMap()[grooveKey], value)) return;
+      return patchDoorGrooveMapEntries(state.App, [{ key: grooveKey, value }], nextMeta);
     },
   };
 }

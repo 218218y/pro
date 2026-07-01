@@ -151,13 +151,12 @@ export function writeSplit(App: unknown, doorId: unknown, isSplit: boolean, meta
   const id0 = readMapKey(doorId);
   if (!id0) return false;
   const maps = readMapsBagOrNull(App);
-  if (!maps) return false;
 
   const canonicalKey = splitKey(id0);
   if (!canonicalKey) return false;
 
   try {
-    const fn = maps.setSplit;
+    const fn = maps?.setSplit;
     if (typeof fn === 'function') {
       fn.call(maps, canonicalKey, !!isSplit, meta);
       return true;
@@ -183,13 +182,12 @@ export function writeSplitBottom(
   const id0 = readMapKey(doorId);
   if (!id0) return false;
   const maps = readMapsBagOrNull(App);
-  if (!maps) return false;
 
   const canonicalKey = splitBottomKey(id0);
   if (!canonicalKey) return false;
 
   try {
-    const fn = maps.setSplitBottom;
+    const fn = maps?.setSplitBottom;
     if (typeof fn === 'function') {
       fn.call(maps, canonicalKey, !!isOn, meta);
       return true;
@@ -275,8 +273,6 @@ function toggleCanonicalGrooveKeyInMap(
   key: unknown,
   meta?: ActionMetaLike
 ): boolean {
-  const maps = readMapsBagOrNull(App);
-  if (!maps) return false;
   return toggleVisualKeyedMapEntryFromOwner(App, mapName, key, meta);
 }
 

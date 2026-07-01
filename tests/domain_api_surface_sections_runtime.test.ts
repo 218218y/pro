@@ -305,6 +305,38 @@ test('domain api surface sections generic map fallback writers normalize keys on
   );
 });
 
+test('domain api surface sections generic map writers reject visual maps and keep simple maps writable', () => {
+  const h = createHarness();
+
+  assert.throws(
+    () => h.mapActions.setKey('removedDoorsMap', 'removed_d1_full', true, { source: 'test:generic:removed' }),
+    /writeSimpleMapValue cannot write visual\/keyed map "removedDoorsMap"/
+  );
+  assert.throws(
+    () => h.mapActions.setKey('splitDoorsMap', 'split_d1', true, { source: 'test:generic:split' }),
+    /writeSimpleMapValue cannot write visual\/keyed map "splitDoorsMap"/
+  );
+  assert.throws(
+    () =>
+      h.mapActions.setKey('splitDoorsBottomMap', 'splitb_d1', true, { source: 'test:generic:split-bottom' }),
+    /writeSimpleMapValue cannot write visual\/keyed map "splitDoorsBottomMap"/
+  );
+
+  h.mapActions.setKey('hingeMap', 'd1', 'left', { source: 'test:generic:hinge' });
+  h.mapActions.setKey('handlesMap', 'd1', 'bar', { source: 'test:generic:handle' });
+
+  assert.deepEqual(
+    h.mapPatchCalls.map(({ mapName, key, value }) => ({ mapName, key, value })),
+    [
+      { mapName: 'hingeMap', key: 'd1', value: 'left' },
+      { mapName: 'handlesMap', key: 'd1', value: 'bar' },
+    ]
+  );
+  assert.deepEqual({ ...h.env.maps.removedDoorsMap }, {});
+  assert.deepEqual({ ...h.env.maps.splitDoorsMap }, {});
+  assert.deepEqual({ ...h.env.maps.splitDoorsBottomMap }, {});
+});
+
 test('domain api surface sections writes canonical split ids and removed door keys only', () => {
   const h = createHarness();
 
@@ -313,6 +345,24 @@ test('domain api surface sections writes canonical split ids and removed door ke
 
   assert.deepEqual({ ...h.env.maps.splitDoorsMap }, { split_d11: true });
   assert.deepEqual({ ...h.env.maps.removedDoorsMap }, { removed_d12_full: true });
+});
+
+test('domain api surface sections route visual door writes through semantic owner writers only', () => {
+  const h = createHarness();
+
+  h.doorsActions.setRemoved('d41', true, { source: 'test:semantic:removed' });
+  h.doorsActions.setSplit('d42_top', true, { source: 'test:semantic:split' });
+  h.doorsActions.setSplitBottom('splitb_d43_bot', true, { source: 'test:semantic:split-bottom' });
+
+  assert.deepEqual(h.mapPatchCalls, []);
+  assert.deepEqual(
+    h.configSetCalls.map(({ mapName, nextMap }) => ({ mapName, nextMap })),
+    [
+      { mapName: 'removedDoorsMap', nextMap: { removed_d41_full: true } },
+      { mapName: 'splitDoorsMap', nextMap: { split_d42: true } },
+      { mapName: 'splitDoorsBottomMap', nextMap: { splitb_d43: true } },
+    ]
+  );
 });
 
 test('domain api surface sections heal missing action/select methods without replacing intact refs', () => {
@@ -365,11 +415,11 @@ test('domain api surface sections reinstall heals drifted public slots and keeps
   assert.equal(h.select.doors.isSplit('d21'), false);
 
   h.doorsActions.setSplit('d22', true, { source: 'test:split:healed' });
-  assert.deepEqual(h.mapPatchCalls.slice(-1), [
+  assert.deepEqual(h.mapPatchCalls, []);
+  assert.deepEqual(h.configSetCalls.slice(-1), [
     {
       mapName: 'splitDoorsMap',
-      key: 'split_d22',
-      value: true,
+      nextMap: { split_d21: false, split_d22: true },
       meta: { source: 'actions:doors:setSplit', installVersion: 2 },
     },
   ]);
@@ -412,11 +462,11 @@ test('domain api surface sections keep canonical public roots alive across root 
   assert.equal(h.select.doors.isSplit('d31'), false);
 
   staleDoorsActions.setSplit('d32', true, { source: 'test:split:stale-root-reused' });
-  assert.deepEqual(h.mapPatchCalls.slice(-1), [
+  assert.deepEqual(h.mapPatchCalls, []);
+  assert.deepEqual(h.configSetCalls.slice(-1), [
     {
       mapName: 'splitDoorsMap',
-      key: 'split_d32',
-      value: true,
+      nextMap: { split_d31: false, split_d32: true },
       meta: { source: 'actions:doors:setSplit', installVersion: 2 },
     },
   ]);

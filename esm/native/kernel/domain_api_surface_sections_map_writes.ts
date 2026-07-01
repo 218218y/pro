@@ -1,5 +1,5 @@
 import type { ActionMetaLike, AppContainer, UnknownRecord } from '../../../types';
-import { writeMapKey } from '../runtime/maps_access.js';
+import { isVisualKeyedMapName, writeMapKey } from '../runtime/maps_access.js';
 import type { DomainApiSurfaceSectionsState } from './domain_api_surface_sections_contracts.js';
 import {
   normalizePrefixedMapKey,
@@ -88,6 +88,21 @@ export function shouldSkipCanonicalPrefixedMapCommit(
   return shouldSkipCanonicalMapCommit(state, mapName, nextKey, value);
 }
 
+function readDomainGenericVisualMapWriteError(apiName: string, mapName: string): Error {
+  return new Error(
+    `[WardrobePro] ${apiName} cannot write visual/keyed map "${mapName}"; use a semantic runtime owner writer`
+  );
+}
+
+export function assertDomainGenericMapWriteAllowed(apiName: string, mapName: string): void {
+  if (isVisualKeyedMapName(mapName)) throw readDomainGenericVisualMapWriteError(apiName, mapName);
+}
+
+function isDomainGenericMapWriteAllowed(apiName: string, mapName: string): boolean {
+  assertDomainGenericMapWriteAllowed(apiName, mapName);
+  return !!mapName;
+}
+
 export function patchCanonicalMapValue(
   patchMap: (mapName: unknown, key: unknown, value: unknown, meta?: ActionMetaLike) => unknown,
   mapName: string,
@@ -96,6 +111,7 @@ export function patchCanonicalMapValue(
   meta?: ActionMetaLike
 ): unknown {
   if (!canonicalKey) return undefined;
+  if (!isDomainGenericMapWriteAllowed('patchCanonicalMapValue', mapName)) return undefined;
   patchMap(mapName, canonicalKey, value, meta);
   return undefined;
 }
@@ -108,6 +124,7 @@ export function writeCanonicalMapValueDirect(
   meta?: ActionMetaLike
 ): boolean {
   if (!canonicalKey) return false;
+  if (!isDomainGenericMapWriteAllowed('writeCanonicalMapValueDirect', mapName)) return false;
   return writeMapKey(App, mapName, canonicalKey, value, meta);
 }
 
@@ -119,6 +136,7 @@ export function commitCanonicalMapValue(
   meta?: ActionMetaLike
 ): unknown {
   if (!canonicalKey) return undefined;
+  if (!isDomainGenericMapWriteAllowed('commitCanonicalMapValue', mapName)) return undefined;
   if (shouldSkipCanonicalMapCommit(state, mapName, canonicalKey, value)) return undefined;
   if (writeCanonicalMapValueDirect(state.App, mapName, canonicalKey, value, meta)) {
     return undefined;
@@ -137,6 +155,7 @@ export function patchCanonicalPrefixedMapViaCfg(
 ): unknown {
   const nextKey = canonicalKey || normalizePrefixedMapKey(valueOrKey, semantics.prefix);
   if (!nextKey) return undefined;
+  if (!isDomainGenericMapWriteAllowed('patchCanonicalPrefixedMapViaCfg', mapName)) return undefined;
   return state.patchCanonicalMapViaCfg(mapName, nextKey, value, meta);
 }
 
@@ -151,6 +170,7 @@ export function commitCanonicalPrefixedMapValue(
 ): unknown {
   const nextKey = canonicalKey || normalizePrefixedMapKey(valueOrKey, semantics.prefix);
   if (!nextKey) return undefined;
+  if (!isDomainGenericMapWriteAllowed('commitCanonicalPrefixedMapValue', mapName)) return undefined;
   return commitCanonicalMapValue(state, mapName, nextKey, value, meta);
 }
 
@@ -164,6 +184,7 @@ export function writeSimpleMapValue(
   const nextMapName = readMapKey(mapName);
   const nextKey = readMapKey(key);
   if (!nextMapName || !nextKey) return undefined;
+  if (!isDomainGenericMapWriteAllowed('writeSimpleMapValue', nextMapName)) return undefined;
   if (shouldSkipSimpleMapWrite(state, nextMapName, nextKey, value)) return undefined;
   if (writeMapKey(state.App, nextMapName, nextKey, value, meta)) return undefined;
   return state._cfgMapPatch(nextMapName, nextKey, value, meta);
