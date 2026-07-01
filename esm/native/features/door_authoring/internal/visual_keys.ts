@@ -101,6 +101,11 @@ export function resolveDoorVisualSegmentIdentity(partId: unknown): DoorVisualSeg
   };
 }
 
+/**
+ * Split-authoring contract for hover/click/map keys, not general visual identity.
+ * Do not replace this with resolveDoorVisualSegmentIdentity(...).basePartId without
+ * a full audit; it preserves existing split hover, click, and map key behavior.
+ */
 export function resolveDoorSplitAuthoringBaseKey(partId: unknown): string {
   const pid = typeof partId === 'string' ? partId : String(partId || '');
   if (!pid) return '';

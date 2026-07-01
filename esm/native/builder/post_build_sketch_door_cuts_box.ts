@@ -4,6 +4,7 @@
 
 import { getDrawersArray } from '../runtime/render_access.js';
 import { isSplitEnabledInMap, readSplitPosListFromMap } from '../runtime/maps_access.js';
+import { resolveDoorSplitAuthoringBaseKey } from '../features/door_authoring/api.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import type { AppContainer, BuildContextLike, ThreeLike } from '../../../types/index.js';
 import { getMirrorMaterial } from './render_ops.js';
@@ -24,10 +25,6 @@ import {
 } from './post_build_sketch_door_cuts_shared.js';
 
 type SketchBoxDrawerStackBounds = SketchDrawerStackBounds & { key: string };
-
-function readSketchBoxDoorBasePartId(partId: string): string {
-  return String(partId || '').replace(/_(?:full|top|bot|mid\d*)$/i, '');
-}
 
 function readSketchBoxDoorManualSplitPosList(cfg: ValueRecord, basePartId: string): number[] {
   if (!basePartId) return [];
@@ -132,7 +129,7 @@ export function applySketchBoxExternalDrawerDoorCuts(args: {
       const moduleKey = readStringOrNull(ud.__wpSketchModuleKey);
       const boxKey = getSketchBoxDoorPendingStateKey(moduleKey, boxId);
       const stacks = boxStacks.get(boxKey) || [];
-      const basePartId = readSketchBoxDoorBasePartId(
+      const basePartId = resolveDoorSplitAuthoringBaseKey(
         typeof ud.partId === 'string' ? String(ud.partId) : `${boxKey}_door`
       );
       const splitPosList = readSketchBoxDoorManualSplitPosList(cfg, basePartId);

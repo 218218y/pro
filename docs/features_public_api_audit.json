@@ -457,6 +457,10 @@
       "entry": "part_identity/api.js"
     },
     {
+      "file": "esm/native/builder/post_build_sketch_door_cuts_box.ts",
+      "entry": "door_authoring/api.js"
+    },
+    {
       "file": "esm/native/builder/post_build_sketch_door_cuts_contracts.ts",
       "entry": "manual_handle_position.js"
     },

@@ -114,6 +114,8 @@ test('[door-visual-keys] split authoring base keys preserve the canvas split-map
     ['sketch_box_0_boxA_door_left', 'sketch_box_0_boxA_door_left', 'sketch_box_0_boxA_door_left'],
     ['sketch_box_0_boxA_door_left_full', 'sketch_box_0_boxA_door_left', 'sketch_box_0_boxA_door_left'],
     ['sketch_box_0_boxA_door_left_top', 'sketch_box_0_boxA_door_left', 'sketch_box_0_boxA_door_left'],
+    ['sketch_box_0_boxA_door_left_bot', 'sketch_box_0_boxA_door_left', 'sketch_box_0_boxA_door_left'],
+    ['sketch_box_0_boxA_door_left_mid2', 'sketch_box_0_boxA_door_left', 'sketch_box_0_boxA_door_left'],
     [
       'sketch_box_0_boxA_door_left_mid2_accent_top',
       'sketch_box_0_boxA_door_left_mid2_accent',
@@ -125,8 +127,28 @@ test('[door-visual-keys] split authoring base keys preserve the canvas split-map
       'sketch_box_free_0_boxA_door_sbdr_1',
     ],
     [
+      'sketch_box_free_0_boxA_door_sbdr_1_full',
+      'sketch_box_free_0_boxA_door_sbdr_1',
+      'sketch_box_free_0_boxA_door_sbdr_1',
+    ],
+    [
+      'sketch_box_free_0_boxA_door_sbdr_1_top',
+      'sketch_box_free_0_boxA_door_sbdr_1',
+      'sketch_box_free_0_boxA_door_sbdr_1',
+    ],
+    [
       'sketch_box_free_0_boxA_door_sbdr_1_bot',
       'sketch_box_free_0_boxA_door_sbdr_1',
+      'sketch_box_free_0_boxA_door_sbdr_1',
+    ],
+    [
+      'sketch_box_free_0_boxA_door_sbdr_1_mid2',
+      'sketch_box_free_0_boxA_door_sbdr_1',
+      'sketch_box_free_0_boxA_door_sbdr_1',
+    ],
+    [
+      'sketch_box_free_0_boxA_door_sbdr_1_mid2_accent_top',
+      'sketch_box_free_0_boxA_door_sbdr_1_mid2_accent',
       'sketch_box_free_0_boxA_door_sbdr_1',
     ],
     [

@@ -860,6 +860,7 @@ test('sketch box drawers and external drawers source use divider-aware spans', a
 });
 
 test('sketch box external drawer cuts rebuild segmented box doors from drawer runtime bounds', async () => {
+  const boxSrc = await readSourceFiles(['../esm/native/builder/post_build_sketch_door_cuts_box.ts']);
   const src = await readSourceFiles([
     '../esm/native/builder/post_build_sketch_door_cuts.ts',
     '../esm/native/builder/post_build_sketch_door_cuts_box.ts',
@@ -872,6 +873,9 @@ test('sketch box external drawer cuts rebuild segmented box doors from drawer ru
     src,
     /function collectSketchBoxExternalDrawerStackBounds\(App: AppContainer\): SketchBoxDrawerStackBounds\[]/
   );
+  assert.match(boxSrc, /features\/door_authoring\/api\.js/);
+  assert.match(boxSrc, /resolveDoorSplitAuthoringBaseKey/);
+  assert.doesNotMatch(boxSrc, /readSketchBoxDoorBasePartId/);
   assert.match(src, /ud\.__wpSketchExtDrawer !== true/);
   assert.match(
     bundle,
