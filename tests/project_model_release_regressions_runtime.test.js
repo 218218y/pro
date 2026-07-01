@@ -1,11 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildProjectPdfUiPatch, preserveUiEphemeral } from '../esm/native/io/project_io_load_helpers.ts';
+import {
+  buildProjectPdfUiPatch,
+  preserveUiEphemeral,
+} from '../dist/esm/native/io/project_io_load_helpers.js';
 import {
   buildProjectStructureFromModel,
   loadProjectStructureResult,
-} from '../esm/native/services/models_apply_project.ts';
+} from '../dist/esm/native/services/models_apply_project.js';
 
 function cloneJson(value) {
   return JSON.parse(JSON.stringify(value));
@@ -116,7 +119,7 @@ test('project/model release regressions preserve current PDF draft, canonicalize
     stackSplitLowerModulesConfiguration: [{ id: 'lower-1', extDrawersCount: '3' }],
     cornerConfiguration: { modulesConfiguration: [{ doors: '5' }] },
     splitDoorsMap: { split_d1: true, splitpos_main: [0.25, 0.75, NaN], main: [0.5] },
-    splitDoorsBottomMap: { splitb_lower_d1: true, splitb_lower: true, splitb_off: false, lower: true },
+    splitDoorsBottomMap: { splitb_lower: true, splitb_off: false, lower: true },
     doorTrimMap: { d1_full: [{ axis: 'vertical', color: 'gold' }] },
     savedNotes: [{ text: 'note' }],
     preChestState: { enabled: true },
@@ -134,7 +137,8 @@ test('project/model release regressions preserve current PDF draft, canonicalize
   assert.equal(built.orderPdfEditorZoom, 1.75);
   assert.deepEqual(asPlainRecord(built.splitDoorsMap), { split_d1: true, splitpos_main: [0.25, 0.75] });
   assert.deepEqual(asPlainRecord(built.splitDoorsBottomMap), {
-    splitb_lower_d1: true,
+    splitb_lower: true,
+    splitb_off: false,
   });
   assert.equal(built.modulesConfiguration[2].doors, 1);
   assert.equal(built.stackSplitLowerModulesConfiguration[0].extDrawersCount, 3);
