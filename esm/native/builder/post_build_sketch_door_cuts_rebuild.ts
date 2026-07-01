@@ -5,6 +5,7 @@
 import { readKey } from './post_build_extras_shared.js';
 import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
+import { readDoorTrimListForPart } from '../features/door_authoring/api.js';
 import type { RebuildSketchSegmentedDoorArgs } from './post_build_sketch_door_cuts_contracts.js';
 import { maybeAttachSegmentHandle } from './post_build_sketch_door_cuts_rebuild_handles.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
@@ -149,7 +150,11 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
       THREE: runtime.THREE,
       group: visualObj,
       partId: segmentPartId,
-      trims: runtime.doorTrimMap?.[segmentPartId],
+      trims: readDoorTrimListForPart({
+        map: runtime.doorTrimMap,
+        partId,
+        scopedPartId: segmentPartId,
+      }),
       doorWidth: segmentVisualWidth,
       doorHeight: segmentVisualHeight,
       frontZ: thickness / 2 + 0.0015,

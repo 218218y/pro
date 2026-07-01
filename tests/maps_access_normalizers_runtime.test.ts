@@ -27,17 +27,27 @@ test('maps access normalizers keep hinge entries detached and door trim ids stab
   const trimMapA = normalizeKnownMapSnapshot('doorTrimMap', { d1: [rawTrim] });
   const trimMapB = normalizeKnownMapSnapshot('doorTrimMap', { d1: [rawTrim] });
 
-  assert.equal(trimMapA.d1?.[0]?.id, trimMapB.d1?.[0]?.id);
-  assert.equal(trimMapA.d1?.[0]?.axis, 'vertical');
-  assert.equal(trimMapA.d1?.[0]?.color, 'gold');
-  assert.equal(trimMapA.d1?.[0]?.sizeCm, 17);
-  assert.equal(trimMapA.d1?.[0]?.crossSizeCm, 6.5);
+  assert.equal(trimMapA.d1_full?.[0]?.id, trimMapB.d1_full?.[0]?.id);
+  assert.equal(trimMapA.d1_full?.[0]?.axis, 'vertical');
+  assert.equal(trimMapA.d1_full?.[0]?.color, 'gold');
+  assert.equal(trimMapA.d1_full?.[0]?.sizeCm, 17);
+  assert.equal(trimMapA.d1_full?.[0]?.crossSizeCm, 6.5);
+  assert.equal('d1' in trimMapA, false);
 
-  const firstId = trimMapA.d1?.[0]?.id;
-  trimMapA.d1?.[0] && (trimMapA.d1[0].color = 'black');
+  const firstId = trimMapA.d1_full?.[0]?.id;
+  trimMapA.d1_full?.[0] && (trimMapA.d1_full[0].color = 'black');
   const trimMapC = normalizeKnownMapSnapshot('doorTrimMap', { d1: [rawTrim] });
-  assert.equal(trimMapC.d1?.[0]?.id, firstId);
-  assert.equal(trimMapC.d1?.[0]?.color, 'gold');
+  assert.equal(trimMapC.d1_full?.[0]?.id, firstId);
+  assert.equal(trimMapC.d1_full?.[0]?.color, 'gold');
+
+  const trimSurfaceMap = normalizeKnownMapSnapshot('doorTrimMap', {
+    d1_mid2_accent_top: [rawTrim],
+    d2_top_trim_preview_hover: [rawTrim],
+  });
+  assert.equal(Array.isArray(trimSurfaceMap.d1_mid2), true);
+  assert.equal(Array.isArray(trimSurfaceMap.d2_top), true);
+  assert.equal('d1_mid2_accent_top' in trimSurfaceMap, false);
+  assert.equal('d2_top_trim_preview_hover' in trimSurfaceMap, false);
 
   const mirrorMap = normalizeKnownMapSnapshot('mirrorLayoutMap', {
     d1: [{ widthCm: '45', heightCm: 75, faceSign: -1 }, { widthCm: 0 }],

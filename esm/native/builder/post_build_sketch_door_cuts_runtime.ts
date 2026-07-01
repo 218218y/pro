@@ -8,7 +8,7 @@ import {
   edgeHandleVariantPartKey,
   normEdgeHandleVariant,
 } from './handles_shared.js';
-import { readDoorStyleMap } from '../features/door_authoring/api.js';
+import { readDoorStyleMap, readDoorTrimMap } from '../features/door_authoring/api.js';
 import { readManualHandlePositionForPart } from '../features/manual_handle_position.js';
 import { makeDoorRemovalChecker } from './doors_state_utils.js';
 import { readDoorVisualMapValue, readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
@@ -46,7 +46,7 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
 
   const groovesMap = asRecord(readKey(cfg, 'groovesMap'));
   const groovesEnabled = resolveSketchGroovesEnabledFromBuildContext(ctx);
-  const doorTrimMap = asRecord(readKey(cfg, 'doorTrimMap'));
+  const doorTrimMap = readDoorTrimMap(readKey(cfg, 'doorTrimMap'));
   const curtainMap = asRecord(readKey(cfg, 'curtainMap'));
   const specialMap = asRecord(readKey(cfg, 'doorSpecialMap'));
   const mirrorLayoutMap = asRecord(readKey(cfg, 'mirrorLayoutMap'));

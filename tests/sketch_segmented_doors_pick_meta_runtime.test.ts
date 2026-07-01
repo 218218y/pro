@@ -166,7 +166,7 @@ test('segmented sketch door rebuild replays door trim visuals per surviving spli
     doorStyleMap: {},
     groovesMap: {},
     doorTrimMap: {
-      sketch_box_0_sb_1_door_left_top: [
+      sketch_box_0_sb_1_door_left_top_trim_preview_hover: [
         {
           id: 'trim_top',
           axis: 'horizontal',

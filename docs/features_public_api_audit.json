@@ -469,6 +469,10 @@
       "entry": "sketch_stack_positioning.js"
     },
     {
+      "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild.ts",
+      "entry": "door_authoring/api.js"
+    },
+    {
       "file": "esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts",
       "entry": "manual_handle_position.js"
     },

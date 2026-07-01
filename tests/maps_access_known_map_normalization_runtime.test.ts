@@ -72,9 +72,9 @@ test('maps_access normalizes known maps and clones unknown maps without leaking 
   assert.equal('bad' in (roundedFrameSides || {}), false);
 
   const trims = readMap(App, 'doorTrimMap');
-  assert.equal(trims?.d1?.length, 2);
-  assert.deepEqual(trims?.d1?.[0], {
-    id: trims?.d1?.[0]?.id,
+  assert.equal(trims?.d1_full?.length, 2);
+  assert.deepEqual(trims?.d1_full?.[0], {
+    id: trims?.d1_full?.[0]?.id,
     axis: 'vertical',
     color: 'gold',
     span: 'custom',
@@ -83,9 +83,10 @@ test('maps_access normalizes known maps and clones unknown maps without leaking 
     centerXNorm: 0.25,
     centerYNorm: 0.75,
   });
-  assert.equal(trims?.d1?.[1]?.axis, 'horizontal');
-  assert.equal(trims?.d1?.[1]?.color, 'nickel');
-  assert.equal(trims?.d1?.[1]?.span, 'half');
+  assert.equal(trims?.d1_full?.[1]?.axis, 'horizontal');
+  assert.equal(trims?.d1_full?.[1]?.color, 'nickel');
+  assert.equal(trims?.d1_full?.[1]?.span, 'half');
+  assert.equal('d1' in (trims || {}), false);
 
   const custom = readMapOrEmpty(App, 'customMap');
   assert.deepEqual({ ...custom }, { nested: { a: 1 } });

@@ -138,7 +138,8 @@ test('buildProjectStructureFromModel reuses the persisted config projection with
 
   const built = buildProjectStructureFromModel(App, model as never);
   assert.deepEqual({ ...built.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
-  assert.equal(built.doorTrimMap?.d1?.[0]?.color, 'gold');
+  assert.equal(built.doorTrimMap?.d1_full?.[0]?.color, 'gold');
+  assert.equal('d1' in (built.doorTrimMap || {}), false);
   assert.equal(((built.preChestState as Record<string, unknown>).dims as Record<string, unknown>).width, 55);
 
   model.mirrorLayoutMap.d1[0].widthCm = 99;
@@ -146,7 +147,7 @@ test('buildProjectStructureFromModel reuses the persisted config projection with
   (model.preChestState.dims as Record<string, unknown>).width = 77;
 
   assert.deepEqual({ ...built.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
-  assert.equal(built.doorTrimMap?.d1?.[0]?.color, 'gold');
+  assert.equal(built.doorTrimMap?.d1_full?.[0]?.color, 'gold');
   assert.equal(((built.preChestState as Record<string, unknown>).dims as Record<string, unknown>).width, 55);
 });
 

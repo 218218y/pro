@@ -1,5 +1,8 @@
 import type { AppContainer, DoorVisualEntryLike, UnknownRecord } from '../../../types';
-import { stripDoorVisualSurfaceSuffix } from '../../shared/door_visual_key_contracts_shared.js';
+import {
+  listDoorTrimTargetLookupKeys,
+  toCanonicalDoorTrimTargetKey,
+} from '../../shared/door_trim_key_contracts_shared.js';
 import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
 import { isDrawerBoxPartId } from '../features/part_identity/api.js';
 import { isCabinetBodyDoorTrimSurfacePartId } from '../features/door_authoring/api.js';
@@ -87,27 +90,6 @@ function isDoorTrimTargetPartId(partId: string): boolean {
   );
 }
 
-function isSegmentedDoorBaseId(partId: string): boolean {
-  if (!partId) return false;
-  if (/^(?:lower_)?d\d+$/.test(partId)) return true;
-  if (/^(?:lower_)?corner_door_\d+$/.test(partId)) return true;
-  if (/^(?:lower_)?corner_pent_door_\d+$/.test(partId)) return true;
-  return false;
-}
-
-function canonDoorPartKeyForMaps(partId: string): string {
-  if (!partId) return '';
-  if (
-    partId.endsWith('_full') ||
-    partId.endsWith('_top') ||
-    partId.endsWith('_mid') ||
-    partId.endsWith('_bot')
-  )
-    return partId;
-  if (isSegmentedDoorBaseId(partId)) return `${partId}_full`;
-  return partId;
-}
-
 function scopeCornerPartIdForBottom(partId: string, preferredGroup: DoorGroupLike): string {
   if (!partId || readGroupStackKey(preferredGroup) !== 'bottom') return partId;
   if (partId.startsWith('lower_')) return partId;
@@ -116,13 +98,9 @@ function scopeCornerPartIdForBottom(partId: string, preferredGroup: DoorGroupLik
 }
 
 function normalizeDoorTrimMapPartId(candidatePartId: unknown, preferredGroup: DoorGroupLike): string {
-  const preferredGroupPartId = stripDoorTrimDecorationSuffix(readGroupPartId(preferredGroup));
-  const preferredDrawerOwnerPartId = stripDoorTrimDecorationSuffix(
-    readGroupDrawerOwnerPartId(preferredGroup)
-  );
-  const raw = stripDoorTrimDecorationSuffix(
-    typeof candidatePartId === 'string' ? String(candidatePartId) : String(candidatePartId ?? '')
-  );
+  const preferredGroupPartId = readGroupPartId(preferredGroup);
+  const preferredDrawerOwnerPartId = readGroupDrawerOwnerPartId(preferredGroup);
+  const raw = typeof candidatePartId === 'string' ? String(candidatePartId) : String(candidatePartId ?? '');
   const variants = [
     scopeCornerPartIdForBottom(preferredDrawerOwnerPartId, preferredGroup),
     scopeCornerPartIdForBottom(preferredGroupPartId, preferredGroup),
@@ -132,15 +110,10 @@ function normalizeDoorTrimMapPartId(candidatePartId: unknown, preferredGroup: Do
     raw,
   ];
   for (let i = 0; i < variants.length; i += 1) {
-    const key = canonDoorPartKeyForMaps(variants[i]);
+    const key = toCanonicalDoorTrimTargetKey(variants[i]);
     if (key && isDoorTrimTargetPartId(key)) return key;
   }
   return '';
-}
-
-function stripDoorTrimDecorationSuffix(partId: string): string {
-  if (!partId) return '';
-  return stripDoorVisualSurfaceSuffix(partId).replace(/_(?:trim|trim_preview)(?:_[a-z0-9]+)?$/i, '');
 }
 
 function pushCandidate(out: string[], seen: Set<string>, value: unknown): void {
@@ -150,42 +123,28 @@ function pushCandidate(out: string[], seen: Set<string>, value: unknown): void {
   out.push(text);
 }
 
+function pushDoorTrimTargetCandidates(out: string[], seen: Set<string>, value: unknown): void {
+  const keys = listDoorTrimTargetLookupKeys(value);
+  for (let index = 0; index < keys.length; index += 1) pushCandidate(out, seen, keys[index]);
+}
+
 function buildDoorTrimPartIdCandidates(candidatePartId: unknown, preferredGroup: DoorGroupLike): string[] {
   const out: string[] = [];
   const seen = new Set<string>();
   const raw = typeof candidatePartId === 'string' ? String(candidatePartId) : String(candidatePartId ?? '');
   const preferredGroupPartId = readGroupPartId(preferredGroup);
   const preferredDrawerOwnerPartId = readGroupDrawerOwnerPartId(preferredGroup);
-  const strippedRaw = stripDoorTrimDecorationSuffix(raw);
-  const strippedPreferred = stripDoorTrimDecorationSuffix(preferredGroupPartId);
-  const strippedPreferredDrawerOwner = stripDoorTrimDecorationSuffix(preferredDrawerOwnerPartId);
 
-  pushCandidate(out, seen, scopeCornerPartIdForBottom(preferredDrawerOwnerPartId, preferredGroup));
-  pushCandidate(out, seen, scopeCornerPartIdForBottom(preferredGroupPartId, preferredGroup));
-  pushCandidate(out, seen, scopeCornerPartIdForBottom(raw, preferredGroup));
-  pushCandidate(out, seen, preferredDrawerOwnerPartId);
-  pushCandidate(out, seen, preferredGroupPartId);
-  pushCandidate(out, seen, raw);
-  pushCandidate(out, seen, strippedPreferredDrawerOwner);
-  pushCandidate(out, seen, strippedPreferred);
-  pushCandidate(out, seen, strippedRaw);
-  pushCandidate(out, seen, canonDoorPartKeyForMaps(preferredDrawerOwnerPartId));
-  pushCandidate(out, seen, canonDoorPartKeyForMaps(preferredGroupPartId));
-  pushCandidate(out, seen, canonDoorPartKeyForMaps(raw));
-  pushCandidate(out, seen, canonDoorPartKeyForMaps(strippedPreferredDrawerOwner));
-  pushCandidate(out, seen, canonDoorPartKeyForMaps(strippedPreferred));
-  pushCandidate(out, seen, canonDoorPartKeyForMaps(strippedRaw));
-
-  if (strippedRaw.endsWith('_top') || strippedRaw.endsWith('_mid') || strippedRaw.endsWith('_bot')) {
-    pushCandidate(out, seen, strippedRaw.replace(/_(top|mid|bot)$/i, '_full'));
-  }
-  if (
-    strippedPreferred.endsWith('_top') ||
-    strippedPreferred.endsWith('_mid') ||
-    strippedPreferred.endsWith('_bot')
-  ) {
-    pushCandidate(out, seen, strippedPreferred.replace(/_(top|mid|bot)$/i, '_full'));
-  }
+  pushDoorTrimTargetCandidates(
+    out,
+    seen,
+    scopeCornerPartIdForBottom(preferredDrawerOwnerPartId, preferredGroup)
+  );
+  pushDoorTrimTargetCandidates(out, seen, scopeCornerPartIdForBottom(preferredGroupPartId, preferredGroup));
+  pushDoorTrimTargetCandidates(out, seen, scopeCornerPartIdForBottom(raw, preferredGroup));
+  pushDoorTrimTargetCandidates(out, seen, preferredDrawerOwnerPartId);
+  pushDoorTrimTargetCandidates(out, seen, preferredGroupPartId);
+  pushDoorTrimTargetCandidates(out, seen, raw);
 
   return out.filter(isDoorTrimTargetPartId);
 }

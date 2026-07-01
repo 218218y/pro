@@ -136,12 +136,13 @@ test('project io default snapshot canonicalizes persisted config maps while pres
   assert.deepEqual(snap.savedColors, ['oak', { id: 'c2', value: '#222' }]);
   assert.deepEqual({ ...snap.splitDoorsBottomMap }, { splitb_d1: true });
   assert.deepEqual({ ...snap.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
-  assert.equal(Array.isArray(snap.doorTrimMap.d1), true);
-  assert.equal(snap.doorTrimMap.d1.length, 2);
-  assert.equal(snap.doorTrimMap.d1[0].axis, 'vertical');
-  assert.equal(snap.doorTrimMap.d1[0].color, 'gold');
-  assert.equal(snap.doorTrimMap.d1[0].span, 'custom');
-  assert.equal(snap.doorTrimMap.d1[0].sizeCm, 11);
+  assert.equal(Array.isArray(snap.doorTrimMap.d1_full), true);
+  assert.equal(snap.doorTrimMap.d1_full.length, 2);
+  assert.equal(snap.doorTrimMap.d1_full[0].axis, 'vertical');
+  assert.equal(snap.doorTrimMap.d1_full[0].color, 'gold');
+  assert.equal(snap.doorTrimMap.d1_full[0].span, 'custom');
+  assert.equal(snap.doorTrimMap.d1_full[0].sizeCm, 11);
+  assert.equal('d1' in snap.doorTrimMap, false);
   assert.equal(snap.isLibraryMode, true);
   assert.notEqual(snap.preChestState, sourcePreChestState);
   ((snap.preChestState as Record<string, unknown>).dims as Record<string, unknown>).width = 77;
@@ -174,12 +175,13 @@ test('project save finalizer detaches persisted notes and canonicalizes config m
   assert.deepEqual(finalized.savedColors, ['oak', { id: 'c2', value: '#222' }]);
   assert.deepEqual({ ...finalized.splitDoorsBottomMap }, { splitb_d1: true });
   assert.deepEqual({ ...finalized.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
-  assert.equal(Array.isArray(finalized.doorTrimMap.d1), true);
-  assert.equal(finalized.doorTrimMap.d1.length, 2);
-  assert.equal(finalized.doorTrimMap.d1[0].axis, 'vertical');
-  assert.equal(finalized.doorTrimMap.d1[0].color, 'gold');
-  assert.equal(finalized.doorTrimMap.d1[0].span, 'custom');
-  assert.equal(finalized.doorTrimMap.d1[0].sizeCm, 11);
+  assert.equal(Array.isArray(finalized.doorTrimMap.d1_full), true);
+  assert.equal(finalized.doorTrimMap.d1_full.length, 2);
+  assert.equal(finalized.doorTrimMap.d1_full[0].axis, 'vertical');
+  assert.equal(finalized.doorTrimMap.d1_full[0].color, 'gold');
+  assert.equal(finalized.doorTrimMap.d1_full[0].span, 'custom');
+  assert.equal(finalized.doorTrimMap.d1_full[0].sizeCm, 11);
+  assert.equal('d1' in finalized.doorTrimMap, false);
   assert.notEqual(finalized.savedNotes, sourceSavedNotes);
   (
     ((finalized.savedNotes as Record<string, unknown>[])[0].blocks as Record<string, unknown>[])[0] as Record<
@@ -302,12 +304,12 @@ test('project save/default helpers share the same persisted config projection fo
 
   assert.deepEqual({ ...builtDefault.splitDoorsBottomMap }, { ...finalized.splitDoorsBottomMap });
   assert.deepEqual({ ...builtDefault.mirrorLayoutMap }, { ...finalized.mirrorLayoutMap });
-  assert.equal(Array.isArray(builtDefault.doorTrimMap.d1), true);
-  assert.equal(Array.isArray(finalized.doorTrimMap.d1), true);
-  assert.equal(builtDefault.doorTrimMap.d1[0].axis, finalized.doorTrimMap.d1[0].axis);
-  assert.equal(builtDefault.doorTrimMap.d1[0].color, finalized.doorTrimMap.d1[0].color);
-  assert.equal(builtDefault.doorTrimMap.d1[0].span, finalized.doorTrimMap.d1[0].span);
-  assert.equal(builtDefault.doorTrimMap.d1[0].sizeCm, finalized.doorTrimMap.d1[0].sizeCm);
+  assert.equal(Array.isArray(builtDefault.doorTrimMap.d1_full), true);
+  assert.equal(Array.isArray(finalized.doorTrimMap.d1_full), true);
+  assert.equal(builtDefault.doorTrimMap.d1_full[0].axis, finalized.doorTrimMap.d1_full[0].axis);
+  assert.equal(builtDefault.doorTrimMap.d1_full[0].color, finalized.doorTrimMap.d1_full[0].color);
+  assert.equal(builtDefault.doorTrimMap.d1_full[0].span, finalized.doorTrimMap.d1_full[0].span);
+  assert.equal(builtDefault.doorTrimMap.d1_full[0].sizeCm, finalized.doorTrimMap.d1_full[0].sizeCm);
   assert.deepEqual(builtDefault.savedColors, finalized.savedColors);
   assert.deepEqual(builtDefault.preChestState, finalized.preChestState);
 });

@@ -112,7 +112,8 @@ test('kernel_state_kernel_config captures and applies normalized config map snap
       d2: [{ faceSign: -1 }],
     }
   );
-  assert.equal(captured.doorTrimMap.d1[0].sizeCm, 11);
+  assert.equal(captured.doorTrimMap.d1_full[0].sizeCm, 11);
+  assert.equal('d1' in captured.doorTrimMap, false);
   assert.deepEqual(captured.savedColors, [
     {
       id: 'c2',

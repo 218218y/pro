@@ -1,5 +1,9 @@
 import type { DoorTrimEntry, DoorTrimMap } from './trim_shared.js';
 import {
+  listDoorTrimTargetLookupKeys,
+  toCanonicalDoorTrimTargetKey,
+} from '../../../../shared/door_trim_key_contracts_shared.js';
+import {
   DEFAULT_DOOR_TRIM_AXIS,
   DEFAULT_DOOR_TRIM_COLOR,
   DEFAULT_DOOR_TRIM_SPAN,
@@ -68,8 +72,12 @@ export function readDoorTrimMap(value: unknown): DoorTrimMap {
   const out: DoorTrimMap = Object.create(null);
   if (!isDoorTrimRecord(value)) return out;
   for (const [key, entry] of Object.entries(value)) {
+    const canonicalKey = toCanonicalDoorTrimTargetKey(key);
+    if (!canonicalKey) continue;
     const next = cloneDoorTrimList(entry);
-    if (next.length) out[key] = next;
+    if (!next.length) continue;
+    const directCanonical = canonicalKey === key.trim();
+    if (directCanonical || typeof out[canonicalKey] === 'undefined') out[canonicalKey] = next;
   }
   return out;
 }
@@ -81,27 +89,20 @@ function pushDoorTrimCandidate(out: string[], seen: Record<string, true>, value:
   out.push(key);
 }
 
-function isSegmentedDoorBaseKey(value: string): boolean {
-  return (
-    /^(?:lower_)?d\d+$/i.test(value) ||
-    /^(?:lower_)?corner_door_\d+$/i.test(value) ||
-    /^(?:lower_)?corner_pent_door_\d+$/i.test(value)
-  );
-}
-
 function pushDoorTrimKeyVariants(
   out: string[],
   seen: Record<string, true>,
   value: unknown,
   options?: { allowBaseKeyLookup?: boolean }
 ): void {
-  const key = typeof value === 'string' ? value : String(value ?? '');
-  if (!key) return;
   const allowBaseKeyLookup = options?.allowBaseKeyLookup !== false;
-  pushDoorTrimCandidate(out, seen, key);
-  if (key.startsWith('lower_') && allowBaseKeyLookup)
-    pushDoorTrimCandidate(out, seen, key.slice('lower_'.length));
-  if (isSegmentedDoorBaseKey(key)) pushDoorTrimCandidate(out, seen, `${key}_full`);
+  const keys = listDoorTrimTargetLookupKeys(value);
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index];
+    pushDoorTrimCandidate(out, seen, key);
+    if (key.startsWith('lower_') && allowBaseKeyLookup)
+      pushDoorTrimCandidate(out, seen, key.slice('lower_'.length));
+  }
 }
 
 export function readDoorTrimListForPart(args: {
@@ -111,6 +112,7 @@ export function readDoorTrimListForPart(args: {
   preferScopedOnly?: boolean;
 }): DoorTrimEntry[] {
   if (!isDoorTrimRecord(args.map)) return [];
+  const map = readDoorTrimMap(args.map);
   const candidates: string[] = [];
   const seen: Record<string, true> = Object.create(null);
   pushDoorTrimKeyVariants(candidates, seen, args.scopedPartId, {
@@ -119,7 +121,7 @@ export function readDoorTrimListForPart(args: {
   if (!args.preferScopedOnly) pushDoorTrimKeyVariants(candidates, seen, args.partId);
 
   for (let i = 0; i < candidates.length; i += 1) {
-    const trims = readDoorTrimList(args.map[candidates[i]]);
+    const trims = readDoorTrimList(map[candidates[i]]);
     if (trims.length) return trims;
   }
   return [];

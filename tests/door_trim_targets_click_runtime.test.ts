@@ -100,9 +100,17 @@ test('door trim target resolution canonicalizes segmented door ids and bottom-co
   assert.equal(segmentedTarget?.partId, 'd7_full');
   assert.equal(segmentedTarget?.group, segmented);
 
+  const segmentedSurfaceTarget = resolveDoorTrimTarget(App, 'd7_mid2_accent_top');
+  assert.equal(segmentedSurfaceTarget?.partId, 'd7_full');
+  assert.equal(segmentedSurfaceTarget?.group, segmented);
+
   const cornerTarget = resolveDoorTrimTarget(App, 'corner_door_2_trim', lowerCorner);
   assert.equal(cornerTarget?.partId, 'lower_corner_door_2_full');
   assert.equal(cornerTarget?.group, lowerCorner);
+
+  const cornerSurfaceTarget = resolveDoorTrimTarget(App, 'corner_door_2_mid2_groove_left', lowerCorner);
+  assert.equal(cornerSurfaceTarget?.partId, 'lower_corner_door_2_full');
+  assert.equal(cornerSurfaceTarget?.group, lowerCorner);
 });
 
 test('door trim click writes canonical trim maps through history batch and toggles existing matches off', () => {
@@ -112,7 +120,7 @@ test('door trim click writes canonical trim maps through history batch and toggl
 
   const first = handleCanvasDoorTrimClick({
     App: app,
-    effectiveDoorId: 'd7_top',
+    effectiveDoorId: 'd7_mid2_accent_top',
     foundPartId: null,
     doorHitPoint: { x: 0, y: 0, z: 0 },
     doorHitObject: doorGroup,
@@ -125,6 +133,8 @@ test('door trim click writes canonical trim maps through history batch and toggl
   assert.equal(configWrites[0]?.mapName, 'doorTrimMap');
   assert.ok(Array.isArray(rootState.config.doorTrimMap.d7_full));
   assert.equal(rootState.config.doorTrimMap.d7_full.length, 1);
+  assert.equal('d7_mid2_accent_top' in rootState.config.doorTrimMap, false);
+  assert.equal('d7_mid2' in rootState.config.doorTrimMap, false);
   const [addedTrim] = rootState.config.doorTrimMap.d7_full;
   assert.equal(addedTrim.axis, 'horizontal');
   assert.equal(addedTrim.color, 'gold');
@@ -137,7 +147,7 @@ test('door trim click writes canonical trim maps through history batch and toggl
 
   const second = handleCanvasDoorTrimClick({
     App: app,
-    effectiveDoorId: 'd7_top',
+    effectiveDoorId: 'd7_mid2_trim_preview_hover',
     foundPartId: null,
     doorHitPoint: { x: 0, y: 0, z: 0 },
     doorHitObject: doorGroup,
@@ -162,7 +172,7 @@ test('door trim click resolves sketch external-drawer split door leaves from nes
   }) as DoorGroupLike & { parent?: unknown };
   const nestedMesh = {
     userData: {
-      partId: 'sketch_box_0_sb_1_door_left_top',
+      partId: 'sketch_box_0_sb_1_door_left_top_trim_preview_hover',
       __wpSketchDoorSegment: true,
     },
     parent: segmentedRoot,
@@ -178,7 +188,7 @@ test('door trim click resolves sketch external-drawer split door leaves from nes
 
   const handled = handleCanvasDoorTrimClick({
     App: app,
-    effectiveDoorId: 'sketch_box_0_sb_1_door_left_top',
+    effectiveDoorId: 'sketch_box_0_sb_1_door_left_top_accent_top',
     foundPartId: null,
     doorHitPoint: { x: 0, y: 0, z: 0 },
     doorHitObject: nestedMesh,
@@ -188,6 +198,8 @@ test('door trim click resolves sketch external-drawer split door leaves from nes
   assert.equal(handled, true);
   assert.equal(configWrites.length, 1);
   assert.equal(rootState.config.doorTrimMap.sketch_box_0_sb_1_door_left, undefined);
+  assert.equal(rootState.config.doorTrimMap.sketch_box_0_sb_1_door_left_top_accent_top, undefined);
+  assert.equal(rootState.config.doorTrimMap.sketch_box_0_sb_1_door_left_top_trim_preview_hover, undefined);
   assert.ok(Array.isArray(rootState.config.doorTrimMap.sketch_box_0_sb_1_door_left_top));
   assert.equal(rootState.config.doorTrimMap.sketch_box_0_sb_1_door_left_top.length, 1);
   assert.equal(rootState.config.doorTrimMap.sketch_box_0_sb_1_door_left_top[0].axis, 'horizontal');

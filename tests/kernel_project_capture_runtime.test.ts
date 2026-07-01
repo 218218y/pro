@@ -89,12 +89,13 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
     { ...snapshot.mirrorLayoutMap },
     { d1: [{ widthCm: 55, heightCm: 88 }], d2: [{ widthCm: 33 }] }
   );
-  assert.equal(Array.isArray(snapshot.doorTrimMap.d1), true);
-  assert.equal(snapshot.doorTrimMap.d1.length, 2);
-  assert.equal(snapshot.doorTrimMap.d1[0].axis, 'vertical');
-  assert.equal(snapshot.doorTrimMap.d1[0].color, 'gold');
-  assert.equal(snapshot.doorTrimMap.d1[0].span, 'custom');
-  assert.equal(snapshot.doorTrimMap.d1[0].sizeCm, 11);
+  assert.equal(Array.isArray(snapshot.doorTrimMap.d1_full), true);
+  assert.equal(snapshot.doorTrimMap.d1_full.length, 2);
+  assert.equal(snapshot.doorTrimMap.d1_full[0].axis, 'vertical');
+  assert.equal(snapshot.doorTrimMap.d1_full[0].color, 'gold');
+  assert.equal(snapshot.doorTrimMap.d1_full[0].span, 'custom');
+  assert.equal(snapshot.doorTrimMap.d1_full[0].sizeCm, 11);
+  assert.equal('d1' in snapshot.doorTrimMap, false);
   assert.deepEqual(snapshot.savedColors, ['oak', { id: 'c2', value: '#abc' }]);
   assert.equal(
     ((snapshot.savedNotes[0].blocks as Record<string, unknown>[])[0] as Record<string, unknown>).text,

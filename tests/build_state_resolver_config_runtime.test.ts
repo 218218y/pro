@@ -145,8 +145,9 @@ test('build_state_resolver normalizes config maps and persisted color arrays fro
       d3: [{ faceSign: -1 }],
     }
   );
-  assert.equal(result.cfgSnapshot.doorTrimMap?.d1?.[0]?.axis, 'vertical');
-  assert.equal(result.cfgSnapshot.doorTrimMap?.d1?.[0]?.sizeCm, 12);
+  assert.equal(result.cfgSnapshot.doorTrimMap?.d1_full?.[0]?.axis, 'vertical');
+  assert.equal(result.cfgSnapshot.doorTrimMap?.d1_full?.[0]?.sizeCm, 12);
+  assert.equal('d1' in (result.cfgSnapshot.doorTrimMap || {}), false);
   assert.equal('drop' in (result.cfgSnapshot.doorTrimMap || {}), false);
 });
 
