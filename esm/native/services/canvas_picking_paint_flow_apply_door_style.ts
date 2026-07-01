@@ -1,6 +1,6 @@
 import type { AppContainer, DoorSpecialMap, MirrorLayoutMap, CurtainMap } from '../../../types';
 
-import { cfgSetMap } from '../runtime/cfg_access.js';
+import { cfgSetMap, setCfgDoorStyleMap, setCfgMirrorLayoutMap } from '../runtime/cfg_access.js';
 import {
   readDoorVisualMapEntry,
   isDoorStyleOverrideValue,
@@ -214,8 +214,8 @@ export function tryHandleDoorStyleOverridePaintClick(args: {
   __wp_historyBatch(args.App, baseMeta, () => {
     if (specialChanged) cfgSetMap(args.App, 'doorSpecialMap', specialCleanup.special, baseMeta);
     if (curtainsChanged) cfgSetMap(args.App, 'curtainMap', specialCleanup.curtains, baseMeta);
-    if (mirrorChanged) cfgSetMap(args.App, 'mirrorLayoutMap', specialCleanup.mirror, baseMeta);
-    if (styleChanged) cfgSetMap(args.App, 'doorStyleMap', doorStyleMap, baseMeta);
+    if (mirrorChanged) setCfgMirrorLayoutMap(args.App, specialCleanup.mirror, baseMeta);
+    if (styleChanged) setCfgDoorStyleMap(args.App, doorStyleMap, baseMeta);
     return undefined;
   });
   return true;

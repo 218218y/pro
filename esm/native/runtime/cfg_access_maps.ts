@@ -13,6 +13,7 @@ import {
   type ConfigMapPatchFn,
 } from './cfg_access_shared.js';
 import { applyConfigPatchReplaceKeys } from './cfg_access_scalars.js';
+import { normalizeDoorStyleMap } from './maps_access_normalizers_shared.js';
 
 type CfgMap = {
   <K extends KnownMapName>(App: unknown, mapName: K): MapsByName[K];
@@ -148,6 +149,14 @@ export function setCfgDoorSpecialMap(
   meta?: ActionMetaLike
 ): MapsByName['doorSpecialMap'] {
   return readDoorSpecialMapSnapshot(cfgSetMap(App, 'doorSpecialMap', readDoorSpecialMapSnapshot(next), meta));
+}
+
+export function setCfgDoorStyleMap(
+  App: unknown,
+  next: unknown,
+  meta?: ActionMetaLike
+): MapsByName['doorStyleMap'] {
+  return normalizeDoorStyleMap(cfgSetMap(App, 'doorStyleMap', normalizeDoorStyleMap(next), meta));
 }
 
 export function setCfgMirrorLayoutMap(

@@ -4,14 +4,21 @@ import { ensureMapRecord, mapsAccessReportNonFatal, readOwn, writeOwn } from './
 import { splitBottomKey, splitKey } from './maps_access_split_helpers.js';
 import type { HandleValue, HingeValue, KnownMapValue } from './maps_access_shared.js';
 import { readMapsBagOrNull, trySetKey } from './maps_access_runtime.js';
-import { cfgSetMap } from './cfg_access_maps.js';
+import { cfgMap, cfgSetMap } from './cfg_access_maps.js';
 import { normalizeKnownMapSnapshot } from './maps_access_normalizers.js';
 import {
   toCanonicalGrooveLinesCountMapKey,
   toCanonicalGroovesMapKey,
 } from '../../shared/door_groove_key_contracts_shared.js';
+import { toCanonicalDoorTrimTargetKey } from '../../shared/door_trim_key_contracts_shared.js';
 
 type GrooveContractMapName = 'groovesMap' | 'grooveLinesCountMap';
+type CanonicalVisualPatchMapName = GrooveContractMapName | 'doorTrimMap';
+
+export type CanonicalVisualMapPatchEntry = Readonly<{
+  key: unknown;
+  value: unknown;
+}>;
 
 function readMapKey(value: unknown): string {
   return String(value || '').trim();
@@ -26,29 +33,37 @@ function readGrooveContractMapKey(mapName: GrooveContractMapName, key: unknown):
   return mapName === 'groovesMap' ? toCanonicalGroovesMapKey(key) : toCanonicalGrooveLinesCountMapKey(key);
 }
 
-function writeGrooveContractMapKey(
+function readCanonicalVisualPatchKey(mapName: CanonicalVisualPatchMapName, key: unknown): string {
+  if (mapName === 'doorTrimMap') return toCanonicalDoorTrimTargetKey(key);
+  return readGrooveContractMapKey(mapName, key);
+}
+
+export function patchCanonicalVisualMapEntries(
   App: unknown,
-  maps: NonNullable<ReturnType<typeof readMapsBagOrNull>>,
-  mapName: GrooveContractMapName,
-  key: unknown,
-  value: unknown,
+  mapName: CanonicalVisualPatchMapName,
+  entries: readonly CanonicalVisualMapPatchEntry[],
   meta?: ActionMetaLike
 ): boolean {
-  const canonicalKey = readGrooveContractMapKey(mapName, key);
-  if (!canonicalKey) return false;
-
-  const current = ensureMapRecord(maps, mapName);
+  if (!entries.length) return false;
+  const maps = readMapsBagOrNull(App);
+  const current = cfgMap(App, mapName);
   const nextMap = { ...(normalizeKnownMapSnapshot(mapName, current) as Record<string, unknown>) };
-  if (value == null) {
-    delete nextMap[canonicalKey];
-  } else {
-    const normalizedEntryMap = normalizeKnownMapSnapshot(mapName, {
-      [canonicalKey]: value,
-    }) as Record<string, unknown>;
-    if (Object.prototype.hasOwnProperty.call(normalizedEntryMap, canonicalKey)) {
-      nextMap[canonicalKey] = normalizedEntryMap[canonicalKey];
-    } else {
+
+  for (let i = 0; i < entries.length; i += 1) {
+    const entry = entries[i];
+    const canonicalKey = readCanonicalVisualPatchKey(mapName, entry.key);
+    if (!canonicalKey) continue;
+    if (entry.value == null) {
       delete nextMap[canonicalKey];
+    } else {
+      const normalizedEntryMap = normalizeKnownMapSnapshot(mapName, {
+        [canonicalKey]: entry.value,
+      }) as Record<string, unknown>;
+      if (Object.prototype.hasOwnProperty.call(normalizedEntryMap, canonicalKey)) {
+        nextMap[canonicalKey] = normalizedEntryMap[canonicalKey];
+      } else {
+        delete nextMap[canonicalKey];
+      }
     }
   }
 
@@ -56,9 +71,19 @@ function writeGrooveContractMapKey(
     cfgSetMap(App, mapName, nextMap, meta);
     return true;
   } catch {
-    replaceMapRecord(current, nextMap);
+    if (maps) replaceMapRecord(ensureMapRecord(maps, mapName), nextMap);
   }
-  return true;
+  return !!maps;
+}
+
+function writeGrooveContractMapKey(
+  App: unknown,
+  mapName: GrooveContractMapName,
+  key: unknown,
+  value: unknown,
+  meta?: ActionMetaLike
+): boolean {
+  return patchCanonicalVisualMapEntries(App, mapName, [{ key, value }], meta);
 }
 
 export function writeHandle(
@@ -123,11 +148,12 @@ export function writeMapKey<K extends string>(
 ): boolean {
   const name = String(mapName || '');
   if (!name) return false;
+  if (name === 'groovesMap' || name === 'grooveLinesCountMap') {
+    return writeGrooveContractMapKey(App, name, key, val, meta);
+  }
+
   const maps = readMapsBagOrNull(App);
   if (!maps) return false;
-  if (name === 'groovesMap' || name === 'grooveLinesCountMap') {
-    return writeGrooveContractMapKey(App, maps, name, key, val, meta);
-  }
 
   const k = String(key || '');
   if (!k) return false;

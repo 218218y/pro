@@ -3,10 +3,14 @@ import type { AppContainer, DoorVisualEntryLike } from '../../../types';
 import { hasMirrorSurfaceOnFace, readDoorVisualMirrorLayout } from '../features/door_authoring/api.js';
 import { setDoorsOpenViaService } from '../runtime/doors_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
-import { normalizeKnownMapSnapshot, toggleGrooveKey, writeHinge } from '../runtime/maps_access.js';
+import {
+  normalizeKnownMapSnapshot,
+  patchCanonicalVisualMapEntries,
+  toggleGrooveKey,
+  writeHinge,
+} from '../runtime/maps_access.js';
 import { callDoorsAction, hasDoorsAction } from '../runtime/actions_access_domains.js';
 import { toggleGrooveViaActions } from '../runtime/actions_access_mutations.js';
-import { cfgSetMap } from '../runtime/cfg_access.js';
 import {
   createCanvasPickingDoorAuthoringRefreshGatedMeta,
   createCanvasPickingDoorAuthoringStructuralMeta,
@@ -355,7 +359,7 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
       explicitGrooveLinesCountForClick !== null &&
       currentGrooveLinesCount !== grooveLinesCountForClick;
     const nextGrooveOn = shouldUpdateExistingGrooveLinesCount || !isGrooveOn;
-    const nextGrooveLinesCountMap = { ...grooveLinesCountMap };
+    const grooveLinesCountPatchEntries: { key: unknown; value: unknown }[] = [];
     const siblingSketchSegmentPartIds = isInheritedSketchSegmentGrooveOn
       ? readDoorVisualSiblingSegmentPartIds({
           App,
@@ -378,21 +382,20 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
         const siblingPartId = siblingPartIds[i];
         if (!siblingPartId || siblingPartId === targetId) continue;
         if (inheritedGrooveLinesCount != null) {
-          nextGrooveLinesCountMap[toCanonicalGrooveLinesCountMapKey(siblingPartId)] =
-            inheritedGrooveLinesCount;
+          grooveLinesCountPatchEntries.push({ key: siblingPartId, value: inheritedGrooveLinesCount });
         }
       }
     }
     if (isInheritedSketchSegmentGrooveOn && sketchSegmentBasePartId) {
-      delete nextGrooveLinesCountMap[toCanonicalGrooveLinesCountMapKey(sketchSegmentBasePartId)];
-      delete nextGrooveLinesCountMap[toCanonicalGrooveLinesCountMapKey(`${sketchSegmentBasePartId}_full`)];
+      grooveLinesCountPatchEntries.push({ key: sketchSegmentBasePartId, value: null });
+      grooveLinesCountPatchEntries.push({ key: `${sketchSegmentBasePartId}_full`, value: null });
     }
     if (isInheritedRegularSegmentGrooveOn && regularSegmentFullPartId) {
-      delete nextGrooveLinesCountMap[toCanonicalGrooveLinesCountMapKey(regularSegmentFullPartId)];
+      grooveLinesCountPatchEntries.push({ key: regularSegmentFullPartId, value: null });
     }
     if (nextGrooveOn && grooveLinesCountForClick != null)
-      nextGrooveLinesCountMap[grooveLinesCountKey] = grooveLinesCountForClick;
-    else delete nextGrooveLinesCountMap[grooveLinesCountKey];
+      grooveLinesCountPatchEntries.push({ key: grooveLinesCountKey, value: grooveLinesCountForClick });
+    else grooveLinesCountPatchEntries.push({ key: grooveLinesCountKey, value: null });
 
     const grooveStructuralMeta = createCanvasPickingDoorAuthoringStructuralMeta('groove:click');
     const grooveRefreshGatedMeta = createCanvasPickingDoorAuthoringRefreshGatedMeta(
@@ -412,34 +415,39 @@ export function handleCanvasDoorGrooveClick(args: CanvasDoorGrooveClickArgs): bo
         nextGrooveOn && grooveLinesCountForClick != null ? grooveLinesCountForClick : null,
         'groove:click:pendingCount'
       );
-      cfgSetMap(App, 'grooveLinesCountMap', nextGrooveLinesCountMap, grooveCountRefreshGatedMeta);
+      patchCanonicalVisualMapEntries(
+        App,
+        'grooveLinesCountMap',
+        grooveLinesCountPatchEntries,
+        grooveCountRefreshGatedMeta
+      );
       if (isSketchBoxSegmentTarget || isInheritedRegularSegmentGrooveOn) {
-        const nextGroovesMap = { ...groovesMap };
+        const groovePatchEntries: { key: unknown; value: unknown }[] = [];
         const siblingPartIds = isInheritedSketchSegmentGrooveOn
           ? siblingSketchSegmentPartIds
           : siblingRegularSegmentPartIds;
         if (isInheritedSketchSegmentGrooveOn && sketchSegmentBasePartId) {
-          delete nextGroovesMap[toCanonicalGroovesMapKey(sketchSegmentBasePartId)];
-          delete nextGroovesMap[toCanonicalGroovesMapKey(`${sketchSegmentBasePartId}_full`)];
+          groovePatchEntries.push({ key: sketchSegmentBasePartId, value: null });
+          groovePatchEntries.push({ key: `${sketchSegmentBasePartId}_full`, value: null });
         }
         if (isInheritedRegularSegmentGrooveOn && regularSegmentFullPartId) {
-          delete nextGroovesMap[toCanonicalGroovesMapKey(regularSegmentFullPartId)];
+          groovePatchEntries.push({ key: regularSegmentFullPartId, value: null });
         }
         if (isInheritedSketchSegmentGrooveOn || isInheritedRegularSegmentGrooveOn) {
           for (let i = 0; i < siblingPartIds.length; i += 1) {
             const siblingPartId = siblingPartIds[i];
             if (!siblingPartId || siblingPartId === targetId) continue;
-            nextGroovesMap[toCanonicalGroovesMapKey(siblingPartId)] = true;
+            groovePatchEntries.push({ key: siblingPartId, value: true });
           }
         }
         if (isSketchBoxSegmentTarget) {
-          nextGroovesMap[grooveKey] = nextGrooveOn;
+          groovePatchEntries.push({ key: grooveKey, value: nextGrooveOn });
         } else if (nextGrooveOn) {
-          nextGroovesMap[grooveKey] = true;
+          groovePatchEntries.push({ key: grooveKey, value: true });
         } else {
-          delete nextGroovesMap[grooveKey];
+          groovePatchEntries.push({ key: grooveKey, value: null });
         }
-        cfgSetMap(App, 'groovesMap', nextGroovesMap, grooveRefreshGatedMeta);
+        patchCanonicalVisualMapEntries(App, 'groovesMap', groovePatchEntries, grooveRefreshGatedMeta);
       } else if (!shouldUpdateExistingGrooveLinesCount) {
         if (!toggleGrooveViaActions(App, grooveKey, grooveRefreshGatedMeta)) {
           toggleGrooveKey(App, grooveKey, grooveRefreshGatedMeta);

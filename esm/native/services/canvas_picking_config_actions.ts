@@ -21,7 +21,7 @@ import {
   setCfgCurtainMap,
   setCfgDepth,
   setCfgDoorSpecialMap,
-  cfgSetMap,
+  setCfgDoorStyleMap,
   setCfgMirrorLayoutMap,
   setCfgHeight,
   setCfgLowerModulesConfiguration,
@@ -172,7 +172,7 @@ export function applyPaintConfigSnapshot(args: PaintConfigSnapshotArgs): void {
       setCfgIndividualColors(App, individualColors, meta);
       setCfgCurtainMap(App, curtainMap, meta);
       setCfgDoorSpecialMap(App, doorSpecialMap, meta);
-      if (doorStyleMap !== null) cfgSetMap(App, 'doorStyleMap', doorStyleMap, meta);
+      if (doorStyleMap !== null) setCfgDoorStyleMap(App, doorStyleMap, meta);
       setCfgMirrorLayoutMap(App, mirrorLayoutMap, meta);
     },
     meta

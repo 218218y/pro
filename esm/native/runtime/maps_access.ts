@@ -32,6 +32,7 @@ export {
   readMapOrEmpty,
 } from './maps_access_readers.js';
 export {
+  patchCanonicalVisualMapEntries,
   toggleDivider,
   toggleGrooveKey,
   writeHandle,

@@ -13,6 +13,7 @@ export {
   patchConfigMap,
   setCfgCurtainMap,
   setCfgDoorSpecialMap,
+  setCfgDoorStyleMap,
   setCfgHandlesMap,
   setCfgHingeMap,
   setCfgIndividualColors,

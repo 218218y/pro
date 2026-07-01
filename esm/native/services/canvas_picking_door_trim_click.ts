@@ -1,6 +1,6 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 
-import { cfgSetMap } from '../runtime/cfg_access.js';
+import { patchCanonicalVisualMapEntries } from '../runtime/maps_access.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import {
   readMirrorLayoutListForPart,
@@ -116,13 +116,14 @@ export function handleCanvasDoorTrimClick(args: CanvasDoorTrimClickArgs): boolea
     );
   }
 
-  const nextMap: UnknownRecord = { ...trimsMap };
-  if (nextList.length) nextMap[trimPartId] = nextList;
-  else delete nextMap[trimPartId];
-
   const meta = createCanvasPickingDoorAuthoringStructuralMeta('doorTrim:click');
   __wp_historyBatch(App, meta, () => {
-    cfgSetMap(App, 'doorTrimMap', nextMap, meta);
+    patchCanonicalVisualMapEntries(
+      App,
+      'doorTrimMap',
+      [{ key: trimPartId, value: nextList.length ? nextList : null }],
+      meta
+    );
     return undefined;
   });
   return true;
