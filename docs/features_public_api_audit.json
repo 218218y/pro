@@ -1553,6 +1553,10 @@
       "entry": "hex_cell/index.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_split_hover_bounds.ts",
+      "entry": "door_authoring/api.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
       "entry": "modules_configuration/modules_config_api.js"
     },

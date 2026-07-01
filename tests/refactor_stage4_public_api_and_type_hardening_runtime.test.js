@@ -136,6 +136,7 @@ test('door authoring facade exposes only audited public symbols', () => {
     'readMirrorLayoutListForPart',
     'readMirrorLayoutMap',
     'resolveCabinetBodyDoorTrimSurfaceInfo',
+    'resolveDoorSplitAuthoringBaseKey',
     'resolveDoorStylePaintSelectionState',
     'resolveDoorStylePaintTargetKey',
     'resolveDoorTrimPlacement',

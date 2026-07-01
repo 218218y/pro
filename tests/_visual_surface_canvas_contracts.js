@@ -689,11 +689,19 @@ test('[canvas-family] paint + overlap + split-hover + toggle seams stay thin ove
     assert,
     splitHoverBounds,
     [
+      /features\/door_authoring\/api\.js/,
+      /resolveDoorSplitAuthoringBaseKey/,
       /export type SplitHoverDoorBounds = \{ minY: number; maxY: number \};/,
       /export function __wp_getSplitHoverDoorBaseKey\(/,
       /export function __wp_readSplitHoverDoorBounds\(/,
     ],
     'split-hover bounds'
+  );
+  assertLacksAll(
+    assert,
+    splitHoverBounds,
+    [/function stripSplitDoorSegmentSuffix/, /pid\.startsWith/, /sketch_box\(\?:_free\)\?/],
+    'split-hover bounds local key parsing'
   );
   assertMatchesAll(
     assert,

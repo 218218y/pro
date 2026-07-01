@@ -70,6 +70,7 @@ export {
   readDoorVisualPrefixedMapEntry,
   readDoorVisualPrefixedOwnMapEntry,
   readDoorVisualSegmentBasePartId,
+  resolveDoorSplitAuthoringBaseKey,
   resolveDoorStylePaintTargetKey,
   resolveDoorVisualSegmentIdentity,
 } from './internal/visual_keys.js';
