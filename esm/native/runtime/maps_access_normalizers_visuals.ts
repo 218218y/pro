@@ -7,8 +7,8 @@ import type {
   MapsByName,
 } from '../../../types';
 
-import { readMirrorLayoutMap as readCanonicalMirrorLayoutMap } from '../../shared/mirror_layout_contracts_shared.js';
-import { toCanonicalDoorTrimTargetKey } from '../../shared/door_trim_key_contracts_shared.js';
+import { readCanonicalMirrorLayoutMap } from '../../shared/mirror_layout_contracts_shared.js';
+import { isCanonicalDoorTrimTargetKey } from '../../shared/door_trim_key_contracts_shared.js';
 import { asRecord } from './maps_access_shared.js';
 import {
   createStableDoorTrimId,
@@ -85,12 +85,9 @@ export function normalizeDoorTrimMap(value: unknown): DoorTrimMap {
   const out: DoorTrimMap = Object.create(null);
   if (!rec) return out;
   for (const key of Object.keys(rec)) {
-    const canonicalKey = toCanonicalDoorTrimTargetKey(key);
-    if (!canonicalKey) continue;
+    if (!isCanonicalDoorTrimTargetKey(key)) continue;
     const next = normalizeDoorTrimList(rec[key]);
-    if (!next.length) continue;
-    const directCanonical = canonicalKey === key.trim();
-    if (directCanonical || typeof out[canonicalKey] === 'undefined') out[canonicalKey] = next;
+    if (next.length) out[key] = next;
   }
   return out;
 }

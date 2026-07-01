@@ -20,7 +20,7 @@ import type {
   UnknownRecord,
 } from '../../../types';
 
-import { readMirrorLayoutMap as readCanonicalMirrorLayoutMap } from '../../shared/mirror_layout_contracts_shared.js';
+import { readCanonicalMirrorLayoutMap } from '../../shared/mirror_layout_contracts_shared.js';
 import { assertStore } from './assert.js';
 
 export type RootStateLike = UnknownRecord & { config?: ConfigSnapshotLike };

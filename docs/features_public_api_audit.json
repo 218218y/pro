@@ -810,7 +810,7 @@
     },
     {
       "file": "esm/native/io/project_schema_current.ts",
-      "entry": "door_authoring/api.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/kernel/domain_api.ts",
@@ -862,7 +862,7 @@
     },
     {
       "file": "esm/native/kernel/kernel_project_capture_payload.ts",
-      "entry": "door_authoring/api.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/kernel/kernel_project_capture_payload.ts",

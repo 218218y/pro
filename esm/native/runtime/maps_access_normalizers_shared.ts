@@ -1,8 +1,8 @@
 import type { KnownMapName, MapsByName } from '../../../types';
 
 import {
+  isCanonicalDoorVisualMapKey,
   resolveDoorSplitAuthoringBaseKey,
-  toDoorStyleOverrideMapKey,
 } from '../../shared/door_visual_key_contracts_shared.js';
 import {
   isCanonicalGrooveLinesCountMapKey,
@@ -232,12 +232,9 @@ export function normalizeDoorStyleMap(value: unknown): MapsByName['doorStyleMap'
   const out: MapsByName['doorStyleMap'] = Object.create(null);
   if (!rec) return out;
   for (const key of Object.keys(rec)) {
+    if (!isCanonicalDoorVisualMapKey(key)) continue;
     const entry = typeof rec[key] === 'string' ? String(rec[key]).trim().toLowerCase() : '';
-    const mapKey = toDoorStyleOverrideMapKey(key);
-    if (!mapKey) continue;
-    if (entry === 'flat' || entry === 'profile' || entry === 'double_profile') {
-      if (mapKey === key || typeof out[mapKey] === 'undefined') out[mapKey] = entry;
-    }
+    if (entry === 'flat' || entry === 'profile' || entry === 'double_profile') out[key] = entry;
   }
   return out;
 }

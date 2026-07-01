@@ -17,14 +17,18 @@ test('project config comparable patch canonicalizes only provided branches and d
 
   const patch = canonicalizeComparableProjectConfigPatch({
     savedNotes: sourceNotes,
-    mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }] },
+    mirrorLayoutMap: {
+      d1: [{ widthCm: '99', heightCm: 99 }],
+      d1_full: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }],
+    },
     customMeta: sourceCustomMeta,
   } as never);
 
   assert.equal('modulesConfiguration' in patch, false);
   assert.equal('stackSplitLowerModulesConfiguration' in patch, false);
   assert.equal('cornerConfiguration' in patch, false);
-  assert.deepEqual({ ...patch.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
+  assert.deepEqual({ ...patch.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
+  assert.equal('d1' in (patch.mirrorLayoutMap || {}), false);
   assert.notEqual(patch.savedNotes, sourceNotes);
   assert.notEqual(patch.customMeta, sourceCustomMeta);
 
@@ -57,8 +61,14 @@ test('project config persisted snapshot readers share a canonical branch list an
       splitDoorsMap: { d2_top: true, split_d2: false, splitpos_d4: [0.25, 0.75] },
       splitDoorsBottomMap: { splitb_d1: true, drop: false },
       roundedFrameSideShelvesMap: { body_left: true, body_right: false, legacy: 1, junk: 'bad' },
-      mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }] },
-      doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }] },
+      mirrorLayoutMap: {
+        d1: [{ widthCm: '99', heightCm: 99 }],
+        d1_full: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }],
+      },
+      doorTrimMap: {
+        d1: [{ axis: 'horizontal', color: 'black' }],
+        d1_full: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }],
+      },
       preChestState: { dims: { width: 55 } },
       isLibraryMode: true,
       grooveLinesCount: 4.8,
@@ -79,7 +89,8 @@ test('project config persisted snapshot readers share a canonical branch list an
   assert.deepEqual({ ...persisted.splitDoorsMap }, { split_d2: false, splitpos_d4: [0.25, 0.75] });
   assert.deepEqual({ ...persisted.splitDoorsBottomMap }, { splitb_d1: true });
   assert.deepEqual({ ...persisted.roundedFrameSideShelvesMap }, { body_left: true, body_right: false });
-  assert.deepEqual({ ...persisted.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
+  assert.deepEqual({ ...persisted.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
+  assert.equal('d1' in (persisted.mirrorLayoutMap || {}), false);
   assert.equal(Array.isArray(persisted.doorTrimMap.d1_full), true);
   assert.equal(persisted.doorTrimMap.d1_full[0].axis, 'vertical');
   assert.equal(persisted.doorTrimMap.d1_full[0].color, 'gold');
@@ -98,8 +109,14 @@ test('project config persisted snapshot readers sanitize structural and map bran
     splitDoorsMap: { d3_bot: 'true', split_d4: true, splitpos_d5: [0.4, 0.9] },
     splitDoorsBottomMap: { d1: true, splitb_d2: true, drop: false, junk: 'bad' },
     roundedFrameSideShelvesMap: { body_left: true, body_right: false, junk: 'bad' },
-    mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }] },
-    doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }] },
+    mirrorLayoutMap: {
+      d1: [{ widthCm: '99', heightCm: 99 }],
+      d1_full: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }],
+    },
+    doorTrimMap: {
+      d1: [{ axis: 'horizontal', color: 'black' }],
+      d1_full: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }],
+    },
     savedColors: ['oak', { id: 'c2', value: '#222', nested: { keep: true } }, { id: '' }],
     savedNotes: [{ id: 'n1', blocks: [{ text: 'keep' }] }],
     preChestState: { dims: { width: 55 } },
@@ -116,7 +133,8 @@ test('project config persisted snapshot readers sanitize structural and map bran
   assert.deepEqual({ ...persisted.splitDoorsMap }, { split_d4: true, splitpos_d5: [0.4, 0.9] });
   assert.deepEqual({ ...persisted.splitDoorsBottomMap }, { splitb_d2: true });
   assert.deepEqual({ ...persisted.roundedFrameSideShelvesMap }, { body_left: true, body_right: false });
-  assert.deepEqual({ ...persisted.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
+  assert.deepEqual({ ...persisted.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
+  assert.equal('d1' in (persisted.mirrorLayoutMap || {}), false);
   assert.equal(persisted.doorTrimMap.d1_full[0].sizeCm, 11);
   assert.equal('d1' in persisted.doorTrimMap, false);
   assert.deepEqual(persisted.savedColors, ['oak', { id: 'c2', value: '#222' }]);

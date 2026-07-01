@@ -9,9 +9,14 @@ export type DoorVisualSegmentIdentity = {
 const SEGMENTED_DOOR_ANY_SUFFIX_RE = /_(?:full|top|bot|mid\d*)$/i;
 const SEGMENTED_DOOR_PART_SUFFIX_RE = /_(?:top|bot|mid\d*)$/i;
 const DOOR_VISUAL_SURFACE_SUFFIX_RE = /_(?:accent|groove)_(?:top|bottom|left|right)$/i;
+const DOOR_VISUAL_DECORATION_SUFFIX_RE = /_(?:trim|trim_preview)(?:_[a-z0-9]+)?$/i;
 
 function readPartKey(value: unknown): string {
   return typeof value === 'string' ? value.trim() : String(value ?? '').trim();
+}
+
+function readRawPartKey(value: unknown): string {
+  return typeof value === 'string' ? value : String(value ?? '');
 }
 
 export function hasDoorVisualSegmentSuffix(partId: string): boolean {
@@ -76,6 +81,27 @@ export function buildDoorVisualLookupKeys(partId: string): string[] {
 
 export function stripDoorVisualSurfaceSuffix(partId: string): string {
   return String(partId || '').replace(DOOR_VISUAL_SURFACE_SUFFIX_RE, '');
+}
+
+export function stripDoorVisualDecorationSuffix(partId: unknown): string {
+  let key = readPartKey(partId);
+  for (let index = 0; index < 4; index += 1) {
+    const next = stripDoorVisualSurfaceSuffix(key).replace(DOOR_VISUAL_DECORATION_SUFFIX_RE, '');
+    if (next === key) return key;
+    key = next;
+  }
+  return key;
+}
+
+export function toCanonicalDoorVisualMapKey(partId: unknown): string {
+  const key = stripDoorVisualDecorationSuffix(partId);
+  return key ? toDoorStyleOverrideMapKey(key) : '';
+}
+
+export function isCanonicalDoorVisualMapKey(partId: unknown): partId is string {
+  const raw = readRawPartKey(partId);
+  const key = readPartKey(partId);
+  return !!key && raw === key && key === toCanonicalDoorVisualMapKey(key);
 }
 
 export function resolveDoorVisualSegmentIdentity(partId: unknown): DoorVisualSegmentIdentity {

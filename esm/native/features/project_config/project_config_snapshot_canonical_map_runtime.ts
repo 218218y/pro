@@ -1,15 +1,13 @@
 import { isCanonicalRemovedDoorsMapKey } from '../../../shared/removed_doors_map_keys_shared.js';
 import { isCanonicalGrooveLinesCountMapKey } from '../../../shared/door_groove_key_contracts_shared.js';
 import {
+  readDoorStyleMap as normalizeDoorStyleMap,
+  readDoorTrimConfigMap,
   readGroovesMap,
+  readMirrorLayoutConfigMap,
   readSplitDoorsBottomMapValue,
   readSplitDoorsMapValue,
 } from './project_config_map_readers.js';
-import {
-  readDoorStyleMap as normalizeDoorStyleMap,
-  readDoorTrimMap,
-  readMirrorLayoutMap,
-} from '../door_authoring/api.js';
 import {
   cloneComparableProjectConfigValue,
   isComparableRecord,
@@ -133,8 +131,8 @@ const PROJECT_CONFIG_MAP_NORMALIZERS: Record<string, ProjectConfigMapNormalizer>
   individualColors: normalizeNullableStringMap,
   doorSpecialMap: normalizeNullableStringMap,
   doorStyleMap: normalizeDoorStyleMap,
-  mirrorLayoutMap: readMirrorLayoutMap,
-  doorTrimMap: readDoorTrimMap,
+  mirrorLayoutMap: readMirrorLayoutConfigMap,
+  doorTrimMap: readDoorTrimConfigMap,
 };
 
 export function normalizeKnownProjectConfigMap(key: string, value: unknown): unknown {

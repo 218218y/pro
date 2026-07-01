@@ -22,11 +22,10 @@ import {
   isCanonicalGroovesMapKey,
 } from '../../../shared/door_groove_key_contracts_shared.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../../shared/removed_doors_map_keys_shared.js';
-import {
-  readDoorStyleMap as readCanonicalDoorStyleMap,
-  readDoorTrimMap,
-  readMirrorLayoutMap,
-} from '../door_authoring/api.js';
+import { isCanonicalDoorVisualMapKey } from '../../../shared/door_visual_key_contracts_shared.js';
+import { isCanonicalDoorTrimTargetKey } from '../../../shared/door_trim_key_contracts_shared.js';
+import { readCanonicalMirrorLayoutMap } from '../../../shared/mirror_layout_contracts_shared.js';
+import { readDoorTrimMap } from '../door_authoring/api.js';
 
 function isObjectRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -121,8 +120,21 @@ export function readDoorSpecialMap(value: unknown): DoorSpecialMap {
   return readStringMap(value);
 }
 
+function readDoorStyleValue(value: unknown): DoorStyleMap[string] | undefined {
+  const entry = typeof value === 'string' ? String(value).trim().toLowerCase() : '';
+  return entry === 'flat' || entry === 'profile' || entry === 'double_profile' ? entry : undefined;
+}
+
 export function readDoorStyleMap(value: unknown): DoorStyleMap {
-  return readCanonicalDoorStyleMap(value);
+  const src = asObjectRecord(value);
+  const out: DoorStyleMap = {};
+  if (!src) return out;
+  for (const [key, entry] of Object.entries(src)) {
+    if (!isCanonicalDoorVisualMapKey(key)) continue;
+    const next = readDoorStyleValue(entry);
+    if (typeof next !== 'undefined') out[key] = next;
+  }
+  return out;
 }
 
 export function isHingeMapEntry(value: unknown): value is HingeMap[string] {
@@ -237,9 +249,18 @@ export function readSplitDoorsBottomMapValue(value: unknown): SplitDoorsBottomMa
 }
 
 export function readMirrorLayoutConfigMap(value: unknown): MirrorLayoutMap {
-  return readMirrorLayoutMap(value);
+  return readCanonicalMirrorLayoutMap(value);
 }
 
 export function readDoorTrimConfigMap(value: unknown): DoorTrimMap {
-  return readDoorTrimMap(value);
+  const src = asObjectRecord(value);
+  const out: DoorTrimMap = {};
+  if (!src) return out;
+  for (const [key, entry] of Object.entries(src)) {
+    if (!isCanonicalDoorTrimTargetKey(key)) continue;
+    const normalized = readDoorTrimMap({ [key]: entry });
+    const next = normalized[key];
+    if (Array.isArray(next) && next.length) out[key] = next;
+  }
+  return out;
 }

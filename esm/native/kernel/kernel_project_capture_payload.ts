@@ -1,7 +1,7 @@
 import type { UnknownRecord } from '../../../types';
 
 import { readUiRawScalarFromCanonicalSnapshot } from '../runtime/ui_raw_selectors.js';
-import { readMirrorLayoutMap, readDoorTrimMap } from '../features/door_authoring/api.js';
+import { readDoorTrimConfigMap, readMirrorLayoutConfigMap } from '../features/project_config/api.js';
 import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
 
@@ -252,12 +252,12 @@ export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDat
     individualColors: cloneProjectCaptureValue(canonicalCfg.individualColors, {}),
     doorSpecialMap: cloneProjectCaptureValue(canonicalCfg.doorSpecialMap, {}),
     doorStyleMap: cloneProjectCaptureValue(canonicalCfg.doorStyleMap, {}),
-    mirrorLayoutMap: cloneProjectCaptureValue(readMirrorLayoutMap(cfgRec.mirrorLayoutMap), {}),
+    mirrorLayoutMap: cloneProjectCaptureValue(readMirrorLayoutConfigMap(cfgRec.mirrorLayoutMap), {}),
     savedColors: cloneProjectCaptureValue(canonicalCfg.savedColors, []),
     handlesMap: cloneProjectCaptureValue(canonicalCfg.handlesMap, {}),
     hingeMap: cloneProjectCaptureValue(canonicalCfg.hingeMap, {}),
     curtainMap: cloneProjectCaptureValue(readCurtainSnapshot(cfgRec.curtainMap), {}),
-    doorTrimMap: cloneProjectCaptureValue(readDoorTrimMap(cfgRec.doorTrimMap), {}),
+    doorTrimMap: cloneProjectCaptureValue(readDoorTrimConfigMap(cfgRec.doorTrimMap), {}),
     preChestState: cloneProjectCaptureValue(canonicalCfg.preChestState, null),
     overlayFrameThicknessCm: normalizeDoorMountThicknessCm(canonicalCfg.overlayFrameThicknessCm),
     overlayShelfThicknessCm: normalizeDoorMountThicknessCm(canonicalCfg.overlayShelfThicknessCm),

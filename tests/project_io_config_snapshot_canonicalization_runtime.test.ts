@@ -127,15 +127,22 @@ test('project io default snapshot canonicalizes persisted config maps while pres
       isLibraryMode: true,
       savedColors: sourceSavedColors,
       splitDoorsBottomMap: { splitb_d1: true, drop: false },
-      mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }] },
-      doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }] },
+      mirrorLayoutMap: {
+        d1: [{ widthCm: '99', heightCm: 99 }],
+        d1_full: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }],
+      },
+      doorTrimMap: {
+        d1: [{ axis: 'horizontal', color: 'black' }],
+        d1_full: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }],
+      },
       preChestState: sourcePreChestState,
     },
   } as never);
 
   assert.deepEqual(snap.savedColors, ['oak', { id: 'c2', value: '#222' }]);
   assert.deepEqual({ ...snap.splitDoorsBottomMap }, { splitb_d1: true });
-  assert.deepEqual({ ...snap.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
+  assert.deepEqual({ ...snap.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
+  assert.equal('d1' in (snap.mirrorLayoutMap || {}), false);
   assert.equal(Array.isArray(snap.doorTrimMap.d1_full), true);
   assert.equal(snap.doorTrimMap.d1_full.length, 2);
   assert.equal(snap.doorTrimMap.d1_full[0].axis, 'vertical');
@@ -161,8 +168,14 @@ test('project save finalizer detaches persisted notes and canonicalizes config m
     savedNotes: sourceSavedNotes,
     savedColors: ['oak', { id: 'c2', value: '#222' }, { id: '' }],
     splitDoorsBottomMap: { splitb_d1: true, drop: false },
-    mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }] },
-    doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }] },
+    mirrorLayoutMap: {
+      d1: [{ widthCm: '99', heightCm: 99 }],
+      d1_full: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }],
+    },
+    doorTrimMap: {
+      d1: [{ axis: 'horizontal', color: 'black' }],
+      d1_full: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }],
+    },
     preChestState: { dims: { width: 55 } },
   });
 
@@ -174,7 +187,8 @@ test('project save finalizer detaches persisted notes and canonicalizes config m
 
   assert.deepEqual(finalized.savedColors, ['oak', { id: 'c2', value: '#222' }]);
   assert.deepEqual({ ...finalized.splitDoorsBottomMap }, { splitb_d1: true });
-  assert.deepEqual({ ...finalized.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
+  assert.deepEqual({ ...finalized.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
+  assert.equal('d1' in (finalized.mirrorLayoutMap || {}), false);
   assert.equal(Array.isArray(finalized.doorTrimMap.d1_full), true);
   assert.equal(finalized.doorTrimMap.d1_full.length, 2);
   assert.equal(finalized.doorTrimMap.d1_full[0].axis, 'vertical');
@@ -283,8 +297,11 @@ test('project save/default helpers share the same persisted config projection fo
     savedColors: ['oak', { id: 'c2', value: '#222' }],
     savedNotes: [{ id: 'n1', blocks: [{ text: 'keep' }] }],
     splitDoorsBottomMap: { splitb_d1: true, drop: false },
-    mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }] },
-    doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold' }] },
+    mirrorLayoutMap: { d1: [{ widthCm: '99', heightCm: 99 }], d1_full: [{ widthCm: '55', heightCm: 88 }] },
+    doorTrimMap: {
+      d1: [{ axis: 'horizontal', color: 'black' }],
+      d1_full: [{ axis: 'vertical', color: 'gold' }],
+    },
     preChestState: { dims: { width: 55 } },
   });
 

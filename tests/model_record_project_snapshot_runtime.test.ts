@@ -131,22 +131,26 @@ test('buildProjectStructureFromModel reuses the persisted config projection with
     name: 'Model 3',
     settings: { doors: 2, structureSelection: '[1,1]', wardrobeType: 'hinged' },
     savedNotes: [{ id: 'n1', blocks: [{ text: 'keep' }] }],
-    mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }] },
-    doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold' }] },
+    mirrorLayoutMap: { d1: [{ widthCm: '99', heightCm: 99 }], d1_full: [{ widthCm: '55', heightCm: 88 }] },
+    doorTrimMap: {
+      d1: [{ axis: 'horizontal', color: 'black' }],
+      d1_full: [{ axis: 'vertical', color: 'gold' }],
+    },
     preChestState: { dims: { width: 55 } },
   } as Record<string, any>;
 
   const built = buildProjectStructureFromModel(App, model as never);
-  assert.deepEqual({ ...built.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
+  assert.deepEqual({ ...built.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
+  assert.equal('d1' in (built.mirrorLayoutMap || {}), false);
   assert.equal(built.doorTrimMap?.d1_full?.[0]?.color, 'gold');
   assert.equal('d1' in (built.doorTrimMap || {}), false);
   assert.equal(((built.preChestState as Record<string, unknown>).dims as Record<string, unknown>).width, 55);
 
-  model.mirrorLayoutMap.d1[0].widthCm = 99;
-  model.doorTrimMap.d1[0].color = 'black';
+  model.mirrorLayoutMap.d1_full[0].widthCm = 99;
+  model.doorTrimMap.d1_full[0].color = 'black';
   (model.preChestState.dims as Record<string, unknown>).width = 77;
 
-  assert.deepEqual({ ...built.mirrorLayoutMap }, { d1: [{ widthCm: 55, heightCm: 88 }] });
+  assert.deepEqual({ ...built.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
   assert.equal(built.doorTrimMap?.d1_full?.[0]?.color, 'gold');
   assert.equal(((built.preChestState as Record<string, unknown>).dims as Record<string, unknown>).width, 55);
 });

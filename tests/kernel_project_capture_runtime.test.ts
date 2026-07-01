@@ -21,8 +21,15 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
     groovesMap: { groove_d1: true, g1: true, drop: 1n },
     roundedFrameSideShelvesMap: { body_left: true, drop: 1n },
     splitDoorsBottomMap: { splitb_d1: true, d1: true, drop: false },
-    mirrorLayoutMap: { d1: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }], d2: [cyclicMirrorLayout] },
-    doorTrimMap: { d1: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }] },
+    mirrorLayoutMap: {
+      d1: [{ widthCm: '99', heightCm: 99 }],
+      d1_full: [{ widthCm: '55', heightCm: 88 }, { widthCm: 0 }],
+      d2_full: [cyclicMirrorLayout],
+    },
+    doorTrimMap: {
+      d1: [{ axis: 'horizontal', color: 'black' }],
+      d1_full: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: '11' }, { bad: true }],
+    },
     preChestState: { dims: { width: 55 }, createdAt: new Date('2024-01-02T03:04:05.000Z') },
     savedColors: ['oak', { id: 'c2', value: '#abc' }, { id: '' }, 1n],
   };
@@ -87,8 +94,9 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
   assert.deepEqual({ ...snapshot.splitDoorsBottomMap }, { splitb_d1: true });
   assert.deepEqual(
     { ...snapshot.mirrorLayoutMap },
-    { d1: [{ widthCm: 55, heightCm: 88 }], d2: [{ widthCm: 33 }] }
+    { d1_full: [{ widthCm: 55, heightCm: 88 }], d2_full: [{ widthCm: 33 }] }
   );
+  assert.equal('d1' in snapshot.mirrorLayoutMap, false);
   assert.equal(Array.isArray(snapshot.doorTrimMap.d1_full), true);
   assert.equal(snapshot.doorTrimMap.d1_full.length, 2);
   assert.equal(snapshot.doorTrimMap.d1_full[0].axis, 'vertical');

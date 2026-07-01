@@ -1,6 +1,10 @@
 import type { ProjectDataLike } from '../../../types/index.js';
 
-import { readMirrorLayoutMap, readDoorTrimMap, readDoorStyleMap } from '../features/door_authoring/api.js';
+import {
+  readDoorStyleMap,
+  readDoorTrimConfigMap,
+  readMirrorLayoutConfigMap,
+} from '../features/project_config/api.js';
 
 import {
   readCurtainMap,
@@ -55,8 +59,8 @@ export function normalizeCurrentProjectData(data: ProjectDataLike, nowISO?: stri
   data.individualColors = readIndividualColorsMap(data.individualColors);
   data.doorSpecialMap = readDoorSpecialMap(data.doorSpecialMap);
   data.doorStyleMap = readDoorStyleMap(data.doorStyleMap);
-  data.mirrorLayoutMap = readMirrorLayoutMap(data.mirrorLayoutMap);
-  data.doorTrimMap = readDoorTrimMap(data.doorTrimMap);
+  data.mirrorLayoutMap = readMirrorLayoutConfigMap(data.mirrorLayoutMap);
+  data.doorTrimMap = readDoorTrimConfigMap(data.doorTrimMap);
 
   normalizeGlobalHandleType(settings);
 

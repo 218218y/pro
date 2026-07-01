@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { normalizeKnownMapSnapshot } from '../esm/native/runtime/maps_access_normalizers.ts';
+import { tryHandleDoorStyleOverridePaintClick } from '../esm/native/services/canvas_picking_paint_flow_apply_door_style.ts';
 
 test('maps access normalizers keep hinge entries detached and door trim ids stable across normalizations', () => {
   const hingeNested = { inner: { side: 'left' } };
@@ -24,42 +25,41 @@ test('maps access normalizers keep hinge entries detached and door trim ids stab
     centerXNorm: '0.25',
     centerYNorm: '0.75',
   };
-  const trimMapA = normalizeKnownMapSnapshot('doorTrimMap', { d1: [rawTrim] });
-  const trimMapB = normalizeKnownMapSnapshot('doorTrimMap', { d1: [rawTrim] });
+  const trimMapA = normalizeKnownMapSnapshot('doorTrimMap', { d1_full: [rawTrim] });
+  const trimMapB = normalizeKnownMapSnapshot('doorTrimMap', { d1_full: [rawTrim] });
 
   assert.equal(trimMapA.d1_full?.[0]?.id, trimMapB.d1_full?.[0]?.id);
   assert.equal(trimMapA.d1_full?.[0]?.axis, 'vertical');
   assert.equal(trimMapA.d1_full?.[0]?.color, 'gold');
   assert.equal(trimMapA.d1_full?.[0]?.sizeCm, 17);
   assert.equal(trimMapA.d1_full?.[0]?.crossSizeCm, 6.5);
-  assert.equal('d1' in trimMapA, false);
 
   const firstId = trimMapA.d1_full?.[0]?.id;
   trimMapA.d1_full?.[0] && (trimMapA.d1_full[0].color = 'black');
-  const trimMapC = normalizeKnownMapSnapshot('doorTrimMap', { d1: [rawTrim] });
+  const trimMapC = normalizeKnownMapSnapshot('doorTrimMap', { d1_full: [rawTrim] });
   assert.equal(trimMapC.d1_full?.[0]?.id, firstId);
   assert.equal(trimMapC.d1_full?.[0]?.color, 'gold');
 
-  const trimSurfaceMap = normalizeKnownMapSnapshot('doorTrimMap', {
+  const trimAliasMap = normalizeKnownMapSnapshot('doorTrimMap', {
+    d1: [rawTrim],
     d1_mid2_accent_top: [rawTrim],
     d2_top_trim_preview_hover: [rawTrim],
   });
-  assert.equal(Array.isArray(trimSurfaceMap.d1_mid2), true);
-  assert.equal(Array.isArray(trimSurfaceMap.d2_top), true);
-  assert.equal('d1_mid2_accent_top' in trimSurfaceMap, false);
-  assert.equal('d2_top_trim_preview_hover' in trimSurfaceMap, false);
+  assert.deepEqual({ ...trimAliasMap }, {});
 
   const mirrorMap = normalizeKnownMapSnapshot('mirrorLayoutMap', {
-    d1: [{ widthCm: '45', heightCm: 75, faceSign: -1 }, { widthCm: 0 }],
-    d2: [{ faceSign: -1 }],
+    d1: [{ widthCm: '99', heightCm: 99 }],
+    d1_full: [{ widthCm: '45', heightCm: 75, faceSign: -1 }, { widthCm: 0 }],
+    d2_mid2_accent_top: [{ widthCm: 20 }],
+    d2_full: [{ faceSign: -1 }],
   });
   assert.deepEqual(
     Object.fromEntries(
       Object.entries(mirrorMap).map(([key, list]) => [key, list.map(entry => ({ ...entry }))])
     ),
     {
-      d1: [{ widthCm: 45, heightCm: 75, faceSign: -1 }],
-      d2: [{ faceSign: -1 }],
+      d1_full: [{ widthCm: 45, heightCm: 75, faceSign: -1 }],
+      d2_full: [{ faceSign: -1 }],
     }
   );
 
@@ -67,10 +67,11 @@ test('maps access normalizers keep hinge entries detached and door trim ids stab
     d1: 'PROFILE',
     d1_full: 'double_profile',
     d2: 'flat',
+    d2_mid2_accent_top: 'profile',
     drawer_1: 'profile',
     bad: 'glass',
   });
-  assert.deepEqual({ ...doorStyleMap }, { d1_full: 'double_profile', d2_full: 'flat', drawer_1: 'profile' });
+  assert.deepEqual({ ...doorStyleMap }, { d1_full: 'double_profile', drawer_1: 'profile' });
 });
 
 test('maps access normalizers keep split maps on canonical keys and values only', () => {
@@ -204,4 +205,45 @@ test('maps access normalizers keep groove line count keys unprefixed and canonic
   assert.equal('d3_top_trim_preview_hover' in grooveLinesCountMap, false);
   assert.equal('groove_d4_mid2' in grooveLinesCountMap, false);
   assert.equal('d7_mid2' in grooveLinesCountMap, false);
+});
+
+test('door style live writer canonicalizes decorated hit ids before storing', () => {
+  const writes: Record<string, unknown>[] = [];
+  const maps: Record<string, Record<string, unknown>> = {
+    doorStyleMap: {},
+    doorSpecialMap: {},
+    curtainMap: {},
+    mirrorLayoutMap: {},
+  };
+  const App = {
+    maps,
+    actions: {
+      config: {
+        setMap(name: string, next: Record<string, unknown>) {
+          maps[name] = { ...next };
+          if (name === 'doorStyleMap') writes.push({ ...next });
+          return maps[name];
+        },
+      },
+      history: {
+        batch(_meta: unknown, cb: () => unknown) {
+          return cb();
+        },
+      },
+    },
+  };
+
+  const handled = tryHandleDoorStyleOverridePaintClick({
+    App: App as never,
+    foundPartId: 'd1_mid2_accent_top',
+    effectiveDoorId: 'd1_mid2_accent_top',
+    foundDrawerId: null,
+    activeStack: 'top',
+    paintSelection: '__wp_door_style__:profile',
+    paintSource: 'test:decorated-style-hit',
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual(writes, [{ d1_mid2: 'profile' }]);
+  assert.equal('d1_mid2_accent_top' in maps.doorStyleMap, false);
 });

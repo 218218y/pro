@@ -6,11 +6,17 @@ import {
   isSegmentedDoorBaseId,
   resolveDoorVisualSegmentIdentity,
   stripDoorVisualSurfaceSuffix,
+  toCanonicalDoorVisualMapKey,
   toDoorStyleOverrideMapKey,
 } from '../../../../shared/door_visual_key_contracts_shared.js';
 
 export type DoorVisualMapEntry = { key: string; value: unknown };
-export { buildDoorVisualLookupKeys, stripDoorVisualSurfaceSuffix, toDoorStyleOverrideMapKey };
+export {
+  buildDoorVisualLookupKeys,
+  stripDoorVisualSurfaceSuffix,
+  toCanonicalDoorVisualMapKey,
+  toDoorStyleOverrideMapKey,
+};
 
 function hasOwn(map: Record<string, unknown> | undefined | null, key: string): boolean {
   return !!map && !!key && Object.prototype.hasOwnProperty.call(map, key);
@@ -67,7 +73,7 @@ export function resolveDoorStylePaintTargetKey(args: {
   const rawTarget =
     effectiveDoorId || foundDrawerId || (args.isDoorOrDrawerLikePartId(foundPartId) ? foundPartId : '');
   const scopedTarget = rawTarget ? args.scopePartKeyForStack(rawTarget, args.activeStack) : '';
-  return toDoorStyleOverrideMapKey(scopedTarget);
+  return toCanonicalDoorVisualMapKey(scopedTarget);
 }
 
 export function readDoorVisualPrefixedOwnMapEntry(args: {

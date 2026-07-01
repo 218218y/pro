@@ -4,6 +4,7 @@ import type {
   MirrorLayoutMap,
   UnknownRecord,
 } from '../../types/index.js';
+import { isCanonicalDoorVisualMapKey } from './door_visual_key_contracts_shared.js';
 import { DOOR_VISUAL_DIMENSIONS } from './wardrobe_dimension_tokens_shared.js';
 
 export const DEFAULT_CENTER_NORM = 0.5;
@@ -146,6 +147,17 @@ export function readMirrorLayoutMap(value: unknown): MirrorLayoutMap {
   const out: MirrorLayoutMap = Object.create(null);
   if (!isRecord(value)) return out;
   for (const [key, entry] of Object.entries(value)) {
+    const next = cloneMirrorLayoutList(entry);
+    if (next.length) out[key] = next;
+  }
+  return out;
+}
+
+export function readCanonicalMirrorLayoutMap(value: unknown): MirrorLayoutMap {
+  const out: MirrorLayoutMap = Object.create(null);
+  if (!isRecord(value)) return out;
+  for (const [key, entry] of Object.entries(value)) {
+    if (!isCanonicalDoorVisualMapKey(key)) continue;
     const next = cloneMirrorLayoutList(entry);
     if (next.length) out[key] = next;
   }
