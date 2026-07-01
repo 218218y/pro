@@ -126,6 +126,12 @@ test('project io default snapshot canonicalizes persisted config maps while pres
       wardrobeType: 'hinged',
       isLibraryMode: true,
       savedColors: sourceSavedColors,
+      splitDoorsMap: {
+        split_d1: true,
+        splitpos_d1: [0.25, 'bad', 0.75],
+        split_d1_mid2_accent_top: true,
+        splitpos_d1_mid2_groove_left: [0.4],
+      },
       splitDoorsBottomMap: { splitb_d1: true, drop: false },
       mirrorLayoutMap: {
         d1: [{ widthCm: '99', heightCm: 99 }],
@@ -140,6 +146,7 @@ test('project io default snapshot canonicalizes persisted config maps while pres
   } as never);
 
   assert.deepEqual(snap.savedColors, ['oak', { id: 'c2', value: '#222' }]);
+  assert.deepEqual({ ...snap.splitDoorsMap }, { split_d1: true, splitpos_d1: [0.25, 0.75] });
   assert.deepEqual({ ...snap.splitDoorsBottomMap }, { splitb_d1: true });
   assert.deepEqual({ ...snap.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
   assert.equal('d1' in (snap.mirrorLayoutMap || {}), false);
@@ -167,6 +174,12 @@ test('project save finalizer detaches persisted notes and canonicalizes config m
     },
     savedNotes: sourceSavedNotes,
     savedColors: ['oak', { id: 'c2', value: '#222' }, { id: '' }],
+    splitDoorsMap: {
+      split_d1: true,
+      splitpos_d1: [0.25, 'bad', 0.75],
+      split_d1_mid2_groove_left: true,
+      splitpos_d1_mid2_accent_top: [0.4],
+    },
     splitDoorsBottomMap: { splitb_d1: true, drop: false },
     mirrorLayoutMap: {
       d1: [{ widthCm: '99', heightCm: 99 }],
@@ -186,6 +199,7 @@ test('project save finalizer detaches persisted notes and canonicalizes config m
   });
 
   assert.deepEqual(finalized.savedColors, ['oak', { id: 'c2', value: '#222' }]);
+  assert.deepEqual({ ...finalized.splitDoorsMap }, { split_d1: true, splitpos_d1: [0.25, 0.75] });
   assert.deepEqual({ ...finalized.splitDoorsBottomMap }, { splitb_d1: true });
   assert.deepEqual({ ...finalized.mirrorLayoutMap }, { d1_full: [{ widthCm: 55, heightCm: 88 }] });
   assert.equal('d1' in (finalized.mirrorLayoutMap || {}), false);

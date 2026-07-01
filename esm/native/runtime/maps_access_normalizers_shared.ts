@@ -1,13 +1,15 @@
 import type { KnownMapName, MapsByName } from '../../../types';
 
-import {
-  isCanonicalDoorVisualMapKey,
-  resolveDoorSplitAuthoringBaseKey,
-} from '../../shared/door_visual_key_contracts_shared.js';
+import { isCanonicalDoorVisualMapKey } from '../../shared/door_visual_key_contracts_shared.js';
 import {
   isCanonicalGrooveLinesCountMapKey,
   isCanonicalGroovesMapKey,
 } from '../../shared/door_groove_key_contracts_shared.js';
+import {
+  isCanonicalSplitDoorsBottomMapKey,
+  isCanonicalSplitDoorsMapKey,
+  isCanonicalSplitPositionMapKey,
+} from '../../shared/door_split_map_key_contracts_shared.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
 import { asMapRecord, asRecord } from './maps_access_shared.js';
 
@@ -56,18 +58,6 @@ export function normalizeToggleMap(value: unknown): MapsByName['drawerDividersMa
   return out;
 }
 
-function readCanonicalSplitMapBaseKey(key: string, prefix: string): string {
-  if (!key.startsWith(prefix)) return '';
-  const base = key.slice(prefix.length);
-  if (!base) return '';
-  return resolveDoorSplitAuthoringBaseKey(base);
-}
-
-function isCanonicalSplitMapKey(key: string, prefix: string): boolean {
-  const base = readCanonicalSplitMapBaseKey(key, prefix);
-  return !!base && key === `${prefix}${base}`;
-}
-
 export function normalizeGroovesMap(value: unknown): MapsByName['groovesMap'] {
   const rec = asMapRecord(value);
   const out: MapsByName['groovesMap'] = Object.create(null);
@@ -97,7 +87,7 @@ export function normalizeSplitDoorsBottomMap(value: unknown): MapsByName['splitD
   const out: MapsByName['splitDoorsBottomMap'] = Object.create(null);
   if (!rec) return out;
   for (const key of Object.keys(rec)) {
-    if (!isCanonicalSplitMapKey(key, 'splitb_')) continue;
+    if (!isCanonicalSplitDoorsBottomMapKey(key)) continue;
     const entry = rec[key];
     if (entry === true) out[key] = true;
     else if (entry === false) out[key] = false;
@@ -171,8 +161,8 @@ export function normalizeSplitDoorsMap(value: unknown): MapsByName['splitDoorsMa
     const isSplitToggleKey = key.startsWith('split_');
     const isSplitPositionKey = key.startsWith('splitpos_');
     if (!isSplitToggleKey && !isSplitPositionKey) continue;
-    if (isSplitToggleKey && !isCanonicalSplitMapKey(key, 'split_')) continue;
-    if (isSplitPositionKey && !isCanonicalSplitMapKey(key, 'splitpos_')) continue;
+    if (isSplitToggleKey && !isCanonicalSplitDoorsMapKey(key)) continue;
+    if (isSplitPositionKey && !isCanonicalSplitPositionMapKey(key)) continue;
     const entry = rec[key];
     if (entry === null) {
       if (isSplitToggleKey) out[key] = null;

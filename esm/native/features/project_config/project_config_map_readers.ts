@@ -22,6 +22,11 @@ import {
   isCanonicalGrooveLinesCountMapKey,
   isCanonicalGroovesMapKey,
 } from '../../../shared/door_groove_key_contracts_shared.js';
+import {
+  isCanonicalSplitDoorsBottomMapKey,
+  isCanonicalSplitDoorsMapKey,
+  isCanonicalSplitPositionMapKey,
+} from '../../../shared/door_split_map_key_contracts_shared.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../../shared/removed_doors_map_keys_shared.js';
 import { isCanonicalDoorVisualMapKey } from '../../../shared/door_visual_key_contracts_shared.js';
 import { isCanonicalDoorTrimTargetKey } from '../../../shared/door_trim_key_contracts_shared.js';
@@ -163,10 +168,6 @@ function readNullableBoolean(value: unknown): boolean | null | undefined {
   return readBoolean(value);
 }
 
-function hasDoorSegmentSuffix(value: string): boolean {
-  return /_(?:full|top|bot|mid\d*)$/i.test(value);
-}
-
 function parseSplitPositionList(raw: unknown): number[] {
   const out: number[] = [];
   const push = (value: unknown) => {
@@ -211,14 +212,13 @@ export function readSplitDoorsMapValue(value: unknown): SplitDoorsMap {
     if (!hasOwn.call(src, rawKey)) continue;
     const entry = src[rawKey];
     const key = String(rawKey || '');
-    if (hasDoorSegmentSuffix(key)) continue;
 
-    if (key.startsWith('split_')) {
+    if (isCanonicalSplitDoorsMapKey(key)) {
       assignSplitToggle(key, entry);
       continue;
     }
 
-    if (key.startsWith('splitpos_')) {
+    if (isCanonicalSplitPositionMapKey(key)) {
       const list = parseSplitPositionList(entry);
       if (list.length) out[key] = list;
     }
@@ -241,9 +241,8 @@ export function readSplitDoorsBottomMapValue(value: unknown): SplitDoorsBottomMa
     if (!hasOwn.call(src, rawKey)) continue;
     const entry = src[rawKey];
     const key = String(rawKey || '');
-    if (hasDoorSegmentSuffix(key)) continue;
 
-    if (key.startsWith('splitb_')) assignNormalizedToggle(key, entry);
+    if (isCanonicalSplitDoorsBottomMapKey(key)) assignNormalizedToggle(key, entry);
   }
 
   return out;

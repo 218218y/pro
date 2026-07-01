@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { readDoorTrimConfigMap } from '../esm/native/features/project_config/project_config_map_readers.ts';
+import {
+  readDoorTrimConfigMap,
+  readSplitDoorsBottomMapValue,
+  readSplitDoorsMapValue,
+} from '../esm/native/features/project_config/project_config_map_readers.ts';
 import { normalizeKnownMapSnapshot } from '../esm/native/runtime/maps_access_normalizers.ts';
 
 const PROJECT_ROOT = process.cwd();
@@ -34,6 +38,10 @@ const FORBIDDEN_ALIAS_CONVERSION_HELPERS = [
   'toCanonicalRemovedDoorPartId',
   'toCanonicalRemovedDoorsMapKey',
   'toDoorStyleOverrideMapKey',
+  'resolveDoorSplitAuthoringBaseKey',
+  'splitKey',
+  'splitBottomKey',
+  'splitPosKey',
   'buildDoorVisualLookupKeys',
   'listDoorTrimTargetLookupKeys',
   'listDoorGrooveTargetLookupKeys',
@@ -54,6 +62,9 @@ const ALLOWED_CANONICAL_ONLY_HELPERS = [
   'isCanonicalGroovesMapKey',
   'isCanonicalGrooveLinesCountMapKey',
   'isCanonicalRemovedDoorsMapKey',
+  'isCanonicalSplitDoorsMapKey',
+  'isCanonicalSplitPositionMapKey',
+  'isCanonicalSplitDoorsBottomMapKey',
   'readCanonicalMirrorLayoutMap',
 ];
 
@@ -134,6 +145,33 @@ test('project config doorTrimMap keeps only direct canonical keys', () => {
   assert.equal('d1' in doorTrimMap, false);
   assert.equal('d1_mid2_accent_top' in doorTrimMap, false);
   assert.equal('d2_top_trim_preview_hover' in doorTrimMap, false);
+});
+
+test('project config split maps keep only direct canonical split keys', () => {
+  const splitDoorsMap = readSplitDoorsMapValue({
+    split_d1: true,
+    splitpos_d1: [0.25, 'bad', 0.75],
+    splitpos_main: [0.2, 0.8, NaN],
+    split_d1_mid2_accent_top: true,
+    split_d1_mid2_groove_left: true,
+    splitpos_d1_mid2_accent_top: [0.4],
+    splitpos_d1_mid2_groove_left: [0.5],
+    split_d2: 'true',
+    splitpos_d3: '0.4',
+  });
+  assert.deepEqual(
+    { ...splitDoorsMap },
+    { split_d1: true, splitpos_d1: [0.25, 0.75], splitpos_main: [0.2, 0.8] }
+  );
+
+  const splitDoorsBottomMap = readSplitDoorsBottomMapValue({
+    splitb_d1: true,
+    splitb_lower_d2: null,
+    splitb_d1_mid2_accent_top: true,
+    splitb_d1_mid2_groove_left: true,
+    splitb_d3: 'true',
+  });
+  assert.deepEqual({ ...splitDoorsBottomMap }, { splitb_d1: true, splitb_lower_d2: null });
 });
 
 test('runtime storage normalizers keep visual maps canonical-only without alias repair', () => {

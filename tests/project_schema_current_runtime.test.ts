@@ -66,9 +66,18 @@ test('current project schema rejects values that require historical migration', 
   assert.equal(normalizeProjectData({ ...base, notes: [{ text: 'old' }] }), null);
   assert.equal(normalizeProjectData({ ...base, toggles: { showContents: 1 } }), null);
   assert.equal(normalizeProjectData({ ...base, splitDoorsMap: { split_d1_full: true } }), null);
+  assert.equal(normalizeProjectData({ ...base, splitDoorsMap: { split_d1_mid2_accent_top: true } }), null);
+  assert.equal(
+    normalizeProjectData({ ...base, splitDoorsMap: { splitpos_d1_mid2_groove_left: [0.4] } }),
+    null
+  );
   assert.equal(normalizeProjectData({ ...base, splitDoorsMap: { split_d1: 'true' } }), null);
   assert.equal(normalizeProjectData({ ...base, splitDoorsMap: { splitpos_d1: '0.25,0.75' } }), null);
   assert.equal(normalizeProjectData({ ...base, splitDoorsBottomMap: { splitb_d1_full: true } }), null);
+  assert.equal(
+    normalizeProjectData({ ...base, splitDoorsBottomMap: { splitb_d1_mid2_groove_left: true } }),
+    null
+  );
   assert.equal(normalizeProjectData({ ...base, splitDoorsBottomMap: { splitb_d1: 1 } }), null);
   assert.equal(normalizeProjectData({ ...base, removedDoorsMap: { removed_d1: true } }), null);
   assert.equal(normalizeProjectData({ ...base, removedDoorsMap: { removed_d1_full: 1 } }), null);

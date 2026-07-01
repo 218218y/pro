@@ -9,6 +9,11 @@ import {
   isCanonicalGrooveLinesCountMapKey,
   isCanonicalGroovesMapKey,
 } from '../../shared/door_groove_key_contracts_shared.js';
+import {
+  isCanonicalSplitDoorsBottomMapKey,
+  isCanonicalSplitDoorsMapKey,
+  isCanonicalSplitPositionMapKey,
+} from '../../shared/door_split_map_key_contracts_shared.js';
 
 const REQUIRED_DIMENSION_KEYS = ['width', 'height', 'depth', 'doors'] as const;
 const OPTIONAL_NUMERIC_SETTINGS_KEYS = [
@@ -102,18 +107,6 @@ function projectValuesEqual(left: unknown, right: unknown): boolean {
     if (!projectValuesEqual(left[leftKeys[i]], right[rightKeys[i]])) return false;
   }
   return true;
-}
-
-function hasDoorSegmentSuffix(value: string): boolean {
-  return /_(?:full|top|bot|mid\d*)$/i.test(value);
-}
-
-function isCanonicalSplitDoorsMapKey(value: string): boolean {
-  return (value.startsWith('split_') || value.startsWith('splitpos_')) && !hasDoorSegmentSuffix(value);
-}
-
-function isCanonicalSplitDoorsBottomMapKey(value: string): boolean {
-  return value.startsWith('splitb_') && !hasDoorSegmentSuffix(value);
 }
 
 function validateMapKeys(
@@ -282,7 +275,12 @@ export function validateProjectData(data: ProjectDataLike): ProjectSchemaValidat
     errors.push('"grooveLinesCount" must be a positive finite number or null');
   }
 
-  validateMapKeys(data, 'splitDoorsMap', isCanonicalSplitDoorsMapKey, errors);
+  validateMapKeys(
+    data,
+    'splitDoorsMap',
+    key => isCanonicalSplitDoorsMapKey(key) || isCanonicalSplitPositionMapKey(key),
+    errors
+  );
   validateMapKeys(data, 'splitDoorsBottomMap', isCanonicalSplitDoorsBottomMapKey, errors);
   validateMapKeys(data, 'removedDoorsMap', isCanonicalRemovedDoorsMapKey, errors);
   validateMapKeys(data, 'groovesMap', isCanonicalGroovesMapKey, errors);
