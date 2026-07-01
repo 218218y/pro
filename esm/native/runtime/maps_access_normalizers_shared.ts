@@ -5,8 +5,8 @@ import {
   toDoorStyleOverrideMapKey,
 } from '../../shared/door_visual_key_contracts_shared.js';
 import {
-  toCanonicalGrooveLinesCountMapKey,
-  toCanonicalGroovesMapKey,
+  isCanonicalGrooveLinesCountMapKey,
+  isCanonicalGroovesMapKey,
 } from '../../shared/door_groove_key_contracts_shared.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
 import { asMapRecord, asRecord, readFiniteNumber } from './maps_access_shared.js';
@@ -71,18 +71,11 @@ function isCanonicalSplitMapKey(key: string, prefix: string): boolean {
 export function normalizeGroovesMap(value: unknown): MapsByName['groovesMap'] {
   const rec = asMapRecord(value);
   const out: MapsByName['groovesMap'] = Object.create(null);
-  const directByKey: Record<string, boolean> = Object.create(null);
   if (!rec) return out;
   for (const key of Object.keys(rec)) {
-    if (!key.startsWith('groove_')) continue;
-    const canonicalKey = toCanonicalGroovesMapKey(key);
-    if (!canonicalKey) continue;
+    if (!isCanonicalGroovesMapKey(key)) continue;
     const next = normalizeToggleValue(rec[key]);
-    if (typeof next === 'undefined') continue;
-    const isDirect = key === canonicalKey;
-    if (directByKey[canonicalKey] && !isDirect) continue;
-    out[canonicalKey] = next;
-    directByKey[canonicalKey] = isDirect;
+    if (typeof next !== 'undefined') out[key] = next;
   }
   return out;
 }
@@ -219,11 +212,9 @@ export function normalizeNullableStringMap(value: unknown): NullableStringMap {
 export function normalizeNullablePositiveIntMap(value: unknown): MapsByName['grooveLinesCountMap'] {
   const rec = asMapRecord(value);
   const out: MapsByName['grooveLinesCountMap'] = Object.create(null);
-  const directByKey: Record<string, boolean> = Object.create(null);
   if (!rec) return out;
   for (const key of Object.keys(rec)) {
-    const canonicalKey = toCanonicalGrooveLinesCountMapKey(key);
-    if (!canonicalKey) continue;
+    if (!isCanonicalGrooveLinesCountMapKey(key)) continue;
     const entry = rec[key];
     let next: number | null | undefined;
     if (entry === null) {
@@ -231,11 +222,7 @@ export function normalizeNullablePositiveIntMap(value: unknown): MapsByName['gro
     } else if (typeof entry === 'number' && Number.isFinite(entry) && entry >= 1) {
       next = Math.max(1, Math.floor(entry));
     }
-    if (typeof next === 'undefined') continue;
-    const isDirect = key === canonicalKey;
-    if (directByKey[canonicalKey] && !isDirect) continue;
-    out[canonicalKey] = next;
-    directByKey[canonicalKey] = isDirect;
+    if (typeof next !== 'undefined') out[key] = next;
   }
   return out;
 }

@@ -18,8 +18,8 @@ import type {
 } from '../../../../types/index.js';
 
 import {
-  toCanonicalGrooveLinesCountMapKey,
-  toCanonicalGroovesMapKey,
+  isCanonicalGrooveLinesCountMapKey,
+  isCanonicalGroovesMapKey,
 } from '../../../shared/door_groove_key_contracts_shared.js';
 import { isCanonicalRemovedDoorsMapKey } from '../../../shared/removed_doors_map_keys_shared.js';
 import {
@@ -90,15 +90,8 @@ export function readCurtainMap(value: unknown): CurtainMap {
 export function readGroovesMap(value: unknown): GroovesMap {
   const src = readToggleMap(value);
   const out: GroovesMap = {};
-  const directByKey: Record<string, boolean> = {};
   for (const [key, entry] of Object.entries(src)) {
-    if (!key.startsWith('groove_')) continue;
-    const canonicalKey = toCanonicalGroovesMapKey(key);
-    if (!canonicalKey) continue;
-    const isDirect = key === canonicalKey;
-    if (directByKey[canonicalKey] && !isDirect) continue;
-    out[canonicalKey] = entry;
-    directByKey[canonicalKey] = isDirect;
+    if (isCanonicalGroovesMapKey(key)) out[key] = entry;
   }
   return out;
 }
@@ -106,22 +99,16 @@ export function readGroovesMap(value: unknown): GroovesMap {
 export function readGrooveLinesCountMap(value: unknown): GrooveLinesCountMap {
   const src = asObjectRecord(value);
   const out: GrooveLinesCountMap = {};
-  const directByKey: Record<string, boolean> = {};
   if (!src) return out;
   for (const [key, entry] of Object.entries(src)) {
-    const canonicalKey = toCanonicalGrooveLinesCountMapKey(key);
-    if (!canonicalKey) continue;
+    if (!isCanonicalGrooveLinesCountMapKey(key)) continue;
     let next: number | null | undefined;
     if (entry === null) {
       next = null;
     } else if (typeof entry === 'number' && Number.isFinite(entry) && entry >= 1) {
       next = Math.max(1, Math.floor(entry));
     }
-    if (typeof next === 'undefined') continue;
-    const isDirect = key === canonicalKey;
-    if (directByKey[canonicalKey] && !isDirect) continue;
-    out[canonicalKey] = next;
-    directByKey[canonicalKey] = isDirect;
+    if (typeof next !== 'undefined') out[key] = next;
   }
   return out;
 }

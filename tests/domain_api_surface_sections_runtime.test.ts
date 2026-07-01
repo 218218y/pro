@@ -205,7 +205,7 @@ test('domain api surface sections fallback writes canonical prefixed ids without
   );
 });
 
-test('domain api surface sections direct map writes touch only the canonical groove key', () => {
+test('domain api surface sections direct map writes replace legacy groove aliases with the canonical key only', () => {
   const h = createHarness();
   h.App.maps = {
     groovesMap: { d14_full: true },
@@ -214,7 +214,6 @@ test('domain api surface sections direct map writes touch only the canonical gro
   h.groovesActions.set('groove_d14_full', true, { source: 'test:groove:direct-clear' });
 
   assert.deepEqual(h.App.maps.groovesMap, {
-    d14_full: true,
     groove_d14_full: true,
   });
   assert.deepEqual(h.mapPatchCalls, []);

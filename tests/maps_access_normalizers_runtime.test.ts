@@ -158,9 +158,6 @@ test('maps access normalizers keep generic toggle maps on canonical boolean/null
       groove_d1_full: true,
       groove_d2_full: false,
       groove_d3_full: null,
-      groove_d10_mid2: true,
-      groove_d11_mid2: true,
-      groove_d12_top: true,
       groove_d13_mid2: false,
       groove_d14_mid2: null,
     }
@@ -198,17 +195,13 @@ test('maps access normalizers keep groove line count keys unprefixed and canonic
   assert.deepEqual(
     { ...grooveLinesCountMap },
     {
-      d1_mid2: 4,
-      d2_mid2: 5,
-      d3_top: 6,
-      d4_mid2: 8,
       d5_mid2: 11,
       d6_mid2: 12,
-      d7_mid2: null,
     }
   );
   assert.equal('d1_mid2_accent_top' in grooveLinesCountMap, false);
   assert.equal('d2_mid2_groove_left' in grooveLinesCountMap, false);
   assert.equal('d3_top_trim_preview_hover' in grooveLinesCountMap, false);
   assert.equal('groove_d4_mid2' in grooveLinesCountMap, false);
+  assert.equal('d7_mid2' in grooveLinesCountMap, false);
 });

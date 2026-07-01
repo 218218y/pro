@@ -39,8 +39,9 @@ test('door-style override mode is wired through design tab, paint apply, and hov
   assert.doesNotMatch(paintDoorStyle, /toDoorStyleOverrideMapKey/);
   assert.match(hover, /resolveDoorStylePaintSelectionState\(\{/);
   assert.match(hover, /doorStylePaintState\.willRemove/);
-  assert.match(grooveSegments, /features\/door_authoring\/api\.js/);
+  assert.match(grooveSegments, /shared\/door_groove_key_contracts_shared\.js/);
   assert.match(grooveSegments, /shared\/door_visual_key_contracts_shared\.js/);
+  assert.doesNotMatch(grooveSegments, /features\/door_authoring\/api\.js/);
   assert.match(materialization, /shared\/door_visual_key_contracts_shared\.js/);
   assert.doesNotMatch(materialization, /features\/door_authoring\/api\.js/);
   assert.match(ownerMap, /features\/door_authoring\/api\.js/);

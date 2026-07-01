@@ -1,5 +1,5 @@
 import { isCanonicalRemovedDoorsMapKey } from '../../../shared/removed_doors_map_keys_shared.js';
-import { toCanonicalGrooveLinesCountMapKey } from '../../../shared/door_groove_key_contracts_shared.js';
+import { isCanonicalGrooveLinesCountMapKey } from '../../../shared/door_groove_key_contracts_shared.js';
 import {
   readGroovesMap,
   readSplitDoorsBottomMapValue,
@@ -68,11 +68,9 @@ function normalizeNullableStringMap(value: unknown): Record<string, string | nul
 function normalizeNullablePositiveIntMap(value: unknown): Record<string, number | null> {
   const rec = asMapRecord(value);
   const out: Record<string, number | null> = Object.create(null);
-  const directByKey: Record<string, boolean> = Object.create(null);
   if (!rec) return out;
   for (const key of Object.keys(rec)) {
-    const canonicalKey = toCanonicalGrooveLinesCountMapKey(key);
-    if (!canonicalKey) continue;
+    if (!isCanonicalGrooveLinesCountMapKey(key)) continue;
     const entry = rec[key];
     let next: number | null | undefined;
     if (entry === null) {
@@ -80,11 +78,7 @@ function normalizeNullablePositiveIntMap(value: unknown): Record<string, number 
     } else if (typeof entry === 'number' && Number.isFinite(entry) && entry >= 1) {
       next = Math.max(1, Math.floor(entry));
     }
-    if (typeof next === 'undefined') continue;
-    const isDirect = key === canonicalKey;
-    if (directByKey[canonicalKey] && !isDirect) continue;
-    out[canonicalKey] = next;
-    directByKey[canonicalKey] = isDirect;
+    if (typeof next !== 'undefined') out[key] = next;
   }
   return out;
 }
