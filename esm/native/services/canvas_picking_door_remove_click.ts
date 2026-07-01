@@ -16,12 +16,11 @@ import { requestDoorAuthoringBurstRefresh } from './canvas_picking_door_authorin
 import {
   __wp_reportPickingIssue,
   __wp_isRemoved,
-  __wp_canonDoorPartKeyForMaps,
   __wp_scopeCornerPartKeyForStack,
-  __wp_isSegmentedDoorBaseId,
   __wp_historyBatch,
   __wp_map,
 } from './canvas_picking_core_helpers.js';
+import { resolveRemovedDoorPartIdentity } from '../../shared/removed_doors_map_keys_shared.js';
 
 export interface CanvasDoorRemoveClickArgs {
   App: AppContainer;
@@ -105,17 +104,15 @@ export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): bo
     setRemoved(pid, !!on);
   };
 
-  const isSegmentedDoor =
-    clickedId.endsWith('_top') ||
-    clickedId.endsWith('_bot') ||
-    clickedId.endsWith('_mid') ||
-    clickedId.endsWith('_full') ||
-    __wp_isSegmentedDoorBaseId(clickedId);
+  const clickedIdentity = resolveRemovedDoorPartIdentity(clickedId);
+  const clickedKey = clickedIdentity.partId;
+  if (!clickedKey) return true;
+  const isSegmentedDoor = clickedIdentity.isDoorLike && (clickedIdentity.isSegment || clickedIdentity.isFull);
 
   if (!isSegmentedDoor) {
     __wp_historyBatch(App, structuralMeta, () => {
-      const now = hasRemoved(clickedId);
-      set(clickedId, !now);
+      const now = hasRemoved(clickedKey);
+      set(clickedKey, !now);
       return undefined;
     });
 
@@ -123,15 +120,14 @@ export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): bo
     return true;
   }
 
-  const clickedKey = __wp_canonDoorPartKeyForMaps(clickedId);
-  const base = clickedKey.replace(/_(top|bot|mid\d*|full)$/i, '');
+  const base = clickedIdentity.basePartId;
   const topId = `${base}_top`;
   const botId = `${base}_bot`;
-  const fullId = `${base}_full`;
+  const fullId = clickedIdentity.fullPartId;
 
   const familyPartIds = (() => {
     const out = new Set<string>([topId, botId]);
-    if (clickedKey && clickedKey !== fullId && clickedKey.startsWith(base + '_')) out.add(clickedKey);
+    if (clickedIdentity.isSegment && clickedKey !== fullId) out.add(clickedKey);
 
     try {
       const doorsArray = getDoorsArray(App);
@@ -143,9 +139,12 @@ export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): bo
         const userData = asRecord(g.userData) || {};
         const pidRaw = String(userData.partId || '');
         if (!pidRaw) continue;
-        const pid = __wp_canonDoorPartKeyForMaps(__wp_scopeCornerPartKeyForStack(pidRaw, foundModuleStack));
-        if (!pid || pid === fullId) continue;
-        if (pid === base || pid.startsWith(base + '_')) out.add(pid);
+        const identity = resolveRemovedDoorPartIdentity(
+          __wp_scopeCornerPartKeyForStack(pidRaw, foundModuleStack)
+        );
+        const pid = identity.partId;
+        if (!pid || pid === fullId || identity.basePartId !== base) continue;
+        if (identity.isSegment) out.add(pid);
       }
     } catch (err) {
       __wp_reportPickingIssue(App, err, {
@@ -161,9 +160,12 @@ export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): bo
       for (let i = 0; i < keys.length; i++) {
         const raw = keys[i];
         const pid0 = raw.indexOf('removed_') === 0 ? raw.slice(8) : raw;
-        const pid = __wp_canonDoorPartKeyForMaps(__wp_scopeCornerPartKeyForStack(pid0, foundModuleStack));
-        if (!pid || pid === fullId) continue;
-        if (pid === base || pid.startsWith(base + '_')) out.add(pid);
+        const identity = resolveRemovedDoorPartIdentity(
+          __wp_scopeCornerPartKeyForStack(pid0, foundModuleStack)
+        );
+        const pid = identity.partId;
+        if (!pid || pid === fullId || identity.basePartId !== base) continue;
+        if (identity.isSegment) out.add(pid);
       }
     } catch (err) {
       __wp_reportPickingIssue(App, err, {
@@ -176,7 +178,7 @@ export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): bo
     return Array.from(out);
   })();
 
-  const isPart = clickedKey !== fullId && clickedKey.startsWith(base + '_');
+  const isPart = clickedIdentity.isSegment && clickedKey !== fullId;
   const perceivedRemoved = (() => {
     if (hasRemoved(clickedKey)) return true;
     if (isPart) return hasRemoved(fullId);

@@ -1,4 +1,5 @@
 import type { RemovedDoorsMap, UnknownRecord } from '../../../types/index.js';
+import { isCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
 import { MODES } from '../runtime/api.js';
 
 import type { CornerBuildUI, CornerConfigRecord } from './corner_state_normalize_contracts.js';
@@ -12,7 +13,7 @@ export function asRemovedDoorsMap(value: unknown): RemovedDoorsMap {
   if (!isRecord(value)) return {};
   const next: RemovedDoorsMap = {};
   for (const [key, raw] of Object.entries(value)) {
-    if (isRemovedDoorToggleValue(raw)) next[key] = raw;
+    if (isCanonicalRemovedDoorsMapKey(key) && isRemovedDoorToggleValue(raw)) next[key] = raw;
   }
   return next;
 }

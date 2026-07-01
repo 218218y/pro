@@ -7,6 +7,11 @@ import {
   readDoorVisualMapValue,
   isCabinetBodyDoorTrimSurfacePartId,
 } from '../features/door_authoring/api.js';
+import {
+  isSegmentedRemovedDoorBaseId,
+  listCanonicalRemovedDoorLookupKeys,
+  toCanonicalRemovedDoorPartId,
+} from '../../shared/removed_doors_map_keys_shared.js';
 
 import type { AppContainer } from '../../../types';
 import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
@@ -14,25 +19,8 @@ import type { HitObjectLike } from './canvas_picking_engine.js';
 import { __wp_asHitObject, __wp_asRecord, __wp_map, __wp_str } from './canvas_picking_core_shared.js';
 
 function __wp_isRemoved(App: AppContainer, partId: string): boolean {
-  const raw = String(partId || '');
   const m = __wp_map(App, 'removedDoorsMap');
-  if (!raw) return false;
-
-  // Canonical segmented-door ids: store/check removed_<id> using *_full/_top/_mid/_bot keys (never base ids).
-  const id0 = raw.indexOf('removed_') === 0 ? raw.slice(8) : raw;
-  const id = __wp_canonDoorPartKeyForMaps(id0);
-  if (!id) return false;
-
-  const rk = `removed_${id}`;
-  if (!!m[rk]) return true;
-
-  // Segmented parts inherit from the full door key.
-  if (id.endsWith('_top') || id.endsWith('_mid') || id.endsWith('_bot')) {
-    const full = id.replace(/_(top|mid|bot)$/i, '_full');
-    return !!m[`removed_${full}`];
-  }
-
-  return false;
+  return listCanonicalRemovedDoorLookupKeys(partId).some(key => !!m[key]);
 }
 
 function __wp_isDoorLikePartId(partId: unknown): boolean {
@@ -76,24 +64,12 @@ function __wp_isDoorTrimActionTargetPartId(partId: unknown): boolean {
   return __wp_isDoorOrDrawerLikePartId(partId) || isCabinetBodyDoorTrimSurfacePartId(partId);
 }
 
-// Segmented doors (hinged + corner doors) persist per-door maps using *_full/_top/_bot keys.
-// Older payloads may have stored base keys (no suffix). Those are migrated at load-time.
 function __wp_isSegmentedDoorBaseId(partId: unknown): boolean {
-  const pid = typeof partId === 'string' ? partId : String(partId ?? '');
-  if (!pid) return false;
-  if (/^(?:lower_)?d\d+$/.test(pid)) return true;
-  if (/^(?:lower_)?corner_door_\d+$/.test(pid)) return true;
-  if (/^(?:lower_)?corner_pent_door_\d+$/.test(pid)) return true;
-  return false;
+  return isSegmentedRemovedDoorBaseId(typeof partId === 'string' ? partId : String(partId ?? ''));
 }
 
 function __wp_canonDoorPartKeyForMaps(partId: unknown): string {
-  const pid = typeof partId === 'string' ? partId : String(partId ?? '');
-  if (!pid) return '';
-  if (pid.endsWith('_full') || pid.endsWith('_top') || pid.endsWith('_bot') || pid.endsWith('_mid'))
-    return pid;
-  if (__wp_isSegmentedDoorBaseId(pid)) return pid + '_full';
-  return pid;
+  return toCanonicalRemovedDoorPartId(partId);
 }
 
 function __wp_scopeCornerPartKeyForStack(

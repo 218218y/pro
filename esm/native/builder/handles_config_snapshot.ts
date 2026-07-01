@@ -1,5 +1,6 @@
 import { normalizeKnownMapSnapshot, isSplitBottomEnabledInMap } from '../runtime/maps_access.js';
 import { readConfigState, type ValueRecord } from './handles_shared.js';
+import { listCanonicalRemovedDoorLookupKeys } from '../../shared/removed_doors_map_keys_shared.js';
 
 import type { ConfigStateLike } from '../../../types';
 
@@ -34,29 +35,11 @@ export function captureHandlesConfigSnapshot(cfgSnapshot: unknown): HandlesConfi
   };
 }
 
-function canonicalDoorRemovalId(partId: string): string {
-  let id = String(partId || '');
-  if (!id) return '';
-  if (
-    !/(?:_(?:full|top|bot|mid))$/i.test(id) &&
-    (/^(?:lower_)?d\d+$/.test(id) ||
-      /^(?:lower_)?corner_door_\d+$/.test(id) ||
-      /^(?:lower_)?corner_pent_door_\d+$/.test(id))
-  ) {
-    id += '_full';
-  }
-  return id;
-}
-
 export function createHandlesDoorRemovedReader(removedDoorsMap: ValueRecord): (partId: unknown) => boolean {
   return (partId: unknown): boolean => {
-    const raw = String(partId || '');
-    const id = canonicalDoorRemovalId(raw);
-    if (!id) return false;
-    if (removedDoorsMap[`removed_${id}`] === true) return true;
-    if (id.endsWith('_top') || id.endsWith('_mid') || id.endsWith('_bot')) {
-      const full = id.replace(/_(top|mid|bot)$/i, '_full');
-      return removedDoorsMap[`removed_${full}`] === true;
+    const keys = listCanonicalRemovedDoorLookupKeys(partId);
+    for (let i = 0; i < keys.length; i += 1) {
+      if (removedDoorsMap[keys[i]] === true) return true;
     }
     return false;
   };

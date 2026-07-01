@@ -130,6 +130,7 @@ test('normalizeCornerWingState seeds lower split config and scopes bottom remova
   assert.equal(state.baseType, 'legs');
   assert.equal(state.__stackScopePartKey('corner_pent_door_2'), 'lower_corner_pent_door_2');
   assert.equal(state.__isDoorRemoved('corner_pent_door_2'), true);
+  assert.equal(state.__isDoorRemoved('corner_pent_door_2_mid2_accent_top'), true);
   assert.equal(state.__isDoorRemoved('corner_pent_door_1'), false);
   assert.equal(state.config.customData?.storage, false);
 });

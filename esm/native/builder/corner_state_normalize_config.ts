@@ -8,6 +8,7 @@ import type { CornerBuildUI, CornerConfigRecord } from './corner_state_normalize
 import { asRemovedDoorsMap, ensureCornerConfigRecord } from './corner_state_normalize_shared.js';
 import { isRecord } from './corner_geometry_plan.js';
 import { requireCornerConfigSnapshot } from './corner_config_readers.js';
+import { listCanonicalRemovedDoorLookupKeys } from '../../shared/removed_doors_map_keys_shared.js';
 
 export type CornerNormalizedConfigState = {
   __cfg: ConfigStateLike;
@@ -42,32 +43,11 @@ export function createCornerNormalizedConfigState(args: {
     if (!kRaw) return false;
     const scoped = __stackScopePartKey(kRaw);
 
-    const canon = (id0: string): string => {
-      let id = String(id0 || '');
-      if (!id) return '';
-      if (!/(?:_(?:full|top|bot|mid))$/i.test(id)) {
-        if (
-          /^(?:lower_)?d\d+$/.test(id) ||
-          /^(?:lower_)?corner_door_\d+$/.test(id) ||
-          /^(?:lower_)?corner_pent_door_\d+$/.test(id)
-        ) {
-          id = id + '_full';
-        }
-      }
-      return id;
-    };
-
     const isRemoved = (id0: string): boolean => {
-      const id = canon(id0);
-      if (!id) return false;
-      const map = __removedDoorsMap;
-      if (!!map[`removed_${id}`]) return true;
-
-      if (id.endsWith('_top') || id.endsWith('_mid') || id.endsWith('_bot')) {
-        const full = id.replace(/_(top|mid|bot)$/i, '_full');
-        return !!map[`removed_${full}`];
+      const keys = listCanonicalRemovedDoorLookupKeys(id0);
+      for (let i = 0; i < keys.length; i += 1) {
+        if (__removedDoorsMap[keys[i]] === true) return true;
       }
-
       return false;
     };
 

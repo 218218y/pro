@@ -1,5 +1,6 @@
 import type { UnknownRecord } from '../../../types';
 import { stripDoorVisualSurfaceSuffix } from '../../shared/door_visual_key_contracts_shared.js';
+import { resolveRemovedDoorPartIdentity } from '../../shared/removed_doors_map_keys_shared.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import { __wp_map } from './canvas_picking_core_helpers.js';
 import {
@@ -37,9 +38,10 @@ function readDoorActionHoverFamilyPartIds(args: {
       const gUserData = __asObject<UnknownRecord>(g.userData);
       const pidRaw = String(gUserData?.partId || '');
       if (!pidRaw) continue;
-      const pid = hoverArgs.canonDoorPartKeyForMaps(__scopeCornerHoverPartKey(pidRaw, state.hitDoorStack));
-      if (!pid || pid === fullId) continue;
-      if (pid === base || pid.startsWith(base + '_')) out.add(pid);
+      const identity = resolveRemovedDoorPartIdentity(__scopeCornerHoverPartKey(pidRaw, state.hitDoorStack));
+      const pid = identity.partId;
+      if (!pid || pid === fullId || identity.basePartId !== base) continue;
+      if (identity.isSegment) out.add(pid);
     }
   } catch {
     // Hover preview should stay best-effort and never fail hard on runtime access.
@@ -51,9 +53,10 @@ function readDoorActionHoverFamilyPartIds(args: {
     for (let i = 0; i < keys.length; i++) {
       const raw = keys[i];
       const pid0 = raw.indexOf('removed_') === 0 ? raw.slice(8) : raw;
-      const pid = hoverArgs.canonDoorPartKeyForMaps(__scopeCornerHoverPartKey(pid0, state.hitDoorStack));
-      if (!pid || pid === fullId) continue;
-      if (pid === base || pid.startsWith(base + '_')) out.add(pid);
+      const identity = resolveRemovedDoorPartIdentity(__scopeCornerHoverPartKey(pid0, state.hitDoorStack));
+      const pid = identity.partId;
+      if (!pid || pid === fullId || identity.basePartId !== base) continue;
+      if (identity.isSegment) out.add(pid);
     }
   } catch {
     // ignore
@@ -69,20 +72,18 @@ export function readDoorActionHoverWillRestore(args: {
   const { hoverArgs, state } = args;
   try {
     const clickedId = String(state.scopedHitDoorPid || '');
+    const clickedIdentity = resolveRemovedDoorPartIdentity(clickedId);
+    const clickedKey = clickedIdentity.partId;
+    if (!clickedKey) return false;
     const isSegmentedDoor =
-      clickedId.endsWith('_top') ||
-      clickedId.endsWith('_bot') ||
-      clickedId.endsWith('_mid') ||
-      clickedId.endsWith('_full') ||
-      hoverArgs.isSegmentedDoorBaseId(clickedId);
+      clickedIdentity.isDoorLike && (clickedIdentity.isSegment || clickedIdentity.isFull);
 
-    if (!isSegmentedDoor) return hoverArgs.isRemoved(hoverArgs.App, clickedId);
+    if (!isSegmentedDoor) return hoverArgs.isRemoved(hoverArgs.App, clickedKey);
 
-    const clickedKey = hoverArgs.canonDoorPartKeyForMaps(clickedId);
-    const base = clickedKey.replace(/_(top|bot|mid\d*|full)$/i, '');
-    const fullId = `${base}_full`;
+    const base = clickedIdentity.basePartId;
+    const fullId = clickedIdentity.fullPartId;
     const familyPartIds = readDoorActionHoverFamilyPartIds({ hoverArgs, state, clickedKey, fullId, base });
-    const isPart = clickedKey !== fullId && clickedKey.startsWith(base + '_');
+    const isPart = clickedIdentity.isSegment && clickedKey !== fullId;
 
     if (hoverArgs.isRemoved(hoverArgs.App, clickedKey)) return true;
     if (isPart) return hoverArgs.isRemoved(hoverArgs.App, fullId);

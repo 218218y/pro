@@ -5,6 +5,7 @@ import {
   handleCanvasDoorGrooveClick,
   handleCanvasDoorHingeClick,
 } from '../esm/native/services/canvas_picking_door_hinge_groove_click.ts';
+import { readDoorActionHoverWillRestore } from '../esm/native/services/canvas_picking_door_action_hover_remove.ts';
 import { handleCanvasDoorRemoveClick } from '../esm/native/services/canvas_picking_door_remove_click.ts';
 import {
   isSketchBoxDoorSegmentPartId,
@@ -471,6 +472,66 @@ test('free sketch-box segmented door remove click toggles only the clicked drawe
   assert.deepEqual(state.config.removedDoorsMap, {
     removed_sketch_box_free_0_sbf_alpha_door_sbdr_1_bot: true,
   });
+});
+
+test('door remove hover and click share canonical keys for decorated mid segments', () => {
+  const { App, state } = createApp();
+  state.config.removedDoorsMap = { removed_d1_full: true };
+  App.actions.doors = {
+    setRemoved(partId: string, on: boolean) {
+      const key = `removed_${partId}`;
+      if (on) state.config.removedDoorsMap[key] = true;
+      else delete state.config.removedDoorsMap[key];
+    },
+  };
+  const hoverArgs = {
+    App,
+    isRemoved(_App: unknown, partId: string) {
+      return state.config.removedDoorsMap[`removed_${partId}`] === true;
+    },
+  };
+  const hoverState = {
+    scopedHitDoorPid: 'd1_mid2_accent_top',
+    hitDoorStack: 'top',
+  };
+
+  assert.equal(readDoorActionHoverWillRestore({ hoverArgs, state: hoverState } as any), true);
+  assert.equal(
+    handleCanvasDoorRemoveClick({
+      App,
+      effectiveDoorId: 'd1_mid2_accent_top',
+      foundPartId: null,
+      foundModuleStack: 'top',
+    }),
+    true
+  );
+  assert.deepEqual(state.config.removedDoorsMap, {});
+  assert.equal(readDoorActionHoverWillRestore({ hoverArgs, state: hoverState } as any), false);
+
+  assert.equal(
+    handleCanvasDoorRemoveClick({
+      App,
+      effectiveDoorId: 'd1_mid2_accent_top',
+      foundPartId: null,
+      foundModuleStack: 'top',
+    }),
+    true
+  );
+  assert.deepEqual(state.config.removedDoorsMap, { removed_d1_mid2: true });
+  assert.equal(state.config.removedDoorsMap.removed_d1_mid2_accent_top, undefined);
+  assert.equal(readDoorActionHoverWillRestore({ hoverArgs, state: hoverState } as any), true);
+
+  assert.equal(
+    handleCanvasDoorRemoveClick({
+      App,
+      effectiveDoorId: 'd1_mid2_accent_top',
+      foundPartId: null,
+      foundModuleStack: 'top',
+    }),
+    true
+  );
+  assert.deepEqual(state.config.removedDoorsMap, {});
+  assert.equal(readDoorActionHoverWillRestore({ hoverArgs, state: hoverState } as any), false);
 });
 
 test('sketch-box door target parser normalizes segmented door suffixes before patching door config', () => {

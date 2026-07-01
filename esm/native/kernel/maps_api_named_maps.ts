@@ -4,6 +4,7 @@ import { patchConfigMap } from '../runtime/cfg_access.js';
 import { splitBottomKey, splitKey } from '../runtime/maps_access.js';
 import type { MapsApiShared } from './maps_api_shared.js';
 import { createRecord, asObject } from './maps_api_shared.js';
+import { toCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
 
 function readMapKey(value: unknown): string {
   return String(value || '').trim();
@@ -141,18 +142,8 @@ export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared
 
   maps.setRemoved = function setRemoved(partId: string, isRemoved: boolean, meta?: ActionMetaLike) {
     const metaFixed = metaNorm(meta, 'maps:setRemoved');
-    let pid = String(partId || '');
-    if (!pid) return undefined;
-    if (!/(?:_(?:full|top|bot|mid))$/i.test(pid)) {
-      if (
-        /^(?:lower_)?d\d+$/.test(pid) ||
-        /^(?:lower_)?corner_door_\d+$/.test(pid) ||
-        /^(?:lower_)?corner_pent_door_\d+$/.test(pid)
-      ) {
-        pid = pid + '_full';
-      }
-    }
-    const k = pid.indexOf('removed_') === 0 ? pid : 'removed_' + pid;
+    const k = toCanonicalRemovedDoorsMapKey(partId);
+    if (!k) return undefined;
     return maps.setKey?.('removedDoorsMap', k, isRemoved ? true : null, metaFixed);
   };
 

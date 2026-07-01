@@ -284,7 +284,7 @@ test('handles purge reads removed-door state from the provided cfg snapshot', ()
   const { App } = createApp();
   const wardrobeGroup = new FakeGroup3D();
   const door = new FakeGroup3D();
-  door.userData.partId = 'd4_full';
+  door.userData.partId = 'd4_mid2_accent_top';
   const handle = new FakeGroup3D();
   handle.name = 'handle_group_v7';
   door.add(handle);

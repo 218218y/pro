@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { installMapsApi } from '../esm/native/kernel/maps_api.ts';
 import { installStateApi } from '../esm/native/kernel/state_api.ts';
 import { createLibraryTopModuleConfig } from '../esm/native/features/library_preset/library_preset.ts';
 
@@ -268,6 +269,40 @@ test('[state-api.config] applyProjectSnapshot marks snapshot-owned visual/config
   assert.deepEqual(committedPatch.colorSwatchesOrder, []);
   assert.deepEqual(committedPatch.savedNotes, []);
   assert.equal(committedPatch.preChestState, null);
+});
+
+test('[state-api.maps] setRemoved writes canonical removed-door keys and preserves removable side keys', () => {
+  const store = createStoreStub({
+    ui: {},
+    config: { removedDoorsMap: {} },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+  const App: AnyRecord = { actions: {}, maps: {}, store };
+  installStateApi(App as any);
+  installMapsApi(App as any);
+
+  const readRemoved = () => asRec(asRec(store.getState().config).removedDoorsMap);
+
+  (App.maps as any).setRemoved('d1', true, { source: 'test:maps:setRemoved:base' });
+  assert.equal(readRemoved().removed_d1_full, true);
+  assert.equal('removed_d1' in readRemoved(), false);
+
+  (App.maps as any).setRemoved('d1_mid2', true, { source: 'test:maps:setRemoved:segment' });
+  assert.equal(readRemoved().removed_d1_mid2, true);
+
+  (App.maps as any).setRemoved('d1_mid2', false, { source: 'test:maps:setRemoved:segment' });
+  assert.equal('removed_d1_mid2' in readRemoved(), false);
+
+  (App.maps as any).setRemoved('body_left', true, { source: 'test:maps:setRemoved:side' });
+  (App.maps as any).setRemoved('lower_body_right', true, { source: 'test:maps:setRemoved:side' });
+  (App.maps as any).setRemoved('sketch_box_free_0_alpha_side_left', true, {
+    source: 'test:maps:setRemoved:side',
+  });
+  assert.equal(readRemoved().removed_body_left, true);
+  assert.equal(readRemoved().removed_lower_body_right, true);
+  assert.equal(readRemoved().removed_sketch_box_free_0_alpha_side_left, true);
 });
 
 test('[state-api.config] applyModulesGeometrySnapshot keeps modules structure-aware on store-backed paths', () => {
