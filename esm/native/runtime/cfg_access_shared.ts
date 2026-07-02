@@ -186,6 +186,14 @@ export function getConfigNamespace(App: unknown): ConfigActionsNamespaceLike | n
   return config && typeof config === 'object' ? config : null;
 }
 
+export type InternalConfigMapOwnerNamespace = ConfigActionsNamespaceLike & {
+  setMap?: (mapName: string, nextMap: UnknownRecord, meta?: ActionMetaLike) => unknown;
+};
+
+export function getInternalConfigMapOwnerNamespace(App: unknown): InternalConfigMapOwnerNamespace | null {
+  return getConfigNamespace(App) as InternalConfigMapOwnerNamespace | null;
+}
+
 export function getHistoryNamespace(App: unknown): HistoryActionsNamespaceLike | null {
   const history = getActions(App)?.history;
   return history && typeof history === 'object' ? history : null;

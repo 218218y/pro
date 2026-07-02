@@ -131,11 +131,6 @@ export type ConfigScalarUpdater<K extends ConfigScalarKey = ConfigScalarKey> = (
   prev: ConfigScalarValueMap[K] | undefined,
   cfg?: ConfigSnapshotLike
 ) => ConfigScalarValueMap[K];
-export type ConfigMapUpdater<K extends KnownMapName = KnownMapName> = (
-  nextDraft: MapsByName[K],
-  curVal: MapsByName[K]
-) => unknown;
-
 export interface ModulesGeometrySnapshotLike extends UnknownRecord {
   modulesConfiguration: ModulesConfigurationLike;
   isManualWidth?: boolean;
@@ -159,22 +154,6 @@ export interface ConfigActionsNamespaceLike extends UnknownRecord {
       meta?: ActionMetaLike
     ): unknown;
     (key: string, valueOrFn: unknown, meta?: ActionMetaLike): unknown;
-  };
-  setMap?: {
-    <K extends KnownMapName>(mapName: K, nextMap: MapsByName[K], meta?: ActionMetaLike): unknown;
-    (mapName: string, nextMap: UnknownRecord, meta?: ActionMetaLike): unknown;
-  };
-  patchMap?: {
-    <K extends KnownMapName>(
-      mapName: K,
-      patchOrFn: Partial<MapsByName[K]> | ConfigMapUpdater<K>,
-      meta?: ActionMetaLike
-    ): unknown;
-    (
-      mapName: string,
-      patchOrFn: UnknownRecord | ((nextDraft: UnknownRecord, curVal: UnknownRecord) => unknown),
-      meta?: ActionMetaLike
-    ): unknown;
   };
   setCustomUploadedDataURL?: (dataUrl: string | null, meta?: ActionMetaLike) => unknown;
   setModulesConfiguration?: (next: ModulesConfigurationLike, meta?: ActionMetaLike) => unknown;

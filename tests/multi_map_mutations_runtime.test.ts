@@ -34,7 +34,7 @@ test('sequential multi-part paint preserves existing individual door overrides',
 
   App.actions.colors.applyPaint({ d1_full: 'oak' }, {}, { source: 'test:paint:first' }, {}, {});
   let cfg = getCfg(App) as Record<string, any>;
-  assert.deepEqual(cfg.individualColors, { d1_full: 'oak' });
+  assert.deepEqual({ ...cfg.individualColors }, { d1_full: 'oak' });
 
   App.actions.colors.applyPaint(
     { ...cfg.individualColors, d2_full: 'white' },
@@ -45,10 +45,13 @@ test('sequential multi-part paint preserves existing individual door overrides',
   );
 
   cfg = getCfg(App) as Record<string, any>;
-  assert.deepEqual(cfg.individualColors, {
-    d1_full: 'oak',
-    d2_full: 'white',
-  });
+  assert.deepEqual(
+    { ...cfg.individualColors },
+    {
+      d1_full: 'oak',
+      d2_full: 'white',
+    }
+  );
 });
 
 test('sequential remove and split commands preserve existing entries across multiple doors', () => {
@@ -60,14 +63,20 @@ test('sequential remove and split commands preserve existing entries across mult
   App.actions.doors.setSplit('d2', true, { source: 'test:split:second' });
 
   const cfg = getCfg(App) as Record<string, any>;
-  assert.deepEqual(cfg.removedDoorsMap, {
-    removed_d1_full: true,
-    removed_d2_full: true,
-  });
-  assert.deepEqual(cfg.splitDoorsMap, {
-    split_d1: true,
-    split_d2: true,
-  });
+  assert.deepEqual(
+    { ...cfg.removedDoorsMap },
+    {
+      removed_d1_full: true,
+      removed_d2_full: true,
+    }
+  );
+  assert.deepEqual(
+    { ...cfg.splitDoorsMap },
+    {
+      split_d1: true,
+      split_d2: true,
+    }
+  );
 });
 
 test('sequential special-door and style overrides preserve prior per-door entries', () => {
@@ -92,28 +101,27 @@ test('sequential special-door and style overrides preserve prior per-door entrie
     { ...cfg.doorStyleMap, d2_full: 'double_profile' }
   );
   cfg = getCfg(App) as Record<string, any>;
-  assert.deepEqual(cfg.doorSpecialMap, {
-    d1_full: 'mirror',
-    d2_full: 'glass',
-  });
-  assert.deepEqual(cfg.mirrorLayoutMap, {
-    d1_full: [{ widthCm: 40, heightCm: 60, faceSign: -1 }],
-  });
-  assert.deepEqual(cfg.doorStyleMap, {
-    d1_full: 'profile',
-    d2_full: 'double_profile',
-  });
-
-  App.actions.config.setMap('doorStyleMap', { d1_full: 'profile' }, { source: 'test:style:first' });
-  cfg = getCfg(App) as Record<string, any>;
-  App.actions.config.setMap(
-    'doorStyleMap',
-    { ...cfg.doorStyleMap, d2_full: 'double_profile' },
-    { source: 'test:style:second' }
+  assert.deepEqual(
+    { ...cfg.doorSpecialMap },
+    {
+      d1_full: 'mirror',
+      d2_full: 'glass',
+    }
   );
-  cfg = getCfg(App) as Record<string, any>;
-  assert.deepEqual(cfg.doorStyleMap, {
-    d1_full: 'profile',
-    d2_full: 'double_profile',
-  });
+  assert.deepEqual(
+    { ...cfg.mirrorLayoutMap },
+    {
+      d1_full: [{ widthCm: 40, heightCm: 60, faceSign: -1 }],
+    }
+  );
+  assert.deepEqual(
+    { ...cfg.doorStyleMap },
+    {
+      d1_full: 'profile',
+      d2_full: 'double_profile',
+    }
+  );
+
+  assert.equal(App.actions.config.setMap, undefined);
+  assert.equal(App.actions.config.patchMap, undefined);
 });

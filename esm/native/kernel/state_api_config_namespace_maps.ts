@@ -1,44 +1,62 @@
 import type {
   ActionMetaLike,
-  ActionsNamespaceLike,
   ConfigActionsNamespaceLike,
+  KnownMapName,
+  MapsByName,
   UnknownRecord,
 } from '../../../types';
 
 import { cfgPatchWithReplaceKeys } from '../runtime/cfg_access.js';
-import { asRecord, isRecord } from '../runtime/record.js';
+import { normalizeKnownMapSnapshot } from '../runtime/maps_access_normalizers.js';
+import { asRecord } from '../runtime/record.js';
 import {
   commitConfigWrite,
-  readConfigMapUpdater,
   reuseEquivalentValue,
   toConfigPatch,
 } from './state_api_config_namespace_shared.js';
 
 interface StateApiConfigNamespaceMapsContext {
-  actions: ActionsNamespaceLike;
   configNs: ConfigActionsNamespaceLike;
   normMeta(meta: unknown, source: string): ActionMetaLike;
   safeCall(fn: () => unknown): unknown;
-  shallowCloneObj(v: unknown): UnknownRecord;
   commitConfigPatch(patch: Record<string, unknown>, meta: ActionMetaLike): unknown;
 }
 
 export function installStateApiConfigNamespaceMaps(ctx: StateApiConfigNamespaceMapsContext): void {
-  const { actions, configNs, normMeta, safeCall, shallowCloneObj, commitConfigPatch } = ctx;
+  const { configNs, normMeta, safeCall, commitConfigPatch } = ctx;
+
+  delete configNs['setMap'];
+  delete configNs['patchMap'];
+
+  const readNormalizedConfigMap = <K extends KnownMapName>(mapName: K): MapsByName[K] => {
+    const snap = asRecord(safeCall(() => configNs.captureSnapshot?.())) || {};
+    return normalizeKnownMapSnapshot(mapName, snap[mapName]);
+  };
+
+  const commitKnownMapSnapshot = <K extends KnownMapName>(
+    mapName: K,
+    nextMap: unknown,
+    meta: ActionMetaLike
+  ): MapsByName[K] => {
+    const cur = readNormalizedConfigMap(mapName);
+    const nextRec = reuseEquivalentValue(cur, normalizeKnownMapSnapshot(mapName, nextMap)) as MapsByName[K];
+    if (Object.is(cur, nextRec)) return cur;
+    const patch = toConfigPatch(cfgPatchWithReplaceKeys({ [mapName]: nextRec }, { [mapName]: true }));
+    void commitConfigWrite(commitConfigPatch, patch, meta);
+    return nextRec;
+  };
 
   if (typeof configNs.setHingeMap !== 'function') {
     configNs.setHingeMap = function setHingeMap(next: unknown, meta?: ActionMetaLike) {
       const m = normMeta(meta, 'actions.config:setHingeMap');
-      const v = isRecord(next) ? shallowCloneObj(next) : {};
-      return configNs.setMap?.('hingeMap', v, m);
+      return commitKnownMapSnapshot('hingeMap', next, m);
     };
   }
 
   if (typeof configNs.setHandlesMap !== 'function') {
     configNs.setHandlesMap = function setHandlesMap(next: unknown, meta?: ActionMetaLike) {
       const m = normMeta(meta, 'actions.config:setHandlesMap');
-      const v = isRecord(next) ? shallowCloneObj(next) : {};
-      return configNs.setMap?.('handlesMap', v, m);
+      return commitKnownMapSnapshot('handlesMap', next, m);
     };
   }
 
@@ -60,30 +78,27 @@ export function installStateApiConfigNamespaceMaps(ctx: StateApiConfigNamespaceM
 
       const nextColors = reuseEquivalentValue(
         prevColors,
-        isRecord(individualColors) ? shallowCloneObj(individualColors) : {}
+        normalizeKnownMapSnapshot('individualColors', individualColors)
       );
       const nextCurtains = reuseEquivalentValue(
         prevCurtains,
-        isRecord(curtainMap) ? shallowCloneObj(curtainMap) : {}
+        normalizeKnownMapSnapshot('curtainMap', curtainMap)
       );
       const nextSpecial =
         doorSpecialMap === undefined
           ? null
-          : reuseEquivalentValue(
-              prevSpecial,
-              isRecord(doorSpecialMap) ? shallowCloneObj(doorSpecialMap) : {}
-            );
+          : reuseEquivalentValue(prevSpecial, normalizeKnownMapSnapshot('doorSpecialMap', doorSpecialMap));
       const nextMirrorLayout =
         mirrorLayoutMap === undefined
           ? null
           : reuseEquivalentValue(
               prevMirrorLayout,
-              isRecord(mirrorLayoutMap) ? shallowCloneObj(mirrorLayoutMap) : {}
+              normalizeKnownMapSnapshot('mirrorLayoutMap', mirrorLayoutMap)
             );
       const nextDoorStyle =
         doorStyleMap === undefined
           ? null
-          : reuseEquivalentValue(prevDoorStyle, isRecord(doorStyleMap) ? shallowCloneObj(doorStyleMap) : {});
+          : reuseEquivalentValue(prevDoorStyle, normalizeKnownMapSnapshot('doorStyleMap', doorStyleMap));
 
       const basePatch: UnknownRecord = {};
       const replaceKeys: string[] = [];
@@ -113,56 +128,4 @@ export function installStateApiConfigNamespaceMaps(ctx: StateApiConfigNamespaceM
       return commitConfigWrite(commitConfigPatch, patch, m);
     };
   }
-
-  if (typeof configNs.setMap !== 'function') {
-    configNs.setMap = function setMap(mapName: unknown, nextMap: unknown, meta?: ActionMetaLike) {
-      const key = String(mapName || '');
-      if (!key) return {};
-      const cur = asRecord(safeCall(() => configNs.map?.(key))) || {};
-      const nextRec = reuseEquivalentValue(cur, isRecord(nextMap) ? shallowCloneObj(nextMap) : {});
-      if (Object.is(cur, nextRec)) return cur;
-      const m = normMeta(meta, 'actions.config:setMap');
-      const patch = toConfigPatch(cfgPatchWithReplaceKeys({ [key]: nextRec }, { [key]: true }));
-      void commitConfigWrite(commitConfigPatch, patch, m);
-      return nextRec;
-    };
-  }
-
-  if (typeof configNs.patchMap !== 'function') {
-    configNs.patchMap = function patchMap(mapName: unknown, patchOrFn: unknown, meta?: ActionMetaLike) {
-      const key = String(mapName || '');
-      if (!key) return {};
-      const cur = asRecord(safeCall(() => configNs.map?.(key))) || {};
-      const next: UnknownRecord = { ...cur };
-      let patchVal = patchOrFn;
-      if (typeof patchOrFn === 'function') {
-        try {
-          const updateMap = readConfigMapUpdater(patchOrFn);
-          patchVal = updateMap ? updateMap(next, cur) : undefined;
-        } catch (_e) {
-          patchVal = undefined;
-        }
-      }
-      if (isRecord(patchVal)) {
-        for (const k of Object.keys(patchVal)) {
-          const v = patchVal[k];
-          if (v === undefined || v === null) {
-            try {
-              delete next[k];
-            } catch (_e) {}
-          } else {
-            next[k] = v;
-          }
-        }
-      }
-      const nextRec = reuseEquivalentValue(cur, next);
-      if (Object.is(cur, nextRec)) return cur;
-      const m = normMeta(meta, 'actions.config:patchMap');
-      const patch = toConfigPatch(cfgPatchWithReplaceKeys({ [key]: nextRec }, { [key]: true }));
-      void commitConfigWrite(commitConfigPatch, patch, m);
-      return nextRec;
-    };
-  }
-
-  void actions;
 }

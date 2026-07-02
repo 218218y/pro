@@ -15,25 +15,22 @@ function assertIncludesInOrder(src, parts) {
   }
 }
 
-test('config map actions reuse shallow-equivalent maps before committing', () => {
+test('config map owner actions reuse normalized equivalent maps before committing', () => {
   const src = [
     read('esm/native/kernel/state_api_config_namespace.ts'),
     read('esm/native/kernel/state_api_config_namespace_maps.ts'),
     read('esm/native/kernel/state_api_config_namespace_shared.ts'),
   ].join('\n');
   assert.match(src, /function reuseEquivalentValue\(prev: unknown, next: unknown\): unknown/);
+  assert.match(src, /delete configNs\['setMap'\]/);
+  assert.match(src, /delete configNs\['patchMap'\]/);
+  assert.doesNotMatch(src, /configNs\.setMap = function setMap/);
+  assert.doesNotMatch(src, /configNs\.patchMap = function patchMap/);
   assertIncludesInOrder(src, [
-    'configNs.setMap = function setMap',
-    'const cur = asRecord(safeCall(() => configNs.map?.(key))) || {};',
-    'reuseEquivalentValue(cur, isRecord(nextMap) ? shallowCloneObj(nextMap) : {})',
+    'const commitKnownMapSnapshot = <K extends KnownMapName>',
+    'const cur = readNormalizedConfigMap(mapName);',
+    'reuseEquivalentValue(cur, normalizeKnownMapSnapshot(mapName, nextMap))',
     'if (Object.is(cur, nextRec)) return cur;',
-    "const m = normMeta(meta, 'actions.config:setMap');",
-  ]);
-  assertIncludesInOrder(src, [
-    'configNs.patchMap = function patchMap',
-    'const cur = asRecord(safeCall(() => configNs.map?.(key))) || {};',
-    'const nextRec = reuseEquivalentValue(cur, next);',
-    'if (Object.is(cur, nextRec)) return cur;',
-    "const m = normMeta(meta, 'actions.config:patchMap');",
+    'cfgPatchWithReplaceKeys({ [mapName]: nextRec }, { [mapName]: true })',
   ]);
 });

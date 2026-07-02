@@ -69,6 +69,10 @@ const ALLOW__REPLACE = new Set([
   'esm/native/kernel/state_api.ts',
   'esm/native/runtime/cfg_access.ts',
   'esm/native/runtime/cfg_access.js',
+  'esm/native/runtime/cfg_access_core.ts',
+  'esm/native/runtime/cfg_access_scalars.ts',
+  'esm/native/kernel/state_api_config_namespace_maps.ts',
+  'esm/native/kernel/state_api_shared.ts',
 ]);
 
 const ALLOW_STATEKERNEL_STACK_METHODS = new Set();
@@ -113,7 +117,7 @@ function scanFile(fileAbs) {
       file: rp,
       kind: 'no-scattered-__replace',
       line: lineNumberOf(text, idxReplace),
-      msg: 'Use cfg_access helpers (setMap/patchMap or applyConfigPatchReplaceKeys) instead of hand-rolling __replace.',
+      msg: 'Use cfg_access owner helpers or applyConfigPatchReplaceKeys instead of hand-rolling __replace.',
     });
   }
 

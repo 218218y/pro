@@ -31,28 +31,6 @@ test('cfg access runtime pack: canonical config/history namespaces own map write
           Object.assign(state.config, patch);
           return patch;
         },
-        setMap(name: string, next: AnyRecord, meta?: AnyRecord) {
-          calls.push(['setMap', name, { ...next }, meta || null]);
-          state.config[name] = { ...next };
-          return state.config[name];
-        },
-        patchMap(
-          name: string,
-          patchOrFn: AnyRecord | ((draft: AnyRecord, cur: AnyRecord) => unknown),
-          meta?: AnyRecord
-        ) {
-          const cur = { ...(state.config[name] || {}) };
-          const draft = { ...cur };
-          const patch = typeof patchOrFn === 'function' ? patchOrFn(draft, cur) : patchOrFn;
-          for (const key of Object.keys(patch || {})) {
-            const value = (patch as AnyRecord)[key];
-            if (value === undefined || value === null) delete draft[key];
-            else draft[key] = value;
-          }
-          state.config[name] = draft;
-          calls.push(['patchMap', name, { ...draft }, meta || null]);
-          return draft;
-        },
       },
       history: {
         batch(fn: () => unknown, meta?: AnyRecord) {
@@ -119,8 +97,16 @@ test('cfg access runtime pack: canonical config/history namespaces own map write
   assert.equal(batchOut, 42);
 
   assert.deepEqual(calls, [
-    ['setMap', 'handlesMap', { a: 'bar', b: 'knob' }, { source: 'set:map' }],
-    ['patchMap', 'handlesMap', { a: 'bar', b: 'knob', c: 'pull' }, { source: 'patch:map' }],
+    [
+      'patch',
+      { handlesMap: { a: 'bar', b: 'knob' }, __replace: { handlesMap: true } },
+      { source: 'set:map' },
+    ],
+    [
+      'patch',
+      { handlesMap: { a: 'bar', b: 'knob', c: 'pull' }, __replace: { handlesMap: true } },
+      { source: 'patch:map' },
+    ],
     ['patch', { height: 240 }, { source: 'apply:patch' }],
     ['batch', { source: 'cfg:batch' }],
     ['insideBatch'],

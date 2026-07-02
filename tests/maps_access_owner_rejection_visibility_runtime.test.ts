@@ -1,7 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { readMap, readSavedColors, writeHandle, writeSplit } from '../esm/native/runtime/maps_access.ts';
+import {
+  readMap,
+  readSavedColors,
+  writeHandle,
+  writeHinge,
+  writeSplit,
+} from '../esm/native/runtime/maps_access.ts';
 
 type Report = { error: unknown; ctx: any };
 
@@ -122,6 +128,38 @@ test('maps access reports canonical split owner rejection and repairs through th
   assert.equal(reports[0].ctx.where, 'native/runtime/maps_access');
   assert.equal(reports[0].ctx.op, 'maps_access.writeSplit.ownerRejected');
   assert.equal(reports[0].ctx.fatal, false);
+});
+
+test('simple map owner suppresses object-equivalent entry writes', () => {
+  const calls: Array<{ mapName: string; nextMap: Record<string, unknown> }> = [];
+  const state = {
+    ui: {},
+    runtime: {},
+    mode: {},
+    meta: {},
+    config: {
+      hingeMap: { d1: { dir: 'left', nested: { side: 'left' } } },
+    } as Record<string, unknown>,
+  };
+  const { App } = createReportingApp({});
+  App.actions = {
+    config: {
+      setMap(mapName: string, nextMap: Record<string, unknown>) {
+        calls.push({ mapName, nextMap: { ...nextMap } });
+        state.config[mapName] = { ...nextMap };
+        return state.config[mapName];
+      },
+    },
+  };
+  App.store = {
+    getState: () => state,
+    patch: () => undefined,
+  };
+
+  assert.equal(writeHinge(App, 'd1', { dir: 'left', nested: { side: 'left' } }), true);
+
+  assert.deepEqual(calls, []);
+  assert.deepEqual(state.config.hingeMap, { d1: { dir: 'left', nested: { side: 'left' } } });
 });
 
 test('maps access reports saved-colors owner rejection instead of silently returning unavailable', () => {

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installStateApi } from '../esm/native/kernel/state_api.ts';
+import { patchConfigMap } from '../esm/native/runtime/cfg_access_maps.ts';
 
 type AnyRecord = Record<string, unknown>;
 
@@ -174,7 +175,7 @@ test('[state-api] config replace-key filtering preserves unchanged entries insid
   const { calls, store, state } = createStore({
     ui: {},
     config: {
-      removedDoorsMap: { removed_d1_full: true },
+      handlesMap: { d1_full: 'bar' },
     },
     runtime: {},
     mode: { primary: 'none', opts: {} },
@@ -184,21 +185,17 @@ test('[state-api] config replace-key filtering preserves unchanged entries insid
 
   installStateApi(App as any);
 
-  (App.actions as any).config.patchMap(
-    'removedDoorsMap',
-    { removed_d2_full: true },
-    { source: 'test:replace-map-merge' }
-  );
+  patchConfigMap(App, 'handlesMap', { d2_full: 'knob' }, { source: 'test:replace-map-merge' });
 
   assert.equal(calls.length, 1);
   assert.equal(calls[0].op, 'store.setConfig');
-  assert.deepEqual((calls[0].patch as AnyRecord).removedDoorsMap, {
-    removed_d1_full: true,
-    removed_d2_full: true,
+  assert.deepEqual((calls[0].patch as AnyRecord).handlesMap, {
+    d1_full: 'bar',
+    d2_full: 'knob',
   });
-  assert.deepEqual((state.config as AnyRecord).removedDoorsMap, {
-    removed_d1_full: true,
-    removed_d2_full: true,
+  assert.deepEqual((state.config as AnyRecord).handlesMap, {
+    d1_full: 'bar',
+    d2_full: 'knob',
   });
 });
 

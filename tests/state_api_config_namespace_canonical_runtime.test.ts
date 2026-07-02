@@ -441,19 +441,38 @@ test('[state-api.config] applyPaintSnapshot commits door style with special glas
   installStateApi(App as any);
 
   (App.actions as any).config.applyPaintSnapshot(
-    {},
-    {},
+    { d1_full: 'oak' },
+    { d1_full: 'linen' },
     { source: 'test:paint-style-snapshot' },
-    { drawer_1: 'glass' },
-    {},
-    { drawer_1: 'double_profile' }
+    { drawer_1: 'glass', bad: 9 },
+    {
+      d1: [{ widthCm: 99, heightCm: 99 }],
+      d1_full: [{ widthCm: '55', heightCm: 88, faceSign: -1 }, { widthCm: 0 }],
+    },
+    { d1: 'profile', drawer_1: 'double_profile', bad: 'glass' }
   );
 
   const committedPatch = asRec(store.commits[0]?.patch);
   const replace = asRec(committedPatch.__replace);
-  assert.deepEqual(asRec(committedPatch.doorSpecialMap), { drawer_1: 'glass' });
-  assert.deepEqual(asRec(committedPatch.doorStyleMap), { drawer_1: 'double_profile' });
+  assert.deepEqual({ ...asRec(committedPatch.individualColors) }, { d1_full: 'oak' });
+  assert.deepEqual({ ...asRec(committedPatch.curtainMap) }, { d1_full: 'linen' });
+  assert.deepEqual({ ...asRec(committedPatch.doorSpecialMap) }, { drawer_1: 'glass' });
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(asRec(committedPatch.mirrorLayoutMap)).map(([key, list]) => [
+        key,
+        (Array.isArray(list) ? list : []).map(entry => ({ ...asRec(entry) })),
+      ])
+    ),
+    {
+      d1_full: [{ widthCm: 55, heightCm: 88, faceSign: -1 }],
+    }
+  );
+  assert.deepEqual({ ...asRec(committedPatch.doorStyleMap) }, { drawer_1: 'double_profile' });
+  assert.equal(replace.individualColors, true);
+  assert.equal(replace.curtainMap, true);
   assert.equal(replace.doorSpecialMap, true);
+  assert.equal(replace.mirrorLayoutMap, true);
   assert.equal(replace.doorStyleMap, true);
 });
 

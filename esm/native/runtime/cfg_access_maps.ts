@@ -1,7 +1,7 @@
 import type { ActionMetaLike, KnownMapName, MapsByName, UnknownRecord } from '../../../types';
 import {
   cfgMapRecord,
-  getConfigNamespace,
+  getInternalConfigMapOwnerNamespace,
   readCurtainMapSnapshot,
   readDoorSpecialMapSnapshot,
   readHandlesMapSnapshot,
@@ -53,7 +53,7 @@ function cfgSetMapFromOwner(
   const next = readMapRecord(nextMap);
   if (!name) return next;
 
-  const cfgNs = getConfigNamespace(App);
+  const cfgNs = getInternalConfigMapOwnerNamespace(App);
   if (typeof cfgNs?.setMap === 'function') {
     cfgNs.setMap(name, next, meta);
     return next;
@@ -102,12 +102,6 @@ export const patchConfigMap: PatchConfigMap = (
   const normalizedPatchOrFn = readPatchMapInput(patchOrFn);
   if (!normalizedPatchOrFn) return cfgMapRecord(App, name);
 
-  const cfgNs = getConfigNamespace(App);
-  if (typeof cfgNs?.patchMap === 'function') {
-    const out = cfgNs.patchMap(name, normalizedPatchOrFn, meta);
-    return readMapRecord(out);
-  }
-
   const cur = cfgMapRecord(App, name);
   const next: UnknownRecord = { ...cur };
   const patchValue =
@@ -128,7 +122,7 @@ export const patchConfigMap: PatchConfigMap = (
 };
 
 export function setCfgHingeMap(App: unknown, next: unknown, meta?: ActionMetaLike): MapsByName['hingeMap'] {
-  const cfgNs = getConfigNamespace(App);
+  const cfgNs = getInternalConfigMapOwnerNamespace(App);
   const nextMap = readHingeMapSnapshot(next);
   if (typeof cfgNs?.setHingeMap === 'function') {
     const out = cfgNs.setHingeMap(nextMap, meta);

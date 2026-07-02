@@ -1,6 +1,6 @@
 import type { ActionMetaLike, UnknownRecord } from '../../../types';
 
-import { cfgMapRecord, getConfigNamespace, readMapRecord } from './cfg_access_shared.js';
+import { cfgMapRecord, getInternalConfigMapOwnerNamespace, readMapRecord } from './cfg_access_shared.js';
 import { applyConfigPatchReplaceKeys } from './cfg_access_scalars.js';
 
 export const SIMPLE_WRITABLE_MAP_NAMES = [
@@ -28,7 +28,7 @@ function setCfgSimpleWritableMapFromOwner(
   meta?: ActionMetaLike
 ): UnknownRecord {
   const next = readMapRecord(nextMap);
-  const cfgNs = getConfigNamespace(App);
+  const cfgNs = getInternalConfigMapOwnerNamespace(App);
   if (typeof cfgNs?.setMap === 'function') {
     cfgNs.setMap(mapName, next, meta);
     return next;
@@ -43,6 +43,35 @@ function readSimpleWritableMapFromOwner(
   mapName: SimpleWritableMapName
 ): Record<string, unknown> {
   return { ...cfgMapRecord(App, mapName) };
+}
+
+function areSimpleWritableValuesEquivalent(left: unknown, right: unknown, depth = 3): boolean {
+  if (Object.is(left, right)) return true;
+  if (depth <= 0) return false;
+
+  if (Array.isArray(left) || Array.isArray(right)) {
+    if (!Array.isArray(left) || !Array.isArray(right)) return false;
+    if (left.length !== right.length) return false;
+    for (let i = 0; i < left.length; i += 1) {
+      if (!areSimpleWritableValuesEquivalent(left[i], right[i], depth - 1)) return false;
+    }
+    return true;
+  }
+
+  const leftRecord = readMapRecord(left);
+  const rightRecord = readMapRecord(right);
+  const leftIsRecord = Object.is(leftRecord, left);
+  const rightIsRecord = Object.is(rightRecord, right);
+  if (!leftIsRecord || !rightIsRecord) return false;
+
+  const leftKeys = Object.keys(leftRecord);
+  const rightKeys = Object.keys(rightRecord);
+  if (leftKeys.length !== rightKeys.length) return false;
+  for (const key of leftKeys) {
+    if (!Object.prototype.hasOwnProperty.call(rightRecord, key)) return false;
+    if (!areSimpleWritableValuesEquivalent(leftRecord[key], rightRecord[key], depth - 1)) return false;
+  }
+  return true;
 }
 
 export function patchSimpleWritableMapEntryFromOwner(
@@ -61,7 +90,7 @@ export function patchSimpleWritableMapEntryFromOwner(
     if (!hasOwn) return true;
     delete nextMap[cleanKey];
   } else {
-    if (hasOwn && Object.is(nextMap[cleanKey], value)) return true;
+    if (hasOwn && areSimpleWritableValuesEquivalent(nextMap[cleanKey], value)) return true;
     nextMap[cleanKey] = value;
   }
 

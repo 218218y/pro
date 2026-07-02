@@ -25,6 +25,11 @@ const SIMPLE_WRITABLE_OWNER_MODULE = 'esm/native/runtime/simple_writable_map_wri
 const DIRECT_WRITE_OWNER_FILES = new Set([VISUAL_KEYED_OWNER_MODULE]);
 
 const GENERIC_CONFIG_MAP_WRITE_ALLOWLIST = new Set(['esm/native/runtime/cfg_access_maps.ts']);
+const GENERIC_PUBLIC_CONFIG_MAP_ACTION_ALLOWLIST = new Set([
+  'esm/native/runtime/cfg_access_maps.ts',
+  'esm/native/runtime/simple_writable_map_writer_owner.ts',
+  'esm/native/runtime/visual_keyed_map_writer_owner.ts',
+]);
 
 const OWNER_HELPER_IMPORT_ALLOWLIST = new Set([
   'esm/native/runtime/cfg_access_maps.ts',
@@ -71,6 +76,8 @@ const DOMAIN_API_GROOVE_BINDINGS_FILE =
 const DOMAIN_API_DRAWERS_DIVIDERS_BINDINGS_FILE =
   'esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts';
 const MAPS_API_NAMED_MAPS_FILE = 'esm/native/kernel/maps_api_named_maps.ts';
+const CONFIG_NAMESPACE_MAPS_FILE = 'esm/native/kernel/state_api_config_namespace_maps.ts';
+const KERNEL_TYPES_FILE = 'types/kernel.ts';
 const SIMPLE_WRITABLE_MAPS = [
   'handlesMap',
   'hingeMap',
@@ -485,6 +492,28 @@ function collectGenericConfigMapImportViolations() {
   return violations;
 }
 
+function collectGenericPublicConfigMapActionViolations() {
+  const violations = [];
+  const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
+  const regex = /\b(?:actions\.config|configNs|cfgNs)\??\.(?:setMap|patchMap)\b/g;
+
+  for (const file of files) {
+    if (GENERIC_PUBLIC_CONFIG_MAP_ACTION_ALLOWLIST.has(file)) continue;
+    const rawSource = readSourceFile(file);
+    const strippedSource = stripCommentsPreserveLines(rawSource);
+    pushRegexMatches(violations, {
+      file,
+      rawSource,
+      strippedSource,
+      mapName: 'actions.config.map',
+      kind: 'generic public config map action',
+      regex: new RegExp(regex),
+    });
+  }
+
+  return violations;
+}
+
 function collectGenericPublicMapSetKeyViolations() {
   const violations = [];
   const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
@@ -610,6 +639,8 @@ test('simple map writes use semantic writers and generic public map writers stay
   const mapsAccessFacade = readSourceFile('esm/native/runtime/maps_access.ts');
   const mapWrites = readSourceFile(DOMAIN_API_MAP_WRITES_FILE);
   const mapsApiNamedMaps = readSourceFile(MAPS_API_NAMED_MAPS_FILE);
+  const configNamespaceMaps = readSourceFile(CONFIG_NAMESPACE_MAPS_FILE);
+  const kernelTypes = readSourceFile(KERNEL_TYPES_FILE);
   const doorBindings = readSourceFile(DOMAIN_API_DOOR_BINDINGS_FILE);
   const grooveCurtainBindings = readSourceFile(DOMAIN_API_GROOVE_BINDINGS_FILE);
   const drawerDividerBindings = readSourceFile(DOMAIN_API_DRAWERS_DIVIDERS_BINDINGS_FILE);
@@ -639,6 +670,12 @@ test('simple map writes use semantic writers and generic public map writers stay
   assert.match(mapsApiNamedMaps, /toggleSimpleWritableBooleanMapEntryFromOwner/);
   assert.match(mapsApiNamedMaps, /delete maps\.setKey/);
   assert.match(mapsApiNamedMaps, /delete maps\.toggleKey/);
+  assert.match(configNamespaceMaps, /delete configNs\['setMap'\]/);
+  assert.match(configNamespaceMaps, /delete configNs\['patchMap'\]/);
+  assert.doesNotMatch(configNamespaceMaps, /configNs\.setMap = function setMap/);
+  assert.doesNotMatch(configNamespaceMaps, /configNs\.patchMap = function patchMap/);
+  assert.doesNotMatch(kernelTypes, /setMap\?:/);
+  assert.doesNotMatch(kernelTypes, /patchMap\?:/);
   assert.match(mapsWriters, /export function replaceDoorGrooveLinesCountMap\(/);
   assert.match(mapsWriters, /export function replaceRoundedFrameSideShelvesMap\(/);
   assert.match(mapsWriters, /export function replaceDoorSpecialMap\(/);
@@ -686,7 +723,9 @@ test('simple map writes use semantic writers and generic public map writers stay
   assert.doesNotMatch(installHelpers, /\bwriteCanonicalMapValueDirect\b/);
   assert.doesNotMatch(rootMapBindings, /\bwriteSimpleMapValue\b/);
   assert.match(rootMapBindings, /delete state\.mapActions\.setKey/);
+  assert.match(rootMapBindings, /delete state\.mapActions\.toggleKey/);
   assert.doesNotMatch(rootMapBindings, /\bsetKey\s*\(/);
+  assert.doesNotMatch(rootMapBindings, /\btoggleKey\s*\(/);
   assert.doesNotMatch(grooveCurtainBindings, /writeCurtainPreset\([\s\S]*?_cfgMapPatch/);
   assert.doesNotMatch(drawerDividerBindings, /writeDividerState\([\s\S]*?_cfgMapPatch/);
   assert.doesNotMatch(colorsSection, /writeIndividualColor\([\s\S]*?_cfgMapPatch/);
@@ -724,6 +763,14 @@ test('simple map writes use semantic writers and generic public map writers stay
     genericConfigMapImportViolations,
     [],
     `cfgSetMap/patchConfigMap imports must stay inside config owner files:\n${genericConfigMapImportViolations.join('\n')}`
+  );
+
+  const genericPublicConfigMapActionViolations =
+    collectGenericPublicConfigMapActionViolations().map(formatViolation);
+  assert.deepEqual(
+    genericPublicConfigMapActionViolations,
+    [],
+    `actions.config.setMap/patchMap must not be used outside owner internals:\n${genericPublicConfigMapActionViolations.join('\n')}`
   );
 
   const genericPublicMapSetKeyViolations = collectGenericPublicMapSetKeyViolations().map(formatViolation);

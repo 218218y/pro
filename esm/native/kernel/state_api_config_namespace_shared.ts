@@ -33,14 +33,6 @@ export function readUnknownArray(value: unknown): unknown[] {
   return Array.isArray(value) ? [...value] : [];
 }
 
-export function readConfigMapUpdater(
-  value: unknown
-): ((nextDraft: UnknownRecord, curVal: UnknownRecord) => unknown) | null {
-  return typeof value === 'function'
-    ? (nextDraft, curVal) => Reflect.apply(value, undefined, [nextDraft, curVal])
-    : null;
-}
-
 export function readConfigScalarResolver(
   value: unknown
 ): ((prev: unknown, cfg?: UnknownRecord) => unknown) | null {

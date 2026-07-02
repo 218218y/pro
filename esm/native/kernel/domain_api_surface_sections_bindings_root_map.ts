@@ -15,6 +15,7 @@ function createSelectRootBindings(state: DomainApiSurfaceSectionsState): Unknown
 
 function createMapActionBindings(state: DomainApiSurfaceSectionsState): UnknownRecord {
   delete state.mapActions.setKey;
+  delete state.mapActions.toggleKey;
   return {};
 }
 
