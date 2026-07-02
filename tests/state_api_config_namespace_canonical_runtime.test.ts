@@ -160,6 +160,92 @@ test('[state-api.config] applyProjectSnapshot materializes top modules against l
   assert.equal(asRec(store.commits[0]?.meta).source, 'test:project-snapshot');
 });
 
+test('[state-api.config] generic config patch rejects known map branches', () => {
+  const store = createStoreStub({
+    ui: {},
+    config: { boardMaterial: 'oak', handlesMap: { d1_full: 'bar' } },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+  const App: AnyRecord = { actions: {}, store };
+  installStateApi(App as any);
+
+  assert.throws(
+    () =>
+      (App.actions as any).config.patch(
+        { handlesMap: { d1_full: 'rail' } },
+        { source: 'test:generic-map-patch' }
+      ),
+    /actions\.config\.patch cannot write known config map branches \(handlesMap\)/
+  );
+  assert.deepEqual(store.commits, []);
+  assert.deepEqual({ ...asRec(asRec(store.getState().config).handlesMap) }, { d1_full: 'bar' });
+
+  const out = (App.actions as any).config.patch(
+    { boardMaterial: 'walnut' },
+    { source: 'test:generic-scalar-patch' }
+  );
+
+  assert.equal(asRec(out).boardMaterial, 'walnut');
+  assert.equal(asRec(store.commits[0]?.patch).boardMaterial, 'walnut');
+  assert.equal(asRec(store.commits[0]?.meta).source, 'test:generic-scalar-patch');
+});
+
+test('[state-api.config] actions.applyConfig rejects known map branches before generic patch routing', () => {
+  const store = createStoreStub({
+    ui: {},
+    config: { hingeMap: { d1_full: { side: 'left' } } },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+  const App: AnyRecord = { actions: {}, store };
+  installStateApi(App as any);
+
+  assert.throws(
+    () =>
+      (App.actions as any).applyConfig(
+        { hingeMap: { d1_full: { side: 'right' } } },
+        { source: 'test:applyConfig-map' }
+      ),
+    /actions\.applyConfig cannot write known config map branches \(hingeMap\)/
+  );
+  assert.deepEqual(store.commits, []);
+  assert.deepEqual({ ...asRec(asRec(store.getState().config).hingeMap) }, { d1_full: { side: 'left' } });
+});
+
+test('[state-api.config] root actions.patch rejects known map branches outside snapshot owners', () => {
+  const store = createStoreStub({
+    ui: {},
+    config: { handlesMap: { d1_full: 'bar' } },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+  const App: AnyRecord = { actions: {}, store };
+  installStateApi(App as any);
+
+  assert.throws(
+    () =>
+      (App.actions as any).patch(
+        { config: { handlesMap: { d1_full: 'rail' } }, ui: { doorStyle: 'profile' } },
+        { source: 'test:root-map-patch' }
+      ),
+    /actions\.patch cannot write known config map branches \(handlesMap\)/
+  );
+  assert.deepEqual({ ...asRec(asRec(store.getState().config).handlesMap) }, { d1_full: 'bar' });
+  assert.equal(asRec(store.getState().ui).doorStyle, undefined);
+
+  (App.actions as any).patch(
+    { config: { handlesMap: { d1_full: 'rail' } }, ui: { doorStyle: 'profile' } },
+    { source: 'project.load' }
+  );
+
+  assert.deepEqual({ ...asRec(asRec(store.getState().config).handlesMap) }, { d1_full: 'rail' });
+  assert.equal(asRec(store.getState().ui).doorStyle, 'profile');
+});
+
 test('[state-api.config] applyProjectSnapshot keeps library module signature from the incoming snapshot', () => {
   const store = createStoreStub({
     ui: {

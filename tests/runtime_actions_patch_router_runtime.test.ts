@@ -47,6 +47,32 @@ test('[actions-access] single-slice patch still prefers namespaced patch surface
   assert.deepEqual(calls, [{ op: 'runtime.patch', patch: { sketchMode: true }, meta: { source: 'rt' } }]);
 });
 
+test('[actions-access] config patch owner rejections surface through patchViaActions without root fallback', () => {
+  const calls: AnyRecord[] = [];
+  const App = {
+    actions: {
+      config: {
+        patch(patch: AnyRecord, meta?: AnyRecord) {
+          calls.push({ op: 'config.patch', patch, meta });
+          throw new Error('config patch rejected');
+        },
+      },
+      patch(patch: AnyRecord, meta?: AnyRecord) {
+        calls.push({ op: 'actions.patch', patch, meta });
+        return { via: 'patch' };
+      },
+    },
+  } as AnyRecord;
+
+  assert.throws(
+    () => patchViaActions(App as any, { config: { handlesMap: { d1_full: 'bar' } } }, { source: 'cfg' }),
+    /config patch rejected/
+  );
+  assert.deepEqual(calls, [
+    { op: 'config.patch', patch: { handlesMap: { d1_full: 'bar' } }, meta: { source: 'cfg' } },
+  ]);
+});
+
 test('[actions-access] canonicalizes noisy one-slice payloads before routing, instead of falling back to generic root patch', () => {
   const calls: AnyRecord[] = [];
   const App = {

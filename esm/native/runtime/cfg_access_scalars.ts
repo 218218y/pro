@@ -12,7 +12,13 @@ import {
   readScalarUpdaterFn,
   type ScalarUpdaterFn,
 } from './cfg_access_shared.js';
-import { applyConfigPatch, cfgGet, cfgPatchWithReplaceKeys, cfgRead } from './cfg_access_core.js';
+import {
+  applyConfigPatch,
+  applyConfigPatchFromMapOwner,
+  cfgGet,
+  cfgPatchWithReplaceKeys,
+  cfgRead,
+} from './cfg_access_core.js';
 
 export function applyConfigPatchReplaceKeys(
   App: unknown,
@@ -23,6 +29,18 @@ export function applyConfigPatchReplaceKeys(
   const base = asRecord(patchObj) || {};
   const patch = cfgPatchWithReplaceKeys(base, replaceKeys);
   void applyConfigPatch(App, patch, meta);
+  return patch;
+}
+
+export function applyConfigPatchReplaceKeysFromMapOwner(
+  App: unknown,
+  patchObj: unknown,
+  replaceKeys: unknown,
+  meta?: ActionMetaLike
+) {
+  const base = asRecord(patchObj) || {};
+  const patch = cfgPatchWithReplaceKeys(base, replaceKeys);
+  void applyConfigPatchFromMapOwner(App, patch, meta);
   return patch;
 }
 

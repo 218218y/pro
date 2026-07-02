@@ -13,6 +13,7 @@ import {
 } from './kernel_project_config_snapshot_canonical.js';
 import { materializeTopModulesConfigurationFromUiConfig } from '../features/modules_configuration/modules_config_api.js';
 import { cfgPatchWithReplaceKeys } from '../runtime/cfg_access.js';
+import { isKnownMapName } from '../runtime/maps_access_normalizers.js';
 import { asRecord, isRecord } from '../runtime/record.js';
 import {
   asConfigPatch,
@@ -35,6 +36,8 @@ interface StateApiConfigNamespaceCoreContext {
   projectConfigReplaceKeys: Record<string, true>;
   modulesGeometryReplaceKeys: Record<string, true>;
 }
+
+const CONFIG_PATCH_REPLACE_KEY = `${'__'}replace`;
 
 export function installStateApiConfigNamespaceCore(ctx: StateApiConfigNamespaceCoreContext): void {
   const {
@@ -72,13 +75,26 @@ export function installStateApiConfigNamespaceCore(ctx: StateApiConfigNamespaceC
     });
   };
 
+  const readKnownConfigMapPatchKeys = (patch: UnknownRecord): string[] =>
+    Object.keys(patch).filter(key => key !== CONFIG_PATCH_REPLACE_KEY && isKnownMapName(key));
+
+  const assertNoGenericConfigMapPatch = (patch: UnknownRecord, apiName: string): void => {
+    const mapKeys = readKnownConfigMapPatchKeys(patch);
+    if (!mapKeys.length) return;
+    throw new Error(
+      `[WardrobePro] ${apiName} cannot write known config map branches (${mapKeys.join(
+        ', '
+      )}); use applyProjectSnapshot/applyPaintSnapshot or a semantic map writer.`
+    );
+  };
+
   if (typeof actions.applyConfig !== 'function') {
     actions.applyConfig = function applyConfig(cfg?: UnknownRecord, meta?: ActionMetaLike) {
       const m = normMeta(meta, 'actions:applyConfig');
       const p = asRecord(cfg) ?? {};
+      assertNoGenericConfigMapPatch(p, 'actions.applyConfig');
       if (typeof configNs.patch === 'function') {
-        safeCall(() => configNs.patch?.(p, m));
-        return p;
+        return configNs.patch(p, m);
       }
       return commitConfigWrite(commitConfigPatch, buildConfigPatch(p), m);
     };
@@ -112,6 +128,7 @@ export function installStateApiConfigNamespaceCore(ctx: StateApiConfigNamespaceC
   if (typeof configNs.patch !== 'function') {
     configNs.patch = function patch(cfg?: UnknownRecord, meta?: ActionMetaLike) {
       const cfgRec = asConfigPatch(cfg);
+      assertNoGenericConfigMapPatch(cfgRec, 'actions.config.patch');
       const m = normMeta(meta, 'actions.config:patch');
       return commitConfigWrite(commitConfigPatch, cfgRec, m);
     };

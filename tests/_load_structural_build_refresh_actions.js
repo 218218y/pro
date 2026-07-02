@@ -6,6 +6,24 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
 
+const KNOWN_PROJECT_CONFIG_MAP_KEYS = new Set([
+  'groovesMap',
+  'grooveLinesCountMap',
+  'splitDoorsMap',
+  'splitDoorsBottomMap',
+  'removedDoorsMap',
+  'roundedFrameSideShelvesMap',
+  'drawerDividersMap',
+  'individualColors',
+  'doorSpecialMap',
+  'doorStyleMap',
+  'mirrorLayoutMap',
+  'handlesMap',
+  'hingeMap',
+  'curtainMap',
+  'doorTrimMap',
+]);
+
 export function loadStructuralBuildRefreshActionsModule(stubs = {}) {
   const file = path.join(process.cwd(), 'esm/native/ui/react/actions/structural_build_refresh_actions.ts');
   const source = fs.readFileSync(file, 'utf8');
@@ -18,6 +36,9 @@ export function loadStructuralBuildRefreshActionsModule(stubs = {}) {
   }).outputText;
   const mod = { exports: {} };
   const localRequire = specifier => {
+    if (specifier === '../../../features/project_config/api.js') {
+      return { KNOWN_PROJECT_CONFIG_MAP_KEYS };
+    }
     if (specifier === '../../../services/api.js') {
       return {
         patchViaActions: (...args) => {

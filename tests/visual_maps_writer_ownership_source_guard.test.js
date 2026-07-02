@@ -87,6 +87,7 @@ const SIMPLE_WRITABLE_MAPS = [
   'drawerDividersMap',
   'roundedFrameSideShelvesMap',
 ];
+const KNOWN_CONFIG_MAP_PATCH_KEYS = [...VISUAL_KEYED_MAPS, ...SIMPLE_WRITABLE_MAPS];
 
 const WRITE_MAP_KEY_CALL_ALLOWLIST = new Set();
 
@@ -514,6 +515,59 @@ function collectGenericPublicConfigMapActionViolations() {
   return violations;
 }
 
+function collectGenericKnownConfigMapPatchViolations() {
+  const violations = [];
+  const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
+
+  for (const file of files) {
+    const rawSource = readSourceFile(file);
+    const strippedSource = stripCommentsPreserveLines(rawSource);
+
+    for (const mapName of KNOWN_CONFIG_MAP_PATCH_KEYS) {
+      const escapedMap = escapeRegExp(mapName);
+      const mapPropertyPattern = String.raw`(?:${escapedMap}\s*:|['"]${escapedMap}['"]\s*:|\[\s*['"]${escapedMap}['"]\s*\]\s*:)`;
+
+      pushRegexMatches(violations, {
+        file,
+        rawSource,
+        strippedSource,
+        mapName,
+        kind: 'patchViaActions config map branch',
+        regex: new RegExp(
+          String.raw`\bpatchViaActions\s*\([\s\S]{0,700}\bconfig\s*:\s*\{[\s\S]{0,700}${mapPropertyPattern}`,
+          'g'
+        ),
+      });
+
+      pushRegexMatches(violations, {
+        file,
+        rawSource,
+        strippedSource,
+        mapName,
+        kind: 'generic actions.config.patch map branch',
+        regex: new RegExp(
+          String.raw`\b(?:(?:[A-Za-z_$][\w$]*\.)?actions\??\.config\??\.patch|(?:[A-Za-z_$][\w$]*\.)?configNs\??\.patch|cfgNs\??\.patch)\s*\(\s*\{[\s\S]{0,700}${mapPropertyPattern}`,
+          'g'
+        ),
+      });
+
+      pushRegexMatches(violations, {
+        file,
+        rawSource,
+        strippedSource,
+        mapName,
+        kind: 'generic actions.patch config map branch',
+        regex: new RegExp(
+          String.raw`\b(?:[A-Za-z_$][\w$]*\.)?actions\??\.patch\s*\(\s*\{[\s\S]{0,700}\bconfig\s*:\s*\{[\s\S]{0,700}${mapPropertyPattern}`,
+          'g'
+        ),
+      });
+    }
+  }
+
+  return violations;
+}
+
 function collectGenericPublicMapSetKeyViolations() {
   const violations = [];
   const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
@@ -635,8 +689,10 @@ test('domain api visual writes are blocked from generic helpers and routed throu
 
 test('simple map writes use semantic writers and generic public map writers stay retired', () => {
   const simpleOwner = readSourceFile(SIMPLE_WRITABLE_OWNER_MODULE);
+  const visualOwner = readSourceFile(VISUAL_KEYED_OWNER_MODULE);
   const mapsWriters = readSourceFile('esm/native/runtime/maps_access_writers.ts');
   const mapsAccessFacade = readSourceFile('esm/native/runtime/maps_access.ts');
+  const cfgAccessMaps = readSourceFile('esm/native/runtime/cfg_access_maps.ts');
   const mapWrites = readSourceFile(DOMAIN_API_MAP_WRITES_FILE);
   const mapsApiNamedMaps = readSourceFile(MAPS_API_NAMED_MAPS_FILE);
   const configNamespaceMaps = readSourceFile(CONFIG_NAMESPACE_MAPS_FILE);
@@ -650,6 +706,12 @@ test('simple map writes use semantic writers and generic public map writers stay
   assert.match(simpleOwner, /export function patchSimpleWritableMapEntryFromOwner\(/);
   assert.match(simpleOwner, /export function replaceSimpleWritableMapFromOwner\(/);
   assert.match(simpleOwner, /export function toggleSimpleWritableBooleanMapEntryFromOwner\(/);
+  assert.match(simpleOwner, /applyConfigPatchReplaceKeysFromMapOwner/);
+  assert.match(visualOwner, /applyConfigPatchReplaceKeysFromMapOwner/);
+  assert.match(cfgAccessMaps, /applyConfigPatchReplaceKeysFromMapOwner/);
+  assert.doesNotMatch(simpleOwner, /\bapplyConfigPatchReplaceKeys\(/);
+  assert.doesNotMatch(visualOwner, /\bapplyConfigPatchReplaceKeys\(/);
+  assert.doesNotMatch(cfgAccessMaps, /\bapplyConfigPatchReplaceKeys\(/);
   assert.match(mapsWriters, /simple_writable_map_writer_owner\.js/);
   assert.match(mapsApiNamedMaps, /simple_writable_map_writer_owner\.js/);
   assert.doesNotMatch(mapWrites, /simple_writable_map_writer_owner\.js/);
@@ -771,6 +833,14 @@ test('simple map writes use semantic writers and generic public map writers stay
     genericPublicConfigMapActionViolations,
     [],
     `actions.config.setMap/patchMap must not be used outside owner internals:\n${genericPublicConfigMapActionViolations.join('\n')}`
+  );
+
+  const genericKnownConfigMapPatchViolations =
+    collectGenericKnownConfigMapPatchViolations().map(formatViolation);
+  assert.deepEqual(
+    genericKnownConfigMapPatchViolations,
+    [],
+    `Known config maps must not be written through generic config patch APIs:\n${genericKnownConfigMapPatchViolations.join('\n')}`
   );
 
   const genericPublicMapSetKeyViolations = collectGenericPublicMapSetKeyViolations().map(formatViolation);

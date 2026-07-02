@@ -20,6 +20,7 @@ import type {
   SlicePatchValueMap,
 } from '../runtime/slice_write_access_shared.js';
 import { getAllSliceNamespaces, readSlicePatchValue } from '../runtime/slice_write_access_shared.js';
+import { isKnownMapName } from '../runtime/maps_access_normalizers.js';
 import { asRecord as asObj } from '../runtime/record.js';
 import { snapshotStoreValueEqual, uiSnapshotValueEqual } from './kernel_snapshot_store_shared.js';
 import { asPatchPayload } from './state_api_shared.js';
@@ -140,6 +141,41 @@ function diffComparableValue(prev: unknown, patch: unknown): unknown {
 function readConfigReplaceRecord(patch: ConfigSlicePatch): UnknownRecord | null {
   const patchRec = asObj<UnknownRecord>(patch);
   return patchRec ? asObj<UnknownRecord>(patchRec[CONFIG_REPLACE_KEY]) || null : null;
+}
+
+function readKnownConfigMapPatchKeys(patch: unknown): string[] {
+  const patchRec = asObj<UnknownRecord>(patch);
+  if (!patchRec) return [];
+  return Object.keys(patchRec).filter(key => key !== CONFIG_REPLACE_KEY && isKnownMapName(key));
+}
+
+function isSnapshotOwnedRootConfigMapPatch(meta: ActionMetaLike): boolean {
+  const source = typeof meta.source === 'string' ? meta.source : '';
+  if (!source) return false;
+  if (source === 'project.load' || source.startsWith('project.load:')) return true;
+  if (source === 'history.undoRedo' || source.startsWith('history.') || source.startsWith('history:'))
+    return true;
+  if (
+    source === 'actions:room:setWardrobeType:restore' ||
+    source.startsWith('actions:room:setWardrobeType:restore:')
+  )
+    return true;
+  if (
+    source === 'actions:room:setWardrobeType:init' ||
+    source.startsWith('actions:room:setWardrobeType:init:')
+  )
+    return true;
+  return false;
+}
+
+function assertNoGenericRootConfigMapPatch(payload: PatchPayload, meta: ActionMetaLike): void {
+  const mapKeys = readKnownConfigMapPatchKeys(payload.config);
+  if (!mapKeys.length || isSnapshotOwnedRootConfigMapPatch(meta)) return;
+  throw new Error(
+    `[WardrobePro] actions.patch cannot write known config map branches (${mapKeys.join(
+      ', '
+    )}); use applyProjectSnapshot/applyPaintSnapshot or a semantic map writer.`
+  );
 }
 
 function filterNoopSlicePatch<N extends SlicePatchNamespace>(
@@ -280,6 +316,7 @@ export function createStateApiInstallSupport(App: AppContainer, storeInput: unkn
 
   const dispatchCanonicalPatch = (payloadIn: PatchPayload, meta: ActionMetaLike): unknown => {
     const payload = asPatchPayload(payloadIn);
+    assertNoGenericRootConfigMapPatch(payload, meta);
     const root = readRootSnapshot();
     const filteredPayload: PatchPayload = {};
 

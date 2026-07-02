@@ -150,9 +150,9 @@ test('[design-tab-controller-runtime] delegates structural ui writes through can
       ['runHistoryBatch', app, { source: 'react:design:grooveLinesCount', immediate: true }],
       ['materializeActiveGrooveLinesCountMap', app],
       [
-        'patchViaActions',
+        'replaceDoorGrooveLinesCountMap',
         app,
-        { config: { grooveLinesCountMap: { active: 4 } } },
+        { active: 4 },
         { source: 'react:design:grooveLinesCount:freezeExisting', immediate: true },
       ],
       [
@@ -164,9 +164,9 @@ test('[design-tab-controller-runtime] delegates structural ui writes through can
       ['runHistoryBatch', app, { source: 'react:design:grooveLinesCount:reset', immediate: true }],
       ['materializeActiveGrooveLinesCountMap', app],
       [
-        'patchViaActions',
+        'replaceDoorGrooveLinesCountMap',
         app,
-        { config: { grooveLinesCountMap: { active: 4 } } },
+        { active: 4 },
         { source: 'react:design:grooveLinesCount:freezeExisting', immediate: true },
       ],
       [
@@ -248,21 +248,14 @@ test('[design-tab-controller-runtime] toggles rounded shelves for removed frame 
 
   controller.toggleRoundedFrameSideShelves();
 
-  assert.equal(calls.length, 3);
+  assert.equal(calls.length, 2);
   assert.equal(calls[0][0], 'runHistoryBatch');
   assert.equal(calls[0][1], app);
   assert.deepEqual({ ...calls[0][2] }, { source: 'react:design:roundedFrameSideShelves', immediate: true });
-  assert.equal(calls[1][0], 'patchViaActions');
+  assert.equal(calls[1][0], 'replaceRoundedFrameSideShelvesMap');
   assert.equal(calls[1][1], app);
-  assert.deepEqual(
-    { ...calls[1][2].config.roundedFrameSideShelvesMap },
-    { body_right: true, body_left: true }
-  );
+  assert.deepEqual({ ...calls[1][2] }, { body_right: true, body_left: true });
   assert.deepEqual({ ...calls[1][3] }, { source: 'react:design:roundedFrameSideShelves', immediate: true });
-  assert.equal(calls[2][0], 'replaceRoundedFrameSideShelvesMap');
-  assert.equal(calls[2][1], app);
-  assert.deepEqual({ ...calls[2][2] }, { body_right: true, body_left: true });
-  assert.deepEqual({ ...calls[2][3] }, { source: 'react:design:roundedFrameSideShelves', immediate: true });
 });
 
 test('[design-tab-controller-runtime] toggles rounded shelves on lower scoped removed frame sides', () => {
@@ -285,11 +278,6 @@ test('[design-tab-controller-runtime] toggles rounded shelves on lower scoped re
 
   controller.toggleRoundedFrameSideShelves();
 
-  assert.equal(calls[1][0], 'patchViaActions');
-  assert.deepEqual(
-    { ...calls[1][2].config.roundedFrameSideShelvesMap },
-    { body_left: true, lower_body_left: true }
-  );
-  assert.equal(calls[2][0], 'replaceRoundedFrameSideShelvesMap');
-  assert.deepEqual({ ...calls[2][2] }, { body_left: true, lower_body_left: true });
+  assert.equal(calls[1][0], 'replaceRoundedFrameSideShelvesMap');
+  assert.deepEqual({ ...calls[1][2] }, { body_left: true, lower_body_left: true });
 });

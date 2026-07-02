@@ -6,7 +6,7 @@ import type {
   ConfigSnapshotLike,
   UnknownRecord,
 } from '../../../types';
-import { patchSliceCanonical } from './slice_write_access.js';
+import { hasSliceWriterSeam, patchSliceCanonical } from './slice_write_access.js';
 import {
   asRecord,
   getHistoryNamespace,
@@ -20,6 +20,16 @@ import {
 const CFG_PATCH_PROTOCOL_KEYS = Object.freeze({
   replace: `${'__'}replace`,
 });
+const CONFIG_PATCH_WRITE_OPTS = {
+  storeWriter: 'setConfig',
+  allowRootStorePatch: false,
+} as const;
+const CONFIG_MAP_OWNER_PATCH_WRITE_OPTS = {
+  storeWriter: 'setConfig',
+  allowRootStorePatch: false,
+  preferStoreWriter: true,
+  skipNamespacePatch: true,
+} as const;
 
 export function cfgGet(App: unknown): ConfigSnapshotLike {
   const store = getStore(App, 'cfgGet');
@@ -50,16 +60,33 @@ export function applyConfigPatch(App: unknown, patchObj: unknown, meta?: ActionM
   if (!Object.keys(patch).length) return patch;
   const resolvedMeta = normMeta(App, meta, { source: 'config' });
 
-  const out = patchSliceCanonical(App, 'config', patch, resolvedMeta, {
-    storeWriter: 'setConfig',
-    allowRootStorePatch: false,
-  });
-  if (out !== undefined) return out;
+  if (hasSliceWriterSeam(App, 'config', CONFIG_PATCH_WRITE_OPTS)) {
+    const out = patchSliceCanonical(App, 'config', patch, resolvedMeta, CONFIG_PATCH_WRITE_OPTS);
+    return out === undefined ? patch : out;
+  }
 
   getStore(App, 'applyConfigPatch');
   throw new Error(
     '[WardrobePro][cfg_access] Missing config writer: expected config.patch action or store.setConfig.'
   );
+}
+
+export function applyConfigPatchFromMapOwner(
+  App: unknown,
+  patchObj: unknown,
+  meta?: ActionMetaLike
+): unknown {
+  const patch = asRecord(patchObj) || {};
+  if (!Object.keys(patch).length) return patch;
+  const resolvedMeta = normMeta(App, meta, { source: 'config:mapOwner' });
+
+  if (hasSliceWriterSeam(App, 'config', CONFIG_MAP_OWNER_PATCH_WRITE_OPTS)) {
+    const out = patchSliceCanonical(App, 'config', patch, resolvedMeta, CONFIG_MAP_OWNER_PATCH_WRITE_OPTS);
+    return out === undefined ? patch : out;
+  }
+
+  getStore(App, 'applyConfigPatchFromMapOwner');
+  throw new Error('[WardrobePro][cfg_access] Missing config map owner writer: expected store.setConfig.');
 }
 
 export function applyConfigSnapshot(

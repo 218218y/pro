@@ -12,7 +12,7 @@ import {
   readPatchMapInput,
   type ConfigMapPatchFn,
 } from './cfg_access_shared.js';
-import { applyConfigPatchReplaceKeys } from './cfg_access_scalars.js';
+import { applyConfigPatchReplaceKeysFromMapOwner } from './cfg_access_scalars.js';
 import { normalizeDoorStyleMap } from './maps_access_normalizers_shared.js';
 import { isVisualKeyedMapName } from './visual_keyed_map_names.js';
 import { setCfgVisualKeyedMapFromOwner } from './visual_keyed_map_writer_owner.js';
@@ -59,7 +59,7 @@ function cfgSetMapFromOwner(
     return next;
   }
 
-  applyConfigPatchReplaceKeys(App, { [name]: next }, { [name]: true }, meta);
+  applyConfigPatchReplaceKeysFromMapOwner(App, { [name]: next }, { [name]: true }, meta);
   return next;
 }
 

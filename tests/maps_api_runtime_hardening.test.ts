@@ -76,6 +76,11 @@ test('maps_api keeps map writes store-backed and mirrors saved colors to storage
     },
     store: {
       getState: () => state,
+      setConfig: (patch: Record<string, unknown>) => {
+        configPatchWrites.push(patch);
+        Object.assign(state.config, patch);
+        return patch;
+      },
       patch: () => undefined,
       subscribe: () => () => undefined,
     },
@@ -232,6 +237,10 @@ test('maps_api and runtime writers replace groove maps with canonical prefixed k
     },
     store: {
       getState: () => state,
+      setConfig: (patch: Record<string, unknown>) => {
+        Object.assign(state.config, patch);
+        return patch;
+      },
       patch: () => undefined,
       subscribe: () => () => undefined,
     },
@@ -304,6 +313,10 @@ test('generic config and maps API writers reject visual keyed maps unless routed
     },
     store: {
       getState: () => state,
+      setConfig: (patch: Record<string, unknown>) => {
+        Object.assign(state.config, patch);
+        return patch;
+      },
       patch: () => undefined,
       subscribe: () => () => undefined,
     },

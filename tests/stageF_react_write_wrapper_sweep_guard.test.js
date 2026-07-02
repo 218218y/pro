@@ -176,6 +176,11 @@ test('[stageF] React write hotspots use canonical wrapper sweep for common ui/co
     [
       /export function createImmediateStructuralMutationMeta\(\s*source: string,\s*metaOverrides\?: ActionMetaLike\s*\): ActionMetaLike/,
       /normalizeImmediateStructuralMutationSource\(source\)/,
+      /KNOWN_PROJECT_CONFIG_MAP_KEYS/,
+      /function readKnownConfigMapPatchKeys\(/,
+      /function assertNoMixedConfigMapPatch\(/,
+      /assertNoMixedConfigMapPatch\(args\.patch, knownMapKeys\)/,
+      /args\.applyDirectMutation\(meta\)[\s\S]*appliedViaActions: false/,
       /const payload: UnknownRecord = \{ \[args\.slice\]: args\.patch \}/,
       /patchViaActions\(args\.app, payload, meta\)/,
       /slice: 'config'/,

@@ -1,5 +1,6 @@
 import type { ActionMetaLike, UnknownRecord } from '../../../../../types';
 
+import { KNOWN_PROJECT_CONFIG_MAP_KEYS } from '../../../features/project_config/api.js';
 import { patchViaActions } from '../../../services/api.js';
 
 export type StructuralMutationSlice = 'config' | 'ui' | 'runtime';
@@ -17,6 +18,8 @@ type ApplyImmediateStructuralMutationArgs = {
   metaOverrides?: ActionMetaLike;
   applyDirectMutation: (meta: ActionMetaLike) => void;
 };
+
+const CONFIG_PATCH_REPLACE_KEY = `${'__'}replace`;
 
 function normalizeImmediateStructuralMutationSource(source: string): string {
   const normalized = String(source || '').trim();
@@ -55,10 +58,42 @@ function createSliceImmediateStructuralMutationMeta(
   return meta;
 }
 
+function readConfigPatchKeys(patch: UnknownRecord): string[] {
+  return Object.keys(patch).filter(key => key && key !== CONFIG_PATCH_REPLACE_KEY);
+}
+
+function readKnownConfigMapPatchKeys(patch: UnknownRecord): string[] {
+  return readConfigPatchKeys(patch).filter(key => KNOWN_PROJECT_CONFIG_MAP_KEYS.has(key));
+}
+
+function assertNoMixedConfigMapPatch(patch: UnknownRecord, knownMapKeys: readonly string[]): void {
+  if (!knownMapKeys.length) return;
+  const patchKeys = readConfigPatchKeys(patch);
+  if (knownMapKeys.length === patchKeys.length) return;
+  throw new Error(
+    `[WardrobePro] Immediate structural config mutation cannot mix map branches (${knownMapKeys.join(
+      ', '
+    )}) with scalar branches; split them into explicit semantic map and scalar writes.`
+  );
+}
+
 export function applyImmediateStructuralMutation(
   args: ApplyImmediateStructuralMutationArgs
 ): ApplyImmediateStructuralMutationResult {
   const meta = createSliceImmediateStructuralMutationMeta(args.slice, args.source, args.metaOverrides);
+
+  if (args.slice === 'config') {
+    const knownMapKeys = readKnownConfigMapPatchKeys(args.patch);
+    if (knownMapKeys.length) {
+      assertNoMixedConfigMapPatch(args.patch, knownMapKeys);
+      args.applyDirectMutation(meta);
+      return {
+        appliedViaActions: false,
+        requestedBuild: false,
+      };
+    }
+  }
+
   const payload: UnknownRecord = { [args.slice]: args.patch };
   const appliedViaActions = !!patchViaActions(args.app, payload, meta);
 

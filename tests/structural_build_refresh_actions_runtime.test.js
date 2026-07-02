@@ -33,6 +33,54 @@ test('[structural-build-refresh-actions] config mutation writes immediate patch 
   assert.equal(result.requestedBuild, false);
 });
 
+test('[structural-build-refresh-actions] known config maps use semantic direct writer before generic patch', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  const mod = loadStructuralBuildRefreshActionsModule({
+    calls,
+    patchViaActions: () => true,
+  });
+
+  const result = mod.applyImmediateStructuralConfigMutation(
+    app,
+    'react:test:handlesMap',
+    { handlesMap: { d1_full: 'bar' } },
+    meta => {
+      calls.push(['directConfigMutation', meta]);
+    }
+  );
+
+  assert.equal(
+    JSON.stringify(calls),
+    JSON.stringify([['directConfigMutation', { source: 'react:test:handlesMap', immediate: true }]])
+  );
+  assert.equal(result.appliedViaActions, false);
+  assert.equal(result.requestedBuild, false);
+});
+
+test('[structural-build-refresh-actions] known config map mutation rejects mixed scalar patches', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  const mod = loadStructuralBuildRefreshActionsModule({
+    calls,
+    patchViaActions: () => true,
+  });
+
+  assert.throws(
+    () =>
+      mod.applyImmediateStructuralConfigMutation(
+        app,
+        'react:test:mixed',
+        { handlesMap: { d1_full: 'bar' }, globalHandleType: 'rail' },
+        meta => {
+          calls.push(['directConfigMutation', meta]);
+        }
+      ),
+    /Immediate structural config mutation cannot mix map branches \(handlesMap\) with scalar branches/
+  );
+  assert.deepEqual(calls, []);
+});
+
 test('[structural-build-refresh-actions] ui mutation skips direct fallback when canonical patch applies', () => {
   const calls = [];
   const app = { id: 'app' };
