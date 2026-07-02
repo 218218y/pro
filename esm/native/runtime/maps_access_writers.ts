@@ -85,6 +85,23 @@ export function replaceRoundedFrameSideShelvesMap(
   );
 }
 
+export function replaceDoorSpecialMap(App: unknown, nextMap: unknown, meta?: ActionMetaLike): boolean {
+  return replaceSimpleWritableMapFromOwner(App, 'doorSpecialMap', nextMap, meta);
+}
+
+export function replaceCurtainMap(App: unknown, nextMap: unknown, meta?: ActionMetaLike): boolean {
+  return replaceSimpleWritableMapFromOwner(App, 'curtainMap', nextMap, meta);
+}
+
+export function writeIndividualColor(
+  App: unknown,
+  partId: unknown,
+  value: unknown,
+  meta?: ActionMetaLike
+): boolean {
+  return patchSimpleWritableMapEntryFromOwner(App, 'individualColors', partId, value, meta);
+}
+
 export function writeHandle(
   App: unknown,
   partId: unknown,

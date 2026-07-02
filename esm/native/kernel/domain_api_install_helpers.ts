@@ -7,11 +7,12 @@ import type {
   UnknownRecord,
 } from '../../../types';
 
-import { applyConfigPatch, patchConfigMap } from '../runtime/cfg_access.js';
+import { applyConfigPatch } from '../runtime/cfg_access.js';
 import { metaMerge } from '../runtime/meta_profiles_access.js';
 import { readMap } from '../runtime/maps_access.js';
 import { getCfg, getRuntime, getUi } from './store_access.js';
 import { asActionMeta, asDomainObject, domainApiReportNonFatal } from './domain_api_shared.js';
+import { writeCanonicalMapValueDirect } from './domain_api_surface_sections_map_writes.js';
 
 export type DomainApiInstallHelpers = {
   readConfig: () => ConfigStateLike;
@@ -74,8 +75,7 @@ export function createDomainApiInstallHelpers(
     const recordKey = String(key || '');
     if (!mapKey || !recordKey) return undefined;
     const mergedMeta = createMeta(meta, 'actions:cfgMapPatch:' + mapKey);
-    const patch: UnknownRecord = { [recordKey]: value };
-    return patchConfigMap(App, mapKey, patch, mergedMeta);
+    return writeCanonicalMapValueDirect(App, mapKey, recordKey, value, mergedMeta);
   };
 
   void applyConfigPatch;

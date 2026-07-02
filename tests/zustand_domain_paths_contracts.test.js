@@ -250,9 +250,11 @@ test('[zustand-domain] history, config scalar, and applyPaint flows stay central
   assert.doesNotMatch(domainApiColors, /colorsActions\.applyPaint[\s\S]{0,260}cfgPatchWithReplaceKeys\(/);
   assert.doesNotMatch(domainApiColors, /colorsActions\.applyPaint[\s\S]{0,260}applyConfigPatch\(App,/);
 
-  assert.match(mapsApi, /patchConfigMap/);
+  assert.match(mapsApi, /patchSimpleWritableMapEntryFromOwner/);
+  assert.match(mapsApi, /patchVisualKeyedMapEntriesFromOwner/);
   assert.match(mapsApi, /setCfgSavedColors/);
   assert.match(mapsApi, /setCfgColorSwatchesOrder/);
+  assert.doesNotMatch(mapsApi, /patchConfigMap/);
   assert.doesNotMatch(mapsApi, /applyConfigPatch/);
   assert.doesNotMatch(mapsApi, /from '\.\/config_write\.js'/);
 });

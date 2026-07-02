@@ -24,6 +24,8 @@ const SIMPLE_WRITABLE_OWNER_MODULE = 'esm/native/runtime/simple_writable_map_wri
 
 const DIRECT_WRITE_OWNER_FILES = new Set([VISUAL_KEYED_OWNER_MODULE]);
 
+const GENERIC_CONFIG_MAP_WRITE_ALLOWLIST = new Set(['esm/native/runtime/cfg_access_maps.ts']);
+
 const OWNER_HELPER_IMPORT_ALLOWLIST = new Set([
   'esm/native/runtime/cfg_access_maps.ts',
   'esm/native/runtime/maps_access_writers.ts',
@@ -56,6 +58,10 @@ const SERVICE_SEMANTIC_WRITER_EXPECTATIONS = [
   {
     file: 'esm/native/services/canvas_picking_door_hinge_groove_click.ts',
     writers: ['patchDoorGrooveMapEntries', 'patchDoorGrooveLinesCountEntries'],
+  },
+  {
+    file: 'esm/native/services/canvas_picking_paint_flow_apply_door_style.ts',
+    writers: ['replaceDoorSpecialMap', 'replaceCurtainMap'],
   },
 ];
 
@@ -436,6 +442,28 @@ function collectUiGenericMapWriteViolations() {
   return violations;
 }
 
+function collectGenericConfigMapWriteViolations() {
+  const violations = [];
+  const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
+  const regex = /\b(?:cfgSetMap|patchConfigMap)\s*\(/g;
+
+  for (const file of files) {
+    if (GENERIC_CONFIG_MAP_WRITE_ALLOWLIST.has(file)) continue;
+    const rawSource = readSourceFile(file);
+    const strippedSource = stripCommentsPreserveLines(rawSource);
+    pushRegexMatches(violations, {
+      file,
+      rawSource,
+      strippedSource,
+      mapName: 'configMap',
+      kind: 'generic config map write outside config owner',
+      regex: new RegExp(regex),
+    });
+  }
+
+  return violations;
+}
+
 function collectDuplicatedOwnerPatchLogicViolations() {
   const violations = [];
   const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
@@ -571,6 +599,9 @@ test('simple generic map writers are allowlisted and semantic actions prefer nam
   assert.match(mapsApiNamedMaps, /patchSimpleWritableMapEntryFromOwner/);
   assert.match(mapsWriters, /export function replaceDoorGrooveLinesCountMap\(/);
   assert.match(mapsWriters, /export function replaceRoundedFrameSideShelvesMap\(/);
+  assert.match(mapsWriters, /export function replaceDoorSpecialMap\(/);
+  assert.match(mapsWriters, /export function replaceCurtainMap\(/);
+  assert.match(mapsWriters, /export function writeIndividualColor\(/);
   assert.match(mapsWriters, /setCfgVisualKeyedMapFromOwner/);
   assert.match(mapsWriters, /replaceSimpleWritableMapFromOwner/);
   assert.match(grooveCurtainBindings, /writeCurtainPreset\(state\.App/);
@@ -587,6 +618,31 @@ test('simple generic map writers are allowlisted and semantic actions prefer nam
   assert.doesNotMatch(mapsWriters, /\btrySetKey\b/);
   assert.doesNotMatch(mapsApiNamedMaps, /\bpatchConfigMap\b/);
   assert.doesNotMatch(mapsApiNamedMaps, /\bcreateMapPatch\b/);
+
+  const paintDoorStyleFlow = readSourceFile(
+    'esm/native/services/canvas_picking_paint_flow_apply_door_style.ts'
+  );
+  const colorsSection = readSourceFile('esm/native/kernel/domain_api_colors_section.ts');
+  const installHelpers = readSourceFile('esm/native/kernel/domain_api_install_helpers.ts');
+  const rootMapBindings = readSourceFile(
+    'esm/native/kernel/domain_api_surface_sections_bindings_root_map.ts'
+  );
+
+  assert.match(paintDoorStyleFlow, /replaceDoorSpecialMap\(args\.App/);
+  assert.match(paintDoorStyleFlow, /replaceCurtainMap\(args\.App/);
+  assert.doesNotMatch(paintDoorStyleFlow, /cfgSetMap\(\s*args\.App\s*,\s*['"]doorSpecialMap['"]/);
+  assert.doesNotMatch(paintDoorStyleFlow, /cfgSetMap\(\s*args\.App\s*,\s*['"]curtainMap['"]/);
+  assert.match(colorsSection, /writeIndividualColor\(App,\s*partKey,\s*value,\s*meta\)/);
+  assert.doesNotMatch(colorsSection, /_cfgMapPatch\(\s*['"]individualColors['"]/);
+  assert.doesNotMatch(installHelpers, /\bpatchConfigMap\b/);
+  assert.match(
+    installHelpers,
+    /writeCanonicalMapValueDirect\(App,\s*mapKey,\s*recordKey,\s*value,\s*mergedMeta\)/
+  );
+  assert.match(rootMapBindings, /writeSimpleMapValue\(state,\s*nextMapName,\s*key,\s*val,\s*nextMeta\)/);
+  assert.doesNotMatch(grooveCurtainBindings, /writeCurtainPreset\([\s\S]*?_cfgMapPatch/);
+  assert.doesNotMatch(drawerDividerBindings, /writeDividerState\([\s\S]*?_cfgMapPatch/);
+  assert.doesNotMatch(colorsSection, /writeIndividualColor\([\s\S]*?_cfgMapPatch/);
 
   const violations = collectBroadWriteMapKeyCallViolations().map(formatViolation);
   assert.deepEqual(
@@ -607,6 +663,13 @@ test('simple generic map writers are allowlisted and semantic actions prefer nam
     uiGenericMapWriteViolations,
     [],
     `UI/React map writes must use semantic runtime writers instead of generic config map APIs:\n${uiGenericMapWriteViolations.join('\n')}`
+  );
+
+  const genericConfigMapWriteViolations = collectGenericConfigMapWriteViolations().map(formatViolation);
+  assert.deepEqual(
+    genericConfigMapWriteViolations,
+    [],
+    `cfgSetMap/patchConfigMap calls must stay inside config owner files:\n${genericConfigMapWriteViolations.join('\n')}`
   );
 });
 

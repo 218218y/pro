@@ -8,7 +8,7 @@ import type {
 } from '../../../types';
 
 import { setCfgColorSwatchesOrder, setCfgMultiColorMode, setCfgSavedColors } from '../runtime/cfg_access.js';
-import { writeColorSwatchesOrder, writeSavedColors } from '../runtime/maps_access.js';
+import { writeColorSwatchesOrder, writeIndividualColor, writeSavedColors } from '../runtime/maps_access.js';
 import { asRecord } from '../runtime/record.js';
 
 type ColorsSelect = UnknownRecord & {
@@ -26,7 +26,6 @@ interface InstallDomainApiColorsSectionArgs {
   _cfg(): UnknownRecord;
   _map(mapName: unknown): UnknownRecord;
   _meta(meta: unknown, source: string): ActionMetaLike;
-  _cfgMapPatch(mapName: unknown, key: unknown, val: unknown, meta?: ActionMetaLike): unknown;
 }
 
 function asUnknownArray(value: unknown): unknown[] {
@@ -71,7 +70,7 @@ function readColorId(x: unknown): string | null {
 }
 
 export function installDomainApiColorsSection(args: InstallDomainApiColorsSectionArgs): void {
-  const { App, select, colorsActions, configActions, _cfg, _map, _meta, _cfgMapPatch } = args;
+  const { App, select, colorsActions, configActions, _cfg, _map, _meta } = args;
 
   select.colors.isMultiMode =
     select.colors.isMultiMode ||
@@ -206,7 +205,7 @@ export function installDomainApiColorsSection(args: InstallDomainApiColorsSectio
     colorsActions.setIndividual ||
     function (partKey: unknown, value: unknown, meta: ActionMetaLike | undefined) {
       meta = _meta(meta, 'actions:colors:setIndividual');
-      return _cfgMapPatch('individualColors', String(partKey || ''), value, meta);
+      return writeIndividualColor(App, partKey, value, meta);
     };
 
   colorsActions.applyPaint =

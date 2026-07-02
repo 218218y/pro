@@ -8,6 +8,8 @@ import {
   patchDoorGrooveLinesCountEntries,
   patchDoorGrooveMapEntries,
   readMapOrEmpty,
+  replaceCurtainMap,
+  replaceDoorSpecialMap,
   replaceDoorGrooveLinesCountMap,
   replaceRoundedFrameSideShelvesMap,
   splitBottomKey,
@@ -15,6 +17,7 @@ import {
   splitPosKey,
   toggleGrooveKey,
   writeHandle,
+  writeIndividualColor,
   writeRemoved,
   writeSplit,
   writeSplitBottom,
@@ -171,6 +174,29 @@ test('maps_api keeps map writes store-backed and mirrors saved colors to storage
     { ...(state.config.roundedFrameSideShelvesMap as Record<string, unknown>) },
     { body_left: true, body_right: null }
   );
+
+  assert.equal(
+    replaceDoorSpecialMap(App, { d4_full: 'glass', d5_full: null }, { source: 'test:map-replace:special' }),
+    true
+  );
+  assert.deepEqual(
+    { ...(state.config.doorSpecialMap as Record<string, unknown>) },
+    { d4_full: 'glass', d5_full: null }
+  );
+
+  assert.equal(
+    replaceCurtainMap(App, { d4_full: 'linen', d5_full: null }, { source: 'test:map-replace:curtain' }),
+    true
+  );
+  assert.deepEqual(
+    { ...(state.config.curtainMap as Record<string, unknown>) },
+    { d4_full: 'linen', d5_full: null }
+  );
+
+  assert.equal(writeIndividualColor(App, 'body_left', '#112233', { source: 'test:write:color' }), true);
+  assert.equal((state.config.individualColors as Record<string, unknown>).body_left, '#112233');
+  assert.equal(writeIndividualColor(App, 'body_left', null, { source: 'test:delete:color' }), true);
+  assert.equal(Object.prototype.hasOwnProperty.call(state.config.individualColors, 'body_left'), false);
 });
 
 test('maps_api and runtime writers replace groove maps with canonical prefixed keys', () => {

@@ -4,7 +4,7 @@
 // Stage 2+ cleanup:
 // - Removed the old model-maps surface.
 // - All reads come from the store-backed config snapshot.
-// - All writes route through runtime/cfg_access helpers (patchConfigMap / cfgSetScalar).
+// - Map writes route through runtime owner writers; scalar collections use semantic cfg helpers.
 
 import type { AppContainer } from '../../../types';
 

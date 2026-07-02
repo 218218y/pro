@@ -169,7 +169,6 @@ export function installDomainApi(app: unknown): AppContainer {
     _cfg: readConfig,
     _map: readMapSnapshot,
     _meta: createMeta,
-    _cfgMapPatch: patchConfigMapValue,
   });
 
   ensureDomainApiInstallState(App).installed = true;
