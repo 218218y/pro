@@ -41,7 +41,6 @@ const OWNER_HELPER_NAMES = [
 const SIMPLE_OWNER_HELPER_IMPORT_ALLOWLIST = new Set([
   'esm/native/runtime/maps_access_writers.ts',
   'esm/native/kernel/maps_api_named_maps.ts',
-  'esm/native/kernel/domain_api_surface_sections_map_writes.ts',
 ]);
 
 const SIMPLE_OWNER_HELPER_NAMES = [
@@ -72,14 +71,6 @@ const DOMAIN_API_GROOVE_BINDINGS_FILE =
 const DOMAIN_API_DRAWERS_DIVIDERS_BINDINGS_FILE =
   'esm/native/kernel/domain_api_surface_sections_bindings_drawers_dividers.ts';
 const MAPS_API_NAMED_MAPS_FILE = 'esm/native/kernel/maps_api_named_maps.ts';
-const DOMAIN_GENERIC_MAP_WRITE_HELPERS = [
-  'commitCanonicalMapValue',
-  'commitCanonicalPrefixedMapValue',
-  'writeCanonicalMapValueDirect',
-  'patchCanonicalPrefixedMapViaCfg',
-  'writeSimpleMapValue',
-];
-
 const SIMPLE_WRITABLE_MAPS = [
   'handlesMap',
   'hingeMap',
@@ -357,11 +348,18 @@ function collectDomainGenericVisualWriteHelperViolations() {
   const files = walkSourceFiles('esm/native/kernel').filter(file =>
     file.startsWith('esm/native/kernel/domain_api_surface_sections')
   );
+  const domainGenericMapWriteHelpers = [
+    'commitCanonicalMapValue',
+    'commitCanonicalPrefixedMapValue',
+    'writeCanonicalMapValueDirect',
+    'patchCanonicalPrefixedMapViaCfg',
+    'writeSimpleMapValue',
+  ];
 
   for (const file of files) {
     const rawSource = readSourceFile(file);
     const strippedSource = stripCommentsPreserveLines(rawSource);
-    for (const helper of DOMAIN_GENERIC_MAP_WRITE_HELPERS) {
+    for (const helper of domainGenericMapWriteHelpers) {
       for (const mapName of VISUAL_KEYED_MAPS) {
         const regex = new RegExp(
           String.raw`\b${escapeRegExp(helper)}\s*\([^\n)]*['"]${escapeRegExp(mapName)}['"]`,
@@ -464,6 +462,50 @@ function collectGenericConfigMapWriteViolations() {
   return violations;
 }
 
+function collectGenericConfigMapImportViolations() {
+  const violations = [];
+  const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
+  const importPattern =
+    /import\s+\{[^}]*\b(?:cfgSetMap|patchConfigMap)\b[^}]*\}\s+from\s+['"][^'"]*cfg_access(?:_maps)?\.js['"]/g;
+
+  for (const file of files) {
+    if (GENERIC_CONFIG_MAP_WRITE_ALLOWLIST.has(file)) continue;
+    const rawSource = readSourceFile(file);
+    const strippedSource = stripCommentsPreserveLines(rawSource);
+    pushRegexMatches(violations, {
+      file,
+      rawSource,
+      strippedSource,
+      mapName: 'configMap',
+      kind: 'generic config map import outside config owner',
+      regex: new RegExp(importPattern),
+    });
+  }
+
+  return violations;
+}
+
+function collectGenericPublicMapSetKeyViolations() {
+  const violations = [];
+  const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
+  const regex = /\b(?:setKey|toggleKey)\s*(?::|=(?!=)|\()/g;
+
+  for (const file of files) {
+    const rawSource = readSourceFile(file);
+    const strippedSource = stripCommentsPreserveLines(rawSource);
+    pushRegexMatches(violations, {
+      file,
+      rawSource,
+      strippedSource,
+      mapName: 'setKey',
+      kind: 'generic public map setKey/toggleKey surface',
+      regex: new RegExp(regex),
+    });
+  }
+
+  return violations;
+}
+
 function collectDuplicatedOwnerPatchLogicViolations() {
   const violations = [];
   const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
@@ -508,6 +550,8 @@ test('visual/keyed owner helpers stay out of broad runtime facades', () => {
   const servicesStateFacade = readSourceFile('esm/native/services/api_state_surface.ts');
 
   assert.doesNotMatch(cfgAccessFacade, /setCfgVisualKeyedMapFromOwner/);
+  assert.doesNotMatch(cfgAccessFacade, /\bcfgSetMap\b/);
+  assert.doesNotMatch(cfgAccessFacade, /\bpatchConfigMap\b/);
   assert.doesNotMatch(mapsAccessFacade, /patchVisualKeyedMapEntriesFromOwner/);
   assert.doesNotMatch(mapsAccessFacade, /patchCanonicalVisualMapEntries/);
   assert.doesNotMatch(mapsAccessFacade, /writeMapKey/);
@@ -533,15 +577,10 @@ test('domain api visual writes are blocked from generic helpers and routed throu
   const doorBindings = readSourceFile(DOMAIN_API_DOOR_BINDINGS_FILE);
   const grooveBindings = readSourceFile(DOMAIN_API_GROOVE_BINDINGS_FILE);
 
-  assert.match(mapWrites, /isVisualKeyedMapName/);
-  assert.match(mapWrites, /assertDomainGenericMapWriteAllowed/);
-  for (const helper of DOMAIN_GENERIC_MAP_WRITE_HELPERS) {
-    assert.match(
-      mapWrites,
-      new RegExp(String.raw`\b${escapeRegExp(helper)}\s*\(`),
-      `${helper} should remain centralized in ${DOMAIN_API_MAP_WRITES_FILE}`
-    );
-  }
+  assert.doesNotMatch(mapWrites, /isVisualKeyedMapName/);
+  assert.doesNotMatch(mapWrites, /assertDomainGenericMapWriteAllowed/);
+  assert.doesNotMatch(mapWrites, /writeSimpleMapValue/);
+  assert.doesNotMatch(mapWrites, /writeCanonicalMapValueDirect/);
 
   assert.doesNotMatch(doorBindings, /commitCanonicalMapValue\(\s*state\s*,\s*['"]removedDoorsMap['"]/);
   assert.doesNotMatch(doorBindings, /commitCanonicalPrefixedMapValue\(\s*state\s*,\s*['"]splitDoorsMap['"]/);
@@ -565,7 +604,7 @@ test('domain api visual writes are blocked from generic helpers and routed throu
   );
 });
 
-test('simple generic map writers are allowlisted and semantic actions prefer named writers', () => {
+test('simple map writes use semantic writers and generic public map writers stay retired', () => {
   const simpleOwner = readSourceFile(SIMPLE_WRITABLE_OWNER_MODULE);
   const mapsWriters = readSourceFile('esm/native/runtime/maps_access_writers.ts');
   const mapsAccessFacade = readSourceFile('esm/native/runtime/maps_access.ts');
@@ -582,7 +621,7 @@ test('simple generic map writers are allowlisted and semantic actions prefer nam
   assert.match(simpleOwner, /export function toggleSimpleWritableBooleanMapEntryFromOwner\(/);
   assert.match(mapsWriters, /simple_writable_map_writer_owner\.js/);
   assert.match(mapsApiNamedMaps, /simple_writable_map_writer_owner\.js/);
-  assert.match(mapWrites, /simple_writable_map_writer_owner\.js/);
+  assert.doesNotMatch(mapWrites, /simple_writable_map_writer_owner\.js/);
   assert.match(mapsAccessFacade, /SIMPLE_WRITABLE_MAP_NAMES/);
   assert.match(mapsAccessFacade, /isSimpleWritableMapName/);
   for (const mapName of SIMPLE_WRITABLE_MAPS) {
@@ -593,10 +632,13 @@ test('simple generic map writers are allowlisted and semantic actions prefer nam
     );
   }
 
-  assert.match(mapWrites, /isSimpleWritableMapName/);
-  assert.match(mapWrites, /patchSimpleWritableMapEntryFromOwner/);
-  assert.match(mapsApiNamedMaps, /isSimpleWritableMapName\(cleanMapName\)/);
+  assert.doesNotMatch(mapWrites, /isSimpleWritableMapName/);
+  assert.doesNotMatch(mapWrites, /patchSimpleWritableMapEntryFromOwner/);
+  assert.doesNotMatch(mapsApiNamedMaps, /isSimpleWritableMapName\(cleanMapName\)/);
   assert.match(mapsApiNamedMaps, /patchSimpleWritableMapEntryFromOwner/);
+  assert.match(mapsApiNamedMaps, /toggleSimpleWritableBooleanMapEntryFromOwner/);
+  assert.match(mapsApiNamedMaps, /delete maps\.setKey/);
+  assert.match(mapsApiNamedMaps, /delete maps\.toggleKey/);
   assert.match(mapsWriters, /export function replaceDoorGrooveLinesCountMap\(/);
   assert.match(mapsWriters, /export function replaceRoundedFrameSideShelvesMap\(/);
   assert.match(mapsWriters, /export function replaceDoorSpecialMap\(/);
@@ -613,6 +655,10 @@ test('simple generic map writers are allowlisted and semantic actions prefer nam
   assert.doesNotMatch(drawerDividerBindings, /toggleDivider\([\s\S]*?toggleSimpleBooleanMapValue/);
   assert.doesNotMatch(doorBindings, /writeHandle\([\s\S]*?writeSimpleMapValue/);
   assert.doesNotMatch(doorBindings, /writeHinge\([\s\S]*?writeSimpleMapValue/);
+  assert.doesNotMatch(mapsApiNamedMaps, /\bmaps\.setKey\s*=/);
+  assert.doesNotMatch(mapsApiNamedMaps, /\bmaps\.setKey\?\./);
+  assert.doesNotMatch(mapsApiNamedMaps, /\bmaps\.toggleKey\s*=/);
+  assert.doesNotMatch(mapsApiNamedMaps, /\bmaps\.toggleKey\?\./);
   assert.doesNotMatch(mapsWriters, /\bensureMapRecord\b/);
   assert.doesNotMatch(mapsWriters, /\bwriteOwn\b/);
   assert.doesNotMatch(mapsWriters, /\btrySetKey\b/);
@@ -635,11 +681,12 @@ test('simple generic map writers are allowlisted and semantic actions prefer nam
   assert.match(colorsSection, /writeIndividualColor\(App,\s*partKey,\s*value,\s*meta\)/);
   assert.doesNotMatch(colorsSection, /_cfgMapPatch\(\s*['"]individualColors['"]/);
   assert.doesNotMatch(installHelpers, /\bpatchConfigMap\b/);
-  assert.match(
-    installHelpers,
-    /writeCanonicalMapValueDirect\(App,\s*mapKey,\s*recordKey,\s*value,\s*mergedMeta\)/
-  );
-  assert.match(rootMapBindings, /writeSimpleMapValue\(state,\s*nextMapName,\s*key,\s*val,\s*nextMeta\)/);
+  assert.doesNotMatch(installHelpers, /\bpatchConfigMapValue\b/);
+  assert.doesNotMatch(installHelpers, /\bapplyConfigPatch\b/);
+  assert.doesNotMatch(installHelpers, /\bwriteCanonicalMapValueDirect\b/);
+  assert.doesNotMatch(rootMapBindings, /\bwriteSimpleMapValue\b/);
+  assert.match(rootMapBindings, /delete state\.mapActions\.setKey/);
+  assert.doesNotMatch(rootMapBindings, /\bsetKey\s*\(/);
   assert.doesNotMatch(grooveCurtainBindings, /writeCurtainPreset\([\s\S]*?_cfgMapPatch/);
   assert.doesNotMatch(drawerDividerBindings, /writeDividerState\([\s\S]*?_cfgMapPatch/);
   assert.doesNotMatch(colorsSection, /writeIndividualColor\([\s\S]*?_cfgMapPatch/);
@@ -670,6 +717,20 @@ test('simple generic map writers are allowlisted and semantic actions prefer nam
     genericConfigMapWriteViolations,
     [],
     `cfgSetMap/patchConfigMap calls must stay inside config owner files:\n${genericConfigMapWriteViolations.join('\n')}`
+  );
+
+  const genericConfigMapImportViolations = collectGenericConfigMapImportViolations().map(formatViolation);
+  assert.deepEqual(
+    genericConfigMapImportViolations,
+    [],
+    `cfgSetMap/patchConfigMap imports must stay inside config owner files:\n${genericConfigMapImportViolations.join('\n')}`
+  );
+
+  const genericPublicMapSetKeyViolations = collectGenericPublicMapSetKeyViolations().map(formatViolation);
+  assert.deepEqual(
+    genericPublicMapSetKeyViolations,
+    [],
+    `Generic public map setKey/toggleKey surfaces are retired:\n${genericPublicMapSetKeyViolations.join('\n')}`
   );
 });
 

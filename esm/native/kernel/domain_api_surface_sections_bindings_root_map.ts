@@ -1,12 +1,10 @@
-import type { ActionMetaLike, UnknownRecord } from '../../../types';
+import type { UnknownRecord } from '../../../types';
 
 import {
-  readMapKey,
   type DomainApiSurfaceSectionBindings,
   type DomainApiSurfaceSectionBindingFactory,
   type DomainApiSurfaceSectionKey,
   type DomainApiSurfaceSectionsState,
-  writeSimpleMapValue,
 } from './domain_api_surface_sections_shared.js';
 
 function createSelectRootBindings(state: DomainApiSurfaceSectionsState): UnknownRecord {
@@ -16,13 +14,8 @@ function createSelectRootBindings(state: DomainApiSurfaceSectionsState): Unknown
 }
 
 function createMapActionBindings(state: DomainApiSurfaceSectionsState): UnknownRecord {
-  return {
-    setKey(mapName: unknown, key: unknown, val: unknown, meta: ActionMetaLike | undefined) {
-      const nextMapName = readMapKey(mapName);
-      const nextMeta = state._meta(meta, 'actions:map:setKey:' + nextMapName);
-      return writeSimpleMapValue(state, nextMapName, key, val, nextMeta);
-    },
-  };
+  delete state.mapActions.setKey;
+  return {};
 }
 
 export const DOMAIN_API_ROOT_MAP_BINDING_FACTORIES: Pick<

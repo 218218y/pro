@@ -46,7 +46,7 @@ function hasInstalledDomainApiSurface(app: AppContainer): boolean {
   } = ensureDomainApiNamespaces(app);
 
   return (
-    typeof mapActions.setKey === 'function' &&
+    typeof mapActions.setKey === 'undefined' &&
     typeof doorsActions.setOpen === 'function' &&
     typeof doorsActions.setRemoved === 'function' &&
     typeof drawersActions.setOpenId === 'function' &&
@@ -101,7 +101,6 @@ export function installDomainApi(app: unknown): AppContainer {
     captureConfigSnapshot,
     createMeta,
     readMapSnapshot,
-    patchConfigMapValue,
     reportNonFatal,
   } = createDomainApiInstallHelpers({ App, configActions });
 
@@ -141,7 +140,6 @@ export function installDomainApi(app: unknown): AppContainer {
     _meta: createMeta,
     _map: readMapSnapshot,
     _num: readNumberOrNull,
-    _cfgMapPatch: patchConfigMapValue,
   });
 
   installDomainApiRoomSection({

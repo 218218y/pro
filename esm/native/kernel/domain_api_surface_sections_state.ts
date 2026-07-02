@@ -1,4 +1,4 @@
-import type { ActionMetaLike, AppContainer, UnknownRecord } from '../../../types';
+import type { AppContainer, UnknownRecord } from '../../../types';
 import { splitBottomKey, splitKey } from '../runtime/maps_access.js';
 import type {
   DomainCurtainsSelect,
@@ -22,7 +22,6 @@ import {
   type DomainApiSurfaceSectionSurfaces,
   type DomainApiSurfaceSectionsContext,
   type DomainApiSurfaceSectionsState,
-  patchCanonicalMapValue,
   uniqueSurfaceTargets,
 } from './domain_api_surface_sections_shared.js';
 
@@ -107,6 +106,7 @@ export function attachCanonicalActionSurfaces(
   >
 ): void {
   const actionsRoot = ensureDomainApiNamespaces(App).actions;
+  delete surfaces.mapActions.setKey;
   actionsRoot.map = surfaces.mapActions;
   actionsRoot.doors = surfaces.doorsActions;
   actionsRoot.drawers = surfaces.drawersActions;
@@ -172,12 +172,6 @@ export function createDomainApiSurfaceSectionsState(
     ]);
   const readGrooveFlag = (partIdOrKey: unknown): boolean =>
     readPrefixedToggleMapFlag(readGroovesMap, partIdOrKey, grooveMapSemantics);
-  const patchCanonicalMapViaCfg = (
-    mapName: string,
-    canonicalKey: string,
-    value: unknown,
-    meta?: ActionMetaLike
-  ) => patchCanonicalMapValue(ctx._cfgMapPatch, mapName, canonicalKey, value, meta);
 
   return {
     ...ctx,
@@ -213,7 +207,6 @@ export function createDomainApiSurfaceSectionsState(
     readSplitFlag,
     readSplitBottomFlag,
     readGrooveFlag,
-    patchCanonicalMapViaCfg,
   };
 }
 

@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installMapsApi } from '../esm/native/kernel/maps_api.ts';
-import { cfgSetMap, patchConfigMap, setCfgDoorStyleMap } from '../esm/native/runtime/cfg_access.ts';
+import { cfgSetMap, patchConfigMap } from '../esm/native/runtime/cfg_access_maps.ts';
+import { setCfgDoorStyleMap } from '../esm/native/runtime/cfg_access.ts';
 import {
   isVisualKeyedMapName,
   patchDoorGrooveLinesCountEntries,
@@ -24,16 +25,6 @@ import {
   writeSplitPositionList,
 } from '../esm/native/runtime/maps_access.ts';
 
-function withSuppressedConsoleWarn(fn: () => void): void {
-  const originalWarn = console.warn;
-  console.warn = () => undefined;
-  try {
-    fn();
-  } finally {
-    console.warn = originalWarn;
-  }
-}
-
 test('runtime split key helpers use the door split authoring base for visual surface ids', () => {
   assert.equal(splitKey('d4_top'), 'split_d4');
   assert.equal(splitKey('d4_mid2'), 'split_d4');
@@ -50,6 +41,7 @@ test('runtime split key helpers use the door split authoring base for visual sur
 
 test('maps_api keeps map writes store-backed and mirrors saved colors to storage without stale array reuse', () => {
   const storageWrites: Array<[string, unknown]> = [];
+  const configPatchWrites: Array<Record<string, unknown>> = [];
   const state = {
     ui: {},
     runtime: {},
@@ -68,6 +60,7 @@ test('maps_api keeps map writes store-backed and mirrors saved colors to storage
     actions: {
       config: {
         patch: (patch: Record<string, unknown>) => {
+          configPatchWrites.push(patch);
           Object.assign(state.config, patch);
           return patch;
         },
@@ -195,8 +188,17 @@ test('maps_api keeps map writes store-backed and mirrors saved colors to storage
 
   assert.equal(writeIndividualColor(App, 'body_left', '#112233', { source: 'test:write:color' }), true);
   assert.equal((state.config.individualColors as Record<string, unknown>).body_left, '#112233');
+  const colorWritesBeforeNoop = configPatchWrites.length;
+  assert.equal(writeIndividualColor(App, 'body_left', '#112233', { source: 'test:write:color:noop' }), true);
+  assert.equal(configPatchWrites.length, colorWritesBeforeNoop);
   assert.equal(writeIndividualColor(App, 'body_left', null, { source: 'test:delete:color' }), true);
   assert.equal(Object.prototype.hasOwnProperty.call(state.config.individualColors, 'body_left'), false);
+  const colorWritesBeforeMissingDelete = configPatchWrites.length;
+  assert.equal(
+    writeIndividualColor(App, 'body_left', undefined, { source: 'test:delete:color:missing' }),
+    true
+  );
+  assert.equal(configPatchWrites.length, colorWritesBeforeMissingDelete);
 });
 
 test('maps_api and runtime writers replace groove maps with canonical prefixed keys', () => {
@@ -284,7 +286,14 @@ test('generic config and maps API writers reject visual keyed maps unless routed
     config: {} as Record<string, unknown>,
   };
   const App: any = {
-    maps: {},
+    maps: {
+      setKey: () => {
+        throw new Error('legacy setKey should be removed');
+      },
+      toggleKey: () => {
+        throw new Error('legacy toggleKey should be removed');
+      },
+    },
     actions: {
       config: {
         patch: (patch: Record<string, unknown>) => {
@@ -302,6 +311,8 @@ test('generic config and maps API writers reject visual keyed maps unless routed
 
   installMapsApi(App);
 
+  assert.equal(App.maps.setKey, undefined);
+  assert.equal(App.maps.toggleKey, undefined);
   assert.equal(isVisualKeyedMapName('doorStyleMap'), true);
   assert.equal(isVisualKeyedMapName('handlesMap'), false);
 
@@ -320,10 +331,7 @@ test('generic config and maps API writers reject visual keyed maps unless routed
   assert.equal(state.config.splitDoorsMap, undefined);
   assert.equal(state.config.splitDoorsBottomMap, undefined);
 
-  withSuppressedConsoleWarn(() => {
-    App.maps.setKey('doorStyleMap', 'd1_full', 'profile', { source: 'test:maps:setKey:style' });
-    App.maps.setKey('unknownMap', 'd1', true, { source: 'test:maps:setKey:unknown' });
-  });
+  assert.equal(typeof App.maps.setKey, 'undefined');
   assert.equal(state.config.doorStyleMap, undefined);
   assert.equal(state.config.unknownMap, undefined);
 

@@ -331,18 +331,6 @@ export interface MapsNamespaceLike extends UnknownRecord {
     (mapName: string): UnknownRecord;
   };
 
-  /** Typed setter for known map names (falls back to unknown for unknown names). */
-  setKey?: {
-    <K extends KnownMapName>(
-      mapName: K,
-      key: string,
-      val: MapsByName[K][string],
-      meta?: ActionMetaLike
-    ): unknown;
-    (mapName: string, key: string, val: unknown, meta?: ActionMetaLike): unknown;
-  };
-  toggleKey?: (mapName: string, key: string, meta?: ActionMetaLike) => unknown;
-
   toggleDivider?: (dividerKey: string, meta?: ActionMetaLike) => unknown;
   toggleGrooveKey?: (grooveKey: string, meta?: ActionMetaLike) => unknown;
   getGroove?: (partId: string) => boolean;

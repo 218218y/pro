@@ -34,15 +34,17 @@ test('[routeA delete-pass] actions.setCfgScalar is canonical commit-only (no cfg
   assert.doesNotMatch(stateApiConfigNamespace, /callCfgCompat\('setScalar', key, valueOrFn, meta\)/);
 });
 
-test('[routeA delete-pass] maps_api config writes route through runtime cfg_access (no local applyConfig probe)', () => {
-  assert.match(mapsApi, /patchConfigMap/);
+test('[routeA delete-pass] maps_api config writes route through semantic owner writers (no local applyConfig probe)', () => {
+  assert.match(mapsApi, /patchSimpleWritableMapEntryFromOwner/);
+  assert.match(mapsApi, /patchVisualKeyedMapEntriesFromOwner/);
   assert.match(mapsApi, /setCfgSavedColors/);
   assert.match(mapsApi, /setCfgColorSwatchesOrder/);
+  assert.doesNotMatch(mapsApi, /patchConfigMap/);
   assert.doesNotMatch(mapsApi, /applyConfigPatch/);
   assert.doesNotMatch(mapsApi, /from '\.\/config_write\.js'/);
   assert.match(
     mapsApi,
-    /All writes route through runtime\/cfg_access helpers \(patchConfigMap \/ cfgSetScalar\)\./
+    /Map writes route through runtime owner writers; scalar collections use semantic cfg helpers\./
   );
   assert.doesNotMatch(mapsApi, /maps\.commitConfigPatch\.applyConfig/);
   assert.doesNotMatch(mapsApi, /const applyConfig = actions \? actions\['applyConfig'\] : null/);

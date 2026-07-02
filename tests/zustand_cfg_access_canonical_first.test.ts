@@ -1,14 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import {
-  applyConfigPatch,
-  cfgGet,
-  cfgRead,
-  cfgSetScalar,
-  cfgSetMap,
-  patchConfigMap,
-} from '../esm/native/runtime/cfg_access.ts';
+import { applyConfigPatch, cfgGet, cfgRead, cfgSetScalar } from '../esm/native/runtime/cfg_access.ts';
+import { cfgSetMap, patchConfigMap } from '../esm/native/runtime/cfg_access_maps.ts';
 
 type AnyRecord = Record<string, unknown>;
 

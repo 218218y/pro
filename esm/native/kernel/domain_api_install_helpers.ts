@@ -7,12 +7,10 @@ import type {
   UnknownRecord,
 } from '../../../types';
 
-import { applyConfigPatch } from '../runtime/cfg_access.js';
 import { metaMerge } from '../runtime/meta_profiles_access.js';
 import { readMap } from '../runtime/maps_access.js';
 import { getCfg, getRuntime, getUi } from './store_access.js';
 import { asActionMeta, asDomainObject, domainApiReportNonFatal } from './domain_api_shared.js';
-import { writeCanonicalMapValueDirect } from './domain_api_surface_sections_map_writes.js';
 
 export type DomainApiInstallHelpers = {
   readConfig: () => ConfigStateLike;
@@ -21,7 +19,6 @@ export type DomainApiInstallHelpers = {
   captureConfigSnapshot: () => UnknownRecord;
   createMeta: (meta: ActionMetaLike | UnknownRecord | null | undefined, source: string) => ActionMetaLike;
   readMapSnapshot: (mapName: unknown) => UnknownRecord;
-  patchConfigMapValue: (mapName: unknown, key: unknown, value: unknown, meta?: ActionMetaLike) => unknown;
   reportNonFatal: (op: string, error: unknown, opts?: { throttleMs?: number; failFast?: boolean }) => void;
 };
 
@@ -65,21 +62,6 @@ export function createDomainApiInstallHelpers(
     return asDomainObject(value) || {};
   };
 
-  const patchConfigMapValue = (
-    mapName: unknown,
-    key: unknown,
-    value: unknown,
-    meta?: ActionMetaLike
-  ): unknown => {
-    const mapKey = String(mapName || '');
-    const recordKey = String(key || '');
-    if (!mapKey || !recordKey) return undefined;
-    const mergedMeta = createMeta(meta, 'actions:cfgMapPatch:' + mapKey);
-    return writeCanonicalMapValueDirect(App, mapKey, recordKey, value, mergedMeta);
-  };
-
-  void applyConfigPatch;
-
   return {
     readConfig,
     readUi,
@@ -87,7 +69,6 @@ export function createDomainApiInstallHelpers(
     captureConfigSnapshot,
     createMeta,
     readMapSnapshot,
-    patchConfigMapValue,
     reportNonFatal: (op, error, opts) => domainApiReportNonFatal(App, op, error, opts),
   };
 }

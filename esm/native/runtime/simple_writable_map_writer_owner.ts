@@ -56,9 +56,12 @@ export function patchSimpleWritableMapEntryFromOwner(
   if (!cleanKey) return false;
 
   const nextMap = readSimpleWritableMapFromOwner(App, mapName);
+  const hasOwn = Object.prototype.hasOwnProperty.call(nextMap, cleanKey);
   if (value === undefined || value === null) {
+    if (!hasOwn) return true;
     delete nextMap[cleanKey];
   } else {
+    if (hasOwn && Object.is(nextMap[cleanKey], value)) return true;
     nextMap[cleanKey] = value;
   }
 

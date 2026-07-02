@@ -45,5 +45,7 @@ test('maps/doors runtime seams use typed option/meta contracts instead of raw un
     mapsAccess,
     /setKey\?: \(mapName: string, key: string, val: unknown, meta\?: unknown\)/
   );
+  assert.doesNotMatch(mapsAccess, /\bsetKey\?:/);
+  assert.doesNotMatch(mapsAccess, /\btoggleKey\?:/);
   assert.doesNotMatch(mapsAccess, /setSavedColors\?: \(arr: unknown, meta\?: unknown\)/);
 });

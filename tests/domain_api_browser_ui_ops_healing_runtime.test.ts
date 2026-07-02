@@ -34,7 +34,6 @@ function createDomainApp() {
 test('installDomainApi heals missing methods in place without replacing intact action seams', () => {
   const App = createDomainApp();
 
-  const setKeyRef = App.actions.map.setKey;
   const setOpenRef = App.actions.doors.setOpen;
   const setFloorTypeRef = App.actions.room.setFloorType;
   const recomputeRef = App.actions.modules.recompute;
@@ -45,13 +44,14 @@ test('installDomainApi heals missing methods in place without replacing intact a
   delete App.actions.textures.setCustomUploadedDataURL;
   delete App.actions.modules.setAll;
   delete App.actions.corner.setConfig;
+  App.actions.map.setKey = () => 'legacy';
   App.actions.modules.patchAt = () => 'legacy';
   App.actions.corner.ensureLowerCellAt = () => 'legacy';
   App.actions.modules.patch = () => 'legacy';
 
   installDomainApi(App);
 
-  assert.equal(App.actions.map.setKey, setKeyRef);
+  assert.equal(App.actions.map.setKey, undefined);
   assert.equal(App.actions.doors.setOpen, setOpenRef);
   assert.equal(App.actions.room.setFloorType, setFloorTypeRef);
   assert.equal(App.actions.modules.recompute, recomputeRef);

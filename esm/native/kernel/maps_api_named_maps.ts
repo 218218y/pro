@@ -1,17 +1,17 @@
 import type { AppContainer, ActionMetaLike } from '../../../types';
 
-import { isVisualKeyedMapName, splitBottomKey, splitKey } from '../runtime/maps_access.js';
+import { splitBottomKey, splitKey } from '../runtime/maps_access.js';
 import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
 import {
-  isSimpleWritableMapName,
   patchSimpleWritableMapEntryFromOwner,
+  toggleSimpleWritableBooleanMapEntryFromOwner,
 } from '../runtime/simple_writable_map_writer_owner.js';
 import {
   patchVisualKeyedMapEntriesFromOwner,
   toggleVisualKeyedMapEntryFromOwner,
 } from '../runtime/visual_keyed_map_writer_owner.js';
 import type { MapsApiShared } from './maps_api_shared.js';
-import { createRecord, asObject } from './maps_api_shared.js';
+import { createRecord } from './maps_api_shared.js';
 import { toCanonicalGroovesMapKey } from '../../shared/door_groove_key_contracts_shared.js';
 import { toCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
 
@@ -22,71 +22,24 @@ function readMapKey(value: unknown): string {
 export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared): void {
   const { maps, metaNorm, readConfigMap, readNamedMap, reportNonFatal } = shared;
 
+  delete maps.setKey;
+  delete maps.toggleKey;
+
   maps.getMap = function getMap(mapName: string) {
     const name = String(mapName || '');
     return name ? readConfigMap(name) : createRecord();
-  };
-
-  maps.setKey = function setKey(mapName: string, key: string, val: unknown, meta?: ActionMetaLike) {
-    const cleanMapName = String(mapName || '');
-    const cleanKey = String(key || '');
-    if (!cleanMapName || !cleanKey) return undefined;
-    const metaFixed = metaNorm(meta, 'maps:setKey:' + cleanMapName);
-    if (
-      cleanMapName === 'doorTrimMap' ||
-      cleanMapName === 'groovesMap' ||
-      cleanMapName === 'grooveLinesCountMap'
-    ) {
-      return patchVisualKeyedMapEntriesFromOwner(
-        App,
-        cleanMapName,
-        [{ key: cleanKey, value: val }],
-        metaFixed
-      );
-    }
-    if (isVisualKeyedMapName(cleanMapName)) {
-      reportNonFatal(
-        'maps.setKey.visualKeyedMapRejected',
-        new Error(`maps.setKey cannot write visual/keyed map "${cleanMapName}"; use the map owner writer`),
-        6000
-      );
-      return undefined;
-    }
-    if (!isSimpleWritableMapName(cleanMapName)) {
-      reportNonFatal(
-        'maps.setKey.simpleWritableMapRejected',
-        new Error(
-          `maps.setKey cannot write map "${cleanMapName}"; use a semantic writer or SIMPLE_WRITABLE_MAP_NAMES`
-        ),
-        6000
-      );
-      return undefined;
-    }
-
-    try {
-      return patchSimpleWritableMapEntryFromOwner(App, cleanMapName, cleanKey, val, metaFixed);
-    } catch (_e) {
-      reportNonFatal('maps.setKey.patchSimpleWritableMapEntryFromOwner', _e, 6000);
-      return undefined;
-    }
-  };
-
-  maps.toggleKey = function toggleKey(mapName: string, key: string, meta?: ActionMetaLike) {
-    const cleanMapName = String(mapName || '');
-    const cleanKey = String(key || '');
-    if (!cleanMapName || !cleanKey) return undefined;
-    const metaFixed = metaNorm(meta, 'maps:toggleKey:' + cleanMapName);
-    const current = maps.getMap?.(cleanMapName) || createRecord();
-    const currentRecord = asObject(current) || createRecord();
-    const next = currentRecord[cleanKey] === true ? null : true;
-    return maps.setKey?.(cleanMapName, cleanKey, next, metaFixed);
   };
 
   maps.toggleDivider = function toggleDivider(dividerKey: string, meta?: ActionMetaLike) {
     const metaFixed = metaNorm(meta, 'maps:toggleDivider');
     const k = String(dividerKey || '');
     if (!k) return undefined;
-    return maps.toggleKey?.('drawerDividersMap', k, metaFixed);
+    try {
+      return toggleSimpleWritableBooleanMapEntryFromOwner(App, 'drawerDividersMap', k, metaFixed);
+    } catch (_e) {
+      reportNonFatal('maps.toggleDivider.toggleSimpleWritableBooleanMapEntryFromOwner', _e, 6000);
+      return undefined;
+    }
   };
 
   maps.toggleGrooveKey = function toggleGrooveKey(grooveKey: string, meta?: ActionMetaLike) {
@@ -145,7 +98,12 @@ export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared
     const metaFixed = metaNorm(meta, 'maps:setHinge');
     const k = String(doorId || '');
     if (!k) return undefined;
-    return maps.setKey?.('hingeMap', k, hingeDir, metaFixed);
+    try {
+      return patchSimpleWritableMapEntryFromOwner(App, 'hingeMap', k, hingeDir, metaFixed);
+    } catch (_e) {
+      reportNonFatal('maps.setHinge.patchSimpleWritableMapEntryFromOwner', _e, 6000);
+      return undefined;
+    }
   };
 
   maps.setRemoved = function setRemoved(partId: string, isRemoved: boolean, meta?: ActionMetaLike) {
@@ -169,6 +127,13 @@ export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared
 
   maps.setHandle = function setHandle(partId: string, handleType: unknown, meta?: ActionMetaLike) {
     const metaFixed = metaNorm(meta, 'maps:setHandle');
-    return maps.setKey?.('handlesMap', String(partId || ''), handleType, metaFixed);
+    const k = String(partId || '');
+    if (!k) return undefined;
+    try {
+      return patchSimpleWritableMapEntryFromOwner(App, 'handlesMap', k, handleType, metaFixed);
+    } catch (_e) {
+      reportNonFatal('maps.setHandle.patchSimpleWritableMapEntryFromOwner', _e, 6000);
+      return undefined;
+    }
   };
 }

@@ -9,8 +9,6 @@ export {
 } from './cfg_access_core.js';
 export {
   cfgMap,
-  cfgSetMap,
-  patchConfigMap,
   setCfgCurtainMap,
   setCfgDoorSpecialMap,
   setCfgDoorStyleMap,

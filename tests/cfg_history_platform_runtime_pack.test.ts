@@ -5,10 +5,9 @@ import {
   applyConfigPatch,
   cfgBatch,
   cfgPatchWithReplaceKeys,
-  cfgSetMap,
   extractConfigPatchWriteMetadata,
-  patchConfigMap,
 } from '../esm/native/runtime/cfg_access.ts';
+import { cfgSetMap, patchConfigMap } from '../esm/native/runtime/cfg_access_maps.ts';
 
 type AnyRecord = Record<string, any>;
 

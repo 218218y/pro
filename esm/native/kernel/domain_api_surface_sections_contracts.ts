@@ -44,7 +44,6 @@ export interface DomainApiSurfaceSectionsContext {
   _meta: (meta: ActionMetaLike | UnknownRecord | null | undefined, source: string) => ActionMetaLike;
   _map: (mapName: unknown) => UnknownRecord;
   _num: (value: unknown) => number | null;
-  _cfgMapPatch: (mapName: unknown, key: unknown, val: unknown, meta?: ActionMetaLike) => unknown;
 }
 
 export interface DomainApiSurfaceSectionsState extends DomainApiSurfaceSectionsContext {
@@ -71,12 +70,6 @@ export interface DomainApiSurfaceSectionsState extends DomainApiSurfaceSectionsC
   readSplitFlag: (doorBaseId: unknown) => boolean;
   readSplitBottomFlag: (doorBaseId: unknown) => boolean;
   readGrooveFlag: (partIdOrKey: unknown) => boolean;
-  patchCanonicalMapViaCfg: (
-    mapName: string,
-    canonicalKey: string,
-    value: unknown,
-    meta?: ActionMetaLike
-  ) => unknown;
 }
 
 export const DOMAIN_API_SECTION_KEYS = [

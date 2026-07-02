@@ -110,18 +110,6 @@ function createHarness(overrides?: {
       _meta: (meta, source) => ({ ...(meta || {}), installVersion: env.installVersion, source }),
       _map: mapName => ({ ...(env.maps[String(mapName)] || {}) }),
       _num: value => (typeof value === 'number' ? value : null),
-      _cfgMapPatch: (mapName, key, value, meta) => {
-        const cleanMapName = String(mapName || '');
-        const cleanKey = String(key || '');
-        if (cleanMapName && cleanKey) {
-          const nextMap = { ...(env.maps[cleanMapName] || {}) };
-          if (value == null) delete nextMap[cleanKey];
-          else nextMap[cleanKey] = value;
-          env.maps[cleanMapName] = nextMap;
-        }
-        mapPatchCalls.push({ mapName, key, value, meta });
-        return { ok: true };
-      },
     });
 
   const replacePublicRoots = () => {
@@ -291,45 +279,26 @@ test('domain api surface sections divider toggle writes through the simple map o
   assert.deepEqual(h.mapPatchCalls, []);
 });
 
-test('domain api surface sections generic simple writers normalize keys once across map and curtain actions', () => {
+test('domain api surface sections do not expose generic map setKey and curtain semantic writes normalize keys', () => {
   const h = createHarness();
 
-  h.mapActions.setKey('curtainMap', 42, 'linen', { source: 'test:map:setKey:number' });
+  assert.equal(h.mapActions.setKey, undefined);
   h.curtainsActions.set(7, 'sheer', { source: 'test:curtains:set:number' });
 
   assert.deepEqual(
     h.configSetCalls.map(({ mapName, nextMap }) => ({ mapName, nextMap })),
-    [
-      { mapName: 'curtainMap', nextMap: { '42': 'linen' } },
-      { mapName: 'curtainMap', nextMap: { '42': 'linen', '7': 'sheer' } },
-    ]
+    [{ mapName: 'curtainMap', nextMap: { '7': 'sheer' } }]
   );
   assert.deepEqual(h.mapPatchCalls, []);
 });
 
-test('domain api surface sections generic map writers reject visual maps and keep simple maps writable', () => {
+test('domain api surface sections keep simple map writes on semantic actions only', () => {
   const h = createHarness();
 
-  assert.throws(
-    () => h.mapActions.setKey('removedDoorsMap', 'removed_d1_full', true, { source: 'test:generic:removed' }),
-    /writeSimpleMapValue cannot write visual\/keyed map "removedDoorsMap"/
-  );
-  assert.throws(
-    () => h.mapActions.setKey('splitDoorsMap', 'split_d1', true, { source: 'test:generic:split' }),
-    /writeSimpleMapValue cannot write visual\/keyed map "splitDoorsMap"/
-  );
-  assert.throws(
-    () =>
-      h.mapActions.setKey('splitDoorsBottomMap', 'splitb_d1', true, { source: 'test:generic:split-bottom' }),
-    /writeSimpleMapValue cannot write visual\/keyed map "splitDoorsBottomMap"/
-  );
-  assert.throws(
-    () => h.mapActions.setKey('unknownMap', 'd1', true, { source: 'test:generic:unknown' }),
-    /writeSimpleMapValue cannot write map "unknownMap"; use a semantic writer or SIMPLE_WRITABLE_MAP_NAMES/
-  );
+  assert.equal(h.mapActions.setKey, undefined);
 
-  h.mapActions.setKey('hingeMap', 'd1', 'left', { source: 'test:generic:hinge' });
-  h.mapActions.setKey('handlesMap', 'd1', 'bar', { source: 'test:generic:handle' });
+  h.doorsActions.setHinge('d1', 'left', { source: 'test:semantic:hinge' });
+  h.doorsActions.setHandle('d1', 'bar', { source: 'test:semantic:handle' });
 
   assert.deepEqual(
     h.configSetCalls.map(({ mapName, nextMap }) => ({ mapName, nextMap })),
@@ -375,7 +344,6 @@ test('domain api surface sections route visual door writes through semantic owne
 test('domain api surface sections heal missing action/select methods without replacing intact refs', () => {
   const h = createHarness();
 
-  const setKeyRef = h.mapActions.setKey;
   const setOpenRef = h.doorsActions.setOpen;
   const countRef = h.select.doors.count;
   const curtainsGetRef = h.select.curtains.get;
@@ -387,7 +355,7 @@ test('domain api surface sections heal missing action/select methods without rep
 
   h.install();
 
-  assert.equal(h.mapActions.setKey, setKeyRef);
+  assert.equal(h.mapActions.setKey, undefined);
   assert.equal(h.doorsActions.setOpen, setOpenRef);
   assert.equal(h.select.doors.count, countRef);
   assert.equal(h.select.curtains.get, curtainsGetRef);
