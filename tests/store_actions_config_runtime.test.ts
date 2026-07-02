@@ -155,7 +155,7 @@ test('store actions config prefers focused action namespaces and normalizes maps
   );
 });
 
-test('store actions config falls back to canonical scalar/map writers and replace-key snapshots', () => {
+test('store actions config falls back to canonical scalar/map writers and fails fast without project snapshot action', () => {
   const h = createHarness();
   delete h.app.actions.config.setSavedNotes;
   delete h.app.actions.config.setCustomUploadedDataURL;
@@ -172,10 +172,14 @@ test('store actions config falls back to canonical scalar/map writers and replac
   setCfgSavedNotes(h.app, [{ id: 'note-1' }, 'skip'], { source: 'notes' });
   setCfgCustomUploadedDataURL(h.app, '   ', { source: 'upload' });
   setCfgPreChestState(h.app, { keep: true }, { source: 'prechest' });
-  applyProjectConfigSnapshot(
-    h.app,
-    { modulesConfiguration: [{ id: 'm1' }], handlesMap: { d1: 'bar' } },
-    { source: 'snapshot' }
+  assert.throws(
+    () =>
+      applyProjectConfigSnapshot(
+        h.app,
+        { modulesConfiguration: [{ id: 'm1' }], handlesMap: { d1: 'bar' } },
+        { source: 'snapshot' }
+      ),
+    /applyProjectConfigSnapshot requires canonical actions\.config\.applyProjectSnapshot/
   );
   setCfgHingeMap(h.app, { d1: 'left', bad: 99 }, { source: 'hinge' });
   setCfgHandlesMap(h.app, { d1: 'bar', bad: 88 }, { source: 'handles' });
@@ -217,36 +221,5 @@ test('store actions config falls back to canonical scalar/map writers and replac
   );
 
   const storeCalls = h.calls.filter(call => call.ns === 'store');
-  assert.deepEqual(storeCalls, [
-    {
-      ns: 'store',
-      method: 'setConfig',
-      args: [
-        {
-          modulesConfiguration: [{ id: 'm1' }],
-          handlesMap: { d1: 'bar' },
-          __replace: {
-            modulesConfiguration: true,
-            stackSplitLowerModulesConfiguration: true,
-            cornerConfiguration: true,
-            groovesMap: true,
-            splitDoorsMap: true,
-            splitDoorsBottomMap: true,
-            removedDoorsMap: true,
-            roundedFrameSideShelvesMap: true,
-            drawerDividersMap: true,
-            individualColors: true,
-            doorSpecialMap: true,
-            doorStyleMap: true,
-            savedColors: true,
-            handlesMap: true,
-            hingeMap: true,
-            curtainMap: true,
-            doorTrimMap: true,
-          },
-        },
-        { source: 'snapshot' },
-      ],
-    },
-  ]);
+  assert.deepEqual(storeCalls, []);
 });

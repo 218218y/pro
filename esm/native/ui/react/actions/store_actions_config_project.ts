@@ -7,7 +7,6 @@ import type {
 } from '../../../../../types';
 
 import {
-  applyConfigPatchReplaceKeys as applyConfigPatchReplaceKeysApi,
   cfgSetScalar as cfgSetScalarApi,
   setCfgCustomUploadedDataURL as setCfgCustomUploadedDataURLApi,
 } from '../../../services/api.js';
@@ -61,29 +60,8 @@ function applyProjectConfigSnapshot(app: AppContainer, snapshot: UnknownRecord, 
     cfgNs.applyProjectSnapshot(snapshot, meta);
     return;
   }
-  void applyConfigPatchReplaceKeysApi(
-    app,
-    snapshot,
-    {
-      modulesConfiguration: true,
-      stackSplitLowerModulesConfiguration: true,
-      cornerConfiguration: true,
-      groovesMap: true,
-      splitDoorsMap: true,
-      splitDoorsBottomMap: true,
-      removedDoorsMap: true,
-      roundedFrameSideShelvesMap: true,
-      drawerDividersMap: true,
-      individualColors: true,
-      doorSpecialMap: true,
-      doorStyleMap: true,
-      savedColors: true,
-      handlesMap: true,
-      hingeMap: true,
-      curtainMap: true,
-      doorTrimMap: true,
-    },
-    meta
+  throw new Error(
+    '[WardrobePro] applyProjectConfigSnapshot requires canonical actions.config.applyProjectSnapshot(snapshot, meta).'
   );
 }
 

@@ -20,6 +20,7 @@ import { assertCanonicalUiRawDims } from '../runtime/ui_raw_selectors.js';
 import {
   buildCanonicalProjectConfigSnapshot,
   buildCanonicalProjectUiSnapshot,
+  PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS,
 } from './project_load_canonical_snapshot.js';
 import { setAutoCameraBuildKey } from '../runtime/render_access.js';
 import {
@@ -53,6 +54,16 @@ import {
   prepareProjectIoAutosaveBeforeLoad,
   refreshProjectIoAutosaveAfterLoad,
 } from './project_io_orchestrator_autosave.js';
+
+function assertProjectLoadConfigReplaceOwnedBranches(cfg: UnknownRecord): UnknownRecord {
+  const missing = Object.keys(PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS).filter(key => {
+    return !Object.prototype.hasOwnProperty.call(cfg, key) || typeof cfg[key] === 'undefined';
+  });
+  if (missing.length) {
+    throw new Error(`project.load.config missing replace-owned config branch(es): ${missing.join(', ')}`);
+  }
+  return cfg;
+}
 
 export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
   const { App, showToast, reportNonFatal, metaRestore, metaUiOnly, setProjectIoRestoring, deepCloneJson } =
@@ -116,7 +127,9 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
     restoreGen = nextProjectIoRestoreGeneration(App);
 
     try {
-      const cfg: UnknownRecord = buildCanonicalProjectConfigSnapshot(data) as UnknownRecord;
+      const cfg: UnknownRecord = assertProjectLoadConfigReplaceOwnedBranches(
+        buildCanonicalProjectConfigSnapshot(data) as UnknownRecord
+      );
       const metaNoBuild = metaRestore('project.load', { silent: false });
 
       const { uiState, savedNotes } = loadSnapshot;
