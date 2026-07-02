@@ -32,6 +32,10 @@ const sectionsBindingsOwner = readSource(
   '../esm/native/kernel/domain_api_surface_sections_bindings.ts',
   import.meta.url
 );
+const sectionsRootMapOwner = readSource(
+  '../esm/native/kernel/domain_api_surface_sections_bindings_root_map.ts',
+  import.meta.url
+);
 const sectionsDoorsOwner = readSource(
   '../esm/native/kernel/domain_api_surface_sections_bindings_doors.ts',
   import.meta.url
@@ -74,7 +78,7 @@ test('[domain-api-sections] facade stays thin while shared helpers, state wiring
   );
 });
 
-test('[domain-api-sections] shared facade delegates contracts, prefixed maps, map writes, and removed-door ownership', () => {
+test('[domain-api-sections] shared facade delegates contracts, prefixed-map readers, map read helpers, and removed-door ownership', () => {
   assertMatchesAll(
     assert,
     sectionsSharedFacade,
@@ -83,7 +87,9 @@ test('[domain-api-sections] shared facade delegates contracts, prefixed maps, ma
       /domain_api_surface_sections_prefixed_maps\.js/,
       /domain_api_surface_sections_map_writes\.js/,
       /domain_api_surface_sections_removed_doors\.js/,
-      /commitCanonicalPrefixedMapValue/,
+      /areDomainMapValuesEquivalent/,
+      /readDomainMapValue/,
+      /shouldSkipSimpleMapWrite/,
       /canonicalRemovedDoorPartId/,
     ],
     'sectionsSharedFacade'
@@ -93,9 +99,12 @@ test('[domain-api-sections] shared facade delegates contracts, prefixed maps, ma
     sectionsSharedFacade,
     [
       /export function canonicalRemovedDoorPartId\(/,
-      /export function commitCanonicalPrefixedMapValue\(/,
-      /export function writeSimpleMapValue\(/,
-      /export function shouldSkipCanonicalPrefixedMapCommit\(/,
+      /commitCanonicalPrefixedMapValue/,
+      /writeSimpleMapValue/,
+      /shouldSkipCanonicalPrefixedMapCommit/,
+      /writeCanonicalMapValueDirect/,
+      /patchConfigMapValue/,
+      /_cfgMapPatch/,
       /writeMapKey\(/,
     ],
     'sectionsSharedFacade'
@@ -133,10 +142,26 @@ test('[domain-api-sections] shared facade delegates contracts, prefixed maps, ma
     assert,
     sectionsMapWritesOwner,
     [
-      /export function commitCanonicalPrefixedMapValue\(/,
-      /export function writeSimpleMapValue\(/,
-      /export function shouldSkipCanonicalPrefixedMapCommit\(/,
+      /function readOwnMapValue\(/,
+      /function isPlainDomainValueObject\(/,
+      /export function areDomainMapValuesEquivalent\(/,
+      /export function readDomainMapValue\(/,
+      /export function shouldSkipSimpleMapWrite\(/,
+    ],
+    'sectionsMapWritesOwner'
+  );
+  assertLacksAll(
+    assert,
+    sectionsMapWritesOwner,
+    [
+      /commitCanonicalPrefixedMapValue/,
+      /writeSimpleMapValue/,
+      /shouldSkipCanonicalPrefixedMapCommit/,
+      /writeCanonicalMapValueDirect/,
       /patchSimpleWritableMapEntryFromOwner/,
+      /patchConfigMapValue/,
+      /_cfgMapPatch/,
+      /writeMapKey\(/,
     ],
     'sectionsMapWritesOwner'
   );
@@ -166,6 +191,7 @@ test('[domain-api-sections] state and binding owners hold readers and family fac
       /export function createDomainApiSurfaceSectionsState\(/,
       /export function attachCanonicalSelectSurfaces\(/,
       /export function attachCanonicalActionSurfaces\(/,
+      /delete surfaces\.mapActions\.setKey/,
       /readPrefixedToggleMapFlag\(/,
     ],
     'sectionsStateOwner'
@@ -181,6 +207,23 @@ test('[domain-api-sections] state and binding owners hold readers and family fac
       /export function createDomainApiSurfaceSectionBindings\(/,
     ],
     'sectionsBindingsOwner'
+  );
+  assertMatchesAll(
+    assert,
+    sectionsRootMapOwner,
+    [
+      /function createSelectRootBindings\(/,
+      /function createMapActionBindings\(/,
+      /delete state\.mapActions\.setKey/,
+      /return \{\};/,
+    ],
+    'sectionsRootMapOwner'
+  );
+  assertLacksAll(
+    assert,
+    sectionsRootMapOwner,
+    [/writeSimpleMapValue/, /commitCanonicalPrefixedMapValue/, /return \{\s*setKey/s],
+    'sectionsRootMapOwner'
   );
   assertLacksAll(
     assert,

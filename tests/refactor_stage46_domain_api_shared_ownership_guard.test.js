@@ -31,6 +31,7 @@ test('stage 46 domain API shared ownership split is anchored', () => {
     'function isPlainDomainValueObject',
     'export function canonicalRemovedDoorPartId(',
     'export function commitCanonicalPrefixedMapValue(',
+    'export function writeSimpleMapValue(',
   ]) {
     assert.equal(
       facade.includes(implementationNeedle),
@@ -56,13 +57,24 @@ test('stage 46 domain API shared ownership split is anchored', () => {
   );
 
   assert.ok(mapWrites.includes('export function areDomainMapValuesEquivalent'));
-  assert.ok(mapWrites.includes('export function shouldSkipCanonicalPrefixedMapCommit'));
-  assert.ok(mapWrites.includes('export function commitCanonicalPrefixedMapValue'));
-  assert.ok(mapWrites.includes('export function writeSimpleMapValue'));
-  assert.ok(
-    mapWrites.includes('patchSimpleWritableMapEntryFromOwner'),
-    'map write owner must route simple map writes through the simple owner'
-  );
+  assert.ok(mapWrites.includes('export function readDomainMapValue'));
+  assert.ok(mapWrites.includes('export function shouldSkipSimpleMapWrite'));
+  for (const retiredWriterNeedle of [
+    'export function shouldSkipCanonicalPrefixedMapCommit',
+    'export function commitCanonicalPrefixedMapValue',
+    'export function writeSimpleMapValue',
+    'writeCanonicalMapValueDirect',
+    'patchSimpleWritableMapEntryFromOwner',
+    'patchConfigMapValue',
+    '_cfgMapPatch',
+    'writeMapKey(',
+  ]) {
+    assert.equal(
+      mapWrites.includes(retiredWriterNeedle),
+      false,
+      `domain map write helper owner must not restore retired generic writer ${retiredWriterNeedle}`
+    );
+  }
   assert.equal(
     mapWrites.includes('canonicalRemovedDoorPartId'),
     false,
