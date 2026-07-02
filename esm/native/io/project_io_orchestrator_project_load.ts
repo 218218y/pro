@@ -9,20 +9,17 @@ import {
   preserveUiEphemeral,
 } from './project_io_load_helpers.js';
 import { requestBuilderForcedBuild } from '../runtime/builder_service_access.js';
-import { cfgPatchWithReplaceKeys } from '../runtime/cfg_access.js';
 import { restoreNotesFromSaveViaService } from '../runtime/notes_access.js';
 import { resetHistoryBaselineRequiredOrThrow } from '../runtime/history_system_access.js';
 import {
   applyProjectConfigSnapshotViaActionsOrThrow,
   commitUiSnapshotViaActionsOrThrow,
-  patchViaActions,
   setDirtyViaActionsOrThrow,
 } from '../runtime/actions_access_mutations.js';
 import { assertCanonicalUiRawDims } from '../runtime/ui_raw_selectors.js';
 import {
   buildCanonicalProjectConfigSnapshot,
   buildCanonicalProjectUiSnapshot,
-  PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS,
 } from './project_load_canonical_snapshot.js';
 import { setAutoCameraBuildKey } from '../runtime/render_access.js';
 import {
@@ -56,35 +53,6 @@ import {
   prepareProjectIoAutosaveBeforeLoad,
   refreshProjectIoAutosaveAfterLoad,
 } from './project_io_orchestrator_autosave.js';
-
-function buildProjectLoadCommittedUiSnapshot(uiSnap: UnknownRecord): UnknownRecord {
-  return {
-    ...uiSnap,
-    __snapshot: true,
-    __capturedAt: Date.now(),
-  };
-}
-
-function buildProjectLoadCanonicalPatch(
-  cfg: UnknownRecord,
-  committedUiSnap: UnknownRecord,
-  restoring = false
-): UnknownRecord {
-  return {
-    // Project loads must replace snapshot-owned config branches so empty maps/lists clear stale state.
-    config: cfgPatchWithReplaceKeys({ ...cfg }, PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS),
-    ui: { ...committedUiSnap },
-    runtime: {
-      sketchMode: !!committedUiSnap.sketchMode,
-      restoring: !!restoring,
-      // Wardrobe-type profiles are a transient mode-switch cache, not project data.
-      // Loading a snapshot must clear them so switching Hinged/Sliding after a reset or file load
-      // cannot resurrect a cabinet from the previous in-memory project.
-      wardrobeTypeProfiles: null,
-    },
-    meta: { dirty: false },
-  };
-}
 
 export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
   const { App, showToast, reportNonFatal, metaRestore, metaUiOnly, setProjectIoRestoring, deepCloneJson } =
@@ -195,7 +163,6 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
         reportNonFatal('project.load.restoreNotes', err);
       }
 
-      let committedUiSnap: UnknownRecord | null = null;
       try {
         let uiSnap = normalizeProjectIoUiState(buildCanonicalProjectUiSnapshot(uiState));
         assertCanonicalUiRawDims(uiSnap, 'project.load.uiState');
@@ -215,46 +182,42 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
           reportNonFatal('project.load.pdfDraft', err);
         }
 
-        committedUiSnap = buildProjectLoadCommittedUiSnapshot(uiSnap);
-        const committedPatch = buildProjectLoadCanonicalPatch(cfg, committedUiSnap, false);
-        if (!patchViaActions(App, committedPatch, metaNoBuild)) {
-          applyProjectConfigSnapshotViaActionsOrThrow(App, cfg, metaNoBuild, 'project.load config apply');
-          commitUiSnapshotViaActionsOrThrow(App, uiSnap, metaNoBuild, 'project.load UI snapshot commit');
+        applyProjectConfigSnapshotViaActionsOrThrow(App, cfg, metaNoBuild, 'project.load config apply');
+        commitUiSnapshotViaActionsOrThrow(App, uiSnap, metaNoBuild, 'project.load UI snapshot commit');
 
-          try {
-            setRuntimeSketchMode(
-              App,
-              !!committedUiSnap.sketchMode,
-              metaRestore('project.load:sketchMode', { silent: false })
-            );
-            setRuntimeScalar(
-              App,
-              'wardrobeTypeProfiles',
-              null,
-              metaRestore('project.load:clearWardrobeTypeProfiles', { silent: false })
-            );
-          } catch (err) {
-            reportNonFatal('project.load.syncRuntimeSnapshotState', err);
-            throw err;
-          }
+        try {
+          setRuntimeSketchMode(
+            App,
+            !!uiSnap.sketchMode,
+            metaRestore('project.load:sketchMode', { silent: false })
+          );
+          setRuntimeScalar(
+            App,
+            'wardrobeTypeProfiles',
+            null,
+            metaRestore('project.load:clearWardrobeTypeProfiles', { silent: false })
+          );
+        } catch (err) {
+          reportNonFatal('project.load.syncRuntimeSnapshotState', err);
+          throw err;
+        }
 
-          try {
-            setDirtyViaActionsOrThrow(
-              App,
-              false,
-              metaUiOnly('project.load', { silent: true }),
-              'project.load dirty clear'
-            );
-          } catch (err) {
-            reportNonFatal('project.load.clearDirty', err);
-            throw err;
-          }
+        try {
+          setDirtyViaActionsOrThrow(
+            App,
+            false,
+            metaUiOnly('project.load', { silent: true }),
+            'project.load dirty clear'
+          );
+        } catch (err) {
+          reportNonFatal('project.load.clearDirty', err);
+          throw err;
+        }
 
-          try {
-            setProjectIoRestoring(false, metaRestore('project.load', { silent: true }));
-          } catch (err) {
-            reportNonFatal('project.load.setRestoring.false', err);
-          }
+        try {
+          setProjectIoRestoring(false, metaRestore('project.load', { silent: true }));
+        } catch (err) {
+          reportNonFatal('project.load.setRestoring.false', err);
         }
       } catch (err) {
         reportNonFatal('project.load.commitUiSnapshot', err);

@@ -215,7 +215,7 @@ test('[state-api.config] actions.applyConfig rejects known map branches before g
   assert.deepEqual({ ...asRec(asRec(store.getState().config).hingeMap) }, { d1_full: { side: 'left' } });
 });
 
-test('[state-api.config] root actions.patch rejects known map branches outside snapshot owners', () => {
+test('[state-api.config] root actions.patch always rejects known map branches', () => {
   const store = createStoreStub({
     ui: {},
     config: { handlesMap: { d1_full: 'bar' } },
@@ -237,13 +237,22 @@ test('[state-api.config] root actions.patch rejects known map branches outside s
   assert.deepEqual({ ...asRec(asRec(store.getState().config).handlesMap) }, { d1_full: 'bar' });
   assert.equal(asRec(store.getState().ui).doorStyle, undefined);
 
-  (App.actions as any).patch(
-    { config: { handlesMap: { d1_full: 'rail' } }, ui: { doorStyle: 'profile' } },
+  assert.throws(
+    () =>
+      (App.actions as any).patch(
+        { config: { handlesMap: { d1_full: 'rail' } }, ui: { doorStyle: 'profile' } },
+        { source: 'project.load' }
+      ),
+    /actions\.patch cannot write known config map branches \(handlesMap\)/
+  );
+  assert.deepEqual({ ...asRec(asRec(store.getState().config).handlesMap) }, { d1_full: 'bar' });
+  assert.equal(asRec(store.getState().ui).doorStyle, undefined);
+
+  (App.actions as any).config.applyProjectSnapshot(
+    { handlesMap: { d1_full: 'rail' } },
     { source: 'project.load' }
   );
-
   assert.deepEqual({ ...asRec(asRec(store.getState().config).handlesMap) }, { d1_full: 'rail' });
-  assert.equal(asRec(store.getState().ui).doorStyle, 'profile');
 });
 
 test('[state-api.config] applyProjectSnapshot keeps library module signature from the incoming snapshot', () => {

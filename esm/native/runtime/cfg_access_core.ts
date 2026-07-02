@@ -7,6 +7,7 @@ import type {
   UnknownRecord,
 } from '../../../types';
 import { hasSliceWriterSeam, patchSliceCanonical } from './slice_write_access.js';
+import { isKnownMapName } from './maps_access_normalizers.js';
 import {
   asRecord,
   getHistoryNamespace,
@@ -20,6 +21,11 @@ import {
 const CFG_PATCH_PROTOCOL_KEYS = Object.freeze({
   replace: `${'__'}replace`,
 });
+const CFG_PATCH_PROTOCOL_KEY_SET = new Set<string>([
+  CFG_PATCH_PROTOCOL_KEYS.replace,
+  '__snapshot',
+  '__capturedAt',
+]);
 const CONFIG_PATCH_WRITE_OPTS = {
   storeWriter: 'setConfig',
   allowRootStorePatch: false,
@@ -55,9 +61,36 @@ export const cfgRead: CfgRead = (App: unknown, key: unknown, defaultValue?: unkn
   return value === undefined ? defaultValue : value;
 };
 
+function readKnownConfigMapPatchKeys(patch: UnknownRecord): string[] {
+  return Object.keys(patch).filter(key => !CFG_PATCH_PROTOCOL_KEY_SET.has(key) && isKnownMapName(key));
+}
+
+function readKnownConfigMapReplaceKeys(patch: UnknownRecord): string[] {
+  const replace = readBooleanMap(patch[CFG_PATCH_PROTOCOL_KEYS.replace]);
+  if (!replace) return [];
+  return Object.keys(replace).filter(key => replace[key] && isKnownMapName(key));
+}
+
+export function assertNoGenericKnownConfigMapPatch(patchObj: unknown, apiName: string): void {
+  const patch = asRecord(patchObj) || {};
+  const mapKeys = readKnownConfigMapPatchKeys(patch);
+  const replaceKeys = readKnownConfigMapReplaceKeys(patch);
+  if (!mapKeys.length && !replaceKeys.length) return;
+
+  const parts: string[] = [];
+  if (mapKeys.length) parts.push(`branches (${mapKeys.join(', ')})`);
+  if (replaceKeys.length) parts.push(`replace keys (${replaceKeys.join(', ')})`);
+  throw new Error(
+    `[WardrobePro][cfg_access] ${apiName} cannot write known config map ${parts.join(
+      ' and '
+    )}; use applyProjectSnapshot/applyPaintSnapshot or a semantic map writer.`
+  );
+}
+
 export function applyConfigPatch(App: unknown, patchObj: unknown, meta?: ActionMetaLike): unknown {
   const patch = asRecord(patchObj) || {};
   if (!Object.keys(patch).length) return patch;
+  assertNoGenericKnownConfigMapPatch(patch, 'applyConfigPatch');
   const resolvedMeta = normMeta(App, meta, { source: 'config' });
 
   if (hasSliceWriterSeam(App, 'config', CONFIG_PATCH_WRITE_OPTS)) {
@@ -96,6 +129,7 @@ export function applyConfigSnapshot(
 ): ConfigSnapshotLike {
   const snapshot = asRecord(snapshotObj) || {};
   const patch = { ...snapshot, __snapshot: true };
+  assertNoGenericKnownConfigMapPatch(patch, 'applyConfigSnapshot');
   void applyConfigPatch(App, patch, meta);
   return snapshot;
 }

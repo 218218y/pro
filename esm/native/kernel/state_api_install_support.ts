@@ -149,28 +149,9 @@ function readKnownConfigMapPatchKeys(patch: unknown): string[] {
   return Object.keys(patchRec).filter(key => key !== CONFIG_REPLACE_KEY && isKnownMapName(key));
 }
 
-function isSnapshotOwnedRootConfigMapPatch(meta: ActionMetaLike): boolean {
-  const source = typeof meta.source === 'string' ? meta.source : '';
-  if (!source) return false;
-  if (source === 'project.load' || source.startsWith('project.load:')) return true;
-  if (source === 'history.undoRedo' || source.startsWith('history.') || source.startsWith('history:'))
-    return true;
-  if (
-    source === 'actions:room:setWardrobeType:restore' ||
-    source.startsWith('actions:room:setWardrobeType:restore:')
-  )
-    return true;
-  if (
-    source === 'actions:room:setWardrobeType:init' ||
-    source.startsWith('actions:room:setWardrobeType:init:')
-  )
-    return true;
-  return false;
-}
-
-function assertNoGenericRootConfigMapPatch(payload: PatchPayload, meta: ActionMetaLike): void {
+function assertNoGenericRootConfigMapPatch(payload: PatchPayload): void {
   const mapKeys = readKnownConfigMapPatchKeys(payload.config);
-  if (!mapKeys.length || isSnapshotOwnedRootConfigMapPatch(meta)) return;
+  if (!mapKeys.length) return;
   throw new Error(
     `[WardrobePro] actions.patch cannot write known config map branches (${mapKeys.join(
       ', '
@@ -316,7 +297,7 @@ export function createStateApiInstallSupport(App: AppContainer, storeInput: unkn
 
   const dispatchCanonicalPatch = (payloadIn: PatchPayload, meta: ActionMetaLike): unknown => {
     const payload = asPatchPayload(payloadIn);
-    assertNoGenericRootConfigMapPatch(payload, meta);
+    assertNoGenericRootConfigMapPatch(payload);
     const root = readRootSnapshot();
     const filteredPayload: PatchPayload = {};
 

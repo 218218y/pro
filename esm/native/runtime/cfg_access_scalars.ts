@@ -15,6 +15,7 @@ import {
 import {
   applyConfigPatch,
   applyConfigPatchFromMapOwner,
+  assertNoGenericKnownConfigMapPatch,
   cfgGet,
   cfgPatchWithReplaceKeys,
   cfgRead,
@@ -28,6 +29,7 @@ export function applyConfigPatchReplaceKeys(
 ) {
   const base = asRecord(patchObj) || {};
   const patch = cfgPatchWithReplaceKeys(base, replaceKeys);
+  assertNoGenericKnownConfigMapPatch(patch, 'applyConfigPatchReplaceKeys');
   void applyConfigPatch(App, patch, meta);
   return patch;
 }

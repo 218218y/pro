@@ -392,7 +392,7 @@ test('project io load clears wardrobe-type profile cache in fallback runtime wri
   );
 });
 
-test('project io load uses one canonical root patch when the installed actions surface supports it', () => {
+test('project io load uses explicit snapshot APIs even when a root patch surface exists', () => {
   const rootPatches: Array<{ patch: Record<string, unknown>; meta?: Record<string, unknown> }> = [];
   const { orchestrator, calls, autosaveCalls, runtimeFlags } = createProjectIoApp({
     patch(patch, meta) {
@@ -411,25 +411,20 @@ test('project io load uses one canonical root patch when the installed actions s
   );
 
   assert.deepEqual(result, { ok: true, restoreGen: 1 });
-  assert.equal(rootPatches.length, 1);
-  assert.deepEqual(calls, ['history:project.load']);
+  assert.equal(rootPatches.length, 0);
+  assert.deepEqual(calls, [
+    'config:project.load',
+    'commit:project.load',
+    'dirty:false:project.load',
+    'history:project.load',
+  ]);
   assert.deepEqual(autosaveCalls, ['cancel', 'force']);
-  assert.deepEqual(runtimeFlags, [{ key: 'restoring', value: true }]);
-  assert.equal(rootPatches[0].meta?.source, 'project.load');
-  assert.equal(rootPatches[0].patch.runtime?.sketchMode, true);
-  assert.equal(rootPatches[0].patch.runtime?.restoring, false);
-  assert.equal(rootPatches[0].patch.runtime?.wardrobeTypeProfiles, null);
-  assert.equal(rootPatches[0].patch.meta?.dirty, false);
-  assert.equal(rootPatches[0].patch.ui?.orderPdfEditorZoom, 1.25);
-  assert.deepEqual(rootPatches[0].patch.ui?.orderPdfEditorDraft, { id: 'draft-1' });
-  assert.equal(rootPatches[0].patch.ui?.__snapshot, true);
-  assert.equal(typeof rootPatches[0].patch.ui?.__capturedAt, 'number');
-  assert.deepEqual(rootPatches[0].patch.config?.removedDoorsMap, {});
-  assert.deepEqual(rootPatches[0].patch.config?.roundedFrameSideShelvesMap, {});
-  assert.deepEqual(rootPatches[0].patch.config?.drawerDividersMap, {});
-  assert.equal(rootPatches[0].patch.config?.__replace?.removedDoorsMap, true);
-  assert.equal(rootPatches[0].patch.config?.__replace?.roundedFrameSideShelvesMap, true);
-  assert.equal(rootPatches[0].patch.config?.__replace?.drawerDividersMap, true);
+  assert.deepEqual(runtimeFlags, [
+    { key: 'restoring', value: true },
+    { key: 'sketchMode', value: true },
+    { key: 'wardrobeTypeProfiles', value: null },
+    { key: 'restoring', value: false },
+  ]);
 });
 
 test('project io handleFileLoad now preserves canonical file-read/load errors instead of hiding behind pending legacy results', async () => {
