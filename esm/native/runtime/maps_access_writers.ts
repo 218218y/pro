@@ -8,14 +8,17 @@ import { toCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_ke
 import { VISUAL_KEYED_MAP_NAMES, isVisualKeyedMapName } from './visual_keyed_map_names.js';
 import {
   patchVisualKeyedMapEntriesFromOwner,
+  setCfgVisualKeyedMapFromOwner,
   toggleVisualKeyedMapEntryFromOwner,
 } from './visual_keyed_map_writer_owner.js';
 import {
   SIMPLE_WRITABLE_MAP_NAMES,
   isSimpleWritableMapName,
   patchSimpleWritableMapEntryFromOwner,
+  replaceSimpleWritableMapFromOwner,
   toggleSimpleWritableBooleanMapEntryFromOwner,
 } from './simple_writable_map_writer_owner.js';
+import { normalizeKnownMapSnapshot } from './maps_access_normalizers.js';
 
 export { SIMPLE_WRITABLE_MAP_NAMES, VISUAL_KEYED_MAP_NAMES, isSimpleWritableMapName, isVisualKeyedMapName };
 
@@ -53,6 +56,33 @@ export function patchDoorGrooveLinesCountEntries(
   meta?: ActionMetaLike
 ): boolean {
   return patchVisualKeyedMapEntriesFromOwner(App, 'grooveLinesCountMap', entries, meta);
+}
+
+export function replaceDoorGrooveLinesCountMap(
+  App: unknown,
+  nextMap: unknown,
+  meta?: ActionMetaLike
+): boolean {
+  setCfgVisualKeyedMapFromOwner(
+    App,
+    'grooveLinesCountMap',
+    normalizeKnownMapSnapshot('grooveLinesCountMap', nextMap),
+    meta
+  );
+  return true;
+}
+
+export function replaceRoundedFrameSideShelvesMap(
+  App: unknown,
+  nextMap: unknown,
+  meta?: ActionMetaLike
+): boolean {
+  return replaceSimpleWritableMapFromOwner(
+    App,
+    'roundedFrameSideShelvesMap',
+    normalizeKnownMapSnapshot('roundedFrameSideShelvesMap', nextMap),
+    meta
+  );
 }
 
 export function writeHandle(

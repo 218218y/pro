@@ -1,12 +1,6 @@
 import type { AppContainer } from '../../../../../types';
 
-import {
-  runHistoryBatch,
-  setCfgMap,
-  setCfgScalar,
-  setUiCorniceType,
-  setUiDoorStyle,
-} from '../actions/store_actions.js';
+import { runHistoryBatch, setCfgScalar, setUiCorniceType, setUiDoorStyle } from '../actions/store_actions.js';
 import {
   applyImmediateStructuralConfigMutation,
   applyImmediateStructuralUiMutation,
@@ -16,7 +10,12 @@ import {
   ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME,
   readRemovedFrameSidePartIds,
 } from '../../../features/part_identity/api.js';
-import { materializeActiveGrooveLinesCountMap, readStoreStateMaybe } from '../../../services/api.js';
+import {
+  materializeActiveGrooveLinesCountMap,
+  readStoreStateMaybe,
+  replaceDoorGrooveLinesCountMap,
+  replaceRoundedFrameSideShelvesMap,
+} from '../../../services/api.js';
 
 import type {
   DesignTabCorniceType,
@@ -47,7 +46,7 @@ function freezeExistingGrooveLinesCount(app: AppContainer): void {
   const source = 'react:design:grooveLinesCount:freezeExisting';
   const nextMap = materializeActiveGrooveLinesCountMap(app);
   applyImmediateStructuralConfigMutation(app, source, { grooveLinesCountMap: nextMap }, meta => {
-    setCfgMap(app, 'grooveLinesCountMap', nextMap, meta);
+    replaceDoorGrooveLinesCountMap(app, nextMap, meta);
   });
 }
 
@@ -158,7 +157,7 @@ export function createDesignTabControllerRuntime(
             source,
             { [ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME]: nextMap },
             meta => {
-              setCfgMap(app, ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME, nextMap, meta);
+              replaceRoundedFrameSideShelvesMap(app, nextMap, meta);
             }
           );
         },

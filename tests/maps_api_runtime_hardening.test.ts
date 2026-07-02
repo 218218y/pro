@@ -8,6 +8,8 @@ import {
   patchDoorGrooveLinesCountEntries,
   patchDoorGrooveMapEntries,
   readMapOrEmpty,
+  replaceDoorGrooveLinesCountMap,
+  replaceRoundedFrameSideShelvesMap,
   splitBottomKey,
   splitKey,
   splitPosKey,
@@ -146,6 +148,29 @@ test('maps_api keeps map writes store-backed and mirrors saved colors to storage
   assert.equal((state.config.groovesMap as Record<string, unknown>).d2, undefined);
   assert.equal(grooveLineCounts.d2_mid2, 6);
   assert.equal((state.config.grooveLinesCountMap as Record<string, unknown>).groove_d2_mid2, undefined);
+
+  assert.equal(
+    replaceDoorGrooveLinesCountMap(
+      App,
+      { d3_mid2: 6, groove_d3_mid2: 7, invalid: 'bad' },
+      { source: 'test:map-replace:count' }
+    ),
+    true
+  );
+  assert.deepEqual({ ...(state.config.grooveLinesCountMap as Record<string, unknown>) }, { d3_mid2: 6 });
+
+  assert.equal(
+    replaceRoundedFrameSideShelvesMap(
+      App,
+      { body_left: true, body_right: null, ignored: 'bad' },
+      { source: 'test:map-replace:rounded' }
+    ),
+    true
+  );
+  assert.deepEqual(
+    { ...(state.config.roundedFrameSideShelvesMap as Record<string, unknown>) },
+    { body_left: true, body_right: null }
+  );
 });
 
 test('maps_api and runtime writers replace groove maps with canonical prefixed keys', () => {

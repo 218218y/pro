@@ -38,6 +38,8 @@ export {
   isVisualKeyedMapName,
   patchDoorGrooveLinesCountEntries,
   patchDoorGrooveMapEntries,
+  replaceDoorGrooveLinesCountMap,
+  replaceRoundedFrameSideShelvesMap,
   toggleDivider,
   toggleGrooveKey,
   writeCurtainPreset,

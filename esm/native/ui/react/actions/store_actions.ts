@@ -16,7 +16,6 @@ export {
   setCfgManualWidth,
   setCfgMirrorReflectorEnabled,
   setCfgLowerModulesConfiguration,
-  setCfgMap,
   setCfgModulesConfiguration,
   setCfgMultiColorMode,
   setCfgPreChestState,

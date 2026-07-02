@@ -66,6 +66,16 @@ export function patchSimpleWritableMapEntryFromOwner(
   return true;
 }
 
+export function replaceSimpleWritableMapFromOwner(
+  App: unknown,
+  mapName: SimpleWritableMapName,
+  nextMap: unknown,
+  meta?: ActionMetaLike
+): boolean {
+  setCfgSimpleWritableMapFromOwner(App, mapName, nextMap, meta);
+  return true;
+}
+
 export function toggleSimpleWritableBooleanMapEntryFromOwner(
   App: unknown,
   mapName: Extract<SimpleWritableMapName, 'drawerDividersMap'>,

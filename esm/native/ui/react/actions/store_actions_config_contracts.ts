@@ -3,12 +3,9 @@ import type {
   AppContainer,
   ConfigScalarKey,
   ConfigScalarValueMap,
-  KnownMapName,
-  MapsByName,
 } from '../../../../../types';
 
-import { cfgSetMap as cfgSetMapApi, cfgSetScalar as cfgSetScalarApi } from '../../../services/api.js';
-import { emptyRecord, readRecord } from './store_actions_state.js';
+import { cfgSetScalar as cfgSetScalarApi } from '../../../services/api.js';
 
 type SetCfgScalar = {
   <K extends ConfigScalarKey>(
@@ -29,24 +26,5 @@ const setCfgScalar: SetCfgScalar = (
   void cfgSetScalarApi(app, key, value, meta);
 };
 
-type SetCfgMap = {
-  <K extends KnownMapName>(
-    app: AppContainer,
-    mapName: K,
-    nextMap: MapsByName[K],
-    meta?: ActionMetaLike
-  ): void;
-  (app: AppContainer, mapName: string, nextMap: unknown, meta?: ActionMetaLike): void;
-};
-
-const setCfgMap: SetCfgMap = (
-  app: AppContainer,
-  mapName: string,
-  nextMap: unknown,
-  meta?: ActionMetaLike
-): void => {
-  void cfgSetMapApi(app, mapName, readRecord(nextMap) || emptyRecord(), meta);
-};
-
-export { setCfgMap, setCfgScalar };
-export type { SetCfgMap, SetCfgScalar };
+export { setCfgScalar };
+export type { SetCfgScalar };

@@ -44,6 +44,7 @@ const SIMPLE_OWNER_HELPER_IMPORT_ALLOWLIST = new Set([
 
 const SIMPLE_OWNER_HELPER_NAMES = [
   'patchSimpleWritableMapEntryFromOwner',
+  'replaceSimpleWritableMapFromOwner',
   'toggleSimpleWritableBooleanMapEntryFromOwner',
 ];
 
@@ -396,6 +397,45 @@ function collectBroadWriteMapKeyCallViolations() {
   return violations;
 }
 
+function collectUiGenericMapWriteViolations() {
+  const violations = [];
+  const files = walkSourceFiles('esm/native/ui');
+  const patterns = [
+    {
+      mapName: 'setCfgMap',
+      kind: 'generic UI setCfgMap',
+      regex: /\bsetCfgMap\s*\(/g,
+    },
+    {
+      mapName: 'cfgSetMap',
+      kind: 'generic UI cfgSetMap',
+      regex: /\bcfgSetMap\s*\(/g,
+    },
+    {
+      mapName: 'patchConfigMap',
+      kind: 'generic UI patchConfigMap',
+      regex: /\bpatchConfigMap\s*\(/g,
+    },
+  ];
+
+  for (const file of files) {
+    const rawSource = readSourceFile(file);
+    const strippedSource = stripCommentsPreserveLines(rawSource);
+    for (const pattern of patterns) {
+      pushRegexMatches(violations, {
+        file,
+        rawSource,
+        strippedSource,
+        mapName: pattern.mapName,
+        kind: pattern.kind,
+        regex: pattern.regex,
+      });
+    }
+  }
+
+  return violations;
+}
+
 function collectDuplicatedOwnerPatchLogicViolations() {
   const violations = [];
   const files = SOURCE_ROOTS.flatMap(root => walkSourceFiles(root));
@@ -445,6 +485,10 @@ test('visual/keyed owner helpers stay out of broad runtime facades', () => {
   assert.doesNotMatch(mapsAccessFacade, /writeMapKey/);
   assert.doesNotMatch(coreApiFacade, /writeMapKey/);
   assert.doesNotMatch(servicesStateFacade, /writeMapKey/);
+  assert.doesNotMatch(coreApiFacade, /\bcfgSetMap\b/);
+  assert.doesNotMatch(coreApiFacade, /\bpatchConfigMap\b/);
+  assert.doesNotMatch(servicesStateFacade, /\bcfgSetMap\b/);
+  assert.doesNotMatch(servicesStateFacade, /\bpatchConfigMap\b/);
 });
 
 test('visual/keyed owner helpers are imported only by approved owners', () => {
@@ -506,6 +550,7 @@ test('simple generic map writers are allowlisted and semantic actions prefer nam
   assert.match(simpleOwner, /SIMPLE_WRITABLE_MAP_NAMES\s*=\s*\[/);
   assert.match(simpleOwner, /export function isSimpleWritableMapName\(/);
   assert.match(simpleOwner, /export function patchSimpleWritableMapEntryFromOwner\(/);
+  assert.match(simpleOwner, /export function replaceSimpleWritableMapFromOwner\(/);
   assert.match(simpleOwner, /export function toggleSimpleWritableBooleanMapEntryFromOwner\(/);
   assert.match(mapsWriters, /simple_writable_map_writer_owner\.js/);
   assert.match(mapsApiNamedMaps, /simple_writable_map_writer_owner\.js/);
@@ -524,6 +569,10 @@ test('simple generic map writers are allowlisted and semantic actions prefer nam
   assert.match(mapWrites, /patchSimpleWritableMapEntryFromOwner/);
   assert.match(mapsApiNamedMaps, /isSimpleWritableMapName\(cleanMapName\)/);
   assert.match(mapsApiNamedMaps, /patchSimpleWritableMapEntryFromOwner/);
+  assert.match(mapsWriters, /export function replaceDoorGrooveLinesCountMap\(/);
+  assert.match(mapsWriters, /export function replaceRoundedFrameSideShelvesMap\(/);
+  assert.match(mapsWriters, /setCfgVisualKeyedMapFromOwner/);
+  assert.match(mapsWriters, /replaceSimpleWritableMapFromOwner/);
   assert.match(grooveCurtainBindings, /writeCurtainPreset\(state\.App/);
   assert.match(drawerDividerBindings, /writeDividerState\(state\.App/);
   assert.match(doorBindings, /writeHandle\(state\.App/);
@@ -551,6 +600,13 @@ test('simple generic map writers are allowlisted and semantic actions prefer nam
     simpleOwnerImportViolations,
     [],
     `Simple writable owner helpers may only be imported by approved writer owners:\n${simpleOwnerImportViolations.join('\n')}`
+  );
+
+  const uiGenericMapWriteViolations = collectUiGenericMapWriteViolations().map(formatViolation);
+  assert.deepEqual(
+    uiGenericMapWriteViolations,
+    [],
+    `UI/React map writes must use semantic runtime writers instead of generic config map APIs:\n${uiGenericMapWriteViolations.join('\n')}`
   );
 });
 

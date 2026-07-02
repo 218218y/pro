@@ -31,7 +31,12 @@ function loadDesignTabControllerRuntimeModule(stubs = {}) {
             stubs.calls?.push(['runHistoryBatch', app, meta]);
             fn();
           }),
-        setCfgMap: stubs.setCfgMap || ((...args) => stubs.calls?.push(['setCfgMap', ...args])),
+        setCfgMap:
+          stubs.setCfgMap ||
+          ((...args) => {
+            stubs.calls?.push(['setCfgMap', ...args]);
+            throw new Error('Design tab controller must use semantic map writers, not setCfgMap');
+          }),
         setCfgScalar: stubs.setCfgScalar || ((...args) => stubs.calls?.push(['setCfgScalar', ...args])),
         setUiCorniceType:
           stubs.setUiCorniceType || ((...args) => stubs.calls?.push(['setUiCorniceType', ...args])),
@@ -57,6 +62,18 @@ function loadDesignTabControllerRuntimeModule(stubs = {}) {
             return false;
           }),
         readStoreStateMaybe: stubs.readStoreStateMaybe || (() => ({ ui: {} })),
+        replaceDoorGrooveLinesCountMap:
+          stubs.replaceDoorGrooveLinesCountMap ||
+          ((...args) => {
+            stubs.calls?.push(['replaceDoorGrooveLinesCountMap', ...args]);
+            return true;
+          }),
+        replaceRoundedFrameSideShelvesMap:
+          stubs.replaceRoundedFrameSideShelvesMap ||
+          ((...args) => {
+            stubs.calls?.push(['replaceRoundedFrameSideShelvesMap', ...args]);
+            return true;
+          }),
         requestBuilderStructuralRefresh:
           stubs.requestBuilderStructuralRefresh ||
           ((...args) => stubs.calls?.push(['requestBuilderStructuralRefresh', ...args])),
@@ -170,6 +187,47 @@ test('[design-tab-controller-runtime] delegates structural ui writes through can
   );
 });
 
+test('[design-tab-controller-runtime] freezes groove line counts through semantic map writer', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  const mod = loadDesignTabControllerRuntimeModule({
+    calls,
+    materializeActiveGrooveLinesCountMap: () => ({ active: 4 }),
+    readStoreStateMaybe: () => ({ ui: {} }),
+  });
+  const controller = mod.createDesignTabControllerRuntime({
+    app,
+    setFeatureToggle: () => undefined,
+  });
+
+  controller.setGrooveLinesCount(7.9);
+  controller.resetGrooveLinesCount();
+
+  assert.equal(
+    calls.some(call => call[0] === 'setCfgMap'),
+    false,
+    'groove line count direct path must not call generic setCfgMap'
+  );
+  const writerCalls = calls.filter(call => call[0] === 'replaceDoorGrooveLinesCountMap');
+  assert.equal(writerCalls.length, 2);
+  assert.deepEqual({ ...writerCalls[0][2] }, { active: 4 });
+  assert.deepEqual(
+    { ...writerCalls[0][3] },
+    {
+      source: 'react:design:grooveLinesCount:freezeExisting',
+      immediate: true,
+    }
+  );
+  assert.deepEqual({ ...writerCalls[1][2] }, { active: 4 });
+  assert.deepEqual(
+    { ...writerCalls[1][3] },
+    {
+      source: 'react:design:grooveLinesCount:freezeExisting',
+      immediate: true,
+    }
+  );
+});
+
 test('[design-tab-controller-runtime] toggles rounded shelves for removed frame sides only', () => {
   const calls = [];
   const app = { id: 'app' };
@@ -201,11 +259,10 @@ test('[design-tab-controller-runtime] toggles rounded shelves for removed frame 
     { body_right: true, body_left: true }
   );
   assert.deepEqual({ ...calls[1][3] }, { source: 'react:design:roundedFrameSideShelves', immediate: true });
-  assert.equal(calls[2][0], 'setCfgMap');
+  assert.equal(calls[2][0], 'replaceRoundedFrameSideShelvesMap');
   assert.equal(calls[2][1], app);
-  assert.equal(calls[2][2], 'roundedFrameSideShelvesMap');
-  assert.deepEqual({ ...calls[2][3] }, { body_right: true, body_left: true });
-  assert.deepEqual({ ...calls[2][4] }, { source: 'react:design:roundedFrameSideShelves', immediate: true });
+  assert.deepEqual({ ...calls[2][2] }, { body_right: true, body_left: true });
+  assert.deepEqual({ ...calls[2][3] }, { source: 'react:design:roundedFrameSideShelves', immediate: true });
 });
 
 test('[design-tab-controller-runtime] toggles rounded shelves on lower scoped removed frame sides', () => {
@@ -233,6 +290,6 @@ test('[design-tab-controller-runtime] toggles rounded shelves on lower scoped re
     { ...calls[1][2].config.roundedFrameSideShelvesMap },
     { body_left: true, lower_body_left: true }
   );
-  assert.equal(calls[2][0], 'setCfgMap');
-  assert.deepEqual({ ...calls[2][3] }, { body_left: true, lower_body_left: true });
+  assert.equal(calls[2][0], 'replaceRoundedFrameSideShelvesMap');
+  assert.deepEqual({ ...calls[2][2] }, { body_left: true, lower_body_left: true });
 });

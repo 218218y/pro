@@ -1,5 +1,5 @@
-export { setCfgMap, setCfgScalar } from './store_actions_config_contracts.js';
-export type { SetCfgMap, SetCfgScalar } from './store_actions_config_contracts.js';
+export { setCfgScalar } from './store_actions_config_contracts.js';
+export type { SetCfgScalar } from './store_actions_config_contracts.js';
 
 export {
   applyProjectConfigSnapshot,
