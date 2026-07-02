@@ -50,7 +50,8 @@ test('cfg access runtime pack: canonical config/history namespaces own map write
     },
     store: {
       getState: () => state,
-      setConfig(patch: AnyRecord) {
+      setConfig(patch: AnyRecord, meta?: AnyRecord) {
+        calls.push(['setConfig', patch, meta || null]);
         Object.assign(state.config, patch);
       },
       patch(payload: AnyRecord) {
@@ -98,12 +99,12 @@ test('cfg access runtime pack: canonical config/history namespaces own map write
 
   assert.deepEqual(calls, [
     [
-      'patch',
+      'setConfig',
       { handlesMap: { a: 'bar', b: 'knob' }, __replace: { handlesMap: true } },
       { source: 'set:map' },
     ],
     [
-      'patch',
+      'setConfig',
       { handlesMap: { a: 'bar', b: 'knob', c: 'pull' }, __replace: { handlesMap: true } },
       { source: 'patch:map' },
     ],

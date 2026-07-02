@@ -60,6 +60,16 @@ function createSplitClickApp(args: {
       getState() {
         return state;
       },
+      setConfig(patch: Record<string, unknown>) {
+        Object.assign(state.config, patch || {});
+        for (const key of ['splitDoorsMap', 'splitDoorsBottomMap']) {
+          const value = patch?.[key];
+          if (value && typeof value === 'object' && !Array.isArray(value)) {
+            maps[key] = value as Record<string, unknown>;
+          }
+        }
+        return patch;
+      },
       patch(patch: Record<string, unknown>) {
         Object.assign(state, patch || {});
       },

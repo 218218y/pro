@@ -1621,6 +1621,10 @@
       "entry": "front_color_shelf_inheritance.js"
     },
     {
+      "file": "esm/native/ui/react/actions/structural_build_refresh_actions.ts",
+      "entry": "project_config/api.js"
+    },
+    {
       "file": "esm/native/ui/react/selectors/config_selectors.ts",
       "entry": "modules_configuration/modules_config_api.js"
     },
