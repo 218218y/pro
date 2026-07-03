@@ -1,6 +1,6 @@
 import type { ActionMetaLike, UnknownRecord } from '../../../types';
 
-import { cfgMapRecord, getInternalConfigMapOwnerNamespace, readMapRecord } from './cfg_access_shared.js';
+import { cfgMapRecord, readMapRecord } from './cfg_access_shared.js';
 import { applyConfigPatchReplaceKeysFromMapOwner } from './cfg_access_scalars.js';
 
 export const SIMPLE_WRITABLE_MAP_NAMES = [
@@ -28,12 +28,6 @@ function setCfgSimpleWritableMapFromOwner(
   meta?: ActionMetaLike
 ): UnknownRecord {
   const next = readMapRecord(nextMap);
-  const cfgNs = getInternalConfigMapOwnerNamespace(App);
-  if (typeof cfgNs?.setMap === 'function') {
-    cfgNs.setMap(mapName, next, meta);
-    return next;
-  }
-
   applyConfigPatchReplaceKeysFromMapOwner(App, { [mapName]: next }, { [mapName]: true }, meta);
   return next;
 }

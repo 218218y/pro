@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  applyConfigPatch,
+  applyConfigNonMapPatch,
   cfgBatch,
   cfgPatchWithReplaceKeys,
   extractConfigPatchWriteMetadata,
@@ -83,7 +83,7 @@ test('cfg access runtime pack: canonical config/history namespaces own map write
   assert.deepEqual(metaInfo.clean, { width: 120 });
   assert.deepEqual(metaInfo.replace, { handlesMap: true, mirrorLayoutMap: true });
 
-  const patchOut = applyConfigPatch(App, { height: 240 }, { source: 'apply:patch' } as any);
+  const patchOut = applyConfigNonMapPatch(App, { height: 240 }, { source: 'apply:patch' } as any);
   assert.deepEqual(patchOut, { height: 240 });
   assert.equal(state.config.height, 240);
 

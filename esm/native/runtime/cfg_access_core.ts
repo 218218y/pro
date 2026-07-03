@@ -87,10 +87,10 @@ export function assertNoGenericKnownConfigMapPatch(patchObj: unknown, apiName: s
   );
 }
 
-export function applyConfigPatch(App: unknown, patchObj: unknown, meta?: ActionMetaLike): unknown {
+export function applyConfigNonMapPatch(App: unknown, patchObj: unknown, meta?: ActionMetaLike): unknown {
   const patch = asRecord(patchObj) || {};
   if (!Object.keys(patch).length) return patch;
-  assertNoGenericKnownConfigMapPatch(patch, 'applyConfigPatch');
+  assertNoGenericKnownConfigMapPatch(patch, 'applyConfigNonMapPatch');
   const resolvedMeta = normMeta(App, meta, { source: 'config' });
 
   if (hasSliceWriterSeam(App, 'config', CONFIG_PATCH_WRITE_OPTS)) {
@@ -98,7 +98,7 @@ export function applyConfigPatch(App: unknown, patchObj: unknown, meta?: ActionM
     return out === undefined ? patch : out;
   }
 
-  getStore(App, 'applyConfigPatch');
+  getStore(App, 'applyConfigNonMapPatch');
   throw new Error(
     '[WardrobePro][cfg_access] Missing config writer: expected config.patch action or store.setConfig.'
   );
@@ -120,18 +120,6 @@ export function applyConfigPatchFromMapOwner(
 
   getStore(App, 'applyConfigPatchFromMapOwner');
   throw new Error('[WardrobePro][cfg_access] Missing config map owner writer: expected store.setConfig.');
-}
-
-export function applyConfigSnapshot(
-  App: unknown,
-  snapshotObj: unknown,
-  meta?: ActionMetaLike
-): ConfigSnapshotLike {
-  const snapshot = asRecord(snapshotObj) || {};
-  const patch = { ...snapshot, __snapshot: true };
-  assertNoGenericKnownConfigMapPatch(patch, 'applyConfigSnapshot');
-  void applyConfigPatch(App, patch, meta);
-  return snapshot;
 }
 
 export function cfgPatchWithReplaceKeys(patchObj: unknown, replaceKeys: unknown): ConfigSlicePatch {

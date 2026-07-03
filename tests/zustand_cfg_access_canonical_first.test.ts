@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  applyConfigPatch,
-  applyConfigPatchReplaceKeys,
+  applyConfigNonMapPatch,
+  applyConfigNonMapPatchWithReplaceKeys,
   cfgGet,
   cfgRead,
   cfgSetScalar,
@@ -94,9 +94,9 @@ test('[cfg_access] cfgGet/cfgRead read store-backed config', () => {
   assert.equal(cfgRead(App, 'missingKey', 7), 7);
 });
 
-test('[cfg_access] applyConfigPatch commits via actions.config.patch when available', () => {
+test('[cfg_access] applyConfigNonMapPatch commits via actions.config.patch when available', () => {
   const App = makeAppBase({ width: 100, modulesConfiguration: {} as AnyRecord });
-  const out = applyConfigPatch(App, { width: 120 }, { source: 't:patch' } as any);
+  const out = applyConfigNonMapPatch(App, { width: 120 }, { source: 't:patch' } as any);
   assert.deepEqual(out, { width: 120 });
   assert.equal(cfgRead(App, 'width', 0), 120);
 
@@ -129,18 +129,23 @@ test('[cfg_access] generic config patch rejects known map branches on store-only
   });
 
   assert.throws(
-    () => applyConfigPatch(App, { handlesMap: { d1_full: 'rail' } }, { source: 't:map' } as any),
-    /applyConfigPatch cannot write known config map branches \(handlesMap\)/
+    () => applyConfigNonMapPatch(App, { handlesMap: { d1_full: 'rail' } }, { source: 't:map' } as any),
+    /applyConfigNonMapPatch cannot write known config map branches \(handlesMap\)/
   );
   assert.throws(
-    () => applyConfigPatch(App, { doorStyleMap: { d1_full: 'profile' } }, { source: 't:visual-map' } as any),
-    /applyConfigPatch cannot write known config map branches \(doorStyleMap\)/
+    () =>
+      applyConfigNonMapPatch(App, { doorStyleMap: { d1_full: 'profile' } }, {
+        source: 't:visual-map',
+      } as any),
+    /applyConfigNonMapPatch cannot write known config map branches \(doorStyleMap\)/
   );
   assert.deepEqual((App as AnyRecord).__calls, []);
   assert.deepEqual(cfgRead(App, 'handlesMap', null), { d1_full: 'bar' });
   assert.deepEqual(cfgRead(App, 'doorStyleMap', null), { d1_full: 'flat' });
 
-  const scalarOut = applyConfigPatch(App, { boardMaterial: 'walnut' }, { source: 't:scalar' } as any);
+  const scalarOut = applyConfigNonMapPatch(App, { boardMaterial: 'walnut' }, {
+    source: 't:scalar',
+  } as any);
   assert.deepEqual(scalarOut, { boardMaterial: 'walnut' });
   assert.equal(cfgRead(App, 'boardMaterial', ''), 'walnut');
 });
@@ -153,17 +158,24 @@ test('[cfg_access] generic replace-key config patch rejects known maps while map
 
   assert.throws(
     () =>
-      applyConfigPatchReplaceKeys(App, { handlesMap: { d1_full: 'rail' } }, { handlesMap: true }, {
-        source: 't:replace-map',
-      } as any),
-    /applyConfigPatchReplaceKeys cannot write known config map branches \(handlesMap\) and replace keys \(handlesMap\)/
+      applyConfigNonMapPatchWithReplaceKeys(
+        App,
+        { handlesMap: { d1_full: 'rail' } },
+        {
+          handlesMap: true,
+        },
+        {
+          source: 't:replace-map',
+        } as any
+      ),
+    /applyConfigNonMapPatchWithReplaceKeys cannot write known config map branches \(handlesMap\) and replace keys \(handlesMap\)/
   );
   assert.throws(
     () =>
-      applyConfigPatchReplaceKeys(App, { width: 120 }, { handlesMap: true }, {
+      applyConfigNonMapPatchWithReplaceKeys(App, { width: 120 }, { handlesMap: true }, {
         source: 't:replace-known-map-key',
       } as any),
-    /applyConfigPatchReplaceKeys cannot write known config map replace keys \(handlesMap\)/
+    /applyConfigNonMapPatchWithReplaceKeys cannot write known config map replace keys \(handlesMap\)/
   );
 
   const ownerPatch = applyConfigPatchFromMapOwner(App, { handlesMap: { d1_full: 'rail' } }, {

@@ -1,7 +1,7 @@
 import type { ActionMetaLike, KnownMapName, MapsByName, UnknownRecord } from '../../../types';
 import {
   cfgMapRecord,
-  getInternalConfigMapOwnerNamespace,
+  getConfigNamespace,
   readCurtainMapSnapshot,
   readDoorSpecialMapSnapshot,
   readHandlesMapSnapshot,
@@ -52,12 +52,6 @@ function cfgSetMapFromOwner(
   const name = String(mapName || '');
   const next = readMapRecord(nextMap);
   if (!name) return next;
-
-  const cfgNs = getInternalConfigMapOwnerNamespace(App);
-  if (typeof cfgNs?.setMap === 'function') {
-    cfgNs.setMap(name, next, meta);
-    return next;
-  }
 
   applyConfigPatchReplaceKeysFromMapOwner(App, { [name]: next }, { [name]: true }, meta);
   return next;
@@ -122,7 +116,7 @@ export const patchConfigMap: PatchConfigMap = (
 };
 
 export function setCfgHingeMap(App: unknown, next: unknown, meta?: ActionMetaLike): MapsByName['hingeMap'] {
-  const cfgNs = getInternalConfigMapOwnerNamespace(App);
+  const cfgNs = getConfigNamespace(App);
   const nextMap = readHingeMapSnapshot(next);
   if (typeof cfgNs?.setHingeMap === 'function') {
     const out = cfgNs.setHingeMap(nextMap, meta);

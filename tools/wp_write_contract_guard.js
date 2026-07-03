@@ -117,7 +117,7 @@ function scanFile(fileAbs) {
       file: rp,
       kind: 'no-scattered-__replace',
       line: lineNumberOf(text, idxReplace),
-      msg: 'Use cfg_access owner helpers or applyConfigPatchReplaceKeys instead of hand-rolling __replace.',
+      msg: 'Use cfg_access owner helpers or applyConfigNonMapPatchWithReplaceKeys instead of hand-rolling __replace.',
     });
   }
 

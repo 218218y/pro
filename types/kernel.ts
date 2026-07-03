@@ -127,6 +127,14 @@ export interface UiActionsNamespaceLike extends UnknownRecord {
 }
 
 export type ConfigSnapshotLike = UnknownRecord & Partial<ConfigScalarValueMap> & Partial<MapsByName>;
+export type ConfigNonMapPatch = UnknownRecord &
+  Omit<Partial<ConfigScalarValueMap>, KnownMapName> & {
+    [K in KnownMapName]?: never;
+  } & {
+    __replace?: Record<string, boolean>;
+    __snapshot?: boolean;
+    __capturedAt?: number;
+  };
 export type ConfigScalarUpdater<K extends ConfigScalarKey = ConfigScalarKey> = (
   prev: ConfigScalarValueMap[K] | undefined,
   cfg?: ConfigSnapshotLike
@@ -146,7 +154,7 @@ export interface ConfigActionsNamespaceLike extends UnknownRecord {
     <K extends KnownMapName>(mapName: K): MapsByName[K];
     (mapName: string): UnknownRecord;
   };
-  patch?: (cfg: ConfigSnapshotLike, meta?: ActionMetaLike) => unknown;
+  patch?: (cfg: ConfigNonMapPatch, meta?: ActionMetaLike) => unknown;
   setScalar?: {
     <K extends ConfigScalarKey>(
       key: K,
@@ -253,7 +261,7 @@ export type SaveProjectAction = () => unknown;
 export interface ActionsNamespaceLike extends UnknownRecord {
   patch?: (partial: PatchPayload, meta?: ActionMetaLike) => unknown;
   commitUiSnapshot?: (uiSnapshot: UnknownRecord, meta?: ActionMetaLike) => unknown;
-  applyConfig?: (cfg: UnknownRecord, meta?: ActionMetaLike) => unknown;
+  applyConfig?: (cfg: ConfigNonMapPatch, meta?: ActionMetaLike) => unknown;
   setCfgScalar?: {
     <K extends ConfigScalarKey>(key: K, valueOrFn: ConfigScalarValueMap[K], meta?: ActionMetaLike): unknown;
     (key: string, valueOrFn: unknown, meta?: ActionMetaLike): unknown;

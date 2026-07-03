@@ -50,7 +50,7 @@ test('maps access reports getMap owner rejection and still reads raw map fallbac
   assert.equal(reports[0].ctx.fatal, false);
 });
 
-test('maps access reports handle owner rejection and repairs through the store-backed simple owner writer', () => {
+test('writeHandle ignores stale public maps wrapper and writes through the store-backed owner path', () => {
   const state = {
     ui: {},
     runtime: {},
@@ -63,34 +63,26 @@ test('maps access reports handle owner rejection and repairs through the store-b
   const { App, reports } = createReportingApp({
     handlesMap: {},
     setHandle() {
-      throw new Error('installed maps setHandle rejected');
+      throw new Error('stale public maps setHandle should not be called');
     },
   });
-  App.actions = {
-    config: {
-      setMap(mapName: string, nextMap: Record<string, unknown>) {
-        state.config[mapName] = { ...nextMap };
-        return state.config[mapName];
-      },
-    },
-  };
   App.store = {
     getState: () => state,
     patch: () => undefined,
+    setConfig: (patch: Record<string, unknown>) => {
+      Object.assign(state.config, patch);
+      return patch;
+    },
   };
 
   assert.equal(writeHandle(App, 'd2', 'knob'), true);
 
   assert.deepEqual(state.config.handlesMap, { d2: 'knob' });
   assert.deepEqual(App.maps.handlesMap, {});
-  assert.equal(reports.length, 1);
-  assert.match(messageOf(reports[0].error), /installed maps setHandle rejected/);
-  assert.equal(reports[0].ctx.where, 'native/runtime/maps_access');
-  assert.equal(reports[0].ctx.op, 'maps_access.writeHandle.ownerRejected');
-  assert.equal(reports[0].ctx.fatal, false);
+  assert.equal(reports.length, 0);
 });
 
-test('maps access reports canonical split owner rejection and repairs through the store-backed owner writer', () => {
+test('writeSplit ignores stale public maps wrapper and writes through the store-backed owner path', () => {
   const state = {
     ui: {},
     runtime: {},
@@ -103,31 +95,23 @@ test('maps access reports canonical split owner rejection and repairs through th
   const { App, reports } = createReportingApp({
     splitDoorsMap: { d3: true },
     setSplit() {
-      throw new Error('installed maps setSplit rejected');
+      throw new Error('stale public maps setSplit should not be called');
     },
   });
-  App.actions = {
-    config: {
-      setMap(mapName: string, nextMap: Record<string, unknown>) {
-        state.config[mapName] = { ...nextMap };
-        return state.config[mapName];
-      },
-    },
-  };
   App.store = {
     getState: () => state,
     patch: () => undefined,
+    setConfig: (patch: Record<string, unknown>) => {
+      Object.assign(state.config, patch);
+      return patch;
+    },
   };
 
   assert.equal(writeSplit(App, 'd3_top', true, { source: 'test' }), true);
 
   assert.deepEqual(state.config.splitDoorsMap, { split_d3: true });
   assert.deepEqual(App.maps.splitDoorsMap, { d3: true });
-  assert.equal(reports.length, 1);
-  assert.match(messageOf(reports[0].error), /installed maps setSplit rejected/);
-  assert.equal(reports[0].ctx.where, 'native/runtime/maps_access');
-  assert.equal(reports[0].ctx.op, 'maps_access.writeSplit.ownerRejected');
-  assert.equal(reports[0].ctx.fatal, false);
+  assert.equal(reports.length, 0);
 });
 
 test('simple map owner suppresses object-equivalent entry writes', () => {
@@ -142,18 +126,17 @@ test('simple map owner suppresses object-equivalent entry writes', () => {
     } as Record<string, unknown>,
   };
   const { App } = createReportingApp({});
-  App.actions = {
-    config: {
-      setMap(mapName: string, nextMap: Record<string, unknown>) {
-        calls.push({ mapName, nextMap: { ...nextMap } });
-        state.config[mapName] = { ...nextMap };
-        return state.config[mapName];
-      },
-    },
-  };
   App.store = {
     getState: () => state,
     patch: () => undefined,
+    setConfig: (patch: Record<string, unknown>) => {
+      for (const [mapName, nextMap] of Object.entries(patch)) {
+        if (mapName === '__replace') continue;
+        calls.push({ mapName, nextMap: { ...(nextMap as Record<string, unknown>) } });
+      }
+      Object.assign(state.config, patch);
+      return patch;
+    },
   };
 
   assert.equal(writeHinge(App, 'd1', { dir: 'left', nested: { side: 'left' } }), true);

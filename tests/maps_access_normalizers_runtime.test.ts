@@ -225,14 +225,19 @@ test('door style live writer canonicalizes decorated hit ids before storing', ()
   };
   const App = {
     maps,
-    actions: {
-      config: {
-        setMap(name: string, next: Record<string, unknown>) {
-          maps[name] = { ...next };
-          if (name === 'doorStyleMap') writes.push({ ...next });
-          return maps[name];
-        },
+    store: {
+      getState() {
+        return { config: maps, ui: {}, runtime: {}, mode: {}, meta: {} };
       },
+      setConfig(patch: Record<string, unknown>) {
+        Object.assign(maps, patch);
+        if (patch.doorStyleMap && typeof patch.doorStyleMap === 'object') {
+          writes.push({ ...(patch.doorStyleMap as Record<string, unknown>) });
+        }
+        return patch;
+      },
+    },
+    actions: {
       history: {
         batch(_meta: unknown, cb: () => unknown) {
           return cb();

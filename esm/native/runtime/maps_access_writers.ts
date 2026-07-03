@@ -110,16 +110,6 @@ export function writeHandle(
 ): boolean {
   const id = String(partId || '');
   if (!id) return false;
-  const maps = readMapsBagOrNull(App);
-  try {
-    const setHandle = maps?.setHandle;
-    if (typeof setHandle === 'function') {
-      setHandle.call(maps, id, handleType, meta);
-      return true;
-    }
-  } catch (err) {
-    mapsAccessReportNonFatal('maps_access.writeHandle.ownerRejected', err, App);
-  }
   return patchSimpleWritableMapEntryFromOwner(App, 'handlesMap', id, handleType, meta);
 }
 
@@ -131,18 +121,6 @@ export function writeHinge(
 ): boolean {
   const id = String(doorId || '');
   if (!id) return false;
-  const maps = readMapsBagOrNull(App);
-
-  try {
-    const setHinge = maps?.setHinge;
-    if (typeof setHinge === 'function') {
-      setHinge.call(maps, id, hinge, meta);
-      return true;
-    }
-  } catch (err) {
-    mapsAccessReportNonFatal('maps_access.writeHinge.ownerRejected', err, App);
-  }
-
   return patchSimpleWritableMapEntryFromOwner(App, 'hingeMap', id, hinge, meta);
 }
 
@@ -168,20 +146,9 @@ export function writeDividerState(
 export function writeSplit(App: unknown, doorId: unknown, isSplit: boolean, meta?: ActionMetaLike): boolean {
   const id0 = readMapKey(doorId);
   if (!id0) return false;
-  const maps = readMapsBagOrNull(App);
 
   const canonicalKey = splitKey(id0);
   if (!canonicalKey) return false;
-
-  try {
-    const fn = maps?.setSplit;
-    if (typeof fn === 'function') {
-      fn.call(maps, canonicalKey, !!isSplit, meta);
-      return true;
-    }
-  } catch (err) {
-    mapsAccessReportNonFatal('maps_access.writeSplit.ownerRejected', err, App);
-  }
 
   return patchVisualKeyedMapEntriesFromOwner(
     App,
@@ -199,20 +166,9 @@ export function writeSplitBottom(
 ): boolean {
   const id0 = readMapKey(doorId);
   if (!id0) return false;
-  const maps = readMapsBagOrNull(App);
 
   const canonicalKey = splitBottomKey(id0);
   if (!canonicalKey) return false;
-
-  try {
-    const fn = maps?.setSplitBottom;
-    if (typeof fn === 'function') {
-      fn.call(maps, canonicalKey, !!isOn, meta);
-      return true;
-    }
-  } catch (err) {
-    mapsAccessReportNonFatal('maps_access.writeSplitBottom.ownerRejected', err, App);
-  }
 
   return patchVisualKeyedMapEntriesFromOwner(
     App,

@@ -81,7 +81,6 @@ export {
   cfgRead,
   cfgMap,
   cfgSetScalar,
-  applyConfigPatch,
   cfgBatch,
   setCfgModulesConfiguration,
   setCfgLowerModulesConfiguration,

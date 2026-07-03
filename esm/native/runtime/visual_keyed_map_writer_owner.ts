@@ -1,6 +1,6 @@
 import type { ActionMetaLike, MapsByName, UnknownRecord } from '../../../types';
 
-import { cfgMapRecord, getInternalConfigMapOwnerNamespace, readMapRecord } from './cfg_access_shared.js';
+import { cfgMapRecord, readMapRecord } from './cfg_access_shared.js';
 import { applyConfigPatchReplaceKeysFromMapOwner } from './cfg_access_scalars.js';
 import { normalizeKnownMapSnapshot } from './maps_access_normalizers.js';
 import type { VisualKeyedMapName } from './visual_keyed_map_names.js';
@@ -47,12 +47,6 @@ function setCfgMapFromVisualKeyedOwner(
   const name = String(mapName || '');
   const next = readMapRecord(nextMap);
   if (!name) return next;
-
-  const cfgNs = getInternalConfigMapOwnerNamespace(App);
-  if (typeof cfgNs?.setMap === 'function') {
-    cfgNs.setMap(name, next, meta);
-    return next;
-  }
 
   applyConfigPatchReplaceKeysFromMapOwner(App, { [name]: next }, { [name]: true }, meta);
   return next;

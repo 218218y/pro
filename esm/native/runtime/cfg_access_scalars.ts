@@ -13,7 +13,7 @@ import {
   type ScalarUpdaterFn,
 } from './cfg_access_shared.js';
 import {
-  applyConfigPatch,
+  applyConfigNonMapPatch,
   applyConfigPatchFromMapOwner,
   assertNoGenericKnownConfigMapPatch,
   cfgGet,
@@ -21,7 +21,7 @@ import {
   cfgRead,
 } from './cfg_access_core.js';
 
-export function applyConfigPatchReplaceKeys(
+export function applyConfigNonMapPatchWithReplaceKeys(
   App: unknown,
   patchObj: unknown,
   replaceKeys: unknown,
@@ -29,8 +29,8 @@ export function applyConfigPatchReplaceKeys(
 ) {
   const base = asRecord(patchObj) || {};
   const patch = cfgPatchWithReplaceKeys(base, replaceKeys);
-  assertNoGenericKnownConfigMapPatch(patch, 'applyConfigPatchReplaceKeys');
-  void applyConfigPatch(App, patch, meta);
+  assertNoGenericKnownConfigMapPatch(patch, 'applyConfigNonMapPatchWithReplaceKeys');
+  void applyConfigNonMapPatch(App, patch, meta);
   return patch;
 }
 
@@ -79,7 +79,7 @@ export const cfgSetScalar: CfgSetScalar = (
     return next;
   }
 
-  applyConfigPatch(App, { [k]: next }, meta);
+  applyConfigNonMapPatch(App, { [k]: next }, meta);
   return next;
 };
 

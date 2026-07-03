@@ -48,6 +48,10 @@ function createApp() {
       getState() {
         return state;
       },
+      setConfig(patch: Record<string, unknown>) {
+        Object.assign(state.config, patch);
+        return patch;
+      },
       patch() {
         throw new Error('unexpected root store.patch write in canvas groove test');
       },
@@ -66,11 +70,6 @@ function createApp() {
       runtime: {
         patch(patch: Record<string, unknown>) {
           state.runtime = { ...state.runtime, ...(patch || {}) };
-        },
-      },
-      config: {
-        setMap(mapName: string, nextMap: Record<string, unknown>) {
-          state.config[mapName] = { ...(nextMap || {}) };
         },
       },
       history: {

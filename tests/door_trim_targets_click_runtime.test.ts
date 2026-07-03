@@ -67,19 +67,20 @@ function createDoorTrimApp() {
       getState() {
         return rootState;
       },
+      setConfig(patch: Record<string, unknown>, meta?: Record<string, unknown>) {
+        for (const [mapName, nextMap] of Object.entries(patch || {})) {
+          if (mapName === '__replace') continue;
+          rootState.config = { ...rootState.config, [mapName]: nextMap };
+          configWrites.push({ mapName, nextMap: nextMap as Record<string, unknown>, meta });
+        }
+        return patch;
+      },
       patch(patch: Record<string, unknown>) {
         Object.assign(rootState, patch || {});
         return patch;
       },
     },
     actions: {
-      config: {
-        setMap(mapName: string, nextMap: Record<string, unknown>, meta?: Record<string, unknown>) {
-          rootState.config = { ...rootState.config, [mapName]: nextMap };
-          configWrites.push({ mapName, nextMap, meta });
-          return nextMap;
-        },
-      },
       history: {
         batch(fn: () => unknown, meta?: Record<string, unknown>) {
           historyMeta.push(meta || {});

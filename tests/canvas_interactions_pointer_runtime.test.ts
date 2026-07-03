@@ -259,18 +259,17 @@ test('drawer divider clicks immediately re-run hover at the same pointer after a
     getState() {
       return { config, ui: {}, runtime: {}, mode: { opts: {} }, meta: {} };
     },
+    setConfig(patch: Record<string, unknown>) {
+      Object.assign(config, patch);
+      for (const [mapName, nextMap] of Object.entries(patch)) {
+        if (mapName === '__replace') continue;
+        App.maps[mapName] = nextMap;
+      }
+      return patch;
+    },
     patch(patch: Record<string, unknown>) {
       Object.assign(config, patch);
       return patch;
-    },
-  };
-  App.actions = {
-    config: {
-      setMap(mapName: string, nextMap: Record<string, unknown>) {
-        config[mapName] = nextMap;
-        App.maps[mapName] = nextMap;
-        return nextMap;
-      },
     },
   };
   const drawerGroup = { userData: { partId: 'int_4', drawerId: 'int_4' } };

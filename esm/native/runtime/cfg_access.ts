@@ -1,6 +1,5 @@
 export {
-  applyConfigPatch,
-  applyConfigSnapshot,
+  applyConfigNonMapPatch,
   cfgBatch,
   cfgGet,
   cfgPatchWithReplaceKeys,
@@ -18,7 +17,7 @@ export {
   setCfgMirrorLayoutMap,
 } from './cfg_access_maps.js';
 export {
-  applyConfigPatchReplaceKeys,
+  applyConfigNonMapPatchWithReplaceKeys,
   cfgDefaultCornerConfiguration,
   cfgSetScalar,
   setCfgBoardMaterial,

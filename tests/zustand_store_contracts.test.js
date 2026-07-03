@@ -95,7 +95,7 @@ test('[zustand-store] builder/store/config seams stay canonical and typed', () =
   assert.match(cfgAccess, /from '\.\/cfg_access_core\.js'/);
   assert.match(cfgAccess, /from '\.\/cfg_access_maps\.js'/);
   assert.match(cfgAccess, /from '\.\/cfg_access_scalars\.js'/);
-  assert.match(cfgAccessBundle, /export function applyConfigPatch\(/);
+  assert.match(cfgAccessBundle, /export function applyConfigNonMapPatch\(/);
   assert.match(cfgAccessBundle, /export (?:function patchConfigMap\(|const patchConfigMap\s*:)/);
   assert.doesNotMatch(cfgAccess, /\bcfgSetMap\b/);
   assert.doesNotMatch(cfgAccess, /\bpatchConfigMap\b/);

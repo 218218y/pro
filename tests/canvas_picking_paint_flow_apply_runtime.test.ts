@@ -34,7 +34,7 @@ function createApp(
 ): any {
   const state = {
     ui: { ...(args.ui || {}) },
-    config: { ...(args.config || {}) },
+    config: { ...(args.maps || {}), ...(args.config || {}) },
     runtime: {},
     mode: {},
     meta: { version: 0, updatedAt: 0, dirty: false },
@@ -42,11 +42,15 @@ function createApp(
   return {
     store: {
       getState: () => state,
+      setConfig(patch: Record<string, unknown>) {
+        Object.assign(state.config, patch);
+        return patch;
+      },
       patch: () => undefined,
     },
     maps: {
       getMap(name: string) {
-        return args.maps?.[name] || null;
+        return (state.config as Record<string, Record<string, unknown> | undefined>)[name] || null;
       },
     },
     deps: { ...(args.deps || {}) },
@@ -1321,12 +1325,14 @@ test('door style paint click clears full-door library glass aliases before apply
         return cb();
       },
     },
-    config: {
-      setMap(name: string, next: Record<string, unknown>) {
-        writtenMaps[name] = { ...next };
-        return next;
-      },
-    },
+  };
+  App.store.setConfig = (patch: Record<string, unknown>) => {
+    Object.assign(App.store.getState().config, patch);
+    for (const [name, next] of Object.entries(patch)) {
+      if (name === '__replace') continue;
+      writtenMaps[name] = { ...(next as Record<string, unknown>) };
+    }
+    return patch;
   };
 
   const handled = tryHandleDoorStyleOverridePaintClick({
@@ -1361,12 +1367,14 @@ test('door style paint click keeps requested profile when it clears existing gla
         return cb();
       },
     },
-    config: {
-      setMap(name: string, next: Record<string, unknown>) {
-        writtenMaps[name] = { ...next };
-        return next;
-      },
-    },
+  };
+  App.store.setConfig = (patch: Record<string, unknown>) => {
+    Object.assign(App.store.getState().config, patch);
+    for (const [name, next] of Object.entries(patch)) {
+      if (name === '__replace') continue;
+      writtenMaps[name] = { ...(next as Record<string, unknown>) };
+    }
+    return patch;
   };
 
   const handled = tryHandleDoorStyleOverridePaintClick({
@@ -1401,12 +1409,13 @@ test('door style paint click materializes an inherited full-door style before re
         return cb();
       },
     },
-    config: {
-      setMap(name: string, next: Record<string, unknown>) {
-        if (name === 'doorStyleMap') writtenMaps.push({ ...next });
-        return next;
-      },
-    },
+  };
+  App.store.setConfig = (patch: Record<string, unknown>) => {
+    Object.assign(App.store.getState().config, patch);
+    if (patch.doorStyleMap && typeof patch.doorStyleMap === 'object') {
+      writtenMaps.push({ ...(patch.doorStyleMap as Record<string, unknown>) });
+    }
+    return patch;
   };
 
   const handled = tryHandleDoorStyleOverridePaintClick({
@@ -1437,12 +1446,13 @@ test('door style paint click materializes inherited free-box full-door style bef
         return cb();
       },
     },
-    config: {
-      setMap(name: string, next: Record<string, unknown>) {
-        if (name === 'doorStyleMap') writtenMaps.push({ ...next });
-        return next;
-      },
-    },
+  };
+  App.store.setConfig = (patch: Record<string, unknown>) => {
+    Object.assign(App.store.getState().config, patch);
+    if (patch.doorStyleMap && typeof patch.doorStyleMap === 'object') {
+      writtenMaps.push({ ...(patch.doorStyleMap as Record<string, unknown>) });
+    }
+    return patch;
   };
 
   const handled = tryHandleDoorStyleOverridePaintClick({
