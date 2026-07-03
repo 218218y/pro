@@ -17,7 +17,8 @@ export function installKernelStateKernelConfigPatchSurfaceRuntime(
 ): void {
   const { App, __sk, asMeta, asRecord, isFn } = helpers;
 
-  __sk.patchConfigMaps = function (nextMapsIn: unknown, metaIn: unknown) {
+  // Internal kernel snapshot boundary only. UI/service/domain map writes must use semantic writers.
+  __sk.applyKernelConfigMapSnapshot = function (nextMapsIn: unknown, metaIn: unknown) {
     const nextMaps = asRecord(nextMapsIn, {});
     const meta = asMeta(metaIn);
     const source = readKernelConfigPatchSource(meta, 'config');
@@ -27,7 +28,9 @@ export function installKernelStateKernelConfigPatchSurfaceRuntime(
     const normalizedPatch = tools.normalizePatchConfigEntries(nextMaps, sc0, useLight);
 
     const didWrite =
-      __sk && typeof __sk.applyConfig === 'function' ? !!__sk.applyConfig(normalizedPatch, meta) : false;
+      __sk && typeof __sk.applyKernelConfigSnapshot === 'function'
+        ? !!__sk.applyKernelConfigSnapshot(normalizedPatch, meta)
+        : false;
 
     const batch = __sk && __sk.__cfgBatch ? __sk.__cfgBatch : null;
     if (!didWrite) {
@@ -70,8 +73,8 @@ export function installKernelStateKernelConfigPatchSurfaceRuntime(
     const normalizedPatch = tools.normalizePatchConfigEntries({ [mapName]: nextMap }, cfgRec, useLight);
     const normalizedMap = asRecord(normalizedPatch[mapName], {});
     const source = readKernelConfigPatchSource(meta, `${mapName}:${key}`);
-    if (__sk && typeof __sk.patchConfigMaps === 'function') {
-      __sk.patchConfigMaps(normalizedPatch, Object.assign({ source }, meta));
+    if (__sk && typeof __sk.applyKernelConfigMapSnapshot === 'function') {
+      __sk.applyKernelConfigMapSnapshot(normalizedPatch, Object.assign({ source }, meta));
     }
     return Object.prototype.hasOwnProperty.call(normalizedMap, key) ? normalizedMap[key] : undefined;
   };
@@ -99,9 +102,9 @@ export function installKernelStateKernelConfigPatchSurfaceRuntime(
     const normalizedPatch = tools.normalizePatchConfigEntries({ [name]: nextValRaw }, baseCfg, useLight);
     const nextVal = normalizedPatch[name];
 
-    if (__sk && typeof __sk.patchConfigMaps === 'function') {
+    if (__sk && typeof __sk.applyKernelConfigMapSnapshot === 'function') {
       const source = readKernelConfigPatchSource(meta, `config:${name}`);
-      __sk.patchConfigMaps(normalizedPatch, Object.assign({ source }, meta));
+      __sk.applyKernelConfigMapSnapshot(normalizedPatch, Object.assign({ source }, meta));
     }
 
     return nextVal;

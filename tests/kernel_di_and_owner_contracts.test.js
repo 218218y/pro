@@ -110,7 +110,7 @@ test('[kernel-di] stateKernel DI stays centralized under services.stateKernel an
       /export function installKernelStateKernelConfigSurface\(/,
       /installKernelStateKernelConfigMapsSurface\(helpers\);/,
       /__sk\.captureConfig = function/,
-      /__sk\.patchConfigMaps = function/,
+      /__sk\.applyKernelConfigMapSnapshot = function/,
     ],
     'kernel bundle'
   );

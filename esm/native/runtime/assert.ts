@@ -69,7 +69,7 @@ function isStateKernelSurface(value: unknown): value is StateKernelLike {
     typeof kernel.captureConfig === 'function' ||
     typeof kernel.getStoreConfig === 'function' ||
     typeof kernel.patchConfigScalar === 'function' ||
-    typeof kernel.applyConfig === 'function';
+    typeof kernel.applyKernelConfigSnapshot === 'function';
   return hasBuildState && hasConfigSurface;
 }
 

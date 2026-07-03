@@ -246,7 +246,10 @@ test('[zustand-domain] history, config scalar, and applyPaint flows stay central
 
   assert.match(domainApi, /installDomainApiColorsSection\(\{/);
   assert.match(domainApiColors, /colorsActions\.applyPaint[\s\S]*configActions\.applyPaintSnapshot/);
-  assert.doesNotMatch(domainApiColors, /colorsActions\.applyPaint[\s\S]{0,260}stateKernel\.patchConfigMaps/);
+  assert.doesNotMatch(
+    domainApiColors,
+    /colorsActions\.applyPaint[\s\S]{0,260}stateKernel\.applyKernelConfigMapSnapshot/
+  );
   assert.doesNotMatch(domainApiColors, /colorsActions\.applyPaint[\s\S]{0,260}cfgPatchWithReplaceKeys\(/);
   assert.doesNotMatch(domainApiColors, /colorsActions\.applyPaint[\s\S]{0,260}applyConfigPatch\(App,/);
 

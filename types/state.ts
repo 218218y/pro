@@ -129,15 +129,15 @@ export interface StoreLike<S = RootStateLike> {
 export type RootStoreLike = StoreLike<RootStateLike>;
 
 export interface StateKernelLike extends UnknownRecord {
-  // Snapshot helpers used by cfg surface (compat).
+  // Internal kernel snapshot helpers. Not UI/service/domain config writers.
   captureConfig?: () => UnknownRecord;
   patchConfigScalar?: (key: string, valueOrFn: unknown, meta?: ActionMetaLike) => unknown;
-  patchConfigMaps?: (patchObj: unknown, meta?: ActionMetaLike) => unknown;
+  applyKernelConfigMapSnapshot?: (patchObj: unknown, meta?: ActionMetaLike) => unknown;
   commit?: (meta?: ActionMetaLike) => unknown;
 
   // Common kernel APIs used across builder/services.
   getStoreConfig?: () => UnknownRecord;
-  applyConfig?: (cfgIn: unknown, metaIn?: ActionMetaLike) => unknown;
+  applyKernelConfigSnapshot?: (cfgIn: unknown, metaIn?: ActionMetaLike) => unknown;
   getBuildState?: (stateOrOverride?: unknown) => UnknownRecord;
   commitFromSnapshot?: (snapshot: unknown, meta?: ActionMetaLike) => unknown;
   setDirty?: (isDirty: boolean, meta?: ActionMetaLike) => unknown;

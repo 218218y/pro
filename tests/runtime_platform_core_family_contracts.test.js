@@ -167,7 +167,7 @@ test('[runtime-platform-core-family] platform/kernel owners stay thin while inst
       /export function installKernelStateKernelConfigCaptureSurface\(/,
       /export function installKernelStateKernelConfigApplySurface\(/,
       /export function installKernelStateKernelConfigPatchSurface\(/,
-      /patchConfigMaps = function \(nextMapsIn: unknown, metaIn: unknown\)/,
+      /applyKernelConfigMapSnapshot = function \(nextMapsIn: unknown, metaIn: unknown\)/,
     ],
     'kernelConfigMapsBundle'
   );

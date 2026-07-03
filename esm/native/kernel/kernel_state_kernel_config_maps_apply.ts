@@ -13,7 +13,8 @@ export function installKernelStateKernelConfigApplySurface(
 ): void {
   const { App, __sk, asMeta, asRecord } = helpers;
 
-  __sk.applyConfig = function (cfgIn: unknown, metaIn: unknown) {
+  // Internal kernel snapshot boundary only. UI/service/domain map writes must use semantic writers.
+  __sk.applyKernelConfigSnapshot = function (cfgIn: unknown, metaIn: unknown) {
     const prevWriting = !!(__sk && __sk.__writing);
     if (__sk) __sk.__writing = true;
 
@@ -101,9 +102,9 @@ export function installKernelStateKernelConfigApplySurface(
       if (Object.keys(patch).length) {
         const patchFixed = cfgPatchWithReplaceKeys(patch, rep);
         const base: ActionMetaLike = Object.assign({}, meta, {
-          source: meta.source != null ? String(meta.source) : 'kernel.applyConfig',
+          source: meta.source != null ? String(meta.source) : 'kernel.applyKernelConfigSnapshot',
         });
-        const metaFixed = metaRestore(App, base, 'kernel.applyConfig');
+        const metaFixed = metaRestore(App, base, 'kernel.applyKernelConfigSnapshot');
         helpers.setStoreConfigPatch(App, patchFixed, metaFixed);
         return true;
       }

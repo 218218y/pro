@@ -152,7 +152,7 @@ test('[history-types] history, state, build, and app surfaces keep explicit Acti
     stateTypes,
     [
       /patchConfigScalar\?: \(key: string, valueOrFn: unknown, meta\?: ActionMetaLike\) => unknown;/,
-      /patchConfigMaps\?: \(patchObj: unknown, meta\?: ActionMetaLike\) => unknown;/,
+      /applyKernelConfigMapSnapshot\?: \(patchObj: unknown, meta\?: ActionMetaLike\) => unknown;/,
       /commitFromSnapshot\?: \(snapshot: unknown, meta\?: ActionMetaLike\) => unknown;/,
       /touch\?: \(meta\?: ActionMetaLike\) => unknown;/,
     ],

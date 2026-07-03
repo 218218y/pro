@@ -145,7 +145,7 @@ test('kernel_state_kernel_config captures and applies normalized config map snap
   ]);
   assert.deepEqual(captured.colorSwatchesOrder, ['c2', '7']);
 
-  __sk.applyConfig(
+  __sk.applyKernelConfigSnapshot(
     {
       groovesMap: { groove_d2: true, drop: 'wat' },
       doorSpecialMap: { d2: 'mirror', drop: 3 },
@@ -352,7 +352,7 @@ test('kernel_state_kernel_config captureConfig rematerializes structure-aware to
   assert.equal((sourceExtra.nested as Record<string, unknown>).enabled, true);
 });
 
-test('kernel_state_kernel_config applyConfig and patchConfigScalar keep top-module sanitization structure-aware', () => {
+test('kernel_state_kernel_config applyKernelConfigSnapshot and patchConfigScalar keep top-module sanitization structure-aware', () => {
   const patches: Array<{ patch: Record<string, unknown>; meta: Record<string, unknown> }> = [];
   const state = {
     ui: { raw: { doors: 5 }, structureSelect: '[2,2,1]' },
@@ -407,7 +407,7 @@ test('kernel_state_kernel_config applyConfig and patchConfigScalar keep top-modu
     },
   });
 
-  __sk.applyConfig(
+  __sk.applyKernelConfigSnapshot(
     {
       modulesConfiguration: [{ layout: 'drawers', doors: 2 }, {}, {}],
     },
@@ -437,7 +437,7 @@ test('kernel_state_kernel_config applyConfig and patchConfigScalar keep top-modu
   assert.equal(asRecord(asRecord(scalarModules[1]).customData).storage, true);
 });
 
-test('kernel_state_kernel_config patchConfigMaps keeps top-module sanitization structure-aware', () => {
+test('kernel_state_kernel_config applyKernelConfigMapSnapshot keeps top-module sanitization structure-aware', () => {
   const state = {
     ui: { raw: { doors: 5 }, structureSelect: '[2,2,1]' },
     config: {
@@ -490,7 +490,7 @@ test('kernel_state_kernel_config patchConfigMaps keeps top-module sanitization s
     },
   });
 
-  __sk.patchConfigMaps(
+  __sk.applyKernelConfigMapSnapshot(
     {
       modulesConfiguration: [{ layout: 'drawers', doors: 2 }, { layout: 'shelves' }, {}],
     },

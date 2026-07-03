@@ -173,5 +173,5 @@ export function getStateKernel(App: unknown): UnknownRecord | null {
 
 export function ensureKernelInstalled(App: unknown): boolean {
   const kernel = getStateKernel(App);
-  return !!(kernel && isFn(kernel.captureConfig) && isFn(kernel.patchConfigMaps));
+  return !!(kernel && isFn(kernel.captureConfig) && isFn(kernel.applyKernelConfigMapSnapshot));
 }

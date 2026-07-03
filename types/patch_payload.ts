@@ -21,7 +21,7 @@ export interface UiSlicePatch extends Partial<UiStateLike> {
 
 /** Config slice patch. Supports snapshot + per-key replacements. */
 export interface ConfigSlicePatch extends Partial<ConfigStateLike> {
-  /** Per-key replacement flags (used by kernel.applyConfig + store.applyConfigPatch). */
+  /** Per-key replacement flags (used by kernel snapshot/config writers + store.applyConfigPatch). */
   __replace?: Record<string, boolean>;
 
   // High-value persisted extras that exist in the wild but aren't fully typed yet.

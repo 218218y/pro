@@ -108,7 +108,11 @@ test('[kernel-store-boundary] thin public owners delegate kernel/store boundary 
   assertLacksAll(
     assert,
     kernelConfigPatchOwner,
-    [/__sk\.patchConfigMaps = function/, /requestKernelBuilderBuild\(/, /scheduleAutosaveViaService\(/],
+    [
+      /__sk\.applyKernelConfigMapSnapshot = function/,
+      /requestKernelBuilderBuild\(/,
+      /scheduleAutosaveViaService\(/,
+    ],
     'kernelStateKernelConfigPatchOwner'
   );
 
@@ -118,7 +122,7 @@ test('[kernel-store-boundary] thin public owners delegate kernel/store boundary 
     [
       /export function mergeKernelStateKernelConfigBatchMeta\(/,
       /export function requestKernelStateKernelConfigBuild\(/,
-      /__sk\.patchConfigMaps = function \(nextMapsIn: unknown, metaIn: unknown\)/,
+      /__sk\.applyKernelConfigMapSnapshot = function \(nextMapsIn: unknown, metaIn: unknown\)/,
       /requestKernelStateKernelConfigBuild\(App, meta, source, force\);/,
       /scheduleKernelStateKernelConfigAutosave\(App, meta\);/,
     ],

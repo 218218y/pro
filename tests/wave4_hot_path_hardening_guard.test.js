@@ -115,11 +115,14 @@ test('[wave4] kernel centralizes store/stateKernel plumbing behind helper seams'
   assert.match(kernelConfigOwner, /kernel_state_kernel_config_maps\.js/);
   assert.doesNotMatch(kernelConfigOwner, /kernel_state_kernel_config_modules_corner\.js/);
   assert.match(kernelConfig, /const patchFixed = cfgPatchWithReplaceKeys\(patch, rep\);/);
-  assert.match(kernelConfig, /const metaFixed = metaRestore\(App, base, 'kernel\.applyConfig'\);/);
+  assert.match(
+    kernelConfig,
+    /const metaFixed = metaRestore\(App, base, 'kernel\.applyKernelConfigSnapshot'\);/
+  );
   assert.match(kernelConfig, /setStoreConfigPatch\(App,\s*patchFixed,\s*metaFixed\);/);
   assertIncludesInOrder(kernelConfig, [
     'const patchFixed = cfgPatchWithReplaceKeys(patch, rep);',
-    "const metaFixed = metaRestore(App, base, 'kernel.applyConfig');",
+    "const metaFixed = metaRestore(App, base, 'kernel.applyKernelConfigSnapshot');",
     'setStoreConfigPatch(App, patchFixed, metaFixed);',
   ]);
   assert.match(kernel, /setStoreUiSnapshot: \(ui, meta, config\) => setStoreUiSnapshot\(ui, meta, config\)/);

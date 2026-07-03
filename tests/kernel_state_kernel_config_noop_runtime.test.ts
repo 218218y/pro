@@ -124,7 +124,7 @@ test('kernel_state_kernel_config maps skip write/commit/build/autosave churn for
     colorSwatchesOrder: ['c1'],
   });
 
-  h.__sk.patchConfigMaps(
+  h.__sk.applyKernelConfigMapSnapshot(
     {
       groovesMap: { groove_d1: true },
       savedColors: [{ id: 'c1', value: '#111' }],
@@ -142,7 +142,10 @@ test('kernel_state_kernel_config maps skip write/commit/build/autosave churn for
 test('kernel_state_kernel_config maps still request force builds for unchanged patches without persisting churn', () => {
   const h = createHarness({ groovesMap: { groove_d1: true } });
 
-  h.__sk.patchConfigMaps({ groovesMap: { groove_d1: true } }, { source: 'test:force-only', force: true });
+  h.__sk.applyKernelConfigMapSnapshot(
+    { groovesMap: { groove_d1: true } },
+    { source: 'test:force-only', force: true }
+  );
 
   assert.equal(h.writes.length, 0);
   assert.equal(h.commits.length, 0);
@@ -161,7 +164,7 @@ test('kernel_state_kernel_config maps still write, commit, build, and autosave w
     colorSwatchesOrder: ['c1'],
   });
 
-  h.__sk.patchConfigMaps(
+  h.__sk.applyKernelConfigMapSnapshot(
     {
       groovesMap: { groove_d2: true },
       savedColors: [{ id: 'c2', value: '#222' }],

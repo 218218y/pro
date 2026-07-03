@@ -110,7 +110,7 @@ test('[state-api] applyConfig commits through the dedicated config writer (no le
       subscribe: () => () => undefined,
     },
     stateKernel: {
-      patchConfigMaps: () => {
+      applyKernelConfigMapSnapshot: () => {
         throw new Error('should not call raw kernel patching in pure mode');
       },
       captureConfig: () => {
