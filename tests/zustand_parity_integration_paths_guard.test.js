@@ -108,7 +108,7 @@ test('[parity-paths] structure/domain bundle keeps canonical width/hinge/save pa
       /setCfgWardrobeType\(/,
       /writeHinge\(/,
       /writeHandle\(/,
-      /applyConfigPatch\(/,
+      /applyConfigNonMapPatch\(/,
     ],
     'structureBundle'
   );

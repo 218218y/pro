@@ -84,10 +84,6 @@ function createHarness(): AppHarness {
       state.config[String(key)] = value;
       return value;
     },
-    setMap: (key: unknown, value: unknown) => {
-      state.config[String(key)] = value;
-      return value;
-    },
   });
 
   addNs('colors', {
@@ -206,8 +202,6 @@ test('store actions config falls back to canonical scalar/map writers and fails 
       ['setScalar', 'savedNotes', [{ id: 'note-1' }]],
       ['setScalar', 'customUploadedDataURL', null],
       ['setScalar', 'preChestState', { keep: true }],
-      ['setMap', 'hingeMap', { d1: 'left' }],
-      ['setMap', 'handlesMap', { d1: 'bar' }],
       ['setScalar', 'modulesConfiguration', [{ id: 'm1' }, 'skip']],
       ['setScalar', 'stackSplitLowerModulesConfiguration', [{ id: 'lm1' }, false]],
       ['setScalar', 'savedColors', ['oak', { id: 'c1', value: '#fff' }]],
@@ -221,5 +215,25 @@ test('store actions config falls back to canonical scalar/map writers and fails 
   );
 
   const storeCalls = h.calls.filter(call => call.ns === 'store');
-  assert.deepEqual(storeCalls, []);
+  assert.deepEqual(
+    storeCalls.map(call => [call.method, call.args[0], call.args[1]]),
+    [
+      [
+        'setConfig',
+        {
+          hingeMap: { d1: 'left' },
+          __replace: { hingeMap: true },
+        },
+        { source: 'hinge' },
+      ],
+      [
+        'setConfig',
+        {
+          handlesMap: { d1: 'bar' },
+          __replace: { handlesMap: true },
+        },
+        { source: 'handles' },
+      ],
+    ]
+  );
 });

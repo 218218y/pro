@@ -4,39 +4,83 @@ import assert from 'node:assert/strict';
 import { tryHandleCanvasHandleAssignClick } from '../esm/native/services/canvas_picking_handle_assign_flow.ts';
 import { readManualHandlePosition } from '../esm/native/features/manual_handle_position.ts';
 
-test('handle assign click reads parent-chain part ids and preserves edge variant writes through typed mode opts', () => {
-  const calls: Array<{ op: string; args: unknown[]; owner?: unknown }> = [];
+type AnyRecord = Record<string, unknown>;
+type HandleAssignCall = { op: string; args: unknown[]; owner?: unknown };
+
+function readRecord(value: unknown): AnyRecord {
+  return value && typeof value === 'object' && !Array.isArray(value) ? { ...(value as AnyRecord) } : {};
+}
+
+function createHandleAssignHarness(args: {
+  deps?: AnyRecord;
+  modeOpts?: AnyRecord;
+  config?: AnyRecord;
+  handleType?: string;
+}): { App: any; calls: HandleAssignCall[] } {
+  const calls: HandleAssignCall[] = [];
+  const state = {
+    ui: {},
+    config: {
+      handlesMap: {},
+      ...(args.config || {}),
+    } as AnyRecord,
+    runtime: {},
+    mode: { opts: args.modeOpts || {} },
+    meta: {},
+  };
+
   const App: any = {
+    deps: args.deps,
     store: {
       getState() {
-        return {
-          ui: {},
-          config: {},
-          runtime: {},
-          mode: { opts: { edgeHandleVariant: 'left' } },
-          meta: {},
-        };
+        return state;
       },
       patch() {
         return undefined;
+      },
+      setConfig(patch: AnyRecord, meta?: unknown) {
+        for (const [mapName, value] of Object.entries(patch || {})) {
+          if (mapName === '__replace') continue;
+          const prev = readRecord(state.config[mapName]);
+          const next = readRecord(value);
+          state.config[mapName] = next;
+          App.maps[mapName] = next;
+
+          if (mapName !== 'handlesMap') continue;
+          const keys = new Set([...Object.keys(prev), ...Object.keys(next)]);
+          for (const key of keys) {
+            const hasNext = Object.prototype.hasOwnProperty.call(next, key);
+            const nextValue = hasNext ? next[key] : null;
+            if (Object.is(prev[key], nextValue)) continue;
+            calls.push({ op: 'setHandle', args: [key, nextValue, meta], owner: App.store });
+          }
+        }
+        return patch;
       },
     },
     services: {
       tools: {
         getHandlesType() {
-          return 'edge';
+          return args.handleType || 'standard';
         },
       },
     },
     maps: {
-      setHandle(partId: string, handleType: string, meta?: unknown) {
-        calls.push({ op: 'setHandle', args: [partId, handleType, meta], owner: this });
-      },
-      setKey(mapName: string, key: string, value: unknown, meta?: unknown) {
-        calls.push({ op: 'setKey', args: [mapName, key, value, meta], owner: this });
+      getMap(name: string) {
+        return state.config[name] || null;
       },
     },
   };
+
+  App.maps.handlesMap = state.config.handlesMap;
+  return { App, calls };
+}
+
+test('handle assign click reads parent-chain part ids and preserves edge variant writes through typed mode opts', () => {
+  const { App, calls } = createHandleAssignHarness({
+    modeOpts: { edgeHandleVariant: 'left' },
+    handleType: 'edge',
+  });
 
   const primaryHitObject = {
     userData: {},
@@ -65,19 +109,18 @@ test('handle assign click reads parent-chain part ids and preserves edge variant
     'short',
     { source: 'handles:assignEdgeVariant', immediate: true },
   ]);
-  assert.equal(calls[0].owner, App.maps);
-  assert.equal(calls[1].owner, App.maps);
+  assert.equal(calls[0].owner, App.store);
+  assert.equal(calls[1].owner, App.store);
   assert.equal(calls[2].op, 'setHandle');
   assert.deepEqual(calls[2].args, [
     '__wp_handle_color:d12_front',
     'nickel',
     { source: 'handles:assignColor', immediate: true },
   ]);
-  assert.equal(calls[2].owner, App.maps);
+  assert.equal(calls[2].owner, App.store);
 });
 
 test('manual handle position click stores normalized door-local position and explicit handle override', () => {
-  const calls: Array<{ op: string; args: unknown[]; owner?: unknown }> = [];
   class Vector3 {
     x: number;
     y: number;
@@ -89,38 +132,11 @@ test('manual handle position click stores normalized door-local position and exp
     }
   }
 
-  const App: any = {
+  const { App, calls } = createHandleAssignHarness({
     deps: { THREE: { Vector3 } },
-    store: {
-      getState() {
-        return {
-          ui: {},
-          config: {},
-          runtime: {},
-          mode: { opts: { handlePlacement: 'manual', handleColor: undefined } },
-          meta: {},
-        };
-      },
-      patch() {
-        return undefined;
-      },
-    },
-    services: {
-      tools: {
-        getHandlesType() {
-          return 'none';
-        },
-      },
-    },
-    maps: {
-      setHandle(partId: string, handleType: string, meta?: unknown) {
-        calls.push({ op: 'setHandle', args: [partId, handleType, meta], owner: this });
-      },
-      setKey(mapName: string, key: string, value: unknown, meta?: unknown) {
-        calls.push({ op: 'setKey', args: [mapName, key, value, meta], owner: this });
-      },
-    },
-  };
+    modeOpts: { handlePlacement: 'manual', handleColor: undefined },
+    handleType: 'none',
+  });
 
   const doorHitObject = {
     userData: { partId: 'd2_full', __doorWidth: 1, __doorHeight: 2 },
@@ -157,7 +173,6 @@ test('manual handle position click stores normalized door-local position and exp
 });
 
 test('manual handle position click stores drawer-local position for external drawer fronts', () => {
-  const calls: Array<{ op: string; args: unknown[]; owner?: unknown }> = [];
   class Vector3 {
     x: number;
     y: number;
@@ -169,38 +184,11 @@ test('manual handle position click stores drawer-local position for external dra
     }
   }
 
-  const App: any = {
+  const { App, calls } = createHandleAssignHarness({
     deps: { THREE: { Vector3 } },
-    store: {
-      getState() {
-        return {
-          ui: {},
-          config: {},
-          runtime: {},
-          mode: { opts: { handlePlacement: 'manual', handleColor: 'black' } },
-          meta: {},
-        };
-      },
-      patch() {
-        return undefined;
-      },
-    },
-    services: {
-      tools: {
-        getHandlesType() {
-          return 'edge';
-        },
-      },
-    },
-    maps: {
-      setHandle(partId: string, handleType: string, meta?: unknown) {
-        calls.push({ op: 'setHandle', args: [partId, handleType, meta], owner: this });
-      },
-      setKey(mapName: string, key: string, value: unknown, meta?: unknown) {
-        calls.push({ op: 'setKey', args: [mapName, key, value, meta], owner: this });
-      },
-    },
-  };
+    modeOpts: { handlePlacement: 'manual', handleColor: 'black' },
+    handleType: 'edge',
+  });
 
   const drawerOwner = {
     userData: { partId: 'd2_draw_0', __doorWidth: 1.2, __doorHeight: 0.2 },
@@ -252,38 +240,7 @@ test('manual handle position reader accepts the canonical serialized shape only'
 });
 
 test('handle assignment treats chest drawers as drawers without targeting chest frame parts', () => {
-  const calls: Array<{ op: string; args: unknown[] }> = [];
-  const App: any = {
-    store: {
-      getState() {
-        return {
-          ui: {},
-          config: {},
-          runtime: {},
-          mode: { opts: {} },
-          meta: {},
-        };
-      },
-      patch() {
-        return undefined;
-      },
-    },
-    services: {
-      tools: {
-        getHandlesType() {
-          return 'standard';
-        },
-      },
-    },
-    maps: {
-      setHandle(partId: string, handleType: string, meta?: unknown) {
-        calls.push({ op: 'setHandle', args: [partId, handleType, meta] });
-      },
-      setKey(mapName: string, key: string, value: unknown, meta?: unknown) {
-        calls.push({ op: 'setKey', args: [mapName, key, value, meta] });
-      },
-    },
-  };
+  const { App, calls } = createHandleAssignHarness({ handleType: 'standard' });
 
   tryHandleCanvasHandleAssignClick({
     App,
@@ -312,38 +269,10 @@ test('handle assignment treats chest drawers as drawers without targeting chest 
 });
 
 test('handle assignment targets internal drawer owner ids from drawer-box hits', () => {
-  const calls: Array<{ op: string; args: unknown[] }> = [];
-  const App: any = {
-    store: {
-      getState() {
-        return {
-          ui: {},
-          config: {},
-          runtime: {},
-          mode: { opts: { handleColor: 'black' } },
-          meta: {},
-        };
-      },
-      patch() {
-        return undefined;
-      },
-    },
-    services: {
-      tools: {
-        getHandlesType() {
-          return 'standard';
-        },
-      },
-    },
-    maps: {
-      setHandle(partId: string, handleType: string, meta?: unknown) {
-        calls.push({ op: 'setHandle', args: [partId, handleType, meta] });
-      },
-      setKey(mapName: string, key: string, value: unknown, meta?: unknown) {
-        calls.push({ op: 'setKey', args: [mapName, key, value, meta] });
-      },
-    },
-  };
+  const { App, calls } = createHandleAssignHarness({
+    modeOpts: { handleColor: 'black' },
+    handleType: 'standard',
+  });
 
   const internalDrawerBox = {
     userData: {
@@ -380,41 +309,15 @@ test('handle assignment targets internal drawer owner ids from drawer-box hits',
 });
 
 test('normal handle assignment clears a previous manual door handle position', () => {
-  const calls: Array<{ op: string; args: unknown[] }> = [];
-  const App: any = {
-    store: {
-      getState() {
-        return {
-          ui: {},
-          config: {},
-          runtime: {},
-          mode: { opts: { handleColor: 'black' } },
-          meta: {},
-        };
-      },
-      patch() {
-        return undefined;
-      },
-    },
-    services: {
-      tools: {
-        getHandlesType() {
-          return 'standard';
-        },
-      },
-    },
-    maps: {
+  const { App, calls } = createHandleAssignHarness({
+    modeOpts: { handleColor: 'black' },
+    handleType: 'standard',
+    config: {
       handlesMap: {
         '__wp_manual_handle_position:d3_full': '{"xRatio":0.4,"yRatio":0.6}',
       },
-      setHandle(partId: string, handleType: string, meta?: unknown) {
-        calls.push({ op: 'setHandle', args: [partId, handleType, meta] });
-      },
-      setKey(mapName: string, key: string, value: unknown, meta?: unknown) {
-        calls.push({ op: 'setKey', args: [mapName, key, value, meta] });
-      },
     },
-  };
+  });
 
   const primaryHitObject = {
     userData: { partId: 'd3_full' },

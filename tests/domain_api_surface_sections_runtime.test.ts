@@ -47,18 +47,9 @@ function createHarness(overrides?: {
       ? { ...(value as Record<string, unknown>) }
       : {};
 
-  const setConfigMap = (mapName: unknown, nextMap: unknown, meta?: unknown) => {
-    const cleanMapName = String(mapName || '');
-    const cleanMap = readMapRecord(nextMap);
-    if (cleanMapName) env.maps[cleanMapName] = cleanMap;
-    configSetCalls.push({ mapName, nextMap: cleanMap, meta });
-    return cleanMap;
-  };
-
   const App: any = {
     actions: {
       config: {
-        setMap: setConfigMap,
         patch(patch: Record<string, unknown>, meta?: unknown) {
           for (const [key, value] of Object.entries(patch || {})) {
             if (key === '__replace') continue;
@@ -70,6 +61,16 @@ function createHarness(overrides?: {
     },
     store: {
       getState: () => rootState,
+      setConfig(patch: Record<string, unknown>, meta?: unknown) {
+        for (const [key, value] of Object.entries(patch || {})) {
+          if (key === '__replace') continue;
+          const cleanMap = readMapRecord(value);
+          env.maps[key] = cleanMap;
+          configSetCalls.push({ mapName: key, nextMap: cleanMap, meta });
+        }
+        rootState.config = env.maps;
+        return patch;
+      },
       patch(patch: Record<string, unknown>) {
         if (patch && typeof patch === 'object' && patch.config && typeof patch.config === 'object') {
           Object.assign(env.maps, patch.config);
