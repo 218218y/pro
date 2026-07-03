@@ -149,13 +149,24 @@ function readKnownConfigMapPatchKeys(patch: unknown): string[] {
   return Object.keys(patchRec).filter(key => key !== CONFIG_REPLACE_KEY && isKnownMapName(key));
 }
 
+function readKnownConfigMapReplaceKeys(patch: unknown): string[] {
+  const patchRec = asObj<UnknownRecord>(patch);
+  const replace = patchRec ? asObj<UnknownRecord>(patchRec[CONFIG_REPLACE_KEY]) : null;
+  if (!replace) return [];
+  return Object.keys(replace).filter(key => replace[key] && isKnownMapName(key));
+}
+
 function assertNoGenericRootConfigMapPatch(payload: PatchPayload): void {
   const mapKeys = readKnownConfigMapPatchKeys(payload.config);
-  if (!mapKeys.length) return;
+  const replaceKeys = readKnownConfigMapReplaceKeys(payload.config);
+  if (!mapKeys.length && !replaceKeys.length) return;
+  const parts: string[] = [];
+  if (mapKeys.length) parts.push(`branches (${mapKeys.join(', ')})`);
+  if (replaceKeys.length) parts.push(`replace keys (${replaceKeys.join(', ')})`);
   throw new Error(
-    `[WardrobePro] actions.patch cannot write known config map branches (${mapKeys.join(
-      ', '
-    )}); use applyProjectSnapshot/applyPaintSnapshot or a semantic map writer.`
+    `[WardrobePro] actions.patch cannot write known config map ${parts.join(
+      ' and '
+    )}; use applyProjectSnapshot/applyPaintSnapshot or a semantic map writer.`
   );
 }
 

@@ -192,6 +192,30 @@ test('[state-api.config] generic config patch rejects known map branches', () =>
   assert.equal(asRec(store.commits[0]?.meta).source, 'test:generic-scalar-patch');
 });
 
+test('[state-api.config] generic config patch rejects known map replace keys', () => {
+  const store = createStoreStub({
+    ui: {},
+    config: { boardMaterial: 'oak', handlesMap: { d1_full: 'bar' } },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+  const App: AnyRecord = { actions: {}, store };
+  installStateApi(App as any);
+
+  assert.throws(
+    () =>
+      (App.actions as any).config.patch(
+        { boardMaterial: 'walnut', __replace: { handlesMap: true } },
+        { source: 'test:generic-map-replace-key' }
+      ),
+    /actions\.config\.patch cannot write known config map replace keys \(handlesMap\)/
+  );
+  assert.deepEqual(store.commits, []);
+  assert.equal(asRec(store.getState().config).boardMaterial, 'oak');
+  assert.deepEqual({ ...asRec(asRec(store.getState().config).handlesMap) }, { d1_full: 'bar' });
+});
+
 test('[state-api.config] actions.applyConfig rejects known map branches before generic patch routing', () => {
   const store = createStoreStub({
     ui: {},
@@ -212,6 +236,30 @@ test('[state-api.config] actions.applyConfig rejects known map branches before g
     /actions\.applyConfig cannot write known config map branches \(hingeMap\)/
   );
   assert.deepEqual(store.commits, []);
+  assert.deepEqual({ ...asRec(asRec(store.getState().config).hingeMap) }, { d1_full: { side: 'left' } });
+});
+
+test('[state-api.config] actions.applyConfig rejects known map replace keys before generic patch routing', () => {
+  const store = createStoreStub({
+    ui: {},
+    config: { width: 100, hingeMap: { d1_full: { side: 'left' } } },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+  const App: AnyRecord = { actions: {}, store };
+  installStateApi(App as any);
+
+  assert.throws(
+    () =>
+      (App.actions as any).applyConfig(
+        { width: 120, __replace: { hingeMap: true } },
+        { source: 'test:applyConfig-map-replace-key' }
+      ),
+    /actions\.applyConfig cannot write known config map replace keys \(hingeMap\)/
+  );
+  assert.deepEqual(store.commits, []);
+  assert.equal(asRec(store.getState().config).width, 100);
   assert.deepEqual({ ...asRec(asRec(store.getState().config).hingeMap) }, { d1_full: { side: 'left' } });
 });
 
@@ -253,6 +301,30 @@ test('[state-api.config] root actions.patch always rejects known map branches', 
     { source: 'project.load' }
   );
   assert.deepEqual({ ...asRec(asRec(store.getState().config).handlesMap) }, { d1_full: 'rail' });
+});
+
+test('[state-api.config] root actions.patch rejects known map replace keys', () => {
+  const store = createStoreStub({
+    ui: {},
+    config: { width: 100, handlesMap: { d1_full: 'bar' } },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: {},
+  });
+  const App: AnyRecord = { actions: {}, store };
+  installStateApi(App as any);
+
+  assert.throws(
+    () =>
+      (App.actions as any).patch(
+        { config: { width: 120, __replace: { handlesMap: true } }, ui: { doorStyle: 'profile' } },
+        { source: 'test:root-map-replace-key' }
+      ),
+    /actions\.patch cannot write known config map replace keys \(handlesMap\)/
+  );
+  assert.equal(asRec(store.getState().config).width, 100);
+  assert.deepEqual({ ...asRec(asRec(store.getState().config).handlesMap) }, { d1_full: 'bar' });
+  assert.equal(asRec(store.getState().ui).doorStyle, undefined);
 });
 
 test('[state-api.config] applyProjectSnapshot keeps library module signature from the incoming snapshot', () => {

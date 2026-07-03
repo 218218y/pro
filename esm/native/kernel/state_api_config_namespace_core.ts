@@ -78,13 +78,22 @@ export function installStateApiConfigNamespaceCore(ctx: StateApiConfigNamespaceC
   const readKnownConfigMapPatchKeys = (patch: UnknownRecord): string[] =>
     Object.keys(patch).filter(key => key !== CONFIG_PATCH_REPLACE_KEY && isKnownMapName(key));
 
+  const readKnownConfigMapReplaceKeys = (patch: UnknownRecord): string[] => {
+    const replace = asRecord(patch[CONFIG_PATCH_REPLACE_KEY]) || {};
+    return Object.keys(replace).filter(key => replace[key] && isKnownMapName(key));
+  };
+
   const assertNoGenericConfigMapPatch = (patch: UnknownRecord, apiName: string): void => {
     const mapKeys = readKnownConfigMapPatchKeys(patch);
-    if (!mapKeys.length) return;
+    const replaceKeys = readKnownConfigMapReplaceKeys(patch);
+    if (!mapKeys.length && !replaceKeys.length) return;
+    const parts: string[] = [];
+    if (mapKeys.length) parts.push(`branches (${mapKeys.join(', ')})`);
+    if (replaceKeys.length) parts.push(`replace keys (${replaceKeys.join(', ')})`);
     throw new Error(
-      `[WardrobePro] ${apiName} cannot write known config map branches (${mapKeys.join(
-        ', '
-      )}); use applyProjectSnapshot/applyPaintSnapshot or a semantic map writer.`
+      `[WardrobePro] ${apiName} cannot write known config map ${parts.join(
+        ' and '
+      )}; use applyProjectSnapshot/applyPaintSnapshot or a semantic map writer.`
     );
   };
 

@@ -127,11 +127,14 @@ export interface UiActionsNamespaceLike extends UnknownRecord {
 }
 
 export type ConfigSnapshotLike = UnknownRecord & Partial<ConfigScalarValueMap> & Partial<MapsByName>;
+export type ConfigNonMapReplaceMap = Record<string, boolean> & {
+  [K in KnownMapName]?: never;
+};
 export type ConfigNonMapPatch = UnknownRecord &
   Omit<Partial<ConfigScalarValueMap>, KnownMapName> & {
     [K in KnownMapName]?: never;
   } & {
-    __replace?: Record<string, boolean>;
+    __replace?: ConfigNonMapReplaceMap;
     __snapshot?: boolean;
     __capturedAt?: number;
   };
