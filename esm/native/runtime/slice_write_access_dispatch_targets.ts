@@ -1,6 +1,13 @@
-import type { ActionMetaLike, ActionRootPatchPayload, PatchPayload } from '../../../types';
+import type {
+  ActionMetaLike,
+  ActionRootPatchPayload,
+  ConfigNonMapPatch,
+  PatchPayload,
+  UnknownRecord,
+} from '../../../types';
 
 import { callDedicatedMetaStoreWriter, readSlicePatchValue } from './slice_write_access_shared.js';
+import { isKnownMapName } from './maps_access_normalizers.js';
 import type {
   MetaTouchDispatchTarget,
   RootPatchDispatchTarget,
@@ -16,13 +23,16 @@ import {
   type SliceWriteStoreLike,
 } from './slice_write_access_context.js';
 
-export type RootPayloadReader = () => PatchPayload;
+export type RootPayloadReader = {
+  readActionPayload: () => ActionRootPatchPayload;
+  readStorePayload: () => PatchPayload;
+};
 
 type RootPatchTargetHandler = {
   hasSeam: (context: ResolvedWriteContext) => boolean;
   dispatch: (
     context: ResolvedWriteContext,
-    readRootPayload: RootPayloadReader,
+    rootPayloadReader: RootPayloadReader,
     meta?: ActionMetaLike
   ) => unknown;
 };
@@ -54,19 +64,83 @@ type SliceDispatchTargetHandler = {
     payload: SlicePatchValue<N>;
     meta?: ActionMetaLike;
     opts: SliceWriteOptions;
-    readRootPayload: RootPayloadReader;
+    rootPayloadReader: RootPayloadReader;
   }) => unknown;
 };
+
+const CONFIG_REPLACE_KEY = `${'__'}replace`;
+
+function asRecord(value: unknown): UnknownRecord | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
+}
+
+function readKnownConfigMapPatchKeys(payload: PatchPayload): string[] {
+  const config = asRecord(payload.config);
+  if (!config) return [];
+  return Object.keys(config).filter(key => key !== CONFIG_REPLACE_KEY && isKnownMapName(key));
+}
+
+function readKnownConfigMapReplaceKeys(payload: PatchPayload): string[] {
+  const config = asRecord(payload.config);
+  const replace = config ? asRecord(config[CONFIG_REPLACE_KEY]) : null;
+  if (!replace) return [];
+  return Object.keys(replace).filter(key => replace[key] && isKnownMapName(key));
+}
+
+function readActionRootConfigPatch(payload: PatchPayload): ConfigNonMapPatch | undefined {
+  if (typeof payload.config === 'undefined') return undefined;
+  const mapKeys = readKnownConfigMapPatchKeys(payload);
+  const replaceKeys = readKnownConfigMapReplaceKeys(payload);
+  if (mapKeys.length || replaceKeys.length) {
+    const parts: string[] = [];
+    if (mapKeys.length) parts.push(`branches (${mapKeys.join(', ')})`);
+    if (replaceKeys.length) parts.push(`replace keys (${replaceKeys.join(', ')})`);
+    throw new Error(
+      `[WardrobePro][slice-write-access] root action patch cannot write known config map ${parts.join(
+        ' and '
+      )}; use actions.config.* or a semantic map writer.`
+    );
+  }
+  return payload.config as ConfigNonMapPatch;
+}
+
+function toActionRootPatchPayload(payload: PatchPayload): ActionRootPatchPayload {
+  const next: ActionRootPatchPayload = {};
+  if (typeof payload.ui !== 'undefined') next.ui = payload.ui;
+  const config = readActionRootConfigPatch(payload);
+  if (typeof config !== 'undefined') next.config = config;
+  if (typeof payload.runtime !== 'undefined') next.runtime = payload.runtime;
+  if (typeof payload.mode !== 'undefined') next.mode = payload.mode;
+  if (typeof payload.meta !== 'undefined') next.meta = payload.meta;
+  return next;
+}
+
+export function createRootPayloadReader(createPayload: () => PatchPayload): RootPayloadReader {
+  let storePayload: PatchPayload | null = null;
+  let actionPayload: ActionRootPatchPayload | null = null;
+  const readStorePayload = (): PatchPayload => {
+    if (!storePayload) storePayload = createPayload();
+    return storePayload;
+  };
+  return {
+    readActionPayload: () => {
+      if (!actionPayload) actionPayload = toActionRootPatchPayload(readStorePayload());
+      return actionPayload;
+    },
+    readStorePayload,
+  };
+}
 
 export const ROOT_PATCH_TARGET_HANDLERS: Record<RootPatchDispatchTarget, RootPatchTargetHandler> = {
   rootActionPatch: {
     hasSeam: context => !!context.rootPatchAction,
-    dispatch: (context, readRootPayload, meta) =>
-      context.rootPatchAction?.(readRootPayload() as ActionRootPatchPayload, meta),
+    dispatch: (context, rootPayloadReader, meta) =>
+      context.rootPatchAction?.(rootPayloadReader.readActionPayload(), meta),
   },
   rootStorePatch: {
     hasSeam: context => typeof context.store?.patch === 'function',
-    dispatch: (context, readRootPayload, meta) => context.store?.patch?.(readRootPayload(), meta),
+    dispatch: (context, rootPayloadReader, meta) =>
+      context.store?.patch?.(rootPayloadReader.readStorePayload(), meta),
   },
 };
 
@@ -82,12 +156,20 @@ export const META_TOUCH_TARGET_HANDLERS: Record<MetaTouchDispatchTarget, MetaTou
   rootActionPatch: {
     hasSeam: context => ROOT_PATCH_TARGET_HANDLERS.rootActionPatch.hasSeam(context),
     dispatch: (context, meta) =>
-      ROOT_PATCH_TARGET_HANDLERS.rootActionPatch.dispatch(context, () => ({}), meta),
+      ROOT_PATCH_TARGET_HANDLERS.rootActionPatch.dispatch(
+        context,
+        createRootPayloadReader(() => ({})),
+        meta
+      ),
   },
   rootStorePatch: {
     hasSeam: context => ROOT_PATCH_TARGET_HANDLERS.rootStorePatch.hasSeam(context),
     dispatch: (context, meta) =>
-      ROOT_PATCH_TARGET_HANDLERS.rootStorePatch.dispatch(context, () => ({}), meta),
+      ROOT_PATCH_TARGET_HANDLERS.rootStorePatch.dispatch(
+        context,
+        createRootPayloadReader(() => ({})),
+        meta
+      ),
   },
 };
 
@@ -141,13 +223,13 @@ export const SLICE_DISPATCH_TARGET_HANDLERS: Record<SliceDispatchTarget, SliceDi
   },
   rootActionPatch: {
     hasSeam: context => ROOT_PATCH_TARGET_HANDLERS.rootActionPatch.hasSeam(context),
-    dispatch: ({ context, meta, readRootPayload }) =>
-      ROOT_PATCH_TARGET_HANDLERS.rootActionPatch.dispatch(context, readRootPayload, meta),
+    dispatch: ({ context, meta, rootPayloadReader }) =>
+      ROOT_PATCH_TARGET_HANDLERS.rootActionPatch.dispatch(context, rootPayloadReader, meta),
   },
   rootStorePatch: {
     hasSeam: context => ROOT_PATCH_TARGET_HANDLERS.rootStorePatch.hasSeam(context),
-    dispatch: ({ context, meta, readRootPayload }) =>
-      ROOT_PATCH_TARGET_HANDLERS.rootStorePatch.dispatch(context, readRootPayload, meta),
+    dispatch: ({ context, meta, rootPayloadReader }) =>
+      ROOT_PATCH_TARGET_HANDLERS.rootStorePatch.dispatch(context, rootPayloadReader, meta),
   },
 };
 
@@ -177,10 +259,10 @@ export function hasMetaTouchDispatchTargetSeam(
 export function dispatchRootPatchTarget(
   context: ResolvedWriteContext,
   target: RootPatchDispatchTarget,
-  readRootPayload: RootPayloadReader,
+  rootPayloadReader: RootPayloadReader,
   meta?: ActionMetaLike
 ): unknown {
-  return ROOT_PATCH_TARGET_HANDLERS[target].dispatch(context, readRootPayload, meta);
+  return ROOT_PATCH_TARGET_HANDLERS[target].dispatch(context, rootPayloadReader, meta);
 }
 
 export function dispatchSliceTarget<N extends SlicePatchNamespace>(args: {
@@ -190,7 +272,7 @@ export function dispatchSliceTarget<N extends SlicePatchNamespace>(args: {
   meta?: ActionMetaLike;
   opts: SliceWriteOptions;
   target: SliceDispatchTarget;
-  readRootPayload: RootPayloadReader;
+  rootPayloadReader: RootPayloadReader;
 }): unknown {
   const { target, ...dispatchArgs } = args;
   return SLICE_DISPATCH_TARGET_HANDLERS[target].dispatch(dispatchArgs);

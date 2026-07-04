@@ -21,6 +21,7 @@ import {
   dispatchMetaTouchTarget,
   dispatchRootPatchTarget,
   dispatchSliceTarget,
+  createRootPayloadReader,
   hasMetaTouchDispatchTargetSeam,
   hasRootPatchDispatchSeamForTarget,
   hasSliceDispatchTargetSeam,
@@ -35,11 +36,11 @@ export {
   type RootPatchDispatchOptions,
 } from './slice_write_access_dispatch_order.js';
 
-const READ_ROOT_PAYLOAD_UNSUPPORTED: RootPayloadReader = () => {
+const READ_ROOT_PAYLOAD_UNSUPPORTED: RootPayloadReader = createRootPayloadReader(() => {
   throw new Error(
     '[WardrobePro] Unexpected root payload read: dispatch targets do not require root patch targets'
   );
-};
+});
 
 function sliceDispatchTargetsNeedRootPayload(targets: readonly SliceDispatchTarget[]): boolean {
   for (const target of targets) {
@@ -78,16 +79,10 @@ function dispatchRootPatchWithResolvedContext(
   meta: ActionMetaLike | undefined,
   targets: readonly RootPatchDispatchTarget[]
 ): unknown {
-  let rootPayload: PatchPayload | null = null;
-  const readRootPayload = (): PatchPayload => {
-    if (!rootPayload) {
-      rootPayload = createPayload();
-    }
-    return rootPayload;
-  };
+  const rootPayloadReader = createRootPayloadReader(createPayload);
 
   for (const target of targets) {
-    const out = dispatchRootPatchTarget(context, target, readRootPayload, meta);
+    const out = dispatchRootPatchTarget(context, target, rootPayloadReader, meta);
     if (out !== undefined) return out;
   }
 
@@ -105,19 +100,21 @@ export function patchSliceWithResolvedContext<N extends SlicePatchNamespace>(
   if (!hasOwnKeys(payload)) return undefined;
 
   const needsRootPayload = sliceDispatchTargetsNeedRootPayload(targets);
-  let rootPayload: PatchPayload | null = null;
   const readRootPayload: RootPayloadReader = needsRootPayload
-    ? () => {
-        if (!rootPayload) {
-          rootPayload = toRootPatchPayload(namespace, payload);
-        }
-        return rootPayload;
-      }
+    ? createRootPayloadReader(() => toRootPatchPayload(namespace, payload))
     : READ_ROOT_PAYLOAD_UNSUPPORTED;
 
   for (const target of targets) {
     if (!hasSliceDispatchTargetSeam(context, namespace, opts, target)) continue;
-    const out = dispatchSliceTarget({ context, namespace, payload, meta, opts, target, readRootPayload });
+    const out = dispatchSliceTarget({
+      context,
+      namespace,
+      payload,
+      meta,
+      opts,
+      target,
+      rootPayloadReader: readRootPayload,
+    });
     if (target === 'storeWriter') return out;
     if (out !== undefined) return out;
   }

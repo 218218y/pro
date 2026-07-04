@@ -22,10 +22,13 @@ export interface ActionEnvelope<TType extends string = string, TPayload = unknow
 export type WardrobeProActionType = 'PATCH' | 'SET';
 
 /** Concrete public PATCH action (preferred public write model). */
-export type PatchAction = ActionEnvelope<'PATCH', ActionRootPatchPayload>;
+export type PublicPatchAction = ActionEnvelope<'PATCH', ActionRootPatchPayload>;
+
+/** Backward-compatible public PATCH alias. */
+export type PatchAction = PublicPatchAction;
 
 /** Preferred public root-action PATCH envelope. */
-export type PatchDispatchEnvelope = PatchAction;
+export type PatchDispatchEnvelope = PublicPatchAction;
 
 /** Raw backend PATCH action used below the public action facade. */
 export type StorePatchAction = ActionEnvelope<'PATCH', StorePatchPayload>;
@@ -33,15 +36,17 @@ export type StorePatchAction = ActionEnvelope<'PATCH', StorePatchPayload>;
 /** Root replacement action (rare). */
 export type SetAction = ActionEnvelope<'SET', UnknownRecord>;
 
-/** Backend-supported action envelopes (current engine + planned Zustand adapter). */
-export type StoreBackendAction = StorePatchAction | SetAction;
+/** Public action union. Raw PATCH payloads belong to StoreBackendAction, not here. */
+export type PublicWardrobeProAction = PublicPatchAction | SetAction;
 
-/** Union of the currently supported strongly-typed actions.
- *
- * NOTE: We still allow arbitrary action types during migration, but PATCH is the
- * preferred public write-path and should be used by App/actions helpers.
- */
-export type WardrobeProAction = PatchAction | StoreBackendAction | ActionEnvelope<string, unknown>;
+/** Backend-supported raw/legacy action envelopes. Not a public action payload contract. */
+export type StoreBackendAction = StorePatchAction | SetAction | ActionEnvelope<string, unknown>;
+
+/** Explicit raw/backend action union for store internals and migration shims. */
+export type RawWardrobeProAction = StoreBackendAction;
+
+/** Union of the currently supported public strongly-typed actions. */
+export type WardrobeProAction = PublicWardrobeProAction;
 
 /** Optional dispatch options supported by some store implementations. */
 export interface DispatchOptionsLike {

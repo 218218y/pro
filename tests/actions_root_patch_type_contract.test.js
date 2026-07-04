@@ -40,21 +40,44 @@ function runVirtualTypecheck(source) {
 }
 
 test('[actions.patch types] public root config patch rejects known maps while store patch remains raw', () => {
-  const source = `import type { ActionsNamespaceLike, StoreLike } from './types';
+  const source = `import type {
+  ActionsNamespaceLike,
+  PatchDispatchEnvelope,
+  PublicWardrobeProAction,
+  StoreBackendAction,
+  StoreLike,
+  StorePatchAction,
+  WardrobeProAction,
+} from './types';
 declare const actions: ActionsNamespaceLike;
 declare const store: StoreLike;
 actions.patch?.({ config: { width: 120 } });
 actions.patch?.({ config: { width: 130, __replace: { width: true } } });
 store.patch({ config: { handlesMap: { d1_full: 'rail' } } });
-actions.patch?.({ config: { handlesMap: { d1_full: 'rail' } } });
-actions.patch?.({ config: { __replace: { handlesMap: true } } });
+actions.patch?.({ config: { handlesMap: { d1_full: 'rail' } } }); // expect-error
+actions.patch?.({ config: { __replace: { handlesMap: true } } }); // expect-error
+const okPatch: PatchDispatchEnvelope = { type: 'PATCH', payload: { config: { width: 120 } } };
+const badPatch: PatchDispatchEnvelope = { type: 'PATCH', payload: { config: { handlesMap: { d1_full: 'rail' } } } }; // expect-error
+const badPublicAction: PublicWardrobeProAction = { type: 'PATCH', payload: { config: { handlesMap: { d1_full: 'rail' } } } }; // expect-error
+const badWardrobeAction: WardrobeProAction = { type: 'PATCH', payload: { config: { handlesMap: { d1_full: 'rail' } } } }; // expect-error
+const rawStoreAction: StorePatchAction = { type: 'PATCH', payload: { config: { handlesMap: { d1_full: 'rail' } } } };
+const rawBackendAction: StoreBackendAction = { type: 'PATCH', payload: { config: { handlesMap: { d1_full: 'rail' } } } };
+void okPatch;
+void badPatch;
+void badPublicAction;
+void badWardrobeAction;
+void rawStoreAction;
+void rawBackendAction;
 `;
 
   const diagnostics = runVirtualTypecheck(source);
+  const expectedLines = source
+    .split('\n')
+    .flatMap((line, index) => (line.includes('expect-error') ? [index + 1] : []));
 
   assert.deepEqual(
     diagnostics.map(diag => diag.line),
-    [7, 8]
+    expectedLines
   );
   assert.ok(
     diagnostics.every(diag => /not assignable/.test(diag.message)),
