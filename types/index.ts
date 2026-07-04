@@ -19,8 +19,25 @@ export * from './ui';
 export * from './three';
 export * from './build';
 export * from './app';
-export * from './actions';
-export * from './patch_payload';
+export type {
+  ActionEnvelope,
+  DispatchOptionsLike,
+  PatchAction,
+  PatchDispatchEnvelope,
+  PublicPatchAction,
+  PublicWardrobeProAction,
+  SetAction,
+  WardrobeProAction,
+  WardrobeProActionType,
+} from './actions';
+export type {
+  ConfigSlicePatch,
+  MetaSlicePatch,
+  ModeSlicePatch,
+  PatchPayload,
+  RuntimeSlicePatch,
+  UiSlicePatch,
+} from './patch_payload';
 export * from './store_state';
 export * from './store_spine';
 export * from './runtime';

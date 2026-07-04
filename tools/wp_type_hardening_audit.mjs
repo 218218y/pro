@@ -93,11 +93,18 @@ const rawStoreBackendTypeNames = [
   'RawWardrobeProAction',
 ];
 
-const rawStoreBackendTypeAllowPrefixes = [
-  'esm/native/platform/',
-  'esm/native/kernel/',
-  'esm/native/runtime/',
-];
+const rawStoreBackendTypeAllowPaths = new Set([
+  'esm/native/platform/store.ts',
+  'esm/native/platform/store_commit_pipeline.ts',
+  'esm/native/platform/store_contract.ts',
+  'esm/native/platform/store_patch_apply.ts',
+  'esm/native/kernel/state_api_install_support.ts',
+  'esm/native/runtime/cfg_access_core.ts',
+  'esm/native/runtime/slice_write_access_dispatch.ts',
+  'esm/native/runtime/slice_write_access_dispatch_targets.ts',
+  'esm/native/runtime/slice_write_access_plan.ts',
+  'esm/native/runtime/slice_write_access_shared.ts',
+]);
 
 const rawStoreWritePublicLayerRoots = [
   'esm/native/adapters',
@@ -133,7 +140,7 @@ function collectRawStoreBackendTypeBoundaryViolations() {
   const rawTypePattern = new RegExp(`\\b(?:${rawStoreBackendTypeNames.join('|')})\\b`, 'g');
   for (const abs of walk(path.join(root, 'esm'))) {
     const rel = path.relative(root, abs).replace(/\\/g, '/');
-    if (rawStoreBackendTypeAllowPrefixes.some(prefix => rel.startsWith(prefix))) continue;
+    if (rawStoreBackendTypeAllowPaths.has(rel)) continue;
     const source = fs.readFileSync(abs, 'utf8');
     rawTypePattern.lastIndex = 0;
     const names = [...new Set([...source.matchAll(rawTypePattern)].map(match => match[0]))].sort();
@@ -148,7 +155,8 @@ function collectRawStoreBackendTypeBoundaryViolations() {
 
 function collectRawStoreWriteBoundaryViolations() {
   const violations = [];
-  const rawStoreWritePattern = /\b(?:App\.)?store\s*\.\s*(?:patch|setConfig)\s*\(/g;
+  const rawStoreWritePattern =
+    /\b(?:App\.)?store\s*\.\s*(?:patch|setConfig)\s*\(|\.setConfig\s*\(|\.patch(?:\?\.)?\s*\(\s*\{\s*(?:config|ui|runtime|mode|meta)\s*:/g;
   for (const rootName of rawStoreWritePublicLayerRoots) {
     for (const abs of walk(path.join(root, rootName))) {
       const rel = path.relative(root, abs).replace(/\\/g, '/');
@@ -169,19 +177,27 @@ function collectRawStoreBoundaryDocViolations() {
   const expectations = [
     {
       rel: 'types/actions.ts',
-      pattern: /Backend-only raw PATCH action used below the public action facade\./,
+      pattern: /Public action union\. Raw PATCH payloads belong to backend_actions, not here\./,
     },
     {
-      rel: 'types/actions.ts',
+      rel: 'types/backend_actions.ts',
+      pattern: /Backend-only action envelope types for the raw store boundary\./,
+    },
+    {
+      rel: 'types/backend_actions.ts',
       pattern: /Never use[\s\S]*it as a public action payload contract\./,
     },
     {
-      rel: 'types/patch_payload.ts',
-      pattern: /Backend-only store PATCH payload\./,
+      rel: 'types/backend_patch_payload.ts',
+      pattern: /Backend-only store PATCH payload types\./,
     },
     {
       rel: 'types/state.ts',
       pattern: /Raw\/backend store patch boundary \(Zustand-only\)\./,
+    },
+    {
+      rel: 'types/state.ts',
+      pattern: /Backend-only convenience writer\. Not for UI\/service\/domain callers\./,
     },
   ];
   const violations = [];
@@ -191,6 +207,25 @@ function collectRawStoreBoundaryDocViolations() {
     if (!expectation.pattern.test(source)) {
       violations.push(`${expectation.rel}: missing raw store/backend boundary documentation`);
     }
+  }
+  return violations;
+}
+
+function collectPublicTypeBarrelViolations() {
+  const source = fs.readFileSync(path.join(root, 'types/index.ts'), 'utf8');
+  const violations = [];
+  if (/export\s+\*\s+from\s+['"]\.\/actions['"]/.test(source)) {
+    violations.push('types/index.ts: public barrel must explicitly export public action types');
+  }
+  if (/export\s+\*\s+from\s+['"]\.\/patch_payload['"]/.test(source)) {
+    violations.push('types/index.ts: public barrel must explicitly export public patch payload types');
+  }
+  if (
+    /backend_actions|backend_patch_payload|StorePatchPayload|StorePatchAction|StoreBackendAction|RawWardrobeProAction/.test(
+      source
+    )
+  ) {
+    violations.push('types/index.ts: public barrel must not export raw backend store/action types');
   }
   return violations;
 }
@@ -211,6 +246,7 @@ violations.push(...collectRuntimeGeometryScalarUnionViolations());
 violations.push(...collectRawStoreBackendTypeBoundaryViolations());
 violations.push(...collectRawStoreWriteBoundaryViolations());
 violations.push(...collectRawStoreBoundaryDocViolations());
+violations.push(...collectPublicTypeBarrelViolations());
 
 if (violations.length) {
   console.error('[type-hardening-audit] FAILED');

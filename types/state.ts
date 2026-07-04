@@ -2,13 +2,13 @@
 
 import type { UnknownRecord } from './common';
 import type { DispatchOptionsLike } from './actions';
+import type { StorePatchPayload } from './backend_patch_payload';
 import type { ActionMetaLike, ModeActionOptsLike } from './kernel';
 import type {
   ConfigSlicePatch,
   MetaSlicePatch,
   ModeSlicePatch,
   RuntimeSlicePatch,
-  StorePatchPayload,
   UiSlicePatch,
 } from './patch_payload';
 import type { RootStateLike } from './store_state';
@@ -124,6 +124,7 @@ export interface StoreLike<S = RootStateLike> {
   setMeta?: (patch: MetaSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
   setDirty?: (isDirty: boolean, meta?: ActionMetaLike | UnknownRecord) => void;
   setUi?: (patch: UiSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
+  /** Backend-only convenience writer. Not for UI/service/domain callers. */
   setConfig?: (patch: ConfigSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
   setModePatch?: (patch: ModeSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
 }

@@ -44,11 +44,10 @@ test('[actions.patch types] public root config patch rejects known maps while st
   ActionsNamespaceLike,
   PatchDispatchEnvelope,
   PublicWardrobeProAction,
-  StoreBackendAction,
   StoreLike,
-  StorePatchAction,
   WardrobeProAction,
 } from './types';
+import type { StoreBackendAction, StorePatchAction } from './types/backend_actions';
 declare const actions: ActionsNamespaceLike;
 declare const store: StoreLike;
 actions.patch?.({ config: { width: 120 } });
@@ -81,6 +80,28 @@ void rawBackendAction;
   );
   assert.ok(
     diagnostics.every(diag => /not assignable/.test(diag.message)),
+    diagnostics.map(diag => diag.message).join('\n')
+  );
+});
+
+test('[actions.patch types] public barrel does not export raw store backend action types', () => {
+  const source = `import type { StorePatchPayload } from './types'; // expect-error
+import type { StorePatchAction } from './types'; // expect-error
+import type { StoreBackendAction } from './types'; // expect-error
+import type { RawWardrobeProAction } from './types'; // expect-error
+`;
+
+  const diagnostics = runVirtualTypecheck(source);
+  const expectedLines = source
+    .split('\n')
+    .flatMap((line, index) => (line.includes('expect-error') ? [index + 1] : []));
+
+  assert.deepEqual(
+    diagnostics.map(diag => diag.line),
+    expectedLines
+  );
+  assert.ok(
+    diagnostics.every(diag => /has no exported member/.test(diag.message)),
     diagnostics.map(diag => diag.message).join('\n')
   );
 });
