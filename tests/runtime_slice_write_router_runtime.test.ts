@@ -506,6 +506,39 @@ test('[slice-write-access] dispatchCanonicalPatchPayload falls through from root
   ]);
 });
 
+test('[slice-write-access] root action map rejection does not fall through to raw root store patch', () => {
+  const calls: AnyRecord[] = [];
+  const App = {
+    actions: {
+      patch(patch: AnyRecord, meta?: AnyRecord) {
+        calls.push({ op: 'actions.patch', patch, meta });
+        return undefined;
+      },
+    },
+    store: {
+      patch(patch: AnyRecord, meta?: AnyRecord) {
+        calls.push({ op: 'store.patch', patch, meta });
+        return { via: 'store.patch' };
+      },
+    },
+  } satisfies AnyRecord;
+
+  assert.throws(
+    () =>
+      dispatchCanonicalPatchPayload(
+        App,
+        { config: { handlesMap: { d1_full: 'rail' } } },
+        { source: 'root-map-fallback' },
+        {
+          allowRootActionPatch: true,
+          allowRootStorePatch: true,
+        }
+      ),
+    /root action patch cannot write known config map branches \(handlesMap\)/
+  );
+  assert.deepEqual(calls, []);
+});
+
 test('[slice-write-access] root patch routes are opt-in instead of default write paths', () => {
   const calls: AnyRecord[] = [];
   const App = {

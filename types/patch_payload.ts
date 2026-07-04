@@ -60,5 +60,8 @@ export interface PatchPayload extends UnknownRecord {
   meta?: MetaSlicePatch;
 }
 
-/** Raw store/backend PATCH payload. Public action patch uses a narrower config branch. */
+/**
+ * Backend-only store PATCH payload.
+ * Public action patch uses ActionRootPatchPayload, whose config branch is non-map.
+ */
 export type StorePatchPayload = PatchPayload;

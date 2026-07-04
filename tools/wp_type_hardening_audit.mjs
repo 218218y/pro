@@ -86,6 +86,27 @@ const runtimeGeometryScalarRoots = [
   'types',
 ];
 
+const rawStoreBackendTypeNames = [
+  'StorePatchPayload',
+  'StorePatchAction',
+  'StoreBackendAction',
+  'RawWardrobeProAction',
+];
+
+const rawStoreBackendTypeAllowPrefixes = [
+  'esm/native/platform/',
+  'esm/native/kernel/',
+  'esm/native/runtime/',
+];
+
+const rawStoreWritePublicLayerRoots = [
+  'esm/native/adapters',
+  'esm/native/builder',
+  'esm/native/features',
+  'esm/native/services',
+  'esm/native/ui',
+];
+
 function collectRuntimeGeometryScalarUnionViolations() {
   const violations = [];
   const keyPattern = runtimeGeometryScalarKeys.join('|');
@@ -107,6 +128,73 @@ function collectRuntimeGeometryScalarUnionViolations() {
   return violations;
 }
 
+function collectRawStoreBackendTypeBoundaryViolations() {
+  const violations = [];
+  const rawTypePattern = new RegExp(`\\b(?:${rawStoreBackendTypeNames.join('|')})\\b`, 'g');
+  for (const abs of walk(path.join(root, 'esm'))) {
+    const rel = path.relative(root, abs).replace(/\\/g, '/');
+    if (rawStoreBackendTypeAllowPrefixes.some(prefix => rel.startsWith(prefix))) continue;
+    const source = fs.readFileSync(abs, 'utf8');
+    rawTypePattern.lastIndex = 0;
+    const names = [...new Set([...source.matchAll(rawTypePattern)].map(match => match[0]))].sort();
+    if (names.length) {
+      violations.push(
+        `${rel}: raw store/backend action type outside backend allowlist (${names.join(', ')})`
+      );
+    }
+  }
+  return violations;
+}
+
+function collectRawStoreWriteBoundaryViolations() {
+  const violations = [];
+  const rawStoreWritePattern = /\b(?:App\.)?store\s*\.\s*(?:patch|setConfig)\s*\(/g;
+  for (const rootName of rawStoreWritePublicLayerRoots) {
+    for (const abs of walk(path.join(root, rootName))) {
+      const rel = path.relative(root, abs).replace(/\\/g, '/');
+      const source = fs.readFileSync(abs, 'utf8');
+      rawStoreWritePattern.lastIndex = 0;
+      const matches = [...source.matchAll(rawStoreWritePattern)];
+      if (matches.length) {
+        violations.push(
+          `${rel}: raw store.patch/store.setConfig write outside backend boundary (${matches.length})`
+        );
+      }
+    }
+  }
+  return violations;
+}
+
+function collectRawStoreBoundaryDocViolations() {
+  const expectations = [
+    {
+      rel: 'types/actions.ts',
+      pattern: /Backend-only raw PATCH action used below the public action facade\./,
+    },
+    {
+      rel: 'types/actions.ts',
+      pattern: /Never use[\s\S]*it as a public action payload contract\./,
+    },
+    {
+      rel: 'types/patch_payload.ts',
+      pattern: /Backend-only store PATCH payload\./,
+    },
+    {
+      rel: 'types/state.ts',
+      pattern: /Raw\/backend store patch boundary \(Zustand-only\)\./,
+    },
+  ];
+  const violations = [];
+  for (const expectation of expectations) {
+    const abs = path.join(root, expectation.rel);
+    const source = fs.readFileSync(abs, 'utf8');
+    if (!expectation.pattern.test(source)) {
+      violations.push(`${expectation.rel}: missing raw store/backend boundary documentation`);
+    }
+  }
+  return violations;
+}
+
 const violations = [];
 for (const rootName of scanRoots) {
   for (const abs of walk(path.join(root, rootName))) {
@@ -120,6 +208,9 @@ for (const rootName of scanRoots) {
 
 violations.push(...collectTypeRuntimeStubViolations());
 violations.push(...collectRuntimeGeometryScalarUnionViolations());
+violations.push(...collectRawStoreBackendTypeBoundaryViolations());
+violations.push(...collectRawStoreWriteBoundaryViolations());
+violations.push(...collectRawStoreBoundaryDocViolations());
 
 if (violations.length) {
   console.error('[type-hardening-audit] FAILED');
@@ -128,5 +219,5 @@ if (violations.length) {
 }
 
 console.log(
-  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric)'
+  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric; raw store backend boundary is guarded)'
 );

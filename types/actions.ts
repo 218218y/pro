@@ -30,7 +30,10 @@ export type PatchAction = PublicPatchAction;
 /** Preferred public root-action PATCH envelope. */
 export type PatchDispatchEnvelope = PublicPatchAction;
 
-/** Raw backend PATCH action used below the public action facade. */
+/**
+ * Backend-only raw PATCH action used below the public action facade.
+ * Public action dispatch must use PublicPatchAction/PatchDispatchEnvelope.
+ */
 export type StorePatchAction = ActionEnvelope<'PATCH', StorePatchPayload>;
 
 /** Root replacement action (rare). */
@@ -39,10 +42,15 @@ export type SetAction = ActionEnvelope<'SET', UnknownRecord>;
 /** Public action union. Raw PATCH payloads belong to StoreBackendAction, not here. */
 export type PublicWardrobeProAction = PublicPatchAction | SetAction;
 
-/** Backend-supported raw/legacy action envelopes. Not a public action payload contract. */
+/**
+ * Backend-supported raw/legacy action envelopes.
+ *
+ * This intentionally accepts arbitrary migration/backend envelopes. Never use
+ * it as a public action payload contract.
+ */
 export type StoreBackendAction = StorePatchAction | SetAction | ActionEnvelope<string, unknown>;
 
-/** Explicit raw/backend action union for store internals and migration shims. */
+/** Explicit raw/backend action union for store internals and migration shims only. */
 export type RawWardrobeProAction = StoreBackendAction;
 
 /** Union of the currently supported public strongly-typed actions. */

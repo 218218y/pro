@@ -99,8 +99,11 @@ export interface StoreLike<S = RootStateLike> {
   subscribeMeta?: (fn: (state: S, actionMeta?: ActionMetaLike) => void) => () => void;
 
   /**
-   * Canonical write path (Zustand-only):
-   * Patch the root state directly (no dispatch envelopes).
+   * Raw/backend store patch boundary (Zustand-only).
+   *
+   * This accepts StorePatchPayload for platform/kernel/runtime owner commits,
+   * including snapshot/map-owner paths. UI, services, builder, and public
+   * callers must use App.actions.* or the focused semantic writer facade.
    */
   patch: (
     payload: StorePatchPayload | UnknownRecord,
