@@ -138,6 +138,9 @@ export type ConfigNonMapPatch = UnknownRecord &
     __snapshot?: boolean;
     __capturedAt?: number;
   };
+export interface ActionRootPatchPayload extends Omit<PatchPayload, 'config'> {
+  config?: ConfigNonMapPatch;
+}
 export type ConfigScalarUpdater<K extends ConfigScalarKey = ConfigScalarKey> = (
   prev: ConfigScalarValueMap[K] | undefined,
   cfg?: ConfigSnapshotLike
@@ -262,7 +265,7 @@ export interface ViewActionsLike extends UnknownRecord {
 export type SaveProjectAction = () => unknown;
 
 export interface ActionsNamespaceLike extends UnknownRecord {
-  patch?: (partial: PatchPayload, meta?: ActionMetaLike) => unknown;
+  patch?: (partial: ActionRootPatchPayload, meta?: ActionMetaLike) => unknown;
   commitUiSnapshot?: (uiSnapshot: UnknownRecord, meta?: ActionMetaLike) => unknown;
   applyConfig?: (cfg: ConfigNonMapPatch, meta?: ActionMetaLike) => unknown;
   setCfgScalar?: {

@@ -1,5 +1,6 @@
 import type {
   ActionMetaLike,
+  ActionRootPatchPayload,
   ActionsNamespaceLike,
   AppContainer,
   BuilderActionsNamespaceLike,
@@ -108,7 +109,7 @@ export function installStateApiSurfaceNamespaces(ctx: StateApiSurfaceNamespacesI
   }
 
   if (typeof actions.patch !== 'function') {
-    actions.patch = function patch(partial?: PatchPayload, meta?: ActionMetaLike) {
+    actions.patch = function patch(partial?: ActionRootPatchPayload, meta?: ActionMetaLike) {
       const payload = partial && typeof partial === 'object' ? { ...partial } : {};
       const m = normMeta(meta, 'actions:patch');
       dispatchCanonicalPatch(payload, m);

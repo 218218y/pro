@@ -5,8 +5,8 @@
 // and the hot-path action types used across layers.
 
 import type { UnknownRecord } from './common';
-import type { ActionMetaLike } from './kernel';
-import type { PatchPayload } from './patch_payload';
+import type { ActionMetaLike, ActionRootPatchPayload } from './kernel';
+import type { StorePatchPayload } from './patch_payload';
 
 /** Generic action envelope used by the store dispatch boundary. */
 export interface ActionEnvelope<TType extends string = string, TPayload = unknown> {
@@ -21,24 +21,27 @@ export interface ActionEnvelope<TType extends string = string, TPayload = unknow
 /** Core action types we currently rely on cross-layer. */
 export type WardrobeProActionType = 'PATCH' | 'SET';
 
-/** Concrete PATCH action (preferred public write model). */
-export type PatchAction = ActionEnvelope<'PATCH', PatchPayload>;
+/** Concrete public PATCH action (preferred public write model). */
+export type PatchAction = ActionEnvelope<'PATCH', ActionRootPatchPayload>;
 
-/** Preferred store-write envelope during migration to Zustand backend. */
+/** Preferred public root-action PATCH envelope. */
 export type PatchDispatchEnvelope = PatchAction;
+
+/** Raw backend PATCH action used below the public action facade. */
+export type StorePatchAction = ActionEnvelope<'PATCH', StorePatchPayload>;
 
 /** Root replacement action (rare). */
 export type SetAction = ActionEnvelope<'SET', UnknownRecord>;
 
 /** Backend-supported action envelopes (current engine + planned Zustand adapter). */
-export type StoreBackendAction = PatchAction | SetAction;
+export type StoreBackendAction = StorePatchAction | SetAction;
 
 /** Union of the currently supported strongly-typed actions.
  *
  * NOTE: We still allow arbitrary action types during migration, but PATCH is the
  * preferred public write-path and should be used by App/actions helpers.
  */
-export type WardrobeProAction = StoreBackendAction | ActionEnvelope<string, unknown>;
+export type WardrobeProAction = PatchAction | StoreBackendAction | ActionEnvelope<string, unknown>;
 
 /** Optional dispatch options supported by some store implementations. */
 export interface DispatchOptionsLike {

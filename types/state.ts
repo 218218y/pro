@@ -7,8 +7,8 @@ import type {
   ConfigSlicePatch,
   MetaSlicePatch,
   ModeSlicePatch,
-  PatchPayload,
   RuntimeSlicePatch,
+  StorePatchPayload,
   UiSlicePatch,
 } from './patch_payload';
 import type { RootStateLike } from './store_state';
@@ -103,7 +103,7 @@ export interface StoreLike<S = RootStateLike> {
    * Patch the root state directly (no dispatch envelopes).
    */
   patch: (
-    payload: PatchPayload | UnknownRecord,
+    payload: StorePatchPayload | UnknownRecord,
     meta?: ActionMetaLike | UnknownRecord,
     opts?: DispatchOptionsLike
   ) => unknown;

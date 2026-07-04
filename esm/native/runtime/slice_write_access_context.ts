@@ -1,7 +1,7 @@
 import type {
   ActionMetaLike,
+  ActionRootPatchPayload,
   ActionsNamespaceLike,
-  PatchPayload,
   RootStoreLike,
   UnknownRecord,
 } from '../../../types';
@@ -27,7 +27,7 @@ export type SliceNamespaceSurface = UnknownRecord & {
   touch?: (meta?: ActionMetaLike) => unknown;
 };
 
-export type BoundRootPatchAction = (payload: PatchPayload, meta?: ActionMetaLike) => unknown;
+export type BoundRootPatchAction = (payload: ActionRootPatchPayload, meta?: ActionMetaLike) => unknown;
 export type BoundMetaTouchAction = (meta?: ActionMetaLike) => unknown;
 
 type NamespaceCacheEntry = {
@@ -70,7 +70,7 @@ function isSliceNamespaceSurface(value: unknown): value is SliceNamespaceSurface
 
 function bindRootPatchAction(actions: ActionsNamespaceLike | null): BoundRootPatchAction | null {
   if (typeof actions?.patch !== 'function') return null;
-  return (payload: PatchPayload, meta?: ActionMetaLike) => actions.patch?.(payload, meta);
+  return (payload: ActionRootPatchPayload, meta?: ActionMetaLike) => actions.patch?.(payload, meta);
 }
 
 function bindLiveMetaTouchAction(actions: ActionsNamespaceLike | null): BoundMetaTouchAction | null {

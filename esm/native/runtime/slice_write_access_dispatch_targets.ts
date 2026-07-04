@@ -1,4 +1,4 @@
-import type { ActionMetaLike, PatchPayload } from '../../../types';
+import type { ActionMetaLike, ActionRootPatchPayload, PatchPayload } from '../../../types';
 
 import { callDedicatedMetaStoreWriter, readSlicePatchValue } from './slice_write_access_shared.js';
 import type {
@@ -61,7 +61,8 @@ type SliceDispatchTargetHandler = {
 export const ROOT_PATCH_TARGET_HANDLERS: Record<RootPatchDispatchTarget, RootPatchTargetHandler> = {
   rootActionPatch: {
     hasSeam: context => !!context.rootPatchAction,
-    dispatch: (context, readRootPayload, meta) => context.rootPatchAction?.(readRootPayload(), meta),
+    dispatch: (context, readRootPayload, meta) =>
+      context.rootPatchAction?.(readRootPayload() as ActionRootPatchPayload, meta),
   },
   rootStorePatch: {
     hasSeam: context => typeof context.store?.patch === 'function',
