@@ -2,6 +2,7 @@ import type { Object3DLike, ThreeLike, UnknownRecord } from '../../../types/inde
 
 import { readConfigBoolFromApp, readConfigNumberLooseFromApp } from './config_selectors.js';
 import { getCamera, getDoorsArray, getRenderer, getScene } from './render_access_surface.js';
+import { getUiFeedback } from './service_access.js';
 import { ensureRenderMetaArray } from './render_access_state_bags.js';
 
 const DEFAULT_REFLECTOR_LONG_EDGE = 1024;
@@ -123,6 +124,19 @@ export type PlanarMirrorRefreshOptions = {
   startIndex?: number | null;
   now?: (() => number) | null;
 };
+
+const notifiedPlanarFallbackApps = new WeakSet<object>();
+
+function notifyPlanarReflectorFallbackToCube(App: unknown): void {
+  const appRecord = readRecord(App);
+  if (!appRecord || notifiedPlanarFallbackApps.has(appRecord)) return;
+  notifiedPlanarFallbackApps.add(appRecord);
+  try {
+    getUiFeedback(App).toast('חלק מהמראות הועברו למראה פשוטה כדי לשמור על ביצועים.', 'info');
+  } catch {
+    // Feedback is best-effort; the cube fallback itself is handled by the render loop.
+  }
+}
 
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -879,7 +893,10 @@ export function installPlanarMirrorReflector(
     Math.floor(readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_MAX_COUNT', DEFAULT_REFLECTOR_MAX_COUNT))
   );
   const installedPlanarCount = countInstalledPlanarReflectors(App);
-  if (installedPlanarCount >= maxReflectors) return false;
+  if (installedPlanarCount >= maxReflectors) {
+    notifyPlanarReflectorFallbackToCube(App);
+    return false;
+  }
 
   const target = makeReflectorRenderTarget(App, THREE, mirrorMesh, installedPlanarCount);
   if (!target) return false;

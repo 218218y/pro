@@ -2,8 +2,8 @@
 //
 // Keep the public paint-click contract stable while grouped targets, special
 // mirror/glass behavior, and map-diff/history policy live in focused owners.
-import { getTools } from '../runtime/service_access.js';
-import { getPaintSourceTag } from './canvas_picking_paint_flow_shared.js';
+import { getTools, getUiFeedback } from '../runtime/service_access.js';
+import { getPaintSourceTag, isSpecialPart } from './canvas_picking_paint_flow_shared.js';
 import type { CanvasPaintClickArgs } from './canvas_picking_paint_flow_contracts.js';
 import { createPaintFlowMutableState } from './canvas_picking_paint_flow_apply_state.js';
 import { applyGroupedOrCornerPaintTarget } from './canvas_picking_paint_flow_apply_targets.js';
@@ -15,6 +15,17 @@ import { tryHandleDoorStyleOverridePaintClick } from './canvas_picking_paint_flo
 import { commitPaintFlowState } from './canvas_picking_paint_flow_apply_commit.js';
 import { isNonPaintableCanvasPaintPartId } from './canvas_picking_paint_part_eligibility.js';
 import { readCanvasPaintTargetScopeFromObject } from './canvas_picking_paint_target_scope.js';
+
+function notifyUnsupportedMirrorPaintTarget(App: unknown): void {
+  try {
+    getUiFeedback(App).toast(
+      'מראה זמינה רק על חזיתות/דלתות שתומכות במראה, לא על דפנות או גוף הארון.',
+      'info'
+    );
+  } catch {
+    // Feedback is best-effort; the important part is not writing an invalid mirror paint value.
+  }
+}
 
 export function tryHandleCanvasPaintClick(args: CanvasPaintClickArgs): boolean {
   const { App, foundPartId, effectiveDoorId, foundDrawerId, activeStack: paintStackKey, isPaintMode } = args;
@@ -39,6 +50,18 @@ export function tryHandleCanvasPaintClick(args: CanvasPaintClickArgs): boolean {
   if (handledDoorStyle !== null) return handledDoorStyle;
 
   const state = createPaintFlowMutableState(App);
+  const paintPartKey = resolveDirectPaintTargetKey({
+    foundPartId,
+    effectiveDoorId,
+    foundDrawerId,
+    activeStack: paintStackKey,
+  });
+
+  if (paintSelection === 'mirror' && !isSpecialPart(paintPartKey)) {
+    notifyUnsupportedMirrorPaintTarget(App);
+    return true;
+  }
+
   const targetScope = readCanvasPaintTargetScopeFromObject(App, args.primaryHitObject || args.doorHitObject);
   const handledGroupedTarget = applyGroupedOrCornerPaintTarget({
     state,
@@ -49,12 +72,6 @@ export function tryHandleCanvasPaintClick(args: CanvasPaintClickArgs): boolean {
   });
 
   if (!handledGroupedTarget) {
-    const paintPartKey = resolveDirectPaintTargetKey({
-      foundPartId,
-      effectiveDoorId,
-      foundDrawerId,
-      activeStack: paintStackKey,
-    });
     applyPaintPartMutation({
       state,
       paintPartKey,

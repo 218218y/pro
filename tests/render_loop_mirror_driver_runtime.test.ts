@@ -374,3 +374,94 @@ test('render loop mirror driver updates dirty newly tracked mirrors without wait
   assert.equal(slots.__mirrorDirty, false);
   assert.equal(slots.__mirrorLastUpdateMs, 1105);
 });
+
+test('render loop mirror driver refreshes cube fallback surfaces while realistic mirror mode is enabled', () => {
+  const material = { envMap: null as unknown, needsUpdate: false };
+  const fallbackMirror = {
+    isMesh: true,
+    __taggedMirror: true,
+    parent: {},
+    visible: true,
+    material,
+    userData: { __wpMirrorSurface: true },
+  };
+  const app = makeApp([fallbackMirror], { MIRROR_REFLECTOR_ENABLED: true });
+  const texture = ((app.render as AnyRecord).mirrorRenderTarget as AnyRecord).texture;
+  const slots = makeSlots({
+    __mirrorLastUpdateMs: -1,
+    __mirrorMotionActive: false,
+    __frameStartMs: 100,
+    __mirrorDirty: true,
+    __mirrorPresenceKnown: true,
+    __mirrorPresenceHasMirror: true,
+    __mirrorPresenceCheckedAtMs: 80,
+    __mirrorTrackedPruneAtMs: 0,
+  });
+
+  const driver = createDriver(app, slots, { now: 105 });
+
+  driver.updateMirrorCube();
+
+  assert.equal(material.envMap, texture);
+  assert.equal(material.needsUpdate, true);
+  assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 1);
+  assert.equal(fallbackMirror.visible, true);
+  assert.equal(slots.__mirrorDirty, false);
+});
+
+test('render loop mirror driver syncs only cube fallback material in mixed planar and fallback realistic mirrors', () => {
+  const planarMaterial = { envMap: null as unknown, needsUpdate: false };
+  const fallbackMaterial = { envMap: null as unknown, needsUpdate: false };
+  const planarMirror = {
+    isMesh: true,
+    __taggedMirror: true,
+    parent: {},
+    visible: true,
+    material: planarMaterial,
+    userData: {
+      __wpMirrorSurface: true,
+      __wpPlanarReflector: {
+        renderTarget: {},
+        virtualCamera: {},
+        textureMatrix: {},
+        material: {},
+      },
+    },
+  };
+  const fallbackMirror = {
+    isMesh: true,
+    __taggedMirror: true,
+    parent: {},
+    visible: true,
+    material: fallbackMaterial,
+    userData: { __wpMirrorSurface: true },
+  };
+  const app = makeApp([planarMirror, fallbackMirror], {
+    MIRROR_REFLECTOR_ENABLED: true,
+    MIRROR_REFLECTOR_UPDATE_MS: 1000,
+  });
+  const texture = ((app.render as AnyRecord).mirrorRenderTarget as AnyRecord).texture;
+  const slots = makeSlots({
+    __mirrorLastUpdateMs: -1,
+    __mirrorPlanarLastUpdateMs: 100,
+    __mirrorMotionActive: false,
+    __frameStartMs: 100,
+    __mirrorDirty: true,
+    __mirrorPresenceKnown: true,
+    __mirrorPresenceHasMirror: true,
+    __mirrorPresenceCheckedAtMs: 80,
+    __mirrorTrackedPruneAtMs: 0,
+  });
+
+  const driver = createDriver(app, slots, { now: 105 });
+
+  driver.updateMirrorCube();
+
+  assert.equal(fallbackMaterial.envMap, texture);
+  assert.equal(fallbackMaterial.needsUpdate, true);
+  assert.equal(planarMaterial.envMap, null);
+  assert.equal(planarMaterial.needsUpdate, false);
+  assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 1);
+  assert.equal(planarMirror.visible, true);
+  assert.equal(fallbackMirror.visible, true);
+});

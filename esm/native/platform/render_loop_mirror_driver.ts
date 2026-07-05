@@ -6,6 +6,7 @@ import {
   getMirrorHideScratch,
   getMirrorRenderTarget,
   getRenderer,
+  isPlanarMirrorSurface,
   getScene,
   getShadowMap,
   readTrackedPlanarMirrorStats,
@@ -274,8 +275,10 @@ export function createRenderLoopMirrorDriver(
         ? readTrackedPlanarMirrorStats(A)
         : { mirrorCount: 0, planarCount: 0, fallbackCount: 0 };
       const hasPlanarReflectors = planarStats.planarCount > 0;
+      const hasCubeFallbackMirrorSurfaces = planarStats.fallbackCount > 0;
       const hasCubeMirrorSurfaces =
-        cubeMirrorMode && (planarStats.fallbackCount > 0 || (hasMirror && planarStats.mirrorCount === 0));
+        hasCubeFallbackMirrorSurfaces ||
+        (cubeMirrorMode && (planarStats.fallbackCount > 0 || (hasMirror && planarStats.mirrorCount === 0)));
       const planarLast = readFiniteSlotNumber(getRenderSlot, A, '__mirrorPlanarLastUpdateMs', -1);
       const planarIntervalRaw = motionActive
         ? readConfigNumberLooseFromApp(A, 'MIRROR_REFLECTOR_MOVE_UPDATE_MS', 0)
@@ -340,7 +343,7 @@ export function createRenderLoopMirrorDriver(
         return;
       }
 
-      if (!cubeMirrorMode) {
+      if (!cubeMirrorMode && !hasCubeFallbackMirrorSurfaces) {
         if (hasMirror) {
           setRenderSlot(A, '__mirrorPresenceKnown', true);
           setRenderSlot(A, '__mirrorPresenceHasMirror', true);
@@ -362,16 +365,19 @@ export function createRenderLoopMirrorDriver(
       }
 
       let shouldRunMirrorCube =
-        cubeMirrorMode && hasMirror && canRunInBudget && !mirrorDisabledForMotion && intervalDue;
+        hasCubeMirrorSurfaces && hasMirror && canRunInBudget && !mirrorDisabledForMotion && intervalDue;
 
       if (shouldRunMirrorCube && mirrorsArr && mirrorsArr.length) {
         let foundMirrorForUpdate = false;
         for (let i = 0; i < mirrorsArr.length; i++) {
           const o = asRecordOrNull(mirrorsArr[i]);
           if (!o) continue;
+          const shouldSyncCubeMaterial = cubeMirrorMode || !isPlanarMirrorSurface(o);
           if (__tryHideMirrorSurface(o, tex, mirrorsToHide)) {
-            syncTrackedMirrorMaterialEnvMap(o, tex);
-            foundMirrorForUpdate = true;
+            if (shouldSyncCubeMaterial) {
+              syncTrackedMirrorMaterialEnvMap(o, tex);
+              foundMirrorForUpdate = true;
+            }
           }
         }
         if (!foundMirrorForUpdate) hasMirror = false;

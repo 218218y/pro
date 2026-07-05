@@ -951,6 +951,53 @@ function isModuleSelector(value: unknown): boolean {
   return !!ud?.isModuleSelector;
 }
 
+function isSlidingDoorLikeUserData(userData: UnknownRecord | null): boolean {
+  if (!userData) return false;
+  if (userData.__doorType === 'sliding') return true;
+
+  const partId = readPartIdFromUserData(userData)?.toLowerCase() || '';
+  return (
+    partId.startsWith('sliding') ||
+    partId.startsWith('slide') ||
+    partId.startsWith('lower_sliding') ||
+    partId.startsWith('lower_slide')
+  );
+}
+
+function isSlidingDoorLikeTarget(value: unknown): boolean {
+  let current = asMeasurableObject(value);
+  while (current) {
+    if (isSlidingDoorLikeUserData(readUserData(current))) return true;
+    current = asMeasurableObject(current.parent);
+  }
+  return false;
+}
+
+function readFrontPlaneOcclusionAdvance(args: {
+  targetBox: LocalMeasurementBox;
+  boundsBox: LocalMeasurementBox;
+  normalSign: number;
+}): number | null {
+  const normalSign = args.normalSign >= 0 ? 1 : -1;
+  const targetFace =
+    normalSign >= 0 ? getBoxMaxAxis(args.targetBox, 'z') : getBoxMinAxis(args.targetBox, 'z');
+  const boundsFace =
+    normalSign >= 0 ? getBoxMaxAxis(args.boundsBox, 'z') : getBoxMinAxis(args.boundsBox, 'z');
+  const advance = normalSign * (boundsFace - targetFace);
+  return Number.isFinite(advance) ? advance : null;
+}
+
+function hasVisibleFrontPlaneOcclusion(args: {
+  targetBox: LocalMeasurementBox;
+  boundsBox: LocalMeasurementBox;
+  normalSign: number;
+}): boolean {
+  const advance = readFrontPlaneOcclusionAdvance(args);
+  return (
+    advance != null && advance > FRONT_Z_EPSILON_M && advance <= POINT_FRONT_PLANE_OCCLUSION_PROMOTION_MAX_M
+  );
+}
+
 function readModuleInteriorBox(args: {
   App: AppContainer;
   target: unknown;
@@ -1777,21 +1824,38 @@ function shouldUseWardrobeFrontPlaneForPointStart(args: {
   THREE: OverlayThree;
   hitState: CanvasPickingClickHitState;
   wardrobeGroup: Object3DLike;
+  target: unknown;
   targetBox: LocalMeasurementBox;
   boundsBox: LocalMeasurementBox;
   resolvedPlane: MeasurementPlane;
   forceInteriorFront: boolean;
 }): boolean {
-  const { App, THREE, hitState, wardrobeGroup, targetBox, boundsBox, resolvedPlane, forceInteriorFront } =
-    args;
-  if (forceInteriorFront || resolvedPlane.kind === 'front') return false;
+  const {
+    App,
+    THREE,
+    hitState,
+    wardrobeGroup,
+    target,
+    targetBox,
+    boundsBox,
+    resolvedPlane,
+    forceInteriorFront,
+  } = args;
+  if (forceInteriorFront) return false;
   if (!isCameraMostlyViewingWardrobeFront({ App, THREE, wardrobeGroup, boundsBox })) return false;
+
+  const cameraSign = readCameraAxisSign({ App, THREE, wardrobeGroup, box: boundsBox, axis: 'z' }) ?? 1;
+  if (resolvedPlane.kind === 'front') {
+    return (
+      isSlidingDoorLikeTarget(target) &&
+      hasVisibleFrontPlaneOcclusion({ targetBox, boundsBox, normalSign: cameraSign })
+    );
+  }
 
   const localPoint = readHitLocalPoint(App, hitState, wardrobeGroup);
   const hitZ = localPoint ? readCoordinateAxis(localPoint, 'z') : null;
   if (hitZ == null) return false;
 
-  const cameraSign = readCameraAxisSign({ App, THREE, wardrobeGroup, box: boundsBox, axis: 'z' }) ?? 1;
   const boundsFrontZ = cameraSign >= 0 ? getBoxMaxAxis(boundsBox, 'z') : getBoxMinAxis(boundsBox, 'z');
   const targetFrontZ = cameraSign >= 0 ? getBoxMaxAxis(targetBox, 'z') : getBoxMinAxis(targetBox, 'z');
   const tolerance = clampNumber(
@@ -2071,6 +2135,7 @@ function resolvePointMeasurementStart(args: {
     THREE,
     hitState,
     wardrobeGroup,
+    target,
     targetBox: box,
     boundsBox,
     resolvedPlane: plane,

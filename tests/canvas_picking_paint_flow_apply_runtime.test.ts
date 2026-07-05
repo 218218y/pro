@@ -1900,3 +1900,39 @@ test('paint special mutation preserves the canonical implicit outside full mirro
   assert.equal(state.special.d5_full, 'mirror');
   assert.deepEqual(state.mirrorLayout.d5_full, [{ faceSign: 1 }, { faceSign: -1 }]);
 });
+
+test('paint click rejects mirror on carcass frame parts before grouped body paint writes invalid colors', () => {
+  const App = createApp({
+    maps: { individualColors: {}, curtainMap: {}, doorSpecialMap: {}, mirrorLayoutMap: {} },
+  });
+  const toasts: Array<{ message: unknown; type: unknown }> = [];
+  let materialRefreshes = 0;
+  App.services.tools = { getPaintColor: () => 'mirror' };
+  App.services.uiFeedback = {
+    toast(message: unknown, type: unknown) {
+      toasts.push({ message, type });
+    },
+  };
+  App.services.builder.materials = {
+    applyMaterials() {
+      materialRefreshes += 1;
+    },
+  };
+
+  const handled = tryHandleCanvasPaintClick({
+    App,
+    foundPartId: 'body_left',
+    effectiveDoorId: null,
+    foundDrawerId: null,
+    activeStack: 'top',
+    isPaintMode: true,
+    primaryHitObject: null,
+    doorHitObject: null,
+  } as never);
+
+  assert.equal(handled, true);
+  assert.deepEqual(App.store.getState().config.individualColors, {});
+  assert.equal(materialRefreshes, 0);
+  assert.equal(toasts.length, 1);
+  assert.match(String(toasts[0]?.message || ''), /מראה זמינה/);
+});

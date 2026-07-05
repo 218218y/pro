@@ -19,7 +19,7 @@ import type {
 import type { IndividualColorsMap } from '../../../types/maps';
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { getPlatformReportError } from '../runtime/platform_access.js';
-import { isDrawerBoxPartId } from '../features/part_identity/api.js';
+import { isDrawerBoxPartId, isSpecialSurfacePaintTargetPartId } from '../features/part_identity/api.js';
 import { readPartColorEntry } from './material_color_lookup.js';
 import { resolveSelectionFrontMaterial } from './material_selection.js';
 
@@ -107,6 +107,7 @@ export function makeMaterialResolver(args: MaterialResolverArgs): {
     if (specificColorVal === 'glass') return globalFrontMat;
 
     if (specificColorVal === 'mirror') {
+      if (!isSpecialSurfacePaintTargetPartId(partId)) return globalFrontMat;
       const ro = getBuilderRenderOps(App);
       const getMirrorMaterial: RenderOpsLike['getMirrorMaterial'] | null =
         ro && typeof ro.getMirrorMaterial === 'function' ? ro.getMirrorMaterial : null;
