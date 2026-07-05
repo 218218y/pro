@@ -100,6 +100,11 @@ function readImportMetaEnv(): ImportMetaEnvLike | null {
   }
 }
 
+export function isGoogleIdentityServicesReady(win: GsiWindowLike | null): boolean {
+  const oauth2 = win?.google?.accounts?.oauth2;
+  return !!oauth2 && typeof oauth2.initTokenClient === 'function';
+}
+
 export function getGoogleClientIdFromEnvOrDefault(): string {
   // Vite injects import.meta.env at build-time.
   try {
@@ -116,7 +121,7 @@ export async function ensureGoogleIdentityServicesLoaded(
   win: GsiWindowLike | null
 ): Promise<void> {
   if (!doc || !win) throw new Error('No DOM');
-  if (win.google && win.google.accounts && win.google.accounts.oauth2) return;
+  if (isGoogleIdentityServicesReady(win)) return;
 
   if (_gsiLoadPromise) return _gsiLoadPromise;
   _gsiLoadPromise = new Promise<void>((resolve, reject) => {
@@ -182,7 +187,12 @@ export async function getGmailComposeAccessToken(opts: {
     return _cachedToken.token;
   }
 
-  await ensureGoogleIdentityServicesLoaded(doc, win);
+  // Google Identity Services requires requestAccessToken to be initiated from a user
+  // gesture. When the script was preloaded, avoid an unnecessary await before the
+  // popup request so browsers keep the click activation alive.
+  if (!isGoogleIdentityServicesReady(win)) {
+    await ensureGoogleIdentityServicesLoaded(doc, win);
+  }
 
   const firstPrompt: '' | 'consent' = opts.forcePrompt ? 'consent' : '';
   let tr = await _requestToken(win, clientId, firstPrompt);

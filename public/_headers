@@ -4,6 +4,7 @@
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=()
 
 # Immutable cache for hashed static release assets. HTML and runtime config stay uncached by default.
