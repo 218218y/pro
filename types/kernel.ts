@@ -5,8 +5,7 @@
 // avoid chasing every internal escape hatch.
 
 import type { UnknownRecord } from './common';
-import type { RuntimeSlicePatch, UiSlicePatch } from './patch_payload';
-import type { RawPatchPayload } from './backend_patch_payload';
+import type { MetaSlicePatch, ModeSlicePatch, RuntimeSlicePatch, UiSlicePatch } from './patch_payload';
 import type { HandleType, HingeDir, WardrobeType } from './domain';
 import type { HandlesMap, HingeMap, KnownMapName, MapsByName } from './maps';
 import type { ConfigScalarKey, ConfigScalarValueMap } from './config_scalar';
@@ -139,8 +138,12 @@ export type ConfigNonMapPatch = UnknownRecord &
     __snapshot?: boolean;
     __capturedAt?: number;
   };
-export interface ActionRootPatchPayload extends Omit<RawPatchPayload, 'config'> {
+export interface ActionRootPatchPayload extends UnknownRecord {
+  ui?: UiSlicePatch;
   config?: ConfigNonMapPatch;
+  runtime?: RuntimeSlicePatch;
+  mode?: ModeSlicePatch;
+  meta?: MetaSlicePatch;
 }
 export type PublicPatchPayload = ActionRootPatchPayload;
 export type PublicConfigPatch = ConfigNonMapPatch;
@@ -222,7 +225,7 @@ export interface ModulesRecomputeFromUiOptionsLike extends UnknownRecord {
 }
 
 export interface ModeActionsNamespaceLike extends UnknownRecord {
-  patch?: (modePartial: RawPatchPayload['mode'], meta?: ActionMetaLike) => unknown;
+  patch?: (modePartial: ModeSlicePatch, meta?: ActionMetaLike) => unknown;
   set?: (primary: unknown, opts?: ModeActionOptsLike, meta?: ActionMetaLike) => unknown;
 }
 

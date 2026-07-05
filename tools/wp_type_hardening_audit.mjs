@@ -271,6 +271,42 @@ function collectPublicTypeBarrelViolations() {
   return violations;
 }
 
+function collectPublicTypeBackendImportViolations() {
+  const violations = [];
+  const backendModules = ['backend_patch_payload', 'backend_actions', 'backend_store'];
+  const backendModulePattern = backendModules.join('|');
+  const backendImportPattern = new RegExp(
+    `(?:^|\\n)\\s*(?:import|export)\\s+(?:type\\s+)?[\\s\\S]*?\\s+from\\s+['"]\\.\\/(?:${backendModulePattern})['"]`,
+    'g'
+  );
+  const backendTypeAllowPaths = new Set([
+    'types/backend_actions.ts',
+    'types/backend_patch_payload.ts',
+    'types/backend_store.ts',
+  ]);
+
+  for (const abs of walk(path.join(root, 'types'))) {
+    const rel = path.relative(root, abs).replace(/\\/g, '/');
+    if (!rel.endsWith('.ts') || rel.endsWith('.d.ts') || backendTypeAllowPaths.has(rel)) continue;
+    const source = fs.readFileSync(abs, 'utf8');
+    backendImportPattern.lastIndex = 0;
+    const matches = [...source.matchAll(backendImportPattern)];
+    if (matches.length) {
+      const modules = [
+        ...new Set(
+          matches
+            .map(match => match[0].match(new RegExp(`\\.\\/(${backendModulePattern})['"]`))?.[1])
+            .filter(Boolean)
+        ),
+      ].sort();
+      violations.push(
+        `${rel}: public type module must not import backend type boundary (${modules.join(', ')})`
+      );
+    }
+  }
+  return violations;
+}
+
 function collectRawPatchPayloadDeepImportViolations() {
   const violations = [];
   const patchPayloadSource = fs.readFileSync(path.join(root, 'types/patch_payload.ts'), 'utf8');
@@ -314,6 +350,7 @@ violations.push(...collectRawStoreBackendTypeBoundaryViolations());
 violations.push(...collectRawStoreWriteBoundaryViolations());
 violations.push(...collectRawStoreBoundaryDocViolations());
 violations.push(...collectPublicTypeBarrelViolations());
+violations.push(...collectPublicTypeBackendImportViolations());
 violations.push(...collectRawPatchPayloadDeepImportViolations());
 
 if (violations.length) {
@@ -323,5 +360,5 @@ if (violations.length) {
 }
 
 console.log(
-  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded)'
+  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded; public type modules avoid backend type imports)'
 );
