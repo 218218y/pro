@@ -28,6 +28,12 @@ export type RootPayloadReader = {
   readStorePayload: () => PatchPayload;
 };
 
+function readStoreWriteOptions(opts: SliceWriteOptions): UnknownRecord | undefined {
+  return opts.configMapWriteCapability
+    ? { configMapWriteCapability: opts.configMapWriteCapability }
+    : undefined;
+}
+
 type RootPatchTargetHandler = {
   hasSeam: (context: ResolvedWriteContext) => boolean;
   dispatch: (
@@ -218,6 +224,9 @@ export const SLICE_DISPATCH_TARGET_HANDLERS: Record<SliceDispatchTarget, SliceDi
     dispatch: ({ context, namespace, payload, meta, opts }) => {
       const store = context.store;
       if (!store) return undefined;
+      if (opts.storeWriter === 'setConfig') {
+        return store.setConfig?.(readSlicePatchValue('config', payload), meta, readStoreWriteOptions(opts));
+      }
       return SLICE_STORE_WRITER_HANDLERS[opts.storeWriter].dispatch(store, namespace, payload, meta);
     },
   },

@@ -11,6 +11,10 @@ const shared = read('../esm/native/platform/store_shared.ts');
 const commitPipeline = read('../esm/native/platform/store_commit_pipeline.ts');
 const patchApply = read('../esm/native/platform/store_patch_apply.ts');
 const subscriptions = read('../esm/native/platform/store_subscriptions.ts');
+const capability = read('../esm/native/runtime/store_config_map_write_capability.ts');
+const cfgAccessCore = read('../esm/native/runtime/cfg_access_core.ts');
+const stateApiInstallSupport = read('../esm/native/kernel/state_api_install_support.ts');
+const kernelInstallSupport = read('../esm/native/kernel/kernel_install_support.ts');
 
 test('store backend family stays split across owner/shared/commit/patch/subscription seams', () => {
   assert.match(owner, /from '\.\/store_shared\.js';/);
@@ -42,4 +46,18 @@ test('store backend family stays split across owner/shared/commit/patch/subscrip
 
   assert.match(subscriptions, /export function createListenerRegistry<T>\(\)/);
   assert.match(subscriptions, /export function createSelectorRegistryEntry<T>\(/);
+});
+
+test('store backend known config map writes require owner capability, not meta source', () => {
+  assert.match(capability, /export const STORE_CONFIG_MAP_WRITE_CAPABILITY = Symbol/);
+  assert.match(capability, /isKnownMapName/);
+  assert.match(capability, /hasStoreConfigMapWriteCapability\(opts\)/);
+  assert.doesNotMatch(capability, /\bsource\b/);
+
+  assert.match(commitPipeline, /assertStoreConfigMapWriteAllowed\(pld\.config, configApiName, opts2\)/);
+  assert.match(patchApply, /assertStoreConfigMapWriteAllowed\(configPatch, 'applyConfigPatch', opts\)/);
+
+  assert.match(cfgAccessCore, /withStoreConfigMapWriteCapability/);
+  assert.match(stateApiInstallSupport, /withStoreConfigMapWriteCapability/);
+  assert.match(kernelInstallSupport, /withStoreConfigMapWriteCapability/);
 });

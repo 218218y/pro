@@ -134,6 +134,27 @@ const rawStoreWritePublicLayerRoots = [
   'esm/native/ui',
 ];
 
+const storeConfigMapWriteCapabilityNames = [
+  'STORE_CONFIG_MAP_WRITE_CAPABILITY',
+  'StoreConfigMapWriteCapability',
+  'StoreConfigMapWriteOptions',
+  'assertStoreConfigMapWriteAllowed',
+  'configMapWriteCapability',
+  'hasStoreConfigMapWriteCapability',
+  'withStoreConfigMapWriteCapability',
+];
+
+const storeConfigMapWriteCapabilityAllowPaths = new Set([
+  'esm/native/kernel/kernel_install_support.ts',
+  'esm/native/kernel/state_api_install_support.ts',
+  'esm/native/platform/store_commit_pipeline.ts',
+  'esm/native/platform/store_patch_apply.ts',
+  'esm/native/runtime/cfg_access_core.ts',
+  'esm/native/runtime/slice_write_access_dispatch_targets.ts',
+  'esm/native/runtime/slice_write_access_shared.ts',
+  'esm/native/runtime/store_config_map_write_capability.ts',
+]);
+
 function collectRuntimeGeometryScalarUnionViolations() {
   const violations = [];
   const keyPattern = runtimeGeometryScalarKeys.join('|');
@@ -199,6 +220,36 @@ function collectRawStoreWriteBoundaryViolations() {
       }
     }
   }
+  return violations;
+}
+
+function collectStoreConfigMapWriteCapabilityViolations() {
+  const violations = [];
+  const capabilityPattern = new RegExp(`\\b(?:${storeConfigMapWriteCapabilityNames.join('|')})\\b`, 'g');
+  const usedAllowPaths = new Set();
+
+  for (const abs of walk(path.join(root, 'esm'))) {
+    const rel = path.relative(root, abs).replace(/\\/g, '/');
+    const source = fs.readFileSync(abs, 'utf8');
+    capabilityPattern.lastIndex = 0;
+    const names = [...new Set([...source.matchAll(capabilityPattern)].map(match => match[0]))].sort();
+    if (storeConfigMapWriteCapabilityAllowPaths.has(rel)) {
+      if (names.length) usedAllowPaths.add(rel);
+      continue;
+    }
+    if (names.length) {
+      violations.push(
+        `${rel}: store config map write capability outside owner allowlist (${names.join(', ')})`
+      );
+    }
+  }
+
+  for (const rel of [...storeConfigMapWriteCapabilityAllowPaths].sort()) {
+    if (!usedAllowPaths.has(rel)) {
+      violations.push(`${rel}: store config map write capability allowlist entry is unused`);
+    }
+  }
+
   return violations;
 }
 
@@ -348,6 +399,7 @@ violations.push(...collectTypeRuntimeStubViolations());
 violations.push(...collectRuntimeGeometryScalarUnionViolations());
 violations.push(...collectRawStoreBackendTypeBoundaryViolations());
 violations.push(...collectRawStoreWriteBoundaryViolations());
+violations.push(...collectStoreConfigMapWriteCapabilityViolations());
 violations.push(...collectRawStoreBoundaryDocViolations());
 violations.push(...collectPublicTypeBarrelViolations());
 violations.push(...collectPublicTypeBackendImportViolations());
@@ -360,5 +412,5 @@ if (violations.length) {
 }
 
 console.log(
-  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded; public type modules avoid backend type imports)'
+  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded; public type modules avoid backend type imports; store config map write capability is owner-scoped)'
 );

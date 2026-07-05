@@ -7,6 +7,7 @@ import type {
   UnknownRecord,
 } from '../../../types';
 import type { ConfigSlicePatch, PatchPayload } from '../../../types/backend_patch_payload';
+import type { StoreConfigMapWriteCapability } from './store_config_map_write_capability.js';
 
 export type SlicePatchNamespace = 'ui' | 'runtime' | 'mode' | 'config' | 'meta';
 export type SliceStoreWriter = 'setUi' | 'setRuntime' | 'setModePatch' | 'setConfig' | 'setMeta';
@@ -35,6 +36,7 @@ export type SliceWriteOptions = {
   allowRootStorePatch?: boolean;
   preferStoreWriter?: boolean;
   skipNamespacePatch?: boolean;
+  configMapWriteCapability?: StoreConfigMapWriteCapability;
 };
 
 export type MetaTouchOptions = {
@@ -53,7 +55,7 @@ export type CanonicalPatchDispatchOptions = {
 
 export type DedicatedSliceWriteOptions = Pick<
   SliceWriteOptions,
-  'storeWriter' | 'preferStoreWriter' | 'skipNamespacePatch'
+  'storeWriter' | 'preferStoreWriter' | 'skipNamespacePatch' | 'configMapWriteCapability'
 >;
 
 export type DedicatedMetaTouchOptions = Pick<MetaTouchOptions, 'preferStoreWriter' | 'skipNamespaceTouch'>;
@@ -156,6 +158,7 @@ export function createSliceWriteOptions(
     allowRootStorePatch: opts?.allowRootStorePatch,
     preferStoreWriter: opts?.preferStoreWriter,
     skipNamespacePatch: opts?.skipNamespacePatch,
+    configMapWriteCapability: opts?.configMapWriteCapability,
   };
 }
 
@@ -169,6 +172,7 @@ export function toDedicatedSliceWriteOptions(
     allowRootStorePatch: false,
     preferStoreWriter: opts?.preferStoreWriter !== false,
     skipNamespacePatch: opts?.skipNamespacePatch === true,
+    configMapWriteCapability: opts?.configMapWriteCapability,
   };
 }
 

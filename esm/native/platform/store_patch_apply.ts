@@ -23,6 +23,10 @@ import {
   sanitizeCornerConfigurationForPatch,
 } from '../features/modules_configuration/corner_cells_api.js';
 import { extractConfigPatchWriteMetadata } from '../runtime/cfg_access.js';
+import {
+  assertStoreConfigMapWriteAllowed,
+  type StoreConfigMapWriteOptions,
+} from '../runtime/store_config_map_write_capability.js';
 
 /**
  * Structural deep merge used by PATCH slices.
@@ -201,8 +205,10 @@ export function applyConfigPatch(
   prevConfig: unknown,
   configPatch: unknown,
   actionMeta?: ActionMetaLike,
-  uiSnapshot?: unknown
+  uiSnapshot?: unknown,
+  opts?: StoreConfigMapWriteOptions
 ): RootStateLike['config'] {
+  assertStoreConfigMapWriteAllowed(configPatch, 'applyConfigPatch', opts);
   const { clean, replace, snapshot } = cleanConfigPatchInput(configPatch);
   const prevRec = asRecordOrEmpty(prevConfig);
   const useLight = !!(actionMeta && actionMeta.noHistory === true && actionMeta.noAutosave === true);

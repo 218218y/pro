@@ -30,10 +30,14 @@ import {
   toUiSlicePatch,
 } from './store_patch_apply.js';
 import { ensureRootState } from './store_shared.js';
+import {
+  assertStoreConfigMapWriteAllowed,
+  type StoreConfigMapWriteOptions,
+} from '../runtime/store_config_map_write_capability.js';
 
 type DispatchOpts = DispatchOptionsLike & {
   silent?: boolean;
-};
+} & StoreConfigMapWriteOptions;
 
 type StoreCommitPipelineDeps = {
   zustandApi: ZustandStoreApi<RootStateLike>;
@@ -196,7 +200,12 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
     return out;
   }
 
-  function patchRoot(payloadIn: unknown, metaIn?: unknown, opts2: DispatchOpts = {}): RootStateLike {
+  function patchRoot(
+    payloadIn: unknown,
+    metaIn?: unknown,
+    opts2: DispatchOpts = {},
+    configApiName = 'store.patch'
+  ): RootStateLike {
     const meta = normalizeActionMeta(metaIn);
     const { silent, forceCommit } = readCommitControlFlags(meta, opts2);
 
@@ -213,7 +222,8 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
     }
 
     if (pld.config && typeof pld.config === 'object') {
-      next.config = applyConfigPatch(current.config, pld.config, meta, current.ui);
+      assertStoreConfigMapWriteAllowed(pld.config, configApiName, opts2);
+      next.config = applyConfigPatch(current.config, pld.config, meta, current.ui, opts2);
     }
 
     if (pld.mode) {
@@ -299,8 +309,13 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
     patchRoot({ ui: toUiSlicePatch(patchIn) }, normalizeHelperMeta('ui', meta2));
   }
 
-  function setConfig(patchIn: unknown, meta2?: unknown): void {
-    patchRoot({ config: toConfigSlicePatch(patchIn) }, normalizeHelperMeta('config', meta2));
+  function setConfig(patchIn: unknown, meta2?: unknown, opts2: DispatchOpts = {}): void {
+    patchRoot(
+      { config: toConfigSlicePatch(patchIn) },
+      normalizeHelperMeta('config', meta2),
+      opts2,
+      'store.setConfig'
+    );
   }
 
   function setModePatch(patchIn: unknown, meta2?: unknown): void {

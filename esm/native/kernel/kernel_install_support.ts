@@ -14,15 +14,16 @@ import type {
 import { shouldFailFast } from '../runtime/api.js';
 import { cloneViaPlatform } from '../runtime/platform_access.js';
 import { reportError } from '../runtime/errors.js';
+import { withStoreConfigMapWriteCapability } from '../runtime/store_config_map_write_capability.js';
 import { isRecord } from './kernel_shared.js';
 
 const kernelCatchTs: Record<string, number> = Object.create(null);
 
-const KERNEL_CONFIG_WRITE_OPTS: DedicatedSliceWriteOptions = {
+const KERNEL_CONFIG_WRITE_OPTS: DedicatedSliceWriteOptions = withStoreConfigMapWriteCapability({
   storeWriter: 'setConfig',
   preferStoreWriter: true,
   skipNamespacePatch: false,
-};
+});
 
 const KERNEL_UI_WRITE_OPTS: DedicatedSliceWriteOptions = {
   storeWriter: 'setUi',

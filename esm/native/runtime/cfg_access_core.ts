@@ -8,6 +8,7 @@ import type {
 import type { ConfigSlicePatch } from '../../../types/backend_patch_payload';
 import { hasSliceWriterSeam, patchSliceCanonical } from './slice_write_access.js';
 import { isKnownMapName } from './maps_access_normalizers.js';
+import { withStoreConfigMapWriteCapability } from './store_config_map_write_capability.js';
 import {
   asRecord,
   getHistoryNamespace,
@@ -30,12 +31,12 @@ const CONFIG_PATCH_WRITE_OPTS = {
   storeWriter: 'setConfig',
   allowRootStorePatch: false,
 } as const;
-const CONFIG_MAP_OWNER_PATCH_WRITE_OPTS = {
+const CONFIG_MAP_OWNER_PATCH_WRITE_OPTS = withStoreConfigMapWriteCapability({
   storeWriter: 'setConfig',
   allowRootStorePatch: false,
   preferStoreWriter: true,
   skipNamespacePatch: true,
-} as const;
+} as const);
 
 export function cfgGet(App: unknown): ConfigSnapshotLike {
   const store = getStore(App, 'cfgGet');

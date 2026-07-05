@@ -20,6 +20,7 @@ import type {
 } from '../runtime/slice_write_access_shared.js';
 import { getAllSliceNamespaces, readSlicePatchValue } from '../runtime/slice_write_access_shared.js';
 import { isKnownMapName } from '../runtime/maps_access_normalizers.js';
+import { withStoreConfigMapWriteCapability } from '../runtime/store_config_map_write_capability.js';
 import { asRecord as asObj } from '../runtime/record.js';
 import { snapshotStoreValueEqual, uiSnapshotValueEqual } from './kernel_snapshot_store_shared.js';
 import { asPatchPayload } from './state_api_shared.js';
@@ -42,11 +43,11 @@ const INTERNAL_SLICE_WRITE_OPTS: Record<SlicePatchNamespace, DedicatedSliceWrite
     preferStoreWriter: true,
     skipNamespacePatch: true,
   },
-  config: {
+  config: withStoreConfigMapWriteCapability({
     storeWriter: 'setConfig',
     preferStoreWriter: true,
     skipNamespacePatch: true,
-  },
+  }),
   meta: {
     storeWriter: 'setMeta',
     preferStoreWriter: true,

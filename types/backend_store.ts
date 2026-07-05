@@ -35,7 +35,11 @@ export interface BackendStoreLike<S = RootStateLike> extends PublicStoreLike<S>,
   setDirty?: (isDirty: boolean, meta?: ActionMetaLike | UnknownRecord) => void;
   setUi?: (patch: UiSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
   /** Backend-only convenience writer. Not for UI/service/domain callers. */
-  setConfig?: (patch: ConfigSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
+  setConfig?: (
+    patch: ConfigSlicePatch | UnknownRecord,
+    meta?: ActionMetaLike | UnknownRecord,
+    opts?: DispatchOptionsLike | UnknownRecord
+  ) => void;
   setModePatch?: (patch: ModeSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
 }
 
