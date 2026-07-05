@@ -188,7 +188,7 @@ export function applyCanvasLinearCellDimsContextWithOptions(
     __wp_reportPickingIssue(
       App,
       err,
-      { where: 'canvasPicking', op: 'cellDims.applyStoreConfigPatch' },
+      { where: 'canvasPicking', op: 'cellDims.applyCellDimsConfigSnapshot' },
       { failFast: true }
     );
   }

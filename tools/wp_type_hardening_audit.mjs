@@ -155,6 +155,11 @@ const storeConfigMapWriteCapabilityAllowPaths = new Set([
   'esm/native/runtime/store_config_map_write_capability.ts',
 ]);
 
+const storeConfigPatchApplyBoundaryAllowPaths = new Set([
+  'esm/native/platform/store_commit_pipeline.ts',
+  'esm/native/platform/store_patch_apply.ts',
+]);
+
 function collectRuntimeGeometryScalarUnionViolations() {
   const violations = [];
   const keyPattern = runtimeGeometryScalarKeys.join('|');
@@ -262,6 +267,36 @@ function collectStoreConfigPatchApplyNameViolations() {
       if (matches.length) {
         violations.push(`${rel}: deprecated generic applyConfigPatch name remains (${matches.length})`);
       }
+    }
+  }
+
+  return violations;
+}
+
+function collectStoreConfigPatchApplyBoundaryViolations() {
+  const violations = [];
+  const applyNamePattern = /\bapplyStoreConfigPatch\b/g;
+  const usedAllowPaths = new Set();
+
+  for (const abs of walk(path.join(root, 'esm'))) {
+    const rel = path.relative(root, abs).replace(/\\/g, '/');
+    const source = fs.readFileSync(abs, 'utf8');
+    applyNamePattern.lastIndex = 0;
+    const matches = [...source.matchAll(applyNamePattern)];
+    if (storeConfigPatchApplyBoundaryAllowPaths.has(rel)) {
+      if (matches.length) usedAllowPaths.add(rel);
+      continue;
+    }
+    if (matches.length) {
+      violations.push(
+        `${rel}: applyStoreConfigPatch used outside platform store boundary (${matches.length})`
+      );
+    }
+  }
+
+  for (const rel of [...storeConfigPatchApplyBoundaryAllowPaths].sort()) {
+    if (!usedAllowPaths.has(rel)) {
+      violations.push(`${rel}: applyStoreConfigPatch boundary allowlist entry is unused`);
     }
   }
 
@@ -451,6 +486,7 @@ violations.push(...collectRawStoreWriteBoundaryViolations());
 violations.push(...collectStoreConfigMapWriteCapabilityExportViolations());
 violations.push(...collectStoreConfigMapWriteCapabilityViolations());
 violations.push(...collectStoreConfigPatchApplyNameViolations());
+violations.push(...collectStoreConfigPatchApplyBoundaryViolations());
 violations.push(...collectRawStoreBoundaryDocViolations());
 violations.push(...collectPublicTypeBarrelViolations());
 violations.push(...collectPublicTypeBackendImportViolations());

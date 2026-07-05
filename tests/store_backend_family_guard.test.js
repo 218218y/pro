@@ -15,6 +15,7 @@ const capability = read('../esm/native/runtime/store_config_map_write_capability
 const cfgAccessCore = read('../esm/native/runtime/cfg_access_core.ts');
 const stateApiInstallSupport = read('../esm/native/kernel/state_api_install_support.ts');
 const kernelInstallSupport = read('../esm/native/kernel/kernel_install_support.ts');
+const cellDimsLinearApply = read('../esm/native/services/canvas_picking_cell_dims_linear_apply.ts');
 const publicStateTypes = read('../types/state.ts');
 const backendStoreTypes = read('../types/backend_store.ts');
 const typeHardeningAudit = read('../tools/wp_type_hardening_audit.mjs');
@@ -53,6 +54,10 @@ test('store backend family stays split across owner/shared/commit/patch/subscrip
   assert.match(patchApply, /export function applyStoreConfigPatch\(/);
   assert.doesNotMatch(patchApply, /export function applyConfigPatch\(/);
   assert.match(patchApply, /export function applyModePatchSlice\(/);
+  assert.match(typeHardeningAudit, /storeConfigPatchApplyBoundaryAllowPaths/);
+  assert.match(typeHardeningAudit, /applyStoreConfigPatch used outside platform store boundary/);
+  assert.match(cellDimsLinearApply, /op: 'cellDims\.applyCellDimsConfigSnapshot'/);
+  assert.doesNotMatch(cellDimsLinearApply, /applyStoreConfigPatch/);
 
   assert.match(subscriptions, /export function createListenerRegistry<T>\(\)/);
   assert.match(subscriptions, /export function createSelectorRegistryEntry<T>\(/);
