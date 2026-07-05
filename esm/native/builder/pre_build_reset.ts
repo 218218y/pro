@@ -10,6 +10,7 @@
 import type { AppContainer, ProjectSavedNotesLike, SavedNote } from '../../../types';
 
 import { getWardrobeGroup, invalidateMirrorTracking } from '../runtime/render_access.js';
+import { capturePlanarReflectorWarmCache } from '../runtime/planar_reflector_runtime.js';
 import { cleanGroupViaPlatform, markPlatformPerfFlagsDirty } from '../runtime/platform_access.js';
 import { reportError } from '../runtime/errors.js';
 import { requireBuilderRegistry } from '../runtime/builder_service_access.js';
@@ -67,6 +68,11 @@ export function prepareBuildScene(args: PrepareBuildSceneArgs): PrepareBuildScen
     const saved = readSavedNotes(asRecord(state.config)?.savedNotes);
     if (saved.length) notesToPreserve = saved;
   }
+
+  // Preserve already-rendered planar mirror targets before scene cleanup.
+  // This lets a rebuild reuse unchanged mirror reflections instead of flashing/re-rendering
+  // every door when only one mirror was added.
+  capturePlanarReflectorWarmCache(App);
 
   // Clear wardrobe group
   const wardrobeGroup = getWardrobeGroup(App);

@@ -112,6 +112,7 @@ type PlanarReflectorState = UnknownRecord & {
   clipPlane: UnknownRecord;
   reflectorPlane: UnknownRecord;
   q: UnknownRecord;
+  cacheKey?: string;
 };
 
 export type PlanarMirrorRefreshResult = {
@@ -131,10 +132,18 @@ export type PlanarMirrorRefreshOptions = {
   maxBudgetMs?: number | null;
   startIndex?: number | null;
   now?: (() => number) | null;
+  /**
+   * Refresh only newly installed reflector targets. Rebuilds mark mirror tracking dirty even
+   * when most mirrors were only recreated from the previous build; this mode prevents a
+   * single added mirror from re-rendering every existing door mirror.
+   */
+  initialOnly?: boolean | null;
 };
 
 const PLANAR_CUBE_MODE_RENDER_SLOT = '__mirrorPlanarCubeMode';
 const PLANAR_CUBE_MODE_NOTIFIED_RENDER_SLOT = '__mirrorPlanarCubeModeNotified';
+const PLANAR_WARM_CACHE_RENDER_SLOT = '__mirrorPlanarWarmCache';
+const PLANAR_WARM_CACHE_MAX_ENTRIES = 64;
 
 function hasNotifiedPlanarReflectorCubeMode(App: unknown): boolean {
   return getRenderSlot<boolean>(App, PLANAR_CUBE_MODE_NOTIFIED_RENDER_SLOT) === true;
@@ -163,6 +172,144 @@ function isRecord(value: unknown): value is UnknownRecord {
 
 function readRecord(value: unknown): UnknownRecord | null {
   return isRecord(value) ? value : null;
+}
+
+function readPlanarReflectorCacheKey(mirror: unknown): string | null {
+  const key = readMirrorUserData(mirror)?.__wpPlanarReflectorCacheKey;
+  return typeof key === 'string' && key.trim() ? key : null;
+}
+
+type PlanarWarmCacheEntry = UnknownRecord & {
+  key: string;
+  renderTarget: UnknownRecord;
+  textureMatrix?: UnknownRecord;
+  updateCount: number;
+};
+
+type PlanarWarmCacheBag = UnknownRecord & {
+  entries: Record<string, PlanarWarmCacheEntry>;
+  order: string[];
+};
+
+function readPlanarWarmCacheBag(value: unknown): PlanarWarmCacheBag | null {
+  const bag = readRecord(value);
+  const entries = readRecord(bag?.entries);
+  const order = Array.isArray(bag?.order) ? bag?.order.filter(key => typeof key === 'string') : null;
+  if (!bag || !entries || !order) return null;
+  return { ...bag, entries: entries as Record<string, PlanarWarmCacheEntry>, order };
+}
+
+function makeEmptyPlanarWarmCacheBag(): PlanarWarmCacheBag {
+  return { entries: {}, order: [] };
+}
+
+function disposePlanarWarmCacheEntry(entry: unknown): void {
+  const rec = readRecord(entry);
+  if (!rec) return;
+  callDispose(rec.renderTarget);
+}
+
+function disposePlanarWarmCacheBag(value: unknown): void {
+  const bag = readPlanarWarmCacheBag(value);
+  if (!bag) return;
+  for (const key of bag.order) disposePlanarWarmCacheEntry(bag.entries[key]);
+}
+
+function popPlanarWarmCacheEntry(App: unknown, key: string | null): PlanarWarmCacheEntry | null {
+  if (!key) return null;
+  const bag = readPlanarWarmCacheBag(getRenderSlot<UnknownRecord>(App, PLANAR_WARM_CACHE_RENDER_SLOT));
+  if (!bag) return null;
+  const entry = readRecord(bag.entries[key]) as PlanarWarmCacheEntry | null;
+  if (!entry || !readRecord(entry.renderTarget)) return null;
+  delete bag.entries[key];
+  bag.order = bag.order.filter(existingKey => existingKey !== key);
+  setRenderSlot(App, PLANAR_WARM_CACHE_RENDER_SLOT, bag);
+  return entry;
+}
+
+function copyWarmTextureMatrix(target: UnknownRecord, source: unknown): boolean {
+  const sourceRecord = readRecord(source);
+  if (!target || !sourceRecord) return false;
+
+  const copy = readFn<(value: unknown) => unknown>(target, 'copy');
+  if (copy) {
+    try {
+      call1(target, copy, sourceRecord);
+      return true;
+    } catch {
+      // Fall back to raw elements below.
+    }
+  }
+
+  const targetElements = Array.isArray(target.elements) ? target.elements : null;
+  const sourceElements = Array.isArray(sourceRecord.elements) ? sourceRecord.elements : null;
+  if (!targetElements || !sourceElements || sourceElements.length < 16) return false;
+  for (let i = 0; i < 16; i += 1) targetElements[i] = sourceElements[i];
+  return true;
+}
+
+function addPlanarWarmCacheEntry(bag: PlanarWarmCacheBag, entry: PlanarWarmCacheEntry): void {
+  const existing = bag.entries[entry.key];
+  if (existing && existing !== entry) disposePlanarWarmCacheEntry(existing);
+  bag.entries[entry.key] = entry;
+  bag.order = bag.order.filter(key => key !== entry.key);
+  bag.order.push(entry.key);
+  while (bag.order.length > PLANAR_WARM_CACHE_MAX_ENTRIES) {
+    const evictedKey = bag.order.shift();
+    if (!evictedKey) break;
+    const evicted = bag.entries[evictedKey];
+    delete bag.entries[evictedKey];
+    disposePlanarWarmCacheEntry(evicted);
+  }
+}
+
+export function capturePlanarReflectorWarmCache(App: unknown): number {
+  disposePlanarWarmCacheBag(getRenderSlot<UnknownRecord>(App, PLANAR_WARM_CACHE_RENDER_SLOT));
+  const mirrors = ensureRenderMetaArray<UnknownRecord>(App, 'mirrors');
+  const bag = makeEmptyPlanarWarmCacheBag();
+  const seen = new Set<UnknownRecord>();
+
+  for (let i = 0; i < mirrors.length; i += 1) {
+    const mirror = readRecord(mirrors[i]);
+    if (!mirror || seen.has(mirror)) continue;
+    seen.add(mirror);
+    if (!isTaggedMirrorSurface(mirror)) continue;
+    const key = readPlanarReflectorCacheKey(mirror);
+    if (!key) continue;
+    const state = readPlanarReflectorState(mirror);
+    if (!state || !(state.updateCount > 0)) continue;
+    const renderTarget = readRecord(state.renderTarget);
+    if (!renderTarget) continue;
+    const textureMatrix = readRecord(state.textureMatrix) || undefined;
+    addPlanarWarmCacheEntry(bag, {
+      key,
+      renderTarget,
+      textureMatrix,
+      updateCount: Math.max(1, Math.floor(Number(state.updateCount) || 1)),
+    });
+  }
+
+  setRenderSlot(App, PLANAR_WARM_CACHE_RENDER_SLOT, bag);
+  return bag.order.length;
+}
+
+export function finalizePlanarReflectorWarmCache(App: unknown): boolean {
+  const bag = readPlanarWarmCacheBag(getRenderSlot<UnknownRecord>(App, PLANAR_WARM_CACHE_RENDER_SLOT));
+  if (!bag || bag.order.length <= 0) {
+    setRenderSlot(App, PLANAR_WARM_CACHE_RENDER_SLOT, makeEmptyPlanarWarmCacheBag());
+    return false;
+  }
+  disposePlanarWarmCacheBag(bag);
+  setRenderSlot(App, PLANAR_WARM_CACHE_RENDER_SLOT, makeEmptyPlanarWarmCacheBag());
+  return true;
+}
+
+function isInitialPlanarReflectorState(state: PlanarReflectorState): boolean {
+  return !(
+    typeof state.updateCount === 'number' &&
+    Number.isFinite(state.updateCount) &&
+    state.updateCount > 0
+  );
 }
 
 function readFn<T extends (...args: never[]) => unknown>(obj: UnknownRecord | null, key: string): T | null {
@@ -269,6 +416,7 @@ function disablePlanarReflectorCubeMode(
     setRenderSlot(App, '__mirrorDirty', true);
     setRenderSlot(App, '__mirrorWorkPending', true);
     setRenderSlot(App, '__mirrorPlanarBatchPending', false);
+    setRenderSlot(App, '__mirrorPlanarInitialBatchPending', false);
     setRenderSlot(App, '__mirrorPlanarCursorIndex', 0);
   }
   return true;
@@ -1003,6 +1151,8 @@ export function enablePlanarReflectorCubeMode(App: unknown, opts?: { notify?: bo
   }
   setRenderSlot(App, '__mirrorDirty', true);
   setRenderSlot(App, '__mirrorWorkPending', true);
+  setRenderSlot(App, '__mirrorPlanarBatchPending', false);
+  setRenderSlot(App, '__mirrorPlanarInitialBatchPending', false);
   if (opts?.notify === true) notifyPlanarReflectorCubeMode(App);
   return changed;
 }
@@ -1034,12 +1184,19 @@ export function installPlanarMirrorReflector(
   }
 
   const originalMaterial = Reflect.get(mirrorMesh, 'material');
-  const target = makeReflectorRenderTarget(App, THREE, mirrorMesh, installedPlanarCount);
+  const cacheKey = readPlanarReflectorCacheKey(mirrorMesh);
+  const warmed = popPlanarWarmCacheEntry(App, cacheKey);
+  const target =
+    readRecord(warmed?.renderTarget) ||
+    makeReflectorRenderTarget(App, THREE, mirrorMesh, installedPlanarCount);
   if (!target) return false;
 
   const textureMatrix = readRecord(new THREE.Matrix4());
   const virtualCamera = readRecord(new THREE.PerspectiveCamera());
   if (!textureMatrix || !virtualCamera) return false;
+  const restoredWarmTextureMatrix = warmed
+    ? copyWarmTextureMatrix(textureMatrix, warmed.textureMatrix)
+    : false;
 
   const material = createReflectorMaterial(App, THREE, target.texture, textureMatrix, mirrorMesh);
   if (!material) return false;
@@ -1093,7 +1250,8 @@ export function installPlanarMirrorReflector(
       0,
       0.05
     ),
-    updateCount: 0,
+    updateCount:
+      warmed && restoredWarmTextureMatrix ? Math.max(1, Math.floor(Number(warmed.updateCount) || 1)) : 0,
     surfaceObject: surfaceInstall.surfaceObject,
     reflectorWorldPosition,
     cameraWorldPosition,
@@ -1105,6 +1263,7 @@ export function installPlanarMirrorReflector(
     clipPlane,
     reflectorPlane,
     q,
+    cacheKey: cacheKey || undefined,
   };
 
   const surfaceObject = readRecord(surfaceInstall.surfaceObject);
@@ -1382,12 +1541,14 @@ export function refreshTrackedPlanarMirrorSurfacesNow(
     return result;
   }
 
+  const initialOnly = options?.initialOnly === true;
   const maxSurfaces = resolveRefreshLimit(options?.maxSurfaces, result.planarCount);
   const budgetMs = clampNumber(options?.maxBudgetMs, Number.POSITIVE_INFINITY, 1, 1000);
   const startedAt = readRefreshNow(options);
   const startIndex = normalizeRefreshStartIndex(options?.startIndex, mirrors.length);
   let scannedCount = 0;
   let nextIndex = startIndex;
+  let eligibleCount = 0;
 
   for (; scannedCount < mirrors.length; scannedCount += 1) {
     if (result.refreshedCount >= maxSurfaces) break;
@@ -1399,6 +1560,8 @@ export function refreshTrackedPlanarMirrorSurfacesNow(
     if (!mirror || !isTaggedMirrorSurface(mirror)) continue;
     const state = readPlanarReflectorState(mirror);
     if (!state) continue;
+    if (initialOnly && !isInitialPlanarReflectorState(state)) continue;
+    eligibleCount += 1;
     const ok = renderPlanarMirrorSurface({
       App,
       mirror,
@@ -1412,14 +1575,18 @@ export function refreshTrackedPlanarMirrorSurfacesNow(
 
   result.nextIndex = nextIndex;
   result.completedCycle = scannedCount >= mirrors.length;
-  result.deferredCount = result.completedCycle ? 0 : Math.max(0, result.planarCount - result.refreshedCount);
+  result.deferredCount = result.completedCycle
+    ? 0
+    : Math.max(0, (initialOnly ? eligibleCount : result.planarCount) - result.refreshedCount);
 
   if (result.refreshedCount > 0) {
     result.refreshed = true;
     return result;
   }
   result.skippedReason = result.completedCycle
-    ? 'planar-reflector-render-failed'
+    ? initialOnly && eligibleCount <= 0
+      ? 'no-initial-planar-reflector-surfaces'
+      : 'planar-reflector-render-failed'
     : 'planar-reflector-budget-deferred';
   return result;
 }

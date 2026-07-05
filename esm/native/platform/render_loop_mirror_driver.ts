@@ -289,6 +289,7 @@ export function createRenderLoopMirrorDriver(
         : readConfigNumberLooseFromApp(A, 'MIRROR_REFLECTOR_UPDATE_MS', 120);
       const planarInterval = Math.max(0, Number.isFinite(planarIntervalRaw) ? planarIntervalRaw : 160);
       const planarBatchPending = !!getRenderSlot<boolean>(A, '__mirrorPlanarBatchPending');
+      const planarInitialBatchPending = !!getRenderSlot<boolean>(A, '__mirrorPlanarInitialBatchPending');
       const planarIntervalDue =
         mirrorDirty ||
         planarBatchPending ||
@@ -304,15 +305,18 @@ export function createRenderLoopMirrorDriver(
 
       if (hasPlanarReflectors && planarIntervalDue && canRunInBudget) {
         const planarCursor = readFiniteSlotNumber(getRenderSlot, A, '__mirrorPlanarCursorIndex', 0);
+        const refreshInitialOnly = planarInitialBatchPending || (mirrorDirty && !motionActive);
         const planarResult = refreshTrackedPlanarMirrorSurfacesNow(A, {
           startIndex: planarCursor,
           maxSurfaces: resolvePlanarUpdatesPerFrame(A, motionActive),
           maxBudgetMs: resolveRemainingFrameBudgetMs(mirrorNow, frameStart, budgetMs),
           now: __now,
+          initialOnly: refreshInitialOnly,
         });
         setRenderSlot(A, '__mirrorPlanarCursorIndex', planarResult.nextIndex);
         planarBatchCompleted = planarResult.completedCycle;
         setRenderSlot(A, '__mirrorPlanarBatchPending', !planarBatchCompleted);
+        setRenderSlot(A, '__mirrorPlanarInitialBatchPending', refreshInitialOnly && !planarBatchCompleted);
         if (planarResult.refreshed) {
           planarRefreshed = true;
           setRenderSlot(A, '__mirrorPlanarLastUpdateMs', mirrorNow);

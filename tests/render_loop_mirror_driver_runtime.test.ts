@@ -467,3 +467,196 @@ test('render loop mirror driver switches mixed realistic mirrors to one cube pat
   assert.equal(planarMirror.visible, true);
   assert.equal(fallbackMirror.visible, true);
 });
+
+function makeNoopMatrix() {
+  return {
+    elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, -1, 0, 0, -1, 1],
+    extractRotation() {
+      return this;
+    },
+    copy() {
+      return this;
+    },
+    invert() {
+      return this;
+    },
+  } as AnyRecord;
+}
+
+function makeNoopVector() {
+  return {
+    x: 0,
+    y: 0,
+    z: 0,
+    w: 0,
+    set() {
+      return this;
+    },
+    setFromMatrixPosition() {
+      return this;
+    },
+    applyMatrix4() {
+      return this;
+    },
+    subVectors() {
+      return this;
+    },
+    dot() {
+      return -1;
+    },
+    reflect() {
+      return this;
+    },
+    negate() {
+      return this;
+    },
+    add() {
+      return this;
+    },
+    copy() {
+      return this;
+    },
+    multiplyScalar() {
+      return this;
+    },
+  } as AnyRecord;
+}
+
+function makeNoopPlane() {
+  return {
+    normal: makeNoopVector(),
+    constant: 0,
+    setFromNormalAndCoplanarPoint() {
+      return this;
+    },
+    applyMatrix4() {
+      return this;
+    },
+  } as AnyRecord;
+}
+
+function makeRenderablePlanarState(updateCount = 1) {
+  return {
+    renderTarget: { id: 'planar-render-target' },
+    virtualCamera: {
+      position: makeNoopVector(),
+      up: makeNoopVector(),
+      matrixWorld: makeNoopMatrix(),
+      matrixWorldInverse: makeNoopMatrix(),
+      projectionMatrix: makeNoopMatrix(),
+      updateProjectionMatrix() {
+        return this;
+      },
+      updateMatrixWorld() {
+        return this;
+      },
+      lookAt() {
+        return this;
+      },
+    },
+    textureMatrix: {
+      set() {
+        return this;
+      },
+      multiply() {
+        return this;
+      },
+    },
+    material: {},
+    updateCount,
+    surfaceObject: null,
+    normalSign: 1,
+    clipBias: 0,
+    reflectorWorldPosition: makeNoopVector(),
+    cameraWorldPosition: makeNoopVector(),
+    rotationMatrix: makeNoopMatrix(),
+    normal: makeNoopVector(),
+    view: makeNoopVector(),
+    targetVector: makeNoopVector(),
+    lookAtPosition: makeNoopVector(),
+    clipPlane: makeNoopVector(),
+    reflectorPlane: makeNoopPlane(),
+    q: makeNoopVector(),
+  } as AnyRecord;
+}
+
+function addRenderablePlanarSurfaceRuntime(app: AnyRecord, mirror: AnyRecord): void {
+  (app.render as AnyRecord).renderer = {
+    renderCalls: 0,
+    setRenderTargetCalls: 0,
+    shadowMap: { autoUpdate: true },
+    state: {
+      buffers: { depth: { setMask() {} } },
+      viewport() {},
+    },
+    xr: { enabled: true },
+    getRenderTarget() {
+      return null;
+    },
+    setRenderTarget() {
+      this.setRenderTargetCalls += 1;
+    },
+    clear() {},
+    render() {
+      this.renderCalls += 1;
+    },
+  };
+  (app.render as AnyRecord).camera = {
+    far: 1000,
+    near: 0.1,
+    aspect: 1,
+    fov: 50,
+    matrixWorld: makeNoopMatrix(),
+    matrixWorldInverse: makeNoopMatrix(),
+    projectionMatrix: makeNoopMatrix(),
+    updateMatrixWorld() {
+      return this;
+    },
+  };
+  mirror.matrixWorld = makeNoopMatrix();
+  mirror.updateMatrixWorld = function () {
+    return this;
+  };
+}
+
+test('render loop keeps warmed planar reflections live while motion marks mirrors dirty', () => {
+  const warmedPlanarMirror = {
+    isMesh: true,
+    __taggedMirror: true,
+    parent: {},
+    visible: true,
+    userData: {
+      __wpMirrorSurface: true,
+      __wpPlanarReflector: makeRenderablePlanarState(2),
+    },
+  };
+  const app = makeApp([warmedPlanarMirror], {
+    MIRROR_REFLECTOR_ENABLED: true,
+    MIRROR_REFLECTOR_MOVE_UPDATE_MS: 0,
+    MIRROR_REFLECTOR_MOVE_MAX_UPDATES_PER_FRAME: 1,
+  });
+  addRenderablePlanarSurfaceRuntime(app, warmedPlanarMirror);
+  const slots = makeSlots({
+    __mirrorLastUpdateMs: 1000,
+    __mirrorPlanarLastUpdateMs: 1000,
+    __mirrorMotionActive: true,
+    __frameStartMs: 1100,
+    __mirrorDirty: true,
+    __mirrorPresenceKnown: true,
+    __mirrorPresenceHasMirror: true,
+    __mirrorPresenceCheckedAtMs: 1000,
+    __mirrorTrackedPruneAtMs: 1000,
+    __mirrorPlanarInitialBatchPending: false,
+  });
+
+  const driver = createDriver(app, slots, { now: 1105 });
+
+  driver.updateMirrorCube();
+
+  const renderer = (app.render as AnyRecord).renderer as AnyRecord;
+  assert.equal(renderer.renderCalls, 1);
+  assert.equal((warmedPlanarMirror.userData.__wpPlanarReflector as AnyRecord).updateCount, 3);
+  assert.equal(slots.__mirrorPlanarUpdateCount, 1);
+  assert.equal(slots.__mirrorDirty, false);
+  assert.equal(slots.__mirrorWorkPending, false);
+});

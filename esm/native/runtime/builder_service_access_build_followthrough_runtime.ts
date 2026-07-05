@@ -1,5 +1,8 @@
 import { ensureRenderMetaArray, getRenderSlot, getScene } from './render_access.js';
-import { finalizePlanarReflectorCubeModeRecovery } from './planar_reflector_runtime.js';
+import {
+  finalizePlanarReflectorCubeModeRecovery,
+  finalizePlanarReflectorWarmCache,
+} from './planar_reflector_runtime.js';
 import { finalizeBuilderRegistry } from './builder_service_access_slots.js';
 import { applyBuilderHandles } from './builder_service_access_build_handles.js';
 import {
@@ -80,6 +83,7 @@ export function runBuilderPostBuildFollowThroughRuntime(
 
   const clearedBuildUi = shouldClearBuilderBuildUi(opts) ? clearBuilderBuildUi(App) : false;
   const finalizedPlanarCubeRecovery = finalizePlanarReflectorCubeModeRecovery(App);
+  finalizePlanarReflectorWarmCache(App);
   const renderResult = shouldTriggerPlatformRender(opts)
     ? runBuilderRenderFollowThroughRuntime(App, {
         updateShadows: readPostBuildUpdateShadows(opts),
@@ -106,6 +110,7 @@ export function runBuilderChestModeFollowThroughRuntime(
   const handleApplyOpts = shouldApplyBuilderHandles(opts) ? createFollowThroughHandleApplyOpts(opts) : null;
   const appliedHandles = handleApplyOpts ? applyBuilderHandles(App, handleApplyOpts) : false;
   const finalizedPlanarCubeRecovery = finalizePlanarReflectorCubeModeRecovery(App);
+  finalizePlanarReflectorWarmCache(App);
   const viewport =
     opts?.renderViewport === false
       ? { renderedViewport: false, updatedControls: false }

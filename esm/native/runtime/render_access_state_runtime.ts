@@ -48,6 +48,7 @@ export type RenderRuntimeStateLike = {
   __mirrorMotionUntilMs: number;
   __mirrorMotionSnap: UnknownRecord | null;
   __mirrorWorkPending: boolean;
+  __mirrorPlanarInitialBatchPending: boolean;
   __splitHoverPickablesDirty: boolean;
   __wpAutoHideFloorRef: unknown | null;
   __wpAutoHideFloorRoomKey: unknown | null;
@@ -76,6 +77,7 @@ function isRenderRuntimeStateBag(
     typeof value.__mirrorPresenceHasMirror === 'boolean' &&
     typeof value.__mirrorMotionActive === 'boolean' &&
     typeof value.__mirrorWorkPending === 'boolean' &&
+    typeof value.__mirrorPlanarInitialBatchPending === 'boolean' &&
     typeof value.__splitHoverPickablesDirty === 'boolean' &&
     Number.isFinite(value.loopRaf) &&
     Number.isFinite(value.__lastFrameTs) &&
@@ -125,6 +127,8 @@ export function ensureRenderRuntimeState(App: unknown): RenderRuntimeStateLike {
   if (!Number.isFinite(renderBag.__mirrorMotionUntilMs)) renderBag.__mirrorMotionUntilMs = 0;
   if (!asRecord(renderBag.__mirrorMotionSnap)) renderBag.__mirrorMotionSnap = null;
   if (typeof renderBag.__mirrorWorkPending !== 'boolean') renderBag.__mirrorWorkPending = false;
+  if (typeof renderBag.__mirrorPlanarInitialBatchPending !== 'boolean')
+    renderBag.__mirrorPlanarInitialBatchPending = false;
   if (typeof renderBag.__splitHoverPickablesDirty !== 'boolean') renderBag.__splitHoverPickablesDirty = false;
 
   if (typeof renderBag.__wpAutoHideFloorRef === 'undefined') renderBag.__wpAutoHideFloorRef = null;
@@ -368,6 +372,7 @@ export function invalidateMirrorTracking(App: unknown): void {
     renderBag.__mirrorWorkPending = false;
     renderBag.__mirrorPresenceCheckedAtMs = 0;
     renderBag.__mirrorTrackedPruneAtMs = 0;
+    renderBag.__mirrorPlanarInitialBatchPending = false;
   } catch {
     // ignore
   }

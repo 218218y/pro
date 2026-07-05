@@ -137,6 +137,57 @@ export function applyMirrorReflectorProfileMetadata(
   );
 }
 
+function formatMirrorIdentityNumber(value: unknown): string {
+  const num = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(num) ? num.toFixed(4) : 'na';
+}
+
+export function applyMirrorReflectorIdentityMetadata(
+  mirrorMesh: Object3DLike,
+  args: {
+    ownerPartId?: string | null;
+    role: string;
+    placementIndex: number;
+    faceSign: number;
+    widthM: number;
+    heightM: number;
+    offsetX?: number | null;
+    offsetY?: number | null;
+    profile?: BuilderMirrorReflectorProfile | null;
+  }
+): void {
+  mirrorMesh.userData = mirrorMesh.userData || {};
+  const userData = mirrorMesh.userData;
+  const ownerPartId =
+    typeof args.ownerPartId === 'string' && args.ownerPartId ? args.ownerPartId : 'unknown-door';
+  const faceSign = args.faceSign < 0 ? -1 : 1;
+  const slidingLane =
+    args.profile?.slidingLane === 'inner'
+      ? 'inner'
+      : args.profile?.slidingLane === 'outer'
+        ? 'outer'
+        : 'none';
+  const slidingIndex = Number.isFinite(Number(args.profile?.slidingDoorIndex))
+    ? String(Math.floor(Number(args.profile?.slidingDoorIndex)))
+    : 'na';
+
+  userData.__mirrorWidthM = args.widthM;
+  userData.__mirrorHeightM = args.heightM;
+  userData.__wpPlanarReflectorCacheKey = [
+    'door-mirror',
+    ownerPartId,
+    args.role || 'mirror',
+    String(Math.max(0, Math.floor(Number(args.placementIndex) || 0))),
+    String(faceSign),
+    formatMirrorIdentityNumber(args.widthM),
+    formatMirrorIdentityNumber(args.heightM),
+    formatMirrorIdentityNumber(args.offsetX || 0),
+    formatMirrorIdentityNumber(args.offsetY || 0),
+    slidingLane,
+    slidingIndex,
+  ].join('|');
+}
+
 export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike {
   const { App, THREE, w, h, thickness, mat, baseMaterial, zSign, isSketch, mirrorLayout, addOutlines } = args;
   const tagDoorVisualPart: TagDoorVisualPartFn =
@@ -186,6 +237,17 @@ export function createMirrorDoorVisual(args: MirrorDoorVisualArgs): Object3DLike
     mirrorMesh.userData.__wpMirrorSurface = true;
     applyDoorFaceIdentityMetadata(mirrorMesh, placementFaceSign);
     applyMirrorReflectorProfileMetadata(mirrorMesh, args.mirrorReflectorProfile);
+    applyMirrorReflectorIdentityMetadata(mirrorMesh, {
+      ownerPartId: args.groovePartId,
+      role: 'door_mirror_surface',
+      placementIndex: i,
+      faceSign: placementFaceSign,
+      widthM: placement.mirrorWidthM,
+      heightM: placement.mirrorHeightM,
+      offsetX: placement.offsetX,
+      offsetY: placement.offsetY,
+      profile: args.mirrorReflectorProfile ?? null,
+    });
     mirrorMesh.position.set(
       placement.offsetX,
       placement.offsetY,
