@@ -4,26 +4,10 @@ import assert from 'node:assert/strict';
 import { installStateApi } from '../esm/native/kernel/state_api.ts';
 import { applyConfigPatchFromMapOwner } from '../esm/native/runtime/cfg_access_core.ts';
 import { applyConfigPatchReplaceKeysFromMapOwner } from '../esm/native/runtime/cfg_access_scalars.ts';
-import { isKnownMapName } from '../esm/native/runtime/maps_access_normalizers.ts';
+import { getKnownMapNames, isKnownMapName } from '../esm/native/runtime/maps_access_normalizers.ts';
 import { AnyRecord, asRec, createStore } from './store_zustand_parity_helpers.ts';
 
-const KNOWN_CONFIG_MAP_NAMES = [
-  'handlesMap',
-  'hingeMap',
-  'splitDoorsMap',
-  'splitDoorsBottomMap',
-  'drawerDividersMap',
-  'groovesMap',
-  'grooveLinesCountMap',
-  'removedDoorsMap',
-  'roundedFrameSideShelvesMap',
-  'curtainMap',
-  'individualColors',
-  'doorSpecialMap',
-  'doorStyleMap',
-  'mirrorLayoutMap',
-  'doorTrimMap',
-] as const;
+const KNOWN_CONFIG_MAP_NAMES = getKnownMapNames();
 
 function cloneRecord(value: unknown): AnyRecord {
   return { ...asRec(value) };
@@ -101,6 +85,9 @@ test('[store-runtime-config-map-capability] direct raw store config writes rejec
 });
 
 test('[store-runtime-config-map-capability] direct raw store config writes reject every known map', () => {
+  assert.ok(KNOWN_CONFIG_MAP_NAMES.length > 0);
+  assert.equal(new Set(KNOWN_CONFIG_MAP_NAMES).size, KNOWN_CONFIG_MAP_NAMES.length);
+
   for (const mapName of KNOWN_CONFIG_MAP_NAMES) {
     assert.equal(isKnownMapName(mapName), true, `${mapName} must stay registered as a known map`);
 

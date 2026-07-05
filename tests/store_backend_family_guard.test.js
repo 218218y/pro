@@ -19,6 +19,12 @@ const publicStateTypes = read('../types/state.ts');
 const backendStoreTypes = read('../types/backend_store.ts');
 const typeHardeningAudit = read('../tools/wp_type_hardening_audit.mjs');
 
+const rawCapabilityExportPatterns = [
+  /\bexport\s+const\s+STORE_CONFIG_MAP_WRITE_CAPABILITY\b/,
+  /\bexport\s*\{[^}]*\bSTORE_CONFIG_MAP_WRITE_CAPABILITY\b[^}]*\}/,
+  /\bexport\s+default\s+STORE_CONFIG_MAP_WRITE_CAPABILITY\b/,
+];
+
 test('store backend family stays split across owner/shared/commit/patch/subscription seams', () => {
   assert.match(owner, /from '\.\/store_shared\.js';/);
   assert.match(owner, /from '\.\/store_commit_pipeline\.js';/);
@@ -53,10 +59,15 @@ test('store backend family stays split across owner/shared/commit/patch/subscrip
 
 test('store backend known config map writes require owner capability, not meta source', () => {
   assert.match(capability, /const STORE_CONFIG_MAP_WRITE_CAPABILITY = Symbol/);
-  assert.doesNotMatch(capability, /export\s+const\s+STORE_CONFIG_MAP_WRITE_CAPABILITY/);
+  for (const pattern of rawCapabilityExportPatterns) {
+    assert.doesNotMatch(capability, pattern);
+  }
   assert.match(capability, /isKnownMapName/);
   assert.match(capability, /hasStoreConfigMapWriteCapability\(opts\)/);
   assert.doesNotMatch(capability, /\bsource\b/);
+  assert.match(typeHardeningAudit, /rawCapabilityExportPatterns/);
+  assert.match(typeHardeningAudit, /export\\s\+default\\s\+STORE_CONFIG_MAP_WRITE_CAPABILITY/);
+  assert.match(typeHardeningAudit, /export\\s\*\\\{/);
 
   assert.match(commitPipeline, /assertStoreConfigMapWriteAllowed\(pld\.config, configApiName, opts2\)/);
   assert.match(patchApply, /assertStoreConfigMapWriteAllowed\(configPatch, 'applyConfigPatch', opts\)/);

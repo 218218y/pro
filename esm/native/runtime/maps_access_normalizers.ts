@@ -2,7 +2,6 @@ import type { KnownMapName, MapsByName } from '../../../types';
 
 import {
   type KnownMapNormalizerMap,
-  isKnownMapName,
   normalizeDoorStyleMap,
   normalizeGroovesMap,
   normalizeHandlesMap,
@@ -39,6 +38,17 @@ const KNOWN_MAP_NORMALIZERS = {
   doorTrimMap: normalizeDoorTrimMap,
 } satisfies KnownMapNormalizerMap;
 
+const KNOWN_MAP_NORMALIZER_NAMES = Object.freeze(Object.keys(KNOWN_MAP_NORMALIZERS) as KnownMapName[]);
+const KNOWN_MAP_NAME_SET = new Set<string>(KNOWN_MAP_NORMALIZER_NAMES);
+
+export function getKnownMapNames(): KnownMapName[] {
+  return [...KNOWN_MAP_NORMALIZER_NAMES];
+}
+
+export function isKnownMapName(value: string): value is KnownMapName {
+  return KNOWN_MAP_NAME_SET.has(value);
+}
+
 function readKnownMapNormalizer<K extends KnownMapName>(mapName: K): KnownMapNormalizerMap[K] {
   return KNOWN_MAP_NORMALIZERS[mapName];
 }
@@ -52,7 +62,6 @@ export function createEmptyKnownMapSnapshot<K extends KnownMapName>(mapName: K):
 }
 
 export {
-  isKnownMapName,
   normalizeColorSwatchesOrderSnapshot,
   normalizeSavedColorObjectsSnapshot,
   normalizeSavedColorsSnapshot,

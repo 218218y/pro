@@ -16,30 +16,6 @@ import { asMapRecord, asRecord } from './maps_access_shared.js';
 export type KnownMapNormalizerMap = { [K in KnownMapName]: (value: unknown) => MapsByName[K] };
 export type NullableStringMap = Record<string, string | null | undefined>;
 
-const KNOWN_MAP_NAMES: KnownMapName[] = [
-  'handlesMap',
-  'hingeMap',
-  'splitDoorsMap',
-  'splitDoorsBottomMap',
-  'drawerDividersMap',
-  'groovesMap',
-  'grooveLinesCountMap',
-  'removedDoorsMap',
-  'roundedFrameSideShelvesMap',
-  'curtainMap',
-  'individualColors',
-  'doorSpecialMap',
-  'doorStyleMap',
-  'mirrorLayoutMap',
-  'doorTrimMap',
-];
-
-const KNOWN_MAP_NAME_SET = new Set<string>(KNOWN_MAP_NAMES);
-
-export function isKnownMapName(value: string): value is KnownMapName {
-  return KNOWN_MAP_NAME_SET.has(value);
-}
-
 export function normalizeToggleValue(value: unknown): true | false | null | undefined {
   if (value === true) return true;
   if (value === false) return false;

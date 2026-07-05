@@ -227,8 +227,16 @@ function collectStoreConfigMapWriteCapabilityExportViolations() {
   const violations = [];
   const rel = 'esm/native/runtime/store_config_map_write_capability.ts';
   const source = fs.readFileSync(path.join(root, rel), 'utf8');
-  if (/export\s+const\s+STORE_CONFIG_MAP_WRITE_CAPABILITY\b/.test(source)) {
-    violations.push(`${rel}: raw store config map write capability symbol must stay module-private`);
+  const rawCapabilityExportPatterns = [
+    /\bexport\s+const\s+STORE_CONFIG_MAP_WRITE_CAPABILITY\b/,
+    /\bexport\s*\{[^}]*\bSTORE_CONFIG_MAP_WRITE_CAPABILITY\b[^}]*\}/,
+    /\bexport\s+default\s+STORE_CONFIG_MAP_WRITE_CAPABILITY\b/,
+  ];
+  for (const pattern of rawCapabilityExportPatterns) {
+    if (pattern.test(source)) {
+      violations.push(`${rel}: raw store config map write capability symbol must stay module-private`);
+      break;
+    }
   }
   if (!/const\s+STORE_CONFIG_MAP_WRITE_CAPABILITY\s*=\s*Symbol/.test(source)) {
     violations.push(`${rel}: missing module-private store config map write capability symbol`);
