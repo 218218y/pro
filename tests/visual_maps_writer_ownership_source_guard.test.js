@@ -25,7 +25,7 @@ const CONFIG_MAP_OWNER_COMMIT_MODULE = 'esm/native/runtime/cfg_access_map_owner.
 
 const DIRECT_WRITE_OWNER_FILES = new Set([VISUAL_KEYED_OWNER_MODULE]);
 
-const GENERIC_CONFIG_MAP_WRITE_ALLOWLIST = new Set(['esm/native/runtime/cfg_access_maps.ts']);
+const GENERIC_CONFIG_MAP_WRITE_ALLOWLIST = new Set();
 const GENERIC_PUBLIC_CONFIG_MAP_ACTION_ALLOWLIST = new Set([
   'esm/native/runtime/cfg_access_maps.ts',
   'esm/native/runtime/simple_writable_map_writer_owner.ts',
@@ -723,6 +723,8 @@ test('simple map writes use semantic writers and generic public map writers stay
   assert.match(simpleOwner, /commitConfigMapOwnerPatchWithReplaceKeys/);
   assert.match(visualOwner, /commitConfigMapOwnerPatchWithReplaceKeys/);
   assert.match(cfgAccessMaps, /commitConfigMapOwnerPatchWithReplaceKeys/);
+  assert.doesNotMatch(cfgAccessMaps, /\bcfgSetMap\b/);
+  assert.doesNotMatch(cfgAccessMaps, /\bpatchConfigMap\b/);
   assert.doesNotMatch(cfgAccessScalars, /commitConfigMapOwnerPatch/);
   assert.doesNotMatch(cfgAccessScalars, /applyConfigPatchFromMapOwner/);
   assert.doesNotMatch(cfgAccessScalars, /applyConfigPatchReplaceKeysFromMapOwner/);
@@ -839,14 +841,14 @@ test('simple map writes use semantic writers and generic public map writers stay
   assert.deepEqual(
     genericConfigMapWriteViolations,
     [],
-    `cfgSetMap/patchConfigMap calls must stay inside config owner files:\n${genericConfigMapWriteViolations.join('\n')}`
+    `cfgSetMap/patchConfigMap calls must stay retired from source runtime:\n${genericConfigMapWriteViolations.join('\n')}`
   );
 
   const genericConfigMapImportViolations = collectGenericConfigMapImportViolations().map(formatViolation);
   assert.deepEqual(
     genericConfigMapImportViolations,
     [],
-    `cfgSetMap/patchConfigMap imports must stay inside config owner files:\n${genericConfigMapImportViolations.join('\n')}`
+    `cfgSetMap/patchConfigMap imports must stay retired from source runtime:\n${genericConfigMapImportViolations.join('\n')}`
   );
 
   const genericPublicConfigMapActionViolations =

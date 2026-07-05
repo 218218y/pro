@@ -362,6 +362,25 @@ function collectConfigMapOwnerCommitHelperViolations() {
   return violations;
 }
 
+function collectRetiredGenericConfigMapAccessViolations() {
+  const violations = [];
+  const retiredNamePattern = /\b(?:cfgSetMap|patchConfigMap)\b/g;
+
+  for (const rootName of scanRoots) {
+    for (const abs of walk(path.join(root, rootName))) {
+      const rel = path.relative(root, abs).replace(/\\/g, '/');
+      const source = fs.readFileSync(abs, 'utf8');
+      retiredNamePattern.lastIndex = 0;
+      const matches = [...source.matchAll(retiredNamePattern)];
+      if (matches.length) {
+        violations.push(`${rel}: retired generic config map access name remains (${matches.length})`);
+      }
+    }
+  }
+
+  return violations;
+}
+
 function collectStoreConfigMapWriteCapabilityViolations() {
   const violations = [];
   const capabilityPattern = new RegExp(`\\b(?:${storeConfigMapWriteCapabilityNames.join('|')})\\b`, 'g');
@@ -547,6 +566,7 @@ violations.push(...collectStoreConfigMapWriteCapabilityViolations());
 violations.push(...collectStoreConfigPatchApplyNameViolations());
 violations.push(...collectStoreConfigPatchApplyBoundaryViolations());
 violations.push(...collectConfigMapOwnerCommitHelperViolations());
+violations.push(...collectRetiredGenericConfigMapAccessViolations());
 violations.push(...collectRawStoreBoundaryDocViolations());
 violations.push(...collectPublicTypeBarrelViolations());
 violations.push(...collectPublicTypeBackendImportViolations());
@@ -559,5 +579,5 @@ if (violations.length) {
 }
 
 console.log(
-  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded; public type modules avoid backend type imports; store config map write capability is owner-scoped)'
+  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded; public type modules avoid backend type imports; store config map write capability is owner-scoped; retired generic config map access names stay removed)'
 );

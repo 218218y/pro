@@ -14,7 +14,6 @@ import type {
   HistoryActionsNamespaceLike,
   MetaActionsNamespaceLike,
   ModulesConfigurationLike,
-  KnownMapName,
   MapsByName,
   UnknownRecord,
 } from '../../../types';
@@ -24,10 +23,6 @@ import { readCanonicalMirrorLayoutMap } from '../../shared/mirror_layout_contrac
 import { assertStore } from './assert.js';
 
 export type RootStateLike = UnknownRecord & { config?: ConfigSnapshotLike };
-export type ConfigMapPatchFn<K extends KnownMapName = KnownMapName> = (
-  nextDraft: MapsByName[K],
-  curVal: MapsByName[K]
-) => unknown;
 export type ScalarUpdaterFn<K extends ConfigScalarKey = ConfigScalarKey> = (
   prev: ConfigScalarValueMap[K] | undefined,
   cfg?: ConfigSnapshotLike
@@ -92,21 +87,6 @@ export function readRootState(value: unknown): RootStateLike {
 export function readMapRecord(value: unknown): UnknownRecord {
   const rec = asRecord(value);
   return rec ? rec : {};
-}
-
-type UnknownConfigMapPatchFn = (nextDraft: UnknownRecord, curVal: UnknownRecord) => unknown;
-
-function readUnknownConfigMapPatchFn(value: unknown): UnknownConfigMapPatchFn | null {
-  if (typeof value !== 'function') return null;
-  return (nextDraft: UnknownRecord, curVal: UnknownRecord) =>
-    Reflect.apply(value, undefined, [nextDraft, curVal]);
-}
-
-export function readPatchMapInput(value: unknown): UnknownRecord | UnknownConfigMapPatchFn | null {
-  const patchFn = readUnknownConfigMapPatchFn(value);
-  if (patchFn) return patchFn;
-  const patch = asRecord(value);
-  return patch ? patch : null;
 }
 
 function readConfigSnapshot(App: unknown): ConfigSnapshotLike {

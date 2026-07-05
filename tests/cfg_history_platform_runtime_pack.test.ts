@@ -7,7 +7,7 @@ import {
   cfgPatchWithReplaceKeys,
   extractConfigPatchWriteMetadata,
 } from '../esm/native/runtime/cfg_access.ts';
-import { cfgSetMap, patchConfigMap } from '../esm/native/runtime/cfg_access_maps.ts';
+import { setCfgHandlesMap } from '../esm/native/runtime/cfg_access_maps.ts';
 
 type AnyRecord = Record<string, any>;
 
@@ -62,18 +62,10 @@ test('cfg access runtime pack: canonical config/history namespaces own map write
     },
   };
 
-  const setMapOut = cfgSetMap(App, 'handlesMap', { a: 'bar', b: 'knob' }, { source: 'set:map' } as any);
+  const setMapOut = setCfgHandlesMap(App, { a: 'bar', b: 'knob' }, { source: 'set:map' } as any);
   assert.deepEqual(setMapOut, { a: 'bar', b: 'knob' });
 
-  const patchMapOut = patchConfigMap(
-    App,
-    'handlesMap',
-    (draft: AnyRecord) => {
-      draft.c = 'pull';
-      return draft;
-    },
-    { source: 'patch:map' } as any
-  );
+  const patchMapOut = setCfgHandlesMap(App, { ...setMapOut, c: 'pull' }, { source: 'patch:map' } as any);
   assert.deepEqual(patchMapOut, { a: 'bar', b: 'knob', c: 'pull' });
 
   const patch = cfgPatchWithReplaceKeys({ width: 120, __capturedAt: 1 }, ['handlesMap', 'mirrorLayoutMap']);

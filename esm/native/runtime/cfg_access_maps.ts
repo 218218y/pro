@@ -9,12 +9,9 @@ import {
   readIndividualColorsMapSnapshot,
   readMapRecord,
   readMirrorLayoutMapSnapshot,
-  readPatchMapInput,
-  type ConfigMapPatchFn,
 } from './cfg_access_shared.js';
 import { commitConfigMapOwnerPatchWithReplaceKeys } from './cfg_access_map_owner.js';
 import { normalizeDoorStyleMap } from './maps_access_normalizers_shared.js';
-import { isVisualKeyedMapName } from './visual_keyed_map_names.js';
 import { setCfgVisualKeyedMapFromOwner } from './visual_keyed_map_writer_owner.js';
 
 type CfgMap = {
@@ -27,23 +24,7 @@ export const cfgMap: CfgMap = (App: unknown, mapName: unknown): UnknownRecord =>
   return cfgMapRecord(App, name);
 };
 
-type CfgSetMap = {
-  <K extends KnownMapName>(
-    App: unknown,
-    mapName: K,
-    nextMap: MapsByName[K],
-    meta?: ActionMetaLike
-  ): MapsByName[K];
-  (App: unknown, mapName: string, nextMap: UnknownRecord, meta?: ActionMetaLike): UnknownRecord;
-};
-
-function readVisualKeyedMapWriteError(apiName: string, mapName: string): Error {
-  return new Error(
-    `[WardrobePro] ${apiName} cannot write visual/keyed map "${mapName}"; use the map owner writer`
-  );
-}
-
-function cfgSetMapFromOwner(
+function setConfigMapFromOwner(
   App: unknown,
   mapName: unknown,
   nextMap: unknown,
@@ -57,64 +38,6 @@ function cfgSetMapFromOwner(
   return next;
 }
 
-export const cfgSetMap: CfgSetMap = (
-  App: unknown,
-  mapName: unknown,
-  nextMap: unknown,
-  meta?: ActionMetaLike
-): UnknownRecord => {
-  const name = String(mapName || '');
-  if (isVisualKeyedMapName(name)) throw readVisualKeyedMapWriteError('cfgSetMap', name);
-  return cfgSetMapFromOwner(App, name, nextMap, meta);
-};
-
-type PatchConfigMap = {
-  <K extends KnownMapName>(
-    App: unknown,
-    mapName: K,
-    patchOrFn: Partial<MapsByName[K]> | ConfigMapPatchFn<K>,
-    meta?: ActionMetaLike
-  ): MapsByName[K];
-  (
-    App: unknown,
-    mapName: string,
-    patchOrFn: UnknownRecord | ((nextDraft: UnknownRecord, curVal: UnknownRecord) => unknown),
-    meta?: ActionMetaLike
-  ): UnknownRecord;
-};
-
-export const patchConfigMap: PatchConfigMap = (
-  App: unknown,
-  mapName: unknown,
-  patchOrFn: unknown,
-  meta?: ActionMetaLike
-): UnknownRecord => {
-  const name = String(mapName || '');
-  if (!name) return {};
-  if (isVisualKeyedMapName(name)) throw readVisualKeyedMapWriteError('patchConfigMap', name);
-
-  const normalizedPatchOrFn = readPatchMapInput(patchOrFn);
-  if (!normalizedPatchOrFn) return cfgMapRecord(App, name);
-
-  const cur = cfgMapRecord(App, name);
-  const next: UnknownRecord = { ...cur };
-  const patchValue =
-    typeof normalizedPatchOrFn === 'function' ? normalizedPatchOrFn(next, cur) : normalizedPatchOrFn;
-
-  const patch = readMapRecord(patchValue);
-  for (const key of Object.keys(patch)) {
-    const value = patch[key];
-    if (value === undefined || value === null) {
-      delete next[key];
-    } else {
-      next[key] = value;
-    }
-  }
-
-  cfgSetMap(App, name, next, meta);
-  return next;
-};
-
 export function setCfgHingeMap(App: unknown, next: unknown, meta?: ActionMetaLike): MapsByName['hingeMap'] {
   const cfgNs = getConfigNamespace(App);
   const nextMap = readHingeMapSnapshot(next);
@@ -122,7 +45,7 @@ export function setCfgHingeMap(App: unknown, next: unknown, meta?: ActionMetaLik
     const out = cfgNs.setHingeMap(nextMap, meta);
     return readHingeMapSnapshot(out);
   }
-  return readHingeMapSnapshot(cfgSetMap(App, 'hingeMap', nextMap, meta));
+  return readHingeMapSnapshot(setConfigMapFromOwner(App, 'hingeMap', nextMap, meta));
 }
 
 export function setCfgHandlesMap(
@@ -130,7 +53,7 @@ export function setCfgHandlesMap(
   next: unknown,
   meta?: ActionMetaLike
 ): MapsByName['handlesMap'] {
-  return readHandlesMapSnapshot(cfgSetMap(App, 'handlesMap', readHandlesMapSnapshot(next), meta));
+  return readHandlesMapSnapshot(setConfigMapFromOwner(App, 'handlesMap', readHandlesMapSnapshot(next), meta));
 }
 
 export function setCfgIndividualColors(
@@ -139,7 +62,7 @@ export function setCfgIndividualColors(
   meta?: ActionMetaLike
 ): MapsByName['individualColors'] {
   return readIndividualColorsMapSnapshot(
-    cfgSetMap(App, 'individualColors', readIndividualColorsMapSnapshot(next), meta)
+    setConfigMapFromOwner(App, 'individualColors', readIndividualColorsMapSnapshot(next), meta)
   );
 }
 
@@ -148,7 +71,7 @@ export function setCfgCurtainMap(
   next: unknown,
   meta?: ActionMetaLike
 ): MapsByName['curtainMap'] {
-  return readCurtainMapSnapshot(cfgSetMap(App, 'curtainMap', readCurtainMapSnapshot(next), meta));
+  return readCurtainMapSnapshot(setConfigMapFromOwner(App, 'curtainMap', readCurtainMapSnapshot(next), meta));
 }
 
 export function setCfgDoorSpecialMap(
@@ -156,7 +79,9 @@ export function setCfgDoorSpecialMap(
   next: unknown,
   meta?: ActionMetaLike
 ): MapsByName['doorSpecialMap'] {
-  return readDoorSpecialMapSnapshot(cfgSetMap(App, 'doorSpecialMap', readDoorSpecialMapSnapshot(next), meta));
+  return readDoorSpecialMapSnapshot(
+    setConfigMapFromOwner(App, 'doorSpecialMap', readDoorSpecialMapSnapshot(next), meta)
+  );
 }
 
 export function setCfgDoorStyleMap(

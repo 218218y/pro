@@ -7,12 +7,12 @@ import {
   cfgGet,
   cfgRead,
   cfgSetScalar,
+  setCfgHandlesMap,
 } from '../esm/native/runtime/cfg_access.ts';
 import {
   commitConfigMapOwnerPatch,
   commitConfigMapOwnerPatchWithReplaceKeys,
 } from '../esm/native/runtime/cfg_access_map_owner.ts';
-import { cfgSetMap, patchConfigMap } from '../esm/native/runtime/cfg_access_maps.ts';
 
 type AnyRecord = Record<string, unknown>;
 
@@ -108,19 +108,19 @@ test('[cfg_access] applyConfigNonMapPatch commits via actions.config.patch when 
   assert.equal((calls[0].meta as AnyRecord).source, 't:patch');
 });
 
-test('[cfg_access] cfgSetScalar/cfgSetMap/patchConfigMap operate on store-backed config', () => {
-  const App = makeAppBase({ width: 100, modulesConfiguration: { a: 1 } as AnyRecord });
+test('[cfg_access] cfgSetScalar and semantic map setters operate on store-backed config', () => {
+  const App = makeAppBase({ width: 100, handlesMap: { a: 'bar' } as AnyRecord });
 
   cfgSetScalar(App, 'width', (prev: unknown) => Number(prev || 0) + 5, { source: 't:scalar' } as any);
   assert.equal(cfgRead(App, 'width', 0), 105);
 
-  const out1 = cfgSetMap(App, 'modulesConfiguration', { a: 1, b: 2 }, { source: 't:setMap' } as any);
-  assert.deepEqual(out1, { a: 1, b: 2 });
-  assert.deepEqual(cfgRead(App, 'modulesConfiguration', null), { a: 1, b: 2 });
+  const out1 = setCfgHandlesMap(App, { a: 'bar', b: 'knob' }, { source: 't:setHandlesMap' } as any);
+  assert.deepEqual(out1, { a: 'bar', b: 'knob' });
+  assert.deepEqual(cfgRead(App, 'handlesMap', null), { a: 'bar', b: 'knob' });
 
-  const out2 = patchConfigMap(App, 'modulesConfiguration', { c: 3 }, { source: 't:patchMap' } as any);
-  assert.deepEqual(out2, { a: 1, b: 2, c: 3 });
-  assert.deepEqual(cfgRead(App, 'modulesConfiguration', null), { a: 1, b: 2, c: 3 });
+  const out2 = setCfgHandlesMap(App, { ...out1, c: 'pull' }, { source: 't:replaceHandlesMap' } as any);
+  assert.deepEqual(out2, { a: 'bar', b: 'knob', c: 'pull' });
+  assert.deepEqual(cfgRead(App, 'handlesMap', null), { a: 'bar', b: 'knob', c: 'pull' });
 });
 
 test('[cfg_access] generic config patch rejects known map branches on store-only writer paths', () => {

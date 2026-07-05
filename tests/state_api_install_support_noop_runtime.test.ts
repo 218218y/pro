@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installStateApi } from '../esm/native/kernel/state_api.ts';
-import { patchConfigMap } from '../esm/native/runtime/cfg_access_maps.ts';
+import { setCfgHandlesMap } from '../esm/native/runtime/cfg_access_maps.ts';
 
 type AnyRecord = Record<string, unknown>;
 
@@ -185,7 +185,7 @@ test('[state-api] config replace-key filtering preserves unchanged entries insid
 
   installStateApi(App as any);
 
-  patchConfigMap(App, 'handlesMap', { d2_full: 'knob' }, { source: 'test:replace-map-merge' });
+  setCfgHandlesMap(App, { d1_full: 'bar', d2_full: 'knob' }, { source: 'test:replace-map-merge' });
 
   assert.equal(calls.length, 1);
   assert.equal(calls[0].op, 'store.setConfig');

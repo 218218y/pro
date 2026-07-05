@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installMapsApi } from '../esm/native/kernel/maps_api.ts';
-import { cfgSetMap, patchConfigMap } from '../esm/native/runtime/cfg_access_maps.ts';
+import * as cfgAccessMaps from '../esm/native/runtime/cfg_access_maps.ts';
 import { setCfgDoorStyleMap } from '../esm/native/runtime/cfg_access.ts';
 import {
   isVisualKeyedMapName,
@@ -286,7 +286,7 @@ test('maps_api and runtime writers replace groove maps with canonical prefixed k
   assert.equal(state.config.splitDoorsBottomMap.splitb_d7_bot, undefined);
 });
 
-test('generic config and maps API writers reject visual keyed maps unless routed through an owner', () => {
+test('generic config map exports stay retired and visual keyed maps write only through owners', () => {
   const state = {
     ui: {},
     runtime: {},
@@ -329,14 +329,8 @@ test('generic config and maps API writers reject visual keyed maps unless routed
   assert.equal(isVisualKeyedMapName('doorStyleMap'), true);
   assert.equal(isVisualKeyedMapName('handlesMap'), false);
 
-  assert.throws(
-    () => cfgSetMap(App, 'doorStyleMap', { d1_full: 'profile' }, { source: 'test:cfgSetMap' }),
-    /cfgSetMap cannot write visual\/keyed map "doorStyleMap"/
-  );
-  assert.throws(
-    () => patchConfigMap(App, 'doorTrimMap', { d1_full: [] }, { source: 'test:patchConfigMap' }),
-    /patchConfigMap cannot write visual\/keyed map "doorTrimMap"/
-  );
+  assert.equal(Object.prototype.hasOwnProperty.call(cfgAccessMaps, 'cfgSetMap'), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(cfgAccessMaps, 'patchConfigMap'), false);
 
   assert.equal(state.config.doorStyleMap, undefined);
   assert.equal(state.config.mirrorLayoutMap, undefined);
