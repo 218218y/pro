@@ -1,16 +1,7 @@
 // State/runtime shared types (DI deps + store shapes).
 
 import type { UnknownRecord } from './common';
-import type { DispatchOptionsLike } from './actions';
-import type { StorePatchPayload } from './backend_patch_payload';
-import type { ActionMetaLike, ModeActionOptsLike } from './kernel';
-import type {
-  ConfigSlicePatch,
-  MetaSlicePatch,
-  ModeSlicePatch,
-  RuntimeSlicePatch,
-  UiSlicePatch,
-} from './patch_payload';
+import type { ActionMetaLike } from './kernel';
 import type { RootStateLike } from './store_state';
 import type { ThreeLike } from './three';
 import type { WardrobeProRuntimeConfig, WardrobeProRuntimeFlags } from './runtime';
@@ -64,12 +55,8 @@ export interface BrowserDeps {
   fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 }
 
-/**
- * Minimal store interface used across the codebase.
- *
- * Keep this intentionally small and permissive during migration.
- */
-export interface StoreLike<S = RootStateLike> {
+/** Public/read-only store surface. Raw write methods live in backend_store.ts. */
+export interface PublicStoreLike<S = RootStateLike> {
   getState: () => S;
   subscribe: (fn: (state: S, actionMeta?: ActionMetaLike) => void) => () => void;
 
@@ -98,39 +85,13 @@ export interface StoreLike<S = RootStateLike> {
    */
   subscribeMeta?: (fn: (state: S, actionMeta?: ActionMetaLike) => void) => () => void;
 
-  /**
-   * Raw/backend store patch boundary (Zustand-only).
-   *
-   * This accepts StorePatchPayload for platform/kernel/runtime owner commits,
-   * including snapshot/map-owner paths. UI, services, builder, and public
-   * callers must use App.actions.* or the focused semantic writer facade.
-   */
-  patch: (
-    payload: StorePatchPayload | UnknownRecord,
-    meta?: ActionMetaLike | UnknownRecord,
-    opts?: DispatchOptionsLike
-  ) => unknown;
-
-  /** Rare root replacement helper (primarily for tests/tooling). */
-  setRoot?: (nextRoot: unknown, meta?: ActionMetaLike | UnknownRecord, opts?: DispatchOptionsLike) => unknown;
-
   /** Optional store-local diagnostics for patch/source churn analysis. */
   getDebugStats?: () => StoreDebugStats;
   resetDebugStats?: () => void;
-
-  // Optional convenience methods (present in some builds / legacy callers).
-  setMode?: (primary: unknown, opts?: ModeActionOptsLike, meta?: ActionMetaLike | UnknownRecord) => void;
-  setRuntime?: (patch: RuntimeSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
-  setMeta?: (patch: MetaSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
-  setDirty?: (isDirty: boolean, meta?: ActionMetaLike | UnknownRecord) => void;
-  setUi?: (patch: UiSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
-  /** Backend-only convenience writer. Not for UI/service/domain callers. */
-  setConfig?: (patch: ConfigSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
-  setModePatch?: (patch: ModeSlicePatch | UnknownRecord, meta?: ActionMetaLike | UnknownRecord) => void;
 }
 
-// Default root-store shape (used by most ESM modules).
-export type RootStoreLike = StoreLike<RootStateLike>;
+export type ReadableStoreLike<S = RootStateLike> = PublicStoreLike<S>;
+export type RootPublicStoreLike = PublicStoreLike<RootStateLike>;
 
 export interface StateKernelLike extends UnknownRecord {
   // Internal kernel snapshot helpers. Not UI/service/domain config writers.

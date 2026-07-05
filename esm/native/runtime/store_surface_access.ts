@@ -1,14 +1,16 @@
-import type { RootStateLike, RootStoreLike, StoreLike } from '../../../types';
+import type { PublicStoreLike, RootStateLike } from '../../../types';
+import type { RootStoreLike, StoreLike } from '../../../types/backend_store';
 
 import { ensureStoreRoot, getStoreRootMaybe } from './app_roots_access.js';
 import { asRecord } from './record.js';
 
-export type StoreSurfaceLike<S = RootStateLike> = Pick<StoreLike<S>, 'getState'> & Partial<StoreLike<S>>;
+export type StoreSurfaceLike<S = RootStateLike> = Pick<PublicStoreLike<S>, 'getState'> &
+  Partial<PublicStoreLike<S>>;
 export type StorePatchSurfaceLike<S = RootStateLike> = StoreSurfaceLike<S> & Pick<StoreLike<S>, 'patch'>;
 export type StoreSelectorSurfaceLike<S = RootStateLike> = StoreSurfaceLike<S> &
-  Required<Pick<StoreLike<S>, 'subscribeSelector'>>;
-type StoreSubscribeFn<S = RootStateLike> = StoreLike<S>['subscribe'];
-type StoreSelectorSubscribeFn<S = RootStateLike> = NonNullable<StoreLike<S>['subscribeSelector']>;
+  Required<Pick<PublicStoreLike<S>, 'subscribeSelector'>>;
+type StoreSubscribeFn<S = RootStateLike> = PublicStoreLike<S>['subscribe'];
+type StoreSelectorSubscribeFn<S = RootStateLike> = NonNullable<PublicStoreLike<S>['subscribeSelector']>;
 
 function isStoreSurfaceLike<S = RootStateLike>(value: unknown): value is StoreSurfaceLike<S> {
   const store = asRecord<StoreSurfaceLike<S>>(value);

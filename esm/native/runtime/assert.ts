@@ -7,12 +7,12 @@
 import type {
   AppContainer,
   Deps3D,
-  StoreLike,
   StateKernelLike,
   ThreeLike,
   ActionsNamespaceLike,
   ActionsDomainsLike,
 } from '../../../types';
+import type { StoreLike } from '../../../types/backend_store';
 
 import { asRecord } from './record.js';
 import { getActionNamespace } from './actions_access_core.js';

@@ -7,8 +7,8 @@
 
 import type {
   AppContainer,
+  PublicStoreLike,
   StoreDebugStats,
-  StoreLike,
   StoreSourceDebugStat,
   WardrobeProDebugConsoleSurface,
   BuilderDebugStatsLike,
@@ -32,7 +32,7 @@ import {
 import { asRecord } from './record.js';
 import { getStoreSurfaceMaybe } from './store_surface_access.js';
 
-type StoreWithDebug = StoreLike & {
+type StoreWithDebug = PublicStoreLike & {
   getDebugStats?: () => StoreDebugStats;
   resetDebugStats?: () => void;
 };

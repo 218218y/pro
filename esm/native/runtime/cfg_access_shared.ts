@@ -16,9 +16,9 @@ import type {
   ModulesConfigurationLike,
   KnownMapName,
   MapsByName,
-  RootStoreLike,
   UnknownRecord,
 } from '../../../types';
+import type { RootStoreLike } from '../../../types/backend_store';
 
 import { readCanonicalMirrorLayoutMap } from '../../shared/mirror_layout_contracts_shared.js';
 import { assertStore } from './assert.js';

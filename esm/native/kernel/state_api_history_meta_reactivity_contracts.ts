@@ -3,10 +3,10 @@ import type {
   ActionsNamespaceLike,
   AppContainer,
   HistoryActionsNamespaceLike,
-  RootStoreLike,
   StoreActionsNamespaceLike,
   UnknownRecord,
 } from '../../../types';
+import type { RootStoreLike } from '../../../types/backend_store';
 
 type MetaNs = NonNullable<ActionsNamespaceLike['meta']>;
 

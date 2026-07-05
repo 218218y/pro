@@ -2,9 +2,9 @@ import type {
   ActionMetaLike,
   ActionRootPatchPayload,
   ActionsNamespaceLike,
-  RootStoreLike,
   UnknownRecord,
 } from '../../../types';
+import type { RootStoreLike } from '../../../types/backend_store';
 
 import { getActions } from './actions_access_core.js';
 import { isActionStubFn } from './actions_access_shared.js';

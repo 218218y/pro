@@ -87,6 +87,9 @@ const runtimeGeometryScalarRoots = [
 ];
 
 const rawStoreBackendTypeNames = [
+  'BackendStoreLike',
+  'RootStoreLike',
+  'StoreLike',
   'StorePatchPayload',
   'StorePatchAction',
   'StoreBackendAction',
@@ -99,7 +102,15 @@ const rawStoreBackendTypeAllowPaths = new Set([
   'esm/native/platform/store_contract.ts',
   'esm/native/platform/store_patch_apply.ts',
   'esm/native/kernel/state_api_install_support.ts',
+  'esm/native/kernel/kernel_snapshot_store_commits_ops.ts',
+  'esm/native/kernel/state_api_config_namespace.ts',
+  'esm/native/kernel/state_api_config_namespace_core.ts',
+  'esm/native/kernel/state_api_history_meta_reactivity_contracts.ts',
+  'esm/native/runtime/assert.ts',
+  'esm/native/runtime/cfg_access_shared.ts',
   'esm/native/runtime/cfg_access_core.ts',
+  'esm/native/runtime/store_surface_access.ts',
+  'esm/native/runtime/slice_write_access_context.ts',
   'esm/native/runtime/slice_write_access_dispatch.ts',
   'esm/native/runtime/slice_write_access_dispatch_targets.ts',
   'esm/native/runtime/slice_write_access_plan.ts',
@@ -188,15 +199,19 @@ function collectRawStoreBoundaryDocViolations() {
       pattern: /Never use[\s\S]*it as a public action payload contract\./,
     },
     {
+      rel: 'types/backend_store.ts',
+      pattern: /Backend-only store write surface\./,
+    },
+    {
       rel: 'types/backend_patch_payload.ts',
       pattern: /Backend-only store PATCH payload types\./,
     },
     {
       rel: 'types/state.ts',
-      pattern: /Raw\/backend store patch boundary \(Zustand-only\)\./,
+      pattern: /Public\/read-only store surface\. Raw write methods live in backend_store\.ts\./,
     },
     {
-      rel: 'types/state.ts',
+      rel: 'types/backend_store.ts',
       pattern: /Backend-only convenience writer\. Not for UI\/service\/domain callers\./,
     },
   ];
@@ -221,7 +236,7 @@ function collectPublicTypeBarrelViolations() {
     violations.push('types/index.ts: public barrel must explicitly export public patch payload types');
   }
   if (
-    /backend_actions|backend_patch_payload|StorePatchPayload|StorePatchAction|StoreBackendAction|RawWardrobeProAction/.test(
+    /backend_actions|backend_patch_payload|backend_store|\b(?:BackendStoreLike|StoreLike|RootStoreLike|StorePatchPayload|StorePatchAction|StoreBackendAction|RawWardrobeProAction)\b/.test(
       source
     )
   ) {

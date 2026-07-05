@@ -3,9 +3,9 @@ import type {
   ActionsNamespaceLike,
   ConfigActionsNamespaceLike,
   ConfigSlicePatch,
-  RootStoreLike,
   UnknownRecord,
 } from '../../../types';
+import type { RootStoreLike } from '../../../types/backend_store';
 
 import type { MetaNs } from './state_api_shared.js';
 import { installStateApiConfigNamespaceCore } from './state_api_config_namespace_core.js';

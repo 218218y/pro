@@ -3,9 +3,9 @@ import type {
   ActionsNamespaceLike,
   ConfigActionsNamespaceLike,
   ModulesGeometrySnapshotLike,
-  RootStoreLike,
   UnknownRecord,
 } from '../../../types';
+import type { RootStoreLike } from '../../../types/backend_store';
 
 import {
   canonicalizeComparableProjectConfigPatch,

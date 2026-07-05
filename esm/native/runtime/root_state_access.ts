@@ -8,7 +8,7 @@
 import type {
   RootStateLike,
   RootSliceKey,
-  StoreLike,
+  PublicStoreLike,
   UiStateLike,
   ConfigStateLike,
   RuntimeStateLike,
@@ -26,7 +26,7 @@ import { getStoreSurfaceMaybe } from './store_surface_access.js';
 
 type UnknownRecord = Record<string, unknown>;
 type RootStateSeed = RootStateLike & UnknownRecord;
-type RootStoreReader = Pick<StoreLike, 'getState'>;
+type RootStoreReader = Pick<PublicStoreLike, 'getState'>;
 type RootSliceCoercerMap = { [K in RootSliceKey]: (value: unknown) => RootStateLike[K] };
 
 function asStoreLike(v: unknown): RootStoreReader | null {

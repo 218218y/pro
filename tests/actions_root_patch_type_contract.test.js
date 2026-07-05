@@ -44,9 +44,9 @@ test('[actions.patch types] public root config patch rejects known maps while st
   ActionsNamespaceLike,
   PatchDispatchEnvelope,
   PublicWardrobeProAction,
-  StoreLike,
   WardrobeProAction,
 } from './types';
+import type { StoreLike } from './types/backend_store';
 import type { StoreBackendAction, StorePatchAction } from './types/backend_actions';
 declare const actions: ActionsNamespaceLike;
 declare const store: StoreLike;
@@ -89,6 +89,9 @@ test('[actions.patch types] public barrel does not export raw store backend acti
 import type { StorePatchAction } from './types'; // expect-error
 import type { StoreBackendAction } from './types'; // expect-error
 import type { RawWardrobeProAction } from './types'; // expect-error
+import type { StoreLike } from './types'; // expect-error
+import type { RootStoreLike } from './types'; // expect-error
+import type { BackendStoreLike } from './types'; // expect-error
 `;
 
   const diagnostics = runVirtualTypecheck(source);
@@ -102,6 +105,29 @@ import type { RawWardrobeProAction } from './types'; // expect-error
   );
   assert.ok(
     diagnostics.every(diag => /has no exported member/.test(diag.message)),
+    diagnostics.map(diag => diag.message).join('\n')
+  );
+});
+
+test('[actions.patch types] public store surface does not expose raw store writers', () => {
+  const source = `import type { PublicStoreLike } from './types';
+declare const store: PublicStoreLike;
+store.getState();
+store.patch({ config: { handlesMap: { d1_full: 'rail' } } }); // expect-error
+store.setConfig?.({ handlesMap: { d1_full: 'rail' } }); // expect-error
+`;
+
+  const diagnostics = runVirtualTypecheck(source);
+  const expectedLines = source
+    .split('\n')
+    .flatMap((line, index) => (line.includes('expect-error') ? [index + 1] : []));
+
+  assert.deepEqual(
+    diagnostics.map(diag => diag.line),
+    expectedLines
+  );
+  assert.ok(
+    diagnostics.every(diag => /does not exist/.test(diag.message)),
     diagnostics.map(diag => diag.message).join('\n')
   );
 });

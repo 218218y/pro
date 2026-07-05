@@ -14,7 +14,24 @@ export * from './modules_configuration';
 export * from './ui_raw';
 export * from './ui_tabs';
 export * from './ui_state';
-export * from './state';
+export type {
+  BrowserClearIntervalLike,
+  BrowserClearTimeoutLike,
+  BrowserDeps,
+  BrowserSetIntervalLike,
+  BrowserSetTimeoutLike,
+  BrowserTimerCallback,
+  Deps,
+  Deps3D,
+  IntervalHandleLike,
+  PublicStoreLike,
+  ReadableStoreLike,
+  RootPublicStoreLike,
+  StateKernelLike,
+  StoreDebugStats,
+  StoreSourceDebugStat,
+  TimeoutHandleLike,
+} from './state';
 export * from './ui';
 export * from './three';
 export * from './build';

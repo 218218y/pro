@@ -2,7 +2,7 @@
 // Stage 3 (Zustand migration): backend swap under the same store contract.
 //
 // Design goals:
-// - Keep the existing StoreLike surface (getState/patch/subscribe + helpers)
+// - Keep the backend store surface stable (getState/patch/subscribe + helpers)
 // - Canonical write path: store.patch(payload, meta) (no dispatch envelopes)
 // - Avoid hybrid write paths inside the store backend (single backend = Zustand)
 // - Preserve actionMeta-aware subscriptions used by platform/slice wrappers
@@ -10,13 +10,8 @@
 import { createStore as createZustandVanillaStore } from 'zustand/vanilla';
 import type { StoreApi as ZustandStoreApi } from 'zustand/vanilla';
 
-import type {
-  ActionEnvelope,
-  ActionMetaLike,
-  RootStateLike,
-  StoreLike,
-  StoreDebugStats,
-} from '../../../types';
+import type { ActionEnvelope, ActionMetaLike, RootStateLike, StoreDebugStats } from '../../../types';
+import type { StoreLike } from '../../../types/backend_store';
 import {
   asRecordOrEmpty,
   cloneDebugSources,

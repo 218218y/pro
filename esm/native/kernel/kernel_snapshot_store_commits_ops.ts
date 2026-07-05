@@ -1,6 +1,8 @@
 import type { UnknownRecord } from '../../../types';
+import type { RootStoreLike } from '../../../types/backend_store';
 
 import { getUi, isDirty } from './store_access.js';
+import { getStoreRootMaybe } from '../runtime/app_roots_access.js';
 import { metaUiOnly } from '../runtime/meta_profiles_access.js';
 import { getStoreSurfaceMaybe } from '../runtime/store_surface_access.js';
 
@@ -81,7 +83,7 @@ export function createKernelSnapshotStoreCommitOpsRuntime(
     const dirty = !!isDirtyValue;
 
     try {
-      const store = getStoreSurfaceMaybe(args.App);
+      const store = getStoreRootMaybe<RootStoreLike>(args.App);
       const setDirty = store && typeof store.setDirty === 'function' ? store.setDirty : null;
       if (setDirty) {
         setDirty.call(

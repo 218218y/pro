@@ -2,7 +2,7 @@
 // Extracted from the types barrel to keep dependencies explicit and manageable.
 
 import type { Namespace, UnknownRecord } from './common';
-import type { Deps, RootStoreLike } from './state';
+import type { Deps, RootPublicStoreLike } from './state';
 import type {
   ActionMetaLike,
   ActionsNamespaceLike,
@@ -592,7 +592,7 @@ export interface AppContainer {
   stores?: Namespace;
 
   // Common runtime surfaces (platform installed).
-  store?: RootStoreLike;
+  store?: RootPublicStoreLike;
 
   // Optional runtime diagnostics surfaces.
   smokeChecks?: Namespace & SmokeChecksNamespaceLike;
