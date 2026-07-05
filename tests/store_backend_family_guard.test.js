@@ -19,6 +19,9 @@ const sliceWriteAccessDispatchTargets = read('../esm/native/runtime/slice_write_
 const stateApiInstallSupport = read('../esm/native/kernel/state_api_install_support.ts');
 const kernelInstallSupport = read('../esm/native/kernel/kernel_install_support.ts');
 const cellDimsLinearApply = read('../esm/native/services/canvas_picking_cell_dims_linear_apply.ts');
+const structuralBuildRefreshActions = read(
+  '../esm/native/ui/react/actions/structural_build_refresh_actions.ts'
+);
 const publicStateTypes = read('../types/state.ts');
 const backendStoreTypes = read('../types/backend_store.ts');
 const typeHardeningAudit = read('../tools/wp_type_hardening_audit.mjs');
@@ -103,6 +106,7 @@ test('store backend replace metadata construction stays centralized in the metad
   assert.match(writeContractGuard, /template-built __replace/);
   assert.match(writeContractGuard, /concatenated __replace/);
   assert.match(writeContractGuard, /no-raw-config-replace-key-constant/);
+  assert.match(writeContractGuard, /no-local-config-protocol-prefix-sniffing/);
   assert.match(writeContractGuard, /config replace-key allowlist entry is unused/);
   assert.match(writeContractGuard, /config replace-key constant allowlist entry is unused/);
   assert.match(allowlist, /esm\/native\/runtime\/cfg_access_patch_metadata\.ts/);
@@ -119,6 +123,8 @@ test('store backend replace metadata construction stays centralized in the metad
   assert.doesNotMatch(cfgAccessCore, /CONFIG_PATCH_REPLACE_KEY/);
   assert.doesNotMatch(sliceWriteAccessDispatchTargets, /CONFIG_PATCH_REPLACE_KEY/);
   assert.doesNotMatch(stateApiInstallSupport, /CONFIG_PATCH_REPLACE_KEY/);
+  assert.match(structuralBuildRefreshActions, /readConfigPatchDataKeys/);
+  assert.doesNotMatch(structuralBuildRefreshActions, /startsWith\(['"]__['"]\)/);
 });
 
 test('store root replacement stays a backend snapshot boundary', () => {

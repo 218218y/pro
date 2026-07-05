@@ -104,6 +104,7 @@ const CONFIG_REPLACE_KEY_PATTERNS = [
 ];
 
 const CONFIG_REPLACE_KEY_CONSTANT_PATTERN = /\bCONFIG_PATCH_REPLACE_KEY\b/g;
+const CONFIG_PROTOCOL_METADATA_PREFIX_PATTERN = /\.startsWith\(\s*['"]__['"]\s*\)/g;
 
 function collectConfigReplaceKeyConstructionMatches(text) {
   const matches = [];
@@ -166,6 +167,20 @@ function scanFile(fileAbs) {
         msg: 'Use cfg_access_patch_metadata.ts helpers instead of the raw config replace-key constant.',
       });
     }
+  }
+
+  // 1.6) Ban local protocol-metadata format sniffing. Call cfg_access_patch_metadata helpers instead.
+  const protocolPrefixMatches =
+    !isTypes && rp.startsWith('esm/native/')
+      ? [...text.matchAll(CONFIG_PROTOCOL_METADATA_PREFIX_PATTERN)]
+      : [];
+  if (protocolPrefixMatches.length) {
+    violations.push({
+      file: rp,
+      kind: 'no-local-config-protocol-prefix-sniffing',
+      line: lineNumberOf(text, protocolPrefixMatches[0].index),
+      msg: 'Use cfg_access_patch_metadata helpers instead of local startsWith("__") protocol metadata checks.',
+    });
   }
 
   // 2) Ban stack/corner compat calls via stateKernel (outside kernel itself).

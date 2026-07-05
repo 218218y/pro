@@ -111,6 +111,8 @@ export {
   setCfgDoorSpecialMap,
 } from '../runtime/cfg_access.js';
 
+export { readConfigPatchDataKeys } from '../runtime/cfg_access_patch_metadata.js';
+
 // UI / Runtime write access seams (canonical-first; keeps callsites off store.patch envelopes).
 export {
   patchUi,

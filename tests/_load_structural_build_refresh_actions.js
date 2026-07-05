@@ -41,6 +41,12 @@ export function loadStructuralBuildRefreshActionsModule(stubs = {}) {
     }
     if (specifier === '../../../services/api.js') {
       return {
+        readConfigPatchDataKeys: patch => {
+          const patchRec = patch && typeof patch === 'object' && !Array.isArray(patch) ? patch : {};
+          return Object.keys(patchRec).filter(
+            key => key !== '__replace' && key !== '__snapshot' && key !== '__capturedAt'
+          );
+        },
         patchViaActions: (...args) => {
           stubs.calls?.push(['patchViaActions', ...args]);
           return typeof stubs.patchViaActions === 'function' ? stubs.patchViaActions(...args) : false;
