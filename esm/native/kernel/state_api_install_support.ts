@@ -20,12 +20,15 @@ import type {
 } from '../runtime/slice_write_access_shared.js';
 import { getAllSliceNamespaces, readSlicePatchValue } from '../runtime/slice_write_access_shared.js';
 import { isKnownMapName } from '../runtime/maps_access_normalizers.js';
+import {
+  CONFIG_PATCH_REPLACE_KEY,
+  isConfigPatchProtocolKey,
+  readConfigPatchReplaceMap,
+} from '../runtime/cfg_access_patch_metadata.js';
 import { withStoreConfigMapWriteCapability } from '../runtime/store_config_map_write_capability.js';
 import { asRecord as asObj } from '../runtime/record.js';
 import { snapshotStoreValueEqual, uiSnapshotValueEqual } from './kernel_snapshot_store_shared.js';
 import { asPatchPayload } from './state_api_shared.js';
-
-const CONFIG_REPLACE_KEY = `${'__'}replace`;
 
 const INTERNAL_SLICE_WRITE_OPTS: Record<SlicePatchNamespace, DedicatedSliceWriteOptions> = {
   ui: {
@@ -138,20 +141,18 @@ function diffComparableValue(prev: unknown, patch: unknown): unknown {
   return Object.is(prev, patch) ? undefined : patch;
 }
 
-function readConfigReplaceRecord(patch: ConfigSlicePatch): UnknownRecord | null {
-  const patchRec = asObj<UnknownRecord>(patch);
-  return patchRec ? asObj<UnknownRecord>(patchRec[CONFIG_REPLACE_KEY]) || null : null;
+function readConfigReplaceRecord(patch: ConfigSlicePatch): Record<string, boolean> | null {
+  return readConfigPatchReplaceMap(patch);
 }
 
 function readKnownConfigMapPatchKeys(patch: unknown): string[] {
   const patchRec = asObj<UnknownRecord>(patch);
   if (!patchRec) return [];
-  return Object.keys(patchRec).filter(key => key !== CONFIG_REPLACE_KEY && isKnownMapName(key));
+  return Object.keys(patchRec).filter(key => !isConfigPatchProtocolKey(key) && isKnownMapName(key));
 }
 
 function readKnownConfigMapReplaceKeys(patch: unknown): string[] {
-  const patchRec = asObj<UnknownRecord>(patch);
-  const replace = patchRec ? asObj<UnknownRecord>(patchRec[CONFIG_REPLACE_KEY]) : null;
+  const replace = readConfigPatchReplaceMap(patch);
   if (!replace) return [];
   return Object.keys(replace).filter(key => replace[key] && isKnownMapName(key));
 }
@@ -191,7 +192,7 @@ function filterNoopSlicePatch<N extends SlicePatchNamespace>(
   const nextReplace: UnknownRecord | null = replaceRec ? {} : null;
 
   for (const key of Object.keys(patch)) {
-    if (key === CONFIG_REPLACE_KEY) continue;
+    if (key === CONFIG_PATCH_REPLACE_KEY) continue;
     if (replaceRec && replaceRec[key]) {
       const nextValue = patch[key];
       if (!snapshotStoreValueEqual(prevRec[key], nextValue)) {
@@ -204,7 +205,7 @@ function filterNoopSlicePatch<N extends SlicePatchNamespace>(
     if (typeof diff !== 'undefined') next[key] = diff;
   }
 
-  if (nextReplace && Object.keys(nextReplace).length) next[CONFIG_REPLACE_KEY] = nextReplace;
+  if (nextReplace && Object.keys(nextReplace).length) next[CONFIG_PATCH_REPLACE_KEY] = nextReplace;
   return Object.keys(next).length ? readSlicePatchValue(namespace, next) : null;
 }
 

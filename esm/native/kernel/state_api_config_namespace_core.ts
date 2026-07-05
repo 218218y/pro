@@ -13,7 +13,7 @@ import {
 } from './kernel_project_config_snapshot_canonical.js';
 import { materializeTopModulesConfigurationFromUiConfig } from '../features/modules_configuration/modules_config_api.js';
 import { buildConfigPatchWithReplaceMetadata } from '../runtime/cfg_access_patch_metadata.js';
-import { isKnownMapName } from '../runtime/maps_access_normalizers.js';
+import { assertNoGenericKnownConfigMapPatch } from '../runtime/cfg_access_core.js';
 import { asRecord, isRecord } from '../runtime/record.js';
 import {
   asConfigPatch,
@@ -36,8 +36,6 @@ interface StateApiConfigNamespaceCoreContext {
   projectConfigReplaceKeys: Record<string, true>;
   modulesGeometryReplaceKeys: Record<string, true>;
 }
-
-const CONFIG_PATCH_REPLACE_KEY = `${'__'}replace`;
 
 export function installStateApiConfigNamespaceCore(ctx: StateApiConfigNamespaceCoreContext): void {
   const {
@@ -75,33 +73,11 @@ export function installStateApiConfigNamespaceCore(ctx: StateApiConfigNamespaceC
     });
   };
 
-  const readKnownConfigMapPatchKeys = (patch: UnknownRecord): string[] =>
-    Object.keys(patch).filter(key => key !== CONFIG_PATCH_REPLACE_KEY && isKnownMapName(key));
-
-  const readKnownConfigMapReplaceKeys = (patch: UnknownRecord): string[] => {
-    const replace = asRecord(patch[CONFIG_PATCH_REPLACE_KEY]) || {};
-    return Object.keys(replace).filter(key => replace[key] && isKnownMapName(key));
-  };
-
-  const assertNoGenericConfigMapPatch = (patch: UnknownRecord, apiName: string): void => {
-    const mapKeys = readKnownConfigMapPatchKeys(patch);
-    const replaceKeys = readKnownConfigMapReplaceKeys(patch);
-    if (!mapKeys.length && !replaceKeys.length) return;
-    const parts: string[] = [];
-    if (mapKeys.length) parts.push(`branches (${mapKeys.join(', ')})`);
-    if (replaceKeys.length) parts.push(`replace keys (${replaceKeys.join(', ')})`);
-    throw new Error(
-      `[WardrobePro] ${apiName} cannot write known config map ${parts.join(
-        ' and '
-      )}; use applyProjectSnapshot/applyPaintSnapshot or a semantic map writer.`
-    );
-  };
-
   if (typeof actions.applyConfig !== 'function') {
     actions.applyConfig = function applyConfig(cfg?: UnknownRecord, meta?: ActionMetaLike) {
       const m = normMeta(meta, 'actions:applyConfig');
       const p = asRecord(cfg) ?? {};
-      assertNoGenericConfigMapPatch(p, 'actions.applyConfig');
+      assertNoGenericKnownConfigMapPatch(p, 'actions.applyConfig');
       if (typeof configNs.patch === 'function') {
         return configNs.patch(p, m);
       }
@@ -137,7 +113,7 @@ export function installStateApiConfigNamespaceCore(ctx: StateApiConfigNamespaceC
   if (typeof configNs.patch !== 'function') {
     configNs.patch = function patch(cfg?: UnknownRecord, meta?: ActionMetaLike) {
       const cfgRec = asConfigPatch(cfg);
-      assertNoGenericConfigMapPatch(cfgRec, 'actions.config.patch');
+      assertNoGenericKnownConfigMapPatch(cfgRec, 'actions.config.patch');
       const m = normMeta(meta, 'actions.config:patch');
       return commitConfigWrite(commitConfigPatch, cfgRec, m);
     };

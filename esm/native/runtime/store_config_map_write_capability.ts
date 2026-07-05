@@ -1,6 +1,7 @@
 import type { UnknownRecord } from '../../../types';
 
 import { isKnownMapName } from './maps_access_normalizers.js';
+import { isConfigPatchProtocolKey, readConfigPatchReplaceMap } from './cfg_access_patch_metadata.js';
 
 const STORE_CONFIG_MAP_WRITE_CAPABILITY = Symbol('WardrobePro.storeConfigMapWriteCapability');
 
@@ -9,9 +10,6 @@ export type StoreConfigMapWriteCapability = typeof STORE_CONFIG_MAP_WRITE_CAPABI
 export type StoreConfigMapWriteOptions = {
   configMapWriteCapability?: StoreConfigMapWriteCapability;
 };
-
-const CONFIG_REPLACE_KEY = `${'__'}replace`;
-const CONFIG_PATCH_PROTOCOL_KEY_SET = new Set<string>([CONFIG_REPLACE_KEY, '__snapshot', '__capturedAt']);
 
 function asRecord(value: unknown): UnknownRecord | null {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
@@ -33,12 +31,11 @@ export function withStoreConfigMapWriteCapability<T extends UnknownRecord>(
 export function readKnownConfigMapPatchKeys(configPatch: unknown): string[] {
   const patch = asRecord(configPatch);
   if (!patch) return [];
-  return Object.keys(patch).filter(key => !CONFIG_PATCH_PROTOCOL_KEY_SET.has(key) && isKnownMapName(key));
+  return Object.keys(patch).filter(key => !isConfigPatchProtocolKey(key) && isKnownMapName(key));
 }
 
 export function readKnownConfigMapReplaceKeys(configPatch: unknown): string[] {
-  const patch = asRecord(configPatch);
-  const replace = patch ? asRecord(patch[CONFIG_REPLACE_KEY]) : null;
+  const replace = readConfigPatchReplaceMap(configPatch);
   if (!replace) return [];
   return Object.keys(replace).filter(key => !!replace[key] && isKnownMapName(key));
 }

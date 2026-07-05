@@ -20,6 +20,7 @@ const cellDimsLinearApply = read('../esm/native/services/canvas_picking_cell_dim
 const publicStateTypes = read('../types/state.ts');
 const backendStoreTypes = read('../types/backend_store.ts');
 const typeHardeningAudit = read('../tools/wp_type_hardening_audit.mjs');
+const writeContractGuard = read('../tools/wp_write_contract_guard.js');
 
 const rawCapabilityExportPatterns = [
   /\bexport\s+const\s+STORE_CONFIG_MAP_WRITE_CAPABILITY\b/,
@@ -85,6 +86,25 @@ test('store backend known config map writes require owner capability, not meta s
   assert.match(cfgAccessMapOwner, /export function commitConfigMapOwnerPatchWithReplaceKeys\(/);
   assert.match(stateApiInstallSupport, /withStoreConfigMapWriteCapability/);
   assert.match(kernelInstallSupport, /withStoreConfigMapWriteCapability/);
+});
+
+test('store backend replace metadata construction stays centralized in the metadata owner', () => {
+  const allowlistMatch = writeContractGuard.match(
+    /const CONFIG_REPLACE_KEY_ALLOWLIST = new Set\(\[[\s\S]*?\]\);/
+  );
+  assert.ok(allowlistMatch, 'write contract guard must declare the replace-key allowlist');
+  const allowlist = allowlistMatch[0];
+
+  assert.match(writeContractGuard, /CONFIG_REPLACE_KEY_ALLOWLIST/);
+  assert.match(writeContractGuard, /collectConfigReplaceKeyConstructionMatches/);
+  assert.match(writeContractGuard, /template-built __replace/);
+  assert.match(writeContractGuard, /concatenated __replace/);
+  assert.match(writeContractGuard, /config replace-key allowlist entry is unused/);
+  assert.match(allowlist, /esm\/native\/runtime\/cfg_access_patch_metadata\.ts/);
+  assert.doesNotMatch(allowlist, /esm\/native\/runtime\/cfg_access\.ts/);
+  assert.doesNotMatch(allowlist, /esm\/native\/runtime\/cfg_access_core\.ts/);
+  assert.doesNotMatch(allowlist, /esm\/native\/runtime\/cfg_access_scalars\.ts/);
+  assert.doesNotMatch(allowlist, /esm\/native\/kernel\/state_api_shared\.ts/);
 });
 
 test('store root replacement stays a backend snapshot boundary', () => {

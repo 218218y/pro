@@ -64,17 +64,7 @@ function lineNumberOf(text, idx) {
   return n;
 }
 
-const ALLOW__REPLACE = new Set([
-  'esm/native/platform/store.ts',
-  'esm/native/kernel/state_api.ts',
-  'esm/native/runtime/cfg_access.ts',
-  'esm/native/runtime/cfg_access.js',
-  'esm/native/runtime/cfg_access_core.ts',
-  'esm/native/runtime/cfg_access_patch_metadata.ts',
-  'esm/native/runtime/cfg_access_scalars.ts',
-  'esm/native/kernel/state_api_config_namespace_maps.ts',
-  'esm/native/kernel/state_api_shared.ts',
-]);
+const CONFIG_REPLACE_KEY_ALLOWLIST = new Set(['esm/native/runtime/cfg_access_patch_metadata.ts']);
 
 const ALLOW_STATEKERNEL_STACK_METHODS = new Set();
 
@@ -94,6 +84,37 @@ const ALLOW_MODE_PATCH = new Set([
 ]);
 
 const violations = [];
+const usedConfigReplaceKeyAllowlist = new Set();
+
+const CONFIG_REPLACE_KEY_PATTERNS = [
+  {
+    kind: 'literal __replace',
+    regex: /\b__replace\b/g,
+  },
+  {
+    kind: 'template-built __replace',
+    regex: /\$\{\s*['"]__['"]\s*\}\s*replace/g,
+  },
+  {
+    kind: 'concatenated __replace',
+    regex: /['"]__['"]\s*\+\s*['"]replace['"]/g,
+  },
+];
+
+function collectConfigReplaceKeyConstructionMatches(text) {
+  const matches = [];
+  for (const pattern of CONFIG_REPLACE_KEY_PATTERNS) {
+    pattern.regex.lastIndex = 0;
+    let match;
+    while ((match = pattern.regex.exec(text))) {
+      matches.push({
+        kind: pattern.kind,
+        index: match.index,
+      });
+    }
+  }
+  return matches.sort((a, b) => a.index - b.index);
+}
 
 function scanFile(fileAbs) {
   let text = '';
@@ -111,15 +132,20 @@ function scanFile(fileAbs) {
   // This guard is about WRITE-PATH *implementations*.
   const isTypes = rp.startsWith('types/');
 
-  // 1) Ban scattered __replace usage.
-  const idxReplace = isTypes ? -1 : text.indexOf('__replace');
-  if (idxReplace >= 0 && !ALLOW__REPLACE.has(rp)) {
-    violations.push({
-      file: rp,
-      kind: 'no-scattered-__replace',
-      line: lineNumberOf(text, idxReplace),
-      msg: 'Use an approved config owner/snapshot helper or boundary-scoped replace metadata builder instead of hand-rolling __replace.',
-    });
+  // 1) Ban scattered config replace-key construction.
+  const replaceKeyMatches = isTypes ? [] : collectConfigReplaceKeyConstructionMatches(text);
+  if (replaceKeyMatches.length) {
+    if (CONFIG_REPLACE_KEY_ALLOWLIST.has(rp)) {
+      usedConfigReplaceKeyAllowlist.add(rp);
+    } else {
+      const first = replaceKeyMatches[0];
+      violations.push({
+        file: rp,
+        kind: 'no-scattered-config-replace-key',
+        line: lineNumberOf(text, first.index),
+        msg: `Use cfg_access_patch_metadata.ts instead of hand-rolling config replace metadata (${first.kind}).`,
+      });
+    }
   }
 
   // 2) Ban stack/corner compat calls via stateKernel (outside kernel itself).
@@ -279,6 +305,17 @@ function main() {
   }
 
   for (const f of files) scanFile(f);
+
+  for (const allowed of CONFIG_REPLACE_KEY_ALLOWLIST) {
+    if (!usedConfigReplaceKeyAllowlist.has(allowed)) {
+      violations.push({
+        file: allowed,
+        kind: 'unused-config-replace-key-allowlist',
+        line: 1,
+        msg: 'config replace-key allowlist entry is unused.',
+      });
+    }
+  }
 
   if (violations.length) {
     console.error('[WP Write Contract Guard] Violations found:\n');

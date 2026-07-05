@@ -1,6 +1,7 @@
 import type { ActionMetaLike, UnknownRecord } from '../../../../../types';
 
 import { KNOWN_PROJECT_CONFIG_MAP_KEYS } from '../../../features/project_config/api.js';
+import { CONFIG_PATCH_REPLACE_KEY } from '../../../runtime/cfg_access_patch_metadata.js';
 import { patchViaActions } from '../../../services/api.js';
 
 export type StructuralMutationSlice = 'config' | 'ui' | 'runtime';
@@ -18,8 +19,6 @@ type ApplyImmediateStructuralMutationArgs = {
   metaOverrides?: ActionMetaLike;
   applyDirectMutation: (meta: ActionMetaLike) => void;
 };
-
-const CONFIG_PATCH_REPLACE_KEY = `${'__'}replace`;
 
 function normalizeImmediateStructuralMutationSource(source: string): string {
   const normalized = String(source || '').trim();

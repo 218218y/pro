@@ -13,18 +13,14 @@ import {
   getStore,
   normMeta,
   readBatchFn,
-  readBooleanMap,
   readRootState,
 } from './cfg_access_shared.js';
+import {
+  CONFIG_PATCH_REPLACE_KEY,
+  isConfigPatchProtocolKey,
+  readConfigPatchReplaceMap,
+} from './cfg_access_patch_metadata.js';
 
-const CFG_PATCH_PROTOCOL_KEYS = Object.freeze({
-  replace: `${'__'}replace`,
-});
-const CFG_PATCH_PROTOCOL_KEY_SET = new Set<string>([
-  CFG_PATCH_PROTOCOL_KEYS.replace,
-  '__snapshot',
-  '__capturedAt',
-]);
 const CONFIG_PATCH_WRITE_OPTS = {
   storeWriter: 'setConfig',
   allowRootStorePatch: false,
@@ -55,11 +51,11 @@ export const cfgRead: CfgRead = (App: unknown, key: unknown, defaultValue?: unkn
 };
 
 function readKnownConfigMapPatchKeys(patch: UnknownRecord): string[] {
-  return Object.keys(patch).filter(key => !CFG_PATCH_PROTOCOL_KEY_SET.has(key) && isKnownMapName(key));
+  return Object.keys(patch).filter(key => !isConfigPatchProtocolKey(key) && isKnownMapName(key));
 }
 
 function readKnownConfigMapReplaceKeys(patch: UnknownRecord): string[] {
-  const replace = readBooleanMap(patch[CFG_PATCH_PROTOCOL_KEYS.replace]);
+  const replace = readConfigPatchReplaceMap(patch);
   if (!replace) return [];
   return Object.keys(replace).filter(key => replace[key] && isKnownMapName(key));
 }
@@ -109,8 +105,8 @@ export function extractConfigPatchWriteMetadata(configPatch: unknown): {
   delete clean.__snapshot;
   delete clean.__capturedAt;
 
-  const replace = asRecord(clean[CFG_PATCH_PROTOCOL_KEYS.replace]);
-  delete clean[CFG_PATCH_PROTOCOL_KEYS.replace];
+  const replace = asRecord(clean[CONFIG_PATCH_REPLACE_KEY]);
+  delete clean[CONFIG_PATCH_REPLACE_KEY];
 
   return { clean, replace, snapshot };
 }
