@@ -43,7 +43,7 @@ export function readRoomString(value: unknown): string {
 }
 
 export function buildCloudSyncShareLink(cfg: CloudSyncPanelConfig, currentRoom: string): string {
-  const base = String(cfg.shareBaseUrl || 'https://bargig218.netlify.app/');
+  const base = String(cfg.shareBaseUrl || 'https://pro218.bargig-furniture.com/');
   const url = new URL(base);
   url.hash = '';
   url.search = '';

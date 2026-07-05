@@ -29,7 +29,7 @@ export default {
     publicRoom: 'public',
     privateRoom: '',
     roomParam: 'room',
-    shareBaseUrl: 'https://bargig218.netlify.app/',
+    shareBaseUrl: 'https://pro218.bargig-furniture.com/',
     pollMs: 1500,
     diagnostics: false,
     realtime: true,

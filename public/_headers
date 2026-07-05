@@ -1,2 +1,13 @@
+# Cloudflare Pages deployment headers.
+# Keep every public URL usable by direct link, while asking search engines not to index it.
 /*
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=()
+
+# Immutable cache for hashed static release assets. HTML and runtime config stay uncached by default.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+/libs/*
+  Cache-Control: public, max-age=31536000, immutable

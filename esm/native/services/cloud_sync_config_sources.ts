@@ -81,7 +81,7 @@ export function readCfg(App: AppContainer): SupabaseCfg {
   const privateRoom = asString(rec?.privateRoom) || '';
   const roomParam = asString(rec?.roomParam) || 'room';
   const pollMs = asNumber(rec?.pollMs) ?? 2000;
-  const shareBaseUrl = asString(rec?.shareBaseUrl) || 'https://bargig218.netlify.app/';
+  const shareBaseUrl = asString(rec?.shareBaseUrl) || 'https://pro218.bargig-furniture.com/';
   const realtime = asBool(rec?.realtime) ?? true;
   const realtimeMode = normalizeRealtimeMode(rec?.realtimeMode);
   const realtimeChannelPrefix = asString(rec?.realtimeChannelPrefix) || 'wp_cloud_sync';

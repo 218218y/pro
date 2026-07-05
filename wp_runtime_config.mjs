@@ -60,7 +60,7 @@ export default {
       roomParam: 'room',
 
       // Base URL used when copying share links (customers should open Site2).
-      shareBaseUrl: 'https://bargig218.netlify.app/',
+      shareBaseUrl: 'https://pro218.bargig-furniture.com/',
 
       // Fallback polling interval (ms) when realtime is DISCONNECTED.
       // Aggressive fallback for near-immediate recovery when realtime drops. While realtime is connected there is NO periodic polling.

@@ -1,5 +1,5 @@
-# Site stays publicly reachable by link, but search engines that respect robots directives must not index it.
-# This complements the HTML robots meta tags and also covers non-HTML files such as PDFs/assets.
+# Legacy Netlify fallback only. Current production hosting is Cloudflare Pages.
+# Kept so any accidental legacy Netlify deployment also remains publicly reachable by link but non-indexable.
 
 [[headers]]
   for = "/*"

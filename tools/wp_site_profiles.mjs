@@ -190,7 +190,7 @@ export function normalizeSiteProfile({ root, profileDir, profile, requestedStore
       publicRoom: asString(supabase.publicRoom, 'public'),
       privateRoom: typeof supabase.privateRoom === 'string' ? supabase.privateRoom.trim() : '',
       roomParam: asString(supabase.roomParam, 'room'),
-      shareBaseUrl: asString(supabase.shareBaseUrl, 'https://bargig218.netlify.app/'),
+      shareBaseUrl: asString(supabase.shareBaseUrl, 'https://pro218.bargig-furniture.com/'),
       pollMs: Number.isFinite(Number(supabase.pollMs)) ? Number(supabase.pollMs) : 1500,
       diagnostics: asBoolean(supabase.diagnostics, false),
       realtime: asBoolean(supabase.realtime, true),

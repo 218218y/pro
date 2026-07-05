@@ -47,16 +47,15 @@ test('[seo-noindex] multi-store generated release templates inherit noindex', as
   }
 });
 
-test('[seo-noindex] deploy headers and robots.txt keep pages accessible but non-indexable', () => {
+test('[seo-noindex] Cloudflare Pages headers and robots.txt keep pages accessible but non-indexable', () => {
   const publicHeaders = read('public/_headers');
   assert.match(
     publicHeaders,
     /\/\*\s+X-Robots-Tag:\s*noindex, nofollow, noarchive, nosnippet, noimageindex/i
   );
-
-  const netlifyToml = read('netlify.toml');
-  assert.match(netlifyToml, /for\s*=\s*"\/\*"/);
-  assert.match(netlifyToml, /X-Robots-Tag\s*=\s*"noindex, nofollow, noarchive, nosnippet, noimageindex"/);
+  assert.match(publicHeaders, /X-Content-Type-Options:\s*nosniff/i);
+  assert.match(publicHeaders, /Referrer-Policy:\s*strict-origin-when-cross-origin/i);
+  assert.match(publicHeaders, /Permissions-Policy:/i);
 
   const robots = read('public/robots.txt');
   assert.match(robots, /User-agent:\s*\*/i);

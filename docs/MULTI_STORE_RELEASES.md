@@ -48,6 +48,21 @@ npm run release:release
 
 The new multi-store commands generate their own release copy of `wp_logo_data.js`, `order_template.pdf`, and `wp_runtime_config.mjs` from the selected profile. Those generated files live under `dist/...` and should not be edited manually.
 
+## Current Bargig production domains
+
+```text
+Main site:     https://pro.bargig-furniture.com/
+Customer site: https://pro218.bargig-furniture.com/
+```
+
+The Cloud Sync share/copy-link base URL for Bargig must point to the customer site:
+
+```text
+shareBaseUrl = https://pro218.bargig-furniture.com/
+```
+
+This value is defined in both the backward-compatible root runtime config (`wp_runtime_config.mjs`) and the multi-store Bargig profile (`sites/bargig/site.profile.mjs`).
+
 ## Profiles
 
 Current profiles:

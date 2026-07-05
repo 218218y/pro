@@ -155,7 +155,7 @@ test('[stageB] tools/meta/config/cloud surfaces use explicit typed boundaries', 
   assert.match(cloudSyncConfig, /type SupabaseImportMetaEnvLike = UnknownRecord & \{/);
   assert.match(
     cloudSyncConfig,
-    /const shareBaseUrl = asString\(rec\?\.shareBaseUrl\) \|\| 'https:\/\/bargig218\.netlify\.app\/'/
+    /const shareBaseUrl = asString\(rec\?\.shareBaseUrl\) \|\| 'https:\/\/pro218\.bargig-furniture\.com\/'/
   );
   assert.doesNotMatch(
     cloudSyncConfig,
