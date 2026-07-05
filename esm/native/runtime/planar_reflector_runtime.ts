@@ -141,7 +141,10 @@ function notifyPlanarReflectorCubeMode(App: unknown): void {
   if (!appRecord || notifiedPlanarCubeModeApps.has(appRecord)) return;
   notifiedPlanarCubeModeApps.add(appRecord);
   try {
-    getUiFeedback(App).toast('כל המראות הועברו למראה פשוטה (cube) כדי לשמור על ביצועים.', 'info');
+    getUiFeedback(App).toast(
+      'כל המראות הועברו זמנית למראה פשוטה (cube) כדי לשמור על ביצועים. כשהכמות תרד מתחת למגבלה, הן יחזרו למראה ממשית.',
+      'info'
+    );
   } catch {
     // User feedback is best-effort; the render path is already safe.
   }
@@ -226,6 +229,46 @@ function countInstalledPlanarReflectors(App: unknown): number {
     if (isPlanarMirrorSurface(mirror)) count += 1;
   }
   return count;
+}
+
+function countTrackedMirrorSurfaces(App: unknown): number {
+  const mirrors = ensureRenderMetaArray<UnknownRecord>(App, 'mirrors');
+  let count = 0;
+  const seen = new Set<UnknownRecord>();
+  for (let i = 0; i < mirrors.length; i += 1) {
+    const mirror = readRecord(mirrors[i]);
+    if (!mirror || seen.has(mirror)) continue;
+    seen.add(mirror);
+    if (isTaggedMirrorSurface(mirror)) count += 1;
+  }
+  return count;
+}
+
+function resolveMaxPlanarReflectors(App: unknown): number {
+  return Math.max(
+    1,
+    Math.floor(readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_MAX_COUNT', DEFAULT_REFLECTOR_MAX_COUNT))
+  );
+}
+
+function disablePlanarReflectorCubeMode(App: unknown, opts?: { markDirty?: boolean | null }): boolean {
+  if (!isPlanarReflectorCubeMode(App)) return false;
+  setRenderSlot(App, PLANAR_CUBE_MODE_RENDER_SLOT, false);
+  const appRecord = readRecord(App);
+  if (appRecord) notifiedPlanarCubeModeApps.delete(appRecord);
+  if (opts?.markDirty !== false) {
+    setRenderSlot(App, '__mirrorDirty', true);
+    setRenderSlot(App, '__mirrorWorkPending', true);
+    setRenderSlot(App, '__mirrorPlanarBatchPending', false);
+    setRenderSlot(App, '__mirrorPlanarCursorIndex', 0);
+  }
+  return true;
+}
+
+function recoverPlanarReflectorCubeModeIfAffordable(App: unknown, maxReflectors: number): boolean {
+  if (!isPlanarReflectorCubeMode(App)) return false;
+  if (countTrackedMirrorSurfaces(App) >= maxReflectors) return false;
+  return disablePlanarReflectorCubeMode(App, { markDirty: false });
 }
 
 function requiredReflectorConstructorsAvailable(THREE: ThreeLike): boolean {
@@ -947,6 +990,8 @@ export function installPlanarMirrorReflector(
 ): boolean {
   if (!mirrorMesh || opts?.sketchMode === true) return false;
   if (!readConfigBoolFromApp(App, 'MIRROR_REFLECTOR_ENABLED', true)) return false;
+  const maxReflectors = resolveMaxPlanarReflectors(App);
+  recoverPlanarReflectorCubeModeIfAffordable(App, maxReflectors);
   if (isPlanarReflectorCubeMode(App)) return false;
   if (!requiredReflectorConstructorsAvailable(THREE)) return false;
 
@@ -954,10 +999,6 @@ export function installPlanarMirrorReflector(
   mirrorMesh.userData = userData;
   if (readPlanarReflectorState(mirrorMesh)) return true;
 
-  const maxReflectors = Math.max(
-    1,
-    Math.floor(readConfigNumberLooseFromApp(App, 'MIRROR_REFLECTOR_MAX_COUNT', DEFAULT_REFLECTOR_MAX_COUNT))
-  );
   const installedPlanarCount = countInstalledPlanarReflectors(App);
   if (installedPlanarCount >= maxReflectors) {
     enablePlanarReflectorCubeMode(App, { notify: true });
