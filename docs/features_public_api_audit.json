@@ -1546,7 +1546,7 @@
     },
     {
       "file": "esm/native/services/canvas_picking_special_paint_targets.ts",
-      "entry": "hex_cell/index.js"
+      "entry": "part_identity/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_split_hover_preview_line.ts",

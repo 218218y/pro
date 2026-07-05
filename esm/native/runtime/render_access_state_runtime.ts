@@ -337,7 +337,7 @@ export function refreshTrackedMirrorSurfacesNow(App: unknown): MirrorRefreshNowR
     if (planarStats.planarCount > 0) {
       const planarResult = refreshTrackedPlanarMirrorSurfacesNow(App);
       if (planarResult.refreshed) result.refreshed = true;
-      if (planarStats.fallbackCount <= 0 && planarStats.mirrorCount > 0) {
+      if (planarStats.cubeCount <= 0 && planarStats.mirrorCount > 0) {
         writeMirrorPresenceState(renderBag, true, nowMs);
         return result;
       }

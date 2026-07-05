@@ -409,7 +409,7 @@ test('render loop mirror driver refreshes cube fallback surfaces while realistic
   assert.equal(slots.__mirrorDirty, false);
 });
 
-test('render loop mirror driver syncs only cube fallback material in mixed planar and fallback realistic mirrors', () => {
+test('render loop mirror driver switches mixed realistic mirrors to one cube path together', () => {
   const planarMaterial = { envMap: null as unknown, needsUpdate: false };
   const fallbackMaterial = { envMap: null as unknown, needsUpdate: false };
   const planarMirror = {
@@ -459,8 +459,10 @@ test('render loop mirror driver syncs only cube fallback material in mixed plana
 
   assert.equal(fallbackMaterial.envMap, texture);
   assert.equal(fallbackMaterial.needsUpdate, true);
-  assert.equal(planarMaterial.envMap, null);
-  assert.equal(planarMaterial.needsUpdate, false);
+  assert.equal(planarMaterial.envMap, texture);
+  assert.equal(planarMaterial.needsUpdate, true);
+  assert.equal((planarMirror.userData as AnyRecord).__wpPlanarReflector, undefined);
+  assert.equal((app.render as AnyRecord).__mirrorPlanarCubeMode, true);
   assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 1);
   assert.equal(planarMirror.visible, true);
   assert.equal(fallbackMirror.visible, true);

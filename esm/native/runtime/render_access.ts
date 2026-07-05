@@ -81,6 +81,7 @@ export {
 
 export {
   installPlanarMirrorReflector,
+  enablePlanarReflectorCubeMode,
   isPlanarMirrorSurface,
   readTrackedPlanarMirrorStats,
   refreshTrackedPlanarMirrorSurfacesNow,

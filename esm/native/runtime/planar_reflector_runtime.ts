@@ -1,7 +1,14 @@
 import type { Object3DLike, ThreeLike, UnknownRecord } from '../../../types/index.js';
 
 import { readConfigBoolFromApp, readConfigNumberLooseFromApp } from './config_selectors.js';
-import { getCamera, getDoorsArray, getRenderer, getScene } from './render_access_surface.js';
+import {
+  getCamera,
+  getDoorsArray,
+  getRenderer,
+  getScene,
+  getRenderSlot,
+  setRenderSlot,
+} from './render_access_surface.js';
 import { getUiFeedback } from './service_access.js';
 import { ensureRenderMetaArray } from './render_access_state_bags.js';
 
@@ -89,6 +96,7 @@ type PlanarReflectorState = UnknownRecord & {
   virtualCamera: UnknownRecord;
   textureMatrix: UnknownRecord;
   material: UnknownRecord;
+  originalMaterial?: unknown;
   faceSign: number;
   normalSign: number;
   clipBias: number;
@@ -110,7 +118,7 @@ export type PlanarMirrorRefreshResult = {
   refreshed: boolean;
   mirrorCount: number;
   planarCount: number;
-  fallbackCount: number;
+  cubeCount: number;
   refreshedCount: number;
   deferredCount: number;
   nextIndex: number;
@@ -125,16 +133,17 @@ export type PlanarMirrorRefreshOptions = {
   now?: (() => number) | null;
 };
 
-const notifiedPlanarFallbackApps = new WeakSet<object>();
+const PLANAR_CUBE_MODE_RENDER_SLOT = '__mirrorPlanarCubeMode';
+const notifiedPlanarCubeModeApps = new WeakSet<object>();
 
-function notifyPlanarReflectorFallbackToCube(App: unknown): void {
+function notifyPlanarReflectorCubeMode(App: unknown): void {
   const appRecord = readRecord(App);
-  if (!appRecord || notifiedPlanarFallbackApps.has(appRecord)) return;
-  notifiedPlanarFallbackApps.add(appRecord);
+  if (!appRecord || notifiedPlanarCubeModeApps.has(appRecord)) return;
+  notifiedPlanarCubeModeApps.add(appRecord);
   try {
-    getUiFeedback(App).toast('חלק מהמראות הועברו למראה פשוטה כדי לשמור על ביצועים.', 'info');
+    getUiFeedback(App).toast('כל המראות הועברו למראה פשוטה (cube) כדי לשמור על ביצועים.', 'info');
   } catch {
-    // Feedback is best-effort; the cube fallback itself is handled by the render loop.
+    // User feedback is best-effort; the render path is already safe.
   }
 }
 
@@ -801,6 +810,7 @@ function makeBoxReflectorSurfacePlane(args: {
   THREE: ThreeLike;
   mirror: Object3DLike;
   material: UnknownRecord;
+  originalMaterial?: unknown;
   faceSign: number;
 }): UnknownRecord | null {
   const { App, THREE, mirror, material, faceSign } = args;
@@ -863,12 +873,67 @@ function installReflectorSurfaceMaterial(args: {
   THREE: ThreeLike;
   mirror: Object3DLike;
   material: UnknownRecord;
+  originalMaterial?: unknown;
   faceSign: number;
 }): { surfaceObject: UnknownRecord; normalSign: number } | null {
   const surfacePlane = makeBoxReflectorSurfacePlane(args);
   if (surfacePlane) return { surfaceObject: surfacePlane, normalSign: 1 };
   if (!writeMirrorMaterial(args.mirror, args.material, args.faceSign)) return null;
   return { surfaceObject: args.mirror, normalSign: args.faceSign < 0 ? -1 : 1 };
+}
+
+function isPlanarReflectorCubeMode(App: unknown): boolean {
+  return getRenderSlot<boolean>(App, PLANAR_CUBE_MODE_RENDER_SLOT) === true;
+}
+
+function callDispose(value: unknown): void {
+  const record = readRecord(value);
+  const dispose = readFn<() => unknown>(record, 'dispose');
+  if (dispose) call0(record, dispose);
+}
+
+function detachReflectorSurface(mirror: UnknownRecord, surface: UnknownRecord): void {
+  if (surface === mirror) return;
+  const parent = readRecord(surface.parent) || mirror;
+  const remove = readFn<(object: unknown) => unknown>(parent, 'remove');
+  if (remove) call1(parent, remove, surface);
+}
+
+function restoreCubeMirrorMaterial(mirror: UnknownRecord, state: PlanarReflectorState): void {
+  const userData = readRecord(mirror.userData);
+  const surface = readRecord(state.surfaceObject);
+  if (surface) detachReflectorSurface(mirror, surface);
+  if (Object.prototype.hasOwnProperty.call(state, 'originalMaterial')) {
+    try {
+      Reflect.set(mirror, 'material', state.originalMaterial);
+    } catch {
+      // The cube updater can still refresh any material already present on the mirror mesh.
+    }
+  }
+  if (userData) delete userData.__wpPlanarReflector;
+  callDispose(state.renderTarget);
+  callDispose(state.material);
+  callDispose(readRecord(surface?.geometry));
+}
+
+export function enablePlanarReflectorCubeMode(App: unknown, opts?: { notify?: boolean | null }): boolean {
+  setRenderSlot(App, PLANAR_CUBE_MODE_RENDER_SLOT, true);
+  const mirrors = ensureRenderMetaArray<UnknownRecord>(App, 'mirrors');
+  let changed = false;
+  const seen = new Set<UnknownRecord>();
+  for (let i = 0; i < mirrors.length; i += 1) {
+    const mirror = readRecord(mirrors[i]);
+    if (!mirror || seen.has(mirror)) continue;
+    seen.add(mirror);
+    const state = readPlanarReflectorState(mirror);
+    if (!state) continue;
+    restoreCubeMirrorMaterial(mirror, state);
+    changed = true;
+  }
+  setRenderSlot(App, '__mirrorDirty', true);
+  setRenderSlot(App, '__mirrorWorkPending', true);
+  if (opts?.notify === true) notifyPlanarReflectorCubeMode(App);
+  return changed;
 }
 
 export function installPlanarMirrorReflector(
@@ -882,6 +947,7 @@ export function installPlanarMirrorReflector(
 ): boolean {
   if (!mirrorMesh || opts?.sketchMode === true) return false;
   if (!readConfigBoolFromApp(App, 'MIRROR_REFLECTOR_ENABLED', true)) return false;
+  if (isPlanarReflectorCubeMode(App)) return false;
   if (!requiredReflectorConstructorsAvailable(THREE)) return false;
 
   const userData = readRecord(mirrorMesh.userData) || {};
@@ -894,10 +960,11 @@ export function installPlanarMirrorReflector(
   );
   const installedPlanarCount = countInstalledPlanarReflectors(App);
   if (installedPlanarCount >= maxReflectors) {
-    notifyPlanarReflectorFallbackToCube(App);
+    enablePlanarReflectorCubeMode(App, { notify: true });
     return false;
   }
 
+  const originalMaterial = Reflect.get(mirrorMesh, 'material');
   const target = makeReflectorRenderTarget(App, THREE, mirrorMesh, installedPlanarCount);
   if (!target) return false;
 
@@ -913,6 +980,7 @@ export function installPlanarMirrorReflector(
     THREE,
     mirror: mirrorMesh,
     material,
+    originalMaterial,
     faceSign,
   });
   if (!surfaceInstall) return false;
@@ -947,6 +1015,7 @@ export function installPlanarMirrorReflector(
     virtualCamera,
     textureMatrix,
     material,
+    originalMaterial,
     faceSign,
     normalSign: surfaceInstall.normalSign,
     clipBias: clampNumber(
@@ -1169,12 +1238,12 @@ function renderPlanarMirrorSurface(args: {
 export function readTrackedPlanarMirrorStats(App: unknown): {
   mirrorCount: number;
   planarCount: number;
-  fallbackCount: number;
+  cubeCount: number;
 } {
   const mirrors = ensureRenderMetaArray<UnknownRecord>(App, 'mirrors');
   let mirrorCount = 0;
   let planarCount = 0;
-  let fallbackCount = 0;
+  let cubeCount = 0;
   const seen = new Set<UnknownRecord>();
   for (let i = 0; i < mirrors.length; i += 1) {
     const mirror = readRecord(mirrors[i]);
@@ -1183,9 +1252,9 @@ export function readTrackedPlanarMirrorStats(App: unknown): {
     if (!isTaggedMirrorSurface(mirror)) continue;
     mirrorCount += 1;
     if (readPlanarReflectorState(mirror)) planarCount += 1;
-    else fallbackCount += 1;
+    else cubeCount += 1;
   }
-  return { mirrorCount, planarCount, fallbackCount };
+  return { mirrorCount, planarCount, cubeCount };
 }
 
 function normalizeRefreshStartIndex(startIndex: unknown, length: number): number {
@@ -1218,7 +1287,7 @@ export function refreshTrackedPlanarMirrorSurfacesNow(
     refreshed: false,
     mirrorCount: 0,
     planarCount: 0,
-    fallbackCount: 0,
+    cubeCount: 0,
     refreshedCount: 0,
     deferredCount: 0,
     nextIndex: 0,
@@ -1238,7 +1307,7 @@ export function refreshTrackedPlanarMirrorSurfacesNow(
   const stats = readTrackedPlanarMirrorStats(App);
   result.mirrorCount = stats.mirrorCount;
   result.planarCount = stats.planarCount;
-  result.fallbackCount = stats.fallbackCount;
+  result.cubeCount = stats.cubeCount;
   if (!result.planarCount || !mirrors.length) {
     result.skippedReason = 'no-planar-reflector-surfaces';
     return result;
