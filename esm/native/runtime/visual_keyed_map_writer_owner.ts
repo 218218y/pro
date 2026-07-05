@@ -1,7 +1,7 @@
 import type { ActionMetaLike, MapsByName, UnknownRecord } from '../../../types';
 
+import { commitConfigMapOwnerPatchWithReplaceKeys } from './cfg_access_map_owner.js';
 import { cfgMapRecord, readMapRecord } from './cfg_access_shared.js';
-import { applyConfigPatchReplaceKeysFromMapOwner } from './cfg_access_scalars.js';
 import { normalizeKnownMapSnapshot } from './maps_access_normalizers.js';
 import type { VisualKeyedMapName } from './visual_keyed_map_names.js';
 import {
@@ -48,7 +48,7 @@ function setCfgMapFromVisualKeyedOwner(
   const next = readMapRecord(nextMap);
   if (!name) return next;
 
-  applyConfigPatchReplaceKeysFromMapOwner(App, { [name]: next }, { [name]: true }, meta);
+  commitConfigMapOwnerPatchWithReplaceKeys(App, { [name]: next }, { [name]: true }, meta);
   return next;
 }
 

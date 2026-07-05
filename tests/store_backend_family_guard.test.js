@@ -13,6 +13,7 @@ const patchApply = read('../esm/native/platform/store_patch_apply.ts');
 const subscriptions = read('../esm/native/platform/store_subscriptions.ts');
 const capability = read('../esm/native/runtime/store_config_map_write_capability.ts');
 const cfgAccessCore = read('../esm/native/runtime/cfg_access_core.ts');
+const cfgAccessMapOwner = read('../esm/native/runtime/cfg_access_map_owner.ts');
 const stateApiInstallSupport = read('../esm/native/kernel/state_api_install_support.ts');
 const kernelInstallSupport = read('../esm/native/kernel/kernel_install_support.ts');
 const cellDimsLinearApply = read('../esm/native/services/canvas_picking_cell_dims_linear_apply.ts');
@@ -78,7 +79,10 @@ test('store backend known config map writes require owner capability, not meta s
   assert.match(commitPipeline, /assertStoreConfigMapWriteAllowed\(pld\.config, configApiName, opts2\)/);
   assert.match(patchApply, /assertStoreConfigMapWriteAllowed\(configPatch, 'applyStoreConfigPatch', opts\)/);
 
-  assert.match(cfgAccessCore, /withStoreConfigMapWriteCapability/);
+  assert.doesNotMatch(cfgAccessCore, /withStoreConfigMapWriteCapability/);
+  assert.match(cfgAccessMapOwner, /withStoreConfigMapWriteCapability/);
+  assert.match(cfgAccessMapOwner, /export function commitConfigMapOwnerPatch\(/);
+  assert.match(cfgAccessMapOwner, /export function commitConfigMapOwnerPatchWithReplaceKeys\(/);
   assert.match(stateApiInstallSupport, /withStoreConfigMapWriteCapability/);
   assert.match(kernelInstallSupport, /withStoreConfigMapWriteCapability/);
 });

@@ -8,8 +8,10 @@ import {
   cfgRead,
   cfgSetScalar,
 } from '../esm/native/runtime/cfg_access.ts';
-import { applyConfigPatchFromMapOwner } from '../esm/native/runtime/cfg_access_core.ts';
-import { applyConfigPatchReplaceKeysFromMapOwner } from '../esm/native/runtime/cfg_access_scalars.ts';
+import {
+  commitConfigMapOwnerPatch,
+  commitConfigMapOwnerPatchWithReplaceKeys,
+} from '../esm/native/runtime/cfg_access_map_owner.ts';
 import { cfgSetMap, patchConfigMap } from '../esm/native/runtime/cfg_access_maps.ts';
 
 type AnyRecord = Record<string, unknown>;
@@ -178,13 +180,13 @@ test('[cfg_access] generic replace-key config patch rejects known maps while map
     /applyConfigNonMapPatchWithReplaceKeys cannot write known config map replace keys \(handlesMap\)/
   );
 
-  const ownerPatch = applyConfigPatchFromMapOwner(App, { handlesMap: { d1_full: 'rail' } }, {
+  const ownerPatch = commitConfigMapOwnerPatch(App, { handlesMap: { d1_full: 'rail' } }, {
     source: 't:map-owner',
   } as any);
   assert.deepEqual(ownerPatch, { handlesMap: { d1_full: 'rail' } });
   assert.deepEqual(cfgRead(App, 'handlesMap', null), { d1_full: 'rail' });
 
-  const ownerReplacePatch = applyConfigPatchReplaceKeysFromMapOwner(
+  const ownerReplacePatch = commitConfigMapOwnerPatchWithReplaceKeys(
     App,
     { handlesMap: { d2_full: 'knob' } },
     { handlesMap: true },

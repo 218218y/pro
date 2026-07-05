@@ -2,8 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installStateApi } from '../esm/native/kernel/state_api.ts';
-import { applyConfigPatchFromMapOwner } from '../esm/native/runtime/cfg_access_core.ts';
-import { applyConfigPatchReplaceKeysFromMapOwner } from '../esm/native/runtime/cfg_access_scalars.ts';
+import {
+  commitConfigMapOwnerPatch,
+  commitConfigMapOwnerPatchWithReplaceKeys,
+} from '../esm/native/runtime/cfg_access_map_owner.ts';
 import { getKnownMapNames, isKnownMapName } from '../esm/native/runtime/maps_access_normalizers.ts';
 import { AnyRecord, asRec, createStore } from './store_zustand_parity_helpers.ts';
 
@@ -143,10 +145,10 @@ test('[store-runtime-config-map-capability] owner and snapshot paths can commit 
   });
   const App: AnyRecord = { actions: {}, store };
 
-  applyConfigPatchFromMapOwner(App, { handlesMap: { d1_full: 'rail' } }, { source: 'test:map-owner' });
+  commitConfigMapOwnerPatch(App, { handlesMap: { d1_full: 'rail' } }, { source: 'test:map-owner' });
   assert.deepEqual(cloneRecord(asRec(store.getState().config).handlesMap), { d1_full: 'rail' });
 
-  applyConfigPatchReplaceKeysFromMapOwner(
+  commitConfigMapOwnerPatchWithReplaceKeys(
     App,
     { handlesMap: { d2_full: 'knob' } },
     { handlesMap: true },

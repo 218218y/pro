@@ -1,7 +1,7 @@
 import type { ActionMetaLike, UnknownRecord } from '../../../types';
 
+import { commitConfigMapOwnerPatchWithReplaceKeys } from './cfg_access_map_owner.js';
 import { cfgMapRecord, readMapRecord } from './cfg_access_shared.js';
-import { applyConfigPatchReplaceKeysFromMapOwner } from './cfg_access_scalars.js';
 
 export const SIMPLE_WRITABLE_MAP_NAMES = [
   'handlesMap',
@@ -28,7 +28,7 @@ function setCfgSimpleWritableMapFromOwner(
   meta?: ActionMetaLike
 ): UnknownRecord {
   const next = readMapRecord(nextMap);
-  applyConfigPatchReplaceKeysFromMapOwner(App, { [mapName]: next }, { [mapName]: true }, meta);
+  commitConfigMapOwnerPatchWithReplaceKeys(App, { [mapName]: next }, { [mapName]: true }, meta);
   return next;
 }
 

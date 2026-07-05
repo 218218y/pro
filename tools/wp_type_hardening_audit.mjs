@@ -149,10 +149,17 @@ const storeConfigMapWriteCapabilityAllowPaths = new Set([
   'esm/native/kernel/state_api_install_support.ts',
   'esm/native/platform/store_commit_pipeline.ts',
   'esm/native/platform/store_patch_apply.ts',
-  'esm/native/runtime/cfg_access_core.ts',
+  'esm/native/runtime/cfg_access_map_owner.ts',
   'esm/native/runtime/slice_write_access_dispatch_targets.ts',
   'esm/native/runtime/slice_write_access_shared.ts',
   'esm/native/runtime/store_config_map_write_capability.ts',
+]);
+
+const configMapOwnerCommitHelperAllowPaths = new Set([
+  'esm/native/runtime/cfg_access_map_owner.ts',
+  'esm/native/runtime/cfg_access_maps.ts',
+  'esm/native/runtime/simple_writable_map_writer_owner.ts',
+  'esm/native/runtime/visual_keyed_map_writer_owner.ts',
 ]);
 
 const storeConfigPatchApplyBoundaryAllowPaths = new Set([
@@ -297,6 +304,58 @@ function collectStoreConfigPatchApplyBoundaryViolations() {
   for (const rel of [...storeConfigPatchApplyBoundaryAllowPaths].sort()) {
     if (!usedAllowPaths.has(rel)) {
       violations.push(`${rel}: applyStoreConfigPatch boundary allowlist entry is unused`);
+    }
+  }
+
+  return violations;
+}
+
+function collectConfigMapOwnerCommitHelperViolations() {
+  const violations = [];
+  const currentNamePattern = /\b(?:commitConfigMapOwnerPatch|commitConfigMapOwnerPatchWithReplaceKeys)\b/g;
+  const retiredNamePattern = /\b(?:applyConfigPatchFromMapOwner|applyConfigPatchReplaceKeysFromMapOwner)\b/g;
+  const usedAllowPaths = new Set();
+  const ownerModuleRel = 'esm/native/runtime/cfg_access_map_owner.ts';
+  const scalarModuleRel = 'esm/native/runtime/cfg_access_scalars.ts';
+  const ownerModuleSource = fs.readFileSync(path.join(root, ownerModuleRel), 'utf8');
+  const scalarModuleSource = fs.readFileSync(path.join(root, scalarModuleRel), 'utf8');
+
+  if (!/\bexport function commitConfigMapOwnerPatch\(/.test(ownerModuleSource)) {
+    violations.push(`${ownerModuleRel}: missing config map owner patch commit helper`);
+  }
+  if (!/\bexport function commitConfigMapOwnerPatchWithReplaceKeys\(/.test(ownerModuleSource)) {
+    violations.push(`${ownerModuleRel}: missing config map owner replace-key commit helper`);
+  }
+  if (/\bcommitConfigMapOwnerPatch\b/.test(scalarModuleSource)) {
+    violations.push(`${scalarModuleRel}: config map owner commit helpers belong in cfg_access_map_owner.ts`);
+  }
+
+  for (const abs of walk(path.join(root, 'esm'))) {
+    const rel = path.relative(root, abs).replace(/\\/g, '/');
+    const source = fs.readFileSync(abs, 'utf8');
+
+    retiredNamePattern.lastIndex = 0;
+    const retiredMatches = [...source.matchAll(retiredNamePattern)];
+    if (retiredMatches.length) {
+      violations.push(`${rel}: retired generic map-owner helper name remains (${retiredMatches.length})`);
+    }
+
+    currentNamePattern.lastIndex = 0;
+    const currentMatches = [...source.matchAll(currentNamePattern)];
+    if (configMapOwnerCommitHelperAllowPaths.has(rel)) {
+      if (currentMatches.length) usedAllowPaths.add(rel);
+      continue;
+    }
+    if (currentMatches.length) {
+      violations.push(
+        `${rel}: config map owner commit helper used outside owner allowlist (${currentMatches.length})`
+      );
+    }
+  }
+
+  for (const rel of [...configMapOwnerCommitHelperAllowPaths].sort()) {
+    if (!usedAllowPaths.has(rel)) {
+      violations.push(`${rel}: config map owner commit helper allowlist entry is unused`);
     }
   }
 
@@ -487,6 +546,7 @@ violations.push(...collectStoreConfigMapWriteCapabilityExportViolations());
 violations.push(...collectStoreConfigMapWriteCapabilityViolations());
 violations.push(...collectStoreConfigPatchApplyNameViolations());
 violations.push(...collectStoreConfigPatchApplyBoundaryViolations());
+violations.push(...collectConfigMapOwnerCommitHelperViolations());
 violations.push(...collectRawStoreBoundaryDocViolations());
 violations.push(...collectPublicTypeBarrelViolations());
 violations.push(...collectPublicTypeBackendImportViolations());

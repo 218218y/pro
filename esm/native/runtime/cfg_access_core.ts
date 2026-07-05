@@ -8,7 +8,6 @@ import type {
 import type { ConfigSlicePatch } from '../../../types/backend_patch_payload';
 import { hasSliceWriterSeam, patchSliceCanonical } from './slice_write_access.js';
 import { isKnownMapName } from './maps_access_normalizers.js';
-import { withStoreConfigMapWriteCapability } from './store_config_map_write_capability.js';
 import {
   asRecord,
   getHistoryNamespace,
@@ -31,12 +30,6 @@ const CONFIG_PATCH_WRITE_OPTS = {
   storeWriter: 'setConfig',
   allowRootStorePatch: false,
 } as const;
-const CONFIG_MAP_OWNER_PATCH_WRITE_OPTS = withStoreConfigMapWriteCapability({
-  storeWriter: 'setConfig',
-  allowRootStorePatch: false,
-  preferStoreWriter: true,
-  skipNamespacePatch: true,
-} as const);
 
 export function cfgGet(App: unknown): ConfigSnapshotLike {
   const store = getStore(App, 'cfgGet');
@@ -103,24 +96,6 @@ export function applyConfigNonMapPatch(App: unknown, patchObj: unknown, meta?: A
   throw new Error(
     '[WardrobePro][cfg_access] Missing config writer: expected config.patch action or store.setConfig.'
   );
-}
-
-export function applyConfigPatchFromMapOwner(
-  App: unknown,
-  patchObj: unknown,
-  meta?: ActionMetaLike
-): unknown {
-  const patch = asRecord(patchObj) || {};
-  if (!Object.keys(patch).length) return patch;
-  const resolvedMeta = normMeta(App, meta, { source: 'config:mapOwner' });
-
-  if (hasSliceWriterSeam(App, 'config', CONFIG_MAP_OWNER_PATCH_WRITE_OPTS)) {
-    const out = patchSliceCanonical(App, 'config', patch, resolvedMeta, CONFIG_MAP_OWNER_PATCH_WRITE_OPTS);
-    return out === undefined ? patch : out;
-  }
-
-  getStore(App, 'applyConfigPatchFromMapOwner');
-  throw new Error('[WardrobePro][cfg_access] Missing config map owner writer: expected store.setConfig.');
 }
 
 export function cfgPatchWithReplaceKeys(patchObj: unknown, replaceKeys: unknown): ConfigSlicePatch {

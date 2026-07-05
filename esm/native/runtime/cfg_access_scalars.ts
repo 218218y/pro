@@ -14,7 +14,6 @@ import {
 } from './cfg_access_shared.js';
 import {
   applyConfigNonMapPatch,
-  applyConfigPatchFromMapOwner,
   assertNoGenericKnownConfigMapPatch,
   cfgGet,
   cfgPatchWithReplaceKeys,
@@ -31,18 +30,6 @@ export function applyConfigNonMapPatchWithReplaceKeys(
   const patch = cfgPatchWithReplaceKeys(base, replaceKeys);
   assertNoGenericKnownConfigMapPatch(patch, 'applyConfigNonMapPatchWithReplaceKeys');
   void applyConfigNonMapPatch(App, patch, meta);
-  return patch;
-}
-
-export function applyConfigPatchReplaceKeysFromMapOwner(
-  App: unknown,
-  patchObj: unknown,
-  replaceKeys: unknown,
-  meta?: ActionMetaLike
-) {
-  const base = asRecord(patchObj) || {};
-  const patch = cfgPatchWithReplaceKeys(base, replaceKeys);
-  void applyConfigPatchFromMapOwner(App, patch, meta);
   return patch;
 }
 

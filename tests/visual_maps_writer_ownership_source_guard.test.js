@@ -21,6 +21,7 @@ const VISUAL_KEYED_MAPS = [
 
 const VISUAL_KEYED_OWNER_MODULE = 'esm/native/runtime/visual_keyed_map_writer_owner.ts';
 const SIMPLE_WRITABLE_OWNER_MODULE = 'esm/native/runtime/simple_writable_map_writer_owner.ts';
+const CONFIG_MAP_OWNER_COMMIT_MODULE = 'esm/native/runtime/cfg_access_map_owner.ts';
 
 const DIRECT_WRITE_OWNER_FILES = new Set([VISUAL_KEYED_OWNER_MODULE]);
 
@@ -699,6 +700,8 @@ test('domain api visual writes are blocked from generic helpers and routed throu
 test('simple map writes use semantic writers and generic public map writers stay retired', () => {
   const simpleOwner = readSourceFile(SIMPLE_WRITABLE_OWNER_MODULE);
   const visualOwner = readSourceFile(VISUAL_KEYED_OWNER_MODULE);
+  const mapOwnerCommit = readSourceFile(CONFIG_MAP_OWNER_COMMIT_MODULE);
+  const cfgAccessScalars = readSourceFile('esm/native/runtime/cfg_access_scalars.ts');
   const mapsWriters = readSourceFile('esm/native/runtime/maps_access_writers.ts');
   const mapsAccessFacade = readSourceFile('esm/native/runtime/maps_access.ts');
   const cfgAccessMaps = readSourceFile('esm/native/runtime/cfg_access_maps.ts');
@@ -715,9 +718,17 @@ test('simple map writes use semantic writers and generic public map writers stay
   assert.match(simpleOwner, /export function patchSimpleWritableMapEntryFromOwner\(/);
   assert.match(simpleOwner, /export function replaceSimpleWritableMapFromOwner\(/);
   assert.match(simpleOwner, /export function toggleSimpleWritableBooleanMapEntryFromOwner\(/);
-  assert.match(simpleOwner, /applyConfigPatchReplaceKeysFromMapOwner/);
-  assert.match(visualOwner, /applyConfigPatchReplaceKeysFromMapOwner/);
-  assert.match(cfgAccessMaps, /applyConfigPatchReplaceKeysFromMapOwner/);
+  assert.match(mapOwnerCommit, /export function commitConfigMapOwnerPatch\(/);
+  assert.match(mapOwnerCommit, /export function commitConfigMapOwnerPatchWithReplaceKeys\(/);
+  assert.match(simpleOwner, /commitConfigMapOwnerPatchWithReplaceKeys/);
+  assert.match(visualOwner, /commitConfigMapOwnerPatchWithReplaceKeys/);
+  assert.match(cfgAccessMaps, /commitConfigMapOwnerPatchWithReplaceKeys/);
+  assert.doesNotMatch(cfgAccessScalars, /commitConfigMapOwnerPatch/);
+  assert.doesNotMatch(cfgAccessScalars, /applyConfigPatchFromMapOwner/);
+  assert.doesNotMatch(cfgAccessScalars, /applyConfigPatchReplaceKeysFromMapOwner/);
+  assert.doesNotMatch(simpleOwner, /applyConfigPatchReplaceKeysFromMapOwner/);
+  assert.doesNotMatch(visualOwner, /applyConfigPatchReplaceKeysFromMapOwner/);
+  assert.doesNotMatch(cfgAccessMaps, /applyConfigPatchReplaceKeysFromMapOwner/);
   assert.doesNotMatch(simpleOwner, /\bapplyConfigPatchReplaceKeys\(/);
   assert.doesNotMatch(visualOwner, /\bapplyConfigPatchReplaceKeys\(/);
   assert.doesNotMatch(cfgAccessMaps, /\bapplyConfigPatchReplaceKeys\(/);
