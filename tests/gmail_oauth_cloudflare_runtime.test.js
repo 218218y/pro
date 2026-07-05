@@ -56,17 +56,24 @@ test('[gmail-oauth-cloudflare] Gmail export does not open a placeholder tab befo
   assert.ok(draftOpenPos > pdfBuildPos, 'Gmail window should open only after PDF bytes are ready');
 });
 
-test('[gmail-oauth-cloudflare] Gmail draft is opened only from the final draft URL in a bounded popup', () => {
+test('[gmail-oauth-cloudflare] Gmail draft opens as a regular browser tab, not a popup window', () => {
   const gmailOps = read('esm/native/ui/react/pdf/order_pdf_overlay_gmail_ops.ts');
-  assert.match(gmailOps, /function resolvePopupFeatures/);
-  assert.match(gmailOps, /popup=yes/);
-  assert.match(gmailOps, /width=\$\{width\}/);
-  assert.match(gmailOps, /height=\$\{height\}/);
-  assert.match(gmailOps, /winMaybe\.open\(url, 'wpGmailDraft', resolvePopupFeatures\(winMaybe\)\)/);
+  assert.match(gmailOps, /function openGmailDraftBrowserTab/);
+  assert.match(gmailOps, /winMaybe\.open\(url, '_blank'\)/);
+
+  assert.equal(gmailOps.includes('function resolvePopupFeatures'), false);
+  assert.equal(gmailOps.includes('popup=yes'), false);
+  assert.equal(gmailOps.includes('width=${width}'), false);
+  assert.equal(gmailOps.includes('height=${height}'), false);
+  assert.equal(gmailOps.includes("winMaybe.open(url, 'wpGmailDraft'"), false);
 });
 
-test('[gmail-oauth-cloudflare] Cloudflare headers allow OAuth popups on the custom domain', () => {
+test('[gmail-oauth-cloudflare] Cloudflare headers allow OAuth popups and opt out of ad privacy sandbox APIs', () => {
   const headers = read('public/_headers');
   assert.match(headers, /Referrer-Policy:\s*strict-origin-when-cross-origin/i);
   assert.match(headers, /Cross-Origin-Opener-Policy:\s*same-origin-allow-popups/i);
+  assert.match(headers, /Permissions-Policy:[^\n]*join-ad-interest-group=\(\)/i);
+  assert.match(headers, /Permissions-Policy:[^\n]*run-ad-auction=\(\)/i);
+  assert.match(headers, /Permissions-Policy:[^\n]*shared-storage=\(\)/i);
+  assert.match(headers, /Permissions-Policy:[^\n]*shared-storage-select-url=\(\)/i);
 });

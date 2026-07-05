@@ -43,37 +43,7 @@ type OrderPdfOverlayGmailOpsDeps = {
   ) => boolean;
 };
 
-function resolvePopupFeatures(winMaybe: Window | null): string {
-  const width = 1120;
-  const height = 820;
-  let left = 80;
-  let top = 60;
-
-  try {
-    const screenX = typeof winMaybe?.screenX === 'number' ? winMaybe.screenX : 0;
-    const screenY = typeof winMaybe?.screenY === 'number' ? winMaybe.screenY : 0;
-    const outerWidth =
-      typeof winMaybe?.outerWidth === 'number' && winMaybe.outerWidth > 0 ? winMaybe.outerWidth : width;
-    const outerHeight =
-      typeof winMaybe?.outerHeight === 'number' && winMaybe.outerHeight > 0 ? winMaybe.outerHeight : height;
-    left = Math.max(0, Math.round(screenX + (outerWidth - width) / 2));
-    top = Math.max(0, Math.round(screenY + (outerHeight - height) / 2));
-  } catch {
-    // Best effort only. Browser may ignore popup sizing and use a tab.
-  }
-
-  return [
-    'popup=yes',
-    'resizable=yes',
-    'scrollbars=yes',
-    `width=${width}`,
-    `height=${height}`,
-    `left=${left}`,
-    `top=${top}`,
-  ].join(',');
-}
-
-function openGmailDraftWindow(args: {
+function openGmailDraftBrowserTab(args: {
   winMaybe: Window | null;
   draftId: string;
   draftUrl?: string | null;
@@ -83,16 +53,20 @@ function openGmailDraftWindow(args: {
 
   try {
     if (!winMaybe || typeof winMaybe.open !== 'function') return false;
-    const popup = winMaybe.open(url, 'wpGmailDraft', resolvePopupFeatures(winMaybe));
-    if (!popup) return false;
+
+    // Deliberately do not pass a third windowFeatures argument. In Chromium,
+    // sizing/legacy feature strings request a minimal popup-style window.
+    // A plain _blank open lets the browser use its normal tab UI.
+    const opened = winMaybe.open(url, '_blank');
+    if (!opened) return false;
 
     try {
-      popup.opener = null;
+      opened.opener = null;
     } catch {
-      // ignore
+      // Cross-origin WindowProxy implementations may reject opener writes.
     }
     try {
-      if (typeof popup.focus === 'function') popup.focus();
+      if (typeof opened.focus === 'function') opened.focus();
     } catch {
       // ignore
     }
@@ -145,7 +119,7 @@ async function createAndOpenGmailDraft(args: {
   });
 
   return {
-    opened: openGmailDraftWindow({
+    opened: openGmailDraftBrowserTab({
       winMaybe,
       draftId,
       draftUrl,
