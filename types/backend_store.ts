@@ -25,7 +25,7 @@ export interface BackendStoreLike<S = RootStateLike> extends PublicStoreLike<S>,
     opts?: DispatchOptionsLike
   ) => unknown;
 
-  /** Rare root replacement helper (primarily for tests/tooling). */
+  /** Rare backend root replacement helper. Snapshot/parity tooling only; not for UI/service/domain callers. */
   setRoot?: (nextRoot: unknown, meta?: ActionMetaLike | UnknownRecord, opts?: DispatchOptionsLike) => unknown;
 
   // Optional backend convenience methods (present in platform store builds).

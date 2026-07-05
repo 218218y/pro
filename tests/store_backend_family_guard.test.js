@@ -15,6 +15,9 @@ const capability = read('../esm/native/runtime/store_config_map_write_capability
 const cfgAccessCore = read('../esm/native/runtime/cfg_access_core.ts');
 const stateApiInstallSupport = read('../esm/native/kernel/state_api_install_support.ts');
 const kernelInstallSupport = read('../esm/native/kernel/kernel_install_support.ts');
+const publicStateTypes = read('../types/state.ts');
+const backendStoreTypes = read('../types/backend_store.ts');
+const typeHardeningAudit = read('../tools/wp_type_hardening_audit.mjs');
 
 test('store backend family stays split across owner/shared/commit/patch/subscription seams', () => {
   assert.match(owner, /from '\.\/store_shared\.js';/);
@@ -49,7 +52,8 @@ test('store backend family stays split across owner/shared/commit/patch/subscrip
 });
 
 test('store backend known config map writes require owner capability, not meta source', () => {
-  assert.match(capability, /export const STORE_CONFIG_MAP_WRITE_CAPABILITY = Symbol/);
+  assert.match(capability, /const STORE_CONFIG_MAP_WRITE_CAPABILITY = Symbol/);
+  assert.doesNotMatch(capability, /export\s+const\s+STORE_CONFIG_MAP_WRITE_CAPABILITY/);
   assert.match(capability, /isKnownMapName/);
   assert.match(capability, /hasStoreConfigMapWriteCapability\(opts\)/);
   assert.doesNotMatch(capability, /\bsource\b/);
@@ -60,4 +64,15 @@ test('store backend known config map writes require owner capability, not meta s
   assert.match(cfgAccessCore, /withStoreConfigMapWriteCapability/);
   assert.match(stateApiInstallSupport, /withStoreConfigMapWriteCapability/);
   assert.match(kernelInstallSupport, /withStoreConfigMapWriteCapability/);
+});
+
+test('store root replacement stays a backend snapshot boundary', () => {
+  assert.match(backendStoreTypes, /Snapshot\/parity tooling only; not for UI\/service\/domain callers\./);
+  assert.match(backendStoreTypes, /\bsetRoot\?:/);
+  assert.doesNotMatch(publicStateTypes, /\bsetRoot\b/);
+  assert.match(typeHardeningAudit, /setRoot\|replaceRoot/);
+  assert.match(
+    typeHardeningAudit,
+    /raw store\.patch\/store\.setConfig\/store\.setRoot\/store\.replaceRoot write outside backend boundary/
+  );
 });

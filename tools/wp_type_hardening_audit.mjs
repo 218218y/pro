@@ -206,7 +206,7 @@ function collectRawStoreBackendTypeBoundaryViolations() {
 function collectRawStoreWriteBoundaryViolations() {
   const violations = [];
   const rawStoreWritePattern =
-    /\b(?:App\.)?store\s*\.\s*(?:patch|setConfig)\s*\(|\bsetConfig\s*\(|\.setConfig\s*\(|(?:\.|\b)patch(?:\?\.)?\s*\(\s*\{\s*(?:config|ui|runtime|mode|meta)\s*:/g;
+    /\b(?:App\.)?store\s*\.\s*(?:patch|setConfig|setRoot|replaceRoot)\s*\(|\b(?:setConfig|setRoot|replaceRoot)\s*\(|\.(?:setConfig|setRoot|replaceRoot)\s*\(|(?:\.|\b)patch(?:\?\.)?\s*\(\s*\{\s*(?:config|ui|runtime|mode|meta)\s*:/g;
   for (const rootName of rawStoreWritePublicLayerRoots) {
     for (const abs of walk(path.join(root, rootName))) {
       const rel = path.relative(root, abs).replace(/\\/g, '/');
@@ -215,10 +215,23 @@ function collectRawStoreWriteBoundaryViolations() {
       const matches = [...source.matchAll(rawStoreWritePattern)];
       if (matches.length) {
         violations.push(
-          `${rel}: raw store.patch/store.setConfig write outside backend boundary (${matches.length})`
+          `${rel}: raw store.patch/store.setConfig/store.setRoot/store.replaceRoot write outside backend boundary (${matches.length})`
         );
       }
     }
+  }
+  return violations;
+}
+
+function collectStoreConfigMapWriteCapabilityExportViolations() {
+  const violations = [];
+  const rel = 'esm/native/runtime/store_config_map_write_capability.ts';
+  const source = fs.readFileSync(path.join(root, rel), 'utf8');
+  if (/export\s+const\s+STORE_CONFIG_MAP_WRITE_CAPABILITY\b/.test(source)) {
+    violations.push(`${rel}: raw store config map write capability symbol must stay module-private`);
+  }
+  if (!/const\s+STORE_CONFIG_MAP_WRITE_CAPABILITY\s*=\s*Symbol/.test(source)) {
+    violations.push(`${rel}: missing module-private store config map write capability symbol`);
   }
   return violations;
 }
@@ -290,6 +303,10 @@ function collectRawStoreBoundaryDocViolations() {
     {
       rel: 'types/backend_store.ts',
       pattern: /Backend-only convenience writer\. Not for UI\/service\/domain callers\./,
+    },
+    {
+      rel: 'types/backend_store.ts',
+      pattern: /Snapshot\/parity tooling only; not for UI\/service\/domain callers\./,
     },
   ];
   const violations = [];
@@ -399,6 +416,7 @@ violations.push(...collectTypeRuntimeStubViolations());
 violations.push(...collectRuntimeGeometryScalarUnionViolations());
 violations.push(...collectRawStoreBackendTypeBoundaryViolations());
 violations.push(...collectRawStoreWriteBoundaryViolations());
+violations.push(...collectStoreConfigMapWriteCapabilityExportViolations());
 violations.push(...collectStoreConfigMapWriteCapabilityViolations());
 violations.push(...collectRawStoreBoundaryDocViolations());
 violations.push(...collectPublicTypeBarrelViolations());

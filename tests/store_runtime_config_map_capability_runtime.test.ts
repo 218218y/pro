@@ -4,7 +4,26 @@ import assert from 'node:assert/strict';
 import { installStateApi } from '../esm/native/kernel/state_api.ts';
 import { applyConfigPatchFromMapOwner } from '../esm/native/runtime/cfg_access_core.ts';
 import { applyConfigPatchReplaceKeysFromMapOwner } from '../esm/native/runtime/cfg_access_scalars.ts';
+import { isKnownMapName } from '../esm/native/runtime/maps_access_normalizers.ts';
 import { AnyRecord, asRec, createStore } from './store_zustand_parity_helpers.ts';
+
+const KNOWN_CONFIG_MAP_NAMES = [
+  'handlesMap',
+  'hingeMap',
+  'splitDoorsMap',
+  'splitDoorsBottomMap',
+  'drawerDividersMap',
+  'groovesMap',
+  'grooveLinesCountMap',
+  'removedDoorsMap',
+  'roundedFrameSideShelvesMap',
+  'curtainMap',
+  'individualColors',
+  'doorSpecialMap',
+  'doorStyleMap',
+  'mirrorLayoutMap',
+  'doorTrimMap',
+] as const;
 
 function cloneRecord(value: unknown): AnyRecord {
   return { ...asRec(value) };
@@ -20,6 +39,10 @@ function createConfigMapStore(config: AnyRecord = {}) {
       meta: { dirty: false, version: 0, updatedAt: 0 },
     },
   });
+}
+
+function knownMapWriteError(apiName: string, kind: 'branches' | 'replace keys', mapName: string): RegExp {
+  return new RegExp(`${apiName.replace('.', '\\.')} cannot write known config map ${kind} \\(${mapName}\\)`);
 }
 
 test('[store-runtime-config-map-capability] direct raw store config writes reject known maps', () => {
@@ -75,6 +98,51 @@ test('[store-runtime-config-map-capability] direct raw store config writes rejec
   storeAny.setConfig({ boardMaterial: 'oak' }, { source: 'test:scalar-setConfig' });
   assert.equal(readConfig().width, 120);
   assert.equal(readConfig().boardMaterial, 'oak');
+});
+
+test('[store-runtime-config-map-capability] direct raw store config writes reject every known map', () => {
+  for (const mapName of KNOWN_CONFIG_MAP_NAMES) {
+    assert.equal(isKnownMapName(mapName), true, `${mapName} must stay registered as a known map`);
+
+    const store = createConfigMapStore({
+      width: 100,
+      [mapName]: { stable_key: 'original' },
+    });
+    const storeAny = store as unknown as {
+      patch: (payload: unknown, meta?: unknown, opts?: unknown) => unknown;
+      setConfig: (patch: unknown, meta?: unknown, opts?: unknown) => unknown;
+    };
+    const readConfig = () => asRec(store.getState().config);
+    const readMap = () => cloneRecord(readConfig()[mapName]);
+
+    assert.throws(
+      () =>
+        storeAny.patch({ config: { [mapName]: { stable_key: 'branch-write' } } }, { source: 'project.load' }),
+      knownMapWriteError('store.patch', 'branches', mapName)
+    );
+    assert.deepEqual(readMap(), { stable_key: 'original' });
+
+    assert.throws(
+      () =>
+        storeAny.setConfig({ [mapName]: { stable_key: 'set-config-write' } }, { source: 'history.undoRedo' }),
+      knownMapWriteError('store.setConfig', 'branches', mapName)
+    );
+    assert.deepEqual(readMap(), { stable_key: 'original' });
+
+    assert.throws(
+      () =>
+        storeAny.patch(
+          { config: { width: 121, __replace: { [mapName]: true } } },
+          { source: 'test:replace-known-map' }
+        ),
+      knownMapWriteError('store.patch', 'replace keys', mapName)
+    );
+    assert.equal(readConfig().width, 100);
+    assert.deepEqual(readMap(), { stable_key: 'original' });
+
+    storeAny.patch({ config: { width: 101 } }, { source: 'test:scalar-control' });
+    assert.equal(readConfig().width, 101);
+  }
 });
 
 test('[store-runtime-config-map-capability] owner and snapshot paths can commit known maps', () => {

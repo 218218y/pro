@@ -2,7 +2,7 @@ import type { UnknownRecord } from '../../../types';
 
 import { isKnownMapName } from './maps_access_normalizers.js';
 
-export const STORE_CONFIG_MAP_WRITE_CAPABILITY = Symbol('WardrobePro.storeConfigMapWriteCapability');
+const STORE_CONFIG_MAP_WRITE_CAPABILITY = Symbol('WardrobePro.storeConfigMapWriteCapability');
 
 export type StoreConfigMapWriteCapability = typeof STORE_CONFIG_MAP_WRITE_CAPABILITY;
 

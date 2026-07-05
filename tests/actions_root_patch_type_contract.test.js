@@ -183,6 +183,7 @@ declare const store: PublicStoreLike;
 store.getState();
 store.patch({ config: { handlesMap: { d1_full: 'rail' } } }); // expect-error
 store.setConfig?.({ handlesMap: { d1_full: 'rail' } }); // expect-error
+store.setRoot?.({ config: {} }); // expect-error
 `;
 
   const diagnostics = runVirtualTypecheck(source);
