@@ -65,6 +65,7 @@ function lineNumberOf(text, idx) {
 }
 
 const CONFIG_REPLACE_KEY_ALLOWLIST = new Set(['esm/native/runtime/cfg_access_patch_metadata.ts']);
+const CONFIG_REPLACE_KEY_CONSTANT_ALLOWLIST = new Set(['esm/native/runtime/cfg_access_patch_metadata.ts']);
 
 const ALLOW_STATEKERNEL_STACK_METHODS = new Set();
 
@@ -85,6 +86,7 @@ const ALLOW_MODE_PATCH = new Set([
 
 const violations = [];
 const usedConfigReplaceKeyAllowlist = new Set();
+const usedConfigReplaceKeyConstantAllowlist = new Set();
 
 const CONFIG_REPLACE_KEY_PATTERNS = [
   {
@@ -100,6 +102,8 @@ const CONFIG_REPLACE_KEY_PATTERNS = [
     regex: /['"]__['"]\s*\+\s*['"]replace['"]/g,
   },
 ];
+
+const CONFIG_REPLACE_KEY_CONSTANT_PATTERN = /\bCONFIG_PATCH_REPLACE_KEY\b/g;
 
 function collectConfigReplaceKeyConstructionMatches(text) {
   const matches = [];
@@ -144,6 +148,22 @@ function scanFile(fileAbs) {
         kind: 'no-scattered-config-replace-key',
         line: lineNumberOf(text, first.index),
         msg: `Use cfg_access_patch_metadata.ts instead of hand-rolling config replace metadata (${first.kind}).`,
+      });
+    }
+  }
+
+  // 1.5) Ban exposing the raw config replace-key constant outside the owner.
+  const replaceKeyConstantMatches =
+    !isTypes && rp.startsWith('esm/') ? [...text.matchAll(CONFIG_REPLACE_KEY_CONSTANT_PATTERN)] : [];
+  if (replaceKeyConstantMatches.length) {
+    if (CONFIG_REPLACE_KEY_CONSTANT_ALLOWLIST.has(rp)) {
+      usedConfigReplaceKeyConstantAllowlist.add(rp);
+    } else {
+      violations.push({
+        file: rp,
+        kind: 'no-raw-config-replace-key-constant',
+        line: lineNumberOf(text, replaceKeyConstantMatches[0].index),
+        msg: 'Use cfg_access_patch_metadata.ts helpers instead of the raw config replace-key constant.',
       });
     }
   }
@@ -313,6 +333,17 @@ function main() {
         kind: 'unused-config-replace-key-allowlist',
         line: 1,
         msg: 'config replace-key allowlist entry is unused.',
+      });
+    }
+  }
+
+  for (const allowed of CONFIG_REPLACE_KEY_CONSTANT_ALLOWLIST) {
+    if (!usedConfigReplaceKeyConstantAllowlist.has(allowed)) {
+      violations.push({
+        file: allowed,
+        kind: 'unused-config-replace-key-constant-allowlist',
+        line: 1,
+        msg: 'config replace-key constant allowlist entry is unused.',
       });
     }
   }

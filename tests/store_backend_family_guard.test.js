@@ -13,7 +13,9 @@ const patchApply = read('../esm/native/platform/store_patch_apply.ts');
 const subscriptions = read('../esm/native/platform/store_subscriptions.ts');
 const capability = read('../esm/native/runtime/store_config_map_write_capability.ts');
 const cfgAccessCore = read('../esm/native/runtime/cfg_access_core.ts');
+const cfgAccessPatchMetadata = read('../esm/native/runtime/cfg_access_patch_metadata.ts');
 const cfgAccessMapOwner = read('../esm/native/runtime/cfg_access_map_owner.ts');
+const sliceWriteAccessDispatchTargets = read('../esm/native/runtime/slice_write_access_dispatch_targets.ts');
 const stateApiInstallSupport = read('../esm/native/kernel/state_api_install_support.ts');
 const kernelInstallSupport = read('../esm/native/kernel/kernel_install_support.ts');
 const cellDimsLinearApply = read('../esm/native/services/canvas_picking_cell_dims_linear_apply.ts');
@@ -96,15 +98,27 @@ test('store backend replace metadata construction stays centralized in the metad
   const allowlist = allowlistMatch[0];
 
   assert.match(writeContractGuard, /CONFIG_REPLACE_KEY_ALLOWLIST/);
+  assert.match(writeContractGuard, /CONFIG_REPLACE_KEY_CONSTANT_ALLOWLIST/);
   assert.match(writeContractGuard, /collectConfigReplaceKeyConstructionMatches/);
   assert.match(writeContractGuard, /template-built __replace/);
   assert.match(writeContractGuard, /concatenated __replace/);
+  assert.match(writeContractGuard, /no-raw-config-replace-key-constant/);
   assert.match(writeContractGuard, /config replace-key allowlist entry is unused/);
+  assert.match(writeContractGuard, /config replace-key constant allowlist entry is unused/);
   assert.match(allowlist, /esm\/native\/runtime\/cfg_access_patch_metadata\.ts/);
   assert.doesNotMatch(allowlist, /esm\/native\/runtime\/cfg_access\.ts/);
   assert.doesNotMatch(allowlist, /esm\/native\/runtime\/cfg_access_core\.ts/);
   assert.doesNotMatch(allowlist, /esm\/native\/runtime\/cfg_access_scalars\.ts/);
   assert.doesNotMatch(allowlist, /esm\/native\/kernel\/state_api_shared\.ts/);
+
+  assert.match(cfgAccessPatchMetadata, /const CONFIG_PATCH_REPLACE_KEY = `\$\{'__'\}replace`;/);
+  assert.doesNotMatch(cfgAccessPatchMetadata, /export\s+const\s+CONFIG_PATCH_REPLACE_KEY/);
+  assert.match(cfgAccessPatchMetadata, /export function readConfigPatchDataKeys\(/);
+  assert.match(cfgAccessPatchMetadata, /export function stripConfigPatchProtocolMetadata\(/);
+  assert.match(cfgAccessPatchMetadata, /export function attachConfigPatchReplaceMetadata\(/);
+  assert.doesNotMatch(cfgAccessCore, /CONFIG_PATCH_REPLACE_KEY/);
+  assert.doesNotMatch(sliceWriteAccessDispatchTargets, /CONFIG_PATCH_REPLACE_KEY/);
+  assert.doesNotMatch(stateApiInstallSupport, /CONFIG_PATCH_REPLACE_KEY/);
 });
 
 test('store root replacement stays a backend snapshot boundary', () => {

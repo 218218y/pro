@@ -8,7 +8,7 @@ import type { PatchPayload } from '../../../types/backend_patch_payload';
 
 import { callDedicatedMetaStoreWriter, readSlicePatchValue } from './slice_write_access_shared.js';
 import { isKnownMapName } from './maps_access_normalizers.js';
-import { CONFIG_PATCH_REPLACE_KEY, readConfigPatchReplaceMap } from './cfg_access_patch_metadata.js';
+import { readConfigPatchDataKeys, readConfigPatchReplaceMap } from './cfg_access_patch_metadata.js';
 import type {
   MetaTouchDispatchTarget,
   RootPatchDispatchTarget,
@@ -75,14 +75,8 @@ type SliceDispatchTargetHandler = {
   }) => unknown;
 };
 
-function asRecord(value: unknown): UnknownRecord | null {
-  return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
-}
-
 function readKnownConfigMapPatchKeys(payload: PatchPayload): string[] {
-  const config = asRecord(payload.config);
-  if (!config) return [];
-  return Object.keys(config).filter(key => key !== CONFIG_PATCH_REPLACE_KEY && isKnownMapName(key));
+  return readConfigPatchDataKeys(payload.config).filter(key => isKnownMapName(key));
 }
 
 function readKnownConfigMapReplaceKeys(payload: PatchPayload): string[] {

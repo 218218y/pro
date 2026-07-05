@@ -16,9 +16,9 @@ import {
   readRootState,
 } from './cfg_access_shared.js';
 import {
-  CONFIG_PATCH_REPLACE_KEY,
-  isConfigPatchProtocolKey,
+  readConfigPatchDataKeys,
   readConfigPatchReplaceMap,
+  stripConfigPatchProtocolMetadata,
 } from './cfg_access_patch_metadata.js';
 
 const CONFIG_PATCH_WRITE_OPTS = {
@@ -51,7 +51,7 @@ export const cfgRead: CfgRead = (App: unknown, key: unknown, defaultValue?: unkn
 };
 
 function readKnownConfigMapPatchKeys(patch: UnknownRecord): string[] {
-  return Object.keys(patch).filter(key => !isConfigPatchProtocolKey(key) && isKnownMapName(key));
+  return readConfigPatchDataKeys(patch).filter(key => isKnownMapName(key));
 }
 
 function readKnownConfigMapReplaceKeys(patch: UnknownRecord): string[] {
@@ -98,17 +98,12 @@ export function extractConfigPatchWriteMetadata(configPatch: unknown): {
   replace: UnknownRecord | null;
   snapshot: boolean;
 } {
-  const cfgIn = asRecord(configPatch) || {};
-  const snapshot = cfgIn.__snapshot === true;
-
-  const clean: UnknownRecord = { ...cfgIn };
-  delete clean.__snapshot;
-  delete clean.__capturedAt;
-
-  const replace = asRecord(clean[CONFIG_PATCH_REPLACE_KEY]);
-  delete clean[CONFIG_PATCH_REPLACE_KEY];
-
-  return { clean, replace, snapshot };
+  const metadata = stripConfigPatchProtocolMetadata(configPatch);
+  return {
+    clean: metadata.clean,
+    replace: asRecord(metadata.replace),
+    snapshot: metadata.snapshot,
+  };
 }
 
 export function cfgBatch(App: unknown, fn: unknown, meta?: ActionMetaLike): unknown {

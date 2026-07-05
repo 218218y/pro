@@ -21,8 +21,8 @@ import type {
 import { getAllSliceNamespaces, readSlicePatchValue } from '../runtime/slice_write_access_shared.js';
 import { isKnownMapName } from '../runtime/maps_access_normalizers.js';
 import {
-  CONFIG_PATCH_REPLACE_KEY,
-  isConfigPatchProtocolKey,
+  attachConfigPatchReplaceMetadata,
+  readConfigPatchDataKeys,
   readConfigPatchReplaceMap,
 } from '../runtime/cfg_access_patch_metadata.js';
 import { withStoreConfigMapWriteCapability } from '../runtime/store_config_map_write_capability.js';
@@ -146,9 +146,7 @@ function readConfigReplaceRecord(patch: ConfigSlicePatch): Record<string, boolea
 }
 
 function readKnownConfigMapPatchKeys(patch: unknown): string[] {
-  const patchRec = asObj<UnknownRecord>(patch);
-  if (!patchRec) return [];
-  return Object.keys(patchRec).filter(key => !isConfigPatchProtocolKey(key) && isKnownMapName(key));
+  return readConfigPatchDataKeys(patch).filter(key => isKnownMapName(key));
 }
 
 function readKnownConfigMapReplaceKeys(patch: unknown): string[] {
@@ -191,8 +189,9 @@ function filterNoopSlicePatch<N extends SlicePatchNamespace>(
     namespace === 'config' ? readConfigReplaceRecord(readSlicePatchValue('config', patch)) : null;
   const nextReplace: UnknownRecord | null = replaceRec ? {} : null;
 
-  for (const key of Object.keys(patch)) {
-    if (key === CONFIG_PATCH_REPLACE_KEY) continue;
+  const patchKeys = namespace === 'config' ? readConfigPatchDataKeys(patch) : Object.keys(patch);
+
+  for (const key of patchKeys) {
     if (replaceRec && replaceRec[key]) {
       const nextValue = patch[key];
       if (!snapshotStoreValueEqual(prevRec[key], nextValue)) {
@@ -205,8 +204,12 @@ function filterNoopSlicePatch<N extends SlicePatchNamespace>(
     if (typeof diff !== 'undefined') next[key] = diff;
   }
 
-  if (nextReplace && Object.keys(nextReplace).length) next[CONFIG_PATCH_REPLACE_KEY] = nextReplace;
-  return Object.keys(next).length ? readSlicePatchValue(namespace, next) : null;
+  if (!Object.keys(next).length) return null;
+  const filteredPatch =
+    nextReplace && Object.keys(nextReplace).length
+      ? attachConfigPatchReplaceMetadata(next, nextReplace)
+      : next;
+  return readSlicePatchValue(namespace, filteredPatch);
 }
 
 function readSliceSnapshot(root: RootStateLike | null, namespace: SlicePatchNamespace): unknown {
