@@ -43,63 +43,60 @@ type OrderPdfOverlayGmailOpsDeps = {
   ) => boolean;
 };
 
-function reserveGmailDraftWindow(winMaybe: Window | null): Window | null {
+function resolvePopupFeatures(winMaybe: Window | null): string {
+  const width = 1120;
+  const height = 820;
+  let left = 80;
+  let top = 60;
+
   try {
-    if (!winMaybe || typeof winMaybe.open !== 'function') return null;
-    const popup = winMaybe.open('', '_blank');
-    if (!popup) return null;
-
-    try {
-      popup.document.title = 'Gmail';
-      popup.document.body.dir = 'rtl';
-      popup.document.body.innerHTML =
-        '<main style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;padding:24px;line-height:1.5;color:#0f172a">' +
-        '<h1 style="font-size:18px;margin:0 0 8px">מכין טיוטת Gmail…</h1>' +
-        '<p style="margin:0;color:#475569">אפשר להשאיר את החלון פתוח. הוא יעבור לטיוטה כשה-PDF יהיה מוכן.</p>' +
-        '</main>';
-    } catch {
-      // Some browsers prevent writing to the reserved popup. Navigation later may still work.
-    }
-
-    return popup;
+    const screenX = typeof winMaybe?.screenX === 'number' ? winMaybe.screenX : 0;
+    const screenY = typeof winMaybe?.screenY === 'number' ? winMaybe.screenY : 0;
+    const outerWidth =
+      typeof winMaybe?.outerWidth === 'number' && winMaybe.outerWidth > 0 ? winMaybe.outerWidth : width;
+    const outerHeight =
+      typeof winMaybe?.outerHeight === 'number' && winMaybe.outerHeight > 0 ? winMaybe.outerHeight : height;
+    left = Math.max(0, Math.round(screenX + (outerWidth - width) / 2));
+    top = Math.max(0, Math.round(screenY + (outerHeight - height) / 2));
   } catch {
-    return null;
+    // Best effort only. Browser may ignore popup sizing and use a tab.
   }
-}
 
-function closeReservedGmailDraftWindow(reservedWindow: Window | null | undefined): void {
-  try {
-    if (reservedWindow && !reservedWindow.closed) reservedWindow.close();
-  } catch {
-    // ignore
-  }
+  return [
+    'popup=yes',
+    'resizable=yes',
+    'scrollbars=yes',
+    `width=${width}`,
+    `height=${height}`,
+    `left=${left}`,
+    `top=${top}`,
+  ].join(',');
 }
 
 function openGmailDraftWindow(args: {
   winMaybe: Window | null;
   draftId: string;
   draftUrl?: string | null;
-  reservedWindow?: Window | null;
 }): boolean {
-  const { winMaybe, draftId, draftUrl, reservedWindow } = args;
+  const { winMaybe, draftId, draftUrl } = args;
   const url = draftUrl || `https://mail.google.com/mail/#drafts/${encodeURIComponent(draftId)}`;
 
   try {
-    if (reservedWindow && !reservedWindow.closed) {
-      try {
-        reservedWindow.opener = null;
-      } catch {
-        // ignore
-      }
-      reservedWindow.location.replace(url);
-      return true;
-    }
-  } catch {
-    // Fall through to a normal popup attempt.
-  }
+    if (!winMaybe || typeof winMaybe.open !== 'function') return false;
+    const popup = winMaybe.open(url, 'wpGmailDraft', resolvePopupFeatures(winMaybe));
+    if (!popup) return false;
 
-  try {
-    return !!(winMaybe && typeof winMaybe.open === 'function' && winMaybe.open(url, '_blank'));
+    try {
+      popup.opener = null;
+    } catch {
+      // ignore
+    }
+    try {
+      if (typeof popup.focus === 'function') popup.focus();
+    } catch {
+      // ignore
+    }
+    return true;
   } catch {
     return false;
   }
@@ -116,7 +113,6 @@ async function createAndOpenGmailDraft(args: {
   fileName: string;
   pdfBytes: Uint8Array;
   accessToken?: string;
-  reservedWindow?: Window | null;
 }): Promise<{ opened: boolean }> {
   const {
     docMaybe,
@@ -129,7 +125,6 @@ async function createAndOpenGmailDraft(args: {
     fileName,
     pdfBytes,
     accessToken,
-    reservedWindow,
   } = args;
 
   const clientId = getGoogleClientIdFromEnvOrDefault();
@@ -154,7 +149,6 @@ async function createAndOpenGmailDraft(args: {
       winMaybe,
       draftId,
       draftUrl,
-      reservedWindow,
     }),
   };
 }
@@ -173,74 +167,63 @@ export function createOrderPdfOverlayGmailOps(deps: OrderPdfOverlayGmailOpsDeps)
   } = deps;
 
   async function exportInteractiveToGmail(draft: OrderPdfDraft): Promise<{ opened: boolean }> {
-    const reservedWindow = reserveGmailDraftWindow(winMaybe);
-    try {
-      const clientId = getGoogleClientIdFromEnvOrDefault();
-      const accessToken = await getGmailComposeAccessToken({ doc: docMaybe, win: winMaybe, clientId });
-      const built = await buildImagePdfAttachmentFromDraft(draft);
-      const fileName = String(built.fileName || 'order_image.pdf');
-      const projectName = String(built.projectName || draft.projectName || 'פרויקט');
-      const orderNumber = String(built.orderNumber || draft.orderNumber || '');
+    // Keep the PDF editor tab active while the heavy PDF/raster work runs.
+    // Gmail is opened only after the draft exists, so no placeholder tab steals focus.
+    const clientId = getGoogleClientIdFromEnvOrDefault();
+    const accessToken = await getGmailComposeAccessToken({ doc: docMaybe, win: winMaybe, clientId });
+    const built = await buildImagePdfAttachmentFromDraft(draft);
+    const fileName = String(built.fileName || 'order_image.pdf');
+    const projectName = String(built.projectName || draft.projectName || 'פרויקט');
+    const orderNumber = String(built.orderNumber || draft.orderNumber || '');
 
-      return await createAndOpenGmailDraft({
-        docMaybe,
-        winMaybe,
-        applyTemplate,
-        subjectTemplate,
-        bodyTemplate,
-        projectName,
-        orderNumber,
-        fileName,
-        pdfBytes: built.pdfBytes,
-        accessToken,
-        reservedWindow,
-      });
-    } catch (e) {
-      closeReservedGmailDraftWindow(reservedWindow);
-      throw e;
-    }
+    return await createAndOpenGmailDraft({
+      docMaybe,
+      winMaybe,
+      applyTemplate,
+      subjectTemplate,
+      bodyTemplate,
+      projectName,
+      orderNumber,
+      fileName,
+      pdfBytes: built.pdfBytes,
+      accessToken,
+    });
   }
 
   async function exportInteractiveDownloadAndGmail(
     draft: OrderPdfDraft
   ): Promise<{ opened: boolean; downloaded: boolean }> {
-    const reservedWindow = reserveGmailDraftWindow(winMaybe);
-    try {
-      const clientId = getGoogleClientIdFromEnvOrDefault();
-      const accessToken = await getGmailComposeAccessToken({ doc: docMaybe, win: winMaybe, clientId });
-      const built = await buildInteractivePdfBlobForEditorDraft(draft);
-      const blob = built.blob;
-      const fileName = String(built.fileName || 'order.pdf');
-      const projectName = String(built.projectName || draft.projectName || 'פרויקט');
-      const orderNumber = String(draft.orderNumber || '');
-      const interactiveBytes = new Uint8Array(await blob.arrayBuffer());
+    // Keep all PDF work in the current focused tab; Gmail is opened only after the draft exists.
+    const clientId = getGoogleClientIdFromEnvOrDefault();
+    const accessToken = await getGmailComposeAccessToken({ doc: docMaybe, win: winMaybe, clientId });
+    const built = await buildInteractivePdfBlobForEditorDraft(draft);
+    const blob = built.blob;
+    const fileName = String(built.fileName || 'order.pdf');
+    const projectName = String(built.projectName || draft.projectName || 'פרויקט');
+    const orderNumber = String(draft.orderNumber || '');
+    const interactiveBytes = new Uint8Array(await blob.arrayBuffer());
 
-      const downloaded = triggerBlobDownloadViaBrowser({ docMaybe, winMaybe }, blob, fileName);
-      const { outBytes, outName } = await rasterizeInteractivePdfBytesToImagePdfBytes({
-        inBytes: interactiveBytes,
-        baseFileName: fileName,
-        draft,
-      });
+    const downloaded = triggerBlobDownloadViaBrowser({ docMaybe, winMaybe }, blob, fileName);
+    const { outBytes, outName } = await rasterizeInteractivePdfBytesToImagePdfBytes({
+      inBytes: interactiveBytes,
+      baseFileName: fileName,
+      draft,
+    });
 
-      const result = await createAndOpenGmailDraft({
-        docMaybe,
-        winMaybe,
-        applyTemplate,
-        subjectTemplate,
-        bodyTemplate,
-        projectName,
-        orderNumber,
-        fileName: outName,
-        pdfBytes: outBytes,
-        accessToken,
-        reservedWindow,
-      });
+    const result = await createAndOpenGmailDraft({
+      docMaybe,
+      winMaybe,
+      applyTemplate,
+      subjectTemplate,
+      bodyTemplate,
+      projectName,
+      orderNumber,
+      fileName: outName,
+      pdfBytes: outBytes,
+      accessToken,
+    });
 
-      return { opened: result.opened, downloaded };
-    } catch (e) {
-      closeReservedGmailDraftWindow(reservedWindow);
-      throw e;
-    }
+    return { opened: result.opened, downloaded };
   }
 
   return {
