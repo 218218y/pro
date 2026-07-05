@@ -6,7 +6,7 @@ import type {
   UnknownRecord,
 } from '../../../types';
 
-import { cfgPatchWithReplaceKeys } from '../runtime/cfg_access.js';
+import { buildConfigPatchWithReplaceMetadata } from '../runtime/cfg_access_patch_metadata.js';
 import { normalizeKnownMapSnapshot } from '../runtime/maps_access_normalizers.js';
 import { asRecord } from '../runtime/record.js';
 import {
@@ -41,7 +41,9 @@ export function installStateApiConfigNamespaceMaps(ctx: StateApiConfigNamespaceM
     const cur = readNormalizedConfigMap(mapName);
     const nextRec = reuseEquivalentValue(cur, normalizeKnownMapSnapshot(mapName, nextMap)) as MapsByName[K];
     if (Object.is(cur, nextRec)) return cur;
-    const patch = toConfigPatch(cfgPatchWithReplaceKeys({ [mapName]: nextRec }, { [mapName]: true }));
+    const patch = toConfigPatch(
+      buildConfigPatchWithReplaceMetadata({ [mapName]: nextRec }, { [mapName]: true })
+    );
     void commitConfigWrite(commitConfigPatch, patch, meta);
     return nextRec;
   };
@@ -123,7 +125,7 @@ export function installStateApiConfigNamespaceMaps(ctx: StateApiConfigNamespaceM
         replaceKeys.push('doorStyleMap');
       }
       if (!Object.keys(basePatch).length) return cfg0;
-      const patch = toConfigPatch(cfgPatchWithReplaceKeys(basePatch, replaceKeys));
+      const patch = toConfigPatch(buildConfigPatchWithReplaceMetadata(basePatch, replaceKeys));
       const m = normMeta(meta, 'actions.config:applyPaintSnapshot');
       return commitConfigWrite(commitConfigPatch, patch, m);
     };

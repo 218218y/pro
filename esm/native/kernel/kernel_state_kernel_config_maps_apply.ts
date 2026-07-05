@@ -1,7 +1,7 @@
 import { getCfg } from './store_access.js';
 import type { ActionMetaLike, UnknownRecord } from '../../../types';
 
-import { cfgPatchWithReplaceKeys } from '../runtime/cfg_access.js';
+import { buildConfigPatchWithReplaceMetadata } from '../runtime/cfg_access_patch_metadata.js';
 import { metaRestore } from '../runtime/meta_profiles_access.js';
 import { snapshotStoreValueEqual } from './kernel_snapshot_store_shared.js';
 import type { KernelStateKernelConfigHelpers } from './kernel_state_kernel_config_shared.js';
@@ -100,7 +100,7 @@ export function installKernelStateKernelConfigApplySurface(
       }
 
       if (Object.keys(patch).length) {
-        const patchFixed = cfgPatchWithReplaceKeys(patch, rep);
+        const patchFixed = buildConfigPatchWithReplaceMetadata(patch, rep);
         const base: ActionMetaLike = Object.assign({}, meta, {
           source: meta.source != null ? String(meta.source) : 'kernel.applyKernelConfigSnapshot',
         });

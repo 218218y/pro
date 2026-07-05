@@ -70,6 +70,7 @@ const ALLOW__REPLACE = new Set([
   'esm/native/runtime/cfg_access.ts',
   'esm/native/runtime/cfg_access.js',
   'esm/native/runtime/cfg_access_core.ts',
+  'esm/native/runtime/cfg_access_patch_metadata.ts',
   'esm/native/runtime/cfg_access_scalars.ts',
   'esm/native/kernel/state_api_config_namespace_maps.ts',
   'esm/native/kernel/state_api_shared.ts',
@@ -117,7 +118,7 @@ function scanFile(fileAbs) {
       file: rp,
       kind: 'no-scattered-__replace',
       line: lineNumberOf(text, idxReplace),
-      msg: 'Use cfg_access owner helpers or applyConfigNonMapPatchWithReplaceKeys instead of hand-rolling __replace.',
+      msg: 'Use an approved config owner/snapshot helper or boundary-scoped replace metadata builder instead of hand-rolling __replace.',
     });
   }
 

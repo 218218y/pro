@@ -639,6 +639,7 @@ test('visual/keyed owner helpers stay out of broad runtime facades', () => {
   assert.doesNotMatch(cfgAccessFacade, /\bapplyConfigPatch\b/);
   assert.doesNotMatch(cfgAccessFacade, /\bapplyConfigPatchReplaceKeys\b/);
   assert.doesNotMatch(cfgAccessFacade, /\bapplyConfigSnapshot\b/);
+  assert.doesNotMatch(cfgAccessFacade, /\bcfgPatchWithReplaceKeys\b/);
   assert.doesNotMatch(mapsAccessFacade, /patchVisualKeyedMapEntriesFromOwner/);
   assert.doesNotMatch(mapsAccessFacade, /patchCanonicalVisualMapEntries/);
   assert.doesNotMatch(mapsAccessFacade, /writeMapKey/);
@@ -647,9 +648,11 @@ test('visual/keyed owner helpers stay out of broad runtime facades', () => {
   assert.doesNotMatch(coreApiFacade, /\bapplyConfigPatch\b/);
   assert.doesNotMatch(coreApiFacade, /\bapplyConfigPatchReplaceKeys\b/);
   assert.doesNotMatch(coreApiFacade, /\bapplyConfigSnapshot\b/);
+  assert.doesNotMatch(coreApiFacade, /\bcfgPatchWithReplaceKeys\b/);
   assert.doesNotMatch(servicesStateFacade, /\bapplyConfigPatch\b/);
   assert.doesNotMatch(servicesStateFacade, /\bapplyConfigPatchReplaceKeys\b/);
   assert.doesNotMatch(servicesStateFacade, /\bapplyConfigSnapshot\b/);
+  assert.doesNotMatch(servicesStateFacade, /\bcfgPatchWithReplaceKeys\b/);
   assert.doesNotMatch(coreApiFacade, /\bcfgSetMap\b/);
   assert.doesNotMatch(coreApiFacade, /\bpatchConfigMap\b/);
   assert.doesNotMatch(servicesStateFacade, /\bcfgSetMap\b/);

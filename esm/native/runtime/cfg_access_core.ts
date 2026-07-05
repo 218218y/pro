@@ -5,7 +5,6 @@ import type {
   ConfigSnapshotLike,
   UnknownRecord,
 } from '../../../types';
-import type { ConfigSlicePatch } from '../../../types/backend_patch_payload';
 import { hasSliceWriterSeam, patchSliceCanonical } from './slice_write_access.js';
 import { isKnownMapName } from './maps_access_normalizers.js';
 import {
@@ -96,31 +95,6 @@ export function applyConfigNonMapPatch(App: unknown, patchObj: unknown, meta?: A
   throw new Error(
     '[WardrobePro][cfg_access] Missing config writer: expected config.patch action or store.setConfig.'
   );
-}
-
-export function cfgPatchWithReplaceKeys(patchObj: unknown, replaceKeys: unknown): ConfigSlicePatch {
-  const base = asRecord(patchObj) || {};
-  const replaceMap: Record<string, boolean> = {};
-
-  if (Array.isArray(replaceKeys)) {
-    for (const keyValue of replaceKeys) {
-      const key = typeof keyValue === 'string' ? keyValue.trim() : '';
-      if (key) replaceMap[key] = true;
-    }
-  } else {
-    const replaceRecord = asRecord(replaceKeys);
-    if (replaceRecord) {
-      for (const key of Object.keys(replaceRecord)) {
-        if (!key) continue;
-        if (replaceRecord[key]) replaceMap[key] = true;
-      }
-    }
-  }
-
-  const existing = readBooleanMap(base[CFG_PATCH_PROTOCOL_KEYS.replace]);
-  const mergedReplace = existing ? { ...existing, ...replaceMap } : replaceMap;
-
-  return { ...base, [CFG_PATCH_PROTOCOL_KEYS.replace]: mergedReplace };
 }
 
 export function extractConfigPatchWriteMetadata(configPatch: unknown): {

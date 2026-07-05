@@ -12,13 +12,13 @@ import { patchUiSoft } from '../runtime/ui_write_access.js';
 import { patchRuntime } from '../runtime/runtime_write_access.js';
 import {
   cfgBatch,
-  cfgPatchWithReplaceKeys,
   setCfgCornerConfiguration,
   setCfgLowerModulesConfiguration,
   setCfgManualWidth,
   setCfgModulesConfiguration,
   setCfgWardrobeType,
 } from '../runtime/cfg_access.js';
+import { buildConfigPatchWithReplaceMetadata } from '../runtime/cfg_access_patch_metadata.js';
 import { runAppStructuralModulesRecompute } from '../runtime/modules_recompute_request_policy.js';
 import { patchViaActions } from '../runtime/actions_access_mutations.js';
 import type { InstallDomainApiRoomSectionArgs, MetaNoBuildFn } from './domain_api_room_section_shared.js';
@@ -377,7 +377,7 @@ const WARDROBE_TYPE_PROFILE_STRUCTURAL_KEYS = [
 function withWardrobeTypeProfileStructuralReplaceKeys(configPatch: UnknownRecord): UnknownRecord {
   const replaceKeys = WARDROBE_TYPE_PROFILE_STRUCTURAL_KEYS.filter(key => hasOwnKey(configPatch, key));
   return replaceKeys.length
-    ? (cfgPatchWithReplaceKeys(configPatch, replaceKeys) as UnknownRecord)
+    ? (buildConfigPatchWithReplaceMetadata(configPatch, replaceKeys) as UnknownRecord)
     : configPatch;
 }
 

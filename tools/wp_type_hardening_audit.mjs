@@ -116,8 +116,8 @@ const rawStoreBackendTypeAllowPaths = new Set([
   'esm/native/kernel/state_api_shared.ts',
   'esm/native/kernel/state_api_surface_namespaces.ts',
   'esm/native/runtime/assert.ts',
+  'esm/native/runtime/cfg_access_patch_metadata.ts',
   'esm/native/runtime/cfg_access_shared.ts',
-  'esm/native/runtime/cfg_access_core.ts',
   'esm/native/runtime/store_surface_access.ts',
   'esm/native/runtime/slice_write_access_context.ts',
   'esm/native/runtime/slice_write_access_dispatch.ts',
@@ -160,6 +160,17 @@ const configMapOwnerCommitHelperAllowPaths = new Set([
   'esm/native/runtime/cfg_access_maps.ts',
   'esm/native/runtime/simple_writable_map_writer_owner.ts',
   'esm/native/runtime/visual_keyed_map_writer_owner.ts',
+]);
+
+const configReplaceMetadataBuilderAllowPaths = new Set([
+  'esm/native/kernel/domain_api_room_section_wardrobe.ts',
+  'esm/native/kernel/kernel_state_kernel_config_maps_apply.ts',
+  'esm/native/kernel/state_api_config_namespace_core.ts',
+  'esm/native/kernel/state_api_config_namespace_maps.ts',
+  'esm/native/kernel/state_api_config_namespace_scalars.ts',
+  'esm/native/runtime/cfg_access_map_owner.ts',
+  'esm/native/runtime/cfg_access_patch_metadata.ts',
+  'esm/native/runtime/cfg_access_scalars.ts',
 ]);
 
 const storeConfigPatchApplyBoundaryAllowPaths = new Set([
@@ -381,6 +392,57 @@ function collectRetiredGenericConfigMapAccessViolations() {
   return violations;
 }
 
+function collectRetiredConfigReplaceMetadataHelperViolations() {
+  const violations = [];
+  const retiredNamePattern = /\bcfgPatchWithReplaceKeys\b/g;
+
+  for (const rootName of scanRoots) {
+    for (const abs of walk(path.join(root, rootName))) {
+      const rel = path.relative(root, abs).replace(/\\/g, '/');
+      const source = fs.readFileSync(abs, 'utf8');
+      retiredNamePattern.lastIndex = 0;
+      const matches = [...source.matchAll(retiredNamePattern)];
+      if (matches.length) {
+        violations.push(
+          `${rel}: retired generic config replace-metadata helper name remains (${matches.length})`
+        );
+      }
+    }
+  }
+
+  return violations;
+}
+
+function collectConfigReplaceMetadataBuilderBoundaryViolations() {
+  const violations = [];
+  const builderNamePattern = /\bbuildConfigPatchWithReplaceMetadata\b/g;
+  const usedAllowPaths = new Set();
+
+  for (const abs of walk(path.join(root, 'esm'))) {
+    const rel = path.relative(root, abs).replace(/\\/g, '/');
+    const source = fs.readFileSync(abs, 'utf8');
+    builderNamePattern.lastIndex = 0;
+    const matches = [...source.matchAll(builderNamePattern)];
+    if (configReplaceMetadataBuilderAllowPaths.has(rel)) {
+      if (matches.length) usedAllowPaths.add(rel);
+      continue;
+    }
+    if (matches.length) {
+      violations.push(
+        `${rel}: config replace metadata builder used outside owner/snapshot allowlist (${matches.length})`
+      );
+    }
+  }
+
+  for (const rel of [...configReplaceMetadataBuilderAllowPaths].sort()) {
+    if (!usedAllowPaths.has(rel)) {
+      violations.push(`${rel}: config replace metadata builder allowlist entry is unused`);
+    }
+  }
+
+  return violations;
+}
+
 function collectStoreConfigMapWriteCapabilityViolations() {
   const violations = [];
   const capabilityPattern = new RegExp(`\\b(?:${storeConfigMapWriteCapabilityNames.join('|')})\\b`, 'g');
@@ -567,6 +629,8 @@ violations.push(...collectStoreConfigPatchApplyNameViolations());
 violations.push(...collectStoreConfigPatchApplyBoundaryViolations());
 violations.push(...collectConfigMapOwnerCommitHelperViolations());
 violations.push(...collectRetiredGenericConfigMapAccessViolations());
+violations.push(...collectRetiredConfigReplaceMetadataHelperViolations());
+violations.push(...collectConfigReplaceMetadataBuilderBoundaryViolations());
 violations.push(...collectRawStoreBoundaryDocViolations());
 violations.push(...collectPublicTypeBarrelViolations());
 violations.push(...collectPublicTypeBackendImportViolations());
@@ -579,5 +643,5 @@ if (violations.length) {
 }
 
 console.log(
-  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded; public type modules avoid backend type imports; store config map write capability is owner-scoped; retired generic config map access names stay removed)'
+  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded; public type modules avoid backend type imports; store config map write capability is owner-scoped; config replace metadata builder is owner/snapshot-scoped; retired generic config map access and replace-metadata helper names stay removed)'
 );

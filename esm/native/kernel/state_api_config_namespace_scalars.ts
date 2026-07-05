@@ -1,7 +1,7 @@
 import type { ActionMetaLike, ActionsNamespaceLike, ConfigActionsNamespaceLike } from '../../../types';
 
 import { asRecord } from '../runtime/record.js';
-import { cfgPatchWithReplaceKeys } from '../runtime/cfg_access.js';
+import { buildConfigPatchWithReplaceMetadata } from '../runtime/cfg_access_patch_metadata.js';
 import type { MetaNs } from './state_api_shared.js';
 import {
   commitConfigWrite,
@@ -117,7 +117,7 @@ export function installStateApiConfigNamespaceScalars(ctx: StateApiConfigNamespa
       nextVal = reuseEquivalentValue(prev, nextVal);
       if (Object.is(prev, nextVal)) return prev;
       const o = projectConfigReplaceKeys[k]
-        ? toConfigPatch(cfgPatchWithReplaceKeys({ [k]: nextVal }, { [k]: true }))
+        ? toConfigPatch(buildConfigPatchWithReplaceMetadata({ [k]: nextVal }, { [k]: true }))
         : configSlicePatchFromKey(k, nextVal);
       return commitConfigWrite(commitConfigPatch, o, meta);
     };

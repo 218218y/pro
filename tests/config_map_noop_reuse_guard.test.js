@@ -31,6 +31,6 @@ test('config map owner actions reuse normalized equivalent maps before committin
     'const cur = readNormalizedConfigMap(mapName);',
     'reuseEquivalentValue(cur, normalizeKnownMapSnapshot(mapName, nextMap))',
     'if (Object.is(cur, nextRec)) return cur;',
-    'cfgPatchWithReplaceKeys({ [mapName]: nextRec }, { [mapName]: true })',
+    'buildConfigPatchWithReplaceMetadata({ [mapName]: nextRec }, { [mapName]: true })',
   ]);
 });

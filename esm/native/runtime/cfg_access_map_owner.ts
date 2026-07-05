@@ -3,7 +3,7 @@ import type { ActionMetaLike } from '../../../types';
 import { hasSliceWriterSeam, patchSliceCanonical } from './slice_write_access.js';
 import { withStoreConfigMapWriteCapability } from './store_config_map_write_capability.js';
 import { asRecord, getStore, normMeta } from './cfg_access_shared.js';
-import { cfgPatchWithReplaceKeys } from './cfg_access_core.js';
+import { buildConfigPatchWithReplaceMetadata } from './cfg_access_patch_metadata.js';
 
 const CONFIG_MAP_OWNER_PATCH_WRITE_OPTS = withStoreConfigMapWriteCapability({
   storeWriter: 'setConfig',
@@ -33,7 +33,7 @@ export function commitConfigMapOwnerPatchWithReplaceKeys(
   meta?: ActionMetaLike
 ) {
   const base = asRecord(patchObj) || {};
-  const patch = cfgPatchWithReplaceKeys(base, replaceKeys);
+  const patch = buildConfigPatchWithReplaceMetadata(base, replaceKeys);
   void commitConfigMapOwnerPatch(App, patch, meta);
   return patch;
 }

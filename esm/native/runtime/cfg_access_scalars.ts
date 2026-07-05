@@ -16,9 +16,9 @@ import {
   applyConfigNonMapPatch,
   assertNoGenericKnownConfigMapPatch,
   cfgGet,
-  cfgPatchWithReplaceKeys,
   cfgRead,
 } from './cfg_access_core.js';
+import { buildConfigPatchWithReplaceMetadata } from './cfg_access_patch_metadata.js';
 
 export function applyConfigNonMapPatchWithReplaceKeys(
   App: unknown,
@@ -27,7 +27,7 @@ export function applyConfigNonMapPatchWithReplaceKeys(
   meta?: ActionMetaLike
 ) {
   const base = asRecord(patchObj) || {};
-  const patch = cfgPatchWithReplaceKeys(base, replaceKeys);
+  const patch = buildConfigPatchWithReplaceMetadata(base, replaceKeys);
   assertNoGenericKnownConfigMapPatch(patch, 'applyConfigNonMapPatchWithReplaceKeys');
   void applyConfigNonMapPatch(App, patch, meta);
   return patch;

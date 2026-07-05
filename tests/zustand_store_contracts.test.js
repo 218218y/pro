@@ -20,6 +20,7 @@ const cfgAccessBundle = normalizeWhitespace(
   [
     readFirstExisting(['../esm/native/runtime/cfg_access.ts'], import.meta.url),
     readFirstExisting(['../esm/native/runtime/cfg_access_core.ts'], import.meta.url),
+    readFirstExisting(['../esm/native/runtime/cfg_access_patch_metadata.ts'], import.meta.url),
     readFirstExisting(['../esm/native/runtime/cfg_access_maps.ts'], import.meta.url),
     readFirstExisting(['../esm/native/runtime/cfg_access_scalars.ts'], import.meta.url),
   ].join('\n')
@@ -102,6 +103,7 @@ test('[zustand-store] builder/store/config seams stay canonical and typed', () =
   assert.doesNotMatch(cfgAccessBundle, /export (?:function patchConfigMap\(|const patchConfigMap\s*:)/);
   assert.doesNotMatch(cfgAccess, /\bcfgSetMap\b/);
   assert.doesNotMatch(cfgAccess, /\bpatchConfigMap\b/);
+  assert.doesNotMatch(cfgAccess, /\bcfgPatchWithReplaceKeys\b/);
   assert.doesNotMatch(cfgAccess, /export function cfgPatch\(/);
   assert.doesNotMatch(cfgAccess, /export function cfgPatchMap\(/);
 });

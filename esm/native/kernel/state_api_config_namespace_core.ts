@@ -12,7 +12,7 @@ import {
   canonicalizeComparableProjectConfigSnapshot,
 } from './kernel_project_config_snapshot_canonical.js';
 import { materializeTopModulesConfigurationFromUiConfig } from '../features/modules_configuration/modules_config_api.js';
-import { cfgPatchWithReplaceKeys } from '../runtime/cfg_access.js';
+import { buildConfigPatchWithReplaceMetadata } from '../runtime/cfg_access_patch_metadata.js';
 import { isKnownMapName } from '../runtime/maps_access_normalizers.js';
 import { asRecord, isRecord } from '../runtime/record.js';
 import {
@@ -149,7 +149,7 @@ export function installStateApiConfigNamespaceCore(ctx: StateApiConfigNamespaceC
       meta?: ActionMetaLike
     ) {
       const snap = canonicalizeProjectConfigPatch(snapshot);
-      const patch = toConfigPatch(cfgPatchWithReplaceKeys(snap, projectConfigReplaceKeys));
+      const patch = toConfigPatch(buildConfigPatchWithReplaceMetadata(snap, projectConfigReplaceKeys));
       const m = normMeta(meta, 'actions.config:applyProjectSnapshot');
       return commitConfigWrite(commitConfigPatch, patch, m);
     };
@@ -184,7 +184,7 @@ export function installStateApiConfigNamespaceCore(ctx: StateApiConfigNamespaceC
       if (Object.prototype.hasOwnProperty.call(snap, 'wardrobeDepth'))
         basePatch.wardrobeDepth = snap.wardrobeDepth;
 
-      const patch = toConfigPatch(cfgPatchWithReplaceKeys(basePatch, modulesGeometryReplaceKeys));
+      const patch = toConfigPatch(buildConfigPatchWithReplaceMetadata(basePatch, modulesGeometryReplaceKeys));
       const m = normMeta(meta, 'actions.config:applyModulesGeometrySnapshot');
       return commitConfigWrite(commitConfigPatch, patch, m);
     };

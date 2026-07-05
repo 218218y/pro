@@ -2,7 +2,6 @@ export {
   applyConfigNonMapPatch,
   cfgBatch,
   cfgGet,
-  cfgPatchWithReplaceKeys,
   cfgRead,
   extractConfigPatchWriteMetadata,
 } from './cfg_access_core.js';

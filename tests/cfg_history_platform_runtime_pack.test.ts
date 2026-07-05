@@ -4,9 +4,9 @@ import assert from 'node:assert/strict';
 import {
   applyConfigNonMapPatch,
   cfgBatch,
-  cfgPatchWithReplaceKeys,
   extractConfigPatchWriteMetadata,
 } from '../esm/native/runtime/cfg_access.ts';
+import { buildConfigPatchWithReplaceMetadata } from '../esm/native/runtime/cfg_access_patch_metadata.ts';
 import { setCfgHandlesMap } from '../esm/native/runtime/cfg_access_maps.ts';
 
 type AnyRecord = Record<string, any>;
@@ -68,7 +68,10 @@ test('cfg access runtime pack: canonical config/history namespaces own map write
   const patchMapOut = setCfgHandlesMap(App, { ...setMapOut, c: 'pull' }, { source: 'patch:map' } as any);
   assert.deepEqual(patchMapOut, { a: 'bar', b: 'knob', c: 'pull' });
 
-  const patch = cfgPatchWithReplaceKeys({ width: 120, __capturedAt: 1 }, ['handlesMap', 'mirrorLayoutMap']);
+  const patch = buildConfigPatchWithReplaceMetadata({ width: 120, __capturedAt: 1 }, [
+    'handlesMap',
+    'mirrorLayoutMap',
+  ]);
   assert.deepEqual((patch as AnyRecord).__replace, { handlesMap: true, mirrorLayoutMap: true });
   const metaInfo = extractConfigPatchWriteMetadata({ ...patch, __snapshot: true } as AnyRecord);
   assert.equal(metaInfo.snapshot, true);
