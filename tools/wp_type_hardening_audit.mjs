@@ -244,6 +244,30 @@ function collectStoreConfigMapWriteCapabilityExportViolations() {
   return violations;
 }
 
+function collectStoreConfigPatchApplyNameViolations() {
+  const violations = [];
+  const deprecatedNamePattern = /\bapplyConfigPatch\b/g;
+  const storePatchApplyRel = 'esm/native/platform/store_patch_apply.ts';
+  const storePatchApplySource = fs.readFileSync(path.join(root, storePatchApplyRel), 'utf8');
+  if (!/\bexport function applyStoreConfigPatch\(/.test(storePatchApplySource)) {
+    violations.push(`${storePatchApplyRel}: missing backend store config patch apply export`);
+  }
+
+  for (const rootName of ['esm', 'types']) {
+    for (const abs of walk(path.join(root, rootName))) {
+      const rel = path.relative(root, abs).replace(/\\/g, '/');
+      const source = fs.readFileSync(abs, 'utf8');
+      deprecatedNamePattern.lastIndex = 0;
+      const matches = [...source.matchAll(deprecatedNamePattern)];
+      if (matches.length) {
+        violations.push(`${rel}: deprecated generic applyConfigPatch name remains (${matches.length})`);
+      }
+    }
+  }
+
+  return violations;
+}
+
 function collectStoreConfigMapWriteCapabilityViolations() {
   const violations = [];
   const capabilityPattern = new RegExp(`\\b(?:${storeConfigMapWriteCapabilityNames.join('|')})\\b`, 'g');
@@ -426,6 +450,7 @@ violations.push(...collectRawStoreBackendTypeBoundaryViolations());
 violations.push(...collectRawStoreWriteBoundaryViolations());
 violations.push(...collectStoreConfigMapWriteCapabilityExportViolations());
 violations.push(...collectStoreConfigMapWriteCapabilityViolations());
+violations.push(...collectStoreConfigPatchApplyNameViolations());
 violations.push(...collectRawStoreBoundaryDocViolations());
 violations.push(...collectPublicTypeBarrelViolations());
 violations.push(...collectPublicTypeBackendImportViolations());

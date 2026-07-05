@@ -50,7 +50,8 @@ test('store backend family stays split across owner/shared/commit/patch/subscrip
   assert.match(commitPipeline, /function isNoopReplacedRoot\(/);
 
   assert.match(patchApply, /function deepMerge\(/);
-  assert.match(patchApply, /export function applyConfigPatch\(/);
+  assert.match(patchApply, /export function applyStoreConfigPatch\(/);
+  assert.doesNotMatch(patchApply, /export function applyConfigPatch\(/);
   assert.match(patchApply, /export function applyModePatchSlice\(/);
 
   assert.match(subscriptions, /export function createListenerRegistry<T>\(\)/);
@@ -70,7 +71,7 @@ test('store backend known config map writes require owner capability, not meta s
   assert.match(typeHardeningAudit, /export\\s\*\\\{/);
 
   assert.match(commitPipeline, /assertStoreConfigMapWriteAllowed\(pld\.config, configApiName, opts2\)/);
-  assert.match(patchApply, /assertStoreConfigMapWriteAllowed\(configPatch, 'applyConfigPatch', opts\)/);
+  assert.match(patchApply, /assertStoreConfigMapWriteAllowed\(configPatch, 'applyStoreConfigPatch', opts\)/);
 
   assert.match(cfgAccessCore, /withStoreConfigMapWriteCapability/);
   assert.match(stateApiInstallSupport, /withStoreConfigMapWriteCapability/);

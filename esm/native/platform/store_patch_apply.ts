@@ -201,14 +201,14 @@ function sanitizeComparableModulesEntry(
   );
 }
 
-export function applyConfigPatch(
+export function applyStoreConfigPatch(
   prevConfig: unknown,
   configPatch: unknown,
   actionMeta?: ActionMetaLike,
   uiSnapshot?: unknown,
   opts?: StoreConfigMapWriteOptions
 ): RootStateLike['config'] {
-  assertStoreConfigMapWriteAllowed(configPatch, 'applyConfigPatch', opts);
+  assertStoreConfigMapWriteAllowed(configPatch, 'applyStoreConfigPatch', opts);
   const { clean, replace, snapshot } = cleanConfigPatchInput(configPatch);
   const prevRec = asRecordOrEmpty(prevConfig);
   const useLight = !!(actionMeta && actionMeta.noHistory === true && actionMeta.noAutosave === true);

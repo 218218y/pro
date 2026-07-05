@@ -15,7 +15,7 @@ import {
   isConfigCompoundsInstalled,
 } from '../esm/native/runtime/install_state_access.ts';
 import { getBootFlags } from '../esm/native/runtime/internal_state.ts';
-import { applyConfigPatch } from '../esm/native/platform/store_patch_apply.ts';
+import { applyStoreConfigPatch } from '../esm/native/platform/store_patch_apply.ts';
 
 test('config compounds install creates canonical service slot with stable methods', async () => {
   const App: { services?: Record<string, unknown> } = { services: Object.create(null) };
@@ -63,7 +63,7 @@ test('config compounds seeding materializes top modules against the live UI stru
       if (payload && typeof payload === 'object' && payload.config) {
         state = {
           ...state,
-          config: applyConfigPatch(state.config, payload.config, meta, state.ui),
+          config: applyStoreConfigPatch(state.config, payload.config, meta, state.ui),
         };
       }
       return state;
@@ -71,7 +71,7 @@ test('config compounds seeding materializes top modules against the live UI stru
     setConfig: (patch: any, meta?: any) => {
       state = {
         ...state,
-        config: applyConfigPatch(state.config, patch, meta, state.ui),
+        config: applyStoreConfigPatch(state.config, patch, meta, state.ui),
       };
       return state.config;
     },
@@ -124,7 +124,7 @@ test('config compounds seed waits for a concrete config snapshot and keeps one i
         patchCalls += 1;
         state = {
           ...state,
-          config: applyConfigPatch(state.config || {}, payload.config, meta, state.ui),
+          config: applyStoreConfigPatch(state.config || {}, payload.config, meta, state.ui),
         };
       }
       return state;
@@ -133,7 +133,7 @@ test('config compounds seed waits for a concrete config snapshot and keeps one i
       patchCalls += 1;
       state = {
         ...state,
-        config: applyConfigPatch(state.config || {}, patch, meta, state.ui),
+        config: applyStoreConfigPatch(state.config || {}, patch, meta, state.ui),
       };
       return state.config;
     },

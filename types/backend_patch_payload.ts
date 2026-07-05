@@ -11,7 +11,7 @@ import type { MetaSlicePatch, ModeSlicePatch, RuntimeSlicePatch, UiSlicePatch } 
 
 /** Backend-only raw config patch. Public config actions use PublicConfigPatch. */
 export interface ConfigSlicePatch extends Partial<ConfigStateLike> {
-  /** Per-key replacement flags (used by kernel snapshot/config writers + store.applyConfigPatch). */
+  /** Per-key replacement flags (used by kernel snapshot/config writers + applyStoreConfigPatch). */
   __replace?: Record<string, boolean>;
 
   // High-value persisted extras that exist in the wild but aren't fully typed yet.

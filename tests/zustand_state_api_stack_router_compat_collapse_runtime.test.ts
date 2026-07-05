@@ -37,7 +37,7 @@ function createStoreStub(): StoreStub {
     meta: { dirty: false, version: 0, updatedAt: 0 },
   };
 
-  const applyConfigPatch = (patchRec: AnyRecord, meta?: AnyRecord) => {
+  const applyStackRouterConfigPatch = (patchRec: AnyRecord, meta?: AnyRecord) => {
     const baseCfg = state.config && typeof state.config === 'object' ? (state.config as AnyRecord) : {};
     state.config = { ...baseCfg, ...patchRec };
     const ms = state.meta && typeof state.meta === 'object' ? (state.meta as AnyRecord) : ({} as AnyRecord);
@@ -52,11 +52,11 @@ function createStoreStub(): StoreStub {
     patch: (payload: AnyRecord, meta?: AnyRecord) => {
       const p = payload && typeof payload === 'object' ? (payload as AnyRecord) : ({} as AnyRecord);
       if (p.config && typeof p.config === 'object') {
-        return applyConfigPatch(p.config as AnyRecord, meta);
+        return applyStackRouterConfigPatch(p.config as AnyRecord, meta);
       }
       return undefined;
     },
-    setConfig: (patch: AnyRecord, meta?: AnyRecord) => applyConfigPatch(patch, meta),
+    setConfig: (patch: AnyRecord, meta?: AnyRecord) => applyStackRouterConfigPatch(patch, meta),
     subscribe: () => () => undefined,
   };
 }

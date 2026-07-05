@@ -20,10 +20,10 @@ import {
   type UnknownRecord,
 } from './store_shared.js';
 import {
-  applyConfigPatch,
   applyMetaPatch,
   applyModePatchSlice,
   applyRuntimePatchSlice,
+  applyStoreConfigPatch,
   applyUiPatchSlice,
   toConfigSlicePatch,
   toModeSlicePatch,
@@ -223,7 +223,7 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
 
     if (pld.config && typeof pld.config === 'object') {
       assertStoreConfigMapWriteAllowed(pld.config, configApiName, opts2);
-      next.config = applyConfigPatch(current.config, pld.config, meta, current.ui, opts2);
+      next.config = applyStoreConfigPatch(current.config, pld.config, meta, current.ui, opts2);
     }
 
     if (pld.mode) {

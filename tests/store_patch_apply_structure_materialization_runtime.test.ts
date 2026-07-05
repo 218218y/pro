@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { applyConfigPatch } from '../esm/native/platform/store_patch_apply.ts';
+import { applyStoreConfigPatch } from '../esm/native/platform/store_patch_apply.ts';
 
 test('store patch apply materializes top modules with structure-aware door counts', () => {
   const prevConfig = {
@@ -22,7 +22,7 @@ test('store patch apply materializes top modules with structure-aware door count
     },
   };
 
-  const next = applyConfigPatch(prevConfig, patch, { source: 't:store-patch' }, ui);
+  const next = applyStoreConfigPatch(prevConfig, patch, { source: 't:store-patch' }, ui);
   const modules = Array.isArray(next.modulesConfiguration) ? next.modulesConfiguration : [];
 
   assert.equal(modules.length, 3);
@@ -34,7 +34,7 @@ test('store patch apply materializes top modules with structure-aware door count
 });
 
 test('store patch apply keeps lower-module sanitization canonical without structure context changes', () => {
-  const next = applyConfigPatch(
+  const next = applyStoreConfigPatch(
     { stackSplitLowerModulesConfiguration: [] },
     { stackSplitLowerModulesConfiguration: [{}] },
     { source: 't:store-patch' },
@@ -64,7 +64,7 @@ test('store patch apply replace-owned corner snapshot clears stale lower corner 
     },
   };
 
-  const next = applyConfigPatch(
+  const next = applyStoreConfigPatch(
     prevConfig,
     {
       cornerConfiguration: {
@@ -92,7 +92,7 @@ test('store patch apply merge-owned corner patch preserves existing lower corner
     },
   };
 
-  const next = applyConfigPatch(
+  const next = applyStoreConfigPatch(
     prevConfig,
     {
       cornerConfiguration: {
@@ -112,7 +112,7 @@ test('store patch apply merge-owned corner patch preserves existing lower corner
 });
 
 test('store patch apply replace-owned lower modules list can clear stale lower linear cells', () => {
-  const next = applyConfigPatch(
+  const next = applyStoreConfigPatch(
     {
       stackSplitLowerModulesConfiguration: [
         { layout: 'shelves', specialDims: { baseWidthCm: 60, widthCm: 90 } },
