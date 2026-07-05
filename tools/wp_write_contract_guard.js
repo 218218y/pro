@@ -66,6 +66,9 @@ function lineNumberOf(text, idx) {
 
 const CONFIG_REPLACE_KEY_ALLOWLIST = new Set(['esm/native/runtime/cfg_access_patch_metadata.ts']);
 const CONFIG_REPLACE_KEY_CONSTANT_ALLOWLIST = new Set(['esm/native/runtime/cfg_access_patch_metadata.ts']);
+const CONFIG_PATCH_DATA_KEYS_SERVICE_IMPORT_ALLOWLIST = new Set([
+  'esm/native/ui/react/actions/structural_build_refresh_actions.ts',
+]);
 
 const ALLOW_STATEKERNEL_STACK_METHODS = new Set();
 
@@ -87,6 +90,7 @@ const ALLOW_MODE_PATCH = new Set([
 const violations = [];
 const usedConfigReplaceKeyAllowlist = new Set();
 const usedConfigReplaceKeyConstantAllowlist = new Set();
+const usedConfigPatchDataKeysServiceImportAllowlist = new Set();
 
 const CONFIG_REPLACE_KEY_PATTERNS = [
   {
@@ -105,6 +109,8 @@ const CONFIG_REPLACE_KEY_PATTERNS = [
 
 const CONFIG_REPLACE_KEY_CONSTANT_PATTERN = /\bCONFIG_PATCH_REPLACE_KEY\b/g;
 const CONFIG_PROTOCOL_METADATA_PREFIX_PATTERN = /\.startsWith\(\s*['"]__['"]\s*\)/g;
+const CONFIG_PATCH_DATA_KEYS_SERVICE_IMPORT_PATTERN =
+  /\bimport\b[\s\S]*?\breadConfigPatchDataKeys\b[\s\S]*?\bfrom\s*['"][^'"]*\/services\/api\.js['"]/g;
 
 function collectConfigReplaceKeyConstructionMatches(text) {
   const matches = [];
@@ -181,6 +187,24 @@ function scanFile(fileAbs) {
       line: lineNumberOf(text, protocolPrefixMatches[0].index),
       msg: 'Use cfg_access_patch_metadata helpers instead of local startsWith("__") protocol metadata checks.',
     });
+  }
+
+  // 1.7) Keep the services-surface read helper narrow until another consumer is explicitly approved.
+  const patchDataKeysServiceImportMatches =
+    !isTypes && rp.startsWith('esm/native/')
+      ? [...text.matchAll(CONFIG_PATCH_DATA_KEYS_SERVICE_IMPORT_PATTERN)]
+      : [];
+  if (patchDataKeysServiceImportMatches.length) {
+    if (CONFIG_PATCH_DATA_KEYS_SERVICE_IMPORT_ALLOWLIST.has(rp)) {
+      usedConfigPatchDataKeysServiceImportAllowlist.add(rp);
+    } else {
+      violations.push({
+        file: rp,
+        kind: 'no-unapproved-config-patch-data-keys-service-import',
+        line: lineNumberOf(text, patchDataKeysServiceImportMatches[0].index),
+        msg: 'readConfigPatchDataKeys is a narrow services-surface helper; approve new consumers deliberately.',
+      });
+    }
   }
 
   // 2) Ban stack/corner compat calls via stateKernel (outside kernel itself).
@@ -359,6 +383,17 @@ function main() {
         kind: 'unused-config-replace-key-constant-allowlist',
         line: 1,
         msg: 'config replace-key constant allowlist entry is unused.',
+      });
+    }
+  }
+
+  for (const allowed of CONFIG_PATCH_DATA_KEYS_SERVICE_IMPORT_ALLOWLIST) {
+    if (!usedConfigPatchDataKeysServiceImportAllowlist.has(allowed)) {
+      violations.push({
+        file: allowed,
+        kind: 'unused-config-patch-data-keys-service-import-allowlist',
+        line: 1,
+        msg: 'config patch data keys services-surface allowlist entry is unused.',
       });
     }
   }
