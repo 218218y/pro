@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { triggerBlobDownloadViaBrowser } from '../../../services/api.js';
 import {
@@ -28,7 +28,6 @@ import {
   textToHtml,
 } from './order_pdf_overlay_text.js';
 import { createOrderPdfOverlayExportOps } from './order_pdf_overlay_export_ops.js';
-import { ensureGoogleIdentityServicesLoaded } from './gmail_draft.js';
 import { createOrderPdfOverlayGmailOps } from './order_pdf_overlay_gmail_ops.js';
 import {
   buildUntouchedDetailsRefreshDraft,
@@ -88,14 +87,8 @@ export function useOrderPdfOverlayComponentApis(args: {
   const { app, fb, docMaybe, winMaybe } = args;
   void app;
   void fb;
+  void docMaybe;
   const richProgrammaticApi = useOrderPdfOverlayRichProgrammatic(winMaybe);
-
-  useEffect(() => {
-    if (!docMaybe || !winMaybe) return;
-    void ensureGoogleIdentityServicesLoaded(docMaybe, winMaybe).catch(() => {
-      // Gmail export will show a user-facing error if the script is still unavailable on click.
-    });
-  }, [docMaybe, winMaybe]);
 
   const runtimeApi = useMemo(
     () => ({

@@ -43,34 +43,15 @@ type OrderPdfOverlayGmailOpsDeps = {
   ) => boolean;
 };
 
-function openGmailDraftBrowserTab(args: {
+function openGmailDraftWindow(args: {
   winMaybe: Window | null;
   draftId: string;
   draftUrl?: string | null;
 }): boolean {
   const { winMaybe, draftId, draftUrl } = args;
   const url = draftUrl || `https://mail.google.com/mail/#drafts/${encodeURIComponent(draftId)}`;
-
   try {
-    if (!winMaybe || typeof winMaybe.open !== 'function') return false;
-
-    // Deliberately do not pass a third windowFeatures argument. In Chromium,
-    // sizing/legacy feature strings request a minimal popup-style window.
-    // A plain _blank open lets the browser use its normal tab UI.
-    const opened = winMaybe.open(url, '_blank');
-    if (!opened) return false;
-
-    try {
-      opened.opener = null;
-    } catch {
-      // Cross-origin WindowProxy implementations may reject opener writes.
-    }
-    try {
-      if (typeof opened.focus === 'function') opened.focus();
-    } catch {
-      // ignore
-    }
-    return true;
+    return !!(winMaybe && typeof winMaybe.open === 'function' && winMaybe.open(url, '_blank'));
   } catch {
     return false;
   }
@@ -86,7 +67,6 @@ async function createAndOpenGmailDraft(args: {
   orderNumber: string;
   fileName: string;
   pdfBytes: Uint8Array;
-  accessToken?: string;
 }): Promise<{ opened: boolean }> {
   const {
     docMaybe,
@@ -98,11 +78,10 @@ async function createAndOpenGmailDraft(args: {
     orderNumber,
     fileName,
     pdfBytes,
-    accessToken,
   } = args;
 
   const clientId = getGoogleClientIdFromEnvOrDefault();
-  const token = accessToken || (await getGmailComposeAccessToken({ doc: docMaybe, win: winMaybe, clientId }));
+  const token = await getGmailComposeAccessToken({ doc: docMaybe, win: winMaybe, clientId });
   const fetchFn: typeof fetch =
     winMaybe && typeof winMaybe.fetch === 'function' ? winMaybe.fetch.bind(winMaybe) : fetch;
   const subject = applyTemplate(subjectTemplate, { projectName, orderNumber, fileName });
@@ -119,7 +98,7 @@ async function createAndOpenGmailDraft(args: {
   });
 
   return {
-    opened: openGmailDraftBrowserTab({
+    opened: openGmailDraftWindow({
       winMaybe,
       draftId,
       draftUrl,
@@ -141,10 +120,6 @@ export function createOrderPdfOverlayGmailOps(deps: OrderPdfOverlayGmailOpsDeps)
   } = deps;
 
   async function exportInteractiveToGmail(draft: OrderPdfDraft): Promise<{ opened: boolean }> {
-    // Keep the PDF editor tab active while the heavy PDF/raster work runs.
-    // Gmail is opened only after the draft exists, so no placeholder tab steals focus.
-    const clientId = getGoogleClientIdFromEnvOrDefault();
-    const accessToken = await getGmailComposeAccessToken({ doc: docMaybe, win: winMaybe, clientId });
     const built = await buildImagePdfAttachmentFromDraft(draft);
     const fileName = String(built.fileName || 'order_image.pdf');
     const projectName = String(built.projectName || draft.projectName || 'פרויקט');
@@ -160,16 +135,12 @@ export function createOrderPdfOverlayGmailOps(deps: OrderPdfOverlayGmailOpsDeps)
       orderNumber,
       fileName,
       pdfBytes: built.pdfBytes,
-      accessToken,
     });
   }
 
   async function exportInteractiveDownloadAndGmail(
     draft: OrderPdfDraft
   ): Promise<{ opened: boolean; downloaded: boolean }> {
-    // Keep all PDF work in the current focused tab; Gmail is opened only after the draft exists.
-    const clientId = getGoogleClientIdFromEnvOrDefault();
-    const accessToken = await getGmailComposeAccessToken({ doc: docMaybe, win: winMaybe, clientId });
     const built = await buildInteractivePdfBlobForEditorDraft(draft);
     const blob = built.blob;
     const fileName = String(built.fileName || 'order.pdf');
@@ -194,7 +165,6 @@ export function createOrderPdfOverlayGmailOps(deps: OrderPdfOverlayGmailOpsDeps)
       orderNumber,
       fileName: outName,
       pdfBytes: outBytes,
-      accessToken,
     });
 
     return { opened: result.opened, downloaded };
