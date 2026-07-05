@@ -66,7 +66,7 @@ function lineNumberOf(text, idx) {
 
 const CONFIG_REPLACE_KEY_ALLOWLIST = new Set(['esm/native/runtime/cfg_access_patch_metadata.ts']);
 const CONFIG_REPLACE_KEY_CONSTANT_ALLOWLIST = new Set(['esm/native/runtime/cfg_access_patch_metadata.ts']);
-const CONFIG_PATCH_DATA_KEYS_SERVICE_IMPORT_ALLOWLIST = new Set([
+const CONFIG_PATCH_DATA_KEYS_UI_USAGE_ALLOWLIST = new Set([
   'esm/native/ui/react/actions/structural_build_refresh_actions.ts',
 ]);
 
@@ -90,7 +90,7 @@ const ALLOW_MODE_PATCH = new Set([
 const violations = [];
 const usedConfigReplaceKeyAllowlist = new Set();
 const usedConfigReplaceKeyConstantAllowlist = new Set();
-const usedConfigPatchDataKeysServiceImportAllowlist = new Set();
+const usedConfigPatchDataKeysUiUsageAllowlist = new Set();
 
 const CONFIG_REPLACE_KEY_PATTERNS = [
   {
@@ -109,8 +109,7 @@ const CONFIG_REPLACE_KEY_PATTERNS = [
 
 const CONFIG_REPLACE_KEY_CONSTANT_PATTERN = /\bCONFIG_PATCH_REPLACE_KEY\b/g;
 const CONFIG_PROTOCOL_METADATA_PREFIX_PATTERN = /\.startsWith\(\s*['"]__['"]\s*\)/g;
-const CONFIG_PATCH_DATA_KEYS_SERVICE_IMPORT_PATTERN =
-  /\bimport\b[\s\S]*?\breadConfigPatchDataKeys\b[\s\S]*?\bfrom\s*['"][^'"]*\/services\/api\.js['"]/g;
+const CONFIG_PATCH_DATA_KEYS_SYMBOL_PATTERN = /\breadConfigPatchDataKeys\b/g;
 
 function collectConfigReplaceKeyConstructionMatches(text) {
   const matches = [];
@@ -189,20 +188,20 @@ function scanFile(fileAbs) {
     });
   }
 
-  // 1.7) Keep the services-surface read helper narrow until another consumer is explicitly approved.
-  const patchDataKeysServiceImportMatches =
-    !isTypes && rp.startsWith('esm/native/')
-      ? [...text.matchAll(CONFIG_PATCH_DATA_KEYS_SERVICE_IMPORT_PATTERN)]
+  // 1.7) Keep the UI use of the services-surface read helper narrow until explicitly approved.
+  const patchDataKeysUiUsageMatches =
+    !isTypes && rp.startsWith('esm/native/ui/')
+      ? [...text.matchAll(CONFIG_PATCH_DATA_KEYS_SYMBOL_PATTERN)]
       : [];
-  if (patchDataKeysServiceImportMatches.length) {
-    if (CONFIG_PATCH_DATA_KEYS_SERVICE_IMPORT_ALLOWLIST.has(rp)) {
-      usedConfigPatchDataKeysServiceImportAllowlist.add(rp);
+  if (patchDataKeysUiUsageMatches.length) {
+    if (CONFIG_PATCH_DATA_KEYS_UI_USAGE_ALLOWLIST.has(rp)) {
+      usedConfigPatchDataKeysUiUsageAllowlist.add(rp);
     } else {
       violations.push({
         file: rp,
-        kind: 'no-unapproved-config-patch-data-keys-service-import',
-        line: lineNumberOf(text, patchDataKeysServiceImportMatches[0].index),
-        msg: 'readConfigPatchDataKeys is a narrow services-surface helper; approve new consumers deliberately.',
+        kind: 'no-unapproved-config-patch-data-keys-ui-usage',
+        line: lineNumberOf(text, patchDataKeysUiUsageMatches[0].index),
+        msg: 'readConfigPatchDataKeys is a narrow services-surface helper; approve new UI consumers deliberately.',
       });
     }
   }
@@ -387,13 +386,13 @@ function main() {
     }
   }
 
-  for (const allowed of CONFIG_PATCH_DATA_KEYS_SERVICE_IMPORT_ALLOWLIST) {
-    if (!usedConfigPatchDataKeysServiceImportAllowlist.has(allowed)) {
+  for (const allowed of CONFIG_PATCH_DATA_KEYS_UI_USAGE_ALLOWLIST) {
+    if (!usedConfigPatchDataKeysUiUsageAllowlist.has(allowed)) {
       violations.push({
         file: allowed,
-        kind: 'unused-config-patch-data-keys-service-import-allowlist',
+        kind: 'unused-config-patch-data-keys-ui-usage-allowlist',
         line: 1,
-        msg: 'config patch data keys services-surface allowlist entry is unused.',
+        msg: 'config patch data keys UI usage allowlist entry is unused.',
       });
     }
   }

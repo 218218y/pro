@@ -103,16 +103,16 @@ test('store backend replace metadata construction stays centralized in the metad
 
   assert.match(writeContractGuard, /CONFIG_REPLACE_KEY_ALLOWLIST/);
   assert.match(writeContractGuard, /CONFIG_REPLACE_KEY_CONSTANT_ALLOWLIST/);
-  assert.match(writeContractGuard, /CONFIG_PATCH_DATA_KEYS_SERVICE_IMPORT_ALLOWLIST/);
+  assert.match(writeContractGuard, /CONFIG_PATCH_DATA_KEYS_UI_USAGE_ALLOWLIST/);
   assert.match(writeContractGuard, /collectConfigReplaceKeyConstructionMatches/);
   assert.match(writeContractGuard, /template-built __replace/);
   assert.match(writeContractGuard, /concatenated __replace/);
   assert.match(writeContractGuard, /no-raw-config-replace-key-constant/);
   assert.match(writeContractGuard, /no-local-config-protocol-prefix-sniffing/);
-  assert.match(writeContractGuard, /no-unapproved-config-patch-data-keys-service-import/);
+  assert.match(writeContractGuard, /no-unapproved-config-patch-data-keys-ui-usage/);
   assert.match(writeContractGuard, /config replace-key allowlist entry is unused/);
   assert.match(writeContractGuard, /config replace-key constant allowlist entry is unused/);
-  assert.match(writeContractGuard, /config patch data keys services-surface allowlist entry is unused/);
+  assert.match(writeContractGuard, /config patch data keys UI usage allowlist entry is unused/);
   assert.match(allowlist, /esm\/native\/runtime\/cfg_access_patch_metadata\.ts/);
   assert.doesNotMatch(allowlist, /esm\/native\/runtime\/cfg_access\.ts/);
   assert.doesNotMatch(allowlist, /esm\/native\/runtime\/cfg_access_core\.ts/);
