@@ -134,15 +134,22 @@ export type PlanarMirrorRefreshOptions = {
 };
 
 const PLANAR_CUBE_MODE_RENDER_SLOT = '__mirrorPlanarCubeMode';
-const notifiedPlanarCubeModeApps = new WeakSet<object>();
+const PLANAR_CUBE_MODE_NOTIFIED_RENDER_SLOT = '__mirrorPlanarCubeModeNotified';
+
+function hasNotifiedPlanarReflectorCubeMode(App: unknown): boolean {
+  return getRenderSlot<boolean>(App, PLANAR_CUBE_MODE_NOTIFIED_RENDER_SLOT) === true;
+}
+
+function setPlanarReflectorCubeModeNotified(App: unknown, value: boolean): void {
+  setRenderSlot(App, PLANAR_CUBE_MODE_NOTIFIED_RENDER_SLOT, value === true);
+}
 
 function notifyPlanarReflectorCubeMode(App: unknown): void {
-  const appRecord = readRecord(App);
-  if (!appRecord || notifiedPlanarCubeModeApps.has(appRecord)) return;
-  notifiedPlanarCubeModeApps.add(appRecord);
+  if (hasNotifiedPlanarReflectorCubeMode(App)) return;
+  setPlanarReflectorCubeModeNotified(App, true);
   try {
     getUiFeedback(App).toast(
-      'כל המראות הועברו זמנית למראה פשוטה (cube) כדי לשמור על ביצועים. כשהכמות תרד מתחת למגבלה, הן יחזרו למראה ממשית.',
+      'כל המראות הועברו זמנית למראה פשוטה (cube) כדי לשמור על ביצועים. כשהכמות לא תחרוג מהמגבלה, הן יחזרו למראה ממשית.',
       'info'
     );
   } catch {
@@ -251,11 +258,13 @@ function resolveMaxPlanarReflectors(App: unknown): number {
   );
 }
 
-function disablePlanarReflectorCubeMode(App: unknown, opts?: { markDirty?: boolean | null }): boolean {
+function disablePlanarReflectorCubeMode(
+  App: unknown,
+  opts?: { markDirty?: boolean | null; resetNotification?: boolean | null }
+): boolean {
   if (!isPlanarReflectorCubeMode(App)) return false;
   setRenderSlot(App, PLANAR_CUBE_MODE_RENDER_SLOT, false);
-  const appRecord = readRecord(App);
-  if (appRecord) notifiedPlanarCubeModeApps.delete(appRecord);
+  if (opts?.resetNotification === true) setPlanarReflectorCubeModeNotified(App, false);
   if (opts?.markDirty !== false) {
     setRenderSlot(App, '__mirrorDirty', true);
     setRenderSlot(App, '__mirrorWorkPending', true);
@@ -267,8 +276,27 @@ function disablePlanarReflectorCubeMode(App: unknown, opts?: { markDirty?: boole
 
 function recoverPlanarReflectorCubeModeIfAffordable(App: unknown, maxReflectors: number): boolean {
   if (!isPlanarReflectorCubeMode(App)) return false;
-  if (countTrackedMirrorSurfaces(App) >= maxReflectors) return false;
+  if (countTrackedMirrorSurfaces(App) > maxReflectors) return false;
   return disablePlanarReflectorCubeMode(App, { markDirty: false });
+}
+
+export function finalizePlanarReflectorCubeModeRecovery(App: unknown): boolean {
+  const maxReflectors = resolveMaxPlanarReflectors(App);
+  const stats = readTrackedPlanarMirrorStats(App);
+  if (stats.mirrorCount > maxReflectors) return false;
+
+  if (isPlanarReflectorCubeMode(App)) {
+    return disablePlanarReflectorCubeMode(App, {
+      markDirty: stats.mirrorCount > 0,
+      resetNotification: true,
+    });
+  }
+
+  if (hasNotifiedPlanarReflectorCubeMode(App)) {
+    setPlanarReflectorCubeModeNotified(App, false);
+    return true;
+  }
+  return false;
 }
 
 function requiredReflectorConstructorsAvailable(THREE: ThreeLike): boolean {

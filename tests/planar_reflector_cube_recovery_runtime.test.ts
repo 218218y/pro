@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  finalizePlanarReflectorCubeModeRecovery,
   installPlanarMirrorReflector,
   isPlanarMirrorSurface,
 } from '../esm/native/runtime/planar_reflector_runtime.ts';
@@ -81,7 +82,7 @@ const fakeThree = {
   FrontSide: 'FrontSide',
 } as never;
 
-function makeApp(maxCount = 2) {
+function makeApp(maxCount = 2, cubeMode = true) {
   const toasts: string[] = [];
   return {
     config: {
@@ -89,7 +90,7 @@ function makeApp(maxCount = 2) {
       MIRROR_REFLECTOR_MAX_COUNT: maxCount,
     },
     render: {
-      __mirrorPlanarCubeMode: true,
+      __mirrorPlanarCubeMode: cubeMode,
       meta: { mirrors: [] },
     },
     services: {
@@ -140,4 +141,53 @@ test('performance cube fallback stays active while the tracked mirror count is s
   assert.equal(isPlanarMirrorSurface(nextMirror), false);
   assert.equal((app.render as AnyRecord).__mirrorPlanarCubeMode, true);
   assert.equal(app.toasts.length, 0);
+});
+
+test('performance cube fallback notification is not repeated during rebuilds that remain over budget', () => {
+  const app = makeApp(1, false);
+  const first = makeMirror();
+  const overflow = makeMirror();
+
+  assert.equal(installPlanarMirrorReflector(app, fakeThree, first as never), true);
+  trackMirrorSurface(app, first);
+  assert.equal(installPlanarMirrorReflector(app, fakeThree, overflow as never), false);
+  trackMirrorSurface(app, overflow);
+
+  assert.equal((app.render as AnyRecord).__mirrorPlanarCubeMode, true);
+  assert.equal(app.toasts.length, 1);
+
+  ((app.render as AnyRecord).meta as AnyRecord).mirrors = [];
+  const rebuiltFirst = makeMirror();
+  const rebuiltOverflow = makeMirror();
+
+  assert.equal(installPlanarMirrorReflector(app, fakeThree, rebuiltFirst as never), true);
+  trackMirrorSurface(app, rebuiltFirst);
+  assert.equal(installPlanarMirrorReflector(app, fakeThree, rebuiltOverflow as never), false);
+  trackMirrorSurface(app, rebuiltOverflow);
+
+  assert.equal((app.render as AnyRecord).__mirrorPlanarCubeMode, true);
+  assert.equal(app.toasts.length, 1, 'the active cube fallback episode should be announced only once');
+});
+
+test('performance cube fallback notification resets after a completed affordable recovery', () => {
+  const app = makeApp(1, false);
+  const first = makeMirror();
+  const overflow = makeMirror();
+
+  assert.equal(installPlanarMirrorReflector(app, fakeThree, first as never), true);
+  trackMirrorSurface(app, first);
+  assert.equal(installPlanarMirrorReflector(app, fakeThree, overflow as never), false);
+  trackMirrorSurface(app, overflow);
+  assert.equal(app.toasts.length, 1);
+
+  ((app.render as AnyRecord).meta as AnyRecord).mirrors = [];
+  const recovered = makeMirror();
+  assert.equal(installPlanarMirrorReflector(app, fakeThree, recovered as never), true);
+  trackMirrorSurface(app, recovered);
+  assert.equal(finalizePlanarReflectorCubeModeRecovery(app), true);
+  assert.notEqual((app.render as AnyRecord).__mirrorPlanarCubeMode, true);
+
+  const nextOverflow = makeMirror();
+  assert.equal(installPlanarMirrorReflector(app, fakeThree, nextOverflow as never), false);
+  assert.equal(app.toasts.length, 2, 'a new fallback episode should still be announced');
 });
