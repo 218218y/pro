@@ -1,0 +1,4 @@
+# WardrobePro: keep the site accessible to anyone with the link, but keep it out of search results.
+# Do not block crawling here; crawlers must be able to fetch pages/assets to see the noindex directives.
+User-agent: *
+Allow: /
