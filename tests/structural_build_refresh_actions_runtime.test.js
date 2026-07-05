@@ -58,6 +58,31 @@ test('[structural-build-refresh-actions] known config maps use semantic direct w
   assert.equal(result.requestedBuild, false);
 });
 
+test('[structural-build-refresh-actions] config map routing ignores patch metadata keys', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  const mod = loadStructuralBuildRefreshActionsModule({
+    calls,
+    patchViaActions: () => true,
+  });
+
+  const result = mod.applyImmediateStructuralConfigMutation(
+    app,
+    'react:test:metadata',
+    { handlesMap: { d1_full: 'bar' }, __snapshot: true },
+    meta => {
+      calls.push(['directConfigMutation', meta]);
+    }
+  );
+
+  assert.equal(
+    JSON.stringify(calls),
+    JSON.stringify([['directConfigMutation', { source: 'react:test:metadata', immediate: true }]])
+  );
+  assert.equal(result.appliedViaActions, false);
+  assert.equal(result.requestedBuild, false);
+});
+
 test('[structural-build-refresh-actions] known config map mutation rejects mixed scalar patches', () => {
   const calls = [];
   const app = { id: 'app' };

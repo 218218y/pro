@@ -1,7 +1,6 @@
 import type { ActionMetaLike, UnknownRecord } from '../../../../../types';
 
 import { KNOWN_PROJECT_CONFIG_MAP_KEYS } from '../../../features/project_config/api.js';
-import { CONFIG_PATCH_REPLACE_KEY } from '../../../runtime/cfg_access_patch_metadata.js';
 import { patchViaActions } from '../../../services/api.js';
 
 export type StructuralMutationSlice = 'config' | 'ui' | 'runtime';
@@ -57,8 +56,12 @@ function createSliceImmediateStructuralMutationMeta(
   return meta;
 }
 
+function isConfigPatchMetadataKey(key: string): boolean {
+  return key.startsWith('__');
+}
+
 function readConfigPatchKeys(patch: UnknownRecord): string[] {
-  return Object.keys(patch).filter(key => key && key !== CONFIG_PATCH_REPLACE_KEY);
+  return Object.keys(patch).filter(key => key && !isConfigPatchMetadataKey(key));
 }
 
 function readKnownConfigMapPatchKeys(patch: UnknownRecord): string[] {

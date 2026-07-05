@@ -39,9 +39,6 @@ export function loadStructuralBuildRefreshActionsModule(stubs = {}) {
     if (specifier === '../../../features/project_config/api.js') {
       return { KNOWN_PROJECT_CONFIG_MAP_KEYS };
     }
-    if (specifier === '../../../runtime/cfg_access_patch_metadata.js') {
-      return { CONFIG_PATCH_REPLACE_KEY: `${'__'}replace` };
-    }
     if (specifier === '../../../services/api.js') {
       return {
         patchViaActions: (...args) => {
