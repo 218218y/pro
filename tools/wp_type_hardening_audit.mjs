@@ -90,6 +90,10 @@ const rawStoreBackendTypeNames = [
   'BackendStoreLike',
   'RootStoreLike',
   'StoreLike',
+  'ConfigSlicePatch',
+  'PatchPayload',
+  'RawConfigSlicePatch',
+  'RawPatchPayload',
   'StorePatchPayload',
   'StorePatchAction',
   'StoreBackendAction',
@@ -101,11 +105,16 @@ const rawStoreBackendTypeAllowPaths = new Set([
   'esm/native/platform/store_commit_pipeline.ts',
   'esm/native/platform/store_contract.ts',
   'esm/native/platform/store_patch_apply.ts',
+  'esm/native/kernel/kernel_install_support.ts',
   'esm/native/kernel/state_api_install_support.ts',
+  'esm/native/kernel/kernel_state_kernel_config_shared.ts',
   'esm/native/kernel/kernel_snapshot_store_commits_ops.ts',
   'esm/native/kernel/state_api_config_namespace.ts',
   'esm/native/kernel/state_api_config_namespace_core.ts',
+  'esm/native/kernel/state_api_config_namespace_shared.ts',
   'esm/native/kernel/state_api_history_meta_reactivity_contracts.ts',
+  'esm/native/kernel/state_api_shared.ts',
+  'esm/native/kernel/state_api_surface_namespaces.ts',
   'esm/native/runtime/assert.ts',
   'esm/native/runtime/cfg_access_shared.ts',
   'esm/native/runtime/cfg_access_core.ts',
@@ -149,16 +158,25 @@ function collectRuntimeGeometryScalarUnionViolations() {
 function collectRawStoreBackendTypeBoundaryViolations() {
   const violations = [];
   const rawTypePattern = new RegExp(`\\b(?:${rawStoreBackendTypeNames.join('|')})\\b`, 'g');
+  const usedAllowPaths = new Set();
   for (const abs of walk(path.join(root, 'esm'))) {
     const rel = path.relative(root, abs).replace(/\\/g, '/');
-    if (rawStoreBackendTypeAllowPaths.has(rel)) continue;
     const source = fs.readFileSync(abs, 'utf8');
     rawTypePattern.lastIndex = 0;
     const names = [...new Set([...source.matchAll(rawTypePattern)].map(match => match[0]))].sort();
+    if (rawStoreBackendTypeAllowPaths.has(rel)) {
+      if (names.length) usedAllowPaths.add(rel);
+      continue;
+    }
     if (names.length) {
       violations.push(
-        `${rel}: raw store/backend action type outside backend allowlist (${names.join(', ')})`
+        `${rel}: raw store/backend action/patch type outside backend allowlist (${names.join(', ')})`
       );
+    }
+  }
+  for (const rel of [...rawStoreBackendTypeAllowPaths].sort()) {
+    if (!usedAllowPaths.has(rel)) {
+      violations.push(`${rel}: raw store/backend action/patch type allowlist entry is unused`);
     }
   }
   return violations;
@@ -167,7 +185,7 @@ function collectRawStoreBackendTypeBoundaryViolations() {
 function collectRawStoreWriteBoundaryViolations() {
   const violations = [];
   const rawStoreWritePattern =
-    /\b(?:App\.)?store\s*\.\s*(?:patch|setConfig)\s*\(|\.setConfig\s*\(|\.patch(?:\?\.)?\s*\(\s*\{\s*(?:config|ui|runtime|mode|meta)\s*:/g;
+    /\b(?:App\.)?store\s*\.\s*(?:patch|setConfig)\s*\(|\bsetConfig\s*\(|\.setConfig\s*\(|(?:\.|\b)patch(?:\?\.)?\s*\(\s*\{\s*(?:config|ui|runtime|mode|meta)\s*:/g;
   for (const rootName of rawStoreWritePublicLayerRoots) {
     for (const abs of walk(path.join(root, rootName))) {
       const rel = path.relative(root, abs).replace(/\\/g, '/');
@@ -204,7 +222,11 @@ function collectRawStoreBoundaryDocViolations() {
     },
     {
       rel: 'types/backend_patch_payload.ts',
-      pattern: /Backend-only store PATCH payload types\./,
+      pattern: /Backend-only raw PATCH payload types\./,
+    },
+    {
+      rel: 'types/patch_payload.ts',
+      pattern: /Raw slice PATCH payload shapes used below the public action facade\./,
     },
     {
       rel: 'types/state.ts',
@@ -236,11 +258,11 @@ function collectPublicTypeBarrelViolations() {
     violations.push('types/index.ts: public barrel must explicitly export public patch payload types');
   }
   if (
-    /backend_actions|backend_patch_payload|backend_store|\b(?:BackendStoreLike|StoreLike|RootStoreLike|StorePatchPayload|StorePatchAction|StoreBackendAction|RawWardrobeProAction)\b/.test(
+    /backend_actions|backend_patch_payload|backend_store|store_spine|\b(?:BackendStoreLike|StoreLike|RootStoreLike|ConfigSlicePatch|PatchPayload|RawConfigSlicePatch|RawPatchPayload|StorePatchPayload|StorePatchAction|StoreBackendAction|RawWardrobeProAction)\b/.test(
       source
     )
   ) {
-    violations.push('types/index.ts: public barrel must not export raw backend store/action types');
+    violations.push('types/index.ts: public barrel must not export raw backend store/action/patch types');
   }
   return violations;
 }
@@ -270,5 +292,5 @@ if (violations.length) {
 }
 
 console.log(
-  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric; raw store backend boundary is guarded)'
+  '[type-hardening-audit] ok (0 `as any` casts in esm/types; types runtime stubs are paired; runtime geometry scalars stay numeric; raw store/backend patch boundary is guarded)'
 );

@@ -1,13 +1,12 @@
 import type {
   ActionMetaLike,
-  ConfigSlicePatch,
   MetaSlicePatch,
   ModeSlicePatch,
-  PatchPayload,
   RuntimeSlicePatch,
   UiSlicePatch,
   UnknownRecord,
 } from '../../../types';
+import type { ConfigSlicePatch, PatchPayload } from '../../../types/backend_patch_payload';
 
 export type SlicePatchNamespace = 'ui' | 'runtime' | 'mode' | 'config' | 'meta';
 export type SliceStoreWriter = 'setUi' | 'setRuntime' | 'setModePatch' | 'setConfig' | 'setMeta';

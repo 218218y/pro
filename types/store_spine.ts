@@ -11,13 +11,8 @@
 
 import type { UiStateLike, ConfigStateLike, RuntimeStateLike, ModeStateLike } from './build';
 import type { RootMetaStateLike, RootSliceKey } from './store_state';
-import type {
-  UiSlicePatch,
-  ConfigSlicePatch,
-  RuntimeSlicePatch,
-  ModeSlicePatch,
-  MetaSlicePatch,
-} from './patch_payload';
+import type { UiSlicePatch, RuntimeSlicePatch, ModeSlicePatch, MetaSlicePatch } from './patch_payload';
+import type { ConfigSlicePatch } from './backend_patch_payload';
 
 export type RootSliceStateMap = {
   ui: UiStateLike;

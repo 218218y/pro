@@ -84,8 +84,12 @@ void rawBackendAction;
   );
 });
 
-test('[actions.patch types] public barrel does not export raw store backend action types', () => {
+test('[actions.patch types] public barrel does not export raw store backend action/patch types', () => {
   const source = `import type { StorePatchPayload } from './types'; // expect-error
+import type { PatchPayload } from './types'; // expect-error
+import type { ConfigSlicePatch } from './types'; // expect-error
+import type { RawPatchPayload } from './types'; // expect-error
+import type { RawConfigSlicePatch } from './types'; // expect-error
 import type { StorePatchAction } from './types'; // expect-error
 import type { StoreBackendAction } from './types'; // expect-error
 import type { RawWardrobeProAction } from './types'; // expect-error
@@ -105,6 +109,41 @@ import type { BackendStoreLike } from './types'; // expect-error
   );
   assert.ok(
     diagnostics.every(diag => /has no exported member/.test(diag.message)),
+    diagnostics.map(diag => diag.message).join('\n')
+  );
+});
+
+test('[actions.patch types] public patch payload aliases reject known config maps', () => {
+  const source = `import type { PublicPatchPayload, PublicConfigPatch } from './types';
+const okPayload: PublicPatchPayload = { config: { width: 120 } };
+const okReplacePayload: PublicPatchPayload = { config: { width: 130, __replace: { width: true } } };
+const badPayload: PublicPatchPayload = { config: { handlesMap: { d1_full: 'rail' } } }; // expect-error
+const badReplacePayload: PublicPatchPayload = { config: { __replace: { handlesMap: true } } }; // expect-error
+const okConfig: PublicConfigPatch = { width: 120 };
+const okReplaceConfig: PublicConfigPatch = { width: 130, __replace: { width: true } };
+const badConfig: PublicConfigPatch = { handlesMap: { d1_full: 'rail' } }; // expect-error
+const badReplaceConfig: PublicConfigPatch = { __replace: { handlesMap: true } }; // expect-error
+void okPayload;
+void okReplacePayload;
+void badPayload;
+void badReplacePayload;
+void okConfig;
+void okReplaceConfig;
+void badConfig;
+void badReplaceConfig;
+`;
+
+  const diagnostics = runVirtualTypecheck(source);
+  const expectedLines = source
+    .split('\n')
+    .flatMap((line, index) => (line.includes('expect-error') ? [index + 1] : []));
+
+  assert.deepEqual(
+    diagnostics.map(diag => diag.line),
+    expectedLines
+  );
+  assert.ok(
+    diagnostics.every(diag => /not assignable/.test(diag.message)),
     diagnostics.map(diag => diag.message).join('\n')
   );
 });

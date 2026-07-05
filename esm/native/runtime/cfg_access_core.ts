@@ -2,10 +2,10 @@ import type {
   ActionMetaLike,
   ConfigScalarKey,
   ConfigScalarValueMap,
-  ConfigSlicePatch,
   ConfigSnapshotLike,
   UnknownRecord,
 } from '../../../types';
+import type { ConfigSlicePatch } from '../../../types/backend_patch_payload';
 import { hasSliceWriterSeam, patchSliceCanonical } from './slice_write_access.js';
 import { isKnownMapName } from './maps_access_normalizers.js';
 import {

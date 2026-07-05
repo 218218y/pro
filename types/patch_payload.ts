@@ -1,8 +1,10 @@
-// Typed PATCH payload shapes.
+// Raw slice PATCH payload shapes used below the public action facade.
 //
 // Goal:
-// - Provide helpful structure at the store/action boundary (PATCH/SET),
-//   without forcing full domain-model typing.
+// - Provide helpful structure for backend/runtime slice patch plumbing,
+//   without presenting these raw shapes as the public root action contract.
+// - Public actions.patch uses ActionRootPatchPayload / PublicPatchPayload.
+// - Backend store.patch uses StorePatchPayload from backend_patch_payload.ts.
 // - Keep slices open-ended (index signatures) so migration can be incremental.
 
 import type { UnknownRecord } from './common';

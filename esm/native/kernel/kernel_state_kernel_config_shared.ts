@@ -1,11 +1,11 @@
 import type {
   AppContainer,
   ActionMetaLike,
-  ConfigSlicePatch,
   StateKernelLike,
   UnknownCallable,
   UnknownRecord,
 } from '../../../types';
+import type { ConfigSlicePatch } from '../../../types/backend_patch_payload';
 
 import { getCfg } from './store_access.js';
 import type { ModulesConfigBucketKey } from '../features/modules_configuration/modules_config_api.js';

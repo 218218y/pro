@@ -1,10 +1,5 @@
-import type {
-  ActionEnvelope,
-  ActionMetaLike,
-  DispatchOptionsLike,
-  RootStateLike,
-  PatchPayload,
-} from '../../../types';
+import type { ActionEnvelope, ActionMetaLike, DispatchOptionsLike, RootStateLike } from '../../../types';
+import type { PatchPayload } from '../../../types/backend_patch_payload';
 import type { StoreApi as ZustandStoreApi } from 'zustand/vanilla';
 
 import { normalizeActionMeta, sanitizePatchPayloadForStore } from './store_contract.js';

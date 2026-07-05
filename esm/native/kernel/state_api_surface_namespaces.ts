@@ -6,7 +6,6 @@ import type {
   BuilderActionsNamespaceLike,
   ModeActionsNamespaceLike,
   ModulesActionsLike,
-  PatchPayload,
   RootStateLike,
   RuntimeActionsNamespaceLike,
   RuntimeSlicePatch,
@@ -14,6 +13,7 @@ import type {
   UiSlicePatch,
   UnknownRecord,
 } from '../../../types';
+import type { PatchPayload } from '../../../types/backend_patch_payload';
 
 import {
   cloneCornerConfigurationListsSnapshot,

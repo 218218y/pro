@@ -47,16 +47,8 @@ export type {
   WardrobeProAction,
   WardrobeProActionType,
 } from './actions';
-export type {
-  ConfigSlicePatch,
-  MetaSlicePatch,
-  ModeSlicePatch,
-  PatchPayload,
-  RuntimeSlicePatch,
-  UiSlicePatch,
-} from './patch_payload';
+export type { MetaSlicePatch, ModeSlicePatch, RuntimeSlicePatch, UiSlicePatch } from './patch_payload';
 export * from './store_state';
-export * from './store_spine';
 export * from './runtime';
 export * from './tools';
 export * from './maps';

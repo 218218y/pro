@@ -1,2 +1,2 @@
-// Backend-only store PATCH payload types.
+// Backend-only raw PATCH payload types.
 export {};

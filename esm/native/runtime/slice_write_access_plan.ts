@@ -1,4 +1,5 @@
-import type { ActionMetaLike, PatchPayload } from '../../../types';
+import type { ActionMetaLike } from '../../../types';
+import type { PatchPayload } from '../../../types/backend_patch_payload';
 
 import { createResolvedWriteContext, type ResolvedWriteContext } from './slice_write_access_context.js';
 import {

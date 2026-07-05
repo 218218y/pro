@@ -1,13 +1,12 @@
 import type {
   ActionMetaLike,
   ActionsNamespaceLike,
-  ConfigSlicePatch,
   ModeSlicePatch,
-  PatchPayload,
   RuntimeSlicePatch,
   UiSlicePatch,
   UnknownRecord,
 } from '../../../types';
+import type { ConfigSlicePatch, PatchPayload } from '../../../types/backend_patch_payload';
 
 import { asRecord, cloneRecord, isRecord } from '../runtime/record.js';
 

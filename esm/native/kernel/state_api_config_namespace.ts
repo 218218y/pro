@@ -2,9 +2,9 @@ import type {
   ActionMetaLike,
   ActionsNamespaceLike,
   ConfigActionsNamespaceLike,
-  ConfigSlicePatch,
   UnknownRecord,
 } from '../../../types';
+import type { ConfigSlicePatch } from '../../../types/backend_patch_payload';
 import type { RootStoreLike } from '../../../types/backend_store';
 
 import type { MetaNs } from './state_api_shared.js';

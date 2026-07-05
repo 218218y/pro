@@ -3,10 +3,9 @@ import type {
   RootStateLike,
   UnknownRecord,
   ActionMetaLike,
-  ConfigSlicePatch,
-  PatchPayload,
   UiSlicePatch,
 } from '../../../types';
+import type { ConfigSlicePatch, PatchPayload } from '../../../types/backend_patch_payload';
 
 import {
   dispatchDedicatedCanonicalPatchPayload,

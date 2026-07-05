@@ -2,9 +2,9 @@ import type {
   ActionMetaLike,
   ActionRootPatchPayload,
   ConfigNonMapPatch,
-  PatchPayload,
   UnknownRecord,
 } from '../../../types';
+import type { PatchPayload } from '../../../types/backend_patch_payload';
 
 import { callDedicatedMetaStoreWriter, readSlicePatchValue } from './slice_write_access_shared.js';
 import { isKnownMapName } from './maps_access_normalizers.js';

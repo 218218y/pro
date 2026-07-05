@@ -1,4 +1,5 @@
-import type { ActionMetaLike, ConfigSlicePatch, UnknownRecord } from '../../../types';
+import type { ActionMetaLike, UnknownRecord } from '../../../types';
+import type { ConfigSlicePatch } from '../../../types/backend_patch_payload';
 import { asRecord, isRecord } from '../runtime/record.js';
 
 export function asConfigPatch(v: unknown): ConfigSlicePatch {

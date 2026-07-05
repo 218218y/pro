@@ -1,11 +1,11 @@
 import type {
   ActionMetaLike,
-  PatchPayload,
   RootStateLike,
   RootSliceKey,
   RootMetaStateLike,
   UnknownRecord,
 } from '../../../types';
+import type { PatchPayload } from '../../../types/backend_patch_payload';
 
 export const ROOT_STORE_SLICE_KEYS: readonly RootSliceKey[] = ['ui', 'config', 'runtime', 'mode', 'meta'];
 

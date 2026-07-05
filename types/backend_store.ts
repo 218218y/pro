@@ -5,15 +5,9 @@
 
 import type { DispatchOptionsLike } from './actions';
 import type { UnknownRecord } from './common';
-import type { StorePatchPayload } from './backend_patch_payload';
+import type { ConfigSlicePatch, StorePatchPayload } from './backend_patch_payload';
 import type { ActionMetaLike, ModeActionOptsLike } from './kernel';
-import type {
-  ConfigSlicePatch,
-  MetaSlicePatch,
-  ModeSlicePatch,
-  RuntimeSlicePatch,
-  UiSlicePatch,
-} from './patch_payload';
+import type { MetaSlicePatch, ModeSlicePatch, RuntimeSlicePatch, UiSlicePatch } from './patch_payload';
 import type { PublicStoreLike } from './state';
 import type { RootStateLike } from './store_state';
 

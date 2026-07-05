@@ -1,4 +1,5 @@
-import type { ActionMetaLike, ConfigSlicePatch, RootStateLike, UiSlicePatch } from '../../../types';
+import type { ActionMetaLike, RootStateLike, UiSlicePatch } from '../../../types';
+import type { ConfigSlicePatch } from '../../../types/backend_patch_payload';
 import { ensureRootMetaRecord, shallowCloneRecord } from './store_contract.js';
 import {
   asPatchRecord,

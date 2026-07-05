@@ -1,4 +1,5 @@
-import type { AppContainer, ActionMetaLike, ConfigSlicePatch, UnknownRecord } from '../../../types';
+import type { AppContainer, ActionMetaLike, UnknownRecord } from '../../../types';
+import type { ConfigSlicePatch } from '../../../types/backend_patch_payload';
 
 import {
   hasDedicatedCanonicalPatchDispatch,
