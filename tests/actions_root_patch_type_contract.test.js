@@ -113,6 +113,35 @@ import type { BackendStoreLike } from './types'; // expect-error
   );
 });
 
+test('[actions.patch types] shared patch_payload module does not export raw root/config patch types', () => {
+  const source = `import type { PatchPayload } from './types/patch_payload'; // expect-error
+import type { ConfigSlicePatch } from './types/patch_payload'; // expect-error
+import type { UiSlicePatch, RuntimeSlicePatch, ModeSlicePatch, MetaSlicePatch } from './types/patch_payload';
+const uiPatch: UiSlicePatch = { __snapshot: true };
+const runtimePatch: RuntimeSlicePatch = { paintColor: 'red' };
+const modePatch: ModeSlicePatch = { primary: 'design' };
+const metaPatch: MetaSlicePatch = { dirty: true };
+void uiPatch;
+void runtimePatch;
+void modePatch;
+void metaPatch;
+`;
+
+  const diagnostics = runVirtualTypecheck(source);
+  const expectedLines = source
+    .split('\n')
+    .flatMap((line, index) => (line.includes('expect-error') ? [index + 1] : []));
+
+  assert.deepEqual(
+    diagnostics.map(diag => diag.line),
+    expectedLines
+  );
+  assert.ok(
+    diagnostics.every(diag => /has no exported member/.test(diag.message)),
+    diagnostics.map(diag => diag.message).join('\n')
+  );
+});
+
 test('[actions.patch types] public patch payload aliases reject known config maps', () => {
   const source = `import type { PublicPatchPayload, PublicConfigPatch } from './types';
 const okPayload: PublicPatchPayload = { config: { width: 120 } };

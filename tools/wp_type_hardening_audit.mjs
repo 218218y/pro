@@ -226,7 +226,11 @@ function collectRawStoreBoundaryDocViolations() {
     },
     {
       rel: 'types/patch_payload.ts',
-      pattern: /Raw slice PATCH payload shapes used below the public action facade\./,
+      pattern: /Shared non-config slice PATCH payload shapes\./,
+    },
+    {
+      rel: 'types/patch_payload.js',
+      pattern: /Shared non-config slice patch runtime stub\./,
     },
     {
       rel: 'types/state.ts',
@@ -267,6 +271,32 @@ function collectPublicTypeBarrelViolations() {
   return violations;
 }
 
+function collectRawPatchPayloadDeepImportViolations() {
+  const violations = [];
+  const patchPayloadSource = fs.readFileSync(path.join(root, 'types/patch_payload.ts'), 'utf8');
+  if (/\bexport\s+(?:interface|type)\s+(?:ConfigSlicePatch|PatchPayload)\b/.test(patchPayloadSource)) {
+    violations.push('types/patch_payload.ts: raw root/config patch types belong in backend_patch_payload.ts');
+  }
+
+  const rawPatchPayloadImportPattern = /import\s+type\s*\{([^}]*)\}\s+from\s+['"]([^'"]*patch_payload)['"]/g;
+  for (const rootName of scanRoots) {
+    for (const abs of walk(path.join(root, rootName))) {
+      const rel = path.relative(root, abs).replace(/\\/g, '/');
+      const source = fs.readFileSync(abs, 'utf8');
+      rawPatchPayloadImportPattern.lastIndex = 0;
+      const matches = [...source.matchAll(rawPatchPayloadImportPattern)].filter(
+        match =>
+          /\b(?:ConfigSlicePatch|PatchPayload)\b/.test(match[1]) &&
+          match[2].replace(/\\/g, '/').split('/').pop() === 'patch_payload'
+      );
+      if (matches.length) {
+        violations.push(`${rel}: raw root/config patch types must be imported from backend_patch_payload.ts`);
+      }
+    }
+  }
+  return violations;
+}
+
 const violations = [];
 for (const rootName of scanRoots) {
   for (const abs of walk(path.join(root, rootName))) {
@@ -284,6 +314,7 @@ violations.push(...collectRawStoreBackendTypeBoundaryViolations());
 violations.push(...collectRawStoreWriteBoundaryViolations());
 violations.push(...collectRawStoreBoundaryDocViolations());
 violations.push(...collectPublicTypeBarrelViolations());
+violations.push(...collectRawPatchPayloadDeepImportViolations());
 
 if (violations.length) {
   console.error('[type-hardening-audit] FAILED');

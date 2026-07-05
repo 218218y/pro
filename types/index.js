@@ -4,6 +4,9 @@
 // for `checkJs` JSDoc typedef imports: `import('../types').SomeType`.
 //
 // Keep this file as a *barrel only* to avoid circular type-only dependencies.
+//
+// Runtime stub only: the TypeScript public export boundary is enforced in
+// types/index.ts. The JS files under types/ are empty ESM stubs for resolution.
 export * from './common';
 export * from './kernel';
 export * from './domain';
