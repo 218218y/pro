@@ -13,6 +13,18 @@ import {
 } from '../esm/native/features/library_preset/library_preset.ts';
 import { normalizeLowerModuleConfig } from '../esm/native/features/stack_split/index.ts';
 
+test('seven-door center-left and center-right single-door positions follow viewer-facing left/right semantics', () => {
+  const signature = (singleDoorPos: string) =>
+    calculateModuleStructure(7, singleDoorPos, '', 'hinged').map(item => item.doors);
+
+  assert.deepEqual(signature('left'), [1, 2, 2, 2]);
+  assert.deepEqual(signature('center-left'), [2, 1, 2, 2]);
+  assert.deepEqual(signature('middle-left'), [2, 1, 2, 2]);
+  assert.deepEqual(signature('center-right'), [2, 2, 1, 2]);
+  assert.deepEqual(signature('middle-right'), [2, 2, 1, 2]);
+  assert.deepEqual(signature('right'), [2, 2, 2, 1]);
+});
+
 test('library preset door signatures follow the canonical module-structure calculator', () => {
   const ui = {
     structureSelect: '',

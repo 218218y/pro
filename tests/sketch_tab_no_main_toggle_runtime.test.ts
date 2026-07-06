@@ -24,12 +24,40 @@ function mergeUi(state: AnyRecord, patch: AnyRecord): void {
   };
 }
 
+const KNOWN_CONFIG_MAP_KEYS = [
+  'groovesMap',
+  'grooveLinesCountMap',
+  'splitDoorsMap',
+  'removedDoorsMap',
+  'roundedFrameSideShelvesMap',
+  'drawerDividersMap',
+  'individualColors',
+  'doorStyleMap',
+  'handlesMap',
+  'hingeMap',
+  'curtainMap',
+  'mirrorLayoutMap',
+  'doorTrimMap',
+  'splitDoorsBottomMap',
+  'doorSpecialMap',
+] as const;
+
+function assertNoGenericKnownConfigMapPatch(patch: AnyRecord): void {
+  const configPatch = patch && typeof patch.config === 'object' ? patch.config : null;
+  if (!configPatch) return;
+  const blocked = KNOWN_CONFIG_MAP_KEYS.filter(key => Object.prototype.hasOwnProperty.call(configPatch, key));
+  if (blocked.length) {
+    throw new Error(`generic actions.patch cannot write known config maps: ${blocked.join(', ')}`);
+  }
+}
+
 function createToggleApp(state: AnyRecord): AnyRecord {
   return {
     state,
     recomputeCalls: [] as AnyRecord[],
     actions: {
       patch(patch: AnyRecord) {
+        assertNoGenericKnownConfigMapPatch(patch);
         if (patch && patch.ui) mergeUi(state, patch.ui);
         if (patch && patch.config) state.config = clone(patch.config);
       },
@@ -68,6 +96,41 @@ const meta = {
     return { source, noBuild: true };
   },
 };
+
+test('sketch no-main enable writes full config snapshots through the project snapshot owner', () => {
+  const state: AnyRecord = {
+    ui: {
+      doors: 5,
+      width: 200,
+      height: 240,
+      depth: 55,
+      raw: { doors: 5, width: 200, height: 240, depth: 55 },
+    },
+    config: {
+      wardrobeType: 'hinged',
+      removedDoorsMap: {},
+      splitDoorsMap: {},
+      handlesMap: { d1_full: 'rail' },
+      modulesConfiguration: [{ id: 'main-module', doors: 5 }],
+    },
+    runtime: {},
+    mode: { primary: 'none', opts: {} },
+    meta: { dirty: false },
+  };
+  const app = createToggleApp(state);
+
+  assert.deepEqual(toggleSketchNoMainWardrobe({ app, meta }), {
+    ok: true,
+    active: true,
+    restored: false,
+  });
+
+  assert.equal(state.ui.raw.doors, 0);
+  assert.equal(state.config.wardrobeType, 'hinged');
+  assert.deepEqual(state.config.removedDoorsMap, {});
+  assert.deepEqual(state.config.splitDoorsMap, {});
+  assert.deepEqual(state.config.handlesMap, { d1_full: 'rail' });
+});
 
 test('sketch no-main toggle hides no-main free boxes while the main wardrobe is restored', () => {
   const mainBox = { id: 'main-box', freePlacement: false, widthM: 0.8 };

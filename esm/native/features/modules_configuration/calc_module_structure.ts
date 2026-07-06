@@ -152,7 +152,11 @@ export function calculateModuleStructure(
   }
 
   if (pos === 'center-left' || pos === 'middle-left') {
-    const leftPairs = Math.max(0, Math.ceil(pairs / 2));
+    // Module arrays are consumed left-to-right by the builder. For the special
+    // seven-door layout, "center-left" means the single module is the second
+    // module from the viewer's left, so the smaller half of the pairs must be
+    // emitted before the single door.
+    const leftPairs = Math.max(0, Math.floor(pairs / 2));
     const rightPairs = pairs - leftPairs;
     pushPairs(leftPairs);
     pushSingle();
@@ -161,7 +165,9 @@ export function calculateModuleStructure(
   }
 
   if (pos === 'center-right' || pos === 'middle-right') {
-    const leftPairs = Math.max(0, Math.floor(pairs / 2));
+    // Symmetric counterpart of center-left: the larger half of the pairs is
+    // emitted before the single door, placing it second from the viewer's right.
+    const leftPairs = Math.max(0, Math.ceil(pairs / 2));
     const rightPairs = pairs - leftPairs;
     pushPairs(leftPairs);
     pushSingle();

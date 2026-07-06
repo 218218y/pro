@@ -269,7 +269,7 @@ function mergeUiPatch(base: UnknownRecord, patch: UnknownRecord): UnknownRecord 
   return out;
 }
 
-function createNoMainConfigPatch(config: UnknownRecord): UnknownRecord {
+function createNoMainConfigSnapshot(config: UnknownRecord): UnknownRecord {
   return {
     ...cloneSerializable(config),
     wardrobeType: 'hinged',
@@ -456,16 +456,15 @@ function applyNoMainBatch(args: {
   source: string;
   meta: ActionMetaLike;
   uiPatch: UnknownRecord;
-  configPatch?: UnknownRecord | null;
   configSnapshot?: UnknownRecord | null;
 }): void {
-  const { app, source, meta, uiPatch, configPatch, configSnapshot } = args;
+  const { app, source, meta, uiPatch, configSnapshot } = args;
   applyStructureTemplateRecomputeBatch({
     app,
     source,
     meta,
     uiPatch,
-    statePatch: configSnapshot ? null : { ui: uiPatch, ...(configPatch ? { config: configPatch } : {}) },
+    statePatch: configSnapshot ? null : { ui: uiPatch },
     mutate: configSnapshot
       ? () => {
           applyProjectConfigSnapshot(app, configSnapshot, meta);
@@ -503,8 +502,8 @@ export function toggleSketchNoMainWardrobe(args: {
   if (!active) {
     const restore = createRestoreSnapshot(ui, config);
     const uiPatch = createNoMainUiPatch(ui, restore);
-    const configPatch = mergeFreeExtrasSnapshotIntoNoMainConfig({
-      noMainConfig: createNoMainConfigPatch(config),
+    const configSnapshot = mergeFreeExtrasSnapshotIntoNoMainConfig({
+      noMainConfig: createNoMainConfigSnapshot(config),
       freeExtras: readFreeExtrasSnapshot(ui),
     });
     const source = 'react:sketch:noMainWardrobe:enable';
@@ -513,7 +512,7 @@ export function toggleSketchNoMainWardrobe(args: {
       source,
       meta: createStructureTabNoBuildImmediateMeta(meta, source),
       uiPatch,
-      configPatch,
+      configSnapshot,
     });
     return { ok: true, active: true, restored: false };
   }
