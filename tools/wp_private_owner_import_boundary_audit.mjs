@@ -95,6 +95,7 @@ export const PRIVATE_OWNER_IMPORT_FAMILIES = Object.freeze([
     privateOwners: [
       'esm/native/services/viewer_measurement_tool_contracts.ts',
       'esm/native/services/viewer_measurement_tool_geometry.ts',
+      'esm/native/services/viewer_measurement_tool_resolution.ts',
     ],
   },
   {

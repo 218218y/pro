@@ -1581,7 +1581,7 @@
       "entry": "model_record/api.js"
     },
     {
-      "file": "esm/native/services/viewer_measurement_tool.ts",
+      "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
       "entry": "part_identity/api.js"
     },
     {

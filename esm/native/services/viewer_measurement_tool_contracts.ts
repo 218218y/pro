@@ -4,6 +4,7 @@ import type { Vector3Like } from '../../../types/three_like.js';
 import type { HitObjectLike, MouseVectorLike, RaycasterLike } from './canvas_picking_engine.js';
 
 export const FRONT_Z_EPSILON_M = 0.006;
+export const MIN_MEASURABLE_EDGE_M = 0.005;
 
 export type ViewerMeasurementToolMode = 'part' | 'points';
 
