@@ -216,6 +216,65 @@ test('resolveViewerMeasurementResolution resolves a shelf-bounded module cavity 
   assertClose(resolution.box.height, 0.96);
 });
 
+test('resolveViewerMeasurementResolution gives sibling cavities distinct measurement keys under one module target', () => {
+  const App = createApp();
+  const THREE = App.deps.THREE;
+  const wardrobeGroup = createGroup();
+  const selector = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.5,
+    y: 1,
+    userData: { isModuleSelector: true, moduleIndex: 0 },
+  });
+  const lowerShelf = createMesh({
+    width: 1,
+    height: 0.04,
+    depth: 0.45,
+    y: 0.5,
+    userData: { __wpShelfGroupPartId: true, partId: 'shelf_lower', moduleIndex: 0 },
+  });
+  const upperShelf = createMesh({
+    width: 1,
+    height: 0.04,
+    depth: 0.45,
+    y: 1.5,
+    userData: { __wpShelfGroupPartId: true, partId: 'shelf_upper', moduleIndex: 0 },
+  });
+  wardrobeGroup.add(selector);
+  wardrobeGroup.add(lowerShelf);
+  wardrobeGroup.add(upperShelf);
+
+  App.services.runtimeCache.internalGridMap['0'] = {
+    effectiveBottomY: 0,
+    effectiveTopY: 2,
+    innerW: 1,
+    internalCenterX: 0,
+    internalDepth: 0.5,
+    internalZ: 0,
+    woodThick: 0.04,
+  };
+
+  const lower = resolveViewerMeasurementResolution({
+    App,
+    THREE,
+    hitState: makeHitState({ target: selector, moduleIndex: 0, point: { x: 0, y: 0.25, z: 0 } }),
+    wardrobeGroup: wardrobeGroup as any,
+  });
+  const middle = resolveViewerMeasurementResolution({
+    App,
+    THREE,
+    hitState: makeHitState({ target: selector, moduleIndex: 0, point: { x: 0, y: 1, z: 0 } }),
+    wardrobeGroup: wardrobeGroup as any,
+  });
+
+  assert.ok(lower);
+  assert.ok(middle);
+  assert.equal(lower.targetKey, '0');
+  assert.equal(middle.targetKey, '0');
+  assert.notEqual(lower.measurementKey, middle.measurementKey);
+});
+
 test('resolveViewerMeasurementResolution ignores hidden shelves as cavity boundaries', () => {
   const App = createApp();
   const THREE = App.deps.THREE;

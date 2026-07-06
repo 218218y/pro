@@ -35,6 +35,7 @@ import {
 export type ViewerMeasurementResolution = {
   target: unknown;
   targetKey: string | null;
+  measurementKey: string;
   box: LocalMeasurementBox;
   plane: MeasurementPlane;
   shouldMeasureInterior: boolean;
@@ -461,6 +462,48 @@ function targetKeyForHit(hitState: CanvasPickingClickHitState, target: unknown):
   return null;
 }
 
+function measurementKeyNumber(value: number): string {
+  if (!Number.isFinite(value)) return 'nan';
+  const rounded = Math.round(value * 10000) / 10000;
+  return (Object.is(rounded, -0) ? 0 : rounded).toFixed(4);
+}
+
+function measurementBoxKey(box: LocalMeasurementBox): string {
+  return [box.centerX, box.centerY, box.centerZ, box.width, box.height, box.depth]
+    .map(measurementKeyNumber)
+    .join(',');
+}
+
+function measurementPlaneKey(plane: MeasurementPlane): string {
+  return [
+    plane.kind,
+    plane.normalAxis,
+    plane.normalSign >= 0 ? 1 : -1,
+    measurementKeyNumber(plane.normalValue),
+    plane.uAxis,
+    measurementKeyNumber(plane.uMin),
+    measurementKeyNumber(plane.uMax),
+    plane.vAxis,
+    measurementKeyNumber(plane.vMin),
+    measurementKeyNumber(plane.vMax),
+  ].join(',');
+}
+
+export function buildViewerMeasurementKey(args: {
+  targetKey: string | null;
+  box: LocalMeasurementBox;
+  plane: MeasurementPlane;
+  shouldMeasureInterior: boolean;
+}): string {
+  const baseKey = args.targetKey ? args.targetKey : 'anonymous';
+  return [
+    baseKey,
+    args.shouldMeasureInterior ? 'interior' : 'part',
+    measurementBoxKey(args.box),
+    measurementPlaneKey(args.plane),
+  ].join('|');
+}
+
 function findTaggedAncestor(start: unknown, predicate: (userData: UnknownRecord) => boolean): unknown | null {
   let current = asMeasurableObject(start);
   while (current) {
@@ -764,9 +807,11 @@ export function resolveViewerMeasurementResolution(args: {
       target,
     });
 
+  const targetKey = targetKeyForHit(hitState, target);
   return {
     target,
-    targetKey: targetKeyForHit(hitState, target),
+    targetKey,
+    measurementKey: buildViewerMeasurementKey({ targetKey, box, plane, shouldMeasureInterior }),
     box,
     plane,
     shouldMeasureInterior,

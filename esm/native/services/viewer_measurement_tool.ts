@@ -877,7 +877,7 @@ function renderPartMeasurementHoverOverlay(args: {
     committedState &&
     !committedState.pointDraft &&
     resolution.targetKey &&
-    committedState.targetKey === resolution.targetKey
+    committedState.targetKey === resolution.measurementKey
   ) {
     clearViewerMeasurementHoverOverlay(App, true);
     return true;
@@ -894,7 +894,7 @@ function renderPartMeasurementHoverOverlay(args: {
     color: PART_HOVER_COLOR,
   });
 
-  writeHoverOverlayState(App, { objects, targetKey: resolution.targetKey });
+  writeHoverOverlayState(App, { objects, targetKey: resolution.measurementKey });
   touchRender(App);
   return true;
 }
@@ -943,12 +943,12 @@ function renderMeasurementOverlay(args: {
 
   const resolution = resolveViewerMeasurementResolution({ App, THREE, hitState, wardrobeGroup, target });
   if (!resolution) return false;
-  const { box, plane, targetKey } = resolution;
+  const { box, plane, measurementKey } = resolution;
   const objects: Object3DLike[] = [];
   addSelectionFrame({ THREE, wardrobeGroup, box, plane, objects });
   addDimensionGuides({ THREE, addDimensionLine, box, plane, objects });
 
-  writeOverlayState(App, { objects, targetKey });
+  writeOverlayState(App, { objects, targetKey: measurementKey });
   touchRender(App);
   return true;
 }

@@ -331,6 +331,27 @@ function createDoorPointHit(door: any, point: { x: number; y: number; z: number 
   };
 }
 
+function createPartHit(part: any, partId: string, point: { x: number; y: number; z: number }) {
+  return {
+    intersects: [{ object: part, point }],
+    foundPartId: partId,
+    foundModuleIndex: null,
+    foundModuleStack: 'top' as const,
+    effectiveDoorId: null,
+    foundDrawerId: null,
+    primaryHitObject: part,
+    doorHitObject: null,
+    doorHitGroup: null,
+    primaryHitPoint: point,
+    doorHitPoint: null,
+    moduleHitY: null,
+    doorHitY: null,
+    primaryHitY: point.y,
+    hitIdentity: { partId } as any,
+    hitUserData: part.userData,
+  };
+}
+
 test('viewer part measurement hover previews the exact selectable part without committing dimensions', () => {
   const wardrobe = createGroup();
   const door = createMesh({
@@ -383,6 +404,107 @@ test('viewer part measurement click replaces the hover preview with the committe
   );
   assert.ok(wardrobe.children.some(child => child.name === 'wp-viewer-measurement-selection-frame'));
   assert.deepEqual(labels, ['70', '200', '2']);
+});
+
+test('viewer part measurement hover remains live for another cavity inside the same module after a click', () => {
+  const wardrobe = createGroup();
+  const selector = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.55,
+    userData: { isModuleSelector: true, moduleIndex: 0, __wpStack: 'top' },
+    opacity: 0,
+  });
+  const backPanel = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.01,
+    z: -0.28,
+    userData: { kind: 'backPanel' },
+  });
+  const lowerShelf = createMesh({
+    width: 0.9,
+    height: 0.02,
+    depth: 0.45,
+    y: 0.7,
+    userData: { partId: 'module_shelf_0_g1', __wpShelfGroupPartId: 'all_shelves' },
+  });
+  const upperShelf = createMesh({
+    width: 0.9,
+    height: 0.02,
+    depth: 0.45,
+    y: 1.3,
+    userData: { partId: 'module_shelf_0_g2', __wpShelfGroupPartId: 'all_shelves' },
+  });
+  wardrobe.add(selector);
+  wardrobe.add(backPanel);
+  wardrobe.add(lowerShelf);
+  wardrobe.add(upperShelf);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  const makeCavityHit = (y: number) => ({
+    intersects: [
+      { object: selector, point: { x: 0, y, z: 0.2 } },
+      { object: backPanel, point: { x: 0, y, z: -0.28 } },
+    ],
+    foundPartId: null,
+    foundModuleIndex: 0,
+    foundModuleStack: 'top' as const,
+    effectiveDoorId: null,
+    foundDrawerId: null,
+    primaryHitObject: backPanel,
+    doorHitObject: null,
+    doorHitGroup: null,
+    primaryHitPoint: { x: 0, y, z: -0.28 },
+    doorHitPoint: null,
+    moduleHitY: y,
+    doorHitY: null,
+    primaryHitY: y,
+    hitIdentity: { moduleIndex: 0 } as any,
+    hitUserData: backPanel.userData,
+  });
+
+  tryHandleViewerMeasurementClick({ App, hitState: makeCavityHit(0.35) });
+  tryHandleViewerMeasurementHover({ App, hitState: makeCavityHit(1) });
+
+  assert.ok(wardrobe.children.some(child => child.name === 'wp-viewer-measurement-selection-frame'));
+  assert.ok(wardrobe.children.some(child => child.name === 'wp-viewer-measurement-hover-frame'));
+});
+
+test('viewer part measurement hover remains live for a sibling part sharing the same part id after a click', () => {
+  const wardrobe = createGroup();
+  const leftTop = createMesh({
+    width: 0.7,
+    height: 0.03,
+    depth: 0.55,
+    x: -0.45,
+    y: 2.015,
+    userData: { partId: 'cabinet_top_segment' },
+  });
+  const rightTop = createMesh({
+    width: 0.9,
+    height: 0.03,
+    depth: 0.55,
+    x: 0.55,
+    y: 2.015,
+    userData: { partId: 'cabinet_top_segment' },
+  });
+  wardrobe.add(leftTop);
+  wardrobe.add(rightTop);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+
+  tryHandleViewerMeasurementClick({
+    App,
+    hitState: createPartHit(leftTop, 'cabinet_top_segment', { x: -0.45, y: 2.015, z: 0.275 }),
+  });
+  tryHandleViewerMeasurementHover({
+    App,
+    hitState: createPartHit(rightTop, 'cabinet_top_segment', { x: 0.55, y: 2.015, z: 0.275 }),
+  });
+
+  assert.ok(wardrobe.children.some(child => child.name === 'wp-viewer-measurement-selection-frame'));
+  assert.ok(wardrobe.children.some(child => child.name === 'wp-viewer-measurement-hover-frame'));
 });
 
 test('viewer part measurement empty hover clears only the transient hover preview', () => {
