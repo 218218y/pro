@@ -216,6 +216,69 @@ test('resolveViewerMeasurementResolution resolves a shelf-bounded module cavity 
   assertClose(resolution.box.height, 0.96);
 });
 
+test('resolveViewerMeasurementResolution ignores hidden shelves as cavity boundaries', () => {
+  const App = createApp();
+  const THREE = App.deps.THREE;
+  const wardrobeGroup = createGroup();
+  const selector = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.5,
+    y: 1,
+    userData: { isModuleSelector: true, moduleIndex: 0 },
+  });
+  const hiddenShelf = createMesh({
+    width: 1,
+    height: 0.04,
+    depth: 0.45,
+    y: 1,
+    visible: false,
+    userData: { __wpShelfGroupPartId: true, partId: 'hidden_shelf', moduleIndex: 0 },
+  });
+  const hiddenMaterialShelf = createMesh({
+    width: 1,
+    height: 0.04,
+    depth: 0.45,
+    y: 1.25,
+    materialVisible: false,
+    userData: { __wpShelfGroupPartId: true, partId: 'hidden_material_shelf', moduleIndex: 0 },
+  });
+  const transparentShelf = createMesh({
+    width: 1,
+    height: 0.04,
+    depth: 0.45,
+    y: 1.5,
+    opacity: 0,
+    userData: { __wpShelfGroupPartId: true, partId: 'transparent_shelf', moduleIndex: 0 },
+  });
+  wardrobeGroup.add(selector);
+  wardrobeGroup.add(hiddenShelf);
+  wardrobeGroup.add(hiddenMaterialShelf);
+  wardrobeGroup.add(transparentShelf);
+
+  App.services.runtimeCache.internalGridMap['0'] = {
+    effectiveBottomY: 0,
+    effectiveTopY: 2,
+    innerW: 1,
+    internalCenterX: 0,
+    internalDepth: 0.5,
+    internalZ: 0,
+    woodThick: 0.04,
+  };
+
+  const resolution = resolveViewerMeasurementResolution({
+    App,
+    THREE,
+    hitState: makeHitState({ target: selector, moduleIndex: 0, point: { x: 0, y: 0.75, z: 0 } }),
+    wardrobeGroup: wardrobeGroup as any,
+  });
+
+  assert.ok(resolution);
+  assert.equal(resolution.shouldMeasureInterior, true);
+  assertClose(resolution.box.centerY, 1);
+  assertClose(resolution.box.height, 2);
+});
+
 test('resolveViewerMeasurementResolution returns a basis plane for corner pentagon doors', () => {
   const App = createApp();
   const THREE = App.deps.THREE;

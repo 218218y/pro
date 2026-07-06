@@ -644,6 +644,7 @@ function readModuleInteriorBox(args: {
     const objModule = ud?.moduleIndex ?? ud?.__wpSketchModuleKey;
     if (objModule != null && !sameModuleKey(objModule, moduleKey)) return;
     if (ud?.isModuleSelector || ud?.__wpViewerMeasurementOverlay || ud?.__ignoreRaycast) return;
+    if (isViewerMeasurementHiddenObject(obj)) return;
     if (isBackPanelLike(obj) || isMeasurementPassiveFittingObject(obj)) return;
 
     const box = __wp_measureObjectLocalBox(App, obj, wardrobeGroup);
