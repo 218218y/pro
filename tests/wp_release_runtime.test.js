@@ -10,8 +10,10 @@ import { copyRootStaticWebAssets } from '../tools/wp_release_shared.js';
 
 import { parseReleaseArgs } from '../tools/wp_release_state.js';
 import {
+  buildReleaseHeaders,
   resolveFinalReleaseAssets,
   rewriteReleaseHtml,
+  writeReleaseHeaders,
   writeReleaseMetadata,
 } from '../tools/wp_release_finalize.js';
 
@@ -147,6 +149,68 @@ test('release arg parsing keeps site2/template/out and secure sourcemap policy c
   assert.equal(parsed.buildMode, 'debug');
 });
 
+test('release headers pin mutable entrypoints to no-store and only exact fingerprinted assets to immutable cache', () => {
+  const dir = tempDir();
+  fs.mkdirSync(path.join(dir, 'libs'), { recursive: true });
+  fs.mkdirSync(path.join(dir, 'assets'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'wardrobepro.bundle.abc123.js'), "console.log('bundle');\n", 'utf8');
+  fs.writeFileSync(path.join(dir, 'wardrobepro.chunk-core.def456.js'), "console.log('core');\n", 'utf8');
+  fs.writeFileSync(path.join(dir, 'wardrobepro.chunk-oldmissing.000000.js'), "console.log('old');\n", 'utf8');
+  fs.unlinkSync(path.join(dir, 'wardrobepro.chunk-oldmissing.000000.js'));
+  fs.writeFileSync(path.join(dir, 'react_styles.112233.css'), 'body{}\n', 'utf8');
+  fs.writeFileSync(path.join(dir, 'assets', 'logo-8899aa.png'), 'png', 'utf8');
+  fs.writeFileSync(path.join(dir, 'assets', 'plain.png'), 'png', 'utf8');
+  fs.writeFileSync(path.join(dir, 'libs', 'three.vendor.0f0f0f.js'), "console.log('three');\n", 'utf8');
+
+  const headers = buildReleaseHeaders({
+    releaseDir: dir,
+    bundleRelFinal: 'wardrobepro.bundle.abc123.js',
+    threeVendorMetaFinal: { file: 'libs/three.vendor.0f0f0f.js' },
+    chunksFinal: [{ file: 'wardrobepro.chunk-core.def456.js' }],
+  });
+
+  assert.match(headers, /\/\n  Cache-Control: no-store, no-cache, must-revalidate, max-age=0/);
+  assert.match(headers, /\/index\.html\n  Cache-Control: no-store, no-cache, must-revalidate, max-age=0/);
+  assert.match(headers, /\/version\.json\n  Cache-Control: no-store, no-cache, must-revalidate, max-age=0/);
+  assert.match(
+    headers,
+    /\/wp_runtime_config\.mjs\n  Cache-Control: no-store, no-cache, must-revalidate, max-age=0/
+  );
+  assert.match(
+    headers,
+    /\/wardrobepro\.bundle\.abc123\.js\n  Cache-Control: public, max-age=31536000, immutable/
+  );
+  assert.match(
+    headers,
+    /\/wardrobepro\.chunk-core\.def456\.js\n  Cache-Control: public, max-age=31536000, immutable/
+  );
+  assert.match(headers, /\/react_styles\.112233\.css\n  Cache-Control: public, max-age=31536000, immutable/);
+  assert.match(
+    headers,
+    /\/libs\/three\.vendor\.0f0f0f\.js\n  Cache-Control: public, max-age=31536000, immutable/
+  );
+  assert.match(headers, /\/assets\/logo-8899aa\.png\n  Cache-Control: public, max-age=31536000, immutable/);
+  assert.doesNotMatch(headers, /\/wardrobepro\.chunk-\*\.js/);
+  assert.doesNotMatch(headers, /\/libs\/\*/);
+  assert.doesNotMatch(headers, /\/assets\/\*/);
+  assert.doesNotMatch(headers, /plain\.png\n  Cache-Control: public, max-age=31536000, immutable/);
+});
+
+test('release header writer materializes Cloudflare Pages headers in the release root', () => {
+  const dir = tempDir();
+  fs.writeFileSync(path.join(dir, 'wardrobepro.bundle.abc123.js'), "console.log('bundle');\n", 'utf8');
+
+  const headers = writeReleaseHeaders({
+    releaseDir: dir,
+    bundleRelFinal: 'wardrobepro.bundle.abc123.js',
+    threeVendorMetaFinal: null,
+    chunksFinal: [],
+  });
+
+  assert.equal(fs.readFileSync(path.join(dir, '_headers'), 'utf8'), headers);
+  assert.match(headers, /Exact immutable asset rules are intentional/);
+});
+
 test('release finalize rewrites hashed html refs and modulepreloads canonical assets', () => {
   const dir = tempDir();
   const libs = path.join(dir, 'libs');
@@ -191,6 +255,9 @@ test('release finalize rewrites hashed html refs and modulepreloads canonical as
   assert.match(html, /wp_logo_data\.js\?v=202603310101/);
   assert.match(html, /wp_runtime_config\.mjs\?v=202603310101/);
   assert.match(html, /__WP_RELEASE_BUILD_ID__/);
+  assert.match(html, /Failed to fetch dynamically imported module/);
+  assert.match(html, /addEventListener\('unhandledrejection'/);
+  assert.match(html, /addEventListener\('error'/);
   assert.match(html, /modulepreload/);
 });
 

@@ -1,13 +1,33 @@
 # Cloudflare Pages deployment headers.
-# Keep every public URL usable by direct link, while asking search engines not to index it.
+# The release packager overwrites dist/**/release/_headers with exact per-build cache rules.
+# Keep this source file conservative so missing stale JS chunks never inherit a long immutable TTL.
 /*
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=()
 
-# Immutable cache for hashed static release assets. HTML and runtime config stay uncached by default.
-/assets/*
-  Cache-Control: public, max-age=31536000, immutable
-/libs/*
-  Cache-Control: public, max-age=31536000, immutable
+/
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
+
+/index.html
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
+
+/version.json
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
+
+/wp_runtime_config.mjs
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
+
+/wp_logo_data.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0

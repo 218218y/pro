@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { exists, sha256File, escapeRegExp } from './wp_release_shared.js';
+import { exists, sha256File, escapeRegExp, listReleaseCssRelFiles } from './wp_release_shared.js';
 
 function buildNoCacheUpdateScript(buildId) {
   const metaNoCache = [
@@ -19,6 +19,7 @@ function buildNoCacheUpdateScript(buildId) {
 
           var KEY = '__wp_update_attempt__';
           var BANNER_ID = 'wp-update-banner';
+          var RECOVERY_STARTED = false;
 
           function showBanner(nextId){
             try {
@@ -44,28 +45,20 @@ function buildNoCacheUpdateScript(buildId) {
 
               var msg = document.createElement('div');
               msg.style.cssText = 'line-height:1.4; font-size:14px;';
-              msg.textContent = 'זוהתה גרסה חדשה. אם משהו נראה תקוע — רענן כדי למשוך את העדכון.';
+              msg.textContent = 'זוהתה גרסה חדשה. צריך רענון נקי כדי למשוך את קבצי האתר החדשים.';
 
               var actions = document.createElement('div');
               actions.style.cssText = 'display:flex; gap:10px; align-items:center; flex-wrap:wrap;';
 
               var btn = document.createElement('button');
               btn.type = 'button';
-              btn.textContent = 'רענן עכשיו';
+              btn.textContent = 'טען גרסה חדשה';
               btn.style.cssText = 'cursor:pointer; border:0; padding:8px 12px; border-radius:10px; font-weight:800;';
-              btn.onclick = function(){
-                try {
-                  var u = new URL(location.href);
-                  u.searchParams.set('v', String(nextId || '1'));
-                  location.replace(u.toString());
-                } catch(_) {
-                  try { location.reload(); } catch(__){}
-                }
-              };
+              btn.onclick = function(){ forceReload(nextId || '1', 'manual-banner'); };
 
               var hint = document.createElement('div');
               hint.style.cssText = 'font-size:12px; opacity:.85;';
-              hint.textContent = 'אם זה חוזר: Ctrl+F5';
+              hint.textContent = 'אם זה חוזר: Cloudflare > Purge Everything';
 
               actions.appendChild(btn);
               actions.appendChild(hint);
@@ -75,12 +68,72 @@ function buildNoCacheUpdateScript(buildId) {
             } catch(_) {}
           }
 
-          async function checkForUpdate(){
+          function forceReload(nextId, reason){
+            try {
+              var u = new URL(location.href);
+              u.searchParams.set('v', String(nextId || Date.now()));
+              u.searchParams.set('wp_reload', String(reason || 'update'));
+              location.replace(u.toString());
+            } catch(_) {
+              try { location.reload(); } catch(__) {}
+            }
+          }
+
+          function looksLikeStaleChunkError(err){
+            try {
+              var text = '';
+              if (typeof err === 'string') text = err;
+              else if (err && typeof err.message === 'string') text = err.message;
+              else if (err && typeof err.reason === 'string') text = err.reason;
+              else if (err && err.reason && typeof err.reason.message === 'string') text = err.reason.message;
+              else if (err && typeof err.filename === 'string') text = err.filename;
+              text = String(text || '');
+              return /Failed to fetch dynamically imported module|Importing a module script failed|Expected a JavaScript(?:-or-Wasm)? module script|wardrobepro\.chunk-|ChunkLoadError/i.test(text);
+            } catch(_) {
+              return false;
+            }
+          }
+
+          async function deleteBrowserCaches(){
+            try {
+              if (window.caches && typeof window.caches.keys === 'function') {
+                var keys = await window.caches.keys();
+                await Promise.all(keys.map(function(k){ return window.caches.delete(k); }));
+              }
+            } catch(_) {}
+          }
+
+          async function readLatestBuildId(){
             try {
               var r = await fetch('./version.json?ts=' + Date.now(), { cache: 'no-store' });
-              if (!r || !r.ok) return;
+              if (!r || !r.ok) return '';
               var meta = await r.json();
-              var next = meta && meta.cache && meta.cache.buildId ? String(meta.cache.buildId) : '';
+              return meta && meta.cache && meta.cache.buildId ? String(meta.cache.buildId) : '';
+            } catch(_) {
+              return '';
+            }
+          }
+
+          async function recoverFromStaleChunk(reason){
+            try {
+              if (RECOVERY_STARTED) return;
+              RECOVERY_STARTED = true;
+              var next = await readLatestBuildId();
+              if (!next || next === BUILD_ID) {
+                RECOVERY_STARTED = false;
+                return;
+              }
+              await deleteBrowserCaches();
+              try { sessionStorage.removeItem(KEY); } catch(_) {}
+              forceReload(next, reason || 'stale-chunk');
+            } catch(_) {
+              RECOVERY_STARTED = false;
+            }
+          }
+
+          async function checkForUpdate(){
+            try {
+              var next = await readLatestBuildId();
               if (!next || next === BUILD_ID) return;
 
               var attempted = null;
@@ -91,25 +144,14 @@ function buildNoCacheUpdateScript(buildId) {
               }
 
               try { sessionStorage.setItem(KEY, next); } catch(_) {}
-              try {
-                if (window.caches && typeof window.caches.keys === 'function') {
-                  var keys = await window.caches.keys();
-                  await Promise.all(keys.map(function(k){ return window.caches.delete(k); }));
-                }
-              } catch(_) {}
-
-              try {
-                var u = new URL(location.href);
-                u.searchParams.set('v', next);
-                location.replace(u.toString());
-              } catch(_) {
-                try { location.reload(); } catch(__) {}
-              }
+              await deleteBrowserCaches();
+              forceReload(next, 'version-check');
             } catch(_) {}
           }
 
           function start(){
             try { window.__WP_CHECK_FOR_UPDATE__ = checkForUpdate; } catch(_) {}
+            setTimeout(checkForUpdate, 0);
             setTimeout(checkForUpdate, 1500);
             setInterval(function(){
               if (document.visibilityState === 'visible') checkForUpdate();
@@ -117,6 +159,12 @@ function buildNoCacheUpdateScript(buildId) {
             document.addEventListener('visibilitychange', function(){
               if (document.visibilityState === 'visible') checkForUpdate();
             });
+            window.addEventListener('unhandledrejection', function(ev){
+              if (looksLikeStaleChunkError(ev && (ev.reason || ev))) recoverFromStaleChunk('unhandledrejection');
+            });
+            window.addEventListener('error', function(ev){
+              if (looksLikeStaleChunkError(ev && (ev.error || ev.message || ev.filename))) recoverFromStaleChunk('module-error');
+            }, true);
           }
 
           if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
@@ -232,6 +280,116 @@ export function rewriteReleaseHtml({
   }
 
   return html;
+}
+
+function toHeaderPath(relFile) {
+  const rel = String(relFile || '')
+    .replace(/\\/g, '/')
+    .replace(/^\/+/, '');
+  return rel ? `/${rel}` : '';
+}
+
+function hasFingerprintInName(relFile) {
+  const base = path.posix.basename(String(relFile || '').replace(/\\/g, '/'));
+  return /(?:^|[.-])[a-f0-9]{6,64}(?=\.)/i.test(base) || /-[a-f0-9]{6,64}(?=\.)/i.test(base);
+}
+
+function walkFilesRel(rootDir, dir = rootDir, out = []) {
+  if (!exists(dir)) return out;
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    const abs = path.join(dir, ent.name);
+    if (ent.isDirectory()) walkFilesRel(rootDir, abs, out);
+    else if (ent.isFile()) out.push(path.relative(rootDir, abs).replace(/\\/g, '/'));
+  }
+  return out;
+}
+
+export function collectImmutableReleaseAssetRelFiles({
+  releaseDir,
+  bundleRelFinal,
+  threeVendorMetaFinal,
+  chunksFinal,
+}) {
+  const files = new Set();
+
+  if (bundleRelFinal && hasFingerprintInName(bundleRelFinal)) files.add(bundleRelFinal);
+  if (threeVendorMetaFinal && threeVendorMetaFinal.file && hasFingerprintInName(threeVendorMetaFinal.file)) {
+    files.add(threeVendorMetaFinal.file);
+  }
+  for (const chunk of chunksFinal || []) {
+    if (chunk && chunk.file && hasFingerprintInName(chunk.file)) files.add(chunk.file);
+  }
+
+  for (const cssRel of listReleaseCssRelFiles(releaseDir)) {
+    if (hasFingerprintInName(cssRel)) files.add(cssRel);
+  }
+
+  const assetsDir = path.join(releaseDir, 'assets');
+  for (const rel of walkFilesRel(assetsDir)) {
+    const releaseRel = path.posix.join('assets', rel);
+    if (hasFingerprintInName(releaseRel)) files.add(releaseRel);
+  }
+
+  return Array.from(files).sort();
+}
+
+export function buildReleaseHeaders({ releaseDir, bundleRelFinal, threeVendorMetaFinal, chunksFinal }) {
+  const immutableAssets = collectImmutableReleaseAssetRelFiles({
+    releaseDir,
+    bundleRelFinal,
+    threeVendorMetaFinal,
+    chunksFinal,
+  });
+
+  const mutableNoStorePaths = [
+    '/',
+    '/index.html',
+    '/version.json',
+    '/wp_runtime_config.mjs',
+    '/wp_logo_data.js',
+    '/site_manifest.json',
+    '/order_template.pdf',
+    '/index.template.site-profile.html',
+  ];
+
+  const lines = [
+    '# Auto-generated by tools/wp_release.js for Cloudflare Pages deployments.',
+    '# Do not edit this generated release copy directly; edit tools/wp_release_finalize.js or public/_headers instead.',
+    '# Exact immutable asset rules are intentional: a stale missing chunk must not inherit a long cache TTL.',
+    '/*',
+    '  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex',
+    '  X-Content-Type-Options: nosniff',
+    '  Referrer-Policy: strict-origin-when-cross-origin',
+    '  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=()',
+    '',
+  ];
+
+  for (const route of mutableNoStorePaths) {
+    lines.push(route);
+    lines.push('  Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    lines.push('  Pragma: no-cache');
+    lines.push('  Expires: 0');
+    lines.push('');
+  }
+
+  for (const relFile of immutableAssets) {
+    const route = toHeaderPath(relFile);
+    if (!route) continue;
+    lines.push(route);
+    lines.push('  Cache-Control: public, max-age=31536000, immutable');
+    lines.push('');
+  }
+
+  return `${lines
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()}\n`;
+}
+
+export function writeReleaseHeaders({ releaseDir, bundleRelFinal, threeVendorMetaFinal, chunksFinal }) {
+  const headers = buildReleaseHeaders({ releaseDir, bundleRelFinal, threeVendorMetaFinal, chunksFinal });
+  fs.writeFileSync(path.join(releaseDir, '_headers'), headers, 'utf8');
+  return headers;
 }
 
 export function writeReleaseMetadata({

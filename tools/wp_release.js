@@ -19,6 +19,7 @@ import { parseReleaseArgs, resolveReleasePaths } from './wp_release_state.js';
 import {
   resolveFinalReleaseAssets,
   rewriteReleaseHtml,
+  writeReleaseHeaders,
   writeReleaseMetadata,
 } from './wp_release_finalize.js';
 import { applyContentHashingToRelease } from './wp_release_hashing.js';
@@ -38,7 +39,7 @@ import {
 export { applyContentHashingToRelease } from './wp_release_hashing.js';
 export { resolveReleaseJsObfuscationPolicy } from './wp_release_build.js';
 export { parseReleaseArgs } from './wp_release_state.js';
-export { resolveFinalReleaseAssets, rewriteReleaseHtml } from './wp_release_finalize.js';
+export { resolveFinalReleaseAssets, rewriteReleaseHtml, writeReleaseHeaders } from './wp_release_finalize.js';
 
 async function main() {
   const root = process.cwd();
@@ -217,6 +218,13 @@ async function main() {
   });
   const htmlInfo = await maybeMinifyHtml({ html, wantMinify: config.wantHtmlMinify });
   fs.writeFileSync(path.join(releaseDir, 'index.html'), htmlInfo.html, 'utf8');
+
+  writeReleaseHeaders({
+    releaseDir,
+    bundleRelFinal: finalAssets.bundleRelFinal,
+    threeVendorMetaFinal: finalAssets.threeVendorMetaFinal,
+    chunksFinal: finalAssets.chunksFinal,
+  });
 
   writeReleaseMetadata({
     root,
