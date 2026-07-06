@@ -24,121 +24,69 @@ import { getThreeMaybe } from '../runtime/three_access.js';
 import type { CanvasPickingClickHitState } from './canvas_picking_click_contracts.js';
 import { __wp_isDoorOrDrawerLikePartId, __wp_reportPickingIssue } from './canvas_picking_core_helpers.js';
 import { __wp_measureObjectLocalBox, __wp_projectWorldPointToLocal } from './canvas_picking_local_helpers.js';
-import type { HitObjectLike, MouseVectorLike, RaycasterLike } from './canvas_picking_engine.js';
+import type { MouseVectorLike, RaycasterLike } from './canvas_picking_engine.js';
+import {
+  FRONT_Z_EPSILON_M,
+  type LocalMeasurementBox,
+  type LocalPlanePoint,
+  type MeasurableObject,
+  type MeasurementAxis,
+  type MeasurementBasisVector,
+  type MeasurementOverlayState,
+  type MeasurementPlane,
+  type MeasurementPlaneKind,
+  type OverlayThree,
+  type PointClampResult,
+  type PointMeasurementDraft,
+  type PointMeasurementPointerContext,
+  type RaycasterWithRay,
+  type ViewerMeasurementToolMode,
+} from './viewer_measurement_tool_contracts.js';
+import {
+  addBasisVectors,
+  axisVector,
+  basisVector,
+  clampNumber,
+  computePointEdgeClampTolerance,
+  createMeasurementPlaneForBox,
+  dotBasisVector,
+  getBoxCenterAxis,
+  getBoxLengthAxis,
+  getBoxMaxAxis,
+  getBoxMinAxis,
+  inferMeasurementPlaneKind,
+  makePointOnPlane,
+  measurementPlaneAxes,
+  normalizeBasisVector,
+  pointOnBoxAxisLine,
+  pointOnMeasurementPlane,
+  readCoordinateAxis,
+  readPointAxis,
+  readPointPlaneNormal,
+  readPointPlaneU,
+  readPointPlaneV,
+  rotatePointByEuler,
+  snapPointToMeasurementPlaneEdges,
+  subBasisVector,
+  vector,
+} from './viewer_measurement_tool_geometry.js';
 
 export const VIEWER_MEASUREMENT_MODE_ID = 'measure';
+export type { ViewerMeasurementToolMode } from './viewer_measurement_tool_contracts.js';
 
 const VIEWER_MEASUREMENT_CACHE_KEY = '__wpViewerMeasurementOverlay';
 const VIEWER_MEASUREMENT_TOOL_MODE_CACHE_KEY = '__wpViewerMeasurementToolMode';
 const MIN_MEASURABLE_EDGE_M = 0.005;
-const FRONT_Z_EPSILON_M = 0.006;
 const OVERLAY_RENDER_ORDER = 10040;
 const GUIDE_OFFSET_M = 0.045;
 const SIDE_GUIDE_OFFSET_M = 0.055;
 const REAR_SELECTION_FRAME_PULL_FORWARD_M = 0.012;
 const POINT_STRAIGHT_SNAP_MAX_ANGLE_DEG = 10;
 const POINT_STRAIGHT_SNAP_ABSOLUTE_TOLERANCE_M = 0.008;
-const POINT_EDGE_CLAMP_TOLERANCE_MIN_M = 0.02;
-const POINT_EDGE_CLAMP_TOLERANCE_MAX_M = 0.08;
-const POINT_EDGE_CLAMP_TOLERANCE_RATIO = 0.035;
 const POINT_STRAIGHT_SNAP_COLOR = 0x16a34a;
 const POINT_DEFAULT_COLOR = 0x2563eb;
 const POINT_FRONT_PLANE_OCCLUSION_PROMOTION_MAX_M = 0.16;
 const POINT_MEASUREMENT_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 25 25'%3E%3Cpath d='M6 6 L19 19 M19 6 L6 19' stroke='%23111827' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='12.5' cy='12.5' r='2.2' fill='none' stroke='%23ffffff' stroke-width='1.4'/%3E%3C/svg%3E") 12 12, crosshair`;
-
-export type ViewerMeasurementToolMode = 'part' | 'points';
-
-type MeasurementAxis = 'x' | 'y' | 'z';
-
-type MeasurementPlaneKind = 'front' | 'side' | 'top';
-
-type MeasurementBasisVector = { x: number; y: number; z: number };
-
-type MeasurementPlaneBasis = {
-  center: MeasurementBasisVector;
-  u: MeasurementBasisVector;
-  v: MeasurementBasisVector;
-  normal: MeasurementBasisVector;
-  normalMin: number;
-  normalMax: number;
-};
-
-type MeasurementPlane = {
-  kind: MeasurementPlaneKind;
-  normalAxis: MeasurementAxis;
-  normalSign: number;
-  normalValue: number;
-  uAxis: MeasurementAxis;
-  vAxis: MeasurementAxis;
-  uMin: number;
-  uMax: number;
-  vMin: number;
-  vMax: number;
-  uLength: number;
-  vLength: number;
-  basis?: MeasurementPlaneBasis;
-};
-
-type LocalMeasurementBox = {
-  centerX: number;
-  centerY: number;
-  centerZ: number;
-  width: number;
-  height: number;
-  depth: number;
-};
-
-type PointMeasurementDraft = {
-  point: { x: number; y: number; z: number };
-  plane: MeasurementPlane;
-  targetKey: string | null;
-};
-
-type PointMeasurementPointerContext = {
-  ndcX?: number;
-  ndcY?: number;
-  raycaster?: RaycasterLike | null;
-  mouse?: MouseVectorLike | null;
-};
-
-type LocalPlanePoint = { x: number; y: number; z: number };
-
-type PointClampResult = {
-  point: Vector3Like;
-  rawU: number;
-  rawV: number;
-  clampedU: number;
-  clampedV: number;
-  outsideU: boolean;
-  outsideV: boolean;
-  outsideDistance: number;
-};
-
-type RaycasterWithRay = RaycasterLike & {
-  ray?: {
-    origin?: { x?: number; y?: number; z?: number } | null;
-    direction?: { x?: number; y?: number; z?: number } | null;
-  } | null;
-};
-
-type MeasurementOverlayState = {
-  objects: Object3DLike[];
-  targetKey: string | null;
-  pointDraft?: PointMeasurementDraft | null;
-};
-
-type OverlayThree = ThreeLike & {
-  BufferGeometry: ThreeLike['BufferGeometry'];
-  LineBasicMaterial: ThreeLike['LineBasicMaterial'];
-  Line: ThreeLike['Line'];
-  Vector3: ThreeLike['Vector3'];
-};
-
-type MeasurableObject = HitObjectLike & {
-  userData?: UnknownRecord | null;
-  parent?: MeasurableObject | null;
-  type?: string;
-};
 
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -416,130 +364,11 @@ function readOverlayThree(App: AppContainer): OverlayThree | null {
   return THREE as OverlayThree;
 }
 
-function vector(THREE: Pick<ThreeLike, 'Vector3'>, x: number, y: number, z: number): Vector3Like {
-  return new THREE.Vector3(x, y, z);
-}
-
 function formatCmLabel(valueM: number): string {
   const cm = valueM * 100;
   if (!Number.isFinite(cm)) return '';
   if (cm >= 10) return Math.round(cm).toFixed(0);
   return cm.toFixed(1).replace(/\.0$/, '');
-}
-
-function getBoxCenterAxis(box: LocalMeasurementBox, axis: MeasurementAxis): number {
-  if (axis === 'x') return box.centerX;
-  if (axis === 'y') return box.centerY;
-  return box.centerZ;
-}
-
-function getBoxLengthAxis(box: LocalMeasurementBox, axis: MeasurementAxis): number {
-  if (axis === 'x') return box.width;
-  if (axis === 'y') return box.height;
-  return box.depth;
-}
-
-function getBoxMinAxis(box: LocalMeasurementBox, axis: MeasurementAxis): number {
-  return getBoxCenterAxis(box, axis) - getBoxLengthAxis(box, axis) / 2;
-}
-
-function getBoxMaxAxis(box: LocalMeasurementBox, axis: MeasurementAxis): number {
-  return getBoxCenterAxis(box, axis) + getBoxLengthAxis(box, axis) / 2;
-}
-
-function readCoordinateAxis(value: unknown, axis: MeasurementAxis): number | null {
-  const rec = isRecord(value) ? value : null;
-  const n = readFiniteNumber(rec, axis);
-  return n == null || !Number.isFinite(n) ? null : n;
-}
-
-function axisVector(
-  THREE: Pick<ThreeLike, 'Vector3'>,
-  axis: MeasurementAxis,
-  amount: number,
-  base?: Partial<Record<MeasurementAxis, number>>
-): Vector3Like {
-  const coords = { x: base?.x ?? 0, y: base?.y ?? 0, z: base?.z ?? 0 };
-  coords[axis] = (coords[axis] || 0) + amount;
-  return vector(THREE, coords.x, coords.y, coords.z);
-}
-
-function basisVector(
-  THREE: Pick<ThreeLike, 'Vector3'>,
-  value: MeasurementBasisVector,
-  amount = 1
-): Vector3Like {
-  return vector(THREE, value.x * amount, value.y * amount, value.z * amount);
-}
-
-function addBasisVectors(
-  THREE: Pick<ThreeLike, 'Vector3'>,
-  a: MeasurementBasisVector,
-  amountA: number,
-  b?: MeasurementBasisVector,
-  amountB = 0
-): Vector3Like {
-  return vector(
-    THREE,
-    a.x * amountA + (b?.x ?? 0) * amountB,
-    a.y * amountA + (b?.y ?? 0) * amountB,
-    a.z * amountA + (b?.z ?? 0) * amountB
-  );
-}
-
-function dotBasisVector(a: { x: number; y: number; z: number }, b: MeasurementBasisVector): number {
-  return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
-function subBasisVector(
-  a: { x: number; y: number; z: number },
-  b: { x: number; y: number; z: number }
-): MeasurementBasisVector {
-  return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
-}
-
-function normalizeBasisVector(value: MeasurementBasisVector): MeasurementBasisVector | null {
-  const length = Math.hypot(value.x, value.y, value.z);
-  if (!Number.isFinite(length) || length < 1e-9) return null;
-  return { x: value.x / length, y: value.y / length, z: value.z / length };
-}
-
-function rotatePointByEuler(
-  point: { x: number; y: number; z: number },
-  rotation: { x?: number; y?: number; z?: number } | null
-): MeasurementBasisVector {
-  let x = point.x;
-  let y = point.y;
-  let z = point.z;
-  const rx = typeof rotation?.x === 'number' && Number.isFinite(rotation.x) ? rotation.x : 0;
-  const ry = typeof rotation?.y === 'number' && Number.isFinite(rotation.y) ? rotation.y : 0;
-  const rz = typeof rotation?.z === 'number' && Number.isFinite(rotation.z) ? rotation.z : 0;
-
-  if (rx) {
-    const c = Math.cos(rx);
-    const s = Math.sin(rx);
-    const ny = y * c - z * s;
-    const nz = y * s + z * c;
-    y = ny;
-    z = nz;
-  }
-  if (ry) {
-    const c = Math.cos(ry);
-    const s = Math.sin(ry);
-    const nx = x * c + z * s;
-    const nz = -x * s + z * c;
-    x = nx;
-    z = nz;
-  }
-  if (rz) {
-    const c = Math.cos(rz);
-    const s = Math.sin(rz);
-    const nx = x * c - y * s;
-    const ny = x * s + y * c;
-    x = nx;
-    y = ny;
-  }
-  return { x, y, z };
 }
 
 function readVectorRecord(value: unknown): MeasurementBasisVector | null {
@@ -653,60 +482,6 @@ function readCornerPentDoorMeasurementBox(args: {
       },
     },
   };
-}
-
-function pointOnMeasurementPlane(
-  THREE: Pick<ThreeLike, 'Vector3'>,
-  box: LocalMeasurementBox,
-  plane: MeasurementPlane,
-  u: number,
-  v: number,
-  normalOffset = 0
-): Vector3Like {
-  if (plane.basis) {
-    const { center, normal } = plane.basis;
-    return vector(
-      THREE,
-      center.x + plane.basis.u.x * u + plane.basis.v.x * v + normal.x * (plane.normalValue + normalOffset),
-      center.y + plane.basis.u.y * u + plane.basis.v.y * v + normal.y * (plane.normalValue + normalOffset),
-      center.z + plane.basis.u.z * u + plane.basis.v.z * v + normal.z * (plane.normalValue + normalOffset)
-    );
-  }
-  const coords = { x: box.centerX, y: box.centerY, z: box.centerZ };
-  coords[plane.uAxis] = u;
-  coords[plane.vAxis] = v;
-  coords[plane.normalAxis] = plane.normalValue + normalOffset;
-  return vector(THREE, coords.x, coords.y, coords.z);
-}
-
-function pointOnBoxAxisLine(
-  THREE: Pick<ThreeLike, 'Vector3'>,
-  box: LocalMeasurementBox,
-  values: Partial<Record<MeasurementAxis, number>>
-): Vector3Like {
-  const coords = { x: box.centerX, y: box.centerY, z: box.centerZ };
-  if (values.x != null) coords.x = values.x;
-  if (values.y != null) coords.y = values.y;
-  if (values.z != null) coords.z = values.z;
-  return vector(THREE, coords.x, coords.y, coords.z);
-}
-
-function inferMeasurementPlaneKind(
-  box: LocalMeasurementBox,
-  forceInteriorFront: boolean
-): MeasurementPlaneKind {
-  if (forceInteriorFront) return 'front';
-
-  const { width, height, depth } = box;
-  const smallest = Math.min(width, height, depth);
-  const isThinX = width === smallest && width <= Math.min(height, depth) * 0.32;
-  const isThinY = height === smallest && height <= Math.min(width, depth) * 0.32;
-  const isThinZ = depth === smallest && depth <= Math.min(width, height) * 0.32;
-
-  if (isThinX) return 'side';
-  if (isThinY) return 'top';
-  if (isThinZ) return 'front';
-  return 'front';
 }
 
 function readClosestHitFaceSign(args: {
@@ -1438,110 +1213,6 @@ function readHitLocalPoint(
   return null;
 }
 
-function readPointAxis(point: { x: number; y: number; z: number }, axis: MeasurementAxis): number {
-  if (axis === 'x') return point.x;
-  if (axis === 'y') return point.y;
-  return point.z;
-}
-
-function readPointPlaneU(point: { x: number; y: number; z: number }, plane: MeasurementPlane): number {
-  if (!plane.basis) return readPointAxis(point, plane.uAxis);
-  return dotBasisVector(subBasisVector(point, plane.basis.center), plane.basis.u);
-}
-
-function readPointPlaneV(point: { x: number; y: number; z: number }, plane: MeasurementPlane): number {
-  if (!plane.basis) return readPointAxis(point, plane.vAxis);
-  return dotBasisVector(subBasisVector(point, plane.basis.center), plane.basis.v);
-}
-
-function readPointPlaneNormal(point: { x: number; y: number; z: number }, plane: MeasurementPlane): number {
-  if (!plane.basis) return readPointAxis(point, plane.normalAxis);
-  return dotBasisVector(subBasisVector(point, plane.basis.center), plane.basis.normal);
-}
-
-function makePointOnPlane(
-  THREE: Pick<ThreeLike, 'Vector3'>,
-  plane: MeasurementPlane,
-  u: number,
-  v: number
-): Vector3Like {
-  if (plane.basis) {
-    const { center, normal } = plane.basis;
-    return vector(
-      THREE,
-      center.x + plane.basis.u.x * u + plane.basis.v.x * v + normal.x * plane.normalValue,
-      center.y + plane.basis.u.y * u + plane.basis.v.y * v + normal.y * plane.normalValue,
-      center.z + plane.basis.u.z * u + plane.basis.v.z * v + normal.z * plane.normalValue
-    );
-  }
-  const coords = { x: 0, y: 0, z: 0 };
-  coords[plane.uAxis] = u;
-  coords[plane.vAxis] = v;
-  coords[plane.normalAxis] = plane.normalValue;
-  return vector(THREE, coords.x, coords.y, coords.z);
-}
-
-function clampNumber(value: number, min: number, max: number): number {
-  if (value < min) return min;
-  if (value > max) return max;
-  return value;
-}
-
-function computePointEdgeClampTolerance(plane: MeasurementPlane): number {
-  const proportional = Math.max(plane.uLength, plane.vLength) * POINT_EDGE_CLAMP_TOLERANCE_RATIO;
-  return clampNumber(proportional, POINT_EDGE_CLAMP_TOLERANCE_MIN_M, POINT_EDGE_CLAMP_TOLERANCE_MAX_M);
-}
-
-function snapCoordinateToMeasurementEdge(value: number, min: number, max: number, tolerance: number): number {
-  const clamped = clampNumber(value, min, max);
-  if (clamped !== value) return clamped;
-  if (value - min <= tolerance) return min;
-  if (max - value <= tolerance) return max;
-  return value;
-}
-
-function clampPointToMeasurementPlane(
-  THREE: Pick<ThreeLike, 'Vector3'>,
-  plane: MeasurementPlane,
-  localPoint: LocalPlanePoint
-): PointClampResult {
-  const rawU = readPointPlaneU(localPoint, plane);
-  const rawV = readPointPlaneV(localPoint, plane);
-  const clampedU = clampNumber(rawU, plane.uMin, plane.uMax);
-  const clampedV = clampNumber(rawV, plane.vMin, plane.vMax);
-  const outsideU = rawU < plane.uMin || rawU > plane.uMax;
-  const outsideV = rawV < plane.vMin || rawV > plane.vMax;
-  const outsideDistance = Math.hypot(rawU - clampedU, rawV - clampedV);
-  return {
-    point: makePointOnPlane(THREE, plane, clampedU, clampedV),
-    rawU,
-    rawV,
-    clampedU,
-    clampedV,
-    outsideU,
-    outsideV,
-    outsideDistance,
-  };
-}
-
-function snapPointToMeasurementPlaneEdges(
-  THREE: Pick<ThreeLike, 'Vector3'>,
-  plane: MeasurementPlane,
-  localPoint: LocalPlanePoint
-): PointClampResult {
-  const base = clampPointToMeasurementPlane(THREE, plane, localPoint);
-  const tolerance = computePointEdgeClampTolerance(plane);
-  const clampedU = snapCoordinateToMeasurementEdge(base.rawU, plane.uMin, plane.uMax, tolerance);
-  const clampedV = snapCoordinateToMeasurementEdge(base.rawV, plane.vMin, plane.vMax, tolerance);
-  return {
-    ...base,
-    point: makePointOnPlane(THREE, plane, clampedU, clampedV),
-    clampedU,
-    clampedV,
-    outsideDistance: Math.hypot(base.rawU - clampedU, base.rawV - clampedV),
-  };
-}
-
 function clipPointRayToMeasurementBounds(args: {
   plane: MeasurementPlane;
   startU: number;
@@ -1571,47 +1242,6 @@ function clipPointRayToMeasurementBounds(args: {
     u: clampNumber(startU + deltaU * bestT, plane.uMin, plane.uMax),
     v: clampNumber(startV + deltaV * bestT, plane.vMin, plane.vMax),
     clipped: true,
-  };
-}
-
-function measurementPlaneAxes(kind: MeasurementPlaneKind): {
-  normal: MeasurementAxis;
-  u: MeasurementAxis;
-  v: MeasurementAxis;
-} {
-  if (kind === 'side') return { normal: 'x', u: 'z', v: 'y' };
-  if (kind === 'top') return { normal: 'y', u: 'x', v: 'z' };
-  return { normal: 'z', u: 'x', v: 'y' };
-}
-
-function createMeasurementPlaneForBox(
-  box: LocalMeasurementBox,
-  kind: MeasurementPlaneKind,
-  normalSign: number,
-  normalSourceBox: LocalMeasurementBox = box
-): MeasurementPlane {
-  const axes = measurementPlaneAxes(kind);
-  const safeSign = normalSign >= 0 ? 1 : -1;
-  const normalFace =
-    safeSign >= 0 ? getBoxMaxAxis(normalSourceBox, axes.normal) : getBoxMinAxis(normalSourceBox, axes.normal);
-  const uMin = getBoxMinAxis(box, axes.u);
-  const uMax = getBoxMaxAxis(box, axes.u);
-  const vMin = getBoxMinAxis(box, axes.v);
-  const vMax = getBoxMaxAxis(box, axes.v);
-
-  return {
-    kind,
-    normalAxis: axes.normal,
-    normalSign: safeSign,
-    normalValue: normalFace + safeSign * FRONT_Z_EPSILON_M,
-    uAxis: axes.u,
-    vAxis: axes.v,
-    uMin,
-    uMax,
-    vMin,
-    vMax,
-    uLength: uMax - uMin,
-    vLength: vMax - vMin,
   };
 }
 

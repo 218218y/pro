@@ -90,6 +90,14 @@ export const PRIVATE_OWNER_IMPORT_FAMILIES = Object.freeze([
     ],
   },
   {
+    id: 'services:viewer-measurement-tool',
+    publicFacade: 'esm/native/services/viewer_measurement_tool.ts',
+    privateOwners: [
+      'esm/native/services/viewer_measurement_tool_contracts.ts',
+      'esm/native/services/viewer_measurement_tool_geometry.ts',
+    ],
+  },
+  {
     id: 'ui:order-pdf-export-commands',
     publicFacade: 'esm/native/ui/react/pdf/order_pdf_overlay_export_commands.ts',
     privateOwners: [

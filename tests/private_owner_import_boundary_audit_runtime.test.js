@@ -85,6 +85,7 @@ test('private owner import boundary audit passes on the live registered owner fa
   assert.equal(result.configErrors.length, 0);
   assert.equal(result.missingFiles.length, 0);
   assert.equal(result.violations.length, 0);
+  assert.ok(result.families.some(family => family.id === 'services:viewer-measurement-tool'));
   assert.ok(result.privateOwners >= 25);
   assert.ok(result.importSites.length >= result.privateOwners);
 });
