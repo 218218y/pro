@@ -229,7 +229,7 @@ test('project io fail-fast: missing commitUiSnapshot seam no longer lets project
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'error');
     assert.match(String(result.message || ''), /project\.load ui snapshot commit|actions\.commitUiSnapshot/i);
-    assert.deepEqual(calls, ['config:project.load']);
+    assert.deepEqual(calls, []);
     assert.deepEqual(autosaveCalls, ['cancel']);
   });
 });
@@ -296,8 +296,8 @@ test('project io restoreLastSession strips legacy autosave version metadata befo
   assert.deepEqual(toasts, [{ message: 'העריכה שוחזרה בהצלחה!', type: 'success' }]);
   assert.deepEqual(autosaveCalls, ['cancel', 'force']);
   assert.deepEqual(calls, [
-    'config:project.load',
     'commit:project.load',
+    'config:project.load',
     'dirty:false:project.load',
     'history:project.load',
   ]);
@@ -314,8 +314,8 @@ test('project io reset-default loads preserve last-session autosave instead of o
   assert.deepEqual(result, { ok: true, restoreGen: 1 });
   assert.deepEqual(autosaveCalls, ['flush']);
   assert.deepEqual(calls, [
-    'config:project.load',
     'commit:project.load',
+    'config:project.load',
     'dirty:false:project.load',
     'history:project.load',
   ]);
@@ -345,8 +345,8 @@ test('project io handleFileLoad now delegates through canonical project file ing
   assert.deepEqual(result, { ok: true, restoreGen: 1 });
   assert.deepEqual(toasts, [{ message: 'הפרויקט נטען בהצלחה!', type: 'success' }]);
   assert.deepEqual(calls, [
-    'config:project.load',
     'commit:project.load',
+    'config:project.load',
     'dirty:false:project.load',
     'history:project.load',
   ]);
@@ -413,8 +413,8 @@ test('project io load uses explicit snapshot APIs even when a root patch surface
   assert.deepEqual(result, { ok: true, restoreGen: 1 });
   assert.equal(rootPatches.length, 0);
   assert.deepEqual(calls, [
-    'config:project.load',
     'commit:project.load',
+    'config:project.load',
     'dirty:false:project.load',
     'history:project.load',
   ]);

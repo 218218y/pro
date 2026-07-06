@@ -11,6 +11,8 @@ import {
 import { requestBuilderForcedBuild } from '../runtime/builder_service_access.js';
 import { restoreNotesFromSaveViaService } from '../runtime/notes_access.js';
 import { resetHistoryBaselineRequiredOrThrow } from '../runtime/history_system_access.js';
+import { getActionFn } from '../runtime/actions_access_core.js';
+import { getConfigActionFn } from '../runtime/actions_access_domains.js';
 import {
   applyProjectConfigSnapshotViaActionsOrThrow,
   commitUiSnapshotViaActionsOrThrow,
@@ -54,6 +56,22 @@ import {
   prepareProjectIoAutosaveBeforeLoad,
   refreshProjectIoAutosaveAfterLoad,
 } from './project_io_orchestrator_autosave.js';
+
+function assertProjectLoadSnapshotMutationSeamsReadyOrThrow(App: unknown): void {
+  const applyProjectSnapshot = getConfigActionFn(App, 'applyProjectSnapshot');
+  if (typeof applyProjectSnapshot !== 'function') {
+    throw new Error(
+      '[WardrobePro] project.load config apply requires canonical actions.config.applyProjectSnapshot(snapshot, meta).'
+    );
+  }
+
+  const commitUiSnapshot = getActionFn(App, 'commitUiSnapshot');
+  if (typeof commitUiSnapshot !== 'function') {
+    throw new Error(
+      '[WardrobePro] project.load UI snapshot commit requires canonical actions.commitUiSnapshot(snapshot, meta).'
+    );
+  }
+}
 
 function assertProjectLoadConfigReplaceOwnedBranches(cfg: UnknownRecord): UnknownRecord {
   const missing = Object.keys(PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS).filter(key => {
@@ -131,6 +149,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
         buildCanonicalProjectConfigSnapshot(data) as UnknownRecord
       );
       const metaNoBuild = metaRestore('project.load', { silent: false });
+      assertProjectLoadSnapshotMutationSeamsReadyOrThrow(App);
 
       const { uiState, savedNotes } = loadSnapshot;
 
