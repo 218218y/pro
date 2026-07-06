@@ -54,7 +54,10 @@ export type HingedDoorModuleOpsContext = {
   isDoorRemovedSafe: (partId: string) => boolean;
   reportDoorSoftOnce: (op: string, error: unknown, extra?: Record<string, unknown>) => void;
   resolveCurtainForPart: (partId: string, defaultCurtain: string | null | undefined) => string | null;
-  resolveSpecialForPart: (partId: string, curtainVal: string | null) => 'mirror' | 'glass' | null;
+  resolveSpecialForPart: (
+    partId: string,
+    curtainVal: string | null
+  ) => 'mirror' | 'glass' | 'black_glass' | 'frosted_glass' | null;
   isDoorSplitExplicitOn: (map: unknown, doorIdNum: number) => boolean;
 };
 

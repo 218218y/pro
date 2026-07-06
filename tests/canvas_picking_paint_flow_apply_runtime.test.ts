@@ -503,6 +503,7 @@ test('paint grouped target treats the chest rear board as part of the body shell
     chest_back: 'walnut',
   });
   assert.equal(getPaintSourceTag('walnut', 'chest_back'), 'paint.apply:group');
+  assert.equal(getPaintSourceTag('frosted_glass', 'd1_left'), 'paint.apply:adhesiveGlass');
 });
 
 test('paint special mutation removes only the matched mirror layout while preserving unrelated placements', () => {
@@ -570,6 +571,37 @@ test('paint special mutation applies a canonical full mirror on the first click 
   assert.equal(state.special.d3_full, 'mirror');
   assert.equal(state.curtains.d3_full, undefined);
   assert.equal(state.mirrorLayout.d3_full, undefined);
+});
+
+test('paint special mutation applies adhesive glass with the same sized-layout lifecycle as mirror', () => {
+  const state = createManualState({
+    App: createApp({ ui: { currentCurtainChoice: 'linen' } }),
+  });
+
+  applyPaintPartMutation({
+    state,
+    paintPartKey: 'd7_full',
+    paintSelection: 'black_glass',
+    clickArgs: {
+      App: state.App,
+      foundPartId: 'd7_full',
+      activeStack: 'top',
+      isPaintMode: true,
+    },
+    resolveMirrorLayout: () => ({
+      nextLayout: { widthCm: 48, heightCm: 90, centerXNorm: 0.5, centerYNorm: 0.5, faceSign: 1 },
+      removeMatch: null,
+      canApplyMirror: true,
+      hitFaceSign: 1,
+      isFullDoorMirror: false,
+    }),
+  });
+
+  assert.equal(state.special.d7_full, 'black_glass');
+  assert.equal(state.curtains.d7_full, undefined);
+  assert.deepEqual(state.mirrorLayout.d7_full, [
+    { widthCm: 48, heightCm: 90, centerXNorm: 0.5, centerYNorm: 0.5, faceSign: 1 },
+  ]);
 });
 
 test('paint special mutation replaces glass with mirror on the first click and clears glass-only style state', () => {

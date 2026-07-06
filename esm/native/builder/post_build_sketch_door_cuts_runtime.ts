@@ -8,7 +8,11 @@ import {
   edgeHandleVariantPartKey,
   normEdgeHandleVariant,
 } from './handles_shared.js';
-import { readDoorStyleMap, readDoorTrimMap } from '../features/door_authoring/api.js';
+import {
+  readDoorStyleMap,
+  readDoorTrimMap,
+  resolveAdhesiveGlassKind,
+} from '../features/door_authoring/api.js';
 import { readManualHandlePositionForPart } from '../features/manual_handle_position.js';
 import { makeDoorRemovalChecker } from './doors_state_utils.js';
 import { readDoorVisualMapValue, readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
@@ -58,9 +62,14 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
     const raw = readDoorVisualMapValue(curtainMap, partId);
     return typeof raw === 'string' && raw && raw !== 'none' ? raw : null;
   };
-  const resolveSpecial = (partId: string, curtain: string | null): 'mirror' | 'glass' | null => {
+  const resolveSpecial = (
+    partId: string,
+    curtain: string | null
+  ): 'mirror' | 'glass' | 'black_glass' | 'frosted_glass' | null => {
     const raw = readDoorVisualMapValue(specialMap, partId);
     if (raw === 'mirror' || raw === 'glass') return raw;
+    const adhesiveGlassKind = resolveAdhesiveGlassKind(raw);
+    if (adhesiveGlassKind) return adhesiveGlassKind;
     return curtain ? 'glass' : null;
   };
   const resolveHandleType = (partId: string): string => {

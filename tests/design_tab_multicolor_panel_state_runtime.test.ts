@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { MULTI_GLASS_STYLE_OPTIONS } from '../esm/native/ui/react/tabs/design_tab_multicolor_panel_contracts.js';
+import {
+  MULTI_GLASS_HEIGHT,
+  MULTI_GLASS_STYLE_OPTIONS,
+  MULTI_GLASS_WIDTH,
+  MULTI_SPECIAL_SWATCHES,
+} from '../esm/native/ui/react/tabs/design_tab_multicolor_panel_contracts.js';
 import {
   createDesignTabMulticolorViewState,
   resolveDesignTabCurtainChoice,
@@ -17,6 +22,38 @@ test('[design-tab-multicolor-state] exposes all three glass style buttons in the
     ['glass', '__wp_glass_style__:flat', '__wp_glass_style__:double_profile']
   );
   assert.equal(MULTI_GLASS_STYLE_OPTIONS[0]?.curtainPreset, 'none');
+});
+
+test('[design-tab-multicolor-state] exposes black and frosted adhesive glass swatches with mirror-sized controls state', () => {
+  assert.deepEqual(
+    MULTI_SPECIAL_SWATCHES.map(option => option.title),
+    ['מראה', 'זכוכית שחורה', 'זכוכית חלבית', 'דלת זכוכית / וילון']
+  );
+  assert.deepEqual(
+    MULTI_SPECIAL_SWATCHES.map(option => option.paintId),
+    ['mirror', 'black_glass', 'frosted_glass', 'glass']
+  );
+  assert.equal(MULTI_GLASS_HEIGHT, 'גובה זכוכית');
+  assert.equal(MULTI_GLASS_WIDTH, 'רוחב זכוכית');
+
+  const state = createDesignTabMulticolorViewState({
+    enabled: true,
+    primaryMode: 'paint',
+    curtainChoiceRaw: 'none',
+    mirrorDraftHeight: '120',
+    mirrorDraftWidth: '45',
+    paintColor: 'frosted_glass',
+    activeDoorStyleOverride: null,
+    defaultSwatches: [],
+    savedSwatches: [],
+  });
+
+  assert.equal(state.activeAdhesiveGlassKind, 'frosted_glass');
+  assert.equal(state.activeGlassFrameStyle, null);
+  assert.equal(state.specialSwatches.find(dot => dot.id === 'frosted_glass')?.selected, true);
+  assert.equal(state.hintText, 'כעת לחץ על דלתות כדי להחיל זכוכית מודבקת במידה שנבחרה.');
+  assert.equal(state.mirrorDraftHeight, '120');
+  assert.equal(state.mirrorDraftWidth, '45');
 });
 
 test('[design-tab-multicolor-state] derives curtain choice, swatch selection, and hints from one canonical state seam', () => {

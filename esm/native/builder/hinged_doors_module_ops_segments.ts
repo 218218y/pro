@@ -1,5 +1,5 @@
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { hasMirrorSurfaceOnFace } from '../features/door_authoring/api.js';
+import { hasMirrorSurfaceOnFace, resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
 import { readSplitPosListFromMap } from '../runtime/maps_access.js';
 import { attachHiddenModuleDoors } from './hinged_doors_module_ops_metadata.js';
@@ -33,8 +33,12 @@ export function pushHingedDoorSegment(
   if (!args.partId || !(args.segH > DOOR_SYSTEM_DIMENSIONS.hinged.split.renderMinSegmentHeightM)) return;
   const special = ctx.cfg.isMultiColorMode ? ctx.resolveSpecialForPart(args.partId, args.curtainVal) : null;
   const isMirror = special === 'mirror';
+  const adhesiveGlassKind = resolveAdhesiveGlassKind(special);
+  const hasAdhesiveGlass = !!adhesiveGlassKind;
   const hasGroove =
-    ctx.isGroovesEnabled && !!args.grooveFlag && !(isMirror && hasOutsideMirrorSurface(ctx, args.partId));
+    ctx.isGroovesEnabled &&
+    !!args.grooveFlag &&
+    !((isMirror || hasAdhesiveGlass) && hasOutsideMirrorSurface(ctx, args.partId));
   const style = special === 'glass' ? 'glass' : null;
   const op = attachHiddenModuleDoors(
     {
@@ -48,6 +52,7 @@ export function pushHingedDoorSegment(
       meshOffsetX: state.meshOffsetX,
       isLeftHinge: state.isLeftHinge,
       isMirror: !!isMirror,
+      adhesiveGlassKind,
       hasGroove: !!hasGroove,
       curtain: args.curtainVal || null,
       style,

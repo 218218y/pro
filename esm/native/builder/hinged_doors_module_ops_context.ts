@@ -1,5 +1,5 @@
 import { reportError, shouldFailFast } from '../runtime/api.js';
-import { readDoorVisualMapValue } from '../features/door_authoring/api.js';
+import { isDoorSpecialSurfaceValue, readDoorVisualMapValue } from '../features/door_authoring/api.js';
 import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
 import {
   DOOR_SYSTEM_DIMENSIONS,
@@ -41,7 +41,7 @@ function readHingedDoorPivotMap(value: unknown): Record<number, HingedDoorPivotS
   return out;
 }
 
-const isSpecialVal = (v: unknown) => v === 'mirror' || v === 'glass';
+const isSpecialVal = isDoorSpecialSurfaceValue;
 
 export function createHingedDoorModuleOpsContext(
   params: AppendHingedDoorOpsParams
@@ -177,11 +177,11 @@ export function createHingedDoorModuleOpsContext(
   const resolveSpecialForPart = (
     partId: string,
     resolvedCurtainVal: string | null
-  ): 'mirror' | 'glass' | null => {
+  ): 'mirror' | 'glass' | 'black_glass' | 'frosted_glass' | null => {
     try {
       let v: unknown = partId ? readDoorVisualMapValue(doorSpecialMap, partId) : null;
       if (!isSpecialVal(v) && resolvedCurtainVal && resolvedCurtainVal !== 'none') v = 'glass';
-      return v === 'mirror' || v === 'glass' ? v : null;
+      return isSpecialVal(v) ? v : null;
     } catch (e) {
       reportDoorSoftOnce('resolveSpecialForPart', e, { partId });
       return null;

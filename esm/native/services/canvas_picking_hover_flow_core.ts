@@ -3,6 +3,7 @@
 // Extracted from canvas_picking_core.ts to keep the owner file thin while
 // preserving the canonical exported hover entrypoint there.
 import type { AppContainer } from '../../../types';
+import { isAdhesiveGlassValue } from '../features/door_authoring/api.js';
 import { getModeId } from '../runtime/api.js';
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { getTools } from '../runtime/service_access.js';
@@ -106,7 +107,7 @@ export function handleCanvasHoverNDCImpl(App: AppContainer, ndcX: number, ndcY: 
     const __isMeasureMode = __pm === (getModeId('MEASURE') || VIEWER_MEASUREMENT_MODE_ID);
     const __splitVariant = readSplitVariant(App);
     const __paintSelection = readPaintSelection(App, __pm);
-    const __isMirrorPaintMode = __paintSelection === 'mirror';
+    const __isMirrorPaintMode = __paintSelection === 'mirror' || isAdhesiveGlassValue(__paintSelection);
 
     if (__isMeasureMode) {
       const hitState = resolveCanvasPickingClickHitState({

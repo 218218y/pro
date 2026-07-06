@@ -31,6 +31,7 @@ export type DrawerConfig = {
   doorSpecialMap?: Record<string, string | null | undefined>;
   doorStyleMap?: ReturnType<typeof readDoorStyleMap>;
   curtainMap?: Record<string, unknown>;
+  mirrorLayoutMap?: Record<string, unknown>;
   isMultiColorMode?: boolean;
   isLibraryMode?: boolean;
 };

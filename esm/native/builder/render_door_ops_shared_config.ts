@@ -1,6 +1,7 @@
 import type { MirrorLayoutList } from '../../../types';
 import {
   readDoorStyleMap,
+  resolveAdhesiveGlassKind,
   resolveEffectiveDoorStyle,
   type DoorStyleOverrideValue,
 } from '../features/door_authoring/api.js';
@@ -81,26 +82,36 @@ export function resolveSlidingDoorVisualState(
 ): SlidingDoorVisualState {
   let isMirror = false;
   let isGlass = false;
+  let adhesiveGlassKind: 'black_glass' | 'frosted_glass' | null = null;
   let curtain = readCurtainType(resolveCurtain(cfg.curtainMap, partId));
 
   if (cfg.isMultiColorMode) {
     const special = readDoorVisualMapValue(cfg.doorSpecialMap, partId);
     if (special === 'mirror') isMirror = true;
     else if (special === 'glass') isGlass = true;
-    else if (getPartColorValue) {
+    else adhesiveGlassKind = resolveAdhesiveGlassKind(special);
+
+    if (!isMirror && !isGlass && !adhesiveGlassKind && getPartColorValue) {
       const value = getPartColorValue(partId);
       if (value === 'mirror') isMirror = true;
       else if (value === 'glass') isGlass = true;
+      else adhesiveGlassKind = resolveAdhesiveGlassKind(value);
     }
-    if (!isMirror && !isGlass && curtain && curtain !== 'none') isGlass = true;
+    if (!isMirror && !isGlass && !adhesiveGlassKind && curtain && curtain !== 'none') isGlass = true;
   }
 
   if (isMirror) {
     isGlass = false;
+    adhesiveGlassKind = null;
+    curtain = null;
+  }
+  if (isGlass) adhesiveGlassKind = null;
+  if (adhesiveGlassKind) {
+    isGlass = false;
     curtain = null;
   }
 
-  return { isMirror, isGlass, curtain };
+  return { isMirror, isGlass, curtain, adhesiveGlassKind };
 }
 
 export function resolveHandleType(getHandleType: GetHandleTypeFn | null, partId: string): string {

@@ -7,8 +7,12 @@ import {
   MULTI_CURTAIN_TITLE,
   MULTI_DOOR_STYLE_HEADER,
   MULTI_DOOR_STYLE_OPTIONS,
+  MULTI_GLASS_HEIGHT,
+  MULTI_GLASS_RESET_HEIGHT,
+  MULTI_GLASS_RESET_WIDTH,
   MULTI_GLASS_STYLE_HEADER,
   MULTI_GLASS_STYLE_OPTIONS,
+  MULTI_GLASS_WIDTH,
   MULTI_MIRROR_AUTO,
   MULTI_MIRROR_HEIGHT,
   MULTI_MIRROR_RESET_HEIGHT,
@@ -76,17 +80,22 @@ function MultiColorSwatchRow(props: {
 function MultiColorMirrorDraftCard(props: {
   heightDraft: string;
   widthDraft: string;
+  title?: string;
+  heightLabel?: string;
+  widthLabel?: string;
+  resetHeightLabel?: string;
+  resetWidthLabel?: string;
   onSetMirrorDraftField: (key: MirrorDraftFieldKey, value: string) => void;
 }): ReactElement {
   return (
     <div className="wp-tool-card wp-tool-card--curtain">
-      <div className="wp-section-title">מידות מראה</div>
+      <div className="wp-section-title">{props.title || 'מידות מראה'}</div>
 
       <div className="wp-row wp-gap-10 wp-r-mirror-draft-fields">
         <MultiColorMirrorDraftField
           id="wp-r-mirror-draft-height"
-          label={MULTI_MIRROR_HEIGHT}
-          resetLabel={MULTI_MIRROR_RESET_HEIGHT}
+          label={props.heightLabel || MULTI_MIRROR_HEIGHT}
+          resetLabel={props.resetHeightLabel || MULTI_MIRROR_RESET_HEIGHT}
           value={props.heightDraft}
           fieldKey="currentMirrorDraftHeightCm"
           onSetMirrorDraftField={props.onSetMirrorDraftField}
@@ -94,8 +103,8 @@ function MultiColorMirrorDraftCard(props: {
 
         <MultiColorMirrorDraftField
           id="wp-r-mirror-draft-width"
-          label={MULTI_MIRROR_WIDTH}
-          resetLabel={MULTI_MIRROR_RESET_WIDTH}
+          label={props.widthLabel || MULTI_MIRROR_WIDTH}
+          resetLabel={props.resetWidthLabel || MULTI_MIRROR_RESET_WIDTH}
           value={props.widthDraft}
           fieldKey="currentMirrorDraftWidthCm"
           onSetMirrorDraftField={props.onSetMirrorDraftField}
@@ -295,6 +304,19 @@ function MultiColorPanelBody(props: Omit<MultiColorPanelViewProps, 'embedded'>):
 
             {viewState.paintActive && viewState.paintColor === 'mirror' ? (
               <MultiColorMirrorDraftCard
+                heightDraft={viewState.mirrorDraftHeight}
+                widthDraft={viewState.mirrorDraftWidth}
+                onSetMirrorDraftField={props.onSetMirrorDraftField}
+              />
+            ) : null}
+
+            {viewState.paintActive && viewState.activeAdhesiveGlassKind ? (
+              <MultiColorMirrorDraftCard
+                title="מידות זכוכית"
+                heightLabel={MULTI_GLASS_HEIGHT}
+                widthLabel={MULTI_GLASS_WIDTH}
+                resetHeightLabel={MULTI_GLASS_RESET_HEIGHT}
+                resetWidthLabel={MULTI_GLASS_RESET_WIDTH}
                 heightDraft={viewState.mirrorDraftHeight}
                 widthDraft={viewState.mirrorDraftWidth}
                 onSetMirrorDraftField={props.onSetMirrorDraftField}

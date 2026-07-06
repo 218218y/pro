@@ -70,6 +70,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       );
       const specificMat = getPartMaterial ? getPartMaterial(partId) : null;
       const drawerVisualState = resolveDrawerVisualState(cfg, partId, getPartColorValue);
+      const hasAdhesiveGlass = !!drawerVisualState.adhesiveGlassKind;
       const omitConnectorPanel = drawerVisualState.isGlass;
       const faceW = readFinitePositive(drawerOp.faceW) ?? drawerOp.visualW;
       const faceOffsetX = readFinite(drawerOp.faceOffsetX, 0);
@@ -122,15 +123,19 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
           drawerOp.visualT || DRAWER_DIMENSIONS.external.visualThicknessM,
           drawerVisualState.isMirror ? drawerMirrorMat : drawerWoodMat,
           effectiveDrawerStyle,
-          hasGroove && !drawerVisualState.isGlass,
+          hasGroove && !drawerVisualState.isGlass && !hasAdhesiveGlass,
           drawerVisualState.isMirror,
           drawerVisualState.isGlass ? drawerVisualState.curtainType : null,
-          drawerVisualState.isMirror ? drawerWoodMat : globalFrontMat,
+          drawerVisualState.isMirror || hasAdhesiveGlass ? drawerWoodMat : globalFrontMat,
           1,
           false,
-          null,
+          drawerVisualState.mirrorLayout,
           partId,
-          drawerVisualState.isGlass ? { glassFrameStyle: effectiveDrawerFrameStyle } : null
+          drawerVisualState.isGlass
+            ? { glassFrameStyle: effectiveDrawerFrameStyle }
+            : drawerVisualState.adhesiveGlassKind
+              ? { adhesiveGlassKind: drawerVisualState.adhesiveGlassKind }
+              : null
         );
       } else {
         visual = new THREE.Mesh(

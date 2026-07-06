@@ -2,7 +2,7 @@
 //
 // Owns per-segment material selection and visual creation for segmented sketch-door rebuild flows.
 
-import { resolveEffectiveDoorStyle } from '../features/door_authoring/api.js';
+import { resolveAdhesiveGlassKind, resolveEffectiveDoorStyle } from '../features/door_authoring/api.js';
 import { resolveDoorVisualSegmentIdentity } from '../../shared/door_visual_key_contracts_shared.js';
 import {
   listDoorGrooveTargetLookupKeys,
@@ -21,6 +21,7 @@ export type SketchSegmentVisualFlags = {
   segmentHasGroove: boolean;
   segmentIsMirror: boolean;
   segmentIsGlass: boolean;
+  segmentAdhesiveGlassKind: 'black_glass' | 'frosted_glass' | null;
   segmentCurtain: string | null;
   segmentMirrorLayout: unknown;
 };
@@ -124,16 +125,19 @@ export function resolveSketchSegmentVisualFlags(args: {
   const segmentSpecial = resolveSpecial(segmentPartId, segmentCurtain);
   const segmentIsMirror = segmentSpecial === 'mirror';
   const segmentIsGlass = segmentSpecial === 'glass';
+  const segmentAdhesiveGlassKind = resolveAdhesiveGlassKind(segmentSpecial);
   const segmentHasGroove =
     runtime.groovesEnabled !== false &&
     !segmentIsMirror &&
     !segmentIsGlass &&
+    !segmentAdhesiveGlassKind &&
     readSketchSegmentGrooveEnabled({ groovesMap, segmentPartId, sourceUserData });
   return {
     effectiveDoorStyle: resolveEffectiveDoorStyle(doorStyle, doorStyleMap, segmentPartId),
     segmentHasGroove,
     segmentIsMirror,
     segmentIsGlass,
+    segmentAdhesiveGlassKind,
     segmentCurtain,
     segmentMirrorLayout: resolveMirrorLayout(segmentPartId),
   };
@@ -177,12 +181,16 @@ export function createSegmentVisual(args: {
         flags.segmentHasGroove,
         flags.segmentIsMirror,
         flags.segmentIsGlass ? flags.segmentCurtain : null,
-        flags.segmentIsMirror ? segmentWoodMat : globalFrontMat,
+        flags.segmentIsMirror || flags.segmentAdhesiveGlassKind ? segmentWoodMat : globalFrontMat,
         1,
         false,
         flags.segmentMirrorLayout,
         segmentPartId,
-        flags.segmentIsGlass ? { glassFrameStyle: flags.effectiveDoorStyle } : null
+        flags.segmentIsGlass
+          ? { glassFrameStyle: flags.effectiveDoorStyle }
+          : flags.segmentAdhesiveGlassKind
+            ? { adhesiveGlassKind: flags.segmentAdhesiveGlassKind }
+            : null
       );
     } catch {
       visual = null;

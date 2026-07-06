@@ -1,6 +1,15 @@
 export { isRemoveDoorModeFromSnapshot, resolveRemoveDoorsEnabledFromSnapshots } from './internal/removal.js';
 
 export type { DoorStyleOverrideValue } from './internal/style.js';
+
+export type { AdhesiveGlassKind } from './internal/special_glass.js';
+export {
+  DOOR_SPECIAL_BLACK_GLASS,
+  DOOR_SPECIAL_FROSTED_GLASS,
+  isAdhesiveGlassValue,
+  isDoorSpecialSurfaceValue,
+  resolveAdhesiveGlassKind,
+} from './internal/special_glass.js';
 export {
   encodeDoorStyleOverridePaintToken,
   encodeGlassFrameStylePaintToken,

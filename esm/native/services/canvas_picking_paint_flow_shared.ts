@@ -12,6 +12,7 @@ import type {
 
 import { getBuilderMaterialsService } from '../runtime/builder_service_access.js';
 import {
+  isAdhesiveGlassValue,
   isGlassPaintSelection,
   readDoorStyleMap,
   mirrorLayoutMapEquals,
@@ -208,7 +209,7 @@ export function isSpecialPart(__paintPartKey: string): boolean {
 }
 
 export function isSpecialVal(v: unknown): v is DoorSpecialValue {
-  return v === 'mirror' || v === 'glass';
+  return v === 'mirror' || v === 'glass' || isAdhesiveGlassValue(v);
 }
 
 export function getPaintSourceTag(paint: string, foundPartId: string): string {
@@ -216,6 +217,7 @@ export function getPaintSourceTag(paint: string, foundPartId: string): string {
     .trim()
     .toLowerCase();
   if (selection === 'mirror') return 'paint.apply:mirror';
+  if (isAdhesiveGlassValue(selection)) return 'paint.apply:adhesiveGlass';
   if (isGlassPaintSelection(selection)) return 'paint.apply:glass';
   if (
     foundPartId &&

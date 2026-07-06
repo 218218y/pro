@@ -1,3 +1,4 @@
+import { resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
@@ -121,6 +122,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
 
       let woodMat = getPartMaterial ? getPartMaterial(partId) : null;
       const isMirrorDoor = doorOp.isMirror;
+      const adhesiveGlassKind = resolveAdhesiveGlassKind(doorOp.adhesiveGlassKind);
       let mirrorMat = null;
       if (isMirrorDoor) {
         mirrorMat = getMirrorMaterial({
@@ -138,6 +140,10 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
         const glassFrameStyleRaw =
           doorOp.style === 'glass' ? resolveDoorVisualStyle(null, doorStyle, cfg.doorStyleMap, partId) : null;
         const glassFrameStyle = glassFrameStyleRaw === 'glass' ? null : glassFrameStyleRaw;
+        const doorVisualOptions = {
+          ...(glassFrameStyle ? { glassFrameStyle } : null),
+          ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
+        };
         visual = createDoorVisual(
           (doorOp.width || 0) - hingedDims.visualWidthClearanceM,
           (doorOp.height || 0) - hingedDims.visualHeightClearanceM,
@@ -147,12 +153,12 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
           doorOp.hasGroove,
           isMirrorDoor,
           readCurtainType(doorOp.curtain),
-          isMirrorDoor ? woodMat : globalFrontMat,
+          isMirrorDoor || adhesiveGlassKind ? woodMat : globalFrontMat,
           1,
           false,
           resolveMirrorLayout(cfg, partId),
           partId,
-          glassFrameStyle ? { glassFrameStyle } : null
+          Object.keys(doorVisualOptions).length ? doorVisualOptions : null
         );
       } else {
         visual = new THREE.Mesh(

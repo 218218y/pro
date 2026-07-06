@@ -28,7 +28,8 @@ export function resolveSketchBoxDoorVisualRoute(args: {
   const { doorPid } = layout;
   const effectiveDoorStyle = resolveEffectiveDoorStyle(doorStyle, doorStyleMap, doorPid);
   const hasDoorVisualFactory = !!createDoorVisual;
-  const isSpecialVisual = doorVisualState.isMirror || doorVisualState.isGlass;
+  const isSpecialVisual =
+    doorVisualState.isMirror || doorVisualState.isGlass || !!doorVisualState.adhesiveGlassKind;
   const canUseStyledDoorVisual = !!(
     hasDoorVisualFactory &&
     (effectiveDoorStyle === 'profile' || effectiveDoorStyle === 'double_profile') &&
@@ -57,6 +58,7 @@ export function resolveSketchBoxDoorVisualRoute(args: {
     route: 'slab',
     effectiveDoorStyle,
     createDoorVisual,
-    shouldUseClassicAccents: !doorVisualState.isMirror && !doorVisualState.isGlass,
+    shouldUseClassicAccents:
+      !doorVisualState.isMirror && !doorVisualState.isGlass && !doorVisualState.adhesiveGlassKind,
   };
 }

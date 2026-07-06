@@ -14,7 +14,11 @@ import {
   createPreviewOpsArgs,
 } from './canvas_picking_generic_paint_hover_shared.js';
 import { resolveGenericPartPaintTarget } from './canvas_picking_generic_paint_target_resolution.js';
-import { isDoorStyleOverridePaintToken, isGlassPaintSelection } from '../features/door_authoring/api.js';
+import {
+  isAdhesiveGlassValue,
+  isDoorStyleOverridePaintToken,
+  isGlassPaintSelection,
+} from '../features/door_authoring/api.js';
 import { resolvePaintPreviewGroupBox } from './canvas_picking_generic_paint_hover_preview.js';
 import { isNonPaintableCanvasPaintPartId } from './canvas_picking_paint_part_eligibility.js';
 
@@ -44,6 +48,7 @@ export function tryHandleGenericPartPaintHover(args: {
   if (
     !selection ||
     selection === 'mirror' ||
+    isAdhesiveGlassValue(selection) ||
     isGlassPaintSelection(selection) ||
     isDoorStyleOverridePaintToken(selection)
   )

@@ -6,6 +6,7 @@ import {
   readDoorTrimListForPart,
   resolveEffectiveDoorStyle,
   isRemoveDoorModeFromSnapshot,
+  resolveAdhesiveGlassKind,
 } from '../features/door_authoring/api.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 
@@ -61,9 +62,12 @@ export function pushCornerConnectorDoorSegmentVisual(
     ctx.cfg0.isMultiColorMode && ctx.getCurtain ? readScopedReaderAny(ctx, ctx.getCurtain, partId) : null;
   const special = ctx.resolveSpecial(partId, curtain);
   const isMirror = special === 'mirror';
+  const adhesiveGlassKind = resolveAdhesiveGlassKind(special);
+  const hasAdhesiveGlass = !!adhesiveGlassKind;
   const mirrorLayout = readCornerConnectorMirrorLayout(ctx, partId);
   const hasOutsideMirrorSurface =
-    isMirror && hasMirrorSurfaceOnFace(mirrorLayout, ctx.outwardZSign, ctx.outwardZSign);
+    (isMirror || hasAdhesiveGlass) &&
+    hasMirrorSurfaceOnFace(mirrorLayout, ctx.outwardZSign, ctx.outwardZSign);
   const hasGroove =
     ctx.groovesEnabled && !hasOutsideMirrorSurface && !!readScopedReaderAny(ctx, ctx.getGroove, partId);
   const style = special === 'glass' ? 'glass' : null;
@@ -83,13 +87,17 @@ export function pushCornerConnectorDoorSegmentVisual(
     style || effectiveFrameStyle,
     hasGroove,
     isMirror,
-    readCurtainTypeLocal(curtain),
-    isMirror ? woodMat : ctx.frontMat,
+    special === 'glass' ? readCurtainTypeLocal(curtain) : null,
+    isMirror || hasAdhesiveGlass ? woodMat : ctx.frontMat,
     ctx.outwardZSign,
     true,
     mirrorLayout,
     scopedPartId,
-    special === 'glass' ? { glassFrameStyle: effectiveFrameStyle } : null
+    special === 'glass'
+      ? { glassFrameStyle: effectiveFrameStyle }
+      : adhesiveGlassKind
+        ? { adhesiveGlassKind }
+        : null
   );
   vis.position.set(state.meshOffset, 0, 0);
   hinge.add(vis);

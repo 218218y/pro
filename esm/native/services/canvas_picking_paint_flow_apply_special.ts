@@ -1,6 +1,7 @@
-import type { MirrorLayoutEntry, MirrorLayoutList } from '../../../types';
+import type { DoorSpecialValue, MirrorLayoutEntry, MirrorLayoutList } from '../../../types';
 
 import {
+  isAdhesiveGlassValue,
   readMirrorLayoutList,
   readDoorVisualMapEntry,
   isDoorStyleOverrideValue,
@@ -54,9 +55,9 @@ function readEffectiveMapEntry(
 function readEffectiveSpecialEntry(
   state: PaintFlowMutableState,
   partKey: string
-): { key: string; value: 'mirror' | 'glass' } | null {
+): { key: string; value: Exclude<DoorSpecialValue, null> } | null {
   const entry = readEffectiveMapEntry(state.special0, partKey);
-  return entry && (entry.value === 'mirror' || entry.value === 'glass')
+  return entry && (entry.value === 'mirror' || entry.value === 'glass' || isAdhesiveGlassValue(entry.value))
     ? { key: entry.key, value: entry.value }
     : null;
 }
@@ -237,18 +238,19 @@ function createFullDoorMirrorLayout(faceSign: 1 | -1): MirrorLayoutEntry {
 
 function resolveMirrorLayoutsAfterAdd(args: {
   existingSpecial: string | null;
+  paintSelection: string;
   existingMirrorLayouts: MirrorLayoutList;
   result: ResolvedMirrorLayoutClickResult;
 }): MirrorLayoutList | null {
-  const { existingSpecial, existingMirrorLayouts, result } = args;
+  const { existingSpecial, existingMirrorLayouts, paintSelection, result } = args;
   if (!result.isFullDoorMirror) {
-    return existingSpecial === 'mirror'
+    return existingSpecial === paintSelection
       ? existingMirrorLayouts.concat([result.nextLayout])
       : [result.nextLayout];
   }
 
   const faceSign = result.hitFaceSign;
-  if (existingSpecial !== 'mirror') return faceSign === -1 ? [createFullDoorMirrorLayout(-1)] : null;
+  if (existingSpecial !== paintSelection) return faceSign === -1 ? [createFullDoorMirrorLayout(-1)] : null;
   if (existingMirrorLayouts.length)
     return existingMirrorLayouts.concat([createFullDoorMirrorLayout(faceSign)]);
 
@@ -282,10 +284,12 @@ export function applyPaintPartMutation(args: {
   const isSpecialPaintPart = isSpecialPart(paintPartKey);
   const isHexCellDiagonalPaintPart = isHexCellDiagonalPanelPartId(paintPartKey);
 
-  if (isSpecialPaintPart && !isHexCellDiagonalPaintPart && paintSelection === 'mirror') {
+  const isMirrorLikeOverlaySelection = paintSelection === 'mirror' || isAdhesiveGlassValue(paintSelection);
+
+  if (isSpecialPaintPart && !isHexCellDiagonalPaintPart && isMirrorLikeOverlaySelection) {
     const mirrorResult = resolveMirrorLayout(clickArgs, existingMirrorLayouts);
     const { removeMatch, canApplyMirror } = mirrorResult;
-    if (existingSpecial === 'mirror' && removeMatch) {
+    if (existingSpecial === paintSelection && removeMatch) {
       const nextLayouts = existingMirrorLayouts.filter((_, idx) => idx !== removeMatch.index);
       const isInheritedSpecialOwner = isDoorVisualInheritedOwner({
         targetPartId: paintPartKey,
@@ -312,11 +316,11 @@ export function applyPaintPartMutation(args: {
         });
         deleteClickedDoorVisualEntries({ state, partKey: paintPartKey });
         if (nextLayouts.length) {
-          state.ensureSpecial()[paintPartKey] = 'mirror';
+          state.ensureSpecial()[paintPartKey] = paintSelection;
           state.ensureMirrorLayout()[paintPartKey] = nextLayouts;
         }
       } else if (nextLayouts.length) {
-        state.ensureSpecial()[mirrorOwnerKey] = 'mirror';
+        state.ensureSpecial()[mirrorOwnerKey] = paintSelection;
         deleteDoorVisualOwnerAliasEntries(state.ensureCurtains(), mirrorOwnerKey);
         state.ensureMirrorLayout()[mirrorOwnerKey] = nextLayouts;
       } else {
@@ -331,7 +335,7 @@ export function applyPaintPartMutation(args: {
     if (!canApplyMirror) return;
 
     const isTogglingCanonicalOutsideMirror =
-      existingSpecial === 'mirror' &&
+      existingSpecial === paintSelection &&
       mirrorResult.isFullDoorMirror &&
       mirrorResult.hitFaceSign === 1 &&
       !existingMirrorLayouts.length;
@@ -372,13 +376,14 @@ export function applyPaintPartMutation(args: {
     const nextLayouts = resolveMirrorLayoutsAfterAdd({
       existingSpecial,
       existingMirrorLayouts,
+      paintSelection,
       result: mirrorResult,
     });
 
     if (existingSpecial === 'glass') {
       restoreDoorStyleBeforeReplacingGlassSpecial(state, paintPartKey, specialOwnerKey);
     }
-    state.ensureSpecial()[paintPartKey] = 'mirror';
+    state.ensureSpecial()[paintPartKey] = paintSelection;
     clearDoorStyleBeforeGlassMarker(state, paintPartKey);
     deleteDoorVisualOwnerAliasEntries(state.ensureCurtains(), paintPartKey);
     if (nextLayouts && nextLayouts.length) state.ensureMirrorLayout()[paintPartKey] = nextLayouts;

@@ -6,6 +6,7 @@ import {
   resolveEffectiveDoorStyle,
   readDoorTrimListForPart,
   hasMirrorSurfaceOnFace,
+  resolveAdhesiveGlassKind,
 } from '../features/door_authoring/api.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import {
@@ -157,8 +158,11 @@ export function emitCornerWingExternalDrawers(
     const special = runtime.__resolveSpecial(id, curtain);
     const isMirror = special === 'mirror';
     const isGlass = special === 'glass';
+    const adhesiveGlassKind = resolveAdhesiveGlassKind(special);
+    const hasAdhesiveGlass = !!adhesiveGlassKind;
     const mirrorLayout = runtime.readMirrorLayout(id);
-    const hasOutsideMirrorSurface = isMirror && hasMirrorSurfaceOnFace(mirrorLayout, 1, 1);
+    const hasOutsideMirrorSurface =
+      (isMirror || hasAdhesiveGlass) && hasMirrorSurfaceOnFace(mirrorLayout, 1, 1);
     const hasGroove =
       runtime.groovesEnabled &&
       !hasOutsideMirrorSurface &&
@@ -193,12 +197,12 @@ export function emitCornerWingExternalDrawers(
       hasGroove,
       isMirror,
       isGlass ? readCurtainType(curtain) : null,
-      isMirror ? woodMat : runtime.materials.front,
+      isMirror || hasAdhesiveGlass ? woodMat : runtime.materials.front,
       1,
       false,
       mirrorLayout,
       id,
-      isGlass ? { glassFrameStyle: effectiveFrameStyle } : null
+      isGlass ? { glassFrameStyle: effectiveFrameStyle } : adhesiveGlassKind ? { adhesiveGlassKind } : null
     );
     dVis.position.set(0, 0, 0);
 

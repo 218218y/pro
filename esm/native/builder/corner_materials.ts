@@ -1,7 +1,7 @@
 // Corner wing: material resolution + multi-color/special doors
 
 import { CORNER_SHELF_GROUP_PART_ID } from '../features/part_identity/api.js';
-import { readDoorVisualMapEntry } from '../features/door_authoring/api.js';
+import { readDoorVisualMapEntry, resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { getCommonMatsOrThrow } from './common_mats_resolver.js';
 import { asRecord, cloneRecord } from '../runtime/record.js';
 
@@ -32,7 +32,7 @@ type RenderOpsLike = {
 
 type GetMaterialFn = BuilderGetMaterialFn;
 type ScopedReaderLike = ((key: string) => unknown) | null | undefined;
-type SpecialDoorMode = 'mirror' | 'glass' | null;
+type SpecialDoorMode = 'mirror' | 'glass' | 'black_glass' | 'frosted_glass' | null;
 type PartMap = UnknownRecord;
 
 type CornerWingMaterialsResult = {
@@ -330,10 +330,14 @@ export function createCornerWingMaterials(args: {
     const scopedSpecial = readDoorSpecialValue(readScopedMapVal(doorSpecialMap, partId));
     if (scopedSpecial === 'mirror') return 'mirror';
     if (scopedSpecial === 'glass') return 'glass';
+    const specialAdhesiveGlass = resolveAdhesiveGlassKind(scopedSpecial);
+    if (specialAdhesiveGlass) return specialAdhesiveGlass;
 
     const scopedColor = readScopedMapVal(individualColors, partId);
     if (scopedColor === 'mirror') return 'mirror';
     if (scopedColor === 'glass') return 'glass';
+    const colorAdhesiveGlass = resolveAdhesiveGlassKind(scopedColor);
+    if (colorAdhesiveGlass) return colorAdhesiveGlass;
 
     return curtainVal === 'glass' ? 'glass' : null;
   };
@@ -342,7 +346,8 @@ export function createCornerWingMaterials(args: {
     const scopedColor = readScopedMapVal(individualColors, partId);
     if (cfg.isMultiColorMode && scopedColor) {
       const colorValue = scopedColor ?? null;
-      if (colorValue === 'mirror' || colorValue === 'glass') return defaultMat;
+      if (colorValue === 'mirror' || colorValue === 'glass' || resolveAdhesiveGlassKind(colorValue))
+        return defaultMat;
       return resolveSelectionFrontMaterial({
         selection: colorValue,
         cfg,

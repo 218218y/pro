@@ -3,6 +3,7 @@
 // Keep the public paint-click contract stable while grouped targets, special
 // mirror/glass behavior, and map-diff/history policy live in focused owners.
 import { getTools, getUiFeedback } from '../runtime/service_access.js';
+import { isAdhesiveGlassValue } from '../features/door_authoring/api.js';
 import { getPaintSourceTag, isSpecialPart } from './canvas_picking_paint_flow_shared.js';
 import type { CanvasPaintClickArgs } from './canvas_picking_paint_flow_contracts.js';
 import { createPaintFlowMutableState } from './canvas_picking_paint_flow_apply_state.js';
@@ -16,10 +17,10 @@ import { commitPaintFlowState } from './canvas_picking_paint_flow_apply_commit.j
 import { isNonPaintableCanvasPaintPartId } from './canvas_picking_paint_part_eligibility.js';
 import { readCanvasPaintTargetScopeFromObject } from './canvas_picking_paint_target_scope.js';
 
-function notifyUnsupportedMirrorPaintTarget(App: unknown): void {
+function notifyUnsupportedMirrorPaintTarget(App: unknown, label = 'מראה'): void {
   try {
     getUiFeedback(App).toast(
-      'מראה זמינה רק על חזיתות/דלתות שתומכות במראה, לא על דפנות או גוף הארון.',
+      `${label} זמינה רק על חזיתות/דלתות שתומכות בתוסף דלת, לא על דפנות או גוף הארון.`,
       'info'
     );
   } catch {
@@ -57,8 +58,8 @@ export function tryHandleCanvasPaintClick(args: CanvasPaintClickArgs): boolean {
     activeStack: paintStackKey,
   });
 
-  if (paintSelection === 'mirror' && !isSpecialPart(paintPartKey)) {
-    notifyUnsupportedMirrorPaintTarget(App);
+  if ((paintSelection === 'mirror' || isAdhesiveGlassValue(paintSelection)) && !isSpecialPart(paintPartKey)) {
+    notifyUnsupportedMirrorPaintTarget(App, paintSelection === 'mirror' ? 'מראה' : 'זכוכית');
     return true;
   }
 

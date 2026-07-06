@@ -67,6 +67,7 @@ export type SlidingDoorVisualState = {
   isMirror: boolean;
   isGlass: boolean;
   curtain: string | null | undefined;
+  adhesiveGlassKind?: 'black_glass' | 'frosted_glass' | null;
 };
 
 export type SlidingRailLike = {
@@ -106,6 +107,7 @@ export type HingedDoorOpLike = {
   openAngle?: number;
   isRemoved: boolean;
   isMirror: boolean;
+  adhesiveGlassKind?: 'black_glass' | 'frosted_glass' | null;
   hasGroove: boolean;
   moduleIndex?: unknown;
   moduleDoors?: number;

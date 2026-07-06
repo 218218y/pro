@@ -97,10 +97,12 @@ export function createChestDrawerFrontVisual(args: ChestDrawerFrontVisualArgs): 
   const effectiveDrawerFrameStyle =
     effectiveDrawerFrameStyleRaw === 'glass' ? 'profile' : effectiveDrawerFrameStyleRaw;
   const effectiveDrawerStyle = drawerVisualState.isGlass ? 'glass' : effectiveDrawerFrameStyle;
+  const hasAdhesiveGlass = !!drawerVisualState.adhesiveGlassKind;
   const hasGroove =
     !!args.isGroovesEnabled &&
     !drawerVisualState.isGlass &&
     !drawerVisualState.isMirror &&
+    !hasAdhesiveGlass &&
     !!cfg.groovesMap &&
     cfg.groovesMap[toCanonicalGroovesMapKey(args.drawerId)] === true;
 
@@ -113,13 +115,16 @@ export function createChestDrawerFrontVisual(args: ChestDrawerFrontVisualArgs): 
     hasGroove,
     drawerVisualState.isMirror,
     drawerVisualState.isGlass ? drawerVisualState.curtainType : null,
-    drawerVisualState.isMirror ? drawerWoodMat : args.globalFrontMaterial,
+    drawerVisualState.isMirror || hasAdhesiveGlass ? drawerWoodMat : args.globalFrontMaterial,
     1,
     false,
-    null,
+    drawerVisualState.mirrorLayout,
     args.drawerId,
     {
       ...(drawerVisualState.isGlass ? { glassFrameStyle: effectiveDrawerFrameStyle } : {}),
+      ...(drawerVisualState.adhesiveGlassKind
+        ? { adhesiveGlassKind: drawerVisualState.adhesiveGlassKind }
+        : {}),
       renderPolicy: args.renderPolicy,
     }
   );

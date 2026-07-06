@@ -4,6 +4,7 @@ import {
   findMirrorLayoutMatchInRect,
   resolveMirrorPlacementInRect,
   isGlassPaintSelection,
+  isAdhesiveGlassValue,
   resolveDoorStylePaintSelectionState,
   resolveGlassFrameStylePaintSelection,
   readDoorVisualMapValue,
@@ -73,7 +74,9 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
   });
   const existingSpecialValue = readDoorVisualMapValue(doorSpecialMap, partKey);
   const existingSpecial =
-    existingSpecialValue === 'mirror' || existingSpecialValue === 'glass'
+    existingSpecialValue === 'mirror' ||
+    existingSpecialValue === 'glass' ||
+    isAdhesiveGlassValue(existingSpecialValue)
       ? String(existingSpecialValue)
       : null;
   const existingCurtainValue = readDoorVisualMapValue(curtainMap, partKey);
@@ -96,7 +99,7 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
     previewMaterial = willRemoveDoorStyle
       ? markerUd.__matRemove || markerUd.__matGroove || baseMarkerMaterial
       : markerUd.__matAdd || markerUd.__matGroove || baseMarkerMaterial;
-  } else if (normalizedPaintSelection === 'mirror') {
+  } else if (normalizedPaintSelection === 'mirror' || isAdhesiveGlassValue(normalizedPaintSelection)) {
     if (!__isSpecialPaintTarget(partKey) || isHexCellDiagonalPanelPartId(partKey)) {
       if (doorMarker) doorMarker.visible = false;
       return false;
@@ -127,7 +130,7 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
     const mirrorDraft = __readMirrorDraft(readUi, App);
     const hasSizedDraft = __hasMirrorSizedDraft(readUi, App);
     const removeMatch =
-      existingSpecial === 'mirror'
+      existingSpecial === normalizedPaintSelection
         ? findMirrorLayoutMatchInRect({
             rect: mirrorRect,
             layouts: existingMirrorLayouts,
@@ -137,7 +140,10 @@ export function tryHandleDoorPaintHoverPreview(args: DoorPaintHoverPreviewArgs):
           })
         : null;
     const isCanonicalFullMirrorRemoveHover =
-      existingSpecial === 'mirror' && !hasSizedDraft && !existingMirrorLayouts.length && hitFaceSign === 1;
+      existingSpecial === normalizedPaintSelection &&
+      !hasSizedDraft &&
+      !existingMirrorLayouts.length &&
+      hitFaceSign === 1;
     const willRemoveMirror = !!removeMatch || isCanonicalFullMirrorRemoveHover;
     const center = buildSnappedMirrorCenterFromHit({
       rect: mirrorRect,

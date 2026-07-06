@@ -1,10 +1,12 @@
 import {
   isDoorStyleOverridePaintToken,
   isGlassPaintSelection,
+  resolveAdhesiveGlassKind,
   resolveGlassFrameStylePaintSelection,
 } from '../../../features/door_authoring/api.js';
 import { isCurtainPreset, type CurtainPreset } from './design_tab_multicolor_shared.js';
 import {
+  MULTI_MSG_HINT_ADHESIVE_GLASS,
   MULTI_MSG_HINT_DOOR_STYLE,
   MULTI_MSG_HINT_GLASS,
   MULTI_MSG_HINT_PAINT,
@@ -22,12 +24,16 @@ function isSelectedPaintDot(
   paintActive: boolean,
   paintColor: string | null,
   curtainChoice: CurtainPreset,
-  dot: Pick<MultiColorSwatchDot, 'paintId' | 'curtainPreset' | 'id'>
+  dot: Pick<MultiColorSwatchDot, 'paintId' | 'curtainPreset' | 'id' | 'adhesiveGlassKind'>
 ): boolean {
   if (!paintActive || !paintColor) return false;
 
   if (isDoorStyleOverridePaintToken(dot.paintId)) {
     return paintColor === dot.paintId;
+  }
+
+  if (dot.adhesiveGlassKind) {
+    return resolveAdhesiveGlassKind(paintColor) === dot.adhesiveGlassKind;
   }
 
   if (dot.paintId === 'glass') {
@@ -58,6 +64,7 @@ function resolvePaintHint(
   activeDoorStyleOverride: MultiColorPanelViewState['activeDoorStyleOverride']
 ): string | null {
   if (!paintActive || paintColor === 'mirror') return null;
+  if (resolveAdhesiveGlassKind(paintColor)) return MULTI_MSG_HINT_ADHESIVE_GLASS;
   if (isGlassPaintSelection(paintColor)) return MULTI_MSG_HINT_GLASS;
   if (activeDoorStyleOverride) return MULTI_MSG_HINT_DOOR_STYLE;
   return MULTI_MSG_HINT_PAINT;
@@ -110,6 +117,7 @@ export function createDesignTabMulticolorViewState(
         icon: swatch.icon,
         badge: swatch.badge,
         curtainPreset: swatch.curtainPreset,
+        adhesiveGlassKind: swatch.adhesiveGlassKind,
       },
       paintActive,
       args.paintColor,
@@ -126,6 +134,7 @@ export function createDesignTabMulticolorViewState(
     mirrorDraftWidth: args.mirrorDraftWidth,
     activeDoorStyleOverride: args.activeDoorStyleOverride,
     activeGlassFrameStyle: resolveGlassFrameStylePaintSelection(args.paintColor),
+    activeAdhesiveGlassKind: resolveAdhesiveGlassKind(args.paintColor),
     defaultSwatches,
     savedSwatches,
     specialSwatches,

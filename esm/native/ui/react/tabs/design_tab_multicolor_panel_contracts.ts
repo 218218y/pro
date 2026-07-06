@@ -1,5 +1,8 @@
 import {
+  DOOR_SPECIAL_BLACK_GLASS,
+  DOOR_SPECIAL_FROSTED_GLASS,
   encodeGlassFrameStylePaintToken,
+  type AdhesiveGlassKind,
   type DoorStyleOverrideValue,
 } from '../../../features/door_authoring/api.js';
 import type { CurtainPreset, DefaultSwatch, SavedColor } from './design_tab_multicolor_shared.js';
@@ -7,9 +10,12 @@ import type { CurtainPreset, DefaultSwatch, SavedColor } from './design_tab_mult
 export const MULTI_ICON_BRUSH = '🖌️';
 export const MULTI_ICON_MIRROR = '🪞';
 export const MULTI_ICON_WINDOW = '🪟';
+export const MULTI_ICON_BLACK_GLASS = '◩';
+export const MULTI_ICON_FROSTED_GLASS = '◫';
 export const MULTI_ICON_THREAD = '🧵';
 
 export const MULTI_MSG_HINT_GLASS = 'כעת לחץ על דלתות כדי להחיל זכוכית ואת הוילון הנבחר.';
+export const MULTI_MSG_HINT_ADHESIVE_GLASS = 'כעת לחץ על דלתות כדי להחיל זכוכית מודבקת במידה שנבחרה.';
 export const MULTI_MSG_HINT_PAINT = 'כעת לחץ על חלקים בארון כדי לצבוע אותם.';
 export const MULTI_MSG_HINT_DOOR_STYLE = 'כעת לחץ על דלתות או מגירות כדי להחיל את סגנון החזית שנבחר.';
 
@@ -19,16 +25,22 @@ export const MULTI_BTN_FINISH_EDIT = 'סיום עריכה';
 export const MULTI_SPECIAL_HEADER = 'מראה או זכוכית לדלתות';
 export const MULTI_DOOR_STYLE_HEADER = 'סגנון חזית לדלתות ומגירות';
 export const MULTI_LABEL_MIRROR = 'מראה';
-export const MULTI_LABEL_GLASS = 'זכוכית';
+export const MULTI_LABEL_GLASS = 'דלת זכוכית / וילון';
+export const MULTI_LABEL_BLACK_GLASS = 'זכוכית שחורה';
+export const MULTI_LABEL_FROSTED_GLASS = 'זכוכית חלבית';
 export const MULTI_GLASS_STYLE_HEADER = 'אפשרויות זכוכית';
 export const MULTI_LABEL_GLASS_FULL = 'זכוכית מלאה';
 export const MULTI_LABEL_GLASS_DOUBLE_PROFILE = 'זכוכית פרופיל כפול';
 export const MULTI_CURTAIN_TITLE = 'בחר צבע וילון לדלת הזכוכית:';
 export const MULTI_MIRROR_HEIGHT = 'גובה מראה';
 export const MULTI_MIRROR_WIDTH = 'רוחב מראה';
+export const MULTI_GLASS_HEIGHT = 'גובה זכוכית';
+export const MULTI_GLASS_WIDTH = 'רוחב זכוכית';
 export const MULTI_MIRROR_AUTO = 'אוטומטי';
 export const MULTI_MIRROR_RESET_HEIGHT = 'חזרה לגובה מלא';
 export const MULTI_MIRROR_RESET_WIDTH = 'חזרה לרוחב מלא';
+export const MULTI_GLASS_RESET_HEIGHT = 'חזרה לגובה זכוכית מלא';
+export const MULTI_GLASS_RESET_WIDTH = 'חזרה לרוחב זכוכית מלא';
 export const MULTI_SECTION_TITLE = 'צביעה מתקדמת ותוספות';
 
 export const MULTI_GLASS_STYLE_OPTIONS: ReadonlyArray<{
@@ -37,7 +49,7 @@ export const MULTI_GLASS_STYLE_OPTIONS: ReadonlyArray<{
   label: string;
   curtainPreset?: CurtainPreset;
 }> = [
-  { id: 'profile', paintId: 'glass', label: MULTI_LABEL_GLASS, curtainPreset: 'none' },
+  { id: 'profile', paintId: 'glass', label: 'זכוכית', curtainPreset: 'none' },
   { id: 'flat', paintId: encodeGlassFrameStylePaintToken('flat'), label: MULTI_LABEL_GLASS_FULL },
   {
     id: 'double_profile',
@@ -60,10 +72,27 @@ export type MultiColorSpecialSwatchDef = {
   icon: string;
   badge?: string;
   curtainPreset?: CurtainPreset;
+  adhesiveGlassKind?: AdhesiveGlassKind;
 };
 
 export const MULTI_SPECIAL_SWATCHES: ReadonlyArray<MultiColorSpecialSwatchDef> = [
   { id: 'mirror', paintId: 'mirror', title: MULTI_LABEL_MIRROR, val: '#a4c2f4', icon: MULTI_ICON_MIRROR },
+  {
+    id: DOOR_SPECIAL_BLACK_GLASS,
+    paintId: DOOR_SPECIAL_BLACK_GLASS,
+    title: MULTI_LABEL_BLACK_GLASS,
+    val: '#101214',
+    icon: MULTI_ICON_BLACK_GLASS,
+    adhesiveGlassKind: DOOR_SPECIAL_BLACK_GLASS,
+  },
+  {
+    id: DOOR_SPECIAL_FROSTED_GLASS,
+    paintId: DOOR_SPECIAL_FROSTED_GLASS,
+    title: MULTI_LABEL_FROSTED_GLASS,
+    val: '#e9f2f2',
+    icon: MULTI_ICON_FROSTED_GLASS,
+    adhesiveGlassKind: DOOR_SPECIAL_FROSTED_GLASS,
+  },
   {
     id: 'glass_curtain',
     paintId: 'glass',
@@ -88,6 +117,7 @@ export type MultiColorSwatchDot = {
   badge?: string;
   curtainPreset?: CurtainPreset;
   id?: string;
+  adhesiveGlassKind?: AdhesiveGlassKind;
 };
 
 export type MultiColorPanelViewState = {
@@ -99,6 +129,7 @@ export type MultiColorPanelViewState = {
   mirrorDraftWidth: string;
   activeDoorStyleOverride: DoorStyleOverrideValue | null;
   activeGlassFrameStyle: DoorStyleOverrideValue | null;
+  activeAdhesiveGlassKind: AdhesiveGlassKind | null;
   defaultSwatches: ReadonlyArray<MultiColorSwatchDot>;
   savedSwatches: ReadonlyArray<MultiColorSwatchDot>;
   specialSwatches: ReadonlyArray<MultiColorSwatchDot>;

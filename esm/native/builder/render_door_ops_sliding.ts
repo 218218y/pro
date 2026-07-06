@@ -143,10 +143,12 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
 
       const visualState = resolveSlidingDoorVisualState(cfg, slideID, getPartColorValue);
       const mirrorLayout = resolveMirrorLayout(cfg, slideID);
-      const hasOutsideMirrorSurface = visualState.isMirror && hasMirrorSurfaceOnFace(mirrorLayout, 1, 1);
+      const hasAdhesiveGlass = !!visualState.adhesiveGlassKind;
+      const hasOutsideOverlaySurface =
+        (visualState.isMirror || hasAdhesiveGlass) && hasMirrorSurfaceOnFace(mirrorLayout, 1, 1);
       const hasSlideGrooves =
         isGroovesEnabled &&
-        !hasOutsideMirrorSurface &&
+        !hasOutsideOverlaySurface &&
         !visualState.isGlass &&
         groovesMap[toCanonicalGroovesMapKey(slideID)] === true;
       const effectiveDoorStyleBase = resolveEffectiveDoorStyle(doorStyle, cfg.doorStyleMap, slideID);
@@ -174,6 +176,7 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
           : null;
         const doorVisualOptions = {
           ...(visualState.isGlass ? { glassFrameStyle: effectiveDoorStyleBase } : null),
+          ...(visualState.adhesiveGlassKind ? { adhesiveGlassKind: visualState.adhesiveGlassKind } : null),
           ...(mirrorReflectorProfile ? { mirrorReflectorProfile } : null),
         };
         visual = createDoorVisual(
@@ -185,7 +188,7 @@ export function createApplySlidingDoorsOps(deps: BuilderRenderDoorDeps) {
           hasSlideGrooves,
           visualState.isMirror,
           visualState.isGlass ? visualState.curtain : null,
-          visualState.isMirror ? slideWoodMat : globalFrontMat,
+          visualState.isMirror || visualState.adhesiveGlassKind ? slideWoodMat : globalFrontMat,
           1,
           false,
           mirrorLayout,

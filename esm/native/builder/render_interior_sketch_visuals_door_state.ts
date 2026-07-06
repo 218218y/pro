@@ -3,6 +3,7 @@ import type { InteriorOpsCallable } from './render_interior_ops_contracts.js';
 import type { RenderInteriorSketchInput } from './render_interior_sketch_shared.js';
 
 import { isCallable, readNullableStringMap, readUnknownMap } from './render_interior_sketch_shared.js';
+import { resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { readDoorVisualMapValue, readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
 import { requireInteriorSketchConfigSnapshot } from './render_interior_sketch_input_contract.js';
 
@@ -13,6 +14,7 @@ export function resolveSketchFrontVisualState(
   isMirror: boolean;
   isGlass: boolean;
   curtainType: string | null;
+  adhesiveGlassKind: 'black_glass' | 'frosted_glass' | null;
   mirrorLayout: MirrorLayoutList | null;
 } {
   const cfg = requireInteriorSketchConfigSnapshot(input.cfgSnapshot, 'render_interior_sketch.visualState');
@@ -23,6 +25,7 @@ export function resolveSketchFrontVisualState(
 
   let isMirror = false;
   let isGlass = false;
+  let adhesiveGlassKind: 'black_glass' | 'frosted_glass' | null = null;
   const special = (() => {
     const value = readDoorVisualMapValue(doorSpecialMap, partId);
     return typeof value === 'string' ? String(value) : '';
@@ -35,24 +38,35 @@ export function resolveSketchFrontVisualState(
   if (cfg?.isMultiColorMode) {
     if (special === 'mirror') isMirror = true;
     else if (special === 'glass') isGlass = true;
-    else if (isCallable(getPartColorValue)) {
+    else adhesiveGlassKind = resolveAdhesiveGlassKind(special);
+
+    if (!isMirror && !isGlass && !adhesiveGlassKind && isCallable(getPartColorValue)) {
       const colorValue = getPartColorValue(partId);
       if (colorValue === 'mirror') isMirror = true;
       else if (colorValue === 'glass') isGlass = true;
+      else adhesiveGlassKind = resolveAdhesiveGlassKind(colorValue);
     }
-    if (!isMirror && !isGlass && curtainType) isGlass = true;
+    if (!isMirror && !isGlass && !adhesiveGlassKind && curtainType) isGlass = true;
   }
 
   if (isMirror) {
     isGlass = false;
+    adhesiveGlassKind = null;
+    curtainType = null;
+  }
+  if (isGlass) adhesiveGlassKind = null;
+  if (adhesiveGlassKind) {
+    isGlass = false;
     curtainType = null;
   }
 
-  const mirrorLayout = isMirror ? readDoorVisualMirrorLayout(mirrorLayoutMap, partId) || [] : [];
+  const shouldUseMirrorLayout = isMirror || !!adhesiveGlassKind;
+  const mirrorLayout = shouldUseMirrorLayout ? readDoorVisualMirrorLayout(mirrorLayoutMap, partId) || [] : [];
   return {
     isMirror,
     isGlass,
     curtainType: isGlass ? curtainType : null,
+    adhesiveGlassKind,
     mirrorLayout: mirrorLayout.length ? mirrorLayout : null,
   };
 }
@@ -64,6 +78,7 @@ export function resolveSketchBoxDoorVisualState(
   isMirror: boolean;
   isGlass: boolean;
   curtainType: string | null;
+  adhesiveGlassKind: 'black_glass' | 'frosted_glass' | null;
   mirrorLayout: MirrorLayoutList | null;
 } {
   return resolveSketchFrontVisualState(input, partId);

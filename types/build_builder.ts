@@ -82,6 +82,7 @@ export type BuilderMirrorReflectorProfile = {
 };
 
 export type BuilderDoorVisualOptions = {
+  adhesiveGlassKind?: 'black_glass' | 'frosted_glass' | null;
   glassFrameStyle?: BuilderDoorVisualFrameStyle | null;
   grooveLinesCount?: number | null;
   mirrorReflectorProfile?: BuilderMirrorReflectorProfile | null;

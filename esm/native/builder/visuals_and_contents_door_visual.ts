@@ -1,5 +1,14 @@
-import { hasMirrorSurfaceOnFace, readMirrorLayoutFaceSign } from '../features/door_authoring/api.js';
+import {
+  hasMirrorSurfaceOnFace,
+  readMirrorLayoutFaceSign,
+  resolveAdhesiveGlassKind,
+} from '../features/door_authoring/api.js';
 import { createMirrorDoorVisual } from './visuals_and_contents_door_visual_mirror.js';
+import {
+  createAdhesiveGlassDoorVisual,
+  createStyledAdhesiveGlassDoorVisual,
+  createStyledFullAdhesiveGlassDoorVisual,
+} from './visuals_and_contents_door_visual_adhesive_glass.js';
 import {
   createStyledFullMirrorDoorVisual,
   createStyledMirrorDoorVisual,
@@ -104,6 +113,44 @@ export function createDoorVisual(
   const zSign = frontFaceSign === -1 ? -1 : 1;
   const __forceCurtainFix = !!forceCurtainFix;
   const { tagDoorVisualPart } = createDoorVisualPartTagger({ groovePartId });
+
+  const adhesiveGlassKind = resolveAdhesiveGlassKind(options?.adhesiveGlassKind);
+  if (adhesiveGlassKind) {
+    const hasOutsideGlassSurface = hasMirrorSurfaceOnFace(mirrorLayout, zSign, zSign);
+    const hasOutsideGrooves = hasGrooves && !hasOutsideGlassSurface;
+    const commonAdhesiveGlassArgs = {
+      App,
+      THREE,
+      kind: adhesiveGlassKind,
+      w,
+      h,
+      thickness,
+      mat,
+      baseMaterial,
+      zSign,
+      isSketch,
+      mirrorLayout,
+      addOutlines,
+      tagDoorVisualPart,
+      hasGrooves: hasOutsideGrooves,
+      groovePartId,
+      grooveLinesCount: options?.grooveLinesCount ?? null,
+    } as const;
+
+    if ((style === 'profile' || style === 'double_profile') && hasExplicitMirrorLayout(mirrorLayout)) {
+      return createStyledAdhesiveGlassDoorVisual({ ...commonAdhesiveGlassArgs, style });
+    }
+
+    if (
+      (style === 'profile' || style === 'double_profile') &&
+      hasInsideFullMirrorLayout(mirrorLayout, zSign) &&
+      !hasOutsideFullMirrorLayout(mirrorLayout, zSign)
+    ) {
+      return createStyledFullAdhesiveGlassDoorVisual({ ...commonAdhesiveGlassArgs, style });
+    }
+
+    return createAdhesiveGlassDoorVisual(commonAdhesiveGlassArgs);
+  }
 
   if (isMirror) {
     const hasOutsideMirrorSurface = hasMirrorSurfaceOnFace(mirrorLayout, zSign, zSign);

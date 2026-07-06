@@ -38,7 +38,10 @@ export type SketchDoorCutsRuntime = {
   resolveHandleColor: (partId: string) => string;
   resolveManualHandlePosition: (partId: string) => ManualHandlePosition | null;
   resolveCurtain: (partId: string) => string | null;
-  resolveSpecial: (partId: string, curtain: string | null) => 'mirror' | 'glass' | null;
+  resolveSpecial: (
+    partId: string,
+    curtain: string | null
+  ) => 'mirror' | 'glass' | 'black_glass' | 'frosted_glass' | null;
   doorStyle: string;
   doorStyleMap: DoorStyleMap;
   groovesMap: ValueRecord | null;

@@ -35,6 +35,7 @@ export type HingedDoorOpLike = UnknownRecord & {
   meshOffsetX?: number;
   isLeftHinge?: boolean;
   isMirror?: boolean;
+  adhesiveGlassKind?: 'black_glass' | 'frosted_glass' | null;
   hasGroove?: boolean;
   curtain?: string | null;
   style?: string | null;

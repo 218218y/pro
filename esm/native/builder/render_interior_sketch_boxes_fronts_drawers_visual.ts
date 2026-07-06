@@ -115,15 +115,21 @@ function createSketchBoxExternalDrawerFrontVisual(
       opPlan.visualD,
       materialSet.frontFaceMat,
       frontVisualState.isGlass ? 'glass' : effectiveFrameStyle,
-      hasGroove && !frontVisualState.isGlass,
+      hasGroove && !frontVisualState.isGlass && !frontVisualState.adhesiveGlassKind,
       frontVisualState.isMirror,
       frontVisualState.curtainType,
-      frontVisualState.isMirror ? materialSet.frontBaseMat : context.shell.boxMat || opPlan.frontMat,
+      frontVisualState.isMirror || frontVisualState.adhesiveGlassKind
+        ? materialSet.frontBaseMat
+        : context.shell.boxMat || opPlan.frontMat,
       1,
       false,
       frontVisualState.mirrorLayout,
       opPlan.partId,
-      frontVisualState.isGlass ? { glassFrameStyle: effectiveFrameStyle } : null
+      frontVisualState.isGlass
+        ? { glassFrameStyle: effectiveFrameStyle }
+        : frontVisualState.adhesiveGlassKind
+          ? { adhesiveGlassKind: frontVisualState.adhesiveGlassKind }
+          : null
     );
   } catch {
     return null;
