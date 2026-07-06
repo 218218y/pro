@@ -33,6 +33,10 @@ test('[design-tab-multicolor-state] exposes black and frosted adhesive glass swa
     MULTI_SPECIAL_SWATCHES.map(option => option.paintId),
     ['mirror', 'black_glass', 'frosted_glass', 'glass']
   );
+  assert.equal(
+    MULTI_SPECIAL_SWATCHES.find(option => option.id === 'black_glass')?.swatchClassName,
+    'special-swatch--black-glass'
+  );
   assert.equal(MULTI_GLASS_HEIGHT, 'גובה זכוכית');
   assert.equal(MULTI_GLASS_WIDTH, 'רוחב זכוכית');
 
@@ -51,6 +55,10 @@ test('[design-tab-multicolor-state] exposes black and frosted adhesive glass swa
   assert.equal(state.activeAdhesiveGlassKind, 'frosted_glass');
   assert.equal(state.activeGlassFrameStyle, null);
   assert.equal(state.specialSwatches.find(dot => dot.id === 'frosted_glass')?.selected, true);
+  assert.equal(
+    state.specialSwatches.find(dot => dot.id === 'black_glass')?.swatchClassName,
+    'special-swatch--black-glass'
+  );
   assert.equal(state.hintText, 'כעת לחץ על דלתות כדי להחיל זכוכית מודבקת במידה שנבחרה.');
   assert.equal(state.mirrorDraftHeight, '120');
   assert.equal(state.mirrorDraftWidth, '45');

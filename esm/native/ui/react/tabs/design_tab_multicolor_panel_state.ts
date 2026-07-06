@@ -118,6 +118,7 @@ export function createDesignTabMulticolorViewState(
         badge: swatch.badge,
         curtainPreset: swatch.curtainPreset,
         adhesiveGlassKind: swatch.adhesiveGlassKind,
+        swatchClassName: swatch.swatchClassName,
       },
       paintActive,
       args.paintColor,

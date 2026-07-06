@@ -54,6 +54,7 @@ function MultiColorSwatchDotButton(props: {
       title={dot.title}
       selected={dot.selected}
       special={dot.isSpecial}
+      className={dot.swatchClassName}
       backgroundImage={dot.isTexture && dot.textureData ? dot.textureData : undefined}
       backgroundColor={!dot.isTexture && dot.val ? dot.val : undefined}
       onPick={pick}

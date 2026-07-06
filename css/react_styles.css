@@ -3745,6 +3745,17 @@ body.wp-ui-react .color-swatch:hover {
   z-index: var(--wp-z-local-raised);
 }
 
+#reactSidebarRoot .color-dot-swatch.special-swatch.special-swatch--black-glass {
+  background-color: #2f3742;
+}
+
+#reactSidebarRoot .special-swatch.special-swatch--black-glass .swatch-icon {
+  color: #f8fafc;
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 0.45),
+    0 0 7px rgb(255 255 255 / 0.28);
+}
+
 /* Saved colors: lock indicator sits *outside* the color circle (doesn't cover the swatch). */
 #reactSidebarRoot .tab-content[data-tab='design'] .color-picker-row {
   gap: 12px;

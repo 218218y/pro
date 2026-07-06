@@ -73,6 +73,7 @@ export type MultiColorSpecialSwatchDef = {
   badge?: string;
   curtainPreset?: CurtainPreset;
   adhesiveGlassKind?: AdhesiveGlassKind;
+  swatchClassName?: string;
 };
 
 export const MULTI_SPECIAL_SWATCHES: ReadonlyArray<MultiColorSpecialSwatchDef> = [
@@ -81,8 +82,9 @@ export const MULTI_SPECIAL_SWATCHES: ReadonlyArray<MultiColorSpecialSwatchDef> =
     id: DOOR_SPECIAL_BLACK_GLASS,
     paintId: DOOR_SPECIAL_BLACK_GLASS,
     title: MULTI_LABEL_BLACK_GLASS,
-    val: '#101214',
+    val: '#2f3742',
     icon: MULTI_ICON_BLACK_GLASS,
+    swatchClassName: 'special-swatch--black-glass',
     adhesiveGlassKind: DOOR_SPECIAL_BLACK_GLASS,
   },
   {
@@ -118,6 +120,7 @@ export type MultiColorSwatchDot = {
   curtainPreset?: CurtainPreset;
   id?: string;
   adhesiveGlassKind?: AdhesiveGlassKind;
+  swatchClassName?: string;
 };
 
 export type MultiColorPanelViewState = {
