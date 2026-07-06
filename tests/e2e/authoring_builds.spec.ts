@@ -395,13 +395,14 @@ function expectChestProjectPayload(
 ): void {
   const settings = asRecord(project.settings);
   const toggles = asRecord(project.toggles);
+  const chestSettings = asRecord(project.chestSettings);
 
   expect(toggles.chestMode).toBe(true);
-  expect(readFiniteNumber(settings.chestDrawersCount)).toBe(targets.chestDrawersCount);
+  expect(readFiniteNumber(chestSettings.drawersCount)).toBe(targets.chestDrawersCount);
   expect(readFiniteNumber(settings.width)).toBe(targets.width);
   expect(readFiniteNumber(settings.height)).toBe(targets.height);
   expect(readFiniteNumber(settings.depth)).toBe(targets.depth);
-  expect(readFiniteNumber(settings.doors)).toBe(0);
+  expect(readFiniteNumber(settings.doors)).toBeGreaterThan(0);
   expect(String(settings.baseType || '')).toBe('legs');
 }
 

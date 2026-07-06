@@ -2,7 +2,10 @@ import type { UnknownRecord } from '../../../types';
 
 import { readUiRawScalarFromCanonicalSnapshot } from '../runtime/ui_raw_selectors.js';
 import { readDoorTrimConfigMap, readMirrorLayoutConfigMap } from '../features/project_config/api.js';
-import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DEFAULT_HINGED_DOORS,
+  normalizeDoorMountThicknessCm,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
 
 import { asString } from './kernel_shared.js';
@@ -46,6 +49,26 @@ function readCanonicalCornerSide(uiRec: UnknownRecord, rawAny: UnknownRecord): '
 
 function assignFiniteNumber(record: UnknownRecord, key: string, value: unknown): void {
   if (typeof value === 'number' && Number.isFinite(value)) record[key] = value;
+}
+
+function readPositiveInteger(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 1) return null;
+  return Math.floor(value);
+}
+
+function resolvePersistedProjectDoors(
+  uiRec: UnknownRecord,
+  overallDoors: unknown,
+  preChestState: unknown
+): unknown {
+  if (uiRec.isChestMode !== true) return overallDoors;
+
+  const preChest = readPlainRecord(preChestState);
+  const preChestDoors = readPositiveInteger(preChest?.doors);
+  if (preChestDoors != null) return preChestDoors;
+
+  const directDoors = readPositiveInteger(overallDoors);
+  return directDoors != null ? directDoors : DEFAULT_HINGED_DOORS;
 }
 
 function buildProjectCaptureSettings(
@@ -232,13 +255,14 @@ export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDat
     topMode: 'clone',
     savedColorsMode: 'mixed',
   });
+  const persistedDoors = resolvePersistedProjectDoors(uiRec, overallDoors, canonicalCfg.preChestState);
 
   return {
     settings: buildProjectCaptureSettings(
       uiRec,
       rawAny,
       cfgRec,
-      overallDoors,
+      persistedDoors,
       overallWidth,
       overallHeight,
       overallDepth,

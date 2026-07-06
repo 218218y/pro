@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createKernelProjectCapture } from '../esm/native/kernel/kernel_project_capture.ts';
 import { cloneProjectCaptureValue } from '../esm/native/kernel/kernel_project_capture_shared.ts';
+import { DEFAULT_HINGED_DOORS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 
 test('kernel project capture canonicalizes config lists and detaches mutable snapshot slices', () => {
   const savedNotesSource = [{ id: 'n1', blocks: [{ text: 'first' }] }];
@@ -144,6 +145,59 @@ test('kernel project capture omits absent optional finite numbers instead of ser
   assert.equal(snapshot.settings.stackSplitLowerDoors, 6);
   assert.equal(Object.prototype.hasOwnProperty.call(snapshot.chestSettings, 'mirrorHeightCm'), false);
   assert.equal(Object.prototype.hasOwnProperty.call(snapshot.chestSettings, 'mirrorWidthCm'), false);
+});
+
+test('kernel project capture persists positive wardrobe doors while chest build state keeps zero doors', () => {
+  const capture = createKernelProjectCapture({
+    App: { store: { getState: () => ({ config: {} }) } } as never,
+    stateKernel: {
+      captureConfig: () => ({ preChestState: { doors: 5, width: 180, height: 240, depth: 55 } }),
+    } as never,
+    getUiSnapshot: () => ({
+      isChestMode: true,
+      baseType: 'legs',
+      raw: {
+        width: 130,
+        height: 95,
+        depth: 45,
+        doors: 0,
+        chestDrawersCount: 4,
+      },
+    }),
+    captureSavedNotes: () => [],
+    reportKernelError: () => false,
+  });
+
+  const snapshot = capture('persist') as Record<string, any>;
+
+  assert.equal(snapshot.toggles.chestMode, true);
+  assert.equal(snapshot.settings.doors, 5);
+  assert.equal(snapshot.settings.width, 130);
+  assert.equal(snapshot.settings.height, 95);
+  assert.equal(snapshot.settings.depth, 45);
+  assert.equal(snapshot.chestSettings.drawersCount, 4);
+
+  const fallbackCapture = createKernelProjectCapture({
+    App: { store: { getState: () => ({ config: {} }) } } as never,
+    stateKernel: {
+      captureConfig: () => ({ preChestState: null }),
+    } as never,
+    getUiSnapshot: () => ({
+      isChestMode: true,
+      raw: {
+        width: 130,
+        height: 95,
+        depth: 45,
+        doors: 0,
+        chestDrawersCount: 4,
+      },
+    }),
+    captureSavedNotes: () => [],
+    reportKernelError: () => false,
+  });
+
+  const fallbackSnapshot = fallbackCapture('persist') as Record<string, any>;
+  assert.equal(fallbackSnapshot.settings.doors, DEFAULT_HINGED_DOORS);
 });
 
 test('kernel project capture rejects top-level-only UI dimensions before serialization', () => {

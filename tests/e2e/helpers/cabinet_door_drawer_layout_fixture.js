@@ -10,10 +10,84 @@ function ensureModuleArray(value) {
   return Array.isArray(value) ? value.map(item => ({ ...asRecord(item) })) : [];
 }
 
-function upsertModule(modules, index, patch) {
-  while (modules.length <= index) modules.push({});
-  modules[index] = { ...asRecord(modules[index]), ...patch };
+const DEFAULT_MODULE_CELL_COUNT = 6;
+
+function createDefaultModuleCustomData() {
+  const emptySlots = Array.from({ length: DEFAULT_MODULE_CELL_COUNT }, () => false);
+  return {
+    shelves: emptySlots.slice(),
+    rods: emptySlots.slice(),
+    storage: false,
+  };
+}
+
+function normalizeModuleCustomData(value) {
+  const rec = asRecord(value);
+  const defaults = createDefaultModuleCustomData();
+  return {
+    ...rec,
+    shelves: Array.isArray(rec.shelves) ? rec.shelves.slice() : defaults.shelves.slice(),
+    rods: Array.isArray(rec.rods) ? rec.rods.slice() : defaults.rods.slice(),
+    storage: rec.storage === true,
+  };
+}
+
+function canonicalTopModule(index, patch) {
+  const rec = asRecord(patch);
+  return {
+    ...rec,
+    layout:
+      typeof rec.layout === 'string' && rec.layout ? rec.layout : index === 0 ? 'hanging_top2' : 'shelves',
+    extDrawersCount: Number.isFinite(Number(rec.extDrawersCount))
+      ? Math.max(0, Math.floor(Number(rec.extDrawersCount)))
+      : 0,
+    hasShoeDrawer: rec.hasShoeDrawer === true,
+    isCustom: rec.isCustom === true,
+    doors: Number.isFinite(Number(rec.doors)) && Number(rec.doors) >= 1 ? Math.floor(Number(rec.doors)) : 2,
+    customData: normalizeModuleCustomData(rec.customData),
+  };
+}
+
+function canonicalLowerModule(patch) {
+  const rec = asRecord(patch);
+  return {
+    ...rec,
+    layout: typeof rec.layout === 'string' && rec.layout ? rec.layout : 'shelves',
+    extDrawersCount: Number.isFinite(Number(rec.extDrawersCount))
+      ? Math.max(0, Math.floor(Number(rec.extDrawersCount)))
+      : 0,
+    hasShoeDrawer: rec.hasShoeDrawer === true,
+    isCustom: rec.isCustom === true,
+    gridDivisions:
+      Number.isFinite(Number(rec.gridDivisions)) && Number(rec.gridDivisions) >= 1
+        ? Math.floor(Number(rec.gridDivisions))
+        : DEFAULT_MODULE_CELL_COUNT,
+    customData: normalizeModuleCustomData(rec.customData),
+  };
+}
+
+function canonicalModule(bucket, index, patch) {
+  return bucket === 'stackSplitLowerModulesConfiguration'
+    ? canonicalLowerModule(patch)
+    : canonicalTopModule(index, patch);
+}
+
+function upsertModule(modules, bucket, index, patch) {
+  while (modules.length <= index) modules.push(canonicalModule(bucket, modules.length, {}));
+  modules[index] = canonicalModule(bucket, index, { ...asRecord(modules[index]), ...patch });
   return modules;
+}
+
+function createDoorTrimEntry(id, axis, color, span, extra = {}) {
+  return {
+    id,
+    axis,
+    color,
+    span,
+    centerXNorm: 0.5,
+    centerYNorm: 0.5,
+    ...extra,
+  };
 }
 
 function normalizeTruthyRecordKeys(value) {
@@ -200,10 +274,15 @@ function applyModules(project, config) {
   const modulesConfiguration = ensureModuleArray(project.modulesConfiguration);
   const stackSplitLowerModulesConfiguration = ensureModuleArray(project.stackSplitLowerModulesConfiguration);
   for (const [index, patch] of Object.entries(asRecord(config?.modulesConfiguration))) {
-    upsertModule(modulesConfiguration, Number(index), patch);
+    upsertModule(modulesConfiguration, 'modulesConfiguration', Number(index), patch);
   }
   for (const [index, patch] of Object.entries(asRecord(config?.stackSplitLowerModulesConfiguration))) {
-    upsertModule(stackSplitLowerModulesConfiguration, Number(index), patch);
+    upsertModule(
+      stackSplitLowerModulesConfiguration,
+      'stackSplitLowerModulesConfiguration',
+      Number(index),
+      patch
+    );
   }
   project.modulesConfiguration = modulesConfiguration;
   project.stackSplitLowerModulesConfiguration = stackSplitLowerModulesConfiguration;
@@ -264,8 +343,8 @@ const SCENARIO_BUILDERS = {
       'div:ext_2': true,
     };
     project.doorTrimMap = {
-      d1_full: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: 12 }],
-      d2_full: [{ axis: 'horizontal', color: 'black', span: 'half' }],
+      d1_full: [createDoorTrimEntry('trim_mixed_d1_vertical', 'vertical', 'gold', 'custom', { sizeCm: 12 })],
+      d2_full: [createDoorTrimEntry('trim_mixed_d2_horizontal', 'horizontal', 'black', 'half')],
     };
     applyModules(project, {
       modulesConfiguration: {
@@ -330,9 +409,9 @@ const SCENARIO_BUILDERS = {
       'div:int_2': true,
     };
     project.doorTrimMap = {
-      d1_full: [{ axis: 'vertical', color: 'gold', span: 'custom', sizeCm: 10 }],
-      d2_full: [{ axis: 'horizontal', color: 'black', span: 'half' }],
-      d4_full: [{ axis: 'vertical', color: 'silver', span: 'third' }],
+      d1_full: [createDoorTrimEntry('trim_split_d1_vertical', 'vertical', 'gold', 'custom', { sizeCm: 10 })],
+      d2_full: [createDoorTrimEntry('trim_split_d2_horizontal', 'horizontal', 'black', 'half')],
+      d4_full: [createDoorTrimEntry('trim_split_d4_vertical', 'vertical', 'silver', 'third')],
     };
     applyModules(project, {
       modulesConfiguration: {
@@ -409,7 +488,7 @@ const SCENARIO_BUILDERS = {
   'drawer-stack-heavy': project => {
     project.settings.wardrobeType = 'hinged';
     project.settings.boardMaterial = 'sandwich';
-    project.settings.doorStyle = 'post';
+    project.settings.doorStyle = 'flat';
     project.toggles.grooves = false;
     project.toggles.splitDoors = false;
     project.toggles.removeDoors = false;
@@ -421,7 +500,7 @@ const SCENARIO_BUILDERS = {
       'div:ext_1': true,
     };
     project.doorTrimMap = {
-      d1_full: [{ axis: 'vertical', color: 'nickel', span: 'custom', sizeCm: 6 }],
+      d1_full: [createDoorTrimEntry('trim_heavy_d1_vertical', 'vertical', 'nickel', 'custom', { sizeCm: 6 })],
     };
     applyModules(project, {
       modulesConfiguration: {
@@ -435,7 +514,7 @@ const SCENARIO_BUILDERS = {
     return createFingerprint({
       wardrobeType: 'hinged',
       boardMaterial: 'sandwich',
-      doorStyle: 'post',
+      doorStyle: 'flat',
       groovesEnabled: false,
       grooveLinesCount: null,
       splitDoors: false,
