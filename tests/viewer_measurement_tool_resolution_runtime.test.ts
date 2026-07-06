@@ -36,6 +36,7 @@ function createGroup(userData: Record<string, unknown> = {}) {
     type: 'Group',
     parent: null as any,
     children: [] as any[],
+    visible: true,
     position: new FakeVector3(),
     rotation: new FakeVector3(),
     scale: new FakeVector3(1, 1, 1),
@@ -65,17 +66,20 @@ function createMesh(args: {
   y?: number;
   z?: number;
   userData?: Record<string, unknown>;
+  visible?: boolean;
+  materialVisible?: boolean;
   opacity?: number;
 }) {
   return {
     type: 'Mesh',
     parent: null as any,
     children: [] as any[],
+    visible: args.visible ?? true,
     geometry: { parameters: { width: args.width, height: args.height, depth: args.depth } },
     position: new FakeVector3(args.x ?? 0, args.y ?? 0, args.z ?? 0),
     rotation: new FakeVector3(),
     scale: new FakeVector3(1, 1, 1),
-    material: { visible: true, opacity: args.opacity ?? 1 },
+    material: { visible: args.materialVisible ?? true, opacity: args.opacity ?? 1 },
     userData: args.userData || {},
     add(obj: any) {
       obj.parent = this;
@@ -345,6 +349,39 @@ test('resolvePointMeasurementStartFromPointer ignores non-structural objects for
     opacity: 0,
     userData: { partId: 'transparent_helper' },
   });
+  const hiddenObject = createMesh({
+    width: 75,
+    height: 75,
+    depth: 75,
+    x: 30,
+    y: -30,
+    z: 30,
+    visible: false,
+    userData: { partId: 'hidden_object_helper' },
+  });
+  const hiddenMaterial = createMesh({
+    width: 85,
+    height: 85,
+    depth: 85,
+    x: -35,
+    y: -35,
+    z: 35,
+    materialVisible: false,
+    userData: { partId: 'hidden_material_helper' },
+  });
+  const hiddenParent = createGroup();
+  hiddenParent.visible = false;
+  hiddenParent.add(
+    createMesh({
+      width: 95,
+      height: 95,
+      depth: 95,
+      x: 45,
+      y: -45,
+      z: -45,
+      userData: { partId: 'hidden_parent_child_helper' },
+    })
+  );
   const passiveFitting = createMesh({
     width: 80,
     height: 0.02,
@@ -362,6 +399,9 @@ test('resolvePointMeasurementStartFromPointer ignores non-structural objects for
   wardrobeGroup.add(body);
   wardrobeGroup.add(overlay);
   wardrobeGroup.add(transparent);
+  wardrobeGroup.add(hiddenObject);
+  wardrobeGroup.add(hiddenMaterial);
+  wardrobeGroup.add(hiddenParent);
   wardrobeGroup.add(passiveFitting);
   wardrobeGroup.add(selector);
 
@@ -386,6 +426,42 @@ test('resolvePointMeasurementStartFromPointer ignores non-structural objects for
   assertClose(draft.plane.uMax, 0.5);
   assertClose(draft.plane.vMin, 0);
   assertClose(draft.plane.vMax, 2);
+});
+
+test('resolvePointMeasurementStartFromPointer supports thin-front-only aggregate bounds', () => {
+  const App = createApp();
+  const THREE = App.deps.THREE;
+  const wardrobeGroup = createGroup();
+  const thinFront = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.001,
+    y: 1,
+    userData: { partId: 'thin_front_only' },
+  });
+  wardrobeGroup.add(thinFront);
+
+  const draft = resolvePointMeasurementStartFromPointer({
+    App,
+    THREE,
+    wardrobeGroup: wardrobeGroup as any,
+    pointer: {
+      raycaster: {
+        ray: {
+          origin: { x: 0.49, y: 1, z: 3 },
+          direction: { x: 0, y: 0, z: -1 },
+        },
+      } as any,
+    },
+  });
+
+  assert.ok(draft);
+  assert.equal(draft.plane.kind, 'front');
+  assertClose(draft.plane.uMin, -0.5);
+  assertClose(draft.plane.uMax, 0.5);
+  assertClose(draft.plane.vMin, 0);
+  assertClose(draft.plane.vMax, 2);
+  assertClose(draft.plane.normalValue, 0.0005 + FRONT_Z_EPSILON_M);
 });
 
 test('resolvePointMeasurementStart uses the shared visible-occlusion policy for front-plane promotion', () => {
@@ -442,4 +518,46 @@ test('resolvePointMeasurementStart uses the shared visible-occlusion policy for 
   assert.ok(distantDraft);
   assertClose(visibleDraft.plane.normalValue, 0.32 + FRONT_Z_EPSILON_M);
   assertClose(distantDraft.plane.normalValue, 0.29 + FRONT_Z_EPSILON_M);
+});
+
+test('resolvePointMeasurementStart uses one aggregate-derived sign for front-plane promotion', () => {
+  const App = createApp();
+  App.render.camera.position = new FakeVector3(0, 1, 0.03);
+  const THREE = App.deps.THREE;
+  const wardrobeGroup = createGroup();
+  const sidePanel = createMesh({
+    width: 0.02,
+    height: 2,
+    depth: 0.58,
+    x: -0.51,
+    y: 1,
+    z: 0,
+    userData: { partId: 'left_side_panel' },
+  });
+  const shiftedFront = createMesh({
+    width: 1,
+    height: 2,
+    depth: 0.02,
+    y: 1,
+    z: 0.4,
+    userData: { partId: 'shifted_front' },
+  });
+  wardrobeGroup.add(sidePanel);
+  wardrobeGroup.add(shiftedFront);
+
+  const draft = resolvePointMeasurementStart({
+    App,
+    THREE,
+    hitState: makeHitState({
+      target: sidePanel,
+      point: { x: -0.52, y: 1, z: -0.29 },
+      hitIdentity: { partId: 'left_side_panel' },
+    }),
+    wardrobeGroup: wardrobeGroup as any,
+  });
+
+  assert.ok(draft);
+  assert.equal(draft.plane.kind, 'front');
+  assert.equal(draft.plane.normalSign, -1);
+  assertClose(draft.plane.normalValue, -0.29 - FRONT_Z_EPSILON_M);
 });

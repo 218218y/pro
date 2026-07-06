@@ -6,6 +6,7 @@ import { getInternalGridMap } from '../runtime/cache_access.js';
 import { getCamera } from '../runtime/render_access.js';
 import type { CanvasPickingClickHitState } from './canvas_picking_click_contracts.js';
 import { __wp_isDoorOrDrawerLikePartId } from './canvas_picking_core_helpers.js';
+import { readCanvasPickingMaterialHitPolicy } from './canvas_picking_transparent_hit_policy.js';
 import { __wp_measureObjectLocalBox, __wp_projectWorldPointToLocal } from './canvas_picking_local_helpers.js';
 import {
   FRONT_Z_EPSILON_M,
@@ -177,20 +178,20 @@ function shouldSkipDirectIntersectionObject(value: unknown): boolean {
   if (!obj || isDecorativeObject(obj) || isMeasurementPassiveFittingObject(obj)) return true;
   const ud = readUserData(obj);
   if (ud?.isModuleSelector || ud?.__ignoreRaycast) return true;
-  return isFullyTransparentMaterialObject(obj);
+  return isViewerMeasurementHiddenObject(obj);
 }
 
-function readMaterialRecords(value: unknown): UnknownRecord[] {
-  if (Array.isArray(value)) return value.filter(isRecord) as UnknownRecord[];
-  return isRecord(value) ? [value] : [];
-}
+export function isViewerMeasurementHiddenObject(value: unknown): boolean {
+  let current = asMeasurableObject(value);
+  while (current) {
+    if (isRecord(current) && current.visible === false) return true;
+    current = asMeasurableObject(current.parent);
+  }
 
-export function isFullyTransparentMaterialObject(value: unknown): boolean {
   const rec = isRecord(value) ? value : null;
-  const materials = readMaterialRecords(rec?.material);
-  if (!materials.length) return false;
-  const visible = materials.filter(material => material.visible !== false);
-  return visible.length > 0 && visible.every(material => material.opacity === 0);
+  if (!rec) return false;
+  const materialPolicy = readCanvasPickingMaterialHitPolicy(rec.material);
+  return !materialPolicy.visible || materialPolicy.fullyTransparent;
 }
 
 function readVectorRecord(value: unknown): MeasurementBasisVector | null {

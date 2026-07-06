@@ -34,9 +34,9 @@ import {
   asMeasurableObject,
   hasVisibleFrontPlaneOcclusion,
   isDecorativeObject,
-  isFullyTransparentMaterialObject,
   isMeasurementPassiveFittingObject,
   isSlidingDoorLikeTarget,
+  isViewerMeasurementHiddenObject,
   readCameraAxisSign,
   readCameraWorldPosition,
   readMeasuredBox,
@@ -164,7 +164,7 @@ function shouldSkipAggregateWardrobeBoundsObject(value: unknown): boolean {
   const ud = readUserData(obj);
   if (ud?.__wpViewerMeasurementOverlay || ud?.__wpExcludeWardrobeBounds || ud?.__ignoreRaycast) return true;
   if (ud?.isModuleSelector) return true;
-  return isFullyTransparentMaterialObject(obj);
+  return isViewerMeasurementHiddenObject(obj);
 }
 
 function readAggregateWardrobeBoundsBox(
@@ -206,8 +206,7 @@ function readAggregateWardrobeBoundsBox(
     !Number.isFinite(maxY) ||
     !Number.isFinite(maxZ) ||
     maxX - minX < MIN_MEASURABLE_EDGE_M ||
-    maxY - minY < MIN_MEASURABLE_EDGE_M ||
-    maxZ - minZ < MIN_MEASURABLE_EDGE_M
+    maxY - minY < MIN_MEASURABLE_EDGE_M
   ) {
     return null;
   }
@@ -263,6 +262,7 @@ function shouldUseWardrobeFrontPlaneForPointStart(args: {
   boundsBox: LocalMeasurementBox;
   resolvedPlane: MeasurementPlane;
   forceInteriorFront: boolean;
+  frontPlaneSign: number;
 }): boolean {
   const {
     App,
@@ -274,15 +274,15 @@ function shouldUseWardrobeFrontPlaneForPointStart(args: {
     boundsBox,
     resolvedPlane,
     forceInteriorFront,
+    frontPlaneSign,
   } = args;
   if (forceInteriorFront) return false;
   if (!isCameraMostlyViewingWardrobeFront({ App, THREE, wardrobeGroup, boundsBox })) return false;
 
-  const cameraSign = readCameraAxisSign({ App, THREE, wardrobeGroup, box: boundsBox, axis: 'z' }) ?? 1;
   if (resolvedPlane.kind === 'front') {
     return (
       isSlidingDoorLikeTarget(target) &&
-      hasVisibleFrontPlaneOcclusion({ targetBox, boundsBox, normalSign: cameraSign })
+      hasVisibleFrontPlaneOcclusion({ targetBox, boundsBox, normalSign: frontPlaneSign })
     );
   }
 
@@ -290,8 +290,8 @@ function shouldUseWardrobeFrontPlaneForPointStart(args: {
   const hitZ = localPoint ? readCoordinateAxis(localPoint, 'z') : null;
   if (hitZ == null) return false;
 
-  const boundsFrontZ = cameraSign >= 0 ? getBoxMaxAxis(boundsBox, 'z') : getBoxMinAxis(boundsBox, 'z');
-  const targetFrontZ = cameraSign >= 0 ? getBoxMaxAxis(targetBox, 'z') : getBoxMinAxis(targetBox, 'z');
+  const boundsFrontZ = frontPlaneSign >= 0 ? getBoxMaxAxis(boundsBox, 'z') : getBoxMinAxis(boundsBox, 'z');
+  const targetFrontZ = frontPlaneSign >= 0 ? getBoxMaxAxis(targetBox, 'z') : getBoxMinAxis(targetBox, 'z');
   const tolerance = clampNumber(
     Math.max(boundsBox.depth, targetBox.depth) * 0.05,
     FRONT_Z_EPSILON_M * 2,
@@ -311,6 +311,8 @@ export function resolvePointMeasurementStart(args: {
   if (!resolution) return null;
   const { target, box, plane, shouldMeasureInterior, targetKey } = resolution;
   const boundsBox = readPointMeasurementBoundsBox({ App, targetBox: box, wardrobeGroup });
+  const frontPlaneSign =
+    readCameraAxisSign({ App, THREE, wardrobeGroup, box: boundsBox, axis: 'z' }) ?? plane.normalSign;
   const shouldUseFrontPlane = shouldUseWardrobeFrontPlaneForPointStart({
     App,
     THREE,
@@ -321,9 +323,8 @@ export function resolvePointMeasurementStart(args: {
     boundsBox,
     resolvedPlane: plane,
     forceInteriorFront: shouldMeasureInterior,
+    frontPlaneSign,
   });
-  const frontPlaneSign =
-    readCameraAxisSign({ App, THREE, wardrobeGroup, box, axis: 'z' }) ?? plane.normalSign;
   const frontPlaneNormalSourceBox = shouldUseFrontPlane
     ? resolvePointFrontPlaneNormalSourceBox({
         targetBox: box,

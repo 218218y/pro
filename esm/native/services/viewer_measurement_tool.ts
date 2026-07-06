@@ -21,7 +21,6 @@ import {
   FRONT_Z_EPSILON_M,
   MIN_MEASURABLE_EDGE_M,
   type LocalMeasurementBox,
-  type LocalPlanePoint,
   type MeasurementAxis,
   type MeasurementOverlayState,
   type MeasurementPlane,
@@ -34,15 +33,11 @@ import {
   addBasisVectors,
   axisVector,
   basisVector,
-  clampNumber,
   getBoxLengthAxis,
   getBoxMaxAxis,
   getBoxMinAxis,
-  makePointOnPlane,
   pointOnBoxAxisLine,
   pointOnMeasurementPlane,
-  readPointPlaneU,
-  readPointPlaneV,
   vector,
 } from './viewer_measurement_tool_geometry.js';
 import {
@@ -54,6 +49,7 @@ import {
   resolvePointMeasurementStart,
   resolvePointMeasurementStartFromPointer,
 } from './viewer_measurement_tool_point_resolution.js';
+import { resolvePointMeasurementEnd } from './viewer_measurement_tool_point_geometry.js';
 
 export const VIEWER_MEASUREMENT_MODE_ID = 'measure';
 export type { ViewerMeasurementToolMode } from './viewer_measurement_tool_contracts.js';
@@ -64,8 +60,6 @@ const OVERLAY_RENDER_ORDER = 10040;
 const GUIDE_OFFSET_M = 0.045;
 const SIDE_GUIDE_OFFSET_M = 0.055;
 const REAR_SELECTION_FRAME_PULL_FORWARD_M = 0.012;
-const POINT_STRAIGHT_SNAP_MAX_ANGLE_DEG = 10;
-const POINT_STRAIGHT_SNAP_ABSOLUTE_TOLERANCE_M = 0.008;
 const POINT_STRAIGHT_SNAP_COLOR = 0x16a34a;
 const POINT_DEFAULT_COLOR = 0x2563eb;
 const POINT_MEASUREMENT_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 25 25'%3E%3Cpath d='M6 6 L19 19 M19 6 L6 19' stroke='%23111827' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='12.5' cy='12.5' r='2.2' fill='none' stroke='%23ffffff' stroke-width='1.4'/%3E%3C/svg%3E") 12 12, crosshair`;
@@ -493,38 +487,6 @@ function addSelectionFrame(args: {
   });
 }
 
-function clipPointRayToMeasurementBounds(args: {
-  plane: MeasurementPlane;
-  startU: number;
-  startV: number;
-  rawU: number;
-  rawV: number;
-}): { u: number; v: number; clipped: boolean } {
-  const { plane, startU, startV, rawU, rawV } = args;
-  const clampedU = clampNumber(rawU, plane.uMin, plane.uMax);
-  const clampedV = clampNumber(rawV, plane.vMin, plane.vMax);
-  const outsideU = rawU < plane.uMin || rawU > plane.uMax;
-  const outsideV = rawV < plane.vMin || rawV > plane.vMax;
-  if (!outsideU && !outsideV) return { u: rawU, v: rawV, clipped: false };
-
-  const deltaU = rawU - startU;
-  const deltaV = rawV - startV;
-  const candidates: number[] = [];
-  if (deltaU > 1e-9) candidates.push((plane.uMax - startU) / deltaU);
-  else if (deltaU < -1e-9) candidates.push((plane.uMin - startU) / deltaU);
-  if (deltaV > 1e-9) candidates.push((plane.vMax - startV) / deltaV);
-  else if (deltaV < -1e-9) candidates.push((plane.vMin - startV) / deltaV);
-
-  const bestT = candidates.filter(t => Number.isFinite(t) && t >= 0 && t <= 1).sort((a, b) => a - b)[0];
-  if (bestT == null) return { u: clampedU, v: clampedV, clipped: true };
-
-  return {
-    u: clampNumber(startU + deltaU * bestT, plane.uMin, plane.uMax),
-    v: clampNumber(startV + deltaV * bestT, plane.vMin, plane.vMax),
-    clipped: true,
-  };
-}
-
 function offsetPointOnMeasurementPlane(
   THREE: Pick<ThreeLike, 'Vector3'>,
   plane: MeasurementPlane,
@@ -597,81 +559,6 @@ function addDraftPointMarker(args: {
     namePrefix: args.namePrefix || 'wp-viewer-measurement-point-draft-marker',
     color: args.color,
   });
-}
-
-type ResolvedPointMeasurement = {
-  axis: MeasurementAxis | 'free';
-  snapAxis: MeasurementAxis | null;
-  snapped: boolean;
-  start: Vector3Like;
-  end: Vector3Like;
-  length: number;
-};
-
-function shouldSnapPointMeasurementToStraightAxis(deltaU: number, deltaV: number): boolean {
-  const absU = Math.abs(deltaU);
-  const absV = Math.abs(deltaV);
-  const major = Math.max(absU, absV);
-  const minor = Math.min(absU, absV);
-  if (!(major > MIN_MEASURABLE_EDGE_M)) return false;
-  const angleRad = (POINT_STRAIGHT_SNAP_MAX_ANGLE_DEG * Math.PI) / 180;
-  const tolerance = Math.max(POINT_STRAIGHT_SNAP_ABSOLUTE_TOLERANCE_M, major * Math.tan(angleRad));
-  return minor <= tolerance;
-}
-
-function shouldSnapClippedPointMeasurementToStraightAxis(deltaU: number, deltaV: number): boolean {
-  const absU = Math.abs(deltaU);
-  const absV = Math.abs(deltaV);
-  const major = Math.max(absU, absV);
-  const minor = Math.min(absU, absV);
-  return major > MIN_MEASURABLE_EDGE_M && minor <= POINT_STRAIGHT_SNAP_ABSOLUTE_TOLERANCE_M;
-}
-
-function resolvePointMeasurementEnd(args: {
-  THREE: OverlayThree;
-  draft: PointMeasurementDraft;
-  localEnd: LocalPlanePoint;
-}): ResolvedPointMeasurement | null {
-  const { THREE, draft, localEnd } = args;
-  const plane = draft.plane;
-  const startU = readPointPlaneU(draft.point, plane);
-  const startV = readPointPlaneV(draft.point, plane);
-  const rawU = readPointPlaneU(localEnd, plane);
-  const rawV = readPointPlaneV(localEnd, plane);
-  const clippedEnd = clipPointRayToMeasurementBounds({ plane, startU, startV, rawU, rawV });
-  const rawDeltaU = rawU - startU;
-  const rawDeltaV = rawV - startV;
-  const shouldSnap = clippedEnd.clipped
-    ? shouldSnapClippedPointMeasurementToStraightAxis(rawDeltaU, rawDeltaV)
-    : shouldSnapPointMeasurementToStraightAxis(rawDeltaU, rawDeltaV);
-
-  let axis: MeasurementAxis | 'free' = 'free';
-  let snapAxis: MeasurementAxis | null = null;
-  let endU: number;
-  let endV: number;
-  let length: number;
-
-  if (shouldSnap) {
-    snapAxis = Math.abs(rawDeltaU) >= Math.abs(rawDeltaV) ? plane.uAxis : plane.vAxis;
-    axis = snapAxis;
-    endU = snapAxis === plane.uAxis ? clampNumber(rawU, plane.uMin, plane.uMax) : startU;
-    endV = snapAxis === plane.vAxis ? clampNumber(rawV, plane.vMin, plane.vMax) : startV;
-    length = Math.abs(snapAxis === plane.uAxis ? endU - startU : endV - startV);
-  } else {
-    endU = clippedEnd.u;
-    endV = clippedEnd.v;
-    length = Math.hypot(endU - startU, endV - startV);
-  }
-
-  if (!Number.isFinite(length)) return null;
-  return {
-    axis,
-    snapAxis,
-    snapped: shouldSnap,
-    start: makePointOnPlane(THREE, plane, startU, startV),
-    end: makePointOnPlane(THREE, plane, endU, endV),
-    length,
-  };
 }
 
 function removeOverlayStateObjects(state: MeasurementOverlayState | null): void {
