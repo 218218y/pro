@@ -2,6 +2,7 @@ import { reportError } from '../../../services/api.js';
 import { asRecord, getFn } from './order_pdf_overlay_runtime_shared.js';
 import type { ExportApiBindingLike, ExportCanvasModuleLike } from './order_pdf_overlay_runtime_export_api.js';
 import { bindExportApiFromModule } from './order_pdf_overlay_runtime_export_api.js';
+import { requestReleaseAssetRecovery } from '../release_asset_recovery.js';
 
 let _exportCanvasModulePromise: Promise<ExportCanvasModuleLike | null> | null = null;
 
@@ -43,12 +44,16 @@ export async function ensureExportApiReady(app: unknown): Promise<ExportApiBindi
         })
         .catch(err => {
           _exportCanvasModulePromise = null;
+          if (requestReleaseAssetRecovery(app, err, 'order-pdf-export-module')) {
+            throw new Error('טוען גרסה נקייה של קבצי עורך ה־PDF…');
+          }
           throw err;
         });
     }
     const mod = await _exportCanvasModulePromise;
     return bindExportApiFromModule(mod, app);
   } catch (__wpErr) {
+    if (requestReleaseAssetRecovery(app, __wpErr, 'order-pdf-export-module')) return null;
     reportError(
       app,
       __wpErr,

@@ -8,6 +8,7 @@ import {
   reportError,
   asRecord,
 } from '../../../services/api.js';
+import { requestReleaseAssetRecovery } from '../release_asset_recovery.js';
 
 type Props = {
   label?: string;
@@ -49,6 +50,11 @@ function tryReloadViaDi(app: unknown | null | undefined): void {
   }
 }
 
+function tryRecoverOrReload(app: unknown | null | undefined, error: unknown): void {
+  if (requestReleaseAssetRecovery(app, error, 'lazy-chunk-load')) return;
+  tryReloadViaDi(app);
+}
+
 export class LazyErrorBoundary extends Component<Props, State> {
   state: State = { error: null };
 
@@ -57,6 +63,7 @@ export class LazyErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: unknown) {
+    requestReleaseAssetRecovery(this.props.app, error, 'lazy-chunk-load');
     try {
       reportError(this.props.app, error, {
         where: 'ui/react/LazyErrorBoundary',
@@ -80,7 +87,11 @@ export class LazyErrorBoundary extends Component<Props, State> {
           לפעמים זה קורה בגלל קאש ישן או קובץ JS שחסר בשרת. נסה לרענן.
         </div>
         <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button type="button" className="btn btn-save" onClick={() => tryReloadViaDi(this.props.app)}>
+          <button
+            type="button"
+            className="btn btn-save"
+            onClick={() => tryRecoverOrReload(this.props.app, error)}
+          >
             רענן
           </button>
           <div style={{ fontSize: 12, opacity: 0.85, alignSelf: 'center' }}>אם זה חוזר: Ctrl+F5</div>

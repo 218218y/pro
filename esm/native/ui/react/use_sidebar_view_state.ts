@@ -19,7 +19,6 @@ import {
   readEventTargetElement,
 } from './sidebar_shared.js';
 import { scheduleReactBackgroundWarmup } from './background_warmup.js';
-import { warmExportCanvasModule } from './export_actions.js';
 import {
   clearSidebarBackgroundExit,
   createSidebarBackgroundExitState,
@@ -46,9 +45,6 @@ export type SidebarViewState = {
 
 function prefetchSidebarTabIntent(tabId: TabId | null | undefined): void {
   prefetchDeferredSidebarTabs(tabId);
-  if (tabId === 'settings') {
-    void warmExportCanvasModule().catch(() => undefined);
-  }
 }
 
 function isViewerMeasurementPrimaryMode(primaryMode: string): boolean {

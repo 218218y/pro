@@ -10,6 +10,7 @@ import type { AppContainer, UnknownRecord } from '../../../../types';
 
 import type { ExportUiActionKind, ExportUiActionResult } from '../export_action_contracts.js';
 import { getExportActionFailureToast } from '../export_action_feedback.js';
+import { requestReleaseAssetRecovery } from './release_asset_recovery.js';
 import { beginAppActionFamilyFlight, type AppActionFamilyFlight } from '../action_family_singleflight.js';
 import {
   buildPerfEntryOptionsFromActionResult,
@@ -146,7 +147,7 @@ const exportActionFlights = new WeakMap<
 
 let exportCanvasModulePromise: Promise<ExportCanvasModuleLike> | null = null;
 
-async function ensureExportModule(): Promise<ExportCanvasModuleLike> {
+async function ensureExportModule(app?: AppContainer): Promise<ExportCanvasModuleLike> {
   try {
     if (!exportCanvasModulePromise) {
       exportCanvasModulePromise = import('../export_canvas.js')
@@ -159,6 +160,9 @@ async function ensureExportModule(): Promise<ExportCanvasModuleLike> {
         })
         .catch(err => {
           exportCanvasModulePromise = null;
+          if (app && requestReleaseAssetRecovery(app, err, 'export-canvas-module')) {
+            throw new Error('טוען גרסה נקייה של קבצי הייצוא…');
+          }
           throw err;
         });
     }
@@ -168,13 +172,14 @@ async function ensureExportModule(): Promise<ExportCanvasModuleLike> {
   }
 }
 
-export async function warmExportCanvasModule(): Promise<void> {
-  await ensureExportModule();
+export async function warmExportCanvasModule(app?: AppContainer): Promise<void> {
+  await ensureExportModule(app);
 }
 
 export async function runExportUiActionWithDeps(args: RunExportUiActionDeps): Promise<ExportUiActionResult> {
   const { app, kind } = args;
-  const ensureModuleImpl = typeof args.ensureModule === 'function' ? args.ensureModule : ensureExportModule;
+  const ensureModuleImpl =
+    typeof args.ensureModule === 'function' ? args.ensureModule : () => ensureExportModule(app);
   const reportError =
     typeof args.reportError === 'function'
       ? args.reportError
@@ -194,6 +199,9 @@ export async function runExportUiActionWithDeps(args: RunExportUiActionDeps): Pr
         }
         return { ok: true, kind };
       } catch (error) {
+        if (requestReleaseAssetRecovery(app, error, 'export-action-module')) {
+          return { ok: false, kind, reason: 'error', message: 'טוען גרסה נקייה של קבצי הייצוא…' };
+        }
         reportError('export action failed', error);
         const message = readErrorMessage(error);
         return message ? { ok: false, kind, reason: 'error', message } : { ok: false, kind, reason: 'error' };

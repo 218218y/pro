@@ -1,15 +1,5 @@
-import pdfJsRealWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-
 import type { AppContainer, UnknownRecord } from '../../../../types';
-import {
-  getBrowserTimers,
-  getNavigatorMaybe,
-  getWindowMaybe,
-  requestIdleCallbackMaybe,
-} from '../../services/api.js';
-import { warmExportCanvasModule } from './export_actions.js';
-import { warmOrderPdfEditorOpenPath } from './pdf/order_pdf_overlay_pdf_render.js';
-import { fetchFirstOk } from './pdf/order_pdf_overlay_runtime.js';
+import { getBrowserTimers, getNavigatorMaybe, requestIdleCallbackMaybe } from '../../services/api.js';
 
 const backgroundWarmupSeen = new WeakSet<AppContainer>();
 
@@ -45,29 +35,6 @@ function readSaveDataEnabled(app: AppContainer): boolean {
   }
 }
 
-function readAssetVersion(app: AppContainer): string {
-  try {
-    const win = asRecord(getWindowMaybe(app));
-    const value = win && typeof win.__WP_ASSET_VERSION__ === 'string' ? String(win.__WP_ASSET_VERSION__) : '';
-    return value.trim();
-  } catch {
-    return '';
-  }
-}
-
-function withAssetVersion(app: AppContainer, urls: string[]): string[] {
-  try {
-    const assetV = readAssetVersion(app);
-    if (!assetV) return urls;
-    return urls.map(u => {
-      if (!u || typeof u !== 'string' || u.includes('?')) return u;
-      return `${u}?v=${encodeURIComponent(assetV)}`;
-    });
-  } catch {
-    return urls;
-  }
-}
-
 function idleTask(app: AppContainer, run: () => void): Cleanup {
   const requestIdle = requestIdleCallbackMaybe(app);
   if (requestIdle) {
@@ -94,7 +61,7 @@ export function warmDeferredSidebarTabsChunk(): Promise<void> {
 }
 
 export function warmOrderPdfOverlayChunk(): Promise<void> {
-  return import('./pdf/OrderPdfInPlaceEditorOverlay.js').then(() => undefined);
+  return Promise.resolve();
 }
 
 export function scheduleReactBackgroundWarmup(app: AppContainer): Cleanup {
@@ -107,18 +74,7 @@ export function scheduleReactBackgroundWarmup(app: AppContainer): Cleanup {
   const cleanups: Cleanup[] = [];
   let cancelled = false;
 
-  const tasks: WarmTask[] = [
-    () => warmDeferredSidebarTabsChunk(),
-    () => warmExportCanvasModule(),
-    () => warmOrderPdfOverlayChunk(),
-    () =>
-      warmOrderPdfEditorOpenPath({
-        app,
-        realWorkerUrl: pdfJsRealWorkerUrl,
-        fetchFirstOk,
-        withV: (urls: string[]) => withAssetVersion(app, urls),
-      }),
-  ];
+  const tasks: WarmTask[] = [() => warmDeferredSidebarTabsChunk()];
 
   const runStep = (index: number): void => {
     if (cancelled || index >= tasks.length) return;
