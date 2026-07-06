@@ -5,6 +5,7 @@ import type { HitObjectLike, MouseVectorLike, RaycasterLike } from './canvas_pic
 
 export const FRONT_Z_EPSILON_M = 0.006;
 export const MIN_MEASURABLE_EDGE_M = 0.005;
+export const POINT_FRONT_PLANE_OCCLUSION_PROMOTION_MAX_M = 0.16;
 
 export type ViewerMeasurementToolMode = 'part' | 'points';
 

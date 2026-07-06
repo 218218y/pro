@@ -10,6 +10,7 @@ import { __wp_measureObjectLocalBox, __wp_projectWorldPointToLocal } from './can
 import {
   FRONT_Z_EPSILON_M,
   MIN_MEASURABLE_EDGE_M,
+  POINT_FRONT_PLANE_OCCLUSION_PROMOTION_MAX_M,
   type LocalMeasurementBox,
   type MeasurableObject,
   type MeasurementAxis,
@@ -30,8 +31,6 @@ import {
   subBasisVector,
 } from './viewer_measurement_tool_geometry.js';
 
-const POINT_FRONT_PLANE_OCCLUSION_PROMOTION_MAX_M = 0.16;
-
 export type ViewerMeasurementResolution = {
   target: unknown;
   targetKey: string | null;
@@ -40,7 +39,7 @@ export type ViewerMeasurementResolution = {
   shouldMeasureInterior: boolean;
 };
 
-export function isRecord(value: unknown): value is UnknownRecord {
+function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
@@ -54,7 +53,7 @@ export function readUserData(value: unknown): UnknownRecord | null {
   return ud;
 }
 
-export function readFiniteNumber(value: unknown, key: string): number | null {
+function readFiniteNumber(value: unknown, key: string): number | null {
   const rec = isRecord(value) ? value : null;
   const raw = rec ? rec[key] : null;
   return typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
@@ -93,7 +92,7 @@ function isShelfLikeObject(value: unknown): boolean {
   return isShelfLikeUserData(readUserData(value));
 }
 
-export function hasCavityBackgroundTarget(value: unknown): boolean {
+function hasCavityBackgroundTarget(value: unknown): boolean {
   const ud = readUserData(value);
   if (!ud) return true;
   if (isBackPanelLike(value)) return true;
@@ -186,7 +185,7 @@ function readMaterialRecords(value: unknown): UnknownRecord[] {
   return isRecord(value) ? [value] : [];
 }
 
-function isFullyTransparentMaterialObject(value: unknown): boolean {
+export function isFullyTransparentMaterialObject(value: unknown): boolean {
   const rec = isRecord(value) ? value : null;
   const materials = readMaterialRecords(rec?.material);
   if (!materials.length) return false;
@@ -394,7 +393,7 @@ function readShapePlaneSign(
   return null;
 }
 
-export function resolveViewerMeasurementPlane(args: {
+function resolveViewerMeasurementPlane(args: {
   App: AppContainer;
   THREE: OverlayThree;
   hitState: CanvasPickingClickHitState;
@@ -439,13 +438,14 @@ export function resolveViewerMeasurementPlane(args: {
   };
 }
 
-export function targetKeyForHit(hitState: CanvasPickingClickHitState, target: unknown): string | null {
+function targetKeyForHit(hitState: CanvasPickingClickHitState, target: unknown): string | null {
   const ud = readUserData(target);
   const identity = hitState.hitIdentity;
   const candidates = [
     ud?.partId,
     ud?.pid,
     ud?.surfaceId,
+    ud?.drawerId,
     ud?.moduleIndex,
     identity?.partId,
     identity?.doorId,
@@ -534,7 +534,7 @@ export function resolveViewerMeasurementTarget(hitState: CanvasPickingClickHitSt
   return findModuleSelectorTarget(hitState) || taggedOwner || primary;
 }
 
-export function isModuleSelector(value: unknown): boolean {
+function isModuleSelector(value: unknown): boolean {
   const ud = readUserData(value);
   return !!ud?.isModuleSelector;
 }
