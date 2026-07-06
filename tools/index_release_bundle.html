@@ -98,6 +98,100 @@
           const safe = s =>
             String(s || '').replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[ch]);
 
+          function moduleAssetUrl(rel) {
+            try {
+              return new URL(rel, import.meta.url).toString();
+            } catch (_) {
+              return String(rel || '');
+            }
+          }
+
+          function isHtmlContentType(contentType) {
+            return /(?:^|;)\s*(?:text\/html|application\/xhtml\+xml)(?:\s*;|$)/i.test(
+              String(contentType || '')
+            );
+          }
+
+          function createRecoverableAssetError(rel, response, contentType) {
+            const status = response && response.status ? response.status : 0;
+            const url = moduleAssetUrl(rel);
+            const err = new TypeError(
+              'Release module asset is not available as JavaScript: ' +
+                url +
+                ' status=' +
+                status +
+                ' content-type=' +
+                String(contentType || '')
+            );
+            err.recoverableAsset = true;
+            err.assetUrl = url;
+            err.assetStatus = status;
+            err.assetContentType = String(contentType || '');
+            return err;
+          }
+
+          async function probeModuleAsset(rel) {
+            if (typeof fetch !== 'function') return;
+            const url = moduleAssetUrl(rel);
+            let response;
+            try {
+              response = await fetch(url, { cache: 'no-store', credentials: 'same-origin' });
+            } catch (err) {
+              if (err && typeof err === 'object') {
+                err.recoverableAsset = true;
+                err.assetUrl = url;
+              }
+              throw err;
+            }
+            const contentType =
+              response && response.headers ? response.headers.get('content-type') || '' : '';
+            if (!response || !response.ok || isHtmlContentType(contentType)) {
+              throw createRecoverableAssetError(rel, response, contentType);
+            }
+          }
+
+          function extractFailedModuleUrl(err) {
+            const text = String((err && (err.message || err.stack)) || err || '');
+            const match = text.match(/https?:\/\/[^\s"'<>]+\.js(?:\?[^\s"'<>]*)?/i);
+            return match ? match[0] : '';
+          }
+
+          function isRecoverableModuleFailure(err) {
+            if (err && err.recoverableAsset) return true;
+            const text = String((err && (err.message || err.stack)) || err || '');
+            return /Failed to fetch dynamically imported module|Importing a module script failed|Expected a JavaScript(?:-or-Wasm)? module script|Release module asset is not available as JavaScript/i.test(
+              text
+            );
+          }
+
+          function recoverStaleAsset(errOrUrl, reason) {
+            const assetUrl =
+              typeof errOrUrl === 'string'
+                ? errOrUrl
+                : (errOrUrl && errOrUrl.assetUrl) || extractFailedModuleUrl(errOrUrl);
+            try {
+              if (typeof window.__WP_RECOVER_FROM_STALE_ASSET__ === 'function') {
+                window.__WP_RECOVER_FROM_STALE_ASSET__(assetUrl || '', reason || 'loader-module');
+                return true;
+              }
+            } catch (_) {}
+            try {
+              const u = new URL(location.href);
+              u.searchParams.set('v', String(Date.now()));
+              u.searchParams.set('wp_reload', String(reason || 'loader-module'));
+              if (assetUrl) u.searchParams.set('missing_asset', assetUrl.split('/').pop() || 'module');
+              location.replace(u.toString());
+              return true;
+            } catch (_) {
+              try {
+                location.reload();
+                return true;
+              } catch (__) {
+                return false;
+              }
+            }
+          }
+
           overlay.innerHTML = `
             <div style="max-width:920px;line-height:1.7">
               <div style="font-size:22px;font-weight:800;margin-bottom:10px">שגיאת טעינה: ${safe(title)}</div>
@@ -114,8 +208,11 @@
                     </div>
                   </li>
                   <li style="margin-top:10px">פתח קונסול כדי לראות מה חסר/נכשל</li>
-                  <li style="margin-top:8px">רענן (Ctrl+F5)</li>
+                  <li style="margin-top:8px">אם זה קרה אחרי העלאה מחדש — זה בדרך כלל HTML ישן שמצביע לקובץ JS שכבר לא קיים.</li>
                 </ol>
+                <button type="button" data-wp-recover style="cursor:pointer;border:0;padding:10px 14px;border-radius:12px;font-weight:800;margin-top:12px">
+                  טען גרסה נקייה עכשיו
+                </button>
                 <div style="margin-top:10px;opacity:.85;font-size:13px">
                   טיפ: אם אתה על נטפרי/פילטר — לפעמים קבצי JS מוחלפים בעמוד חסימה (HTML). במקרה כזה חייבים קבצים מקומיים תקינים.
                 </div>
@@ -123,9 +220,14 @@
             </div>
           `;
           document.body.appendChild(overlay);
+          try {
+            const btn = overlay.querySelector('[data-wp-recover]');
+            if (btn) btn.addEventListener('click', () => recoverStaleAsset(err, 'fatal-overlay'));
+          } catch (_) {}
         }
 
         async function loadThreeVendor() {
+          await probeModuleAsset('./libs/three.vendor.js');
           const mod = await import('./libs/three.vendor.js');
           const THREE =
             mod && mod.THREE ? mod.THREE : mod && mod.default && mod.default.THREE ? mod.default.THREE : null;
@@ -153,6 +255,7 @@
         async function boot() {
           try {
             const THREE = await loadThreeVendor();
+            await probeModuleAsset('./wardrobepro.bundle.js');
             const { boot } = await import('./wardrobepro.bundle.js');
 
             // Required canonical runtime config module:
@@ -216,6 +319,7 @@
 
             if (!app) throw new Error('ESM boot failed: app is null/undefined');
           } catch (err) {
+            if (isRecoverableModuleFailure(err) && recoverStaleAsset(err, 'boot-module')) return;
             showFatalOverlay('Boot', err);
           }
         }

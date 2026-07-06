@@ -15,6 +15,7 @@ import {
   rewriteReleaseHtml,
   writeReleaseHeaders,
   writeReleaseMetadata,
+  writeReleaseNotFoundPage,
 } from '../tools/wp_release_finalize.js';
 
 function tempDir() {
@@ -57,6 +58,21 @@ test('release html templates advertise the canonical favicon and web-app icon se
     assert.match(html, /<link rel="icon" type="image\/png" sizes="16x16" href="\.\/favicon-16x16\.png" \/>/);
     assert.match(html, /<link rel="apple-touch-icon" sizes="180x180" href="\.\/apple-touch-icon\.png" \/>/);
     assert.match(html, /<link rel="manifest" href="\.\/site\.webmanifest" \/>/);
+  }
+});
+
+test('release bundle HTML templates probe module assets before dynamic imports and expose clean recovery', () => {
+  const root = process.cwd();
+  for (const rel of [
+    path.join('tools', 'index_release_bundle.html'),
+    path.join('tools', 'index_release_bundle_site2.html'),
+  ]) {
+    const html = fs.readFileSync(path.join(root, rel), 'utf8');
+    assert.match(html, /probeModuleAsset\('\.\/libs\/three\.vendor\.js'\)/);
+    assert.match(html, /probeModuleAsset\('\.\/wardrobepro\.bundle\.js'\)/);
+    assert.match(html, /isRecoverableModuleFailure/);
+    assert.match(html, /__WP_RECOVER_FROM_STALE_ASSET__/);
+    assert.match(html, /data-wp-recover/);
   }
 });
 
@@ -149,7 +165,7 @@ test('release arg parsing keeps site2/template/out and secure sourcemap policy c
   assert.equal(parsed.buildMode, 'debug');
 });
 
-test('release headers pin mutable entrypoints to no-store and only exact fingerprinted assets to immutable cache', () => {
+test('release headers pin mutable entrypoints/stale module fallbacks to no-store and only exact fingerprinted assets to immutable cache', () => {
   const dir = tempDir();
   fs.mkdirSync(path.join(dir, 'libs'), { recursive: true });
   fs.mkdirSync(path.join(dir, 'assets'), { recursive: true });
@@ -171,27 +187,35 @@ test('release headers pin mutable entrypoints to no-store and only exact fingerp
 
   assert.match(headers, /\/\n  Cache-Control: no-store, no-cache, must-revalidate, max-age=0/);
   assert.match(headers, /\/index\.html\n  Cache-Control: no-store, no-cache, must-revalidate, max-age=0/);
+  assert.match(headers, /\/404\.html\n  Cache-Control: no-store, no-cache, must-revalidate, max-age=0/);
   assert.match(headers, /\/version\.json\n  Cache-Control: no-store, no-cache, must-revalidate, max-age=0/);
+  assert.match(headers, /\/wardrobepro\*\n  Cache-Control: no-store, no-cache, must-revalidate, max-age=0/);
+  assert.match(headers, /\/libs\/\*\n  Cache-Control: no-store, no-cache, must-revalidate, max-age=0/);
   assert.match(
     headers,
     /\/wp_runtime_config\.mjs\n  Cache-Control: no-store, no-cache, must-revalidate, max-age=0/
   );
   assert.match(
     headers,
-    /\/wardrobepro\.bundle\.abc123\.js\n  Cache-Control: public, max-age=31536000, immutable/
+    /\/wardrobepro\.bundle\.abc123\.js\n  ! Cache-Control\n  ! Pragma\n  ! Expires\n  Cache-Control: public, max-age=31536000, immutable/
   );
   assert.match(
     headers,
-    /\/wardrobepro\.chunk-core\.def456\.js\n  Cache-Control: public, max-age=31536000, immutable/
+    /\/wardrobepro\.chunk-core\.def456\.js\n  ! Cache-Control\n  ! Pragma\n  ! Expires\n  Cache-Control: public, max-age=31536000, immutable/
   );
-  assert.match(headers, /\/react_styles\.112233\.css\n  Cache-Control: public, max-age=31536000, immutable/);
   assert.match(
     headers,
-    /\/libs\/three\.vendor\.0f0f0f\.js\n  Cache-Control: public, max-age=31536000, immutable/
+    /\/react_styles\.112233\.css\n  ! Cache-Control\n  ! Pragma\n  ! Expires\n  Cache-Control: public, max-age=31536000, immutable/
   );
-  assert.match(headers, /\/assets\/logo-8899aa\.png\n  Cache-Control: public, max-age=31536000, immutable/);
+  assert.match(
+    headers,
+    /\/libs\/three\.vendor\.0f0f0f\.js\n  ! Cache-Control\n  ! Pragma\n  ! Expires\n  Cache-Control: public, max-age=31536000, immutable/
+  );
+  assert.match(
+    headers,
+    /\/assets\/logo-8899aa\.png\n  ! Cache-Control\n  ! Pragma\n  ! Expires\n  Cache-Control: public, max-age=31536000, immutable/
+  );
   assert.doesNotMatch(headers, /\/wardrobepro\.chunk-\*\.js/);
-  assert.doesNotMatch(headers, /\/libs\/\*/);
   assert.doesNotMatch(headers, /\/assets\/\*/);
   assert.doesNotMatch(headers, /plain\.png\n  Cache-Control: public, max-age=31536000, immutable/);
 });
@@ -209,6 +233,15 @@ test('release header writer materializes Cloudflare Pages headers in the release
 
   assert.equal(fs.readFileSync(path.join(dir, '_headers'), 'utf8'), headers);
   assert.match(headers, /Exact immutable asset rules are intentional/);
+});
+
+test('release writes a top-level 404 page so Cloudflare Pages does not serve index.html for missing stale modules', () => {
+  const dir = tempDir();
+  const html = writeReleaseNotFoundPage({ releaseDir: dir });
+  assert.equal(fs.readFileSync(path.join(dir, '404.html'), 'utf8'), html);
+  assert.match(html, /no-store, no-cache, must-revalidate, max-age=0/);
+  assert.match(html, /קישור לקובץ ישן מפריסה קודמת/);
+  assert.match(html, /wp_reload=404/);
 });
 
 test('release finalize rewrites hashed html refs and modulepreloads canonical assets', () => {
@@ -255,6 +288,7 @@ test('release finalize rewrites hashed html refs and modulepreloads canonical as
   assert.match(html, /wp_logo_data\.js\?v=202603310101/);
   assert.match(html, /wp_runtime_config\.mjs\?v=202603310101/);
   assert.match(html, /__WP_RELEASE_BUILD_ID__/);
+  assert.match(html, /__WP_RECOVER_FROM_STALE_ASSET__/);
   assert.match(html, /Failed to fetch dynamically imported module/);
   assert.match(html, /addEventListener\('unhandledrejection'/);
   assert.match(html, /addEventListener\('error'/);

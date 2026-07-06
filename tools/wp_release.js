@@ -21,6 +21,7 @@ import {
   rewriteReleaseHtml,
   writeReleaseHeaders,
   writeReleaseMetadata,
+  writeReleaseNotFoundPage,
 } from './wp_release_finalize.js';
 import { applyContentHashingToRelease } from './wp_release_hashing.js';
 import {
@@ -39,7 +40,12 @@ import {
 export { applyContentHashingToRelease } from './wp_release_hashing.js';
 export { resolveReleaseJsObfuscationPolicy } from './wp_release_build.js';
 export { parseReleaseArgs } from './wp_release_state.js';
-export { resolveFinalReleaseAssets, rewriteReleaseHtml, writeReleaseHeaders } from './wp_release_finalize.js';
+export {
+  resolveFinalReleaseAssets,
+  rewriteReleaseHtml,
+  writeReleaseHeaders,
+  writeReleaseNotFoundPage,
+} from './wp_release_finalize.js';
 
 async function main() {
   const root = process.cwd();
@@ -218,6 +224,7 @@ async function main() {
   });
   const htmlInfo = await maybeMinifyHtml({ html, wantMinify: config.wantHtmlMinify });
   fs.writeFileSync(path.join(releaseDir, 'index.html'), htmlInfo.html, 'utf8');
+  writeReleaseNotFoundPage({ releaseDir });
 
   writeReleaseHeaders({
     releaseDir,

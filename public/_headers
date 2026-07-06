@@ -17,6 +17,11 @@
   Pragma: no-cache
   Expires: 0
 
+/404.html
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
+
 /version.json
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
   Pragma: no-cache
@@ -28,6 +33,19 @@
   Expires: 0
 
 /wp_logo_data.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
+
+# Stale module requests from an older cached index must never be browser-cached
+# as Cloudflare's HTML fallback. Generated release headers override exact hashed
+# assets back to immutable cache rules.
+/wardrobepro*
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
+
+/libs/*
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
   Pragma: no-cache
   Expires: 0
