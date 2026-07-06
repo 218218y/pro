@@ -67,7 +67,7 @@ export function appendFullHingedDoorOps(
       meshOffsetX: state.meshOffsetX,
       isLeftHinge: state.isLeftHinge,
       isMirror: !!isMirror,
-      adhesiveGlassKind,
+      ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
       hasGroove: !!hasGroove,
       curtain,
       style,

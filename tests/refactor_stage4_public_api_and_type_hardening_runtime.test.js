@@ -110,6 +110,18 @@ test('door authoring facade exposes only audited public symbols', () => {
     },
     {
       reason:
+        'Adhesive glass authoring shares the mirror-layout lifecycle across UI, paint services, and render builders',
+      symbols: [
+        'AdhesiveGlassKind',
+        'DOOR_SPECIAL_BLACK_GLASS',
+        'DOOR_SPECIAL_FROSTED_GLASS',
+        'isAdhesiveGlassValue',
+        'isDoorSpecialSurfaceValue',
+        'resolveAdhesiveGlassKind',
+      ],
+    },
+    {
+      reason:
         'Door trim authoring spans UI controls, hover/click services, and builder visuals, so the facade owns the public trim geometry/map contract',
       symbols: [
         'DEFAULT_DOOR_TRIM_CROSS_SIZE_CM',

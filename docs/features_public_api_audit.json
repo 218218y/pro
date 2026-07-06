@@ -501,6 +501,10 @@
       "entry": "door_authoring/api.js"
     },
     {
+      "file": "esm/native/builder/render_door_ops_hinged.ts",
+      "entry": "door_authoring/api.js"
+    },
+    {
       "file": "esm/native/builder/render_door_ops_shared_config.ts",
       "entry": "door_authoring/api.js"
     },
@@ -511,6 +515,10 @@
     {
       "file": "esm/native/builder/render_door_ops_shared_materials.ts",
       "entry": "finish_palette/api.js"
+    },
+    {
+      "file": "esm/native/builder/render_door_ops_shared_ops.ts",
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/builder/render_door_ops_sliding.ts",
@@ -534,6 +542,10 @@
     },
     {
       "file": "esm/native/builder/render_drawer_ops_shared_types.ts",
+      "entry": "door_authoring/api.js"
+    },
+    {
+      "file": "esm/native/builder/render_drawer_ops_shared_visual_state.ts",
       "entry": "door_authoring/api.js"
     },
     {
@@ -697,6 +709,10 @@
       "entry": "base_plinth_support.js"
     },
     {
+      "file": "esm/native/builder/render_interior_sketch_visuals_door_state.ts",
+      "entry": "door_authoring/api.js"
+    },
+    {
       "file": "esm/native/builder/render_ops_primitives.ts",
       "entry": "finish_palette/api.js"
     },
@@ -710,6 +726,10 @@
     },
     {
       "file": "esm/native/builder/visuals_and_contents_door_visual.ts",
+      "entry": "door_authoring/api.js"
+    },
+    {
+      "file": "esm/native/builder/visuals_and_contents_door_visual_adhesive_glass.ts",
       "entry": "door_authoring/api.js"
     },
     {
@@ -1237,6 +1257,10 @@
       "entry": "manual_handle_position.js"
     },
     {
+      "file": "esm/native/services/canvas_picking_hover_flow_core.ts",
+      "entry": "door_authoring/api.js"
+    },
+    {
       "file": "esm/native/services/canvas_picking_hover_flow_nonsplit_face.ts",
       "entry": "part_identity/api.js"
     },
@@ -1347,6 +1371,10 @@
     {
       "file": "esm/native/services/canvas_picking_manual_layout_vertical_blockers.ts",
       "entry": "interior_layout_presets/api.js"
+    },
+    {
+      "file": "esm/native/services/canvas_picking_paint_flow_apply.ts",
+      "entry": "door_authoring/api.js"
     },
     {
       "file": "esm/native/services/canvas_picking_paint_flow_apply_door_style.ts",

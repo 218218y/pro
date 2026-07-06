@@ -93,11 +93,12 @@ export function pushCornerConnectorDoorSegmentVisual(
     true,
     mirrorLayout,
     scopedPartId,
-    special === 'glass'
-      ? { glassFrameStyle: effectiveFrameStyle }
-      : adhesiveGlassKind
-        ? { adhesiveGlassKind }
-        : null
+    special === 'glass' || adhesiveGlassKind
+      ? {
+          ...(special === 'glass' ? { glassFrameStyle: effectiveFrameStyle } : null),
+          ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
+        }
+      : null
   );
   vis.position.set(state.meshOffset, 0, 0);
   hinge.add(vis);

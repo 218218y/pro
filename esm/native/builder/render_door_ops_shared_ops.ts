@@ -5,6 +5,7 @@ import type {
 } from './render_door_ops_shared_contracts.js';
 import { readRenderOpNumber, readRenderOpNumberOr } from './render_ops_number_contracts.js';
 import { isRecord } from './render_door_ops_shared_core.js';
+import { resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 
 function readFinite(value: unknown, defaultValue = 0): number {
   return readRenderOpNumberOr(value, defaultValue);
@@ -61,6 +62,7 @@ export function readHingedDoorOp(value: unknown): HingedDoorOpLike | null {
   const height = readFinite(value.height, NaN);
   const partId = readString(value.partId);
   if (!partId || !Number.isFinite(width) || !Number.isFinite(height)) return null;
+  const adhesiveGlassKind = resolveAdhesiveGlassKind(value.adhesiveGlassKind);
   const op: HingedDoorOpLike = {
     x: readFinite(value.x),
     y: readFinite(value.y),
@@ -73,6 +75,7 @@ export function readHingedDoorOp(value: unknown): HingedDoorOpLike | null {
     openAngle: readRenderOpNumber(value.openAngle) ?? undefined,
     isRemoved: value.isRemoved === true,
     isMirror: value.isMirror === true,
+    ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
     hasGroove: value.hasGroove === true,
     moduleIndex: value.moduleIndex,
     pivotX: readRenderOpNumber(value.pivotX) ?? undefined,

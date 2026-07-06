@@ -16,8 +16,8 @@ export function bindDoorVisualRenderPolicy(
 ): BuilderCreateDoorVisualFn {
   return (...args) => {
     const nextArgs = [...args] as Parameters<BuilderCreateDoorVisualFn>;
-    nextArgs[13] = {
-      ...readDoorVisualOptions(args[13]),
+    nextArgs[14] = {
+      ...readDoorVisualOptions(args[14]),
       renderPolicy,
     };
     return createDoorVisual(...nextArgs);

@@ -202,7 +202,12 @@ export function emitCornerWingExternalDrawers(
       false,
       mirrorLayout,
       id,
-      isGlass ? { glassFrameStyle: effectiveFrameStyle } : adhesiveGlassKind ? { adhesiveGlassKind } : null
+      isGlass || adhesiveGlassKind
+        ? {
+            ...(isGlass ? { glassFrameStyle: effectiveFrameStyle } : null),
+            ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
+          }
+        : null
     );
     dVis.position.set(0, 0, 0);
 

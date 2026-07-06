@@ -12,7 +12,7 @@ export function resolveDrawerVisualState(
   isMirror: boolean;
   isGlass: boolean;
   curtainType: string | null | undefined;
-  adhesiveGlassKind: 'black_glass' | 'frosted_glass' | null;
+  adhesiveGlassKind?: 'black_glass' | 'frosted_glass' | null;
   mirrorLayout: MirrorLayoutList | null;
 } {
   if (!cfg.isMultiColorMode)
@@ -62,7 +62,7 @@ export function resolveDrawerVisualState(
     isMirror,
     isGlass,
     curtainType,
-    adhesiveGlassKind,
+    ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
     mirrorLayout: mirrorLayout && mirrorLayout.length ? mirrorLayout : null,
   };
 }

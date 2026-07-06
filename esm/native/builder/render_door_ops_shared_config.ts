@@ -111,7 +111,12 @@ export function resolveSlidingDoorVisualState(
     curtain = null;
   }
 
-  return { isMirror, isGlass, curtain, adhesiveGlassKind };
+  return {
+    isMirror,
+    isGlass,
+    curtain,
+    ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
+  };
 }
 
 export function resolveHandleType(getHandleType: GetHandleTypeFn | null, partId: string): string {

@@ -14,7 +14,7 @@ export function resolveSketchFrontVisualState(
   isMirror: boolean;
   isGlass: boolean;
   curtainType: string | null;
-  adhesiveGlassKind: 'black_glass' | 'frosted_glass' | null;
+  adhesiveGlassKind?: 'black_glass' | 'frosted_glass' | null;
   mirrorLayout: MirrorLayoutList | null;
 } {
   const cfg = requireInteriorSketchConfigSnapshot(input.cfgSnapshot, 'render_interior_sketch.visualState');
@@ -66,7 +66,7 @@ export function resolveSketchFrontVisualState(
     isMirror,
     isGlass,
     curtainType: isGlass ? curtainType : null,
-    adhesiveGlassKind,
+    ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
     mirrorLayout: mirrorLayout.length ? mirrorLayout : null,
   };
 }
@@ -78,7 +78,7 @@ export function resolveSketchBoxDoorVisualState(
   isMirror: boolean;
   isGlass: boolean;
   curtainType: string | null;
-  adhesiveGlassKind: 'black_glass' | 'frosted_glass' | null;
+  adhesiveGlassKind?: 'black_glass' | 'frosted_glass' | null;
   mirrorLayout: MirrorLayoutList | null;
 } {
   return resolveSketchFrontVisualState(input, partId);

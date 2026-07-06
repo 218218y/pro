@@ -134,11 +134,12 @@ export function processCornerDoorVisual(
     false,
     mirrorLayout,
     groovePartId,
-    special === 'glass'
-      ? { glassFrameStyle: effectiveFrameStyle }
-      : adhesiveGlassKind
-        ? { adhesiveGlassKind }
-        : null
+    special === 'glass' || adhesiveGlassKind
+      ? {
+          ...(special === 'glass' ? { glassFrameStyle: effectiveFrameStyle } : null),
+          ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
+        }
+      : null
   );
   vis.position.set(args.meshOffset, 0, 0);
   args.group.add(vis);

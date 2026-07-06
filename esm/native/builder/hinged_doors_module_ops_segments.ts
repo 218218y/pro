@@ -52,7 +52,7 @@ export function pushHingedDoorSegment(
       meshOffsetX: state.meshOffsetX,
       isLeftHinge: state.isLeftHinge,
       isMirror: !!isMirror,
-      adhesiveGlassKind,
+      ...(adhesiveGlassKind ? { adhesiveGlassKind } : null),
       hasGroove: !!hasGroove,
       curtain: args.curtainVal || null,
       style,
