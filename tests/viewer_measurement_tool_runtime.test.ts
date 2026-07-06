@@ -331,6 +331,96 @@ function createDoorPointHit(door: any, point: { x: number; y: number; z: number 
   };
 }
 
+test('viewer part measurement hover previews the exact selectable part without committing dimensions', () => {
+  const wardrobe = createGroup();
+  const door = createMesh({
+    width: 0.7,
+    height: 2,
+    depth: 0.02,
+    userData: { partId: 'door_1_full' },
+  });
+  wardrobe.add(door);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+
+  const handled = tryHandleViewerMeasurementHover({
+    App,
+    hitState: createDoorPointHit(door, { x: 0, y: 1, z: 0.01 }),
+  });
+
+  assert.equal(handled, true);
+  assert.deepEqual(labels, []);
+  assert.match(App.__canvas.style.cursor, /crosshair/);
+  const hoverFrame = wardrobe.children.find(child => child.name === 'wp-viewer-measurement-hover-frame');
+  assert.ok(hoverFrame);
+  assert.equal(hoverFrame.material.color, 0x38bdf8);
+  assert.equal(hoverFrame.userData?.__wpViewerMeasurementOverlay, true);
+  assert.equal(hoverFrame.userData?.__ignoreRaycast, true);
+  assert.equal(hoverFrame.geometry.points.length, 5);
+});
+
+test('viewer part measurement click replaces the hover preview with the committed measurement overlay', () => {
+  const wardrobe = createGroup();
+  const door = createMesh({
+    width: 0.7,
+    height: 2,
+    depth: 0.02,
+    userData: { partId: 'door_1_full' },
+  });
+  wardrobe.add(door);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  const hitState = createDoorPointHit(door, { x: 0, y: 1, z: 0.01 });
+
+  tryHandleViewerMeasurementHover({ App, hitState });
+  assert.ok(wardrobe.children.some(child => child.name === 'wp-viewer-measurement-hover-frame'));
+
+  tryHandleViewerMeasurementClick({ App, hitState });
+
+  assert.equal(
+    wardrobe.children.some(child => child.name === 'wp-viewer-measurement-hover-frame'),
+    false
+  );
+  assert.ok(wardrobe.children.some(child => child.name === 'wp-viewer-measurement-selection-frame'));
+  assert.deepEqual(labels, ['70', '200', '2']);
+});
+
+test('viewer part measurement empty hover clears only the transient hover preview', () => {
+  const wardrobe = createGroup();
+  const door = createMesh({
+    width: 0.7,
+    height: 2,
+    depth: 0.02,
+    userData: { partId: 'door_1_full' },
+  });
+  const nextDoor = createMesh({
+    width: 0.5,
+    height: 2,
+    depth: 0.02,
+    x: 0.8,
+    userData: { partId: 'door_2_full' },
+  });
+  wardrobe.add(door);
+  wardrobe.add(nextDoor);
+  const labels: string[] = [];
+  const App = createApp(wardrobe, labels);
+  const hitState = createDoorPointHit(door, { x: 0, y: 1, z: 0.01 });
+  const nextHitState = createDoorPointHit(nextDoor, { x: 0.8, y: 1, z: 0.01 });
+
+  tryHandleViewerMeasurementClick({ App, hitState });
+  tryHandleViewerMeasurementHover({ App, hitState: nextHitState });
+  assert.ok(wardrobe.children.some(child => child.name === 'wp-viewer-measurement-hover-frame'));
+
+  tryHandleViewerMeasurementHover({ App, hitState: null });
+
+  assert.equal(
+    wardrobe.children.some(child => child.name === 'wp-viewer-measurement-hover-frame'),
+    false
+  );
+  assert.ok(wardrobe.children.some(child => child.name === 'wp-viewer-measurement-selection-frame'));
+  assert.deepEqual(labels, ['70', '200', '2']);
+});
+
 test('viewer measurement picks a real shelf over the transparent module selector', () => {
   const wardrobe = createGroup();
   const selector = createMesh({

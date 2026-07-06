@@ -55,11 +55,13 @@ export const VIEWER_MEASUREMENT_MODE_ID = 'measure';
 export type { ViewerMeasurementToolMode } from './viewer_measurement_tool_contracts.js';
 
 const VIEWER_MEASUREMENT_CACHE_KEY = '__wpViewerMeasurementOverlay';
+const VIEWER_MEASUREMENT_HOVER_CACHE_KEY = '__wpViewerMeasurementHoverOverlay';
 const VIEWER_MEASUREMENT_TOOL_MODE_CACHE_KEY = '__wpViewerMeasurementToolMode';
 const OVERLAY_RENDER_ORDER = 10040;
 const GUIDE_OFFSET_M = 0.045;
 const SIDE_GUIDE_OFFSET_M = 0.055;
 const REAR_SELECTION_FRAME_PULL_FORWARD_M = 0.012;
+const PART_HOVER_COLOR = 0x38bdf8;
 const POINT_STRAIGHT_SNAP_COLOR = 0x16a34a;
 const POINT_DEFAULT_COLOR = 0x2563eb;
 const POINT_MEASUREMENT_CURSOR = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 25 25'%3E%3Cpath d='M6 6 L19 19 M19 6 L6 19' stroke='%23111827' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='12.5' cy='12.5' r='2.2' fill='none' stroke='%23ffffff' stroke-width='1.4'/%3E%3C/svg%3E") 12 12, crosshair`;
@@ -77,8 +79,17 @@ function readOverlayState(App: AppContainer): MeasurementOverlayState | null {
   return state && Array.isArray(state.objects) ? state : null;
 }
 
+function readHoverOverlayState(App: AppContainer): MeasurementOverlayState | null {
+  const state = readRenderCacheValue<MeasurementOverlayState>(App, VIEWER_MEASUREMENT_HOVER_CACHE_KEY);
+  return state && Array.isArray(state.objects) ? state : null;
+}
+
 function writeOverlayState(App: AppContainer, state: MeasurementOverlayState | null): void {
   writeRenderCacheValue(App, VIEWER_MEASUREMENT_CACHE_KEY, state);
+}
+
+function writeHoverOverlayState(App: AppContainer, state: MeasurementOverlayState | null): void {
+  writeRenderCacheValue(App, VIEWER_MEASUREMENT_HOVER_CACHE_KEY, state);
 }
 
 function writeMeasurementCursor(App: AppContainer, cursor: string): void {
@@ -160,10 +171,23 @@ function touchRender(App: AppContainer): void {
 
 export function clearViewerMeasurementOverlay(App: AppContainer, render = true): void {
   const state = readOverlayState(App);
+  const hoverState = readHoverOverlayState(App);
+  const hadOverlay = !!state && state.objects.length > 0;
+  const hadHoverOverlay = !!hoverState && hoverState.objects.length > 0;
+  removeOverlayStateObjects(state);
+  removeOverlayStateObjects(hoverState);
+  writeOverlayState(App, null);
+  writeHoverOverlayState(App, null);
+  if (render && (hadOverlay || hadHoverOverlay)) touchRender(App);
+}
+
+function clearViewerMeasurementHoverOverlay(App: AppContainer, render = true): boolean {
+  const state = readHoverOverlayState(App);
   const hadOverlay = !!state && state.objects.length > 0;
   removeOverlayStateObjects(state);
-  writeOverlayState(App, null);
+  writeHoverOverlayState(App, null);
   if (render && hadOverlay) touchRender(App);
+  return hadOverlay;
 }
 
 function readAddDimensionLine(App: AppContainer): BuilderDimensionLineFn | null {
@@ -468,6 +492,8 @@ function addSelectionFrame(args: {
   box: LocalMeasurementBox;
   plane: MeasurementPlane;
   objects: Object3DLike[];
+  name?: string;
+  color?: number;
 }): void {
   const { THREE, wardrobeGroup, box, plane, objects } = args;
   const frameUMin = resolveSelectionFrameAxisMin(plane, plane.uAxis, plane.uMin, plane.uMax);
@@ -476,7 +502,8 @@ function addSelectionFrame(args: {
     THREE,
     wardrobeGroup,
     objects,
-    name: 'wp-viewer-measurement-selection-frame',
+    name: args.name || 'wp-viewer-measurement-selection-frame',
+    color: args.color,
     points: [
       pointOnMeasurementPlane(THREE, box, plane, frameUMin, frameVMin),
       pointOnMeasurementPlane(THREE, box, plane, plane.uMax, frameVMin),
@@ -802,7 +829,10 @@ export function tryHandleViewerMeasurementHover(args: {
   mouse?: MouseVectorLike | null;
 }): boolean {
   const { App, hitState } = args;
-  if (getViewerMeasurementToolMode(App) !== 'points') return false;
+  if (getViewerMeasurementToolMode(App) !== 'points') {
+    return tryHandleViewerPartMeasurementHover({ App, hitState });
+  }
+  clearViewerMeasurementHoverOverlay(App, false);
   applyMeasurementToolCursor(App, 'points');
   const state = readOverlayState(App);
   const draft = state?.pointDraft || null;
@@ -829,12 +859,83 @@ export function tryHandleViewerMeasurementHover(args: {
   return true;
 }
 
+function renderPartMeasurementHoverOverlay(args: {
+  App: AppContainer;
+  target: unknown;
+  hitState: CanvasPickingClickHitState;
+}): boolean {
+  const { App, target, hitState } = args;
+  const THREE = readOverlayThree(App);
+  const wardrobeGroup = getWardrobeGroup(App);
+  if (!THREE || !wardrobeGroup) return false;
+
+  const resolution = resolveViewerMeasurementResolution({ App, THREE, hitState, wardrobeGroup, target });
+  if (!resolution) return false;
+
+  const committedState = readOverlayState(App);
+  if (
+    committedState &&
+    !committedState.pointDraft &&
+    resolution.targetKey &&
+    committedState.targetKey === resolution.targetKey
+  ) {
+    clearViewerMeasurementHoverOverlay(App, true);
+    return true;
+  }
+
+  const objects: Object3DLike[] = [];
+  addSelectionFrame({
+    THREE,
+    wardrobeGroup,
+    box: resolution.box,
+    plane: resolution.plane,
+    objects,
+    name: 'wp-viewer-measurement-hover-frame',
+    color: PART_HOVER_COLOR,
+  });
+
+  writeHoverOverlayState(App, { objects, targetKey: resolution.targetKey });
+  touchRender(App);
+  return true;
+}
+
+function tryHandleViewerPartMeasurementHover(args: {
+  App: AppContainer;
+  hitState: CanvasPickingClickHitState | null;
+}): boolean {
+  const { App, hitState } = args;
+  applyMeasurementToolCursor(App, 'part');
+  if (!hitState) return clearViewerMeasurementHoverOverlay(App, true);
+
+  try {
+    const target = resolveViewerMeasurementTarget(hitState);
+    if (!target) return clearViewerMeasurementHoverOverlay(App, true);
+
+    clearViewerMeasurementHoverOverlay(App, false);
+    if (!renderPartMeasurementHoverOverlay({ App, target, hitState })) {
+      touchRender(App);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    clearViewerMeasurementHoverOverlay(App, false);
+    __wp_reportPickingIssue(App, err, {
+      where: 'viewerMeasurement',
+      op: 'hoverPart',
+      throttleMs: 1000,
+    });
+    touchRender(App);
+    return false;
+  }
+}
+
 function renderMeasurementOverlay(args: {
   App: AppContainer;
   target: unknown;
   hitState: CanvasPickingClickHitState;
 }): boolean {
   const { App, target, hitState } = args;
+  clearViewerMeasurementHoverOverlay(App, false);
   const THREE = readOverlayThree(App);
   const wardrobeGroup = getWardrobeGroup(App);
   const addDimensionLine = readAddDimensionLine(App);
