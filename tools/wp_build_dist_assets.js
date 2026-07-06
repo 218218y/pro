@@ -1,16 +1,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { copyDir, copyDirContents, copyFile, exists } from './wp_build_dist_shared.js';
+import { WEB_APP_ICON_ASSETS, normalizeRootWebAssetName } from './wp_web_icon_assets.js';
 
-export const ROOT_STATIC_DIST_ASSETS = ['favicon.ico'];
+export const ROOT_STATIC_DIST_ASSETS = WEB_APP_ICON_ASSETS;
 
 export function copyRootStaticDistAssets({ root, distAbs, assets = ROOT_STATIC_DIST_ASSETS }) {
   if (!root || !distAbs) return [];
 
   const copied = [];
   for (const assetName of assets || []) {
-    const name = String(assetName || '').trim();
-    if (!name || path.basename(name) !== name) continue;
+    const name = normalizeRootWebAssetName(assetName);
+    if (!name) continue;
 
     const src = path.join(root, name);
     if (!exists(src)) continue;

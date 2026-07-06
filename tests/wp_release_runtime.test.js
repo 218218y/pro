@@ -19,16 +19,43 @@ function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-release-'));
 }
 
-test('release root static web assets copy favicon into target root', () => {
+test('release root static web assets copy canonical favicon/web-app icon set into target root only', () => {
   const root = tempDir();
   const targetDir = path.join(root, 'dist', 'release');
   fs.mkdirSync(targetDir, { recursive: true });
-  fs.writeFileSync(path.join(root, 'favicon.ico'), 'ico', 'utf8');
+  const iconAssets = [
+    'favicon.ico',
+    'favicon-16x16.png',
+    'favicon-32x32.png',
+    'apple-touch-icon.png',
+    'android-chrome-192x192.png',
+    'android-chrome-512x512.png',
+    'site.webmanifest',
+  ];
+  for (const name of iconAssets) fs.writeFileSync(path.join(root, name), name, 'utf8');
+  fs.writeFileSync(path.join(root, 'random-root-image.png'), 'should-not-copy', 'utf8');
 
   const copied = copyRootStaticWebAssets({ root, targetDir });
 
-  assert.deepEqual(copied, ['favicon.ico']);
-  assert.equal(fs.readFileSync(path.join(targetDir, 'favicon.ico'), 'utf8'), 'ico');
+  assert.deepEqual(copied, iconAssets);
+  for (const name of iconAssets) assert.equal(fs.readFileSync(path.join(targetDir, name), 'utf8'), name);
+  assert.equal(fs.existsSync(path.join(targetDir, 'random-root-image.png')), false);
+});
+
+test('release html templates advertise the canonical favicon and web-app icon set', () => {
+  const root = process.cwd();
+  for (const rel of [
+    path.join('tools', 'index_release.html'),
+    path.join('tools', 'index_release_bundle.html'),
+    path.join('tools', 'index_release_bundle_site2.html'),
+  ]) {
+    const html = fs.readFileSync(path.join(root, rel), 'utf8');
+    assert.match(html, /<link rel="icon" href="\.\/favicon\.ico" \/>/);
+    assert.match(html, /<link rel="icon" type="image\/png" sizes="32x32" href="\.\/favicon-32x32\.png" \/>/);
+    assert.match(html, /<link rel="icon" type="image\/png" sizes="16x16" href="\.\/favicon-16x16\.png" \/>/);
+    assert.match(html, /<link rel="apple-touch-icon" sizes="180x180" href="\.\/apple-touch-icon\.png" \/>/);
+    assert.match(html, /<link rel="manifest" href="\.\/site\.webmanifest" \/>/);
+  }
 });
 
 test('release hashing rewrites bundle/chunk refs and hashes vendor/css files', () => {

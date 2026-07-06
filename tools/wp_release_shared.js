@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
+import { WEB_APP_ICON_ASSETS, normalizeRootWebAssetName } from './wp_web_icon_assets.js';
+
 // Shared release helpers / optional deps for the canonical release packager.
 
 export function pickCjsDefault(mod) {
@@ -162,15 +164,15 @@ export function copyDirContents(srcDir, dstDir, opts = {}) {
   }
 }
 
-export const ROOT_STATIC_WEB_ASSETS = ['favicon.ico'];
+export const ROOT_STATIC_WEB_ASSETS = WEB_APP_ICON_ASSETS;
 
 export function copyRootStaticWebAssets({ root, targetDir, assets = ROOT_STATIC_WEB_ASSETS }) {
   const copied = [];
   if (!root || !targetDir) return copied;
 
   for (const assetName of assets || []) {
-    const name = String(assetName || '').trim();
-    if (!name || path.basename(name) !== name) continue;
+    const name = normalizeRootWebAssetName(assetName);
+    if (!name) continue;
 
     const src = path.join(root, name);
     if (!exists(src)) continue;
