@@ -11,6 +11,7 @@ import {
   type AdhesiveGlassKind,
 } from '../features/door_authoring/api.js';
 import { appendGrooveStrips } from './visuals_and_contents_door_visual_grooves.js';
+import { __markMirrorTracked } from './visuals_and_contents_shared.js';
 import {
   applyDoorFaceIdentityMetadata,
   applyMirrorPlacementRectMetadata,
@@ -85,15 +86,37 @@ function resolveOverlayDepthLayout(thickness: number): OverlayDepthLayout {
   return { baseDoorThick, glassThick, adhesiveGap, glassCenterZ };
 }
 
+function resolveAdhesiveGlassReflectionProfile(kind: AdhesiveGlassKind): {
+  color: number;
+  opacity: number;
+  roughness: number;
+  envMapIntensity: number;
+} {
+  if (kind === 'black_glass') {
+    return {
+      color: 0x050608,
+      opacity: 0.84,
+      roughness: 0.1,
+      envMapIntensity: 1.05,
+    };
+  }
+  return {
+    color: 0xe9f2f2,
+    opacity: 0.62,
+    roughness: 0.72,
+    envMapIntensity: 0.38,
+  };
+}
+
 function createAdhesiveGlassMaterial(args: { THREE: ThreeLike; kind: AdhesiveGlassKind }) {
-  const isBlack = args.kind === 'black_glass';
+  const profile = resolveAdhesiveGlassReflectionProfile(args.kind);
   const mat = new args.THREE.MeshStandardMaterial({
-    color: isBlack ? 0x050608 : 0xe9f2f2,
+    color: profile.color,
     transparent: true,
-    opacity: isBlack ? 0.82 : 0.58,
-    roughness: isBlack ? 0.14 : 0.88,
+    opacity: profile.opacity,
+    roughness: profile.roughness,
     metalness: 0.0,
-    envMapIntensity: isBlack ? 0.7 : 0.18,
+    envMapIntensity: profile.envMapIntensity,
     side: args.THREE.DoubleSide,
   });
   mat.depthWrite = false;
@@ -105,6 +128,7 @@ function createAdhesiveGlassMaterial(args: { THREE: ThreeLike; kind: AdhesiveGla
   }
   mat.userData = mat.userData || {};
   mat.userData.__wpAdhesiveGlassKind = args.kind;
+  mat.userData.__wpReflectiveAdhesiveGlassMaterial = true;
   return mat;
 }
 
@@ -121,6 +145,11 @@ function tagAdhesiveGlassPane(args: {
   pane.userData = pane.userData || {};
   pane.userData.__keepMaterial = true;
   pane.userData.__wpAdhesiveGlassSurface = kind;
+  pane.userData.__wpMirrorSurface = true;
+  pane.userData.__wpMirrorReflectionMode = 'cube';
+  pane.userData.__wpReflectiveAdhesiveGlassSurface = true;
+  pane.userData.__mirrorWidthM = widthM;
+  pane.userData.__mirrorHeightM = heightM;
   pane.userData.__doorVisualRole = role;
   applyDoorFaceIdentityMetadata(pane, faceSign);
   applyMirrorPlacementRectMetadata(pane, widthM, heightM);
@@ -128,6 +157,7 @@ function tagAdhesiveGlassPane(args: {
 }
 
 function appendAdhesiveGlassPane(args: {
+  App: AppContainer;
   THREE: ThreeLike;
   group: Object3DLike;
   kind: AdhesiveGlassKind;
@@ -157,6 +187,11 @@ function appendAdhesiveGlassPane(args: {
   pane.renderOrder = DOOR_VISUAL_DIMENSIONS.glass.paneRenderOrder;
   pane.position.set(args.x, args.y, args.z);
   args.group.add(pane);
+  try {
+    __markMirrorTracked(args.App, pane);
+  } catch {
+    // Cube reflection tracking is best-effort; the pane itself remains a valid glass overlay.
+  }
   return pane;
 }
 
@@ -277,6 +312,7 @@ export function createAdhesiveGlassDoorVisual(args: AdhesiveGlassDoorVisualArgs)
     const placementLayout = i < placementLayouts.length ? placementLayouts[i] : null;
     const faceSign = readMirrorLayoutFaceSign(placementLayout, args.zSign);
     appendAdhesiveGlassPane({
+      App: args.App,
       THREE: args.THREE,
       group: visualGroup,
       kind,
@@ -317,6 +353,7 @@ export function createStyledAdhesiveGlassDoorVisual(
     const placementLayout = i < placementLayouts.length ? placementLayouts[i] : null;
     const faceSign = readMirrorLayoutFaceSign(placementLayout, args.zSign);
     appendAdhesiveGlassPane({
+      App: args.App,
       THREE: args.THREE,
       group: center.panel,
       kind,
@@ -353,6 +390,7 @@ export function createStyledFullAdhesiveGlassDoorVisual(
 
   for (let i = 0; i < fullInsideLayouts.length; i += 1) {
     appendAdhesiveGlassPane({
+      App: args.App,
       THREE: args.THREE,
       group: visualGroup,
       kind,

@@ -82,7 +82,11 @@ test('stage 75 sketch box door visual ownership split is anchored', () => {
   assert.match(routes, /route: 'special'/);
   assert.match(routes, /route: 'styled'/);
   assert.match(routes, /route: 'slab'/);
-  assert.match(routes, /shouldUseClassicAccents: !doorVisualState\.isMirror && !doorVisualState\.isGlass/);
+  assert.match(
+    routes,
+    /const isSpecialVisual =\s*doorVisualState\.isMirror \|\| doorVisualState\.isGlass \|\| !!doorVisualState\.adhesiveGlassKind/
+  );
+  assert.match(routes, /shouldUseClassicAccents: !isSpecialVisual/);
   assert.doesNotMatch(
     routes,
     /getMirrorMaterial|new THREE\.Mesh\(|applySketchBoxPickMeta|appendDoorTrimVisuals|appendClassicDoorAccentAndGrooves/,

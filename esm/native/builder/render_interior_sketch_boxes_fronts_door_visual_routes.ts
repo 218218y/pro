@@ -58,7 +58,6 @@ export function resolveSketchBoxDoorVisualRoute(args: {
     route: 'slab',
     effectiveDoorStyle,
     createDoorVisual,
-    shouldUseClassicAccents:
-      !doorVisualState.isMirror && !doorVisualState.isGlass && !doorVisualState.adhesiveGlassKind,
+    shouldUseClassicAccents: !isSpecialVisual,
   };
 }

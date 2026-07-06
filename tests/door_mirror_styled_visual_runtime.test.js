@@ -598,3 +598,70 @@ test('flat mirror door with an outside mirror keeps groove strips suppressed', (
   assert.equal(mirrorPane.userData.faceSign, 1);
   assert.equal(mirrorPane.userData.faceSide, 'outside');
 });
+
+test('adhesive black glass panes are cube-reflection tracked without becoming full planar mirrors', () => {
+  const THREE = createThree();
+  const app = createDoorVisualApp(THREE);
+  const visual = createDoorVisual(
+    app,
+    0.7,
+    1.9,
+    0.02,
+    { kind: 'front' },
+    'flat',
+    false,
+    false,
+    null,
+    { kind: 'wood' },
+    1,
+    false,
+    null,
+    'd1_black_glass',
+    { adhesiveGlassKind: 'black_glass', renderPolicy: { sketchMode: false, addOutlines: null } }
+  );
+
+  const pane = visual.children.find(child => child.userData?.__wpAdhesiveGlassSurface === 'black_glass');
+  assert.ok(pane);
+  assert.equal(pane.userData.__wpMirrorSurface, true);
+  assert.equal(pane.userData.__wpMirrorReflectionMode, 'cube');
+  assert.equal(pane.userData.__wpReflectiveAdhesiveGlassSurface, true);
+  assert.equal(pane.userData.__mirrorWidthM, pane.geometry.args[0]);
+  assert.equal(pane.userData.__mirrorHeightM, pane.geometry.args[1]);
+  assert.ok(pane.userData.__mirrorWidthM > 0.69);
+  assert.ok(pane.userData.__mirrorHeightM > 1.89);
+  assert.ok(app.render?.meta?.mirrors?.includes(pane));
+  assert.equal(pane.material.userData.__wpReflectiveAdhesiveGlassMaterial, true);
+  assert.ok(pane.material.envMapIntensity >= 1);
+  assert.ok(pane.material.roughness <= 0.12);
+});
+
+test('adhesive frosted glass keeps a milky material while still accepting cube reflections', () => {
+  const THREE = createThree();
+  const app = createDoorVisualApp(THREE);
+  const visual = createDoorVisual(
+    app,
+    0.6,
+    1.6,
+    0.02,
+    { kind: 'front' },
+    'flat',
+    false,
+    false,
+    null,
+    { kind: 'wood' },
+    1,
+    false,
+    [{ widthCm: 30, heightCm: 80 }],
+    'd1_frosted_glass',
+    { adhesiveGlassKind: 'frosted_glass', renderPolicy: { sketchMode: false, addOutlines: null } }
+  );
+
+  const pane = visual.children.find(child => child.userData?.__wpAdhesiveGlassSurface === 'frosted_glass');
+  assert.ok(pane);
+  assert.equal(pane.material.color, 0xe9f2f2);
+  assert.ok(pane.material.roughness > 0.5);
+  assert.ok(pane.material.envMapIntensity > 0.25);
+  assert.equal(pane.userData.__wpMirrorSurface, true);
+  assert.equal(pane.userData.__wpMirrorReflectionMode, 'cube');
+  assert.ok(app.render?.meta?.mirrors?.includes(pane));
+});
