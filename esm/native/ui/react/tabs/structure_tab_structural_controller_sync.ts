@@ -1,6 +1,7 @@
 import type { ActionMetaLike, UnknownRecord } from '../../../../../types';
 
 import {
+  applyUiRawScalarPatch,
   applyUiSoftScalarPatch,
   setUiSingleDoorPos,
   setUiStructureSelect,
@@ -29,6 +30,30 @@ function isAutoStructuralCommitSource(source: string): boolean {
   return STRUCTURAL_AUTO_COMMIT_SUFFIXES.some(suffix => source.endsWith(suffix));
 }
 
+function createStructuralRawMirrorPatch(patch: UnknownRecord): UnknownRecord {
+  const rawPatch: UnknownRecord = {};
+  if (Object.prototype.hasOwnProperty.call(patch, 'structureSelect')) {
+    rawPatch.structureSelect = patch.structureSelect;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, 'singleDoorPos')) {
+    rawPatch.singleDoorPos = patch.singleDoorPos;
+  }
+  return rawPatch;
+}
+
+function withStructuralRawMirror(patch: UnknownRecord): UnknownRecord {
+  const rawPatch = createStructuralRawMirrorPatch(patch);
+  if (!Object.keys(rawPatch).length) return patch;
+  const existingRaw = asRecord(patch.raw) || {};
+  return {
+    ...patch,
+    raw: {
+      ...existingRaw,
+      ...rawPatch,
+    },
+  };
+}
+
 function createStructuralCommitMeta(
   args: CreateStructureTabStructuralControllerArgs,
   patch: UnknownRecord,
@@ -48,12 +73,15 @@ export function createStructureTabStructuralSyncController(
 
     try {
       const actionMeta: ActionMetaLike = createStructuralCommitMeta(args, patch, source);
+      const uiPatch = withStructuralRawMirror(patch);
+      const rawPatch = createStructuralRawMirrorPatch(patch);
+
       applyStructureTemplateRecomputeBatch({
         app: args.app,
         source,
         meta: actionMeta,
-        uiPatch: patch,
-        statePatch: { ui: patch },
+        uiPatch,
+        statePatch: { ui: uiPatch },
         mutate: () => {
           if (Object.prototype.hasOwnProperty.call(patch, 'structureSelect')) {
             setUiStructureSelect(args.app, patch.structureSelect, actionMeta);
@@ -61,10 +89,12 @@ export function createStructureTabStructuralSyncController(
           if (Object.prototype.hasOwnProperty.call(patch, 'singleDoorPos')) {
             setUiSingleDoorPos(args.app, patch.singleDoorPos, actionMeta);
           }
+          applyUiRawScalarPatch(args.app, rawPatch, actionMeta);
 
           const softPatch: UnknownRecord = { ...patch };
           delete softPatch.structureSelect;
           delete softPatch.singleDoorPos;
+          delete softPatch.raw;
           applyUiSoftScalarPatch(args.app, softPatch, actionMeta);
         },
       });

@@ -27,6 +27,7 @@ function loadTsModule(relPath, calls, stubs = {}, cache = new Map()) {
   const localRequire = specifier => {
     if (specifier === '../actions/store_actions.js') {
       return {
+        applyUiRawScalarPatch: (...args) => calls.push(['applyUiRawScalarPatch', ...args]),
         applyUiSoftScalarPatch: (...args) => calls.push(['applyUiSoftScalarPatch', ...args]),
         getUiSnapshot: app => {
           calls.push(['getUiSnapshot', app]);
@@ -224,6 +225,9 @@ test('[structure-structural-controller] commit + normalization + raw flows run t
   controller.setSlidingTracksColor('black');
 
   assert.ok(calls.some(entry => entry[0] === 'setUiStructureSelect' && entry[2] === 'default'));
+  assert.ok(
+    calls.some(entry => entry[0] === 'applyUiRawScalarPatch' && entry[2].structureSelect === 'default')
+  );
   assert.ok(calls.some(entry => entry[0] === 'applyUiSoftScalarPatch' && entry[2].width === 180));
   assert.ok(
     calls.some(
@@ -427,6 +431,7 @@ test('[structure-structural-controller] commitStructural collapses to a canonica
       entry =>
         entry[0] === 'patchViaActions:applied' &&
         entry[2].ui.structureSelect === 'default' &&
+        entry[2].ui.raw.structureSelect === 'default' &&
         entry[2].ui.width === 180
     )
   );
@@ -437,9 +442,33 @@ test('[structure-structural-controller] commitStructural collapses to a canonica
       entry =>
         entry[0] === 'recomputeFromUi:viaApp' &&
         entry[2].structureSelect === 'default' &&
+        entry[2].raw.structureSelect === 'default' &&
         entry[2].width === 180
     )
   );
+});
+
+test('[structure-structural-controller] structural commits mirror raw fields for saved-model builds', () => {
+  const calls = [];
+  const mod = loadStructureStructuralControllerModule(calls, {
+    applyStructureTemplateRecomputeBatch: args => {
+      calls.push(['commitBatch', args]);
+    },
+  });
+  const controller = mod.createStructureTabStructuralController(createArgs({ calls }));
+
+  controller.commitStructural(
+    { structureSelect: '[1,2,1]', singleDoorPos: 'center-left' },
+    'react:structure:pattern'
+  );
+
+  const batch = calls.find(entry => entry[0] === 'commitBatch')?.[1];
+  assert.ok(batch);
+  assert.equal(batch.uiPatch.structureSelect, '[1,2,1]');
+  assert.equal(batch.uiPatch.singleDoorPos, 'center-left');
+  assert.equal(batch.uiPatch.raw.structureSelect, '[1,2,1]');
+  assert.equal(batch.uiPatch.raw.singleDoorPos, 'center-left');
+  assert.equal(JSON.stringify(batch.statePatch), JSON.stringify({ ui: batch.uiPatch }));
 });
 
 test('[structure-structural-controller] user structure buttons are historyable while auto sync stays ui-only', () => {
