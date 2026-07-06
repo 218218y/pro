@@ -448,6 +448,18 @@ export function writeReleaseNotFoundPage({ releaseDir }) {
   return html;
 }
 
+export function writeReleaseWebSurface({ releaseDir, htmlInfo, finalAssets }) {
+  fs.writeFileSync(path.join(releaseDir, 'index.html'), htmlInfo.html, 'utf8');
+  const notFoundHtml = writeReleaseNotFoundPage({ releaseDir });
+  const headers = writeReleaseHeaders({
+    releaseDir,
+    bundleRelFinal: finalAssets.bundleRelFinal,
+    threeVendorMetaFinal: finalAssets.threeVendorMetaFinal,
+    chunksFinal: finalAssets.chunksFinal,
+  });
+  return { headers, notFoundHtml };
+}
+
 export function writeReleaseMetadata({
   root,
   releaseDir,

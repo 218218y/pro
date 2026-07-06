@@ -1035,6 +1035,14 @@ import {
     assert.match(browserPerfSmoke, /windowPerfRecoveryHangoverSummary/);
     assert.match(browserPerfSmoke, /windowStoreDebugSummary/);
     assert.match(browserPerfSmoke, /userJourneySummary/);
+    assert.match(browserPerfSmoke, /getHeaderSketchToggle/);
+    assert.match(browserPerfSmoke, /getViewerNoteDrawModeButton/);
+    assert.match(browserPerfSmoke, /getViewerNotesVisibilityButton/);
+    assert.match(browserPerfSmoke, /getViewerContentsToggleButton/);
+    assert.doesNotMatch(browserPerfSmoke, /toggle-sketch-mode/);
+    assert.doesNotMatch(browserPerfSmoke, /toggle-notes/);
+    assert.match(browserPerfSmoke, /quick-actions-sync-pin-button/);
+    assert.doesNotMatch(browserPerfSmoke, /cloud-sync-floating-pin-toggle/);
     assert.match(browserPerfSmoke, /cabinet-core\.mixed-edit-burst/);
     assert.match(browserPerfSmoke, /project\.persistence-recovery\.burst/);
     assert.match(browserPerfSmoke, /cabinet-build-variants\.authoring-matrix/);

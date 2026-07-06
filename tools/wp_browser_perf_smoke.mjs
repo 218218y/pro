@@ -652,10 +652,6 @@ function getActiveTabPanelAnchor(page, id) {
       return page.locator('#reactSidebarRoot [data-testid="design-color-section"]:visible').first();
     case 'interior':
       return page.locator('#reactSidebarRoot .wp-r-intdrawer-toggle:visible').last();
-    case 'render':
-      return page
-        .locator('#reactSidebarRoot .control-section:has(input[data-testid="toggle-sketch-mode"]):visible')
-        .last();
     case 'settings':
       return page.locator('#reactSidebarRoot button[data-testid="export-snapshot-button"]:visible').last();
     default:
@@ -840,13 +836,21 @@ async function dismissStickyEditModeToastIfPresent(page) {
 }
 
 async function toggleCloudSyncFloatingPin(page) {
-  await openMainTab(page, 'settings');
-  const input = page.locator('input[data-testid="cloud-sync-floating-pin-toggle"]');
-  await expect(input).toHaveCount(1);
   const beforeCount = (await readPerfSummary(page))['cloudSync.floatingSync.toggle']?.count || 0;
-  const label = input.locator('xpath=ancestor::label[1]').first();
-  await expect(label).toBeVisible();
-  await label.click();
+  const pinButton = page.locator('button[data-testid="quick-actions-sync-pin-button"]').first();
+  if ((await pinButton.count()) === 0 || !(await pinButton.isVisible())) {
+    const dockToggle = page.locator('button[data-testid="quick-actions-toggle-button"]').first();
+    await expect(dockToggle).toBeVisible();
+    await dockToggle.click();
+  }
+  await expect(pinButton).toBeVisible();
+  const before = await readButtonPressed(pinButton);
+  await pinButton.click();
+  if (before) {
+    await expectButtonPressed(pinButton, false);
+  } else {
+    await expectButtonPressed(pinButton, true);
+  }
   await expectPerfMetricCount(page, 'cloudSync.floatingSync.toggle', beforeCount + 1);
 }
 
@@ -1175,6 +1179,76 @@ async function readSelectedButtonValue(buttons, attributeName, fallback = {}) {
 
 async function readOptionalCheckboxState(input) {
   return (await input.count()) > 0 ? await input.first().isChecked() : false;
+}
+
+function getHeaderSketchToggle(page) {
+  return page.locator('button[data-testid="header-sketch-toggle-button"]').first();
+}
+
+function getViewerNoteDrawModeButton(page) {
+  return page.locator('button[data-testid="viewer-note-draw-mode-button"]').first();
+}
+
+function getViewerNotesVisibilityButton(page) {
+  return page.locator('button[data-testid="viewer-notes-visibility-button"]').first();
+}
+
+function getViewerContentsToggleButton(page) {
+  return page.locator('button[data-testid="viewer-contents-toggle-button"]').first();
+}
+
+async function readButtonPressed(button) {
+  await expect(button).toBeVisible();
+  return (await button.getAttribute('aria-pressed')) === 'true';
+}
+
+async function expectButtonPressed(button, expected) {
+  await expect(button).toHaveAttribute('aria-pressed', expected ? 'true' : 'false');
+}
+
+async function setPressedButtonState(button, pressed) {
+  const current = await readButtonPressed(button);
+  if (current === pressed) return;
+  await button.click();
+  await expectButtonPressed(button, pressed);
+}
+
+async function togglePressedButtonTwice(button) {
+  const before = await readButtonPressed(button);
+  await setPressedButtonState(button, !before);
+  await setPressedButtonState(button, before);
+}
+
+async function setHeaderSketchMode(page, enabled) {
+  await setPressedButtonState(getHeaderSketchToggle(page), enabled);
+}
+
+async function readHeaderSketchMode(page) {
+  return await readButtonPressed(getHeaderSketchToggle(page));
+}
+
+async function toggleViewerNoteDrawMode(page) {
+  const button = getViewerNoteDrawModeButton(page);
+  const before = await readButtonPressed(button);
+  await button.click();
+  await expectButtonPressed(button, !before);
+  if (!before) {
+    await expect(page.locator('#notes-overlay')).toBeVisible();
+    await expectButtonPressed(getViewerNotesVisibilityButton(page), true);
+  }
+}
+
+async function toggleViewerNoteDrawModeTwice(page) {
+  await toggleViewerNoteDrawMode(page);
+  await toggleViewerNoteDrawMode(page);
+}
+
+async function toggleViewerNotesVisibilityTwice(page) {
+  await togglePressedButtonTwice(getViewerNotesVisibilityButton(page));
+}
+
+async function toggleViewerContentsVisibilityTwice(page) {
+  await togglePressedButtonTwice(getViewerContentsToggleButton(page));
 }
 
 async function isButtonSelected(button) {
@@ -1538,21 +1612,13 @@ async function readBuildOptionFingerprint(page) {
   };
 }
 
-async function setRenderSketchMode(page, enabled) {
-  await openMainTab(page, 'settings');
-  const input = page.locator('input[data-testid="toggle-sketch-mode"]');
-  await expect(input).toHaveCount(1);
-  await setCheckboxState(input, enabled);
-}
-
 async function readCabinetCoreFingerprint(page) {
   const uiState = await readUiStateFingerprint(page);
   const dimensions = await readStructureDimensions(page);
   const buildOptions = await readBuildOptionFingerprint(page);
   const savedSwatches = await readSavedDesignSwatchMeta(page);
   const selectedSwatch = await readSelectedDesignSwatchMeta(page);
-  await openMainTab(page, 'settings');
-  const sketchModeEnabled = await page.locator('input[data-testid="toggle-sketch-mode"]').isChecked();
+  const sketchModeEnabled = await readHeaderSketchMode(page);
   return {
     ...uiState,
     ...dimensions,
@@ -1623,7 +1689,7 @@ async function runCabinetCoreMixedEditBurst(page) {
     await setStructureDimension(page, 'depth', target.depth);
     const colorValue = await addSavedDesignColor(page, cycleColors[index]);
     await expect(getSavedDesignColorSwatch(page, colorValue)).toHaveCount(1);
-    await setRenderSketchMode(page, target.sketch);
+    await setHeaderSketchMode(page, target.sketch);
     await deleteSavedDesignColor(page, colorValue);
     await expect(getSavedDesignColorSwatch(page, colorValue)).toHaveCount(0);
   }
@@ -1634,7 +1700,7 @@ async function runCabinetCoreMixedEditBurst(page) {
   if (selectedBefore?.id) {
     await selectSavedDesignSwatchById(page, selectedBefore.id);
   }
-  await setRenderSketchMode(page, true);
+  await setHeaderSketchMode(page, true);
 }
 
 async function runCabinetBuildVariantAuthoringMatrix(page, canonicalVariant) {
@@ -1645,7 +1711,7 @@ async function runCabinetBuildVariantAuthoringMatrix(page, canonicalVariant) {
   await setStructureType(page, 'sliding');
   await setBoardMaterial(page, 'melamine');
   await setDoorStyle(page, 'double_profile');
-  await setRenderSketchMode(page, false);
+  await setHeaderSketchMode(page, false);
   await setStructureDimension(page, 'width', 188);
   await setStructureDimension(page, 'height', 239);
   await setStructureDimension(page, 'depth', 60);
@@ -1653,7 +1719,7 @@ async function runCabinetBuildVariantAuthoringMatrix(page, canonicalVariant) {
   await setStructureType(page, 'hinged');
   await setBoardMaterial(page, 'melamine');
   await setDoorStyle(page, 'post');
-  await setRenderSketchMode(page, true);
+  await setHeaderSketchMode(page, true);
   await setStructureDimension(page, 'width', 201);
   await setStructureDimension(page, 'height', 249);
   await setStructureDimension(page, 'depth', 63);
@@ -1671,7 +1737,7 @@ async function runCabinetBuildVariantAuthoringMatrix(page, canonicalVariant) {
   if (canonicalVariant.textureSwatchId) {
     await selectSavedDesignSwatchById(page, canonicalVariant.textureSwatchId);
   }
-  await setRenderSketchMode(page, !!canonicalVariant.sketchModeEnabled);
+  await setHeaderSketchMode(page, !!canonicalVariant.sketchModeEnabled);
   await setStructureDimension(page, 'width', Number(canonicalVariant.width) || 195);
   await setStructureDimension(page, 'height', Number(canonicalVariant.height) || 247);
   await setStructureDimension(page, 'depth', Number(canonicalVariant.depth) || 62);
@@ -1708,7 +1774,7 @@ async function runCabinetBuildOptionPressureBurst(page, canonicalVariant) {
     await setStructureType(page, combo.type);
     await setBoardMaterial(page, combo.material);
     await setDoorStyle(page, combo.style);
-    await setRenderSketchMode(page, combo.sketch);
+    await setHeaderSketchMode(page, combo.sketch);
     await setStructureDimension(page, 'width', combo.width);
     await setStructureDimension(page, 'height', combo.height);
     await setStructureDimension(page, 'depth', combo.depth);
@@ -1727,7 +1793,7 @@ async function runCabinetBuildOptionPressureBurst(page, canonicalVariant) {
   if (canonicalVariant.textureSwatchId) {
     await selectSavedDesignSwatchById(page, canonicalVariant.textureSwatchId);
   }
-  await setRenderSketchMode(page, !!canonicalVariant.sketchModeEnabled);
+  await setHeaderSketchMode(page, !!canonicalVariant.sketchModeEnabled);
   await setStructureDimension(page, 'width', Number(canonicalVariant.width) || 195);
   await setStructureDimension(page, 'height', Number(canonicalVariant.height) || 247);
   await setStructureDimension(page, 'depth', Number(canonicalVariant.depth) || 62);
@@ -1750,7 +1816,7 @@ async function runProjectPersistenceRecoveryBurst(
       await setStructureDimension(page, 'width', Math.max(90, Number(expectedCabinetCoreState.width) + 11));
       await setStructureDimension(page, 'height', Math.max(120, Number(expectedCabinetCoreState.height) - 5));
       await setStructureDimension(page, 'depth', Math.max(35, Number(expectedCabinetCoreState.depth) + 4));
-      await setRenderSketchMode(page, !expectedCabinetCoreState.sketchModeEnabled);
+      await setHeaderSketchMode(page, !expectedCabinetCoreState.sketchModeEnabled);
     }
     const tempColor = `#${String((Date.now() + seed.length) % 0xffffff)
       .padStart(6, '0')
@@ -1909,39 +1975,44 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
       { journey: USER_JOURNEYS.cabinetCoreAuthoring, tags: ['settings', 'visual', 'toggle'] }
     );
 
-    const sketchModeToggle = settingsRoot.locator('input[data-testid="toggle-sketch-mode"]');
     await withStep(
       result,
       page,
-      'settings.visual.sketch-mode.roundtrip',
+      'header.sketch-mode.roundtrip',
       async () => {
-        await toggleCheckboxTwice(sketchModeToggle);
+        await togglePressedButtonTwice(getHeaderSketchToggle(page));
       },
-      { journey: USER_JOURNEYS.cabinetCoreAuthoring, tags: ['settings', 'visual', 'sketch'] }
-    );
-
-    const notesToggle = settingsRoot.locator('input[data-testid="toggle-notes"]');
-    await withStep(
-      result,
-      page,
-      'settings.visual.notes.toggle-on',
-      async () => {
-        await setCheckboxState(notesToggle, true);
-        await expect(notesToggle).toBeChecked();
-        await expect(page.locator('#notes-overlay')).toBeVisible();
-      },
-      { journey: USER_JOURNEYS.cabinetCoreAuthoring, tags: ['settings', 'visual', 'notes'] }
+      { journey: USER_JOURNEYS.cabinetCoreAuthoring, tags: ['header', 'visual', 'sketch'] }
     );
 
     await withStep(
       result,
       page,
-      'settings.visual.notes.toggle-off',
+      'viewer.notes.draw-mode.roundtrip',
       async () => {
-        await setCheckboxState(notesToggle, false);
-        await expect(notesToggle).not.toBeChecked();
+        await toggleViewerNoteDrawModeTwice(page);
       },
-      { journey: USER_JOURNEYS.cabinetCoreAuthoring, tags: ['settings', 'visual', 'notes'] }
+      { journey: USER_JOURNEYS.cabinetCoreAuthoring, tags: ['viewer', 'notes', 'draw-mode'] }
+    );
+
+    await withStep(
+      result,
+      page,
+      'viewer.notes.visibility.roundtrip',
+      async () => {
+        await toggleViewerNotesVisibilityTwice(page);
+      },
+      { journey: USER_JOURNEYS.cabinetCoreAuthoring, tags: ['viewer', 'notes', 'visibility'] }
+    );
+
+    await withStep(
+      result,
+      page,
+      'viewer.contents.visibility.roundtrip',
+      async () => {
+        await toggleViewerContentsVisibilityTwice(page);
+      },
+      { journey: USER_JOURNEYS.cabinetCoreAuthoring, tags: ['viewer', 'contents', 'visibility'] }
     );
 
     const cabinetCoreSavedName = `Cabinet Browser Perf ${Date.now()}`;
@@ -1960,7 +2031,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
           .slice(-6)}`;
         const savedColorValue = await addSavedDesignColor(page, uniqueColor);
         await expect(getSavedDesignColorSwatch(page, savedColorValue)).toHaveCount(1);
-        await setRenderSketchMode(page, true);
+        await setHeaderSketchMode(page, true);
         expectedCabinetCoreState = await readCabinetCoreFingerprint(page);
         await expectPerfMetricCount(page, 'structure.dimensions.width.commit', 1);
         await expectPerfMetricCount(page, 'structure.dimensions.height.commit', 1);

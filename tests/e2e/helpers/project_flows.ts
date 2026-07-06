@@ -1180,7 +1180,7 @@ export async function toggleCloudSyncFloatingPin(page: Page): Promise<void> {
   const before = await readButtonPressed(pinButton);
   await pinButton.click();
   if (before) {
-    await expect(pinButton).toHaveCount(0);
+    await expectButtonPressed(pinButton, false);
   } else {
     await expectButtonPressed(pinButton, true);
   }
