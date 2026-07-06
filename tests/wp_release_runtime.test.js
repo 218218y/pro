@@ -73,6 +73,22 @@ test('release bundle HTML templates probe module assets before dynamic imports a
     assert.match(html, /isRecoverableModuleFailure/);
     assert.match(html, /__WP_RECOVER_FROM_STALE_ASSET__/);
     assert.match(html, /data-wp-recover/);
+
+    const overlayStart = html.indexOf('function showFatalOverlay');
+    const bootStart = html.indexOf('async function loadThreeVendor', overlayStart);
+    assert.ok(overlayStart > 0, `${rel} should define showFatalOverlay`);
+    assert.ok(bootStart > overlayStart, `${rel} should define loadThreeVendor after the overlay renderer`);
+
+    const outerLoaderScope = html.slice(0, overlayStart);
+    assert.match(outerLoaderScope, /function moduleAssetUrl\(/);
+    assert.match(outerLoaderScope, /function probeModuleAsset\(/);
+    assert.match(outerLoaderScope, /function isRecoverableModuleFailure\(/);
+    assert.match(outerLoaderScope, /function recoverStaleAsset\(/);
+
+    const overlayRendererBody = html.slice(overlayStart, bootStart);
+    assert.doesNotMatch(overlayRendererBody, /function probeModuleAsset\(/);
+    assert.doesNotMatch(overlayRendererBody, /function isRecoverableModuleFailure\(/);
+    assert.doesNotMatch(overlayRendererBody, /function recoverStaleAsset\(/);
   }
 });
 

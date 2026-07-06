@@ -78,6 +78,99 @@
          No fallback. -->
     <script type="module">
       (function () {
+        function moduleAssetUrl(rel) {
+          try {
+            return new URL(rel, import.meta.url).toString();
+          } catch (_) {
+            return String(rel || '');
+          }
+        }
+
+        function isHtmlContentType(contentType) {
+          return /(?:^|;)\s*(?:text\/html|application\/xhtml\+xml)(?:\s*;|$)/i.test(
+            String(contentType || '')
+          );
+        }
+
+        function createRecoverableAssetError(rel, response, contentType) {
+          const status = response && response.status ? response.status : 0;
+          const url = moduleAssetUrl(rel);
+          const err = new TypeError(
+            'Release module asset is not available as JavaScript: ' +
+              url +
+              ' status=' +
+              status +
+              ' content-type=' +
+              String(contentType || '')
+          );
+          err.recoverableAsset = true;
+          err.assetUrl = url;
+          err.assetStatus = status;
+          err.assetContentType = String(contentType || '');
+          return err;
+        }
+
+        async function probeModuleAsset(rel) {
+          if (typeof fetch !== 'function') return;
+          const url = moduleAssetUrl(rel);
+          let response;
+          try {
+            response = await fetch(url, { cache: 'no-store', credentials: 'same-origin' });
+          } catch (err) {
+            if (err && typeof err === 'object') {
+              err.recoverableAsset = true;
+              err.assetUrl = url;
+            }
+            throw err;
+          }
+          const contentType = response && response.headers ? response.headers.get('content-type') || '' : '';
+          if (!response || !response.ok || isHtmlContentType(contentType)) {
+            throw createRecoverableAssetError(rel, response, contentType);
+          }
+        }
+
+        function extractFailedModuleUrl(err) {
+          const text = String((err && (err.message || err.stack)) || err || '');
+          const match = text.match(/https?:\/\/[^\s"'<>]+\.js(?:\?[^\s"'<>]*)?/i);
+          return match ? match[0] : '';
+        }
+
+        function isRecoverableModuleFailure(err) {
+          if (err && err.recoverableAsset) return true;
+          const text = String((err && (err.message || err.stack)) || err || '');
+          return /Failed to fetch dynamically imported module|Importing a module script failed|Expected a JavaScript(?:-or-Wasm)? module script|Release module asset is not available as JavaScript/i.test(
+            text
+          );
+        }
+
+        function recoverStaleAsset(errOrUrl, reason) {
+          const assetUrl =
+            typeof errOrUrl === 'string'
+              ? errOrUrl
+              : (errOrUrl && errOrUrl.assetUrl) || extractFailedModuleUrl(errOrUrl);
+          try {
+            if (typeof window.__WP_RECOVER_FROM_STALE_ASSET__ === 'function') {
+              window.__WP_RECOVER_FROM_STALE_ASSET__(assetUrl || '', reason || 'loader-module');
+              return true;
+            }
+          } catch (_) {}
+          try {
+            const u = new URL(location.href);
+            u.searchParams.set('v', String(Date.now()));
+            u.searchParams.set('wp_reload', String(reason || 'loader-module'));
+            if (assetUrl) u.searchParams.set('missing_asset', assetUrl.split('/').pop() || 'module');
+            location.replace(u.toString());
+            return true;
+          } catch (_) {
+            try {
+              location.reload();
+              return true;
+            } catch (__) {
+              return false;
+            }
+          }
+        }
+
         function showFatalOverlay(title, err) {
           try {
             console.error('[WP LOADER]', title, err);
@@ -99,100 +192,6 @@
 
           const safe = s =>
             String(s || '').replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[ch]);
-
-          function moduleAssetUrl(rel) {
-            try {
-              return new URL(rel, import.meta.url).toString();
-            } catch (_) {
-              return String(rel || '');
-            }
-          }
-
-          function isHtmlContentType(contentType) {
-            return /(?:^|;)\s*(?:text\/html|application\/xhtml\+xml)(?:\s*;|$)/i.test(
-              String(contentType || '')
-            );
-          }
-
-          function createRecoverableAssetError(rel, response, contentType) {
-            const status = response && response.status ? response.status : 0;
-            const url = moduleAssetUrl(rel);
-            const err = new TypeError(
-              'Release module asset is not available as JavaScript: ' +
-                url +
-                ' status=' +
-                status +
-                ' content-type=' +
-                String(contentType || '')
-            );
-            err.recoverableAsset = true;
-            err.assetUrl = url;
-            err.assetStatus = status;
-            err.assetContentType = String(contentType || '');
-            return err;
-          }
-
-          async function probeModuleAsset(rel) {
-            if (typeof fetch !== 'function') return;
-            const url = moduleAssetUrl(rel);
-            let response;
-            try {
-              response = await fetch(url, { cache: 'no-store', credentials: 'same-origin' });
-            } catch (err) {
-              if (err && typeof err === 'object') {
-                err.recoverableAsset = true;
-                err.assetUrl = url;
-              }
-              throw err;
-            }
-            const contentType =
-              response && response.headers ? response.headers.get('content-type') || '' : '';
-            if (!response || !response.ok || isHtmlContentType(contentType)) {
-              throw createRecoverableAssetError(rel, response, contentType);
-            }
-          }
-
-          function extractFailedModuleUrl(err) {
-            const text = String((err && (err.message || err.stack)) || err || '');
-            const match = text.match(/https?:\/\/[^\s"'<>]+\.js(?:\?[^\s"'<>]*)?/i);
-            return match ? match[0] : '';
-          }
-
-          function isRecoverableModuleFailure(err) {
-            if (err && err.recoverableAsset) return true;
-            const text = String((err && (err.message || err.stack)) || err || '');
-            return /Failed to fetch dynamically imported module|Importing a module script failed|Expected a JavaScript(?:-or-Wasm)? module script|Release module asset is not available as JavaScript/i.test(
-              text
-            );
-          }
-
-          function recoverStaleAsset(errOrUrl, reason) {
-            const assetUrl =
-              typeof errOrUrl === 'string'
-                ? errOrUrl
-                : (errOrUrl && errOrUrl.assetUrl) || extractFailedModuleUrl(errOrUrl);
-            try {
-              if (typeof window.__WP_RECOVER_FROM_STALE_ASSET__ === 'function') {
-                window.__WP_RECOVER_FROM_STALE_ASSET__(assetUrl || '', reason || 'loader-module');
-                return true;
-              }
-            } catch (_) {}
-            try {
-              const u = new URL(location.href);
-              u.searchParams.set('v', String(Date.now()));
-              u.searchParams.set('wp_reload', String(reason || 'loader-module'));
-              if (assetUrl) u.searchParams.set('missing_asset', assetUrl.split('/').pop() || 'module');
-              location.replace(u.toString());
-              return true;
-            } catch (_) {
-              try {
-                location.reload();
-                return true;
-              } catch (__) {
-                return false;
-              }
-            }
-          }
 
           overlay.innerHTML = `
             <div style="max-width:920px;line-height:1.7">
