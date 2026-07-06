@@ -631,8 +631,9 @@ test('adhesive black glass panes are cube-reflection tracked without becoming fu
   assert.ok(pane.userData.__mirrorHeightM > 1.89);
   assert.ok(app.render?.meta?.mirrors?.includes(pane));
   assert.equal(pane.material.userData.__wpReflectiveAdhesiveGlassMaterial, true);
-  assert.ok(pane.material.envMapIntensity >= 1);
-  assert.ok(pane.material.roughness <= 0.12);
+  assert.ok(pane.material.envMapIntensity >= 1.5);
+  assert.ok(pane.material.roughness <= 0.15);
+  assert.ok(pane.material.metalness > 0);
 });
 
 test('adhesive frosted glass keeps a milky material while still accepting cube reflections', () => {
@@ -659,8 +660,9 @@ test('adhesive frosted glass keeps a milky material while still accepting cube r
   const pane = visual.children.find(child => child.userData?.__wpAdhesiveGlassSurface === 'frosted_glass');
   assert.ok(pane);
   assert.equal(pane.material.color, 0xe9f2f2);
-  assert.ok(pane.material.roughness > 0.5);
-  assert.ok(pane.material.envMapIntensity > 0.25);
+  assert.ok(pane.material.roughness < 0.4);
+  assert.ok(pane.material.envMapIntensity >= 1);
+  assert.ok(pane.material.metalness > 0);
   assert.equal(pane.userData.__wpMirrorSurface, true);
   assert.equal(pane.userData.__wpMirrorReflectionMode, 'cube');
   assert.ok(app.render?.meta?.mirrors?.includes(pane));

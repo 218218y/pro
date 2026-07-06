@@ -90,21 +90,24 @@ function resolveAdhesiveGlassReflectionProfile(kind: AdhesiveGlassKind): {
   color: number;
   opacity: number;
   roughness: number;
+  metalness: number;
   envMapIntensity: number;
 } {
   if (kind === 'black_glass') {
     return {
       color: 0x050608,
-      opacity: 0.84,
-      roughness: 0.1,
-      envMapIntensity: 1.05,
+      opacity: 0.9,
+      roughness: 0.15,
+      metalness: 0.12,
+      envMapIntensity: 1.5,
     };
   }
   return {
     color: 0xe9f2f2,
-    opacity: 0.62,
-    roughness: 0.72,
-    envMapIntensity: 0.38,
+    opacity: 0.9,
+    roughness: 0.04,
+    metalness: 0.12,
+    envMapIntensity: 1.5,
   };
 }
 
@@ -115,7 +118,7 @@ function createAdhesiveGlassMaterial(args: { THREE: ThreeLike; kind: AdhesiveGla
     transparent: true,
     opacity: profile.opacity,
     roughness: profile.roughness,
-    metalness: 0.0,
+    metalness: profile.metalness,
     envMapIntensity: profile.envMapIntensity,
     side: args.THREE.DoubleSide,
   });
