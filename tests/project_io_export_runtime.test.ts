@@ -222,6 +222,74 @@ test('project io export preserves live door-mount thickness overrides through sa
   assert.match(String(exported?.jsonStr || ''), /insetFrameThicknessCm/);
 });
 
+test('project io export removes undefined optional numeric fields before canonical validation', () => {
+  const reports: Array<[string, unknown]> = [];
+  const App = {
+    actions: {},
+    services: {
+      project: {
+        capture(scope: unknown) {
+          assert.equal(scope, 'persist');
+          return {
+            settings: {
+              wardrobeType: 'hinged',
+              width: 240,
+              height: 240,
+              depth: 55,
+              doors: 6,
+              stackSplitLowerHeight: undefined,
+            },
+            toggles: {},
+            chestSettings: {
+              drawersCount: 4,
+              mirrorHeightCm: undefined,
+              mirrorWidthCm: undefined,
+            },
+          };
+        },
+      },
+      platform: {
+        util: { log() {} },
+        reportError() {},
+        triggerRender() {},
+      },
+    },
+    store: {
+      getState() {
+        return { ui: { projectName: 'Optional numbers' }, config: {}, runtime: {}, mode: {}, meta: {} };
+      },
+    },
+  } as any;
+
+  const orchestrator = createProjectIoOrchestrator({
+    App,
+    showToast() {},
+    openCustomConfirm() {},
+    userAgent: 'node:test',
+    schemaId: 'schema:test',
+    schemaVersion: 123,
+    reportNonFatal(op, err) {
+      reports.push([op, err]);
+    },
+  });
+
+  const exported = orchestrator.exportCurrentProject({ source: 'unit' });
+  assert.ok(exported);
+  assert.equal(reports.length, 0);
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(exported?.projectData?.settings || {}, 'stackSplitLowerHeight'),
+    false
+  );
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(exported?.projectData?.chestSettings || {}, 'mirrorHeightCm'),
+    false
+  );
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(exported?.projectData?.chestSettings || {}, 'mirrorWidthCm'),
+    false
+  );
+});
+
 test('project io export fails visibly when canonical project capture is unavailable', () => {
   const reports: Array<[string, unknown]> = [];
   const App = {

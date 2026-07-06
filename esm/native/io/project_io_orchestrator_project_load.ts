@@ -195,8 +195,8 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
           reportNonFatal('project.load.pdfDraft', err);
         }
 
-        applyProjectConfigSnapshotViaActionsOrThrow(App, cfg, metaNoBuild, 'project.load config apply');
         commitUiSnapshotViaActionsOrThrow(App, uiSnap, metaNoBuild, 'project.load UI snapshot commit');
+        applyProjectConfigSnapshotViaActionsOrThrow(App, cfg, metaNoBuild, 'project.load config apply');
 
         try {
           setRuntimeSketchMode(

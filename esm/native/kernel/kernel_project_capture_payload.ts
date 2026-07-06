@@ -44,6 +44,10 @@ function readCanonicalCornerSide(uiRec: UnknownRecord, rawAny: UnknownRecord): '
           : 'right';
 }
 
+function assignFiniteNumber(record: UnknownRecord, key: string, value: unknown): void {
+  if (typeof value === 'number' && Number.isFinite(value)) record[key] = value;
+}
+
 function buildProjectCaptureSettings(
   uiRec: UnknownRecord,
   rawAny: UnknownRecord,
@@ -60,7 +64,7 @@ function buildProjectCaptureSettings(
   lowerWidthManual: boolean,
   lowerDoorsManual: boolean
 ): UnknownRecord {
-  return {
+  const settings: UnknownRecord = {
     doors: overallDoors,
     width: overallWidth,
     height: overallHeight,
@@ -113,14 +117,29 @@ function buildProjectCaptureSettings(
     stackSplitEnabled: typeof uiRec.stackSplitEnabled !== 'undefined' ? !!uiRec.stackSplitEnabled : false,
     stackSplitDecorativeSeparatorEnabled:
       !!uiRec.stackSplitEnabled && !!uiRec.stackSplitDecorativeSeparatorEnabled,
-    stackSplitLowerHeight,
     stackSplitLowerDepthManual: lowerDepthManual,
     stackSplitLowerWidthManual: lowerWidthManual,
     stackSplitLowerDoorsManual: lowerDoorsManual,
-    stackSplitLowerDepth: lowerDepthManual ? stackSplitLowerDepth : overallDepth,
-    stackSplitLowerWidth: lowerWidthManual ? stackSplitLowerWidth : overallWidth,
-    stackSplitLowerDoors: lowerDoorsManual ? stackSplitLowerDoors : overallDoors,
   };
+
+  assignFiniteNumber(settings, 'stackSplitLowerHeight', stackSplitLowerHeight);
+  assignFiniteNumber(
+    settings,
+    'stackSplitLowerDepth',
+    lowerDepthManual ? stackSplitLowerDepth : overallDepth
+  );
+  assignFiniteNumber(
+    settings,
+    'stackSplitLowerWidth',
+    lowerWidthManual ? stackSplitLowerWidth : overallWidth
+  );
+  assignFiniteNumber(
+    settings,
+    'stackSplitLowerDoors',
+    lowerDoorsManual ? stackSplitLowerDoors : overallDoors
+  );
+
+  return settings;
 }
 
 function buildProjectCaptureToggles(uiRec: UnknownRecord, cfgRec: UnknownRecord): UnknownRecord {
@@ -232,13 +251,16 @@ export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDat
       lowerDoorsManual
     ),
     toggles: buildProjectCaptureToggles(uiRec, cfgRec),
-    chestSettings: {
-      drawersCount: typeof chestDrawersCount !== 'undefined' ? chestDrawersCount : 4,
-      commodeEnabled: !!uiRec.chestCommodeEnabled,
-      mirrorHeightCm: chestCommodeMirrorHeightCm,
-      mirrorWidthCm: chestCommodeMirrorWidthCm,
-      mirrorWidthManual: chestCommodeMirrorWidthManual,
-    },
+    chestSettings: (() => {
+      const chestSettings: UnknownRecord = {
+        drawersCount: typeof chestDrawersCount !== 'undefined' ? chestDrawersCount : 4,
+        commodeEnabled: !!uiRec.chestCommodeEnabled,
+        mirrorWidthManual: chestCommodeMirrorWidthManual,
+      };
+      assignFiniteNumber(chestSettings, 'mirrorHeightCm', chestCommodeMirrorHeightCm);
+      assignFiniteNumber(chestSettings, 'mirrorWidthCm', chestCommodeMirrorWidthCm);
+      return chestSettings;
+    })(),
     modulesConfiguration: canonicalConfigLists.modulesConfiguration,
     stackSplitLowerModulesConfiguration: canonicalConfigLists.stackSplitLowerModulesConfiguration,
     cornerConfiguration: canonicalConfigLists.cornerConfiguration,

@@ -59,6 +59,44 @@ function readBoolean(value: unknown, defaultValue = false): boolean {
   return defaultValue;
 }
 
+function deleteInvalidFiniteNumber(record: UnknownRecord, key: string): void {
+  if (!Object.prototype.hasOwnProperty.call(record, key)) return;
+  if (typeof record[key] === 'number' && Number.isFinite(record[key])) return;
+  delete record[key];
+}
+
+function normalizeOptionalFiniteNumbersForSavePayload(projectData: UnknownRecord): void {
+  const settings = asRecord(projectData.settings);
+  if (settings) {
+    for (const key of [
+      'cornerWidth',
+      'cornerHeight',
+      'cornerDepth',
+      'cornerDoors',
+      'stackSplitLowerHeight',
+      'stackSplitLowerWidth',
+      'stackSplitLowerDepth',
+      'stackSplitLowerDoors',
+      'baseLegPlatformSideOverhangCm',
+      'baseLegPlatformFrontOverhangCm',
+      'stackSplitDecorativeSeparatorSideOverhangCm',
+      'stackSplitDecorativeSeparatorFrontOverhangCm',
+      'basePlinthHeightCm',
+      'baseLegHeightCm',
+      'baseLegWidthCm',
+    ]) {
+      deleteInvalidFiniteNumber(settings, key);
+    }
+  }
+
+  const chestSettings = asRecord(projectData.chestSettings);
+  if (chestSettings) {
+    for (const key of ['drawersCount', 'mirrorHeightCm', 'mirrorWidthCm']) {
+      deleteInvalidFiniteNumber(chestSettings, key);
+    }
+  }
+}
+
 function readCanonicalProjectConfigForExportPayload(
   projectData: ProjectDataLike | UnknownRecord
 ): UnknownRecord {
@@ -91,6 +129,7 @@ export function finalizeProjectForSavePayload(
 
   const canonicalCfg = readCanonicalProjectConfigForExportPayload(out);
   Object.assign(out, readPersistedProjectConfigSnapshot(canonicalCfg));
+  normalizeOptionalFiniteNumbersForSavePayload(out);
 
   out.__schema = options.schemaId || PROJECT_SCHEMA_ID;
   out.__version = options.schemaVersion || PROJECT_SCHEMA_VERSION;

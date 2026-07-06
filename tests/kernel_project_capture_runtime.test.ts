@@ -115,6 +115,37 @@ test('kernel project capture canonicalizes config lists and detaches mutable sna
   );
 });
 
+test('kernel project capture omits absent optional finite numbers instead of serializing undefined', () => {
+  const capture = createKernelProjectCapture({
+    App: { store: { getState: () => ({ config: {} }) } } as never,
+    stateKernel: {
+      captureConfig: () => ({}),
+    } as never,
+    getUiSnapshot: () => ({
+      raw: {
+        width: 240,
+        height: 240,
+        depth: 55,
+        doors: 6,
+        stackSplitLowerDepthManual: false,
+        stackSplitLowerWidthManual: false,
+        stackSplitLowerDoorsManual: false,
+      },
+    }),
+    captureSavedNotes: () => [],
+    reportKernelError: () => false,
+  });
+
+  const snapshot = capture('persist') as Record<string, any>;
+
+  assert.equal(Object.prototype.hasOwnProperty.call(snapshot.settings, 'stackSplitLowerHeight'), false);
+  assert.equal(snapshot.settings.stackSplitLowerDepth, 55);
+  assert.equal(snapshot.settings.stackSplitLowerWidth, 240);
+  assert.equal(snapshot.settings.stackSplitLowerDoors, 6);
+  assert.equal(Object.prototype.hasOwnProperty.call(snapshot.chestSettings, 'mirrorHeightCm'), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(snapshot.chestSettings, 'mirrorWidthCm'), false);
+});
+
 test('kernel project capture rejects top-level-only UI dimensions before serialization', () => {
   const reports: unknown[] = [];
   const capture = createKernelProjectCapture({
