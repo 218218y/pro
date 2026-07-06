@@ -48,9 +48,9 @@ test('[stageAX] sidebar/hooks/notes-selection keep UI seams on typed readers ins
     hooks,
     [
       /function readRecord\(value: unknown\): UnknownRecord \| null \{/,
-      /return useStoreSelector\(st => selector\(st\.config\), equalityFn\);/,
-      /return useStoreSelector\(st => selector\(st\.runtime\), equalityFn\);/,
-      /return useStoreSelector\(st => selector\(st\.mode\), equalityFn\);/,
+      /return useStoreSelector\(st => selector\(st\.config\), equalityFn, 'config'\);/,
+      /return useStoreSelector\(st => selector\(st\.runtime\), equalityFn, 'runtime'\);/,
+      /return useStoreSelector\(st => selector\(st\.mode\), equalityFn, 'mode'\);/,
     ],
     'hooks'
   );
