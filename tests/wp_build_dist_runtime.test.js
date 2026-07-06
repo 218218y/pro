@@ -62,6 +62,7 @@ test('static asset copy mirrors html/runtime/public assets into dist', () => {
   fs.writeFileSync(path.join(root, 'docs', 'guide.md'), '# hi\n', 'utf8');
   fs.mkdirSync(path.join(root, 'public', 'img'), { recursive: true });
   fs.writeFileSync(path.join(root, 'public', 'img', 'logo.png'), 'png', 'utf8');
+  fs.writeFileSync(path.join(root, 'favicon.ico'), 'ico', 'utf8');
   fs.writeFileSync(path.join(root, 'wp_logo_data.js'), 'export const logo = 1;\n', 'utf8');
   fs.writeFileSync(path.join(root, 'wp_runtime_config.mjs'), 'export default {};\n', 'utf8');
 
@@ -72,6 +73,7 @@ test('static asset copy mirrors html/runtime/public assets into dist', () => {
   assert.equal(fs.readFileSync(path.join(distAbs, 'libs', 'vendor.js'), 'utf8'), 'export {};\n');
   assert.equal(fs.readFileSync(path.join(distAbs, 'docs', 'guide.md'), 'utf8'), '# hi\n');
   assert.equal(fs.readFileSync(path.join(distAbs, 'img', 'logo.png'), 'utf8'), 'png');
+  assert.equal(fs.readFileSync(path.join(distAbs, 'favicon.ico'), 'utf8'), 'ico');
   assert.equal(fs.readFileSync(path.join(distAbs, 'wp_logo_data.js'), 'utf8'), 'export const logo = 1;\n');
   assert.equal(fs.readFileSync(path.join(distAbs, 'wp_runtime_config.mjs'), 'utf8'), 'export default {};\n');
 });

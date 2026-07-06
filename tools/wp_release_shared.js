@@ -162,6 +162,32 @@ export function copyDirContents(srcDir, dstDir, opts = {}) {
   }
 }
 
+export const ROOT_STATIC_WEB_ASSETS = ['favicon.ico'];
+
+export function copyRootStaticWebAssets({ root, targetDir, assets = ROOT_STATIC_WEB_ASSETS }) {
+  const copied = [];
+  if (!root || !targetDir) return copied;
+
+  for (const assetName of assets || []) {
+    const name = String(assetName || '').trim();
+    if (!name || path.basename(name) !== name) continue;
+
+    const src = path.join(root, name);
+    if (!exists(src)) continue;
+
+    try {
+      if (!fs.statSync(src).isFile()) continue;
+    } catch {
+      continue;
+    }
+
+    copyFile(src, path.join(targetDir, name));
+    copied.push(name);
+  }
+
+  return copied;
+}
+
 export function sha256File(p) {
   const h = crypto.createHash('sha256');
   h.update(fs.readFileSync(p));

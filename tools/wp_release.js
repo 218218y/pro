@@ -12,6 +12,7 @@ import {
   copyFile,
   copyDir,
   copyDirContents,
+  copyRootStaticWebAssets,
   listReleaseChunkRelFiles,
 } from './wp_release_shared.js';
 import { parseReleaseArgs, resolveReleasePaths } from './wp_release_state.js';
@@ -175,6 +176,7 @@ async function main() {
 
   const publicSrc = path.join(root, 'public');
   if (exists(publicSrc)) copyDirContents(publicSrc, releaseDir);
+  copyRootStaticWebAssets({ root, targetDir: releaseDir });
 
   const distAssetsSrc = path.join(distDir, 'assets');
   const releaseAssetsDir = path.join(releaseDir, 'assets');

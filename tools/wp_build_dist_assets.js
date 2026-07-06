@@ -2,6 +2,32 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { copyDir, copyDirContents, copyFile, exists } from './wp_build_dist_shared.js';
 
+export const ROOT_STATIC_DIST_ASSETS = ['favicon.ico'];
+
+export function copyRootStaticDistAssets({ root, distAbs, assets = ROOT_STATIC_DIST_ASSETS }) {
+  if (!root || !distAbs) return [];
+
+  const copied = [];
+  for (const assetName of assets || []) {
+    const name = String(assetName || '').trim();
+    if (!name || path.basename(name) !== name) continue;
+
+    const src = path.join(root, name);
+    if (!exists(src)) continue;
+
+    try {
+      if (!fs.statSync(src).isFile()) continue;
+    } catch {
+      continue;
+    }
+
+    copyFile(src, path.join(distAbs, name));
+    copied.push(name);
+  }
+
+  return copied;
+}
+
 export function copyEsmMjsVerbatim({ root, distEsmAbs }) {
   const srcDir = path.join(root, 'esm');
   if (!exists(srcDir) || !exists(distEsmAbs)) return;
@@ -24,6 +50,7 @@ export function copyStaticDistAssets({ root, distAbs }) {
   copyDir(path.join(root, 'libs'), path.join(distAbs, 'libs'));
   copyDir(path.join(root, 'docs'), path.join(distAbs, 'docs'));
   copyDirContents(path.join(root, 'public'), distAbs);
+  copyRootStaticDistAssets({ root, distAbs });
 
   const logo = path.join(root, 'wp_logo_data.js');
   if (exists(logo)) copyFile(logo, path.join(distAbs, 'wp_logo_data.js'));

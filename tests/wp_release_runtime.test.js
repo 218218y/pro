@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import { applyContentHashingToRelease } from '../tools/wp_release_hashing.js';
 import { resolveReleaseJsObfuscationPolicy } from '../tools/wp_release_build.js';
+import { copyRootStaticWebAssets } from '../tools/wp_release_shared.js';
 
 import { parseReleaseArgs } from '../tools/wp_release_state.js';
 import {
@@ -17,6 +18,18 @@ import {
 function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-release-'));
 }
+
+test('release root static web assets copy favicon into target root', () => {
+  const root = tempDir();
+  const targetDir = path.join(root, 'dist', 'release');
+  fs.mkdirSync(targetDir, { recursive: true });
+  fs.writeFileSync(path.join(root, 'favicon.ico'), 'ico', 'utf8');
+
+  const copied = copyRootStaticWebAssets({ root, targetDir });
+
+  assert.deepEqual(copied, ['favicon.ico']);
+  assert.equal(fs.readFileSync(path.join(targetDir, 'favicon.ico'), 'utf8'), 'ico');
+});
 
 test('release hashing rewrites bundle/chunk refs and hashes vendor/css files', () => {
   const dir = tempDir();

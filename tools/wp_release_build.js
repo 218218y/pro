@@ -14,6 +14,7 @@ import {
   copyFile,
   copyDir,
   copyDirContents,
+  copyRootStaticWebAssets,
   isWardrobeChunkFileName,
   escapeRegExp,
 } from './wp_release_shared.js';
@@ -197,6 +198,7 @@ export function prepareDistSite({ root, distDir, htmlTemplate }) {
     // Copy Vite-style public assets (served from site root)
     const publicSrc = path.join(root, 'public');
     if (exists(publicSrc)) copyDirContents(publicSrc, distDir);
+    copyRootStaticWebAssets({ root, targetDir: distDir });
     // Canonical runtime config is required even when Cloud Sync is disabled.
     const supaCfgMjs = path.join(root, 'wp_runtime_config.mjs');
     if (!exists(supaCfgMjs)) throw new Error('Missing required wp_runtime_config.mjs');
