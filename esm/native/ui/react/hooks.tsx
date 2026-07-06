@@ -9,6 +9,7 @@ import type {
   ConfigStateLike,
   RuntimeStateLike,
   ModeStateLike,
+  StoreSelectorSliceKey,
   UnknownRecord,
 } from '../../../../types';
 
@@ -25,7 +26,12 @@ type SelectorStoreApi = {
   subscribeSelector: <T>(
     selector: (state: RootStateLike) => T,
     listener: (selected: T, previous: T, actionMeta?: unknown) => void,
-    opts?: { equalityFn?: (a: T, b: T) => boolean; fireImmediately?: boolean }
+    opts?: {
+      equalityFn?: (a: T, b: T) => boolean;
+      fireImmediately?: boolean;
+      slice?: StoreSelectorSliceKey;
+      slices?: readonly StoreSelectorSliceKey[];
+    }
   ) => (() => void) | void;
 };
 
@@ -130,7 +136,12 @@ function getZustandApiFromApp(app: AppContainer): SelectorStoreApi {
     subscribeSelector<T>(
       selector: (state: RootStateLike) => T,
       listener: (selected: T, previous: T, actionMeta?: unknown) => void,
-      opts?: { equalityFn?: (a: T, b: T) => boolean; fireImmediately?: boolean }
+      opts?: {
+        equalityFn?: (a: T, b: T) => boolean;
+        fireImmediately?: boolean;
+        slice?: StoreSelectorSliceKey;
+        slices?: readonly StoreSelectorSliceKey[];
+      }
     ) {
       return subscribeSelector(selector, listener, opts);
     },
@@ -143,7 +154,11 @@ function getZustandApiFromApp(app: AppContainer): SelectorStoreApi {
  * Stage 2 (Zustand unboxing): subscribe to the canonical store surface via React's
  * `useSyncExternalStore`.
  */
-export function useStoreSelector<T>(selector: (state: RootStateLike) => T, equalityFn?: EqualityFn<T>): T {
+export function useStoreSelector<T>(
+  selector: (state: RootStateLike) => T,
+  equalityFn?: EqualityFn<T>,
+  selectorSlice: StoreSelectorSliceKey = 'all'
+): T {
   const app = useApp();
   // Memoize the store surface so useSyncExternalStore doesn't resubscribe on every render.
   const api = useMemo(() => getZustandApiFromApp(app), [app]);
@@ -193,11 +208,12 @@ export function useStoreSelector<T>(selector: (state: RootStateLike) => T, equal
         },
         {
           equalityFn: (a: T, b: T) => eqRef.current(a, b),
+          slice: selectorSlice,
         }
       );
       return typeof unsub === 'function' ? unsub : () => undefined;
     },
-    [api]
+    [api, selectorSlice]
   );
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
@@ -209,7 +225,7 @@ export function useStoreSelectorShallow<T extends object | unknown[]>(
 }
 
 export function useUiSelector<T>(selector: (ui: UiState) => T, equalityFn?: EqualityFn<T>): T {
-  return useStoreSelector(st => selector(st.ui), equalityFn);
+  return useStoreSelector(st => selector(st.ui), equalityFn, 'ui');
 }
 
 export function useUiSelectorShallow<T extends object | unknown[]>(selector: (ui: UiState) => T): T {
@@ -217,7 +233,7 @@ export function useUiSelectorShallow<T extends object | unknown[]>(selector: (ui
 }
 
 export function useCfgSelector<T>(selector: (cfg: ConfigStateLike) => T, equalityFn?: EqualityFn<T>): T {
-  return useStoreSelector(st => selector(st.config), equalityFn);
+  return useStoreSelector(st => selector(st.config), equalityFn, 'config');
 }
 
 export function useCfgSelectorShallow<T extends object | unknown[]>(
@@ -227,7 +243,7 @@ export function useCfgSelectorShallow<T extends object | unknown[]>(
 }
 
 export function useRuntimeSelector<T>(selector: (rt: RuntimeStateLike) => T, equalityFn?: EqualityFn<T>): T {
-  return useStoreSelector(st => selector(st.runtime), equalityFn);
+  return useStoreSelector(st => selector(st.runtime), equalityFn, 'runtime');
 }
 
 export function useRuntimeSelectorShallow<T extends object | unknown[]>(
@@ -237,7 +253,7 @@ export function useRuntimeSelectorShallow<T extends object | unknown[]>(
 }
 
 export function useModeSelector<T>(selector: (mode: ModeStateLike) => T, equalityFn?: EqualityFn<T>): T {
-  return useStoreSelector(st => selector(st.mode), equalityFn);
+  return useStoreSelector(st => selector(st.mode), equalityFn, 'mode');
 }
 
 export function useModeSelectorShallow<T extends object | unknown[]>(

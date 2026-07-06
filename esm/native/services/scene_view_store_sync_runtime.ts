@@ -120,7 +120,7 @@ export function installSceneViewStoreSync(App: AppContainer): boolean {
     () => {
       scheduleSceneViewSyncFromStore(App, { reason: 'sceneView:store.modeChange' });
     },
-    { equalityFn: areSceneViewModeValuesEqual }
+    { equalityFn: areSceneViewModeValuesEqual, slice: 'runtime' }
   );
 
   const lightsUnsub = subscribeSelector(
@@ -132,7 +132,7 @@ export function installSceneViewStoreSync(App: AppContainer): boolean {
         reason: 'sceneView:store.lightInputsChange',
       });
     },
-    { equalityFn: areSceneViewLightValuesEqual }
+    { equalityFn: areSceneViewLightValuesEqual, slices: ['runtime', 'ui'] }
   );
 
   syncState.installed = true;

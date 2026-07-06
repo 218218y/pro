@@ -2,7 +2,7 @@
 
 import type { UnknownRecord } from './common';
 import type { ActionMetaLike } from './kernel';
-import type { RootStateLike } from './store_state';
+import type { RootStateLike, RootSliceKey } from './store_state';
 import type { ThreeLike } from './three';
 import type { WardrobeProRuntimeConfig, WardrobeProRuntimeFlags } from './runtime';
 
@@ -25,6 +25,8 @@ export interface StoreDebugStats {
   selectorNotifyCount: number;
   sources: Record<string, StoreSourceDebugStat>;
 }
+
+export type StoreSelectorSliceKey = RootSliceKey | 'root' | 'all';
 
 export type TimeoutHandleLike = ReturnType<typeof setTimeout> | number;
 export type IntervalHandleLike = ReturnType<typeof setInterval> | number;
@@ -77,6 +79,8 @@ export interface PublicStoreLike<S = RootStateLike> {
     opts?: {
       equalityFn?: (a: T, b: T) => boolean;
       fireImmediately?: boolean;
+      slice?: StoreSelectorSliceKey;
+      slices?: readonly StoreSelectorSliceKey[];
     }
   ) => () => void;
 

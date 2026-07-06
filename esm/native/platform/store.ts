@@ -131,6 +131,7 @@ export function createStore(opts: StoreCreateOpts = {}): StoreCreateResult {
     const current = zustandApi.getState();
     selectorListeners.forEach(function callSelectorListener(entry) {
       if (!entry || typeof entry.notify !== 'function') return;
+      if (typeof entry.shouldNotify === 'function' && !entry.shouldNotify(actionMeta)) return;
       entry.notify(current, actionMeta);
     });
   }
@@ -149,6 +150,8 @@ export function createStore(opts: StoreCreateOpts = {}): StoreCreateResult {
       selector,
       listener: fn,
       equalityFn,
+      slice: opts3.slice,
+      slices: opts3.slices,
       onNotify() {
         debugState.selectorNotifyCount += 1;
       },

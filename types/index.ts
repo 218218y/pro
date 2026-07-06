@@ -29,6 +29,7 @@ export type {
   RootPublicStoreLike,
   StateKernelLike,
   StoreDebugStats,
+  StoreSelectorSliceKey,
   StoreSourceDebugStat,
   TimeoutHandleLike,
 } from './state';
