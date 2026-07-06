@@ -148,7 +148,9 @@ export function useStructureTabViewStateState(app: AppContainer): StructureTabVi
       readLibraryUpperDoorsHiddenPreference(libraryUpperDoorsHiddenRaw, libraryUpperDoorsEffectivelyRemoved),
     [libraryUpperDoorsHiddenRaw, libraryUpperDoorsEffectivelyRemoved]
   );
-  const modulesCount = useStoreSelector(st => readModulesCountFromRootSnapshot(st, doors));
+  // This selector reads the optional root build snapshot when present; keep it broad until build is
+  // promoted to a formal store slice.
+  const modulesCount = useStoreSelector(st => readModulesCountFromRootSnapshot(st, doors), undefined, 'all');
 
   const defaultCellWidth = useMemo(
     () => readStructureTabDefaultCellWidth({ modulesCount, width }),

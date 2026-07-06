@@ -38,6 +38,7 @@ type SelectorStoreApi = {
 const AppCtx = createContext<AppContainer | null>(null);
 
 type EqualityFn<T> = (a: T, b: T) => boolean;
+type SelectorSliceHint = StoreSelectorSliceKey | readonly StoreSelectorSliceKey[];
 
 function objectIs<T>(a: T, b: T): boolean {
   return Object.is(a, b);
@@ -79,6 +80,17 @@ function shallowEqual<T>(a: T, b: T): boolean {
     if (!Object.is(aRec[k], bRec[k])) return false;
   }
   return true;
+}
+
+function isSelectorSliceArray(value: SelectorSliceHint): value is readonly StoreSelectorSliceKey[] {
+  return Array.isArray(value);
+}
+
+function readSelectorSliceOpts(selectorSlice: SelectorSliceHint): {
+  slice?: StoreSelectorSliceKey;
+  slices?: readonly StoreSelectorSliceKey[];
+} {
+  return isSelectorSliceArray(selectorSlice) ? { slices: selectorSlice } : { slice: selectorSlice };
 }
 
 export function AppProvider(props: { app: AppContainer; children: ReactNode }) {
@@ -157,7 +169,7 @@ function getZustandApiFromApp(app: AppContainer): SelectorStoreApi {
 export function useStoreSelector<T>(
   selector: (state: RootStateLike) => T,
   equalityFn?: EqualityFn<T>,
-  selectorSlice: StoreSelectorSliceKey = 'all'
+  selectorSlice: SelectorSliceHint = 'all'
 ): T {
   const app = useApp();
   // Memoize the store surface so useSyncExternalStore doesn't resubscribe on every render.
@@ -208,7 +220,7 @@ export function useStoreSelector<T>(
         },
         {
           equalityFn: (a: T, b: T) => eqRef.current(a, b),
-          slice: selectorSlice,
+          ...readSelectorSliceOpts(selectorSlice),
         }
       );
       return typeof unsub === 'function' ? unsub : () => undefined;
@@ -219,9 +231,10 @@ export function useStoreSelector<T>(
 }
 
 export function useStoreSelectorShallow<T extends object | unknown[]>(
-  selector: (state: RootStateLike) => T
+  selector: (state: RootStateLike) => T,
+  selectorSlice: SelectorSliceHint = 'all'
 ): T {
-  return useStoreSelector(selector, (a, b) => shallowEqual(a, b));
+  return useStoreSelector(selector, (a, b) => shallowEqual(a, b), selectorSlice);
 }
 
 export function useUiSelector<T>(selector: (ui: UiState) => T, equalityFn?: EqualityFn<T>): T {

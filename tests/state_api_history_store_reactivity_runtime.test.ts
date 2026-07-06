@@ -181,6 +181,33 @@ test('state-api store reactivity reuses one delayed timer, keeps the latest queu
   );
 });
 
+test('state-api store reactivity treats explicit immediate false as coalesced delayed build work', () => {
+  const h = createHarness();
+
+  h.emit(1, { source: 'reactive:coalesced:first', immediate: false });
+  h.emit(2, { source: 'reactive:coalesced:second', immediate: false });
+
+  assert.equal(h.queued.size, 1);
+  assert.equal(h.setCount, 1);
+  assert.equal(h.clearCount, 0);
+
+  h.flushTimers();
+  assert.deepEqual(
+    h.calls.filter(([kind]) => kind === 'build'),
+    [
+      [
+        'build',
+        {
+          source: 'reactive:coalesced:second',
+          immediate: false,
+          reason: 'reactive:coalesced:second',
+          force: false,
+        },
+      ],
+    ]
+  );
+});
+
 test('state-api store reactivity cancels pending delayed build when an immediate commit arrives', () => {
   const h = createHarness();
 

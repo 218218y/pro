@@ -138,6 +138,39 @@ test('[structural-build-refresh-actions] ui mutation skips direct fallback when 
   assert.equal(result.requestedBuild, false);
 });
 
+test('[structural-build-refresh-actions] explicit coalesced build meta keeps the write canonical and debounced', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  const mod = loadStructuralBuildRefreshActionsModule({
+    calls,
+    patchViaActions: () => true,
+  });
+
+  const result = mod.applyImmediateStructuralUiMutation(
+    app,
+    'react:test:ui:coalesced',
+    { colorChoice: '#123456' },
+    meta => {
+      calls.push(['directUiMutation', meta]);
+    },
+    { immediate: false }
+  );
+
+  assert.equal(
+    JSON.stringify(calls),
+    JSON.stringify([
+      [
+        'patchViaActions',
+        app,
+        { ui: { colorChoice: '#123456' } },
+        { immediate: false, source: 'react:test:ui:coalesced' },
+      ],
+    ])
+  );
+  assert.equal(result.appliedViaActions, true);
+  assert.equal(result.requestedBuild, false);
+});
+
 test('[structural-build-refresh-actions] runtime mutation supports meta overrides and strips noBuild', () => {
   const calls = [];
   const app = { id: 'app' };
@@ -185,6 +218,13 @@ test('[structural-build-refresh-actions] immediate structural meta normalizes so
     JSON.stringify({
       source: 'react:test:trimmed',
       immediate: true,
+    })
+  );
+  assert.equal(
+    JSON.stringify(mod.createImmediateStructuralMutationMeta(' react:test:coalesced ', { immediate: false })),
+    JSON.stringify({
+      immediate: false,
+      source: 'react:test:coalesced',
     })
   );
   assert.throws(

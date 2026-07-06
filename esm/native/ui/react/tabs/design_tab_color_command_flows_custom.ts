@@ -52,7 +52,7 @@ export function saveCustomColorByName(
   const nextOrder = buildSavedColorOrder(orderedSwatches)
     .filter(value => value !== id)
     .concat(id);
-  const meta = { source: 'react:design:savedColors:add', immediate: true };
+  const meta = { source: 'react:design:savedColors:add', immediate: false };
   applySavedColorsAtomicMutation(
     app,
     {

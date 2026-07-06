@@ -208,3 +208,19 @@ test('store selector slices support multi-slice subscriptions', () => {
   assert.equal(selectorCalls, 3);
   assert.equal(listenerCalls, 2);
 });
+
+test('store selector slices reject invalid slice names with a clear error', () => {
+  const store = createStore();
+  const statsBefore = (store as AnyRecord).getDebugStats() as AnyRecord;
+
+  assert.throws(() => {
+    store.subscribeSelector(
+      state => state.ui,
+      () => undefined,
+      { slice: 'invalid-slice' as never }
+    );
+  }, /\[WardrobePro\]\[store\] Invalid selector slice: invalid-slice/);
+
+  const statsAfter = (store as AnyRecord).getDebugStats() as AnyRecord;
+  assert.equal(statsAfter.selectorListenerCount, statsBefore.selectorListenerCount);
+});

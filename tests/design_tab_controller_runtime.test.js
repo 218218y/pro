@@ -107,7 +107,7 @@ function loadDesignTabControllerRuntimeModule(stubs = {}) {
   return mod.exports;
 }
 
-test('[design-tab-controller-runtime] delegates structural ui writes through canonical immediate structural patch without duplicate refresh', () => {
+test('[design-tab-controller-runtime] delegates structural ui writes through canonical coalesced structural patch without duplicate refresh', () => {
   const calls = [];
   const mod = loadDesignTabControllerRuntimeModule({
     calls,
@@ -139,41 +139,41 @@ test('[design-tab-controller-runtime] delegates structural ui writes through can
         'patchViaActions',
         app,
         { ui: { doorStyle: 'profile' } },
-        { source: 'react:design:doorStyle', immediate: true },
+        { immediate: false, source: 'react:design:doorStyle' },
       ],
       [
         'patchViaActions',
         app,
         { ui: { corniceType: 'wave' } },
-        { source: 'react:design:corniceType', immediate: true },
+        { immediate: false, source: 'react:design:corniceType' },
       ],
-      ['runHistoryBatch', app, { source: 'react:design:grooveLinesCount', immediate: true }],
+      ['runHistoryBatch', app, { immediate: false, source: 'react:design:grooveLinesCount' }],
       ['materializeActiveGrooveLinesCountMap', app],
       [
         'replaceDoorGrooveLinesCountMap',
         app,
         { active: 4 },
-        { source: 'react:design:grooveLinesCount:freezeExisting', immediate: true },
+        { immediate: false, source: 'react:design:grooveLinesCount:freezeExisting' },
       ],
       [
         'patchViaActions',
         app,
         { config: { grooveLinesCount: 7 } },
-        { source: 'react:design:grooveLinesCount', immediate: true },
+        { immediate: false, source: 'react:design:grooveLinesCount' },
       ],
-      ['runHistoryBatch', app, { source: 'react:design:grooveLinesCount:reset', immediate: true }],
+      ['runHistoryBatch', app, { immediate: false, source: 'react:design:grooveLinesCount:reset' }],
       ['materializeActiveGrooveLinesCountMap', app],
       [
         'replaceDoorGrooveLinesCountMap',
         app,
         { active: 4 },
-        { source: 'react:design:grooveLinesCount:freezeExisting', immediate: true },
+        { immediate: false, source: 'react:design:grooveLinesCount:freezeExisting' },
       ],
       [
         'patchViaActions',
         app,
         { config: { grooveLinesCount: null } },
-        { source: 'react:design:grooveLinesCount:reset', immediate: true },
+        { immediate: false, source: 'react:design:grooveLinesCount:reset' },
       ],
     ])
   );
@@ -215,7 +215,7 @@ test('[design-tab-controller-runtime] freezes groove line counts through semanti
     { ...writerCalls[0][3] },
     {
       source: 'react:design:grooveLinesCount:freezeExisting',
-      immediate: true,
+      immediate: false,
     }
   );
   assert.deepEqual({ ...writerCalls[1][2] }, { active: 4 });
@@ -223,7 +223,7 @@ test('[design-tab-controller-runtime] freezes groove line counts through semanti
     { ...writerCalls[1][3] },
     {
       source: 'react:design:grooveLinesCount:freezeExisting',
-      immediate: true,
+      immediate: false,
     }
   );
 });
@@ -251,11 +251,11 @@ test('[design-tab-controller-runtime] toggles rounded shelves for removed frame 
   assert.equal(calls.length, 2);
   assert.equal(calls[0][0], 'runHistoryBatch');
   assert.equal(calls[0][1], app);
-  assert.deepEqual({ ...calls[0][2] }, { source: 'react:design:roundedFrameSideShelves', immediate: true });
+  assert.deepEqual({ ...calls[0][2] }, { immediate: false, source: 'react:design:roundedFrameSideShelves' });
   assert.equal(calls[1][0], 'replaceRoundedFrameSideShelvesMap');
   assert.equal(calls[1][1], app);
   assert.deepEqual({ ...calls[1][2] }, { body_right: true, body_left: true });
-  assert.deepEqual({ ...calls[1][3] }, { source: 'react:design:roundedFrameSideShelves', immediate: true });
+  assert.deepEqual({ ...calls[1][3] }, { source: 'react:design:roundedFrameSideShelves', immediate: false });
 });
 
 test('[design-tab-controller-runtime] toggles rounded shelves on lower scoped removed frame sides', () => {

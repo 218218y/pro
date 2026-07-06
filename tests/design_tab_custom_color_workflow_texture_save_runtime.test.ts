@@ -162,6 +162,10 @@ test('custom color workflow controller saves custom color through canonical prom
     assert.deepEqual(state.colorSwatchesOrder, ['saved_a', 'saved_1']);
     assert.equal(state.appliedChoice, 'saved_1');
     assert.equal(state.appliedSource, 'react:design:savedColors:add');
+    assert.deepEqual(state.patchCalls[0]?.meta, {
+      source: 'react:design:savedColors:add',
+      immediate: false,
+    });
     assert.deepEqual(feedback.seen, [{ message: 'נשמר גוון חדש', type: 'success' }]);
   } finally {
     Date.now = originalNow;

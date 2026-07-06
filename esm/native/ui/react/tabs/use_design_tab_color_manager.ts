@@ -23,6 +23,8 @@ import { useDesignTabSavedSwatches } from './use_design_tab_saved_swatches.js';
 
 export type { DesignTabColorManagerModel } from './design_tab_color_manager_shared.js';
 
+const COALESCED_DESIGN_COLOR_BUILD_META = { immediate: false } as const;
+
 export function useDesignTabColorManager(args: UseDesignTabColorManagerArgs): DesignTabColorManagerModel {
   const savedColors = useMemo(
     () => normalizeDesignTabSavedColors(args.savedColorsRaw),
@@ -43,9 +45,15 @@ export function useDesignTabColorManager(args: UseDesignTabColorManagerArgs): De
     (choice: string, source = 'react:design:colorChoice') => {
       const value = String(choice || '');
       if (!value || value === String(args.colorChoice || '')) return;
-      applyImmediateStructuralUiMutation(args.app, source, { colorChoice: value }, meta => {
-        setUiColorChoice(args.app, value, meta);
-      });
+      applyImmediateStructuralUiMutation(
+        args.app,
+        source,
+        { colorChoice: value },
+        meta => {
+          setUiColorChoice(args.app, value, meta);
+        },
+        COALESCED_DESIGN_COLOR_BUILD_META
+      );
     },
     [args.app, args.colorChoice]
   );

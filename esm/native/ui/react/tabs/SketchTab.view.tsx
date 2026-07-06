@@ -28,6 +28,8 @@ const SKETCH_BOX_CELL_DIMS_TEST_IDS = {
   resetHexDoorWidthButton: 'sketch-box-cell-dims-reset-hex-door-width-button',
 } as const;
 
+const SKETCH_NO_MAIN_SELECTOR_SLICES = ['ui', 'config'] as const;
+
 export function SketchTabView(props: InteriorTabViewProps): ReactElement {
   return <SketchTabInner active={props.active} />;
 }
@@ -53,7 +55,7 @@ function SketchTabInner(props: { active: boolean }): ReactElement {
       active: isSketchNoMainWardrobeActive({ ui: rootState.ui, wardrobeType }),
       doors,
     };
-  });
+  }, SKETCH_NO_MAIN_SELECTOR_SLICES);
   const sketchCardActive = state.isDoorTrimMode || (!state.isChestMode && state.isSketchToolActive);
 
   const handleNoMainToggle = useCallback(() => {

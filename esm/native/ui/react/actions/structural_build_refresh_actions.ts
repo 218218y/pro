@@ -33,7 +33,7 @@ export function createImmediateStructuralMutationMeta(
 ): ActionMetaLike {
   const meta: ActionMetaLike = metaOverrides ? { ...metaOverrides } : {};
   meta.source = normalizeImmediateStructuralMutationSource(source);
-  meta.immediate = true;
+  meta.immediate = metaOverrides?.immediate === false ? false : true;
   delete meta.noBuild;
   return meta;
 }

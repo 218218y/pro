@@ -100,7 +100,7 @@ export function deleteSavedColor(
   const nextSaved = savedColors.filter(color => trim(color.id) !== targetId);
   const nextOrder = buildSavedColorOrder(orderedSwatches).filter(value => value !== targetId);
   const deletedWasSelected = trim(colorChoice) === targetId;
-  const meta = { source: 'react:design:savedColors:delete', immediate: true };
+  const meta = { source: 'react:design:savedColors:delete', immediate: false };
 
   applySavedColorsAtomicMutation(
     app,

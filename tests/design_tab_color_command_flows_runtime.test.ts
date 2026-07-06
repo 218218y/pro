@@ -143,6 +143,10 @@ test('deleteSavedColor removes color, trims order, and resets active choice when
   assert.deepEqual(state.colorSwatchesOrder, ['saved_a', 'saved_c']);
   assert.equal(state.appliedChoice, '#ffffff');
   assert.equal(state.appliedSource, 'react:design:savedColors:delete');
+  assert.deepEqual(state.patchCalls[0]?.meta, {
+    source: 'react:design:savedColors:delete',
+    immediate: false,
+  });
   assert.equal(state.batchCalls, 0);
 });
 
@@ -196,6 +200,10 @@ test('saveCustomColorByName writes new saved color, order, and activates it', ()
   assert.deepEqual(state.colorSwatchesOrder.at(-1), 'saved_fixed');
   assert.equal(state.appliedChoice, 'saved_fixed');
   assert.equal(state.appliedSource, 'react:design:savedColors:add');
+  assert.deepEqual(state.patchCalls[0]?.meta, {
+    source: 'react:design:savedColors:add',
+    immediate: false,
+  });
   assert.equal(state.batchCalls, 0);
 });
 
