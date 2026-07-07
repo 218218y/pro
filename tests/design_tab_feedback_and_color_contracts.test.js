@@ -186,11 +186,19 @@ test('[contracts-design-color-feedback] DesignTab color workflows use stable fee
       /export function deleteSavedColor\(/,
       /export async function runDeleteSavedColorFlow\(/,
       /applySavedColorsAtomicMutation\(/,
-      /setCfgSavedColors\(/,
+      /createStructuralMutationMeta\(/,
+      /buildTiming: 'none'/,
       /requestConfirmationFromFeedback\(/,
       /runConfirmedAction/,
     ],
     'design color saved command flows'
+  );
+
+  assertLacksAll(
+    assert,
+    designColorFlowsSaved,
+    [/setCfgSavedColors\(/, /setCfgColorSwatchesOrder\(/, /runHistoryBatch\(/],
+    'design color saved command flows direct persistence writes'
   );
 
   assertMatchesAll(

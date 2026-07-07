@@ -75,7 +75,15 @@ test('[wave3] React hotspots route history/colors writes through centralized wra
     designColorManager,
     /setCfgColorSwatchesOrder\(app,\s*(?:colorSwatchesOrder|nextOrder|nextIds),\s*meta\)/
   );
-  assert.match(designColorManager, /setCfgSavedColors\(app,\s*next,\s*\{\s*source\s*\}\)/);
+  assert.match(
+    designColorManager,
+    /createStructuralMutationMeta\(source,\s*\{\s*buildTiming:\s*'none'\s*\}\)/
+  );
+  assert.match(
+    designColorManager,
+    /applySavedColorsAtomicMutation\(app,\s*\{\s*savedColors:\s*next\s*\},\s*meta\)/
+  );
+  assert.doesNotMatch(designColorManager, /setCfgSavedColors\(app,\s*next,\s*\{\s*source\s*\}\)/);
   assert.doesNotMatch(designController + designColorManager, /useActions\(/);
   assert.doesNotMatch(designController + designColorManager, /actions\.colors|actions\.history/);
   assert.doesNotMatch(designController + designColorManager, /colorsNs\.|historyNs\./);
