@@ -22,6 +22,28 @@ function percentile(sortedValues, ratio) {
   return sortedValues[index] || 0;
 }
 
+function normalizeDurationSamples(value) {
+  return Array.isArray(value)
+    ? value
+        .map(item => (Number.isFinite(Number(item)) ? roundDuration(Number(item)) : null))
+        .filter(item => item !== null)
+    : [];
+}
+
+function createDurationSummary(samplesIn) {
+  const samples = normalizeDurationSamples(samplesIn);
+  const sorted = [...samples].sort((left, right) => left - right);
+  const totalMs = roundDuration(samples.reduce((sum, value) => sum + value, 0));
+  return {
+    count: samples.length,
+    totalMs,
+    avgMs: samples.length ? roundDuration(totalMs / samples.length) : 0,
+    p95Ms: sorted.length ? roundDuration(percentile(sorted, 0.95)) : 0,
+    maxMs: sorted.length ? roundDuration(sorted[sorted.length - 1]) : 0,
+    samplesMs: samples,
+  };
+}
+
 function normalizePerfEntry(entry) {
   if (!entry || typeof entry !== 'object') return null;
   const name = typeof entry.name === 'string' && entry.name.trim() ? entry.name.trim() : null;
@@ -676,6 +698,21 @@ function normalizeBuildReasonStats(reasons) {
       executeDebouncedNonForceCount: Number.isFinite(item?.executeDebouncedNonForceCount)
         ? Math.max(0, Math.floor(Number(item.executeDebouncedNonForceCount)))
         : 0,
+      executeSuccessCount: Number.isFinite(item?.executeSuccessCount)
+        ? Math.max(0, Math.floor(Number(item.executeSuccessCount)))
+        : 0,
+      executeFailureCount: Number.isFinite(item?.executeFailureCount)
+        ? Math.max(0, Math.floor(Number(item.executeFailureCount)))
+        : 0,
+      executeDurationTotalMs: roundDuration(Number(item?.executeDurationTotalMs) || 0),
+      executeDurationAvgMs: roundDuration(Number(item?.executeDurationAvgMs) || 0),
+      executeDurationP95Ms: roundDuration(Number(item?.executeDurationP95Ms) || 0),
+      executeDurationMaxMs: roundDuration(Number(item?.executeDurationMaxMs) || 0),
+      executeDurationSamplesMs: normalizeDurationSamples(item?.executeDurationSamplesMs),
+      lastExecuteStatus:
+        typeof item?.lastExecuteStatus === 'string' && item.lastExecuteStatus.trim()
+          ? item.lastExecuteStatus.trim()
+          : null,
     };
   }
   return out;
@@ -764,6 +801,37 @@ function normalizeBuildDebugStats(stats) {
     skippedRepeatedExecuteCount: Number.isFinite(stats?.skippedRepeatedExecuteCount)
       ? Math.max(0, Math.floor(Number(stats.skippedRepeatedExecuteCount)))
       : 0,
+    executeSuccessCount: Number.isFinite(stats?.executeSuccessCount)
+      ? Math.max(0, Math.floor(Number(stats.executeSuccessCount)))
+      : 0,
+    executeFailureCount: Number.isFinite(stats?.executeFailureCount)
+      ? Math.max(0, Math.floor(Number(stats.executeFailureCount)))
+      : 0,
+    executeDurationTotalMs: roundDuration(Number(stats?.executeDurationTotalMs) || 0),
+    executeDurationAvgMs: roundDuration(Number(stats?.executeDurationAvgMs) || 0),
+    executeDurationP95Ms: roundDuration(Number(stats?.executeDurationP95Ms) || 0),
+    executeDurationMaxMs: roundDuration(Number(stats?.executeDurationMaxMs) || 0),
+    executeDurationSamplesMs: normalizeDurationSamples(stats?.executeDurationSamplesMs),
+    executeImmediateDurationTotalMs: roundDuration(Number(stats?.executeImmediateDurationTotalMs) || 0),
+    executeImmediateDurationAvgMs: roundDuration(Number(stats?.executeImmediateDurationAvgMs) || 0),
+    executeImmediateDurationP95Ms: roundDuration(Number(stats?.executeImmediateDurationP95Ms) || 0),
+    executeImmediateDurationMaxMs: roundDuration(Number(stats?.executeImmediateDurationMaxMs) || 0),
+    executeImmediateDurationSamplesMs: normalizeDurationSamples(stats?.executeImmediateDurationSamplesMs),
+    executeDebouncedDurationTotalMs: roundDuration(Number(stats?.executeDebouncedDurationTotalMs) || 0),
+    executeDebouncedDurationAvgMs: roundDuration(Number(stats?.executeDebouncedDurationAvgMs) || 0),
+    executeDebouncedDurationP95Ms: roundDuration(Number(stats?.executeDebouncedDurationP95Ms) || 0),
+    executeDebouncedDurationMaxMs: roundDuration(Number(stats?.executeDebouncedDurationMaxMs) || 0),
+    executeDebouncedDurationSamplesMs: normalizeDurationSamples(stats?.executeDebouncedDurationSamplesMs),
+    executeForceDurationTotalMs: roundDuration(Number(stats?.executeForceDurationTotalMs) || 0),
+    executeForceDurationAvgMs: roundDuration(Number(stats?.executeForceDurationAvgMs) || 0),
+    executeForceDurationP95Ms: roundDuration(Number(stats?.executeForceDurationP95Ms) || 0),
+    executeForceDurationMaxMs: roundDuration(Number(stats?.executeForceDurationMaxMs) || 0),
+    executeForceDurationSamplesMs: normalizeDurationSamples(stats?.executeForceDurationSamplesMs),
+    executeNonForceDurationTotalMs: roundDuration(Number(stats?.executeNonForceDurationTotalMs) || 0),
+    executeNonForceDurationAvgMs: roundDuration(Number(stats?.executeNonForceDurationAvgMs) || 0),
+    executeNonForceDurationP95Ms: roundDuration(Number(stats?.executeNonForceDurationP95Ms) || 0),
+    executeNonForceDurationMaxMs: roundDuration(Number(stats?.executeNonForceDurationMaxMs) || 0),
+    executeNonForceDurationSamplesMs: normalizeDurationSamples(stats?.executeNonForceDurationSamplesMs),
     lastRequestReason:
       typeof stats?.lastRequestReason === 'string' && stats.lastRequestReason.trim()
         ? stats.lastRequestReason.trim()
@@ -771,6 +839,10 @@ function normalizeBuildDebugStats(stats) {
     lastExecuteReason:
       typeof stats?.lastExecuteReason === 'string' && stats.lastExecuteReason.trim()
         ? stats.lastExecuteReason.trim()
+        : null,
+    lastExecuteStatus:
+      typeof stats?.lastExecuteStatus === 'string' && stats.lastExecuteStatus.trim()
+        ? stats.lastExecuteStatus.trim()
         : null,
     reasons: normalizeBuildReasonStats(stats?.reasons),
   };
@@ -964,6 +1036,11 @@ export function createBuildSummary(stats) {
   const normalized = normalizeBuildDebugStats(stats);
   const rankedReasons = rankBuildReasons(normalized, 1);
   const topReason = rankedReasons[0] || null;
+  const executeDuration = createDurationSummary(normalized.executeDurationSamplesMs);
+  const immediateDuration = createDurationSummary(normalized.executeImmediateDurationSamplesMs);
+  const debouncedDuration = createDurationSummary(normalized.executeDebouncedDurationSamplesMs);
+  const forceDuration = createDurationSummary(normalized.executeForceDurationSamplesMs);
+  const nonForceDuration = createDurationSummary(normalized.executeNonForceDurationSamplesMs);
   const suppressedRequestCount =
     normalized.skippedDuplicatePendingRequestCount + normalized.skippedSatisfiedRequestCount;
   const suppressedExecuteCount = normalized.skippedRepeatedExecuteCount;
@@ -993,6 +1070,30 @@ export function createBuildSummary(stats) {
     builderWaitScheduleCount: normalized.builderWaitScheduleCount,
     staleWakeupCount,
     reasonCount: Object.keys(normalized.reasons).length,
+    executeSuccessCount: normalized.executeSuccessCount,
+    executeFailureCount: normalized.executeFailureCount,
+    executeDurationCount: executeDuration.count,
+    executeDurationTotalMs: executeDuration.totalMs,
+    executeDurationAvgMs: executeDuration.avgMs,
+    executeDurationP95Ms: executeDuration.p95Ms,
+    executeDurationMaxMs: executeDuration.maxMs,
+    executeImmediateDurationCount: immediateDuration.count,
+    executeImmediateDurationAvgMs: immediateDuration.avgMs,
+    executeImmediateDurationP95Ms: immediateDuration.p95Ms,
+    executeImmediateDurationMaxMs: immediateDuration.maxMs,
+    executeDebouncedDurationCount: debouncedDuration.count,
+    executeDebouncedDurationAvgMs: debouncedDuration.avgMs,
+    executeDebouncedDurationP95Ms: debouncedDuration.p95Ms,
+    executeDebouncedDurationMaxMs: debouncedDuration.maxMs,
+    executeForceDurationCount: forceDuration.count,
+    executeForceDurationAvgMs: forceDuration.avgMs,
+    executeForceDurationP95Ms: forceDuration.p95Ms,
+    executeForceDurationMaxMs: forceDuration.maxMs,
+    executeNonForceDurationCount: nonForceDuration.count,
+    executeNonForceDurationAvgMs: nonForceDuration.avgMs,
+    executeNonForceDurationP95Ms: nonForceDuration.p95Ms,
+    executeNonForceDurationMaxMs: nonForceDuration.maxMs,
+    lastExecuteStatus: normalized.lastExecuteStatus,
     ...(topReason
       ? {
           topReason: topReason.reason,
@@ -1024,6 +1125,13 @@ export function rankBuildReasons(stats, limit = 5) {
       executeImmediateNonForceCount: Number(item?.executeImmediateNonForceCount) || 0,
       executeDebouncedForceCount: Number(item?.executeDebouncedForceCount) || 0,
       executeDebouncedNonForceCount: Number(item?.executeDebouncedNonForceCount) || 0,
+      executeSuccessCount: Number(item?.executeSuccessCount) || 0,
+      executeFailureCount: Number(item?.executeFailureCount) || 0,
+      executeDurationTotalMs: roundDuration(Number(item?.executeDurationTotalMs) || 0),
+      executeDurationAvgMs: roundDuration(Number(item?.executeDurationAvgMs) || 0),
+      executeDurationP95Ms: roundDuration(Number(item?.executeDurationP95Ms) || 0),
+      executeDurationMaxMs: roundDuration(Number(item?.executeDurationMaxMs) || 0),
+      executeDurationCount: normalizeDurationSamples(item?.executeDurationSamplesMs).length,
     }))
     .filter(item => item.requestCount > 0 || item.executeCount > 0)
     .sort((left, right) => {
@@ -1031,6 +1139,42 @@ export function rankBuildReasons(stats, limit = 5) {
       if (right.requestCount !== left.requestCount) return right.requestCount - left.requestCount;
       if (right.debouncedRequestCount !== left.debouncedRequestCount) {
         return right.debouncedRequestCount - left.debouncedRequestCount;
+      }
+      return left.reason.localeCompare(right.reason);
+    })
+    .slice(0, Math.max(1, limit));
+}
+
+export function rankBuildSlowReasons(stats, limit = 5) {
+  const normalized = normalizeBuildDebugStats(stats);
+  return Object.entries(normalized.reasons)
+    .map(([reason, item]) => {
+      const duration = createDurationSummary(item?.executeDurationSamplesMs);
+      return {
+        reason,
+        executeCount: Number(item?.executeCount) || 0,
+        executeSuccessCount: Number(item?.executeSuccessCount) || 0,
+        executeFailureCount: Number(item?.executeFailureCount) || 0,
+        executeDurationCount: duration.count,
+        executeDurationTotalMs: duration.totalMs,
+        executeDurationAvgMs: duration.avgMs,
+        executeDurationP95Ms: duration.p95Ms,
+        executeDurationMaxMs: duration.maxMs,
+      };
+    })
+    .filter(item => item.executeDurationCount > 0)
+    .sort((left, right) => {
+      if (right.executeDurationP95Ms !== left.executeDurationP95Ms) {
+        return right.executeDurationP95Ms - left.executeDurationP95Ms;
+      }
+      if (right.executeDurationMaxMs !== left.executeDurationMaxMs) {
+        return right.executeDurationMaxMs - left.executeDurationMaxMs;
+      }
+      if (right.executeDurationAvgMs !== left.executeDurationAvgMs) {
+        return right.executeDurationAvgMs - left.executeDurationAvgMs;
+      }
+      if (right.executeDurationTotalMs !== left.executeDurationTotalMs) {
+        return right.executeDurationTotalMs - left.executeDurationTotalMs;
       }
       return left.reason.localeCompare(right.reason);
     })
@@ -2555,6 +2699,7 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   const buildTopReasons = Array.isArray(result.windowBuildDebugTopReasons)
     ? result.windowBuildDebugTopReasons
     : rankBuildReasons(result.windowBuildDebugStats);
+  const buildSlowReasons = rankBuildSlowReasons(result.windowBuildDebugStats);
   const buildFlowSummary =
     result.windowBuildFlowPressureSummary && Object.keys(result.windowBuildFlowPressureSummary).length
       ? result.windowBuildFlowPressureSummary
@@ -2792,6 +2937,32 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   lines.push(
     `Build requests: ${Number(buildDebugSummary.requestCount) || 0}, executes: ${Number(buildDebugSummary.executeCount) || 0}, immediate requests: ${Number(buildDebugSummary.immediateRequestCount) || 0}, debounced requests: ${Number(buildDebugSummary.debouncedRequestCount) || 0}, immediate force: ${Number(buildDebugSummary.immediateForceRequestCount) || 0}, immediate non-force: ${Number(buildDebugSummary.immediateNonForceRequestCount) || 0}, coalesced force: ${Number(buildDebugSummary.debouncedForceRequestCount) || 0}, coalesced non-force: ${Number(buildDebugSummary.debouncedNonForceRequestCount) || 0}, force requests: ${Number(buildDebugSummary.forceRequestCount) || 0}, force executes: ${Number(buildDebugSummary.executeForceCount) || 0}, pending overwrites: ${Number(buildDebugSummary.pendingOverwriteCount) || 0}, suppressed requests: ${Number(buildDebugSummary.suppressedRequestCount) || 0}, suppressed executes: ${Number(buildDebugSummary.suppressedExecuteCount) || 0}, debounce schedules: ${Number(buildDebugSummary.debouncedScheduleCount) || 0}`
   );
+  if ((Number(buildDebugSummary.executeDurationCount) || 0) > 0) {
+    lines.push('', '### Build execution duration', '');
+    lines.push(
+      `- all: count=${Number(buildDebugSummary.executeDurationCount) || 0}, ok=${Number(buildDebugSummary.executeSuccessCount) || 0}, error=${Number(buildDebugSummary.executeFailureCount) || 0}, total=${formatMs(Number(buildDebugSummary.executeDurationTotalMs) || 0)}, avg=${formatMs(Number(buildDebugSummary.executeDurationAvgMs) || 0)}, p95=${formatMs(Number(buildDebugSummary.executeDurationP95Ms) || 0)}, max=${formatMs(Number(buildDebugSummary.executeDurationMaxMs) || 0)}`
+    );
+    lines.push(
+      `- immediate: count=${Number(buildDebugSummary.executeImmediateDurationCount) || 0}, avg=${formatMs(Number(buildDebugSummary.executeImmediateDurationAvgMs) || 0)}, p95=${formatMs(Number(buildDebugSummary.executeImmediateDurationP95Ms) || 0)}, max=${formatMs(Number(buildDebugSummary.executeImmediateDurationMaxMs) || 0)}`
+    );
+    lines.push(
+      `- debounced: count=${Number(buildDebugSummary.executeDebouncedDurationCount) || 0}, avg=${formatMs(Number(buildDebugSummary.executeDebouncedDurationAvgMs) || 0)}, p95=${formatMs(Number(buildDebugSummary.executeDebouncedDurationP95Ms) || 0)}, max=${formatMs(Number(buildDebugSummary.executeDebouncedDurationMaxMs) || 0)}`
+    );
+    lines.push(
+      `- force: count=${Number(buildDebugSummary.executeForceDurationCount) || 0}, avg=${formatMs(Number(buildDebugSummary.executeForceDurationAvgMs) || 0)}, p95=${formatMs(Number(buildDebugSummary.executeForceDurationP95Ms) || 0)}, max=${formatMs(Number(buildDebugSummary.executeForceDurationMaxMs) || 0)}`
+    );
+    lines.push(
+      `- non-force: count=${Number(buildDebugSummary.executeNonForceDurationCount) || 0}, avg=${formatMs(Number(buildDebugSummary.executeNonForceDurationAvgMs) || 0)}, p95=${formatMs(Number(buildDebugSummary.executeNonForceDurationP95Ms) || 0)}, max=${formatMs(Number(buildDebugSummary.executeNonForceDurationMaxMs) || 0)}`
+    );
+    if (buildSlowReasons.length) {
+      lines.push('', '### Slow build reasons by execution duration', '');
+      for (const item of buildSlowReasons) {
+        lines.push(
+          `- ${item.reason}: count=${item.executeDurationCount}, ok=${item.executeSuccessCount}, error=${item.executeFailureCount}, total=${formatMs(item.executeDurationTotalMs)}, avg=${formatMs(item.executeDurationAvgMs)}, p95=${formatMs(item.executeDurationP95Ms)}, max=${formatMs(item.executeDurationMaxMs)}`
+        );
+      }
+    }
+  }
   if (buildFlowRows.length) {
     lines.push('', '### Build-heavy user-flow steps', '');
     for (const item of buildFlowRows) {

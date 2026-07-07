@@ -758,8 +758,16 @@ export interface BuildReasonDebugStatLike extends UnknownRecord {
   skippedSatisfiedRequestCount: number;
   repeatedExecuteCount: number;
   skippedRepeatedExecuteCount: number;
+  executeSuccessCount: number;
+  executeFailureCount: number;
+  executeDurationTotalMs: number;
+  executeDurationAvgMs: number;
+  executeDurationP95Ms: number;
+  executeDurationMaxMs: number;
+  executeDurationSamplesMs: number[];
   lastRequestTs?: number;
   lastExecuteTs?: number;
+  lastExecuteStatus?: string;
 }
 
 export interface BuilderDebugStatsLike extends UnknownRecord {
@@ -790,8 +798,36 @@ export interface BuilderDebugStatsLike extends UnknownRecord {
   skippedSatisfiedRequestCount: number;
   repeatedExecuteCount: number;
   skippedRepeatedExecuteCount: number;
+  executeSuccessCount: number;
+  executeFailureCount: number;
+  executeDurationTotalMs: number;
+  executeDurationAvgMs: number;
+  executeDurationP95Ms: number;
+  executeDurationMaxMs: number;
+  executeDurationSamplesMs: number[];
+  executeImmediateDurationTotalMs: number;
+  executeImmediateDurationAvgMs: number;
+  executeImmediateDurationP95Ms: number;
+  executeImmediateDurationMaxMs: number;
+  executeImmediateDurationSamplesMs: number[];
+  executeDebouncedDurationTotalMs: number;
+  executeDebouncedDurationAvgMs: number;
+  executeDebouncedDurationP95Ms: number;
+  executeDebouncedDurationMaxMs: number;
+  executeDebouncedDurationSamplesMs: number[];
+  executeForceDurationTotalMs: number;
+  executeForceDurationAvgMs: number;
+  executeForceDurationP95Ms: number;
+  executeForceDurationMaxMs: number;
+  executeForceDurationSamplesMs: number[];
+  executeNonForceDurationTotalMs: number;
+  executeNonForceDurationAvgMs: number;
+  executeNonForceDurationP95Ms: number;
+  executeNonForceDurationMaxMs: number;
+  executeNonForceDurationSamplesMs: number[];
   lastRequestReason: string;
   lastExecuteReason: string;
+  lastExecuteStatus: string;
   reasons: Record<string, BuildReasonDebugStatLike>;
 }
 

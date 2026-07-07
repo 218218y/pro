@@ -36,6 +36,12 @@ type ReasonStatNumericKey =
   | 'skippedSatisfiedRequestCount'
   | 'repeatedExecuteCount'
   | 'skippedRepeatedExecuteCount'
+  | 'executeSuccessCount'
+  | 'executeFailureCount'
+  | 'executeDurationTotalMs'
+  | 'executeDurationAvgMs'
+  | 'executeDurationP95Ms'
+  | 'executeDurationMaxMs'
   | 'lastRequestTs'
   | 'lastExecuteTs';
 
@@ -67,13 +73,35 @@ const REASON_STAT_NUMERIC_KEYS: ReasonStatNumericKey[] = [
   'skippedSatisfiedRequestCount',
   'repeatedExecuteCount',
   'skippedRepeatedExecuteCount',
+  'executeSuccessCount',
+  'executeFailureCount',
+  'executeDurationTotalMs',
+  'executeDurationAvgMs',
+  'executeDurationP95Ms',
+  'executeDurationMaxMs',
   'lastRequestTs',
   'lastExecuteTs',
 ];
 
 type BuilderDebugStatNumericKey =
   | Exclude<ReasonStatNumericKey, 'overwriteCount' | 'lastRequestTs' | 'lastExecuteTs'>
-  | 'pendingOverwriteCount';
+  | 'pendingOverwriteCount'
+  | 'executeImmediateDurationTotalMs'
+  | 'executeImmediateDurationAvgMs'
+  | 'executeImmediateDurationP95Ms'
+  | 'executeImmediateDurationMaxMs'
+  | 'executeDebouncedDurationTotalMs'
+  | 'executeDebouncedDurationAvgMs'
+  | 'executeDebouncedDurationP95Ms'
+  | 'executeDebouncedDurationMaxMs'
+  | 'executeForceDurationTotalMs'
+  | 'executeForceDurationAvgMs'
+  | 'executeForceDurationP95Ms'
+  | 'executeForceDurationMaxMs'
+  | 'executeNonForceDurationTotalMs'
+  | 'executeNonForceDurationAvgMs'
+  | 'executeNonForceDurationP95Ms'
+  | 'executeNonForceDurationMaxMs';
 
 const BUILDER_DEBUG_STAT_NUMERIC_KEYS: BuilderDebugStatNumericKey[] = [
   'requestCount',
@@ -103,6 +131,28 @@ const BUILDER_DEBUG_STAT_NUMERIC_KEYS: BuilderDebugStatNumericKey[] = [
   'skippedSatisfiedRequestCount',
   'repeatedExecuteCount',
   'skippedRepeatedExecuteCount',
+  'executeSuccessCount',
+  'executeFailureCount',
+  'executeDurationTotalMs',
+  'executeDurationAvgMs',
+  'executeDurationP95Ms',
+  'executeDurationMaxMs',
+  'executeImmediateDurationTotalMs',
+  'executeImmediateDurationAvgMs',
+  'executeImmediateDurationP95Ms',
+  'executeImmediateDurationMaxMs',
+  'executeDebouncedDurationTotalMs',
+  'executeDebouncedDurationAvgMs',
+  'executeDebouncedDurationP95Ms',
+  'executeDebouncedDurationMaxMs',
+  'executeForceDurationTotalMs',
+  'executeForceDurationAvgMs',
+  'executeForceDurationP95Ms',
+  'executeForceDurationMaxMs',
+  'executeNonForceDurationTotalMs',
+  'executeNonForceDurationAvgMs',
+  'executeNonForceDurationP95Ms',
+  'executeNonForceDurationMaxMs',
 ];
 
 export function nowForBuildStats(): number {
@@ -113,6 +163,18 @@ export function nowForBuildStats(): number {
   } catch {
     return Date.now();
   }
+}
+
+function normalizeDurationMs(value: unknown): number {
+  const numeric = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(numeric) ? Math.max(0, Math.round(numeric * 100) / 100) : 0;
+}
+
+function normalizeDurationSamples(value: unknown): number[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map(item => (Number.isFinite(Number(item)) ? normalizeDurationMs(item) : null))
+    .filter((item): item is number => item !== null);
 }
 
 export function normalizeBuildReason(reasonIn: unknown): string {
@@ -150,8 +212,16 @@ function createReasonDebugStat(reason: string): BuildReasonDebugStatLike {
     skippedSatisfiedRequestCount: 0,
     repeatedExecuteCount: 0,
     skippedRepeatedExecuteCount: 0,
+    executeSuccessCount: 0,
+    executeFailureCount: 0,
+    executeDurationTotalMs: 0,
+    executeDurationAvgMs: 0,
+    executeDurationP95Ms: 0,
+    executeDurationMaxMs: 0,
+    executeDurationSamplesMs: [],
     lastRequestTs: 0,
     lastExecuteTs: 0,
+    lastExecuteStatus: '',
   };
 }
 
@@ -184,8 +254,36 @@ export function createBuildDebugStats(): BuilderDebugStatsLike {
     skippedSatisfiedRequestCount: 0,
     repeatedExecuteCount: 0,
     skippedRepeatedExecuteCount: 0,
+    executeSuccessCount: 0,
+    executeFailureCount: 0,
+    executeDurationTotalMs: 0,
+    executeDurationAvgMs: 0,
+    executeDurationP95Ms: 0,
+    executeDurationMaxMs: 0,
+    executeDurationSamplesMs: [],
+    executeImmediateDurationTotalMs: 0,
+    executeImmediateDurationAvgMs: 0,
+    executeImmediateDurationP95Ms: 0,
+    executeImmediateDurationMaxMs: 0,
+    executeImmediateDurationSamplesMs: [],
+    executeDebouncedDurationTotalMs: 0,
+    executeDebouncedDurationAvgMs: 0,
+    executeDebouncedDurationP95Ms: 0,
+    executeDebouncedDurationMaxMs: 0,
+    executeDebouncedDurationSamplesMs: [],
+    executeForceDurationTotalMs: 0,
+    executeForceDurationAvgMs: 0,
+    executeForceDurationP95Ms: 0,
+    executeForceDurationMaxMs: 0,
+    executeForceDurationSamplesMs: [],
+    executeNonForceDurationTotalMs: 0,
+    executeNonForceDurationAvgMs: 0,
+    executeNonForceDurationP95Ms: 0,
+    executeNonForceDurationMaxMs: 0,
+    executeNonForceDurationSamplesMs: [],
     lastRequestReason: '',
     lastExecuteReason: '',
+    lastExecuteStatus: '',
     reasons: {},
   };
 }
@@ -214,6 +312,8 @@ function readReasonStat(value: unknown): BuildReasonDebugStatLike | null {
   for (const key of REASON_STAT_NUMERIC_KEYS) {
     next[key] = readReasonStatNumber(rec, key) ?? 0;
   }
+  next.executeDurationSamplesMs = normalizeDurationSamples(rec.executeDurationSamplesMs);
+  next.lastExecuteStatus = typeof rec.lastExecuteStatus === 'string' ? rec.lastExecuteStatus : '';
   return next as unknown as BuildReasonDebugStatLike;
 }
 
@@ -223,6 +323,12 @@ function normalizeBuildDebugStatsInPlace(stats: BuilderDebugStatsLike): void {
   }
   if (typeof stats.lastRequestReason !== 'string') stats.lastRequestReason = '';
   if (typeof stats.lastExecuteReason !== 'string') stats.lastExecuteReason = '';
+  if (typeof stats.lastExecuteStatus !== 'string') stats.lastExecuteStatus = '';
+  stats.executeDurationSamplesMs = normalizeDurationSamples(stats.executeDurationSamplesMs);
+  stats.executeImmediateDurationSamplesMs = normalizeDurationSamples(stats.executeImmediateDurationSamplesMs);
+  stats.executeDebouncedDurationSamplesMs = normalizeDurationSamples(stats.executeDebouncedDurationSamplesMs);
+  stats.executeForceDurationSamplesMs = normalizeDurationSamples(stats.executeForceDurationSamplesMs);
+  stats.executeNonForceDurationSamplesMs = normalizeDurationSamples(stats.executeNonForceDurationSamplesMs);
   stats.reasons = getReasonStatsMap(stats.reasons);
 }
 
@@ -252,6 +358,19 @@ export function getReasonStats(stats: BuilderDebugStatsLike, reason: string): Bu
 export function cloneBuildDebugStats(stats: BuilderDebugStatsLike): BuilderDebugStatsLike {
   return {
     ...stats,
-    reasons: { ...getReasonStatsMap(stats.reasons) },
+    executeDurationSamplesMs: [...normalizeDurationSamples(stats.executeDurationSamplesMs)],
+    executeImmediateDurationSamplesMs: [...normalizeDurationSamples(stats.executeImmediateDurationSamplesMs)],
+    executeDebouncedDurationSamplesMs: [...normalizeDurationSamples(stats.executeDebouncedDurationSamplesMs)],
+    executeForceDurationSamplesMs: [...normalizeDurationSamples(stats.executeForceDurationSamplesMs)],
+    executeNonForceDurationSamplesMs: [...normalizeDurationSamples(stats.executeNonForceDurationSamplesMs)],
+    reasons: Object.fromEntries(
+      Object.entries(getReasonStatsMap(stats.reasons)).map(([key, value]) => [
+        key,
+        {
+          ...value,
+          executeDurationSamplesMs: [...normalizeDurationSamples(value.executeDurationSamplesMs)],
+        },
+      ])
+    ),
   };
 }

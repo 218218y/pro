@@ -1,4 +1,8 @@
-import type { BuildStateLike, BuilderSchedulerStateInternalLike } from '../../../types/index.js';
+import type {
+  BuildStateLike,
+  BuilderDebugStatsLike,
+  BuilderSchedulerStateInternalLike,
+} from '../../../types/index.js';
 
 import { type SchedulerPendingPlan } from './scheduler_shared.js';
 import {
@@ -7,6 +11,126 @@ import {
   normalizeBuildReason,
 } from './scheduler_debug_stats_reason_store.js';
 import { readExecutionSignature, readPendingSignature } from './scheduler_debug_stats_signature_policy.js';
+
+type BuildExecuteStatus = 'ok' | 'error';
+
+type DurationStatsTarget = {
+  executeDurationTotalMs: number;
+  executeDurationAvgMs: number;
+  executeDurationP95Ms: number;
+  executeDurationMaxMs: number;
+  executeDurationSamplesMs: number[];
+};
+
+type DurationStatsSnapshot = {
+  totalMs: number;
+  avgMs: number;
+  p95Ms: number;
+  maxMs: number;
+  samplesMs: number[];
+};
+
+function normalizeDurationMs(value: unknown): number {
+  const numeric = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(numeric) ? Math.max(0, Math.round(numeric * 100) / 100) : 0;
+}
+
+function percentile(values: number[], pct: number): number {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((left, right) => left - right);
+  const rank = Math.min(sorted.length - 1, Math.max(0, Math.ceil(sorted.length * pct) - 1));
+  return sorted[rank] || 0;
+}
+
+function recordDurationSample(target: DurationStatsTarget, durationMsIn: unknown): void {
+  const durationMs = normalizeDurationMs(durationMsIn);
+  const samples = Array.isArray(target.executeDurationSamplesMs) ? target.executeDurationSamplesMs : [];
+  samples.push(durationMs);
+  target.executeDurationSamplesMs = samples;
+  target.executeDurationTotalMs = normalizeDurationMs((target.executeDurationTotalMs || 0) + durationMs);
+  target.executeDurationAvgMs = normalizeDurationMs(target.executeDurationTotalMs / samples.length);
+  target.executeDurationP95Ms = normalizeDurationMs(percentile(samples, 0.95));
+  target.executeDurationMaxMs = Math.max(normalizeDurationMs(target.executeDurationMaxMs), durationMs);
+}
+
+function createDurationSnapshot(
+  samplesIn: unknown,
+  totalMsIn: unknown,
+  maxMsIn: unknown,
+  durationMsIn: unknown
+): DurationStatsSnapshot {
+  const durationMs = normalizeDurationMs(durationMsIn);
+  const samplesMs = Array.isArray(samplesIn) ? [...samplesIn.map(item => normalizeDurationMs(item))] : [];
+  samplesMs.push(durationMs);
+  const totalMs = normalizeDurationMs((Number(totalMsIn) || 0) + durationMs);
+  return {
+    totalMs,
+    avgMs: normalizeDurationMs(totalMs / samplesMs.length),
+    p95Ms: normalizeDurationMs(percentile(samplesMs, 0.95)),
+    maxMs: Math.max(normalizeDurationMs(maxMsIn), durationMs),
+    samplesMs,
+  };
+}
+
+function recordSplitDurationSample(
+  stats: BuilderDebugStatsLike,
+  prefix: 'executeImmediate' | 'executeDebounced' | 'executeForce' | 'executeNonForce',
+  durationMs: number
+): void {
+  if (prefix === 'executeImmediate') {
+    const next = createDurationSnapshot(
+      stats.executeImmediateDurationSamplesMs,
+      stats.executeImmediateDurationTotalMs,
+      stats.executeImmediateDurationMaxMs,
+      durationMs
+    );
+    stats.executeImmediateDurationTotalMs = next.totalMs;
+    stats.executeImmediateDurationAvgMs = next.avgMs;
+    stats.executeImmediateDurationP95Ms = next.p95Ms;
+    stats.executeImmediateDurationMaxMs = next.maxMs;
+    stats.executeImmediateDurationSamplesMs = next.samplesMs;
+    return;
+  }
+  if (prefix === 'executeDebounced') {
+    const next = createDurationSnapshot(
+      stats.executeDebouncedDurationSamplesMs,
+      stats.executeDebouncedDurationTotalMs,
+      stats.executeDebouncedDurationMaxMs,
+      durationMs
+    );
+    stats.executeDebouncedDurationTotalMs = next.totalMs;
+    stats.executeDebouncedDurationAvgMs = next.avgMs;
+    stats.executeDebouncedDurationP95Ms = next.p95Ms;
+    stats.executeDebouncedDurationMaxMs = next.maxMs;
+    stats.executeDebouncedDurationSamplesMs = next.samplesMs;
+    return;
+  }
+  if (prefix === 'executeForce') {
+    const next = createDurationSnapshot(
+      stats.executeForceDurationSamplesMs,
+      stats.executeForceDurationTotalMs,
+      stats.executeForceDurationMaxMs,
+      durationMs
+    );
+    stats.executeForceDurationTotalMs = next.totalMs;
+    stats.executeForceDurationAvgMs = next.avgMs;
+    stats.executeForceDurationP95Ms = next.p95Ms;
+    stats.executeForceDurationMaxMs = next.maxMs;
+    stats.executeForceDurationSamplesMs = next.samplesMs;
+    return;
+  }
+  const next = createDurationSnapshot(
+    stats.executeNonForceDurationSamplesMs,
+    stats.executeNonForceDurationTotalMs,
+    stats.executeNonForceDurationMaxMs,
+    durationMs
+  );
+  stats.executeNonForceDurationTotalMs = next.totalMs;
+  stats.executeNonForceDurationAvgMs = next.avgMs;
+  stats.executeNonForceDurationP95Ms = next.p95Ms;
+  stats.executeNonForceDurationMaxMs = next.maxMs;
+  stats.executeNonForceDurationSamplesMs = next.samplesMs;
+}
 
 export function recordSkippedDuplicatePendingRequest(
   state: BuilderSchedulerStateInternalLike,
@@ -194,6 +318,37 @@ export function recordBuildExecute(
     perReason.repeatedExecuteCount += 1;
   }
   state.lastExecutedSignature = sig;
+
+  return reason;
+}
+
+export function recordBuildExecuteDuration(
+  state: BuilderSchedulerStateInternalLike,
+  reasonIn: unknown,
+  immediate: boolean,
+  forceBuild: boolean,
+  durationMsIn: unknown,
+  status: BuildExecuteStatus
+): string {
+  const reason = normalizeBuildReason(reasonIn);
+  const stats = ensureBuildDebugStats(state);
+  const perReason = getReasonStats(stats, reason);
+  const durationMs = normalizeDurationMs(durationMsIn);
+
+  if (status === 'ok') {
+    stats.executeSuccessCount += 1;
+    perReason.executeSuccessCount += 1;
+  } else {
+    stats.executeFailureCount += 1;
+    perReason.executeFailureCount += 1;
+  }
+  stats.lastExecuteStatus = status;
+  perReason.lastExecuteStatus = status;
+
+  recordDurationSample(stats, durationMs);
+  recordDurationSample(perReason, durationMs);
+  recordSplitDurationSample(stats, immediate ? 'executeImmediate' : 'executeDebounced', durationMs);
+  recordSplitDurationSample(stats, forceBuild ? 'executeForce' : 'executeNonForce', durationMs);
 
   return reason;
 }

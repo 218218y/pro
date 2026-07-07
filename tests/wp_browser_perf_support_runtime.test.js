@@ -38,6 +38,7 @@ import {
   rankStoreFlowPressure,
   rankBuildFlowPressure,
   rankBuildReasons,
+  rankBuildSlowReasons,
   rankUserJourneyDiagnosis,
   rankUserJourneys,
   evaluateBrowserPerfBaseline,
@@ -397,6 +398,7 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
   );
   assert.match(md, /Top store sources/);
   assert.match(md, /Builder scheduling pressure/);
+  assert.doesNotMatch(md, /Build execution duration/);
   assert.match(
     md,
     /Build requests: 6, executes: 4, immediate requests: 2, debounced requests: 4, immediate force: 0, immediate non-force: 2, coalesced force: 1, coalesced non-force: 3, force requests: 1, force executes: 1, pending overwrites: 2, suppressed requests: 1, suppressed executes: 1, debounce schedules: 3/
@@ -1586,6 +1588,30 @@ test('browser perf support summarizes build scheduling pressure canonically', ()
     builderWaitScheduleCount: 1,
     staleWakeupCount: 1,
     reasonCount: 2,
+    executeSuccessCount: 0,
+    executeFailureCount: 0,
+    executeDurationCount: 0,
+    executeDurationTotalMs: 0,
+    executeDurationAvgMs: 0,
+    executeDurationP95Ms: 0,
+    executeDurationMaxMs: 0,
+    executeImmediateDurationCount: 0,
+    executeImmediateDurationAvgMs: 0,
+    executeImmediateDurationP95Ms: 0,
+    executeImmediateDurationMaxMs: 0,
+    executeDebouncedDurationCount: 0,
+    executeDebouncedDurationAvgMs: 0,
+    executeDebouncedDurationP95Ms: 0,
+    executeDebouncedDurationMaxMs: 0,
+    executeForceDurationCount: 0,
+    executeForceDurationAvgMs: 0,
+    executeForceDurationP95Ms: 0,
+    executeForceDurationMaxMs: 0,
+    executeNonForceDurationCount: 0,
+    executeNonForceDurationAvgMs: 0,
+    executeNonForceDurationP95Ms: 0,
+    executeNonForceDurationMaxMs: 0,
+    lastExecuteStatus: null,
     topReason: 'apply-board-material',
     topReasonRequestCount: 6,
     topReasonExecuteCount: 4,
@@ -1918,6 +1944,101 @@ test('browser perf support summarizes build scheduling pressure canonically', ()
   });
   const rankedJourneys = rankJourneyBuildPressure(journeySummary, 1);
   assert.equal(rankedJourneys[0].name, 'cabinet-build-variants');
+});
+
+test('browser perf support summarizes real build execution duration only when samples exist', () => {
+  const stats = {
+    requestCount: 4,
+    executeCount: 4,
+    executeImmediateCount: 2,
+    executeDebouncedCount: 2,
+    executeForceCount: 1,
+    executeSuccessCount: 3,
+    executeFailureCount: 1,
+    executeDurationSamplesMs: [12, 30, 6, 18],
+    executeImmediateDurationSamplesMs: [12, 30],
+    executeDebouncedDurationSamplesMs: [6, 18],
+    executeForceDurationSamplesMs: [30],
+    executeNonForceDurationSamplesMs: [12, 6, 18],
+    reasons: {
+      'project.load': {
+        requestCount: 2,
+        executeCount: 2,
+        executeSuccessCount: 1,
+        executeFailureCount: 1,
+        executeDurationSamplesMs: [12, 30],
+      },
+      'react:structure:width': {
+        requestCount: 2,
+        executeCount: 2,
+        executeSuccessCount: 2,
+        executeFailureCount: 0,
+        executeDurationSamplesMs: [6, 18],
+      },
+    },
+  };
+
+  assert.deepEqual(
+    {
+      executeDurationCount: createBuildSummary(stats).executeDurationCount,
+      executeDurationTotalMs: createBuildSummary(stats).executeDurationTotalMs,
+      executeDurationAvgMs: createBuildSummary(stats).executeDurationAvgMs,
+      executeDurationP95Ms: createBuildSummary(stats).executeDurationP95Ms,
+      executeDurationMaxMs: createBuildSummary(stats).executeDurationMaxMs,
+      executeImmediateDurationAvgMs: createBuildSummary(stats).executeImmediateDurationAvgMs,
+      executeDebouncedDurationAvgMs: createBuildSummary(stats).executeDebouncedDurationAvgMs,
+      executeForceDurationAvgMs: createBuildSummary(stats).executeForceDurationAvgMs,
+      executeNonForceDurationAvgMs: createBuildSummary(stats).executeNonForceDurationAvgMs,
+    },
+    {
+      executeDurationCount: 4,
+      executeDurationTotalMs: 66,
+      executeDurationAvgMs: 16.5,
+      executeDurationP95Ms: 30,
+      executeDurationMaxMs: 30,
+      executeImmediateDurationAvgMs: 21,
+      executeDebouncedDurationAvgMs: 12,
+      executeForceDurationAvgMs: 30,
+      executeNonForceDurationAvgMs: 12,
+    }
+  );
+
+  const slowReasons = rankBuildSlowReasons(stats, 2);
+  assert.deepEqual(
+    slowReasons.map(item => item.reason),
+    ['project.load', 'react:structure:width']
+  );
+  assert.equal(slowReasons[0].executeDurationP95Ms, 30);
+
+  const md = summarizeBrowserPerfResult(
+    {
+      generatedAt: '2026-04-19T00:00:00.000Z',
+      userFlow: {},
+      userFlowSteps: [],
+      runtimeIssues: { pageErrors: [], consoleErrors: [] },
+      projectActionEvents: [],
+      windowPerfEntries: [],
+      windowBuildDebugStats: stats,
+    },
+    {
+      requiredRuntimeMetrics: [],
+      requiredRuntimeMetricMinimumCounts: {},
+      requiredProjectActions: [],
+      requiredUserJourneys: [],
+      requiredUserJourneyMinimumStepCounts: {},
+      requiredRuntimeOutcomeCoverage: {},
+      requiredRuntimeRecoverySequences: {},
+    }
+  );
+
+  assert.match(md, /Build execution duration/);
+  assert.match(md, /all: count=4, ok=3, error=1, total=66ms, avg=17ms, p95=30ms, max=30ms/);
+  assert.match(md, /immediate: count=2, avg=21ms, p95=30ms, max=30ms/);
+  assert.match(md, /debounced: count=2, avg=12ms, p95=18ms, max=18ms/);
+  assert.match(md, /force: count=1, avg=30ms, p95=30ms, max=30ms/);
+  assert.match(md, /non-force: count=3, avg=12ms, p95=18ms, max=18ms/);
+  assert.match(md, /Slow build reasons by execution duration/);
+  assert.match(md, /project\.load: count=2, ok=1, error=1, total=42ms, avg=21ms, p95=30ms, max=30ms/);
 });
 
 test('browser perf support baseline evaluation enforces build pressure budgets', () => {

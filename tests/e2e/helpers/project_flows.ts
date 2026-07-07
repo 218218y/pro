@@ -61,6 +61,13 @@ export type BuildDebugReasonStats = {
   executeImmediateNonForceCount: number;
   executeDebouncedForceCount: number;
   executeDebouncedNonForceCount: number;
+  executeSuccessCount: number;
+  executeFailureCount: number;
+  executeDurationTotalMs: number;
+  executeDurationAvgMs: number;
+  executeDurationP95Ms: number;
+  executeDurationMaxMs: number;
+  executeDurationSamplesMs: number[];
 };
 
 export type BuildDebugStats = {
@@ -91,8 +98,36 @@ export type BuildDebugStats = {
   skippedSatisfiedRequestCount: number;
   repeatedExecuteCount: number;
   skippedRepeatedExecuteCount: number;
+  executeSuccessCount: number;
+  executeFailureCount: number;
+  executeDurationTotalMs: number;
+  executeDurationAvgMs: number;
+  executeDurationP95Ms: number;
+  executeDurationMaxMs: number;
+  executeDurationSamplesMs: number[];
+  executeImmediateDurationTotalMs: number;
+  executeImmediateDurationAvgMs: number;
+  executeImmediateDurationP95Ms: number;
+  executeImmediateDurationMaxMs: number;
+  executeImmediateDurationSamplesMs: number[];
+  executeDebouncedDurationTotalMs: number;
+  executeDebouncedDurationAvgMs: number;
+  executeDebouncedDurationP95Ms: number;
+  executeDebouncedDurationMaxMs: number;
+  executeDebouncedDurationSamplesMs: number[];
+  executeForceDurationTotalMs: number;
+  executeForceDurationAvgMs: number;
+  executeForceDurationP95Ms: number;
+  executeForceDurationMaxMs: number;
+  executeForceDurationSamplesMs: number[];
+  executeNonForceDurationTotalMs: number;
+  executeNonForceDurationAvgMs: number;
+  executeNonForceDurationP95Ms: number;
+  executeNonForceDurationMaxMs: number;
+  executeNonForceDurationSamplesMs: number[];
   lastRequestReason: string;
   lastExecuteReason: string;
+  lastExecuteStatus: string;
   reasons: Record<string, BuildDebugReasonStats>;
 };
 
@@ -2139,6 +2174,38 @@ function normalizeDebugCount(value: unknown): number {
   return Number.isFinite(Number(value)) ? Math.max(0, Math.floor(Number(value))) : 0;
 }
 
+function normalizeDebugDuration(value: unknown): number {
+  return Number.isFinite(Number(value)) ? Math.max(0, Math.round(Number(value) * 100) / 100) : 0;
+}
+
+function normalizeDebugDurationSamples(value: unknown): number[] {
+  return Array.isArray(value)
+    ? value
+        .map(item => (Number.isFinite(Number(item)) ? normalizeDebugDuration(item) : null))
+        .filter((item): item is number => item !== null)
+    : [];
+}
+
+function percentileDuration(values: number[], pct: number): number {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((left, right) => left - right);
+  const index = Math.min(sorted.length - 1, Math.max(0, Math.ceil(sorted.length * pct) - 1));
+  return sorted[index] || 0;
+}
+
+function createDurationDelta(afterSamples: number[], beforeSamples: number[]) {
+  const samples =
+    afterSamples.length >= beforeSamples.length ? afterSamples.slice(beforeSamples.length) : afterSamples;
+  const totalMs = normalizeDebugDuration(samples.reduce((sum, value) => sum + value, 0));
+  return {
+    totalMs,
+    avgMs: samples.length ? normalizeDebugDuration(totalMs / samples.length) : 0,
+    p95Ms: normalizeDebugDuration(percentileDuration(samples, 0.95)),
+    maxMs: samples.length ? normalizeDebugDuration(Math.max(...samples)) : 0,
+    samplesMs: samples,
+  };
+}
+
 function normalizeBuildDebugReasonStats(value: unknown): BuildDebugReasonStats {
   const rec = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
   return {
@@ -2158,6 +2225,13 @@ function normalizeBuildDebugReasonStats(value: unknown): BuildDebugReasonStats {
     executeImmediateNonForceCount: normalizeDebugCount(rec.executeImmediateNonForceCount),
     executeDebouncedForceCount: normalizeDebugCount(rec.executeDebouncedForceCount),
     executeDebouncedNonForceCount: normalizeDebugCount(rec.executeDebouncedNonForceCount),
+    executeSuccessCount: normalizeDebugCount(rec.executeSuccessCount),
+    executeFailureCount: normalizeDebugCount(rec.executeFailureCount),
+    executeDurationTotalMs: normalizeDebugDuration(rec.executeDurationTotalMs),
+    executeDurationAvgMs: normalizeDebugDuration(rec.executeDurationAvgMs),
+    executeDurationP95Ms: normalizeDebugDuration(rec.executeDurationP95Ms),
+    executeDurationMaxMs: normalizeDebugDuration(rec.executeDurationMaxMs),
+    executeDurationSamplesMs: normalizeDebugDurationSamples(rec.executeDurationSamplesMs),
   };
 }
 
@@ -2198,8 +2272,36 @@ function normalizeBuildDebugStats(value: unknown): BuildDebugStats {
     skippedSatisfiedRequestCount: normalizeDebugCount(rec.skippedSatisfiedRequestCount),
     repeatedExecuteCount: normalizeDebugCount(rec.repeatedExecuteCount),
     skippedRepeatedExecuteCount: normalizeDebugCount(rec.skippedRepeatedExecuteCount),
+    executeSuccessCount: normalizeDebugCount(rec.executeSuccessCount),
+    executeFailureCount: normalizeDebugCount(rec.executeFailureCount),
+    executeDurationTotalMs: normalizeDebugDuration(rec.executeDurationTotalMs),
+    executeDurationAvgMs: normalizeDebugDuration(rec.executeDurationAvgMs),
+    executeDurationP95Ms: normalizeDebugDuration(rec.executeDurationP95Ms),
+    executeDurationMaxMs: normalizeDebugDuration(rec.executeDurationMaxMs),
+    executeDurationSamplesMs: normalizeDebugDurationSamples(rec.executeDurationSamplesMs),
+    executeImmediateDurationTotalMs: normalizeDebugDuration(rec.executeImmediateDurationTotalMs),
+    executeImmediateDurationAvgMs: normalizeDebugDuration(rec.executeImmediateDurationAvgMs),
+    executeImmediateDurationP95Ms: normalizeDebugDuration(rec.executeImmediateDurationP95Ms),
+    executeImmediateDurationMaxMs: normalizeDebugDuration(rec.executeImmediateDurationMaxMs),
+    executeImmediateDurationSamplesMs: normalizeDebugDurationSamples(rec.executeImmediateDurationSamplesMs),
+    executeDebouncedDurationTotalMs: normalizeDebugDuration(rec.executeDebouncedDurationTotalMs),
+    executeDebouncedDurationAvgMs: normalizeDebugDuration(rec.executeDebouncedDurationAvgMs),
+    executeDebouncedDurationP95Ms: normalizeDebugDuration(rec.executeDebouncedDurationP95Ms),
+    executeDebouncedDurationMaxMs: normalizeDebugDuration(rec.executeDebouncedDurationMaxMs),
+    executeDebouncedDurationSamplesMs: normalizeDebugDurationSamples(rec.executeDebouncedDurationSamplesMs),
+    executeForceDurationTotalMs: normalizeDebugDuration(rec.executeForceDurationTotalMs),
+    executeForceDurationAvgMs: normalizeDebugDuration(rec.executeForceDurationAvgMs),
+    executeForceDurationP95Ms: normalizeDebugDuration(rec.executeForceDurationP95Ms),
+    executeForceDurationMaxMs: normalizeDebugDuration(rec.executeForceDurationMaxMs),
+    executeForceDurationSamplesMs: normalizeDebugDurationSamples(rec.executeForceDurationSamplesMs),
+    executeNonForceDurationTotalMs: normalizeDebugDuration(rec.executeNonForceDurationTotalMs),
+    executeNonForceDurationAvgMs: normalizeDebugDuration(rec.executeNonForceDurationAvgMs),
+    executeNonForceDurationP95Ms: normalizeDebugDuration(rec.executeNonForceDurationP95Ms),
+    executeNonForceDurationMaxMs: normalizeDebugDuration(rec.executeNonForceDurationMaxMs),
+    executeNonForceDurationSamplesMs: normalizeDebugDurationSamples(rec.executeNonForceDurationSamplesMs),
     lastRequestReason: typeof rec.lastRequestReason === 'string' ? rec.lastRequestReason.trim() : '',
     lastExecuteReason: typeof rec.lastExecuteReason === 'string' ? rec.lastExecuteReason.trim() : '',
+    lastExecuteStatus: typeof rec.lastExecuteStatus === 'string' ? rec.lastExecuteStatus.trim() : '',
     reasons,
   };
 }
@@ -2226,6 +2328,10 @@ export function subtractBuildDebugStats(after: BuildDebugStats, before: BuildDeb
   for (const name of reasonNames) {
     const next = after.reasons[name];
     const prev = before.reasons[name];
+    const durationDelta = createDurationDelta(
+      next?.executeDurationSamplesMs || [],
+      prev?.executeDurationSamplesMs || []
+    );
     const delta: BuildDebugReasonStats = {
       requestCount: Math.max(0, (next?.requestCount || 0) - (prev?.requestCount || 0)),
       executeCount: Math.max(0, (next?.executeCount || 0) - (prev?.executeCount || 0)),
@@ -2279,11 +2385,44 @@ export function subtractBuildDebugStats(after: BuildDebugStats, before: BuildDeb
         0,
         (next?.executeDebouncedNonForceCount || 0) - (prev?.executeDebouncedNonForceCount || 0)
       ),
+      executeSuccessCount: Math.max(0, (next?.executeSuccessCount || 0) - (prev?.executeSuccessCount || 0)),
+      executeFailureCount: Math.max(0, (next?.executeFailureCount || 0) - (prev?.executeFailureCount || 0)),
+      executeDurationTotalMs: durationDelta.totalMs,
+      executeDurationAvgMs: durationDelta.avgMs,
+      executeDurationP95Ms: durationDelta.p95Ms,
+      executeDurationMaxMs: durationDelta.maxMs,
+      executeDurationSamplesMs: durationDelta.samplesMs,
     };
-    if (Object.values(delta).some(count => count > 0)) {
+    if (
+      delta.requestCount > 0 ||
+      delta.executeCount > 0 ||
+      delta.executeSuccessCount > 0 ||
+      delta.executeFailureCount > 0 ||
+      delta.executeDurationSamplesMs.length > 0
+    ) {
       reasons[name] = delta;
     }
   }
+  const executeDurationDelta = createDurationDelta(
+    after.executeDurationSamplesMs,
+    before.executeDurationSamplesMs
+  );
+  const executeImmediateDurationDelta = createDurationDelta(
+    after.executeImmediateDurationSamplesMs,
+    before.executeImmediateDurationSamplesMs
+  );
+  const executeDebouncedDurationDelta = createDurationDelta(
+    after.executeDebouncedDurationSamplesMs,
+    before.executeDebouncedDurationSamplesMs
+  );
+  const executeForceDurationDelta = createDurationDelta(
+    after.executeForceDurationSamplesMs,
+    before.executeForceDurationSamplesMs
+  );
+  const executeNonForceDurationDelta = createDurationDelta(
+    after.executeNonForceDurationSamplesMs,
+    before.executeNonForceDurationSamplesMs
+  );
   return {
     requestCount: Math.max(0, after.requestCount - before.requestCount),
     immediateRequestCount: Math.max(0, after.immediateRequestCount - before.immediateRequestCount),
@@ -2357,8 +2496,36 @@ export function subtractBuildDebugStats(after: BuildDebugStats, before: BuildDeb
       0,
       after.skippedRepeatedExecuteCount - before.skippedRepeatedExecuteCount
     ),
+    executeSuccessCount: Math.max(0, after.executeSuccessCount - before.executeSuccessCount),
+    executeFailureCount: Math.max(0, after.executeFailureCount - before.executeFailureCount),
+    executeDurationTotalMs: executeDurationDelta.totalMs,
+    executeDurationAvgMs: executeDurationDelta.avgMs,
+    executeDurationP95Ms: executeDurationDelta.p95Ms,
+    executeDurationMaxMs: executeDurationDelta.maxMs,
+    executeDurationSamplesMs: executeDurationDelta.samplesMs,
+    executeImmediateDurationTotalMs: executeImmediateDurationDelta.totalMs,
+    executeImmediateDurationAvgMs: executeImmediateDurationDelta.avgMs,
+    executeImmediateDurationP95Ms: executeImmediateDurationDelta.p95Ms,
+    executeImmediateDurationMaxMs: executeImmediateDurationDelta.maxMs,
+    executeImmediateDurationSamplesMs: executeImmediateDurationDelta.samplesMs,
+    executeDebouncedDurationTotalMs: executeDebouncedDurationDelta.totalMs,
+    executeDebouncedDurationAvgMs: executeDebouncedDurationDelta.avgMs,
+    executeDebouncedDurationP95Ms: executeDebouncedDurationDelta.p95Ms,
+    executeDebouncedDurationMaxMs: executeDebouncedDurationDelta.maxMs,
+    executeDebouncedDurationSamplesMs: executeDebouncedDurationDelta.samplesMs,
+    executeForceDurationTotalMs: executeForceDurationDelta.totalMs,
+    executeForceDurationAvgMs: executeForceDurationDelta.avgMs,
+    executeForceDurationP95Ms: executeForceDurationDelta.p95Ms,
+    executeForceDurationMaxMs: executeForceDurationDelta.maxMs,
+    executeForceDurationSamplesMs: executeForceDurationDelta.samplesMs,
+    executeNonForceDurationTotalMs: executeNonForceDurationDelta.totalMs,
+    executeNonForceDurationAvgMs: executeNonForceDurationDelta.avgMs,
+    executeNonForceDurationP95Ms: executeNonForceDurationDelta.p95Ms,
+    executeNonForceDurationMaxMs: executeNonForceDurationDelta.maxMs,
+    executeNonForceDurationSamplesMs: executeNonForceDurationDelta.samplesMs,
     lastRequestReason: after.lastRequestReason || before.lastRequestReason,
     lastExecuteReason: after.lastExecuteReason || before.lastExecuteReason,
+    lastExecuteStatus: after.lastExecuteStatus || before.lastExecuteStatus,
     reasons,
   };
 }

@@ -236,8 +236,12 @@ test('builder scheduler runtime: legacy debug stats are normalized without dropp
   let stats = getBuildDebugStats(harness.App);
   assert.equal(stats.debouncedNonForceRequestCount, 0);
   assert.equal(stats.executeDebouncedForceCount, 0);
+  assert.equal(stats.executeDurationTotalMs, 0);
+  assert.deepEqual(stats.executeDurationSamplesMs, []);
   assert.equal(stats.reasons.legacy?.requestCount, 1);
   assert.equal(stats.reasons.legacy?.debouncedNonForceRequestCount, 0);
+  assert.equal(stats.reasons.legacy?.executeDurationTotalMs, 0);
+  assert.deepEqual(stats.reasons.legacy?.executeDurationSamplesMs, []);
 
   requestBuild(harness.App, null, { reason: 'legacy:next' });
   stats = getBuildDebugStats(harness.App);
@@ -246,6 +250,95 @@ test('builder scheduler runtime: legacy debug stats are normalized without dropp
   assert.equal(stats.debouncedNonForceRequestCount, 1);
   assert.equal(stats.reasons.legacy?.requestCount, 1);
   assert.equal(stats.reasons['legacy:next']?.debouncedNonForceRequestCount, 1);
+});
+
+test('builder scheduler runtime: build execute duration is recorded by reason and request split', () => {
+  const harness = createSchedulerHarness('sig:timing:immediate');
+
+  requestBuild(harness.App, null, { reason: 'timing:immediate', immediate: true });
+  harness.setSignature('sig:timing:force');
+  requestBuild(harness.App, null, { reason: 'timing:force', force: true });
+  harness.flush();
+
+  const stats = getBuildDebugStats(harness.App);
+  assert.equal(stats.executeCount, 2);
+  assert.equal(stats.executeSuccessCount, 2);
+  assert.equal(stats.executeFailureCount, 0);
+  assert.equal(stats.executeDurationSamplesMs.length, 2);
+  assert.equal(stats.executeImmediateDurationSamplesMs.length, 1);
+  assert.equal(stats.executeDebouncedDurationSamplesMs.length, 1);
+  assert.equal(stats.executeForceDurationSamplesMs.length, 1);
+  assert.equal(stats.executeNonForceDurationSamplesMs.length, 1);
+  assert.equal(stats.lastExecuteStatus, 'ok');
+  assert.equal(stats.reasons['timing:immediate']?.executeDurationSamplesMs.length, 1);
+  assert.equal(stats.reasons['timing:force']?.executeDurationSamplesMs.length, 1);
+  assert.equal(stats.reasons['timing:force']?.executeForceCount, 1);
+});
+
+test('builder scheduler runtime: failed build execute still records duration and status', () => {
+  const reports: any[] = [];
+  const App: any = {
+    services: {
+      platform: {
+        reportError(err: unknown, ctx?: unknown) {
+          reports.push({ err, ctx });
+        },
+      },
+      builder: {
+        buildWardrobe() {
+          throw new Error('build exploded');
+        },
+      },
+    },
+    actions: {
+      builder: {
+        getBuildState() {
+          return {
+            ui: { panel: 'demo' },
+            config: {},
+            runtime: {},
+            mode: {},
+            meta: {},
+            build: { signature: 'sig:timing:error' },
+          };
+        },
+      },
+    },
+    boot: {
+      isReady() {
+        return true;
+      },
+    },
+  };
+
+  installBuilderScheduler(App, {
+    getBuildState() {
+      return {
+        ui: { panel: 'demo' },
+        build: { signature: 'sig:timing:error' },
+      } as any;
+    },
+  });
+
+  const originalConsoleError = console.error;
+  console.error = () => undefined;
+  try {
+    assert.doesNotThrow(() => requestBuild(App, null, { reason: 'timing:error', immediate: true }));
+  } finally {
+    console.error = originalConsoleError;
+  }
+
+  const stats = getBuildDebugStats(App);
+  assert.equal(stats.executeCount, 1);
+  assert.equal(stats.executeSuccessCount, 0);
+  assert.equal(stats.executeFailureCount, 1);
+  assert.equal(stats.lastExecuteStatus, 'error');
+  assert.equal(stats.executeDurationSamplesMs.length, 1);
+  assert.equal(stats.reasons['timing:error']?.executeFailureCount, 1);
+  assert.equal(stats.reasons['timing:error']?.lastExecuteStatus, 'error');
+  assert.equal(stats.reasons['timing:error']?.executeDurationSamplesMs.length, 1);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0]?.ctx?.where, 'builder/scheduler.requestBuild');
 });
 
 test('builder scheduler runtime: duplicate pending signature requests keep the original pending plan and avoid rescheduling churn', () => {

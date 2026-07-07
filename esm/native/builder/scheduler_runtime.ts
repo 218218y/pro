@@ -43,6 +43,7 @@ import {
   recordSkippedSatisfiedRequest,
   recordBuildRequest,
   recordBuildExecute,
+  recordBuildExecuteDuration,
   cloneBuildDebugStats,
   createBuildDebugStats,
   summarizeBuildDebugBudget,
@@ -78,6 +79,14 @@ function clearPendingBuildState(state: BuilderSchedulerStateInternalLike): void 
 function clearScheduledDebouncedRun(state: BuilderSchedulerStateInternalLike): void {
   state.debouncedRunScheduled = false;
   state.debouncedRunVersion = 0;
+}
+
+type BuildThenableResult = {
+  then: (onFulfilled: (value: unknown) => unknown, onRejected: (error: unknown) => unknown) => unknown;
+};
+
+function isBuildThenableResult(value: unknown): value is BuildThenableResult {
+  return !!value && typeof value === 'object' && typeof (value as { then?: unknown }).then === 'function';
 }
 
 function stagePendingBuildState(
@@ -193,10 +202,66 @@ function executePendingBuild(
     return null;
   }
 
-  recordBuildExecute(state, reason, immediate, forceBuild, buildState, nowForBuildStats(), executionPlan);
+  const execReason = recordBuildExecute(
+    state,
+    reason,
+    immediate,
+    forceBuild,
+    buildState,
+    nowForBuildStats(),
+    executionPlan
+  );
   clearPendingBuildState(state);
   invalidateBuilderWait(state);
-  return callBuild(App, buildState);
+  const startedAt = nowForBuildStats();
+  try {
+    const result = callBuild(App, buildState);
+    if (isBuildThenableResult(result)) {
+      return result.then(
+        value => {
+          recordBuildExecuteDuration(
+            state,
+            execReason,
+            immediate,
+            forceBuild,
+            nowForBuildStats() - startedAt,
+            'ok'
+          );
+          return value;
+        },
+        error => {
+          recordBuildExecuteDuration(
+            state,
+            execReason,
+            immediate,
+            forceBuild,
+            nowForBuildStats() - startedAt,
+            'error'
+          );
+          throw error;
+        }
+      );
+    }
+    recordBuildExecuteDuration(
+      state,
+      execReason,
+      immediate,
+      forceBuild,
+      nowForBuildStats() - startedAt,
+      'ok'
+    );
+    return result;
+  } catch (error) {
+    recordBuildExecuteDuration(
+      state,
+      execReason,
+      immediate,
+      forceBuild,
+      nowForBuildStats() - startedAt,
+      'error'
+    );
+    throw error;
+  }
 }
 
 export function runPendingBuildRuntime(App: AppContainer, reason: string, forceBuild = false): unknown {

@@ -26,6 +26,7 @@ export {
   recordSkippedSatisfiedRequest,
   recordBuildRequest,
   recordBuildExecute,
+  recordBuildExecuteDuration,
   recordSkippedRepeatedExecute,
 } from './scheduler_debug_stats_recorders.js';
 
