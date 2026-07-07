@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 
 import {
   buildPerfEntryOptionsFromActionResult,
@@ -31,8 +32,12 @@ test('prod observability surface stays no-op and preserves app actions', async (
   assert.equal(buildPerfEntryOptionsFromActionResult({ ok: false, reason: 'busy' }), undefined);
 
   const mark = markPerfPoint(app, 'project.save', { detail: { source: 'test' } });
+  assert.equal(mark.id, 'noop');
   assert.equal(mark.name, 'project.save');
   assert.equal(mark.status, 'mark');
+  assert.equal(mark.startTime, 0);
+  assert.equal(mark.endTime, 0);
+  assert.equal(mark.durationMs, 0);
   assert.deepEqual(mark.detail, { source: 'test' });
 
   const spanId = startPerfSpan(app, 'project.load');
@@ -44,6 +49,12 @@ test('prod observability surface stays no-op and preserves app actions', async (
 
   const asyncResult = await runPerfAction(app, 'project.async', async () => ({ ok: true, pending: true }));
   assert.deepEqual(asyncResult, { ok: true, pending: true });
+
+  const promise = Promise.resolve({ ok: true, identity: true });
+  assert.equal(
+    runPerfAction(app, 'project.promiseIdentity', () => promise),
+    promise
+  );
 
   const wrapped = await runWithPerfSpan(app, 'project.wrap', async () => 42);
   assert.equal(wrapped, 42);
@@ -70,4 +81,12 @@ test('prod observability surface stays no-op and preserves app actions', async (
   assert.equal(installPerfRuntimeSurface(app, win), null);
   assert.equal(installDebugConsoleSurface(app, win), null);
   assert.deepEqual(installObservabilityForBuild(app, win), { perf: null, debug: null });
+});
+
+test('prod observability source stays free of active timing probes', () => {
+  const source = fs.readFileSync('esm/native/runtime/observability_surface_prod.ts', 'utf8');
+  assert.doesNotMatch(source, /performance\.now\s*\(/);
+  assert.doesNotMatch(source, /Date\.now\s*\(/);
+  assert.doesNotMatch(source, /Math\.random\s*\(/);
+  assert.doesNotMatch(source, /perf_runtime_surface|perf_runtime_core|debug_console_surface/);
 });

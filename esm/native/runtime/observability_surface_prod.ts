@@ -13,22 +13,6 @@ import type {
   WardrobeProPerfStateFingerprint,
 } from '../../../types/index.js';
 
-const PERF_RESULT_MARK_REASONS = new Set([
-  'busy',
-  'cancelled',
-  'superseded',
-  'noop',
-  'same-hash',
-  'same-client',
-  'missing-file',
-  'missing-autosave',
-  'prompt',
-  'prompt-unavailable',
-  'confirm-unavailable',
-  'focus',
-  'typing',
-]);
-
 export type ObservabilityInstallResult = {
   perf: WardrobeProPerfConsoleSurface | null;
   debug: WardrobeProDebugConsoleSurface | null;
@@ -48,15 +32,9 @@ type PerfActionOptions<T> = PerfSpanOptions & {
   resolveEndOptions?: ((result: T) => PerfEntryOptions | void) | undefined;
 };
 
-function nowMs(): number {
-  try {
-    if (typeof performance !== 'undefined' && performance && typeof performance.now === 'function') {
-      return performance.now();
-    }
-  } catch {
-    // ignore
-  }
-  return Date.now();
+function normalizeNoopPerfEntryName(name: string): string {
+  const trimmed = typeof name === 'string' ? name.trim() : '';
+  return trimmed || 'unknown';
 }
 
 function createNoopEntry(
@@ -64,24 +42,15 @@ function createNoopEntry(
   status: WardrobeProPerfEntry['status'],
   detail?: unknown
 ): WardrobeProPerfEntry {
-  const stamp = nowMs();
   return {
-    id: `noop-${Math.random().toString(36).slice(2, 10)}`,
-    name: typeof name === 'string' && name.trim() ? name.trim() : 'unknown',
-    startTime: stamp,
-    endTime: stamp,
+    id: 'noop',
+    name: normalizeNoopPerfEntryName(name),
+    startTime: 0,
+    endTime: 0,
     durationMs: 0,
     status,
     ...(typeof detail !== 'undefined' ? { detail } : {}),
   };
-}
-
-function isPromiseLike<T>(value: unknown): value is PromiseLike<T> {
-  return (
-    !!value &&
-    (typeof value === 'object' || typeof value === 'function') &&
-    typeof Reflect.get(value, 'then') === 'function'
-  );
 }
 
 export function getObservabilityBuildMode(): 'client' {
@@ -89,10 +58,28 @@ export function getObservabilityBuildMode(): 'client' {
 }
 
 export function isNonErrorPerfResultReason(reason: unknown): boolean {
-  return typeof reason === 'string' && PERF_RESULT_MARK_REASONS.has(reason.trim());
+  if (typeof reason !== 'string') return false;
+  switch (reason.trim()) {
+    case 'busy':
+    case 'cancelled':
+    case 'superseded':
+    case 'noop':
+    case 'same-hash':
+    case 'same-client':
+    case 'missing-file':
+    case 'missing-autosave':
+    case 'prompt':
+    case 'prompt-unavailable':
+    case 'confirm-unavailable':
+    case 'focus':
+    case 'typing':
+      return true;
+    default:
+      return false;
+  }
 }
 
-export function buildPerfEntryOptionsFromActionResult(): PerfEntryOptions | undefined {
+export function buildPerfEntryOptionsFromActionResult(_result?: unknown): PerfEntryOptions | undefined {
   return undefined;
 }
 
@@ -131,11 +118,7 @@ export function runPerfAction<T>(
   run: () => T,
   _options: PerfActionOptions<T> = {}
 ): T {
-  const result = run();
-  if (isPromiseLike<T>(result)) {
-    return Promise.resolve(result) as T;
-  }
-  return result;
+  return run();
 }
 
 export function getPerfEntries(_App: AppContainer, _name?: string): WardrobeProPerfEntry[] {
