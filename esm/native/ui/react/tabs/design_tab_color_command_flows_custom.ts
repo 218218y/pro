@@ -21,6 +21,7 @@ import type { SaveCustomColorFlowArgs } from './design_tab_color_command_flows_c
 import { requestPromptFromFeedback } from '../../feedback_prompt_runtime.js';
 import { runPromptedAction } from '../../feedback_action_runtime.js';
 import type { SavedColor } from './design_tab_multicolor_panel.js';
+import { runSavedColorPerfStep } from './design_tab_saved_colors_perf_runtime.js';
 
 export function saveCustomColorByName(
   app: AppContainer,
@@ -43,27 +44,34 @@ export function saveCustomColorByName(
   }
 
   const id = nextSavedColorId(idFactory);
-  const next: SavedColor[] = savedColors.slice();
-  next.push(
-    isTexture
-      ? { id, name: trimmedName, type: 'texture', value: id, textureData: texture }
-      : { id, name: trimmedName, type: 'color', value: hex, textureData: null }
-  );
+  const next = runSavedColorPerfStep(app, 'design.savedColor.add.prepare', () => {
+    const prepared: SavedColor[] = savedColors.slice();
+    prepared.push(
+      isTexture
+        ? { id, name: trimmedName, type: 'texture', value: id, textureData: texture }
+        : { id, name: trimmedName, type: 'color', value: hex, textureData: null }
+    );
+    return prepared;
+  });
 
-  const nextOrder = buildSavedColorOrder(orderedSwatches)
-    .filter(value => value !== id)
-    .concat(id);
+  const nextOrder = runSavedColorPerfStep(app, 'design.savedColor.add.order', () =>
+    buildSavedColorOrder(orderedSwatches)
+      .filter(value => value !== id)
+      .concat(id)
+  );
   const meta = createStructuralMutationMeta('react:design:savedColors:add', {
     buildTiming: 'coalesced',
   });
-  applySavedColorsAtomicMutation(
-    app,
-    {
-      savedColors: next,
-      colorSwatchesOrder: nextOrder,
-      colorChoice: id,
-    },
-    meta
+  runSavedColorPerfStep(app, 'design.savedColor.add.mutation', () =>
+    applySavedColorsAtomicMutation(
+      app,
+      {
+        savedColors: next,
+        colorSwatchesOrder: nextOrder,
+        colorChoice: id,
+      },
+      meta
+    )
   );
 
   void applyColorChoice;
@@ -93,7 +101,9 @@ export async function runSaveCustomColorFlow(
   const defaultName = nextDefaultColorName(args.savedColors, !!trim(args.draftTextureData || ''));
   return await runPromptedAction<DesignTabColorActionResult>({
     request: () =>
-      requestPromptFromFeedback(args.feedback, 'תן שם לגוון החדש:', defaultName, 'שמירת גוון לא זמינה כרגע'),
+      runSavedColorPerfStep(args.app, 'design.savedColor.add.prompt', () =>
+        requestPromptFromFeedback(args.feedback, 'תן שם לגוון החדש:', defaultName, 'שמירת גוון לא זמינה כרגע')
+      ),
     onRequestError: message => buildDesignTabColorActionFailure('save-custom-color', 'error', {}, message),
     onCancelled: () => buildDesignTabColorActionFailure('save-custom-color', 'cancelled'),
     normalizeValue: value => String(value),

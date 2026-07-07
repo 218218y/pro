@@ -1,6 +1,12 @@
 import type { ActionMetaLike, AppContainer } from '../../../../../types';
 
-import { getStorageKey, patchViaActions, setStorageJSON } from '../../../services/api.js';
+import {
+  getStorageKey,
+  getStorageServiceMaybe,
+  patchViaActions,
+  reportError,
+  setStorageJSON,
+} from '../../../services/api.js';
 import {
   runHistoryBatch,
   setCfgColorSwatchesOrder,
@@ -9,6 +15,10 @@ import {
 } from '../actions/store_actions.js';
 
 import type { SavedColor } from './design_tab_multicolor_panel.js';
+import {
+  readSavedColorPerfMetricPrefix,
+  runSavedColorPerfStep,
+} from './design_tab_saved_colors_perf_runtime.js';
 
 type SavedColorsAtomicMutation = {
   savedColors?: SavedColor[];
@@ -48,6 +58,33 @@ function buildSavedColorsMutationPatch(mutation: SavedColorsAtomicMutation): Rec
   return patch;
 }
 
+function hasStorageJsonWriter(app: AppContainer): boolean {
+  const storage = getStorageServiceMaybe(app);
+  return !!(storage && typeof storage.setJSON === 'function');
+}
+
+function reportSavedColorsStorageWriteFailure(app: AppContainer, key: string): void {
+  reportError(
+    app,
+    new Error(`[WardrobePro] Saved colors storage write failed for ${key}.`),
+    {
+      where: 'native/ui/react/tabs/design_tab_saved_colors_atomic_runtime',
+      op: 'persistSavedColorsStorage.setStorageJSON',
+      fatal: false,
+    },
+    { consoleOutput: false }
+  );
+}
+
+function writeSavedColorsStorageJSON(app: AppContainer, key: string, value: unknown): boolean {
+  if (!hasStorageJsonWriter(app)) return false;
+  const ok = runSavedColorPerfStep(app, 'design.savedColor.storage.write', () =>
+    setStorageJSON(app, key, value)
+  );
+  if (!ok) reportSavedColorsStorageWriteFailure(app, key);
+  return ok;
+}
+
 function persistSavedColorsStorage(
   app: AppContainer,
   mutation: SavedColorsAtomicMutation,
@@ -57,17 +94,24 @@ function persistSavedColorsStorage(
   if (typeof mutation.savedColors === 'undefined' && typeof mutation.colorSwatchesOrder === 'undefined')
     return;
 
-  const savedColorsKey = getStorageKey(app, 'SAVED_COLORS', 'wardrobeSavedColors');
-  if (typeof mutation.savedColors !== 'undefined') {
-    setStorageJSON(app, savedColorsKey, cloneSavedColors(mutation.savedColors) || []);
-  }
-  if (typeof mutation.colorSwatchesOrder !== 'undefined') {
-    setStorageJSON(
-      app,
-      `${savedColorsKey}:order`,
-      cloneColorSwatchesOrder(mutation.colorSwatchesOrder) || []
-    );
-  }
+  const metricPrefix = readSavedColorPerfMetricPrefix(meta, 'design.savedColor.storage');
+  runSavedColorPerfStep(app, `${metricPrefix}.storage`, () => {
+    const savedColorsKey = getStorageKey(app, 'SAVED_COLORS', 'wardrobeSavedColors');
+    if (typeof mutation.savedColors !== 'undefined') {
+      writeSavedColorsStorageJSON(app, savedColorsKey, cloneSavedColors(mutation.savedColors) || []);
+    }
+    if (typeof mutation.colorSwatchesOrder !== 'undefined') {
+      writeSavedColorsStorageJSON(
+        app,
+        `${savedColorsKey}:order`,
+        cloneColorSwatchesOrder(mutation.colorSwatchesOrder) || []
+      );
+    }
+  });
+}
+
+function createFallbackMutationMeta(meta: ActionMetaLike | undefined): ActionMetaLike {
+  return { ...(meta || {}), noStorageWrite: true };
 }
 
 export function applySavedColorsAtomicMutation(
@@ -78,7 +122,8 @@ export function applySavedColorsAtomicMutation(
   const patch = buildSavedColorsMutationPatch(mutation);
   if (!Object.keys(patch).length) return;
 
-  if (patchViaActions(app, patch, meta)) {
+  const metricPrefix = readSavedColorPerfMetricPrefix(meta);
+  if (runSavedColorPerfStep(app, `${metricPrefix}.patch`, () => patchViaActions(app, patch, meta))) {
     persistSavedColorsStorage(app, mutation, meta);
     return;
   }
@@ -87,13 +132,19 @@ export function applySavedColorsAtomicMutation(
   const colorSwatchesOrder = cloneColorSwatchesOrder(mutation.colorSwatchesOrder);
   const colorChoice = typeof mutation.colorChoice === 'string' ? mutation.colorChoice : '';
 
-  runHistoryBatch(
-    app,
-    () => {
-      if (typeof savedColors !== 'undefined') setCfgSavedColors(app, savedColors, meta);
-      if (typeof colorSwatchesOrder !== 'undefined') setCfgColorSwatchesOrder(app, colorSwatchesOrder, meta);
-      if (colorChoice) setUiColorChoice(app, colorChoice, meta);
-    },
-    meta
+  const fallbackMeta = createFallbackMutationMeta(meta);
+
+  runSavedColorPerfStep(app, `${metricPrefix}.fallback`, () =>
+    runHistoryBatch(
+      app,
+      () => {
+        if (typeof savedColors !== 'undefined') setCfgSavedColors(app, savedColors, fallbackMeta);
+        if (typeof colorSwatchesOrder !== 'undefined')
+          setCfgColorSwatchesOrder(app, colorSwatchesOrder, fallbackMeta);
+        if (colorChoice) setUiColorChoice(app, colorChoice, meta);
+      },
+      meta
+    )
   );
+  persistSavedColorsStorage(app, mutation, meta);
 }

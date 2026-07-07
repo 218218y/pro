@@ -11,6 +11,7 @@ import {
   toggleSavedColorLock,
 } from '../esm/native/ui/react/tabs/design_tab_color_command_flows.js';
 import type { SavedColor } from '../esm/native/ui/react/tabs/design_tab_multicolor_panel.js';
+import { getPerfEntries } from '../esm/native/runtime/perf_runtime_surface.ts';
 
 function createAppHarness() {
   const state = {
@@ -265,6 +266,87 @@ test('saveCustomColorByName writes new saved color, order, and activates it', ()
     immediate: false,
   });
   assert.equal(state.batchCalls, 0);
+});
+
+test('saved color add records stage-level perf entries for diagnosis', () => {
+  const { app, applyColorChoice } = createAppHarness();
+  const result = saveCustomColorByName(
+    app as never,
+    BASE_SAVED_COLORS,
+    BASE_SAVED_COLORS,
+    '#abcdef',
+    null,
+    'גוון מדוד',
+    applyColorChoice,
+    () => 'saved_measured'
+  );
+
+  assert.equal(result.ok, true);
+  const metricNames = getPerfEntries(app as never).map(entry => entry.name);
+  assert.ok(metricNames.includes('design.savedColor.add.prepare'));
+  assert.ok(metricNames.includes('design.savedColor.add.order'));
+  assert.ok(metricNames.includes('design.savedColor.add.mutation'));
+  assert.ok(metricNames.includes('design.savedColor.add.patch'));
+  assert.ok(metricNames.includes('design.savedColor.add.storage'));
+  assert.ok(metricNames.includes('design.savedColor.storage.write'));
+});
+
+test('saved color atomic fallback still persists storage exactly once per branch', () => {
+  const { app, state, applyColorChoice } = createAppHarness();
+  delete (app as { actions?: { patch?: unknown } }).actions?.patch;
+
+  const result = saveCustomColorByName(
+    app as never,
+    BASE_SAVED_COLORS,
+    BASE_SAVED_COLORS,
+    '#abcdef',
+    null,
+    'גוון fallback',
+    applyColorChoice,
+    () => 'saved_fallback'
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(state.batchCalls, 1);
+  assert.equal(state.patchCalls.length, 0);
+  assert.deepEqual(
+    state.storageCalls.map(call => call.key),
+    ['savedColors', 'savedColors:order']
+  );
+  assert.deepEqual(state.colorSwatchesOrder.at(-1), 'saved_fallback');
+  assert.equal(state.appliedChoice, 'saved_fallback');
+});
+
+test('deleteSavedColor no-op guards avoid patch and storage writes', () => {
+  const { app, state, applyColorChoice } = createAppHarness();
+  const lockedSavedColors: SavedColor[] = [
+    BASE_SAVED_COLORS[0] as SavedColor,
+    { ...(BASE_SAVED_COLORS[1] as SavedColor), locked: true },
+    BASE_SAVED_COLORS[2] as SavedColor,
+  ];
+  const missing = deleteSavedColor(
+    app as never,
+    lockedSavedColors,
+    lockedSavedColors,
+    'saved_a',
+    'saved_missing',
+    applyColorChoice
+  );
+  const locked = deleteSavedColor(
+    app as never,
+    lockedSavedColors,
+    lockedSavedColors,
+    'saved_a',
+    'saved_b',
+    applyColorChoice
+  );
+
+  assert.equal(missing.ok, false);
+  assert.equal(missing.reason, 'missing');
+  assert.equal(locked.ok, false);
+  assert.equal(locked.reason, 'locked');
+  assert.equal(state.patchCalls.length, 0);
+  assert.equal(state.storageCalls.length, 0);
 });
 
 test('runSaveCustomColorFlow uses prompt default and returns cancelled on empty name', async () => {
