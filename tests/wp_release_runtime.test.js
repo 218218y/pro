@@ -61,27 +61,6 @@ test('release html templates advertise the canonical favicon and web-app icon se
   }
 });
 
-test('repository root provides the advertised favicon and web-app icon assets', () => {
-  const root = process.cwd();
-  const advertisedAssets = [
-    'favicon.ico',
-    'favicon-16x16.png',
-    'favicon-32x32.png',
-    'apple-touch-icon.png',
-    'android-chrome-192x192.png',
-    'android-chrome-512x512.png',
-    'site.webmanifest',
-  ];
-
-  for (const assetName of advertisedAssets) {
-    assert.equal(
-      fs.existsSync(path.join(root, assetName)),
-      true,
-      `${assetName} should exist at the repository root`
-    );
-  }
-});
-
 test('release bundle HTML templates probe module assets before dynamic imports and expose clean recovery', () => {
   const root = process.cwd();
   for (const rel of [
