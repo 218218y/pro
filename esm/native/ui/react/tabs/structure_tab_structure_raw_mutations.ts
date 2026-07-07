@@ -20,7 +20,11 @@ import {
   safeJsonParse,
   sumDoorsFromStructure,
 } from './structure_tab_library_helpers.js';
-import { applyStructureTemplateRecomputeBatch, structureTabReportNonFatal } from './structure_tab_core.js';
+import {
+  applyStructureTemplateRecomputeBatch,
+  structureTabReportNonFatal,
+  type StructureRecomputeBuildTiming,
+} from './structure_tab_core.js';
 import { normalizeStructureRawValue } from './structure_tab_dimension_constraints.js';
 import {
   createStructureTabNoBuildImmediateMeta,
@@ -48,6 +52,17 @@ function readStructurePerfMetricName(key: StructureTabNumericKey): string | null
       return 'structure.dimensions.depth.commit';
     default:
       return null;
+  }
+}
+
+function readStructureScalarBuildTiming(key: StructureTabNumericKey): StructureRecomputeBuildTiming {
+  switch (key) {
+    case 'width':
+    case 'height':
+    case 'depth':
+      return 'coalesced';
+    default:
+      return 'immediate';
   }
 }
 
@@ -322,6 +337,7 @@ export function commitStructureRawValue(args: {
         meta: m,
         uiPatch,
         statePatch,
+        buildTiming: readStructureScalarBuildTiming(key),
         mutate: () => {
           if (key === 'width' && !isManualWidth) {
             setManualWidth(

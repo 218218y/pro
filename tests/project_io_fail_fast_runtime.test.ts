@@ -28,6 +28,8 @@ function createProjectIoApp(overrides?: {
   const calls: string[] = [];
   const autosaveCalls: string[] = [];
   const editStateCalls: string[] = [];
+  const events: string[] = [];
+  const buildCalls: Array<{ uiOverride: unknown; meta?: Record<string, unknown> }> = [];
   const reports: Array<{ op: string; message: string }> = [];
   const runtimeFlags: Array<{ key: string; value: unknown }> = [];
   const toasts: Array<{ message: unknown; type: unknown }> = [];
@@ -56,6 +58,7 @@ function createProjectIoApp(overrides?: {
       overrides?.applyProjectSnapshot === undefined
         ? (_snapshot: Record<string, unknown>, meta?: Record<string, unknown>) => {
             calls.push(`config:${String(meta?.source || '')}`);
+            events.push(`config:${String(meta?.source || '')}`);
           }
         : overrides.applyProjectSnapshot;
   }
@@ -65,6 +68,7 @@ function createProjectIoApp(overrides?: {
       overrides?.commitUiSnapshot === undefined
         ? (_snapshot: Record<string, unknown>, meta?: Record<string, unknown>) => {
             calls.push(`commit:${String(meta?.source || '')}`);
+            events.push(`commit:${String(meta?.source || '')}`);
           }
         : overrides.commitUiSnapshot;
   }
@@ -74,6 +78,7 @@ function createProjectIoApp(overrides?: {
       overrides?.setDirty === undefined
         ? (next: boolean, meta?: Record<string, unknown>) => {
             calls.push(`dirty:${next}:${String(meta?.source || '')}`);
+            events.push(`dirty:${next}:${String(meta?.source || '')}`);
           }
         : overrides.setDirty;
   }
@@ -126,10 +131,18 @@ function createProjectIoApp(overrides?: {
                   overrides?.resetBaseline === undefined
                     ? (meta?: Record<string, unknown>) => {
                         calls.push(`history:${String(meta?.source || '')}`);
+                        events.push(`history:${String(meta?.source || '')}`);
                       }
                     : overrides.resetBaseline,
               },
             },
+      builder: {
+        requestBuild(uiOverride: unknown, meta?: Record<string, unknown>) {
+          buildCalls.push({ uiOverride, meta });
+          events.push(`build:${String(meta?.reason || meta?.source || '')}`);
+          return true;
+        },
+      },
       platform: {
         util: {
           log() {},
@@ -181,7 +194,18 @@ function createProjectIoApp(overrides?: {
   (App.services.projectIO as Record<string, unknown>).loadProjectData = orchestrator.loadProjectData;
   (App.services.projectIO as Record<string, unknown>).restoreLastSession = orchestrator.restoreLastSession;
 
-  return { App, calls, autosaveCalls, editStateCalls, reports, runtimeFlags, toasts, orchestrator };
+  return {
+    App,
+    calls,
+    autosaveCalls,
+    editStateCalls,
+    events,
+    buildCalls,
+    reports,
+    runtimeFlags,
+    toasts,
+    orchestrator,
+  };
 }
 
 const VALID_PROJECT = {
@@ -390,6 +414,40 @@ test('project io load clears wardrobe-type profile cache in fallback runtime wri
     runtimeFlags.some(flag => flag.key === 'wardrobeTypeProfiles' && flag.value === null),
     true
   );
+});
+
+test('project io load emits exactly one final builder request after a valid load and none for invalid input', () => {
+  const valid = createProjectIoApp();
+
+  const result = valid.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.deepEqual(result, { ok: true, restoreGen: 1 });
+  assert.deepEqual(valid.events, [
+    'commit:project.load',
+    'config:project.load',
+    'dirty:false:project.load',
+    'history:project.load',
+    'build:project.load',
+  ]);
+  assert.equal(valid.buildCalls.length, 1);
+  assert.deepEqual(valid.buildCalls[0], {
+    uiOverride: null,
+    meta: {
+      reason: 'project.load',
+      immediate: true,
+      force: true,
+    },
+  });
+
+  const invalid = createProjectIoApp();
+  const invalidResult = invalid.orchestrator.loadProjectData(
+    { settings: { wardrobeType: 'hinged' } } as never,
+    { toast: false }
+  );
+
+  assert.deepEqual(invalidResult, { ok: false, reason: 'invalid' });
+  assert.deepEqual(invalid.events, []);
+  assert.deepEqual(invalid.buildCalls, []);
 });
 
 test('project io load uses explicit snapshot APIs even when a root patch surface exists', () => {

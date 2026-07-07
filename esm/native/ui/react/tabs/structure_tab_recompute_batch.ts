@@ -22,12 +22,39 @@ export type StructurePatchRecomputeBatchArgs<TPatch extends UnknownRecord = Unkn
   mutate?: () => void;
   recomputeOpts?: StructureRecomputeOpts;
   mergeUiOverride?: StructureUiOverrideMerge;
+  buildTiming?: StructureRecomputeBuildTiming;
 };
 
 export const STRUCTURE_RECOMPUTE_OPTS = createStructuralModulesRecomputeOpts() as StructureRecomputeOpts;
 
+export type StructureRecomputeBuildTiming = 'immediate' | 'coalesced';
+
+export type StructureRecomputeBuildDefaults = {
+  source: string;
+  force: true;
+  immediate?: false;
+};
+
 export function createStructureRecomputeOpts(): StructureRecomputeOpts {
   return createStructuralModulesRecomputeOpts() as StructureRecomputeOpts;
+}
+
+function readStructureRecomputeBuildTiming(
+  buildTiming: StructureRecomputeBuildTiming | null | undefined
+): StructureRecomputeBuildTiming {
+  if (buildTiming == null) return 'immediate';
+  if (buildTiming === 'immediate' || buildTiming === 'coalesced') return buildTiming;
+  throw new Error(`[WardrobePro] Unknown structure recompute build timing: ${String(buildTiming)}`);
+}
+
+export function createStructureRecomputeBuildDefaults(
+  source: string,
+  buildTiming?: StructureRecomputeBuildTiming | null
+): StructureRecomputeBuildDefaults {
+  const timing = readStructureRecomputeBuildTiming(buildTiming);
+  const defaults: StructureRecomputeBuildDefaults = { source, force: true };
+  if (timing === 'coalesced') defaults.immediate = false;
+  return defaults;
 }
 
 export function mergeStructureUiOverride(
@@ -71,6 +98,7 @@ export function runStructurePatchRecomputeBatch<TPatch extends UnknownRecord = U
     mutate,
     recomputeOpts = createStructureRecomputeOpts(),
     mergeUiOverride = mergeStructureUiOverride,
+    buildTiming,
   } = args;
 
   runHistoryBatch(
@@ -78,7 +106,14 @@ export function runStructurePatchRecomputeBatch<TPatch extends UnknownRecord = U
     () => {
       applyStatePatchOrMutation(app, statePatch, meta, mutate);
       const override = mergeUiOverride(getUiSnapshot(app), uiPatch ?? null);
-      runAppStructuralModulesRecompute(app, override, null, { source, force: true }, recomputeOpts, {});
+      runAppStructuralModulesRecompute(
+        app,
+        override,
+        null,
+        createStructureRecomputeBuildDefaults(source, buildTiming),
+        recomputeOpts,
+        {}
+      );
     },
     meta
   );

@@ -41,9 +41,12 @@ function loadDesignTabEditModesControllerModule(calls) {
     }
     if (specifier === '../actions/structural_build_refresh_actions.js') {
       return {
-        applyImmediateStructuralUiMutation: (app, source, patch, applyDirectMutation) => {
-          calls.push(['applyImmediateStructuralUiMutation', app, source, patch]);
-          applyDirectMutation({ source, immediate: true });
+        applyStructuralUiMutation: (app, source, patch, applyDirectMutation, options) => {
+          calls.push(['applyStructuralUiMutation', app, source, patch, options]);
+          applyDirectMutation({
+            source,
+            immediate: options?.buildTiming === 'coalesced' ? false : true,
+          });
           return { appliedViaActions: false, requestedBuild: false };
         },
       };
@@ -124,9 +127,10 @@ test('[design-tab-edit-modes-controller] feature toggles and edit mode entry flo
   assert.ok(
     calls.some(
       entry =>
-        entry[0] === 'applyImmediateStructuralUiMutation' &&
+        entry[0] === 'applyStructuralUiMutation' &&
         entry[2] === 'react:design:splitDoors' &&
-        JSON.stringify(entry[3]) === JSON.stringify({ splitDoors: true })
+        JSON.stringify(entry[3]) === JSON.stringify({ splitDoors: true }) &&
+        JSON.stringify(entry[4]) === JSON.stringify({ buildTiming: 'coalesced' })
     )
   );
   assert.ok(
@@ -135,7 +139,7 @@ test('[design-tab-edit-modes-controller] feature toggles and edit mode entry flo
         entry[0] === 'setUiFlag' &&
         entry[2] === 'splitDoors' &&
         entry[3] === true &&
-        JSON.stringify(entry[4]) === JSON.stringify({ source: 'react:design:splitDoors', immediate: true })
+        JSON.stringify(entry[4]) === JSON.stringify({ source: 'react:design:splitDoors', immediate: false })
     )
   );
 
@@ -250,9 +254,12 @@ test('[design-tab-edit-modes-controller] failures stay reported without throwing
       }
       if (specifier === '../actions/structural_build_refresh_actions.js') {
         return {
-          applyImmediateStructuralUiMutation: (app, source, patch, applyDirectMutation) => {
-            realEnter(['applyImmediateStructuralUiMutation', app, source, patch]);
-            applyDirectMutation({ source, immediate: true });
+          applyStructuralUiMutation: (app, source, patch, applyDirectMutation, options) => {
+            realEnter(['applyStructuralUiMutation', app, source, patch, options]);
+            applyDirectMutation({
+              source,
+              immediate: options?.buildTiming === 'coalesced' ? false : true,
+            });
             return { appliedViaActions: false, requestedBuild: false };
           },
         };
@@ -380,7 +387,7 @@ test('[design-tab-edit-modes-controller] enabling grooves with existing groove d
     calls.some(entry => entry[0] === 'enterPrimaryMode'),
     false
   );
-  const buildMutationCall = calls.find(entry => entry[0] === 'applyImmediateStructuralUiMutation');
+  const buildMutationCall = calls.find(entry => entry[0] === 'applyStructuralUiMutation');
   assert.equal(buildMutationCall[2], 'react:design:groovesEnabled');
   assert.equal(JSON.stringify(buildMutationCall[3]), JSON.stringify({ groovesEnabled: true }));
 

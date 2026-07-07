@@ -4,54 +4,96 @@ import { KNOWN_PROJECT_CONFIG_MAP_KEYS } from '../../../features/project_config/
 import { patchViaActions, readConfigPatchDataKeys } from '../../../services/api.js';
 
 export type StructuralMutationSlice = 'config' | 'ui' | 'runtime';
+export type StructuralMutationBuildTiming = 'immediate' | 'coalesced' | 'none';
 
-export type ApplyImmediateStructuralMutationResult = {
+export type StructuralMutationOptions = {
+  buildTiming?: StructuralMutationBuildTiming;
+  metaOverrides?: ActionMetaLike;
+};
+
+export type ApplyStructuralMutationResult = {
   appliedViaActions: boolean;
   requestedBuild: boolean;
 };
 
-type ApplyImmediateStructuralMutationArgs = {
+export type ApplyImmediateStructuralMutationResult = ApplyStructuralMutationResult;
+
+type ApplyStructuralMutationArgs = {
   app: unknown;
   source: string;
   slice: StructuralMutationSlice;
   patch: UnknownRecord;
-  metaOverrides?: ActionMetaLike;
+  options?: StructuralMutationOptions;
   applyDirectMutation: (meta: ActionMetaLike) => void;
 };
 
-function normalizeImmediateStructuralMutationSource(source: string): string {
+type ApplyImmediateStructuralMutationArgs = Omit<ApplyStructuralMutationArgs, 'options'> & {
+  metaOverrides?: ActionMetaLike;
+};
+
+function normalizeStructuralMutationSource(source: string): string {
   const normalized = String(source || '').trim();
   if (!normalized) {
-    throw new Error('[WardrobePro] Immediate structural mutation requires a source.');
+    throw new Error('[WardrobePro] Structural mutation requires a source.');
   }
   return normalized;
+}
+
+function readStructuralMutationBuildTiming(
+  options?: StructuralMutationOptions | null
+): StructuralMutationBuildTiming {
+  const timing = options?.buildTiming;
+  if (timing == null) return 'immediate';
+  if (timing === 'immediate' || timing === 'coalesced' || timing === 'none') return timing;
+  throw new Error(`[WardrobePro] Unknown structural mutation build timing: ${String(timing)}`);
+}
+
+export function createStructuralMutationMeta(
+  source: string,
+  options?: StructuralMutationOptions | null
+): ActionMetaLike {
+  const metaOverrides = options?.metaOverrides;
+  const buildTiming = readStructuralMutationBuildTiming(options);
+  const meta: ActionMetaLike = metaOverrides ? { ...metaOverrides } : {};
+  meta.source = normalizeStructuralMutationSource(source);
+
+  if (buildTiming === 'none') {
+    meta.immediate = false;
+    meta.noBuild = true;
+    delete meta.force;
+    delete meta.forceBuild;
+    return meta;
+  }
+
+  meta.immediate = buildTiming === 'coalesced' ? false : true;
+  delete meta.noBuild;
+  return meta;
 }
 
 export function createImmediateStructuralMutationMeta(
   source: string,
   metaOverrides?: ActionMetaLike
 ): ActionMetaLike {
-  const meta: ActionMetaLike = metaOverrides ? { ...metaOverrides } : {};
-  meta.source = normalizeImmediateStructuralMutationSource(source);
-  meta.immediate = metaOverrides?.immediate === false ? false : true;
-  delete meta.noBuild;
-  return meta;
+  return createStructuralMutationMeta(source, {
+    buildTiming: 'immediate',
+    metaOverrides,
+  });
 }
 
-function createSliceImmediateStructuralMutationMeta(
+function createSliceStructuralMutationMeta(
   slice: StructuralMutationSlice,
   source: string,
-  metaOverrides?: ActionMetaLike
+  options?: StructuralMutationOptions | null
 ): ActionMetaLike {
-  const meta = createImmediateStructuralMutationMeta(source, metaOverrides);
+  const meta = createStructuralMutationMeta(source, options);
 
   // Runtime slice writes are normally profiled as transient/noBuild by the runtime
   // namespace because most runtime values are UI-only. Structural runtime inputs
   // (currently sketchMode) are different: the builder fingerprint reads them, so
-  // the immediate store reaction must be allowed to schedule a rebuild. Use an
+  // the store reaction must be allowed to schedule a rebuild. Use an
   // explicit false sentinel so downstream transient meta merging cannot re-add
   // a no-build profile after this helper already stripped caller-provided noBuild.
-  if (slice === 'runtime') meta.noBuild = false;
+  if (slice === 'runtime' && readStructuralMutationBuildTiming(options) !== 'none') meta.noBuild = false;
 
   return meta;
 }
@@ -78,7 +120,21 @@ function assertNoMixedConfigMapPatch(patch: UnknownRecord, knownMapKeys: readonl
 export function applyImmediateStructuralMutation(
   args: ApplyImmediateStructuralMutationArgs
 ): ApplyImmediateStructuralMutationResult {
-  const meta = createSliceImmediateStructuralMutationMeta(args.slice, args.source, args.metaOverrides);
+  return applyStructuralMutation({
+    app: args.app,
+    source: args.source,
+    slice: args.slice,
+    patch: args.patch,
+    options: {
+      buildTiming: 'immediate',
+      metaOverrides: args.metaOverrides,
+    },
+    applyDirectMutation: args.applyDirectMutation,
+  });
+}
+
+export function applyStructuralMutation(args: ApplyStructuralMutationArgs): ApplyStructuralMutationResult {
+  const meta = createSliceStructuralMutationMeta(args.slice, args.source, args.options);
 
   if (args.slice === 'config') {
     const knownMapKeys = readKnownConfigMapPatchKeys(args.patch);
@@ -102,10 +158,27 @@ export function applyImmediateStructuralMutation(
   return {
     appliedViaActions,
     // Build scheduling is intentionally delegated to canonical store reactivity.
-    // The immediate semantic meta above is the build request contract; this helper
+    // The semantic meta above is the build request contract; this helper
     // must not add a second explicit structural-refresh request.
     requestedBuild: false,
   };
+}
+
+export function applyStructuralConfigMutation(
+  app: unknown,
+  source: string,
+  configPatch: UnknownRecord,
+  applyDirectMutation: (meta: ActionMetaLike) => void,
+  options?: StructuralMutationOptions
+): ApplyStructuralMutationResult {
+  return applyStructuralMutation({
+    app,
+    source,
+    slice: 'config',
+    patch: configPatch,
+    options,
+    applyDirectMutation,
+  });
 }
 
 export function applyImmediateStructuralConfigMutation(
@@ -115,12 +188,25 @@ export function applyImmediateStructuralConfigMutation(
   applyDirectMutation: (meta: ActionMetaLike) => void,
   metaOverrides?: ActionMetaLike
 ): ApplyImmediateStructuralMutationResult {
-  return applyImmediateStructuralMutation({
+  return applyStructuralConfigMutation(app, source, configPatch, applyDirectMutation, {
+    buildTiming: 'immediate',
+    metaOverrides,
+  });
+}
+
+export function applyStructuralUiMutation(
+  app: unknown,
+  source: string,
+  uiPatch: UnknownRecord,
+  applyDirectMutation: (meta: ActionMetaLike) => void,
+  options?: StructuralMutationOptions
+): ApplyStructuralMutationResult {
+  return applyStructuralMutation({
     app,
     source,
-    slice: 'config',
-    patch: configPatch,
-    metaOverrides,
+    slice: 'ui',
+    patch: uiPatch,
+    options,
     applyDirectMutation,
   });
 }
@@ -132,12 +218,25 @@ export function applyImmediateStructuralUiMutation(
   applyDirectMutation: (meta: ActionMetaLike) => void,
   metaOverrides?: ActionMetaLike
 ): ApplyImmediateStructuralMutationResult {
-  return applyImmediateStructuralMutation({
+  return applyStructuralUiMutation(app, source, uiPatch, applyDirectMutation, {
+    buildTiming: 'immediate',
+    metaOverrides,
+  });
+}
+
+export function applyStructuralRuntimeMutation(
+  app: unknown,
+  source: string,
+  runtimePatch: UnknownRecord,
+  applyDirectMutation: (meta: ActionMetaLike) => void,
+  options?: StructuralMutationOptions
+): ApplyStructuralMutationResult {
+  return applyStructuralMutation({
     app,
     source,
-    slice: 'ui',
-    patch: uiPatch,
-    metaOverrides,
+    slice: 'runtime',
+    patch: runtimePatch,
+    options,
     applyDirectMutation,
   });
 }
@@ -149,12 +248,8 @@ export function applyImmediateStructuralRuntimeMutation(
   applyDirectMutation: (meta: ActionMetaLike) => void,
   metaOverrides?: ActionMetaLike
 ): ApplyImmediateStructuralMutationResult {
-  return applyImmediateStructuralMutation({
-    app,
-    source,
-    slice: 'runtime',
-    patch: runtimePatch,
+  return applyStructuralRuntimeMutation(app, source, runtimePatch, applyDirectMutation, {
+    buildTiming: 'immediate',
     metaOverrides,
-    applyDirectMutation,
   });
 }

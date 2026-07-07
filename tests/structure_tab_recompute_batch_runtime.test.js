@@ -101,3 +101,39 @@ test('[structure-tab-recompute-batch] accepts caller-owned ui override merge pol
     JSON.stringify({ raw: { width: 120, height: 220 }, customMerge: true })
   );
 });
+
+test('[structure-tab-recompute-batch] coalesced build timing keeps recompute sync and defers only build execution', () => {
+  const calls = [];
+  const app = { id: 'app' };
+  const meta = { source: 'react:structure:width', immediate: true, noBuild: true };
+  const mod = loadStructureTabRecomputeBatchModule({
+    calls,
+    uiSnapshot: { raw: { width: 120 } },
+    patchViaActions: () => true,
+  });
+
+  mod.runStructurePatchRecomputeBatch({
+    app,
+    source: 'react:structure:width',
+    meta,
+    uiPatch: { raw: { width: 180 } },
+    statePatch: { ui: { raw: { width: 180 } } },
+    recomputeOpts: { structureChanged: true, preserveTemplate: true, anchorSide: 'left' },
+    buildTiming: 'coalesced',
+  });
+
+  const recompute = calls.find(entry => entry[0] === 'runAppStructuralModulesRecompute');
+  assert.equal(
+    JSON.stringify(recompute?.[4]),
+    JSON.stringify({ source: 'react:structure:width', force: true, immediate: false })
+  );
+});
+
+test('[structure-tab-recompute-batch] unknown build timing fails fast instead of falling back silently', () => {
+  const mod = loadStructureTabRecomputeBatchModule({ calls: [] });
+
+  assert.throws(
+    () => mod.createStructureRecomputeBuildDefaults('react:structure:test', 'later-but-not-really'),
+    /Unknown structure recompute build timing/
+  );
+});

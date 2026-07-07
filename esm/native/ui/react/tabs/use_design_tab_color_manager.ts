@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 
 import { setUiColorChoice } from '../actions/store_actions.js';
-import { applyImmediateStructuralUiMutation } from '../actions/structural_build_refresh_actions.js';
+import { applyStructuralUiMutation } from '../actions/structural_build_refresh_actions.js';
 import {
   buildOrderedSwatches,
   isKnownSavedColorId,
@@ -23,7 +23,7 @@ import { useDesignTabSavedSwatches } from './use_design_tab_saved_swatches.js';
 
 export type { DesignTabColorManagerModel } from './design_tab_color_manager_shared.js';
 
-const COALESCED_DESIGN_COLOR_BUILD_META = { immediate: false } as const;
+const COALESCED_DESIGN_COLOR_BUILD_OPTIONS = { buildTiming: 'coalesced' } as const;
 
 export function useDesignTabColorManager(args: UseDesignTabColorManagerArgs): DesignTabColorManagerModel {
   const savedColors = useMemo(
@@ -45,14 +45,14 @@ export function useDesignTabColorManager(args: UseDesignTabColorManagerArgs): De
     (choice: string, source = 'react:design:colorChoice') => {
       const value = String(choice || '');
       if (!value || value === String(args.colorChoice || '')) return;
-      applyImmediateStructuralUiMutation(
+      applyStructuralUiMutation(
         args.app,
         source,
         { colorChoice: value },
         meta => {
           setUiColorChoice(args.app, value, meta);
         },
-        COALESCED_DESIGN_COLOR_BUILD_META
+        COALESCED_DESIGN_COLOR_BUILD_OPTIONS
       );
     },
     [args.app, args.colorChoice]

@@ -1,4 +1,4 @@
-export type { StructureRecomputeOpts } from './structure_tab_core.js';
+export type { StructureRecomputeBuildTiming, StructureRecomputeOpts } from './structure_tab_core.js';
 export {
   applyStructureTemplateRecomputeBatch,
   asFiniteInt,

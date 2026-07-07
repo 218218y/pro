@@ -139,41 +139,41 @@ test('[design-tab-controller-runtime] delegates structural ui writes through can
         'patchViaActions',
         app,
         { ui: { doorStyle: 'profile' } },
-        { immediate: false, source: 'react:design:doorStyle' },
+        { source: 'react:design:doorStyle', immediate: false },
       ],
       [
         'patchViaActions',
         app,
         { ui: { corniceType: 'wave' } },
-        { immediate: false, source: 'react:design:corniceType' },
+        { source: 'react:design:corniceType', immediate: false },
       ],
-      ['runHistoryBatch', app, { immediate: false, source: 'react:design:grooveLinesCount' }],
+      ['runHistoryBatch', app, { source: 'react:design:grooveLinesCount', immediate: false }],
       ['materializeActiveGrooveLinesCountMap', app],
       [
         'replaceDoorGrooveLinesCountMap',
         app,
         { active: 4 },
-        { immediate: false, source: 'react:design:grooveLinesCount:freezeExisting' },
+        { source: 'react:design:grooveLinesCount:freezeExisting', immediate: false },
       ],
       [
         'patchViaActions',
         app,
         { config: { grooveLinesCount: 7 } },
-        { immediate: false, source: 'react:design:grooveLinesCount' },
+        { source: 'react:design:grooveLinesCount', immediate: false },
       ],
-      ['runHistoryBatch', app, { immediate: false, source: 'react:design:grooveLinesCount:reset' }],
+      ['runHistoryBatch', app, { source: 'react:design:grooveLinesCount:reset', immediate: false }],
       ['materializeActiveGrooveLinesCountMap', app],
       [
         'replaceDoorGrooveLinesCountMap',
         app,
         { active: 4 },
-        { immediate: false, source: 'react:design:grooveLinesCount:freezeExisting' },
+        { source: 'react:design:grooveLinesCount:freezeExisting', immediate: false },
       ],
       [
         'patchViaActions',
         app,
         { config: { grooveLinesCount: null } },
-        { immediate: false, source: 'react:design:grooveLinesCount:reset' },
+        { source: 'react:design:grooveLinesCount:reset', immediate: false },
       ],
     ])
   );
@@ -251,7 +251,7 @@ test('[design-tab-controller-runtime] toggles rounded shelves for removed frame 
   assert.equal(calls.length, 2);
   assert.equal(calls[0][0], 'runHistoryBatch');
   assert.equal(calls[0][1], app);
-  assert.deepEqual({ ...calls[0][2] }, { immediate: false, source: 'react:design:roundedFrameSideShelves' });
+  assert.deepEqual({ ...calls[0][2] }, { source: 'react:design:roundedFrameSideShelves', immediate: false });
   assert.equal(calls[1][0], 'replaceRoundedFrameSideShelvesMap');
   assert.equal(calls[1][1], app);
   assert.deepEqual({ ...calls[1][2] }, { body_right: true, body_left: true });

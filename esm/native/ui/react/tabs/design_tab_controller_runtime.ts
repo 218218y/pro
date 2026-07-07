@@ -2,9 +2,9 @@ import type { AppContainer } from '../../../../../types';
 
 import { runHistoryBatch, setCfgScalar, setUiCorniceType, setUiDoorStyle } from '../actions/store_actions.js';
 import {
-  applyImmediateStructuralConfigMutation,
-  applyImmediateStructuralUiMutation,
-  createImmediateStructuralMutationMeta,
+  applyStructuralConfigMutation,
+  applyStructuralUiMutation,
+  createStructuralMutationMeta,
 } from '../actions/structural_build_refresh_actions.js';
 import {
   ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME,
@@ -38,7 +38,7 @@ export type CreateDesignTabControllerRuntimeArgs = {
   setFeatureToggle: (key: DesignTabFeatureToggleKey, on: boolean) => void;
 };
 
-const COALESCED_DESIGN_STRUCTURAL_BUILD_META = { immediate: false } as const;
+const COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS = { buildTiming: 'coalesced' } as const;
 
 export function normalizeDesignTabGrooveLinesCount(count: number): number {
   return Math.max(1, Math.floor(Number(count) || 0));
@@ -47,14 +47,14 @@ export function normalizeDesignTabGrooveLinesCount(count: number): number {
 function freezeExistingGrooveLinesCount(app: AppContainer): void {
   const source = 'react:design:grooveLinesCount:freezeExisting';
   const nextMap = materializeActiveGrooveLinesCountMap(app);
-  applyImmediateStructuralConfigMutation(
+  applyStructuralConfigMutation(
     app,
     source,
     { grooveLinesCountMap: nextMap },
     meta => {
       replaceDoorGrooveLinesCountMap(app, nextMap, meta);
     },
-    COALESCED_DESIGN_STRUCTURAL_BUILD_META
+    COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS
   );
 }
 
@@ -99,28 +99,28 @@ export function createDesignTabControllerRuntime(
     setDoorStyle(style: DesignTabDoorStyle) {
       const next = String(style || '');
       if (!next || readCurrentUiString(app, 'doorStyle') === next) return;
-      applyImmediateStructuralUiMutation(
+      applyStructuralUiMutation(
         app,
         'react:design:doorStyle',
         { doorStyle: next },
         meta => {
           setUiDoorStyle(app, next, meta);
         },
-        COALESCED_DESIGN_STRUCTURAL_BUILD_META
+        COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS
       );
     },
 
     setCorniceType(value: DesignTabCorniceType) {
       const next = String(value || '');
       if (readCurrentUiString(app, 'corniceType') === next) return;
-      applyImmediateStructuralUiMutation(
+      applyStructuralUiMutation(
         app,
         'react:design:corniceType',
         { corniceType: next },
         meta => {
           setUiCorniceType(app, next, meta);
         },
-        COALESCED_DESIGN_STRUCTURAL_BUILD_META
+        COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS
       );
     },
 
@@ -137,17 +137,17 @@ export function createDesignTabControllerRuntime(
         app,
         () => {
           freezeExistingGrooveLinesCount(app);
-          applyImmediateStructuralConfigMutation(
+          applyStructuralConfigMutation(
             app,
             source,
             { grooveLinesCount: nextValue },
             meta => {
               setCfgScalar(app, 'grooveLinesCount', nextValue, meta);
             },
-            COALESCED_DESIGN_STRUCTURAL_BUILD_META
+            COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS
           );
         },
-        createImmediateStructuralMutationMeta(source, COALESCED_DESIGN_STRUCTURAL_BUILD_META)
+        createStructuralMutationMeta(source, COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS)
       );
     },
 
@@ -157,17 +157,17 @@ export function createDesignTabControllerRuntime(
         app,
         () => {
           freezeExistingGrooveLinesCount(app);
-          applyImmediateStructuralConfigMutation(
+          applyStructuralConfigMutation(
             app,
             source,
             { grooveLinesCount: null },
             meta => {
               setCfgScalar(app, 'grooveLinesCount', null, meta);
             },
-            COALESCED_DESIGN_STRUCTURAL_BUILD_META
+            COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS
           );
         },
-        createImmediateStructuralMutationMeta(source, COALESCED_DESIGN_STRUCTURAL_BUILD_META)
+        createStructuralMutationMeta(source, COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS)
       );
     },
 
@@ -184,17 +184,17 @@ export function createDesignTabControllerRuntime(
       runHistoryBatch(
         app,
         () => {
-          applyImmediateStructuralConfigMutation(
+          applyStructuralConfigMutation(
             app,
             source,
             { [ROUNDED_FRAME_SIDE_SHELVES_MAP_NAME]: nextMap },
             meta => {
               replaceRoundedFrameSideShelvesMap(app, nextMap, meta);
             },
-            COALESCED_DESIGN_STRUCTURAL_BUILD_META
+            COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS
           );
         },
-        createImmediateStructuralMutationMeta(source, COALESCED_DESIGN_STRUCTURAL_BUILD_META)
+        createStructuralMutationMeta(source, COALESCED_DESIGN_STRUCTURAL_BUILD_OPTIONS)
       );
     },
   };

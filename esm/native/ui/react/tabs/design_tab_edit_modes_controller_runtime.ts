@@ -2,7 +2,7 @@ import type { AppContainer, UnknownRecord } from '../../../../../types';
 
 import { enterPrimaryMode, exitPrimaryMode } from '../actions/modes_actions.js';
 import { setUiFlag } from '../actions/store_actions.js';
-import { applyImmediateStructuralUiMutation } from '../actions/structural_build_refresh_actions.js';
+import { applyStructuralUiMutation } from '../actions/structural_build_refresh_actions.js';
 import { __designTabReportNonFatal } from './design_tab_multicolor_shared.js';
 import type {
   DesignTabFeatureToggleKey,
@@ -51,10 +51,16 @@ export type DesignTabEditModesController = {
   toggleRemoveDoorEdit: () => void;
 };
 
+const COALESCED_DESIGN_SPLIT_DOORS_BUILD_OPTIONS = { buildTiming: 'coalesced' } as const;
+
 function readModeKey(value: string): string {
   return String(value || '')
     .trim()
     .toLowerCase();
+}
+
+function readFeatureToggleBuildOptions(key: DesignTabFeatureToggleKey) {
+  return key === 'splitDoors' ? COALESCED_DESIGN_SPLIT_DOORS_BUILD_OPTIONS : undefined;
 }
 
 export function readDesignTabEditModesState(args: ReadDesignTabEditModesStateArgs): DesignTabEditModesState {
@@ -198,9 +204,15 @@ export function createDesignTabEditModesController(
     const source = `react:design:${key}`;
     const uiPatch = { [key]: nextOn };
     const applyDirectFeatureToggle = () => {
-      applyImmediateStructuralUiMutation(args.app, source, uiPatch, meta => {
-        setUiFlag(args.app, key, nextOn, meta);
-      });
+      applyStructuralUiMutation(
+        args.app,
+        source,
+        uiPatch,
+        meta => {
+          setUiFlag(args.app, key, nextOn, meta);
+        },
+        readFeatureToggleBuildOptions(key)
+      );
     };
     activeFeatureToggleTransaction = { uiPatch, source, consumed: false };
 

@@ -1,4 +1,5 @@
 import { setCfgSavedColors } from '../actions/store_actions.js';
+import { createStructuralMutationMeta } from '../actions/structural_build_refresh_actions.js';
 
 import type { AppContainer } from '../../../../../types';
 import type { SavedColor } from './design_tab_multicolor_panel.js';
@@ -100,7 +101,9 @@ export function deleteSavedColor(
   const nextSaved = savedColors.filter(color => trim(color.id) !== targetId);
   const nextOrder = buildSavedColorOrder(orderedSwatches).filter(value => value !== targetId);
   const deletedWasSelected = trim(colorChoice) === targetId;
-  const meta = { source: 'react:design:savedColors:delete', immediate: false };
+  const meta = createStructuralMutationMeta('react:design:savedColors:delete', {
+    buildTiming: 'coalesced',
+  });
 
   applySavedColorsAtomicMutation(
     app,

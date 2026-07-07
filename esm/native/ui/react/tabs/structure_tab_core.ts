@@ -1,3 +1,4 @@
+export type { StructureRecomputeBuildTiming } from './structure_tab_core_recompute.js';
 export type { StructureRecomputeOpts } from './structure_tab_core_contracts.js';
 
 export { getModelsService } from './structure_tab_core_models.js';

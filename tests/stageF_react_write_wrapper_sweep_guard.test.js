@@ -174,8 +174,11 @@ test('[stageF] React write hotspots use canonical wrapper sweep for common ui/co
     assert,
     structuralBuildRefreshActions,
     [
+      /export function createStructuralMutationMeta\(\s*source: string,\s*options\?: StructuralMutationOptions \| null\s*\): ActionMetaLike/,
       /export function createImmediateStructuralMutationMeta\(\s*source: string,\s*metaOverrides\?: ActionMetaLike\s*\): ActionMetaLike/,
-      /normalizeImmediateStructuralMutationSource\(source\)/,
+      /normalizeStructuralMutationSource\(source\)/,
+      /buildTiming === 'none'/,
+      /meta\.noBuild = true/,
       /KNOWN_PROJECT_CONFIG_MAP_KEYS/,
       /function readKnownConfigMapPatchKeys\(/,
       /function assertNoMixedConfigMapPatch\(/,
@@ -192,7 +195,7 @@ test('[stageF] React write hotspots use canonical wrapper sweep for common ui/co
   assertLacksAll(
     assert,
     structuralBuildRefreshActions,
-    [/requestBuilderStructuralRefresh\(/, /noBuild:\s*true/],
+    [/requestBuilderStructuralRefresh\(/],
     'structuralBuildRefreshActions'
   );
 

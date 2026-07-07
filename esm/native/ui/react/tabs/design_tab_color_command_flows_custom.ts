@@ -1,4 +1,5 @@
 import { setCfgCustomUploadedDataURL } from '../actions/store_actions.js';
+import { createStructuralMutationMeta } from '../actions/structural_build_refresh_actions.js';
 
 import type { AppContainer } from '../../../../../types';
 
@@ -52,7 +53,9 @@ export function saveCustomColorByName(
   const nextOrder = buildSavedColorOrder(orderedSwatches)
     .filter(value => value !== id)
     .concat(id);
-  const meta = { source: 'react:design:savedColors:add', immediate: false };
+  const meta = createStructuralMutationMeta('react:design:savedColors:add', {
+    buildTiming: 'coalesced',
+  });
   applySavedColorsAtomicMutation(
     app,
     {

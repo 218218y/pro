@@ -200,6 +200,7 @@ test('[structure-raw-mutations] width commit batches manual-width config with ui
   assert.ok(batchCall);
   const args = batchCall[1];
   assert.equal(args.source, 'react:structure:width');
+  assert.equal(args.buildTiming, 'coalesced');
   assert.equal(JSON.stringify(args.uiPatch), JSON.stringify({ raw: { width: 220 } }));
   assert.equal(
     JSON.stringify(args.statePatch),
@@ -226,6 +227,7 @@ test('[structure-raw-mutations] doors commit collapses auto-width fix into the s
   assert.ok(batchCall);
   const args = batchCall[1];
   assert.equal(args.source, 'react:structure:doors');
+  assert.equal(args.buildTiming, undefined);
   assert.equal(
     JSON.stringify(args.statePatch),
     JSON.stringify({
@@ -234,6 +236,27 @@ test('[structure-raw-mutations] doors commit collapses auto-width fix into the s
     })
   );
   assert.ok(!calls.some(entry => entry[0] === 'setManualWidth'));
+});
+
+test('[structure-raw-mutations] height and depth commits request coalesced build timing', () => {
+  for (const [key, nextValue] of [
+    ['height', 260],
+    ['depth', 70],
+  ]) {
+    const calls = [];
+    const mod = loadTsModule('esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts', calls);
+
+    mod.commitStructureRawValue({
+      ...baseArgs({ getDisplayedRawValue: field => ({ [key]: 1 })[field] || 0 }),
+      key,
+      nextValue,
+    });
+
+    const batchCall = calls.find(entry => entry[0] === 'applyStructureTemplateRecomputeBatch');
+    assert.ok(batchCall);
+    assert.equal(batchCall[1].source, `react:structure:${key}`);
+    assert.equal(batchCall[1].buildTiming, 'coalesced');
+  }
 });
 
 test('[structure-raw-mutations] stack-split lower doors commit uses one ui patch instead of split writes', () => {
