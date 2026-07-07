@@ -63,15 +63,20 @@ function loadInteriorActionsHarness(initialUi = {}) {
         };
       }
       if (specifier === './structural_build_refresh_actions.js') {
-        const buildMeta = (sourceName, overrides = {}) => {
-          const meta = { ...overrides, source: String(sourceName || '').trim(), immediate: true };
+        const buildMeta = (sourceName, options = {}) => {
+          const overrides = options?.metaOverrides || {};
+          const meta = {
+            ...overrides,
+            source: String(sourceName || '').trim(),
+            immediate: options?.buildTiming === 'coalesced' ? false : true,
+          };
           delete meta.noBuild;
           return meta;
         };
         return {
-          applyImmediateStructuralUiMutation: (_app, sourceName, patch, applyDirectMutation, overrides) => {
-            calls.push(['applyImmediateStructuralUiMutation', sourceName, patch, overrides]);
-            applyDirectMutation(buildMeta(sourceName, overrides));
+          applyStructuralUiMutation: (_app, sourceName, patch, applyDirectMutation, options) => {
+            calls.push(['applyStructuralUiMutation', sourceName, patch, options]);
+            applyDirectMutation(buildMeta(sourceName, options));
             return { appliedViaActions: false, requestedBuild: false };
           },
         };
@@ -85,23 +90,30 @@ function loadInteriorActionsHarness(initialUi = {}) {
   return { api: mod.exports, calls, store, app };
 }
 
-test('[interior-actions] internal drawer toggle routes through immediate structural ui mutation', () => {
+test('[interior-actions] internal drawer toggle routes through coalesced structural ui mutation', () => {
   const { api, calls, store, app } = loadInteriorActionsHarness();
 
   api.setInternalDrawersEnabled(app, true);
 
   assert.equal(store.ui.internalDrawersEnabled, true);
+  assert.equal(
+    calls.some(entry => entry[0] === 'applyImmediateStructuralUiMutation'),
+    false
+  );
   assert.ok(
     calls.some(
       entry =>
-        entry[0] === 'applyImmediateStructuralUiMutation' &&
+        entry[0] === 'applyStructuralUiMutation' &&
         entry[1] === 'react:interior:sketchIntDrawersToggle' &&
         JSON.stringify(entry[2]) === JSON.stringify({ internalDrawersEnabled: true }) &&
         JSON.stringify(entry[3]) ===
           JSON.stringify({
-            source: 'react:interior:sketchIntDrawersToggle',
-            immediate: true,
-            profile: 'interactive',
+            buildTiming: 'coalesced',
+            metaOverrides: {
+              source: 'react:interior:sketchIntDrawersToggle',
+              immediate: true,
+              profile: 'interactive',
+            },
           })
     )
   );
@@ -114,7 +126,7 @@ test('[interior-actions] internal drawer toggle routes through immediate structu
         JSON.stringify(entry[3]) ===
           JSON.stringify({
             source: 'react:interior:sketchIntDrawersToggle',
-            immediate: true,
+            immediate: false,
             profile: 'interactive',
           })
     )
@@ -129,6 +141,10 @@ test('[interior-actions] internal drawer toggle keeps semantic no-op quiet', () 
   assert.equal(store.ui.internalDrawersEnabled, true);
   assert.equal(
     calls.some(entry => entry[0] === 'applyImmediateStructuralUiMutation'),
+    false
+  );
+  assert.equal(
+    calls.some(entry => entry[0] === 'applyStructuralUiMutation'),
     false
   );
   assert.equal(

@@ -76,6 +76,7 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
     windowStoreDebugSummary: {
       commitCount: 9,
       noopSkipCount: 2,
+      noBuildCount: 3,
       selectorListenerCount: 4,
       selectorNotifyCount: 18,
       sourceCount: 2,
@@ -92,6 +93,7 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
         type: 'PATCH',
         slices: ['config', 'meta'],
         count: 3,
+        noBuildCount: 1,
         totalMs: 24,
         maxMs: 11,
         lastMs: 8,
@@ -103,6 +105,7 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
         durationMs: 440,
         commitCount: 8,
         noopSkipCount: 2,
+        noBuildCount: 2,
         selectorNotifyCount: 16,
         selectorListenerCount: 4,
         sourceCount: 2,
@@ -116,8 +119,10 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
       executeCount: 4,
       immediateRequestCount: 2,
       debouncedRequestCount: 4,
+      forceRequestCount: 1,
       executeImmediateCount: 1,
       executeDebouncedCount: 3,
+      executeForceCount: 1,
       pendingOverwriteCount: 2,
       suppressedRequestCount: 1,
       suppressedExecuteCount: 1,
@@ -137,8 +142,10 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
         executeCount: 3,
         immediateRequestCount: 1,
         debouncedRequestCount: 3,
+        forceRequestCount: 1,
         executeImmediateCount: 1,
         executeDebouncedCount: 2,
+        executeForceCount: 1,
       },
     ],
     windowBuildFlowPressureSummary: {
@@ -148,8 +155,10 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
         executeCount: 4,
         immediateRequestCount: 2,
         debouncedRequestCount: 4,
+        forceRequestCount: 1,
         executeImmediateCount: 1,
         executeDebouncedCount: 3,
+        executeForceCount: 1,
         pendingOverwriteCount: 2,
         suppressedRequestCount: 1,
         suppressedExecuteCount: 1,
@@ -167,8 +176,10 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
         executeCount: 6,
         immediateRequestCount: 2,
         debouncedRequestCount: 7,
+        forceRequestCount: 1,
         executeImmediateCount: 1,
         executeDebouncedCount: 5,
+        executeForceCount: 1,
         pendingOverwriteCount: 3,
         suppressedRequestCount: 2,
         suppressedExecuteCount: 1,
@@ -310,7 +321,7 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
   assert.match(md, /Store write pressure/);
   assert.match(
     md,
-    /Store commits: 9, no-op skips: 2, selector notifications: 18, tracked sources: 2, slow sources: 1, total source time: 36ms/
+    /Store commits: 9, no-op skips: 2, noBuild commits: 3, selector notifications: 18, tracked sources: 2, slow sources: 1, total source time: 36ms/
   );
   assert.match(md, /Store-heavy user-flow steps/);
   assert.match(
@@ -321,19 +332,22 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
   assert.match(md, /Builder scheduling pressure/);
   assert.match(
     md,
-    /Build requests: 6, executes: 4, pending overwrites: 2, suppressed requests: 1, suppressed executes: 1, debounce schedules: 3/
+    /Build requests: 6, executes: 4, immediate requests: 2, debounced requests: 4, force requests: 1, force executes: 1, pending overwrites: 2, suppressed requests: 1, suppressed executes: 1, debounce schedules: 3/
   );
   assert.match(md, /Build-heavy user-flow steps/);
   assert.match(
     md,
-    /project\.save-load\.roundtrip: requests=6, executes=4, pendingOverwrites=2, suppressedRequests=1, debounce=4, duration=440ms, topReasons=apply-board-material/
+    /project\.save-load\.roundtrip: requests=6, executes=4, forceRequests=1, forceExecutes=1, pendingOverwrites=2, suppressedRequests=1, debounce=4, duration=440ms, topReasons=apply-board-material/
   );
   assert.match(md, /Top build reasons/);
-  assert.match(md, /apply-board-material: requests=4, executes=3, immediateRequests=1, debouncedRequests=3/);
+  assert.match(
+    md,
+    /apply-board-material: requests=4, executes=3, immediateRequests=1, debouncedRequests=3, forceRequests=1, forceExecutes=1/
+  );
   assert.match(md, /Build-heavy customer journeys/);
   assert.match(
     md,
-    /cabinet-build-variants: steps=2, requests=9, executes=6, pendingOverwrites=3, suppressedRequests=2, debounce=5, total=780ms, topReasons=apply-board-material, toggle-door-style/
+    /cabinet-build-variants: steps=2, requests=9, executes=6, forceRequests=1, forceExecutes=1, pendingOverwrites=3, suppressedRequests=2, debounce=5, total=780ms, topReasons=apply-board-material, toggle-door-style/
   );
   assert.match(md, /Customer journeys/);
   assert.match(
@@ -349,7 +363,7 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
   assert.match(md, /- none required/);
   assert.match(
     md,
-    /PATCH:actions\.project\.save:config\+meta: source=actions\.project\.save, type=PATCH, slices=config\+meta, count=3, total=24ms, max=11ms, slow=1/
+    /PATCH:actions\.project\.save:config\+meta: source=actions\.project\.save, type=PATCH, slices=config\+meta, count=3, noBuild=1, total=24ms, max=11ms, slow=1/
   );
   assert.match(md, /Runtime outcome coverage/);
   assert.match(md, /project\.load: statuses=ok\/error, ok=1, error=1, mark=0, mixed=yes/);
@@ -1248,6 +1262,7 @@ test('browser perf support summarizes store write pressure and ranks noisy sourc
   const stats = {
     commitCount: 9,
     noopSkipCount: 2,
+    noBuildCount: 3,
     selectorListenerCount: 4,
     selectorNotifyCount: 18,
     sources: {
@@ -1256,6 +1271,7 @@ test('browser perf support summarizes store write pressure and ranks noisy sourc
         type: 'PATCH',
         slices: ['config', 'meta'],
         count: 3,
+        noBuildCount: 1,
         totalMs: 24,
         maxMs: 11,
         lastMs: 8,
@@ -1266,6 +1282,7 @@ test('browser perf support summarizes store write pressure and ranks noisy sourc
         type: 'PATCH',
         slices: ['runtime'],
         count: 4,
+        noBuildCount: 2,
         totalMs: 12,
         maxMs: 4,
         lastMs: 3,
@@ -1277,6 +1294,7 @@ test('browser perf support summarizes store write pressure and ranks noisy sourc
   assert.deepEqual(createStoreDebugSummary(stats), {
     commitCount: 9,
     noopSkipCount: 2,
+    noBuildCount: 3,
     selectorListenerCount: 4,
     selectorNotifyCount: 18,
     sourceCount: 2,
@@ -1300,6 +1318,7 @@ test('browser perf support summarizes store write pressure and ranks noisy sourc
       before: {
         commitCount: 1,
         noopSkipCount: 0,
+        noBuildCount: 1,
         selectorListenerCount: 4,
         selectorNotifyCount: 2,
         sources: {},
@@ -1311,6 +1330,7 @@ test('browser perf support summarizes store write pressure and ranks noisy sourc
     durationMs: 440,
     commitCount: 8,
     noopSkipCount: 2,
+    noBuildCount: 2,
     selectorNotifyCount: 16,
     selectorListenerCount: 4,
     sourceCount: 2,
@@ -1335,9 +1355,11 @@ test('browser perf support summarizes build scheduling pressure canonically', ()
     requestCount: 10,
     immediateRequestCount: 3,
     debouncedRequestCount: 7,
+    forceRequestCount: 2,
     executeCount: 7,
     executeImmediateCount: 2,
     executeDebouncedCount: 5,
+    executeForceCount: 1,
     pendingOverwriteCount: 3,
     debouncedScheduleCount: 4,
     reusedDebouncedScheduleCount: 2,
@@ -1357,16 +1379,20 @@ test('browser perf support summarizes build scheduling pressure canonically', ()
         executeCount: 4,
         immediateRequestCount: 1,
         debouncedRequestCount: 5,
+        forceRequestCount: 1,
         executeImmediateCount: 1,
         executeDebouncedCount: 3,
+        executeForceCount: 1,
       },
       'toggle-door-style': {
         requestCount: 4,
         executeCount: 3,
         immediateRequestCount: 2,
         debouncedRequestCount: 2,
+        forceRequestCount: 1,
         executeImmediateCount: 1,
         executeDebouncedCount: 2,
+        executeForceCount: 0,
       },
     },
   };
@@ -1376,8 +1402,10 @@ test('browser perf support summarizes build scheduling pressure canonically', ()
     executeCount: 7,
     immediateRequestCount: 3,
     debouncedRequestCount: 7,
+    forceRequestCount: 2,
     executeImmediateCount: 2,
     executeDebouncedCount: 5,
+    executeForceCount: 1,
     pendingOverwriteCount: 3,
     suppressedRequestCount: 3,
     suppressedExecuteCount: 1,
@@ -1405,9 +1433,11 @@ test('browser perf support summarizes build scheduling pressure canonically', ()
         requestCount: 2,
         immediateRequestCount: 1,
         debouncedRequestCount: 1,
+        forceRequestCount: 0,
         executeCount: 1,
         executeImmediateCount: 1,
         executeDebouncedCount: 0,
+        executeForceCount: 0,
         pendingOverwriteCount: 0,
         debouncedScheduleCount: 1,
         reusedDebouncedScheduleCount: 0,
@@ -1430,8 +1460,10 @@ test('browser perf support summarizes build scheduling pressure canonically', ()
     executeCount: 6,
     immediateRequestCount: 2,
     debouncedRequestCount: 6,
+    forceRequestCount: 2,
     executeImmediateCount: 1,
     executeDebouncedCount: 5,
+    executeForceCount: 1,
     pendingOverwriteCount: 3,
     suppressedRequestCount: 3,
     suppressedExecuteCount: 1,
@@ -1462,9 +1494,11 @@ test('browser perf support summarizes build scheduling pressure canonically', ()
         requestCount: 2,
         immediateRequestCount: 1,
         debouncedRequestCount: 1,
+        forceRequestCount: 0,
         executeCount: 1,
         executeImmediateCount: 1,
         executeDebouncedCount: 0,
+        executeForceCount: 0,
         pendingOverwriteCount: 0,
         debouncedScheduleCount: 1,
         reusedDebouncedScheduleCount: 0,
@@ -1488,9 +1522,11 @@ test('browser perf support summarizes build scheduling pressure canonically', ()
         requestCount: 10,
         immediateRequestCount: 3,
         debouncedRequestCount: 7,
+        forceRequestCount: 2,
         executeCount: 7,
         executeImmediateCount: 2,
         executeDebouncedCount: 5,
+        executeForceCount: 1,
         pendingOverwriteCount: 3,
         debouncedScheduleCount: 4,
         reusedDebouncedScheduleCount: 2,
@@ -1508,16 +1544,20 @@ test('browser perf support summarizes build scheduling pressure canonically', ()
             executeCount: 4,
             immediateRequestCount: 1,
             debouncedRequestCount: 5,
+            forceRequestCount: 1,
             executeImmediateCount: 1,
             executeDebouncedCount: 3,
+            executeForceCount: 1,
           },
           'toggle-door-style': {
             requestCount: 4,
             executeCount: 3,
             immediateRequestCount: 2,
             debouncedRequestCount: 2,
+            forceRequestCount: 1,
             executeImmediateCount: 1,
             executeDebouncedCount: 2,
+            executeForceCount: 0,
           },
         },
       },
@@ -1525,9 +1565,11 @@ test('browser perf support summarizes build scheduling pressure canonically', ()
         requestCount: 14,
         immediateRequestCount: 4,
         debouncedRequestCount: 10,
+        forceRequestCount: 3,
         executeCount: 10,
         executeImmediateCount: 2,
         executeDebouncedCount: 8,
+        executeForceCount: 2,
         pendingOverwriteCount: 4,
         debouncedScheduleCount: 7,
         reusedDebouncedScheduleCount: 3,
@@ -1545,16 +1587,20 @@ test('browser perf support summarizes build scheduling pressure canonically', ()
             executeCount: 6,
             immediateRequestCount: 1,
             debouncedRequestCount: 7,
+            forceRequestCount: 2,
             executeImmediateCount: 1,
             executeDebouncedCount: 5,
+            executeForceCount: 2,
           },
           'toggle-door-style': {
             requestCount: 6,
             executeCount: 4,
             immediateRequestCount: 3,
             debouncedRequestCount: 3,
+            forceRequestCount: 1,
             executeImmediateCount: 1,
             executeDebouncedCount: 3,
+            executeForceCount: 0,
           },
         },
       },
@@ -1567,8 +1613,10 @@ test('browser perf support summarizes build scheduling pressure canonically', ()
     executeCount: 9,
     immediateRequestCount: 3,
     debouncedRequestCount: 9,
+    forceRequestCount: 3,
     executeImmediateCount: 1,
     executeDebouncedCount: 8,
+    executeForceCount: 2,
     pendingOverwriteCount: 4,
     suppressedRequestCount: 4,
     suppressedExecuteCount: 2,
@@ -1581,16 +1629,20 @@ test('browser perf support summarizes build scheduling pressure canonically', ()
         executeCount: 6,
         immediateRequestCount: 1,
         debouncedRequestCount: 7,
+        forceRequestCount: 2,
         executeImmediateCount: 1,
         executeDebouncedCount: 5,
+        executeForceCount: 2,
       },
       'toggle-door-style': {
         requestCount: 6,
         executeCount: 4,
         immediateRequestCount: 3,
         debouncedRequestCount: 3,
+        forceRequestCount: 1,
         executeImmediateCount: 1,
         executeDebouncedCount: 3,
+        executeForceCount: 0,
       },
     },
     steps: ['cabinet-build-variants.profile-texture.configure', 'cabinet-build-variants.option-burst'],

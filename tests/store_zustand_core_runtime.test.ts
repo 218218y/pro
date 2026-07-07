@@ -268,11 +268,16 @@ test('store parity: helper patch APIs stamp canonical metadata for UI/config/run
   assert.equal(last.affectsUi, true);
   assert.equal(last.noBuild, true);
   assert.equal(last.noHistory, true);
+  let debug = asRec((store as unknown as { getDebugStats: () => unknown }).getDebugStats());
+  assert.equal(debug.noBuildCount, 1);
+  assert.equal(asRec(asRec(debug.sources)['PATCH:ui:ui']).noBuildCount, 1);
 
   (store as unknown as { setConfig: (p: unknown, m?: unknown) => void }).setConfig({ projectName: 'A' });
   last = asRec(asRec(store.getState().meta).lastAction);
   assert.equal(last.source, 'config');
   assert.equal(last.affectsConfig, true);
+  debug = asRec((store as unknown as { getDebugStats: () => unknown }).getDebugStats());
+  assert.equal(debug.noBuildCount, 1);
 
   (store as unknown as { setRuntime: (p: unknown, m?: unknown) => void }).setRuntime({ busy: true });
   last = asRec(asRec(store.getState().meta).lastAction);

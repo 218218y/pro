@@ -174,7 +174,7 @@ function loadStructureTabControlsModule(stubs = {}) {
   return mod.exports;
 }
 
-test('[structure-tab-controls] board material writes collapse to canonical immediate config patch without duplicate refresh', () => {
+test('[structure-tab-controls] board material writes collapse to canonical coalesced config patch without duplicate refresh', () => {
   const calls = [];
   const app = { id: 'app' };
   const mod = loadStructureTabControlsModule({
@@ -195,13 +195,13 @@ test('[structure-tab-controls] board material writes collapse to canonical immed
         'patchViaActions',
         app,
         { config: { boardMaterial: 'melamine' } },
-        { source: 'react:boardMaterial', immediate: true },
+        { source: 'react:boardMaterial', immediate: false },
       ],
     ])
   );
 });
 
-test('[structure-tab-controls] hinged door mount writes use canonical immediate config patch without duplicate refresh', () => {
+test('[structure-tab-controls] hinged door mount writes use canonical coalesced config patch without duplicate refresh', () => {
   const calls = [];
   const app = { id: 'app' };
   const mod = loadStructureTabControlsModule({
@@ -225,7 +225,7 @@ test('[structure-tab-controls] hinged door mount writes use canonical immediate 
         'patchViaActions',
         app,
         { config: { doorMountMode: 'inset' } },
-        { source: 'react:doorMountMode', immediate: true },
+        { source: 'react:doorMountMode', immediate: false },
       ],
     ])
   );
@@ -278,7 +278,7 @@ test('[structure-tab-controls] inset door mount thickness fields use inset defau
         'patchViaActions',
         app,
         { config: { insetShelfThicknessCm: 4.1 } },
-        { source: 'react:doorMountThickness:shelf', immediate: true },
+        { source: 'react:doorMountThickness:shelf', immediate: false },
       ],
     ])
   );
@@ -317,7 +317,7 @@ test('[structure-tab-controls] door mount thickness reset returns only the activ
         'patchViaActions',
         app,
         { config: { overlayFrameThicknessCm: null } },
-        { source: 'react:doorMountThickness:frame', immediate: true },
+        { source: 'react:doorMountThickness:frame', immediate: false },
       ],
     ])
   );
@@ -358,7 +358,7 @@ test('[structure-tab-controls] sliding wardrobes hide mount chooser but expose o
         'patchViaActions',
         app,
         { config: { overlayShelfThicknessCm: 1.6 } },
-        { source: 'react:doorMountThickness:shelf', immediate: true },
+        { source: 'react:doorMountThickness:shelf', immediate: false },
       ],
     ])
   );

@@ -12,9 +12,11 @@ type ReasonStatNumericKey =
   | 'requestCount'
   | 'immediateRequestCount'
   | 'debouncedRequestCount'
+  | 'forceRequestCount'
   | 'executeCount'
   | 'executeImmediateCount'
   | 'executeDebouncedCount'
+  | 'executeForceCount'
   | 'overwriteCount'
   | 'debouncedScheduleCount'
   | 'reusedDebouncedScheduleCount'
@@ -33,9 +35,11 @@ const REASON_STAT_NUMERIC_KEYS: ReasonStatNumericKey[] = [
   'requestCount',
   'immediateRequestCount',
   'debouncedRequestCount',
+  'forceRequestCount',
   'executeCount',
   'executeImmediateCount',
   'executeDebouncedCount',
+  'executeForceCount',
   'overwriteCount',
   'debouncedScheduleCount',
   'reusedDebouncedScheduleCount',
@@ -72,9 +76,11 @@ function createReasonDebugStat(reason: string): BuildReasonDebugStatLike {
     requestCount: 0,
     immediateRequestCount: 0,
     debouncedRequestCount: 0,
+    forceRequestCount: 0,
     executeCount: 0,
     executeImmediateCount: 0,
     executeDebouncedCount: 0,
+    executeForceCount: 0,
     overwriteCount: 0,
     debouncedScheduleCount: 0,
     reusedDebouncedScheduleCount: 0,
@@ -96,9 +102,11 @@ export function createBuildDebugStats(): BuilderDebugStatsLike {
     requestCount: 0,
     immediateRequestCount: 0,
     debouncedRequestCount: 0,
+    forceRequestCount: 0,
     executeCount: 0,
     executeImmediateCount: 0,
     executeDebouncedCount: 0,
+    executeForceCount: 0,
     pendingOverwriteCount: 0,
     debouncedScheduleCount: 0,
     reusedDebouncedScheduleCount: 0,
@@ -138,9 +146,11 @@ function readReasonStat(value: unknown): BuildReasonDebugStatLike | null {
     requestCount: readReasonStatNumber(rec, 'requestCount') ?? 0,
     immediateRequestCount: readReasonStatNumber(rec, 'immediateRequestCount') ?? 0,
     debouncedRequestCount: readReasonStatNumber(rec, 'debouncedRequestCount') ?? 0,
+    forceRequestCount: readReasonStatNumber(rec, 'forceRequestCount') ?? 0,
     executeCount: readReasonStatNumber(rec, 'executeCount') ?? 0,
     executeImmediateCount: readReasonStatNumber(rec, 'executeImmediateCount') ?? 0,
     executeDebouncedCount: readReasonStatNumber(rec, 'executeDebouncedCount') ?? 0,
+    executeForceCount: readReasonStatNumber(rec, 'executeForceCount') ?? 0,
     overwriteCount: readReasonStatNumber(rec, 'overwriteCount') ?? 0,
     debouncedScheduleCount: readReasonStatNumber(rec, 'debouncedScheduleCount') ?? 0,
     reusedDebouncedScheduleCount: readReasonStatNumber(rec, 'reusedDebouncedScheduleCount') ?? 0,

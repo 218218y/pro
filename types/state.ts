@@ -11,6 +11,7 @@ export interface StoreSourceDebugStat {
   type: string;
   slices: string[];
   count: number;
+  noBuildCount: number;
   totalMs: number;
   maxMs: number;
   lastMs: number;
@@ -21,6 +22,7 @@ export interface StoreSourceDebugStat {
 export interface StoreDebugStats {
   commitCount: number;
   noopSkipCount: number;
+  noBuildCount: number;
   selectorListenerCount: number;
   selectorNotifyCount: number;
   sources: Record<string, StoreSourceDebugStat>;

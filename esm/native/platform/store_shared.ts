@@ -13,6 +13,7 @@ export type StoreDebugSourceStatsMap = Record<string, StoreSourceDebugStat>;
 export type StoreDebugState = {
   commitCount: number;
   noopSkipCount: number;
+  noBuildCount: number;
   selectorListenerCount: number;
   selectorNotifyCount: number;
   sources: StoreDebugSourceStatsMap;
@@ -209,6 +210,7 @@ export function cloneDebugSources(src: StoreDebugSourceStatsMap): StoreDebugSour
       type: String(entry.type || ''),
       slices: Array.isArray(entry.slices) ? entry.slices.slice() : [],
       count: Number(entry.count || 0),
+      noBuildCount: Number(entry.noBuildCount || 0),
       totalMs: Number(entry.totalMs || 0),
       maxMs: Number(entry.maxMs || 0),
       lastMs: Number(entry.lastMs || 0),
@@ -223,6 +225,7 @@ export function createEmptyDebugState(): StoreDebugState {
   return {
     commitCount: 0,
     noopSkipCount: 0,
+    noBuildCount: 0,
     selectorListenerCount: 0,
     selectorNotifyCount: 0,
     sources: {},
@@ -238,6 +241,7 @@ export function recordDebugPatchStat(
   slowThresholdMs: number
 ): void {
   const src = readRecordString(meta, 'source');
+  const noBuild = readRecordBoolean(meta, 'noBuild');
   const slices = collectPayloadSlices(payload);
   const key = `${type}:${src || 'unknown'}:${slices.join('+') || 'none'}`;
   const entry = debugState.sources[key] || {
@@ -245,6 +249,7 @@ export function recordDebugPatchStat(
     type: String(type || ''),
     slices: slices.slice(),
     count: 0,
+    noBuildCount: 0,
     totalMs: 0,
     maxMs: 0,
     lastMs: 0,
@@ -252,6 +257,10 @@ export function recordDebugPatchStat(
     lastUpdatedAt: 0,
   };
   entry.count += 1;
+  if (noBuild) {
+    debugState.noBuildCount += 1;
+    entry.noBuildCount += 1;
+  }
   entry.totalMs += dtMs;
   entry.lastMs = dtMs;
   entry.maxMs = Math.max(entry.maxMs, dtMs);

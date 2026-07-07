@@ -4,7 +4,7 @@ import { OptionButton } from '../components/index.js';
 import { useApp, useCfgSelectorShallow } from '../hooks.js';
 import { setCfgBoardMaterial, setCfgDoorMountMode } from '../actions/store_actions.js';
 import { setWardrobeType } from '../actions/room_actions.js';
-import { applyImmediateStructuralConfigMutation } from '../actions/structural_build_refresh_actions.js';
+import { applyStructuralConfigMutation } from '../actions/structural_build_refresh_actions.js';
 import { cfgSetScalar } from '../../../services/api.js';
 import {
   selectBoardMaterial,
@@ -53,15 +53,23 @@ const STRUCTURE_DOOR_MOUNT_OPTIONS: readonly StructureDoorMountOption[] = [
   { id: 'inset', label: 'דלת שקועה' },
 ];
 
-function applyImmediateStructuralScalarMutation(
+const STRUCTURE_CONTROL_BUILD_OPTIONS = { buildTiming: 'coalesced' } as const;
+
+function applyCoalescedStructuralScalarMutation(
   app: unknown,
   source: string,
   key: DoorMountThicknessConfigKey,
   value: number | null
 ): void {
-  applyImmediateStructuralConfigMutation(app, source, { [key]: value }, meta => {
-    cfgSetScalar(app, key, value, meta);
-  });
+  applyStructuralConfigMutation(
+    app,
+    source,
+    { [key]: value },
+    meta => {
+      cfgSetScalar(app, key, value, meta);
+    },
+    STRUCTURE_CONTROL_BUILD_OPTIONS
+  );
 }
 
 function formatThicknessInputValue(value: number): string {
@@ -124,13 +132,14 @@ export function TypeSelector(props: { hideTypeOptions?: boolean; isChestMode?: b
               data-board-material={option.id}
               onClick={() => {
                 if (selected) return;
-                applyImmediateStructuralConfigMutation(
+                applyStructuralConfigMutation(
                   app,
                   'react:boardMaterial',
                   { boardMaterial: option.id },
                   meta => {
                     setCfgBoardMaterial(app, option.id, meta);
-                  }
+                  },
+                  STRUCTURE_CONTROL_BUILD_OPTIONS
                 );
               }}
             >
@@ -160,13 +169,14 @@ export function TypeSelector(props: { hideTypeOptions?: boolean; isChestMode?: b
                   data-door-mount-mode={option.id}
                   onClick={() => {
                     if (selected) return;
-                    applyImmediateStructuralConfigMutation(
+                    applyStructuralConfigMutation(
                       app,
                       'react:doorMountMode',
                       { doorMountMode: option.id },
                       meta => {
                         setCfgDoorMountMode(app, option.id, meta);
-                      }
+                      },
+                      STRUCTURE_CONTROL_BUILD_OPTIONS
                     );
                   }}
                 >
@@ -186,7 +196,7 @@ export function TypeSelector(props: { hideTypeOptions?: boolean; isChestMode?: b
             inputTestId="structure-frame-thickness-input"
             resetTestId="structure-frame-thickness-reset"
             onChange={value => {
-              applyImmediateStructuralScalarMutation(
+              applyCoalescedStructuralScalarMutation(
                 app,
                 'react:doorMountThickness:frame',
                 doorMountThickness.frameKey,
@@ -204,7 +214,7 @@ export function TypeSelector(props: { hideTypeOptions?: boolean; isChestMode?: b
               inputTestId="structure-shelf-thickness-input"
               resetTestId="structure-shelf-thickness-reset"
               onChange={value => {
-                applyImmediateStructuralScalarMutation(
+                applyCoalescedStructuralScalarMutation(
                   app,
                   'react:doorMountThickness:shelf',
                   doorMountThickness.shelfKey,

@@ -1,4 +1,3 @@
-import { setCfgSavedColors } from '../actions/store_actions.js';
 import { createStructuralMutationMeta } from '../actions/structural_build_refresh_actions.js';
 
 import type { AppContainer } from '../../../../../types';
@@ -42,7 +41,9 @@ export function reorderSavedColorSwatches(
     nextSaved.length === savedColors.length &&
     nextSaved.every((color, index) => readSavedColorId(color) === readSavedColorId(savedColors[index]));
 
-  const meta = { source: 'react:design:colorSwatches:reorder' };
+  const meta = createStructuralMutationMeta('react:design:colorSwatches:reorder', {
+    buildTiming: 'none',
+  });
   applySavedColorsAtomicMutation(
     app,
     {
@@ -70,7 +71,8 @@ export function toggleSavedColorLock(
   const lockedNow = !!existing.locked;
   const next = toggleLockedSavedColor(savedColors, targetId);
 
-  setCfgSavedColors(app, next, { source });
+  const meta = createStructuralMutationMeta(source, { buildTiming: 'none' });
+  applySavedColorsAtomicMutation(app, { savedColors: next }, meta);
   return buildDesignTabColorActionSuccess('toggle-lock', {
     id: targetId,
     name: trim(existing.name),
@@ -102,7 +104,7 @@ export function deleteSavedColor(
   const nextOrder = buildSavedColorOrder(orderedSwatches).filter(value => value !== targetId);
   const deletedWasSelected = trim(colorChoice) === targetId;
   const meta = createStructuralMutationMeta('react:design:savedColors:delete', {
-    buildTiming: 'coalesced',
+    buildTiming: deletedWasSelected ? 'coalesced' : 'none',
   });
 
   applySavedColorsAtomicMutation(

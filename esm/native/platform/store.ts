@@ -92,6 +92,7 @@ export function createStore(opts: StoreCreateOpts = {}): StoreCreateResult {
     return {
       commitCount: debugState.commitCount,
       noopSkipCount: debugState.noopSkipCount,
+      noBuildCount: debugState.noBuildCount,
       selectorListenerCount: debugState.selectorListenerCount,
       selectorNotifyCount: debugState.selectorNotifyCount,
       sources: cloneDebugSources(debugState.sources),
@@ -101,6 +102,7 @@ export function createStore(opts: StoreCreateOpts = {}): StoreCreateResult {
   function resetDebugStats(): void {
     debugState.commitCount = 0;
     debugState.noopSkipCount = 0;
+    debugState.noBuildCount = 0;
     debugState.selectorNotifyCount = 0;
     debugState.sources = {};
   }

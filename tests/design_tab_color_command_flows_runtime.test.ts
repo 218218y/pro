@@ -19,6 +19,7 @@ function createAppHarness() {
     customUploadedDataURL: null as string | null,
     batchCalls: 0,
     patchCalls: [] as Array<Record<string, unknown>>,
+    storageCalls: [] as Array<{ key: string; value: unknown }>,
     appliedChoice: '',
     appliedSource: '',
   };
@@ -65,6 +66,15 @@ function createAppHarness() {
         },
       },
     },
+    services: {
+      storage: {
+        KEYS: { SAVED_COLORS: 'savedColors' },
+        setJSON(key: string, value: unknown) {
+          state.storageCalls.push({ key, value });
+          return true;
+        },
+      },
+    },
   } as const;
 
   const applyColorChoice = (choice: string, source?: string) => {
@@ -100,6 +110,15 @@ test('reorderSavedColorSwatches updates order and persists saved-color order whe
   );
   assert.equal(state.batchCalls, 0);
   assert.equal(state.patchCalls.length, 1);
+  assert.deepEqual(state.patchCalls[0]?.meta, {
+    source: 'react:design:colorSwatches:reorder',
+    immediate: false,
+    noBuild: true,
+  });
+  assert.deepEqual(
+    state.storageCalls.map(call => call.key),
+    ['savedColors', 'savedColors:order']
+  );
 });
 
 test('toggleSavedColorLock flips locked flag through canonical saved-colors write', () => {
@@ -117,10 +136,21 @@ test('toggleSavedColorLock flips locked flag through canonical saved-colors writ
     state.savedColors.find(color => color.id === 'saved_b'),
     {
       id: 'saved_b',
+      name: 'ב',
       type: 'color',
       value: '#222222',
       textureData: null,
+      locked: true,
     }
+  );
+  assert.deepEqual(state.patchCalls[0]?.meta, {
+    source: 'react:design:savedColors:toggleLock',
+    immediate: false,
+    noBuild: true,
+  });
+  assert.deepEqual(
+    state.storageCalls.map(call => call.key),
+    ['savedColors']
   );
 });
 
@@ -147,6 +177,36 @@ test('deleteSavedColor removes color, trims order, and resets active choice when
     source: 'react:design:savedColors:delete',
     immediate: false,
   });
+  assert.equal(state.batchCalls, 0);
+});
+
+test('deleteSavedColor removes an unselected color without requesting a build', () => {
+  const { app, state, applyColorChoice } = createAppHarness();
+  const result = deleteSavedColor(
+    app as never,
+    BASE_SAVED_COLORS,
+    BASE_SAVED_COLORS,
+    'saved_a',
+    'saved_b',
+    applyColorChoice
+  );
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(
+    state.savedColors.map(color => String(color.id)),
+    ['saved_a', 'saved_c']
+  );
+  assert.deepEqual(state.colorSwatchesOrder, ['saved_a', 'saved_c']);
+  assert.equal(state.appliedChoice, '');
+  assert.deepEqual(state.patchCalls[0]?.meta, {
+    source: 'react:design:savedColors:delete',
+    immediate: false,
+    noBuild: true,
+  });
+  assert.deepEqual(
+    state.storageCalls.map(call => call.key),
+    ['savedColors', 'savedColors:order']
+  );
   assert.equal(state.batchCalls, 0);
 });
 

@@ -320,9 +320,13 @@ test('builder scheduler runtime: repeated settled debounced requests are skipped
 
   stats = getBuildDebugStats(harness.App);
   assert.equal(stats.executeCount, 2);
+  assert.equal(stats.forceRequestCount, 1);
+  assert.equal(stats.executeForceCount, 1);
   assert.equal(stats.skippedSatisfiedRequestCount, 1);
   assert.equal(stats.skippedRepeatedExecuteCount, 0);
   assert.equal(stats.reasons['autosave-force']?.executeCount, 1);
+  assert.equal(stats.reasons['autosave-force']?.forceRequestCount, 1);
+  assert.equal(stats.reasons['autosave-force']?.executeForceCount, 1);
 });
 
 test('builder scheduler runtime: settled structural config changes rebuild even when module signature is unchanged', () => {
@@ -578,8 +582,12 @@ test('builder scheduler runtime: repeated immediate non-forced execute signature
   stats = getBuildDebugStats(harness.App);
   assert.equal(stats.executeCount, 2);
   assert.equal(stats.executeImmediateCount, 2);
+  assert.equal(stats.forceRequestCount, 1);
+  assert.equal(stats.executeForceCount, 1);
   assert.equal(stats.skippedRepeatedExecuteCount, 1);
   assert.equal(stats.reasons['pointer:move:force']?.executeImmediateCount, 1);
+  assert.equal(stats.reasons['pointer:move:force']?.forceRequestCount, 1);
+  assert.equal(stats.reasons['pointer:move:force']?.executeForceCount, 1);
 });
 
 test('builder scheduler runtime: reinstall keeps public scheduler method references stable while refreshing deps', () => {

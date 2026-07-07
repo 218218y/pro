@@ -13,7 +13,7 @@ import {
 } from './store_actions.js';
 import { getMetaActionFn } from '../../../services/api.js';
 import { readStoreStateMaybe } from '../../../services/api.js';
-import { applyImmediateStructuralUiMutation } from './structural_build_refresh_actions.js';
+import { applyStructuralUiMutation } from './structural_build_refresh_actions.js';
 
 function isRecord(v: unknown): v is UnknownRecord {
   return !!v && typeof v === 'object' && !Array.isArray(v);
@@ -35,7 +35,9 @@ function getInteriorModes(): InteriorModesLike {
   return readRecord(MODES) || {};
 }
 
-function interactiveImmediateMeta(app: AppContainer, source: string): ActionMetaLike {
+const INTERIOR_DRAWERS_TOGGLE_BUILD_OPTIONS = { buildTiming: 'coalesced' } as const;
+
+function interactiveStructuralMetaOverrides(app: AppContainer, source: string): ActionMetaLike {
   const interactiveImmediate = getMetaActionFn<(source: string) => ActionMetaLike>(
     app,
     'interactiveImmediate'
@@ -255,16 +257,19 @@ export function setInternalDrawersEnabled(
   if (enabled === !!uiSnap.internalDrawersEnabled) return;
 
   try {
-    const m: ActionMetaLike = interactiveImmediateMeta(app, source);
+    const m: ActionMetaLike = interactiveStructuralMetaOverrides(app, source);
 
-    applyImmediateStructuralUiMutation(
+    applyStructuralUiMutation(
       app,
       source,
       { internalDrawersEnabled: enabled },
       meta => {
         setUiFlag(app, 'internalDrawersEnabled', enabled, meta);
       },
-      m
+      {
+        buildTiming: INTERIOR_DRAWERS_TOGGLE_BUILD_OPTIONS.buildTiming,
+        metaOverrides: m,
+      }
     );
   } catch {
     // ignore

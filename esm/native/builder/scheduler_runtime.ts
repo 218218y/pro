@@ -193,7 +193,7 @@ function executePendingBuild(
     return null;
   }
 
-  recordBuildExecute(state, reason, immediate, buildState, nowForBuildStats(), executionPlan);
+  recordBuildExecute(state, reason, immediate, forceBuild, buildState, nowForBuildStats(), executionPlan);
   clearPendingBuildState(state);
   invalidateBuilderWait(state);
   return callBuild(App, buildState);
@@ -272,7 +272,7 @@ export function requestBuildRuntime(
       forceBuild,
       nextPendingPlan
     );
-    const requestReason = recordBuildRequest(s, opts?.reason, immediate, nextPendingPlan, now);
+    const requestReason = recordBuildRequest(s, opts?.reason, immediate, forceBuild, nextPendingPlan, now);
 
     if (suppressDuplicatePending) {
       recordSkippedDuplicatePendingRequest(s, requestReason);

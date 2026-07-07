@@ -734,9 +734,11 @@ export interface BuildReasonDebugStatLike extends UnknownRecord {
   requestCount: number;
   immediateRequestCount: number;
   debouncedRequestCount: number;
+  forceRequestCount: number;
   executeCount: number;
   executeImmediateCount: number;
   executeDebouncedCount: number;
+  executeForceCount: number;
   overwriteCount: number;
   debouncedScheduleCount: number;
   reusedDebouncedScheduleCount: number;
@@ -756,9 +758,11 @@ export interface BuilderDebugStatsLike extends UnknownRecord {
   requestCount: number;
   immediateRequestCount: number;
   debouncedRequestCount: number;
+  forceRequestCount: number;
   executeCount: number;
   executeImmediateCount: number;
   executeDebouncedCount: number;
+  executeForceCount: number;
   pendingOverwriteCount: number;
   debouncedScheduleCount: number;
   reusedDebouncedScheduleCount: number;

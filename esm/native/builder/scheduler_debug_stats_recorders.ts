@@ -99,6 +99,7 @@ export function recordBuildRequest(
   state: BuilderSchedulerStateInternalLike,
   reasonIn: unknown,
   immediate: boolean,
+  forceBuild: boolean,
   nextPlan: SchedulerPendingPlan,
   requestTs: number
 ): string {
@@ -112,11 +113,13 @@ export function recordBuildRequest(
   stats.requestCount += 1;
   if (immediate) stats.immediateRequestCount += 1;
   else stats.debouncedRequestCount += 1;
+  if (forceBuild) stats.forceRequestCount += 1;
   stats.lastRequestReason = reason;
 
   perReason.requestCount += 1;
   if (immediate) perReason.immediateRequestCount += 1;
   else perReason.debouncedRequestCount += 1;
+  if (forceBuild) perReason.forceRequestCount += 1;
   perReason.lastRequestTs = requestTs;
 
   if (hadPending) {
@@ -136,6 +139,7 @@ export function recordBuildExecute(
   state: BuilderSchedulerStateInternalLike,
   reasonIn: unknown,
   immediate: boolean,
+  forceBuild: boolean,
   buildState: BuildStateLike,
   execTs: number,
   plan?: SchedulerPendingPlan | null
@@ -148,11 +152,13 @@ export function recordBuildExecute(
   stats.executeCount += 1;
   if (immediate) stats.executeImmediateCount += 1;
   else stats.executeDebouncedCount += 1;
+  if (forceBuild) stats.executeForceCount += 1;
   stats.lastExecuteReason = reason;
 
   perReason.executeCount += 1;
   if (immediate) perReason.executeImmediateCount += 1;
   else perReason.executeDebouncedCount += 1;
+  if (forceBuild) perReason.executeForceCount += 1;
   perReason.lastExecuteTs = execTs;
 
   if (sig !== null && Object.is(state.lastExecutedSignature, sig)) {

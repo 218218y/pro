@@ -146,9 +146,10 @@ test('[stageF] React write hotspots use canonical wrapper sweep for common ui/co
     assert,
     structureBundle,
     [
-      /applyImmediateStructuralConfigMutation\(app, 'react:boardMaterial', \{ boardMaterial: option\.id \},/,
+      /applyStructuralConfigMutation\(\s*app,\s*'react:boardMaterial',\s*\{ boardMaterial: option\.id \}/,
+      /STRUCTURE_CONTROL_BUILD_OPTIONS = \{ buildTiming: 'coalesced' \} as const/,
       /setCfgBoardMaterial\(app, option\.id, meta\)/,
-      /applyImmediateStructuralConfigMutation\(\s*app,\s*'react:doorMountMode',\s*\{ doorMountMode: option\.id \},/,
+      /applyStructuralConfigMutation\(\s*app,\s*'react:doorMountMode',\s*\{ doorMountMode: option\.id \}/,
       /setCfgDoorMountMode\(app, option\.id, meta\)/,
       /setUiSelectedModelId\(app, nextSelectedId, meta\.uiOnlyImmediate\('react:models:selection:clear'\)\)/,
       /applyUiRawScalarPatch\(app, (?:rawPatch|readRawPatch\(uiPatch\)), m\)/,
@@ -240,7 +241,8 @@ test('[stageF] React write hotspots use canonical wrapper sweep for common ui/co
     assert,
     interiorActions,
     [
-      /applyImmediateStructuralUiMutation\(\s*app,\s*source,\s*\{ internalDrawersEnabled: enabled \}/,
+      /applyStructuralUiMutation\(\s*app,\s*source,\s*\{ internalDrawersEnabled: enabled \}/,
+      /INTERIOR_DRAWERS_TOGGLE_BUILD_OPTIONS = \{ buildTiming: 'coalesced' \} as const/,
       /setUiFlag\(app, 'internalDrawersEnabled', enabled, meta\)/,
     ],
     'interiorActions'

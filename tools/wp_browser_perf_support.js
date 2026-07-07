@@ -409,6 +409,9 @@ function normalizeStoreDebugSourceEntry(name, entry) {
   const maxMs = roundDuration(Number(entry.maxMs) || 0);
   const lastMs = roundDuration(Number(entry.lastMs) || 0);
   const slowCount = Number.isFinite(entry.slowCount) ? Math.max(0, Math.floor(Number(entry.slowCount))) : 0;
+  const noBuildCount = Number.isFinite(entry.noBuildCount)
+    ? Math.max(0, Math.floor(Number(entry.noBuildCount)))
+    : 0;
   const lastUpdatedAt = Number.isFinite(entry.lastUpdatedAt) ? Math.max(0, Number(entry.lastUpdatedAt)) : 0;
   return {
     key: typeof name === 'string' && name.trim() ? name.trim() : `${type}:${source || 'unknown'}`,
@@ -416,6 +419,7 @@ function normalizeStoreDebugSourceEntry(name, entry) {
     type,
     slices,
     count,
+    noBuildCount,
     totalMs,
     maxMs,
     lastMs,
@@ -440,6 +444,9 @@ function normalizeStoreDebugStats(stats) {
     noopSkipCount: Number.isFinite(stats?.noopSkipCount)
       ? Math.max(0, Math.floor(Number(stats.noopSkipCount)))
       : 0,
+    noBuildCount: Number.isFinite(stats?.noBuildCount)
+      ? Math.max(0, Math.floor(Number(stats.noBuildCount)))
+      : 0,
     selectorListenerCount: Number.isFinite(stats?.selectorListenerCount)
       ? Math.max(0, Math.floor(Number(stats.selectorListenerCount)))
       : 0,
@@ -459,9 +466,10 @@ function subtractStoreDebugStats(after, before) {
     const afterEntry = next.sources[key] || null;
     const beforeEntry = prev.sources[key] || null;
     const count = Math.max(0, (afterEntry?.count || 0) - (beforeEntry?.count || 0));
+    const noBuildCount = Math.max(0, (afterEntry?.noBuildCount || 0) - (beforeEntry?.noBuildCount || 0));
     const totalMs = roundDuration(Math.max(0, (afterEntry?.totalMs || 0) - (beforeEntry?.totalMs || 0)));
     const slowCount = Math.max(0, (afterEntry?.slowCount || 0) - (beforeEntry?.slowCount || 0));
-    if (count < 1 && totalMs <= 0 && slowCount < 1) continue;
+    if (count < 1 && noBuildCount < 1 && totalMs <= 0 && slowCount < 1) continue;
     sources[key] = {
       key,
       source: afterEntry?.source || beforeEntry?.source || null,
@@ -472,6 +480,7 @@ function subtractStoreDebugStats(after, before) {
           ? beforeEntry.slices.slice()
           : [],
       count,
+      noBuildCount,
       totalMs,
       maxMs: roundDuration(afterEntry?.maxMs || beforeEntry?.maxMs || 0),
       lastMs: roundDuration(afterEntry?.lastMs || beforeEntry?.lastMs || 0),
@@ -482,6 +491,7 @@ function subtractStoreDebugStats(after, before) {
   return {
     commitCount: Math.max(0, next.commitCount - prev.commitCount),
     noopSkipCount: Math.max(0, next.noopSkipCount - prev.noopSkipCount),
+    noBuildCount: Math.max(0, next.noBuildCount - prev.noBuildCount),
     selectorNotifyCount: Math.max(0, next.selectorNotifyCount - prev.selectorNotifyCount),
     selectorListenerCount: next.selectorListenerCount,
     sources,
@@ -504,6 +514,7 @@ export function createStoreDebugSummary(stats) {
   return {
     commitCount: normalized.commitCount,
     noopSkipCount: normalized.noopSkipCount,
+    noBuildCount: normalized.noBuildCount,
     selectorListenerCount: normalized.selectorListenerCount,
     selectorNotifyCount: normalized.selectorNotifyCount,
     sourceCount: sourceRows.length,
@@ -528,6 +539,7 @@ export function rankStoreDebugSources(stats, limit = 5) {
       type: item.type || 'PATCH',
       slices: Array.isArray(item.slices) ? item.slices.slice() : [],
       count: Number(item.count) || 0,
+      noBuildCount: Number(item.noBuildCount) || 0,
       totalMs: Number(item.totalMs) || 0,
       maxMs: Number(item.maxMs) || 0,
       lastMs: Number(item.lastMs) || 0,
@@ -556,6 +568,7 @@ export function createStoreFlowPressureSummary(steps) {
       durationMs: roundDuration(Number(rawStep.durationMs) || 0),
       commitCount: delta.commitCount,
       noopSkipCount: delta.noopSkipCount,
+      noBuildCount: delta.noBuildCount,
       selectorNotifyCount: delta.selectorNotifyCount,
       selectorListenerCount: delta.selectorListenerCount,
       sourceCount: Object.keys(delta.sources).length,
@@ -576,6 +589,7 @@ export function rankStoreFlowPressure(summary, limit = 5) {
       durationMs: Number(item?.durationMs) || 0,
       commitCount: Number(item?.commitCount) || 0,
       noopSkipCount: Number(item?.noopSkipCount) || 0,
+      noBuildCount: Number(item?.noBuildCount) || 0,
       selectorNotifyCount: Number(item?.selectorNotifyCount) || 0,
       sourceCount: Number(item?.sourceCount) || 0,
       slowSourceCount: Number(item?.slowSourceCount) || 0,
@@ -626,11 +640,17 @@ function normalizeBuildReasonStats(reasons) {
       debouncedRequestCount: Number.isFinite(item?.debouncedRequestCount)
         ? Math.max(0, Math.floor(Number(item.debouncedRequestCount)))
         : 0,
+      forceRequestCount: Number.isFinite(item?.forceRequestCount)
+        ? Math.max(0, Math.floor(Number(item.forceRequestCount)))
+        : 0,
       executeImmediateCount: Number.isFinite(item?.executeImmediateCount)
         ? Math.max(0, Math.floor(Number(item.executeImmediateCount)))
         : 0,
       executeDebouncedCount: Number.isFinite(item?.executeDebouncedCount)
         ? Math.max(0, Math.floor(Number(item.executeDebouncedCount)))
+        : 0,
+      executeForceCount: Number.isFinite(item?.executeForceCount)
+        ? Math.max(0, Math.floor(Number(item.executeForceCount)))
         : 0,
     };
   }
@@ -648,6 +668,9 @@ function normalizeBuildDebugStats(stats) {
     debouncedRequestCount: Number.isFinite(stats?.debouncedRequestCount)
       ? Math.max(0, Math.floor(Number(stats.debouncedRequestCount)))
       : 0,
+    forceRequestCount: Number.isFinite(stats?.forceRequestCount)
+      ? Math.max(0, Math.floor(Number(stats.forceRequestCount)))
+      : 0,
     executeCount: Number.isFinite(stats?.executeCount)
       ? Math.max(0, Math.floor(Number(stats.executeCount)))
       : 0,
@@ -656,6 +679,9 @@ function normalizeBuildDebugStats(stats) {
       : 0,
     executeDebouncedCount: Number.isFinite(stats?.executeDebouncedCount)
       ? Math.max(0, Math.floor(Number(stats.executeDebouncedCount)))
+      : 0,
+    executeForceCount: Number.isFinite(stats?.executeForceCount)
+      ? Math.max(0, Math.floor(Number(stats.executeForceCount)))
       : 0,
     pendingOverwriteCount: Number.isFinite(stats?.pendingOverwriteCount)
       ? Math.max(0, Math.floor(Number(stats.pendingOverwriteCount)))
@@ -720,6 +746,10 @@ function subtractBuildDebugStats(after, before) {
       0,
       (nextItem?.debouncedRequestCount || 0) - (prevItem?.debouncedRequestCount || 0)
     );
+    const forceRequestCount = Math.max(
+      0,
+      (nextItem?.forceRequestCount || 0) - (prevItem?.forceRequestCount || 0)
+    );
     const executeImmediateCount = Math.max(
       0,
       (nextItem?.executeImmediateCount || 0) - (prevItem?.executeImmediateCount || 0)
@@ -728,13 +758,19 @@ function subtractBuildDebugStats(after, before) {
       0,
       (nextItem?.executeDebouncedCount || 0) - (prevItem?.executeDebouncedCount || 0)
     );
+    const executeForceCount = Math.max(
+      0,
+      (nextItem?.executeForceCount || 0) - (prevItem?.executeForceCount || 0)
+    );
     if (
       requestCount < 1 &&
       executeCount < 1 &&
       immediateRequestCount < 1 &&
       debouncedRequestCount < 1 &&
+      forceRequestCount < 1 &&
       executeImmediateCount < 1 &&
-      executeDebouncedCount < 1
+      executeDebouncedCount < 1 &&
+      executeForceCount < 1
     ) {
       continue;
     }
@@ -743,17 +779,21 @@ function subtractBuildDebugStats(after, before) {
       executeCount,
       immediateRequestCount,
       debouncedRequestCount,
+      forceRequestCount,
       executeImmediateCount,
       executeDebouncedCount,
+      executeForceCount,
     };
   }
   return {
     requestCount: Math.max(0, next.requestCount - prev.requestCount),
     immediateRequestCount: Math.max(0, next.immediateRequestCount - prev.immediateRequestCount),
     debouncedRequestCount: Math.max(0, next.debouncedRequestCount - prev.debouncedRequestCount),
+    forceRequestCount: Math.max(0, next.forceRequestCount - prev.forceRequestCount),
     executeCount: Math.max(0, next.executeCount - prev.executeCount),
     executeImmediateCount: Math.max(0, next.executeImmediateCount - prev.executeImmediateCount),
     executeDebouncedCount: Math.max(0, next.executeDebouncedCount - prev.executeDebouncedCount),
+    executeForceCount: Math.max(0, next.executeForceCount - prev.executeForceCount),
     pendingOverwriteCount: Math.max(0, next.pendingOverwriteCount - prev.pendingOverwriteCount),
     debouncedScheduleCount: Math.max(0, next.debouncedScheduleCount - prev.debouncedScheduleCount),
     reusedDebouncedScheduleCount: Math.max(
@@ -805,8 +845,10 @@ export function createBuildSummary(stats) {
     executeCount: normalized.executeCount,
     immediateRequestCount: normalized.immediateRequestCount,
     debouncedRequestCount: normalized.debouncedRequestCount,
+    forceRequestCount: normalized.forceRequestCount,
     executeImmediateCount: normalized.executeImmediateCount,
     executeDebouncedCount: normalized.executeDebouncedCount,
+    executeForceCount: normalized.executeForceCount,
     pendingOverwriteCount: normalized.pendingOverwriteCount,
     suppressedRequestCount,
     suppressedExecuteCount,
@@ -834,8 +876,10 @@ export function rankBuildReasons(stats, limit = 5) {
       executeCount: Number(item?.executeCount) || 0,
       immediateRequestCount: Number(item?.immediateRequestCount) || 0,
       debouncedRequestCount: Number(item?.debouncedRequestCount) || 0,
+      forceRequestCount: Number(item?.forceRequestCount) || 0,
       executeImmediateCount: Number(item?.executeImmediateCount) || 0,
       executeDebouncedCount: Number(item?.executeDebouncedCount) || 0,
+      executeForceCount: Number(item?.executeForceCount) || 0,
     }))
     .filter(item => item.requestCount > 0 || item.executeCount > 0)
     .sort((left, right) => {
@@ -868,8 +912,10 @@ export function createBuildFlowPressureSummary(steps) {
       executeCount: delta.executeCount,
       immediateRequestCount: delta.immediateRequestCount,
       debouncedRequestCount: delta.debouncedRequestCount,
+      forceRequestCount: delta.forceRequestCount,
       executeImmediateCount: delta.executeImmediateCount,
       executeDebouncedCount: delta.executeDebouncedCount,
+      executeForceCount: delta.executeForceCount,
       pendingOverwriteCount: delta.pendingOverwriteCount,
       suppressedRequestCount,
       suppressedExecuteCount,
@@ -891,8 +937,10 @@ export function rankBuildFlowPressure(summary, limit = 5) {
       executeCount: Number(item?.executeCount) || 0,
       immediateRequestCount: Number(item?.immediateRequestCount) || 0,
       debouncedRequestCount: Number(item?.debouncedRequestCount) || 0,
+      forceRequestCount: Number(item?.forceRequestCount) || 0,
       executeImmediateCount: Number(item?.executeImmediateCount) || 0,
       executeDebouncedCount: Number(item?.executeDebouncedCount) || 0,
+      executeForceCount: Number(item?.executeForceCount) || 0,
       pendingOverwriteCount: Number(item?.pendingOverwriteCount) || 0,
       suppressedRequestCount: Number(item?.suppressedRequestCount) || 0,
       suppressedExecuteCount: Number(item?.suppressedExecuteCount) || 0,
@@ -961,8 +1009,10 @@ export function createJourneyBuildPressureSummary(steps) {
         executeCount: 0,
         immediateRequestCount: 0,
         debouncedRequestCount: 0,
+        forceRequestCount: 0,
         executeImmediateCount: 0,
         executeDebouncedCount: 0,
+        executeForceCount: 0,
         pendingOverwriteCount: 0,
         suppressedRequestCount: 0,
         suppressedExecuteCount: 0,
@@ -980,8 +1030,10 @@ export function createJourneyBuildPressureSummary(steps) {
     bucket.executeCount += delta.executeCount;
     bucket.immediateRequestCount += delta.immediateRequestCount;
     bucket.debouncedRequestCount += delta.debouncedRequestCount;
+    bucket.forceRequestCount += delta.forceRequestCount;
     bucket.executeImmediateCount += delta.executeImmediateCount;
     bucket.executeDebouncedCount += delta.executeDebouncedCount;
+    bucket.executeForceCount += delta.executeForceCount;
     bucket.pendingOverwriteCount += delta.pendingOverwriteCount;
     bucket.suppressedRequestCount +=
       delta.skippedDuplicatePendingRequestCount + delta.skippedSatisfiedRequestCount;
@@ -997,8 +1049,10 @@ export function createJourneyBuildPressureSummary(steps) {
           executeCount: 0,
           immediateRequestCount: 0,
           debouncedRequestCount: 0,
+          forceRequestCount: 0,
           executeImmediateCount: 0,
           executeDebouncedCount: 0,
+          executeForceCount: 0,
         };
       }
       const reasonBucket = bucket.reasons[reason];
@@ -1006,8 +1060,10 @@ export function createJourneyBuildPressureSummary(steps) {
       reasonBucket.executeCount += Number(reasonItem?.executeCount) || 0;
       reasonBucket.immediateRequestCount += Number(reasonItem?.immediateRequestCount) || 0;
       reasonBucket.debouncedRequestCount += Number(reasonItem?.debouncedRequestCount) || 0;
+      reasonBucket.forceRequestCount += Number(reasonItem?.forceRequestCount) || 0;
       reasonBucket.executeImmediateCount += Number(reasonItem?.executeImmediateCount) || 0;
       reasonBucket.executeDebouncedCount += Number(reasonItem?.executeDebouncedCount) || 0;
+      reasonBucket.executeForceCount += Number(reasonItem?.executeForceCount) || 0;
     }
   }
   for (const bucket of Object.values(summary)) {
@@ -1025,6 +1081,8 @@ export function rankJourneyBuildPressure(summary, limit = 5) {
       totalDurationMs: Number(item?.totalDurationMs) || 0,
       requestCount: Number(item?.requestCount) || 0,
       executeCount: Number(item?.executeCount) || 0,
+      forceRequestCount: Number(item?.forceRequestCount) || 0,
+      executeForceCount: Number(item?.executeForceCount) || 0,
       pendingOverwriteCount: Number(item?.pendingOverwriteCount) || 0,
       suppressedRequestCount: Number(item?.suppressedRequestCount) || 0,
       debounceCount: Number(item?.debounceCount) || 0,
@@ -2372,7 +2430,7 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   }
   lines.push('', '## Store write pressure', '');
   lines.push(
-    `Store commits: ${Number(storeDebugSummary.commitCount) || 0}, no-op skips: ${Number(storeDebugSummary.noopSkipCount) || 0}, selector notifications: ${Number(storeDebugSummary.selectorNotifyCount) || 0}, tracked sources: ${Number(storeDebugSummary.sourceCount) || 0}, slow sources: ${Number(storeDebugSummary.slowSourceCount) || 0}, total source time: ${formatMs(Number(storeDebugSummary.totalSourceMs) || 0)}`
+    `Store commits: ${Number(storeDebugSummary.commitCount) || 0}, no-op skips: ${Number(storeDebugSummary.noopSkipCount) || 0}, noBuild commits: ${Number(storeDebugSummary.noBuildCount) || 0}, selector notifications: ${Number(storeDebugSummary.selectorNotifyCount) || 0}, tracked sources: ${Number(storeDebugSummary.sourceCount) || 0}, slow sources: ${Number(storeDebugSummary.slowSourceCount) || 0}, total source time: ${formatMs(Number(storeDebugSummary.totalSourceMs) || 0)}`
   );
   if (storeFlowRows.length) {
     lines.push('', '### Store-heavy user-flow steps', '');
@@ -2386,19 +2444,19 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
     lines.push('', '### Top store sources', '');
     for (const item of storeTopSources) {
       lines.push(
-        `- ${item.key}: source=${item.source}, type=${item.type}, slices=${item.slices.join('+') || 'none'}, count=${item.count}, total=${formatMs(item.totalMs)}, max=${formatMs(item.maxMs)}, slow=${item.slowCount}`
+        `- ${item.key}: source=${item.source}, type=${item.type}, slices=${item.slices.join('+') || 'none'}, count=${item.count}, noBuild=${item.noBuildCount || 0}, total=${formatMs(item.totalMs)}, max=${formatMs(item.maxMs)}, slow=${item.slowCount}`
       );
     }
   }
   lines.push('', '## Builder scheduling pressure', '');
   lines.push(
-    `Build requests: ${Number(buildDebugSummary.requestCount) || 0}, executes: ${Number(buildDebugSummary.executeCount) || 0}, pending overwrites: ${Number(buildDebugSummary.pendingOverwriteCount) || 0}, suppressed requests: ${Number(buildDebugSummary.suppressedRequestCount) || 0}, suppressed executes: ${Number(buildDebugSummary.suppressedExecuteCount) || 0}, debounce schedules: ${Number(buildDebugSummary.debouncedScheduleCount) || 0}`
+    `Build requests: ${Number(buildDebugSummary.requestCount) || 0}, executes: ${Number(buildDebugSummary.executeCount) || 0}, immediate requests: ${Number(buildDebugSummary.immediateRequestCount) || 0}, debounced requests: ${Number(buildDebugSummary.debouncedRequestCount) || 0}, force requests: ${Number(buildDebugSummary.forceRequestCount) || 0}, force executes: ${Number(buildDebugSummary.executeForceCount) || 0}, pending overwrites: ${Number(buildDebugSummary.pendingOverwriteCount) || 0}, suppressed requests: ${Number(buildDebugSummary.suppressedRequestCount) || 0}, suppressed executes: ${Number(buildDebugSummary.suppressedExecuteCount) || 0}, debounce schedules: ${Number(buildDebugSummary.debouncedScheduleCount) || 0}`
   );
   if (buildFlowRows.length) {
     lines.push('', '### Build-heavy user-flow steps', '');
     for (const item of buildFlowRows) {
       lines.push(
-        `- ${item.name}: requests=${item.requestCount}, executes=${item.executeCount}, pendingOverwrites=${item.pendingOverwriteCount}, suppressedRequests=${item.suppressedRequestCount}, debounce=${item.debounceCount}, duration=${formatMs(item.durationMs)}, topReasons=${item.topReasons.join(', ') || 'none'}`
+        `- ${item.name}: requests=${item.requestCount}, executes=${item.executeCount}, forceRequests=${item.forceRequestCount || 0}, forceExecutes=${item.executeForceCount || 0}, pendingOverwrites=${item.pendingOverwriteCount}, suppressedRequests=${item.suppressedRequestCount}, debounce=${item.debounceCount}, duration=${formatMs(item.durationMs)}, topReasons=${item.topReasons.join(', ') || 'none'}`
       );
     }
   }
@@ -2406,7 +2464,7 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
     lines.push('', '### Top build reasons', '');
     for (const item of buildTopReasons) {
       lines.push(
-        `- ${item.reason}: requests=${item.requestCount}, executes=${item.executeCount}, immediateRequests=${item.immediateRequestCount}, debouncedRequests=${item.debouncedRequestCount}`
+        `- ${item.reason}: requests=${item.requestCount}, executes=${item.executeCount}, immediateRequests=${item.immediateRequestCount}, debouncedRequests=${item.debouncedRequestCount}, forceRequests=${item.forceRequestCount || 0}, forceExecutes=${item.executeForceCount || 0}`
       );
     }
   }
@@ -2414,7 +2472,7 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
     lines.push('', '### Build-heavy customer journeys', '');
     for (const item of journeyBuildRows) {
       lines.push(
-        `- ${item.name}: steps=${item.stepCount}, requests=${item.requestCount}, executes=${item.executeCount}, pendingOverwrites=${item.pendingOverwriteCount}, suppressedRequests=${item.suppressedRequestCount}, debounce=${item.debounceCount}, total=${formatMs(item.totalDurationMs)}, topReasons=${item.topReasons.join(', ') || 'none'}`
+        `- ${item.name}: steps=${item.stepCount}, requests=${item.requestCount}, executes=${item.executeCount}, forceRequests=${item.forceRequestCount || 0}, forceExecutes=${item.executeForceCount || 0}, pendingOverwrites=${item.pendingOverwriteCount}, suppressedRequests=${item.suppressedRequestCount}, debounce=${item.debounceCount}, total=${formatMs(item.totalDurationMs)}, topReasons=${item.topReasons.join(', ') || 'none'}`
       );
     }
   }
