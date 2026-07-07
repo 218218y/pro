@@ -509,6 +509,46 @@ test('manual-layout shelf direct hit respects add hover instead of deleting an a
   assert.deepEqual(shelves, ['existing']);
 });
 
+test('manual-layout shelf direct hit respects rod add hover instead of deleting an adjacent shelf', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      shelves: [{ id: 'existing', yNorm: 0.25 }],
+    },
+  };
+  let patched = false;
+
+  const applied = tryApplyManualLayoutSketchDirectHitActions({
+    App: {} as never,
+    __mt: 'sketch_rod',
+    __activeModuleKey: 2,
+    topY: 2.4,
+    bottomY: 0,
+    mapKey: 2,
+    __gridMap: { '2': { gridDivisions: 6 } },
+    totalHeight: 2.4,
+    hitY0: 0.6,
+    pad: 0,
+    intersects: [{ object: { userData: { partId: 'all_shelves' } }, point: { y: 0.6 } }] as any,
+    __patchConfigForKey: (_mk, patchFn) => {
+      patched = true;
+      patchFn(cfg);
+      return null;
+    },
+    __wp_isViewportRoot: () => false,
+    __hoverOk: true,
+    __hoverKind: 'rod',
+    __hoverOp: 'add',
+    __hoverRec: { kind: 'rod', op: 'add', yNorm: 0.5 },
+  });
+
+  const shelves = (((cfg.sketchExtras as { shelves?: Array<{ id: string }> }) || {}).shelves ?? []).map(
+    entry => entry.id
+  );
+  assert.equal(applied, false);
+  assert.equal(patched, false);
+  assert.deepEqual(shelves, ['existing']);
+});
+
 test('manual-layout external sketch drawer tool removes an internal drawer box via canonical owner id', () => {
   const cfg: Record<string, unknown> = {
     sketchExtras: {

@@ -15,7 +15,9 @@ import {
   clampSketchModuleStorageCenterY,
 } from './canvas_picking_sketch_module_vertical_content.js';
 import {
+  createRodAddHoverRecord,
   createShelfAddHoverRecord,
+  createStorageAddHoverRecord,
   findSketchBoxInnerShelfSpan,
   type ResolveSketchModuleSurfacePreviewArgs,
   type SketchModuleSurfacePreviewResult,
@@ -162,10 +164,19 @@ export function resolveSketchModuleContentPreview(args: {
         : yClamped;
     const blockedBySketchDrawers = storagePlacement?.blocked === true;
     if (blockedBySketchDrawers) op = 'blocked';
+    const storageAddYNorm = spanH > 0 ? Math.max(0, Math.min(1, (storagePreviewY - bottomY) / spanH)) : 0;
     const depth0 = Number.isFinite(internalDepth) ? internalDepth : 0;
     const zFront = internalZ + depth0 / 2;
     return {
       handled: true,
+      hoverRecord:
+        args.contentOp === 'add'
+          ? createStorageAddHoverRecord({
+              host: source.host,
+              yNorm: storageAddYNorm,
+              blockedReason: blockedBySketchDrawers ? 'collision' : null,
+            })
+          : undefined,
       preview: {
         kind: 'storage',
         x: internalCenterX,
@@ -184,8 +195,17 @@ export function resolveSketchModuleContentPreview(args: {
   if (isRod) {
     const blockedBySketchDrawers = isAddBlockedBySketchDrawers(resolveSketchModuleRodCollisionHeight());
     if (blockedBySketchDrawers) op = 'blocked';
+    const rodAddYNorm = spanH > 0 ? Math.max(0, Math.min(1, (yClamped - bottomY) / spanH)) : 0;
     return {
       handled: true,
+      hoverRecord:
+        args.contentOp === 'add'
+          ? createRodAddHoverRecord({
+              host: source.host,
+              yNorm: rodAddYNorm,
+              blockedReason: blockedBySketchDrawers ? 'collision' : null,
+            })
+          : undefined,
       preview: {
         kind: 'rod',
         x: internalCenterX,

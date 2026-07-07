@@ -64,6 +64,44 @@ export function createStorageRemoveHoverRecord(args: {
   };
 }
 
+export function createStorageAddHoverRecord(args: {
+  host: ManualLayoutSketchHoverHost;
+  yNorm: number;
+  blockedReason?: string | null;
+}): RecordMap {
+  return {
+    ts: args.host.ts ?? Date.now(),
+    tool: args.host.tool,
+    moduleKey: args.host.moduleKey,
+    isBottom: args.host.isBottom,
+    hostModuleKey: args.host.moduleKey,
+    hostIsBottom: args.host.isBottom,
+    kind: 'storage',
+    op: 'add',
+    yNorm: Number.isFinite(args.yNorm) ? Math.max(0, Math.min(1, args.yNorm)) : undefined,
+    __wpBlockedReason: args.blockedReason || undefined,
+  };
+}
+
+export function createRodAddHoverRecord(args: {
+  host: ManualLayoutSketchHoverHost;
+  yNorm: number;
+  blockedReason?: string | null;
+}): RecordMap {
+  return {
+    ts: args.host.ts ?? Date.now(),
+    tool: args.host.tool,
+    moduleKey: args.host.moduleKey,
+    isBottom: args.host.isBottom,
+    hostModuleKey: args.host.moduleKey,
+    hostIsBottom: args.host.isBottom,
+    kind: 'rod',
+    op: 'add',
+    yNorm: Number.isFinite(args.yNorm) ? Math.max(0, Math.min(1, args.yNorm)) : undefined,
+    __wpBlockedReason: args.blockedReason || undefined,
+  };
+}
+
 export function createRodRemoveHoverRecord(args: {
   host: ManualLayoutSketchHoverHost;
   removeKind: 'sketch' | 'base';

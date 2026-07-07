@@ -108,6 +108,26 @@ test('module surface hover writes shelf add intent so click follows the hover pr
   assert.equal(calls.hides, 0);
 });
 
+test('module surface hover writes rod add intent so stale shelf-remove hover cannot steal the click', () => {
+  const { ctx, calls } = createSurfaceContext({
+    tool: 'sketch_rod',
+    isShelf: false,
+    isRod: true,
+    yClamped: 0.72,
+  });
+
+  const handled = handleManualLayoutSketchHoverModuleSurfacePreview(ctx);
+  assert.equal(handled, true);
+  assert.equal(calls.hover.length, 1);
+  assert.equal(calls.hover[0].kind, 'rod');
+  assert.equal(calls.hover[0].op, 'add');
+  assert.equal(calls.hover[0].yNorm, 0.72 / 1.2);
+  assert.equal(calls.previews.length, 1);
+  assert.equal(calls.previews[0].kind, 'rod');
+  assert.equal(calls.previews[0].op, 'add');
+  assert.equal(calls.hides, 0);
+});
+
 test('module preview flow probes existing shelf removal before drawer stack add previews', () => {
   const { ctx, calls } = createSurfaceContext({
     tool: 'sketch_int_drawers',
