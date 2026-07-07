@@ -1,5 +1,6 @@
 import type { AppContainer } from '../../../types';
 
+import { runPerfAction } from '../services/api.js';
 import { requestAppConfirmation } from './feedback_confirm_runtime.js';
 import { runConfirmedAction } from './feedback_action_runtime.js';
 import { runAppActionFamilySingleFlight, type AppActionFamilyFlight } from './action_family_singleflight.js';
@@ -15,20 +16,35 @@ export type ConfirmedAppActionFamilyArgs<Result, Key extends string> = {
   runConfirmed: () => Result | Promise<Result>;
   onBusy?: (() => Result | Promise<Result>) | null;
   onReuse?: (() => void) | null;
+  requestPerfName?: string | null;
 };
 
 export function runAppConfirmedActionFamilySingleFlight<Result, Key extends string>(
   args: ConfirmedAppActionFamilyArgs<Result, Key>
 ): Promise<Result> {
-  const { flights, app, key, title, message, onRequestError, onCancelled, runConfirmed, onBusy, onReuse } =
-    args;
+  const {
+    flights,
+    app,
+    key,
+    title,
+    message,
+    onRequestError,
+    onCancelled,
+    runConfirmed,
+    onBusy,
+    onReuse,
+    requestPerfName,
+  } = args;
   return runAppActionFamilySingleFlight({
     flights,
     app,
     key,
     run: () =>
       runConfirmedAction<Result>({
-        request: () => requestAppConfirmation(app, title, message),
+        request: () =>
+          requestPerfName
+            ? runPerfAction(app, requestPerfName, () => requestAppConfirmation(app, title, message))
+            : requestAppConfirmation(app, title, message),
         onRequestError,
         onCancelled,
         runConfirmed,

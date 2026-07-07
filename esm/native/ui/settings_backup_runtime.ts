@@ -73,6 +73,7 @@ export async function runConfirmedSettingsBackupImportFlight({
     message: 'פעולה זו תמזג את הדגמים והצבעים מהקובץ לרשימה הקיימת שלך. האם להמשיך?',
     onRequestError,
     onCancelled: () => buildSettingsBackupImportFailureResult('cancelled'),
+    requestPerfName: 'settingsBackup.import.confirm',
     onBusy: () => {
       clearInputValue(event);
       return buildSettingsBackupImportFailureResult('busy');

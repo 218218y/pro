@@ -2409,6 +2409,76 @@ export function createSavedColorPhaseBreakdown(summary) {
   }).filter(item => item.count > 0);
 }
 
+function readSettingsBackupImportBottleneck({
+  confirmAvgMs,
+  readFileAvgMs,
+  parseAvgMs,
+  modelsMergeAvgMs,
+  colorsAvgMs,
+  modelsFinalizeAvgMs,
+  storageWriteAvgMs,
+  codeAvgMs,
+}) {
+  if (confirmAvgMs >= Math.max(100, codeAvgMs * 2)) return 'confirm-wait';
+  if (storageWriteAvgMs >= Math.max(25, codeAvgMs * 0.5)) return 'storage';
+  if (modelsMergeAvgMs >= Math.max(25, codeAvgMs * 0.5)) return 'models-merge';
+  if (colorsAvgMs >= Math.max(25, codeAvgMs * 0.5)) return 'colors-merge';
+  if (modelsFinalizeAvgMs >= Math.max(25, codeAvgMs * 0.5)) return 'models-refresh';
+  if (readFileAvgMs >= Math.max(25, codeAvgMs * 0.5)) return 'file-read';
+  if (parseAvgMs >= Math.max(10, codeAvgMs * 0.5)) return 'parse';
+  if (codeAvgMs > 0) return 'app-pipeline';
+  return 'none';
+}
+
+export function createSettingsBackupImportPhaseBreakdown(summary) {
+  const total = 'settingsBackup.import';
+  const count = readPerfCount(summary, total);
+  if (count <= 0) return [];
+
+  const phaseMetricCount = [
+    'settingsBackup.import.confirm',
+    'settingsBackup.import.readFile',
+    'settingsBackup.import.parse',
+    'settingsBackup.import.models.merge',
+    'settingsBackup.import.colors',
+    'settingsBackup.import.models.finalize',
+    'settingsBackup.import.storage.write',
+  ].reduce((sum, name) => sum + readPerfCount(summary, name), 0);
+  if (phaseMetricCount <= 0) return [];
+
+  const totalAvgMs = readPerfAverage(summary, total);
+  const confirmAvgMs = readPerfAverage(summary, 'settingsBackup.import.confirm');
+  const readFileAvgMs = readPerfAverage(summary, 'settingsBackup.import.readFile');
+  const parseAvgMs = readPerfAverage(summary, 'settingsBackup.import.parse');
+  const modelsMergeAvgMs = readPerfAverage(summary, 'settingsBackup.import.models.merge');
+  const colorsAvgMs = readPerfAverage(summary, 'settingsBackup.import.colors');
+  const modelsFinalizeAvgMs = readPerfAverage(summary, 'settingsBackup.import.models.finalize');
+  const storageWriteAvgMs = readPerfAverage(summary, 'settingsBackup.import.storage.write');
+  const codeAvgMs = Math.max(0, roundDuration(totalAvgMs - confirmAvgMs));
+  const row = {
+    op: 'import',
+    count,
+    totalAvgMs,
+    totalP95Ms: readPerfP95(summary, total),
+    confirmAvgMs,
+    confirmP95Ms: readPerfP95(summary, 'settingsBackup.import.confirm'),
+    codeAvgMs,
+    readFileAvgMs,
+    parseAvgMs,
+    modelsMergeAvgMs,
+    colorsAvgMs,
+    modelsFinalizeAvgMs,
+    storageWriteAvgMs,
+    storageWriteCount: readPerfCount(summary, 'settingsBackup.import.storage.write'),
+  };
+  return [
+    {
+      ...row,
+      bottleneck: readSettingsBackupImportBottleneck(row),
+    },
+  ];
+}
+
 export function summarizeBrowserPerfResult(result, contracts = {}) {
   const requiredMetrics = Array.isArray(contracts.requiredRuntimeMetrics)
     ? contracts.requiredRuntimeMetrics
@@ -2686,6 +2756,15 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
     for (const item of savedColorPhaseRows) {
       lines.push(
         `- ${item.op}: totalAvg=${formatMs(item.totalAvgMs)}, totalP95=${formatMs(item.totalP95Ms)}, dialogAvg=${formatMs(item.dialogAvgMs)}, dialogP95=${formatMs(item.dialogP95Ms)}, codeAvg≈${formatMs(item.codeAvgMs)}, prepare=${formatMs(item.prepareAvgMs)}, order=${formatMs(item.orderAvgMs)}, mutation=${formatMs(item.mutationAvgMs)}, patch=${formatMs(item.patchAvgMs)}, storage=${formatMs(item.storageAvgMs)}, bottleneck=${item.bottleneck}`
+      );
+    }
+  }
+  const settingsBackupImportPhaseRows = createSettingsBackupImportPhaseBreakdown(perfSummary);
+  if (settingsBackupImportPhaseRows.length) {
+    lines.push('', '### Settings backup import phase breakdown', '');
+    for (const item of settingsBackupImportPhaseRows) {
+      lines.push(
+        `- ${item.op}: totalAvg=${formatMs(item.totalAvgMs)}, totalP95=${formatMs(item.totalP95Ms)}, confirmAvg=${formatMs(item.confirmAvgMs)}, confirmP95=${formatMs(item.confirmP95Ms)}, codeAvg≈${formatMs(item.codeAvgMs)}, readFile=${formatMs(item.readFileAvgMs)}, parse=${formatMs(item.parseAvgMs)}, modelsMerge=${formatMs(item.modelsMergeAvgMs)}, colors=${formatMs(item.colorsAvgMs)}, modelsFinalize=${formatMs(item.modelsFinalizeAvgMs)}, storageWrite=${formatMs(item.storageWriteAvgMs)} x${item.storageWriteCount}, bottleneck=${item.bottleneck}`
       );
     }
   }

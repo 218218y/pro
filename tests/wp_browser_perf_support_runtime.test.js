@@ -14,6 +14,7 @@ import {
   createRuntimeRecoveryHangoverBudget,
   createRuntimeRecoveryHangoverSummary,
   createSavedColorPhaseBreakdown,
+  createSettingsBackupImportPhaseBreakdown,
   createRuntimeRecoverySequenceSummary,
   createRuntimeStatusTransitionSummary,
   createStateIntegritySummary,
@@ -318,6 +319,14 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
       'design.savedColor.add.mutation': { count: 2, averageMs: 4, p95Ms: 5 },
       'design.savedColor.add.patch': { count: 2, averageMs: 2, p95Ms: 3 },
       'design.savedColor.add.storage': { count: 2, averageMs: 1, p95Ms: 1 },
+      'settingsBackup.import': { count: 2, averageMs: 280, p95Ms: 300, totalMs: 560 },
+      'settingsBackup.import.confirm': { count: 2, averageMs: 210, p95Ms: 230 },
+      'settingsBackup.import.readFile': { count: 2, averageMs: 12, p95Ms: 15 },
+      'settingsBackup.import.parse': { count: 2, averageMs: 2, p95Ms: 3 },
+      'settingsBackup.import.models.merge': { count: 2, averageMs: 18, p95Ms: 20 },
+      'settingsBackup.import.colors': { count: 2, averageMs: 16, p95Ms: 18 },
+      'settingsBackup.import.models.finalize': { count: 2, averageMs: 9, p95Ms: 10 },
+      'settingsBackup.import.storage.write': { count: 4, averageMs: 1, p95Ms: 2 },
     },
     windowPerfEntries: [
       { name: 'project.save', durationMs: 25, status: 'ok' },
@@ -452,6 +461,11 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
     md,
     /add: totalAvg=320ms, totalP95=340ms, dialogAvg=300ms, dialogP95=320ms, codeAvg≈20ms, prepare=1ms, order=1ms, mutation=4ms, patch=2ms, storage=1ms, bottleneck=feedback-wait/
   );
+  assert.match(md, /Settings backup import phase breakdown/);
+  assert.match(
+    md,
+    /import: totalAvg=280ms, totalP95=300ms, confirmAvg=210ms, confirmP95=230ms, codeAvg≈70ms, readFile=12ms, parse=2ms, modelsMerge=18ms, colors=16ms, modelsFinalize=9ms, storageWrite=1ms x4, bottleneck=confirm-wait/
+  );
   assert.match(md, /Sustained-use pressure signals/);
   assert.match(md, /Runtime domains/);
   assert.match(
@@ -488,6 +502,39 @@ test('browser perf support explains saved color user wait versus app pipeline co
       patchAvgMs: 2,
       storageAvgMs: 1,
       bottleneck: 'feedback-wait',
+    },
+  ]);
+});
+
+test('browser perf support explains settings backup import confirmation wait versus import pipeline cost', () => {
+  const rows = createSettingsBackupImportPhaseBreakdown({
+    'settingsBackup.import': { count: 3, averageMs: 340, p95Ms: 370 },
+    'settingsBackup.import.confirm': { count: 3, averageMs: 260, p95Ms: 300 },
+    'settingsBackup.import.readFile': { count: 3, averageMs: 12, p95Ms: 15 },
+    'settingsBackup.import.parse': { count: 3, averageMs: 2, p95Ms: 3 },
+    'settingsBackup.import.models.merge': { count: 3, averageMs: 20, p95Ms: 22 },
+    'settingsBackup.import.colors': { count: 3, averageMs: 18, p95Ms: 20 },
+    'settingsBackup.import.models.finalize': { count: 3, averageMs: 8, p95Ms: 9 },
+    'settingsBackup.import.storage.write': { count: 6, averageMs: 1, p95Ms: 2 },
+  });
+
+  assert.deepEqual(rows, [
+    {
+      op: 'import',
+      count: 3,
+      totalAvgMs: 340,
+      totalP95Ms: 370,
+      confirmAvgMs: 260,
+      confirmP95Ms: 300,
+      codeAvgMs: 80,
+      readFileAvgMs: 12,
+      parseAvgMs: 2,
+      modelsMergeAvgMs: 20,
+      colorsAvgMs: 18,
+      modelsFinalizeAvgMs: 8,
+      storageWriteAvgMs: 1,
+      storageWriteCount: 6,
+      bottleneck: 'confirm-wait',
     },
   ]);
 });

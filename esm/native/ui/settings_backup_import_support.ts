@@ -7,6 +7,7 @@ import {
   patchViaActions,
   readFileTextResultViaBrowser,
   readSavedColors,
+  runPerfAction,
   renderModelUiViaActionsOrThrow,
   setCfgColorSwatchesOrder,
   setCfgSavedColors,
@@ -114,6 +115,10 @@ function buildImportedColorConfigPatch(mutation: ImportedColorMutation): Unknown
   return Object.keys(configPatch).length ? { config: configPatch } : {};
 }
 
+function runSettingsBackupImportPerfStep<T>(App: AppContainer, metricName: string, run: () => T): T {
+  return runPerfAction(App, metricName, run);
+}
+
 function writeImportedColorStorage(
   App: AppContainer,
   op: string,
@@ -121,7 +126,10 @@ function writeImportedColorStorage(
   key: string,
   value: unknown[]
 ): void {
-  if (writeStorageArray(storage, key, value)) return;
+  const ok = runSettingsBackupImportPerfStep(App, 'settingsBackup.import.storage.write', () =>
+    writeStorageArray(storage, key, value)
+  );
+  if (ok) return;
   settingsBackupReport(App, op, new Error(`${op} storage write unavailable`), true);
 }
 
@@ -199,7 +207,13 @@ function writeStorageIdListIfChanged(
   nextValue: string[]
 ): void {
   if (sameSettingsBackupIdList(currentValue, nextValue)) return;
-  if (writeStorageArray(storage, key, nextValue)) return;
+  if (
+    runSettingsBackupImportPerfStep(App, 'settingsBackup.import.storage.write', () =>
+      writeStorageArray(storage, key, nextValue)
+    )
+  ) {
+    return;
+  }
   settingsBackupReport(App, op, new Error(`${op} storage write unavailable`), true);
 }
 

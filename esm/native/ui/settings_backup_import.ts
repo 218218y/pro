@@ -43,12 +43,16 @@ export async function importSystemSettings(
           onRequestError: message =>
             buildSettingsBackupActionErrorResult('import', message, 'ייבוא הגדרות נכשל'),
           runConfirmed: async () => {
-            const readResult = await readBackupFileTextSafe(App, file);
+            const readResult = await runSettingsBackupPerfAction(App, 'settingsBackup.import.readFile', () =>
+              readBackupFileTextSafe(App, file)
+            );
             if (readResult.ok === false) {
               return buildSettingsBackupImportFailureResult(readResult.reason, readResult.message);
             }
 
-            const parsed = parseSettingsBackupSafe(readResult.text);
+            const parsed = await runSettingsBackupPerfAction(App, 'settingsBackup.import.parse', () =>
+              parseSettingsBackupSafe(readResult.text)
+            );
             if (parsed.ok === false) {
               return buildSettingsBackupImportFailureResult(parsed.reason, parsed.message);
             }
@@ -58,14 +62,22 @@ export async function importSystemSettings(
             let modelsMergeResult: ModelsMergeResult = { added: 0, updated: 0 };
 
             if (data.savedModels.length > 0) {
-              modelsMergeResult = mergeImportedModelsStrict(App, data.savedModels);
+              modelsMergeResult = await runSettingsBackupPerfAction(
+                App,
+                'settingsBackup.import.models.merge',
+                () => mergeImportedModelsStrict(App, data.savedModels)
+              );
               modelsAdded = Number.isFinite(Number(modelsMergeResult.added))
                 ? Number(modelsMergeResult.added)
                 : 0;
             }
 
-            const colorsAdded = applyImportedColorSettings(App, data);
-            finalizeImportedModels(App, modelsMergeResult);
+            const colorsAdded = await runSettingsBackupPerfAction(App, 'settingsBackup.import.colors', () =>
+              applyImportedColorSettings(App, data)
+            );
+            await runSettingsBackupPerfAction(App, 'settingsBackup.import.models.finalize', () =>
+              finalizeImportedModels(App, modelsMergeResult)
+            );
             return buildSettingsBackupImportSuccessResult(modelsAdded, colorsAdded);
           },
         })

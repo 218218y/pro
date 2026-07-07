@@ -236,6 +236,13 @@ test('importSystemSettings merges models/colors, syncs storage order, and clears
     const perfEntries = getPerfEntries(app as never, 'settingsBackup.import');
     assert.equal(perfEntries.length, 1);
     assert.equal(perfEntries[0]?.status, 'ok');
+    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.confirm').length, 1);
+    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.readFile').length, 1);
+    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.parse').length, 1);
+    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.models.merge').length, 1);
+    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.colors').length, 1);
+    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.models.finalize').length, 1);
+    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.storage.write').length, 4);
   } finally {
     (globalThis as { FileReader?: unknown }).FileReader = originalReader;
     (globalThis as { File?: unknown }).File = originalFile;
