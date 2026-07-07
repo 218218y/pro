@@ -66,6 +66,17 @@ function readStructureScalarBuildTiming(key: StructureTabNumericKey): StructureR
   }
 }
 
+function readStructureScalarBuildForce(key: StructureTabNumericKey): boolean {
+  switch (key) {
+    case 'width':
+    case 'height':
+    case 'depth':
+      return false;
+    default:
+      return true;
+  }
+}
+
 export function commitStructureRawValue(args: {
   app: AppContainer;
   meta: MetaActionsNamespaceLike;
@@ -338,6 +349,7 @@ export function commitStructureRawValue(args: {
         uiPatch,
         statePatch,
         buildTiming: readStructureScalarBuildTiming(key),
+        forceBuild: readStructureScalarBuildForce(key),
         mutate: () => {
           if (key === 'width' && !isManualWidth) {
             setManualWidth(

@@ -201,6 +201,7 @@ test('[structure-raw-mutations] width commit batches manual-width config with ui
   const args = batchCall[1];
   assert.equal(args.source, 'react:structure:width');
   assert.equal(args.buildTiming, 'coalesced');
+  assert.equal(args.forceBuild, false);
   assert.equal(JSON.stringify(args.uiPatch), JSON.stringify({ raw: { width: 220 } }));
   assert.equal(
     JSON.stringify(args.statePatch),
@@ -256,6 +257,7 @@ test('[structure-raw-mutations] height and depth commits request coalesced build
     assert.ok(batchCall);
     assert.equal(batchCall[1].source, `react:structure:${key}`);
     assert.equal(batchCall[1].buildTiming, 'coalesced');
+    assert.equal(batchCall[1].forceBuild, false);
   }
 });
 
@@ -273,6 +275,7 @@ test('[structure-raw-mutations] stack-split lower doors commit uses one ui patch
   assert.ok(batchCall);
   const args = batchCall[1];
   assert.equal(args.source, 'react:structure:stackSplitLowerDoors');
+  assert.equal(args.forceBuild, undefined);
   assert.equal(
     JSON.stringify(args.statePatch),
     JSON.stringify({

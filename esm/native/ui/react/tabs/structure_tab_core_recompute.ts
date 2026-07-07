@@ -23,6 +23,7 @@ export type ApplyStructureTemplateRecomputeBatchArgs<TPatch extends UnknownRecor
   statePatch?: UnknownRecord | null;
   mutate?: () => void;
   buildTiming?: StructureRecomputeBuildTiming;
+  forceBuild?: boolean;
 };
 
 export function applyStructureTemplateRecomputeBatch<TPatch extends UnknownRecord = UnknownRecord>(

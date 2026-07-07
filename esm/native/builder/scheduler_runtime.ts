@@ -251,7 +251,8 @@ export function requestBuildRuntime(
 
   const now = nowForBuildStats();
   const immediate = !!opts?.immediate;
-  const forceBuild = !!opts?.force;
+  const requestedForceBuild = !!opts?.force;
+  const forceBuild = requestedForceBuild || !!s.pendingForceBuild;
 
   try {
     const plan = getBuildPlanForScheduler(A, uiOverride);
@@ -272,7 +273,14 @@ export function requestBuildRuntime(
       forceBuild,
       nextPendingPlan
     );
-    const requestReason = recordBuildRequest(s, opts?.reason, immediate, forceBuild, nextPendingPlan, now);
+    const requestReason = recordBuildRequest(
+      s,
+      opts?.reason,
+      immediate,
+      requestedForceBuild,
+      nextPendingPlan,
+      now
+    );
 
     if (suppressDuplicatePending) {
       recordSkippedDuplicatePendingRequest(s, requestReason);

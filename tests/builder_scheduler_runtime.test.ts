@@ -182,6 +182,72 @@ test('builder scheduler runtime: install surface exposes runtime stats/reset hoo
   assert.equal(builder.__scheduler.getState().waiting, false);
 });
 
+test('builder scheduler runtime: legacy debug stats are normalized without dropping reason rows', () => {
+  const harness = createSchedulerHarness('sig:legacy-stats');
+  const state = harness.App.services.builder.__schedulerState;
+  state.debugStats = {
+    requestCount: 1,
+    immediateRequestCount: 0,
+    debouncedRequestCount: 1,
+    forceRequestCount: 0,
+    executeCount: 0,
+    executeImmediateCount: 0,
+    executeDebouncedCount: 0,
+    executeForceCount: 0,
+    pendingOverwriteCount: 0,
+    debouncedScheduleCount: 1,
+    reusedDebouncedScheduleCount: 0,
+    builderWaitScheduleCount: 0,
+    staleDebouncedTimerFireCount: 0,
+    staleBuilderWaitWakeupCount: 0,
+    duplicatePendingSignatureCount: 0,
+    skippedDuplicatePendingRequestCount: 0,
+    skippedSatisfiedRequestCount: 0,
+    repeatedExecuteCount: 0,
+    skippedRepeatedExecuteCount: 0,
+    lastRequestReason: 'legacy',
+    lastExecuteReason: '',
+    reasons: {
+      legacy: {
+        reason: 'legacy',
+        requestCount: 1,
+        immediateRequestCount: 0,
+        debouncedRequestCount: 1,
+        forceRequestCount: 0,
+        executeCount: 0,
+        executeImmediateCount: 0,
+        executeDebouncedCount: 0,
+        executeForceCount: 0,
+        overwriteCount: 0,
+        debouncedScheduleCount: 1,
+        reusedDebouncedScheduleCount: 0,
+        builderWaitScheduleCount: 0,
+        staleDebouncedTimerFireCount: 0,
+        staleBuilderWaitWakeupCount: 0,
+        duplicatePendingSignatureCount: 0,
+        skippedDuplicatePendingRequestCount: 0,
+        skippedSatisfiedRequestCount: 0,
+        repeatedExecuteCount: 0,
+        skippedRepeatedExecuteCount: 0,
+      },
+    },
+  } as any;
+
+  let stats = getBuildDebugStats(harness.App);
+  assert.equal(stats.debouncedNonForceRequestCount, 0);
+  assert.equal(stats.executeDebouncedForceCount, 0);
+  assert.equal(stats.reasons.legacy?.requestCount, 1);
+  assert.equal(stats.reasons.legacy?.debouncedNonForceRequestCount, 0);
+
+  requestBuild(harness.App, null, { reason: 'legacy:next' });
+  stats = getBuildDebugStats(harness.App);
+
+  assert.equal(stats.requestCount, 2);
+  assert.equal(stats.debouncedNonForceRequestCount, 1);
+  assert.equal(stats.reasons.legacy?.requestCount, 1);
+  assert.equal(stats.reasons['legacy:next']?.debouncedNonForceRequestCount, 1);
+});
+
 test('builder scheduler runtime: duplicate pending signature requests keep the original pending plan and avoid rescheduling churn', () => {
   const harness = createSchedulerHarness('sig:alpha');
 
@@ -199,6 +265,59 @@ test('builder scheduler runtime: duplicate pending signature requests keep the o
   assert.equal(stats.executeCount, 1);
   assert.equal(stats.reasons.typing?.requestCount, 2);
   assert.equal(stats.reasons.typing?.skippedDuplicatePendingRequestCount, 1);
+});
+
+test('builder scheduler runtime: coalesced non-force requests with changed fingerprints execute only the latest pending build', () => {
+  const harness = createSchedulerHarness('sig:width');
+
+  requestBuild(harness.App, null, { reason: 'react:structure:width' });
+  harness.setSignature('sig:height');
+  requestBuild(harness.App, null, { reason: 'react:structure:height' });
+  harness.setSignature('sig:depth');
+  requestBuild(harness.App, null, { reason: 'react:structure:depth' });
+
+  assert.equal(harness.buildCalls.length, 0);
+  assert.equal(harness.getScheduleCount(), 3);
+
+  harness.flush();
+
+  assert.equal(harness.buildCalls.length, 1);
+  assert.equal(harness.buildCalls[0]?.build?.signature, 'sig:depth');
+
+  const stats = getBuildDebugStats(harness.App);
+  assert.equal(stats.requestCount, 3);
+  assert.equal(stats.executeCount, 1);
+  assert.equal(stats.forceRequestCount, 0);
+  assert.equal(stats.executeForceCount, 0);
+  assert.equal(stats.pendingOverwriteCount, 2);
+  assert.equal(stats.debouncedNonForceRequestCount, 3);
+  assert.equal(stats.executeDebouncedNonForceCount, 1);
+  assert.equal(stats.reasons['react:structure:depth']?.executeCount, 1);
+});
+
+test('builder scheduler runtime: a pending forced build is preserved when a newer non-force request supplies the latest state', () => {
+  const harness = createSchedulerHarness('sig:recovery');
+
+  requestBuild(harness.App, null, { reason: 'recompute:recovery', force: true });
+  harness.setSignature('sig:latest-structure');
+  requestBuild(harness.App, null, { reason: 'react:structure:width' });
+
+  harness.flush();
+
+  assert.equal(harness.buildCalls.length, 1);
+  assert.equal(harness.buildCalls[0]?.build?.signature, 'sig:latest-structure');
+  assert.equal(harness.buildCalls[0]?.ui?.forceBuild, true);
+
+  const stats = getBuildDebugStats(harness.App);
+  assert.equal(stats.requestCount, 2);
+  assert.equal(stats.forceRequestCount, 1);
+  assert.equal(stats.debouncedForceRequestCount, 1);
+  assert.equal(stats.debouncedNonForceRequestCount, 1);
+  assert.equal(stats.executeCount, 1);
+  assert.equal(stats.executeForceCount, 1);
+  assert.equal(stats.executeDebouncedForceCount, 1);
+  assert.equal(stats.reasons['react:structure:width']?.forceRequestCount, 0);
+  assert.equal(stats.reasons['react:structure:width']?.executeForceCount, 1);
 });
 
 test('builder scheduler runtime: fallback debounce keeps only one queued timer active for repeated non-immediate requests', () => {

@@ -102,7 +102,7 @@ test('[structure-tab-recompute-batch] accepts caller-owned ui override merge pol
   );
 });
 
-test('[structure-tab-recompute-batch] coalesced build timing keeps recompute sync and defers only build execution', () => {
+test('[structure-tab-recompute-batch] coalesced non-force profile keeps recompute sync and defers only build execution', () => {
   const calls = [];
   const app = { id: 'app' };
   const meta = { source: 'react:structure:width', immediate: true, noBuild: true };
@@ -120,12 +120,26 @@ test('[structure-tab-recompute-batch] coalesced build timing keeps recompute syn
     statePatch: { ui: { raw: { width: 180 } } },
     recomputeOpts: { structureChanged: true, preserveTemplate: true, anchorSide: 'left' },
     buildTiming: 'coalesced',
+    forceBuild: false,
   });
 
   const recompute = calls.find(entry => entry[0] === 'runAppStructuralModulesRecompute');
   assert.equal(
     JSON.stringify(recompute?.[4]),
-    JSON.stringify({ source: 'react:structure:width', force: true, immediate: false })
+    JSON.stringify({ source: 'react:structure:width', force: false, immediate: false })
+  );
+});
+
+test('[structure-tab-recompute-batch] coalesced timing alone preserves the forced recompute default', () => {
+  const mod = loadStructureTabRecomputeBatchModule({ calls: [] });
+
+  assert.equal(
+    JSON.stringify(mod.createStructureRecomputeBuildDefaults('react:structure:doors', 'coalesced')),
+    JSON.stringify({
+      source: 'react:structure:doors',
+      force: true,
+      immediate: false,
+    })
   );
 });
 
@@ -135,5 +149,14 @@ test('[structure-tab-recompute-batch] unknown build timing fails fast instead of
   assert.throws(
     () => mod.createStructureRecomputeBuildDefaults('react:structure:test', 'later-but-not-really'),
     /Unknown structure recompute build timing/
+  );
+});
+
+test('[structure-tab-recompute-batch] unknown build force fails fast instead of falling back silently', () => {
+  const mod = loadStructureTabRecomputeBatchModule({ calls: [] });
+
+  assert.throws(
+    () => mod.createStructureRecomputeBuildDefaults('react:structure:test', 'coalesced', 'sometimes'),
+    /Unknown structure recompute build force/
   );
 });

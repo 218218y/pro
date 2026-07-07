@@ -23,6 +23,7 @@ export type StructurePatchRecomputeBatchArgs<TPatch extends UnknownRecord = Unkn
   recomputeOpts?: StructureRecomputeOpts;
   mergeUiOverride?: StructureUiOverrideMerge;
   buildTiming?: StructureRecomputeBuildTiming;
+  forceBuild?: boolean;
 };
 
 export const STRUCTURE_RECOMPUTE_OPTS = createStructuralModulesRecomputeOpts() as StructureRecomputeOpts;
@@ -31,7 +32,7 @@ export type StructureRecomputeBuildTiming = 'immediate' | 'coalesced';
 
 export type StructureRecomputeBuildDefaults = {
   source: string;
-  force: true;
+  force: boolean;
   immediate?: false;
 };
 
@@ -47,12 +48,22 @@ function readStructureRecomputeBuildTiming(
   throw new Error(`[WardrobePro] Unknown structure recompute build timing: ${String(buildTiming)}`);
 }
 
+function readStructureRecomputeBuildForce(forceBuild: boolean | null | undefined): boolean {
+  if (forceBuild == null) return true;
+  if (typeof forceBuild === 'boolean') return forceBuild;
+  throw new Error(`[WardrobePro] Unknown structure recompute build force: ${String(forceBuild)}`);
+}
+
 export function createStructureRecomputeBuildDefaults(
   source: string,
-  buildTiming?: StructureRecomputeBuildTiming | null
+  buildTiming?: StructureRecomputeBuildTiming | null,
+  forceBuild?: boolean | null
 ): StructureRecomputeBuildDefaults {
   const timing = readStructureRecomputeBuildTiming(buildTiming);
-  const defaults: StructureRecomputeBuildDefaults = { source, force: true };
+  const defaults: StructureRecomputeBuildDefaults = {
+    source,
+    force: readStructureRecomputeBuildForce(forceBuild),
+  };
   if (timing === 'coalesced') defaults.immediate = false;
   return defaults;
 }
@@ -99,6 +110,7 @@ export function runStructurePatchRecomputeBatch<TPatch extends UnknownRecord = U
     recomputeOpts = createStructureRecomputeOpts(),
     mergeUiOverride = mergeStructureUiOverride,
     buildTiming,
+    forceBuild,
   } = args;
 
   runHistoryBatch(
@@ -110,7 +122,7 @@ export function runStructurePatchRecomputeBatch<TPatch extends UnknownRecord = U
         app,
         override,
         null,
-        createStructureRecomputeBuildDefaults(source, buildTiming),
+        createStructureRecomputeBuildDefaults(source, buildTiming, forceBuild),
         recomputeOpts,
         {}
       );

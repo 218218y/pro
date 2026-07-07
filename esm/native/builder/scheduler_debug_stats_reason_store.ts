@@ -13,10 +13,18 @@ type ReasonStatNumericKey =
   | 'immediateRequestCount'
   | 'debouncedRequestCount'
   | 'forceRequestCount'
+  | 'immediateForceRequestCount'
+  | 'immediateNonForceRequestCount'
+  | 'debouncedForceRequestCount'
+  | 'debouncedNonForceRequestCount'
   | 'executeCount'
   | 'executeImmediateCount'
   | 'executeDebouncedCount'
   | 'executeForceCount'
+  | 'executeImmediateForceCount'
+  | 'executeImmediateNonForceCount'
+  | 'executeDebouncedForceCount'
+  | 'executeDebouncedNonForceCount'
   | 'overwriteCount'
   | 'debouncedScheduleCount'
   | 'reusedDebouncedScheduleCount'
@@ -36,10 +44,18 @@ const REASON_STAT_NUMERIC_KEYS: ReasonStatNumericKey[] = [
   'immediateRequestCount',
   'debouncedRequestCount',
   'forceRequestCount',
+  'immediateForceRequestCount',
+  'immediateNonForceRequestCount',
+  'debouncedForceRequestCount',
+  'debouncedNonForceRequestCount',
   'executeCount',
   'executeImmediateCount',
   'executeDebouncedCount',
   'executeForceCount',
+  'executeImmediateForceCount',
+  'executeImmediateNonForceCount',
+  'executeDebouncedForceCount',
+  'executeDebouncedNonForceCount',
   'overwriteCount',
   'debouncedScheduleCount',
   'reusedDebouncedScheduleCount',
@@ -53,6 +69,40 @@ const REASON_STAT_NUMERIC_KEYS: ReasonStatNumericKey[] = [
   'skippedRepeatedExecuteCount',
   'lastRequestTs',
   'lastExecuteTs',
+];
+
+type BuilderDebugStatNumericKey =
+  | Exclude<ReasonStatNumericKey, 'overwriteCount' | 'lastRequestTs' | 'lastExecuteTs'>
+  | 'pendingOverwriteCount';
+
+const BUILDER_DEBUG_STAT_NUMERIC_KEYS: BuilderDebugStatNumericKey[] = [
+  'requestCount',
+  'immediateRequestCount',
+  'debouncedRequestCount',
+  'forceRequestCount',
+  'immediateForceRequestCount',
+  'immediateNonForceRequestCount',
+  'debouncedForceRequestCount',
+  'debouncedNonForceRequestCount',
+  'executeCount',
+  'executeImmediateCount',
+  'executeDebouncedCount',
+  'executeForceCount',
+  'executeImmediateForceCount',
+  'executeImmediateNonForceCount',
+  'executeDebouncedForceCount',
+  'executeDebouncedNonForceCount',
+  'pendingOverwriteCount',
+  'debouncedScheduleCount',
+  'reusedDebouncedScheduleCount',
+  'builderWaitScheduleCount',
+  'staleDebouncedTimerFireCount',
+  'staleBuilderWaitWakeupCount',
+  'duplicatePendingSignatureCount',
+  'skippedDuplicatePendingRequestCount',
+  'skippedSatisfiedRequestCount',
+  'repeatedExecuteCount',
+  'skippedRepeatedExecuteCount',
 ];
 
 export function nowForBuildStats(): number {
@@ -77,10 +127,18 @@ function createReasonDebugStat(reason: string): BuildReasonDebugStatLike {
     immediateRequestCount: 0,
     debouncedRequestCount: 0,
     forceRequestCount: 0,
+    immediateForceRequestCount: 0,
+    immediateNonForceRequestCount: 0,
+    debouncedForceRequestCount: 0,
+    debouncedNonForceRequestCount: 0,
     executeCount: 0,
     executeImmediateCount: 0,
     executeDebouncedCount: 0,
     executeForceCount: 0,
+    executeImmediateForceCount: 0,
+    executeImmediateNonForceCount: 0,
+    executeDebouncedForceCount: 0,
+    executeDebouncedNonForceCount: 0,
     overwriteCount: 0,
     debouncedScheduleCount: 0,
     reusedDebouncedScheduleCount: 0,
@@ -103,10 +161,18 @@ export function createBuildDebugStats(): BuilderDebugStatsLike {
     immediateRequestCount: 0,
     debouncedRequestCount: 0,
     forceRequestCount: 0,
+    immediateForceRequestCount: 0,
+    immediateNonForceRequestCount: 0,
+    debouncedForceRequestCount: 0,
+    debouncedNonForceRequestCount: 0,
     executeCount: 0,
     executeImmediateCount: 0,
     executeDebouncedCount: 0,
     executeForceCount: 0,
+    executeImmediateForceCount: 0,
+    executeImmediateNonForceCount: 0,
+    executeDebouncedForceCount: 0,
+    executeDebouncedNonForceCount: 0,
     pendingOverwriteCount: 0,
     debouncedScheduleCount: 0,
     reusedDebouncedScheduleCount: 0,
@@ -126,6 +192,7 @@ export function createBuildDebugStats(): BuilderDebugStatsLike {
 
 export function ensureBuildDebugStats(state: BuilderSchedulerStateInternalLike): BuilderDebugStatsLike {
   if (!state.debugStats) state.debugStats = createBuildDebugStats();
+  normalizeBuildDebugStatsInPlace(state.debugStats);
   return state.debugStats;
 }
 
@@ -134,38 +201,29 @@ function readReasonStatNumber(rec: AnyObj, key: ReasonStatNumericKey): number | 
   return typeof value === 'number' ? value : null;
 }
 
+function readBuilderStatNumber(rec: BuilderDebugStatsLike, key: BuilderDebugStatNumericKey): number | null {
+  const value = rec[key];
+  return typeof value === 'number' ? value : null;
+}
+
 function readReasonStat(value: unknown): BuildReasonDebugStatLike | null {
   const rec = readObject(value);
   if (!rec || typeof rec.reason !== 'string') return null;
-  for (const key of REASON_STAT_NUMERIC_KEYS) {
-    if (readReasonStatNumber(rec, key) == null) return null;
-  }
 
-  return {
-    reason: rec.reason,
-    requestCount: readReasonStatNumber(rec, 'requestCount') ?? 0,
-    immediateRequestCount: readReasonStatNumber(rec, 'immediateRequestCount') ?? 0,
-    debouncedRequestCount: readReasonStatNumber(rec, 'debouncedRequestCount') ?? 0,
-    forceRequestCount: readReasonStatNumber(rec, 'forceRequestCount') ?? 0,
-    executeCount: readReasonStatNumber(rec, 'executeCount') ?? 0,
-    executeImmediateCount: readReasonStatNumber(rec, 'executeImmediateCount') ?? 0,
-    executeDebouncedCount: readReasonStatNumber(rec, 'executeDebouncedCount') ?? 0,
-    executeForceCount: readReasonStatNumber(rec, 'executeForceCount') ?? 0,
-    overwriteCount: readReasonStatNumber(rec, 'overwriteCount') ?? 0,
-    debouncedScheduleCount: readReasonStatNumber(rec, 'debouncedScheduleCount') ?? 0,
-    reusedDebouncedScheduleCount: readReasonStatNumber(rec, 'reusedDebouncedScheduleCount') ?? 0,
-    builderWaitScheduleCount: readReasonStatNumber(rec, 'builderWaitScheduleCount') ?? 0,
-    staleDebouncedTimerFireCount: readReasonStatNumber(rec, 'staleDebouncedTimerFireCount') ?? 0,
-    staleBuilderWaitWakeupCount: readReasonStatNumber(rec, 'staleBuilderWaitWakeupCount') ?? 0,
-    duplicatePendingSignatureCount: readReasonStatNumber(rec, 'duplicatePendingSignatureCount') ?? 0,
-    skippedDuplicatePendingRequestCount:
-      readReasonStatNumber(rec, 'skippedDuplicatePendingRequestCount') ?? 0,
-    skippedSatisfiedRequestCount: readReasonStatNumber(rec, 'skippedSatisfiedRequestCount') ?? 0,
-    repeatedExecuteCount: readReasonStatNumber(rec, 'repeatedExecuteCount') ?? 0,
-    skippedRepeatedExecuteCount: readReasonStatNumber(rec, 'skippedRepeatedExecuteCount') ?? 0,
-    lastRequestTs: readReasonStatNumber(rec, 'lastRequestTs') ?? 0,
-    lastExecuteTs: readReasonStatNumber(rec, 'lastExecuteTs') ?? 0,
-  };
+  const next: AnyObj = { reason: rec.reason };
+  for (const key of REASON_STAT_NUMERIC_KEYS) {
+    next[key] = readReasonStatNumber(rec, key) ?? 0;
+  }
+  return next as unknown as BuildReasonDebugStatLike;
+}
+
+function normalizeBuildDebugStatsInPlace(stats: BuilderDebugStatsLike): void {
+  for (const key of BUILDER_DEBUG_STAT_NUMERIC_KEYS) {
+    if (readBuilderStatNumber(stats, key) == null) stats[key] = 0;
+  }
+  if (typeof stats.lastRequestReason !== 'string') stats.lastRequestReason = '';
+  if (typeof stats.lastExecuteReason !== 'string') stats.lastExecuteReason = '';
+  stats.reasons = getReasonStatsMap(stats.reasons);
 }
 
 function getReasonStatsMap(value: unknown): BuildStatsReasonMap {

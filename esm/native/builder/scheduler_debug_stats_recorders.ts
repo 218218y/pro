@@ -111,14 +111,28 @@ export function recordBuildRequest(
   const pendingSig = readPendingSignature(state.pendingPlan);
 
   stats.requestCount += 1;
-  if (immediate) stats.immediateRequestCount += 1;
-  else stats.debouncedRequestCount += 1;
+  if (immediate) {
+    stats.immediateRequestCount += 1;
+    if (forceBuild) stats.immediateForceRequestCount += 1;
+    else stats.immediateNonForceRequestCount += 1;
+  } else {
+    stats.debouncedRequestCount += 1;
+    if (forceBuild) stats.debouncedForceRequestCount += 1;
+    else stats.debouncedNonForceRequestCount += 1;
+  }
   if (forceBuild) stats.forceRequestCount += 1;
   stats.lastRequestReason = reason;
 
   perReason.requestCount += 1;
-  if (immediate) perReason.immediateRequestCount += 1;
-  else perReason.debouncedRequestCount += 1;
+  if (immediate) {
+    perReason.immediateRequestCount += 1;
+    if (forceBuild) perReason.immediateForceRequestCount += 1;
+    else perReason.immediateNonForceRequestCount += 1;
+  } else {
+    perReason.debouncedRequestCount += 1;
+    if (forceBuild) perReason.debouncedForceRequestCount += 1;
+    else perReason.debouncedNonForceRequestCount += 1;
+  }
   if (forceBuild) perReason.forceRequestCount += 1;
   perReason.lastRequestTs = requestTs;
 
@@ -150,14 +164,28 @@ export function recordBuildExecute(
   const sig = readExecutionSignature(plan, buildState);
 
   stats.executeCount += 1;
-  if (immediate) stats.executeImmediateCount += 1;
-  else stats.executeDebouncedCount += 1;
+  if (immediate) {
+    stats.executeImmediateCount += 1;
+    if (forceBuild) stats.executeImmediateForceCount += 1;
+    else stats.executeImmediateNonForceCount += 1;
+  } else {
+    stats.executeDebouncedCount += 1;
+    if (forceBuild) stats.executeDebouncedForceCount += 1;
+    else stats.executeDebouncedNonForceCount += 1;
+  }
   if (forceBuild) stats.executeForceCount += 1;
   stats.lastExecuteReason = reason;
 
   perReason.executeCount += 1;
-  if (immediate) perReason.executeImmediateCount += 1;
-  else perReason.executeDebouncedCount += 1;
+  if (immediate) {
+    perReason.executeImmediateCount += 1;
+    if (forceBuild) perReason.executeImmediateForceCount += 1;
+    else perReason.executeImmediateNonForceCount += 1;
+  } else {
+    perReason.executeDebouncedCount += 1;
+    if (forceBuild) perReason.executeDebouncedForceCount += 1;
+    else perReason.executeDebouncedNonForceCount += 1;
+  }
   if (forceBuild) perReason.executeForceCount += 1;
   perReason.lastExecuteTs = execTs;
 

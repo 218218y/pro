@@ -49,17 +49,37 @@ export type BuildDebugReasonStats = {
   executeCount: number;
   immediateRequestCount: number;
   debouncedRequestCount: number;
+  forceRequestCount: number;
+  immediateForceRequestCount: number;
+  immediateNonForceRequestCount: number;
+  debouncedForceRequestCount: number;
+  debouncedNonForceRequestCount: number;
   executeImmediateCount: number;
   executeDebouncedCount: number;
+  executeForceCount: number;
+  executeImmediateForceCount: number;
+  executeImmediateNonForceCount: number;
+  executeDebouncedForceCount: number;
+  executeDebouncedNonForceCount: number;
 };
 
 export type BuildDebugStats = {
   requestCount: number;
   immediateRequestCount: number;
   debouncedRequestCount: number;
+  forceRequestCount: number;
+  immediateForceRequestCount: number;
+  immediateNonForceRequestCount: number;
+  debouncedForceRequestCount: number;
+  debouncedNonForceRequestCount: number;
   executeCount: number;
   executeImmediateCount: number;
   executeDebouncedCount: number;
+  executeForceCount: number;
+  executeImmediateForceCount: number;
+  executeImmediateNonForceCount: number;
+  executeDebouncedForceCount: number;
+  executeDebouncedNonForceCount: number;
   pendingOverwriteCount: number;
   debouncedScheduleCount: number;
   reusedDebouncedScheduleCount: number;
@@ -2126,8 +2146,18 @@ function normalizeBuildDebugReasonStats(value: unknown): BuildDebugReasonStats {
     executeCount: normalizeDebugCount(rec.executeCount),
     immediateRequestCount: normalizeDebugCount(rec.immediateRequestCount),
     debouncedRequestCount: normalizeDebugCount(rec.debouncedRequestCount),
+    forceRequestCount: normalizeDebugCount(rec.forceRequestCount),
+    immediateForceRequestCount: normalizeDebugCount(rec.immediateForceRequestCount),
+    immediateNonForceRequestCount: normalizeDebugCount(rec.immediateNonForceRequestCount),
+    debouncedForceRequestCount: normalizeDebugCount(rec.debouncedForceRequestCount),
+    debouncedNonForceRequestCount: normalizeDebugCount(rec.debouncedNonForceRequestCount),
     executeImmediateCount: normalizeDebugCount(rec.executeImmediateCount),
     executeDebouncedCount: normalizeDebugCount(rec.executeDebouncedCount),
+    executeForceCount: normalizeDebugCount(rec.executeForceCount),
+    executeImmediateForceCount: normalizeDebugCount(rec.executeImmediateForceCount),
+    executeImmediateNonForceCount: normalizeDebugCount(rec.executeImmediateNonForceCount),
+    executeDebouncedForceCount: normalizeDebugCount(rec.executeDebouncedForceCount),
+    executeDebouncedNonForceCount: normalizeDebugCount(rec.executeDebouncedNonForceCount),
   };
 }
 
@@ -2144,9 +2174,19 @@ function normalizeBuildDebugStats(value: unknown): BuildDebugStats {
     requestCount: normalizeDebugCount(rec.requestCount),
     immediateRequestCount: normalizeDebugCount(rec.immediateRequestCount),
     debouncedRequestCount: normalizeDebugCount(rec.debouncedRequestCount),
+    forceRequestCount: normalizeDebugCount(rec.forceRequestCount),
+    immediateForceRequestCount: normalizeDebugCount(rec.immediateForceRequestCount),
+    immediateNonForceRequestCount: normalizeDebugCount(rec.immediateNonForceRequestCount),
+    debouncedForceRequestCount: normalizeDebugCount(rec.debouncedForceRequestCount),
+    debouncedNonForceRequestCount: normalizeDebugCount(rec.debouncedNonForceRequestCount),
     executeCount: normalizeDebugCount(rec.executeCount),
     executeImmediateCount: normalizeDebugCount(rec.executeImmediateCount),
     executeDebouncedCount: normalizeDebugCount(rec.executeDebouncedCount),
+    executeForceCount: normalizeDebugCount(rec.executeForceCount),
+    executeImmediateForceCount: normalizeDebugCount(rec.executeImmediateForceCount),
+    executeImmediateNonForceCount: normalizeDebugCount(rec.executeImmediateNonForceCount),
+    executeDebouncedForceCount: normalizeDebugCount(rec.executeDebouncedForceCount),
+    executeDebouncedNonForceCount: normalizeDebugCount(rec.executeDebouncedNonForceCount),
     pendingOverwriteCount: normalizeDebugCount(rec.pendingOverwriteCount),
     debouncedScheduleCount: normalizeDebugCount(rec.debouncedScheduleCount),
     reusedDebouncedScheduleCount: normalizeDebugCount(rec.reusedDebouncedScheduleCount),
@@ -2197,6 +2237,23 @@ export function subtractBuildDebugStats(after: BuildDebugStats, before: BuildDeb
         0,
         (next?.debouncedRequestCount || 0) - (prev?.debouncedRequestCount || 0)
       ),
+      forceRequestCount: Math.max(0, (next?.forceRequestCount || 0) - (prev?.forceRequestCount || 0)),
+      immediateForceRequestCount: Math.max(
+        0,
+        (next?.immediateForceRequestCount || 0) - (prev?.immediateForceRequestCount || 0)
+      ),
+      immediateNonForceRequestCount: Math.max(
+        0,
+        (next?.immediateNonForceRequestCount || 0) - (prev?.immediateNonForceRequestCount || 0)
+      ),
+      debouncedForceRequestCount: Math.max(
+        0,
+        (next?.debouncedForceRequestCount || 0) - (prev?.debouncedForceRequestCount || 0)
+      ),
+      debouncedNonForceRequestCount: Math.max(
+        0,
+        (next?.debouncedNonForceRequestCount || 0) - (prev?.debouncedNonForceRequestCount || 0)
+      ),
       executeImmediateCount: Math.max(
         0,
         (next?.executeImmediateCount || 0) - (prev?.executeImmediateCount || 0)
@@ -2204,6 +2261,23 @@ export function subtractBuildDebugStats(after: BuildDebugStats, before: BuildDeb
       executeDebouncedCount: Math.max(
         0,
         (next?.executeDebouncedCount || 0) - (prev?.executeDebouncedCount || 0)
+      ),
+      executeForceCount: Math.max(0, (next?.executeForceCount || 0) - (prev?.executeForceCount || 0)),
+      executeImmediateForceCount: Math.max(
+        0,
+        (next?.executeImmediateForceCount || 0) - (prev?.executeImmediateForceCount || 0)
+      ),
+      executeImmediateNonForceCount: Math.max(
+        0,
+        (next?.executeImmediateNonForceCount || 0) - (prev?.executeImmediateNonForceCount || 0)
+      ),
+      executeDebouncedForceCount: Math.max(
+        0,
+        (next?.executeDebouncedForceCount || 0) - (prev?.executeDebouncedForceCount || 0)
+      ),
+      executeDebouncedNonForceCount: Math.max(
+        0,
+        (next?.executeDebouncedNonForceCount || 0) - (prev?.executeDebouncedNonForceCount || 0)
       ),
     };
     if (Object.values(delta).some(count => count > 0)) {
@@ -2214,9 +2288,43 @@ export function subtractBuildDebugStats(after: BuildDebugStats, before: BuildDeb
     requestCount: Math.max(0, after.requestCount - before.requestCount),
     immediateRequestCount: Math.max(0, after.immediateRequestCount - before.immediateRequestCount),
     debouncedRequestCount: Math.max(0, after.debouncedRequestCount - before.debouncedRequestCount),
+    forceRequestCount: Math.max(0, after.forceRequestCount - before.forceRequestCount),
+    immediateForceRequestCount: Math.max(
+      0,
+      after.immediateForceRequestCount - before.immediateForceRequestCount
+    ),
+    immediateNonForceRequestCount: Math.max(
+      0,
+      after.immediateNonForceRequestCount - before.immediateNonForceRequestCount
+    ),
+    debouncedForceRequestCount: Math.max(
+      0,
+      after.debouncedForceRequestCount - before.debouncedForceRequestCount
+    ),
+    debouncedNonForceRequestCount: Math.max(
+      0,
+      after.debouncedNonForceRequestCount - before.debouncedNonForceRequestCount
+    ),
     executeCount: Math.max(0, after.executeCount - before.executeCount),
     executeImmediateCount: Math.max(0, after.executeImmediateCount - before.executeImmediateCount),
     executeDebouncedCount: Math.max(0, after.executeDebouncedCount - before.executeDebouncedCount),
+    executeForceCount: Math.max(0, after.executeForceCount - before.executeForceCount),
+    executeImmediateForceCount: Math.max(
+      0,
+      after.executeImmediateForceCount - before.executeImmediateForceCount
+    ),
+    executeImmediateNonForceCount: Math.max(
+      0,
+      after.executeImmediateNonForceCount - before.executeImmediateNonForceCount
+    ),
+    executeDebouncedForceCount: Math.max(
+      0,
+      after.executeDebouncedForceCount - before.executeDebouncedForceCount
+    ),
+    executeDebouncedNonForceCount: Math.max(
+      0,
+      after.executeDebouncedNonForceCount - before.executeDebouncedNonForceCount
+    ),
     pendingOverwriteCount: Math.max(0, after.pendingOverwriteCount - before.pendingOverwriteCount),
     debouncedScheduleCount: Math.max(0, after.debouncedScheduleCount - before.debouncedScheduleCount),
     reusedDebouncedScheduleCount: Math.max(
