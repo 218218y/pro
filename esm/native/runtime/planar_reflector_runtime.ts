@@ -360,6 +360,17 @@ function isTaggedMirrorSurface(mirror: unknown): boolean {
   return readMirrorUserData(mirror)?.__wpMirrorSurface === true;
 }
 
+function isExplicitCubeReflectionSurface(mirror: unknown): boolean {
+  const userData = readMirrorUserData(mirror);
+  return (
+    userData?.__wpMirrorReflectionMode === 'cube' || userData?.__wpReflectiveAdhesiveGlassSurface === true
+  );
+}
+
+function isPlanarReflectorBudgetSurface(mirror: unknown): boolean {
+  return isTaggedMirrorSurface(mirror) && !isExplicitCubeReflectionSurface(mirror);
+}
+
 function readPlanarReflectorState(mirror: unknown): PlanarReflectorState | null {
   const state = readRecord(readMirrorUserData(mirror)?.__wpPlanarReflector);
   if (!state) return null;
@@ -393,7 +404,7 @@ function countTrackedMirrorSurfaces(App: unknown): number {
     const mirror = readRecord(mirrors[i]);
     if (!mirror || seen.has(mirror)) continue;
     seen.add(mirror);
-    if (isTaggedMirrorSurface(mirror)) count += 1;
+    if (isPlanarReflectorBudgetSurface(mirror)) count += 1;
   }
   return count;
 }
@@ -1467,22 +1478,31 @@ export function readTrackedPlanarMirrorStats(App: unknown): {
   mirrorCount: number;
   planarCount: number;
   cubeCount: number;
+  explicitCubeCount: number;
 } {
   const mirrors = ensureRenderMetaArray<UnknownRecord>(App, 'mirrors');
   let mirrorCount = 0;
   let planarCount = 0;
   let cubeCount = 0;
+  let explicitCubeCount = 0;
   const seen = new Set<UnknownRecord>();
   for (let i = 0; i < mirrors.length; i += 1) {
     const mirror = readRecord(mirrors[i]);
     if (!mirror || seen.has(mirror)) continue;
     seen.add(mirror);
     if (!isTaggedMirrorSurface(mirror)) continue;
+
+    const hasPlanarReflector = !!readPlanarReflectorState(mirror);
+    if (isExplicitCubeReflectionSurface(mirror) && !hasPlanarReflector) {
+      explicitCubeCount += 1;
+      continue;
+    }
+
     mirrorCount += 1;
-    if (readPlanarReflectorState(mirror)) planarCount += 1;
+    if (hasPlanarReflector) planarCount += 1;
     else cubeCount += 1;
   }
-  return { mirrorCount, planarCount, cubeCount };
+  return { mirrorCount, planarCount, cubeCount, explicitCubeCount };
 }
 
 function normalizeRefreshStartIndex(startIndex: unknown, length: number): number {

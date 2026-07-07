@@ -274,7 +274,7 @@ export function createRenderLoopMirrorDriver(
 
       let planarStats = hasMirror
         ? readTrackedPlanarMirrorStats(A)
-        : { mirrorCount: 0, planarCount: 0, cubeCount: 0 };
+        : { mirrorCount: 0, planarCount: 0, cubeCount: 0, explicitCubeCount: 0 };
       if (hasMirror && planarStats.planarCount > 0 && (cubeMirrorMode || planarStats.cubeCount > 0)) {
         enablePlanarReflectorCubeMode(A, { notify: !cubeMirrorMode });
         planarStats = readTrackedPlanarMirrorStats(A);
@@ -282,7 +282,11 @@ export function createRenderLoopMirrorDriver(
       const hasPlanarReflectors = planarStats.planarCount > 0;
       const hasCubeMirrorSurfaces =
         planarStats.cubeCount > 0 ||
-        (cubeMirrorMode && (planarStats.cubeCount > 0 || (hasMirror && planarStats.mirrorCount === 0)));
+        planarStats.explicitCubeCount > 0 ||
+        (cubeMirrorMode &&
+          (planarStats.cubeCount > 0 ||
+            planarStats.explicitCubeCount > 0 ||
+            (hasMirror && planarStats.mirrorCount === 0)));
       const planarLast = readFiniteSlotNumber(getRenderSlot, A, '__mirrorPlanarLastUpdateMs', -1);
       const planarIntervalRaw = motionActive
         ? readConfigNumberLooseFromApp(A, 'MIRROR_REFLECTOR_MOVE_UPDATE_MS', 0)
@@ -351,7 +355,7 @@ export function createRenderLoopMirrorDriver(
         return;
       }
 
-      if (!cubeMirrorMode && planarStats.cubeCount <= 0) {
+      if (!cubeMirrorMode && !hasCubeMirrorSurfaces) {
         if (hasMirror) {
           setRenderSlot(A, '__mirrorPresenceKnown', true);
           setRenderSlot(A, '__mirrorPresenceHasMirror', true);

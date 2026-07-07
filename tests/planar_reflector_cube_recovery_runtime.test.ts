@@ -111,6 +111,17 @@ function makeMirror() {
   } as AnyRecord;
 }
 
+function makeExplicitCubeGlassSurface() {
+  return {
+    material: { name: 'adhesive-glass-cube-material' },
+    userData: {
+      __wpMirrorSurface: true,
+      __wpMirrorReflectionMode: 'cube',
+      __wpReflectiveAdhesiveGlassSurface: true,
+    },
+  } as AnyRecord;
+}
+
 test('stale performance cube fallback is cleared when the rebuilt mirror count is affordable', () => {
   const app = makeApp(2);
   const mirror = makeMirror();
@@ -125,6 +136,20 @@ test('stale performance cube fallback is cleared when the rebuilt mirror count i
     0,
     'recovery is silent until the rebuild proves whether fallback is still needed'
   );
+});
+
+test('explicit cube glass surfaces do not count against the planar mirror fallback budget', () => {
+  const app = makeApp(1);
+  const glass = makeExplicitCubeGlassSurface();
+  const mirror = makeMirror();
+  trackMirrorSurface(app, glass);
+
+  const installed = installPlanarMirrorReflector(app, fakeThree, mirror as never);
+
+  assert.equal(installed, true);
+  assert.equal(isPlanarMirrorSurface(mirror), true);
+  assert.notEqual((app.render as AnyRecord).__mirrorPlanarCubeMode, true);
+  assert.equal(app.toasts.length, 0);
 });
 
 test('performance cube fallback stays active while the tracked mirror count is still over the limit', () => {

@@ -468,6 +468,70 @@ test('render loop mirror driver switches mixed realistic mirrors to one cube pat
   assert.equal(fallbackMirror.visible, true);
 });
 
+test('render loop keeps planar door mirrors when adhesive glass needs cube reflections', () => {
+  const planarMaterial = { envMap: null as unknown, needsUpdate: false };
+  const adhesiveGlassMaterial = { envMap: null as unknown, needsUpdate: false };
+  const planarMirrorState = {
+    renderTarget: {},
+    virtualCamera: {},
+    textureMatrix: {},
+    material: {},
+  };
+  const planarMirror = {
+    isMesh: true,
+    __taggedMirror: true,
+    parent: {},
+    visible: true,
+    material: planarMaterial,
+    userData: {
+      __wpMirrorSurface: true,
+      __wpPlanarReflector: planarMirrorState,
+    },
+  };
+  const adhesiveGlass = {
+    isMesh: true,
+    __taggedMirror: true,
+    parent: {},
+    visible: true,
+    material: adhesiveGlassMaterial,
+    userData: {
+      __wpMirrorSurface: true,
+      __wpMirrorReflectionMode: 'cube',
+      __wpReflectiveAdhesiveGlassSurface: true,
+    },
+  };
+  const app = makeApp([planarMirror, adhesiveGlass], {
+    MIRROR_REFLECTOR_ENABLED: true,
+    MIRROR_REFLECTOR_UPDATE_MS: 1000,
+  });
+  const texture = ((app.render as AnyRecord).mirrorRenderTarget as AnyRecord).texture;
+  const slots = makeSlots({
+    __mirrorLastUpdateMs: -1,
+    __mirrorPlanarLastUpdateMs: 100,
+    __mirrorMotionActive: false,
+    __frameStartMs: 100,
+    __mirrorDirty: true,
+    __mirrorPresenceKnown: true,
+    __mirrorPresenceHasMirror: true,
+    __mirrorPresenceCheckedAtMs: 80,
+    __mirrorTrackedPruneAtMs: 0,
+  });
+
+  const driver = createDriver(app, slots, { now: 105 });
+
+  driver.updateMirrorCube();
+
+  assert.equal(adhesiveGlassMaterial.envMap, texture);
+  assert.equal(adhesiveGlassMaterial.needsUpdate, true);
+  assert.equal(planarMaterial.envMap, null);
+  assert.equal(planarMaterial.needsUpdate, false);
+  assert.equal((planarMirror.userData as AnyRecord).__wpPlanarReflector, planarMirrorState);
+  assert.notEqual((app.render as AnyRecord).__mirrorPlanarCubeMode, true);
+  assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 1);
+  assert.equal(planarMirror.visible, true);
+  assert.equal(adhesiveGlass.visible, true);
+});
+
 function makeNoopMatrix() {
   return {
     elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, -1, 0, 0, -1, 1],
