@@ -42,7 +42,7 @@ export function runAppConfirmedActionFamilySingleFlight<Result, Key extends stri
     run: () =>
       runConfirmedAction<Result>({
         request: () =>
-          requestPerfName
+          requestPerfName && typeof runPerfAction === 'function'
             ? runPerfAction(app, requestPerfName, () => requestAppConfirmation(app, title, message))
             : requestAppConfirmation(app, title, message),
         onRequestError,

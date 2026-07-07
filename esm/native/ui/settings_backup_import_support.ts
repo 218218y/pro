@@ -116,7 +116,7 @@ function buildImportedColorConfigPatch(mutation: ImportedColorMutation): Unknown
 }
 
 function runSettingsBackupImportPerfStep<T>(App: AppContainer, metricName: string, run: () => T): T {
-  return runPerfAction(App, metricName, run);
+  return typeof runPerfAction === 'function' ? runPerfAction(App, metricName, run) : run();
 }
 
 function writeImportedColorStorage(
