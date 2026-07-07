@@ -13,6 +13,7 @@ import {
   createRuntimeRecoveryDebtSummary,
   createRuntimeRecoveryHangoverBudget,
   createRuntimeRecoveryHangoverSummary,
+  createSavedColorPhaseBreakdown,
   createRuntimeRecoverySequenceSummary,
   createRuntimeStatusTransitionSummary,
   createStateIntegritySummary,
@@ -292,6 +293,31 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
         p95Ms: 35,
         maxMs: 35,
       },
+      'design.savedColor.add': {
+        count: 2,
+        okCount: 2,
+        errorCount: 0,
+        markCount: 0,
+        totalMs: 640,
+        averageMs: 320,
+        p95Ms: 340,
+        maxMs: 340,
+      },
+      'design.savedColor.add.prompt': {
+        count: 2,
+        okCount: 2,
+        errorCount: 0,
+        markCount: 0,
+        totalMs: 600,
+        averageMs: 300,
+        p95Ms: 320,
+        maxMs: 320,
+      },
+      'design.savedColor.add.prepare': { count: 2, averageMs: 1, p95Ms: 1 },
+      'design.savedColor.add.order': { count: 2, averageMs: 1, p95Ms: 1 },
+      'design.savedColor.add.mutation': { count: 2, averageMs: 4, p95Ms: 5 },
+      'design.savedColor.add.patch': { count: 2, averageMs: 2, p95Ms: 3 },
+      'design.savedColor.add.storage': { count: 2, averageMs: 1, p95Ms: 1 },
     },
     windowPerfEntries: [
       { name: 'project.save', durationMs: 25, status: 'ok' },
@@ -421,6 +447,11 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
   assert.match(md, /State integrity checks/);
   assert.match(md, /pressure\.loops\.keep-user-state: ok/);
   assert.match(md, /project.save: count=1, required>=2/);
+  assert.match(md, /Saved colors phase breakdown/);
+  assert.match(
+    md,
+    /add: totalAvg=320ms, totalP95=340ms, dialogAvg=300ms, dialogP95=320ms, codeAvg≈20ms, prepare=1ms, order=1ms, mutation=4ms, patch=2ms, storage=1ms, bottleneck=feedback-wait/
+  );
   assert.match(md, /Sustained-use pressure signals/);
   assert.match(md, /Runtime domains/);
   assert.match(
@@ -429,6 +460,36 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
   );
   assert.match(md, /Hotspot candidates/);
   assert.match(md, /project.save: total=25ms, p95=25ms, max=25ms, count=1, errors=0/);
+});
+
+test('browser perf support explains saved color user wait versus app pipeline cost', () => {
+  const rows = createSavedColorPhaseBreakdown({
+    'design.savedColor.add': { count: 3, averageMs: 330, p95Ms: 380 },
+    'design.savedColor.add.prompt': { count: 3, averageMs: 305, p95Ms: 360 },
+    'design.savedColor.add.prepare': { count: 3, averageMs: 1, p95Ms: 1 },
+    'design.savedColor.add.order': { count: 3, averageMs: 0, p95Ms: 0 },
+    'design.savedColor.add.mutation': { count: 3, averageMs: 3, p95Ms: 4 },
+    'design.savedColor.add.patch': { count: 3, averageMs: 2, p95Ms: 3 },
+    'design.savedColor.add.storage': { count: 3, averageMs: 1, p95Ms: 1 },
+  });
+
+  assert.deepEqual(rows, [
+    {
+      op: 'add',
+      count: 3,
+      totalAvgMs: 330,
+      totalP95Ms: 380,
+      dialogAvgMs: 305,
+      dialogP95Ms: 360,
+      codeAvgMs: 25,
+      prepareAvgMs: 1,
+      orderAvgMs: 0,
+      mutationAvgMs: 3,
+      patchAvgMs: 2,
+      storageAvgMs: 1,
+      bottleneck: 'feedback-wait',
+    },
+  ]);
 });
 
 test('browser perf support ranks hotspot candidates by errors and time cost', () => {

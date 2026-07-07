@@ -110,7 +110,7 @@ function persistSavedColorsStorage(
   });
 }
 
-function createFallbackMutationMeta(meta: ActionMetaLike | undefined): ActionMetaLike {
+function createStoreOnlyMutationMeta(meta: ActionMetaLike | undefined): ActionMetaLike {
   return { ...(meta || {}), noStorageWrite: true };
 }
 
@@ -132,19 +132,22 @@ export function applySavedColorsAtomicMutation(
   const colorSwatchesOrder = cloneColorSwatchesOrder(mutation.colorSwatchesOrder);
   const colorChoice = typeof mutation.colorChoice === 'string' ? mutation.colorChoice : '';
 
-  const fallbackMeta = createFallbackMutationMeta(meta);
-
-  runSavedColorPerfStep(app, `${metricPrefix}.fallback`, () =>
+  const ownerMeta = meta;
+  const runDirectStoreMutation = (meta: ActionMetaLike): void => {
     runHistoryBatch(
       app,
       () => {
-        if (typeof savedColors !== 'undefined') setCfgSavedColors(app, savedColors, fallbackMeta);
+        if (typeof savedColors !== 'undefined') setCfgSavedColors(app, savedColors, meta);
         if (typeof colorSwatchesOrder !== 'undefined')
-          setCfgColorSwatchesOrder(app, colorSwatchesOrder, fallbackMeta);
-        if (colorChoice) setUiColorChoice(app, colorChoice, meta);
+          setCfgColorSwatchesOrder(app, colorSwatchesOrder, meta);
+        if (colorChoice) setUiColorChoice(app, colorChoice, ownerMeta);
       },
-      meta
-    )
+      ownerMeta
+    );
+  };
+
+  runSavedColorPerfStep(app, `${metricPrefix}.direct`, () =>
+    runDirectStoreMutation(createStoreOnlyMutationMeta(ownerMeta))
   );
-  persistSavedColorsStorage(app, mutation, meta);
+  persistSavedColorsStorage(app, mutation, ownerMeta);
 }

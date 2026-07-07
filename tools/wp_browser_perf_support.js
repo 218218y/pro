@@ -2353,6 +2353,62 @@ export function rankBrowserPerfHotspots(summary, limit = 5) {
   return rows.slice(0, Math.max(1, limit));
 }
 
+const SAVED_COLOR_PHASES = [
+  { op: 'add', total: 'design.savedColor.add', dialog: 'design.savedColor.add.prompt' },
+  { op: 'delete', total: 'design.savedColor.delete', dialog: 'design.savedColor.delete.confirm' },
+];
+
+function readPerfAverage(summary, name) {
+  const item = summary && summary[name];
+  return Number.isFinite(Number(item?.averageMs)) ? Number(item.averageMs) : 0;
+}
+
+function readPerfP95(summary, name) {
+  const item = summary && summary[name];
+  return Number.isFinite(Number(item?.p95Ms)) ? Number(item.p95Ms) : 0;
+}
+
+function readPerfCount(summary, name) {
+  const item = summary && summary[name];
+  return Number.isFinite(Number(item?.count)) ? Number(item.count) : 0;
+}
+
+function readSavedColorPhaseBottleneck(dialogAvgMs, codeAvgMs, storageAvgMs, patchAvgMs) {
+  if (dialogAvgMs >= Math.max(100, codeAvgMs * 3)) return 'feedback-wait';
+  if (storageAvgMs >= Math.max(25, patchAvgMs * 2, codeAvgMs * 0.5)) return 'storage';
+  if (patchAvgMs >= Math.max(25, storageAvgMs * 2, codeAvgMs * 0.5)) return 'patch';
+  if (codeAvgMs > 0) return 'app-pipeline';
+  return 'none';
+}
+
+export function createSavedColorPhaseBreakdown(summary) {
+  return SAVED_COLOR_PHASES.map(phase => {
+    const totalAvgMs = readPerfAverage(summary, phase.total);
+    const dialogAvgMs = readPerfAverage(summary, phase.dialog);
+    const prepareAvgMs = readPerfAverage(summary, `${phase.total}.prepare`);
+    const orderAvgMs = readPerfAverage(summary, `${phase.total}.order`);
+    const mutationAvgMs = readPerfAverage(summary, `${phase.total}.mutation`);
+    const patchAvgMs = readPerfAverage(summary, `${phase.total}.patch`);
+    const storageAvgMs = readPerfAverage(summary, `${phase.total}.storage`);
+    const codeAvgMs = Math.max(0, roundDuration(totalAvgMs - dialogAvgMs));
+    return {
+      op: phase.op,
+      count: readPerfCount(summary, phase.total),
+      totalAvgMs,
+      totalP95Ms: readPerfP95(summary, phase.total),
+      dialogAvgMs,
+      dialogP95Ms: readPerfP95(summary, phase.dialog),
+      codeAvgMs,
+      prepareAvgMs,
+      orderAvgMs,
+      mutationAvgMs,
+      patchAvgMs,
+      storageAvgMs,
+      bottleneck: readSavedColorPhaseBottleneck(dialogAvgMs, codeAvgMs, storageAvgMs, patchAvgMs),
+    };
+  }).filter(item => item.count > 0);
+}
+
 export function summarizeBrowserPerfResult(result, contracts = {}) {
   const requiredMetrics = Array.isArray(contracts.requiredRuntimeMetrics)
     ? contracts.requiredRuntimeMetrics
@@ -2623,6 +2679,15 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
     const count = perfSummary[name]?.count || 0;
     const minCount = Number(minimumCounts?.[name]) || 1;
     lines.push(`- ${name}: count=${count}, required>=${minCount}`);
+  }
+  const savedColorPhaseRows = createSavedColorPhaseBreakdown(perfSummary);
+  if (savedColorPhaseRows.length) {
+    lines.push('', '### Saved colors phase breakdown', '');
+    for (const item of savedColorPhaseRows) {
+      lines.push(
+        `- ${item.op}: totalAvg=${formatMs(item.totalAvgMs)}, totalP95=${formatMs(item.totalP95Ms)}, dialogAvg=${formatMs(item.dialogAvgMs)}, dialogP95=${formatMs(item.dialogP95Ms)}, codeAvg≈${formatMs(item.codeAvgMs)}, prepare=${formatMs(item.prepareAvgMs)}, order=${formatMs(item.orderAvgMs)}, mutation=${formatMs(item.mutationAvgMs)}, patch=${formatMs(item.patchAvgMs)}, storage=${formatMs(item.storageAvgMs)}, bottleneck=${item.bottleneck}`
+      );
+    }
   }
   lines.push('', '## Store write pressure', '');
   lines.push(
