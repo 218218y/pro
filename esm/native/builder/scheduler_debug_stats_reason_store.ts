@@ -4,9 +4,12 @@ import type {
   BuilderSchedulerStateInternalLike,
 } from '../../../types/index.js';
 
+import { isClientObservabilityBuild } from '../runtime/observability_build_mode.js';
 import { type AnyObj, readObject } from './scheduler_shared.js';
 
 export type BuildStatsReasonMap = Record<string, BuildReasonDebugStatLike>;
+
+export const MAX_BUILD_DURATION_SAMPLES = 512;
 
 type ReasonStatNumericKey =
   | 'requestCount'
@@ -165,6 +168,10 @@ export function nowForBuildStats(): number {
   }
 }
 
+export function isBuildDebugStatsEnabled(): boolean {
+  return !isClientObservabilityBuild();
+}
+
 function normalizeDurationMs(value: unknown): number {
   const numeric = typeof value === 'number' ? value : Number(value);
   return Number.isFinite(numeric) ? Math.max(0, Math.round(numeric * 100) / 100) : 0;
@@ -174,7 +181,8 @@ function normalizeDurationSamples(value: unknown): number[] {
   if (!Array.isArray(value)) return [];
   return value
     .map(item => (Number.isFinite(Number(item)) ? normalizeDurationMs(item) : null))
-    .filter((item): item is number => item !== null);
+    .filter((item): item is number => item !== null)
+    .slice(-MAX_BUILD_DURATION_SAMPLES);
 }
 
 export function normalizeBuildReason(reasonIn: unknown): string {
@@ -289,6 +297,9 @@ export function createBuildDebugStats(): BuilderDebugStatsLike {
 }
 
 export function ensureBuildDebugStats(state: BuilderSchedulerStateInternalLike): BuilderDebugStatsLike {
+  if (!isBuildDebugStatsEnabled()) {
+    return createBuildDebugStats();
+  }
   if (!state.debugStats) state.debugStats = createBuildDebugStats();
   normalizeBuildDebugStatsInPlace(state.debugStats);
   return state.debugStats;

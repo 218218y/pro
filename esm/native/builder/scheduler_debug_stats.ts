@@ -2,6 +2,8 @@ export type { BuildStatsReasonMap } from './scheduler_debug_stats_reason_store.j
 
 export {
   nowForBuildStats,
+  isBuildDebugStatsEnabled,
+  MAX_BUILD_DURATION_SAMPLES,
   normalizeBuildReason,
   createBuildDebugStats,
   ensureBuildDebugStats,

@@ -2,11 +2,69 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  getSchedulerState,
   getBuildDebugBudget,
   getBuildDebugStats,
   installBuilderScheduler,
   requestBuild,
 } from '../esm/native/builder/scheduler.ts';
+import {
+  isBuildDebugStatsEnabled,
+  MAX_BUILD_DURATION_SAMPLES,
+  recordBuildExecuteDuration,
+} from '../esm/native/builder/scheduler_debug_stats.ts';
+
+type BuildFlagGlobals = typeof globalThis & {
+  __WP_BUILD_CLIENT__?: boolean;
+  __WP_BUILD_PERF__?: boolean;
+  __WP_BUILD_DEBUG__?: boolean;
+};
+
+type BuildFlagPatch = {
+  client?: boolean;
+  perf?: boolean;
+  debug?: boolean;
+};
+
+function setOptionalBuildFlag(
+  target: BuildFlagGlobals,
+  key: '__WP_BUILD_CLIENT__' | '__WP_BUILD_PERF__' | '__WP_BUILD_DEBUG__',
+  value: boolean | undefined
+): void {
+  if (typeof value === 'boolean') {
+    target[key] = value;
+    return;
+  }
+  delete target[key];
+}
+
+function withBuildFlags<T>(flags: BuildFlagPatch, run: () => T): T {
+  const target = globalThis as BuildFlagGlobals;
+  const previous = {
+    client: target.__WP_BUILD_CLIENT__,
+    perf: target.__WP_BUILD_PERF__,
+    debug: target.__WP_BUILD_DEBUG__,
+  };
+
+  setOptionalBuildFlag(target, '__WP_BUILD_CLIENT__', flags.client);
+  setOptionalBuildFlag(target, '__WP_BUILD_PERF__', flags.perf);
+  setOptionalBuildFlag(target, '__WP_BUILD_DEBUG__', flags.debug);
+
+  try {
+    return run();
+  } finally {
+    setOptionalBuildFlag(target, '__WP_BUILD_CLIENT__', previous.client);
+    setOptionalBuildFlag(target, '__WP_BUILD_PERF__', previous.perf);
+    setOptionalBuildFlag(target, '__WP_BUILD_DEBUG__', previous.debug);
+  }
+}
+
+function percentile(values: number[], pct: number): number {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((left, right) => left - right);
+  const rank = Math.min(sorted.length - 1, Math.max(0, Math.ceil(sorted.length * pct) - 1));
+  return sorted[rank] || 0;
+}
 
 function createDebounceHarness() {
   let scheduled: (() => void) | null = null;
@@ -182,6 +240,102 @@ test('builder scheduler runtime: install surface exposes runtime stats/reset hoo
   assert.equal(builder.__scheduler.getState().waiting, false);
 });
 
+test('builder scheduler runtime: client build keeps debug stats no-op without creating scheduler stats', () => {
+  withBuildFlags({ client: true, perf: false, debug: false }, () => {
+    const harness = createSchedulerHarness('sig:client:no-stats');
+    const state = harness.App.services.builder.__schedulerState;
+
+    assert.equal(isBuildDebugStatsEnabled(), false);
+    assert.equal(state.debugStats, undefined);
+
+    requestBuild(harness.App, null, { reason: 'client:no-stats', immediate: true });
+
+    assert.equal(harness.buildCalls.length, 1);
+    assert.equal(state.debugStats, undefined);
+    const summary = getSchedulerState(harness.App);
+    assert.equal(Object.prototype.hasOwnProperty.call(summary, 'debugStats'), false);
+    assert.deepEqual(summary.debugStats, undefined);
+
+    const stats = getBuildDebugStats(harness.App);
+    assert.equal(stats.requestCount, 0);
+    assert.equal(stats.executeCount, 0);
+    assert.equal(stats.executeSuccessCount, 0);
+    assert.deepEqual(stats.executeDurationSamplesMs, []);
+    assert.deepEqual(stats.reasons, {});
+    assert.equal(state.debugStats, undefined);
+
+    recordBuildExecuteDuration(state, 'client:direct-duration', true, true, 25, 'ok');
+    assert.equal(state.debugStats, undefined);
+    assert.deepEqual(getBuildDebugStats(harness.App).executeDurationSamplesMs, []);
+  });
+});
+
+test('builder scheduler runtime: perf/debug build flags still record duration by reason and split', () => {
+  withBuildFlags({ client: false, perf: true, debug: false }, () => {
+    const harness = createSchedulerHarness('sig:perf:immediate');
+
+    assert.equal(isBuildDebugStatsEnabled(), true);
+
+    requestBuild(harness.App, null, { reason: 'perf:immediate', immediate: true });
+    harness.setSignature('sig:perf:debounced-force');
+    requestBuild(harness.App, null, { reason: 'perf:debounced-force', force: true });
+    harness.flush();
+
+    const stats = getBuildDebugStats(harness.App);
+    assert.equal(stats.executeCount, 2);
+    assert.equal(stats.executeSuccessCount, 2);
+    assert.equal(stats.executeDurationSamplesMs.length, 2);
+    assert.equal(stats.executeImmediateDurationSamplesMs.length, 1);
+    assert.equal(stats.executeDebouncedDurationSamplesMs.length, 1);
+    assert.equal(stats.executeForceDurationSamplesMs.length, 1);
+    assert.equal(stats.executeNonForceDurationSamplesMs.length, 1);
+    assert.equal(stats.reasons['perf:immediate']?.executeDurationSamplesMs.length, 1);
+    assert.equal(stats.reasons['perf:debounced-force']?.executeDurationSamplesMs.length, 1);
+    assert.equal(stats.reasons['perf:debounced-force']?.executeForceCount, 1);
+  });
+});
+
+test('builder scheduler runtime: client build keeps scheduling suppression active without debug stats', () => {
+  withBuildFlags({ client: true, perf: false, debug: false }, () => {
+    const duplicatePending = createSchedulerHarness('sig:client:pending');
+    requestBuild(duplicatePending.App, null, { reason: 'client:pending' });
+    requestBuild(duplicatePending.App, null, { reason: 'client:pending' });
+    assert.equal(duplicatePending.getScheduleCount(), 1);
+    duplicatePending.flush();
+    assert.equal(duplicatePending.buildCalls.length, 1);
+    assert.equal(duplicatePending.App.services.builder.__schedulerState.debugStats, undefined);
+
+    const satisfied = createSchedulerHarness('sig:client:satisfied');
+    requestBuild(satisfied.App, null, { reason: 'client:satisfied' });
+    satisfied.flush();
+    requestBuild(satisfied.App, null, { reason: 'client:satisfied' });
+    assert.equal(satisfied.getScheduleCount(), 1);
+    assert.equal(satisfied.buildCalls.length, 1);
+    assert.equal(satisfied.App.services.builder.__schedulerState.debugStats, undefined);
+
+    const repeated = createSchedulerHarness('sig:client:repeated');
+    requestBuild(repeated.App, null, { reason: 'client:repeated', immediate: true });
+    requestBuild(repeated.App, null, { reason: 'client:repeated', immediate: true });
+    assert.equal(repeated.buildCalls.length, 1);
+    assert.equal(repeated.App.services.builder.__schedulerState.debugStats, undefined);
+
+    requestBuild(repeated.App, null, { reason: 'client:repeated:force', immediate: true, force: true });
+    assert.equal(repeated.buildCalls.length, 2);
+    assert.equal(repeated.buildCalls[1]?.ui?.forceBuild, true);
+    assert.equal(repeated.App.services.builder.__schedulerState.debugStats, undefined);
+
+    const forcedRecovery = createSchedulerHarness('sig:client:forced-initial');
+    requestBuild(forcedRecovery.App, null, { reason: 'client:forced', force: true });
+    forcedRecovery.setSignature('sig:client:forced-latest');
+    requestBuild(forcedRecovery.App, null, { reason: 'client:forced-latest' });
+    forcedRecovery.flush();
+    assert.equal(forcedRecovery.buildCalls.length, 1);
+    assert.equal(forcedRecovery.buildCalls[0]?.build?.signature, 'sig:client:forced-latest');
+    assert.equal(forcedRecovery.buildCalls[0]?.ui?.forceBuild, true);
+    assert.equal(forcedRecovery.App.services.builder.__schedulerState.debugStats, undefined);
+  });
+});
+
 test('builder scheduler runtime: legacy debug stats are normalized without dropping reason rows', () => {
   const harness = createSchedulerHarness('sig:legacy-stats');
   const state = harness.App.services.builder.__schedulerState;
@@ -273,6 +427,47 @@ test('builder scheduler runtime: build execute duration is recorded by reason an
   assert.equal(stats.reasons['timing:immediate']?.executeDurationSamplesMs.length, 1);
   assert.equal(stats.reasons['timing:force']?.executeDurationSamplesMs.length, 1);
   assert.equal(stats.reasons['timing:force']?.executeForceCount, 1);
+});
+
+test('builder scheduler runtime: build execute duration samples are capped to a bounded window', () => {
+  const harness = createSchedulerHarness('sig:timing:cap');
+  const state = harness.App.services.builder.__schedulerState;
+  const sampleCount = MAX_BUILD_DURATION_SAMPLES + 20;
+
+  for (let i = 0; i < sampleCount; i += 1) {
+    recordBuildExecuteDuration(state, 'timing:cap', true, true, i, 'ok');
+  }
+  for (let i = 0; i < sampleCount; i += 1) {
+    recordBuildExecuteDuration(state, 'timing:cap', false, false, 1000 + i, 'ok');
+  }
+
+  const stats = getBuildDebugStats(harness.App);
+  const expectedWindow = Array.from(
+    { length: MAX_BUILD_DURATION_SAMPLES },
+    (_item, index) => 1000 + index + 20
+  );
+  const expectedFirstSplitWindow = Array.from(
+    { length: MAX_BUILD_DURATION_SAMPLES },
+    (_item, index) => index + 20
+  );
+  const expectedTotal = expectedWindow.reduce((sum, value) => sum + value, 0);
+
+  assert.equal(stats.executeSuccessCount, sampleCount * 2);
+  assert.equal(stats.executeDurationSamplesMs.length, MAX_BUILD_DURATION_SAMPLES);
+  assert.deepEqual(stats.executeDurationSamplesMs, expectedWindow);
+  assert.equal(stats.executeDurationTotalMs, expectedTotal);
+  assert.equal(stats.executeDurationAvgMs, expectedTotal / MAX_BUILD_DURATION_SAMPLES);
+  assert.equal(stats.executeDurationP95Ms, percentile(expectedWindow, 0.95));
+  assert.equal(stats.executeDurationMaxMs, 1000 + sampleCount - 1);
+  assert.equal(stats.reasons['timing:cap']?.executeDurationSamplesMs.length, MAX_BUILD_DURATION_SAMPLES);
+  assert.equal(stats.executeImmediateDurationSamplesMs.length, MAX_BUILD_DURATION_SAMPLES);
+  assert.deepEqual(stats.executeImmediateDurationSamplesMs, expectedFirstSplitWindow);
+  assert.equal(stats.executeDebouncedDurationSamplesMs.length, MAX_BUILD_DURATION_SAMPLES);
+  assert.deepEqual(stats.executeDebouncedDurationSamplesMs, expectedWindow);
+  assert.equal(stats.executeForceDurationSamplesMs.length, MAX_BUILD_DURATION_SAMPLES);
+  assert.deepEqual(stats.executeForceDurationSamplesMs, expectedFirstSplitWindow);
+  assert.equal(stats.executeNonForceDurationSamplesMs.length, MAX_BUILD_DURATION_SAMPLES);
+  assert.deepEqual(stats.executeNonForceDurationSamplesMs, expectedWindow);
 });
 
 test('builder scheduler runtime: failed build execute still records duration and status', () => {

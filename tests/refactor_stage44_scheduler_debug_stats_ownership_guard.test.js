@@ -16,6 +16,7 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
   const signaturePolicy = read('esm/native/builder/scheduler_debug_stats_signature_policy.ts');
   const recorders = read('esm/native/builder/scheduler_debug_stats_recorders.ts');
   const budget = read('esm/native/builder/scheduler_debug_stats_budget.ts');
+  const schedulerRuntime = read('esm/native/builder/scheduler_runtime.ts');
 
   assert.ok(
     lineCount(facade) <= 60,
@@ -33,6 +34,8 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
 
   for (const publicExport of [
     'nowForBuildStats',
+    'isBuildDebugStatsEnabled',
+    'MAX_BUILD_DURATION_SAMPLES',
     'normalizeBuildReason',
     'createBuildDebugStats',
     'ensureBuildDebugStats',
@@ -43,6 +46,7 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
     'shouldSuppressRepeatedExecute',
     'recordBuildRequest',
     'recordBuildExecute',
+    'recordBuildExecuteDuration',
     'summarizeBuildDebugBudget',
   ]) {
     assert.ok(
@@ -71,6 +75,24 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
   assert.ok(
     reasonStore.includes('export function createBuildDebugStats'),
     'debug stats construction must live in scheduler_debug_stats_reason_store.ts'
+  );
+  assert.ok(
+    reasonStore.includes(
+      "import { isClientObservabilityBuild } from '../runtime/observability_build_mode.js';"
+    ),
+    'build debug stats must use the compile-time observability build-mode seam'
+  );
+  assert.ok(
+    reasonStore.includes('export const MAX_BUILD_DURATION_SAMPLES = 512;'),
+    'duration sample caps must live with the scheduler debug stats shape owner'
+  );
+  assert.ok(
+    reasonStore.includes('export function isBuildDebugStatsEnabled(): boolean'),
+    'client/release instrumentation gating must live with the scheduler debug stats owner'
+  );
+  assert.ok(
+    reasonStore.includes('if (!isBuildDebugStatsEnabled()) {\n    return createBuildDebugStats();\n  }'),
+    'ensureBuildDebugStats must not create state.debugStats while client stats are disabled'
   );
   assert.equal(
     reasonStore.includes('readBuildInputFingerprintFromState'),
@@ -101,6 +123,25 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
     'execute counter mutation must live in scheduler_debug_stats_recorders.ts'
   );
   assert.ok(recorders.includes('getReasonStats'), 'recorders must share the centralized reason-store seam');
+  assert.ok(
+    recorders.includes('MAX_BUILD_DURATION_SAMPLES'),
+    'recorders must cap duration sample arrays instead of growing them indefinitely'
+  );
+  assert.ok(
+    recorders.includes('samples.splice(0, samples.length - MAX_BUILD_DURATION_SAMPLES)'),
+    'duration recording must evict old samples when the cap is exceeded'
+  );
+  assert.ok(
+    recorders.includes(
+      'if (!isBuildDebugStatsEnabled()) {\n    state.lastExecutedSignature = sig;\n    return reason;\n  }'
+    ),
+    'recordBuildExecute must preserve execution signature suppression without mutating debug stats in client builds'
+  );
+  const noOpRecorderGuards = recorders.match(/if \(!isBuildDebugStatsEnabled\(\)\) return reason;/g) || [];
+  assert.ok(
+    noOpRecorderGuards.length >= 9,
+    'all scheduler stats recorders except the signature-preserving execute recorder must no-op in client builds'
+  );
 
   assert.ok(
     budget.includes('export function summarizeBuildDebugBudget'),
@@ -111,5 +152,30 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
     budget.includes('getReasonStats'),
     false,
     'budget summary must not mutate or normalize per-reason stats'
+  );
+
+  assert.ok(
+    schedulerRuntime.includes('const shouldMeasureBuildExecution = isBuildDebugStatsEnabled();'),
+    'scheduler runtime must decide build execution timing through the central debug-stats guard'
+  );
+  assert.ok(
+    schedulerRuntime.includes('const startedAt = shouldMeasureBuildExecution ? nowForBuildStats() : 0;'),
+    'scheduler runtime must not call the timing source when client stats are disabled'
+  );
+  assert.equal(
+    schedulerRuntime.includes('const startedAt = nowForBuildStats();'),
+    false,
+    'scheduler runtime must not keep an unconditional build execution timing probe'
+  );
+  assert.ok(
+    (schedulerRuntime.match(/if \(shouldMeasureBuildExecution\) \{\s*recordBuildExecuteDuration/g) || [])
+      .length >= 4,
+    'every build duration recorder call in scheduler runtime must be guarded'
+  );
+  assert.ok(
+    schedulerRuntime.includes(
+      'if (isBuildDebugStatsEnabled()) summary.debugStats = ensureBuildDebugStats(s);'
+    ),
+    'getSchedulerState must not create debugStats in client/release state summaries'
   );
 });

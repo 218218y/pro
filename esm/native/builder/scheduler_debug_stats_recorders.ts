@@ -8,6 +8,8 @@ import { type SchedulerPendingPlan } from './scheduler_shared.js';
 import {
   ensureBuildDebugStats,
   getReasonStats,
+  isBuildDebugStatsEnabled,
+  MAX_BUILD_DURATION_SAMPLES,
   normalizeBuildReason,
 } from './scheduler_debug_stats_reason_store.js';
 import { readExecutionSignature, readPendingSignature } from './scheduler_debug_stats_signature_policy.js';
@@ -46,28 +48,33 @@ function recordDurationSample(target: DurationStatsTarget, durationMsIn: unknown
   const durationMs = normalizeDurationMs(durationMsIn);
   const samples = Array.isArray(target.executeDurationSamplesMs) ? target.executeDurationSamplesMs : [];
   samples.push(durationMs);
+  if (samples.length > MAX_BUILD_DURATION_SAMPLES) {
+    samples.splice(0, samples.length - MAX_BUILD_DURATION_SAMPLES);
+  }
   target.executeDurationSamplesMs = samples;
-  target.executeDurationTotalMs = normalizeDurationMs((target.executeDurationTotalMs || 0) + durationMs);
+  target.executeDurationTotalMs = normalizeDurationMs(samples.reduce((sum, value) => sum + value, 0));
   target.executeDurationAvgMs = normalizeDurationMs(target.executeDurationTotalMs / samples.length);
   target.executeDurationP95Ms = normalizeDurationMs(percentile(samples, 0.95));
-  target.executeDurationMaxMs = Math.max(normalizeDurationMs(target.executeDurationMaxMs), durationMs);
+  target.executeDurationMaxMs = samples.length ? Math.max(...samples) : 0;
 }
 
-function createDurationSnapshot(
-  samplesIn: unknown,
-  totalMsIn: unknown,
-  maxMsIn: unknown,
-  durationMsIn: unknown
-): DurationStatsSnapshot {
+function createDurationSnapshot(samplesIn: unknown, durationMsIn: unknown): DurationStatsSnapshot {
   const durationMs = normalizeDurationMs(durationMsIn);
-  const samplesMs = Array.isArray(samplesIn) ? [...samplesIn.map(item => normalizeDurationMs(item))] : [];
+  const samplesMs = Array.isArray(samplesIn)
+    ? samplesIn
+        .map(item => (Number.isFinite(Number(item)) ? normalizeDurationMs(item) : null))
+        .filter((item): item is number => item !== null)
+    : [];
   samplesMs.push(durationMs);
-  const totalMs = normalizeDurationMs((Number(totalMsIn) || 0) + durationMs);
+  if (samplesMs.length > MAX_BUILD_DURATION_SAMPLES) {
+    samplesMs.splice(0, samplesMs.length - MAX_BUILD_DURATION_SAMPLES);
+  }
+  const totalMs = normalizeDurationMs(samplesMs.reduce((sum, value) => sum + value, 0));
   return {
     totalMs,
     avgMs: normalizeDurationMs(totalMs / samplesMs.length),
     p95Ms: normalizeDurationMs(percentile(samplesMs, 0.95)),
-    maxMs: Math.max(normalizeDurationMs(maxMsIn), durationMs),
+    maxMs: samplesMs.length ? Math.max(...samplesMs) : 0,
     samplesMs,
   };
 }
@@ -78,12 +85,7 @@ function recordSplitDurationSample(
   durationMs: number
 ): void {
   if (prefix === 'executeImmediate') {
-    const next = createDurationSnapshot(
-      stats.executeImmediateDurationSamplesMs,
-      stats.executeImmediateDurationTotalMs,
-      stats.executeImmediateDurationMaxMs,
-      durationMs
-    );
+    const next = createDurationSnapshot(stats.executeImmediateDurationSamplesMs, durationMs);
     stats.executeImmediateDurationTotalMs = next.totalMs;
     stats.executeImmediateDurationAvgMs = next.avgMs;
     stats.executeImmediateDurationP95Ms = next.p95Ms;
@@ -92,12 +94,7 @@ function recordSplitDurationSample(
     return;
   }
   if (prefix === 'executeDebounced') {
-    const next = createDurationSnapshot(
-      stats.executeDebouncedDurationSamplesMs,
-      stats.executeDebouncedDurationTotalMs,
-      stats.executeDebouncedDurationMaxMs,
-      durationMs
-    );
+    const next = createDurationSnapshot(stats.executeDebouncedDurationSamplesMs, durationMs);
     stats.executeDebouncedDurationTotalMs = next.totalMs;
     stats.executeDebouncedDurationAvgMs = next.avgMs;
     stats.executeDebouncedDurationP95Ms = next.p95Ms;
@@ -106,12 +103,7 @@ function recordSplitDurationSample(
     return;
   }
   if (prefix === 'executeForce') {
-    const next = createDurationSnapshot(
-      stats.executeForceDurationSamplesMs,
-      stats.executeForceDurationTotalMs,
-      stats.executeForceDurationMaxMs,
-      durationMs
-    );
+    const next = createDurationSnapshot(stats.executeForceDurationSamplesMs, durationMs);
     stats.executeForceDurationTotalMs = next.totalMs;
     stats.executeForceDurationAvgMs = next.avgMs;
     stats.executeForceDurationP95Ms = next.p95Ms;
@@ -119,12 +111,7 @@ function recordSplitDurationSample(
     stats.executeForceDurationSamplesMs = next.samplesMs;
     return;
   }
-  const next = createDurationSnapshot(
-    stats.executeNonForceDurationSamplesMs,
-    stats.executeNonForceDurationTotalMs,
-    stats.executeNonForceDurationMaxMs,
-    durationMs
-  );
+  const next = createDurationSnapshot(stats.executeNonForceDurationSamplesMs, durationMs);
   stats.executeNonForceDurationTotalMs = next.totalMs;
   stats.executeNonForceDurationAvgMs = next.avgMs;
   stats.executeNonForceDurationP95Ms = next.p95Ms;
@@ -137,6 +124,7 @@ export function recordSkippedDuplicatePendingRequest(
   reasonIn: unknown
 ): string {
   const reason = normalizeBuildReason(reasonIn);
+  if (!isBuildDebugStatsEnabled()) return reason;
   const stats = ensureBuildDebugStats(state);
   const perReason = getReasonStats(stats, reason);
 
@@ -152,6 +140,7 @@ export function recordDebouncedSchedule(
   reusedExistingSchedule = false
 ): string {
   const reason = normalizeBuildReason(reasonIn);
+  if (!isBuildDebugStatsEnabled()) return reason;
   const stats = ensureBuildDebugStats(state);
   const perReason = getReasonStats(stats, reason);
 
@@ -171,6 +160,7 @@ export function recordBuilderWaitSchedule(
   reasonIn: unknown
 ): string {
   const reason = normalizeBuildReason(reasonIn);
+  if (!isBuildDebugStatsEnabled()) return reason;
   const stats = ensureBuildDebugStats(state);
   const perReason = getReasonStats(stats, reason);
 
@@ -184,6 +174,7 @@ export function recordStaleDebouncedTimerFire(
   reasonIn: unknown
 ): string {
   const reason = normalizeBuildReason(reasonIn);
+  if (!isBuildDebugStatsEnabled()) return reason;
   const stats = ensureBuildDebugStats(state);
   const perReason = getReasonStats(stats, reason);
 
@@ -197,6 +188,7 @@ export function recordStaleBuilderWaitWakeup(
   reasonIn: unknown
 ): string {
   const reason = normalizeBuildReason(reasonIn);
+  if (!isBuildDebugStatsEnabled()) return reason;
   const stats = ensureBuildDebugStats(state);
   const perReason = getReasonStats(stats, reason);
 
@@ -210,6 +202,7 @@ export function recordSkippedSatisfiedRequest(
   reasonIn: unknown
 ): string {
   const reason = normalizeBuildReason(reasonIn);
+  if (!isBuildDebugStatsEnabled()) return reason;
   const stats = ensureBuildDebugStats(state);
   const perReason = getReasonStats(stats, reason);
 
@@ -228,6 +221,7 @@ export function recordBuildRequest(
   requestTs: number
 ): string {
   const reason = normalizeBuildReason(reasonIn);
+  if (!isBuildDebugStatsEnabled()) return reason;
   const stats = ensureBuildDebugStats(state);
   const perReason = getReasonStats(stats, reason);
   const hadPending = !!state.pendingPlan;
@@ -283,9 +277,15 @@ export function recordBuildExecute(
   plan?: SchedulerPendingPlan | null
 ): string {
   const reason = normalizeBuildReason(reasonIn);
+  const sig = readExecutionSignature(plan, buildState);
+
+  if (!isBuildDebugStatsEnabled()) {
+    state.lastExecutedSignature = sig;
+    return reason;
+  }
+
   const stats = ensureBuildDebugStats(state);
   const perReason = getReasonStats(stats, reason);
-  const sig = readExecutionSignature(plan, buildState);
 
   stats.executeCount += 1;
   if (immediate) {
@@ -331,6 +331,7 @@ export function recordBuildExecuteDuration(
   status: BuildExecuteStatus
 ): string {
   const reason = normalizeBuildReason(reasonIn);
+  if (!isBuildDebugStatsEnabled()) return reason;
   const stats = ensureBuildDebugStats(state);
   const perReason = getReasonStats(stats, reason);
   const durationMs = normalizeDurationMs(durationMsIn);
@@ -358,6 +359,7 @@ export function recordSkippedRepeatedExecute(
   reasonIn: unknown
 ): string {
   const reason = normalizeBuildReason(reasonIn);
+  if (!isBuildDebugStatsEnabled()) return reason;
   const stats = ensureBuildDebugStats(state);
   const perReason = getReasonStats(stats, reason);
 

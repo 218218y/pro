@@ -29,6 +29,7 @@ import {
 } from './scheduler_shared.js';
 import {
   nowForBuildStats,
+  isBuildDebugStatsEnabled,
   normalizeBuildReason,
   ensureBuildDebugStats,
   shouldSuppressDuplicatePendingRequest,
@@ -208,58 +209,67 @@ function executePendingBuild(
     immediate,
     forceBuild,
     buildState,
-    nowForBuildStats(),
+    isBuildDebugStatsEnabled() ? nowForBuildStats() : 0,
     executionPlan
   );
   clearPendingBuildState(state);
   invalidateBuilderWait(state);
-  const startedAt = nowForBuildStats();
+  const shouldMeasureBuildExecution = isBuildDebugStatsEnabled();
+  const startedAt = shouldMeasureBuildExecution ? nowForBuildStats() : 0;
   try {
     const result = callBuild(App, buildState);
     if (isBuildThenableResult(result)) {
       return result.then(
         value => {
-          recordBuildExecuteDuration(
-            state,
-            execReason,
-            immediate,
-            forceBuild,
-            nowForBuildStats() - startedAt,
-            'ok'
-          );
+          if (shouldMeasureBuildExecution) {
+            recordBuildExecuteDuration(
+              state,
+              execReason,
+              immediate,
+              forceBuild,
+              nowForBuildStats() - startedAt,
+              'ok'
+            );
+          }
           return value;
         },
         error => {
-          recordBuildExecuteDuration(
-            state,
-            execReason,
-            immediate,
-            forceBuild,
-            nowForBuildStats() - startedAt,
-            'error'
-          );
+          if (shouldMeasureBuildExecution) {
+            recordBuildExecuteDuration(
+              state,
+              execReason,
+              immediate,
+              forceBuild,
+              nowForBuildStats() - startedAt,
+              'error'
+            );
+          }
           throw error;
         }
       );
     }
-    recordBuildExecuteDuration(
-      state,
-      execReason,
-      immediate,
-      forceBuild,
-      nowForBuildStats() - startedAt,
-      'ok'
-    );
+    if (shouldMeasureBuildExecution) {
+      recordBuildExecuteDuration(
+        state,
+        execReason,
+        immediate,
+        forceBuild,
+        nowForBuildStats() - startedAt,
+        'ok'
+      );
+    }
     return result;
   } catch (error) {
-    recordBuildExecuteDuration(
-      state,
-      execReason,
-      immediate,
-      forceBuild,
-      nowForBuildStats() - startedAt,
-      'error'
-    );
+    if (shouldMeasureBuildExecution) {
+      recordBuildExecuteDuration(
+        state,
+        execReason,
+        immediate,
+        forceBuild,
+        nowForBuildStats() - startedAt,
+        'error'
+      );
+    }
     throw error;
   }
 }
@@ -314,7 +324,7 @@ export function requestBuildRuntime(
   const s = ensureSchedulerState(A);
   const rerunPendingBuild = (nextReason: string) => runPendingBuildRuntime(A, nextReason);
 
-  const now = nowForBuildStats();
+  const now = isBuildDebugStatsEnabled() ? nowForBuildStats() : 0;
   const immediate = !!opts?.immediate;
   const requestedForceBuild = !!opts?.force;
   const forceBuild = requestedForceBuild || !!s.pendingForceBuild;
@@ -408,12 +418,13 @@ export function getSchedulerStateRuntime(App: AppContainer): BuilderSchedulerSta
   try {
     const a = assertApp(App, 'native/builder/scheduler.getState');
     const s = ensureSchedulerState(a);
-    return {
+    const summary: BuilderSchedulerStateSummaryLike = {
       pendingState: readPlanState(s.pendingPlan),
       lastTs: s.lastTs,
       waiting: !!s.waitingForBuilder,
-      debugStats: ensureBuildDebugStats(s),
     };
+    if (isBuildDebugStatsEnabled()) summary.debugStats = ensureBuildDebugStats(s);
+    return summary;
   } catch {
     return { pendingState: null, lastTs: 0, waiting: false };
   }
@@ -422,12 +433,17 @@ export function getSchedulerStateRuntime(App: AppContainer): BuilderSchedulerSta
 export function getBuildDebugStatsRuntime(App: AppContainer): BuilderDebugStatsLike {
   const A = assertApp(App, 'native/builder/scheduler.getBuildDebugStats');
   const s = ensureSchedulerState(A);
+  if (!isBuildDebugStatsEnabled()) return createBuildDebugStats();
   return ensureBuildDebugStats(s);
 }
 
 export function resetBuildDebugStatsRuntime(App: AppContainer): BuilderDebugStatsLike {
   const A = assertApp(App, 'native/builder/scheduler.resetBuildDebugStats');
   const s = ensureSchedulerState(A);
+  if (!isBuildDebugStatsEnabled()) {
+    delete s.debugStats;
+    return createBuildDebugStats();
+  }
   const before = cloneBuildDebugStats(ensureBuildDebugStats(s));
   s.debugStats = createBuildDebugStats();
   return before;
