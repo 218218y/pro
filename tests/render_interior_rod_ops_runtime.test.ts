@@ -2,7 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createBuilderRenderInteriorRodOps } from '../esm/native/builder/render_interior_rod_ops.ts';
-import { resolveInteriorRodAvailableHeight } from '../esm/native/builder/render_interior_rod_clearance.ts';
+import {
+  resolveInteriorRodAvailableHeight,
+  resolveSingleHangerRequiredClearance,
+} from '../esm/native/builder/render_interior_rod_clearance.ts';
 
 function makeFakeThree() {
   class CylinderGeometry {
@@ -245,6 +248,102 @@ test('render interior rod shortens hanging clothes above sketch drawer stacks', 
   // The external sketch drawer stack is taller than the internal two-drawer stack here,
   // so it is the nearest real blocker below the rod: 0.9m rod - 0.44m stack top.
   assert.equal(Number(clothesCalls[0][5].toFixed(3)), 0.46);
+});
+
+test('render interior rod skips single hanger when external drawer clearance below the rod is too short', () => {
+  const THREE = makeFakeThree();
+  const { ops, added, group } = createRodOpsHarness();
+  const hangerCalls: any[] = [];
+  const innerW = 0.8;
+  const yPos = 1.0;
+  const requiredClearance = resolveSingleHangerRequiredClearance(innerW);
+
+  assert.ok(requiredClearance > 0.22, 'test should exercise the real single-hanger height');
+
+  const created = ops.createRodWithContents({
+    THREE,
+    yPos,
+    effectiveBottomY: yPos - requiredClearance + 0.015,
+    effectiveTopY: 2.4,
+    gridDivisions: 6,
+    localGridStep: 0.4,
+    config: {},
+    innerW,
+    internalCenterX: 0,
+    internalZ: 0,
+    wardrobeGroup: group,
+    showHangerEnabled: true,
+    addRealisticHanger(...args: any[]) {
+      hangerCalls.push(args);
+    },
+  });
+
+  assert.equal(created, true);
+  assert.equal(added.length, 1, 'the rod itself must still render');
+  assert.equal(hangerCalls.length, 0, 'the single hanger should be suppressed when it hits drawers below');
+});
+
+test('render interior rod keeps single hanger when the nearest blocker leaves enough clearance', () => {
+  const THREE = makeFakeThree();
+  const { ops, group } = createRodOpsHarness();
+  const hangerCalls: any[] = [];
+  const innerW = 0.8;
+  const yPos = 1.0;
+  const requiredClearance = resolveSingleHangerRequiredClearance(innerW);
+
+  const created = ops.createRodWithContents({
+    THREE,
+    yPos,
+    effectiveBottomY: yPos - requiredClearance - 0.02,
+    effectiveTopY: 2.4,
+    gridDivisions: 6,
+    localGridStep: 0.4,
+    config: {},
+    innerW,
+    internalCenterX: 0,
+    internalZ: 0,
+    wardrobeGroup: group,
+    showHangerEnabled: true,
+    addRealisticHanger(...args: any[]) {
+      hangerCalls.push(args);
+    },
+  });
+
+  assert.equal(created, true);
+  assert.equal(hangerCalls.length, 1);
+});
+
+test('render interior rod skips single hanger when sketch drawers are the nearest blocker below', () => {
+  const THREE = makeFakeThree();
+  const { ops, added, group } = createRodOpsHarness();
+  const hangerCalls: any[] = [];
+
+  const created = ops.createRodWithContents({
+    THREE,
+    yPos: 0.6,
+    effectiveBottomY: 0,
+    effectiveTopY: 2.4,
+    gridDivisions: 6,
+    localGridStep: 0.4,
+    woodThick: 0.02,
+    config: {
+      sketchExtras: {
+        extDrawers: [{ id: 'ext-bottom', yNorm: 0, count: 2 }],
+      },
+    },
+    innerW: 0.8,
+    internalCenterX: 0,
+    internalZ: 0,
+    wardrobeGroup: group,
+    showHangerEnabled: true,
+    addRealisticHanger(...args: any[]) {
+      hangerCalls.push(args);
+    },
+  });
+
+  assert.equal(created, true);
+  assert.equal(added.length, 1, 'the rod should still render without the hanger');
+  assert.equal(hangerCalls.length, 0);
 });
 
 test('render interior rod reserves folded clothes above shelf blockers', () => {

@@ -38,6 +38,37 @@ type DrawerRange = {
   maxY: number;
 };
 
+function clampSingleHangerScaleForModuleWidth(moduleWidth: unknown): number {
+  const width = readRuntimeNumber(moduleWidth);
+  if (width == null) return 1;
+  const dims = CONTENT_VISUAL_DIMENSIONS.hanger;
+  const totalHangerWidth = dims.halfWidthM * 2;
+  if (!(totalHangerWidth > 0)) return 1;
+  const safeWidth = width - dims.moduleWidthClearanceM;
+  if (!(safeWidth > 0)) return 0;
+  return Math.min(1, safeWidth / totalHangerWidth);
+}
+
+export function resolveSingleHangerRequiredClearance(moduleWidth: unknown): number {
+  const dims = CONTENT_VISUAL_DIMENSIONS.hanger;
+  const scale = clampSingleHangerScaleForModuleWidth(moduleWidth);
+  const lowestBodyY = -dims.shoulderHeightM - dims.shoulderDropM;
+  const lowestBarY = -dims.shoulderHeightM - dims.barYOffsetM - dims.barRadiusM;
+  const lowestLocalY = Math.min(lowestBodyY, lowestBarY, 0);
+  return Math.max(0, dims.rodYOffsetM + Math.abs(lowestLocalY) * scale);
+}
+
+export function canSingleHangerFitBelowRod(args: {
+  availableHeight: unknown;
+  moduleWidth: unknown;
+}): boolean {
+  const availableHeight = readRuntimeNumber(args.availableHeight);
+  if (availableHeight == null) return false;
+  const requiredClearance = resolveSingleHangerRequiredClearance(args.moduleWidth);
+  const tolerance = Math.max(1e-5, requiredClearance * 1e-4);
+  return availableHeight + tolerance >= requiredClearance;
+}
+
 const FOLDED_CLOTHES_BLOCKER_HEIGHT_M =
   CONTENT_VISUAL_DIMENSIONS.foldedClothes.itemHeightM *
     (CONTENT_VISUAL_DIMENSIONS.foldedClothes.stackBaseItems +

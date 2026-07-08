@@ -1,5 +1,8 @@
 import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { resolveInteriorRodAvailableHeight } from './render_interior_rod_clearance.js';
+import {
+  canSingleHangerFitBelowRod,
+  resolveInteriorRodAvailableHeight,
+} from './render_interior_rod_clearance.js';
 import type { UnknownRecord } from '../../../types';
 import type {
   InteriorObjectLike,
@@ -208,7 +211,17 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     }
     group.add(rod);
 
-    if (showHangerEnabled && enableSingleHanger && typeof addRealisticHanger === 'function') {
+    const canRenderSingleHanger = canSingleHangerFitBelowRod({
+      availableHeight,
+      moduleWidth: innerW,
+    });
+
+    if (
+      showHangerEnabled &&
+      enableSingleHanger &&
+      canRenderSingleHanger &&
+      typeof addRealisticHanger === 'function'
+    ) {
       addRealisticHanger(internalCenterX, yPos, internalZ, group, innerW, {
         showHangerEnabled,
         sketchMode,
