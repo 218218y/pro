@@ -1,4 +1,4 @@
-import type { AppContainer, ThreeLike, UnknownRecord } from '../../../types/index.js';
+import type { UnknownRecord } from '../../../types/index.js';
 import { getBrowserTimers, requestIdleCallbackMaybe } from './api_browser_surface.js';
 import { getCamera, getMirrorRenderTarget, getRenderer, getScene } from './render_access.js';
 import { getCacheBag } from './cache_access.js';
@@ -17,11 +17,13 @@ type WarmupState = {
   lastSkippedReason?: string | null;
 };
 
+type UnknownConstructor = new (...args: unknown[]) => unknown;
+
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
-function readWarmupState(App: AppContainer): WarmupState {
+function readWarmupState(App: unknown): WarmupState {
   const cache = getCacheBag(App) as Record<string, unknown>;
   const existing = cache[ADHESIVE_GLASS_STANDARD_WARMUP_KEY];
   if (existing && typeof existing === 'object' && !Array.isArray(existing)) return existing as WarmupState;
@@ -30,7 +32,7 @@ function readWarmupState(App: AppContainer): WarmupState {
   return next;
 }
 
-function readMirrorRenderTargetTexture(App: AppContainer): unknown | null {
+function readMirrorRenderTargetTexture(App: unknown): unknown | null {
   try {
     const renderTarget = getMirrorRenderTarget(App) as { texture?: unknown } | null;
     return renderTarget?.texture || null;
@@ -39,8 +41,18 @@ function readMirrorRenderTargetTexture(App: AppContainer): unknown | null {
   }
 }
 
-function readFrontSide(THREE: ThreeLike): unknown {
-  return typeof THREE.FrontSide !== 'undefined' ? THREE.FrontSide : THREE.DoubleSide;
+function readConstructor(value: unknown): UnknownConstructor | null {
+  return typeof value === 'function' ? (value as UnknownConstructor) : null;
+}
+
+function readThreeRecord(THREE: unknown): UnknownRecord | null {
+  return isRecord(THREE) ? THREE : null;
+}
+
+function readFrontSide(THREE: unknown): unknown {
+  const three = readThreeRecord(THREE);
+  if (!three) return undefined;
+  return typeof three.FrontSide !== 'undefined' ? three.FrontSide : three.DoubleSide;
 }
 
 function call0(ctx: unknown, fn: unknown): unknown {
@@ -59,9 +71,10 @@ function call3(ctx: unknown, fn: unknown, a: unknown, b: unknown, c: unknown): u
   return typeof fn === 'function' ? fn.call(ctx, a, b, c) : undefined;
 }
 
-function createWarmupMaterial(THREE: ThreeLike, texture: unknown): unknown | null {
-  const MeshStandardMaterial = THREE.MeshStandardMaterial;
-  if (typeof MeshStandardMaterial !== 'function') return null;
+function createWarmupMaterial(THREE: unknown, texture: unknown): unknown | null {
+  const three = readThreeRecord(THREE);
+  const MeshStandardMaterial = readConstructor(three?.MeshStandardMaterial);
+  if (!MeshStandardMaterial) return null;
   const mat = new MeshStandardMaterial({
     color: 0x050608,
     transparent: false,
@@ -91,10 +104,11 @@ function createWarmupMaterial(THREE: ThreeLike, texture: unknown): unknown | nul
   return mat;
 }
 
-function createWarmupMesh(THREE: ThreeLike, material: unknown): { geometry: unknown; mesh: unknown } | null {
-  const BoxGeometry = THREE.BoxGeometry;
-  const Mesh = THREE.Mesh;
-  if (typeof BoxGeometry !== 'function' || typeof Mesh !== 'function') return null;
+function createWarmupMesh(THREE: unknown, material: unknown): { geometry: unknown; mesh: unknown } | null {
+  const three = readThreeRecord(THREE);
+  const BoxGeometry = readConstructor(three?.BoxGeometry);
+  const Mesh = readConstructor(three?.Mesh);
+  if (!BoxGeometry || !Mesh) return null;
   const geometry = new BoxGeometry(0.001, 0.001, 0.001);
   const mesh = new Mesh(geometry, material);
   const rec = isRecord(mesh) ? mesh : null;
@@ -138,7 +152,7 @@ function removeWarmupMesh(scene: UnknownRecord, mesh: unknown): void {
   if (index >= 0) children.splice(index, 1);
 }
 
-export function warmAdhesiveGlassStandardShaderNow(App: AppContainer, THREE: ThreeLike): boolean {
+export function warmAdhesiveGlassStandardShaderNow(App: unknown, THREE: unknown): boolean {
   const state = readWarmupState(App);
   state.attempts = Math.max(0, Math.floor(Number(state.attempts) || 0)) + 1;
 
@@ -212,7 +226,7 @@ export function warmAdhesiveGlassStandardShaderNow(App: AppContainer, THREE: Thr
   }
 }
 
-export function scheduleAdhesiveGlassStandardShaderWarmup(App: AppContainer, THREE: ThreeLike): void {
+export function scheduleAdhesiveGlassStandardShaderWarmup(App: unknown, THREE: unknown): void {
   const state = readWarmupState(App);
   if (state.completed || state.scheduled) return;
   state.scheduled = true;
