@@ -17,7 +17,9 @@ type WarmupState = {
   lastSkippedReason?: string | null;
 };
 
-type UnknownConstructor = new (...args: unknown[]) => unknown;
+type MeshStandardMaterialConstructor = new (params: UnknownRecord) => unknown;
+type BoxGeometryConstructor = new (width: number, height: number, depth: number) => unknown;
+type MeshConstructor = new (geometry: unknown, material: unknown) => unknown;
 
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -41,8 +43,16 @@ function readMirrorRenderTargetTexture(App: unknown): unknown | null {
   }
 }
 
-function readConstructor(value: unknown): UnknownConstructor | null {
-  return typeof value === 'function' ? (value as UnknownConstructor) : null;
+function readMeshStandardMaterialConstructor(value: unknown): MeshStandardMaterialConstructor | null {
+  return typeof value === 'function' ? (value as MeshStandardMaterialConstructor) : null;
+}
+
+function readBoxGeometryConstructor(value: unknown): BoxGeometryConstructor | null {
+  return typeof value === 'function' ? (value as BoxGeometryConstructor) : null;
+}
+
+function readMeshConstructor(value: unknown): MeshConstructor | null {
+  return typeof value === 'function' ? (value as MeshConstructor) : null;
 }
 
 function readThreeRecord(THREE: unknown): UnknownRecord | null {
@@ -73,7 +83,7 @@ function call3(ctx: unknown, fn: unknown, a: unknown, b: unknown, c: unknown): u
 
 function createWarmupMaterial(THREE: unknown, texture: unknown): unknown | null {
   const three = readThreeRecord(THREE);
-  const MeshStandardMaterial = readConstructor(three?.MeshStandardMaterial);
+  const MeshStandardMaterial = readMeshStandardMaterialConstructor(three?.MeshStandardMaterial);
   if (!MeshStandardMaterial) return null;
   const mat = new MeshStandardMaterial({
     color: 0x050608,
@@ -106,8 +116,8 @@ function createWarmupMaterial(THREE: unknown, texture: unknown): unknown | null 
 
 function createWarmupMesh(THREE: unknown, material: unknown): { geometry: unknown; mesh: unknown } | null {
   const three = readThreeRecord(THREE);
-  const BoxGeometry = readConstructor(three?.BoxGeometry);
-  const Mesh = readConstructor(three?.Mesh);
+  const BoxGeometry = readBoxGeometryConstructor(three?.BoxGeometry);
+  const Mesh = readMeshConstructor(three?.Mesh);
   if (!BoxGeometry || !Mesh) return null;
   const geometry = new BoxGeometry(0.001, 0.001, 0.001);
   const mesh = new Mesh(geometry, material);
@@ -248,7 +258,7 @@ export function scheduleAdhesiveGlassStandardShaderWarmup(App: unknown, THREE: u
       idle(() => run(), { timeout: 250 });
       return;
     } catch {
-      // Fall through to timer fallback.
+      // Continue with timer scheduling when idle scheduling is unavailable.
     }
   }
 
