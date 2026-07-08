@@ -3,10 +3,12 @@ import type { AppContainer } from '../../../types';
 import {
   isAdhesiveGlassValue,
   parseDoorStyleOverridePaintToken,
+  resolveDoorStylePaintTargetKey as resolveDoorAuthoringStylePaintTargetKey,
   resolveGlassFrameStylePaintSelection,
 } from '../features/door_authoring/api.js';
 import {
   __wp_canonDoorPartKeyForMaps,
+  __wp_isDoorOrDrawerLikePartId,
   __wp_scopeCornerPartKeyForStack,
 } from './canvas_picking_core_helpers.js';
 import type { CanvasPaintClickArgs } from './canvas_picking_paint_flow_contracts.js';
@@ -44,6 +46,7 @@ export type ResolvedCanvasPaintCommand = {
   readonly originalFoundPartId: string;
   readonly canonicalPartKey: string;
   readonly effectiveDoorId: string | null;
+  readonly doorStyleTargetKey: string | null;
   readonly drawerId: string | null;
   readonly stack: 'top' | 'bottom';
   readonly targetScope: CanvasPaintTargetScope;
@@ -94,6 +97,38 @@ function resolvePaintCommandMutationKind(args: {
     : 'color';
 }
 
+export function resolveDoorStylePaintCommandTargetKey(args: {
+  foundPartId: string;
+  effectiveDoorId: string | null;
+  drawerId: string | null;
+  stack: 'top' | 'bottom';
+}): string {
+  return resolveDoorAuthoringStylePaintTargetKey({
+    foundPartId: args.foundPartId,
+    effectiveDoorId: args.effectiveDoorId,
+    foundDrawerId: args.drawerId,
+    activeStack: args.stack,
+    isDoorOrDrawerLikePartId: __wp_isDoorOrDrawerLikePartId,
+    scopePartKeyForStack: __wp_scopeCornerPartKeyForStack,
+  });
+}
+
+function resolvePaintCommandDoorStyleTargetKey(args: {
+  isDoorStyleSelection: boolean;
+  originalFoundPartId: string;
+  effectiveDoorId: string | null;
+  drawerId: string | null;
+  stack: 'top' | 'bottom';
+}): string | null {
+  if (!args.isDoorStyleSelection) return null;
+  return resolveDoorStylePaintCommandTargetKey({
+    foundPartId: args.originalFoundPartId,
+    effectiveDoorId: args.effectiveDoorId,
+    drawerId: args.drawerId,
+    stack: args.stack,
+  });
+}
+
 function resolveCommandInvalidationKind(
   App: AppContainer,
   mutationKind: CanvasPaintMutationKind
@@ -132,10 +167,18 @@ export function resolveCanvasPaintCommand(
     activeStack: stack,
   });
   const sourceTag = getPaintSourceTag(paintSelection, originalFoundPartId);
+  const isDoorStyleSelection = parseDoorStyleOverridePaintToken(paintSelection) != null;
   const mutationKind = resolvePaintCommandMutationKind({
     selection: paintSelection,
     sourceTag,
     canonicalPartKey,
+  });
+  const doorStyleTargetKey = resolvePaintCommandDoorStyleTargetKey({
+    isDoorStyleSelection,
+    originalFoundPartId,
+    effectiveDoorId,
+    drawerId,
+    stack,
   });
   const hitIdentity = args.hitIdentity || null;
   return {
@@ -145,6 +188,7 @@ export function resolveCanvasPaintCommand(
     originalFoundPartId,
     canonicalPartKey,
     effectiveDoorId,
+    doorStyleTargetKey,
     drawerId,
     stack,
     targetScope: readCanvasPaintTargetScopeFromObject(args.App, args.primaryHitObject || args.doorHitObject),

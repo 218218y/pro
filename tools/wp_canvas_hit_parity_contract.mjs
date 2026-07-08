@@ -275,6 +275,18 @@ requireMatch(
 requireMatch(
   files.paintCommand,
   paintCommand,
+  /readonly doorStyleTargetKey: string \| null;/,
+  'resolved paint command must carry the door-style target key separately from direct paint map keys'
+);
+requireMatch(
+  files.paintCommand,
+  paintCommand,
+  /export function resolveDoorStylePaintCommandTargetKey/,
+  'paint command owner must own door-style target key resolution'
+);
+requireMatch(
+  files.paintCommand,
+  paintCommand,
   /effectiveDoorId && \(!isSpecialPart\(foundPartId\) \|\| isSpecialPart\(effectiveDoorId\)\)/,
   'direct paint target resolution must not let canonical door ids override special sketch door part keys'
 );

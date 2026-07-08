@@ -7,18 +7,12 @@ import {
   isDoorStyleOverrideValue,
   parseDoorStyleOverridePaintToken,
   readDoorStyleMap,
-  resolveDoorStylePaintTargetKey as resolveDoorAuthoringStylePaintTargetKey,
 } from '../features/door_authoring/api.js';
 import {
   isDoorVisualInheritedOwner,
   materializeInheritedDoorVisualOwner,
 } from './canvas_picking_door_segment_materialization.js';
-import {
-  __wp_historyBatch,
-  __wp_isDoorOrDrawerLikePartId,
-  __wp_map,
-  __wp_scopeCornerPartKeyForStack,
-} from './canvas_picking_core_helpers.js';
+import { __wp_historyBatch, __wp_map } from './canvas_picking_core_helpers.js';
 import { createCanvasPickingPaintStructuralMeta } from './canvas_picking_paint_meta.js';
 import {
   cloneCurtainMap,
@@ -35,6 +29,10 @@ import {
   deleteDoorVisualOwnerAliasEntries,
   deletePrefixedDoorVisualOwnerAliasEntries,
 } from './canvas_picking_door_visual_owner_map.js';
+import {
+  resolveDoorStylePaintCommandTargetKey,
+  type ResolvedCanvasPaintCommand,
+} from './canvas_picking_paint_command.js';
 
 const GLASS_PREVIOUS_STYLE_PREFIX = '__wp_glass_previous_door_style__:';
 
@@ -44,13 +42,11 @@ export function resolveDoorStylePaintTargetKey(args: {
   foundDrawerId?: string | null;
   activeStack: 'top' | 'bottom';
 }): string {
-  return resolveDoorAuthoringStylePaintTargetKey({
+  return resolveDoorStylePaintCommandTargetKey({
     foundPartId: args.foundPartId,
-    effectiveDoorId: args.effectiveDoorId,
-    foundDrawerId: args.foundDrawerId,
-    activeStack: args.activeStack,
-    isDoorOrDrawerLikePartId: __wp_isDoorOrDrawerLikePartId,
-    scopePartKeyForStack: __wp_scopeCornerPartKeyForStack,
+    effectiveDoorId: args.effectiveDoorId || null,
+    drawerId: args.foundDrawerId || null,
+    stack: args.activeStack,
   });
 }
 
@@ -149,17 +145,12 @@ function clearSpecialVisualForDoorStyleTarget(args: {
 
 export function tryHandleDoorStyleOverridePaintClick(args: {
   App: AppContainer;
-  foundPartId: string;
-  effectiveDoorId?: string | null;
-  foundDrawerId?: string | null;
-  activeStack: 'top' | 'bottom';
-  paintSelection: string;
-  paintSource: string;
+  command: ResolvedCanvasPaintCommand;
 }): boolean | null {
-  const doorStyleSelection = parseDoorStyleOverridePaintToken(args.paintSelection);
+  const doorStyleSelection = parseDoorStyleOverridePaintToken(args.command.selection);
   if (!doorStyleSelection) return null;
 
-  const paintTargetKey = resolveDoorStylePaintTargetKey(args);
+  const paintTargetKey = args.command.doorStyleTargetKey;
   if (!paintTargetKey) return true;
 
   const doorStyleMap0 = readDoorStyleMap(__wp_map(args.App, 'doorStyleMap'));
@@ -211,7 +202,7 @@ export function tryHandleDoorStyleOverridePaintClick(args: {
   const mirrorChanged = !sameMirrorLayoutMap(mirror0, specialCleanup.mirror);
   if (!styleChanged && !specialChanged && !curtainsChanged && !mirrorChanged) return true;
 
-  const baseMeta = createCanvasPickingPaintStructuralMeta(args.paintSource);
+  const baseMeta = createCanvasPickingPaintStructuralMeta(args.command.sourceTag);
   __wp_historyBatch(args.App, baseMeta, () => {
     if (specialChanged) replaceDoorSpecialMap(args.App, specialCleanup.special, baseMeta);
     if (curtainsChanged) replaceCurtainMap(args.App, specialCleanup.curtains, baseMeta);

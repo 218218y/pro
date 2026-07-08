@@ -36,12 +36,7 @@ export function tryHandleCanvasPaintClick(args: CanvasPaintClickArgs): boolean {
 
   const handledDoorStyle = tryHandleDoorStyleOverridePaintClick({
     App,
-    foundPartId: command.originalFoundPartId,
-    effectiveDoorId: command.effectiveDoorId,
-    foundDrawerId: command.drawerId,
-    activeStack: command.stack,
-    paintSelection: command.selection,
-    paintSource: command.sourceTag,
+    command,
   });
   if (handledDoorStyle !== null) return handledDoorStyle;
 

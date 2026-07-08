@@ -14,6 +14,7 @@ test('door-style override mode is wired through design tab, paint apply, and hov
   ].join('\n');
   const controller = read('esm/native/ui/react/tabs/design_tab_multicolor_controller_runtime.ts');
   const paintApply = read('esm/native/services/canvas_picking_paint_flow_apply.ts');
+  const paintCommand = read('esm/native/services/canvas_picking_paint_command.ts');
   const paintDoorStyle = read('esm/native/services/canvas_picking_paint_flow_apply_door_style.ts');
   const grooveSegments = read('esm/native/services/canvas_picking_door_groove_segments.ts');
   const materialization = read('esm/native/services/canvas_picking_door_segment_materialization.ts');
@@ -31,12 +32,15 @@ test('door-style override mode is wired through design tab, paint apply, and hov
   assert.match(controller, /enterDoorStyleMode\(style: DoorStyleOverrideValue\)/);
   assert.match(controller, /encodeDoorStyleOverridePaintToken\(style\)/);
   assert.match(paintApply, /tryHandleDoorStyleOverridePaintClick\(/);
-  assert.match(paintDoorStyle, /parseDoorStyleOverridePaintToken\(args\.paintSelection\)/);
+  assert.match(paintDoorStyle, /parseDoorStyleOverridePaintToken\(args\.command\.selection\)/);
+  assert.match(paintDoorStyle, /args\.command\.doorStyleTargetKey/);
   assert.match(paintDoorStyle, /setCfgDoorStyleMap\(args\.App, doorStyleMap, baseMeta\)/);
   assert.doesNotMatch(paintDoorStyle, /cfgSetMap\(args\.App, 'doorStyleMap'/);
-  assert.match(paintDoorStyle, /resolveDoorAuthoringStylePaintTargetKey\(\{/);
-  assert.match(paintDoorStyle, /isDoorOrDrawerLikePartId: __wp_isDoorOrDrawerLikePartId/);
-  assert.match(paintDoorStyle, /scopePartKeyForStack: __wp_scopeCornerPartKeyForStack/);
+  assert.match(paintCommand, /export function resolveDoorStylePaintCommandTargetKey/);
+  assert.match(paintCommand, /resolveDoorAuthoringStylePaintTargetKey\(\{/);
+  assert.match(paintCommand, /isDoorOrDrawerLikePartId: __wp_isDoorOrDrawerLikePartId/);
+  assert.match(paintCommand, /scopePartKeyForStack: __wp_scopeCornerPartKeyForStack/);
+  assert.match(paintDoorStyle, /resolveDoorStylePaintCommandTargetKey\(\{/);
   assert.doesNotMatch(paintDoorStyle, /toDoorStyleOverrideMapKey/);
   assert.match(hover, /resolveDoorStylePaintSelectionState\(\{/);
   assert.match(hover, /doorStylePaintState\.willRemove/);

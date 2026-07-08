@@ -190,6 +190,45 @@ function resolveMirrorLayoutForPaintClick(
   );
 }
 
+function handleDoorStyleOverridePaintClick(args: {
+  App: any;
+  foundPartId: string;
+  effectiveDoorId?: string | null;
+  foundDrawerId?: string | null;
+  activeStack?: 'top' | 'bottom';
+  paintSelection: string;
+}): boolean | null {
+  return tryHandleDoorStyleOverridePaintClick({
+    App: args.App,
+    command: createPaintCommand({
+      App: args.App,
+      foundPartId: args.foundPartId,
+      effectiveDoorId: args.effectiveDoorId ?? null,
+      foundDrawerId: args.foundDrawerId ?? null,
+      activeStack: args.activeStack || 'top',
+      paintSelection: args.paintSelection,
+    }),
+  });
+}
+
+function capturePaintRoute(App: any, paintSelection: string): unknown[][] {
+  const applyPaintCalls: unknown[][] = [];
+  App.services.tools = { getPaintColor: () => paintSelection };
+  App.actions = {
+    history: {
+      batch(cb: () => unknown) {
+        return cb();
+      },
+    },
+    colors: {
+      applyPaint(...args: unknown[]) {
+        applyPaintCalls.push(args);
+      },
+    },
+  };
+  return applyPaintCalls;
+}
+
 test('paint grouped/corner target applies the full scoped shell set for corner wing frame clicks', () => {
   const expected = {
     lower_corner_ceil: 'walnut',
@@ -499,7 +538,7 @@ test('paint click ignores corner back-panel hit ids because those meshes are not
 });
 
 test('paint click replaces glass with a one-sided mirror through the public paint route on the first click', () => {
-  const applyPaintCalls: unknown[][] = [];
+  let materialRefreshes = 0;
   const App = createApp({
     ui: { currentCurtainChoice: 'linen' },
     maps: {
@@ -512,20 +551,13 @@ test('paint click replaces glass with a one-sided mirror through the public pain
       doorStyleMap: { d12_full: 'profile' },
       mirrorLayoutMap: {},
     },
+    builderMaterials: {
+      applyMaterials() {
+        materialRefreshes += 1;
+      },
+    },
   });
-  App.services.tools = { getPaintColor: () => 'mirror' };
-  App.actions = {
-    history: {
-      batch(cb: () => unknown) {
-        return cb();
-      },
-    },
-    colors: {
-      applyPaint(...args: unknown[]) {
-        applyPaintCalls.push(args);
-      },
-    },
-  };
+  const applyPaintCalls = capturePaintRoute(App, 'mirror');
 
   const handled = tryHandleCanvasPaintClick({
     App,
@@ -551,9 +583,117 @@ test('paint click replaces glass with a one-sided mirror through the public pain
   assert.equal(handled, true);
   assert.equal(applyPaintCalls.length, 1);
   assert.deepEqual(applyPaintCalls[0]?.[1], {});
+  assert.deepEqual(applyPaintCalls[0]?.[2], { source: 'paint.apply:mirror', immediate: true });
   assert.deepEqual(applyPaintCalls[0]?.[3], { d12_full: 'mirror' });
   assert.deepEqual(applyPaintCalls[0]?.[4], { d12_full: [{ faceSign: -1 }] });
   assert.deepEqual(applyPaintCalls[0]?.[5], { d12_full: 'double_profile' });
+  assert.equal(materialRefreshes, 0);
+});
+
+test('paint click commits glass through the public paint route without material refresh', () => {
+  let materialRefreshes = 0;
+  const App = createApp({
+    ui: { currentCurtainChoice: 'linen' },
+    maps: {
+      individualColors: {},
+      curtainMap: {},
+      doorSpecialMap: {},
+      doorStyleMap: { d13_full: 'flat' },
+      mirrorLayoutMap: {},
+    },
+    builderMaterials: {
+      applyMaterials() {
+        materialRefreshes += 1;
+      },
+    },
+  });
+  const applyPaintCalls = capturePaintRoute(App, 'glass');
+
+  const handled = tryHandleCanvasPaintClick({
+    App,
+    foundPartId: 'door_profile_inner_top',
+    effectiveDoorId: 'd13_full',
+    foundDrawerId: null,
+    activeStack: 'top',
+    isPaintMode: true,
+    hitIdentity: {
+      targetKind: 'door',
+      partId: 'door_profile_inner_top',
+      doorId: 'd13',
+      drawerId: null,
+      moduleIndex: null,
+      moduleStack: null,
+      surfaceId: 'door:d13:outside',
+      faceSign: 1,
+      faceSide: 'outside',
+      splitPart: 'full',
+      source: 'click',
+    },
+  } as never);
+
+  assert.equal(handled, true);
+  assert.equal(applyPaintCalls.length, 1);
+  assert.deepEqual(applyPaintCalls[0]?.[1], { d13_full: 'linen' });
+  assert.deepEqual(applyPaintCalls[0]?.[2], { source: 'paint.apply:glass', immediate: true });
+  assert.deepEqual(applyPaintCalls[0]?.[3], {
+    d13_full: 'glass',
+    '__wp_glass_previous_door_style__:d13_full': 'flat',
+  });
+  assert.deepEqual(applyPaintCalls[0]?.[4], {});
+  assert.deepEqual(applyPaintCalls[0]?.[5], { d13_full: 'profile' });
+  assert.equal(materialRefreshes, 0);
+});
+
+test('paint click keeps sketch-box persisted special map key through the public paint route', () => {
+  let materialRefreshes = 0;
+  const App = createApp({
+    ui: { currentMirrorDraftWidthCm: '', currentMirrorDraftHeightCm: '' },
+    maps: {
+      individualColors: {},
+      curtainMap: {},
+      doorSpecialMap: {},
+      doorStyleMap: {},
+      mirrorLayoutMap: {},
+    },
+    builderMaterials: {
+      applyMaterials() {
+        materialRefreshes += 1;
+      },
+    },
+  });
+  const applyPaintCalls = capturePaintRoute(App, 'mirror');
+
+  const handled = tryHandleCanvasPaintClick({
+    App,
+    foundPartId: 'sketch_box_free_alpha_door_sbdr_1',
+    effectiveDoorId: 'sbdr_1',
+    foundDrawerId: null,
+    activeStack: 'top',
+    isPaintMode: true,
+    hitIdentity: {
+      targetKind: 'door',
+      partId: 'sketch_box_free_alpha_door_sbdr_1',
+      doorId: 'sbdr_1',
+      drawerId: null,
+      moduleIndex: 7,
+      moduleStack: null,
+      surfaceId: 'sketch-box:alpha:door:sbdr_1',
+      faceSign: 1,
+      faceSide: 'outside',
+      splitPart: null,
+      source: 'click',
+    },
+  } as never);
+
+  assert.equal(handled, true);
+  assert.equal(applyPaintCalls.length, 1);
+  assert.deepEqual(applyPaintCalls[0]?.[2], { source: 'paint.apply:mirror', immediate: true });
+  assert.deepEqual(applyPaintCalls[0]?.[3], {
+    sketch_box_free_alpha_door_sbdr_1: 'mirror',
+  });
+  assert.equal(Object.prototype.hasOwnProperty.call(applyPaintCalls[0]?.[3] || {}, 'sbdr_1'), false);
+  assert.deepEqual(applyPaintCalls[0]?.[4], {});
+  assert.equal(materialRefreshes, 0);
 });
 
 test('paint grouped target treats the stack-split lower carcass frame as one shell', () => {
@@ -1474,6 +1614,19 @@ test('paint command preserves sketch-box persisted special map keys beside canon
   assert.equal(command.invalidationKind, 'structuralRebuild');
 });
 
+test('paint command carries door-style target key without reusing direct special paint key rules', () => {
+  const command = createPaintCommand({
+    foundPartId: 'sketch_box_free_alpha_door_sbdr_1',
+    effectiveDoorId: 'sbdr_1',
+    paintSelection: '__wp_door_style__:flat',
+  });
+
+  assert.equal(command.mutationKind, 'doorStyle');
+  assert.equal(command.canonicalPartKey, 'sketch_box_free_alpha_door_sbdr_1');
+  assert.equal(command.doorStyleTargetKey, 'sbdr_1');
+  assert.equal(command.invalidationKind, 'structuralRebuild');
+});
+
 test('door style paint click clears full-door library glass aliases before applying post style', () => {
   const writtenMaps: Record<string, Record<string, unknown>> = {};
   const App = createApp({
@@ -1500,14 +1653,13 @@ test('door style paint click clears full-door library glass aliases before apply
     return patch;
   };
 
-  const handled = tryHandleDoorStyleOverridePaintClick({
-    App: App as never,
+  const handled = handleDoorStyleOverridePaintClick({
+    App,
     foundPartId: 'd9_full',
     effectiveDoorId: 'd9_full',
     foundDrawerId: null,
     activeStack: 'top',
     paintSelection: '__wp_door_style__:flat',
-    paintSource: 'paint.apply:doorStyle',
   });
 
   assert.equal(handled, true);
@@ -1542,14 +1694,13 @@ test('door style paint click keeps requested profile when it clears existing gla
     return patch;
   };
 
-  const handled = tryHandleDoorStyleOverridePaintClick({
-    App: App as never,
+  const handled = handleDoorStyleOverridePaintClick({
+    App,
     foundPartId: 'd10_full',
     effectiveDoorId: 'd10_full',
     foundDrawerId: null,
     activeStack: 'top',
     paintSelection: '__wp_door_style__:profile',
-    paintSource: 'paint.apply:doorStyle',
   });
 
   assert.equal(handled, true);
@@ -1583,14 +1734,13 @@ test('door style paint click materializes an inherited full-door style before re
     return patch;
   };
 
-  const handled = tryHandleDoorStyleOverridePaintClick({
-    App: App as never,
+  const handled = handleDoorStyleOverridePaintClick({
+    App,
     foundPartId: 'd9_top',
     effectiveDoorId: 'd9_top',
     foundDrawerId: null,
     activeStack: 'top',
     paintSelection: '__wp_door_style__:profile',
-    paintSource: 'paint.apply:doorStyle',
   });
 
   assert.equal(handled, true);
@@ -1620,14 +1770,13 @@ test('door style paint click materializes inherited free-box full-door style bef
     return patch;
   };
 
-  const handled = tryHandleDoorStyleOverridePaintClick({
-    App: App as never,
+  const handled = handleDoorStyleOverridePaintClick({
+    App,
     foundPartId: `${partId}_bot`,
     effectiveDoorId: `${partId}_bot`,
     foundDrawerId: null,
     activeStack: 'top',
     paintSelection: '__wp_door_style__:profile',
-    paintSource: 'paint.apply:doorStyle',
   });
 
   assert.equal(handled, true);

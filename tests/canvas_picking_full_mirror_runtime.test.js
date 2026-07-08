@@ -143,7 +143,27 @@ function createState(overrides = {}) {
 }
 
 function createCommand(canonicalPartKey, selection = 'mirror') {
-  return { canonicalPartKey, selection };
+  return {
+    selection,
+    sourceTag: selection === 'mirror' ? 'paint.apply:mirror' : 'paint.apply:color',
+    targetKind: 'door',
+    originalFoundPartId: canonicalPartKey,
+    canonicalPartKey,
+    effectiveDoorId: null,
+    doorStyleTargetKey: null,
+    drawerId: null,
+    stack: 'top',
+    targetScope: { stackSplitUnifiedFrame: false },
+    hitIdentity: null,
+    hitReferences: {
+      primaryObject: null,
+      doorObject: null,
+      primaryPoint: null,
+      doorPoint: null,
+    },
+    mutationKind: selection === 'mirror' ? 'mirror' : 'color',
+    invalidationKind: selection === 'mirror' ? 'structuralRebuild' : 'materialRefreshOnly',
+  };
 }
 
 test('full default mirror is committed on the first click even when no explicit mirror layout payload is needed', () => {

@@ -79,6 +79,8 @@ const { applyCorniceSegment } = loadTsModule(
   applyCorniceSegment: typeof import('../esm/native/builder/render_carcass_ops_cornice_apply.ts').applyCorniceSegment;
 };
 
+type PaintCommand = Parameters<typeof applyGroupedOrCornerPaintTarget>[0]['command'];
+
 type MutablePaintState = {
   colors: IndividualColorsMap;
   ensureColors: () => IndividualColorsMap;
@@ -97,13 +99,29 @@ function makePaintCommand(
   foundPartId: string,
   paintSelection: string,
   activeStack: 'top' | 'bottom' = 'top'
-) {
-  return {
-    originalFoundPartId: foundPartId,
-    stack: activeStack,
+): PaintCommand {
+  const command: PaintCommand = {
     selection: paintSelection,
+    sourceTag: 'paint.apply:group',
+    targetKind: 'module',
+    originalFoundPartId: foundPartId,
+    canonicalPartKey: foundPartId,
+    effectiveDoorId: null,
+    doorStyleTargetKey: null,
+    drawerId: null,
+    stack: activeStack,
     targetScope: { stackSplitUnifiedFrame: false },
+    hitIdentity: null,
+    hitReferences: {
+      primaryObject: null,
+      doorObject: null,
+      primaryPoint: null,
+      doorPoint: null,
+    },
+    mutationKind: 'group',
+    invalidationKind: 'materialRefreshOnly',
   };
+  return command;
 }
 
 function resolvePaintTargetKeysForAssert(partId: string, activeStack: 'top' | 'bottom'): string[] {
@@ -147,7 +165,7 @@ test('wave cornice click flow leaves fascia parts for direct per-part mutation i
 
   const handledWaveSide = applyGroupedOrCornerPaintTarget({
     state: state as never,
-    command: makePaintCommand('cornice_wave_side_left', '#222222') as never,
+    command: makePaintCommand('cornice_wave_side_left', '#222222'),
   });
 
   assert.equal(handledWaveSide, false);
@@ -155,7 +173,7 @@ test('wave cornice click flow leaves fascia parts for direct per-part mutation i
 
   const handledClassicCornice = applyGroupedOrCornerPaintTarget({
     state: state as never,
-    command: makePaintCommand('cornice_color', '#333333') as never,
+    command: makePaintCommand('cornice_color', '#333333'),
   });
 
   assert.equal(handledClassicCornice, true);

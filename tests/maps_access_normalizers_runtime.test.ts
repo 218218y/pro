@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { normalizeKnownMapSnapshot } from '../esm/native/runtime/maps_access_normalizers.ts';
+import { resolveCanvasPaintCommand } from '../esm/native/services/canvas_picking_paint_command.ts';
 import { tryHandleDoorStyleOverridePaintClick } from '../esm/native/services/canvas_picking_paint_flow_apply_door_style.ts';
 
 test('maps access normalizers keep hinge entries detached and door trim ids stable across normalizations', () => {
@@ -248,12 +249,17 @@ test('door style live writer canonicalizes decorated hit ids before storing', ()
 
   const handled = tryHandleDoorStyleOverridePaintClick({
     App: App as never,
-    foundPartId: 'd1_mid2_accent_top',
-    effectiveDoorId: 'd1_mid2_accent_top',
-    foundDrawerId: null,
-    activeStack: 'top',
-    paintSelection: '__wp_door_style__:profile',
-    paintSource: 'test:decorated-style-hit',
+    command: resolveCanvasPaintCommand(
+      {
+        App: App as never,
+        foundPartId: 'd1_mid2_accent_top',
+        effectiveDoorId: 'd1_mid2_accent_top',
+        foundDrawerId: null,
+        activeStack: 'top',
+        isPaintMode: true,
+      },
+      '__wp_door_style__:profile'
+    ),
   });
 
   assert.equal(handled, true);
