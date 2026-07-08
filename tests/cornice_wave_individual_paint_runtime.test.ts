@@ -1,11 +1,83 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import vm from 'node:vm';
+import { createRequire } from 'node:module';
 
-import { makeMaterialResolver } from '../esm/native/builder/material_resolver.ts';
-import { applyGroupedOrCornerPaintTarget } from '../esm/native/services/canvas_picking_paint_flow_apply_targets.ts';
-import { resolvePaintTargetKeys } from '../esm/native/services/canvas_picking_paint_targets.ts';
 import type { IndividualColorsMap } from '../types/maps.ts';
-import { applyCorniceSegment } from '../esm/native/builder/render_carcass_ops_cornice_apply.ts';
+
+const require = createRequire(import.meta.url);
+const ts = require('typescript');
+const moduleCache = new Map<string, { exports: Record<string, unknown> }>();
+
+function resolveTsPath(specifier: string, fromFile: string): string | null {
+  if (specifier.startsWith('.')) {
+    const resolved = path.resolve(path.dirname(fromFile), specifier);
+    const candidates = [resolved, resolved.replace(/\.js$/i, '.ts'), resolved.replace(/\.js$/i, '.js')];
+    for (const candidate of candidates) {
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
+    }
+  }
+  return null;
+}
+
+function loadTsModule(file: string): Record<string, unknown> {
+  const normalized = path.resolve(file);
+  const cached = moduleCache.get(normalized);
+  if (cached) return cached.exports;
+
+  const source = fs.readFileSync(normalized, 'utf8');
+  const transpiled = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2020,
+    },
+    fileName: normalized,
+  }).outputText;
+
+  const mod = { exports: {} as Record<string, unknown> };
+  moduleCache.set(normalized, mod);
+  const localRequire = (specifier: string) => {
+    const maybeTs = resolveTsPath(specifier, normalized);
+    if (maybeTs) return loadTsModule(maybeTs);
+    return require(specifier);
+  };
+  const sandbox = {
+    module: mod,
+    exports: mod.exports,
+    require: localRequire,
+    __dirname: path.dirname(normalized),
+    __filename: normalized,
+    console,
+    process,
+    setTimeout,
+    clearTimeout,
+  };
+  vm.runInNewContext(transpiled, sandbox, { filename: normalized });
+  return mod.exports;
+}
+
+const { makeMaterialResolver } = loadTsModule(
+  path.join(process.cwd(), 'esm/native/builder/material_resolver.ts')
+) as {
+  makeMaterialResolver: typeof import('../esm/native/builder/material_resolver.ts').makeMaterialResolver;
+};
+const { applyGroupedOrCornerPaintTarget } = loadTsModule(
+  path.join(process.cwd(), 'esm/native/services/canvas_picking_paint_flow_apply_targets.ts')
+) as {
+  applyGroupedOrCornerPaintTarget: typeof import('../esm/native/services/canvas_picking_paint_flow_apply_targets.ts').applyGroupedOrCornerPaintTarget;
+};
+const { resolvePaintTargetKeys } = loadTsModule(
+  path.join(process.cwd(), 'esm/native/services/canvas_picking_paint_targets.ts')
+) as {
+  resolvePaintTargetKeys: typeof import('../esm/native/services/canvas_picking_paint_targets.ts').resolvePaintTargetKeys;
+};
+const { applyCorniceSegment } = loadTsModule(
+  path.join(process.cwd(), 'esm/native/builder/render_carcass_ops_cornice_apply.ts')
+) as {
+  applyCorniceSegment: typeof import('../esm/native/builder/render_carcass_ops_cornice_apply.ts').applyCorniceSegment;
+};
 
 type MutablePaintState = {
   colors: IndividualColorsMap;
@@ -21,11 +93,32 @@ function makePaintState(colors: IndividualColorsMap = {}): MutablePaintState {
   };
 }
 
+function makePaintCommand(
+  foundPartId: string,
+  paintSelection: string,
+  activeStack: 'top' | 'bottom' = 'top'
+) {
+  return {
+    originalFoundPartId: foundPartId,
+    stack: activeStack,
+    selection: paintSelection,
+    targetScope: { stackSplitUnifiedFrame: false },
+  };
+}
+
+function resolvePaintTargetKeysForAssert(partId: string, activeStack: 'top' | 'bottom'): string[] {
+  return Array.from(resolvePaintTargetKeys(partId, activeStack));
+}
+
 test('main wave cornice paint targets resolve front and each side as independent fascia parts', () => {
-  assert.deepEqual(resolvePaintTargetKeys('cornice_wave_front', 'top'), ['cornice_wave_front']);
-  assert.deepEqual(resolvePaintTargetKeys('cornice_wave_side_left', 'top'), ['cornice_wave_side_left']);
-  assert.deepEqual(resolvePaintTargetKeys('cornice_wave_side_right', 'top'), ['cornice_wave_side_right']);
-  assert.deepEqual(resolvePaintTargetKeys('cornice_color', 'top'), ['cornice_color']);
+  assert.deepEqual(resolvePaintTargetKeysForAssert('cornice_wave_front', 'top'), ['cornice_wave_front']);
+  assert.deepEqual(resolvePaintTargetKeysForAssert('cornice_wave_side_left', 'top'), [
+    'cornice_wave_side_left',
+  ]);
+  assert.deepEqual(resolvePaintTargetKeysForAssert('cornice_wave_side_right', 'top'), [
+    'cornice_wave_side_right',
+  ]);
+  assert.deepEqual(resolvePaintTargetKeysForAssert('cornice_color', 'top'), ['cornice_color']);
 });
 
 test('hex-cell wave diagonal fillers inherit the main front paint part', () => {
@@ -54,9 +147,7 @@ test('wave cornice click flow leaves fascia parts for direct per-part mutation i
 
   const handledWaveSide = applyGroupedOrCornerPaintTarget({
     state: state as never,
-    foundPartId: 'cornice_wave_side_left',
-    activeStack: 'top',
-    paintSelection: '#222222',
+    command: makePaintCommand('cornice_wave_side_left', '#222222') as never,
   });
 
   assert.equal(handledWaveSide, false);
@@ -64,9 +155,7 @@ test('wave cornice click flow leaves fascia parts for direct per-part mutation i
 
   const handledClassicCornice = applyGroupedOrCornerPaintTarget({
     state: state as never,
-    foundPartId: 'cornice_color',
-    activeStack: 'top',
-    paintSelection: '#333333',
+    command: makePaintCommand('cornice_color', '#333333') as never,
   });
 
   assert.equal(handledClassicCornice, true);

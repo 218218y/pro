@@ -1373,7 +1373,7 @@
       "entry": "interior_layout_presets/api.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_paint_flow_apply.ts",
+      "file": "esm/native/services/canvas_picking_paint_command.ts",
       "entry": "door_authoring/api.js"
     },
     {
