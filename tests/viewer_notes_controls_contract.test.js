@@ -76,6 +76,10 @@ test('viewer overlay exposes notes edit and visibility controls without duplicat
   assert.match(css, /background:\s*#eff6ff;/);
   assert.match(
     css,
+    /body\.wp-ui-react \.wp-viewer-notes-controls \.hint-bottom:hover,[\s\S]*?body\.wp-ui-react \.wp-viewer-notes-controls \.hint-bottom:focus-visible \{[\s\S]*?z-index:\s*var\(--wp-z-tooltip\);/
+  );
+  assert.match(
+    css,
     /body\.wp-ui-react \.wp-viewer-note-eye \{[\s\S]*?left:\s*-6px;[\s\S]*?right:\s*auto;[\s\S]*?bottom:\s*2px;[\s\S]*?width:\s*20px;[\s\S]*?height:\s*20px;[\s\S]*?box-sizing:\s*border-box;[\s\S]*?padding:\s*0;/
   );
   assert.match(css, /body\.wp-ui-react \.hint-bottom \{[\s\S]*?position:\s*relative;/);

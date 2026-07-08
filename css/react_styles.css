@@ -4357,6 +4357,11 @@ body.wp-ui-react .wp-viewer-measurement-mode-menu {
   pointer-events: auto;
 }
 
+body.wp-ui-react .wp-viewer-notes-controls .hint-bottom:hover,
+body.wp-ui-react .wp-viewer-notes-controls .hint-bottom:focus-visible {
+  z-index: var(--wp-z-tooltip);
+}
+
 body.wp-ui-react .cam-btn.wp-viewer-measurement-mode-btn {
   width: 42px;
   min-width: 42px;

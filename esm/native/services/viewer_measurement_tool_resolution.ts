@@ -94,12 +94,21 @@ function isShelfLikeObject(value: unknown): boolean {
   return isShelfLikeUserData(readUserData(value));
 }
 
+function hasDirectMeasurableAncestor(value: unknown): boolean {
+  let current = asMeasurableObject(value);
+  while (current) {
+    if (hasDirectMeasurableUserData(readUserData(current))) return true;
+    current = asMeasurableObject(current.parent);
+  }
+  return false;
+}
+
 function hasCavityBackgroundTarget(value: unknown): boolean {
   const ud = readUserData(value);
-  if (!ud) return true;
   if (isBackPanelLike(value)) return true;
-  if (ud.isModuleSelector) return true;
-  return !hasDirectMeasurableUserData(ud);
+  if (ud?.isModuleSelector) return true;
+  if (hasDirectMeasurableUserData(ud)) return false;
+  return !hasDirectMeasurableAncestor(value);
 }
 
 function sameModuleKey(a: unknown, b: unknown): boolean {
@@ -449,6 +458,7 @@ function targetKeyForHit(hitState: CanvasPickingClickHitState, target: unknown):
     ud?.surfaceId,
     ud?.drawerId,
     ud?.moduleIndex,
+    readNearestTargetIdentity(target),
     identity?.partId,
     identity?.doorId,
     identity?.drawerId,
@@ -526,8 +536,57 @@ function findModuleSelectorTarget(hitState: CanvasPickingClickHitState): unknown
   return null;
 }
 
+function partIdMatchesDoorCandidate(partId: string | null, doorId: string | null): boolean {
+  if (!partId || !doorId) return false;
+  return partId === doorId;
+}
+
+function readDoorOwnerMetadata(userData: UnknownRecord | null): { width: number; height: number } | null {
+  const width = readFiniteNumber(userData, '__doorWidth');
+  const height = readFiniteNumber(userData, '__doorHeight');
+  if (width == null || height == null) return null;
+  if (!(width > MIN_MEASURABLE_EDGE_M && height > MIN_MEASURABLE_EDGE_M)) return null;
+  return { width, height };
+}
+
+function findDoorMeasurementBranch(start: unknown, doorId: string | null): unknown | null {
+  const first = asMeasurableObject(start);
+  if (!first || !doorId) return null;
+
+  let current: MeasurableObject | null = first;
+  let childBelowCurrent: MeasurableObject | null = null;
+  while (current) {
+    const ud = readUserData(current);
+    const partId = readPartIdFromUserData(ud);
+    if (partIdMatchesDoorCandidate(partId, doorId) && readDoorOwnerMetadata(ud)) {
+      return childBelowCurrent || current;
+    }
+    childBelowCurrent = current;
+    current = asMeasurableObject(current.parent);
+  }
+
+  return null;
+}
+
+function resolveDoorMeasurementTarget(start: unknown, doorId: string | null): unknown | null {
+  return findDoorMeasurementBranch(start, doorId) || start || null;
+}
+
+function readNearestTargetIdentity(value: unknown): string | null {
+  let current = asMeasurableObject(value);
+  while (current) {
+    const ud = readUserData(current);
+    const raw = ud?.partId ?? ud?.pid ?? ud?.surfaceId ?? ud?.drawerId;
+    if (raw != null && String(raw).trim()) return String(raw).trim();
+    current = asMeasurableObject(current.parent);
+  }
+  return null;
+}
+
 function findNearestDirectPartTarget(hitState: CanvasPickingClickHitState): unknown | null {
-  if (hitState.doorHitGroup) return hitState.doorHitGroup;
+  if (hitState.doorHitGroup) {
+    return resolveDoorMeasurementTarget(hitState.doorHitGroup, hitState.effectiveDoorId ?? null);
+  }
 
   for (let i = 0; i < hitState.intersects.length; i += 1) {
     const hitObj = asMeasurableObject(hitState.intersects[i]?.object);
@@ -546,7 +605,11 @@ function findNearestDirectPartTarget(hitState: CanvasPickingClickHitState): unkn
     if (isBackPanelLike(taggedOwner)) continue;
 
     const partId = readObjectPartId(taggedOwner);
-    if (partId && (__wp_isDoorOrDrawerLikePartId(partId) || isShelfBoardPartId(partId))) {
+    if (partId && __wp_isDoorOrDrawerLikePartId(partId)) {
+      return resolveDoorMeasurementTarget(taggedOwner, partId);
+    }
+
+    if (partId && isShelfBoardPartId(partId)) {
       return taggedOwner;
     }
 

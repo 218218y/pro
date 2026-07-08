@@ -24,10 +24,63 @@ class FakeVector3 {
   }
 }
 
+function readFakeNumber(value: unknown, key: string): number | null {
+  const rec = value && typeof value === 'object' ? (value as Record<string, unknown>) : null;
+  const raw = rec ? rec[key] : null;
+  return typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
+}
+
+function readFakeWorldPosition(node: any): { x: number; y: number; z: number } {
+  let x = 0;
+  let y = 0;
+  let z = 0;
+  let current: any = node;
+  while (current) {
+    x += readFakeNumber(current.position, 'x') ?? 0;
+    y += readFakeNumber(current.position, 'y') ?? 0;
+    z += readFakeNumber(current.position, 'z') ?? 0;
+    current = current.parent || null;
+  }
+  return { x, y, z };
+}
+
+class FakeBox3 {
+  min = new FakeVector3(Infinity, Infinity, Infinity);
+  max = new FakeVector3(-Infinity, -Infinity, -Infinity);
+
+  setFromObject(obj: any) {
+    let found = false;
+    const visit = (node: any) => {
+      if (!node || node.visible === false) return;
+      const params = node.geometry?.parameters;
+      const width = readFakeNumber(params, 'width');
+      const height = readFakeNumber(params, 'height');
+      const depth = readFakeNumber(params, 'depth');
+      if (width != null && height != null && depth != null && width > 0 && height > 0 && depth > 0) {
+        const center = readFakeWorldPosition(node);
+        this.min.x = Math.min(this.min.x, center.x - width / 2);
+        this.max.x = Math.max(this.max.x, center.x + width / 2);
+        this.min.y = Math.min(this.min.y, center.y - height / 2);
+        this.max.y = Math.max(this.max.y, center.y + height / 2);
+        this.min.z = Math.min(this.min.z, center.z - depth / 2);
+        this.max.z = Math.max(this.max.z, center.z + depth / 2);
+        found = true;
+      }
+      for (const child of node.children || []) visit(child);
+    };
+    visit(obj);
+    if (!found) {
+      this.min = new FakeVector3(0, 0, 0);
+      this.max = new FakeVector3(0, 0, 0);
+    }
+    return this;
+  }
+}
+
 function createFakeThree() {
   return {
     Vector3: FakeVector3,
-    Box3: function FakeBox3() {},
+    Box3: FakeBox3,
   };
 }
 
@@ -336,6 +389,111 @@ test('resolveViewerMeasurementResolution ignores hidden shelves as cavity bounda
   assert.equal(resolution.shouldMeasureInterior, true);
   assertClose(resolution.box.centerY, 1);
   assertClose(resolution.box.height, 2);
+});
+
+test('resolveViewerMeasurementResolution measures profile door visual branches as one complete door face', () => {
+  const App = createApp();
+  const THREE = App.deps.THREE;
+  const wardrobeGroup = createGroup();
+  const doorGroup = createGroup({
+    partId: 'd1_full',
+    __doorWidth: 0.7,
+    __doorHeight: 2,
+    __doorMeshOffsetX: 0,
+  });
+  const profileVisual = createGroup();
+  const centerPanel = createMesh({
+    width: 0.42,
+    height: 1.72,
+    depth: 0.012,
+    z: -0.004,
+    userData: { partId: 'd1_full', __doorVisualRole: 'door_profile_center_panel' },
+  });
+  const leftRail = createMesh({
+    width: 0.14,
+    height: 2,
+    depth: 0.02,
+    x: -0.28,
+    userData: { partId: 'd1_full', __doorVisualRole: 'door_profile_outer_left' },
+  });
+  const rightRail = createMesh({
+    width: 0.14,
+    height: 2,
+    depth: 0.02,
+    x: 0.28,
+    userData: { partId: 'd1_full', __doorVisualRole: 'door_profile_outer_right' },
+  });
+  const topRail = createMesh({
+    width: 0.7,
+    height: 0.14,
+    depth: 0.02,
+    y: 0.93,
+    userData: { partId: 'd1_full', __doorVisualRole: 'door_profile_outer_top' },
+  });
+  const bottomRail = createMesh({
+    width: 0.7,
+    height: 0.14,
+    depth: 0.02,
+    y: -0.93,
+    userData: { partId: 'd1_full', __doorVisualRole: 'door_profile_outer_bottom' },
+  });
+  profileVisual.add(centerPanel);
+  profileVisual.add(leftRail);
+  profileVisual.add(rightRail);
+  profileVisual.add(topRail);
+  profileVisual.add(bottomRail);
+  doorGroup.add(profileVisual);
+  wardrobeGroup.add(doorGroup);
+
+  const selector = createMesh({
+    width: 0.44,
+    height: 1.4,
+    depth: 0.3,
+    y: 0.3,
+    userData: { isModuleSelector: true, moduleIndex: 0 },
+  });
+  wardrobeGroup.add(selector);
+  App.services.runtimeCache.internalGridMap['0'] = {
+    effectiveBottomY: -0.4,
+    effectiveTopY: 1,
+    innerW: 0.44,
+    internalCenterX: 0,
+    internalDepth: 0.3,
+    internalZ: -0.2,
+    woodThick: 0.04,
+  };
+
+  const hitPoint = { x: 0, y: 0, z: -0.01 };
+  const resolution = resolveViewerMeasurementResolution({
+    App,
+    THREE,
+    hitState: {
+      ...makeHitState({
+        target: centerPanel,
+        intersects: [
+          { object: centerPanel, point: hitPoint },
+          { object: selector, point: hitPoint },
+        ],
+        hitIdentity: { partId: 'd1_full', doorId: 'd1_full' },
+        moduleIndex: 0,
+        point: hitPoint,
+      }),
+      effectiveDoorId: 'd1_full',
+      doorHitObject: centerPanel,
+      doorHitGroup: centerPanel,
+      doorHitPoint: hitPoint,
+      doorHitY: 0,
+    } as any,
+    wardrobeGroup: wardrobeGroup as any,
+  });
+
+  assert.ok(resolution);
+  assert.equal(resolution.shouldMeasureInterior, false);
+  assert.equal(resolution.target, profileVisual);
+  assert.equal(resolution.targetKey, 'd1_full');
+  assertClose(resolution.box.width, 0.7);
+  assertClose(resolution.box.height, 2);
+  assertClose(resolution.box.depth, 0.02);
 });
 
 test('resolveViewerMeasurementResolution returns a basis plane for corner pentagon doors', () => {
