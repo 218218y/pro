@@ -705,10 +705,10 @@ function summarize(results) {
 }
 
 function formatStatusIcon(status) {
-  if (status === 'passed') return '✅';
-  if (status === 'environment-blocked') return '⚠️';
-  if (status === 'runner-blocked') return '🟡';
-  return '❌';
+  if (status === 'passed') return '[PASS]';
+  if (status === 'environment-blocked') return '[ENV-BLOCKED]';
+  if (status === 'runner-blocked') return '[RUNNER-BLOCKED]';
+  return '[FAIL]';
 }
 
 function formatLaneResultMd(result) {
@@ -733,7 +733,7 @@ function formatLaneResultMd(result) {
   }
   if (result.stderr) lines.push('', '#### stderr', '', '```text', result.stderr, '```');
   if (result.stdout) lines.push('', '#### stdout', '', '```text', result.stdout, '```');
-  return lines.join('\n');
+  return lines.join('\n').replace(/\n+$/u, '\n');
 }
 
 function buildMarkdownReport(payload) {
@@ -763,18 +763,18 @@ function buildMarkdownReport(payload) {
     '## Interpretation',
     '',
     payload.summary.failed === 0 && payload.summary.runnerBlocked === 0
-      ? 'כל ה־lanes שנבחרו לריצת closeout עברו או נחסמו סביבתית בלבד. כלומר אין כאן כשל verify פעיל ברמת הקוד בתוך סט הסגירה הזה.'
+      ? 'All selected closeout lanes passed, or were environment-blocked only. There is no active code-level verification failure in this closeout set.'
       : payload.summary.failed > 0
-        ? 'יש לפחות lane אחד שנכשל ברמת verify/command, ולכן הסגירה הזו עדיין לא מלאה.'
-        : 'לא נצפה כשל קוד ישיר, אבל לפחות lane אחד נחסם ברמת runner/sandbox ולכן עדיין אין סגירה מלאה.',
+        ? 'At least one lane failed at the verify/command level, so this closeout is not complete yet.'
+        : 'No direct code failure was observed, but at least one lane was runner-blocked, so this is not a clean closeout.',
     '',
     payload.summary.environmentBlocked > 0
-      ? 'יש גם lane אחד לפחות שנחסם סביבתית; הוא לא נספר ככשל קוד, אבל כן נשאר פתוח לסביבה מלאה עם browser/רשת זמינים.'
-      : 'לא זוהו חסימות סביבתיות בריצת closeout הזו.',
+      ? 'At least one lane was environment-blocked. It is not counted as a code failure, but still needs a fully provisioned environment.'
+      : 'No environment blockers were detected in this closeout run.',
     '',
     payload.summary.runnerBlocked > 0
-      ? 'יש גם lane אחד לפחות שנחסם ברמת wrapper/runner/sandbox. זה לא נספר ככשל קוד ישיר, אבל גם לא נסגר כמעבר אמיתי.'
-      : 'לא זוהו חסימות runner בריצת closeout הזו.',
+      ? 'At least one lane was blocked by the wrapper/runner/sandbox. It is not a direct code failure, but it is not a real pass either.'
+      : 'No runner blockers were detected in this closeout run.',
     '',
     '## Lane results',
     ''
@@ -788,7 +788,7 @@ function writeReports(payload, reportPaths = {}) {
   const mdPath = reportPaths.mdPath || REPORT_MD_PATH;
   ensureDirFor(jsonPath);
   fs.writeFileSync(jsonPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
-  fs.writeFileSync(mdPath, `${buildMarkdownReport(payload)}\n`, 'utf8');
+  fs.writeFileSync(mdPath, buildMarkdownReport(payload), 'utf8');
 }
 
 module.exports = {
