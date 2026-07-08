@@ -42,9 +42,12 @@ test('canvas picking paint writes use dedicated structural and material-refresh 
     paintApplyDoorStyle,
     /import \{ createCanvasPickingPaintStructuralMeta \} from '\.\/canvas_picking_paint_meta\.js';/
   );
+  assert.match(paintApplyDoorStyle, /type ResolvedCanvasPaintCommand/);
+  assert.match(paintApplyDoorStyle, /command: ResolvedCanvasPaintCommand;/);
   assert.match(
     paintApplyDoorStyle,
-    /const baseMeta = createCanvasPickingPaintStructuralMeta\(args\.paintSource\);/
+    /const baseMeta = createCanvasPickingPaintStructuralMeta\(args\.command\.sourceTag\);/
   );
+  assert.doesNotMatch(paintApplyDoorStyle, /args\.paintSource/);
   assert.doesNotMatch(paintApplyDoorStyle, /createImmediateMeta/);
 });
