@@ -25,6 +25,27 @@ test('release clean audit accepts a minimal production release directory', () =>
   assert.deepEqual(collectReleaseCleanIssues({ root, dirs: ['dist/release'] }), []);
 });
 
+test('release clean audit catches scheduler debug instrumentation in release JavaScript', () => {
+  const root = tempDir();
+  const releaseDir = path.join(root, 'dist', 'release');
+  fs.mkdirSync(releaseDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(releaseDir, 'wardrobepro.bundle.js'),
+    'console.log("executeDurationSamplesMs", "scheduler_debug_stats_recorders");\n',
+    'utf8'
+  );
+
+  const issues = collectReleaseCleanIssues({
+    root,
+    dirs: ['dist/release'],
+    observability: true,
+  });
+  const report = formatReleaseCleanIssues(issues);
+
+  assert.match(report, /scheduler debug stats recorders module/);
+  assert.match(report, /build execution duration sample field/);
+});
+
 test('release clean audit catches test folders, test files, and test-only text references', () => {
   const root = tempDir();
   const releaseDir = path.join(root, 'dist', 'release');
@@ -44,16 +65,28 @@ test('release clean audit catches test folders, test files, and test-only text r
   assert.match(report, /__WP_TEST_/);
 });
 
-test('release clean audit reports missing release directories and parses multiple dirs', () => {
+test('release clean audit reports missing required release directories and skips missing optional dirs', () => {
   const root = tempDir();
-  const parsed = parseReleaseCleanAuditArgs(['--dirs', 'dist/release,dist/site2/release']);
+  const parsed = parseReleaseCleanAuditArgs([
+    '--dirs',
+    'dist/release',
+    '--optional-dirs',
+    'dist/site2/release',
+    '--observability',
+  ]);
 
-  assert.deepEqual(parsed.dirs, ['dist/release', 'dist/site2/release']);
-  const issues = collectReleaseCleanIssues({ root, dirs: parsed.dirs });
+  assert.deepEqual(parsed.dirs, ['dist/release']);
+  assert.deepEqual(parsed.optionalDirs, ['dist/site2/release']);
+  assert.equal(parsed.observability, true);
+  const issues = collectReleaseCleanIssues({
+    root,
+    dirs: parsed.dirs,
+    optionalDirs: parsed.optionalDirs,
+  });
 
-  assert.equal(issues.length, 2);
+  assert.equal(issues.length, 1);
   assert.deepEqual(
     issues.map(issue => issue.type),
-    ['missing-dir', 'missing-dir']
+    ['missing-dir']
   );
 });

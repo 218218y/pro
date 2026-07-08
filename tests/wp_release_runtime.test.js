@@ -371,7 +371,11 @@ test('package release scripts keep client mode explicit for shipped site bundles
   assert.match(pkg.scripts['release:site2'], /--build-mode client/);
   assert.equal(
     pkg.scripts['check:release-clean'],
-    'node tools/wp_release_clean_audit.mjs --dirs dist/release,dist/site2/release'
+    'node tools/wp_release_clean_audit.mjs --dirs dist/release --optional-dirs dist/site2/release'
+  );
+  assert.equal(
+    pkg.scripts['check:release-observability-clean'],
+    'node tools/wp_release_clean_audit.mjs --dirs dist/release --optional-dirs dist/site2/release --observability'
   );
   assert.equal(pkg.scripts.bundle, 'npm run release:release');
   assert.equal(pkg.scripts['bundle:site2'], 'npm run release:site2');

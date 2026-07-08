@@ -13,6 +13,14 @@ import {
   MAX_BUILD_DURATION_SAMPLES,
   recordBuildExecuteDuration,
 } from '../esm/native/builder/scheduler_debug_stats.ts';
+import {
+  createBuildDebugStats as createProdBuildDebugStats,
+  hasRepeatedExecuteSignature as hasProdRepeatedExecuteSignature,
+  isBuildDebugStatsEnabled as isProdBuildDebugStatsEnabled,
+  recordBuildExecute as recordProdBuildExecute,
+  recordBuildExecuteDuration as recordProdBuildExecuteDuration,
+  summarizeBuildDebugBudget as summarizeProdBuildDebugBudget,
+} from '../esm/native/builder/scheduler_debug_stats_prod.ts';
 
 type BuildFlagGlobals = typeof globalThis & {
   __WP_BUILD_CLIENT__?: boolean;
@@ -267,6 +275,43 @@ test('builder scheduler runtime: client build keeps debug stats no-op without cr
     recordBuildExecuteDuration(state, 'client:direct-duration', true, true, 25, 'ok');
     assert.equal(state.debugStats, undefined);
     assert.deepEqual(getBuildDebugStats(harness.App).executeDurationSamplesMs, []);
+  });
+});
+
+test('builder scheduler runtime: prod debug stats implementation stays minimal while preserving execution signature', () => {
+  const state: any = { lastExecutedSignature: null };
+  const buildState: any = {
+    ui: { panel: 'demo' },
+    config: {},
+    runtime: {},
+    mode: {},
+    meta: {},
+    build: { signature: 'sig:prod-stats' },
+  };
+
+  assert.equal(isProdBuildDebugStatsEnabled(), false);
+  assert.deepEqual(createProdBuildDebugStats(), { reasons: {} });
+
+  const reason = recordProdBuildExecute(state, '  prod:execute  ', true, false, buildState, 123, null);
+  assert.equal(reason, 'prod:execute');
+  assert.equal(hasProdRepeatedExecuteSignature(state, buildState), true);
+  assert.equal(state.debugStats, undefined);
+
+  recordProdBuildExecuteDuration(state, 'prod:execute', true, false, 50, 'ok');
+  assert.equal(state.debugStats, undefined);
+  assert.deepEqual(summarizeProdBuildDebugBudget(null), {
+    requestCount: 0,
+    executeCount: 0,
+    suppressedRequestCount: 0,
+    suppressedExecuteCount: 0,
+    duplicatePendingRate: 0,
+    noOpRequestRate: 0,
+    noOpExecuteRate: 0,
+    debouncedScheduleCount: 0,
+    reusedDebouncedScheduleCount: 0,
+    builderWaitScheduleCount: 0,
+    staleWakeupCount: 0,
+    debouncedScheduleReuseRate: 0,
   });
 });
 

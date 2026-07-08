@@ -121,7 +121,18 @@ test('bundle build config keeps strict entry signatures and named chunk policy',
 
   const aliasKey = path.join('/repo', 'dist', 'esm', 'native', 'runtime', 'observability_surface.js');
   const aliasTarget = path.join('/repo', 'dist', 'esm', 'native', 'runtime', 'observability_surface_prod.js');
+  const statsAliasKey = path.join('/repo', 'dist', 'esm', 'native', 'builder', 'scheduler_debug_stats.js');
+  const statsAliasTarget = path.join(
+    '/repo',
+    'dist',
+    'esm',
+    'native',
+    'builder',
+    'scheduler_debug_stats_prod.js'
+  );
   assert.equal(cfg.resolve.alias[aliasKey], aliasTarget);
+  assert.equal(cfg.resolve.alias[statsAliasKey], statsAliasTarget);
+  assert.equal(cfg.resolve.alias['./scheduler_debug_stats.js'], statsAliasTarget);
   assert.equal(cfg.define.__WP_BUILD_CLIENT__, 'true');
   assert.equal(cfg.define.__WP_BUILD_PERF__, 'false');
   assert.equal(cfg.build.copyPublicDir, false);
@@ -129,6 +140,29 @@ test('bundle build config keeps strict entry signatures and named chunk policy',
   assert.equal(cfg.build.rolldownOptions.output.entryFileNames, 'wardrobepro.bundle.js');
   assert.equal(cfg.build.rolldownOptions.output.chunkFileNames, 'wardrobepro.chunk-[name].js');
   assert.equal(cfg.build.rolldownOptions.treeshake.moduleSideEffects, false);
+});
+
+test('bundle build config maps scheduler debug stats to full implementation outside client mode', () => {
+  const cfg = createBundleBuildConfig({
+    root: '/repo',
+    entryAbs: '/repo/dist/esm/release_main.js',
+    tmpDirAbs: '/tmp/wp-bundle',
+    args: { sourcemap: false, minify: true, buildMode: 'perf' },
+  });
+
+  const statsAliasKey = path.join('/repo', 'dist', 'esm', 'native', 'builder', 'scheduler_debug_stats.js');
+  const statsAliasTarget = path.join(
+    '/repo',
+    'dist',
+    'esm',
+    'native',
+    'builder',
+    'scheduler_debug_stats_full.js'
+  );
+  assert.equal(cfg.resolve.alias[statsAliasKey], statsAliasTarget);
+  assert.equal(cfg.resolve.alias['./scheduler_debug_stats.js'], statsAliasTarget);
+  assert.equal(cfg.define.__WP_BUILD_CLIENT__, 'false');
+  assert.equal(cfg.define.__WP_BUILD_PERF__, 'true');
 });
 
 test('bundle emit writes build-mode marker next to the entry bundle', () => {

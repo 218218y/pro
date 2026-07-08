@@ -12,6 +12,8 @@ function lineCount(source) {
 
 test('stage 44 scheduler debug stats ownership split is anchored', () => {
   const facade = read('esm/native/builder/scheduler_debug_stats.ts');
+  const full = read('esm/native/builder/scheduler_debug_stats_full.ts');
+  const prod = read('esm/native/builder/scheduler_debug_stats_prod.ts');
   const reasonStore = read('esm/native/builder/scheduler_debug_stats_reason_store.ts');
   const signaturePolicy = read('esm/native/builder/scheduler_debug_stats_signature_policy.ts');
   const recorders = read('esm/native/builder/scheduler_debug_stats_recorders.ts');
@@ -19,8 +21,14 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
   const schedulerRuntime = read('esm/native/builder/scheduler_runtime.ts');
 
   assert.ok(
-    lineCount(facade) <= 60,
-    'scheduler_debug_stats.ts must stay a small public facade instead of regrowing implementation logic'
+    lineCount(facade) <= 10,
+    'scheduler_debug_stats.ts must stay a tiny canonical facade instead of importing implementation owners directly'
+  );
+  assert.ok(facade.includes("export * from './scheduler_debug_stats_full.js';"));
+
+  assert.ok(
+    lineCount(full) <= 60,
+    'scheduler_debug_stats_full.ts must stay a small full-instrumentation facade over focused owners'
   );
 
   for (const modulePath of [
@@ -29,7 +37,7 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
     './scheduler_debug_stats_recorders.js',
     './scheduler_debug_stats_budget.js',
   ]) {
-    assert.ok(facade.includes(modulePath), `scheduler debug facade must delegate to ${modulePath}`);
+    assert.ok(full.includes(modulePath), `scheduler debug full facade must delegate to ${modulePath}`);
   }
 
   for (const publicExport of [
@@ -50,8 +58,8 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
     'summarizeBuildDebugBudget',
   ]) {
     assert.ok(
-      facade.includes(publicExport),
-      `scheduler debug facade must keep public export ${publicExport}`
+      full.includes(publicExport),
+      `scheduler debug full facade must keep public export ${publicExport}`
     );
   }
 
@@ -65,6 +73,38 @@ test('stage 44 scheduler debug stats ownership split is anchored', () => {
       facade.includes(internalNeedle),
       false,
       `scheduler debug facade must not own internal implementation detail ${internalNeedle}`
+    );
+    assert.equal(
+      full.includes(internalNeedle),
+      false,
+      `scheduler debug full facade must not own internal implementation detail ${internalNeedle}`
+    );
+  }
+
+  assert.ok(
+    prod.includes("from './scheduler_debug_stats_signature_policy.js';"),
+    'prod scheduler stats must keep production signature/suppression policy'
+  );
+  assert.ok(
+    prod.includes('state.lastExecutedSignature = readExecutionSignature(plan, buildState);'),
+    'prod recordBuildExecute must preserve repeated-execute suppression signatures'
+  );
+  for (const forbiddenProdNeedle of [
+    './scheduler_debug_stats_reason_store.js',
+    './scheduler_debug_stats_recorders.js',
+    './scheduler_debug_stats_budget.js',
+    'getReasonStats',
+    'executeDurationSamplesMs',
+    'executeDurationAvgMs',
+    'executeDurationP95Ms',
+    'forceRequestCount',
+    'performance.now',
+    'Date.now',
+  ]) {
+    assert.equal(
+      prod.includes(forbiddenProdNeedle),
+      false,
+      `prod scheduler stats must not retain instrumentation detail ${forbiddenProdNeedle}`
     );
   }
 

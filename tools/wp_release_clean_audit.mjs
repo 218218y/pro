@@ -26,7 +26,7 @@ const FORBIDDEN_FILE_PATTERNS = [
   { re: /^package(?:-lock)?\.json$/i, reason: 'package manager metadata' },
 ];
 
-const TEXT_FILE_RE = /\.(?:css|html|js|json|mjs|txt)$/i;
+const TEXT_FILE_RE = /\.(?:css|html|js|json|mjs|txt|map)$/i;
 
 const FORBIDDEN_TEXT_NEEDLES = [
   { needle: '@playwright/test', reason: 'Playwright dependency reference' },
@@ -34,6 +34,35 @@ const FORBIDDEN_TEXT_NEEDLES = [
   { needle: 'tests/e2e/', reason: 'E2E helper path reference' },
   { needle: 'tests\\e2e\\', reason: 'E2E helper path reference' },
   { needle: '__WP_TEST_', reason: 'test-only browser hook' },
+];
+
+const FORBIDDEN_OBSERVABILITY_TEXT_NEEDLES = [
+  { needle: 'scheduler_debug_stats_reason_store', reason: 'scheduler debug stats reason-store module' },
+  { needle: 'scheduler_debug_stats_recorders', reason: 'scheduler debug stats recorders module' },
+  { needle: 'scheduler_debug_stats_budget', reason: 'scheduler debug stats budget module' },
+  { needle: 'executeDurationSamplesMs', reason: 'build execution duration sample field' },
+  {
+    needle: 'executeImmediateDurationSamplesMs',
+    reason: 'build execution immediate duration sample field',
+  },
+  {
+    needle: 'executeDebouncedDurationSamplesMs',
+    reason: 'build execution debounced duration sample field',
+  },
+  { needle: 'executeForceDurationSamplesMs', reason: 'build execution force duration sample field' },
+  {
+    needle: 'executeNonForceDurationSamplesMs',
+    reason: 'build execution non-force duration sample field',
+  },
+  { needle: 'executeDurationAvgMs', reason: 'build execution duration average field' },
+  { needle: 'executeDurationP95Ms', reason: 'build execution duration p95 field' },
+  { needle: 'forceRequestCount', reason: 'scheduler debug request counter field' },
+  { needle: 'Build execution duration', reason: 'browser perf build-duration report text' },
+  {
+    needle: 'Slow build reasons by execution duration',
+    reason: 'browser perf slow-build report text',
+  },
+  { needle: 'recordBuildExecuteDuration', reason: 'build execution duration recorder' },
 ];
 
 function normalizeSlash(value) {
@@ -70,7 +99,7 @@ function checkFileName(fileName) {
   return '';
 }
 
-function checkTextFile(fileAbs) {
+function checkTextFile(fileAbs, { observability = false } = {}) {
   if (!TEXT_FILE_RE.test(fileAbs)) return [];
   let text = '';
   try {
@@ -78,12 +107,15 @@ function checkTextFile(fileAbs) {
   } catch {
     return [];
   }
-  return FORBIDDEN_TEXT_NEEDLES.filter(({ needle }) => text.includes(needle)).map(
-    ({ reason, needle }) => `${reason}: ${needle}`
-  );
+  const needles = observability
+    ? [...FORBIDDEN_TEXT_NEEDLES, ...FORBIDDEN_OBSERVABILITY_TEXT_NEEDLES]
+    : FORBIDDEN_TEXT_NEEDLES;
+  return needles
+    .filter(({ needle }) => text.includes(needle))
+    .map(({ reason, needle }) => `${reason}: ${needle}`);
 }
 
-function collectDirIssues(dirAbs) {
+function collectDirIssues(dirAbs, options = {}) {
   const issues = [];
   const stack = [dirAbs];
 
@@ -117,7 +149,7 @@ function collectDirIssues(dirAbs) {
         issues.push(createIssue('forbidden-file', dirAbs, abs, fileNameReason));
       }
 
-      for (const textReason of checkTextFile(abs)) {
+      for (const textReason of checkTextFile(abs, options)) {
         issues.push(createIssue('forbidden-text', dirAbs, abs, textReason));
       }
     }
@@ -126,18 +158,47 @@ function collectDirIssues(dirAbs) {
   return issues;
 }
 
-export function collectReleaseCleanIssues({ root = process.cwd(), dirs = DEFAULT_RELEASE_DIRS } = {}) {
+function normalizeDirList(dirs, fallback = DEFAULT_RELEASE_DIRS) {
+  const required = [];
+  const optional = [];
+  const input = Array.isArray(dirs) && dirs.length ? dirs : fallback;
+  for (const dir of input) {
+    const raw = String(dir || '').trim();
+    if (!raw) continue;
+    if (raw.startsWith('?')) {
+      const next = raw.slice(1).trim();
+      if (next) optional.push(next);
+      continue;
+    }
+    required.push(raw);
+  }
+  return { required, optional };
+}
+
+export function collectReleaseCleanIssues({
+  root = process.cwd(),
+  dirs = DEFAULT_RELEASE_DIRS,
+  optionalDirs = [],
+  observability = false,
+} = {}) {
   const rootAbs = path.resolve(root);
-  const releaseDirs = Array.isArray(dirs) && dirs.length ? dirs : DEFAULT_RELEASE_DIRS;
+  const releaseDirs = normalizeDirList(dirs);
+  const optionalReleaseDirs = normalizeDirList(optionalDirs, []).required.concat(releaseDirs.optional);
   const issues = [];
 
-  for (const dir of releaseDirs) {
+  for (const dir of releaseDirs.required) {
     const dirAbs = resolveUnderRoot(rootAbs, dir);
     if (!fs.existsSync(dirAbs)) {
       issues.push(createIssue('missing-dir', dirAbs, dirAbs, 'release directory is missing'));
       continue;
     }
-    issues.push(...collectDirIssues(dirAbs));
+    issues.push(...collectDirIssues(dirAbs, { observability }));
+  }
+
+  for (const dir of optionalReleaseDirs) {
+    const dirAbs = resolveUnderRoot(rootAbs, dir);
+    if (!fs.existsSync(dirAbs)) continue;
+    issues.push(...collectDirIssues(dirAbs, { observability }));
   }
 
   return issues;
@@ -145,6 +206,8 @@ export function collectReleaseCleanIssues({ root = process.cwd(), dirs = DEFAULT
 
 export function parseReleaseCleanAuditArgs(argv = []) {
   const dirs = [];
+  const optionalDirs = [];
+  let observability = false;
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if ((arg === '--dir' || arg === '--dirs') && argv[i + 1]) {
@@ -152,6 +215,14 @@ export function parseReleaseCleanAuditArgs(argv = []) {
       for (const item of raw.split(',')) {
         const trimmed = item.trim();
         if (trimmed) dirs.push(trimmed);
+      }
+      continue;
+    }
+    if ((arg === '--optional-dir' || arg === '--optional-dirs') && argv[i + 1]) {
+      const raw = String(argv[++i] || '');
+      for (const item of raw.split(',')) {
+        const trimmed = item.trim();
+        if (trimmed) optionalDirs.push(trimmed);
       }
       continue;
     }
@@ -169,9 +240,27 @@ export function parseReleaseCleanAuditArgs(argv = []) {
         const trimmed = item.trim();
         if (trimmed) dirs.push(trimmed);
       }
+      continue;
     }
+    if (arg.startsWith('--optional-dir=')) {
+      const raw = arg.slice('--optional-dir='.length);
+      for (const item of raw.split(',')) {
+        const trimmed = item.trim();
+        if (trimmed) optionalDirs.push(trimmed);
+      }
+      continue;
+    }
+    if (arg.startsWith('--optional-dirs=')) {
+      const raw = arg.slice('--optional-dirs='.length);
+      for (const item of raw.split(',')) {
+        const trimmed = item.trim();
+        if (trimmed) optionalDirs.push(trimmed);
+      }
+      continue;
+    }
+    if (arg === '--observability') observability = true;
   }
-  return { dirs: dirs.length ? dirs : DEFAULT_RELEASE_DIRS };
+  return { dirs: dirs.length ? dirs : DEFAULT_RELEASE_DIRS, optionalDirs, observability };
 }
 
 export function formatReleaseCleanIssues(issues) {
@@ -185,7 +274,11 @@ export function formatReleaseCleanIssues(issues) {
 
 function main() {
   const args = parseReleaseCleanAuditArgs(process.argv.slice(2));
-  const issues = collectReleaseCleanIssues({ dirs: args.dirs });
+  const issues = collectReleaseCleanIssues({
+    dirs: args.dirs,
+    optionalDirs: args.optionalDirs,
+    observability: args.observability,
+  });
   const message = formatReleaseCleanIssues(issues);
   if (issues.length) {
     console.error(message);

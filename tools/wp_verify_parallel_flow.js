@@ -106,7 +106,17 @@ function createBundleSteps() {
     nodeStep('release-clean-audit', [
       'tools/wp_release_clean_audit.mjs',
       '--dirs',
-      'dist/release,dist/site2/release',
+      'dist/release',
+      '--optional-dirs',
+      'dist/site2/release',
+    ]),
+    nodeStep('release-observability-clean-audit', [
+      'tools/wp_release_clean_audit.mjs',
+      '--dirs',
+      'dist/release',
+      '--optional-dirs',
+      'dist/site2/release',
+      '--observability',
     ]),
   ];
 }

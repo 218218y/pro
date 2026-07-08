@@ -77,6 +77,8 @@ const schedulerOwner = readSource('../esm/native/builder/scheduler.ts', import.m
 const schedulerRuntime = readSource('../esm/native/builder/scheduler_runtime.ts', import.meta.url);
 const schedulerShared = readSource('../esm/native/builder/scheduler_shared.ts', import.meta.url);
 const schedulerDebug = readSource('../esm/native/builder/scheduler_debug_stats.ts', import.meta.url);
+const schedulerDebugFull = readSource('../esm/native/builder/scheduler_debug_stats_full.ts', import.meta.url);
+const schedulerDebugProd = readSource('../esm/native/builder/scheduler_debug_stats_prod.ts', import.meta.url);
 const schedulerDebugReasonStore = readSource(
   '../esm/native/builder/scheduler_debug_stats_reason_store.ts',
   import.meta.url
@@ -758,23 +760,68 @@ test('[builder-surface-family] orchestration owners remain thin around canonical
   assertMatchesAll(
     assert,
     schedulerDebug,
+    [/from '\.\/scheduler_debug_stats_full\.js'/],
+    'scheduler debug canonical facade'
+  );
+  assertMatchesAll(
+    assert,
+    schedulerDebugFull,
     [
       /from '\.\/scheduler_debug_stats_reason_store\.js'/,
       /from '\.\/scheduler_debug_stats_signature_policy\.js'/,
       /from '\.\/scheduler_debug_stats_recorders\.js'/,
       /from '\.\/scheduler_debug_stats_budget\.js'/,
     ],
-    'scheduler debug facade'
+    'scheduler debug full facade'
   );
   assertLacksAll(
     assert,
     schedulerDebug,
     [
+      /scheduler_debug_stats_reason_store\.js/,
+      /scheduler_debug_stats_recorders\.js/,
+      /scheduler_debug_stats_budget\.js/,
       /function readReasonStat\(/,
       /readBuildInputFingerprintFromState\(/,
       /export function recordBuildExecute\(/,
     ],
-    'scheduler debug facade'
+    'scheduler debug canonical facade'
+  );
+  assertLacksAll(
+    assert,
+    schedulerDebugFull,
+    [
+      /function readReasonStat\(/,
+      /readBuildInputFingerprintFromState\(/,
+      /export function recordBuildExecute\(/,
+    ],
+    'scheduler debug full facade'
+  );
+  assertMatchesAll(
+    assert,
+    schedulerDebugProd,
+    [
+      /from '\.\/scheduler_debug_stats_signature_policy\.js'/,
+      /state\.lastExecutedSignature = readExecutionSignature\(plan, buildState\)/,
+      /export function isBuildDebugStatsEnabled\(\): boolean/,
+    ],
+    'scheduler debug prod facade'
+  );
+  assertLacksAll(
+    assert,
+    schedulerDebugProd,
+    [
+      /scheduler_debug_stats_reason_store\.js/,
+      /scheduler_debug_stats_recorders\.js/,
+      /scheduler_debug_stats_budget\.js/,
+      /executeDurationSamplesMs/,
+      /executeDurationAvgMs/,
+      /executeDurationP95Ms/,
+      /forceRequestCount/,
+      /performance\.now/,
+      /Date\.now/,
+    ],
+    'scheduler debug prod facade'
   );
   assertMatchesAll(
     assert,

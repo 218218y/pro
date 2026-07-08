@@ -41,9 +41,10 @@ Keep E2E focused on critical journeys:
 actual build/render work. Keep it focused on high-value authoring modes rather than exhaustive option matrices:
 structure/design/interior edits, corner/chest/library/sliding modes, stack-split, and cell-dim overrides.
 
-Release artifact cleanliness is guarded outside browser E2E by `npm run check:release-clean` and by the
-pre-release `npm run verify` bundle lane. Tests stay in the source tree, but release folders must not ship
-`tests`, `e2e`, Playwright configs, or test-only browser hooks.
+Release artifact cleanliness is guarded outside browser E2E by `npm run check:release-clean`,
+`npm run check:release-observability-clean`, and by the pre-release `npm run verify` bundle lane. Tests stay
+in the source tree, but release folders must not ship `tests`, `e2e`, Playwright configs, test-only browser
+hooks, or scheduler debug stats instrumentation.
 
 ## What does not belong in E2E
 

@@ -23,14 +23,32 @@ function resolveObservabilityTargetBaseName(buildMode) {
     : 'observability_surface_full';
 }
 
+function resolveSchedulerDebugStatsTargetBaseName(buildMode) {
+  return normalizeObservabilityBuildMode(buildMode) === 'client'
+    ? 'scheduler_debug_stats_prod'
+    : 'scheduler_debug_stats_full';
+}
+
 export function createObservabilityAliasMap({ root, buildMode, useDist }) {
   const mode = normalizeObservabilityBuildMode(buildMode);
   const suffix = useDist ? 'js' : 'ts';
-  const baseDir = path.join(root, useDist ? 'dist' : '', 'esm', 'native', 'runtime');
-  const canonicalAbs = path.join(baseDir, `observability_surface.${suffix}`);
-  const targetAbs = path.join(baseDir, `${resolveObservabilityTargetBaseName(mode)}.${suffix}`);
+  const sourceRoot = path.join(root, useDist ? 'dist' : '', 'esm', 'native');
+  const runtimeDir = path.join(sourceRoot, 'runtime');
+  const builderDir = path.join(sourceRoot, 'builder');
+  const observabilityCanonicalAbs = path.join(runtimeDir, `observability_surface.${suffix}`);
+  const observabilityTargetAbs = path.join(
+    runtimeDir,
+    `${resolveObservabilityTargetBaseName(mode)}.${suffix}`
+  );
+  const schedulerStatsCanonicalAbs = path.join(builderDir, `scheduler_debug_stats.${suffix}`);
+  const schedulerStatsTargetAbs = path.join(
+    builderDir,
+    `${resolveSchedulerDebugStatsTargetBaseName(mode)}.${suffix}`
+  );
   return {
-    [canonicalAbs]: targetAbs,
+    [observabilityCanonicalAbs]: observabilityTargetAbs,
+    [schedulerStatsCanonicalAbs]: schedulerStatsTargetAbs,
+    './scheduler_debug_stats.js': schedulerStatsTargetAbs,
   };
 }
 

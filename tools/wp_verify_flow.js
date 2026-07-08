@@ -112,8 +112,29 @@ export function runVerifyFlow({ projectRoot, childEnv, flags, runners = {} }) {
       projectRoot,
       childEnv,
       cmd: process.execPath,
-      args: ['tools/wp_release_clean_audit.mjs', '--dirs', 'dist/release,dist/site2/release'],
-      label: 'node tools/wp_release_clean_audit.mjs --dirs dist/release,dist/site2/release',
+      args: [
+        'tools/wp_release_clean_audit.mjs',
+        '--dirs',
+        'dist/release',
+        '--optional-dirs',
+        'dist/site2/release',
+      ],
+      label: 'node tools/wp_release_clean_audit.mjs --dirs dist/release --optional-dirs dist/site2/release',
+    });
+    runCmdImpl({
+      projectRoot,
+      childEnv,
+      cmd: process.execPath,
+      args: [
+        'tools/wp_release_clean_audit.mjs',
+        '--dirs',
+        'dist/release',
+        '--optional-dirs',
+        'dist/site2/release',
+        '--observability',
+      ],
+      label:
+        'node tools/wp_release_clean_audit.mjs --dirs dist/release --optional-dirs dist/site2/release --observability',
     });
   }
 
