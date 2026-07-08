@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
 
-import { InlineNotice, ModeToggleButton } from '../components/index.js';
+import { Button, InlineNotice, ModeToggleButton } from '../components/index.js';
 import { OptionalDimField } from './structure_tab_controls.js';
 import {
   DEFAULT_HEIGHT,
@@ -35,9 +35,10 @@ function CellDimResetButton(props: {
   testId: string;
 }): ReactElement {
   return (
-    <button
-      type="button"
-      className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-styled-tooltip hint-bottom"
+    <Button
+      variant="light"
+      inline
+      className="wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-styled-tooltip hint-bottom"
       disabled={props.disabled}
       data-tooltip={props.title}
       aria-label={props.title}
@@ -45,7 +46,7 @@ function CellDimResetButton(props: {
       data-testid={props.testId}
     >
       <i className="fas fa-undo-alt" aria-hidden="true" />
-    </button>
+    </Button>
   );
 }
 

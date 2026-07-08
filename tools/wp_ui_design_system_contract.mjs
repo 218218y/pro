@@ -137,6 +137,19 @@ forbidPattern(
   /className="btn btn-accent wp-r-mt-1"/
 );
 
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx',
+  /import \{ Button, InlineNotice, ModeToggleButton \} from '\.\.\/components\/index\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx',
+  /function CellDimResetButton[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-cell-dims-reset-dim-btn/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx',
+  /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-styled-tooltip hint-bottom"/
+);
+
 if (errors.length) {
   console.error('[ui-design-system-contract] FAILED');
   for (const error of errors) console.error(`- ${error}`);

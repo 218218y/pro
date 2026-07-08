@@ -23,6 +23,7 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   const button = read('esm/native/ui/react/components/Button.tsx');
   const designPanel = read('esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx');
   const colorSection = read('esm/native/ui/react/tabs/design_tab_color_section.tsx');
+  const cellDimsSection = read('esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx');
 
   assert.match(colorSwatch, /children\?: ReactNode/);
   assert.match(colorSwatch, /special\?: boolean/);
@@ -59,4 +60,17 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   );
   assert.doesNotMatch(colorSection, /className="btn btn-delete wp-r-btn-compact"/);
   assert.doesNotMatch(colorSection, /className="btn btn-save wp-r-mt-4"/);
+
+  assert.match(
+    cellDimsSection,
+    /import \{ Button, InlineNotice, ModeToggleButton \} from '\.\.\/components\/index\.js';/
+  );
+  assert.match(
+    cellDimsSection,
+    /function CellDimResetButton[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-cell-dims-reset-dim-btn/
+  );
+  assert.doesNotMatch(
+    cellDimsSection,
+    /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-styled-tooltip hint-bottom"/
+  );
 });
