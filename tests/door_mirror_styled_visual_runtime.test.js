@@ -162,11 +162,13 @@ class FakeLine extends FakeObject3D {
 }
 class FakeMeshBasicMaterial {
   constructor(props = {}) {
+    this.type = 'MeshBasicMaterial';
     Object.assign(this, props);
   }
 }
 class FakeMeshStandardMaterial {
   constructor(props = {}) {
+    this.type = 'MeshStandardMaterial';
     Object.assign(this, props);
   }
 }
@@ -187,6 +189,7 @@ function createThree() {
     MeshStandardMaterial: FakeMeshStandardMaterial,
     Vector3: FakeVector3,
     DoubleSide: 2,
+    FrontSide: 0,
   };
 }
 
@@ -631,9 +634,14 @@ test('adhesive black glass panes are cube-reflection tracked without becoming fu
   assert.ok(pane.userData.__mirrorHeightM > 1.89);
   assert.ok(app.render?.meta?.mirrors?.includes(pane));
   assert.equal(pane.material.userData.__wpReflectiveAdhesiveGlassMaterial, true);
-  assert.ok(pane.material.envMapIntensity >= 1.5);
-  assert.ok(pane.material.roughness <= 0.15);
-  assert.ok(pane.material.metalness > 0);
+  assert.equal(pane.material.type, 'MeshBasicMaterial');
+  assert.equal(pane.material.side, THREE.FrontSide);
+  assert.equal(pane.material.transparent, false);
+  assert.equal(pane.material.depthWrite, true);
+  assert.ok(pane.material.envMapIntensity > 0);
+  assert.ok(pane.material.reflectivity > 0);
+  assert.equal(pane.material.roughness, undefined);
+  assert.equal(pane.material.metalness, undefined);
 });
 
 test('adhesive glass reuses one cached material per glass kind and seeds the cube texture', () => {
@@ -707,7 +715,11 @@ test('adhesive glass reuses one cached material per glass kind and seeds the cub
   assert.ok(frostedPane);
   assert.equal(secondPane.material, firstPane.material);
   assert.notEqual(frostedPane.material, firstPane.material);
+  assert.equal(firstPane.material.type, 'MeshBasicMaterial');
   assert.equal(firstPane.material.envMap, texture);
+  assert.equal(firstPane.material.side, THREE.FrontSide);
+  assert.equal(firstPane.material.transparent, false);
+  assert.equal(firstPane.material.depthWrite, true);
   assert.equal(firstPane.material.__keepMaterial, true);
   assert.equal(firstPane.material.userData.isCached, true);
   assert.equal(firstPane.material.userData.__keepMaterial, true);
@@ -769,6 +781,7 @@ test('cached adhesive glass material syncs the cube texture before the first tex
   assert.equal(secondPane.material.envMap, texture);
   assert.equal(secondPane.material.needsUpdate, true);
   assert.equal(secondPane.material.userData.__wpReflectiveAdhesiveGlassMaterial, true);
+  assert.equal(secondPane.material.userData.__wpAdhesiveGlassShaderProfile, 'cube-basic-front-opaque-v1');
 });
 
 test('adhesive frosted glass keeps a milky material while still accepting cube reflections', () => {
@@ -795,9 +808,14 @@ test('adhesive frosted glass keeps a milky material while still accepting cube r
   const pane = visual.children.find(child => child.userData?.__wpAdhesiveGlassSurface === 'frosted_glass');
   assert.ok(pane);
   assert.equal(pane.material.color, 0xe9f2f2);
-  assert.ok(pane.material.roughness < 0.4);
-  assert.ok(pane.material.envMapIntensity >= 1);
-  assert.ok(pane.material.metalness > 0);
+  assert.equal(pane.material.type, 'MeshBasicMaterial');
+  assert.equal(pane.material.transparent, false);
+  assert.equal(pane.material.depthWrite, true);
+  assert.equal(pane.material.side, THREE.FrontSide);
+  assert.ok(pane.material.envMapIntensity > 0);
+  assert.ok(pane.material.reflectivity > 0);
+  assert.equal(pane.material.roughness, undefined);
+  assert.equal(pane.material.metalness, undefined);
   assert.equal(pane.userData.__wpMirrorSurface, true);
   assert.equal(pane.userData.__wpMirrorReflectionMode, 'cube');
   assert.ok(app.render?.meta?.mirrors?.includes(pane));

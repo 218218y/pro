@@ -90,26 +90,20 @@ function resolveOverlayDepthLayout(thickness: number): OverlayDepthLayout {
 
 function resolveAdhesiveGlassReflectionProfile(kind: AdhesiveGlassKind): {
   color: number;
-  opacity: number;
-  roughness: number;
-  metalness: number;
+  reflectivity: number;
   envMapIntensity: number;
 } {
   if (kind === 'black_glass') {
     return {
       color: 0x050608,
-      opacity: 0.9,
-      roughness: 0.15,
-      metalness: 0.12,
-      envMapIntensity: 1.5,
+      reflectivity: 0.82,
+      envMapIntensity: 1.18,
     };
   }
   return {
     color: 0xe9f2f2,
-    opacity: 0.9,
-    roughness: 0.04,
-    metalness: 0.12,
-    envMapIntensity: 1.5,
+    reflectivity: 0.42,
+    envMapIntensity: 0.72,
   };
 }
 
@@ -151,6 +145,7 @@ function writeAdhesiveGlassMaterialMetadata(mat: unknown, kind: AdhesiveGlassKin
   userData.__keepMaterial = true;
   userData.__wpAdhesiveGlassKind = kind;
   userData.__wpReflectiveAdhesiveGlassMaterial = true;
+  userData.__wpAdhesiveGlassShaderProfile = 'cube-basic-front-opaque-v1';
   rec.userData = userData;
 }
 
@@ -161,6 +156,10 @@ function syncAdhesiveGlassMaterialEnvMap(App: AppContainer, mat: unknown): void 
   if (!mirrorTexture || rec.envMap === mirrorTexture) return;
   rec.envMap = mirrorTexture;
   rec.needsUpdate = true;
+}
+
+function readAdhesiveGlassFrontSide(THREE: ThreeLike): unknown {
+  return typeof THREE.FrontSide !== 'undefined' ? THREE.FrontSide : THREE.DoubleSide;
 }
 
 function createAdhesiveGlassMaterial(args: { App: AppContainer; THREE: ThreeLike; kind: AdhesiveGlassKind }) {
@@ -174,23 +173,18 @@ function createAdhesiveGlassMaterial(args: { App: AppContainer; THREE: ThreeLike
 
   const profile = resolveAdhesiveGlassReflectionProfile(args.kind);
   const mirrorTexture = readMirrorRenderTargetTexture(args.App);
-  const mat = new args.THREE.MeshStandardMaterial({
+  const materialArgs = {
     color: profile.color,
-    transparent: true,
-    opacity: profile.opacity,
-    roughness: profile.roughness,
-    metalness: profile.metalness,
     ...(mirrorTexture ? { envMap: mirrorTexture } : null),
     envMapIntensity: profile.envMapIntensity,
-    side: args.THREE.DoubleSide,
-  });
-  mat.depthWrite = false;
-  mat.side = args.THREE.DoubleSide;
-  try {
-    mat.premultipliedAlpha = true;
-  } catch {
-    // ignore
-  }
+    reflectivity: profile.reflectivity,
+    side: readAdhesiveGlassFrontSide(args.THREE),
+  };
+  const mat = new args.THREE.MeshBasicMaterial(materialArgs);
+  mat.transparent = false;
+  mat.opacity = 1;
+  mat.depthWrite = true;
+  mat.side = readAdhesiveGlassFrontSide(args.THREE);
   writeAdhesiveGlassMaterialMetadata(mat, args.kind);
   cache[args.kind] = mat;
   return mat;
