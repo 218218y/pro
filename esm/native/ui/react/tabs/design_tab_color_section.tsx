@@ -1,6 +1,6 @@
 import type { DragEvent, MouseEvent, ReactElement } from 'react';
 
-import { ColorSwatchItem } from '../components/index.js';
+import { Button, ColorSwatchItem } from '../components/index.js';
 import { MultiColorPanel, __designTabReportNonFatal } from './design_tab_multicolor_panel.js';
 import type { DesignTabColorSectionModel } from './use_design_tab_controller_contracts.js';
 
@@ -140,24 +140,24 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
 
       {model.selectedCustom ? (
         <div className="wp-r-btn-row wp-r-split-between" style={{ marginTop: 10 }}>
-          <button
-            type="button"
-            className="btn btn-delete wp-r-btn-compact"
+          <Button
+            variant="delete"
+            className="wp-r-btn-compact"
             onClick={model.deleteSelectedColor}
             data-testid="design-selected-color-delete-button"
           >
             <i className="fas fa-trash-alt"></i> מחק גוון זה
-          </button>
+          </Button>
 
-          <button
-            type="button"
-            className="btn btn-inline wp-r-btn-compact"
+          <Button
+            inline
+            className="wp-r-btn-compact"
             onClick={model.toggleSelectedColorLock}
             data-testid="design-selected-color-lock-button"
           >
             <i className={model.selectedCustom.locked ? 'fas fa-lock' : 'fas fa-unlock'}></i>{' '}
             {model.selectedCustom.locked ? 'שחרר נעילת צבע' : 'נעילת צבע'}
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -239,32 +239,28 @@ export function DesignTabColorSection(props: { model: DesignTabColorSectionModel
           ) : null}
 
           {model.draftTextureData ? (
-            <button
-              type="button"
-              className="btn btn-delete wp-r-btn-xs wp-r-mt-1"
-              onClick={model.removeTexture}
-            >
+            <Button variant="delete" className="wp-r-btn-xs wp-r-mt-1" onClick={model.removeTexture}>
               הסר תמונה
-            </button>
+            </Button>
           ) : null}
 
-          <button
-            type="button"
-            className="btn btn-save wp-r-mt-4"
+          <Button
+            variant="save"
+            className="wp-r-mt-4"
             onClick={model.saveCustom}
             data-testid="design-custom-color-save-button"
           >
             שמור גוון לרשימה
-          </button>
+          </Button>
 
-          <button
-            type="button"
-            className="btn btn-accent wp-r-mt-1"
+          <Button
+            variant="accent"
+            className="wp-r-mt-1"
             onClick={model.cancelCustom}
             data-testid="design-custom-color-cancel-button"
           >
             ביטול
-          </button>
+          </Button>
         </div>
       ) : null}
 

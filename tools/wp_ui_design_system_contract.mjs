@@ -85,11 +85,31 @@ forbidPattern(
 
 requirePattern(
   'esm/native/ui/react/tabs/design_tab_color_section.tsx',
-  /import \{ ColorSwatchItem \} from '\.\.\/components\/index\.js';/
+  /import \{ Button, ColorSwatchItem \} from '\.\.\/components\/index\.js';/
 );
 requirePattern(
   'esm/native/ui/react/tabs/design_tab_color_section.tsx',
   /<ColorSwatchItem[\s\S]*data-testid="design-color-swatch-item"/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/design_tab_color_section.tsx',
+  /<Button[\s\S]*variant="delete"[\s\S]*data-testid="design-selected-color-delete-button"/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/design_tab_color_section.tsx',
+  /<Button[\s\S]*inline[\s\S]*data-testid="design-selected-color-lock-button"/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/design_tab_color_section.tsx',
+  /<Button[\s\S]*variant="delete"[\s\S]*className="wp-r-btn-xs wp-r-mt-1"[\s\S]*onClick=\{model\.removeTexture\}/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/design_tab_color_section.tsx',
+  /<Button[\s\S]*variant="save"[\s\S]*data-testid="design-custom-color-save-button"/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/design_tab_color_section.tsx',
+  /<Button[\s\S]*variant="accent"[\s\S]*data-testid="design-custom-color-cancel-button"/
 );
 forbidPattern(
   'esm/native/ui/react/tabs/design_tab_color_section.tsx',
@@ -98,6 +118,23 @@ forbidPattern(
 forbidPattern(
   'esm/native/ui/react/tabs/design_tab_color_section.tsx',
   /<div className=\{className\} style=\{style\} aria-hidden="true"/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/design_tab_color_section.tsx',
+  /className="btn btn-delete wp-r-btn-compact"/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/design_tab_color_section.tsx',
+  /className="btn btn-inline wp-r-btn-compact"/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/design_tab_color_section.tsx',
+  /className="btn btn-delete wp-r-btn-xs wp-r-mt-1"/
+);
+forbidPattern('esm/native/ui/react/tabs/design_tab_color_section.tsx', /className="btn btn-save wp-r-mt-4"/);
+forbidPattern(
+  'esm/native/ui/react/tabs/design_tab_color_section.tsx',
+  /className="btn btn-accent wp-r-mt-1"/
 );
 
 if (errors.length) {

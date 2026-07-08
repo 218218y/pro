@@ -22,6 +22,7 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   const colorSwatch = read('esm/native/ui/react/components/ColorSwatch.tsx');
   const button = read('esm/native/ui/react/components/Button.tsx');
   const designPanel = read('esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx');
+  const colorSection = read('esm/native/ui/react/tabs/design_tab_color_section.tsx');
 
   assert.match(colorSwatch, /children\?: ReactNode/);
   assert.match(colorSwatch, /special\?: boolean/);
@@ -41,4 +42,21 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   assert.doesNotMatch(designPanel, /<button\b/);
   assert.doesNotMatch(designPanel, /className=\{\s*'type-option type-option--compact type-option--iconrow/);
   assert.doesNotMatch(designPanel, /className=\{'curtain-btn' \+/);
+
+  assert.match(colorSection, /import \{ Button, ColorSwatchItem \} from '\.\.\/components\/index\.js';/);
+  assert.match(
+    colorSection,
+    /<Button[\s\S]*variant="delete"[\s\S]*data-testid="design-selected-color-delete-button"/
+  );
+  assert.match(colorSection, /<Button[\s\S]*inline[\s\S]*data-testid="design-selected-color-lock-button"/);
+  assert.match(
+    colorSection,
+    /<Button[\s\S]*variant="save"[\s\S]*data-testid="design-custom-color-save-button"/
+  );
+  assert.match(
+    colorSection,
+    /<Button[\s\S]*variant="accent"[\s\S]*data-testid="design-custom-color-cancel-button"/
+  );
+  assert.doesNotMatch(colorSection, /className="btn btn-delete wp-r-btn-compact"/);
+  assert.doesNotMatch(colorSection, /className="btn btn-save wp-r-mt-4"/);
 });

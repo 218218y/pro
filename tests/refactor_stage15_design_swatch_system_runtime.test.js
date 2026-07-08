@@ -14,7 +14,7 @@ test('stage15 design saved swatches use ColorSwatchItem primitive', () => {
   assert.match(component, /export function ColorSwatchItem/);
   assert.match(component, /function handleActivation/);
   assert.match(component, /swatchStyle\?: CSSProperties/);
-  assert.match(colorSection, /import \{ ColorSwatchItem \} from '\.\.\/components\/index\.js';/);
+  assert.match(colorSection, /import \{ Button, ColorSwatchItem \} from '\.\.\/components\/index\.js';/);
   assert.match(colorSection, /<ColorSwatchItem[\s\S]*data-testid="design-color-swatch-item"/);
   assert.doesNotMatch(colorSection, /const className = 'color-dot-swatch'/);
   assert.doesNotMatch(colorSection, /<div className=\{className\} style=\{style\} aria-hidden="true"/);
