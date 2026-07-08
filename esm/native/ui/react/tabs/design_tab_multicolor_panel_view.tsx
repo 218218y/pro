@@ -1,6 +1,6 @@
 import type { ChangeEvent, ReactElement } from 'react';
 
-import { ColorSwatch, OptionButton, OptionButtonGroup, ToggleRow } from '../components/index.js';
+import { Button, ColorSwatch, OptionButton, OptionButtonGroup, ToggleRow } from '../components/index.js';
 import { CURTAIN_OPTIONS, type CurtainPreset } from './design_tab_multicolor_shared.js';
 import {
   MULTI_BTN_FINISH_EDIT,
@@ -133,18 +133,16 @@ function MultiColorMirrorDraftField(props: {
         {props.label}
       </label>
       <div className="wp-r-mirror-draft-input-row">
-        <button
-          type="button"
-          className={
-            'btn btn-light btn-inline wp-r-groove-reset-btn ' +
-            'wp-r-mirror-draft-reset-btn wp-r-styled-tooltip hint-bottom'
-          }
+        <Button
+          variant="light"
+          inline
+          className="wp-r-groove-reset-btn wp-r-mirror-draft-reset-btn wp-r-styled-tooltip hint-bottom"
           data-tooltip={props.resetLabel}
           aria-label={props.resetLabel}
           onClick={onReset}
         >
           <i className="fas fa-undo-alt" aria-hidden="true" />
-        </button>
+        </Button>
         <input
           id={props.id}
           name={props.id}
@@ -261,9 +259,10 @@ function MultiColorPanelBody(props: Omit<MultiColorPanelViewProps, 'embedded'>):
               </div>
 
               {viewState.paintActive ? (
-                <button
-                  type="button"
-                  className="btn btn-danger btn-inline btn-sm"
+                <Button
+                  variant="danger"
+                  inline
+                  size="sm"
                   onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
                     event.preventDefault();
                     event.stopPropagation();
@@ -271,7 +270,7 @@ function MultiColorPanelBody(props: Omit<MultiColorPanelViewProps, 'embedded'>):
                   }}
                 >
                   {MULTI_BTN_FINISH_EDIT}
-                </button>
+                </Button>
               ) : null}
             </div>
 

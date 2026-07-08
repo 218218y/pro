@@ -20,11 +20,16 @@ test('stage 14 UI design system contract is wired into refactor guardrails', () 
 
 test('stage 14 Design tab uses shared choice primitives instead of bespoke swatch and option controls', () => {
   const colorSwatch = read('esm/native/ui/react/components/ColorSwatch.tsx');
+  const button = read('esm/native/ui/react/components/Button.tsx');
   const designPanel = read('esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx');
 
   assert.match(colorSwatch, /children\?: ReactNode/);
   assert.match(colorSwatch, /special\?: boolean/);
+  assert.match(button, /type ButtonVariant =[\s\S]*\| 'danger'/);
+  assert.match(designPanel, /import \{ Button, ColorSwatch, OptionButton, OptionButtonGroup, ToggleRow \}/);
   assert.match(designPanel, /<ColorSwatch[\s\S]*special=\{dot\.isSpecial\}/);
+  assert.match(designPanel, /<Button[\s\S]*variant="light"[\s\S]*wp-r-mirror-draft-reset-btn/);
+  assert.match(designPanel, /<Button[\s\S]*variant="danger"[\s\S]*size="sm"/);
   assert.match(
     designPanel,
     /<OptionButtonGroup columns="auto" density="compact" className="wp-r-design-door-style-options">/
@@ -33,6 +38,7 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
     designPanel,
     /<OptionButtonGroup columns="auto" density="compact" className="wp-r-design-curtain-options">/
   );
+  assert.doesNotMatch(designPanel, /<button\b/);
   assert.doesNotMatch(designPanel, /className=\{\s*'type-option type-option--compact type-option--iconrow/);
   assert.doesNotMatch(designPanel, /className=\{'curtain-btn' \+/);
 });

@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes } from 'react';
 
-type ButtonVariant = 'default' | 'primary' | 'save' | 'delete' | 'accent' | 'light' | 'success' | 'header';
+type ButtonVariant =
+  'default' | 'primary' | 'save' | 'delete' | 'danger' | 'accent' | 'light' | 'success' | 'header';
 
 type ButtonSize = 'sm' | 'md';
 
@@ -22,6 +23,8 @@ function variantToClass(v: ButtonVariant | undefined): string {
       return 'btn btn-save';
     case 'delete':
       return 'btn btn-delete';
+    case 'danger':
+      return 'btn btn-danger';
     case 'accent':
       return 'btn btn-accent';
     case 'light':

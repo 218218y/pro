@@ -33,7 +33,16 @@ requirePattern('esm/native/ui/react/components/ColorSwatch.tsx', /function handl
 
 requirePattern(
   'esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx',
-  /import \{ ColorSwatch, OptionButton, OptionButtonGroup, ToggleRow \}/
+  /import \{ Button, ColorSwatch, OptionButton, OptionButtonGroup, ToggleRow \}/
+);
+requirePattern('esm/native/ui/react/components/Button.tsx', /type ButtonVariant =[\s\S]*\| 'danger'/);
+requirePattern(
+  'esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx',
+  /<Button[\s\S]*variant="light"[\s\S]*wp-r-mirror-draft-reset-btn/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx',
+  /<Button[\s\S]*variant="danger"[\s\S]*size="sm"/
 );
 requirePattern(
   'esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx',
@@ -60,6 +69,7 @@ forbidPattern(
   'esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx',
   /import type \{ CSSProperties/
 );
+forbidPattern('esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx', /<button\b/);
 forbidPattern(
   'esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx',
   /className=\{\s*'color-dot-swatch wp-r-color-swatch'/
