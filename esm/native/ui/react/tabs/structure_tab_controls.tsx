@@ -1,6 +1,6 @@
 import type { ChangeEvent, FocusEvent } from 'react';
 
-import { OptionButton } from '../components/index.js';
+import { Button, OptionButton } from '../components/index.js';
 import { useApp, useCfgSelectorShallow } from '../hooks.js';
 import { setCfgBoardMaterial, setCfgDoorMountMode } from '../actions/store_actions.js';
 import { setWardrobeType } from '../actions/room_actions.js';
@@ -266,9 +266,10 @@ function DoorMountThicknessField(props: {
             props.onChange(rawValue === '' ? null : normalizeDoorMountThicknessCm(rawValue));
           }}
         />
-        <button
-          type="button"
-          className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-door-thickness-reset-btn wp-r-styled-tooltip hint-bottom"
+        <Button
+          variant="light"
+          inline
+          className="wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-door-thickness-reset-btn wp-r-styled-tooltip hint-bottom"
           data-testid={props.resetTestId}
           aria-label={props.resetLabel}
           title={props.resetLabel}
@@ -277,7 +278,7 @@ function DoorMountThicknessField(props: {
           onClick={() => props.onChange(null)}
         >
           <i className="fas fa-undo-alt" aria-hidden="true" />
-        </button>
+        </Button>
       </div>
     </div>
   );

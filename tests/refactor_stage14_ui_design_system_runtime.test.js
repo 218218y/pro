@@ -28,6 +28,7 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   const sketchBoxControls = read(
     'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_components.tsx'
   );
+  const structureControls = read('esm/native/ui/react/tabs/structure_tab_controls.tsx');
 
   assert.match(colorSwatch, /children\?: ReactNode/);
   assert.match(colorSwatch, /special\?: boolean/);
@@ -91,5 +92,15 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   assert.doesNotMatch(
     `${platformOverhangField}\n${sketchBoxControls}`,
     /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-platform-overhang-reset-btn wp-r-styled-tooltip hint-bottom"/
+  );
+
+  assert.match(structureControls, /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/);
+  assert.match(
+    structureControls,
+    /function DoorMountThicknessField[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-door-thickness-reset-btn/
+  );
+  assert.doesNotMatch(
+    structureControls,
+    /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-door-thickness-reset-btn wp-r-styled-tooltip hint-bottom"/
   );
 });

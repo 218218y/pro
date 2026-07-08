@@ -175,6 +175,19 @@ forbidPattern(
   /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-platform-overhang-reset-btn wp-r-styled-tooltip hint-bottom"/
 );
 
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_controls.tsx',
+  /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_controls.tsx',
+  /function DoorMountThicknessField[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-door-thickness-reset-btn/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/structure_tab_controls.tsx',
+  /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-door-thickness-reset-btn wp-r-styled-tooltip hint-bottom"/
+);
+
 if (errors.length) {
   console.error('[ui-design-system-contract] FAILED');
   for (const error of errors) console.error(`- ${error}`);
