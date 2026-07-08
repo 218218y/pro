@@ -1,5 +1,11 @@
 # Perf and Stability Baseline
 
+Tool-owned report target for the perf smoke baseline.
+
+- Baseline data: `tools/wp_perf_smoke_baseline.json`
+- Report target: `docs/PERF_AND_STABILITY_BASELINE.md`
+- Latest run artifacts: `.artifacts/perf-smoke/latest.json`, `.artifacts/perf-smoke/latest.md`
+
 - Generated: 2026-07-08T08:23:53.758Z
 - Profile: default
 - Verify lanes: perf-toolchain-core, ui-react-jsx-hardening-core

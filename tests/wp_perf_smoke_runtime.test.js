@@ -7,11 +7,20 @@ import {
   createPerfSmokeHelpText,
 } from '../tools/wp_perf_smoke_state.js';
 import {
+  DEFAULT_PERF_SMOKE_BASELINE_RELATIVE_PATH,
+  DEFAULT_PERF_SMOKE_DOC_RELATIVE_PATH,
+  DEFAULT_PERF_SMOKE_JSON_OUT_RELATIVE_PATH,
+  DEFAULT_PERF_SMOKE_MD_OUT_RELATIVE_PATH,
   createPerfSmokeBaseline,
+  createPerfSmokeMarkdownReport,
   evaluatePerfSmokeBaseline,
   resolvePerfSmokePlan,
 } from '../tools/wp_perf_smoke_shared.js';
 import { runPerfSmokeFlow } from '../tools/wp_perf_smoke_flow.js';
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 test('perf smoke args parse lanes, scripts, baseline paths, and flags canonically', () => {
   assert.deepEqual(
@@ -128,6 +137,29 @@ test('perf smoke baseline evaluation detects regressions and profile drift', () 
   );
   assert.equal(drift.ok, false);
   assert.ok(drift.failures.some(item => item.kind === 'profile-drift'));
+});
+
+test('perf smoke markdown report keeps durable tool-owned baseline anchors', () => {
+  const summary = {
+    generatedAt: '2026-07-08T08:23:53.758Z',
+    profileName: 'default',
+    laneNames: ['perf-toolchain-core'],
+    nodeVersion: 'v24.18.0',
+    scripts: [{ scriptName: 'test:perf-toolchain-core', durationMs: 575, ok: true, exitCode: 0 }],
+    totalDurationMs: 575,
+  };
+  const baseline = createPerfSmokeBaseline(summary);
+  const markdown = createPerfSmokeMarkdownReport({
+    summary,
+    baseline,
+    evaluation: { ok: true, failures: [] },
+  });
+
+  assert.match(markdown, /Tool-owned report target/);
+  assert.match(markdown, new RegExp(escapeRegExp(DEFAULT_PERF_SMOKE_BASELINE_RELATIVE_PATH)));
+  assert.match(markdown, new RegExp(escapeRegExp(DEFAULT_PERF_SMOKE_DOC_RELATIVE_PATH)));
+  assert.match(markdown, new RegExp(escapeRegExp(DEFAULT_PERF_SMOKE_JSON_OUT_RELATIVE_PATH)));
+  assert.match(markdown, new RegExp(escapeRegExp(DEFAULT_PERF_SMOKE_MD_OUT_RELATIVE_PATH)));
 });
 
 test('perf smoke flow updates baseline, writes outputs, and enforces budgets through the canonical flow', () => {

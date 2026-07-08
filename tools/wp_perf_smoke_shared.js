@@ -273,6 +273,14 @@ export function createPerfSmokeMarkdownReport({ summary, baseline = null, evalua
   const lines = [];
   lines.push('# Perf and Stability Baseline');
   lines.push('');
+  lines.push('Tool-owned report target for the perf smoke baseline.');
+  lines.push('');
+  lines.push(`- Baseline data: \`${DEFAULT_PERF_SMOKE_BASELINE_RELATIVE_PATH}\``);
+  lines.push(`- Report target: \`${DEFAULT_PERF_SMOKE_DOC_RELATIVE_PATH}\``);
+  lines.push(
+    `- Latest run artifacts: \`${DEFAULT_PERF_SMOKE_JSON_OUT_RELATIVE_PATH}\`, \`${DEFAULT_PERF_SMOKE_MD_OUT_RELATIVE_PATH}\``
+  );
+  lines.push('');
   lines.push(`- Generated: ${summary?.generatedAt || new Date().toISOString()}`);
   lines.push(`- Profile: ${summary?.profileName || 'default'}`);
   lines.push(
