@@ -90,25 +90,33 @@ function resolveOverlayDepthLayout(thickness: number): OverlayDepthLayout {
 
 function resolveAdhesiveGlassReflectionProfile(kind: AdhesiveGlassKind): {
   color: number;
-  reflectivity: number;
+  opacity: number;
+  roughness: number;
+  metalness: number;
+  envMapIntensity: number;
   reflectionStrength: number;
-  blendMode: 'mix';
 } {
   if (kind === 'black_glass') {
     return {
       color: 0x050608,
-      reflectivity: 0.01,
-      reflectionStrength: 0.01,
-      blendMode: 'mix',
+      opacity: 1,
+      roughness: 0.18,
+      metalness: 0.06,
+      envMapIntensity: 0.72,
+      reflectionStrength: 0.72,
     };
   }
   return {
     color: 0xe9f2f2,
-    reflectivity: 0.12,
-    reflectionStrength: 0.12,
-    blendMode: 'mix',
+    opacity: 1,
+    roughness: 0.26,
+    metalness: 0.04,
+    envMapIntensity: 0.46,
+    reflectionStrength: 0.46,
   };
 }
+
+const ADHESIVE_GLASS_SHADER_PROFILE = 'cube-standard-front-opaque-v5';
 
 type AdhesiveGlassMaterialKind = 'black_glass' | 'frosted_glass';
 
@@ -150,7 +158,7 @@ function writeAdhesiveGlassMaterialMetadata(mat: unknown, kind: AdhesiveGlassKin
   userData.__wpAdhesiveGlassReflectionStrength =
     resolveAdhesiveGlassReflectionProfile(kind).reflectionStrength;
   userData.__wpReflectiveAdhesiveGlassMaterial = true;
-  userData.__wpAdhesiveGlassShaderProfile = 'cube-basic-front-opaque-mix-v4';
+  userData.__wpAdhesiveGlassShaderProfile = ADHESIVE_GLASS_SHADER_PROFILE;
   rec.userData = userData;
 }
 
@@ -167,33 +175,62 @@ function readAdhesiveGlassFrontSide(THREE: ThreeLike): unknown {
   return typeof THREE.FrontSide !== 'undefined' ? THREE.FrontSide : THREE.DoubleSide;
 }
 
-function readAdhesiveGlassEnvMapBlendMode(THREE: ThreeLike): unknown {
-  const threeRecord = THREE as unknown as Record<string, unknown>;
-  return typeof threeRecord.MixOperation !== 'undefined' ? threeRecord.MixOperation : undefined;
+function isReusableAdhesiveGlassMaterial(mat: unknown, kind: AdhesiveGlassKind): boolean {
+  const rec = mat && typeof mat === 'object' ? (mat as Record<string, unknown>) : null;
+  if (!rec) return false;
+  const userData =
+    rec.userData && typeof rec.userData === 'object' && !Array.isArray(rec.userData)
+      ? (rec.userData as Record<string, unknown>)
+      : null;
+  return (
+    rec.type === 'MeshStandardMaterial' &&
+    userData?.__wpAdhesiveGlassKind === kind &&
+    userData.__wpAdhesiveGlassShaderProfile === ADHESIVE_GLASS_SHADER_PROFILE
+  );
+}
+
+function disposeStaleAdhesiveGlassMaterial(mat: unknown): void {
+  const rec = mat && typeof mat === 'object' ? (mat as Record<string, unknown>) : null;
+  const dispose = rec?.dispose;
+  if (typeof dispose !== 'function') return;
+  try {
+    dispose.call(rec);
+  } catch {
+    // Best-effort cleanup only; a stale material must not block rebuilding the door.
+  }
 }
 
 function createAdhesiveGlassMaterial(args: { App: AppContainer; THREE: ThreeLike; kind: AdhesiveGlassKind }) {
   const cache = readAdhesiveGlassMaterialCache(args.App);
   const cached = cache[args.kind];
-  if (cached) {
+  if (cached && isReusableAdhesiveGlassMaterial(cached, args.kind)) {
     syncAdhesiveGlassMaterialEnvMap(args.App, cached);
     writeAdhesiveGlassMaterialMetadata(cached, args.kind);
     return cached;
   }
+  if (cached) {
+    disposeStaleAdhesiveGlassMaterial(cached);
+    delete cache[args.kind];
+  }
 
   const profile = resolveAdhesiveGlassReflectionProfile(args.kind);
   const mirrorTexture = readMirrorRenderTargetTexture(args.App);
-  const blendMode = readAdhesiveGlassEnvMapBlendMode(args.THREE);
   const materialArgs = {
     color: profile.color,
+    transparent: false,
+    opacity: profile.opacity,
+    roughness: profile.roughness,
+    metalness: profile.metalness,
     ...(mirrorTexture ? { envMap: mirrorTexture } : null),
-    ...(typeof blendMode !== 'undefined' ? { combine: blendMode } : null),
-    reflectivity: profile.reflectivity,
+    envMapIntensity: profile.envMapIntensity,
     side: readAdhesiveGlassFrontSide(args.THREE),
   };
-  const mat = new args.THREE.MeshBasicMaterial(materialArgs);
+  const mat = new args.THREE.MeshStandardMaterial(materialArgs);
   mat.transparent = false;
-  mat.opacity = 1;
+  mat.opacity = profile.opacity;
+  mat.roughness = profile.roughness;
+  mat.metalness = profile.metalness;
+  mat.envMapIntensity = profile.envMapIntensity;
   mat.depthWrite = true;
   mat.side = readAdhesiveGlassFrontSide(args.THREE);
   writeAdhesiveGlassMaterialMetadata(mat, args.kind);
