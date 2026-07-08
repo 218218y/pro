@@ -4,7 +4,8 @@ const TOOLTIP_SHIFT_VAR = '--wp-r-tooltip-shift-x';
 const TOOLTIP_SHIFT_ZERO = '0px';
 const TOOLTIP_PORTAL_ATTR = 'data-wp-r-tooltip-portal';
 const TOOLTIP_ARROW_ATTR = 'data-wp-r-tooltip-arrow';
-const TOOLTIP_TARGET_SELECTOR = '.wp-r-styled-tooltip.hint-bottom[data-tooltip]';
+const TOOLTIP_TEXT_ATTR = 'data-tooltip';
+const TOOLTIP_TARGET_SELECTOR = `.wp-r-styled-tooltip.hint-bottom[${TOOLTIP_TEXT_ATTR}]`;
 const TOOLTIP_PORTAL_OFFSET_PX = 10;
 const TOOLTIP_ARROW_SIZE_PX = 6;
 const TOOLTIP_ARROW_GUTTER_PX = 14;
@@ -146,6 +147,10 @@ function isInsideTargetOrTooltip(
   );
 }
 
+function isTooltipTargetConnected(target: HTMLElement | null): target is HTMLElement {
+  return !!target && target.isConnected && target.matches(TOOLTIP_TARGET_SELECTOR);
+}
+
 function positionTooltipHost(doc: Document, target: HTMLElement, text: string): void {
   const win = doc.defaultView;
   const host = getOrCreateTooltipHost(doc);
@@ -260,7 +265,7 @@ export function clampStyledTooltipToViewport(
 
 export function installStyledTooltipViewportHost(doc: Document): () => void {
   const showFromTarget = (target: HTMLElement | null): void => {
-    const text = readTooltipText(target?.getAttribute('data-tooltip'));
+    const text = readTooltipText(target?.getAttribute(TOOLTIP_TEXT_ATTR));
     if (!target || !text) {
       hideTooltipHost(doc);
       return;
@@ -294,13 +299,43 @@ export function installStyledTooltipViewportHost(doc: Document): () => void {
 
   const handleScrollOrResize = (): void => {
     if (!activeTooltipTarget) return;
-    const text = readTooltipText(activeTooltipTarget.getAttribute('data-tooltip'));
-    if (!text || !activeTooltipTarget.isConnected) {
+    const text = readTooltipText(activeTooltipTarget.getAttribute(TOOLTIP_TEXT_ATTR));
+    if (!text || !isTooltipTargetConnected(activeTooltipTarget)) {
       hideTooltipHost(doc);
       return;
     }
     positionTooltipHost(doc, activeTooltipTarget, text);
   };
+
+  const handleTooltipMutation = (mutations: MutationRecord[]): void => {
+    const target = activeTooltipTarget;
+    if (!target) return;
+
+    for (const mutation of mutations) {
+      if (mutation.type === 'attributes' && mutation.target === target) {
+        if (mutation.attributeName === TOOLTIP_TEXT_ATTR || mutation.attributeName === 'class') {
+          showFromTarget(isTooltipTargetConnected(target) ? target : null);
+          return;
+        }
+      }
+
+      if (mutation.type === 'childList' && !target.isConnected) {
+        hideTooltipHost(doc);
+        return;
+      }
+    }
+  };
+
+  const TooltipMutationObserver = doc.defaultView?.MutationObserver;
+  const tooltipMutationObserver = TooltipMutationObserver
+    ? new TooltipMutationObserver(handleTooltipMutation)
+    : null;
+  tooltipMutationObserver?.observe(doc.body, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: [TOOLTIP_TEXT_ATTR, 'class'],
+  });
 
   doc.addEventListener('mouseover', handleMouseOver, true);
   doc.addEventListener('mouseout', handleMouseOut, true);
@@ -316,11 +351,13 @@ export function installStyledTooltipViewportHost(doc: Document): () => void {
     doc.removeEventListener('focusout', handleFocusOut, true);
     doc.removeEventListener('scroll', handleScrollOrResize, true);
     doc.defaultView?.removeEventListener('resize', handleScrollOrResize);
+    tooltipMutationObserver?.disconnect();
     hideTooltipHost(doc);
   };
 }
 
 export const __styledTooltipPlacementTestSeams = {
+  TOOLTIP_TEXT_ATTR,
   TOOLTIP_TARGET_SELECTOR,
   TOOLTIP_SHIFT_VAR_VALUE,
 };

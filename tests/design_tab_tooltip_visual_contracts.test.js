@@ -94,6 +94,23 @@ test('[design-tab-tooltips] styled tooltip body is viewport-clamped without movi
   );
 });
 
+test('[styled-tooltips] active floating tooltip refreshes when its data-tooltip changes', () => {
+  assertMatchesAll(
+    assert,
+    tooltipPlacement,
+    [
+      /const TOOLTIP_TEXT_ATTR = 'data-tooltip';/,
+      /const TOOLTIP_TARGET_SELECTOR = `\.wp-r-styled-tooltip\.hint-bottom\[\$\{TOOLTIP_TEXT_ATTR\}\]`;/,
+      /function isTooltipTargetConnected\(target: HTMLElement \| null\): target is HTMLElement \{[\s\S]*?target\.matches\(TOOLTIP_TARGET_SELECTOR\)/,
+      /const handleTooltipMutation = \(mutations: MutationRecord\[\]\): void => \{[\s\S]*?mutation\.attributeName === TOOLTIP_TEXT_ATTR[\s\S]*?showFromTarget\(isTooltipTargetConnected\(target\) \? target : null\)/,
+      /new TooltipMutationObserver\(handleTooltipMutation\)/,
+      /attributeFilter: \[TOOLTIP_TEXT_ATTR, 'class'\]/,
+      /tooltipMutationObserver\?\.disconnect\(\);/,
+    ],
+    'active styled tooltip mutation refresh seam'
+  );
+});
+
 test('[styled-tooltips] fixed viewport host is installed once at the React shell boundary', () => {
   assertMatchesAll(
     assert,
