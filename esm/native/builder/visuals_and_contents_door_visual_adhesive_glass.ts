@@ -91,19 +91,19 @@ function resolveOverlayDepthLayout(thickness: number): OverlayDepthLayout {
 function resolveAdhesiveGlassReflectionProfile(kind: AdhesiveGlassKind): {
   color: number;
   reflectivity: number;
-  envMapIntensity: number;
+  reflectionStrength: number;
 } {
   if (kind === 'black_glass') {
     return {
       color: 0x050608,
       reflectivity: 0.82,
-      envMapIntensity: 1.18,
+      reflectionStrength: 1.18,
     };
   }
   return {
     color: 0xe9f2f2,
     reflectivity: 0.42,
-    envMapIntensity: 0.72,
+    reflectionStrength: 0.72,
   };
 }
 
@@ -144,8 +144,10 @@ function writeAdhesiveGlassMaterialMetadata(mat: unknown, kind: AdhesiveGlassKin
   userData.isCached = true;
   userData.__keepMaterial = true;
   userData.__wpAdhesiveGlassKind = kind;
+  userData.__wpAdhesiveGlassReflectionStrength =
+    resolveAdhesiveGlassReflectionProfile(kind).reflectionStrength;
   userData.__wpReflectiveAdhesiveGlassMaterial = true;
-  userData.__wpAdhesiveGlassShaderProfile = 'cube-basic-front-opaque-v1';
+  userData.__wpAdhesiveGlassShaderProfile = 'cube-basic-front-opaque-v2';
   rec.userData = userData;
 }
 
@@ -176,7 +178,6 @@ function createAdhesiveGlassMaterial(args: { App: AppContainer; THREE: ThreeLike
   const materialArgs = {
     color: profile.color,
     ...(mirrorTexture ? { envMap: mirrorTexture } : null),
-    envMapIntensity: profile.envMapIntensity,
     reflectivity: profile.reflectivity,
     side: readAdhesiveGlassFrontSide(args.THREE),
   };
