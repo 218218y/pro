@@ -636,6 +636,83 @@ test('adhesive black glass panes are cube-reflection tracked without becoming fu
   assert.ok(pane.material.metalness > 0);
 });
 
+test('adhesive glass reuses one cached material per glass kind and seeds the cube texture', () => {
+  const THREE = createThree();
+  const app = createDoorVisualApp(THREE);
+  const texture = { kind: 'cube-texture' };
+  app.render = { mirrorRenderTarget: { texture } };
+
+  const first = createDoorVisual(
+    app,
+    0.7,
+    1.9,
+    0.02,
+    { kind: 'front' },
+    'flat',
+    false,
+    false,
+    null,
+    { kind: 'wood' },
+    1,
+    false,
+    null,
+    'd1_black_glass',
+    { adhesiveGlassKind: 'black_glass', renderPolicy: { sketchMode: false, addOutlines: null } }
+  );
+  const second = createDoorVisual(
+    app,
+    0.6,
+    1.6,
+    0.02,
+    { kind: 'front' },
+    'flat',
+    false,
+    false,
+    null,
+    { kind: 'wood' },
+    1,
+    false,
+    null,
+    'd2_black_glass',
+    { adhesiveGlassKind: 'black_glass', renderPolicy: { sketchMode: false, addOutlines: null } }
+  );
+  const frosted = createDoorVisual(
+    app,
+    0.6,
+    1.6,
+    0.02,
+    { kind: 'front' },
+    'flat',
+    false,
+    false,
+    null,
+    { kind: 'wood' },
+    1,
+    false,
+    null,
+    'd3_frosted_glass',
+    { adhesiveGlassKind: 'frosted_glass', renderPolicy: { sketchMode: false, addOutlines: null } }
+  );
+
+  const firstPane = first.children.find(child => child.userData?.__wpAdhesiveGlassSurface === 'black_glass');
+  const secondPane = second.children.find(
+    child => child.userData?.__wpAdhesiveGlassSurface === 'black_glass'
+  );
+  const frostedPane = frosted.children.find(
+    child => child.userData?.__wpAdhesiveGlassSurface === 'frosted_glass'
+  );
+
+  assert.ok(firstPane);
+  assert.ok(secondPane);
+  assert.ok(frostedPane);
+  assert.equal(secondPane.material, firstPane.material);
+  assert.notEqual(frostedPane.material, firstPane.material);
+  assert.equal(firstPane.material.envMap, texture);
+  assert.equal(firstPane.material.__keepMaterial, true);
+  assert.equal(firstPane.material.userData.isCached, true);
+  assert.equal(firstPane.material.userData.__keepMaterial, true);
+});
+
 test('adhesive frosted glass keeps a milky material while still accepting cube reflections', () => {
   const THREE = createThree();
   const app = createDoorVisualApp(THREE);
