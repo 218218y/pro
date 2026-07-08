@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 
 import { buildScopedFormFieldId } from '../components/form_field_id.js';
 
-import { ModeToggleButton } from '../components/index.js';
+import { Button, ModeToggleButton } from '../components/index.js';
 import {
   DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM,
   DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE,
@@ -39,15 +39,16 @@ const SKETCH_STORAGE_HEIGHT_MAX_CM = 120;
 
 function SketchFieldResetButton(props: { onClick: () => void; testId: string }): ReactElement {
   return (
-    <button
-      type="button"
-      className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"
+    <Button
+      variant="light"
+      inline
+      className="wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"
       onClick={props.onClick}
       data-testid={props.testId}
     >
       <i className="fas fa-undo-alt" aria-hidden="true" />
       <span>ברירת מחדל</span>
-    </button>
+    </Button>
   );
 }
 

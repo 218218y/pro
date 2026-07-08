@@ -196,6 +196,31 @@ forbidPattern(
   /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-door-thickness-reset-btn wp-r-styled-tooltip hint-bottom"/
 );
 
+requirePattern(
+  'esm/native/ui/react/tabs/interior_tab_sketch_drawer_height_field.tsx',
+  /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/interior_tab_sketch_drawer_height_field.tsx',
+  /export function SketchDrawerHeightField[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-sketch-drawer-height-reset-btn/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/interior_tab_sketch_drawer_height_field.tsx',
+  /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/interior_layout_sketch_shelves_section.tsx',
+  /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/interior_layout_sketch_shelves_section.tsx',
+  /function SketchFieldResetButton[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-sketch-drawer-height-reset-btn/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/interior_layout_sketch_shelves_section.tsx',
+  /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"/
+);
+
 if (errors.length) {
   console.error('[ui-design-system-contract] FAILED');
   for (const error of errors) console.error(`- ${error}`);

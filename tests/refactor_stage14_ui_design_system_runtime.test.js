@@ -29,6 +29,10 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
     'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_components.tsx'
   );
   const structureControls = read('esm/native/ui/react/tabs/structure_tab_controls.tsx');
+  const sketchDrawerHeightField = read(
+    'esm/native/ui/react/tabs/interior_tab_sketch_drawer_height_field.tsx'
+  );
+  const sketchShelvesSection = read('esm/native/ui/react/tabs/interior_layout_sketch_shelves_section.tsx');
 
   assert.match(colorSwatch, /children\?: ReactNode/);
   assert.match(colorSwatch, /special\?: boolean/);
@@ -110,5 +114,27 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   assert.doesNotMatch(
     structureControls,
     /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-door-thickness-reset-btn wp-r-styled-tooltip hint-bottom"/
+  );
+
+  assert.match(
+    sketchDrawerHeightField,
+    /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+  );
+  assert.match(
+    sketchDrawerHeightField,
+    /export function SketchDrawerHeightField[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-sketch-drawer-height-reset-btn/
+  );
+  assert.doesNotMatch(
+    sketchDrawerHeightField,
+    /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"/
+  );
+  assert.match(sketchShelvesSection, /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/);
+  assert.match(
+    sketchShelvesSection,
+    /function SketchFieldResetButton[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-sketch-drawer-height-reset-btn/
+  );
+  assert.doesNotMatch(
+    sketchShelvesSection,
+    /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"/
   );
 });

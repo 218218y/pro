@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import type { ChangeEvent, FocusEvent, ReactElement } from 'react';
 
+import { Button } from '../components/index.js';
 import {
   SKETCH_DRAWER_HEIGHT_MAX_CM,
   SKETCH_DRAWER_HEIGHT_MIN_CM,
@@ -58,14 +59,15 @@ export function SketchDrawerHeightField(props: SketchDrawerHeightFieldProps): Re
   return (
     <div className="wp-field wp-r-sketch-drawer-height-field">
       <div className="wp-r-sketch-drawer-height-row">
-        <button
-          type="button"
-          className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"
+        <Button
+          variant="light"
+          inline
+          className="wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"
           onClick={props.onReset}
         >
           <i className="fas fa-undo-alt" aria-hidden="true" />
           <span>ברירת מחדל</span>
-        </button>
+        </Button>
         <div className="wp-r-sketch-drawer-height-control">
           <label className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label" htmlFor={inputId}>
             {props.label}
