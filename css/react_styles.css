@@ -4357,11 +4357,6 @@ body.wp-ui-react .wp-viewer-measurement-mode-menu {
   pointer-events: auto;
 }
 
-body.wp-ui-react .wp-viewer-notes-controls .hint-bottom:hover,
-body.wp-ui-react .wp-viewer-notes-controls .hint-bottom:focus-visible {
-  z-index: var(--wp-z-tooltip);
-}
-
 body.wp-ui-react .cam-btn.wp-viewer-measurement-mode-btn {
   width: 42px;
   min-width: 42px;
@@ -4616,6 +4611,8 @@ body.wp-ui-react .hint-bottom::before {
 
 #reactSidebarRoot .wp-r-header .wp-r-header-hint.hint-bottom:hover,
 #reactSidebarRoot .wp-r-header .wp-r-header-hint.hint-bottom:focus-visible,
+body.wp-ui-react .wp-viewer-notes-controls .hint-bottom:hover,
+body.wp-ui-react .wp-viewer-notes-controls .hint-bottom:focus-visible,
 body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:hover,
 body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:focus-visible,
 body.wp-ui-react .hint-bottom::after,
