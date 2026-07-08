@@ -421,11 +421,15 @@ function resolveViewerMeasurementPlane(args: {
   const kind = inferMeasurementPlaneKind(box, forceInteriorFront);
   const axes = measurementPlaneAxes(kind);
   const cameraSign = readCameraAxisSign({ App, THREE, wardrobeGroup, box, axis: axes.normal });
+  const targetFrontSign =
+    !forceInteriorFront && axes.normal === 'z' && target ? readDoorOrDrawerFrontFaceSign(target) : null;
   const hitSign = forceInteriorFront
     ? null
     : readClosestHitFaceSign({ App, hitState, wardrobeGroup, box, axis: axes.normal });
   const shapeSign = forceInteriorFront ? null : readShapePlaneSign(box, axes.normal, kind);
-  const normalSign = forceInteriorFront ? (cameraSign ?? 1) : (hitSign ?? shapeSign ?? cameraSign ?? 1);
+  const normalSign = forceInteriorFront
+    ? (cameraSign ?? 1)
+    : (targetFrontSign ?? hitSign ?? shapeSign ?? cameraSign ?? 1);
   const normalFace = normalSign >= 0 ? getBoxMaxAxis(box, axes.normal) : getBoxMinAxis(box, axes.normal);
 
   const uMin = getBoxMinAxis(box, axes.u);
@@ -666,6 +670,24 @@ export function isSlidingDoorLikeTarget(value: unknown): boolean {
     current = asMeasurableObject(current.parent);
   }
   return false;
+}
+
+function readDoorOrDrawerFrontFaceSign(value: unknown): number | null {
+  let current = asMeasurableObject(value);
+  while (current) {
+    const ud = readUserData(current);
+    const partId = readPartIdFromUserData(ud);
+    const hasFrontMetadata = readDoorOwnerMetadata(ud) != null;
+    if (hasFrontMetadata || (partId != null && __wp_isDoorOrDrawerLikePartId(partId))) {
+      const sign =
+        readFiniteNumber(ud, '__handleZSign') ??
+        readFiniteNumber(ud, '__wpDoorOpenDirSign') ??
+        readFiniteNumber(ud, 'faceSign');
+      return sign != null && sign < 0 ? -1 : 1;
+    }
+    current = asMeasurableObject(current.parent);
+  }
+  return null;
 }
 
 function readFrontPlaneOcclusionAdvance(args: {

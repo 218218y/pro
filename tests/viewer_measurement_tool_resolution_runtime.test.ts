@@ -494,6 +494,9 @@ test('resolveViewerMeasurementResolution measures profile door visual branches a
   assertClose(resolution.box.width, 0.7);
   assertClose(resolution.box.height, 2);
   assertClose(resolution.box.depth, 0.02);
+  assert.equal(resolution.plane.kind, 'front');
+  assert.equal(resolution.plane.normalSign, 1);
+  assertClose(resolution.plane.normalValue, 0.01 + FRONT_Z_EPSILON_M);
 });
 
 test('resolveViewerMeasurementResolution returns a basis plane for corner pentagon doors', () => {
