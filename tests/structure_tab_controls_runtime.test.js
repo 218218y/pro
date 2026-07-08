@@ -69,6 +69,47 @@ function selectDoorMountThicknessControls(cfg) {
   };
 }
 
+function cx(...parts) {
+  return parts.filter(Boolean).join(' ');
+}
+
+const BUTTON_VARIANT_CLASSES = {
+  primary: 'btn btn-primary',
+  save: 'btn btn-save',
+  delete: 'btn btn-delete',
+  danger: 'btn btn-danger',
+  accent: 'btn btn-accent',
+  light: 'btn btn-light',
+  success: 'btn btn-success',
+  header: 'header-btn-small wp-r-btn-small',
+  default: 'btn',
+};
+
+function renderButton({
+  variant = 'default',
+  size = 'md',
+  inline = false,
+  className,
+  type,
+  children,
+  ...props
+}) {
+  const variantClass = BUTTON_VARIANT_CLASSES[variant] ?? BUTTON_VARIANT_CLASSES.default;
+  const classes =
+    variant === 'header'
+      ? cx(variantClass, className)
+      : cx(variantClass, inline && 'btn-inline', size === 'sm' && 'btn-sm', className);
+  return {
+    type: 'button',
+    props: {
+      ...props,
+      type: type ?? 'button',
+      className: classes,
+      children,
+    },
+  };
+}
+
 function loadStructureTabControlsModule(stubs = {}) {
   const file = path.join(process.cwd(), 'esm/native/ui/react/tabs/structure_tab_controls.tsx');
   const source = fs.readFileSync(file, 'utf8');
@@ -94,6 +135,7 @@ function loadStructureTabControlsModule(stubs = {}) {
     }
     if (specifier === '../components/index.js') {
       return {
+        Button: renderButton,
         OptionButton: ({ selected = false, children, icon, onClick, ...props }) => ({
           type: 'button',
           props: {
