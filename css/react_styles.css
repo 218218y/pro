@@ -4614,7 +4614,10 @@ body.wp-ui-react .hint-bottom::before {
 body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:hover,
 body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:focus-visible,
 body.wp-ui-react .hint-bottom::after,
-body.wp-ui-react .hint-bottom::before,
+body.wp-ui-react .hint-bottom::before {
+  z-index: var(--wp-z-tooltip);
+}
+
 body.wp-ui-react .wp-viewer-notes-controls .hint-bottom:hover,
 body.wp-ui-react .wp-viewer-notes-controls .hint-bottom:focus-visible {
   z-index: var(--wp-z-tooltip);
@@ -5660,7 +5663,9 @@ body.wp-ui-react .wp-pdf-ui-hint {
 
 body.wp-ui-react .wp-pdf-ui-hint:hover,
 body.wp-ui-react .wp-pdf-ui-hint:focus-visible,
-body.wp-ui-react .wp-pdf-ui-hint:focus-within {
+body.wp-ui-react .wp-pdf-ui-hint:focus-within,
+body.wp-ui-react .wp-pdf-ui-hint::after,
+body.wp-ui-react .wp-pdf-ui-hint::before {
   z-index: var(--wp-z-tooltip);
 }
 
@@ -5719,11 +5724,6 @@ body.wp-ui-react .wp-pdf-ui-hint::before {
     opacity 0.18s ease,
     transform 0.18s ease,
     visibility 0.18s ease;
-}
-
-body.wp-ui-react .wp-pdf-ui-hint::after,
-body.wp-ui-react .wp-pdf-ui-hint::before {
-  z-index: var(--wp-z-tooltip);
 }
 
 body.wp-ui-react .wp-pdf-ui-hint:hover::after,
