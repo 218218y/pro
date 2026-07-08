@@ -15,7 +15,7 @@ import {
   type StructureBaseLegStyle,
   type SlidingTracksColor,
 } from './structure_tab_body_section_contracts.js';
-import { OptionButtonGroup } from '../components/index.js';
+import { Button, OptionButtonGroup } from '../components/index.js';
 import { StructureBodyTypeOptionButton } from './structure_tab_body_section_controls.js';
 import {
   BASE_LEG_HEIGHT_MAX_CM,
@@ -122,14 +122,15 @@ export function StructureBodyBaseControls(props: {
       {!props.hideBaseTypeControls && props.baseType === 'plinth' ? (
         <div className="wp-field wp-r-base-plinth-height-field">
           <div className="wp-r-sketch-drawer-height-row wp-r-base-plinth-height-row">
-            <button
-              type="button"
-              className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"
+            <Button
+              variant="light"
+              inline
+              className="wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"
               onClick={() => props.onSetBasePlinthHeightCm(DEFAULT_BASE_PLINTH_HEIGHT_CM)}
             >
               <i className="fas fa-undo-alt" aria-hidden="true" />
               <span>ברירת מחדל</span>
-            </button>
+            </Button>
             <div className="wp-r-sketch-drawer-height-control">
               <label
                 className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label"

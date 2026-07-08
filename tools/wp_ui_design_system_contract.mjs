@@ -220,6 +220,30 @@ forbidPattern(
   'esm/native/ui/react/tabs/interior_layout_sketch_shelves_section.tsx',
   /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"/
 );
+requirePattern(
+  'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx',
+  /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx',
+  /wp-r-sketch-box-plinth-height-row[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-sketch-drawer-height-reset-btn[\s\S]*resetSketchBoxPlinthHeight\(props\)/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx',
+  /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_body_section_base.tsx',
+  /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_body_section_base.tsx',
+  /wp-r-base-plinth-height-row[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-sketch-drawer-height-reset-btn[\s\S]*DEFAULT_BASE_PLINTH_HEIGHT_CM/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/structure_tab_body_section_base.tsx',
+  /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"/
+);
 
 if (errors.length) {
   console.error('[ui-design-system-contract] FAILED');

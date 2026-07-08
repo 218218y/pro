@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 
 import { buildScopedFormFieldId } from '../components/form_field_id.js';
+import { Button } from '../components/index.js';
 
 import {
   SKETCH_TOOL_BOX_DIVIDER,
@@ -289,16 +290,17 @@ export function InteriorSketchBoxControlsSection(props: InteriorSketchBoxControl
                 style={{ gridColumn: '1 / -1' }}
               >
                 <div className="wp-r-sketch-drawer-height-row wp-r-base-plinth-height-row wp-r-sketch-box-plinth-height-row">
-                  <button
-                    type="button"
-                    className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"
+                  <Button
+                    variant="light"
+                    inline
+                    className="wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"
                     onClick={() => {
                       resetSketchBoxPlinthHeight(props);
                     }}
                   >
                     <i className="fas fa-undo-alt" aria-hidden="true" />
                     <span>ברירת מחדל</span>
-                  </button>
+                  </Button>
                   <div className="wp-r-sketch-drawer-height-control">
                     <label
                       className="wp-r-label wp-r-label--center wp-r-sketch-drawer-height-label"
