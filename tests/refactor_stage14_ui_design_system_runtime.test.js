@@ -23,6 +23,7 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   const button = read('esm/native/ui/react/components/Button.tsx');
   const designPanel = read('esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx');
   const colorSection = read('esm/native/ui/react/tabs/design_tab_color_section.tsx');
+  const doorFeaturesSection = read('esm/native/ui/react/tabs/design_tab_sections_door_features.tsx');
   const cellDimsSection = read('esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx');
   const platformOverhangField = read('esm/native/ui/react/tabs/structure_tab_platform_overhang_field.tsx');
   const sketchBoxControls = read(
@@ -73,6 +74,13 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   );
   assert.doesNotMatch(colorSection, /className="btn btn-delete wp-r-btn-compact"/);
   assert.doesNotMatch(colorSection, /className="btn btn-save wp-r-mt-4"/);
+
+  assert.match(doorFeaturesSection, /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/);
+  assert.match(
+    doorFeaturesSection,
+    /wp-r-groove-lines-row[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*className="wp-r-groove-reset-btn"[\s\S]*onClick=\{model\.resetGrooveLinesCount\}/
+  );
+  assert.doesNotMatch(doorFeaturesSection, /className="btn btn-light btn-inline wp-r-groove-reset-btn"/);
 
   assert.match(
     cellDimsSection,

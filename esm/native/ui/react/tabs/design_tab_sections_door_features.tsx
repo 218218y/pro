@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 
-import { ModeToggleButton, ToggleRow } from '../components/index.js';
+import { Button, ModeToggleButton, ToggleRow } from '../components/index.js';
 import type { DoorFeaturesSectionProps } from './design_tab_sections_contracts.js';
 
 export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactElement | null {
@@ -42,14 +42,15 @@ export function DoorFeaturesSection(props: DoorFeaturesSectionProps): ReactEleme
                 מספר חריטות
               </label>
               <div className="wp-r-groove-lines-row">
-                <button
-                  type="button"
-                  className="btn btn-light btn-inline wp-r-groove-reset-btn"
+                <Button
+                  variant="light"
+                  inline
+                  className="wp-r-groove-reset-btn"
                   onClick={model.resetGrooveLinesCount}
                 >
                   <i className="fas fa-undo-alt" aria-hidden="true" />
                   <span>ברירת מחדל</span>
-                </button>
+                </Button>
                 <input
                   id="wp-r-groove-lines-count"
                   name="grooveLinesCount"

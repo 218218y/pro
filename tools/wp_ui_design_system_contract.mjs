@@ -244,6 +244,18 @@ forbidPattern(
   'esm/native/ui/react/tabs/structure_tab_body_section_base.tsx',
   /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"/
 );
+requirePattern(
+  'esm/native/ui/react/tabs/design_tab_sections_door_features.tsx',
+  /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/design_tab_sections_door_features.tsx',
+  /wp-r-groove-lines-row[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*className="wp-r-groove-reset-btn"[\s\S]*onClick=\{model\.resetGrooveLinesCount\}/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/design_tab_sections_door_features.tsx',
+  /className="btn btn-light btn-inline wp-r-groove-reset-btn"/
+);
 
 if (errors.length) {
   console.error('[ui-design-system-contract] FAILED');
