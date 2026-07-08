@@ -150,6 +150,31 @@ forbidPattern(
   /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-styled-tooltip hint-bottom"/
 );
 
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_platform_overhang_field.tsx',
+  /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_platform_overhang_field.tsx',
+  /<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-platform-overhang-reset-btn/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/structure_tab_platform_overhang_field.tsx',
+  /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-platform-overhang-reset-btn wp-r-styled-tooltip hint-bottom"/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_components.tsx',
+  /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_components.tsx',
+  /export function SketchBoxPlatformOverhangField[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-platform-overhang-reset-btn/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_components.tsx',
+  /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-platform-overhang-reset-btn wp-r-styled-tooltip hint-bottom"/
+);
+
 if (errors.length) {
   console.error('[ui-design-system-contract] FAILED');
   for (const error of errors) console.error(`- ${error}`);

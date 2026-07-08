@@ -2,7 +2,7 @@ import { useId } from 'react';
 import type { CSSProperties, ReactElement, ReactNode } from 'react';
 
 import { InlineNotice } from '../components/InlineNotice.js';
-import { ModeToggleButton, OptionButtonGroup } from '../components/index.js';
+import { Button, ModeToggleButton, OptionButtonGroup } from '../components/index.js';
 import { OptionBtn, cx } from './interior_tab_helpers.js';
 import {
   PLATFORM_OVERHANG_MAX_CM,
@@ -124,16 +124,17 @@ export function SketchBoxPlatformOverhangField(props: {
             props.onChange(normalizePlatformOverhangCm(rawValue, props.defaultValue));
           }}
         />
-        <button
-          type="button"
-          className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-platform-overhang-reset-btn wp-r-styled-tooltip hint-bottom"
+        <Button
+          variant="light"
+          inline
+          className="wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-platform-overhang-reset-btn wp-r-styled-tooltip hint-bottom"
           title={props.resetTitle}
           aria-label={props.resetTitle}
           data-tooltip={props.resetTitle}
           onClick={() => props.onChange(props.defaultValue)}
         >
           <i className="fas fa-undo-alt" aria-hidden="true" />
-        </button>
+        </Button>
       </div>
     </div>
   );

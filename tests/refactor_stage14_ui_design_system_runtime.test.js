@@ -24,6 +24,10 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   const designPanel = read('esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx');
   const colorSection = read('esm/native/ui/react/tabs/design_tab_color_section.tsx');
   const cellDimsSection = read('esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx');
+  const platformOverhangField = read('esm/native/ui/react/tabs/structure_tab_platform_overhang_field.tsx');
+  const sketchBoxControls = read(
+    'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_components.tsx'
+  );
 
   assert.match(colorSwatch, /children\?: ReactNode/);
   assert.match(colorSwatch, /special\?: boolean/);
@@ -72,5 +76,20 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   assert.doesNotMatch(
     cellDimsSection,
     /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-styled-tooltip hint-bottom"/
+  );
+
+  assert.match(platformOverhangField, /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/);
+  assert.match(
+    platformOverhangField,
+    /<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-platform-overhang-reset-btn/
+  );
+  assert.match(sketchBoxControls, /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/);
+  assert.match(
+    sketchBoxControls,
+    /export function SketchBoxPlatformOverhangField[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-platform-overhang-reset-btn/
+  );
+  assert.doesNotMatch(
+    `${platformOverhangField}\n${sketchBoxControls}`,
+    /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-platform-overhang-reset-btn wp-r-styled-tooltip hint-bottom"/
   );
 });
