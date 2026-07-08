@@ -142,18 +142,15 @@ function createState(overrides = {}) {
   };
 }
 
+function createCommand(canonicalPartKey, selection = 'mirror') {
+  return { canonicalPartKey, selection };
+}
+
 test('full default mirror is committed on the first click even when no explicit mirror layout payload is needed', () => {
   const state = createState();
   applyPaintPartMutation({
     state,
-    paintPartKey: 'd4_full',
-    paintSelection: 'mirror',
-    clickArgs: {
-      App: {},
-      foundPartId: 'd4_full',
-      activeStack: 'top',
-      isPaintMode: true,
-    },
+    command: createCommand('d4_full'),
   });
 
   assert.equal(state.special.d4_full, 'mirror');
@@ -164,14 +161,7 @@ test('full default mirror toggles off when clicked again on an already full-mirr
   const state = createState({ special0: { d4_full: 'mirror' } });
   applyPaintPartMutation({
     state,
-    paintPartKey: 'd4_full',
-    paintSelection: 'mirror',
-    clickArgs: {
-      App: {},
-      foundPartId: 'd4_full',
-      activeStack: 'top',
-      isPaintMode: true,
-    },
+    command: createCommand('d4_full'),
   });
 
   assert.equal(state.special.d4_full, undefined);
@@ -182,14 +172,7 @@ test('full inside mirror is stored as a face-specific full layout', () => {
   const state = createState();
   applyPaintPartMutation({
     state,
-    paintPartKey: 'd4_full',
-    paintSelection: 'mirror',
-    clickArgs: {
-      App: {},
-      foundPartId: 'd4_full',
-      activeStack: 'top',
-      isPaintMode: true,
-    },
+    command: createCommand('d4_full'),
     resolveMirrorLayout: () => ({
       nextLayout: null,
       removeMatch: null,
@@ -210,14 +193,7 @@ test('full outside mirror does not erase an existing full inside mirror', () => 
   });
   applyPaintPartMutation({
     state,
-    paintPartKey: 'd4_full',
-    paintSelection: 'mirror',
-    clickArgs: {
-      App: {},
-      foundPartId: 'd4_full',
-      activeStack: 'top',
-      isPaintMode: true,
-    },
+    command: createCommand('d4_full'),
     resolveMirrorLayout: () => ({
       nextLayout: null,
       removeMatch: null,

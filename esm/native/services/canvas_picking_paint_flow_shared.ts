@@ -13,6 +13,7 @@ import type {
 import { getBuilderMaterialsService } from '../runtime/builder_service_access.js';
 import {
   isAdhesiveGlassValue,
+  isDoorStyleOverridePaintToken,
   isGlassPaintSelection,
   readDoorStyleMap,
   mirrorLayoutMapEquals,
@@ -216,6 +217,7 @@ export function getPaintSourceTag(paint: string, foundPartId: string): string {
   const selection = String(paint || '')
     .trim()
     .toLowerCase();
+  if (isDoorStyleOverridePaintToken(selection)) return 'paint.apply:doorStyle';
   if (selection === 'mirror') return 'paint.apply:mirror';
   if (isAdhesiveGlassValue(selection)) return 'paint.apply:adhesiveGlass';
   if (isGlassPaintSelection(selection)) return 'paint.apply:glass';

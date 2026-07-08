@@ -4,12 +4,14 @@ import assert from 'node:assert/strict';
 import { tryHandleCanvasPaintClick } from '../esm/native/services/canvas_picking_paint_flow.ts';
 import { applyGroupedOrCornerPaintTarget } from '../esm/native/services/canvas_picking_paint_flow_apply_targets.ts';
 import { resolvePaintTargetKeys } from '../esm/native/services/canvas_picking_paint_targets.ts';
+import { applyPaintPartMutation as applyResolvedPaintPartMutation } from '../esm/native/services/canvas_picking_paint_flow_apply_special.ts';
 import {
-  applyPaintPartMutation,
+  resolveCanvasPaintCommand,
   resolveDirectPaintTargetKey,
   resolvePaintPartKey,
-} from '../esm/native/services/canvas_picking_paint_flow_apply_special.ts';
-import { resolveMirrorLayoutForPaintClick } from '../esm/native/services/canvas_picking_paint_flow_mirror.ts';
+  type ResolvedCanvasPaintCommand,
+} from '../esm/native/services/canvas_picking_paint_command.ts';
+import { resolveMirrorLayoutForPaintClick as resolveMirrorLayoutForPaintCommand } from '../esm/native/services/canvas_picking_paint_flow_mirror.ts';
 import {
   createPaintFlowMutableState,
   summarizePaintFlowChanges,
@@ -110,6 +112,84 @@ function createManualState(overrides: Partial<PaintFlowMutableState> = {}): Pain
   };
 }
 
+function createPaintCommand(args: {
+  App?: any;
+  foundPartId: string;
+  effectiveDoorId?: string | null;
+  foundDrawerId?: string | null;
+  activeStack?: 'top' | 'bottom';
+  paintSelection: string;
+  primaryHitObject?: unknown;
+  doorHitObject?: unknown;
+  primaryHitPoint?: unknown;
+  doorHitPoint?: unknown;
+  targetScope?: { stackSplitUnifiedFrame: boolean };
+  hitIdentity?: Parameters<typeof resolveCanvasPaintCommand>[0]['hitIdentity'];
+}): ResolvedCanvasPaintCommand {
+  const App = args.App || createApp();
+  const primaryHitObject =
+    args.primaryHitObject ??
+    (args.targetScope
+      ? { userData: { __wpStackSplitUnifiedFrame: args.targetScope.stackSplitUnifiedFrame } }
+      : undefined);
+  return resolveCanvasPaintCommand(
+    {
+      App,
+      foundPartId: args.foundPartId,
+      effectiveDoorId: args.effectiveDoorId ?? null,
+      foundDrawerId: args.foundDrawerId ?? null,
+      activeStack: args.activeStack || 'top',
+      isPaintMode: true,
+      primaryHitObject,
+      doorHitObject: args.doorHitObject,
+      primaryHitPoint: args.primaryHitPoint,
+      doorHitPoint: args.doorHitPoint,
+      hitIdentity: args.hitIdentity ?? null,
+    },
+    args.paintSelection
+  );
+}
+
+function applyPaintPartMutation(args: {
+  state: PaintFlowMutableState;
+  paintPartKey: string;
+  paintSelection: string;
+  clickArgs?: Partial<Parameters<typeof resolveCanvasPaintCommand>[0]>;
+  resolveMirrorLayout?: Parameters<typeof applyResolvedPaintPartMutation>[0]['resolveMirrorLayout'];
+}) {
+  const clickArgs = args.clickArgs || {};
+  applyResolvedPaintPartMutation({
+    state: args.state,
+    command: createPaintCommand({
+      App: args.state.App,
+      foundPartId: args.paintPartKey,
+      effectiveDoorId: clickArgs.effectiveDoorId ?? null,
+      foundDrawerId: clickArgs.foundDrawerId ?? null,
+      activeStack: clickArgs.activeStack || 'top',
+      paintSelection: args.paintSelection,
+      primaryHitObject: clickArgs.primaryHitObject,
+      doorHitObject: clickArgs.doorHitObject,
+      primaryHitPoint: clickArgs.primaryHitPoint,
+      doorHitPoint: clickArgs.doorHitPoint,
+      hitIdentity: clickArgs.hitIdentity ?? null,
+    }),
+    resolveMirrorLayout: args.resolveMirrorLayout,
+  });
+}
+
+function resolveMirrorLayoutForPaintClick(
+  args: Parameters<typeof resolveCanvasPaintCommand>[0],
+  layouts?: Parameters<typeof resolveMirrorLayoutForPaintCommand>[1]
+) {
+  return resolveMirrorLayoutForPaintCommand(
+    {
+      App: args.App,
+      command: resolveCanvasPaintCommand(args, 'mirror'),
+    },
+    layouts
+  );
+}
+
 test('paint grouped/corner target applies the full scoped shell set for corner wing frame clicks', () => {
   const expected = {
     lower_corner_ceil: 'walnut',
@@ -129,15 +209,50 @@ test('paint grouped/corner target applies the full scoped shell set for corner w
     const state = createManualState();
     const handled = applyGroupedOrCornerPaintTarget({
       state,
-      foundPartId,
-      activeStack: 'bottom',
-      paintSelection: 'walnut',
+      command: createPaintCommand({ foundPartId, activeStack: 'bottom', paintSelection: 'walnut' }),
     });
 
     assert.equal(handled, true, foundPartId);
     assert.deepEqual(state.colors, expected, foundPartId);
     assert.deepEqual(resolvePaintTargetKeys(foundPartId, 'bottom'), Object.keys(expected), foundPartId);
   }
+});
+
+test('paint click rejects glass frame paint on non-special body targets without mutating state', () => {
+  const App = createApp({
+    maps: { individualColors: {}, curtainMap: {}, doorSpecialMap: {}, mirrorLayoutMap: {} },
+  });
+  const toasts: Array<{ message: unknown; type: unknown }> = [];
+  let materialRefreshes = 0;
+  App.services.tools = { getPaintColor: () => 'glass' };
+  App.services.uiFeedback = {
+    toast(message: unknown, type: unknown) {
+      toasts.push({ message, type });
+    },
+  };
+  App.services.builder.materials = {
+    applyMaterials() {
+      materialRefreshes += 1;
+    },
+  };
+
+  const handled = tryHandleCanvasPaintClick({
+    App,
+    foundPartId: 'body_right',
+    effectiveDoorId: null,
+    foundDrawerId: null,
+    activeStack: 'top',
+    isPaintMode: true,
+    primaryHitObject: null,
+    doorHitObject: null,
+  } as never);
+
+  assert.equal(handled, true);
+  assert.deepEqual(App.store.getState().config.individualColors, {});
+  assert.deepEqual(App.store.getState().config.doorSpecialMap, {});
+  assert.equal(materialRefreshes, 0);
+  assert.equal(toasts.length, 1);
+  assert.equal(toasts[0]?.type, 'info');
 });
 
 test('paint grouped/corner target treats the pentagon floor, roof, and attach sides as one frame', () => {
@@ -152,9 +267,7 @@ test('paint grouped/corner target treats the pentagon floor, roof, and attach si
     const state = createManualState();
     const handled = applyGroupedOrCornerPaintTarget({
       state,
-      foundPartId,
-      activeStack: 'top',
-      paintSelection: 'walnut',
+      command: createPaintCommand({ foundPartId, activeStack: 'top', paintSelection: 'walnut' }),
     });
 
     assert.equal(handled, true, foundPartId);
@@ -167,9 +280,11 @@ test('paint grouped/corner target scopes the pentagon frame to the lower stack',
   const state = createManualState();
   const handled = applyGroupedOrCornerPaintTarget({
     state,
-    foundPartId: 'corner_pent_attach_main',
-    activeStack: 'bottom',
-    paintSelection: 'walnut',
+    command: createPaintCommand({
+      foundPartId: 'corner_pent_attach_main',
+      activeStack: 'bottom',
+      paintSelection: 'walnut',
+    }),
   });
 
   assert.equal(handled, true);
@@ -195,9 +310,7 @@ test('paint grouped/corner target treats corner leg platforms as scoped single p
     const state = createManualState();
     const handled = applyGroupedOrCornerPaintTarget({
       state,
-      foundPartId,
-      activeStack,
-      paintSelection: 'walnut',
+      command: createPaintCommand({ foundPartId, activeStack, paintSelection: 'walnut' }),
     });
 
     assert.equal(handled, true, foundPartId);
@@ -225,10 +338,7 @@ test('paint grouped/corner target keeps a unified stack-split corner wing frame 
     const state = createManualState();
     const handled = applyGroupedOrCornerPaintTarget({
       state,
-      foundPartId,
-      activeStack,
-      paintSelection: 'walnut',
-      targetScope,
+      command: createPaintCommand({ foundPartId, activeStack, paintSelection: 'walnut', targetScope }),
     });
 
     assert.equal(handled, true, `${activeStack}:${foundPartId}`);
@@ -247,10 +357,7 @@ test('paint grouped/corner target keeps a unified stack-split corner wing frame 
     const state = createManualState();
     const handled = applyGroupedOrCornerPaintTarget({
       state,
-      foundPartId,
-      activeStack,
-      paintSelection: 'walnut',
-      targetScope,
+      command: createPaintCommand({ foundPartId, activeStack, paintSelection: 'walnut', targetScope }),
     });
 
     assert.equal(handled, true, `${activeStack}:${foundPartId}`);
@@ -266,10 +373,12 @@ test('paint grouped/corner target keeps a unified stack-split corner wing frame 
     const state = createManualState();
     const handled = applyGroupedOrCornerPaintTarget({
       state,
-      foundPartId,
-      activeStack: 'top',
-      paintSelection: 'walnut',
-      targetScope,
+      command: createPaintCommand({
+        foundPartId,
+        activeStack: 'top',
+        paintSelection: 'walnut',
+        targetScope,
+      }),
     });
 
     assert.equal(handled, true, `top:${foundPartId}`);
@@ -296,10 +405,7 @@ test('paint grouped/corner target keeps a unified stack-split pentagon frame as 
     const state = createManualState();
     const handled = applyGroupedOrCornerPaintTarget({
       state,
-      foundPartId,
-      activeStack,
-      paintSelection: 'walnut',
-      targetScope,
+      command: createPaintCommand({ foundPartId, activeStack, paintSelection: 'walnut', targetScope }),
     });
 
     assert.equal(handled, true, `${activeStack}:${foundPartId}`);
@@ -318,10 +424,7 @@ test('paint grouped/corner target keeps a unified stack-split pentagon frame as 
     const state = createManualState();
     const handled = applyGroupedOrCornerPaintTarget({
       state,
-      foundPartId,
-      activeStack,
-      paintSelection: 'walnut',
-      targetScope,
+      command: createPaintCommand({ foundPartId, activeStack, paintSelection: 'walnut', targetScope }),
     });
 
     assert.equal(handled, true, `${activeStack}:${foundPartId}`);
@@ -344,9 +447,11 @@ test('paint grouped/corner target migrates legacy unified corner frame colors ba
 
   const handled = applyGroupedOrCornerPaintTarget({
     state,
-    foundPartId: 'corner_wing_side_right',
-    activeStack: 'top',
-    paintSelection: 'oak',
+    command: createPaintCommand({
+      foundPartId: 'corner_wing_side_right',
+      activeStack: 'top',
+      paintSelection: 'oak',
+    }),
   });
 
   assert.equal(handled, true);
@@ -462,9 +567,11 @@ test('paint grouped target treats the stack-split lower carcass frame as one she
   const state = createManualState();
   const handled = applyGroupedOrCornerPaintTarget({
     state,
-    foundPartId: 'lower_body_left',
-    activeStack: 'bottom',
-    paintSelection: 'walnut',
+    command: createPaintCommand({
+      foundPartId: 'lower_body_left',
+      activeStack: 'bottom',
+      paintSelection: 'walnut',
+    }),
   });
 
   assert.equal(handled, true);
@@ -489,9 +596,7 @@ test('paint grouped target treats the chest rear board as part of the body shell
   const state = createManualState();
   const handled = applyGroupedOrCornerPaintTarget({
     state,
-    foundPartId: 'chest_left',
-    activeStack: 'top',
-    paintSelection: 'walnut',
+    command: createPaintCommand({ foundPartId: 'chest_left', activeStack: 'top', paintSelection: 'walnut' }),
   });
 
   assert.equal(handled, true);
@@ -1291,13 +1396,14 @@ test('paint flow summary enables no-build material refresh only for color-only d
   const state = createPaintFlowMutableState(App as never);
 
   state.ensureColors().body_left = 'black';
-  const summary = summarizePaintFlowChanges(state);
+  const summary = summarizePaintFlowChanges(state, 'materialRefreshOnly');
 
   assert.equal(summary.colorsChanged, true);
   assert.equal(summary.curtainsChanged, false);
   assert.equal(summary.specialChanged, false);
   assert.equal(summary.styleChanged, false);
   assert.equal(summary.mirrorLayoutChanged, false);
+  assert.equal(summary.invalidationKind, 'materialRefreshOnly');
   assert.equal(summary.useNoBuildMaterialRefresh, true);
 });
 
@@ -1339,6 +1445,33 @@ test('paint flow helpers resolve scoped door-style and paint-part keys without l
     }),
     'sketch_box_free_alpha_door_sbdr_1'
   );
+});
+
+test('paint command preserves sketch-box persisted special map keys beside canonical hit identity', () => {
+  const command = createPaintCommand({
+    foundPartId: 'sketch_box_free_alpha_door_sbdr_1',
+    effectiveDoorId: 'sbdr_1',
+    paintSelection: 'mirror',
+    hitIdentity: {
+      targetKind: 'door',
+      partId: 'sketch_box_free_alpha_door_sbdr_1',
+      doorId: 'sbdr_1',
+      drawerId: null,
+      moduleIndex: 7,
+      moduleStack: null,
+      surfaceId: 'sketch-box:alpha:door:sbdr_1',
+      faceSign: 1,
+      faceSide: 'outside',
+      splitPart: null,
+      source: 'click',
+    },
+  });
+
+  assert.equal(command.canonicalPartKey, 'sketch_box_free_alpha_door_sbdr_1');
+  assert.equal(command.effectiveDoorId, 'sbdr_1');
+  assert.equal(command.hitIdentity?.doorId, 'sbdr_1');
+  assert.equal(command.mutationKind, 'mirror');
+  assert.equal(command.invalidationKind, 'structuralRebuild');
 });
 
 test('door style paint click clears full-door library glass aliases before applying post style', () => {
@@ -1774,9 +1907,11 @@ test('paint flow commit skips no-op writes and tags canonical source families fo
     App: noOpApp as never,
     state: noOpState,
     paintSource: 'paint.apply:color',
+    invalidationKind: 'materialRefreshOnly',
   });
 
   assert.equal(noOpSummary.didChange, false);
+  assert.equal(noOpSummary.invalidationKind, 'noChange');
   assert.equal(getPaintSourceTag('mirror', 'd1_left'), 'paint.apply:mirror');
   assert.equal(getPaintSourceTag('glass', 'd1_left'), 'paint.apply:glass');
   assert.equal(getPaintSourceTag('oak', 'body_left'), 'paint.apply:group');
@@ -1834,9 +1969,11 @@ test('paint flow commit uses no-build refresh only for color-only diffs and batc
     App: App as never,
     state,
     paintSource: 'paint.apply:group',
+    invalidationKind: 'materialRefreshOnly',
   });
 
   assert.equal(summary.didChange, true);
+  assert.equal(summary.invalidationKind, 'materialRefreshOnly');
   assert.equal(summary.useNoBuildMaterialRefresh, true);
   assert.equal(materialRefreshes, 1);
   assert.deepEqual(renderCalls, [false]);

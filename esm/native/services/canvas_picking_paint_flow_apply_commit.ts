@@ -12,14 +12,16 @@ import {
   type PaintFlowChangeSummary,
   type PaintFlowMutableState,
 } from './canvas_picking_paint_flow_apply_state.js';
+import type { PaintInvalidationKind } from './canvas_picking_paint_command.js';
 
 export function commitPaintFlowState(args: {
   App: AppContainer;
   state: PaintFlowMutableState;
   paintSource: string;
+  invalidationKind: PaintInvalidationKind;
 }): PaintFlowChangeSummary {
-  const { App, state, paintSource } = args;
-  const summary = summarizePaintFlowChanges(state);
+  const { App, state, paintSource, invalidationKind } = args;
+  const summary = summarizePaintFlowChanges(state, invalidationKind);
   if (!summary.didChange) return summary;
 
   const baseMeta = createCanvasPickingPaintStructuralMeta(paintSource);

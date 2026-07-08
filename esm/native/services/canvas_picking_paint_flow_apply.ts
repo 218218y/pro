@@ -3,19 +3,14 @@
 // Keep the public paint-click contract stable while grouped targets, special
 // mirror/glass behavior, and map-diff/history policy live in focused owners.
 import { getTools, getUiFeedback } from '../runtime/service_access.js';
-import { isAdhesiveGlassValue } from '../features/door_authoring/api.js';
-import { getPaintSourceTag, isSpecialPart } from './canvas_picking_paint_flow_shared.js';
 import type { CanvasPaintClickArgs } from './canvas_picking_paint_flow_contracts.js';
+import { resolveCanvasPaintCommand } from './canvas_picking_paint_command.js';
 import { createPaintFlowMutableState } from './canvas_picking_paint_flow_apply_state.js';
 import { applyGroupedOrCornerPaintTarget } from './canvas_picking_paint_flow_apply_targets.js';
-import {
-  applyPaintPartMutation,
-  resolveDirectPaintTargetKey,
-} from './canvas_picking_paint_flow_apply_special.js';
+import { applyPaintPartMutation } from './canvas_picking_paint_flow_apply_special.js';
 import { tryHandleDoorStyleOverridePaintClick } from './canvas_picking_paint_flow_apply_door_style.js';
 import { commitPaintFlowState } from './canvas_picking_paint_flow_apply_commit.js';
 import { isNonPaintableCanvasPaintPartId } from './canvas_picking_paint_part_eligibility.js';
-import { readCanvasPaintTargetScopeFromObject } from './canvas_picking_paint_target_scope.js';
 
 function notifyUnsupportedMirrorPaintTarget(App: unknown, label = 'מראה'): void {
   try {
@@ -29,7 +24,7 @@ function notifyUnsupportedMirrorPaintTarget(App: unknown, label = 'מראה'): v
 }
 
 export function tryHandleCanvasPaintClick(args: CanvasPaintClickArgs): boolean {
-  const { App, foundPartId, effectiveDoorId, foundDrawerId, activeStack: paintStackKey, isPaintMode } = args;
+  const { App, foundPartId, isPaintMode } = args;
 
   if (!isPaintMode || !foundPartId) return false;
   if (isNonPaintableCanvasPaintPartId(foundPartId)) return false;
@@ -37,54 +32,43 @@ export function tryHandleCanvasPaintClick(args: CanvasPaintClickArgs): boolean {
   const tools = getTools(App);
   const paintSelection = typeof tools.getPaintColor === 'function' ? tools.getPaintColor() : null;
   if (!paintSelection) return false;
-  const paintSource = getPaintSourceTag(paintSelection, foundPartId);
+  const command = resolveCanvasPaintCommand(args, paintSelection);
 
   const handledDoorStyle = tryHandleDoorStyleOverridePaintClick({
     App,
-    foundPartId,
-    effectiveDoorId,
-    foundDrawerId,
-    activeStack: paintStackKey,
-    paintSelection,
-    paintSource,
+    foundPartId: command.originalFoundPartId,
+    effectiveDoorId: command.effectiveDoorId,
+    foundDrawerId: command.drawerId,
+    activeStack: command.stack,
+    paintSelection: command.selection,
+    paintSource: command.sourceTag,
   });
   if (handledDoorStyle !== null) return handledDoorStyle;
 
   const state = createPaintFlowMutableState(App);
-  const paintPartKey = resolveDirectPaintTargetKey({
-    foundPartId,
-    effectiveDoorId,
-    foundDrawerId,
-    activeStack: paintStackKey,
-  });
 
-  if ((paintSelection === 'mirror' || isAdhesiveGlassValue(paintSelection)) && !isSpecialPart(paintPartKey)) {
+  if (command.mutationKind === 'unsupported') {
     notifyUnsupportedMirrorPaintTarget(App, paintSelection === 'mirror' ? 'מראה' : 'זכוכית');
     return true;
   }
 
-  const targetScope = readCanvasPaintTargetScopeFromObject(App, args.primaryHitObject || args.doorHitObject);
   const handledGroupedTarget = applyGroupedOrCornerPaintTarget({
     state,
-    foundPartId,
-    activeStack: paintStackKey,
-    paintSelection,
-    targetScope,
+    command,
   });
 
   if (!handledGroupedTarget) {
     applyPaintPartMutation({
       state,
-      paintPartKey,
-      paintSelection,
-      clickArgs: args,
+      command,
     });
   }
 
   const summary = commitPaintFlowState({
     App,
     state,
-    paintSource,
+    paintSource: command.sourceTag,
+    invalidationKind: command.invalidationKind,
   });
   if (!summary.didChange) return true;
 

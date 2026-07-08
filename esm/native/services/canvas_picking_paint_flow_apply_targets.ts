@@ -2,7 +2,6 @@ import {
   __wp_scopeCornerPartKeyForStack,
   __wp_scopeCornerPartKeysForStack,
 } from './canvas_picking_core_helpers.js';
-import type { CanvasPaintTargetScope } from './canvas_picking_paint_target_scope.js';
 import {
   CHEST_BODY_PARTS,
   CORNER_BODY_PARTS,
@@ -22,6 +21,7 @@ import {
   toggleSinglePaintTarget,
 } from './canvas_picking_paint_flow_shared.js';
 import type { PaintFlowMutableState } from './canvas_picking_paint_flow_apply_state.js';
+import type { ResolvedCanvasPaintCommand } from './canvas_picking_paint_command.js';
 
 function readOwnPaintValue(map: Record<string, unknown>, key: string): unknown {
   return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined;
@@ -96,12 +96,15 @@ function resolveCornerLegPlatformPaintTargetKey(partId: string): string | null {
 
 export function applyGroupedOrCornerPaintTarget(args: {
   state: PaintFlowMutableState;
-  foundPartId: string;
-  activeStack: 'top' | 'bottom';
-  paintSelection: string;
-  targetScope?: CanvasPaintTargetScope | null;
+  command: ResolvedCanvasPaintCommand;
 }): boolean {
-  const { state, foundPartId, activeStack, paintSelection, targetScope } = args;
+  const { state, command } = args;
+  const {
+    originalFoundPartId: foundPartId,
+    stack: activeStack,
+    selection: paintSelection,
+    targetScope,
+  } = command;
   const unifiedCornerFrameKeys = resolveUnifiedCornerFramePaintTargetKeys(
     foundPartId,
     activeStack,

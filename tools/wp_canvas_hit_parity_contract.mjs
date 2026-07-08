@@ -11,6 +11,7 @@ const files = {
   clickRouteActions: 'esm/native/services/canvas_picking_click_route_actions.ts',
   splitClickShared: 'esm/native/services/canvas_picking_door_split_click_shared.ts',
   paintContracts: 'esm/native/services/canvas_picking_paint_flow_contracts.ts',
+  paintCommand: 'esm/native/services/canvas_picking_paint_command.ts',
   paintShared: 'esm/native/services/canvas_picking_paint_flow_shared.ts',
   paintMirror: 'esm/native/services/canvas_picking_paint_flow_mirror.ts',
   paintApplySpecial: 'esm/native/services/canvas_picking_paint_flow_apply_special.ts',
@@ -252,6 +253,32 @@ requireMatch(
   'paint click args must expose optional canonical hitIdentity'
 );
 
+const paintCommand = read(files.paintCommand);
+requireMatch(
+  files.paintCommand,
+  paintCommand,
+  /export type ResolvedCanvasPaintCommand = \{/,
+  'paint command owner must expose the resolved command contract'
+);
+requireMatch(
+  files.paintCommand,
+  paintCommand,
+  /readonly canonicalPartKey: string;/,
+  'resolved paint command must carry the canonical map key'
+);
+requireMatch(
+  files.paintCommand,
+  paintCommand,
+  /readonly invalidationKind: PaintInvalidationKind;/,
+  'resolved paint command must carry explicit invalidation intent'
+);
+requireMatch(
+  files.paintCommand,
+  paintCommand,
+  /effectiveDoorId && \(!isSpecialPart\(foundPartId\) \|\| isSpecialPart\(effectiveDoorId\)\)/,
+  'direct paint target resolution must not let canonical door ids override special sketch door part keys'
+);
+
 const paintMirror = read(files.paintMirror);
 requireMatch(
   files.paintMirror,
@@ -293,12 +320,6 @@ requireMatch(
 );
 
 const paintApplySpecial = read(files.paintApplySpecial);
-requireMatch(
-  files.paintApplySpecial,
-  paintApplySpecial,
-  /effectiveDoorId && \(!isSpecialPart\(foundPartId\) \|\| isSpecialPart\(effectiveDoorId\)\)/,
-  'direct paint target resolution must not let canonical door ids override special sketch door part keys'
-);
 requireMatch(
   files.paintApplySpecial,
   paintApplySpecial,

@@ -13,7 +13,6 @@ import {
   cloneDoorStyleMap,
   cloneIndividualColorsMap,
   cloneMirrorLayoutConfigMap,
-  hasLiveMaterialRefresh,
   readCurtainMap,
   readDoorSpecialMap,
   readDoorStyleConfigMap,
@@ -22,6 +21,7 @@ import {
   sameFlatMap,
   sameMirrorLayoutMap,
 } from './canvas_picking_paint_flow_shared.js';
+import type { PaintInvalidationKind } from './canvas_picking_paint_command.js';
 
 export type PaintFlowMutableState = {
   App: AppContainer;
@@ -49,6 +49,7 @@ export type PaintFlowChangeSummary = {
   styleChanged: boolean;
   mirrorLayoutChanged: boolean;
   didChange: boolean;
+  invalidationKind: PaintInvalidationKind;
   useNoBuildMaterialRefresh: boolean;
 };
 
@@ -110,13 +111,24 @@ export function createPaintFlowMutableState(App: AppContainer): PaintFlowMutable
   };
 }
 
-export function summarizePaintFlowChanges(state: PaintFlowMutableState): PaintFlowChangeSummary {
+export function summarizePaintFlowChanges(
+  state: PaintFlowMutableState,
+  requestedInvalidationKind: PaintInvalidationKind
+): PaintFlowChangeSummary {
   const colorsChanged = !sameFlatMap(state.colors0, state.colors);
   const curtainsChanged = !sameFlatMap(state.curtains0, state.curtains);
   const specialChanged = !sameFlatMap(state.special0, state.special);
   const styleChanged = !sameFlatMap(state.style0, state.style);
   const mirrorLayoutChanged = !sameMirrorLayoutMap(state.mirror0, state.mirrorLayout);
   const didChange = colorsChanged || curtainsChanged || specialChanged || styleChanged || mirrorLayoutChanged;
+  const useNoBuildMaterialRefresh =
+    didChange &&
+    requestedInvalidationKind === 'materialRefreshOnly' &&
+    colorsChanged &&
+    !curtainsChanged &&
+    !specialChanged &&
+    !styleChanged &&
+    !mirrorLayoutChanged;
   return {
     colorsChanged,
     curtainsChanged,
@@ -124,12 +136,11 @@ export function summarizePaintFlowChanges(state: PaintFlowMutableState): PaintFl
     styleChanged,
     mirrorLayoutChanged,
     didChange,
-    useNoBuildMaterialRefresh:
-      colorsChanged &&
-      !curtainsChanged &&
-      !specialChanged &&
-      !styleChanged &&
-      !mirrorLayoutChanged &&
-      hasLiveMaterialRefresh(state.App),
+    invalidationKind: !didChange
+      ? 'noChange'
+      : useNoBuildMaterialRefresh
+        ? 'materialRefreshOnly'
+        : 'structuralRebuild',
+    useNoBuildMaterialRefresh,
   };
 }

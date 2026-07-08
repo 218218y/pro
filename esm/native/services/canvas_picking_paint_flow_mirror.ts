@@ -12,7 +12,7 @@ import {
   readMirrorPlacementRectFromUserData,
   resolveMirrorPlacementOwnerByPartId,
 } from './canvas_picking_door_shared.js';
-import type { CanvasPaintClickArgs } from './canvas_picking_paint_flow_contracts.js';
+import type { ResolvedCanvasPaintCommand } from './canvas_picking_paint_command.js';
 import type { MirrorLayoutClickResult } from './canvas_picking_paint_flow_shared.js';
 import { isRecord } from './canvas_picking_paint_flow_shared.js';
 import { __wp_ui } from './canvas_picking_core_helpers.js';
@@ -54,16 +54,19 @@ function normalizeMirrorHitIdentityFaceSign(value: unknown): 1 | -1 | null {
   return null;
 }
 
-function targetMatchesHitIdentityDoor(args: CanvasPaintClickArgs, targetId: string | null): boolean {
-  const identity = args.hitIdentity;
+function targetMatchesHitIdentityDoor(command: ResolvedCanvasPaintCommand, targetId: string | null): boolean {
+  const identity = command.hitIdentity;
   if (!identity || identity.targetKind !== 'door' || !targetId) return false;
   if (identity.partId === targetId || identity.doorId === targetId) return true;
   return !!(identity.doorId && targetId.startsWith(`${identity.doorId}_`));
 }
 
-function readHitIdentityMirrorFaceSign(args: CanvasPaintClickArgs, targetId: string | null): 1 | -1 | null {
-  if (!targetMatchesHitIdentityDoor(args, targetId)) return null;
-  return normalizeMirrorHitIdentityFaceSign(args.hitIdentity?.faceSign);
+function readHitIdentityMirrorFaceSign(
+  command: ResolvedCanvasPaintCommand,
+  targetId: string | null
+): 1 | -1 | null {
+  if (!targetMatchesHitIdentityDoor(command, targetId)) return null;
+  return normalizeMirrorHitIdentityFaceSign(command.hitIdentity?.faceSign);
 }
 
 function isFullDoorMirrorLayoutEntry(layout: unknown): boolean {
@@ -92,13 +95,13 @@ function findFullDoorMirrorFaceMatch(
 }
 
 function resolveFullDoorMirrorHitIdentityResult(args: {
-  clickArgs: CanvasPaintClickArgs;
+  command: ResolvedCanvasPaintCommand;
   layouts: MirrorLayoutList | null | undefined;
   targetId: string | null;
   hasSizedDraft: boolean;
 }): MirrorLayoutClickResult | null {
   if (args.hasSizedDraft) return null;
-  const faceSign = readHitIdentityMirrorFaceSign(args.clickArgs, args.targetId);
+  const faceSign = readHitIdentityMirrorFaceSign(args.command, args.targetId);
   if (faceSign == null) return null;
   return {
     nextLayout: null,
@@ -123,29 +126,27 @@ function resolveMirrorFaceSignFromLocalPoint(localPoint: UnknownRecord | null): 
 }
 
 export function resolveMirrorLayoutForPaintClick(
-  args: CanvasPaintClickArgs,
+  args: { App: AppContainer; command: ResolvedCanvasPaintCommand },
   layouts?: MirrorLayoutList | null
 ): MirrorLayoutClickResult {
-  const targetId =
-    typeof args.effectiveDoorId === 'string' && args.effectiveDoorId
-      ? args.effectiveDoorId
-      : args.foundPartId;
-  const hitObj = args.doorHitObject ?? args.primaryHitObject;
-  const hitPoint = args.doorHitPoint ?? args.primaryHitPoint;
+  const { App, command } = args;
+  const targetId = command.canonicalPartKey;
+  const hitObj = command.hitReferences.doorObject ?? command.hitReferences.primaryObject;
+  const hitPoint = command.hitReferences.doorPoint ?? command.hitReferences.primaryPoint;
   const owner = resolveMirrorPlacementOwnerByPartId(isRecord(hitObj) ? hitObj : null, targetId || null);
   const rect = readDoorLeafRect(owner);
-  const draft = readMirrorDraft(args.App);
+  const draft = readMirrorDraft(App);
   const hasSizedDraft = hasSizedMirrorDraft(draft);
   const identityResult = (): MirrorLayoutClickResult | null =>
     resolveFullDoorMirrorHitIdentityResult({
-      clickArgs: args,
+      command,
       layouts,
       targetId: targetId || null,
       hasSizedDraft,
     });
 
   if (!owner || !rect || !hitPoint) return identityResult() || emptyMirrorLayoutClickResult();
-  const localPoint = __wp_projectWorldPointToLocal(args.App, hitPoint, owner);
+  const localPoint = __wp_projectWorldPointToLocal(App, hitPoint, owner);
   if (!localPoint) return identityResult() || emptyMirrorLayoutClickResult();
   const faceSign = resolveMirrorFaceSignFromLocalPoint(localPoint);
   const removeMatch = findMirrorLayoutMatchInRect({

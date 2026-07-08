@@ -1,4 +1,4 @@
-import type { DoorSpecialValue, MirrorLayoutEntry, MirrorLayoutList } from '../../../types';
+import type { AppContainer, DoorSpecialValue, MirrorLayoutEntry, MirrorLayoutList } from '../../../types';
 
 import {
   isAdhesiveGlassValue,
@@ -14,10 +14,6 @@ import {
   readPrefixedDoorVisualOwnerAliasValue,
 } from './canvas_picking_door_visual_owner_map.js';
 import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
-import {
-  __wp_canonDoorPartKeyForMaps,
-  __wp_scopeCornerPartKeyForStack,
-} from './canvas_picking_core_helpers.js';
 import { resolveMirrorLayoutForPaintClick } from './canvas_picking_paint_flow_mirror.js';
 import {
   isSpecialPart,
@@ -30,7 +26,7 @@ import {
   materializeInheritedDoorVisualOwner,
   type DoorVisualSegmentMaterializeResult,
 } from './canvas_picking_door_segment_materialization.js';
-import type { CanvasPaintClickArgs } from './canvas_picking_paint_flow_contracts.js';
+import type { ResolvedCanvasPaintCommand } from './canvas_picking_paint_command.js';
 import type { PaintFlowMutableState } from './canvas_picking_paint_flow_apply_state.js';
 
 const GLASS_PREVIOUS_STYLE_PREFIX = '__wp_glass_previous_door_style__:';
@@ -205,32 +201,9 @@ function deleteClickedDoorVisualEntries(args: {
 }
 
 export type ResolveMirrorLayoutForPaintClickFn = (
-  args: CanvasPaintClickArgs,
+  args: { App: AppContainer; command: ResolvedCanvasPaintCommand },
   layouts?: MirrorLayoutList | null
 ) => MirrorLayoutClickResult;
-
-export function resolvePaintPartKey(foundPartId: string, activeStack: 'top' | 'bottom'): string {
-  const scoped = __wp_scopeCornerPartKeyForStack(foundPartId, activeStack);
-  return __wp_canonDoorPartKeyForMaps(scoped);
-}
-
-export function resolveDirectPaintTargetKey(args: {
-  foundPartId: string;
-  effectiveDoorId?: string | null;
-  foundDrawerId?: string | null;
-  activeStack: 'top' | 'bottom';
-}): string {
-  const effectiveDoorId =
-    typeof args.effectiveDoorId === 'string' && args.effectiveDoorId ? args.effectiveDoorId : null;
-  const foundDrawerId =
-    typeof args.foundDrawerId === 'string' && args.foundDrawerId ? args.foundDrawerId : null;
-  const foundPartId = args.foundPartId;
-  const rawTarget =
-    effectiveDoorId && (!isSpecialPart(foundPartId) || isSpecialPart(effectiveDoorId))
-      ? effectiveDoorId
-      : foundDrawerId || foundPartId;
-  return resolvePaintPartKey(rawTarget, args.activeStack);
-}
 
 function createFullDoorMirrorLayout(faceSign: 1 | -1): MirrorLayoutEntry {
   return { faceSign };
@@ -261,12 +234,12 @@ function resolveMirrorLayoutsAfterAdd(args: {
 
 export function applyPaintPartMutation(args: {
   state: PaintFlowMutableState;
-  paintPartKey: string;
-  paintSelection: string;
-  clickArgs: CanvasPaintClickArgs;
+  command: ResolvedCanvasPaintCommand;
   resolveMirrorLayout?: ResolveMirrorLayoutForPaintClickFn;
 }): void {
-  const { state, paintPartKey, paintSelection, clickArgs } = args;
+  const { state, command } = args;
+  const paintPartKey = command.canonicalPartKey;
+  const paintSelection = command.selection;
   const curtainChoice = readCurtainChoice(state.App);
   const existingCurtainEntry = readEffectiveTextEntry(state.curtains0, paintPartKey);
   const existingCurtain = existingCurtainEntry?.value;
@@ -287,7 +260,7 @@ export function applyPaintPartMutation(args: {
   const isMirrorLikeOverlaySelection = paintSelection === 'mirror' || isAdhesiveGlassValue(paintSelection);
 
   if (isSpecialPaintPart && !isHexCellDiagonalPaintPart && isMirrorLikeOverlaySelection) {
-    const mirrorResult = resolveMirrorLayout(clickArgs, existingMirrorLayouts);
+    const mirrorResult = resolveMirrorLayout({ App: state.App, command }, existingMirrorLayouts);
     const { removeMatch, canApplyMirror } = mirrorResult;
     if (existingSpecial === paintSelection && removeMatch) {
       const nextLayouts = existingMirrorLayouts.filter((_, idx) => idx !== removeMatch.index);

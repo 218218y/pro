@@ -5,7 +5,8 @@ import { createDoorVisual } from '../esm/native/builder/visuals_and_contents_doo
 import { createGlassDoorVisual } from '../esm/native/builder/visuals_and_contents_door_visual_glass.ts';
 import { createProfileDoorVisual } from '../esm/native/builder/visuals_and_contents_door_visual_profile.ts';
 import { createStyledMirrorDoorVisual } from '../esm/native/builder/visuals_and_contents_door_visual_mirror_styled.ts';
-import { resolveMirrorLayoutForPaintClick } from '../esm/native/services/canvas_picking_paint_flow_mirror.ts';
+import { resolveCanvasPaintCommand } from '../esm/native/services/canvas_picking_paint_command.ts';
+import { resolveMirrorLayoutForPaintClick as resolveMirrorLayoutForPaintCommand } from '../esm/native/services/canvas_picking_paint_flow_mirror.ts';
 
 class FakeVector3 {
   constructor(x = 0, y = 0, z = 0) {
@@ -62,6 +63,16 @@ class FakeObject3D {
     target.z -= offset.z;
     return target;
   }
+}
+
+function resolveMirrorLayoutForPaintClick(args, layouts) {
+  return resolveMirrorLayoutForPaintCommand(
+    {
+      App: args.App,
+      command: resolveCanvasPaintCommand(args, 'mirror'),
+    },
+    layouts
+  );
 }
 
 class FakeGroup extends FakeObject3D {}
