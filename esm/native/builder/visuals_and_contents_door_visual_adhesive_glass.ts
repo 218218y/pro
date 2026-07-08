@@ -92,8 +92,6 @@ function resolveAdhesiveGlassReflectionProfile(kind: AdhesiveGlassKind): {
   color: number;
   reflectivity: number;
   reflectionStrength: number;
-  glossReflectivity: number;
-  glossOpacity: number;
   blendMode: 'mix';
 } {
   if (kind === 'black_glass') {
@@ -101,8 +99,6 @@ function resolveAdhesiveGlassReflectionProfile(kind: AdhesiveGlassKind): {
       color: 0x050608,
       reflectivity: 0.01,
       reflectionStrength: 0.01,
-      glossReflectivity: 0.7,
-      glossOpacity: 0.09,
       blendMode: 'mix',
     };
   }
@@ -110,8 +106,6 @@ function resolveAdhesiveGlassReflectionProfile(kind: AdhesiveGlassKind): {
     color: 0xe9f2f2,
     reflectivity: 0.12,
     reflectionStrength: 0.12,
-    glossReflectivity: 0.46,
-    glossOpacity: 0.055,
     blendMode: 'mix',
   };
 }
@@ -121,28 +115,16 @@ type AdhesiveGlassMaterialKind = 'black_glass' | 'frosted_glass';
 type AdhesiveGlassMaterialCache = Partial<Record<AdhesiveGlassMaterialKind, unknown>>;
 
 const ADHESIVE_GLASS_MATERIAL_CACHE_KEY = '__wpAdhesiveGlassMaterialCache';
-const ADHESIVE_GLASS_GLOSS_MATERIAL_CACHE_KEY = '__wpAdhesiveGlassGlossMaterialCache';
 
-function readAdhesiveGlassMaterialCacheByKey(
-  App: AppContainer,
-  cacheKey: string
-): AdhesiveGlassMaterialCache {
+function readAdhesiveGlassMaterialCache(App: AppContainer): AdhesiveGlassMaterialCache {
   const cache = getCacheBag(App) as Record<string, unknown>;
-  const existing = cache[cacheKey];
+  const existing = cache[ADHESIVE_GLASS_MATERIAL_CACHE_KEY];
   if (existing && typeof existing === 'object' && !Array.isArray(existing)) {
     return existing as AdhesiveGlassMaterialCache;
   }
   const next: AdhesiveGlassMaterialCache = Object.create(null) as AdhesiveGlassMaterialCache;
-  cache[cacheKey] = next;
+  cache[ADHESIVE_GLASS_MATERIAL_CACHE_KEY] = next;
   return next;
-}
-
-function readAdhesiveGlassMaterialCache(App: AppContainer): AdhesiveGlassMaterialCache {
-  return readAdhesiveGlassMaterialCacheByKey(App, ADHESIVE_GLASS_MATERIAL_CACHE_KEY);
-}
-
-function readAdhesiveGlassGlossMaterialCache(App: AppContainer): AdhesiveGlassMaterialCache {
-  return readAdhesiveGlassMaterialCacheByKey(App, ADHESIVE_GLASS_GLOSS_MATERIAL_CACHE_KEY);
 }
 
 function readMirrorRenderTargetTexture(App: AppContainer): unknown | null {
@@ -165,30 +147,10 @@ function writeAdhesiveGlassMaterialMetadata(mat: unknown, kind: AdhesiveGlassKin
   userData.isCached = true;
   userData.__keepMaterial = true;
   userData.__wpAdhesiveGlassKind = kind;
-  const profile = resolveAdhesiveGlassReflectionProfile(kind);
-  userData.__wpAdhesiveGlassReflectionStrength = profile.reflectionStrength;
+  userData.__wpAdhesiveGlassReflectionStrength =
+    resolveAdhesiveGlassReflectionProfile(kind).reflectionStrength;
   userData.__wpReflectiveAdhesiveGlassMaterial = true;
-  userData.__wpAdhesiveGlassShaderProfile = 'cube-basic-front-opaque-mix-v5';
-  rec.userData = userData;
-}
-
-function writeAdhesiveGlassGlossMaterialMetadata(mat: unknown, kind: AdhesiveGlassKind): void {
-  const rec = mat && typeof mat === 'object' ? (mat as Record<string, unknown>) : null;
-  if (!rec) return;
-  rec.__keepMaterial = true;
-  const profile = resolveAdhesiveGlassReflectionProfile(kind);
-  const userData =
-    rec.userData && typeof rec.userData === 'object' && !Array.isArray(rec.userData)
-      ? (rec.userData as Record<string, unknown>)
-      : {};
-  userData.isCached = true;
-  userData.__keepMaterial = true;
-  userData.__wpAdhesiveGlassKind = kind;
-  userData.__wpAdhesiveGlassGlossLayer = true;
-  userData.__wpAdhesiveGlassGlossReflectivity = profile.glossReflectivity;
-  userData.__wpAdhesiveGlassGlossOpacity = profile.glossOpacity;
-  userData.__wpReflectiveAdhesiveGlassMaterial = true;
-  userData.__wpAdhesiveGlassShaderProfile = 'cube-basic-gloss-additive-v1';
+  userData.__wpAdhesiveGlassShaderProfile = 'cube-basic-front-opaque-mix-v4';
   rec.userData = userData;
 }
 
@@ -208,11 +170,6 @@ function readAdhesiveGlassFrontSide(THREE: ThreeLike): unknown {
 function readAdhesiveGlassEnvMapBlendMode(THREE: ThreeLike): unknown {
   const threeRecord = THREE as unknown as Record<string, unknown>;
   return typeof threeRecord.MixOperation !== 'undefined' ? threeRecord.MixOperation : undefined;
-}
-
-function readAdhesiveGlassAdditiveBlending(THREE: ThreeLike): unknown {
-  const threeRecord = THREE as unknown as Record<string, unknown>;
-  return typeof threeRecord.AdditiveBlending !== 'undefined' ? threeRecord.AdditiveBlending : undefined;
 }
 
 function createAdhesiveGlassMaterial(args: { App: AppContainer; THREE: ThreeLike; kind: AdhesiveGlassKind }) {
@@ -244,47 +201,6 @@ function createAdhesiveGlassMaterial(args: { App: AppContainer; THREE: ThreeLike
   return mat;
 }
 
-function createAdhesiveGlassGlossMaterial(args: {
-  App: AppContainer;
-  THREE: ThreeLike;
-  kind: AdhesiveGlassKind;
-}) {
-  const cache = readAdhesiveGlassGlossMaterialCache(args.App);
-  const cached = cache[args.kind];
-  if (cached) {
-    syncAdhesiveGlassMaterialEnvMap(args.App, cached);
-    writeAdhesiveGlassGlossMaterialMetadata(cached, args.kind);
-    return cached;
-  }
-
-  const profile = resolveAdhesiveGlassReflectionProfile(args.kind);
-  const mirrorTexture = readMirrorRenderTargetTexture(args.App);
-  const blendMode = readAdhesiveGlassEnvMapBlendMode(args.THREE);
-  const additiveBlending = readAdhesiveGlassAdditiveBlending(args.THREE);
-  const materialArgs = {
-    color: 0x000000,
-    transparent: true,
-    opacity: profile.glossOpacity,
-    depthWrite: false,
-    ...(mirrorTexture ? { envMap: mirrorTexture } : null),
-    ...(typeof blendMode !== 'undefined' ? { combine: blendMode } : null),
-    ...(typeof additiveBlending !== 'undefined' ? { blending: additiveBlending } : null),
-    reflectivity: profile.glossReflectivity,
-    side: args.THREE.DoubleSide,
-  };
-  const mat = new args.THREE.MeshBasicMaterial(materialArgs);
-  mat.transparent = true;
-  mat.opacity = profile.glossOpacity;
-  mat.depthWrite = false;
-  mat.side = args.THREE.DoubleSide;
-  if (typeof additiveBlending !== 'undefined') {
-    mat.blending = additiveBlending;
-  }
-  writeAdhesiveGlassGlossMaterialMetadata(mat, args.kind);
-  cache[args.kind] = mat;
-  return mat;
-}
-
 function tagAdhesiveGlassPane(args: {
   pane: Object3DLike;
   kind: AdhesiveGlassKind;
@@ -293,7 +209,6 @@ function tagAdhesiveGlassPane(args: {
   heightM: number;
   role: string;
   tagDoorVisualPart: TagDoorVisualPartFn;
-  glossLayer?: boolean;
 }): void {
   const { pane, kind, faceSign, widthM, heightM, role, tagDoorVisualPart } = args;
   pane.userData = pane.userData || {};
@@ -302,51 +217,12 @@ function tagAdhesiveGlassPane(args: {
   pane.userData.__wpMirrorSurface = true;
   pane.userData.__wpMirrorReflectionMode = 'cube';
   pane.userData.__wpReflectiveAdhesiveGlassSurface = true;
-  if (args.glossLayer === true) pane.userData.__wpAdhesiveGlassGlossLayer = true;
   pane.userData.__mirrorWidthM = widthM;
   pane.userData.__mirrorHeightM = heightM;
   pane.userData.__doorVisualRole = role;
   applyDoorFaceIdentityMetadata(pane, faceSign);
   applyMirrorPlacementRectMetadata(pane, widthM, heightM);
   tagDoorVisualPart(pane, role);
-}
-
-function appendAdhesiveGlassGlossLayer(args: {
-  App: AppContainer;
-  THREE: ThreeLike;
-  pane: Object3DLike;
-  kind: AdhesiveGlassKind;
-  widthM: number;
-  heightM: number;
-  depthM: number;
-  faceSign: number;
-  role: string;
-  tagDoorVisualPart: TagDoorVisualPartFn;
-}): Object3DLike | null {
-  if (typeof args.THREE.PlaneGeometry !== 'function') return null;
-  const gloss = new args.THREE.Mesh(
-    new args.THREE.PlaneGeometry(args.widthM, args.heightM),
-    createAdhesiveGlassGlossMaterial({ App: args.App, THREE: args.THREE, kind: args.kind })
-  );
-  tagAdhesiveGlassPane({
-    pane: gloss,
-    kind: args.kind,
-    faceSign: args.faceSign,
-    widthM: args.widthM,
-    heightM: args.heightM,
-    role: args.role,
-    tagDoorVisualPart: args.tagDoorVisualPart,
-    glossLayer: true,
-  });
-  gloss.renderOrder = DOOR_VISUAL_DIMENSIONS.glass.paneRenderOrder + 0.01;
-  gloss.position.set(0, 0, (args.depthM / 2 + 0.0002) * args.faceSign);
-  args.pane.add(gloss);
-  try {
-    __markMirrorTracked(args.App, gloss);
-  } catch {
-    // Best-effort only; the base pane is still tracked for cube reflection updates.
-  }
-  return gloss;
 }
 
 function appendAdhesiveGlassPane(args: {
@@ -379,18 +255,6 @@ function appendAdhesiveGlassPane(args: {
   });
   pane.renderOrder = DOOR_VISUAL_DIMENSIONS.glass.paneRenderOrder;
   pane.position.set(args.x, args.y, args.z);
-  appendAdhesiveGlassGlossLayer({
-    App: args.App,
-    THREE: args.THREE,
-    pane,
-    kind: args.kind,
-    widthM: args.widthM,
-    heightM: args.heightM,
-    depthM: args.depthM,
-    faceSign: args.faceSign,
-    role: args.role,
-    tagDoorVisualPart: args.tagDoorVisualPart,
-  });
   args.group.add(pane);
   try {
     __markMirrorTracked(args.App, pane);
