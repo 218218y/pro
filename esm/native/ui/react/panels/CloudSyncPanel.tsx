@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 
-import { InlineNotice } from '../components/index.js';
+import { Button, InlineNotice } from '../components/index.js';
 import { useCloudSyncPanelActions } from './cloud_sync_panel_actions.js';
 
 export function CloudSyncPanel(): ReactElement {
@@ -23,52 +23,51 @@ export function CloudSyncPanel(): ReactElement {
       </div>
 
       <div className="wp-r-btn-row wp-r-wrap">
-        <button
-          type="button"
-          className="btn btn-primary btn-inline btn-sm"
+        <Button
+          variant="primary"
+          inline
+          size="sm"
           data-testid="cloud-sync-room-mode-button"
           onClick={handleToggleRoomMode}
         >
           <i className="fas fa-lock" /> {isPublic ? 'עבור לפרטי' : 'עבור לציבורי'}
-        </button>
+        </Button>
 
-        <button
-          type="button"
-          className="btn btn-accent btn-inline btn-sm"
+        <Button
+          variant="accent"
+          inline
+          size="sm"
           data-testid="cloud-sync-copy-link-button"
           onClick={handleCopy}
         >
           <i className="fas fa-link" /> קישור
-        </button>
+        </Button>
 
-        <button
-          type="button"
-          className="btn btn-inline btn-sm"
-          data-testid="cloud-sync-sync-sketch-button"
-          onClick={handleSyncSketch}
-        >
+        <Button inline size="sm" data-testid="cloud-sync-sync-sketch-button" onClick={handleSyncSketch}>
           <i className="fas fa-sync" /> סנכרן סקיצה
-        </button>
+        </Button>
       </div>
 
       <div className="wp-r-btn-row wp-r-wrap">
-        <button
-          type="button"
-          className="btn btn-danger btn-inline btn-sm"
+        <Button
+          variant="danger"
+          inline
+          size="sm"
           data-testid="cloud-sync-delete-models-button"
           onClick={handleDeleteModels}
         >
           <i className="fas fa-trash" /> מחק דגמים זמניים
-        </button>
+        </Button>
 
-        <button
-          type="button"
-          className="btn btn-danger btn-inline btn-sm"
+        <Button
+          variant="danger"
+          inline
+          size="sm"
           data-testid="cloud-sync-delete-colors-button"
           onClick={handleDeleteColors}
         >
           <i className="fas fa-trash" /> מחק צבעים זמניים
-        </button>
+        </Button>
       </div>
 
       <InlineNotice>

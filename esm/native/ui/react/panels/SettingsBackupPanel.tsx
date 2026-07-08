@@ -1,7 +1,7 @@
 import { useCallback, useId, useMemo, useRef } from 'react';
 import type { ChangeEvent, ReactElement } from 'react';
 
-import { InlineNotice } from '../components/index.js';
+import { Button, InlineNotice } from '../components/index.js';
 import { useApp, useUiFeedback } from '../hooks.js';
 import { exportSystemSettings, importSystemSettings } from '../actions/settings_backup_actions.js';
 import { reportSettingsBackupActionResult } from '../../settings_backup_action_feedback.js';
@@ -47,23 +47,25 @@ export function SettingsBackupPanel(): ReactElement {
       <span className="section-title">גיבוי הגדרות</span>
 
       <div className="wp-r-btn-row wp-r-wrap">
-        <button
-          type="button"
-          className="btn btn-primary btn-inline btn-sm"
+        <Button
+          variant="primary"
+          inline
+          size="sm"
           onClick={handleExportClick}
           data-testid="settings-backup-export-button"
         >
           <i className="fas fa-file-export" /> ייצוא
-        </button>
+        </Button>
 
-        <button
-          type="button"
-          className="btn btn-accent btn-inline btn-sm"
+        <Button
+          variant="accent"
+          inline
+          size="sm"
           onClick={handleImportClick}
           data-testid="settings-backup-import-button"
         >
           <i className="fas fa-file-import" /> ייבוא
-        </button>
+        </Button>
       </div>
 
       <input

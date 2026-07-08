@@ -24,6 +24,8 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   const designPanel = read('esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx');
   const colorSection = read('esm/native/ui/react/tabs/design_tab_color_section.tsx');
   const doorFeaturesSection = read('esm/native/ui/react/tabs/design_tab_sections_door_features.tsx');
+  const settingsBackupPanel = read('esm/native/ui/react/panels/SettingsBackupPanel.tsx');
+  const cloudSyncPanel = read('esm/native/ui/react/panels/CloudSyncPanel.tsx');
   const cellDimsSection = read('esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx');
   const platformOverhangField = read('esm/native/ui/react/tabs/structure_tab_platform_overhang_field.tsx');
   const sketchBoxControls = read(
@@ -81,6 +83,44 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
     /wp-r-groove-lines-row[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*className="wp-r-groove-reset-btn"[\s\S]*onClick=\{model\.resetGrooveLinesCount\}/
   );
   assert.doesNotMatch(doorFeaturesSection, /className="btn btn-light btn-inline wp-r-groove-reset-btn"/);
+
+  assert.match(settingsBackupPanel, /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/);
+  assert.match(
+    settingsBackupPanel,
+    /<Button[\s\S]*variant="primary"[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid="settings-backup-export-button"/
+  );
+  assert.match(
+    settingsBackupPanel,
+    /<Button[\s\S]*variant="accent"[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid="settings-backup-import-button"/
+  );
+  assert.doesNotMatch(settingsBackupPanel, /className="btn btn-primary btn-inline btn-sm"/);
+  assert.doesNotMatch(settingsBackupPanel, /className="btn btn-accent btn-inline btn-sm"/);
+
+  assert.match(cloudSyncPanel, /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/);
+  assert.match(
+    cloudSyncPanel,
+    /<Button[\s\S]*variant="primary"[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid="cloud-sync-room-mode-button"/
+  );
+  assert.match(
+    cloudSyncPanel,
+    /<Button[\s\S]*variant="accent"[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid="cloud-sync-copy-link-button"/
+  );
+  assert.match(
+    cloudSyncPanel,
+    /<Button[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid="cloud-sync-sync-sketch-button"/
+  );
+  assert.match(
+    cloudSyncPanel,
+    /<Button[\s\S]*variant="danger"[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid="cloud-sync-delete-models-button"/
+  );
+  assert.match(
+    cloudSyncPanel,
+    /<Button[\s\S]*variant="danger"[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid="cloud-sync-delete-colors-button"/
+  );
+  assert.doesNotMatch(cloudSyncPanel, /className="btn btn-primary btn-inline btn-sm"/);
+  assert.doesNotMatch(cloudSyncPanel, /className="btn btn-accent btn-inline btn-sm"/);
+  assert.doesNotMatch(cloudSyncPanel, /className="btn btn-inline btn-sm"/);
+  assert.doesNotMatch(cloudSyncPanel, /className="btn btn-danger btn-inline btn-sm"/);
 
   assert.match(
     cellDimsSection,

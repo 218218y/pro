@@ -257,6 +257,65 @@ forbidPattern(
   /className="btn btn-light btn-inline wp-r-groove-reset-btn"/
 );
 
+requirePattern(
+  'esm/native/ui/react/panels/SettingsBackupPanel.tsx',
+  /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/panels/SettingsBackupPanel.tsx',
+  /<Button[\s\S]*variant="primary"[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid="settings-backup-export-button"/
+);
+requirePattern(
+  'esm/native/ui/react/panels/SettingsBackupPanel.tsx',
+  /<Button[\s\S]*variant="accent"[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid="settings-backup-import-button"/
+);
+forbidPattern(
+  'esm/native/ui/react/panels/SettingsBackupPanel.tsx',
+  /className="btn btn-primary btn-inline btn-sm"/
+);
+forbidPattern(
+  'esm/native/ui/react/panels/SettingsBackupPanel.tsx',
+  /className="btn btn-accent btn-inline btn-sm"/
+);
+
+requirePattern(
+  'esm/native/ui/react/panels/CloudSyncPanel.tsx',
+  /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/panels/CloudSyncPanel.tsx',
+  /<Button[\s\S]*variant="primary"[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid="cloud-sync-room-mode-button"/
+);
+requirePattern(
+  'esm/native/ui/react/panels/CloudSyncPanel.tsx',
+  /<Button[\s\S]*variant="accent"[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid="cloud-sync-copy-link-button"/
+);
+requirePattern(
+  'esm/native/ui/react/panels/CloudSyncPanel.tsx',
+  /<Button[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid="cloud-sync-sync-sketch-button"/
+);
+requirePattern(
+  'esm/native/ui/react/panels/CloudSyncPanel.tsx',
+  /<Button[\s\S]*variant="danger"[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid="cloud-sync-delete-models-button"/
+);
+requirePattern(
+  'esm/native/ui/react/panels/CloudSyncPanel.tsx',
+  /<Button[\s\S]*variant="danger"[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid="cloud-sync-delete-colors-button"/
+);
+forbidPattern(
+  'esm/native/ui/react/panels/CloudSyncPanel.tsx',
+  /className="btn btn-primary btn-inline btn-sm"/
+);
+forbidPattern(
+  'esm/native/ui/react/panels/CloudSyncPanel.tsx',
+  /className="btn btn-accent btn-inline btn-sm"/
+);
+forbidPattern('esm/native/ui/react/panels/CloudSyncPanel.tsx', /className="btn btn-inline btn-sm"/);
+forbidPattern(
+  'esm/native/ui/react/panels/CloudSyncPanel.tsx',
+  /className="btn btn-danger btn-inline btn-sm"/
+);
+
 if (errors.length) {
   console.error('[ui-design-system-contract] FAILED');
   for (const error of errors) console.error(`- ${error}`);
