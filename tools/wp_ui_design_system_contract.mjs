@@ -174,6 +174,14 @@ forbidPattern(
   'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_components.tsx',
   /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-platform-overhang-reset-btn wp-r-styled-tooltip hint-bottom"/
 );
+requirePattern(
+  'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_components.tsx',
+  /export function SketchBoxNumericField[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-sketch-box-reset-btn/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_components.tsx',
+  /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-sketch-box-reset-btn wp-r-styled-tooltip hint-bottom"/
+);
 
 requirePattern(
   'esm/native/ui/react/tabs/structure_tab_controls.tsx',

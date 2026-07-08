@@ -64,16 +64,17 @@ export function SketchBoxNumericField(props: NumericFieldProps): ReactElement {
         />
         {props.onReset ? (
           <div className="wp-r-input-addon">
-            <button
-              type="button"
-              className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-sketch-box-reset-btn wp-r-styled-tooltip hint-bottom"
+            <Button
+              variant="light"
+              inline
+              className="wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-sketch-box-reset-btn wp-r-styled-tooltip hint-bottom"
               disabled={!!props.resetDisabled}
               data-tooltip={props.resetTitle || 'איפוס מידה'}
               aria-label={props.resetTitle || 'איפוס מידה'}
               onClick={props.onReset}
             >
               <i className="fas fa-undo-alt" aria-hidden="true" />
-            </button>
+            </Button>
           </div>
         ) : null}
       </div>

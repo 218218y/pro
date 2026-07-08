@@ -51,6 +51,18 @@ test('[interior-sketch-box] invalid draft commits restore the previous valid box
 
 test('[interior-sketch-box] reset affordance is an icon-only addon without forcing width/depth defaults into drafts', () => {
   assert.match(component, /wp-r-sketch-box-reset-btn/);
+  assert.match(
+    component,
+    /export function SketchBoxNumericField[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-sketch-box-reset-btn/
+  );
+  assert.doesNotMatch(
+    component,
+    /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-sketch-box-reset-btn wp-r-styled-tooltip hint-bottom"/
+  );
+  assert.doesNotMatch(
+    component,
+    /<Button(?:(?!<\/Button>)[\s\S])*wp-r-sketch-box-reset-btn(?:(?!<\/Button>)[\s\S])*title=/
+  );
   assert.match(component, /<i className="fas fa-undo-alt" aria-hidden="true" \/>/);
   assert.match(component, /resolveSketchBoxNumericChangeValue\(props, event\)/);
   assert.match(component, /emptyStepStartValue\?: number/);

@@ -87,7 +87,15 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   assert.match(sketchBoxControls, /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/);
   assert.match(
     sketchBoxControls,
+    /export function SketchBoxNumericField[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-sketch-box-reset-btn/
+  );
+  assert.match(
+    sketchBoxControls,
     /export function SketchBoxPlatformOverhangField[\s\S]*<Button[\s\S]*variant="light"[\s\S]*inline[\s\S]*wp-r-platform-overhang-reset-btn/
+  );
+  assert.doesNotMatch(
+    sketchBoxControls,
+    /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-cell-dims-reset-dim-btn wp-r-sketch-box-reset-btn wp-r-styled-tooltip hint-bottom"/
   );
   assert.doesNotMatch(
     `${platformOverhangField}\n${sketchBoxControls}`,
