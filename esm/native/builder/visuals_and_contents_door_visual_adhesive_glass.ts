@@ -92,18 +92,21 @@ function resolveAdhesiveGlassReflectionProfile(kind: AdhesiveGlassKind): {
   color: number;
   reflectivity: number;
   reflectionStrength: number;
+  blendMode: 'mix';
 } {
   if (kind === 'black_glass') {
     return {
       color: 0x050608,
-      reflectivity: 0.82,
-      reflectionStrength: 1.18,
+      reflectivity: 0.36,
+      reflectionStrength: 0.36,
+      blendMode: 'mix',
     };
   }
   return {
     color: 0xe9f2f2,
-    reflectivity: 0.42,
-    reflectionStrength: 0.72,
+    reflectivity: 0.12,
+    reflectionStrength: 0.12,
+    blendMode: 'mix',
   };
 }
 
@@ -147,7 +150,7 @@ function writeAdhesiveGlassMaterialMetadata(mat: unknown, kind: AdhesiveGlassKin
   userData.__wpAdhesiveGlassReflectionStrength =
     resolveAdhesiveGlassReflectionProfile(kind).reflectionStrength;
   userData.__wpReflectiveAdhesiveGlassMaterial = true;
-  userData.__wpAdhesiveGlassShaderProfile = 'cube-basic-front-opaque-v2';
+  userData.__wpAdhesiveGlassShaderProfile = 'cube-basic-front-opaque-mix-v3';
   rec.userData = userData;
 }
 
@@ -164,6 +167,11 @@ function readAdhesiveGlassFrontSide(THREE: ThreeLike): unknown {
   return typeof THREE.FrontSide !== 'undefined' ? THREE.FrontSide : THREE.DoubleSide;
 }
 
+function readAdhesiveGlassEnvMapBlendMode(THREE: ThreeLike): unknown {
+  const threeRecord = THREE as unknown as Record<string, unknown>;
+  return typeof threeRecord.MixOperation !== 'undefined' ? threeRecord.MixOperation : undefined;
+}
+
 function createAdhesiveGlassMaterial(args: { App: AppContainer; THREE: ThreeLike; kind: AdhesiveGlassKind }) {
   const cache = readAdhesiveGlassMaterialCache(args.App);
   const cached = cache[args.kind];
@@ -175,9 +183,11 @@ function createAdhesiveGlassMaterial(args: { App: AppContainer; THREE: ThreeLike
 
   const profile = resolveAdhesiveGlassReflectionProfile(args.kind);
   const mirrorTexture = readMirrorRenderTargetTexture(args.App);
+  const blendMode = readAdhesiveGlassEnvMapBlendMode(args.THREE);
   const materialArgs = {
     color: profile.color,
     ...(mirrorTexture ? { envMap: mirrorTexture } : null),
+    ...(typeof blendMode !== 'undefined' ? { combine: blendMode } : null),
     reflectivity: profile.reflectivity,
     side: readAdhesiveGlassFrontSide(args.THREE),
   };
