@@ -12,6 +12,7 @@ import {
 } from '../tools/wp_build_dist_state.js';
 import { copyStaticDistAssets } from '../tools/wp_build_dist_assets.js';
 import { runBuildDistFlow } from '../tools/wp_build_dist_flow.js';
+import { resolveTscInvocation } from '../tools/wp_build_dist_shared.js';
 
 function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-build-dist-'));
@@ -117,6 +118,60 @@ test('static asset copy fails when the canonical runtime config module is missin
   fs.writeFileSync(path.join(root, 'index_pro.html'), '<html></html>\n', 'utf8');
 
   assert.throws(() => copyStaticDistAssets({ root, distAbs }), /Missing required wp_runtime_config\.mjs/);
+});
+
+test('build-dist TypeScript resolver requires local TypeScript by default', () => {
+  const root = tempDir();
+  const systemProbe = () => ({ status: 0 });
+
+  assert.equal(resolveTscInvocation(root, { spawnImpl: systemProbe, env: {} }), null);
+
+  fs.mkdirSync(path.join(root, 'node_modules', 'typescript', 'lib'), { recursive: true });
+  const localTsc = path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js');
+  fs.writeFileSync(localTsc, '// stub\n', 'utf8');
+
+  const resolved = resolveTscInvocation(root, { spawnImpl: systemProbe, env: {} });
+  assert.equal(resolved.cmd, process.execPath);
+  assert.deepEqual(resolved.args, [localTsc]);
+  assert.equal(resolved.source, 'local-node-modules');
+});
+
+test('build-dist TypeScript resolver allows system tsc only in explicit manual mode', () => {
+  const root = tempDir();
+  const probes = [];
+  const spawnImpl = (cmd, args) => {
+    probes.push([cmd, args]);
+    return { status: 0 };
+  };
+
+  const resolved = resolveTscInvocation(root, {
+    spawnImpl,
+    env: { WP_ALLOW_SYSTEM_TSC: '1' },
+  });
+
+  assert.equal(resolved.cmd, 'tsc');
+  assert.deepEqual(resolved.args, []);
+  assert.equal(resolved.source, 'system-path');
+  assert.match(resolved.warning, /manual mode/i);
+  assert.deepEqual(probes, [['tsc', ['--version']]]);
+});
+
+test('build-dist flow fails clearly instead of using system tsc when local TypeScript is missing', () => {
+  const root = tempDir();
+  fs.writeFileSync(path.join(root, 'tsconfig.dist.json'), '{"compilerOptions":{}}\n', 'utf8');
+
+  assert.throws(
+    () =>
+      runBuildDistFlow({
+        root,
+        args: parseBuildDistArgs(['--no-assets']),
+        spawnImpl() {
+          return { status: 0 };
+        },
+        processEnv: {},
+      }),
+    /Local TypeScript was not found.*npm ci.*Refusing to use system tsc/s
+  );
 });
 
 test('build-dist retries once without tsbuildinfo when incremental build misses entry', () => {

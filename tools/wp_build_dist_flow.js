@@ -3,6 +3,7 @@ import path from 'node:path';
 import { exists, mkdirp, resolveTscInvocation, rmrf } from './wp_build_dist_shared.js';
 import { copyEsmMjsVerbatim, copyStaticDistAssets } from './wp_build_dist_assets.js';
 import { createBuildDistSuccessMessage, resolveBuildDistPaths } from './wp_build_dist_state.js';
+import { createLocalTypeScriptNotFoundMessage } from './wp_typescript_resolver.js';
 
 function createBuildDistError(message, exitCode = 1) {
   const err = new Error(message);
@@ -66,12 +67,11 @@ export function runBuildDistFlow({
     throw createBuildDistError(`[WP BuildDist] Missing tsconfig: ${path.relative(root, paths.tsconfigAbs)}`);
   }
 
-  const tscInvocation = resolveTscInvocation(root);
+  const tscInvocation = resolveTscInvocation(root, { env: processEnv, spawnImpl });
   if (!tscInvocation) {
-    throw createBuildDistError(
-      '[WP BuildDist] Missing dependency: typescript (expected node_modules/typescript or a system tsc on PATH)\n              Run: npm i'
-    );
+    throw createBuildDistError(createLocalTypeScriptNotFoundMessage('[WP BuildDist] '));
   }
+  if (tscInvocation.warning) warn(`[WP BuildDist] ${tscInvocation.warning}`);
 
   if (args.clean) cleanDistOutputs({ paths, assets: args.assets });
 

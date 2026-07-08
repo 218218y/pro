@@ -10,7 +10,8 @@ import {
   createBundleBuildConfig,
   writeBundleOutputs,
 } from '../tools/wp_bundle_emit.js';
-import { shouldRebuildDistModules } from '../tools/wp_bundle_dist.js';
+import { buildDistModules, shouldRebuildDistModules } from '../tools/wp_bundle_dist.js';
+import { resolveTscInvocation } from '../tools/wp_bundle_shared.js';
 
 function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-bundle-'));
@@ -79,6 +80,39 @@ test('bundle dist freshness requests rebuild when entry/build info are stale or 
   const stale = shouldRebuildDistModules(root, {});
   assert.equal(stale.rebuild, true);
   assert.match(stale.reason, /older than a source or config file/);
+});
+
+test('bundle TypeScript resolver refuses system tsc unless manual fallback is explicit', () => {
+  const root = tempDir();
+  const spawnImpl = () => ({ status: 0 });
+
+  assert.equal(resolveTscInvocation(root, { spawnImpl, env: {} }), null);
+
+  const manual = resolveTscInvocation(root, {
+    spawnImpl,
+    env: { WP_ALLOW_SYSTEM_TSC: '1', WP_TSC_BIN: '/custom/tsc' },
+  });
+  assert.equal(manual.cmd, '/custom/tsc');
+  assert.deepEqual(manual.args, []);
+  assert.equal(manual.source, 'manual-env-bin');
+  assert.match(manual.warning, /manual mode/i);
+});
+
+test('bundle dist build fails before probing system tsc when local TypeScript is missing', () => {
+  const root = tempDir();
+  fs.writeFileSync(path.join(root, 'tsconfig.dist.json'), '{}\n', 'utf8');
+
+  assert.throws(
+    () =>
+      buildDistModules(root, {
+        forceDistRebuild: true,
+        env: {},
+        spawnImpl() {
+          return { status: 0 };
+        },
+      }),
+    /Local TypeScript was not found.*npm ci.*Refusing to use system tsc/s
+  );
 });
 
 test('bundle artifact cleanup removes numbered chunk wrappers only', () => {

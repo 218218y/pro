@@ -2,6 +2,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 
 export const MODE_TO_CONFIG = {
+  project: 'tsconfig.json',
   app: 'tsconfig.checkjs.app.json',
   boot: 'tsconfig.checkjs.boot.json',
   'strict-boot': 'tsconfig.checkjs.strict-boot.json',
@@ -15,6 +16,8 @@ export const MODE_TO_CONFIG = {
   ui: 'tsconfig.checkjs.ui.json',
   runtime: 'tsconfig.checkjs.runtime.json',
   'adapters-browser': 'tsconfig.checkjs.adapters-browser.json',
+  dist: 'tsconfig.dist.json',
+  'ui-lean': 'tsconfig.checkjs.ui-lean.json',
   strictcore: 'tsconfig.checkjs.strictcore.json',
   'strict-runtime': 'tsconfig.checkjs.strict-runtime.json',
   'strict-adapters-browser': 'tsconfig.checkjs.strict-adapters-browser.json',
@@ -22,6 +25,10 @@ export const MODE_TO_CONFIG = {
   'strict-services': 'tsconfig.checkjs.strict-services.json',
   'strict-platform': 'tsconfig.checkjs.strict-platform.json',
   'strict-ui': 'tsconfig.checkjs.strict-ui.json',
+};
+
+export const MODE_TO_EXTRA_ARGS = {
+  dist: ['--noEmit'],
 };
 
 export const DEFAULT_ALL_MODES = [
@@ -76,6 +83,11 @@ export function isKnownTypecheckMode(mode) {
 
 export function resolveTypecheckConfigPath(root, mode) {
   return path.join(root, MODE_TO_CONFIG[mode]);
+}
+
+export function resolveTypecheckExtraArgs(mode) {
+  const extraArgs = MODE_TO_EXTRA_ARGS[mode];
+  return Array.isArray(extraArgs) ? extraArgs.slice() : [];
 }
 
 export function configExists(configPath, existsImpl = fs.existsSync) {

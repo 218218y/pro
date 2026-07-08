@@ -9,6 +9,7 @@ import {
   createSkippedMissingConfigMessage,
   MODE_TO_CONFIG,
   parseTypecheckArgs,
+  resolveTypecheckExtraArgs,
   resolveTypecheckConfigPath,
   resolveTypecheckModes,
 } from '../tools/wp_typecheck_state.js';
@@ -39,10 +40,32 @@ test('typecheck args parsing preserves help/mode/all semantics', () => {
   assert.match(createTypecheckHelpText(), /wp_typecheck\.js --mode runtime/);
 });
 
-test('typecheck resolves WP_TSC_BIN before local or global lookup', () => {
+test('typecheck refuses WP_TSC_BIN and system tsc unless manual fallback is explicit', () => {
   const root = tempDir();
-  const resolved = resolveTsc(root, { env: { WP_TSC_BIN: '/custom/tsc' } });
-  assert.deepEqual(resolved, { kind: 'bin', cmd: '/custom/tsc', label: '/custom/tsc' });
+  const systemProbe = () => ({ status: 0 });
+
+  assert.equal(resolveTsc(root, { env: { WP_TSC_BIN: '/custom/tsc' }, spawnImpl: systemProbe }), null);
+
+  const resolved = resolveTsc(root, {
+    env: { WP_ALLOW_SYSTEM_TSC: '1', WP_TSC_BIN: '/custom/tsc' },
+    spawnImpl: systemProbe,
+  });
+  assert.equal(resolved.kind, 'bin');
+  assert.equal(resolved.cmd, '/custom/tsc');
+  assert.equal(resolved.label, '/custom/tsc');
+  assert.equal(resolved.source, 'manual-env-bin');
+  assert.match(resolved.warning, /manual mode/i);
+
+  fs.mkdirSync(path.join(root, 'node_modules', 'typescript', 'lib'), { recursive: true });
+  const localTsc = path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js');
+  fs.writeFileSync(localTsc, '// stub\n', 'utf8');
+  const local = resolveTsc(root, {
+    env: { WP_ALLOW_SYSTEM_TSC: '1', WP_TSC_BIN: '/custom/tsc' },
+    spawnImpl: systemProbe,
+  });
+  assert.equal(local.kind, 'node');
+  assert.equal(local.cmd, localTsc);
+  assert.equal(local.source, 'local-node-modules');
 });
 
 test('typecheck flow runs matching config and reports success', () => {
@@ -71,6 +94,30 @@ test('typecheck flow runs matching config and reports success', () => {
   assert.equal(invocations[0].args[0], path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js'));
   assert.equal(invocations[0].args[2], resolveTypecheckConfigPath(root, 'runtime'));
   assert.ok(logs.some(line => /typecheck completed successfully/i.test(line)));
+});
+
+test('typecheck dist mode preserves noEmit while using local TypeScript', () => {
+  const root = tempDir();
+  fs.writeFileSync(resolveTypecheckConfigPath(root, 'dist'), '{"compilerOptions":{}}\n', 'utf8');
+  fs.mkdirSync(path.join(root, 'node_modules', 'typescript', 'lib'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js'), '// stub\n', 'utf8');
+
+  assert.deepEqual(resolveTypecheckExtraArgs('dist'), ['--noEmit']);
+
+  const invocations = [];
+  const result = runTypecheckFlow({
+    root,
+    node: '/usr/bin/node',
+    runAll: false,
+    mode: 'dist',
+    spawnImpl(cmd, args) {
+      invocations.push({ cmd, args });
+      return { status: 0 };
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(invocations[0].args.at(-1), '--noEmit');
 });
 
 test('typecheck flow skips missing configs for --all and errors for unknown or missing single mode', () => {
@@ -114,4 +161,15 @@ test('typecheck flow skips missing configs for --all and errors for unknown or m
   });
   assert.equal(missingConfig.ok, false);
   assert.equal(missingConfig.errorMessage, createMissingConfigMessage(MODE_TO_CONFIG.services));
+});
+
+test('package typecheck scripts route through wp_typecheck instead of direct tsc', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
+  const typecheckScripts = Object.entries(pkg.scripts).filter(([name]) => name.startsWith('typecheck'));
+  assert.ok(typecheckScripts.length > 0);
+  for (const [name, script] of typecheckScripts) {
+    if (name === 'typecheck:wp') continue;
+    assert.match(script, /node tools\/wp_typecheck\.js|npm run typecheck:all/);
+    assert.doesNotMatch(script, /\btsc\b/);
+  }
 });

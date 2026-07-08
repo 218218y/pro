@@ -11,6 +11,7 @@ import {
   resolveTscInvocation,
   rmrf,
 } from './wp_bundle_shared.js';
+import { createLocalTypeScriptNotFoundMessage } from './wp_typescript_resolver.js';
 
 export function shouldRebuildDistModules(root, options = {}) {
   const entryAbs = resolveBundleDistEntry(root);
@@ -61,17 +62,18 @@ export function shouldRebuildDistModules(root, options = {}) {
 }
 
 export function buildDistModules(root, options = {}) {
+  const processEnv = options.env || process.env;
+  const spawnImpl = options.spawnImpl || spawnSync;
   const tsconfigAbs = path.join(root, 'tsconfig.dist.json');
   if (!exists(tsconfigAbs)) {
     throw new Error(`[WP Bundle] Missing tsconfig: ${path.relative(root, tsconfigAbs)}`);
   }
 
-  const tscInvocation = resolveTscInvocation(root);
+  const tscInvocation = resolveTscInvocation(root, { env: processEnv, spawnImpl });
   if (!tscInvocation) {
-    throw new Error(
-      '[WP Bundle] Missing dependency: typescript (expected node_modules/typescript or a system tsc on PATH)'
-    );
+    throw new Error(createLocalTypeScriptNotFoundMessage('[WP Bundle] '));
   }
+  if (tscInvocation.warning) console.warn(`[WP Bundle] ${tscInvocation.warning}`);
 
   const distAbs = path.join(root, 'dist');
   const distEsmAbs = path.join(distAbs, 'esm');
@@ -91,13 +93,13 @@ export function buildDistModules(root, options = {}) {
   }
 
   console.log(`[WP Bundle] Building dist modules (tsc:${tscInvocation.source}) - ${freshness.reason}...`);
-  const res = spawnSync(
+  const res = spawnImpl(
     tscInvocation.cmd,
     [...(Array.isArray(tscInvocation.args) ? tscInvocation.args : []), '-p', tsconfigAbs],
     {
       stdio: 'inherit',
       cwd: root,
-      env: process.env,
+      env: processEnv,
     }
   );
   if (res.status !== 0) {

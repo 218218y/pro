@@ -2,7 +2,7 @@
  * tools/wp_typecheck.js
  *
  * Cross-platform TypeScript checker for our gradual migration.
- * Runs `tsc` via Node to avoid OS-specific shims.
+ * Runs project-local TypeScript via Node to avoid OS-specific shims.
  */
 
 import { createTypecheckHelpText } from './wp_typecheck_shared.js';

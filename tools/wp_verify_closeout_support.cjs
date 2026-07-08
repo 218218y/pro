@@ -4,9 +4,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
-const REPORT_JSON_PATH = path.join('docs', 'FINAL_VERIFICATION_SUMMARY.json');
-const REPORT_MD_PATH = path.join('docs', 'FINAL_VERIFICATION_SUMMARY.md');
-const STATE_JSON_PATH = path.join('.artifacts', 'closeout-state.json');
+const REPORT_JSON_PATH = 'docs/FINAL_VERIFICATION_SUMMARY.json';
+const REPORT_MD_PATH = 'docs/FINAL_VERIFICATION_SUMMARY.md';
+const STATE_JSON_PATH = '.artifacts/closeout-state.json';
 
 const CLOSEOUT_LANES = [
   {
@@ -36,9 +36,9 @@ const CLOSEOUT_LANES = [
         command: 'node',
         args: ['--test', 'tests/export_overlay_errors_family_contracts.test.js'],
       },
-      { label: 'typecheck platform', command: 'tsc', args: ['-p', 'tsconfig.checkjs.platform.json'] },
-      { label: 'typecheck services', command: 'tsc', args: ['-p', 'tsconfig.checkjs.services.json'] },
-      { label: 'typecheck runtime', command: 'tsc', args: ['-p', 'tsconfig.checkjs.runtime.json'] },
+      { label: 'typecheck platform', command: 'node', args: ['tools/wp_typecheck.js', '--mode', 'platform'] },
+      { label: 'typecheck services', command: 'node', args: ['tools/wp_typecheck.js', '--mode', 'services'] },
+      { label: 'typecheck runtime', command: 'node', args: ['tools/wp_typecheck.js', '--mode', 'runtime'] },
       { label: 'layer contracts', command: 'node', args: ['tools/wp_layer_contract.js'] },
       { label: 'public api contracts', command: 'node', args: ['tools/wp_public_api_contract.js'] },
     ],

@@ -1,6 +1,6 @@
 import path from 'node:path';
-import fs from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { createLocalTypeScriptNotFoundMessage, resolveTypeScriptTool } from './wp_typescript_resolver.js';
 
 export function createTypecheckHelpText() {
   return ['Usage:', '  node tools/wp_typecheck.js --all', '  node tools/wp_typecheck.js --mode runtime'].join(
@@ -14,47 +14,40 @@ export function printTypecheckHeader(title, log = console.log) {
   log('============================================================\n');
 }
 
-export function resolveTsc(
-  root,
-  { env = process.env, spawnImpl = spawnSync, existsImpl = fs.existsSync } = {}
-) {
-  const envBin = env.WP_TSC_BIN;
-  if (envBin) {
-    return { kind: 'bin', cmd: envBin, label: envBin };
+export function resolveTsc(root, { env = process.env, spawnImpl = spawnSync, existsImpl } = {}) {
+  const tool = resolveTypeScriptTool(root, { env, spawnImpl, existsImpl });
+  if (!tool) return null;
+
+  if (tool.kind === 'local') {
+    return {
+      kind: 'node',
+      cmd: tool.bin,
+      label: path.relative(root, tool.bin),
+      source: tool.source,
+      warning: tool.warning,
+    };
   }
 
-  const candidates = [
-    path.join(root, 'node_modules', 'typescript', 'bin', 'tsc'),
-    path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js'),
-  ];
-  for (const candidate of candidates) {
-    if (existsImpl(candidate)) {
-      return { kind: 'node', cmd: candidate, label: path.relative(root, candidate) };
-    }
-  }
-
-  const globalTsc = spawnImpl('tsc', ['-v'], {
-    stdio: 'pipe',
-    shell: false,
-    cwd: root,
-    env,
-  });
-  if (!globalTsc?.error && globalTsc?.status === 0) {
-    return { kind: 'bin', cmd: 'tsc', label: 'tsc' };
-  }
-
-  return null;
+  return {
+    kind: 'bin',
+    cmd: tool.bin,
+    label: tool.bin,
+    source: tool.source,
+    warning: tool.warning,
+  };
 }
 
-export function createTypecheckLabel(root, tscRef, configPath) {
+export function createTypecheckLabel(root, tscRef, configPath, extraArgs = []) {
   const configRel = path.relative(root, configPath);
-  return `${tscRef.kind === 'node' ? 'node ' + tscRef.label : tscRef.label} -p ${configRel}`;
+  const suffix = extraArgs.length ? ` ${extraArgs.join(' ')}` : '';
+  return `${tscRef.kind === 'node' ? 'node ' + tscRef.label : tscRef.label} -p ${configRel}${suffix}`;
 }
 
 export function runTypecheckCommand({
   node = process.execPath,
   tscRef,
   configPath,
+  extraArgs = [],
   label,
   cwd = process.cwd(),
   env = process.env,
@@ -62,7 +55,8 @@ export function runTypecheckCommand({
   log = console.log,
 }) {
   printTypecheckHeader(label, log);
-  const args = tscRef.kind === 'node' ? [tscRef.cmd, '-p', configPath] : ['-p', configPath];
+  const args =
+    tscRef.kind === 'node' ? [tscRef.cmd, '-p', configPath, ...extraArgs] : ['-p', configPath, ...extraArgs];
   const cmd = tscRef.kind === 'node' ? node : tscRef.cmd;
   return spawnImpl(cmd, args, {
     stdio: 'inherit',
@@ -73,17 +67,17 @@ export function runTypecheckCommand({
 }
 
 export function createTypecheckNotFoundMessage() {
-  return '❌ TypeScript not found. Install dependencies first: npm install, or expose a global tsc / WP_TSC_BIN.';
+  return createLocalTypeScriptNotFoundMessage('[WP Typecheck] ');
 }
 
 export function createTypecheckSpawnErrorMessage() {
-  return '❌ Failed to start TypeScript.';
+  return '[WP Typecheck] Failed to start TypeScript.';
 }
 
 export function createTypecheckFailureMessage(code) {
-  return `\n❌ Typecheck failed (exit ${code})\n`;
+  return `\n[WP Typecheck] Typecheck failed (exit ${code})\n`;
 }
 
 export function createTypecheckSuccessMessage() {
-  return '\n✅ typecheck completed successfully.\n';
+  return '\n[WP Typecheck] typecheck completed successfully.\n';
 }

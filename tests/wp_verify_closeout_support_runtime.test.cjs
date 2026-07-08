@@ -70,6 +70,15 @@ test('overlay export closeout lane stays direct and grouped', () => {
       'public api contracts',
     ]
   );
+  const typecheckSteps = lane.steps.filter(step => step.label.startsWith('typecheck '));
+  assert.deepEqual(
+    typecheckSteps.map(step => [step.command, step.args.slice(0, 2)]),
+    [
+      ['node', ['tools/wp_typecheck.js', '--mode']],
+      ['node', ['tools/wp_typecheck.js', '--mode']],
+      ['node', ['tools/wp_typecheck.js', '--mode']],
+    ]
+  );
 });
 
 test('direct profiles stay stable for order-pdf sketch and cloud-sync', () => {

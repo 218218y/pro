@@ -1,7 +1,7 @@
 import fs from 'node:fs';
-import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolveLocalTypeScriptBin, resolveTypeScriptTool } from './wp_typescript_resolver.js';
 
 export function resolveProjectRoot(importMetaUrl = import.meta.url) {
   const filename = fileURLToPath(importMetaUrl);
@@ -30,37 +30,27 @@ export function mkdirp(p) {
 }
 
 export function resolveTscBin(root) {
-  const p1 = path.join(root, 'node_modules', 'typescript', 'bin', 'tsc');
-  if (exists(p1)) return p1;
-  const p2 = path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js');
-  if (exists(p2)) return p2;
-  return null;
+  return resolveLocalTypeScriptBin(root, { existsImpl: exists });
 }
 
-export function resolveTscInvocation(root) {
-  const localBin = resolveTscBin(root);
-  if (localBin) {
+export function resolveTscInvocation(root, { env = process.env, spawnImpl } = {}) {
+  const tool = resolveTypeScriptTool(root, { env, spawnImpl, existsImpl: exists });
+  if (!tool) return null;
+  if (tool.kind === 'local') {
     return {
       cmd: process.execPath,
-      args: [localBin],
-      source: 'local-node-modules',
+      args: [tool.bin],
+      source: tool.source,
+      warning: tool.warning,
     };
   }
 
-  try {
-    const probe = spawnSync('tsc', ['--version'], { stdio: 'ignore' });
-    if (probe && probe.status === 0) {
-      return {
-        cmd: 'tsc',
-        args: [],
-        source: 'system-path',
-      };
-    }
-  } catch {
-    // ignore and fall through to null
-  }
-
-  return null;
+  return {
+    cmd: tool.bin,
+    args: [],
+    source: tool.source,
+    warning: tool.warning,
+  };
 }
 
 export function copyFile(srcAbs, dstAbs) {
