@@ -97,8 +97,8 @@ function resolveAdhesiveGlassReflectionProfile(kind: AdhesiveGlassKind): {
   if (kind === 'black_glass') {
     return {
       color: 0x050608,
-      reflectivity: 0.36,
-      reflectionStrength: 0.36,
+      reflectivity: 0.01,
+      reflectionStrength: 0.01,
       blendMode: 'mix',
     };
   }
@@ -150,7 +150,7 @@ function writeAdhesiveGlassMaterialMetadata(mat: unknown, kind: AdhesiveGlassKin
   userData.__wpAdhesiveGlassReflectionStrength =
     resolveAdhesiveGlassReflectionProfile(kind).reflectionStrength;
   userData.__wpReflectiveAdhesiveGlassMaterial = true;
-  userData.__wpAdhesiveGlassShaderProfile = 'cube-basic-front-opaque-mix-v3';
+  userData.__wpAdhesiveGlassShaderProfile = 'cube-basic-front-opaque-mix-v4';
   rec.userData = userData;
 }
 

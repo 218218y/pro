@@ -641,8 +641,8 @@ test('adhesive black glass panes are cube-reflection tracked without becoming fu
   assert.equal(pane.material.depthWrite, true);
   assert.equal(Object.hasOwn(pane.material, 'envMapIntensity'), false);
   assert.equal(pane.material.combine, THREE.MixOperation);
-  assert.equal(pane.material.reflectivity, 0.36);
-  assert.equal(pane.material.userData.__wpAdhesiveGlassReflectionStrength, 0.36);
+  assert.equal(pane.material.reflectivity, 0.01);
+  assert.equal(pane.material.userData.__wpAdhesiveGlassReflectionStrength, 0.01);
   assert.equal(pane.material.roughness, undefined);
   assert.equal(pane.material.metalness, undefined);
 });
@@ -784,7 +784,7 @@ test('cached adhesive glass material syncs the cube texture before the first tex
   assert.equal(secondPane.material.envMap, texture);
   assert.equal(secondPane.material.needsUpdate, true);
   assert.equal(secondPane.material.userData.__wpReflectiveAdhesiveGlassMaterial, true);
-  assert.equal(secondPane.material.userData.__wpAdhesiveGlassShaderProfile, 'cube-basic-front-opaque-mix-v3');
+  assert.equal(secondPane.material.userData.__wpAdhesiveGlassShaderProfile, 'cube-basic-front-opaque-mix-v4');
 });
 
 test('adhesive frosted glass keeps a milky material while still accepting cube reflections', () => {
