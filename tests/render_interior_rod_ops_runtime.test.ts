@@ -313,6 +313,83 @@ test('render interior rod keeps single hanger when the nearest blocker leaves en
   assert.equal(hangerCalls.length, 1);
 });
 
+test('render interior rod keeps single hanger when a shelf top stays below the hanger bottom', () => {
+  const THREE = makeFakeThree();
+  const { ops, group } = createRodOpsHarness();
+  const hangerCalls: any[] = [];
+  const innerW = 0.8;
+  const yPos = 1.0;
+
+  const created = ops.createRodWithContents({
+    THREE,
+    yPos,
+    effectiveBottomY: 0,
+    effectiveTopY: 2.4,
+    gridDivisions: 6,
+    localGridStep: 0.25,
+    shelfThick: 0.02,
+    config: {
+      isCustom: true,
+      customData: {
+        shelves: [false, false, true],
+        rods: [],
+        rodOps: [],
+        storage: false,
+      },
+    },
+    innerW,
+    internalCenterX: 0,
+    internalZ: 0,
+    wardrobeGroup: group,
+    showHangerEnabled: true,
+    addRealisticHanger(...args: any[]) {
+      hangerCalls.push(args);
+    },
+  });
+
+  assert.equal(created, true);
+  assert.equal(hangerCalls.length, 1, 'folded shelf contents must not suppress a non-colliding hanger');
+});
+
+test('render interior rod skips single hanger when the physical shelf slab intersects it', () => {
+  const THREE = makeFakeThree();
+  const { ops, added, group } = createRodOpsHarness();
+  const hangerCalls: any[] = [];
+  const innerW = 0.8;
+  const yPos = 1.0;
+
+  const created = ops.createRodWithContents({
+    THREE,
+    yPos,
+    effectiveBottomY: 0,
+    effectiveTopY: 2.4,
+    gridDivisions: 6,
+    localGridStep: 0.29,
+    shelfThick: 0.02,
+    config: {
+      isCustom: true,
+      customData: {
+        shelves: [false, false, true],
+        rods: [],
+        rodOps: [],
+        storage: false,
+      },
+    },
+    innerW,
+    internalCenterX: 0,
+    internalZ: 0,
+    wardrobeGroup: group,
+    showHangerEnabled: true,
+    addRealisticHanger(...args: any[]) {
+      hangerCalls.push(args);
+    },
+  });
+
+  assert.equal(created, true);
+  assert.equal(added.length, 1, 'the rod itself must still render when only the hanger collides');
+  assert.equal(hangerCalls.length, 0, 'the hanger must be removed when the shelf slab reaches into it');
+});
+
 test('render interior rod skips single hanger when sketch drawers are the nearest blocker below', () => {
   const THREE = makeFakeThree();
   const { ops, added, group } = createRodOpsHarness();

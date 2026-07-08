@@ -211,8 +211,21 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     }
     group.add(rod);
 
+    const singleHangerAvailableHeight = resolveInteriorRodAvailableHeight({
+      config,
+      yPos,
+      effectiveBottomY,
+      effectiveTopY,
+      localGridStep,
+      gridDivisions,
+      manualHeightLimit,
+      woodThick,
+      shelfThick,
+      shelfBlockerMode: 'surface',
+    });
+
     const canRenderSingleHanger = canSingleHangerFitBelowRod({
-      availableHeight,
+      availableHeight: singleHangerAvailableHeight,
       moduleWidth: innerW,
     });
 

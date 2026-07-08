@@ -17,6 +17,8 @@ import {
 import { resolveSketchStackCenterYFromNormalizedItem } from '../features/sketch_stack_positioning.js';
 import type { UnknownRecord } from '../../../types';
 
+type ShelfBlockerMode = 'contents' | 'surface';
+
 type RodClearanceArgs = {
   config?: unknown;
   yPos: number;
@@ -27,6 +29,7 @@ type RodClearanceArgs = {
   manualHeightLimit?: number | null;
   woodThick?: unknown;
   shelfThick?: unknown;
+  shelfBlockerMode?: ShelfBlockerMode;
 };
 
 type RodPoint = {
@@ -99,27 +102,47 @@ function readGridDivisions(config: UnknownRecord | null, explicit: unknown): num
   return CARCASS_SHELL_DIMENSIONS.drawerGridDivisions;
 }
 
+function resolveShelfTopY(args: { shelfY: number; shelfThick: number }): number | null {
+  const { shelfY, shelfThick } = args;
+  if (!Number.isFinite(shelfY)) return null;
+  return shelfY + Math.max(0, shelfThick) / 2;
+}
+
 function pushShelfBlocker(args: {
   blockers: number[];
   effectiveBottomY: number;
   localGridStep: number;
   index: number;
   shelfThick: number;
+  shelfBlockerMode: ShelfBlockerMode;
 }): void {
-  const { blockers, effectiveBottomY, localGridStep, index, shelfThick } = args;
+  const { blockers, effectiveBottomY, localGridStep, index, shelfThick, shelfBlockerMode } = args;
   if (!(index > 0) || !(localGridStep > 0)) return;
-  pushShelfContentBlocker({ blockers, shelfY: effectiveBottomY + index * localGridStep, shelfThick });
+  pushShelfContentBlocker({
+    blockers,
+    shelfY: effectiveBottomY + index * localGridStep,
+    shelfThick,
+    shelfBlockerMode,
+  });
 }
 
-function pushShelfContentBlocker(args: { blockers: number[]; shelfY: number; shelfThick: number }): void {
-  const { blockers, shelfY, shelfThick } = args;
-  if (!Number.isFinite(shelfY)) return;
+function pushShelfContentBlocker(args: {
+  blockers: number[];
+  shelfY: number;
+  shelfThick: number;
+  shelfBlockerMode: ShelfBlockerMode;
+}): void {
+  const { blockers, shelfY, shelfThick, shelfBlockerMode } = args;
+  const shelfTopY = resolveShelfTopY({ shelfY, shelfThick });
+  if (shelfTopY == null) return;
 
-  // Hanging clothes are shortened against the visible contents resting on a shelf, not only
-  // against the wooden shelf slab. Folded clothes are emitted from the shelf top upward, so
-  // reserve their maximum generated stack height as a real blocker whenever contents are shown.
-  const shelfHalfH = Math.max(0, shelfThick) / 2;
-  blockers.push(shelfY + shelfHalfH + FOLDED_CLOTHES_BLOCKER_HEIGHT_M);
+  // Hanging clothes must reserve the visible folded stack that can sit on top of a shelf.
+  // A single hanger, however, only collides with the physical shelf slab itself. Keeping
+  // these two blocker modes separate prevents false removal when folded-clothes height is
+  // irrelevant, and prevents missed collisions when the synthetic folded stack rises above
+  // the rod and would otherwise be ignored as an above-rod blocker.
+  const blockerY = shelfBlockerMode === 'contents' ? shelfTopY + FOLDED_CLOTHES_BLOCKER_HEIGHT_M : shelfTopY;
+  blockers.push(blockerY);
 }
 
 function resolveRodY(args: {
@@ -153,15 +176,23 @@ function collectPresetBlockers(args: {
   localGridStep: number;
   blockers: number[];
   shelfThick: number;
+  shelfBlockerMode: ShelfBlockerMode;
 }): boolean {
-  const { config, layout, effectiveBottomY, localGridStep, blockers, shelfThick } = args;
+  const { config, layout, effectiveBottomY, localGridStep, blockers, shelfThick, shelfBlockerMode } = args;
   const preset = INTERIOR_FITTINGS_DIMENSIONS.presets;
   const rods: RodPoint[] = [];
   let hasKnownPreset = false;
 
   const addShelves = (rows: readonly number[]): void => {
     for (let i = 0; i < rows.length; i += 1) {
-      pushShelfBlocker({ blockers, effectiveBottomY, localGridStep, index: rows[i], shelfThick });
+      pushShelfBlocker({
+        blockers,
+        effectiveBottomY,
+        localGridStep,
+        index: rows[i],
+        shelfThick,
+        shelfBlockerMode,
+      });
     }
   };
   const addRod = (yFactor: number): void => {
@@ -218,13 +249,23 @@ function collectCustomBlockers(args: {
   localGridStep: number;
   blockers: number[];
   shelfThick: number;
+  shelfBlockerMode: ShelfBlockerMode;
 }): boolean {
-  const { customData, effectiveBottomY, localGridStep, blockers, shelfThick } = args;
+  const { customData, effectiveBottomY, localGridStep, blockers, shelfThick, shelfBlockerMode } = args;
   let hasEvidence = true;
 
   const shelves = readBoolArray(customData.shelves);
   for (let i = 0; i < shelves.length; i += 1) {
-    if (shelves[i]) pushShelfBlocker({ blockers, effectiveBottomY, localGridStep, index: i + 1, shelfThick });
+    if (shelves[i]) {
+      pushShelfBlocker({
+        blockers,
+        effectiveBottomY,
+        localGridStep,
+        index: i + 1,
+        shelfThick,
+        shelfBlockerMode,
+      });
+    }
   }
 
   const rodOps = readRecordArray(customData.rodOps);
@@ -380,8 +421,9 @@ function collectSketchExtraBlockers(args: {
   blockers: number[];
   woodThick: number;
   shelfThick: number;
+  shelfBlockerMode: ShelfBlockerMode;
 }): boolean {
-  const { config, effectiveBottomY, effectiveTopY, blockers, woodThick, shelfThick } = args;
+  const { config, effectiveBottomY, effectiveTopY, blockers, woodThick, shelfThick, shelfBlockerMode } = args;
   const extras = isRecord(config?.sketchExtras) ? config.sketchExtras : null;
   if (!extras) return false;
   let hasEvidence = false;
@@ -404,7 +446,7 @@ function collectSketchExtraBlockers(args: {
   for (let i = 0; i < shelves.length; i += 1) {
     const y = clampNormY(shelves[i].yNorm);
     if (y != null) {
-      pushShelfContentBlocker({ blockers, shelfY: y, shelfThick });
+      pushShelfContentBlocker({ blockers, shelfY: y, shelfThick, shelfBlockerMode });
       hasEvidence = true;
     }
   }
@@ -453,6 +495,7 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
   const gridDivisions = readGridDivisions(config, args.gridDivisions);
   const woodThick = resolvePositiveThickness(args.woodThick);
   const shelfThick = resolvePositiveThickness(args.shelfThick ?? args.woodThick);
+  const shelfBlockerMode: ShelfBlockerMode = args.shelfBlockerMode === 'surface' ? 'surface' : 'contents';
   const derivedTopY =
     Number.isFinite(localGridStep) && localGridStep > 0
       ? effectiveBottomY + gridDivisions * localGridStep
@@ -471,6 +514,7 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
       localGridStep,
       blockers,
       shelfThick,
+      shelfBlockerMode,
     });
   } else {
     const layout = typeof config?.layout === 'string' ? config.layout : '';
@@ -481,6 +525,7 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
       localGridStep,
       blockers,
       shelfThick,
+      shelfBlockerMode,
     });
   }
 
@@ -492,6 +537,7 @@ export function resolveInteriorRodAvailableHeight(args: RodClearanceArgs): numbe
       blockers,
       woodThick,
       shelfThick,
+      shelfBlockerMode,
     }) || hasEvidence;
 
   let blockerY = effectiveBottomY;
