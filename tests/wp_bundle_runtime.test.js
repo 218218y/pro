@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { parseBundleArgs, resolveBundlePaths } from '../tools/wp_bundle_state.js';
+import { assertBundleArgsAllowed, parseBundleArgs, resolveBundlePaths } from '../tools/wp_bundle_state.js';
 import {
   cleanOldBundleArtifacts,
   createBundleBuildConfig,
@@ -34,7 +34,15 @@ test('bundle arg parsing preserves out/sourcemap/minify/rebuild policy', () => {
       forceDistRebuild: true,
       minify: true,
       buildMode: 'perf',
+      unknownOptions: [],
     }
+  );
+
+  assert.deepEqual(parseBundleArgs(['--wat']).unknownOptions, ['--wat']);
+  assert.equal(assertBundleArgsAllowed(parseBundleArgs(['--wat']), { env: {} }), true);
+  assert.throws(
+    () => assertBundleArgsAllowed(parseBundleArgs(['--wat']), { env: { CI: '1' } }),
+    /Unknown option\(s\) in CI\/release mode: --wat/
   );
 });
 
@@ -96,6 +104,13 @@ test('bundle TypeScript resolver refuses system tsc unless manual fallback is ex
   assert.deepEqual(manual.args, []);
   assert.equal(manual.source, 'manual-env-bin');
   assert.match(manual.warning, /manual mode/i);
+
+  const blocked = resolveTscInvocation(root, {
+    spawnImpl,
+    env: { WP_ALLOW_SYSTEM_TSC: '1', GITHUB_ACTIONS: 'true' },
+  });
+  assert.equal(blocked.blocked, true);
+  assert.match(blocked.errorMessage, /manual-only.*refused in CI\/release/i);
 });
 
 test('bundle dist build fails before probing system tsc when local TypeScript is missing', () => {

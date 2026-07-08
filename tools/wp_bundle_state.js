@@ -1,6 +1,7 @@
 import path from 'node:path';
 
 import { normalizeObservabilityBuildMode } from './wp_observability_build.js';
+import { isReleaseOrCiEnv } from './wp_typescript_resolver.js';
 
 export function parseBundleArgs(argv) {
   const out = {
@@ -9,6 +10,7 @@ export function parseBundleArgs(argv) {
     forceDistRebuild: false,
     minify: false,
     buildMode: 'client',
+    unknownOptions: [],
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -57,7 +59,7 @@ export function parseBundleArgs(argv) {
       i++;
       continue;
     }
-    if (a.startsWith('-')) console.warn('[WP Bundle] Unknown option:', a);
+    if (a.startsWith('-')) out.unknownOptions.push(a);
   }
 
   return out;
@@ -75,6 +77,19 @@ export function maybeHandleBundleHelp(argv) {
     }
   }
   return false;
+}
+
+export function createBundleUnknownOptionsMessage(options) {
+  const values = Array.isArray(options) ? options.filter(Boolean) : [];
+  return `[WP Bundle] Unknown option(s) in CI/release mode: ${values.join(', ')}`;
+}
+
+export function assertBundleArgsAllowed(args, { env = process.env } = {}) {
+  const unknownOptions = args?.unknownOptions || [];
+  if (unknownOptions.length > 0 && isReleaseOrCiEnv(env)) {
+    throw new Error(createBundleUnknownOptionsMessage(unknownOptions));
+  }
+  return true;
 }
 
 export function resolveBundlePaths({ root, outFile }) {

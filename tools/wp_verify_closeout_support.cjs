@@ -577,7 +577,7 @@ function spawnCommand(command, args) {
   const result = spawnSync(command, args || [], {
     encoding: 'utf8',
     shell: process.platform === 'win32',
-    env: process.env,
+    env: { ...process.env, WP_RELEASE_VERIFY: '1' },
     maxBuffer: 1024 * 1024 * 16,
   });
   const durationMs = Date.now() - startedAt;

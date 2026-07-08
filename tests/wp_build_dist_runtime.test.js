@@ -154,6 +154,13 @@ test('build-dist TypeScript resolver allows system tsc only in explicit manual m
   assert.equal(resolved.source, 'system-path');
   assert.match(resolved.warning, /manual mode/i);
   assert.deepEqual(probes, [['tsc', ['--version']]]);
+
+  const blocked = resolveTscInvocation(root, {
+    spawnImpl,
+    env: { WP_ALLOW_SYSTEM_TSC: '1', CI: '1' },
+  });
+  assert.equal(blocked.blocked, true);
+  assert.match(blocked.errorMessage, /manual-only.*refused in CI\/release/i);
 });
 
 test('build-dist flow fails clearly instead of using system tsc when local TypeScript is missing', () => {
@@ -171,6 +178,37 @@ test('build-dist flow fails clearly instead of using system tsc when local TypeS
         processEnv: {},
       }),
     /Local TypeScript was not found.*npm ci.*Refusing to use system tsc/s
+  );
+
+  assert.throws(
+    () =>
+      runBuildDistFlow({
+        root,
+        args: parseBuildDistArgs(['--no-assets']),
+        spawnImpl() {
+          return { status: 0 };
+        },
+        processEnv: { WP_ALLOW_SYSTEM_TSC: '1', CI: '1' },
+      }),
+    /WP_ALLOW_SYSTEM_TSC=1 is manual-only.*Run npm ci/s
+  );
+});
+
+test('build-dist rejects unknown options in CI/release mode', () => {
+  const root = tempDir();
+  fs.writeFileSync(path.join(root, 'tsconfig.dist.json'), '{"compilerOptions":{}}\n', 'utf8');
+
+  assert.throws(
+    () =>
+      runBuildDistFlow({
+        root,
+        args: parseBuildDistArgs(['--badflag']),
+        spawnImpl() {
+          return { status: 0 };
+        },
+        processEnv: { CI: '1' },
+      }),
+    /Unknown option\(s\) in CI\/release mode: --badflag/
   );
 });
 

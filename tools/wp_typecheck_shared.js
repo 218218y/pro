@@ -18,6 +18,15 @@ export function resolveTsc(root, { env = process.env, spawnImpl = spawnSync, exi
   const tool = resolveTypeScriptTool(root, { env, spawnImpl, existsImpl });
   if (!tool) return null;
 
+  if (tool.kind === 'blocked') {
+    return {
+      kind: 'blocked',
+      errorMessage: tool.errorMessage,
+      source: tool.source,
+      warning: null,
+    };
+  }
+
   if (tool.kind === 'local') {
     return {
       kind: 'node',

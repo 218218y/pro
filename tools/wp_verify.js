@@ -18,7 +18,7 @@ function main() {
   const flags = parseVerifyArgs(process.argv.slice(2));
   const projectRoot = resolveProjectRoot(import.meta.url);
   const childEnvInfo = createSanitizedChildEnv(process.env);
-  const childEnv = childEnvInfo.env;
+  const childEnv = { ...childEnvInfo.env, WP_RELEASE_VERIFY: '1' };
 
   console.log('[WardrobePro] verify: running full pre-release suite...');
   if (childEnvInfo.removedInvalidLocalStorageFile) {

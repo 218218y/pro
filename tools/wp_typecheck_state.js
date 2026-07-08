@@ -95,13 +95,18 @@ export function configExists(configPath, existsImpl = fs.existsSync) {
 }
 
 export function createUnknownModeMessage(mode) {
-  return `❌ Unknown mode: ${mode || '(missing)'}`;
+  return `[WP Typecheck] Unknown mode: ${mode || '(missing)'}`;
+}
+
+export function createUnknownOptionsMessage(options) {
+  const values = Array.isArray(options) ? options.filter(Boolean) : [];
+  return `[WP Typecheck] Unknown option(s): ${values.join(', ')}`;
 }
 
 export function createMissingConfigMessage(configName) {
-  return `❌ Missing config: ${configName}`;
+  return `[WP Typecheck] Missing config: ${configName}`;
 }
 
 export function createSkippedMissingConfigMessage(configName) {
-  return `⚠️  Skipping missing config: ${configName}`;
+  return `[WP Typecheck] Skipping missing config: ${configName}`;
 }

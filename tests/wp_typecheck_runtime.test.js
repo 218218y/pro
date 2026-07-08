@@ -34,6 +34,7 @@ test('typecheck args parsing preserves help/mode/all semantics', () => {
     runAll: true,
     unknownOptions: [],
   });
+  assert.deepEqual(parseTypecheckArgs(['--mode', 'runtime', '--badflag']).unknownOptions, ['--badflag']);
 
   assert.equal(resolveTypecheckModes({ runAll: false, mode: 'services' })[0], 'services');
   assert.ok(resolveTypecheckModes({ runAll: true, mode: null }).includes('strict-runtime'));
@@ -56,6 +57,13 @@ test('typecheck refuses WP_TSC_BIN and system tsc unless manual fallback is expl
   assert.equal(resolved.source, 'manual-env-bin');
   assert.match(resolved.warning, /manual mode/i);
 
+  const blocked = resolveTsc(root, {
+    env: { WP_ALLOW_SYSTEM_TSC: '1', CI: '1', WP_TSC_BIN: '/custom/tsc' },
+    spawnImpl: systemProbe,
+  });
+  assert.equal(blocked.kind, 'blocked');
+  assert.match(blocked.errorMessage, /manual-only.*refused in CI\/release/i);
+
   fs.mkdirSync(path.join(root, 'node_modules', 'typescript', 'lib'), { recursive: true });
   const localTsc = path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js');
   fs.writeFileSync(localTsc, '// stub\n', 'utf8');
@@ -66,6 +74,34 @@ test('typecheck refuses WP_TSC_BIN and system tsc unless manual fallback is expl
   assert.equal(local.kind, 'node');
   assert.equal(local.cmd, localTsc);
   assert.equal(local.source, 'local-node-modules');
+});
+
+test('typecheck flow rejects unknown options and CI system tsc fallback', () => {
+  const root = tempDir();
+  fs.writeFileSync(resolveTypecheckConfigPath(root, 'runtime'), '{"compilerOptions":{}}\n', 'utf8');
+
+  const unknown = runTypecheckFlow({
+    root,
+    runAll: false,
+    mode: 'runtime',
+    unknownOptions: ['--badflag'],
+  });
+  assert.equal(unknown.ok, false);
+  assert.equal(unknown.reason, 'unknown-options');
+  assert.match(unknown.errorMessage, /Unknown option\(s\): --badflag/);
+
+  const blocked = runTypecheckFlow({
+    root,
+    runAll: false,
+    mode: 'runtime',
+    env: { WP_ALLOW_SYSTEM_TSC: '1', CI: '1' },
+    spawnImpl() {
+      return { status: 0 };
+    },
+  });
+  assert.equal(blocked.ok, false);
+  assert.equal(blocked.reason, 'system-tsc-refused');
+  assert.match(blocked.errorMessage, /manual-only.*Run npm ci/);
 });
 
 test('typecheck flow runs matching config and reports success', () => {

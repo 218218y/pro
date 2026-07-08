@@ -73,6 +73,9 @@ export function buildDistModules(root, options = {}) {
   if (!tscInvocation) {
     throw new Error(createLocalTypeScriptNotFoundMessage('[WP Bundle] '));
   }
+  if (tscInvocation.blocked) {
+    throw new Error(`[WP Bundle] ${tscInvocation.errorMessage}`);
+  }
   if (tscInvocation.warning) console.warn(`[WP Bundle] ${tscInvocation.warning}`);
 
   const distAbs = path.join(root, 'dist');

@@ -96,6 +96,14 @@ export function resolveTscBin(root) {
 export function resolveTscInvocation(root, { env = process.env, spawnImpl } = {}) {
   const tool = resolveTypeScriptTool(root, { env, spawnImpl, existsImpl: exists });
   if (!tool) return null;
+  if (tool.kind === 'blocked') {
+    return {
+      blocked: true,
+      source: tool.source,
+      errorMessage: tool.errorMessage,
+      warning: null,
+    };
+  }
   if (tool.kind === 'local') {
     return {
       cmd: process.execPath,

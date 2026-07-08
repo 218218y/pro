@@ -6,7 +6,12 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 import { loadViteBuild } from './wp_bundle_shared.js';
-import { parseBundleArgs, maybeHandleBundleHelp, resolveBundlePaths } from './wp_bundle_state.js';
+import {
+  assertBundleArgsAllowed,
+  parseBundleArgs,
+  maybeHandleBundleHelp,
+  resolveBundlePaths,
+} from './wp_bundle_state.js';
 import { buildDistModules } from './wp_bundle_dist.js';
 import { buildBundleArtifacts } from './wp_bundle_emit.js';
 
@@ -17,6 +22,10 @@ export async function runBundleCli(argv = process.argv.slice(2)) {
   if (maybeHandleBundleHelp(argv)) return { help: true };
 
   const args = parseBundleArgs(argv);
+  assertBundleArgsAllowed(args, { env: process.env });
+  const unknownOptions = args.unknownOptions || [];
+  for (const option of unknownOptions) console.warn('[WP Bundle] Unknown option:', option);
+
   const root = path.resolve(__dirname, '..');
   const entryAbs = buildDistModules(root, { forceDistRebuild: args.forceDistRebuild });
   const { outFileAbs, outDirAbs, staleTmpDirAbs } = resolveBundlePaths({ root, outFile: args.outFile });

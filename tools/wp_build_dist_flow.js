@@ -3,7 +3,7 @@ import path from 'node:path';
 import { exists, mkdirp, resolveTscInvocation, rmrf } from './wp_build_dist_shared.js';
 import { copyEsmMjsVerbatim, copyStaticDistAssets } from './wp_build_dist_assets.js';
 import { createBuildDistSuccessMessage, resolveBuildDistPaths } from './wp_build_dist_state.js';
-import { createLocalTypeScriptNotFoundMessage } from './wp_typescript_resolver.js';
+import { createLocalTypeScriptNotFoundMessage, isReleaseOrCiEnv } from './wp_typescript_resolver.js';
 
 function createBuildDistError(message, exitCode = 1) {
   const err = new Error(message);
@@ -59,7 +59,14 @@ export function runBuildDistFlow({
 } = {}) {
   const paths = resolveBuildDistPaths({ root, tsconfig: args.tsconfig });
 
-  for (const option of args.unknownOptions || []) {
+  const unknownOptions = args.unknownOptions || [];
+  if (unknownOptions.length > 0 && isReleaseOrCiEnv(processEnv)) {
+    throw createBuildDistError(
+      `[WP BuildDist] Unknown option(s) in CI/release mode: ${unknownOptions.join(', ')}`,
+      2
+    );
+  }
+  for (const option of unknownOptions) {
     warn('[WP BuildDist] Unknown option:', option);
   }
 
@@ -70,6 +77,9 @@ export function runBuildDistFlow({
   const tscInvocation = resolveTscInvocation(root, { env: processEnv, spawnImpl });
   if (!tscInvocation) {
     throw createBuildDistError(createLocalTypeScriptNotFoundMessage('[WP BuildDist] '));
+  }
+  if (tscInvocation.blocked) {
+    throw createBuildDistError(`[WP BuildDist] ${tscInvocation.errorMessage}`);
   }
   if (tscInvocation.warning) warn(`[WP BuildDist] ${tscInvocation.warning}`);
 

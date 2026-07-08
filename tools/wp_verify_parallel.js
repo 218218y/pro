@@ -41,7 +41,7 @@ async function main() {
 
   const projectRoot = resolveProjectRoot(import.meta.url);
   const childEnvInfo = createSanitizedChildEnv(process.env);
-  const childEnv = childEnvInfo.env;
+  const childEnv = { ...childEnvInfo.env, WP_RELEASE_VERIFY: '1' };
 
   if (childEnvInfo.removedInvalidLocalStorageFile) {
     const sourceLabel =

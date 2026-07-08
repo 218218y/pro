@@ -13,6 +13,7 @@ import {
   createMissingConfigMessage,
   createSkippedMissingConfigMessage,
   createUnknownModeMessage,
+  createUnknownOptionsMessage,
   isKnownTypecheckMode,
   resolveTypecheckConfigPath,
   resolveTypecheckExtraArgs,
@@ -24,12 +25,22 @@ export function runTypecheckFlow({
   node = process.execPath,
   runAll,
   mode,
+  unknownOptions = [],
   env = process.env,
   log = console.log,
   warn = console.warn,
   spawnImpl,
   existsImpl,
 } = {}) {
+  if (Array.isArray(unknownOptions) && unknownOptions.length > 0) {
+    return {
+      ok: false,
+      exitCode: 2,
+      reason: 'unknown-options',
+      errorMessage: createUnknownOptionsMessage(unknownOptions),
+    };
+  }
+
   const tscRef = resolveTsc(root, { env, spawnImpl, existsImpl });
   if (!tscRef) {
     return {
@@ -37,6 +48,14 @@ export function runTypecheckFlow({
       exitCode: 1,
       reason: 'missing-tsc',
       errorMessage: createTypecheckNotFoundMessage(),
+    };
+  }
+  if (tscRef.kind === 'blocked') {
+    return {
+      ok: false,
+      exitCode: 1,
+      reason: 'system-tsc-refused',
+      errorMessage: `[WP Typecheck] ${tscRef.errorMessage}`,
     };
   }
   if (tscRef.warning) warn(`[WP Typecheck] ${tscRef.warning}`);

@@ -21,6 +21,7 @@ const result = runTypecheckFlow({
   node: process.execPath,
   runAll: args.runAll,
   mode: args.mode,
+  unknownOptions: args.unknownOptions,
   env: process.env,
   log: console.log,
   warn: console.warn,
