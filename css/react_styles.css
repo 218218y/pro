@@ -4611,12 +4611,12 @@ body.wp-ui-react .hint-bottom::before {
 
 #reactSidebarRoot .wp-r-header .wp-r-header-hint.hint-bottom:hover,
 #reactSidebarRoot .wp-r-header .wp-r-header-hint.hint-bottom:focus-visible,
-body.wp-ui-react .wp-viewer-notes-controls .hint-bottom:hover,
-body.wp-ui-react .wp-viewer-notes-controls .hint-bottom:focus-visible,
 body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:hover,
 body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:focus-visible,
 body.wp-ui-react .hint-bottom::after,
-body.wp-ui-react .hint-bottom::before {
+body.wp-ui-react .hint-bottom::before,
+body.wp-ui-react .wp-viewer-notes-controls .hint-bottom:hover,
+body.wp-ui-react .wp-viewer-notes-controls .hint-bottom:focus-visible {
   z-index: var(--wp-z-tooltip);
 }
 
