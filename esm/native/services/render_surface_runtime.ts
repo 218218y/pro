@@ -8,6 +8,7 @@ import { ensureRenderNamespace, ensureRenderRuntimeState, getWindowMaybe } from 
 import { ensureRenderBag as ensureRenderCoreBag } from '../runtime/render_access_shared.js';
 import { readConfigLooseScalarFromApp } from '../runtime/config_selectors.js';
 import { assertThreeViaDeps } from '../runtime/three_access.js';
+import { scheduleAdhesiveGlassStandardShaderWarmup } from '../runtime/adhesive_glass_shader_warmup.js';
 import {
   addNode,
   clampNumber,
@@ -273,6 +274,11 @@ export function createViewportSurface(
     render.wardrobeGroup = wardrobeGroup;
   }
   if (readObject3DWritable(wardrobeGroup)?.parent !== scene) addNode(scene, wardrobeGroup);
+  try {
+    scheduleAdhesiveGlassStandardShaderWarmup(App, THREE);
+  } catch {
+    // Shader warmup is an optimization only; viewport creation must stay resilient.
+  }
   return {
     scene,
     camera,

@@ -70,6 +70,9 @@ const { createDoorVisual } = loadTsModule(
 const { FULL_MIRROR_INSET_M } = loadTsModule(
   path.join(process.cwd(), 'esm/shared/mirror_layout_contracts_shared.ts')
 );
+const { warmAdhesiveGlassStandardShaderNow, scheduleAdhesiveGlassStandardShaderWarmup } = loadTsModule(
+  path.join(process.cwd(), 'esm/native/runtime/adhesive_glass_shader_warmup.ts')
+);
 
 class FakeVector3 {
   constructor(x = 0, y = 0, z = 0) {
@@ -95,6 +98,13 @@ class FakeObject3D {
   }
   add(child) {
     this.children.push(child);
+    child.parent = this;
+    return child;
+  }
+  remove(child) {
+    const index = this.children.indexOf(child);
+    if (index >= 0) this.children.splice(index, 1);
+    if (child && child.parent === this) child.parent = null;
     return child;
   }
 }
@@ -828,6 +838,79 @@ test('cached adhesive glass material syncs the cube texture before the first tex
   assert.equal(secondPane.material.needsUpdate, true);
   assert.equal(secondPane.material.userData.__wpReflectiveAdhesiveGlassMaterial, true);
   assert.equal(secondPane.material.userData.__wpAdhesiveGlassShaderProfile, 'cube-standard-front-opaque-v5');
+});
+
+test('adhesive glass standard material shader warmup compiles the cube envMap profile off the visible build path', () => {
+  const THREE = createThree();
+  const scene = new THREE.Group();
+  const camera = { isCamera: true };
+  const texture = { kind: 'cube-texture' };
+  const calls = [];
+  const renderer = {
+    debug: { checkShaderErrors: true },
+    compile(sceneArg, cameraArg) {
+      calls.push({ sceneArg, cameraArg, checkShaderErrors: this.debug.checkShaderErrors });
+    },
+  };
+  const app = {
+    deps: { THREE },
+    services: {},
+    render: { renderer, scene, camera, mirrorRenderTarget: { texture } },
+  };
+
+  assert.equal(warmAdhesiveGlassStandardShaderNow(app, THREE), true);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].sceneArg, scene);
+  assert.equal(calls[0].cameraArg, camera);
+  assert.equal(calls[0].checkShaderErrors, false);
+  assert.equal(renderer.debug.checkShaderErrors, true);
+  assert.equal(scene.children.length, 0);
+
+  const state = app.services.runtimeCache.__wpAdhesiveGlassStandardShaderWarmup;
+  assert.equal(state.completed, true);
+  assert.equal(state.scheduled, false);
+  assert.equal(state.material.type, 'MeshStandardMaterial');
+  assert.equal(state.material.envMap, texture);
+  assert.equal(state.material.envMapIntensity, 0.72);
+  assert.equal(state.material.side, THREE.FrontSide);
+  assert.equal(state.material.transparent, false);
+  assert.equal(state.material.depthWrite, true);
+  assert.equal(state.material.userData.__wpAdhesiveGlassShaderWarmup, true);
+});
+
+test('adhesive glass shader warmup schedules once and reuses the warmed standard profile', () => {
+  const THREE = createThree();
+  const scene = new THREE.Group();
+  const camera = { isCamera: true };
+  const texture = { kind: 'cube-texture' };
+  let timerCalls = 0;
+  let compileCalls = 0;
+  const renderer = {
+    debug: { checkShaderErrors: true },
+    compile() {
+      compileCalls += 1;
+    },
+  };
+  const app = {
+    deps: {
+      THREE,
+      browser: {
+        setTimeout(fn) {
+          timerCalls += 1;
+          fn();
+          return 1;
+        },
+      },
+    },
+    services: {},
+    render: { renderer, scene, camera, mirrorRenderTarget: { texture } },
+  };
+
+  scheduleAdhesiveGlassStandardShaderWarmup(app, THREE);
+  scheduleAdhesiveGlassStandardShaderWarmup(app, THREE);
+  assert.equal(timerCalls, 1);
+  assert.equal(compileCalls, 1);
+  assert.equal(app.services.runtimeCache.__wpAdhesiveGlassStandardShaderWarmup.completed, true);
 });
 
 test('adhesive frosted glass keeps a milky material while still accepting cube reflections', () => {
