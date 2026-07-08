@@ -154,10 +154,23 @@ function writeAdhesiveGlassMaterialMetadata(mat: unknown, kind: AdhesiveGlassKin
   rec.userData = userData;
 }
 
+function syncAdhesiveGlassMaterialEnvMap(App: AppContainer, mat: unknown): void {
+  const rec = mat && typeof mat === 'object' ? (mat as Record<string, unknown>) : null;
+  if (!rec) return;
+  const mirrorTexture = readMirrorRenderTargetTexture(App);
+  if (!mirrorTexture || rec.envMap === mirrorTexture) return;
+  rec.envMap = mirrorTexture;
+  rec.needsUpdate = true;
+}
+
 function createAdhesiveGlassMaterial(args: { App: AppContainer; THREE: ThreeLike; kind: AdhesiveGlassKind }) {
   const cache = readAdhesiveGlassMaterialCache(args.App);
   const cached = cache[args.kind];
-  if (cached) return cached;
+  if (cached) {
+    syncAdhesiveGlassMaterialEnvMap(args.App, cached);
+    writeAdhesiveGlassMaterialMetadata(cached, args.kind);
+    return cached;
+  }
 
   const profile = resolveAdhesiveGlassReflectionProfile(args.kind);
   const mirrorTexture = readMirrorRenderTargetTexture(args.App);

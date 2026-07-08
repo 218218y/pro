@@ -713,6 +713,64 @@ test('adhesive glass reuses one cached material per glass kind and seeds the cub
   assert.equal(firstPane.material.userData.__keepMaterial, true);
 });
 
+test('cached adhesive glass material syncs the cube texture before the first textured pane is attached', () => {
+  const THREE = createThree();
+  const app = createDoorVisualApp(THREE);
+
+  const beforeTexture = createDoorVisual(
+    app,
+    0.7,
+    1.9,
+    0.02,
+    { kind: 'front' },
+    'flat',
+    false,
+    false,
+    null,
+    { kind: 'wood' },
+    1,
+    false,
+    null,
+    'd1_black_glass',
+    { adhesiveGlassKind: 'black_glass', renderPolicy: { sketchMode: false, addOutlines: null } }
+  );
+  const firstPane = beforeTexture.children.find(
+    child => child.userData?.__wpAdhesiveGlassSurface === 'black_glass'
+  );
+  assert.ok(firstPane);
+  assert.equal(firstPane.material.envMap, undefined);
+
+  const texture = { kind: 'late-cube-texture' };
+  app.render.mirrorRenderTarget = { texture };
+
+  const afterTexture = createDoorVisual(
+    app,
+    0.6,
+    1.6,
+    0.02,
+    { kind: 'front' },
+    'flat',
+    false,
+    false,
+    null,
+    { kind: 'wood' },
+    1,
+    false,
+    null,
+    'd2_black_glass',
+    { adhesiveGlassKind: 'black_glass', renderPolicy: { sketchMode: false, addOutlines: null } }
+  );
+  const secondPane = afterTexture.children.find(
+    child => child.userData?.__wpAdhesiveGlassSurface === 'black_glass'
+  );
+
+  assert.ok(secondPane);
+  assert.equal(secondPane.material, firstPane.material);
+  assert.equal(secondPane.material.envMap, texture);
+  assert.equal(secondPane.material.needsUpdate, true);
+  assert.equal(secondPane.material.userData.__wpReflectiveAdhesiveGlassMaterial, true);
+});
+
 test('adhesive frosted glass keeps a milky material while still accepting cube reflections', () => {
   const THREE = createThree();
   const app = createDoorVisualApp(THREE);
