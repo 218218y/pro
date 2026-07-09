@@ -4,6 +4,8 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { resolveTsc } from '../tools/wp_typecheck_shared.js';
+
 const rootDir = process.cwd();
 const configPath = path.join(rootDir, 'tsconfig.type-contracts.json');
 const fixturePath = path.join(
@@ -12,8 +14,6 @@ const fixturePath = path.join(
   'type_contracts',
   'actions_root_patch_type_contract.fixture.ts'
 );
-const tscBinPath = path.join(rootDir, 'node_modules', 'typescript', 'bin', 'tsc');
-
 function runFixtureAsRuntimeDiscoveredTest() {
   return spawnSync(process.execPath, ['--import', 'tsx', fixturePath], {
     cwd: rootDir,
@@ -22,14 +22,34 @@ function runFixtureAsRuntimeDiscoveredTest() {
   });
 }
 
-function runTypeContracts() {
-  assert.ok(fs.existsSync(tscBinPath), `Local TypeScript compiler was not found at ${tscBinPath}`);
+function resolveTypeContractTsc() {
+  const tscRef = resolveTsc(rootDir);
 
-  return spawnSync(process.execPath, [tscBinPath, '-p', configPath, '--noEmit', '--pretty', 'false'], {
-    cwd: rootDir,
-    encoding: 'utf8',
-    windowsHide: true,
-  });
+  assert.ok(
+    tscRef,
+    'Local TypeScript compiler was not found. Run npm ci before running type contract tests.'
+  );
+  assert.notEqual(
+    tscRef.kind,
+    'blocked',
+    `Type contract TypeScript resolver refused fallback: ${tscRef.errorMessage || 'blocked'}`
+  );
+
+  return tscRef;
+}
+
+function runTypeContracts() {
+  const tscRef = resolveTypeContractTsc();
+
+  return spawnSync(
+    tscRef.command,
+    [...tscRef.argsPrefix, '-p', configPath, '--noEmit', '--pretty', 'false'],
+    {
+      cwd: rootDir,
+      encoding: 'utf8',
+      windowsHide: true,
+    }
+  );
 }
 
 test('[actions.patch types] fixture uses native @ts-expect-error contracts', () => {
@@ -56,10 +76,11 @@ test('[actions.patch types] public/backend patch contract fixture typechecks thr
   assert.equal(
     result.status,
     0,
-    `Type contract fixture failed. Command: node ${path.relative(rootDir, tscBinPath)} -p ${path.relative(
+    `Type contract fixture failed. Command: ${resolveTypeContractTsc().label} -p ${path.relative(
       rootDir,
       configPath
-    )} --noEmit --pretty false\n${output}`
+    )} --noEmit --pretty false
+${output}`
   );
 });
 
