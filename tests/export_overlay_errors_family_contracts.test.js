@@ -395,7 +395,8 @@ test('[overlay-export-family] overlay ui seams stay wiring-first while controlle
       /quickActionsController\.readPinnedSync\(\)/,
       /quickActionsController\.subscribePinnedSync\(setPinnedSync\)/,
       /quickActionsController\.toggleMenu\(\{/,
-      /quickActionsController\.runAction\(\{[\s\S]*op: 'quick-actions:snapshot'/,
+      /runAction\(\{[\s\S]*keepOpen: keepOpenRef\.current,[\s\S]*op,/,
+      /<QuickActionExportButton[\s\S]*action=\{\(\) => exp\.exportTakeSnapshot\(\)\}[\s\S]*op="quick-actions:snapshot"[\s\S]*runAction=\{quickActionsController\.runAction\}/,
     ],
     'overlay quick actions dock'
   );
