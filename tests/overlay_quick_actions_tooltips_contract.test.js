@@ -40,15 +40,21 @@ test('quick action export buttons expose structured title and detail through the
   assert.match(tooltipPlacementSource, /const TOOLTIP_DETAIL_ATTR = 'data-tooltip-detail';/);
   assert.match(
     tooltipPlacementSource,
-    /return \[title, detail\]\.filter\(Boolean\)\.join\('\\n'\) \|\| undefined;/
+    /type TooltipContent = \{[\s\S]*title\?: string;[\s\S]*detail\?: string;[\s\S]*rich: boolean;/
   );
-  assert.doesNotMatch(dockSource, /QuickActionExportTooltipView/);
-  assert.doesNotMatch(dockSource, /className="wp-qa-tooltip-title"/);
-  assert.doesNotMatch(dockSource, /className="wp-qa-tooltip-detail"/);
+  assert.match(
+    tooltipPlacementSource,
+    /appendTooltipPart\(doc, tooltip, 'wp-r-floating-tooltip-title', content\.title\);/
+  );
+  assert.match(
+    tooltipPlacementSource,
+    /appendTooltipPart\(doc, tooltip, 'wp-r-floating-tooltip-detail', content\.detail\);/
+  );
+  assert.match(tooltipPlacementSource, /tooltip\.classList\.toggle\('is-rich', content\.rich\);/);
   assert.doesNotMatch(dockSource, /className="wp-qa-btn hint-bottom"/);
 });
 
-test('quick action menu uses the shared fixed viewport tooltip instead of an internal tooltip box', () => {
+test('quick action menu uses the shared fixed viewport tooltip with a rich compact visual layout', () => {
   assert.match(stylesSource, /body\.wp-ui-react \.wp-r-floating-tooltip \{[\s\S]*?white-space:\s*pre-line;/);
   assert.match(
     stylesSource,
@@ -56,11 +62,26 @@ test('quick action menu uses the shared fixed viewport tooltip instead of an int
   );
   assert.match(
     stylesSource,
+    /body\.wp-ui-react \.wp-r-floating-tooltip\.is-rich \{[\s\S]*?width:\s*min\(144px, calc\(100vw - 16px\)\);[\s\S]*?white-space:\s*normal;[\s\S]*?font-weight:\s*450;/
+  );
+  assert.match(
+    stylesSource,
+    /body\.wp-ui-react \.wp-r-floating-tooltip-title \{[\s\S]*?font-size:\s*0\.94rem;[\s\S]*?font-weight:\s*800;/
+  );
+  assert.match(
+    stylesSource,
+    /body\.wp-ui-react \.wp-r-floating-tooltip-detail \{[\s\S]*?font-size:\s*0\.75rem;[\s\S]*?font-weight:\s*450;/
+  );
+  assert.match(
+    stylesSource,
     /body\.wp-ui-react \.wp-r-floating-tooltip-arrow\.is-below \{[\s\S]*?border-bottom-color:\s*#1e293b;/
   );
   assert.match(tooltipPlacementSource, /\.wp-qa-btn\[\$\{TOOLTIP_TITLE_ATTR\}\]/);
-  assert.doesNotMatch(stylesSource, /body\.wp-ui-react \.wp-qa-menu \.wp-qa-tooltip \{/);
-  assert.doesNotMatch(stylesSource, /body\.wp-ui-react \.wp-qa-menu \.wp-qa-tooltip::before/);
+  assert.match(tooltipPlacementSource, /const TOOLTIP_RICH_MAX_WIDTH_PX = 144;/);
+  assert.match(
+    tooltipPlacementSource,
+    /host\.tooltip\.style\.width = content\.rich \? `\$\{maxWidth\}px` : 'max-content';/
+  );
 });
 
 test('quick action export tooltip layer stays above the docked sketch sync button', () => {

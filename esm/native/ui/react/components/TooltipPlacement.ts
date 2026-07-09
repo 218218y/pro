@@ -1,5 +1,6 @@
 const TOOLTIP_VIEWPORT_GUTTER_PX = 8;
 const TOOLTIP_MAX_WIDTH_PX = 320;
+const TOOLTIP_RICH_MAX_WIDTH_PX = 144;
 const TOOLTIP_PORTAL_ATTR = 'data-wp-r-tooltip-portal';
 const TOOLTIP_ARROW_ATTR = 'data-wp-r-tooltip-arrow';
 const TOOLTIP_TEXT_ATTR = 'data-tooltip';
@@ -41,6 +42,13 @@ type TooltipHost = {
   arrow: HTMLElement;
 };
 
+type TooltipContent = {
+  text: string;
+  title?: string;
+  detail?: string;
+  rich: boolean;
+};
+
 type TooltipCandidate = {
   placement: TooltipPlacement;
   left: number;
@@ -68,13 +76,42 @@ function readTooltipAttr(target: HTMLElement | null | undefined, attr: string): 
   return text || undefined;
 }
 
-function readTooltipText(target: HTMLElement | null | undefined): string | undefined {
+function readTooltipContent(target: HTMLElement | null | undefined): TooltipContent | undefined {
   const text = readTooltipAttr(target, TOOLTIP_TEXT_ATTR);
-  if (text) return text;
+  if (text) {
+    return { text, rich: false };
+  }
 
   const title = readTooltipAttr(target, TOOLTIP_TITLE_ATTR);
   const detail = readTooltipAttr(target, TOOLTIP_DETAIL_ATTR);
-  return [title, detail].filter(Boolean).join('\n') || undefined;
+  const richText = [title, detail].filter(Boolean).join('\n');
+  return richText ? { text: richText, title, detail, rich: true } : undefined;
+}
+
+function appendTooltipPart(
+  doc: Document,
+  parent: HTMLElement,
+  className: string,
+  text: string | undefined
+): void {
+  if (!text) return;
+  const part = doc.createElement('span');
+  part.className = className;
+  part.textContent = text;
+  parent.appendChild(part);
+}
+
+function renderTooltipContent(doc: Document, tooltip: HTMLElement, content: TooltipContent): void {
+  tooltip.textContent = '';
+  tooltip.classList.toggle('is-rich', content.rich);
+
+  if (!content.rich) {
+    tooltip.textContent = content.text;
+    return;
+  }
+
+  appendTooltipPart(doc, tooltip, 'wp-r-floating-tooltip-title', content.title);
+  appendTooltipPart(doc, tooltip, 'wp-r-floating-tooltip-detail', content.detail);
 }
 
 function getTooltipMeasureEl(doc: Document): HTMLElement {
@@ -315,7 +352,7 @@ function tooltipPlacementClass(placement: TooltipPlacement): string {
   }
 }
 
-function positionTooltipHost(doc: Document, target: HTMLElement, text: string): void {
+function positionTooltipHost(doc: Document, target: HTMLElement, content: TooltipContent): void {
   const win = doc.defaultView;
   const host = getOrCreateTooltipHost(doc);
   if (!win || !host) return;
@@ -325,12 +362,12 @@ function positionTooltipHost(doc: Document, target: HTMLElement, text: string): 
   if (!viewportWidth || !viewportHeight) return;
 
   const availableWidth = Math.max(0, viewportWidth - TOOLTIP_VIEWPORT_GUTTER_PX * 2);
-  const maxWidth = Math.min(TOOLTIP_MAX_WIDTH_PX, availableWidth);
+  const maxWidth = Math.min(content.rich ? TOOLTIP_RICH_MAX_WIDTH_PX : TOOLTIP_MAX_WIDTH_PX, availableWidth);
   const targetRect = target.getBoundingClientRect();
 
-  host.tooltip.textContent = text;
+  renderTooltipContent(doc, host.tooltip, content);
   host.tooltip.style.maxWidth = `${maxWidth}px`;
-  host.tooltip.style.width = 'max-content';
+  host.tooltip.style.width = content.rich ? `${maxWidth}px` : 'max-content';
   host.tooltip.classList.add(TOOLTIP_OPEN_CLASS);
   removeTooltipPlacementClasses(host.tooltip);
   removeTooltipPlacementClasses(host.arrow);
@@ -338,7 +375,7 @@ function positionTooltipHost(doc: Document, target: HTMLElement, text: string): 
 
   const tooltipRect = host.tooltip.getBoundingClientRect();
   const tooltipWidth = Math.min(
-    Math.ceil(tooltipRect.width || measureTooltipWidth(doc, viewportWidth, text)),
+    Math.ceil(tooltipRect.width || measureTooltipWidth(doc, viewportWidth, content.text)),
     maxWidth
   );
   const tooltipHeight = Math.ceil(tooltipRect.height || 0);
@@ -402,12 +439,12 @@ function positionTooltipHost(doc: Document, target: HTMLElement, text: string): 
 
 export function installStyledTooltipViewportHost(doc: Document): () => void {
   const showFromTarget = (target: HTMLElement | null): void => {
-    const text = readTooltipText(target);
-    if (!target || !text) {
+    const content = readTooltipContent(target);
+    if (!target || !content) {
       hideTooltipHost(doc);
       return;
     }
-    positionTooltipHost(doc, target, text);
+    positionTooltipHost(doc, target, content);
   };
 
   const handleMouseOver = (event: MouseEvent): void => {
@@ -436,12 +473,12 @@ export function installStyledTooltipViewportHost(doc: Document): () => void {
 
   const handleScrollOrResize = (): void => {
     if (!activeTooltipTarget) return;
-    const text = readTooltipText(activeTooltipTarget);
-    if (!text || !isTooltipTargetConnected(activeTooltipTarget)) {
+    const content = readTooltipContent(activeTooltipTarget);
+    if (!content || !isTooltipTargetConnected(activeTooltipTarget)) {
       hideTooltipHost(doc);
       return;
     }
-    positionTooltipHost(doc, activeTooltipTarget, text);
+    positionTooltipHost(doc, activeTooltipTarget, content);
   };
 
   const handleTooltipMutation = (mutations: MutationRecord[]): void => {

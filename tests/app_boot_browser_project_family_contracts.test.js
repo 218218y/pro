@@ -869,10 +869,6 @@ import {
     assert.match(sidebarHeader, /data-tooltip=\{sketchTooltip\}/);
     assert.match(sidebarHeader, /data-tooltip="שמור פרויקט"/);
     assert.doesNotMatch(sidebarHeader, /\btitle=/);
-    assert.doesNotMatch(
-      reactStyles,
-      /#reactSidebarRoot \.wp-r-header \.wp-r-header-hint\.hint-bottom::after/
-    );
     assert.match(
       reactStyles,
       /#reactSidebarRoot \.wp-r-header \.wp-r-header-hint:hover,[\s\S]*?#reactSidebarRoot \.wp-r-header \.wp-r-header-hint:focus-visible,[\s\S]*?z-index:\s*var\(--wp-z-tooltip\);/

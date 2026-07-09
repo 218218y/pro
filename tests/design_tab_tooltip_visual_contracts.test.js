@@ -66,8 +66,8 @@ test('[design-tab-tooltips] styled tooltip body is viewport-clamped without movi
     tooltipPlacement,
     [
       /TOOLTIP_VIEWPORT_GUTTER_PX = 8/,
-      /measureTooltipWidth\(doc, viewportWidth, text\)/,
-      /function positionTooltipHost\(doc: Document, target: HTMLElement, text: string\): void/,
+      /measureTooltipWidth\(doc, viewportWidth, content\.text\)/,
+      /function positionTooltipHost\(doc: Document, target: HTMLElement, content: TooltipContent\): void/,
       /host\.tooltip\.style\.setProperty\(TOOLTIP_POSITION_VAR_X, `\$\{Math\.round\(left\)\}px`\);/,
       /arrowLeft = clamp\([\s\S]*?left \+ tooltipWidth - TOOLTIP_ARROW_GUTTER_PX[\s\S]*?\);/,
       /arrowTop =[\s\S]*?top - TOOLTIP_ARROW_SIZE_PX[\s\S]*?: top \+ tooltipHeight \+ TOOLTIP_ARROW_SIZE_PX;/,

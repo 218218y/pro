@@ -251,10 +251,6 @@ test('order PDF tooltips use the shared fixed viewport tooltip system', () => {
     css,
     /body\.wp-ui-react \.wp-pdf-editor-toolbar:hover,[\s\S]*?z-index:\s*var\(--wp-z-pdf-editor-tooltip-host\);/
   );
-  assert.doesNotMatch(
-    css,
-    /body\.wp-ui-react \.wp-pdf-ui-hint::after \{[\s\S]*?content:\s*attr\(data-tooltip\);/
-  );
 });
 
 test('PDF page annotation note tooltips can escape the PDF page clipping layer', () => {

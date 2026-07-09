@@ -4590,6 +4590,34 @@ body.wp-ui-react .wp-r-floating-tooltip.is-open {
   transform: translateY(0);
 }
 
+body.wp-ui-react .wp-r-floating-tooltip.is-rich {
+  width: min(144px, calc(100vw - 16px));
+  max-width: min(144px, calc(100vw - 16px));
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+  padding: 6px 7px;
+  font-size: 0.8rem;
+  font-weight: 450;
+  line-height: 1.35;
+}
+
+body.wp-ui-react .wp-r-floating-tooltip-title {
+  display: block;
+  font-size: 0.94rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+body.wp-ui-react .wp-r-floating-tooltip-detail {
+  display: block;
+  font-family: 'Heebo', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 450;
+  line-height: 1.2;
+}
+
 body.wp-ui-react .wp-r-floating-tooltip-arrow {
   top: var(--wp-r-tooltip-arrow-top, -9999px);
   left: var(--wp-r-tooltip-arrow-left, -9999px);
