@@ -58,7 +58,7 @@ export function installBuilderCorePure(App: unknown) {
   const A = assertApp(App, 'native/builder/core_pure.install');
   const B = ensureBuilderService(A, 'native/builder/core_pure.install');
   const existing = _asObject(B.corePure);
-  const C: UnknownRecord = { ...(existing || {}) };
+  const C: UnknownRecord = { ...existing };
   B.corePure = C;
   if (C.__esm_v1) return C;
 

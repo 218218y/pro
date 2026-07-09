@@ -14,8 +14,6 @@ import { installMapsApiSavedColors } from './maps_api_saved_colors.js';
 
 export function installMapsApi(App: AppContainer): void {
   if (!App || typeof App !== 'object') return;
-  ('use strict');
-
   const shared = createMapsApiShared(App);
   installMapsApiNamedMaps(App, shared);
   installMapsApiSavedColors(App, shared);

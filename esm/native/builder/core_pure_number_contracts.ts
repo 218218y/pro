@@ -24,7 +24,7 @@ export function readCorePurePositiveNumber(value: unknown): number | null {
 
 export function readCorePureNumberArray(value: unknown): number[] | null {
   if (!Array.isArray(value)) return null;
-  const out = new Array<number>(value.length);
+  const out = Array.from<number>({ length: value.length });
   for (let i = 0; i < value.length; i += 1) {
     const n = readCorePureNumber(value[i], NaN);
     if (!Number.isFinite(n)) return null;

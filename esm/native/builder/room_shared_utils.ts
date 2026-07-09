@@ -131,7 +131,7 @@ export function __roomReportError(
   const prev = __roomErrorLastAt.get(key) || 0;
   if (now - prev < throttleMs) return;
   __roomErrorLastAt.set(key, now);
-  reportError(A || null, err, { where: 'builder/room', op, ...(extra || {}) });
+  reportError(A || null, err, { where: 'builder/room', op, ...extra });
 }
 
 export function __roomHandleCatch(

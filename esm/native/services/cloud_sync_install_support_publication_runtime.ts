@@ -24,7 +24,7 @@ export function clearCloudSyncPublishedState(
       preserveTestHooks: true,
       invalidatePublicationEpoch: false,
       publicationEpoch: null,
-      ...(opts || {}),
+      ...opts,
     };
 
     const { invalidatePublicationEpoch, publicationEpoch } = resolvedOptions;

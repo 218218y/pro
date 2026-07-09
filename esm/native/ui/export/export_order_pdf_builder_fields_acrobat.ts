@@ -29,8 +29,8 @@ export function createOrderPdfBuilderFieldAcrobatOps(
       const daText = asText(daObj) || '';
       if (/\bTf\b/.test(daText)) return true;
 
-      const prefixMatch = /\/([A-Za-z0-9_+\-\.]+)\s+\d+(?:\.\d+)?/.exec(daText);
-      const anyFontMatch = /\/([A-Za-z0-9_+\-\.]+)/.exec(daText);
+      const prefixMatch = /\/([A-Za-z0-9_+\-.]+)\s+\d+(?:\.\d+)?/.exec(daText);
+      const anyFontMatch = /\/([A-Za-z0-9_+\-.]+)/.exec(daText);
       const fontName = (prefixMatch && prefixMatch[1]) || (anyFontMatch && anyFontMatch[1]) || 'Helv';
 
       let next = daText;

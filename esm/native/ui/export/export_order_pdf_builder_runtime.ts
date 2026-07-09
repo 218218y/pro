@@ -101,7 +101,7 @@ export async function loadOrderPdfBuilderRuntime(
   const parseFontNamesFromDA = (daObj: unknown): string[] => {
     const text = asText(daObj);
     const out: string[] = [];
-    const re = /\/([A-Za-z0-9_+\-\.]+)\s+\d+(?:\.\d+)?\s+Tf/g;
+    const re = /\/([A-Za-z0-9_+\-.]+)\s+\d+(?:\.\d+)?\s+Tf/g;
     let match: RegExpExecArray | null;
     while ((match = re.exec(text))) {
       if (match[1] && !out.includes(match[1])) out.push(match[1]);

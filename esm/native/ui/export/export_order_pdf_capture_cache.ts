@@ -72,7 +72,7 @@ function cloneSlotBytes(
 }
 
 function cloneRecord(value: unknown): UnknownRecord {
-  return { ...(asUnknownRecord(value) || {}) };
+  return { ...asUnknownRecord(value) };
 }
 
 function sanitizeUiCaptureState(value: unknown): UnknownRecord {

@@ -13,8 +13,9 @@ test('lint parity report classifies every rule before parser removal', async () 
   const byRule = new Map(rows.map(row => [row.rule, row]));
 
   assert.equal(byRule.get('no-dupe-keys').classification, 'covered by modern gate');
-  assert.equal(byRule.get('no-unused-vars').classification, 'false positive');
-  assert.equal(byRule.get('no-restricted-imports').classification, 'needs custom contract');
+  assert.equal(byRule.get('no-unused-vars').classification, 'covered by modern gate');
+  assert.equal(byRule.get('no-restricted-imports').classification, 'covered by modern gate');
+  assert.equal(byRule.get('no-restricted-syntax').classification, 'covered by modern gate');
   assert.equal(byRule.get('no-undef').classification, 'blocked by tool support');
 
   for (const row of rows) {

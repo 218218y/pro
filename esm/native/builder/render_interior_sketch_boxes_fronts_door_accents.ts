@@ -86,7 +86,7 @@ export function appendClassicDoorAccentAndGrooves(args: {
     mesh.renderOrder = 3;
     applySketchBoxPickMeta(mesh, partId, moduleKeyStr, bid, { door: true });
     mesh.userData = {
-      ...(readObject<InteriorValueRecord>(mesh.userData) || {}),
+      ...readObject<InteriorValueRecord>(mesh.userData),
       __wpSketchBoxDoorId: doorId,
       __wpSketchFreePlacement: isFreePlacement === true,
     };
@@ -138,7 +138,7 @@ export function appendClassicDoorAccentAndGrooves(args: {
       mesh.renderOrder = 4;
       applySketchBoxPickMeta(mesh, doorPid, moduleKeyStr, bid, { door: true });
       mesh.userData = {
-        ...(readObject<InteriorValueRecord>(mesh.userData) || {}),
+        ...readObject<InteriorValueRecord>(mesh.userData),
         __wpSketchBoxDoorId: doorId,
         __wpSketchFreePlacement: isFreePlacement === true,
       };

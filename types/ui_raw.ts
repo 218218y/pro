@@ -143,9 +143,9 @@ export const UI_RAW_NUMERIC_KEYS: readonly UiRawNumericKey[] = [
 
 export const UI_RAW_SCALAR_KEYS: readonly UiRawScalarKey[] = [...UI_RAW_NUMERIC_KEYS, ...UI_RAW_BOOLEAN_KEYS];
 
-const UI_RAW_SCALAR_KEY_SET = new Set<string>([...UI_RAW_SCALAR_KEYS]);
-const UI_RAW_BOOLEAN_KEY_SET = new Set<string>([...UI_RAW_BOOLEAN_KEYS]);
-const UI_RAW_NUMERIC_KEY_SET = new Set<string>([...UI_RAW_NUMERIC_KEYS]);
+const UI_RAW_SCALAR_KEY_SET = new Set<string>(UI_RAW_SCALAR_KEYS);
+const UI_RAW_BOOLEAN_KEY_SET = new Set<string>(UI_RAW_BOOLEAN_KEYS);
+const UI_RAW_NUMERIC_KEY_SET = new Set<string>(UI_RAW_NUMERIC_KEYS);
 
 export function isUiRawScalarKey(key: unknown): key is UiRawScalarKey {
   return typeof key === 'string' && UI_RAW_SCALAR_KEY_SET.has(key);

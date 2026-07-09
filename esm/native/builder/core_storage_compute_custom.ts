@@ -84,7 +84,7 @@ export function computeInteriorCustomOps(customData: unknown, gridDivisions: unk
       continue;
     }
 
-    if (!!rodsArr[i - 1]) {
+    if (rodsArr[i - 1]) {
       const rodOp: InteriorRodOpLike = {
         gridIndex: i,
         yFactor: i,
@@ -97,12 +97,12 @@ export function computeInteriorCustomOps(customData: unknown, gridDivisions: unk
       let limitAdd: number | null = null;
 
       for (let k = i - 1; k >= 1; k--) {
-        if (!!shelvesArr[k - 1]) {
+        if (shelvesArr[k - 1]) {
           limitFactor = i - k;
           limitAdd = INTERIOR_FITTINGS_DIMENSIONS.rods.defaultYOffsetM;
           break;
         }
-        if (!!rodsArr[k - 1]) {
+        if (rodsArr[k - 1]) {
           limitFactor = i - k;
           limitAdd = 0;
           break;

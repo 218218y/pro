@@ -3,7 +3,19 @@ export default {
   categories: {
     correctness: 'error',
   },
-  rules: {},
+  rules: {
+    'eslint/no-unused-vars': [
+      'error',
+      {
+        argsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+      },
+    ],
+    eqeqeq: ['error', 'smart'],
+    'eslint/no-unused-expressions': ['error', { allowShortCircuit: true, allowTernary: true }],
+    'typescript/no-this-alias': 'off',
+  },
   env: {
     builtin: true,
   },

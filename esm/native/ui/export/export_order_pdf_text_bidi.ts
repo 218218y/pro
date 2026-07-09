@@ -85,10 +85,10 @@ export function createOrderPdfTextBidiOps() {
     if (!stripped) return RLM;
 
     const stabilized = stripped
-      .replace(/([\u0590-\u08FF\)\]\}:;,.!?])([ \t]+)(?=[A-Za-z0-9])/g, (_m, a) => `${a}${NBSP}`)
+      .replace(/([\u0590-\u08FF)\]}:;,.!?])([ \t]+)(?=[A-Za-z0-9])/g, (_m, a) => `${a}${NBSP}`)
       .replace(/([A-Za-z0-9])([ \t]+)(?=[\u0590-\u08FF])/g, (_m, a) => `${a}${NBSP}`);
 
-    const TOKEN = `[A-Za-z0-9][A-Za-z0-9\\-\\._:@/\\\\\+\\(\\)\\[\\]\\{\\}%&\\*\\#\\!\\'\\"<>=,;:\\?]*`;
+    const TOKEN = `[A-Za-z0-9][A-Za-z0-9\\-\\._:@/\\\\+\\(\\)\\[\\]\\{\\}%&\\*\\#\\!\\'\\"<>=,;:\\?]*`;
     const re = new RegExp(`${TOKEN}(?:[ \t]+${TOKEN})*`, 'g');
     const wrapLine = (line: string): string => String(line || '').replace(re, m => `${LRM}${m}${LRM}`);
 

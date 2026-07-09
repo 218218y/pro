@@ -174,8 +174,8 @@ export function mergeCanvasPickingHitIdentityUserData(
   if (!hit && !resolved) return null;
 
   const merged: UnknownRecord = {
-    ...(resolved || {}),
-    ...(hit || {}),
+    ...resolved,
+    ...hit,
   };
 
   const resolvedPartId = cleanString(resolved?.partId);

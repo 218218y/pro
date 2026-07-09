@@ -208,7 +208,7 @@ export function materializeTopModulesConfigurationForStructure(
   modulesStructure: unknown
 ): NormalizedTopModuleConfigLike[] {
   const structureList = Array.isArray(modulesStructure) ? modulesStructure : [];
-  const out: NormalizedTopModuleConfigLike[] = new Array(structureList.length);
+  const out: NormalizedTopModuleConfigLike[] = Array.from({ length: structureList.length });
 
   for (let i = 0; i < structureList.length; i += 1) {
     out[i] = ensureNormalizedTopModuleFromListSnapshot(prevListValue, i, structureList);

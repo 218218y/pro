@@ -32,8 +32,8 @@ function mapCanonicalRodIndexToDivisions(value: number, divs: number): number {
 export function buildPresetBackedCustomData(layoutType: unknown, divsRaw: number): SeededPresetCustomData {
   const divs = clampDivisions(divsRaw);
   const ops = computeInteriorPresetOps(layoutType);
-  const shelves: boolean[] = new Array(Math.max(0, divs - 1)).fill(false);
-  const rods: boolean[] = new Array(Math.max(0, divs)).fill(false);
+  const shelves: boolean[] = Array.from({ length: Math.max(0, divs - 1) }, () => false);
+  const rods: boolean[] = Array.from({ length: Math.max(0, divs) }, () => false);
   const rodOps: InteriorRodOpLike[] = [];
 
   if (Array.isArray(ops.shelves)) {
@@ -70,6 +70,6 @@ export function buildPresetBackedCustomData(layoutType: unknown, divsRaw: number
     rods,
     rodOps,
     storage: !!ops.storageBarrier,
-    shelfVariants: new Array(Math.max(0, divs - 1)).fill(''),
+    shelfVariants: Array.from({ length: Math.max(0, divs - 1) }, () => ''),
   };
 }

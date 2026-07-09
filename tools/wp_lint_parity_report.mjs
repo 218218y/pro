@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getLintArchitectureBaselineCount } from './wp_lint_architecture_contracts.mjs';
 import { collectLintRuleMatrix, formatMarkdownForDocs } from './wp_lint_rule_matrix.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,8 +37,8 @@ const COVERAGE_BY_RULE = new Map([
   [
     'eqeqeq',
     [
-      'needs custom contract',
-      'Current ESLint uses `smart`; Oxlint option parity must be confirmed before blocking.',
+      'covered by modern gate',
+      'Oxlint syntax is configured with the same smart equality policy used by legacy ESLint.',
     ],
   ],
   [
@@ -50,36 +51,36 @@ const COVERAGE_BY_RULE = new Map([
   [
     'no-unused-vars',
     [
-      'false positive',
-      'Oxlint currently reports underscore catch variables that legacy ESLint intentionally ignores.',
+      'covered by modern gate',
+      'Oxlint syntax is configured to match legacy underscore ignore behavior for variables and catch bindings.',
     ],
   ],
   [
     '@typescript-eslint/no-unused-vars',
     [
-      'false positive',
-      'Candidate for Oxlint, but underscore and rest-sibling ignores need config parity first.',
+      'covered by modern gate',
+      'Oxlint syntax now covers the TS unused-vars migration lane with legacy underscore ignore parity.',
     ],
   ],
   [
     'no-restricted-globals',
     [
-      'needs custom contract',
-      'Browser-global DI policy is architecture-specific and should not depend on TS parser selectors.',
+      'covered by modern gate',
+      'Mirrored by `wp_lint_architecture_contracts`; current debt is baselined so the gate blocks new regressions.',
     ],
   ],
   [
     'no-restricted-imports',
     [
-      'needs custom contract',
-      'Layer/import boundaries already overlap with custom contracts and should be fully owned there.',
+      'covered by modern gate',
+      'Mirrored by `wp_lint_architecture_contracts` and existing layer contracts; current debt is baselined.',
     ],
   ],
   [
     'no-restricted-syntax',
     [
-      'needs custom contract',
-      'Legacy App.* bag ban is project-specific; move to a dedicated AST/custom contract before parser removal.',
+      'covered by modern gate',
+      'Mirrored by `wp_lint_architecture_contracts` through the AST adapter, without depending on ESLint selectors.',
     ],
   ],
 ]);
@@ -95,9 +96,9 @@ const GATES = [
   {
     gate: 'oxlint syntax',
     command: 'npm run lint:ts-modern:syntax',
-    blocker: 'no',
+    blocker: 'yes',
     role: 'Fast modern parser/config/file-discovery lane for `esm` and `types`.',
-    status: 'audit-only; diagnostics do not block yet',
+    status: 'blocking; current syntax diagnostics are 0',
   },
   {
     gate: 'oxlint type-aware',
@@ -118,7 +119,7 @@ const GATES = [
     command: 'npm run lint:contracts',
     blocker: 'yes',
     role: 'Project-owned quality rules that should survive parser/linter swaps.',
-    status: 'matrix/parity docs are checked; architecture contracts remain separate scripts',
+    status: 'matrix/parity docs and lint architecture contracts are blocking',
   },
 ];
 
@@ -176,7 +177,7 @@ export async function createRawLintParityMarkdown() {
     '',
     '<!-- Tool-owned report target. Regenerate with: npm run lint:parity-report -->',
     '',
-    'Stage 5 keeps the legacy ESLint gate intact and introduces modern linting as audit-only. The report explains what is already covered, what is duplicated, and what still needs a durable owner before TS/TSX can be removed from `@typescript-eslint/parser`.',
+    'Stage 5 keeps the legacy ESLint gate intact and promotes Oxlint syntax to a blocking modern lint lane after reaching 0 diagnostics. The report explains what is already covered, what is duplicated, and what still needs a durable owner before TS/TSX can be removed from `@typescript-eslint/parser`.',
     '',
     '## Gate comparison',
     '',
@@ -206,13 +207,17 @@ export async function createRawLintParityMarkdown() {
 
   lines.push(
     '',
+    '## Architecture contract baseline',
+    '',
+    `The custom lint architecture contract currently has ${getLintArchitectureBaselineCount()} baselined legacy exception(s). They are not ignored forever: the contract blocks new regressions while existing services/io and UI globalThis debt can be retired in a dedicated follow-up.`,
+    '',
     '## Stage 5 decision',
     '',
     '- Do not remove `@typescript-eslint` yet.',
     '- Do not update to TypeScript 7 yet.',
     '- Do not swap `wp_ast_adapter` away from TypeScript yet.',
-    '- Keep `lint:legacy` as the blocking lint gate while `lint:ts-modern:*` runs in audit mode.',
-    '- Before a later parser-removal stage, every `needs custom contract`, `false positive`, `blocked by tool support`, or `manual-review` row must be resolved or intentionally accepted.',
+    '- Keep `lint:legacy` as a blocking compatibility gate; `lint:ts-modern:syntax` is also blocking at 0 diagnostics.',
+    '- `lint:ts-modern:type-aware` remains audit-only; parser removal is still blocked until the type-aware/TS7 lane is intentionally handled.',
     ''
   );
 

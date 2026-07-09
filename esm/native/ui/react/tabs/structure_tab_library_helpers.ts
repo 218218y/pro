@@ -113,7 +113,7 @@ export function mergeUiOverride(
 
   const baseRaw = isRecord(baseUi.raw) ? baseUi.raw : undefined;
   const patchRaw = isRecord(patch.raw) ? patch.raw : undefined;
-  if (baseRaw || patchRaw) out.raw = { ...(baseRaw || {}), ...(patchRaw || {}) };
+  if (baseRaw || patchRaw) out.raw = { ...baseRaw, ...patchRaw };
 
   return out;
 }
@@ -127,7 +127,7 @@ export function createStructureTabLibraryEnv(
   const merge = (m?: ActionMetaLike, defaults?: ActionMetaLike, src?: string): ActionMetaLike => {
     const fn = metaNs?.merge;
     if (typeof fn === 'function') return fn(m || {}, defaults || {}, src);
-    return { ...(defaults || {}), ...(m || {}), ...(src ? { source: src } : {}) };
+    return { ...defaults, ...m, ...(src ? { source: src } : {}) };
   };
 
   const noBuild = (m?: ActionMetaLike, src?: string): ActionMetaLike => {

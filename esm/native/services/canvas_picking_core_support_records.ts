@@ -56,7 +56,7 @@ export function __wp_isDefaultCornerCellCfgLike(cfg0: unknown): boolean {
     const storage = __wp_readRecordBoolean(cd, 'storage');
 
     const allFalse = (arr: unknown[]): boolean => {
-      for (let i = 0; i < arr.length; i++) if (!!arr[i]) return false;
+      for (let i = 0; i < arr.length; i++) if (arr[i]) return false;
       return true;
     };
 

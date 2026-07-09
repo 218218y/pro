@@ -202,7 +202,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     rod.rotation.z = Math.PI / 2;
     rod.position.set(internalCenterX, yPos, internalZ);
     rod.userData = {
-      ...(rod.userData || {}),
+      ...rod.userData,
       __kind: 'wardrobe_rod',
       __wpMeasurementIgnoreInteriorBoundary: true,
     };

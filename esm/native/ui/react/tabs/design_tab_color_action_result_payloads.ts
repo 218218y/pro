@@ -96,9 +96,7 @@ export function normalizeUploadTextureFailureExtras(
   value: unknown
 ): DesignTabColorFailureExtrasByKind['upload-texture'] {
   const base = readDesignTabColorActionBase(value);
-  return {
-    ...(base.textureName ? { textureName: base.textureName } : {}),
-  };
+  return base.textureName ? { textureName: base.textureName } : {};
 }
 
 export function normalizeSaveCustomColorFailureExtras(

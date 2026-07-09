@@ -183,7 +183,7 @@ export function resolveMirrorPlacementListInRect(args: {
   const preparedRect = prepareMirrorRect(args.rect);
   const layouts = readMirrorLayoutList(args.layouts);
   if (!layouts.length) return [resolveMirrorPlacementFromPreparedRect({ preparedRect, layout: null })];
-  const out: ResolvedMirrorPlacement[] = new Array(layouts.length);
+  const out: ResolvedMirrorPlacement[] = Array.from({ length: layouts.length });
   for (let i = 0; i < layouts.length; i += 1) {
     out[i] = resolveMirrorPlacementFromPreparedRect({ preparedRect, layout: layouts[i] });
   }

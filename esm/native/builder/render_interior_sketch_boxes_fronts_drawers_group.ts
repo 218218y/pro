@@ -18,7 +18,7 @@ export function createSketchBoxExternalDrawerGroupNode(
   const groupNode = new context.THREE.Group();
   groupNode.position?.set?.(opPlan.px, opPlan.py, opPlan.pz);
   groupNode.userData = {
-    ...(readObject<InteriorValueRecord>(groupNode.userData) || {}),
+    ...readObject<InteriorValueRecord>(groupNode.userData),
     partId: opPlan.partId,
     moduleIndex: context.moduleIndex,
     __wpStack:

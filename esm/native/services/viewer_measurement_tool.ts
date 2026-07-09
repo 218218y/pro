@@ -283,7 +283,7 @@ function addTrackedLine(args: {
   line.name = name;
   line.renderOrder = OVERLAY_RENDER_ORDER;
   line.userData = {
-    ...(line.userData || {}),
+    ...line.userData,
     __wpViewerMeasurementOverlay: true,
     __wpExcludeWardrobeBounds: true,
     __ignoreRaycast: true,
@@ -372,7 +372,7 @@ function readCreatedDimensionObjects(value: unknown): Object3DLike[] {
   const sprite = asObject3D(rec?.sprite);
   if (line) {
     line.userData = {
-      ...(line.userData || {}),
+      ...line.userData,
       __wpViewerMeasurementOverlay: true,
       __wpExcludeWardrobeBounds: true,
       __ignoreRaycast: true,
@@ -382,7 +382,7 @@ function readCreatedDimensionObjects(value: unknown): Object3DLike[] {
   }
   if (sprite) {
     sprite.userData = {
-      ...(sprite.userData || {}),
+      ...sprite.userData,
       __wpViewerMeasurementOverlay: true,
       __wpExcludeWardrobeBounds: true,
       __ignoreRaycast: true,

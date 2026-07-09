@@ -228,7 +228,7 @@ export function emitCornerWingExternalDrawers(
     );
     dBox.position.set(0, 0, -cellD / 2 + CORNER_WING_DIMENSIONS.drawers.externalBoxOffsetZM);
     dBox.userData = {
-      ...(dBox.userData || {}),
+      ...dBox.userData,
       partId: drawerBoxPartId,
       drawerId: id,
       moduleIndex: cellKey,

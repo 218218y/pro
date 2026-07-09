@@ -164,7 +164,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         : new THREE.Mesh(new THREE.BoxGeometry(drawerOp.boxW, drawerOp.boxH, drawerOp.boxD), drawerBoxMat);
       drawerBox.position.set(0, 0, drawerOp.boxOffsetZ || 0);
       drawerBox.userData = {
-        ...(drawerBox.userData || {}),
+        ...drawerBox.userData,
         partId: drawerBoxPartId,
         drawerId: partId,
         moduleIndex: drawerOp.moduleIndex,

@@ -47,7 +47,7 @@ export function sanitizeModulesConfigurationListLight(
   const safeList = asUnknownList(Array.isArray(nextVal) ? nextVal : prevVal);
   const prevList = asUnknownList(prevVal);
 
-  const out: ModuleConfigLike[] = new Array(safeList.length);
+  const out: ModuleConfigLike[] = Array.from({ length: safeList.length });
   for (let i = 0; i < safeList.length; i += 1) {
     const v = safeList[i];
     const pv = prevList[i];
@@ -74,7 +74,7 @@ export function sanitizeModulesConfigurationListForPatch(
 ): ModulesConfigurationLike {
   const nextList = asUnknownList(Array.isArray(nextVal) ? nextVal : prevVal);
   const prevList = asUnknownList(prevVal);
-  const out = new Array(nextList.length);
+  const out: ModulesConfigurationLike = Array.from<ModuleConfigLike>({ length: nextList.length });
 
   for (let i = 0; i < nextList.length; i += 1) {
     const v = nextList[i];

@@ -183,7 +183,7 @@ export function buildLibraryModuleConfigLists(
 }
 
 function hasUsableInteriorState(cfg: ModuleConfigLike): boolean {
-  if (!!cfg.isCustom) return true;
+  if (cfg.isCustom) return true;
   return typeof cfg.layout === 'string' && cfg.layout.trim().length > 0;
 }
 
@@ -213,7 +213,7 @@ function normalizeBoolArrayAgainstLength(
 ): boolean[] {
   const defaultList = Array.isArray(defaultValue) ? defaultValue : [];
   const srcList = Array.isArray(value) ? value : [];
-  const out = new Array(targetLength);
+  const out: boolean[] = Array.from({ length: targetLength }, () => false);
   for (let i = 0; i < targetLength; i += 1) {
     const raw = i < srcList.length ? srcList[i] : defaultList[i];
     out[i] = !!raw;
@@ -228,7 +228,7 @@ function normalizeStringArrayAgainstLength(
 ): string[] {
   const defaultList = Array.isArray(defaultValue) ? defaultValue : [];
   const srcList = Array.isArray(value) ? value : [];
-  const out = new Array(targetLength);
+  const out: string[] = Array.from({ length: targetLength }, () => '');
   for (let i = 0; i < targetLength; i += 1) {
     const raw = i < srcList.length ? srcList[i] : defaultList[i];
     out[i] = typeof raw === 'string' ? raw : raw == null ? '' : String(raw);
@@ -378,7 +378,7 @@ export function buildNextLibraryModuleCfgList(
 ): ModulesConfigurationLike | null {
   const curList = Array.isArray(list) ? list : [];
   let changed = curList.length !== expectedList.length;
-  const nextList: ModulesConfigurationLike = new Array(expectedList.length);
+  const nextList: ModulesConfigurationLike = Array.from<ModuleConfigLike>({ length: expectedList.length });
 
   for (let i = 0; i < expectedList.length; i++) {
     const expected = expectedList[i];

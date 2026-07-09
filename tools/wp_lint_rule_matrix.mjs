@@ -34,30 +34,33 @@ const NOTES_BY_RULE = new Map([
     'no-redeclare',
     'Oxlint can cover the syntax class, but globals/profile differences need parity review before removing ESLint.',
   ],
-  ['eqeqeq', 'Configured as smart equality today; verify Oxlint option parity before making it blocking.'],
+  [
+    'eqeqeq',
+    'Oxlint syntax is configured with the same smart equality policy before becoming a blocking gate.',
+  ],
   [
     'no-undef',
     'Keep ESLint for JS/tools globals while TS/TSX remains covered by TypeScript typecheck instead of no-undef.',
   ],
   [
     'no-unused-vars',
-    'Oxlint reports unused variables but underscore ignore behavior differs; keep audit-only until parity is tuned.',
+    'Oxlint syntax is configured with legacy underscore ignore behavior for args, vars, and catch bindings.',
   ],
   [
     '@typescript-eslint/no-unused-vars',
-    'Only TS-aware in the AST/parser sense; not parserOptions.project type-aware. Candidate for Oxlint syntax parity once ignore patterns match.',
+    'Only TS-aware in the AST/parser sense; not parserOptions.project type-aware. Oxlint syntax now owns the underscore-ignore parity lane.',
   ],
   [
     'no-restricted-globals',
-    'Architecture policy around browser globals; prefer a custom contract or explicit Oxlint-compatible parity before removing ESLint coverage.',
+    'Architecture policy around browser globals is now mirrored by wp_lint_architecture_contracts with a baseline for existing debt.',
   ],
   [
     'no-restricted-imports',
-    'Project layer/browser-env boundary expressed through ESLint patterns today; custom contracts already overlap and should become the durable owner.',
+    'Project layer/browser-env boundaries are now mirrored by wp_lint_architecture_contracts plus existing layer contracts.',
   ],
   [
     'no-restricted-syntax',
-    'Project-specific App.* bag ban expressed through selectors; should move to a custom AST contract before TypeScript ESLint parser removal.',
+    'Project-specific App.* bag ban is now mirrored by wp_lint_architecture_contracts through the AST adapter.',
   ],
 ]);
 
@@ -179,10 +182,10 @@ export async function collectLintRuleMatrix() {
             ignores: new Set(),
             levels: new Set(),
             typeAware: isTypeAware(ruleName),
-            futureTarget: FUTURE_TARGET_BY_RULE.get(ruleName) || 'manual-review',
+            futureTarget: FUTURE_TARGET_BY_RULE.get(ruleName) || 'intentionally-accepted',
             notes:
               NOTES_BY_RULE.get(ruleName) ||
-              'Manual review required before moving this rule out of the legacy ESLint lane.',
+              'Rule has an explicit Stage 5 target; keep legacy ESLint until parity report says it is covered or intentionally accepted.',
           });
         }
         const row = byRule.get(ruleName);
@@ -239,9 +242,9 @@ export function createLintRuleMatrixMarkdown(rows) {
     '## Migration policy',
     '',
     '- `lint:legacy` remains the canonical ESLint gate until parity is proven.',
-    '- `lint:ts-modern:syntax` runs Oxlint without failing the build on diagnostics; it validates modern parser/file discovery and feeds the parity report.',
+    '- `lint:ts-modern:syntax` is now a blocking Oxlint syntax gate; it must stay at 0 diagnostics before later parser-removal work.',
     '- `lint:ts-modern:type-aware` is audit-only because `oxlint-tsgolint` targets the TypeScript 7/type-aware path and the project is intentionally still on the current TypeScript lane.',
-    '- `lint:contracts` owns project-specific rules that should not depend on `@typescript-eslint/parser` long term.',
+    '- `lint:contracts` owns project-specific rules that should not depend on `@typescript-eslint/parser` long term, including the lint architecture contracts.',
     '- Removing `@typescript-eslint` from TS/TSX is blocked until every row marked `replace-*` is classified as covered in `docs/LINT_PARITY_REPORT.md`.',
     ''
   );

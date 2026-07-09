@@ -195,7 +195,7 @@ export function installLifecycleVisibility(App: unknown) {
         setLifecycleTabHidden(root, !!isHidden);
       } catch (_e0) {}
 
-      if (!!isHidden) {
+      if (isHidden) {
         try {
           const loopRaf = getLoopRaf(root);
           if (loopRaf) {

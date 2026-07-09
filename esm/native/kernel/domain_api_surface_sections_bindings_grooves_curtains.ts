@@ -38,7 +38,7 @@ function createGroovesActionBindings(state: DomainApiSurfaceSectionsState): Unkn
       const nextMeta = state._meta(meta, 'actions:grooves:set');
       const grooveKey = normalizePrefixedMapKey(partIdOrKey, 'groove_');
       if (!grooveKey) return;
-      const value = !!isOn ? true : null;
+      const value = isOn ? true : null;
       if (areDomainMapValuesEquivalent(state.readGroovesMap()[grooveKey], value)) return;
       return patchDoorGrooveMapEntries(state.App, [{ key: grooveKey, value }], nextMeta);
     },

@@ -87,7 +87,7 @@ export function readGridBounds(
 export function ensureCustomData(cfg: LayoutConfigRecordLike): LayoutConfigCustomDataLike {
   const existing = asRecord(cfg.customData);
   const next: LayoutConfigCustomDataLike = {
-    ...(existing || {}),
+    ...existing,
     shelves: Array.isArray(existing?.shelves) ? existing.shelves.filter(v => typeof v === 'boolean') : [],
     rods: Array.isArray(existing?.rods) ? existing.rods.filter(v => typeof v === 'boolean') : [],
     storage: typeof existing?.storage === 'boolean' ? existing.storage : false,

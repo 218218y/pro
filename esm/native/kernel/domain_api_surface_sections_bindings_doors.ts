@@ -100,13 +100,13 @@ function createDoorsActionBindings(state: DomainApiSurfaceSectionsState): Unknow
       const canonicalPartId = canonicalRemovedDoorPartId(doorId);
       if (!canonicalPartId) return;
       const removedKey = 'removed_' + canonicalPartId;
-      const value = !!isRemoved ? true : null;
+      const value = isRemoved ? true : null;
       if (areDomainMapValuesEquivalent(state.readDoorsRemovedMap()[removedKey], value)) return;
       return writeRemoved(state.App, doorId, !!isRemoved, nextMeta);
     },
     setSplit(doorId: unknown, isSplit: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setSplit');
-      const value = !!isSplit ? true : false;
+      const value = isSplit ? true : false;
       const canonicalKey = splitKey(doorId);
       if (!canonicalKey) return;
       if (areDomainMapValuesEquivalent(state.readDoorsSplitMap()[canonicalKey], value)) return;
@@ -114,7 +114,7 @@ function createDoorsActionBindings(state: DomainApiSurfaceSectionsState): Unknow
     },
     setSplitBottom(doorId: unknown, isOn: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setSplitBottom');
-      const value = !!isOn ? true : null;
+      const value = isOn ? true : null;
       const canonicalKey = splitBottomKey(doorId);
       if (!canonicalKey) return;
       if (areDomainMapValuesEquivalent(state.readDoorsSplitBottomMap()[canonicalKey], value)) return;

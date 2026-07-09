@@ -96,7 +96,7 @@ export function mergeCfgRaw(
   override: SupabaseCfgRaw | null
 ): SupabaseCfgRaw | null {
   if (!base && !override) return null;
-  const next: SupabaseCfgRaw = { ...(base || {}), ...(override || {}) };
+  const next: SupabaseCfgRaw = { ...base, ...override };
   return next;
 }
 

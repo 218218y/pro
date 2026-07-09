@@ -123,7 +123,7 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
     mesh.position.set(x, y, z);
     const surfaceUserData = buildDoorTrimSurfaceUserData(idName, { width: w, height: h, depth: d });
-    mesh.userData = { partId: idName, ...(surfaceUserData || {}) };
+    mesh.userData = { partId: idName, ...surfaceUserData };
     if (addOutlines) addOutlines(mesh);
     if (isCabinetBodyDoorTrimSurfacePartId(idName)) {
       const surfaceInfo = resolveCabinetBodyDoorTrimSurfaceInfo(idName, { width: w, height: h, depth: d });
@@ -357,7 +357,7 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
     );
     boxMesh.position.set(0, 0, 0);
     boxMesh.userData = {
-      ...(boxMesh.userData || {}),
+      ...boxMesh.userData,
       partId: drawerBoxId,
       drawerId,
       __wpDrawerBox: true,

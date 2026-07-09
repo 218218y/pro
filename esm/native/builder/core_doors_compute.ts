@@ -15,7 +15,18 @@ import {
   __normalizeModulesStructure,
   __sumDoors,
 } from './core_pure_shared.js';
+import type { SlidingDoorOpLike } from '../../../types';
 import type { HingedDoorPivotSpec, UnknownRecord } from './core_pure_shared.js';
+
+type SlidingDoorSpec = {
+  index: number;
+  isOuter: boolean;
+  x: number;
+  z: number;
+  minX: number;
+  maxX: number;
+  width: number;
+};
 
 export function computeHingedDoorPivotMap(input: unknown) {
   const inp = _asObject(input) || {};
@@ -195,7 +206,7 @@ export function computeSlidingDoorSpecs(input: unknown) {
   let internalWidthForDoors = totalW - 2 * woodThick;
   let doorWidth = (internalWidthForDoors + (numDoors - 1) * overlap) / numDoors;
   const offsetZ = railDepth / DOOR_SYSTEM_DIMENSIONS.sliding.railTrackLaneDivisor;
-  let specs = new Array(numDoors);
+  let specs: SlidingDoorSpec[] = Array.from<SlidingDoorSpec>({ length: numDoors });
 
   for (let i = 0; i < numDoors; i++) {
     let isOuter;
@@ -290,7 +301,7 @@ export function computeSlidingDoorOps(input: unknown) {
   let doorWidth = specRes.doorWidth;
   let specs = specRes.specs;
 
-  let doors = new Array(numDoors);
+  let doors: SlidingDoorOpLike[] = Array.from<SlidingDoorOpLike>({ length: numDoors });
   for (let i = 0; i < numDoors; i++) {
     const sp = specs[i] || {};
     doors[i] = {

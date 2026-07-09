@@ -36,7 +36,7 @@ function createLibraryModuleConfig(
     gridDivisions,
     customData: {
       shelves,
-      rods: new Array(gridDivisions).fill(false),
+      rods: Array.from({ length: gridDivisions }, () => false),
       storage: false,
     },
     doors: normalizeDoors(doors),
@@ -56,7 +56,7 @@ export function createLibraryTopModuleConfig(doors: number): NormalizedTopModule
     isCustom: !!base.isCustom,
     customData: base.customData || {
       shelves: [true, true, true, true, false],
-      rods: new Array(LIBRARY_PRESET_DIMENSIONS.topGridDivisions).fill(false),
+      rods: Array.from({ length: LIBRARY_PRESET_DIMENSIONS.topGridDivisions }, () => false),
       storage: false,
     },
     doors: normalizeDoors(base.doors),

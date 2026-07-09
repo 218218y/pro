@@ -59,7 +59,7 @@ export function renderSketchBoxExternalDrawers(args: RenderSketchBoxExternalDraw
       addSketchBoxExternalDrawerBoxAndConnector(context, opPlan, groupNode);
       applySketchBoxPickMeta(groupNode, opPlan.partId, context.moduleKeyStr, context.shell.boxId);
       groupNode.userData = {
-        ...(groupNode.userData || {}),
+        ...groupNode.userData,
         __wpSketchExtDrawer: true,
         __wpSketchFreePlacement: context.shell.isFreePlacement === true,
       };

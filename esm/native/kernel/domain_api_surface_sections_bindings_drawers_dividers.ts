@@ -62,7 +62,7 @@ function createDividersActionBindings(state: DomainApiSurfaceSectionsState): Unk
       const nextMeta = state._meta(meta, 'actions:dividers:set');
       const key = String(dividerKey || '');
       if (!key) return;
-      const nextValue = !!isOn ? true : null;
+      const nextValue = isOn ? true : null;
       if (shouldSkipSimpleMapWrite(state, 'drawerDividersMap', key, nextValue)) return;
       return writeDividerState(state.App, key, !!isOn, nextMeta);
     },

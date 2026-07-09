@@ -63,8 +63,12 @@ test('package keeps legacy lint as blocker while adding separated modern audit l
   assert.equal(pkg.devDependencies['oxlint-tsgolint'], '^0.24.0');
   assert.equal(pkg.scripts.lint, 'npm run lint:legacy');
   assert.equal(pkg.scripts['lint:legacy'], 'node tools/wp_lint.js --profile migrate');
-  assert.equal(pkg.scripts['lint:ts-modern:syntax'], 'node tools/wp_oxlint_audit.mjs --mode syntax');
+  assert.equal(
+    pkg.scripts['lint:ts-modern:syntax'],
+    'node tools/wp_oxlint_audit.mjs --mode syntax --fail-on-diagnostics'
+  );
   assert.equal(pkg.scripts['lint:ts-modern:type-aware'], 'node tools/wp_oxlint_audit.mjs --mode type-aware');
+  assert.equal(pkg.scripts['lint:architecture-contracts'], 'node tools/wp_lint_architecture_contracts.mjs');
   assert.match(pkg.scripts['quality:ts'], /lint:legacy/);
   assert.match(pkg.scripts['quality:ts'], /lint:ts-modern:syntax/);
   assert.match(pkg.scripts['quality:ts'], /typecheck:runtime/);

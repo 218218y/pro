@@ -97,7 +97,7 @@ export function sanitizeCornerCellListForPatch(nextVal: unknown, prevVal: unknow
   const nextList = Array.isArray(nextVal) ? nextVal : Array.isArray(prevVal) ? prevVal : [];
   const prevList = asList(prevVal);
 
-  const out: CornerCellConfigLike[] = new Array(nextList.length);
+  const out: CornerCellConfigLike[] = Array.from({ length: nextList.length });
   for (let i = 0; i < nextList.length; i++) {
     const v = nextList[i];
     const pv = prevList[i];
@@ -260,7 +260,7 @@ export function sanitizeLowerCornerCellListForPatch(nextVal: unknown, prevVal: u
   const nextList = Array.isArray(nextVal) ? nextVal : Array.isArray(prevVal) ? prevVal : [];
   const prevList = asList(prevVal);
 
-  const out: ModuleConfigLike[] = new Array(nextList.length);
+  const out: ModuleConfigLike[] = Array.from({ length: nextList.length });
   for (let i = 0; i < nextList.length; i++) {
     const v = nextList[i];
     const pv = prevList[i];

@@ -64,10 +64,10 @@ export function installStateApiSurfaceNamespaces(ctx: StateApiSurfaceNamespacesI
     const stateLike = hasBuildStateOverride(value) ? ctx.asObj(value) || {} : {};
     const uiPatch = hasBuildStateOverride(value) ? {} : ctx.asObj(value) || {};
 
-    const nextUi = { ...baseUi, ...(ctx.asObj(stateLike.ui) || {}), ...uiPatch };
+    const nextUi = { ...baseUi, ...ctx.asObj(stateLike.ui), ...uiPatch };
     const nextCfg = {
       ...baseCfg,
-      ...(ctx.asObj(stateLike.config) || {}),
+      ...ctx.asObj(stateLike.config),
     };
     nextCfg.modulesConfiguration = materializeTopModulesConfigurationFromUiConfig(
       nextCfg.modulesConfiguration,
@@ -89,8 +89,8 @@ export function installStateApiSurfaceNamespaces(ctx: StateApiSurfaceNamespacesI
       ...stateLike,
       ui: nextUi,
       config: nextCfg,
-      runtime: { ...baseRuntime, ...(ctx.asObj(stateLike.runtime) || {}) },
-      mode: { ...baseMode, ...(ctx.asObj(stateLike.mode) || {}) },
+      runtime: { ...baseRuntime, ...ctx.asObj(stateLike.runtime) },
+      mode: { ...baseMode, ...ctx.asObj(stateLike.mode) },
     };
   };
 

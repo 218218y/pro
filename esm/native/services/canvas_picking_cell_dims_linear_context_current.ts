@@ -34,7 +34,7 @@ export function computeCurrentLinearDims(
   const baseH: number[] = [];
   const baseD: number[] = [];
 
-  const fixedW: (number | null)[] = new Array(moduleCount).fill(null);
+  const fixedW: (number | null)[] = Array.from({ length: moduleCount }, () => null);
   let fixedSumW = 0;
   let missingUnitsW = 0;
   for (let i = 0; i < moduleCount; i++) {

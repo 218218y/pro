@@ -289,7 +289,7 @@ function collectCustomBlockers(args: {
     if (Number.isFinite(rodY)) blockers.push(rodY);
   }
 
-  if (!!customData.storage) {
+  if (customData.storage) {
     blockers.push(effectiveBottomY + INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM);
   }
 

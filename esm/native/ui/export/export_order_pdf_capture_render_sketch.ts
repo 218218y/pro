@@ -36,7 +36,7 @@ export function createOrderPdfCaptureRenderSketchOp(
       if (!ctx) throw new Error('[WardrobePro][ESM] 2d canvas context unavailable');
 
       try {
-        if (!!deps.readRuntimeScalarOrDefaultFromApp(App, 'sketchMode', false)) {
+        if (deps.readRuntimeScalarOrDefaultFromApp(App, 'sketchMode', false)) {
           deps.applyViewportSketchMode(App, false, {
             source: 'export:pdf',
             rebuild: true,

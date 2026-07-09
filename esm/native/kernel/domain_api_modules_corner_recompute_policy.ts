@@ -158,10 +158,10 @@ export function createModulesRecomputeWriteMeta(
   extras?: ActionMetaLike | null
 ): ActionMetaLike {
   return {
-    ...(meta || {}),
+    ...meta,
     source: readMetaSource(meta, fallbackSource),
     immediate: true,
-    ...(extras || {}),
+    ...extras,
   };
 }
 

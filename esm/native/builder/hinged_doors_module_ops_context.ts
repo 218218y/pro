@@ -112,7 +112,7 @@ export function createHingedDoorModuleOpsContext(
       where: 'native/builder/hinged_doors_pipeline',
       op,
       fatal: false,
-      ...(extra || {}),
+      ...extra,
     });
     if (shouldFailFast(App)) {
       throw error instanceof Error ? error : new Error(String(error));

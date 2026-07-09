@@ -32,7 +32,7 @@ export function createStructureTabRecomputeWriteMeta(
 ): ActionMetaLike {
   const normalized = normalizeStructureTabMetaSource(source, 'recompute-write');
   return {
-    ...(baseMeta || {}),
+    ...baseMeta,
     source: normalized,
     immediate: true,
     noBuild: true,

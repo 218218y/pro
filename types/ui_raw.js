@@ -33,9 +33,9 @@ export const UI_RAW_NUMERIC_KEYS = [
   'cellDimsHexDoorWidth',
 ];
 export const UI_RAW_SCALAR_KEYS = [...UI_RAW_NUMERIC_KEYS, ...UI_RAW_BOOLEAN_KEYS];
-const UI_RAW_SCALAR_KEY_SET = new Set([...UI_RAW_SCALAR_KEYS]);
-const UI_RAW_BOOLEAN_KEY_SET = new Set([...UI_RAW_BOOLEAN_KEYS]);
-const UI_RAW_NUMERIC_KEY_SET = new Set([...UI_RAW_NUMERIC_KEYS]);
+const UI_RAW_SCALAR_KEY_SET = new Set(UI_RAW_SCALAR_KEYS);
+const UI_RAW_BOOLEAN_KEY_SET = new Set(UI_RAW_BOOLEAN_KEYS);
+const UI_RAW_NUMERIC_KEY_SET = new Set(UI_RAW_NUMERIC_KEYS);
 export function isUiRawScalarKey(key) {
   return typeof key === 'string' && UI_RAW_SCALAR_KEY_SET.has(key);
 }

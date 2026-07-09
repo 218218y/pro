@@ -129,7 +129,7 @@ export function StructureCellDimsControls(props: StructureCellDimsControlsProps)
 
   const labels = props.labels || {};
   const defaultHexDoorWidth = resolveDefaultHexDoorWidthCm(props.defaultCellWidth);
-  const testIds = { ...DEFAULT_STRUCTURE_CELL_DIMS_TEST_IDS, ...(props.testIds || {}) };
+  const testIds = { ...DEFAULT_STRUCTURE_CELL_DIMS_TEST_IDS, ...props.testIds };
   const cellDimsPanelOpen = props.cellDimsPanelOpen || props.cellDimsEditActive;
   const hexCellPanelOpen = props.cellDimsHexPanelOpen || props.cellDimsHexMode;
 

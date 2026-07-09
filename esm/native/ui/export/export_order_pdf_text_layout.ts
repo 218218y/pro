@@ -55,7 +55,12 @@ export function createOrderPdfTextLayoutOps() {
 
   function sanitizeFileNameForDownload(name: string): string {
     let s = String(name || '');
-    s = s.replace(/[\u0000-\u001F\u007F]/g, '');
+    s = Array.from(s)
+      .filter(ch => {
+        const code = ch.charCodeAt(0);
+        return code > 31 && code !== 127;
+      })
+      .join('');
     s = s.replace(/[\\/:*?"<>|]/g, '');
     s = s.trim();
     s = s.replace(/[. ]+$/g, '');

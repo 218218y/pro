@@ -309,7 +309,7 @@ export function runSmokeChecksScenario(App: SmokeAppRootLike): string[] {
       after: modulesAfter,
     });
   }
-  if (doorsBefore >= 0 && doorsAfter >= 0 && doorsBefore > 0 && doorsAfter > 0) {
+  if (doorsBefore > 0 && doorsAfter > 0) {
     assertSmoke(doorsAfter === doorsBefore, 'doors count changed after export+reload', {
       before: doorsBefore,
       after: doorsAfter,

@@ -38,7 +38,7 @@ export function getEntryProStartRuntimeOps(
 ): EntryProStartRuntimeOps {
   return {
     ...defaultStartRuntimeOps,
-    ...(overrides || {}),
+    ...overrides,
   };
 }
 

@@ -53,7 +53,7 @@ export function createLibraryPresetRuntime(env: LibraryPresetEnv): LibraryPreset
   const metaMerge = (meta?: ActionMetaLike, defaults?: ActionMetaLike, src?: string): ActionMetaLike => {
     const fn = env && env.meta && typeof env.meta.merge === 'function' ? env.meta.merge : null;
     if (fn) return fn(meta || {}, defaults || {}, src || meta?.source || 'meta:merge');
-    return { ...(defaults || {}), ...(meta || {}) };
+    return { ...defaults, ...meta };
   };
 
   const metaNoBuild = (meta?: ActionMetaLike, src?: string): ActionMetaLike => {

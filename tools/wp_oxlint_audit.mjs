@@ -55,7 +55,7 @@ function parseOxlintJson(stdout) {
   }
 }
 
-function createSummary({ mode, status, report }) {
+function createSummary({ mode, status, report, failOnDiagnostics }) {
   const diagnostics = Array.isArray(report.diagnostics) ? report.diagnostics : [];
   const bySeverity = diagnostics.reduce((acc, item) => {
     const severity = item && item.severity ? String(item.severity) : 'unknown';
@@ -74,7 +74,7 @@ function createSummary({ mode, status, report }) {
 
   return {
     mode,
-    auditOnly: true,
+    auditOnly: !failOnDiagnostics,
     oxlintExitCode: status,
     files: report.number_of_files || 0,
     rules: report.number_of_rules || 0,
@@ -129,9 +129,13 @@ function printSummary(summary) {
       '[Oxlint Audit] type-aware mode is intentionally non-blocking until TS7/tsgolint parity is closed.'
     );
   } else {
-    console.log(
-      '[Oxlint Audit] syntax mode is audit-only in Stage 5; legacy ESLint remains the blocker for diagnostics.'
-    );
+    if (summary.auditOnly) {
+      console.log(
+        '[Oxlint Audit] syntax mode is audit-only in Stage 5; legacy ESLint remains the blocker for diagnostics.'
+      );
+    } else {
+      console.log('[Oxlint Audit] syntax mode is blocking; diagnostics fail this gate.');
+    }
   }
 }
 
@@ -139,7 +143,12 @@ function main() {
   const args = parseArgs(process.argv.slice(2));
   const result = runOxlint(args);
   const report = parseOxlintJson(result.stdout);
-  const summary = createSummary({ mode: args.mode, status: result.status, report });
+  const summary = createSummary({
+    mode: args.mode,
+    status: result.status,
+    report,
+    failOnDiagnostics: args.failOnDiagnostics,
+  });
   const payload = { summary, report };
   writeJsonOut(args.jsonOut, payload);
   printSummary(summary);

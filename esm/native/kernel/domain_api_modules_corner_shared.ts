@@ -165,7 +165,7 @@ export function cloneModuleConfig(
   return normalizeTopModuleConfigTyped(
     {
       ...dst,
-      ...(patch || {}),
+      ...patch,
       doors: nextDoors,
     },
     idx,
@@ -181,7 +181,7 @@ export function sanitizeSketchExtrasForNoMain(value: unknown): UnknownRecord {
   const extra = asRecord(value) || {};
   const boxes = Array.isArray(extra.boxes) ? extra.boxes.filter(isFreePlacementSketchBox) : [];
   return {
-    boxes: boxes.map(item => cloneJsonRecord(item) || { ...(asRecord(item) || {}) }),
+    boxes: boxes.map(item => cloneJsonRecord(item) || { ...asRecord(item) }),
     shelves: [],
     storageBarriers: [],
     rods: [],

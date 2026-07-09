@@ -118,7 +118,7 @@ function resolveCornerWingCellWidths(
   cellCfgs: CornerCellCfg[]
 ): number[] {
   const cellCount = cellCfgs.length;
-  const fixedWidths: (number | null)[] = new Array(cellCount).fill(null);
+  const fixedWidths: (number | null)[] = Array.from({ length: cellCount }, () => null);
   let fixedSum = 0;
   let missingUnits = 0;
 

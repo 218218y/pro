@@ -111,7 +111,7 @@ function persistSavedColorsStorage(
 }
 
 function createStoreOnlyMutationMeta(meta: ActionMetaLike | undefined): ActionMetaLike {
-  return { ...(meta || {}), noStorageWrite: true };
+  return { ...meta, noStorageWrite: true };
 }
 
 export function applySavedColorsAtomicMutation(

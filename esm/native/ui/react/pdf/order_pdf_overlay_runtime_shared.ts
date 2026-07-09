@@ -42,7 +42,7 @@ export function tryClearPdfTextField(f: unknown): void {
 }
 
 export function pdfUiOnlyMeta(meta: MetaActionsNamespaceLike, extra?: ActionMetaLike): ActionMetaLike {
-  return meta.uiOnly ? meta.uiOnly(extra, 'react:pdf') : { ...(extra || {}), source: 'react:pdf' };
+  return meta.uiOnly ? meta.uiOnly(extra, 'react:pdf') : { ...extra, source: 'react:pdf' };
 }
 
 export function asRecord(v: unknown): UnknownRecord | null {

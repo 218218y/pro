@@ -98,7 +98,7 @@ export function readCornerModules(cfg: unknown): UnknownRecord[] {
 }
 
 export function cloneRecord(value: unknown): UnknownRecord {
-  return { ...(asRecord(value) || {}) };
+  return { ...asRecord(value) };
 }
 
 export function reportCornerDimsIssue(

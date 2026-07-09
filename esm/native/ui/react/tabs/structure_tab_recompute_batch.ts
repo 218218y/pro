@@ -80,7 +80,7 @@ export function mergeStructureUiOverride(
   const out: UnknownRecord = { ...base, ...uiPatch };
   const baseRaw = base.raw && typeof base.raw === 'object' ? (base.raw as UnknownRecord) : null;
   const patchRaw = uiPatch.raw && typeof uiPatch.raw === 'object' ? (uiPatch.raw as UnknownRecord) : null;
-  if (baseRaw || patchRaw) out.raw = { ...(baseRaw || {}), ...(patchRaw || {}) };
+  if (baseRaw || patchRaw) out.raw = { ...baseRaw, ...patchRaw };
   return out;
 }
 

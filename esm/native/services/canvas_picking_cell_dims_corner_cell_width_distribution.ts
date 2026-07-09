@@ -25,8 +25,8 @@ export function createCornerCellWidthDistribution(ctx: CornerCellDimsContext): C
   const getStoredWidth = (cfgCell: UnknownRecord): number | null =>
     readStoredWidthCm(cfgCell, App, 'cellDims.corner.width.getStoredWidth');
 
-  const doorsInCell = new Array<number>(cellCount).fill(1);
-  const fixedWidths = new Array<number | null>(cellCount).fill(null);
+  const doorsInCell = Array.from({ length: cellCount }, () => 1);
+  const fixedWidths: (number | null)[] = Array.from({ length: cellCount }, () => null);
   let fixedSum = 0;
   let missingUnits = 0;
 

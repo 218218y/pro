@@ -39,7 +39,7 @@ export function groupSketchFreeBoxDimensionEntries(
     .filter((entry): entry is SketchFreeBoxDimensionSegment => !!entry);
   if (!segments.length) return [];
 
-  const visited = new Array(segments.length).fill(false);
+  const visited = Array.from({ length: segments.length }, () => false);
   const groups: SketchFreeBoxDimensionSegment[][] = [];
 
   for (let i = 0; i < segments.length; i++) {

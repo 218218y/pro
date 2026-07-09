@@ -241,7 +241,7 @@ export function reportPostBuildSoft(
     where: 'native/builder/post_build_extras_pipeline',
     op,
     fatal: false,
-    ...(extra || {}),
+    ...extra,
   });
   if (shouldFailFast(App)) {
     throw error instanceof Error ? error : new Error(String(error));

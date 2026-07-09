@@ -16,7 +16,7 @@ function __renderOpsReportError(
   const prev = __renderOpsErrorLastAt.get(key) || 0;
   if (now - prev < throttleMs) return;
   __renderOpsErrorLastAt.set(key, now);
-  reportError(App || null, err, { where: 'builder/render_ops', op, ...(extra || {}) });
+  reportError(App || null, err, { where: 'builder/render_ops', op, ...extra });
 }
 
 export function __renderOpsHandleCatch(

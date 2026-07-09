@@ -95,7 +95,7 @@ function addSketchBoxExternalDrawerConnector(
   connector.position?.set?.(0, 0, opPlan.connectorZ);
   applySketchBoxPickMeta(connector, opPlan.boxPartId, context.moduleKeyStr, bid);
   connector.userData = {
-    ...(readObject<InteriorValueRecord>(connector.userData) || {}),
+    ...readObject<InteriorValueRecord>(connector.userData),
     __wpSketchExtDrawer: true,
     __wpSketchExtDrawerId: opPlan.drawerId,
     __wpRegularExternalDrawer: opPlan.isRegularExternalDrawer === true,

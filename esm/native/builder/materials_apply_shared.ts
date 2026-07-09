@@ -105,7 +105,7 @@ export function reportMaterialsApplySoft(
     where: 'native/builder/materials_apply',
     op,
     fatal: false,
-    ...(extra || {}),
+    ...extra,
   });
   if (shouldFailFast(App)) {
     throw error instanceof Error ? error : new Error(String(error));

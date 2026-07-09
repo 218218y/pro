@@ -306,7 +306,7 @@ function refreshSketchSegmentedDoorHandles(
     }
 
     handle.position.y = leaf.centerLocalY + localCenterY;
-    handle.userData = { ...(handle.userData || {}), partId: leaf.partId };
+    handle.userData = { ...handle.userData, partId: leaf.partId };
     root.add(handle);
   }
 }

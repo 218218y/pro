@@ -106,7 +106,7 @@ export function asModuleConfigList(value: unknown): ModuleConfigLike[] {
 
 export function asNumberList(value: unknown): number[] | null {
   if (!Array.isArray(value)) return null;
-  const out = new Array<number>(value.length);
+  const out = Array.from<number>({ length: value.length });
   for (let i = 0; i < value.length; i += 1) {
     const n = value[i];
     if (typeof n !== 'number' || !Number.isFinite(n)) return null;

@@ -35,23 +35,23 @@ function asStoreLike(v: unknown): RootStoreReader | null {
 }
 
 function asUiState(v: unknown): UiStateLike {
-  return { ...(asRecord<UiStateLike>(v) || {}) };
+  return { ...asRecord<UiStateLike>(v) };
 }
 
 function asConfigState(v: unknown): ConfigStateLike {
-  return { ...(asRecord<ConfigStateLike>(v) || {}) };
+  return { ...asRecord<ConfigStateLike>(v) };
 }
 
 function asRuntimeState(v: unknown): RuntimeStateLike {
-  return { ...(asRecord<RuntimeStateLike>(v) || {}) };
+  return { ...asRecord<RuntimeStateLike>(v) };
 }
 
 function asModeState(v: unknown): ModeStateLike {
-  return { ...(asRecord<ModeStateLike>(v) || {}) };
+  return { ...asRecord<ModeStateLike>(v) };
 }
 
 function asMetaState(v: unknown): RootMetaStateLike {
-  const meta: MetaStateLike = { ...(asRecord<MetaStateLike>(v) || {}) };
+  const meta: MetaStateLike = { ...asRecord<MetaStateLike>(v) };
   const version = typeof meta.version === 'number' && Number.isFinite(meta.version) ? meta.version : 0;
   const updatedAt =
     typeof meta.updatedAt === 'number' && Number.isFinite(meta.updatedAt) ? meta.updatedAt : 0;
@@ -74,7 +74,7 @@ function coerceSlice<K extends RootSliceKey>(sliceKey: K, value: unknown): RootS
 export function asRootState(st: unknown): RootStateLike {
   const seed = asRecord<RootStateSeed>(st);
   return {
-    ...(seed || {}),
+    ...seed,
     ui: asUiState(seed?.ui),
     config: asConfigState(seed?.config),
     runtime: asRuntimeState(seed?.runtime),
@@ -98,7 +98,7 @@ export function readUiStateFromStore(store: unknown): UiStateLike {
 }
 
 export function readUiRawInputsFromStore(store: unknown): UiRawInputsLike {
-  return { ...(asRecord<UiRawInputsLike>(readUiStateFromStore(store).raw) || {}) };
+  return { ...asRecord<UiRawInputsLike>(readUiStateFromStore(store).raw) };
 }
 
 function readBooleanRawScalar(raw: UiRawInputsLike, key: UiRawBooleanKey): boolean | undefined {

@@ -60,7 +60,7 @@ function reportBuildRunnerSoftError(
   try {
     const reportError = getPlatformReportError(App);
     if (reportError) {
-      reportError(error, { where, fatal: false, ...(extra || {}) });
+      reportError(error, { where, fatal: false, ...extra });
     }
   } catch {
     // swallow

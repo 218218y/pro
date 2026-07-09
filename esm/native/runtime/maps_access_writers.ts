@@ -153,7 +153,7 @@ export function writeSplit(App: unknown, doorId: unknown, isSplit: boolean, meta
   return patchVisualKeyedMapEntriesFromOwner(
     App,
     'splitDoorsMap',
-    [{ key: canonicalKey, value: !!isSplit ? true : false }],
+    [{ key: canonicalKey, value: isSplit ? true : false }],
     meta
   );
 }
@@ -173,7 +173,7 @@ export function writeSplitBottom(
   return patchVisualKeyedMapEntriesFromOwner(
     App,
     'splitDoorsBottomMap',
-    [{ key: canonicalKey, value: !!isOn ? true : null }],
+    [{ key: canonicalKey, value: isOn ? true : null }],
     meta
   );
 }

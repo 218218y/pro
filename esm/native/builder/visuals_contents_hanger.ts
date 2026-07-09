@@ -11,7 +11,7 @@ function markHangerFitting(obj: unknown, kind: string): void {
   if (!obj || typeof obj !== 'object') return;
   const rec = obj as { userData?: Record<string, unknown> };
   rec.userData = {
-    ...(rec.userData || {}),
+    ...rec.userData,
     __kind: kind,
     __wpMeasurementIgnoreInteriorBoundary: true,
   };

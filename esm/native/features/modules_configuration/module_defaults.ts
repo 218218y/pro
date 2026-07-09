@@ -14,7 +14,7 @@ export function createDefaultModuleCustomData(
   cellCount: number = DEFAULT_MODULE_CELL_COUNT
 ): ModuleCustomDataLike {
   const n = Number.isFinite(cellCount) && cellCount > 0 ? Math.floor(cellCount) : DEFAULT_MODULE_CELL_COUNT;
-  const arr = new Array(n);
+  const arr = Array.from({ length: n }, () => false);
   for (let i = 0; i < n; i++) arr[i] = false;
   return {
     shelves: arr.slice(),

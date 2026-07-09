@@ -148,28 +148,24 @@ const exportActionFlights = new WeakMap<
 let exportCanvasModulePromise: Promise<ExportCanvasModuleLike> | null = null;
 
 async function ensureExportModule(app?: AppContainer): Promise<ExportCanvasModuleLike> {
-  try {
-    if (!exportCanvasModulePromise) {
-      exportCanvasModulePromise = import('../export_canvas.js')
-        .then(mod => {
-          const out = asExportCanvasModule(mod);
-          if (!hasAnyExportAction(out)) {
-            throw new Error('[WardrobePro] export_canvas named exports missing');
-          }
-          return out;
-        })
-        .catch(err => {
-          exportCanvasModulePromise = null;
-          if (app && requestReleaseAssetRecovery(app, err, 'export-canvas-module')) {
-            throw new Error('טוען גרסה נקייה של קבצי הייצוא…');
-          }
-          throw err;
-        });
-    }
-    return await exportCanvasModulePromise;
-  } catch (e) {
-    throw e;
+  if (!exportCanvasModulePromise) {
+    exportCanvasModulePromise = import('../export_canvas.js')
+      .then(mod => {
+        const out = asExportCanvasModule(mod);
+        if (!hasAnyExportAction(out)) {
+          throw new Error('[WardrobePro] export_canvas named exports missing');
+        }
+        return out;
+      })
+      .catch(err => {
+        exportCanvasModulePromise = null;
+        if (app && requestReleaseAssetRecovery(app, err, 'export-canvas-module')) {
+          throw new Error('טוען גרסה נקייה של קבצי הייצוא…');
+        }
+        throw err;
+      });
   }
+  return await exportCanvasModulePromise;
 }
 
 export async function warmExportCanvasModule(app?: AppContainer): Promise<void> {

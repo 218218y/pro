@@ -29,7 +29,7 @@ function isSketchRedoKey(event: OrderPdfSketchShortcutLike): boolean {
 
 export function isOrderPdfSketchUndoShortcut(event: OrderPdfSketchShortcutLike | null | undefined): boolean {
   if (!event || !hasSketchShortcutModifier(event)) return false;
-  if (!!event.shiftKey) return false;
+  if (event.shiftKey) return false;
   return isSketchUndoKey(event);
 }
 

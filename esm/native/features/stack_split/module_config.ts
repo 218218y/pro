@@ -95,7 +95,7 @@ export function createDefaultLowerModuleConfig(_i: number): ModuleConfigLike {
     gridDivisions: INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault,
     customData: {
       shelves: Array.from(INTERIOR_FITTINGS_DIMENSIONS.storage.defaultLowerShelfSlots),
-      rods: new Array(INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault).fill(false),
+      rods: Array.from({ length: INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault }, () => false),
       storage: false,
     },
   };
@@ -135,7 +135,7 @@ function createDefaultModuleCustomData(
     Number.isFinite(cellCount) && cellCount > 0
       ? Math.floor(cellCount)
       : INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
-  const arr = new Array(n).fill(false);
+  const arr = Array.from({ length: n }, () => false);
   return {
     shelves: arr.slice(),
     rods: arr.slice(),

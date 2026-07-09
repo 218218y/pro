@@ -77,8 +77,8 @@ export function derivePostBuildDimensionMetrics(args: {
 
     let hasWidthOverride = false;
 
-    const segWidthsCm: number[] = new Array(mods.length);
-    const missing: boolean[] = new Array(mods.length);
+    const segWidthsCm: number[] = Array.from({ length: mods.length });
+    const missing: boolean[] = Array.from({ length: mods.length });
     let fixedSumCm = 0;
     let missingUnits = 0;
 

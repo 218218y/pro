@@ -109,7 +109,7 @@ export function appendSketchBoxDoorCoreVisual(args: {
   doorSlab.position?.set?.(slabLocalX, 0, 0);
   applySketchBoxPickMeta(doorSlab, doorPid, moduleKeyStr, bid, { door: true });
   doorSlab.userData = {
-    ...(readObject<InteriorValueRecord>(doorSlab.userData) || {}),
+    ...readObject<InteriorValueRecord>(doorSlab.userData),
     ...sharedDoorUserData,
   };
   if (isFn(addOutlines)) addOutlines(doorSlab);

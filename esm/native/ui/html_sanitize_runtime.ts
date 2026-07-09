@@ -170,7 +170,7 @@ function sanitizeTagMarkupText(
   const allowedTags = POLICY_ALLOWED_TAGS[policy];
   if (!allowedTags.has(tag)) return '';
   if (closing) return `</${tag.toLowerCase()}>`;
-  const attrRe = /([^\s"'=<>`\/]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
+  const attrRe = /([^\s"'=<>`/]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
   const kept: string[] = [];
   let match: RegExpExecArray | null = null;
   while ((match = attrRe.exec(attrsChunk))) {

@@ -107,7 +107,7 @@ export function tagHexCellDiagonalObjectTree(node: unknown, userData: UnknownRec
   const apply = (target: unknown) => {
     const rec = asRecord(target);
     if (!rec) return;
-    rec.userData = { ...(asRecord(rec.userData) || {}), ...userData };
+    rec.userData = { ...asRecord(rec.userData), ...userData };
   };
   apply(root);
   const traverse = root.traverse;

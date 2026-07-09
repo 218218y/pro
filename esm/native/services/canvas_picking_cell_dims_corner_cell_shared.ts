@@ -18,7 +18,8 @@ export function createCornerCellConfigReader(
   opPrefix: string,
   cellCount?: number
 ): CornerCellConfigReader {
-  const cache = typeof cellCount === 'number' && cellCount > 0 ? new Array<UnknownRecord>(cellCount) : null;
+  const cache =
+    typeof cellCount === 'number' && cellCount > 0 ? Array.from<UnknownRecord>({ length: cellCount }) : null;
   return (cellIdx: number): UnknownRecord => {
     const cached = cache ? cache[cellIdx] : null;
     if (cached) return cached;

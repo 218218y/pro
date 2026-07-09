@@ -183,7 +183,7 @@ export function resolveDoorTrimSurfaceLogicalPoint(args: {
   faceCoord: number;
 }): { x: number; y: number; z: number } {
   const userData = args.surfacePlane
-    ? { ...(args.userData || {}), __wpDoorTrimSurfacePlane: args.surfacePlane }
+    ? { ...args.userData, __wpDoorTrimSurfacePlane: args.surfacePlane }
     : args.userData;
   return mapDoorTrimSurfaceLogicalToLocalPoint({
     userData,

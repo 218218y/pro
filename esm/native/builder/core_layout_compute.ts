@@ -24,7 +24,7 @@ export function normalizeModulesConfiguration(
   const ms = __normalizeModulesStructure(modulesStructure);
   const cfgArr = __asArray(modulesConfiguration);
 
-  const out: ModuleConfig[] = new Array(ms.length);
+  const out: ModuleConfig[] = Array.from({ length: ms.length });
   for (let i = 0; i < ms.length; i++) {
     let doors = __asInt(ms[i].doors, 1);
     const prev = cfgArr[i];
@@ -75,13 +75,13 @@ export function computeModuleLayout(input: unknown) {
   // - Global width changes affect ONLY the remaining (non-fixed) modules.
   // - If everything is fixed, fall back to adjusting the rightmost module to keep tiling.
   const totalWcm = totalW * CM_PER_METER;
-  const moduleSegWidthsCm: number[] = new Array(modules.length);
-  const moduleInternalWidths: number[] = new Array(modules.length);
+  const moduleSegWidthsCm: number[] = Array.from({ length: modules.length });
+  const moduleInternalWidths: number[] = Array.from({ length: modules.length });
 
   // First pass: read explicit segment widths from specialDims, otherwise mark missing.
   let fixedSumCm = 0;
   let missingUnits = 0;
-  const missing: boolean[] = new Array(modules.length);
+  const missing: boolean[] = Array.from({ length: modules.length });
 
   for (let i = 0; i < modules.length; i++) {
     const doors = Math.max(1, __asInt(modules[i]?.doors, 1));

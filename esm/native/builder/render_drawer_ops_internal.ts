@@ -102,7 +102,7 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       );
       const sketchModuleKey = drawerOp.sketchModuleKey ?? drawerOp.moduleIndex;
       intBox.userData = {
-        ...(intBox.userData || {}),
+        ...intBox.userData,
         partId: drawerBoxPartId,
         drawerId: partId,
         moduleIndex: drawerOp.moduleIndex,

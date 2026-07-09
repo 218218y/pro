@@ -44,7 +44,7 @@ function applyDoorTrimSurfaceMetrics(mesh: { userData?: AnyMap | null }, bd: Boa
   const surfaceUserData = buildDoorTrimSurfaceUserData(partId, bd);
   if (!surfaceUserData) return;
   mesh.userData = {
-    ...(readRecord(mesh.userData) || {}),
+    ...readRecord(mesh.userData),
     ...surfaceUserData,
   };
 }
