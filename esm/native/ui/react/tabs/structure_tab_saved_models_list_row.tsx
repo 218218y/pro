@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactElement } from 'react';
 
+import { Button } from '../components/index.js';
 import {
   getModelId,
   getModelName,
@@ -88,13 +89,11 @@ function SavedModelsRowActions(
 
   return (
     <div className="wp-r-savedmodels-rowactions" dir="ltr">
-      <button
-        type="button"
-        className={
-          props.row.locked
-            ? 'btn btn-accent btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom'
-            : 'btn btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom'
-        }
+      <Button
+        variant={props.row.locked ? 'accent' : 'default'}
+        inline
+        size="sm"
+        className="wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom"
         onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
           event.preventDefault();
           event.stopPropagation();
@@ -107,11 +106,13 @@ function SavedModelsRowActions(
         aria-disabled={props.row.preset}
       >
         <i className={props.row.locked ? 'fas fa-lock' : 'fas fa-unlock'} />
-      </button>
+      </Button>
 
-      <button
-        type="button"
-        className="btn btn-accent btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom"
+      <Button
+        variant="accent"
+        inline
+        size="sm"
+        className="wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom"
         onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
           event.preventDefault();
           event.stopPropagation();
@@ -126,11 +127,13 @@ function SavedModelsRowActions(
         aria-disabled={!props.row.canOverwrite}
       >
         <i className="fas fa-sync-alt" />
-      </button>
+      </Button>
 
-      <button
-        type="button"
-        className="btn btn-danger btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom"
+      <Button
+        variant="danger"
+        inline
+        size="sm"
+        className="wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom"
         onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
           event.preventDefault();
           event.stopPropagation();
@@ -143,7 +146,7 @@ function SavedModelsRowActions(
         aria-disabled={props.row.preset}
       >
         <i className="fas fa-trash" />
-      </button>
+      </Button>
     </div>
   );
 }

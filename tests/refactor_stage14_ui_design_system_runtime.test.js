@@ -41,6 +41,7 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   );
   const structureBodyBaseSection = read('esm/native/ui/react/tabs/structure_tab_body_section_base.tsx');
   const savedModelsSections = read('esm/native/ui/react/tabs/structure_tab_saved_models_view_sections.tsx');
+  const savedModelsListRow = read('esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx');
 
   assert.match(colorSwatch, /children\?: ReactNode/);
   assert.match(colorSwatch, /special\?: boolean/);
@@ -237,5 +238,31 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   assert.doesNotMatch(
     savedModelsSections,
     /className="btn btn-accent wp-r-savedmodels-arrow wp-r-styled-tooltip hint-bottom"/
+  );
+
+  assert.match(savedModelsListRow, /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/);
+  assert.match(
+    savedModelsListRow,
+    /function SavedModelsRowActions[\s\S]*<Button[\s\S]*variant=\{props\.row\.locked \? 'accent' : 'default'\}[\s\S]*inline[\s\S]*size="sm"[\s\S]*className="wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom"[\s\S]*event\.preventDefault\(\);[\s\S]*event\.stopPropagation\(\);[\s\S]*props\.onSetSelected\(props\.row\.id\);[\s\S]*props\.onToggleLock\(props\.row\.id\)/
+  );
+  assert.match(
+    savedModelsListRow,
+    /function SavedModelsRowActions[\s\S]*<Button[\s\S]*variant="accent"[\s\S]*inline[\s\S]*size="sm"[\s\S]*className="wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom"[\s\S]*event\.preventDefault\(\);[\s\S]*event\.stopPropagation\(\);[\s\S]*props\.onSetSelected\(props\.row\.id\);[\s\S]*props\.onOverwriteById\(props\.row\.id\)/
+  );
+  assert.match(
+    savedModelsListRow,
+    /function SavedModelsRowActions[\s\S]*<Button[\s\S]*variant="danger"[\s\S]*inline[\s\S]*size="sm"[\s\S]*className="wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom"[\s\S]*event\.preventDefault\(\);[\s\S]*event\.stopPropagation\(\);[\s\S]*props\.onSetSelected\(props\.row\.id\);[\s\S]*props\.onDeleteById\(props\.row\.id\)/
+  );
+  assert.doesNotMatch(
+    savedModelsListRow,
+    /btn btn-accent btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom/
+  );
+  assert.doesNotMatch(
+    savedModelsListRow,
+    /btn btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom/
+  );
+  assert.doesNotMatch(
+    savedModelsListRow,
+    /btn btn-danger btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom/
   );
 });

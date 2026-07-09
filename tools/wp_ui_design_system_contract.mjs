@@ -291,6 +291,35 @@ forbidPattern(
 );
 
 requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx',
+  /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx',
+  /function SavedModelsRowActions[\s\S]*<Button[\s\S]*variant=\{props\.row\.locked \? 'accent' : 'default'\}[\s\S]*inline[\s\S]*size="sm"[\s\S]*className="wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom"[\s\S]*event\.preventDefault\(\);[\s\S]*event\.stopPropagation\(\);[\s\S]*props\.onSetSelected\(props\.row\.id\);[\s\S]*props\.onToggleLock\(props\.row\.id\)/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx',
+  /function SavedModelsRowActions[\s\S]*<Button[\s\S]*variant="accent"[\s\S]*inline[\s\S]*size="sm"[\s\S]*className="wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom"[\s\S]*event\.preventDefault\(\);[\s\S]*event\.stopPropagation\(\);[\s\S]*props\.onSetSelected\(props\.row\.id\);[\s\S]*props\.onOverwriteById\(props\.row\.id\)/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx',
+  /function SavedModelsRowActions[\s\S]*<Button[\s\S]*variant="danger"[\s\S]*inline[\s\S]*size="sm"[\s\S]*className="wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom"[\s\S]*event\.preventDefault\(\);[\s\S]*event\.stopPropagation\(\);[\s\S]*props\.onSetSelected\(props\.row\.id\);[\s\S]*props\.onDeleteById\(props\.row\.id\)/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx',
+  /btn btn-accent btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx',
+  /btn btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx',
+  /btn btn-danger btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom/
+);
+
+requirePattern(
   'esm/native/ui/react/panels/SettingsBackupPanel.tsx',
   /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
 );
