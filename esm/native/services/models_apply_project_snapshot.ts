@@ -2,7 +2,8 @@ import type { AppContainer, ProjectDataLike, SavedModelLike, UnknownRecord } fro
 
 import { getCfg } from '../kernel/api.js';
 import { captureProjectSnapshotMaybe } from '../runtime/project_capture_access.js';
-import { cloneProjectJson, readPersistedProjectConfigSnapshot } from '../runtime/project_payload_access.js';
+import { cloneProjectJson } from '../../shared/project_json_clone.js';
+import { readPersistedProjectConfigSnapshot } from '../features/project_config/project_config_persisted_snapshot.js';
 import { normalizeModelRecord } from '../features/model_record/api.js';
 import { canonicalizeComparableProjectConfigSnapshot } from '../features/project_config/api.js';
 import { asCornerConfiguration } from '../runtime/cfg_access_shared.js';

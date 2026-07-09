@@ -5,7 +5,7 @@ import {
   getAutosaveServiceMaybe,
   readAutosaveInfoFromStorage,
 } from '../runtime/autosave_access.js';
-import { cloneProjectJson as cloneProjectJsonSafe } from '../runtime/project_payload_access.js';
+import { cloneProjectJson as cloneProjectJsonSafe } from '../../shared/project_json_clone.js';
 import { asRecord, createNullRecord } from '../runtime/record.js';
 import { setUiScalarSoft } from '../runtime/ui_write_access.js';
 
