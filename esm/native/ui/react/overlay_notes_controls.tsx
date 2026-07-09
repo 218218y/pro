@@ -204,7 +204,7 @@ export function ViewerNotesControls(): ReactElement {
         <div className="wp-viewer-notes-wrap">
           <IconButton
             variant="camera"
-            className={`wp-viewer-note-btn hint-bottom${notesDrawMode ? ' is-on' : ''}`}
+            className={`wp-viewer-note-btn hint-bottom wp-r-styled-tooltip${notesDrawMode ? ' is-on' : ''}`}
             data-tooltip={notesDrawMode ? 'סיום עריכת הערות' : 'הערה'}
             aria-label={notesDrawMode ? 'סיום עריכת הערות' : 'הערה'}
             aria-pressed={notesDrawMode}
@@ -221,7 +221,7 @@ export function ViewerNotesControls(): ReactElement {
 
           <button
             type="button"
-            className={`wp-viewer-note-eye hint-bottom${notesEnabled ? ' is-on' : ''}`}
+            className={`wp-viewer-note-eye hint-bottom wp-r-styled-tooltip${notesEnabled ? ' is-on' : ''}`}
             data-tooltip={notesEnabled ? 'הסתר הערות' : 'הצג הערות'}
             aria-label={notesEnabled ? 'הסתר הערות' : 'הצג הערות'}
             aria-pressed={notesEnabled}
@@ -237,7 +237,7 @@ export function ViewerNotesControls(): ReactElement {
 
         <IconButton
           variant="camera"
-          className={`wp-viewer-contents-btn hint-bottom${showContents ? ' is-on' : ''}`}
+          className={`wp-viewer-contents-btn hint-bottom wp-r-styled-tooltip${showContents ? ' is-on' : ''}`}
           data-tooltip={showContents ? 'הסתר תכולה' : 'הצג תכולה'}
           aria-label={showContents ? 'הסתר תכולה' : 'הצג תכולה'}
           aria-pressed={showContents}
@@ -253,7 +253,7 @@ export function ViewerNotesControls(): ReactElement {
         <div className="wp-viewer-measurement-wrap">
           <IconButton
             variant="camera"
-            className={`wp-viewer-measurement-btn hint-bottom${measurementMode ? ' is-on' : ''}`}
+            className={`wp-viewer-measurement-btn hint-bottom wp-r-styled-tooltip${measurementMode ? ' is-on' : ''}`}
             data-tooltip={measurementMode ? 'סיום סרגל מדידה' : 'סרגל מדידה'}
             aria-label={measurementMode ? 'סיום סרגל מדידה' : 'סרגל מדידה'}
             aria-pressed={measurementMode}
@@ -275,7 +275,7 @@ export function ViewerNotesControls(): ReactElement {
             >
               <IconButton
                 variant="camera"
-                className={`wp-viewer-measurement-mode-btn hint-bottom${
+                className={`wp-viewer-measurement-mode-btn hint-bottom wp-r-styled-tooltip${
                   measurementToolMode === 'part' ? ' is-on' : ''
                 }`}
                 data-tooltip="מדידה לפי חלק"
@@ -291,7 +291,7 @@ export function ViewerNotesControls(): ReactElement {
               </IconButton>
               <IconButton
                 variant="camera"
-                className={`wp-viewer-measurement-mode-btn hint-bottom${
+                className={`wp-viewer-measurement-mode-btn hint-bottom wp-r-styled-tooltip${
                   measurementToolMode === 'points' ? ' is-on' : ''
                 }`}
                 data-tooltip="מדידה לפי מיקום מדוייק"

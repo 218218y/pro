@@ -10,6 +10,7 @@ const tooltipPlacement = readSource('../esm/native/ui/react/components/TooltipPl
 const projectPanel = readSource('../esm/native/ui/react/panels/ProjectPanel.tsx', import.meta.url);
 const reactStyles = readSource('../css/react_styles.css', import.meta.url);
 const bootReactUi = readSource('../esm/native/ui/react/boot_react_ui.tsx', import.meta.url);
+const viewerNotesControls = readSource('../esm/native/ui/react/overlay_notes_controls.tsx', import.meta.url);
 const savedModelsRows = readSource(
   '../esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx',
   import.meta.url
@@ -108,6 +109,22 @@ test('[styled-tooltips] active floating tooltip refreshes when its data-tooltip 
       /tooltipMutationObserver\?\.disconnect\(\);/,
     ],
     'active styled tooltip mutation refresh seam'
+  );
+});
+
+test('[viewer-notes-tooltips] sketch overlay controls use the shared viewport-safe tooltip host', () => {
+  assertMatchesAll(
+    assert,
+    viewerNotesControls,
+    [
+      /wp-viewer-note-btn hint-bottom wp-r-styled-tooltip[\s\S]*data-tooltip=\{notesDrawMode \? 'סיום עריכת הערות' : 'הערה'\}/,
+      /wp-viewer-note-eye hint-bottom wp-r-styled-tooltip[\s\S]*data-tooltip=\{notesEnabled \? 'הסתר הערות' : 'הצג הערות'\}/,
+      /wp-viewer-contents-btn hint-bottom wp-r-styled-tooltip[\s\S]*data-tooltip=\{showContents \? 'הסתר תכולה' : 'הצג תכולה'\}/,
+      /wp-viewer-measurement-btn hint-bottom wp-r-styled-tooltip[\s\S]*data-tooltip=\{measurementMode \? 'סיום סרגל מדידה' : 'סרגל מדידה'\}/,
+      /wp-viewer-measurement-mode-btn hint-bottom wp-r-styled-tooltip[\s\S]*data-tooltip="מדידה לפי חלק"/,
+      /wp-viewer-measurement-mode-btn hint-bottom wp-r-styled-tooltip[\s\S]*data-tooltip="מדידה לפי מיקום מדוייק"/,
+    ],
+    'viewer overlay floating tooltip seam'
   );
 });
 
