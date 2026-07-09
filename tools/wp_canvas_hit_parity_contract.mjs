@@ -61,8 +61,20 @@ requireMatch(
 requireMatch(
   files.owner,
   owner,
-  /const merged: UnknownRecord = \{\s*\.\.\.\(resolved \|\| \{\}\),\s*\.\.\.\(hit \|\| \{\}\),\s*\};/s,
+  /const merged: UnknownRecord = \{\s*\.\.\.(?:\(resolved \|\| \{\}\)|resolved),\s*\.\.\.(?:\(hit \|\| \{\}\)|hit),\s*\};/s,
   'shared metadata merger must preserve surface hit metadata over resolved parent defaults'
+);
+requireMatch(
+  files.owner,
+  owner,
+  /if \(resolvedPartId\) merged\.partId = resolvedPartId;/,
+  'shared metadata merger must preserve resolved owner part id over proxy surface ids'
+);
+requireMatch(
+  files.owner,
+  owner,
+  /if \(resolvedDoorId\) merged\.doorId = resolvedDoorId;/,
+  'shared metadata merger must preserve resolved owner door id over proxy surface ids'
 );
 requireMatch(
   files.owner,

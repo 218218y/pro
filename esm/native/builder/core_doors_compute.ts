@@ -303,7 +303,17 @@ export function computeSlidingDoorOps(input: unknown) {
 
   let doors: SlidingDoorOpLike[] = Array.from<SlidingDoorOpLike>({ length: numDoors });
   for (let i = 0; i < numDoors; i++) {
-    const sp = specs[i] || {};
+    const fallbackMinX = -internalWidthForDoors / 2 + doorWidth / 2;
+    const fallbackMaxX = internalWidthForDoors / 2 - doorWidth / 2;
+    const sp: SlidingDoorSpec = specs[i] ?? {
+      index: i,
+      isOuter: false,
+      x: 0,
+      z: railZ,
+      minX: fallbackMinX,
+      maxX: fallbackMaxX,
+      width: doorWidth,
+    };
     doors[i] = {
       partId: 'sliding_door_' + (i + 1),
       index: i,
@@ -314,8 +324,8 @@ export function computeSlidingDoorOps(input: unknown) {
       width: __asNum(sp.width, doorWidth),
       height: doorHeightNet,
       isOuter: !!sp.isOuter,
-      minX: __asNum(sp.minX, -internalWidthForDoors / 2 + doorWidth / 2),
-      maxX: __asNum(sp.maxX, internalWidthForDoors / 2 - doorWidth / 2),
+      minX: __asNum(sp.minX, fallbackMinX),
+      maxX: __asNum(sp.maxX, fallbackMaxX),
     };
   }
 
