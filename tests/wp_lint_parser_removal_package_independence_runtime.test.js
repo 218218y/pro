@@ -7,6 +7,9 @@ import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
+const REMOVED_SCOPE = '@' + 'typescript' + '-' + 'eslint';
+const REMOVED_PARSER = REMOVED_SCOPE + '/parser';
+const REMOVED_PLUGIN = REMOVED_SCOPE + '/eslint-plugin';
 
 function read(rel) {
   return fs.readFileSync(new URL('../' + rel, import.meta.url), 'utf8');
@@ -32,17 +35,17 @@ async function loadEslintConfig(profile) {
 }
 
 function copyConfigToTempProject() {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'wp-eslint-dry-run-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'wp-eslint-js-only-'));
   fs.writeFileSync(path.join(tmp, 'package.json'), JSON.stringify({ type: 'module' }));
   fs.copyFileSync(path.join(ROOT, 'eslint.config.js'), path.join(tmp, 'eslint.config.js'));
   return tmp;
 }
 
-test('parser-removal dry-run imports eslint.config.js without @typescript-eslint packages installed', () => {
+test('eslint config imports without removed TS ESLint packages installed', () => {
   const configSource = read('eslint.config.js');
-  assert.doesNotMatch(configSource, /^import\s+.*@typescript-eslint\/parser/m);
-  assert.doesNotMatch(configSource, /^import\s+.*@typescript-eslint\/eslint-plugin/m);
-  assert.match(configSource, /PARSER_REMOVAL_DRY_RUN \? null : await loadTypeScriptEslint\(\)/);
+  assert.doesNotMatch(configSource, new RegExp(REMOVED_PARSER.replace('/', '\\/')));
+  assert.doesNotMatch(configSource, new RegExp(REMOVED_PLUGIN.replace('/', '\\/')));
+  assert.doesNotMatch(configSource, /loadTypeScriptEslint|tsSourceConfig|typeScriptEslint/);
 
   const tempProject = copyConfigToTempProject();
   const script = [
@@ -58,27 +61,28 @@ test('parser-removal dry-run imports eslint.config.js without @typescript-eslint
   assert.equal(out.trim(), 'ok');
 });
 
-test('migrate profile still configures @typescript-eslint for legacy compatibility', async () => {
+test('migrate profile is JS-only after package removal', async () => {
   const migrateConfig = await loadEslintConfig('migrate');
-  assert.ok(
-    migrateConfig.some(entry => entry.languageOptions?.parser && entry.plugins?.['@typescript-eslint']),
-    'legacy migrate profile must still load @typescript-eslint parser/plugin for TS/TSX compatibility'
+  assert.equal(
+    migrateConfig.some(entry => entry.languageOptions?.parser || Object.keys(entry.plugins || {}).length),
+    false,
+    'migrate profile must not configure removed TS ESLint parser/plugin packages'
   );
 });
 
-test('legacy lint remains unchanged and modern quality excludes legacy', () => {
+test('removed TS ESLint packages are absent and modern quality excludes retired legacy alias', () => {
   const pkg = packageJson();
 
-  assert.equal(pkg.scripts['lint:legacy'], 'node tools/wp_lint.js --profile migrate');
-  assert.equal(pkg.scripts['lint:js'], 'node tools/wp_lint.js --profile parser-removal-dry-run');
+  assert.equal(pkg.devDependencies[REMOVED_PARSER], undefined);
+  assert.equal(pkg.devDependencies[REMOVED_PLUGIN], undefined);
+  assert.equal(pkg.scripts.lint, 'npm run lint:modern');
   assert.equal(
-    pkg.scripts['lint:js:strict'],
-    'node tools/wp_lint.js --profile parser-removal-dry-run --strict'
+    pkg.scripts['lint:modern'],
+    'npm run lint:js:strict && npm run lint:ts-modern:syntax && npm run lint:contracts'
   );
-  assert.equal(
-    pkg.scripts['lint:parser-removal-dry-run'],
-    'node tools/wp_lint.js --profile parser-removal-dry-run'
-  );
+  assert.equal(pkg.scripts['lint:legacy'], 'node tools/wp_lint_legacy_retired.mjs');
+  assert.equal(pkg.scripts['quality:ts'], 'npm run quality:ts-modern');
   assert.match(pkg.scripts['quality:ts-modern'], /lint:js:strict/);
   assert.doesNotMatch(pkg.scripts['quality:ts-modern'], /lint:legacy/);
+  assert.doesNotMatch(pkg.scripts['lint:modern'], /lint:legacy/);
 });

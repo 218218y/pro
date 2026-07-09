@@ -6,7 +6,7 @@
  *
  * Profiles:
  *   - runtime (default): conservative, avoids churn
- *   - migrate          : highlights remaining "script-style" coupling
+ *   - migrate          : highlights remaining "script-style" coupling for JS surfaces
  *
  * Select profile via:
  *   node tools/wp_lint.js --profile migrate
@@ -14,21 +14,7 @@
 
 const PROFILE = (process.env.WP_LINT_PROFILE || 'runtime').toLowerCase();
 const MIGRATE = PROFILE === 'migrate' || PROFILE === 'esm' || PROFILE === 'module';
-const PARSER_REMOVAL_DRY_RUN = PROFILE === 'parser-removal-dry-run' || PROFILE === 'js-only';
-
-async function loadTypeScriptEslint() {
-  const [parserModule, pluginModule] = await Promise.all([
-    import('@typescript-eslint/parser'),
-    import('@typescript-eslint/eslint-plugin'),
-  ]);
-
-  return {
-    parser: parserModule.default || parserModule,
-    plugin: pluginModule.default || pluginModule,
-  };
-}
-
-const typeScriptEslint = PARSER_REMOVAL_DRY_RUN ? null : await loadTypeScriptEslint();
+// ESLint is now a JS/tools/config gate only. TS/TSX is owned by the modern split.
 
 // --- Globals ---------------------------------------------------------------
 
@@ -253,41 +239,7 @@ const APP_BAG_RESTRICTIONS = APP_BAG_PROPS.flatMap(p => [
 ]);
 
 const jsEsmFiles = (...roots) => roots.flatMap(root => [`${root}/**/*.js`, `${root}/**/*.mjs`]);
-const tsEsmFiles = (...roots) =>
-  roots.flatMap(root => [`${root}/**/*.ts`, `${root}/**/*.tsx`, `${root}/**/*.mts`]);
-const esmFiles = (...roots) =>
-  PARSER_REMOVAL_DRY_RUN ? jsEsmFiles(...roots) : [...jsEsmFiles(...roots), ...tsEsmFiles(...roots)];
-const tsSourceConfig = PARSER_REMOVAL_DRY_RUN
-  ? []
-  : [
-      {
-        files: ['esm/**/*.ts', 'esm/**/*.tsx', 'esm/**/*.mts', 'types/**/*.ts', 'types/**/*.d.ts'],
-        languageOptions: {
-          ecmaVersion: 2022,
-          sourceType: 'module',
-          parser: typeScriptEslint.parser,
-          parserOptions: {
-            ecmaVersion: 2022,
-            sourceType: 'module',
-          },
-          // Same philosophy as ESM JS: keep browser globals available, but restrict direct access in core.
-          globals: browserBuiltins,
-        },
-        plugins: {
-          '@typescript-eslint': typeScriptEslint.plugin,
-        },
-        rules: {
-          ...baseBrowserRules,
-          // In TS, `no-undef` is noisy/incorrect (TS knows libs/types). Let TS catch type errors.
-          'no-undef': 'off',
-          // Use the TS-aware unused vars rule.
-          'no-unused-vars': 'off',
-          '@typescript-eslint/no-unused-vars': unusedVarsWarn,
-          'no-restricted-globals': ['error', 'window', 'globalThis'],
-          eqeqeq: ['warn', 'smart'],
-        },
-      },
-    ];
+const esmFiles = jsEsmFiles;
 
 export default [
   {
@@ -330,10 +282,8 @@ export default [
     },
   },
 
-  // Pure ESM TypeScript source (./esm and ./types). In the parser-removal dry-run,
-  // this block is intentionally omitted so TS/TSX is covered by Oxlint/typecheck/contracts,
-  // not by @typescript-eslint/parser.
-  ...tsSourceConfig,
+  // TypeScript source is intentionally out of ESLint. TS/TSX is covered by
+  // Oxlint syntax, TypeScript typecheck, and custom contracts.
 
   // Layer import boundaries (pure ESM)
   // NOTE: We intentionally keep these simple (import path heuristics) so they work
@@ -485,11 +435,7 @@ export default [
   // Entry adapters (HTML/bootstrap): allowed to touch browser globals.
   // Keep the rest of ./esm free of direct window/document reads.
   {
-    files: PARSER_REMOVAL_DRY_RUN
-      ? ['esm/entry*.js', 'esm/entry*.mjs']
-      : ['esm/entry*.js', 'esm/entry*.mjs', 'esm/entry*.ts', 'esm/entry*.tsx', 'esm/entry*.mts'],
-    // Future TS entry points (during migration)
-    // files: ['esm/entry*.ts'] is handled by the TS block above, but we keep the exception here too.
+    files: ['esm/entry*.js', 'esm/entry*.mjs'],
     rules: {
       // Entry code may use `window`/`document`, but we still forbid `globalThis`
       // so browser-only assumptions stay explicit.

@@ -57,13 +57,6 @@ const COVERAGE_BY_RULE = new Map([
     ],
   ],
   [
-    '@typescript-eslint/no-unused-vars',
-    [
-      'covered by modern gate',
-      'Oxlint syntax now covers the TS unused-vars migration lane with legacy underscore ignore parity.',
-    ],
-  ],
-  [
     'no-restricted-globals',
     [
       'covered by modern gate',
@@ -88,11 +81,18 @@ const COVERAGE_BY_RULE = new Map([
 
 const GATES = [
   {
+    gate: 'lint modern',
+    command: 'npm run lint:modern',
+    blocker: 'yes',
+    role: 'Primary lint gate combining strict JS ESLint, Oxlint syntax, and custom contracts.',
+    status: 'blocking primary gate',
+  },
+  {
     gate: 'lint legacy',
     command: 'npm run lint:legacy',
-    blocker: 'yes',
-    role: 'Current compatibility ESLint migrate profile, including `@typescript-eslint/parser` for TS/TSX.',
-    status: 'temporary compatibility gate only; not the final Stage 5 target split',
+    blocker: 'no',
+    role: 'Retired compatibility alias; it no longer owns TS/TSX linting.',
+    status: 'retired/no-op; kept temporarily so older automation fails gracefully',
   },
   {
     gate: 'lint JS/parser-removal dry-run',
@@ -100,7 +100,7 @@ const GATES = [
     blocker: 'yes',
     role: 'ESLint profile that excludes TS/TSX and keeps JS/tools/tests/config coverage, including `no-undef`.',
     status:
-      'strict blocking dry-run with 0 JS warnings; proves TS/TSX can leave `@typescript-eslint/parser` while JS remains linted',
+      'strict blocking JS gate with 0 warnings; TS/TSX stays outside ESLint and remains covered by the modern lanes',
   },
   {
     gate: 'oxlint syntax',
@@ -167,11 +167,10 @@ export async function collectLintParityRows() {
     ];
     return {
       rule: row.rule,
-      legacy: 'covered',
+      legacy: 'retired',
       oxlintSyntax: row.futureTarget === 'replace-by-oxlint' ? 'candidate' : 'not owner',
       oxlintTypeAware: row.typeAware ? 'candidate' : 'not required today',
-      typecheck:
-        row.rule === 'no-undef' || row.rule.startsWith('@typescript-eslint/') ? 'partial' : 'not owner',
+      typecheck: row.rule === 'no-undef' ? 'partial' : 'not owner',
       customContracts: row.futureTarget === 'replace-by-custom-contract' ? 'candidate owner' : 'not owner',
       classification,
       rationale,
@@ -187,11 +186,11 @@ export async function createRawLintParityMarkdown() {
     '',
     '<!-- Tool-owned report target. Regenerate with: npm run lint:parity-report -->',
     '',
-    'Stage 6 keeps the legacy ESLint compatibility gate intact while the modern split is removal-ready: JS stays on strict ESLint, TS/TSX syntax stays on Oxlint, architecture rules stay on custom contracts, type correctness stays on TypeScript, and `wp_ast_adapter` is no longer coupled to the TypeScript AST API. TS/TSX is still not removed from `@typescript-eslint/parser` until the final package-removal step.',
+    'Stage 7 completes TS/TSX parser removal: JS/tools/tests/config stay on strict ESLint, TS/TSX syntax stays on Oxlint, architecture rules stay on custom contracts, type correctness stays on TypeScript, and `wp_ast_adapter` remains on `oxc-parser`. The modern gate is now the primary lint path.',
     '',
     '## Gate comparison',
     '',
-    '| Gate | Command | Blocking? | Role | Stage 5 status |',
+    '| Gate | Command | Blocking? | Role | Stage 7 status |',
     '| --- | --- | --- | --- | --- |',
   ];
 
@@ -241,14 +240,13 @@ export async function createRawLintParityMarkdown() {
     '',
     architectureBaselineSentence,
     '',
-    '## Stage 6 decision',
+    '## Stage 7 decision',
     '',
-    '- Do not remove `@typescript-eslint` yet.',
     '- Do not update to TypeScript 7 yet.',
-    '- `wp_ast_adapter` now uses `oxc-parser`; do not remove `@typescript-eslint` packages in this stage.',
-    '- Keep `lint:legacy` as a temporary blocking compatibility gate; the final split is `lint:js:strict` / `lint:parser-removal-dry-run`, `lint:ts-modern:syntax`, `lint:contracts`, and `typecheck:*`.',
-    '- `quality:ts-modern` is the dry-run gate bundle for that final split; it intentionally excludes `lint:legacy`.',
-    '- `lint:ts-modern:type-aware` remains audit-only with known diagnostics; it is not a Stage 6 blocker.',
+    '- The previous TS-specific ESLint parser/plugin packages are removed from package metadata and config.',
+    '- `lint:modern` is the primary lint gate: `lint:js:strict`, `lint:ts-modern:syntax`, and `lint:contracts`.',
+    '- `quality:ts-modern` is the primary TypeScript quality bundle and intentionally excludes the retired legacy alias.',
+    '- `lint:ts-modern:type-aware` remains audit-only with known diagnostics; it is not a Stage 7 blocker.',
     ''
   );
 

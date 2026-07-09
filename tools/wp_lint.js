@@ -5,7 +5,7 @@
   Why this exists:
   - Works on Windows/macOS/Linux (no `FOO=bar` env syntax in npm scripts).
   - Allows multiple lint "profiles" so we can keep day-to-day lint low-noise
-    while still having a migration lens for the upcoming ESM conversion.
+    while still keeping the JS/tools/config ESLint lane explicit.
 
   Usage:
     node tools/wp_lint.js
@@ -42,7 +42,7 @@ function getFlagValue(flag) {
 
 const profile = (getFlagValue('--profile') || 'runtime').trim();
 const normalizedProfile = profile.toLowerCase();
-const parserRemovalDryRun = normalizedProfile === 'parser-removal-dry-run' || normalizedProfile === 'js-only';
+const jsOnlyProfile = ['runtime', 'migrate', 'parser-removal-dry-run', 'js-only'].includes(normalizedProfile);
 const strict = hasFlag('--strict');
 const fix = hasFlag('--fix');
 
@@ -68,19 +68,17 @@ if (!configPath) {
 // ESLint errors if you pass a pattern that matches zero files unless you also pass
 // --no-error-on-unmatched-pattern.
 const defaultTargets = [];
-if (parserRemovalDryRun) {
-  if (fs.existsSync(path.join(ROOT, 'js'))) defaultTargets.push('js');
-  if (fs.existsSync(path.join(ROOT, 'esm'))) defaultTargets.push('esm/**/*.js', 'esm/**/*.mjs');
-  if (fs.existsSync(path.join(ROOT, 'tools'))) defaultTargets.push('tools/**/*.js');
-  if (fs.existsSync(path.join(ROOT, 'tests'))) defaultTargets.push('tests/**/*.js');
-  defaultTargets.push('*.js', '*.cjs', '*.mjs');
-} else {
-  if (fs.existsSync(path.join(ROOT, 'js'))) defaultTargets.push('js');
-  if (fs.existsSync(path.join(ROOT, 'esm'))) defaultTargets.push('esm');
-  if (fs.existsSync(path.join(ROOT, 'types'))) defaultTargets.push('types');
-  // Always lint tools and root config scripts.
-  defaultTargets.push('tools', '*.js', '*.cjs', '*.mjs');
+if (!jsOnlyProfile) {
+  console.error(`[WP Lint] Unknown profile: ${profile}`);
+  console.error('[WP Lint] Supported profiles: runtime, migrate, parser-removal-dry-run, js-only');
+  process.exit(2);
 }
+
+if (fs.existsSync(path.join(ROOT, 'js'))) defaultTargets.push('js/**/*.js');
+if (fs.existsSync(path.join(ROOT, 'esm'))) defaultTargets.push('esm/**/*.js', 'esm/**/*.mjs');
+if (fs.existsSync(path.join(ROOT, 'tools'))) defaultTargets.push('tools/**/*.js');
+if (fs.existsSync(path.join(ROOT, 'tests'))) defaultTargets.push('tests/**/*.js');
+defaultTargets.push('*.js', '*.cjs', '*.mjs');
 
 const args = [
   eslintBin,

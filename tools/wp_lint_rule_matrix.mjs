@@ -10,7 +10,7 @@ export const ROOT = path.resolve(__dirname, '..');
 
 const ESLINT_CONFIG_RELATIVE_PATH = 'eslint.config.js';
 const DEFAULT_DOC_RELATIVE_PATH = 'docs/LINT_STRATEGY_MATRIX.md';
-const PROFILES = ['runtime', 'migrate'];
+const PROFILES = ['runtime', 'migrate', 'parser-removal-dry-run'];
 
 const FUTURE_TARGET_BY_RULE = new Map([
   ['no-dupe-keys', 'replace-by-oxlint'],
@@ -20,7 +20,6 @@ const FUTURE_TARGET_BY_RULE = new Map([
   ['eqeqeq', 'replace-by-oxlint'],
   ['no-undef', 'keep-eslint'],
   ['no-unused-vars', 'replace-by-oxlint'],
-  ['@typescript-eslint/no-unused-vars', 'replace-by-oxlint'],
   ['no-restricted-globals', 'replace-by-custom-contract'],
   ['no-restricted-imports', 'replace-by-custom-contract'],
   ['no-restricted-syntax', 'replace-by-custom-contract'],
@@ -45,10 +44,6 @@ const NOTES_BY_RULE = new Map([
   [
     'no-unused-vars',
     'Oxlint syntax is configured with legacy underscore ignore behavior for args, vars, and catch bindings.',
-  ],
-  [
-    '@typescript-eslint/no-unused-vars',
-    'Only TS-aware in the AST/parser sense; not parserOptions.project type-aware. Oxlint syntax now owns the underscore-ignore parity lane.',
   ],
   [
     'no-restricted-globals',
@@ -133,7 +128,6 @@ function classifyAppliesTo(files) {
 }
 
 function classifySource(ruleName) {
-  if (ruleName.startsWith('@typescript-eslint/')) return '@typescript-eslint';
   if (ruleName === 'no-restricted-imports' || ruleName === 'no-restricted-syntax') return 'custom';
   return 'ESLint';
 }
@@ -223,7 +217,7 @@ export function createLintRuleMatrixMarkdown(rows) {
     '',
     `Generated from: \`${generatedFrom}\`.`,
     '',
-    'Stage 5 purpose: keep the existing ESLint compatibility gate intact while promoting the JS-only ESLint dry-run, Oxlint syntax, and custom lint contracts to blocking parser-removal readiness gates. This is not a TypeScript 7 upgrade, does not remove `@typescript-eslint`, and does not replace the AST adapter parser.',
+    'Stage 7 purpose: the TS/TSX ESLint parser-removal step is complete. ESLint now owns JS/tools/tests/config, while TS/TSX is covered by Oxlint syntax, TypeScript typecheck, and custom contracts. This is not a TypeScript 7 upgrade.',
     '',
     '## Rule matrix',
     '',
@@ -241,11 +235,11 @@ export function createLintRuleMatrixMarkdown(rows) {
     '',
     '## Migration policy',
     '',
-    '- `lint:legacy` remains a temporary blocking compatibility gate while `lint:js:strict` proves the future JS-only ESLint split with 0 warnings.',
+    '- `lint:modern` is the primary lint gate and combines strict JS ESLint, Oxlint syntax, and custom contracts.',
     '- `lint:ts-modern:syntax` is now a blocking Oxlint syntax gate; it must stay at 0 diagnostics before later parser-removal work.',
     '- `lint:ts-modern:type-aware` is audit-only because `oxlint-tsgolint` targets the TypeScript 7/type-aware path and the project is intentionally still on the current TypeScript lane.',
-    '- `lint:contracts` owns project-specific rules that should not depend on `@typescript-eslint/parser` long term, including the lint architecture contracts.',
-    '- Removing `@typescript-eslint/parser` from TS/TSX is blocked until `npm run lint:parser-removal-readiness`, `npm run lint:js:strict`, `npm run lint:parser-removal-dry-run`, and the parity report all stay green.',
+    '- `lint:contracts` owns project-specific rules that should not depend on ESLint parser selectors, including the lint architecture contracts.',
+    '- TS/TSX parser removal is complete; `lint:parser-removal-readiness` remains as a regression check for the split.',
     ''
   );
 

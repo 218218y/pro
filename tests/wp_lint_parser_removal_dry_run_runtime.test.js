@@ -44,7 +44,7 @@ function hasTsOrTsxPattern(pattern) {
   return /\*\.tsx?\b|\*\.mts\b|types\/\*\*\/\*\.d\.ts/.test(String(pattern));
 }
 
-test('parser-removal dry-run profile is exposed through npm scripts without changing legacy lint', () => {
+test('parser-removal profile is exposed while lint uses modern as the primary lane', () => {
   const pkg = packageJson();
 
   assert.equal(
@@ -56,31 +56,30 @@ test('parser-removal dry-run profile is exposed through npm scripts without chan
     pkg.scripts['lint:js:strict'],
     'node tools/wp_lint.js --profile parser-removal-dry-run --strict'
   );
-  assert.equal(pkg.scripts['lint:legacy'], 'node tools/wp_lint.js --profile migrate');
+  assert.equal(pkg.scripts.lint, 'npm run lint:modern');
+  assert.equal(pkg.scripts['lint:legacy'], 'node tools/wp_lint_legacy_retired.mjs');
   assert.match(pkg.scripts['quality:ts-modern'], /lint:js:strict/);
   assert.match(pkg.scripts['quality:ts-modern'], /lint:ts-modern:syntax/);
   assert.match(pkg.scripts['quality:ts-modern'], /lint:contracts/);
   assert.doesNotMatch(pkg.scripts['quality:ts-modern'], /lint:legacy/);
 });
 
-test('parser-removal dry-run omits @typescript-eslint parser for TS and TSX files', async () => {
+test('ESLint profiles omit TS and TSX files and custom parsers', async () => {
   const dryRunConfig = await loadEslintConfig('parser-removal-dry-run');
-  const legacyConfig = await loadEslintConfig('migrate');
+  const migrateConfig = await loadEslintConfig('migrate');
 
-  assert.ok(
-    legacyConfig.some(entry => entry.languageOptions?.parser && entry.plugins?.['@typescript-eslint']),
-    'legacy migrate profile must still keep @typescript-eslint coverage'
-  );
-  assert.equal(
-    dryRunConfig.some(entry => entry.languageOptions?.parser || entry.plugins?.['@typescript-eslint']),
-    false,
-    'dry-run profile must not configure @typescript-eslint parser/plugin for any matched file'
-  );
-  assert.equal(
-    allConfiguredFiles(dryRunConfig).some(hasTsOrTsxPattern),
-    false,
-    'dry-run profile must not target TS/TSX/MTS/d.ts files through ESLint'
-  );
+  for (const config of [dryRunConfig, migrateConfig]) {
+    assert.equal(
+      config.some(entry => entry.languageOptions?.parser || Object.keys(entry.plugins || {}).length),
+      false,
+      'ESLint profiles must not configure custom TS parsers/plugins after package removal'
+    );
+    assert.equal(
+      allConfiguredFiles(config).some(hasTsOrTsxPattern),
+      false,
+      'ESLint profiles must not target TS/TSX/MTS/d.ts files'
+    );
+  }
 });
 
 test('parser-removal dry-run keeps JS tools, tests, and config files under ESLint no-undef', async () => {
@@ -102,18 +101,11 @@ test('parser-removal dry-run keeps JS tools, tests, and config files under ESLin
   assert.equal(cjsEntry.languageOptions.sourceType, 'script');
 });
 
-test('wp_lint parser-removal dry-run defaults exclude TS/TSX target directories', () => {
+test('wp_lint defaults target JS-only surfaces for every ESLint profile', () => {
   const runner = read('tools/wp_lint.js');
 
-  assert.match(runner, /parserRemovalDryRun/);
+  assert.match(runner, /jsOnlyProfile/);
   assert.match(runner, /esm\/\*\*\/\*\.js/);
   assert.match(runner, /tests\/\*\*\/\*\.js/);
-  assert.doesNotMatch(
-    runner.slice(
-      runner.indexOf('if (parserRemovalDryRun)'),
-      runner.indexOf('} else {', runner.indexOf('if (parserRemovalDryRun)'))
-    ),
-    /types|\*\.ts|\*\.tsx/,
-    'dry-run default targets should not include TS/TSX/types paths'
-  );
+  assert.doesNotMatch(runner, /types\/|esm'\)\) defaultTargets\.push\('esm'\)|\*\.ts|\*\.tsx/);
 });

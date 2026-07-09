@@ -35,7 +35,7 @@ test('parser removal readiness has a concrete owner for every lint matrix rule',
   }
 
   assert.equal(readinessByRule.get('no-restricted-imports').futureOwner, 'custom lint contracts');
-  assert.equal(readinessByRule.get('@typescript-eslint/no-unused-vars').futureOwner, 'Oxlint syntax');
+  assert.equal(readinessByRule.get('no-unused-vars').futureOwner, 'Oxlint syntax');
 });
 
 test('parser removal readiness blocks undecided manual-review targets', async () => {
@@ -101,6 +101,11 @@ test('parser removal readiness is wired into lint contracts and toolchain surfac
   assert.equal(
     pkg.scripts['lint:parser-removal-readiness'],
     'node tools/wp_lint_parser_removal_readiness.mjs'
+  );
+  assert.equal(pkg.scripts.lint, 'npm run lint:modern');
+  assert.equal(
+    pkg.scripts['lint:modern'],
+    'npm run lint:js:strict && npm run lint:ts-modern:syntax && npm run lint:contracts'
   );
   assert.equal(pkg.scripts['lint:js'], 'node tools/wp_lint.js --profile parser-removal-dry-run');
   assert.equal(

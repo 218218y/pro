@@ -12,7 +12,6 @@ function read(rel) {
 }
 
 const EXPECTED_RULES = [
-  '@typescript-eslint/no-unused-vars',
   'eqeqeq',
   'no-const-assign',
   'no-dupe-keys',
@@ -33,17 +32,14 @@ test('lint rule matrix captures every configured ESLint rule with stage-5 owners
   );
 
   for (const row of rows) {
-    assert.ok(['ESLint', '@typescript-eslint', 'custom'].includes(row.source), row.rule);
+    assert.ok(['ESLint', 'custom'].includes(row.source), row.rule);
     assert.ok(row.appliesTo.length > 0, row.rule);
     assert.ok(row.futureTarget, row.rule);
     assert.equal(row.typeAware, false, `${row.rule} must not pretend to be parserOptions.project type-aware`);
     assert.ok(row.notes.length > 20, row.rule);
   }
 
-  assert.equal(
-    rows.find(row => row.rule === '@typescript-eslint/no-unused-vars').futureTarget,
-    'replace-by-oxlint'
-  );
+  assert.equal(rows.find(row => row.rule === 'no-unused-vars').futureTarget, 'replace-by-oxlint');
   assert.equal(
     rows.find(row => row.rule === 'no-restricted-syntax').futureTarget,
     'replace-by-custom-contract'
@@ -56,13 +52,17 @@ test('lint strategy matrix document is generated from the live eslint config', a
   assert.equal(read('docs/LINT_STRATEGY_MATRIX.md'), expected);
 });
 
-test('package keeps legacy lint as blocker while adding separated modern audit lanes', () => {
+test('package promotes modern lint while keeping retired legacy alias', () => {
   const pkg = JSON.parse(read('package.json'));
   assert.equal(pkg.devDependencies.typescript, '6.0.3');
   assert.equal(pkg.devDependencies.oxlint, '1.73.0');
   assert.equal(pkg.devDependencies['oxlint-tsgolint'], '0.24.0');
-  assert.equal(pkg.scripts.lint, 'npm run lint:legacy');
-  assert.equal(pkg.scripts['lint:legacy'], 'node tools/wp_lint.js --profile migrate');
+  assert.equal(pkg.scripts.lint, 'npm run lint:modern');
+  assert.equal(
+    pkg.scripts['lint:modern'],
+    'npm run lint:js:strict && npm run lint:ts-modern:syntax && npm run lint:contracts'
+  );
+  assert.equal(pkg.scripts['lint:legacy'], 'node tools/wp_lint_legacy_retired.mjs');
   assert.equal(pkg.scripts['lint:js'], 'node tools/wp_lint.js --profile parser-removal-dry-run');
   assert.equal(
     pkg.scripts['lint:js:strict'],
@@ -78,9 +78,7 @@ test('package keeps legacy lint as blocker while adding separated modern audit l
   );
   assert.equal(pkg.scripts['lint:ts-modern:type-aware'], 'node tools/wp_oxlint_audit.mjs --mode type-aware');
   assert.equal(pkg.scripts['lint:architecture-contracts'], 'node tools/wp_lint_architecture_contracts.mjs');
-  assert.match(pkg.scripts['quality:ts'], /lint:legacy/);
-  assert.match(pkg.scripts['quality:ts'], /lint:ts-modern:syntax/);
-  assert.match(pkg.scripts['quality:ts'], /typecheck:runtime/);
+  assert.equal(pkg.scripts['quality:ts'], 'npm run quality:ts-modern');
   assert.match(pkg.scripts['quality:ts-modern'], /lint:js:strict/);
   assert.match(pkg.scripts['quality:ts-modern'], /lint:contracts/);
   assert.doesNotMatch(pkg.scripts['quality:ts-modern'], /lint:legacy/);
