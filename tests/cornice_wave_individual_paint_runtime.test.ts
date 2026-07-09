@@ -2,12 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 import type { IndividualColorsMap } from '../types/maps.ts';
-
-const loaderModulePath = ['./', '_ts', '_runtime_module_loader.mjs'].join('');
-const { loadTsRuntimeModule } = (await import(loaderModulePath)) as {
-  loadTsRuntimeModule: (file: string, options?: Record<string, unknown>) => Record<string, unknown>;
-};
 
 const { makeMaterialResolver } = loadTsRuntimeModule(
   path.join(process.cwd(), 'esm/native/builder/material_resolver.ts')

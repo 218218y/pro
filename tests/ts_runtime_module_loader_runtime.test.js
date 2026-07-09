@@ -187,6 +187,10 @@ test('runtime tests do not reintroduce per-test TS VM loaders', () => {
     ['Module', 'Kind'].join(''),
     ['Script', 'Target'].join(''),
     ['vm', 'runInNewContext'].join('.'),
+    ['require', "('typescript')"].join(''),
+    ['require', '("typescript")'].join(''),
+    ['from ', "'typescript'"].join(''),
+    ['from ', '"typescript"'].join(''),
   ];
   const failures = [];
 
