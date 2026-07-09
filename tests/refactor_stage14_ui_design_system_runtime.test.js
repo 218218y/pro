@@ -40,6 +40,7 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
     'esm/native/ui/react/tabs/interior_layout_sketch_box_controls_section.tsx'
   );
   const structureBodyBaseSection = read('esm/native/ui/react/tabs/structure_tab_body_section_base.tsx');
+  const savedModelsSections = read('esm/native/ui/react/tabs/structure_tab_saved_models_view_sections.tsx');
 
   assert.match(colorSwatch, /children\?: ReactNode/);
   assert.match(colorSwatch, /special\?: boolean/);
@@ -212,5 +213,29 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   assert.doesNotMatch(
     structureBodyBaseSection,
     /className="btn btn-light btn-inline wp-r-groove-reset-btn wp-r-sketch-drawer-height-reset-btn"/
+  );
+
+  assert.match(savedModelsSections, /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/);
+  assert.match(
+    savedModelsSections,
+    /export function SavedModelsPrimaryActions[\s\S]*<Button[\s\S]*id="btnSaveModel"[\s\S]*variant="save"[\s\S]*className="wp-r-savedmodels-btn"[\s\S]*onClick=\{props\.saveCurrent\}/
+  );
+  assert.match(
+    savedModelsSections,
+    /export function SavedModelsPrimaryActions[\s\S]*<Button[\s\S]*id="btnDeleteModel"[\s\S]*variant="delete"[\s\S]*className="wp-r-savedmodels-btn"[\s\S]*onClick=\{props\.deleteSelected\}/
+  );
+  assert.match(
+    savedModelsSections,
+    /export function SavedModelsPrimaryActions[\s\S]*<Button[\s\S]*id="btnMoveModelUp"[\s\S]*variant="accent"[\s\S]*className="wp-r-savedmodels-arrow wp-r-styled-tooltip hint-bottom"[\s\S]*onClick=\{\(\) => props\.moveSelected\('up'\)\}[\s\S]*data-tooltip=[\s\S]*aria-label=[\s\S]*aria-disabled=\{false\}[\s\S]*fas fa-arrow-up/
+  );
+  assert.match(
+    savedModelsSections,
+    /export function SavedModelsPrimaryActions[\s\S]*<Button[\s\S]*id="btnMoveModelDown"[\s\S]*variant="accent"[\s\S]*className="wp-r-savedmodels-arrow wp-r-styled-tooltip hint-bottom"[\s\S]*onClick=\{\(\) => props\.moveSelected\('down'\)\}[\s\S]*data-tooltip=[\s\S]*aria-label=[\s\S]*aria-disabled=\{false\}[\s\S]*fas fa-arrow-down/
+  );
+  assert.doesNotMatch(savedModelsSections, /className="btn btn-save wp-r-savedmodels-btn"/);
+  assert.doesNotMatch(savedModelsSections, /className="btn btn-delete wp-r-savedmodels-btn"/);
+  assert.doesNotMatch(
+    savedModelsSections,
+    /className="btn btn-accent wp-r-savedmodels-arrow wp-r-styled-tooltip hint-bottom"/
   );
 });

@@ -1,5 +1,6 @@
 import type { DragEvent, ReactElement, ReactNode } from 'react';
 
+import { Button } from '../components/index.js';
 import { StructureTabSavedModelsList } from './structure_tab_saved_models_list.js';
 import type { StructureTabSavedModelsViewProps } from './structure_tab_saved_models_view_contracts.js';
 import { SAVED_MODELS_HEADER_TITLE_STYLE } from './structure_tab_saved_models_view_contracts.js';
@@ -58,47 +59,42 @@ export function SavedModelsPrimaryActions(
 ): ReactElement {
   return (
     <div className="wp-r-savedmodels-grid">
-      <button
-        id="btnSaveModel"
-        type="button"
-        className="btn btn-save wp-r-savedmodels-btn"
-        onClick={props.saveCurrent}
-      >
+      <Button id="btnSaveModel" variant="save" className="wp-r-savedmodels-btn" onClick={props.saveCurrent}>
         שמור דגם
-      </button>
+      </Button>
 
-      <button
+      <Button
         id="btnDeleteModel"
-        type="button"
-        className="btn btn-delete wp-r-savedmodels-btn"
+        variant="delete"
+        className="wp-r-savedmodels-btn"
         onClick={props.deleteSelected}
       >
         מחק
-      </button>
+      </Button>
 
       <div className="wp-r-savedmodels-arrows">
-        <button
+        <Button
           id="btnMoveModelUp"
-          type="button"
-          className="btn btn-accent wp-r-savedmodels-arrow wp-r-styled-tooltip hint-bottom"
+          variant="accent"
+          className="wp-r-savedmodels-arrow wp-r-styled-tooltip hint-bottom"
           onClick={() => props.moveSelected('up')}
           data-tooltip="הזז למעלה"
           aria-label="הזז דגם למעלה"
           aria-disabled={false}
         >
           <i className="fas fa-arrow-up" />
-        </button>
-        <button
+        </Button>
+        <Button
           id="btnMoveModelDown"
-          type="button"
-          className="btn btn-accent wp-r-savedmodels-arrow wp-r-styled-tooltip hint-bottom"
+          variant="accent"
+          className="wp-r-savedmodels-arrow wp-r-styled-tooltip hint-bottom"
           onClick={() => props.moveSelected('down')}
           data-tooltip="הזז למטה"
           aria-label="הזז דגם למטה"
           aria-disabled={false}
         >
           <i className="fas fa-arrow-down" />
-        </button>
+        </Button>
       </div>
     </div>
   );

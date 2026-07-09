@@ -258,6 +258,39 @@ forbidPattern(
 );
 
 requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_view_sections.tsx',
+  /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_view_sections.tsx',
+  /export function SavedModelsPrimaryActions[\s\S]*<Button[\s\S]*id="btnSaveModel"[\s\S]*variant="save"[\s\S]*className="wp-r-savedmodels-btn"[\s\S]*onClick=\{props\.saveCurrent\}/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_view_sections.tsx',
+  /export function SavedModelsPrimaryActions[\s\S]*<Button[\s\S]*id="btnDeleteModel"[\s\S]*variant="delete"[\s\S]*className="wp-r-savedmodels-btn"[\s\S]*onClick=\{props\.deleteSelected\}/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_view_sections.tsx',
+  /export function SavedModelsPrimaryActions[\s\S]*<Button[\s\S]*id="btnMoveModelUp"[\s\S]*variant="accent"[\s\S]*className="wp-r-savedmodels-arrow wp-r-styled-tooltip hint-bottom"[\s\S]*onClick=\{\(\) => props\.moveSelected\('up'\)\}[\s\S]*data-tooltip=[\s\S]*aria-label=[\s\S]*aria-disabled=\{false\}[\s\S]*fas fa-arrow-up/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_view_sections.tsx',
+  /export function SavedModelsPrimaryActions[\s\S]*<Button[\s\S]*id="btnMoveModelDown"[\s\S]*variant="accent"[\s\S]*className="wp-r-savedmodels-arrow wp-r-styled-tooltip hint-bottom"[\s\S]*onClick=\{\(\) => props\.moveSelected\('down'\)\}[\s\S]*data-tooltip=[\s\S]*aria-label=[\s\S]*aria-disabled=\{false\}[\s\S]*fas fa-arrow-down/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_view_sections.tsx',
+  /className="btn btn-save wp-r-savedmodels-btn"/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_view_sections.tsx',
+  /className="btn btn-delete wp-r-savedmodels-btn"/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_view_sections.tsx',
+  /className="btn btn-accent wp-r-savedmodels-arrow wp-r-styled-tooltip hint-bottom"/
+);
+
+requirePattern(
   'esm/native/ui/react/panels/SettingsBackupPanel.tsx',
   /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
 );
