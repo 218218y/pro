@@ -1,6 +1,4 @@
-import type { ButtonHTMLAttributes, FocusEvent, MouseEvent, ReactElement, ReactNode } from 'react';
-
-import { clampStyledTooltipToViewport, resetStyledTooltipViewportClamp } from './TooltipPlacement.js';
+import type { ButtonHTMLAttributes, ReactElement, ReactNode } from 'react';
 
 export type OptionButtonDensity = 'regular' | 'compact' | 'micro';
 export type OptionButtonLayout = 'default' | 'iconRow';
@@ -36,10 +34,6 @@ export function OptionButton(props: OptionButtonProps): ReactElement {
     className,
     onClick,
     title,
-    onMouseEnter,
-    onMouseLeave,
-    onFocus,
-    onBlur,
     preventDefault = false,
     stopPropagation = false,
     testId,
@@ -54,22 +48,6 @@ export function OptionButton(props: OptionButtonProps): ReactElement {
       data-testid={testId}
       aria-pressed={selected}
       data-tooltip={tooltip}
-      onMouseEnter={(event: MouseEvent<HTMLButtonElement>) => {
-        onMouseEnter?.(event);
-        clampStyledTooltipToViewport(event.currentTarget, tooltip);
-      }}
-      onMouseLeave={(event: MouseEvent<HTMLButtonElement>) => {
-        onMouseLeave?.(event);
-        resetStyledTooltipViewportClamp(event.currentTarget);
-      }}
-      onFocus={(event: FocusEvent<HTMLButtonElement>) => {
-        onFocus?.(event);
-        clampStyledTooltipToViewport(event.currentTarget, tooltip);
-      }}
-      onBlur={(event: FocusEvent<HTMLButtonElement>) => {
-        onBlur?.(event);
-        resetStyledTooltipViewportClamp(event.currentTarget);
-      }}
       className={cx(
         'type-option',
         'wp-r-option-button',

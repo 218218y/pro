@@ -94,11 +94,11 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   );
   assert.match(
     undoRedoControls,
-    /<IconButton[\s\S]*variant="camera"[\s\S]*className="hint-bottom"[\s\S]*data-tooltip="[^"]*Ctrl\+Z\)"[\s\S]*disabled=\{!status\.canUndo\}[\s\S]*event\.preventDefault\(\);[\s\S]*undo\(\);[\s\S]*fas fa-undo/
+    /<IconButton[\s\S]*variant="camera"[\s\S]*className="wp-r-styled-tooltip hint-bottom"[\s\S]*data-tooltip="[^"]*Ctrl\+Z\)"[\s\S]*disabled=\{!status\.canUndo\}[\s\S]*event\.preventDefault\(\);[\s\S]*undo\(\);[\s\S]*fas fa-undo/
   );
   assert.match(
     undoRedoControls,
-    /<IconButton[\s\S]*variant="camera"[\s\S]*className="hint-bottom"[\s\S]*data-tooltip="[^"]*Ctrl\+Y\)"[\s\S]*disabled=\{!status\.canRedo\}[\s\S]*event\.preventDefault\(\);[\s\S]*redo\(\);[\s\S]*fas fa-redo/
+    /<IconButton[\s\S]*variant="camera"[\s\S]*className="wp-r-styled-tooltip hint-bottom"[\s\S]*data-tooltip="[^"]*Ctrl\+Y\)"[\s\S]*disabled=\{!status\.canRedo\}[\s\S]*event\.preventDefault\(\);[\s\S]*redo\(\);[\s\S]*fas fa-redo/
   );
   assert.doesNotMatch(undoRedoControls, /className="cam-btn hint-bottom"/);
   const cameraControls = readBetween(
@@ -151,12 +151,12 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   assert.match(quickActionsDock, /import \{ IconButton \} from '\.\/components\/IconButton\.js';/);
   assert.match(
     quickActionsDock,
-    /<IconButton[\s\S]*ref=\{toggleRef\}[\s\S]*variant="camera"[\s\S]*className="wp-qa-toggle hint-bottom"[\s\S]*data-testid="quick-actions-toggle-button"[\s\S]*data-tooltip=\{menuOpen \?[\s\S]*aria-label=\{menuOpen \?[\s\S]*quickActionsController\.toggleMenu\(\{[\s\S]*event,[\s\S]*op: 'quick-actions:toggle-menu',[\s\S]*setMenuOpen,[\s\S]*fas fa-times[\s\S]*fas fa-arrow-right/
+    /<IconButton[\s\S]*ref=\{toggleRef\}[\s\S]*variant="camera"[\s\S]*className="wp-qa-toggle wp-r-styled-tooltip hint-bottom"[\s\S]*data-testid="quick-actions-toggle-button"[\s\S]*data-tooltip=\{menuOpen \?[\s\S]*aria-label=\{menuOpen \?[\s\S]*quickActionsController\.toggleMenu\(\{[\s\S]*event,[\s\S]*op: 'quick-actions:toggle-menu',[\s\S]*setMenuOpen,[\s\S]*fas fa-times[\s\S]*fas fa-arrow-right/
   );
   assert.doesNotMatch(quickActionsDock, /className="cam-btn wp-qa-toggle hint-bottom"/);
   assert.match(
     quickActionsDock,
-    /function QuickActionExportButton\(\{[\s\S]*className="wp-qa-btn"[\s\S]*data-tooltip-title=\{tooltip\.title\}[\s\S]*data-tooltip-detail=\{tooltip\.detail\}[\s\S]*aria-label=\{formatQuickActionExportTooltipLabel\(tooltip\)\}[\s\S]*keepOpen: keepOpenRef\.current[\s\S]*<QuickActionExportTooltipView tooltip=\{tooltip\} \/>/
+    /function QuickActionExportButton\(\{[\s\S]*className="wp-qa-btn wp-r-styled-tooltip"[\s\S]*data-tooltip-title=\{tooltip\.title\}[\s\S]*data-tooltip-detail=\{tooltip\.detail\}[\s\S]*aria-label=\{formatQuickActionExportTooltipLabel\(tooltip\)\}[\s\S]*keepOpen: keepOpenRef\.current[\s\S]*<i className=\{iconClassName\} \/>/
   );
   assert.match(
     quickActionsDock,

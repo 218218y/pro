@@ -1,11 +1,19 @@
 const TOOLTIP_VIEWPORT_GUTTER_PX = 8;
 const TOOLTIP_MAX_WIDTH_PX = 320;
-const TOOLTIP_SHIFT_VAR = '--wp-r-tooltip-shift-x';
-const TOOLTIP_SHIFT_ZERO = '0px';
 const TOOLTIP_PORTAL_ATTR = 'data-wp-r-tooltip-portal';
 const TOOLTIP_ARROW_ATTR = 'data-wp-r-tooltip-arrow';
 const TOOLTIP_TEXT_ATTR = 'data-tooltip';
-const TOOLTIP_TARGET_SELECTOR = `.wp-r-styled-tooltip.hint-bottom[${TOOLTIP_TEXT_ATTR}]`;
+const TOOLTIP_TITLE_ATTR = 'data-tooltip-title';
+const TOOLTIP_DETAIL_ATTR = 'data-tooltip-detail';
+const TOOLTIP_PLACEMENT_ATTR = 'data-tooltip-placement';
+const TOOLTIP_TARGET_SELECTOR = [
+  `.wp-r-styled-tooltip[${TOOLTIP_TEXT_ATTR}]`,
+  `.wp-r-styled-tooltip[${TOOLTIP_TITLE_ATTR}]`,
+  `.hint-bottom[${TOOLTIP_TEXT_ATTR}]`,
+  `.cam-btn[${TOOLTIP_TEXT_ATTR}]`,
+  `.wp-pdf-ui-hint[${TOOLTIP_TEXT_ATTR}]`,
+  `.wp-qa-btn[${TOOLTIP_TITLE_ATTR}]`,
+].join(',');
 const TOOLTIP_PORTAL_OFFSET_PX = 10;
 const TOOLTIP_ARROW_SIZE_PX = 6;
 const TOOLTIP_ARROW_GUTTER_PX = 14;
@@ -13,14 +21,31 @@ const TOOLTIP_POSITION_VAR_X = '--wp-r-tooltip-left';
 const TOOLTIP_POSITION_VAR_Y = '--wp-r-tooltip-top';
 const TOOLTIP_ARROW_POSITION_VAR_X = '--wp-r-tooltip-arrow-left';
 const TOOLTIP_ARROW_POSITION_VAR_Y = '--wp-r-tooltip-arrow-top';
-const TOOLTIP_SHIFT_VAR_VALUE = `var(${TOOLTIP_SHIFT_VAR})`;
 const TOOLTIP_OPEN_CLASS = 'is-open';
 const TOOLTIP_ABOVE_CLASS = 'is-above';
 const TOOLTIP_BELOW_CLASS = 'is-below';
+const TOOLTIP_SIDE_LEFT_CLASS = 'is-side-left';
+const TOOLTIP_SIDE_RIGHT_CLASS = 'is-side-right';
+
+const TOOLTIP_PLACEMENT_CLASSES = [
+  TOOLTIP_ABOVE_CLASS,
+  TOOLTIP_BELOW_CLASS,
+  TOOLTIP_SIDE_LEFT_CLASS,
+  TOOLTIP_SIDE_RIGHT_CLASS,
+] as const;
+
+type TooltipPlacement = 'above' | 'below' | 'side-left' | 'side-right';
 
 type TooltipHost = {
   tooltip: HTMLElement;
   arrow: HTMLElement;
+};
+
+type TooltipCandidate = {
+  placement: TooltipPlacement;
+  left: number;
+  top: number;
+  hasRoom: boolean;
 };
 
 let tooltipMeasureEl: HTMLElement | null = null;
@@ -38,9 +63,18 @@ function readViewportHeight(doc: Document, win: Window): number {
   return Math.max(0, doc.documentElement.clientHeight || win.innerHeight || 0);
 }
 
-function readTooltipText(value: string | null | undefined): string | undefined {
-  const text = String(value || '').trim();
+function readTooltipAttr(target: HTMLElement | null | undefined, attr: string): string | undefined {
+  const text = String(target?.getAttribute(attr) || '').trim();
   return text || undefined;
+}
+
+function readTooltipText(target: HTMLElement | null | undefined): string | undefined {
+  const text = readTooltipAttr(target, TOOLTIP_TEXT_ATTR);
+  if (text) return text;
+
+  const title = readTooltipAttr(target, TOOLTIP_TITLE_ATTR);
+  const detail = readTooltipAttr(target, TOOLTIP_DETAIL_ATTR);
+  return [title, detail].filter(Boolean).join('\n') || undefined;
 }
 
 function getTooltipMeasureEl(doc: Document): HTMLElement {
@@ -58,7 +92,7 @@ function getTooltipMeasureEl(doc: Document): HTMLElement {
   el.style.display = 'inline-block';
   el.style.width = 'max-content';
   el.style.maxWidth = `${TOOLTIP_MAX_WIDTH_PX}px`;
-  el.style.whiteSpace = 'normal';
+  el.style.whiteSpace = 'pre-line';
   el.style.overflowWrap = 'break-word';
   el.style.direction = 'rtl';
   el.style.textAlign = 'center';
@@ -109,11 +143,17 @@ function getOrCreateTooltipHost(doc: Document): TooltipHost | null {
   return { tooltip, arrow };
 }
 
+function removeTooltipPlacementClasses(el: HTMLElement | null | undefined): void {
+  el?.classList.remove(...TOOLTIP_PLACEMENT_CLASSES);
+}
+
 function hideTooltipHost(doc: Document): void {
   const tooltip = doc.querySelector<HTMLElement>(`[${TOOLTIP_PORTAL_ATTR}="true"]`);
   const arrow = doc.querySelector<HTMLElement>(`[${TOOLTIP_ARROW_ATTR}="true"]`);
-  tooltip?.classList.remove(TOOLTIP_OPEN_CLASS, TOOLTIP_ABOVE_CLASS, TOOLTIP_BELOW_CLASS);
-  arrow?.classList.remove(TOOLTIP_OPEN_CLASS, TOOLTIP_ABOVE_CLASS, TOOLTIP_BELOW_CLASS);
+  tooltip?.classList.remove(TOOLTIP_OPEN_CLASS);
+  arrow?.classList.remove(TOOLTIP_OPEN_CLASS);
+  removeTooltipPlacementClasses(tooltip);
+  removeTooltipPlacementClasses(arrow);
   tooltip?.setAttribute('aria-hidden', 'true');
   tooltip?.removeAttribute('data-placement');
   arrow?.removeAttribute('data-placement');
@@ -151,6 +191,130 @@ function isTooltipTargetConnected(target: HTMLElement | null): target is HTMLEle
   return !!target && target.isConnected && target.matches(TOOLTIP_TARGET_SELECTOR);
 }
 
+function normalizePlacement(value: string | null | undefined): TooltipPlacement | null {
+  switch (value) {
+    case 'above':
+    case 'below':
+    case 'side-left':
+    case 'side-right':
+      return value;
+    default:
+      return null;
+  }
+}
+
+function resolvePreferredPlacement(target: HTMLElement): TooltipPlacement {
+  const explicit = normalizePlacement(target.getAttribute(TOOLTIP_PLACEMENT_ATTR));
+  if (explicit) return explicit;
+
+  if (target.classList.contains('wp-pdf-ui-hint--side-left')) return 'side-left';
+  if (target.classList.contains('wp-pdf-ui-hint--side-right')) return 'side-right';
+  if (target.classList.contains('wp-pdf-ui-hint--above')) return 'above';
+  if (target.classList.contains('wp-r-tooltip-above')) return 'above';
+  if (target.classList.contains('cam-btn') && !target.classList.contains('hint-bottom')) return 'above';
+  return 'below';
+}
+
+function buildPlacementOrder(preferredPlacement: TooltipPlacement): TooltipPlacement[] {
+  switch (preferredPlacement) {
+    case 'above':
+      return ['above', 'below', 'side-left', 'side-right'];
+    case 'side-left':
+      return ['side-left', 'side-right', 'above', 'below'];
+    case 'side-right':
+      return ['side-right', 'side-left', 'above', 'below'];
+    case 'below':
+    default:
+      return ['below', 'above', 'side-left', 'side-right'];
+  }
+}
+
+function getTooltipCandidate(
+  placement: TooltipPlacement,
+  targetRect: DOMRect,
+  tooltipWidth: number,
+  tooltipHeight: number,
+  viewportWidth: number,
+  viewportHeight: number
+): TooltipCandidate {
+  const targetCenterX = targetRect.left + targetRect.width / 2;
+  const targetCenterY = targetRect.top + targetRect.height / 2;
+
+  switch (placement) {
+    case 'above': {
+      const left = targetCenterX - tooltipWidth / 2;
+      const top = targetRect.top - tooltipHeight - TOOLTIP_PORTAL_OFFSET_PX;
+      return {
+        placement,
+        left,
+        top,
+        hasRoom: top >= TOOLTIP_VIEWPORT_GUTTER_PX,
+      };
+    }
+    case 'side-left': {
+      const left = targetRect.left - tooltipWidth - TOOLTIP_PORTAL_OFFSET_PX;
+      const top = targetCenterY - tooltipHeight / 2;
+      return {
+        placement,
+        left,
+        top,
+        hasRoom: left >= TOOLTIP_VIEWPORT_GUTTER_PX,
+      };
+    }
+    case 'side-right': {
+      const left = targetRect.right + TOOLTIP_PORTAL_OFFSET_PX;
+      const top = targetCenterY - tooltipHeight / 2;
+      return {
+        placement,
+        left,
+        top,
+        hasRoom: left + tooltipWidth <= viewportWidth - TOOLTIP_VIEWPORT_GUTTER_PX,
+      };
+    }
+    case 'below':
+    default: {
+      const left = targetCenterX - tooltipWidth / 2;
+      const top = targetRect.bottom + TOOLTIP_PORTAL_OFFSET_PX;
+      return {
+        placement: 'below',
+        left,
+        top,
+        hasRoom: top + tooltipHeight <= viewportHeight - TOOLTIP_VIEWPORT_GUTTER_PX,
+      };
+    }
+  }
+}
+
+function resolveTooltipCandidate(
+  target: HTMLElement,
+  targetRect: DOMRect,
+  tooltipWidth: number,
+  tooltipHeight: number,
+  viewportWidth: number,
+  viewportHeight: number
+): TooltipCandidate {
+  const placements = buildPlacementOrder(resolvePreferredPlacement(target));
+  const candidates = placements.map(placement =>
+    getTooltipCandidate(placement, targetRect, tooltipWidth, tooltipHeight, viewportWidth, viewportHeight)
+  );
+
+  return candidates.find(candidate => candidate.hasRoom) || candidates[0];
+}
+
+function tooltipPlacementClass(placement: TooltipPlacement): string {
+  switch (placement) {
+    case 'above':
+      return TOOLTIP_ABOVE_CLASS;
+    case 'side-left':
+      return TOOLTIP_SIDE_LEFT_CLASS;
+    case 'side-right':
+      return TOOLTIP_SIDE_RIGHT_CLASS;
+    case 'below':
+    default:
+      return TOOLTIP_BELOW_CLASS;
+  }
+}
+
 function positionTooltipHost(doc: Document, target: HTMLElement, text: string): void {
   const win = doc.defaultView;
   const host = getOrCreateTooltipHost(doc);
@@ -168,7 +332,8 @@ function positionTooltipHost(doc: Document, target: HTMLElement, text: string): 
   host.tooltip.style.maxWidth = `${maxWidth}px`;
   host.tooltip.style.width = 'max-content';
   host.tooltip.classList.add(TOOLTIP_OPEN_CLASS);
-  host.tooltip.classList.remove(TOOLTIP_ABOVE_CLASS, TOOLTIP_BELOW_CLASS);
+  removeTooltipPlacementClasses(host.tooltip);
+  removeTooltipPlacementClasses(host.arrow);
   host.tooltip.setAttribute('aria-hidden', 'false');
 
   const tooltipRect = host.tooltip.getBoundingClientRect();
@@ -177,95 +342,67 @@ function positionTooltipHost(doc: Document, target: HTMLElement, text: string): 
     maxWidth
   );
   const tooltipHeight = Math.ceil(tooltipRect.height || 0);
-  const desiredLeft = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
+  const candidate = resolveTooltipCandidate(
+    target,
+    targetRect,
+    tooltipWidth,
+    tooltipHeight,
+    viewportWidth,
+    viewportHeight
+  );
+
   const maxLeft = Math.max(
     TOOLTIP_VIEWPORT_GUTTER_PX,
     viewportWidth - TOOLTIP_VIEWPORT_GUTTER_PX - tooltipWidth
   );
-  const left = clamp(desiredLeft, TOOLTIP_VIEWPORT_GUTTER_PX, maxLeft);
-
-  const belowTop = targetRect.bottom + TOOLTIP_PORTAL_OFFSET_PX;
-  const aboveTop = targetRect.top - tooltipHeight - TOOLTIP_PORTAL_OFFSET_PX;
-  const hasRoomBelow = belowTop + tooltipHeight <= viewportHeight - TOOLTIP_VIEWPORT_GUTTER_PX;
-  const hasRoomAbove = aboveTop >= TOOLTIP_VIEWPORT_GUTTER_PX;
-  const placement = hasRoomBelow || !hasRoomAbove ? 'below' : 'above';
-  const rawTop = placement === 'below' ? belowTop : aboveTop;
   const maxTop = Math.max(
     TOOLTIP_VIEWPORT_GUTTER_PX,
     viewportHeight - TOOLTIP_VIEWPORT_GUTTER_PX - tooltipHeight
   );
-  const top = clamp(rawTop, TOOLTIP_VIEWPORT_GUTTER_PX, maxTop);
+  const left = clamp(candidate.left, TOOLTIP_VIEWPORT_GUTTER_PX, maxLeft);
+  const top = clamp(candidate.top, TOOLTIP_VIEWPORT_GUTTER_PX, maxTop);
+  const placementClass = tooltipPlacementClass(candidate.placement);
 
-  const anchorCenter = clamp(
-    targetRect.left + targetRect.width / 2,
-    left + TOOLTIP_ARROW_GUTTER_PX,
-    left + tooltipWidth - TOOLTIP_ARROW_GUTTER_PX
-  );
-  const arrowTop =
-    placement === 'below' ? top - TOOLTIP_ARROW_SIZE_PX : top + tooltipHeight + TOOLTIP_ARROW_SIZE_PX;
+  let arrowLeft: number;
+  let arrowTop: number;
+  if (candidate.placement === 'side-left' || candidate.placement === 'side-right') {
+    arrowLeft =
+      candidate.placement === 'side-left'
+        ? left + tooltipWidth + TOOLTIP_ARROW_SIZE_PX
+        : left - TOOLTIP_ARROW_SIZE_PX;
+    arrowTop = clamp(
+      targetRect.top + targetRect.height / 2,
+      top + TOOLTIP_ARROW_GUTTER_PX,
+      top + tooltipHeight - TOOLTIP_ARROW_GUTTER_PX
+    );
+  } else {
+    arrowLeft = clamp(
+      targetRect.left + targetRect.width / 2,
+      left + TOOLTIP_ARROW_GUTTER_PX,
+      left + tooltipWidth - TOOLTIP_ARROW_GUTTER_PX
+    );
+    arrowTop =
+      candidate.placement === 'below'
+        ? top - TOOLTIP_ARROW_SIZE_PX
+        : top + tooltipHeight + TOOLTIP_ARROW_SIZE_PX;
+  }
 
   host.tooltip.style.setProperty(TOOLTIP_POSITION_VAR_X, `${Math.round(left)}px`);
   host.tooltip.style.setProperty(TOOLTIP_POSITION_VAR_Y, `${Math.round(top)}px`);
-  host.tooltip.setAttribute('data-placement', placement);
-  host.tooltip.classList.add(placement === 'below' ? TOOLTIP_BELOW_CLASS : TOOLTIP_ABOVE_CLASS);
+  host.tooltip.setAttribute('data-placement', candidate.placement);
+  host.tooltip.classList.add(placementClass);
 
-  host.arrow.style.setProperty(TOOLTIP_ARROW_POSITION_VAR_X, `${Math.round(anchorCenter)}px`);
+  host.arrow.style.setProperty(TOOLTIP_ARROW_POSITION_VAR_X, `${Math.round(arrowLeft)}px`);
   host.arrow.style.setProperty(TOOLTIP_ARROW_POSITION_VAR_Y, `${Math.round(arrowTop)}px`);
-  host.arrow.setAttribute('data-placement', placement);
-  host.arrow.classList.add(
-    TOOLTIP_OPEN_CLASS,
-    placement === 'below' ? TOOLTIP_BELOW_CLASS : TOOLTIP_ABOVE_CLASS
-  );
-  host.arrow.classList.remove(placement === 'below' ? TOOLTIP_ABOVE_CLASS : TOOLTIP_BELOW_CLASS);
+  host.arrow.setAttribute('data-placement', candidate.placement);
+  host.arrow.classList.add(TOOLTIP_OPEN_CLASS, placementClass);
 
   activeTooltipTarget = target;
 }
 
-export function resetStyledTooltipViewportClamp(el: HTMLElement | null | undefined): void {
-  if (!el) return;
-  el.style.setProperty(TOOLTIP_SHIFT_VAR, TOOLTIP_SHIFT_ZERO);
-}
-
-export function clampStyledTooltipToViewport(
-  el: HTMLElement | null | undefined,
-  tooltip: string | undefined
-): void {
-  if (!el || !tooltip) {
-    resetStyledTooltipViewportClamp(el);
-    return;
-  }
-
-  const doc = el.ownerDocument;
-  const win = doc.defaultView;
-  if (!win || !doc.body) return;
-
-  const viewportWidth = readViewportWidth(doc, win);
-  if (!viewportWidth) return;
-
-  const tooltipWidth = measureTooltipWidth(doc, viewportWidth, tooltip);
-  if (!tooltipWidth) return;
-
-  const rect = el.getBoundingClientRect();
-  const desiredLeft = rect.left + rect.width / 2 - tooltipWidth / 2;
-  const maxLeft = Math.max(
-    TOOLTIP_VIEWPORT_GUTTER_PX,
-    viewportWidth - TOOLTIP_VIEWPORT_GUTTER_PX - tooltipWidth
-  );
-  const clampedLeft = clamp(desiredLeft, TOOLTIP_VIEWPORT_GUTTER_PX, maxLeft);
-  const shift = Math.round(clampedLeft - desiredLeft);
-
-  if (shift === 0) {
-    resetStyledTooltipViewportClamp(el);
-  } else {
-    el.style.setProperty(TOOLTIP_SHIFT_VAR, `${shift}px`);
-  }
-
-  positionTooltipHost(doc, el, tooltip);
-}
-
 export function installStyledTooltipViewportHost(doc: Document): () => void {
   const showFromTarget = (target: HTMLElement | null): void => {
-    const text = readTooltipText(target?.getAttribute(TOOLTIP_TEXT_ATTR));
+    const text = readTooltipText(target);
     if (!target || !text) {
       hideTooltipHost(doc);
       return;
@@ -299,7 +436,7 @@ export function installStyledTooltipViewportHost(doc: Document): () => void {
 
   const handleScrollOrResize = (): void => {
     if (!activeTooltipTarget) return;
-    const text = readTooltipText(activeTooltipTarget.getAttribute(TOOLTIP_TEXT_ATTR));
+    const text = readTooltipText(activeTooltipTarget);
     if (!text || !isTooltipTargetConnected(activeTooltipTarget)) {
       hideTooltipHost(doc);
       return;
@@ -313,7 +450,13 @@ export function installStyledTooltipViewportHost(doc: Document): () => void {
 
     for (const mutation of mutations) {
       if (mutation.type === 'attributes' && mutation.target === target) {
-        if (mutation.attributeName === TOOLTIP_TEXT_ATTR || mutation.attributeName === 'class') {
+        if (
+          mutation.attributeName === TOOLTIP_TEXT_ATTR ||
+          mutation.attributeName === TOOLTIP_TITLE_ATTR ||
+          mutation.attributeName === TOOLTIP_DETAIL_ATTR ||
+          mutation.attributeName === TOOLTIP_PLACEMENT_ATTR ||
+          mutation.attributeName === 'class'
+        ) {
           showFromTarget(isTooltipTargetConnected(target) ? target : null);
           return;
         }
@@ -334,7 +477,13 @@ export function installStyledTooltipViewportHost(doc: Document): () => void {
     subtree: true,
     childList: true,
     attributes: true,
-    attributeFilter: [TOOLTIP_TEXT_ATTR, 'class'],
+    attributeFilter: [
+      TOOLTIP_TEXT_ATTR,
+      TOOLTIP_TITLE_ATTR,
+      TOOLTIP_DETAIL_ATTR,
+      TOOLTIP_PLACEMENT_ATTR,
+      'class',
+    ],
   });
 
   doc.addEventListener('mouseover', handleMouseOver, true);
@@ -358,6 +507,8 @@ export function installStyledTooltipViewportHost(doc: Document): () => void {
 
 export const __styledTooltipPlacementTestSeams = {
   TOOLTIP_TEXT_ATTR,
+  TOOLTIP_TITLE_ATTR,
+  TOOLTIP_DETAIL_ATTR,
+  TOOLTIP_PLACEMENT_ATTR,
   TOOLTIP_TARGET_SELECTOR,
-  TOOLTIP_SHIFT_VAR_VALUE,
 };

@@ -208,43 +208,52 @@ test('order PDF page and sketch drawing modes are mutually exclusive', () => {
   assert.match(surface, /onClick=\{handleToggleSketchPreview\}/);
 });
 
-test('order PDF tooltips use the same styled data-tooltip system as the sketch viewer controls', () => {
+test('order PDF tooltips use the shared fixed viewport tooltip system', () => {
   const toolbar = readSource('esm/native/ui/react/pdf/order_pdf_overlay_toolbar.tsx');
   const surface = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx');
   const sketchToolbar = readSource('esm/native/ui/react/pdf/order_pdf_overlay_sketch_toolbar_view.tsx');
   const shapeToolbar = readSource('esm/native/ui/react/pdf/order_pdf_overlay_sketch_shape_toolbar.tsx');
   const css = readSource('css/react_styles.css');
+  const tooltipPlacement = readSource('esm/native/ui/react/components/TooltipPlacement.ts');
 
-  assert.match(toolbar, /wp-pdf-ui-hint/);
+  assert.match(toolbar, /wp-r-styled-tooltip wp-pdf-ui-hint/);
   assert.match(surface, /data-tooltip=\{pdfPageAnnotationTooltip\}/);
   assert.match(surface, /data-tooltip=\{sketchPreviewTooltip\}/);
-  assert.match(surface, /wp-pdf-ui-hint--above/);
-  assert.match(sketchToolbar, /wp-pdf-ui-hint--side-left/);
-  assert.match(shapeToolbar, /wp-pdf-ui-hint--side-right/);
+  assert.match(surface, /wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--above/);
+  assert.match(sketchToolbar, /wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-left/);
+  assert.match(shapeToolbar, /wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-right/);
 
   assert.match(
-    css,
-    /body\.wp-ui-react \.wp-pdf-ui-hint::after \{[\s\S]*?content:\s*attr\(data-tooltip\);[\s\S]*?background:\s*#1e293b;[\s\S]*?box-shadow:\s*var\(--wp-r-shadow-tooltip\);/
+    tooltipPlacement,
+    /if \(target\.classList\.contains\('wp-pdf-ui-hint--above'\)\) return 'above';/
+  );
+  assert.match(
+    tooltipPlacement,
+    /if \(target\.classList\.contains\('wp-pdf-ui-hint--side-left'\)\) return 'side-left';/
+  );
+  assert.match(
+    tooltipPlacement,
+    /if \(target\.classList\.contains\('wp-pdf-ui-hint--side-right'\)\) return 'side-right';/
   );
   assert.match(
     css,
-    /body\.wp-ui-react \.wp-pdf-ui-hint::before \{[\s\S]*?border-color:\s*transparent transparent #1e293b transparent;/
+    /body\.wp-ui-react \.wp-r-floating-tooltip,[\s\S]*?body\.wp-ui-react \.wp-r-floating-tooltip-arrow \{[\s\S]*?position:\s*fixed;[\s\S]*?body\.wp-ui-react \.wp-r-floating-tooltip \{[\s\S]*?max-width:\s*min\(320px, calc\(100vw - 16px\)\);/
   );
   assert.match(
     css,
-    /body\.wp-ui-react \.wp-pdf-ui-hint--above::after \{[\s\S]*?bottom:\s*calc\(100% \+ 10px\);/
+    /body\.wp-ui-react \.wp-r-floating-tooltip-arrow\.is-side-left \{[\s\S]*?border-left-color:\s*#1e293b;/
   );
   assert.match(
     css,
-    /body\.wp-ui-react \.wp-pdf-floating-draw-btn--sketch\.wp-pdf-ui-hint--above::after \{[\s\S]*?left:\s*0;[\s\S]*?right:\s*auto;[\s\S]*?transform:\s*translateY\(4px\);/
-  );
-  assert.match(
-    css,
-    /body\.wp-ui-react \.wp-pdf-floating-draw-btn--sketch\.wp-pdf-ui-hint--above:hover::after,[\s\S]*?transform:\s*translateY\(0\);/
+    /body\.wp-ui-react \.wp-r-floating-tooltip-arrow\.is-side-right \{[\s\S]*?border-right-color:\s*#1e293b;/
   );
   assert.match(
     css,
     /body\.wp-ui-react \.wp-pdf-editor-toolbar:hover,[\s\S]*?z-index:\s*var\(--wp-z-pdf-editor-tooltip-host\);/
+  );
+  assert.doesNotMatch(
+    css,
+    /body\.wp-ui-react \.wp-pdf-ui-hint::after \{[\s\S]*?content:\s*attr\(data-tooltip\);/
   );
 });
 
@@ -262,7 +271,7 @@ test('regular canvas note toolbar uses the styled tooltip hints from the PDF not
   const deleteToolbar = readSource('esm/native/ui/react/notes/notes_overlay_note_card_toolbar_delete.tsx');
 
   for (const source of [boldToolbar, colorToolbar, sizeToolbar, deleteToolbar]) {
-    assert.match(source, /wp-pdf-ui-hint wp-pdf-ui-hint--side-right/);
+    assert.match(source, /wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-right/);
     assert.match(source, /data-tooltip=/);
   }
 
@@ -277,7 +286,7 @@ test('order PDF color swatches do not show hexadecimal tooltips', () => {
   const noteToolbar = readSource('esm/native/ui/react/pdf/order_pdf_overlay_sketch_note_toolbar.tsx');
 
   assert.doesNotMatch(sketchPalettes, /data-tooltip=\{swatch\}/);
-  assert.doesNotMatch(sketchPalettes, /wp-pdf-sketch-color-swatch wp-pdf-ui-hint/);
+  assert.doesNotMatch(sketchPalettes, /wp-pdf-sketch-color-swatch wp-r-styled-tooltip wp-pdf-ui-hint/);
   assert.match(sketchPalettes, /aria-label=\{`בחר צבע \${swatch}`\}/);
   assert.doesNotMatch(noteToolbar, /data-tooltip=\{color\}/);
 });

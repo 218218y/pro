@@ -41,7 +41,7 @@ export function SidebarHeader() {
           <div className="wp-r-header-actions-col wp-r-header-actions-col--gate">
             <Button
               variant="header"
-              className={`btn-header-tabs-toggle wp-r-header-hint hint-bottom ${site2GateOpen ? 'wp-r-btn-active' : ''}`}
+              className={`btn-header-tabs-toggle wp-r-header-hint wp-r-styled-tooltip hint-bottom ${site2GateOpen ? 'wp-r-btn-active' : ''}`}
               data-testid="header-site2-gate-button"
               aria-pressed={site2GateOpen}
               onClick={handleSite2GateToggle}
@@ -53,7 +53,7 @@ export function SidebarHeader() {
 
             <Button
               variant="header"
-              className="btn-header-reset-default wp-r-header-hint hint-bottom"
+              className="btn-header-reset-default wp-r-header-hint wp-r-styled-tooltip hint-bottom"
               data-testid="header-reset-default-button"
               onClick={handleResetDefault}
               data-tooltip="איפוס לארון ברירת מחדל"
@@ -67,7 +67,7 @@ export function SidebarHeader() {
         <div className="wp-r-header-actions-col wp-r-header-actions-col--export">
           <Button
             variant="header"
-            className="btn-header-export-pdf wp-r-header-hint hint-bottom"
+            className="btn-header-export-pdf wp-r-header-hint wp-r-styled-tooltip hint-bottom"
             data-testid="header-open-pdf-button"
             onClick={handleOpenPdf}
             onMouseEnter={handleWarmPdf}
@@ -79,7 +79,7 @@ export function SidebarHeader() {
 
           <Button
             variant="header"
-            className="btn-header-export-load wp-r-header-hint hint-bottom"
+            className="btn-header-export-load wp-r-header-hint wp-r-styled-tooltip hint-bottom"
             data-testid="header-project-load-button"
             onClick={handleOpenLoad}
             data-tooltip="טען פרויקט"
@@ -92,7 +92,7 @@ export function SidebarHeader() {
         <div className="wp-r-header-actions-col wp-r-header-actions-col--main">
           <Button
             variant="header"
-            className={`btn-header-sketch wp-r-header-hint hint-bottom ${sketch ? 'wp-r-btn-active' : ''}`}
+            className={`btn-header-sketch wp-r-header-hint wp-r-styled-tooltip hint-bottom ${sketch ? 'wp-r-btn-active' : ''}`}
             data-testid="header-sketch-toggle-button"
             aria-pressed={sketch}
             onClick={handleToggleSketch}
@@ -104,7 +104,7 @@ export function SidebarHeader() {
 
           <Button
             variant="header"
-            className="btn-save btn-header-save wp-r-header-hint hint-bottom"
+            className="btn-save btn-header-save wp-r-header-hint wp-r-styled-tooltip hint-bottom"
             data-testid="header-project-save-button"
             onClick={handleSaveProject}
             data-tooltip="שמור פרויקט"

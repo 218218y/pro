@@ -826,8 +826,14 @@ import {
     assert.match(projectPanel, /data-testid="project-load-button"/);
     assert.match(projectPanel, /data-testid="project-load-input"/);
     assert.match(projectPanel, /data-testid="project-restore-button"/);
-    assert.match(projectPanel, /className="btn-header-export-load wp-r-project-icon-btn"/);
-    assert.match(projectPanel, /className="btn-save btn-header-save wp-r-project-icon-btn"/);
+    assert.match(
+      projectPanel,
+      /className="btn-header-export-load wp-r-project-icon-btn wp-r-styled-tooltip hint-bottom"/
+    );
+    assert.match(
+      projectPanel,
+      /className="btn-save btn-header-save wp-r-project-icon-btn wp-r-styled-tooltip hint-bottom"/
+    );
     assert.match(projectPanel, /onKeyDown=\{\(e: import\('react'\)\.KeyboardEvent<HTMLInputElement>\) => \{/);
     assert.match(projectPanel, /if \(e\.key !== 'Enter'\) return;/);
     assert.match(projectPanel, /handleSaveDraft\(e\.currentTarget\.value\)/);
@@ -858,18 +864,18 @@ import {
     assert.match(sidebarHeader, /data-testid="header-project-load-input"/);
     assert.match(sidebarHeader, /data-testid="header-sketch-toggle-button"/);
     assert.match(sidebarHeader, /data-testid="header-open-pdf-button"/);
-    assert.equal(sidebarHeader.match(/wp-r-header-hint hint-bottom/g)?.length, 6);
+    assert.equal(sidebarHeader.match(/wp-r-header-hint wp-r-styled-tooltip hint-bottom/g)?.length, 6);
     assert.match(sidebarHeader, /data-tooltip=\{site2GateTooltip\}/);
     assert.match(sidebarHeader, /data-tooltip=\{sketchTooltip\}/);
     assert.match(sidebarHeader, /data-tooltip="שמור פרויקט"/);
     assert.doesNotMatch(sidebarHeader, /\btitle=/);
-    assert.match(
+    assert.doesNotMatch(
       reactStyles,
-      /#reactSidebarRoot \.wp-r-header \.wp-r-header-hint\.hint-bottom::after \{[\s\S]*?top:\s*calc\(100% \+ 8px\);[\s\S]*?direction:\s*rtl;[\s\S]*?font-weight:\s*700;/
+      /#reactSidebarRoot \.wp-r-header \.wp-r-header-hint\.hint-bottom::after/
     );
     assert.match(
       reactStyles,
-      /#reactSidebarRoot \.wp-r-header \.wp-r-header-hint\.hint-bottom:hover,[\s\S]*?#reactSidebarRoot \.wp-r-header \.wp-r-header-hint\.hint-bottom:focus-visible,[\s\S]*?body\.wp-ui-react \.hint-bottom::after,[\s\S]*?body\.wp-ui-react \.hint-bottom::before \{[\s\S]*?z-index:\s*var\(--wp-z-tooltip\);/
+      /#reactSidebarRoot \.wp-r-header \.wp-r-header-hint:hover,[\s\S]*?#reactSidebarRoot \.wp-r-header \.wp-r-header-hint:focus-visible,[\s\S]*?z-index:\s*var\(--wp-z-tooltip\);/
     );
     assert.doesNotMatch(reactStyles, /#reactSidebarRoot \.wp-r-header \{[\s\S]*?z-index:\s*20;/);
 

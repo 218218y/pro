@@ -101,7 +101,7 @@ export function OrderPdfOverlayToolbar(props: OrderPdfOverlayToolbarProps): Reac
         <div className="wp-pdf-editor-zoom" dir="ltr">
           <button
             type="button"
-            className="wp-pdf-editor-btn wp-pdf-editor-btn--iconOnly wp-pdf-ui-hint"
+            className="wp-pdf-editor-btn wp-pdf-editor-btn--iconOnly wp-r-styled-tooltip wp-pdf-ui-hint"
             onClick={onZoomOut}
             data-tooltip="הקטן"
             aria-label="הקטן"
@@ -112,7 +112,7 @@ export function OrderPdfOverlayToolbar(props: OrderPdfOverlayToolbarProps): Reac
           <span className="wp-pdf-editor-zoom-val">{Math.round(zoom * 100)}%</span>
           <button
             type="button"
-            className="wp-pdf-editor-btn wp-pdf-editor-btn--iconOnly wp-pdf-ui-hint"
+            className="wp-pdf-editor-btn wp-pdf-editor-btn--iconOnly wp-r-styled-tooltip wp-pdf-ui-hint"
             onClick={onZoomIn}
             data-tooltip="הגדל"
             aria-label="הגדל"
@@ -126,7 +126,7 @@ export function OrderPdfOverlayToolbar(props: OrderPdfOverlayToolbarProps): Reac
       <div className="wp-pdf-editor-toolbar-center" dir="rtl">
         <button
           type="button"
-          className="wp-pdf-editor-btn wp-pdf-editor-toolbar-action-btn wp-pdf-ui-hint"
+          className="wp-pdf-editor-btn wp-pdf-editor-toolbar-action-btn wp-r-styled-tooltip wp-pdf-ui-hint"
           onClick={onRefreshAuto}
           data-tooltip="עדכן מהפרויקט"
           aria-label="עדכן מהפרויקט"
@@ -138,7 +138,7 @@ export function OrderPdfOverlayToolbar(props: OrderPdfOverlayToolbarProps): Reac
 
         <button
           type="button"
-          className="wp-pdf-editor-btn wp-pdf-editor-toolbar-action-btn wp-pdf-ui-hint"
+          className="wp-pdf-editor-btn wp-pdf-editor-toolbar-action-btn wp-r-styled-tooltip wp-pdf-ui-hint"
           onClick={onLoadPdfClick}
           data-tooltip="טען PDF קיים לעריכה (אפשר גם לגרור PDF לתוך העורך)"
           aria-label="טען PDF קיים לעריכה"
@@ -162,7 +162,7 @@ export function OrderPdfOverlayToolbar(props: OrderPdfOverlayToolbarProps): Reac
 
         <button
           type="button"
-          className="wp-pdf-editor-btn wp-pdf-editor-toolbar-action-btn wp-pdf-editor-btn--pdf wp-pdf-ui-hint"
+          className="wp-pdf-editor-btn wp-pdf-editor-toolbar-action-btn wp-pdf-editor-btn--pdf wp-r-styled-tooltip wp-pdf-ui-hint"
           onClick={onExportInteractive}
           data-tooltip="הורד PDF (אינטראקטיבי לעריכה באקרובט)"
           aria-label="הורד PDF"
@@ -174,7 +174,7 @@ export function OrderPdfOverlayToolbar(props: OrderPdfOverlayToolbarProps): Reac
 
         <button
           type="button"
-          className="wp-pdf-editor-btn wp-pdf-editor-toolbar-action-btn wp-pdf-editor-btn--pdfImg wp-pdf-ui-hint"
+          className="wp-pdf-editor-btn wp-pdf-editor-toolbar-action-btn wp-pdf-editor-btn--pdfImg wp-r-styled-tooltip wp-pdf-ui-hint"
           onClick={onExportImagePdf}
           disabled={imagePdfBusy}
           data-tooltip={printTooltip}
@@ -187,7 +187,7 @@ export function OrderPdfOverlayToolbar(props: OrderPdfOverlayToolbarProps): Reac
 
         <button
           type="button"
-          className="wp-pdf-editor-btn wp-pdf-editor-toolbar-action-btn wp-pdf-editor-btn--mail wp-pdf-ui-hint"
+          className="wp-pdf-editor-btn wp-pdf-editor-toolbar-action-btn wp-pdf-editor-btn--mail wp-r-styled-tooltip wp-pdf-ui-hint"
           onClick={onExportInteractiveToGmail}
           disabled={gmailBusy}
           data-tooltip={gmailTooltip}
@@ -202,7 +202,7 @@ export function OrderPdfOverlayToolbar(props: OrderPdfOverlayToolbarProps): Reac
           <span className="wp-pdf-editor-imgopts-label">צרף תמונות:</span>
           <button
             type="button"
-            className={`wp-pdf-editor-toggle wp-pdf-ui-hint${includeRenderSketchOn ? ' is-on' : ''}`}
+            className={`wp-pdf-editor-toggle wp-r-styled-tooltip wp-pdf-ui-hint${includeRenderSketchOn ? ' is-on' : ''}`}
             aria-pressed={includeRenderSketchOn}
             aria-label={renderSketchState.title}
             data-tooltip={renderSketchState.title}
@@ -221,7 +221,7 @@ export function OrderPdfOverlayToolbar(props: OrderPdfOverlayToolbarProps): Reac
 
           <button
             type="button"
-            className={`wp-pdf-editor-toggle wp-pdf-ui-hint${includeOpenClosedOn ? ' is-on' : ''}`}
+            className={`wp-pdf-editor-toggle wp-r-styled-tooltip wp-pdf-ui-hint${includeOpenClosedOn ? ' is-on' : ''}`}
             aria-pressed={includeOpenClosedOn}
             aria-label={openClosedState.title}
             data-tooltip={openClosedState.title}
@@ -243,7 +243,7 @@ export function OrderPdfOverlayToolbar(props: OrderPdfOverlayToolbarProps): Reac
       <div className="wp-pdf-editor-toolbar-right" dir="ltr">
         <button
           type="button"
-          className="wp-pdf-editor-btn wp-pdf-editor-btn--iconOnly wp-pdf-ui-hint"
+          className="wp-pdf-editor-btn wp-pdf-editor-btn--iconOnly wp-r-styled-tooltip wp-pdf-ui-hint"
           onClick={onClose}
           data-tooltip="סגור"
           aria-label="סגור"

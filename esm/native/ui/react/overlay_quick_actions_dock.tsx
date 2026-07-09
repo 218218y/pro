@@ -51,19 +51,6 @@ function formatQuickActionExportTooltipLabel(tooltip: QuickActionExportTooltipCo
   return `${tooltip.title}, ${tooltip.detail}`;
 }
 
-function QuickActionExportTooltipView({
-  tooltip,
-}: {
-  tooltip: QuickActionExportTooltipConfig;
-}): ReactElement {
-  return (
-    <span className="wp-qa-tooltip" aria-hidden="true">
-      <span className="wp-qa-tooltip-title">{tooltip.title}</span>
-      <span className="wp-qa-tooltip-detail">{tooltip.detail}</span>
-    </span>
-  );
-}
-
 function QuickActionExportButton({
   action,
   closeMenu,
@@ -76,7 +63,7 @@ function QuickActionExportButton({
   return (
     <button
       type="button"
-      className="wp-qa-btn"
+      className="wp-qa-btn wp-r-styled-tooltip"
       data-tooltip-title={tooltip.title}
       data-tooltip-detail={tooltip.detail}
       aria-label={formatQuickActionExportTooltipLabel(tooltip)}
@@ -91,7 +78,6 @@ function QuickActionExportButton({
       }}
     >
       <i className={iconClassName} />
-      <QuickActionExportTooltipView tooltip={tooltip} />
     </button>
   );
 }
@@ -194,7 +180,7 @@ export function QuickActionsDock(): ReactElement {
         <IconButton
           ref={toggleRef}
           variant="camera"
-          className="wp-qa-toggle hint-bottom"
+          className="wp-qa-toggle wp-r-styled-tooltip hint-bottom"
           data-testid="quick-actions-toggle-button"
           data-tooltip={menuOpen ? 'סגור תפריט' : 'פתח תפריט'}
           aria-label={menuOpen ? 'סגור תפריט' : 'פתח תפריט'}
@@ -213,7 +199,7 @@ export function QuickActionsDock(): ReactElement {
           <button
             ref={menuPinRef}
             type="button"
-            className={'wp-qa-toggle-pin hint-bottom' + (menuPinnedOpen ? ' is-on' : '')}
+            className={'wp-qa-toggle-pin wp-r-styled-tooltip hint-bottom' + (menuPinnedOpen ? ' is-on' : '')}
             data-tooltip={menuPinnedOpen ? 'בטל הצמדה של התפריט' : 'הצמד תפריט פתוח'}
             aria-label={menuPinnedOpen ? 'בטל הצמדה של התפריט' : 'הצמד תפריט פתוח'}
             aria-pressed={menuPinnedOpen}
@@ -294,7 +280,7 @@ export function QuickActionsDock(): ReactElement {
             <div className="wp-qa-sync-wrap">
               <button
                 type="button"
-                className="wp-qa-sync hint-bottom"
+                className="wp-qa-sync wp-r-styled-tooltip hint-bottom"
                 data-testid="quick-actions-sync-button"
                 data-tooltip="סנכרן סקיצה"
                 aria-label="סנכרן סקיצה"
@@ -313,7 +299,7 @@ export function QuickActionsDock(): ReactElement {
 
               <button
                 type="button"
-                className={'wp-qa-sync-pin hint-bottom' + (pinnedSync ? ' is-on' : '')}
+                className={'wp-qa-sync-pin wp-r-styled-tooltip hint-bottom' + (pinnedSync ? ' is-on' : '')}
                 data-testid="quick-actions-sync-pin-button"
                 data-tooltip={pinnedSync ? 'בטל הצמדה' : 'הצמד כפתור סנכרון'}
                 aria-label={pinnedSync ? 'בטל הצמדה' : 'הצמד כפתור סנכרון'}

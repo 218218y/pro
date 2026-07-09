@@ -131,21 +131,6 @@
   overflow: visible;
 }
 
-#reactSidebarRoot .wp-r-header .wp-r-header-hint.hint-bottom::after {
-  top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  direction: rtl;
-  font-weight: 700;
-}
-
-#reactSidebarRoot .wp-r-header .wp-r-header-hint.hint-bottom::before {
-  top: calc(100% + 2px);
-  left: 50%;
-  transform: translateX(-50%);
-}
-
 /* Sketch button (neutral) */
 #reactSidebarRoot .wp-r-header .btn-header-sketch {
   width: 100%;
@@ -4539,111 +4524,29 @@ body.wp-ui-react .cam-btn:disabled:hover {
   transform: none;
 }
 
-body.wp-ui-react .cam-btn::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #1e293b;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-  margin-bottom: 8px;
-  font-family: 'Heebo', sans-serif;
-}
-
-body.wp-ui-react .cam-btn:hover::after {
-  opacity: 1;
-}
-
-/* Bottom tooltip variant lives after .cam-btn tooltip so cascade order stays explicit. */
-body.wp-ui-react .hint-bottom {
+/* Shared viewport-safe React tooltip system.
+   Tooltip text is rendered into a fixed host by TooltipPlacement.ts, so compact
+   panels, side toolbars, and overlay controls do not clip or hide long labels. */
+body.wp-ui-react .hint-bottom,
+body.wp-ui-react .wp-r-styled-tooltip,
+body.wp-ui-react .wp-pdf-ui-hint {
   position: relative;
   overflow: visible;
 }
 
-body.wp-ui-react .hint-bottom::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: 125%;
-  bottom: auto;
-  left: 0;
-  transform: none;
-  display: inline-block;
-  width: auto;
-  min-width: max-content;
-  white-space: nowrap;
-  box-sizing: border-box;
-  background: #1e293b;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  line-height: 1.2;
-  font-family: 'Heebo', sans-serif;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 0.2s;
-  box-shadow: var(--wp-r-shadow-tooltip);
+body.wp-ui-react .wp-r-styled-tooltip::after,
+body.wp-ui-react .wp-r-styled-tooltip::before {
+  content: none;
+  display: none;
 }
 
-body.wp-ui-react .hint-bottom::before {
-  content: '';
-  position: absolute;
-  top: 110%;
-  bottom: auto;
-  left: 14px;
-  transform: none;
-  border-width: 6px;
-  border-style: solid;
-  border-color: transparent transparent #1e293b transparent;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.2s;
-}
-
-#reactSidebarRoot .wp-r-header .wp-r-header-hint.hint-bottom:hover,
-#reactSidebarRoot .wp-r-header .wp-r-header-hint.hint-bottom:focus-visible,
-body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:hover,
-body.wp-ui-react .wp-r-styled-tooltip.hint-bottom:focus-visible,
-body.wp-ui-react .hint-bottom::after,
-body.wp-ui-react .hint-bottom::before {
-  z-index: var(--wp-z-tooltip);
-}
-
+#reactSidebarRoot .wp-r-header .wp-r-header-hint:hover,
+#reactSidebarRoot .wp-r-header .wp-r-header-hint:focus-visible,
+body.wp-ui-react .wp-r-styled-tooltip:hover,
+body.wp-ui-react .wp-r-styled-tooltip:focus-visible,
 body.wp-ui-react .wp-viewer-notes-controls .hint-bottom:hover,
 body.wp-ui-react .wp-viewer-notes-controls .hint-bottom:focus-visible {
   z-index: var(--wp-z-tooltip);
-}
-
-body.wp-ui-react .hint-bottom:hover::after,
-body.wp-ui-react .hint-bottom:hover::before {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Shared React tooltip: used by sidebar controls that should not rely on the browser's native title bubble. */
-body.wp-ui-react .wp-r-styled-tooltip.hint-bottom {
-  position: relative;
-  overflow: visible;
-  /* Keep the release CSS minifier from turning a typed calc fallback (0px) into an invalid unitless 0. */
-  --wp-r-tooltip-shift-x: 0px;
-}
-
-/* Styled tooltips are rendered into a fixed viewport host by TooltipPlacement.ts.
-   Keeping the old pseudo-elements disabled prevents long labels from becoming
-   scrollable overflow inside compact panels such as saved models. */
-body.wp-ui-react .wp-r-styled-tooltip.hint-bottom::after,
-body.wp-ui-react .wp-r-styled-tooltip.hint-bottom::before {
-  content: none;
-  display: none;
 }
 
 body.wp-ui-react .wp-r-floating-tooltip,
@@ -4658,7 +4561,7 @@ body.wp-ui-react .wp-r-floating-tooltip {
   display: block;
   width: max-content;
   max-width: min(320px, calc(100vw - 16px));
-  white-space: normal;
+  white-space: pre-line;
   overflow-wrap: break-word;
   direction: rtl;
   text-align: center;
@@ -4698,7 +4601,6 @@ body.wp-ui-react .wp-r-floating-tooltip-arrow {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateX(-50%);
   transition:
     opacity 0.18s ease,
     visibility 0.18s ease;
@@ -4709,12 +4611,30 @@ body.wp-ui-react .wp-r-floating-tooltip-arrow.is-open {
   visibility: visible;
 }
 
+body.wp-ui-react .wp-r-floating-tooltip-arrow.is-below,
+body.wp-ui-react .wp-r-floating-tooltip-arrow.is-above {
+  transform: translateX(-50%);
+}
+
+body.wp-ui-react .wp-r-floating-tooltip-arrow.is-side-left,
+body.wp-ui-react .wp-r-floating-tooltip-arrow.is-side-right {
+  transform: translateY(-50%);
+}
+
 body.wp-ui-react .wp-r-floating-tooltip-arrow.is-below {
   border-bottom-color: #1e293b;
 }
 
 body.wp-ui-react .wp-r-floating-tooltip-arrow.is-above {
   border-top-color: #1e293b;
+}
+
+body.wp-ui-react .wp-r-floating-tooltip-arrow.is-side-left {
+  border-left-color: #1e293b;
+}
+
+body.wp-ui-react .wp-r-floating-tooltip-arrow.is-side-right {
+  border-right-color: #1e293b;
 }
 
 /* Viewer notes eye also uses .hint-bottom. Keep this after the tooltip helper,
@@ -5232,72 +5152,7 @@ body.wp-ui-react .wp-qa-menu {
   z-index: var(--wp-z-quick-actions-menu);
 }
 
-body.wp-ui-react .wp-qa-menu .wp-qa-tooltip {
-  position: absolute;
-  top: 125%;
-  bottom: auto;
-  left: 50%;
-  right: auto;
-  transform: translateX(-50%);
-  direction: rtl;
-  text-align: center;
-  width: min(144px, calc(100vw - 96px));
-  max-width: calc(100vw - 96px);
-  min-width: 0;
-  white-space: normal;
-  overflow-wrap: normal;
-  word-break: normal;
-  box-sizing: border-box;
-  background: #1e293b;
-  color: white;
-  padding: 6px 7px;
-  border-radius: 6px;
-  font-family: 'Heebo', sans-serif;
-  font-size: 0.8rem;
-  line-height: 1.35;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 0.2s;
-  box-shadow: var(--wp-r-shadow-tooltip);
-}
-
-body.wp-ui-react .wp-qa-menu .wp-qa-tooltip::before {
-  content: '';
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  right: auto;
-  transform: translateX(-50%);
-  border-width: 6px;
-  border-style: solid;
-  border-color: transparent transparent #1e293b transparent;
-}
-
-body.wp-ui-react .wp-qa-menu .wp-qa-tooltip-title {
-  display: block;
-  font-size: 0.94rem;
-  font-weight: 800;
-  line-height: 1.2;
-  margin-bottom: 2px;
-}
-
-body.wp-ui-react .wp-qa-menu .wp-qa-tooltip-detail {
-  display: block;
-  font-family: 'Heebo', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 450;
-  line-height: 1.2;
-}
-
-body.wp-ui-react .wp-qa-menu .wp-qa-btn:hover .wp-qa-tooltip,
-body.wp-ui-react .wp-qa-menu .wp-qa-btn:focus-visible .wp-qa-tooltip {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Ensure tooltips never hide behind sibling buttons without adding a second layer declaration. */
-body.wp-ui-react .wp-qa-menu .wp-qa-tooltip,
+/* Ensure quick action buttons stay above sibling controls while the fixed tooltip host is open. */
 body.wp-ui-react .wp-qa-menu .wp-qa-btn:hover,
 body.wp-ui-react .wp-qa-menu .wp-qa-btn:focus-visible,
 body.wp-ui-react .wp-qa-anchor .hint-bottom:hover {
@@ -5656,170 +5511,11 @@ body.wp-ui-react .wp-pdf-editor-toolbar .wp-pdf-editor-btn .wp-icon-gmail {
   height: 21px;
 }
 
-body.wp-ui-react .wp-pdf-ui-hint {
-  position: relative;
-  overflow: visible;
-}
-
-body.wp-ui-react .wp-pdf-ui-hint:hover,
-body.wp-ui-react .wp-pdf-ui-hint:focus-visible,
-body.wp-ui-react .wp-pdf-ui-hint:focus-within,
-body.wp-ui-react .wp-pdf-ui-hint::after,
-body.wp-ui-react .wp-pdf-ui-hint::before {
-  z-index: var(--wp-z-tooltip);
-}
-
 body.wp-ui-react .wp-pdf-editor-toolbar:hover,
 body.wp-ui-react .wp-pdf-editor-toolbar:focus-within,
 body.wp-ui-react .wp-pdf-sketch-toolbar--floating:hover,
 body.wp-ui-react .wp-pdf-sketch-toolbar--floating:focus-within {
   z-index: var(--wp-z-pdf-editor-tooltip-host);
-}
-
-body.wp-ui-react .wp-pdf-ui-hint::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%) translateY(-4px);
-  display: inline-block;
-  width: auto;
-  max-width: min(360px, calc(100vw - 32px));
-  min-width: max-content;
-  box-sizing: border-box;
-  white-space: nowrap;
-  direction: rtl;
-  text-align: center;
-  background: #1e293b;
-  color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  line-height: 1.2;
-  font-family: 'Heebo', sans-serif;
-  font-weight: 700;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition:
-    opacity 0.18s ease,
-    transform 0.18s ease,
-    visibility 0.18s ease;
-  box-shadow: var(--wp-r-shadow-tooltip);
-}
-
-body.wp-ui-react .wp-pdf-ui-hint::before {
-  content: '';
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 50%;
-  transform: translateX(-50%) translateY(-4px);
-  border-width: 6px;
-  border-style: solid;
-  border-color: transparent transparent #1e293b transparent;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition:
-    opacity 0.18s ease,
-    transform 0.18s ease,
-    visibility 0.18s ease;
-}
-
-body.wp-ui-react .wp-pdf-ui-hint:hover::after,
-body.wp-ui-react .wp-pdf-ui-hint:hover::before,
-body.wp-ui-react .wp-pdf-ui-hint:focus-visible::after,
-body.wp-ui-react .wp-pdf-ui-hint:focus-visible::before {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(0);
-}
-
-body.wp-ui-react .wp-pdf-ui-hint--above::after {
-  top: auto;
-  bottom: calc(100% + 10px);
-  transform: translateX(-50%) translateY(4px);
-}
-
-body.wp-ui-react .wp-pdf-ui-hint--above::before {
-  top: auto;
-  bottom: calc(100% + 4px);
-  transform: translateX(-50%) translateY(4px);
-  border-color: #1e293b transparent transparent transparent;
-}
-
-body.wp-ui-react .wp-pdf-ui-hint--above:hover::after,
-body.wp-ui-react .wp-pdf-ui-hint--above:hover::before,
-body.wp-ui-react .wp-pdf-ui-hint--above:focus-visible::after,
-body.wp-ui-react .wp-pdf-ui-hint--above:focus-visible::before {
-  transform: translateX(-50%) translateY(0);
-}
-
-body.wp-ui-react .wp-pdf-floating-draw-btn--sketch.wp-pdf-ui-hint--above::after {
-  left: 0;
-  right: auto;
-  transform: translateY(4px);
-  text-align: right;
-}
-
-body.wp-ui-react .wp-pdf-floating-draw-btn--sketch.wp-pdf-ui-hint--above::before {
-  left: 50%;
-  right: auto;
-  transform: translateX(-50%) translateY(4px);
-}
-
-body.wp-ui-react .wp-pdf-floating-draw-btn--sketch.wp-pdf-ui-hint--above:hover::after,
-body.wp-ui-react .wp-pdf-floating-draw-btn--sketch.wp-pdf-ui-hint--above:focus-visible::after {
-  transform: translateY(0);
-}
-
-body.wp-ui-react .wp-pdf-floating-draw-btn--sketch.wp-pdf-ui-hint--above:hover::before,
-body.wp-ui-react .wp-pdf-floating-draw-btn--sketch.wp-pdf-ui-hint--above:focus-visible::before {
-  transform: translateX(-50%) translateY(0);
-}
-
-body.wp-ui-react .wp-pdf-ui-hint--side-left::after {
-  top: 50%;
-  left: auto;
-  right: calc(100% + 10px);
-  transform: translateY(-50%) translateX(4px);
-}
-
-body.wp-ui-react .wp-pdf-ui-hint--side-left::before {
-  top: 50%;
-  left: auto;
-  right: calc(100% + 4px);
-  transform: translateY(-50%) translateX(4px);
-  border-color: transparent transparent transparent #1e293b;
-}
-
-body.wp-ui-react .wp-pdf-ui-hint--side-left:hover::after,
-body.wp-ui-react .wp-pdf-ui-hint--side-left:hover::before,
-body.wp-ui-react .wp-pdf-ui-hint--side-left:focus-visible::after,
-body.wp-ui-react .wp-pdf-ui-hint--side-left:focus-visible::before {
-  transform: translateY(-50%) translateX(0);
-}
-
-body.wp-ui-react .wp-pdf-ui-hint--side-right::after {
-  top: 50%;
-  right: auto;
-  left: calc(100% + 10px);
-  transform: translateY(-50%) translateX(-4px);
-}
-
-body.wp-ui-react .wp-pdf-ui-hint--side-right::before {
-  top: 50%;
-  right: auto;
-  left: calc(100% + 4px);
-  transform: translateY(-50%) translateX(-4px);
-  border-color: transparent #1e293b transparent transparent;
-}
-
-body.wp-ui-react .wp-pdf-ui-hint--side-right:hover::after,
-body.wp-ui-react .wp-pdf-ui-hint--side-right:hover::before,
-body.wp-ui-react .wp-pdf-ui-hint--side-right:focus-visible::after,
-body.wp-ui-react .wp-pdf-ui-hint--side-right:focus-visible::before {
-  transform: translateY(-50%) translateX(0);
 }
 
 body.wp-ui-react .wp-pdf-editor-zoom {

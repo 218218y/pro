@@ -28,7 +28,6 @@ test('[design-tab-tooltips] design color palette uses styled tooltips without dr
       /function normalizeTooltip\(value: string\): string \| undefined/,
       /data-tooltip=\{tooltip\}/,
       /tooltip && 'wp-r-styled-tooltip hint-bottom'/,
-      /clampStyledTooltipToViewport\(event\.currentTarget, tooltip\)/,
     ],
     'shared color swatch styled tooltip seam'
   );
@@ -44,7 +43,6 @@ test('[design-tab-tooltips] tab option buttons can reuse the same styled tooltip
       /const tooltip = normalizeTooltip\(title\);/,
       /data-tooltip=\{tooltip\}/,
       /tooltip && 'wp-r-styled-tooltip hint-bottom'/,
-      /clampStyledTooltipToViewport\(event\.currentTarget, tooltip\)/,
     ],
     'shared tab option button tooltip seam'
   );
@@ -53,7 +51,7 @@ test('[design-tab-tooltips] tab option buttons can reuse the same styled tooltip
     assert,
     reactStyles,
     [
-      /body\.wp-ui-react \.wp-r-styled-tooltip\.hint-bottom::after,[\s\S]*?content:\s*none;[\s\S]*?display:\s*none;/,
+      /body\.wp-ui-react \.wp-r-styled-tooltip::after,[\s\S]*?body\.wp-ui-react \.wp-r-styled-tooltip::before \{[\s\S]*?content:\s*none;[\s\S]*?display:\s*none;/,
       /body\.wp-ui-react \.wp-r-floating-tooltip,[\s\S]*?body\.wp-ui-react \.wp-r-floating-tooltip-arrow \{[\s\S]*?position:\s*fixed;/,
       /body\.wp-ui-react \.wp-r-floating-tooltip \{[\s\S]*?max-width:\s*min\(320px, calc\(100vw - 16px\)\);[\s\S]*?box-shadow:\s*var\(--wp-r-shadow-tooltip\);/,
       /body\.wp-ui-react \.wp-r-floating-tooltip-arrow\.is-below \{[\s\S]*?border-bottom-color:\s*#1e293b;/,
@@ -68,14 +66,11 @@ test('[design-tab-tooltips] styled tooltip body is viewport-clamped without movi
     tooltipPlacement,
     [
       /TOOLTIP_VIEWPORT_GUTTER_PX = 8/,
-      /TOOLTIP_SHIFT_ZERO = '0px'/,
-      /resetStyledTooltipViewportClamp[\s\S]*?setProperty\(TOOLTIP_SHIFT_VAR, TOOLTIP_SHIFT_ZERO\)/,
-      /measureTooltipWidth\(doc, viewportWidth, tooltip\)/,
-      /const clampedLeft = clamp\(desiredLeft, TOOLTIP_VIEWPORT_GUTTER_PX, maxLeft\);/,
-      /el\.style\.setProperty\(TOOLTIP_SHIFT_VAR, `\$\{shift\}px`\);/,
+      /measureTooltipWidth\(doc, viewportWidth, text\)/,
       /function positionTooltipHost\(doc: Document, target: HTMLElement, text: string\): void/,
       /host\.tooltip\.style\.setProperty\(TOOLTIP_POSITION_VAR_X, `\$\{Math\.round\(left\)\}px`\);/,
-      /const anchorCenter = clamp\([\s\S]*?left \+ tooltipWidth - TOOLTIP_ARROW_GUTTER_PX[\s\S]*?\);/,
+      /arrowLeft = clamp\([\s\S]*?left \+ tooltipWidth - TOOLTIP_ARROW_GUTTER_PX[\s\S]*?\);/,
+      /arrowTop =[\s\S]*?top - TOOLTIP_ARROW_SIZE_PX[\s\S]*?: top \+ tooltipHeight \+ TOOLTIP_ARROW_SIZE_PX;/,
       /export function installStyledTooltipViewportHost\(doc: Document\): \(\) => void/,
     ],
     'shared tooltip viewport clamp runtime'
@@ -85,7 +80,6 @@ test('[design-tab-tooltips] styled tooltip body is viewport-clamped without movi
     assert,
     reactStyles,
     [
-      /--wp-r-tooltip-shift-x:\s*0px;/,
       /body\.wp-ui-react \.wp-r-floating-tooltip \{[\s\S]*?top:\s*var\(--wp-r-tooltip-top, -9999px\);[\s\S]*?left:\s*var\(--wp-r-tooltip-left, -9999px\);/,
       /max-width:\s*min\(320px, calc\(100vw - 16px\)\);/,
       /overflow-wrap:\s*break-word;/,
@@ -101,11 +95,11 @@ test('[styled-tooltips] active floating tooltip refreshes when its data-tooltip 
     tooltipPlacement,
     [
       /const TOOLTIP_TEXT_ATTR = 'data-tooltip';/,
-      /const TOOLTIP_TARGET_SELECTOR = `\.wp-r-styled-tooltip\.hint-bottom\[\$\{TOOLTIP_TEXT_ATTR\}\]`;/,
+      /const TOOLTIP_TARGET_SELECTOR = \[[\s\S]*?wp-r-styled-tooltip[\s\S]*?TOOLTIP_TEXT_ATTR[\s\S]*?wp-pdf-ui-hint[\s\S]*?TOOLTIP_TEXT_ATTR/,
       /function isTooltipTargetConnected\(target: HTMLElement \| null\): target is HTMLElement \{[\s\S]*?target\.matches\(TOOLTIP_TARGET_SELECTOR\)/,
       /const handleTooltipMutation = \(mutations: MutationRecord\[\]\): void => \{[\s\S]*?mutation\.attributeName === TOOLTIP_TEXT_ATTR[\s\S]*?showFromTarget\(isTooltipTargetConnected\(target\) \? target : null\)/,
       /new TooltipMutationObserver\(handleTooltipMutation\)/,
-      /attributeFilter: \[TOOLTIP_TEXT_ATTR, 'class'\]/,
+      /attributeFilter: \[[\s\S]*?TOOLTIP_TEXT_ATTR,[\s\S]*?TOOLTIP_TITLE_ATTR,[\s\S]*?TOOLTIP_DETAIL_ATTR,[\s\S]*?TOOLTIP_PLACEMENT_ATTR,[\s\S]*?'class'/,
       /tooltipMutationObserver\?\.disconnect\(\);/,
     ],
     'active styled tooltip mutation refresh seam'

@@ -44,8 +44,8 @@ export function NoteCardToolbarBoldButton(
     <button
       className={
         toolbarBoldOn
-          ? 'toolbar-btn toolbar-btn--square active-state wp-pdf-ui-hint wp-pdf-ui-hint--side-right'
-          : 'toolbar-btn toolbar-btn--square wp-pdf-ui-hint wp-pdf-ui-hint--side-right'
+          ? 'toolbar-btn toolbar-btn--square active-state wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-right'
+          : 'toolbar-btn toolbar-btn--square wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-right'
       }
       type="button"
       aria-pressed={toolbarBoldOn}

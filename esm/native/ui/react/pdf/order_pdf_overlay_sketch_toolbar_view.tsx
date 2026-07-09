@@ -78,7 +78,7 @@ export const OrderPdfSketchToolbar = memo(function OrderPdfSketchToolbar(
             <button
               type="button"
               ref={drawTriggerRef}
-              className={`toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn wp-pdf-sketch-tool-btn--combo wp-pdf-ui-hint wp-pdf-ui-hint--side-left${freehandActive || drawPaletteOpen ? ' active-state' : ''}`}
+              className={`toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn wp-pdf-sketch-tool-btn--combo wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-left${freehandActive || drawPaletteOpen ? ' active-state' : ''}`}
               onClick={onActivateDrawTool}
               data-tooltip={`${freehandDefinition.label} / מרקר`}
               aria-label={`${freehandDefinition.label} / מרקר`}
@@ -96,7 +96,7 @@ export const OrderPdfSketchToolbar = memo(function OrderPdfSketchToolbar(
 
           <button
             type="button"
-            className={`toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn wp-pdf-ui-hint wp-pdf-ui-hint--side-left${tool === 'eraser' ? ' active-state' : ''}`}
+            className={`toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-left${tool === 'eraser' ? ' active-state' : ''}`}
             onClick={() => onSetTool('eraser')}
             data-tooltip="מחק"
             aria-label="מחק"
@@ -109,7 +109,7 @@ export const OrderPdfSketchToolbar = memo(function OrderPdfSketchToolbar(
             <button
               type="button"
               ref={widthTriggerRef}
-              className={`toolbar-btn toolbar-btn--square wp-pdf-sketch-toolbar-trigger wp-pdf-ui-hint wp-pdf-ui-hint--side-left${widthPaletteOpen ? ' active-state' : ''}`}
+              className={`toolbar-btn toolbar-btn--square wp-pdf-sketch-toolbar-trigger wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-left${widthPaletteOpen ? ' active-state' : ''}`}
               onClick={onToggleWidthPalette}
               data-tooltip={widthTitle}
               aria-label={widthTitle}
@@ -124,7 +124,7 @@ export const OrderPdfSketchToolbar = memo(function OrderPdfSketchToolbar(
             <button
               type="button"
               ref={colorTriggerRef}
-              className={`toolbar-btn toolbar-btn--square wp-pdf-sketch-toolbar-trigger wp-pdf-ui-hint wp-pdf-ui-hint--side-left${colorPaletteOpen ? ' active-state' : ''}`}
+              className={`toolbar-btn toolbar-btn--square wp-pdf-sketch-toolbar-trigger wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-left${colorPaletteOpen ? ' active-state' : ''}`}
               onClick={onToggleColorPalette}
               data-tooltip={colorTitle}
               aria-label={colorTitle}
@@ -139,7 +139,7 @@ export const OrderPdfSketchToolbar = memo(function OrderPdfSketchToolbar(
           <div className="wp-pdf-sketch-toolbar-divider" />
           <button
             type="button"
-            className="toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn wp-pdf-ui-hint wp-pdf-ui-hint--side-left"
+            className="toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-left"
             onClick={onUndo}
             disabled={!activeHasStrokes}
             data-tooltip="בטל קו אחרון (Ctrl/Cmd+Z)"
@@ -150,7 +150,7 @@ export const OrderPdfSketchToolbar = memo(function OrderPdfSketchToolbar(
 
           <button
             type="button"
-            className="toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn wp-pdf-ui-hint wp-pdf-ui-hint--side-left"
+            className="toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-left"
             onClick={onRedo}
             disabled={!activeHasRedo}
             data-tooltip="החזר קו אחרון (Ctrl/Cmd+Y)"
@@ -161,7 +161,7 @@ export const OrderPdfSketchToolbar = memo(function OrderPdfSketchToolbar(
 
           <button
             type="button"
-            className="toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn close-btn wp-pdf-ui-hint wp-pdf-ui-hint--side-left"
+            className="toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn close-btn wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-left"
             onClick={onClear}
             disabled={!activeHasStrokes}
             data-tooltip="נקה עמוד"
@@ -172,7 +172,7 @@ export const OrderPdfSketchToolbar = memo(function OrderPdfSketchToolbar(
 
           <button
             type="button"
-            className="toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn wp-pdf-ui-hint wp-pdf-ui-hint--side-left"
+            className="toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-left"
             onClick={onRefresh}
             disabled={busy}
             data-tooltip={busy ? 'טוען סקיצות…' : 'רענן סקיצות'}

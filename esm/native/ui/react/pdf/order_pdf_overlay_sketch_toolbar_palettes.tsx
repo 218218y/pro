@@ -52,7 +52,7 @@ export function OrderPdfSketchDrawToolPalette(props: DrawToolPaletteProps): Reac
         <button
           key={definition.tool}
           type="button"
-          className={`toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-palette-btn wp-pdf-ui-hint wp-pdf-ui-hint--side-left${freehandTool === definition.tool ? ' active-state' : ''}`}
+          className={`toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-palette-btn wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-left${freehandTool === definition.tool ? ' active-state' : ''}`}
           onClick={() => onSelectFreehandTool(definition.tool)}
           data-tooltip={definition.label}
           aria-label={definition.label}

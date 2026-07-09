@@ -70,7 +70,7 @@ function UndoRedoControls() {
     <div className="undo-redo-container">
       <IconButton
         variant="camera"
-        className="hint-bottom"
+        className="wp-r-styled-tooltip hint-bottom"
         data-tooltip="בטל (Ctrl+Z)"
         disabled={!status.canUndo}
         onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
@@ -87,7 +87,7 @@ function UndoRedoControls() {
 
       <IconButton
         variant="camera"
-        className="hint-bottom"
+        className="wp-r-styled-tooltip hint-bottom"
         data-tooltip="החזר (Ctrl+Y)"
         disabled={!status.canRedo}
         onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
@@ -124,19 +124,39 @@ function CameraControls() {
 
   return (
     <div className="camera-controls">
-      <IconButton variant="camera" data-tooltip="חזית מלאה" onClick={() => move('front')}>
+      <IconButton
+        variant="camera"
+        className="wp-r-styled-tooltip"
+        data-tooltip="חזית מלאה"
+        onClick={() => move('front')}
+      >
         <i className="fas fa-border-all" />
       </IconButton>
 
-      <IconButton variant="camera" data-tooltip="תקריב" onClick={() => move('front-zoom')}>
+      <IconButton
+        variant="camera"
+        className="wp-r-styled-tooltip"
+        data-tooltip="תקריב"
+        onClick={() => move('front-zoom')}
+      >
         <i className="fas fa-search-plus" />
       </IconButton>
 
-      <IconButton variant="camera" data-tooltip="מבט מימין" onClick={() => move('perspective')}>
+      <IconButton
+        variant="camera"
+        className="wp-r-styled-tooltip"
+        data-tooltip="מבט מימין"
+        onClick={() => move('perspective')}
+      >
         <i className="fas fa-cube" style={{ transform: 'scaleX(-1)' }} />
       </IconButton>
 
-      <IconButton variant="camera" data-tooltip="מבט משמאל" onClick={() => move('perspective-left')}>
+      <IconButton
+        variant="camera"
+        className="wp-r-styled-tooltip"
+        data-tooltip="מבט משמאל"
+        onClick={() => move('perspective-left')}
+      >
         <i className="fas fa-cube" />
       </IconButton>
     </div>

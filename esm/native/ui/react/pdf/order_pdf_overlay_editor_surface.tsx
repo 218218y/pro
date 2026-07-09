@@ -353,7 +353,7 @@ export function OrderPdfOverlayEditorSurface(props: OrderPdfOverlayEditorSurface
       <div className="wp-pdf-floating-draw-dock" dir="rtl" aria-label="כלי ציור בעורך PDF">
         <button
           type="button"
-          className={`wp-pdf-editor-btn wp-pdf-editor-btn--iconOnly wp-pdf-floating-draw-btn wp-pdf-floating-draw-btn--pdf wp-pdf-ui-hint wp-pdf-ui-hint--above${pdfPageAnnotationOpen ? ' is-on' : ''}`}
+          className={`wp-pdf-editor-btn wp-pdf-editor-btn--iconOnly wp-pdf-floating-draw-btn wp-pdf-floating-draw-btn--pdf wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--above${pdfPageAnnotationOpen ? ' is-on' : ''}`}
           data-testid="order-pdf-page-annotation-toggle"
           data-tooltip={pdfPageAnnotationTooltip}
           aria-label={pdfPageAnnotationTooltip}
@@ -368,7 +368,7 @@ export function OrderPdfOverlayEditorSurface(props: OrderPdfOverlayEditorSurface
 
         <button
           type="button"
-          className={`wp-pdf-editor-btn wp-pdf-editor-btn--iconOnly wp-pdf-floating-draw-btn wp-pdf-floating-draw-btn--sketch wp-pdf-ui-hint wp-pdf-ui-hint--above${sketchPreviewOpen ? ' is-on' : ''}`}
+          className={`wp-pdf-editor-btn wp-pdf-editor-btn--iconOnly wp-pdf-floating-draw-btn wp-pdf-floating-draw-btn--sketch wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--above${sketchPreviewOpen ? ' is-on' : ''}`}
           data-testid="order-pdf-sketch-preview-toggle"
           data-tooltip={sketchPreviewTooltip}
           aria-label={sketchPreviewTooltip}

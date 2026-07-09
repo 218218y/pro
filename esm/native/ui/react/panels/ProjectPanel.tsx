@@ -117,9 +117,9 @@ export function ProjectPanel(): ReactElement {
           <Button
             variant="header"
             data-testid="project-load-button"
-            className="btn-header-export-load wp-r-project-icon-btn"
+            className="btn-header-export-load wp-r-project-icon-btn wp-r-styled-tooltip hint-bottom"
             onClick={handleLoadButtonClick}
-            title="טען קובץ"
+            data-tooltip="טען קובץ"
             aria-label="טען קובץ"
           >
             <i className="fas fa-folder-open" aria-hidden="true" />
@@ -128,9 +128,9 @@ export function ProjectPanel(): ReactElement {
           <Button
             variant="header"
             data-testid="project-save-button"
-            className="btn-save btn-header-save wp-r-project-icon-btn"
+            className="btn-save btn-header-save wp-r-project-icon-btn wp-r-styled-tooltip hint-bottom"
             onClick={() => handleSaveDraft(draft)}
-            title="שמור"
+            data-tooltip="שמור"
             aria-label="שמור"
           >
             <i className="fas fa-save" aria-hidden="true" />

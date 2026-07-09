@@ -9,7 +9,7 @@ export function NoteCardToolbarDeleteButton(
   const { index, requestDeleteNote } = props;
   return (
     <button
-      className="toolbar-btn toolbar-btn--square close-btn wp-pdf-ui-hint wp-pdf-ui-hint--side-right"
+      className="toolbar-btn toolbar-btn--square close-btn wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-right"
       type="button"
       data-tooltip="מחק הערה"
       onMouseDown={(e: import('react').MouseEvent<HTMLButtonElement>) =>

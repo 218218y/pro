@@ -54,7 +54,7 @@ export const OrderPdfSketchShapeToolbar = memo(function OrderPdfSketchShapeToolb
         <div className="wp-pdf-sketch-toolbar-stack">
           <button
             type="button"
-            className={`toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn wp-pdf-sketch-tool-btn--shape wp-pdf-ui-hint wp-pdf-ui-hint--side-right${tool === 'text' ? ' active-state' : ''}`}
+            className={`toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn wp-pdf-sketch-tool-btn--shape wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-right${tool === 'text' ? ' active-state' : ''}`}
             onClick={() => onSetTool('text')}
             data-tooltip="טקסט"
             aria-label="טקסט"
@@ -69,7 +69,7 @@ export const OrderPdfSketchShapeToolbar = memo(function OrderPdfSketchShapeToolb
               <button
                 key={shape.tool}
                 type="button"
-                className={`toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn wp-pdf-sketch-tool-btn--shape wp-pdf-ui-hint wp-pdf-ui-hint--side-right${active ? ' active-state' : ''}`}
+                className={`toolbar-btn toolbar-btn--square wp-pdf-sketch-tool-btn wp-pdf-sketch-tool-btn--shape wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-right${active ? ' active-state' : ''}`}
                 onClick={() => onSetTool(shape.tool)}
                 data-tooltip={shape.label}
                 aria-label={shape.label}

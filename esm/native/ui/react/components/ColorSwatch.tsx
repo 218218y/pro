@@ -1,6 +1,4 @@
-import type { CSSProperties, FocusEvent, HTMLAttributes, KeyboardEvent, MouseEvent, ReactNode } from 'react';
-
-import { clampStyledTooltipToViewport, resetStyledTooltipViewportClamp } from './TooltipPlacement.js';
+import type { CSSProperties, HTMLAttributes, KeyboardEvent, ReactNode } from 'react';
 
 type ColorSwatchProps = Omit<HTMLAttributes<HTMLDivElement>, 'onClick' | 'onKeyDown' | 'title'> & {
   title: string;
@@ -42,34 +40,6 @@ function cssUrl(value: string): string {
   return `url(${JSON.stringify(value)})`;
 }
 
-function attachTooltipPlacementHandlers<T extends HTMLDivElement>(args: {
-  tooltip: string | undefined;
-  onMouseEnter?: HTMLAttributes<T>['onMouseEnter'];
-  onMouseLeave?: HTMLAttributes<T>['onMouseLeave'];
-  onFocus?: HTMLAttributes<T>['onFocus'];
-  onBlur?: HTMLAttributes<T>['onBlur'];
-}) {
-  const { tooltip, onMouseEnter, onMouseLeave, onFocus, onBlur } = args;
-  return {
-    onMouseEnter(event: MouseEvent<T>) {
-      onMouseEnter?.(event);
-      clampStyledTooltipToViewport(event.currentTarget, tooltip);
-    },
-    onMouseLeave(event: MouseEvent<T>) {
-      onMouseLeave?.(event);
-      resetStyledTooltipViewportClamp(event.currentTarget);
-    },
-    onFocus(event: FocusEvent<T>) {
-      onFocus?.(event);
-      clampStyledTooltipToViewport(event.currentTarget, tooltip);
-    },
-    onBlur(event: FocusEvent<T>) {
-      onBlur?.(event);
-      resetStyledTooltipViewportClamp(event.currentTarget);
-    },
-  };
-}
-
 export function ColorSwatch(props: ColorSwatchProps) {
   const {
     title,
@@ -80,10 +50,6 @@ export function ColorSwatch(props: ColorSwatchProps) {
     onPick,
     children,
     className,
-    onMouseEnter,
-    onMouseLeave,
-    onFocus,
-    onBlur,
     ...rest
   } = props;
 
@@ -93,13 +59,6 @@ export function ColorSwatch(props: ColorSwatchProps) {
       ? { backgroundColor }
       : {};
   const tooltip = normalizeTooltip(title);
-  const tooltipHandlers = attachTooltipPlacementHandlers<HTMLDivElement>({
-    tooltip,
-    onMouseEnter,
-    onMouseLeave,
-    onFocus,
-    onBlur,
-  });
 
   return (
     <div
@@ -115,7 +74,6 @@ export function ColorSwatch(props: ColorSwatchProps) {
       data-tooltip={tooltip}
       aria-label={rest['aria-label'] || tooltip}
       style={style}
-      {...tooltipHandlers}
       onClick={onPick}
       role="button"
       tabIndex={0}
@@ -136,21 +94,10 @@ export function ColorSwatchItem(props: ColorSwatchItemProps) {
     onPick,
     children,
     className,
-    onMouseEnter,
-    onMouseLeave,
-    onFocus,
-    onBlur,
     ...rest
   } = props;
 
   const tooltip = normalizeTooltip(title);
-  const tooltipHandlers = attachTooltipPlacementHandlers<HTMLDivElement>({
-    tooltip,
-    onMouseEnter,
-    onMouseLeave,
-    onFocus,
-    onBlur,
-  });
 
   return (
     <div
@@ -163,7 +110,6 @@ export function ColorSwatchItem(props: ColorSwatchItemProps) {
       )}
       data-tooltip={tooltip}
       aria-label={rest['aria-label'] || tooltip}
-      {...tooltipHandlers}
       onClick={onPick}
       role="button"
       tabIndex={0}

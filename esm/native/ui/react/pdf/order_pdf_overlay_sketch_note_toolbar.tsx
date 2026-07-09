@@ -64,8 +64,8 @@ export function OrderPdfSketchNoteToolbar(props: OrderPdfSketchNoteToolbarProps)
         type="button"
         className={
           activeBold
-            ? 'toolbar-btn toolbar-btn--square active-state wp-pdf-ui-hint wp-pdf-ui-hint--side-right'
-            : 'toolbar-btn toolbar-btn--square wp-pdf-ui-hint wp-pdf-ui-hint--side-right'
+            ? 'toolbar-btn toolbar-btn--square active-state wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-right'
+            : 'toolbar-btn toolbar-btn--square wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-right'
         }
         aria-pressed={activeBold}
         data-tooltip="מודגש"
@@ -78,7 +78,7 @@ export function OrderPdfSketchNoteToolbar(props: OrderPdfSketchNoteToolbarProps)
       <div className="toolbar-color-container">
         <button
           type="button"
-          className="toolbar-btn toolbar-btn--square toolbar-color-btn wp-pdf-ui-hint wp-pdf-ui-hint--side-right"
+          className="toolbar-btn toolbar-btn--square toolbar-color-btn wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-right"
           data-tooltip="צבע טקסט"
           style={{
             backgroundColor: activeColor,
@@ -112,7 +112,7 @@ export function OrderPdfSketchNoteToolbar(props: OrderPdfSketchNoteToolbarProps)
       <div className="toolbar-size-container">
         <button
           type="button"
-          className="toolbar-btn toolbar-btn--square toolbar-size-btn wp-pdf-ui-hint wp-pdf-ui-hint--side-right"
+          className="toolbar-btn toolbar-btn--square toolbar-size-btn wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-right"
           data-tooltip="גודל טקסט"
           onMouseDown={(event: ReactMouseEvent<HTMLButtonElement>) => stopToolbarMouse(event)}
           onClick={onToggleSizePalette}
@@ -142,7 +142,7 @@ export function OrderPdfSketchNoteToolbar(props: OrderPdfSketchNoteToolbarProps)
 
       <button
         type="button"
-        className="toolbar-btn toolbar-btn--square close-btn wp-pdf-ui-hint wp-pdf-ui-hint--side-right"
+        className="toolbar-btn toolbar-btn--square close-btn wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-right"
         data-tooltip="מחק תיבת טקסט"
         onMouseDown={(event: ReactMouseEvent<HTMLButtonElement>) => stopToolbarMouse(event)}
         onClick={onDelete}
