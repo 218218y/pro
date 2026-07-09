@@ -27,8 +27,11 @@ import {
   readSplitDoorsBottomMapValue,
   readSplitDoorsMapValue,
   readToggleMap,
-} from './api.js';
-import { PERSISTED_PROJECT_CONFIG_BRANCH_KEYS, type PersistedProjectConfigBranchKey } from './api.js';
+} from './project_config_map_readers.js';
+import {
+  PERSISTED_PROJECT_CONFIG_BRANCH_KEYS,
+  type PersistedProjectConfigBranchKey,
+} from './project_config_snapshot_canonical_shared.js';
 
 export type PersistedSavedColorsSnapshot = Array<SavedColorLike | string>;
 type PersistedCornerConfigurationSnapshot = ReturnType<typeof cloneCornerConfigurationListsSnapshot>;

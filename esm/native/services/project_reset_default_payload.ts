@@ -7,7 +7,7 @@ import {
   type ProjectResetDefaultFailureResult,
 } from '../runtime/project_recovery_action_result.js';
 import { cloneProjectJson, isObjectRecord } from '../../shared/project_json_clone.js';
-import { normalizeResetDefaultProjectStructureInPlace } from '../features/project_config/project_payload_canonical.js';
+import { normalizeResetDefaultProjectStructureInPlace } from '../features/project_config/api.js';
 import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../../shared/project_schema_constants.js';
 
 function cloneJsonProjectData(value: ProjectDataLike): ProjectDataLike & Record<string, unknown> {

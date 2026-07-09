@@ -5,4 +5,4 @@ export {
   type ConfigStateProjectConfigSnapshot,
   type PersistedProjectConfigSnapshot,
   type PersistedSavedColorsSnapshot,
-} from '../features/project_config/project_config_persisted_snapshot.js';
+} from '../features/project_config/api.js';

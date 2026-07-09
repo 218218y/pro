@@ -786,14 +786,6 @@
     },
     {
       "file": "esm/native/io/project_config_persisted_snapshot.ts",
-      "entry": "modules_configuration/corner_cells_api.js"
-    },
-    {
-      "file": "esm/native/io/project_config_persisted_snapshot.ts",
-      "entry": "modules_configuration/modules_config_api.js"
-    },
-    {
-      "file": "esm/native/io/project_config_persisted_snapshot.ts",
       "entry": "project_config/api.js"
     },
     {
@@ -826,7 +818,7 @@
     },
     {
       "file": "esm/native/io/project_payload_canonical.ts",
-      "entry": "modules_configuration/corner_cells_api.js"
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/io/project_schema_current.ts",
@@ -1598,6 +1590,10 @@
     },
     {
       "file": "esm/native/services/models_apply_project_snapshot.ts",
+      "entry": "project_config/api.js"
+    },
+    {
+      "file": "esm/native/services/models_apply_project_snapshot.ts",
       "entry": "model_record/api.js"
     },
     {
@@ -1607,6 +1603,10 @@
     {
       "file": "esm/native/services/models_registry_normalization.ts",
       "entry": "model_record/api.js"
+    },
+    {
+      "file": "esm/native/services/project_reset_default_payload.ts",
+      "entry": "project_config/api.js"
     },
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",

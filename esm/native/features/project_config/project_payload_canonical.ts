@@ -2,7 +2,7 @@ import type { ProjectDataLike, UnknownRecord } from '../../../../types/index.js'
 
 import { cloneCornerConfigurationListsSnapshot } from '../modules_configuration/corner_cells_api.js';
 
-import { canonicalizeProjectConfigListsForExportPayload } from './api.js';
+import { canonicalizeProjectConfigListsForExportPayload } from './project_config_lists_runtime.js';
 import { asObjectRecord } from '../../../shared/project_json_clone.js';
 
 function stripSketchExtrasFromModules(list: unknown): void {
