@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import type { AppContainer } from '../../../../types';
 
 import { restoreReactFeedbackHost, setReactFeedbackHost } from '../feedback_shared.js';
+import { Button } from './components/Button.js';
 import {
   clearOverlayFeedbackPromptFocusTimers,
   clearOverlayFeedbackToastTimers,
@@ -318,22 +319,16 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
             )}
 
             <div className="modal-actions">
-              <button
+              <Button
                 id="modalConfirmBtn"
-                type="button"
-                className={modal.open && modal.mode === 'confirm' ? 'btn btn-danger' : 'btn btn-save'}
+                variant={modal.open && modal.mode === 'confirm' ? 'danger' : 'save'}
                 onClick={confirmOk}
               >
                 אישור
-              </button>
-              <button
-                id="modalCancelBtn"
-                type="button"
-                className="btn btn-cancel"
-                onClick={() => close({ cancelled: true })}
-              >
+              </Button>
+              <Button id="modalCancelBtn" variant="cancel" onClick={() => close({ cancelled: true })}>
                 ביטול
-              </button>
+              </Button>
             </div>
           </div>
         </div>,

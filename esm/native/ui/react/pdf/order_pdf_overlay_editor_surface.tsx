@@ -9,6 +9,7 @@ import type {
   ReactNode,
 } from 'react';
 
+import { Button } from '../components/Button.js';
 import type { OrderPdfEditableScalarField } from './order_pdf_overlay_draft_state.js';
 import type {
   InlineDetailsConfirmState,
@@ -500,12 +501,12 @@ export function OrderPdfOverlayEditorSurface(props: OrderPdfOverlayEditorSurface
               <div className="wp-pdf-inline-preview">{inlineConfirm.preview}</div>
             ) : null}
             <div className="modal-actions">
-              <button type="button" className="btn btn-save" onClick={onConfirmInlineOk}>
+              <Button variant="save" onClick={onConfirmInlineOk}>
                 אישור
-              </button>
-              <button type="button" className="btn btn-cancel" onClick={onConfirmInlineCancel}>
+              </Button>
+              <Button variant="cancel" onClick={onConfirmInlineCancel}>
                 ביטול
-              </button>
+              </Button>
             </div>
           </div>
         </div>

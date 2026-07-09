@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes } from 'react';
 
 type ButtonVariant =
-  'default' | 'primary' | 'save' | 'delete' | 'danger' | 'accent' | 'light' | 'success' | 'header';
+  'default' | 'primary' | 'save' | 'delete' | 'danger' | 'accent' | 'light' | 'success' | 'header' | 'cancel';
 
 type ButtonSize = 'sm' | 'md';
 
@@ -31,6 +31,8 @@ function variantToClass(v: ButtonVariant | undefined): string {
       return 'btn btn-light';
     case 'success':
       return 'btn btn-success';
+    case 'cancel':
+      return 'btn btn-cancel';
     case 'header':
       return 'header-btn-small wp-r-btn-small';
     case 'default':

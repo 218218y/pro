@@ -55,6 +55,8 @@ requirePattern(
   /import \{ Button, ColorSwatch, OptionButton, OptionButtonGroup, ToggleRow \}/
 );
 requirePattern('esm/native/ui/react/components/Button.tsx', /type ButtonVariant =[\s\S]*\| 'danger'/);
+requirePattern('esm/native/ui/react/components/Button.tsx', /type ButtonVariant =[\s\S]*\| 'cancel'/);
+requirePattern('esm/native/ui/react/components/Button.tsx', /case 'cancel':[\s\S]*return 'btn btn-cancel';/);
 requirePattern(
   'esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx',
   /<Button[\s\S]*variant="light"[\s\S]*wp-r-mirror-draft-reset-btn/
@@ -370,6 +372,35 @@ forbidPattern(
   'esm/native/ui/react/tabs/interior_tab_sections_controls.tsx',
   /className="btn btn-danger btn-inline btn-sm"/
 );
+
+requirePattern(
+  'esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx',
+  /import \{ Button \} from '\.\.\/components\/Button\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx',
+  /id="orderPdfInlineConfirmModal"[\s\S]*<Button[\s\S]*variant="save"[\s\S]*onClick=\{onConfirmInlineOk\}[\s\S]*אישור[\s\S]*<Button[\s\S]*variant="cancel"[\s\S]*onClick=\{onConfirmInlineCancel\}[\s\S]*ביטול/
+);
+forbidPattern('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx', /className="btn btn-save"/);
+forbidPattern('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx', /className="btn btn-cancel"/);
+requirePattern(
+  'esm/native/ui/react/overlay_feedback_host.tsx',
+  /import \{ Button \} from '\.\/components\/Button\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/overlay_feedback_host.tsx',
+  /id="modalConfirmBtn"[\s\S]*variant=\{modal\.open && modal\.mode === 'confirm' \? 'danger' : 'save'\}[\s\S]*onClick=\{confirmOk\}[\s\S]*אישור/
+);
+requirePattern(
+  'esm/native/ui/react/overlay_feedback_host.tsx',
+  /id="modalCancelBtn"[\s\S]*variant="cancel"[\s\S]*onClick=\{\(\) => close\(\{ cancelled: true \}\)\}[\s\S]*ביטול/
+);
+forbidPattern(
+  'esm/native/ui/react/overlay_feedback_host.tsx',
+  /className=\{modal\.open && modal\.mode === 'confirm' \? 'btn btn-danger' : 'btn btn-save'\}/
+);
+forbidPattern('esm/native/ui/react/overlay_feedback_host.tsx', /className="btn btn-save"/);
+forbidPattern('esm/native/ui/react/overlay_feedback_host.tsx', /className="btn btn-cancel"/);
 
 requirePattern(
   'esm/native/ui/react/panels/SettingsBackupPanel.tsx',

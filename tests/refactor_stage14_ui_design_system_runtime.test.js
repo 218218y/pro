@@ -23,6 +23,8 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   const button = read('esm/native/ui/react/components/Button.tsx');
   const appErrorBoundary = read('esm/native/ui/react/components/AppErrorBoundary.tsx');
   const lazyErrorBoundary = read('esm/native/ui/react/components/LazyErrorBoundary.tsx');
+  const overlayFeedbackHost = read('esm/native/ui/react/overlay_feedback_host.tsx');
+  const orderPdfEditorSurface = read('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx');
   const designPanel = read('esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx');
   const colorSection = read('esm/native/ui/react/tabs/design_tab_color_section.tsx');
   const doorFeaturesSection = read('esm/native/ui/react/tabs/design_tab_sections_door_features.tsx');
@@ -49,6 +51,8 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   assert.match(colorSwatch, /children\?: ReactNode/);
   assert.match(colorSwatch, /special\?: boolean/);
   assert.match(button, /type ButtonVariant =[\s\S]*\| 'danger'/);
+  assert.match(button, /type ButtonVariant =[\s\S]*\| 'cancel'/);
+  assert.match(button, /case 'cancel':[\s\S]*return 'btn btn-cancel';/);
   assert.match(appErrorBoundary, /import \{ Button \} from '\.\/Button\.js';/);
   assert.match(
     appErrorBoundary,
@@ -61,6 +65,28 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
     /<Button[\s\S]*variant="save"[\s\S]*onClick=\{\(\) => tryRecoverOrReload\(this\.props\.app, error\)\}[\s\S]*רענן/
   );
   assert.doesNotMatch(lazyErrorBoundary, /className="btn btn-save"/);
+  assert.match(orderPdfEditorSurface, /import \{ Button \} from '\.\.\/components\/Button\.js';/);
+  assert.match(
+    orderPdfEditorSurface,
+    /id="orderPdfInlineConfirmModal"[\s\S]*<Button[\s\S]*variant="save"[\s\S]*onClick=\{onConfirmInlineOk\}[\s\S]*אישור[\s\S]*<Button[\s\S]*variant="cancel"[\s\S]*onClick=\{onConfirmInlineCancel\}[\s\S]*ביטול/
+  );
+  assert.doesNotMatch(orderPdfEditorSurface, /className="btn btn-save"/);
+  assert.doesNotMatch(orderPdfEditorSurface, /className="btn btn-cancel"/);
+  assert.match(overlayFeedbackHost, /import \{ Button \} from '\.\/components\/Button\.js';/);
+  assert.match(
+    overlayFeedbackHost,
+    /id="modalConfirmBtn"[\s\S]*variant=\{modal\.open && modal\.mode === 'confirm' \? 'danger' : 'save'\}[\s\S]*onClick=\{confirmOk\}[\s\S]*אישור/
+  );
+  assert.match(
+    overlayFeedbackHost,
+    /id="modalCancelBtn"[\s\S]*variant="cancel"[\s\S]*onClick=\{\(\) => close\(\{ cancelled: true \}\)\}[\s\S]*ביטול/
+  );
+  assert.doesNotMatch(
+    overlayFeedbackHost,
+    /className=\{modal\.open && modal\.mode === 'confirm' \? 'btn btn-danger' : 'btn btn-save'\}/
+  );
+  assert.doesNotMatch(overlayFeedbackHost, /className="btn btn-save"/);
+  assert.doesNotMatch(overlayFeedbackHost, /className="btn btn-cancel"/);
   assert.match(designPanel, /import \{ Button, ColorSwatch, OptionButton, OptionButtonGroup, ToggleRow \}/);
   assert.match(designPanel, /<ColorSwatch[\s\S]*special=\{dot\.isSpecial\}/);
   assert.match(designPanel, /<Button[\s\S]*variant="light"[\s\S]*wp-r-mirror-draft-reset-btn/);
