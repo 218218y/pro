@@ -17,6 +17,29 @@ function forbidPattern(file, pattern) {
   if (pattern.test(source)) errors.push(`${file}: forbidden legacy pattern ${pattern}`);
 }
 
+function section(file, startText, endText) {
+  const source = read(file);
+  const start = source.indexOf(startText);
+  if (start < 0) {
+    errors.push(`${file}: missing section start ${startText}`);
+    return '';
+  }
+  const end = source.indexOf(endText, start + startText.length);
+  if (end < 0) {
+    errors.push(`${file}: missing section end ${endText}`);
+    return source.slice(start);
+  }
+  return source.slice(start, end);
+}
+
+function requirePatternIn(label, source, pattern) {
+  if (!pattern.test(source)) errors.push(`${label}: missing ${pattern}`);
+}
+
+function forbidPatternIn(label, source, pattern) {
+  if (pattern.test(source)) errors.push(`${label}: forbidden legacy pattern ${pattern}`);
+}
+
 requirePattern(
   'esm/native/ui/react/components/ColorSwatch.tsx',
   /type ColorSwatchProps = Omit<HTMLAttributes<HTMLDivElement>, 'onClick' \| 'onKeyDown' \| 'title'>/
@@ -49,6 +72,37 @@ requirePattern(
   /<Button[\s\S]*variant="save"[\s\S]*onClick=\{\(\) => tryRecoverOrReload\(this\.props\.app, error\)\}[\s\S]*רענן/
 );
 forbidPattern('esm/native/ui/react/components/LazyErrorBoundary.tsx', /className="btn btn-save"/);
+
+requirePattern('esm/native/ui/react/components/IconButton.tsx', /type IconButtonVariant =[\s\S]*\| 'camera'/);
+requirePattern('esm/native/ui/react/components/IconButton.tsx', /case 'camera':[\s\S]*return 'cam-btn';/);
+requirePattern(
+  'esm/native/ui/react/components/IconButton.tsx',
+  /className=\{cx\(variantToClass\(variant\), className\)\}/
+);
+requirePattern(
+  'esm/native/ui/react/overlay_top_controls.tsx',
+  /import \{ IconButton \} from '\.\/components\/IconButton\.js';/
+);
+const undoRedoControls = section(
+  'esm/native/ui/react/overlay_top_controls.tsx',
+  'function UndoRedoControls()',
+  'function CameraControls()'
+);
+requirePatternIn(
+  'esm/native/ui/react/overlay_top_controls.tsx UndoRedoControls',
+  undoRedoControls,
+  /<IconButton[\s\S]*variant="camera"[\s\S]*className="hint-bottom"[\s\S]*data-tooltip="[^"]*Ctrl\+Z\)"[\s\S]*disabled=\{!status\.canUndo\}[\s\S]*event\.preventDefault\(\);[\s\S]*undo\(\);[\s\S]*fas fa-undo/
+);
+requirePatternIn(
+  'esm/native/ui/react/overlay_top_controls.tsx UndoRedoControls',
+  undoRedoControls,
+  /<IconButton[\s\S]*variant="camera"[\s\S]*className="hint-bottom"[\s\S]*data-tooltip="[^"]*Ctrl\+Y\)"[\s\S]*disabled=\{!status\.canRedo\}[\s\S]*event\.preventDefault\(\);[\s\S]*redo\(\);[\s\S]*fas fa-redo/
+);
+forbidPatternIn(
+  'esm/native/ui/react/overlay_top_controls.tsx UndoRedoControls',
+  undoRedoControls,
+  /className="cam-btn hint-bottom"/
+);
 
 requirePattern(
   'esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx',

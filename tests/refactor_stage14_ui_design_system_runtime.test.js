@@ -7,6 +7,14 @@ function read(file) {
   return readFileSync(file, 'utf8');
 }
 
+function readBetween(source, startText, endText) {
+  const start = source.indexOf(startText);
+  assert.notEqual(start, -1, `missing section start: ${startText}`);
+  const end = source.indexOf(endText, start + startText.length);
+  assert.notEqual(end, -1, `missing section end: ${endText}`);
+  return source.slice(start, end);
+}
+
 test('stage 14 UI design system contract is wired into refactor guardrails', () => {
   execFileSync(process.execPath, ['tools/wp_ui_design_system_contract.mjs'], { stdio: 'pipe' });
 
@@ -21,8 +29,10 @@ test('stage 14 UI design system contract is wired into refactor guardrails', () 
 test('stage 14 Design tab uses shared choice primitives instead of bespoke swatch and option controls', () => {
   const colorSwatch = read('esm/native/ui/react/components/ColorSwatch.tsx');
   const button = read('esm/native/ui/react/components/Button.tsx');
+  const iconButton = read('esm/native/ui/react/components/IconButton.tsx');
   const appErrorBoundary = read('esm/native/ui/react/components/AppErrorBoundary.tsx');
   const lazyErrorBoundary = read('esm/native/ui/react/components/LazyErrorBoundary.tsx');
+  const overlayTopControls = read('esm/native/ui/react/overlay_top_controls.tsx');
   const overlayFeedbackHost = read('esm/native/ui/react/overlay_feedback_host.tsx');
   const orderPdfEditorSurface = read('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx');
   const designPanel = read('esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx');
@@ -53,6 +63,9 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   assert.match(button, /type ButtonVariant =[\s\S]*\| 'danger'/);
   assert.match(button, /type ButtonVariant =[\s\S]*\| 'cancel'/);
   assert.match(button, /case 'cancel':[\s\S]*return 'btn btn-cancel';/);
+  assert.match(iconButton, /type IconButtonVariant =[\s\S]*\| 'camera'/);
+  assert.match(iconButton, /case 'camera':[\s\S]*return 'cam-btn';/);
+  assert.match(iconButton, /className=\{cx\(variantToClass\(variant\), className\)\}/);
   assert.match(appErrorBoundary, /import \{ Button \} from '\.\/Button\.js';/);
   assert.match(
     appErrorBoundary,
@@ -65,6 +78,21 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
     /<Button[\s\S]*variant="save"[\s\S]*onClick=\{\(\) => tryRecoverOrReload\(this\.props\.app, error\)\}[\s\S]*רענן/
   );
   assert.doesNotMatch(lazyErrorBoundary, /className="btn btn-save"/);
+  assert.match(overlayTopControls, /import \{ IconButton \} from '\.\/components\/IconButton\.js';/);
+  const undoRedoControls = readBetween(
+    overlayTopControls,
+    'function UndoRedoControls()',
+    'function CameraControls()'
+  );
+  assert.match(
+    undoRedoControls,
+    /<IconButton[\s\S]*variant="camera"[\s\S]*className="hint-bottom"[\s\S]*data-tooltip="[^"]*Ctrl\+Z\)"[\s\S]*disabled=\{!status\.canUndo\}[\s\S]*event\.preventDefault\(\);[\s\S]*undo\(\);[\s\S]*fas fa-undo/
+  );
+  assert.match(
+    undoRedoControls,
+    /<IconButton[\s\S]*variant="camera"[\s\S]*className="hint-bottom"[\s\S]*data-tooltip="[^"]*Ctrl\+Y\)"[\s\S]*disabled=\{!status\.canRedo\}[\s\S]*event\.preventDefault\(\);[\s\S]*redo\(\);[\s\S]*fas fa-redo/
+  );
+  assert.doesNotMatch(undoRedoControls, /className="cam-btn hint-bottom"/);
   assert.match(orderPdfEditorSurface, /import \{ Button \} from '\.\.\/components\/Button\.js';/);
   assert.match(
     orderPdfEditorSurface,

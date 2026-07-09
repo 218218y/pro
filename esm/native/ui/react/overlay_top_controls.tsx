@@ -10,6 +10,7 @@ import {
 } from '../../services/api.js';
 
 import { useApp, useUiFeedback } from './hooks.js';
+import { IconButton } from './components/IconButton.js';
 import { ViewerNotesControls } from './overlay_notes_controls.js';
 import { reportOverlayAppNonFatal } from './overlay_app_shared.js';
 
@@ -67,9 +68,9 @@ function UndoRedoControls() {
 
   return (
     <div className="undo-redo-container">
-      <button
-        type="button"
-        className="cam-btn hint-bottom"
+      <IconButton
+        variant="camera"
+        className="hint-bottom"
         data-tooltip="בטל (Ctrl+Z)"
         disabled={!status.canUndo}
         onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
@@ -82,11 +83,11 @@ function UndoRedoControls() {
         }}
       >
         <i className="fas fa-undo" />
-      </button>
+      </IconButton>
 
-      <button
-        type="button"
-        className="cam-btn hint-bottom"
+      <IconButton
+        variant="camera"
+        className="hint-bottom"
         data-tooltip="החזר (Ctrl+Y)"
         disabled={!status.canRedo}
         onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
@@ -99,7 +100,7 @@ function UndoRedoControls() {
         }}
       >
         <i className="fas fa-redo" />
-      </button>
+      </IconButton>
     </div>
   );
 }

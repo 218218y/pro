@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes } from 'react';
 
-type IconButtonVariant = 'default' | 'step' | 'light' | 'header';
+type IconButtonVariant = 'default' | 'step' | 'light' | 'header' | 'camera';
 
 type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: IconButtonVariant;
@@ -20,6 +20,8 @@ function variantToClass(v: IconButtonVariant | undefined): string {
       return 'btn btn-light btn-inline btn-sm wp-r-icon-btn';
     case 'header':
       return 'header-btn-small wp-r-btn-small wp-r-icon-btn';
+    case 'camera':
+      return 'cam-btn';
     case 'default':
     default:
       return 'wp-r-icon-btn';
