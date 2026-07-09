@@ -26,22 +26,17 @@ test('quick action export buttons expose structured title and detail tooltips', 
       dockSource.includes(`detail: '${tooltip.detail}'`),
       `missing quick-action tooltip detail: ${tooltip.detail}`
     );
-    assert.match(
-      dockSource,
-      new RegExp(`data-tooltip-title=\{QUICK_ACTION_EXPORT_TOOLTIPS\.${tooltip.key}\.title\}`)
-    );
-    assert.match(
-      dockSource,
-      new RegExp(`data-tooltip-detail=\{QUICK_ACTION_EXPORT_TOOLTIPS\.${tooltip.key}\.detail\}`)
-    );
-    assert.match(
-      dockSource,
-      new RegExp(`<QuickActionExportTooltipView tooltip=\{QUICK_ACTION_EXPORT_TOOLTIPS\.${tooltip.key}\} />`)
-    );
+    assert.match(dockSource, new RegExp(`tooltip=\\{QUICK_ACTION_EXPORT_TOOLTIPS\\.${tooltip.key}\\}`));
   }
 
   assert.match(dockSource, /type QuickActionExportTooltipConfig/);
   assert.match(dockSource, /function QuickActionExportTooltipView\(\{\s*tooltip,?\s*\}/);
+  assert.match(dockSource, /function QuickActionExportButton\(\{/);
+  assert.match(dockSource, /data-tooltip-title=\{tooltip\.title\}/);
+  assert.match(dockSource, /data-tooltip-detail=\{tooltip\.detail\}/);
+  assert.match(dockSource, /aria-label=\{formatQuickActionExportTooltipLabel\(tooltip\)\}/);
+  assert.match(dockSource, /<QuickActionExportTooltipView tooltip=\{tooltip\} \/>/);
+  assert.match(dockSource, /keepOpen: keepOpenRef\.current/);
   assert.doesNotMatch(dockSource, /type QuickActionExportTooltip\s*=/);
   assert.match(dockSource, /className="wp-qa-tooltip-title"/);
   assert.match(dockSource, /className="wp-qa-tooltip-detail"/);

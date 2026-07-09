@@ -154,6 +154,31 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
     /<IconButton[\s\S]*ref=\{toggleRef\}[\s\S]*variant="camera"[\s\S]*className="wp-qa-toggle hint-bottom"[\s\S]*data-testid="quick-actions-toggle-button"[\s\S]*data-tooltip=\{menuOpen \?[\s\S]*aria-label=\{menuOpen \?[\s\S]*quickActionsController\.toggleMenu\(\{[\s\S]*event,[\s\S]*op: 'quick-actions:toggle-menu',[\s\S]*setMenuOpen,[\s\S]*fas fa-times[\s\S]*fas fa-arrow-right/
   );
   assert.doesNotMatch(quickActionsDock, /className="cam-btn wp-qa-toggle hint-bottom"/);
+  assert.match(
+    quickActionsDock,
+    /function QuickActionExportButton\(\{[\s\S]*className="wp-qa-btn"[\s\S]*data-tooltip-title=\{tooltip\.title\}[\s\S]*data-tooltip-detail=\{tooltip\.detail\}[\s\S]*aria-label=\{formatQuickActionExportTooltipLabel\(tooltip\)\}[\s\S]*keepOpen: keepOpenRef\.current[\s\S]*<QuickActionExportTooltipView tooltip=\{tooltip\} \/>/
+  );
+  assert.match(
+    quickActionsDock,
+    /<QuickActionExportButton[\s\S]*action=\{\(\) => exp\.exportTakeSnapshot\(\)\}[\s\S]*closeMenu=\{closeMenu\}[\s\S]*iconClassName="fas fa-camera"[\s\S]*keepOpenRef=\{menuPinnedOpenRefState\}[\s\S]*op="quick-actions:snapshot"[\s\S]*runAction=\{quickActionsController\.runAction\}[\s\S]*tooltip=\{QUICK_ACTION_EXPORT_TOOLTIPS\.snapshot\}/
+  );
+  assert.match(
+    quickActionsDock,
+    /<QuickActionExportButton[\s\S]*action=\{\(\) => exp\.exportCopyToClipboard\(\)\}[\s\S]*closeMenu=\{closeMenu\}[\s\S]*iconClassName="fas fa-copy"[\s\S]*keepOpenRef=\{menuPinnedOpenRefState\}[\s\S]*op="quick-actions:copy"[\s\S]*runAction=\{quickActionsController\.runAction\}[\s\S]*tooltip=\{QUICK_ACTION_EXPORT_TOOLTIPS\.copy\}/
+  );
+  assert.match(
+    quickActionsDock,
+    /<QuickActionExportButton[\s\S]*action=\{\(\) => exp\.exportRenderAndSketch\(\)\}[\s\S]*closeMenu=\{closeMenu\}[\s\S]*iconClassName="fas fa-images"[\s\S]*keepOpenRef=\{menuPinnedOpenRefState\}[\s\S]*op="quick-actions:render-and-sketch"[\s\S]*runAction=\{quickActionsController\.runAction\}[\s\S]*tooltip=\{QUICK_ACTION_EXPORT_TOOLTIPS\.renderAndSketch\}/
+  );
+  assert.match(
+    quickActionsDock,
+    /<QuickActionExportButton[\s\S]*action=\{\(\) => exp\.exportDualImage\(\)\}[\s\S]*closeMenu=\{closeMenu\}[\s\S]*iconClassName="fas fa-columns"[\s\S]*keepOpenRef=\{menuPinnedOpenRefState\}[\s\S]*op="quick-actions:dual-image"[\s\S]*runAction=\{quickActionsController\.runAction\}[\s\S]*tooltip=\{QUICK_ACTION_EXPORT_TOOLTIPS\.dualImage\}/
+  );
+  assert.doesNotMatch(quickActionsDock, /data-tooltip-title=\{QUICK_ACTION_EXPORT_TOOLTIPS\.[\w.]+\.title\}/);
+  assert.doesNotMatch(
+    quickActionsDock,
+    /aria-label=\{formatQuickActionExportTooltipLabel\(QUICK_ACTION_EXPORT_TOOLTIPS\./
+  );
   assert.match(orderPdfEditorSurface, /import \{ Button \} from '\.\.\/components\/Button\.js';/);
   assert.match(
     orderPdfEditorSurface,

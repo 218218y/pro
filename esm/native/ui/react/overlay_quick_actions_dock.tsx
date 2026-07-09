@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties, ReactElement } from 'react';
+import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactElement } from 'react';
 
 import { getCloudSyncServiceMaybe, getDocumentMaybe, runPerfAction } from '../../services/api.js';
 import { createCloudSyncUiActionController } from './cloud_sync_ui_action_controller_runtime.js';
 import { IconButton } from './components/IconButton.js';
-import { createQuickActionsDockController } from './overlay_quick_actions_dock_controller_runtime.js';
+import {
+  createQuickActionsDockController,
+  type QuickActionsDockController,
+} from './overlay_quick_actions_dock_controller_runtime.js';
 import { useApp, useExportActions, useUiFeedback } from './hooks.js';
 import { reportOverlayAppNonFatal } from './overlay_app_shared.js';
 
@@ -30,6 +33,20 @@ const QUICK_ACTION_EXPORT_TOOLTIPS = {
 type QuickActionExportTooltipConfig =
   (typeof QUICK_ACTION_EXPORT_TOOLTIPS)[keyof typeof QUICK_ACTION_EXPORT_TOOLTIPS];
 
+type QuickActionBooleanRef = {
+  current: boolean;
+};
+
+type QuickActionExportButtonProps = {
+  action: () => unknown;
+  closeMenu: () => void;
+  iconClassName: string;
+  keepOpenRef: QuickActionBooleanRef;
+  op: string;
+  runAction: QuickActionsDockController['runAction'];
+  tooltip: QuickActionExportTooltipConfig;
+};
+
 function formatQuickActionExportTooltipLabel(tooltip: QuickActionExportTooltipConfig): string {
   return `${tooltip.title}, ${tooltip.detail}`;
 }
@@ -44,6 +61,38 @@ function QuickActionExportTooltipView({
       <span className="wp-qa-tooltip-title">{tooltip.title}</span>
       <span className="wp-qa-tooltip-detail">{tooltip.detail}</span>
     </span>
+  );
+}
+
+function QuickActionExportButton({
+  action,
+  closeMenu,
+  iconClassName,
+  keepOpenRef,
+  op,
+  runAction,
+  tooltip,
+}: QuickActionExportButtonProps): ReactElement {
+  return (
+    <button
+      type="button"
+      className="wp-qa-btn"
+      data-tooltip-title={tooltip.title}
+      data-tooltip-detail={tooltip.detail}
+      aria-label={formatQuickActionExportTooltipLabel(tooltip)}
+      onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
+        runAction({
+          action,
+          closeMenu,
+          event,
+          keepOpen: keepOpenRef.current,
+          op,
+        });
+      }}
+    >
+      <i className={iconClassName} />
+      <QuickActionExportTooltipView tooltip={tooltip} />
+    </button>
   );
 }
 
@@ -85,6 +134,10 @@ export function QuickActionsDock(): ReactElement {
       { detail: { source: 'quick-actions' } }
     );
   }, [app, cloudSyncUiController]);
+
+  const closeMenu = useCallback(() => {
+    setMenuOpen(false);
+  }, []);
 
   useEffect(() => {
     setPinnedSync(quickActionsController.readPinnedSync());
@@ -187,85 +240,45 @@ export function QuickActionsDock(): ReactElement {
             }}
           >
             <div className="wp-qa-grid">
-              <button
-                type="button"
-                className="wp-qa-btn"
-                data-tooltip-title={QUICK_ACTION_EXPORT_TOOLTIPS.snapshot.title}
-                data-tooltip-detail={QUICK_ACTION_EXPORT_TOOLTIPS.snapshot.detail}
-                aria-label={formatQuickActionExportTooltipLabel(QUICK_ACTION_EXPORT_TOOLTIPS.snapshot)}
-                onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
-                  quickActionsController.runAction({
-                    action: () => exp.exportTakeSnapshot(),
-                    closeMenu: () => setMenuOpen(false),
-                    event,
-                    keepOpen: menuPinnedOpenRefState.current,
-                    op: 'quick-actions:snapshot',
-                  });
-                }}
-              >
-                <i className="fas fa-camera" />
-                <QuickActionExportTooltipView tooltip={QUICK_ACTION_EXPORT_TOOLTIPS.snapshot} />
-              </button>
+              <QuickActionExportButton
+                action={() => exp.exportTakeSnapshot()}
+                closeMenu={closeMenu}
+                iconClassName="fas fa-camera"
+                keepOpenRef={menuPinnedOpenRefState}
+                op="quick-actions:snapshot"
+                runAction={quickActionsController.runAction}
+                tooltip={QUICK_ACTION_EXPORT_TOOLTIPS.snapshot}
+              />
 
-              <button
-                type="button"
-                className="wp-qa-btn"
-                data-tooltip-title={QUICK_ACTION_EXPORT_TOOLTIPS.copy.title}
-                data-tooltip-detail={QUICK_ACTION_EXPORT_TOOLTIPS.copy.detail}
-                aria-label={formatQuickActionExportTooltipLabel(QUICK_ACTION_EXPORT_TOOLTIPS.copy)}
-                onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
-                  quickActionsController.runAction({
-                    action: () => exp.exportCopyToClipboard(),
-                    closeMenu: () => setMenuOpen(false),
-                    event,
-                    keepOpen: menuPinnedOpenRefState.current,
-                    op: 'quick-actions:copy',
-                  });
-                }}
-              >
-                <i className="fas fa-copy" />
-                <QuickActionExportTooltipView tooltip={QUICK_ACTION_EXPORT_TOOLTIPS.copy} />
-              </button>
+              <QuickActionExportButton
+                action={() => exp.exportCopyToClipboard()}
+                closeMenu={closeMenu}
+                iconClassName="fas fa-copy"
+                keepOpenRef={menuPinnedOpenRefState}
+                op="quick-actions:copy"
+                runAction={quickActionsController.runAction}
+                tooltip={QUICK_ACTION_EXPORT_TOOLTIPS.copy}
+              />
 
-              <button
-                type="button"
-                className="wp-qa-btn"
-                data-tooltip-title={QUICK_ACTION_EXPORT_TOOLTIPS.renderAndSketch.title}
-                data-tooltip-detail={QUICK_ACTION_EXPORT_TOOLTIPS.renderAndSketch.detail}
-                aria-label={formatQuickActionExportTooltipLabel(QUICK_ACTION_EXPORT_TOOLTIPS.renderAndSketch)}
-                onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
-                  quickActionsController.runAction({
-                    action: () => exp.exportRenderAndSketch(),
-                    closeMenu: () => setMenuOpen(false),
-                    event,
-                    keepOpen: menuPinnedOpenRefState.current,
-                    op: 'quick-actions:render-and-sketch',
-                  });
-                }}
-              >
-                <i className="fas fa-images" />
-                <QuickActionExportTooltipView tooltip={QUICK_ACTION_EXPORT_TOOLTIPS.renderAndSketch} />
-              </button>
+              <QuickActionExportButton
+                action={() => exp.exportRenderAndSketch()}
+                closeMenu={closeMenu}
+                iconClassName="fas fa-images"
+                keepOpenRef={menuPinnedOpenRefState}
+                op="quick-actions:render-and-sketch"
+                runAction={quickActionsController.runAction}
+                tooltip={QUICK_ACTION_EXPORT_TOOLTIPS.renderAndSketch}
+              />
 
-              <button
-                type="button"
-                className="wp-qa-btn"
-                data-tooltip-title={QUICK_ACTION_EXPORT_TOOLTIPS.dualImage.title}
-                data-tooltip-detail={QUICK_ACTION_EXPORT_TOOLTIPS.dualImage.detail}
-                aria-label={formatQuickActionExportTooltipLabel(QUICK_ACTION_EXPORT_TOOLTIPS.dualImage)}
-                onClick={(event: import('react').MouseEvent<HTMLButtonElement>) => {
-                  quickActionsController.runAction({
-                    action: () => exp.exportDualImage(),
-                    closeMenu: () => setMenuOpen(false),
-                    event,
-                    keepOpen: menuPinnedOpenRefState.current,
-                    op: 'quick-actions:dual-image',
-                  });
-                }}
-              >
-                <i className="fas fa-columns" />
-                <QuickActionExportTooltipView tooltip={QUICK_ACTION_EXPORT_TOOLTIPS.dualImage} />
-              </button>
+              <QuickActionExportButton
+                action={() => exp.exportDualImage()}
+                closeMenu={closeMenu}
+                iconClassName="fas fa-columns"
+                keepOpenRef={menuPinnedOpenRefState}
+                op="quick-actions:dual-image"
+                runAction={quickActionsController.runAction}
+                tooltip={QUICK_ACTION_EXPORT_TOOLTIPS.dualImage}
+              />
             </div>
           </div>
         ) : null}

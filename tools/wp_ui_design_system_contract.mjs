@@ -197,6 +197,39 @@ forbidPattern(
   'esm/native/ui/react/overlay_quick_actions_dock.tsx',
   /className="cam-btn wp-qa-toggle hint-bottom"/
 );
+requirePatternIn(
+  'esm/native/ui/react/overlay_quick_actions_dock.tsx QuickActionExportButton',
+  quickActionsDock,
+  /function QuickActionExportButton\(\{[\s\S]*className="wp-qa-btn"[\s\S]*data-tooltip-title=\{tooltip\.title\}[\s\S]*data-tooltip-detail=\{tooltip\.detail\}[\s\S]*aria-label=\{formatQuickActionExportTooltipLabel\(tooltip\)\}[\s\S]*keepOpen: keepOpenRef\.current[\s\S]*<QuickActionExportTooltipView tooltip=\{tooltip\} \/>/
+);
+requirePatternIn(
+  'esm/native/ui/react/overlay_quick_actions_dock.tsx export buttons',
+  quickActionsDock,
+  /<QuickActionExportButton[\s\S]*action=\{\(\) => exp\.exportTakeSnapshot\(\)\}[\s\S]*closeMenu=\{closeMenu\}[\s\S]*iconClassName="fas fa-camera"[\s\S]*keepOpenRef=\{menuPinnedOpenRefState\}[\s\S]*op="quick-actions:snapshot"[\s\S]*runAction=\{quickActionsController\.runAction\}[\s\S]*tooltip=\{QUICK_ACTION_EXPORT_TOOLTIPS\.snapshot\}/
+);
+requirePatternIn(
+  'esm/native/ui/react/overlay_quick_actions_dock.tsx export buttons',
+  quickActionsDock,
+  /<QuickActionExportButton[\s\S]*action=\{\(\) => exp\.exportCopyToClipboard\(\)\}[\s\S]*closeMenu=\{closeMenu\}[\s\S]*iconClassName="fas fa-copy"[\s\S]*keepOpenRef=\{menuPinnedOpenRefState\}[\s\S]*op="quick-actions:copy"[\s\S]*runAction=\{quickActionsController\.runAction\}[\s\S]*tooltip=\{QUICK_ACTION_EXPORT_TOOLTIPS\.copy\}/
+);
+requirePatternIn(
+  'esm/native/ui/react/overlay_quick_actions_dock.tsx export buttons',
+  quickActionsDock,
+  /<QuickActionExportButton[\s\S]*action=\{\(\) => exp\.exportRenderAndSketch\(\)\}[\s\S]*closeMenu=\{closeMenu\}[\s\S]*iconClassName="fas fa-images"[\s\S]*keepOpenRef=\{menuPinnedOpenRefState\}[\s\S]*op="quick-actions:render-and-sketch"[\s\S]*runAction=\{quickActionsController\.runAction\}[\s\S]*tooltip=\{QUICK_ACTION_EXPORT_TOOLTIPS\.renderAndSketch\}/
+);
+requirePatternIn(
+  'esm/native/ui/react/overlay_quick_actions_dock.tsx export buttons',
+  quickActionsDock,
+  /<QuickActionExportButton[\s\S]*action=\{\(\) => exp\.exportDualImage\(\)\}[\s\S]*closeMenu=\{closeMenu\}[\s\S]*iconClassName="fas fa-columns"[\s\S]*keepOpenRef=\{menuPinnedOpenRefState\}[\s\S]*op="quick-actions:dual-image"[\s\S]*runAction=\{quickActionsController\.runAction\}[\s\S]*tooltip=\{QUICK_ACTION_EXPORT_TOOLTIPS\.dualImage\}/
+);
+forbidPattern(
+  'esm/native/ui/react/overlay_quick_actions_dock.tsx',
+  /data-tooltip-title=\{QUICK_ACTION_EXPORT_TOOLTIPS\.[\w.]+\.title\}/
+);
+forbidPattern(
+  'esm/native/ui/react/overlay_quick_actions_dock.tsx',
+  /aria-label=\{formatQuickActionExportTooltipLabel\(QUICK_ACTION_EXPORT_TOOLTIPS\./
+);
 
 requirePattern(
   'esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx',
