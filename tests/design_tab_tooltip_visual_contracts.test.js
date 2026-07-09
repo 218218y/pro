@@ -128,11 +128,17 @@ test('[structure-tab-tooltips] saved-model labels use the shared styled tooltip 
     assert,
     savedModelsRows,
     [
-      /className="btn btn-inline btn-sm wp-r-styled-tooltip hint-bottom"/,
+      /<Button[\s\S]*inline[\s\S]*size="sm"[\s\S]*className="wp-r-styled-tooltip hint-bottom"/,
       /data-tooltip=\{props\.row\.name\}/,
       /data-tooltip=\{props\.row\.locked \? 'הדגם נעול \(לחץ לשחרר\)' : 'נעל דגם \(מונע מחיקה ושינוי סדר\)'\}/,
     ],
     'saved model styled tooltip metadata'
+  );
+  assertLacksAll(
+    assert,
+    savedModelsRows,
+    [/className="btn btn-inline btn-sm wp-r-styled-tooltip hint-bottom"/],
+    'legacy saved model label button class string'
   );
 });
 
