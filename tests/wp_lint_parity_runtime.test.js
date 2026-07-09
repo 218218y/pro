@@ -29,7 +29,7 @@ test('lint parity document is generated from the matrix source of truth', async 
   assert.equal(read('docs/LINT_PARITY_REPORT.md'), await createLintParityMarkdown());
 });
 
-test('stage 5 does not remove current parser/AST infrastructure prematurely', () => {
+test('stage 6 keeps legacy eslint compatibility while AST adapter uses Oxc', () => {
   const eslintConfig = read('eslint.config.js');
   const astAdapter = read('tools/wp_ast_adapter.mjs');
   const oxlintConfig = read('oxlint.config.mjs');
@@ -37,7 +37,11 @@ test('stage 5 does not remove current parser/AST infrastructure prematurely', ()
   assert.match(eslintConfig, /import\('@typescript-eslint\/parser'\)/);
   assert.match(eslintConfig, /PARSER_REMOVAL_DRY_RUN \? null : await loadTypeScriptEslint\(\)/);
   assert.match(eslintConfig, /parser:\s*typeScriptEslint\.parser/);
-  assert.match(astAdapter, /require\('typescript'\)/);
+  assert.match(astAdapter, /from 'oxc-parser'/);
+  const forbiddenTsImportPattern = new RegExp(
+    ["require\\('typescript'\\)", ['from ', "'typescript'"].join(''), "import\\('typescript'\\)"].join('|')
+  );
+  assert.doesNotMatch(astAdapter, forbiddenTsImportPattern);
   assert.match(oxlintConfig, /plugins:\s*\[/);
   assert.match(oxlintConfig, /typescript/);
 });

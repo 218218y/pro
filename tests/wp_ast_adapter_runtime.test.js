@@ -10,7 +10,9 @@ import {
   countFunctionLikeNodes,
   createAstAdapter,
   createSourceFile,
+  getAstParserModule,
   requireAstAdapter,
+  walkAst,
 } from '../tools/wp_ast_adapter.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -33,29 +35,85 @@ function walkFiles(dir, out = []) {
   return out;
 }
 
-test('AST adapter parses TS/TSX and exposes stable syntax helpers', () => {
+test('AST adapter uses Oxc parser and parses TS/TSX through stable syntax helpers', () => {
   const astApi = requireAstAdapter('AST Adapter Runtime Test');
   const source = createSourceFile(
     'fixture.tsx',
     `
+      import { item as importedItem } from './item.js';
       type Props = { label: string };
       export function View(props: Props) {
-        return <div>{props.label}</div>;
+        return <div>{props?.label ?? importedItem}</div>;
       }
     `,
     { astApi }
   );
 
   let functionCount = 0;
-  function visit(node) {
-    if (astApi.isFunctionDeclaration(node)) functionCount += 1;
-    astApi.forEachChild(node, visit);
-  }
-  visit(source);
+  let importCount = 0;
+  let memberCount = 0;
+  walkAst(
+    source,
+    node => {
+      if (astApi.isFunctionDeclaration(node)) functionCount += 1;
+      if (astApi.isImportDeclaration(node)) importCount += 1;
+      if (astApi.isPropertyAccessExpression(node)) memberCount += 1;
+    },
+    { astApi }
+  );
 
+  assert.equal(getAstParserModule().parseSync, getAstParserModule().parseSync);
+  assert.equal(astApi.__parser, 'oxc-parser');
   assert.equal(astApi.getScriptKindForFile('fixture.tsx'), astApi.ScriptKind.TSX);
   assert.equal(functionCount, 1);
+  assert.equal(importCount, 1);
+  assert.ok(memberCount >= 1);
   assert.equal(countFunctionLikeNodes(source, { astApi }), 1);
+});
+
+test('AST adapter preserves import, dynamic import, member, and optional-chain shapes for callers', () => {
+  const astApi = requireAstAdapter('AST Adapter Runtime Test');
+  const source = createSourceFile(
+    'imports.ts',
+    `
+      import * as THREE from 'three';
+      import localDefault, { Mesh as MeshAlias } from './local.js';
+      export { MeshAlias } from './exported.js';
+      const ctor = THREE.Mesh;
+      const optional = app?.store?.value;
+      const loaded = import('./lazy.js');
+      const url = new URL('./asset.js', import.meta.url);
+      void localDefault;
+    `,
+    { astApi }
+  );
+
+  const imports = [];
+  const exports = [];
+  const dynamicImports = [];
+  const propertyNames = [];
+  const newUrls = [];
+  walkAst(
+    source,
+    node => {
+      if (astApi.isImportDeclaration(node)) imports.push(node.moduleSpecifier.text);
+      if (node.kind === astApi.SyntaxKind.ExportDeclaration) exports.push(node.moduleSpecifier.text);
+      if (astApi.isCallExpression(node) && node.expression.kind === astApi.SyntaxKind.ImportKeyword) {
+        dynamicImports.push(node.arguments[0].text);
+      }
+      if (astApi.isPropertyAccessExpression(node)) propertyNames.push(node.name?.text || '');
+      if (astApi.isNewExpression(node) && astApi.isIdentifier(node.expression))
+        newUrls.push(node.expression.text);
+    },
+    { astApi }
+  );
+
+  assert.deepEqual(imports, ['three', './local.js']);
+  assert.deepEqual(exports, ['./exported.js']);
+  assert.deepEqual(dynamicImports, ['./lazy.js']);
+  assert.ok(propertyNames.includes('Mesh'));
+  assert.ok(propertyNames.includes('url'));
+  assert.deepEqual(newUrls, ['URL']);
 });
 
 test('AST adapter keeps token/code-line metrics independent from tool callers', () => {
@@ -96,21 +154,30 @@ test('AST adapter centralizes type-hardening AST counts', () => {
   });
 });
 
-test('only the AST adapter imports TypeScript directly for AST parsing', () => {
-  const scannedRoots = ['tools', 'tests'].map(rel => path.join(root, rel));
-  const allowedRelPaths = new Set(['tools/wp_ast_adapter.mjs']);
+test('AST adapter exposes syntax error diagnostics without TypeScript compiler API', () => {
+  const astApi = requireAstAdapter('AST Adapter Runtime Test');
+  const source = createSourceFile('broken.ts', 'export const value = ;', { astApi });
+
+  assert.equal(source.parseDiagnostics.length, 1);
+  assert.match(String(source.parseDiagnostics[0].messageText), /Expected|Unexpected|expression|token/i);
+});
+
+test('no project tool/test/runtime source imports TypeScript directly', () => {
+  const scannedRoots = ['tools', 'tests', 'esm', 'types']
+    .map(rel => path.join(root, rel))
+    .filter(dir => fs.existsSync(dir));
   const forbiddenNeedles = [
     ['from ', "'typescript'"].join(''),
     ['from ', '"typescript"'].join(''),
     ['require', "('typescript')"].join(''),
     ['require', '("typescript")'].join(''),
     ['import', "('typescript')"].join(''),
+    ['import', '("typescript")'].join(''),
   ];
   const failures = [];
 
   for (const file of scannedRoots.flatMap(dir => walkFiles(dir))) {
     const rel = path.relative(root, file).replaceAll(path.sep, '/');
-    if (allowedRelPaths.has(rel)) continue;
     const source = read(rel);
     for (const needle of forbiddenNeedles) {
       if (source.includes(needle)) failures.push(`${rel}: ${needle}`);
@@ -120,10 +187,10 @@ test('only the AST adapter imports TypeScript directly for AST parsing', () => {
   assert.deepEqual(failures, []);
 });
 
-test('AST adapter can wrap an already loaded TS module for callers that inject one', () => {
+test('AST adapter returns injected adapter instances without exposing TypeScript module wrapping', () => {
   const direct = requireAstAdapter('AST Adapter Runtime Test');
-  const wrapped = createAstAdapter({ tsModule: direct.__tsModule });
+  const wrapped = createAstAdapter({ astApi: direct });
 
-  assert.ok(wrapped);
+  assert.equal(wrapped, direct);
   assert.equal(wrapped.getScriptKindForFile('fixture.js'), wrapped.ScriptKind.JS);
 });

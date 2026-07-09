@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { createAstAdapter, formatParseDiagnostic, getTypeScriptAstModule } from './wp_ast_adapter.mjs';
+import { createAstAdapter, formatParseDiagnostic, getAstParserModule } from './wp_ast_adapter.mjs';
 import { JS_EXTS, ROOT, TS_EXTS, rel } from './wp_check_shared.js';
 
 export function getTypeScriptModule() {
-  return getTypeScriptAstModule();
+  return getAstParserModule();
 }
 
 export function nodeCheck(file, options = {}) {
@@ -15,13 +15,13 @@ export function nodeCheck(file, options = {}) {
 }
 
 export function tsParseCheck(file, options = {}) {
-  const astApi = options.astApi || createAstAdapter({ tsModule: options.tsModule });
+  const astApi = options.astApi || createAstAdapter({ astApi: options.astApi });
   const root = options.root || ROOT;
   if (!astApi) {
     return {
       ok: true,
       skipped: true,
-      msg: 'typescript module not available (TS syntax-only check skipped)',
+      msg: 'oxc-parser module not available (TS syntax-only check skipped)',
     };
   }
 

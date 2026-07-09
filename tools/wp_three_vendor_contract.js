@@ -17,10 +17,10 @@ import { fileURLToPath } from 'node:url';
 import { createAstAdapter } from './wp_ast_adapter.mjs';
 
 function loadAstAdapter(options = {}) {
-  const astApi = createAstAdapter({ astApi: options.astApi, tsModule: options.tsApi });
+  const astApi = createAstAdapter({ astApi: options.astApi });
   if (astApi) return astApi;
-  console.error('[WP Three Contract] Missing dependency: typescript');
-  console.error('                   Run: npm i -D typescript');
+  console.error('[WP Three Contract] Missing dependency: oxc-parser');
+  console.error('                   Run: npm i -D oxc-parser');
   process.exitCode = 1;
   return null;
 }
@@ -747,7 +747,7 @@ export async function runThreeVendorContractCheck(options = {}) {
 
   const astApi = loadAstAdapter(options);
   if (!astApi) {
-    return { ok: false, error: 'missing_typescript' };
+    return { ok: false, error: 'missing_ast_parser' };
   }
 
   const root = path.resolve(args.root);

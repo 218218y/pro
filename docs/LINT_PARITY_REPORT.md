@@ -2,7 +2,7 @@
 
 <!-- Tool-owned report target. Regenerate with: npm run lint:parity-report -->
 
-Stage 5 keeps the legacy ESLint compatibility gate intact while promoting the JS-only ESLint dry-run, Oxlint syntax, and custom lint contracts to blocking parser-removal readiness gates. The report explains what is covered, which command owns each rule, and why TS/TSX is still not removed from `@typescript-eslint/parser` until the final removal step.
+Stage 6 keeps the legacy ESLint compatibility gate intact while the modern split is removal-ready: JS stays on strict ESLint, TS/TSX syntax stays on Oxlint, architecture rules stay on custom contracts, type correctness stays on TypeScript, and `wp_ast_adapter` is no longer coupled to the TypeScript AST API. TS/TSX is still not removed from `@typescript-eslint/parser` until the final package-removal step.
 
 ## Gate comparison
 
@@ -51,11 +51,11 @@ Stage 5 keeps the legacy ESLint compatibility gate intact while promoting the JS
 
 The custom lint architecture contract baseline is 0. Every new architecture violation fails, and stale baseline entries fail as well.
 
-## Stage 5 decision
+## Stage 6 decision
 
 - Do not remove `@typescript-eslint` yet.
 - Do not update to TypeScript 7 yet.
-- Do not swap `wp_ast_adapter` away from TypeScript yet.
+- `wp_ast_adapter` now uses `oxc-parser`; do not remove `@typescript-eslint` packages in this stage.
 - Keep `lint:legacy` as a temporary blocking compatibility gate; the final split is `lint:js:strict` / `lint:parser-removal-dry-run`, `lint:ts-modern:syntax`, `lint:contracts`, and `typecheck:*`.
 - `quality:ts-modern` is the dry-run gate bundle for that final split; it intentionally excludes `lint:legacy`.
-- `lint:ts-modern:type-aware` remains audit-only with known diagnostics; it is not a Stage 5 blocker.
+- `lint:ts-modern:type-aware` remains audit-only with known diagnostics; it is not a Stage 6 blocker.
