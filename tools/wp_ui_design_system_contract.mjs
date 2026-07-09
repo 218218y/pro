@@ -318,6 +318,26 @@ forbidPattern(
   'esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx',
   /btn btn-danger btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom/
 );
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx',
+  /export function StructureTabSavedModelsListRow[\s\S]*<Button[\s\S]*inline[\s\S]*size="sm"[\s\S]*className="wp-r-styled-tooltip hint-bottom"[\s\S]*data-tooltip=\{props\.row\.name\}/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx',
+  /export function StructureTabSavedModelsListRow[\s\S]*props\.listType === 'preset'[\s\S]*width: '100%'[\s\S]*textAlign: 'right'[\s\S]*justifyContent: 'flex-start'[\s\S]*direction: 'rtl'[\s\S]*: \{ textAlign: 'right', justifyContent: 'flex-start', direction: 'rtl' \}/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx',
+  /onClick=\{\(\) => \{[\s\S]*props\.onSetSelected\(props\.row\.id\);\s*if \(props\.row\.id\) props\.onApplySelected\(props\.row\.id\);/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx',
+  /<span style=\{\{ display: 'inline-flex', alignItems: 'center', gap: 6 \}\}>[\s\S]*<span>\{props\.row\.name\}<\/span>/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx',
+  /className="btn btn-inline btn-sm wp-r-styled-tooltip hint-bottom"/
+);
 
 requirePattern(
   'esm/native/ui/react/panels/SettingsBackupPanel.tsx',

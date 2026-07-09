@@ -186,9 +186,10 @@ export function StructureTabSavedModelsListRow(
       }
       style={getRowStyle(props.listType, props.row.id === props.selectedId)}
     >
-      <button
-        type="button"
-        className="btn btn-inline btn-sm wp-r-styled-tooltip hint-bottom"
+      <Button
+        inline
+        size="sm"
+        className="wp-r-styled-tooltip hint-bottom"
         style={
           props.listType === 'preset'
             ? {
@@ -208,7 +209,7 @@ export function StructureTabSavedModelsListRow(
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           <span>{props.row.name}</span>
         </span>
-      </button>
+      </Button>
 
       <SavedModelsRowActions
         row={props.row}

@@ -265,4 +265,24 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
     savedModelsListRow,
     /btn btn-danger btn-inline btn-sm wp-r-savedmodels-rowicon wp-r-styled-tooltip hint-bottom/
   );
+  assert.match(
+    savedModelsListRow,
+    /export function StructureTabSavedModelsListRow[\s\S]*<Button[\s\S]*inline[\s\S]*size="sm"[\s\S]*className="wp-r-styled-tooltip hint-bottom"[\s\S]*data-tooltip=\{props\.row\.name\}/
+  );
+  assert.match(
+    savedModelsListRow,
+    /export function StructureTabSavedModelsListRow[\s\S]*props\.listType === 'preset'[\s\S]*width: '100%'[\s\S]*textAlign: 'right'[\s\S]*justifyContent: 'flex-start'[\s\S]*direction: 'rtl'[\s\S]*: \{ textAlign: 'right', justifyContent: 'flex-start', direction: 'rtl' \}/
+  );
+  assert.match(
+    savedModelsListRow,
+    /onClick=\{\(\) => \{[\s\S]*props\.onSetSelected\(props\.row\.id\);\s*if \(props\.row\.id\) props\.onApplySelected\(props\.row\.id\);/
+  );
+  assert.match(
+    savedModelsListRow,
+    /<span style=\{\{ display: 'inline-flex', alignItems: 'center', gap: 6 \}\}>[\s\S]*<span>\{props\.row\.name\}<\/span>/
+  );
+  assert.doesNotMatch(
+    savedModelsListRow,
+    /className="btn btn-inline btn-sm wp-r-styled-tooltip hint-bottom"/
+  );
 });
