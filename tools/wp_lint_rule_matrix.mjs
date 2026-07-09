@@ -32,7 +32,7 @@ const NOTES_BY_RULE = new Map([
   ['no-const-assign', 'Covered by ESLint today and by Oxlint correctness; low-risk syntax parity rule.'],
   [
     'no-redeclare',
-    'Oxlint can cover the syntax class, but globals/profile differences need parity review before removing ESLint.',
+    'Oxlint owns the syntax class; legacy ESLint stays as a temporary compatibility gate until the parser-removal dry-run.',
   ],
   [
     'eqeqeq',
@@ -52,15 +52,15 @@ const NOTES_BY_RULE = new Map([
   ],
   [
     'no-restricted-globals',
-    'Architecture policy around browser globals is now mirrored by wp_lint_architecture_contracts with a baseline for existing debt.',
+    'Architecture policy around browser globals is now mirrored by wp_lint_architecture_contracts; the architecture baseline is 0 and new violations fail.',
   ],
   [
     'no-restricted-imports',
-    'Project layer/browser-env boundaries are now mirrored by wp_lint_architecture_contracts plus existing layer contracts.',
+    'Project layer/browser-env boundaries are now mirrored by wp_lint_architecture_contracts plus existing layer contracts; the architecture baseline is 0.',
   ],
   [
     'no-restricted-syntax',
-    'Project-specific App.* bag ban is now mirrored by wp_lint_architecture_contracts through the AST adapter.',
+    'Project-specific App.* bag ban is now mirrored by wp_lint_architecture_contracts through the AST adapter; the architecture baseline is 0.',
   ],
 ]);
 
@@ -223,7 +223,7 @@ export function createLintRuleMatrixMarkdown(rows) {
     '',
     `Generated from: \`${generatedFrom}\`.`,
     '',
-    'Stage 5 purpose: keep the existing ESLint gate intact while introducing a modern TypeScript lint lane in audit mode. This is not a TypeScript 7 upgrade, does not remove `@typescript-eslint`, and does not replace the AST adapter parser.',
+    'Stage 5 purpose: keep the existing ESLint compatibility gate intact while promoting Oxlint syntax and custom lint contracts to blocking parser-removal readiness gates. This is not a TypeScript 7 upgrade, does not remove `@typescript-eslint`, and does not replace the AST adapter parser.',
     '',
     '## Rule matrix',
     '',
@@ -241,11 +241,11 @@ export function createLintRuleMatrixMarkdown(rows) {
     '',
     '## Migration policy',
     '',
-    '- `lint:legacy` remains the canonical ESLint gate until parity is proven.',
+    '- `lint:legacy` remains a temporary blocking compatibility gate until the parser-removal dry-run completes.',
     '- `lint:ts-modern:syntax` is now a blocking Oxlint syntax gate; it must stay at 0 diagnostics before later parser-removal work.',
     '- `lint:ts-modern:type-aware` is audit-only because `oxlint-tsgolint` targets the TypeScript 7/type-aware path and the project is intentionally still on the current TypeScript lane.',
     '- `lint:contracts` owns project-specific rules that should not depend on `@typescript-eslint/parser` long term, including the lint architecture contracts.',
-    '- Removing `@typescript-eslint` from TS/TSX is blocked until every row marked `replace-*` is classified as covered in `docs/LINT_PARITY_REPORT.md`.',
+    '- Removing `@typescript-eslint/parser` from TS/TSX is blocked until `npm run lint:parser-removal-readiness` and the parity report both show every rule has a concrete owner.',
     ''
   );
 
