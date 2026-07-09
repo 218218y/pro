@@ -44,18 +44,10 @@ export function resolveTscInvocation(root, { env = process.env, spawnImpl } = {}
       warning: null,
     };
   }
-  if (tool.kind === 'local') {
-    return {
-      cmd: process.execPath,
-      args: [tool.bin],
-      source: tool.source,
-      warning: tool.warning,
-    };
-  }
-
   return {
-    cmd: tool.bin,
-    args: [],
+    kind: tool.kind,
+    cmd: tool.command,
+    args: [...tool.argsPrefix],
     source: tool.source,
     warning: tool.warning,
   };

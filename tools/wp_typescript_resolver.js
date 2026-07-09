@@ -11,6 +11,33 @@ export const SYSTEM_TSC_MANUAL_WARNING =
 export const SYSTEM_TSC_CI_REFUSAL_MESSAGE =
   'WP_ALLOW_SYSTEM_TSC=1 is manual-only and is refused in CI/release verification. Run npm ci so local TypeScript is available.';
 
+function createNodeScriptTool(scriptPath, { node, source, warning = null }) {
+  return {
+    kind: 'node-script',
+    command: node,
+    argsPrefix: [scriptPath],
+    script: scriptPath,
+    bin: scriptPath,
+    source,
+    warning,
+  };
+}
+
+function createBinTool(kind, binPath, { source, warning = null }) {
+  return {
+    kind,
+    command: binPath,
+    argsPrefix: [],
+    bin: binPath,
+    source,
+    warning,
+  };
+}
+
+function existingCandidate(candidates, existsImpl) {
+  return candidates.find(candidate => existsImpl(candidate.path)) || null;
+}
+
 export function isSystemTscAllowed(env = process.env) {
   return env && env.WP_ALLOW_SYSTEM_TSC === '1';
 }
@@ -54,15 +81,40 @@ export function isReleaseOrCiEnv(env = process.env) {
   return isCiLikeEnv(env) || isReleaseLifecycleEnv(env);
 }
 
-export function resolveLocalTypeScriptBin(root, { existsImpl = fs.existsSync } = {}) {
-  const candidates = [
-    path.join(root, 'node_modules', 'typescript', 'bin', 'tsc'),
-    path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js'),
+export function resolveLocalTypeScriptTool(
+  root,
+  { node = process.execPath, existsImpl = fs.existsSync } = {}
+) {
+  const directBinNames = process.platform === 'win32' ? ['tsc.cmd', 'tsc'] : ['tsc'];
+  const localCandidates = [
+    {
+      kind: 'node-script',
+      path: path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js'),
+      source: 'local-node-modules',
+    },
+    {
+      kind: 'node-script',
+      path: path.join(root, 'node_modules', 'typescript', 'bin', 'tsc'),
+      source: 'local-node-modules',
+    },
+    ...directBinNames.map(name => ({
+      kind: 'direct-bin',
+      path: path.join(root, 'node_modules', '.bin', name),
+      source: 'local-node-modules-bin',
+    })),
   ];
-  for (const candidate of candidates) {
-    if (existsImpl(candidate)) return candidate;
+  const candidate = existingCandidate(localCandidates, existsImpl);
+
+  if (!candidate) return null;
+  if (candidate.kind === 'node-script') {
+    return createNodeScriptTool(candidate.path, { node, source: candidate.source });
   }
-  return null;
+  return createBinTool(candidate.kind, candidate.path, { source: candidate.source });
+}
+
+export function resolveLocalTypeScriptBin(root, { existsImpl = fs.existsSync } = {}) {
+  const tool = resolveLocalTypeScriptTool(root, { existsImpl });
+  return tool?.script || tool?.bin || tool?.command || null;
 }
 
 export function probeSystemTsc({ env = process.env, spawnImpl = spawnSync, cwd = process.cwd() } = {}) {
@@ -81,44 +133,37 @@ export function probeSystemTsc({ env = process.env, spawnImpl = spawnSync, cwd =
 
 export function resolveTypeScriptTool(
   root,
-  { env = process.env, spawnImpl = spawnSync, existsImpl = fs.existsSync } = {}
+  { env = process.env, node = process.execPath, spawnImpl = spawnSync, existsImpl = fs.existsSync } = {}
 ) {
-  const localBin = resolveLocalTypeScriptBin(root, { existsImpl });
-  if (localBin) {
-    return {
-      kind: 'local',
-      bin: localBin,
-      source: 'local-node-modules',
-      warning: null,
-    };
-  }
+  const localTool = resolveLocalTypeScriptTool(root, { node, existsImpl });
+  if (localTool) return localTool;
 
   if (!isSystemTscAllowed(env)) return null;
 
   if (isReleaseOrCiEnv(env)) {
     return {
       kind: 'blocked',
+      command: null,
+      argsPrefix: [],
       source: 'system-fallback-refused',
+      warning: null,
       errorMessage: SYSTEM_TSC_CI_REFUSAL_MESSAGE,
     };
   }
 
-  if (env?.WP_TSC_BIN) {
-    return {
-      kind: 'manual-bin',
-      bin: env.WP_TSC_BIN,
+  const manualBin = String(env?.WP_TSC_BIN || '').trim();
+  if (manualBin) {
+    return createBinTool('manual-bin', manualBin, {
       source: 'manual-env-bin',
       warning: SYSTEM_TSC_MANUAL_WARNING,
-    };
+    });
   }
 
   if (probeSystemTsc({ env, spawnImpl, cwd: root })) {
-    return {
-      kind: 'system',
-      bin: 'tsc',
+    return createBinTool('system', 'tsc', {
       source: 'system-path',
       warning: SYSTEM_TSC_MANUAL_WARNING,
-    };
+    });
   }
 
   return null;

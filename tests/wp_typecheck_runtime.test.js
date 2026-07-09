@@ -14,6 +14,7 @@ import {
   resolveTypecheckModes,
 } from '../tools/wp_typecheck_state.js';
 import { createTypecheckHelpText, resolveTsc } from '../tools/wp_typecheck_shared.js';
+import { resolveTypeScriptTool } from '../tools/wp_typescript_resolver.js';
 import { runTypecheckFlow } from '../tools/wp_typecheck_flow.js';
 
 function tempDir() {
@@ -51,8 +52,9 @@ test('typecheck refuses WP_TSC_BIN and system tsc unless manual fallback is expl
     env: { WP_ALLOW_SYSTEM_TSC: '1', WP_TSC_BIN: '/custom/tsc' },
     spawnImpl: systemProbe,
   });
-  assert.equal(resolved.kind, 'bin');
-  assert.equal(resolved.cmd, '/custom/tsc');
+  assert.equal(resolved.kind, 'manual-bin');
+  assert.equal(resolved.command, '/custom/tsc');
+  assert.deepEqual(resolved.argsPrefix, []);
   assert.equal(resolved.label, '/custom/tsc');
   assert.equal(resolved.source, 'manual-env-bin');
   assert.match(resolved.warning, /manual mode/i);
@@ -71,9 +73,58 @@ test('typecheck refuses WP_TSC_BIN and system tsc unless manual fallback is expl
     env: { WP_ALLOW_SYSTEM_TSC: '1', WP_TSC_BIN: '/custom/tsc' },
     spawnImpl: systemProbe,
   });
-  assert.equal(local.kind, 'node');
-  assert.equal(local.cmd, localTsc);
+  assert.equal(local.kind, 'node-script');
+  assert.equal(local.command, process.execPath);
+  assert.deepEqual(local.argsPrefix, [localTsc]);
   assert.equal(local.source, 'local-node-modules');
+});
+
+test('TypeScript resolver exposes node-script, direct-bin, manual-bin and system command plans', () => {
+  const root = tempDir();
+  const localLibTsc = path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js');
+  fs.mkdirSync(path.dirname(localLibTsc), { recursive: true });
+  fs.writeFileSync(localLibTsc, '// stub\n', 'utf8');
+
+  const nodeScript = resolveTypeScriptTool(root, { node: '/custom/node', env: {} });
+  assert.equal(nodeScript.kind, 'node-script');
+  assert.equal(nodeScript.command, '/custom/node');
+  assert.deepEqual(nodeScript.argsPrefix, [localLibTsc]);
+  assert.equal(nodeScript.script, localLibTsc);
+  assert.equal(nodeScript.source, 'local-node-modules');
+
+  const directRoot = tempDir();
+  const directTsc = path.join(
+    directRoot,
+    'node_modules',
+    '.bin',
+    process.platform === 'win32' ? 'tsc.cmd' : 'tsc'
+  );
+  fs.mkdirSync(path.dirname(directTsc), { recursive: true });
+  fs.writeFileSync(directTsc, '#!/usr/bin/env node\n', 'utf8');
+
+  const directBin = resolveTypeScriptTool(directRoot, { env: {} });
+  assert.equal(directBin.kind, 'direct-bin');
+  assert.equal(directBin.command, directTsc);
+  assert.deepEqual(directBin.argsPrefix, []);
+  assert.equal(directBin.source, 'local-node-modules-bin');
+
+  const manual = resolveTypeScriptTool(tempDir(), {
+    env: { WP_ALLOW_SYSTEM_TSC: '1', WP_TSC_BIN: '/manual/tsc' },
+    spawnImpl: () => {
+      throw new Error('manual bin should not probe system tsc');
+    },
+  });
+  assert.equal(manual.kind, 'manual-bin');
+  assert.equal(manual.command, '/manual/tsc');
+  assert.deepEqual(manual.argsPrefix, []);
+
+  const system = resolveTypeScriptTool(tempDir(), {
+    env: { WP_ALLOW_SYSTEM_TSC: '1' },
+    spawnImpl: () => ({ status: 0 }),
+  });
+  assert.equal(system.kind, 'system');
+  assert.equal(system.command, 'tsc');
+  assert.deepEqual(system.argsPrefix, []);
 });
 
 test('typecheck flow rejects unknown options and CI system tsc fallback', () => {
@@ -128,6 +179,7 @@ test('typecheck flow runs matching config and reports success', () => {
   assert.equal(invocations.length, 1);
   assert.equal(invocations[0].cmd, '/usr/bin/node');
   assert.equal(invocations[0].args[0], path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js'));
+  assert.equal(invocations[0].args[1], '-p');
   assert.equal(invocations[0].args[2], resolveTypecheckConfigPath(root, 'runtime'));
   assert.ok(logs.some(line => /typecheck completed successfully/i.test(line)));
 });

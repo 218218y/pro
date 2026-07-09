@@ -41,7 +41,7 @@ export function runTypecheckFlow({
     };
   }
 
-  const tscRef = resolveTsc(root, { env, spawnImpl, existsImpl });
+  const tscRef = resolveTsc(root, { env, node, spawnImpl, existsImpl });
   if (!tscRef) {
     return {
       ok: false,
@@ -86,7 +86,6 @@ export function runTypecheckFlow({
     }
 
     const result = runTypecheckCommand({
-      node,
       tscRef,
       configPath,
       extraArgs,

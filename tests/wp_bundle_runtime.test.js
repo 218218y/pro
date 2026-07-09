@@ -100,6 +100,7 @@ test('bundle TypeScript resolver refuses system tsc unless manual fallback is ex
     spawnImpl,
     env: { WP_ALLOW_SYSTEM_TSC: '1', WP_TSC_BIN: '/custom/tsc' },
   });
+  assert.equal(manual.kind, 'manual-bin');
   assert.equal(manual.cmd, '/custom/tsc');
   assert.deepEqual(manual.args, []);
   assert.equal(manual.source, 'manual-env-bin');

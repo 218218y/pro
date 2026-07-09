@@ -14,33 +14,39 @@ export function printTypecheckHeader(title, log = console.log) {
   log('============================================================\n');
 }
 
-export function resolveTsc(root, { env = process.env, spawnImpl = spawnSync, existsImpl } = {}) {
-  const tool = resolveTypeScriptTool(root, { env, spawnImpl, existsImpl });
+function createTypecheckToolLabel(root, tool) {
+  if (tool.kind === 'node-script') {
+    return `node ${path.relative(root, tool.script)}`;
+  }
+  return tool.command;
+}
+
+export function resolveTsc(
+  root,
+  { env = process.env, node = process.execPath, spawnImpl = spawnSync, existsImpl } = {}
+) {
+  const tool = resolveTypeScriptTool(root, { env, node, spawnImpl, existsImpl });
   if (!tool) return null;
 
   if (tool.kind === 'blocked') {
     return {
       kind: 'blocked',
-      errorMessage: tool.errorMessage,
+      command: null,
+      cmd: null,
+      argsPrefix: [],
+      label: null,
       source: tool.source,
       warning: null,
-    };
-  }
-
-  if (tool.kind === 'local') {
-    return {
-      kind: 'node',
-      cmd: tool.bin,
-      label: path.relative(root, tool.bin),
-      source: tool.source,
-      warning: tool.warning,
+      errorMessage: tool.errorMessage,
     };
   }
 
   return {
-    kind: 'bin',
-    cmd: tool.bin,
-    label: tool.bin,
+    kind: tool.kind,
+    command: tool.command,
+    cmd: tool.command,
+    argsPrefix: [...tool.argsPrefix],
+    label: createTypecheckToolLabel(root, tool),
     source: tool.source,
     warning: tool.warning,
   };
@@ -49,11 +55,10 @@ export function resolveTsc(root, { env = process.env, spawnImpl = spawnSync, exi
 export function createTypecheckLabel(root, tscRef, configPath, extraArgs = []) {
   const configRel = path.relative(root, configPath);
   const suffix = extraArgs.length ? ` ${extraArgs.join(' ')}` : '';
-  return `${tscRef.kind === 'node' ? 'node ' + tscRef.label : tscRef.label} -p ${configRel}${suffix}`;
+  return `${tscRef.label} -p ${configRel}${suffix}`;
 }
 
 export function runTypecheckCommand({
-  node = process.execPath,
   tscRef,
   configPath,
   extraArgs = [],
@@ -64,10 +69,7 @@ export function runTypecheckCommand({
   log = console.log,
 }) {
   printTypecheckHeader(label, log);
-  const args =
-    tscRef.kind === 'node' ? [tscRef.cmd, '-p', configPath, ...extraArgs] : ['-p', configPath, ...extraArgs];
-  const cmd = tscRef.kind === 'node' ? node : tscRef.cmd;
-  return spawnImpl(cmd, args, {
+  return spawnImpl(tscRef.command, [...tscRef.argsPrefix, '-p', configPath, ...extraArgs], {
     stdio: 'inherit',
     shell: false,
     cwd,

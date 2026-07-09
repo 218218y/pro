@@ -250,7 +250,11 @@ const TOOLCHAIN_FAMILIES = [
     modules: [
       {
         path: 'tools/wp_typecheck_shared.js',
-        requiredNeedles: ['export function resolveTsc(', 'export function runTypecheckCommand('],
+        requiredNeedles: [
+          'export function resolveTsc(',
+          'export function runTypecheckCommand(',
+          'argsPrefix',
+        ],
         forbiddenNeedles: ['export function parseTypecheckArgs('],
       },
       {
@@ -266,6 +270,16 @@ const TOOLCHAIN_FAMILIES = [
         path: 'tools/wp_typecheck_flow.js',
         requiredNeedles: ['export function runTypecheckFlow('],
         forbiddenNeedles: ['export function parseTypecheckArgs('],
+      },
+      {
+        path: 'tools/wp_typescript_resolver.js',
+        requiredNeedles: [
+          'export function resolveTypeScriptTool(',
+          "kind: 'node-script'",
+          "kind: 'direct-bin'",
+          'argsPrefix',
+        ],
+        forbiddenNeedles: ['export function runTypecheckCommand('],
       },
     ],
   },

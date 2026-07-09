@@ -131,6 +131,7 @@ test('build-dist TypeScript resolver requires local TypeScript by default', () =
   fs.writeFileSync(localTsc, '// stub\n', 'utf8');
 
   const resolved = resolveTscInvocation(root, { spawnImpl: systemProbe, env: {} });
+  assert.equal(resolved.kind, 'node-script');
   assert.equal(resolved.cmd, process.execPath);
   assert.deepEqual(resolved.args, [localTsc]);
   assert.equal(resolved.source, 'local-node-modules');
@@ -149,6 +150,7 @@ test('build-dist TypeScript resolver allows system tsc only in explicit manual m
     env: { WP_ALLOW_SYSTEM_TSC: '1' },
   });
 
+  assert.equal(resolved.kind, 'system');
   assert.equal(resolved.cmd, 'tsc');
   assert.deepEqual(resolved.args, []);
   assert.equal(resolved.source, 'system-path');
