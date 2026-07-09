@@ -14,24 +14,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-function pickCjsDefault(mod) {
-  return mod && mod.default ? mod.default : mod;
-}
+import { createAstAdapter } from './wp_ast_adapter.mjs';
 
-let ts = null;
-async function loadTypeScript() {
-  if (ts) return ts;
-  try {
-    const mod = await import('typescript');
-    ts = pickCjsDefault(mod);
-    return ts;
-  } catch (e) {
-    console.error('[WP Three Contract] Missing dependency: typescript');
-    console.error('                   Run: npm i -D typescript');
-    console.error('                   Details:', String(e && e.message ? e.message : e));
-    process.exitCode = 1;
-    return null;
-  }
+function loadAstAdapter(options = {}) {
+  const astApi = createAstAdapter({ astApi: options.astApi, tsModule: options.tsApi });
+  if (astApi) return astApi;
+  console.error('[WP Three Contract] Missing dependency: typescript');
+  console.error('                   Run: npm i -D typescript');
+  process.exitCode = 1;
+  return null;
 }
 
 function exists(p) {
@@ -162,12 +153,12 @@ function walkFiles(absPath, out) {
   }
 }
 
-function tsScriptKindForFile(tsApi, file) {
+function astScriptKindForFile(astApi, file) {
   const f = file.toLowerCase();
-  if (f.endsWith('.tsx')) return tsApi.ScriptKind.TSX;
-  if (f.endsWith('.ts')) return tsApi.ScriptKind.TS;
-  if (f.endsWith('.jsx')) return tsApi.ScriptKind.JSX;
-  return tsApi.ScriptKind.JS;
+  if (f.endsWith('.tsx')) return astApi.ScriptKind.TSX;
+  if (f.endsWith('.ts')) return astApi.ScriptKind.TS;
+  if (f.endsWith('.jsx')) return astApi.ScriptKind.JSX;
+  return astApi.ScriptKind.JS;
 }
 
 function compileIgnoreMatchers(rawList) {
@@ -197,22 +188,22 @@ function compileIgnoreMatchers(rawList) {
     });
 }
 
-function stripTsWrappers(tsApi, node) {
+function stripTsWrappers(astApi, node) {
   let cur = node || null;
   while (cur) {
-    if (tsApi.isParenthesizedExpression(cur)) {
+    if (astApi.isParenthesizedExpression(cur)) {
       cur = cur.expression;
       continue;
     }
-    if (tsApi.isAsExpression(cur) || tsApi.isTypeAssertionExpression(cur)) {
+    if (astApi.isAsExpression(cur) || astApi.isTypeAssertionExpression(cur)) {
       cur = cur.expression;
       continue;
     }
-    if (tsApi.isNonNullExpression && tsApi.isNonNullExpression(cur)) {
+    if (astApi.isNonNullExpression && astApi.isNonNullExpression(cur)) {
       cur = cur.expression;
       continue;
     }
-    if (tsApi.isSatisfiesExpression && tsApi.isSatisfiesExpression(cur)) {
+    if (astApi.isSatisfiesExpression && astApi.isSatisfiesExpression(cur)) {
       cur = cur.expression;
       continue;
     }
@@ -221,20 +212,20 @@ function stripTsWrappers(tsApi, node) {
   return cur;
 }
 
-function getSimpleCalleeName(tsApi, expr) {
-  const callee = stripTsWrappers(tsApi, expr);
+function getSimpleCalleeName(astApi, expr) {
+  const callee = stripTsWrappers(astApi, expr);
   if (!callee) return null;
-  if (tsApi.isIdentifier(callee)) return callee.text;
-  if (tsApi.isPropertyAccessExpression(callee) && callee.name) return callee.name.text || null;
+  if (astApi.isIdentifier(callee)) return callee.text;
+  if (astApi.isPropertyAccessExpression(callee) && callee.name) return callee.name.text || null;
   return null;
 }
 
-function getLiteralPropertyName(tsApi, node) {
-  const value = stripTsWrappers(tsApi, node);
+function getLiteralPropertyName(astApi, node) {
+  const value = stripTsWrappers(astApi, node);
   if (!value) return null;
-  if (tsApi.isIdentifier(value)) return value.text;
-  if (tsApi.isStringLiteral(value) || tsApi.isNoSubstitutionTemplateLiteral(value)) return value.text;
-  if (tsApi.isNumericLiteral(value)) return value.text;
+  if (astApi.isIdentifier(value)) return value.text;
+  if (astApi.isStringLiteral(value) || astApi.isNoSubstitutionTemplateLiteral(value)) return value.text;
+  if (astApi.isNumericLiteral(value)) return value.text;
   return null;
 }
 
@@ -262,59 +253,59 @@ function looksLikeThreeReflectiveReadHelperName(name) {
   );
 }
 
-function isThreeNamespaceLikeExpression(tsApi, expr, aliasNames) {
-  const e = stripTsWrappers(tsApi, expr);
+function isThreeNamespaceLikeExpression(astApi, expr, aliasNames) {
+  const e = stripTsWrappers(astApi, expr);
   if (!e) return false;
 
-  if (tsApi.isIdentifier(e)) {
+  if (astApi.isIdentifier(e)) {
     const name = e.text;
     return !!(aliasNames && aliasNames.has(name));
   }
 
-  if (tsApi.isPropertyAccessExpression(e)) {
-    const base = stripTsWrappers(tsApi, e.expression);
+  if (astApi.isPropertyAccessExpression(e)) {
+    const base = stripTsWrappers(astApi, e.expression);
     if (e.name && e.name.text === 'THREE') return true;
-    return !!(base && tsApi.isIdentifier(base) && aliasNames && aliasNames.has(base.text));
+    return !!(base && astApi.isIdentifier(base) && aliasNames && aliasNames.has(base.text));
   }
 
-  if (tsApi.isElementAccessExpression(e)) {
-    const base = stripTsWrappers(tsApi, e.expression);
-    const arg = stripTsWrappers(tsApi, e.argumentExpression);
+  if (astApi.isElementAccessExpression(e)) {
+    const base = stripTsWrappers(astApi, e.expression);
+    const arg = stripTsWrappers(astApi, e.argumentExpression);
     if (
       arg &&
-      (tsApi.isStringLiteral(arg) || tsApi.isNoSubstitutionTemplateLiteral(arg)) &&
+      (astApi.isStringLiteral(arg) || astApi.isNoSubstitutionTemplateLiteral(arg)) &&
       arg.text === 'THREE'
     ) {
       return true;
     }
-    return !!(base && tsApi.isIdentifier(base) && aliasNames && aliasNames.has(base.text));
+    return !!(base && astApi.isIdentifier(base) && aliasNames && aliasNames.has(base.text));
   }
 
-  if (tsApi.isConditionalExpression(e)) {
+  if (astApi.isConditionalExpression(e)) {
     return (
-      isThreeNamespaceLikeExpression(tsApi, e.whenTrue, aliasNames) ||
-      isThreeNamespaceLikeExpression(tsApi, e.whenFalse, aliasNames)
+      isThreeNamespaceLikeExpression(astApi, e.whenTrue, aliasNames) ||
+      isThreeNamespaceLikeExpression(astApi, e.whenFalse, aliasNames)
     );
   }
 
-  if (tsApi.isBinaryExpression(e)) {
+  if (astApi.isBinaryExpression(e)) {
     const op = e.operatorToken && e.operatorToken.kind;
     if (
-      op === tsApi.SyntaxKind.BarBarToken ||
-      op === tsApi.SyntaxKind.AmpersandAmpersandToken ||
-      op === tsApi.SyntaxKind.QuestionQuestionToken
+      op === astApi.SyntaxKind.BarBarToken ||
+      op === astApi.SyntaxKind.AmpersandAmpersandToken ||
+      op === astApi.SyntaxKind.QuestionQuestionToken
     ) {
       return (
-        isThreeNamespaceLikeExpression(tsApi, e.left, aliasNames) ||
-        isThreeNamespaceLikeExpression(tsApi, e.right, aliasNames)
+        isThreeNamespaceLikeExpression(astApi, e.left, aliasNames) ||
+        isThreeNamespaceLikeExpression(astApi, e.right, aliasNames)
       );
     }
   }
 
-  if (tsApi.isCallExpression(e)) {
-    const calleeName = getSimpleCalleeName(tsApi, e.expression);
+  if (astApi.isCallExpression(e)) {
+    const calleeName = getSimpleCalleeName(astApi, e.expression);
     const hasAliasArg = (e.arguments || []).some(arg =>
-      isThreeNamespaceLikeExpression(tsApi, arg, aliasNames)
+      isThreeNamespaceLikeExpression(astApi, arg, aliasNames)
     );
     if (hasAliasArg && looksLikeThreeAliasFactoryName(calleeName)) return true;
     if (calleeName && /^(?:_+)?(?:assert|ensure|get|resolve)THREE$/i.test(calleeName)) return true;
@@ -323,124 +314,125 @@ function isThreeNamespaceLikeExpression(tsApi, expr, aliasNames) {
   return false;
 }
 
-function getThreeNamespacePropName(tsApi, node, aliasNames = null) {
+function getThreeNamespacePropName(astApi, node, aliasNames = null) {
   if (!node) return null;
   const aliases = aliasNames || new Set(['THREE']);
 
-  if (tsApi.isPropertyAccessExpression(node)) {
-    const base = stripTsWrappers(tsApi, node.expression);
-    if (base && tsApi.isIdentifier(base) && aliases.has(base.text)) {
+  if (astApi.isPropertyAccessExpression(node)) {
+    const base = stripTsWrappers(astApi, node.expression);
+    if (base && astApi.isIdentifier(base) && aliases.has(base.text)) {
       return node.name && node.name.text ? node.name.text : null;
     }
   }
 
-  if (tsApi.isElementAccessExpression(node)) {
-    const base = stripTsWrappers(tsApi, node.expression);
-    if (base && tsApi.isIdentifier(base) && aliases.has(base.text)) {
-      const arg = stripTsWrappers(tsApi, node.argumentExpression);
-      if (arg && (tsApi.isStringLiteral(arg) || tsApi.isNoSubstitutionTemplateLiteral(arg))) return arg.text;
+  if (astApi.isElementAccessExpression(node)) {
+    const base = stripTsWrappers(astApi, node.expression);
+    if (base && astApi.isIdentifier(base) && aliases.has(base.text)) {
+      const arg = stripTsWrappers(astApi, node.argumentExpression);
+      if (arg && (astApi.isStringLiteral(arg) || astApi.isNoSubstitutionTemplateLiteral(arg)))
+        return arg.text;
     }
   }
   return null;
 }
 
-function isThreeNamespaceWriteAccess(tsApi, node) {
+function isThreeNamespaceWriteAccess(astApi, node) {
   const parent = node && node.parent;
   if (!parent) return false;
 
-  if (tsApi.isBinaryExpression(parent) && parent.left === node) {
+  if (astApi.isBinaryExpression(parent) && parent.left === node) {
     const op = parent.operatorToken && parent.operatorToken.kind;
     switch (op) {
-      case tsApi.SyntaxKind.EqualsToken:
-      case tsApi.SyntaxKind.PlusEqualsToken:
-      case tsApi.SyntaxKind.MinusEqualsToken:
-      case tsApi.SyntaxKind.AsteriskEqualsToken:
-      case tsApi.SyntaxKind.AsteriskAsteriskEqualsToken:
-      case tsApi.SyntaxKind.SlashEqualsToken:
-      case tsApi.SyntaxKind.PercentEqualsToken:
-      case tsApi.SyntaxKind.AmpersandEqualsToken:
-      case tsApi.SyntaxKind.BarEqualsToken:
-      case tsApi.SyntaxKind.CaretEqualsToken:
-      case tsApi.SyntaxKind.LessThanLessThanEqualsToken:
-      case tsApi.SyntaxKind.GreaterThanGreaterThanEqualsToken:
-      case tsApi.SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken:
-      case tsApi.SyntaxKind.BarBarEqualsToken:
-      case tsApi.SyntaxKind.AmpersandAmpersandEqualsToken:
-      case tsApi.SyntaxKind.QuestionQuestionEqualsToken:
+      case astApi.SyntaxKind.EqualsToken:
+      case astApi.SyntaxKind.PlusEqualsToken:
+      case astApi.SyntaxKind.MinusEqualsToken:
+      case astApi.SyntaxKind.AsteriskEqualsToken:
+      case astApi.SyntaxKind.AsteriskAsteriskEqualsToken:
+      case astApi.SyntaxKind.SlashEqualsToken:
+      case astApi.SyntaxKind.PercentEqualsToken:
+      case astApi.SyntaxKind.AmpersandEqualsToken:
+      case astApi.SyntaxKind.BarEqualsToken:
+      case astApi.SyntaxKind.CaretEqualsToken:
+      case astApi.SyntaxKind.LessThanLessThanEqualsToken:
+      case astApi.SyntaxKind.GreaterThanGreaterThanEqualsToken:
+      case astApi.SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken:
+      case astApi.SyntaxKind.BarBarEqualsToken:
+      case astApi.SyntaxKind.AmpersandAmpersandEqualsToken:
+      case astApi.SyntaxKind.QuestionQuestionEqualsToken:
         return true;
       default:
         return false;
     }
   }
-  if (tsApi.isPrefixUnaryExpression(parent) && parent.operand === node) {
+  if (astApi.isPrefixUnaryExpression(parent) && parent.operand === node) {
     const op = parent.operator;
-    return op === tsApi.SyntaxKind.PlusPlusToken || op === tsApi.SyntaxKind.MinusMinusToken;
+    return op === astApi.SyntaxKind.PlusPlusToken || op === astApi.SyntaxKind.MinusMinusToken;
   }
-  if (tsApi.isPostfixUnaryExpression(parent) && parent.operand === node) {
+  if (astApi.isPostfixUnaryExpression(parent) && parent.operand === node) {
     const op = parent.operator;
-    return op === tsApi.SyntaxKind.PlusPlusToken || op === tsApi.SyntaxKind.MinusMinusToken;
+    return op === astApi.SyntaxKind.PlusPlusToken || op === astApi.SyntaxKind.MinusMinusToken;
   }
-  if (tsApi.isDeleteExpression(parent) && parent.expression === node) return true;
+  if (astApi.isDeleteExpression(parent) && parent.expression === node) return true;
 
   return false;
 }
 
-function conditionMentionsGuardForThreeSymbol(tsApi, expr, symbolName, aliasNames) {
+function conditionMentionsGuardForThreeSymbol(astApi, expr, symbolName, aliasNames) {
   let found = false;
   function visit(node) {
     if (!node || found) return;
 
     // 'SymbolName' in THREE_ALIAS
-    if (tsApi.isBinaryExpression(node) && node.operatorToken.kind === tsApi.SyntaxKind.InKeyword) {
-      const left = stripTsWrappers(tsApi, node.left);
-      const right = stripTsWrappers(tsApi, node.right);
+    if (astApi.isBinaryExpression(node) && node.operatorToken.kind === astApi.SyntaxKind.InKeyword) {
+      const left = stripTsWrappers(astApi, node.left);
+      const right = stripTsWrappers(astApi, node.right);
       const leftText =
-        left && (tsApi.isStringLiteral(left) || tsApi.isNoSubstitutionTemplateLiteral(left))
+        left && (astApi.isStringLiteral(left) || astApi.isNoSubstitutionTemplateLiteral(left))
           ? left.text
           : null;
-      if (leftText === symbolName && isThreeNamespaceLikeExpression(tsApi, right, aliasNames)) {
+      if (leftText === symbolName && isThreeNamespaceLikeExpression(astApi, right, aliasNames)) {
         found = true;
         return;
       }
     }
 
     // typeof THREE_ALIAS.SymbolName ...
-    const propName = getThreeNamespacePropName(tsApi, node, aliasNames);
+    const propName = getThreeNamespacePropName(astApi, node, aliasNames);
     if (propName === symbolName) {
       found = true;
       return;
     }
 
-    tsApi.forEachChild(node, visit);
+    astApi.forEachChild(node, visit);
   }
   visit(expr);
   return found;
 }
 
-function isThreeSymbolReadInFallbackGuardContext(tsApi, node, symbolName, aliasNames) {
+function isThreeSymbolReadInFallbackGuardContext(astApi, node, symbolName, aliasNames) {
   let child = node;
   let cur = node ? node.parent : null;
   while (cur) {
-    if (tsApi.isIfStatement(cur)) {
+    if (astApi.isIfStatement(cur)) {
       // Node appears inside `if (<cond>)`
       if (child === cur.expression) {
-        if (conditionMentionsGuardForThreeSymbol(tsApi, cur.expression, symbolName, aliasNames)) return true;
+        if (conditionMentionsGuardForThreeSymbol(astApi, cur.expression, symbolName, aliasNames)) return true;
       }
       // Node appears inside `then` branch guarded by same symbol
       if (child === cur.thenStatement) {
-        if (conditionMentionsGuardForThreeSymbol(tsApi, cur.expression, symbolName, aliasNames)) return true;
+        if (conditionMentionsGuardForThreeSymbol(astApi, cur.expression, symbolName, aliasNames)) return true;
       }
       // `else` branch is not considered guarded-positive here.
-    } else if (tsApi.isConditionalExpression(cur)) {
+    } else if (astApi.isConditionalExpression(cur)) {
       if (child === cur.condition || child === cur.whenTrue) {
-        if (conditionMentionsGuardForThreeSymbol(tsApi, cur.condition, symbolName, aliasNames)) return true;
+        if (conditionMentionsGuardForThreeSymbol(astApi, cur.condition, symbolName, aliasNames)) return true;
       }
-    } else if (tsApi.isBinaryExpression(cur)) {
+    } else if (astApi.isBinaryExpression(cur)) {
       const op = cur.operatorToken && cur.operatorToken.kind;
       if (
-        (op === tsApi.SyntaxKind.AmpersandAmpersandToken || op === tsApi.SyntaxKind.BarBarToken) &&
+        (op === astApi.SyntaxKind.AmpersandAmpersandToken || op === astApi.SyntaxKind.BarBarToken) &&
         child === cur.right &&
-        conditionMentionsGuardForThreeSymbol(tsApi, cur.left, symbolName, aliasNames)
+        conditionMentionsGuardForThreeSymbol(astApi, cur.left, symbolName, aliasNames)
       ) {
         return true;
       }
@@ -452,7 +444,7 @@ function isThreeSymbolReadInFallbackGuardContext(tsApi, node, symbolName, aliasN
   return false;
 }
 
-function collectThreeSymbolUsagesFromSource(tsApi, sourceFile, shouldIgnoreSymbol = null) {
+function collectThreeSymbolUsagesFromSource(astApi, sourceFile, shouldIgnoreSymbol = null) {
   const symbols = new Map(); // symbol -> total read count (direct + fallback)
   const directSymbols = new Map(); // symbol -> unguarded/direct read count
   const fallbackSymbols = new Map(); // symbol -> guarded/compat read count
@@ -474,16 +466,16 @@ function collectThreeSymbolUsagesFromSource(tsApi, sourceFile, shouldIgnoreSymbo
 
   const addAliasFromBindingName = bindingName => {
     if (!bindingName) return false;
-    if (tsApi.isIdentifier(bindingName)) {
+    if (astApi.isIdentifier(bindingName)) {
       if (!isLikelyThreeAliasName(bindingName.text)) return false;
       aliasNames.add(bindingName.text);
       return true;
     }
-    if (tsApi.isObjectBindingPattern(bindingName)) {
+    if (astApi.isObjectBindingPattern(bindingName)) {
       let changed = false;
       for (const el of bindingName.elements || []) {
         if (!el || el.dotDotDotToken) continue;
-        if (el.name && tsApi.isIdentifier(el.name)) {
+        if (el.name && astApi.isIdentifier(el.name)) {
           aliasNames.add(el.name.text);
           changed = true;
         }
@@ -497,18 +489,18 @@ function collectThreeSymbolUsagesFromSource(tsApi, sourceFile, shouldIgnoreSymbo
     let changed = false;
 
     function visitAlias(node) {
-      if (tsApi.isVariableDeclaration(node)) {
+      if (astApi.isVariableDeclaration(node)) {
         const init = node.initializer;
         if (node.name && init) {
-          if (tsApi.isObjectBindingPattern(node.name)) {
+          if (astApi.isObjectBindingPattern(node.name)) {
             // const { THREE: T } = deps
             for (const el of node.name.elements || []) {
-              if (!el || el.dotDotDotToken || !el.name || !tsApi.isIdentifier(el.name)) continue;
+              if (!el || el.dotDotDotToken || !el.name || !astApi.isIdentifier(el.name)) continue;
               const prop = el.propertyName || el.name;
               const propText =
-                tsApi.isIdentifier(prop) ||
-                tsApi.isStringLiteral(prop) ||
-                tsApi.isNoSubstitutionTemplateLiteral(prop)
+                astApi.isIdentifier(prop) ||
+                astApi.isStringLiteral(prop) ||
+                astApi.isNoSubstitutionTemplateLiteral(prop)
                   ? prop.text
                   : null;
               if (propText === 'THREE') {
@@ -517,7 +509,7 @@ function collectThreeSymbolUsagesFromSource(tsApi, sourceFile, shouldIgnoreSymbo
                 if (aliasNames.size !== before) changed = true;
               }
             }
-          } else if (isThreeNamespaceLikeExpression(tsApi, init, aliasNames)) {
+          } else if (isThreeNamespaceLikeExpression(astApi, init, aliasNames)) {
             const before = aliasNames.size;
             addAliasFromBindingName(node.name);
             if (aliasNames.size !== before) changed = true;
@@ -525,10 +517,10 @@ function collectThreeSymbolUsagesFromSource(tsApi, sourceFile, shouldIgnoreSymbo
         }
       }
 
-      if (tsApi.isBinaryExpression(node) && node.operatorToken.kind === tsApi.SyntaxKind.EqualsToken) {
-        if (isThreeNamespaceLikeExpression(tsApi, node.right, aliasNames)) {
-          const left = stripTsWrappers(tsApi, node.left);
-          if (left && tsApi.isIdentifier(left) && isLikelyThreeAliasName(left.text)) {
+      if (astApi.isBinaryExpression(node) && node.operatorToken.kind === astApi.SyntaxKind.EqualsToken) {
+        if (isThreeNamespaceLikeExpression(astApi, node.right, aliasNames)) {
+          const left = stripTsWrappers(astApi, node.left);
+          if (left && astApi.isIdentifier(left) && isLikelyThreeAliasName(left.text)) {
             const before = aliasNames.size;
             aliasNames.add(left.text);
             if (aliasNames.size !== before) changed = true;
@@ -536,7 +528,7 @@ function collectThreeSymbolUsagesFromSource(tsApi, sourceFile, shouldIgnoreSymbo
         }
       }
 
-      tsApi.forEachChild(node, visitAlias);
+      astApi.forEachChild(node, visitAlias);
     }
 
     visitAlias(sourceFile);
@@ -549,77 +541,71 @@ function collectThreeSymbolUsagesFromSource(tsApi, sourceFile, shouldIgnoreSymbo
 
   function visit(node) {
     // THREE.Foo / alias.Foo / THREE['Foo'] / alias['Foo']
-    const threeProp = getThreeNamespacePropName(tsApi, node, aliasNames);
+    const threeProp = getThreeNamespacePropName(astApi, node, aliasNames);
     if (threeProp) {
       // Namespace writes (e.g. THREE.__foo = ..., THREE['bar'] ||= ...) are app augmentations,
       // not requirements for the vendor export contract.
-      if (isThreeNamespaceWriteAccess(tsApi, node)) addIgnoredWrite(threeProp);
+      if (isThreeNamespaceWriteAccess(astApi, node)) addIgnoredWrite(threeProp);
       else
         add(threeProp, {
-          fallback: isThreeSymbolReadInFallbackGuardContext(tsApi, node, threeProp, aliasNames),
+          fallback: isThreeSymbolReadInFallbackGuardContext(astApi, node, threeProp, aliasNames),
         });
     }
 
     // getCtor(THREE, 'Box3') / getProp(THREE, 'Vector3') / similar reflective helpers.
-    if (tsApi.isCallExpression(node)) {
-      const calleeName = getSimpleCalleeName(tsApi, node.expression);
+    if (astApi.isCallExpression(node)) {
+      const calleeName = getSimpleCalleeName(astApi, node.expression);
       const firstArg = node.arguments && node.arguments.length >= 1 ? node.arguments[0] : null;
       const secondArg = node.arguments && node.arguments.length >= 2 ? node.arguments[1] : null;
       if (
         looksLikeThreeReflectiveReadHelperName(calleeName) &&
-        isThreeNamespaceLikeExpression(tsApi, firstArg, aliasNames)
+        isThreeNamespaceLikeExpression(astApi, firstArg, aliasNames)
       ) {
-        const reflectiveProp = getLiteralPropertyName(tsApi, secondArg);
+        const reflectiveProp = getLiteralPropertyName(astApi, secondArg);
         if (reflectiveProp) {
           add(reflectiveProp, {
-            fallback: isThreeSymbolReadInFallbackGuardContext(tsApi, node, reflectiveProp, aliasNames),
+            fallback: isThreeSymbolReadInFallbackGuardContext(astApi, node, reflectiveProp, aliasNames),
           });
         }
       }
     }
 
     // const { Foo, Bar: Baz } = THREE (or alias to THREE)
-    if (tsApi.isVariableDeclaration(node) && tsApi.isObjectBindingPattern(node.name)) {
+    if (astApi.isVariableDeclaration(node) && astApi.isObjectBindingPattern(node.name)) {
       const init = node.initializer;
-      if (isThreeNamespaceLikeExpression(tsApi, init, aliasNames)) {
+      if (isThreeNamespaceLikeExpression(astApi, init, aliasNames)) {
         for (const el of node.name.elements) {
           if (!el || (!el.propertyName && !el.name)) continue;
           if (el.dotDotDotToken) continue;
           const prop = el.propertyName || el.name;
           const propText =
-            tsApi.isIdentifier(prop) ||
-            tsApi.isStringLiteral(prop) ||
-            tsApi.isNoSubstitutionTemplateLiteral(prop)
+            astApi.isIdentifier(prop) ||
+            astApi.isStringLiteral(prop) ||
+            astApi.isNoSubstitutionTemplateLiteral(prop)
               ? prop.text
               : null;
           if (propText) {
             add(propText, {
-              fallback: isThreeSymbolReadInFallbackGuardContext(tsApi, node, propText, aliasNames),
+              fallback: isThreeSymbolReadInFallbackGuardContext(astApi, node, propText, aliasNames),
             });
           }
         }
       }
     }
 
-    tsApi.forEachChild(node, visit);
+    astApi.forEachChild(node, visit);
   }
 
   visit(sourceFile);
   return { symbols, directSymbols, fallbackSymbols, ignoredNamespaceWrites };
 }
 
-function parseJsLikeFile(tsApi, absPath) {
+function parseJsLikeFile(astApi, absPath) {
   const text = fs.readFileSync(absPath, 'utf8');
-  return tsApi.createSourceFile(
-    absPath,
-    text,
-    tsApi.ScriptTarget.Latest,
-    true,
-    tsScriptKindForFile(tsApi, absPath)
-  );
+  return astApi.createSourceFile(absPath, text, astScriptKindForFile(astApi, absPath));
 }
 
-function collectRequiredThreeSymbols({ root, scanPaths, tsApi, shouldIgnoreSymbol }) {
+function collectRequiredThreeSymbols({ root, scanPaths, astApi, shouldIgnoreSymbol }) {
   const files = [];
   for (const rel of scanPaths) {
     const abs = path.isAbsolute(rel) ? rel : path.join(root, rel);
@@ -638,11 +624,11 @@ function collectRequiredThreeSymbols({ root, scanPaths, tsApi, shouldIgnoreSymbo
   for (const f of files) {
     let sf;
     try {
-      sf = parseJsLikeFile(tsApi, f);
+      sf = parseJsLikeFile(astApi, f);
     } catch {
       continue;
     }
-    const local = collectThreeSymbolUsagesFromSource(tsApi, sf, shouldIgnoreSymbol);
+    const local = collectThreeSymbolUsagesFromSource(astApi, sf, shouldIgnoreSymbol);
     const localSymbols = local && local.symbols ? local.symbols : new Map();
     const localDirectSymbols = local && local.directSymbols ? local.directSymbols : new Map();
     const localFallbackSymbols = local && local.fallbackSymbols ? local.fallbackSymbols : new Map();
@@ -695,49 +681,49 @@ function collectRequiredThreeSymbols({ root, scanPaths, tsApi, shouldIgnoreSymbo
   };
 }
 
-function collectVendorExportedSymbolsFromEntry({ root, vendorEntry, tsApi }) {
+function collectVendorExportedSymbolsFromEntry({ root, vendorEntry, astApi }) {
   const entryAbs = path.isAbsolute(vendorEntry) ? vendorEntry : path.join(root, vendorEntry);
   if (!exists(entryAbs)) {
     throw new Error(`[WP Three Contract] Missing vendor entry: ${posixRel(root, entryAbs)}`);
   }
-  const sf = parseJsLikeFile(tsApi, entryAbs);
+  const sf = parseJsLikeFile(astApi, entryAbs);
   const exported = new Set();
   let foundThreeObject = false;
 
   function addPropName(nameNode) {
     if (!nameNode) return;
-    if (tsApi.isIdentifier(nameNode)) exported.add(nameNode.text);
-    else if (tsApi.isStringLiteral(nameNode) || tsApi.isNoSubstitutionTemplateLiteral(nameNode))
+    if (astApi.isIdentifier(nameNode)) exported.add(nameNode.text);
+    else if (astApi.isStringLiteral(nameNode) || astApi.isNoSubstitutionTemplateLiteral(nameNode))
       exported.add(nameNode.text);
-    else if (tsApi.isNumericLiteral(nameNode)) exported.add(nameNode.text);
+    else if (astApi.isNumericLiteral(nameNode)) exported.add(nameNode.text);
   }
 
   function visit(node) {
-    if (tsApi.isVariableStatement(node)) {
+    if (astApi.isVariableStatement(node)) {
       for (const decl of node.declarationList.declarations || []) {
-        if (!tsApi.isIdentifier(decl.name) || decl.name.text !== 'THREE') continue;
-        if (!decl.initializer || !tsApi.isObjectLiteralExpression(decl.initializer)) continue;
+        if (!astApi.isIdentifier(decl.name) || decl.name.text !== 'THREE') continue;
+        if (!decl.initializer || !astApi.isObjectLiteralExpression(decl.initializer)) continue;
         foundThreeObject = true;
         for (const prop of decl.initializer.properties) {
-          if (tsApi.isShorthandPropertyAssignment(prop)) {
+          if (astApi.isShorthandPropertyAssignment(prop)) {
             exported.add(prop.name.text);
             continue;
           }
-          if (tsApi.isPropertyAssignment(prop)) {
+          if (astApi.isPropertyAssignment(prop)) {
             addPropName(prop.name);
             continue;
           }
-          if (tsApi.isMethodDeclaration(prop)) {
+          if (astApi.isMethodDeclaration(prop)) {
             addPropName(prop.name);
             continue;
           }
-          if (tsApi.isSpreadAssignment(prop)) {
+          if (astApi.isSpreadAssignment(prop)) {
             // Intentionally ignore spreads; current vendor entry should stay explicit.
           }
         }
       }
     }
-    tsApi.forEachChild(node, visit);
+    astApi.forEachChild(node, visit);
   }
   visit(sf);
 
@@ -759,8 +745,8 @@ export async function runThreeVendorContractCheck(options = {}) {
     ...options,
   };
 
-  const tsApi = options.tsApi || (await loadTypeScript());
-  if (!tsApi) {
+  const astApi = loadAstAdapter(options);
+  if (!astApi) {
     return { ok: false, error: 'missing_typescript' };
   }
 
@@ -769,8 +755,8 @@ export async function runThreeVendorContractCheck(options = {}) {
   const scanPaths = Array.isArray(args.scanPaths) && args.scanPaths.length ? args.scanPaths : ['esm'];
 
   const shouldIgnoreSymbol = compileIgnoreMatchers(args.ignoreSymbols);
-  const requiredRes = collectRequiredThreeSymbols({ root, scanPaths, tsApi, shouldIgnoreSymbol });
-  const vendorRes = collectVendorExportedSymbolsFromEntry({ root, vendorEntry, tsApi });
+  const requiredRes = collectRequiredThreeSymbols({ root, scanPaths, astApi, shouldIgnoreSymbol });
+  const vendorRes = collectVendorExportedSymbolsFromEntry({ root, vendorEntry, astApi });
   const exportedSet = new Set(vendorRes.exported);
 
   const directSet = new Set(requiredRes.directRequiredCounts.keys());

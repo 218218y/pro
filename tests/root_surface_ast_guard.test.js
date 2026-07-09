@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import ts from 'typescript';
+import { requireAstAdapter } from '../tools/wp_ast_adapter.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const sourceRoot = path.resolve(here, '..', 'esm', 'native');
+const astApi = requireAstAdapter('Root Surface AST Guard');
 
 const forbiddenRootProps = new Set(['actions', 'store', 'deps', 'browser', 'platform', 'render', 'config']);
 const allowedExts = new Set(['.ts', '.tsx', '.js', '.mjs', '.cjs']);
@@ -25,21 +26,18 @@ function collectFiles(dir) {
 }
 
 function scriptKindFor(file) {
-  const ext = path.extname(file);
-  if (ext === '.tsx') return ts.ScriptKind.TSX;
-  if (ext === '.js' || ext === '.mjs' || ext === '.cjs') return ts.ScriptKind.JS;
-  return ts.ScriptKind.TS;
+  return astApi.getScriptKindForFile(file);
 }
 
 function unwrapExpression(node) {
   let cur = node;
   while (
     cur &&
-    (ts.isParenthesizedExpression(cur) ||
-      ts.isAsExpression(cur) ||
-      ts.isTypeAssertionExpression(cur) ||
-      ts.isNonNullExpression(cur) ||
-      ts.isSatisfiesExpression?.(cur))
+    (astApi.isParenthesizedExpression(cur) ||
+      astApi.isAsExpression(cur) ||
+      astApi.isTypeAssertionExpression(cur) ||
+      astApi.isNonNullExpression(cur) ||
+      astApi.isSatisfiesExpression?.(cur))
   ) {
     cur = cur.expression;
   }
@@ -47,8 +45,8 @@ function unwrapExpression(node) {
 }
 
 function calleeName(expr) {
-  if (ts.isIdentifier(expr)) return expr.text;
-  if (ts.isPropertyAccessExpression(expr)) return expr.name.text;
+  if (astApi.isIdentifier(expr)) return expr.text;
+  if (astApi.isPropertyAccessExpression(expr)) return expr.name.text;
   return '';
 }
 
@@ -71,21 +69,21 @@ function buildAppishAliasSet(sf) {
   function exprIsAppish(expr) {
     const node = unwrapExpression(expr);
     if (!node) return false;
-    if (ts.isIdentifier(node)) return appish.has(node.text) || isAppishParameter(node.text);
-    if (ts.isCallExpression(node)) {
+    if (astApi.isIdentifier(node)) return appish.has(node.text) || isAppishParameter(node.text);
+    if (astApi.isCallExpression(node)) {
       const name = calleeName(node.expression);
       if (!looksAppishFactory(name)) return false;
       return node.arguments.some(arg => exprIsAppish(arg));
     }
-    if (ts.isConditionalExpression(node)) {
+    if (astApi.isConditionalExpression(node)) {
       return exprIsAppish(node.whenTrue) || exprIsAppish(node.whenFalse);
     }
-    if (ts.isBinaryExpression(node)) {
+    if (astApi.isBinaryExpression(node)) {
       const op = node.operatorToken.kind;
       if (
-        op === ts.SyntaxKind.QuestionQuestionToken ||
-        op === ts.SyntaxKind.BarBarToken ||
-        op === ts.SyntaxKind.AmpersandAmpersandToken
+        op === astApi.SyntaxKind.QuestionQuestionToken ||
+        op === astApi.SyntaxKind.BarBarToken ||
+        op === astApi.SyntaxKind.AmpersandAmpersandToken
       ) {
         return exprIsAppish(node.left) || exprIsAppish(node.right);
       }
@@ -94,17 +92,17 @@ function buildAppishAliasSet(sf) {
   }
 
   function visit(node) {
-    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) {
+    if (astApi.isVariableDeclaration(node) && astApi.isIdentifier(node.name) && node.initializer) {
       if (exprIsAppish(node.initializer)) appish.add(node.name.text);
     }
     if (
-      ts.isBinaryExpression(node) &&
-      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
-      ts.isIdentifier(node.left)
+      astApi.isBinaryExpression(node) &&
+      node.operatorToken.kind === astApi.SyntaxKind.EqualsToken &&
+      astApi.isIdentifier(node.left)
     ) {
       if (exprIsAppish(node.right)) appish.add(node.left.text);
     }
-    ts.forEachChild(node, visit);
+    astApi.forEachChild(node, visit);
   }
 
   visit(sf);
@@ -112,10 +110,10 @@ function buildAppishAliasSet(sf) {
 }
 
 function isForbiddenRootAccess(node, appish) {
-  if (!ts.isPropertyAccessExpression(node)) return false;
+  if (!astApi.isPropertyAccessExpression(node)) return false;
   const expr = unwrapExpression(node.expression);
   return !!(
-    ts.isIdentifier(expr) &&
+    astApi.isIdentifier(expr) &&
     (appish.has(expr.text) || isAppishParameter(expr.text)) &&
     forbiddenRootProps.has(node.name.text)
   );
@@ -123,7 +121,7 @@ function isForbiddenRootAccess(node, appish) {
 
 function collectForbiddenHits(file) {
   const source = fs.readFileSync(file, 'utf8');
-  const sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, scriptKindFor(file));
+  const sf = astApi.createSourceFile(file, source, scriptKindFor(file));
   const hits = [];
   const appish = buildAppishAliasSet(sf);
 
@@ -137,7 +135,7 @@ function collectForbiddenHits(file) {
         text: node.getText(sf),
       });
     }
-    ts.forEachChild(node, visit);
+    astApi.forEachChild(node, visit);
   }
 
   visit(sf);

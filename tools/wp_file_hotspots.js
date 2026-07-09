@@ -12,10 +12,12 @@
  */
 import fs from 'fs';
 import path from 'path';
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+import {
+  collectCodeLineNumbers,
+  countFunctionLikeNodes,
+  createSourceFile,
+  requireAstAdapter,
+} from './wp_ast_adapter.mjs';
 
 const args = process.argv.slice(2);
 let json = false;
@@ -73,53 +75,12 @@ function walk(target) {
 for (const root of scope) walk(root);
 files.sort();
 
-function getScriptKind(file) {
-  switch (path.extname(file)) {
-    case '.tsx':
-      return ts.ScriptKind.TSX;
-    case '.jsx':
-      return ts.ScriptKind.JSX;
-    case '.js':
-      return ts.ScriptKind.JS;
-    case '.mjs':
-      return ts.ScriptKind.JS;
-    case '.cjs':
-      return ts.ScriptKind.JS;
-    case '.mts':
-      return ts.ScriptKind.TS;
-    case '.cts':
-      return ts.ScriptKind.TS;
-    case '.ts':
-    default:
-      return ts.ScriptKind.TS;
-  }
-}
-
 function countPhysicalLines(text) {
   if (!text.length) return 0;
   return text.split(/\r\n|\r|\n/).length;
 }
 
-function countFunctionLikes(sourceFile) {
-  let count = 0;
-  function visit(node) {
-    if (
-      ts.isFunctionDeclaration(node) ||
-      ts.isFunctionExpression(node) ||
-      ts.isArrowFunction(node) ||
-      ts.isMethodDeclaration(node) ||
-      ts.isConstructorDeclaration(node) ||
-      ts.isGetAccessorDeclaration(node) ||
-      ts.isSetAccessorDeclaration(node)
-    ) {
-      count += 1;
-    }
-    ts.forEachChild(node, visit);
-  }
-  visit(sourceFile);
-  return count;
-}
-
+const astApi = requireAstAdapter('WP File Hotspots');
 const rows = [];
 let totalPhysicalLines = 0;
 let totalCodeLines = 0;
@@ -127,30 +88,10 @@ let totalFunctionLikes = 0;
 
 for (const file of files) {
   const text = fs.readFileSync(file, 'utf8');
-  const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, getScriptKind(file));
+  const sourceFile = createSourceFile(file, text, { astApi });
   const physicalLines = countPhysicalLines(text);
-  const codeLines = (() => {
-    const codeLineSet = new Set();
-    const languageVariant =
-      getScriptKind(file) === ts.ScriptKind.TSX || getScriptKind(file) === ts.ScriptKind.JSX
-        ? ts.LanguageVariant.JSX
-        : ts.LanguageVariant.Standard;
-    const scanner = ts.createScanner(ts.ScriptTarget.Latest, false, languageVariant, text);
-    let token = scanner.scan();
-    while (token !== ts.SyntaxKind.EndOfFileToken) {
-      const tokenText = scanner.getTokenText();
-      if (tokenText && /\S/.test(tokenText)) {
-        const start = scanner.getTokenPos();
-        const end = scanner.getTextPos();
-        const startLine = ts.getLineAndCharacterOfPosition(sourceFile, start).line + 1;
-        const endLine = ts.getLineAndCharacterOfPosition(sourceFile, Math.max(start, end - 1)).line + 1;
-        for (let line = startLine; line <= endLine; line += 1) codeLineSet.add(line);
-      }
-      token = scanner.scan();
-    }
-    return codeLineSet.size;
-  })();
-  const functionLikes = countFunctionLikes(sourceFile);
+  const codeLines = collectCodeLineNumbers(file, text, { astApi, sourceFile }).size;
+  const functionLikes = countFunctionLikeNodes(sourceFile, { astApi });
 
   totalPhysicalLines += physicalLines;
   totalCodeLines += codeLines;

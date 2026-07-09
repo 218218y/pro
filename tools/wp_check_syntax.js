@@ -1,23 +1,10 @@
 import fs from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { createRequire } from 'node:module';
-
+import { createAstAdapter, formatParseDiagnostic, getTypeScriptAstModule } from './wp_ast_adapter.mjs';
 import { JS_EXTS, ROOT, TS_EXTS, rel } from './wp_check_shared.js';
 
-const require = createRequire(import.meta.url);
-let cachedTsModule = null;
-let tsLoadFailed = false;
-
 export function getTypeScriptModule() {
-  if (cachedTsModule) return cachedTsModule;
-  if (tsLoadFailed) return null;
-  try {
-    cachedTsModule = require('typescript');
-    return cachedTsModule;
-  } catch {
-    tsLoadFailed = true;
-    return null;
-  }
+  return getTypeScriptAstModule();
 }
 
 export function nodeCheck(file, options = {}) {
@@ -28,9 +15,9 @@ export function nodeCheck(file, options = {}) {
 }
 
 export function tsParseCheck(file, options = {}) {
-  const ts = options.tsModule || getTypeScriptModule();
+  const astApi = options.astApi || createAstAdapter({ tsModule: options.tsModule });
   const root = options.root || ROOT;
-  if (!ts) {
+  if (!astApi) {
     return {
       ok: true,
       skipped: true,
@@ -40,29 +27,12 @@ export function tsParseCheck(file, options = {}) {
 
   try {
     const text = fs.readFileSync(file, 'utf8');
-    const lower = file.toLowerCase();
-    const scriptKind = lower.endsWith('.tsx')
-      ? ts.ScriptKind.TSX
-      : lower.endsWith('.mts')
-        ? ts.ScriptKind.MTS
-        : lower.endsWith('.cts')
-          ? ts.ScriptKind.CTS
-          : ts.ScriptKind.TS;
-    const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, scriptKind);
+    const sourceFile = astApi.createSourceFile(file, text, astApi.getScriptKindForFile(file));
     const diagnostics = Array.isArray(sourceFile.parseDiagnostics) ? sourceFile.parseDiagnostics : [];
     if (!diagnostics.length) return { ok: true, skipped: false };
     const pretty = diagnostics
       .slice(0, 10)
-      .map(diag => {
-        const message =
-          typeof ts.flattenDiagnosticMessageText === 'function'
-            ? ts.flattenDiagnosticMessageText(diag.messageText, '\n')
-            : String(diag.messageText || 'TS parse error');
-        const pos =
-          typeof diag.start === 'number' ? sourceFile.getLineAndCharacterOfPosition(diag.start) : null;
-        const where = pos ? `:${pos.line + 1}:${pos.character + 1}` : '';
-        return `${rel(root, file)}${where} TS${diag.code}: ${message}`;
-      })
+      .map(diagnostic => formatParseDiagnostic({ astApi, root, file, sourceFile, diagnostic, rel }))
       .join('\n');
     return { ok: false, skipped: false, msg: pretty };
   } catch (error) {

@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import ts from 'typescript';
+import { requireAstAdapter } from './wp_ast_adapter.mjs';
 import { exists, isLocalJsRef, isLocalRef, normalizeRefText } from './wp_release_parity_shared.js';
+
+const astApi = requireAstAdapter('WP Release Parity Refs');
 
 export function collectHtmlLocalRefs(htmlText) {
   const refs = [];
@@ -229,35 +231,39 @@ export function maskJsComments(jsText) {
 
 function getStaticStringLiteralText(node) {
   if (!node) return null;
-  if (ts.isStringLiteralLike(node)) return String(node.text || '');
+  if (astApi.isStringLiteralLike(node)) return String(node.text || '');
   return null;
 }
 
 function isImportMetaUrl(node) {
   return !!(
     node &&
-    ts.isPropertyAccessExpression(node) &&
+    astApi.isPropertyAccessExpression(node) &&
     node.name &&
     node.name.text === 'url' &&
-    ts.isMetaProperty(node.expression) &&
-    node.expression.keywordToken === ts.SyntaxKind.ImportKeyword &&
+    astApi.isMetaProperty(node.expression) &&
+    node.expression.keywordToken === astApi.SyntaxKind.ImportKeyword &&
     node.expression.name &&
     node.expression.name.text === 'meta'
   );
 }
 
 function visitJsRefNodes(node, refs) {
-  if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+  if (astApi.isCallExpression(node) && node.expression.kind === astApi.SyntaxKind.ImportKeyword) {
     const ref = getStaticStringLiteralText(node.arguments[0]);
     if (isLocalJsRef(ref || '')) refs.push({ kind: 'js:dynamic-import', ref: normalizeRefText(ref) });
   }
 
-  if (ts.isImportDeclaration(node)) {
+  if (astApi.isImportDeclaration(node)) {
     const ref = getStaticStringLiteralText(node.moduleSpecifier);
     if (isLocalJsRef(ref || '')) refs.push({ kind: 'js:import', ref: normalizeRefText(ref) });
   }
 
-  if (ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'URL') {
+  if (
+    astApi.isNewExpression(node) &&
+    astApi.isIdentifier(node.expression) &&
+    node.expression.text === 'URL'
+  ) {
     const args = Array.isArray(node.arguments) ? node.arguments : [];
     const ref = getStaticStringLiteralText(args[0]);
     if (ref && isImportMetaUrl(args[1]) && isLocalJsRef(ref)) {
@@ -265,24 +271,22 @@ function visitJsRefNodes(node, refs) {
     }
   }
 
-  if (ts.isStringLiteralLike(node)) {
+  if (astApi.isStringLiteralLike(node)) {
     const ref = String(node.text || '');
     if (/^\.?\/?libs\/three\.vendor(?:\.[a-f0-9]{6,64})?\.js$/i.test(ref) && isLocalJsRef(ref)) {
       refs.push({ kind: 'js:vendor-literal', ref: normalizeRefText(ref) });
     }
   }
 
-  ts.forEachChild(node, child => visitJsRefNodes(child, refs));
+  astApi.forEachChild(node, child => visitJsRefNodes(child, refs));
 }
 
 export function collectJsLocalRefs(jsText) {
   const refs = [];
-  const source = ts.createSourceFile(
+  const source = astApi.createSourceFile(
     'release-parity-scan.js',
     String(jsText || ''),
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.JS
+    astApi.ScriptKind.JS
   );
   visitJsRefNodes(source, refs);
   return refs;

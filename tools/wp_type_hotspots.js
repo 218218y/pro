@@ -11,9 +11,12 @@
  */
 import fs from 'fs';
 import path from 'path';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+import {
+  collectTypeHotspotCounts,
+  createSourceFile,
+  createTypeHotspotCounts,
+  requireAstAdapter,
+} from './wp_ast_adapter.mjs';
 
 const args = process.argv.slice(2);
 let json = false;
@@ -57,12 +60,7 @@ for (const root of scope) walk(root);
 files.sort();
 
 function createZeroCounts() {
-  return {
-    explicitAny: 0,
-    asExpression: 0,
-    angleAssertion: 0,
-    nonNull: 0,
-  };
+  return createTypeHotspotCounts();
 }
 
 function addCounts(target, source) {
@@ -76,27 +74,12 @@ function totalCounts(counts) {
   return counts.explicitAny + counts.asExpression + counts.angleAssertion + counts.nonNull;
 }
 
-function visitTypeNode(typeNode, counts) {
-  if (!typeNode) return;
-  if (typeNode.kind === ts.SyntaxKind.AnyKeyword) counts.explicitAny += 1;
-  ts.forEachChild(typeNode, child => visitTypeNode(child, counts));
-}
+const astApi = requireAstAdapter('WP Type Hotspots');
 
 function collectCounts(file) {
   const text = fs.readFileSync(file, 'utf8');
-  const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
-  const counts = createZeroCounts();
-
-  function visit(node) {
-    if (ts.isAsExpression(node)) counts.asExpression += 1;
-    if (ts.isTypeAssertionExpression(node)) counts.angleAssertion += 1;
-    if (ts.isNonNullExpression(node)) counts.nonNull += 1;
-    if ('type' in node && node.type) visitTypeNode(node.type, counts);
-    ts.forEachChild(node, visit);
-  }
-
-  visit(sf);
-  return counts;
+  const sf = createSourceFile(file, text, { astApi });
+  return collectTypeHotspotCounts(sf, { astApi });
 }
 
 const rows = [];
