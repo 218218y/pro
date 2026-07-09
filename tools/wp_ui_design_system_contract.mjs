@@ -340,6 +340,19 @@ forbidPattern(
 );
 
 requirePattern(
+  'esm/native/ui/react/tabs/interior_tab_sections_controls.tsx',
+  /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/tabs/interior_tab_sections_controls.tsx',
+  /export function InteriorToolCardHeader[\s\S]*props\.active && props\.onExit \? \([\s\S]*<Button[\s\S]*variant="danger"[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid=\{props\.exitButtonTestId\}[\s\S]*onClick=\{props\.onExit\}/
+);
+forbidPattern(
+  'esm/native/ui/react/tabs/interior_tab_sections_controls.tsx',
+  /className="btn btn-danger btn-inline btn-sm"/
+);
+
+requirePattern(
   'esm/native/ui/react/panels/SettingsBackupPanel.tsx',
   /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
 );

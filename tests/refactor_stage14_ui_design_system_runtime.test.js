@@ -42,6 +42,7 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   const structureBodyBaseSection = read('esm/native/ui/react/tabs/structure_tab_body_section_base.tsx');
   const savedModelsSections = read('esm/native/ui/react/tabs/structure_tab_saved_models_view_sections.tsx');
   const savedModelsListRow = read('esm/native/ui/react/tabs/structure_tab_saved_models_list_row.tsx');
+  const interiorSectionsControls = read('esm/native/ui/react/tabs/interior_tab_sections_controls.tsx');
 
   assert.match(colorSwatch, /children\?: ReactNode/);
   assert.match(colorSwatch, /special\?: boolean/);
@@ -285,4 +286,14 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
     savedModelsListRow,
     /className="btn btn-inline btn-sm wp-r-styled-tooltip hint-bottom"/
   );
+
+  assert.match(
+    interiorSectionsControls,
+    /import \{[^}]*\bButton\b[^}]*\} from '\.\.\/components\/index\.js';/
+  );
+  assert.match(
+    interiorSectionsControls,
+    /export function InteriorToolCardHeader[\s\S]*props\.active && props\.onExit \? \([\s\S]*<Button[\s\S]*variant="danger"[\s\S]*inline[\s\S]*size="sm"[\s\S]*data-testid=\{props\.exitButtonTestId\}[\s\S]*onClick=\{props\.onExit\}/
+  );
+  assert.doesNotMatch(interiorSectionsControls, /className="btn btn-danger btn-inline btn-sm"/);
 });

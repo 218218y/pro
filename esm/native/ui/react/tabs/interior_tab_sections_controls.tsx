@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 
+import { Button } from '../components/index.js';
 import { OptionBtn, cx } from './interior_tab_helpers.js';
 import type {
   InteriorEdgeHandleVariantRowProps,
@@ -13,14 +14,9 @@ export function InteriorToolCardHeader(props: InteriorToolCardHeaderProps): Reac
         <strong>{props.title}</strong>
       </div>
       {props.active && props.onExit ? (
-        <button
-          type="button"
-          className="btn btn-danger btn-inline btn-sm"
-          data-testid={props.exitButtonTestId}
-          onClick={props.onExit}
-        >
+        <Button variant="danger" inline size="sm" data-testid={props.exitButtonTestId} onClick={props.onExit}>
           סיום עריכה
-        </button>
+        </Button>
       ) : null}
     </div>
   );
