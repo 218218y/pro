@@ -102,6 +102,12 @@ test('parser removal readiness is wired into lint contracts and toolchain surfac
     pkg.scripts['lint:parser-removal-readiness'],
     'node tools/wp_lint_parser_removal_readiness.mjs'
   );
+  assert.equal(pkg.scripts['lint:js'], 'node tools/wp_lint.js --profile parser-removal-dry-run');
+  assert.equal(
+    pkg.scripts['lint:parser-removal-dry-run'],
+    'node tools/wp_lint.js --profile parser-removal-dry-run'
+  );
   assert.match(pkg.scripts['lint:contracts'], /lint:parser-removal-readiness/);
   assert.match(pkg.scripts['test:toolchain-surfaces'], /wp_lint_parser_removal_readiness_runtime\.test\.js/);
+  assert.match(pkg.scripts['test:toolchain-surfaces'], /wp_lint_parser_removal_dry_run_runtime\.test\.js/);
 });

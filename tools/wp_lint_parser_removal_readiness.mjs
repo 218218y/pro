@@ -60,9 +60,16 @@ function isLintContractsScriptWired(pkg) {
   );
 }
 
+function isParserRemovalDryRunScript(command) {
+  return command.includes('wp_lint.js') && command.includes('--profile parser-removal-dry-run');
+}
+
 function isLintJsSeparated(pkg) {
-  const command = getScript(pkg, 'lint:js');
-  return command.includes('wp_lint.js') && command.includes('--profile runtime') && command.includes('tools');
+  return isParserRemovalDryRunScript(getScript(pkg, 'lint:js'));
+}
+
+function isParserRemovalDryRunWired(pkg) {
+  return isParserRemovalDryRunScript(getScript(pkg, 'lint:parser-removal-dry-run'));
 }
 
 function isTypecheckGateWired(pkg) {
@@ -146,7 +153,11 @@ function evaluateRow(row, context) {
   if (target === 'keep-eslint') {
     if (row.rule === 'no-undef') {
       if (!context.lintJsSeparated)
-        issues.push('no-undef requires a separated lint:js gate for JS/tools/config');
+        issues.push(
+          'no-undef requires lint:js to use the parser-removal dry-run ESLint gate for JS/tools/config'
+        );
+      if (!context.parserRemovalDryRunWired)
+        issues.push('no-undef requires lint:parser-removal-dry-run to be wired');
       if (!context.typecheckWired) issues.push('no-undef TS/TSX replacement requires typecheck gates');
     } else if (hasTsOrTsxScope(row)) {
       issues.push('keep-eslint rule still applies to TS/TSX and blocks parser removal');
@@ -174,6 +185,7 @@ export async function collectLintParserRemovalReadiness(options = {}) {
         : getLintArchitectureBaselineCount(),
     lintContractsWired: isLintContractsScriptWired(pkg),
     lintJsSeparated: isLintJsSeparated(pkg),
+    parserRemovalDryRunWired: isParserRemovalDryRunWired(pkg),
     oxlintSyntaxBlocking: isBlockingOxlintSyntaxScript(pkg),
     typecheckWired: isTypecheckGateWired(pkg),
   };

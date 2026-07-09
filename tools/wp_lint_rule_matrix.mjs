@@ -223,7 +223,7 @@ export function createLintRuleMatrixMarkdown(rows) {
     '',
     `Generated from: \`${generatedFrom}\`.`,
     '',
-    'Stage 5 purpose: keep the existing ESLint compatibility gate intact while promoting Oxlint syntax and custom lint contracts to blocking parser-removal readiness gates. This is not a TypeScript 7 upgrade, does not remove `@typescript-eslint`, and does not replace the AST adapter parser.',
+    'Stage 5 purpose: keep the existing ESLint compatibility gate intact while promoting the JS-only ESLint dry-run, Oxlint syntax, and custom lint contracts to blocking parser-removal readiness gates. This is not a TypeScript 7 upgrade, does not remove `@typescript-eslint`, and does not replace the AST adapter parser.',
     '',
     '## Rule matrix',
     '',
@@ -241,11 +241,11 @@ export function createLintRuleMatrixMarkdown(rows) {
     '',
     '## Migration policy',
     '',
-    '- `lint:legacy` remains a temporary blocking compatibility gate until the parser-removal dry-run completes.',
+    '- `lint:legacy` remains a temporary blocking compatibility gate while `lint:parser-removal-dry-run` proves the future JS-only ESLint split.',
     '- `lint:ts-modern:syntax` is now a blocking Oxlint syntax gate; it must stay at 0 diagnostics before later parser-removal work.',
     '- `lint:ts-modern:type-aware` is audit-only because `oxlint-tsgolint` targets the TypeScript 7/type-aware path and the project is intentionally still on the current TypeScript lane.',
     '- `lint:contracts` owns project-specific rules that should not depend on `@typescript-eslint/parser` long term, including the lint architecture contracts.',
-    '- Removing `@typescript-eslint/parser` from TS/TSX is blocked until `npm run lint:parser-removal-readiness` and the parity report both show every rule has a concrete owner.',
+    '- Removing `@typescript-eslint/parser` from TS/TSX is blocked until `npm run lint:parser-removal-readiness`, `npm run lint:parser-removal-dry-run`, and the parity report all stay green.',
     ''
   );
 

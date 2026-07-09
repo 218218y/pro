@@ -41,6 +41,8 @@ function getFlagValue(flag) {
 }
 
 const profile = (getFlagValue('--profile') || 'runtime').trim();
+const normalizedProfile = profile.toLowerCase();
+const parserRemovalDryRun = normalizedProfile === 'parser-removal-dry-run' || normalizedProfile === 'js-only';
 const strict = hasFlag('--strict');
 const fix = hasFlag('--fix');
 
@@ -66,11 +68,19 @@ if (!configPath) {
 // ESLint errors if you pass a pattern that matches zero files unless you also pass
 // --no-error-on-unmatched-pattern.
 const defaultTargets = [];
-if (fs.existsSync(path.join(ROOT, 'js'))) defaultTargets.push('js');
-if (fs.existsSync(path.join(ROOT, 'esm'))) defaultTargets.push('esm');
-if (fs.existsSync(path.join(ROOT, 'types'))) defaultTargets.push('types');
-// Always lint tools and root config scripts.
-defaultTargets.push('tools', '*.js', '*.cjs', '*.mjs');
+if (parserRemovalDryRun) {
+  if (fs.existsSync(path.join(ROOT, 'js'))) defaultTargets.push('js');
+  if (fs.existsSync(path.join(ROOT, 'esm'))) defaultTargets.push('esm/**/*.js', 'esm/**/*.mjs');
+  if (fs.existsSync(path.join(ROOT, 'tools'))) defaultTargets.push('tools/**/*.js');
+  if (fs.existsSync(path.join(ROOT, 'tests'))) defaultTargets.push('tests/**/*.js');
+  defaultTargets.push('*.js', '*.cjs', '*.mjs');
+} else {
+  if (fs.existsSync(path.join(ROOT, 'js'))) defaultTargets.push('js');
+  if (fs.existsSync(path.join(ROOT, 'esm'))) defaultTargets.push('esm');
+  if (fs.existsSync(path.join(ROOT, 'types'))) defaultTargets.push('types');
+  // Always lint tools and root config scripts.
+  defaultTargets.push('tools', '*.js', '*.cjs', '*.mjs');
+}
 
 const args = [
   eslintBin,

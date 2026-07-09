@@ -17,6 +17,7 @@ import tsPlugin from '@typescript-eslint/eslint-plugin';
 
 const PROFILE = (process.env.WP_LINT_PROFILE || 'runtime').toLowerCase();
 const MIGRATE = PROFILE === 'migrate' || PROFILE === 'esm' || PROFILE === 'module';
+const PARSER_REMOVAL_DRY_RUN = PROFILE === 'parser-removal-dry-run' || PROFILE === 'js-only';
 
 // --- Globals ---------------------------------------------------------------
 
@@ -77,6 +78,11 @@ const nodeGlobals = {
   clearTimeout: 'readonly',
   setInterval: 'readonly',
   clearInterval: 'readonly',
+  URL: 'readonly',
+  URLSearchParams: 'readonly',
+  Blob: 'readonly',
+  structuredClone: 'readonly',
+  queueMicrotask: 'readonly',
 };
 
 // CommonJS globals for config files that still use `module.exports`.
@@ -235,6 +241,43 @@ const APP_BAG_RESTRICTIONS = APP_BAG_PROPS.flatMap(p => [
   },
 ]);
 
+const jsEsmFiles = (...roots) => roots.flatMap(root => [`${root}/**/*.js`, `${root}/**/*.mjs`]);
+const tsEsmFiles = (...roots) =>
+  roots.flatMap(root => [`${root}/**/*.ts`, `${root}/**/*.tsx`, `${root}/**/*.mts`]);
+const esmFiles = (...roots) =>
+  PARSER_REMOVAL_DRY_RUN ? jsEsmFiles(...roots) : [...jsEsmFiles(...roots), ...tsEsmFiles(...roots)];
+const tsSourceConfig = PARSER_REMOVAL_DRY_RUN
+  ? []
+  : [
+      {
+        files: ['esm/**/*.ts', 'esm/**/*.tsx', 'esm/**/*.mts', 'types/**/*.ts', 'types/**/*.d.ts'],
+        languageOptions: {
+          ecmaVersion: 2022,
+          sourceType: 'module',
+          parser: tsParser,
+          parserOptions: {
+            ecmaVersion: 2022,
+            sourceType: 'module',
+          },
+          // Same philosophy as ESM JS: keep browser globals available, but restrict direct access in core.
+          globals: browserBuiltins,
+        },
+        plugins: {
+          '@typescript-eslint': tsPlugin,
+        },
+        rules: {
+          ...baseBrowserRules,
+          // In TS, `no-undef` is noisy/incorrect (TS knows libs/types). Let TS catch type errors.
+          'no-undef': 'off',
+          // Use the TS-aware unused vars rule.
+          'no-unused-vars': 'off',
+          '@typescript-eslint/no-unused-vars': unusedVarsWarn,
+          'no-restricted-globals': ['error', 'window', 'globalThis'],
+          eqeqeq: ['warn', 'smart'],
+        },
+      },
+    ];
+
 export default [
   {
     // Generated Three.js mirrors are refreshed from node_modules; verify their
@@ -276,133 +319,55 @@ export default [
     },
   },
 
-  // Pure ESM TypeScript source (./esm and ./types)
-  {
-    files: ['esm/**/*.ts', 'esm/**/*.tsx', 'esm/**/*.mts', 'types/**/*.ts', 'types/**/*.d.ts'],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module',
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 2022,
-        sourceType: 'module',
-      },
-      // Same philosophy as ESM JS: keep browser globals available, but restrict direct access in core.
-      globals: browserBuiltins,
-    },
-    plugins: {
-      '@typescript-eslint': tsPlugin,
-    },
-    rules: {
-      ...baseBrowserRules,
-      // In TS, `no-undef` is noisy/incorrect (TS knows libs/types). Let TS catch type errors.
-      'no-undef': 'off',
-      // Use the TS-aware unused vars rule.
-      'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': unusedVarsWarn,
-      'no-restricted-globals': ['error', 'window', 'globalThis'],
-      eqeqeq: ['warn', 'smart'],
-    },
-  },
+  // Pure ESM TypeScript source (./esm and ./types). In the parser-removal dry-run,
+  // this block is intentionally omitted so TS/TSX is covered by Oxlint/typecheck/contracts,
+  // not by @typescript-eslint/parser.
+  ...tsSourceConfig,
 
   // Layer import boundaries (pure ESM)
   // NOTE: We intentionally keep these simple (import path heuristics) so they work
   // everywhere, even before full TS project-references enforcement.
   layerBoundary(
-    [
-      'esm/native/adapters/**/*.js',
-      'esm/native/adapters/**/*.mjs',
-      'esm/native/adapters/**/*.ts',
-      'esm/native/adapters/**/*.tsx',
-      'esm/native/adapters/**/*.mts',
-    ],
+    esmFiles('esm/native/adapters'),
     LAYER_DISALLOWED.adapters,
     'Layer boundary: adapters may only import from runtime (or local adapters modules).'
   ),
   layerBoundary(
-    [
-      'esm/native/kernel/**/*.js',
-      'esm/native/kernel/**/*.mjs',
-      'esm/native/kernel/**/*.ts',
-      'esm/native/kernel/**/*.tsx',
-      'esm/native/kernel/**/*.mts',
-    ],
+    esmFiles('esm/native/kernel'),
     LAYER_DISALLOWED.kernel,
     'Layer boundary: kernel may only import from runtime (or local kernel modules).'
   ),
   layerBoundary(
-    [
-      'esm/native/builder/**/*.js',
-      'esm/native/builder/**/*.mjs',
-      'esm/native/builder/**/*.ts',
-      'esm/native/builder/**/*.tsx',
-      'esm/native/builder/**/*.mts',
-    ],
+    esmFiles('esm/native/builder'),
     LAYER_DISALLOWED.builder,
     'Layer boundary: builder may only import from runtime (or local builder modules).'
   ),
   layerBoundary(
-    [
-      'esm/native/platform/**/*.js',
-      'esm/native/platform/**/*.mjs',
-      'esm/native/platform/**/*.ts',
-      'esm/native/platform/**/*.tsx',
-      'esm/native/platform/**/*.mts',
-    ],
+    esmFiles('esm/native/platform'),
     LAYER_DISALLOWED.platform,
     'Layer boundary: platform may only import from kernel/runtime (or local platform modules).'
   ),
   layerBoundary(
-    [
-      'esm/native/services/**/*.js',
-      'esm/native/services/**/*.mjs',
-      'esm/native/services/**/*.ts',
-      'esm/native/services/**/*.tsx',
-      'esm/native/services/**/*.mts',
-    ],
+    esmFiles('esm/native/services'),
     LAYER_DISALLOWED.services,
     'Layer boundary: services may only import from kernel/runtime (or local services modules).'
   ),
   layerBoundary(
-    [
-      'esm/native/ui/**/*.js',
-      'esm/native/ui/**/*.mjs',
-      'esm/native/ui/**/*.ts',
-      'esm/native/ui/**/*.tsx',
-      'esm/native/ui/**/*.mts',
-    ],
+    esmFiles('esm/native/ui'),
     LAYER_DISALLOWED.ui,
     'Layer boundary: ui may only import from services (via services/api) or local ui modules.'
   ),
 
   // ESM code should not touch browser globals directly (route through runtime/browser_env via DI).
   {
-    files: [
-      'esm/native/platform/**/*.js',
-      'esm/native/platform/**/*.ts',
-      'esm/native/platform/**/*.tsx',
-      'esm/native/platform/**/*.mts',
-      'esm/native/services/**/*.js',
-      'esm/native/services/**/*.ts',
-      'esm/native/services/**/*.tsx',
-      'esm/native/services/**/*.mts',
-      'esm/native/kernel/**/*.js',
-      'esm/native/kernel/**/*.ts',
-      'esm/native/kernel/**/*.tsx',
-      'esm/native/kernel/**/*.mts',
-      'esm/native/io/**/*.js',
-      'esm/native/io/**/*.ts',
-      'esm/native/io/**/*.tsx',
-      'esm/native/io/**/*.mts',
-      'esm/native/builder/**/*.js',
-      'esm/native/builder/**/*.ts',
-      'esm/native/builder/**/*.tsx',
-      'esm/native/builder/**/*.mts',
-      'esm/native/ui/**/*.js',
-      'esm/native/ui/**/*.ts',
-      'esm/native/ui/**/*.tsx',
-      'esm/native/ui/**/*.mts',
-    ],
+    files: esmFiles(
+      'esm/native/platform',
+      'esm/native/services',
+      'esm/native/kernel',
+      'esm/native/io',
+      'esm/native/builder',
+      'esm/native/ui'
+    ),
     rules: {
       // Route through runtime/browser_env (DI) instead of accessing browser globals directly.
       'no-restricted-globals': ['error', 'window', 'globalThis', 'document', 'navigator', 'location'],
@@ -420,7 +385,7 @@ export default [
   // Node tooling & configs
   {
     // ESM-only Node scripts (project is `"type": "module"`).
-    files: ['tools/**/*.js', '*.js', '*.mjs'],
+    files: ['tools/**/*.js', 'tests/**/*.js', '*.js', '*.mjs'],
     languageOptions: {
       ecmaVersion: 2022,
       // Project is ESM (`"type": "module"`), and our tools use ESM imports.
@@ -435,6 +400,25 @@ export default [
       'no-unreachable': 'error',
       'no-unused-vars': unusedVarsWarn,
       eqeqeq: ['warn', 'smart'],
+    },
+  },
+
+  // Runtime-loader helpers intentionally expose a local CommonJS fallback inside test sandboxes.
+  {
+    files: ['tests/project_drag_drop_controller_runtime_helpers.js'],
+    languageOptions: {
+      globals: {
+        require: 'readonly',
+      },
+    },
+  },
+
+  // Some contract tests intentionally include malformed object literals as fixtures.
+  // Keep test no-undef coverage without making those fixture shapes block the JS-only gate.
+  {
+    files: ['tests/wp_browser_perf_support_runtime.test.js'],
+    rules: {
+      'no-dupe-keys': 'off',
     },
   },
 
@@ -460,43 +444,14 @@ export default [
   // Boundary: core modules must not import browser_env directly.
   // Use UI/adapters to read window/document/navigator and inject functions into core.
   {
-    files: [
-      'esm/native/platform/**/*.js',
-      'esm/native/platform/**/*.mjs',
-      'esm/native/platform/**/*.ts',
-      'esm/native/platform/**/*.tsx',
-      'esm/native/platform/**/*.mts',
-
-      'esm/native/services/**/*.js',
-      'esm/native/services/**/*.mjs',
-      'esm/native/services/**/*.ts',
-      'esm/native/services/**/*.tsx',
-      'esm/native/services/**/*.mts',
-
-      'esm/native/io/**/*.js',
-      'esm/native/io/**/*.mjs',
-      'esm/native/io/**/*.ts',
-      'esm/native/io/**/*.tsx',
-      'esm/native/io/**/*.mts',
-
-      'esm/native/builder/**/*.js',
-      'esm/native/builder/**/*.mjs',
-      'esm/native/builder/**/*.ts',
-      'esm/native/builder/**/*.tsx',
-      'esm/native/builder/**/*.mts',
-
-      'esm/native/kernel/**/*.js',
-      'esm/native/kernel/**/*.mjs',
-      'esm/native/kernel/**/*.ts',
-      'esm/native/kernel/**/*.tsx',
-      'esm/native/kernel/**/*.mts',
-
-      'esm/native/data/**/*.js',
-      'esm/native/data/**/*.mjs',
-      'esm/native/data/**/*.ts',
-      'esm/native/data/**/*.tsx',
-      'esm/native/data/**/*.mts',
-    ],
+    files: esmFiles(
+      'esm/native/platform',
+      'esm/native/services',
+      'esm/native/io',
+      'esm/native/builder',
+      'esm/native/kernel',
+      'esm/native/data'
+    ),
     rules: {
       'no-restricted-imports': [
         'error',
@@ -509,13 +464,7 @@ export default [
 
   // Guardrail: forbid direct App.* bag usage outside runtime/compat modules.
   {
-    files: [
-      'esm/native/**/*.js',
-      'esm/native/**/*.mjs',
-      'esm/native/**/*.ts',
-      'esm/native/**/*.tsx',
-      'esm/native/**/*.mts',
-    ],
+    files: esmFiles('esm/native'),
     ignores: ['esm/native/runtime/**', 'esm/native/kernel/cfg_surface.ts', 'esm/native/ui/feedback.ts'],
     rules: {
       'no-restricted-syntax': ['error', ...APP_BAG_RESTRICTIONS],
@@ -525,7 +474,9 @@ export default [
   // Entry adapters (HTML/bootstrap): allowed to touch browser globals.
   // Keep the rest of ./esm free of direct window/document reads.
   {
-    files: ['esm/entry*.js', 'esm/entry*.mjs', 'esm/entry*.ts', 'esm/entry*.tsx', 'esm/entry*.mts'],
+    files: PARSER_REMOVAL_DRY_RUN
+      ? ['esm/entry*.js', 'esm/entry*.mjs']
+      : ['esm/entry*.js', 'esm/entry*.mjs', 'esm/entry*.ts', 'esm/entry*.tsx', 'esm/entry*.mts'],
     // Future TS entry points (during migration)
     // files: ['esm/entry*.ts'] is handled by the TS block above, but we keep the exception here too.
     rules: {

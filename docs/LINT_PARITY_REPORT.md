@@ -2,17 +2,18 @@
 
 <!-- Tool-owned report target. Regenerate with: npm run lint:parity-report -->
 
-Stage 5 keeps the legacy ESLint compatibility gate intact while promoting Oxlint syntax and custom lint contracts to blocking parser-removal readiness gates. The report explains what is covered, which command owns each rule, and why TS/TSX is not removed from `@typescript-eslint/parser` until the next dry-run.
+Stage 5 keeps the legacy ESLint compatibility gate intact while promoting the JS-only ESLint dry-run, Oxlint syntax, and custom lint contracts to blocking parser-removal readiness gates. The report explains what is covered, which command owns each rule, and why TS/TSX is not removed from `@typescript-eslint/parser` until the next dry-run.
 
 ## Gate comparison
 
-| Gate              | Command                                               | Blocking? | Role                                                                                        | Stage 5 status                                                                             |
-| ----------------- | ----------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| lint legacy       | `npm run lint:legacy`                                 | yes       | Current canonical ESLint migrate profile, including `@typescript-eslint/parser` for TS/TSX. | kept as source of truth in Stage 5                                                         |
-| oxlint syntax     | `npm run lint:ts-modern:syntax`                       | yes       | Fast modern parser/config/file-discovery lane for `esm` and `types`.                        | blocking; current syntax diagnostics are 0                                                 |
-| oxlint type-aware | `npm run lint:ts-modern:type-aware`                   | no        | Future TypeScript semantic lint lane through `oxlint-tsgolint`.                             | audit-only; TS7/tsgolint path is not a blocker yet                                         |
-| typecheck         | `npm run typecheck:runtime && npm run typecheck:dist` | yes       | TypeScript compiler contracts and TS/JS check lanes.                                        | already canonical for type correctness                                                     |
-| custom contracts  | `npm run lint:contracts`                              | yes       | Project-owned quality rules that should survive parser/linter swaps.                        | matrix/parity docs, parser-removal readiness, and lint architecture contracts are blocking |
+| Gate                           | Command                                               | Blocking? | Role                                                                                                | Stage 5 status                                                                                |
+| ------------------------------ | ----------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| lint legacy                    | `npm run lint:legacy`                                 | yes       | Current compatibility ESLint migrate profile, including `@typescript-eslint/parser` for TS/TSX.     | temporary compatibility gate only; not the final Stage 5 target split                         |
+| lint JS/parser-removal dry-run | `npm run lint:parser-removal-dry-run`                 | yes       | ESLint profile that excludes TS/TSX and keeps JS/tools/tests/config coverage, including `no-undef`. | blocking dry-run; proves TS/TSX can leave `@typescript-eslint/parser` while JS remains linted |
+| oxlint syntax                  | `npm run lint:ts-modern:syntax`                       | yes       | Fast modern parser/config/file-discovery lane for `esm` and `types`.                                | blocking; current syntax diagnostics are 0                                                    |
+| oxlint type-aware              | `npm run lint:ts-modern:type-aware`                   | no        | Future TypeScript semantic lint lane through `oxlint-tsgolint`.                                     | audit-only; TS7/tsgolint path is not a blocker yet                                            |
+| typecheck                      | `npm run typecheck:runtime && npm run typecheck:dist` | yes       | TypeScript compiler contracts and TS/JS check lanes.                                                | already canonical for type correctness                                                        |
+| custom contracts               | `npm run lint:contracts`                              | yes       | Project-owned quality rules that should survive parser/linter swaps.                                | matrix/parity docs, parser-removal readiness, and lint architecture contracts are blocking    |
 
 ## Rule parity
 
@@ -55,5 +56,6 @@ The custom lint architecture contract baseline is 0. Every new architecture viol
 - Do not remove `@typescript-eslint` yet.
 - Do not update to TypeScript 7 yet.
 - Do not swap `wp_ast_adapter` away from TypeScript yet.
-- Keep `lint:legacy` as a temporary blocking compatibility gate; the final split is `lint:js`, `lint:ts-modern:syntax`, `lint:contracts`, and `typecheck:*`.
+- Keep `lint:legacy` as a temporary blocking compatibility gate; the final split is `lint:js` / `lint:parser-removal-dry-run`, `lint:ts-modern:syntax`, `lint:contracts`, and `typecheck:*`.
+- `quality:ts-modern` is the dry-run gate bundle for that final split; it intentionally excludes `lint:legacy`.
 - `lint:ts-modern:type-aware` remains audit-only with known diagnostics; it is not a Stage 5 blocker.
