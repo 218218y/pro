@@ -136,7 +136,7 @@ export function clearOrderPdfSketchRedoStateSnapshotPage(args: {
 }
 
 export function resolveOrderPdfSketchHistoryShortcutAction(args: {
-  event: globalThis.KeyboardEvent;
+  event: KeyboardEvent;
   activeHasStrokes: boolean;
   activeHasRedo: boolean;
 }): 'undo' | 'redo' | null {

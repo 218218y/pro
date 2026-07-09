@@ -1,6 +1,6 @@
 import type { AppContainer, ProjectFileLike, ProjectFileLoadEventLike } from '../../../types';
 
-import { loadProjectFileInput } from '../io/project_file_ingress_command.js';
+import { loadProjectFileInput } from '../runtime/project_file_ingress_access.js';
 import type { ProjectLoadActionResult } from '../runtime/project_load_action_result.js';
 
 export async function loadProjectFileInputViaService(

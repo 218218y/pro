@@ -15,34 +15,76 @@ const IGNORED_DIRS = new Set(['.git', 'dist', 'libs', 'node_modules']);
 const APP_BAG_PROPS = new Set(['maps', 'cache', 'tools', 'uiFeedback', 'cfg']);
 const RESTRICTED_BROWSER_GLOBALS = new Set(['window', 'globalThis', 'document', 'navigator', 'location']);
 
-const BASELINED_VIOLATIONS = new Set([
-  'lint-architecture/no-restricted-imports:layer-boundary|esm/native/services/autosave_shared.ts|services modules must not import from io: ../io/project_payload_shared.js',
-  'lint-architecture/no-restricted-imports:layer-boundary|esm/native/services/models_apply_project_snapshot.ts|services modules must not import from io: ../io/project_config_persisted_snapshot.js',
-  'lint-architecture/no-restricted-imports:layer-boundary|esm/native/services/models_apply_project_snapshot.ts|services modules must not import from io: ../io/project_payload_shared.js',
-  'lint-architecture/no-restricted-imports:layer-boundary|esm/native/services/project_file_ingress_service.ts|services modules must not import from io: ../io/project_file_ingress_command.js',
-  'lint-architecture/no-restricted-imports:layer-boundary|esm/native/services/project_reset_default_payload.ts|services modules must not import from io: ../io/project_payload_canonical.js',
-  'lint-architecture/no-restricted-imports:layer-boundary|esm/native/services/project_reset_default_payload.ts|services modules must not import from io: ../io/project_payload_shared.js',
-  'lint-architecture/no-restricted-globals|esm/native/ui/react/notes/notes_overlay_editor_workflow_events.ts|Route globalThis access through runtime/browser_env or injected deps.',
-  'lint-architecture/no-restricted-globals|esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_drawing_hooks.ts|Route globalThis access through runtime/browser_env or injected deps.',
-  'lint-architecture/no-restricted-globals|esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_pointer_interaction_session_hooks.ts|Route globalThis access through runtime/browser_env or injected deps.',
-  'lint-architecture/no-restricted-globals|esm/native/ui/react/pdf/order_pdf_overlay_sketch_panel_history_hooks.ts|Route globalThis access through runtime/browser_env or injected deps.',
-  'lint-architecture/no-restricted-globals|esm/native/ui/react/pdf/order_pdf_overlay_sketch_panel_history_runtime.ts|Route globalThis access through runtime/browser_env or injected deps.',
-]);
+export const DEFAULT_BASELINE_PATH = path.join(__dirname, 'wp_lint_architecture_baseline.json');
 
 function baselineKey(failure) {
   return `${failure.rule}|${failure.file}|${failure.message}`;
 }
 
-function isBaselinedViolation(failure) {
-  return BASELINED_VIOLATIONS.has(baselineKey(failure));
+function normalizeBaselineEntry(entry, index = 0) {
+  if (typeof entry === 'string') {
+    const [rule, file, ...messageParts] = entry.split('|');
+    const message = messageParts.join('|');
+    if (!rule || !file || !message) {
+      throw new Error(`Invalid lint architecture baseline string at index ${index}.`);
+    }
+    return { rule, file: normalizeRel(file), message };
+  }
+
+  if (!entry || typeof entry !== 'object') {
+    throw new Error(`Invalid lint architecture baseline entry at index ${index}.`);
+  }
+
+  const rule = String(entry.rule || '').trim();
+  const file = normalizeRel(String(entry.file || '').trim());
+  const message = String(entry.message || '').trim();
+  const reason = typeof entry.reason === 'string' && entry.reason.trim() ? entry.reason.trim() : undefined;
+  if (!rule || !file || !message) {
+    throw new Error(`Invalid lint architecture baseline entry at index ${index}.`);
+  }
+  return reason ? { rule, file, message, reason } : { rule, file, message };
 }
 
-export function getLintArchitectureBaselineCount() {
-  return BASELINED_VIOLATIONS.size;
+function readJsonFile(file) {
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
-export function getLintArchitectureBaselineEntries() {
-  return [...BASELINED_VIOLATIONS].sort();
+export function readLintArchitectureBaselineEntries(baselinePath = DEFAULT_BASELINE_PATH) {
+  if (!baselinePath || !fs.existsSync(baselinePath)) return [];
+  const parsed = readJsonFile(baselinePath);
+  const rawEntries = Array.isArray(parsed) ? parsed : parsed?.entries;
+  if (!Array.isArray(rawEntries)) {
+    throw new Error(
+      `Lint architecture baseline must be an array or an object with an entries array: ${baselinePath}`
+    );
+  }
+  const entries = rawEntries.map((entry, index) => normalizeBaselineEntry(entry, index));
+  const seen = new Set();
+  for (const entry of entries) {
+    const key = baselineKey(entry);
+    if (seen.has(key)) throw new Error(`Duplicate lint architecture baseline entry: ${key}`);
+    seen.add(key);
+  }
+  return entries.sort(
+    (a, b) =>
+      a.file.localeCompare(b.file) || a.rule.localeCompare(b.rule) || a.message.localeCompare(b.message)
+  );
+}
+
+function createBaselineKeySet(entries) {
+  return new Set(entries.map(baselineKey));
+}
+
+function isBaselinedViolation(failure, baselineKeys) {
+  return baselineKeys.has(baselineKey(failure));
+}
+
+export function getLintArchitectureBaselineCount(options = {}) {
+  return readLintArchitectureBaselineEntries(options.baselinePath).length;
+}
+
+export function getLintArchitectureBaselineEntries(options = {}) {
+  return readLintArchitectureBaselineEntries(options.baselinePath).map(baselineKey);
 }
 
 const LAYER_DISALLOWED = {
@@ -337,43 +379,126 @@ export function auditLintArchitectureSource(rel, text, options = {}) {
   ];
 }
 
-export function collectLintArchitectureViolations(options = {}) {
+function compareFailures(a, b) {
+  return a.file.localeCompare(b.file) || a.line - b.line || a.rule.localeCompare(b.rule);
+}
+
+export function collectLintArchitectureReport(options = {}) {
   const root = options.root || ROOT;
-  const includeBaseline = options.includeBaseline === true;
   const astApi = options.astApi || requireAstAdapter('lint architecture contracts');
   const files = options.files || walkSourceFiles(root);
-  const failures = [];
+  const baselineEntries =
+    options.baselineEntries || readLintArchitectureBaselineEntries(options.baselinePath);
+  const baselineKeys = createBaselineKeySet(baselineEntries);
+  const violations = [];
+
   for (const file of files) {
     const rel = toRel(file, root);
     const text = fs.readFileSync(file, 'utf8');
     for (const failure of auditLintArchitectureSource(rel, text, { astApi })) {
-      if (!includeBaseline && isBaselinedViolation(failure)) continue;
-      failures.push(failure);
+      violations.push(failure);
     }
   }
-  return failures.sort(
-    (a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.rule.localeCompare(b.rule)
-  );
+
+  violations.sort(compareFailures);
+  const actualKeys = createBaselineKeySet(violations);
+  const baselinedViolations = violations.filter(failure => isBaselinedViolation(failure, baselineKeys));
+  const unbaselinedViolations = violations.filter(failure => !isBaselinedViolation(failure, baselineKeys));
+  const staleBaselineEntries = baselineEntries.filter(entry => !actualKeys.has(baselineKey(entry)));
+
+  return {
+    baselineEntries,
+    baselinedViolations,
+    staleBaselineEntries,
+    unbaselinedViolations,
+    violations,
+  };
 }
 
-function printFailures(failures) {
-  if (!failures.length) {
-    const baselineNote = BASELINED_VIOLATIONS.size
-      ? ` (${BASELINED_VIOLATIONS.size} baselined current exception(s))`
+export function collectLintArchitectureViolations(options = {}) {
+  const report = collectLintArchitectureReport(options);
+  const failures = options.includeBaseline === true ? report.violations : report.unbaselinedViolations;
+  return [...failures].sort(compareFailures);
+}
+
+function formatBaselineDocument(violations) {
+  const entries = [...violations].sort(compareFailures).map(failure => ({
+    rule: failure.rule,
+    file: failure.file,
+    message: failure.message,
+    reason: 'existing lint architecture exception; remove after the owning layer is migrated',
+  }));
+  return `${JSON.stringify({ entries }, null, 2)}\n`;
+}
+
+function printFailureGroup(title, failures) {
+  if (!failures.length) return;
+  console.error(`[Lint Architecture Contracts] ${title}: ${failures.length}`);
+  for (const failure of failures) {
+    const line = typeof failure.line === 'number' ? `:${failure.line}` : '';
+    console.error(`- ${failure.file}${line} ${failure.rule} ${failure.message}`);
+  }
+}
+
+function printReport(report, options = {}) {
+  const visibleViolations = options.includeBaseline ? report.violations : report.unbaselinedViolations;
+  if (!visibleViolations.length && !report.staleBaselineEntries.length) {
+    const baselineNote = report.baselineEntries.length
+      ? ` (${report.baselineEntries.length} baselined current exception(s))`
       : '';
     console.log(`[Lint Architecture Contracts] passed${baselineNote}`);
     return;
   }
-  console.error(`[Lint Architecture Contracts] ${failures.length} violation(s)`);
-  for (const failure of failures) {
-    console.error(`${failure.file}:${failure.line} ${failure.rule} ${failure.message}`);
+
+  if (options.includeBaseline && report.baselinedViolations.length) {
+    printFailureGroup('baselined violation(s)', report.baselinedViolations);
   }
+  printFailureGroup('unbaselined violation(s)', report.unbaselinedViolations);
+  printFailureGroup('stale baseline entrie(s)', report.staleBaselineEntries);
+}
+
+function parseArgs(argv) {
+  const options = { baselinePath: DEFAULT_BASELINE_PATH, includeBaseline: false, updateBaseline: false };
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (arg === '--include-baseline') {
+      options.includeBaseline = true;
+      continue;
+    }
+    if (arg === '--update-baseline') {
+      options.updateBaseline = true;
+      continue;
+    }
+    if (arg === '--baseline') {
+      const next = argv[i + 1];
+      if (!next) throw new Error('--baseline requires a file path');
+      options.baselinePath = path.resolve(next);
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith('--baseline=')) {
+      options.baselinePath = path.resolve(arg.slice('--baseline='.length));
+      continue;
+    }
+    throw new Error(`Unknown argument: ${arg}`);
+  }
+  return options;
 }
 
 function main() {
-  const failures = collectLintArchitectureViolations();
-  printFailures(failures);
-  if (failures.length) process.exit(1);
+  const options = parseArgs(process.argv.slice(2));
+  const report = collectLintArchitectureReport({ baselinePath: options.baselinePath });
+
+  if (options.updateBaseline) {
+    fs.writeFileSync(options.baselinePath, formatBaselineDocument(report.violations));
+    console.log(
+      `[Lint Architecture Contracts] wrote ${report.violations.length} baseline entrie(s): ${path.relative(ROOT, options.baselinePath)}`
+    );
+    return;
+  }
+
+  printReport(report, { includeBaseline: options.includeBaseline });
+  if (report.unbaselinedViolations.length || report.staleBaselineEntries.length) process.exit(1);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === __filename) main();

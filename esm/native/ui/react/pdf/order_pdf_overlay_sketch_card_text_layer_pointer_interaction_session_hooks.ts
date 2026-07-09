@@ -97,7 +97,7 @@ export function useOrderPdfSketchTextLayerInteractionSession(
     const win = getNodeWindow(hostRef.current);
     if (!win) return;
 
-    const finishInteraction = (event: globalThis.PointerEvent) => {
+    const finishInteraction = (event: PointerEvent) => {
       const activeSession = interactionRef.current;
       if (!activeSession || event.pointerId !== activeSession.interaction.pointerId) return;
       const nextSession =
@@ -113,7 +113,7 @@ export function useOrderPdfSketchTextLayerInteractionSession(
       }
     };
 
-    const onPointerMove = (event: globalThis.PointerEvent) => {
+    const onPointerMove = (event: PointerEvent) => {
       const activeSession = interactionRef.current;
       if (!activeSession || event.pointerId !== activeSession.interaction.pointerId) return;
       scheduleInteractionPoint({ clientX: event.clientX, clientY: event.clientY });

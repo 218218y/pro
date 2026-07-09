@@ -32,7 +32,7 @@ Stage 5 keeps the legacy ESLint gate intact and promotes Oxlint syntax to a bloc
 
 ## Architecture contract baseline
 
-The custom lint architecture contract currently has 11 baselined legacy exception(s). They are not ignored forever: the contract blocks new regressions while existing services/io and UI globalThis debt can be retired in a dedicated follow-up.
+The custom lint architecture contract currently has 0 baselined legacy exception(s). They are not ignored forever: the contract blocks new regressions while existing services/io and UI globalThis debt can be retired in a dedicated follow-up.
 
 ## Stage 5 decision
 

@@ -77,7 +77,7 @@ export function useOrderPdfSketchCardDrawingHooks(
       const getCoalescedEvents = Reflect.get(nativeEvent, 'getCoalescedEvents');
       const events =
         typeof getCoalescedEvents === 'function'
-          ? (Reflect.apply(getCoalescedEvents, nativeEvent, []) as globalThis.PointerEvent[])
+          ? (Reflect.apply(getCoalescedEvents, nativeEvent, []) as PointerEvent[])
           : [nativeEvent];
       const changed = updateOrderPdfDrawingPointsFromClientBatch({
         tool: drawConfigRef.current.tool,

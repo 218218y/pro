@@ -121,7 +121,7 @@ export function useOrderPdfSketchHistoryShortcuts(args: {
     if (!open) return;
     const win = getNodeWindow(toolbarRef.current);
     if (!win) return;
-    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+    const onKeyDown = (event: KeyboardEvent) => {
       const action = resolveOrderPdfSketchHistoryShortcutAction({
         event,
         activeHasStrokes,

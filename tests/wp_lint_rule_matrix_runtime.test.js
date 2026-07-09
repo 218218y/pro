@@ -58,9 +58,9 @@ test('lint strategy matrix document is generated from the live eslint config', a
 
 test('package keeps legacy lint as blocker while adding separated modern audit lanes', () => {
   const pkg = JSON.parse(read('package.json'));
-  assert.equal(pkg.devDependencies.typescript, '^6.0.3');
-  assert.equal(pkg.devDependencies.oxlint, '^1.73.0');
-  assert.equal(pkg.devDependencies['oxlint-tsgolint'], '^0.24.0');
+  assert.equal(pkg.devDependencies.typescript, '6.0.3');
+  assert.equal(pkg.devDependencies.oxlint, '1.73.0');
+  assert.equal(pkg.devDependencies['oxlint-tsgolint'], '0.24.0');
   assert.equal(pkg.scripts.lint, 'npm run lint:legacy');
   assert.equal(pkg.scripts['lint:legacy'], 'node tools/wp_lint.js --profile migrate');
   assert.equal(

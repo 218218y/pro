@@ -139,7 +139,7 @@ export function useNotesOverlayEditorWorkflowEvents(
     const win = doc.defaultView;
     if (!win) return;
 
-    const onPointerDownCapture = (ev: globalThis.PointerEvent) => {
+    const onPointerDownCapture = (ev: PointerEvent) => {
       if (!editMode || !notesEnabled) return;
       if (activeIndex == null) return;
 
