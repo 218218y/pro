@@ -1,79 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
 import type { IndividualColorsMap } from '../types/maps.ts';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-const moduleCache = new Map<string, { exports: Record<string, unknown> }>();
+const loaderModulePath = ['./', '_ts', '_runtime_module_loader.mjs'].join('');
+const { loadTsRuntimeModule } = (await import(loaderModulePath)) as {
+  loadTsRuntimeModule: (file: string, options?: Record<string, unknown>) => Record<string, unknown>;
+};
 
-function resolveTsPath(specifier: string, fromFile: string): string | null {
-  if (specifier.startsWith('.')) {
-    const resolved = path.resolve(path.dirname(fromFile), specifier);
-    const candidates = [resolved, resolved.replace(/\.js$/i, '.ts'), resolved.replace(/\.js$/i, '.js')];
-    for (const candidate of candidates) {
-      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
-    }
-  }
-  return null;
-}
-
-function loadTsModule(file: string): Record<string, unknown> {
-  const normalized = path.resolve(file);
-  const cached = moduleCache.get(normalized);
-  if (cached) return cached.exports;
-
-  const source = fs.readFileSync(normalized, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: normalized,
-  }).outputText;
-
-  const mod = { exports: {} as Record<string, unknown> };
-  moduleCache.set(normalized, mod);
-  const localRequire = (specifier: string) => {
-    const maybeTs = resolveTsPath(specifier, normalized);
-    if (maybeTs) return loadTsModule(maybeTs);
-    return require(specifier);
-  };
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(normalized),
-    __filename: normalized,
-    console,
-    process,
-    setTimeout,
-    clearTimeout,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: normalized });
-  return mod.exports;
-}
-
-const { makeMaterialResolver } = loadTsModule(
+const { makeMaterialResolver } = loadTsRuntimeModule(
   path.join(process.cwd(), 'esm/native/builder/material_resolver.ts')
 ) as {
   makeMaterialResolver: typeof import('../esm/native/builder/material_resolver.ts').makeMaterialResolver;
 };
-const { applyGroupedOrCornerPaintTarget } = loadTsModule(
+const { applyGroupedOrCornerPaintTarget } = loadTsRuntimeModule(
   path.join(process.cwd(), 'esm/native/services/canvas_picking_paint_flow_apply_targets.ts')
 ) as {
   applyGroupedOrCornerPaintTarget: typeof import('../esm/native/services/canvas_picking_paint_flow_apply_targets.ts').applyGroupedOrCornerPaintTarget;
 };
-const { resolvePaintTargetKeys } = loadTsModule(
+const { resolvePaintTargetKeys } = loadTsRuntimeModule(
   path.join(process.cwd(), 'esm/native/services/canvas_picking_paint_targets.ts')
 ) as {
   resolvePaintTargetKeys: typeof import('../esm/native/services/canvas_picking_paint_targets.ts').resolvePaintTargetKeys;
 };
-const { applyCorniceSegment } = loadTsModule(
+const { applyCorniceSegment } = loadTsRuntimeModule(
   path.join(process.cwd(), 'esm/native/builder/render_carcass_ops_cornice_apply.ts')
 ) as {
   applyCorniceSegment: typeof import('../esm/native/builder/render_carcass_ops_cornice_apply.ts').applyCorniceSegment;
