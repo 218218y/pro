@@ -1,10 +1,6 @@
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
 function createDeferred() {
   let resolve;
@@ -18,13 +14,6 @@ function createDeferred() {
 
 export function loadProjectDragDropControllerModule(state) {
   const file = path.join(process.cwd(), 'esm/native/ui/interactions/project_drag_drop_controller_runtime.ts');
-  const source = fs.readFileSync(file, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-    fileName: file,
-  }).outputText;
-  const mod = { exports: {} };
-
   class FakeBlob {}
   class FakeFile extends FakeBlob {
     constructor(name, options = {}) {
@@ -204,21 +193,14 @@ export function loadProjectDragDropControllerModule(state) {
     return require(specifier);
   };
 
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-    setTimeout,
-    clearTimeout,
-    Blob: FakeBlob,
-    DragEvent: FakeDragEvent,
+  return {
+    exports: loadTsRuntimeModule(file, {
+      mock: specifier => localRequire(specifier),
+      globals: { Blob: FakeBlob, DragEvent: FakeDragEvent },
+    }),
+    FakeFile,
+    FakeDragEvent,
   };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  return { exports: mod.exports, FakeFile, FakeDragEvent };
 }
 
 export function createProjectDragDropState(overrides = {}) {

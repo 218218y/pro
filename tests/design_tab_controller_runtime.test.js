@@ -1,26 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
 import { loadStructuralBuildRefreshActionsModule } from './_load_structural_build_refresh_actions.js';
+import { loadTsRuntimeModule, requireFromTsRuntimeLoader } from './_ts_runtime_module_loader.mjs';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+const require = requireFromTsRuntimeLoader;
 
 function loadDesignTabControllerRuntimeModule(stubs = {}) {
   const file = path.join(process.cwd(), 'esm/native/ui/react/tabs/design_tab_controller_runtime.ts');
-  const source = fs.readFileSync(file, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: file,
-  }).outputText;
-  const mod = { exports: {} };
   let structuralBuildRefreshActions;
   const localRequire = specifier => {
     if (specifier === '../actions/store_actions.js') {
@@ -94,17 +82,9 @@ function loadDesignTabControllerRuntimeModule(stubs = {}) {
     }
     return require(specifier);
   };
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  return mod.exports;
+  return loadTsRuntimeModule(file, {
+    mock: specifier => localRequire(specifier),
+  });
 }
 
 test('[design-tab-controller-runtime] delegates structural ui writes through canonical coalesced structural patch without duplicate refresh', () => {

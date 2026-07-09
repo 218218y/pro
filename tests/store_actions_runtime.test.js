@@ -1,29 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+import { loadTsRuntimeModule, requireFromTsRuntimeLoader } from './_ts_runtime_module_loader.mjs';
+
+const require = requireFromTsRuntimeLoader;
 
 function loadTsModule(relPath, calls, cache = new Map()) {
   const file = path.join(process.cwd(), relPath);
-  if (cache.has(file)) return cache.get(file).exports;
-
-  const source = fs.readFileSync(file, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: file,
-  }).outputText;
-
-  const mod = { exports: {} };
-  cache.set(file, mod);
-
   const localRequire = specifier => {
     if (specifier === '../../../services/api.js') {
       return {
@@ -38,19 +22,10 @@ function loadTsModule(relPath, calls, cache = new Map()) {
     return require(specifier);
   };
 
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-    setTimeout,
-    clearTimeout,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  return mod.exports;
+  return loadTsRuntimeModule(file, {
+    cache,
+    mock: specifier => localRequire(specifier),
+  });
 }
 
 test('store actions runtime: recomputeFromUi delegates to canonical app-bound structural recompute owner', () => {
@@ -75,16 +50,8 @@ test('store actions runtime: recomputeFromUi delegates to canonical app-bound st
 test('store actions runtime: recomputeFromUi swallows owner failures without throwing', () => {
   const calls = [];
   const file = path.join(process.cwd(), 'esm/native/ui/react/actions/store_actions_runtime.ts');
-  const source = fs.readFileSync(file, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-    fileName: file,
-  }).outputText;
-  const mod = { exports: {} };
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: specifier => {
+  const mod = loadTsRuntimeModule(file, {
+    mock: specifier => {
       if (specifier === '../../../services/api.js') {
         return {
           setRuntimeGlobalClickMode: (...args) => calls.push(['setRuntimeGlobalClickMode', ...args]),
@@ -97,17 +64,10 @@ test('store actions runtime: recomputeFromUi swallows owner failures without thr
       }
       return require(specifier);
     },
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-    setTimeout,
-    clearTimeout,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
+  });
 
   assert.doesNotThrow(() => {
-    mod.exports.recomputeFromUi({ id: 'app' }, null, undefined, { structureChanged: true });
+    mod.recomputeFromUi({ id: 'app' }, null, undefined, { structureChanged: true });
   });
   assert.equal(calls[0][0], 'runAppStructuralModulesRecompute');
 });

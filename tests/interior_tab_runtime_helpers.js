@@ -1,69 +1,16 @@
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-
-function transpileTsModule(file) {
-  const source = fs.readFileSync(file, 'utf8');
-  return ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: file,
-  }).outputText;
-}
-
-function resolveTsModulePath(fromFile, specifier) {
-  const base = path.resolve(path.dirname(fromFile), specifier);
-  if (fs.existsSync(base)) return base;
-  if (base.endsWith('.js')) {
-    const tsFile = `${base.slice(0, -3)}.ts`;
-    if (fs.existsSync(tsFile)) return tsFile;
-    const tsxFile = `${base.slice(0, -3)}.tsx`;
-    if (fs.existsSync(tsxFile)) return tsxFile;
-  }
-  if (!path.extname(base)) {
-    for (const ext of ['.ts', '.tsx', '.js']) {
-      if (fs.existsSync(base + ext)) return base + ext;
-    }
-  }
-  return base;
-}
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
 function loadTranspiledTsModule(file, createOverride, options = {}, cache = new Map()) {
-  if (cache.has(file)) return cache.get(file).exports;
-  const transpiled = transpileTsModule(file);
-  const mod = { exports: {} };
-  cache.set(file, mod);
-  const localRequire = specifier => {
-    const override = createOverride(specifier);
-    if (override !== undefined) return override;
-    if (specifier.startsWith('./') || specifier.startsWith('../')) {
-      const resolved = resolveTsModulePath(file, specifier);
-      if (resolved.endsWith('.ts') || resolved.endsWith('.tsx')) {
-        return loadTranspiledTsModule(resolved, createOverride, options, cache);
-      }
-      return require(resolved);
-    }
-    return require(specifier);
-  };
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-    setTimeout: options.setTimeout ?? setTimeout,
-    clearTimeout: options.clearTimeout ?? clearTimeout,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  return mod.exports;
+  return loadTsRuntimeModule(file, {
+    cache,
+    mock: specifier => createOverride(specifier),
+    globals: {
+      setTimeout: options.setTimeout ?? setTimeout,
+      clearTimeout: options.clearTimeout ?? clearTimeout,
+    },
+  });
 }
 
 export function loadInteriorTabWorkflowControllerModule(calls, options = {}) {
