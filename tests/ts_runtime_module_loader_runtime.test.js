@@ -177,7 +177,6 @@ test('ts runtime loader evaluate errors include the fixture filename', () => {
 test('runtime tests do not reintroduce per-test TS VM loaders', () => {
   const testsDir = new URL('./', import.meta.url);
   const allowedRelPaths = new Set([
-    'actions_root_patch_type_contract.test.js',
     'root_surface_ast_guard.test.js',
     '_ts_runtime_module_loader.mjs',
     'ts_runtime_module_loader_runtime.test.js',
