@@ -4,11 +4,8 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { createRequire } from 'node:module';
 import { readSourceText } from '../tools/wp_source_text.mjs';
-
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+import { transformTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
 async function loadResolverForRuntimeTest() {
   const source = readSourceText('esm/native/builder/builder_deps_resolver.ts')
@@ -22,13 +19,10 @@ async function loadResolverForRuntimeTest() {
     )
     .replace(/import type \{[\s\S]*?\} from '\.\.\/\.\.\/\.\.\/types';\n/, '');
 
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.ES2022,
-      target: ts.ScriptTarget.ES2022,
-      importsNotUsedAsValues: ts.ImportsNotUsedAsValues.Remove,
-    },
-  }).outputText;
+  const transpiled = transformTsRuntimeModule(source, 'builder_deps_resolver_runtime_fixture.ts', {
+    target: 'es2022',
+    esbuildOptions: { format: 'esm' },
+  });
 
   const dir = mkdtempSync(join(tmpdir(), 'wardrobepro-builder-deps-resolver-'));
   const file = join(dir, 'builder_deps_resolver_runtime_fixture.mjs');

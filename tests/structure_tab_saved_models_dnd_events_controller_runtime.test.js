@@ -1,24 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 function loadModule(state) {
   const file = path.join(
     process.cwd(),
     'esm/native/ui/react/tabs/structure_tab_saved_models_dnd_events_controller_runtime.ts'
   );
-  const source = fs.readFileSync(file, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-    fileName: file,
-  }).outputText;
-  const mod = { exports: {} };
   const localRequire = specifier => {
     if (specifier === './structure_tab_shared.js') {
       return {
@@ -27,21 +16,11 @@ function loadModule(state) {
         },
       };
     }
-    return require(specifier);
+    return undefined;
   };
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-    setTimeout,
-    clearTimeout,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  return mod.exports;
+  return loadTsRuntimeModule(file, {
+    mock: specifier => localRequire(specifier),
+  });
 }
 
 function createSetters(state) {

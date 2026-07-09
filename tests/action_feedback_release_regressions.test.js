@@ -1,45 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-
-function transpileModule(file) {
-  const source = fs.readFileSync(file, 'utf8');
-  return ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: file,
-  }).outputText;
-}
-
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 function loadTsModule(file, overrides = {}) {
-  const transpiled = transpileModule(file);
-  const mod = { exports: {} };
-  const localRequire = specifier => {
-    if (specifier in overrides) return overrides[specifier];
-    return require(specifier);
-  };
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-    setTimeout,
-    clearTimeout,
-    queueMicrotask,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  return mod.exports;
+  return loadTsRuntimeModule(file, { mocks: overrides });
 }
 
 function loadActionFeedbackShared() {

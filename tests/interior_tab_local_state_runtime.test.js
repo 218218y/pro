@@ -1,61 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import vm from 'node:vm';
-import fs from 'node:fs';
 import path from 'node:path';
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
 const srcPath = path.resolve('esm/native/ui/react/tabs/interior_tab_local_state_shared.ts');
-const src = fs.readFileSync(srcPath, 'utf8');
-const transpiled = ts.transpileModule(src, {
-  compilerOptions: {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ES2020,
-  },
-  fileName: srcPath,
-}).outputText;
-
-const sandbox = {
-  module: { exports: {} },
-  exports: {},
-  require: spec => {
-    if (spec === '../../../../shared/wardrobe_dimension_tokens_shared.js') {
-      return {
-        INTERIOR_FITTINGS_DIMENSIONS: { shelves: { regularDepthM: 0.45 } },
-        mToCm: value => value * 100,
-      };
-    }
-    if (spec === '../../../features/sketch_drawer_sizing.js') {
-      return {
-        DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM: 22,
-        DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM: 16.5,
-      };
-    }
-    if (spec === '../../../features/base_plinth_support.js') {
-      return {
-        DEFAULT_BASE_PLINTH_HEIGHT_CM: 8,
-      };
-    }
-    if (spec === '../../../features/base_leg_support.js') {
-      return {
-        DEFAULT_BASE_LEG_PLATFORM_MODE: 'stage',
-        DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE: 'overhang',
-      };
-    }
-    if (spec === '../../../features/platform_overhang_support.js') {
-      return {
-        DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM: 1.5,
-        DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM: 2,
-      };
-    }
-    return require(spec);
-  },
-};
-sandbox.exports = sandbox.module.exports;
-vm.runInNewContext(transpiled, sandbox, { filename: srcPath });
-
 const {
   createInteriorTabLocalStateDefaults,
   DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM,
@@ -66,7 +15,29 @@ const {
   INTERIOR_HANDLE_TYPES,
   INTERIOR_LAYOUT_TYPES,
   INTERIOR_MANUAL_TOOLS,
-} = sandbox.module.exports;
+} = loadTsRuntimeModule(srcPath, {
+  mocks: {
+    '../../../../shared/wardrobe_dimension_tokens_shared.js': {
+      INTERIOR_FITTINGS_DIMENSIONS: { shelves: { regularDepthM: 0.45 } },
+      mToCm: value => value * 100,
+    },
+    '../../../features/sketch_drawer_sizing.js': {
+      DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM: 22,
+      DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM: 16.5,
+    },
+    '../../../features/base_plinth_support.js': {
+      DEFAULT_BASE_PLINTH_HEIGHT_CM: 8,
+    },
+    '../../../features/base_leg_support.js': {
+      DEFAULT_BASE_LEG_PLATFORM_MODE: 'stage',
+      DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE: 'overhang',
+    },
+    '../../../features/platform_overhang_support.js': {
+      DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM: 1.5,
+      DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM: 2,
+    },
+  },
+});
 
 test('[interior-local-state-runtime] defaults stay canonical for drafts/options', () => {
   const defaults = createInteriorTabLocalStateDefaults();

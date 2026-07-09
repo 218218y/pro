@@ -1,38 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
 function loadBindingsModule() {
-  const file = path.join(
-    process.cwd(),
-    'esm/native/ui/react/tabs/interior_tab_view_state_bindings_runtime.ts'
+  return loadTsRuntimeModule(
+    path.join(process.cwd(), 'esm/native/ui/react/tabs/interior_tab_view_state_bindings_runtime.ts')
   );
-  const source = fs.readFileSync(file, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: file,
-  }).outputText;
-  const mod = { exports: {} };
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require,
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  return mod.exports;
 }
 
 test('[interior-view-state-bindings] maps local setters into controller args once', () => {

@@ -1,23 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import vm from 'node:vm';
-import fs from 'node:fs';
 import path from 'node:path';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 function loadHandlesActionsHarness(initial = {}) {
   const srcPath = path.resolve('esm/native/ui/react/actions/handles_actions.ts');
-  const src = fs.readFileSync(srcPath, 'utf8');
-  const transpiled = ts.transpileModule(src, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: srcPath,
-  }).outputText;
 
   const store = {
     config: {
@@ -41,10 +28,8 @@ function loadHandlesActionsHarness(initial = {}) {
   const calls = [];
   const app = {};
 
-  const sandbox = {
-    module: { exports: {} },
-    exports: {},
-    require: spec => {
+  const api = loadTsRuntimeModule(srcPath, {
+    mock: spec => {
       if (spec === './modes_actions.js') {
         return {
           getPrimaryMode: () => store.mode.primary,
@@ -130,11 +115,9 @@ function loadHandlesActionsHarness(initial = {}) {
       }
       throw new Error(`Unexpected import: ${spec}`);
     },
-    console,
-  };
-  sandbox.exports = sandbox.module.exports;
-  vm.runInNewContext(transpiled, sandbox, { filename: srcPath });
-  return { api: sandbox.module.exports, store, calls, app };
+    globals: { console },
+  });
+  return { api, store, calls, app };
 }
 
 function lastEnter(calls) {

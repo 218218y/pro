@@ -1,13 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 function createFeedbackSpy() {
   const seen = [];
   return {
@@ -59,12 +54,6 @@ function loadSavedSwatchesModule(stubs = {}) {
     process.cwd(),
     'esm/native/ui/react/tabs/design_tab_saved_swatches_controller_runtime.ts'
   );
-  const source = fs.readFileSync(file, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-    fileName: file,
-  }).outputText;
-  const mod = { exports: {} };
   const localRequire = specifier => {
     if (specifier === '../../../services/api.js') {
       return {
@@ -142,22 +131,12 @@ function loadSavedSwatchesModule(stubs = {}) {
         },
       };
     }
-    return require(specifier);
+    return undefined;
   };
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-    setTimeout,
-    clearTimeout,
-    Promise,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  return mod.exports;
+  return loadTsRuntimeModule(file, {
+    mock: specifier => localRequire(specifier),
+    globals: { Promise },
+  });
 }
 
 test('saved swatches delete is app-scoped single-flight across controllers and reports busy for conflicting design-color work', async () => {

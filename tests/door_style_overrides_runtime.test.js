@@ -1,20 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
-import {
-  buildDoorVisualOwnerAliasKeys,
-  resolveDoorStylePaintTargetKey,
-} from '../esm/native/features/door_authoring/api.ts';
-import {
-  resolveDoorSplitAuthoringBaseKey,
-  resolveDoorVisualSegmentIdentity,
-} from '../esm/shared/door_visual_key_contracts_shared.ts';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
+function toHostRealm(value) {
+  return value && typeof value === 'object' ? structuredClone(value) : value;
+}
+
+const doorAuthoringApi = loadTsRuntimeModule(
+  path.join(process.cwd(), 'esm/native/features/door_authoring/api.ts')
+);
+const doorVisualContracts = loadTsRuntimeModule(
+  path.join(process.cwd(), 'esm/shared/door_visual_key_contracts_shared.ts')
+);
+
+const buildDoorVisualOwnerAliasKeys = (...args) =>
+  toHostRealm(doorAuthoringApi.buildDoorVisualOwnerAliasKeys(...args));
+const resolveDoorStylePaintTargetKey = (...args) =>
+  toHostRealm(doorAuthoringApi.resolveDoorStylePaintTargetKey(...args));
+const resolveDoorSplitAuthoringBaseKey = (...args) =>
+  toHostRealm(doorVisualContracts.resolveDoorSplitAuthoringBaseKey(...args));
+const resolveDoorVisualSegmentIdentity = (...args) =>
+  toHostRealm(doorVisualContracts.resolveDoorVisualSegmentIdentity(...args));
 
 function createDoorVisualMapLookupMock() {
   const anySuffixRe = /_(?:full|top|bot|mid\d*)$/i;
@@ -70,33 +77,14 @@ function createDoorVisualMapLookupMock() {
 }
 
 function loadDoorStyleOverridesModule() {
-  const file = path.join(process.cwd(), 'esm/native/features/door_authoring/internal/style.ts');
-  const source = fs.readFileSync(file, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: file,
-  }).outputText;
-  const mod = { exports: {} };
-  const localRequire = spec => {
-    if (spec === './visual_keys.js') return createDoorVisualMapLookupMock();
-    return require(spec);
-  };
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-    setTimeout,
-    clearTimeout,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  return mod.exports;
+  return loadTsRuntimeModule(
+    path.join(process.cwd(), 'esm/native/features/door_authoring/internal/style.ts'),
+    {
+      mocks: {
+        './visual_keys.js': createDoorVisualMapLookupMock(),
+      },
+    }
+  );
 }
 
 test('[door-visual-keys] split authoring base keys use the canonical visual base', () => {

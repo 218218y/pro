@@ -1,23 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 function loadInteriorActionsHarness(initialUi = {}) {
   const file = path.resolve('esm/native/ui/react/actions/interior_actions.ts');
-  const source = fs.readFileSync(file, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: file,
-  }).outputText;
   const calls = [];
   const store = {
     ui: {
@@ -26,12 +13,8 @@ function loadInteriorActionsHarness(initialUi = {}) {
     },
   };
   const app = {};
-  const mod = { exports: {} };
-
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: specifier => {
+  const api = loadTsRuntimeModule(file, {
+    mock: specifier => {
       if (specifier === './modes_actions.js') {
         return {
           getPrimaryMode: () => 'none',
@@ -81,13 +64,11 @@ function loadInteriorActionsHarness(initialUi = {}) {
           },
         };
       }
-      return require(specifier);
+      return undefined;
     },
-    console,
-    process,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  return { api: mod.exports, calls, store, app };
+    globals: { console },
+  });
+  return { api, calls, store, app };
 }
 
 test('[interior-actions] internal drawer toggle routes through coalesced structural ui mutation', () => {

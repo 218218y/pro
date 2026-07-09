@@ -2,64 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 function loadTsModule(entryFile, overrides = Object.create(null)) {
-  const cache = new Map();
-
-  const load = file => {
-    const normalizedFile = path.resolve(file);
-    if (cache.has(normalizedFile)) return cache.get(normalizedFile).exports;
-
-    const source = fs.readFileSync(normalizedFile, 'utf8');
-    const transpiled = ts.transpileModule(source, {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2020,
-      },
-      fileName: normalizedFile,
-    }).outputText;
-
-    const mod = { exports: {} };
-    cache.set(normalizedFile, mod);
-
-    const localRequire = specifier => {
-      if (specifier in overrides) return overrides[specifier];
-      if (specifier.startsWith('.')) {
-        const resolved = path.resolve(path.dirname(normalizedFile), specifier);
-        const candidates = [resolved, resolved.replace(/\.js$/i, '.ts'), `${resolved}.ts`];
-        for (const candidate of candidates) {
-          if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return load(candidate);
-        }
-      }
-      return require(specifier);
-    };
-
-    const sandbox = {
-      module: mod,
-      exports: mod.exports,
-      require: localRequire,
-      __dirname: path.dirname(normalizedFile),
-      __filename: normalizedFile,
-      console,
-      process,
-      Math,
-      Date,
-      Set,
-      Object,
-      Array,
-      Number,
-      String,
-    };
-    vm.runInNewContext(transpiled, sandbox, { filename: normalizedFile });
-    return mod.exports;
-  };
-
-  return load(entryFile);
+  return loadTsRuntimeModule(entryFile, {
+    cache: new Map(),
+    mocks: overrides,
+    globals: { Math, Date, Set, Object, Array, Number, String },
+  });
 }
 
 function loadDoorTrimModule() {

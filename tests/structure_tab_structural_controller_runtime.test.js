@@ -1,29 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 function loadTsModule(relPath, calls, stubs = {}, cache = new Map()) {
   const file = path.join(process.cwd(), relPath);
-  if (cache.has(file)) return cache.get(file).exports;
-
-  const source = fs.readFileSync(file, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: file,
-  }).outputText;
-
-  const mod = { exports: {} };
-  cache.set(file, mod);
-
   const localRequire = specifier => {
     if (specifier === '../actions/store_actions.js') {
       return {
@@ -141,22 +122,13 @@ function loadTsModule(relPath, calls, stubs = {}, cache = new Map()) {
       const rel = path.relative(process.cwd(), target);
       return loadTsModule(rel, calls, stubs, cache);
     }
-    return require(specifier);
+    return undefined;
   };
 
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-    setTimeout,
-    clearTimeout,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  return mod.exports;
+  return loadTsRuntimeModule(file, {
+    cache,
+    mock: specifier => localRequire(specifier),
+  });
 }
 
 function loadStructureStructuralControllerModule(calls = [], stubs = {}) {

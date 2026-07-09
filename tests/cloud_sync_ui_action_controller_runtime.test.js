@@ -1,13 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 const projectRoot = process.cwd();
 const sharedModuleCache = new Map();
 let activeReportCalls = null;
@@ -23,86 +18,65 @@ function loadCloudSyncUiActionControllerModule(reportCalls) {
   if (loadedCloudSyncUiActionControllerModule) return loadedCloudSyncUiActionControllerModule;
 
   function loadModule(resolvedPath) {
-    const normalized = path.normalize(resolvedPath);
-    if (sharedModuleCache.has(normalized)) return sharedModuleCache.get(normalized).exports;
-
-    const source = fs.readFileSync(normalized, 'utf8');
-    const transpiled = ts.transpileModule(source, {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2020,
+    return loadTsRuntimeModule(resolvedPath, {
+      cache: sharedModuleCache,
+      mock: specifier => {
+        if (specifier === '../../services/api.js') {
+          return {
+            normalizeUnknownError: (err, fallbackMessage = '') => ({
+              message:
+                err && typeof err === 'object' && typeof err.message === 'string' && err.message.trim()
+                  ? err.message.trim()
+                  : typeof err === 'string' && err.trim()
+                    ? err.trim()
+                    : fallbackMessage || 'Unexpected error',
+            }),
+          };
+        }
+        if (specifier === '../action_family_singleflight.js') {
+          return loadTsRuntimeModule(path.join(projectRoot, 'esm/native/ui/action_family_singleflight.ts'), {
+            cache: sharedModuleCache,
+          });
+        }
+        if (specifier === '../cloud_sync_action_feedback.js') {
+          return {
+            reportCloudSyncRoomModeResult: (fb, result) => pushReportCall(['roomMode', fb, result]),
+            reportCloudSyncShareLinkResult: (fb, result) => pushReportCall(['shareLink', fb, result]),
+            reportCloudSketchSyncResult: (fb, result) => pushReportCall(['syncSketch', fb, result]),
+            reportCloudDeleteTempResult: (fb, result, kind) =>
+              pushReportCall(['deleteTemp', fb, result, kind]),
+            reportFloatingSketchSyncPinResult: (fb, result) => pushReportCall(['floatingSync', fb, result]),
+            reportSite2TabsGateResult: (fb, result) => pushReportCall(['site2TabsGate', fb, result]),
+          };
+        }
+        if (specifier === '../cloud_sync_mutation_commands.js') {
+          return {
+            syncSketchNowCommand: async () => ({ ok: false, reason: 'not-installed' }),
+            deleteTemporaryModelsWithConfirm: async () => ({
+              ok: false,
+              removed: 0,
+              reason: 'not-installed',
+            }),
+            deleteTemporaryColorsWithConfirm: async () => ({
+              ok: false,
+              removed: 0,
+              reason: 'not-installed',
+            }),
+          };
+        }
+        if (specifier === './actions/cloud_sync_actions.js') {
+          return {
+            copyCloudSyncShareLink: async () => ({ ok: false, reason: 'not-installed' }),
+            goCloudSyncPublic: () => ({ ok: false, mode: 'public', reason: 'not-installed' }),
+            goCloudSyncPrivate: () => ({ ok: false, mode: 'private', reason: 'not-installed' }),
+            setFloatingSketchSyncEnabled: async () => ({ ok: false, reason: 'not-installed' }),
+            toggleFloatingSketchSyncEnabled: async () => ({ ok: false, reason: 'not-installed' }),
+            toggleSite2TabsGate: async () => ({ ok: false, reason: 'not-installed' }),
+          };
+        }
+        return undefined;
       },
-      fileName: normalized,
-    }).outputText;
-
-    const mod = { exports: {} };
-    sharedModuleCache.set(normalized, mod);
-
-    const localRequire = specifier => {
-      if (specifier === '../../services/api.js') {
-        return {
-          normalizeUnknownError: (err, fallbackMessage = '') => ({
-            message:
-              err && typeof err === 'object' && typeof err.message === 'string' && err.message.trim()
-                ? err.message.trim()
-                : typeof err === 'string' && err.trim()
-                  ? err.trim()
-                  : fallbackMessage || 'Unexpected error',
-          }),
-        };
-      }
-      if (specifier === '../action_family_singleflight.js') {
-        return require('../esm/native/ui/action_family_singleflight.ts');
-      }
-      if (specifier === '../cloud_sync_action_feedback.js') {
-        return {
-          reportCloudSyncRoomModeResult: (fb, result) => pushReportCall(['roomMode', fb, result]),
-          reportCloudSyncShareLinkResult: (fb, result) => pushReportCall(['shareLink', fb, result]),
-          reportCloudSketchSyncResult: (fb, result) => pushReportCall(['syncSketch', fb, result]),
-          reportCloudDeleteTempResult: (fb, result, kind) => pushReportCall(['deleteTemp', fb, result, kind]),
-          reportFloatingSketchSyncPinResult: (fb, result) => pushReportCall(['floatingSync', fb, result]),
-          reportSite2TabsGateResult: (fb, result) => pushReportCall(['site2TabsGate', fb, result]),
-        };
-      }
-      if (specifier === '../cloud_sync_mutation_commands.js') {
-        return {
-          syncSketchNowCommand: async () => ({ ok: false, reason: 'not-installed' }),
-          deleteTemporaryModelsWithConfirm: async () => ({ ok: false, removed: 0, reason: 'not-installed' }),
-          deleteTemporaryColorsWithConfirm: async () => ({ ok: false, removed: 0, reason: 'not-installed' }),
-        };
-      }
-      if (specifier === './actions/cloud_sync_actions.js') {
-        return {
-          copyCloudSyncShareLink: async () => ({ ok: false, reason: 'not-installed' }),
-          goCloudSyncPublic: () => ({ ok: false, mode: 'public', reason: 'not-installed' }),
-          goCloudSyncPrivate: () => ({ ok: false, mode: 'private', reason: 'not-installed' }),
-          setFloatingSketchSyncEnabled: async () => ({ ok: false, reason: 'not-installed' }),
-          toggleFloatingSketchSyncEnabled: async () => ({ ok: false, reason: 'not-installed' }),
-          toggleSite2TabsGate: async () => ({ ok: false, reason: 'not-installed' }),
-        };
-      }
-      if (specifier.startsWith('./') || specifier.startsWith('../')) {
-        const jsResolved = path.resolve(path.dirname(normalized), specifier);
-        const tsResolved = jsResolved.endsWith('.js') ? `${jsResolved.slice(0, -3)}.ts` : `${jsResolved}.ts`;
-        if (fs.existsSync(tsResolved)) return loadModule(tsResolved);
-        if (fs.existsSync(jsResolved)) return loadModule(jsResolved);
-      }
-      return require(specifier);
-    };
-
-    const sandbox = {
-      module: mod,
-      exports: mod.exports,
-      require: localRequire,
-      __dirname: path.dirname(normalized),
-      __filename: normalized,
-      console,
-      process,
-      setTimeout,
-      clearTimeout,
-    };
-    vm.runInNewContext(transpiled, sandbox, { filename: normalized });
-    return mod.exports;
+    });
   }
 
   loadedCloudSyncUiActionControllerModule = loadModule(

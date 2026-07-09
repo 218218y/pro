@@ -1,12 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
 function areDepsEqual(a, b) {
   if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
@@ -60,32 +56,16 @@ function createFakeReactRuntime() {
 }
 
 function loadSyncModule(stubs) {
-  const file = path.join(process.cwd(), 'esm/native/ui/react/tabs/use_interior_tab_view_state_sync.ts');
-  const source = fs.readFileSync(file, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: file,
-  }).outputText;
-  const mod = { exports: {} };
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require(spec) {
-      if (spec === 'react') return stubs.react;
-      if (spec === './interior_tab_view_state_bindings_runtime.js') return stubs.bindings;
-      if (spec === './interior_tab_view_state_controller_runtime.js') return stubs.controller;
-      return require(spec);
-    },
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  return mod.exports;
+  return loadTsRuntimeModule(
+    path.join(process.cwd(), 'esm/native/ui/react/tabs/use_interior_tab_view_state_sync.ts'),
+    {
+      mocks: {
+        react: stubs.react,
+        './interior_tab_view_state_bindings_runtime.js': stubs.bindings,
+        './interior_tab_view_state_controller_runtime.js': stubs.controller,
+      },
+    }
+  );
 }
 
 test('[interior-view-state-sync] keeps the controller stable across local draft rerenders and only resyncs when inputs change', () => {

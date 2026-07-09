@@ -1,13 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 function installFakeFile() {
   const originalFile = globalThis.File;
   class FakeFile extends Blob {
@@ -25,53 +20,15 @@ function installFakeFile() {
   };
 }
 
-function transpileTsModule(file) {
-  const source = fs.readFileSync(file, 'utf8');
-  return ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: file,
-  }).outputText;
-}
-
 function loadTsModule(file, overrides = {}, cache = new Map()) {
-  if (cache.has(file)) return cache.get(file);
-
-  const transpiled = transpileTsModule(file);
-  const mod = { exports: {} };
-  cache.set(file, mod.exports);
-
-  const localRequire = specifier => {
-    if (specifier in overrides) return overrides[specifier];
-    if (specifier.startsWith('./') || specifier.startsWith('../')) {
-      const resolved = path.resolve(path.dirname(file), specifier.replace(/\.js$/, '.ts'));
-      if (fs.existsSync(resolved)) {
-        const loaded = loadTsModule(resolved, overrides, cache);
-        cache.set(file, mod.exports);
-        return loaded;
-      }
-    }
-    return require(specifier);
-  };
-
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-    Blob,
-    File: globalThis.File,
-    setTimeout,
-    clearTimeout,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  cache.set(file, mod.exports);
-  return mod.exports;
+  return loadTsRuntimeModule(file, {
+    cache,
+    mocks: overrides,
+    globals: {
+      Blob,
+      File: globalThis.File,
+    },
+  });
 }
 
 function loadSettingsBackupModule() {

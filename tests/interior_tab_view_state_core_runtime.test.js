@@ -1,26 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import vm from 'node:vm';
-import fs from 'node:fs';
 import path from 'node:path';
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
 const srcPath = path.resolve('esm/native/ui/react/tabs/interior_tab_view_state_core_runtime.ts');
-const src = fs.readFileSync(srcPath, 'utf8');
-const transpiled = ts.transpileModule(src, {
-  compilerOptions: {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ES2020,
-  },
-  fileName: srcPath,
-}).outputText;
-
-const sandbox = {
-  module: { exports: {} },
-  exports: {},
-  require: spec => {
+const moduleExports = loadTsRuntimeModule(srcPath, {
+  mock: spec => {
     if (spec === '../../../services/api.js') {
       return {
         MODES: {
@@ -81,9 +67,7 @@ const sandbox = {
     }
     throw new Error(`Unexpected import: ${spec}`);
   },
-};
-sandbox.exports = sandbox.module.exports;
-vm.runInNewContext(transpiled, sandbox, { filename: srcPath });
+});
 
 const {
   readInteriorTabUiSnapshot,
@@ -91,7 +75,7 @@ const {
   readInteriorTabModeSnapshot,
   readInteriorTabModeConsts,
   deriveInteriorTabCoreState,
-} = sandbox.module.exports;
+} = moduleExports;
 
 test('interior tab core runtime reads grouped snapshots canonically', () => {
   const ui = JSON.parse(

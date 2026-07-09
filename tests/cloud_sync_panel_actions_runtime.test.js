@@ -1,13 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 function createReactStub() {
   function useRef(initialValue) {
     return { current: initialValue };
@@ -48,112 +43,76 @@ function loadCloudSyncPanelActionsModule(options = {}) {
   const perfCalls = options.perfCalls || [];
 
   function loadModule(resolvedPath) {
-    const normalized = path.normalize(resolvedPath);
-    if (moduleCache.has(normalized)) return moduleCache.get(normalized).exports;
-
-    const source = fs.readFileSync(normalized, 'utf8');
-    const transpiled = ts.transpileModule(source, {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2020,
-        jsx: ts.JsxEmit.ReactJSX,
-      },
-      fileName: normalized,
-    }).outputText;
-
-    const mod = { exports: {} };
-    moduleCache.set(normalized, mod);
-
-    const localRequire = specifier => {
-      if (specifier === 'react') return createReactStub();
-      if (specifier === '../../../services/api.js') {
-        return {
-          getCloudSyncServiceMaybe: () => api,
-          buildPerfEntryOptionsFromActionResult: result => ({ result }),
-          runPerfAction: (_app, name, run, options) => {
-            const result = run();
-            if (result && typeof result.then === 'function') {
-              return Promise.resolve(result).then(resolved => {
-                perfCalls.push([
-                  name,
-                  options?.detail ?? null,
-                  options?.resolveEndOptions ? options.resolveEndOptions(resolved) : null,
-                ]);
-                return resolved;
-              });
-            }
-            perfCalls.push([
-              name,
-              options?.detail ?? null,
-              options?.resolveEndOptions ? options.resolveEndOptions(result) : null,
-            ]);
-            return result;
-          },
-        };
-      }
-      if (specifier === '../cloud_sync_ui_action_controller_runtime.js') {
-        return {
-          createCloudSyncUiActionController: () =>
-            controller || {
-              toggleRoomMode: isPublic => {
-                controllerCalls.push(['toggleRoomMode', isPublic]);
-                return { ok: true, changed: true, mode: isPublic ? 'private' : 'public' };
-              },
-              copyShareLink: async () => {
-                controllerCalls.push(['copyShareLink']);
-                return { ok: true, copied: true };
-              },
-              syncSketch: async () => {
-                controllerCalls.push(['syncSketch']);
-                return { ok: true, changed: true };
-              },
-              deleteTemporaryModels: async () => {
-                controllerCalls.push(['deleteTemporaryModels']);
-                return { ok: true, removed: 2 };
-              },
-              deleteTemporaryColors: async () => {
-                controllerCalls.push(['deleteTemporaryColors']);
-                return { ok: false, reason: 'cancelled' };
-              },
-              setFloatingSyncEnabled: async enabled => {
-                controllerCalls.push(['setFloatingSyncEnabled', enabled]);
-                return { ok: true, changed: true, enabled };
-              },
+    return loadTsRuntimeModule(resolvedPath, {
+      cache: moduleCache,
+      transformOptions: { esbuildOptions: { jsx: 'automatic' } },
+      mock: specifier => {
+        if (specifier === 'react') return createReactStub();
+        if (specifier === '../../../services/api.js') {
+          return {
+            getCloudSyncServiceMaybe: () => api,
+            buildPerfEntryOptionsFromActionResult: result => ({ result }),
+            runPerfAction: (_app, name, run, options) => {
+              const result = run();
+              if (result && typeof result.then === 'function') {
+                return Promise.resolve(result).then(resolved => {
+                  perfCalls.push([
+                    name,
+                    options?.detail ?? null,
+                    options?.resolveEndOptions ? options.resolveEndOptions(resolved) : null,
+                  ]);
+                  return resolved;
+                });
+              }
+              perfCalls.push([
+                name,
+                options?.detail ?? null,
+                options?.resolveEndOptions ? options.resolveEndOptions(result) : null,
+              ]);
+              return result;
             },
-        };
-      }
-      if (specifier === '../hooks.js') {
-        return {
-          useApp: () => app,
-          useUiFeedback: () => fb,
-        };
-      }
-      if (specifier.startsWith('./') || specifier.startsWith('../')) {
-        const jsResolved = path.resolve(path.dirname(normalized), specifier);
-        const tsResolved = jsResolved.endsWith('.js') ? `${jsResolved.slice(0, -3)}.ts` : `${jsResolved}.ts`;
-        const tsxResolved = jsResolved.endsWith('.js')
-          ? `${jsResolved.slice(0, -3)}.tsx`
-          : `${jsResolved}.tsx`;
-        if (fs.existsSync(tsResolved)) return loadModule(tsResolved);
-        if (fs.existsSync(tsxResolved)) return loadModule(tsxResolved);
-        if (fs.existsSync(jsResolved)) return loadModule(jsResolved);
-      }
-      return require(specifier);
-    };
-
-    const sandbox = {
-      module: mod,
-      exports: mod.exports,
-      require: localRequire,
-      __dirname: path.dirname(normalized),
-      __filename: normalized,
-      console,
-      process,
-      setTimeout,
-      clearTimeout,
-    };
-    vm.runInNewContext(transpiled, sandbox, { filename: normalized });
-    return mod.exports;
+          };
+        }
+        if (specifier === '../cloud_sync_ui_action_controller_runtime.js') {
+          return {
+            createCloudSyncUiActionController: () =>
+              controller || {
+                toggleRoomMode: isPublic => {
+                  controllerCalls.push(['toggleRoomMode', isPublic]);
+                  return { ok: true, changed: true, mode: isPublic ? 'private' : 'public' };
+                },
+                copyShareLink: async () => {
+                  controllerCalls.push(['copyShareLink']);
+                  return { ok: true, copied: true };
+                },
+                syncSketch: async () => {
+                  controllerCalls.push(['syncSketch']);
+                  return { ok: true, changed: true };
+                },
+                deleteTemporaryModels: async () => {
+                  controllerCalls.push(['deleteTemporaryModels']);
+                  return { ok: true, removed: 2 };
+                },
+                deleteTemporaryColors: async () => {
+                  controllerCalls.push(['deleteTemporaryColors']);
+                  return { ok: false, reason: 'cancelled' };
+                },
+                setFloatingSyncEnabled: async enabled => {
+                  controllerCalls.push(['setFloatingSyncEnabled', enabled]);
+                  return { ok: true, changed: true, enabled };
+                },
+              },
+          };
+        }
+        if (specifier === '../hooks.js') {
+          return {
+            useApp: () => app,
+            useUiFeedback: () => fb,
+          };
+        }
+        return undefined;
+      },
+    });
   }
 
   return loadModule(path.join(projectRoot, 'esm/native/ui/react/panels/cloud_sync_panel_actions.ts'));

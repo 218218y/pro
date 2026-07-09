@@ -1,23 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
 function loadRenderLoopModule(options = {}) {
   const file = path.join(process.cwd(), 'esm/native/platform/render_loop_impl.ts');
-  const source = fs.readFileSync(file, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: file,
-  }).outputText;
 
   const reports = [];
   let rafCalls = 0;
@@ -25,7 +13,6 @@ function loadRenderLoopModule(options = {}) {
   const motionCalls = [];
   const renderSlotState = Object.create(null);
 
-  const mod = { exports: {} };
   const localRequire = specifier => {
     if (specifier === '../runtime/install_idempotency_patterns.js') {
       return {
@@ -443,23 +430,15 @@ function loadRenderLoopModule(options = {}) {
         },
       };
     }
-    return require(specifier);
+    return undefined;
   };
 
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-    setTimeout,
-    clearTimeout,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
+  const moduleExports = loadTsRuntimeModule(file, {
+    mock: specifier => localRequire(specifier),
+  });
+
   return {
-    ...mod.exports,
+    ...moduleExports,
     reports,
     getRafCalls: () => rafCalls,
     getLastAnimate: () => lastAnimate,

@@ -1,62 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
-import { buildDoorVisualOwnerAliasKeys } from '../esm/native/features/door_authoring/api.ts';
-import { resolveDoorVisualSegmentIdentity } from '../esm/shared/door_visual_key_contracts_shared.ts';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-const moduleCache = new Map();
-
-function resolveTsPath(specifier, fromFile) {
-  if (specifier.startsWith('.')) {
-    const resolved = path.resolve(path.dirname(fromFile), specifier);
-    const candidates = [resolved, resolved.replace(/\.js$/i, '.ts'), resolved.replace(/\.js$/i, '.js')];
-    for (const candidate of candidates) {
-      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
-    }
-  }
-  return null;
-}
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
+const { buildDoorVisualOwnerAliasKeys } = loadTsRuntimeModule(
+  path.join(process.cwd(), 'esm/native/features/door_authoring/api.ts')
+);
+const { resolveDoorVisualSegmentIdentity } = loadTsRuntimeModule(
+  path.join(process.cwd(), 'esm/shared/door_visual_key_contracts_shared.ts')
+);
 
 function loadTsModule(file, overrides = {}) {
-  const normalized = path.resolve(file);
-  const cacheKey = normalized + '::' + Object.keys(overrides).sort().join(',');
-  if (moduleCache.has(cacheKey)) return moduleCache.get(cacheKey).exports;
-
-  const source = fs.readFileSync(normalized, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: normalized,
-  }).outputText;
-
-  const mod = { exports: {} };
-  moduleCache.set(cacheKey, mod);
-  const localRequire = specifier => {
-    if (Object.prototype.hasOwnProperty.call(overrides, specifier)) return overrides[specifier];
-    const maybeTs = resolveTsPath(specifier, normalized);
-    if (maybeTs) return loadTsModule(maybeTs, overrides);
-    return require(specifier);
-  };
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(normalized),
-    __filename: normalized,
-    console,
-    process,
-    setTimeout,
-    clearTimeout,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: normalized });
-  return mod.exports;
+  return loadTsRuntimeModule(file, { mocks: overrides });
 }
 
 const { applyPaintPartMutation } = loadTsModule(

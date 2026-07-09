@@ -1,58 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 const moduleCache = new Map();
 
-function resolveTsPath(specifier, fromFile) {
-  if (specifier.startsWith('.')) {
-    const resolved = path.resolve(path.dirname(fromFile), specifier);
-    const candidates = [resolved, resolved.replace(/\.js$/i, '.ts'), resolved.replace(/\.js$/i, '.js')];
-    for (const candidate of candidates) {
-      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
-    }
-  }
-  return null;
-}
-
 function loadTsModule(file) {
-  const normalized = path.resolve(file);
-  if (moduleCache.has(normalized)) return moduleCache.get(normalized).exports;
-
-  const source = fs.readFileSync(normalized, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: normalized,
-  }).outputText;
-
-  const mod = { exports: {} };
-  moduleCache.set(normalized, mod);
-  const localRequire = specifier => {
-    const maybeTs = resolveTsPath(specifier, normalized);
-    if (maybeTs) return loadTsModule(maybeTs);
-    return require(specifier);
-  };
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(normalized),
-    __filename: normalized,
-    console,
-    process,
-    setTimeout,
-    clearTimeout,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: normalized });
-  return mod.exports;
+  return loadTsRuntimeModule(file, { cache: moduleCache });
 }
 
 const { createProfileDoorVisual } = loadTsModule(

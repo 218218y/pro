@@ -3,12 +3,9 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { createRequire } from 'node:module';
 import test from 'node:test';
 import { readSourceText } from '../tools/wp_source_text.mjs';
-
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+import { transformTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
 async function loadHitIdentityOwner() {
   const doorPartHelperShim = `
@@ -50,13 +47,10 @@ function __wp_isDrawerLikePartId(partId) {
     'canvas hit identity fixture must inline the door-part helper shim'
   );
 
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.ES2022,
-      target: ts.ScriptTarget.ES2022,
-      importsNotUsedAsValues: ts.ImportsNotUsedAsValues.Remove,
-    },
-  }).outputText;
+  const transpiled = transformTsRuntimeModule(source, 'canvas_picking_hit_identity_fixture.ts', {
+    target: 'es2022',
+    esbuildOptions: { format: 'esm' },
+  });
 
   const dir = mkdtempSync(join(tmpdir(), 'wardrobepro-canvas-hit-identity-'));
   const file = join(dir, 'canvas_picking_hit_identity_fixture.mjs');

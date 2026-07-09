@@ -1,13 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 const serviceApiDimensionConstants = Object.freeze({
   DEFAULT_CORNER_WIDTH: 120,
   DEFAULT_CORNER_DOORS: 3,
@@ -63,15 +58,6 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
     process.cwd(),
     'esm/native/ui/react/tabs/structure_tab_actions_controller_runtime.ts'
   );
-  const source = fs.readFileSync(file, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: file,
-  }).outputText;
-  const mod = { exports: {} };
   const localRequire = specifier => {
     if (specifier === '../actions/room_actions.js') {
       return {
@@ -183,51 +169,11 @@ function loadStructureActionsControllerModule(calls, overrides = {}) {
         structureTabReportNonFatal: (...args) => calls.push(['reportNonFatal', ...args]),
       };
     }
-    if (specifier.startsWith('.')) {
-      const resolved = path.resolve(path.dirname(file), specifier);
-      const candidates = [resolved, resolved.replace(/\.js$/i, '.ts'), `${resolved}.ts`];
-      for (const candidate of candidates) {
-        if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
-          const source = fs.readFileSync(candidate, 'utf8');
-          const transpiled = ts.transpileModule(source, {
-            compilerOptions: {
-              module: ts.ModuleKind.CommonJS,
-              target: ts.ScriptTarget.ES2020,
-            },
-            fileName: candidate,
-          }).outputText;
-          const childMod = { exports: {} };
-          const childSandbox = {
-            module: childMod,
-            exports: childMod.exports,
-            require: localRequire,
-            __dirname: path.dirname(candidate),
-            __filename: candidate,
-            console,
-            process,
-            setTimeout,
-            clearTimeout,
-          };
-          vm.runInNewContext(transpiled, childSandbox, { filename: candidate });
-          return childMod.exports;
-        }
-      }
-    }
-    return require(specifier);
+    return undefined;
   };
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(file),
-    __filename: file,
-    console,
-    process,
-    setTimeout,
-    clearTimeout,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  return mod.exports;
+  return loadTsRuntimeModule(file, {
+    mock: specifier => localRequire(specifier),
+  });
 }
 
 test('[structure-actions-controller] hinge controller gates build-visible hinge maps through canonical seams', () => {

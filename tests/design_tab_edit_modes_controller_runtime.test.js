@@ -1,27 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
-
+import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 function loadDesignTabEditModesControllerModule(calls) {
   const file = path.join(
     process.cwd(),
     'esm/native/ui/react/tabs/design_tab_edit_modes_controller_runtime.ts'
   );
-  const source = fs.readFileSync(file, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: file,
-  }).outputText;
-  const mod = { exports: {} };
   const localRequire = specifier => {
     if (specifier === '../actions/modes_actions.js') {
       return {
@@ -56,22 +42,17 @@ function loadDesignTabEditModesControllerModule(calls) {
         __designTabReportNonFatal: (...args) => calls.push(['reportNonFatal', ...args]),
       };
     }
-    return require(specifier);
+    return undefined;
   };
-  const sandbox = {
-    module: mod,
-    exports: mod.exports,
-    require: localRequire,
-    __dirname: path.dirname(file),
-    __filename: file,
-    console: {
-      warn: (...args) => calls.push(['console.warn', ...args]),
-      error: (...args) => calls.push(['console.error', ...args]),
+  return loadTsRuntimeModule(file, {
+    mock: specifier => localRequire(specifier),
+    globals: {
+      console: {
+        warn: (...args) => calls.push(['console.warn', ...args]),
+        error: (...args) => calls.push(['console.error', ...args]),
+      },
     },
-    process,
-  };
-  vm.runInNewContext(transpiled, sandbox, { filename: file });
-  return mod.exports;
+  });
 }
 
 test('[design-tab-edit-modes-controller] feature toggles and edit mode entry flow through one canonical owner', () => {
@@ -225,70 +206,52 @@ test('[design-tab-edit-modes-controller] failures stay reported without throwing
   // force enterPrimaryMode failures by overriding mocked calls after module load
   const realEnter = calls.push.bind(calls);
   calls.length = 0;
-  const hardFailMod = (() => {
-    const file = path.join(
-      process.cwd(),
-      'esm/native/ui/react/tabs/design_tab_edit_modes_controller_runtime.ts'
-    );
-    const source = fs.readFileSync(file, 'utf8');
-    const transpiled = ts.transpileModule(source, {
-      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-      fileName: file,
-    }).outputText;
-    const mod = { exports: {} };
-    const localRequire = specifier => {
-      if (specifier === '../actions/modes_actions.js') {
-        return {
-          enterPrimaryMode() {
-            throw new Error('enter-boom');
-          },
-          exitPrimaryMode() {
-            throw new Error('exit-boom');
-          },
-        };
-      }
-      if (specifier === '../actions/store_actions.js') {
-        return {
-          setUiFlag: (...args) => realEnter(['setUiFlag', ...args]),
-        };
-      }
-      if (specifier === '../actions/structural_build_refresh_actions.js') {
-        return {
-          applyStructuralUiMutation: (app, source, patch, applyDirectMutation, options) => {
-            realEnter(['applyStructuralUiMutation', app, source, patch, options]);
-            applyDirectMutation({
-              source,
-              immediate: options?.buildTiming === 'coalesced' ? false : true,
-            });
-            return { appliedViaActions: false, requestedBuild: false };
-          },
-        };
-      }
-      if (specifier === './design_tab_multicolor_shared.js') {
-        return {
-          __designTabReportNonFatal: (...args) => realEnter(['reportNonFatal', ...args]),
-        };
-      }
-      return require(specifier);
-    };
-    vm.runInNewContext(
-      transpiled,
-      {
-        module: mod,
-        exports: mod.exports,
-        require: localRequire,
-        __dirname: path.dirname(file),
-        __filename: file,
+  const hardFailMod = loadTsRuntimeModule(
+    path.join(process.cwd(), 'esm/native/ui/react/tabs/design_tab_edit_modes_controller_runtime.ts'),
+    {
+      mock: specifier => {
+        if (specifier === '../actions/modes_actions.js') {
+          return {
+            enterPrimaryMode() {
+              throw new Error('enter-boom');
+            },
+            exitPrimaryMode() {
+              throw new Error('exit-boom');
+            },
+          };
+        }
+        if (specifier === '../actions/store_actions.js') {
+          return {
+            setUiFlag: (...args) => realEnter(['setUiFlag', ...args]),
+          };
+        }
+        if (specifier === '../actions/structural_build_refresh_actions.js') {
+          return {
+            applyStructuralUiMutation: (app, source, patch, applyDirectMutation, options) => {
+              realEnter(['applyStructuralUiMutation', app, source, patch, options]);
+              applyDirectMutation({
+                source,
+                immediate: options?.buildTiming === 'coalesced' ? false : true,
+              });
+              return { appliedViaActions: false, requestedBuild: false };
+            },
+          };
+        }
+        if (specifier === './design_tab_multicolor_shared.js') {
+          return {
+            __designTabReportNonFatal: (...args) => realEnter(['reportNonFatal', ...args]),
+          };
+        }
+        return undefined;
+      },
+      globals: {
         console: {
           warn: (...args) => realEnter(['console.warn', ...args]),
           error: (...args) => realEnter(['console.error', ...args]),
         },
-        process,
       },
-      { filename: file }
-    );
-    return mod.exports;
-  })();
+    }
+  );
 
   const hardFail = hardFailMod.createDesignTabEditModesController({
     app: { id: 'app' },
