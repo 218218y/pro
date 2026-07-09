@@ -34,8 +34,9 @@ test('stage 5 does not remove current parser/AST infrastructure prematurely', ()
   const astAdapter = read('tools/wp_ast_adapter.mjs');
   const oxlintConfig = read('oxlint.config.mjs');
 
-  assert.match(eslintConfig, /@typescript-eslint\/parser/);
-  assert.match(eslintConfig, /parser:\s*tsParser/);
+  assert.match(eslintConfig, /import\('@typescript-eslint\/parser'\)/);
+  assert.match(eslintConfig, /PARSER_REMOVAL_DRY_RUN \? null : await loadTypeScriptEslint\(\)/);
+  assert.match(eslintConfig, /parser:\s*typeScriptEslint\.parser/);
   assert.match(astAdapter, /require\('typescript'\)/);
   assert.match(oxlintConfig, /plugins:\s*\[/);
   assert.match(oxlintConfig, /typescript/);

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
+import { bundleSources, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 
 const storeUiActionFiles = [
   '../esm/native/ui/react/actions/store_actions_ui.ts',

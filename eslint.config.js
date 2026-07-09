@@ -12,12 +12,23 @@
  *   node tools/wp_lint.js --profile migrate
  */
 
-import tsParser from '@typescript-eslint/parser';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
-
 const PROFILE = (process.env.WP_LINT_PROFILE || 'runtime').toLowerCase();
 const MIGRATE = PROFILE === 'migrate' || PROFILE === 'esm' || PROFILE === 'module';
 const PARSER_REMOVAL_DRY_RUN = PROFILE === 'parser-removal-dry-run' || PROFILE === 'js-only';
+
+async function loadTypeScriptEslint() {
+  const [parserModule, pluginModule] = await Promise.all([
+    import('@typescript-eslint/parser'),
+    import('@typescript-eslint/eslint-plugin'),
+  ]);
+
+  return {
+    parser: parserModule.default || parserModule,
+    plugin: pluginModule.default || pluginModule,
+  };
+}
+
+const typeScriptEslint = PARSER_REMOVAL_DRY_RUN ? null : await loadTypeScriptEslint();
 
 // --- Globals ---------------------------------------------------------------
 
@@ -254,7 +265,7 @@ const tsSourceConfig = PARSER_REMOVAL_DRY_RUN
         languageOptions: {
           ecmaVersion: 2022,
           sourceType: 'module',
-          parser: tsParser,
+          parser: typeScriptEslint.parser,
           parserOptions: {
             ecmaVersion: 2022,
             sourceType: 'module',
@@ -263,7 +274,7 @@ const tsSourceConfig = PARSER_REMOVAL_DRY_RUN
           globals: browserBuiltins,
         },
         plugins: {
-          '@typescript-eslint': tsPlugin,
+          '@typescript-eslint': typeScriptEslint.plugin,
         },
         rules: {
           ...baseBrowserRules,

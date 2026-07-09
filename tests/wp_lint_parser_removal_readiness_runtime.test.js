@@ -92,7 +92,7 @@ test('parser removal readiness treats no-undef as a JS/tools ESLint rule, not a 
   const noUndef = rows.find(row => row.rule === 'no-undef');
   assert.equal(noUndef.ready, true);
   assert.equal(noUndef.futureOwner, 'ESLint JS/tools + TypeScript typecheck');
-  assert.match(noUndef.blockingCommand, /lint:js/);
+  assert.match(noUndef.blockingCommand, /lint:js:strict/);
   assert.match(noUndef.notes, /Not a TS\/TSX parser-removal blocker/);
 });
 
@@ -104,10 +104,18 @@ test('parser removal readiness is wired into lint contracts and toolchain surfac
   );
   assert.equal(pkg.scripts['lint:js'], 'node tools/wp_lint.js --profile parser-removal-dry-run');
   assert.equal(
+    pkg.scripts['lint:js:strict'],
+    'node tools/wp_lint.js --profile parser-removal-dry-run --strict'
+  );
+  assert.equal(
     pkg.scripts['lint:parser-removal-dry-run'],
     'node tools/wp_lint.js --profile parser-removal-dry-run'
   );
   assert.match(pkg.scripts['lint:contracts'], /lint:parser-removal-readiness/);
   assert.match(pkg.scripts['test:toolchain-surfaces'], /wp_lint_parser_removal_readiness_runtime\.test\.js/);
   assert.match(pkg.scripts['test:toolchain-surfaces'], /wp_lint_parser_removal_dry_run_runtime\.test\.js/);
+  assert.match(
+    pkg.scripts['test:toolchain-surfaces'],
+    /wp_lint_parser_removal_package_independence_runtime\.test\.js/
+  );
 });

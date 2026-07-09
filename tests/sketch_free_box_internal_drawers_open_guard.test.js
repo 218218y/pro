@@ -9,7 +9,7 @@ test('free-box sketch doors can follow global open during interior edit modes', 
   const shared = read('esm/native/services/doors_runtime_shared.ts');
   const runtimeSupport = read('esm/native/runtime/doors_runtime_support.ts');
   const runtimeModes = read('esm/native/runtime/doors_runtime_support_modes.ts');
-  const runtimeEntries = read('esm/native/runtime/doors_runtime_support_entries.ts');
+  const _runtimeEntries = read('esm/native/runtime/doors_runtime_support_entries.ts');
   const motion = [
     read('esm/native/platform/render_loop_motion.ts'),
     read('esm/native/platform/render_loop_motion_frame_state.ts'),

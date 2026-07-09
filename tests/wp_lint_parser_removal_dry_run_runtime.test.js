@@ -52,8 +52,12 @@ test('parser-removal dry-run profile is exposed through npm scripts without chan
     'node tools/wp_lint.js --profile parser-removal-dry-run'
   );
   assert.equal(pkg.scripts['lint:js'], 'node tools/wp_lint.js --profile parser-removal-dry-run');
+  assert.equal(
+    pkg.scripts['lint:js:strict'],
+    'node tools/wp_lint.js --profile parser-removal-dry-run --strict'
+  );
   assert.equal(pkg.scripts['lint:legacy'], 'node tools/wp_lint.js --profile migrate');
-  assert.match(pkg.scripts['quality:ts-modern'], /lint:js/);
+  assert.match(pkg.scripts['quality:ts-modern'], /lint:js:strict/);
   assert.match(pkg.scripts['quality:ts-modern'], /lint:ts-modern:syntax/);
   assert.match(pkg.scripts['quality:ts-modern'], /lint:contracts/);
   assert.doesNotMatch(pkg.scripts['quality:ts-modern'], /lint:legacy/);

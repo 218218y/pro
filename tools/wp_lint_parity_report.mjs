@@ -96,10 +96,11 @@ const GATES = [
   },
   {
     gate: 'lint JS/parser-removal dry-run',
-    command: 'npm run lint:parser-removal-dry-run',
+    command: 'npm run lint:js:strict',
     blocker: 'yes',
     role: 'ESLint profile that excludes TS/TSX and keeps JS/tools/tests/config coverage, including `no-undef`.',
-    status: 'blocking dry-run; proves TS/TSX can leave `@typescript-eslint/parser` while JS remains linted',
+    status:
+      'strict blocking dry-run with 0 JS warnings; proves TS/TSX can leave `@typescript-eslint/parser` while JS remains linted',
   },
   {
     gate: 'oxlint syntax',
@@ -186,7 +187,7 @@ export async function createRawLintParityMarkdown() {
     '',
     '<!-- Tool-owned report target. Regenerate with: npm run lint:parity-report -->',
     '',
-    'Stage 5 keeps the legacy ESLint compatibility gate intact while promoting the JS-only ESLint dry-run, Oxlint syntax, and custom lint contracts to blocking parser-removal readiness gates. The report explains what is covered, which command owns each rule, and why TS/TSX is not removed from `@typescript-eslint/parser` until the next dry-run.',
+    'Stage 5 keeps the legacy ESLint compatibility gate intact while promoting the JS-only ESLint dry-run, Oxlint syntax, and custom lint contracts to blocking parser-removal readiness gates. The report explains what is covered, which command owns each rule, and why TS/TSX is still not removed from `@typescript-eslint/parser` until the final removal step.',
     '',
     '## Gate comparison',
     '',
@@ -245,7 +246,7 @@ export async function createRawLintParityMarkdown() {
     '- Do not remove `@typescript-eslint` yet.',
     '- Do not update to TypeScript 7 yet.',
     '- Do not swap `wp_ast_adapter` away from TypeScript yet.',
-    '- Keep `lint:legacy` as a temporary blocking compatibility gate; the final split is `lint:js` / `lint:parser-removal-dry-run`, `lint:ts-modern:syntax`, `lint:contracts`, and `typecheck:*`.',
+    '- Keep `lint:legacy` as a temporary blocking compatibility gate; the final split is `lint:js:strict` / `lint:parser-removal-dry-run`, `lint:ts-modern:syntax`, `lint:contracts`, and `typecheck:*`.',
     '- `quality:ts-modern` is the dry-run gate bundle for that final split; it intentionally excludes `lint:legacy`.',
     '- `lint:ts-modern:type-aware` remains audit-only with known diagnostics; it is not a Stage 5 blocker.',
     ''

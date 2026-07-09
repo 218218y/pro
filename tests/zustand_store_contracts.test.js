@@ -12,8 +12,8 @@ function read(rel) {
 const plan = read('esm/native/builder/plan.ts');
 const provide = read('esm/native/builder/provide.ts');
 const scheduler = read('esm/native/builder/scheduler.ts');
-const schedulerRuntime = read('esm/native/builder/scheduler_runtime.ts');
-const schedulerShared = read('esm/native/builder/scheduler_shared.ts');
+const _schedulerRuntime = read('esm/native/builder/scheduler_runtime.ts');
+const _schedulerShared = read('esm/native/builder/scheduler_shared.ts');
 const schedulerSharedBuildPlan = read('esm/native/builder/scheduler_shared_build_plan.ts');
 const cfgAccess = readFirstExisting(['../esm/native/runtime/cfg_access.ts'], import.meta.url);
 const cfgAccessBundle = normalizeWhitespace(

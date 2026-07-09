@@ -24,8 +24,8 @@ Stage 5 purpose: keep the existing ESLint compatibility gate intact while promot
 
 ## Migration policy
 
-- `lint:legacy` remains a temporary blocking compatibility gate while `lint:parser-removal-dry-run` proves the future JS-only ESLint split.
+- `lint:legacy` remains a temporary blocking compatibility gate while `lint:js:strict` proves the future JS-only ESLint split with 0 warnings.
 - `lint:ts-modern:syntax` is now a blocking Oxlint syntax gate; it must stay at 0 diagnostics before later parser-removal work.
 - `lint:ts-modern:type-aware` is audit-only because `oxlint-tsgolint` targets the TypeScript 7/type-aware path and the project is intentionally still on the current TypeScript lane.
 - `lint:contracts` owns project-specific rules that should not depend on `@typescript-eslint/parser` long term, including the lint architecture contracts.
-- Removing `@typescript-eslint/parser` from TS/TSX is blocked until `npm run lint:parser-removal-readiness`, `npm run lint:parser-removal-dry-run`, and the parity report all stay green.
+- Removing `@typescript-eslint/parser` from TS/TSX is blocked until `npm run lint:parser-removal-readiness`, `npm run lint:js:strict`, `npm run lint:parser-removal-dry-run`, and the parity report all stay green.

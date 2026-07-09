@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-import { bundleSources, readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
+import { bundleSources, assertMatchesAll, assertLacksAll } from './_source_bundle.js';
 
 function read(rel) {
   return fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');

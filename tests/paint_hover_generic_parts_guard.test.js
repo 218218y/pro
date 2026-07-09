@@ -15,7 +15,7 @@ const hoverFlowNonSplitPreviewDoor = readFileSync(
   'esm/native/services/canvas_picking_hover_flow_nonsplit_preview_door.ts',
   'utf8'
 );
-const hoverTargets = readFileSync('esm/native/services/canvas_picking_door_hover_targets.ts', 'utf8');
+const _hoverTargets = readFileSync('esm/native/services/canvas_picking_door_hover_targets.ts', 'utf8');
 const hoverTargetsHit = readFileSync('esm/native/services/canvas_picking_door_hover_targets_hit.ts', 'utf8');
 const hoverTargetsHitPaint = readFileSync(
   'esm/native/services/canvas_picking_door_hover_targets_hit_paint.ts',
@@ -111,15 +111,15 @@ ${hoverFlowCore}
 ${hoverFlowNonSplit}
 ${hoverFlowNonSplitPreview}
 ${hoverFlowNonSplitPreviewDoor}`;
-const hoverTargetsNorm = normalizeWhitespace(hoverTargetsHit);
-const hoverModesNorm = normalizeWhitespace(hoverModes);
-const genericPaintHoverNorm = normalizeWhitespace(genericPaintHover);
+const _hoverTargetsNorm = normalizeWhitespace(hoverTargetsHit);
+const _hoverModesNorm = normalizeWhitespace(hoverModes);
+const _genericPaintHoverNorm = normalizeWhitespace(genericPaintHover);
 const genericPaintHoverFlowNorm = normalizeWhitespace(genericPaintHoverFlow);
-const genericPaintHoverPreviewNorm = normalizeWhitespace(genericPaintHoverPreview);
+const _genericPaintHoverPreviewNorm = normalizeWhitespace(genericPaintHoverPreview);
 const genericPaintHoverPreviewObjectsNorm = normalizeWhitespace(genericPaintHoverPreviewObjects);
-const genericPaintHoverPreviewCornerNorm = normalizeWhitespace(genericPaintHoverPreviewCorner);
-const genericPaintHoverPreviewBoundsNorm = normalizeWhitespace(genericPaintHoverPreviewBounds);
-const genericPaintHoverSharedNorm = normalizeWhitespace(genericPaintHoverShared);
+const _genericPaintHoverPreviewCornerNorm = normalizeWhitespace(genericPaintHoverPreviewCorner);
+const _genericPaintHoverPreviewBoundsNorm = normalizeWhitespace(genericPaintHoverPreviewBounds);
+const _genericPaintHoverSharedNorm = normalizeWhitespace(genericPaintHoverShared);
 const materialsApplyNorm = normalizeWhitespace(materialsApply);
 const renderPreviewSketchOpsNorm = normalizeWhitespace(`${renderPreviewSketchOps}
 ${renderPreviewSketchPipeline}
@@ -277,7 +277,7 @@ test('paint door hover in paint mode resolves only the topmost eligible hit, so 
 
 test('cornice paint keeps classic group paint while wave fascia click, hover, render, and live refresh stay per segment', () => {
   const paintFlow = readFileSync('esm/native/services/canvas_picking_paint_targets.ts', 'utf8');
-  const paintApply = readFileSync('esm/native/services/canvas_picking_paint_flow_apply.ts', 'utf8');
+  const _paintApply = readFileSync('esm/native/services/canvas_picking_paint_flow_apply.ts', 'utf8');
   const paintApplyTargets = readFileSync(
     'esm/native/services/canvas_picking_paint_flow_apply_targets.ts',
     'utf8'

@@ -176,7 +176,7 @@ test('saved swatches delete is app-scoped single-flight across controllers and r
   });
 
   const first = controllerA.deleteSelected(savedColors[0]);
-  const duplicate = controllerB.deleteSelected(savedColors[0]);
+  const _duplicate = controllerB.deleteSelected(savedColors[0]);
   await Promise.resolve();
   assert.equal(deleteCalls, 1);
 

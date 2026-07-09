@@ -43,7 +43,7 @@ const commandsAccess = readSource('../esm/native/runtime/commands_access.ts', im
 const storageAccess = readSource('../esm/native/runtime/storage_access.ts', import.meta.url);
 const threeAccess = readSource('../esm/native/runtime/three_access.ts', import.meta.url);
 const bootEntry = readSource('../esm/native/runtime/boot_entry_access.ts', import.meta.url);
-const bootMain = readSource('../esm/native/platform/boot_main.ts', import.meta.url);
+const _bootMain = readSource('../esm/native/platform/boot_main.ts', import.meta.url);
 const bootFinalizers = read('esm/native/services/boot_finalizers.ts');
 
 const smokeBundlePaths = [

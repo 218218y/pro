@@ -29,7 +29,7 @@ const renderOpsBundle = normalizeWhitespace(
     .map(rel => fs.readFileSync(new URL(rel, import.meta.url), 'utf8'))
     .join('\n\n')
 );
-const room = normalizeWhitespace(
+const _room = normalizeWhitespace(
   fs.readFileSync(new URL('../esm/native/builder/room.ts', import.meta.url), 'utf8')
 );
 const roomSharedTypes = normalizeWhitespace(

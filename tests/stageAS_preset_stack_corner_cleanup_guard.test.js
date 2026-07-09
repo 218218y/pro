@@ -10,7 +10,7 @@ test('[stageAS-final] preset/stack/corner surfaces stop introducing fresh AnyRec
   const cornerGeom = read('esm/native/builder/corner_geometry_plan.ts');
   const cornerCarcass = read('esm/native/builder/corner_wing_carcass_emit.ts');
   const cornerCarcassShared = read('esm/native/builder/corner_wing_carcass_shared.ts');
-  const cornerCarcassShell = read('esm/native/builder/corner_wing_carcass_shell.ts');
+  const _cornerCarcassShell = read('esm/native/builder/corner_wing_carcass_shell.ts');
 
   assert.match(
     moduleCfg,

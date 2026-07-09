@@ -156,7 +156,7 @@ test('[design-tab-edit-modes-controller] feature toggles and edit mode entry flo
 test('[design-tab-edit-modes-controller] failures stay reported without throwing', () => {
   const calls = [];
   const mod = loadDesignTabEditModesControllerModule(calls);
-  const controller = mod.createDesignTabEditModesController({
+  const _controller = mod.createDesignTabEditModesController({
     app: { id: 'app' },
     feedback: {
       toast() {
@@ -181,7 +181,7 @@ test('[design-tab-edit-modes-controller] failures stay reported without throwing
   // monkey-patch mocked runtime to throw through local calls list inspection path
   calls.length = 0;
   const failingMod = loadDesignTabEditModesControllerModule(calls);
-  const failing = failingMod.createDesignTabEditModesController({
+  const _failing = failingMod.createDesignTabEditModesController({
     app: { id: 'app' },
     feedback: {
       toast() {

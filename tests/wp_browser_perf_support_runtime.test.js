@@ -47,7 +47,6 @@ import {
   rankRepeatedMetricPressure,
   rankRuntimeRecoveryDebt,
   rankRuntimeRecoveryHangover,
-  rankRuntimeRecoverySequences,
   rankRuntimeStatusTransitions,
   summarizeBrowserPerfResult,
 } from '../tools/wp_browser_perf_support.js';

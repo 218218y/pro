@@ -22,7 +22,7 @@ const UNDECIDED_TARGETS = new Set(['manual-review', 'under-review', 'todo', 'tbd
 const OXLINT_SYNTAX_COMMAND = 'npm run lint:ts-modern:syntax';
 const CUSTOM_CONTRACT_COMMAND = 'npm run lint:contracts';
 const TYPECHECK_COMMAND = 'npm run typecheck:runtime && npm run typecheck:dist';
-const JS_ESLINT_COMMAND = 'npm run lint:js';
+const JS_ESLINT_COMMAND = 'npm run lint:js:strict';
 
 const CUSTOM_CONTRACT_RULES = new Set([
   'no-restricted-globals',
@@ -66,6 +66,11 @@ function isParserRemovalDryRunScript(command) {
 
 function isLintJsSeparated(pkg) {
   return isParserRemovalDryRunScript(getScript(pkg, 'lint:js'));
+}
+
+function isLintJsStrictSeparated(pkg) {
+  const command = getScript(pkg, 'lint:js:strict');
+  return isParserRemovalDryRunScript(command) && command.includes('--strict');
 }
 
 function isParserRemovalDryRunWired(pkg) {
@@ -156,6 +161,10 @@ function evaluateRow(row, context) {
         issues.push(
           'no-undef requires lint:js to use the parser-removal dry-run ESLint gate for JS/tools/config'
         );
+      if (!context.lintJsStrictSeparated)
+        issues.push(
+          'no-undef requires lint:js:strict to use parser-removal dry-run with --strict for zero-warning JS/tools coverage'
+        );
       if (!context.parserRemovalDryRunWired)
         issues.push('no-undef requires lint:parser-removal-dry-run to be wired');
       if (!context.typecheckWired) issues.push('no-undef TS/TSX replacement requires typecheck gates');
@@ -185,6 +194,7 @@ export async function collectLintParserRemovalReadiness(options = {}) {
         : getLintArchitectureBaselineCount(),
     lintContractsWired: isLintContractsScriptWired(pkg),
     lintJsSeparated: isLintJsSeparated(pkg),
+    lintJsStrictSeparated: isLintJsStrictSeparated(pkg),
     parserRemovalDryRunWired: isParserRemovalDryRunWired(pkg),
     oxlintSyntaxBlocking: isBlockingOxlintSyntaxScript(pkg),
     typecheckWired: isTypecheckGateWired(pkg),

@@ -83,7 +83,7 @@ const cornerWingCellDoors = normalizeWhitespace(
     read('esm/native/builder/corner_wing_cell_doors_full.ts'),
   ].join('\n')
 );
-const cornerWingCell = normalizeWhitespace(
+const _cornerWingCell = normalizeWhitespace(
   [
     read('esm/native/builder/corner_wing_cell_emit.ts'),
     read('esm/native/builder/corner_wing_cell_interiors.ts'),
@@ -111,7 +111,7 @@ const cornerConnectorCornice = normalizeWhitespace(
 );
 const cornerConnectorInterior = read('esm/native/builder/corner_connector_interior_emit.ts');
 const cornerConnectorInteriorShared = read('esm/native/builder/corner_connector_interior_shared.ts');
-const cornerConnectorOwner = read('esm/native/builder/corner_connector_emit.ts');
+const _cornerConnectorOwner = read('esm/native/builder/corner_connector_emit.ts');
 const cornerConnectorShared = read('esm/native/builder/corner_connector_emit_shared.ts');
 const cornerConnectorDoor = normalizeWhitespace(
   [

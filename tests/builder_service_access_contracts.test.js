@@ -19,15 +19,6 @@ const smokeBundlePaths = [
   '../esm/native/platform/smoke_checks_shared.ts',
 ];
 
-function stripNoise(input) {
-  return String(input || '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/\/\/.*$/gm, '')
-    .replace(/'[^'\\]*(?:\\.[^'\\]*)*'/g, "''")
-    .replace(/"[^"\\]*(?:\\.[^"\\]*)*"/g, '""')
-    .replace(/`[^`\\]*(?:\\.[^`\\]*)*`/g, '``');
-}
-
 const servicesApi = readSource('../esm/native/services/api.ts', import.meta.url);
 const servicesPlatformSurface = readSource(
   '../esm/native/services/api_services_platform_surface.ts',
@@ -164,7 +155,7 @@ const platformBundle = bundleSources(
   import.meta.url,
   { stripNoise: true }
 );
-const autosaveBundle = bundleSources(
+const _autosaveBundle = bundleSources(
   [
     '../esm/native/services/autosave.ts',
     '../esm/native/services/autosave_shared.ts',
@@ -183,7 +174,7 @@ const autosaveBundle = bundleSources(
   { stripNoise: true }
 );
 
-const room = read('esm/native/builder/room.ts');
+const _room = read('esm/native/builder/room.ts');
 const roomActiveState = read('esm/native/builder/room_active_state.ts');
 const roomLifecycle = read('esm/native/builder/room_lifecycle.ts');
 const roomDesignSurface = read('esm/native/builder/room_design_surface.ts');
