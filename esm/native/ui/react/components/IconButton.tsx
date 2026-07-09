@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import type { ButtonHTMLAttributes } from 'react';
 
 type IconButtonVariant = 'default' | 'step' | 'light' | 'header' | 'camera';
@@ -28,7 +29,9 @@ function variantToClass(v: IconButtonVariant | undefined): string {
   }
 }
 
-export function IconButton(props: IconButtonProps) {
+export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(props, ref) {
   const { variant = 'default', className, type, ...rest } = props;
-  return <button {...rest} type={type ?? 'button'} className={cx(variantToClass(variant), className)} />;
-}
+  return (
+    <button {...rest} ref={ref} type={type ?? 'button'} className={cx(variantToClass(variant), className)} />
+  );
+});

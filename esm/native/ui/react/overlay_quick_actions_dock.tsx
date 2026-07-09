@@ -3,6 +3,7 @@ import type { CSSProperties, ReactElement } from 'react';
 
 import { getCloudSyncServiceMaybe, getDocumentMaybe, runPerfAction } from '../../services/api.js';
 import { createCloudSyncUiActionController } from './cloud_sync_ui_action_controller_runtime.js';
+import { IconButton } from './components/IconButton.js';
 import { createQuickActionsDockController } from './overlay_quick_actions_dock_controller_runtime.js';
 import { useApp, useExportActions, useUiFeedback } from './hooks.js';
 import { reportOverlayAppNonFatal } from './overlay_app_shared.js';
@@ -137,10 +138,10 @@ export function QuickActionsDock(): ReactElement {
   return (
     <div className="wp-qa-dock" style={dockStyle}>
       <div ref={anchorRef} className="wp-qa-anchor" style={{ pointerEvents: 'auto' }}>
-        <button
+        <IconButton
           ref={toggleRef}
-          type="button"
-          className="cam-btn wp-qa-toggle hint-bottom"
+          variant="camera"
+          className="wp-qa-toggle hint-bottom"
           data-testid="quick-actions-toggle-button"
           data-tooltip={menuOpen ? 'סגור תפריט' : 'פתח תפריט'}
           aria-label={menuOpen ? 'סגור תפריט' : 'פתח תפריט'}
@@ -153,7 +154,7 @@ export function QuickActionsDock(): ReactElement {
           }}
         >
           <i className={menuOpen ? 'fas fa-times' : 'fas fa-arrow-right'} />
-        </button>
+        </IconButton>
 
         {menuOpen ? (
           <button

@@ -75,6 +75,12 @@ forbidPattern('esm/native/ui/react/components/LazyErrorBoundary.tsx', /className
 
 requirePattern('esm/native/ui/react/components/IconButton.tsx', /type IconButtonVariant =[\s\S]*\| 'camera'/);
 requirePattern('esm/native/ui/react/components/IconButton.tsx', /case 'camera':[\s\S]*return 'cam-btn';/);
+requirePattern('esm/native/ui/react/components/IconButton.tsx', /import \{ forwardRef \} from 'react';/);
+requirePattern(
+  'esm/native/ui/react/components/IconButton.tsx',
+  /export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>\(function IconButton\(/
+);
+requirePattern('esm/native/ui/react/components/IconButton.tsx', /ref=\{ref\}/);
 requirePattern(
   'esm/native/ui/react/components/IconButton.tsx',
   /className=\{cx\(variantToClass\(variant\), className\)\}/
@@ -176,6 +182,21 @@ requirePatternIn(
 );
 forbidPattern('esm/native/ui/react/overlay_notes_controls.tsx', /className=\{`cam-btn/);
 forbidPattern('esm/native/ui/react/overlay_notes_controls.tsx', /className="cam-btn/);
+
+requirePattern(
+  'esm/native/ui/react/overlay_quick_actions_dock.tsx',
+  /import \{ IconButton \} from '\.\/components\/IconButton\.js';/
+);
+const quickActionsDock = read('esm/native/ui/react/overlay_quick_actions_dock.tsx');
+requirePatternIn(
+  'esm/native/ui/react/overlay_quick_actions_dock.tsx quick-actions toggle',
+  quickActionsDock,
+  /<IconButton[\s\S]*ref=\{toggleRef\}[\s\S]*variant="camera"[\s\S]*className="wp-qa-toggle hint-bottom"[\s\S]*data-testid="quick-actions-toggle-button"[\s\S]*data-tooltip=\{menuOpen \?[\s\S]*aria-label=\{menuOpen \?[\s\S]*quickActionsController\.toggleMenu\(\{[\s\S]*event,[\s\S]*op: 'quick-actions:toggle-menu',[\s\S]*setMenuOpen,[\s\S]*fas fa-times[\s\S]*fas fa-arrow-right/
+);
+forbidPattern(
+  'esm/native/ui/react/overlay_quick_actions_dock.tsx',
+  /className="cam-btn wp-qa-toggle hint-bottom"/
+);
 
 requirePattern(
   'esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx',

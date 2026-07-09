@@ -34,6 +34,7 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   const lazyErrorBoundary = read('esm/native/ui/react/components/LazyErrorBoundary.tsx');
   const overlayTopControls = read('esm/native/ui/react/overlay_top_controls.tsx');
   const viewerNotesControls = read('esm/native/ui/react/overlay_notes_controls.tsx');
+  const quickActionsDock = read('esm/native/ui/react/overlay_quick_actions_dock.tsx');
   const overlayFeedbackHost = read('esm/native/ui/react/overlay_feedback_host.tsx');
   const orderPdfEditorSurface = read('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx');
   const designPanel = read('esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx');
@@ -66,6 +67,12 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   assert.match(button, /case 'cancel':[\s\S]*return 'btn btn-cancel';/);
   assert.match(iconButton, /type IconButtonVariant =[\s\S]*\| 'camera'/);
   assert.match(iconButton, /case 'camera':[\s\S]*return 'cam-btn';/);
+  assert.match(iconButton, /import \{ forwardRef \} from 'react';/);
+  assert.match(
+    iconButton,
+    /export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>\(function IconButton\(/
+  );
+  assert.match(iconButton, /ref=\{ref\}/);
   assert.match(iconButton, /className=\{cx\(variantToClass\(variant\), className\)\}/);
   assert.match(appErrorBoundary, /import \{ Button \} from '\.\/Button\.js';/);
   assert.match(
@@ -141,6 +148,12 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   );
   assert.doesNotMatch(viewerNotesControls, /className=\{`cam-btn/);
   assert.doesNotMatch(viewerNotesControls, /className="cam-btn/);
+  assert.match(quickActionsDock, /import \{ IconButton \} from '\.\/components\/IconButton\.js';/);
+  assert.match(
+    quickActionsDock,
+    /<IconButton[\s\S]*ref=\{toggleRef\}[\s\S]*variant="camera"[\s\S]*className="wp-qa-toggle hint-bottom"[\s\S]*data-testid="quick-actions-toggle-button"[\s\S]*data-tooltip=\{menuOpen \?[\s\S]*aria-label=\{menuOpen \?[\s\S]*quickActionsController\.toggleMenu\(\{[\s\S]*event,[\s\S]*op: 'quick-actions:toggle-menu',[\s\S]*setMenuOpen,[\s\S]*fas fa-times[\s\S]*fas fa-arrow-right/
+  );
+  assert.doesNotMatch(quickActionsDock, /className="cam-btn wp-qa-toggle hint-bottom"/);
   assert.match(orderPdfEditorSurface, /import \{ Button \} from '\.\.\/components\/Button\.js';/);
   assert.match(
     orderPdfEditorSurface,
