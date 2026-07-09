@@ -103,6 +103,79 @@ forbidPatternIn(
   undoRedoControls,
   /className="cam-btn hint-bottom"/
 );
+const cameraControls = section(
+  'esm/native/ui/react/overlay_top_controls.tsx',
+  'function CameraControls()',
+  'export function OverlayTopControls()'
+);
+requirePatternIn(
+  'esm/native/ui/react/overlay_top_controls.tsx CameraControls',
+  cameraControls,
+  /<IconButton[\s\S]*variant="camera"[\s\S]*onClick=\{\(\) => move\('front'\)\}[\s\S]*fas fa-border-all/
+);
+requirePatternIn(
+  'esm/native/ui/react/overlay_top_controls.tsx CameraControls',
+  cameraControls,
+  /<IconButton[\s\S]*variant="camera"[\s\S]*onClick=\{\(\) => move\('front-zoom'\)\}[\s\S]*fas fa-search-plus/
+);
+requirePatternIn(
+  'esm/native/ui/react/overlay_top_controls.tsx CameraControls',
+  cameraControls,
+  /<IconButton[\s\S]*variant="camera"[\s\S]*onClick=\{\(\) => move\('perspective'\)\}[\s\S]*fas fa-cube[\s\S]*scaleX\(-1\)/
+);
+requirePatternIn(
+  'esm/native/ui/react/overlay_top_controls.tsx CameraControls',
+  cameraControls,
+  /<IconButton[\s\S]*variant="camera"[\s\S]*onClick=\{\(\) => move\('perspective-left'\)\}[\s\S]*fas fa-cube/
+);
+forbidPatternIn(
+  'esm/native/ui/react/overlay_top_controls.tsx CameraControls',
+  cameraControls,
+  /className="cam-btn"/
+);
+forbidPatternIn(
+  'esm/native/ui/react/overlay_top_controls.tsx CameraControls',
+  cameraControls,
+  /role="button"/
+);
+forbidPatternIn(
+  'esm/native/ui/react/overlay_top_controls.tsx CameraControls',
+  cameraControls,
+  /tabIndex=\{0\}/
+);
+
+requirePattern(
+  'esm/native/ui/react/overlay_notes_controls.tsx',
+  /import \{ IconButton \} from '\.\/components\/IconButton\.js';/
+);
+const viewerNotesControls = read('esm/native/ui/react/overlay_notes_controls.tsx');
+requirePatternIn(
+  'esm/native/ui/react/overlay_notes_controls.tsx',
+  viewerNotesControls,
+  /<IconButton[\s\S]*variant="camera"[\s\S]*wp-viewer-note-btn hint-bottom[\s\S]*data-testid="viewer-note-draw-mode-button"[\s\S]*stopViewerNotesControlEvent\(event\);[\s\S]*toggleNoteEditMode\(\);/
+);
+requirePatternIn(
+  'esm/native/ui/react/overlay_notes_controls.tsx',
+  viewerNotesControls,
+  /<IconButton[\s\S]*variant="camera"[\s\S]*wp-viewer-contents-btn hint-bottom[\s\S]*data-testid="viewer-contents-toggle-button"[\s\S]*stopViewerNotesControlEvent\(event\);[\s\S]*toggleContentsVisibility\(\);/
+);
+requirePatternIn(
+  'esm/native/ui/react/overlay_notes_controls.tsx',
+  viewerNotesControls,
+  /<IconButton[\s\S]*variant="camera"[\s\S]*wp-viewer-measurement-btn hint-bottom[\s\S]*data-testid="viewer-measurement-toggle-button"[\s\S]*stopViewerNotesControlEvent\(event\);[\s\S]*toggleMeasurementMode\(\);/
+);
+requirePatternIn(
+  'esm/native/ui/react/overlay_notes_controls.tsx',
+  viewerNotesControls,
+  /<IconButton[\s\S]*variant="camera"[\s\S]*wp-viewer-measurement-mode-btn hint-bottom[\s\S]*data-testid="viewer-measurement-mode-part-button"[\s\S]*stopViewerNotesControlEvent\(event\);[\s\S]*selectMeasurementToolMode\('part'\);/
+);
+requirePatternIn(
+  'esm/native/ui/react/overlay_notes_controls.tsx',
+  viewerNotesControls,
+  /<IconButton[\s\S]*variant="camera"[\s\S]*wp-viewer-measurement-mode-btn hint-bottom[\s\S]*data-testid="viewer-measurement-mode-points-button"[\s\S]*stopViewerNotesControlEvent\(event\);[\s\S]*selectMeasurementToolMode\('points'\);/
+);
+forbidPattern('esm/native/ui/react/overlay_notes_controls.tsx', /className=\{`cam-btn/);
+forbidPattern('esm/native/ui/react/overlay_notes_controls.tsx', /className="cam-btn/);
 
 requirePattern(
   'esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx',

@@ -15,6 +15,7 @@ import {
 
 import { enterPrimaryMode, exitPrimaryMode } from './actions/modes_actions.js';
 import { setUiNotesEnabled, setUiShowContents } from './actions/store_actions.js';
+import { IconButton } from './components/IconButton.js';
 import { useApp, useMeta, useModeSelector, useUiFeedback, useUiSelector } from './hooks.js';
 import { reportOverlayAppNonFatal } from './overlay_app_shared.js';
 
@@ -201,9 +202,9 @@ export function ViewerNotesControls(): ReactElement {
     <div className="wp-viewer-notes-controls">
       <div className="wp-viewer-notes-controls-row">
         <div className="wp-viewer-notes-wrap">
-          <button
-            type="button"
-            className={`cam-btn wp-viewer-note-btn hint-bottom${notesDrawMode ? ' is-on' : ''}`}
+          <IconButton
+            variant="camera"
+            className={`wp-viewer-note-btn hint-bottom${notesDrawMode ? ' is-on' : ''}`}
             data-tooltip={notesDrawMode ? 'סיום עריכת הערות' : 'הערה'}
             aria-label={notesDrawMode ? 'סיום עריכת הערות' : 'הערה'}
             aria-pressed={notesDrawMode}
@@ -216,7 +217,7 @@ export function ViewerNotesControls(): ReactElement {
             <span className="wp-viewer-note-btn-letter" aria-hidden="true">
               A
             </span>
-          </button>
+          </IconButton>
 
           <button
             type="button"
@@ -234,9 +235,9 @@ export function ViewerNotesControls(): ReactElement {
           </button>
         </div>
 
-        <button
-          type="button"
-          className={`cam-btn wp-viewer-contents-btn hint-bottom${showContents ? ' is-on' : ''}`}
+        <IconButton
+          variant="camera"
+          className={`wp-viewer-contents-btn hint-bottom${showContents ? ' is-on' : ''}`}
           data-tooltip={showContents ? 'הסתר תכולה' : 'הצג תכולה'}
           aria-label={showContents ? 'הסתר תכולה' : 'הצג תכולה'}
           aria-pressed={showContents}
@@ -247,12 +248,12 @@ export function ViewerNotesControls(): ReactElement {
           }}
         >
           <i className="fas fa-tshirt" aria-hidden="true" />
-        </button>
+        </IconButton>
 
         <div className="wp-viewer-measurement-wrap">
-          <button
-            type="button"
-            className={`cam-btn wp-viewer-measurement-btn hint-bottom${measurementMode ? ' is-on' : ''}`}
+          <IconButton
+            variant="camera"
+            className={`wp-viewer-measurement-btn hint-bottom${measurementMode ? ' is-on' : ''}`}
             data-tooltip={measurementMode ? 'סיום סרגל מדידה' : 'סרגל מדידה'}
             aria-label={measurementMode ? 'סיום סרגל מדידה' : 'סרגל מדידה'}
             aria-pressed={measurementMode}
@@ -263,7 +264,7 @@ export function ViewerNotesControls(): ReactElement {
             }}
           >
             <i className="fas fa-ruler-combined" aria-hidden="true" />
-          </button>
+          </IconButton>
 
           {measurementMode ? (
             <div
@@ -272,9 +273,9 @@ export function ViewerNotesControls(): ReactElement {
               aria-label="בחירת סוג מדידה"
               data-testid="viewer-measurement-mode-menu"
             >
-              <button
-                type="button"
-                className={`cam-btn wp-viewer-measurement-mode-btn hint-bottom${
+              <IconButton
+                variant="camera"
+                className={`wp-viewer-measurement-mode-btn hint-bottom${
                   measurementToolMode === 'part' ? ' is-on' : ''
                 }`}
                 data-tooltip="מדידה לפי חלק"
@@ -287,10 +288,10 @@ export function ViewerNotesControls(): ReactElement {
                 }}
               >
                 <i className="fas fa-vector-square" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className={`cam-btn wp-viewer-measurement-mode-btn hint-bottom${
+              </IconButton>
+              <IconButton
+                variant="camera"
+                className={`wp-viewer-measurement-mode-btn hint-bottom${
                   measurementToolMode === 'points' ? ' is-on' : ''
                 }`}
                 data-tooltip="מדידה לפי מיקום מדוייק"
@@ -303,7 +304,7 @@ export function ViewerNotesControls(): ReactElement {
                 }}
               >
                 <i className="fas fa-crosshairs" aria-hidden="true" />
-              </button>
+              </IconButton>
             </div>
           ) : null}
         </div>

@@ -33,6 +33,7 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   const appErrorBoundary = read('esm/native/ui/react/components/AppErrorBoundary.tsx');
   const lazyErrorBoundary = read('esm/native/ui/react/components/LazyErrorBoundary.tsx');
   const overlayTopControls = read('esm/native/ui/react/overlay_top_controls.tsx');
+  const viewerNotesControls = read('esm/native/ui/react/overlay_notes_controls.tsx');
   const overlayFeedbackHost = read('esm/native/ui/react/overlay_feedback_host.tsx');
   const orderPdfEditorSurface = read('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx');
   const designPanel = read('esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx');
@@ -93,6 +94,53 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
     /<IconButton[\s\S]*variant="camera"[\s\S]*className="hint-bottom"[\s\S]*data-tooltip="[^"]*Ctrl\+Y\)"[\s\S]*disabled=\{!status\.canRedo\}[\s\S]*event\.preventDefault\(\);[\s\S]*redo\(\);[\s\S]*fas fa-redo/
   );
   assert.doesNotMatch(undoRedoControls, /className="cam-btn hint-bottom"/);
+  const cameraControls = readBetween(
+    overlayTopControls,
+    'function CameraControls()',
+    'export function OverlayTopControls()'
+  );
+  assert.match(
+    cameraControls,
+    /<IconButton[\s\S]*variant="camera"[\s\S]*onClick=\{\(\) => move\('front'\)\}[\s\S]*fas fa-border-all/
+  );
+  assert.match(
+    cameraControls,
+    /<IconButton[\s\S]*variant="camera"[\s\S]*onClick=\{\(\) => move\('front-zoom'\)\}[\s\S]*fas fa-search-plus/
+  );
+  assert.match(
+    cameraControls,
+    /<IconButton[\s\S]*variant="camera"[\s\S]*onClick=\{\(\) => move\('perspective'\)\}[\s\S]*fas fa-cube[\s\S]*scaleX\(-1\)/
+  );
+  assert.match(
+    cameraControls,
+    /<IconButton[\s\S]*variant="camera"[\s\S]*onClick=\{\(\) => move\('perspective-left'\)\}[\s\S]*fas fa-cube/
+  );
+  assert.doesNotMatch(cameraControls, /className="cam-btn"/);
+  assert.doesNotMatch(cameraControls, /role="button"/);
+  assert.doesNotMatch(cameraControls, /tabIndex=\{0\}/);
+  assert.match(viewerNotesControls, /import \{ IconButton \} from '\.\/components\/IconButton\.js';/);
+  assert.match(
+    viewerNotesControls,
+    /<IconButton[\s\S]*variant="camera"[\s\S]*wp-viewer-note-btn hint-bottom[\s\S]*data-testid="viewer-note-draw-mode-button"[\s\S]*stopViewerNotesControlEvent\(event\);[\s\S]*toggleNoteEditMode\(\);/
+  );
+  assert.match(
+    viewerNotesControls,
+    /<IconButton[\s\S]*variant="camera"[\s\S]*wp-viewer-contents-btn hint-bottom[\s\S]*data-testid="viewer-contents-toggle-button"[\s\S]*stopViewerNotesControlEvent\(event\);[\s\S]*toggleContentsVisibility\(\);/
+  );
+  assert.match(
+    viewerNotesControls,
+    /<IconButton[\s\S]*variant="camera"[\s\S]*wp-viewer-measurement-btn hint-bottom[\s\S]*data-testid="viewer-measurement-toggle-button"[\s\S]*stopViewerNotesControlEvent\(event\);[\s\S]*toggleMeasurementMode\(\);/
+  );
+  assert.match(
+    viewerNotesControls,
+    /<IconButton[\s\S]*variant="camera"[\s\S]*wp-viewer-measurement-mode-btn hint-bottom[\s\S]*data-testid="viewer-measurement-mode-part-button"[\s\S]*stopViewerNotesControlEvent\(event\);[\s\S]*selectMeasurementToolMode\('part'\);/
+  );
+  assert.match(
+    viewerNotesControls,
+    /<IconButton[\s\S]*variant="camera"[\s\S]*wp-viewer-measurement-mode-btn hint-bottom[\s\S]*data-testid="viewer-measurement-mode-points-button"[\s\S]*stopViewerNotesControlEvent\(event\);[\s\S]*selectMeasurementToolMode\('points'\);/
+  );
+  assert.doesNotMatch(viewerNotesControls, /className=\{`cam-btn/);
+  assert.doesNotMatch(viewerNotesControls, /className="cam-btn/);
   assert.match(orderPdfEditorSurface, /import \{ Button \} from '\.\.\/components\/Button\.js';/);
   assert.match(
     orderPdfEditorSurface,

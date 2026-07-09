@@ -124,49 +124,21 @@ function CameraControls() {
 
   return (
     <div className="camera-controls">
-      <button
-        type="button"
-        className="cam-btn"
-        role="button"
-        tabIndex={0}
-        data-tooltip="חזית מלאה"
-        onClick={() => move('front')}
-      >
+      <IconButton variant="camera" data-tooltip="חזית מלאה" onClick={() => move('front')}>
         <i className="fas fa-border-all" />
-      </button>
+      </IconButton>
 
-      <button
-        type="button"
-        className="cam-btn"
-        role="button"
-        tabIndex={0}
-        data-tooltip="תקריב"
-        onClick={() => move('front-zoom')}
-      >
+      <IconButton variant="camera" data-tooltip="תקריב" onClick={() => move('front-zoom')}>
         <i className="fas fa-search-plus" />
-      </button>
+      </IconButton>
 
-      <button
-        type="button"
-        className="cam-btn"
-        role="button"
-        tabIndex={0}
-        data-tooltip="מבט מימין"
-        onClick={() => move('perspective')}
-      >
+      <IconButton variant="camera" data-tooltip="מבט מימין" onClick={() => move('perspective')}>
         <i className="fas fa-cube" style={{ transform: 'scaleX(-1)' }} />
-      </button>
+      </IconButton>
 
-      <button
-        type="button"
-        className="cam-btn"
-        role="button"
-        tabIndex={0}
-        data-tooltip="מבט משמאל"
-        onClick={() => move('perspective-left')}
-      >
+      <IconButton variant="camera" data-tooltip="מבט משמאל" onClick={() => move('perspective-left')}>
         <i className="fas fa-cube" />
-      </button>
+      </IconButton>
     </div>
   );
 }
