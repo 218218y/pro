@@ -2,6 +2,7 @@ import { Component } from 'react';
 import type { ReactNode } from 'react';
 
 import { reportError, getDocumentMaybe, getWindowMaybe, asRecord } from '../../../services/api.js';
+import { Button } from './Button.js';
 
 type Props = {
   label?: string;
@@ -66,9 +67,9 @@ export class AppErrorBoundary extends Component<Props, State> {
           משהו כאן נפל. אם זה קורה אחרי עדכון — לפעמים זה קאש ישן. נסה רענון.
         </div>
         <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button type="button" className="btn btn-save" onClick={() => tryReloadViaDi(this.props.app)}>
+          <Button variant="save" onClick={() => tryReloadViaDi(this.props.app)}>
             רענן
-          </button>
+          </Button>
           <div style={{ fontSize: 12, opacity: 0.85, alignSelf: 'center' }}>אם זה חוזר: Ctrl+F5</div>
         </div>
       </div>

@@ -32,6 +32,25 @@ requirePattern('esm/native/ui/react/components/ColorSwatch.tsx', /export functio
 requirePattern('esm/native/ui/react/components/ColorSwatch.tsx', /function handleActivation/);
 
 requirePattern(
+  'esm/native/ui/react/components/AppErrorBoundary.tsx',
+  /import \{ Button \} from '\.\/Button\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/components/AppErrorBoundary.tsx',
+  /<Button[\s\S]*variant="save"[\s\S]*onClick=\{\(\) => tryReloadViaDi\(this\.props\.app\)\}[\s\S]*רענן/
+);
+forbidPattern('esm/native/ui/react/components/AppErrorBoundary.tsx', /className="btn btn-save"/);
+requirePattern(
+  'esm/native/ui/react/components/LazyErrorBoundary.tsx',
+  /import \{ Button \} from '\.\/Button\.js';/
+);
+requirePattern(
+  'esm/native/ui/react/components/LazyErrorBoundary.tsx',
+  /<Button[\s\S]*variant="save"[\s\S]*onClick=\{\(\) => tryRecoverOrReload\(this\.props\.app, error\)\}[\s\S]*רענן/
+);
+forbidPattern('esm/native/ui/react/components/LazyErrorBoundary.tsx', /className="btn btn-save"/);
+
+requirePattern(
   'esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx',
   /import \{ Button, ColorSwatch, OptionButton, OptionButtonGroup, ToggleRow \}/
 );

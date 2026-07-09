@@ -9,6 +9,7 @@ import {
   asRecord,
 } from '../../../services/api.js';
 import { requestReleaseAssetRecovery } from '../release_asset_recovery.js';
+import { Button } from './Button.js';
 
 type Props = {
   label?: string;
@@ -87,13 +88,9 @@ export class LazyErrorBoundary extends Component<Props, State> {
           לפעמים זה קורה בגלל קאש ישן או קובץ JS שחסר בשרת. נסה לרענן.
         </div>
         <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            className="btn btn-save"
-            onClick={() => tryRecoverOrReload(this.props.app, error)}
-          >
+          <Button variant="save" onClick={() => tryRecoverOrReload(this.props.app, error)}>
             רענן
-          </button>
+          </Button>
           <div style={{ fontSize: 12, opacity: 0.85, alignSelf: 'center' }}>אם זה חוזר: Ctrl+F5</div>
         </div>
       </div>
