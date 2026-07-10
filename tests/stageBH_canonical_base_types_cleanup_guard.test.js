@@ -54,7 +54,8 @@ test('[stageBH] canonical base types retire legacy weak aliases and function con
     /function bindCallable\(owner: UnknownRecord, key: string\): BuilderCallable \| null \{/
   );
 
-  assert.match(browserEnv, /readGlobalScopeCandidate\(\(\) => Function\('return this'\)\(\)\)/);
+  assert.match(browserEnv, /readGlobalScopeCandidate\(\(\) => globalThis\)/);
+  assert.doesNotMatch(browserEnv, /Function\('return this'\)/);
   assert.doesNotMatch(browserEnv, /typeof self !== 'undefined'/);
   assert.doesNotMatch(browserEnv, /typeof global !== 'undefined'/);
 

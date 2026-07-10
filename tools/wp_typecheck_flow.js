@@ -31,6 +31,7 @@ export function runTypecheckFlow({
   warn = console.warn,
   spawnImpl,
   existsImpl,
+  platform = process.platform,
 } = {}) {
   if (Array.isArray(unknownOptions) && unknownOptions.length > 0) {
     return {
@@ -41,7 +42,7 @@ export function runTypecheckFlow({
     };
   }
 
-  const tscRef = resolveTsc(root, { env, node, spawnImpl, existsImpl });
+  const tscRef = resolveTsc(root, { env, node, spawnImpl, existsImpl, platform });
   if (!tscRef) {
     return {
       ok: false,

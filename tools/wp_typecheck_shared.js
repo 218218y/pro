@@ -23,9 +23,15 @@ function createTypecheckToolLabel(root, tool) {
 
 export function resolveTsc(
   root,
-  { env = process.env, node = process.execPath, spawnImpl = spawnSync, existsImpl } = {}
+  {
+    env = process.env,
+    node = process.execPath,
+    spawnImpl = spawnSync,
+    existsImpl,
+    platform = process.platform,
+  } = {}
 ) {
-  const tool = resolveTypeScriptTool(root, { env, node, spawnImpl, existsImpl });
+  const tool = resolveTypeScriptTool(root, { env, node, spawnImpl, existsImpl, platform });
   if (!tool) return null;
 
   if (tool.kind === 'blocked') {

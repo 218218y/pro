@@ -146,6 +146,59 @@ test('TypeScript resolver exposes node-script, direct-bin, manual-bin and system
   assert.deepEqual(system.argsPrefix, []);
 });
 
+test('TypeScript resolver avoids npm .cmd shims on Windows local installs', () => {
+  const root = tempDir();
+  const packageBin = path.join(root, 'node_modules', 'typescript', 'bin', 'tsc');
+  const cmdShim = path.join(root, 'node_modules', '.bin', 'tsc.cmd');
+  fs.mkdirSync(path.dirname(packageBin), { recursive: true });
+  fs.mkdirSync(path.dirname(cmdShim), { recursive: true });
+  fs.writeFileSync(packageBin, '#!/usr/bin/env node\nimport "../lib/tsc.js";\n', 'utf8');
+  fs.writeFileSync(cmdShim, '@ECHO off\r\n', 'utf8');
+
+  const resolved = resolveTypeScriptTool(root, {
+    node: 'C:\\Program Files\\nodejs\\node.exe',
+    env: {},
+    platform: 'win32',
+  });
+
+  assert.equal(resolved.kind, 'node-script');
+  assert.equal(resolved.command, 'C:\\Program Files\\nodejs\\node.exe');
+  assert.deepEqual(resolved.argsPrefix, [packageBin]);
+  assert.equal(resolved.source, 'local-node-modules-package-bin');
+  assert.equal(resolved.bin, packageBin);
+});
+
+test('typecheck flow runs Windows package bin through node instead of tsc.cmd', () => {
+  const root = tempDir();
+  const configPath = resolveTypecheckConfigPath(root, 'boot');
+  const packageBin = path.join(root, 'node_modules', 'typescript', 'bin', 'tsc');
+  const cmdShim = path.join(root, 'node_modules', '.bin', 'tsc.cmd');
+  fs.writeFileSync(configPath, '{"compilerOptions":{}}\n', 'utf8');
+  fs.mkdirSync(path.dirname(packageBin), { recursive: true });
+  fs.mkdirSync(path.dirname(cmdShim), { recursive: true });
+  fs.writeFileSync(packageBin, '#!/usr/bin/env node\nimport "../lib/tsc.js";\n', 'utf8');
+  fs.writeFileSync(cmdShim, '@ECHO off\r\n', 'utf8');
+
+  const invocations = [];
+  const result = runTypecheckFlow({
+    root,
+    node: 'C:\\Program Files\\nodejs\\node.exe',
+    platform: 'win32',
+    runAll: false,
+    mode: 'boot',
+    spawnImpl(cmd, args, options) {
+      invocations.push({ cmd, args, cwd: options.cwd });
+      return { status: 0 };
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(invocations.length, 1);
+  assert.equal(invocations[0].cmd, 'C:\\Program Files\\nodejs\\node.exe');
+  assert.deepEqual(invocations[0].args.slice(0, 3), [packageBin, '-p', configPath]);
+  assert.doesNotMatch(invocations[0].cmd, /tsc\.cmd$/i);
+});
+
 test('typecheck flow rejects unknown options and CI system tsc fallback', () => {
   const root = tempDir();
   fs.writeFileSync(resolveTypecheckConfigPath(root, 'runtime'), '{"compilerOptions":{}}\n', 'utf8');

@@ -83,26 +83,52 @@ export function isReleaseOrCiEnv(env = process.env) {
 
 export function resolveLocalTypeScriptTool(
   root,
-  { node = process.execPath, existsImpl = fs.existsSync } = {}
+  { node = process.execPath, existsImpl = fs.existsSync, platform = process.platform } = {}
 ) {
-  const directBinNames = process.platform === 'win32' ? ['tsc.cmd', 'tsc'] : ['tsc'];
-  const localCandidates = [
-    ...directBinNames.map(name => ({
-      kind: 'direct-bin',
-      path: path.join(root, 'node_modules', '.bin', name),
-      source: 'local-node-modules-bin',
-    })),
-    {
-      kind: 'direct-bin',
-      path: path.join(root, 'node_modules', 'typescript', 'bin', 'tsc'),
-      source: 'local-node-modules-package-bin',
-    },
-    {
-      kind: 'node-script',
-      path: path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js'),
-      source: 'local-node-modules-lib-fallback',
-    },
-  ];
+  const packageBin = path.join(root, 'node_modules', 'typescript', 'bin', 'tsc');
+  const libFallback = path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js');
+
+  const localCandidates =
+    platform === 'win32'
+      ? [
+          {
+            kind: 'node-script',
+            path: packageBin,
+            source: 'local-node-modules-package-bin',
+          },
+          {
+            kind: 'node-script',
+            path: libFallback,
+            source: 'local-node-modules-lib-fallback',
+          },
+          {
+            kind: 'direct-bin',
+            path: path.join(root, 'node_modules', '.bin', 'tsc.cmd'),
+            source: 'local-node-modules-bin',
+          },
+          {
+            kind: 'direct-bin',
+            path: path.join(root, 'node_modules', '.bin', 'tsc'),
+            source: 'local-node-modules-bin',
+          },
+        ]
+      : [
+          {
+            kind: 'direct-bin',
+            path: path.join(root, 'node_modules', '.bin', 'tsc'),
+            source: 'local-node-modules-bin',
+          },
+          {
+            kind: 'direct-bin',
+            path: packageBin,
+            source: 'local-node-modules-package-bin',
+          },
+          {
+            kind: 'node-script',
+            path: libFallback,
+            source: 'local-node-modules-lib-fallback',
+          },
+        ];
   const candidate = existingCandidate(localCandidates, existsImpl);
 
   if (!candidate) return null;
@@ -112,8 +138,11 @@ export function resolveLocalTypeScriptTool(
   return createBinTool(candidate.kind, candidate.path, { source: candidate.source });
 }
 
-export function resolveLocalTypeScriptBin(root, { existsImpl = fs.existsSync } = {}) {
-  const tool = resolveLocalTypeScriptTool(root, { existsImpl });
+export function resolveLocalTypeScriptBin(
+  root,
+  { existsImpl = fs.existsSync, platform = process.platform } = {}
+) {
+  const tool = resolveLocalTypeScriptTool(root, { existsImpl, platform });
   return tool?.script || tool?.bin || tool?.command || null;
 }
 
@@ -133,9 +162,15 @@ export function probeSystemTsc({ env = process.env, spawnImpl = spawnSync, cwd =
 
 export function resolveTypeScriptTool(
   root,
-  { env = process.env, node = process.execPath, spawnImpl = spawnSync, existsImpl = fs.existsSync } = {}
+  {
+    env = process.env,
+    node = process.execPath,
+    spawnImpl = spawnSync,
+    existsImpl = fs.existsSync,
+    platform = process.platform,
+  } = {}
 ) {
-  const localTool = resolveLocalTypeScriptTool(root, { node, existsImpl });
+  const localTool = resolveLocalTypeScriptTool(root, { node, existsImpl, platform });
   if (localTool) return localTool;
 
   if (!isSystemTscAllowed(env)) return null;

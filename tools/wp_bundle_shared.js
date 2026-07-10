@@ -89,12 +89,15 @@ export async function loadViteBuild() {
   return null;
 }
 
-export function resolveTscBin(root) {
-  return resolveLocalTypeScriptBin(root, { existsImpl: exists });
+export function resolveTscBin(root, { platform = process.platform } = {}) {
+  return resolveLocalTypeScriptBin(root, { existsImpl: exists, platform });
 }
 
-export function resolveTscInvocation(root, { env = process.env, spawnImpl } = {}) {
-  const tool = resolveTypeScriptTool(root, { env, spawnImpl, existsImpl: exists });
+export function resolveTscInvocation(
+  root,
+  { env = process.env, spawnImpl, platform = process.platform } = {}
+) {
+  const tool = resolveTypeScriptTool(root, { env, spawnImpl, existsImpl: exists, platform });
   if (!tool) return null;
   if (tool.kind === 'blocked') {
     return {
