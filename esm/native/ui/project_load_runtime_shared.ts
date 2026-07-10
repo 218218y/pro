@@ -1,4 +1,5 @@
 import type { ProjectFileInputTargetLike, ProjectFileLike, ProjectFileLoadEventLike } from '../../../types';
+import { buildProjectFileFlightFingerprint } from './project_file_flight_key.js';
 
 export type ClickableLike = { click: () => void };
 type ProjectLoadRuntimeRecordLike = Record<string, unknown>;
@@ -71,20 +72,15 @@ function readProjectLoadInputFile(value: unknown): ProjectLoadFileLike | null {
   return isProjectFileLike(first) ? first : null;
 }
 
-function readProjectLoadFlightPart(value: unknown): string {
-  return value == null ? '' : String(value);
-}
-
 function readProjectLoadFileFlightKey(file: ProjectLoadFileLike | null | undefined): string | null {
   if (!file) return null;
-  const name = readProjectLoadFlightPart(typeof file.name === 'string' ? file.name : '');
-  const size = readProjectLoadFlightPart(typeof file.size === 'number' ? file.size : '');
-  const type = readProjectLoadFlightPart(typeof file.type === 'string' ? file.type : '');
-  const lastModified = readProjectLoadFlightPart(
-    typeof file.lastModified === 'number' ? file.lastModified : ''
-  );
-  if (!name && !size && !type && !lastModified) return null;
-  return `file:${[name, size, type, lastModified].join('|')}`;
+  const fingerprint = buildProjectFileFlightFingerprint({
+    name: typeof file.name === 'string' ? file.name : undefined,
+    size: typeof file.size === 'number' ? file.size : undefined,
+    mediaType: typeof file.type === 'string' ? file.type : undefined,
+    lastModified: typeof file.lastModified === 'number' ? file.lastModified : undefined,
+  });
+  return fingerprint ? `file:${fingerprint}` : null;
 }
 
 function readProjectLoadTargetValueFlightKey(value: unknown): string | null {

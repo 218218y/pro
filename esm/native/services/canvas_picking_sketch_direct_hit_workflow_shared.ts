@@ -13,6 +13,7 @@ export { asConfig } from './canvas_picking_sketch_direct_hit_workflow_contracts.
 
 export {
   asRecord,
+  readRecordIdentity,
   readRecordString,
   readRecordNumber,
   readRecordBoolean,

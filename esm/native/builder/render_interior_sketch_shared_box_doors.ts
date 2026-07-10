@@ -1,6 +1,7 @@
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 import type { SketchBoxDoorExtra } from './render_interior_sketch_shared_types.js';
 import { readObject } from './render_interior_sketch_shared_records.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 export function readSketchBoxDoors(value: unknown): SketchBoxDoorExtra[] {
   const rec = readObject<InteriorValueRecord>(value);
@@ -17,5 +18,5 @@ export function readSketchBoxDoors(value: unknown): SketchBoxDoorExtra[] {
 export function readSketchBoxDoorId(value: unknown, defaultValue: string): string {
   const rec = readObject<InteriorValueRecord>(value);
   const raw = rec ? rec.id : null;
-  return raw != null && String(raw) ? String(raw) : defaultValue;
+  return formatIdentityValue(readIdentityValue(raw)) || defaultValue;
 }

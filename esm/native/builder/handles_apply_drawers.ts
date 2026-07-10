@@ -2,6 +2,7 @@ import { getDrawersArray, getWardrobeGroup } from '../runtime/render_access.js';
 import { isDrawerBoxPartId, resolveDrawerBoxOwnerPartId } from '../features/part_identity/api.js';
 import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveManualHandleLocalPosition } from '../features/manual_handle_position.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { createHandleMeshV7 } from './handles_mesh.js';
 import type { HandlesApplyRuntime } from './handles_apply_shared.js';
 import { asNode, readBox3, readMatrix4, type NodeLike } from './handles_shared.js';
@@ -111,20 +112,20 @@ function resolveDrawerHandlePartId(node: NodeLike | null | undefined): string {
   const userData = node?.userData || {};
   const ownerPartId = resolveDrawerBoxOwnerPartId(userData);
   if (ownerPartId) return ownerPartId;
-  return userData.partId == null ? '' : String(userData.partId);
+  return formatIdentityValue(readIdentityValue(userData.partId));
 }
 
 function isDrawerBoxGroup(node: NodeLike | null | undefined): boolean {
   if (!node) return false;
   const userData = node.userData || {};
-  const partId = userData.partId ? String(userData.partId) : '';
+  const partId = formatIdentityValue(readIdentityValue(userData.partId));
   return userData.__wpDrawerBox === true || isDrawerBoxPartId(partId);
 }
 
 function isDrawerLikeGroup(node: NodeLike | null | undefined): boolean {
   if (!node || node.isGroup !== true) return false;
   const userData = node.userData || {};
-  const partId = userData.partId ? String(userData.partId) : '';
+  const partId = formatIdentityValue(readIdentityValue(userData.partId));
   if (isDrawerBoxGroup(node)) return false;
   if (!partId || !partId.includes('drawer')) return false;
   return (

@@ -33,10 +33,22 @@ export function MultiColorPanel(props: { embedded?: boolean } = {}) {
   const app = useApp();
   const enabled = useCfgSelector(selectIsMultiColorMode);
   const savedRaw = useCfgSelector(selectSavedColors);
-  const curtainChoiceRaw = useUiSelector(ui => String(ui.currentCurtainChoice || 'none'));
-  const mirrorDraftHeight = useUiSelector(ui => String(ui.currentMirrorDraftHeightCm || ''));
-  const mirrorDraftWidth = useUiSelector(ui => String(ui.currentMirrorDraftWidthCm || ''));
-  const primaryMode = useModeSelector(mode => String(mode.primary || 'none'));
+  const curtainChoiceRaw = useUiSelector(ui =>
+    typeof ui.currentCurtainChoice === 'string' && ui.currentCurtainChoice ? ui.currentCurtainChoice : 'none'
+  );
+  const mirrorDraftHeight = useUiSelector(ui =>
+    typeof ui.currentMirrorDraftHeightCm === 'string' || typeof ui.currentMirrorDraftHeightCm === 'number'
+      ? ui.currentMirrorDraftHeightCm.toString()
+      : ''
+  );
+  const mirrorDraftWidth = useUiSelector(ui =>
+    typeof ui.currentMirrorDraftWidthCm === 'string' || typeof ui.currentMirrorDraftWidthCm === 'number'
+      ? ui.currentMirrorDraftWidthCm.toString()
+      : ''
+  );
+  const primaryMode = useModeSelector(mode =>
+    typeof mode.primary === 'string' && mode.primary ? mode.primary : 'none'
+  );
   const saved = useMemo(() => normalizeSavedColors(savedRaw), [savedRaw]);
 
   // Tool-level state (paintColor) isn't in the store, so keep a small local mirror.
@@ -47,7 +59,7 @@ export function MultiColorPanel(props: { embedded?: boolean } = {}) {
     () =>
       createDesignTabMulticolorController({
         app,
-        getPaintActive: () => String(primaryMode || 'none').toLowerCase() === 'paint',
+        getPaintActive: () => primaryMode.toLowerCase() === 'paint',
         setPaintColor,
         reportNonFatal: (op, err, throttleMs) => __designTabReportNonFatal(app, op, err, throttleMs),
       }),
@@ -59,7 +71,7 @@ export function MultiColorPanel(props: { embedded?: boolean } = {}) {
   }, [multicolorController]);
 
   useEffect(() => {
-    const paintActive = String(primaryMode || 'none').toLowerCase() === 'paint';
+    const paintActive = primaryMode.toLowerCase() === 'paint';
     if (!enabled && paintActive) multicolorController.finishPaintMode();
   }, [enabled, primaryMode, multicolorController]);
 

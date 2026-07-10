@@ -52,11 +52,11 @@ type SavedModelsIdentifiedResult<
 };
 
 export function trimId(value: unknown): SavedModelId {
-  return String(value || '').trim();
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 export function trimName(value: unknown): string {
-  return String(value || '').trim();
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 export function buildActionSuccess<K extends SavedModelsActionKind>(

@@ -7,6 +7,7 @@ import type {
   StorageNamespaceLike,
   UnknownRecord,
 } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 export type ModelsOpts = ModelsLoadOptions;
 
@@ -92,8 +93,8 @@ export function isStorageLike(value: unknown): value is StorageLike {
 
 export function asMutableSavedModel(value: unknown): MutableSavedModel | null {
   if (!isObject(value)) return null;
-  const id = value.id != null ? String(value.id).trim() : '';
-  const name = value.name != null ? String(value.name).trim() : '';
+  const id = formatIdentityValue(readIdentityValue(value.id)).trim();
+  const name = typeof value.name === 'string' ? value.name.trim() : '';
   if (!id || !name) return null;
   return { ...value, id, name, isPreset: !!value.isPreset };
 }
@@ -136,11 +137,11 @@ export function normalizeModelsOpts(value: unknown): ModelsOpts {
 }
 
 export function readModelId(model: { id?: unknown } | null | undefined): string {
-  return model && model.id != null ? String(model.id).trim() : '';
+  return formatIdentityValue(readIdentityValue(model?.id)).trim();
 }
 
 export function readModelName(model: { name?: unknown } | null | undefined): string {
-  return model && model.name != null ? String(model.name).trim() : '';
+  return typeof model?.name === 'string' ? model.name.trim() : '';
 }
 
 export function markModelAsUserPreset(model: MutableSavedModel): void {

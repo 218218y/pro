@@ -102,16 +102,8 @@ function safeCall(fn: unknown): void {
   }
 }
 
-function safeKey(key: unknown): string {
-  try {
-    return String(key ?? '').trim();
-  } catch {
-    return '';
-  }
-}
-
-function safeUiKey(key: unknown): string {
-  const k = safeKey(key);
+function safeUiKey(key: string): string {
+  const k = key.trim();
   // Professional contract: UiRuntime keys are namespaced (prevents collisions/leaks).
   return k.startsWith('ui:') ? k : '';
 }

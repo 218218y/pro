@@ -2,6 +2,7 @@ import {
   INTERIOR_FITTINGS_DIMENSIONS,
   MATERIAL_DIMENSIONS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type { VerticalOccupancyRange } from './canvas_picking_manual_layout_sketch_vertical_stack.js';
 import type {
   PickSketchBoxSegmentArgs,
@@ -61,7 +62,7 @@ const VERTICAL_CONTENT_COLLISION_GAP_M = 0;
 
 function readStringId(item: RecordMap, defaultId: string): string {
   const id = readRecordValue(item, 'id');
-  return id != null && id !== '' ? String(id) : defaultId;
+  return formatIdentityValue(readIdentityValue(id)) || defaultId;
 }
 
 function clampUnit(value: number): number {
@@ -70,7 +71,7 @@ function clampUnit(value: number): number {
 }
 
 function shelfThicknessForVariant(variant: unknown, woodThick: number): number {
-  const kind = variant != null && variant !== '' ? String(variant) : 'regular';
+  const kind = typeof variant === 'string' && variant ? variant : 'regular';
   if (kind === 'glass') return MATERIAL_DIMENSIONS.glassShelf.thicknessM;
   if (kind === 'double') return Math.max(woodThick, woodThick * 2);
   return woodThick;
@@ -216,7 +217,9 @@ export function buildSketchBoxVerticalContentBlockers(
     const yNorm = readRecordNumber(shelf, 'yNorm');
     if (yNorm == null) continue;
     const centerY = bottomY + clampUnit(yNorm) * args.targetHeight;
-    const height = shelfThicknessForVariant(readRecordValue(shelf, 'variant'), args.woodThick);
+    const variantValue = readRecordValue(shelf, 'variant');
+    const variant = typeof variantValue === 'string' ? variantValue : 'regular';
+    const height = shelfThicknessForVariant(variant, args.woodThick);
     pushBlocker(blockers, {
       minY: centerY - height / 2,
       maxY: centerY + height / 2,
@@ -224,7 +227,7 @@ export function buildSketchBoxVerticalContentBlockers(
       index: i,
       id: readStringId(shelf, `box_shelf_${i}`),
       xNorm: readRecordNumber(shelf, 'xNorm') ?? 0.5,
-      variant: String(readRecordValue(shelf, 'variant') ?? 'regular'),
+      variant,
       depthM: readRecordNumber(shelf, 'depthM'),
       heightM: height,
     });

@@ -1,4 +1,5 @@
 import type { AppContainer, ModuleConfigLike, UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { resolveDrawerBoxOwnerPartId } from '../features/part_identity/api.js';
 import {
   isSketchInternalDrawerCassettePartId,
@@ -190,7 +191,7 @@ function readUserData(value: unknown): UnknownRecord | null {
 }
 
 function readString(value: unknown): string {
-  return typeof value === 'string' ? value : value == null ? '' : String(value);
+  return formatIdentityValue(readIdentityValue(value));
 }
 
 function stripSketchInternalDrawerSlotSuffix(partId: string): string {
@@ -661,8 +662,9 @@ export function removeStandardExternalDrawerFromConfig(
 }
 
 export function sameModuleKey(a: unknown, b: unknown): boolean {
-  if (a == null || b == null) return false;
-  return String(a) === String(b);
+  const left = readIdentityValue(a);
+  const right = readIdentityValue(b);
+  return left != null && right != null && formatIdentityValue(left) === formatIdentityValue(right);
 }
 
 function readModuleKeyFromUserData(ud: UnknownRecord | null): string {

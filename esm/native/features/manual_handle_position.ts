@@ -1,4 +1,5 @@
 import type { UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 export const MANUAL_HANDLE_POSITION_MODE = 'manual';
 export const MANUAL_HANDLE_POSITION_KEY_PREFIX = '__wp_manual_handle_position:';
@@ -52,11 +53,11 @@ function normalizeRect(rect: DoorRectLike | null | undefined): DoorRectLike | nu
 }
 
 export function manualHandlePositionKey(partId: unknown): string {
-  return `${MANUAL_HANDLE_POSITION_KEY_PREFIX}${String(partId ?? '')}`;
+  return `${MANUAL_HANDLE_POSITION_KEY_PREFIX}${formatIdentityValue(readIdentityValue(partId))}`;
 }
 
 export function isManualHandlePositionMode(value: unknown): boolean {
-  return String(value || '') === MANUAL_HANDLE_POSITION_MODE;
+  return value === MANUAL_HANDLE_POSITION_MODE;
 }
 
 function readManualHandlePositionString(value: string): ManualHandlePosition | null {
@@ -94,13 +95,13 @@ export function readManualHandlePositionForPart(
   alternatePartId?: unknown
 ): ManualHandlePosition | null {
   const hm = isRecord(handlesMap) ? handlesMap : null;
-  const pid = String(partId || '');
+  const pid = formatIdentityValue(readIdentityValue(partId));
   if (!hm || !pid) return null;
 
   const direct = readManualHandlePosition(hm[manualHandlePositionKey(pid)]);
   if (direct) return direct;
 
-  const alternate = String(alternatePartId || '');
+  const alternate = formatIdentityValue(readIdentityValue(alternatePartId));
   if (alternate && alternate !== pid) {
     return readManualHandlePosition(hm[manualHandlePositionKey(alternate)]);
   }

@@ -3,6 +3,7 @@
 // Keeps prompt/confirm/toast/browser-adapter lookup out of the owner installer.
 
 import type { AppContainer, UnknownRecord } from '../../../types/index.js';
+import { formatDisplayScalar, readDisplayScalar } from '../../shared/display_text_shared.js';
 
 import { getUiFeedback } from '../runtime/service_access.js';
 import {
@@ -66,7 +67,7 @@ export function createProjectIoFeedbackBridge(
     if (typeof rawShowToast === 'function') {
       try {
         rawShowToast(
-          String(message == null ? '' : message),
+          formatDisplayScalar(readDisplayScalar(message)),
           typeof type === 'string' && type ? type : undefined
         );
         return;
@@ -96,8 +97,8 @@ export function createProjectIoFeedbackBridge(
     if (typeof rawOpenCustomConfirm === 'function') {
       try {
         rawOpenCustomConfirm(
-          String(title == null ? '' : title),
-          String(message == null ? '' : message),
+          formatDisplayScalar(readDisplayScalar(title)),
+          formatDisplayScalar(readDisplayScalar(message)),
           onConfirmCb,
           onCancelCb
         );
@@ -108,7 +109,9 @@ export function createProjectIoFeedbackBridge(
     }
 
     try {
-      const ok = typeof confirmFn === 'function' ? !!confirmFn(String(message || title || '')) : false;
+      const confirmText =
+        formatDisplayScalar(readDisplayScalar(message)) || formatDisplayScalar(readDisplayScalar(title));
+      const ok = typeof confirmFn === 'function' ? !!confirmFn(confirmText) : false;
       if (ok) onConfirmCb();
       if (!ok && onCancelCb) onCancelCb();
     } catch (err) {

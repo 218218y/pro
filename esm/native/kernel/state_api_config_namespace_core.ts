@@ -102,7 +102,7 @@ export function installStateApiConfigNamespaceCore(ctx: StateApiConfigNamespaceC
 
   if (typeof configNs.map !== 'function') {
     configNs.map = function map(mapName: unknown) {
-      const key = String(mapName || '');
+      const key = typeof mapName === 'string' ? mapName : '';
       if (!key) return {};
       const snap = asRecord(safeCall(() => configNs.captureSnapshot?.())) || {};
       const v = snap[key];

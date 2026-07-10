@@ -1,6 +1,8 @@
 import type { AppContainer } from '../../../../types/app.js';
 import type { OrderPdfDraftLike } from '../../../../types/build.js';
 import type { ExportOrderPdfDeps } from './export_order_pdf_types.js';
+import { formatIdentityValue, readIdentityValue } from '../../../shared/identity_value_shared.js';
+import { readFiniteNumber, readInteger, readNumericInput } from '../../../shared/numeric_value_shared.js';
 
 import {
   DEFAULT_HEIGHT,
@@ -26,7 +28,7 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
   function getCfgString(cfg: Record<string, unknown>, key: string, defaultValue: string): string {
     try {
       const v = cfg[key];
-      return typeof v === 'string' ? v : v == null ? defaultValue : String(v);
+      return typeof v === 'string' ? v : defaultValue;
     } catch (e) {
       _exportReportNonFatalNoApp(`getCfgScalar:${key}`, e, 3000);
       return defaultValue;
@@ -37,8 +39,8 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
     try {
       const raw = asRecord(ui['raw']);
       const v = raw ? raw[key] : undefined;
-      const n = typeof v === 'number' ? v : parseFloat(String(v ?? ''));
-      return Number.isFinite(n) ? n : defaultValue;
+      const n = readFiniteNumber(readNumericInput(v));
+      return n ?? defaultValue;
     } catch (e) {
       _exportReportNonFatalNoApp(`getUiRawNumber:${key}`, e, 3000);
       return defaultValue;
@@ -49,8 +51,8 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
     try {
       const raw = asRecord(ui['raw']);
       const v = raw ? raw[key] : undefined;
-      const n = typeof v === 'number' ? v : parseInt(String(v ?? ''), 10);
-      return Number.isFinite(n) ? n : defaultValue;
+      const n = readInteger(readNumericInput(v));
+      return n ?? defaultValue;
     } catch (e) {
       _exportReportNonFatalNoApp(`getUiRawInt:${key}`, e, 3000);
       return defaultValue;
@@ -101,7 +103,7 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
           const u = ui || {};
           const raw = asRecord(u['raw']);
           const pos = u['singleDoorPos'] ?? raw?.['singleDoorPos'] ?? cfg['singleDoorPos'];
-          singleDoorPos = String(pos || 'left') === 'right' ? 'right' : 'left';
+          singleDoorPos = pos === 'right' ? 'right' : 'left';
         } catch (e) {
           _exportReportNonFatalNoApp('calcBodySplit.singleDoorPos', e, 3000);
           singleDoorPos = 'left';
@@ -149,9 +151,8 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
   function readCorniceLabel(ui: Record<string, unknown>): string {
     try {
       if (!readEnabledFlag(ui['hasCornice'])) return '';
-      const type = String(ui['corniceType'] ?? 'classic')
-        .trim()
-        .toLowerCase();
+      const rawType = ui['corniceType'];
+      const type = typeof rawType === 'string' ? rawType.trim().toLowerCase() : 'classic';
       return type === 'wave' ? 'גל' : 'רגיל';
     } catch (e) {
       _exportReportNonFatalNoApp('readCorniceLabel', e, 3000);
@@ -172,8 +173,9 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
     const height = getUiRawNumber(ui, 'height', DEFAULT_HEIGHT);
     const depth = getUiRawNumber(ui, 'depth', defaultDepth);
 
-    const selectedModelId = String(ui['selectedModelId'] || '').trim();
-    const doorStyleKey = String(ui['doorStyle'] ?? cfg['doorStyle'] ?? 'flat').trim();
+    const selectedModelId = formatIdentityValue(readIdentityValue(ui['selectedModelId'])).trim();
+    const rawDoorStyle = ui['doorStyle'] ?? cfg['doorStyle'];
+    const doorStyleKey = typeof rawDoorStyle === 'string' ? rawDoorStyle.trim() : 'flat';
 
     const typeHeb = wardrobeType === 'sliding' ? 'הזזה' : 'פתיחה';
     const materialHeb = boardMaterial === 'melamine' ? 'מלמין' : "סנדביץ'";
@@ -194,7 +196,7 @@ export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
       try {
         const m = getModelById(App, selectedModelId);
         const mRec = asRecord(m);
-        const rawName = String(mRec?.name ?? '').trim();
+        const rawName = typeof mRec?.name === 'string' ? mRec.name.trim() : '';
         const name = rawName.replace(/^⭐\s*/u, '').trim();
         if (name) lines.push(`דגם: ${name}`);
       } catch (e) {

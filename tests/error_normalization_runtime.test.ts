@@ -29,6 +29,26 @@ test('error normalization falls back for opaque values instead of returning an e
   });
 });
 
+test('error normalization never throws for circular objects or throwing getters', () => {
+  const circular: Record<string, unknown> = {};
+  circular.self = circular;
+  const throwingGetter = Object.defineProperty({}, 'message', {
+    get() {
+      throw new Error('getter exploded');
+    },
+  });
+
+  assert.deepEqual(normalizeUnknownError(circular, 'circular fallback'), {
+    message: 'circular fallback',
+  });
+  assert.deepEqual(normalizeUnknownError(throwingGetter, 'getter fallback'), {
+    message: 'getter fallback',
+  });
+  assert.deepEqual(normalizeUnknownError(Symbol('failure')), { message: 'Symbol(failure)' });
+  assert.deepEqual(normalizeUnknownError(12n), { message: '12' });
+  assert.deepEqual(normalizeUnknownError(false), { message: 'false' });
+});
+
 test('attachErrorMessage upgrades canonical failure payloads with normalized messages', () => {
   assert.deepEqual(attachErrorMessage({ ok: false, reason: 'error' }, 'string failure'), {
     ok: false,

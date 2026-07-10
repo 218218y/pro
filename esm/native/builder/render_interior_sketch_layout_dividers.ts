@@ -1,5 +1,6 @@
 import type { SketchBoxExtra, SketchDividerExtra } from './render_interior_sketch_shared.js';
 import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import {
   asRecordArray,
   readObject,
@@ -149,7 +150,7 @@ export const readSketchBoxHorizontalDividers = (box: unknown): SketchBoxHorizont
     const frontZ = toFiniteNumber(it.frontZ);
     const xNorm = clampUnit(it.xNorm);
     dividers.push({
-      id: it.id != null && it.id !== '' ? String(it.id) : `sbh_${i}`,
+      id: formatIdentityValue(readIdentityValue(it.id)) || `sbh_${i}`,
       yNorm,
       centered: Math.abs(yNorm - 0.5) <= 0.001,
       ...(frontZ != null ? { frontZ } : {}),

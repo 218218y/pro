@@ -94,6 +94,23 @@ function readWidgetPageRef(widget: unknown, PDFName: PdfNameLike): unknown {
   return null;
 }
 
+function readPdfReferenceKey(value: unknown): string | null {
+  if (typeof value === 'string' && value) return value;
+  const tag = getProp(value, 'tag');
+  if (typeof tag === 'string' && tag) return tag;
+  const objectNumber = getProp(value, 'objectNumber');
+  const generationNumber = getProp(value, 'generationNumber');
+  if (
+    typeof objectNumber !== 'number' ||
+    typeof generationNumber !== 'number' ||
+    !Number.isSafeInteger(objectNumber) ||
+    !Number.isSafeInteger(generationNumber)
+  ) {
+    return null;
+  }
+  return `${objectNumber} ${generationNumber} R`;
+}
+
 export async function collectTrailingNonFormPageIndexes(pdfDoc: {
   getPages?: () => unknown[];
   getForm?: () => { getFields?: () => unknown[] } | null;
@@ -109,7 +126,8 @@ export async function collectTrailingNonFormPageIndexes(pdfDoc: {
     for (let i = 0; i < total; i++) {
       try {
         const ref = getProp(pages[i], 'ref');
-        if (ref) pageRefToIndex.set(String(ref), i);
+        const refKey = readPdfReferenceKey(ref);
+        if (refKey) pageRefToIndex.set(refKey, i);
       } catch (__wpErr) {
         orderPdfOverlayReportNonFatal('orderPdfImport:pageRefToIndex', __wpErr);
       }
@@ -124,8 +142,9 @@ export async function collectTrailingNonFormPageIndexes(pdfDoc: {
         for (const widget of widgets || []) {
           try {
             const pObj = readWidgetPageRef(widget, PDFName);
-            if (!pObj) continue;
-            const idx = pageRefToIndex.get(String(pObj));
+            const pageKey = readPdfReferenceKey(pObj);
+            if (!pageKey) continue;
+            const idx = pageRefToIndex.get(pageKey);
             if (typeof idx === 'number' && idx >= 0) formPageIndexes.add(idx);
           } catch (__wpErr) {
             orderPdfOverlayReportNonFatal('orderPdfImport:widgetPageIndex', __wpErr);

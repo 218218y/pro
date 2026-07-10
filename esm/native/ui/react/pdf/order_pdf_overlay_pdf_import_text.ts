@@ -14,7 +14,7 @@ const ORDER_PDF_TEXT_ITEM_DEFAULT_HEIGHT = 12;
 type UnknownRecord = Record<string, unknown>;
 
 type PdfJsTextLayerItemLike = {
-  str?: unknown;
+  str?: string;
   transform?: unknown;
   width?: unknown;
   height?: unknown;
@@ -73,7 +73,7 @@ function readPdfJsPageSize(page: PdfJsTextPageLike): { width: number; height: nu
 function readPdfTextLayerItem(value: unknown): PdfTextLayerItem | null {
   const item = asRecord(value) as PdfJsTextLayerItemLike | null;
   if (!item) return null;
-  const str = String(item.str ?? '').replace(/\u00a0/g, ' ');
+  const str = (typeof item.str === 'string' ? item.str : '').replace(/\u00a0/g, ' ');
   if (!str.trim()) return null;
 
   const transform = readNumberTuple(item.transform);

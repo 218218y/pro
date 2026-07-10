@@ -1,5 +1,7 @@
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
+
 function readPartId(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : String(value ?? '').trim();
+  return formatIdentityValue(readIdentityValue(value)).trim();
 }
 
 export type RemovableFrameSide = 'left' | 'right';

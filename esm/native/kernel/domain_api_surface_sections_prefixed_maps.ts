@@ -1,4 +1,5 @@
 import type { UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 export interface PrefixedMapSemantics {
   prefix: string;
@@ -25,7 +26,7 @@ export const grooveMapSemantics: PrefixedMapSemantics = {
 };
 
 export function readMapKey(value: unknown): string {
-  return String(value || '').trim();
+  return formatIdentityValue(readIdentityValue(value)).trim();
 }
 
 export function normalizePrefixedMapKey(value: unknown, prefix: string): string {

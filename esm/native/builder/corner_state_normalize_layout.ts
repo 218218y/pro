@@ -282,7 +282,7 @@ export function resolveCornerWingFlags(args: {
 }): CornerWingFlagsState {
   const { uiAny, primaryMode, __stackKey, __stackSplitEnabled } = args;
   const isMode = (id: unknown): boolean => {
-    const s = String(id || '');
+    const s = typeof id === 'string' ? id : '';
     return !!s && primaryMode === s;
   };
 
@@ -322,6 +322,10 @@ export function resolveCornerWingPlacement(args: {
   __stackKey: 'top' | 'bottom';
   __stackSplitEnabled: boolean;
 }): CornerWingPlacementState {
+  const hasStringOverride = (value: unknown): value is string =>
+    typeof value === 'string' && value.trim() !== '';
+  const hasNumericOverride = (value: unknown): value is string | number =>
+    (typeof value === 'number' && Number.isFinite(value)) || hasStringOverride(value);
   const {
     uiAny,
     config,
@@ -347,7 +351,7 @@ export function resolveCornerWingPlacement(args: {
 
   const __baseTypeRaw = (() => {
     const v = __baseTypeOverride != null ? __baseTypeOverride : uiAny.baseType;
-    const s = v != null && String(v).trim() !== '' ? String(v).trim() : 'plinth';
+    const s = hasStringOverride(v) ? v.trim() : 'plinth';
     return s;
   })();
 
@@ -358,52 +362,41 @@ export function resolveCornerWingPlacement(args: {
 
   if (__stackSplitEnabled && __stackKey === 'top') baseType = 'none';
 
-  const basePlinthHeightSource =
-    __basePlinthHeightCmOverride != null && String(__basePlinthHeightCmOverride).trim() !== ''
-      ? __basePlinthHeightCmOverride
-      : uiAny.basePlinthHeightCm;
+  const basePlinthHeightSource = hasNumericOverride(__basePlinthHeightCmOverride)
+    ? __basePlinthHeightCmOverride
+    : uiAny.basePlinthHeightCm;
   const basePlinthHeightCm = normalizeBasePlinthHeightCm(basePlinthHeightSource);
 
   const legOptions = readBaseLegOptions({
-    baseLegStyle:
-      __baseLegStyleOverride != null && String(__baseLegStyleOverride).trim() !== ''
-        ? __baseLegStyleOverride
-        : uiAny.baseLegStyle,
-    baseLegColor:
-      __baseLegColorOverride != null && String(__baseLegColorOverride).trim() !== ''
-        ? __baseLegColorOverride
-        : uiAny.baseLegColor,
-    baseLegHeightCm:
-      __baseLegHeightCmOverride != null && String(__baseLegHeightCmOverride).trim() !== ''
-        ? __baseLegHeightCmOverride
-        : uiAny.baseLegHeightCm,
-    baseLegWidthCm:
-      __baseLegWidthCmOverride != null && String(__baseLegWidthCmOverride).trim() !== ''
-        ? __baseLegWidthCmOverride
-        : uiAny.baseLegWidthCm,
+    baseLegStyle: hasStringOverride(__baseLegStyleOverride) ? __baseLegStyleOverride : uiAny.baseLegStyle,
+    baseLegColor: hasStringOverride(__baseLegColorOverride) ? __baseLegColorOverride : uiAny.baseLegColor,
+    baseLegHeightCm: hasNumericOverride(__baseLegHeightCmOverride)
+      ? __baseLegHeightCmOverride
+      : uiAny.baseLegHeightCm,
+    baseLegWidthCm: hasNumericOverride(__baseLegWidthCmOverride)
+      ? __baseLegWidthCmOverride
+      : uiAny.baseLegWidthCm,
   });
 
   const baseLegPlatformMode = normalizeBaseLegPlatformMode(
-    __baseLegPlatformModeOverride != null && String(__baseLegPlatformModeOverride).trim() !== ''
+    hasStringOverride(__baseLegPlatformModeOverride)
       ? __baseLegPlatformModeOverride
       : uiAny.baseLegPlatformMode,
     'plain'
   );
   const baseLegPlatformSideMode = normalizeBaseLegPlatformSideMode(
-    __baseLegPlatformSideModeOverride != null && String(__baseLegPlatformSideModeOverride).trim() !== ''
+    hasStringOverride(__baseLegPlatformSideModeOverride)
       ? __baseLegPlatformSideModeOverride
       : uiAny.baseLegPlatformSideMode
   );
   const baseLegPlatformSideOverhangM = platformOverhangCmToM(
-    __baseLegPlatformSideOverhangCmOverride != null &&
-      String(__baseLegPlatformSideOverhangCmOverride).trim() !== ''
+    hasNumericOverride(__baseLegPlatformSideOverhangCmOverride)
       ? __baseLegPlatformSideOverhangCmOverride
       : uiAny.baseLegPlatformSideOverhangCm,
     DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM
   );
   const baseLegPlatformFrontOverhangM = platformOverhangCmToM(
-    __baseLegPlatformFrontOverhangCmOverride != null &&
-      String(__baseLegPlatformFrontOverhangCmOverride).trim() !== ''
+    hasNumericOverride(__baseLegPlatformFrontOverhangCmOverride)
       ? __baseLegPlatformFrontOverhangCmOverride
       : uiAny.baseLegPlatformFrontOverhangCm,
     DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM

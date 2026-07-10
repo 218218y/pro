@@ -10,6 +10,7 @@ import type {
 import { setCfgColorSwatchesOrder, setCfgMultiColorMode, setCfgSavedColors } from '../runtime/cfg_access.js';
 import { writeColorSwatchesOrder, writeIndividualColor, writeSavedColors } from '../runtime/maps_access.js';
 import { asRecord } from '../runtime/record.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 type ColorsSelect = UnknownRecord & {
   isMultiMode?: () => boolean;
@@ -90,7 +91,7 @@ export function installDomainApiColorsSection(args: InstallDomainApiColorsSectio
     function (partKey: unknown) {
       const m = readIndividualColorsMap();
       if (!m || typeof m !== 'object') return null;
-      const k = String(partKey || '');
+      const k = formatIdentityValue(readIdentityValue(partKey));
       return k && k in m ? m[k] : null;
     };
 
@@ -145,7 +146,7 @@ export function installDomainApiColorsSection(args: InstallDomainApiColorsSectio
     colorsActions.deleteSaved ||
     function (colorId: unknown, meta: ActionMetaLike | undefined) {
       meta = _meta(meta, 'actions:colors:deleteSaved');
-      const id = String(colorId || '');
+      const id = formatIdentityValue(readIdentityValue(colorId));
       if (!id) return;
       const cur = readSavedColors();
       const next: SavedColorsInput = cur.filter(function (c: unknown) {

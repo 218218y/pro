@@ -37,8 +37,16 @@ test('project load runtime prefers file fingerprint over target value and ignore
     },
   });
 
-  assert.equal(key, 'file:demo.json|3|application/json|123');
+  assert.equal(key, 'file:s9:demo.json|n:3|s16:application/json|n:123');
   assert.equal(readProjectLoadFlightKey({ currentTarget: { value: 17 } }), null);
+});
+
+test('project load file fingerprints do not collide when delimiters occur inside file metadata', () => {
+  const first = new File(['x'], 'a|n:1', { type: 'text/plain', lastModified: 2 });
+  const second = new File(['x'], 'a', { type: 'n:1|text/plain', lastModified: 2 });
+
+  assert.notEqual(readProjectLoadFlightKey(first), readProjectLoadFlightKey(second));
+  assert.equal(readProjectLoadFlightKey(first), readProjectLoadFlightKey(first));
 });
 
 test('project load runtime clones plain event-like objects and rejects Blob inputs', () => {

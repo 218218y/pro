@@ -102,11 +102,11 @@ export function createKernelSnapshotStoreCommitOpsRuntime(
   const isDirtyState = () => isDirty(args.App);
 
   const markDirty = (reason: unknown) => {
-    setDirty(true, { source: 'dirty', reason: String(reason || '') });
+    setDirty(true, { source: 'dirty', reason: typeof reason === 'string' ? reason : '' });
   };
 
   const clearDirty = (reason: unknown) => {
-    setDirty(false, { source: 'clean', reason: String(reason || '') });
+    setDirty(false, { source: 'clean', reason: typeof reason === 'string' ? reason : '' });
   };
 
   const touch = (meta?: KernelSnapshotStoreMetaLike): void => {

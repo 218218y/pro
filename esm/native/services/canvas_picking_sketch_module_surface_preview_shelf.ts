@@ -113,7 +113,8 @@ export function resolveSketchModuleShelfRemovePreview(
               const shelvesArr = Array.isArray(cd.shelves) ? cd.shelves : [];
               exists = !!shelvesArr[shelfIndex - 1];
             } else {
-              const lt = String(readRecordValue(cfgRef, 'layout') || 'shelves');
+              const layoutValue = readRecordValue(cfgRef, 'layout');
+              const lt = typeof layoutValue === 'string' && layoutValue ? layoutValue : 'shelves';
               switch (lt) {
                 case 'shelves':
                 case 'mixed':

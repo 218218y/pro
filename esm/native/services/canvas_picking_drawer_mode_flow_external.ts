@@ -1,4 +1,5 @@
 import type { AppContainer, ModuleConfigLike } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { resolveExternalDrawerFitFromBounds } from '../../shared/wardrobe_construction_validation_shared.js';
 import {
   HEX_CELL_DRAWER_ADD_BLOCKED_MESSAGE,
@@ -31,7 +32,7 @@ import { tryCommitSketchBoxRegularExternalDrawersHover } from './canvas_picking_
 import { blockRemovableSideContentBuildIfModuleSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
 
 function readString(value: unknown): string {
-  return typeof value === 'string' ? value : value == null ? '' : String(value);
+  return formatIdentityValue(readIdentityValue(value));
 }
 
 function readHoverRemoveId(hover: ExtDrawerModeHoverRecord | null): string {

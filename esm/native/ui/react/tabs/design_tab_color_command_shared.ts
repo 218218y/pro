@@ -4,7 +4,7 @@ import type { SavedColor } from './design_tab_multicolor_panel.js';
 import type { DesignTabSwatchReorderPos } from './design_tab_shared.js';
 
 export function trimDesignTabColorValue(value: unknown): string {
-  return String(value || '').trim();
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 export function readTextureFileName(file: Blob | File): string | undefined {

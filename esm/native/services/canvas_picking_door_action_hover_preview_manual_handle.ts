@@ -1,4 +1,5 @@
 import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
 import { readMapOrEmpty } from '../runtime/maps_access.js';
 import { __wp_isDrawerLikePartId } from './canvas_picking_core_helpers.js';
@@ -110,7 +111,7 @@ function resolvePreviewSize(args: {
 }
 
 function isManualHandleDrawerHost(partId: unknown, userData: UnknownRecord | null): boolean {
-  const pid = typeof partId === 'string' ? String(partId) : String(partId ?? '');
+  const pid = formatIdentityValue(readIdentityValue(partId));
   if (__wp_isDrawerLikePartId(pid)) return true;
   const userPartId = typeof userData?.partId === 'string' ? String(userData.partId) : '';
   if (userPartId && __wp_isDrawerLikePartId(userPartId)) return true;

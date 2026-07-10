@@ -54,7 +54,7 @@ export function createDomainApiInstallHelpers(
   ): ActionMetaLike => metaMerge(App, asActionMeta(meta), undefined, source || 'domain:meta');
 
   const readMapSnapshot = (mapName: unknown): UnknownRecord => {
-    const name = String(mapName || '');
+    const name = typeof mapName === 'string' ? mapName : '';
     const fromRuntime = readMap(App, name);
     if (fromRuntime) return fromRuntime;
     const cfg = readConfig();

@@ -13,13 +13,14 @@ import {
   type BootFatalOverlayController,
   type BootFatalOverlayOpts,
 } from './entry_pro_shared.js';
+import { formatDisplayScalar, readDisplayScalar } from './shared/display_text_shared.js';
 
 async function copyText(win: Window | null, txt: unknown): Promise<boolean> {
   try {
     if (!win) return false;
     const nav = win.navigator;
     if (nav && nav.clipboard && typeof nav.clipboard.writeText === 'function') {
-      await nav.clipboard.writeText(String(txt || ''));
+      await nav.clipboard.writeText(formatDisplayScalar(readDisplayScalar(txt)));
       return true;
     }
   } catch (err) {
@@ -33,7 +34,7 @@ async function copyText(win: Window | null, txt: unknown): Promise<boolean> {
     ta = doc.createElement('textarea');
     ta.name = 'bootFatalCopyBuffer';
     ta.setAttribute('aria-label', 'Temporary copy buffer');
-    ta.value = String(txt || '');
+    ta.value = formatDisplayScalar(readDisplayScalar(txt));
     ta.setAttribute('readonly', '');
     ta.setAttribute('tabindex', '-1');
     ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';

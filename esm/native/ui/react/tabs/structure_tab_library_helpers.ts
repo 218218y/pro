@@ -80,7 +80,7 @@ export function sumDoorsFromStructure(structureParsed: unknown): number | null {
 }
 
 export function normalizeSingleDoorPos(doors: number, posRaw: unknown): SingleDoorPos | '' {
-  const p = String(posRaw || '').trim();
+  const p = typeof posRaw === 'string' ? posRaw.trim() : '';
   if (!p) return '';
 
   if (p === 'left' || p === 'right') return p;

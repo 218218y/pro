@@ -1,4 +1,5 @@
 import { METAL_FINISH_PALETTE_BY_COLOR } from './metal_finish_palette.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 export type HandleFinishPresetColor = 'nickel' | 'silver' | 'gold' | 'black' | 'pink';
 export type HandleFinishColor = HandleFinishPresetColor | `#${string}`;
@@ -20,9 +21,7 @@ function isValidHexNibbleSequence(value: string): boolean {
 }
 
 function normalizeHexColor(value: string): `#${string}` | null {
-  const raw = String(value || '')
-    .trim()
-    .toLowerCase();
+  const raw = value.trim().toLowerCase();
   if (!raw) return null;
   const withHash = raw.startsWith('#') ? raw : `#${raw}`;
   return isValidHexNibbleSequence(withHash.slice(1)) ? (withHash as `#${string}`) : null;
@@ -39,7 +38,7 @@ export function isHandleFinishPresetColor(value: unknown): value is HandleFinish
 }
 
 export function isHandleFinishCustomHexColor(value: unknown): value is `#${string}` {
-  return normalizeHexColor(String(value ?? '')) !== null;
+  return typeof value === 'string' && normalizeHexColor(value) !== null;
 }
 
 export function isHandleFinishCustomColor(value: unknown): value is `#${string}` {
@@ -47,15 +46,13 @@ export function isHandleFinishCustomColor(value: unknown): value is `#${string}`
 }
 
 export function normalizeHandleFinishColor(value: unknown): HandleFinishColor {
-  const raw = String(value ?? '')
-    .trim()
-    .toLowerCase();
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
   if (isHandleFinishPresetColor(raw)) return raw;
   return normalizeHexColor(raw) || DEFAULT_HANDLE_FINISH_COLOR;
 }
 
 export function handleColorPartKey(partId: unknown): string {
-  return `${HANDLE_COLOR_PART_PREFIX}${String(partId ?? '')}`;
+  return `${HANDLE_COLOR_PART_PREFIX}${formatIdentityValue(readIdentityValue(partId))}`;
 }
 
 function buildCustomHandleFinishPalette(color: `#${string}`): HandleFinishPalette {

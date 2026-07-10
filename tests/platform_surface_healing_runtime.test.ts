@@ -6,13 +6,10 @@ import { installPlatformServiceSurface } from '../esm/native/platform/platform_s
 
 test('platform util install heals drifted util/reportError seams while preserving canonical refs', () => {
   const calls: unknown[] = [];
-  const legacyStr = (value: unknown, fallback?: unknown) => `legacy:${value ?? fallback ?? ''}`;
   const legacyReportError = (err: unknown, ctx?: unknown) => calls.push(['report', err, ctx]);
   const App: any = {
     platform: {
-      util: Object.assign(Object.create(null), {
-        str: legacyStr,
-      }),
+      util: Object.create(null),
       reportError: legacyReportError,
     },
   };
@@ -32,12 +29,10 @@ test('platform util install heals drifted util/reportError seams while preservin
     requestIdleCallbackFn: null,
   });
 
-  const firstStr = App.platform.util.str;
   const firstClone = App.platform.util.clone;
   const firstReportError = App.platform.reportError;
   const firstAfterPaint = App.platform.util.afterPaint;
 
-  App.platform.util.str = () => 'stale';
   delete App.platform.util.clone;
   App.platform.reportError = () => calls.push(['stale']);
   delete App.platform.util.afterPaint;
@@ -57,11 +52,9 @@ test('platform util install heals drifted util/reportError seams while preservin
     requestIdleCallbackFn: null,
   });
 
-  assert.equal(App.platform.util.str, firstStr);
   assert.equal(App.platform.util.clone, firstClone);
   assert.equal(App.platform.reportError, firstReportError);
   assert.equal(App.platform.util.afterPaint, firstAfterPaint);
-  assert.equal(App.platform.util.str('wardrobe'), 'legacy:wardrobe');
   App.platform.reportError('boom', 'ctx');
   const clone = App.platform.util.clone({ a: 1 });
   assert.deepEqual(clone, { a: 1 });

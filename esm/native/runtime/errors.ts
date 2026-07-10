@@ -7,6 +7,7 @@
 
 import { readRuntimeScalarOrDefaultFromApp } from './runtime_selectors.js';
 import { asRecord } from './record.js';
+import { normalizeUnknownError } from './error_normalization.js';
 
 export type ReportErrorFn = (err: unknown, ctx?: unknown) => void;
 
@@ -89,21 +90,7 @@ export function getReportError(App: unknown): ReportErrorFn | null {
 }
 
 export function toErrorMessage(err: unknown): string {
-  try {
-    if (err == null) return '';
-    if (typeof err === 'string') return err;
-    if (typeof err === 'number' || typeof err === 'boolean' || typeof err === 'bigint') return String(err);
-
-    const rec = asObject(err);
-    if (rec) {
-      if (typeof rec.message === 'string') return rec.message;
-      if (typeof rec.name === 'string' && typeof rec.stack === 'string') return rec.stack;
-    }
-
-    return String(err);
-  } catch {
-    return '';
-  }
+  return normalizeUnknownError(err).message;
 }
 
 export function reportError(

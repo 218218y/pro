@@ -86,7 +86,8 @@ export function deriveInteriorTabModeState(args: InteriorTabModeStateArgs) {
   const isDoorTrimMode = primary === modeDoorTrim;
   const layoutActive = isLayoutMode || isManualLayoutMode || isBraceShelvesMode || isDoorTrimMode;
   const layoutType = isLayoutMode ? readLayoutTypeId(modeOpts.layoutType, layoutTypeUi) : layoutTypeUi;
-  const manualToolRaw = isManualLayoutMode ? String(modeOpts.manualTool || '') : '';
+  const manualToolRaw =
+    isManualLayoutMode && typeof modeOpts.manualTool === 'string' ? modeOpts.manualTool : '';
   const isSketchToolActive = isManualLayoutMode && manualToolRaw.startsWith('sketch_');
   const sketchDivisionManualTool = readSketchDivisionManualToolId(manualToolRaw);
   const isSketchDivisionToolActive = isManualLayoutMode && sketchDivisionManualTool !== null;

@@ -88,7 +88,7 @@ export function formatErrorInfo(err: unknown): ErrorInfo {
 export function ctxToObj(ctx: ErrorContext): ErrorContextRecord {
   if (!ctx) return {};
   if (typeof ctx === 'string') return { where: ctx };
-  return typeof ctx === 'object' ? ctx : { where: String(ctx) };
+  return typeof ctx === 'object' ? ctx : {};
 }
 
 function readStateSlice(rec: RootStateLike | null, key: 'runtime' | 'config'): UnknownRecord | null {
@@ -101,9 +101,9 @@ export function ctxToLabel(ctx: ErrorContext): string {
     if (!ctx) return '';
     if (typeof ctx === 'string') return ctx;
     if (typeof ctx === 'object') {
-      const w = ctx.where ? String(ctx.where) : '';
-      const op = ctx.op ? String(ctx.op) : '';
-      const tag = ctx.tag ? String(ctx.tag) : '';
+      const w = typeof ctx.where === 'string' ? ctx.where : '';
+      const op = typeof ctx.op === 'string' ? ctx.op : '';
+      const tag = typeof ctx.tag === 'string' ? ctx.tag : '';
       const parts = [w, op, tag].filter(Boolean);
       return parts.join(' / ');
     }

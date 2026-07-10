@@ -3,6 +3,10 @@ import type {
   ConfigScalarKey,
   ConfigScalarValueMap,
   CornerConfigurationLike,
+  BoardMaterial,
+  DoorMountMode,
+  HandleType,
+  WardrobeType,
 } from '../../../types';
 import {
   asCornerConfiguration,
@@ -49,7 +53,7 @@ export const cfgSetScalar: CfgSetScalar = (
   valueOrFn: unknown,
   meta?: ActionMetaLike
 ): unknown => {
-  const k = String(key || '');
+  const k = typeof key === 'string' ? key.trim() : '';
   if (!k) return undefined;
 
   let next: unknown = valueOrFn;
@@ -100,11 +104,14 @@ export function setCfgManualWidth(App: unknown, on: unknown, meta?: ActionMetaLi
   return next;
 }
 
-export function setCfgWardrobeType(App: unknown, value: unknown, meta?: ActionMetaLike): string | undefined {
-  const next = value == null ? '' : String(value);
-  if (!next) return undefined;
-  void cfgSetScalar(App, 'wardrobeType', next, meta);
-  return next;
+export function setCfgWardrobeType(
+  App: unknown,
+  value: unknown,
+  meta?: ActionMetaLike
+): WardrobeType | undefined {
+  if (value !== 'hinged' && value !== 'sliding') return undefined;
+  void cfgSetScalar(App, 'wardrobeType', value, meta);
+  return value;
 }
 
 export function setCfgMultiColorMode(App: unknown, on: unknown, meta?: ActionMetaLike): boolean | undefined {
@@ -113,26 +120,34 @@ export function setCfgMultiColorMode(App: unknown, on: unknown, meta?: ActionMet
   return next;
 }
 
-export function setCfgBoardMaterial(App: unknown, value: unknown, meta?: ActionMetaLike): string | undefined {
-  const next = value == null ? '' : String(value);
-  void cfgSetScalar(App, 'boardMaterial', next, meta);
-  return next;
+export function setCfgBoardMaterial(
+  App: unknown,
+  value: unknown,
+  meta?: ActionMetaLike
+): BoardMaterial | undefined {
+  if (value !== 'sandwich' && value !== 'melamine') return undefined;
+  void cfgSetScalar(App, 'boardMaterial', value, meta);
+  return value;
 }
 
-export function setCfgDoorMountMode(App: unknown, value: unknown, meta?: ActionMetaLike): string | undefined {
-  const next = value == null ? '' : String(value);
-  void cfgSetScalar(App, 'doorMountMode', next, meta);
-  return next;
+export function setCfgDoorMountMode(
+  App: unknown,
+  value: unknown,
+  meta?: ActionMetaLike
+): DoorMountMode | undefined {
+  if (value !== 'overlay' && value !== 'inset') return undefined;
+  void cfgSetScalar(App, 'doorMountMode', value, meta);
+  return value;
 }
 
 export function setCfgGlobalHandleType(
   App: unknown,
   value: unknown,
   meta?: ActionMetaLike
-): string | undefined {
-  const next = value == null ? '' : String(value);
-  void cfgSetScalar(App, 'globalHandleType', next, meta);
-  return next;
+): HandleType | undefined {
+  if (value !== 'standard' && value !== 'edge' && value !== 'none') return undefined;
+  void cfgSetScalar(App, 'globalHandleType', value, meta);
+  return value;
 }
 
 export function setCfgShowDimensions(App: unknown, on: unknown, meta?: ActionMetaLike): boolean | undefined {
@@ -180,7 +195,8 @@ export function setCfgCustomUploadedDataURL(
   value: unknown,
   meta?: ActionMetaLike
 ): string | null | undefined {
-  const next = value == null ? null : String(value || '');
+  const next = typeof value === 'string' ? value : value == null ? null : undefined;
+  if (typeof next === 'undefined') return undefined;
   void cfgSetScalar(App, 'customUploadedDataURL', next, meta);
   return next;
 }
@@ -196,7 +212,7 @@ export function setCfgColorSwatchesOrder(
   next: unknown,
   meta?: ActionMetaLike
 ): string[] | undefined {
-  const arr = Array.isArray(next) ? next.map(v => String(v)) : [];
+  const arr = Array.isArray(next) ? next.filter((value): value is string => typeof value === 'string') : [];
   void cfgSetScalar(App, 'colorSwatchesOrder', arr, meta);
   return arr;
 }

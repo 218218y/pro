@@ -18,6 +18,7 @@ import {
   type ResolvedMirrorPlacement,
 } from './mirror_geometry.js';
 import { buildDoorVisualLookupKeys } from './visual_keys.js';
+import { formatIdentityValue, readIdentityValue } from '../../../../shared/identity_value_shared.js';
 
 export type MirrorLayoutHitMatch = {
   index: number;
@@ -36,14 +37,14 @@ export function readMirrorLayoutListForPart(args: {
   const map = args.map;
 
   const pushCandidate = (out: string[], seen: Record<string, true>, value: unknown): void => {
-    const key = typeof value === 'string' ? value : String(value ?? '');
+    const key = formatIdentityValue(readIdentityValue(value));
     if (!key || seen[key]) return;
     seen[key] = true;
     out.push(key);
   };
 
   const pushVariants = (out: string[], seen: Record<string, true>, value: unknown): void => {
-    const key = typeof value === 'string' ? value : String(value ?? '');
+    const key = formatIdentityValue(readIdentityValue(value));
     if (!key) return;
     const keys = buildDoorVisualLookupKeys(key);
     for (let i = 0; i < keys.length; i += 1) pushCandidate(out, seen, keys[i]);

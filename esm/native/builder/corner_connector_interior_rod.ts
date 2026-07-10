@@ -47,7 +47,7 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
   if (!enabled) return;
 
   const sideRaw = ui.cornerPentAttachRodSide ?? 'wing';
-  const side = String(sideRaw || 'wing').toLowerCase() === 'main' ? 'main' : 'wing';
+  const side = typeof sideRaw === 'string' && sideRaw.toLowerCase() === 'main' ? 'main' : 'wing';
 
   // Default lowered a bit (user feedback): 150cm feels more natural for hanging.
   const hCmRaw =

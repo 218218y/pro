@@ -16,6 +16,7 @@ import {
   getUiActions,
 } from '../../../services/api.js';
 import { getStoreSurfaceMaybe } from '../../../services/api.js';
+import { formatIdentityValue, readIdentityValue } from '../../../../shared/identity_value_shared.js';
 
 function isRecord(v: unknown): v is UnknownRecord {
   return !!v && typeof v === 'object' && !Array.isArray(v);
@@ -64,7 +65,7 @@ function readColorSwatchesOrder(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   const out: string[] = [];
   for (const entry of value) {
-    const next = entry == null ? '' : String(entry).trim();
+    const next = formatIdentityValue(readIdentityValue(entry)).trim();
     if (next) out.push(next);
   }
   return out;
@@ -109,7 +110,7 @@ function asBoolean(v: unknown): boolean {
 }
 
 function asStringValue(v: unknown): string {
-  return v == null ? '' : String(v);
+  return typeof v === 'string' ? v : '';
 }
 
 function asStringOrNull(v: unknown): string | null {

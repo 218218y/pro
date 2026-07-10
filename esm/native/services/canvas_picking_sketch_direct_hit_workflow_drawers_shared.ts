@@ -2,7 +2,7 @@ import type { SketchConfigLike } from './canvas_picking_sketch_direct_hit_workfl
 import {
   ensureArray,
   ensureSketchExtras,
-  readRecordString,
+  readRecordIdentity,
 } from './canvas_picking_sketch_direct_hit_workflow_records.js';
 import { asRecord } from '../runtime/record.js';
 import { SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY } from '../features/sketch_box_regular_external_drawers.js';
@@ -10,7 +10,7 @@ import { SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY } from '../features/sketch_box_
 export function removeSketchDrawerById(cfg: SketchConfigLike, drawerId: string): void {
   const extra = ensureSketchExtras(cfg);
   const list = ensureArray(extra, 'drawers');
-  const idx = list.findIndex(item => readRecordString(item, 'id') === drawerId);
+  const idx = list.findIndex(item => readRecordIdentity(item, 'id') === drawerId);
   if (idx >= 0) list.splice(idx, 1);
 }
 
@@ -21,27 +21,27 @@ export function removeSketchExternalDrawerById(
 ): void {
   const extra = ensureSketchExtras(cfg);
   const topLevel = ensureArray(extra, 'extDrawers');
-  const topIdx = topLevel.findIndex(item => readRecordString(item, 'id') === drawerId);
+  const topIdx = topLevel.findIndex(item => readRecordIdentity(item, 'id') === drawerId);
   if (topIdx >= 0) {
     topLevel.splice(topIdx, 1);
     return;
   }
 
   const boxes = ensureArray(extra, 'boxes');
-  const candidateBoxes = boxId ? boxes.filter(box => readRecordString(box, 'id') === boxId) : boxes;
+  const candidateBoxes = boxId ? boxes.filter(box => readRecordIdentity(box, 'id') === boxId) : boxes;
   for (let i = 0; i < candidateBoxes.length; i++) {
     const box = asRecord(candidateBoxes[i]);
     if (!box) continue;
 
     const list = ensureArray(box, 'extDrawers');
-    const idx = list.findIndex(item => readRecordString(item, 'id') === drawerId);
+    const idx = list.findIndex(item => readRecordIdentity(item, 'id') === drawerId);
     if (idx >= 0) {
       list.splice(idx, 1);
       return;
     }
 
     const regularList = ensureArray(box, SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY);
-    const regularIdx = regularList.findIndex(item => readRecordString(item, 'id') === drawerId);
+    const regularIdx = regularList.findIndex(item => readRecordIdentity(item, 'id') === drawerId);
     if (regularIdx >= 0) {
       regularList.splice(regularIdx, 1);
       return;

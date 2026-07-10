@@ -57,13 +57,14 @@ test('JS-only profile is the canonical ESLint lane', () => {
   assert.equal(pkg.scripts['lint:js:strict'], 'node tools/wp_lint.js --profile js-only --strict');
   assert.equal(
     pkg.scripts['lint:modern'],
-    'npm run lint:js:strict && npm run lint:ts-modern:syntax && npm run lint:contracts'
+    'npm run lint:js:strict && npm run lint:ts-modern:syntax && npm run lint:ts-modern:type-aware && npm run lint:contracts'
   );
   assert.equal(pkg.scripts[OLD_LINT_LEGACY], undefined);
   assert.equal(pkg.scripts[OLD_DRY_RUN_SCRIPT], undefined);
   assert.equal(pkg.scripts[OLD_READINESS_SCRIPT], undefined);
   assert.match(pkg.scripts['quality:ts-modern'], /lint:js:strict/);
   assert.match(pkg.scripts['quality:ts-modern'], /lint:ts-modern:syntax/);
+  assert.match(pkg.scripts['quality:ts-modern'], /lint:ts-modern:type-aware/);
   assert.match(pkg.scripts['quality:ts-modern'], /lint:contracts/);
   assert.doesNotMatch(
     pkg.scripts['quality:ts-modern'],

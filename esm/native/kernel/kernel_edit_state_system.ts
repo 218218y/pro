@@ -26,7 +26,7 @@ export function createKernelEditStateSystem(args: CreateKernelEditStateSystemArg
       const mode = asRecord(getMode(args.App), {});
       const rt = asRecord(getRuntime(args.App), {});
 
-      const primary = mode && mode.primary != null ? String(mode.primary) : 'none';
+      const primary = typeof mode?.primary === 'string' && mode.primary ? mode.primary : 'none';
       const optsBase: UnknownRecord = isRecord(mode.opts) ? mode.opts : {};
       const opts: UnknownRecord = { ...optsBase };
 

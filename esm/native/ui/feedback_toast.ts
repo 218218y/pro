@@ -1,6 +1,7 @@
 import type { AppContainer } from '../../../types';
 
 import { getBrowserTimers } from '../services/api.js';
+import { formatDisplayScalar, readDisplayScalar } from '../../shared/display_text_shared.js';
 import { __uiFeedbackReportNonFatal, getReactFeedback } from './feedback_shared.js';
 import {
   ensureToastContainer,
@@ -15,10 +16,11 @@ export function showToast(
   message: unknown,
   type: string = 'success'
 ): void {
+  const displayMessage = formatDisplayScalar(readDisplayScalar(message));
   const reactFeedback = getReactFeedback(App);
   if (reactFeedback && typeof reactFeedback.toast === 'function') {
     try {
-      reactFeedback.toast(message == null ? '' : String(message), normalizeToastKind(type));
+      reactFeedback.toast(displayMessage, normalizeToastKind(type));
       return;
     } catch (err) {
       __uiFeedbackReportNonFatal(App, 'toast.react', err);
@@ -40,7 +42,7 @@ export function showToast(
   iconEl.className = `fas ${resolveToastIcon(kind)}`;
 
   const textEl = doc.createElement('span');
-  textEl.textContent = message == null ? '' : String(message);
+  textEl.textContent = displayMessage;
 
   toast.appendChild(iconEl);
   toast.appendChild(doc.createTextNode(' '));

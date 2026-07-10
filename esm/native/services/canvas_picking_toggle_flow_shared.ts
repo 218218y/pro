@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type { HitObjectLike } from './canvas_picking_engine.js';
 import { getTools } from '../runtime/service_access.js';
@@ -34,7 +35,7 @@ export function ensureChildRecord(owner: UnknownRecord, key: string): UnknownRec
 export function readStringRecord(value: unknown, key: string): string | null {
   const rec = asRecord(value);
   const raw = rec ? rec[key] : undefined;
-  return raw == null ? null : String(raw);
+  return formatIdentityValue(readIdentityValue(raw)) || null;
 }
 
 export function readFiniteNumber(value: unknown): number | null {
@@ -254,10 +255,10 @@ export function tryHandleGlobalCornerPentToggle(
     const doorsArray = getDoorsArray(App);
     const allDoors = doorsArray.filter(__isDoorRuntimeRef);
     const list1 = allDoors.filter(d =>
-      String(d.group?.userData?.partId ?? '').startsWith('corner_pent_door_1')
+      formatIdentityValue(readIdentityValue(d.group?.userData?.partId)).startsWith('corner_pent_door_1')
     );
     const list2 = allDoors.filter(d =>
-      String(d.group?.userData?.partId ?? '').startsWith('corner_pent_door_2')
+      formatIdentityValue(readIdentityValue(d.group?.userData?.partId)).startsWith('corner_pent_door_2')
     );
     const cur = !!(list1.some(d => !!d.isOpen) || list2.some(d => !!d.isOpen));
     const next = !cur;

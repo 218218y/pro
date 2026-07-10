@@ -2,6 +2,7 @@
 // default-shape detection.
 
 import type { AppContainer, UnknownRecord } from '../../../types';
+import { readInteger, readNumericInput } from '../../shared/numeric_value_shared.js';
 
 import { __wp_toFiniteNumber } from './canvas_picking_core_support_numbers.js';
 
@@ -40,8 +41,8 @@ export function __wp_isDefaultCornerCellCfgLike(cfg0: unknown): boolean {
     const cfg = __wp_asRecord(cfg0) || {};
 
     const __parseIntSafe = (v: unknown, fb: number): number => {
-      const n = parseInt(String(v ?? ''), 10);
-      return Number.isFinite(n) ? n : fb;
+      const n = readInteger(readNumericInput(v));
+      return n ?? fb;
     };
 
     const layout = __wp_readRecordString(cfg, 'layout') || 'shelves';

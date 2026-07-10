@@ -41,7 +41,7 @@ export function resolveStructureLibraryPaintModeId(modes: unknown = MODES): stri
 }
 
 function normalizePaintId(value: unknown): string {
-  return String(value == null ? '' : value).trim();
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 function runGlassEditStep(op: string, reportNonFatal: ReportNonFatalFn, fn: () => void): void {

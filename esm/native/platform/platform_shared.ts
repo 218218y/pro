@@ -1,6 +1,7 @@
 import { MODES } from '../runtime/api.js';
 
 import type { TimeoutHandleLike, UnknownRecord } from '../../../types';
+import { normalizeUnknownErrorInfo } from '../runtime/error_normalization.js';
 
 export type PlatformTask = () => unknown;
 export type PlatformArgList = unknown[];
@@ -96,9 +97,10 @@ export const WP_DEFAULT_VERBOSE_CONSOLE_ERRORS_DEDUPE_MS = 4000;
 const __wpConsoleErrorSeen = new Map<string, number>();
 
 function __wpConsoleErrorKey(err: unknown, ctx?: unknown): string {
-  const stack = getErrorStack(err) || '';
-  const msg = stack ? stack.split('\n')[0] : String(err);
-  return `${String(ctx || '')}::${msg}`;
+  const normalized = normalizeUnknownErrorInfo(err);
+  const msg = normalized.stack ? normalized.stack.split('\n')[0] : normalized.message;
+  const context = typeof ctx === 'string' ? ctx : '';
+  return `${context}::${msg}`;
 }
 
 export function shouldConsoleLogOnce(err: unknown, ctx?: unknown, dedupeMs?: unknown): boolean {

@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { readRootState } from '../runtime/root_state_access.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import type { TransformNodeLike } from './canvas_picking_door_hover_targets_contracts.js';
@@ -6,7 +7,7 @@ import type { HitObjectLike } from './canvas_picking_engine.js';
 import { __asObject } from './canvas_picking_door_hover_targets_runtime.js';
 
 export function __scopeCornerHoverPartKey(partId: unknown, stackKey: unknown): string {
-  const pid = typeof partId === 'string' ? partId : String(partId ?? '');
+  const pid = formatIdentityValue(readIdentityValue(partId));
   if (!pid) return '';
   if (stackKey !== 'bottom') return pid;
   if (pid.startsWith('lower_')) return pid;

@@ -12,18 +12,18 @@ export type SanitizedNotesHtmlString = string & {
 };
 
 function asSanitizedNotesHtml(html: string): SanitizedNotesHtmlString {
-  return String(html || '') as SanitizedNotesHtmlString;
+  return html as SanitizedNotesHtmlString;
 }
 
 function stripAllHtml(s: string): string {
-  return String(s || '').replace(/<[^>]*>/g, '');
+  return s.replace(/<[^>]*>/g, '');
 }
 
 export function sanitizeRichTextHTMLWithDocument(
   doc: Document | null | undefined,
   html: unknown
 ): SanitizedNotesHtmlString {
-  const raw = typeof html === 'string' ? html : html == null ? '' : String(html);
+  const raw = typeof html === 'string' ? html : '';
   if (!raw) return asSanitizedNotesHtml('');
   if (!doc) return asSanitizedNotesHtml(stripAllHtml(raw));
   return asSanitizedNotesHtml(sanitizeHtmlByPolicy(doc, raw, 'notes-rich'));

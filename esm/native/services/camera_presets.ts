@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import { readFiniteNumber, readNumericInput } from '../../shared/numeric_value_shared.js';
 import { getViewportCameraControls } from './render_surface_runtime.js';
 import { readUiStateFromStore } from '../runtime/root_state_access.js';
 import { getStoreSurfaceMaybe } from '../runtime/store_surface_access.js';
@@ -114,7 +115,7 @@ function writeVec3(target: unknown, x: number, y: number, z: number): boolean {
 }
 
 function asNum(v: unknown): number | null {
-  const n = typeof v === 'number' ? v : parseFloat(String(v ?? ''));
+  const n = readFiniteNumber(readNumericInput(v));
   return Number.isFinite(n) ? n : null;
 }
 

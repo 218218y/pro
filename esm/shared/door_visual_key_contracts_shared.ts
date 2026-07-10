@@ -12,11 +12,11 @@ const DOOR_VISUAL_SURFACE_SUFFIX_RE = /_(?:accent|groove)_(?:top|bottom|left|rig
 const DOOR_VISUAL_DECORATION_SUFFIX_RE = /_(?:trim|trim_preview)(?:_[a-z0-9]+)?$/i;
 
 function readPartKey(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : String(value ?? '').trim();
+  return formatIdentityValue(readIdentityValue(value)).trim();
 }
 
 function readRawPartKey(value: unknown): string {
-  return typeof value === 'string' ? value : String(value ?? '');
+  return formatIdentityValue(readIdentityValue(value));
 }
 
 export function hasDoorVisualSegmentSuffix(partId: string): boolean {
@@ -105,7 +105,7 @@ export function isCanonicalDoorVisualMapKey(partId: unknown): partId is string {
 }
 
 export function resolveDoorVisualSegmentIdentity(partId: unknown): DoorVisualSegmentIdentity {
-  const key = stripDoorVisualSurfaceSuffix(String(partId || ''));
+  const key = stripDoorVisualSurfaceSuffix(formatIdentityValue(readIdentityValue(partId)));
   const basePartId = key.replace(SEGMENTED_DOOR_ANY_SUFFIX_RE, '');
   const fullPartId = basePartId ? `${basePartId}_full` : '';
   return {
@@ -128,3 +128,4 @@ export function resolveDoorVisualSegmentIdentity(partId: unknown): DoorVisualSeg
 export function resolveDoorSplitAuthoringBaseKey(partId: unknown): string {
   return resolveDoorVisualSegmentIdentity(partId).basePartId;
 }
+import { formatIdentityValue, readIdentityValue } from './identity_value_shared.js';

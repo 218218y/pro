@@ -261,7 +261,7 @@ export function readNumFrom(obj: unknown, key: string, defaultValue: number): nu
 
 export function readStrFrom(obj: unknown, key: string, defaultValue = ''): string {
   const v = asRecord(obj)[key];
-  return typeof v === 'string' ? v : v == null ? defaultValue : String(v);
+  return typeof v === 'string' ? v : defaultValue;
 }
 
 type CloneMaybeFn = {

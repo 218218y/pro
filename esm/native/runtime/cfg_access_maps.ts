@@ -20,7 +20,7 @@ type CfgMap = {
 };
 
 export const cfgMap: CfgMap = (App: unknown, mapName: unknown): UnknownRecord => {
-  const name = String(mapName || '');
+  const name = typeof mapName === 'string' ? mapName : '';
   return cfgMapRecord(App, name);
 };
 
@@ -30,7 +30,7 @@ function setConfigMapFromOwner(
   nextMap: unknown,
   meta?: ActionMetaLike
 ): UnknownRecord {
-  const name = String(mapName || '');
+  const name = typeof mapName === 'string' ? mapName : '';
   const next = readMapRecord(nextMap);
   if (!name) return next;
 

@@ -1,6 +1,7 @@
 import type { AppContainer, UiFeedbackConfirmCallback, UiFeedbackPromptCallback } from '../../../types';
 
 import { get$, getBrowserTimers, getDocumentMaybe } from '../services/api.js';
+import { formatDisplayScalar, readDisplayScalar } from '../../shared/display_text_shared.js';
 import { ensureFeedbackModalState } from './feedback_modal_state.js';
 import {
   type CustomModalEls,
@@ -9,6 +10,10 @@ import {
   asHTMLElement,
   asHTMLInputElement,
 } from './feedback_shared.js';
+
+function readFeedbackText(value: unknown): string {
+  return formatDisplayScalar(readDisplayScalar(value));
+}
 
 export function ensureModalState(App: AppContainer) {
   return ensureFeedbackModalState(App);
@@ -104,9 +109,9 @@ export function openPromptViaWindow(
     const win = doc.defaultView;
     const value =
       win && typeof win.prompt === 'function'
-        ? win.prompt(String(title || ''), String(defaultValue || ''))
+        ? win.prompt(readFeedbackText(title), readFeedbackText(defaultValue))
         : null;
-    if (typeof callback === 'function' && value !== null) callback(String(value));
+    if (typeof callback === 'function' && value !== null) callback(value);
   } catch (err) {
     __uiFeedbackReportNonFatal(App, 'prompt.window', err);
   }
@@ -122,7 +127,7 @@ export function openConfirmViaWindow(
   if (!doc) return;
   try {
     const win = doc.defaultView;
-    const ok = win && typeof win.confirm === 'function' ? !!win.confirm(String(message || '')) : false;
+    const ok = win && typeof win.confirm === 'function' ? !!win.confirm(readFeedbackText(message)) : false;
     if (ok && typeof onConfirm === 'function') onConfirm();
     if (!ok && typeof onCancel === 'function') onCancel();
   } catch (err) {

@@ -1,4 +1,5 @@
 import type { Object3DLike } from '../../../types/three_like';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 type MovingFrontNodeLike = Object3DLike & {
   castShadow?: boolean;
@@ -12,7 +13,7 @@ function isInMovingFrontSubtree(obj: MovingFrontNodeLike | null | undefined): bo
   let p: MovingFrontNodeLike | null | undefined = obj;
   for (let i = 0; i < 8 && p; i++) {
     const ud = p.userData || {};
-    const pid = ud.partId != null ? String(ud.partId) : '';
+    const pid = formatIdentityValue(readIdentityValue(ud.partId));
     if (ud.__wpCornerPentDoor || ud.__wpCornerPentDoorPair || ud.__wpDoorOpenDirSign) return true;
     if (
       (typeof ud.__doorWidth === 'number' && Number.isFinite(ud.__doorWidth)) ||

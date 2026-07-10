@@ -2,6 +2,7 @@ import type { ActionMetaLike, UnknownRecord } from '../../../types';
 
 import { commitConfigMapOwnerPatchWithReplaceKeys } from './cfg_access_map_owner.js';
 import { cfgMapRecord, readMapRecord } from './cfg_access_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 export const SIMPLE_WRITABLE_MAP_NAMES = [
   'handlesMap',
@@ -18,7 +19,7 @@ export type SimpleWritableMapName = (typeof SIMPLE_WRITABLE_MAP_NAMES)[number];
 const SIMPLE_WRITABLE_MAP_NAME_SET: ReadonlySet<string> = new Set(SIMPLE_WRITABLE_MAP_NAMES);
 
 export function isSimpleWritableMapName(mapName: unknown): mapName is SimpleWritableMapName {
-  return SIMPLE_WRITABLE_MAP_NAME_SET.has(String(mapName || ''));
+  return typeof mapName === 'string' && SIMPLE_WRITABLE_MAP_NAME_SET.has(mapName);
 }
 
 function setCfgSimpleWritableMapFromOwner(
@@ -75,7 +76,7 @@ export function patchSimpleWritableMapEntryFromOwner(
   value: unknown,
   meta?: ActionMetaLike
 ): boolean {
-  const cleanKey = String(key || '');
+  const cleanKey = formatIdentityValue(readIdentityValue(key));
   if (!cleanKey) return false;
 
   const nextMap = readSimpleWritableMapFromOwner(App, mapName);
@@ -108,7 +109,7 @@ export function toggleSimpleWritableBooleanMapEntryFromOwner(
   key: unknown,
   meta?: ActionMetaLike
 ): boolean {
-  const cleanKey = String(key || '');
+  const cleanKey = formatIdentityValue(readIdentityValue(key));
   if (!cleanKey) return false;
   const current = readSimpleWritableMapFromOwner(App, mapName);
   return patchSimpleWritableMapEntryFromOwner(App, mapName, cleanKey, current[cleanKey] ? null : true, meta);

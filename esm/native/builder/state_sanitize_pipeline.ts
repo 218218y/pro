@@ -4,6 +4,7 @@ import { ensureBuilderService } from '../runtime/builder_service_access.js';
 import { coerceFiniteInt, coerceFiniteNumber } from '../runtime/num_coerce.js';
 import { syncDimensionRuntimePatch } from '../runtime/dimension_sync_coalescer.js';
 import { metaUiOnly } from '../runtime/meta_profiles_access.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import {
   DEFAULT_HEIGHT,
   DEFAULT_WIDTH,
@@ -108,7 +109,7 @@ export function sanitizeBuildDimsAndSyncRuntime(args: {
   const rawChestDrawers = _toInt(raw.chestDrawersCount, DEFAULT_CHEST_DRAWERS_COUNT);
 
   const forceBuild = !!ui.forceBuild;
-  const activeId = ui.__activeId ? String(ui.__activeId) : '';
+  const activeId = formatIdentityValue(readIdentityValue(ui.__activeId));
 
   // Mid-edit skip rules (do NOT throw; just skip build to avoid fight with the input field).
   if (!forceBuild) {

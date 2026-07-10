@@ -1,7 +1,6 @@
 import type { AppContainer, TimeoutHandleLike } from '../../../types';
 
 import {
-  getErrorStack,
   shouldConsoleLogOnce,
   type DebounceOptions,
   type PlatformArgList,
@@ -11,6 +10,7 @@ import {
 } from './platform_shared.js';
 import { ensurePlatformRoot, getPlatformRootMaybe } from '../runtime/app_roots_access.js';
 import { installStableSurfaceMethod } from '../runtime/stable_surface_methods.js';
+import { normalizeUnknownErrorInfo } from '../runtime/error_normalization.js';
 
 function clearTimeoutSafe(
   clearTimeoutFn: PlatformUtilInstallDeps['clearTimeoutFn'],
@@ -57,16 +57,6 @@ export function installPlatformUtilSurface(App: AppContainer, deps: PlatformUtil
     }
   }
 
-  installStableSurfaceMethod(platform.util, 'str', '__wpStr', () => {
-    return function (v: unknown, defaultValue?: unknown) {
-      if (v === null || typeof v === 'undefined')
-        return typeof defaultValue === 'undefined' ? '' : String(defaultValue);
-      if (typeof v === 'number' && v !== v)
-        return typeof defaultValue === 'undefined' ? '' : String(defaultValue);
-      return String(v);
-    };
-  });
-
   installStableSurfaceMethod(platform, 'reportError', '__wpReportError', () => {
     return function (err: unknown, ctx?: unknown) {
       try {
@@ -74,9 +64,10 @@ export function installPlatformUtilSurface(App: AppContainer, deps: PlatformUtil
         if (!vb.enabled) return;
         if (!shouldConsoleLogOnce(err, ctx, vb.dedupeMs)) return;
 
-        const stack = getErrorStack(err);
-        const msg = stack ? String(stack) : String(err);
-        console.error('[Platform]', ctx ? `[${String(ctx)}]` : '', msg);
+        const normalized = normalizeUnknownErrorInfo(err);
+        const msg = normalized.stack || normalized.message;
+        const context = typeof ctx === 'string' && ctx ? `[${ctx}]` : '';
+        console.error('[Platform]', context, msg);
       } catch {
         // swallow
       }
@@ -90,12 +81,15 @@ export function installPlatformUtilSurface(App: AppContainer, deps: PlatformUtil
       } catch (e) {
         const reportError = getReportErrorFn();
         if (reportError) {
-          const ctx = String(prefix ? `${String(prefix)}.` : '') + String(label || '');
+          const prefixText = typeof prefix === 'string' && prefix ? `${prefix}.` : '';
+          const labelText = typeof label === 'string' ? label : '';
+          const ctx = prefixText + labelText;
           reportError(e, ctx);
         }
         const vb = deps.getVerboseCfg();
         if (!vb.enabled || !reportError) {
-          console.warn(`[${String(prefix || 'safe')}]`, label, e);
+          const prefixLabel = typeof prefix === 'string' && prefix ? prefix : 'safe';
+          console.warn(`[${prefixLabel}]`, label, e);
         }
         return null;
       }

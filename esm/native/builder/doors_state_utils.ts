@@ -4,6 +4,7 @@
 
 import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
 import { listCanonicalRemovedDoorLookupKeys } from '../../shared/removed_doors_map_keys_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type {
   BuilderDoorMapsConfigLike,
@@ -31,7 +32,7 @@ function readBool(v: unknown): boolean {
 function readPartColorValue(value: unknown): BuilderPartColorValue {
   if (typeof value === 'string') return value;
   if (value == null) return value === null ? null : undefined;
-  return String(value);
+  return undefined;
 }
 
 function asRecordOrNull(x: unknown): UnknownRecord | null {
@@ -174,7 +175,9 @@ export function makeHandleTypeResolver(args: {
   const globalHandleType: string =
     globalValue === undefined || globalValue === null || globalValue === ''
       ? 'standard'
-      : String(globalValue);
+      : typeof globalValue === 'string'
+        ? globalValue
+        : 'standard';
 
   const readOverride = (key: string): unknown => {
     if (!hm || !key) return undefined;
@@ -190,7 +193,7 @@ export function makeHandleTypeResolver(args: {
   };
 
   return function getHandleType(id: unknown): unknown {
-    const sid = id == null ? '' : String(id);
+    const sid = formatIdentityValue(readIdentityValue(id));
     const base = stripSuffix(sid);
 
     // Bottom segment created by bottom-split: NO handle by default.

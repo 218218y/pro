@@ -25,13 +25,23 @@ function stableSerializeHistorySnapshotValue(
   seen: WeakSet<object> = new WeakSet<object>()
 ): string {
   if (value === null) return 'null';
-  const valueType = typeof value;
-  if (valueType === 'string') return JSON.stringify(value);
-  if (valueType === 'number') return Number.isFinite(value) ? String(value) : 'null';
-  if (valueType === 'boolean') return value ? 'true' : 'false';
-  if (valueType === 'undefined' || valueType === 'function' || valueType === 'symbol') return 'null';
+  if (typeof value === 'string') return JSON.stringify(value);
+  if (typeof value === 'number') return Number.isFinite(value) ? value.toString() : 'null';
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  if (
+    typeof value === 'undefined' ||
+    typeof value === 'function' ||
+    typeof value === 'symbol' ||
+    typeof value === 'bigint'
+  ) {
+    return 'null';
+  }
   if (Array.isArray(value)) {
-    return `[${value.map(item => stableSerializeHistorySnapshotValue(item, seen)).join(',')}]`;
+    if (seen.has(value)) return 'null';
+    seen.add(value);
+    const serialized = `[${value.map(item => stableSerializeHistorySnapshotValue(item, seen)).join(',')}]`;
+    seen.delete(value);
+    return serialized;
   }
   const rec = readJsonLikeRecord(value);
   if (!rec) return 'null';

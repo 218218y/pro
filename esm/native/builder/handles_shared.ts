@@ -1,6 +1,7 @@
 import { assertApp, assertTHREE } from '../runtime/api.js';
 import { ensureBuilderService } from '../runtime/builder_service_access.js';
 import { asRecord } from '../runtime/record.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type {
   AppContainer,
   Box3Like,
@@ -155,7 +156,7 @@ export function normEdgeHandleVariant(v: unknown): EdgeHandleVariant {
 }
 
 export function edgeHandleVariantPartKey(partId: unknown): string {
-  return `${EDGE_HANDLE_VARIANT_PART_PREFIX}${String(partId || '')}`;
+  return `${EDGE_HANDLE_VARIANT_PART_PREFIX}${formatIdentityValue(readIdentityValue(partId))}`;
 }
 
 export function getHandlesThree(App: AppContainer): ThreeLike {

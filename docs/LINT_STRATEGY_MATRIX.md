@@ -23,8 +23,8 @@ Stage 9 finalization: TypeScript 7.0.2 is active, TS/TSX ESLint ownership is rem
 
 ## Migration policy
 
-- `lint:modern` is the primary lint gate and combines strict JS ESLint, Oxlint syntax, and custom contracts.
+- `lint:modern` is the primary lint gate and combines strict JS ESLint, Oxlint syntax, blocking type-aware Oxlint, and custom contracts.
 - `lint:ts-modern:syntax` is now a blocking Oxlint syntax gate; it must stay at 0 diagnostics as the canonical TS/TSX syntax gate.
-- `lint:ts-modern:type-aware` remains audit-only; the first safe burn-down reduced diagnostics from 998 to 966, and the remaining buckets need focused follow-up passes.
+- `lint:ts-modern:type-aware` is blocking at 0 diagnostics; the global zero contract covers `no-redundant-type-constituents`, `unbound-method`, and `no-base-to-string`.
 - `lint:contracts` owns project-specific rules that should not depend on ESLint parser selectors, including the lint architecture contracts.
 - TS/TSX ESLint removal is complete; `lint:modern-readiness` remains as a regression check for rule ownership.

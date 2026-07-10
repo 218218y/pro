@@ -29,6 +29,24 @@ test('builder build input fingerprint runtime: canonical helper keeps scalar nor
   assert.match(normalizeBuildInputFingerprintScalar({ a: 1 }), /^json:/);
 });
 
+test('builder build input fingerprint runtime: object order is stable and scalar types do not collide', () => {
+  assert.equal(
+    normalizeBuildInputFingerprintScalar({ b: 2, a: 1 }),
+    normalizeBuildInputFingerprintScalar({ a: 1, b: 2 })
+  );
+  assert.notEqual(
+    normalizeBuildInputFingerprintScalar({ value: 1 }),
+    normalizeBuildInputFingerprintScalar({ value: '1' })
+  );
+
+  const circular: Record<string, unknown> = { value: 1 };
+  circular.self = circular;
+  assert.equal(
+    normalizeBuildInputFingerprintScalar(circular),
+    normalizeBuildInputFingerprintScalar(circular)
+  );
+});
+
 test('builder build input fingerprint runtime: canonical helper includes transient active/force context only when needed', () => {
   assert.equal(createBuildInputFingerprint({ signature: 'sig:a', activeId: '', forceBuild: false }), 'sig:a');
   assert.equal(

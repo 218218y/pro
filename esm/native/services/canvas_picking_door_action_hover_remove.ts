@@ -1,6 +1,7 @@
 import type { UnknownRecord } from '../../../types';
 import { toCanonicalDoorGrooveTargetKey } from '../../shared/door_groove_key_contracts_shared.js';
 import { resolveRemovedDoorPartIdentity } from '../../shared/removed_doors_map_keys_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { normalizeKnownMapSnapshot } from '../runtime/maps_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import { __wp_map } from './canvas_picking_core_helpers.js';
@@ -44,7 +45,7 @@ function readDoorActionHoverFamilyPartIds(args: {
       const g = doorsArray[i] && doorsArray[i].group;
       if (!g || !g.userData) continue;
       const gUserData = __asObject<UnknownRecord>(g.userData);
-      const pidRaw = String(gUserData?.partId || '');
+      const pidRaw = formatIdentityValue(readIdentityValue(gUserData?.partId));
       if (!pidRaw) continue;
       const identity = resolveRemovedDoorPartIdentity(__scopeCornerHoverPartKey(pidRaw, state.hitDoorStack));
       const pid = identity.partId;

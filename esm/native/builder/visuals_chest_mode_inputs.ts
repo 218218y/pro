@@ -114,8 +114,9 @@ export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike)
     opts.baseLegPlatformFrontOverhangCm,
     DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM
   );
+  const normalizedBaseType = typeof rawBaseType === 'string' ? rawBaseType : '';
   const baseLegPlatformEnabled =
-    !isWheelsBase && String(rawBaseType || '') !== 'plinth' && baseLegPlatformMode === 'stage';
+    !isWheelsBase && normalizedBaseType !== 'plinth' && baseLegPlatformMode === 'stage';
   const baseLegPlatformHeightM = baseLegPlatformEnabled ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM : 0;
   const basePlinthHeightCm = normalizeBasePlinthHeightCm(plinthHeightSource);
   const effectiveBaseLegHeightM = isWheelsBase
@@ -143,7 +144,7 @@ export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike)
     totalW,
     D,
     drawersCount,
-    effectiveBaseType: String(rawBaseType || '') === 'plinth' ? 'plinth' : 'legs',
+    effectiveBaseType: normalizedBaseType === 'plinth' ? 'plinth' : 'legs',
     baseLegStyle: legOptions.style,
     baseLegColor: legOptions.color,
     basePlinthHeightCm,
@@ -157,14 +158,14 @@ export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike)
     baseLegTopPlatformHeightM: baseLegPlatformHeightM,
     baseLegPlatformSideOverhangM,
     baseLegPlatformFrontOverhangM,
-    colorChoice: String(colorChoice || '#ffffff'),
-    customColor: String(customColor || '#ffffff'),
+    colorChoice: typeof colorChoice === 'string' && colorChoice ? colorChoice : '#ffffff',
+    customColor: typeof customColor === 'string' && customColor ? customColor : '#ffffff',
     chestCommodeEnabled,
     chestCommodeMirrorHeightCm,
     chestCommodeMirrorWidthCm,
     chestCommodeMirrorHeightM: cmToM(chestCommodeMirrorHeightCm),
     chestCommodeMirrorWidthM: cmToM(chestCommodeMirrorWidthCm),
-    doorStyle: String(doorStyle || 'flat'),
+    doorStyle: typeof doorStyle === 'string' && doorStyle ? doorStyle : 'flat',
     isGroovesEnabled,
   };
 }

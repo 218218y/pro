@@ -1,6 +1,7 @@
 import type { DrawerVisualEntryLike } from '../../../types';
 
 import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { getCfg } from '../kernel/api.js';
 import { getCamera, getWardrobeGroup } from '../runtime/render_access.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
@@ -159,12 +160,9 @@ export function tryHandleDrawerDividerHoverPreview(args: DrawerDividerHoverPrevi
     const cfg = __readRecord(getCfg(App));
     const dividerMap = __readRecord(cfg?.drawerDividersMap);
     const dividerKey =
-      hoverDrawer && hoverDrawer.dividerKey
-        ? String(hoverDrawer.dividerKey)
-        : hoverDrawer.id != null
-          ? String(hoverDrawer.id)
-          : '';
-    const partId = hoverDrawer && hoverDrawer.id != null ? String(hoverDrawer.id) : '';
+      formatIdentityValue(readIdentityValue(hoverDrawer?.dividerKey)) ||
+      formatIdentityValue(readIdentityValue(hoverDrawer?.id));
+    const partId = formatIdentityValue(readIdentityValue(hoverDrawer?.id));
     const hasDivider = !!(
       dividerMap &&
       ((dividerKey && dividerMap[dividerKey]) || (partId && dividerMap[partId]))

@@ -96,7 +96,7 @@ test('package promotes modern lint without retired aliases', () => {
   assert.equal(pkg.scripts.lint, 'npm run lint:modern');
   assert.equal(
     pkg.scripts['lint:modern'],
-    'npm run lint:js:strict && npm run lint:ts-modern:syntax && npm run lint:contracts'
+    'npm run lint:js:strict && npm run lint:ts-modern:syntax && npm run lint:ts-modern:type-aware && npm run lint:contracts'
   );
   assert.equal(pkg.scripts[OLD_LINT_LEGACY], undefined);
   assert.equal(pkg.scripts['lint:js'], 'node tools/wp_lint.js --profile js-only');
@@ -105,10 +105,14 @@ test('package promotes modern lint without retired aliases', () => {
     pkg.scripts['lint:ts-modern:syntax'],
     'node tools/wp_oxlint_audit.mjs --mode syntax --fail-on-diagnostics'
   );
-  assert.equal(pkg.scripts['lint:ts-modern:type-aware'], 'node tools/wp_oxlint_audit.mjs --mode type-aware');
+  assert.equal(
+    pkg.scripts['lint:ts-modern:type-aware'],
+    'node tools/wp_oxlint_audit.mjs --mode type-aware --fail-on-diagnostics'
+  );
   assert.equal(pkg.scripts['lint:architecture-contracts'], 'node tools/wp_lint_architecture_contracts.mjs');
   assert.equal(pkg.scripts['quality:ts'], 'npm run quality:ts-modern');
   assert.match(pkg.scripts['quality:ts-modern'], /lint:js:strict/);
+  assert.match(pkg.scripts['quality:ts-modern'], /lint:ts-modern:type-aware/);
   assert.match(pkg.scripts['quality:ts-modern'], /lint:contracts/);
   assert.doesNotMatch(
     pkg.scripts['quality:ts-modern'],
@@ -119,14 +123,15 @@ test('package promotes modern lint without retired aliases', () => {
 test('zeroed type-aware rules stay globally zero without baselining the remaining debt', () => {
   const report = readTypeAwareLintReport();
   const diagnostics = Array.isArray(report.diagnostics) ? report.diagnostics : [];
-  const redundantTypeConstituentDiagnostics = diagnostics.filter(
-    diagnostic => diagnostic?.code === 'typescript(no-redundant-type-constituents)'
-  );
+  const zeroedRules = [
+    'typescript(no-redundant-type-constituents)',
+    'typescript(unbound-method)',
+    'typescript(no-base-to-string)',
+  ];
 
   assert.ok(report.number_of_files > 0, 'The global type-aware scan must cover project files.');
-  assert.equal(
-    redundantTypeConstituentDiagnostics.length,
-    0,
-    'typescript(no-redundant-type-constituents) regressed above its zero contract.'
-  );
+  for (const rule of zeroedRules) {
+    const ruleDiagnostics = diagnostics.filter(diagnostic => diagnostic?.code === rule);
+    assert.equal(ruleDiagnostics.length, 0, `${rule} regressed above its zero contract.`);
+  }
 });

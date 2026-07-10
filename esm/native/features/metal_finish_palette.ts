@@ -56,9 +56,7 @@ export const METAL_FINISH_PALETTE_BY_COLOR: Record<MetalFinishPresetColor, Metal
 export const NICKEL_METAL_FINISH = METAL_FINISH_PALETTE_BY_COLOR.nickel;
 
 export function resolveMetalFinishPalette(value: unknown): MetalFinishPalette {
-  const key = String(value || '')
-    .trim()
-    .toLowerCase();
+  const key = typeof value === 'string' ? value.trim().toLowerCase() : '';
   return Object.prototype.hasOwnProperty.call(METAL_FINISH_PALETTE_BY_COLOR, key)
     ? METAL_FINISH_PALETTE_BY_COLOR[key as MetalFinishPresetColor]
     : METAL_FINISH_PALETTE_BY_COLOR.nickel;

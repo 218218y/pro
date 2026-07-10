@@ -9,6 +9,7 @@ import {
   toCanonicalDoorVisualMapKey,
   toDoorStyleOverrideMapKey,
 } from '../../../../shared/door_visual_key_contracts_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../../../shared/identity_value_shared.js';
 
 export type DoorVisualMapEntry = { key: string; value: unknown };
 export {
@@ -23,7 +24,7 @@ function hasOwn(map: Record<string, unknown> | undefined | null, key: string): b
 }
 
 function normalizePartKey(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : String(value ?? '').trim();
+  return formatIdentityValue(readIdentityValue(value)).trim();
 }
 
 export function readDoorVisualMapEntry(
@@ -64,8 +65,7 @@ export function resolveDoorStylePaintTargetKey(args: {
   isDoorOrDrawerLikePartId: (partId: unknown) => boolean;
   scopePartKeyForStack: (partId: string, stack: 'top' | 'bottom') => string;
 }): string {
-  const foundPartId =
-    typeof args.foundPartId === 'string' ? args.foundPartId : String(args.foundPartId ?? '');
+  const foundPartId = formatIdentityValue(readIdentityValue(args.foundPartId));
   const effectiveDoorId =
     typeof args.effectiveDoorId === 'string' && args.effectiveDoorId ? args.effectiveDoorId : '';
   const foundDrawerId =

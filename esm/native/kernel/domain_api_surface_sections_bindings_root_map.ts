@@ -9,7 +9,7 @@ import {
 
 function createSelectRootBindings(state: DomainApiSurfaceSectionsState): UnknownRecord {
   return {
-    map: (mapName: unknown) => state._map(String(mapName || '')),
+    map: (mapName: unknown) => state._map(typeof mapName === 'string' ? mapName : ''),
   };
 }
 

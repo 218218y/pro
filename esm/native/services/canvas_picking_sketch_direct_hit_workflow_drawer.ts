@@ -12,7 +12,11 @@ import {
   readSketchBoxId,
   readVector3Ctor,
 } from './canvas_picking_sketch_direct_hit_workflow_objects.js';
-import { readRecordNumber, readRecordString } from './canvas_picking_sketch_direct_hit_workflow_records.js';
+import {
+  readRecordIdentity,
+  readRecordNumber,
+  readRecordString,
+} from './canvas_picking_sketch_direct_hit_workflow_records.js';
 import {
   findDirectCrossDrawerHitInIntersects,
   removeStandardExternalDrawerFromConfig,
@@ -54,7 +58,7 @@ function hoverAllowsSketchExternalRemoval(args: {
   if (!args.hoverOk) return false;
   if (args.hoverOp !== 'remove') return false;
 
-  const hoverRemoveId = readRecordString(args.hoverRec, 'removeId');
+  const hoverRemoveId = readRecordIdentity(args.hoverRec, 'removeId');
   if (!hoverRemoveId || hoverRemoveId !== args.drawerId) return false;
 
   if (args.hoverKind === 'ext_drawers') return true;
@@ -63,7 +67,7 @@ function hoverAllowsSketchExternalRemoval(args: {
   const hoverContentKind = readRecordString(args.hoverRec, 'contentKind');
   if (!isSketchExternalDrawerHoverContentKind(hoverContentKind)) return false;
 
-  const hoverBoxId = readRecordString(args.hoverRec, 'boxId');
+  const hoverBoxId = readRecordIdentity(args.hoverRec, 'boxId');
   return !args.boxId || !hoverBoxId || hoverBoxId === args.boxId;
 }
 
@@ -77,7 +81,7 @@ function hoverAllowsSketchInternalRemoval(args: {
   if (!args.hoverOk) return false;
   if (args.hoverOp !== 'remove') return false;
   if (args.hoverKind !== 'drawers') return false;
-  return readRecordString(args.hoverRec, 'removeId') === args.drawerId;
+  return readRecordIdentity(args.hoverRec, 'removeId') === args.drawerId;
 }
 
 function hoverAllowsStandardExternalRemoval(args: {
@@ -90,7 +94,7 @@ function hoverAllowsStandardExternalRemoval(args: {
   if (!args.hoverOk) return true;
   if (args.hoverOp !== 'remove') return false;
   if (args.hoverKind !== 'ext_drawers') return false;
-  return readRecordString(args.hoverRec, 'removePid') === args.partId;
+  return readRecordIdentity(args.hoverRec, 'removePid') === args.partId;
 }
 export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDirectHitContext): boolean {
   const {
@@ -116,7 +120,7 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
         const drawerGroup = sketchExternalHit.object ?? null;
         const drawerId =
           sketchExternalHit.sketchExtDrawerId ||
-          readRecordString(drawerGroup?.userData, '__wpSketchExtDrawerId');
+          readRecordIdentity(drawerGroup?.userData, '__wpSketchExtDrawerId');
         const boxId = sketchExternalHit.sketchBoxId || readSketchBoxId(drawerGroup);
         if (
           drawerId &&
@@ -287,15 +291,15 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
       const pid = readPartId(drawerGroup);
       const moduleIndex = readModuleIndex(drawerGroup);
       const drawerId = drawerGroup?.userData
-        ? readRecordString(drawerGroup.userData, '__wpSketchExtDrawerId')
+        ? readRecordIdentity(drawerGroup.userData, '__wpSketchExtDrawerId')
         : '';
       const boxId = readSketchBoxId(drawerGroup);
       if (pid && drawerId && moduleIndex && moduleIndex === String(__activeModuleKey)) {
         let allowRemove = false;
 
         if (__hoverOk) {
-          const hoverRemoveId = readRecordString(__hoverRec, 'removeId');
-          const hoverBoxId = readRecordString(__hoverRec, 'boxId');
+          const hoverRemoveId = readRecordIdentity(__hoverRec, 'removeId');
+          const hoverBoxId = readRecordIdentity(__hoverRec, 'boxId');
           const hoverContentKind = readRecordString(__hoverRec, 'contentKind');
           const hoverRemovesModuleDrawer =
             __hoverKind === 'ext_drawers' && __hoverOp === 'remove' && hoverRemoveId === drawerId;

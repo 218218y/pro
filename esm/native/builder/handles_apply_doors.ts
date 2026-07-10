@@ -5,6 +5,7 @@ import {
   resolveDoorHandleVerticalFit,
 } from '../../shared/wardrobe_construction_validation_shared.js';
 import { resolveManualHandleLocalPosition } from '../features/manual_handle_position.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { createHandleMeshV7 } from './handles_mesh.js';
 import { notifyHandleFitSuppressions } from './handles_fit_suppression_feedback.js';
 import type { HandlesApplyRuntime } from './handles_apply_shared.js';
@@ -79,7 +80,8 @@ export function applyDoorHandles(runtime: HandlesApplyRuntime): void {
         isManualPlacement,
       })
     ) {
-      standardSuppressedPartIds.push(String(id));
+      const suppressedPartId = formatIdentityValue(readIdentityValue(id));
+      if (suppressedPartId) standardSuppressedPartIds.push(suppressedPartId);
       continue;
     }
     g.add(handle);

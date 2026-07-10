@@ -2,6 +2,7 @@
 // Keeps record-patch semantics and top-vs-lower list normalization in one focused seam.
 
 import type { ModuleConfigLike, NormalizedTopModuleConfigLike } from '../../../../types';
+import { readInteger, readNumericInput } from '../../../shared/numeric_value_shared.js';
 
 import { normalizeTopModuleConfigTyped } from './modules_config_api.js';
 import { createDefaultLowerModuleConfig, normalizeLowerModuleConfig } from '../stack_split/module_config.js';
@@ -143,8 +144,8 @@ export type NormalizeCornerCellForPatchOptions<T extends CornerCellConfigLike = 
 };
 
 function readCornerCellDoorsCount(value: unknown, defaultValue = 2): number {
-  const doors = parseInt(String((isRecord(value) ? value.doors : undefined) ?? ''), 10);
-  return Number.isFinite(doors) && doors > 0 ? doors : defaultValue;
+  const doors = readInteger(readNumericInput(isRecord(value) ? value.doors : undefined));
+  return doors != null && doors > 0 ? doors : defaultValue;
 }
 
 function resolveCornerCellDefaultLayout(

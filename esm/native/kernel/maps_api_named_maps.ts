@@ -14,9 +14,10 @@ import type { MapsApiShared } from './maps_api_shared.js';
 import { createRecord } from './maps_api_shared.js';
 import { toCanonicalGroovesMapKey } from '../../shared/door_groove_key_contracts_shared.js';
 import { toCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 function readMapKey(value: unknown): string {
-  return String(value || '').trim();
+  return formatIdentityValue(readIdentityValue(value)).trim();
 }
 
 export function installMapsApiNamedMaps(App: AppContainer, shared: MapsApiShared): void {

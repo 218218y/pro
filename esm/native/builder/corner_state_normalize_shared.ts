@@ -41,7 +41,7 @@ export function readBool(obj: CornerBuildUI, key: keyof CornerBuildUI): boolean 
 
 export function readStringValue(obj: UnknownRecord, key: string, defaultValue = ''): string {
   const v = obj[key];
-  return v == null ? defaultValue : String(v);
+  return typeof v === 'string' ? v : defaultValue;
 }
 
 export function readModeConstant(name: string, defaultMode: string): string {

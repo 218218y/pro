@@ -3,6 +3,7 @@ import type {
   SketchBoxSegmentState,
   SketchBoxVerticalSegmentState,
 } from './canvas_picking_sketch_box_dividers_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { pickSketchBoxSegment, pickSketchBoxVerticalSegment } from './canvas_picking_sketch_box_segments.js';
 import {
   findSketchBoxDoorForSegment,
@@ -148,9 +149,7 @@ export function upsertSketchBoxDoorForSegment(args: {
   const hinge = hingeRaw === 'right' ? 'right' : 'left';
   const next: SketchBoxDoorState = {
     id:
-      args.doorId != null && String(args.doorId)
-        ? String(args.doorId)
-        : existing?.door.id || createSketchBoxDoorId('d_'),
+      formatIdentityValue(readIdentityValue(args.doorId)) || existing?.door.id || createSketchBoxDoorId('d_'),
     xNorm: targetSegment.xNorm,
     ...(targetVerticalSegment ? { yNorm: targetVerticalSegment.yNorm } : {}),
     hinge,
@@ -181,7 +180,7 @@ export function removeSketchBoxDoorForSegment(args: {
 }): boolean {
   const doors = readSketchBoxDoors(args.box);
   if (!doors.length) return false;
-  const doorId = args.doorId != null && String(args.doorId) ? String(args.doorId) : '';
+  const doorId = formatIdentityValue(readIdentityValue(args.doorId));
   let removeIndex = -1;
   if (doorId) {
     removeIndex = doors.findIndex(door => door.id === doorId);
@@ -214,7 +213,7 @@ export function toggleSketchBoxDoorHingeForSegment(args: {
   const doors = readSketchBoxDoors(args.box);
   if (!doors.length) return null;
   if (hasSketchBoxDoubleDoorPairForSegment(args)) return null;
-  const doorId = args.doorId != null && String(args.doorId) ? String(args.doorId) : '';
+  const doorId = formatIdentityValue(readIdentityValue(args.doorId));
   let target = -1;
   if (doorId) target = doors.findIndex(door => door.id === doorId);
   if (target < 0) {

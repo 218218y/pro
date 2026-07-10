@@ -1,6 +1,7 @@
 import { normalizeKnownMapSnapshot, isSplitBottomEnabledInMap } from '../runtime/maps_access.js';
 import { readConfigState, type ValueRecord } from './handles_shared.js';
 import { listCanonicalRemovedDoorLookupKeys } from '../../shared/removed_doors_map_keys_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type { ConfigStateLike } from '../../../types';
 
@@ -46,7 +47,7 @@ export function createHandlesDoorRemovedReader(removedDoorsMap: ValueRecord): (p
 }
 
 export function isBottomSplitBotPartFromSnapshot(splitDoorsBottomMap: ValueRecord, id: unknown): boolean {
-  const sid = id == null ? '' : String(id);
+  const sid = formatIdentityValue(readIdentityValue(id));
   if (!sid || !sid.endsWith('_bot')) return false;
   const baseId = sid.replace(/_bot$/, '');
   return !!baseId && isSplitBottomEnabledInMap(splitDoorsBottomMap, baseId);

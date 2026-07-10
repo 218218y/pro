@@ -1,4 +1,5 @@
 import type { DoorVisualEntryLike, DrawerVisualEntryLike, UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 export type SketchFreeBoxMotionScope = {
   boxId: string;
@@ -26,8 +27,7 @@ function asRecord(value: unknown): UnknownRecord | null {
 }
 
 function readString(value: unknown): string | null {
-  if (value == null) return null;
-  const text = String(value).trim();
+  const text = formatIdentityValue(readIdentityValue(value)).trim();
   return text ? text : null;
 }
 

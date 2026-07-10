@@ -45,7 +45,7 @@ export function installStateApiConfigNamespaceScalars(ctx: StateApiConfigNamespa
       meta?: ActionMetaLike
     ) {
       const m = normMeta(meta, 'actions.config:setCustomUploadedDataURL');
-      const v = data == null ? null : String(data || '');
+      const v = typeof data === 'string' ? data : null;
       return actions.setCfgScalar?.('customUploadedDataURL', v, m);
     };
   }

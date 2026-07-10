@@ -14,14 +14,16 @@ function readCloudSyncStableSerializeBigIntValue(
   value: bigint,
   options: CloudSyncStableSerializeOptions
 ): string {
-  return options.bigintValue === 'quoted-n' ? `"${String(value)}n"` : String(value);
+  return options.bigintValue === 'quoted-n' ? `"${value.toString()}n"` : value.toString();
 }
 
 function readCloudSyncStableSerializeOtherPrimitiveValue(
   value: unknown,
   options: CloudSyncStableSerializeOptions
 ): string {
-  return options.otherPrimitiveValue === 'type-label' ? `"${typeof value}"` : JSON.stringify(String(value));
+  if (options.otherPrimitiveValue === 'type-label') return `"${typeof value}"`;
+  if (typeof value === 'symbol') return JSON.stringify(`[Symbol:${value.description ?? ''}]`);
+  return `"[Unsupported:${typeof value}]"`;
 }
 
 export function stableSerializeCloudSyncValue(
@@ -31,13 +33,17 @@ export function stableSerializeCloudSyncValue(
 ): string {
   if (value === null) return 'null';
   if (typeof value === 'undefined') return readCloudSyncStableSerializeUndefinedValue(options);
-  const valueType = typeof value;
-  if (valueType === 'string') return JSON.stringify(value);
-  if (valueType === 'number' || valueType === 'boolean') return String(value);
-  if (valueType === 'bigint') return readCloudSyncStableSerializeBigIntValue(value as bigint, options);
-  if (valueType !== 'object') return readCloudSyncStableSerializeOtherPrimitiveValue(value, options);
+  if (typeof value === 'string') return JSON.stringify(value);
+  if (typeof value === 'number') return Number.isFinite(value) ? value.toString() : 'null';
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  if (typeof value === 'bigint') return readCloudSyncStableSerializeBigIntValue(value, options);
+  if (typeof value !== 'object') return readCloudSyncStableSerializeOtherPrimitiveValue(value, options);
   if (Array.isArray(value)) {
-    return `[${value.map(item => stableSerializeCloudSyncValue(item, options, seen)).join(',')}]`;
+    if (seen.has(value)) return '"[Circular]"';
+    seen.add(value);
+    const serialized = `[${value.map(item => stableSerializeCloudSyncValue(item, options, seen)).join(',')}]`;
+    seen.delete(value);
+    return serialized;
   }
   const rec = asRecord(value);
   if (!rec) return readCloudSyncStableSerializeOtherPrimitiveValue(value, options);

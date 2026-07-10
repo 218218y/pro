@@ -29,12 +29,17 @@ function hashString32(value: string): string {
 
 function stableSerialize(value: unknown, seen: WeakSet<object> = new WeakSet<object>()): string {
   if (value === null) return 'null';
-  const valueType = typeof value;
-  if (valueType === 'string') return JSON.stringify(value);
-  if (valueType === 'number') return Number.isFinite(value) ? String(value) : 'null';
-  if (valueType === 'boolean') return value ? 'true' : 'false';
-  if (valueType !== 'object') return 'null';
-  if (Array.isArray(value)) return `[${value.map(item => stableSerialize(item, seen)).join(',')}]`;
+  if (typeof value === 'string') return JSON.stringify(value);
+  if (typeof value === 'number') return Number.isFinite(value) ? value.toString() : 'null';
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  if (typeof value !== 'object') return 'null';
+  if (Array.isArray(value)) {
+    if (seen.has(value)) return '"[Circular]"';
+    seen.add(value);
+    const serialized = `[${value.map(item => stableSerialize(item, seen)).join(',')}]`;
+    seen.delete(value);
+    return serialized;
+  }
   if (ArrayBuffer.isView(value)) {
     return `{"$view":${JSON.stringify(value.constructor.name)},"byteLength":${value.byteLength}}`;
   }

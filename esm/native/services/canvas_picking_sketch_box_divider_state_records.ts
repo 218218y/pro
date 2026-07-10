@@ -1,4 +1,5 @@
 import { asRecord } from '../runtime/record.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type {
   SketchBoxDividerState,
   SketchBoxHorizontalDividerState,
@@ -31,7 +32,7 @@ export function readSketchBoxDividers(box: unknown): SketchBoxDividerState[] {
     const frontZ = typeof it?.frontZ === 'number' && Number.isFinite(it.frontZ) ? it.frontZ : null;
     const yNorm = normalizeSketchBoxDividerYNorm(it?.yNorm);
     dividers.push({
-      id: it?.id != null && String(it.id) ? String(it.id) : `sbd_${i}`,
+      id: formatIdentityValue(readIdentityValue(it?.id)) || `sbd_${i}`,
       xNorm,
       centered: Math.abs(xNorm - 0.5) <= 0.001,
       ...(frontZ != null ? { frontZ } : {}),
@@ -54,7 +55,7 @@ export function readSketchBoxHorizontalDividers(box: unknown): SketchBoxHorizont
     const xNorm = normalizeSketchBoxDividerXNorm(it?.xNorm);
     const frontZ = typeof it?.frontZ === 'number' && Number.isFinite(it.frontZ) ? it.frontZ : null;
     dividers.push({
-      id: it?.id != null && String(it.id) ? String(it.id) : `sbh_${i}`,
+      id: formatIdentityValue(readIdentityValue(it?.id)) || `sbh_${i}`,
       yNorm,
       centered: Math.abs(yNorm - 0.5) <= 0.001,
       ...(frontZ != null ? { frontZ } : {}),

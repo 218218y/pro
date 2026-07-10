@@ -44,10 +44,10 @@ function readUiRawPreferredString(ui: UnknownRecord, key: string, defaultValue =
   const raw = asRecordOrEmpty(ui.raw);
   if (Object.prototype.hasOwnProperty.call(raw, key)) {
     const value = raw[key];
-    return value == null ? defaultValue : String(value);
+    return typeof value === 'string' ? value : defaultValue;
   }
   const value = ui[key];
-  return value == null ? defaultValue : String(value);
+  return typeof value === 'string' ? value : defaultValue;
 }
 
 export function createDomainApiModulesCornerRecomputeRuntime(args: {
@@ -67,7 +67,7 @@ export function createDomainApiModulesCornerRecomputeRuntime(args: {
   const doorsCount = readCanonicalUiRawIntFromSnapshot(ui, 'doors', 2);
   const singlePos = readUiRawPreferredString(ui, 'singleDoorPos');
   const structVal = readUiRawPreferredString(ui, 'structureSelect');
-  const wardrobeType = cfg && cfg.wardrobeType ? String(cfg.wardrobeType) : 'hinged';
+  const wardrobeType = cfg?.wardrobeType === 'sliding' ? 'sliding' : 'hinged';
   const modulesStructure = asModulesStructureList(
     calculateModuleStructurePure(doorsCount, singlePos, structVal, wardrobeType) || []
   );

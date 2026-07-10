@@ -89,7 +89,7 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
             contentKind,
             hoverRec: __hoverRec,
             hoverHost: {
-              tool: String(__hoverRec.tool || ''),
+              tool: typeof __hoverRec.tool === 'string' ? __hoverRec.tool : '',
               moduleKey: __activeModuleKey,
               isBottom: !!__isBottomStack,
             },

@@ -1,6 +1,8 @@
 // Focused canvas-picking support owner for numeric coercion, module-key parsing,
 // and small identifier helpers.
 
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
+
 export type ModuleKey = number | 'corner' | `corner:${number}`;
 
 const EDGE_HANDLE_VARIANT_PART_PREFIX = '__wp_edge_handle_variant:';
@@ -34,7 +36,7 @@ export function __wp_isCornerKey(mk: unknown): mk is 'corner' | `corner:${number
 }
 
 export function __edgeHandleVariantPartKey(partId: unknown): string {
-  return `${EDGE_HANDLE_VARIANT_PART_PREFIX}${String(partId || '')}`;
+  return `${EDGE_HANDLE_VARIANT_PART_PREFIX}${formatIdentityValue(readIdentityValue(partId))}`;
 }
 
 export function __normEdgeHandleVariant(v: unknown): 'short' | 'long' {

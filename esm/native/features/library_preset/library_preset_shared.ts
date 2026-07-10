@@ -88,7 +88,7 @@ export function cloneStringMap(value: unknown): Record<string, string | null | u
       out[key] = null;
       continue;
     }
-    out[key] = typeof raw === 'string' ? raw : String(raw);
+    if (typeof raw === 'string') out[key] = raw;
   }
   return out;
 }
@@ -105,7 +105,7 @@ export function cloneDoorSpecialMap(value: unknown): DoorSpecialMap {
       out[key] = null;
       continue;
     }
-    out[key] = typeof raw === 'string' ? raw : String(raw);
+    if (typeof raw === 'string') out[key] = raw;
   }
   return out;
 }

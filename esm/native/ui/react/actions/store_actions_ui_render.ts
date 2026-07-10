@@ -15,6 +15,8 @@ import {
   readRecord,
 } from './store_actions_state.js';
 import { patchUi, patchUiSoft, setUiScalarSoft } from './store_actions_ui_writes.js';
+import { formatIdentityValue, readIdentityValue } from '../../../../shared/identity_value_shared.js';
+import { readFiniteNumber, readNumericInput } from '../../../../shared/numeric_value_shared.js';
 
 function setUiLastSelectedWallColor(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
   void setUiLastSelectedWallColorApi(app, value, meta);
@@ -90,7 +92,7 @@ function setUiCurrentFloorType(app: AppContainer, value: unknown, meta?: ActionM
     uiNs.setCurrentFloorType(asStringValue(value), meta);
     return;
   }
-  setUiScalarSoft(app, 'currentFloorType', value == null ? '' : String(value), meta);
+  setUiScalarSoft(app, 'currentFloorType', asStringValue(value), meta);
 }
 
 function setUiCurrentLayoutType(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
@@ -99,7 +101,7 @@ function setUiCurrentLayoutType(app: AppContainer, value: unknown, meta?: Action
     uiNs.setCurrentLayoutType(asStringValue(value), meta);
     return;
   }
-  setUiScalarSoft(app, 'currentLayoutType', value == null ? '' : String(value), meta);
+  setUiScalarSoft(app, 'currentLayoutType', asStringValue(value), meta);
 }
 
 function setUiGridDivisionsState(
@@ -114,19 +116,19 @@ function setUiGridDivisionsState(
     uiNs.setGridDivisionsState(
       asNumberOrNull(divisions),
       readRecord(perCellGridMap) || emptyRecord(),
-      activeGridCellId == null ? null : String(activeGridCellId),
+      formatIdentityValue(readIdentityValue(activeGridCellId)) || null,
       meta
     );
     return;
   }
-  const divsNum = typeof divisions === 'number' ? divisions : parseFloat(String(divisions || ''));
+  const divsNum = readFiniteNumber(readNumericInput(divisions));
   const divs = Number.isFinite(divsNum) ? divsNum : 4;
   const patch: UnknownRecord = { currentGridDivisions: divs };
   if (perCellGridMap && typeof perCellGridMap === 'object' && !Array.isArray(perCellGridMap)) {
     patch.perCellGridMap = perCellGridMap;
   }
   if (typeof activeGridCellId !== 'undefined') {
-    patch.activeGridCellId = activeGridCellId == null ? null : String(activeGridCellId || '') || null;
+    patch.activeGridCellId = formatIdentityValue(readIdentityValue(activeGridCellId)) || null;
   }
   patchUiSoft(app, patch, meta);
 }
@@ -137,7 +139,7 @@ function setUiGridShelfVariantState(app: AppContainer, variant: unknown, meta?: 
     uiNs.setGridShelfVariantState(asStringOrNull(variant), meta);
     return;
   }
-  const raw = variant == null ? '' : String(variant || '');
+  const raw = asStringValue(variant);
   const normalized = raw.trim().toLowerCase();
   const next =
     normalized === 'regular' || normalized === 'double' || normalized === 'glass' || normalized === 'brace'
@@ -157,8 +159,8 @@ function setUiExtDrawerSelection(
     uiNs.setExtDrawerSelection(asStringOrNull(drawerType), asNumberOrNull(count), meta);
     return;
   }
-  const typeValue = drawerType == null ? '' : String(drawerType || '');
-  const countNum = typeof count === 'number' ? count : parseFloat(String(count || ''));
+  const typeValue = asStringValue(drawerType);
+  const countNum = readFiniteNumber(readNumericInput(count));
   const nextCount = Number.isFinite(countNum) ? countNum : 2;
   patchUiSoft(app, { currentExtDrawerType: typeValue, currentExtDrawerCount: nextCount }, meta);
 }

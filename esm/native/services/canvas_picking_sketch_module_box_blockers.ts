@@ -1,4 +1,5 @@
 import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { buildSketchModuleDrawerVerticalBlockers } from './canvas_picking_sketch_module_vertical_content_collision.js';
 import { buildManualLayoutVerticalContentBlockers } from './canvas_picking_manual_layout_vertical_blockers.js';
 import type { VerticalOccupancyRange } from './canvas_picking_manual_layout_sketch_vertical_stack.js';
@@ -51,7 +52,7 @@ export function buildSketchModuleBoxVerticalBlockers(args: {
       if (yNorm == null || heightM == null || !(heightM > 0)) return null;
       const clampedHeight = Math.max(woodThick * 2 + 0.02, Math.min(args.totalHeight, heightM));
       const centerY = args.bottomY + Math.max(0, Math.min(1, yNorm)) * args.totalHeight;
-      const id = box.id != null && box.id !== '' ? String(box.id) : String(index);
+      const id = formatIdentityValue(readIdentityValue(box.id)) || formatIdentityValue(index);
       return {
         id: `box:${id}`,
         centerY,

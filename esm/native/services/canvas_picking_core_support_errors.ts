@@ -3,16 +3,13 @@
 import type { AppContainer } from '../../../types';
 import { historyTouch } from '../runtime/app_helpers.js';
 import { reportError, shouldFailFast } from '../runtime/api_assert_surface.js';
+import { normalizeUnknownError } from '../runtime/error_normalization.js';
 
 const __wpPickingWarnThrottle = new Map<string, number>();
 
 export function __wp_toError(err: unknown, defaultMessage: string): Error {
   if (err instanceof Error) return err;
-  try {
-    return new Error(typeof err === 'string' ? err : String(err ?? defaultMessage));
-  } catch {
-    return new Error(defaultMessage);
-  }
+  return new Error(normalizeUnknownError(err, defaultMessage).message);
 }
 
 export function __wp_reportPickingIssue(

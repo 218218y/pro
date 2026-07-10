@@ -10,7 +10,7 @@ export type {
 export {
   readNumber,
   readRecordNumber,
-  readRecordString,
+  readRecordIdentity,
   readRecordValue,
 } from './canvas_picking_sketch_free_surface_preview_records.js';
 export {

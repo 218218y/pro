@@ -35,8 +35,6 @@ export {
   createCanvasViaPlatform,
   getPlatformLog,
   logViaPlatform,
-  getPlatformStringifier,
-  stringifyViaPlatform,
   getPlatformIdle,
   idleViaPlatform,
   getPlatformClone,

@@ -1,4 +1,5 @@
 import type { OrderPdfDraft } from './order_pdf_overlay_contracts.js';
+import { formatDisplayScalar, readDisplayScalar } from '../../../../shared/display_text_shared.js';
 import { sanitizeHtmlByPolicy } from '../../html_sanitize_runtime.js';
 import type { OrderPdfTextApi } from './order_pdf_overlay_text_api.js';
 
@@ -24,7 +25,7 @@ function trimTextValue(value: string): string {
 }
 
 export function hasOrderPdfTextValue(value: unknown): boolean {
-  return trimTextValue(typeof value === 'string' ? value : value == null ? '' : String(value)).length > 0;
+  return trimTextValue(formatDisplayScalar(readDisplayScalar(value))).length > 0;
 }
 
 export function resolveOrderPdfRichTextHtml(args: {

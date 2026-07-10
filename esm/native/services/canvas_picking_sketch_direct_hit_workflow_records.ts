@@ -1,4 +1,5 @@
 import type { UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { asRecord } from '../runtime/record.js';
 import { buildPresetBackedCustomData } from '../features/interior_layout_presets/api.js';
 import type {
@@ -33,7 +34,12 @@ function isStringArray(value: unknown): value is string[] {
 export function readRecordString(record: unknown, key: string): string {
   const rec = asRecord(record);
   const value = rec ? rec[key] : undefined;
-  return value != null ? String(value) : '';
+  return typeof value === 'string' ? value : '';
+}
+
+export function readRecordIdentity(record: unknown, key: string): string {
+  const rec = asRecord(record);
+  return formatIdentityValue(readIdentityValue(rec?.[key]));
 }
 
 export function readRecordNumber(record: unknown, key: string): number | null {

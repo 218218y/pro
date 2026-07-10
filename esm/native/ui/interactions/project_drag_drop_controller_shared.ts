@@ -1,4 +1,5 @@
 import type { ProjectFileLike } from '../../../../types';
+import { buildProjectFileFlightFingerprint } from '../project_file_flight_key.js';
 
 export type ProjectDragDropToastFn = (msg: string, type?: string) => void;
 
@@ -14,7 +15,7 @@ type DataTransferItemLike = { kind?: string };
 type DataTransferFilesLike = FileList | ArrayLike<ProjectFileLike>;
 
 function readDataTransferItemKind(item: unknown): string {
-  return item && typeof item === 'object' && 'kind' in item ? String(item.kind || '') : '';
+  return item && typeof item === 'object' && 'kind' in item && typeof item.kind === 'string' ? item.kind : '';
 }
 
 function isProjectFileLike(value: unknown): value is ProjectFileLike {
@@ -29,20 +30,15 @@ export function readDroppedProjectFile(
   return isProjectFileLike(first) ? first : null;
 }
 
-function readDroppedProjectFileScalar(value: unknown): string {
-  return value == null ? '' : String(value);
-}
-
 export function readDroppedProjectFileFlightKey(file: ProjectFileLike | null | undefined): string | null {
   if (!file) return null;
-  const name = readDroppedProjectFileScalar(typeof file.name === 'string' ? file.name : '');
-  const size = readDroppedProjectFileScalar(typeof file.size === 'number' ? file.size : '');
-  const type = readDroppedProjectFileScalar(typeof file.type === 'string' ? file.type : '');
   const lastModifiedValue = Reflect.get(file, 'lastModified');
-  const lastModified =
-    typeof lastModifiedValue === 'number' ? readDroppedProjectFileScalar(lastModifiedValue) : '';
-  if (!name && !size && !type && !lastModified) return null;
-  return [name, size, type, lastModified].join('|');
+  return buildProjectFileFlightFingerprint({
+    name: typeof file.name === 'string' ? file.name : undefined,
+    size: typeof file.size === 'number' ? file.size : undefined,
+    mediaType: typeof file.type === 'string' ? file.type : undefined,
+    lastModified: typeof lastModifiedValue === 'number' ? lastModifiedValue : undefined,
+  });
 }
 
 function hasFilesType(dt: DataTransfer): boolean {

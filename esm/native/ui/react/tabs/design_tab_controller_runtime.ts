@@ -63,7 +63,7 @@ function readCurrentUiString(app: AppContainer, key: string): string {
     const state = readStoreStateMaybe(app);
     const ui = state && typeof state === 'object' ? (state as { ui?: Record<string, unknown> }).ui : null;
     const value = ui && typeof ui === 'object' ? ui[key] : '';
-    return value == null ? '' : String(value);
+    return typeof value === 'string' ? value : '';
   } catch {
     return '';
   }

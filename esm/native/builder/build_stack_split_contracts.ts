@@ -160,5 +160,5 @@ export type PreparedStackSplitLowerSetup = {
 };
 
 export function toStr(x: unknown, def = ''): string {
-  return typeof x === 'string' ? x : x == null ? def : String(x);
+  return typeof x === 'string' ? x : def;
 }

@@ -2,7 +2,7 @@ import { toFiniteNumber, toPositiveNumber, toNormalizedUnit } from './render_int
 import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 export const normalizeSketchShelfVariant = (variant: unknown): 'regular' | 'double' | 'glass' | 'brace' => {
-  const raw = variant == null ? '' : String(variant || '');
+  const raw = typeof variant === 'string' ? variant : '';
   const v = raw.trim().toLowerCase();
   return v === 'double' || v === 'glass' || v === 'brace' || v === 'regular' ? v : 'regular';
 };

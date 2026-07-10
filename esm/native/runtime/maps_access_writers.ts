@@ -19,11 +19,12 @@ import {
   toggleSimpleWritableBooleanMapEntryFromOwner,
 } from './simple_writable_map_writer_owner.js';
 import { normalizeKnownMapSnapshot } from './maps_access_normalizers.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 export { SIMPLE_WRITABLE_MAP_NAMES, VISUAL_KEYED_MAP_NAMES, isSimpleWritableMapName, isVisualKeyedMapName };
 
 function readMapKey(value: unknown): string {
-  return String(value || '').trim();
+  return formatIdentityValue(readIdentityValue(value)).trim();
 }
 
 type VisualKeyedWriterEntry = { readonly key: unknown; readonly value: unknown };
@@ -108,7 +109,7 @@ export function writeHandle(
   handleType: Exclude<HandleValue, undefined>,
   meta?: ActionMetaLike
 ): boolean {
-  const id = String(partId || '');
+  const id = formatIdentityValue(readIdentityValue(partId));
   if (!id) return false;
   return patchSimpleWritableMapEntryFromOwner(App, 'handlesMap', id, handleType, meta);
 }
@@ -119,7 +120,7 @@ export function writeHinge(
   hinge: Exclude<HingeValue, undefined | null>,
   meta?: ActionMetaLike
 ): boolean {
-  const id = String(doorId || '');
+  const id = formatIdentityValue(readIdentityValue(doorId));
   if (!id) return false;
   return patchSimpleWritableMapEntryFromOwner(App, 'hingeMap', id, hinge, meta);
 }
@@ -130,7 +131,8 @@ export function writeCurtainPreset(
   preset: unknown,
   meta?: ActionMetaLike
 ): boolean {
-  const value = preset === undefined || preset === null ? null : String(preset || 'none');
+  if (preset !== undefined && preset !== null && typeof preset !== 'string') return false;
+  const value = preset === undefined || preset === null ? null : preset || 'none';
   return patchSimpleWritableMapEntryFromOwner(App, 'curtainMap', partId, value, meta);
 }
 
@@ -243,7 +245,7 @@ function toggleCanonicalGrooveKeyInMap(
 }
 
 export function toggleDivider(App: unknown, dividerKey: unknown, meta?: ActionMetaLike): boolean {
-  return toggleKeyInMap(App, 'drawerDividersMap', String(dividerKey || ''), meta);
+  return toggleKeyInMap(App, 'drawerDividersMap', formatIdentityValue(readIdentityValue(dividerKey)), meta);
 }
 
 export function toggleGrooveKey(App: unknown, grooveKey: unknown, meta?: ActionMetaLike): boolean {

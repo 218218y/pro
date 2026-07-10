@@ -91,7 +91,7 @@ export async function loadOrderPdfBuilderRuntime(
       const textCodec = getTextCodec(obj);
       if (textCodec && typeof textCodec.decodeText === 'function') return textCodec.decodeText();
       if (textCodec && typeof textCodec.asString === 'function') return textCodec.asString();
-      return String(obj);
+      return '';
     } catch (e) {
       deps._exportReportThrottled(App, 'buildOrderPdfInteractive.asText', e, { throttleMs: 1500 });
       return '';

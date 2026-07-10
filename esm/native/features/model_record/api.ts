@@ -77,7 +77,7 @@ export function normalizeModelRecord(model: SavedModelRecordLike): SavedModelLik
   const presetId =
     typeof model.id === 'string' && model.id.trim()
       ? model.id.trim()
-      : `preset_${String(model.name || 'unnamed').trim() || 'unnamed'}`;
+      : `preset_${typeof model.name === 'string' && model.name.trim() ? model.name.trim() : 'unnamed'}`;
   const presetName = typeof model.name === 'string' && model.name.trim() ? model.name.trim() : presetId;
 
   const out: UnknownRecord = Object.assign({}, model, { id: presetId, name: presetName });

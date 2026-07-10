@@ -102,6 +102,6 @@ export function prepareBuildWardrobeContextSetup(
     calculateModuleStructureFn: readers.calculateModuleStructureFn,
     getMaterialFn: readers.getMaterialFn,
     addOutlinesMesh: readers.addOutlinesMesh,
-    toStr: createBuildStringNormalizer(App),
+    toStr: createBuildStringNormalizer(),
   };
 }

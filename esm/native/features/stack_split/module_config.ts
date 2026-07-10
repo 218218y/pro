@@ -11,6 +11,7 @@ import type {
   UnknownRecord,
 } from '../../../../types';
 import type { StackKey } from './stack_split.js';
+import { readInteger, readNumericInput } from '../../../shared/numeric_value_shared.js';
 import {
   INTERIOR_FITTINGS_DIMENSIONS,
   LIBRARY_PRESET_DIMENSIONS,
@@ -25,8 +26,8 @@ function cloneRecord<T extends UnknownRecord>(src: T): T {
 }
 
 function toInt(v: unknown, defaultValue: number): number {
-  const n = parseInt(String(v ?? ''), 10);
-  return Number.isFinite(n) ? n : defaultValue;
+  const n = readInteger(readNumericInput(v));
+  return n ?? defaultValue;
 }
 
 function normalizeLowerWidthDepthSpecialDims(src: unknown): UnknownRecord | null {

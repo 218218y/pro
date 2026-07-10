@@ -1,5 +1,6 @@
 import { getCacheBag } from '../runtime/cache_access.js';
 import { asRecord, createNullRecord } from '../runtime/record.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type { BuilderEdgeHandleDefaultNoneReader, UnknownRecord } from '../../../types/index.js';
 
@@ -79,7 +80,7 @@ export function markEdgeHandleDefaultNone(
   partId: unknown,
   scope: EdgeHandleDefaultNoneScope = 'module'
 ): boolean {
-  const key = partId == null ? '' : String(partId);
+  const key = formatIdentityValue(readIdentityValue(partId));
   if (!key) return false;
   const map = ensureEdgeHandleDefaultNoneCacheMap(App, stackKey, scope);
   map[key] = true;
@@ -91,7 +92,7 @@ export function isEdgeHandleDefaultNone(
   stackKey: EdgeHandleDefaultNoneStackKey,
   partId: unknown
 ): boolean {
-  const key = partId == null ? '' : String(partId);
+  const key = formatIdentityValue(readIdentityValue(partId));
   if (!key) return false;
   const cache = getCacheBag(App);
   for (const cacheKey of EDGE_HANDLE_DEFAULT_NONE_CACHE_KEYS) {

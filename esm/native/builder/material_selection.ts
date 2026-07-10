@@ -26,9 +26,11 @@ function asCfg(value: unknown): MaterialSelectionCfgLike {
 }
 
 function toText(value: unknown, defaultText: string, toStr?: MaterialSelectionStringifier): string {
-  if (typeof toStr === 'function') return String(toStr(value, defaultText) || defaultText);
-  if (value == null) return defaultText;
-  return String(value || defaultText);
+  if (typeof toStr === 'function') {
+    const formatted = toStr(value, defaultText);
+    return typeof formatted === 'string' && formatted ? formatted : defaultText;
+  }
+  return typeof value === 'string' && value ? value : defaultText;
 }
 
 function readTextureDataURL(value: unknown): string | null {

@@ -82,7 +82,8 @@ export function captureProjectPrevUiMode(uiState: UiStateLike | null | undefined
 }
 
 export function captureProjectLoadSourceFlags(opts?: ProjectLoadOpts): ProjectIoSourceFlagsLike {
-  const source = String((opts && opts.meta && opts.meta.source) || '');
+  const rawSource = opts?.meta?.source;
+  const source = typeof rawSource === 'string' ? rawSource : '';
   return {
     source,
     isHistoryApply:

@@ -2,11 +2,13 @@ import type {
   ActionMetaLike,
   ActionsNamespaceLike,
   UiActionsNamespaceLike,
+  UiGridCellIdLike,
   UiRawScalarKey,
   UiSlicePatch,
   UnknownRecord,
 } from '../../../types';
 import { buildUiRawScalarPatch } from '../../../types/ui_raw.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import { asMeta, asUiPatch, buildUiScalarPatch, normMeta, shallowCloneObj } from './state_api_shared.js';
 import type { MetaNs } from './state_api_shared.js';
@@ -50,41 +52,31 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
     };
   }
   if (typeof uiNs.setActiveTab !== 'function') {
-    uiNs.setActiveTab = function setActiveTab(next: unknown, meta?: ActionMetaLike) {
-      return uiNs.patchSoft?.(
-        { activeTab: next == null ? '' : String(next) },
-        normMeta(meta, 'actions.ui:setActiveTab')
-      );
+    uiNs.setActiveTab = function setActiveTab(next: string, meta?: ActionMetaLike) {
+      return uiNs.patchSoft?.({ activeTab: next }, normMeta(meta, 'actions.ui:setActiveTab'));
     };
   }
   if (typeof uiNs.setDoorStyle !== 'function') {
-    uiNs.setDoorStyle = function setDoorStyle(style: unknown, meta?: ActionMetaLike) {
-      return uiNs.patch?.(
-        { doorStyle: style == null ? '' : String(style) },
-        normMeta(meta, 'actions.ui:setDoorStyle')
-      );
+    uiNs.setDoorStyle = function setDoorStyle(style: string, meta?: ActionMetaLike) {
+      return uiNs.patch?.({ doorStyle: style }, normMeta(meta, 'actions.ui:setDoorStyle'));
     };
   }
   if (typeof uiNs.setCorniceType !== 'function') {
-    uiNs.setCorniceType = function setCorniceType(value: unknown, meta?: ActionMetaLike) {
-      return uiNs.patch?.(
-        { corniceType: value == null ? '' : String(value) },
-        normMeta(meta, 'actions.ui:setCorniceType')
-      );
+    uiNs.setCorniceType = function setCorniceType(value: string, meta?: ActionMetaLike) {
+      return uiNs.patch?.({ corniceType: value }, normMeta(meta, 'actions.ui:setCorniceType'));
     };
   }
   if (typeof uiNs.setColorChoice !== 'function') {
-    uiNs.setColorChoice = function setColorChoice(choice: unknown, meta?: ActionMetaLike) {
-      const v = choice == null ? '' : String(choice);
-      if (!v) return undefined;
-      return uiNs.patch?.({ colorChoice: v }, normMeta(meta, 'actions.ui:setColorChoice'));
+    uiNs.setColorChoice = function setColorChoice(choice: string, meta?: ActionMetaLike) {
+      if (!choice) return undefined;
+      return uiNs.patch?.({ colorChoice: choice }, normMeta(meta, 'actions.ui:setColorChoice'));
     };
   }
   if (typeof uiNs.setFlag !== 'function') {
-    uiNs.setFlag = function setFlag(key: unknown, on: unknown, meta?: ActionMetaLike) {
-      const k = String(key == null ? '' : key).trim();
+    uiNs.setFlag = function setFlag(key: string, on: boolean, meta?: ActionMetaLike) {
+      const k = key.trim();
       if (!k || !/^[a-zA-Z0-9_]+$/.test(k)) return undefined;
-      return uiNs.patch?.(buildUiScalarPatch(k, !!on), normMeta(meta, 'actions.ui:setFlag'));
+      return uiNs.patch?.(buildUiScalarPatch(k, on), normMeta(meta, 'actions.ui:setFlag'));
     };
   }
   if (typeof uiNs.setNotesEnabled !== 'function') {
@@ -121,32 +113,31 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
     };
   }
   if (typeof uiNs.setCurrentFloorType !== 'function') {
-    uiNs.setCurrentFloorType = function setCurrentFloorType(value: unknown, meta?: ActionMetaLike) {
+    uiNs.setCurrentFloorType = function setCurrentFloorType(value: string, meta?: ActionMetaLike) {
       return uiNs.patchSoft?.(
-        { currentFloorType: value == null ? '' : String(value) },
+        { currentFloorType: value },
         uiOnlyMeta(meta, 'actions.ui:setCurrentFloorType')
       );
     };
   }
   if (typeof uiNs.setCurrentLayoutType !== 'function') {
-    uiNs.setCurrentLayoutType = function setCurrentLayoutType(value: unknown, meta?: ActionMetaLike) {
+    uiNs.setCurrentLayoutType = function setCurrentLayoutType(value: string, meta?: ActionMetaLike) {
       return uiNs.patchSoft?.(
-        { currentLayoutType: value == null ? '' : String(value) },
+        { currentLayoutType: value },
         uiOnlyMeta(meta, 'actions.ui:setCurrentLayoutType')
       );
     };
   }
   if (typeof uiNs.setGridDivisionsState !== 'function') {
     uiNs.setGridDivisionsState = function setGridDivisionsState(
-      divisions: unknown,
-      perCellGridMap: unknown,
-      activeGridCellId: unknown,
+      divisions: number | null,
+      perCellGridMap: UnknownRecord | null,
+      activeGridCellId: UiGridCellIdLike,
       meta?: ActionMetaLike
     ) {
-      const divsNum = typeof divisions === 'number' ? divisions : parseFloat(String(divisions || ''));
-      const divs = Number.isFinite(divsNum) ? divsNum : 4;
+      const divs = typeof divisions === 'number' && Number.isFinite(divisions) ? divisions : 4;
       const perCell = isObj(perCellGridMap) ? shallowCloneObj(perCellGridMap) : undefined;
-      const active = activeGridCellId == null ? null : String(activeGridCellId || '') || null;
+      const active = formatIdentityValue(readIdentityValue(activeGridCellId)) || null;
       const patch: UiSlicePatch = { currentGridDivisions: divs, activeGridCellId: active };
       if (typeof perCell !== 'undefined') patch.perCellGridMap = perCell;
       return uiNs.patchSoft?.(patch, uiOnlyMeta(meta, 'actions.ui:setGridDivisionsState'));
@@ -154,10 +145,10 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
   }
   if (typeof uiNs.setGridShelfVariantState !== 'function') {
     uiNs.setGridShelfVariantState = function setGridShelfVariantState(
-      variant: unknown,
+      variant: string | null,
       meta?: ActionMetaLike
     ) {
-      const raw = variant == null ? '' : String(variant || '');
+      const raw = variant ?? '';
       const v0 = raw.trim().toLowerCase();
       const v = v0 === 'regular' || v0 === 'double' || v0 === 'glass' || v0 === 'brace' ? v0 : 'regular';
       return uiNs.patchSoft?.(
@@ -168,33 +159,27 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
   }
   if (typeof uiNs.setExtDrawerSelection !== 'function') {
     uiNs.setExtDrawerSelection = function setExtDrawerSelection(
-      drawerType: unknown,
-      count: unknown,
+      drawerType: string | null,
+      count: number | null,
       meta?: ActionMetaLike
     ) {
-      const countNum = typeof count === 'number' ? count : parseFloat(String(count || ''));
       return uiNs.patchSoft?.(
         {
-          currentExtDrawerType: drawerType == null ? '' : String(drawerType || ''),
-          currentExtDrawerCount: Number.isFinite(countNum) ? countNum : 2,
+          currentExtDrawerType: drawerType ?? '',
+          currentExtDrawerCount: typeof count === 'number' && Number.isFinite(count) ? count : 2,
         },
         uiOnlyMeta(meta, 'actions.ui:setExtDrawerSelection')
       );
     };
   }
   if (typeof uiNs.setBaseType !== 'function') {
-    uiNs.setBaseType = function setBaseType(value: unknown, meta?: ActionMetaLike) {
-      return uiNs.patch?.(
-        { baseType: value == null ? '' : String(value) },
-        normMeta(meta, 'actions.ui:setBaseType')
-      );
+    uiNs.setBaseType = function setBaseType(value: string, meta?: ActionMetaLike) {
+      return uiNs.patch?.({ baseType: value }, normMeta(meta, 'actions.ui:setBaseType'));
     };
   }
   if (typeof uiNs.setBaseLegPlatformMode !== 'function') {
-    uiNs.setBaseLegPlatformMode = function setBaseLegPlatformMode(value: unknown, meta?: ActionMetaLike) {
-      const raw = String(value || '')
-        .trim()
-        .toLowerCase();
+    uiNs.setBaseLegPlatformMode = function setBaseLegPlatformMode(value: string, meta?: ActionMetaLike) {
+      const raw = value.trim().toLowerCase();
       return uiNs.patch?.(
         { baseLegPlatformMode: raw === 'plain' ? 'plain' : 'stage' },
         normMeta(meta, 'actions.ui:setBaseLegPlatformMode')
@@ -203,12 +188,10 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
   }
   if (typeof uiNs.setBaseLegPlatformSideMode !== 'function') {
     uiNs.setBaseLegPlatformSideMode = function setBaseLegPlatformSideMode(
-      value: unknown,
+      value: string,
       meta?: ActionMetaLike
     ) {
-      const raw = String(value || '')
-        .trim()
-        .toLowerCase();
+      const raw = value.trim().toLowerCase();
       return uiNs.patch?.(
         { baseLegPlatformSideMode: raw === 'flush' || raw === 'zero' ? 'flush' : 'overhang' },
         normMeta(meta, 'actions.ui:setBaseLegPlatformSideMode')
@@ -221,24 +204,18 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
     };
   }
   if (typeof uiNs.setStructureSelect !== 'function') {
-    uiNs.setStructureSelect = function setStructureSelect(value: unknown, meta?: ActionMetaLike) {
-      return uiNs.patch?.(
-        { structureSelect: value == null ? '' : String(value) },
-        normMeta(meta, 'actions.ui:setStructureSelect')
-      );
+    uiNs.setStructureSelect = function setStructureSelect(value: string, meta?: ActionMetaLike) {
+      return uiNs.patch?.({ structureSelect: value }, normMeta(meta, 'actions.ui:setStructureSelect'));
     };
   }
   if (typeof uiNs.setSingleDoorPos !== 'function') {
-    uiNs.setSingleDoorPos = function setSingleDoorPos(value: unknown, meta?: ActionMetaLike) {
-      return uiNs.patch?.(
-        { singleDoorPos: value == null ? '' : String(value) },
-        normMeta(meta, 'actions.ui:setSingleDoorPos')
-      );
+    uiNs.setSingleDoorPos = function setSingleDoorPos(value: string, meta?: ActionMetaLike) {
+      return uiNs.patch?.({ singleDoorPos: value }, normMeta(meta, 'actions.ui:setSingleDoorPos'));
     };
   }
   if (typeof uiNs.setRawScalar !== 'function') {
     uiNs.setRawScalar = function setRawScalar(key: string, value: unknown, meta?: ActionMetaLike) {
-      const k = String(key == null ? '' : key);
+      const k = key.trim();
       if (!k) return undefined;
       return actions.setUiRawScalar?.(k, value, normMeta(meta, 'actions.ui:setRawScalar'));
     };

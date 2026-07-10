@@ -1,6 +1,8 @@
 import { createBootErrorPolicy } from './boot/boot_error_policy.js';
 import { sanitizeHtmlByPolicy } from './native/ui/html_sanitize_runtime.js';
 import type { BootErrorPolicyReportOpts } from './boot/boot_error_policy.js';
+import { normalizeUnknownErrorInfo } from './native/runtime/error_normalization.js';
+import { formatDisplayScalar, readDisplayScalar } from './shared/display_text_shared.js';
 
 export type ErrorOverlayModule = typeof import('./native/ui/error_overlay.js');
 export type EntryProMainModule = typeof import('./entry_pro_main.js');
@@ -88,7 +90,7 @@ export function setHtmlOrText(target: unknown, value: string): void {
 export function safeText(v: unknown): string {
   try {
     const ESC: Record<string, string> = { '<': '&lt;', '>': '&gt;', '&': '&amp;' };
-    return String(v || '').replace(/[<>&]/g, ch => ESC[ch] ?? ch);
+    return formatDisplayScalar(readDisplayScalar(v)).replace(/[<>&]/g, ch => ESC[ch] ?? ch);
   } catch (_e) {
     return '';
   }
@@ -109,21 +111,13 @@ export function silentNoDom(opts: BootFatalOverlayOpts | null | undefined): bool
 }
 
 export function formatError(err: unknown): { name: string; message: string; stack: string } {
-  try {
-    if (!err) return { name: '', message: '', stack: '' };
-    if (typeof err === 'string') return { name: '', message: err, stack: '' };
-
-    if (isRecord(err)) {
-      const name = typeof err.name === 'string' ? err.name : '';
-      const message = typeof err.message === 'string' ? err.message : String(err);
-      const stack = typeof err.stack === 'string' ? err.stack : '';
-      return { name, message, stack };
-    }
-
-    return { name: '', message: String(err), stack: '' };
-  } catch (_e) {
-    return { name: '', message: '', stack: '' };
-  }
+  if (!err) return { name: '', message: '', stack: '' };
+  const normalized = normalizeUnknownErrorInfo(err);
+  return {
+    name: normalized.name ?? '',
+    message: normalized.message,
+    stack: normalized.stack ?? '',
+  };
 }
 
 export function stableStringify(x: unknown): string {

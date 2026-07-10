@@ -138,7 +138,7 @@ export function applyModePatchSlice(
 
   if (hasPrimary) {
     const raw = input.primary;
-    const normalizedPrimary = raw ? String(raw) : getNoneMode();
+    const normalizedPrimary = typeof raw === 'string' && raw ? raw : getNoneMode();
     if (!Object.is(prevModeRec.primary, normalizedPrimary)) {
       next = next || shallowCloneRecord(base);
       next.primary = normalizedPrimary;

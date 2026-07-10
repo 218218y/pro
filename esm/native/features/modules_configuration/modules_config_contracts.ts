@@ -5,6 +5,7 @@ import type {
   ModulesConfigurationLike,
   ModulesStructureItemLike,
 } from '../../../../types';
+import { readInteger, readNumericInput } from '../../../shared/numeric_value_shared.js';
 
 import { createDefaultModuleCustomData } from './module_defaults.js';
 
@@ -26,8 +27,8 @@ export function isRecord(v: unknown): v is UnknownBag {
 }
 
 export function toInt(v: unknown, defaultValue: number): number {
-  const n = parseInt(String(v ?? ''), 10);
-  return Number.isFinite(n) ? n : defaultValue;
+  const n = readInteger(readNumericInput(v));
+  return n ?? defaultValue;
 }
 
 export function toIntMin(v: unknown, defaultValue: number, min: number): number {

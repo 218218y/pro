@@ -36,6 +36,26 @@ function normalizeBooleanScalar(value: unknown): boolean {
   return value === true;
 }
 
+function normalizeWardrobeType(value: unknown): 'hinged' | 'sliding' | '' {
+  return value === 'hinged' || value === 'sliding' ? value : '';
+}
+
+function normalizeBoardMaterial(value: unknown): 'sandwich' | 'melamine' | '' {
+  return value === 'sandwich' || value === 'melamine' ? value : '';
+}
+
+function normalizeDoorMountMode(value: unknown): 'overlay' | 'inset' | '' {
+  return value === 'overlay' || value === 'inset' ? value : '';
+}
+
+function normalizeGlobalHandleType(value: unknown): 'standard' | 'edge' | 'none' | '' {
+  return value === 'standard' || value === 'edge' || value === 'none' ? value : '';
+}
+
+function normalizeCustomUploadedDataUrl(value: unknown): string | null {
+  return typeof value === 'string' ? value : null;
+}
+
 type ProjectConfigScalarNormalizer = (
   value: unknown,
   options?: Pick<ProjectConfigSnapshotCanonicalizationOptions, 'savedColorsMode'>
@@ -53,15 +73,15 @@ const PROJECT_CONFIG_SCALAR_NORMALIZERS: Record<string, ProjectConfigScalarNorma
   isMultiColorMode: normalizeBooleanScalar,
   showDimensions: normalizeBooleanScalar,
   isManualWidth: normalizeBooleanScalar,
-  wardrobeType: value => (value == null ? '' : String(value)),
-  boardMaterial: value => (value == null ? '' : String(value)),
-  doorMountMode: value => (value == null ? '' : String(value)),
+  wardrobeType: normalizeWardrobeType,
+  boardMaterial: normalizeBoardMaterial,
+  doorMountMode: normalizeDoorMountMode,
   overlayFrameThicknessCm: normalizeDoorMountThicknessCm,
   overlayShelfThicknessCm: normalizeDoorMountThicknessCm,
   insetFrameThicknessCm: normalizeDoorMountThicknessCm,
   insetShelfThicknessCm: normalizeDoorMountThicknessCm,
-  globalHandleType: value => (value == null ? '' : String(value)),
-  customUploadedDataURL: value => (value == null ? null : String(value)),
+  globalHandleType: normalizeGlobalHandleType,
+  customUploadedDataURL: normalizeCustomUploadedDataUrl,
   grooveLinesCount: normalizeGrooveLinesCount,
 };
 

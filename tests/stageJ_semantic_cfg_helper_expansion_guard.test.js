@@ -107,8 +107,8 @@ test('[stageJ] semantic cfg access helpers prefer dedicated namespace methods an
 
   setCfgModulesConfiguration(App, [{ id: 'top-1' }], { source: 'cfg:modules' });
   setCfgLowerModulesConfiguration(App, [{ id: 'bottom-1' }], { source: 'cfg:lower' });
-  setCfgBoardMaterial(App, 'oak', { source: 'cfg:boardMaterial' });
-  setCfgGlobalHandleType(App, 'bar', { source: 'cfg:handleType' });
+  setCfgBoardMaterial(App, 'sandwich', { source: 'cfg:boardMaterial' });
+  setCfgGlobalHandleType(App, 'edge', { source: 'cfg:handleType' });
   setCfgShowDimensions(App, 0, { source: 'cfg:showDimensions' });
   setCfgLibraryMode(App, 'x', { source: 'cfg:libraryMode' });
   setCfgCustomUploadedDataURL(App, undefined, { source: 'cfg:texture' });
@@ -116,8 +116,13 @@ test('[stageJ] semantic cfg access helpers prefer dedicated namespace methods an
   assert.deepEqual(calls, [
     { op: 'config.setModulesConfiguration', next: [{ id: 'top-1' }], meta: { source: 'cfg:modules' } },
     { op: 'config.setLowerModulesConfiguration', next: [{ id: 'bottom-1' }], meta: { source: 'cfg:lower' } },
-    { op: 'config.setScalar', key: 'boardMaterial', value: 'oak', meta: { source: 'cfg:boardMaterial' } },
-    { op: 'config.setScalar', key: 'globalHandleType', value: 'bar', meta: { source: 'cfg:handleType' } },
+    {
+      op: 'config.setScalar',
+      key: 'boardMaterial',
+      value: 'sandwich',
+      meta: { source: 'cfg:boardMaterial' },
+    },
+    { op: 'config.setScalar', key: 'globalHandleType', value: 'edge', meta: { source: 'cfg:handleType' } },
     { op: 'config.setScalar', key: 'showDimensions', value: false, meta: { source: 'cfg:showDimensions' } },
     { op: 'config.setScalar', key: 'isLibraryMode', value: true, meta: { source: 'cfg:libraryMode' } },
     { op: 'config.setScalar', key: 'customUploadedDataURL', value: null, meta: { source: 'cfg:texture' } },
@@ -137,7 +142,7 @@ test('[stageJ] domain api stack/textures/doors writes mutate canonical config sl
 
   App.actions.modules.patchForStack('top', 1, { width: 55 }, { source: 'domain:top' });
   App.actions.modules.patchForStack('bottom', 0, { width: 30 }, { source: 'domain:bottom' });
-  App.actions.doors.setGlobalHandleType('line', { source: 'domain:handleType' });
+  App.actions.doors.setGlobalHandleType('edge', { source: 'domain:handleType' });
   App.actions.textures.setCustomUploadedDataURL('data:image/png;base64,abc', { source: 'domain:texture' });
 
   assert.deepEqual(
@@ -148,7 +153,7 @@ test('[stageJ] domain api stack/textures/doors writes mutate canonical config sl
     state.config.stackSplitLowerModulesConfiguration.map(item => item.width),
     [30, 35]
   );
-  assert.equal(state.config.globalHandleType, 'line');
+  assert.equal(state.config.globalHandleType, 'edge');
   assert.deepEqual(state.config.handlesMap, {});
   assert.equal(state.config.customUploadedDataURL, 'data:image/png;base64,abc');
 
@@ -201,17 +206,33 @@ test('[stageJ] react store cfg wrappers keep named hotpaths on semantic helpers 
   const { state, store } = createStoreStub();
   const App = { actions: {}, store };
 
-  setCfgBoardMaterialFromReact(App, 'walnut', { source: 'react:boardMaterial' });
-  setCfgGlobalHandleTypeFromReact(App, 'round', { source: 'react:handleType' });
+  setCfgBoardMaterialFromReact(App, 'melamine', { source: 'react:boardMaterial' });
+  setCfgGlobalHandleTypeFromReact(App, 'none', { source: 'react:handleType' });
   setCfgShowDimensionsFromReact(App, 1, { source: 'react:showDimensions' });
   setCfgLibraryModeFromReact(App, 0, { source: 'react:libraryMode' });
   setCfgMultiColorModeFromReact(App, 'yes', { source: 'react:multiColor' });
 
   assert.deepEqual(state.config, {
-    boardMaterial: 'walnut',
-    globalHandleType: 'round',
+    boardMaterial: 'melamine',
+    globalHandleType: 'none',
     showDimensions: true,
     isLibraryMode: false,
     isMultiColorMode: true,
   });
+});
+
+test('[stageJ] closed-union config writers reject invalid values without mutating config', () => {
+  const { state, calls, store } = createStoreStub({
+    boardMaterial: 'sandwich',
+    globalHandleType: 'standard',
+  });
+  const App = { actions: {}, store };
+
+  assert.equal(setCfgBoardMaterial(App, 'oak', { source: 'invalid:boardMaterial' }), undefined);
+  assert.equal(setCfgGlobalHandleType(App, 'round', { source: 'invalid:handleType' }), undefined);
+  assert.deepEqual(state.config, {
+    boardMaterial: 'sandwich',
+    globalHandleType: 'standard',
+  });
+  assert.deepEqual(calls, []);
 });

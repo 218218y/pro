@@ -104,7 +104,7 @@ export function __asFinite(v: unknown, defaultValue = NaN): number {
 }
 
 export function __asString(v: unknown, defaultValue = ''): string {
-  return typeof v === 'string' ? v : v == null ? defaultValue : String(v);
+  return typeof v === 'string' ? v : defaultValue;
 }
 
 export function __asBool(v: unknown): boolean {

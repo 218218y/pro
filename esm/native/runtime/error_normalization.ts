@@ -15,9 +15,10 @@ function readTrimmedString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function stringifyUnknown(value: unknown): string {
+function formatPrimitiveErrorValue(value: number | boolean | bigint | symbol): string {
   try {
-    return typeof value === 'symbol' ? String(value) : String(value ?? '');
+    if (typeof value === 'symbol') return Symbol.prototype.toString.call(value);
+    return value.toString();
   } catch {
     return '';
   }
@@ -36,30 +37,50 @@ function readErrorRecord(err: unknown): Record<string, unknown> | null {
   return asRecord<Record<string, unknown>>(err);
 }
 
+function readRecordValue(record: Record<string, unknown> | null, key: string): unknown {
+  if (!record) return undefined;
+  try {
+    return record[key];
+  } catch {
+    return undefined;
+  }
+}
+
+function isErrorValue(value: unknown): value is Error {
+  try {
+    return value instanceof Error;
+  } catch {
+    return false;
+  }
+}
+
 function readErrorStack(err: unknown): string {
-  if (err instanceof Error) return readTrimmedString(err.stack);
-  return readTrimmedString(readErrorRecord(err)?.stack);
+  return readTrimmedString(readRecordValue(readErrorRecord(err), 'stack'));
 }
 
 function readReasonToken(source: unknown): string {
   if (typeof source === 'string') return readTrimmedString(source).toLowerCase();
   const rec = readErrorRecord(source);
   if (!rec) return '';
-  const fromReason = readTrimmedString(rec.reason).toLowerCase();
+  const fromReason = readTrimmedString(readRecordValue(rec, 'reason')).toLowerCase();
   if (fromReason) return fromReason;
-  const fromCode = readTrimmedString(rec.code).toLowerCase();
+  const fromCode = readTrimmedString(readRecordValue(rec, 'code')).toLowerCase();
   if (fromCode) return fromCode;
-  const fromName = readTrimmedString(rec.name).toLowerCase();
+  const fromName = readTrimmedString(readRecordValue(rec, 'name')).toLowerCase();
   return fromName;
 }
 
 export function normalizeUnknownError(err: unknown, defaultMessage = ''): NormalizedUnknownError {
   const defaultText = readTrimmedString(defaultMessage);
 
-  if (err instanceof Error) {
+  if (isErrorValue(err)) {
+    const rec = readErrorRecord(err);
     const message =
-      readTrimmedString(err.message) || defaultText || readTrimmedString(err.name) || 'Unexpected error';
-    const name = readTrimmedString(err.name);
+      readTrimmedString(readRecordValue(rec, 'message')) ||
+      defaultText ||
+      readTrimmedString(readRecordValue(rec, 'name')) ||
+      'Unexpected error';
+    const name = readTrimmedString(readRecordValue(rec, 'name'));
     return name ? { message, name } : { message };
   }
 
@@ -72,20 +93,23 @@ export function normalizeUnknownError(err: unknown, defaultMessage = ''): Normal
     typeof err === 'bigint' ||
     typeof err === 'symbol'
   ) {
-    const message = stringifyUnknown(err).trim() || defaultText || 'Unexpected error';
+    const message = formatPrimitiveErrorValue(err).trim() || defaultText || 'Unexpected error';
     return { message };
   }
 
   const rec = readErrorRecord(err);
   if (rec) {
-    const name = readTrimmedString(rec.name);
+    const name = readTrimmedString(readRecordValue(rec, 'name'));
     const message =
-      readTrimmedString(rec.message) || stringifyRecord(rec) || defaultText || name || 'Unexpected error';
+      readTrimmedString(readRecordValue(rec, 'message')) ||
+      stringifyRecord(rec) ||
+      defaultText ||
+      name ||
+      'Unexpected error';
     return name ? { message, name } : { message };
   }
 
-  const message = stringifyUnknown(err).trim() || defaultText || 'Unexpected error';
-  return { message };
+  return { message: defaultText || 'Unexpected error' };
 }
 
 export function normalizeUnknownErrorInfo(err: unknown, defaultMessage = ''): NormalizedUnknownErrorInfo {

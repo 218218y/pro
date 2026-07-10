@@ -9,6 +9,7 @@ import { getConfigRootMaybe } from './app_roots_access.js';
 import { getWindowMaybe } from './browser_env_surface.js';
 import { getDepMaybe } from './deps_access.js';
 import { asRecord } from './record.js';
+import { normalizeUnknownError } from './error_normalization.js';
 
 type PerfRuntimeSpanRecord = {
   id: string;
@@ -55,8 +56,8 @@ function normalizeStatus(value: unknown): 'ok' | 'error' | 'mark' {
 
 function normalizeErrorMessage(error: unknown): string | undefined {
   if (!error) return undefined;
-  if (error instanceof Error) return error.message || String(error);
-  return typeof error === 'string' && error.trim() ? error : String(error);
+  const message = normalizeUnknownError(error).message.trim();
+  return message || undefined;
 }
 
 const PERF_RESULT_MARK_REASONS = new Set([

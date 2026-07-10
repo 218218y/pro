@@ -16,6 +16,7 @@ import {
   normalizeKnownMapSnapshot,
 } from './maps_access_normalizers.js';
 import { readMapsBagOrNull } from './maps_access_runtime.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 type ReadMapFn = {
   <K extends KnownMapName>(App: unknown, mapName: K): MapsByName[K] | null;
@@ -71,7 +72,7 @@ export const readMapOrEmpty: ReadMapOrEmptyFn = (App: unknown, mapName: string) 
 };
 
 export function readHandle(App: unknown, partId: unknown): HandleValue {
-  const id = String(partId || '');
+  const id = formatIdentityValue(readIdentityValue(partId));
   if (!id) return undefined;
   const maps = readMapsBagOrNull(App);
   if (!maps) return undefined;

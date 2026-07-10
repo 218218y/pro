@@ -5,6 +5,7 @@ import type {
   UiSnapshotLike,
   UnknownRecord,
 } from '../../../types';
+import { readFiniteNumber, readNumericInput } from '../../shared/numeric_value_shared.js';
 
 import { getNormalizedErrorHead } from '../runtime/error_normalization.js';
 import { reportError } from '../runtime/errors.js';
@@ -167,12 +168,13 @@ export function readRootStateWithStoreUi(value: unknown): RootStateWithStoreUi |
 }
 
 export function asFiniteNumber(v: unknown): number | null {
-  const n = typeof v === 'number' ? v : parseFloat(String(v ?? ''));
+  const n = readFiniteNumber(readNumericInput(v));
   return Number.isFinite(n) ? n : null;
 }
 
 export function asKeyPart(v: unknown): string {
-  return v == null ? '' : String(v);
+  if (typeof v === 'string') return v;
+  return typeof v === 'number' && Number.isFinite(v) ? v.toString() : '';
 }
 
 export function asRootStateLike(state: unknown): RootStateLike {

@@ -29,7 +29,7 @@ export type BootErrorPolicy = {
 };
 
 function __toError(err: unknown, fallbackMessage: string): Error {
-  return err instanceof Error ? err : new Error(String(err ?? fallbackMessage));
+  return err instanceof Error ? err : new Error(normalizeUnknownError(err, fallbackMessage).message);
 }
 
 function getLocationSearch(win: Window | null | undefined): string {
@@ -132,3 +132,4 @@ export function createBootErrorPolicy(cfg: BootErrorPolicyConfig): BootErrorPoli
     reportBestEffort,
   };
 }
+import { normalizeUnknownError } from '../native/runtime/error_normalization.js';

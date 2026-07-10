@@ -1,4 +1,5 @@
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 export const SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY = 'regularExtDrawers';
 export const SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND = 'regular_ext_drawers';
@@ -88,7 +89,7 @@ export function readSketchBoxRegularExternalDrawersForRender(box: unknown): Reco
       if (!hasShoeDrawer && count <= 0) return null;
       const normalized: RecordMap = {
         ...item,
-        id: item.id != null && String(item.id) ? item.id : `sbrd_${index}`,
+        id: formatIdentityValue(readIdentityValue(item.id)) || `sbrd_${index}`,
         count,
         hasShoeDrawer,
         drawerHeightM: DRAWER_DIMENSIONS.external.regularHeightM,
@@ -169,7 +170,7 @@ export function removeSketchBoxRegularExternalDrawersInCell(
     return;
   }
   box[SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY] = list.filter(item => {
-    if (excludeId && item.id != null && String(item.id) === excludeId) return true;
+    if (excludeId && formatIdentityValue(readIdentityValue(item.id)) === excludeId) return true;
     return !sketchBoxRegularExternalDrawerMatchesCell(item, cell);
   });
 }

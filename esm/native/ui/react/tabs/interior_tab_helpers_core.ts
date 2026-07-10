@@ -7,8 +7,7 @@ export function cx(...parts: Array<string | false | null | undefined>): string {
 
 export function asStr(v: unknown, defaultValue = ''): string {
   if (typeof v === 'string') return v;
-  if (v === null || v === undefined) return defaultValue;
-  return String(v);
+  return defaultValue;
 }
 
 export function asNum(v: unknown, defaultValue = 0): number {

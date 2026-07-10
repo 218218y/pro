@@ -2,7 +2,8 @@
 // normalization. Error/reporting policy is delegated to the dedicated error seam.
 
 import type { ActionMetaLike, UnknownRecord, AppContainer } from '../../../types';
-import { appStr, historyBatch } from '../runtime/app_helpers.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
+import { historyBatch } from '../runtime/app_helpers.js';
 import { metaNoBuild, metaUiOnly } from '../runtime/meta_profiles_access.js';
 
 import { __wp_reportPickingIssue } from './canvas_picking_core_support_errors.js';
@@ -46,10 +47,6 @@ export function __wp_historyBatch(App: AppContainer, meta: ActionMetaLike, fn: (
 }
 
 export function __wp_str(App: AppContainer, v: unknown): string {
-  try {
-    return appStr(App, v);
-  } catch (err) {
-    __wp_reportPickingIssue(App, err, { where: 'canvasPicking.utils', op: 'str', throttleMs: 2000 });
-  }
-  return String(v ?? '');
+  void App;
+  return formatIdentityValue(readIdentityValue(v));
 }

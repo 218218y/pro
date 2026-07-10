@@ -27,8 +27,9 @@ const PINNED_DEV_DEPS = [
   },
   {
     name: 'oxlint-tsgolint',
-    role: 'Audit-only type-aware lint lane.',
-    updatePolicy: 'Keep exact; patch/minor updates belong to a later type-aware diagnostic burn-down pass.',
+    role: 'Blocking type-aware lint lane.',
+    updatePolicy:
+      'Keep exact while type-aware diagnostics are 0; updates require a zero-diagnostic parity run.',
   },
   {
     name: 'oxc-parser',
@@ -173,8 +174,8 @@ function createToolchainVersionPolicyMarkdown(policy) {
     '## Future update check',
     '',
     '- Do not auto-upgrade TypeScript, Oxlint, oxlint-tsgolint, oxc-parser, or ESLint as part of feature work.',
-    '- For a future patch/minor refresh, run the normal quality gates, regenerate lint parity docs, and compare `lint:ts-modern:type-aware` diagnostics before/after.',
-    '- `lint:ts-modern:type-aware` remains audit-only; patch/minor updates should reduce or explain diagnostics before becoming blocking.',
+    '- For a future patch/minor refresh, run the normal quality gates, regenerate lint parity docs, and prove `lint:ts-modern:type-aware` remains at 0 diagnostics.',
+    '- `lint:ts-modern:type-aware` is blocking; patch/minor updates must preserve the global zero contract.',
     '',
     '## Current status',
     '',

@@ -47,7 +47,7 @@ export function installKernelStateKernelConfigApplySurface(
       function setStr(key: string, val: unknown, allowNull: boolean) {
         setValue(
           key,
-          allowNull && (val === null || val === undefined) ? null : val == null ? '' : String(val)
+          allowNull && (val === null || val === undefined) ? null : typeof val === 'string' ? val : ''
         );
       }
 

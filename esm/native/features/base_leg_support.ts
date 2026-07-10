@@ -67,9 +67,7 @@ function asRecord(value: unknown): UnknownRecord | null {
 }
 
 export function normalizeBaseLegStyle(value: unknown): BaseLegStyle {
-  const raw = String(value || '')
-    .trim()
-    .toLowerCase();
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
   if (raw === 'round') return 'round';
   if (raw === 'square') return 'square';
   if (raw === 'wheels' || raw === 'wheel' || raw === 'casters' || raw === 'caster') return 'wheels';
@@ -77,9 +75,7 @@ export function normalizeBaseLegStyle(value: unknown): BaseLegStyle {
 }
 
 export function normalizeBaseLegColor(value: unknown): BaseLegColor {
-  const raw = String(value || '')
-    .trim()
-    .toLowerCase();
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
   if (raw === 'nickel') return 'nickel';
   if (raw === 'gold') return 'gold';
   return DEFAULT_BASE_LEG_COLOR;
@@ -89,9 +85,7 @@ export function normalizeBaseLegPlatformMode(
   value: unknown,
   defaultValue: BaseLegPlatformMode = DEFAULT_BASE_LEG_PLATFORM_MODE
 ): BaseLegPlatformMode {
-  const raw = String(value || '')
-    .trim()
-    .toLowerCase();
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
   if (raw === 'plain' || raw === 'none' || raw === 'without' || raw === 'no-stage') return 'plain';
   if (raw === 'stage' || raw === 'platform' || raw === 'with' || raw === 'with-stage') return 'stage';
   return defaultValue;
@@ -101,9 +95,7 @@ export function normalizeBaseLegPlatformSideMode(
   value: unknown,
   defaultValue: BaseLegPlatformSideMode = DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE
 ): BaseLegPlatformSideMode {
-  const raw = String(value || '')
-    .trim()
-    .toLowerCase();
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
   if (
     raw === 'flush' ||
     raw === 'zero' ||

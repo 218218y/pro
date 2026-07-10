@@ -170,7 +170,7 @@ export function getModelByIdInternalImpl(App: AppContainer, id: unknown): SavedM
 
   const state = getModelsRuntimeStateForApp(App);
   for (let i = 0; i < state.all.length; i++) {
-    if (state.all[i] && String(state.all[i].id) === String(id)) {
+    if (state.all[i]?.id === id) {
       return state.all[i];
     }
   }

@@ -1,6 +1,7 @@
 import type { ActionMetaLike, UnknownRecord } from '../../../types';
 
 import { patchDoorGrooveMapEntries, toggleGrooveKey, writeCurtainPreset } from '../runtime/maps_access.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import {
   areDomainMapValuesEquivalent,
   normalizePrefixedMapKey,
@@ -49,10 +50,10 @@ function createCurtainsSelectBindings(state: DomainApiSurfaceSectionsState): Unk
   return {
     map: () => state._map('curtainMap'),
     get(partId: unknown) {
-      const key = String(partId || '');
+      const key = formatIdentityValue(readIdentityValue(partId));
       if (!key) return 'none';
       const value = state.readCurtainsMap()[key];
-      return value == null || value === '' ? 'none' : String(value);
+      return typeof value === 'string' && value ? value : 'none';
     },
   };
 }
@@ -61,9 +62,10 @@ function createCurtainsActionBindings(state: DomainApiSurfaceSectionsState): Unk
   return {
     set(partId: unknown, preset: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:curtains:set');
-      const key = String(partId || '');
+      const key = formatIdentityValue(readIdentityValue(partId));
       if (!key) return;
-      const value = preset === undefined || preset === null ? null : String(preset || 'none');
+      if (preset !== undefined && preset !== null && typeof preset !== 'string') return;
+      const value = preset === undefined || preset === null ? null : preset || 'none';
       if (shouldSkipSimpleMapWrite(state, 'curtainMap', key, value)) return;
       return writeCurtainPreset(state.App, key, value, nextMeta);
     },

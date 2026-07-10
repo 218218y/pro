@@ -6,6 +6,7 @@ import {
   toggleDoorsViaService,
 } from '../runtime/doors_access.js';
 import { patchRuntime } from '../runtime/runtime_write_access.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { cfgBatch, setCfgGlobalHandleType, setCfgHandlesMap } from '../runtime/cfg_access.js';
 import {
   splitBottomKey,
@@ -60,13 +61,13 @@ function createDoorsSelectBindings(state: DomainApiSurfaceSectionsState): Unknow
     },
     hingeDir(hingeKey: unknown, def: unknown) {
       const map = state.readDoorsHingeMap();
-      const key = String(hingeKey || '');
+      const key = formatIdentityValue(readIdentityValue(hingeKey));
       const value = key ? map[key] : null;
       return value === 'right' || value === 'left' ? value : def || 'left';
     },
     handleType(doorId: unknown, defaultHandleType: unknown) {
       const handlesMap = state.readDoorsHandlesMap();
-      const id = String(doorId || '');
+      const id = formatIdentityValue(readIdentityValue(doorId));
       const value =
         handlesMap && typeof handlesMap === 'object' && id && id in handlesMap ? handlesMap[id] : undefined;
       if (typeof value !== 'undefined' && value !== null && value !== '') return value;
@@ -122,14 +123,14 @@ function createDoorsActionBindings(state: DomainApiSurfaceSectionsState): Unknow
     },
     setHinge(doorId: unknown, hinge: UnknownRecord | string, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setHinge');
-      const key = String(doorId || '');
+      const key = formatIdentityValue(readIdentityValue(doorId));
       if (!key) return;
       if (shouldSkipSimpleMapWrite(state, 'hingeMap', key, hinge)) return;
       return writeHinge(state.App, key, hinge, nextMeta);
     },
     setHandle(doorId: unknown, handleType: string | null, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setHandle');
-      const key = String(doorId || '');
+      const key = formatIdentityValue(readIdentityValue(doorId));
       if (!key) return;
       if (shouldSkipSimpleMapWrite(state, 'handlesMap', key, handleType)) return;
       return writeHandle(state.App, key, handleType, nextMeta);

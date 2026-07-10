@@ -73,9 +73,8 @@ function readRawPreferredValue(
 }
 
 function resolveSingleDoorPos(args: CanvasLinearCellDimsArgs): string {
-  const value = String(
-    readRawPreferredValue(args.ui, args.raw, 'singleDoorPos') ?? (args.isBottomStack ? 'center' : 'left')
-  );
+  const rawValue = readRawPreferredValue(args.ui, args.raw, 'singleDoorPos');
+  const value = typeof rawValue === 'string' ? rawValue : args.isBottomStack ? 'center' : 'left';
   if (!args.isBottomStack) return value;
   return value || 'center';
 }

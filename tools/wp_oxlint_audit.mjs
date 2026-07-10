@@ -126,7 +126,9 @@ function printSummary(summary) {
   }
   if (summary.mode === 'type-aware') {
     console.log(
-      '[Oxlint Audit] type-aware mode is intentionally non-blocking until TS7/tsgolint parity is closed.'
+      summary.auditOnly
+        ? '[Oxlint Audit] type-aware mode is running as an explicit audit.'
+        : '[Oxlint Audit] type-aware mode is blocking; diagnostics fail this gate.'
     );
   } else {
     if (summary.auditOnly) {
@@ -158,8 +160,8 @@ function main() {
     process.exit(1);
   }
 
-  // Oxlint uses a non-zero status when diagnostics are emitted. The modern lane keeps
-  // diagnostics audit-only unless the caller explicitly asks to fail on them.
+  // Oxlint uses a non-zero status when diagnostics are emitted. Callers may still request
+  // a report-only audit by omitting --fail-on-diagnostics.
   if (args.failOnDiagnostics && summary.diagnostics > 0) process.exit(1);
   if (typeof result.status === 'number' && result.status !== 0 && summary.diagnostics === 0) {
     console.error(result.stderr || '[Oxlint Audit] oxlint failed without diagnostics.');

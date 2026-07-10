@@ -2,6 +2,7 @@ import {
   INTERIOR_FITTINGS_DIMENSIONS,
   SKETCH_BOX_DIMENSIONS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
   ResolveSketchBoxVerticalContentPreviewArgs,
@@ -82,7 +83,7 @@ export function resolveSketchBoxRodPreview(
       bestDy = dy;
       removePreviewY = yAbs;
       const idRaw = readRecordValue(it, 'id');
-      removeId = idRaw != null ? String(idRaw) : null;
+      removeId = formatIdentityValue(readIdentityValue(idRaw)) || null;
       removeIdx = i;
       previewSegment = itemSegment || activeSegment;
     }

@@ -1,6 +1,7 @@
 import type { AppContainer, ProjectJsonLike, ProjectPdfStateLike } from '../../../types';
 
 import { readUiStateFromApp } from '../runtime/root_state_access.js';
+import { formatDisplayScalar, readDisplayScalar } from '../../shared/display_text_shared.js';
 
 import { type PdfDraftSnapshotLike, isObject } from './models_registry_contracts.js';
 import { _modelsReportNonFatal } from './models_registry_nonfatal.js';
@@ -52,17 +53,21 @@ function asOrderPdfDraft(v: unknown): OrderPdfMeaningfulFields | null {
   };
 }
 
+function hasMeaningfulPdfField(value: unknown): boolean {
+  return formatDisplayScalar(readDisplayScalar(value)).trim().length > 0;
+}
+
 export function hasMeaningfulOrderPdfDraft(draft: unknown): boolean {
   const d = asOrderPdfDraft(draft);
   if (!d) return false;
   return (
     Boolean(d.detailsTouched) ||
-    Boolean(String(d.detailsText || '').trim()) ||
-    Boolean(String(d.notes || '').trim()) ||
-    Boolean(String(d.orderNumber || '').trim()) ||
-    Boolean(String(d.deliveryAddress || '').trim()) ||
-    Boolean(String(d.phone || '').trim()) ||
-    Boolean(String(d.mobile || '').trim())
+    hasMeaningfulPdfField(d.detailsText) ||
+    hasMeaningfulPdfField(d.notes) ||
+    hasMeaningfulPdfField(d.orderNumber) ||
+    hasMeaningfulPdfField(d.deliveryAddress) ||
+    hasMeaningfulPdfField(d.phone) ||
+    hasMeaningfulPdfField(d.mobile)
   );
 }
 

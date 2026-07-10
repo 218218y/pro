@@ -3,6 +3,7 @@ import {
   normalizeSketchBoxDividerYNorm,
   readFiniteNumber,
 } from './canvas_picking_sketch_box_dividers_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import {
   readSketchBoxDividers,
   readSketchBoxHorizontalDividers,
@@ -11,9 +12,10 @@ import {
 } from './canvas_picking_sketch_box_divider_state_records.js';
 
 function createDividerId(prefix: string, dividerId?: unknown): string {
-  return dividerId != null && String(dividerId)
-    ? String(dividerId)
-    : `${prefix}_${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36)}`;
+  return (
+    formatIdentityValue(readIdentityValue(dividerId)) ||
+    `${prefix}_${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36)}`
+  );
 }
 
 export function addSketchBoxDividerState(
@@ -48,7 +50,7 @@ export function removeSketchBoxDividerState(
     writeSketchBoxDividers(box, []);
     return;
   }
-  const id = dividerId != null && String(dividerId) ? String(dividerId) : '';
+  const id = formatIdentityValue(readIdentityValue(dividerId));
   if (id) {
     writeSketchBoxDividers(
       box,
@@ -111,7 +113,7 @@ export function removeSketchBoxHorizontalDividerState(
     writeSketchBoxHorizontalDividers(box, []);
     return;
   }
-  const id = dividerId != null && String(dividerId) ? String(dividerId) : '';
+  const id = formatIdentityValue(readIdentityValue(dividerId));
   if (id) {
     writeSketchBoxHorizontalDividers(
       box,

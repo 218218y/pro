@@ -12,6 +12,7 @@ import {
   listCanonicalRemovedDoorLookupKeys,
   toCanonicalRemovedDoorPartId,
 } from '../../shared/removed_doors_map_keys_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type { AppContainer } from '../../../types';
 import { isHexCellDiagonalPanelPartId } from '../features/hex_cell/index.js';
@@ -24,7 +25,7 @@ function __wp_isRemoved(App: AppContainer, partId: string): boolean {
 }
 
 function __wp_isDoorLikePartId(partId: unknown): boolean {
-  const pid = typeof partId === 'string' ? partId : String(partId ?? '');
+  const pid = formatIdentityValue(readIdentityValue(partId));
   if (!pid) return false;
   if (/^(?:lower_)?d\d+(?:_|$)/.test(pid) && !pid.includes('_draw_')) return true;
   if (/^sketch_box(?:_free)?_.+_door(?:_|$)/.test(pid)) return true;
@@ -41,7 +42,7 @@ function __wp_isDoorLikePartId(partId: unknown): boolean {
 }
 
 function __wp_isDrawerLikePartId(partId: unknown): boolean {
-  const pid = typeof partId === 'string' ? partId : String(partId ?? '');
+  const pid = formatIdentityValue(readIdentityValue(partId));
   if (!pid) return false;
   if (/^(?:lower_)?d\d+_draw_/.test(pid)) return true;
   if (/^chest_drawer_\d+$/.test(pid)) return true;
@@ -65,7 +66,7 @@ function __wp_isDoorTrimActionTargetPartId(partId: unknown): boolean {
 }
 
 function __wp_isSegmentedDoorBaseId(partId: unknown): boolean {
-  return isSegmentedRemovedDoorBaseId(typeof partId === 'string' ? partId : String(partId ?? ''));
+  return isSegmentedRemovedDoorBaseId(formatIdentityValue(readIdentityValue(partId)));
 }
 
 function __wp_canonDoorPartKeyForMaps(partId: unknown): string {
@@ -76,7 +77,7 @@ function __wp_scopeCornerPartKeyForStack(
   partId: unknown,
   stackKey: 'top' | 'bottom' | null | undefined
 ): string {
-  const pid = typeof partId === 'string' ? partId : String(partId ?? '');
+  const pid = formatIdentityValue(readIdentityValue(partId));
   if (!pid) return '';
   if (stackKey !== 'bottom') return pid;
   if (pid.startsWith('lower_')) return pid;

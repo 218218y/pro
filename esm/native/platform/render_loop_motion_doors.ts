@@ -3,6 +3,8 @@ import {
   DOOR_SYSTEM_DIMENSIONS,
   WARDROBE_DEFAULTS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
+import { readInteger, readNumericInput } from '../../shared/numeric_value_shared.js';
 import type { AppContainer } from '../../../types';
 
 import { getBuildUIFromPlatform, getDimsMFromPlatform } from '../runtime/platform_access.js';
@@ -80,7 +82,7 @@ export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFram
       let targetRot = targetOpen ? (d.hingeSide === 'left' ? -Math.PI / 2.1 : Math.PI / 2.1) : 0;
 
       const ud = readMotionUserData(g);
-      const pid = ud && ud.partId != null ? String(ud.partId) : '';
+      const pid = formatIdentityValue(readIdentityValue(ud?.partId));
       const isCornerPent =
         !!(ud && (ud.__wpCornerPentDoor || ud.__wpCornerPentDoorPair === 'corner_pent_pair')) ||
         (pid && pid.startsWith('corner_pent_door'));
@@ -121,8 +123,8 @@ export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFram
       let value: unknown = null;
       if (rawUi && typeof rawUi['doors'] !== 'undefined') value = rawUi['doors'];
       else if (ui && typeof ui['doors'] !== 'undefined') value = ui['doors'];
-      const parsed = typeof value === 'number' ? value : parseInt(String(value ?? ''), 10);
-      if (Number.isFinite(parsed)) doorsCount = parsed;
+      const parsed = readInteger(readNumericInput(value));
+      if (parsed != null) doorsCount = parsed;
     }
     doorsCount =
       (Number.isFinite(doorsCount) ? doorsCount : DOOR_SYSTEM_DIMENSIONS.sliding.defaultDoorsCount) ||

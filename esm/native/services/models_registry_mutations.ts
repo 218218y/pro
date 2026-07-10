@@ -28,10 +28,7 @@ import { getModelsRuntimeStateForApp, markModelsRuntimeStateDirty } from './mode
 
 export function normalizeNameKey(value: unknown): string {
   try {
-    return String(value == null ? '' : value)
-      .toLowerCase()
-      .replace(/\s+/g, ' ')
-      .trim();
+    return (typeof value === 'string' ? value : '').toLowerCase().replace(/\s+/g, ' ').trim();
   } catch {
     return '';
   }

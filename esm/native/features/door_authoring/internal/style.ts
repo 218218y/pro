@@ -1,6 +1,7 @@
 import type { DoorStyleMap, UnknownRecord } from '../../../../../types';
 
 import { readDoorVisualMapEntry, toDoorStyleOverrideMapKey } from './visual_keys.js';
+import { formatIdentityValue, readIdentityValue } from '../../../../shared/identity_value_shared.js';
 
 export type DoorStyleOverrideValue = 'flat' | 'profile' | 'double_profile';
 
@@ -18,9 +19,7 @@ export function normalizeDoorStyleOverrideValue(
   value: unknown,
   defaultValue: DoorStyleOverrideValue = 'flat'
 ): DoorStyleOverrideValue {
-  const raw = String(value == null ? defaultValue : value)
-    .trim()
-    .toLowerCase();
+  const raw = (typeof value === 'string' ? value : defaultValue).trim().toLowerCase();
   return raw === 'profile' || raw === 'double_profile' || raw === 'flat' ? raw : defaultValue;
 }
 
@@ -96,7 +95,7 @@ export function resolveDoorStyleOverrideValue(
 ): DoorStyleOverrideValue | null {
   const map = asRecord(doorStyleMap);
   if (!map) return null;
-  const directKey = typeof partId === 'string' ? partId.trim() : String(partId ?? '').trim();
+  const directKey = formatIdentityValue(readIdentityValue(partId)).trim();
 
   const effectiveEntry = readDoorVisualMapEntry(map, directKey);
   if (effectiveEntry && isDoorStyleOverrideValue(effectiveEntry.value)) return effectiveEntry.value;

@@ -56,7 +56,7 @@ export function createInteriorTabDrawersWorkflowController(
 
     toggleIntDrawerMode() {
       clearInteriorDrawerModeBootstrap(app);
-      const manualToolRaw = String(state.modeOpts?.manualTool || '');
+      const manualToolRaw = typeof state.modeOpts?.manualTool === 'string' ? state.modeOpts.manualTool : '';
       if (state.isManualLayoutMode && isSketchInternalDrawersTool(manualToolRaw)) {
         exitPrimaryMode(app, modeIds.manualLayout, CLOSE_DOORS_OPTS);
         return;
@@ -66,7 +66,7 @@ export function createInteriorTabDrawersWorkflowController(
 
     setInternalDrawersEnabled(on: boolean) {
       const enabled = !!on;
-      const manualToolRaw = String(state.modeOpts?.manualTool || '');
+      const manualToolRaw = typeof state.modeOpts?.manualTool === 'string' ? state.modeOpts.manualTool : '';
       const isSketchInternalDrawerEditing =
         state.isManualLayoutMode && isSketchInternalDrawersTool(manualToolRaw);
 

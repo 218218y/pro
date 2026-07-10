@@ -1,4 +1,5 @@
 import type { AppContainer, DoorVisualEntryLike } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import { hasMirrorSurfaceOnFace, readDoorVisualMirrorLayout } from '../features/door_authoring/api.js';
 import { setDoorsOpenViaService } from '../runtime/doors_access.js';
@@ -84,7 +85,8 @@ export function handleCanvasDoorHingeClick(args: CanvasDoorHingeClickArgs): bool
   const doorsArray = getDoorsArray(App);
   const relatedDoor = doorsArray.find((door: DoorVisualEntryLike) => {
     const pid = door && door.group && door.group.userData ? door.group.userData.partId : null;
-    return pid === doorIdStr || (pid && doorIdStr.includes(String(pid)));
+    const partId = formatIdentityValue(readIdentityValue(pid));
+    return partId === doorIdStr || (!!partId && doorIdStr.includes(partId));
   });
 
   let currentDir: 'left' | 'right' = 'left';

@@ -6,6 +6,7 @@ import {
 } from '../features/modules_configuration/corner_cells_api.js';
 import type { CornerBuildUI, CornerConfigRecord } from './corner_state_normalize_contracts.js';
 import { asRemovedDoorsMap, ensureCornerConfigRecord } from './corner_state_normalize_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { isRecord } from './corner_geometry_plan.js';
 import { requireCornerConfigSnapshot } from './corner_config_readers.js';
 import { listCanonicalRemovedDoorLookupKeys } from '../../shared/removed_doors_map_keys_shared.js';
@@ -28,7 +29,7 @@ export function createCornerNormalizedConfigState(args: {
   const __cfg = requireCornerConfigSnapshot(cfgSnapshot);
 
   const __stackScopePartKey = (partId: unknown): string => {
-    const pid = String(partId || '');
+    const pid = formatIdentityValue(readIdentityValue(partId));
     if (!pid) return '';
     if (__stackKey !== 'bottom') return pid;
     if (pid.startsWith('lower_')) return pid;
@@ -39,7 +40,7 @@ export function createCornerNormalizedConfigState(args: {
   const __removedDoorsMap: RemovedDoorsMap = asRemovedDoorsMap(__cfg.removedDoorsMap);
 
   const __isDoorRemoved = (pid: unknown) => {
-    const kRaw = String(pid || '');
+    const kRaw = formatIdentityValue(readIdentityValue(pid));
     if (!kRaw) return false;
     const scoped = __stackScopePartKey(kRaw);
 

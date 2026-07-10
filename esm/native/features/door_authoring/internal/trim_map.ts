@@ -4,6 +4,7 @@ import {
   toCanonicalDoorTrimTargetKey,
 } from '../../../../shared/door_trim_key_contracts_shared.js';
 import { normalizeDoorTrimEntryValue } from '../../../../shared/door_trim_value_contracts_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../../../shared/identity_value_shared.js';
 import {
   DEFAULT_DOOR_TRIM_AXIS,
   DEFAULT_DOOR_TRIM_COLOR,
@@ -61,7 +62,7 @@ export function readDoorTrimMap(value: unknown): DoorTrimMap {
 }
 
 function pushDoorTrimCandidate(out: string[], seen: Record<string, true>, value: unknown): void {
-  const key = typeof value === 'string' ? value : String(value ?? '');
+  const key = formatIdentityValue(readIdentityValue(value));
   if (!key || seen[key]) return;
   seen[key] = true;
   out.push(key);

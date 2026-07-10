@@ -2,6 +2,7 @@ import {
   INTERIOR_FITTINGS_DIMENSIONS,
   MATERIAL_DIMENSIONS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { buildPresetBackedCustomData } from '../features/interior_layout_presets/api.js';
 import type { VerticalOccupancyRange } from './canvas_picking_manual_layout_sketch_vertical_stack.js';
 
@@ -88,7 +89,7 @@ function readShelfVariant(args: {
 }
 
 function shelfThicknessForVariant(variant: unknown, woodThick: number): number {
-  const kind = variant != null && variant !== '' ? String(variant) : 'regular';
+  const kind = typeof variant === 'string' && variant ? variant : 'regular';
   if (kind === 'glass') return MATERIAL_DIMENSIONS.glassShelf.thicknessM;
   if (kind === 'double') {
     return Math.max(woodThick, woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier);
@@ -191,7 +192,7 @@ function buildSketchShelfBlockers(args: RangeContext): ManualLayoutVerticalConte
       kind: 'shelf',
       source: 'sketch',
       index: i,
-      id: idRaw != null && idRaw !== '' ? String(idRaw) : `sketch_shelf_${i}`,
+      id: formatIdentityValue(readIdentityValue(idRaw)) || `sketch_shelf_${i}`,
     });
   }
   return ranges;
@@ -373,7 +374,7 @@ function buildSketchRodBlockers(args: RangeContext): ManualLayoutVerticalContent
       centerY: args.bottomY + clampUnit(yNorm) * args.totalHeight,
       source: 'sketch',
       index: i,
-      id: idRaw != null && idRaw !== '' ? String(idRaw) : `sketch_rod_${i}`,
+      id: formatIdentityValue(readIdentityValue(idRaw)) || `sketch_rod_${i}`,
     });
   }
   return ranges;
@@ -436,7 +437,7 @@ function buildSketchStorageBlockers(args: RangeContext): ManualLayoutVerticalCon
       kind: 'storage',
       source: 'sketch',
       index: i,
-      id: idRaw != null && idRaw !== '' ? String(idRaw) : `sketch_storage_${i}`,
+      id: formatIdentityValue(readIdentityValue(idRaw)) || `sketch_storage_${i}`,
     });
   }
   return ranges;

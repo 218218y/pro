@@ -2,6 +2,8 @@ import type { SketchBoxDividerState, SketchBoxSegmentState } from './canvas_pick
 import {
   DEFAULT_BASE_LEG_PLATFORM_MODE,
   DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE,
+  normalizeBaseLegPlatformMode,
+  normalizeBaseLegPlatformSideMode,
   readBaseLegOptions,
 } from '../features/base_leg_support.js';
 import { normalizeBasePlinthHeightCm } from '../features/base_plinth_support.js';
@@ -116,10 +118,13 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
   const sameLegOptions =
     currentLegOptions.style === selectedLegOptions.style &&
     currentLegOptions.color === selectedLegOptions.color &&
-    String(readRecordValue(targetBox, 'baseLegPlatformMode') || DEFAULT_BASE_LEG_PLATFORM_MODE) ===
-      String(selectedBaseSpec?.baseLegPlatformMode || DEFAULT_BASE_LEG_PLATFORM_MODE) &&
-    String(readRecordValue(targetBox, 'baseLegPlatformSideMode') || DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE) ===
-      String(selectedBaseSpec?.baseLegPlatformSideMode || DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE) &&
+    normalizeBaseLegPlatformMode(readRecordValue(targetBox, 'baseLegPlatformMode')) ===
+      normalizeBaseLegPlatformMode(selectedBaseSpec?.baseLegPlatformMode, DEFAULT_BASE_LEG_PLATFORM_MODE) &&
+    normalizeBaseLegPlatformSideMode(readRecordValue(targetBox, 'baseLegPlatformSideMode')) ===
+      normalizeBaseLegPlatformSideMode(
+        selectedBaseSpec?.baseLegPlatformSideMode,
+        DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE
+      ) &&
     (readRecordFiniteStateNumber(targetBox, 'baseLegPlatformSideOverhangCm') ??
       DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM) ===
       (selectedBaseSpec?.baseLegPlatformSideOverhangCm ?? DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM) &&

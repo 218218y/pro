@@ -1,5 +1,6 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { getCfg } from '../kernel/api.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import { getActiveOverrideCm } from '../features/special_dims/index.js';
@@ -167,7 +168,7 @@ function readFreeBoxesFromModule(cfgMod: UnknownRecord | null): UnknownRecord[] 
 function findFreeBoxById(boxes: UnknownRecord[], boxId: string): UnknownRecord | null {
   for (let i = 0; i < boxes.length; i += 1) {
     const rec = boxes[i];
-    const id = rec.id != null ? String(rec.id) : String(i);
+    const id = formatIdentityValue(readIdentityValue(rec.id)) || formatIdentityValue(i);
     if (id === boxId) return rec;
   }
   return null;

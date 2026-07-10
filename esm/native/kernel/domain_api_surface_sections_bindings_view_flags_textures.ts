@@ -56,7 +56,8 @@ function createTexturesActionBindings(state: DomainApiSurfaceSectionsState): Unk
   return {
     setCustomUploadedDataURL(dataUrl: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:textures:setCustomUploadedDataURL');
-      const next = dataUrl === undefined || dataUrl === null || dataUrl === '' ? null : String(dataUrl);
+      if (dataUrl !== undefined && dataUrl !== null && typeof dataUrl !== 'string') return;
+      const next = dataUrl === undefined || dataUrl === null || dataUrl === '' ? null : dataUrl;
       return setCfgCustomUploadedDataURL(state.App, next, nextMeta);
     },
   };

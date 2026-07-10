@@ -6,6 +6,7 @@ import {
   resolveSketchFreeBoxGeometry,
 } from './canvas_picking_sketch_free_box_shared.js';
 import { resolveSketchFreeBoxPlacementGap } from './canvas_picking_sketch_free_box_gap.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 export function resolveSketchFreeBoxNonOverlappingPlacement(args: {
   centerX: number;
@@ -44,7 +45,7 @@ export function resolveSketchFreeBoxNonOverlappingPlacement(args: {
   const woodThick = asFiniteNumberOrNaN(args.woodThick);
   const pad = asNumberOrNull(args.pad) ?? 0;
   const freeBoxes = Array.isArray(args.freeBoxes) ? args.freeBoxes : [];
-  const ignoreBoxId = args.ignoreBoxId != null ? String(args.ignoreBoxId) : '';
+  const ignoreBoxId = formatIdentityValue(readIdentityValue(args.ignoreBoxId));
   const attachment = args.attachment && typeof args.attachment === 'object' ? args.attachment : null;
   const attachmentFixedAxis =
     attachment?.fixedAxis === 'x' || attachment?.fixedAxis === 'y' ? attachment.fixedAxis : null;

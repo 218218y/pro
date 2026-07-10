@@ -182,8 +182,9 @@ function materializeGlassPreviousStyleMarkers(args: {
     const segmentPartId = materialized.segmentPartIds[index];
     if (!segmentPartId || segmentPartId === materialized.clickedPartId) continue;
     if (nextSpecial[segmentPartId] === 'glass') {
-      nextSpecial[getGlassPreviousStyleKey(segmentPartId)] =
-        typeof markerValue === 'undefined' ? GLASS_PREVIOUS_STYLE_NONE : String(markerValue);
+      nextSpecial[getGlassPreviousStyleKey(segmentPartId)] = isDoorStyleOverrideValue(markerValue)
+        ? markerValue
+        : GLASS_PREVIOUS_STYLE_NONE;
     }
   }
 }

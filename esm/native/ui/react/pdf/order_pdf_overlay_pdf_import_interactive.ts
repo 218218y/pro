@@ -5,6 +5,10 @@ import { collectTrailingNonFormPageIndexes, isBlobLike } from './order_pdf_overl
 import { loadPdfDocumentCtor } from './order_pdf_overlay_pdf_lib.js';
 import { resolveOrderPdfSketchImageAppendPlan } from './order_pdf_overlay_sketch_image_slots_runtime.js';
 
+function readPdfOutputText(value: unknown, defaultValue: string): string {
+  return typeof value === 'string' && value ? value : defaultValue;
+}
+
 export async function maybePreserveImportedImagePagesInInteractivePdf(args: {
   blob: Blob;
   fileName?: string;
@@ -97,8 +101,8 @@ export async function buildInteractivePdfBlobForEditorDraft(args: {
 
   return await maybePreserveImportedImagePagesInInteractivePdf({
     blob: builtBlob,
-    fileName: String(getProp(builtMaybe, 'fileName') || 'order.pdf'),
-    projectName: String(getProp(builtMaybe, 'projectName') || args.draft.projectName || 'פרויקט'),
+    fileName: readPdfOutputText(getProp(builtMaybe, 'fileName'), 'order.pdf'),
+    projectName: readPdfOutputText(getProp(builtMaybe, 'projectName'), args.draft.projectName || 'פרויקט'),
     draft: args.draft,
     loadedPdfOriginalBytes: args.loadedPdfOriginalBytes,
     importedTailIndexes: args.importedTailIndexes,

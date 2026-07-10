@@ -110,17 +110,23 @@ export function getModesMap(): ModesMap {
 
 function stableSerializeModeValue(value: unknown, seen: WeakSet<object> = new WeakSet<object>()): string {
   if (value == null) return 'null';
-  const valueType = typeof value;
-  if (valueType === 'string') return JSON.stringify(value);
-  if (valueType === 'number' || valueType === 'boolean') return String(value);
-  if (valueType !== 'object') return JSON.stringify(String(value));
+  if (typeof value === 'string') return JSON.stringify(value);
+  if (typeof value === 'number') return Number.isFinite(value) ? value.toString() : 'null';
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  if (typeof value === 'bigint') return JSON.stringify(`${value.toString()}n`);
+  if (typeof value === 'symbol') return JSON.stringify(`[Symbol:${value.description ?? ''}]`);
+  if (typeof value === 'function') return '"[Unsupported:function]"';
 
   if (Array.isArray(value)) {
-    return `[${value.map(item => stableSerializeModeValue(item, seen)).join(',')}]`;
+    if (seen.has(value)) return '"[Circular]"';
+    seen.add(value);
+    const serialized = `[${value.map(item => stableSerializeModeValue(item, seen)).join(',')}]`;
+    seen.delete(value);
+    return serialized;
   }
 
   const rec = isRecord(value) ? value : null;
-  if (!rec) return JSON.stringify(String(value));
+  if (!rec) return '"[Unsupported:object]"';
   if (seen.has(rec)) return '"[Circular]"';
   seen.add(rec);
   const parts: string[] = [];

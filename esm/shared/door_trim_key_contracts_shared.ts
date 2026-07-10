@@ -3,15 +3,16 @@ import {
   stripDoorVisualSurfaceSuffix,
   toDoorStyleOverrideMapKey,
 } from './door_visual_key_contracts_shared.js';
+import { formatIdentityValue, readIdentityValue } from './identity_value_shared.js';
 
 const DOOR_TRIM_DECORATION_SUFFIX_RE = /_(?:trim|trim_preview)(?:_[a-z0-9]+)?$/i;
 
 function readPartKey(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : String(value ?? '').trim();
+  return formatIdentityValue(readIdentityValue(value)).trim();
 }
 
 function readRawPartKey(value: unknown): string {
-  return typeof value === 'string' ? value : String(value ?? '');
+  return formatIdentityValue(readIdentityValue(value));
 }
 
 export function stripDoorTrimTargetDecorationSuffix(partId: unknown): string {

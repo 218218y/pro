@@ -5,6 +5,7 @@
 // - Keep direct window/navigator access out of non-UI modules.
 
 import type { AppContainer, BrowserNamespaceLike } from '../../../../types';
+import { formatDisplayScalar, readDisplayScalar } from '../../../shared/display_text_shared.js';
 
 import { assertApp, getWindowMaybe } from '../../runtime/api.js';
 import { ensureBrowserSurface } from '../../runtime/browser_surface_access.js';
@@ -29,7 +30,7 @@ export function installBrowserDialogsAdapter(app: unknown): AppContainer {
     return function (message: string) {
       try {
         const w = getWindowMaybe(App);
-        return !!(w && typeof w.confirm === 'function' ? w.confirm(String(message || '')) : false);
+        return !!(w && typeof w.confirm === 'function' ? w.confirm(message) : false);
       } catch {
         return false;
       }
@@ -41,8 +42,8 @@ export function installBrowserDialogsAdapter(app: unknown): AppContainer {
       try {
         const w = getWindowMaybe(App);
         if (!(w && typeof w.prompt === 'function')) return null;
-        const v = w.prompt(String(message || ''), String(typeof def === 'undefined' ? '' : def));
-        return v == null ? null : String(v);
+        const v = w.prompt(message, formatDisplayScalar(readDisplayScalar(def)));
+        return v;
       } catch {
         return null;
       }

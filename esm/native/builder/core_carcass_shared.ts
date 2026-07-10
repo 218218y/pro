@@ -68,10 +68,10 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
   const D = __asNum(inp.D, 0);
   const H = __asNum(inp.H, 0);
   const woodThick = __asNum(inp.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
-  const baseType = String(inp.baseType || '');
+  const baseType = typeof inp.baseType === 'string' ? inp.baseType : '';
   const doorsCount = __asInt(inp.doorsCount, 0);
   const hasCornice = !!inp.hasCornice;
-  const corniceType = String(inp.corniceType || 'classic');
+  const corniceType = typeof inp.corniceType === 'string' && inp.corniceType ? inp.corniceType : 'classic';
   const cfg = _asObject(inp.cfg) || {};
   const baseLegTopPlatformRequested = !!inp.baseLegTopPlatformOnly && baseType !== 'legs';
   const baseLegPlatformMode = normalizeBaseLegPlatformMode(

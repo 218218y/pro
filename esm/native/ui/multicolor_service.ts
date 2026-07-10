@@ -107,7 +107,7 @@ export function setMultiEnabled(App: AppContainer, next: boolean, meta?: Multico
 }
 
 export function setCurtainChoice(App: AppContainer, id: unknown): void {
-  const next = String(id ?? '').trim();
+  const next = typeof id === 'string' ? id.trim() : '';
   if (!next) return;
 
   _safe('setCurtainChoice', () => {

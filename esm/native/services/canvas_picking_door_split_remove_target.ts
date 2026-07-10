@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type { HitObjectLike } from './canvas_picking_engine.js';
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getCamera } from '../runtime/render_access.js';
@@ -260,7 +261,7 @@ export function resolveCanvasDoorCustomSplitScreenRemoveCandidate(args: {
     if (!groupRec) continue;
     const group = groupRec as HitObjectLike;
     const userData = asRecord(groupRec?.userData);
-    const hitDoorPid = userData && userData.partId != null ? String(userData.partId || '') : '';
+    const hitDoorPid = formatIdentityValue(readIdentityValue(userData?.partId));
     if (!hitDoorPid) continue;
 
     let doorBaseKey = '';

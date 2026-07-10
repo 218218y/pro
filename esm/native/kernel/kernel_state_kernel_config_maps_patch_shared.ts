@@ -24,7 +24,7 @@ export function createKernelStateKernelConfigBatchFlags(): KernelStateKernelConf
 }
 
 export function readKernelConfigPatchSource(meta: UnknownRecord, defaultSource = 'config'): string {
-  return meta.source != null ? String(meta.source) : defaultSource;
+  return typeof meta.source === 'string' ? meta.source : defaultSource;
 }
 
 export function readKernelConfigPatchForce(meta: UnknownRecord): boolean {
@@ -48,7 +48,12 @@ export function mergeKernelStateKernelConfigBatchMeta(
   force: boolean
 ): boolean {
   if (!batch || Number(batch.depth ?? 0) <= 0) return false;
-  batch.lastSource = String(source || batch.lastSource || 'config');
+  batch.lastSource =
+    typeof source === 'string' && source
+      ? source
+      : typeof batch.lastSource === 'string' && batch.lastSource
+        ? batch.lastSource
+        : 'config';
   const flags = ensureKernelStateKernelConfigBatchFlags(batch);
   if (!flags) return false;
   flags.noBuild = flags.noBuild || Boolean(meta.noBuild);

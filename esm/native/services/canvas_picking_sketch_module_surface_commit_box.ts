@@ -13,6 +13,7 @@ import {
   readRecordNumber,
   type CommitSketchModuleSurfaceToolArgs,
 } from './canvas_picking_sketch_module_surface_commit_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 function readSketchExtrasRecordList(extra: Record<string, unknown>, key: string): Record<string, unknown>[] {
   const value = extra[key];
@@ -104,7 +105,9 @@ export function tryCommitSketchModuleSurfaceBoxTool(args: CommitSketchModuleSurf
     placementBlockers,
   });
   if (resolvedBoxAction.op === 'remove' && resolvedBoxAction.removeId) {
-    const idx = boxes.findIndex(it => String(it?.id ?? '') === resolvedBoxAction.removeId);
+    const idx = boxes.findIndex(
+      it => formatIdentityValue(readIdentityValue(it?.id)) === resolvedBoxAction.removeId
+    );
     if (idx >= 0) boxes.splice(idx, 1);
     return true;
   }

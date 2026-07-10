@@ -1,8 +1,9 @@
 import { resolveDoorSplitAuthoringBaseKey } from '../../shared/door_visual_key_contracts_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { asRecord, readOwn } from './maps_access_shared.js';
 
 function canonDoorBaseId(id0: unknown): string {
-  let id = String(id0 || '').trim();
+  let id = formatIdentityValue(readIdentityValue(id0)).trim();
   if (!id) return '';
   if (id.indexOf('splitpos_') === 0) id = id.slice(9);
   if (id.indexOf('splitb_') === 0) id = id.slice(7);

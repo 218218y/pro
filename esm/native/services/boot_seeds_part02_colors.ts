@@ -41,9 +41,8 @@ function cfgMetaRestoreProfile(
 }
 
 function readSavedColorsStorageKey(storage: ReturnType<typeof getStorage>): string {
-  return storage && storage.KEYS && storage.KEYS.SAVED_COLORS
-    ? String(storage.KEYS.SAVED_COLORS)
-    : 'wardrobeSavedColors';
+  const key = storage?.KEYS?.SAVED_COLORS;
+  return typeof key === 'string' && key ? key : 'wardrobeSavedColors';
 }
 
 function readStorageJsonArray(storage: ReturnType<typeof getStorage>, key: string): unknown[] {
@@ -68,7 +67,8 @@ function normalizeStoredColorOrder(value: unknown[]): string[] {
   const out: string[] = [];
   const seen = new Set<string>();
   for (let i = 0; i < value.length; i++) {
-    const next = String(value[i] || '').trim();
+    const candidate = value[i];
+    const next = typeof candidate === 'string' ? candidate.trim() : '';
     if (!next || seen.has(next)) continue;
     seen.add(next);
     out.push(next);

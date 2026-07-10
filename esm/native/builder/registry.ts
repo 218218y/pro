@@ -6,6 +6,8 @@
 // - Central registry for interactive parts built by the builder.
 // - Keeps render doorsArray / drawersArray / moduleHitBoxes stable (no reassign).
 // - Collects partId -> object references (for picking / tools) via render.partIndex.
+
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 //
 // Design:
 // - No IIFE and no implicit side-effects on import.
@@ -91,7 +93,7 @@ function isRegistryValue(value: unknown): value is RegistryValue {
 
 function _put(map: UnknownRecord, key: unknown, val: RegistryValue): void {
   if (!key) return;
-  const normalizedKey = String(key);
+  const normalizedKey = formatIdentityValue(readIdentityValue(key));
   if (!normalizedKey) return;
   const current = map[normalizedKey];
   if (typeof current === 'undefined') {
@@ -108,9 +110,8 @@ function _put(map: UnknownRecord, key: unknown, val: RegistryValue): void {
 function _partIdFromVisualEntry(entry: DoorVisualEntryLike | DrawerVisualEntryLike): string | null {
   if (!entry) return null;
   if (entry.id != null && String(entry.id)) return String(entry.id);
-  if (entry.group?.userData?.partId != null && String(entry.group.userData.partId)) {
-    return String(entry.group.userData.partId);
-  }
+  const groupPartId = formatIdentityValue(readIdentityValue(entry.group?.userData?.partId));
+  if (groupPartId) return groupPartId;
   if (entry.partId != null && String(entry.partId)) return String(entry.partId);
   return null;
 }

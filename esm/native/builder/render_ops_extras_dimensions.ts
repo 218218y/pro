@@ -1,4 +1,5 @@
 import { createCanvasViaPlatform } from '../runtime/platform_access.js';
+import { formatDisplayScalar, readDisplayScalar } from '../../shared/display_text_shared.js';
 
 import type { ThreeLike, Vec3Like } from '../../../types/index.js';
 import type {
@@ -83,8 +84,9 @@ export function getDimLabelEntry(textStr: unknown, ctx: unknown, styleKeyIn?: un
   const runtime = ensureRenderOpsExtrasRuntime(readRenderOpsExtrasContextApp(ctx));
   const { App, renderMeta } = runtime;
   const util = runtime.platform.util;
-  const styleKey = styleKeyIn ? String(styleKeyIn) : 'default';
-  const key = `dim:${styleKey}:${String(textStr || '')}`;
+  const styleKey = typeof styleKeyIn === 'string' && styleKeyIn ? styleKeyIn : 'default';
+  const displayText = formatDisplayScalar(readDisplayScalar(textStr));
+  const key = `dim:${styleKey}:${displayText}`;
 
   const cached = util.dimLabelCache instanceof Map ? util.dimLabelCache.get(key) || null : null;
   if (cached) {
@@ -125,7 +127,7 @@ export function getDimLabelEntry(textStr: unknown, ctx: unknown, styleKeyIn?: un
   ctx2d.fillStyle = isCell ? '#0b4f79' : isCenter ? '#047857' : 'black';
   ctx2d.textAlign = 'center';
   ctx2d.textBaseline = 'middle';
-  ctx2d.fillText(String(textStr || ''), width / 2, height / 2);
+  ctx2d.fillText(displayText, width / 2, height / 2);
 
   const THREEBase = ensureRenderOpsExtrasTHREE(App);
   if (!isThreeLabelSurface(THREEBase)) throw new Error('[DimLabel] THREE canvas surface unavailable');

@@ -3,20 +3,14 @@ import { normalizeBaseLegPlatformMode, readBaseLegOptions } from '../features/ba
 import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
 
 export function normalizeSketchBoxAdornmentBaseType(value: unknown): 'plinth' | 'legs' | 'none' {
-  const raw = String(value || '')
-    .trim()
-    .toLowerCase();
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
   if (raw === 'legs') return 'legs';
   if (raw === 'plinth') return 'plinth';
   return 'none';
 }
 
 export function normalizeSketchBoxAdornmentCorniceType(value: unknown): 'classic' | 'wave' {
-  return String(value || '')
-    .trim()
-    .toLowerCase() === 'wave'
-    ? 'wave'
-    : 'classic';
+  return (typeof value === 'string' ? value.trim().toLowerCase() : '') === 'wave' ? 'wave' : 'classic';
 }
 
 function readNumber(value: unknown): number | null {

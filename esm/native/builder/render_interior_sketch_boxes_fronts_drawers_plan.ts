@@ -1,4 +1,5 @@
 import { makeDrawerBoxPartId } from '../features/part_identity/api.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { readRenderOpNumber } from './render_ops_number_contracts.js';
 import { computeExternalDrawersOpsForModule } from './pure_api.js';
 import {
@@ -130,7 +131,7 @@ export function createSketchBoxExternalDrawerStackPlan(
   if (centerY == null) return null;
 
   const baseY = centerY - stackH / 2;
-  const drawerId = item.id != null && String(item.id) ? String(item.id) : String(drawerIndex);
+  const drawerId = formatIdentityValue(readIdentityValue(item.id)) || formatIdentityValue(drawerIndex);
   const keyPrefix = `${boxPid}_ext_drawers_${drawerId}_`;
   const span = context.resolveBoxDrawerSpan(item);
   const outerW = Math.max(DRAWER_DIMENSIONS.sketch.externalPreviewMinWidthM, span.outerW);

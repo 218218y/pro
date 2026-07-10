@@ -3,6 +3,7 @@ import {
   listDoorTrimTargetLookupKeys,
   toCanonicalDoorTrimTargetKey,
 } from '../../shared/door_trim_key_contracts_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
 import { isDrawerBoxPartId } from '../features/part_identity/api.js';
 import { isCabinetBodyDoorTrimSurfacePartId } from '../features/door_authoring/api.js';
@@ -100,7 +101,7 @@ function scopeCornerPartIdForBottom(partId: string, preferredGroup: DoorGroupLik
 function normalizeDoorTrimMapPartId(candidatePartId: unknown, preferredGroup: DoorGroupLike): string {
   const preferredGroupPartId = readGroupPartId(preferredGroup);
   const preferredDrawerOwnerPartId = readGroupDrawerOwnerPartId(preferredGroup);
-  const raw = typeof candidatePartId === 'string' ? String(candidatePartId) : String(candidatePartId ?? '');
+  const raw = formatIdentityValue(readIdentityValue(candidatePartId));
   const variants = [
     scopeCornerPartIdForBottom(preferredDrawerOwnerPartId, preferredGroup),
     scopeCornerPartIdForBottom(preferredGroupPartId, preferredGroup),
@@ -117,7 +118,7 @@ function normalizeDoorTrimMapPartId(candidatePartId: unknown, preferredGroup: Do
 }
 
 function pushCandidate(out: string[], seen: Set<string>, value: unknown): void {
-  const text = typeof value === 'string' ? value.trim() : String(value ?? '').trim();
+  const text = formatIdentityValue(readIdentityValue(value)).trim();
   if (!text || seen.has(text)) return;
   seen.add(text);
   out.push(text);
@@ -131,7 +132,7 @@ function pushDoorTrimTargetCandidates(out: string[], seen: Set<string>, value: u
 function buildDoorTrimPartIdCandidates(candidatePartId: unknown, preferredGroup: DoorGroupLike): string[] {
   const out: string[] = [];
   const seen = new Set<string>();
-  const raw = typeof candidatePartId === 'string' ? String(candidatePartId) : String(candidatePartId ?? '');
+  const raw = formatIdentityValue(readIdentityValue(candidatePartId));
   const preferredGroupPartId = readGroupPartId(preferredGroup);
   const preferredDrawerOwnerPartId = readGroupDrawerOwnerPartId(preferredGroup);
 

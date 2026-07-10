@@ -1,4 +1,5 @@
 import type { ActionMetaLike, AppContainer, SavedNote, SavedNoteStyle } from '../../../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../../../shared/identity_value_shared.js';
 
 import { normalizeSavedNotes } from '../../notes_service.js';
 import { readInnerHtml } from '../../dom_helpers.js';
@@ -35,7 +36,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function sanitizeHistoryIdentityPart(value: unknown): string {
-  const raw = value == null ? '' : String(value).trim();
+  const raw = formatIdentityValue(readIdentityValue(value)).trim();
   if (!raw) return '';
   return raw.replace(/[^a-zA-Z0-9_.:-]+/g, '_').slice(0, 96);
 }

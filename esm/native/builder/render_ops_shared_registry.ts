@@ -1,4 +1,5 @@
 import { getBuilderRegistry } from '../runtime/builder_service_access.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type { AppContainer } from './render_ops_shared_contracts.js';
 import { __renderOpsHandleCatch } from './render_ops_shared_errors.js';
@@ -7,7 +8,7 @@ export function __reg(App: AppContainer, partId: unknown, obj: unknown, kind: un
   try {
     const reg = getBuilderRegistry(App);
     if (reg && typeof reg.registerPartObject === 'function') {
-      const pid = typeof partId === 'string' ? partId : partId == null ? '' : String(partId);
+      const pid = formatIdentityValue(readIdentityValue(partId));
       if (!pid) return;
       const k = typeof kind === 'string' ? kind : undefined;
       reg.registerPartObject(pid, obj, k);

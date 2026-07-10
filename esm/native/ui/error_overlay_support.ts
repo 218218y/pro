@@ -1,5 +1,6 @@
 import { downloadJsonTextViaBrowser } from './browser_file_download.js';
 import { normalizeUnknownErrorInfo } from '../services/api.js';
+import { formatDisplayScalar, readDisplayScalar } from '../../shared/display_text_shared.js';
 
 import type { FatalOverlayShowOptionsLike, WardrobeProFatalOverlayController } from '../../../types';
 
@@ -80,7 +81,7 @@ export function setFatalOverlayController(win: Window | null, ctrl: FatalOverlay
 export function safeFatalOverlayText(value: unknown): string {
   try {
     const ESC: Record<string, string> = { '<': '&lt;', '>': '&gt;', '&': '&amp;' };
-    return String(value || '').replace(/[<>&]/g, ch => ESC[ch] ?? ch);
+    return formatDisplayScalar(readDisplayScalar(value)).replace(/[<>&]/g, ch => ESC[ch] ?? ch);
   } catch (_e) {
     return '';
   }
@@ -171,11 +172,12 @@ export function downloadFatalOverlayJson(
 }
 
 export function copyFatalOverlayText(win: Window | null, txt: unknown): boolean {
+  const text = formatDisplayScalar(readDisplayScalar(txt));
   try {
     if (!win) return false;
     const nav = win.navigator;
     if (nav && nav.clipboard && typeof nav.clipboard.writeText === 'function') {
-      void nav.clipboard.writeText(String(txt || ''));
+      void nav.clipboard.writeText(text);
       return true;
     }
   } catch (_e) {}
@@ -186,7 +188,7 @@ export function copyFatalOverlayText(win: Window | null, txt: unknown): boolean 
     const ta = doc.createElement('textarea');
     ta.name = 'fatalOverlayCopyBuffer';
     ta.setAttribute('aria-label', 'Temporary copy buffer');
-    ta.value = String(txt || '');
+    ta.value = text;
     ta.setAttribute('readonly', '');
     ta.setAttribute('tabindex', '-1');
     ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';

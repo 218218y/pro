@@ -1,4 +1,5 @@
 import type { AppContainer, Object3DLike, UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { isDrawerBoxPartId, resolveDrawerBoxOwnerPartId } from '../features/part_identity/api.js';
 import type { DoorHoverHit, IsViewportRootFn, StrFn } from './canvas_picking_door_hover_targets_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
@@ -74,7 +75,7 @@ function readInternalDrawerBoxHoverOwnerPartId(userData: UnknownRecord | null | 
 
 function isBlockedDoorHoverBodyHit(userData: UnknownRecord | null | undefined): boolean {
   if (!userData) return false;
-  const partId = userData.partId != null ? String(userData.partId) : '';
+  const partId = formatIdentityValue(readIdentityValue(userData.partId));
   if (readInternalDrawerBoxHoverOwnerPartId(userData)) return false;
   return userData.__wpDrawerBox === true || isDrawerBoxPartId(partId);
 }

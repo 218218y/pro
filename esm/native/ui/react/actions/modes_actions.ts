@@ -78,7 +78,7 @@ function resetAllEditModes(app: AppContainer): void {
 export function getPrimaryMode(app: AppContainer): string {
   try {
     const p = getModeRecord(app).primary;
-    return String(p == null ? 'none' : p);
+    return typeof p === 'string' && p ? p : 'none';
   } catch {
     return 'none';
   }
@@ -92,19 +92,19 @@ export function getModeState(app: AppContainer): UnknownRecord {
   }
 }
 
-export function enterPrimaryMode(app: AppContainer, modeId: unknown, opts?: UnknownRecord): void {
+export function enterPrimaryMode(app: AppContainer, modeId: string, opts?: UnknownRecord): void {
   resetAllEditModes(app);
 
   try {
-    getNativeModeApi().enter(app, String(modeId), opts || {});
+    getNativeModeApi().enter(app, modeId, opts || {});
   } catch {
     // ignore
   }
 }
 
-export function exitPrimaryMode(app: AppContainer, expectedMode?: unknown, opts?: UnknownRecord): void {
+export function exitPrimaryMode(app: AppContainer, expectedMode?: string, opts?: UnknownRecord): void {
   try {
-    getNativeModeApi().exit(app, expectedMode == null ? undefined : String(expectedMode), opts || {});
+    getNativeModeApi().exit(app, expectedMode, opts || {});
   } catch {
     // ignore
   }

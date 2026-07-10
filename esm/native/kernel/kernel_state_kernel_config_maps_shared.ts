@@ -151,9 +151,9 @@ export function createKernelStateKernelConfigMapsTools(
       case 'boardMaterial':
       case 'doorMountMode':
       case 'globalHandleType':
-        return value == null ? '' : String(value);
+        return typeof value === 'string' ? value : '';
       case 'customUploadedDataURL':
-        return value == null ? null : String(value);
+        return typeof value === 'string' ? value : null;
       case 'grooveLinesCount': {
         return value == null
           ? null

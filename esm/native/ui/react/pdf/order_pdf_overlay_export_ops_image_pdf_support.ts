@@ -1,6 +1,7 @@
 import type { PdfLibPageImageOptionsLike, PdfLibWritableDocumentLike } from './order_pdf_overlay_pdf_lib.js';
 import type { OrderPdfDraft } from './order_pdf_overlay_contracts.js';
 import type { WindowPartialLike } from './order_pdf_overlay_runtime.js';
+import { formatDisplayScalar, readDisplayScalar } from '../../../../shared/display_text_shared.js';
 
 import { resolveOrderPdfDetailsTextFromDraft } from '../../pdf/order_pdf_details_runtime.js';
 export { ORDER_PDF_IMAGE_TEMPLATE_BOXES } from '../../pdf/order_pdf_field_specs_runtime.js';
@@ -30,7 +31,7 @@ export type CanvasToPngBytesFn = (
 ) => Promise<Uint8Array>;
 
 export function coerceOrderPdfText(value: unknown): string {
-  return value === null || value === undefined ? '' : String(value);
+  return formatDisplayScalar(readDisplayScalar(value));
 }
 
 export function buildOrderPdfDetailsText(draft: OrderPdfDraft): string {

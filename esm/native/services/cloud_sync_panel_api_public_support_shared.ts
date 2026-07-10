@@ -13,9 +13,9 @@ export function asCloudSyncPublicRecord(value: unknown): UnknownRecord | null {
 
 export function cloneCloudSyncPanelSnapshot(snapshot: CloudSyncPanelSnapshot): CloudSyncPanelSnapshot {
   return {
-    room: String(snapshot.room || ''),
+    room: snapshot.room || '',
     isPublic: typeof snapshot.isPublic === 'boolean' ? snapshot.isPublic : null,
-    status: String(snapshot.status || 'offline'),
+    status: snapshot.status || 'offline',
     floatingSync: !!snapshot.floatingSync,
   };
 }
@@ -33,9 +33,9 @@ export function cloneCloudSyncPublicPanelSnapshot(snapshot: unknown): CloudSyncP
   const rec = asCloudSyncPublicRecord(snapshot);
   if (!rec) return getUnavailableCloudSyncPanelSnapshot();
   return cloneCloudSyncPanelSnapshot({
-    room: String(rec.room || ''),
+    room: typeof rec.room === 'string' ? rec.room : '',
     isPublic: typeof rec.isPublic === 'boolean' ? rec.isPublic : null,
-    status: String(rec.status || 'offline'),
+    status: typeof rec.status === 'string' && rec.status ? rec.status : 'offline',
     floatingSync: !!rec.floatingSync,
   });
 }

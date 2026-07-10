@@ -1,4 +1,5 @@
 import { getDrawersArray } from '../runtime/render_access.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import {
   classifyCrossDrawerPart,
   readCrossDrawerCanonicalPartId,
@@ -13,7 +14,7 @@ import {
 } from './canvas_picking_hover_targets_shared.js';
 
 function readString(value: unknown): string {
-  return typeof value === 'string' ? value : value == null ? '' : String(value);
+  return formatIdentityValue(readIdentityValue(value));
 }
 
 function readInternalModuleKeyFromPartId(partId: string): string {

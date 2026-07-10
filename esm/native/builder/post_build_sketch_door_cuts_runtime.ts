@@ -92,7 +92,7 @@ export function createSketchDoorCutsRuntime(args: SketchDoorCutsRuntimeArgs): Sk
   const readHandleOverride = (key: string): string | undefined => {
     if (!handlesMap || !Object.prototype.hasOwnProperty.call(handlesMap, key)) return undefined;
     const value = handlesMap[key];
-    return value == null || value === '' ? undefined : String(value);
+    return typeof value === 'string' && value ? value : undefined;
   };
   const resolveEdgeHandleVariant = (partId: string): 'short' | 'long' => {
     const base = stripSuffix(partId);

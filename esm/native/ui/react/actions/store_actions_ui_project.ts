@@ -9,15 +9,15 @@ function setUiActiveTab(app: AppContainer, next: unknown, meta?: ActionMetaLike)
     uiNs.setActiveTab(asStringValue(next), meta);
     return;
   }
-  setUiScalarSoft(app, 'activeTab', next == null ? '' : String(next), meta);
+  setUiScalarSoft(app, 'activeTab', asStringValue(next), meta);
 }
 
 function setUiSelectedModelId(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'selectedModelId', value == null ? '' : String(value), meta);
+  setUiScalarSoft(app, 'selectedModelId', asStringValue(value), meta);
 }
 
 function setUiProjectName(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'projectName', value == null ? '' : String(value), meta);
+  setUiScalarSoft(app, 'projectName', asStringValue(value), meta);
 }
 
 function setUiOrderPdfEditorOpen(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {

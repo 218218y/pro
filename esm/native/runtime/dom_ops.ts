@@ -11,6 +11,7 @@
 
 import { get$, getQs, getQsa } from './dom_access.js';
 import { getDocumentMaybe } from './browser_env.js';
+import { formatDisplayScalar, readDisplayScalar } from '../../shared/display_text_shared.js';
 
 type HtmlTextLike = Element & {
   textContent: string | null;
@@ -18,10 +19,6 @@ type HtmlTextLike = Element & {
 
 type HtmlTooltipLike = Element & {
   title: string;
-};
-
-type HtmlMarkupLike = Element & {
-  innerHTML: string;
 };
 
 function getDoc(App: unknown, el: Element | null): Document | null {
@@ -40,9 +37,9 @@ function clear(el: Element | null): void {
   }
 }
 
-function looksLikeClassList(s: unknown): boolean {
+function looksLikeClassList(s: string): boolean {
   try {
-    const t = String(s || '').trim();
+    const t = s.trim();
     if (!t) return false;
     if (/(?:^|\s)fa[srb]?(?:\s|$)/u.test(t)) return true;
     return /\s/u.test(t);
@@ -57,10 +54,6 @@ function hasTextContent(el: Element | null): el is HtmlTextLike {
 
 function hasTitle(el: Element | null): el is HtmlTooltipLike {
   return !!el && 'title' in el;
-}
-
-function hasInnerHTML(el: Element | null): el is HtmlMarkupLike {
-  return !!el && 'innerHTML' in el;
 }
 
 function isHTMLElementLike(value: unknown): value is HTMLElement {
@@ -91,8 +84,8 @@ export function setIconText(
   try {
     if (!el) return;
     const doc = getDoc(App, el);
-    const icon = iconOrClass == null ? '' : String(iconOrClass).trim();
-    const t = text == null ? '' : String(text);
+    const icon = iconOrClass?.trim() ?? '';
+    const t = text;
 
     clear(el);
 
@@ -119,7 +112,7 @@ export function setIconText(
       if (doc && typeof doc.createTextNode === 'function') {
         el.appendChild(doc.createTextNode(t));
       } else if (hasTextContent(el)) {
-        el.textContent = String(el.textContent || '') + t;
+        el.textContent = (el.textContent || '') + t;
       }
     }
 
@@ -138,16 +131,17 @@ export function setStrongInline(_App: unknown, el: Element | null, ...args: read
     if (!el) return;
 
     if (args.length === 1) {
-      const html = args[0];
-      if (hasInnerHTML(el)) el.innerHTML = html == null ? '' : String(html);
+      if (hasTextContent(el)) {
+        el.textContent = formatDisplayScalar(readDisplayScalar(args[0]));
+      }
       return;
     }
 
     if (args.length >= 2 && typeof args[0] === 'boolean') {
       const isActive = args[0];
-      const activePrefix = args[1] == null ? '' : String(args[1]);
-      const activeSuffix = args[2] == null ? '' : String(args[2]);
-      const inactiveText = args[3] == null ? '' : String(args[3]);
+      const activePrefix = formatDisplayScalar(readDisplayScalar(args[1]));
+      const activeSuffix = formatDisplayScalar(readDisplayScalar(args[2]));
+      const inactiveText = formatDisplayScalar(readDisplayScalar(args[3]));
       if (hasTextContent(el)) {
         el.textContent = isActive ? activePrefix + activeSuffix : inactiveText || activePrefix;
       }
@@ -155,7 +149,7 @@ export function setStrongInline(_App: unknown, el: Element | null, ...args: read
     }
 
     if (hasTextContent(el)) {
-      el.textContent = args.map(v => (v == null ? '' : String(v))).join('');
+      el.textContent = args.map(v => formatDisplayScalar(readDisplayScalar(v))).join('');
     }
   } catch {
     // swallow
@@ -170,8 +164,8 @@ export function setStrongSmall(
 ): void {
   try {
     if (!el) return;
-    const s = strongText == null ? '' : String(strongText);
-    const sm = smallText == null ? '' : String(smallText);
+    const s = strongText;
+    const sm = smallText;
     const doc = getDoc(App, el);
 
     clear(el);

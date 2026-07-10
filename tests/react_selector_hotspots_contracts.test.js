@@ -120,13 +120,15 @@ test('[react-hotspots] StructureTab, DesignTab, and SettingsVisual keep grouped 
   assert.match(designMultiColor, /const savedRaw = useCfgSelector\(selectSavedColors\);/);
   assert.match(
     designMultiColor,
-    /const curtainChoiceRaw = useUiSelector\(ui => String\(ui\.currentCurtainChoice \|\| 'none'\)\);/
+    /const curtainChoiceRaw = useUiSelector\(ui =>[\s\S]*typeof ui\.currentCurtainChoice === 'string'[\s\S]*\? ui\.currentCurtainChoice : 'none'[\s\S]*\);/
   );
   assert.match(
     designMultiColor,
-    /const primaryMode = useModeSelector\(mode => String\(mode\.primary \|\| 'none'\)\);/
+    /const primaryMode = useModeSelector\(mode =>[\s\S]*typeof mode\.primary === 'string'[\s\S]*\? mode\.primary : 'none'[\s\S]*\);/
   );
   assert.doesNotMatch(designMultiColor, /useStoreSelectorShallow\(st => \{/);
+  assert.doesNotMatch(designMultiColor, /String\(ui\.currentCurtainChoice/);
+  assert.doesNotMatch(designMultiColor, /String\(mode\.primary/);
 
   assert.match(settingsVisual, /useCfgSelectorShallow\(cfg => readSettingsVisualCfgState\(cfg\)\)/);
   assert.match(settingsVisual, /useUiSelectorShallow\(ui => readSettingsVisualUiState\(ui\)\)/);

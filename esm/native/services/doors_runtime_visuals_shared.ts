@@ -1,4 +1,5 @@
 import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import {
   isSlidingDoorTrackOpenMode,
   resolveSlidingDoorTrackOpenPosition,
@@ -37,7 +38,8 @@ export function resolveDoorPartId(group: ReturnType<typeof getDoorsArray>[number
   let cur = group;
   for (let i = 0; i < 6 && cur; i++) {
     const userData = cur && cur.userData ? cur.userData : null;
-    if (userData && userData.partId != null) return String(userData.partId);
+    const partId = formatIdentityValue(readIdentityValue(userData?.partId));
+    if (partId) return partId;
     cur = cur.parent;
   }
   return '';

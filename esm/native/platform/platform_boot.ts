@@ -22,7 +22,8 @@ export function readBootFailFastFlag(App: AppContainer, reportError: PlatformRep
     try {
       const storage = readLocalStorage(win?.localStorage);
       if (storage) {
-        const value = String(storage.getItem('WP_FAIL_FAST') || '');
+        const rawValue = storage.getItem('WP_FAIL_FAST');
+        const value = typeof rawValue === 'string' ? rawValue : '';
         if (value === '1' || value === 'true' || value === 'yes' || value === 'on') enabled = true;
       }
     } catch (e) {

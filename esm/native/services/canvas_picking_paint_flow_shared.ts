@@ -78,7 +78,7 @@ function cloneStringMap(src: UnknownRecord): Record<string, string | null | unde
     } else if (value === undefined) {
       nextValue = undefined;
     } else {
-      nextValue = String(value);
+      continue;
     }
     out[key] = nextValue;
   }

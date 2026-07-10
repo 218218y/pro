@@ -3,6 +3,7 @@
 import type { OrderPdfDraftLike, OrderPdfSketchAnnotationsLike } from '../../../../types/build.js';
 import type { NotesExportTransformLike } from './export_canvas_engine.js';
 import type { CallableLike, UnknownRecord } from './export_order_pdf_contracts_shared.js';
+import { formatDisplayScalar, readDisplayScalar } from '../../../shared/display_text_shared.js';
 export type {
   CallableLike,
   NotesExportTransformArgsLike,
@@ -77,7 +78,7 @@ export function readNotesTransform(value: unknown): NotesExportTransformLike | n
 export function readDraftString(rec: UnknownRecord, key: keyof OrderPdfDraftLike): string | undefined {
   const value = rec[key];
   if (typeof value === 'undefined' || value === null) return undefined;
-  return String(value);
+  return formatDisplayScalar(readDisplayScalar(value));
 }
 
 export function readDraftBoolean(rec: UnknownRecord, key: keyof OrderPdfDraftLike): boolean | undefined {

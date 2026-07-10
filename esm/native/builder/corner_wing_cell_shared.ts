@@ -155,7 +155,7 @@ export function readCurtainType(value: unknown): string | null | undefined {
   if (typeof value === 'string') return value;
   if (value === null) return null;
   if (typeof value === 'undefined') return undefined;
-  return String(value);
+  return undefined;
 }
 
 export function isValueRecord(value: unknown): value is ValueRecord {

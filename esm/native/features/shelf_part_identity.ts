@@ -19,7 +19,7 @@ type ShelfUserDataLike = {
 };
 
 function normalizeShelfScopeKey(value: unknown): string {
-  const raw = typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
+  const raw = formatIdentityValue(readIdentityValue(value)).trim();
   if (!raw) return DEFAULT_SCOPE_KEY;
   const normalized = raw.replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '');
   return normalized || DEFAULT_SCOPE_KEY;
@@ -54,10 +54,9 @@ export function createSketchExternalDrawerBraceShelfPartId(
   boxId?: unknown
 ): string {
   const moduleScope = normalizeShelfScopeKey(moduleKey);
-  const scopeKey =
-    boxId == null || String(boxId).trim() === ''
-      ? moduleScope
-      : `${moduleScope}_box_${normalizeShelfScopeKey(boxId)}`;
+  const scopeKey = !formatIdentityValue(readIdentityValue(boxId)).trim()
+    ? moduleScope
+    : `${moduleScope}_box_${normalizeShelfScopeKey(boxId)}`;
   const drawerKey = `${EXTERNAL_DRAWER_BRACE_SHELF_KEY}_${normalizeShelfScopeKey(drawerId)}`;
   return createSketchShelfPartId(scopeKey, drawerKey);
 }
@@ -73,7 +72,7 @@ function isCornerPentagonInteriorShelfPartId(partId: string): boolean {
 }
 
 export function isIndividualShelfPartId(partId: unknown): boolean {
-  const pid = withoutLowerStackPrefix(typeof partId === 'string' ? partId : String(partId ?? ''));
+  const pid = withoutLowerStackPrefix(formatIdentityValue(readIdentityValue(partId)));
   return (
     pid.startsWith(MODULE_SHELF_PART_PREFIX) ||
     pid.startsWith(SKETCH_SHELF_PART_PREFIX) ||
@@ -83,7 +82,7 @@ export function isIndividualShelfPartId(partId: unknown): boolean {
 }
 
 export function resolveShelfGroupPartId(partId: unknown): string | null {
-  const pid = withoutLowerStackPrefix(typeof partId === 'string' ? partId : String(partId ?? ''));
+  const pid = withoutLowerStackPrefix(formatIdentityValue(readIdentityValue(partId)));
   if (pid.startsWith(CORNER_SHELF_PART_PREFIX) || isCornerPentagonInteriorShelfPartId(pid)) {
     return CORNER_SHELF_GROUP_PART_ID;
   }
@@ -94,7 +93,7 @@ export function resolveShelfGroupPartId(partId: unknown): string | null {
 }
 
 export function isShelfBoardPartId(partId: unknown): boolean {
-  const pid = typeof partId === 'string' ? partId : String(partId ?? '');
+  const pid = formatIdentityValue(readIdentityValue(partId));
   return pid === SHELF_GROUP_PART_ID || pid === CORNER_SHELF_GROUP_PART_ID || isIndividualShelfPartId(pid);
 }
 
@@ -137,3 +136,4 @@ export function resolveShelfPartMaterial(args: {
   }
   return currentShelfMat;
 }
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';

@@ -1,4 +1,5 @@
 import type { AppContainer } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type { HitObjectLike } from './canvas_picking_engine.js';
 import { readRootState } from '../runtime/root_state_access.js';
@@ -94,11 +95,12 @@ export function resolveSketchBoxPatchTargets(
   const seen = new Set<string>();
 
   const pushCandidate = (stack: 'top' | 'bottom', moduleKey: unknown) => {
-    if (moduleKey == null || moduleKey === '') return;
-    const key = `${stack}::${String(moduleKey)}`;
+    const normalizedModuleKey = formatIdentityValue(readIdentityValue(moduleKey));
+    if (!normalizedModuleKey) return;
+    const key = `${stack}::${normalizedModuleKey}`;
     if (seen.has(key)) return;
     seen.add(key);
-    out.push({ stack, moduleKey: String(moduleKey) });
+    out.push({ stack, moduleKey: normalizedModuleKey });
   };
 
   if (target.moduleKey) {
@@ -116,7 +118,7 @@ export function resolveSketchBoxPatchTargets(
       const boxes = Array.isArray(extra?.boxes) ? extra?.boxes : [];
       const found = boxes.some(box => {
         const rec = asRecord(box);
-        return !!rec && rec.id != null && String(rec.id) === target.boxId;
+        return !!rec && formatIdentityValue(readIdentityValue(rec.id)) === target.boxId;
       });
       if (found) pushCandidate(stack, i);
     }

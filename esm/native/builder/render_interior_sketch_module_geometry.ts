@@ -1,4 +1,5 @@
 import type { AppContainer } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type {
   InteriorGroupLike,
@@ -244,12 +245,12 @@ export function resolveSketchModuleDoorFaceSpan(
     const ud = asGeometryUserData(child.userData);
     if (!ud) continue;
     const childModuleIndex = readGeometryUserDataNumberKey(ud, 'moduleIndex');
-    const childModuleKey = ud.moduleIndex != null ? String(ud.moduleIndex) : '';
+    const childModuleKey = formatIdentityValue(readIdentityValue(ud.moduleIndex));
     const matchesNumericModule =
       moduleIndex >= 0 && childModuleIndex != null && Math.floor(childModuleIndex) === moduleIndex;
     const matchesScopedModuleKey = !!wantModuleKey && childModuleKey === wantModuleKey;
     if (!matchesNumericModule && !matchesScopedModuleKey) continue;
-    const partId = ud.partId != null ? String(ud.partId) : '';
+    const partId = formatIdentityValue(readIdentityValue(ud.partId));
     const doorId = readGeometryUserDataNumberKey(ud, '__wpDoorId');
     if (doorId == null && !/^d\d+/.test(partId)) continue;
     const childStackRaw = ud.__wpStack;

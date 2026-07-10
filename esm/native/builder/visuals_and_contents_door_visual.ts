@@ -104,12 +104,12 @@ export function createDoorVisual(
   const visualGroup = new THREE.Group();
 
   // Fail-fast: door style must be resolved from store.ui, without DOM readback.
-  if (style == null || String(style).trim() === '') {
+  if (typeof style !== 'string' || style.trim() === '') {
     throw new Error(
       '[WardrobePro] Door style is missing (expected ui.doorStyle to be "flat", "profile", or "double_profile").'
     );
   }
-  style = String(style).trim();
+  style = style.trim();
   const zSign = frontFaceSign === -1 ? -1 : 1;
   const __forceCurtainFix = !!forceCurtainFix;
   const { tagDoorVisualPart } = createDoorVisualPartTagger({ groovePartId });

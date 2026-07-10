@@ -6,7 +6,7 @@ import type {
   Vec3Ctor,
 } from './canvas_picking_sketch_direct_hit_workflow_contracts.js';
 import { getProp, getRecordProp } from '../runtime/record.js';
-import { readRecordNumber, readRecordString } from './canvas_picking_sketch_direct_hit_workflow_records.js';
+import { readRecordIdentity, readRecordNumber } from './canvas_picking_sketch_direct_hit_workflow_records.js';
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === 'object' && !Array.isArray(v);
@@ -37,21 +37,21 @@ export function readChildObjects(value: unknown): DirectHitObject[] {
 
 export function readPartId(value: unknown): string {
   const obj = asDirectHitObject(value);
-  return obj?.userData ? readRecordString(obj.userData, 'partId') : '';
+  return obj?.userData ? readRecordIdentity(obj.userData, 'partId') : '';
 }
 
 export function readModuleIndex(value: unknown): string {
   const obj = asDirectHitObject(value);
   if (!obj?.userData) return '';
   return (
-    readRecordString(obj.userData, '__wpSketchModuleKey') || readRecordString(obj.userData, 'moduleIndex')
+    readRecordIdentity(obj.userData, '__wpSketchModuleKey') || readRecordIdentity(obj.userData, 'moduleIndex')
   );
 }
 
 export function readSketchBoxId(value: unknown): string {
   const obj = asDirectHitObject(value);
   if (!obj?.userData) return '';
-  return readRecordString(obj.userData, '__wpSketchBoxId');
+  return readRecordIdentity(obj.userData, '__wpSketchBoxId');
 }
 
 function readParent(value: unknown): unknown {

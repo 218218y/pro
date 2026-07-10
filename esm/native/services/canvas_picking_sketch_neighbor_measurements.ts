@@ -61,7 +61,7 @@ function pushRange(
 }
 
 function shelfThicknessForVariant(variant: unknown, woodThick: number): number {
-  const kind = variant != null && variant !== '' ? String(variant) : 'regular';
+  const kind = typeof variant === 'string' && variant ? variant : 'regular';
   if (kind === 'glass') return MATERIAL_DIMENSIONS.glassShelf.thicknessM;
   if (kind === 'double' || kind === '') return Math.max(woodThick, woodThick * 2);
   return woodThick;
@@ -99,7 +99,8 @@ function readLayoutShelfState(
 
   const layoutRaw = readValue(cfgRef, 'layout');
   if (layoutRaw == null || layoutRaw === '') return null;
-  const layout = String(layoutRaw);
+  if (typeof layoutRaw !== 'string') return null;
+  const layout = layoutRaw;
   const braceShelvesRaw = readValue(cfgRef, 'braceShelves');
   const braceShelves = Array.isArray(braceShelvesRaw)
     ? new Set(braceShelvesRaw.map(value => Number(value)).filter(Number.isFinite))

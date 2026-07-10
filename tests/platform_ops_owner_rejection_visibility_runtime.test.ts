@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 
 import {
   triggerRenderViaPlatform,
-  stringifyViaPlatform,
   cloneViaPlatform,
   cleanGroupViaPlatform,
   pruneCachesSafeViaPlatform,
@@ -54,7 +53,6 @@ test('platform access reports owner rejection while preserving stable fallback r
   const { App, reports } = createAppWithDiagnostics();
 
   assert.equal(triggerRenderViaPlatform(App, true), false);
-  assert.equal(stringifyViaPlatform(App, { a: 1 }, 'fallback'), '[object Object]');
   const value = { stable: true };
   assert.equal(cloneViaPlatform(App, value), value);
   assert.equal(cleanGroupViaPlatform(App, { children: [] }), false);
@@ -69,7 +67,6 @@ test('platform access reports owner rejection while preserving stable fallback r
     reports.map(report => report.ctx?.op),
     [
       'triggerRender.ownerRejected',
-      'stringify.ownerRejected',
       'clone.ownerRejected',
       'cleanGroup.ownerRejected',
       'pruneCachesSafe.ownerRejected',

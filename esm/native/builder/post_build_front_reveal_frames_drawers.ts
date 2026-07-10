@@ -4,6 +4,7 @@
 
 import { getDrawersArray } from '../runtime/render_access.js';
 import { FRONT_REVEAL_FRAME_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type { Object3DLike } from '../../../types/index.js';
 
 import {
@@ -31,7 +32,7 @@ export function applyFrontRevealDrawerFrames(runtime: FrontRevealFramesRuntime):
         wardrobeGroup.traverse((obj: Object3DLike) => {
           const ud = obj && obj.userData;
           if (!ud) return;
-          const pid = ud.partId ? String(ud.partId) : '';
+          const pid = formatIdentityValue(readIdentityValue(ud.partId));
           if (!pid) return;
           const drawerLike = pid.indexOf('drawer') !== -1 || pid.startsWith('div_int_');
           if (!drawerLike) return;
@@ -51,8 +52,8 @@ export function applyFrontRevealDrawerFrames(runtime: FrontRevealFramesRuntime):
     if (!g || !g.userData || !g.position) continue;
 
     const pid =
-      (g.userData && g.userData.partId != null ? String(g.userData.partId) : '') ||
-      (readKey(asRecord(entry), 'id') != null ? String(readKey(asRecord(entry), 'id')) : '');
+      formatIdentityValue(readIdentityValue(g.userData?.partId)) ||
+      formatIdentityValue(readIdentityValue(readKey(asRecord(entry), 'id')));
     const isDrawerLike =
       /^d\d+_draw_(?:shoe|\d+)$/.test(pid) ||
       /^(?:lower_)?corner_c\d+_draw_(?:shoe|\d+)$/.test(pid) ||

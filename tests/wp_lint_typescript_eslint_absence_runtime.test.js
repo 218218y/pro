@@ -84,12 +84,13 @@ test('removed TS ESLint packages are absent and modern quality has no old aliase
   assert.equal(pkg.scripts.lint, 'npm run lint:modern');
   assert.equal(
     pkg.scripts['lint:modern'],
-    'npm run lint:js:strict && npm run lint:ts-modern:syntax && npm run lint:contracts'
+    'npm run lint:js:strict && npm run lint:ts-modern:syntax && npm run lint:ts-modern:type-aware && npm run lint:contracts'
   );
   assert.equal(pkg.scripts[OLD_LINT_LEGACY], undefined);
   assert.equal(pkg.scripts[OLD_DRY_RUN_SCRIPT], undefined);
   assert.equal(pkg.scripts['quality:ts'], 'npm run quality:ts-modern');
   assert.match(pkg.scripts['quality:ts-modern'], /lint:js:strict/);
+  assert.match(pkg.scripts['quality:ts-modern'], /lint:ts-modern:type-aware/);
   assert.doesNotMatch(
     pkg.scripts['quality:ts-modern'],
     new RegExp(`${OLD_LINT_LEGACY}|${OLD_PARSER_REMOVAL}`)

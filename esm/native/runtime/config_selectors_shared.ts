@@ -146,17 +146,17 @@ export function normalizeBoolean(value: unknown, defaultValue: boolean): boolean
 }
 
 export function normalizeBoardMaterial(value: unknown, defaultValue: BoardMaterialValue): BoardMaterialValue {
-  const s = String(value ?? '').trim();
+  const s = typeof value === 'string' ? value.trim() : '';
   return s === 'sandwich' || s === 'melamine' ? s : defaultValue;
 }
 
 export function normalizeDoorMountMode(value: unknown, defaultValue: DoorMountModeValue): DoorMountModeValue {
-  const s = String(value ?? '').trim();
+  const s = typeof value === 'string' ? value.trim() : '';
   return s === 'inset' || s === 'overlay' ? s : defaultValue;
 }
 
 export function normalizeWardrobeType(value: unknown, defaultValue: WardrobeTypeValue): WardrobeTypeValue {
-  const s = String(value ?? '').trim();
+  const s = typeof value === 'string' ? value.trim() : '';
   return s === 'hinged' || s === 'sliding' ? s : defaultValue;
 }
 
@@ -164,7 +164,7 @@ export function normalizeGlobalHandleType(
   value: unknown,
   defaultValue: GlobalHandleTypeValue
 ): GlobalHandleTypeValue {
-  const s = String(value ?? '').trim();
+  const s = typeof value === 'string' ? value.trim() : '';
   return s === 'standard' || s === 'edge' || s === 'none' ? s : defaultValue;
 }
 

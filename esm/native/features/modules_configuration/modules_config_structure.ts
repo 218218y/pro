@@ -43,7 +43,7 @@ function readUiRawPreferredInt(uiSnapshot: unknown, key: string, defaultValue: n
 
 function readUiRawPreferredString(uiSnapshot: unknown, key: string, defaultValue = ''): string {
   const value = readUiRawPreferredValue(uiSnapshot, key);
-  return value == null ? defaultValue : String(value);
+  return typeof value === 'string' ? value : defaultValue;
 }
 
 export function resolveTopModulesStructureFromUiConfig(
@@ -54,7 +54,7 @@ export function resolveTopModulesStructureFromUiConfig(
   const singleDoorPos = readUiRawPreferredString(uiSnapshot, 'singleDoorPos', '');
   const structureSelect = readUiRawPreferredString(uiSnapshot, 'structureSelect', '');
   const cfg = isRecord(cfgSnapshot) ? cfgSnapshot : {};
-  const wardrobeType = String(cfg.wardrobeType ?? 'hinged');
+  const wardrobeType = cfg.wardrobeType === 'sliding' ? 'sliding' : 'hinged';
 
   try {
     const structure = calculateModuleStructure(doorsCount, singleDoorPos, structureSelect, wardrobeType);

@@ -43,7 +43,7 @@ type CfgRead = {
 };
 
 export const cfgRead: CfgRead = (App: unknown, key: unknown, defaultValue?: unknown): unknown => {
-  const k = String(key || '');
+  const k = typeof key === 'string' ? key : '';
   if (!k) return defaultValue;
   const snap = cfgGet(App);
   const value = snap[k];

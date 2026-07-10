@@ -1,5 +1,6 @@
 import type { AppContainer, Object3DLike, UnknownRecord } from '../../../types';
 import type { Vector3Like } from '../../../types/three_like.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import { isShelfBoardPartId } from '../features/part_identity/api.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
@@ -63,8 +64,7 @@ function readFiniteNumber(value: unknown, key: string): number | null {
 
 function readPartIdFromUserData(userData: UnknownRecord | null): string | null {
   const raw = userData?.partId ?? userData?.pid;
-  if (raw == null) return null;
-  const text = String(raw).trim();
+  const text = formatIdentityValue(readIdentityValue(raw)).trim();
   return text || null;
 }
 
@@ -112,8 +112,9 @@ function hasCavityBackgroundTarget(value: unknown): boolean {
 }
 
 function sameModuleKey(a: unknown, b: unknown): boolean {
-  if (a == null || b == null) return false;
-  return String(a) === String(b);
+  const left = readIdentityValue(a);
+  const right = readIdentityValue(b);
+  return left != null && right != null && formatIdentityValue(left) === formatIdentityValue(right);
 }
 
 export function isDecorativeObject(value: unknown): boolean {
@@ -123,7 +124,7 @@ export function isDecorativeObject(value: unknown): boolean {
 
 function readUserDataKind(userData: UnknownRecord | null): string {
   const raw = userData?.__kind ?? userData?.kind ?? userData?.type;
-  return raw == null ? '' : String(raw).trim().toLowerCase();
+  return typeof raw === 'string' ? raw.trim().toLowerCase() : '';
 }
 
 function isMeasurementPassiveFittingUserData(userData: UnknownRecord | null): boolean {
@@ -471,7 +472,8 @@ function targetKeyForHit(hitState: CanvasPickingClickHitState, target: unknown):
   ];
   for (let i = 0; i < candidates.length; i += 1) {
     const raw = candidates[i];
-    if (raw != null && String(raw).trim()) return String(raw).trim();
+    const key = formatIdentityValue(readIdentityValue(raw)).trim();
+    if (key) return key;
   }
   return null;
 }
@@ -581,7 +583,8 @@ function readNearestTargetIdentity(value: unknown): string | null {
   while (current) {
     const ud = readUserData(current);
     const raw = ud?.partId ?? ud?.pid ?? ud?.surfaceId ?? ud?.drawerId;
-    if (raw != null && String(raw).trim()) return String(raw).trim();
+    const key = formatIdentityValue(readIdentityValue(raw)).trim();
+    if (key) return key;
     current = asMeasurableObject(current.parent);
   }
   return null;
@@ -599,7 +602,7 @@ function findNearestDirectPartTarget(hitState: CanvasPickingClickHitState): unkn
     if (hitState.foundDrawerId) {
       const drawerOwner = findTaggedAncestor(hitObj, ud => {
         const id = ud.drawerId ?? ud.partId ?? ud.pid;
-        return id != null && String(id) === String(hitState.foundDrawerId);
+        return sameModuleKey(id, hitState.foundDrawerId);
       });
       if (drawerOwner) return drawerOwner;
     }
@@ -729,7 +732,8 @@ function readModuleInteriorBox(args: {
   const fallbackBox = selectorBox || readMeasuredBox(App, target, wardrobeGroup);
 
   const grid = getInternalGridMap(App, hitState.foundModuleStack === 'bottom');
-  const info = isRecord(grid) ? grid[String(hitState.foundModuleIndex)] : null;
+  const moduleKey = formatIdentityValue(readIdentityValue(hitState.foundModuleIndex));
+  const info = isRecord(grid) && moduleKey ? grid[moduleKey] : null;
   const gridInfo = isRecord(info) ? info : null;
 
   const fallbackBottomY = fallbackBox ? fallbackBox.centerY - fallbackBox.height / 2 : null;
@@ -761,7 +765,7 @@ function readModuleInteriorBox(args: {
   const minShelfWidth = Math.max(0.02, innerW * 0.35);
   const minShelfDepth = Math.max(0.015, internalDepth * 0.12);
   const maxShelfHeight = Math.max(0.09, woodThick * 4.2);
-  const moduleKey = hitState.foundModuleIndex;
+  const targetModuleKey = hitState.foundModuleIndex;
   const moduleMinX = internalCenterX - innerW / 2;
   const moduleMaxX = internalCenterX + innerW / 2;
   const bounds: number[] = [bottomY, topY];
@@ -770,7 +774,7 @@ function readModuleInteriorBox(args: {
     if (!obj || obj === target || obj === selectorTarget || isDecorativeObject(obj)) return;
     const ud = readUserData(obj);
     const objModule = ud?.moduleIndex ?? ud?.__wpSketchModuleKey;
-    if (objModule != null && !sameModuleKey(objModule, moduleKey)) return;
+    if (objModule != null && !sameModuleKey(objModule, targetModuleKey)) return;
     if (ud?.isModuleSelector || ud?.__wpViewerMeasurementOverlay || ud?.__ignoreRaycast) return;
     if (isViewerMeasurementHiddenObject(obj)) return;
     if (isBackPanelLike(obj) || isMeasurementPassiveFittingObject(obj)) return;

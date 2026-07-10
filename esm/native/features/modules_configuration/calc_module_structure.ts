@@ -9,22 +9,21 @@
 // - Defensive parsing: invalid inputs resolve through the canonical default layout.
 
 import type { ModulesStructureItemLike } from '../../../../types/index.js';
+import { readInteger, readNumericInput } from '../../../shared/numeric_value_shared.js';
 
 export type ModulesStructureItem = ModulesStructureItemLike;
 export type ModuleStructureWardrobeType = 'hinged' | 'sliding';
 
 export function normalizeModuleStructureWardrobeType(v: unknown): ModuleStructureWardrobeType {
-  const s = String(v ?? '')
-    .trim()
-    .toLowerCase();
+  const s = typeof v === 'string' ? v.trim().toLowerCase() : '';
   return s === 'sliding' ? 'sliding' : 'hinged';
 }
 
 export function normalizeModuleStructureDoorCount(n: unknown, wardrobeType: unknown): number {
-  const v = parseInt(String(n ?? ''), 10);
+  const v = readInteger(readNumericInput(n));
   const type = normalizeModuleStructureWardrobeType(wardrobeType);
   const minDoors = type === 'sliding' ? 2 : 0;
-  if (!Number.isFinite(v) || v < minDoors) return minDoors;
+  if (v == null || v < minDoors) return minDoors;
   return v;
 }
 
@@ -32,8 +31,8 @@ function readPositiveDoorCountList(value: unknown[]): number[] | null {
   if (!value.length) return null;
   const out: number[] = [];
   for (const item of value) {
-    const n = parseInt(String(item ?? ''), 10);
-    if (!Number.isFinite(n) || n <= 0) return null;
+    const n = readInteger(readNumericInput(item));
+    if (n == null || n <= 0) return null;
     out.push(n);
   }
   return out;
@@ -42,7 +41,8 @@ function readPositiveDoorCountList(value: unknown[]): number[] | null {
 export function readModuleStructureSelectSignature(value: unknown): number[] | null {
   if (Array.isArray(value)) return readPositiveDoorCountList(value);
 
-  const raw = String(value ?? '').trim();
+  if (typeof value !== 'string') return null;
+  const raw = value.trim();
   if (!raw) return null;
 
   let parsed: unknown;
@@ -117,9 +117,7 @@ export function calculateModuleStructure(
   }
 
   // Odd: place the single door according to singlePos.
-  const pos = String(singlePos ?? '')
-    .trim()
-    .toLowerCase();
+  const pos = typeof singlePos === 'string' ? singlePos.trim().toLowerCase() : '';
 
   const pushPairs = (countPairs: number) => {
     for (let i = 0; i < countPairs; i++) out.push({ doors: 2 });

@@ -12,11 +12,10 @@ function getPreferredExportWallColor(App: AppContainer): string {
     const colors = getArrayProp(rd, 'WALL_COLORS');
     for (const item of colors) {
       const rec = asRecord(item);
-      const id = String(rec['id'] || '')
-        .trim()
-        .toLowerCase();
-      const name = String(rec['name'] || '').trim();
-      const val = String(rec['val'] || rec['color'] || '').trim();
+      const id = typeof rec.id === 'string' ? rec.id.trim().toLowerCase() : '';
+      const name = typeof rec.name === 'string' ? rec.name.trim() : '';
+      const rawColor = rec.val || rec.color;
+      const val = typeof rawColor === 'string' ? rawColor.trim() : '';
       if (!val) continue;
       if (id === 'blue' || name === 'תכלת עדין') return val;
     }
@@ -29,14 +28,16 @@ function getPreferredExportWallColor(App: AppContainer): string {
 function getCurrentWallColorForExportRestore(App: AppContainer): string | null {
   try {
     const ui = asRecord(getUi(App));
-    const v = String(ui?.['lastSelectedWallColor'] || '').trim();
+    const rawColor = ui?.['lastSelectedWallColor'];
+    const v = typeof rawColor === 'string' ? rawColor.trim() : '';
     if (v) return v;
   } catch (e) {
     _exportReportThrottled(App, 'getCurrentWallColorForExportRestore.ui', e, { throttleMs: 2000 });
   }
   try {
     const rd = asRecord(getRoomDesignServiceMaybe(App));
-    const v = String(rd['DEFAULT_WALL_COLOR'] || '').trim();
+    const rawColor = rd.DEFAULT_WALL_COLOR;
+    const v = typeof rawColor === 'string' ? rawColor.trim() : '';
     if (v) return v;
   } catch (e) {
     _exportReportThrottled(App, 'getCurrentWallColorForExportRestore.roomDesign', e, { throttleMs: 2000 });

@@ -1,4 +1,5 @@
 import type { AppContainer } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import {
   __wp_isDoorLikePartId,
@@ -45,7 +46,7 @@ export function scanCanvasPickingClickObjectHit(args: {
   let curr: typeof obj | null = obj;
   while (curr && !__wp_isViewportRoot(App, curr)) {
     if (curr.userData?.partId != null) {
-      const pid = String(curr.userData.partId);
+      const pid = formatIdentityValue(readIdentityValue(curr.userData.partId));
       const mergedUserData = mergeCanvasPickingHitIdentityUserData(obj.userData, curr.userData);
       const stackHint = normalizeCanvasPickingModuleStack(
         mergedUserData?.moduleStack ?? mergedUserData?.__wpStack ?? mergedUserData?.stack

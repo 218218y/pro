@@ -4,6 +4,7 @@
 
 import { getDoorsArray } from '../runtime/render_access.js';
 import { FRONT_REVEAL_FRAME_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type { BuildContextLike, Object3DLike } from '../../../types/index.js';
 
 import {
@@ -34,7 +35,7 @@ export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: Front
         wardrobeGroup.traverse((obj: Object3DLike) => {
           const ud = obj && obj.userData;
           if (!ud) return;
-          const pid = ud.partId ? String(ud.partId) : '';
+          const pid = formatIdentityValue(readIdentityValue(ud.partId));
           if (!pid) return;
           if (!/^d\d+_/.test(pid)) return;
           const w = readGeometryUserDataPositiveNumberKey(ud, '__doorWidth');

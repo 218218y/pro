@@ -1,6 +1,7 @@
 // React UI actions: interior tools (layout/manual/drawers/dividers)
 
 import type { AppContainer, ActionMetaLike, UnknownRecord } from '../../../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../../../shared/identity_value_shared.js';
 
 import { getPrimaryMode, enterPrimaryMode, exitPrimaryMode } from './modes_actions.js';
 import { getUiFeedback, MODES } from '../../../services/api.js';
@@ -33,6 +34,14 @@ type InteriorModesLike = Partial<
 
 function getInteriorModes(): InteriorModesLike {
   return readRecord(MODES) || {};
+}
+
+function readInteriorModeId(value: unknown, defaultValue: string): string {
+  return typeof value === 'string' && value ? value : defaultValue;
+}
+
+function readInteriorChoice(value: unknown, defaultValue: string): string {
+  return typeof value === 'string' && value ? value : defaultValue;
 }
 
 const INTERIOR_DRAWERS_TOGGLE_BUILD_OPTIONS = { buildTiming: 'coalesced' } as const;
@@ -71,7 +80,7 @@ function readCloseDoorsOpts(closeDoors: boolean): UnknownRecord {
 function turnOffHandleModeIfNeeded(app: AppContainer): void {
   try {
     const modes = getInteriorModes();
-    const HANDLE = String(modes.HANDLE || 'handle');
+    const HANDLE = readInteriorModeId(modes.HANDLE, 'handle');
     const cur = getPrimaryMode(app);
     if (String(cur) === HANDLE) {
       exitPrimaryMode(app, HANDLE, { preserveDoors: true });
@@ -84,7 +93,8 @@ function turnOffHandleModeIfNeeded(app: AppContainer): void {
 export function enterLayoutMode(app: AppContainer, layoutType: unknown): void {
   turnOffHandleModeIfNeeded(app);
   const modes = getInteriorModes();
-  const MODE_LAYOUT = String(modes.LAYOUT || 'layout');
+  const MODE_LAYOUT = readInteriorModeId(modes.LAYOUT, 'layout');
+  const selectedLayout = readInteriorChoice(layoutType, 'shelves');
 
   try {
     const m: ActionMetaLike = {
@@ -94,13 +104,13 @@ export function enterLayoutMode(app: AppContainer, layoutType: unknown): void {
       noHistory: true,
       noPersist: true,
     };
-    setUiCurrentLayoutType(app, String(layoutType || 'shelves'), m);
+    setUiCurrentLayoutType(app, selectedLayout, m);
   } catch {
     // ignore
   }
 
   enterPrimaryMode(app, MODE_LAYOUT, {
-    modeOpts: { layoutType: String(layoutType || 'shelves') },
+    modeOpts: { layoutType: selectedLayout },
     openDoors: true,
     cursor: 'alias',
     toast: 'בחר חלוקה ואז לחץ על תא ליישום',
@@ -110,10 +120,10 @@ export function enterLayoutMode(app: AppContainer, layoutType: unknown): void {
 export function enterManualLayoutMode(app: AppContainer, toolId: unknown): void {
   turnOffHandleModeIfNeeded(app);
   const modes = getInteriorModes();
-  const MODE_MANUAL = String(modes.MANUAL_LAYOUT || 'manual_layout');
+  const MODE_MANUAL = readInteriorModeId(modes.MANUAL_LAYOUT, 'manual_layout');
 
   enterPrimaryMode(app, MODE_MANUAL, {
-    modeOpts: { manualTool: String(toolId || 'shelf') },
+    modeOpts: { manualTool: readInteriorChoice(toolId, 'shelf') },
     openDoors: true,
     cursor: 'alias',
     toast: 'חלוקה ידנית: לחץ בתוך הארון להוספה/הסרה',
@@ -123,7 +133,7 @@ export function enterManualLayoutMode(app: AppContainer, toolId: unknown): void 
 export function toggleBraceShelvesMode(app: AppContainer): void {
   turnOffHandleModeIfNeeded(app);
   const modes = getInteriorModes();
-  const MODE_BRACE = String(modes.BRACE_SHELVES || 'brace_shelves');
+  const MODE_BRACE = readInteriorModeId(modes.BRACE_SHELVES, 'brace_shelves');
 
   const cur = getPrimaryMode(app);
   if (String(cur) === MODE_BRACE) {
@@ -155,9 +165,10 @@ export function setGridDivisions(app: AppContainer, n: unknown): void {
       noPersist: true,
     };
 
-    if (activeId) {
+    const activeKey = formatIdentityValue(readIdentityValue(activeId));
+    if (activeKey) {
       const base = perCell && typeof perCell === 'object' && !Array.isArray(perCell) ? perCell : {};
-      const next = { ...base, [String(activeId)]: divs };
+      const next = { ...base, [activeKey]: divs };
       setUiGridDivisionsState(app, divs, next, null, m);
       return;
     }
@@ -169,7 +180,7 @@ export function setGridDivisions(app: AppContainer, n: unknown): void {
 }
 
 export function setGridShelfVariant(app: AppContainer, variant: unknown): void {
-  const raw = variant == null ? '' : String(variant || '');
+  const raw = typeof variant === 'string' ? variant : '';
   const v0 = raw.trim().toLowerCase();
   const v = v0 === 'double' || v0 === 'glass' || v0 === 'brace' || v0 === 'regular' ? v0 : 'regular';
 
@@ -190,7 +201,8 @@ export function setGridShelfVariant(app: AppContainer, variant: unknown): void {
 export function enterExtDrawerMode(app: AppContainer, drawerType: unknown, count?: unknown): void {
   turnOffHandleModeIfNeeded(app);
   const modes = getInteriorModes();
-  const MODE_EXT = String(modes.EXT_DRAWER || 'ext_drawer');
+  const MODE_EXT = readInteriorModeId(modes.EXT_DRAWER, 'ext_drawer');
+  const selectedDrawerType = readInteriorChoice(drawerType, 'regular');
 
   const snap = getUiSnap(app);
   const curCount = Number(snap.currentExtDrawerCount);
@@ -205,13 +217,13 @@ export function enterExtDrawerMode(app: AppContainer, drawerType: unknown, count
       noHistory: true,
       noPersist: true,
     };
-    setUiExtDrawerSelection(app, String(drawerType || 'regular'), finalCount, m);
+    setUiExtDrawerSelection(app, selectedDrawerType, finalCount, m);
   } catch {
     // ignore
   }
 
   enterPrimaryMode(app, MODE_EXT, {
-    modeOpts: { extDrawerType: String(drawerType || 'regular'), extDrawerCount: finalCount },
+    modeOpts: { extDrawerType: selectedDrawerType, extDrawerCount: finalCount },
     preserveDoors: true,
     cursor: 'alias',
     toast: 'בחירת מגירה: לחץ על תא להצבה',
@@ -221,7 +233,7 @@ export function enterExtDrawerMode(app: AppContainer, drawerType: unknown, count
 export function toggleDividerMode(app: AppContainer): void {
   turnOffHandleModeIfNeeded(app);
   const modes = getInteriorModes();
-  const MODE_DIV = String(modes.DIVIDER || 'divider');
+  const MODE_DIV = readInteriorModeId(modes.DIVIDER, 'divider');
 
   const cur = getPrimaryMode(app);
   if (String(cur) === MODE_DIV) {

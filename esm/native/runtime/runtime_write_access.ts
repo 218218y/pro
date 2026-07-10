@@ -48,7 +48,7 @@ export const setRuntimeScalar: SetRuntimeScalar = (
   value: unknown,
   meta?: ActionMetaLike
 ): unknown => {
-  const k = key == null ? '' : String(key);
+  const k = typeof key === 'string' ? key : '';
   if (!k) return undefined;
   if (typeof value === 'function') return undefined;
 

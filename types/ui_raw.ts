@@ -180,7 +180,7 @@ export const buildUiRawScalarPatch: BuildUiRawScalarPatch = (
   key: string,
   value: unknown
 ): UiRawInputsLike => {
-  const k = String(key || '');
+  const k = key.trim();
   if (!k) return {};
   const patch: UiRawInputsLike = {};
   patch[k] = value;

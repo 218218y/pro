@@ -1,4 +1,5 @@
 import type { AppContainer, DoorVisualEntryLike } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import { getDoorsArray } from '../runtime/render_access.js';
 import { callDoorsAction, hasDoorsAction } from '../runtime/actions_access_domains.js';
@@ -137,7 +138,7 @@ export function handleCanvasDoorRemoveClick(args: CanvasDoorRemoveClickArgs): bo
         const g = entry && entry.group;
         if (!g || !g.userData) continue;
         const userData = asRecord(g.userData) || {};
-        const pidRaw = String(userData.partId || '');
+        const pidRaw = formatIdentityValue(readIdentityValue(userData.partId));
         if (!pidRaw) continue;
         const identity = resolveRemovedDoorPartIdentity(
           __wp_scopeCornerPartKeyForStack(pidRaw, foundModuleStack)

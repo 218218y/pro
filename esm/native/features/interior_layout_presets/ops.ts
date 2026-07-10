@@ -13,7 +13,7 @@ import { INTERIOR_FITTINGS_DIMENSIONS } from '../../../shared/wardrobe_dimension
  * The caller converts these ops to absolute coordinates using its own geometry context.
  */
 export function computeInteriorPresetOps(layoutType: unknown): InteriorPresetOpsLike {
-  const lt = layoutType != null ? String(layoutType) : 'shelves';
+  const lt = typeof layoutType === 'string' ? layoutType : 'shelves';
   const ops: InteriorPresetOpsLike = { shelves: [], rods: [] };
   const preset = INTERIOR_FITTINGS_DIMENSIONS.presets;
 

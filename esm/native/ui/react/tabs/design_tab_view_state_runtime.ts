@@ -94,7 +94,7 @@ export function readDesignTabUiState(ui: unknown): DesignTabUiState {
   return {
     noMainWardrobeActive: doors === 0,
     doorStyle: readDesignTabDoorStyle(rec?.doorStyle),
-    colorChoice: String(rec?.colorChoice || '#ffffff'),
+    colorChoice: typeof rec?.colorChoice === 'string' && rec.colorChoice ? rec.colorChoice : '#ffffff',
     frontColorShelfInheritanceMode: normalizeFrontColorShelfInheritanceMode(
       rec?.frontColorShelfInheritanceMode
     ),

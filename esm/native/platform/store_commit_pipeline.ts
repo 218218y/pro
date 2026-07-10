@@ -293,7 +293,7 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
     patchRoot(
       {
         mode: {
-          primary: primary ? String(primary) : NONE,
+          primary: typeof primary === 'string' && primary ? primary : NONE,
           opts: opts3 && typeof opts3 === 'object' ? opts3 : {},
         },
       },

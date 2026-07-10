@@ -68,7 +68,7 @@ export function createHingedDoorModuleOpsContext(
     params && typeof params.moduleDoorFrontZ === 'number' && Number.isFinite(params.moduleDoorFrontZ)
       ? params.moduleDoorFrontZ
       : D / 2;
-  const isInsetDoorMount = String(cfg.doorMountMode || '') === 'inset';
+  const isInsetDoorMount = cfg.doorMountMode === 'inset';
   const insetReveal = isInsetDoorMount
     ? Math.min(DOOR_SYSTEM_DIMENSIONS.hinged.insetRevealM, Math.max(0, woodThick / 3))
     : 0;

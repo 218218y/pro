@@ -142,7 +142,6 @@ test('corner connector door shared wrappers assemble context/state and normalize
   assert.equal(ctx?.stackKey, 'bottom');
   assert.equal(ctx?.mount.userData.partId, 'corner_pent_front_mount');
   assert.ok((ctx?.cornerGroup as any).children.includes(ctx?.mount));
-  assert.equal(readCurtainType(3), '3');
 
   const state = createCornerConnectorDoorState(ctx!, 1);
   assert.equal(state.scopedDoorBaseId, 'lower_corner_pent_door_1');
@@ -165,6 +164,15 @@ test('corner connector door shared wrappers assemble context/state and normalize
 
   const clamped = clampCornerConnectorHandleAbsY(ctx!, 'corner_pent_door_1_top', 5, 0.5, 0.8);
   assert.equal(clamped, 0.79);
+});
+
+test('corner connector curtain type preserves only the declared string/nullish contract', () => {
+  assert.equal(readCurtainType('linen'), 'linen');
+  assert.equal(readCurtainType(null), null);
+  assert.equal(readCurtainType(undefined), undefined);
+  assert.equal(readCurtainType(3), undefined);
+  assert.equal(readCurtainType({ type: 'linen' }), undefined);
+  assert.equal(readCurtainType(Symbol('linen')), undefined);
 });
 
 test('corner connector edge handles default to one riding handle for the pentagon door pair', () => {

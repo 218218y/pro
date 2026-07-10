@@ -12,7 +12,7 @@ import {
   parseSketchBoxBaseToolSpec,
   type LocalPoint,
   readRecordNumber,
-  readRecordString,
+  readRecordIdentity,
   readRecordValue,
   type SelectorLocalBox,
   type SketchFreeBoxTarget,
@@ -124,7 +124,7 @@ export function resolveSketchFreeHoverTargetCandidate(args: {
   return {
     dist: localHit ? -1 : dx + Math.abs(hitY - centerY),
     target: {
-      boxId: readRecordString(box, 'id') || '',
+      boxId: readRecordIdentity(box, 'id') || '',
       partPrefix,
       targetBox: box,
       targetGeo: geo,

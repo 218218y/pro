@@ -1,4 +1,5 @@
 import type { UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { isSketchInternalDrawersTool } from '../features/sketch_drawer_sizing.js';
@@ -24,7 +25,7 @@ function asRecord(value: unknown): UnknownRecord | null {
 }
 
 function readString(value: unknown): string {
-  return typeof value === 'string' ? value : value == null ? '' : String(value);
+  return formatIdentityValue(readIdentityValue(value));
 }
 
 function readNumber(value: unknown): number | null {

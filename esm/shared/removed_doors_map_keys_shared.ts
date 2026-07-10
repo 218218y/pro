@@ -3,6 +3,7 @@ import {
   stripDoorVisualSurfaceSuffix,
   toDoorStyleOverrideMapKey,
 } from './door_visual_key_contracts_shared.js';
+import { formatIdentityValue, readIdentityValue } from './identity_value_shared.js';
 
 export type RemovedDoorPartIdentity = {
   partId: string;
@@ -16,7 +17,7 @@ export type RemovedDoorPartIdentity = {
 };
 
 function readRemovedDoorKey(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : String(value ?? '').trim();
+  return formatIdentityValue(readIdentityValue(value)).trim();
 }
 
 function stripRemovedDoorMapPrefix(value: unknown): string {

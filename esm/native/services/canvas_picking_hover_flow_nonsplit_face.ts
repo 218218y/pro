@@ -1,4 +1,5 @@
 import { isDrawerBoxPartId, resolveDrawerBoxOwnerPartId } from '../features/part_identity/api.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { resolveCanvasPickingClickHitState } from './canvas_picking_click_hit_flow.js';
 import { __wp_isDoorOrDrawerLikePartId } from './canvas_picking_core_helpers.js';
 import { asRecordMap } from './canvas_picking_hover_flow_shared.js';
@@ -48,7 +49,7 @@ type FacePreviewTarget = {
 };
 
 function normalizeActionableFacePreviewPartId(partId: unknown): string | null {
-  const normalized = typeof partId === 'string' ? partId.trim() : String(partId ?? '').trim();
+  const normalized = formatIdentityValue(readIdentityValue(partId)).trim();
   if (!normalized) return null;
   if (isDrawerBoxPartId(normalized)) return null;
   return __wp_isDoorOrDrawerLikePartId(normalized) ? normalized : null;
@@ -64,7 +65,7 @@ function isDrawerBoxBodyHitObject(hitObject: unknown): boolean {
   while (current && visited < 60) {
     visited += 1;
     const userData = asRecordMap(current.userData);
-    const partId = typeof userData?.partId === 'string' ? userData.partId : String(userData?.partId ?? '');
+    const partId = formatIdentityValue(readIdentityValue(userData?.partId));
     if (userData?.__wpDrawerBox === true || isDrawerBoxPartId(partId)) {
       return !isManualHandleAllowedInternalDrawerBox(userData);
     }

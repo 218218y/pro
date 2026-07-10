@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import { getModulesActions } from '../runtime/actions_access_domains.js';
 import { readRootState } from '../runtime/root_state_access.js';
@@ -94,10 +95,11 @@ function resolveSketchBoxDoorPatchTargets(
 
   const pushCandidate = (stack: 'top' | 'bottom', moduleKey: unknown) => {
     if (moduleKey == null || moduleKey === '') return;
-    const key = `${stack}::${String(moduleKey)}`;
+    const normalizedModuleKey = formatIdentityValue(readIdentityValue(moduleKey));
+    const key = `${stack}::${normalizedModuleKey}`;
     if (seen.has(key)) return;
     seen.add(key);
-    out.push({ stack, moduleKey: String(moduleKey) });
+    out.push({ stack, moduleKey: normalizedModuleKey });
   };
 
   if (target.moduleKey) {
@@ -115,7 +117,7 @@ function resolveSketchBoxDoorPatchTargets(
       const boxes = Array.isArray(extra?.boxes) ? extra?.boxes : [];
       const found = boxes.some(box => {
         const boxRec = asRecord(box);
-        return !!boxRec && boxRec.id != null && String(boxRec.id) === target.boxId;
+        return !!boxRec && formatIdentityValue(readIdentityValue(boxRec.id)) === target.boxId;
       });
       if (found) pushCandidate(stack, i);
     }
@@ -142,12 +144,12 @@ function findSketchBoxDoorInModule(
   const boxes = Array.isArray(extra?.boxes) ? extra.boxes : [];
   for (let i = 0; i < boxes.length; i++) {
     const boxRec = asRecord(boxes[i]);
-    if (!boxRec || boxRec.id == null || String(boxRec.id) !== boxId) continue;
+    if (!boxRec || formatIdentityValue(readIdentityValue(boxRec.id)) !== boxId) continue;
     const doors = Array.isArray(boxRec.doors) ? boxRec.doors : [];
     for (let di = 0; di < doors.length; di++) {
       const doorRec = asRecord(doors[di]);
       if (!doorRec) continue;
-      if (doorId && String(doorRec.id ?? '') !== doorId) continue;
+      if (doorId && formatIdentityValue(readIdentityValue(doorRec.id)) !== doorId) continue;
       return doorRec;
     }
     return null;
@@ -175,9 +177,9 @@ export function readSketchBoxDoorRecord(
         if (Number.isInteger(numericIndex) && index === numericIndex) return true;
         const cfgRec = asRecord(cfg);
         return (
-          String(cfgRec?.id ?? '') === moduleKey ||
-          String(cfgRec?.moduleKey ?? '') === moduleKey ||
-          String(cfgRec?.key ?? '') === moduleKey
+          formatIdentityValue(readIdentityValue(cfgRec?.id)) === moduleKey ||
+          formatIdentityValue(readIdentityValue(cfgRec?.moduleKey)) === moduleKey ||
+          formatIdentityValue(readIdentityValue(cfgRec?.key)) === moduleKey
         );
       });
       for (const cfg of exactCandidates) {
@@ -224,7 +226,7 @@ export function patchSketchBoxDoor(
         const list = Array.isArray(extraRec.boxes) ? extraRec.boxes : (extraRec.boxes = []);
         for (let i = 0; i < list.length; i++) {
           const boxRec = asRecord(list[i]);
-          if (!boxRec || boxRec.id == null || String(boxRec.id) !== boxId) continue;
+          if (!boxRec || formatIdentityValue(readIdentityValue(boxRec.id)) !== boxId) continue;
           const doorId = rawDoorId != null && String(rawDoorId) ? String(rawDoorId) : '';
           const doors = Array.isArray(boxRec.doors) ? boxRec.doors.filter(it => !!asRecord(it)) : [];
           const nextDoors: UnknownRecord[] = [];
@@ -232,7 +234,7 @@ export function patchSketchBoxDoor(
           for (let di = 0; di < doors.length; di++) {
             const currentDoor = asRecord(doors[di]);
             if (!currentDoor) continue;
-            const currentId = currentDoor.id != null ? String(currentDoor.id) : '';
+            const currentId = formatIdentityValue(readIdentityValue(currentDoor.id));
             if (doorId && currentId !== doorId) {
               nextDoors.push(currentDoor);
               continue;

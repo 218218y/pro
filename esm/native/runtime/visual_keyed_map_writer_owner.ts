@@ -10,6 +10,7 @@ import {
 } from '../../shared/door_groove_key_contracts_shared.js';
 import { toCanonicalDoorTrimTargetKey } from '../../shared/door_trim_key_contracts_shared.js';
 import { toCanonicalRemovedDoorsMapKey } from '../../shared/removed_doors_map_keys_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 type GrooveContractMapName = 'groovesMap' | 'grooveLinesCountMap';
 type CanonicalVisualPatchMapName = GrooveContractMapName | 'doorTrimMap';
@@ -34,21 +35,21 @@ function readCanonicalVisualPatchKey(mapName: CanonicalVisualPatchMapName, key: 
 
 function readCanonicalOwnerPatchKey(mapName: VisualKeyedOwnerPatchMapName, key: unknown): string {
   if (mapName === 'removedDoorsMap') return toCanonicalRemovedDoorsMapKey(key);
-  if (mapName === 'splitDoorsMap' || mapName === 'splitDoorsBottomMap') return String(key || '').trim();
+  if (mapName === 'splitDoorsMap' || mapName === 'splitDoorsBottomMap') {
+    return formatIdentityValue(readIdentityValue(key)).trim();
+  }
   return readCanonicalVisualPatchKey(mapName, key);
 }
 
 function setCfgMapFromVisualKeyedOwner(
   App: unknown,
-  mapName: unknown,
+  mapName: VisualKeyedMapName,
   nextMap: unknown,
   meta?: ActionMetaLike
 ): UnknownRecord {
-  const name = String(mapName || '');
   const next = readMapRecord(nextMap);
-  if (!name) return next;
 
-  commitConfigMapOwnerPatchWithReplaceKeys(App, { [name]: next }, { [name]: true }, meta);
+  commitConfigMapOwnerPatchWithReplaceKeys(App, { [mapName]: next }, { [mapName]: true }, meta);
   return next;
 }
 

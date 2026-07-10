@@ -1,4 +1,5 @@
 import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { isSlidingDoorTrackOpenMode } from '../runtime/sliding_door_motion.js';
 import {
   type AppLike,
@@ -51,10 +52,12 @@ function captureSlidingTrackOpenSnapshot(App: AppLike, includeDrawers: boolean):
 function drawerMatchesCloseId(App: AppLike, drawer: Record<string, unknown>, sid: string): boolean {
   let drawerId = '';
   try {
-    if (drawer.id !== undefined && drawer.id !== null) drawerId = String(drawer.id);
-    else if (drawer.drawerId !== undefined && drawer.drawerId !== null) drawerId = String(drawer.drawerId);
-    else if (drawer.dividerKey !== undefined && drawer.dividerKey !== null)
-      drawerId = String(drawer.dividerKey);
+    if (drawer.id !== undefined && drawer.id !== null) {
+      drawerId = formatIdentityValue(readIdentityValue(drawer.id));
+    } else if (drawer.drawerId !== undefined && drawer.drawerId !== null) {
+      drawerId = formatIdentityValue(readIdentityValue(drawer.drawerId));
+    } else if (drawer.dividerKey !== undefined && drawer.dividerKey !== null)
+      drawerId = formatIdentityValue(readIdentityValue(drawer.dividerKey));
   } catch (_) {
     reportDoorsRuntimeNonFatal(App, 'closeDrawerById.readId', _);
   }
@@ -64,7 +67,7 @@ function drawerMatchesCloseId(App: AppLike, drawer: Record<string, unknown>, sid
   try {
     const group = drawer.group as { userData?: Record<string, unknown> } | null | undefined;
     const partId = group && group.userData ? group.userData.partId : null;
-    if (partId !== undefined && partId !== null && String(partId) === sid) return true;
+    if (formatIdentityValue(readIdentityValue(partId)) === sid) return true;
   } catch (_) {
     reportDoorsRuntimeNonFatal(App, 'closeDrawerById.readPartId', _);
   }
@@ -76,7 +79,8 @@ export function closeDrawerById(App: AppLike, id: DrawerId, opts?: CloseDrawerOp
   if (!App || typeof App !== 'object') return;
   if (id === null || typeof id === 'undefined') return;
 
-  const sid = String(id);
+  const sid = formatIdentityValue(readIdentityValue(id));
+  if (!sid) return;
   const snap = !(opts && typeof opts === 'object' && opts.snap === false);
   const arr = getDrawersArray(App);
 

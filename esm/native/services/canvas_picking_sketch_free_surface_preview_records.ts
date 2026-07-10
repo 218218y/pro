@@ -1,12 +1,14 @@
 import { asRecord } from '../runtime/record.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 export function readRecordValue(record: unknown, key: string): unknown {
   return asRecord(record)?.[key];
 }
 
-export function readRecordString(record: unknown, key: string): string | null {
+export function readRecordIdentity(record: unknown, key: string): string | null {
   const value = readRecordValue(record, key);
-  return value == null ? null : String(value);
+  const identity = formatIdentityValue(readIdentityValue(value));
+  return identity || null;
 }
 
 export function readNumber(value: unknown): number | null {

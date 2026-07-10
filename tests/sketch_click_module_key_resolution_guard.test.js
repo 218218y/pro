@@ -34,6 +34,10 @@ test('sketch click resolution prefers scoped sketch module keys for direct hits 
   ].join('\n');
   assert.match(
     directHitSrc,
-    /return[\s\S]*readRecordString\(obj\.userData, '__wpSketchModuleKey'\)[\s\S]*\|\|[\s\S]*readRecordString\(obj\.userData, 'moduleIndex'\)[\s\S]*\);/
+    /return[\s\S]*readRecordIdentity\(obj\.userData, '__wpSketchModuleKey'\)[\s\S]*\|\|[\s\S]*readRecordIdentity\(obj\.userData, 'moduleIndex'\)[\s\S]*\);/
+  );
+  assert.doesNotMatch(
+    directHitSrc,
+    /readRecordString\(obj\.userData, '(?:__wpSketchModuleKey|moduleIndex)'\)/
   );
 });

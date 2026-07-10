@@ -4,6 +4,7 @@ import { CORNER_SHELF_GROUP_PART_ID } from '../features/part_identity/api.js';
 import { readDoorVisualMapEntry, resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { getCommonMatsOrThrow } from './common_mats_resolver.js';
 import { asRecord, cloneRecord } from '../runtime/record.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type {
   AppContainer,
@@ -173,11 +174,6 @@ function shouldSuppressUnifiedTopMiddleBoard(
   return isCornerWingFloorPartId(partId) || partId === 'corner_pent_floor';
 }
 
-function __appUtilStr(App: AppContainer, value: unknown): string {
-  const util = App.util;
-  return util && typeof util.str === 'function' ? String(util.str(value)) : String(value ?? '');
-}
-
 export function createCornerWingMaterials(args: {
   App: AppContainer;
   THREE: ThreeLike;
@@ -223,7 +219,7 @@ export function createCornerWingMaterials(args: {
   const readScopedMapVal = (mapObj: PartMap | null | undefined, partId: unknown): unknown => {
     const rec = asMapRecord<PartMap>(mapObj);
     if (!rec) return undefined;
-    const baseId = String(partId || '');
+    const baseId = formatIdentityValue(readIdentityValue(partId));
     if (!baseId) return undefined;
     const isIndividualColorsMap = rec === individualColors;
     if (isIndividualColorsMap) {
@@ -297,7 +293,7 @@ export function createCornerWingMaterials(args: {
 
   const readScopedReader = (reader: ScopedReaderLike, partId: unknown): unknown => {
     if (typeof reader !== 'function') return undefined;
-    const baseId = String(partId || '');
+    const baseId = formatIdentityValue(readIdentityValue(partId));
     if (!baseId) return undefined;
     const useScopedNamespace =
       stackSplitEnabled && stackKey === 'bottom' && typeof stackScopePartKey === 'function';
@@ -352,7 +348,7 @@ export function createCornerWingMaterials(args: {
         selection: colorValue,
         cfg,
         getMaterial,
-        toStr: (value, defaultValue) => __appUtilStr(App, value ?? defaultValue),
+        toStr: (value, defaultValue) => (typeof value === 'string' ? value : (defaultValue ?? '')),
       });
     }
     return defaultMat;

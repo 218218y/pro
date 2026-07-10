@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import {
   __wp_clearSketchHover,
   __wp_readSketchHover,
@@ -31,7 +32,7 @@ function asRecord(value: unknown): UnknownRecord | null {
 }
 
 function readString(value: unknown): string {
-  return typeof value === 'string' ? value : value == null ? '' : String(value);
+  return formatIdentityValue(readIdentityValue(value));
 }
 
 function readNumber(value: unknown): number | null {

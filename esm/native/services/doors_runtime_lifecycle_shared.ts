@@ -1,4 +1,5 @@
 import type { DoorVisualEntryLike, DrawerVisualEntryLike } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
 import { isSlidingDoorTrackOpenMode } from '../runtime/sliding_door_motion.js';
@@ -11,8 +12,10 @@ import {
 
 export function doorKey(d: DoorVisualEntryLike, idx: number, App?: AppLike): string {
   try {
-    if (d && (d.id || d.doorId)) return String(d.id || d.doorId);
-    if (d && d.group && d.group.userData && d.group.userData.partId) return String(d.group.userData.partId);
+    const directId = formatIdentityValue(readIdentityValue(d?.id ?? d?.doorId));
+    if (directId) return directId;
+    const partId = formatIdentityValue(readIdentityValue(d?.group?.userData?.partId));
+    if (partId) return partId;
     if (d && d.group && typeof d.group.name === 'string' && d.group.name) return String(d.group.name);
   } catch (_) {
     reportDoorsRuntimeNonFatal(App, 'L339', _);
@@ -22,8 +25,10 @@ export function doorKey(d: DoorVisualEntryLike, idx: number, App?: AppLike): str
 
 export function drawerKey(d: DrawerVisualEntryLike, idx: number, App?: AppLike): string {
   try {
-    if (d && (d.id || d.drawerId)) return String(d.id || d.drawerId);
-    if (d && d.group && d.group.userData && d.group.userData.partId) return String(d.group.userData.partId);
+    const directId = formatIdentityValue(readIdentityValue(d?.id ?? d?.drawerId));
+    if (directId) return directId;
+    const partId = formatIdentityValue(readIdentityValue(d?.group?.userData?.partId));
+    if (partId) return partId;
     if (d && d.group && typeof d.group.name === 'string' && d.group.name) return String(d.group.name);
   } catch (_) {
     reportDoorsRuntimeNonFatal(App, 'L348', _);

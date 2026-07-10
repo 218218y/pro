@@ -37,12 +37,12 @@ function isElementNode(node: Node): node is Element {
   return !!node && node.nodeType === ELEMENT_NODE && typeof Reflect.get(node, 'tagName') === 'string';
 }
 
-function lower(value: unknown): string {
-  return String(value || '').toLowerCase();
+function lower(value: string): string {
+  return value.toLowerCase();
 }
 
-function trim(value: unknown): string {
-  return String(value || '').trim();
+function trim(value: string): string {
+  return value.trim();
 }
 
 function escapeAttribute(value: string): string {
@@ -134,7 +134,7 @@ function sanitizeDomTree(policy: HtmlSanitizePolicy, root: Element): string {
       return;
     }
     if (!isElementNode(node)) return;
-    const tag = String(node.tagName || '').toUpperCase();
+    const tag = node.tagName.toUpperCase();
     if (DANGEROUS_DROP_CONTENT_TAGS.has(tag)) {
       removeNode(node);
       return;
@@ -166,7 +166,7 @@ function sanitizeTagMarkupText(
   attrsChunk: string,
   closing: boolean
 ): string {
-  const tag = String(tagName || '').toUpperCase();
+  const tag = tagName.toUpperCase();
   const allowedTags = POLICY_ALLOWED_TAGS[policy];
   if (!allowedTags.has(tag)) return '';
   if (closing) return `</${tag.toLowerCase()}>`;
@@ -185,7 +185,7 @@ function sanitizeTagMarkupText(
 }
 
 function sanitizeHtmlTextOnly(policy: HtmlSanitizePolicy, html: string): string {
-  const source = String(html || '')
+  const source = html
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<\/?(?:iframe|object|embed|template|meta|link)\b[^>]*>/gi, '')
     .replace(/<\/?(?:script|style)\b[^>]*>/gi, '');
@@ -207,7 +207,7 @@ export function sanitizeHtmlByPolicy(
   html: string,
   policy: HtmlSanitizePolicy
 ): string {
-  const raw = String(html || '');
+  const raw = html;
   if (!raw) return '';
   const root = createDetachedHtmlRoot(doc, raw);
   if (root) return sanitizeDomTree(policy, root);

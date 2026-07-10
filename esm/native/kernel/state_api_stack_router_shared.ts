@@ -5,6 +5,7 @@ import type {
   ModuleConfigLike,
   ModuleConfigPatchLike,
 } from '../../../types';
+import { readInteger, readNumericInput } from '../../shared/numeric_value_shared.js';
 
 import { asRecord, isRecord } from '../runtime/record.js';
 import {
@@ -51,7 +52,7 @@ export interface StateApiStackRouterContext {
 }
 
 export function normalizeModuleStack(stack: unknown): ModuleStackName {
-  return String(stack || '').toLowerCase() === 'bottom' ? 'bottom' : 'top';
+  return typeof stack === 'string' && stack.toLowerCase() === 'bottom' ? 'bottom' : 'top';
 }
 
 export function parseCornerCellIndex(moduleKey: unknown): number | null {
@@ -246,8 +247,8 @@ export function asCornerPatchLike(value: unknown): CornerPatchLike {
 }
 
 export function readModuleIndex(moduleKey: unknown): number | null {
-  const parsed = parseInt(String(moduleKey ?? ''), 10);
-  return Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : null;
+  const parsed = readInteger(readNumericInput(moduleKey));
+  return parsed != null && parsed >= 0 ? Math.floor(parsed) : null;
 }
 
 export function readModulesBucketKey(stack: ModuleStackName): ModulesBucketKey {

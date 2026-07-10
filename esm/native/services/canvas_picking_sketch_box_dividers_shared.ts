@@ -1,4 +1,5 @@
 import type { UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { isSketchInternalDrawersTool } from '../features/sketch_drawer_sizing.js';
 import {
   getDefaultBaseLegWidthCm,
@@ -111,17 +112,11 @@ export function normalizeSketchBoxDividerYNorm(dividerYNorm: unknown): number | 
 }
 
 export function normalizeSketchBoxCorniceType(value: unknown): SketchBoxAdornmentCorniceType {
-  return String(value || '')
-    .trim()
-    .toLowerCase() === 'wave'
-    ? 'wave'
-    : 'classic';
+  return typeof value === 'string' && value.trim().toLowerCase() === 'wave' ? 'wave' : 'classic';
 }
 
 export function normalizeSketchBoxBaseType(value: unknown): SketchBoxAdornmentBaseType {
-  const raw = String(value || '')
-    .trim()
-    .toLowerCase();
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
   if (raw === 'legs') return 'legs';
   if (raw === 'plinth') return 'plinth';
   return 'none';
@@ -206,8 +201,8 @@ export function normalizeSketchBoxDoorState(raw: unknown, fallbackId: string): S
   if (xNorm == null) return null;
   const yNorm = normalizeSketchBoxDividerYNorm(rec.yNorm);
   const idRaw = rec.id;
-  const id = idRaw != null && String(idRaw) ? String(idRaw) : fallbackId;
-  const hingeRaw = typeof rec.hinge === 'string' ? String(rec.hinge).trim().toLowerCase() : '';
+  const id = formatIdentityValue(readIdentityValue(idRaw)) || fallbackId;
+  const hingeRaw = typeof rec.hinge === 'string' ? rec.hinge.trim().toLowerCase() : '';
   return {
     id,
     xNorm,

@@ -55,8 +55,8 @@ export function installKernelStateKernelConfigPatchSurfaceRuntime(
   };
 
   __sk.patchConfigEntry = function (mapNameIn: unknown, keyIn: unknown, valueOrFn: unknown, metaIn: unknown) {
-    const mapName = String(mapNameIn || '');
-    const key = String(keyIn || '');
+    const mapName = typeof mapNameIn === 'string' ? mapNameIn : '';
+    const key = typeof keyIn === 'string' ? keyIn : '';
     if (!mapName || !key) return;
 
     const meta = asMeta(metaIn);
@@ -80,7 +80,7 @@ export function installKernelStateKernelConfigPatchSurfaceRuntime(
   };
 
   __sk.patchConfigScalar = function (nameIn: unknown, valueOrFn: unknown, metaIn: unknown) {
-    const name = String(nameIn || '');
+    const name = typeof nameIn === 'string' ? nameIn : '';
     if (!name) return;
 
     if (name === 'hasUnsavedChanges') {

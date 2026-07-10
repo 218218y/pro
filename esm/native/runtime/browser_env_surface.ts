@@ -79,7 +79,10 @@ export function getLocationSearchMaybe(app: unknown): string {
   try {
     const surf = getBrowserSurfaceMaybe(app);
     const getLocationSearch = readBrowserSurfaceReader(surf, 'getLocationSearch');
-    if (getLocationSearch) return String(getLocationSearch() || '');
+    if (getLocationSearch) {
+      const search = getLocationSearch();
+      if (typeof search === 'string') return search;
+    }
   } catch {
     // swallow
   }

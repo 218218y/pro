@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { enterPrimaryMode, exitPrimaryMode, installModesController } from '../esm/native/ui/modes.ts';
-import { modesReportNonFatal } from '../esm/native/ui/modes_shared.ts';
+import { buildModeActionOptsFingerprint, modesReportNonFatal } from '../esm/native/ui/modes_shared.ts';
 import { installUiPrimaryMode } from '../esm/native/ui/primary_mode.ts';
 import { consumeDrawerRebuildIntent, setDrawerRebuildIntent } from '../esm/native/runtime/doors_access.ts';
 import {
@@ -10,6 +10,21 @@ import {
   getPrimaryModeEffectsMaybe,
   getUiModesRuntimeServiceMaybe,
 } from '../esm/native/runtime/ui_modes_runtime_access.ts';
+
+test('mode option fingerprints are key-order stable, type-aware, and cycle-safe', () => {
+  assert.equal(
+    buildModeActionOptsFingerprint({ b: 2, a: 1 }),
+    buildModeActionOptsFingerprint({ a: 1, b: 2 })
+  );
+  assert.notEqual(
+    buildModeActionOptsFingerprint({ value: 1 }),
+    buildModeActionOptsFingerprint({ value: '1' })
+  );
+
+  const circular: Record<string, unknown> = {};
+  circular.self = circular;
+  assert.match(buildModeActionOptsFingerprint(circular), /Circular/);
+});
 
 test('modes controller lives under canonical services.uiModesRuntime service', () => {
   const App = {

@@ -2,12 +2,13 @@ import {
   buildDoorVisualLookupKeys,
   stripDoorVisualSurfaceSuffix,
 } from './door_visual_key_contracts_shared.js';
+import { formatIdentityValue, readIdentityValue } from './identity_value_shared.js';
 
 const DOOR_GROOVE_MAP_PREFIX = 'groove_';
 const DOOR_GROOVE_DECORATION_SUFFIX_RE = /_(?:trim|trim_preview)(?:_[a-z0-9]+)?$/i;
 
 function readDoorGrooveKey(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : String(value ?? '').trim();
+  return formatIdentityValue(readIdentityValue(value)).trim();
 }
 
 function stripDoorGrooveMapPrefix(value: string): string {

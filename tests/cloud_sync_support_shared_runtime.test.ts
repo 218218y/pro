@@ -60,3 +60,12 @@ test('stableSerializeCloudSyncValue can preserve sketch-style null/type semantic
   assert.match(first, /"7n"/);
   assert.match(first, /"function"/);
 });
+
+test('stableSerializeCloudSyncValue handles circular arrays and distinguishes scalar types', () => {
+  const circular: unknown[] = [];
+  circular.push(circular);
+
+  assert.equal(stableSerializeCloudSyncValue(circular), '["[Circular]"]');
+  assert.notEqual(stableSerializeCloudSyncValue(1), stableSerializeCloudSyncValue('1'));
+  assert.doesNotThrow(() => stableSerializeCloudSyncValue(Symbol('cloud')));
+});

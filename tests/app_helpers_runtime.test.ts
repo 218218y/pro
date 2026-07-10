@@ -1,23 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { appStr, historyBatch, historyTouch } from '../esm/native/runtime/app_helpers.ts';
-
-test('app helpers stringifier uses the canonical platform seam with a sensible fallback', () => {
-  const App: any = {
-    platform: {
-      util: {
-        str(value: unknown, fallback = '') {
-          if (value == null) return `fallback:${fallback}`;
-          return `platform:${String(value)}`;
-        },
-      },
-    },
-  };
-
-  assert.equal(appStr(App, 42), 'platform:42');
-  assert.equal(appStr({}, null), '');
-});
+import { historyBatch, historyTouch } from '../esm/native/runtime/app_helpers.ts';
 
 test('historyBatch prefers the canonical history.batch action and falls back cleanly on failure', () => {
   const calls: string[] = [];

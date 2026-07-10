@@ -1,4 +1,5 @@
 import type { UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type { ModuleKey } from './canvas_picking_layout_edit_flow_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import {
@@ -31,7 +32,7 @@ function readNumber(value: unknown): number | null {
 }
 
 function readString(value: unknown): string {
-  return typeof value === 'string' ? value : value == null ? '' : String(value);
+  return formatIdentityValue(readIdentityValue(value));
 }
 
 function stripLowerStackPrefix(partId: string): string {
@@ -220,7 +221,12 @@ export function isFreshBraceSketchShelfHover(args: {
   if (!rec) return false;
   if (rec.tool !== 'brace_shelves') return false;
   if (rec.kind !== 'brace_shelf') return false;
-  if (String(rec.moduleKey ?? '') !== String(args.moduleKey ?? '')) return false;
+  if (
+    formatIdentityValue(readIdentityValue(rec.moduleKey)) !==
+    formatIdentityValue(readIdentityValue(args.moduleKey))
+  ) {
+    return false;
+  }
   if (!!rec.isBottom !== !!args.isBottom) return false;
   const ts = readNumber(rec.ts);
   if (ts == null) return false;

@@ -46,8 +46,7 @@ export function getDataURLTexture(appIn: unknown, dataUrl: unknown) {
   return tex;
 }
 
-function hashTextureSeed(value: unknown): number {
-  const text = String(value || '');
+function hashTextureSeed(text: string): number {
   let hash = 2166136261;
   for (let i = 0; i < text.length; i += 1) {
     hash ^= text.charCodeAt(i);
@@ -56,7 +55,7 @@ function hashTextureSeed(value: unknown): number {
   return hash >>> 0;
 }
 
-function createTextureRandom(seedInput: unknown): () => number {
+function createTextureRandom(seedInput: string): () => number {
   let seed = hashTextureSeed(seedInput) || 1;
   return () => {
     seed = Math.imul(seed ^ (seed >>> 15), 2246822507);
@@ -152,7 +151,9 @@ export function generateTexture(appIn: unknown, colorHex: unknown, type: unknown
   const { App, renderCache, renderMeta } = runtime;
   const THREE = getMaterialsTHREE(App);
 
-  const texKey = 'tex_' + String(colorHex) + '_' + String(type);
+  const textureColor = typeof colorHex === 'string' ? colorHex : '#ffffff';
+  const textureType = typeof type === 'string' ? type : '';
+  const texKey = `tex_${textureColor}_${textureType}`;
   const cached = renderCache.textureCache.get(texKey);
   if (cached) {
     touchMaterialsCacheMeta(App, renderMeta.texture, texKey);
@@ -167,10 +168,9 @@ export function generateTexture(appIn: unknown, colorHex: unknown, type: unknown
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
 
-  ctx.fillStyle = typeof colorHex === 'string' ? colorHex : String(colorHex || '#ffffff');
+  ctx.fillStyle = textureColor;
   ctx.fillRect(0, 0, 512, 512);
 
-  const textureType = String(type || '');
   const random = createTextureRandom(texKey);
   if (textureType === 'wood' || textureType === 'wood-dark') {
     drawWoodTexture(ctx, random, textureType === 'wood-dark');

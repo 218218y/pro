@@ -20,7 +20,7 @@ export function computeExternalDrawersOpsForModule(input: unknown) {
   let D = readCorePureNumber(inp.depth, readCorePureNumber(inp.D, 0));
   let startY = readCorePureNumber(inp.startY, 0);
   let woodThick = readCorePureNumber(inp.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
-  const doorMountMode = String(inp.doorMountMode || '') === 'inset' ? 'inset' : 'overlay';
+  const doorMountMode = inp.doorMountMode === 'inset' ? 'inset' : 'overlay';
 
   let shoeDrawerHeight = readCorePureNumber(inp.shoeDrawerHeight, DRAWER_DIMENSIONS.external.shoeHeightM);
   let regDrawerHeight = readCorePureNumber(inp.regDrawerHeight, DRAWER_DIMENSIONS.external.regularHeightM);

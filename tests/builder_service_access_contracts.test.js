@@ -368,7 +368,6 @@ test('[builder-access] migrated builder and cross-layer callsites use runtime he
       /getRoomDesignServiceMaybe\((?:App|app)\)/,
       /runPlatformRenderFollowThrough\b/,
       /reportError\b/,
-      /stringifyViaPlatform\(/,
       /logViaPlatform\(/,
       /idleViaPlatform\(/,
     ],

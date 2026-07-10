@@ -863,7 +863,7 @@ export const DOOR_MOUNT_THICKNESS_CONFIG_KEYS = Object.freeze({
 } satisfies Record<DoorMountConstructionMode, Record<DoorMountThicknessKind, DoorMountThicknessConfigKey>>);
 
 function normalizeDoorMountConstructionMode(value: unknown): DoorMountConstructionMode {
-  return String(value ?? '').trim() === 'inset' ? 'inset' : 'overlay';
+  return value === 'inset' ? 'inset' : 'overlay';
 }
 
 function roundDoorMountThicknessCm(value: number): number {
@@ -1774,7 +1774,7 @@ export function resolveExternalDrawerGeometry(args?: {
   const drawerHeightM = finiteOr(args?.drawerHeightM, external.regularHeightM);
   const connectD = external.connectorDepthM;
   const visualT = external.visualThicknessM;
-  const isInsetMount = String(args?.doorMountMode || '') === 'inset';
+  const isInsetMount = args?.doorMountMode === 'inset';
   const insetRevealM = isInsetMount
     ? Math.min(DOOR_SYSTEM_DIMENSIONS.hinged.insetRevealM, Math.max(0, woodThicknessM / 3))
     : 0;

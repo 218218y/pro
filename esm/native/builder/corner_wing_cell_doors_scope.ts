@@ -1,5 +1,6 @@
 import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { readFiniteNumber } from './corner_geometry_plan.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 // Corner wing door scoping + split policy helpers.
 //
@@ -11,7 +12,7 @@ import type { CornerCellCfg } from './corner_wing_cell_shared.js';
 import type { CornerWingDoorContext, CornerWingDoorState } from './corner_wing_cell_doors_contracts.js';
 
 export function isSplit(ctx: CornerWingDoorContext, baseId: unknown): boolean {
-  const idRaw = String(baseId || '');
+  const idRaw = formatIdentityValue(readIdentityValue(baseId));
   if (!idRaw) return ctx.stackKey === 'bottom' ? false : true;
   const idScoped = ctx.stackScopePartKey(idRaw);
   const keyScoped = idScoped.startsWith('split_') ? idScoped : `split_${idScoped}`;
@@ -38,7 +39,7 @@ export function isSplit(ctx: CornerWingDoorContext, baseId: unknown): boolean {
 }
 
 export function isSplitBottom(ctx: CornerWingDoorContext, baseId: unknown): boolean {
-  const idRaw = String(baseId || '');
+  const idRaw = formatIdentityValue(readIdentityValue(baseId));
   if (!idRaw) return false;
   const idScoped = ctx.stackScopePartKey(idRaw);
   const keyScoped = idScoped.startsWith('splitb_') ? idScoped : `splitb_${idScoped}`;
@@ -62,7 +63,7 @@ export function isSplitBottom(ctx: CornerWingDoorContext, baseId: unknown): bool
 }
 
 export function hingeDirExplicit(ctx: CornerWingDoorContext, hingeKey: unknown): 'left' | 'right' | null {
-  const rawKey = String(hingeKey || '');
+  const rawKey = formatIdentityValue(readIdentityValue(hingeKey));
   if (!rawKey) return null;
   const scopedKey = ctx.stackScopePartKey(rawKey);
   if (ctx.hingeMap0 && Object.prototype.hasOwnProperty.call(ctx.hingeMap0, scopedKey)) {

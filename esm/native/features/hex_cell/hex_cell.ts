@@ -1,6 +1,7 @@
 import type { ModuleConfigLike, UnknownRecord } from '../../../../types/index.js';
 
 import { getActiveDepthCmFromConfig, getSpecialDims } from '../special_dims/index.js';
+import { formatIdentityValue, readIdentityValue } from '../../../shared/identity_value_shared.js';
 
 export type HexCellConfig = {
   enabled?: boolean;
@@ -65,7 +66,7 @@ function readConfigBag(cfgMod: unknown): HexCellConfig | null {
 }
 
 export function isHexCellDiagonalPanelPartId(value: unknown): boolean {
-  const partId = typeof value === 'string' ? value.trim() : String(value ?? '').trim();
+  const partId = formatIdentityValue(readIdentityValue(value)).trim();
   if (!partId) return false;
   if (/^(?:lower_)?hex_cell_\d+_diag_(?:left|right)$/.test(partId)) return true;
   if (/^(?:lower_)?corner_hex_cell_c\d+_diag_(?:left|right)$/.test(partId)) return true;

@@ -6,6 +6,7 @@ import type {
   NormalizedTopModuleConfigLike,
   UnknownRecord,
 } from '../../../types';
+import { readInteger, readNumericInput } from '../../shared/numeric_value_shared.js';
 
 import { cfgDefaultCornerConfiguration } from '../runtime/cfg_access.js';
 import {
@@ -59,8 +60,8 @@ export function asRecordOrEmpty(value: unknown): UnknownRecord {
 export function readDoorsCount(value: unknown, defaultValue = 2): number {
   const rec = asRecord(value);
   const raw = rec ? rec.doors : undefined;
-  const parsed = parseInt(String(raw ?? ''), 10);
-  return Number.isFinite(parsed) ? parsed : defaultValue;
+  const parsed = readInteger(readNumericInput(raw));
+  return parsed ?? defaultValue;
 }
 
 export function asModulesStructureList(value: unknown): ModulesStructureItem[] {

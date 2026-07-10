@@ -23,8 +23,8 @@ test('[design-tab-palette-textures] texture swatch URLs are CSS-safe in both pal
     assert,
     designShared,
     [
-      /function cssUrl\(value: unknown\): string \{/,
-      /JSON\.stringify\(String\(value \|\| ''\)\)/,
+      /function cssUrl\(value: string\): string \{/,
+      /JSON\.stringify\(value\)/,
       /backgroundImage: cssUrl\(color\.textureData\)/,
     ],
     'main design palette swatch background image style'
@@ -44,7 +44,11 @@ test('[design-tab-palette-textures] texture swatch URLs are CSS-safe in both pal
   assertLacksAll(
     assert,
     `${designShared}\n${colorSwatch}`,
-    [/url\(\$\{String\(color\.textureData \|\| ''\)\}\)/, /url\(\$\{backgroundImage\}\)/],
+    [
+      /url\(\$\{String\(color\.textureData \|\| ''\)\}\)/,
+      /JSON\.stringify\(String\(value \|\| ''\)\)/,
+      /url\(\$\{backgroundImage\}\)/,
+    ],
     'unquoted texture url regressions'
   );
 });

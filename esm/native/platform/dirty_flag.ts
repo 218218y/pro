@@ -49,7 +49,7 @@ function createCanonicalSetDirty(A: UnknownRecord): DirtySetter {
       A.__dirtyMirror = !!isDirty;
 
       const mm = asObject(meta) || null;
-      const src = mm && mm.source != null ? String(mm.source) : 'dirty';
+      const src = mm && typeof mm.source === 'string' ? mm.source : 'dirty';
       const merged = metaUiOnly(A, mm || meta, src);
 
       const setDirtyFn = readSetDirtyFn(asObject(getStoreSurfaceMaybe(A)));

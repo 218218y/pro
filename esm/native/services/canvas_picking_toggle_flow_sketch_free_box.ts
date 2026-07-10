@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type { HitObjectLike } from './canvas_picking_engine.js';
 import { getModulesActions } from '../runtime/actions_access_domains.js';
@@ -28,7 +29,7 @@ export function resolveSketchFreeBoxToggleScope(
     const byUserData = readSketchFreeBoxMotionScopeFromUserData(userData);
     if (byUserData) return byUserData;
 
-    const partId = userData && userData.partId != null ? String(userData.partId) : null;
+    const partId = formatIdentityValue(readIdentityValue(userData?.partId)) || null;
     const byPartId = readSketchFreeBoxMotionScopeFromPartId(partId);
     if (byPartId) return byPartId;
     cur = cur.parent || null;
@@ -61,7 +62,9 @@ function patchSketchFreeBoxDoorOpenState(
     if (!boxes) continue;
     const exists = boxes.some(box => {
       const rec = asRecord(box);
-      return !!rec && rec.id != null && String(rec.id) === scope.boxId && rec.freePlacement === true;
+      return (
+        !!rec && formatIdentityValue(readIdentityValue(rec.id)) === scope.boxId && rec.freePlacement === true
+      );
     });
     if (!exists) continue;
 
@@ -73,7 +76,7 @@ function patchSketchFreeBoxDoorOpenState(
         const list = Array.isArray(extraRec.boxes) ? extraRec.boxes : (extraRec.boxes = []);
         for (let i = 0; i < list.length; i++) {
           const boxRec = asRecord(list[i]);
-          if (!boxRec || boxRec.id == null || String(boxRec.id) !== scope.boxId) continue;
+          if (!boxRec || formatIdentityValue(readIdentityValue(boxRec.id)) !== scope.boxId) continue;
           if (boxRec.freePlacement !== true) continue;
           const doors = Array.isArray(boxRec.doors) ? boxRec.doors.slice() : [];
           if (!doors.length) return;
@@ -81,7 +84,7 @@ function patchSketchFreeBoxDoorOpenState(
             const doorRec = asRecord(doors[doorIndex]);
             if (!(doorRec && doorRec.enabled !== false)) continue;
             const doorId =
-              doorRec.id != null && String(doorRec.id) ? String(doorRec.id) : `sketch_box_door_${doorIndex}`;
+              formatIdentityValue(readIdentityValue(doorRec.id)) || `sketch_box_door_${doorIndex}`;
             doors[doorIndex] = { ...doorRec, id: doorId, enabled: true, open: !!nextOpen };
           }
           boxRec.doors = doors;

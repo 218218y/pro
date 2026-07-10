@@ -3,6 +3,7 @@ import type { ActionMetaLike, DrawersOpenIdLike, UnknownRecord } from '../../../
 import { getTools } from '../runtime/service_access.js';
 import { patchRuntime } from '../runtime/runtime_write_access.js';
 import { toggleDivider, writeDividerState } from '../runtime/maps_access.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import {
   shouldSkipSimpleMapWrite,
   type DomainApiSurfaceSectionBindings,
@@ -37,7 +38,7 @@ function createDividersSelectBindings(state: DomainApiSurfaceSectionsState): Unk
   return {
     map: () => state._map('drawerDividersMap'),
     isOn(dividerKey: unknown) {
-      const key = String(dividerKey || '');
+      const key = formatIdentityValue(readIdentityValue(dividerKey));
       if (!key) return false;
       const map = state.readDividersMap();
       return !!(map && typeof map === 'object' && map[key]);
@@ -52,7 +53,7 @@ function createDividersActionBindings(state: DomainApiSurfaceSectionsState): Unk
   return {
     toggle(dividerKey: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:dividers:toggle');
-      const key = String(dividerKey || '');
+      const key = formatIdentityValue(readIdentityValue(dividerKey));
       if (!key) return;
       const nextValue = state.readDividerIsOn(key) ? null : true;
       if (shouldSkipSimpleMapWrite(state, 'drawerDividersMap', key, nextValue)) return;
@@ -60,7 +61,7 @@ function createDividersActionBindings(state: DomainApiSurfaceSectionsState): Unk
     },
     set(dividerKey: unknown, isOn: unknown, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:dividers:set');
-      const key = String(dividerKey || '');
+      const key = formatIdentityValue(readIdentityValue(dividerKey));
       if (!key) return;
       const nextValue = isOn ? true : null;
       if (shouldSkipSimpleMapWrite(state, 'drawerDividersMap', key, nextValue)) return;

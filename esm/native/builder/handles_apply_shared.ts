@@ -1,6 +1,7 @@
 import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { isEdgeHandleDefaultNone } from './edge_handle_default_none_runtime.js';
 import {
   readManualHandlePositionForPart,
@@ -59,7 +60,7 @@ function readOverride(hm: ValueRecord | null | undefined, key: string): string |
     if (!Object.prototype.hasOwnProperty.call(hm, key)) return undefined;
     const v = hm[key];
     if (v === undefined || v === null || v === '') return undefined;
-    return String(v);
+    return typeof v === 'string' ? v : undefined;
   } catch (_e) {
     return undefined;
   }
@@ -67,7 +68,7 @@ function readOverride(hm: ValueRecord | null | undefined, key: string): string |
 
 function createEdgeHandleVariantResolver(handlesMap: ValueRecord): (id: unknown) => EdgeHandleVariant {
   return (id: unknown): EdgeHandleVariant => {
-    const sid = id == null ? '' : String(id);
+    const sid = formatIdentityValue(readIdentityValue(id));
     const base = stripSuffix(sid);
     const hm = handlesMap;
 
@@ -85,7 +86,7 @@ function createEdgeHandleVariantResolver(handlesMap: ValueRecord): (id: unknown)
 
 function createHandleColorResolver(handlesMap: ValueRecord): (id: unknown) => string {
   return (id: unknown): string => {
-    const sid = id == null ? '' : String(id);
+    const sid = formatIdentityValue(readIdentityValue(id));
     const base = stripSuffix(sid);
     const hm = handlesMap;
     const partV = readOverride(hm, handleColorPartKey(sid));
@@ -99,7 +100,7 @@ function createManualHandlePositionResolver(
   handlesMap: ValueRecord
 ): (id: unknown) => ManualHandlePosition | null {
   return (id: unknown): ManualHandlePosition | null => {
-    const sid = id == null ? '' : String(id);
+    const sid = formatIdentityValue(readIdentityValue(id));
     if (!sid) return null;
     const base = stripSuffix(sid);
     return readManualHandlePositionForPart(handlesMap, sid, base);
@@ -128,7 +129,7 @@ function createHandleTypeResolver(
     __rawGht === 'standard' || __rawGht === 'edge' || __rawGht === 'none' ? __rawGht : 'standard';
 
   return (id: unknown, stackKey?: 'top' | 'bottom'): string => {
-    const sid = id == null ? '' : String(id);
+    const sid = formatIdentityValue(readIdentityValue(id));
     const base = stripSuffix(sid);
     const sk: 'top' | 'bottom' = stackKey === 'bottom' ? 'bottom' : 'top';
 
@@ -213,7 +214,9 @@ function syncDoorVisibilityForRemovedDoors(
       continue;
     }
 
-    const pid = g.userData && g.userData.partId ? String(g.userData.partId) : d.id ? String(d.id) : '';
+    const pid =
+      formatIdentityValue(readIdentityValue(g.userData?.partId)) ||
+      formatIdentityValue(readIdentityValue(d.id));
     const removed = isDoorRemovedV7(pid);
     g.visible = baseVis && !removed;
   }

@@ -3,6 +3,7 @@ import type {
   ResolvedModuleBoxLike,
 } from './canvas_picking_sketch_box_overlap_contracts.js';
 import { clamp } from './canvas_picking_sketch_box_overlap_bounds.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import {
   isPlacementBoxLike,
   readRecordNumber,
@@ -29,7 +30,7 @@ export function resolveModuleBoxes(args: {
   const internalDepth = Number(args.internalDepth);
   const internalZ = Number(args.internalZ);
   const woodThick = Number(args.woodThick);
-  const ignoreBoxId = args.ignoreBoxId != null ? String(args.ignoreBoxId) : '';
+  const ignoreBoxId = formatIdentityValue(readIdentityValue(args.ignoreBoxId));
   const resolveSketchBoxGeometry = args.resolveSketchBoxGeometry;
   if (
     !Number.isFinite(bottomY) ||

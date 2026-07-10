@@ -66,7 +66,7 @@ function readStructureTabReportArgs(args: ArrayLike<unknown>): {
 
   return {
     app: null,
-    op: String(args[0] || 'unknown'),
+    op: typeof args[0] === 'string' && args[0] ? args[0] : 'unknown',
     err: args[1],
     dedupeMs: typeof args[2] === 'number' && Number.isFinite(args[2]) ? Math.max(0, args[2]) : 4000,
   };

@@ -1,6 +1,8 @@
 // Shared corner snapshot/default helpers.
 // Keeps lower/top default policy, scalar coercion, and custom-data normalization in one focused seam.
 
+import { readInteger, readNumericInput } from '../../../shared/numeric_value_shared.js';
+
 import {
   isRecord,
   readRecord,
@@ -59,8 +61,8 @@ export function sanitizeCornerCustomDataForPatch(v: unknown): NormalizedCornerCu
 }
 
 export function toInt(v: unknown, defaultValue: number): number {
-  const n = parseInt(String(v ?? ''), 10);
-  return Number.isFinite(n) ? n : defaultValue;
+  const n = readInteger(readNumericInput(v));
+  return n ?? defaultValue;
 }
 
 export function toIntMin(v: unknown, defaultValue: number, min: number): number {

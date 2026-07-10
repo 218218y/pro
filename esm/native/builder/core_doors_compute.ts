@@ -32,7 +32,7 @@ export function computeHingedDoorPivotMap(input: unknown) {
   const inp = _asObject(input) || {};
   let totalW = __asNum(inp.totalW, 0);
   let woodThick = __asNum(inp.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
-  const doorMountMode = String(inp.doorMountMode || 'overlay') === 'inset' ? 'inset' : 'overlay';
+  const doorMountMode = inp.doorMountMode === 'inset' ? 'inset' : 'overlay';
   const isInsetDoorMount = doorMountMode === 'inset';
   let singleUnitWidth = __asNum(inp.singleUnitWidth, 0);
   const hingeMap: UnknownRecord = _asObject(inp.hingeMap) || {};

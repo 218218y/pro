@@ -77,9 +77,7 @@ export function readDesignTabDoorStyle(
   value: unknown,
   defaultValue: DesignTabDoorStyle = 'flat'
 ): DesignTabDoorStyle {
-  const raw = String(value == null ? defaultValue : value)
-    .trim()
-    .toLowerCase();
+  const raw = (typeof value === 'string' ? value : defaultValue).trim().toLowerCase();
   return raw === 'profile' || raw === 'double_profile' || raw === 'flat' ? raw : defaultValue;
 }
 
@@ -87,9 +85,7 @@ export function readDesignTabCorniceType(
   value: unknown,
   defaultValue: DesignTabCorniceType = 'classic'
 ): DesignTabCorniceType {
-  const raw = String(value == null ? defaultValue : value)
-    .trim()
-    .toLowerCase();
+  const raw = (typeof value === 'string' ? value : defaultValue).trim().toLowerCase();
   return raw === 'wave' || raw === 'classic' ? raw : defaultValue;
 }
 
@@ -101,7 +97,7 @@ export function readDesignTabModeState(mode: unknown): DesignTabModeStateSummary
   const modeRec = isRecord(mode) ? mode : null;
   const opts = isRecord(modeRec?.opts) ? modeRec.opts : null;
   return {
-    primaryMode: String(modeRec?.primary == null ? 'none' : modeRec.primary),
+    primaryMode: typeof modeRec?.primary === 'string' && modeRec.primary ? modeRec.primary : 'none',
     splitVariant: readSplitModeVariant(opts?.splitVariant),
   };
 }
@@ -113,35 +109,35 @@ export function resolveDesignTabFeedback(fb: UiFeedbackNamespaceLike): DesignTab
   const confirmBase = asConfirmFn(fb.confirm) || ((_title, _message, _onYes) => {});
   return {
     toast: (msg, kind) => {
-      toastBase(String(msg || ''), kind);
+      toastBase(msg, kind);
     },
     prompt: (title, defaultValue, cb) => {
-      promptBase(String(title || ''), String(defaultValue || ''), cb);
+      promptBase(title, defaultValue, cb);
     },
     confirm: (title, message, onYes, onNo) => {
-      confirmBase(String(title || ''), String(message || ''), onYes, onNo);
+      confirmBase(title, message, onYes, onNo);
     },
   };
 }
 
 export function readSavedColorId(color: SavedColor): string {
-  return String(color.id || '').trim();
+  return typeof color.id === 'string' ? color.id.trim() : '';
 }
 
 export function readSavedColorName(color: SavedColor): string {
-  return String(color.name || '').trim();
+  return typeof color.name === 'string' ? color.name.trim() : '';
 }
 
 export function readSavedColorValue(color: SavedColor): string {
-  return String(color.value || '');
+  return typeof color.value === 'string' ? color.value : '';
 }
 
 export function isSavedColorLocked(color: SavedColor): boolean {
   return !!color.locked;
 }
 
-function cssUrl(value: unknown): string {
-  return `url(${JSON.stringify(String(value || ''))})`;
+function cssUrl(value: string): string {
+  return `url(${JSON.stringify(value)})`;
 }
 
 export function getSwatchStyle(color: SavedColor): CSSProperties {

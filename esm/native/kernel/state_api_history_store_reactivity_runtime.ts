@@ -1,4 +1,5 @@
 import type { BuildStateLike, TimeoutHandleLike, UnknownRecord } from '../../../types';
+import { readInteger, readNumericInput } from '../../shared/numeric_value_shared.js';
 
 import { scheduleAutosaveViaService } from '../runtime/autosave_access.js';
 import { getBrowserTimers } from '../runtime/api.js';
@@ -92,8 +93,8 @@ export function installStateApiStoreReactivityRuntime(ctx: StateApiHistoryMetaRe
           const vParsed =
             typeof metaSlice.version === 'number'
               ? metaSlice.version
-              : parseInt(String(metaSlice.version ?? ''), 10);
-          const v = Number.isFinite(vParsed) ? vParsed | 0 : null;
+              : readInteger(readNumericInput(metaSlice.version));
+          const v = vParsed != null && Number.isFinite(vParsed) ? vParsed | 0 : null;
           if (v != null) {
             if (v === lastVersion) return;
             lastVersion = v;

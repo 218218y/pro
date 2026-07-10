@@ -134,7 +134,7 @@ export const setUiScalar: SetUiScalar = (
   value: unknown,
   meta?: ActionMetaLike
 ): unknown => {
-  const k = String(key == null ? '' : key).trim();
+  const k = key.trim();
   if (!k) return undefined;
   if (typeof value === 'function') return undefined;
   if (areUiPatchValuesEquivalent(readCurrentUiValue(App, k), value)) return undefined;
@@ -152,7 +152,7 @@ export const setUiScalarSoft: SetUiScalarSoft = (
   value: unknown,
   meta?: ActionMetaLike
 ): unknown => {
-  const k = String(key == null ? '' : key).trim();
+  const k = key.trim();
   if (!k) return undefined;
   if (typeof value === 'function') return undefined;
   if (areUiPatchValuesEquivalent(readCurrentUiValue(App, k), value)) return undefined;
@@ -185,7 +185,7 @@ export const setUiRawScalar: SetUiRawScalar = (
   value: unknown,
   meta?: ActionMetaLike
 ): unknown => {
-  const k = String(key == null ? '' : key);
+  const k = typeof key === 'string' ? key.trim() : '';
   if (!k) return undefined;
   if (typeof value === 'function') return undefined;
   if (areUiPatchValuesEquivalent(readCurrentUiRawValue(App, k), value)) return undefined;
@@ -199,7 +199,7 @@ export const setUiRawScalar: SetUiRawScalar = (
 };
 
 export function setUiLastSelectedWallColor(App: unknown, value: unknown, meta?: ActionMetaLike): unknown {
-  const next = value == null ? '' : String(value).trim();
+  const next = typeof value === 'string' ? value.trim() : '';
   if (!next) return undefined;
   return setUiScalarSoft(App, 'lastSelectedWallColor', next, meta);
 }
@@ -237,7 +237,7 @@ export function setUiLightScalar(
 ): unknown {
   if (!isUiLightingScalarKey(key)) return undefined;
   if (key === 'lightingControl') return setUiScalarSoft(App, key, !!value, meta);
-  const next = value == null ? '' : String(value);
+  const next = typeof value === 'string' || typeof value === 'number' ? value.toString() : '';
   if (!next) return undefined;
   return setUiScalarSoft(App, key, next, meta);
 }
@@ -252,7 +252,7 @@ export function patchUiLightingState(App: unknown, patch: unknown, meta?: Action
   }
   if (Object.prototype.hasOwnProperty.call(rec, 'lastLightPreset')) {
     const value = rec.lastLightPreset;
-    const clean = value == null ? '' : String(value);
+    const clean = typeof value === 'string' || typeof value === 'number' ? value.toString() : '';
     if (clean) next.lastLightPreset = clean;
   }
 
@@ -266,13 +266,13 @@ export function patchUiLightingState(App: unknown, patch: unknown, meta?: Action
   for (const key of lightingKeys) {
     if (!Object.prototype.hasOwnProperty.call(rec, key)) continue;
     const value = rec[key];
-    const clean = value == null ? '' : String(value);
+    const clean = typeof value === 'string' || typeof value === 'number' ? value.toString() : '';
     if (clean) setUiLightingTextPatch(next, key, clean);
   }
 
   if (Object.prototype.hasOwnProperty.call(rec, 'lastSelectedWallColor')) {
     const value = rec.lastSelectedWallColor;
-    const clean = value == null ? '' : String(value).trim();
+    const clean = typeof value === 'string' ? value.trim() : '';
     if (clean) next.lastSelectedWallColor = clean;
   }
 

@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownCallable } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type {
   InteriorGeometryLike,
   InteriorGroupLike,
@@ -133,7 +134,7 @@ export function readCustomThreeSurface(value: unknown): InteriorTHREESurface | n
 }
 
 export function readModuleKeyString(input: InteriorCustomInput, moduleIndex: number): string {
-  return input.moduleKey != null ? String(input.moduleKey) : moduleIndex >= 0 ? String(moduleIndex) : '';
+  return formatIdentityValue(readIdentityValue(input.moduleKey ?? (moduleIndex >= 0 ? moduleIndex : null)));
 }
 
 export function readCustomRenderNumber(value: unknown, defaultValue: number): number {

@@ -151,7 +151,8 @@ function resolveSketchBoxNumericChangeValue(
   if (String(props.value || '').trim() !== '') return raw;
   if (String(raw).trim() !== String(props.min)) return raw;
 
-  const inputType = String((event.nativeEvent as { inputType?: unknown }).inputType || '');
+  const nativeInputType = (event.nativeEvent as { inputType?: unknown }).inputType;
+  const inputType = typeof nativeInputType === 'string' ? nativeInputType : '';
   return inputType ? raw : String(start);
 }
 

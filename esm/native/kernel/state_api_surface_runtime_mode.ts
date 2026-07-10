@@ -105,7 +105,7 @@ export function installStateApiRuntimeModeSurface(ctx: StateApiSurfaceRuntimeMod
         modes && typeof modes['NONE'] === 'string' && String(modes['NONE']).trim()
           ? String(modes['NONE'])
           : 'none';
-      const nextPrimary = primary ? String(primary) : NONE;
+      const nextPrimary = typeof primary === 'string' && primary ? primary : NONE;
       const mergedMeta = transientMeta(meta, 'actions.mode:set');
       const out = callStoreWriter('setMode', nextPrimary, cleanOpts, mergedMeta);
       if (out !== undefined) return out;

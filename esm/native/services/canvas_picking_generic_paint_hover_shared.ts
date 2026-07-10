@@ -168,7 +168,7 @@ export function __readPaintHoverOp(
     const segmentOverridesMatch = effectiveKeys.every(partKey => {
       if (!__isCornicePaintKey(partKey) || partKey === baseCorniceKey) return true;
       const value = colors[partKey];
-      return value == null || String(value) === selection;
+      return value == null || (typeof value === 'string' && value === selection);
     });
     return baseColor === selection && segmentOverridesMatch ? 'remove' : 'add';
   }

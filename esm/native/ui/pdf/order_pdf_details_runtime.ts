@@ -1,4 +1,5 @@
 import type { OrderPdfDraftLike } from '../../../../types/build.js';
+import { formatDisplayScalar, readDisplayScalar } from '../../../shared/display_text_shared.js';
 
 export type OrderPdfDetailsDraftLike = Pick<
   OrderPdfDraftLike,
@@ -6,7 +7,7 @@ export type OrderPdfDetailsDraftLike = Pick<
 >;
 
 export function coerceOrderPdfTextValue(value: unknown, defaultValue = ''): string {
-  return value == null ? defaultValue : String(value);
+  return formatDisplayScalar(readDisplayScalar(value), defaultValue);
 }
 
 export function hasOrderPdfTextValue(value: unknown): boolean {

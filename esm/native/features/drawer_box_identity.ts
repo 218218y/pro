@@ -4,10 +4,12 @@
 // chest_drawer_0). The physical drawer box must be a separate paint target so
 // that front/global cabinet paint does not leak into it.
 
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
+
 export const DRAWER_BOX_PART_ID_PREFIX = 'drawer_box__';
 
 function normalizeDrawerBoxSourcePartId(partId: unknown): string {
-  const raw = typeof partId === 'string' ? partId.trim() : String(partId ?? '').trim();
+  const raw = formatIdentityValue(readIdentityValue(partId)).trim();
   const normalized = raw.replace(/[^A-Za-z0-9_-]+/g, '_');
   return normalized || 'unknown';
 }
@@ -33,7 +35,7 @@ export function resolveDrawerBoxOwnerPartId(
   const candidates = [userData?.__wpDrawerOwnerPartId, userData?.__wpDrawerId, userData?.drawerId];
   for (const value of candidates) {
     if (value == null) continue;
-    const sid = String(value).trim();
+    const sid = formatIdentityValue(readIdentityValue(value)).trim();
     if (sid) return sid;
   }
 

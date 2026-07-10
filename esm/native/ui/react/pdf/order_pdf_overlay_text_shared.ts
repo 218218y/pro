@@ -1,5 +1,6 @@
 import { createDetachedHtmlRoot, readInnerHtml } from '../../dom_helpers.js';
 import type { OrderPdfDraft } from './order_pdf_overlay_contracts.js';
+import { formatDisplayScalar, readDisplayScalar } from '../../../../shared/display_text_shared.js';
 
 const TEXT_NODE = 3;
 const ELEMENT_NODE = 1;
@@ -17,7 +18,7 @@ function readHtmlElement(node: Node): HTMLElement | null {
 }
 
 export function safeStr(v: unknown): string {
-  return typeof v === 'string' ? v : v == null ? '' : String(v);
+  return formatDisplayScalar(readDisplayScalar(v));
 }
 
 export function makeEmptyDraft(): OrderPdfDraft {

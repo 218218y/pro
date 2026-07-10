@@ -6,6 +6,8 @@
 // - React UI must NOT depend on esm/native/runtime (layer contract).
 // - The UI still needs a single place to normalize/parse ui.raw values.
 //
+
+import { readFiniteNumber, readInteger, readNumericInput } from '../../../../shared/numeric_value_shared.js';
 // Notes:
 // - Snapshot-only helpers (no store imports).
 // - Fail-soft: never throw.
@@ -33,14 +35,14 @@ function asUiSnapshot(ui: unknown): UiSnapshotLike | null {
 
 function coerceFiniteNumber(v: unknown): number | undefined {
   if (v === null || v === undefined || v === '') return undefined;
-  const n = typeof v === 'number' ? v : parseFloat(String(v));
-  return Number.isFinite(n) ? n : undefined;
+  const n = readFiniteNumber(readNumericInput(v));
+  return n ?? undefined;
 }
 
 function coerceFiniteInt(v: unknown): number | undefined {
   if (v === null || v === undefined || v === '') return undefined;
-  const n = typeof v === 'number' ? v : parseInt(String(v), 10);
-  return Number.isFinite(n) ? n : undefined;
+  const n = readInteger(readNumericInput(v));
+  return n ?? undefined;
 }
 
 function coerceBoolean(v: unknown): boolean | undefined {

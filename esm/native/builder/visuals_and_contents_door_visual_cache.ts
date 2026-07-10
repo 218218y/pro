@@ -12,10 +12,12 @@ function round6(value: number): number {
   return Math.round(value * 1e6) / 1e6;
 }
 
-function safeKeyPart(value: unknown): string {
-  if (typeof value === 'number' && Number.isFinite(value)) return String(round6(value));
-  if (typeof value === 'boolean') return value ? '1' : '0';
-  return String(value ?? '');
+type DoorVisualCacheKeyPart = string | number | boolean | null | undefined;
+
+function safeKeyPart(value: DoorVisualCacheKeyPart): string {
+  if (typeof value === 'number' && Number.isFinite(value)) return `n:${round6(value).toString()}`;
+  if (typeof value === 'boolean') return value ? 'b:1' : 'b:0';
+  return typeof value === 'string' ? `s${value.length}:${value}` : 'null';
 }
 
 function ensureGeometryCache(App: AppContainer): CacheMap {
@@ -47,7 +49,7 @@ function markCachedValue<T>(value: T): T {
   return value;
 }
 
-export function createDoorVisualCacheKey(prefix: string, parts: unknown[]): string {
+export function createDoorVisualCacheKey(prefix: string, parts: DoorVisualCacheKeyPart[]): string {
   let out = prefix;
   for (let i = 0; i < parts.length; i += 1) out += `:${safeKeyPart(parts[i])}`;
   return out;

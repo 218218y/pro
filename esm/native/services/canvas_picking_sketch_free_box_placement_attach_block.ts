@@ -5,6 +5,7 @@ import {
   resolveSketchFreeBoxGeometry,
 } from './canvas_picking_sketch_free_box_shared.js';
 import type { SketchFreeBoxAttachPlacement } from './canvas_picking_sketch_free_box_placement_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 export function isSketchFreeInwardSideAttachmentBlocked(args: {
   targetCenterX: number;
@@ -33,7 +34,7 @@ export function isSketchFreeInwardSideAttachmentBlocked(args: {
   const pointX = asFiniteNumberOrNaN(args.pointX);
   const pointY = asFiniteNumberOrNaN(args.pointY);
   const direction = candidate.direction;
-  const ignoreBoxId = args.ignoreBoxId != null ? String(args.ignoreBoxId) : '';
+  const ignoreBoxId = formatIdentityValue(readIdentityValue(args.ignoreBoxId));
   if (
     !Number.isFinite(targetCenterX) ||
     !Number.isFinite(targetCenterY) ||

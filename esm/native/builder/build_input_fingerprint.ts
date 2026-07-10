@@ -10,6 +10,7 @@ import {
   resolveDoorMountThicknessesFromConfig,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { asRecord } from '../runtime/record.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { applyBuildVisibleConfigMapGates } from './build_visible_config_gates.js';
 
 export type BuildInputFingerprintReader = (state: unknown) => unknown;
@@ -69,7 +70,7 @@ function readBuildInputFingerprintSnapshotValue(
   const valueType = typeof value;
   if (valueType === 'string' || valueType === 'boolean') return value;
   if (valueType === 'number') return Number.isFinite(value) ? value : null;
-  if (valueType === 'bigint') return String(value);
+  if (typeof value === 'bigint') return value.toString();
   if (valueType === 'function' || valueType === 'symbol' || valueType === 'undefined') return undefined;
 
   if (Array.isArray(value)) {
@@ -84,7 +85,7 @@ function readBuildInputFingerprintSnapshotValue(
   }
 
   const rec = readRecord(value);
-  if (!rec) return String(value);
+  if (!rec) return undefined;
   if (seen.has(rec)) return '[Circular]';
   seen.add(rec);
   const out: UnknownRecord = {};
@@ -182,7 +183,7 @@ export function normalizeBuildInputFingerprintScalar(value: unknown): string {
   if (typeof value === 'string') return `str:${value}`;
   if (typeof value === 'number') return `num:${Number.isFinite(value) ? value : 'NaN'}`;
   if (typeof value === 'boolean') return value ? 'bool:1' : 'bool:0';
-  if (typeof value === 'bigint') return `big:${String(value)}`;
+  if (typeof value === 'bigint') return `big:${value.toString()}`;
   try {
     const snapshot = readBuildInputFingerprintSnapshotValue(value);
     const json = stableSerializeBuildInputFingerprintValue(snapshot);
@@ -190,7 +191,8 @@ export function normalizeBuildInputFingerprintScalar(value: unknown): string {
   } catch {
     // fall through
   }
-  return `repr:${String(value)}`;
+  if (typeof value === 'symbol') return `unsupported:symbol:${value.description ?? ''}`;
+  return `unsupported:${typeof value}`;
 }
 
 function stableSerializeBuildInputFingerprintValue(
@@ -202,7 +204,7 @@ function stableSerializeBuildInputFingerprintValue(
   if (typeof value === 'string') return JSON.stringify(value);
   if (typeof value === 'number') return Number.isFinite(value) ? String(value) : 'null';
   if (typeof value === 'boolean') return value ? 'true' : 'false';
-  if (typeof value === 'bigint') return JSON.stringify(String(value));
+  if (typeof value === 'bigint') return JSON.stringify(value.toString());
   if (typeof value === 'function' || typeof value === 'symbol') return 'undefined';
   if (Array.isArray(value)) {
     if (seen.has(value)) return JSON.stringify('[Circular]');
@@ -217,7 +219,7 @@ function stableSerializeBuildInputFingerprintValue(
     return out;
   }
   const rec = readRecord(value);
-  if (!rec) return JSON.stringify(String(value));
+  if (!rec) return 'undefined';
   if (seen.has(rec)) return JSON.stringify('[Circular]');
   seen.add(rec);
   const props: string[] = [];
@@ -255,7 +257,7 @@ export function readBuildInputFingerprintFromState(
 ): unknown {
   const signature = state == null ? null : readSemanticBuildInputFingerprint(state, readSignature(state));
   const activeIdRaw = readTransientBuildUiFlag(state, '__activeId');
-  const activeId = activeIdRaw == null ? '' : String(activeIdRaw);
+  const activeId = formatIdentityValue(readIdentityValue(activeIdRaw));
   const forceBuild = !!readTransientBuildUiFlag(state, 'forceBuild');
   return createBuildInputFingerprint({ signature, activeId, forceBuild });
 }

@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import {
   INTERIOR_FITTINGS_DIMENSIONS,
   MATERIAL_DIMENSIONS,
@@ -655,7 +656,7 @@ export function resolveBraceShelvesFreeBoxPlan(args: {
     const shelfIdRaw = readRecordValue(shelf, 'id');
     bestDy = dy;
     best = {
-      shelfId: shelfIdRaw != null ? String(shelfIdRaw) : null,
+      shelfId: formatIdentityValue(readIdentityValue(shelfIdRaw)) || null,
       shelfIdx: i,
       shelfY,
       shelfYNorm: clampUnit(yNorm),
@@ -1120,7 +1121,11 @@ function updateFreeBoxShelfVariant(args: { box: RecordMap; hoverRec: RecordMap }
   const shelfId = readString(readRecordValue(args.hoverRec, 'shelfId'));
   const shelfIdx = readRecordNumber(args.hoverRec, 'shelfIdx');
   let index = -1;
-  if (shelfId) index = shelves.findIndex(item => String(readRecordValue(item, 'id') ?? '') === shelfId);
+  if (shelfId) {
+    index = shelves.findIndex(
+      item => formatIdentityValue(readIdentityValue(readRecordValue(item, 'id'))) === shelfId
+    );
+  }
   if (index < 0 && shelfIdx != null && shelfIdx >= 0 && shelfIdx < shelves.length)
     index = Math.floor(shelfIdx);
   if (index < 0) return false;

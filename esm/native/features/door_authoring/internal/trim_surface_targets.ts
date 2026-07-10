@@ -1,4 +1,5 @@
 import type { UnknownRecord } from '../../../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../../../shared/identity_value_shared.js';
 
 export const CABINET_BODY_DOOR_TRIM_SURFACE_PARTS = Object.freeze([
   'body_left',
@@ -43,7 +44,7 @@ function readPositive(value: unknown): number | null {
 }
 
 function normalizePartId(partId: unknown): string {
-  return typeof partId === 'string' ? partId : String(partId ?? '');
+  return formatIdentityValue(readIdentityValue(partId));
 }
 
 export function isCabinetBodyDoorTrimSurfacePartId(partId: unknown): boolean {

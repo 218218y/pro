@@ -1,6 +1,7 @@
 import type { AppContainer, UiFeedbackConfirmCallback, UiFeedbackPromptCallback } from '../../../types';
 
 import { getBrowserTimers } from '../services/api.js';
+import { formatDisplayScalar, readDisplayScalar } from '../../shared/display_text_shared.js';
 import { __uiFeedbackReportNonFatal, getReactFeedback, readAppWithModalState } from './feedback_shared.js';
 import { ensureCustomModalBindings } from './feedback_modal_bindings.js';
 import {
@@ -9,6 +10,10 @@ import {
   openConfirmViaWindow,
   openPromptViaWindow,
 } from './feedback_modal_dom.js';
+
+function readFeedbackText(value: unknown): string {
+  return formatDisplayScalar(readDisplayScalar(value));
+}
 
 export function openCustomPrompt(
   App: AppContainer | null | undefined,
@@ -19,9 +24,9 @@ export function openCustomPrompt(
   const reactFeedback = getReactFeedback(App);
   if (reactFeedback && typeof reactFeedback.prompt === 'function') {
     try {
-      reactFeedback.prompt(String(title || ''), String(defaultValue || ''), value => {
+      reactFeedback.prompt(readFeedbackText(title), readFeedbackText(defaultValue), value => {
         try {
-          if (typeof callback === 'function') callback(value == null ? '' : String(value));
+          if (typeof callback === 'function') callback(typeof value === 'string' ? value : '');
         } catch (err) {
           __uiFeedbackReportNonFatal(App, 'prompt.reactCallback', err);
         }
@@ -50,7 +55,7 @@ export function openCustomPrompt(
   state.onCancel = null;
 
   try {
-    if (els.titleEl) els.titleEl.textContent = String(title || '');
+    if (els.titleEl) els.titleEl.textContent = readFeedbackText(title);
   } catch (err) {
     __uiFeedbackReportNonFatal(App, 'prompt.title', err);
   }
@@ -62,7 +67,7 @@ export function openCustomPrompt(
   try {
     if (els.input) {
       els.input.classList.remove('hidden');
-      els.input.value = defaultValue == null ? '' : String(defaultValue);
+      els.input.value = readFeedbackText(defaultValue);
     }
   } catch (err) {
     __uiFeedbackReportNonFatal(App, 'prompt.input', err);
@@ -101,8 +106,8 @@ export function openCustomConfirm(
   if (reactFeedback && typeof reactFeedback.confirm === 'function') {
     try {
       reactFeedback.confirm(
-        String(title || ''),
-        String(message || ''),
+        readFeedbackText(title),
+        readFeedbackText(message),
         () => {
           try {
             if (typeof onConfirm === 'function') onConfirm();
@@ -136,13 +141,13 @@ export function openCustomConfirm(
   state.onPrompt = null;
 
   try {
-    if (els.titleEl) els.titleEl.textContent = String(title || '');
+    if (els.titleEl) els.titleEl.textContent = readFeedbackText(title);
   } catch (err) {
     __uiFeedbackReportNonFatal(App, 'confirm.title', err);
   }
   try {
     if (els.msgEl) {
-      els.msgEl.textContent = String(message || '');
+      els.msgEl.textContent = readFeedbackText(message);
       els.msgEl.classList.remove('hidden');
     }
   } catch (err) {

@@ -108,7 +108,8 @@ function getModesBag(): ModesBagLike {
 }
 
 function getHandleModeId(): string {
-  return String(getModesBag().HANDLE || 'handle');
+  const value = getModesBag().HANDLE;
+  return typeof value === 'string' && value ? value : 'handle';
 }
 
 function normEdgeHandleVariant(v: unknown): 'short' | 'long' {
@@ -120,7 +121,7 @@ function readHandleColor(value: unknown) {
 }
 
 function readModeHandleType(value: unknown): HandleType {
-  const raw = String(value || '').trim();
+  const raw = typeof value === 'string' ? value.trim() : '';
   return raw === 'edge' || raw === 'none' ? (raw as HandleType) : 'standard';
 }
 
@@ -170,7 +171,8 @@ function isPerPartHandleToolMapKey(key: string): boolean {
 }
 
 function isMeaningfulHandleOverrideValue(value: unknown): boolean {
-  return value !== undefined && value !== null && String(value || '').trim() !== '';
+  if (value === undefined || value === null) return false;
+  return typeof value === 'string' ? value.trim() !== '' : true;
 }
 
 function hasDirtyHandleOverrides(app: AppContainer): boolean {
@@ -361,7 +363,7 @@ export function setHandleModeEdgeVariant(app: AppContainer, v: unknown): void {
   const next = normEdgeHandleVariant(v);
   const modeHandle = getHandleModeId();
   const curMode = getModeState(app);
-  const primary = String(curMode.primary || '');
+  const primary = typeof curMode.primary === 'string' ? curMode.primary : '';
   const curOpts = primary === modeHandle ? readRecord(curMode.opts) || {} : {};
   const handleColor =
     primary === modeHandle ? readHandleColor(curOpts.handleColor) : readStoredHandleToolColor(app);
@@ -388,7 +390,7 @@ export function setHandleModeColor(app: AppContainer, color: unknown): void {
   const nextColor = readHandleColor(color);
   const modeHandle = getHandleModeId();
   const curMode = getModeState(app);
-  const primary = String(curMode.primary || '');
+  const primary = typeof curMode.primary === 'string' ? curMode.primary : '';
   const curOpts = primary === modeHandle ? readRecord(curMode.opts) || {} : {};
   const handleType =
     primary === modeHandle ? readModeHandleType(curOpts.handleType) : readStoredHandleToolType(app);
@@ -426,24 +428,20 @@ export function enterManualHandlePositionMode(app: AppContainer): void {
   const modeHandle = getHandleModeId();
   const curMode = getModeState(app);
   const curOpts = readRecord(curMode.opts) || {};
-  const currentIsManual =
-    String(curMode.primary || '') === modeHandle && isManualHandlePositionMode(curOpts.handlePlacement);
+  const isHandleMode = curMode.primary === modeHandle;
+  const currentIsManual = isHandleMode && isManualHandlePositionMode(curOpts.handlePlacement);
   if (currentIsManual) {
     exitPrimaryMode(app, modeHandle, { preserveDoors: true });
     return;
   }
 
-  const selectedType =
-    String(curMode.primary || '') === modeHandle
-      ? readManualModeHandleType(curOpts.handleType)
-      : readManualModeHandleType(readStoredHandleToolType(app));
-  const selectedColor =
-    String(curMode.primary || '') === modeHandle
-      ? readHandleColor(curOpts.handleColor)
-      : readStoredHandleToolColor(app);
+  const selectedType = isHandleMode
+    ? readManualModeHandleType(curOpts.handleType)
+    : readManualModeHandleType(readStoredHandleToolType(app));
+  const selectedColor = isHandleMode ? readHandleColor(curOpts.handleColor) : readStoredHandleToolColor(app);
   const selectedEdgeVariant =
     selectedType === 'edge'
-      ? String(curMode.primary || '') === modeHandle
+      ? isHandleMode
         ? normEdgeHandleVariant(curOpts.edgeHandleVariant)
         : readStoredHandleToolEdgeVariant(app)
       : readStoredHandleToolEdgeVariant(app);
@@ -481,9 +479,9 @@ export function toggleHandleMode(app: AppContainer, t?: unknown): void {
 
   const modeHandle = getHandleModeId();
   const curMode = getModeState(app);
-  const primary = String(curMode.primary || '');
+  const primary = typeof curMode.primary === 'string' ? curMode.primary : '';
   const currentHandleMode = primary === modeHandle;
-  const requestedType = t == null ? '' : String(t || '').trim();
+  const requestedType = typeof t === 'string' ? t.trim() : '';
 
   if (currentHandleMode && !requestedType) {
     exitPrimaryMode(app, modeHandle, { preserveDoors: true });

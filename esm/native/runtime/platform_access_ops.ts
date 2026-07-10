@@ -19,7 +19,7 @@ import {
   summarizeRenderFollowThroughBudget,
 } from './platform_access_debug_stats.js';
 import { ensureRenderLoopViaPlatform, touchPlatformActivity } from './platform_access_state.js';
-import type { CloneFn, Hash32Fn, StringifierFn } from './platform_access_shared.js';
+import type { CloneFn, Hash32Fn } from './platform_access_shared.js';
 
 export type PlatformRenderFollowThroughOpts = {
   updateShadows?: boolean;
@@ -198,21 +198,6 @@ export function logViaPlatform(App: unknown, ...args: PlatformLogArgs): boolean 
   } catch (error) {
     reportPlatformOpRejected(App, error, 'log.ownerRejected');
     return false;
-  }
-}
-
-export function getPlatformStringifier(App: unknown): StringifierFn | null {
-  return bindMethod<[unknown, string?], string>(readUtil(App), 'str');
-}
-
-export function stringifyViaPlatform(App: unknown, value: unknown, defaultText = ''): string {
-  try {
-    const fn = getPlatformStringifier(App);
-    if (!fn) return value == null ? String(defaultText || '') : String(value);
-    return fn(value, defaultText);
-  } catch (error) {
-    reportPlatformOpRejected(App, error, 'stringify.ownerRejected');
-    return value == null ? String(defaultText || '') : String(value);
   }
 }
 

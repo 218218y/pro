@@ -2,6 +2,7 @@ import { computeHingedDoorPivotMap } from './pure_api.js';
 import { makeHandleTypeResolver } from './doors_state_utils.js';
 import { readCanonicalPositiveIntegerText, readRecord } from './build_flow_readers.js';
 import { moduleRequiresCustomBoundaryGeometry } from './module_custom_geometry_policy.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type {
   BuilderDoorMapsConfigLike,
@@ -134,7 +135,7 @@ export function createBottomHandleTypeResolver(args: {
   };
 
   return (id: unknown): unknown => {
-    const sid = id == null ? '' : String(id);
+    const sid = formatIdentityValue(readIdentityValue(id));
     if (globalHandleType === 'edge') return baseGetHandleTypeBottom(sid);
     if (hasExplicitHandle(sid)) return baseGetHandleTypeBottom(sid);
 

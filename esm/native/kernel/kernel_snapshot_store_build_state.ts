@@ -1,4 +1,5 @@
 import type { ModulesConfigurationLike, UnknownRecord } from '../../../types';
+import { readPositiveInteger, readNumericInput } from '../../shared/numeric_value_shared.js';
 
 import { getState, getRuntime } from './store_access.js';
 import {
@@ -71,16 +72,18 @@ function readModulesStructure(
 } {
   let doorsCount = readCanonicalUiRawIntFromSnapshot(ui, 'doors', 4);
   if (!Number.isFinite(doorsCount) || doorsCount < 0) doorsCount = 4;
-  const wardrobeType = cfg && cfg.wardrobeType != null ? String(cfg.wardrobeType) : 'hinged';
-  const singleDoorPos = ui.singleDoorPos != null ? String(ui.singleDoorPos) : '';
-  const structureSelect = ui.structureSelect != null ? String(ui.structureSelect) : '';
+  const wardrobeType = cfg?.wardrobeType === 'sliding' ? 'sliding' : 'hinged';
+  const singleDoorPos = typeof ui.singleDoorPos === 'string' ? ui.singleDoorPos : '';
+  const structureSelect = typeof ui.structureSelect === 'string' ? ui.structureSelect : '';
 
   let ms: ModulesStructureItem[] | null = null;
   try {
     const out = calculateModuleStructure(doorsCount, singleDoorPos, structureSelect, wardrobeType);
     if (Array.isArray(out)) {
       ms = out.map((m: unknown): ModulesStructureItem => {
-        const doors = args.isRecord(m) ? parseInt(String(args.asRecord(m).doors ?? ''), 10) || 1 : 1;
+        const doors = args.isRecord(m)
+          ? (readPositiveInteger(readNumericInput(args.asRecord(m).doors)) ?? 1)
+          : 1;
         return { doors };
       });
     }

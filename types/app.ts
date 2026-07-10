@@ -75,7 +75,6 @@ export interface RenderFollowThroughBudgetSummaryLike extends UnknownRecord {
 
 export interface PlatformUtilNamespaceLike extends UnknownRecord {
   log?: PlatformLogFn;
-  str?: (value: unknown, fallback?: string) => string;
   idle?: (cb: () => void, timeout?: number) => unknown;
   clone?: <T>(value: T, seed?: unknown) => T;
   cleanGroup?: (group: unknown) => unknown;

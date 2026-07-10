@@ -191,9 +191,9 @@ test('builder/corner/canvas seams use typed installer contracts and reader helpe
   assert.doesNotMatch(directHit, /new Array\([^\n]*\)\.fill\(false\) as boolean\[]/);
 });
 
-test('corner builders keep typed flow params, explicit nullish-string narrowing, and shared reader contracts', () => {
+test('corner builders keep typed flow params, reject non-string curtain values, and share reader contracts', () => {
   const explicitNullishString =
-    /if \(typeof value === 'string'\) return value;[\s\S]*if \(value === null\) return null;[\s\S]*if \(typeof value === 'undefined'\) return undefined;[\s\S]*return String\(value\);/;
+    /if \(typeof value === 'string'\) return value;[\s\S]*if \(value === null\) return null;[\s\S]*if \(typeof value === 'undefined'\) return undefined;[\s\S]*return undefined;/;
 
   assert.match(cornerWingCarcass, /corner_wing_carcass_shared\.js/);
   assert.match(cornerWingCarcass, /corner_wing_carcass_shell\.js/);
@@ -222,6 +222,9 @@ test('corner builders keep typed flow params, explicit nullish-string narrowing,
   assert.match(cornerWingCellShared, explicitNullishString);
   assert.match(cornerConnectorDoor, explicitNullishString);
   assert.match(renderDoorOps, explicitNullishString);
+  assert.doesNotMatch(cornerWingCellShared, /String\(value\)/);
+  assert.doesNotMatch(cornerConnectorDoor, /String\(value\)/);
+  assert.doesNotMatch(renderDoorOps, /String\(value\)/);
 
   assert.match(
     cornerWingCellShared,

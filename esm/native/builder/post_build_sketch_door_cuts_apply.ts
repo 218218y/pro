@@ -122,7 +122,7 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
     const ud = asRecord(g && g.userData);
     if (!entry || !g || !ud) continue;
     const type = readKey(entry, 'type');
-    if (type != null && String(type) !== 'hinged') continue;
+    if (type != null && type !== 'hinged') continue;
     const selection = selectDoorCuts(entry, g, ud);
     if (!selection) continue;
     const selectedStacks = Array.isArray(selection.stacks) ? selection.stacks : [];

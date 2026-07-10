@@ -61,7 +61,8 @@ export function makeMaterialResolver(args: MaterialResolverArgs): {
   const globalFrontMat = args.globalFrontMat;
   const materialSnapshot = args.materialSnapshot;
 
-  const toColorKey = (value: unknown, defaultValue = ''): string => String(value ?? defaultValue);
+  const toColorKey = (value: unknown, defaultValue = ''): string =>
+    typeof value === 'string' ? value : defaultValue;
 
   if (!App || typeof App !== 'object')
     throw new Error('[builder/material_resolver] makeMaterialResolver: App missing');
@@ -91,7 +92,7 @@ export function makeMaterialResolver(args: MaterialResolverArgs): {
     });
     if (value === null) return null;
     if (typeof value === 'undefined') return undefined;
-    return String(value);
+    return typeof value === 'string' ? value : undefined;
   }
 
   function getPartMaterial(partId: string): unknown {

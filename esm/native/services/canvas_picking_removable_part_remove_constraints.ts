@@ -1,4 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import {
@@ -160,11 +161,8 @@ export function readSketchBoxPartIdCandidatesForRecord(args: {
 }): string[] {
   const box = asRecord(args.box) || {};
   const rawBoxId =
-    box.id != null && String(box.id).trim()
-      ? String(box.id).trim()
-      : args.boxIndex != null
-        ? String(args.boxIndex)
-        : '';
+    formatIdentityValue(readIdentityValue(box.id)).trim() ||
+    formatIdentityValue(readIdentityValue(args.boxIndex));
   if (!rawBoxId) return [];
 
   const moduleIndex = readModuleIndex(args.moduleKey);
@@ -265,7 +263,7 @@ function readOppositeFrameSidePartId(partId: string, side: 'left' | 'right'): st
 }
 
 function readSketchBoxIdCandidates(box: UnknownRecord, boxIndex: number, moduleKey: string): string[] {
-  const rawBoxId = box.id != null && String(box.id).trim() ? String(box.id).trim() : String(boxIndex);
+  const rawBoxId = formatIdentityValue(readIdentityValue(box.id)).trim() || formatIdentityValue(boxIndex);
   const hasModuleKey = !!moduleKey;
   const candidates = new Set<string>();
   const pushPrefix = (prefix: string): void => {

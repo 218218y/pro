@@ -47,7 +47,11 @@ export function createFrontRevealMaterialPicker(
 
     const rootRec = root as Object3DLike & ValueRecord;
     const rootUd = toValueRecord(rootRec.userData);
-    if (rootUd && PREFERRED_REVEAL_ROLES.has(String(rootUd.__doorVisualRole || ''))) {
+    if (
+      rootUd &&
+      typeof rootUd.__doorVisualRole === 'string' &&
+      PREFERRED_REVEAL_ROLES.has(rootUd.__doorVisualRole)
+    ) {
       const rootHex = pickMaterialHex(
         Array.isArray(rootRec.material) ? rootRec.material : [rootRec.material],
         sampleTextureToneHex
@@ -66,7 +70,11 @@ export function createFrontRevealMaterialPicker(
       const current = queue.shift();
       if (!current) continue;
       const currentUd = toValueRecord(current.userData);
-      if (currentUd && PREFERRED_REVEAL_ROLES.has(String(currentUd.__doorVisualRole || ''))) {
+      if (
+        currentUd &&
+        typeof currentUd.__doorVisualRole === 'string' &&
+        PREFERRED_REVEAL_ROLES.has(currentUd.__doorVisualRole)
+      ) {
         const directHex = pickMaterialHex(
           Array.isArray(current.material) ? current.material : [current.material],
           sampleTextureToneHex

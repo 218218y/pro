@@ -8,7 +8,7 @@ import { getObjectMethods } from './export_order_pdf_shared.js';
 function readNameValue(value: unknown): string {
   if (!value || typeof value !== 'object' || !('name' in value)) return '';
   const name = value.name;
-  return typeof name === 'string' ? name : String(name || '');
+  return typeof name === 'string' ? name : '';
 }
 
 export function createOrderPdfBuilderTemplateOps(

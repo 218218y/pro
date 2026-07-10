@@ -73,7 +73,7 @@ export type CreateDesignTabCustomColorWorkflowControllerArgs = {
 };
 
 function trim(value: unknown): string {
-  return String(value || '').trim();
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 function buildTextureFileFlightKey(file: Blob | File | null): string {

@@ -1,12 +1,13 @@
 import type { AppContainer } from '../../../types';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import type { ModuleKey, ProjectWorldPointToLocalFn } from './canvas_picking_sketch_free_box_contracts.js';
 
 import { getRecordProp } from '../runtime/record.js';
 
 export function getSketchFreeBoxPartPrefix(hostModuleKey: ModuleKey, boxId: unknown): string {
-  const moduleKeyStr = hostModuleKey != null ? String(hostModuleKey) : '';
-  const bid = boxId != null && boxId !== '' ? String(boxId) : 'box';
+  const moduleKeyStr = formatIdentityValue(readIdentityValue(hostModuleKey));
+  const bid = formatIdentityValue(readIdentityValue(boxId)) || 'box';
   return moduleKeyStr ? `sketch_box_free_${moduleKeyStr}_${bid}` : `sketch_box_free_${bid}`;
 }
 

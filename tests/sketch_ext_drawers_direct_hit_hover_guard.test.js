@@ -28,7 +28,10 @@ test('[sketch-ext-drawers-direct-hit] router delegates drawer/shelf direct hits 
 test('[sketch-ext-drawers-direct-hit] removal is gated by the live hover remove target before direct-hit delete runs', () => {
   const src = WORKFLOW.map(file => fs.readFileSync(file, 'utf8')).join('\n');
   assert.match(src, /__hoverOk:\s*boolean;/);
-  assert.match(src, /const\s+hoverRemoveId\s*=\s*readRecordString\(__hoverRec, 'removeId'\);/);
+  assert.match(
+    src,
+    /const\s+hoverRemoveId\s*=\s*readRecordIdentity\((?:args\.hoverRec|__hoverRec), 'removeId'\);/
+  );
   assert.match(
     src,
     /const\s+hoverRemovesModuleDrawer\s*=\s*[\s\S]*__hoverKind === 'ext_drawers'[\s\S]*__hoverOp === 'remove'[\s\S]*hoverRemoveId === drawerId/
@@ -38,6 +41,7 @@ test('[sketch-ext-drawers-direct-hit] removal is gated by the live hover remove 
     /const\s+hoverRemovesBoxDrawer\s*=\s*[\s\S]*__hoverKind === 'box_content'[\s\S]*hoverContentKind === 'ext_drawers'[\s\S]*__hoverOp === 'remove'[\s\S]*hoverRemoveId === drawerId/
   );
   assert.match(src, /allowRemove = hoverRemovesModuleDrawer \|\| hoverRemovesBoxDrawer;/);
+  assert.doesNotMatch(src, /readRecordString\((?:args\.hoverRec|__hoverRec), 'removeId'\)/);
 });
 
 test('[sketch-ext-drawers-direct-hit] removal can target nested box external drawers and not only the module-level list', () => {
@@ -50,8 +54,9 @@ test('[sketch-ext-drawers-direct-hit] removal can target nested box external dra
   assert.match(src, /const\s+boxes\s*=\s*ensureArray\(extra, 'boxes'\);/);
   assert.match(
     src,
-    /const\s+candidateBoxes\s*=\s*boxId\s*\?\s*boxes\.filter\(box => readRecordString\(box, 'id'\) === boxId\)\s*:\s*boxes;/
+    /const\s+candidateBoxes\s*=\s*boxId\s*\?\s*boxes\.filter\(box => readRecordIdentity\(box, 'id'\) === boxId\)\s*:\s*boxes;/
   );
   assert.match(src, /const\s+list\s*=\s*ensureArray\(box, 'extDrawers'\);/);
   assert.match(src, /removeSketchExternalDrawerById\(cfg, drawerId, boxId \|\| undefined\);/);
+  assert.doesNotMatch(src, /readRecordString\(box, 'id'\)/);
 });

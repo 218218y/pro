@@ -1,4 +1,5 @@
 import type { CloudSyncDiagPayload } from '../../../types';
+import { normalizeUnknownErrorInfo } from '../runtime/error_normalization.js';
 
 import { addCloudSyncCleanup, runCloudSyncInitialPulls } from './cloud_sync_owner_support.js';
 import { type CloudSyncInstallLifecycleArgs } from './cloud_sync_install_lifecycle_shared.js';
@@ -8,14 +9,7 @@ function toCloudSyncDiagPayload(error: unknown): CloudSyncDiagPayload {
   if (error === null) return null;
   if (typeof error === 'undefined') return undefined;
   if (typeof error === 'string' || typeof error === 'number' || typeof error === 'boolean') return error;
-  if (error instanceof Error) {
-    return {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-    };
-  }
-  return { message: String(error) };
+  return normalizeUnknownErrorInfo(error);
 }
 
 function scheduleCloudSyncInitialPulls(args: {

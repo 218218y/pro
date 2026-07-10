@@ -1,5 +1,6 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 import { DRAWER_DIMENSIONS, MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { resolveExternalDrawerFitFromBounds } from '../../shared/wardrobe_construction_validation_shared.js';
 import {
   SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND,
@@ -251,7 +252,7 @@ function buildRegularDrawerPreview(args: {
     boxId: target.boxId,
     freePlacement: true,
     op: blockedReason ? 'add' : op,
-    removeId: blockedReason ? null : existing?.id != null ? String(existing.id) : null,
+    removeId: blockedReason ? null : formatIdentityValue(readIdentityValue(existing?.id)) || null,
     contentXNorm: activeXNorm,
     boxYNorm: activeYNorm,
     boxBaseYNorm: clampUnit((ctx.boxBottomY - ctx.fullBoxBottomY) / Math.max(target.targetHeight, 1e-6)),

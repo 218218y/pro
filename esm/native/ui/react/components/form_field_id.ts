@@ -1,5 +1,5 @@
-function sanitizeDomIdPart(value: unknown): string {
-  const text = String(value ?? '').trim();
+function sanitizeDomIdPart(value: string): string {
+  const text = value.trim();
   const sanitized = text.replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '');
   return sanitized || 'field';
 }

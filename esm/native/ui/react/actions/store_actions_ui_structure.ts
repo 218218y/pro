@@ -25,7 +25,7 @@ function setUiBaseType(app: AppContainer, value: unknown, meta?: ActionMetaLike)
     uiNs.setBaseType(asStringValue(value), meta);
     return;
   }
-  setUiScalar(app, 'baseType', value == null ? '' : String(value), meta);
+  setUiScalar(app, 'baseType', asStringValue(value), meta);
 }
 
 function setUiBasePlinthHeightCm(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
@@ -79,7 +79,7 @@ function setUiStructureSelect(app: AppContainer, value: unknown, meta?: ActionMe
     uiNs.setStructureSelect(asStringValue(value), meta);
     return;
   }
-  setUiScalar(app, 'structureSelect', value == null ? '' : String(value), meta);
+  setUiScalar(app, 'structureSelect', asStringValue(value), meta);
 }
 
 function setUiSingleDoorPos(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
@@ -88,7 +88,7 @@ function setUiSingleDoorPos(app: AppContainer, value: unknown, meta?: ActionMeta
     uiNs.setSingleDoorPos(asStringValue(value), meta);
     return;
   }
-  setUiScalar(app, 'singleDoorPos', value == null ? '' : String(value), meta);
+  setUiScalar(app, 'singleDoorPos', asStringValue(value), meta);
 }
 
 function setUiChestMode(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
@@ -100,7 +100,7 @@ function setUiChestCommodeEnabled(app: AppContainer, on: unknown, meta?: ActionM
 }
 
 function setUiCornerSide(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  setUiScalarSoft(app, 'cornerSide', value == null ? '' : String(value), meta);
+  setUiScalarSoft(app, 'cornerSide', asStringValue(value), meta);
 }
 
 function setUiCornerWidth(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
@@ -180,7 +180,7 @@ function setUiStackSplitLowerDoorsManual(app: AppContainer, on: unknown, meta?: 
 }
 
 function setUiSlidingTracksColor(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
-  const next = value == null ? '' : String(value);
+  const next = asStringValue(value);
   if (!next) return;
   setUiScalar(app, 'slidingTracksColor', next, meta);
 }
@@ -249,7 +249,7 @@ function setUiDoorStyle(app: AppContainer, style: unknown, meta?: ActionMetaLike
     uiNs.setDoorStyle(asStringValue(style), meta);
     return;
   }
-  setUiScalar(app, 'doorStyle', style == null ? '' : String(style), meta);
+  setUiScalar(app, 'doorStyle', asStringValue(style), meta);
 }
 
 function setUiCorniceType(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
@@ -258,7 +258,7 @@ function setUiCorniceType(app: AppContainer, value: unknown, meta?: ActionMetaLi
     uiNs.setCorniceType(asStringValue(value), meta);
     return;
   }
-  setUiScalar(app, 'corniceType', value == null ? '' : String(value), meta);
+  setUiScalar(app, 'corniceType', asStringValue(value), meta);
 }
 
 function setUiColorChoice(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
@@ -267,7 +267,7 @@ function setUiColorChoice(app: AppContainer, value: unknown, meta?: ActionMetaLi
     uiNs.setColorChoice(asStringValue(value), meta);
     return;
   }
-  const next = value == null ? '' : String(value);
+  const next = asStringValue(value);
   if (!next) return;
   setUiScalar(app, 'colorChoice', next, meta);
 }

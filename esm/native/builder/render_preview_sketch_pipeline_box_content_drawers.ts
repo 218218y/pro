@@ -204,7 +204,7 @@ function rememberDrawerDividerMotionPreview(
 function applyDrawerDividerPreview(ctx: SketchPlacementPreviewContext): boolean {
   if (ctx.kind !== 'drawer_divider') return false;
 
-  const axis = String(ctx.input.dividerAxis || 'vertical') === 'horizontal' ? 'horizontal' : 'vertical';
+  const axis = ctx.input.dividerAxis === 'horizontal' ? 'horizontal' : 'vertical';
   const highlightX = readPreviewNumber(ctx.input.highlightX);
   const highlightY = readPreviewNumber(ctx.input.highlightY);
   const snapToCenter = ctx.input.snapToCenter === true;

@@ -14,7 +14,6 @@ import { ensureServiceSlot, getServiceSlotMaybe } from './services_root_access.j
 export type PlatformMethod<Args extends unknown[] = never[], Ret = unknown> = (...args: Args) => Ret;
 export type Hash32Fn = PlatformUtilNamespaceLike['hash32'];
 export type CloneFn = PlatformUtilNamespaceLike['clone'];
-export type StringifierFn = PlatformUtilNamespaceLike['str'];
 
 export type PlatformServiceLike = PlatformServiceNamespaceLike;
 export type PlatformRootLike = PlatformNamespace;

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { createPortal } from 'react-dom';
 
 import type { AppContainer } from '../../../../types';
+import { formatDisplayScalar, readDisplayScalar } from '../../../shared/display_text_shared.js';
 
 import { restoreReactFeedbackHost, setReactFeedbackHost } from '../feedback_shared.js';
 import { Button } from './components/Button.js';
@@ -84,7 +85,7 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
   const promptFocusTimerStateRef = useRef(createOverlayFeedbackPromptFocusTimerState());
 
   const toast = useCallback((msg: unknown, kind?: unknown) => {
-    const message = msg == null ? '' : String(msg);
+    const message = formatDisplayScalar(readDisplayScalar(msg));
     const nextKind = readToastKind(kind);
     const id = nextId.current++;
     setToasts(prev => [...prev, { id, kind: nextKind, message }]);
@@ -97,9 +98,9 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
     setModal({
       open: true,
       mode: 'prompt',
-      title: String(title || ''),
+      title,
       message: '',
-      value: String(defaultValue || ''),
+      value: defaultValue,
     });
   }, []);
 
@@ -149,8 +150,8 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
       setModal({
         open: true,
         mode: 'confirm',
-        title: String(title || ''),
-        message: String(message || ''),
+        title,
+        message,
         value: '',
       });
     },
@@ -198,7 +199,7 @@ export function ReactFeedbackHost(props: { bridge: OverlayFeedbackHostBridge }) 
       const callback = promptCbRef.current;
       close();
       try {
-        if (callback) callback(String(modal.value || ''));
+        if (callback) callback(modal.value);
       } catch (err) {
         reportOverlayAppNonFatal(app, 'feedback-host:prompt-confirm', err);
       }

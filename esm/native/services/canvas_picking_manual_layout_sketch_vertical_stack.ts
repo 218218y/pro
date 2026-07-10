@@ -1,4 +1,5 @@
 import { asRecord } from '../runtime/record.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
@@ -278,7 +279,7 @@ export function buildSketchInternalDrawerBlockers<T extends Record<string, unkno
       const clampedCenterY = clampCenter(centerY, stackH);
       const idRaw = readRecordValue(item, 'id');
       return createVerticalOccupancyRange({
-        id: idRaw != null && idRaw !== '' ? String(idRaw) : String(index),
+        id: formatIdentityValue(readIdentityValue(idRaw)) || index.toString(),
         centerY: clampedCenterY,
         minY: clampedCenterY - stackH / 2 - cassette.woodThick,
         maxY: clampedCenterY + stackH / 2 + cassette.woodThick,
@@ -337,7 +338,7 @@ export function buildSketchExternalDrawerBlockers<T extends Record<string, unkno
       const clampedCenterY = clampCenter(centerY, stackH);
       const idRaw = readRecordValue(item, 'id');
       return createVerticalOccupancyRange({
-        id: idRaw != null && idRaw !== '' ? String(idRaw) : String(index),
+        id: formatIdentityValue(readIdentityValue(idRaw)) || index.toString(),
         count,
         stackH,
         centerY: clampedCenterY,

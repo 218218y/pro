@@ -3,6 +3,7 @@ import {
   createManualLayoutSketchNormalizedCenterReader,
   resolveManualLayoutSketchInternalDrawerPlacement,
 } from './canvas_picking_manual_layout_sketch_stack_placement.js';
+import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import {
   buildManualLayoutVerticalContentBlockers,
   type ManualLayoutVerticalContentBlocker,
@@ -50,9 +51,9 @@ function removeSketchShelfByBlocker(args: {
   blocker: ManualLayoutVerticalContentBlocker;
 }): boolean {
   const mutableShelves = ensureRecordList(args.extra, 'shelves');
-  const id = args.blocker.id != null ? String(args.blocker.id) : '';
+  const id = formatIdentityValue(readIdentityValue(args.blocker.id));
   if (id && !id.startsWith('sketch_shelf_')) {
-    const byId = mutableShelves.findIndex(shelf => shelf && shelf.id != null && String(shelf.id) === id);
+    const byId = mutableShelves.findIndex(shelf => formatIdentityValue(readIdentityValue(shelf?.id)) === id);
     if (byId >= 0) {
       mutableShelves.splice(byId, 1);
       return true;

@@ -104,9 +104,9 @@ const GATES = [
   {
     gate: 'oxlint type-aware',
     command: 'npm run lint:ts-modern:type-aware',
-    blocker: 'no',
-    role: 'Future semantic lint lane through `oxlint-tsgolint`.',
-    status: 'audit-only; current known diagnostics are 966 after initial burn-down, not a blocker yet',
+    blocker: 'yes',
+    role: 'Semantic lint lane through `oxlint-tsgolint`.',
+    status: 'blocking; current type-aware diagnostics are 0',
   },
   {
     gate: 'typecheck',
@@ -239,9 +239,9 @@ export async function createRawLintParityMarkdown() {
     '',
     '- TypeScript 7.0.2 is active and remains the compiler version for this lane.',
     '- TS-specific ESLint parser/plugin packages are removed from package metadata and ESLint config.',
-    '- `lint:modern` is the canonical lint gate: `lint:js:strict`, `lint:ts-modern:syntax`, and `lint:contracts`.',
+    '- `lint:modern` is the canonical lint gate: `lint:js:strict`, `lint:ts-modern:syntax`, `lint:ts-modern:type-aware`, and `lint:contracts`.',
     '- `quality:ts-modern` is the primary TypeScript quality bundle.',
-    '- `lint:ts-modern:type-aware` remains audit-only with 966 known diagnostics after the first safe burn-down; it is not a Stage 9 blocker.',
+    '- `lint:ts-modern:type-aware` is blocking at 0 diagnostics, with global zero guards for the hardened semantic rules.',
     ''
   );
 

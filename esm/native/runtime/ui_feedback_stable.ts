@@ -6,6 +6,7 @@ import type {
   UiFeedbackStableLike,
   UiFeedbackToastFn,
 } from '../../../types';
+import { formatDisplayScalar, readDisplayScalar } from '../../shared/display_text_shared.js';
 
 import { getDocumentMaybe } from './browser_env.js';
 import { asRecord } from './record.js';
@@ -190,11 +191,7 @@ function readEditToastFn(owner: UiFeedbackNamespaceLike): UiFeedbackEditToastFn 
 }
 
 function safeString(value: unknown): string {
-  try {
-    return value == null ? '' : String(value);
-  } catch {
-    return '';
-  }
+  return formatDisplayScalar(readDisplayScalar(value));
 }
 
 function markStub<T extends CallableLike>(fn: T, kind: string): T {

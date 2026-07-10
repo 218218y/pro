@@ -1,4 +1,5 @@
 import type { AppContainer } from '../../../types';
+import { formatDisplayScalar, readDisplayScalar } from '../../shared/display_text_shared.js';
 
 import { getMode } from './store_access.js';
 import {
@@ -241,7 +242,7 @@ export function updateEditStateToast(
 
   installStickyToastDismissBinding(App, toast);
 
-  const message = text == null ? '' : String(text);
+  const message = formatDisplayScalar(readDisplayScalar(text));
   const active = !!isActive && message.length > 0;
 
   if (!active) {

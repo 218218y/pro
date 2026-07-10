@@ -111,7 +111,7 @@ test('modern readiness is wired into lint contracts and toolchain surfaces', () 
   assert.equal(pkg.scripts.lint, 'npm run lint:modern');
   assert.equal(
     pkg.scripts['lint:modern'],
-    'npm run lint:js:strict && npm run lint:ts-modern:syntax && npm run lint:contracts'
+    'npm run lint:js:strict && npm run lint:ts-modern:syntax && npm run lint:ts-modern:type-aware && npm run lint:contracts'
   );
   assert.equal(pkg.scripts['lint:js'], 'node tools/wp_lint.js --profile js-only');
   assert.equal(pkg.scripts['lint:js:strict'], 'node tools/wp_lint.js --profile js-only --strict');

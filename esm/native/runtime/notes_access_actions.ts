@@ -121,11 +121,11 @@ export function getNotesSanitizeFn(App: unknown): ((html: string) => string) | n
 
 export function sanitizeNotesHtmlViaService(App: unknown, html: unknown): string {
   try {
-    const text = typeof html === 'string' ? html : html == null ? '' : String(html);
+    const text = typeof html === 'string' ? html : '';
     const sanitize = getNotesSanitizeFn(App);
     return sanitize ? sanitize(text) : text;
   } catch (error) {
     reportNotesOwnerRejection(App, 'notes.sanitize.ownerRejected', error);
-    return typeof html === 'string' ? html : html == null ? '' : String(html);
+    return typeof html === 'string' ? html : '';
   }
 }

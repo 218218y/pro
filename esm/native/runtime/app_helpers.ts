@@ -13,13 +13,7 @@ import type { ActionMetaLike, AppContainer } from '../../../types/index.js';
 
 import { callMetaAction, hasMetaAction } from './actions_access_domains.js';
 import { runHistoryBatchViaActions } from './actions_access_mutations.js';
-import { stringifyViaPlatform } from './platform_access.js';
 import { metaNoBuild } from './meta_profiles_access.js';
-
-/** Best-effort string conversion via the canonical platform seam. */
-export function appStr(App: AppContainer, v: unknown): string {
-  return stringifyViaPlatform(App, v);
-}
 
 /**
  * Run a history batch when `App.actions.history.batch` is available.

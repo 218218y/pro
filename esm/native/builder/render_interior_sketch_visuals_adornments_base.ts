@@ -69,7 +69,7 @@ export function renderSketchBoxAdornmentBase(args: {
   }
   const legHeight = Math.max(0.02, toFiniteNumber(baseRec.height) ?? 0.12);
   const geoRec = asValueRecord(baseRec.geo);
-  const shape = String(geoRec?.shape || 'round');
+  const shape = typeof geoRec?.shape === 'string' ? geoRec.shape : 'round';
   const legGeometry =
     shape === 'square'
       ? new THREE.BoxGeometry(
