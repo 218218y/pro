@@ -10,7 +10,6 @@ import type {
 import { getMode } from './store_access.js';
 import { getDocumentMaybe, getModeToastSyncUnsub } from '../services/api.js';
 import {
-  type ToastType,
   __uiFeedbackReportNonFatal,
   ensureFeedbackService,
   isStubFn,
@@ -102,7 +101,7 @@ function installModeToastSync(App: AppContainer): void {
 }
 
 function fillUiFeedbackSurface(App: AppContainer, fb: UiFeedbackNamespaceLike): UiFeedbackStableLike {
-  const toastImpl = (message: unknown, type?: ToastType | string) => showToast(App, message, type);
+  const toastImpl = (message: unknown, type?: string) => showToast(App, message, type);
   const toast = chooseInstalledCallable(fb.toast, fb.showToast, toastImpl);
   if (fb.toast !== toast) fb.toast = toast;
   if (fb.showToast !== toast) fb.showToast = toast;

@@ -154,7 +154,7 @@ export interface SmokeChecksNamespaceLike extends UnknownRecord {
 
 export type BrowserEventHandlerLike = EventListenerOrEventListenerObject;
 export type BrowserEventOptionsLike = boolean | AddEventListenerOptions;
-export type BrowserTimeoutHandleLike = ReturnType<typeof setTimeout> | number | null;
+export type BrowserTimeoutHandleLike = ReturnType<typeof setTimeout> | null;
 export type BrowserTimeoutRunnerLike = (fn: () => unknown, ms: number) => BrowserTimeoutHandleLike;
 export type BrowserTimeoutCancelerLike = (id: unknown) => void;
 export type ClipboardItemCtorLike = new (items: Record<string, Blob | Promise<Blob>>) => ClipboardItem;

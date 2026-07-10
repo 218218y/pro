@@ -51,7 +51,7 @@ export function scheduleSceneViewSyncFromStore(App: AppContainer, opts?: SceneVi
 
   syncState.flushPending = true;
   const token = ++syncState.flushToken;
-  Promise.resolve().then(() => {
+  void Promise.resolve().then(() => {
     if (syncState.flushToken !== token) return;
 
     syncState.flushPending = false;

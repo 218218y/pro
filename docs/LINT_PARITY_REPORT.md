@@ -6,14 +6,14 @@ Stage 9 finalizes the TypeScript 7 quality path: TypeScript 7.0.2 is active, TS-
 
 ## Gate comparison
 
-| Gate              | Command                                               | Blocking? | Role                                                                                 | Stage 9 status                                                                     |
-| ----------------- | ----------------------------------------------------- | --------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| lint modern       | `npm run lint:modern`                                 | yes       | Canonical lint gate combining strict JS ESLint, Oxlint syntax, and custom contracts. | blocking primary gate                                                              |
-| lint JS-only      | `npm run lint:js:strict`                              | yes       | ESLint coverage for JS/tools/tests/config, including `no-undef`.                     | strict blocking JS gate with 0 warnings; TS/TSX stays outside ESLint               |
-| oxlint syntax     | `npm run lint:ts-modern:syntax`                       | yes       | Fast modern parser/config/file-discovery lane for `esm` and `types` TS/TSX.          | blocking; current syntax diagnostics are 0                                         |
-| oxlint type-aware | `npm run lint:ts-modern:type-aware`                   | no        | Future semantic lint lane through `oxlint-tsgolint`.                                 | audit-only; not a blocker yet                                                      |
-| typecheck         | `npm run typecheck:runtime && npm run typecheck:dist` | yes       | TypeScript compiler contracts and TS/JS check lanes.                                 | canonical for type correctness on TypeScript 7.0.2                                 |
-| custom contracts  | `npm run lint:contracts`                              | yes       | Project-owned quality rules that survive parser/linter swaps.                        | matrix/parity docs, modern readiness, and lint architecture contracts are blocking |
+| Gate              | Command                                               | Blocking? | Role                                                                                 | Stage 9 status                                                                           |
+| ----------------- | ----------------------------------------------------- | --------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| lint modern       | `npm run lint:modern`                                 | yes       | Canonical lint gate combining strict JS ESLint, Oxlint syntax, and custom contracts. | blocking primary gate                                                                    |
+| lint JS-only      | `npm run lint:js:strict`                              | yes       | ESLint coverage for JS/tools/tests/config, including `no-undef`.                     | strict blocking JS gate with 0 warnings; TS/TSX stays outside ESLint                     |
+| oxlint syntax     | `npm run lint:ts-modern:syntax`                       | yes       | Fast modern parser/config/file-discovery lane for `esm` and `types` TS/TSX.          | blocking; current syntax diagnostics are 0                                               |
+| oxlint type-aware | `npm run lint:ts-modern:type-aware`                   | no        | Future semantic lint lane through `oxlint-tsgolint`.                                 | audit-only; current known diagnostics are 966 after initial burn-down, not a blocker yet |
+| typecheck         | `npm run typecheck:runtime && npm run typecheck:dist` | yes       | TypeScript compiler contracts and TS/JS check lanes.                                 | canonical for type correctness on TypeScript 7.0.2                                       |
+| custom contracts  | `npm run lint:contracts`                              | yes       | Project-owned quality rules that survive parser/linter swaps.                        | matrix/parity docs, modern readiness, and lint architecture contracts are blocking       |
 
 ## Rule parity
 
@@ -55,4 +55,4 @@ The custom lint architecture contract baseline is 0. Every new architecture viol
 - TS-specific ESLint parser/plugin packages are removed from package metadata and ESLint config.
 - `lint:modern` is the canonical lint gate: `lint:js:strict`, `lint:ts-modern:syntax`, and `lint:contracts`.
 - `quality:ts-modern` is the primary TypeScript quality bundle.
-- `lint:ts-modern:type-aware` remains audit-only with known diagnostics; it is not a Stage 9 blocker.
+- `lint:ts-modern:type-aware` remains audit-only with 966 known diagnostics after the first safe burn-down; it is not a Stage 9 blocker.

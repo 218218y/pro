@@ -191,7 +191,7 @@ function scheduleMicrotask(App: AppContainer, fn: () => void): void {
     enqueue(fn);
     return;
   }
-  Promise.resolve().then(fn);
+  void Promise.resolve().then(fn);
 }
 
 export function schedulePendingCoalescedReplay(

@@ -20,7 +20,7 @@ function placeFrontOverlay(
     material: PreviewMaterialLike | null | undefined;
     lineMaterial: PreviewMaterialLike | null | undefined;
     frontOverlay: ReturnType<SketchPlacementPreviewContext['readFrontOverlay']>;
-    mesh: typeof ctx.shelfA | typeof ctx.boxBack;
+    mesh: typeof ctx.shelfA;
   }
 ) {
   const { material, lineMaterial, frontOverlay, mesh } = args;

@@ -118,7 +118,7 @@ export function readGlobalScopeCandidate(reader: GlobalScopeReader): GlobalScope
 }
 
 export function getGlobalScopeMaybe(): GlobalScopeLike | null {
-  return readGlobalScopeCandidate(() => Function('return this')());
+  return readGlobalScopeCandidate(() => globalThis);
 }
 
 export function readGlobalFn<T extends AnyCallable>(

@@ -30,8 +30,8 @@ export interface StoreDebugStats {
 
 export type StoreSelectorSliceKey = RootSliceKey | 'root' | 'all';
 
-export type TimeoutHandleLike = ReturnType<typeof setTimeout> | number;
-export type IntervalHandleLike = ReturnType<typeof setInterval> | number;
+export type TimeoutHandleLike = ReturnType<typeof setTimeout>;
+export type IntervalHandleLike = ReturnType<typeof setInterval>;
 export type BrowserTimerCallback = () => void;
 export type BrowserSetTimeoutLike = (fn: BrowserTimerCallback, ms?: number) => TimeoutHandleLike;
 export type BrowserClearTimeoutLike = (handle: TimeoutHandleLike | undefined) => void;

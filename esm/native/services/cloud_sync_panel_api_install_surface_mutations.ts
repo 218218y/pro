@@ -58,7 +58,7 @@ export function installCloudSyncPanelApiMutationRefs(
 ): void {
   installStableSurfaceMethod(api, 'setDiagnosticsEnabled', '__wpCloudSyncSetDiagnosticsEnabled', () => {
     return (enabled: boolean): void => {
-      void invokeCloudSyncPanelApi(context, 'setDiagnosticsEnabled', undefined, enabled);
+      invokeCloudSyncPanelApi(context, 'setDiagnosticsEnabled', undefined, enabled);
     };
   });
   installStableSurfaceMethod(api, 'goPublic', '__wpCloudSyncGoPublic', () => {

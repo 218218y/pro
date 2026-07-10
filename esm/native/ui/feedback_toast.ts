@@ -1,7 +1,7 @@
 import type { AppContainer } from '../../../types';
 
 import { getBrowserTimers } from '../services/api.js';
-import { type ToastType, __uiFeedbackReportNonFatal, getReactFeedback } from './feedback_shared.js';
+import { __uiFeedbackReportNonFatal, getReactFeedback } from './feedback_shared.js';
 import {
   ensureToastContainer,
   normalizeToastKind,
@@ -13,7 +13,7 @@ export { resolveStickyStatusToastHost, updateEditStateToast } from './feedback_t
 export function showToast(
   App: AppContainer | null | undefined,
   message: unknown,
-  type: ToastType | string = 'success'
+  type: string = 'success'
 ): void {
   const reactFeedback = getReactFeedback(App);
   if (reactFeedback && typeof reactFeedback.toast === 'function') {

@@ -38,7 +38,7 @@ export const buildCornerWing = (
   startY: number,
   materials: MaterialsLike,
   meta: BuilderCornerBuildMetaLike,
-  ctxMaybe?: CornerBuildCtx | null | undefined
+  ctxMaybe?: CornerBuildCtx | null
 ): void => {
   const ctx = ctxMaybe;
 

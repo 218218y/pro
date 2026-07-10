@@ -175,7 +175,7 @@ export function copyFatalOverlayText(win: Window | null, txt: unknown): boolean 
     if (!win) return false;
     const nav = win.navigator;
     if (nav && nav.clipboard && typeof nav.clipboard.writeText === 'function') {
-      nav.clipboard.writeText(String(txt || ''));
+      void nav.clipboard.writeText(String(txt || ''));
       return true;
     }
   } catch (_e) {}

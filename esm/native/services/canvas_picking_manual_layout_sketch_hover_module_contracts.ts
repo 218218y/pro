@@ -46,23 +46,23 @@ export type ManualLayoutSketchHoverModuleFlowArgs = {
     args: FindSketchModuleBoxAtPointArgs
   ) => FindSketchModuleBoxAtPointResult | null;
   __wp_readSketchBoxDividers: (box: unknown) => SketchBoxDividerState[];
-  __wp_readSketchBoxHorizontalDividers: (box: unknown) => SketchBoxHorizontalDividerState[];
+  __wp_readSketchBoxHorizontalDividers?: (box: unknown) => SketchBoxHorizontalDividerState[];
   __wp_resolveSketchBoxSegments: (args: ResolveSketchBoxSegmentsArgs) => SketchBoxSegmentState[];
   __wp_pickSketchBoxSegment: (args: PickSketchBoxSegmentArgs) => SketchBoxSegmentState | null;
-  __wp_resolveSketchBoxVerticalSegments: (
+  __wp_resolveSketchBoxVerticalSegments?: (
     args: ResolveSketchBoxVerticalSegmentsArgs
   ) => SketchBoxVerticalSegmentState[];
-  __wp_pickSketchBoxVerticalSegment: (
+  __wp_pickSketchBoxVerticalSegment?: (
     args: PickSketchBoxVerticalSegmentArgs
   ) => SketchBoxVerticalSegmentState | null;
   __wp_findNearestSketchBoxDivider: (
     args: FindNearestSketchBoxDividerArgs
   ) => FindNearestSketchBoxDividerResult | null;
-  __wp_findNearestSketchBoxHorizontalDivider: (
+  __wp_findNearestSketchBoxHorizontalDivider?: (
     args: FindNearestSketchBoxHorizontalDividerArgs
   ) => FindNearestSketchBoxHorizontalDividerResult | null;
   __wp_resolveSketchBoxDividerPlacement: (args: SketchBoxDividerPlacementArgs) => SketchBoxDividerPlacement;
-  __wp_resolveSketchBoxHorizontalDividerPlacement: (
+  __wp_resolveSketchBoxHorizontalDividerPlacement?: (
     args: SketchBoxHorizontalDividerPlacementArgs
   ) => SketchBoxHorizontalDividerPlacement;
   __wp_readSketchBoxDividerXNorm: (box: unknown) => number | null;

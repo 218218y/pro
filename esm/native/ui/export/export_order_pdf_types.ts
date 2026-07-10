@@ -54,7 +54,7 @@ export type ExportOrderPdfDeps = {
     app: AppContainer,
     op: string,
     err: unknown,
-    extra?: { throttleMs?: number; failFast?: boolean } | null | undefined
+    extra?: { throttleMs?: number; failFast?: boolean } | null
   ) => void;
   _getProjectName: (app: AppContainer) => string;
   _requireApp: (app: unknown) => AppContainer;
@@ -83,12 +83,7 @@ export type ExportOrderPdfDeps = {
   _getRenderCore: (app: AppContainer) => { renderer: unknown; scene: unknown } | null;
   _createDomCanvas: (app: AppContainer, width: number, height: number) => HTMLCanvasElement;
   _getRendererCanvasSource: (renderer: { domElement: unknown }) => HTMLCanvasElement;
-  _reportExportError: (
-    app: AppContainer,
-    op: string,
-    err: unknown,
-    extra?: UnknownRecord | null | undefined
-  ) => void;
+  _reportExportError: (app: AppContainer, op: string, err: unknown, extra?: UnknownRecord | null) => void;
   _downloadBlob: (app: AppContainer, blob: Blob, fileName: string) => void;
   _guard: (app: AppContainer, op: string, fn: () => unknown) => unknown;
   hasDom: (app: AppContainer) => boolean;

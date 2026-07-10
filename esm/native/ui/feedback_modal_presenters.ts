@@ -95,7 +95,7 @@ export function openCustomConfirm(
   title: unknown,
   message: unknown,
   onConfirm: UiFeedbackConfirmCallback | null | undefined,
-  onCancel?: UiFeedbackConfirmCallback | null | undefined
+  onCancel?: UiFeedbackConfirmCallback | null
 ): void {
   const reactFeedback = getReactFeedback(App);
   if (reactFeedback && typeof reactFeedback.confirm === 'function') {

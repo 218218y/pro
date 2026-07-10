@@ -53,7 +53,7 @@ export function ensureToastContainer(App: AppContainer, doc: Document): HTMLElem
   return container || null;
 }
 
-export function normalizeToastKind(type: ToastType | string): ToastType {
+export function normalizeToastKind(type: string): ToastType {
   return type === 'error' || type === 'info' || type === 'success' ? type : 'success';
 }
 

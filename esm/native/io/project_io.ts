@@ -61,10 +61,7 @@ function __projectIoReportNonFatal(
  * @param {UnknownRecord} [options]
  * @returns {InstalledProjectIoService}
  */
-export function installProjectIo(
-  App: AppContainer,
-  options: UnknownRecord | undefined = undefined
-): InstalledProjectIoService {
+export function installProjectIo(App: AppContainer, options?: UnknownRecord): InstalledProjectIoService {
   const opts = readOptionsRecord(options);
   if (!App || typeof App !== 'object') {
     throw new Error('[WardrobePro][ProjectIO] App container is required.');

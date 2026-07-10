@@ -43,7 +43,7 @@ function installConfigCompoundsSurface(
 
 export function installConfigCompoundsService(
   App: AppContainer,
-  opts: ConfigCompoundsSeedOptions | undefined = undefined
+  opts?: ConfigCompoundsSeedOptions
 ): ConfigCompoundsServiceLike {
   if (!App || typeof App !== 'object') throw new Error('installConfigCompoundsService(App): App is required');
 
@@ -51,11 +51,9 @@ export function installConfigCompoundsService(
 
   const service = installConfigCompoundsSurface(App, opts);
 
-  try {
-    seedConfigCompounds(App, opts);
-  } catch {
+  void seedConfigCompounds(App, opts).catch(() => {
     // ignore
-  }
+  });
 
   return service;
 }

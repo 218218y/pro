@@ -17,9 +17,7 @@ function isDoorUserDataLike(value: unknown): value is DoorUserDataLike {
   return isRecord(value);
 }
 
-export function getGroupUserData(
-  group: DoorVisualEntryLike['group'] | DrawerVisualEntryLike['group'] | null
-): DoorUserDataLike | null {
+export function getGroupUserData(group: DoorVisualEntryLike['group'] | null): DoorUserDataLike | null {
   const userData = group?.userData ?? null;
   return isDoorUserDataLike(userData) ? userData : null;
 }

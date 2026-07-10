@@ -34,7 +34,7 @@ function withDetail(base: string, detail?: string): string {
 
 export function getOrderPdfOverlayDraftActionToast(
   result: OrderPdfOverlayDraftActionResult,
-  inlineConfirm?: InlineDetailsConfirmState | null | undefined
+  inlineConfirm?: InlineDetailsConfirmState | null
 ): OrderPdfOverlayDraftActionToast | null {
   switch (result.kind) {
     case 'initial-load':
@@ -60,9 +60,9 @@ export function getOrderPdfOverlayDraftActionToast(
 }
 
 export function applyOrderPdfOverlayDraftActionToast(args: {
-  fb: { toast?: ((message: string, kind: ToastLevel) => void) | null | undefined };
+  fb: { toast?: ((message: string, kind: ToastLevel) => void) | null };
   result: OrderPdfOverlayDraftActionResult;
-  inlineConfirm?: InlineDetailsConfirmState | null | undefined;
+  inlineConfirm?: InlineDetailsConfirmState | null;
 }): OrderPdfOverlayDraftActionToast | null {
   const { fb, result, inlineConfirm } = args;
   const toast = getOrderPdfOverlayDraftActionToast(result, inlineConfirm);

@@ -116,7 +116,7 @@ export function openConfirmViaWindow(
   App: AppContainer,
   message: unknown,
   onConfirm: UiFeedbackConfirmCallback | null | undefined,
-  onCancel?: UiFeedbackConfirmCallback | null | undefined
+  onCancel?: UiFeedbackConfirmCallback | null
 ): void {
   const doc = getDocumentMaybe(App);
   if (!doc) return;

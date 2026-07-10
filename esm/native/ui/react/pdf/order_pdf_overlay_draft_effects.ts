@@ -99,7 +99,7 @@ export function useOrderPdfOverlayDraftEffects(args: {
     }
 
     let cancelled = false;
-    (async () => {
+    void (async () => {
       const result = await loadOrderPdfInitialDraftWithDeps({
         app,
         ensureExportApiReady,
@@ -150,7 +150,7 @@ export function useOrderPdfOverlayDraftEffects(args: {
     autoRefreshAttemptedRef.current = true;
 
     let cancelled = false;
-    (async () => {
+    void (async () => {
       const seedResult = await readOrderPdfDraftSeedFromProjectWithDeps({
         app,
         ensureExportApiReady,

@@ -285,7 +285,7 @@ export function readCurtainResolver(value: unknown): BuilderCurtainResolver | un
   const resolver: BuilderCurtainResolver = (
     doorOrPartId: number | string,
     suffixOrDefault: string | null | undefined,
-    defaultCurtain?: string | null | undefined
+    defaultCurtain?: string | null
   ): string | null | undefined => {
     const args =
       typeof doorOrPartId === 'number'
