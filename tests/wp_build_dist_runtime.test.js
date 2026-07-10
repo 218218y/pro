@@ -134,7 +134,7 @@ test('build-dist TypeScript resolver requires local TypeScript by default', () =
   assert.equal(resolved.kind, 'node-script');
   assert.equal(resolved.cmd, process.execPath);
   assert.deepEqual(resolved.args, [localTsc]);
-  assert.equal(resolved.source, 'local-node-modules');
+  assert.equal(resolved.source, 'local-node-modules-lib-fallback');
 });
 
 test('build-dist TypeScript resolver allows system tsc only in explicit manual mode', () => {

@@ -76,7 +76,7 @@ test('typecheck refuses WP_TSC_BIN and system tsc unless manual fallback is expl
   assert.equal(local.kind, 'node-script');
   assert.equal(local.command, process.execPath);
   assert.deepEqual(local.argsPrefix, [localTsc]);
-  assert.equal(local.source, 'local-node-modules');
+  assert.equal(local.source, 'local-node-modules-lib-fallback');
 });
 
 test('TypeScript resolver exposes node-script, direct-bin, manual-bin and system command plans', () => {
@@ -90,7 +90,7 @@ test('TypeScript resolver exposes node-script, direct-bin, manual-bin and system
   assert.equal(nodeScript.command, '/custom/node');
   assert.deepEqual(nodeScript.argsPrefix, [localLibTsc]);
   assert.equal(nodeScript.script, localLibTsc);
-  assert.equal(nodeScript.source, 'local-node-modules');
+  assert.equal(nodeScript.source, 'local-node-modules-lib-fallback');
 
   const directRoot = tempDir();
   const directTsc = path.join(
@@ -107,6 +107,25 @@ test('TypeScript resolver exposes node-script, direct-bin, manual-bin and system
   assert.equal(directBin.command, directTsc);
   assert.deepEqual(directBin.argsPrefix, []);
   assert.equal(directBin.source, 'local-node-modules-bin');
+
+  const fullInstallRoot = tempDir();
+  const packageBin = path.join(
+    fullInstallRoot,
+    'node_modules',
+    '.bin',
+    process.platform === 'win32' ? 'tsc.cmd' : 'tsc'
+  );
+  const packageLib = path.join(fullInstallRoot, 'node_modules', 'typescript', 'lib', 'tsc.js');
+  fs.mkdirSync(path.dirname(packageBin), { recursive: true });
+  fs.mkdirSync(path.dirname(packageLib), { recursive: true });
+  fs.writeFileSync(packageBin, '#!/usr/bin/env node\n', 'utf8');
+  fs.writeFileSync(packageLib, '// fallback only\n', 'utf8');
+
+  const fullInstall = resolveTypeScriptTool(fullInstallRoot, { node: '/custom/node', env: {} });
+  assert.equal(fullInstall.kind, 'direct-bin');
+  assert.equal(fullInstall.command, packageBin);
+  assert.deepEqual(fullInstall.argsPrefix, []);
+  assert.equal(fullInstall.source, 'local-node-modules-bin');
 
   const manual = resolveTypeScriptTool(tempDir(), {
     env: { WP_ALLOW_SYSTEM_TSC: '1', WP_TSC_BIN: '/manual/tsc' },

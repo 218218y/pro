@@ -54,7 +54,7 @@ test('lint strategy matrix document is generated from the live eslint config', a
 
 test('package promotes modern lint while keeping retired legacy alias', () => {
   const pkg = JSON.parse(read('package.json'));
-  assert.equal(pkg.devDependencies.typescript, '6.0.3');
+  assert.equal(pkg.devDependencies.typescript, '7.0.2');
   assert.equal(pkg.devDependencies.oxlint, '1.73.0');
   assert.equal(pkg.devDependencies['oxlint-tsgolint'], '0.24.0');
   assert.equal(pkg.scripts.lint, 'npm run lint:modern');

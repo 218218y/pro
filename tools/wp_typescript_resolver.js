@@ -87,21 +87,21 @@ export function resolveLocalTypeScriptTool(
 ) {
   const directBinNames = process.platform === 'win32' ? ['tsc.cmd', 'tsc'] : ['tsc'];
   const localCandidates = [
-    {
-      kind: 'node-script',
-      path: path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js'),
-      source: 'local-node-modules',
-    },
-    {
-      kind: 'node-script',
-      path: path.join(root, 'node_modules', 'typescript', 'bin', 'tsc'),
-      source: 'local-node-modules',
-    },
     ...directBinNames.map(name => ({
       kind: 'direct-bin',
       path: path.join(root, 'node_modules', '.bin', name),
       source: 'local-node-modules-bin',
     })),
+    {
+      kind: 'direct-bin',
+      path: path.join(root, 'node_modules', 'typescript', 'bin', 'tsc'),
+      source: 'local-node-modules-package-bin',
+    },
+    {
+      kind: 'node-script',
+      path: path.join(root, 'node_modules', 'typescript', 'lib', 'tsc.js'),
+      source: 'local-node-modules-lib-fallback',
+    },
   ];
   const candidate = existingCandidate(localCandidates, existsImpl);
 

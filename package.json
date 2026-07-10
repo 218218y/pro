@@ -47,7 +47,7 @@
     "lint": "npm run lint:modern",
     "lint:migrate": "node tools/wp_lint.js --profile migrate",
     "lint:runtime": "node tools/wp_lint.js --profile runtime",
-    "lint:strict": "node tools/wp_lint.js --profile migrate --strict",
+    "lint:strict": "npm run lint:modern",
     "modernize:vars": "node tools/wp_modernize_vars.js",
     "release": "node tools/wp_release.js --build-mode client",
     "release:debug": "node tools/wp_release.js --debug",
@@ -324,7 +324,7 @@
     "terser": "^5.49.0",
     "three": "^0.185.0",
     "tsx": "^4.19.0",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "vite": "^8.1.4"
   },
   "engines": {
