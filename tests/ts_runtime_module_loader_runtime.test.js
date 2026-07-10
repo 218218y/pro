@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { createTsRuntimeModuleLoader, loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
@@ -175,7 +176,7 @@ test('ts runtime loader evaluate errors include the fixture filename', () => {
 });
 
 test('runtime tests do not reintroduce per-test TS VM loaders', () => {
-  const testsDir = new URL('./', import.meta.url);
+  const testsDir = fileURLToPath(new URL('./', import.meta.url));
   const allowedRelPaths = new Set([
     'root_surface_ast_guard.test.js',
     '_ts_runtime_module_loader.mjs',
@@ -202,7 +203,7 @@ test('runtime tests do not reintroduce per-test TS VM loaders', () => {
       }
       if (!/\.(?:js|mjs|ts|tsx)$/.test(entry.name)) continue;
 
-      const rel = path.relative(testsDir.pathname, absolute).replaceAll(path.sep, '/');
+      const rel = path.relative(testsDir, absolute).replaceAll(path.sep, '/');
       if (allowedRelPaths.has(rel)) continue;
 
       const source = fs.readFileSync(absolute, 'utf8');
@@ -212,7 +213,7 @@ test('runtime tests do not reintroduce per-test TS VM loaders', () => {
     }
   }
 
-  scan(testsDir.pathname);
+  scan(testsDir);
 
   assert.deepEqual(failures, []);
 });

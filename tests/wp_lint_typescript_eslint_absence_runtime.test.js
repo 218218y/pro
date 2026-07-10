@@ -4,9 +4,9 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
+const ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const REMOVED_SCOPE = '@' + 'typescript' + '-' + 'eslint';
 const REMOVED_PARSER = REMOVED_SCOPE + '/parser';
 const REMOVED_PLUGIN = REMOVED_SCOPE + '/eslint-plugin';

@@ -101,16 +101,6 @@ export function resolveLocalTypeScriptTool(
             path: libFallback,
             source: 'local-node-modules-lib-fallback',
           },
-          {
-            kind: 'direct-bin',
-            path: path.join(root, 'node_modules', '.bin', 'tsc.cmd'),
-            source: 'local-node-modules-bin',
-          },
-          {
-            kind: 'direct-bin',
-            path: path.join(root, 'node_modules', '.bin', 'tsc'),
-            source: 'local-node-modules-bin',
-          },
         ]
       : [
           {

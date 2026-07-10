@@ -93,35 +93,29 @@ test('TypeScript resolver exposes node-script, direct-bin, manual-bin and system
   assert.equal(nodeScript.source, 'local-node-modules-lib-fallback');
 
   const directRoot = tempDir();
-  const directTsc = path.join(
-    directRoot,
-    'node_modules',
-    '.bin',
-    process.platform === 'win32' ? 'tsc.cmd' : 'tsc'
-  );
+  const directTsc = path.join(directRoot, 'node_modules', '.bin', 'tsc');
   fs.mkdirSync(path.dirname(directTsc), { recursive: true });
   fs.writeFileSync(directTsc, '#!/usr/bin/env node\n', 'utf8');
 
-  const directBin = resolveTypeScriptTool(directRoot, { env: {} });
+  const directBin = resolveTypeScriptTool(directRoot, { env: {}, platform: 'linux' });
   assert.equal(directBin.kind, 'direct-bin');
   assert.equal(directBin.command, directTsc);
   assert.deepEqual(directBin.argsPrefix, []);
   assert.equal(directBin.source, 'local-node-modules-bin');
 
   const fullInstallRoot = tempDir();
-  const packageBin = path.join(
-    fullInstallRoot,
-    'node_modules',
-    '.bin',
-    process.platform === 'win32' ? 'tsc.cmd' : 'tsc'
-  );
+  const packageBin = path.join(fullInstallRoot, 'node_modules', '.bin', 'tsc');
   const packageLib = path.join(fullInstallRoot, 'node_modules', 'typescript', 'lib', 'tsc.js');
   fs.mkdirSync(path.dirname(packageBin), { recursive: true });
   fs.mkdirSync(path.dirname(packageLib), { recursive: true });
   fs.writeFileSync(packageBin, '#!/usr/bin/env node\n', 'utf8');
   fs.writeFileSync(packageLib, '// fallback only\n', 'utf8');
 
-  const fullInstall = resolveTypeScriptTool(fullInstallRoot, { node: '/custom/node', env: {} });
+  const fullInstall = resolveTypeScriptTool(fullInstallRoot, {
+    node: '/custom/node',
+    env: {},
+    platform: 'linux',
+  });
   assert.equal(fullInstall.kind, 'direct-bin');
   assert.equal(fullInstall.command, packageBin);
   assert.deepEqual(fullInstall.argsPrefix, []);
@@ -166,6 +160,21 @@ test('TypeScript resolver avoids npm .cmd shims on Windows local installs', () =
   assert.deepEqual(resolved.argsPrefix, [packageBin]);
   assert.equal(resolved.source, 'local-node-modules-package-bin');
   assert.equal(resolved.bin, packageBin);
+});
+
+test('TypeScript resolver rejects a Windows install that exposes only the unsafe tsc.cmd shim', () => {
+  const root = tempDir();
+  const cmdShim = path.join(root, 'node_modules', '.bin', 'tsc.cmd');
+  fs.mkdirSync(path.dirname(cmdShim), { recursive: true });
+  fs.writeFileSync(cmdShim, '@ECHO off\r\n', 'utf8');
+
+  const resolved = resolveTypeScriptTool(root, {
+    node: 'C:\\Program Files\\nodejs\\node.exe',
+    env: {},
+    platform: 'win32',
+  });
+
+  assert.equal(resolved, null);
 });
 
 test('typecheck flow runs Windows package bin through node instead of tsc.cmd', () => {

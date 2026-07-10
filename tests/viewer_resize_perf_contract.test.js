@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const PROJECT_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
+const PROJECT_ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const SOURCE = fs.readFileSync(
   path.join(PROJECT_ROOT, 'esm/native/ui/interactions/viewer_resize.ts'),
   'utf8'
