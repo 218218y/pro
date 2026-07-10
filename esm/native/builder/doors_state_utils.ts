@@ -38,8 +38,6 @@ function asRecordOrNull(x: unknown): UnknownRecord | null {
   return isRecord(x) ? x : null;
 }
 
-const hasOwn = Object.prototype.hasOwnProperty;
-
 export function makeDoorStateAccessors(cfg: unknown): BuilderDoorStateAccessorsLike {
   const c = asRecord(cfg);
 
@@ -55,7 +53,7 @@ export function makeDoorStateAccessors(cfg: unknown): BuilderDoorStateAccessorsL
     if (!m) return true;
 
     const base = `split_d${doorIdNum}`;
-    if (hasOwn.call(m, base)) return m[base] !== false;
+    if (Object.prototype.hasOwnProperty.call(m, base)) return m[base] !== false;
 
     return true;
   }
@@ -66,7 +64,7 @@ export function makeDoorStateAccessors(cfg: unknown): BuilderDoorStateAccessorsL
     if (!m) return false;
 
     const base = `splitb_d${doorIdNum}`;
-    if (hasOwn.call(m, base)) return m[base] === true;
+    if (Object.prototype.hasOwnProperty.call(m, base)) return m[base] === true;
 
     return false;
   }
@@ -79,10 +77,10 @@ export function makeDoorStateAccessors(cfg: unknown): BuilderDoorStateAccessorsL
     const cm = asRecord(c['curtainMap']);
     if (typeof doorIdNumOrPartId === 'string') {
       const partId = doorIdNumOrPartId;
-      if (hasOwn.call(cm, partId)) return readPartColorValue(cm[partId]);
+      if (Object.prototype.hasOwnProperty.call(cm, partId)) return readPartColorValue(cm[partId]);
       if (partId.endsWith('_top') || partId.endsWith('_mid') || partId.endsWith('_bot')) {
         const full = partId.replace(/_(top|mid|bot)$/i, '_full');
-        if (hasOwn.call(cm, full)) return readPartColorValue(cm[full]);
+        if (Object.prototype.hasOwnProperty.call(cm, full)) return readPartColorValue(cm[full]);
       }
       return readPartColorValue(suffixOrDefaultValue);
     }
@@ -90,10 +88,10 @@ export function makeDoorStateAccessors(cfg: unknown): BuilderDoorStateAccessorsL
     const doorIdNum = doorIdNumOrPartId;
     const suffix = typeof suffixOrDefaultValue === 'string' ? suffixOrDefaultValue : 'full';
     const key = `d${doorIdNum}_${suffix}`;
-    if (hasOwn.call(cm, key)) return readPartColorValue(cm[key]);
+    if (Object.prototype.hasOwnProperty.call(cm, key)) return readPartColorValue(cm[key]);
     if (suffix === 'top' || suffix === 'mid' || suffix === 'bot') {
       const full = `d${doorIdNum}_full`;
-      if (hasOwn.call(cm, full)) return readPartColorValue(cm[full]);
+      if (Object.prototype.hasOwnProperty.call(cm, full)) return readPartColorValue(cm[full]);
     }
     return readPartColorValue(defaultValue);
   };
@@ -101,7 +99,7 @@ export function makeDoorStateAccessors(cfg: unknown): BuilderDoorStateAccessorsL
   function grooveVal(doorIdNum: number, suffix: string, fullDefault: boolean): boolean {
     const gm = asRecord(c['groovesMap']);
     const k = `groove_d${doorIdNum}_${suffix}`;
-    if (hasOwn.call(gm, k)) return readBool(gm[k]);
+    if (Object.prototype.hasOwnProperty.call(gm, k)) return readBool(gm[k]);
     return readBool(fullDefault);
   }
 
@@ -151,7 +149,7 @@ function isBottomSplitBotPart(
   if (!bm) return false;
 
   const key = baseId.startsWith('splitb_') ? baseId : `splitb_${baseId}`;
-  if (hasOwn.call(bm, key)) return bm[key] === true;
+  if (Object.prototype.hasOwnProperty.call(bm, key)) return bm[key] === true;
 
   return false;
 }
@@ -180,7 +178,7 @@ export function makeHandleTypeResolver(args: {
 
   const readOverride = (key: string): unknown => {
     if (!hm || !key) return undefined;
-    if (!hasOwn.call(hm, key)) return undefined;
+    if (!Object.prototype.hasOwnProperty.call(hm, key)) return undefined;
     const v = hm[key];
     // Empty/cleared values behave like "no override".
     if (v === undefined || v === null || v === '') return undefined;

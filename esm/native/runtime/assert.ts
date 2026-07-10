@@ -108,8 +108,12 @@ export function assertDeps(app: unknown, label = ''): Deps3D {
 export function assertDep(app: unknown, key: string, label = ''): unknown {
   const deps = assertDeps(app, label);
   const where = label ? ` (${label})` : '';
-  const hasOwn = Object.prototype.hasOwnProperty;
-  if (!key || typeof key !== 'string' || !hasOwn.call(deps, key) || deps[key] == null) {
+  if (
+    !key ||
+    typeof key !== 'string' ||
+    !Object.prototype.hasOwnProperty.call(deps, key) ||
+    deps[key] == null
+  ) {
     throw new Error(
       `[WardrobePro][ESM] Missing dep: app.deps.${String(key || '<?>')}${where}. Inject via boot({ deps: { ${String(
         key || 'dep'

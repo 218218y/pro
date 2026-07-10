@@ -69,48 +69,28 @@ export function copyActionStubMeta<T extends ActionAccessFn>(target: T, source: 
 }
 
 const META_ACTIONS_STUB = {
-  uiOnly(meta?: ActionMetaLike, source?: string): ActionMetaLike {
-    return mergeMetaProfile(meta, META_STUB_UI_ONLY, source);
-  },
-  restore(meta?: ActionMetaLike, source?: string): ActionMetaLike {
-    return mergeMetaProfile(meta, META_STUB_RESTORE, source);
-  },
-  interactive(meta?: ActionMetaLike, source?: string): ActionMetaLike {
-    return mergeMetaProfile(meta, META_STUB_INTERACTIVE, source);
-  },
-  transient(meta?: ActionMetaLike, source?: string): ActionMetaLike {
-    return mergeMetaProfile(meta, META_STUB_TRANSIENT, source);
-  },
-  merge(meta?: ActionMetaLike, defaults?: ActionMetaLike, defaultSource?: string): ActionMetaLike {
-    return mergeMetaProfile(meta, defaults, defaultSource);
-  },
-  noBuild(meta?: ActionMetaLike, source?: string): ActionMetaLike {
-    return mergeMetaProfile(meta, META_STUB_NO_BUILD, source);
-  },
-  noHistory(meta?: ActionMetaLike, source?: string): ActionMetaLike {
-    return mergeMetaProfile(meta, META_STUB_NO_HISTORY, source);
-  },
-  uiOnlyImmediate(source?: string): ActionMetaLike {
-    return buildMetaUiOnlyImmediate(source);
-  },
-  interactiveImmediate(source?: string): ActionMetaLike {
-    return buildMetaInteractiveImmediate(source);
-  },
-  noBuildImmediate(source?: string): ActionMetaLike {
-    return buildMetaNoBuildImmediate(source);
-  },
-  noHistoryImmediate(source?: string): ActionMetaLike {
-    return buildMetaNoHistoryImmediate(source);
-  },
-  noHistoryForceBuildImmediate(source?: string): ActionMetaLike {
-    return buildMetaNoHistoryForceBuildImmediate(source);
-  },
-  src(source: string): ActionMetaLike {
-    return buildMetaSource(source);
-  },
-  srcImmediate(source: string): ActionMetaLike {
-    return buildMetaSourceImmediate(source);
-  },
+  uiOnly: (meta?: ActionMetaLike, source?: string): ActionMetaLike =>
+    mergeMetaProfile(meta, META_STUB_UI_ONLY, source),
+  restore: (meta?: ActionMetaLike, source?: string): ActionMetaLike =>
+    mergeMetaProfile(meta, META_STUB_RESTORE, source),
+  interactive: (meta?: ActionMetaLike, source?: string): ActionMetaLike =>
+    mergeMetaProfile(meta, META_STUB_INTERACTIVE, source),
+  transient: (meta?: ActionMetaLike, source?: string): ActionMetaLike =>
+    mergeMetaProfile(meta, META_STUB_TRANSIENT, source),
+  merge: (meta?: ActionMetaLike, defaults?: ActionMetaLike, defaultSource?: string): ActionMetaLike =>
+    mergeMetaProfile(meta, defaults, defaultSource),
+  noBuild: (meta?: ActionMetaLike, source?: string): ActionMetaLike =>
+    mergeMetaProfile(meta, META_STUB_NO_BUILD, source),
+  noHistory: (meta?: ActionMetaLike, source?: string): ActionMetaLike =>
+    mergeMetaProfile(meta, META_STUB_NO_HISTORY, source),
+  uiOnlyImmediate: (source?: string): ActionMetaLike => buildMetaUiOnlyImmediate(source),
+  interactiveImmediate: (source?: string): ActionMetaLike => buildMetaInteractiveImmediate(source),
+  noBuildImmediate: (source?: string): ActionMetaLike => buildMetaNoBuildImmediate(source),
+  noHistoryImmediate: (source?: string): ActionMetaLike => buildMetaNoHistoryImmediate(source),
+  noHistoryForceBuildImmediate: (source?: string): ActionMetaLike =>
+    buildMetaNoHistoryForceBuildImmediate(source),
+  src: (source: string): ActionMetaLike => buildMetaSource(source),
+  srcImmediate: (source: string): ActionMetaLike => buildMetaSourceImmediate(source),
   setDirty: markActionStub(function setDirty(): unknown {
     return undefined;
   }, 'meta:setDirty'),

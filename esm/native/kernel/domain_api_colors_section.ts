@@ -23,9 +23,9 @@ interface InstallDomainApiColorsSectionArgs {
   select: UnknownRecord & { colors: ColorsSelect };
   colorsActions: ColorsActionsLike;
   configActions: ConfigActionsNamespaceLike;
-  _cfg(): UnknownRecord;
-  _map(mapName: unknown): UnknownRecord;
-  _meta(meta: unknown, source: string): ActionMetaLike;
+  _cfg: () => UnknownRecord;
+  _map: (mapName: unknown) => UnknownRecord;
+  _meta: (meta: ActionMetaLike | UnknownRecord | null | undefined, source: string) => ActionMetaLike;
 }
 
 function asUnknownArray(value: unknown): unknown[] {

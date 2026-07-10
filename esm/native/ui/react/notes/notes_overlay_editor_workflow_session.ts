@@ -10,8 +10,8 @@ import type { UseNotesOverlayEditorWorkflowsArgs } from './notes_overlay_editor_
 import type { NotesOverlayEditorSelectionCore } from './notes_overlay_editor_workflow_selection.js';
 
 export type NotesOverlayEditorSessionCore = {
-  openNoteForEdit(index: number): void;
-  reapplyTypingDefaults(index: number, opts: { color?: string; fontSize?: string; bold?: boolean }): void;
+  openNoteForEdit: (index: number) => void;
+  reapplyTypingDefaults: (index: number, opts: { color?: string; fontSize?: string; bold?: boolean }) => void;
 };
 
 export function useNotesOverlayEditorWorkflowSession(

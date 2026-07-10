@@ -18,6 +18,16 @@ type CreateCloudSyncStorageWrapArgs = {
   schedulePush: () => void;
 };
 
+type StorageWriteMethodKey = 'setString' | 'setJSON' | 'remove';
+
+function readStorageWriteMethod(storage: StorageLike, key: 'setString'): StorageLike['setString'];
+function readStorageWriteMethod(storage: StorageLike, key: 'setJSON'): StorageLike['setJSON'];
+function readStorageWriteMethod(storage: StorageLike, key: 'remove'): StorageLike['remove'];
+function readStorageWriteMethod(storage: StorageLike, key: StorageWriteMethodKey): unknown {
+  const value: unknown = Reflect.get(storage, key);
+  return typeof value === 'function' ? value : undefined;
+}
+
 export function createCloudSyncStorageWrap(args: CreateCloudSyncStorageWrapArgs): { dispose: () => void } {
   try {
     const keysToSync = new Set(args.keysToSync.map(key => String(key)));
@@ -30,14 +40,22 @@ export function createCloudSyncStorageWrap(args: CreateCloudSyncStorageWrapArgs)
 
     rememberWrappedStorageFns(args.storage);
 
-    const origSetStringProp = args.storage.setString;
-    const origSetJSONProp = args.storage.setJSON;
-    const origRemoveProp = args.storage.remove;
+    const origSetStringProp = readStorageWriteMethod(args.storage, 'setString');
+    const origSetJSONProp = readStorageWriteMethod(args.storage, 'setJSON');
+    const origRemoveProp = readStorageWriteMethod(args.storage, 'remove');
 
     const origSetString =
-      typeof origSetStringProp === 'function' ? origSetStringProp.bind(args.storage) : null;
-    const origSetJSON = typeof origSetJSONProp === 'function' ? origSetJSONProp.bind(args.storage) : null;
-    const origRemove = typeof origRemoveProp === 'function' ? origRemoveProp.bind(args.storage) : null;
+      typeof origSetStringProp === 'function'
+        ? (key: unknown, value: unknown): boolean => origSetStringProp.call(args.storage, key, value)
+        : null;
+    const origSetJSON =
+      typeof origSetJSONProp === 'function'
+        ? (key: unknown, value: unknown): boolean => origSetJSONProp.call(args.storage, key, value)
+        : null;
+    const origRemove =
+      typeof origRemoveProp === 'function'
+        ? (key: unknown): boolean => origRemoveProp.call(args.storage, key)
+        : null;
 
     if (origSetString) {
       args.storage.setString = (k: unknown, v: unknown): boolean => {

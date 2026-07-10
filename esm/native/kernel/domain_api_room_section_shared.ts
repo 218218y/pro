@@ -48,12 +48,12 @@ export interface InstallDomainApiRoomSectionArgs {
   actions: ActionsNamespaceLike;
   roomActions: RoomActionsLike;
   modulesActions: ModulesActionsLike;
-  _cfg(): ConfigStateLike;
-  _ui(): UiStateLike;
-  _rt(): RuntimeStateLike;
-  _captureConfigSnapshot(): ConfigStateLike;
-  _ensureObj(x: unknown): UnknownRecord;
-  _meta(meta: ActionMetaLike | UnknownRecord | null | undefined, source: string): ActionMetaLike;
+  _cfg: () => ConfigStateLike;
+  _ui: () => UiStateLike;
+  _rt: () => RuntimeStateLike;
+  _captureConfigSnapshot: () => ConfigStateLike;
+  _ensureObj: (x: unknown) => UnknownRecord;
+  _meta: (meta: ActionMetaLike | UnknownRecord | null | undefined, source: string) => ActionMetaLike;
   _metaNoBuild: MetaNoBuildFn;
   _metaNoBuildNoHistory: MetaNoBuildFn;
   _domainApiReportNonFatal: ReportFn;

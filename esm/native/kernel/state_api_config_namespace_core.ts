@@ -27,12 +27,12 @@ interface StateApiConfigNamespaceCoreContext {
   actions: ActionsNamespaceLike;
   configNs: ConfigActionsNamespaceLike;
   store: RootStoreLike;
-  readCfgSnapshot(): UnknownRecord;
-  readUiSnapshot(): UnknownRecord;
-  normMeta(meta: unknown, source: string): ActionMetaLike;
-  safeCall(fn: () => unknown): unknown;
-  shallowCloneObj(v: unknown): UnknownRecord;
-  commitConfigPatch(patch: Record<string, unknown>, meta: ActionMetaLike): unknown;
+  readCfgSnapshot: () => UnknownRecord;
+  readUiSnapshot: () => UnknownRecord;
+  normMeta: (meta: unknown, source: string) => ActionMetaLike;
+  safeCall: (fn: () => unknown) => unknown;
+  shallowCloneObj: (v: unknown) => UnknownRecord;
+  commitConfigPatch: (patch: Record<string, unknown>, meta: ActionMetaLike) => unknown;
   projectConfigReplaceKeys: Record<string, true>;
   modulesGeometryReplaceKeys: Record<string, true>;
 }

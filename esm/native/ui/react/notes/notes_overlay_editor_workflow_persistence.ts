@@ -21,13 +21,13 @@ import {
 } from './notes_overlay_editor_workflow_persistence_runtime.js';
 
 export type NotesOverlayEditorPersistenceCore = {
-  captureAndCommitDraft(source: string): void;
-  captureActiveDraftIfDirty(index: number): void;
-  scheduleTypingPersist(source: string): void;
-  captureDraftOnly(index: number): void;
-  persistActiveNote(index: number, stylePatch: Partial<SavedNoteStyle> | null, source: string): void;
-  updateNoteStyleDefaults(index: number, patch: Partial<SavedNoteStyle>, source: string): void;
-  requestDeleteNote(index: number): void;
+  captureAndCommitDraft: (source: string) => void;
+  captureActiveDraftIfDirty: (index: number) => void;
+  scheduleTypingPersist: (source: string) => void;
+  captureDraftOnly: (index: number) => void;
+  persistActiveNote: (index: number, stylePatch: Partial<SavedNoteStyle> | null, source: string) => void;
+  updateNoteStyleDefaults: (index: number, patch: Partial<SavedNoteStyle>, source: string) => void;
+  requestDeleteNote: (index: number) => void;
 };
 
 export function useNotesOverlayEditorWorkflowPersistence(

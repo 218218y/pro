@@ -16,14 +16,36 @@ type BrowserPerformanceLike = {
 
 type DepsBrowserBag = Partial<BrowserDeps>;
 
-type WindowMethod<Args extends unknown[], Result> = (...args: Args) => Result;
+type BoundWindowMethodKey =
+  | 'setTimeout'
+  | 'setInterval'
+  | 'requestAnimationFrame'
+  | 'cancelAnimationFrame'
+  | 'queueMicrotask'
+  | 'fetch';
 
-function bindWindowMethod<Args extends unknown[], Result>(
+function readWindowMethod(target: BrowserWindowLike | null, key: 'setTimeout'): Window['setTimeout'] | null;
+function readWindowMethod(target: BrowserWindowLike | null, key: 'setInterval'): Window['setInterval'] | null;
+function readWindowMethod(
   target: BrowserWindowLike | null,
-  method: WindowMethod<Args, Result> | null | undefined
-): WindowMethod<Args, Result> | null {
-  if (!target || typeof method !== 'function') return null;
-  return (...args: Args) => method.apply(target, args);
+  key: 'requestAnimationFrame'
+): Window['requestAnimationFrame'] | null;
+function readWindowMethod(
+  target: BrowserWindowLike | null,
+  key: 'cancelAnimationFrame'
+): Window['cancelAnimationFrame'] | null;
+function readWindowMethod(
+  target: BrowserWindowLike | null,
+  key: 'queueMicrotask'
+): NonNullable<BrowserWindowLike['queueMicrotask']> | null;
+function readWindowMethod(
+  target: BrowserWindowLike | null,
+  key: 'fetch'
+): NonNullable<BrowserWindowLike['fetch']> | null;
+function readWindowMethod(target: BrowserWindowLike | null, key: BoundWindowMethodKey): unknown {
+  if (!target) return null;
+  const value: unknown = Reflect.get(target, key);
+  return typeof value === 'function' ? value : null;
 }
 
 function readPerformanceNow(target: BrowserWindowLike | null): (() => number) | null {
@@ -63,8 +85,10 @@ export function buildBrowserDeps(env: {
   // Timing / async surfaces (optional).
   // Bind to the injected Window so callers don't accidentally lose `this`.
   try {
-    const setTimeoutFn = bindWindowMethod(w, w?.setTimeout ?? null);
-    if (setTimeoutFn) browser.setTimeout = setTimeoutFn;
+    const setTimeoutMethod = readWindowMethod(w, 'setTimeout');
+    if (setTimeoutMethod) {
+      browser.setTimeout = (fn, ms) => setTimeoutMethod.call(w, fn, ms);
+    }
   } catch {
     // ignore
   }
@@ -78,8 +102,10 @@ export function buildBrowserDeps(env: {
     // ignore
   }
   try {
-    const setIntervalFn = bindWindowMethod(w, w?.setInterval ?? null);
-    if (setIntervalFn) browser.setInterval = setIntervalFn;
+    const setIntervalMethod = readWindowMethod(w, 'setInterval');
+    if (setIntervalMethod) {
+      browser.setInterval = (fn, ms) => setIntervalMethod.call(w, fn, ms);
+    }
   } catch {
     // ignore
   }
@@ -93,20 +119,26 @@ export function buildBrowserDeps(env: {
     // ignore
   }
   try {
-    const requestAnimationFrameFn = bindWindowMethod(w, w?.requestAnimationFrame ?? null);
-    if (requestAnimationFrameFn) browser.requestAnimationFrame = requestAnimationFrameFn;
+    const requestAnimationFrameMethod = readWindowMethod(w, 'requestAnimationFrame');
+    if (requestAnimationFrameMethod) {
+      browser.requestAnimationFrame = callback => requestAnimationFrameMethod.call(w, callback);
+    }
   } catch {
     // ignore
   }
   try {
-    const cancelAnimationFrameFn = bindWindowMethod(w, w?.cancelAnimationFrame ?? null);
-    if (cancelAnimationFrameFn) browser.cancelAnimationFrame = cancelAnimationFrameFn;
+    const cancelAnimationFrameMethod = readWindowMethod(w, 'cancelAnimationFrame');
+    if (cancelAnimationFrameMethod) {
+      browser.cancelAnimationFrame = handle => cancelAnimationFrameMethod.call(w, handle);
+    }
   } catch {
     // ignore
   }
   try {
-    const queueMicrotaskFn = bindWindowMethod(w, w?.queueMicrotask ?? null);
-    if (queueMicrotaskFn) browser.queueMicrotask = queueMicrotaskFn;
+    const queueMicrotaskMethod = readWindowMethod(w, 'queueMicrotask');
+    if (queueMicrotaskMethod) {
+      browser.queueMicrotask = callback => queueMicrotaskMethod.call(w, callback);
+    }
   } catch {
     // ignore
   }
@@ -119,8 +151,10 @@ export function buildBrowserDeps(env: {
 
   // Networking (optional).
   try {
-    const fetchFn = bindWindowMethod(w, w?.fetch ?? null);
-    if (fetchFn) browser.fetch = fetchFn;
+    const fetchMethod = readWindowMethod(w, 'fetch');
+    if (fetchMethod) {
+      browser.fetch = (input, init) => fetchMethod.call(w, input, init);
+    }
   } catch {
     // ignore
   }

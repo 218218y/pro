@@ -15,9 +15,9 @@ interface StateApiSurfaceUiContext {
   actions: ActionsNamespaceLike;
   metaActionsNs: MetaNs | null;
   uiNs: UiActionsNamespaceLike;
-  commitUiPatch(patch: UiSlicePatch, meta: ActionMetaLike): unknown;
-  isObj(value: unknown): value is UnknownRecord;
-  safeCall(fn: () => unknown): unknown;
+  commitUiPatch: (patch: UiSlicePatch, meta: ActionMetaLike) => unknown;
+  isObj: (value: unknown) => value is UnknownRecord;
+  safeCall: (fn: () => unknown) => unknown;
 }
 
 export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {

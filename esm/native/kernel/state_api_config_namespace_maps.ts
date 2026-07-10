@@ -17,9 +17,9 @@ import {
 
 interface StateApiConfigNamespaceMapsContext {
   configNs: ConfigActionsNamespaceLike;
-  normMeta(meta: unknown, source: string): ActionMetaLike;
-  safeCall(fn: () => unknown): unknown;
-  commitConfigPatch(patch: Record<string, unknown>, meta: ActionMetaLike): unknown;
+  normMeta: (meta: unknown, source: string) => ActionMetaLike;
+  safeCall: (fn: () => unknown) => unknown;
+  commitConfigPatch: (patch: Record<string, unknown>, meta: ActionMetaLike) => unknown;
 }
 
 export function installStateApiConfigNamespaceMaps(ctx: StateApiConfigNamespaceMapsContext): void {

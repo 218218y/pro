@@ -11,14 +11,14 @@ import {
 import type { UseNotesOverlayEditorWorkflowsArgs } from './notes_overlay_editor_workflow_shared.js';
 
 export type NotesOverlayEditorSelectionCore = {
-  getSelectionOffsetsForIndex(index: number): SelectionOffsets | null;
-  restoreSelectionOffsetsForIndex(index: number, offsets: SelectionOffsets | null): void;
-  saveSelectionForIndex(index: number): void;
-  focusEditor(index: number): void;
-  ensureSelectionForIndex(index: number): void;
-  execCommand(cmd: string, value?: string): void;
-  syncToolbarFromSelection(index: number): void;
-  setActive(index: number | null): void;
+  getSelectionOffsetsForIndex: (index: number) => SelectionOffsets | null;
+  restoreSelectionOffsetsForIndex: (index: number, offsets: SelectionOffsets | null) => void;
+  saveSelectionForIndex: (index: number) => void;
+  focusEditor: (index: number) => void;
+  ensureSelectionForIndex: (index: number) => void;
+  execCommand: (cmd: string, value?: string) => void;
+  syncToolbarFromSelection: (index: number) => void;
+  setActive: (index: number | null) => void;
 };
 
 export function useNotesOverlayEditorWorkflowSelection(

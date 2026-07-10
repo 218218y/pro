@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 import {
   collectLintRuleMatrix,
@@ -9,6 +12,36 @@ import {
 
 function read(rel) {
   return fs.readFileSync(new URL('../' + rel, import.meta.url), 'utf8');
+}
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+function readTypeAwareLintReport() {
+  const oxlintBin = path.join(ROOT, 'node_modules', 'oxlint', 'bin', 'oxlint');
+  const result = spawnSync(
+    process.execPath,
+    [
+      oxlintBin,
+      '--type-aware',
+      '-c',
+      'oxlint.config.mjs',
+      '--no-error-on-unmatched-pattern',
+      '--format',
+      'json',
+      'esm',
+      'types',
+    ],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+      maxBuffer: 32 * 1024 * 1024,
+      env: process.env,
+    }
+  );
+
+  assert.ifError(result.error);
+  assert.ok(result.stdout.trim(), result.stderr || 'Oxlint returned no JSON report.');
+  return JSON.parse(result.stdout);
 }
 
 const OLD_LINT_LEGACY = 'lint:' + 'legacy';
@@ -80,5 +113,20 @@ test('package promotes modern lint without retired aliases', () => {
   assert.doesNotMatch(
     pkg.scripts['quality:ts-modern'],
     new RegExp(`${OLD_LINT_LEGACY}|${OLD_PARSER_REMOVAL}`)
+  );
+});
+
+test('zeroed type-aware rules stay globally zero without baselining the remaining debt', () => {
+  const report = readTypeAwareLintReport();
+  const diagnostics = Array.isArray(report.diagnostics) ? report.diagnostics : [];
+  const redundantTypeConstituentDiagnostics = diagnostics.filter(
+    diagnostic => diagnostic?.code === 'typescript(no-redundant-type-constituents)'
+  );
+
+  assert.ok(report.number_of_files > 0, 'The global type-aware scan must cover project files.');
+  assert.equal(
+    redundantTypeConstituentDiagnostics.length,
+    0,
+    'typescript(no-redundant-type-constituents) regressed above its zero contract.'
   );
 });

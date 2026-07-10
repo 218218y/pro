@@ -34,6 +34,16 @@ export type MarkedStorageLike = StorageLike & {
   __wp_cloudSync_origStorageFns?: CloudSyncStorageWrappedFnsLike;
 };
 
+type StorageWriteMethodKey = 'setString' | 'setJSON' | 'remove';
+
+function readStorageWriteMethod(storage: StorageLike, key: 'setString'): StorageLike['setString'];
+function readStorageWriteMethod(storage: StorageLike, key: 'setJSON'): StorageLike['setJSON'];
+function readStorageWriteMethod(storage: StorageLike, key: 'remove'): StorageLike['remove'];
+function readStorageWriteMethod(storage: StorageLike, key: StorageWriteMethodKey): unknown {
+  const value: unknown = Reflect.get(storage, key);
+  return typeof value === 'function' ? value : undefined;
+}
+
 export function isStorageLike(v: unknown): v is StorageLike {
   const rec = asRecord(v);
   return (
@@ -67,9 +77,9 @@ export function restoreWrappedStorageFns(storage: StorageLike): void {
 export function rememberWrappedStorageFns(storage: StorageLike): CloudSyncStorageWrappedFnsLike {
   const marked = storageWithMarker(storage);
   const orig: CloudSyncStorageWrappedFnsLike = {
-    setString: marked.setString,
-    setJSON: marked.setJSON,
-    remove: marked.remove,
+    setString: readStorageWriteMethod(marked, 'setString'),
+    setJSON: readStorageWriteMethod(marked, 'setJSON'),
+    remove: readStorageWriteMethod(marked, 'remove'),
   };
   marked.__wp_cloudSync_origStorageFns = orig;
   return orig;

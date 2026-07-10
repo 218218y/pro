@@ -23,13 +23,13 @@ interface StateApiSurfaceRuntimeModeContext {
   metaActionsNs: MetaNs | null;
   runtimeNs: RuntimeActionsNamespaceLike;
   modeNs: ModeActionsNamespaceLike;
-  commitRuntimePatch(patch: RuntimeSlicePatch, meta: ActionMetaLike): unknown;
-  commitModePatch(patch: Record<string, unknown>, meta: ActionMetaLike): unknown;
-  callStoreWriter(
+  commitRuntimePatch: (patch: RuntimeSlicePatch, meta: ActionMetaLike) => unknown;
+  commitModePatch: (patch: Record<string, unknown>, meta: ActionMetaLike) => unknown;
+  callStoreWriter: (
     methodName: 'setUi' | 'setRuntime' | 'setMode' | 'setModePatch' | 'setConfig' | 'setMeta',
     ...args: readonly unknown[]
-  ): unknown;
-  asObj<T extends object = UnknownRecord>(value: unknown): T | null;
+  ) => unknown;
+  asObj: <T extends object = UnknownRecord>(value: unknown) => T | null;
 }
 
 export function installStateApiRuntimeModeSurface(ctx: StateApiSurfaceRuntimeModeContext): void {

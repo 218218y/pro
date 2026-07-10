@@ -16,9 +16,9 @@ interface StateApiConfigNamespaceScalarsContext {
   actions: ActionsNamespaceLike;
   configNs: ConfigActionsNamespaceLike;
   metaActionsNs: MetaNs | null;
-  normMeta(meta: unknown, source: string): ActionMetaLike;
-  safeCall(fn: () => unknown): unknown;
-  commitConfigPatch(patch: Record<string, unknown>, meta: ActionMetaLike): unknown;
+  normMeta: (meta: unknown, source: string) => ActionMetaLike;
+  safeCall: (fn: () => unknown) => unknown;
+  commitConfigPatch: (patch: Record<string, unknown>, meta: ActionMetaLike) => unknown;
   projectConfigReplaceKeys: Record<string, true>;
 }
 

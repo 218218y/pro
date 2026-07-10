@@ -78,9 +78,9 @@ export type CornerWingInteriorRuntime = {
   __clampHandleAbsYForPart: CornerWingCellFlowParams['helpers']['__clampHandleAbsYForPart'];
   isRecord: CornerWingCellFlowParams['helpers']['isRecord'];
   asRecord: CornerWingCellFlowParams['helpers']['asRecord'];
-  readMirrorLayout(partId: string): MirrorLayoutList | null;
-  readScopedReaderAny(reader: unknown, partId: string): unknown;
-  ensureRenderArray(rec: ValueRecord, key: string): unknown[];
+  readMirrorLayout: (partId: string) => MirrorLayoutList | null;
+  readScopedReaderAny: (reader: unknown, partId: string) => unknown;
+  ensureRenderArray: (rec: ValueRecord, key: string) => unknown[];
 };
 
 export type CornerWingInteriorCellRuntime = {
@@ -106,10 +106,10 @@ export type CornerWingInteriorCellRuntime = {
   __regularDepth: number;
   __fullDepthCenterZ: number;
   __backFaceZ: number;
-  __z(z: number): number;
+  __z: (z: number) => number;
 };
 
 export type CornerWingInteriorLayoutOps = {
-  createRod(yPos: number, limitHeight?: number | null): void;
-  addGridShelf(gridIndex: number): void;
+  createRod: (yPos: number, limitHeight?: number | null) => void;
+  addGridShelf: (gridIndex: number) => void;
 };

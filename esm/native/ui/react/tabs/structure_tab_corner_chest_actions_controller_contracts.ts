@@ -24,16 +24,16 @@ export type StructureTabCornerChestActionsArgs = {
 };
 
 export type StructureTabCornerChestActionsController = {
-  toggleCornerMode(nextOn: boolean): void;
-  toggleCornerSide(): void;
-  commitCornerDoors(nn: number): void;
-  commitCornerWidth(nn: number): void;
-  commitCornerHeight(nn: number): void;
-  commitCornerDepth(nn: number): void;
-  toggleChestMode(next: boolean): void;
-  toggleChestCommode(next: boolean): void;
-  setChestDrawersCount(nn: number): void;
-  setChestCommodeMirrorHeight(nn: number): void;
-  setChestCommodeMirrorWidth(nn: number): void;
-  setChestCommodeMirrorWidthManual(nextManual: boolean): void;
+  toggleCornerMode: (nextOn: boolean) => void;
+  toggleCornerSide: () => void;
+  commitCornerDoors: (nn: number) => void;
+  commitCornerWidth: (nn: number) => void;
+  commitCornerHeight: (nn: number) => void;
+  commitCornerDepth: (nn: number) => void;
+  toggleChestMode: (next: boolean) => void;
+  toggleChestCommode: (next: boolean) => void;
+  setChestDrawersCount: (nn: number) => void;
+  setChestCommodeMirrorHeight: (nn: number) => void;
+  setChestCommodeMirrorWidth: (nn: number) => void;
+  setChestCommodeMirrorWidthManual: (nextManual: boolean) => void;
 };

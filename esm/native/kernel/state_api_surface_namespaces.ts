@@ -37,18 +37,18 @@ export interface StateApiSurfaceNamespacesInstallContext {
   modeNs: ModeActionsNamespaceLike;
   builderNs: BuilderActionsNamespaceLike;
   modulesNs: ModulesActionsLike;
-  dispatchCanonicalPatch(payload: PatchPayload, meta: ActionMetaLike): unknown;
-  commitUiPatch(patch: UiSlicePatch, meta: ActionMetaLike): unknown;
-  commitRuntimePatch(patch: RuntimeSlicePatch, meta: ActionMetaLike): unknown;
-  commitModePatch(patch: Record<string, unknown>, meta: ActionMetaLike): unknown;
-  callStoreWriter(
+  dispatchCanonicalPatch: (payload: PatchPayload, meta: ActionMetaLike) => unknown;
+  commitUiPatch: (patch: UiSlicePatch, meta: ActionMetaLike) => unknown;
+  commitRuntimePatch: (patch: RuntimeSlicePatch, meta: ActionMetaLike) => unknown;
+  commitModePatch: (patch: Record<string, unknown>, meta: ActionMetaLike) => unknown;
+  callStoreWriter: (
     methodName: 'setUi' | 'setRuntime' | 'setMode' | 'setModePatch' | 'setConfig' | 'setMeta',
     ...args: readonly unknown[]
-  ): unknown;
-  readRootSnapshot(): RootStateLike | null;
-  asObj<T extends object = UnknownRecord>(value: unknown): T | null;
-  isObj(value: unknown): value is UnknownRecord;
-  safeCall(fn: () => unknown): unknown;
+  ) => unknown;
+  readRootSnapshot: () => RootStateLike | null;
+  asObj: <T extends object = UnknownRecord>(value: unknown) => T | null;
+  isObj: (value: unknown) => value is UnknownRecord;
+  safeCall: (fn: () => unknown) => unknown;
 }
 
 export function installStateApiSurfaceNamespaces(ctx: StateApiSurfaceNamespacesInstallContext): void {

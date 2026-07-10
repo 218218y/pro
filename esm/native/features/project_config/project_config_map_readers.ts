@@ -195,12 +195,10 @@ function parseSplitPositionList(raw: unknown): number[] {
 export function readSplitDoorsMapValue(value: unknown): SplitDoorsMap {
   const src = asMapRecord(value);
   const out: SplitDoorsMap = {};
-  const hasOwn = Object.prototype.hasOwnProperty;
-
   const assignSplitToggle = (key: string, entry: unknown) => {
     const next = readBoolean(entry);
     if (typeof next === 'undefined') return;
-    if (hasOwn.call(out, key)) {
+    if (Object.prototype.hasOwnProperty.call(out, key)) {
       if (out[key] === false || next === false) out[key] = false;
       else out[key] = true;
       return;
@@ -209,7 +207,7 @@ export function readSplitDoorsMapValue(value: unknown): SplitDoorsMap {
   };
 
   for (const rawKey in src) {
-    if (!hasOwn.call(src, rawKey)) continue;
+    if (!Object.prototype.hasOwnProperty.call(src, rawKey)) continue;
     const entry = src[rawKey];
     const key = String(rawKey || '');
 
@@ -230,15 +228,13 @@ export function readSplitDoorsMapValue(value: unknown): SplitDoorsMap {
 export function readSplitDoorsBottomMapValue(value: unknown): SplitDoorsBottomMap {
   const src = asMapRecord(value);
   const out: SplitDoorsBottomMap = {};
-  const hasOwn = Object.prototype.hasOwnProperty;
-
   const assignNormalizedToggle = (key: string, entry: unknown): void => {
     const next = readNullableBoolean(entry);
     if (typeof next !== 'undefined') out[key] = next;
   };
 
   for (const rawKey in src) {
-    if (!hasOwn.call(src, rawKey)) continue;
+    if (!Object.prototype.hasOwnProperty.call(src, rawKey)) continue;
     const entry = src[rawKey];
     const key = String(rawKey || '');
 
