@@ -1,5 +1,3 @@
-import type { ProjectFileLoadEventLike } from '../../../types';
-
 export type ProjectLoadInputTargetLike =
   | {
       value?: string;
@@ -17,9 +15,7 @@ function readInputTargetCandidate(value: unknown): ProjectLoadInputTargetLike {
   return isEventRecord(value) ? value : null;
 }
 
-export function readProjectLoadInputTarget(
-  evt: ProjectFileLoadEventLike | unknown
-): ProjectLoadInputTargetLike {
+export function readProjectLoadInputTarget(evt: unknown): ProjectLoadInputTargetLike {
   if (!isEventRecord(evt)) return null;
   return readInputTargetCandidate(evt.currentTarget) || readInputTargetCandidate(evt.target);
 }

@@ -1,10 +1,4 @@
-import type {
-  ActionMetaLike,
-  AppContainer,
-  UnknownRecord,
-  UiRawScalarKey,
-  UiRawScalarValueMap,
-} from '../../../../../types';
+import type { ActionMetaLike, AppContainer, UiRawScalarKey, UiRawScalarValueMap } from '../../../../../types';
 import { buildUiRawScalarPatchFromRecord } from '../../../../../types/ui_raw.js';
 
 import {
@@ -35,11 +29,11 @@ const setUiRawScalar: SetUiRawScalar = (
   void setUiRawScalarApi(app, key, value, meta);
 };
 
-function patchUi(app: AppContainer, patch: UnknownRecord | unknown, meta?: ActionMetaLike): void {
+function patchUi(app: AppContainer, patch: unknown, meta?: ActionMetaLike): void {
   void patchUiApi(app, readRecord(patch) || emptyRecord(), meta);
 }
 
-function patchUiSoft(app: AppContainer, patch: UnknownRecord | unknown, meta?: ActionMetaLike): void {
+function patchUiSoft(app: AppContainer, patch: unknown, meta?: ActionMetaLike): void {
   void patchUiSoftApi(app, readRecord(patch) || emptyRecord(), meta);
 }
 

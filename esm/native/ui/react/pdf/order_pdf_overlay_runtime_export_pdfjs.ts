@@ -31,8 +31,8 @@ export function getPdfJsLibFromModule(mod: unknown): PdfJsLibLike | null {
   return def ? asPdfJsLibLike(def) : null;
 }
 
-export function getOrderPdfDraftFn(v: unknown): (() => Promise<unknown> | unknown) | null {
-  const fn = getFn<() => Promise<unknown> | unknown>(v, 'getOrderPdfDraft');
+export function getOrderPdfDraftFn(v: unknown): (() => unknown) | null {
+  const fn = getFn<() => unknown>(v, 'getOrderPdfDraft');
   return fn ? () => fn() : null;
 }
 

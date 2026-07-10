@@ -1,5 +1,5 @@
 import { isDrawerBoxPartId } from '../features/part_identity/api.js';
-import { getBaseLegColorHex, type BaseLegColor } from '../features/base_leg_support.js';
+import { getBaseLegColorHex } from '../features/base_leg_support.js';
 
 import type {
   AppContainer,
@@ -58,7 +58,7 @@ export function resolveChestModeBodyMaterialState(input: {
 export function resolveChestModeMaterialPalette(input: {
   App: AppContainer;
   bodyState: ChestModeBodyMaterialState;
-  legColor?: BaseLegColor | string;
+  legColor?: string;
   cfg: ConfigStateLike;
   sketchMode: boolean;
   getMaterial?: BuilderGetMaterialFn | null;

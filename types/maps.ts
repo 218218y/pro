@@ -10,7 +10,6 @@
 //   encodings are rejected by the runtime/project normalizers instead of migrated.
 
 import type { UnknownRecord } from './common';
-import type { HandleType, HingeDir } from './domain';
 
 /** Base id used in part keys (doors, drawers, etc). */
 export type PartId = string;
@@ -31,10 +30,10 @@ export type ToggleValue = true | false | null;
 export type ToggleMap = Record<string, ToggleValue | undefined>;
 
 /** Handles: global handle type or per-part overrides. */
-export type HandlesMap = Record<string, HandleType | string | null | undefined>;
+export type HandlesMap = Record<string, string | null | undefined>;
 
 /** Hinges: hinge direction or a legacy object payload. */
-export type HingeMap = Record<string, HingeDir | string | UnknownRecord | null | undefined>;
+export type HingeMap = Record<string, string | UnknownRecord | null | undefined>;
 
 /** Split doors: canonical boolean toggles plus numeric split-position lists. */
 export type SplitDoorsMap = Record<string, boolean | number[] | null | undefined>;
@@ -64,7 +63,7 @@ export type CurtainMap = Record<string, string | null | undefined>;
 export type IndividualColorsMap = Record<string, string | null | undefined>;
 
 /** Special door material/type selection. */
-export type DoorSpecialValue = 'mirror' | 'glass' | string | null;
+export type DoorSpecialValue = string | null;
 export type DoorSpecialMap = Record<string, DoorSpecialValue | undefined>;
 
 /** Per-part door/drawer front style override. */

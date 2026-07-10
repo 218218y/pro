@@ -199,9 +199,9 @@ export type ExportCanvasAction =
   'snapshot' | 'save' | 'dual' | 'openclosed' | 'rendersketch' | 'sketch' | 'autozoom' | 'clipboard' | 'copy';
 
 export interface ExportCanvasOptionsLike extends UnknownRecord {
-  action?: ExportCanvasAction | string;
-  mode?: ExportCanvasAction | string;
-  kind?: ExportCanvasAction | string;
+  action?: string;
+  mode?: string;
+  kind?: string;
 }
 
 export interface CameraPoseLike {
@@ -334,9 +334,9 @@ export type ProjectLoadInputLike = ProjectDataLike | UnknownRecord | object;
 
 export interface ProjectIoServiceLike extends UnknownRecord {
   exportCurrentProject?: (meta?: UnknownRecord) => ProjectExportResultLike | null | undefined;
-  handleFileLoad?: (eventOrFile: unknown) => ProjectIoLoadResultLike | unknown;
-  loadProjectData?: (data: ProjectLoadInputLike, opts?: ProjectLoadOpts) => ProjectIoLoadResultLike | unknown;
-  restoreLastSession?: () => ProjectIoLoadResultLike | unknown;
+  handleFileLoad?: (eventOrFile: unknown) => unknown;
+  loadProjectData?: (data: ProjectLoadInputLike, opts?: ProjectLoadOpts) => unknown;
+  restoreLastSession?: () => unknown;
   buildDefaultProjectData?: () => ProjectDataLike;
   runtime?: ProjectIoRuntimeLike;
   [k: string]: unknown;

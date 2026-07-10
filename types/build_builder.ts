@@ -5,7 +5,7 @@ import type { UnknownRecord } from './common';
 import type { Object3DLike } from './three_like';
 import type { ThreeLike } from './three';
 import type { AppContainer } from './app';
-import type { HandleType, HingeDir, WardrobeType } from './domain';
+import type { HingeDir } from './domain';
 import type { ModulesStructureItemLike } from './modules_configuration';
 import type {
   GroovesMap,
@@ -102,7 +102,7 @@ export type BuilderCreateDoorVisualFn = (
   hasGrooves?: boolean,
   isMirror?: boolean,
   curtainType?: string | null,
-  baseMaterial?: unknown | null,
+  baseMaterial?: unknown,
   frontFaceSign?: number,
   forceCurtainFix?: boolean,
   mirrorLayout?: MirrorLayoutList | null,
@@ -163,7 +163,7 @@ export interface SketchPlacementPreviewArgsLike extends UnknownRecord {
   anchorParent?: unknown;
   kind?: string | null;
   variant?: string | null;
-  op?: 'add' | 'remove' | string | null;
+  op?: string | null;
   isRemove?: BuilderPreviewBool;
   x?: BuilderPreviewScalar;
   y?: BuilderPreviewScalar;
@@ -197,7 +197,7 @@ export interface InteriorLayoutHoverPreviewArgsLike extends UnknownRecord {
   innerW?: BuilderPreviewScalar;
   woodThick?: BuilderPreviewScalar;
   shelfVariant?: string | null;
-  op?: 'add' | 'remove' | string | null;
+  op?: string | null;
   isRemove?: BuilderPreviewBool;
   shelfYs?: BuilderPreviewScalar[] | null;
   rodYs?: BuilderPreviewScalar[] | null;
@@ -205,8 +205,8 @@ export interface InteriorLayoutHoverPreviewArgsLike extends UnknownRecord {
 }
 
 export type BuilderSketchIdLike = string | number | null | undefined;
-export type BuilderSketchAdornmentBaseTypeLike = 'plinth' | 'legs' | 'none' | string | null | undefined;
-export type BuilderSketchCorniceTypeLike = 'classic' | 'wave' | string | null | undefined;
+export type BuilderSketchAdornmentBaseTypeLike = string | null | undefined;
+export type BuilderSketchCorniceTypeLike = string | null | undefined;
 
 export interface BuilderSketchDividerLike extends UnknownRecord {
   id?: BuilderSketchIdLike;
@@ -657,10 +657,7 @@ export type BuilderHandleTypeResolver = (partId: unknown) => unknown;
 export type BuilderEdgeHandleDefaultNoneReader = (partId: unknown) => boolean;
 export type BuilderDoorRemovedResolver = (partId: string) => boolean;
 export type BuilderHingeDirResolver = (hingeKey: string, fallback: HingeDir) => HingeDir;
-export type BuilderDoorSplitResolver = (
-  map: SplitDoorsMap | SplitDoorsBottomMap | unknown,
-  doorIdNum: number
-) => boolean;
+export type BuilderDoorSplitResolver = (map: unknown, doorIdNum: number) => boolean;
 export type BuilderCurtainResolver = (
   doorIdNumOrPartId: number | string,
   suffixOrFallback: string | BuilderPartColorValue,
@@ -677,8 +674,8 @@ export interface BuilderDoorStateAccessorsLike extends UnknownRecord {
 }
 
 export interface BuilderDoorMapsConfigLike extends UnknownRecord {
-  wardrobeType?: WardrobeType | string | null;
-  globalHandleType?: HandleType | string | null;
+  wardrobeType?: string | null;
+  globalHandleType?: string | null;
   hingeMap?: HingeMap | null;
   handlesMap?: HandlesMap | null;
   splitDoorsMap?: SplitDoorsMap | null;

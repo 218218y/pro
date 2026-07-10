@@ -193,7 +193,11 @@ declare module 'react' {
   export type FormEventHandler<T = Element> = EventHandler<FormEvent<T>>;
   export type WheelEventHandler<T = Element> = EventHandler<WheelEvent<T>>;
 
-  export type ReactElement<_P = any, _T = any> = any;
+  export interface ReactElement<P = any, T = any> {
+    type: T;
+    props: P;
+    key: Key | null;
+  }
   export interface FunctionComponent<P = {}> {
     (props: PropsWithChildren<P>): ReactElement | null;
   }

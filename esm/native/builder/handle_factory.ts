@@ -40,7 +40,7 @@ export function makeHandleCreator(args: HandleCreatorArgs | null | undefined) {
     h: number,
     isLeftHinge: boolean,
     extraOpts?: { handleColor?: string | null; edgeHandleVariant?: string | null }
-  ): unknown | null {
+  ): unknown {
     if (!type || type === 'none') return null;
 
     const ro = getBuilderRenderOps(App);

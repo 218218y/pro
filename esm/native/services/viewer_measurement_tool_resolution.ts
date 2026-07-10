@@ -518,7 +518,7 @@ export function buildViewerMeasurementKey(args: {
   ].join('|');
 }
 
-function findTaggedAncestor(start: unknown, predicate: (userData: UnknownRecord) => boolean): unknown | null {
+function findTaggedAncestor(start: unknown, predicate: (userData: UnknownRecord) => boolean): unknown {
   let current = asMeasurableObject(start);
   while (current) {
     const ud = readUserData(current);
@@ -528,7 +528,7 @@ function findTaggedAncestor(start: unknown, predicate: (userData: UnknownRecord)
   return null;
 }
 
-function findModuleSelectorTarget(hitState: CanvasPickingClickHitState): unknown | null {
+function findModuleSelectorTarget(hitState: CanvasPickingClickHitState): unknown {
   for (let i = 0; i < hitState.intersects.length; i += 1) {
     const obj = asMeasurableObject(hitState.intersects[i]?.object);
     if (!obj || !isModuleSelector(obj)) continue;
@@ -553,7 +553,7 @@ function readDoorOwnerMetadata(userData: UnknownRecord | null): { width: number;
   return { width, height };
 }
 
-function findDoorMeasurementBranch(start: unknown, doorId: string | null): unknown | null {
+function findDoorMeasurementBranch(start: unknown, doorId: string | null): unknown {
   const first = asMeasurableObject(start);
   if (!first || !doorId) return null;
 
@@ -572,7 +572,7 @@ function findDoorMeasurementBranch(start: unknown, doorId: string | null): unkno
   return null;
 }
 
-function resolveDoorMeasurementTarget(start: unknown, doorId: string | null): unknown | null {
+function resolveDoorMeasurementTarget(start: unknown, doorId: string | null): unknown {
   return findDoorMeasurementBranch(start, doorId) || start || null;
 }
 
@@ -587,7 +587,7 @@ function readNearestTargetIdentity(value: unknown): string | null {
   return null;
 }
 
-function findNearestDirectPartTarget(hitState: CanvasPickingClickHitState): unknown | null {
+function findNearestDirectPartTarget(hitState: CanvasPickingClickHitState): unknown {
   if (hitState.doorHitGroup) {
     return resolveDoorMeasurementTarget(hitState.doorHitGroup, hitState.effectiveDoorId ?? null);
   }
@@ -626,7 +626,7 @@ function findNearestDirectPartTarget(hitState: CanvasPickingClickHitState): unkn
   return null;
 }
 
-export function resolveViewerMeasurementTarget(hitState: CanvasPickingClickHitState): unknown | null {
+export function resolveViewerMeasurementTarget(hitState: CanvasPickingClickHitState): unknown {
   const directTarget = findNearestDirectPartTarget(hitState);
   if (directTarget) return directTarget;
 

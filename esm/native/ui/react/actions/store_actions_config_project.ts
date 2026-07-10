@@ -2,7 +2,6 @@ import type {
   ActionMetaLike,
   AppContainer,
   ProjectPreChestStateLike,
-  ProjectSavedNotesLike,
   UnknownRecord,
 } from '../../../../../types';
 
@@ -12,11 +11,7 @@ import {
 } from '../../../services/api.js';
 import { asStringOrNull, getConfigNamespace, readRecord, readSavedNotes } from './store_actions_state.js';
 
-function setCfgSavedNotes(
-  app: AppContainer,
-  next: ProjectSavedNotesLike | null | unknown,
-  meta?: ActionMetaLike
-): void {
+function setCfgSavedNotes(app: AppContainer, next: unknown, meta?: ActionMetaLike): void {
   const normalized = readSavedNotes(next);
   const cfgNs = getConfigNamespace(app);
   if (typeof cfgNs.setSavedNotes === 'function') {
@@ -26,11 +21,7 @@ function setCfgSavedNotes(
   void cfgSetScalarApi(app, 'savedNotes', normalized, meta);
 }
 
-function setCfgCustomUploadedDataURL(
-  app: AppContainer,
-  value: string | null | unknown,
-  meta?: ActionMetaLike
-): void {
+function setCfgCustomUploadedDataURL(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
   const normalized = asStringOrNull(value);
   const cfgNs = getConfigNamespace(app);
   if (typeof cfgNs.setCustomUploadedDataURL === 'function') {
@@ -40,11 +31,7 @@ function setCfgCustomUploadedDataURL(
   void setCfgCustomUploadedDataURLApi(app, normalized, meta);
 }
 
-function setCfgPreChestState(
-  app: AppContainer,
-  next: ProjectPreChestStateLike | unknown,
-  meta?: ActionMetaLike
-): void {
+function setCfgPreChestState(app: AppContainer, next: unknown, meta?: ActionMetaLike): void {
   const normalized: ProjectPreChestStateLike = readRecord(next) || null;
   const cfgNs = getConfigNamespace(app);
   if (typeof cfgNs.setPreChestState === 'function') {

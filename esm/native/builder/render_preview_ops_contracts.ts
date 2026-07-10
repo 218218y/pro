@@ -73,7 +73,7 @@ export type PreviewObject3DLike = PreviewValueRecord & {
 };
 
 export type PreviewLineLike = PreviewObject3DLike & {
-  material?: PreviewMaterialLike | unknown;
+  material?: unknown;
   userData?: PreviewLineUserData;
 };
 
@@ -83,7 +83,7 @@ export type PreviewMeshUserData = PreviewValueRecord & {
 
 export type PreviewMeshLike = PreviewObject3DLike & {
   geometry?: unknown;
-  material?: PreviewMaterialLike | unknown;
+  material?: unknown;
   userData?: PreviewMeshUserData;
   add: (...objs: unknown[]) => unknown;
 };

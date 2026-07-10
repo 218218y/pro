@@ -33,10 +33,10 @@ export type CanvasPaintMutationKind =
 export type PaintInvalidationKind = 'materialRefreshOnly' | 'structuralRebuild' | 'noChange';
 
 export type CanvasPaintHitReferences = {
-  readonly primaryObject: unknown | null;
-  readonly doorObject: unknown | null;
-  readonly primaryPoint: unknown | null;
-  readonly doorPoint: unknown | null;
+  readonly primaryObject: unknown;
+  readonly doorObject: unknown;
+  readonly primaryPoint: unknown;
+  readonly doorPoint: unknown;
 };
 
 export type ResolvedCanvasPaintCommand = {

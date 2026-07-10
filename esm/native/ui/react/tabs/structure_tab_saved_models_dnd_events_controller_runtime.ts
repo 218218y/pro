@@ -22,14 +22,7 @@ export type SavedModelsDragEventLike = {
 };
 
 type SetModelIdState = (value: SavedModelId | ((prev: SavedModelId) => SavedModelId)) => void;
-type SetDragOverModelIdState = (
-  value:
-    | SavedModelId
-    | '__empty__'
-    | '__end__'
-    | ''
-    | ((prev: SavedModelId | '__empty__' | '__end__' | '') => SavedModelId | '__empty__' | '__end__' | '')
-) => void;
+type SetDragOverModelIdState = (value: SavedModelId | ((prev: SavedModelId) => SavedModelId)) => void;
 type SetDragOverPosState = (
   value: SavedModelsDragIndicatorPos | ((prev: SavedModelsDragIndicatorPos) => SavedModelsDragIndicatorPos)
 ) => void;
@@ -75,7 +68,7 @@ export type SavedModelsDndEventsController = {
 
 export type CreateSavedModelsDndEventsControllerArgs = {
   draggingModelId: SavedModelId;
-  dragOverModelId: SavedModelId | '__empty__' | '__end__' | '';
+  dragOverModelId: SavedModelId;
   dragOverPos: SavedModelsDragIndicatorPos;
   setDraggingModelId: SetModelIdState;
   setDragOverModelId: SetDragOverModelIdState;

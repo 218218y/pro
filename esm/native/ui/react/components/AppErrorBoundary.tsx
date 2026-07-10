@@ -10,7 +10,7 @@ type Props = {
   children: ReactNode;
 };
 
-type State = { error: unknown | null };
+type State = { error: unknown };
 
 type ReloadLocationLike = { reload: () => void };
 type WindowLike = { location?: unknown };
@@ -27,7 +27,7 @@ function readReloadLocation(app: unknown): ReloadLocationLike | null {
   return asReloadLocation(win?.location) || asReloadLocation(doc?.defaultView?.location) || null;
 }
 
-function tryReloadViaDi(app: unknown | null | undefined): void {
+function tryReloadViaDi(app: unknown): void {
   try {
     readReloadLocation(app)?.reload();
   } catch {

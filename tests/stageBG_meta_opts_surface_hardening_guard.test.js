@@ -31,7 +31,8 @@ const interiorTabView = [
 test('[stageBG] residual meta/opts seams use shared typed contracts instead of raw unknown bags', () => {
   assert.match(kernelTypes, /export interface ModeActionOptsLike extends UnknownRecord \{/);
   assert.match(kernelTypes, /handleType\?: string \| null;/);
-  assert.match(kernelTypes, /edgeHandleVariant\?: 'short' \| 'long' \| string \| null;/);
+  assert.match(kernelTypes, /edgeHandleVariant\?: string \| null;/);
+  assert.doesNotMatch(kernelTypes, /edgeHandleVariant\?: 'short' \| 'long' \| string/);
   assert.match(kernelTypes, /extDrawerCount\?: number \| null;/);
 
   assert.match(

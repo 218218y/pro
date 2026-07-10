@@ -1,4 +1,4 @@
-import type { AppContainer, ProjectFileLike, ProjectFileLoadEventLike } from '../../../types';
+import type { AppContainer } from '../../../types';
 
 import {
   buildProjectLoadFailureResult,
@@ -46,7 +46,7 @@ export async function runProjectLoadActionResult(
 export async function runProjectLoadAction(
   App: AppContainer,
   feedback: ProjectFeedbackLike | null | undefined,
-  eventOrFile: ProjectFileLoadEventLike | ProjectFileLike | unknown,
+  eventOrFile: unknown,
   options?: {
     fallbackMessage?: string;
     clearInputTargetFrom?: unknown;

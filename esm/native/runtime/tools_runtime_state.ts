@@ -41,7 +41,7 @@ function readToolsRuntimeState(App: AppContainer): RuntimeToolsState {
   return readRuntimeStateFromStore(getStoreSurfaceMaybe(App));
 }
 
-function normalizeHandleType(value: HandleType | string | null): HandleType {
+function normalizeHandleType(value: string | null): HandleType {
   return value === 'edge' || value === 'none' ? value : 'standard';
 }
 
@@ -65,13 +65,13 @@ export function installToolsRuntimeState(App: AppContainer): ToolsNamespaceLike 
   }
 
   if (typeof tools.getHandlesType !== 'function') {
-    tools.getHandlesType = function (): HandleType | string | null {
+    tools.getHandlesType = function (): string | null {
       const r = readToolsRuntimeState(App);
       return r.handlesType || 'standard';
     };
   }
   if (typeof tools.setHandlesType !== 'function') {
-    tools.setHandlesType = function (v: HandleType | string | null, m?: ToolsRuntimeMeta) {
+    tools.setHandlesType = function (v: string | null, m?: ToolsRuntimeMeta) {
       setRuntimeScalar(App, 'handlesType', normalizeHandleType(v), buildTransientMeta(App, m));
     };
   }

@@ -3,7 +3,6 @@ import type {
   ActionsNamespaceLike,
   AppContainer,
   DrawersOpenIdLike,
-  HandleType,
   MetaActionsNamespaceLike,
   RuntimeScalarKey,
   UnknownRecord,
@@ -23,7 +22,7 @@ export type DomainDoorsSelect = UnknownRecord & {
   isSplitBottom?: (doorBaseId: unknown) => boolean;
   hingeDir?: (hingeKey: unknown, def: unknown) => unknown;
   handleType?: (doorId: unknown, defaultHandleType: unknown) => unknown;
-  globalHandleType?: () => HandleType | string | null;
+  globalHandleType?: () => string | null;
 };
 export type DomainDrawersSelect = UnknownRecord & { openId?: () => DrawersOpenIdLike };
 export type DomainDividersSelect = UnknownRecord & {

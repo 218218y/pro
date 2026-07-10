@@ -8,14 +8,13 @@
 
 import type { UnknownRecord } from './common';
 import type { ActionMetaLike } from './kernel';
-import type { HandleType } from './domain';
 
 export type DrawersOpenIdLike = string | number | null;
 
 export interface ToolsNamespaceLike extends UnknownRecord {
   // Handles
-  getHandlesType?: () => HandleType | string | null;
-  setHandlesType?: (handleType: HandleType | string | null, meta?: ActionMetaLike) => unknown;
+  getHandlesType?: () => string | null;
+  setHandlesType?: (handleType: string | null, meta?: ActionMetaLike) => unknown;
 
   // Interior manual layout tool
   getInteriorManualTool?: () => string | null;

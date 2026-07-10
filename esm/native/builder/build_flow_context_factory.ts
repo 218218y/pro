@@ -3,11 +3,8 @@ import { createBuildContext } from './build_context.js';
 import type {
   AppContainer,
   BuildContextLike,
-  BuilderCreateDoorVisualFn,
   BuilderDrawerRebuildSnapshot,
-  BuilderCreateInternalDrawerBoxFn,
   BuilderDoorStateAccessorsLike,
-  BuilderCreateHandleMeshFn,
   ProjectSavedNotesLike,
   BuildStateLike,
   ThreeLike,
@@ -40,9 +37,9 @@ type BuildFlowContextFactoryArgs = {
   globalClickMode: boolean;
   hadEditHold: boolean;
   notesToPreserve: ProjectSavedNotesLike | null;
-  createDoorVisual: BuilderCreateDoorVisualFn | unknown;
-  createInternalDrawerBox: BuilderCreateInternalDrawerBoxFn | unknown;
-  createHandleMesh: BuilderCreateHandleMeshFn | unknown;
+  createDoorVisual: unknown;
+  createInternalDrawerBox: unknown;
+  createHandleMesh: unknown;
   doorState: BuilderDoorStateAccessorsLike;
   getHandleType: unknown;
   getMaterialFn: GetMaterialFn;

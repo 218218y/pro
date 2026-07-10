@@ -6,7 +6,7 @@
 
 import type { UnknownRecord } from './common';
 import type { MetaSlicePatch, ModeSlicePatch, RuntimeSlicePatch, UiSlicePatch } from './patch_payload';
-import type { HandleType, HingeDir, WardrobeType } from './domain';
+import type { WardrobeType } from './domain';
 import type { HandlesMap, HingeMap, KnownMapName, MapsByName } from './maps';
 import type { ConfigScalarKey, ConfigScalarValueMap } from './config_scalar';
 import type { RuntimeScalarKey, RuntimeScalarValueMap } from './runtime_scalar';
@@ -197,7 +197,7 @@ export interface ConfigActionsNamespaceLike extends UnknownRecord {
 
 export interface ModeActionOptsLike extends UnknownRecord {
   handleType?: string | null;
-  edgeHandleVariant?: 'short' | 'long' | string | null;
+  edgeHandleVariant?: string | null;
   handleColor?: string | null;
   layoutType?: string | null;
   manualTool?: string | null;
@@ -219,7 +219,7 @@ export interface ModeTransitionOptsLike extends ModeActionOptsLike {
 export interface ModulesRecomputeFromUiOptionsLike extends UnknownRecord {
   structureChanged?: boolean;
   preserveTemplate?: boolean;
-  anchorSide?: 'left' | 'right' | string;
+  anchorSide?: string;
   forceRebuild?: boolean;
   skipBuild?: boolean;
 }
@@ -337,11 +337,7 @@ export interface MapsNamespaceLike extends UnknownRecord {
   getCurtain?: (partId: string) => string | null;
   setSplit?: (doorId: string, isSplit: boolean, meta?: ActionMetaLike) => unknown;
   setSplitBottom?: (doorId: string, isOn: boolean, meta?: ActionMetaLike) => unknown;
-  setHinge?: (
-    hingeKey: string,
-    hingeDir: HingeDir | UnknownRecord | string,
-    meta?: ActionMetaLike
-  ) => unknown;
+  setHinge?: (hingeKey: string, hingeDir: UnknownRecord | string, meta?: ActionMetaLike) => unknown;
   setRemoved?: (partId: string, isRemoved: boolean, meta?: ActionMetaLike) => unknown;
 
   getSavedColors?: () => Array<SavedColorLike | string>;
@@ -349,7 +345,7 @@ export interface MapsNamespaceLike extends UnknownRecord {
   setColorSwatchesOrder?: (arr: Array<string | null | undefined>, meta?: ActionMetaLike) => unknown;
 
   getHandle?: (partId: string) => unknown;
-  setHandle?: (partId: string, handleType: HandleType | string | null, meta?: ActionMetaLike) => unknown;
+  setHandle?: (partId: string, handleType: string | null, meta?: ActionMetaLike) => unknown;
 
   [k: string]: unknown;
 }
@@ -392,9 +388,9 @@ export interface DoorsActionsLike extends UnknownRecord {
   setRemoved?: (doorId: string, isRemoved: boolean, meta?: ActionMetaLike) => unknown;
   setSplit?: (doorId: string, isSplit: boolean, meta?: ActionMetaLike) => unknown;
   setSplitBottom?: (doorId: string, isOn: boolean, meta?: ActionMetaLike) => unknown;
-  setHinge?: (doorId: string, hinge: HingeDir | UnknownRecord | string, meta?: ActionMetaLike) => unknown;
-  setHandle?: (doorId: string, handleType: HandleType | string | null, meta?: ActionMetaLike) => unknown;
-  setGlobalHandleType?: (handleType: HandleType | string | null, meta?: ActionMetaLike) => unknown;
+  setHinge?: (doorId: string, hinge: UnknownRecord | string, meta?: ActionMetaLike) => unknown;
+  setHandle?: (doorId: string, handleType: string | null, meta?: ActionMetaLike) => unknown;
+  setGlobalHandleType?: (handleType: string | null, meta?: ActionMetaLike) => unknown;
   [k: string]: unknown;
 }
 
@@ -405,7 +401,7 @@ export interface ModulesActionsLike extends UnknownRecord {
     opts?: ModulesRecomputeFromUiOptionsLike
   ) => unknown;
   patchForStack?: (
-    stack: ModuleStackName | string,
+    stack: string,
     moduleKey: ModuleStackPatchKey,
     patchOrPatchFn: unknown,
     meta?: ActionMetaLike
@@ -417,8 +413,8 @@ export interface ModulesActionsLike extends UnknownRecord {
 }
 
 export interface ModulesEnsureForStackFn {
-  (stack: ModuleStackName | string, moduleKey: 'corner'): CornerConfigurationLike | null;
-  (stack: ModuleStackName | string, moduleKey: ModuleStackPatchKey): ModuleConfigLike | null;
+  (stack: string, moduleKey: 'corner'): CornerConfigurationLike | null;
+  (stack: string, moduleKey: ModuleStackPatchKey): ModuleConfigLike | null;
 }
 
 export interface CornerActionsLike extends UnknownRecord {

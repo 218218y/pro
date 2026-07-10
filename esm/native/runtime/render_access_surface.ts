@@ -203,7 +203,7 @@ export function addToScene(App: unknown, obj: unknown): boolean {
   }
 }
 
-export function removeFromSceneByName(App: unknown, name: string): unknown | null {
+export function removeFromSceneByName(App: unknown, name: string): unknown {
   const scene = readRenderSurface<SceneOpsLike>(App, 'scene');
   if (!scene || typeof scene.getObjectByName !== 'function' || typeof scene.remove !== 'function') {
     return null;

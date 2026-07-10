@@ -1,6 +1,6 @@
 // React UI actions: project save/load/restore
 
-import type { AppContainer, ProjectFileLoadEventLike } from '../../../../../types';
+import type { AppContainer } from '../../../../../types';
 import {
   loadProjectFileInputViaService,
   normalizeProjectLoadActionResult,
@@ -19,10 +19,7 @@ export function saveProject(app: AppContainer): ProjectSaveActionResult {
   return saveProjectResultViaActions(app, 'not-installed');
 }
 
-export async function loadFromFileEvent(
-  app: AppContainer,
-  evt: ProjectFileLoadEventLike | unknown
-): Promise<ProjectLoadActionResult> {
+export async function loadFromFileEvent(app: AppContainer, evt: unknown): Promise<ProjectLoadActionResult> {
   return normalizeProjectLoadActionResult(await loadProjectFileInputViaService(app, evt), 'not-installed');
 }
 

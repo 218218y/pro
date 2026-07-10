@@ -13,7 +13,7 @@ function withDetail(base: string, detail?: string): string {
 export async function readOrderPdfDraftSeedFromProjectWithDeps(args: {
   app: unknown;
   ensureExportApiReady: (app: unknown) => Promise<unknown>;
-  getOrderPdfDraftFn: (value: unknown) => (() => Promise<unknown> | unknown) | null;
+  getOrderPdfDraftFn: (value: unknown) => (() => unknown) | null;
   readOrderPdfDraftSeed: (value: unknown) => OrderPdfDraftSeed;
 }): Promise<
   { ok: true; seed: OrderPdfDraftSeed } | { ok: false; reason: 'not-ready' | 'error'; detail?: string }
@@ -39,7 +39,7 @@ export async function readOrderPdfDraftSeedFromProjectWithDeps(args: {
 export async function loadOrderPdfInitialDraftWithDeps(args: {
   app: unknown;
   ensureExportApiReady: (app: unknown) => Promise<unknown>;
-  getOrderPdfDraftFn: (value: unknown) => (() => Promise<unknown> | unknown) | null;
+  getOrderPdfDraftFn: (value: unknown) => (() => unknown) | null;
   readOrderPdfDraftSeed: (value: unknown) => OrderPdfDraftSeed;
   createOrderPdfInitialDraft: (seed: OrderPdfDraftSeed) => { draft: OrderPdfDraft; detailsDirty: boolean };
 }): Promise<OrderPdfOverlayDraftActionResult> {
@@ -70,7 +70,7 @@ export async function refreshOrderPdfDraftFromProjectWithDeps(args: {
   docMaybe: Document | null;
   detailsDirty: boolean;
   ensureExportApiReady: (app: unknown) => Promise<unknown>;
-  getOrderPdfDraftFn: (value: unknown) => (() => Promise<unknown> | unknown) | null;
+  getOrderPdfDraftFn: (value: unknown) => (() => unknown) | null;
   readOrderPdfDraftSeed: (value: unknown) => OrderPdfDraftSeed;
   resolveOrderPdfRefreshAuto: (args: {
     source: OrderPdfDraftSeed;

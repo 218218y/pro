@@ -135,10 +135,7 @@ export interface ColorLike extends UnknownRecord {
 }
 
 export type ThreeGroupCtor = new () => Object3DLike;
-export type ThreeMeshCtor = new (
-  geometry?: GeometryLike | unknown,
-  material?: MaterialLike | MaterialLike[] | unknown
-) => Object3DLike;
+export type ThreeMeshCtor = new (geometry?: unknown, material?: unknown) => Object3DLike;
 export type ThreeVector3Ctor = new (x?: number, y?: number, z?: number) => Vector3Like;
 export type ThreeVector4Ctor = new (x?: number, y?: number, z?: number, w?: number) => Vector4Like;
 export type ThreeBoxGeometryCtor = new (
@@ -181,11 +178,8 @@ export type ThreeCanvasTextureCtor = new (
   wrapS?: unknown,
   wrapT?: unknown
 ) => TextureLike;
-export type ThreeLineCtor = new (
-  geometry?: GeometryLike | unknown,
-  material?: MaterialLike | unknown
-) => Object3DLike;
-export type ThreeSpriteCtor = new (material?: MaterialLike | unknown) => Object3DLike & {
+export type ThreeLineCtor = new (geometry?: unknown, material?: unknown) => Object3DLike;
+export type ThreeSpriteCtor = new (material?: unknown) => Object3DLike & {
   position: Vector3Like;
   scale: { set: (x: number, y: number, z: number) => unknown };
 };
@@ -228,11 +222,7 @@ export type ThreeWebGLRenderTargetCtor = new (
   height?: number,
   options?: UnknownRecord
 ) => WebGLRenderTargetRuntimeLike;
-export type ThreeCubeCameraCtor = new (
-  near?: number,
-  far?: number,
-  renderTarget?: WebGLCubeRenderTargetLike | unknown
-) => Object3DLike;
+export type ThreeCubeCameraCtor = new (near?: number, far?: number, renderTarget?: unknown) => Object3DLike;
 export type ThreeBufferAttributeCtor = new (
   array?: ArrayLike<number> | ArrayBufferLike,
   itemSize?: number,

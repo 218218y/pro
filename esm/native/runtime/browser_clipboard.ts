@@ -8,11 +8,11 @@ export type BrowserClipboardResult =
   { ok: true } | { ok: false; reason: 'unavailable' | 'error'; message?: string };
 
 type ClipboardTextWriterLike = {
-  writeText?: (text: string) => Promise<unknown> | unknown;
+  writeText?: (text: string) => unknown;
 };
 
 type ClipboardItemsWriterLike = {
-  write?: (items: ClipboardItems) => Promise<unknown> | unknown;
+  write?: (items: ClipboardItems) => unknown;
 };
 
 type ClipboardSurfaceLike = ClipboardTextWriterLike & ClipboardItemsWriterLike;

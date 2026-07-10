@@ -40,7 +40,7 @@ export type MirrorMaterialOpts = {
 };
 
 export type WardrobeMeshLike = Object3DLike & {
-  material?: unknown | unknown[];
+  material?: unknown;
 };
 
 export type MaterialsCacheLike = ValueRecord & {

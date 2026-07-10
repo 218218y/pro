@@ -351,13 +351,13 @@ export function setGlobalHandleColor(app: AppContainer, color: unknown): void {
   applyHandlesBestEffort(app);
 }
 
-export function setGlobalEdgeHandleVariant(app: AppContainer, v: 'short' | 'long' | unknown): void {
+export function setGlobalEdgeHandleVariant(app: AppContainer, v: unknown): void {
   const next = normEdgeHandleVariant(v);
   patchHandlesMapReservedKey(app, EDGE_HANDLE_VARIANT_GLOBAL_KEY, next, 'react:handles:globalEdgeVariant');
   applyHandlesBestEffort(app);
 }
 
-export function setHandleModeEdgeVariant(app: AppContainer, v: 'short' | 'long' | unknown): void {
+export function setHandleModeEdgeVariant(app: AppContainer, v: unknown): void {
   const next = normEdgeHandleVariant(v);
   const modeHandle = getHandleModeId();
   const curMode = getModeState(app);

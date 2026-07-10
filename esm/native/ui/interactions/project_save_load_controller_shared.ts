@@ -10,7 +10,7 @@ export type ProjectSaveLoadInteractionController = {
   ensureSaveProjectAction: () => void;
   performSave: () => void;
   openLoadInput: (input: unknown) => void;
-  handleLoadInputChange: (evt: Event | unknown) => Promise<void>;
+  handleLoadInputChange: (evt: unknown) => Promise<void>;
 };
 
 export type CreateProjectSaveLoadInteractionActions = {

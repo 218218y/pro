@@ -17,7 +17,7 @@ type Props = {
   children: ReactNode;
 };
 
-type State = { error: unknown | null };
+type State = { error: unknown };
 
 type ReloadLocationLike = { reload: () => void };
 type DefaultViewLike = { location?: unknown };
@@ -43,7 +43,7 @@ function readReloadLocation(app: unknown): ReloadLocationLike | null {
   );
 }
 
-function tryReloadViaDi(app: unknown | null | undefined): void {
+function tryReloadViaDi(app: unknown): void {
   try {
     readReloadLocation(app)?.reload();
   } catch {
@@ -51,7 +51,7 @@ function tryReloadViaDi(app: unknown | null | undefined): void {
   }
 }
 
-function tryRecoverOrReload(app: unknown | null | undefined, error: unknown): void {
+function tryRecoverOrReload(app: unknown, error: unknown): void {
   if (requestReleaseAssetRecovery(app, error, 'lazy-chunk-load')) return;
   tryReloadViaDi(app);
 }

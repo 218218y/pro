@@ -15,7 +15,7 @@ import {
 } from './project_load_action_result.js';
 import type { ProjectRestoreActionResult } from './project_recovery_action_result.js';
 
-type ProjectIoLoadFailureLike = ProjectLoadFailureReason | string;
+type ProjectIoLoadFailureLike = string;
 
 export type { ProjectIoLoadFailureLike };
 

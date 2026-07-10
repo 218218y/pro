@@ -50,9 +50,9 @@ export type RenderRuntimeStateLike = {
   __mirrorWorkPending: boolean;
   __mirrorPlanarInitialBatchPending: boolean;
   __splitHoverPickablesDirty: boolean;
-  __wpAutoHideFloorRef: unknown | null;
-  __wpAutoHideFloorRoomKey: unknown | null;
-  __wpAutoHideFloorSceneKey: unknown | null;
+  __wpAutoHideFloorRef: unknown;
+  __wpAutoHideFloorRoomKey: unknown;
+  __wpAutoHideFloorSceneKey: unknown;
   __wpAutoHideFloorTick: number;
   __wpAutoHideFloorVecFloor: UnknownRecord | null;
   __wpAutoHideFloorVecCam: UnknownRecord | null;
@@ -391,7 +391,7 @@ export function readAutoHideFloorCache(App: unknown): RenderAutoHideFloorCacheLi
 
 export function writeAutoHideFloorCache(
   App: unknown,
-  floor: unknown | null,
+  floor: unknown,
   roomKey: unknown,
   sceneKey: unknown
 ): void {

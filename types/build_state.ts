@@ -135,7 +135,7 @@ export interface UiStateLike extends UiState {
   basePlinthHeightCm?: number;
   baseLegHeightCm?: number;
   baseLegWidthCm?: number;
-  slidingTracksColor?: 'black' | 'nickel' | string;
+  slidingTracksColor?: string;
   corniceType?: string;
   color?: string;
   doors?: number;
@@ -150,7 +150,7 @@ export interface UiStateLike extends UiState {
   cornerDepth?: number;
 
   // Corner wardrobe orientation
-  cornerSide?: 'left' | 'right' | string;
+  cornerSide?: string;
 
   // Feature toggles
   groovesEnabled?: boolean;

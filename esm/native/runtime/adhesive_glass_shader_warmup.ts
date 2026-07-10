@@ -34,7 +34,7 @@ function readWarmupState(App: unknown): WarmupState {
   return next;
 }
 
-function readMirrorRenderTargetTexture(App: unknown): unknown | null {
+function readMirrorRenderTargetTexture(App: unknown): unknown {
   try {
     const renderTarget = getMirrorRenderTarget(App) as { texture?: unknown } | null;
     return renderTarget?.texture || null;
@@ -81,7 +81,7 @@ function call3(ctx: unknown, fn: unknown, a: unknown, b: unknown, c: unknown): u
   return typeof fn === 'function' ? fn.call(ctx, a, b, c) : undefined;
 }
 
-function createWarmupMaterial(THREE: unknown, texture: unknown): unknown | null {
+function createWarmupMaterial(THREE: unknown, texture: unknown): unknown {
   const three = readThreeRecord(THREE);
   const MeshStandardMaterial = readMeshStandardMaterialConstructor(three?.MeshStandardMaterial);
   if (!MeshStandardMaterial) return null;

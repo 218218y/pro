@@ -15,7 +15,7 @@ export function openProjectSaveLoadInput(input: unknown): void {
 export async function handleProjectSaveLoadInputChange(
   App: AppContainer,
   toast: ProjectSaveLoadToastFn | null | undefined,
-  evt: Event | unknown
+  evt: unknown
 ): Promise<void> {
   await runProjectLoadAction(App, { toast }, asProjectFileLoadEvent(evt) ?? evt, {
     clearInputTargetFrom: evt,

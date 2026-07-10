@@ -36,7 +36,7 @@ type AdhesiveGlassDoorVisualArgs = {
   h: number;
   thickness: number;
   mat: unknown;
-  baseMaterial: unknown | null;
+  baseMaterial: unknown;
   zSign: number;
   isSketch: boolean;
   mirrorLayout: MirrorLayoutList | null;
@@ -135,7 +135,7 @@ function readAdhesiveGlassMaterialCache(App: AppContainer): AdhesiveGlassMateria
   return next;
 }
 
-function readMirrorRenderTargetTexture(App: AppContainer): unknown | null {
+function readMirrorRenderTargetTexture(App: AppContainer): unknown {
   try {
     const renderTarget = getMirrorRenderTarget(App) as { texture?: unknown } | null;
     return renderTarget?.texture || null;

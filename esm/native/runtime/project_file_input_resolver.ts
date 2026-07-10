@@ -1,9 +1,4 @@
-import type {
-  ProjectFileInputTargetLike,
-  ProjectFileLike,
-  ProjectFileLoadEventLike,
-  UnknownRecord,
-} from '../../../types';
+import type { ProjectFileInputTargetLike, ProjectFileLike, UnknownRecord } from '../../../types';
 
 function isRecord(v: unknown): v is UnknownRecord {
   return !!v && typeof v === 'object' && !Array.isArray(v);
@@ -17,7 +12,7 @@ function isProjectFileLike(value: unknown): value is ProjectFileLike {
   return typeof Blob !== 'undefined' && value instanceof Blob;
 }
 
-function readFileInputTarget(event: ProjectFileLoadEventLike | unknown): ProjectFileInputTargetLike | null {
+function readFileInputTarget(event: unknown): ProjectFileInputTargetLike | null {
   const rec = asRecord(event);
   const target = rec ? asRecord(rec.target) : null;
   return target && !Array.isArray(target) ? target : null;
@@ -30,9 +25,10 @@ function readFirstFile(target: ProjectFileInputTargetLike | null): ProjectFileLi
   return isProjectFileLike(first) ? first : null;
 }
 
-export function resolveProjectFileLoadInput(
-  eventOrFile: ProjectFileLoadEventLike | ProjectFileLike | unknown
-): { file: ProjectFileLike | null; target: ProjectFileInputTargetLike | null } {
+export function resolveProjectFileLoadInput(eventOrFile: unknown): {
+  file: ProjectFileLike | null;
+  target: ProjectFileInputTargetLike | null;
+} {
   if (isProjectFileLike(eventOrFile)) return { file: eventOrFile, target: null };
   const target = readFileInputTarget(eventOrFile);
   return { file: readFirstFile(target), target };

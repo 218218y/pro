@@ -1,11 +1,7 @@
 import { getCacheBag } from '../runtime/cache_access.js';
 import { asRecord, createNullRecord } from '../runtime/record.js';
 
-import type {
-  AppContainer,
-  BuilderEdgeHandleDefaultNoneReader,
-  UnknownRecord,
-} from '../../../types/index.js';
+import type { BuilderEdgeHandleDefaultNoneReader, UnknownRecord } from '../../../types/index.js';
 
 export type EdgeHandleDefaultNoneScope = 'module' | 'corner' | 'pent';
 export type EdgeHandleDefaultNoneStackKey = 'top' | 'bottom';
@@ -59,7 +55,7 @@ export function readEdgeHandleDefaultNoneCacheKey(
 }
 
 export function ensureEdgeHandleDefaultNoneCacheMap(
-  App: AppContainer | unknown,
+  App: unknown,
   stackKey: EdgeHandleDefaultNoneStackKey,
   scope: EdgeHandleDefaultNoneScope = 'module'
 ): EdgeHandleDefaultNoneCacheRecord {
@@ -78,7 +74,7 @@ export function ensureEdgeHandleDefaultNoneCacheMap(
 }
 
 export function markEdgeHandleDefaultNone(
-  App: AppContainer | unknown,
+  App: unknown,
   stackKey: EdgeHandleDefaultNoneStackKey,
   partId: unknown,
   scope: EdgeHandleDefaultNoneScope = 'module'
@@ -91,7 +87,7 @@ export function markEdgeHandleDefaultNone(
 }
 
 export function isEdgeHandleDefaultNone(
-  App: AppContainer | unknown,
+  App: unknown,
   stackKey: EdgeHandleDefaultNoneStackKey,
   partId: unknown
 ): boolean {
@@ -108,14 +104,14 @@ export function isEdgeHandleDefaultNone(
 }
 
 export function bindEdgeHandleDefaultNoneReader(
-  App: AppContainer | unknown,
+  App: unknown,
   stackKey: EdgeHandleDefaultNoneStackKey
 ): BuilderEdgeHandleDefaultNoneReader {
   return (partId: unknown): boolean => isEdgeHandleDefaultNone(App, stackKey, partId);
 }
 
 export function resetEdgeHandleDefaultNoneCacheMaps(
-  App: AppContainer | unknown
+  App: unknown
 ): Record<EdgeHandleDefaultNoneCacheKey, EdgeHandleDefaultNoneCacheRecord> {
   const cache = getCacheBag(App);
   const out = createNullRecord<Record<EdgeHandleDefaultNoneCacheKey, EdgeHandleDefaultNoneCacheRecord>>();

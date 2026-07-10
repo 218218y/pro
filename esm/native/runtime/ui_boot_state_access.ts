@@ -6,7 +6,7 @@ export interface UiBootRuntimeState {
   didInit: boolean;
   booting: boolean;
   bootBuildScheduled: boolean;
-  bootBuildArgs: unknown | null;
+  bootBuildArgs: unknown;
 }
 
 export function getUiBootRuntimeServiceMaybe(App: unknown): UiBootRuntimeServiceLike | null {

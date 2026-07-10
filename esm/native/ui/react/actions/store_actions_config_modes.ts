@@ -1,9 +1,4 @@
-import type {
-  ActionMetaLike,
-  AppContainer,
-  ConfigScalarValueMap,
-  SavedColorLike,
-} from '../../../../../types';
+import type { ActionMetaLike, AppContainer } from '../../../../../types';
 
 import {
   setCfgBoardMaterial as setCfgBoardMaterialApi,
@@ -33,35 +28,19 @@ function runHistoryBatch(app: AppContainer, fn: () => void, meta?: ActionMetaLik
   fn();
 }
 
-function setCfgBoardMaterial(
-  app: AppContainer,
-  value: ConfigScalarValueMap['boardMaterial'] | unknown,
-  meta?: ActionMetaLike
-): void {
+function setCfgBoardMaterial(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
   void setCfgBoardMaterialApi(app, value, meta);
 }
 
-function setCfgDoorMountMode(
-  app: AppContainer,
-  value: ConfigScalarValueMap['doorMountMode'] | unknown,
-  meta?: ActionMetaLike
-): void {
+function setCfgDoorMountMode(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
   void setCfgDoorMountModeApi(app, value, meta);
 }
 
-function setCfgGlobalHandleType(
-  app: AppContainer,
-  value: ConfigScalarValueMap['globalHandleType'] | unknown,
-  meta?: ActionMetaLike
-): void {
+function setCfgGlobalHandleType(app: AppContainer, value: unknown, meta?: ActionMetaLike): void {
   void setCfgGlobalHandleTypeApi(app, value, meta);
 }
 
-function setCfgSavedColors(
-  app: AppContainer,
-  next: Array<SavedColorLike | string> | unknown,
-  meta?: ActionMetaLike
-): void {
+function setCfgSavedColors(app: AppContainer, next: unknown, meta?: ActionMetaLike): void {
   const normalized = readSavedColorsList(next);
   const colorsNs = getColorsNamespace(app);
   if (typeof colorsNs.setSavedColors === 'function') {
@@ -71,11 +50,7 @@ function setCfgSavedColors(
   void setCfgSavedColorsApi(app, normalized, meta);
 }
 
-function setCfgColorSwatchesOrder(
-  app: AppContainer,
-  next: Array<string | null | undefined> | unknown,
-  meta?: ActionMetaLike
-): void {
+function setCfgColorSwatchesOrder(app: AppContainer, next: unknown, meta?: ActionMetaLike): void {
   const normalized = readColorSwatchesOrder(next);
   const colorsNs = getColorsNamespace(app);
   if (typeof colorsNs.setColorSwatchesOrder === 'function') {
@@ -85,19 +60,19 @@ function setCfgColorSwatchesOrder(
   void setCfgColorSwatchesOrderApi(app, normalized, meta);
 }
 
-function setCfgShowDimensions(app: AppContainer, on: boolean | unknown, meta?: ActionMetaLike): void {
+function setCfgShowDimensions(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
   void setCfgShowDimensionsApi(app, asBoolean(on), meta);
 }
 
-function setCfgMirrorReflectorEnabled(app: AppContainer, on: boolean | unknown, meta?: ActionMetaLike): void {
+function setCfgMirrorReflectorEnabled(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
   void setCfgMirrorReflectorEnabledApi(app, asBoolean(on), meta);
 }
 
-function setCfgLibraryMode(app: AppContainer, on: boolean | unknown, meta?: ActionMetaLike): void {
+function setCfgLibraryMode(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
   void setCfgLibraryModeApi(app, asBoolean(on), meta);
 }
 
-function setCfgMultiColorMode(app: AppContainer, on: boolean | unknown, meta?: ActionMetaLike): void {
+function setCfgMultiColorMode(app: AppContainer, on: unknown, meta?: ActionMetaLike): void {
   void setCfgMultiColorModeApi(app, asBoolean(on), meta);
 }
 

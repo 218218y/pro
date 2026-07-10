@@ -126,7 +126,7 @@ export interface CloudSyncStorageValueStoreLike {
 export interface CloudSyncSessionStorageLike extends CloudSyncStorageValueStoreLike {}
 
 export interface CloudSyncClipboardLike {
-  writeText?: (text: string) => Promise<unknown> | unknown;
+  writeText?: (text: string) => unknown;
 }
 
 export interface CloudSyncPromptSinkLike {
@@ -287,7 +287,7 @@ export interface CloudSyncRealtimeChannelOptionsLike extends UnknownRecord {
 export interface CloudSyncRealtimeChannelLike extends UnknownRecord {
   on?: (type: string, filterOrConfig: unknown, handler: (ev: unknown) => void) => unknown;
   subscribe?: (handler: (status: unknown) => void) => unknown;
-  send?: (payload: unknown) => Promise<unknown> | unknown;
+  send?: (payload: unknown) => unknown;
 }
 
 export interface CloudSyncRealtimeClientLike extends UnknownRecord {
@@ -295,7 +295,7 @@ export interface CloudSyncRealtimeClientLike extends UnknownRecord {
     name: string,
     opts?: CloudSyncRealtimeChannelOptionsLike
   ) => CloudSyncRealtimeChannelLike | null | undefined;
-  removeChannel?: (channel: CloudSyncRealtimeChannelLike | unknown) => unknown;
+  removeChannel?: (channel: unknown) => unknown;
   realtime?: CloudSyncRealtimeTransportLike;
 }
 

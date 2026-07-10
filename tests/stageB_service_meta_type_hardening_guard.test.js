@@ -69,8 +69,9 @@ test('[stageB] tools/meta/config/cloud surfaces use explicit typed boundaries', 
 
   assert.match(
     toolsTypes,
-    /setHandlesType\?: \(handleType: HandleType \| string \| null, meta\?: ActionMetaLike\) => unknown;/
+    /setHandlesType\?: \(handleType: string \| null, meta\?: ActionMetaLike\) => unknown;/
   );
+  assert.doesNotMatch(toolsTypes, /HandleType \| string/);
   assert.match(
     toolsTypes,
     /setDrawersOpenId\?: \(id: DrawersOpenIdLike, meta\?: ActionMetaLike\) => unknown;/

@@ -1,4 +1,4 @@
-import type { AppContainer, ProjectFileLike, ProjectFileLoadEventLike } from '../../../types';
+import type { AppContainer, ProjectFileLike } from '../../../types';
 
 import { readFileTextResultViaBrowser } from './browser_file_read.js';
 import {
@@ -32,7 +32,7 @@ export async function readProjectFileText(file: ProjectFileLike, App?: AppContai
 
 export async function loadProjectFileInput(
   App: AppContainer,
-  eventOrFile: ProjectFileLoadEventLike | ProjectFileLike | unknown
+  eventOrFile: unknown
 ): Promise<ProjectLoadActionResult> {
   const { file, target } = resolveProjectFileLoadInput(eventOrFile);
   try {

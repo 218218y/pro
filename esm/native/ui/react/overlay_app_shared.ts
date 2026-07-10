@@ -41,7 +41,7 @@ export type AppUiFeedbackSlot = {
 const overlayAppReportNonFatalSeen = new Map<string, number>();
 
 function readOverlayReportArgs(args: ArrayLike<unknown>): {
-  app: unknown | null;
+  app: unknown;
   op: string;
   err: unknown;
   throttleMs: number;
@@ -85,7 +85,7 @@ export function hasClosestElement(
 
 type OverlayAppReportNonFatalArgs =
   | [op: string, err: unknown, throttleMs?: number]
-  | [app: unknown | null | undefined, op: string, err: unknown, throttleMs?: number];
+  | [app: unknown, op: string, err: unknown, throttleMs?: number];
 
 export function reportOverlayAppNonFatal(...args: OverlayAppReportNonFatalArgs): void {
   const { app, op, err, throttleMs } = readOverlayReportArgs(args);

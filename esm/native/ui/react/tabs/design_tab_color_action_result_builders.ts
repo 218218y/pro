@@ -153,8 +153,8 @@ export function buildDesignTabColorActionSuccess<K extends DesignTabColorSuccess
 
 type DesignTabColorFailureBuilderMap = {
   [K in DesignTabColorFailureKind]: (
-    reason: DesignTabColorFailureReasonByKind[K] | unknown,
-    extras?: DesignTabColorFailureExtrasByKind[K] | unknown,
+    reason: unknown,
+    extras?: unknown,
     message?: string
   ) => DesignTabColorFailureResultByKind<K>;
 };
@@ -188,8 +188,8 @@ const buildFailureByKind: DesignTabColorFailureBuilderMap = {
 
 export function buildDesignTabColorActionFailure<K extends DesignTabColorFailureKind>(
   kind: K,
-  reason: DesignTabColorFailureReasonByKind[K] | unknown,
-  extras?: DesignTabColorFailureExtrasByKind[K] | unknown,
+  reason: unknown,
+  extras?: unknown,
   message?: string
 ): DesignTabColorFailureResultByKind<K> {
   return buildFailureByKind[kind](reason, extras, message);
@@ -198,8 +198,8 @@ export function buildDesignTabColorActionFailure<K extends DesignTabColorFailure
 type DesignTabColorErrorBuilderMap = {
   [K in DesignTabColorFailureKind]: (
     normalizedMessage: string,
-    extras?: DesignTabColorFailureExtrasByKind[K] | unknown,
-    defaultReason?: DesignTabColorFailureReasonByKind[K] | unknown
+    extras?: unknown,
+    defaultReason?: unknown
   ) => DesignTabColorFailureResultByKind<K>;
 };
 
@@ -234,8 +234,8 @@ export function buildDesignTabColorActionErrorResult<K extends DesignTabColorFai
   kind: K,
   error: unknown,
   defaultMessage: string,
-  extras?: DesignTabColorFailureExtrasByKind[K] | unknown,
-  defaultReason?: DesignTabColorFailureReasonByKind[K] | unknown
+  extras?: unknown,
+  defaultReason?: unknown
 ): DesignTabColorFailureResultByKind<K> {
   const normalized = normalizeUnknownError(error, defaultMessage);
   return buildErrorByKind[kind](normalized.message, extras, defaultReason);

@@ -46,7 +46,7 @@ function readFieldWidgets(field: unknown): unknown[] {
   }
 }
 
-function getTextFieldMaybe(form: PdfLibFormLookupLike, name: string): unknown | null {
+function getTextFieldMaybe(form: PdfLibFormLookupLike, name: string): unknown {
   if (!name || typeof form.getTextField !== 'function') return null;
   try {
     return form.getTextField(name);

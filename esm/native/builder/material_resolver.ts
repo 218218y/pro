@@ -74,7 +74,7 @@ export function makeMaterialResolver(args: MaterialResolverArgs): {
   }
 
   const reportError = getPlatformReportError(App);
-  let drawerBoxBaseMat: unknown | undefined;
+  let drawerBoxBaseMat: unknown;
   const getDrawerBoxBaseMat = () => {
     if (!drawerBoxBaseMat) drawerBoxBaseMat = getMaterial('#ffffff', 'body', false);
     return drawerBoxBaseMat || globalFrontMat;

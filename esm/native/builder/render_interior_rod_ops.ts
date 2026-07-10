@@ -126,7 +126,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
 
   // Centralized rod, hanger, and hanging-clothes rendering.
 
-  function createRodWithContents(args: RenderInteriorRodArgs | unknown) {
+  function createRodWithContents(args: unknown) {
     const safeArgs = isRodArgs(args) ? args : {};
     const App = __app(safeArgs);
     __ops(App);

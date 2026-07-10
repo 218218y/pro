@@ -17,7 +17,7 @@ import type {
 export type CornerWingInteriorShelfRuntime = {
   shelfMat: unknown;
   braceShelfMat: unknown;
-  glassShelfMat: unknown | null;
+  glassShelfMat: unknown;
   GLASS_SHELF_THICK: number;
   DOUBLE_SHELF_THICK: number;
   readCornerShelfVariant(cfgCell: CornerCellCfg, gridIndex: number): 'regular' | 'double' | 'glass' | 'brace';
@@ -44,7 +44,7 @@ export function createCornerWingInteriorShelfRuntime(
     runtime.woodThick,
     runtime.woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier
   );
-  let glassShelfMat: unknown | null = null;
+  let glassShelfMat: unknown = null;
 
   try {
     const cache = runtime.getOrCreateCacheRecord(runtime.App, 'cornerWingInteriorMaterialCache');
@@ -87,7 +87,7 @@ export function createCornerWingInteriorShelfRuntime(
   const pinRadius = INTERIOR_FITTINGS_DIMENSIONS.pins.radiusM;
   const pinLen = INTERIOR_FITTINGS_DIMENSIONS.pins.lengthM;
   const pinEdgeOffsetDefault = INTERIOR_FITTINGS_DIMENSIONS.pins.edgeOffsetDefaultM;
-  let pinGeo: unknown | null = null;
+  let pinGeo: unknown = null;
   let pinMat: ReturnType<CornerWingInteriorRuntime['asRecord']> | null = null;
 
   const ensurePinResources = (): boolean => {

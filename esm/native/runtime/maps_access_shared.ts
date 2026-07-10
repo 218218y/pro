@@ -1,7 +1,5 @@
 import type {
   ActionMetaLike,
-  HandleType,
-  HingeDir,
   KnownMapName,
   MapsByName,
   MapsNamespaceLike,
@@ -20,8 +18,8 @@ export type MapRecord = Record<string, unknown>;
 export type ErrorMetaLike = { stack?: unknown; message?: unknown };
 export type MapsBagLike = MapsNamespaceLike & UnknownRecord;
 export type KnownMapValue<K extends KnownMapName> = MapsByName[K][string];
-export type HandleValue = HandleType | string | null | undefined;
-export type HingeValue = HingeDir | string | UnknownRecord | null | undefined;
+export type HandleValue = string | null | undefined;
+export type HingeValue = string | UnknownRecord | null | undefined;
 export type SavedColorsList = readonly unknown[];
 export type ColorSwatchesOrderList = readonly unknown[];
 export type DoorReader<T> = (doorId: string) => T;

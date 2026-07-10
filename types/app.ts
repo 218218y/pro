@@ -227,7 +227,7 @@ export interface StorageNamespaceLike extends UnknownRecord {
   [k: string]: unknown;
 }
 
-export type UiFeedbackToastKind = 'success' | 'error' | 'info' | string;
+export type UiFeedbackToastKind = string;
 export type UiFeedbackPromptCallback = (value: string | null) => void;
 export type UiFeedbackConfirmCallback = () => void;
 export type UiFeedbackToastFn = (msg: string, kind?: UiFeedbackToastKind) => void;
@@ -269,7 +269,7 @@ export interface UiFeedbackRuntimeNamespaceLike extends UnknownRecord {
   modeToastSyncInstalled?: boolean;
   modeToastSyncUnsub?: unknown;
   modalState?: UiFeedbackModalStateLike | null;
-  stickyStatusToastEl?: unknown | null;
+  stickyStatusToastEl?: unknown;
 }
 
 export interface UiFeedbackNamespaceLike extends UnknownRecord {
@@ -429,10 +429,10 @@ export interface RenderMaterialsLike extends UnknownRecord {
 }
 
 export interface RenderMaterialSlotsLike extends RenderMaterialsLike {
-  dimLineMaterial?: unknown | null;
-  dimLineMaterialCell?: unknown | null;
-  outlineLineMaterial?: unknown | null;
-  sketchFillMaterial?: unknown | null;
+  dimLineMaterial?: unknown;
+  dimLineMaterialCell?: unknown;
+  outlineLineMaterial?: unknown;
+  sketchFillMaterial?: unknown;
 }
 
 export interface RendererLightingDefaultsLike extends UnknownRecord {
@@ -440,9 +440,9 @@ export interface RendererLightingDefaultsLike extends UnknownRecord {
 }
 
 export interface RenderAutoHideFloorCacheLike extends UnknownRecord {
-  floor: unknown | null;
-  roomKey: unknown | null;
-  sceneKey: unknown | null;
+  floor: unknown;
+  roomKey: unknown;
+  sceneKey: unknown;
 }
 
 export interface RenderCoreSurfaceLike extends UnknownRecord {
@@ -526,9 +526,9 @@ export interface RenderNamespaceLike extends UnknownRecord {
   __mirrorMotionUntilMs?: number;
   __mirrorMotionSnap?: UnknownRecord | null;
   __splitHoverPickablesDirty?: boolean;
-  __wpAutoHideFloorRef?: unknown | null;
-  __wpAutoHideFloorRoomKey?: unknown | null;
-  __wpAutoHideFloorSceneKey?: unknown | null;
+  __wpAutoHideFloorRef?: unknown;
+  __wpAutoHideFloorRoomKey?: unknown;
+  __wpAutoHideFloorSceneKey?: unknown;
   __wpAutoHideFloorTick?: number;
   __wpAutoHideFloorVecFloor?: UnknownRecord | null;
   __wpAutoHideFloorVecCam?: UnknownRecord | null;

@@ -10,7 +10,7 @@ import type { AppendHingedDoorOpsParams, HingedDoorPipelineCfg } from './hinged_
 import { readFiniteNumber, readRecord, readTextMap, readUnknownArray } from './hinged_doors_shared.js';
 import type { HingedDoorModuleOpsContext, HingedDoorPivotSpec } from './hinged_doors_module_ops_contracts.js';
 
-function resolveHingedDoorOpsList(value: AppendHingedDoorOpsParams['opsList'] | unknown) {
+function resolveHingedDoorOpsList(value: unknown) {
   return Array.isArray(value) ? value : null;
 }
 

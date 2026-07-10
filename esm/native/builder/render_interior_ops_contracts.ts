@@ -43,7 +43,7 @@ export type InteriorObjectLike = InteriorValueRecord & {
   getWorldScale?: (vec: InteriorVector3Like) => unknown;
   getWorldPosition?: (vec: InteriorVector3Like) => unknown;
   geometry?: InteriorGeometryLike;
-  material?: InteriorMaterialLike | unknown;
+  material?: unknown;
   castShadow?: boolean;
   receiveShadow?: boolean;
   isMesh?: boolean;
@@ -53,7 +53,7 @@ export type InteriorObjectLike = InteriorValueRecord & {
 
 export type InteriorMeshLike = InteriorObjectLike & {
   geometry?: InteriorGeometryLike;
-  material?: InteriorMaterialLike | unknown;
+  material?: unknown;
 };
 
 export type InteriorGroupLike = InteriorObjectLike;

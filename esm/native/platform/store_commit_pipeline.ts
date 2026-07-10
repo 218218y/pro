@@ -115,7 +115,7 @@ function shouldAutoMarkConfigDirty(args: {
 function stampLastActionAndMeta(args: {
   nextState: RootStateLike;
   type: string;
-  payload: PatchPayload | unknown;
+  payload: unknown;
   actionMeta: ActionMetaLike | undefined;
   silent: boolean;
 }): ActionMetaLike {
@@ -168,7 +168,7 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
   function commitNextState(
     nextState: RootStateLike,
     type: string,
-    payload: PatchPayload | unknown,
+    payload: unknown,
     actionMeta: ActionMetaLike | undefined,
     silent: boolean
   ): RootStateLike {

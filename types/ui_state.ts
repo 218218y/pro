@@ -10,14 +10,13 @@
 
 import type { UnknownRecord } from './common';
 import type { UiRawInputsLike } from './ui_raw';
-import type { TabId } from './ui_tabs';
 
 export interface UiState extends UnknownRecord {
   // Core structural inputs (often stored under ui.raw)
   raw?: UiRawInputsLike | UnknownRecord | null;
 
   // Navigation
-  activeTab?: TabId | string;
+  activeTab?: string;
 
   // Common UI scalars used by React tabs
   projectName?: string;
@@ -37,7 +36,7 @@ export interface UiState extends UnknownRecord {
   // Design tab
   doorStyle?: string;
   colorChoice?: string;
-  frontColorShelfInheritanceMode?: 'all' | 'brace' | string;
+  frontColorShelfInheritanceMode?: string;
   groovesEnabled?: boolean;
   splitDoors?: boolean;
   removeDoorsEnabled?: boolean;
@@ -74,16 +73,16 @@ export interface UiState extends UnknownRecord {
   noMainSketchRestoreSnapshot?: unknown;
 
   // Structure tab
-  baseType?: 'plinth' | 'legs' | 'none' | string;
-  baseLegStyle?: 'tapered' | 'round' | 'square' | string;
-  baseLegColor?: 'black' | 'nickel' | 'gold' | string;
-  baseLegPlatformMode?: 'stage' | 'plain' | string;
-  baseLegPlatformSideMode?: 'overhang' | 'flush' | string;
+  baseType?: string;
+  baseLegStyle?: string;
+  baseLegColor?: string;
+  baseLegPlatformMode?: string;
+  baseLegPlatformSideMode?: string;
   baseLegPlatformSideOverhangCm?: number;
   baseLegPlatformFrontOverhangCm?: number;
   basePlinthHeightCm?: number;
   baseLegHeightCm?: number;
-  slidingTracksColor?: 'nickel' | 'black' | string;
+  slidingTracksColor?: string;
   structureSelect?: string;
   singleDoorPos?: string;
   hingeDirection?: boolean;
@@ -93,7 +92,7 @@ export interface UiState extends UnknownRecord {
 
   // Corner
   cornerMode?: boolean;
-  cornerSide?: 'left' | 'right' | string;
+  cornerSide?: string;
   cornerWidth?: number;
   cornerDoors?: number;
   cornerHeight?: number;

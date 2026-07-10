@@ -3,7 +3,6 @@ import type {
   ActionsNamespaceLike,
   UiActionsNamespaceLike,
   UiRawScalarKey,
-  UiRawScalarValueMap,
   UiSlicePatch,
   UnknownRecord,
 } from '../../../types';
@@ -238,11 +237,7 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
     };
   }
   if (typeof uiNs.setRawScalar !== 'function') {
-    uiNs.setRawScalar = function setRawScalar(
-      key: UiRawScalarKey | string,
-      value: UiRawScalarValueMap[UiRawScalarKey] | unknown,
-      meta?: ActionMetaLike
-    ) {
+    uiNs.setRawScalar = function setRawScalar(key: string, value: unknown, meta?: ActionMetaLike) {
       const k = String(key == null ? '' : key);
       if (!k) return undefined;
       return actions.setUiRawScalar?.(k, value, normMeta(meta, 'actions.ui:setRawScalar'));
@@ -274,7 +269,7 @@ export function installStateApiUiSurface(ctx: StateApiSurfaceUiContext): void {
   if (typeof actions.setUiRawScalar !== 'function') {
     actions.setUiRawScalar = function setUiRawScalar<K extends UiRawScalarKey>(
       key: K | string,
-      value: UiRawScalarValueMap[K] | unknown,
+      value: unknown,
       meta?: ActionMetaLike
     ) {
       const mergedMeta = normMeta(meta, 'actions:setUiRawScalar');

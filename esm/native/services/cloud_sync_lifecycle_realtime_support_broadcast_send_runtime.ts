@@ -27,7 +27,7 @@ export async function sendCloudSyncRealtimeHint(args: {
   channel: CloudSyncRealtimeChannelLike | null;
   realtimeMode: string;
   runtimeStatus: CloudSyncRuntimeStatus;
-  scope: CloudSyncRealtimeHintPayload['scope'] | string;
+  scope: string;
   rowName?: string;
   room: string;
   clientId: string;

@@ -50,10 +50,8 @@ test('[hinged-doors-type-hardening] builder door resolvers flow through shared t
     /export type BuilderEdgeHandleDefaultNoneReader = \(partId: unknown\) => boolean/
   );
 
-  assert.match(
-    doorStateNorm,
-    /makeDoorStateAccessors\(cfg: BuilderDoorMapsConfigLike \| unknown\): BuilderDoorStateAccessorsLike/
-  );
+  assert.match(doorStateNorm, /makeDoorStateAccessors\(cfg: unknown\): BuilderDoorStateAccessorsLike/);
+  assert.doesNotMatch(doorStateNorm, /BuilderDoorMapsConfigLike \| unknown/);
   assert.match(doorStateNorm, /const curtainVal: BuilderDoorStateAccessorsLike\['curtainVal'\] = \(/);
   assert.match(
     doorStateNorm,

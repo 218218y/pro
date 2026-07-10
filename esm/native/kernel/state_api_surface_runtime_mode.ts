@@ -5,7 +5,6 @@ import type {
   ModeActionsNamespaceLike,
   RuntimeActionsNamespaceLike,
   RuntimeScalarKey,
-  RuntimeScalarValueMap,
   RuntimeSlicePatch,
   UnknownRecord,
 } from '../../../types';
@@ -62,7 +61,7 @@ export function installStateApiRuntimeModeSurface(ctx: StateApiSurfaceRuntimeMod
   if (typeof runtimeNs.setScalar !== 'function') {
     runtimeNs.setScalar = function setScalar<K extends RuntimeScalarKey>(
       key: K | string,
-      value: RuntimeScalarValueMap[RuntimeScalarKey] | unknown,
+      value: unknown,
       meta?: ActionMetaLike
     ) {
       const k = String(key == null ? '' : key);

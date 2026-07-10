@@ -40,7 +40,7 @@ type CreateStyledMirrorDoorVisualArgs = {
   h: number;
   thickness: number;
   mat: unknown;
-  baseMaterial: unknown | null;
+  baseMaterial: unknown;
   zSign: number;
   isSketch: boolean;
   mirrorLayout: MirrorLayoutList | null;

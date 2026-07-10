@@ -88,7 +88,7 @@ export function createDoorVisual(
   hasGrooves = false,
   isMirror = false,
   curtainType: string | null = 'none',
-  baseMaterial: unknown | null = null,
+  baseMaterial: unknown = null,
   frontFaceSign: number = 1,
   forceCurtainFix: boolean = false,
   mirrorLayout: MirrorLayoutList | null = null,

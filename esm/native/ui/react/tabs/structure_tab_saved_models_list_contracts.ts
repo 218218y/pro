@@ -12,7 +12,7 @@ export type StructureTabSavedModelsListProps = {
   emptyText: string;
   selectedId: SavedModelId;
   draggingModelId: SavedModelId;
-  dragOverModelId: SavedModelId | '__empty__' | '__end__' | '';
+  dragOverModelId: SavedModelId;
   dragOverPos: SavedModelsDragIndicatorPos;
   onSetSelected: (id: SavedModelId) => void;
   onApplySelected: (id?: string) => void;

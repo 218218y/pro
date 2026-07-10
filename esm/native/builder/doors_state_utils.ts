@@ -12,7 +12,6 @@ import type {
   BuilderEdgeHandleDefaultNoneReader,
   BuilderHandleTypeResolver,
   BuilderPartColorValue,
-  HandleType,
   HingeDir,
   UnknownRecord,
 } from '../../../types/index.js';
@@ -41,9 +40,7 @@ function asRecordOrNull(x: unknown): UnknownRecord | null {
 
 const hasOwn = Object.prototype.hasOwnProperty;
 
-export function makeDoorStateAccessors(
-  cfg: BuilderDoorMapsConfigLike | unknown
-): BuilderDoorStateAccessorsLike {
+export function makeDoorStateAccessors(cfg: unknown): BuilderDoorStateAccessorsLike {
   const c = asRecord(cfg);
 
   function getHingeDir(hingeKey: string, def: HingeDir): HingeDir {
@@ -176,7 +173,7 @@ export function makeHandleTypeResolver(args: {
   const hm = isRecord(cfg['handlesMap']) ? cfg['handlesMap'] : null;
 
   const globalValue = cfg['globalHandleType'];
-  const globalHandleType: HandleType | string =
+  const globalHandleType: string =
     globalValue === undefined || globalValue === null || globalValue === ''
       ? 'standard'
       : String(globalValue);

@@ -29,7 +29,7 @@ type IdentityInput = {
   readonly moduleStack?: CanvasPickingHitStack;
   readonly surfaceId?: string | null;
   readonly faceSign?: number | null;
-  readonly faceSide?: CanvasPickingHitFaceSide | string | null;
+  readonly faceSide?: string | null;
   readonly splitPart?: string | null;
   readonly source?: CanvasPickingHitSource | null;
   readonly userData?: unknown;

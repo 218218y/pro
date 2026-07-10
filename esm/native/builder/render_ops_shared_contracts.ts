@@ -74,5 +74,5 @@ export type RenderOpsBag = AnyMap & {
   __matCache?: CommonMatsCache;
 };
 
-export type MirrorTrackableObject = Object3DLike & { material?: unknown | unknown[] };
+export type MirrorTrackableObject = Object3DLike & { material?: unknown };
 export type { AppContainer, DoorVisualEntryLike, DrawerVisualEntryLike, Object3DLike };

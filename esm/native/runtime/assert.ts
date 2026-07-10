@@ -119,7 +119,7 @@ export function assertDep(app: unknown, key: string, label = ''): unknown {
   return deps[key];
 }
 
-export function assertDepKeys(app: unknown, keys: string[] | unknown, label = ''): Deps3D {
+export function assertDepKeys(app: unknown, keys: unknown, label = ''): Deps3D {
   const deps = assertDeps(app, label);
   const arr = Array.isArray(keys) ? keys : [];
   for (let i = 0; i < arr.length; i++) {

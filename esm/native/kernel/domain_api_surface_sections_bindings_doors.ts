@@ -1,4 +1,4 @@
-import type { ActionMetaLike, HandleType, HingeDir, UnknownRecord } from '../../../types';
+import type { ActionMetaLike, UnknownRecord } from '../../../types';
 
 import {
   getDoorsOpenViaService,
@@ -120,21 +120,21 @@ function createDoorsActionBindings(state: DomainApiSurfaceSectionsState): Unknow
       if (areDomainMapValuesEquivalent(state.readDoorsSplitBottomMap()[canonicalKey], value)) return;
       return writeSplitBottom(state.App, doorId, !!isOn, nextMeta);
     },
-    setHinge(doorId: unknown, hinge: HingeDir | UnknownRecord | string, meta: ActionMetaLike | undefined) {
+    setHinge(doorId: unknown, hinge: UnknownRecord | string, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setHinge');
       const key = String(doorId || '');
       if (!key) return;
       if (shouldSkipSimpleMapWrite(state, 'hingeMap', key, hinge)) return;
       return writeHinge(state.App, key, hinge, nextMeta);
     },
-    setHandle(doorId: unknown, handleType: HandleType | string | null, meta: ActionMetaLike | undefined) {
+    setHandle(doorId: unknown, handleType: string | null, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setHandle');
       const key = String(doorId || '');
       if (!key) return;
       if (shouldSkipSimpleMapWrite(state, 'handlesMap', key, handleType)) return;
       return writeHandle(state.App, key, handleType, nextMeta);
     },
-    setGlobalHandleType(handleType: HandleType | string | null, meta: ActionMetaLike | undefined) {
+    setGlobalHandleType(handleType: string | null, meta: ActionMetaLike | undefined) {
       const nextMeta = state._meta(meta, 'actions:doors:setGlobalHandleType');
       const nextType = typeof handleType === 'undefined' ? null : handleType;
       return cfgBatch(

@@ -98,7 +98,7 @@ export type ApplySlidingDoorsArgsLike = UnknownRecord & {
 
 // External drawers (hinged-only)
 export type ExternalDrawerOpLike = UnknownRecord & {
-  kind: 'shoe' | 'regular' | string;
+  kind: string;
   partId: string;
   grooveKey?: string;
   dividerKey?: string;
@@ -133,7 +133,7 @@ export type ApplyExternalDrawersArgsLike = UnknownRecord & {
 
 // Internal drawers (per-slot)
 export type InternalDrawerOpLike = UnknownRecord & {
-  kind: 'internal_drawer' | string;
+  kind: string;
   partId: string;
   drawerIndex: number;
   moduleIndex: number;
@@ -181,7 +181,7 @@ export type InteriorCustomOpsLike = UnknownRecord & {
 
 // Carcass/frame ops (boards/back panel/cornice + base)
 export type CarcassBasePlinthOpLike = UnknownRecord & {
-  kind: 'plinth' | string;
+  kind: string;
   width: number;
   height: number;
   depth: number;
@@ -192,14 +192,14 @@ export type CarcassBasePlinthOpLike = UnknownRecord & {
 };
 
 export type CarcassBaseLegsOpLike = UnknownRecord & {
-  kind: 'legs' | string;
+  kind: string;
   height: number;
   geo: UnknownRecord;
   positions: Array<UnknownRecord & { x: number; z: number }>;
 };
 
 export type CarcassBoardOpLike = UnknownRecord & {
-  kind: 'board' | string;
+  kind: string;
   partId?: string;
   width: number;
   height: number;
@@ -210,7 +210,7 @@ export type CarcassBoardOpLike = UnknownRecord & {
 };
 
 export type BackPanelOpLike = UnknownRecord & {
-  kind: 'back_panel' | string;
+  kind: string;
   partId?: string;
   material?: string;
   __wpWoodBackPanel?: boolean;
@@ -223,7 +223,7 @@ export type BackPanelOpLike = UnknownRecord & {
 };
 
 export type CorniceOpLike = UnknownRecord & {
-  kind: 'cornice' | string;
+  kind: string;
   height: number;
   baseSize: number;
   topRadius: number;

@@ -93,9 +93,7 @@ function readProjectLoadTargetValueFlightKey(value: unknown): string | null {
   return inputValue ? `target:${inputValue}` : null;
 }
 
-export function readProjectLoadFlightKey(
-  value: ProjectFileLoadEventLike | ProjectFileLike | unknown
-): string | null {
+export function readProjectLoadFlightKey(value: unknown): string | null {
   return (
     readProjectLoadFileFlightKey(readProjectLoadInputFile(value)) ||
     readProjectLoadTargetValueFlightKey(value)

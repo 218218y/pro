@@ -86,13 +86,13 @@ export function createPartMaterialResolver(args: {
 }): (partId: string, stackKey: PartStackKey, userData?: ValueRecord | null) => unknown {
   const { ui, cfg, getMaterial, globalFrontMat } = args;
   const isMulti = !!cfg.isMultiColorMode;
-  let whiteBodyMat: unknown | undefined;
+  let whiteBodyMat: unknown;
   const getWhiteBodyMat = () => {
     if (!whiteBodyMat) whiteBodyMat = getMaterial('#ffffff', 'body', false);
     return whiteBodyMat || globalFrontMat;
   };
   const getDrawerBoxBaseMat = getWhiteBodyMat;
-  let braceFrontEdgeMat: unknown | undefined;
+  let braceFrontEdgeMat: unknown;
   const getBraceFrontEdgeMat = () => {
     if (!braceFrontEdgeMat) {
       braceFrontEdgeMat = createShelfFrontEdgeMaterials({

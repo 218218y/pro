@@ -38,7 +38,7 @@ type ManualLayoutSketchBoxContentHoverArgs = {
   contentXNorm?: number | null;
   dividerXNorm?: number | null;
   dividerYNorm?: number | null;
-  dividerAxis?: 'vertical' | 'horizontal' | string | null;
+  dividerAxis?: string | null;
   dividerId?: string | null;
   dividerFrontZ?: number | null;
   snapToCenter?: boolean | null;

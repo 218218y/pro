@@ -2,7 +2,7 @@ type UnknownRecord = Record<string, unknown>;
 
 export type PdfLibFormLike = {
   getFields?: () => unknown[];
-  getTextField?: (name: string) => { getText?: () => string } | unknown;
+  getTextField?: (name: string) => unknown;
 };
 
 export type PdfLibCatalogLike = {
@@ -18,7 +18,7 @@ export type PdfLibLoadedDocumentLike = {
   getForm?: () => PdfLibFormLike | null;
   removePage?: (pageIndex: number) => unknown;
   copyPages?: (srcDoc: PdfLibLoadedDocumentLike, indexes: number[]) => Promise<unknown[]>;
-  addPage?: (sizeOrPage?: unknown) => PdfLibDrawablePageLike | unknown;
+  addPage?: (sizeOrPage?: unknown) => unknown;
   insertPage?: (index: number, page: unknown) => unknown;
   getPageCount?: () => number;
   save?: (options?: { updateFieldAppearances?: boolean }) => Promise<Uint8Array>;

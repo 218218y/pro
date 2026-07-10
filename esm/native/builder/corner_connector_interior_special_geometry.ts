@@ -55,7 +55,7 @@ export function createInsetPolygon(
 export function createShapeFromPolygon(
   THREE: CornerConnectorInteriorFlowParams['ctx']['THREE'],
   polygon: readonly P2[] | null | undefined
-): unknown | null {
+): unknown {
   if (!Array.isArray(polygon) || polygon.length < 3) return null;
   const shape = new THREE.Shape();
   shape.moveTo(polygon[0].x, polygon[0].z);

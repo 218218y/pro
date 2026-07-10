@@ -9,7 +9,6 @@ import type {
   ThreeLike,
   UnknownRecord,
 } from '../../../types';
-import type { BuilderOutlineFn } from '../../../types';
 import type { GetMaterialFn } from './build_flow_readers.js';
 
 type MaterialResolverResult = ReturnType<typeof import('./material_resolver.js').makeMaterialResolver>;
@@ -212,7 +211,7 @@ export type BuildFlowPlanResolveArgs = BuildFlowPlanMaterialsArgs &
   > & {
     state: BuildStateLike;
     sketchMode: boolean;
-    addOutlines: BuilderOutlineFn | unknown;
+    addOutlines: unknown;
     calculateModuleStructureFn: BuilderCalculateModuleStructureFn | null;
     doorState?: BuilderDoorStateAccessorsLike;
   };

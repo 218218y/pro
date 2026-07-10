@@ -51,7 +51,7 @@ export type HandleUserDataLike = ValueRecord & {
   __handleZSign?: number;
   __handleAbsY?: number;
   __frontMaxZ?: number;
-  __wpStack?: 'top' | 'bottom' | string;
+  __wpStack?: string;
   __keepMaterial?: boolean;
   __wpSketchCustomHandles?: boolean;
 };
@@ -93,8 +93,8 @@ export type CreateHandleMeshCtx =
   | {
       App: AppContainer;
       addOutlines: BuilderOutlineFn;
-      edgeHandleVariant?: EdgeHandleVariant | string | null;
-      handleColor?: HandleFinishColor | string | null;
+      edgeHandleVariant?: string | null;
+      handleColor?: string | null;
     }
   | null
   | undefined;
