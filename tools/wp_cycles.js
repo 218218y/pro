@@ -11,7 +11,7 @@
  * - Scans .js/.mjs/.ts/.tsx/.mts
  * - Resolves extensionless specs
  * - Resolves `.js` specs to `.ts` when the `.js` file doesn't exist yet (common in TS source)
- * - Collapses tiny `.js` re-export shims that forward into `.ts` (helps during Stage 5)
+ * - Collapses tiny `.js` re-export shims that forward into `.ts` (keeps module audits stable)
  *
  * Usage:
  *   node tools/wp_cycles.js              # checks ./esm

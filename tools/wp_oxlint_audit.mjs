@@ -131,7 +131,7 @@ function printSummary(summary) {
   } else {
     if (summary.auditOnly) {
       console.log(
-        '[Oxlint Audit] syntax mode is audit-only in Stage 5; legacy ESLint remains the blocker for diagnostics.'
+        '[Oxlint Audit] syntax mode is blocking in the modern gate; use --fail-on-diagnostics for CI checks.'
       );
     } else {
       console.log('[Oxlint Audit] syntax mode is blocking; diagnostics fail this gate.');
@@ -158,7 +158,7 @@ function main() {
     process.exit(1);
   }
 
-  // Oxlint uses a non-zero status when diagnostics are emitted. Stage 5 keeps
+  // Oxlint uses a non-zero status when diagnostics are emitted. The modern lane keeps
   // diagnostics audit-only unless the caller explicitly asks to fail on them.
   if (args.failOnDiagnostics && summary.diagnostics > 0) process.exit(1);
   if (typeof result.status === 'number' && result.status !== 0 && summary.diagnostics === 0) {

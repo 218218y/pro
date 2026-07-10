@@ -60,21 +60,17 @@ function isLintContractsScriptWired(pkg) {
   );
 }
 
-function isParserRemovalDryRunScript(command) {
-  return command.includes('wp_lint.js') && command.includes('--profile parser-removal-dry-run');
+function isJsOnlyLintScript(command) {
+  return command.includes('wp_lint.js') && command.includes('--profile js-only');
 }
 
 function isLintJsSeparated(pkg) {
-  return isParserRemovalDryRunScript(getScript(pkg, 'lint:js'));
+  return isJsOnlyLintScript(getScript(pkg, 'lint:js'));
 }
 
 function isLintJsStrictSeparated(pkg) {
   const command = getScript(pkg, 'lint:js:strict');
-  return isParserRemovalDryRunScript(command) && command.includes('--strict');
-}
-
-function isParserRemovalDryRunWired(pkg) {
-  return isParserRemovalDryRunScript(getScript(pkg, 'lint:parser-removal-dry-run'));
+  return isJsOnlyLintScript(command) && command.includes('--strict');
 }
 
 function isTypecheckGateWired(pkg) {
@@ -86,7 +82,7 @@ function futureOwnerForRow(row) {
   if (row.futureTarget === 'replace-by-custom-contract') return 'custom lint contracts';
   if (row.futureTarget === 'replace-by-tsc') return 'TypeScript typecheck';
   if (row.rule === 'no-undef') return 'ESLint JS/tools + TypeScript typecheck';
-  if (row.futureTarget === 'keep-eslint') return 'ESLint compatibility';
+  if (row.futureTarget === 'keep-eslint') return 'ESLint JS/tools/config';
   if (row.futureTarget === 'drop-duplicate') return 'duplicate removed by owner gate';
   return 'accepted policy';
 }
@@ -96,7 +92,7 @@ function blockingCommandForRow(row) {
   if (row.futureTarget === 'replace-by-custom-contract') return CUSTOM_CONTRACT_COMMAND;
   if (row.futureTarget === 'replace-by-tsc') return TYPECHECK_COMMAND;
   if (row.rule === 'no-undef') return `${JS_ESLINT_COMMAND}; TS/TSX via ${TYPECHECK_COMMAND}`;
-  if (row.futureTarget === 'keep-eslint') return 'npm run lint:legacy';
+  if (row.futureTarget === 'keep-eslint') return JS_ESLINT_COMMAND;
   return 'n/a';
 }
 
@@ -111,16 +107,16 @@ function readinessNotesForRow(row) {
     return 'Owned by TypeScript typecheck gates instead of ESLint parser selectors.';
   }
   if (row.rule === 'no-undef') {
-    return 'Not a TS/TSX parser-removal blocker: ESLint keeps JS/tools globals, while TS/TSX relies on TypeScript typecheck.';
+    return 'Not a TS/TSX ESLint blocker: ESLint keeps JS/tools globals, while TS/TSX relies on TypeScript typecheck.';
   }
   if (row.futureTarget === 'keep-eslint') {
     return hasTsOrTsxScope(row)
-      ? 'Still TS/TSX-scoped under ESLint; this would block parser removal until narrowed or re-owned.'
+      ? 'Still TS/TSX-scoped under ESLint; this would block ESLint TS/TSX removal until narrowed or re-owned.'
       : 'Kept under ESLint for JS/tools/config only.';
   }
   if (row.futureTarget === 'drop-duplicate')
     return 'Duplicate coverage is intentionally dropped after the owning gate is blocking.';
-  return 'Explicitly accepted for parser removal.';
+  return 'Explicitly accepted for the modern gate.';
 }
 
 function evaluateRow(row, context) {
@@ -130,7 +126,7 @@ function evaluateRow(row, context) {
   if (!target || UNDECIDED_TARGETS.has(target)) {
     issues.push(`future target is not decided: ${target || '<missing>'}`);
   } else if (!ALLOWED_TARGETS.has(target)) {
-    issues.push(`future target is not an allowed Stage 5 target: ${target}`);
+    issues.push(`future target is not an allowed Stage 9 target: ${target}`);
   }
 
   if (target === 'replace-by-oxlint' && !context.oxlintSyntaxBlocking) {
@@ -146,7 +142,7 @@ function evaluateRow(row, context) {
     }
     if (context.architectureBaselineCount !== 0) {
       issues.push(
-        `architecture baseline is ${context.architectureBaselineCount}; parser removal readiness requires 0`
+        `architecture baseline is ${context.architectureBaselineCount}; modern lint readiness requires 0`
       );
     }
   }
@@ -158,18 +154,14 @@ function evaluateRow(row, context) {
   if (target === 'keep-eslint') {
     if (row.rule === 'no-undef') {
       if (!context.lintJsSeparated)
-        issues.push(
-          'no-undef requires lint:js to use the parser-removal dry-run ESLint gate for JS/tools/config'
-        );
+        issues.push('no-undef requires lint:js to use the JS-only ESLint gate for JS/tools/config');
       if (!context.lintJsStrictSeparated)
         issues.push(
-          'no-undef requires lint:js:strict to use parser-removal dry-run with --strict for zero-warning JS/tools coverage'
+          'no-undef requires lint:js:strict to use JS-only with --strict for zero-warning JS/tools coverage'
         );
-      if (!context.parserRemovalDryRunWired)
-        issues.push('no-undef requires lint:parser-removal-dry-run to be wired');
       if (!context.typecheckWired) issues.push('no-undef TS/TSX replacement requires typecheck gates');
     } else if (hasTsOrTsxScope(row)) {
-      issues.push('keep-eslint rule still applies to TS/TSX and blocks parser removal');
+      issues.push('keep-eslint rule still applies to TS/TSX and blocks ESLint TS/TSX removal');
     }
   }
 
@@ -183,7 +175,7 @@ function evaluateRow(row, context) {
   };
 }
 
-export async function collectLintParserRemovalReadiness(options = {}) {
+export async function collectLintModernReadiness(options = {}) {
   const root = options.root || ROOT;
   const pkg = options.packageJson || readPackageJson(root);
   const rows = options.rows || (await collectLintRuleMatrix());
@@ -195,7 +187,6 @@ export async function collectLintParserRemovalReadiness(options = {}) {
     lintContractsWired: isLintContractsScriptWired(pkg),
     lintJsSeparated: isLintJsSeparated(pkg),
     lintJsStrictSeparated: isLintJsStrictSeparated(pkg),
-    parserRemovalDryRunWired: isParserRemovalDryRunWired(pkg),
     oxlintSyntaxBlocking: isBlockingOxlintSyntaxScript(pkg),
     typecheckWired: isTypecheckGateWired(pkg),
   };
@@ -210,8 +201,8 @@ export async function collectLintParserRemovalReadiness(options = {}) {
   };
 }
 
-export async function collectLintParserRemovalReadinessRows(options = {}) {
-  return (await collectLintParserRemovalReadiness(options)).rows;
+export async function collectLintModernReadinessRows(options = {}) {
+  return (await collectLintModernReadiness(options)).rows;
 }
 
 function parseArgs(argv) {
@@ -219,7 +210,7 @@ function parseArgs(argv) {
   for (const arg of argv) {
     if (arg === '--json') args.json = true;
     else if (arg === '--help' || arg === '-h') {
-      console.log('Usage: node tools/wp_lint_parser_removal_readiness.mjs [--json]');
+      console.log('Usage: node tools/wp_lint_modern_readiness.mjs [--json]');
       process.exit(0);
     } else {
       throw new Error(`Unknown argument: ${arg}`);
@@ -230,7 +221,7 @@ function parseArgs(argv) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const report = await collectLintParserRemovalReadiness();
+  const report = await collectLintModernReadiness();
   if (args.json) {
     console.log(JSON.stringify(report, null, 2));
     return;
@@ -238,12 +229,12 @@ async function main() {
 
   if (report.ready) {
     console.log(
-      `[Lint Parser Removal Readiness] OK (${report.rows.length} rule(s)); architecture baseline = ${report.context.architectureBaselineCount}`
+      `[Lint Modern Readiness] OK (${report.rows.length} rule(s)); architecture baseline = ${report.context.architectureBaselineCount}`
     );
     return;
   }
 
-  console.error(`[Lint Parser Removal Readiness] FAILED (${report.failures.length} blocker(s))`);
+  console.error(`[Lint Modern Readiness] FAILED (${report.failures.length} blocker(s))`);
   for (const failure of report.failures) {
     console.error(`- ${failure.rule}: ${failure.notes}`);
   }

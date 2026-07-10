@@ -6,7 +6,7 @@
 //   and quickly become an unmaintainable compatibility mess.
 // - Optional calls should route through canonical helpers (e.g. runtime/actions_access.ts) or guaranteed surfaces.
 //
-// This guard is intentionally lightweight (regex-based) and runs before ESLint in the migrate profile.
+// This guard is intentionally lightweight (regex-based) and can run as an explicit JS lint preflight.
 
 import fs from 'node:fs';
 import path from 'node:path';

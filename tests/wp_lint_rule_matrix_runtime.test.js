@@ -11,6 +11,9 @@ function read(rel) {
   return fs.readFileSync(new URL('../' + rel, import.meta.url), 'utf8');
 }
 
+const OLD_LINT_LEGACY = 'lint:' + 'legacy';
+const OLD_PARSER_REMOVAL = 'parser' + '-removal';
+
 const EXPECTED_RULES = [
   'eqeqeq',
   'no-const-assign',
@@ -24,7 +27,7 @@ const EXPECTED_RULES = [
   'no-unused-vars',
 ];
 
-test('lint rule matrix captures every configured ESLint rule with stage-5 ownership metadata', async () => {
+test('lint rule matrix captures every configured ESLint rule with stage-9 ownership metadata', async () => {
   const rows = await collectLintRuleMatrix();
   assert.deepEqual(
     rows.map(row => row.rule),
@@ -52,7 +55,7 @@ test('lint strategy matrix document is generated from the live eslint config', a
   assert.equal(read('docs/LINT_STRATEGY_MATRIX.md'), expected);
 });
 
-test('package promotes modern lint while keeping retired legacy alias', () => {
+test('package promotes modern lint without retired aliases', () => {
   const pkg = JSON.parse(read('package.json'));
   assert.equal(pkg.devDependencies.typescript, '7.0.2');
   assert.equal(pkg.devDependencies.oxlint, '1.73.0');
@@ -62,16 +65,9 @@ test('package promotes modern lint while keeping retired legacy alias', () => {
     pkg.scripts['lint:modern'],
     'npm run lint:js:strict && npm run lint:ts-modern:syntax && npm run lint:contracts'
   );
-  assert.equal(pkg.scripts['lint:legacy'], 'node tools/wp_lint_legacy_retired.mjs');
-  assert.equal(pkg.scripts['lint:js'], 'node tools/wp_lint.js --profile parser-removal-dry-run');
-  assert.equal(
-    pkg.scripts['lint:js:strict'],
-    'node tools/wp_lint.js --profile parser-removal-dry-run --strict'
-  );
-  assert.equal(
-    pkg.scripts['lint:parser-removal-dry-run'],
-    'node tools/wp_lint.js --profile parser-removal-dry-run'
-  );
+  assert.equal(pkg.scripts[OLD_LINT_LEGACY], undefined);
+  assert.equal(pkg.scripts['lint:js'], 'node tools/wp_lint.js --profile js-only');
+  assert.equal(pkg.scripts['lint:js:strict'], 'node tools/wp_lint.js --profile js-only --strict');
   assert.equal(
     pkg.scripts['lint:ts-modern:syntax'],
     'node tools/wp_oxlint_audit.mjs --mode syntax --fail-on-diagnostics'
@@ -81,5 +77,8 @@ test('package promotes modern lint while keeping retired legacy alias', () => {
   assert.equal(pkg.scripts['quality:ts'], 'npm run quality:ts-modern');
   assert.match(pkg.scripts['quality:ts-modern'], /lint:js:strict/);
   assert.match(pkg.scripts['quality:ts-modern'], /lint:contracts/);
-  assert.doesNotMatch(pkg.scripts['quality:ts-modern'], /lint:legacy/);
+  assert.doesNotMatch(
+    pkg.scripts['quality:ts-modern'],
+    new RegExp(`${OLD_LINT_LEGACY}|${OLD_PARSER_REMOVAL}`)
+  );
 });

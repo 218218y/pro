@@ -15,6 +15,10 @@ function read(rel) {
   return fs.readFileSync(new URL('../' + rel, import.meta.url), 'utf8');
 }
 
+const OLD_LINT_LEGACY = 'lint:' + 'legacy';
+const OLD_PARSER_REMOVAL = 'parser' + '-removal';
+const OLD_DRY_RUN_SCRIPT = 'lint:' + OLD_PARSER_REMOVAL + '-dry-run';
+
 function packageJson() {
   return JSON.parse(read('package.json'));
 }
@@ -49,7 +53,7 @@ test('eslint config imports without removed TS ESLint packages installed', () =>
 
   const tempProject = copyConfigToTempProject();
   const script = [
-    "process.env.WP_LINT_PROFILE = 'parser-removal-dry-run';",
+    "process.env.WP_LINT_PROFILE = 'js-only';",
     `const mod = await import(${JSON.stringify(pathToFileURL(path.join(tempProject, 'eslint.config.js')).href)});`,
     "console.log(Array.isArray(mod.default) ? 'ok' : 'bad');",
   ].join('\n');
@@ -61,16 +65,18 @@ test('eslint config imports without removed TS ESLint packages installed', () =>
   assert.equal(out.trim(), 'ok');
 });
 
-test('migrate profile is JS-only after package removal', async () => {
-  const migrateConfig = await loadEslintConfig('migrate');
+test('only the js-only ESLint profile is supported after package removal', async () => {
+  const jsOnlyConfig = await loadEslintConfig('js-only');
   assert.equal(
-    migrateConfig.some(entry => entry.languageOptions?.parser || Object.keys(entry.plugins || {}).length),
+    jsOnlyConfig.some(entry => entry.languageOptions?.parser || Object.keys(entry.plugins || {}).length),
     false,
-    'migrate profile must not configure removed TS ESLint parser/plugin packages'
+    'js-only profile must not configure removed TS ESLint parser/plugin packages'
   );
+
+  await assert.rejects(() => loadEslintConfig('migrate'), /Unsupported WP_LINT_PROFILE/);
 });
 
-test('removed TS ESLint packages are absent and modern quality excludes retired legacy alias', () => {
+test('removed TS ESLint packages are absent and modern quality has no old aliases', () => {
   const pkg = packageJson();
 
   assert.equal(pkg.devDependencies[REMOVED_PARSER], undefined);
@@ -80,9 +86,13 @@ test('removed TS ESLint packages are absent and modern quality excludes retired 
     pkg.scripts['lint:modern'],
     'npm run lint:js:strict && npm run lint:ts-modern:syntax && npm run lint:contracts'
   );
-  assert.equal(pkg.scripts['lint:legacy'], 'node tools/wp_lint_legacy_retired.mjs');
+  assert.equal(pkg.scripts[OLD_LINT_LEGACY], undefined);
+  assert.equal(pkg.scripts[OLD_DRY_RUN_SCRIPT], undefined);
   assert.equal(pkg.scripts['quality:ts'], 'npm run quality:ts-modern');
   assert.match(pkg.scripts['quality:ts-modern'], /lint:js:strict/);
-  assert.doesNotMatch(pkg.scripts['quality:ts-modern'], /lint:legacy/);
-  assert.doesNotMatch(pkg.scripts['lint:modern'], /lint:legacy/);
+  assert.doesNotMatch(
+    pkg.scripts['quality:ts-modern'],
+    new RegExp(`${OLD_LINT_LEGACY}|${OLD_PARSER_REMOVAL}`)
+  );
+  assert.doesNotMatch(pkg.scripts['lint:modern'], new RegExp(`${OLD_LINT_LEGACY}|${OLD_PARSER_REMOVAL}`));
 });

@@ -10,7 +10,7 @@ export const ROOT = path.resolve(__dirname, '..');
 
 const ESLINT_CONFIG_RELATIVE_PATH = 'eslint.config.js';
 const DEFAULT_DOC_RELATIVE_PATH = 'docs/LINT_STRATEGY_MATRIX.md';
-const PROFILES = ['runtime', 'migrate', 'parser-removal-dry-run'];
+const PROFILES = ['js-only'];
 
 const FUTURE_TARGET_BY_RULE = new Map([
   ['no-dupe-keys', 'replace-by-oxlint'],
@@ -26,12 +26,12 @@ const FUTURE_TARGET_BY_RULE = new Map([
 ]);
 
 const NOTES_BY_RULE = new Map([
-  ['no-dupe-keys', 'Covered by ESLint today and by Oxlint correctness; low-risk syntax parity rule.'],
-  ['no-unreachable', 'Covered by ESLint today and by Oxlint correctness; low-risk syntax parity rule.'],
-  ['no-const-assign', 'Covered by ESLint today and by Oxlint correctness; low-risk syntax parity rule.'],
+  ['no-dupe-keys', 'Covered by JS ESLint and Oxlint correctness; low-risk syntax parity rule.'],
+  ['no-unreachable', 'Covered by JS ESLint and Oxlint correctness; low-risk syntax parity rule.'],
+  ['no-const-assign', 'Covered by JS ESLint and Oxlint correctness; low-risk syntax parity rule.'],
   [
     'no-redeclare',
-    'Oxlint owns the syntax class; legacy ESLint stays as a temporary compatibility gate until the parser-removal dry-run.',
+    'Oxlint owns this syntax class in the canonical modern gate; ESLint covers JS/tools/config only.',
   ],
   [
     'eqeqeq',
@@ -43,7 +43,7 @@ const NOTES_BY_RULE = new Map([
   ],
   [
     'no-unused-vars',
-    'Oxlint syntax is configured with legacy underscore ignore behavior for args, vars, and catch bindings.',
+    'Oxlint syntax is configured with underscore ignore behavior for args, vars, and catch bindings.',
   ],
   [
     'no-restricted-globals',
@@ -179,7 +179,7 @@ export async function collectLintRuleMatrix() {
             futureTarget: FUTURE_TARGET_BY_RULE.get(ruleName) || 'intentionally-accepted',
             notes:
               NOTES_BY_RULE.get(ruleName) ||
-              'Rule has an explicit Stage 5 target; keep legacy ESLint until parity report says it is covered or intentionally accepted.',
+              'Rule has an explicit Stage 9 target and an owner in the modern quality gate.',
           });
         }
         const row = byRule.get(ruleName);
@@ -217,7 +217,7 @@ export function createLintRuleMatrixMarkdown(rows) {
     '',
     `Generated from: \`${generatedFrom}\`.`,
     '',
-    'Stage 7 purpose: the TS/TSX ESLint parser-removal step is complete. ESLint now owns JS/tools/tests/config, while TS/TSX is covered by Oxlint syntax, TypeScript typecheck, and custom contracts. This is not a TypeScript 7 upgrade.',
+    'Stage 9 finalization: TypeScript 7.0.2 is active, TS/TSX ESLint ownership is removed, ESLint owns JS/tools/tests/config, and TS/TSX is covered by Oxlint syntax, TypeScript typecheck, and custom contracts.',
     '',
     '## Rule matrix',
     '',
@@ -236,10 +236,10 @@ export function createLintRuleMatrixMarkdown(rows) {
     '## Migration policy',
     '',
     '- `lint:modern` is the primary lint gate and combines strict JS ESLint, Oxlint syntax, and custom contracts.',
-    '- `lint:ts-modern:syntax` is now a blocking Oxlint syntax gate; it must stay at 0 diagnostics before later parser-removal work.',
-    '- `lint:ts-modern:type-aware` is audit-only because `oxlint-tsgolint` targets the TypeScript 7/type-aware path and the project is intentionally still on the current TypeScript lane.',
+    '- `lint:ts-modern:syntax` is now a blocking Oxlint syntax gate; it must stay at 0 diagnostics as the canonical TS/TSX syntax gate.',
+    '- `lint:ts-modern:type-aware` remains audit-only; it is tracked separately from the blocking modern gate.',
     '- `lint:contracts` owns project-specific rules that should not depend on ESLint parser selectors, including the lint architecture contracts.',
-    '- TS/TSX parser removal is complete; `lint:parser-removal-readiness` remains as a regression check for the split.',
+    '- TS/TSX ESLint removal is complete; `lint:modern-readiness` remains as a regression check for rule ownership.',
     ''
   );
 

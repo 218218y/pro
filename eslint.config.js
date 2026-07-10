@@ -1,20 +1,22 @@
 /**
  * WardrobePro ESLint (Flat Config)
  *
- * Goal: keep day-to-day lint low-noise, while making it easy to surface
- * exactly what blocks the upcoming ESM migration.
+ * Goal: keep the ESLint lane focused on JS/tools/tests/config files.
+ * TS/TSX is owned by Oxlint syntax, TypeScript typecheck, and custom contracts.
  *
- * Profiles:
- *   - runtime (default): conservative, avoids churn
- *   - migrate          : highlights remaining "script-style" coupling for JS surfaces
+ * Profile:
+ *   - js-only: strict JavaScript tooling/config coverage.
  *
  * Select profile via:
- *   node tools/wp_lint.js --profile migrate
+ *   node tools/wp_lint.js --profile js-only
  */
 
-const PROFILE = (process.env.WP_LINT_PROFILE || 'runtime').toLowerCase();
-const MIGRATE = PROFILE === 'migrate' || PROFILE === 'esm' || PROFILE === 'module';
-// ESLint is now a JS/tools/config gate only. TS/TSX is owned by the modern split.
+const PROFILE = (process.env.WP_LINT_PROFILE || 'js-only').toLowerCase();
+const JS_ONLY = PROFILE === 'js-only';
+if (!JS_ONLY) {
+  throw new Error(`Unsupported WP_LINT_PROFILE: ${PROFILE}. Supported profile: js-only`);
+}
+// ESLint is a JS/tools/config gate only. TS/TSX is owned by the modern quality gate.
 
 // --- Globals ---------------------------------------------------------------
 
@@ -51,18 +53,10 @@ const browserBuiltins = {
   XMLSerializer: 'readonly',
 };
 
-// App singletons (allowed everywhere)
-const appGlobals = {
-  App: 'readonly',
-  THREE: 'readonly',
-  HistorySystem: 'readonly',
-};
-
 // Runtime-only "compat" globals were removed from ESLint globals
 // so they surface as no-undef warnings during migration.
 
-const browserGlobalsRuntime = { ...browserBuiltins, ...appGlobals };
-const browserGlobalsMigrate = { ...browserBuiltins };
+const browserGlobalsJsOnly = { ...browserBuiltins };
 
 // Node globals for modern ESM tooling.
 // NOTE: we intentionally do NOT declare CommonJS globals (require/module/exports)
@@ -248,19 +242,17 @@ export default [
     ignores: ['dist/**', 'libs/**', 'node_modules/**', 'tools/three_addons/**'],
   },
 
-  // Legacy / pre-ESM source (./js). Only present in older repos.
-  // In runtime profile we keep this low-noise; in migrate profile we surface globals/unused vars
-  // to help finish migration work.
+  // Browser script source (./js). Only present in older repos.
   {
     files: ['js/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'script',
-      globals: MIGRATE ? browserGlobalsMigrate : browserGlobalsRuntime,
+      globals: browserGlobalsJsOnly,
     },
     rules: {
       ...baseBrowserRules,
-      ...(MIGRATE ? profileBrowserRules : {}),
+      ...profileBrowserRules,
     },
   },
 

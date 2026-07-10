@@ -9,14 +9,13 @@
 
   Usage:
     node tools/wp_lint.js
-    node tools/wp_lint.js --profile runtime
-    node tools/wp_lint.js --profile migrate
-    node tools/wp_lint.js --profile migrate --strict
+    node tools/wp_lint.js --profile js-only
+    node tools/wp_lint.js --profile js-only --strict
     node tools/wp_lint.js --fix
 
   Notes:
-    - The selected profile is read by eslint.config.cjs via process.env.WP_LINT_PROFILE.
-    - "--strict" sets --max-warnings=0 (useful to gate migration warnings).
+    - The selected profile is read by eslint.config.js via process.env.WP_LINT_PROFILE.
+    - "--strict" sets --max-warnings=0 for the JS/tools/config lane.
 */
 
 import path from 'node:path';
@@ -40,9 +39,9 @@ function getFlagValue(flag) {
   return null;
 }
 
-const profile = (getFlagValue('--profile') || 'runtime').trim();
+const profile = (getFlagValue('--profile') || 'js-only').trim();
 const normalizedProfile = profile.toLowerCase();
-const jsOnlyProfile = ['runtime', 'migrate', 'parser-removal-dry-run', 'js-only'].includes(normalizedProfile);
+const jsOnlyProfile = normalizedProfile === 'js-only';
 const strict = hasFlag('--strict');
 const fix = hasFlag('--fix');
 
@@ -70,7 +69,7 @@ if (!configPath) {
 const defaultTargets = [];
 if (!jsOnlyProfile) {
   console.error(`[WP Lint] Unknown profile: ${profile}`);
-  console.error('[WP Lint] Supported profiles: runtime, migrate, parser-removal-dry-run, js-only');
+  console.error('[WP Lint] Supported profile: js-only');
   process.exit(2);
 }
 
@@ -95,30 +94,6 @@ if (fix) args.push('--fix');
 if (passthrough.length) args.push(...passthrough);
 
 const env = { ...process.env, WP_LINT_PROFILE: profile };
-
-// Migration profile hardening: run lightweight write-contract guard first.
-// This keeps regressions out of the codebase even if ESLint rules don't cover them.
-if (profile === 'migrate') {
-  const guardBin = path.join(ROOT, 'tools', 'wp_write_contract_guard.js');
-  if (fs.existsSync(guardBin)) {
-    const g = spawnSync(process.execPath, [guardBin], {
-      cwd: ROOT,
-      stdio: 'inherit',
-      env,
-    });
-    if (typeof g.status === 'number' && g.status !== 0) process.exit(g.status);
-  }
-
-  const probeGuardBin = path.join(ROOT, 'tools', 'wp_actions_surface_probe_guard.js');
-  if (fs.existsSync(probeGuardBin)) {
-    const g2 = spawnSync(process.execPath, [probeGuardBin], {
-      cwd: ROOT,
-      stdio: 'inherit',
-      env,
-    });
-    if (typeof g2.status === 'number' && g2.status !== 0) process.exit(g2.status);
-  }
-}
 
 const r = spawnSync(process.execPath, args, {
   cwd: ROOT,
