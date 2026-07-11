@@ -7,6 +7,8 @@ import test from 'node:test';
 import { readSourceText } from '../tools/wp_source_text.mjs';
 import { transformTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
+import { readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
+
 async function loadHitIdentityOwner() {
   const doorPartHelperShim = `
 function __wp_isDoorLikePartId(partId) {
@@ -168,8 +170,10 @@ test('stage 18 keeps mirror, split, and sketch identities canonical', async () =
 test('stage 18 canvas parity contract is wired into guardrails', () => {
   const pkg = JSON.parse(readSourceText('package.json'));
   assert.match(pkg.scripts['check:refactor-guardrails'], /check:canvas-hit-parity/);
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /refactor_stage18_canvas_hit_parity_runtime\.test\.js/
+  assert.ok(
+    readTestGroupFiles('refactor-stage-guards')?.includes(
+      'tests/refactor_stage18_canvas_hit_parity_runtime.test.js'
+    ),
+    'tests/refactor_stage18_canvas_hit_parity_runtime.test.js must belong to the canonical stage guard group'
   );
 });

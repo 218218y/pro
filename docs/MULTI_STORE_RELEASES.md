@@ -67,9 +67,11 @@ This value is defined in both the backward-compatible root runtime config (`wp_r
 
 Current profiles:
 
-- `bargig` - existing Bargig behavior/table, kept backward-compatible and pointed at the root Bargig assets.
-- `store-1` - temporary profile for חנות 1, with its own replaceable logo/PDF files.
-- `store-2` - temporary profile for חנות 2, with its own replaceable logo/PDF files.
+- `bargig` - `releaseStatus: 'active'`; existing Bargig behavior/table, kept backward-compatible and pointed at the root Bargig assets.
+- `store-1` - `releaseStatus: 'draft'`; temporary profile for חנות 1, with its own replaceable logo/PDF files.
+- `store-2` - `releaseStatus: 'draft'`; temporary profile for חנות 2, with its own replaceable logo/PDF files.
+
+`npm run check:site-profiles` scans every profile together. It fails on missing assets, invalid ids/URLs, or duplicate storage namespaces, Supabase tables, and realtime channel prefixes. Placeholder deployment URLs are warnings for draft profiles and hard failures after a profile is promoted to `active`. The multi-store release wrapper runs the same audit before building, so release commands cannot bypass the shared contract.
 
 When a new store gets its own branding, replace only these files inside that store folder:
 
@@ -96,6 +98,12 @@ npm run bundle:store1
 npm run bundle:store1:site2
 npm run bundle:store2
 npm run bundle:store2:site2
+```
+
+Profile contract:
+
+```bash
+npm run check:site-profiles
 ```
 
 Generic command:

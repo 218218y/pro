@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
+import { readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
+
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 
 test('stage 9 test portfolio audit is wired into refactor guardrails', () => {
@@ -15,8 +17,13 @@ test('stage 9 test portfolio audit is wired into refactor guardrails', () => {
   assert.match(packageJson.scripts['check:refactor-guardrails'], /check:test-portfolio/);
 });
 
-test('stage guard portfolio has a single package lane', () => {
-  const lane = packageJson.scripts['test:refactor-stage-guards'] || '';
+test('stage guard portfolio has one package facade backed by the canonical test-group catalog', () => {
+  assert.equal(
+    packageJson.scripts['test:refactor-stage-guards'],
+    'node tools/wp_test_group.mjs refactor-stage-guards'
+  );
+  const files = readTestGroupFiles('refactor-stage-guards');
+  assert.ok(Array.isArray(files));
   for (const file of [
     'tests/refactor_stage3_guardrails_runtime.test.js',
     'tests/refactor_stage4_public_api_and_type_hardening_runtime.test.js',
@@ -27,6 +34,6 @@ test('stage guard portfolio has a single package lane', () => {
     'tests/refactor_stage9_test_portfolio_runtime.test.js',
   ]) {
     assert.ok(fs.existsSync(file), `${file} should exist`);
-    assert.match(lane, new RegExp(file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.ok(files.includes(file), `${file} should belong to refactor-stage-guards`);
   }
 });

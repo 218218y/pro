@@ -66,6 +66,8 @@ These are available lanes to choose from, not a checklist to run after every fix
 
 ```bash
 npm run check:docs-control-plane
+npm run check:generated-reports
+npm run check:site-profiles
 npm run verify:parallel -- --no-bundle
 npm run test
 npm run gate

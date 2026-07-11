@@ -11,6 +11,7 @@ import {
   REFACTOR_STAGE_PROGRESS_MARKER,
   assertRefactorStageCatalogIsWellFormed,
 } from '../tools/wp_refactor_stage_catalog.mjs';
+import { readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
 
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 
@@ -25,118 +26,49 @@ function runNodeScript(script) {
 
 test('stage 10 refactor integration audit is wired into guardrails and verify lane', () => {
   assert.match(pkg.scripts['check:refactor-guardrails'], /npm run check:refactor-integration/);
+  assert.match(pkg.scripts['verify:refactor-modernization'], /npm run check:docs-control-plane/);
+  assert.match(pkg.scripts['verify:refactor-modernization'], /npm run check:generated-reports/);
+  assert.match(pkg.scripts['verify:refactor-modernization'], /npm run check:site-profiles/);
   assert.match(pkg.scripts['verify:refactor-modernization'], /npm run check:script-duplicates/);
   assert.match(pkg.scripts['verify:refactor-modernization'], /npm run check:legacy-fallbacks/);
   assert.match(pkg.scripts['verify:refactor-modernization'], /npm run check:refactor-guardrails/);
   assert.match(pkg.scripts['verify:refactor-modernization'], /npm run test:refactor-stage-guards/);
-  assert.match(
+  assert.equal(
     pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage10_refactor_integration_runtime\.test\.js/
+    'node tools/wp_test_group.mjs refactor-stage-guards'
   );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage42_legacy_fallback_inventory_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage43_perf_runtime_surface_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage44_scheduler_debug_stats_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage45_corner_connector_special_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage46_domain_api_shared_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage47_models_service_surface_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage48_preset_models_data_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage49_slice_write_dispatch_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage50_order_pdf_export_actions_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage51_scheduler_shared_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage52_interior_tab_helpers_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage53_room_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage54_render_preview_measurements_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage55_order_pdf_sketch_toolbar_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage56_order_pdf_text_layer_session_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage57_order_pdf_text_box_runtime_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage58_order_pdf_sketch_preview_controller_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage59_order_pdf_sketch_canvas_runtime_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage60_order_pdf_sketch_panel_controller_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage61_order_pdf_card_text_layer_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage62_order_pdf_sketch_preview_runtime_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage63_order_pdf_sketch_panel_measurement_hooks_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage64_order_pdf_sketch_panel_view_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage65_render_carcass_cornice_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage66_render_interior_sketch_shared_ownership_guard\.test\.js/
-  );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /tests\/refactor_stage67_render_preview_marker_ownership_guard\.test\.js/
-  );
+  const stageGuardFiles = readTestGroupFiles('refactor-stage-guards');
+  for (const file of [
+    'tests/refactor_stage10_refactor_integration_runtime.test.js',
+    'tests/refactor_stage42_legacy_fallback_inventory_guard.test.js',
+    'tests/refactor_stage43_perf_runtime_surface_ownership_guard.test.js',
+    'tests/refactor_stage44_scheduler_debug_stats_ownership_guard.test.js',
+    'tests/refactor_stage45_corner_connector_special_ownership_guard.test.js',
+    'tests/refactor_stage46_domain_api_shared_ownership_guard.test.js',
+    'tests/refactor_stage47_models_service_surface_ownership_guard.test.js',
+    'tests/refactor_stage48_preset_models_data_ownership_guard.test.js',
+    'tests/refactor_stage49_slice_write_dispatch_ownership_guard.test.js',
+    'tests/refactor_stage50_order_pdf_export_actions_ownership_guard.test.js',
+    'tests/refactor_stage51_scheduler_shared_ownership_guard.test.js',
+    'tests/refactor_stage52_interior_tab_helpers_ownership_guard.test.js',
+    'tests/refactor_stage53_room_ownership_guard.test.js',
+    'tests/refactor_stage54_render_preview_measurements_ownership_guard.test.js',
+    'tests/refactor_stage55_order_pdf_sketch_toolbar_ownership_guard.test.js',
+    'tests/refactor_stage56_order_pdf_text_layer_session_ownership_guard.test.js',
+    'tests/refactor_stage57_order_pdf_text_box_runtime_ownership_guard.test.js',
+    'tests/refactor_stage58_order_pdf_sketch_preview_controller_ownership_guard.test.js',
+    'tests/refactor_stage59_order_pdf_sketch_canvas_runtime_ownership_guard.test.js',
+    'tests/refactor_stage60_order_pdf_sketch_panel_controller_ownership_guard.test.js',
+    'tests/refactor_stage61_order_pdf_card_text_layer_ownership_guard.test.js',
+    'tests/refactor_stage62_order_pdf_sketch_preview_runtime_ownership_guard.test.js',
+    'tests/refactor_stage63_order_pdf_sketch_panel_measurement_hooks_ownership_guard.test.js',
+    'tests/refactor_stage64_order_pdf_sketch_panel_view_ownership_guard.test.js',
+    'tests/refactor_stage65_render_carcass_cornice_ownership_guard.test.js',
+    'tests/refactor_stage66_render_interior_sketch_shared_ownership_guard.test.js',
+    'tests/refactor_stage67_render_preview_marker_ownership_guard.test.js',
+  ]) {
+    assert.ok(stageGuardFiles.includes(file), `${file} should belong to refactor-stage-guards`);
+  }
 
   const verifyFlow = fs.readFileSync('tools/wp_verify_flow.js', 'utf8');
   const guardIndex = verifyFlow.indexOf("scriptName: 'check:refactor-guardrails'");
@@ -190,10 +122,17 @@ test('stage 39 to 41 refactor control-plane stage catalog is anchored', () => {
     assert.equal(entry.status, 'completed');
     assert.ok(entry.slug, `${entry.label} should have a slug`);
     assert.ok(fs.existsSync(entry.guard), `${entry.label} guard should exist`);
-    assert.match(
-      pkg.scripts[entry.verificationLane],
-      new RegExp(entry.guard.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-    );
+    if (entry.verificationLane === 'test:refactor-stage-guards') {
+      assert.ok(
+        readTestGroupFiles('refactor-stage-guards').includes(entry.guard),
+        `${entry.guard} should belong to refactor-stage-guards`
+      );
+    } else {
+      assert.match(
+        pkg.scripts[entry.verificationLane],
+        new RegExp(entry.guard.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      );
+    }
   }
 
   for (const entry of REFACTOR_POST_CLOSEOUT_GUARDRAILS) {

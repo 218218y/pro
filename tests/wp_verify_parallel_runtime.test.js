@@ -44,6 +44,9 @@ test('verify parallel plan builds once and gives test shards isolated reports', 
   );
   assert.equal(plan.bundleSteps.length, 0);
 
+  const policy = plan.lanes.find(lane => lane.id === 'policy');
+  assert.equal(policy.steps.find(step => step.id === 'lint').scriptName, 'lint');
+
   const contracts = plan.lanes.find(lane => lane.id === 'contracts');
   assert.ok(contracts.steps.some(step => step.label === 'node tools/wp_ui_contract.js'));
   assert.ok(!contracts.steps.some(step => step.label.includes('wp_build_dist.js')));

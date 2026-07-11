@@ -16,7 +16,7 @@ This folder is intentionally compact. Keep only living architecture guidance, se
 
 ## Tool-owned report targets
 
-These files are kept because repository scripts may write to them. They should contain current generated output or a short placeholder, not historic closeout logs:
+These files are kept because repository scripts may write to them. They must describe the current repository state, not historic closeout state. `npm run check:generated-reports` regenerates the registered audit pairs in isolation and compares their semantic content; timestamps are ignored, stale metrics are not. Use `npm run report:generated` to refresh every registered pair.
 
 - `PERF_AND_STABILITY_BASELINE.md`
 - `BROWSER_PERF_AND_E2E_BASELINE.md`

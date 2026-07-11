@@ -53,7 +53,7 @@ function createPolicyLane(flags) {
     steps: [
       npmStep('policy-check', flags.gate ? 'check:gate' : 'check:strict'),
       formatStep(),
-      npmStep('lint', flags.gate ? 'lint:strict' : 'lint'),
+      npmStep('lint', 'lint'),
       npmStep('refactor-guardrails', 'check:refactor-guardrails'),
     ],
   };

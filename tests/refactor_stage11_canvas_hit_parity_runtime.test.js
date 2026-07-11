@@ -3,6 +3,8 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
+import { readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
+
 function runNodeScript(script) {
   const result = spawnSync(process.execPath, [script], {
     cwd: process.cwd(),
@@ -19,8 +21,10 @@ test('canvas click hit identity parity contract is enforced', () => {
 test('refactor guardrail lane includes canvas hit parity contract', () => {
   const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
   assert.match(pkg.scripts['check:refactor-guardrails'], /check:canvas-hit-parity/);
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /refactor_stage11_canvas_hit_parity_runtime\.test\.js/
+  assert.ok(
+    readTestGroupFiles('refactor-stage-guards')?.includes(
+      'tests/refactor_stage11_canvas_hit_parity_runtime.test.js'
+    ),
+    'tests/refactor_stage11_canvas_hit_parity_runtime.test.js must belong to the canonical stage guard group'
   );
 });

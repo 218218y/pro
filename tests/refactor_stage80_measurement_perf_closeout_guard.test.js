@@ -8,6 +8,8 @@ import {
   REFACTOR_INTEGRATION_ANCHORS,
   REFACTOR_POST_CLOSEOUT_GUARDRAILS,
 } from '../tools/wp_refactor_stage_catalog.mjs';
+import { GENERATED_REPORT_CATALOG } from '../tools/wp_generated_report_contract.mjs';
+import { readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
 
 function read(file) {
   return fs.readFileSync(file, 'utf8');
@@ -68,11 +70,12 @@ test('stage 80 measurement and performance closeout is anchored', () => {
     'stage 80 closeout must run in the refactor guardrail lane'
   );
   assert.ok(
-    scripts['test:refactor-stage-guards'].includes(GUARD_FILE),
-    'stage 80 guard must run with the stage guard suite'
+    readTestGroupFiles('refactor-stage-guards')?.includes(GUARD_FILE),
+    'stage guard must belong to the canonical refactor-stage group'
   );
   assert.ok(integrationAudit.includes('check:refactor-closeout'));
-  assert.ok(integrationAudit.includes(GUARD_FILE));
+  assert.match(integrationAudit, /readTestGroupFiles\('refactor-stage-guards'\)/);
+  assert.match(integrationAudit, /requiredStageGuardTests\.includes\(stage\.guard\)/);
 
   assert.equal(scripts['check:perf-hotpaths'], 'node tools/wp_perf_hotpath_contract.mjs');
   assert.equal(scripts['perf:smoke'], 'node tools/wp_perf_smoke.mjs --enforce');
@@ -84,7 +87,18 @@ test('stage 80 measurement and performance closeout is anchored', () => {
     scripts['check:css-style'],
     'node --test tests/css_shadow_tokens_contract.test.js && node tools/wp_css_style_audit.mjs --check --budget=tools/wp_css_style_budget.json'
   );
-  assert.match(scripts['report:css-style'], /--budget=tools\/wp_css_style_budget\.json/);
+  assert.equal(
+    scripts['report:css-style'],
+    'node tools/wp_generated_report_contract.mjs --write --only=css-style'
+  );
+  const cssReportContract = GENERATED_REPORT_CATALOG.find(report => report.id === 'css-style');
+  assert.ok(cssReportContract, 'generated report catalog must own the CSS report');
+  assert.ok(
+    cssReportContract
+      .command({ json: 'report.json', markdown: 'report.md' })
+      .includes('--budget=tools/wp_css_style_budget.json'),
+    'CSS report generation must retain the enforced style budget'
+  );
   assert.equal(cssBudget.file, 'css/react_styles.css');
   assert.ok(
     cssBudget.metrics.important.max <= CSS_IMPORTANT_RATCHET_CEILING,

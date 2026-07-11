@@ -6,6 +6,7 @@ import {
   REFACTOR_COMPLETED_STAGE_LABELS,
   REFACTOR_INTEGRATION_ANCHORS,
 } from '../tools/wp_refactor_stage_catalog.mjs';
+import { readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
 
 function read(file) {
   return fs.readFileSync(file, 'utf8');
@@ -47,7 +48,6 @@ test('stage 78 runtime access surfaces ownership split is anchored', () => {
   const integrationAudit = read('tools/wp_refactor_integration_audit.mjs');
   const runtimePolicyAudit = read('tools/wp_runtime_selector_policy_audit.mjs');
   const projectBoundaryAudit = read('tools/wp_project_migration_boundary_audit.mjs');
-  const pkg = JSON.parse(read('package.json'));
 
   assert.ok(REFACTOR_COMPLETED_STAGE_LABELS.includes('Stage 78'));
   assert.ok(
@@ -57,10 +57,11 @@ test('stage 78 runtime access surfaces ownership split is anchored', () => {
     'stage 78 must be registered in the shared refactor stage catalog anchors'
   );
   assert.ok(
-    pkg.scripts['test:refactor-stage-guards'].includes(GUARD_FILE),
-    'stage 78 guard must be wired into the stage guard lane'
+    readTestGroupFiles('refactor-stage-guards')?.includes(GUARD_FILE),
+    'stage guard must belong to the canonical refactor-stage group'
   );
-  assert.ok(integrationAudit.includes(GUARD_FILE), 'integration audit must require the stage 78 guard');
+  assert.match(integrationAudit, /readTestGroupFiles\('refactor-stage-guards'\)/);
+  assert.match(integrationAudit, /requiredStageGuardTests\.includes\(stage\.guard\)/);
   assert.match(progress, /Stage 78/);
   assert.match(workmap, /Stage 78/);
   assert.match(nextPlan, /Stage 78 — Runtime access surfaces closeout review — completed/);

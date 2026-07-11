@@ -172,6 +172,7 @@ export function normalizeSiteProfile({ root, profileDir, profile, requestedStore
     id,
     storeId: id,
     displayName,
+    releaseStatus: asString(profile.releaseStatus),
     profileDir,
     profileRelDir: path.relative(root, profileDir).replace(/\\/g, '/'),
     storageNamespace: asString(profile.storageNamespace),
@@ -284,6 +285,7 @@ export function buildSiteManifest(profile, variantName) {
     createdAt: new Date().toISOString(),
     storeId: profile.id,
     displayName: profile.displayName,
+    releaseStatus: profile.releaseStatus,
     variant: variant.name,
     siteVariant: variant.siteVariant,
     supabase: {

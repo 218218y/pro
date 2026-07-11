@@ -3,6 +3,8 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
+import { readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
+
 function read(file) {
   return readFileSync(file, 'utf8');
 }
@@ -20,9 +22,11 @@ test('stage 14 UI design system contract is wired into refactor guardrails', () 
 
   const pkg = JSON.parse(read('package.json'));
   assert.match(pkg.scripts['check:refactor-guardrails'], /check:ui-design-system/);
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /refactor_stage14_ui_design_system_runtime\.test\.js/
+  assert.ok(
+    readTestGroupFiles('refactor-stage-guards')?.includes(
+      'tests/refactor_stage14_ui_design_system_runtime.test.js'
+    ),
+    'tests/refactor_stage14_ui_design_system_runtime.test.js must belong to the canonical stage guard group'
   );
 });
 

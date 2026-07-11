@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
+import { readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
+
 function read(file) {
   return readFileSync(file, 'utf8');
 }
@@ -12,9 +14,11 @@ test('stage 21 cloud sync realtime start recovery guard is wired into refactor g
     pkg.scripts['test:cloud-sync-surfaces:lifecycle'],
     /cloud_sync_lifecycle_realtime_start_recovery_runtime\.test\.ts/
   );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /refactor_stage21_cloud_sync_realtime_start_recovery_runtime\.test\.js/
+  assert.ok(
+    readTestGroupFiles('refactor-stage-guards')?.includes(
+      'tests/refactor_stage21_cloud_sync_realtime_start_recovery_runtime.test.js'
+    ),
+    'tests/refactor_stage21_cloud_sync_realtime_start_recovery_runtime.test.js must belong to the canonical stage guard group'
   );
 });
 

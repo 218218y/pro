@@ -59,6 +59,9 @@ Use this map to find the owner before editing. The goal is to prevent “just on
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------- |
 | Architecture layer contracts   | `tools/wp_layer_contract.js`, `tools/wp_public_api_contract.js`                                               |
 | Docs control plane             | `tools/wp_docs_control_plane_audit.mjs`                                                                       |
+| Generated audit report catalog | `tools/wp_generated_report_contract.mjs`                                                                      |
+| Named test-group catalog       | `tools/wp_test_group_catalog.mjs` + `tools/wp_test_group.mjs`                                                 |
+| Multi-store profile contract   | `tools/wp_site_profile_contract.mjs` + `tools/wp_site_profiles.mjs`                                           |
 | Closeout report target         | `tools/wp_verify_closeout*.cjs` -> `docs/FINAL_VERIFICATION_SUMMARY.*`                                        |
 | Perf smoke report target       | `tools/wp_perf_smoke*.mjs` -> `docs/PERF_AND_STABILITY_BASELINE.md`                                           |
 | Browser perf report target     | `tools/wp_browser_perf_smoke.mjs` -> `docs/BROWSER_PERF_AND_E2E_BASELINE.md`                                  |

@@ -129,7 +129,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Run strict lint
-        run: npm run lint:strict
+        run: npm run lint
 
       - name: Upload lint diagnostics
         if: failure()

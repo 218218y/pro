@@ -19,6 +19,7 @@ test('strict quality gates keep generated Three mirrors out of style checks whil
   assert.match(syncThree, /'tools\/three_addons\/OrbitControls\.js'/);
   assert.match(syncThree, /'tools\/three_addons\/RoundedBoxGeometry\.js'/);
   assert.match(verifyFlow, /args:\s*\['tools\/wp_three_vendor_contract\.js'\]/);
-  assert.equal(packageJson.scripts['lint:strict'], 'npm run lint:modern');
+  assert.equal(packageJson.scripts.lint, 'npm run lint:modern');
+  assert.equal(packageJson.scripts['lint:strict'], undefined);
   assert.match(lintRunner, /strict \? '0' : '999999'/);
 });

@@ -7,6 +7,7 @@ import {
   REFACTOR_COMPLETED_STAGE_LABELS,
   REFACTOR_INTEGRATION_ANCHORS,
 } from '../tools/wp_refactor_stage_catalog.mjs';
+import { readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
 
 function runNode(args) {
   const result = spawnSync(process.execPath, args, {
@@ -52,13 +53,15 @@ test('stage 19 project canonical selector guard is wired into the refactor contr
     scripts['test:project-migration-selector-hardening'],
     /project_migration_runtime_selector_hardening_runtime\.test\.ts/
   );
-  assert.match(
-    scripts['test:refactor-stage-guards'],
-    /refactor_stage19_project_migration_selector_hardening_runtime\.test\.js/
+  assert.ok(
+    readTestGroupFiles('refactor-stage-guards')?.includes(
+      'tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js'
+    ),
+    'tests/refactor_stage19_project_migration_selector_hardening_runtime.test.js must belong to the canonical stage guard group'
   );
 
   const integrationAudit = readFileSync('tools/wp_refactor_integration_audit.mjs', 'utf8');
-  assert.match(integrationAudit, /refactor_stage19_project_migration_selector_hardening_runtime\.test\.js/);
+  assert.match(integrationAudit, /readTestGroupFiles\('refactor-stage-guards'\)/);
 
   const progress = readFileSync('docs/REFACTOR_WORKMAP_PROGRESS.md', 'utf8');
   assert.match(progress, /Stage 19/);

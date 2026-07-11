@@ -7,6 +7,7 @@
 export default {
   id: 'store-1',
   displayName: 'חנות 1',
+  releaseStatus: 'draft',
 
   // Keep Bargig empty for backward-compatible localStorage keys.
   // New stores get a namespace so browser-local saved data does not mix under the same domain.

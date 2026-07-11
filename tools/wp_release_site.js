@@ -12,6 +12,7 @@ import {
   parseSiteReleaseArgs,
   writeSiteTemplate,
 } from './wp_site_profiles.mjs';
+import { assertSiteProfileAudit, auditSiteProfiles } from './wp_site_profile_contract.mjs';
 
 function rel(root, p) {
   return path.relative(root, p).replace(/\\/g, '/');
@@ -20,6 +21,12 @@ function rel(root, p) {
 async function main() {
   const root = process.cwd();
   const args = parseSiteReleaseArgs(process.argv.slice(2));
+  const profileAudit = await auditSiteProfiles(root);
+  assertSiteProfileAudit(profileAudit);
+  for (const warning of profileAudit.warnings.filter(item => item.storeId === args.store)) {
+    console.warn(`[WP Site Release] Draft warning ${warning.code}: ${warning.message}`);
+  }
+
   const profile = await loadSiteProfile(root, args.store);
   const variant = profile.variants[args.variant];
 

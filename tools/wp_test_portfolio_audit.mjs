@@ -2,6 +2,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { TEST_GROUP_CATALOG } from './wp_test_group_catalog.mjs';
+
 const ROOT = process.cwd();
 const TEST_ROOT = path.join(ROOT, 'tests');
 const args = new Set(process.argv.slice(2));
@@ -74,13 +76,28 @@ function collectPackageTestRefs() {
   return refs;
 }
 
+function collectCatalogTestRefs() {
+  const refs = [];
+  for (const [group, definition] of Object.entries(TEST_GROUP_CATALOG)) {
+    for (const file of Array.isArray(definition?.files) ? definition.files : []) {
+      refs.push({ group, file });
+    }
+  }
+  return refs;
+}
+
 function buildReport() {
   const tests = (fs.existsSync(TEST_ROOT) ? walk(TEST_ROOT) : [])
     .map(normalize)
     .filter(rel => TEST_FILE_RE.test(rel))
     .sort();
-  const refs = collectPackageTestRefs();
-  const packageRefSet = new Set(refs.map(({ file }) => file));
+  const packageRefs = collectPackageTestRefs();
+  const catalogRefs = collectCatalogTestRefs();
+  const refs = [
+    ...packageRefs.map(ref => ({ source: 'package', owner: ref.script, ...ref })),
+    ...catalogRefs.map(ref => ({ source: 'catalog', owner: ref.group, ...ref })),
+  ];
+  const testRefSet = new Set(refs.map(({ file }) => file));
   const categories = {
     contract: 0,
     'runtime-unit': 0,
@@ -98,15 +115,29 @@ function buildReport() {
     if (/legacy/i.test(file) && !/(migration|compat|cleanup|guard|audit|contract|surface|root)/i.test(file))
       legacyRuntimeNames.push(file);
   }
-  const missingPackageRefs = refs.filter(({ file }) => !fs.existsSync(path.join(ROOT, file)));
+  const missingTestRefs = refs.filter(({ file }) => !fs.existsSync(path.join(ROOT, file)));
+  const duplicateCatalogRefs = Object.entries(TEST_GROUP_CATALOG).flatMap(([group, definition]) => {
+    const seen = new Set();
+    const duplicates = [];
+    for (const file of Array.isArray(definition?.files) ? definition.files : []) {
+      if (seen.has(file)) duplicates.push({ group, file });
+      seen.add(file);
+    }
+    return duplicates;
+  });
   const unreferencedStageGuards = tests.filter(
-    file => /tests\/refactor_stage\d+_.*\.test\.js$/.test(file) && !packageRefSet.has(file)
+    file => /tests\/refactor_stage\d+_.*\.test\.js$/.test(file) && !testRefSet.has(file)
   );
   return {
     generatedAt: new Date().toISOString(),
-    totals: { tests: tests.length, packageTestReferences: refs.length },
+    totals: {
+      tests: tests.length,
+      packageTestReferences: packageRefs.length,
+      catalogTestReferences: catalogRefs.length,
+      totalTestReferences: refs.length,
+    },
     categories,
-    failures: { missingPackageRefs, legacyRuntimeNames, unreferencedStageGuards },
+    failures: { missingTestRefs, duplicateCatalogRefs, legacyRuntimeNames, unreferencedStageGuards },
     records,
   };
 }
@@ -115,16 +146,24 @@ function renderMarkdown(report) {
   const lines = [];
   lines.push('# Test portfolio audit', '', `Generated: ${report.generatedAt}`, '', '## Summary', '');
   lines.push(`- Test files classified: ${report.totals.tests}`);
-  lines.push(`- Package script test references: ${report.totals.packageTestReferences}`, '');
+  lines.push(
+    `- Package script test references: ${report.totals.packageTestReferences}`,
+    `- Catalog test references: ${report.totals.catalogTestReferences}`,
+    `- Total explicit test references: ${report.totals.totalTestReferences}`,
+    ''
+  );
   lines.push('| Category | Count |', '|---|---:|');
   for (const [category, count] of Object.entries(report.categories)) lines.push(`| ${category} | ${count} |`);
   lines.push('', '## Guard results', '', '| Check | Failures |', '|---|---:|');
-  lines.push(`| No stale package test references | ${report.failures.missingPackageRefs.length} |`);
+  lines.push(`| No stale package/catalog test references | ${report.failures.missingTestRefs.length} |`);
+  lines.push(
+    `| Test groups contain no duplicate file membership | ${report.failures.duplicateCatalogRefs.length} |`
+  );
   lines.push(
     `| Legacy tests are explicitly migration/compat/cleanup/root/guard/audit/contract scoped | ${report.failures.legacyRuntimeNames.length} |`
   );
   lines.push(
-    `| Refactor stage guard tests are referenced by package scripts | ${report.failures.unreferencedStageGuards.length} |`,
+    `| Refactor stage guard tests have package/catalog ownership | ${report.failures.unreferencedStageGuards.length} |`,
     ''
   );
   if (Object.values(report.failures).some(items => items.length)) {
@@ -133,7 +172,9 @@ function renderMarkdown(report) {
       if (!items.length) continue;
       lines.push(`### ${key}`, '');
       for (const item of items.slice(0, 100))
-        lines.push(`- ${typeof item === 'string' ? item : `${item.script}: ${item.file}`}`);
+        lines.push(
+          `- ${typeof item === 'string' ? item : `${item.owner || item.script || item.group}: ${item.file}`}`
+        );
       if (items.length > 100) lines.push(`- ... ${items.length - 100} more`);
       lines.push('');
     }
@@ -141,7 +182,7 @@ function renderMarkdown(report) {
   lines.push(
     '## Policy',
     '',
-    'This audit is intentionally a portfolio map, not a brittle snapshot of every assertion. It protects against stale package references and unnamed legacy runtime coverage while allowing the test suite to keep evolving.',
+    'This audit is intentionally a portfolio map, not a brittle snapshot of every assertion. It protects against stale package/catalog references and unnamed legacy runtime coverage while allowing the test suite to keep evolving.',
     ''
   );
   return lines.join('\n');
@@ -153,7 +194,7 @@ if (jsonOut) fs.writeFileSync(jsonOut, `${JSON.stringify(report, null, 2)}\n`);
 if (mdOut) fs.writeFileSync(mdOut, renderMarkdown(report));
 if (shouldPrint) {
   console.log(
-    `[test-portfolio-audit] tests=${report.totals.tests} refs=${report.totals.packageTestReferences}`
+    `[test-portfolio-audit] tests=${report.totals.tests} refs=${report.totals.totalTestReferences} (package=${report.totals.packageTestReferences}, catalog=${report.totals.catalogTestReferences})`
   );
   for (const [category, count] of Object.entries(report.categories)) console.log(`- ${category}: ${count}`);
 }

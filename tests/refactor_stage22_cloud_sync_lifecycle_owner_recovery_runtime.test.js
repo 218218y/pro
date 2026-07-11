@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 
 import { REFACTOR_COMPLETED_STAGE_LABELS } from '../tools/wp_refactor_stage_catalog.mjs';
 
+import { readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
+
 function read(file) {
   return readFileSync(file, 'utf8');
 }
@@ -14,9 +16,11 @@ test('stage 22 cloud sync lifecycle owner recovery guard is wired into refactor 
     pkg.scripts['test:cloud-sync-surfaces:lifecycle'],
     /cloud_sync_lifecycle_owner_realtime_start_runtime\.test\.ts/
   );
-  assert.match(
-    pkg.scripts['test:refactor-stage-guards'],
-    /refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime\.test\.js/
+  assert.ok(
+    readTestGroupFiles('refactor-stage-guards')?.includes(
+      'tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js'
+    ),
+    'tests/refactor_stage22_cloud_sync_lifecycle_owner_recovery_runtime.test.js must belong to the canonical stage guard group'
   );
 });
 

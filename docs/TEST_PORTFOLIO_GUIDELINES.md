@@ -23,7 +23,7 @@ Remove or rewrite tests when they only preserve old migration steps, historical 
 - Use fixtures/builders instead of copying large payloads into every file.
 - Name the behavior being protected.
 - Prefer a small focused guard over a giant snapshot.
-- Avoid tests that require generated reports to be historically identical.
+- Generated reports should be semantically current. Ignore volatile timestamps, but fail when metrics, inventories, or violations drift.
 
 ## Guard-test rules
 
@@ -66,6 +66,9 @@ The audit is not a snapshot test for every assertion. It protects the control pl
 
 - package scripts must not reference missing test files;
 - files with `legacy` in the name must state their purpose as migration, compatibility, cleanup, root, guard, audit, contract, or surface coverage;
-- refactor stage guard tests must be reachable from one package script.
+- refactor stage guard tests must be reachable through the canonical `tools/wp_test_group_catalog.mjs` group used by one short package facade;
+- named test groups must not contain duplicate or missing files.
+
+Large named groups belong in `tools/wp_test_group_catalog.mjs`, not in multi-thousand-character `package.json` commands. `tools/wp_test_group.mjs` validates every member before spawning Node's test runner, and the portfolio audit reads the same catalog as its source of truth.
 
 This keeps the test suite useful as architecture changes instead of turning it into a museum with flaky lighting.

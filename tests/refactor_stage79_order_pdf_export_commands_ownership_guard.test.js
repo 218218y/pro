@@ -6,6 +6,7 @@ import {
   REFACTOR_COMPLETED_STAGE_LABELS,
   REFACTOR_INTEGRATION_ANCHORS,
 } from '../tools/wp_refactor_stage_catalog.mjs';
+import { readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
 
 function read(file) {
   return fs.readFileSync(file, 'utf8');
@@ -46,7 +47,6 @@ test('stage 79 order pdf export command ownership split is anchored', () => {
   const workmap = read('refactor_workmap.md');
   const nextPlan = read('docs/REFACTOR_NEXT_STAGE_PLAN.md');
   const integrationAudit = read('tools/wp_refactor_integration_audit.mjs');
-  const pkg = JSON.parse(read('package.json'));
 
   assert.ok(REFACTOR_COMPLETED_STAGE_LABELS.includes('Stage 79'));
   assert.ok(
@@ -55,8 +55,12 @@ test('stage 79 order pdf export command ownership split is anchored', () => {
     ),
     'stage 79 must be registered in the shared refactor stage catalog anchors'
   );
-  assert.ok(pkg.scripts['test:refactor-stage-guards'].includes(GUARD_FILE));
-  assert.ok(integrationAudit.includes(GUARD_FILE), 'integration audit must require the stage 79 guard');
+  assert.ok(
+    readTestGroupFiles('refactor-stage-guards')?.includes(GUARD_FILE),
+    'stage guard must belong to the canonical refactor-stage group'
+  );
+  assert.match(integrationAudit, /readTestGroupFiles\('refactor-stage-guards'\)/);
+  assert.match(integrationAudit, /requiredStageGuardTests\.includes\(stage\.guard\)/);
   assert.match(progress, /Stage 79/);
   assert.match(workmap, /Stage 79/);
   assert.match(nextPlan, /Stage 79 — Order PDF export\/editor flow review — completed/);

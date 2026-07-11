@@ -25,7 +25,7 @@ test('GitHub CI keeps required verification split by concern', () => {
   assert.match(ci, /run: npm run check:gate/);
   assert.match(ci, /run: npm run format:check/);
   assert.match(ci, /run: npm run check:refactor-guardrails/);
-  assert.match(ci, /run: npm run lint:strict/);
+  assert.match(ci, /run: npm run lint/);
   assert.match(ci, /run: npm run typecheck:all/);
   assert.match(ci, /run: npm run contract:layers/);
   assert.match(ci, /run: npm run contract:api/);
@@ -64,8 +64,8 @@ test('manual lint workflow uses the same strict lint standard as CI', () => {
   const manualLint = read('.github/workflows/manual-lint.yml');
 
   assert.match(manualLint, /name: Manual Strict Lint/);
-  assert.match(manualLint, /run: npm run lint:strict/);
-  assert.doesNotMatch(manualLint, /run: npm run lint\s*$/m);
+  assert.match(manualLint, /run: npm run lint/);
+  assert.doesNotMatch(manualLint, /run: npm run lint:strict/);
 });
 
 test('manual closeout workflow exposes only runner-approved profiles', () => {

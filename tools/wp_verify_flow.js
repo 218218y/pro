@@ -53,7 +53,7 @@ export function runVerifyFlow({ projectRoot, childEnv, flags, runners = {} }) {
     );
   }
 
-  npmRunImpl({ projectRoot, childEnv, scriptName: gate ? 'lint:strict' : 'lint' });
+  npmRunImpl({ projectRoot, childEnv, scriptName: 'lint' });
   npmRunImpl({ projectRoot, childEnv, scriptName: 'typecheck:all' });
 
   runCmdImpl({

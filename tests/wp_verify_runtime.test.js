@@ -115,6 +115,8 @@ test('verify flow orders core checks and skips bundle commands when requested', 
 
   assert.equal(result.skipBundle, true);
   assert.equal(result.hasFormatWarn, false);
+  assert.ok(steps.includes('npm:lint'));
+  assert.ok(!steps.includes('npm:lint:strict'));
   assert.ok(steps.includes('npm:check:refactor-guardrails'));
   assert.ok(steps.includes('npm:test'));
   assert.ok(steps.indexOf('npm:check:refactor-guardrails') < steps.indexOf('npm:test'));
