@@ -38,6 +38,7 @@ const layoutFlowShared = read('esm/native/services/canvas_picking_layout_edit_fl
 const manualLayoutFreeBoxContent = read(
   'esm/native/services/canvas_picking_manual_layout_free_box_content.ts'
 );
+const manualLayoutFreeBoxCommit = read('esm/native/services/canvas_picking_manual_layout_free_box_commit.ts');
 const drawerFlow = read('esm/native/services/canvas_picking_drawer_mode_flow.ts');
 const drawerFlowExternal = read('esm/native/services/canvas_picking_drawer_mode_flow_external.ts');
 const drawerFlowDivider = read('esm/native/services/canvas_picking_drawer_mode_flow_divider.ts');
@@ -255,19 +256,24 @@ test('canvas picking click owner stays thin and routes edit families through foc
   assert.match(layoutFlowBrace, /createCanvasPickingConfigStructuralPatchMeta\('braceShelves\.toggle'\)/);
   assert.match(layoutFlowShared, /export type CanvasLayoutEditClickArgs = \{/);
   assert.match(layoutFlowShared, /export function ensureCustomData\(/);
+  assert.match(manualLayoutFreeBoxContent, /from '\.\/canvas_picking_manual_layout_free_box_commit\.js';/);
+  assert.match(manualLayoutFreeBoxContent, /tryCommitManualLayoutFreeBoxFromHover/);
+  assert.match(manualLayoutFreeBoxContent, /tryCommitPresetLayoutFreeBoxFromHover/);
+  assert.match(manualLayoutFreeBoxContent, /tryCommitBraceShelvesFreeBoxFromHover/);
+  assert.doesNotMatch(manualLayoutFreeBoxContent, /createCanvasPickingModulesStructuralPatchMeta/);
   assert.match(
-    manualLayoutFreeBoxContent,
+    manualLayoutFreeBoxCommit,
     /createCanvasPickingModulesStructuralPatchMeta\('manualLayout\.freeBoxShelfGrid'\)/
   );
   assert.match(
-    manualLayoutFreeBoxContent,
+    manualLayoutFreeBoxCommit,
     /createCanvasPickingModulesStructuralPatchMeta\('layoutPreset\.freeBox'\)/
   );
   assert.match(
-    manualLayoutFreeBoxContent,
+    manualLayoutFreeBoxCommit,
     /createCanvasPickingModulesStructuralPatchMeta\('braceShelves\.freeBoxToggle'\)/
   );
-  assert.doesNotMatch(manualLayoutFreeBoxContent, /noBuild:/);
+  assert.doesNotMatch(manualLayoutFreeBoxCommit, /noBuild:/);
 
   assert.match(
     drawerFlow,

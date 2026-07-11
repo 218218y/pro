@@ -734,6 +734,10 @@ import {
     '../esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx',
     import.meta.url
   );
+  const orderPdfEditorModeControls = readSource(
+    '../esm/native/ui/react/pdf/order_pdf_overlay_editor_mode_controls.tsx',
+    import.meta.url
+  );
   const orderPdfToolbar = readSource(
     '../esm/native/ui/react/pdf/order_pdf_overlay_toolbar.tsx',
     import.meta.url
@@ -897,7 +901,8 @@ import {
     assert.match(settingsTab, /testId="export-open-pdf-button"/);
     assert.doesNotMatch(settingsTab, /<ProjectPanel/);
     assert.match(orderPdfEditorSurface, /data-testid="order-pdf-overlay"/);
-    assert.match(orderPdfEditorSurface, /data-testid="order-pdf-page-annotation-toggle"/);
+    assert.match(orderPdfEditorSurface, /<OrderPdfOverlayEditorModeControls/);
+    assert.match(orderPdfEditorModeControls, /data-testid="order-pdf-page-annotation-toggle"/);
     assert.match(orderPdfToolbar, /data-testid="order-pdf-close-button"/);
     assert.match(orderPdfToolbar, /data-testid="order-pdf-refresh-button"/);
     assert.match(orderPdfToolbar, /data-testid="order-pdf-load-button"/);
