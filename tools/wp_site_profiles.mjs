@@ -81,6 +81,7 @@ export function parseSiteReleaseArgs(args = []) {
   let variant = 'main';
   let outDirRel = '';
   let distRootRel = '';
+  let allowDraft = false;
 
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
@@ -124,6 +125,10 @@ export function parseSiteReleaseArgs(args = []) {
       distRootRel = a.slice('--dist-root='.length);
       continue;
     }
+    if (a === '--allow-draft') {
+      allowDraft = true;
+      continue;
+    }
     passthrough.push(a);
   }
 
@@ -138,6 +143,7 @@ export function parseSiteReleaseArgs(args = []) {
     variant: normalizeVariantName(variant),
     outDirRel: asString(outDirRel),
     distRootRel: asString(distRootRel),
+    allowDraft,
     passthrough,
   };
 }

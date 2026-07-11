@@ -198,6 +198,32 @@ export function assertSiteProfileAudit(result) {
   throw new Error(`[WP Site Profile] contract failed\n${details}`);
 }
 
+function isEnabledEnvironmentFlag(value) {
+  if (value === true) return true;
+  if (typeof value !== 'string') return false;
+  const normalized = value.trim().toLowerCase();
+  return normalized !== '' && normalized !== '0' && normalized !== 'false' && normalized !== 'no';
+}
+
+export function assertSiteProfileReleaseAllowed({ profile, allowDraft = false, env = process.env }) {
+  if (profile.releaseStatus === 'active') return 'release';
+  if (profile.releaseStatus !== 'draft') {
+    throw new Error(
+      `[WP Site Profile] ${profile.id} has unsupported releaseStatus "${profile.releaseStatus || ''}"`
+    );
+  }
+  if (!allowDraft) {
+    throw new Error(
+      `[WP Site Profile] Refusing to release draft profile "${profile.id}". ` +
+        'Activate the profile after replacing placeholders, or use --allow-draft for a local preview artifact.'
+    );
+  }
+  if (isEnabledEnvironmentFlag(env?.CI) || isEnabledEnvironmentFlag(env?.GITHUB_ACTIONS)) {
+    throw new Error(`[WP Site Profile] Draft preview override is disabled in CI for profile "${profile.id}"`);
+  }
+  return 'preview';
+}
+
 async function main() {
   const result = await auditSiteProfiles();
   for (const warning of result.warnings) {

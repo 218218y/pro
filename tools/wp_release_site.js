@@ -12,7 +12,11 @@ import {
   parseSiteReleaseArgs,
   writeSiteTemplate,
 } from './wp_site_profiles.mjs';
-import { assertSiteProfileAudit, auditSiteProfiles } from './wp_site_profile_contract.mjs';
+import {
+  assertSiteProfileAudit,
+  assertSiteProfileReleaseAllowed,
+  auditSiteProfiles,
+} from './wp_site_profile_contract.mjs';
 
 function rel(root, p) {
   return path.relative(root, p).replace(/\\/g, '/');
@@ -23,14 +27,24 @@ async function main() {
   const args = parseSiteReleaseArgs(process.argv.slice(2));
   const profileAudit = await auditSiteProfiles(root);
   assertSiteProfileAudit(profileAudit);
-  for (const warning of profileAudit.warnings.filter(item => item.storeId === args.store)) {
-    console.warn(`[WP Site Release] Draft warning ${warning.code}: ${warning.message}`);
-  }
-
   const profile = await loadSiteProfile(root, args.store);
+  const releaseMode = assertSiteProfileReleaseAllowed({ profile, allowDraft: args.allowDraft });
+  if (releaseMode === 'preview' && (args.distRootRel || args.outDirRel)) {
+    throw new Error(
+      '[WP Site Profile] Draft previews use an isolated .artifacts path; --dist-root and --out are not allowed.'
+    );
+  }
+  for (const warning of profileAudit.warnings.filter(item => item.storeId === args.store)) {
+    console.warn(
+      `[WP Site ${releaseMode === 'preview' ? 'Preview' : 'Release'}] ${warning.code}: ${warning.message}`
+    );
+  }
   const variant = profile.variants[args.variant];
 
-  const distRootRel = args.distRootRel || path.posix.join('dist', 'sites', profile.id, variant.name);
+  const distRootRel =
+    releaseMode === 'preview'
+      ? path.posix.join('.artifacts', 'site-preview', profile.id, variant.name)
+      : args.distRootRel || path.posix.join('dist', 'sites', profile.id, variant.name);
   const outDirRel = args.outDirRel || path.posix.join(distRootRel, 'release');
   const workDir = path.join(root, '.artifacts', 'site-release', profile.id, variant.name);
   const templatePath = path.join(workDir, 'index_release_bundle.html');
@@ -51,7 +65,8 @@ async function main() {
     ...args.passthrough,
   ];
 
-  console.log(`[WP Site Release] Building ${profile.id}/${variant.name} -> ${outDirRel}`);
+  const label = releaseMode === 'preview' ? 'Preview' : 'Release';
+  console.log(`[WP Site ${label}] Building ${profile.id}/${variant.name} -> ${outDirRel}`);
   execFileSync('node', releaseArgs, { cwd: root, stdio: 'inherit' });
 
   const releaseDir = path.resolve(root, outDirRel);
@@ -65,7 +80,7 @@ async function main() {
   // Keep the selected release template beside the generated artifacts for traceability.
   fs.copyFileSync(templatePath, path.join(releaseDir, 'index.template.site-profile.html'));
 
-  console.log(`[WP Site Release] Done: ${rel(root, releaseDir)}`);
+  console.log(`[WP Site ${label}] Done: ${rel(root, releaseDir)}`);
 }
 
 main().catch(err => {

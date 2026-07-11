@@ -168,6 +168,22 @@ test('manual-layout free-box shelf grid commit writes shelves into the no-main f
       contentXNorm: 0.75,
       variant: 'regular',
       depthM: 0.37,
+      freeBoxCommand: {
+        version: 1,
+        command: {
+          kind: 'shelf-grid',
+          boxId: 'free-split',
+          shelfYNorms: [0.58, 0.66, 0.74, 0.82, 0.9],
+          cellXNormMin: 0.5,
+          cellXNormMax: 1,
+          cellYNormMin: 0.5,
+          cellYNormMax: 1,
+          contentXNorm: 0.75,
+          variant: 'regular',
+          depthM: 0.37,
+          blockedReason: null,
+        },
+      },
     },
   });
 
@@ -229,6 +245,22 @@ test('manual-layout free-box shelf grid blocked commit consumes click without mu
       boxId: 'free-short',
       shelfYNorms: [0.2, 0.4, 0.6, 0.8, 0.9],
       __wpBlockedReason: 'no-room',
+      freeBoxCommand: {
+        version: 1,
+        command: {
+          kind: 'shelf-grid',
+          boxId: 'free-short',
+          shelfYNorms: [0.2, 0.4, 0.6, 0.8, 0.9],
+          cellXNormMin: 0,
+          cellXNormMax: 1,
+          cellYNormMin: 0,
+          cellYNormMax: 1,
+          contentXNorm: 0.5,
+          variant: 'regular',
+          depthM: null,
+          blockedReason: 'no-room',
+        },
+      },
     },
   });
 
@@ -237,6 +269,42 @@ test('manual-layout free-box shelf grid blocked commit consumes click without mu
   assert.equal(((cfg.sketchExtras as RecordMap).boxes as RecordMap[])[0]?.shelves?.length, 0);
   assert.equal(toasts.length, 1);
   assert.equal(toasts[0]?.[1], 'error');
+  assert.equal(__wp_readSketchHover(App), null);
+});
+
+test('manual-layout free-box shelf grid rejects partial hover records without mutating content', () => {
+  const cfg: RecordMap = {
+    sketchExtras: {
+      boxes: [
+        {
+          id: 'free-partial',
+          freePlacement: true,
+          shelves: [{ id: 'keep-me', yNorm: 0.5, xNorm: 0.5, variant: 'regular' }],
+        },
+      ],
+    },
+  };
+  const { App, patchCalls } = makeNoMainApp({
+    patchCfg: cfg,
+    hover: {
+      ts: Date.now(),
+      tool: 'shelf',
+      moduleKey: 0,
+      isBottom: false,
+      hostModuleKey: 0,
+      hostIsBottom: false,
+      kind: 'box_content_grid',
+      contentKind: 'shelf_grid',
+      op: 'add',
+      freePlacement: true,
+      boxId: 'free-partial',
+    },
+  });
+
+  assert.equal(tryCommitManualLayoutFreeBoxFromHover(App, 'shelf', 0), true);
+  assert.equal(patchCalls.length, 0);
+  const box = (((cfg.sketchExtras as RecordMap).boxes as RecordMap[])[0] ?? {}) as RecordMap;
+  assert.deepEqual(box.shelves, [{ id: 'keep-me', yNorm: 0.5, xNorm: 0.5, variant: 'regular' }]);
   assert.equal(__wp_readSketchHover(App), null);
 });
 

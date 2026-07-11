@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import {
+  assertSiteProfileReleaseAllowed,
   auditSiteProfiles,
   listSiteProfileIds,
   validateSiteProfile,
@@ -19,6 +20,40 @@ test('site profile contract audits every store from one registry', async () => {
   assert.equal(result.ok, true);
   assert.equal(result.profiles.find(profile => profile.id === 'bargig').releaseStatus, 'active');
   assert.equal(result.warnings.filter(issue => issue.code === 'placeholder-share-url').length, 4);
+});
+
+test('site release blocks draft profiles and confines explicit overrides to local preview mode', async () => {
+  const draftProfile = await loadSiteProfile(ROOT, 'store-1');
+  const activeProfile = await loadSiteProfile(ROOT, 'bargig');
+
+  assert.equal(assertSiteProfileReleaseAllowed({ profile: activeProfile }), 'release');
+  assert.throws(
+    () => assertSiteProfileReleaseAllowed({ profile: draftProfile }),
+    /Refusing to release draft profile/
+  );
+  assert.equal(
+    assertSiteProfileReleaseAllowed({ profile: draftProfile, allowDraft: true, env: {} }),
+    'preview'
+  );
+  for (const env of [{ CI: 'true' }, { CI: '1' }, { GITHUB_ACTIONS: 'TRUE' }]) {
+    assert.throws(
+      () =>
+        assertSiteProfileReleaseAllowed({
+          profile: draftProfile,
+          allowDraft: true,
+          env,
+        }),
+      /disabled in CI/
+    );
+  }
+  assert.equal(
+    assertSiteProfileReleaseAllowed({
+      profile: draftProfile,
+      allowDraft: true,
+      env: { CI: '0', GITHUB_ACTIONS: 'false' },
+    }),
+    'preview'
+  );
 });
 
 test('active site profiles reject placeholder deployment URLs', async () => {

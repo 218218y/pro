@@ -22,6 +22,10 @@ export type PlanarReflectorState = UnknownRecord & {
   reflectorPlane: UnknownRecord;
   q: UnknownRecord;
   cacheKey?: string;
+  consecutiveFailureCount?: number;
+  lastFailureReason?: PlanarReflectorRenderFailureReason;
+  lastFailureAtMs?: number;
+  retryAfterMs?: number;
 };
 
 export type PlanarMirrorRefreshResult = {
@@ -29,10 +33,15 @@ export type PlanarMirrorRefreshResult = {
   mirrorCount: number;
   planarCount: number;
   cubeCount: number;
+  attemptedCount: number;
   refreshedCount: number;
+  failedCount: number;
   deferredCount: number;
+  backoffDeferredCount: number;
   nextIndex: number;
   completedCycle: boolean;
+  firstFailureReason: PlanarReflectorRenderFailureReason | null;
+  failureCounts: Partial<Record<PlanarReflectorRenderFailureReason, number>>;
   skippedReason: string | null;
 };
 

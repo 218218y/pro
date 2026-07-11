@@ -60,8 +60,16 @@ test('site release template injects metadata without mutating shared template fi
 });
 
 test('site release CLI parser supports generic command shape', () => {
-  const parsed = parseSiteReleaseArgs(['--store', 'store-2', '--variant', 'client', '--no-obfuscate']);
+  const parsed = parseSiteReleaseArgs([
+    '--store',
+    'store-2',
+    '--variant',
+    'client',
+    '--allow-draft',
+    '--no-obfuscate',
+  ]);
   assert.equal(parsed.store, 'store-2');
   assert.equal(parsed.variant, 'site2');
+  assert.equal(parsed.allowDraft, true);
   assert.deepEqual(parsed.passthrough, ['--no-obfuscate']);
 });

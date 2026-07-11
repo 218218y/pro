@@ -61,6 +61,19 @@ function incrementRenderSlotCounter(
   return next;
 }
 
+function addRenderSlotCounter(
+  getRenderSlot: RenderSlotReader,
+  setRenderSlot: RenderSlotWriter,
+  app: AppContainer,
+  key: string,
+  amount: number
+): number {
+  const delta = Number.isFinite(amount) && amount > 0 ? amount : 0;
+  const next = readFiniteSlotNumber(getRenderSlot, app, key, 0) + delta;
+  setRenderSlot(app, key, next);
+  return next;
+}
+
 function isFrameWithinBudget(nowMs: number, frameStartMs: number, budgetMs: number): boolean {
   const elapsed = frameStartMs > 0 ? nowMs - frameStartMs : 0;
   return !elapsed || elapsed < budgetMs;
@@ -318,6 +331,32 @@ export function createRenderLoopMirrorDriver(
           initialOnly: refreshInitialOnly,
         });
         setRenderSlot(A, '__mirrorPlanarCursorIndex', planarResult.nextIndex);
+        addRenderSlotCounter(
+          getRenderSlot,
+          setRenderSlot,
+          A,
+          '__mirrorPlanarAttemptCount',
+          planarResult.attemptedCount
+        );
+        addRenderSlotCounter(
+          getRenderSlot,
+          setRenderSlot,
+          A,
+          '__mirrorPlanarFailureCount',
+          planarResult.failedCount
+        );
+        addRenderSlotCounter(
+          getRenderSlot,
+          setRenderSlot,
+          A,
+          '__mirrorPlanarDeferredSurfaceCount',
+          planarResult.deferredCount
+        );
+        if (planarResult.firstFailureReason) {
+          setRenderSlot(A, '__mirrorPlanarLastFailureReason', planarResult.firstFailureReason);
+          setRenderSlot(A, '__mirrorPlanarLastFailureAtMs', mirrorNow);
+          setRenderSlot(A, '__mirrorPlanarFailureCounts', planarResult.failureCounts);
+        }
         planarBatchCompleted = planarResult.completedCycle;
         setRenderSlot(A, '__mirrorPlanarBatchPending', !planarBatchCompleted);
         setRenderSlot(A, '__mirrorPlanarInitialBatchPending', refreshInitialOnly && !planarBatchCompleted);

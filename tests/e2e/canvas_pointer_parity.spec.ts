@@ -12,7 +12,9 @@ import {
 } from './helpers/project_flows';
 
 test.describe('Canvas pointer parity smoke', () => {
-  test('browser hover and click apply cell dimensions to the same canvas target', async ({ page }) => {
+  test('browser hover and click apply cell dimensions to the same canvas target @critical', async ({
+    page,
+  }) => {
     const issues = collectRuntimeIssues(page);
     await gotoSmokeApp(page);
 

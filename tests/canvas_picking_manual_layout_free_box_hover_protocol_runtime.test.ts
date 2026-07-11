@@ -5,6 +5,7 @@ import {
   createBraceShelvesHoverRecord,
   createPresetLayoutHoverRecord,
   createShelfGridHoverRecord,
+  decodeFreeBoxCommand,
   readBraceShelvesFreeBoxCommand,
   readPresetLayoutFreeBoxCommand,
   readShelfGridFreeBoxCommand,
@@ -125,4 +126,127 @@ test('manual free-box brace protocol validates identity and narrows the target v
     depthM: 0.5,
   });
   assert.equal(readBraceShelvesFreeBoxCommand({ ...hover, boxId: '' }), null);
+});
+
+test('manual free-box protocol rejects missing, malformed and unknown-version envelopes', () => {
+  const hover = createShelfGridHoverRecord({
+    host,
+    boxId: 'box-strict',
+    shelfVariant: 'regular',
+    plan: {
+      shelfYs: [0.5],
+      shelfYNorms: [0.5],
+      cellXNormMin: 0,
+      cellXNormMax: 1,
+      cellYNormMin: 0,
+      cellYNormMax: 1,
+      contentXNorm: 0.5,
+      previewX: 0,
+      previewW: 1,
+      previewInternalZ: 0,
+      previewInnerD: 0.5,
+      previewWoodThick: 0.018,
+      depthM: null,
+      blockedReason: null,
+    },
+  });
+
+  const withoutEnvelope = { ...hover };
+  delete withoutEnvelope.freeBoxCommand;
+  assert.deepEqual(decodeFreeBoxCommand(withoutEnvelope), {
+    ok: false,
+    reason: 'missing-envelope',
+  });
+
+  assert.deepEqual(decodeFreeBoxCommand({ ...hover, freeBoxCommand: { version: 2, command: {} } }), {
+    ok: false,
+    reason: 'unsupported-version',
+  });
+  assert.deepEqual(decodeFreeBoxCommand({ ...hover, freeBoxCommand: { version: 1 } }), {
+    ok: false,
+    reason: 'invalid-command',
+  });
+});
+
+test('manual free-box protocol rejects incomplete, non-finite and out-of-range commands', () => {
+  const hover = createShelfGridHoverRecord({
+    host,
+    boxId: 'box-invalid',
+    shelfVariant: 'regular',
+    plan: {
+      shelfYs: [0.5],
+      shelfYNorms: [0.5],
+      cellXNormMin: 0.2,
+      cellXNormMax: 0.8,
+      cellYNormMin: 0.1,
+      cellYNormMax: 0.9,
+      contentXNorm: 0.5,
+      previewX: 0,
+      previewW: 1,
+      previewInternalZ: 0,
+      previewInnerD: 0.5,
+      previewWoodThick: 0.018,
+      depthM: 0.4,
+      blockedReason: null,
+    },
+  });
+  const envelope = structuredClone(hover.freeBoxCommand) as {
+    version: number;
+    command: Record<string, unknown>;
+  };
+
+  for (const mutate of [
+    (command: Record<string, unknown>) => delete command.shelfYNorms,
+    (command: Record<string, unknown>) => (command.shelfYNorms = 'not-an-array'),
+    (command: Record<string, unknown>) => (command.shelfYNorms = [Number.NaN]),
+    (command: Record<string, unknown>) => (command.shelfYNorms = [Number.POSITIVE_INFINITY]),
+    (command: Record<string, unknown>) => (command.shelfYNorms = []),
+    (command: Record<string, unknown>) => (command.shelfYNorms = [0.95]),
+    (command: Record<string, unknown>) => {
+      command.cellXNormMin = 0.9;
+      command.cellXNormMax = 0.1;
+    },
+    (command: Record<string, unknown>) => (command.contentXNorm = 1.5),
+    (command: Record<string, unknown>) => (command.kind = 'preset-layout'),
+  ]) {
+    const invalidEnvelope = structuredClone(envelope);
+    mutate(invalidEnvelope.command);
+    assert.deepEqual(decodeFreeBoxCommand({ ...hover, freeBoxCommand: invalidEnvelope }), {
+      ok: false,
+      reason: 'invalid-command',
+    });
+  }
+});
+
+test('manual free-box protocol rejects route and payload identity drift', () => {
+  const hover = createShelfGridHoverRecord({
+    host,
+    boxId: 'box-route',
+    shelfVariant: 'regular',
+    plan: {
+      shelfYs: [0.5],
+      shelfYNorms: [0.5],
+      cellXNormMin: 0,
+      cellXNormMax: 1,
+      cellYNormMin: 0,
+      cellYNormMax: 1,
+      contentXNorm: 0.5,
+      previewX: 0,
+      previewW: 1,
+      previewInternalZ: 0,
+      previewInnerD: 0.5,
+      previewWoodThick: 0.018,
+      depthM: null,
+      blockedReason: null,
+    },
+  });
+
+  assert.deepEqual(decodeFreeBoxCommand({ ...hover, boxId: 'other-box' }), {
+    ok: false,
+    reason: 'route-mismatch',
+  });
+  assert.deepEqual(decodeFreeBoxCommand({ ...hover, kind: 'box_content_preset' }), {
+    ok: false,
+    reason: 'route-mismatch',
+  });
 });

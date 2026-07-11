@@ -175,3 +175,111 @@ test('initial-only planar refresh skips warm reused mirrors when only tracking i
   assert.equal(renderer.renderCalls, 0);
   assert.equal(renderer.setRenderTargetCalls, 0);
 });
+
+function makeBackfaceFailingMirror(onAttempt: () => void): AnyRecord {
+  return {
+    userData: {
+      __wpMirrorSurface: true,
+      __wpPlanarReflector: {
+        renderTarget: {},
+        virtualCamera: {},
+        textureMatrix: {},
+        material: {},
+        surfaceObject: {},
+        updateCount: 0,
+        reflectorWorldPosition: {},
+        cameraWorldPosition: {},
+        rotationMatrix: {},
+        normal: {},
+        view: {
+          dot() {
+            onAttempt();
+            return 1;
+          },
+        },
+        targetVector: {},
+        lookAtPosition: {},
+        clipPlane: {},
+        reflectorPlane: {},
+        q: {},
+        normalSign: 1,
+        faceSign: 1,
+        clipBias: 0,
+      },
+    },
+  };
+}
+
+test('planar refresh budgets failed attempts instead of running every failing surface', () => {
+  const app = makeApp();
+  let attempts = 0;
+  const mirrors = [
+    makeBackfaceFailingMirror(() => attempts++),
+    makeBackfaceFailingMirror(() => attempts++),
+    makeBackfaceFailingMirror(() => attempts++),
+    makeBackfaceFailingMirror(() => attempts++),
+  ];
+  ((app.render as AnyRecord).meta as AnyRecord).mirrors = mirrors;
+
+  const result = refreshTrackedPlanarMirrorSurfacesNow(app, {
+    maxSurfaces: 1,
+    maxBudgetMs: 10,
+    now: () => 0,
+  });
+
+  assert.equal(attempts, 1);
+  assert.equal(result.attemptedCount, 1);
+  assert.equal(result.refreshedCount, 0);
+  assert.equal(result.failedCount, 1);
+  assert.equal(result.deferredCount, 3);
+  assert.equal(result.completedCycle, false);
+  assert.equal(result.firstFailureReason, 'backface-culled');
+  assert.deepEqual(result.failureCounts, { 'backface-culled': 1 });
+  assert.equal(result.skippedReason, 'planar-reflector-render-failed');
+});
+
+test('planar refresh checks elapsed budget after a failed attempt', () => {
+  const app = makeApp();
+  let attempts = 0;
+  ((app.render as AnyRecord).meta as AnyRecord).mirrors = [
+    makeBackfaceFailingMirror(() => attempts++),
+    makeBackfaceFailingMirror(() => attempts++),
+    makeBackfaceFailingMirror(() => attempts++),
+  ];
+  const nowValues = [0, 0, 2];
+
+  const result = refreshTrackedPlanarMirrorSurfacesNow(app, {
+    maxSurfaces: 3,
+    maxBudgetMs: 1,
+    now: () => nowValues.shift() ?? 2,
+  });
+
+  assert.equal(attempts, 1);
+  assert.equal(result.attemptedCount, 1);
+  assert.equal(result.failedCount, 1);
+  assert.equal(result.deferredCount, 2);
+  assert.equal(result.completedCycle, false);
+});
+
+test('repeated planar failures use bounded retry backoff and preserve the last reason', () => {
+  const app = makeApp();
+  let attempts = 0;
+  const mirror = makeBackfaceFailingMirror(() => attempts++);
+  ((app.render as AnyRecord).meta as AnyRecord).mirrors = [mirror];
+
+  const first = refreshTrackedPlanarMirrorSurfacesNow(app, { now: () => 0 });
+  const second = refreshTrackedPlanarMirrorSurfacesNow(app, { now: () => 0 });
+  const third = refreshTrackedPlanarMirrorSurfacesNow(app, { now: () => 1 });
+  const state = readPlanarState(mirror);
+
+  assert.equal(first.failedCount, 1);
+  assert.equal(second.failedCount, 1);
+  assert.equal(third.attemptedCount, 0);
+  assert.equal(third.backoffDeferredCount, 1);
+  assert.equal(third.deferredCount, 1);
+  assert.equal(third.skippedReason, 'planar-reflector-retry-backoff');
+  assert.equal(attempts, 2);
+  assert.equal(state.consecutiveFailureCount, 2);
+  assert.equal(state.lastFailureReason, 'backface-culled');
+  assert.equal(state.retryAfterMs, 16);
+});

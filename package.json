@@ -294,7 +294,14 @@
     "lint:modern": "npm run lint:js:strict && npm run lint:ts-modern:syntax && npm run lint:ts-modern:type-aware && npm run lint:contracts",
     "lint:modern-readiness": "node tools/wp_lint_modern_readiness.mjs",
     "toolchain:version-policy": "node tools/wp_toolchain_version_policy.mjs --check docs/TOOLCHAIN_VERSION_POLICY.md",
-    "toolchain:version-policy:report": "node tools/wp_toolchain_version_policy.mjs --out docs/TOOLCHAIN_VERSION_POLICY.md"
+    "toolchain:version-policy:report": "node tools/wp_toolchain_version_policy.mjs --out docs/TOOLCHAIN_VERSION_POLICY.md",
+    "preview:site": "node tools/wp_release_site.js --allow-draft",
+    "preview:store1": "node tools/wp_release_site.js --store store-1 --variant main --allow-draft",
+    "preview:store1:site2": "node tools/wp_release_site.js --store store-1 --variant site2 --allow-draft",
+    "preview:store2": "node tools/wp_release_site.js --store store-2 --variant main --allow-draft",
+    "preview:store2:site2": "node tools/wp_release_site.js --store store-2 --variant site2 --allow-draft",
+    "e2e:critical": "node tools/wp_playwright_preflight.js && playwright test -c playwright.config.ts --grep @critical",
+    "e2e:critical:list": "playwright test -c playwright.config.ts --grep @critical --list"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

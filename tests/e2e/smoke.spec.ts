@@ -25,7 +25,7 @@ import {
 } from './helpers/project_flows';
 
 test.describe('Playwright smoke flows', () => {
-  test('boot, viewport, tabs and render toggles stay stable', async ({ page }) => {
+  test('boot, viewport, tabs and render toggles stay stable @critical', async ({ page }) => {
     const issues = collectRuntimeIssues(page);
     await gotoSmokeApp(page);
 
@@ -50,7 +50,7 @@ test.describe('Playwright smoke flows', () => {
     expectNoRuntimeIssues(issues);
   });
 
-  test('header save-load roundtrip restores project name', async ({ page }) => {
+  test('header save-load roundtrip restores project name @critical', async ({ page }) => {
     const issues = collectRuntimeIssues(page);
     await gotoSmokeApp(page);
 
@@ -82,7 +82,7 @@ test.describe('Playwright smoke flows', () => {
     expectNoRuntimeIssues(issues);
   });
 
-  test('order pdf overlay opens from export and header with stable toolbar', async ({ page }) => {
+  test('order pdf overlay opens from export and header with stable toolbar @critical', async ({ page }) => {
     const issues = collectRuntimeIssues(page);
     await gotoSmokeApp(page);
 

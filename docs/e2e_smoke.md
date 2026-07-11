@@ -8,6 +8,8 @@ Do not run full `npm run e2e:smoke` after every Codex fix. Run it when the chang
 
 ```bash
 npm run e2e:smoke:list
+npm run e2e:critical:list
+npm run e2e:critical
 npm run e2e:smoke
 npm run e2e:cloud-sync-reconnect
 npm run e2e:canvas-pointer-parity
@@ -16,6 +18,11 @@ npm run perf:browser
 ```
 
 `npm run e2e:smoke:preflight` checks the Playwright/browser environment before running the suite.
+
+`npm run e2e:critical` is the required CI lane for pull requests and normal pushes. It runs only the
+five `@critical` journeys: app boot/navigation, real authoring/build follow-through, save/load roundtrip,
+canvas pointer preview/commit parity, and the order-PDF overlay lifecycle. The full smoke suite remains
+available manually and for broader release validation.
 
 The Playwright config runs a small app-shell warmup setup project before the parallel smoke workers.
 Keep that setup focused on booting `index_pro.html` and waiting for the canonical shell/canvas readiness;

@@ -475,7 +475,7 @@ function expectProjectContainsModuleSpecialDims(
 }
 
 test.describe('Playwright authoring build coverage', () => {
-  test('structure, design, and interior authoring steps trigger real build and render work', async ({
+  test('structure, design, and interior authoring steps trigger real build and render work @critical', async ({
     page,
   }) => {
     test.slow();

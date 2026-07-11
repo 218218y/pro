@@ -349,6 +349,7 @@ jobs:
       - runtime-tests
       - build-smoke
       - audit
+      - e2e-critical
 
     steps:
       - name: Summarize required checks
@@ -360,6 +361,7 @@ jobs:
           RUNTIME_TESTS_RESULT: ${{ needs['runtime-tests'].result }}
           BUILD_SMOKE_RESULT: ${{ needs['build-smoke'].result }}
           AUDIT_RESULT: ${{ needs['audit'].result }}
+          E2E_CRITICAL_RESULT: ${{ needs['e2e-critical'].result }}
         run: |
           failed=0
           for check in \
@@ -369,7 +371,8 @@ jobs:
             "contracts:$CONTRACTS_RESULT" \
             "runtime-tests:$RUNTIME_TESTS_RESULT" \
             "build-smoke:$BUILD_SMOKE_RESULT" \
-            "audit:$AUDIT_RESULT"
+            "audit:$AUDIT_RESULT" \
+            "e2e-critical:$E2E_CRITICAL_RESULT"
           do
             name="${check%%:*}"
             result="${check#*:}"
@@ -379,6 +382,47 @@ jobs:
             fi
           done
           exit "$failed"
+
+  e2e-critical:
+    name: Playwright critical PR lane
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    if: github.event_name != 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Sync Three.js browser mirrors
+        run: npm run three:sync-libs
+
+      - name: Install Playwright Chromium
+        run: npm run e2e:install -- chromium --with-deps
+
+      - name: Run critical browser journeys
+        run: npm run e2e:critical
+
+      - name: Upload critical E2E diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-critical-diagnostics
+          path: |
+            .artifacts/**
+            test-results/**
+            playwright-report/**
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
 
   release-gate:
     name: Full release gate
