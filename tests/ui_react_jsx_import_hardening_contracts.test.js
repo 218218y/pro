@@ -39,6 +39,8 @@ const appErrorBoundary = readFile(path.join(uiReactRoot, 'components/AppErrorBou
 const overlayTopControls = readFile(path.join(uiReactRoot, 'overlay_top_controls.tsx'));
 const renderRoomSection = readFile(path.join(uiReactRoot, 'tabs/settings_visual_sections_room.tsx'));
 const editorSurface = readFile(path.join(uiReactRoot, 'pdf/order_pdf_overlay_editor_surface.tsx'));
+const editorStage = readFile(path.join(uiReactRoot, 'pdf/order_pdf_overlay_editor_stage.tsx'));
+const editorContracts = readFile(path.join(uiReactRoot, 'pdf/order_pdf_overlay_editor_surface_contracts.ts'));
 
 test('ui react jsx import hardening removes legacy default React imports and namespace access from tsx modules', () => {
   for (const file of jsxFiles) {
@@ -60,9 +62,14 @@ test('ui react jsx import hardening uses explicit named imports in representativ
   assert.match(renderRoomSection, /import type \{[^}]*ReactElement[^}]*\} from 'react';/);
   assert.doesNotMatch(renderRoomSection, /\bReact\./);
 
+  assert.match(editorSurface, /import type \{ ReactElement \} from 'react';/);
   assert.match(
-    editorSurface,
-    /import type \{[^}]*MutableRefObject[^}]*PointerEventHandler[^}]*ReactElement[^}]*ReactNode[^}]*\} from 'react';/
+    editorStage,
+    /import type \{[^}]*ChangeEvent[^}]*InputHTMLAttributes[^}]*MutableRefObject[^}]*PointerEventHandler[^}]*ReactElement[^}]*\} from 'react';/
   );
-  assert.doesNotMatch(editorSurface, /\bReact\./);
+  assert.match(
+    editorContracts,
+    /import type \{[^}]*DragEventHandler[^}]*MutableRefObject[^}]*PointerEventHandler[^}]*ReactNode[^}]*\} from 'react';/
+  );
+  assert.doesNotMatch(editorSurface + editorStage + editorContracts, /\bReact\./);
 });

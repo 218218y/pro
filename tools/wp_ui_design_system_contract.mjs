@@ -555,15 +555,15 @@ forbidPattern(
 );
 
 requirePattern(
-  'esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx',
+  'esm/native/ui/react/pdf/order_pdf_overlay_inline_confirm.tsx',
   /import \{ Button \} from '\.\.\/components\/Button\.js';/
 );
 requirePattern(
-  'esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx',
-  /id="orderPdfInlineConfirmModal"[\s\S]*<Button[\s\S]*variant="save"[\s\S]*onClick=\{onConfirmInlineOk\}[\s\S]*אישור[\s\S]*<Button[\s\S]*variant="cancel"[\s\S]*onClick=\{onConfirmInlineCancel\}[\s\S]*ביטול/
+  'esm/native/ui/react/pdf/order_pdf_overlay_inline_confirm.tsx',
+  /id="orderPdfInlineConfirmModal"[\s\S]*<Button[\s\S]*variant="save"[\s\S]*onClick=\{onConfirm\}[\s\S]*אישור[\s\S]*<Button[\s\S]*variant="cancel"[\s\S]*onClick=\{onCancel\}[\s\S]*ביטול/
 );
-forbidPattern('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx', /className="btn btn-save"/);
-forbidPattern('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx', /className="btn btn-cancel"/);
+forbidPattern('esm/native/ui/react/pdf/order_pdf_overlay_inline_confirm.tsx', /className="btn btn-save"/);
+forbidPattern('esm/native/ui/react/pdf/order_pdf_overlay_inline_confirm.tsx', /className="btn btn-cancel"/);
 requirePattern(
   'esm/native/ui/react/overlay_feedback_host.tsx',
   /import \{ Button \} from '\.\/components\/Button\.js';/

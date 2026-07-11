@@ -11,6 +11,14 @@ import {
 } from './render_access_surface.js';
 import { getUiFeedback } from './service_access.js';
 import { ensureRenderMetaArray } from './render_access_state_bags.js';
+import type {
+  PlanarMirrorRefreshOptions,
+  PlanarMirrorRefreshResult,
+  PlanarReflectorState,
+} from './planar_reflector_contracts.js';
+import { renderPlanarReflectorSurface } from './planar_reflector_render_pass.js';
+
+export type { PlanarMirrorRefreshOptions, PlanarMirrorRefreshResult } from './planar_reflector_contracts.js';
 
 const DEFAULT_REFLECTOR_LONG_EDGE = 1024;
 const DEFAULT_REFLECTOR_MIN_EDGE = 384;
@@ -90,55 +98,6 @@ void main() {
   #include <dithering_fragment>
 }
 `;
-
-type PlanarReflectorState = UnknownRecord & {
-  renderTarget: UnknownRecord;
-  virtualCamera: UnknownRecord;
-  textureMatrix: UnknownRecord;
-  material: UnknownRecord;
-  originalMaterial?: unknown;
-  faceSign: number;
-  normalSign: number;
-  clipBias: number;
-  updateCount: number;
-  surfaceObject: UnknownRecord;
-  reflectorWorldPosition: UnknownRecord;
-  cameraWorldPosition: UnknownRecord;
-  rotationMatrix: UnknownRecord;
-  normal: UnknownRecord;
-  view: UnknownRecord;
-  targetVector: UnknownRecord;
-  lookAtPosition: UnknownRecord;
-  clipPlane: UnknownRecord;
-  reflectorPlane: UnknownRecord;
-  q: UnknownRecord;
-  cacheKey?: string;
-};
-
-export type PlanarMirrorRefreshResult = {
-  refreshed: boolean;
-  mirrorCount: number;
-  planarCount: number;
-  cubeCount: number;
-  refreshedCount: number;
-  deferredCount: number;
-  nextIndex: number;
-  completedCycle: boolean;
-  skippedReason: string | null;
-};
-
-export type PlanarMirrorRefreshOptions = {
-  maxSurfaces?: number | null;
-  maxBudgetMs?: number | null;
-  startIndex?: number | null;
-  now?: (() => number) | null;
-  /**
-   * Refresh only newly installed reflector targets. Rebuilds mark mirror tracking dirty even
-   * when most mirrors were only recreated from the previous build; this mode prevents a
-   * single added mirror from re-rendering every existing door mirror.
-   */
-  initialOnly?: boolean | null;
-};
 
 const PLANAR_CUBE_MODE_RENDER_SLOT = '__mirrorPlanarCubeMode';
 const PLANAR_CUBE_MODE_NOTIFIED_RENDER_SLOT = '__mirrorPlanarCubeModeNotified';
@@ -325,16 +284,8 @@ function call1(ctx: unknown, fn: unknown, a: unknown): unknown {
   return typeof fn === 'function' ? Reflect.apply(fn, ctx, [a]) : undefined;
 }
 
-function call2(ctx: unknown, fn: unknown, a: unknown, b: unknown): unknown {
-  return typeof fn === 'function' ? Reflect.apply(fn, ctx, [a, b]) : undefined;
-}
-
 function call3(ctx: unknown, fn: unknown, a: unknown, b: unknown, c: unknown): unknown {
   return typeof fn === 'function' ? Reflect.apply(fn, ctx, [a, b, c]) : undefined;
-}
-
-function call4(ctx: unknown, fn: unknown, a: unknown, b: unknown, c: unknown, d: unknown): unknown {
-  return typeof fn === 'function' ? Reflect.apply(fn, ctx, [a, b, c, d]) : undefined;
 }
 
 function clampNumber(value: unknown, defaultValue: number, min: number, max: number): number {
@@ -854,38 +805,6 @@ function readSlidingDoorEntryWidth(entry: UnknownRecord): number | null {
   return fromGroup != null && fromGroup > 0 ? fromGroup : null;
 }
 
-type HiddenPlanarReflectorSurface = { object: UnknownRecord; visible: unknown };
-
-function hidePlanarReflectorSurfacesForInternalPass(App: unknown): HiddenPlanarReflectorSurface[] {
-  const hidden: HiddenPlanarReflectorSurface[] = [];
-  const mirrors = ensureRenderMetaArray<UnknownRecord>(App, 'mirrors');
-  const seen = new Set<UnknownRecord>();
-
-  for (let i = 0; i < mirrors.length; i += 1) {
-    const mirror = readRecord(mirrors[i]);
-    if (!mirror) continue;
-    const state = readPlanarReflectorState(mirror);
-    const surface = readRecord(state?.surfaceObject);
-    if (!surface || seen.has(surface)) continue;
-    seen.add(surface);
-    hidden.push({ object: surface, visible: surface.visible });
-    surface.visible = false;
-  }
-
-  return hidden;
-}
-
-function restorePlanarReflectorSurfacesAfterInternalPass(hidden: HiddenPlanarReflectorSurface[]): void {
-  for (let i = hidden.length - 1; i >= 0; i -= 1) {
-    const entry = hidden[i];
-    try {
-      entry.object.visible = entry.visible;
-    } catch {
-      // Best-effort restoration only.
-    }
-  }
-}
-
 function clamp01(value: number): number {
   if (value < 0) return 0;
   if (value > 1) return 1;
@@ -1290,190 +1209,6 @@ export function installPlanarMirrorReflector(
   return true;
 }
 
-function getMatrixWorld(obj: UnknownRecord | null): unknown {
-  return obj ? obj.matrixWorld : null;
-}
-
-function setVector3(target: UnknownRecord | null, x: number, y: number, z: number): void {
-  call3(target, target?.set, x, y, z);
-}
-
-function copyRecord(target: UnknownRecord | null, source: unknown): void {
-  call1(target, target?.copy, source);
-}
-
-function invokeLookAt(camera: UnknownRecord | null, target: unknown): void {
-  call1(camera, camera?.lookAt, target);
-}
-
-function writeReflectorTextureMatrix(textureMatrix: UnknownRecord): void {
-  const set = textureMatrix.set;
-  if (typeof set !== 'function') return;
-  Reflect.apply(
-    set,
-    textureMatrix,
-    [0.5, 0.0, 0.0, 0.5, 0.0, 0.5, 0.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0, 1.0]
-  );
-}
-
-function renderPlanarMirrorSurface(args: {
-  App: unknown;
-  mirror: UnknownRecord;
-  state: PlanarReflectorState;
-  renderer: UnknownRecord;
-  scene: unknown;
-  camera: UnknownRecord;
-}): boolean {
-  const { App, mirror, state, renderer, scene, camera } = args;
-  const surface = readRecord(state.surfaceObject) || mirror;
-  const mirrorVisibleBefore = mirror.visible;
-  let hiddenPlanarSurfaces: HiddenPlanarReflectorSurface[] = [];
-  const rendererShadowMap = readRecord(renderer.shadowMap);
-  const previousShadowAutoUpdate = rendererShadowMap ? rendererShadowMap.autoUpdate : undefined;
-  const xr = readRecord(renderer.xr);
-  const previousXrEnabled = xr ? xr.enabled : undefined;
-  const getRenderTarget = readFn(renderer, 'getRenderTarget');
-  const setRenderTarget = readFn(renderer, 'setRenderTarget');
-  const clear = readFn(renderer, 'clear');
-  const render = readFn(renderer, 'render');
-  if (!setRenderTarget || !render) return false;
-  let previousRenderTarget: unknown = null;
-  let renderTargetChanged = false;
-
-  try {
-    call1(mirror, mirror.updateMatrixWorld, true);
-    call1(surface, surface.updateMatrixWorld, true);
-    call1(camera, camera.updateMatrixWorld, true);
-
-    const reflectorWorldPosition = state.reflectorWorldPosition;
-    const cameraWorldPosition = state.cameraWorldPosition;
-    const rotationMatrix = state.rotationMatrix;
-    const normal = state.normal;
-    const view = state.view;
-    const target = state.targetVector;
-    const lookAtPosition = state.lookAtPosition;
-    const clipPlane = state.clipPlane;
-    const reflectorPlane = state.reflectorPlane;
-    const q = state.q;
-    const virtualCamera = state.virtualCamera;
-    const textureMatrix = state.textureMatrix;
-
-    call1(reflectorWorldPosition, reflectorWorldPosition.setFromMatrixPosition, getMatrixWorld(surface));
-    call1(cameraWorldPosition, cameraWorldPosition.setFromMatrixPosition, getMatrixWorld(camera));
-    call1(rotationMatrix, rotationMatrix.extractRotation, getMatrixWorld(surface));
-    setVector3(normal, 0, 0, state.normalSign < 0 ? -1 : 1);
-    call1(normal, normal.applyMatrix4, rotationMatrix);
-
-    call2(view, view.subVectors, reflectorWorldPosition, cameraWorldPosition);
-    const dot = typeof view.dot === 'function' ? Number(Reflect.apply(view.dot, view, [normal])) : NaN;
-    if (Number.isFinite(dot) && dot > 0) return false;
-
-    call1(view, view.reflect, normal);
-    call0(view, view.negate);
-    call1(view, view.add, reflectorWorldPosition);
-
-    call1(rotationMatrix, rotationMatrix.extractRotation, getMatrixWorld(camera));
-    setVector3(lookAtPosition, 0, 0, -1);
-    call1(lookAtPosition, lookAtPosition.applyMatrix4, rotationMatrix);
-    call1(lookAtPosition, lookAtPosition.add, cameraWorldPosition);
-
-    call2(target, target.subVectors, reflectorWorldPosition, lookAtPosition);
-    call1(target, target.reflect, normal);
-    call0(target, target.negate);
-    call1(target, target.add, reflectorWorldPosition);
-
-    copyRecord(readRecord(virtualCamera.position), view);
-    setVector3(readRecord(virtualCamera.up), 0, 1, 0);
-    call1(readRecord(virtualCamera.up), readRecord(virtualCamera.up)?.applyMatrix4, rotationMatrix);
-    call1(readRecord(virtualCamera.up), readRecord(virtualCamera.up)?.reflect, normal);
-    invokeLookAt(virtualCamera, target);
-
-    virtualCamera.far = camera.far;
-    virtualCamera.near = camera.near;
-    virtualCamera.aspect = camera.aspect;
-    virtualCamera.fov = camera.fov;
-    call0(virtualCamera, virtualCamera.updateProjectionMatrix);
-    call1(virtualCamera, virtualCamera.updateMatrixWorld, true);
-    call1(
-      readRecord(virtualCamera.matrixWorldInverse),
-      readRecord(virtualCamera.matrixWorldInverse)?.copy,
-      virtualCamera.matrixWorld
-    );
-    call0(readRecord(virtualCamera.matrixWorldInverse), readRecord(virtualCamera.matrixWorldInverse)?.invert);
-    call1(
-      readRecord(virtualCamera.projectionMatrix),
-      readRecord(virtualCamera.projectionMatrix)?.copy,
-      camera.projectionMatrix
-    );
-
-    writeReflectorTextureMatrix(textureMatrix);
-    call1(textureMatrix, textureMatrix.multiply, virtualCamera.projectionMatrix);
-    call1(textureMatrix, textureMatrix.multiply, virtualCamera.matrixWorldInverse);
-    call1(textureMatrix, textureMatrix.multiply, surface.matrixWorld);
-
-    call2(reflectorPlane, reflectorPlane.setFromNormalAndCoplanarPoint, normal, reflectorWorldPosition);
-    call1(reflectorPlane, reflectorPlane.applyMatrix4, virtualCamera.matrixWorldInverse);
-    const planeNormal = readRecord(reflectorPlane.normal);
-    if (!planeNormal || typeof reflectorPlane.constant !== 'number') return false;
-    call4(clipPlane, clipPlane.set, planeNormal.x, planeNormal.y, planeNormal.z, reflectorPlane.constant);
-
-    const projectionMatrix = readRecord(virtualCamera.projectionMatrix);
-    const elements = Array.isArray(projectionMatrix?.elements)
-      ? (projectionMatrix?.elements as unknown[])
-      : null;
-    if (!projectionMatrix || !elements) return false;
-    const clipX = typeof clipPlane.x === 'number' ? clipPlane.x : 0;
-    const clipY = typeof clipPlane.y === 'number' ? clipPlane.y : 0;
-    call4(
-      q,
-      q.set,
-      (Math.sign(clipX) + Number(elements[8] || 0)) / Number(elements[0] || 1),
-      (Math.sign(clipY) + Number(elements[9] || 0)) / Number(elements[5] || 1),
-      -1.0,
-      (1.0 + Number(elements[10] || 0)) / Number(elements[14] || 1)
-    );
-    const denominator =
-      typeof clipPlane.dot === 'function' ? Number(Reflect.apply(clipPlane.dot, clipPlane, [q])) : NaN;
-    if (!Number.isFinite(denominator) || Math.abs(denominator) < 0.000001) return false;
-    call1(clipPlane, clipPlane.multiplyScalar, 2.0 / denominator);
-    elements[2] = clipPlane.x;
-    elements[6] = clipPlane.y;
-    elements[10] = Number(clipPlane.z || 0) + 1.0 - state.clipBias;
-    elements[14] = clipPlane.w;
-
-    previousRenderTarget = getRenderTarget ? call0(renderer, getRenderTarget) : null;
-    hiddenPlanarSurfaces = hidePlanarReflectorSurfacesForInternalPass(App);
-    mirror.visible = false;
-    if (rendererShadowMap && typeof previousShadowAutoUpdate !== 'undefined') {
-      rendererShadowMap.autoUpdate = false;
-    }
-    if (xr && typeof previousXrEnabled !== 'undefined') xr.enabled = false;
-    call1(renderer, setRenderTarget, state.renderTarget);
-    renderTargetChanged = true;
-    const rendererState = readRecord(renderer.state);
-    const depthBuffer = readRecord(readRecord(rendererState?.buffers)?.depth);
-    call1(depthBuffer, depthBuffer?.setMask, true);
-    call0(renderer, clear);
-    call2(renderer, render, scene, virtualCamera);
-    call1(renderer, setRenderTarget, previousRenderTarget);
-    const viewport = camera.viewport;
-    if (typeof viewport !== 'undefined') call1(rendererState, rendererState?.viewport, viewport);
-    renderTargetChanged = false;
-    state.updateCount += 1;
-    return true;
-  } catch {
-    return false;
-  } finally {
-    if (renderTargetChanged) call1(renderer, setRenderTarget, previousRenderTarget);
-    restorePlanarReflectorSurfacesAfterInternalPass(hiddenPlanarSurfaces);
-    mirror.visible = mirrorVisibleBefore;
-    if (rendererShadowMap && typeof previousShadowAutoUpdate !== 'undefined') {
-      rendererShadowMap.autoUpdate = previousShadowAutoUpdate;
-    }
-    if (xr && typeof previousXrEnabled !== 'undefined') xr.enabled = previousXrEnabled;
-  }
-}
-
 export function readTrackedPlanarMirrorStats(App: unknown): {
   mirrorCount: number;
   planarCount: number;
@@ -1582,7 +1317,7 @@ export function refreshTrackedPlanarMirrorSurfacesNow(
     if (!state) continue;
     if (initialOnly && !isInitialPlanarReflectorState(state)) continue;
     eligibleCount += 1;
-    const ok = renderPlanarMirrorSurface({
+    const renderResult = renderPlanarReflectorSurface({
       App,
       mirror,
       state,
@@ -1590,7 +1325,7 @@ export function refreshTrackedPlanarMirrorSurfacesNow(
       scene,
       camera,
     });
-    if (ok) result.refreshedCount += 1;
+    if (renderResult.ok) result.refreshedCount += 1;
   }
 
   result.nextIndex = nextIndex;

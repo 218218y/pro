@@ -4,6 +4,10 @@ import test from 'node:test';
 import { readFirstExisting } from './_read_src.js';
 
 const source = readFirstExisting(['../esm/native/runtime/planar_reflector_runtime.ts'], import.meta.url);
+const renderPassSource = readFirstExisting(
+  ['../esm/native/runtime/planar_reflector_render_pass.ts'],
+  import.meta.url
+);
 const slidingSource = readFirstExisting(
   ['../esm/native/builder/render_door_ops_sliding.ts'],
   import.meta.url
@@ -49,7 +53,7 @@ test('box mirrors use a real reflector plane instead of projecting on box side f
   assert.match(source, /DEFAULT_REFLECTOR_SURFACE_INSET_M = 0\.006/);
   assert.match(source, /normalSign: 1/);
   assert.match(source, /surfaceObject: surfaceInstall\.surfaceObject/);
-  assert.match(source, /textureMatrix\.multiply, surface\.matrixWorld/);
+  assert.match(renderPassSource, /textureMatrix\.multiply, surface\.matrixWorld/);
 });
 
 test('non-box fallback still assigns reflector material only to the active mirror face', () => {
@@ -60,10 +64,10 @@ test('non-box fallback still assigns reflector material only to the active mirro
 });
 
 test('planar reflector render pass preserves renderer state details used by official Reflector', () => {
-  assert.match(source, /depthBuffer\?\.setMask/);
-  assert.match(source, /rendererShadowMap\.autoUpdate = false/);
-  assert.match(source, /xr\.enabled = false/);
-  assert.match(source, /rendererState\?\.viewport/);
+  assert.match(renderPassSource, /depthBuffer\?\.setMask/);
+  assert.match(renderPassSource, /rendererShadowMap\.autoUpdate = false/);
+  assert.match(renderPassSource, /xr\.enabled = false/);
+  assert.match(renderPassSource, /rendererState\?\.viewport/);
 });
 
 test('planar reflector plane avoids distant edge shimmer from depth fighting', () => {
@@ -110,8 +114,8 @@ test('sliding inner-lane reflectors clip the area hidden behind a front sliding 
   assert.match(source, /visibleMaxX = Math\.min\(visibleMaxX, overlapMinX - clearance\)/);
   assert.match(source, /visibleMinX = Math\.max\(visibleMinX, overlapMaxX \+ clearance\)/);
   assert.match(source, /surfaceObject\.onBeforeRender = function/);
-  assert.match(source, /hidePlanarReflectorSurfacesForInternalPass/);
-  assert.match(source, /restorePlanarReflectorSurfacesAfterInternalPass/);
+  assert.match(renderPassSource, /hidePlanarReflectorSurfacesForInternalPass/);
+  assert.match(renderPassSource, /restorePlanarReflectorSurfacesAfterInternalPass/);
   assert.match(mirrorVisualSource, /__wpMirrorSlidingDoorIndex/);
   assert.match(slidingSource, /slidingDoorWidthM: doorOp\.width/);
 });

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { exists, sha256File, escapeRegExp, listReleaseCssRelFiles } from './wp_release_shared.js';
+import { formatGlobalBrowserSecurityHeaders } from './wp_browser_security_headers.mjs';
 
 function buildNoCacheUpdateScript(buildId) {
   const metaNoCache = [
@@ -373,10 +374,7 @@ export function buildReleaseHeaders({ releaseDir, bundleRelFinal, threeVendorMet
     '# Do not edit this generated release copy directly; edit tools/wp_release_finalize.js or public/_headers instead.',
     '# Exact immutable asset rules are intentional: a stale missing chunk must not inherit a long cache TTL.',
     '/*',
-    '  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex',
-    '  X-Content-Type-Options: nosniff',
-    '  Referrer-Policy: strict-origin-when-cross-origin',
-    '  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=()',
+    ...formatGlobalBrowserSecurityHeaders('  '),
     '',
   ];
 

@@ -1317,7 +1317,7 @@
       "entry": "interior_layout_presets/api.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_manual_layout_free_box_content.ts",
+      "file": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts",
       "entry": "interior_layout_presets/api.js"
     },
     {

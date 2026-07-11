@@ -87,42 +87,52 @@ export function OrderPdfInPlaceEditorOverlay(): ReactElement | null {
           onClose={actions.close}
         />
       }
-      dragOver={ui.dragOver}
-      layout={layout}
-      draft={ui.draft}
-      overlayRef={refs.overlayRef}
-      containerRef={refs.containerRef}
-      canvasRef={refs.canvasRef}
-      detailsRichRef={refs.detailsRichRef}
-      notesRichRef={refs.notesRichRef}
-      orderNoInputRef={refs.orderNoInputRef}
-      detailsEditorHandlers={controller.detailsEditorHandlers}
-      notesEditorHandlers={controller.notesEditorHandlers}
-      onScalarFieldChange={controller.handleScalarFieldChange}
-      onStagePointerDownCapture={controller.onStagePointerDownCapture}
-      onStagePointerMoveCapture={controller.onStagePointerMoveCapture}
-      onStagePointerUpCapture={controller.onStagePointerUpCapture}
-      onStagePointerCancelCapture={controller.onStagePointerCancelCapture}
-      onStageDragOver={controller.onStageDragOver}
-      onStageDragLeave={controller.onStageDragLeave}
-      onStageDrop={controller.onStageDrop}
-      inlineConfirm={ui.inlineConfirm}
-      onConfirmInlineOk={controller.confirmInlineOk}
-      onConfirmInlineCancel={controller.confirmInlineCancel}
-      sketchPreviewOpen={sketchPreview.sketchPreviewOpen}
-      sketchPreviewBusy={sketchPreview.sketchPreviewBusy}
-      sketchPreviewError={sketchPreview.sketchPreviewError}
-      sketchPreviewEntries={sketchPreview.sketchPreviewEntries}
-      sketchPreviewReady={sketchPreview.sketchPreviewReady}
-      onToggleSketchPreview={sketchPreview.toggleSketchPreview}
-      onCloseSketchPreview={sketchPreview.closeSketchPreview}
-      onRefreshSketchPreview={() => void sketchPreview.refreshSketchPreview()}
-      onAppendSketchStroke={controller.appendSketchStroke}
-      onUpsertSketchTextBox={controller.upsertSketchTextBox}
-      onDeleteSketchTextBox={controller.deleteSketchTextBox}
-      onUndoSketchStroke={controller.undoSketchStroke}
-      onRedoSketchAnnotation={controller.redoSketchAnnotation}
-      onClearSketchStrokes={controller.clearSketchStrokes}
+      refs={{
+        overlayRef: refs.overlayRef,
+        containerRef: refs.containerRef,
+        canvasRef: refs.canvasRef,
+        detailsRichRef: refs.detailsRichRef,
+        notesRichRef: refs.notesRichRef,
+        orderNoInputRef: refs.orderNoInputRef,
+      }}
+      stage={{
+        dragOver: ui.dragOver,
+        layout,
+        draft: ui.draft,
+        detailsEditorHandlers: controller.detailsEditorHandlers,
+        notesEditorHandlers: controller.notesEditorHandlers,
+        onScalarFieldChange: controller.handleScalarFieldChange,
+        onPointerDownCapture: controller.onStagePointerDownCapture,
+        onPointerMoveCapture: controller.onStagePointerMoveCapture,
+        onPointerUpCapture: controller.onStagePointerUpCapture,
+        onPointerCancelCapture: controller.onStagePointerCancelCapture,
+        onDragOver: controller.onStageDragOver,
+        onDragLeave: controller.onStageDragLeave,
+        onDrop: controller.onStageDrop,
+      }}
+      sketch={{
+        open: sketchPreview.sketchPreviewOpen,
+        busy: sketchPreview.sketchPreviewBusy,
+        error: sketchPreview.sketchPreviewError,
+        entries: sketchPreview.sketchPreviewEntries,
+        ready: sketchPreview.sketchPreviewReady,
+        onToggle: sketchPreview.toggleSketchPreview,
+        onClose: sketchPreview.closeSketchPreview,
+        onRefresh: () => void sketchPreview.refreshSketchPreview(),
+      }}
+      annotations={{
+        onAppendStroke: controller.appendSketchStroke,
+        onUpsertTextBox: controller.upsertSketchTextBox,
+        onDeleteTextBox: controller.deleteSketchTextBox,
+        onUndo: controller.undoSketchStroke,
+        onRedo: controller.redoSketchAnnotation,
+        onClear: controller.clearSketchStrokes,
+      }}
+      inlineConfirm={{
+        state: ui.inlineConfirm,
+        onConfirm: controller.confirmInlineOk,
+        onCancel: controller.confirmInlineCancel,
+      }}
     />,
     body
   );

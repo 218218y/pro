@@ -65,6 +65,8 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/refactor_stage78_runtime_access_surfaces_ownership_guard.test.js',
       'tests/refactor_stage79_order_pdf_export_commands_ownership_guard.test.js',
       'tests/refactor_stage80_measurement_perf_closeout_guard.test.js',
+      'tests/refactor_stage81_runtime_pipeline_ownership_guard.test.js',
+      'tests/refactor_stage82_browser_security_headers_guard.test.js',
     ]),
   }),
 });

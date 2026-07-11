@@ -40,7 +40,7 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
   const viewerNotesControls = read('esm/native/ui/react/overlay_notes_controls.tsx');
   const quickActionsDock = read('esm/native/ui/react/overlay_quick_actions_dock.tsx');
   const overlayFeedbackHost = read('esm/native/ui/react/overlay_feedback_host.tsx');
-  const orderPdfEditorSurface = read('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx');
+  const orderPdfInlineConfirm = read('esm/native/ui/react/pdf/order_pdf_overlay_inline_confirm.tsx');
   const designPanel = read('esm/native/ui/react/tabs/design_tab_multicolor_panel_view.tsx');
   const colorSection = read('esm/native/ui/react/tabs/design_tab_color_section.tsx');
   const doorFeaturesSection = read('esm/native/ui/react/tabs/design_tab_sections_door_features.tsx');
@@ -183,13 +183,13 @@ test('stage 14 Design tab uses shared choice primitives instead of bespoke swatc
     quickActionsDock,
     /aria-label=\{formatQuickActionExportTooltipLabel\(QUICK_ACTION_EXPORT_TOOLTIPS\./
   );
-  assert.match(orderPdfEditorSurface, /import \{ Button \} from '\.\.\/components\/Button\.js';/);
+  assert.match(orderPdfInlineConfirm, /import \{ Button \} from '\.\.\/components\/Button\.js';/);
   assert.match(
-    orderPdfEditorSurface,
-    /id="orderPdfInlineConfirmModal"[\s\S]*<Button[\s\S]*variant="save"[\s\S]*onClick=\{onConfirmInlineOk\}[\s\S]*אישור[\s\S]*<Button[\s\S]*variant="cancel"[\s\S]*onClick=\{onConfirmInlineCancel\}[\s\S]*ביטול/
+    orderPdfInlineConfirm,
+    /id="orderPdfInlineConfirmModal"[\s\S]*<Button[\s\S]*variant="save"[\s\S]*onClick=\{onConfirm\}[\s\S]*אישור[\s\S]*<Button[\s\S]*variant="cancel"[\s\S]*onClick=\{onCancel\}[\s\S]*ביטול/
   );
-  assert.doesNotMatch(orderPdfEditorSurface, /className="btn btn-save"/);
-  assert.doesNotMatch(orderPdfEditorSurface, /className="btn btn-cancel"/);
+  assert.doesNotMatch(orderPdfInlineConfirm, /className="btn btn-save"/);
+  assert.doesNotMatch(orderPdfInlineConfirm, /className="btn btn-cancel"/);
   assert.match(overlayFeedbackHost, /import \{ Button \} from '\.\/components\/Button\.js';/);
   assert.match(
     overlayFeedbackHost,

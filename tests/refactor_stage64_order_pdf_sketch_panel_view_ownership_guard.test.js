@@ -17,6 +17,7 @@ test('stage 64 order pdf sketch panel view ownership split is anchored', () => {
   const header = read('esm/native/ui/react/pdf/order_pdf_overlay_sketch_panel_header.tsx');
   const cards = read('esm/native/ui/react/pdf/order_pdf_overlay_sketch_panel_cards.tsx');
   const editorSurface = read('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx');
+  const editorStage = read('esm/native/ui/react/pdf/order_pdf_overlay_editor_stage.tsx');
 
   assert.ok(lineCount(facade) <= 4, 'sketch panel public module must stay a tiny facade');
   assert.match(facade, /order_pdf_overlay_sketch_panel_view\.js/);
@@ -56,9 +57,10 @@ test('stage 64 order pdf sketch panel view ownership split is anchored', () => {
     /OrderPdfSketchToolbar|OrderPdfSketchPanelHeader|useOrderPdfSketchPanelViewHooks/
   );
 
-  assert.match(editorSurface, /from '\.\/order_pdf_overlay_sketch_panel\.js';/);
+  assert.match(editorSurface, /from '\.\/order_pdf_overlay_editor_stage\.js';/);
+  assert.match(editorStage, /from '\.\/order_pdf_overlay_sketch_panel\.js';/);
   assert.doesNotMatch(
-    editorSurface,
+    editorSurface + editorStage,
     /order_pdf_overlay_sketch_panel_(view|types|header|cards)\.js/,
     'editor surface must keep using the public sketch-panel facade instead of private panel owners'
   );

@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-07-11T18:43:42.857Z",
+  "generatedAt": "2026-07-11T19:10:58.224Z",
   "totals": {
-    "tests": 1178,
-    "packageTestReferences": 450,
-    "catalogTestReferences": 59,
-    "totalTestReferences": 509
+    "tests": 1182,
+    "packageTestReferences": 451,
+    "catalogTestReferences": 61,
+    "totalTestReferences": 512
   },
   "categories": {
-    "contract": 384,
+    "contract": 386,
     "runtime-unit": 305,
-    "integration": 433,
+    "integration": 435,
     "e2e-smoke": 7,
     "perf-smoke": 9,
     "legacy-migration": 40
@@ -595,6 +595,10 @@
     },
     {
       "file": "tests/canvas_picking_manual_layout_free_box_content_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_free_box_hover_protocol_runtime.test.ts",
       "category": "integration"
     },
     {
@@ -2618,6 +2622,10 @@
       "category": "contract"
     },
     {
+      "file": "tests/planar_reflector_render_pass_runtime.test.ts",
+      "category": "integration"
+    },
+    {
       "file": "tests/platform_access_runtime.test.ts",
       "category": "runtime-unit"
     },
@@ -3192,6 +3200,14 @@
     {
       "file": "tests/refactor_stage80_measurement_perf_closeout_guard.test.js",
       "category": "perf-smoke"
+    },
+    {
+      "file": "tests/refactor_stage81_runtime_pipeline_ownership_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/refactor_stage82_browser_security_headers_guard.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/refactor_stage8_cloud_sync_and_perf_runtime.test.js",

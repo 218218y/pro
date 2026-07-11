@@ -7,6 +7,10 @@ const runtimeSource = readFirstExisting(
   ['../esm/native/runtime/planar_reflector_runtime.ts'],
   import.meta.url
 );
+const contractsSource = readFirstExisting(
+  ['../esm/native/runtime/planar_reflector_contracts.ts'],
+  import.meta.url
+);
 const driverSource = readFirstExisting(
   ['../esm/native/platform/render_loop_mirror_driver.ts'],
   import.meta.url
@@ -23,11 +27,12 @@ test('planar reflectors adapt render-target resolution by mirror size and reflec
 });
 
 test('planar mirror refresh supports budgeted progressive batches', () => {
-  assert.match(runtimeSource, /export type PlanarMirrorRefreshOptions/);
-  assert.match(runtimeSource, /maxSurfaces\?: number \| null/);
-  assert.match(runtimeSource, /startIndex\?: number \| null/);
-  assert.match(runtimeSource, /completedCycle: boolean/);
-  assert.match(runtimeSource, /nextIndex: number/);
+  assert.match(runtimeSource, /export type \{[\s\S]*?PlanarMirrorRefreshOptions/);
+  assert.match(contractsSource, /export type PlanarMirrorRefreshOptions/);
+  assert.match(contractsSource, /maxSurfaces\?: number \| null/);
+  assert.match(contractsSource, /startIndex\?: number \| null/);
+  assert.match(contractsSource, /completedCycle: boolean/);
+  assert.match(contractsSource, /nextIndex: number/);
   assert.match(runtimeSource, /planar-reflector-budget-deferred/);
 });
 

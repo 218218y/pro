@@ -74,18 +74,18 @@ test('order PDF toolbar centers the main actions against the whole viewport and 
 });
 
 test('order PDF drawing actions are floating icon-only buttons at the bottom left, with no bottom CTAs', () => {
-  const surface = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx');
+  const controls = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_mode_controls.tsx');
   const css = readSource('css/react_styles.css');
 
-  assert.match(surface, /className="wp-pdf-floating-draw-dock"/);
-  assert.match(surface, /data-testid="order-pdf-page-annotation-toggle"/);
-  assert.match(surface, /data-testid="order-pdf-sketch-preview-toggle"/);
-  assert.match(surface, /className="fas fa-file-pdf wp-pdf-floating-draw-icon-base"/);
-  assert.match(surface, /className="fas fa-images wp-pdf-floating-draw-icon-base"/);
-  assert.doesNotMatch(surface, /wp-pdf-sketch-cta-wrap/);
-  assert.doesNotMatch(surface, /wp-pdf-sketch-cta/);
-  assert.doesNotMatch(surface, />צייר על PDF</);
-  assert.doesNotMatch(surface, />הצג סקיצות לציור</);
+  assert.match(controls, /className="wp-pdf-floating-draw-dock"/);
+  assert.match(controls, /data-testid="order-pdf-page-annotation-toggle"/);
+  assert.match(controls, /data-testid="order-pdf-sketch-preview-toggle"/);
+  assert.match(controls, /className="fas fa-file-pdf wp-pdf-floating-draw-icon-base"/);
+  assert.match(controls, /className="fas fa-images wp-pdf-floating-draw-icon-base"/);
+  assert.doesNotMatch(controls, /wp-pdf-sketch-cta-wrap/);
+  assert.doesNotMatch(controls, /wp-pdf-sketch-cta/);
+  assert.doesNotMatch(controls, />צייר על PDF</);
+  assert.doesNotMatch(controls, />הצג סקיצות לציור</);
 
   assert.match(
     css,
@@ -104,19 +104,21 @@ test('order PDF drawing actions are floating icon-only buttons at the bottom lef
 });
 
 test('order PDF page annotation mode shows an in-overlay edit status and consumes the first empty-stage click', () => {
-  const surface = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx');
+  const controls = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_mode_controls.tsx');
+  const modes = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_modes.ts');
+  const stage = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_stage.tsx');
   const css = readSource('css/react_styles.css');
 
-  assert.match(surface, /className="wp-pdf-editor-mode-toast"/);
-  assert.match(surface, /מצב עריכה: ציור והערות על עמוד ה-PDF/);
-  assert.match(surface, /createInitialStageGesture/);
-  assert.match(surface, /finishStagePointerUp/);
-  assert.match(surface, /event\.target === event\.currentTarget/);
-  assert.match(surface, /setPdfPageAnnotationOpen\(false\)/);
-  assert.match(surface, /onPointerUpCapture=\{handleStagePointerUpCapture\}/);
+  assert.match(controls, /className="wp-pdf-editor-mode-toast"/);
+  assert.match(controls, /מצב עריכה: ציור והערות על עמוד ה-PDF/);
+  assert.match(modes, /createInitialStageGesture/);
+  assert.match(modes, /finishStagePointerUp/);
+  assert.match(modes, /event\.target === event\.currentTarget/);
+  assert.match(modes, /setPdfPageAnnotationOpen\(false\)/);
+  assert.match(stage, /onPointerUpCapture=\{onStagePointerUpCapture\}/);
 
-  assert.match(surface, /לחץ על הרקע הריק כדי לצאת מהציור/);
-  assert.doesNotMatch(surface, /לחץ כאן או/);
+  assert.match(controls, /לחץ על הרקע הריק כדי לצאת מהציור/);
+  assert.doesNotMatch(controls, /לחץ כאן או/);
   assert.match(
     css,
     /body\.wp-ui-react \.wp-pdf-editor-mode-toast \{[\s\S]*?position:\s*fixed;[\s\S]*?top:\s*82px;[\s\S]*?left:\s*50%;[\s\S]*?margin:\s*0;[\s\S]*?transform:\s*translateX\(-50%\);/
@@ -130,7 +132,8 @@ test('order PDF page annotation mode shows an in-overlay edit status and consume
 
 test('order PDF sketch preview shows a top ready status after sketch images are available', () => {
   const overlay = readSource('esm/native/ui/react/pdf/OrderPdfInPlaceEditorOverlay.tsx');
-  const surface = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx');
+  const controls = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_mode_controls.tsx');
+  const contracts = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface_contracts.ts');
   const previewHook = readSource(
     'esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_controller_hook.ts'
   );
@@ -142,13 +145,13 @@ test('order PDF sketch preview shows a top ready status after sketch images are 
   assert.match(previewTypes, /sketchPreviewReady:\s*boolean;/);
   assert.match(previewHook, /const sketchPreviewReady =/);
   assert.match(previewHook, /sketchPreviewLoadedSignatureRef\.current === sketchPreviewSignature/);
-  assert.match(overlay, /sketchPreviewReady=\{sketchPreview\.sketchPreviewReady\}/);
-  assert.match(surface, /sketchPreviewReady:\s*boolean;/);
-  assert.match(surface, /data-testid="order-pdf-sketch-preview-ready-toast"/);
-  assert.match(surface, /תמונות סקיצה נוצרו/);
-  assert.match(surface, /אפשר לגלול ולערוך/);
-  assert.match(surface, /role="status"/);
-  assert.match(surface, /aria-live="polite"/);
+  assert.match(overlay, /ready:\s*sketchPreview\.sketchPreviewReady/);
+  assert.match(contracts, /ready:\s*boolean;/);
+  assert.match(controls, /data-testid="order-pdf-sketch-preview-ready-toast"/);
+  assert.match(controls, /תמונות סקיצה נוצרו/);
+  assert.match(controls, /אפשר לגלול ולערוך/);
+  assert.match(controls, /role="status"/);
+  assert.match(controls, /aria-live="polite"/);
   assert.match(css, /body\.wp-ui-react \.wp-pdf-editor-mode-toast--sketch-ready \{/);
   assert.match(
     css,
@@ -177,7 +180,9 @@ test('order PDF sketch toolbar keeps refresh as the last drawing action under cl
 
 test('order PDF page and sketch drawing modes are mutually exclusive', () => {
   const overlay = readSource('esm/native/ui/react/pdf/OrderPdfInPlaceEditorOverlay.tsx');
-  const surface = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx');
+  const modes = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_modes.ts');
+  const controls = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_mode_controls.tsx');
+  const contracts = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface_contracts.ts');
   const previewHook = readSource(
     'esm/native/ui/react/pdf/order_pdf_overlay_sketch_preview_controller_hook.ts'
   );
@@ -191,35 +196,32 @@ test('order PDF page and sketch drawing modes are mutually exclusive', () => {
     previewHook,
     /restoreSketchPreviewSessionState\(\);[\s\S]*?sketchPreviewSessionSnapshotRef\.current = null;[\s\S]*?return false;/
   );
-  assert.match(overlay, /onCloseSketchPreview=\{sketchPreview\.closeSketchPreview\}/);
+  assert.match(overlay, /onClose:\s*sketchPreview\.closeSketchPreview/);
 
-  assert.match(surface, /onCloseSketchPreview:\s*\(\) => void;/);
-  assert.match(surface, /const handleTogglePdfPageAnnotationMode = useCallback/);
+  assert.match(contracts, /onClose:\s*\(\) => void;/);
+  assert.match(modes, /const togglePdfPageAnnotationMode = useCallback/);
+  assert.match(modes, /if \(sketchOpen\) onCloseSketchPreview\(\);[\s\S]*?setPdfPageAnnotationOpen\(true\);/);
+  assert.match(modes, /const toggleSketchPreview = useCallback/);
   assert.match(
-    surface,
-    /if \(sketchPreviewOpen\) onCloseSketchPreview\(\);[\s\S]*?setPdfPageAnnotationOpen\(true\);/
-  );
-  assert.match(surface, /const handleToggleSketchPreview = useCallback/);
-  assert.match(
-    surface,
+    modes,
     /if \(pdfPageAnnotationOpen\) closePdfPageAnnotationMode\(\);[\s\S]*?onToggleSketchPreview\(\);/
   );
-  assert.match(surface, /onClick=\{handleTogglePdfPageAnnotationMode\}/);
-  assert.match(surface, /onClick=\{handleToggleSketchPreview\}/);
+  assert.match(controls, /onClick=\{onTogglePdfPageAnnotationMode\}/);
+  assert.match(controls, /onClick=\{onToggleSketchPreview\}/);
 });
 
 test('order PDF tooltips use the shared fixed viewport tooltip system', () => {
   const toolbar = readSource('esm/native/ui/react/pdf/order_pdf_overlay_toolbar.tsx');
-  const surface = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx');
+  const controls = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_mode_controls.tsx');
   const sketchToolbar = readSource('esm/native/ui/react/pdf/order_pdf_overlay_sketch_toolbar_view.tsx');
   const shapeToolbar = readSource('esm/native/ui/react/pdf/order_pdf_overlay_sketch_shape_toolbar.tsx');
   const css = readSource('css/react_styles.css');
   const tooltipPlacement = readSource('esm/native/ui/react/components/TooltipPlacement.ts');
 
   assert.match(toolbar, /wp-r-styled-tooltip wp-pdf-ui-hint/);
-  assert.match(surface, /data-tooltip=\{pdfPageAnnotationTooltip\}/);
-  assert.match(surface, /data-tooltip=\{sketchPreviewTooltip\}/);
-  assert.match(surface, /wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--above/);
+  assert.match(controls, /data-tooltip=\{pdfPageAnnotationTooltip\}/);
+  assert.match(controls, /data-tooltip=\{sketchPreviewTooltip\}/);
+  assert.match(controls, /wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--above/);
   assert.match(sketchToolbar, /wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-left/);
   assert.match(shapeToolbar, /wp-r-styled-tooltip wp-pdf-ui-hint wp-pdf-ui-hint--side-right/);
 
