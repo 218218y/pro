@@ -28,6 +28,7 @@ import type {
   SketchFreeHoverHost,
   SketchFreeSurfacePreviewResult,
 } from './canvas_picking_sketch_free_surface_preview_shared.js';
+import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 
 type DividerPreviewHelpers = {
   tool: string;
@@ -185,10 +186,7 @@ function resolveHorizontalDividerPreview(args: DividerPreviewHelpers): SketchFre
     hoverRecord: {
       ts: Date.now(),
       tool,
-      moduleKey: host.moduleKey,
-      isBottom: host.isBottom,
-      hostModuleKey: host.moduleKey,
-      hostIsBottom: host.isBottom,
+      ...createSketchHoverHostIdentity(host),
       kind: 'box_content',
       contentKind: 'divider',
       boxId: target.boxId,
@@ -307,10 +305,7 @@ function resolveVerticalDividerPreview(args: DividerPreviewHelpers): SketchFreeS
     hoverRecord: {
       ts: Date.now(),
       tool,
-      moduleKey: host.moduleKey,
-      isBottom: host.isBottom,
-      hostModuleKey: host.moduleKey,
-      hostIsBottom: host.isBottom,
+      ...createSketchHoverHostIdentity(host),
       kind: 'box_content',
       contentKind: 'divider',
       boxId: target.boxId,

@@ -24,8 +24,6 @@ test('sketch-free placement hover record keeps canonical host/free-placement fie
   assert.deepEqual(hoverRecord, {
     ts: 123,
     tool: 'sketch_box_free',
-    moduleKey: 3,
-    isBottom: true,
     hostModuleKey: 3,
     hostIsBottom: true,
     kind: 'box',
@@ -112,8 +110,6 @@ test('sketch-free placement commit rejects string-encoded internal hover geometr
     hoverRec: {
       ts: 1,
       tool: 'sketch_box_free',
-      moduleKey: 7,
-      isBottom: false,
       hostModuleKey: 7,
       hostIsBottom: false,
       kind: 'box',
@@ -370,8 +366,6 @@ test('sketch-free vertical tools commit cross-kind vertical-content removal hove
     __wp_readSketchHover: () => ({
       ts: Date.now(),
       tool: 'sketch_shelf:regular',
-      moduleKey: 2,
-      isBottom: false,
       hostModuleKey: 2,
       hostIsBottom: false,
       kind: 'box_content',
@@ -419,8 +413,6 @@ test('sketch-free stack tools commit existing vertical-content removal hovers be
   const hover = {
     ts: Date.now(),
     tool: 'sketch_ext_drawers:3',
-    moduleKey: 2,
-    isBottom: false,
     hostModuleKey: 2,
     hostIsBottom: false,
     kind: 'box_content',

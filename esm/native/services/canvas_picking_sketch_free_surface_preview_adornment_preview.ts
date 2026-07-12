@@ -13,6 +13,7 @@ import {
 } from '../features/platform_overhang_support.js';
 import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveSketchBoxVisibleFrontOverlay } from './canvas_picking_manual_layout_sketch_front_overlay.js';
+import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 import {
   getSketchBoxAdornmentBaseHeight,
   normalizeSketchBoxBaseType,
@@ -72,10 +73,7 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
       hoverRecord: {
         ts: Date.now(),
         tool,
-        moduleKey: host.moduleKey,
-        isBottom: host.isBottom,
-        hostModuleKey: host.moduleKey,
-        hostIsBottom: host.isBottom,
+        ...createSketchHoverHostIdentity(host),
         kind: 'box_content',
         contentKind: 'cornice',
         boxId,
@@ -185,10 +183,7 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
     hoverRecord: {
       ts: Date.now(),
       tool,
-      moduleKey: host.moduleKey,
-      isBottom: host.isBottom,
-      hostModuleKey: host.moduleKey,
-      hostIsBottom: host.isBottom,
+      ...createSketchHoverHostIdentity(host),
       kind: 'box_content',
       contentKind: 'base',
       boxId,

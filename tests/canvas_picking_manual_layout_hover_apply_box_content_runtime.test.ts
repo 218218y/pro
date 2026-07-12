@@ -83,8 +83,8 @@ test('manual-layout hover click commits sketch-box divider from canonical hover 
     __hoverRec: {
       kind: 'box_content',
       tool: 'sketch_box_divider',
-      moduleKey: 2,
-      isBottom: false,
+      hostModuleKey: 2,
+      hostIsBottom: false,
       ts: Date.now(),
       contentKind: 'divider',
       boxId: 'sb-divider',

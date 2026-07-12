@@ -5,6 +5,10 @@ import {
   __wp_readSketchHover,
   __wp_writeSketchHover,
 } from './canvas_picking_local_helpers_runtime.js';
+import {
+  createSketchHoverHostIdentity,
+  readSketchHoverHostIdentity,
+} from './canvas_picking_sketch_hover_identity.js';
 
 export const EXT_DRAWER_MODE_HOVER_TOOL = 'ext_drawer_mode';
 
@@ -15,8 +19,6 @@ export type ExtDrawerModeHoverModuleKey = number | 'corner' | `corner:${number}`
 export type ExtDrawerModeHoverRecord = UnknownRecord & {
   ts: number;
   tool: typeof EXT_DRAWER_MODE_HOVER_TOOL;
-  moduleKey: ExtDrawerModeHoverModuleKey;
-  isBottom: boolean;
   hostModuleKey: ExtDrawerModeHoverModuleKey;
   hostIsBottom: boolean;
   kind: ExtDrawerModeHoverKind;
@@ -73,10 +75,7 @@ export function writeExtDrawerModeHover(
   const record: ExtDrawerModeHoverRecord = {
     ts: Date.now(),
     tool: EXT_DRAWER_MODE_HOVER_TOOL,
-    moduleKey,
-    isBottom: !!args.isBottom,
-    hostModuleKey: moduleKey,
-    hostIsBottom: !!args.isBottom,
+    ...createSketchHoverHostIdentity({ moduleKey, isBottom: !!args.isBottom }),
     kind: args.kind,
     op: args.op,
   };
@@ -107,6 +106,7 @@ export function readRecentExtDrawerModeHover(
 ): ExtDrawerModeHoverRecord | null {
   const hover = asRecord(__wp_readSketchHover(App));
   if (!hover || readString(hover.tool) !== EXT_DRAWER_MODE_HOVER_TOOL) return null;
+  if (!readSketchHoverHostIdentity(hover, coerceExtDrawerModeHoverModuleKey)) return null;
   const ts = readNumber(hover.ts);
   if (ts == null || Date.now() - ts > maxAgeMs) return null;
   const kind = readString(hover.kind);
@@ -125,9 +125,9 @@ export function extDrawerModeHoverMatchesModule(
   moduleKey: unknown
 ): boolean {
   if (!hover) return false;
-  const hoverModuleKey = coerceExtDrawerModeHoverModuleKey(hover.hostModuleKey ?? hover.moduleKey);
+  const hoverIdentity = readSketchHoverHostIdentity(hover, coerceExtDrawerModeHoverModuleKey);
+  if (!hoverIdentity) return false;
+  const hoverModuleKey = hoverIdentity.moduleKey;
   const targetModuleKey = coerceExtDrawerModeHoverModuleKey(moduleKey);
-  return (
-    targetModuleKey == null || hoverModuleKey == null || String(hoverModuleKey) === String(targetModuleKey)
-  );
+  return hoverModuleKey === targetModuleKey;
 }

@@ -26,8 +26,8 @@ test('manual-layout sketch hover match state accepts a recent matching hover sna
   const state = resolveManualLayoutSketchHoverMatchState({
     hover: {
       tool: 'sketch_rod',
-      moduleKey: 'corner:2',
-      isBottom: true,
+      hostModuleKey: 'corner:2',
+      hostIsBottom: true,
       ts: now - 250,
       kind: 'rod',
       op: 'remove',
@@ -53,8 +53,8 @@ test('manual-layout sketch hover match state rejects stale or mismatched hover s
   const stale = resolveManualLayoutSketchHoverMatchState({
     hover: {
       tool: 'sketch_shelf:glass',
-      moduleKey: 3,
-      isBottom: false,
+      hostModuleKey: 3,
+      hostIsBottom: false,
       ts: now - 1_500,
       kind: 'shelf',
       op: 'remove',
@@ -69,8 +69,8 @@ test('manual-layout sketch hover match state rejects stale or mismatched hover s
   const mismatched = resolveManualLayoutSketchHoverMatchState({
     hover: {
       tool: 'sketch_shelf:glass',
-      moduleKey: 2,
-      isBottom: false,
+      hostModuleKey: 2,
+      hostIsBottom: false,
       ts: now - 100,
       kind: 'shelf',
       op: 'remove',
@@ -88,7 +88,7 @@ test('manual-layout sketch hover match state rejects stale or mismatched hover s
   assert.equal(mismatched.hoverRec.kind, 'shelf');
 });
 
-test('manual-layout sketch hover match state prefers canonical host identity fields over legacy module fields', () => {
+test('manual-layout sketch hover match state rejects records that still carry retired host identity fields', () => {
   const now = 9_000;
   const hover = {
     tool: 'sketch_box:40',
@@ -120,9 +120,9 @@ test('manual-layout sketch hover match state prefers canonical host identity fie
     maxAgeMs: 900,
   });
 
-  assert.equal(canonicalHost.hoverOk, true);
-  assert.equal(canonicalHost.snapshot.moduleKey, 4);
-  assert.equal(canonicalHost.snapshot.isBottom, true);
+  assert.equal(canonicalHost.hoverOk, false);
+  assert.equal(canonicalHost.snapshot.moduleKey, null);
+  assert.equal(canonicalHost.snapshot.isBottom, null);
   assert.equal(legacyHost.hoverOk, false);
 });
 

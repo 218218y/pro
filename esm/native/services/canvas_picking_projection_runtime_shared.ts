@@ -2,6 +2,7 @@ import type { AppContainer, ThreeLike, UnknownRecord } from '../../../types';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { getViewportSurface, readRenderCacheValue, writeRenderCacheValue } from '../runtime/render_access.js';
 import { asRecord, getProp } from '../runtime/record.js';
+import { assertCanonicalSketchHoverRecord } from './canvas_picking_sketch_hover_identity.js';
 
 type __FiniteVec3 = { x: number; y: number; z: number };
 export type __WorldToLocalArg = __FiniteVec3 | { x: number; y: number; z: number };
@@ -101,6 +102,7 @@ export function __wp_readSketchHover(App: AppContainer): UnknownRecord | null {
 }
 
 export function __wp_writeSketchHover(App: AppContainer, snap: UnknownRecord | null): void {
+  if (snap) assertCanonicalSketchHoverRecord(snap);
   writeRenderCacheValue(App, __SKETCH_HOVER_KEY, snap);
 }
 

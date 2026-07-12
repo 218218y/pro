@@ -221,8 +221,10 @@ test('sketch free surface placement preview produces canonical remove hover meta
   assert.equal(preview?.hoverRecord.kind, 'box');
   assert.equal(preview?.hoverRecord.op, 'remove');
   assert.equal(preview?.hoverRecord.removeId, 'free-1');
-  assert.equal(preview?.hoverRecord.moduleKey, 2);
-  assert.equal(preview?.hoverRecord.isBottom, false);
+  assert.equal(preview?.hoverRecord.hostModuleKey, 2);
+  assert.equal(preview?.hoverRecord.hostIsBottom, false);
+  assert.equal('moduleKey' in (preview?.hoverRecord ?? {}), false);
+  assert.equal('isBottom' in (preview?.hoverRecord ?? {}), false);
   assert.equal(preview?.preview.kind, 'box');
   assert.equal(preview?.preview.op, 'remove');
   assert.equal(preview?.preview.fillFront, true);

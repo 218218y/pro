@@ -42,6 +42,7 @@ import { commitSketchFreePlacementHoverRecord } from './canvas_picking_sketch_fr
 import { resolveSketchBoxStackPreviewContext } from './canvas_picking_sketch_box_stack_preview_context.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import { decodeSketchBoxContentCommand } from './canvas_picking_sketch_box_content_command.js';
+import { readSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 import type {
   ExtDrawersHoverPreviewArgs,
   SelectorLocalBox,
@@ -360,9 +361,8 @@ function readRecentRegularFreeBoxHover(App: AppContainer): RecordMap | null {
 export function tryCommitSketchBoxRegularExternalDrawersHover(App: AppContainer): boolean {
   const hover = readRecentRegularFreeBoxHover(App);
   if (!hover) return false;
-  const moduleKey = __wp_toModuleKey(hover.hostModuleKey ?? hover.moduleKey);
-  if (moduleKey == null) return false;
-  const host = { moduleKey, isBottom: hover.hostIsBottom === true || hover.isBottom === true };
+  const host = readSketchHoverHostIdentity(hover, __wp_toModuleKey);
+  if (!host || host.moduleKey == null) return false;
   const boxId = typeof hover.boxId === 'string' ? hover.boxId : null;
   if (!boxId) return false;
   const decoded = decodeSketchBoxContentCommand({

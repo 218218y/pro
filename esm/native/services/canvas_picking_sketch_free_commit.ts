@@ -13,6 +13,7 @@ import {
   ensureSketchModuleBoxes,
   findSketchModuleBoxById,
 } from './canvas_picking_sketch_box_content_commit.js';
+import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 import { toastSketchBoxContentBlocked } from './canvas_picking_sketch_box_content_blocked.js';
 import { createCanvasPickingModulesStructuralPatchMeta } from './canvas_picking_modules_patch_meta.js';
 
@@ -149,10 +150,7 @@ export function createSketchFreePlacementBoxHoverRecord(
   return {
     ts: args.ts ?? Date.now(),
     tool: args.tool,
-    moduleKey: args.host.moduleKey,
-    isBottom: args.host.isBottom,
-    hostModuleKey: args.host.moduleKey,
-    hostIsBottom: args.host.isBottom,
+    ...createSketchHoverHostIdentity(args.host),
     kind: 'box',
     op: args.op,
     freePlacement: true,

@@ -3,6 +3,7 @@ import {
   createSketchBoxContentCommandEnvelope,
   type SketchBoxContentCommand,
 } from './canvas_picking_sketch_box_content_command.js';
+import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 
 type RecordMap = UnknownRecord;
 
@@ -155,10 +156,7 @@ function createManualLayoutSketchHoverBase(args: ManualLayoutSketchHoverBaseArgs
   return {
     ts: args.host.ts ?? Date.now(),
     tool: args.host.tool,
-    moduleKey: args.host.moduleKey,
-    isBottom: args.host.isBottom,
-    hostModuleKey: args.host.moduleKey,
-    hostIsBottom: args.host.isBottom,
+    ...createSketchHoverHostIdentity(args.host),
     kind: args.kind,
     op: args.op,
   };

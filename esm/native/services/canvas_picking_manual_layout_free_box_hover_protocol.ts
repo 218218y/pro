@@ -6,6 +6,7 @@ import {
   type PresetLayoutFreeBoxPlan,
   type RecordMap,
 } from './canvas_picking_manual_layout_free_box_contracts.js';
+import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 
 type FreeBoxCellRange = {
   cellXNormMin: number;
@@ -292,10 +293,7 @@ function createHoverBase(args: {
   return {
     ts: Date.now(),
     tool: args.tool,
-    moduleKey: args.host.moduleKey,
-    isBottom: args.host.isBottom,
-    hostModuleKey: args.host.moduleKey,
-    hostIsBottom: args.host.isBottom,
+    ...createSketchHoverHostIdentity(args.host),
     kind: args.kind,
     contentKind: args.contentKind,
     op: 'add',

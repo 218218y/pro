@@ -163,8 +163,6 @@ test('free-box regular external shoe drawer commit also auto-selects base none',
     {
       ts: Date.now(),
       tool: 'ext_drawers_regular_free_box',
-      moduleKey: 2,
-      isBottom: false,
       hostModuleKey: 2,
       hostIsBottom: false,
       kind: 'box_content',
@@ -304,8 +302,6 @@ test('removing the final free-box shoe drawer restores the previous forced base'
     {
       ts: Date.now(),
       tool: 'ext_drawers_regular_free_box',
-      moduleKey: 2,
-      isBottom: false,
       hostModuleKey: 2,
       hostIsBottom: false,
       kind: 'box_content',

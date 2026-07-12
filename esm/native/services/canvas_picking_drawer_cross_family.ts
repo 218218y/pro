@@ -16,6 +16,7 @@ import {
   __wp_measureObjectLocalBox,
   __wp_projectWorldPointToLocal,
 } from './canvas_picking_local_helpers_runtime.js';
+import { readSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 
 export type CrossDrawerFamily = 'standard_external' | 'sketch_external' | 'sketch_internal' | 'other';
 
@@ -439,19 +440,6 @@ function readSketchInternalDrawerIdFromPartId(partId: string, moduleKey: unknown
   return splitAt >= 0 ? suffix.slice(splitAt + 1) : suffix;
 }
 
-function readHoverModuleKey(
-  hover: UnknownRecord | null,
-  toModuleKey: (value: unknown) => ModuleKey | 'corner' | null
-) {
-  if (!hover) return null;
-  return toModuleKey(hover.hostModuleKey ?? hover.moduleKey);
-}
-
-function readHoverIsBottom(hover: UnknownRecord | null): boolean {
-  if (!hover) return false;
-  return hover.hostIsBottom != null ? !!hover.hostIsBottom : !!hover.isBottom;
-}
-
 function isMatchingRecentSketchInternalRemoveHover(args: {
   hover: UnknownRecord | null;
   tool: string;
@@ -468,8 +456,9 @@ function isMatchingRecentSketchInternalRemoveHover(args: {
   if (readString(hover.kind) !== 'drawers') return false;
   if (readString(hover.op) !== 'remove') return false;
   if (readString(hover.removeId) !== args.drawerId) return false;
-  if (readHoverModuleKey(hover, args.toModuleKey) !== args.moduleKey) return false;
-  if (readHoverIsBottom(hover) !== !!args.isBottom) return false;
+  const hoverHost = readSketchHoverHostIdentity(hover, args.toModuleKey);
+  if (!hoverHost) return false;
+  if (hoverHost.moduleKey !== args.moduleKey || hoverHost.isBottom !== !!args.isBottom) return false;
 
   const tsRaw = hover.ts;
   const ts = typeof tsRaw === 'number' ? tsRaw : Number(tsRaw);

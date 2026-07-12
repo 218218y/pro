@@ -62,8 +62,8 @@ test('manual-layout divider hover snaps to the active segment center when the cu
   assert.equal(hovers[0].contentKind, 'divider');
   assert.equal(hovers[0].op, 'add');
   assert.equal(hovers[0].tool, 'sketch_box_divider');
-  assert.equal(hovers[0].moduleKey, 3);
-  assert.equal(hovers[0].isBottom, false);
+  assert.equal('moduleKey' in hovers[0], false);
+  assert.equal('isBottom' in hovers[0], false);
   assert.equal(hovers[0].hostModuleKey, 3);
   assert.equal(hovers[0].hostIsBottom, false);
   assert.equal(hovers[0].boxId, 'box-1');

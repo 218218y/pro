@@ -1,4 +1,5 @@
 import type { UnknownRecord } from '../../../types';
+import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type { ModuleKey } from './canvas_picking_layout_edit_flow_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
@@ -167,10 +168,7 @@ export function createBraceSketchShelfHoverRecord(args: {
   return {
     ts: Date.now(),
     tool: 'brace_shelves',
-    moduleKey: args.moduleKey,
-    isBottom: !!args.isBottom,
-    hostModuleKey: args.moduleKey,
-    hostIsBottom: !!args.isBottom,
+    ...createSketchHoverHostIdentity({ moduleKey: args.moduleKey, isBottom: args.isBottom }),
     kind: 'brace_shelf',
     op,
     removeIdx: args.match.index,

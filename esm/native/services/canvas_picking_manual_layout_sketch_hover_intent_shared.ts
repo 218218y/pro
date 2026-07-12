@@ -26,7 +26,7 @@ export type ManualLayoutSketchHoverSnapshot = {
   rec: RecordMap;
   tool: string;
   moduleKey: ManualLayoutSketchHoverModuleKey;
-  isBottom: boolean;
+  isBottom: boolean | null;
   ts: number | null;
   kind: string;
   op: string;

@@ -15,6 +15,7 @@ const files = {
   paintShared: 'esm/native/services/canvas_picking_paint_flow_shared.ts',
   paintMirror: 'esm/native/services/canvas_picking_paint_flow_mirror.ts',
   paintApplySpecial: 'esm/native/services/canvas_picking_paint_flow_apply_special.ts',
+  sketchHoverIdentity: 'esm/native/services/canvas_picking_sketch_hover_identity.ts',
   sketchHoverIntentSnapshot:
     'esm/native/services/canvas_picking_manual_layout_sketch_hover_intent_snapshot.ts',
   sketchHoverMatching: 'esm/native/services/canvas_picking_sketch_hover_matching.ts',
@@ -201,26 +202,46 @@ requireMatch(
   'hover hit eligibility must use the shared transparent hit policy'
 );
 
+const sketchHoverIdentity = read(files.sketchHoverIdentity);
+requireMatch(
+  files.sketchHoverIdentity,
+  sketchHoverIdentity,
+  /export function readSketchHoverHostIdentity/,
+  'sketch hover host identity must have one atomic canonical reader'
+);
+requireMatch(
+  files.sketchHoverIdentity,
+  sketchHoverIdentity,
+  /hasRetiredSketchHoverHostIdentity\(record\)/,
+  'sketch hover host identity must reject retired moduleKey/isBottom fields'
+);
+requireMatch(
+  files.sketchHoverIdentity,
+  sketchHoverIdentity,
+  /!hasOwn\(record, 'hostModuleKey'\) \|\| typeof record\.hostIsBottom !== 'boolean'/,
+  'sketch hover host identity must require both canonical fields'
+);
+
 const sketchHoverIntentSnapshot = read(files.sketchHoverIntentSnapshot);
 requireMatch(
   files.sketchHoverIntentSnapshot,
   sketchHoverIntentSnapshot,
-  /readSketchHoverHostModuleKey/,
-  'manual sketch hover snapshots must use the canonical sketch host module-key reader'
-);
-requireMatch(
-  files.sketchHoverIntentSnapshot,
-  sketchHoverIntentSnapshot,
-  /readSketchHoverHostIsBottom/,
-  'manual sketch hover snapshots must use the canonical sketch host stack reader'
+  /readSketchHoverHostIdentity\(hover, args\.toModuleKey\)/,
+  'manual sketch hover snapshots must read canonical host identity atomically'
 );
 
 const sketchHoverMatching = read(files.sketchHoverMatching);
 requireMatch(
   files.sketchHoverMatching,
   sketchHoverMatching,
-  /'hostModuleKey'\) \?\? readRecordValue\(hoverRec, 'moduleKey'\)/,
-  'sketch hover matching must prefer canonical hostModuleKey before legacy moduleKey'
+  /readSketchHoverHostIdentity\(hoverRec, toModuleKey\)/,
+  'sketch hover matching must use the atomic canonical host identity reader'
+);
+requireMatch(
+  files.sketchHoverMatching,
+  sketchHoverMatching,
+  /hoverHost\.moduleKey !== host\.moduleKey \|\| hoverHost\.isBottom !== host\.isBottom/,
+  'sketch hover matching must compare module key and stack as one identity'
 );
 
 const clickRouteActions = read(files.clickRouteActions);
@@ -406,8 +427,8 @@ const sketchHoverIntentRuntimeTest = read(files.sketchHoverIntentRuntimeTest);
 requireMatch(
   files.sketchHoverIntentRuntimeTest,
   sketchHoverIntentRuntimeTest,
-  /prefers canonical host identity fields over legacy module fields/,
-  'runtime test must cover sketch hover/commit host identity precedence'
+  /rejects records that still carry retired host identity fields/,
+  'runtime test must cover rejection of retired sketch hover host identity'
 );
 
 const splitClickRuntimeTest = read(files.splitClickRuntimeTest);

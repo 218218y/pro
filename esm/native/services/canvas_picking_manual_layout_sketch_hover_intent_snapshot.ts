@@ -7,10 +7,7 @@ import {
   type MatchManualLayoutSketchHoverArgs,
   type ReadManualLayoutSketchHoverSnapshotArgs,
 } from './canvas_picking_manual_layout_sketch_hover_intent_shared.js';
-import {
-  readSketchHoverHostIsBottom,
-  readSketchHoverHostModuleKey,
-} from './canvas_picking_sketch_hover_matching.js';
+import { readSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 import { asRecord } from '../runtime/record.js';
 
 export function readManualLayoutSketchHoverSnapshot(
@@ -23,18 +20,19 @@ export function readManualLayoutSketchHoverSnapshot(
       rec: emptyRecord(),
       tool: '',
       moduleKey: null,
-      isBottom: false,
+      isBottom: null,
       ts: null,
       kind: '',
       op: '',
     };
   }
+  const host = readSketchHoverHostIdentity(hover, args.toModuleKey);
   return {
     hover,
     rec: hover,
     tool: readRecordString(hover, 'tool') || '',
-    moduleKey: readSketchHoverHostModuleKey(hover, args.toModuleKey),
-    isBottom: readSketchHoverHostIsBottom(hover),
+    moduleKey: host?.moduleKey ?? null,
+    isBottom: host?.isBottom ?? null,
     ts: readRecordNumber(hover, 'ts'),
     kind: readRecordString(hover, 'kind') || '',
     op: readRecordString(hover, 'op') || '',

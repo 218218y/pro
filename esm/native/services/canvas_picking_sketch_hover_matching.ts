@@ -1,4 +1,5 @@
 import type { ModuleKey } from './canvas_picking_manual_layout_sketch_contracts.js';
+import { readSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 
 type RecordMap = Record<string, unknown>;
 
@@ -39,10 +40,6 @@ function readNumber(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function readRecordValue(record: RecordMap | null, key: string): unknown {
-  return record ? record[key] : null;
-}
-
 export function readSketchHoverRecord(hover: unknown): RecordMap | null {
   return asRecord(hover);
 }
@@ -53,20 +50,6 @@ export function isRecentSketchHoverForTool(hover: unknown, tool: string, maxAgeM
   const hoverTool = readString(hoverRec.tool);
   const hoverTs = readNumber(hoverRec.ts);
   return hoverTool === tool && hoverTs != null && Date.now() - hoverTs <= maxAgeMs;
-}
-
-export function readSketchHoverHostModuleKey(hover: unknown, toModuleKey: ToModuleKeyFn): ModuleKey | null {
-  const hoverRec = readSketchHoverRecord(hover);
-  if (!hoverRec) return null;
-  return toModuleKey(readRecordValue(hoverRec, 'hostModuleKey') ?? readRecordValue(hoverRec, 'moduleKey'));
-}
-
-export function readSketchHoverHostIsBottom(hover: unknown): boolean {
-  const hoverRec = readSketchHoverRecord(hover);
-  if (!hoverRec) return false;
-  return readRecordValue(hoverRec, 'hostIsBottom') != null
-    ? !!readRecordValue(hoverRec, 'hostIsBottom')
-    : !!readRecordValue(hoverRec, 'isBottom');
 }
 
 export function matchRecentSketchHover(args: MatchRecentSketchHoverArgs): RecordMap | null {
@@ -87,9 +70,10 @@ export function matchRecentSketchHover(args: MatchRecentSketchHoverArgs): Record
   if (requireFreePlacement && hoverRec.freePlacement !== true) return null;
   if (host) {
     if (!toModuleKey) return null;
-    const hoverHostModuleKey = readSketchHoverHostModuleKey(hoverRec, toModuleKey);
-    const hoverHostIsBottom = readSketchHoverHostIsBottom(hoverRec);
-    if (hoverHostModuleKey !== host.moduleKey || hoverHostIsBottom !== host.isBottom) return null;
+    const hoverHost = readSketchHoverHostIdentity(hoverRec, toModuleKey);
+    if (!hoverHost || hoverHost.moduleKey !== host.moduleKey || hoverHost.isBottom !== host.isBottom) {
+      return null;
+    }
   }
   return hoverRec;
 }

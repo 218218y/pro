@@ -105,8 +105,6 @@ test('free-box click preserves a real recent free-placement hover even when a mo
     __wp_readSketchHover: () => ({
       ts: Date.now(),
       tool: 'sketch_box:40@45',
-      moduleKey: 0,
-      isBottom: false,
       hostModuleKey: 0,
       hostIsBottom: false,
       kind: 'box',

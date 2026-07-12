@@ -168,7 +168,8 @@ test('manual-layout sketch hover keeps selector hits inside module flow even for
   assert.equal(calls.hover.length, 1);
   assert.equal(calls.hover[0].kind, 'shelf');
   assert.equal(calls.hover[0].op, 'add');
-  assert.equal(calls.hover[0].moduleKey, 2);
+  assert.equal(calls.hover[0].hostModuleKey, 2);
+  assert.equal('moduleKey' in calls.hover[0], false);
   assert.equal(calls.hover[0].variant, 'glass');
   assert.equal(calls.previews.length, 1);
   assert.equal(calls.previews[0].kind, 'shelf');
@@ -324,7 +325,8 @@ test('manual-layout sketch hover falls back to standalone free placement when no
   assert.equal(calls.hideSketch, 0);
   assert.equal(calls.hover.length, 1);
   assert.equal(calls.hover[0].kind, 'box');
-  assert.equal(calls.hover[0].moduleKey, 4);
+  assert.equal(calls.hover[0].hostModuleKey, 4);
+  assert.equal('moduleKey' in calls.hover[0], false);
   assert.equal(calls.previews.length, 1);
   assert.equal(calls.previews[0].kind, 'box');
   assert.equal(calls.previews[0].anchorParent, App.render.wardrobeGroup);

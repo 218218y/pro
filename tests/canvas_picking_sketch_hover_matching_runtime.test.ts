@@ -4,10 +4,9 @@ import assert from 'node:assert/strict';
 import {
   isRecentSketchHoverForTool,
   matchRecentSketchHover,
-  readSketchHoverHostIsBottom,
-  readSketchHoverHostModuleKey,
   readSketchHoverRecord,
 } from '../esm/native/services/canvas_picking_sketch_hover_matching.ts';
+import { readSketchHoverHostIdentity } from '../esm/native/services/canvas_picking_sketch_hover_identity.ts';
 
 test('recent sketch hover matching honors tool, age, free-placement, and host identity together', () => {
   const realNow = Date.now;
@@ -20,17 +19,19 @@ test('recent sketch hover matching honors tool, age, free-placement, and host id
       ts: 1_450,
       freePlacement: true,
       hostModuleKey: '7',
-      hostIsBottom: 1,
+      hostIsBottom: true,
     };
 
     assert.equal(isRecentSketchHoverForTool(hover, 'box', 600), true);
     assert.equal(isRecentSketchHoverForTool(hover, 'rod', 600), false);
     assert.deepEqual(readSketchHoverRecord(hover), hover);
-    assert.equal(
-      readSketchHoverHostModuleKey(hover, value => Number(value)),
-      7
+    assert.deepEqual(
+      readSketchHoverHostIdentity(hover, value => Number(value)),
+      {
+        moduleKey: 7,
+        isBottom: true,
+      }
     );
-    assert.equal(readSketchHoverHostIsBottom(hover), true);
 
     assert.equal(
       matchRecentSketchHover({
@@ -73,36 +74,48 @@ test('recent sketch hover matching honors tool, age, free-placement, and host id
   }
 });
 
-test('recent sketch hover matching falls back to moduleKey/isBottom fields and rejects stale or host-checked matches without a normalizer', () => {
+test('recent sketch hover matching rejects retired or malformed host identity records', () => {
   const realNow = Date.now;
   Date.now = () => 5_000;
   try {
-    const hover = {
+    const legacyHover = {
       tool: 'free',
       ts: 3_900,
       moduleKey: '12',
       isBottom: 0,
     };
+    const malformedHover = {
+      tool: 'free',
+      ts: 3_900,
+      hostModuleKey: '12',
+      hostIsBottom: 0,
+    };
 
     assert.equal(
-      readSketchHoverHostModuleKey(hover, value => Number(value)),
-      12
+      readSketchHoverHostIdentity(legacyHover, value => Number(value)),
+      null
     );
-    assert.equal(readSketchHoverHostIsBottom(hover), false);
+    assert.equal(
+      readSketchHoverHostIdentity(malformedHover, value => Number(value)),
+      null
+    );
     assert.equal(
       matchRecentSketchHover({
-        hover,
+        hover: legacyHover,
         tool: 'free',
         host: { moduleKey: 12, isBottom: false },
+        toModuleKey: value => Number(value),
         maxAgeMs: 1_500,
       }),
       null
     );
     assert.equal(
       matchRecentSketchHover({
-        hover,
+        hover: malformedHover,
         tool: 'free',
-        maxAgeMs: 500,
+        host: { moduleKey: 12, isBottom: false },
+        toModuleKey: value => Number(value),
+        maxAgeMs: 1_500,
       }),
       null
     );

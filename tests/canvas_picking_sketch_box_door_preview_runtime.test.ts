@@ -87,7 +87,8 @@ test('sketch-box door preview resolves canonical remove metadata for an existing
   assert.equal(result.hoverRecord.contentKind, 'double_door');
   assert.equal(result.hoverRecord.op, 'remove');
   assert.equal(result.hoverRecord.freePlacement, true);
-  assert.equal(result.hoverRecord.moduleKey, 'corner');
+  assert.equal(result.hoverRecord.hostModuleKey, 'corner');
+  assert.equal('moduleKey' in result.hoverRecord, false);
   assert.equal(result.hoverRecord.doorLeftId, 'left-door');
   assert.equal(result.hoverRecord.doorRightId, 'right-door');
   assert.equal(result.preview.kind, 'storage');

@@ -108,8 +108,6 @@ test('regular external drawer edit mode removes sketch internal drawers from the
         __lastSketchHover: {
           ts: Date.now(),
           tool: EXT_DRAWER_MODE_HOVER_TOOL,
-          moduleKey: 2,
-          isBottom: false,
           hostModuleKey: 2,
           hostIsBottom: false,
           kind: 'drawers',
@@ -154,8 +152,6 @@ test('regular external drawer edit mode respects an add hover beside sketch inte
         __lastSketchHover: {
           ts: Date.now(),
           tool: EXT_DRAWER_MODE_HOVER_TOOL,
-          moduleKey: 2,
-          isBottom: false,
           hostModuleKey: 2,
           hostIsBottom: false,
           kind: 'ext_drawers',
@@ -431,8 +427,6 @@ test('manual sketch external drawer route removes an internal sketch drawer when
         __lastSketchHover: {
           ts: Date.now(),
           tool: 'sketch_ext_drawers:3',
-          moduleKey: 2,
-          isBottom: false,
           hostModuleKey: 2,
           hostIsBottom: false,
           kind: 'drawers',
@@ -489,8 +483,6 @@ test('manual sketch external drawer route does not remove an internal drawer whe
         __lastSketchHover: {
           ts: Date.now(),
           tool: 'sketch_ext_drawers:3',
-          moduleKey: 2,
-          isBottom: false,
           hostModuleKey: 2,
           hostIsBottom: false,
           kind: 'ext_drawers',

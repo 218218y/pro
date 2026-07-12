@@ -1,5 +1,6 @@
 import type { ManualLayoutSketchHoverHost } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type { RecordMap } from './canvas_picking_sketch_module_surface_preview_contracts.js';
+import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 
 export function createShelfAddHoverRecord(args: {
   host: ManualLayoutSketchHoverHost;
@@ -11,10 +12,7 @@ export function createShelfAddHoverRecord(args: {
   return {
     ts: args.host.ts ?? Date.now(),
     tool: args.host.tool,
-    moduleKey: args.host.moduleKey,
-    isBottom: args.host.isBottom,
-    hostModuleKey: args.host.moduleKey,
-    hostIsBottom: args.host.isBottom,
+    ...createSketchHoverHostIdentity(args.host),
     kind: 'shelf',
     op: 'add',
     yNorm: Number.isFinite(args.yNorm) ? Math.max(0, Math.min(1, args.yNorm)) : undefined,
@@ -33,10 +31,7 @@ export function createShelfRemoveHoverRecord(args: {
   return {
     ts: args.host.ts ?? Date.now(),
     tool: args.host.tool,
-    moduleKey: args.host.moduleKey,
-    isBottom: args.host.isBottom,
-    hostModuleKey: args.host.moduleKey,
-    hostIsBottom: args.host.isBottom,
+    ...createSketchHoverHostIdentity(args.host),
     kind: 'shelf',
     op: 'remove',
     removeKind: args.removeKind,
@@ -53,10 +48,7 @@ export function createStorageRemoveHoverRecord(args: {
   return {
     ts: args.host.ts ?? Date.now(),
     tool: args.host.tool,
-    moduleKey: args.host.moduleKey,
-    isBottom: args.host.isBottom,
-    hostModuleKey: args.host.moduleKey,
-    hostIsBottom: args.host.isBottom,
+    ...createSketchHoverHostIdentity(args.host),
     kind: 'storage',
     op: 'remove',
     removeKind: args.removeKind,
@@ -72,10 +64,7 @@ export function createStorageAddHoverRecord(args: {
   return {
     ts: args.host.ts ?? Date.now(),
     tool: args.host.tool,
-    moduleKey: args.host.moduleKey,
-    isBottom: args.host.isBottom,
-    hostModuleKey: args.host.moduleKey,
-    hostIsBottom: args.host.isBottom,
+    ...createSketchHoverHostIdentity(args.host),
     kind: 'storage',
     op: 'add',
     yNorm: Number.isFinite(args.yNorm) ? Math.max(0, Math.min(1, args.yNorm)) : undefined,
@@ -91,10 +80,7 @@ export function createRodAddHoverRecord(args: {
   return {
     ts: args.host.ts ?? Date.now(),
     tool: args.host.tool,
-    moduleKey: args.host.moduleKey,
-    isBottom: args.host.isBottom,
-    hostModuleKey: args.host.moduleKey,
-    hostIsBottom: args.host.isBottom,
+    ...createSketchHoverHostIdentity(args.host),
     kind: 'rod',
     op: 'add',
     yNorm: Number.isFinite(args.yNorm) ? Math.max(0, Math.min(1, args.yNorm)) : undefined,
@@ -111,10 +97,7 @@ export function createRodRemoveHoverRecord(args: {
   return {
     ts: args.host.ts ?? Date.now(),
     tool: args.host.tool,
-    moduleKey: args.host.moduleKey,
-    isBottom: args.host.isBottom,
-    hostModuleKey: args.host.moduleKey,
-    hostIsBottom: args.host.isBottom,
+    ...createSketchHoverHostIdentity(args.host),
     kind: 'rod',
     op: 'remove',
     removeKind: args.removeKind,

@@ -151,8 +151,6 @@ test('manual-layout free-box shelf grid commit writes shelves into the no-main f
     hover: {
       ts: Date.now(),
       tool: 'shelf',
-      moduleKey: 0,
-      isBottom: false,
       hostModuleKey: 0,
       hostIsBottom: false,
       kind: 'box_content_grid',
@@ -234,8 +232,6 @@ test('manual-layout free-box shelf grid blocked commit consumes click without mu
     hover: {
       ts: Date.now(),
       tool: 'shelf',
-      moduleKey: 0,
-      isBottom: false,
       hostModuleKey: 0,
       hostIsBottom: false,
       kind: 'box_content_grid',
@@ -289,8 +285,6 @@ test('manual-layout free-box shelf grid rejects partial hover records without mu
     hover: {
       ts: Date.now(),
       tool: 'shelf',
-      moduleKey: 0,
-      isBottom: false,
       hostModuleKey: 0,
       hostIsBottom: false,
       kind: 'box_content_grid',
@@ -433,8 +427,6 @@ test('manual-layout free-box commits cross-kind removal hovers from shelf and ro
     hover: {
       ts: Date.now(),
       tool: 'shelf',
-      moduleKey: 0,
-      isBottom: false,
       hostModuleKey: 0,
       hostIsBottom: false,
       kind: 'box_content',
@@ -455,8 +447,6 @@ test('manual-layout free-box commits cross-kind removal hovers from shelf and ro
   __wp_writeSketchHover(App, {
     ts: Date.now(),
     tool: 'rod',
-    moduleKey: 0,
-    isBottom: false,
     hostModuleKey: 0,
     hostIsBottom: false,
     kind: 'box_content',
@@ -475,8 +465,6 @@ test('manual-layout free-box commits cross-kind removal hovers from shelf and ro
   __wp_writeSketchHover(App, {
     ts: Date.now(),
     tool: 'rod',
-    moduleKey: 0,
-    isBottom: false,
     hostModuleKey: 0,
     hostIsBottom: false,
     kind: 'box_content',
