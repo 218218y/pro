@@ -73,7 +73,7 @@ Large named groups belong in `tools/wp_test_group_catalog.mjs`, not in multi-tho
 
 Use `portfolioRole: primary` only for non-overlapping top-level portfolio ownership. Use `focused` for targeted suites that intentionally reuse files from broader lanes, and `architecture` for long-lived guard collections. Primary overlap is a control-plane error; focused overlap is explicit and allowed.
 
-Current centralized lanes include the major `tab-surfaces`, `canvas-surfaces`, `project-surfaces`, `toolchain-surfaces`, and `public-surfaces` portfolios; the focused `structure-tab-family-core`, `mirror-runtime`, `sketch-box-content-protocol`, Order PDF overlay, Cloud Sync, and Sketch surface suites; plus the architecture-owned `refactor-stage-guards` collection. Package scripts and closeout lanes remain short facades and do not duplicate those file lists or serial policies.
+Current centralized lanes include the major `tab-surfaces`, `canvas-surfaces`, `project-surfaces`, `toolchain-surfaces`, and `public-surfaces` portfolios; the focused `structure-tab-family-core`, `mirror-runtime`, `sketch-box-content-protocol`, all Order PDF runtime batches, Cloud Sync, and Sketch surface suites; plus the architecture-owned `refactor-stage-guards` collection. Package scripts and closeout lanes remain short facades and do not duplicate those file lists or serial policies. Direct closeout execution is reserved for build, performance, mixed-contract, or E2E work that is not a canonical test group.
 
 The generated catalog can be inspected with:
 

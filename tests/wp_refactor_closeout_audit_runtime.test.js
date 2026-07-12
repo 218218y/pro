@@ -91,6 +91,33 @@ test('closeout test-group bindings reject catalog drift and direct-file fallback
   ]);
 });
 
+test('closeout audit rejects direct lanes that duplicate an existing canonical test group', () => {
+  const issues = validateCloseoutTestGroupBindings({
+    lanes: [
+      {
+        id: 'legacy-direct-lane',
+        command: 'node',
+        args: ['tools/wp_run_tsx_tests.mjs', 'tests/one.test.ts', 'tests/two.test.ts'],
+      },
+    ],
+    scriptEntries: [['test:canonical', 'node tools/wp_test_group.mjs canonical']],
+    testGroupCatalog: {
+      canonical: {
+        script: 'test:canonical',
+        files: ['tests/one.test.ts', 'tests/two.test.ts'],
+      },
+    },
+  });
+  assert.deepEqual(issues, [
+    {
+      code: 'direct-lane-duplicates-test-group',
+      laneId: 'legacy-direct-lane',
+      groupName: 'canonical',
+      directRefs: ['tests/one.test.ts', 'tests/two.test.ts'],
+    },
+  ]);
+});
+
 test('modernization gate includes the closeout coverage audit', () => {
   const packageJson = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   assert.match(packageJson.scripts['verify:refactor-modernization'], /npm run audit:refactor-closeout/);

@@ -1,13 +1,13 @@
 # Test group catalog
 
-Generated: 2026-07-12T15:42:38.760Z
+Generated: 2026-07-12T16:28:29.766Z
 
 ## Summary
 
-- Catalog groups: 23
-- Package script bindings owned by the catalog: 23
-- Catalog test-file references: 325
-- Direct package.json test-file references still remaining: 213
+- Catalog groups: 29
+- Package script bindings owned by the catalog: 29
+- Catalog test-file references: 347
+- Direct package.json test-file references still remaining: 191
 - Catalog definition issues: 0
 - Package binding issues: 0
 
@@ -25,7 +25,13 @@ Generated: 2026-07-12T15:42:38.760Z
 | `cloud-sync-sync-ops`            | `test:cloud-sync-surfaces:sync-ops`            | focused      | serial-tsx | tsx         |     9 | services/cloud-sync/sync-ops                                         |
 | `cloud-sync-tabs-ui`             | `test:cloud-sync-surfaces:tabs-ui`             | focused      | tsx-test   | tsx         |     5 | ui/cloud-sync-tabs                                                   |
 | `mirror-runtime`                 | `test:mirror-runtime`                          | focused      | tsx-test   | tsx         |     6 | platform/render-loop, runtime/planar-reflector                       |
+| `order-pdf-export-builders`      | `test:order-pdf-surfaces:export-builders`      | focused      | tsx-test   | tsx         |     3 | ui/export/order-pdf                                                  |
+| `order-pdf-export-capture`       | `test:order-pdf-surfaces:export-capture`       | focused      | tsx-test   | tsx         |     3 | ui/export/order-pdf                                                  |
+| `order-pdf-export-overlay`       | `test:order-pdf-surfaces:export-overlay`       | focused      | tsx-test   | tsx         |     3 | ui/order-pdf/export-overlay                                          |
+| `order-pdf-export-text`          | `test:order-pdf-surfaces:export-text`          | focused      | tsx-test   | tsx         |     2 | ui/export/order-pdf                                                  |
 | `order-pdf-overlay-core`         | `test:order-pdf-surfaces:overlay-core`         | focused      | tsx-test   | tsx         |    10 | ui/order-pdf                                                         |
+| `order-pdf-pdf-render`           | `test:order-pdf-surfaces:pdf-render`           | focused      | tsx-test   | tsx         |     5 | ui/order-pdf/pdf-runtime                                             |
+| `order-pdf-sketch`               | `test:order-pdf-surfaces:sketch`               | focused      | tsx-test   | tsx         |     6 | ui/order-pdf/sketch                                                  |
 | `project-surfaces`               | `test:project-surfaces`                        | primary      | tsx-test   | tsx         |    19 | io/project, ui/project-session                                       |
 | `public-surfaces`                | `test:public-surfaces`                         | primary      | tsx-test   | tsx         |    20 | public-api, platform/browser, services/models                        |
 | `refactor-stage-guards`          | `test:refactor-stage-guards`                   | architecture | node-test  | node        |    61 | architecture/control-plane                                           |

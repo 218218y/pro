@@ -62,63 +62,16 @@ test('closeout lanes keep stable ids and include critical families', () => {
   ]);
 });
 
-test('group-backed closeout lanes delegate to canonical test-group package facades', () => {
+test('group-backed closeout lanes delegate to canonical test-group package facades', async () => {
+  const { TEST_GROUP_CATALOG } = await import('../tools/wp_test_group_catalog.mjs');
   const groupBackedLanes = CLOSEOUT_LANES.filter(lane => lane.testGroupId);
-  assert.deepEqual(
-    groupBackedLanes.map(lane => [lane.id, lane.testGroupId, lane.command, lane.args]),
-    [
-      [
-        'verification-control-plane',
-        'verification-control-plane',
-        'npm',
-        ['run', 'test:verification-control-plane'],
-      ],
-      ['toolchain-surfaces', 'toolchain-surfaces', 'npm', ['run', 'test:toolchain-surfaces']],
-      [
-        'order-pdf-overlay-core',
-        'order-pdf-overlay-core',
-        'npm',
-        ['run', 'test:order-pdf-surfaces:overlay-core'],
-      ],
-      ['sketch-manual-hover', 'sketch-manual-hover', 'npm', ['run', 'test:sketch-surfaces:manual-hover']],
-      ['sketch-box-hover', 'sketch-box-hover', 'npm', ['run', 'test:sketch-surfaces:box-hover']],
-      ['sketch-free-boxes', 'sketch-free-boxes', 'npm', ['run', 'test:sketch-surfaces:free-boxes']],
-      [
-        'sketch-render-visuals',
-        'sketch-render-visuals',
-        'npm',
-        ['run', 'test:sketch-surfaces:render-visuals'],
-      ],
-      ['cloud-sync-lifecycle', 'cloud-sync-lifecycle', 'npm', ['run', 'test:cloud-sync-surfaces:lifecycle']],
-      ['cloud-sync-main-row', 'cloud-sync-main-row', 'npm', ['run', 'test:cloud-sync-surfaces:main-row']],
-      [
-        'cloud-sync-panel-install',
-        'cloud-sync-panel-install',
-        'npm',
-        ['run', 'test:cloud-sync-surfaces:panel-install'],
-      ],
-      [
-        'cloud-sync-panel-controller',
-        'cloud-sync-panel-controller',
-        'npm',
-        ['run', 'test:cloud-sync-surfaces:panel-controller'],
-      ],
-      [
-        'cloud-sync-panel-subscriptions',
-        'cloud-sync-panel-subscriptions',
-        'npm',
-        ['run', 'test:cloud-sync-surfaces:panel-subscriptions'],
-      ],
-      [
-        'cloud-sync-panel-snapshots',
-        'cloud-sync-panel-snapshots',
-        'npm',
-        ['run', 'test:cloud-sync-surfaces:panel-snapshots'],
-      ],
-      ['cloud-sync-sync-ops', 'cloud-sync-sync-ops', 'npm', ['run', 'test:cloud-sync-surfaces:sync-ops']],
-      ['cloud-sync-tabs-ui', 'cloud-sync-tabs-ui', 'npm', ['run', 'test:cloud-sync-surfaces:tabs-ui']],
-    ]
-  );
+  assert.ok(groupBackedLanes.length > 0);
+  for (const lane of groupBackedLanes) {
+    const group = TEST_GROUP_CATALOG[lane.testGroupId];
+    assert.ok(group, `${lane.id} should reference an existing test group`);
+    assert.equal(lane.command, 'npm');
+    assert.deepEqual(lane.args, ['run', group.script]);
+  }
 });
 
 test('overlay export closeout lane stays direct and grouped', () => {
@@ -147,7 +100,7 @@ test('overlay export closeout lane stays direct and grouped', () => {
   );
 });
 
-test('direct profiles stay stable for order-pdf sketch and cloud-sync', () => {
+test('closeout profiles stay stable and Order PDF remains fully catalog-backed', () => {
   assert.deepEqual(CLOSEOUT_PROFILES['order-pdf'], [
     'order-pdf-overlay-core',
     'order-pdf-pdf-render',
@@ -157,6 +110,10 @@ test('direct profiles stay stable for order-pdf sketch and cloud-sync', () => {
     'order-pdf-export-capture',
     'order-pdf-export-text',
   ]);
+  for (const laneId of CLOSEOUT_PROFILES['order-pdf']) {
+    const lane = CLOSEOUT_LANES.find(entry => entry.id === laneId);
+    assert.ok(lane?.testGroupId, `${laneId} must stay backed by the canonical test-group catalog`);
+  }
   assert.deepEqual(CLOSEOUT_PROFILES.sketch, [
     'sketch-manual-hover',
     'sketch-box-hover',

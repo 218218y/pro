@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-07-12T15:42:38.760Z",
+  "generatedAt": "2026-07-12T16:28:29.766Z",
   "summary": {
-    "groups": 23,
-    "scriptBindings": 23,
-    "catalogFileReferences": 325,
-    "directPackageTestReferences": 213,
+    "groups": 29,
+    "scriptBindings": 29,
+    "catalogFileReferences": 347,
+    "directPackageTestReferences": 191,
     "catalogIssues": 0,
     "bindingIssues": 0,
     "portfolioRoles": {
       "primary": 5,
-      "focused": 17,
+      "focused": 23,
       "architecture": 1
     },
     "runners": {
-      "tsx-test": 15,
+      "tsx-test": 21,
       "serial-tsx": 5,
       "node-test": 3
     }
@@ -249,6 +249,73 @@
       ]
     },
     {
+      "name": "order-pdf-export-builders",
+      "script": "test:order-pdf-surfaces:export-builders",
+      "description": "Order-PDF export builder composition, draft generation, and sketch-annotation behavior.",
+      "kind": "ui-runtime-integration",
+      "owners": ["ui/export/order-pdf"],
+      "environment": "tsx",
+      "runner": "tsx-test",
+      "portfolioRole": "focused",
+      "serialPolicy": null,
+      "fileCount": 3,
+      "files": [
+        "tests/export_order_pdf_builder_draft_runtime.test.ts",
+        "tests/export_order_pdf_builder_runtime.test.ts",
+        "tests/export_order_pdf_builder_sketch_annotations_runtime.test.ts"
+      ]
+    },
+    {
+      "name": "order-pdf-export-capture",
+      "script": "test:order-pdf-surfaces:export-capture",
+      "description": "Order-PDF export capture cache, viewport capture, and export operation behavior.",
+      "kind": "ui-runtime-integration",
+      "owners": ["ui/export/order-pdf"],
+      "environment": "tsx",
+      "runner": "tsx-test",
+      "portfolioRole": "focused",
+      "serialPolicy": null,
+      "fileCount": 3,
+      "files": [
+        "tests/export_order_pdf_capture_cache_runtime.test.ts",
+        "tests/export_order_pdf_capture_runtime.test.ts",
+        "tests/export_order_pdf_ops_runtime.test.ts"
+      ]
+    },
+    {
+      "name": "order-pdf-export-overlay",
+      "script": "test:order-pdf-surfaces:export-overlay",
+      "description": "Order-PDF overlay export operations, command routing, and single-flight behavior.",
+      "kind": "ui-runtime-integration",
+      "owners": ["ui/order-pdf/export-overlay"],
+      "environment": "tsx",
+      "runner": "tsx-test",
+      "portfolioRole": "focused",
+      "serialPolicy": null,
+      "fileCount": 3,
+      "files": [
+        "tests/order_pdf_overlay_export_ops_runtime.test.ts",
+        "tests/order_pdf_overlay_export_commands_runtime.test.ts",
+        "tests/order_pdf_overlay_export_singleflight_runtime.test.ts"
+      ]
+    },
+    {
+      "name": "order-pdf-export-text",
+      "script": "test:order-pdf-surfaces:export-text",
+      "description": "Order-PDF export text derivation and sketch-annotation serialization behavior.",
+      "kind": "ui-runtime-integration",
+      "owners": ["ui/export/order-pdf"],
+      "environment": "tsx",
+      "runner": "tsx-test",
+      "portfolioRole": "focused",
+      "serialPolicy": null,
+      "fileCount": 2,
+      "files": [
+        "tests/export_order_pdf_sketch_annotations_runtime.test.ts",
+        "tests/export_order_pdf_text_runtime.test.ts"
+      ]
+    },
+    {
       "name": "order-pdf-overlay-core",
       "script": "test:order-pdf-surfaces:overlay-core",
       "description": "Core order-PDF overlay state, commands, interactions, and text behavior.",
@@ -270,6 +337,45 @@
         "tests/order_pdf_overlay_text_details_lines_runtime.test.ts",
         "tests/order_pdf_overlay_text_runtime.test.ts",
         "tests/order_pdf_text_details_merge_support_runtime.test.ts"
+      ]
+    },
+    {
+      "name": "order-pdf-pdf-render",
+      "script": "test:order-pdf-surfaces:pdf-render",
+      "description": "Order-PDF import, PDF.js rendering, cleanup, and image-PDF text-layout behavior.",
+      "kind": "ui-runtime-integration",
+      "owners": ["ui/order-pdf/pdf-runtime"],
+      "environment": "tsx",
+      "runner": "tsx-test",
+      "portfolioRole": "focused",
+      "serialPolicy": null,
+      "fileCount": 5,
+      "files": [
+        "tests/order_pdf_overlay_pdf_import_runtime.test.ts",
+        "tests/order_pdf_overlay_pdf_render_canvas_runtime.test.ts",
+        "tests/order_pdf_overlay_pdf_render_cleanup_runtime.test.ts",
+        "tests/order_pdf_overlay_pdf_render_runtime.test.ts",
+        "tests/order_pdf_image_pdf_text_layout_runtime.test.ts"
+      ]
+    },
+    {
+      "name": "order-pdf-sketch",
+      "script": "test:order-pdf-surfaces:sketch",
+      "description": "Order-PDF sketch editor persistence, placement, panel, preview-session, and shortcut behavior.",
+      "kind": "ui-runtime-integration",
+      "owners": ["ui/order-pdf/sketch"],
+      "environment": "tsx",
+      "runner": "tsx-test",
+      "portfolioRole": "focused",
+      "serialPolicy": null,
+      "fileCount": 6,
+      "files": [
+        "tests/order_pdf_history_shortcuts_runtime.test.ts",
+        "tests/order_pdf_sketch_draft_persistence_runtime.test.ts",
+        "tests/order_pdf_sketch_palette_placement_runtime.test.ts",
+        "tests/order_pdf_sketch_panel_runtime.test.ts",
+        "tests/order_pdf_sketch_preview_session_runtime.test.ts",
+        "tests/order_pdf_sketch_shortcuts_runtime.test.ts"
       ]
     },
     {

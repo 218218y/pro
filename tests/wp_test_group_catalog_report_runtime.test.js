@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+import { TEST_GROUP_CATALOG } from '../tools/wp_test_group_catalog.mjs';
 import {
   buildTestGroupCatalogReport,
   renderTestGroupCatalogMarkdown,
@@ -11,13 +12,21 @@ import {
 
 test('test-group catalog report exposes execution ownership and package bindings', () => {
   const report = buildTestGroupCatalogReport();
-  assert.equal(report.summary.groups, 23);
-  assert.equal(report.summary.scriptBindings, 23);
+  const catalogGroupCount = Object.keys(TEST_GROUP_CATALOG).length;
+  assert.equal(report.summary.groups, catalogGroupCount);
+  assert.equal(report.summary.scriptBindings, catalogGroupCount);
   assert.ok(report.summary.catalogFileReferences > 320);
-  assert.ok(report.summary.directPackageTestReferences < 220);
+  assert.ok(report.summary.directPackageTestReferences < 200);
   assert.deepEqual(report.failures, { catalogIssues: [], bindingIssues: [] });
 
-  for (const groupName of ['order-pdf-overlay-core', 'cloud-sync-lifecycle', 'sketch-manual-hover']) {
+  for (const groupName of [
+    'order-pdf-overlay-core',
+    'order-pdf-pdf-render',
+    'order-pdf-sketch',
+    'order-pdf-export-text',
+    'cloud-sync-lifecycle',
+    'sketch-manual-hover',
+  ]) {
     assert.ok(
       report.groups.some(group => group.name === groupName),
       `${groupName} should stay cataloged`

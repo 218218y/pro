@@ -81,10 +81,34 @@ export function validateCloseoutTestGroupBindings({
   const issues = [];
   const scriptMap = createScriptEntryMap(scriptEntries);
   const groupOwners = new Map();
+  const catalogGroupsByFileSet = new Map(
+    Object.entries(testGroupCatalog || {}).map(([groupName, group]) => [
+      JSON.stringify(Array.from(new Set(group?.files || [])).sort()),
+      groupName,
+    ])
+  );
 
   for (const lane of lanes || []) {
     const groupName = typeof lane?.testGroupId === 'string' ? lane.testGroupId.trim() : '';
-    if (!groupName) continue;
+    if (!groupName) {
+      const laneCommands = [
+        [lane?.command, ...(lane?.args || [])].join(' '),
+        ...(lane?.steps || []).map(step => [step?.command, ...(step?.args || [])].join(' ')),
+      ];
+      const directRefs = Array.from(
+        new Set(laneCommands.flatMap(command => collectCommandTestRefs(command)))
+      ).sort();
+      const matchingGroup = directRefs.length ? catalogGroupsByFileSet.get(JSON.stringify(directRefs)) : null;
+      if (matchingGroup) {
+        issues.push({
+          code: 'direct-lane-duplicates-test-group',
+          laneId: lane?.id,
+          groupName: matchingGroup,
+          directRefs,
+        });
+      }
+      continue;
+    }
     const group = testGroupCatalog?.[groupName];
     if (!group) {
       issues.push({ code: 'unknown-test-group', laneId: lane.id, groupName });
