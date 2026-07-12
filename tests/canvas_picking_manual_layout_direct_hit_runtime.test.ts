@@ -116,6 +116,7 @@ test('manual-layout direct hit removes a sketch-box external drawer only when ho
       __wpSketchModuleKey: '2',
       __wpSketchExtDrawerId: 'ed-2',
       __wpSketchBoxId: 'box-1',
+      __wpRegularExternalDrawer: false,
     },
     parent: null,
   };

@@ -77,11 +77,7 @@ function tryApplyExtDrawerModeHoverRemoval(args: {
       plan = {
         kind: 'remove-sketch-external-drawer',
         moduleKey: targetModuleKey,
-        target: {
-          kind: 'drawer-id',
-          drawerId: removeId,
-          ...(removePid ? { partId: removePid } : {}),
-        },
+        target: { scope: 'module', drawerId: removeId },
       };
     } else if (removePid) {
       plan = {
@@ -96,11 +92,12 @@ function tryApplyExtDrawerModeHoverRemoval(args: {
   }
 
   if (!plan || !source) return false;
-  commitCrossDrawerRemovePlan({
+  const changed = commitCrossDrawerRemovePlan({
     plan,
     patchConfigForKey: args.patchConfigForKey,
     source,
   });
+  if (!changed) return false;
 
   if (hover.kind === 'ext_drawers') {
     restoreShoeDrawerBaseIfNoShoeDrawersRemain(

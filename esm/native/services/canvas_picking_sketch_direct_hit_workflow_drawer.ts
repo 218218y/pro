@@ -38,17 +38,24 @@ function hoverAllowsSketchExternalRemoval(args: {
   hoverRec: unknown;
   drawerId: string;
   boxId?: string;
+  listKind?: 'custom-external' | 'regular-external';
 }): boolean {
   if (!args.hoverOk) return false;
   if (args.hoverKind === 'ext_drawers') {
-    return args.hoverOp === 'remove' && readRecordIdentity(args.hoverRec, 'removeId') === args.drawerId;
+    return (
+      !args.boxId &&
+      args.hoverOp === 'remove' &&
+      readRecordIdentity(args.hoverRec, 'removeId') === args.drawerId
+    );
   }
   const removal = readStrictDrawerRemoval(args.hoverRec);
+  const expectedContentKind = args.listKind === 'regular-external' ? 'regular_ext_drawers' : 'ext_drawers';
   return !!(
     removal &&
-    (removal.contentKind === 'ext_drawers' || removal.contentKind === 'regular_ext_drawers') &&
+    args.boxId &&
+    removal.contentKind === expectedContentKind &&
     removal.removeId === args.drawerId &&
-    (!args.boxId || removal.boxId === args.boxId)
+    removal.boxId === args.boxId
   );
 }
 
@@ -101,23 +108,26 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
         : null;
       if (
         externalPlan?.kind === 'remove-sketch-external-drawer' &&
-        externalPlan.target.kind === 'drawer-id' &&
         hoverAllowsSketchExternalRemoval({
           hoverOk: __hoverOk,
           hoverKind: __hoverKind,
           hoverOp: __hoverOp,
           hoverRec: __hoverRec,
           drawerId: externalPlan.target.drawerId,
-          boxId: externalPlan.target.boxId,
+          boxId: externalPlan.target.scope === 'box' ? externalPlan.target.boxId : undefined,
+          listKind: externalPlan.target.scope === 'box' ? externalPlan.target.listKind : undefined,
         })
       ) {
-        commitCrossDrawerRemovePlan({
-          plan: externalPlan,
-          patchConfigForKey: __patchConfigForKey,
-          source: 'sketch.removeExternalDrawerByCrossHit',
-        });
-        restoreShoeDrawerBaseIfNoShoeDrawersRemain(App, 'sketch.removeExternalDrawerByHit:autoBaseRestore');
-        return true;
+        if (
+          commitCrossDrawerRemovePlan({
+            plan: externalPlan,
+            patchConfigForKey: __patchConfigForKey,
+            source: 'sketch.removeExternalDrawerByCrossHit',
+          })
+        ) {
+          restoreShoeDrawerBaseIfNoShoeDrawersRemain(App, 'sketch.removeExternalDrawerByHit:autoBaseRestore');
+          return true;
+        }
       }
     } catch {
       // ignore
@@ -179,12 +189,15 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
         const allowRemove = __hoverOk ? hoverAllowsRemove : directHitAllowsRemove;
 
         if (allowRemove) {
-          commitCrossDrawerRemovePlan({
-            plan: internalPlan,
-            patchConfigForKey: __patchConfigForKey,
-            source: 'sketch.removeInternalDrawerByHit.guardY',
-          });
-          return true;
+          if (
+            commitCrossDrawerRemovePlan({
+              plan: internalPlan,
+              patchConfigForKey: __patchConfigForKey,
+              source: 'sketch.removeInternalDrawerByHit.guardY',
+            })
+          ) {
+            return true;
+          }
         }
       }
     } catch {
@@ -208,12 +221,15 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
           drawerId: internalPlan.drawerId,
         })
       ) {
-        commitCrossDrawerRemovePlan({
-          plan: internalPlan,
-          patchConfigForKey: __patchConfigForKey,
-          source: 'sketch.removeInternalDrawerByCrossHit',
-        });
-        return true;
+        if (
+          commitCrossDrawerRemovePlan({
+            plan: internalPlan,
+            patchConfigForKey: __patchConfigForKey,
+            source: 'sketch.removeInternalDrawerByCrossHit',
+          })
+        ) {
+          return true;
+        }
       }
     } catch {
       // ignore
@@ -233,16 +249,19 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
         partId: standardPlan.partId,
       })
     ) {
-      commitCrossDrawerRemovePlan({
-        plan: standardPlan,
-        patchConfigForKey: __patchConfigForKey,
-        source: 'sketch.removeStandardExternalDrawerByHit',
-      });
-      restoreShoeDrawerBaseIfNoShoeDrawersRemain(
-        App,
-        'sketch.removeStandardExternalDrawerByHit:autoBaseRestore'
-      );
-      return true;
+      if (
+        commitCrossDrawerRemovePlan({
+          plan: standardPlan,
+          patchConfigForKey: __patchConfigForKey,
+          source: 'sketch.removeStandardExternalDrawerByHit',
+        })
+      ) {
+        restoreShoeDrawerBaseIfNoShoeDrawersRemain(
+          App,
+          'sketch.removeStandardExternalDrawerByHit:autoBaseRestore'
+        );
+        return true;
+      }
     }
 
     try {
@@ -251,10 +270,7 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
         ? resolveCrossDrawerRemovePlan({ hit: sketchDrawerHit, activeModuleKey: __activeModuleKey })
         : null;
       const drawerGroup = sketchDrawerHit?.object ?? null;
-      if (
-        externalPlan?.kind === 'remove-sketch-external-drawer' &&
-        externalPlan.target.kind === 'drawer-id'
-      ) {
+      if (externalPlan?.kind === 'remove-sketch-external-drawer') {
         let allowRemove = false;
 
         if (__hoverOk) {
@@ -264,7 +280,8 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
             hoverOp: __hoverOp,
             hoverRec: __hoverRec,
             drawerId: externalPlan.target.drawerId,
-            boxId: externalPlan.target.boxId,
+            boxId: externalPlan.target.scope === 'box' ? externalPlan.target.boxId : undefined,
+            listKind: externalPlan.target.scope === 'box' ? externalPlan.target.listKind : undefined,
           });
         } else {
           let centerY = Number.NaN;
@@ -314,13 +331,19 @@ export function tryApplySketchDirectHitDrawerActions(args: ManualLayoutSketchDir
         }
 
         if (allowRemove) {
-          commitCrossDrawerRemovePlan({
-            plan: externalPlan,
-            patchConfigForKey: __patchConfigForKey,
-            source: 'sketch.removeExternalDrawerByHit',
-          });
-          restoreShoeDrawerBaseIfNoShoeDrawersRemain(App, 'sketch.removeExternalDrawerByHit:autoBaseRestore');
-          return true;
+          if (
+            commitCrossDrawerRemovePlan({
+              plan: externalPlan,
+              patchConfigForKey: __patchConfigForKey,
+              source: 'sketch.removeExternalDrawerByHit',
+            })
+          ) {
+            restoreShoeDrawerBaseIfNoShoeDrawersRemain(
+              App,
+              'sketch.removeExternalDrawerByHit:autoBaseRestore'
+            );
+            return true;
+          }
         }
       }
     } catch {

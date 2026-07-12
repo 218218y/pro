@@ -62,6 +62,45 @@ test('free-box regular external drawer mode direct hit removes regularExtDrawers
   assert.deepEqual(regularIds, ['sbrd-2']);
 });
 
+test('a stale free-box drawer visual does not swallow the standard drawer fallback', () => {
+  const cfg: Record<string, unknown> = {
+    extDrawersCount: 0,
+    sketchExtras: {
+      boxes: [
+        {
+          id: 'free-1',
+          freePlacement: true,
+          regularExtDrawers: [{ id: 'sbrd-2', count: 2 }],
+        },
+      ],
+    },
+  };
+  let patchCalls = 0;
+
+  const handled = tryHandleExternalDrawerModeClick({
+    App: {
+      store: {
+        getState: () => ({ ui: { currentExtDrawerType: 'regular', currentExtDrawerCount: 1 } }),
+        patch: () => undefined,
+      },
+    } as never,
+    foundModuleIndex: 2,
+    activeModuleKey: 2,
+    isExtDrawerEditMode: true,
+    intersects: [{ object: createRegularFreeBoxDrawerHit(), point: { x: 0, y: 0.4, z: 0 } }] as never,
+    patchConfigForKey: (_key, patchFn) => {
+      patchCalls++;
+      patchFn(cfg as never);
+      return null;
+    },
+  });
+
+  assert.equal(handled, true);
+  assert.equal(patchCalls, 2);
+  assert.equal(cfg.extDrawersCount, 1);
+  assert.deepEqual((cfg.sketchExtras as any).boxes[0].regularExtDrawers, [{ id: 'sbrd-2', count: 2 }]);
+});
+
 test('regular external drawer edit mode direct hit removes sketch internal drawers', () => {
   const cfg: Record<string, unknown> = {
     sketchExtras: {
@@ -226,7 +265,7 @@ test('manual sketch external drawer tool direct hit removes regularExtDrawers in
     __hoverRec: withSketchBoxContentCommand(
       { hostModuleKey: 2 },
       {
-        kind: 'sketch-external-drawers',
+        kind: 'regular-external-drawers',
         op: 'remove',
         boxId: 'free-1',
         freePlacement: true,
@@ -236,9 +275,8 @@ test('manual sketch external drawer tool direct hit removes regularExtDrawers in
         boxYNorm: 0.4,
         boxBaseYNorm: 0.2,
         drawerHeightM: 0.22,
-        drawerH: 0.22,
-        stackH: 0.66,
-        drawerCount: 3,
+        drawerCount: 0,
+        hasShoeDrawer: false,
       }
     ),
   });

@@ -30,12 +30,9 @@ test('[sketch-ext-drawers-direct-hit] removal is gated by the live hover remove 
   assert.match(src, /command\.op !== 'remove'/);
   assert.match(src, /!\('removeId' in command\) \|\| !command\.removeId/);
   assert.match(src, /const\s+removal\s*=\s*readStrictDrawerRemoval\(args\.hoverRec\);/);
-  assert.match(
-    src,
-    /removal\.contentKind === 'ext_drawers' \|\| removal\.contentKind === 'regular_ext_drawers'/
-  );
+  assert.match(src, /removal\.contentKind === expectedContentKind/);
   assert.match(src, /removal\.removeId === args\.drawerId/);
-  assert.match(src, /!args\.boxId \|\| removal\.boxId === args\.boxId/);
+  assert.match(src, /removal\.boxId === args\.boxId/);
   assert.doesNotMatch(src, /hoverKind === 'box_content'/);
   assert.doesNotMatch(src, /hoverContentKind/);
 });
@@ -43,13 +40,14 @@ test('[sketch-ext-drawers-direct-hit] removal is gated by the live hover remove 
 test('[sketch-ext-drawers-direct-hit] removal can target nested box external drawers and not only the module-level list', () => {
   const src = WORKFLOW.map(file => fs.readFileSync(file, 'utf8')).join('\n');
   assert.match(src, /export type SketchExternalDrawerRemoveTarget/);
-  assert.match(src, /target\.kind === 'drawer-id'/);
+  assert.match(src, /scope: 'module'/);
+  assert.match(src, /scope: 'box'/);
+  assert.match(src, /listKind: SketchExternalDrawerListKind/);
+  assert.match(src, /if \(target\.scope === 'module'\)/);
   assert.match(src, /const\s+boxes\s*=\s*readArray\(extra, 'boxes'\);/);
-  assert.match(
-    src,
-    /const\s+candidateBoxes\s*=\s*target\.boxId\s*\?\s*boxes\.filter\(box => readString\(box\?\.id\) === target\.boxId\)\s*:\s*boxes;/
-  );
-  assert.match(src, /removeSketchBoxExternalDrawerByTarget\(box, 'extDrawers', target\)/);
+  assert.match(src, /if \(matchingBoxes\.length !== 1\) return false;/);
+  assert.match(src, /target\.listKind === 'regular-external'/);
+  assert.doesNotMatch(src, /partIdMatchesDrawerId/);
   assert.match(src, /commitCrossDrawerRemovePlan\(/);
   assert.doesNotMatch(src, /removeSketchExternalDrawerById\(/);
 });

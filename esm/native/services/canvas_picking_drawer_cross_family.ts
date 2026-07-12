@@ -22,11 +22,14 @@ import {
 } from './canvas_picking_local_helpers_runtime.js';
 import { readSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 
-export type { CrossDrawerFamily, CrossDrawerHit } from './canvas_picking_drawer_cross_family_model.js';
+export type {
+  CrossDrawerFamily,
+  CrossDrawerHit,
+  SketchExternalDrawerListKind,
+} from './canvas_picking_drawer_cross_family_model.js';
 export {
   applyCrossDrawerRemovePlanToConfig,
   commitCrossDrawerRemovePlan,
-  removeSketchExternalDrawerFromConfig,
   removeSketchExternalDrawerTargetFromConfig,
   removeSketchInternalDrawerFromConfig,
   removeStandardExternalDrawerFromConfig,
@@ -271,6 +274,12 @@ function findCrossDrawerHitOnObject(
           readString(ud?.moduleIndex ?? ud?.__wpSketchModuleKey) || readModuleKeyFromInternalPartId(pid),
         sketchExtDrawerId: readString(ud?.__wpSketchExtDrawerId),
         sketchBoxId: readString(ud?.__wpSketchBoxId),
+        sketchExternalListKind:
+          ud?.__wpRegularExternalDrawer === true
+            ? 'regular-external'
+            : ud?.__wpRegularExternalDrawer === false
+              ? 'custom-external'
+              : null,
       };
     }
     node = asNode(node.parent);

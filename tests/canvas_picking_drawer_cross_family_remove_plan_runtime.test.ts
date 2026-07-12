@@ -15,6 +15,7 @@ function createHit(
     moduleIndex: string;
     sketchExtDrawerId: string;
     sketchBoxId: string;
+    sketchExternalListKind: 'custom-external' | 'regular-external' | null;
   }> = {}
 ) {
   return {
@@ -23,6 +24,7 @@ function createHit(
     moduleIndex: overrides.moduleIndex ?? '2',
     sketchExtDrawerId: overrides.sketchExtDrawerId ?? 'ext-a',
     sketchBoxId: overrides.sketchBoxId ?? '',
+    sketchExternalListKind: overrides.sketchExternalListKind ?? null,
   };
 }
 
@@ -30,14 +32,10 @@ test('drawer remove plan resolves exact typed targets and rejects ambiguous or c
   assert.deepEqual(resolveCrossDrawerRemovePlan({ hit: createHit(), activeModuleKey: 2 }), {
     kind: 'remove-sketch-external-drawer',
     moduleKey: 2,
-    target: {
-      kind: 'drawer-id',
-      drawerId: 'ext-a',
-      partId: 'sketch_ext_drawers_2_ext-a_1',
-    },
+    target: { scope: 'module', drawerId: 'ext-a' },
   });
 
-  assert.deepEqual(
+  assert.equal(
     resolveCrossDrawerRemovePlan({
       hit: createHit({
         family: 'sketch_external',
@@ -47,13 +45,26 @@ test('drawer remove plan resolves exact typed targets and rejects ambiguous or c
       }),
       activeModuleKey: 2,
     }),
+    null
+  );
+
+  assert.deepEqual(
+    resolveCrossDrawerRemovePlan({
+      hit: createHit({
+        sketchExtDrawerId: 'ext-b',
+        sketchBoxId: 'box-a',
+        sketchExternalListKind: 'custom-external',
+      }),
+      activeModuleKey: 2,
+    }),
     {
       kind: 'remove-sketch-external-drawer',
       moduleKey: 2,
       target: {
-        kind: 'part-id',
-        partId: 'sketch_box_box-a_ext_drawers_ext-b_1',
+        scope: 'box',
         boxId: 'box-a',
+        drawerId: 'ext-b',
+        listKind: 'custom-external',
       },
     }
   );
@@ -118,7 +129,12 @@ test('drawer remove plan mutates only the resolved sketch external target', () =
     applyCrossDrawerRemovePlanToConfig(cfg as never, {
       kind: 'remove-sketch-external-drawer',
       moduleKey: 2,
-      target: { kind: 'drawer-id', drawerId: 'nested-a', boxId: 'box-a' },
+      target: {
+        scope: 'box',
+        boxId: 'box-a',
+        drawerId: 'nested-a',
+        listKind: 'custom-external',
+      },
     }),
     true
   );
@@ -129,7 +145,12 @@ test('drawer remove plan mutates only the resolved sketch external target', () =
     applyCrossDrawerRemovePlanToConfig(cfg as never, {
       kind: 'remove-sketch-external-drawer',
       moduleKey: 2,
-      target: { kind: 'drawer-id', drawerId: 'regular-b', boxId: 'box-a' },
+      target: {
+        scope: 'box',
+        boxId: 'box-a',
+        drawerId: 'regular-b',
+        listKind: 'regular-external',
+      },
     }),
     true
   );
@@ -139,7 +160,7 @@ test('drawer remove plan mutates only the resolved sketch external target', () =
     applyCrossDrawerRemovePlanToConfig(cfg as never, {
       kind: 'remove-sketch-external-drawer',
       moduleKey: 2,
-      target: { kind: 'part-id', partId: 'sketch_ext_drawers_2_top-b_1' },
+      target: { scope: 'module', drawerId: 'top-b' },
     }),
     true
   );
@@ -190,13 +211,137 @@ test('drawer remove plan applies sketch internal and standard external mutations
   assert.equal(cfg.hasShoeDrawer, false);
 });
 
+test('sketch internal removal uses exact IDs regardless of overlap, list order, or cassette slot', () => {
+  for (const ids of [
+    ['a_b', 'a'],
+    ['a', 'a_b'],
+    ['drawer_1', 'drawer_10'],
+    ['drawer_10', 'drawer_1'],
+  ]) {
+    for (const slot of ['lower', 'upper']) {
+      const targetId = ids.includes('a_b') ? 'a_b' : 'drawer_1';
+      const cfg = { sketchExtras: { drawers: ids.map(id => ({ id })) } };
+      const plan = resolveCrossDrawerRemovePlan({
+        hit: createHit({
+          family: 'sketch_internal',
+          partId: `div_int_sketch_2_${targetId}_${slot}`,
+          sketchExtDrawerId: '',
+        }),
+        activeModuleKey: 2,
+      });
+
+      assert.ok(plan && plan.kind === 'remove-sketch-internal-drawer');
+      assert.equal(applyCrossDrawerRemovePlanToConfig(cfg as never, plan), true);
+      assert.deepEqual(
+        cfg.sketchExtras.drawers.map(item => item.id),
+        ids.filter(id => id !== targetId)
+      );
+    }
+  }
+});
+
+test('sketch internal resolver rejects part identities that do not encode the exact module scope', () => {
+  assert.equal(
+    resolveCrossDrawerRemovePlan({
+      hit: createHit({
+        family: 'sketch_internal',
+        partId: 'div_int_sketch_a_b_lower',
+        moduleIndex: '2',
+        sketchExtDrawerId: '',
+      }),
+      activeModuleKey: 2,
+    }),
+    null
+  );
+});
+
+test('sketch external removal never crosses module, box, or list scopes for duplicate IDs', () => {
+  const cfg = {
+    sketchExtras: {
+      extDrawers: [{ id: 'dup' }],
+      boxes: [
+        {
+          id: 'box-a',
+          extDrawers: [{ id: 'dup' }],
+          regularExtDrawers: [{ id: 'dup' }],
+        },
+      ],
+    },
+  };
+
+  assert.equal(
+    applyCrossDrawerRemovePlanToConfig(cfg as never, {
+      kind: 'remove-sketch-external-drawer',
+      moduleKey: 2,
+      target: {
+        scope: 'box',
+        boxId: 'box-a',
+        drawerId: 'dup',
+        listKind: 'regular-external',
+      },
+    }),
+    true
+  );
+  assert.deepEqual(cfg.sketchExtras.extDrawers, [{ id: 'dup' }]);
+  assert.deepEqual(cfg.sketchExtras.boxes[0]?.extDrawers, [{ id: 'dup' }]);
+  assert.deepEqual(cfg.sketchExtras.boxes[0]?.regularExtDrawers, []);
+
+  assert.equal(
+    applyCrossDrawerRemovePlanToConfig(cfg as never, {
+      kind: 'remove-sketch-external-drawer',
+      moduleKey: 2,
+      target: { scope: 'module', drawerId: 'dup' },
+    }),
+    true
+  );
+  assert.deepEqual(cfg.sketchExtras.extDrawers, []);
+  assert.deepEqual(cfg.sketchExtras.boxes[0]?.extDrawers, [{ id: 'dup' }]);
+});
+
+test('ambiguous duplicate records and duplicate box identities are rejected without mutation', () => {
+  const duplicateDrawers = { sketchExtras: { extDrawers: [{ id: 'dup' }, { id: 'dup' }] } };
+  assert.equal(
+    applyCrossDrawerRemovePlanToConfig(duplicateDrawers as never, {
+      kind: 'remove-sketch-external-drawer',
+      moduleKey: 2,
+      target: { scope: 'module', drawerId: 'dup' },
+    }),
+    false
+  );
+  assert.equal(duplicateDrawers.sketchExtras.extDrawers.length, 2);
+
+  const duplicateBoxes = {
+    sketchExtras: {
+      boxes: [
+        { id: 'box-a', extDrawers: [{ id: 'dup' }] },
+        { id: 'box-a', extDrawers: [{ id: 'dup' }] },
+      ],
+    },
+  };
+  assert.equal(
+    applyCrossDrawerRemovePlanToConfig(duplicateBoxes as never, {
+      kind: 'remove-sketch-external-drawer',
+      moduleKey: 2,
+      target: {
+        scope: 'box',
+        boxId: 'box-a',
+        drawerId: 'dup',
+        listKind: 'custom-external',
+      },
+    }),
+    false
+  );
+  assert.equal(duplicateBoxes.sketchExtras.boxes[0]?.extDrawers.length, 1);
+  assert.equal(duplicateBoxes.sketchExtras.boxes[1]?.extDrawers.length, 1);
+});
+
 test('drawer remove commit owns the structural patch boundary and applies one immutable plan', () => {
   const cfg = { sketchExtras: { extDrawers: [{ id: 'ext-a' }] } };
   const calls: Array<{ moduleKey: unknown; meta: unknown }> = [];
   const plan: CrossDrawerRemovePlan = {
     kind: 'remove-sketch-external-drawer',
     moduleKey: 2,
-    target: { kind: 'drawer-id', drawerId: 'ext-a' },
+    target: { scope: 'module', drawerId: 'ext-a' },
   };
 
   assert.equal(
@@ -213,4 +358,36 @@ test('drawer remove commit owns the structural patch boundary and applies one im
 
   assert.deepEqual(calls, [{ moduleKey: 2, meta: { source: 'test.removeDrawer', immediate: true } }]);
   assert.deepEqual(cfg.sketchExtras.extDrawers, []);
+});
+
+test('drawer remove commit reports false when the patch is skipped or no target changes', () => {
+  const missingPlan: CrossDrawerRemovePlan = {
+    kind: 'remove-sketch-external-drawer',
+    moduleKey: 2,
+    target: { scope: 'module', drawerId: 'missing' },
+  };
+  const cfg = { sketchExtras: { extDrawers: [{ id: 'ext-a' }] } };
+
+  assert.equal(
+    commitCrossDrawerRemovePlan({
+      plan: missingPlan,
+      source: 'test.missing',
+      patchConfigForKey(_moduleKey, patch) {
+        patch(cfg as never);
+      },
+    }),
+    false
+  );
+  assert.deepEqual(cfg.sketchExtras.extDrawers, [{ id: 'ext-a' }]);
+
+  assert.equal(
+    commitCrossDrawerRemovePlan({
+      plan: missingPlan,
+      source: 'test.skipped',
+      patchConfigForKey() {
+        return null;
+      },
+    }),
+    false
+  );
 });
