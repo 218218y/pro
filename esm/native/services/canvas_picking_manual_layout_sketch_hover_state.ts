@@ -13,6 +13,14 @@ import {
   type SketchStructuralContentKind,
 } from './canvas_picking_sketch_structural_command.js';
 import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
+import {
+  createManualLayoutCommandEnvelope,
+  MANUAL_LAYOUT_COMMAND_FIELD,
+  type ManualLayoutCommand,
+  type ManualLayoutDrawerStackAddCommand,
+  type ManualLayoutDrawerStackBaseCommand,
+  type ManualLayoutDrawerStackRemoveCommand,
+} from './canvas_picking_manual_layout_command.js';
 
 type RecordMap = UnknownRecord;
 
@@ -147,12 +155,37 @@ export function createManualLayoutSketchBlockedHoverRecord(host: ManualLayoutSke
 }
 
 export function createManualLayoutSketchBoxHoverRecord(args: ManualLayoutSketchBoxHoverArgs): RecordMap {
+  const blockedReason = args.blockedReason ?? null;
+  const xNorm = args.xNorm ?? null;
+  const command: ManualLayoutCommand | null =
+    args.op === 'add'
+      ? {
+          kind: 'box',
+          op: 'add',
+          yCenter: args.yCenter,
+          xCenter: args.xCenter,
+          xNorm,
+          blockedReason,
+        }
+      : args.removeId
+        ? {
+            kind: 'box',
+            op: 'remove',
+            yCenter: args.yCenter,
+            xCenter: args.xCenter,
+            xNorm,
+            removeId: args.removeId,
+            blockedReason,
+          }
+        : null;
+  if (!command) return createManualLayoutSketchBlockedHoverRecord(args.host);
   return withDefined(createManualLayoutSketchHoverBase({ host: args.host, kind: 'box', op: args.op }), {
     yCenter: args.yCenter,
     xCenter: args.xCenter,
     xNorm: args.xNorm ?? undefined,
     removeId: args.removeId ?? undefined,
     __wpBlockedReason: args.blockedReason ?? undefined,
+    [MANUAL_LAYOUT_COMMAND_FIELD]: createManualLayoutCommandEnvelope(command),
   });
 }
 
@@ -268,6 +301,56 @@ export function createManualLayoutSketchBoxContentHoverRecord(
 }
 
 export function createManualLayoutSketchStackHoverRecord(args: ManualLayoutSketchStackHoverArgs): RecordMap {
+  const removeId = args.removeId ?? null;
+  const removeKind: ManualLayoutDrawerStackBaseCommand['removeKind'] = args.removeKind || '';
+  const removePid = args.removePid ?? null;
+  const removeSlot = args.removeSlot ?? null;
+  const commandBase: ManualLayoutDrawerStackBaseCommand = {
+    kind: args.kind,
+    yCenter: args.yCenter,
+    baseY: args.baseY ?? null,
+    removeId,
+    removeKind,
+    removePid,
+    removeSlot,
+    drawerH: args.drawerH ?? Number.NaN,
+    drawerGap: args.drawerGap ?? null,
+    stackH: args.stackH ?? Number.NaN,
+    drawerHeightM: args.drawerHeightM ?? Number.NaN,
+    drawerCount: args.drawerCount ?? null,
+    blockedReason: args.blockedReason ?? null,
+  };
+  let command: ManualLayoutCommand | null = null;
+  if (args.op === 'add') {
+    const addCommand: ManualLayoutDrawerStackAddCommand = {
+      ...commandBase,
+      op: 'add',
+      removeId: null,
+      removeKind: '',
+      removePid: null,
+      removeSlot: null,
+    };
+    command = addCommand;
+  } else if (removeKind === 'std' && removePid && !removeId) {
+    const removeCommand: ManualLayoutDrawerStackRemoveCommand = {
+      ...commandBase,
+      op: 'remove',
+      removeId: null,
+      removeKind: 'std',
+      removePid,
+    };
+    command = removeCommand;
+  } else if (removeKind !== 'std' && removeId && !removePid) {
+    const removeCommand: ManualLayoutDrawerStackRemoveCommand = {
+      ...commandBase,
+      op: 'remove',
+      removeId,
+      removeKind,
+      removePid: null,
+    };
+    command = removeCommand;
+  }
+  if (!command) return createManualLayoutSketchBlockedHoverRecord(args.host);
   return withDefined(createManualLayoutSketchHoverBase({ host: args.host, kind: args.kind, op: args.op }), {
     yCenter: args.yCenter,
     baseY: args.baseY ?? undefined,
@@ -285,5 +368,6 @@ export function createManualLayoutSketchStackHoverRecord(args: ManualLayoutSketc
     doorLeftId: args.doorLeftId ?? undefined,
     doorRightId: args.doorRightId ?? undefined,
     __wpBlockedReason: args.blockedReason ?? undefined,
+    [MANUAL_LAYOUT_COMMAND_FIELD]: createManualLayoutCommandEnvelope(command),
   });
 }

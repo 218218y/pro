@@ -27,6 +27,7 @@ import {
   decodeSketchStructuralCommandHover,
   SKETCH_STRUCTURAL_COMMAND_HOVER_KIND,
 } from './canvas_picking_sketch_structural_command.js';
+import { decodeManualLayoutCommand } from './canvas_picking_manual_layout_command.js';
 
 type RecordMap = Record<string, unknown>;
 type ModuleKey = number | 'corner' | `corner:${number}` | null;
@@ -63,6 +64,20 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
     __patchConfigForKey,
     __wp_clearSketchHover,
   } = args;
+
+  const manualHoverKind = __hoverRec.kind;
+  const isManualCommandHover =
+    manualHoverKind === 'box' ||
+    manualHoverKind === 'box_blocked' ||
+    manualHoverKind === 'shelf' ||
+    manualHoverKind === 'rod' ||
+    manualHoverKind === 'storage' ||
+    manualHoverKind === 'drawers' ||
+    manualHoverKind === 'ext_drawers';
+  if (__hoverOk && isManualCommandHover && !decodeManualLayoutCommand(__hoverRec).ok) {
+    __wp_clearSketchHover(App);
+    return true;
+  }
 
   const strictHover = __hoverOk ? decodeSketchBoxContentCommandHover(__hoverRec) : null;
   if (__hoverOk && __hoverRec.kind === SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND) {

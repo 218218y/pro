@@ -6,6 +6,9 @@ import {
   readManualLayoutSketchStackHoverIntent,
   resolveManualLayoutSketchHoverMatchState,
 } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_intent.ts';
+import { createManualLayoutSketchStackHoverRecord } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_state.ts';
+import { createRodRemoveHoverRecord } from '../esm/native/services/canvas_picking_sketch_module_surface_preview_hover_records.ts';
+import { decodeManualLayoutCommand } from '../esm/native/services/canvas_picking_manual_layout_command.ts';
 
 type SketchModuleKey = number | 'corner' | `corner:${number}` | null;
 
@@ -125,34 +128,43 @@ test('manual-layout sketch hover match state rejects records that still carry re
   assert.equal(legacyHost.hoverOk, false);
 });
 
-test('manual-layout hover intent readers normalize stack and vertical removal payloads', () => {
-  const stack = readManualLayoutSketchStackHoverIntent({
-    kind: 'ext_drawers',
-    removeKind: 'std',
-    removeSlot: 3,
-    drawerCount: 5,
-  });
-  const rod = readManualLayoutSketchRodHoverIntent({
-    kind: 'rod',
-    op: 'remove',
-    removeKind: 'base',
-    removeIdx: 1,
-    rodIndex: 4,
-  });
+test('manual-layout hover intent readers decode canonical versioned commands', () => {
+  const host = { tool: 'sketch_ext_drawers:5:20', moduleKey: 2, isBottom: false, ts: 1_000 };
+  const stack = readManualLayoutSketchStackHoverIntent(
+    createManualLayoutSketchStackHoverRecord({
+      host,
+      kind: 'ext_drawers',
+      op: 'add',
+      yCenter: 1.2,
+      baseY: 0.7,
+      drawerCount: 5,
+      drawerH: 0.2,
+      drawerHeightM: 0.2,
+      stackH: 1,
+    })
+  );
+  const rod = readManualLayoutSketchRodHoverIntent(
+    createRodRemoveHoverRecord({
+      host: { ...host, tool: 'sketch_rod' },
+      removeKind: 'base',
+      removeIdx: null,
+      rodIndex: 4,
+    })
+  );
 
   assert.deepEqual(stack, {
     kind: 'ext_drawers',
     op: 'add',
-    yCenter: null,
-    baseY: null,
+    yCenter: 1.2,
+    baseY: 0.7,
     removeId: null,
-    removeKind: 'std',
+    removeKind: '',
     removePid: null,
-    removeSlot: 3,
-    drawerH: null,
+    removeSlot: null,
+    drawerH: 0.2,
     drawerGap: null,
-    stackH: null,
-    drawerHeightM: null,
+    stackH: 1,
+    drawerHeightM: 0.2,
     drawerCount: 5,
     blockedReason: null,
   });
@@ -160,28 +172,124 @@ test('manual-layout hover intent readers normalize stack and vertical removal pa
     kind: 'rod',
     op: 'remove',
     removeKind: 'base',
-    removeIdx: 1,
+    removeIdx: null,
     rodIndex: 4,
   });
 });
 
-test('manual-layout hover intent readers reject string-encoded numeric state', () => {
+test('manual-layout hover intent readers reject malformed and non-exact command payloads', () => {
   const stack = readManualLayoutSketchStackHoverIntent({
-    kind: 'ext_drawers',
-    removeKind: 'std',
-    removeSlot: '3',
-    drawerCount: '5',
+    manualLayoutCommand: {
+      version: 1,
+      command: {
+        kind: 'ext_drawers',
+        op: 'add',
+        yCenter: 1,
+        baseY: 0,
+        removeId: null,
+        removeKind: '',
+        removePid: null,
+        removeSlot: null,
+        drawerH: 0.2,
+        drawerGap: null,
+        stackH: 1,
+        drawerHeightM: 0.2,
+        drawerCount: '5',
+        blockedReason: null,
+      },
+    },
   });
   const rod = readManualLayoutSketchRodHoverIntent({
-    kind: 'rod',
-    op: 'remove',
-    removeKind: 'base',
-    removeIdx: '1',
-    rodIndex: '4',
+    manualLayoutCommand: {
+      version: 1,
+      command: {
+        kind: 'rod',
+        op: 'remove',
+        removeKind: 'base',
+        removeIdx: null,
+        rodIndex: 4,
+        unexpected: true,
+      },
+    },
   });
 
-  assert.equal(stack?.removeSlot, null);
-  assert.equal(stack?.drawerCount, null);
-  assert.equal(rod?.removeIdx, null);
-  assert.equal(rod?.rodIndex, null);
+  assert.equal(stack, null);
+  assert.equal(rod, null);
+  assert.equal(
+    readManualLayoutSketchRodHoverIntent({
+      kind: 'rod',
+      removeKind: 'base',
+      rodIndex: 4,
+    }),
+    null
+  );
+});
+
+test('manual-layout command decoder rejects missing, unknown, and extra fields for every mutation family', () => {
+  const commands: Array<Record<string, unknown>> = [
+    { kind: 'box', op: 'add', xCenter: 0, yCenter: 1, xNorm: 0.5, blockedReason: null },
+    { kind: 'shelf', op: 'add', yNorm: 0.5, variant: 'regular', depthM: 0.4, blockedReason: null },
+    { kind: 'rod', op: 'add', yNorm: 0.5, blockedReason: null },
+    { kind: 'storage', op: 'add', yNorm: 0.2, blockedReason: null },
+    {
+      kind: 'drawers',
+      op: 'add',
+      yCenter: 1,
+      baseY: 0.8,
+      removeId: null,
+      removeKind: '',
+      removePid: null,
+      removeSlot: null,
+      drawerH: 0.2,
+      drawerGap: 0.01,
+      stackH: 0.4,
+      drawerHeightM: 0.2,
+      drawerCount: null,
+      blockedReason: null,
+    },
+    {
+      kind: 'ext_drawers',
+      op: 'add',
+      yCenter: 1,
+      baseY: 0.8,
+      removeId: null,
+      removeKind: '',
+      removePid: null,
+      removeSlot: null,
+      drawerH: 0.2,
+      drawerGap: null,
+      stackH: 0.4,
+      drawerHeightM: 0.2,
+      drawerCount: 2,
+      blockedReason: null,
+    },
+  ];
+
+  for (const command of commands) {
+    assert.equal(decodeManualLayoutCommand({ manualLayoutCommand: { version: 1, command } }).ok, true);
+    const { op: _missing, ...missingOp } = command;
+    assert.equal(
+      decodeManualLayoutCommand({ manualLayoutCommand: { version: 1, command: missingOp } }).ok,
+      false
+    );
+    assert.equal(
+      decodeManualLayoutCommand({
+        manualLayoutCommand: { version: 1, command: { ...command, op: 'insert' } },
+      }).ok,
+      false
+    );
+    assert.equal(
+      decodeManualLayoutCommand({
+        manualLayoutCommand: { version: 1, command: { ...command, unexpected: true } },
+      }).ok,
+      false
+    );
+  }
+
+  assert.deepEqual(
+    decodeManualLayoutCommand({
+      manualLayoutCommand: { version: 2, command: commands[0] },
+    }),
+    { ok: false, reason: 'unknown-version' }
+  );
 });

@@ -2,6 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryApplyManualLayoutSketchHoverClick } from '../esm/native/services/canvas_picking_manual_layout_sketch_click_hover_apply.js';
+import {
+  createShelfAddHoverRecord,
+  createShelfRemoveHoverRecord,
+} from '../esm/native/services/canvas_picking_sketch_module_surface_preview_hover_records.js';
+
+const host = { tool: 'sketch_shelf:regular', moduleKey: 0, isBottom: false, ts: 1_000 } as const;
 
 test('manual-layout hover click removes one base shelf and clears variant plus brace metadata canonically', () => {
   const cfg: Record<string, unknown> = {
@@ -20,7 +26,12 @@ test('manual-layout hover click removes one base shelf and clears variant plus b
     topY: 2.4,
     bottomY: 0,
     __gridInfo: { gridDivisions: 6 },
-    __hoverRec: { kind: 'shelf', op: 'remove', removeKind: 'base', shelfIndex: 2 },
+    __hoverRec: createShelfRemoveHoverRecord({
+      host,
+      removeKind: 'base',
+      removeIdx: null,
+      shelfIndex: 2,
+    }),
     __hoverOk: true,
     __patchConfigForKey: (_mk, patchFn, meta) => {
       patchMeta = { ...meta };
@@ -54,7 +65,12 @@ test('manual-layout hover click removes one sketch shelf from sketch extras with
     topY: 2.4,
     bottomY: 0,
     __gridInfo: { gridDivisions: 6 },
-    __hoverRec: { kind: 'shelf', op: 'remove', removeKind: 'sketch', removeIdx: 0 },
+    __hoverRec: createShelfRemoveHoverRecord({
+      host,
+      removeKind: 'sketch',
+      removeIdx: 0,
+      shelfIndex: null,
+    }),
     __hoverOk: true,
     __patchConfigForKey: (_mk, patchFn) => {
       patchFn(cfg);
@@ -85,7 +101,12 @@ test('manual-layout hover click adds the shelf at the preview yNorm even when a 
     topY: 2.4,
     bottomY: 0,
     __gridInfo: { gridDivisions: 6 },
-    __hoverRec: { kind: 'shelf', op: 'add', yNorm: 0.5, variant: 'glass', depthM: 0.42 },
+    __hoverRec: createShelfAddHoverRecord({
+      host: { ...host, tool: 'sketch_shelf:glass' },
+      yNorm: 0.5,
+      variant: 'glass',
+      depthM: 0.42,
+    }),
     __hoverOk: true,
     __patchConfigForKey: (_mk, patchFn, meta) => {
       patchMeta = { ...meta };
@@ -105,4 +126,61 @@ test('manual-layout hover click adds the shelf at the preview yNorm even when a 
     { id: 'existing', yNorm: 0.25, variant: 'regular' },
     { yNorm: 0.5, variant: 'glass', depthM: 0.42 },
   ]);
+});
+
+test('manual-layout hover click rejects a shelf payload without an explicit versioned operation before patch', () => {
+  const cfg: Record<string, unknown> = { sketchExtras: { shelves: [] } };
+  let patchCalls = 0;
+  let cleared = false;
+
+  const applied = tryApplyManualLayoutSketchHoverClick({
+    App: {} as never,
+    __activeModuleKey: 0,
+    topY: 2.4,
+    bottomY: 0,
+    __gridInfo: { gridDivisions: 6 },
+    __hoverRec: { kind: 'shelf', yNorm: 0.5, variant: 'regular', depthM: 0.4 },
+    __hoverOk: true,
+    __patchConfigForKey: () => {
+      patchCalls += 1;
+      return null;
+    },
+    __wp_clearSketchHover: () => {
+      cleared = true;
+    },
+  });
+
+  assert.equal(applied, true);
+  assert.equal(cleared, true);
+  assert.equal(patchCalls, 0);
+  assert.deepEqual(cfg, { sketchExtras: { shelves: [] } });
+});
+
+test('manual-layout hover click consumes malformed payloads from every command family before patch or fallback', () => {
+  const kinds = ['box', 'shelf', 'rod', 'storage', 'drawers', 'ext_drawers'] as const;
+
+  for (const kind of kinds) {
+    let patchCalls = 0;
+    let clearCalls = 0;
+    const applied = tryApplyManualLayoutSketchHoverClick({
+      App: {} as never,
+      __activeModuleKey: 0,
+      topY: 2.4,
+      bottomY: 0,
+      __gridInfo: { gridDivisions: 6 },
+      __hoverRec: { kind, op: 'add' },
+      __hoverOk: true,
+      __patchConfigForKey: () => {
+        patchCalls += 1;
+        return null;
+      },
+      __wp_clearSketchHover: () => {
+        clearCalls += 1;
+      },
+    });
+
+    assert.equal(applied, true, kind);
+    assert.equal(patchCalls, 0, kind);
+    assert.equal(clearCalls, 1, kind);
+  }
 });

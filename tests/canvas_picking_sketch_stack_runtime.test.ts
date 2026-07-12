@@ -7,6 +7,7 @@ import { resolveSketchFreeStackContentPreview } from '../esm/native/services/can
 import { decodeSketchBoxContentCommandHover } from '../esm/native/services/canvas_picking_sketch_box_content_command.ts';
 import { tryCommitSketchModuleStackTool } from '../esm/native/services/canvas_picking_sketch_module_stack_apply.ts';
 import { withSketchBoxContentCommand } from './_sketch_box_content_command_fixture.ts';
+import { createManualLayoutSketchStackHoverRecord } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_state.ts';
 
 function requireSketchBoxCommandHover(value: unknown) {
   const decoded = decodeSketchBoxContentCommandHover(value);
@@ -490,15 +491,19 @@ test('stack tool consumes opposite-family remove hover without adding internal d
     cfg,
     tool: 'sketch_int_drawers',
     hoverOk: true,
-    hoverRec: {
+    hoverRec: createManualLayoutSketchStackHoverRecord({
+      host: { tool: 'sketch_int_drawers', moduleKey: 2, isBottom: false },
       kind: 'ext_drawers',
       op: 'remove',
       removeId: 'sed-1',
+      removeKind: 'sketch',
       yCenter: 1.2,
       baseY: 0.9,
       stackH: 0.4,
       drawerH: 0.2,
-    },
+      drawerHeightM: 0.2,
+      drawerCount: 2,
+    }),
     bottomY: 0,
     topY: 2.4,
     totalHeight: 2.4,
@@ -530,15 +535,19 @@ test('stack tool consumes opposite-family remove hover without adding external d
     cfg,
     tool: 'sketch_ext_drawers:2',
     hoverOk: true,
-    hoverRec: {
+    hoverRec: createManualLayoutSketchStackHoverRecord({
+      host: { tool: 'sketch_ext_drawers:2', moduleKey: 2, isBottom: false },
       kind: 'drawers',
       op: 'remove',
       removeId: 'sid-1',
+      removeKind: 'sketch',
       yCenter: 1.2,
       baseY: 0.9,
       stackH: 0.4,
       drawerH: 0.2,
-    },
+      drawerGap: 0,
+      drawerHeightM: 0.2,
+    }),
     bottomY: 0,
     topY: 2.4,
     totalHeight: 2.4,

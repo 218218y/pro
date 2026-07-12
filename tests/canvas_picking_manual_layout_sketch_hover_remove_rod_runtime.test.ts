@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryApplyManualLayoutSketchHoverClick } from '../esm/native/services/canvas_picking_manual_layout_sketch_click_hover_apply.js';
+import { createRodRemoveHoverRecord } from '../esm/native/services/canvas_picking_sketch_module_surface_preview_hover_records.js';
+
+const host = { tool: 'sketch_rod', moduleKey: 0, isBottom: false, ts: 1_000 } as const;
 
 test('hover click apply removes one preset-backed split rod without moving the remaining rod off its exact preset height', () => {
   const cfg: Record<string, unknown> = {
@@ -17,7 +20,12 @@ test('hover click apply removes one preset-backed split rod without moving the r
     topY: 1.2,
     bottomY: 0,
     __gridInfo: { gridDivisions: 6 },
-    __hoverRec: { kind: 'rod', op: 'remove', removeKind: 'base', rodIndex: 5 },
+    __hoverRec: createRodRemoveHoverRecord({
+      host,
+      removeKind: 'base',
+      removeIdx: null,
+      rodIndex: 5,
+    }),
     __hoverOk: true,
     __patchConfigForKey: (_mk, patchFn, meta) => {
       patchCalls += 1;
@@ -71,7 +79,12 @@ test('hover click apply removes sketch rod from sketch extras list', () => {
     topY: 1.2,
     bottomY: 0,
     __gridInfo: { gridDivisions: 6 },
-    __hoverRec: { kind: 'rod', op: 'remove', removeKind: 'sketch', removeIdx: 1 },
+    __hoverRec: createRodRemoveHoverRecord({
+      host,
+      removeKind: 'sketch',
+      removeIdx: 1,
+      rodIndex: null,
+    }),
     __hoverOk: true,
     __patchConfigForKey: (_mk, patchFn) => {
       patchFn(cfg);

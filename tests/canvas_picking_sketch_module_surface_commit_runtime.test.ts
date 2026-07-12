@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryCommitSketchModuleSurfaceTool } from '../esm/native/services/canvas_picking_sketch_module_surface_commit.ts';
+import { createManualLayoutSketchBoxHoverRecord } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_state.ts';
 
 function resolveSketchBoxGeometry(args: {
   innerW: number;
@@ -414,14 +415,14 @@ test('tryCommitSketchModuleSurfaceTool refuses a blocked box hover instead of re
       App: makeToastApp(toasts),
       cfg,
       hoverOk: true,
-      hoverRec: {
-        kind: 'box',
+      hoverRec: createManualLayoutSketchBoxHoverRecord({
+        host: { tool: 'sketch_box:40', moduleKey: 0, isBottom: false },
         op: 'add',
         xCenter: 0,
         yCenter: 1.2,
         xNorm: 0.5,
-        __wpBlockedReason: 'collision',
-      },
+        blockedReason: 'collision',
+      }),
     }) as never
   );
 

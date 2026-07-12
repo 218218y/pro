@@ -39,6 +39,16 @@ const manualLayoutFreeBoxContent = read(
   'esm/native/services/canvas_picking_manual_layout_free_box_content.ts'
 );
 const manualLayoutFreeBoxCommit = read('esm/native/services/canvas_picking_manual_layout_free_box_commit.ts');
+const manualLayoutCommand = read('esm/native/services/canvas_picking_manual_layout_command.ts');
+const manualLayoutHoverIntentShared = read(
+  'esm/native/services/canvas_picking_manual_layout_sketch_hover_intent_shared.ts'
+);
+const manualLayoutHoverIntentReaders = read(
+  'esm/native/services/canvas_picking_manual_layout_sketch_hover_intent_readers.ts'
+);
+const manualLayoutHoverApply = read(
+  'esm/native/services/canvas_picking_manual_layout_sketch_click_hover_apply.ts'
+);
 const drawerFlow = read('esm/native/services/canvas_picking_drawer_mode_flow.ts');
 const drawerFlowExternal = read('esm/native/services/canvas_picking_drawer_mode_flow_external.ts');
 const drawerFlowDivider = read('esm/native/services/canvas_picking_drawer_mode_flow_divider.ts');
@@ -67,6 +77,25 @@ const toggleFlowSketchBoxToggle = read('esm/native/services/canvas_picking_toggl
 const toggleFlowSketchFreeBox = read('esm/native/services/canvas_picking_toggle_flow_sketch_free_box.ts');
 const sketchFreeCommit = read('esm/native/services/canvas_picking_sketch_free_commit.ts');
 const audit = read('docs/layering_completion_audit.md');
+
+test('manual-layout hover mutations require exact versioned commands and fail closed before patching', () => {
+  assert.match(manualLayoutCommand, /MANUAL_LAYOUT_COMMAND_VERSION = 1 as const/);
+  assert.match(manualLayoutCommand, /MANUAL_LAYOUT_COMMAND_FIELD = 'manualLayoutCommand' as const/);
+  assert.match(manualLayoutCommand, /export type ManualLayoutCommand =/);
+  assert.match(manualLayoutCommand, /function decodeCommand\(value: unknown\): ManualLayoutCommand \| null/);
+  assert.match(manualLayoutCommand, /keys\.length === allowed\.size/);
+  assert.doesNotMatch(manualLayoutHoverIntentShared, /normalizeOp/);
+  assert.match(manualLayoutHoverIntentReaders, /decodeManualLayoutCommand\(record\)/);
+  assert.match(
+    manualLayoutHoverApply,
+    /isManualCommandHover && !decodeManualLayoutCommand\(__hoverRec\)\.ok/
+  );
+  assert.match(manualLayoutHoverApply, /__wp_clearSketchHover\(App\);[\s\S]*return true;/);
+  assert.match(
+    audit,
+    /Manual Layout hover mutation commands cross the versioned `manualLayoutCommand` envelope/
+  );
+});
 
 test('canvas picking click owner stays thin and routes edit families through focused helper modules', () => {
   assert.match(owner, /canvas_picking_click_flow\.js/);

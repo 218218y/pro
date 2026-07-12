@@ -126,6 +126,7 @@ npm run contract:three-vendor
 - Paint target resolution must preserve sketch-box door part keys for special paint maps; canonical sketch door ids may describe identity but must not replace the persisted map key.
 - Click identity must not invent a `top` stack when no stack hint exists; use explicit object/module stack evidence only.
 - Sketch hover host identity is owned by `services/canvas_picking_sketch_hover_identity.ts`; transient records emit and read only canonical `hostModuleKey`/`hostIsBottom`, retired `moduleKey`/`isBottom` fields are rejected at both read and write boundaries, and incomplete identity never defaults to the top stack.
+- Manual Layout hover mutation commands cross the versioned `manualLayoutCommand` envelope owned by `services/canvas_picking_manual_layout_command.ts`; closed add/remove unions cover module boxes, shelves, rods, storage, and internal/external drawer stacks, exact-shape decoding rejects missing operations, unknown versions, invalid geometry, missing removal identity, and extra fields, and malformed matched hovers are consumed and cleared before any direct-hit fallback or structural patch.
 - Identity helpers stay data-only: no DOM, scene mutation, store writes, timers, or UI operations.
 - Browser pointer smoke should exercise a real `pointermove`/`pointerdown`/`pointerup` path for at least one canvas operation, proving hover eligibility and click commit resolve to the same canonical target.
 

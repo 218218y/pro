@@ -1,5 +1,17 @@
 import type { UnknownRecord } from '../../../types';
 import { asRecord } from '../runtime/record.js';
+import type {
+  ManualLayoutBoxAddCommand,
+  ManualLayoutBoxRemoveCommand,
+  ManualLayoutDrawerStackAddCommand,
+  ManualLayoutDrawerStackRemoveCommand,
+  ManualLayoutRodAddCommand,
+  ManualLayoutRodRemoveCommand,
+  ManualLayoutShelfAddCommand,
+  ManualLayoutShelfRemoveCommand,
+  ManualLayoutStorageAddCommand,
+  ManualLayoutStorageRemoveCommand,
+} from './canvas_picking_manual_layout_command.js';
 
 type RecordMap = UnknownRecord;
 export type { RecordMap };
@@ -40,59 +52,17 @@ export type ManualLayoutSketchHoverMatchState = {
   hoverOk: boolean;
 };
 
-export type ManualLayoutSketchBoxHoverIntent = {
-  kind: 'box';
-  op: 'add' | 'remove';
-  xCenter: number | null;
-  yCenter: number | null;
-  xNorm: number | null;
-  removeId: string | null;
-  blockedReason: string | null;
-};
+export type ManualLayoutSketchBoxHoverIntent = ManualLayoutBoxAddCommand | ManualLayoutBoxRemoveCommand;
 
-export type ManualLayoutSketchStackHoverIntent = {
-  kind: 'drawers' | 'ext_drawers';
-  op: 'add' | 'remove';
-  yCenter: number | null;
-  baseY: number | null;
-  removeId: string | null;
-  removeKind: 'sketch' | 'std' | '';
-  removePid: string | null;
-  removeSlot: number | null;
-  drawerH: number | null;
-  drawerGap: number | null;
-  stackH: number | null;
-  drawerHeightM: number | null;
-  drawerCount: number | null;
-  blockedReason: string | null;
-};
+export type ManualLayoutSketchStackHoverIntent =
+  ManualLayoutDrawerStackAddCommand | ManualLayoutDrawerStackRemoveCommand;
 
-export type ManualLayoutSketchShelfHoverIntent = {
-  kind: 'shelf';
-  op: 'add' | 'remove';
-  removeKind: string;
-  removeIdx: number | null;
-  shelfIndex: number | null;
-  yNorm: number | null;
-  variant: string | null;
-  depthM: number | null;
-  blockedReason: string | null;
-};
+export type ManualLayoutSketchShelfHoverIntent = ManualLayoutShelfAddCommand | ManualLayoutShelfRemoveCommand;
 
-export type ManualLayoutSketchRodHoverIntent = {
-  kind: 'rod';
-  op: 'add' | 'remove';
-  removeKind: 'base' | 'sketch' | '';
-  removeIdx: number | null;
-  rodIndex: number | null;
-};
+export type ManualLayoutSketchRodHoverIntent = ManualLayoutRodAddCommand | ManualLayoutRodRemoveCommand;
 
-export type ManualLayoutSketchStorageHoverIntent = {
-  kind: 'storage';
-  op: 'add' | 'remove';
-  removeKind: 'base' | 'sketch' | '';
-  removeIdx: number | null;
-};
+export type ManualLayoutSketchStorageHoverIntent =
+  ManualLayoutStorageAddCommand | ManualLayoutStorageRemoveCommand;
 
 export function readNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
@@ -113,10 +83,6 @@ export function readRecordNumber(record: unknown, key: string): number | null {
 
 export function readRecordString(record: unknown, key: string): string | null {
   return readString(readRecordValue(record, key));
-}
-
-export function normalizeOp(value: unknown): 'add' | 'remove' {
-  return readString(value) === 'remove' ? 'remove' : 'add';
 }
 
 export function emptyRecord(): RecordMap {
