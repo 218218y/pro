@@ -1217,10 +1217,6 @@
       "entry": "hex_cell/index.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_drawer_mode_flow_external.ts",
-      "entry": "sketch_drawer_sizing.js"
-    },
-    {
       "file": "esm/native/services/canvas_picking_generic_paint_hover_flow.ts",
       "entry": "door_authoring/api.js"
     },

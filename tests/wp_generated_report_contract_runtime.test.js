@@ -10,7 +10,7 @@ import {
   selectGeneratedReports,
 } from '../tools/wp_generated_report_contract.mjs';
 
-test('generated report catalog owns every checked-in audit pair', () => {
+test('generated report catalog classifies source-derived reports separately from release evidence', () => {
   assert.deepEqual(
     GENERATED_REPORT_CATALOG.map(report => report.id),
     [
@@ -23,10 +23,40 @@ test('generated report catalog owns every checked-in audit pair', () => {
       'test-portfolio',
     ]
   );
+  assert.deepEqual(
+    GENERATED_REPORT_CATALOG.map(report => report.lifecycle),
+    [
+      'release-evidence',
+      'source-derived',
+      'source-derived',
+      'source-derived',
+      'source-derived',
+      'source-derived',
+      'source-derived',
+    ]
+  );
   for (const report of GENERATED_REPORT_CATALOG) {
     assert.equal(fs.existsSync(report.json), true, `${report.json} should exist`);
     assert.equal(fs.existsSync(report.markdown), true, `${report.markdown} should exist`);
   }
+});
+
+test('generated report default selection excludes release evidence while explicit selection stays strict', () => {
+  assert.deepEqual(
+    selectGeneratedReports().map(report => report.id),
+    [
+      'script-duplicates',
+      'css-style',
+      'features-public-api',
+      'legacy-fallbacks',
+      'test-groups',
+      'test-portfolio',
+    ]
+  );
+  assert.deepEqual(
+    selectGeneratedReports(['verification-summary']).map(report => report.id),
+    ['verification-summary']
+  );
 });
 
 test('generated report selection rejects unknown ids and preserves catalog order', () => {

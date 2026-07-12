@@ -12,7 +12,6 @@ import {
   restoreShoeDrawerBaseIfNoShoeDrawersRemain,
 } from './canvas_picking_shoe_drawer_base_auto_none.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
-import { markSketchInternalDrawersDirty } from '../features/sketch_drawer_sizing.js';
 import {
   commitCrossDrawerRemovePlan,
   tryRemoveSketchExternalDrawerByDirectHit,

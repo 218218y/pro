@@ -39,8 +39,9 @@ npm run test:refactor-stage-guards
 
 ## Control-plane reports, scripts, and site profiles
 
-- Checked-in audit reports must represent current repository state. `tools/wp_generated_report_contract.mjs` is the catalog for the final-verification, script-duplicate, CSS, feature-public-API, legacy-fallback, test-group, and test-portfolio report pairs.
-- Ordinary reports are regenerated in isolation. `FINAL_VERIFICATION_SUMMARY.*` is stateful release proof: its JSON is the source of truth, its Markdown is derived from that JSON, and validation fails when its schema, source-tree digest, lane-catalog digest, per-lane digest, selection, summary, or final status is stale. Focused profiles may pass independently but cannot write this pair; final-report eligibility requires every default closeout lane to complete with a clean `passed` status.
+- Checked-in audit reports must represent current repository state. `tools/wp_generated_report_contract.mjs` catalogs both source-derived audit pairs and the separate final-verification release evidence pair.
+- `npm run check:generated-reports` and `npm run report:generated` operate only on source-derived reports that can be reproduced deterministically from the repository. `FINAL_VERIFICATION_SUMMARY.*` is intentionally excluded from that default set because it is stateful release evidence, not a source generator output.
+- Validate release evidence explicitly with `npm run check:verification-summary`. Its JSON is the source of truth, its Markdown is derived from that JSON, and validation fails when its schema, source-tree digest, lane-catalog digest, per-lane digest, selection, summary, or final status is stale. Focused profiles may pass independently but cannot write this pair; final-report eligibility requires every default closeout lane to complete with a clean `passed` status.
 - A closeout state file may be resumed only against the exact source and lane catalog that created it. After source or control-plane changes, reset the state instead of merging old results into a new run.
 - Report comparison is semantic: volatile `generatedAt` lines/fields are ignored, while changed counts, inventories, policies, source identities, or violations fail the check.
 - Large named test groups belong in `tools/wp_test_group_catalog.mjs`; package scripts should remain short facades over `tools/wp_test_group.mjs`.

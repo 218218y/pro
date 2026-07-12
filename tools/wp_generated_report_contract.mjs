@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 export const GENERATED_REPORT_CATALOG = Object.freeze([
   Object.freeze({
     id: 'verification-summary',
+    lifecycle: 'release-evidence',
     json: 'docs/FINAL_VERIFICATION_SUMMARY.json',
     markdown: 'docs/FINAL_VERIFICATION_SUMMARY.md',
     command({ json, markdown }) {
@@ -16,6 +17,7 @@ export const GENERATED_REPORT_CATALOG = Object.freeze([
   }),
   Object.freeze({
     id: 'script-duplicates',
+    lifecycle: 'source-derived',
     json: 'docs/script_duplicate_audit.json',
     markdown: 'docs/SCRIPT_DUPLICATE_AUDIT.md',
     command({ json, markdown }) {
@@ -24,6 +26,7 @@ export const GENERATED_REPORT_CATALOG = Object.freeze([
   }),
   Object.freeze({
     id: 'css-style',
+    lifecycle: 'source-derived',
     json: 'docs/css_style_audit.json',
     markdown: 'docs/CSS_STYLE_AUDIT.md',
     command({ json, markdown }) {
@@ -39,6 +42,7 @@ export const GENERATED_REPORT_CATALOG = Object.freeze([
   }),
   Object.freeze({
     id: 'features-public-api',
+    lifecycle: 'source-derived',
     json: 'docs/features_public_api_audit.json',
     markdown: 'docs/FEATURES_PUBLIC_API_AUDIT.md',
     command({ json, markdown }) {
@@ -47,6 +51,7 @@ export const GENERATED_REPORT_CATALOG = Object.freeze([
   }),
   Object.freeze({
     id: 'legacy-fallbacks',
+    lifecycle: 'source-derived',
     json: 'docs/legacy_fallback_audit.json',
     markdown: 'docs/LEGACY_FALLBACK_AUDIT.md',
     command({ json, markdown }) {
@@ -55,6 +60,7 @@ export const GENERATED_REPORT_CATALOG = Object.freeze([
   }),
   Object.freeze({
     id: 'test-groups',
+    lifecycle: 'source-derived',
     json: 'docs/test_group_catalog.json',
     markdown: 'docs/TEST_GROUP_CATALOG.md',
     command({ json, markdown }) {
@@ -63,6 +69,7 @@ export const GENERATED_REPORT_CATALOG = Object.freeze([
   }),
   Object.freeze({
     id: 'test-portfolio',
+    lifecycle: 'source-derived',
     json: 'docs/test_portfolio_audit.json',
     markdown: 'docs/TEST_PORTFOLIO_AUDIT.md',
     command({ json, markdown }) {
@@ -156,7 +163,9 @@ function formatGeneratedArtifacts(projectRoot, files) {
 
 export function selectGeneratedReports(ids = []) {
   const requested = new Set(Array.isArray(ids) ? ids.filter(Boolean) : []);
-  if (!requested.size) return Array.from(GENERATED_REPORT_CATALOG);
+  if (!requested.size) {
+    return GENERATED_REPORT_CATALOG.filter(report => report.lifecycle === 'source-derived');
+  }
   const selected = GENERATED_REPORT_CATALOG.filter(report => requested.has(report.id));
   const missing = Array.from(requested).filter(
     id => !GENERATED_REPORT_CATALOG.some(report => report.id === id)
