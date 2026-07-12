@@ -10,6 +10,14 @@ import {
   resolveSketchBoxSegments,
   resolveSketchBoxVerticalSegments,
 } from '../esm/native/services/canvas_picking_sketch_box_dividers.ts';
+import { decodeSketchStructuralCommandHover } from '../esm/native/services/canvas_picking_sketch_structural_command.ts';
+
+function requireStructuralCommand(value: unknown) {
+  const decoded = decodeSketchStructuralCommandHover(value);
+  assert.equal(decoded.ok, true);
+  if (!decoded.ok) assert.fail(`Expected canonical structural command hover: ${decoded.reason}`);
+  return decoded.value.command;
+}
 
 test('box shelf preview includes vertical clearance labels to the compartment top and bottom', () => {
   const result = resolveSketchBoxVerticalContentPreview({
@@ -167,12 +175,15 @@ test('box shelf preview scopes hover to the active split cell after vertical and
 
   assert.ok(result);
   assert.equal(result?.preview.kind, 'shelf');
-  assert.equal(result?.hoverRecord.freePlacement, true);
+  const command = requireStructuralCommand(result?.hoverRecord);
+  assert.equal(command.kind, 'add-shelf');
+  if (command.kind !== 'add-shelf') assert.fail('Expected add-shelf command');
+  assert.equal(command.freePlacement, true);
   assert.ok(Number(result?.preview.x) > 0);
   assert.ok(Number(result?.preview.y) > 1);
   assert.ok(Number(result?.preview.y) < 1.49);
-  assert.ok(Number(result?.hoverRecord.contentXNorm) > 0.5);
-  assert.ok(Number(result?.hoverRecord.boxYNorm) > 0.7);
+  assert.ok(command.contentXNorm > 0.5);
+  assert.ok(command.boxYNorm > 0.7);
   const measurements = result?.preview.clearanceMeasurements as { labelY?: number; role?: string }[];
   assert.ok(measurements.filter(entry => entry.role === 'cell').every(entry => Number(entry.labelY) > 1));
 });
@@ -215,8 +226,11 @@ test('box shelf preview rejects string-encoded scoped content positions', () => 
   assert.ok(result);
   assert.equal(result?.preview.kind, 'shelf');
   assert.equal(result?.preview.op, 'add');
-  assert.equal(result?.hoverRecord.op, 'add');
-  assert.equal(result?.hoverRecord.removeId ?? null, null);
+  const command = requireStructuralCommand(result?.hoverRecord);
+  assert.equal(command.kind, 'add-shelf');
+  if (command.kind !== 'add-shelf') assert.fail('Expected add-shelf command');
+  assert.equal(command.op, 'add');
+  assert.equal('removeId' in command, false);
 });
 
 test('box shelf preview marks a too-short active cell as blocked with no-room metadata', () => {
@@ -251,5 +265,8 @@ test('box shelf preview marks a too-short active cell as blocked with no-room me
   assert.equal(result?.preview.kind, 'shelf');
   assert.equal(result?.preview.op, 'blocked');
   assert.equal(result?.preview.blockedReason, 'no-room');
-  assert.equal(result?.hoverRecord.__wpBlockedReason, 'no-room');
+  const command = requireStructuralCommand(result?.hoverRecord);
+  assert.equal(command.kind, 'add-shelf');
+  if (command.kind !== 'add-shelf') assert.fail('Expected add-shelf command');
+  assert.equal(command.blockedReason, 'no-room');
 });

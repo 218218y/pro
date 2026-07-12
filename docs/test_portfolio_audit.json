@@ -1,15 +1,18 @@
 {
-  "generatedAt": "2026-07-12T06:53:23.513Z",
+  "generatedAt": "2026-07-12T10:28:51.036Z",
   "totals": {
-    "tests": 1188,
+    "tests": 1189,
+    "unitRunnerTests": 1183,
+    "e2eTests": 6,
+    "nonTestRuntimeFiles": 30,
     "packageTestReferences": 442,
-    "catalogTestReferences": 87,
-    "totalTestReferences": 529
+    "catalogTestReferences": 90,
+    "totalTestReferences": 532
   },
   "categories": {
     "contract": 388,
     "runtime-unit": 305,
-    "integration": 439,
+    "integration": 440,
     "e2e-smoke": 7,
     "perf-smoke": 9,
     "legacy-migration": 40
@@ -18,7 +21,11 @@
     "missingTestRefs": [],
     "duplicateCatalogRefs": [],
     "legacyRuntimeNames": [],
-    "unreferencedStageGuards": []
+    "unreferencedStageGuards": [],
+    "duplicateRunnerFiles": [],
+    "e2eIncludedInUnitRunner": [],
+    "helpersIncludedInUnitRunner": [],
+    "missingFromUnitRunner": []
   },
   "records": [
     {
@@ -782,6 +789,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/canvas_picking_sketch_structural_command_runtime.test.ts",
+      "category": "integration"
+    },
+    {
       "file": "tests/canvas_picking_sketch_workflow_contracts.test.js",
       "category": "contract"
     },
@@ -1030,12 +1041,12 @@
       "category": "contract"
     },
     {
-      "file": "tests/cloud_sync_owner_context_runtime.test.ts",
-      "category": "integration"
-    },
-    {
       "file": "tests/cloud_sync_owner_context_runtime_decomposition_contracts.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/cloud_sync_owner_context_runtime.test.ts",
+      "category": "integration"
     },
     {
       "file": "tests/cloud_sync_owner_context_status_publication_runtime.test.ts",
@@ -1294,11 +1305,11 @@
       "category": "runtime-unit"
     },
     {
-      "file": "tests/config_compounds_service_runtime.test.ts",
+      "file": "tests/config_compounds_service_runtime_extended.test.ts",
       "category": "integration"
     },
     {
-      "file": "tests/config_compounds_service_runtime_extended.test.ts",
+      "file": "tests/config_compounds_service_runtime.test.ts",
       "category": "integration"
     },
     {
@@ -2530,12 +2541,12 @@
       "category": "integration"
     },
     {
-      "file": "tests/order_pdf_sketch_panel_runtime.test.ts",
-      "category": "integration"
-    },
-    {
       "file": "tests/order_pdf_sketch_panel_runtime_decomposition_contracts.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/order_pdf_sketch_panel_runtime.test.ts",
+      "category": "integration"
     },
     {
       "file": "tests/order_pdf_sketch_preview_annotations_contract.test.js",
@@ -3054,6 +3065,10 @@
       "category": "contract"
     },
     {
+      "file": "tests/refactor_stage4_public_api_and_type_hardening_runtime.test.js",
+      "category": "contract"
+    },
+    {
       "file": "tests/refactor_stage42_legacy_fallback_inventory_guard.test.js",
       "category": "legacy-migration"
     },
@@ -3086,8 +3101,8 @@
       "category": "contract"
     },
     {
-      "file": "tests/refactor_stage4_public_api_and_type_hardening_runtime.test.js",
-      "category": "contract"
+      "file": "tests/refactor_stage5_ui_option_buttons_runtime.test.js",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/refactor_stage50_order_pdf_export_actions_ownership_guard.test.js",
@@ -3130,7 +3145,7 @@
       "category": "contract"
     },
     {
-      "file": "tests/refactor_stage5_ui_option_buttons_runtime.test.js",
+      "file": "tests/refactor_stage6_ui_effect_cleanup_runtime.test.js",
       "category": "runtime-unit"
     },
     {
@@ -3174,8 +3189,8 @@
       "category": "contract"
     },
     {
-      "file": "tests/refactor_stage6_ui_effect_cleanup_runtime.test.js",
-      "category": "runtime-unit"
+      "file": "tests/refactor_stage7_canvas_hit_identity_runtime.test.js",
+      "category": "integration"
     },
     {
       "file": "tests/refactor_stage70_render_interior_sketch_ops_ownership_guard.test.js",
@@ -3218,8 +3233,8 @@
       "category": "contract"
     },
     {
-      "file": "tests/refactor_stage7_canvas_hit_identity_runtime.test.js",
-      "category": "integration"
+      "file": "tests/refactor_stage8_cloud_sync_and_perf_runtime.test.js",
+      "category": "perf-smoke"
     },
     {
       "file": "tests/refactor_stage80_measurement_perf_closeout_guard.test.js",
@@ -3232,10 +3247,6 @@
     {
       "file": "tests/refactor_stage82_browser_security_headers_guard.test.js",
       "category": "contract"
-    },
-    {
-      "file": "tests/refactor_stage8_cloud_sync_and_perf_runtime.test.js",
-      "category": "perf-smoke"
     },
     {
       "file": "tests/refactor_stage9_test_portfolio_runtime.test.js",
@@ -3466,11 +3477,11 @@
       "category": "integration"
     },
     {
-      "file": "tests/render_surface_runtime.test.ts",
+      "file": "tests/render_surface_runtime_support_runtime.test.ts",
       "category": "contract"
     },
     {
-      "file": "tests/render_surface_runtime_support_runtime.test.ts",
+      "file": "tests/render_surface_runtime.test.ts",
       "category": "contract"
     },
     {
@@ -3602,16 +3613,16 @@
       "category": "legacy-migration"
     },
     {
-      "file": "tests/service_install_healing_runtime.test.ts",
-      "category": "integration"
-    },
-    {
       "file": "tests/service_install_healing_runtime_extended.test.ts",
       "category": "integration"
     },
     {
       "file": "tests/service_install_healing_runtime_surface.test.ts",
       "category": "contract"
+    },
+    {
+      "file": "tests/service_install_healing_runtime.test.ts",
+      "category": "integration"
     },
     {
       "file": "tests/service_install_state_runtime.test.ts",
@@ -3678,11 +3689,11 @@
       "category": "runtime-unit"
     },
     {
-      "file": "tests/settings_backup_runtime.test.ts",
+      "file": "tests/settings_backup_runtime_extended.test.ts",
       "category": "runtime-unit"
     },
     {
-      "file": "tests/settings_backup_runtime_extended.test.ts",
+      "file": "tests/settings_backup_runtime.test.ts",
       "category": "runtime-unit"
     },
     {
@@ -3742,19 +3753,19 @@
       "category": "runtime-unit"
     },
     {
-      "file": "tests/site2_camera_boot_default_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/site2_settings_tab_meta_runtime.test.ts",
-      "category": "runtime-unit"
-    },
-    {
       "file": "tests/site_profiles_runtime.test.js",
       "category": "runtime-unit"
     },
     {
       "file": "tests/site_variant_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/site2_camera_boot_default_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/site2_settings_tab_meta_runtime.test.ts",
       "category": "runtime-unit"
     },
     {
@@ -4010,6 +4021,10 @@
       "category": "contract"
     },
     {
+      "file": "tests/stageA_domain_corner_delegate_guard.test.js",
+      "category": "contract"
+    },
+    {
       "file": "tests/stageAB_render_ops_interior_dimensions_decomposition_guard.test.js",
       "category": "contract"
     },
@@ -4034,7 +4049,19 @@
       "category": "contract"
     },
     {
-      "file": "tests/stageA_domain_corner_delegate_guard.test.js",
+      "file": "tests/stageB_kernel_viewport_type_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageB_notes_settings_type_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageB_service_meta_type_hardening_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/stageB_type_surface_hardening_guard.test.js",
       "category": "contract"
     },
     {
@@ -4071,22 +4098,6 @@
     },
     {
       "file": "tests/stageBN_preview_cloudsync_contract_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageB_kernel_viewport_type_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageB_notes_settings_type_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageB_service_meta_type_hardening_guard.test.js",
-      "category": "contract"
-    },
-    {
-      "file": "tests/stageB_type_surface_hardening_guard.test.js",
       "category": "contract"
     },
     {

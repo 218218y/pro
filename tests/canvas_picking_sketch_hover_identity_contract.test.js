@@ -16,16 +16,19 @@ const extDrawerHoverOwner = read('esm/native/services/canvas_picking_ext_drawer_
 const audit = read('docs/layering_completion_audit.md');
 const guardrails = read('docs/QUALITY_GUARDRAILS.md');
 
-const producerFiles = [
+const directIdentityProducerFiles = [
   'esm/native/services/canvas_picking_manual_layout_sketch_hover_state.ts',
   'esm/native/services/canvas_picking_sketch_module_surface_preview_hover_records.ts',
   'esm/native/services/canvas_picking_manual_layout_free_box_hover_protocol.ts',
   'esm/native/services/canvas_picking_sketch_free_commit.ts',
   'esm/native/services/canvas_picking_brace_shelves_sketch_extras.ts',
   'esm/native/services/canvas_picking_ext_drawer_mode_hover.ts',
+];
+const structuralCommandProducerFiles = [
   'esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts',
   'esm/native/services/canvas_picking_sketch_free_surface_preview_divider.ts',
 ];
+const producerFiles = [...directIdentityProducerFiles, ...structuralCommandProducerFiles];
 const producers = producerFiles.map(read).join('\n');
 const consumers = [matchingOwner, intentOwner, drawerOwner, regularDrawerOwner, extDrawerHoverOwner].join(
   '\n'
@@ -46,10 +49,16 @@ test('sketch hover host identity has one canonical owner and one atomic read/wri
   assert.doesNotMatch(consumers, /hover(?:Rec|Record)?\??\.isBottom/);
 });
 
-test('all sketch-hover producers emit host identity through the canonical constructor', () => {
-  for (const file of producerFiles) {
+test('all sketch-hover producers emit host identity through a canonical hover factory', () => {
+  for (const file of directIdentityProducerFiles) {
     const source = read(file);
     assert.match(source, /createSketchHoverHostIdentity/);
+  }
+  for (const file of structuralCommandProducerFiles) {
+    const source = read(file);
+    assert.match(source, /createManualLayoutSketchStructuralCommandHoverRecord/);
+    assert.doesNotMatch(source, /hostModuleKey\s*:/);
+    assert.doesNotMatch(source, /hostIsBottom\s*:/);
   }
 
   assert.doesNotMatch(producers, /moduleKey:\s*[^,\n]+,\s*isBottom:\s*[^,\n]+,\s*hostModuleKey:/);

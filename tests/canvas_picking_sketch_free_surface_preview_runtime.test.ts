@@ -6,6 +6,22 @@ import {
   resolveSketchFreePlacementBoxPreview,
 } from '../esm/native/services/canvas_picking_sketch_free_surface_preview.ts';
 import { resolveSketchFreeSurfaceAdornmentPreview } from '../esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts';
+import { decodeSketchFreeBoxPlacementHover } from '../esm/native/services/canvas_picking_sketch_free_box_command.ts';
+import { decodeSketchStructuralCommandHover } from '../esm/native/services/canvas_picking_sketch_structural_command.ts';
+
+function requireFreeBoxPlacementCommand(value: unknown) {
+  const decoded = decodeSketchFreeBoxPlacementHover(value);
+  assert.equal(decoded.ok, true);
+  if (!decoded.ok) assert.fail(`Expected canonical free-box placement hover: ${decoded.reason}`);
+  return decoded.value;
+}
+
+function requireStructuralCommand(value: unknown) {
+  const decoded = decodeSketchStructuralCommandHover(value);
+  assert.equal(decoded.ok, true);
+  if (!decoded.ok) assert.fail(`Expected canonical structural command hover: ${decoded.reason}`);
+  return decoded.value.command;
+}
 
 const wardrobeBox = { centerX: 0, centerY: 1, centerZ: 0, width: 2, height: 2, depth: 0.6 } as const;
 
@@ -219,8 +235,10 @@ test('sketch free surface placement preview produces canonical remove hover meta
 
   assert.ok(preview);
   assert.equal(preview?.hoverRecord.kind, 'box');
-  assert.equal(preview?.hoverRecord.op, 'remove');
-  assert.equal(preview?.hoverRecord.removeId, 'free-1');
+  const command = requireFreeBoxPlacementCommand(preview?.hoverRecord);
+  assert.equal(command.kind, 'remove-free-box');
+  if (command.kind !== 'remove-free-box') assert.fail('Expected remove-free-box command');
+  assert.equal(command.boxId, 'free-1');
   assert.equal(preview?.hoverRecord.hostModuleKey, 2);
   assert.equal(preview?.hoverRecord.hostIsBottom, false);
   assert.equal('moduleKey' in (preview?.hoverRecord ?? {}), false);
@@ -270,7 +288,10 @@ test('sketch free base adornment preview rejects string-encoded current base dim
     resolveSketchBoxSegments: () => [],
   });
 
-  assert.equal(preview.hoverRecord.op, 'add');
-  assert.equal(preview.hoverRecord.baseLegHeightCm, 24);
-  assert.equal(preview.hoverRecord.baseLegWidthCm, 7);
+  const command = requireStructuralCommand(preview.hoverRecord);
+  assert.equal(command.kind, 'set-base');
+  if (command.kind !== 'set-base') assert.fail('Expected set-base command');
+  assert.equal(command.op, 'add');
+  assert.equal(command.baseLegHeightCm, 24);
+  assert.equal(command.baseLegWidthCm, 7);
 });

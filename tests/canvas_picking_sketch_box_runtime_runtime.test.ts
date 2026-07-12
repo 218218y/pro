@@ -7,6 +7,7 @@ import {
   __wp_resolveSketchBoxGeometry,
 } from '../esm/native/services/canvas_picking_sketch_box_runtime.ts';
 import { tryCommitSketchFreePlacementFromHoverWithDeps } from '../esm/native/services/canvas_picking_sketch_box_runtime_commit.ts';
+import { createSketchFreePlacementBoxHoverRecord } from '../esm/native/services/canvas_picking_sketch_free_commit.ts';
 
 test('sketch-box runtime parses width/depth overrides and rejects unrelated tools', () => {
   assert.deepEqual(__wp_parseSketchBoxToolSpec('sketch_box:60@90@45'), {
@@ -149,19 +150,21 @@ test('sketch-box free-placement commit does not derive floorY from string measur
 test('sketch-box free-placement commit clears and rejects stale add-hover under the wardrobe column', () => {
   let committedCalls = 0;
   let cleared = 0;
+  const staleHover = createSketchFreePlacementBoxHoverRecord({
+    tool: 'sketch_box:60',
+    host: { moduleKey: 3, isBottom: false },
+    op: 'add',
+    previewX: 0,
+    previewY: 0.1,
+    previewH: 0.8,
+    previewW: 0.6,
+    previewD: 0.45,
+  });
+  assert.ok(staleHover);
   const committed = tryCommitSketchFreePlacementFromHoverWithDeps({} as never, 'sketch_box:60', {
-    pickSketchFreeBoxHost: () => ({ moduleKey: 3, hostBottom: false }) as never,
-    readSketchHover: () => ({ ts: Date.now() }) as never,
-    matchRecentSketchHover: () =>
-      ({
-        kind: 'box',
-        op: 'add',
-        freePlacement: true,
-        xCenter: 0,
-        yCenter: 0.1,
-        heightM: 0.8,
-        hostModuleKey: 3,
-      }) as never,
+    pickSketchFreeBoxHost: () => ({ moduleKey: 3, isBottom: false }) as never,
+    readSketchHover: () => staleHover,
+    matchRecentSketchHover: () => staleHover as never,
     commitSketchFreePlacementHoverRecord: () => {
       committedCalls += 1;
       return { committed: true, nextHover: null } as never;

@@ -2,6 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryHandleManualLayoutSketchHoverModuleDividerFlow } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_divider_flow.ts';
+import { decodeSketchStructuralCommandHover } from '../esm/native/services/canvas_picking_sketch_structural_command.ts';
+
+function requireStructuralCommand(value: unknown) {
+  const decoded = decodeSketchStructuralCommandHover(value);
+  assert.equal(decoded.ok, true);
+  if (!decoded.ok) assert.fail(`Expected canonical structural command hover: ${decoded.reason}`);
+  return decoded.value.command;
+}
 
 function createContext(overrides: Record<string, unknown> = {}) {
   const previews: any[] = [];
@@ -58,17 +66,21 @@ test('manual-layout divider hover snaps to the active segment center when the cu
   assert.equal(hovers.length, 1);
   assert.equal(previews.length, 1);
 
-  assert.equal(hovers[0].kind, 'box_content');
-  assert.equal(hovers[0].contentKind, 'divider');
-  assert.equal(hovers[0].op, 'add');
+  const command = requireStructuralCommand(hovers[0]);
+  assert.equal(hovers[0].kind, 'box_structural_command');
+  assert.equal(command.kind, 'add-vertical-divider');
+  if (command.kind !== 'add-vertical-divider') assert.fail('Expected add-vertical-divider command');
+  assert.equal(command.op, 'add');
   assert.equal(hovers[0].tool, 'sketch_box_divider');
   assert.equal('moduleKey' in hovers[0], false);
   assert.equal('isBottom' in hovers[0], false);
   assert.equal(hovers[0].hostModuleKey, 3);
   assert.equal(hovers[0].hostIsBottom, false);
-  assert.equal(hovers[0].boxId, 'box-1');
-  assert.equal(hovers[0].dividerId ?? null, null);
-  assert.equal(hovers[0].dividerXNorm, 0.5);
+  assert.equal(command.boxId, 'box-1');
+  assert.equal(command.freePlacement, false);
+  assert.equal(command.blockedReason, null);
+  assert.equal(command.dividerId, null);
+  assert.equal(command.dividerXNorm, 0.5);
   assert.equal('snapToCenter' in hovers[0], false);
   assert.equal(Number.isFinite(hovers[0].ts), true);
 
@@ -90,12 +102,15 @@ test('manual-layout divider hover switches into remove mode when an existing div
   assert.equal(hovers.length, 1);
   assert.equal(previews.length, 1);
 
-  assert.equal(hovers[0].kind, 'box_content');
-  assert.equal(hovers[0].contentKind, 'divider');
-  assert.equal(hovers[0].op, 'remove');
-  assert.equal(hovers[0].boxId, 'box-1');
-  assert.equal(hovers[0].dividerId, 'div-1');
-  assert.equal(hovers[0].dividerXNorm, 0.22);
+  const command = requireStructuralCommand(hovers[0]);
+  assert.equal(hovers[0].kind, 'box_structural_command');
+  assert.equal(command.kind, 'remove-divider');
+  if (command.kind !== 'remove-divider') assert.fail('Expected remove-divider command');
+  assert.equal(command.op, 'remove');
+  assert.equal(command.axis, 'vertical');
+  assert.equal(command.boxId, 'box-1');
+  assert.equal(command.dividerId, 'div-1');
+  assert.equal(command.dividerXNorm, 0.22);
   assert.equal('snapToCenter' in hovers[0], false);
   assert.equal(previews[0].kind, 'drawer_divider');
   assert.equal(previews[0].snapToCenter, false);
@@ -134,7 +149,10 @@ test('manual-layout divider hover does not snap to string-encoded segment geomet
   assert.equal(handled, true);
   assert.equal(hovers.length, 1);
   assert.equal(previews.length, 1);
-  assert.equal(hovers[0].dividerXNorm, 0.18);
+  const command = requireStructuralCommand(hovers[0]);
+  assert.equal(command.kind, 'add-vertical-divider');
+  if (command.kind !== 'add-vertical-divider') assert.fail('Expected add-vertical-divider command');
+  assert.equal(command.dividerXNorm, 0.18);
   assert.equal('snapToCenter' in hovers[0], false);
   assert.equal(previews[0].snapToCenter, false);
   assert.equal(previews[0].x, -0.12);

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryHandleCanvasManualSketchFreeBoxClick } from '../esm/native/services/canvas_picking_click_manual_sketch_free_box.ts';
+import { createSketchFreePlacementBoxHoverRecord } from '../esm/native/services/canvas_picking_sketch_free_commit.ts';
 import { readSketchBoxFrontsBundle, readSourceFiles } from './sketch_box_runtime_helpers.ts';
 
 type RecordMap = Record<string, unknown>;
@@ -100,22 +101,20 @@ test('free-box click fallback rejects string-encoded plane-hit geometry', () => 
 });
 
 test('free-box click preserves a real recent free-placement hover even when a module is behind it', () => {
+  const recentHover = createSketchFreePlacementBoxHoverRecord({
+    tool: 'sketch_box:40@45',
+    host: { moduleKey: 0, isBottom: false },
+    op: 'add',
+    previewX: 0.2,
+    previewY: 0.8,
+    previewH: 0.4,
+    previewW: 0.45,
+    previewD: 0.45,
+  });
+  assert.ok(recentHover);
   const { args, cfg, calls } = createFreeBoxClickHarness({
     foundModuleIndex: 0,
-    __wp_readSketchHover: () => ({
-      ts: Date.now(),
-      tool: 'sketch_box:40@45',
-      hostModuleKey: 0,
-      hostIsBottom: false,
-      kind: 'box',
-      op: 'add',
-      freePlacement: true,
-      xCenter: 0.2,
-      yCenter: 0.8,
-      heightM: 0.4,
-      widthM: 0.45,
-      depthM: 0.45,
-    }),
+    __wp_readSketchHover: () => recentHover,
   });
 
   const handled = tryHandleCanvasManualSketchFreeBoxClick(args);

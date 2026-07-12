@@ -3,6 +3,14 @@ import assert from 'node:assert/strict';
 
 import { tryHandleManualLayoutSketchHoverModuleBoxPreview } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_box.ts';
 import { tryHandleManualLayoutSketchHoverModuleStackPreview } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_stack.ts';
+import { decodeSketchStructuralCommandHover } from '../esm/native/services/canvas_picking_sketch_structural_command.ts';
+
+function requireStructuralCommand(value: unknown) {
+  const decoded = decodeSketchStructuralCommandHover(value);
+  assert.equal(decoded.ok, true);
+  if (!decoded.ok) assert.fail(`Expected canonical structural command hover: ${decoded.reason}`);
+  return decoded.value.command;
+}
 
 function createBaseContext(overrides: Record<string, unknown> = {}) {
   const calls = {
@@ -103,9 +111,13 @@ test('manual-layout module box preview routes shelf hover through the focused bo
 
   const hoverRecord = calls.hover[0];
   const preview = calls.previews[0];
-  assert.equal(hoverRecord.kind, 'box_content');
-  assert.equal(hoverRecord.contentKind, 'shelf');
-  assert.equal(hoverRecord.boxId, 'box-1');
+  const command = requireStructuralCommand(hoverRecord);
+  assert.equal(hoverRecord.kind, 'box_structural_command');
+  assert.equal(command.kind, 'add-shelf');
+  if (command.kind !== 'add-shelf') assert.fail('Expected add-shelf command');
+  assert.equal(command.boxId, 'box-1');
+  assert.equal(command.freePlacement, false);
+  assert.equal(command.variant, 'glass');
   assert.equal(preview.anchor, ctx.hitSelectorObj);
   assert.equal(preview.kind, 'shelf');
   assert.equal(preview.variant, 'glass');

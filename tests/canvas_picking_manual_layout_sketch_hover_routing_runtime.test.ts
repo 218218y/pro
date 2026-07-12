@@ -3,12 +3,20 @@ import assert from 'node:assert/strict';
 
 import { tryHandleManualLayoutSketchHoverPreviewImpl } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_tools_router.ts';
 import { decodeSketchBoxContentCommandHover } from '../esm/native/services/canvas_picking_sketch_box_content_command.ts';
+import { decodeSketchStructuralCommandHover } from '../esm/native/services/canvas_picking_sketch_structural_command.ts';
 
 function requireSketchBoxCommandHover(value: unknown) {
   const decoded = decodeSketchBoxContentCommandHover(value);
   assert.equal(decoded.ok, true);
   if (!decoded.ok) assert.fail(`Expected canonical sketch-box command hover: ${decoded.reason}`);
   return decoded.value;
+}
+
+function requireStructuralCommand(value: unknown) {
+  const decoded = decodeSketchStructuralCommandHover(value);
+  assert.equal(decoded.ok, true);
+  if (!decoded.ok) assert.fail(`Expected canonical structural command hover: ${decoded.reason}`);
+  return decoded.value.command;
 }
 
 function createApp(overrides: Record<string, unknown> = {}) {
@@ -267,10 +275,12 @@ test('manual-layout sketch hover targets free-box content before a module select
   assert.equal(calls.hideSketch, 0);
   assert.equal(calls.moduleBoxScans, 0);
   assert.equal(calls.hover.length, 1);
-  assert.equal(calls.hover[0].kind, 'box_content');
-  assert.equal(calls.hover[0].contentKind, 'shelf');
-  assert.equal(calls.hover[0].freePlacement, true);
-  assert.equal(calls.hover[0].boxId, 'free-1');
+  const command = requireStructuralCommand(calls.hover[0]);
+  assert.equal(calls.hover[0].kind, 'box_structural_command');
+  assert.equal(command.kind, 'add-shelf');
+  if (command.kind !== 'add-shelf') assert.fail('Expected add-shelf command');
+  assert.equal(command.freePlacement, true);
+  assert.equal(command.boxId, 'free-1');
   assert.equal(calls.previews.length, 1);
   assert.equal(calls.previews[0].kind, 'shelf');
   assert.equal(calls.previews[0].anchorParent, App.render.wardrobeGroup);
