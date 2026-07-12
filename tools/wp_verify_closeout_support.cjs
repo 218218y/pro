@@ -70,22 +70,12 @@ const CLOSEOUT_LANES = [
   },
   {
     id: 'order-pdf-overlay-core',
-    label: 'Order PDF overlay core batch (direct)',
+    label: 'Order PDF overlay core (canonical group)',
     category: 'verify',
     expected: 'pass',
-    command: 'node',
-    args: [
-      'tools/wp_run_tsx_tests.mjs',
-      'tests/order_pdf_overlay_controller_actions_runtime.test.ts',
-      'tests/order_pdf_overlay_draft_action_feedback_runtime.test.ts',
-      'tests/order_pdf_overlay_draft_commands_runtime.test.ts',
-      'tests/order_pdf_overlay_draft_effects_runtime.test.ts',
-      'tests/order_pdf_overlay_interactions_runtime.test.ts',
-      'tests/order_pdf_overlay_runtime_export_runtime.test.ts',
-      'tests/order_pdf_overlay_text_details_lines_runtime.test.ts',
-      'tests/order_pdf_overlay_text_runtime.test.ts',
-      'tests/order_pdf_text_details_merge_support_runtime.test.ts',
-    ],
+    testGroupId: 'order-pdf-overlay-core',
+    command: 'npm',
+    args: ['run', 'test:order-pdf-surfaces:overlay-core'],
   },
   {
     id: 'order-pdf-pdf-render',
@@ -171,223 +161,111 @@ const CLOSEOUT_LANES = [
   },
   {
     id: 'sketch-manual-hover',
-    label: 'Sketch manual/hover batch (direct)',
+    label: 'Sketch manual/hover (canonical group)',
     category: 'verify',
     expected: 'pass',
-    command: 'node',
-    args: [
-      'tools/wp_run_tsx_tests.mjs',
-      'tests/sketch_manual_tool_host_runtime.test.ts',
-      'tests/canvas_picking_layout_edit_flow_manual_runtime.test.ts',
-      'tests/canvas_picking_manual_layout_sketch_hover_routing_runtime.test.ts',
-      'tests/canvas_picking_manual_layout_sketch_hover_module_context_runtime.test.ts',
-      'tests/canvas_picking_manual_layout_sketch_hover_module_preview_runtime.test.ts',
-      'tests/canvas_picking_manual_layout_sketch_hover_surface_runtime.test.ts',
-      'tests/canvas_picking_manual_layout_sketch_hover_tools_runtime.test.ts',
-    ],
+    testGroupId: 'sketch-manual-hover',
+    command: 'npm',
+    args: ['run', 'test:sketch-surfaces:manual-hover'],
   },
   {
     id: 'sketch-box-hover',
-    label: 'Sketch box/hover batch (direct)',
+    label: 'Sketch box/hover (canonical group)',
     category: 'verify',
     expected: 'pass',
-    command: 'node',
-    args: [
-      'tools/wp_run_tsx_tests.mjs',
-      'tests/canvas_picking_sketch_box_runtime_runtime.test.ts',
-      'tests/canvas_picking_sketch_box_door_preview_runtime.test.ts',
-      'tests/canvas_picking_sketch_box_doors_runtime.test.ts',
-      'tests/canvas_picking_sketch_box_overlap_runtime.test.ts',
-      'tests/sketch_box_hover_click_runtime.test.ts',
-      'tests/sketch_box_door_visuals_runtime.test.ts',
-    ],
+    testGroupId: 'sketch-box-hover',
+    command: 'npm',
+    args: ['run', 'test:sketch-surfaces:box-hover'],
   },
   {
     id: 'sketch-free-boxes',
-    label: 'Sketch free-box batch (direct)',
+    label: 'Sketch free-boxes (canonical group)',
     category: 'verify',
     expected: 'pass',
-    command: 'node',
-    args: [
-      'tools/wp_run_tsx_tests.mjs',
-      'tests/canvas_picking_sketch_free_surface_preview_runtime.test.ts',
-      'tests/canvas_picking_sketch_free_box_content_preview_runtime.test.ts',
-      'tests/canvas_picking_sketch_free_commit_runtime.test.ts',
-      'tests/sketch_free_boxes_attach_runtime.test.ts',
-      'tests/sketch_free_boxes_hover_plane_attach_runtime.test.ts',
-      'tests/sketch_free_boxes_outside_attach_runtime.test.ts',
-      'tests/sketch_free_boxes_remove_and_sidewall_runtime.test.ts',
-      'tests/sketch_free_boxes_room_floor_runtime.test.ts',
-    ],
+    testGroupId: 'sketch-free-boxes',
+    command: 'npm',
+    args: ['run', 'test:sketch-surfaces:free-boxes'],
   },
   {
     id: 'sketch-render-visuals',
-    label: 'Sketch render/visuals batch (direct)',
+    label: 'Sketch render/visuals (canonical group)',
     category: 'verify',
     expected: 'pass',
-    command: 'node',
-    args: [
-      'tools/wp_run_tsx_tests.mjs',
-      'tests/render_interior_sketch_visuals_runtime.test.ts',
-      'tests/render_interior_sketch_fronts_runtime.test.ts',
-      'tests/render_interior_sketch_layout_dimensions_runtime.test.ts',
-      'tests/render_interior_sketch_layout_geometry_runtime.test.ts',
-      'tests/sketch_front_visual_state_runtime.test.ts',
-    ],
+    testGroupId: 'sketch-render-visuals',
+    command: 'npm',
+    args: ['run', 'test:sketch-surfaces:render-visuals'],
   },
   {
     id: 'cloud-sync-lifecycle',
-    label: 'Cloud sync lifecycle batch (direct)',
+    label: 'Cloud sync lifecycle (canonical group)',
     category: 'verify',
     expected: 'pass',
-    command: 'node',
-    args: [
-      'tools/wp_serial_tests.mjs',
-      '--batch-size',
-      '3',
-      '--heartbeat-ms',
-      '10000',
-      '--timeout-ms',
-      '120000',
-      '--failed-files-path',
-      '.artifacts/cloud-sync-surfaces.lifecycle.failed.txt',
-      '--timings-path',
-      '.artifacts/cloud-sync-surfaces.lifecycle.timings.json',
-      'tests/cloud_sync_panel_actions_runtime.test.js',
-      'tests/cloud_sync_action_feedback_runtime.test.ts',
-      'tests/cloud_sync_access_runtime.test.ts',
-      'tests/cloud_sync_install_support_runtime.test.ts',
-      'tests/cloud_sync_lifecycle_install_cleanup_runtime.test.js',
-      'tests/cloud_sync_actions_runtime.test.ts',
-      'tests/cloud_sync_async_singleflight_owner_runtime.test.ts',
-      'tests/cloud_sync_config_runtime.test.ts',
-      'tests/cloud_sync_delete_temp_runtime.test.ts',
-      'tests/cloud_sync_lifecycle_attention_runtime.test.ts',
-      'tests/cloud_sync_lifecycle_realtime_runtime.test.ts',
-      'tests/cloud_sync_lifecycle_start_idempotent_runtime.test.ts',
-      'tests/cloud_sync_lifecycle_realtime_support_runtime.test.ts',
-    ],
+    testGroupId: 'cloud-sync-lifecycle',
+    command: 'npm',
+    args: ['run', 'test:cloud-sync-surfaces:lifecycle'],
   },
   {
     id: 'cloud-sync-main-row',
-    label: 'Cloud sync main-row batch (direct)',
+    label: 'Cloud sync main-row (canonical group)',
     category: 'verify',
     expected: 'pass',
-    command: 'node',
-    args: [
-      'tools/wp_serial_tests.mjs',
-      '--batch-size',
-      '3',
-      '--heartbeat-ms',
-      '10000',
-      '--timeout-ms',
-      '120000',
-      '--failed-files-path',
-      '.artifacts/cloud-sync-surfaces.main-row.failed.txt',
-      '--timings-path',
-      '.artifacts/cloud-sync-surfaces.main-row.timings.json',
-      'tests/cloud_sync_main_row_payload_dedupe_runtime.test.ts',
-      'tests/cloud_sync_main_row_runtime.test.ts',
-      'tests/cloud_sync_main_write_singleflight_runtime.test.ts',
-      'tests/cloud_sync_mutation_commands_runtime.test.ts',
-      'tests/cloud_sync_mutation_commands_singleflight_runtime.test.ts',
-      'tests/cloud_sync_owner_context_runtime.test.ts',
-      'tests/cloud_sync_status_install_runtime.test.ts',
-    ],
+    testGroupId: 'cloud-sync-main-row',
+    command: 'npm',
+    args: ['run', 'test:cloud-sync-surfaces:main-row'],
   },
   {
     id: 'cloud-sync-panel-install',
-    label: 'Cloud sync panel-install batch (direct)',
+    label: 'Cloud sync panel-install (canonical group)',
     category: 'verify',
     expected: 'pass',
-    command: 'node',
-    args: [
-      'tools/wp_run_tsx_tests.mjs',
-      'tests/cloud_sync_panel_api_install_healing_runtime.test.ts',
-      'tests/cloud_sync_panel_api_surface_runtime.test.ts',
-    ],
+    testGroupId: 'cloud-sync-panel-install',
+    command: 'npm',
+    args: ['run', 'test:cloud-sync-surfaces:panel-install'],
   },
   {
     id: 'cloud-sync-panel-controller',
-    label: 'Cloud sync panel-controller batch (direct)',
+    label: 'Cloud sync panel-controller (canonical group)',
     category: 'verify',
     expected: 'pass',
-    command: 'node',
-    args: [
-      'tools/wp_run_tsx_tests.mjs',
-      'tests/cloud_sync_panel_api_controller_fallback_runtime.test.ts',
-      'tests/cloud_sync_panel_api_failures_runtime.test.ts',
-    ],
+    testGroupId: 'cloud-sync-panel-controller',
+    command: 'npm',
+    args: ['run', 'test:cloud-sync-surfaces:panel-controller'],
   },
   {
     id: 'cloud-sync-panel-subscriptions',
-    label: 'Cloud sync panel-subscriptions batch (direct)',
+    label: 'Cloud sync panel-subscriptions (canonical group)',
     category: 'verify',
     expected: 'pass',
-    command: 'node',
-    args: [
-      'tools/wp_run_tsx_tests.mjs',
-      'tests/cloud_sync_panel_api_singleflight_runtime.test.ts',
-      'tests/cloud_sync_panel_api_subscriptions_runtime.test.ts',
-      'tests/cloud_sync_panel_api_support_singleflight_runtime.test.ts',
-    ],
+    testGroupId: 'cloud-sync-panel-subscriptions',
+    command: 'npm',
+    args: ['run', 'test:cloud-sync-surfaces:panel-subscriptions'],
   },
   {
     id: 'cloud-sync-panel-snapshots',
-    label: 'Cloud sync panel-snapshots batch (direct)',
+    label: 'Cloud sync panel-snapshots (canonical group)',
     category: 'verify',
     expected: 'pass',
-    command: 'node',
-    args: [
-      'tools/wp_run_tsx_tests.mjs',
-      'tests/cloud_sync_panel_snapshot_controller_runtime.test.ts',
-      'tests/cloud_sync_panel_snapshot_dedupe_runtime.test.ts',
-      'tests/cloud_sync_panel_snapshot_fallback_runtime.test.ts',
-    ],
+    testGroupId: 'cloud-sync-panel-snapshots',
+    command: 'npm',
+    args: ['run', 'test:cloud-sync-surfaces:panel-snapshots'],
   },
   {
     id: 'cloud-sync-sync-ops',
-    label: 'Cloud sync sync-ops batch (direct)',
+    label: 'Cloud sync sync-ops (canonical group)',
     category: 'verify',
     expected: 'pass',
-    command: 'node',
-    args: [
-      'tools/wp_serial_tests.mjs',
-      '--batch-size',
-      '3',
-      '--heartbeat-ms',
-      '10000',
-      '--timeout-ms',
-      '120000',
-      '--failed-files-path',
-      '.artifacts/cloud-sync-surfaces.sync-ops.failed.txt',
-      '--timings-path',
-      '.artifacts/cloud-sync-surfaces.sync-ops.timings.json',
-      'tests/cloud_sync_pull_coalescer_runtime.test.ts',
-      'tests/cloud_sync_realtime_support_runtime.test.ts',
-      'tests/cloud_sync_remote_push_singleflight_runtime.test.ts',
-      'tests/cloud_sync_rest_runtime.test.ts',
-      'tests/cloud_sync_room_commands_runtime.test.ts',
-      'tests/cloud_sync_site2_sketch_behavior_runtime.test.ts',
-      'tests/cloud_sync_sketch_ops_runtime.test.ts',
-      'tests/cloud_sync_sketch_pull_load_runtime.test.ts',
-      'tests/cloud_sync_support_runtime.test.ts',
-    ],
+    testGroupId: 'cloud-sync-sync-ops',
+    command: 'npm',
+    args: ['run', 'test:cloud-sync-surfaces:sync-ops'],
   },
   {
     id: 'cloud-sync-tabs-ui',
-    label: 'Cloud sync tabs-ui batch (direct)',
+    label: 'Cloud sync tabs-ui (canonical group)',
     category: 'verify',
     expected: 'pass',
-    command: 'node',
-    args: [
-      'tools/wp_run_tsx_tests.mjs',
-      'tests/cloud_sync_sync_pin_command_runtime.test.ts',
-      'tests/cloud_sync_tabs_gate_command_runtime.test.ts',
-      'tests/cloud_sync_tabs_gate_runtime.test.ts',
-      'tests/cloud_sync_tabs_gate_timer_dedupe_runtime.test.ts',
-      'tests/cloud_sync_ui_action_controller_runtime.test.js',
-    ],
+    testGroupId: 'cloud-sync-tabs-ui',
+    command: 'npm',
+    args: ['run', 'test:cloud-sync-surfaces:tabs-ui'],
   },
   {
     id: 'e2e-list',
@@ -528,7 +406,7 @@ function normalizeCliArgs(argv) {
     skipLaneIds: [],
     resumeFrom: null,
     stopOnFail: false,
-    shouldWrite: false,
+    shouldWriteFinal: false,
     appendState: false,
     fromState: false,
     resetState: false,
@@ -546,7 +424,7 @@ function normalizeCliArgs(argv) {
   ]);
   const booleanOptions = new Map([
     ['--stop-on-fail', () => (options.stopOnFail = true)],
-    ['--write', () => (options.shouldWrite = true)],
+    ['--write-final', () => (options.shouldWriteFinal = true)],
     ['--append-state', () => (options.appendState = true)],
     ['--from-state', () => (options.fromState = true)],
     ['--reset-state', () => (options.resetState = true)],
@@ -820,6 +698,40 @@ function validateCloseoutPayload(payload, options = {}) {
   });
 }
 
+function validateFinalReportEligibility(payload) {
+  const errors = [];
+  const requiredLaneIds = CLOSEOUT_PROFILES.default;
+  const requestedLaneIds = new Set(payload?.selection?.requestedLaneIds || []);
+  const completedLaneIds = new Set(payload?.selection?.completedLaneIds || []);
+  const missingRequested = requiredLaneIds.filter(id => !requestedLaneIds.has(id));
+  const missingCompleted = requiredLaneIds.filter(id => !completedLaneIds.has(id));
+
+  if (missingRequested.length) {
+    errors.push(`final report selection is missing required lane(s): ${missingRequested.join(', ')}`);
+  }
+  if (missingCompleted.length) {
+    errors.push(`final report results are missing required lane(s): ${missingCompleted.join(', ')}`);
+  }
+  if (payload?.selection?.complete !== true) {
+    errors.push('final report selection must be complete');
+  }
+  if (payload?.finalStatus !== 'passed') {
+    errors.push(`final report status must be passed; received ${payload?.finalStatus || '(missing)'}`);
+  }
+
+  return errors;
+}
+
+function assertFinalSelectionEligible(selectedLaneIds) {
+  const selected = new Set(selectedLaneIds || []);
+  const missing = CLOSEOUT_PROFILES.default.filter(id => !selected.has(id));
+  if (missing.length || selected.size !== CLOSEOUT_PROFILES.default.length) {
+    throw new Error(
+      `[closeout] --write-final requires the complete default closeout selection; missing: ${missing.join(', ') || '(none)'}`
+    );
+  }
+}
+
 function assertCompatibleCloseoutState(payload, options = {}) {
   return assertCompatibleVerificationState(payload, {
     projectRoot: options.projectRoot || process.cwd(),
@@ -935,10 +847,13 @@ function buildMarkdownReport(payload) {
   return lines.join('\n');
 }
 
-function writeReports(payload, reportPaths = {}, options = {}) {
+function writeFinalReports(payload, reportPaths = {}, options = {}) {
   const errors = validateCloseoutPayload(payload, options);
+  errors.push(...validateFinalReportEligibility(payload));
   if (errors.length) {
-    throw new Error(`[closeout] refusing to write invalid verification report\n- ${errors.join('\n- ')}`);
+    throw new Error(
+      `[closeout] refusing to write ineligible final verification report\n- ${errors.join('\n- ')}`
+    );
   }
   const jsonPath = reportPaths.jsonPath || REPORT_JSON_PATH;
   const mdPath = reportPaths.mdPath || REPORT_MD_PATH;
@@ -953,6 +868,7 @@ module.exports = {
   REPORT_JSON_PATH,
   REPORT_MD_PATH,
   STATE_JSON_PATH,
+  assertFinalSelectionEligible,
   buildMarkdownReport,
   classifyEnvironmentFailure,
   classifyRunnerFailure,
@@ -967,7 +883,8 @@ module.exports = {
   resolveStateFile,
   summarize,
   validateCloseoutPayload,
+  validateFinalReportEligibility,
   validateSelectionOptions,
-  writeReports,
+  writeFinalReports,
   writeStatePayload,
 };

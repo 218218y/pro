@@ -9,10 +9,11 @@ function read(file) {
 }
 
 test('stage 21 cloud sync realtime start recovery guard is wired into refactor guardrails', () => {
-  const pkg = JSON.parse(read('package.json'));
-  assert.match(
-    pkg.scripts['test:cloud-sync-surfaces:lifecycle'],
-    /cloud_sync_lifecycle_realtime_start_recovery_runtime\.test\.ts/
+  assert.ok(
+    readTestGroupFiles('cloud-sync-lifecycle')?.includes(
+      'tests/cloud_sync_lifecycle_realtime_start_recovery_runtime.test.ts'
+    ),
+    'the canonical Cloud Sync lifecycle group must own realtime start recovery coverage'
   );
   assert.ok(
     readTestGroupFiles('refactor-stage-guards')?.includes(

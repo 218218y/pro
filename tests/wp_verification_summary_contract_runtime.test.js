@@ -9,10 +9,23 @@ import { buildCanonicalVerificationSummary } from '../tools/wp_verification_summ
 
 const require = createRequire(import.meta.url);
 const {
+  CLOSEOUT_LANES,
+  CLOSEOUT_PROFILES,
   REPORT_JSON_PATH,
   buildMarkdownReport,
   createCloseoutPayload,
 } = require('../tools/wp_verify_closeout_support.cjs');
+
+function createFullPassedResults() {
+  return CLOSEOUT_LANES.map(lane => ({
+    ...lane,
+    status: 'passed',
+    exitCode: 0,
+    durationMs: 1,
+    stdout: '',
+    stderr: '',
+  }));
+}
 
 function createProject() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wp-verification-summary-'));
@@ -32,9 +45,9 @@ test('verification summary contract derives markdown from one validated JSON pay
     workspace: root,
     generatedAt: '2026-07-12T11:00:00.000Z',
     runId: 'summary-run-001',
-    meta: { profiles: ['control-plane'] },
-    results: [],
-    requestedLaneIds: [],
+    meta: { profiles: ['default'] },
+    results: createFullPassedResults(),
+    requestedLaneIds: CLOSEOUT_PROFILES.default,
   });
   fs.writeFileSync(path.join(root, REPORT_JSON_PATH), `${JSON.stringify(payload, null, 2)}\n`);
 
@@ -50,11 +63,25 @@ test('verification summary contract refuses to canonize a stale report', () => {
   const payload = createCloseoutPayload({
     projectRoot: root,
     runId: 'summary-run-002',
-    results: [],
-    requestedLaneIds: [],
+    results: createFullPassedResults(),
+    requestedLaneIds: CLOSEOUT_PROFILES.default,
   });
   fs.writeFileSync(path.join(root, REPORT_JSON_PATH), `${JSON.stringify(payload, null, 2)}\n`);
   fs.writeFileSync(path.join(root, 'tools', 'fixture.js'), 'export const value = 2;\n');
 
   assert.throws(() => buildCanonicalVerificationSummary(root), /source digest is stale/);
+});
+
+test('verification summary contract rejects a successful focused profile as final proof', () => {
+  const root = createProject();
+  const payload = createCloseoutPayload({
+    projectRoot: root,
+    runId: 'summary-run-003',
+    meta: { profiles: ['control-plane'] },
+    results: createFullPassedResults().slice(0, 2),
+    requestedLaneIds: CLOSEOUT_PROFILES['control-plane'],
+  });
+  fs.writeFileSync(path.join(root, REPORT_JSON_PATH), `${JSON.stringify(payload, null, 2)}\n`);
+
+  assert.throws(() => buildCanonicalVerificationSummary(root), /missing required lane/);
 });

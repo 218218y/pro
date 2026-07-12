@@ -5,6 +5,7 @@ const {
   REPORT_JSON_PATH,
   REPORT_MD_PATH,
   assertCompatibleCloseoutState,
+  assertFinalSelectionEligible,
   createCloseoutContext,
   createCloseoutPayload,
   normalizeCliArgs,
@@ -12,7 +13,7 @@ const {
   resolveStateFile,
   runLane,
   selectLanes,
-  writeReports,
+  writeFinalReports,
   writeStatePayload,
   mergeResults,
 } = require('./wp_verify_closeout_support.cjs');
@@ -74,11 +75,14 @@ function main() {
     });
     writeStatePayload(stateFile, resetPayload, { context });
     console.log(`[closeout] reset state file ${stateFile}`);
-    if (!options.shouldWrite && !options.fromState && !options.appendState) return;
+    if (!options.shouldWriteFinal && !options.fromState && !options.appendState) return;
   }
 
   const selectedLanes = options.fromState ? [] : selectLanes(CLOSEOUT_LANES, options);
   const selectedLaneIds = selectedLanes.map(lane => lane.id);
+  if (options.shouldWriteFinal && !options.fromState) {
+    assertFinalSelectionEligible(selectedLaneIds);
+  }
   let statePayload = options.appendState ? readCompatibleState(stateFile, context) : null;
   if (options.appendState && !statePayload) {
     statePayload = createPayload({
@@ -160,8 +164,8 @@ function main() {
     });
   }
 
-  if (options.shouldWrite) {
-    writeReports(payload, { jsonPath: REPORT_JSON_PATH, mdPath: REPORT_MD_PATH }, { context });
+  if (options.shouldWriteFinal) {
+    writeFinalReports(payload, { jsonPath: REPORT_JSON_PATH, mdPath: REPORT_MD_PATH }, { context });
     console.log(`[closeout] wrote ${REPORT_JSON_PATH} and ${REPORT_MD_PATH}`);
   }
   process.exitCode = ['passed', 'passed-with-environment-blockers'].includes(payload.finalStatus) ? 0 : 1;

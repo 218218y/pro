@@ -81,7 +81,7 @@ npm run perf:browser
 
 For normal Codex handoff, prefer targeted tests for the touched area plus the nearest relevant typecheck and `npm run lint` when touched source files are linted. GitHub/CI owns the broader regression matrix after handoff; if it reports a failure, address that as a follow-up.
 
-Closeout reports are tied to a versioned source-tree and lane-catalog identity. Use `npm run verify:closeout:control-plane` for focused control-plane work. Do not copy or regenerate `FINAL_VERIFICATION_SUMMARY.*` from stale state; reset `.artifacts/closeout-state.json` after source or lane-definition changes and execute the intended profile again.
+Closeout reports are tied to a versioned source-tree and lane-catalog identity. Use `npm run verify:closeout:control-plane` for focused control-plane work; a focused pass is not release eligibility and cannot write `FINAL_VERIFICATION_SUMMARY.*`. Only a complete clean default closeout may write that pair through `npm run verify:closeout:release` or `verify:closeout:state:finalize`. Do not copy or regenerate it from stale state; reset `.artifacts/closeout-state.json` after source or lane-definition changes and execute the required lanes again.
 
 Use `npm run gate` for broad shared-surface changes, high-risk architecture changes, explicit user requests, or when targeted checks are not enough evidence. Use `npm run gate:full` only before release-style handoff or when explicitly requested.
 

@@ -9,6 +9,7 @@ const path = require('node:path');
 const {
   CLOSEOUT_LANES,
   CLOSEOUT_PROFILES,
+  assertFinalSelectionEligible,
   buildMarkdownReport,
   REPORT_JSON_PATH,
   REPORT_MD_PATH,
@@ -20,6 +21,7 @@ const {
   normalizeCliArgs,
   selectLanes,
   summarize,
+  validateFinalReportEligibility,
   mergeResults,
   readStatePayload,
   resolveStateFile,
@@ -61,13 +63,60 @@ test('closeout lanes keep stable ids and include critical families', () => {
 });
 
 test('group-backed closeout lanes delegate to canonical test-group package facades', () => {
-  const verification = CLOSEOUT_LANES.find(entry => entry.id === 'verification-control-plane');
-  const toolchain = CLOSEOUT_LANES.find(entry => entry.id === 'toolchain-surfaces');
+  const groupBackedLanes = CLOSEOUT_LANES.filter(lane => lane.testGroupId);
   assert.deepEqual(
-    [verification, toolchain].map(lane => [lane.testGroupId, lane.command, lane.args]),
+    groupBackedLanes.map(lane => [lane.id, lane.testGroupId, lane.command, lane.args]),
     [
-      ['verification-control-plane', 'npm', ['run', 'test:verification-control-plane']],
-      ['toolchain-surfaces', 'npm', ['run', 'test:toolchain-surfaces']],
+      [
+        'verification-control-plane',
+        'verification-control-plane',
+        'npm',
+        ['run', 'test:verification-control-plane'],
+      ],
+      ['toolchain-surfaces', 'toolchain-surfaces', 'npm', ['run', 'test:toolchain-surfaces']],
+      [
+        'order-pdf-overlay-core',
+        'order-pdf-overlay-core',
+        'npm',
+        ['run', 'test:order-pdf-surfaces:overlay-core'],
+      ],
+      ['sketch-manual-hover', 'sketch-manual-hover', 'npm', ['run', 'test:sketch-surfaces:manual-hover']],
+      ['sketch-box-hover', 'sketch-box-hover', 'npm', ['run', 'test:sketch-surfaces:box-hover']],
+      ['sketch-free-boxes', 'sketch-free-boxes', 'npm', ['run', 'test:sketch-surfaces:free-boxes']],
+      [
+        'sketch-render-visuals',
+        'sketch-render-visuals',
+        'npm',
+        ['run', 'test:sketch-surfaces:render-visuals'],
+      ],
+      ['cloud-sync-lifecycle', 'cloud-sync-lifecycle', 'npm', ['run', 'test:cloud-sync-surfaces:lifecycle']],
+      ['cloud-sync-main-row', 'cloud-sync-main-row', 'npm', ['run', 'test:cloud-sync-surfaces:main-row']],
+      [
+        'cloud-sync-panel-install',
+        'cloud-sync-panel-install',
+        'npm',
+        ['run', 'test:cloud-sync-surfaces:panel-install'],
+      ],
+      [
+        'cloud-sync-panel-controller',
+        'cloud-sync-panel-controller',
+        'npm',
+        ['run', 'test:cloud-sync-surfaces:panel-controller'],
+      ],
+      [
+        'cloud-sync-panel-subscriptions',
+        'cloud-sync-panel-subscriptions',
+        'npm',
+        ['run', 'test:cloud-sync-surfaces:panel-subscriptions'],
+      ],
+      [
+        'cloud-sync-panel-snapshots',
+        'cloud-sync-panel-snapshots',
+        'npm',
+        ['run', 'test:cloud-sync-surfaces:panel-snapshots'],
+      ],
+      ['cloud-sync-sync-ops', 'cloud-sync-sync-ops', 'npm', ['run', 'test:cloud-sync-surfaces:sync-ops']],
+      ['cloud-sync-tabs-ui', 'cloud-sync-tabs-ui', 'npm', ['run', 'test:cloud-sync-surfaces:tabs-ui']],
     ]
   );
 });
@@ -144,7 +193,7 @@ test('normalize args collects profiles categories lane ids skips log dir and sta
     '--append-state',
     '--from-state',
     '--reset-state',
-    '--write',
+    '--write-final',
     '--stop-on-fail',
   ]);
   assert.deepEqual(options, {
@@ -154,7 +203,7 @@ test('normalize args collects profiles categories lane ids skips log dir and sta
     skipLaneIds: ['order-pdf-export-text'],
     resumeFrom: 'order-pdf-sketch',
     stopOnFail: true,
-    shouldWrite: true,
+    shouldWriteFinal: true,
     appendState: true,
     fromState: true,
     resetState: true,
@@ -166,12 +215,54 @@ test('normalize args collects profiles categories lane ids skips log dir and sta
 test('closeout CLI rejects unknown flags missing values and unknown selectors', () => {
   assert.throws(() => normalizeCliArgs(['--profile']), /--profile requires a value/);
   assert.throws(() => normalizeCliArgs(['--wat']), /unknown argument: --wat/);
+  assert.throws(() => normalizeCliArgs(['--write']), /unknown argument: --write/);
   assert.throws(() => selectLanes(CLOSEOUT_LANES, { profiles: ['typo'] }), /unknown profile: typo/);
   assert.throws(() => selectLanes(CLOSEOUT_LANES, { categories: ['typo'] }), /unknown category: typo/);
   assert.throws(() => selectLanes(CLOSEOUT_LANES, { laneIds: ['typo'] }), /unknown lane: typo/);
   assert.throws(
     () => selectLanes(CLOSEOUT_LANES, { profiles: ['order-pdf'], resumeFrom: 'build-dist' }),
     /resume lane build-dist is not part of the selected lane set/
+  );
+});
+
+test('final report eligibility requires a complete clean default closeout', () => {
+  const context = createCloseoutContext();
+  const requiredLaneIds = CLOSEOUT_PROFILES.default;
+  const fullPayload = createCloseoutPayload({
+    runId: 'full-release-closeout-001',
+    requestedLaneIds: requiredLaneIds,
+    context,
+    results: CLOSEOUT_LANES.map(lane => ({
+      ...lane,
+      status: 'passed',
+      exitCode: 0,
+      durationMs: 1,
+      stdout: '',
+      stderr: '',
+    })),
+  });
+  assert.deepEqual(validateFinalReportEligibility(fullPayload), []);
+  assert.doesNotThrow(() => assertFinalSelectionEligible(requiredLaneIds));
+
+  const focusedPayload = createCloseoutPayload({
+    runId: 'focused-closeout-001',
+    requestedLaneIds: CLOSEOUT_PROFILES['control-plane'],
+    context,
+    results: fullPayload.results.slice(0, 2),
+  });
+  assert.match(validateFinalReportEligibility(focusedPayload).join('\n'), /missing required lane/);
+  assert.throws(
+    () => assertFinalSelectionEligible(CLOSEOUT_PROFILES['control-plane']),
+    /--write-final requires the complete default closeout selection/
+  );
+
+  const environmentBlockedPayload = structuredClone(fullPayload);
+  environmentBlockedPayload.results[0].status = 'environment-blocked';
+  environmentBlockedPayload.summary = summarize(environmentBlockedPayload.results);
+  environmentBlockedPayload.finalStatus = 'passed-with-environment-blockers';
+  assert.match(
+    validateFinalReportEligibility(environmentBlockedPayload).join('\n'),
+    /final report status must be passed/
   );
 });
 

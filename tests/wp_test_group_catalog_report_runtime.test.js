@@ -11,11 +11,18 @@ import {
 
 test('test-group catalog report exposes execution ownership and package bindings', () => {
   const report = buildTestGroupCatalogReport();
-  assert.equal(report.summary.groups, 11);
-  assert.equal(report.summary.scriptBindings, 11);
-  assert.ok(report.summary.catalogFileReferences > 240);
-  assert.ok(report.summary.directPackageTestReferences < 300);
+  assert.equal(report.summary.groups, 23);
+  assert.equal(report.summary.scriptBindings, 23);
+  assert.ok(report.summary.catalogFileReferences > 320);
+  assert.ok(report.summary.directPackageTestReferences < 220);
   assert.deepEqual(report.failures, { catalogIssues: [], bindingIssues: [] });
+
+  for (const groupName of ['order-pdf-overlay-core', 'cloud-sync-lifecycle', 'sketch-manual-hover']) {
+    assert.ok(
+      report.groups.some(group => group.name === groupName),
+      `${groupName} should stay cataloged`
+    );
+  }
 
   const verificationControlPlane = report.groups.find(group => group.name === 'verification-control-plane');
   assert.equal(verificationControlPlane.runner, 'node-test');

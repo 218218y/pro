@@ -9,6 +9,7 @@ const {
   REPORT_JSON_PATH,
   buildMarkdownReport,
   validateCloseoutPayload,
+  validateFinalReportEligibility,
 } = require('./wp_verify_closeout_support.cjs');
 
 function readOption(argv, name, fallback = null) {
@@ -22,10 +23,13 @@ function readOption(argv, name, fallback = null) {
 export function buildCanonicalVerificationSummary(projectRoot = process.cwd()) {
   const sourcePath = path.resolve(projectRoot, REPORT_JSON_PATH);
   if (!fs.existsSync(sourcePath)) {
-    throw new Error(`[verification-summary] missing ${REPORT_JSON_PATH}; run npm run verify:closeout:write`);
+    throw new Error(
+      `[verification-summary] missing ${REPORT_JSON_PATH}; run npm run verify:closeout:release`
+    );
   }
   const payload = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
   const errors = validateCloseoutPayload(payload, { projectRoot });
+  errors.push(...validateFinalReportEligibility(payload));
   if (errors.length) {
     throw new Error(
       `[verification-summary] stale or invalid ${REPORT_JSON_PATH}\n- ${errors.join('\n- ')}\n` +

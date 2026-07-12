@@ -11,10 +11,11 @@ function read(file) {
 }
 
 test('stage 22 cloud sync lifecycle owner recovery guard is wired into refactor guardrails', () => {
-  const pkg = JSON.parse(read('package.json'));
-  assert.match(
-    pkg.scripts['test:cloud-sync-surfaces:lifecycle'],
-    /cloud_sync_lifecycle_owner_realtime_start_runtime\.test\.ts/
+  assert.ok(
+    readTestGroupFiles('cloud-sync-lifecycle')?.includes(
+      'tests/cloud_sync_lifecycle_owner_realtime_start_runtime.test.ts'
+    ),
+    'the canonical Cloud Sync lifecycle group must own owner-level realtime recovery coverage'
   );
   assert.ok(
     readTestGroupFiles('refactor-stage-guards')?.includes(
