@@ -419,6 +419,7 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/canvas_picking_manual_layout_sketch_hover_module_preview_runtime.test.ts',
       'tests/canvas_picking_manual_layout_sketch_hover_surface_runtime.test.ts',
       'tests/canvas_picking_manual_layout_sketch_hover_tools_runtime.test.ts',
+      'tests/canvas_picking_drawer_cross_family_remove_plan_runtime.test.ts',
     ],
   }),
   'sketch-box-hover': defineTestGroup({

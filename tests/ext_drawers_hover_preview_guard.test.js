@@ -87,5 +87,7 @@ test('[ext-drawers-hover] sketch external drawer direct hit removal now routes t
   assert.match(crossDrawer, /export function findDirectCrossDrawerHitInIntersects\(/);
   assert.match(crossDrawer, /if \(!isRenderableDirectHitObject\(hitObj\)\) continue;/);
   assert.match(crossDrawer, /if \(isPointInsideDirectDrawerHit\(App, hit, point\)\) return hit;/);
-  assert.match(workflow, /removeSketchExternalDrawerById\(cfg, drawerId, boxId \|\| undefined\);/);
+  assert.match(workflow, /resolveCrossDrawerRemovePlan\(/);
+  assert.match(workflow, /commitCrossDrawerRemovePlan\(/);
+  assert.doesNotMatch(workflow, /removeSketchExternalDrawerById\(/);
 });

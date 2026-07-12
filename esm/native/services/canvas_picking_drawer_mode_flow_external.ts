@@ -14,11 +14,10 @@ import {
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import { markSketchInternalDrawersDirty } from '../features/sketch_drawer_sizing.js';
 import {
-  removeSketchExternalDrawerFromConfig,
-  removeSketchInternalDrawerFromConfig,
-  removeStandardExternalDrawerFromConfig,
+  commitCrossDrawerRemovePlan,
   tryRemoveSketchExternalDrawerByDirectHit,
   tryRemoveSketchInternalDrawerByDirectHit,
+  type CrossDrawerRemovePlan,
 } from './canvas_picking_drawer_cross_family.js';
 import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
 import { asInternalGridInfo } from './canvas_picking_drawer_mode_flow_shared.js';
@@ -57,42 +56,60 @@ function tryApplyExtDrawerModeHoverRemoval(args: {
   const { hover } = args;
   if (!hover || hover.op !== 'remove') return false;
   const targetModuleKey = args.activeModuleKey ?? args.foundModuleIndex;
-  if (!extDrawerModeHoverMatchesModule(hover, targetModuleKey)) return false;
+  if (targetModuleKey == null || !extDrawerModeHoverMatchesModule(hover, targetModuleKey)) return false;
+
+  let plan: CrossDrawerRemovePlan | null = null;
+  let source = '';
 
   if (hover.kind === 'drawers') {
     const removeId = readHoverRemoveId(hover);
-    if (!removeId || targetModuleKey == null) return false;
-    args.patchConfigForKey(
-      targetModuleKey,
-      cfg => {
-        removeSketchInternalDrawerFromConfig(cfg, createInternalDrawerPartId(targetModuleKey, removeId));
-        markSketchInternalDrawersDirty(cfg);
-      },
-      createCanvasPickingConfigStructuralPatchMeta('extDrawers.hoverRemoveSketchInternal')
-    );
-    return true;
-  }
-
-  if (hover.kind === 'ext_drawers') {
+    if (!removeId) return false;
+    plan = {
+      kind: 'remove-sketch-internal-drawer',
+      moduleKey: targetModuleKey,
+      drawerId: removeId,
+      partId: createInternalDrawerPartId(targetModuleKey, removeId),
+    };
+    source = 'extDrawers.hoverRemoveSketchInternal';
+  } else if (hover.kind === 'ext_drawers') {
     const removeId = readHoverRemoveId(hover);
     const removePid = readHoverRemovePid(hover);
-    if (!removeId && !removePid) return false;
-    args.patchConfigForKey(
-      targetModuleKey,
-      cfg => {
-        if (removeId) removeSketchExternalDrawerFromConfig(cfg, removeId, undefined, removePid || undefined);
-        else if (removePid) removeStandardExternalDrawerFromConfig(cfg, removePid);
-      },
-      createCanvasPickingConfigStructuralPatchMeta('extDrawers.hoverRemoveSketchExternal')
-    );
+    if (removeId) {
+      plan = {
+        kind: 'remove-sketch-external-drawer',
+        moduleKey: targetModuleKey,
+        target: {
+          kind: 'drawer-id',
+          drawerId: removeId,
+          ...(removePid ? { partId: removePid } : {}),
+        },
+      };
+    } else if (removePid) {
+      plan = {
+        kind: 'remove-standard-external-drawer',
+        moduleKey: targetModuleKey,
+        partId: removePid,
+      };
+    } else {
+      return false;
+    }
+    source = 'extDrawers.hoverRemoveSketchExternal';
+  }
+
+  if (!plan || !source) return false;
+  commitCrossDrawerRemovePlan({
+    plan,
+    patchConfigForKey: args.patchConfigForKey,
+    source,
+  });
+
+  if (hover.kind === 'ext_drawers') {
     restoreShoeDrawerBaseIfNoShoeDrawersRemain(
       args.App,
       'extDrawers.hoverRemoveSketchExternal:autoBaseRestore'
     );
-    return true;
   }
-
-  return false;
+  return true;
 }
 
 function shouldSkipExtDrawerModeDirectRemoval(args: {

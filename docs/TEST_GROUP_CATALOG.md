@@ -1,12 +1,12 @@
 # Test group catalog
 
-Generated: 2026-07-12T16:28:29.766Z
+Generated: 2026-07-12T17:35:43.876Z
 
 ## Summary
 
 - Catalog groups: 29
 - Package script bindings owned by the catalog: 29
-- Catalog test-file references: 347
+- Catalog test-file references: 348
 - Direct package.json test-file references still remaining: 191
 - Catalog definition issues: 0
 - Package binding issues: 0
@@ -38,7 +38,7 @@ Generated: 2026-07-12T16:28:29.766Z
 | `sketch-box-content-protocol`    | `test:sketch-box-content-protocol`             | focused      | tsx-test   | tsx         |    13 | services/canvas-picking, features/sketch-box                         |
 | `sketch-box-hover`               | `test:sketch-surfaces:box-hover`               | focused      | tsx-test   | tsx         |     6 | services/canvas-picking/sketch-box                                   |
 | `sketch-free-boxes`              | `test:sketch-surfaces:free-boxes`              | focused      | tsx-test   | tsx         |     9 | services/canvas-picking/sketch-free-boxes                            |
-| `sketch-manual-hover`            | `test:sketch-surfaces:manual-hover`            | focused      | tsx-test   | tsx         |     9 | services/canvas-picking/manual-layout                                |
+| `sketch-manual-hover`            | `test:sketch-surfaces:manual-hover`            | focused      | tsx-test   | tsx         |    10 | services/canvas-picking/manual-layout                                |
 | `sketch-render-visuals`          | `test:sketch-surfaces:render-visuals`          | focused      | tsx-test   | tsx         |     7 | builder/render-sketch                                                |
 | `structure-tab-family-core`      | `test:structure-tab-family-core`               | focused      | serial-tsx | tsx         |    22 | ui/structure-tab, ui/interior-tab                                    |
 | `tab-surfaces`                   | `test:tab-surfaces`                            | primary      | serial-tsx | tsx         |    51 | ui/structure-tab, ui/design-tab, ui/settings-visual, ui/interior-tab |

@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-12T16:28:29.766Z",
+  "generatedAt": "2026-07-12T17:35:43.876Z",
   "summary": {
     "groups": 29,
     "scriptBindings": 29,
-    "catalogFileReferences": 347,
+    "catalogFileReferences": 348,
     "directPackageTestReferences": 191,
     "catalogIssues": 0,
     "bindingIssues": 0,
@@ -600,7 +600,7 @@
       "runner": "tsx-test",
       "portfolioRole": "focused",
       "serialPolicy": null,
-      "fileCount": 9,
+      "fileCount": 10,
       "files": [
         "tests/sketch_manual_tool_host_runtime.test.ts",
         "tests/canvas_picking_layout_edit_flow_manual_runtime.test.ts",
@@ -610,7 +610,8 @@
         "tests/canvas_picking_manual_layout_sketch_hover_module_context_runtime.test.ts",
         "tests/canvas_picking_manual_layout_sketch_hover_module_preview_runtime.test.ts",
         "tests/canvas_picking_manual_layout_sketch_hover_surface_runtime.test.ts",
-        "tests/canvas_picking_manual_layout_sketch_hover_tools_runtime.test.ts"
+        "tests/canvas_picking_manual_layout_sketch_hover_tools_runtime.test.ts",
+        "tests/canvas_picking_drawer_cross_family_remove_plan_runtime.test.ts"
       ]
     },
     {

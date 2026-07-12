@@ -1209,7 +1209,7 @@
       "entry": "sketch_internal_drawer_cassette.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_drawer_cross_family.ts",
+      "file": "esm/native/services/canvas_picking_drawer_cross_family_remove_plan.ts",
       "entry": "sketch_box_regular_external_drawers.js"
     },
     {
@@ -1483,10 +1483,6 @@
     {
       "file": "esm/native/services/canvas_picking_sketch_direct_hit_workflow_drawer.ts",
       "entry": "sketch_drawer_sizing.js"
-    },
-    {
-      "file": "esm/native/services/canvas_picking_sketch_direct_hit_workflow_drawers_shared.ts",
-      "entry": "sketch_box_regular_external_drawers.js"
     },
     {
       "file": "esm/native/services/canvas_picking_sketch_direct_hit_workflow_records.ts",

@@ -11,6 +11,7 @@ const layoutFlowManual = read('esm/native/services/canvas_picking_layout_edit_fl
 const layoutFlowBrace = read('esm/native/services/canvas_picking_layout_edit_flow_brace.ts');
 const drawerFlowExternal = read('esm/native/services/canvas_picking_drawer_mode_flow_external.ts');
 const drawerCrossFamily = read('esm/native/services/canvas_picking_drawer_cross_family.ts');
+const drawerRemovePlan = read('esm/native/services/canvas_picking_drawer_cross_family_remove_plan.ts');
 const sketchHoverApply = read('esm/native/services/canvas_picking_manual_layout_sketch_click_hover_apply.ts');
 const sketchModeClick = read('esm/native/services/canvas_picking_manual_layout_sketch_click_mode_flow.ts');
 const sketchDirectHitDrawer = read('esm/native/services/canvas_picking_sketch_direct_hit_workflow_drawer.ts');
@@ -33,10 +34,9 @@ test('canvas picking config patches use one immediate-build structural meta owne
     layoutFlowManual,
     layoutFlowBrace,
     drawerFlowExternal,
-    drawerCrossFamily,
+    drawerRemovePlan,
     sketchHoverApply,
     sketchModeClick,
-    sketchDirectHitDrawer,
     sketchDirectHitShelf,
   ];
   for (const source of structuralWriteFiles) {
@@ -57,7 +57,8 @@ test('canvas picking config patches use one immediate-build structural meta owne
   );
   assert.match(layoutFlowBrace, /createCanvasPickingConfigStructuralPatchMeta\('braceShelves\.toggle'\)/);
   assert.match(drawerFlowExternal, /createCanvasPickingConfigStructuralPatchMeta\('extDrawers\.toggle'\)/);
-  assert.match(drawerCrossFamily, /createCanvasPickingConfigStructuralPatchMeta\(args\.source\)/);
+  assert.match(drawerRemovePlan, /createCanvasPickingConfigStructuralPatchMeta\(args\.source\)/);
+  assert.match(drawerCrossFamily, /commitCrossDrawerRemovePlan\(/);
   assert.match(
     sketchHoverApply,
     /createCanvasPickingConfigStructuralPatchMeta\(getSketchModuleBoxContentSource\(contentKind\)\)/
@@ -73,26 +74,11 @@ test('canvas picking config patches use one immediate-build structural meta owne
     /createCanvasPickingConfigStructuralPatchMeta\('sketch\.hoverRemoveShelf'\)/
   );
   assert.match(sketchModeClick, /createCanvasPickingConfigStructuralPatchMeta\('sketch\.place'\)/);
-  assert.match(
-    sketchDirectHitDrawer,
-    /createCanvasPickingConfigStructuralPatchMeta\('sketch\.removeExternalDrawerByCrossHit'\)/
-  );
-  assert.match(
-    sketchDirectHitDrawer,
-    /createCanvasPickingConfigStructuralPatchMeta\('sketch\.removeInternalDrawerByHit\.guardY'\)/
-  );
-  assert.match(
-    sketchDirectHitDrawer,
-    /createCanvasPickingConfigStructuralPatchMeta\('sketch\.removeInternalDrawerByCrossHit'\)/
-  );
-  assert.match(
-    sketchDirectHitDrawer,
-    /createCanvasPickingConfigStructuralPatchMeta\('sketch\.removeStandardExternalDrawerByHit'\)/
-  );
-  assert.match(
-    sketchDirectHitDrawer,
-    /createCanvasPickingConfigStructuralPatchMeta\('sketch\.removeExternalDrawerByHit'\)/
-  );
+  assert.match(sketchDirectHitDrawer, /source: 'sketch\.removeExternalDrawerByCrossHit'/);
+  assert.match(sketchDirectHitDrawer, /source: 'sketch\.removeInternalDrawerByHit\.guardY'/);
+  assert.match(sketchDirectHitDrawer, /source: 'sketch\.removeInternalDrawerByCrossHit'/);
+  assert.match(sketchDirectHitDrawer, /source: 'sketch\.removeStandardExternalDrawerByHit'/);
+  assert.match(sketchDirectHitDrawer, /source: 'sketch\.removeExternalDrawerByHit'/);
   assert.match(
     sketchDirectHitShelf,
     /createCanvasPickingConfigStructuralPatchMeta\('sketch\.toggleBaseShelf'\)/

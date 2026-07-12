@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-12T16:28:29.888Z",
+  "generatedAt": "2026-07-12T17:35:45.483Z",
   "totals": {
-    "tests": 1192,
-    "unitRunnerTests": 1186,
+    "tests": 1193,
+    "unitRunnerTests": 1187,
     "e2eTests": 6,
     "nonTestRuntimeFiles": 30,
     "packageTestReferences": 191,
-    "catalogTestReferences": 347,
-    "totalTestReferences": 538,
+    "catalogTestReferences": 348,
+    "totalTestReferences": 539,
     "catalogGroups": 29,
     "catalogScriptBindings": 29,
     "primaryCatalogGroups": 5
@@ -15,7 +15,7 @@
   "categories": {
     "contract": 389,
     "runtime-unit": 307,
-    "integration": 440,
+    "integration": 441,
     "e2e-smoke": 7,
     "perf-smoke": 9,
     "legacy-migration": 40
@@ -500,6 +500,10 @@
     {
       "file": "tests/canvas_picking_door_style_override_contracts.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_drawer_cross_family_remove_plan_runtime.test.ts",
+      "category": "integration"
     },
     {
       "file": "tests/canvas_picking_drawer_mode_divider_meta_contracts.test.js",

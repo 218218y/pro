@@ -13,10 +13,7 @@ const WORKFLOW = [
   path.resolve(process.cwd(), 'esm/native/services/canvas_picking_sketch_direct_hit_workflow_shared.ts'),
   path.resolve(process.cwd(), 'esm/native/services/canvas_picking_sketch_direct_hit_workflow_contracts.ts'),
   path.resolve(process.cwd(), 'esm/native/services/canvas_picking_sketch_direct_hit_workflow_objects.ts'),
-  path.resolve(
-    process.cwd(),
-    'esm/native/services/canvas_picking_sketch_direct_hit_workflow_drawers_shared.ts'
-  ),
+  path.resolve(process.cwd(), 'esm/native/services/canvas_picking_drawer_cross_family_remove_plan.ts'),
 ];
 
 test('[sketch-ext-drawers-direct-hit] router delegates drawer/shelf direct hits through the canonical workflow owner', () => {
@@ -45,17 +42,14 @@ test('[sketch-ext-drawers-direct-hit] removal is gated by the live hover remove 
 
 test('[sketch-ext-drawers-direct-hit] removal can target nested box external drawers and not only the module-level list', () => {
   const src = WORKFLOW.map(file => fs.readFileSync(file, 'utf8')).join('\n');
-  assert.match(src, /function\s+readSketchBoxId\(/);
+  assert.match(src, /export type SketchExternalDrawerRemoveTarget/);
+  assert.match(src, /target\.kind === 'drawer-id'/);
+  assert.match(src, /const\s+boxes\s*=\s*readArray\(extra, 'boxes'\);/);
   assert.match(
     src,
-    /function\s+removeSketchExternalDrawerById\(\s*cfg: SketchConfigLike,\s*drawerId: string,\s*boxId\?: string\s*\): void \{/
+    /const\s+candidateBoxes\s*=\s*target\.boxId\s*\?\s*boxes\.filter\(box => readString\(box\?\.id\) === target\.boxId\)\s*:\s*boxes;/
   );
-  assert.match(src, /const\s+boxes\s*=\s*ensureArray\(extra, 'boxes'\);/);
-  assert.match(
-    src,
-    /const\s+candidateBoxes\s*=\s*boxId\s*\?\s*boxes\.filter\(box => readRecordIdentity\(box, 'id'\) === boxId\)\s*:\s*boxes;/
-  );
-  assert.match(src, /const\s+list\s*=\s*ensureArray\(box, 'extDrawers'\);/);
-  assert.match(src, /removeSketchExternalDrawerById\(cfg, drawerId, boxId \|\| undefined\);/);
-  assert.doesNotMatch(src, /readRecordString\(box, 'id'\)/);
+  assert.match(src, /removeSketchBoxExternalDrawerByTarget\(box, 'extDrawers', target\)/);
+  assert.match(src, /commitCrossDrawerRemovePlan\(/);
+  assert.doesNotMatch(src, /removeSketchExternalDrawerById\(/);
 });

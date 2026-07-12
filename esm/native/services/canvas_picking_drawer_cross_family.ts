@@ -1,16 +1,20 @@
-import type { AppContainer, ModuleConfigLike, UnknownRecord } from '../../../types';
+import type { AppContainer, UnknownRecord } from '../../../types';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
+import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveDrawerBoxOwnerPartId } from '../features/part_identity/api.js';
 import {
   isSketchInternalDrawerCassettePartId,
   SKETCH_INTERNAL_DRAWER_CASSETTE_PART_SUFFIX,
 } from '../features/sketch_internal_drawer_cassette.js';
-import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
-import type { RaycastHitLike } from './canvas_picking_engine.js';
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY } from '../features/sketch_box_regular_external_drawers.js';
 import { getDrawersArray } from '../runtime/render_access.js';
-import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
+import type { ModuleKey, PatchConfigForKeyFn } from './canvas_picking_drawer_mode_flow_shared.js';
+import type { CrossDrawerFamily, CrossDrawerHit } from './canvas_picking_drawer_cross_family_model.js';
+import {
+  commitCrossDrawerRemovePlan,
+  resolveCrossDrawerRemovePlan,
+  sameCrossDrawerModuleKey,
+} from './canvas_picking_drawer_cross_family_remove_plan.js';
+import type { RaycastHitLike } from './canvas_picking_engine.js';
 import {
   __wp_isViewportRoot,
   __wp_measureObjectLocalBox,
@@ -18,7 +22,21 @@ import {
 } from './canvas_picking_local_helpers_runtime.js';
 import { readSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 
-export type CrossDrawerFamily = 'standard_external' | 'sketch_external' | 'sketch_internal' | 'other';
+export type { CrossDrawerFamily, CrossDrawerHit } from './canvas_picking_drawer_cross_family_model.js';
+export {
+  applyCrossDrawerRemovePlanToConfig,
+  commitCrossDrawerRemovePlan,
+  removeSketchExternalDrawerFromConfig,
+  removeSketchExternalDrawerTargetFromConfig,
+  removeSketchInternalDrawerFromConfig,
+  removeStandardExternalDrawerFromConfig,
+  removeStandardInternalDrawerFromConfig,
+  resolveCrossDrawerRemovePlan,
+} from './canvas_picking_drawer_cross_family_remove_plan.js';
+export type {
+  CrossDrawerRemovePlan,
+  SketchExternalDrawerRemoveTarget,
+} from './canvas_picking_drawer_cross_family_remove_plan.js';
 
 export type CrossDrawerPreviewBox = {
   centerX: number;
@@ -164,17 +182,6 @@ export function resolveInternalCrossDrawerStackPreview(args: {
     drawerGap,
   };
 }
-
-export type CrossDrawerHit = {
-  object: Record<string, unknown>;
-  partId: string;
-  family: CrossDrawerFamily;
-  moduleIndex: string;
-  sketchExtDrawerId: string;
-  sketchBoxId: string;
-};
-
-type BoxExternalDrawerListKey = 'extDrawers' | typeof SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY;
 
 type ObjectNode = Record<string, unknown> & {
   parent?: ObjectNode | null;
@@ -356,90 +363,6 @@ export function findDirectCrossDrawerHitInIntersects(
   return null;
 }
 
-function readSketchExtras(cfg: UnknownRecord): UnknownRecord | null {
-  const current = cfg.sketchExtras;
-  return current && typeof current === 'object' && !Array.isArray(current)
-    ? (current as UnknownRecord)
-    : null;
-}
-
-function readArray(record: UnknownRecord | null, key: string): UnknownRecord[] {
-  const current = record ? record[key] : null;
-  return Array.isArray(current) ? (current as UnknownRecord[]) : [];
-}
-
-function removeListItemById(list: UnknownRecord[], id: string): boolean {
-  if (!id) return false;
-  const idx = list.findIndex(item => readString(item && typeof item === 'object' ? item.id : '') === id);
-  if (idx < 0) return false;
-  list.splice(idx, 1);
-  return true;
-}
-
-function partIdMatchesDrawerId(partId: string, drawerId: string): boolean {
-  return !!drawerId && (partId.endsWith(`_${drawerId}`) || partId.includes(`_${drawerId}_`));
-}
-
-function removeSketchDrawerByPartSuffix(
-  cfg: UnknownRecord,
-  listKey: 'drawers' | 'extDrawers',
-  partId: string
-): boolean {
-  const extra = readSketchExtras(cfg);
-  const list = readArray(extra, listKey);
-  for (let i = list.length - 1; i >= 0; i--) {
-    const item = list[i];
-    const id = readString(item && typeof item === 'object' ? item.id : '');
-    if (partIdMatchesDrawerId(partId, id)) {
-      list.splice(i, 1);
-      return true;
-    }
-  }
-  return false;
-}
-
-function removeSketchBoxExternalDrawerByIdOrPart(
-  box: UnknownRecord,
-  listKey: BoxExternalDrawerListKey,
-  drawerId: string,
-  partId?: string
-): boolean {
-  const list = readArray(box, listKey);
-  if (removeListItemById(list, drawerId)) return true;
-  if (!partId) return false;
-
-  for (let i = list.length - 1; i >= 0; i--) {
-    const id = readString(list[i]?.id);
-    if (partIdMatchesDrawerId(partId, id)) {
-      list.splice(i, 1);
-      return true;
-    }
-  }
-  return false;
-}
-
-function coerceCrossDrawerModuleKey(value: unknown): ModuleKey | 'corner' | null {
-  if (value === 'corner') return 'corner';
-  if (typeof value === 'string' && /^corner:\d+$/.test(value)) return value as `corner:${number}`;
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string' && value.trim() !== '') {
-    const n = Number(value);
-    if (Number.isInteger(n) && Number.isFinite(n)) return n;
-  }
-  return null;
-}
-
-function readSketchInternalDrawerIdFromPartId(partId: string, moduleKey: unknown): string {
-  const normalizedPartId = readSketchInternalDrawerStackPartId(partId);
-  const prefix = `div_int_sketch_${String(moduleKey)}_`;
-  if (normalizedPartId.startsWith(prefix)) return normalizedPartId.slice(prefix.length);
-  const shortPrefix = 'div_int_sketch_';
-  if (!normalizedPartId.startsWith(shortPrefix)) return '';
-  const suffix = normalizedPartId.slice(shortPrefix.length);
-  const splitAt = suffix.indexOf('_');
-  return splitAt >= 0 ? suffix.slice(splitAt + 1) : suffix;
-}
-
 function isMatchingRecentSketchInternalRemoveHover(args: {
   hover: UnknownRecord | null;
   tool: string;
@@ -476,31 +399,13 @@ export function tryRemoveSketchExternalDrawerByDirectHit(args: {
   const hit = findDirectCrossDrawerHitInIntersects(args.App, args.intersects || [], 'sketch_external');
   if (!hit) return false;
 
-  if (
-    hit.moduleIndex &&
-    args.activeModuleKey != null &&
-    !sameModuleKey(hit.moduleIndex, args.activeModuleKey)
-  ) {
-    return false;
-  }
-
-  const targetModuleKey = args.activeModuleKey ?? coerceCrossDrawerModuleKey(hit.moduleIndex);
-  if (targetModuleKey == null) return false;
-  if (!hit.sketchExtDrawerId && !hit.partId) return false;
-
-  args.patchConfigForKey(
-    targetModuleKey,
-    (cfg: ModuleConfigLike) => {
-      removeSketchExternalDrawerFromConfig(
-        cfg,
-        hit.sketchExtDrawerId,
-        hit.sketchBoxId || undefined,
-        hit.partId
-      );
-    },
-    createCanvasPickingConfigStructuralPatchMeta(args.source)
-  );
-  return true;
+  const plan = resolveCrossDrawerRemovePlan({ hit, activeModuleKey: args.activeModuleKey });
+  if (!plan || plan.kind !== 'remove-sketch-external-drawer') return false;
+  return commitCrossDrawerRemovePlan({
+    plan,
+    patchConfigForKey: args.patchConfigForKey,
+    source: args.source,
+  });
 }
 
 export function tryRemoveSketchInternalDrawerByDirectHit(args: {
@@ -513,28 +418,13 @@ export function tryRemoveSketchInternalDrawerByDirectHit(args: {
   const hit = findDirectCrossDrawerHitInIntersects(args.App, args.intersects || [], 'sketch_internal');
   if (!hit) return false;
 
-  if (
-    hit.moduleIndex &&
-    args.activeModuleKey != null &&
-    !sameModuleKey(hit.moduleIndex, args.activeModuleKey)
-  ) {
-    return false;
-  }
-
-  const targetModuleKey = args.activeModuleKey ?? coerceCrossDrawerModuleKey(hit.moduleIndex);
-  if (targetModuleKey == null) return false;
-
-  const drawerId = readSketchInternalDrawerIdFromPartId(hit.partId, targetModuleKey);
-  if (!drawerId) return false;
-
-  args.patchConfigForKey(
-    targetModuleKey,
-    (cfg: ModuleConfigLike) => {
-      removeSketchInternalDrawerFromConfig(cfg, hit.partId);
-    },
-    createCanvasPickingConfigStructuralPatchMeta(args.source)
-  );
-  return true;
+  const plan = resolveCrossDrawerRemovePlan({ hit, activeModuleKey: args.activeModuleKey });
+  if (!plan || plan.kind !== 'remove-sketch-internal-drawer') return false;
+  return commitCrossDrawerRemovePlan({
+    plan,
+    patchConfigForKey: args.patchConfigForKey,
+    source: args.source,
+  });
 }
 
 export function tryRemoveSketchInternalDrawerByMatchingHoverDirectHit(args: {
@@ -551,109 +441,30 @@ export function tryRemoveSketchInternalDrawerByMatchingHoverDirectHit(args: {
   const hit = findDirectCrossDrawerHitInIntersects(args.App, args.intersects || [], 'sketch_internal');
   if (!hit) return false;
 
-  if (
-    hit.moduleIndex &&
-    args.activeModuleKey != null &&
-    !sameModuleKey(hit.moduleIndex, args.activeModuleKey)
-  ) {
-    return false;
-  }
-
-  const targetModuleKey = args.activeModuleKey ?? coerceCrossDrawerModuleKey(hit.moduleIndex);
-  if (targetModuleKey == null) return false;
-
-  const drawerId = readSketchInternalDrawerIdFromPartId(hit.partId, targetModuleKey);
-  if (!drawerId) return false;
+  const plan = resolveCrossDrawerRemovePlan({ hit, activeModuleKey: args.activeModuleKey });
+  if (!plan || plan.kind !== 'remove-sketch-internal-drawer') return false;
   if (
     !isMatchingRecentSketchInternalRemoveHover({
       hover: args.hover,
       tool: args.tool,
-      moduleKey: targetModuleKey,
+      moduleKey: plan.moduleKey,
       isBottom: args.isBottom,
-      drawerId,
+      drawerId: plan.drawerId,
       toModuleKey: args.toModuleKey,
     })
   ) {
     return false;
   }
 
-  args.patchConfigForKey(
-    targetModuleKey,
-    (cfg: ModuleConfigLike) => {
-      removeSketchInternalDrawerFromConfig(cfg, hit.partId);
-    },
-    createCanvasPickingConfigStructuralPatchMeta(args.source)
-  );
-  return true;
-}
-
-export function removeSketchInternalDrawerFromConfig(
-  cfg: ModuleConfigLike | UnknownRecord,
-  partId: string
-): boolean {
-  return removeSketchDrawerByPartSuffix(cfg as UnknownRecord, 'drawers', partId);
-}
-
-export function removeSketchExternalDrawerFromConfig(
-  cfg: ModuleConfigLike | UnknownRecord,
-  drawerId: string,
-  boxId?: string,
-  partId?: string
-): boolean {
-  const extra = readSketchExtras(cfg as UnknownRecord);
-  const topLevel = readArray(extra, 'extDrawers');
-  if (removeListItemById(topLevel, drawerId)) return true;
-  if (partId && removeSketchDrawerByPartSuffix(cfg as UnknownRecord, 'extDrawers', partId)) return true;
-
-  const boxes = readArray(extra, 'boxes');
-  const candidateBoxes = boxId ? boxes.filter(box => readString(box?.id) === boxId) : boxes;
-  for (let i = 0; i < candidateBoxes.length; i++) {
-    const box = candidateBoxes[i];
-    if (!box || typeof box !== 'object') continue;
-    if (removeSketchBoxExternalDrawerByIdOrPart(box, 'extDrawers', drawerId, partId)) return true;
-    if (
-      removeSketchBoxExternalDrawerByIdOrPart(box, SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY, drawerId, partId)
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
-
-export function removeStandardInternalDrawerFromConfig(
-  _cfg: ModuleConfigLike | UnknownRecord,
-  _partId: string,
-  _slotHint?: number | null
-): boolean {
-  return false;
-}
-
-export function removeStandardExternalDrawerFromConfig(
-  cfg: ModuleConfigLike | UnknownRecord,
-  partId: string
-): boolean {
-  const rec = cfg as UnknownRecord;
-  if (/^d\d+_draw_shoe$/.test(partId)) {
-    if (rec.hasShoeDrawer) {
-      rec.hasShoeDrawer = false;
-      return true;
-    }
-    return false;
-  }
-  if (/^d\d+_draw_\d+$/.test(partId)) {
-    if (Number(rec.extDrawersCount) !== 0) {
-      rec.extDrawersCount = 0;
-      return true;
-    }
-    return false;
-  }
-  return false;
+  return commitCrossDrawerRemovePlan({
+    plan,
+    patchConfigForKey: args.patchConfigForKey,
+    source: args.source,
+  });
 }
 
 export function sameModuleKey(a: unknown, b: unknown): boolean {
-  const left = readIdentityValue(a);
-  const right = readIdentityValue(b);
-  return left != null && right != null && formatIdentityValue(left) === formatIdentityValue(right);
+  return sameCrossDrawerModuleKey(a, b);
 }
 
 function readModuleKeyFromUserData(ud: UnknownRecord | null): string {
