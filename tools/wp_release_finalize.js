@@ -3,16 +3,19 @@ import path from 'node:path';
 import { exists, sha256File, escapeRegExp, listReleaseCssRelFiles } from './wp_release_shared.js';
 import { formatGlobalBrowserSecurityHeaders } from './wp_browser_security_headers.mjs';
 
-function buildNoCacheUpdateScript(buildId) {
+const RELEASE_BOOT_FILE = 'wp_release_boot.js';
+const RELEASE_LOADER_FILE = 'wp_release_loader.js';
+const RELEASE_NOT_FOUND_STYLE_FILE = 'wp_release_not_found.css';
+const RELEASE_NOT_FOUND_SCRIPT_FILE = 'wp_release_not_found.js';
+
+function buildNoCacheUpdateAssets(buildId) {
   const metaNoCache = [
     '<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />',
     '<meta http-equiv="Pragma" content="no-cache" />',
     '<meta http-equiv="Expires" content="0" />',
   ].join('\n    ');
 
-  const updateScript = `
-    <script>
-      (function(){
+  const updateScript = `(function(){
         try {
           var BUILD_ID = ${JSON.stringify(buildId)};
           window.__WP_RELEASE_BUILD_ID__ = BUILD_ID;
@@ -28,38 +31,23 @@ function buildNoCacheUpdateScript(buildId) {
               if (document.getElementById(BANNER_ID)) return;
               var d = document.createElement('div');
               d.id = BANNER_ID;
-              d.style.cssText = [
-                'position:fixed',
-                'left:12px',
-                'right:12px',
-                'bottom:12px',
-                'z-index:999999',
-                'background:rgba(0,0,0,.86)',
-                'color:#fff',
-                'padding:12px 14px',
-                'border-radius:14px',
-                'font-family:Heebo,Arial,sans-serif',
-                'display:flex',
-                'gap:12px',
-                'align-items:center',
-                'justify-content:space-between',
-              ].join(';');
+              d.className = 'wp-update-banner';
 
               var msg = document.createElement('div');
-              msg.style.cssText = 'line-height:1.4; font-size:14px;';
+              msg.className = 'wp-update-banner__message';
               msg.textContent = 'זוהתה גרסה חדשה. צריך רענון נקי כדי למשוך את קבצי האתר החדשים.';
 
               var actions = document.createElement('div');
-              actions.style.cssText = 'display:flex; gap:10px; align-items:center; flex-wrap:wrap;';
+              actions.className = 'wp-update-banner__actions';
 
               var btn = document.createElement('button');
               btn.type = 'button';
               btn.textContent = 'טען גרסה חדשה';
-              btn.style.cssText = 'cursor:pointer; border:0; padding:8px 12px; border-radius:10px; font-weight:800;';
-              btn.onclick = function(){ forceReload(nextId || '1', 'manual-banner'); };
+              btn.className = 'wp-update-banner__button';
+              btn.addEventListener('click', function(){ forceReload(nextId || '1', 'manual-banner'); });
 
               var hint = document.createElement('div');
-              hint.style.cssText = 'font-size:12px; opacity:.85;';
+              hint.className = 'wp-update-banner__hint';
               hint.textContent = 'אם זה חוזר: Cloudflare > Caching > Purge Everything';
 
               actions.appendChild(btn);
@@ -185,10 +173,28 @@ function buildNoCacheUpdateScript(buildId) {
           else start();
         } catch(_) {}
       })();
-    </script>
-    `;
+`;
 
-  return { metaNoCache, updateScript };
+  const updateScriptTag = `<script src="./${RELEASE_BOOT_FILE}?v=${encodeURIComponent(buildId)}"></script>`;
+  return { metaNoCache, updateScript, updateScriptTag };
+}
+
+function externalizeReleaseInlineModuleScripts(html, releaseDir) {
+  const scripts = [];
+  const rewritten = html.replace(
+    /<script\s+type=["']module["']\s*>([\s\S]*?)<\/script>/giu,
+    (_match, source) => {
+      scripts.push(String(source).trim());
+      return `<script type="module" src="./${RELEASE_LOADER_FILE}"></script>`;
+    }
+  );
+  if (scripts.length > 1) {
+    throw new Error(`[WP Release] Expected at most one inline module loader, found ${scripts.length}.`);
+  }
+  if (scripts.length === 1) {
+    fs.writeFileSync(path.join(releaseDir, RELEASE_LOADER_FILE), `${scripts[0]}\n`, 'utf8');
+  }
+  return rewritten;
 }
 
 export function resolveFinalReleaseAssets({
@@ -273,9 +279,16 @@ export function rewriteReleaseHtml({
     .replace(/\.\/wp_logo_data\.js(\?[^"']*)?/g, `./wp_logo_data.js?v=${buildId}`)
     .replace(/\.\/wp_runtime_config\.mjs(\?[^"']*)?/g, `./wp_runtime_config.mjs?v=${buildId}`);
 
-  if (!html.includes('__WP_RELEASE_BUILD_ID__')) {
-    const { metaNoCache, updateScript } = buildNoCacheUpdateScript(buildId);
-    html = html.replace(/<\/head>/i, `    ${metaNoCache}\n${updateScript}\n  </head>`);
+  html = externalizeReleaseInlineModuleScripts(html, releaseDir);
+
+  if (!html.includes(RELEASE_BOOT_FILE)) {
+    const { metaNoCache, updateScript, updateScriptTag } = buildNoCacheUpdateAssets(buildId);
+    fs.writeFileSync(path.join(releaseDir, RELEASE_BOOT_FILE), updateScript, 'utf8');
+    const buildMeta = `<meta name="wp-build-id" content="${String(buildId).replace(/["<>]/g, '')}" />`;
+    html = html.replace(
+      /<\/head>/i,
+      `    ${metaNoCache}\n    ${buildMeta}\n    ${updateScriptTag}\n  </head>`
+    );
   }
 
   const preloads = [];
@@ -362,6 +375,10 @@ export function buildReleaseHeaders({ releaseDir, bundleRelFinal, threeVendorMet
     '/version.json',
     '/wp_runtime_config.mjs',
     '/wp_logo_data.js',
+    `/${RELEASE_BOOT_FILE}`,
+    `/${RELEASE_LOADER_FILE}`,
+    `/${RELEASE_NOT_FOUND_STYLE_FILE}`,
+    `/${RELEASE_NOT_FOUND_SCRIPT_FILE}`,
     '/site_manifest.json',
     '/order_template.pdf',
     '/index.template.site-profile.html',
@@ -420,21 +437,16 @@ export function buildReleaseNotFoundHtml() {
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>הקובץ לא נמצא</title>
-    <style>
-      body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b1220;color:#fff;font-family:Heebo,Arial,sans-serif;text-align:center;padding:24px;box-sizing:border-box}
-      .card{max-width:720px;background:rgba(255,255,255,.08);border-radius:18px;padding:24px;line-height:1.7}
-      code{direction:ltr;unicode-bidi:bidi-override;background:rgba(0,0,0,.35);border-radius:10px;padding:4px 8px;display:inline-block}
-      button{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:800;margin-top:14px}
-    </style>
+    <link rel="stylesheet" href="./${RELEASE_NOT_FOUND_STYLE_FILE}" />
   </head>
   <body>
     <main class="card">
       <h1>הקובץ לא נמצא</h1>
       <p>כנראה נשאר בדפדפן קישור לקובץ ישן מפריסה קודמת.</p>
       <p><code id="path"></code></p>
-      <button type="button" onclick="location.replace('/?v=' + Date.now() + '&wp_reload=404')">טען את האתר מחדש</button>
+      <button id="reload" type="button">טען את האתר מחדש</button>
     </main>
-    <script>try{document.getElementById('path').textContent=location.pathname}catch(_){}</script>
+    <script src="./${RELEASE_NOT_FOUND_SCRIPT_FILE}"></script>
   </body>
 </html>
 `;
@@ -442,7 +454,11 @@ export function buildReleaseNotFoundHtml() {
 
 export function writeReleaseNotFoundPage({ releaseDir }) {
   const html = buildReleaseNotFoundHtml();
+  const style = `body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b1220;color:#fff;font-family:Heebo,Arial,sans-serif;text-align:center;padding:24px;box-sizing:border-box}.card{max-width:720px;background:rgba(255,255,255,.08);border-radius:18px;padding:24px;line-height:1.7}code{direction:ltr;unicode-bidi:bidi-override;background:rgba(0,0,0,.35);border-radius:10px;padding:4px 8px;display:inline-block}button{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:800;margin-top:14px}`;
+  const script = `try{document.getElementById('path').textContent=location.pathname;document.getElementById('reload').addEventListener('click',function(){location.replace('/?v='+Date.now()+'&wp_reload=404')})}catch(_){}`;
   fs.writeFileSync(path.join(releaseDir, '404.html'), html, 'utf8');
+  fs.writeFileSync(path.join(releaseDir, RELEASE_NOT_FOUND_STYLE_FILE), style, 'utf8');
+  fs.writeFileSync(path.join(releaseDir, RELEASE_NOT_FOUND_SCRIPT_FILE), script, 'utf8');
   return html;
 }
 

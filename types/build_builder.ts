@@ -6,6 +6,7 @@ import type { Object3DLike } from './three_like';
 import type { ThreeLike } from './three';
 import type { AppContainer } from './app';
 import type { HingeDir } from './domain';
+import type { TimeoutHandleLike } from './state';
 import type { ModulesStructureItemLike } from './modules_configuration';
 import type {
   GroovesMap,
@@ -858,6 +859,7 @@ export interface BuilderSchedulerStateInternalLike extends UnknownRecord {
   lastTs: number;
   waitingForBuilder: boolean;
   waitingForBuilderVersion?: number;
+  builderWaitHandle?: TimeoutHandleLike;
   buildWardrobeDebounced: BuilderDebouncedBuildFn | null;
   debugStats?: BuilderDebugStatsLike;
 }

@@ -37,10 +37,12 @@ Usage:
   node tools/wp_prettier_changed.mjs --check --changed
   node tools/wp_prettier_changed.mjs --write --staged
   node tools/wp_prettier_changed.mjs --check --staged
+  node tools/wp_prettier_changed.mjs --check --base <git-ref>
 
 Modes:
   --changed   Use staged, unstaged, and untracked Git files (default)
   --staged    Use only staged files; --write also re-adds formatted files
+  --base      Use files changed from the supplied Git base through HEAD
   --write     Format files
   --check     Check formatting without writing
 `);
@@ -50,9 +52,11 @@ function parseArgs(argv) {
   const options = {
     mode: 'write',
     scope: 'changed',
+    base: null,
   };
 
-  for (const arg of argv) {
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
     if (arg === '--help' || arg === '-h') {
       options.help = true;
     } else if (arg === '--write') {
@@ -63,6 +67,11 @@ function parseArgs(argv) {
       options.scope = 'changed';
     } else if (arg === '--staged') {
       options.scope = 'staged';
+    } else if (arg === '--base') {
+      const base = argv[++index];
+      if (!base || base.startsWith('--')) throw new Error('--base requires a Git ref');
+      options.scope = 'base';
+      options.base = base;
     } else {
       throw new Error(`Unknown argument: ${arg}`);
     }
@@ -125,8 +134,10 @@ function listUntrackedFiles() {
   return gitList(['ls-files', '--others', '--exclude-standard', '-z']);
 }
 
-function listCandidateFiles(scope) {
+function listCandidateFiles(scope, base) {
   if (scope === 'staged') return listStagedFiles();
+  if (scope === 'base')
+    return gitList(['diff', '--name-only', '-z', '--diff-filter=ACMR', `${base}...HEAD`, '--']);
   return uniq([...listStagedFiles(), ...listUnstagedFiles(), ...listUntrackedFiles()]);
 }
 
@@ -198,7 +209,7 @@ function main() {
   assertGitRepo();
   assertPrettierInstalled();
 
-  const files = existingFiles(listCandidateFiles(options.scope));
+  const files = existingFiles(listCandidateFiles(options.scope, options.base));
   if (files.length === 0) {
     console.log(`[WP Prettier] No ${options.scope} files to format.`);
     return;

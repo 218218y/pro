@@ -58,7 +58,10 @@ test('canvas picking config patches use one immediate-build structural meta owne
   assert.match(layoutFlowBrace, /createCanvasPickingConfigStructuralPatchMeta\('braceShelves\.toggle'\)/);
   assert.match(drawerFlowExternal, /createCanvasPickingConfigStructuralPatchMeta\('extDrawers\.toggle'\)/);
   assert.match(drawerRemovePlan, /createCanvasPickingConfigStructuralPatchMeta\(args\.source\)/);
-  assert.match(drawerCrossFamily, /commitCrossDrawerRemovePlan\(/);
+  assert.match(
+    drawerCrossFamily,
+    /commitCrossDrawerRemovePlan,[\s\S]*from '\.\/canvas_picking_drawer_cross_family_remove_plan\.js'/
+  );
   assert.match(
     sketchHoverApply,
     /createCanvasPickingConfigStructuralPatchMeta\(getSketchModuleBoxContentSource\(contentKind\)\)/

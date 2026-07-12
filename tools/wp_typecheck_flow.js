@@ -14,9 +14,11 @@ import {
   createSkippedMissingConfigMessage,
   createUnknownModeMessage,
   createUnknownOptionsMessage,
+  ensureTypecheckBuildInfoDirectory,
   isKnownTypecheckMode,
   resolveTypecheckConfigPath,
   resolveTypecheckExtraArgs,
+  resolveTypecheckIncrementalArgs,
   resolveTypecheckModes,
 } from './wp_typecheck_state.js';
 
@@ -62,6 +64,7 @@ export function runTypecheckFlow({
   if (tscRef.warning) warn(`[WP Typecheck] ${tscRef.warning}`);
 
   const modes = resolveTypecheckModes({ runAll, mode });
+  ensureTypecheckBuildInfoDirectory(root);
   for (const currentMode of modes) {
     if (!isKnownTypecheckMode(currentMode)) {
       return {
@@ -72,7 +75,10 @@ export function runTypecheckFlow({
       };
     }
     const configPath = resolveTypecheckConfigPath(root, currentMode);
-    const extraArgs = resolveTypecheckExtraArgs(currentMode);
+    const extraArgs = [
+      ...resolveTypecheckIncrementalArgs(root, currentMode, env),
+      ...resolveTypecheckExtraArgs(currentMode),
+    ];
     if (!configExists(configPath, existsImpl)) {
       if (runAll) {
         warn(createSkippedMissingConfigMessage(MODE_TO_CONFIG[currentMode]));

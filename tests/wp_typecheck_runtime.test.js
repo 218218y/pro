@@ -7,15 +7,20 @@ import path from 'node:path';
 import {
   createMissingConfigMessage,
   createSkippedMissingConfigMessage,
+  DEFAULT_ALL_MODES,
   MODE_TO_CONFIG,
   parseTypecheckArgs,
+  resolveTypecheckBuildInfoPath,
   resolveTypecheckExtraArgs,
+  resolveTypecheckIncrementalArgs,
   resolveTypecheckConfigPath,
   resolveTypecheckModes,
 } from '../tools/wp_typecheck_state.js';
 import { createTypecheckHelpText, resolveTsc } from '../tools/wp_typecheck_shared.js';
 import { resolveTypeScriptTool } from '../tools/wp_typescript_resolver.js';
 import { runTypecheckFlow } from '../tools/wp_typecheck_flow.js';
+import { parseTypecheckParallelArgs, resolveTypecheckWorkerCount } from '../tools/wp_typecheck_parallel.mjs';
+import { resolveTypecheckModesForFiles } from '../tools/wp_typecheck_changed.mjs';
 
 function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-typecheck-'));
@@ -40,6 +45,38 @@ test('typecheck args parsing preserves help/mode/all semantics', () => {
   assert.equal(resolveTypecheckModes({ runAll: false, mode: 'services' })[0], 'services');
   assert.ok(resolveTypecheckModes({ runAll: true, mode: null }).includes('strict-runtime'));
   assert.match(createTypecheckHelpText(), /wp_typecheck\.js --mode runtime/);
+});
+
+test('typecheck parallel and changed-file routing stay bounded and layer-aware', () => {
+  assert.deepEqual(parseTypecheckParallelArgs(['--workers', '3', '--modes', 'services,strict-services']), {
+    help: false,
+    workers: '3',
+    modes: ['services', 'strict-services'],
+  });
+  assert.equal(resolveTypecheckWorkerCount({ requested: '20', modeCount: 3, cpuCount: 8 }), 3);
+  assert.deepEqual(resolveTypecheckModesForFiles(['esm/native/services/example.ts']), [
+    'services',
+    'strict-services',
+  ]);
+  assert.deepEqual(resolveTypecheckModesForFiles(['esm/native/adapters/browser/example.ts']), [
+    'adapters-browser',
+    'strict-adapters-browser',
+  ]);
+  assert.deepEqual(resolveTypecheckModesForFiles(['types/app.ts']), [...DEFAULT_ALL_MODES]);
+});
+
+test('typecheck incremental cache paths are isolated per config and can be disabled explicitly', () => {
+  const root = tempDir();
+  assert.deepEqual(resolveTypecheckIncrementalArgs(root, 'services', {}), [
+    '--incremental',
+    '--tsBuildInfoFile',
+    resolveTypecheckBuildInfoPath(root, 'services'),
+  ]);
+  assert.deepEqual(resolveTypecheckIncrementalArgs(root, 'services', { WP_TYPECHECK_INCREMENTAL: '0' }), []);
+  assert.notEqual(
+    resolveTypecheckBuildInfoPath(root, 'services'),
+    resolveTypecheckBuildInfoPath(root, 'strict-services')
+  );
 });
 
 test('typecheck refuses WP_TSC_BIN and system tsc unless manual fallback is explicit', () => {
@@ -338,7 +375,10 @@ test('package typecheck scripts route through wp_typecheck instead of direct tsc
   assert.ok(typecheckScripts.length > 0);
   for (const [name, script] of typecheckScripts) {
     if (name === 'typecheck:wp') continue;
-    assert.match(script, /node tools\/wp_typecheck\.js|npm run typecheck:all/);
+    assert.match(
+      script,
+      /node tools\/(?:wp_typecheck\.js|wp_typecheck_parallel\.mjs|wp_typecheck_changed\.mjs)|npm run typecheck:all/
+    );
     assert.doesNotMatch(script, /\btsc\b/);
   }
 });

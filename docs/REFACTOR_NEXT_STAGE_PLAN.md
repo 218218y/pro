@@ -142,14 +142,17 @@ The codebase has already completed many ownership splits. At this point, continu
 
 ## Post-closeout maintenance lanes
 
-The 2026-05-11 closeout keeps Stage 80 as the end of the numbered refactor track and treats the remaining work as maintenance lanes instead of new wrapper-heavy stages. The active lanes are:
+The 2026-05-11 closeout keeps Stage 80 as the end of the numbered refactor track. New work is tracked by capability, risk, and exit criteria instead of stage numbers:
 
-1. keep `check:legacy-fallbacks` broad enough to see camelCase/PascalCase compatibility/default vocabulary, then classify every occurrence instead of hiding it;
-2. keep UI typecheck coverage explicit for both `.ts` and `.tsx` surfaces while the lean lane remains TS-only by design;
-3. keep `types/*.ts` and `types/*.js` paired so runtime stub files cannot silently drift from the typed source surface;
-4. keep root documentation limited to active pointers and move useful policy into living docs, not historical stage logs.
+| Capability                     | Risk owned                                                                  | Exit criteria                                                                                                                   | State                                                                                   |
+| ------------------------------ | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `drawer-cross-family-identity` | wrong-target deletion, cross-scope preview/removal, false-success commits   | exact typed identity, scoped resolver, actual-change commit, focused behavior tests, private-owner boundary                     | completed                                                                               |
+| `browser-security-headers`     | unmeasured CSP violations and unsafe embedding/resource defaults            | sampled/throttled telemetry, source/release header parity, safe enforced directives, no packager-owned inline dependencies      | active until deployment baselines show the full report-only policy is enforcement-ready |
+| `developer-feedback-gates`     | serial full checks and slow local feedback                                  | parallel full typecheck, isolated build-info caches, CI shards, changed-files typecheck/format, unchanged release gate coverage | completed; keep duration data under observation                                         |
+| `legacy-fallback-visibility`   | hidden compatibility/default vocabulary                                     | `check:legacy-fallbacks` classifies occurrences instead of hiding them                                                          | maintenance                                                                             |
+| `typed-surface-parity`         | drift between UI `.ts`/`.tsx` and paired `types/*.ts`/`types/*.js` surfaces | explicit coverage and parity guards remain green                                                                                | maintenance                                                                             |
 
-These lanes do not justify Stage 81 by themselves. They are control-plane hardening work that should reduce future confusion without adding runtime indirection.
+Capability guards must use descriptive filenames such as `runtime_pipeline_ownership_guard.test.js` or `browser_security_headers_guard.test.js`. Do not create `refactor_stage81_*`, `refactor_stage82_*`, or later numbered guard names.
 
 ## Professional split gate
 

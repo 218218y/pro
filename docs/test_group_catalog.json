@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-12T17:35:43.876Z",
+  "generatedAt": "2026-07-12T20:57:14.408Z",
   "summary": {
     "groups": 29,
     "scriptBindings": 29,
@@ -516,8 +516,8 @@
         "tests/refactor_stage78_runtime_access_surfaces_ownership_guard.test.js",
         "tests/refactor_stage79_order_pdf_export_commands_ownership_guard.test.js",
         "tests/refactor_stage80_measurement_perf_closeout_guard.test.js",
-        "tests/refactor_stage81_runtime_pipeline_ownership_guard.test.js",
-        "tests/refactor_stage82_browser_security_headers_guard.test.js"
+        "tests/runtime_pipeline_ownership_guard.test.js",
+        "tests/browser_security_headers_guard.test.js"
       ]
     },
     {

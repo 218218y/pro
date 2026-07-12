@@ -7,6 +7,7 @@ import {
 
 import type { AppContainer } from '../types';
 
+import { installBrowserCspTelemetry } from './native/adapters/browser/csp_telemetry.js';
 import { getBootReactUiCallback } from './entry_pro_main_shared.js';
 
 type BootReporter = (err: unknown, meta: { op: string; phase?: string }) => void;
@@ -32,6 +33,7 @@ async function mountReactUi(app: AppContainer, _w: Window, doc: Document): Promi
 
 export async function runBrowserBootSetup(opts: BrowserBootSetupOpts): Promise<void> {
   const { app: bootApp, window: bootWindow, document: bootDocument, report } = opts;
+  installBrowserCspTelemetry(bootWindow, bootDocument);
   installObservabilityForBuild(bootApp, bootWindow);
   const perfSpanId = startPerfSpan(bootApp, 'boot.browser.setup');
   try {

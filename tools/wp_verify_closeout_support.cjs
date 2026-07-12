@@ -504,11 +504,33 @@ function writeLaneLogs(logDir, laneResult) {
   }
 }
 
+function resolveSpawnInvocation(command, args, options = {}) {
+  const env = options.env || process.env;
+  const platform = options.platform || process.platform;
+  const existsImpl = options.existsImpl || fs.existsSync;
+  const normalizedArgs = Array.isArray(args) ? args : [];
+  if (command !== 'npm') return { command, args: normalizedArgs };
+
+  const candidates = [
+    env.npm_execpath,
+    path.join(path.dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+  ].filter(Boolean);
+  const npmCli = candidates.find(
+    candidate => /npm-cli\.(?:c?js)$/iu.test(candidate) && existsImpl(candidate)
+  );
+  if (npmCli) return { command: process.execPath, args: [npmCli, ...normalizedArgs] };
+  if (platform === 'win32') {
+    throw new Error('[closeout] npm CLI path is unavailable; refusing an unsafe shell fallback on Windows');
+  }
+  return { command, args: normalizedArgs };
+}
+
 function spawnCommand(command, args) {
   const startedAt = Date.now();
-  const result = spawnSync(command, args || [], {
+  const invocation = resolveSpawnInvocation(command, args);
+  const result = spawnSync(invocation.command, invocation.args, {
     encoding: 'utf8',
-    shell: process.platform === 'win32',
+    shell: false,
     env: { ...process.env, WP_RELEASE_VERIFY: '1' },
     maxBuffer: 1024 * 1024 * 16,
   });
@@ -847,6 +869,7 @@ module.exports = {
   createCloseoutContext,
   createCloseoutPayload,
   normalizeCliArgs,
+  resolveSpawnInvocation,
   runLane,
   selectLanes,
   readStatePayload,

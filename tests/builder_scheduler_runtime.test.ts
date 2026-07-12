@@ -1495,6 +1495,61 @@ test('builder scheduler runtime: stale builder-wait wakeups are ignored after an
   assert.equal(budget.staleWakeupCount, 1);
 });
 
+test('builder scheduler runtime: immediate build cancels the pending builder-wait timer', () => {
+  const buildCalls: any[] = [];
+  let signature = 'sig:wait:cancel:one';
+  const timers = createTimerHarness();
+  const App: any = {
+    services: { builder: {} },
+    actions: {
+      builder: {
+        getBuildState() {
+          return {
+            ui: { panel: 'demo' },
+            config: {},
+            runtime: {},
+            mode: {},
+            meta: {},
+            build: { signature },
+          };
+        },
+      },
+    },
+    deps: {
+      browser: {
+        setTimeout: (fn: () => void, _ms?: number) => timers.setTimeout(fn),
+        clearTimeout: (id: number | undefined) => timers.clearTimeout(id),
+      },
+    },
+    boot: { isReady: () => true },
+  };
+
+  installBuilderScheduler(App, {
+    getBuildState() {
+      return { ui: { panel: 'demo' }, build: { signature } } as any;
+    },
+  });
+
+  requestBuild(App, null, { reason: 'builder:wait:cancel', immediate: true });
+  assert.equal(timers.getPendingCount(), 1);
+
+  App.services.builder.buildWardrobe = (state: unknown) => {
+    buildCalls.push(state);
+    return state;
+  };
+  signature = 'sig:wait:cancel:two';
+  requestBuild(App, null, { reason: 'builder:wait:cancel', immediate: true });
+
+  assert.equal(buildCalls.length, 1);
+  assert.equal(timers.getClearTimeoutCount(), 1);
+  assert.equal(timers.getPendingCount(), 0);
+  timers.flushAll();
+
+  const stats = getBuildDebugStats(App);
+  assert.equal(stats.staleBuilderWaitWakeupCount, 0);
+  assert.equal(getBuildDebugBudget(App).staleWakeupCount, 0);
+});
+
 test('builder scheduler runtime: request planning failures do not retry the same missing state seam when no pending plan exists', () => {
   const reports: any[] = [];
   const buildCalls: any[] = [];

@@ -23,6 +23,7 @@ import {
   readPlanState,
   withTransientBuildFlags,
   makeDebouncedBuild,
+  cancelBuilderWait,
   scheduleBuilderWait,
   createPendingPlanFromState,
   type SchedulerPendingPlan,
@@ -62,11 +63,6 @@ function ensurePendingScheduleVersion(state: BuilderSchedulerStateInternalLike):
   const next = nextScheduleVersion(state);
   state.pendingScheduleVersion = next;
   return next;
-}
-
-function invalidateBuilderWait(state: BuilderSchedulerStateInternalLike): void {
-  state.waitingForBuilder = false;
-  state.waitingForBuilderVersion = 0;
 }
 
 function clearPendingBuildState(state: BuilderSchedulerStateInternalLike): void {
@@ -213,7 +209,7 @@ function executePendingBuild(
     executionPlan
   );
   clearPendingBuildState(state);
-  invalidateBuilderWait(state);
+  cancelBuilderWait(App);
   const shouldMeasureBuildExecution = isBuildDebugStatsEnabled();
   const startedAt = shouldMeasureBuildExecution ? nowForBuildStats() : 0;
   try {
@@ -456,7 +452,7 @@ export function getBuildDebugBudgetRuntime(App: AppContainer): BuildDebugBudgetS
 export function flushSchedulerRuntime(App: AppContainer): unknown {
   const A = assertApp(App, 'native/builder/scheduler.flush');
   const s = ensureSchedulerState(A);
-  invalidateBuilderWait(s);
+  cancelBuilderWait(A);
   clearScheduledDebouncedRun(s);
   return runPendingBuildRuntime(A, 'flush');
 }

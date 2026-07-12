@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { spawnSync } from 'node:child_process';
 
 function read(file) {
   return fs.readFileSync(file, 'utf8');
@@ -20,12 +21,14 @@ test('targeted prettier workflow is available for local commits', () => {
   assert.equal(scripts['format:check'], 'node node_modules/prettier/bin/prettier.cjs . --check');
   assert.equal(scripts['format:changed'], 'node tools/wp_prettier_changed.mjs --write --changed');
   assert.equal(scripts['format:changed:check'], 'node tools/wp_prettier_changed.mjs --check --changed');
+  assert.equal(scripts['format:base:check'], 'node tools/wp_prettier_changed.mjs --check --base');
   assert.equal(scripts['format:staged'], 'node tools/wp_prettier_changed.mjs --write --staged');
   assert.equal(scripts['format:staged:check'], 'node tools/wp_prettier_changed.mjs --check --staged');
   assert.equal(scripts['hooks:install'], 'node tools/wp_hooks_install.js');
   assert.equal(scripts['hooks:install:full'], 'node tools/wp_hooks_install.js --with-pre-push');
 
   assert.match(prettierTool, /\['diff',/);
+  assert.match(prettierTool, /`\$\{base\}\.\.\.HEAD`/);
   assert.match(prettierTool, /\['ls-files',/);
   assert.match(prettierTool, /--ignore-unknown/);
   assert.match(prettierTool, /Refusing to auto-stage partially staged files/);
@@ -35,4 +38,13 @@ test('targeted prettier workflow is available for local commits', () => {
   assert.match(hookInstaller, /--with-pre-push/);
   assert.match(hookInstaller, /fs\.rmSync\(prePushPath/);
   assert.match(hookInstaller, /tools\/wp_verify\.js < \/dev\/null/);
+});
+
+test('targeted prettier base scope accepts and consumes an explicit Git ref', () => {
+  const result = spawnSync(process.execPath, ['tools/wp_prettier_changed.mjs', '--check', '--base', 'HEAD'], {
+    encoding: 'utf8',
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /No base files to format/);
 });

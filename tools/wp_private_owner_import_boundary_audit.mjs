@@ -101,6 +101,17 @@ export const PRIVATE_OWNER_IMPORT_FAMILIES = Object.freeze([
     ],
   },
   {
+    id: 'services:drawer-cross-family',
+    publicFacade: 'esm/native/services/canvas_picking_drawer_cross_family.ts',
+    privateOwners: [
+      'esm/native/services/canvas_picking_drawer_cross_family_model.ts',
+      'esm/native/services/canvas_picking_drawer_cross_family_hit_identity.ts',
+      'esm/native/services/canvas_picking_drawer_cross_family_direct_hit.ts',
+      'esm/native/services/canvas_picking_drawer_cross_family_preview.ts',
+      'esm/native/services/canvas_picking_drawer_cross_family_remove_plan.ts',
+    ],
+  },
+  {
     id: 'ui:order-pdf-export-commands',
     publicFacade: 'esm/native/ui/react/pdf/order_pdf_overlay_export_commands.ts',
     privateOwners: [

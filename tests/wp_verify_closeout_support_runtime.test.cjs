@@ -24,10 +24,33 @@ const {
   validateFinalReportEligibility,
   mergeResults,
   readStatePayload,
+  resolveSpawnInvocation,
   resolveStateFile,
   writeStatePayload,
   runLane,
 } = require('../tools/wp_verify_closeout_support.cjs');
+
+test('closeout resolves npm through its JS CLI without a shell command fallback', () => {
+  const npmCli = path.join(os.tmpdir(), 'npm-cli.js');
+  const resolved = resolveSpawnInvocation('npm', ['run', 'test'], {
+    platform: 'win32',
+    env: { npm_execpath: npmCli },
+    existsImpl: candidate => candidate === npmCli,
+  });
+  assert.deepEqual(resolved, {
+    command: process.execPath,
+    args: [npmCli, 'run', 'test'],
+  });
+  assert.throws(
+    () =>
+      resolveSpawnInvocation('npm', ['run', 'test'], {
+        platform: 'win32',
+        env: {},
+        existsImpl: () => false,
+      }),
+    /refusing an unsafe shell fallback/u
+  );
+});
 
 test('closeout lanes keep stable ids and include critical families', () => {
   const ids = CLOSEOUT_LANES.map(lane => lane.id);

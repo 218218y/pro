@@ -98,6 +98,17 @@ export function makeDebouncedBuild(
   return createDebouncedRunner(App, () => runPendingBuild('debounced'), 60, opts);
 }
 
+export function cancelBuilderWait(App: AppContainer): void {
+  const state = ensureSchedulerState(App);
+  const handle = state.builderWaitHandle;
+  state.builderWaitHandle = undefined;
+  state.waitingForBuilder = false;
+  state.waitingForBuilderVersion = 0;
+  if (handle !== undefined) {
+    clearTimeoutHandle(getBrowserTimers(App).clearTimeout, handle);
+  }
+}
+
 export function scheduleBuilderWait(
   App: AppContainer,
   runPendingBuild: (reason: string) => void,
@@ -113,8 +124,10 @@ export function scheduleBuilderWait(
   const scheduledVersion = typeof opts?.version === 'number' ? Math.max(0, opts.version) : 0;
   if (scheduledVersion > 0) s.waitingForBuilderVersion = scheduledVersion;
 
+  let waitHandle: TimeoutHandleLike | undefined;
   const run = () => {
     const current = ensureSchedulerState(App);
+    if (current.builderWaitHandle === waitHandle) current.builderWaitHandle = undefined;
     const activeVersion =
       typeof current.waitingForBuilderVersion === 'number' ? current.waitingForBuilderVersion : 0;
     if (!current.waitingForBuilder || (scheduledVersion > 0 && activeVersion !== scheduledVersion)) {
@@ -131,5 +144,6 @@ export function scheduleBuilderWait(
   };
 
   const timers = getBrowserTimers(App);
-  timers.setTimeout(run, 0);
+  waitHandle = timers.setTimeout(run, 0);
+  s.builderWaitHandle = waitHandle;
 }

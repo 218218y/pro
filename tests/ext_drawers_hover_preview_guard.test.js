@@ -13,6 +13,10 @@ const SRC = path.resolve(
   'esm/native/services/canvas_picking_hover_preview_modes_ext_drawers.ts'
 );
 const CROSS_DRAWER = path.resolve(process.cwd(), 'esm/native/services/canvas_picking_drawer_cross_family.ts');
+const CROSS_DRAWER_DIRECT_HIT = path.resolve(
+  process.cwd(),
+  'esm/native/services/canvas_picking_drawer_cross_family_direct_hit.ts'
+);
 const TOKENS = path.resolve(process.cwd(), 'esm/shared/wardrobe_dimension_tokens_shared.ts');
 
 test('[ext-drawers-hover] preview payload passes finite y to sketch placement preview', () => {
@@ -81,12 +85,14 @@ test('[ext-drawers-hover] sketch external drawer direct hit removal now routes t
     ),
   ].join('\n');
   const crossDrawer = fs.readFileSync(CROSS_DRAWER, 'utf8');
+  const crossDrawerDirectHit = fs.readFileSync(CROSS_DRAWER_DIRECT_HIT, 'utf8');
   assert.match(router, /tryApplySketchDirectHitDrawerActions\(args\)/);
   assert.match(workflow, /if \(__mt\.startsWith\('sketch_ext_drawers:'\)\) \{/);
   assert.match(workflow, /findDirectCrossDrawerHitInIntersects\(App, intersects, 'sketch_external'\)/);
-  assert.match(crossDrawer, /export function findDirectCrossDrawerHitInIntersects\(/);
-  assert.match(crossDrawer, /if \(!isRenderableDirectHitObject\(hitObj\)\) continue;/);
-  assert.match(crossDrawer, /if \(isPointInsideDirectDrawerHit\(App, hit, point\)\) return hit;/);
+  assert.match(crossDrawer, /findDirectCrossDrawerHitInIntersects,/);
+  assert.match(crossDrawerDirectHit, /export function findDirectCrossDrawerHitInIntersects\(/);
+  assert.match(crossDrawerDirectHit, /if \(!isRenderableDirectHitObject\(hitObject\)\) continue;/);
+  assert.match(crossDrawerDirectHit, /if \(isPointInsideDirectDrawerHit\(App, hit, point\)\) return hit;/);
   assert.match(workflow, /resolveCrossDrawerRemovePlan\(/);
   assert.match(workflow, /commitCrossDrawerRemovePlan\(/);
   assert.doesNotMatch(workflow, /removeSketchExternalDrawerById\(/);

@@ -10,7 +10,7 @@ function lineCount(source) {
   return source.split(/\r\n|\r|\n/).length;
 }
 
-test('stage 81 planar reflector render-pass ownership is explicit and failure-safe', () => {
+test('runtime pipeline ownership keeps planar reflector render-pass failure-safe', () => {
   const runtime = read('esm/native/runtime/planar_reflector_runtime.ts');
   const contracts = read('esm/native/runtime/planar_reflector_contracts.ts');
   const renderPass = read('esm/native/runtime/planar_reflector_render_pass.ts');
@@ -36,7 +36,7 @@ test('stage 81 planar reflector render-pass ownership is explicit and failure-sa
   assert.match(contracts, /'render-exception'/);
 });
 
-test('stage 81 free-box preview and commit share one typed command protocol', () => {
+test('runtime pipeline ownership keeps free-box preview and commit on one typed command protocol', () => {
   const content = read('esm/native/services/canvas_picking_manual_layout_free_box_content.ts');
   const contracts = read('esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts');
   const plans = read('esm/native/services/canvas_picking_manual_layout_free_box_plans.ts');
@@ -67,7 +67,7 @@ test('stage 81 free-box preview and commit share one typed command protocol', ()
   assert.match(commit, /getModulesActions/);
 });
 
-test('stage 81 order PDF editor surface remains a grouped-prop compositor', () => {
+test('runtime pipeline ownership keeps the order PDF editor surface as a grouped-prop compositor', () => {
   const caller = read('esm/native/ui/react/pdf/OrderPdfInPlaceEditorOverlay.tsx');
   const surface = read('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface.tsx');
   const contracts = read('esm/native/ui/react/pdf/order_pdf_overlay_editor_surface_contracts.ts');

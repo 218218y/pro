@@ -90,6 +90,19 @@ export function resolveTypecheckExtraArgs(mode) {
   return Array.isArray(extraArgs) ? extraArgs.slice() : [];
 }
 
+export function resolveTypecheckBuildInfoPath(root, mode) {
+  return path.join(root, '.artifacts', 'tsbuildinfo', `${mode}.tsbuildinfo`);
+}
+
+export function resolveTypecheckIncrementalArgs(root, mode, env = process.env) {
+  if (env.WP_TYPECHECK_INCREMENTAL === '0') return [];
+  return ['--incremental', '--tsBuildInfoFile', resolveTypecheckBuildInfoPath(root, mode)];
+}
+
+export function ensureTypecheckBuildInfoDirectory(root, mkdirImpl = fs.mkdirSync) {
+  mkdirImpl(path.join(root, '.artifacts', 'tsbuildinfo'), { recursive: true });
+}
+
 export function configExists(configPath, existsImpl = fs.existsSync) {
   return existsImpl(configPath);
 }

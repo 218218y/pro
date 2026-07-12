@@ -22,6 +22,17 @@ const DEFAULT_BASELINE_POLICY = Object.freeze({
   totalSlackMs: 1500,
 });
 
+const DIRECT_NODE_PERF_SCRIPTS = new Set([
+  'test:perf-toolchain-core',
+  'test:ui-react-import-hardening-contracts',
+  'test:ui-react-jsx-hardening-contracts',
+  'test:ui-type-hardening-contracts',
+  'contract:layers',
+  'contract:api',
+]);
+
+const SAFE_DIRECT_NODE_ARG = /^[A-Za-z0-9_./:@=\\-]+$/;
+
 function trimString(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
@@ -110,7 +121,27 @@ export function resolvePerfSmokePlan({ laneNames = [], scriptNames = [], dedupe 
   };
 }
 
-function runNpmSpawn({ projectRoot, childEnv, scriptName, spawnImpl = spawnSync }) {
+export function resolveDirectPerfSmokeInvocation(projectRoot, scriptName) {
+  if (!DIRECT_NODE_PERF_SCRIPTS.has(scriptName)) return null;
+  const packageJson = readJsonFile(path.join(projectRoot, 'package.json'));
+  const command = trimString(packageJson?.scripts?.[scriptName]);
+  const tokens = command.split(/\s+/).filter(Boolean);
+  if (tokens[0] !== 'node' || tokens.length < 2) return null;
+  const args = tokens.slice(1);
+  if (!args.every(arg => SAFE_DIRECT_NODE_ARG.test(arg))) return null;
+  return { command: process.execPath, args };
+}
+
+function runScriptSpawn({ projectRoot, childEnv, scriptName, spawnImpl = spawnSync }) {
+  const direct = resolveDirectPerfSmokeInvocation(projectRoot, scriptName);
+  if (direct) {
+    return spawnImpl(direct.command, direct.args, {
+      stdio: 'inherit',
+      cwd: projectRoot,
+      env: childEnv,
+      shell: false,
+    });
+  }
   if (process.platform === 'win32') {
     const comspec = process.env.ComSpec || 'cmd.exe';
     return spawnImpl(comspec, ['/d', '/s', '/c', 'npm', 'run', scriptName], {
@@ -131,7 +162,7 @@ function runNpmSpawn({ projectRoot, childEnv, scriptName, spawnImpl = spawnSync 
 export function runPerfSmokeScript({ projectRoot, childEnv, scriptName, spawnImpl = spawnSync }) {
   header(`[WP Perf Smoke] npm run ${scriptName}`);
   const startNs = process.hrtime.bigint();
-  const result = runNpmSpawn({ projectRoot, childEnv, scriptName, spawnImpl });
+  const result = runScriptSpawn({ projectRoot, childEnv, scriptName, spawnImpl });
   const durationMs = Number((process.hrtime.bigint() - startNs) / 1000000n);
   const exitCode = typeof result.status === 'number' ? result.status : 1;
   return {

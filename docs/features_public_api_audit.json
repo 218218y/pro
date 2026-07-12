@@ -1201,11 +1201,11 @@
       "entry": "door_authoring/api.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_drawer_cross_family.ts",
+      "file": "esm/native/services/canvas_picking_drawer_cross_family_hit_identity.ts",
       "entry": "part_identity/api.js"
     },
     {
-      "file": "esm/native/services/canvas_picking_drawer_cross_family.ts",
+      "file": "esm/native/services/canvas_picking_drawer_cross_family_hit_identity.ts",
       "entry": "sketch_internal_drawer_cassette.js"
     },
     {

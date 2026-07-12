@@ -13,7 +13,7 @@ import type {
 
 import { assertApp } from '../runtime/api.js';
 import { ensureBuilderService } from '../runtime/builder_service_access.js';
-import { ensureSchedulerState, readPlanState } from './scheduler_shared.js';
+import { cancelBuilderWait, ensureSchedulerState, readPlanState } from './scheduler_shared.js';
 import { ensureSchedulerDebouncedRunner } from './scheduler_runtime.js';
 
 type SchedulerInstallCallbacks = {
@@ -154,7 +154,7 @@ function ensureSchedulerInstallRefs(
     },
     flush() {
       try {
-        state.waitingForBuilder = false;
+        cancelBuilderWait(context.app);
         return context.callbacks.runPendingBuild(context.app, 'flush');
       } catch {
         return undefined;

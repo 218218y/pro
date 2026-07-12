@@ -4,6 +4,9 @@ libs/
 test-results/
 playwright-report/
 coverage/
+# Release evidence is written and validated only by the closeout control plane.
+docs/FINAL_VERIFICATION_SUMMARY.json
+docs/FINAL_VERIFICATION_SUMMARY.md
 tools/three_addons/
 *.zip
 **/*.min.js

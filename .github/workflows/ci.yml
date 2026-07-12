@@ -78,6 +78,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v5
@@ -91,7 +93,12 @@ jobs:
       - name: Run migration policy gate
         run: npm run check:gate
 
-      - name: Run format check
+      - name: Run changed-files format check
+        if: github.event_name == 'pull_request'
+        run: npm run format:base:check -- "${{ github.event.pull_request.base.sha }}"
+
+      - name: Run full format check
+        if: github.event_name != 'pull_request'
         run: npm run format:check
 
       - name: Run refactor guardrails
@@ -143,10 +150,22 @@ jobs:
           retention-days: 7
 
   typecheck:
-    name: TypeScript
+    name: TypeScript (${{ matrix.shard }})
     runs-on: ubuntu-latest
     timeout-minutes: 25
     if: github.event_name != 'workflow_dispatch' || inputs.run_typecheck
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: boot-data
+            modes: boot,strict-boot,data,io,js
+          - shard: kernel-platform
+            modes: kernel,strict-kernel,platform,strict-platform
+          - shard: runtime-browser
+            modes: runtime,strict-runtime,adapters-browser,strict-adapters-browser
+          - shard: product-ui
+            modes: services,strict-services,builder,ui,strict-ui,strictcore
 
     steps:
       - name: Checkout
@@ -162,13 +181,13 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Run TypeScript checks
-        run: npm run typecheck:all
+        run: node tools/wp_typecheck_parallel.mjs --workers 2 --modes "${{ matrix.modes }}"
 
       - name: Upload TypeScript diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: typecheck-diagnostics
+          name: typecheck-diagnostics-${{ matrix.shard }}
           path: |
             .artifacts/**
           if-no-files-found: warn

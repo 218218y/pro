@@ -22,7 +22,7 @@ export { normalizeSchedulerDeps, readDebounceDep, readGetBuildStateDep } from '.
 export { readActiveId } from './scheduler_shared_state.js';
 export { callBuild, getBuilderCore, hasBuilder, isBootReady } from './scheduler_shared_environment.js';
 export { getBuildPlanForScheduler, getBuildStateForScheduler } from './scheduler_shared_build_plan.js';
-export { makeDebouncedBuild, scheduleBuilderWait } from './scheduler_shared_timers.js';
+export { cancelBuilderWait, makeDebouncedBuild, scheduleBuilderWait } from './scheduler_shared_timers.js';
 
 export function ensureSchedulerState(App: AppContainer): BuilderSchedulerStateInternalLike {
   return ensureSchedulerStateImpl(App);

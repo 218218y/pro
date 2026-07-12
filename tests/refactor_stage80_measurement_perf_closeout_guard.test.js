@@ -23,6 +23,19 @@ const GUARD_FILE = 'tests/refactor_stage80_measurement_perf_closeout_guard.test.
 const CSS_IMPORTANT_RATCHET_CEILING = 1;
 const CSS_Z_INDEX_RATCHET_CEILING = 41;
 
+test('post-closeout guards use capability names instead of continuing numbered stages', () => {
+  const numberedPostCloseoutGuards = fs
+    .readdirSync('tests')
+    .filter(file => /^refactor_stage(?:8[1-9]|9\d)_.*_guard\.test\.(?:js|ts)$/u.test(file));
+  assert.deepEqual(numberedPostCloseoutGuards, []);
+
+  const plan = read('docs/REFACTOR_NEXT_STAGE_PLAN.md');
+  assert.match(plan, /drawer-cross-family-identity/);
+  assert.match(plan, /browser-security-headers/);
+  assert.match(plan, /developer-feedback-gates/);
+  assert.match(plan, /Do not create `refactor_stage81_\*`/);
+});
+
 test('stage 80 measurement and performance closeout is anchored', () => {
   const pkg = readJson('package.json');
   const scripts = pkg.scripts || {};

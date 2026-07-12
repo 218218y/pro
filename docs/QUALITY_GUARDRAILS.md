@@ -67,6 +67,7 @@ npm run check:test-portfolio
 ## Measurement and refactor closeout
 
 - Stage 80 closes the current refactor track. Do not add Stage 81 unless a new, concrete ownership seam passes the professional split gate in `docs/REFACTOR_NEXT_STAGE_PLAN.md`.
+- Post-closeout guards are named by capability, never by continuing the stage number sequence.
 - Refactor completion is not proven by smaller files. It is proven by stable public seams, behavior tests, hotpath guards, and practical smoke baselines.
 - Keep `check:perf-hotpaths` as the fast source-level performance gate for render/scheduler hotpaths.
 - Use `perf:smoke` and `perf:browser` for measured runtime/browser baselines when dependencies and a browser environment are available; update baselines only after a deliberate product/performance decision.
@@ -80,6 +81,22 @@ npm run check:perf-hotpaths
 npm run check:refactor-closeout
 npm run perf:smoke
 npm run perf:browser
+```
+
+## Browser security headers
+
+- `Content-Security-Policy` enforces only the low-risk `base-uri`, `object-src`, and `frame-ancestors` baseline until measured evidence supports broader enforcement.
+- The full CSP stays in `Content-Security-Policy-Report-Only` without `unsafe-inline`. Source HTML and generated release boot/404 surfaces must not add inline script or style dependencies.
+- `Reporting-Endpoints`, `report-to`, and `report-uri` use `/__csp-report`. The hosting profile must route that path to a collector that accepts CSP reports and retains aggregate counts by build, route, and effective directive.
+- The browser adapter listener samples and throttles violations, removes query strings and cross-origin paths, keeps a bounded session baseline, and sends best-effort reports. It must never block boot.
+- Promote additional directives to enforcement only after the collector baseline is quiet for the relevant builds/routes and the browser security header contracts pass for source and release output.
+
+Relevant checks:
+
+```bash
+npm run check:browser-security-headers
+node --import tsx --test tests/browser_csp_telemetry_runtime.test.ts
+node --test tests/wp_release_runtime.test.js
 ```
 
 ## CSS cascade

@@ -283,7 +283,10 @@ test('release writes a top-level 404 page so Cloudflare Pages does not serve ind
   assert.equal(fs.readFileSync(path.join(dir, '404.html'), 'utf8'), html);
   assert.match(html, /no-store, no-cache, must-revalidate, max-age=0/);
   assert.match(html, /קישור לקובץ ישן מפריסה קודמת/);
-  assert.match(html, /wp_reload=404/);
+  assert.match(html, /wp_release_not_found\.css/);
+  assert.match(html, /wp_release_not_found\.js/);
+  assert.doesNotMatch(html, /<style|<script>(?!\s*<\/script>)|onclick=/);
+  assert.match(fs.readFileSync(path.join(dir, 'wp_release_not_found.js'), 'utf8'), /wp_reload=404/);
 });
 
 test('release finalize rewrites hashed html refs and modulepreloads canonical assets', () => {
@@ -315,7 +318,7 @@ test('release finalize rewrites hashed html refs and modulepreloads canonical as
   });
   const html = rewriteReleaseHtml({
     htmlTemplate:
-      '<html><head><link rel="stylesheet" href="theme.css"></head><body><script type="module">import "./libs/three.vendor.js"; import "./wardrobepro.bundle.js";</script><script src="./wp_logo_data.js"></script><script type="module" src="./wp_runtime_config.mjs"></script></body></html>',
+      '<html><head><link rel="stylesheet" href="theme.css"><link rel="modulepreload" href="./libs/three.vendor.js"></head><body><script type="module" src="./wardrobepro.bundle.js"></script><script src="./wp_logo_data.js"></script><script type="module" src="./wp_runtime_config.mjs"></script></body></html>',
     releaseDir: dir,
     hashAssets: true,
     hashed,
@@ -329,11 +332,15 @@ test('release finalize rewrites hashed html refs and modulepreloads canonical as
   assert.match(html, /wardrobepro\.bundle\.abc123\.js/);
   assert.match(html, /wp_logo_data\.js\?v=202603310101/);
   assert.match(html, /wp_runtime_config\.mjs\?v=202603310101/);
-  assert.match(html, /__WP_RELEASE_BUILD_ID__/);
-  assert.match(html, /__WP_RECOVER_FROM_STALE_ASSET__/);
-  assert.match(html, /Failed to fetch dynamically imported module/);
-  assert.match(html, /addEventListener\('unhandledrejection'/);
-  assert.match(html, /addEventListener\('error'/);
+  assert.match(html, /meta name="wp-build-id" content="202603310101"/);
+  assert.match(html, /wp_release_boot\.js\?v=202603310101/);
+  assert.doesNotMatch(html, /<script>(?!\s*<\/script>)/);
+  const releaseBoot = fs.readFileSync(path.join(dir, 'wp_release_boot.js'), 'utf8');
+  assert.match(releaseBoot, /__WP_RELEASE_BUILD_ID__/);
+  assert.match(releaseBoot, /__WP_RECOVER_FROM_STALE_ASSET__/);
+  assert.match(releaseBoot, /Failed to fetch dynamically imported module/);
+  assert.match(releaseBoot, /addEventListener\('unhandledrejection'/);
+  assert.match(releaseBoot, /addEventListener\('error'/);
   assert.match(html, /modulepreload/);
 });
 

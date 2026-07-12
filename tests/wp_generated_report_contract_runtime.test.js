@@ -42,6 +42,9 @@ test('generated report catalog classifies source-derived reports separately from
 });
 
 test('generated report default selection excludes release evidence while explicit selection stays strict', () => {
+  const prettierIgnore = fs.readFileSync('.prettierignore', 'utf8');
+  assert.match(prettierIgnore, /^docs\/FINAL_VERIFICATION_SUMMARY\.json$/m);
+  assert.match(prettierIgnore, /^docs\/FINAL_VERIFICATION_SUMMARY\.md$/m);
   assert.deepEqual(
     selectGeneratedReports().map(report => report.id),
     [

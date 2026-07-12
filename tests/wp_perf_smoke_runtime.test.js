@@ -15,6 +15,7 @@ import {
   createPerfSmokeMarkdownReport,
   evaluatePerfSmokeBaseline,
   resolvePerfSmokePlan,
+  resolveDirectPerfSmokeInvocation,
 } from '../tools/wp_perf_smoke_shared.js';
 import { runPerfSmokeFlow } from '../tools/wp_perf_smoke_flow.js';
 
@@ -88,6 +89,15 @@ test('perf smoke planner resolves verify lanes and dedupes script overlap', () =
     'test:ui-react-jsx-hardening-contracts',
     'test:ui-type-hardening-contracts',
   ]);
+});
+
+test('perf smoke resolves the stable Node-only profile directly and keeps other scripts on npm fallback', () => {
+  const invocation = resolveDirectPerfSmokeInvocation(process.cwd(), 'contract:layers');
+  assert.deepEqual(invocation, {
+    command: process.execPath,
+    args: ['tools/wp_layer_contract.js'],
+  });
+  assert.equal(resolveDirectPerfSmokeInvocation(process.cwd(), 'build:dist'), null);
 });
 
 test('perf smoke baseline evaluation detects regressions and profile drift', () => {
