@@ -14,6 +14,7 @@ test('generated report catalog owns every checked-in audit pair', () => {
   assert.deepEqual(
     GENERATED_REPORT_CATALOG.map(report => report.id),
     [
+      'verification-summary',
       'script-duplicates',
       'css-style',
       'features-public-api',

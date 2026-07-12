@@ -3,12 +3,33 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const {
+  assertCompatibleVerificationState,
+  createVerificationContext,
+  createVerificationPayload,
+  summarizeResults,
+  validateVerificationPayload,
+} = require('./wp_verification_manifest.cjs');
 
 const REPORT_JSON_PATH = 'docs/FINAL_VERIFICATION_SUMMARY.json';
 const REPORT_MD_PATH = 'docs/FINAL_VERIFICATION_SUMMARY.md';
 const STATE_JSON_PATH = '.artifacts/closeout-state.json';
 
 const CLOSEOUT_LANES = [
+  {
+    id: 'verification-control-plane',
+    label: 'Verification control-plane contracts',
+    category: 'toolchain',
+    expected: 'pass',
+    command: 'node',
+    args: [
+      '--test',
+      'tests/wp_verification_manifest_runtime.test.cjs',
+      'tests/wp_verify_closeout_support_runtime.test.cjs',
+      'tests/wp_generated_report_contract_runtime.test.js',
+      'tests/wp_verification_summary_contract_runtime.test.js',
+    ],
+  },
   {
     id: 'build-dist',
     label: 'Build dist bundle',
@@ -394,7 +415,8 @@ const CLOSEOUT_LANES = [
 const CLOSEOUT_PROFILES = {
   default: CLOSEOUT_LANES.map(lane => lane.id),
   verify: CLOSEOUT_LANES.filter(lane => lane.category === 'verify').map(lane => lane.id),
-  'verify-core': ['build-dist', 'perf-smoke', 'overlay-export-core'],
+  'control-plane': ['verification-control-plane'],
+  'verify-core': ['verification-control-plane', 'build-dist', 'perf-smoke', 'overlay-export-core'],
   'order-pdf': CLOSEOUT_LANES.filter(lane => lane.id.startsWith('order-pdf-')).map(lane => lane.id),
   sketch: CLOSEOUT_LANES.filter(lane => lane.id.startsWith('sketch-')).map(lane => lane.id),
   'cloud-sync': CLOSEOUT_LANES.filter(lane => lane.id.startsWith('cloud-sync-')).map(lane => lane.id),
@@ -424,16 +446,11 @@ function readJsonFile(filePath) {
 
 function readStatePayload(filePath) {
   const payload = readJsonFile(filePath);
-  if (!payload || !Array.isArray(payload.results)) {
-    return { generatedAt: null, workspace: process.cwd(), summary: summarize([]), results: [] };
+  if (!payload) return null;
+  if (!Array.isArray(payload.results)) {
+    throw new Error(`[closeout] invalid state payload at ${filePath}: results must be an array`);
   }
-  return {
-    generatedAt: payload.generatedAt || null,
-    workspace: payload.workspace || process.cwd(),
-    meta: payload.meta || {},
-    summary: payload.summary || summarize(payload.results),
-    results: payload.results,
-  };
+  return payload;
 }
 
 function mergeResults(existingResults, nextResults) {
@@ -453,7 +470,11 @@ function mergeResults(existingResults, nextResults) {
   return ordered;
 }
 
-function writeStatePayload(filePath, payload) {
+function writeStatePayload(filePath, payload, options = {}) {
+  const errors = validateCloseoutPayload(payload, options);
+  if (errors.length) {
+    throw new Error(`[closeout] refusing to write invalid state payload\n- ${errors.join('\n- ')}`);
+  }
   ensureDirFor(filePath);
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 }
@@ -496,28 +517,76 @@ function normalizeCliArgs(argv) {
     profiles: [],
     skipLaneIds: [],
     resumeFrom: null,
-    stopOnFail: argv.includes('--stop-on-fail'),
-    shouldWrite: argv.includes('--write'),
-    appendState: argv.includes('--append-state'),
-    fromState: argv.includes('--from-state'),
-    resetState: argv.includes('--reset-state'),
+    stopOnFail: false,
+    shouldWrite: false,
+    appendState: false,
+    fromState: false,
+    resetState: false,
     logDir: null,
     stateFile: null,
   };
-  for (let i = 0; i < argv.length; i += 1) {
-    const token = argv[i];
-    if (token === '--lane' && argv[i + 1]) options.laneIds.push(argv[i + 1]);
-    if (token === '--category' && argv[i + 1]) options.categories.push(argv[i + 1]);
-    if (token === '--profile' && argv[i + 1]) options.profiles.push(argv[i + 1]);
-    if (token === '--skip' && argv[i + 1]) options.skipLaneIds.push(argv[i + 1]);
-    if (token === '--resume-from' && argv[i + 1]) options.resumeFrom = argv[i + 1];
-    if (token === '--log-dir' && argv[i + 1]) options.logDir = argv[i + 1];
-    if (token === '--state-file' && argv[i + 1]) options.stateFile = argv[i + 1];
+  const valueOptions = new Map([
+    ['--lane', value => options.laneIds.push(value)],
+    ['--category', value => options.categories.push(value)],
+    ['--profile', value => options.profiles.push(value)],
+    ['--skip', value => options.skipLaneIds.push(value)],
+    ['--resume-from', value => (options.resumeFrom = value)],
+    ['--log-dir', value => (options.logDir = value)],
+    ['--state-file', value => (options.stateFile = value)],
+  ]);
+  const booleanOptions = new Map([
+    ['--stop-on-fail', () => (options.stopOnFail = true)],
+    ['--write', () => (options.shouldWrite = true)],
+    ['--append-state', () => (options.appendState = true)],
+    ['--from-state', () => (options.fromState = true)],
+    ['--reset-state', () => (options.resetState = true)],
+  ]);
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const token = argv[index];
+    if (valueOptions.has(token)) {
+      const value = argv[index + 1];
+      if (!value || value.startsWith('--')) {
+        throw new Error(`[closeout] ${token} requires a value`);
+      }
+      valueOptions.get(token)(value);
+      index += 1;
+      continue;
+    }
+    if (booleanOptions.has(token)) {
+      booleanOptions.get(token)();
+      continue;
+    }
+    throw new Error(`[closeout] unknown argument: ${token}`);
   }
   return options;
 }
 
+function validateSelectionOptions(lanes, options = {}) {
+  const laneIds = new Set((lanes || []).map(lane => lane.id));
+  const categories = new Set((lanes || []).map(lane => lane.category));
+  const profiles = new Set(Object.keys(CLOSEOUT_PROFILES));
+
+  function assertKnown(label, values, known) {
+    const unknown = (values || []).filter(value => !known.has(value));
+    if (unknown.length) {
+      throw new Error(
+        `[closeout] unknown ${label}: ${unknown.join(', ')}; allowed: ${Array.from(known).join(', ')}`
+      );
+    }
+  }
+
+  assertKnown('profile', options.profiles, profiles);
+  assertKnown('category', options.categories, categories);
+  assertKnown('lane', options.laneIds, laneIds);
+  assertKnown('skip lane', options.skipLaneIds, laneIds);
+  if (options.resumeFrom && !laneIds.has(options.resumeFrom)) {
+    throw new Error(`[closeout] unknown resume lane: ${options.resumeFrom}`);
+  }
+}
+
 function selectLanes(lanes, options = {}) {
+  validateSelectionOptions(lanes, options);
   const laneMap = new Map(lanes.map(lane => [lane.id, lane]));
   const selectedIds = [];
 
@@ -550,7 +619,10 @@ function selectLanes(lanes, options = {}) {
 
   if (options.resumeFrom) {
     const startIndex = filtered.findIndex(lane => lane.id === options.resumeFrom);
-    if (startIndex >= 0) filtered = filtered.slice(startIndex);
+    if (startIndex < 0) {
+      throw new Error(`[closeout] resume lane ${options.resumeFrom} is not part of the selected lane set`);
+    }
+    filtered = filtered.slice(startIndex);
   }
 
   if (Array.isArray(options.skipLaneIds) && options.skipLaneIds.length > 0) {
@@ -693,15 +765,59 @@ function runLane(lane, options = {}) {
 }
 
 function summarize(results) {
-  const summary = { total: results.length, passed: 0, failed: 0, environmentBlocked: 0, runnerBlocked: 0 };
-  for (const result of results) {
-    if (result.status === 'passed') summary.passed += 1;
-    else if (result.status === 'environment-blocked') summary.environmentBlocked += 1;
-    else if (result.status === 'runner-blocked') summary.runnerBlocked += 1;
-    else summary.failed += 1;
-  }
-  summary.ok = summary.failed === 0 && summary.runnerBlocked === 0;
-  return summary;
+  return summarizeResults(results);
+}
+
+function createCloseoutContext(projectRoot = process.cwd()) {
+  return createVerificationContext({
+    projectRoot,
+    lanes: CLOSEOUT_LANES,
+    profiles: CLOSEOUT_PROFILES,
+  });
+}
+
+function createCloseoutPayload({
+  projectRoot = process.cwd(),
+  workspace = projectRoot,
+  generatedAt,
+  runId,
+  meta = {},
+  results = [],
+  requestedLaneIds = [],
+  context = null,
+} = {}) {
+  return createVerificationPayload({
+    projectRoot,
+    workspace,
+    generatedAt,
+    runId,
+    meta,
+    results,
+    requestedLaneIds,
+    lanes: CLOSEOUT_LANES,
+    profiles: CLOSEOUT_PROFILES,
+    context,
+  });
+}
+
+function validateCloseoutPayload(payload, options = {}) {
+  return validateVerificationPayload(payload, {
+    projectRoot: options.projectRoot || process.cwd(),
+    lanes: CLOSEOUT_LANES,
+    profiles: CLOSEOUT_PROFILES,
+    requireCurrentSource: options.requireCurrentSource !== false,
+    context: options.context || null,
+  });
+}
+
+function assertCompatibleCloseoutState(payload, options = {}) {
+  return assertCompatibleVerificationState(payload, {
+    projectRoot: options.projectRoot || process.cwd(),
+    lanes: CLOSEOUT_LANES,
+    profiles: CLOSEOUT_PROFILES,
+    requireCurrentSource: true,
+    context: options.context || null,
+  });
 }
 
 function formatStatusIcon(status) {
@@ -736,13 +852,41 @@ function formatLaneResultMd(result) {
   return lines.join('\n').replace(/\n+$/u, '\n');
 }
 
+function describeFinalStatus(payload) {
+  if (payload.finalStatus === 'passed') {
+    return 'All selected closeout lanes passed. This report is valid for the explicit selection recorded above.';
+  }
+  if (payload.finalStatus === 'passed-with-environment-blockers') {
+    return 'All executable selected lanes passed, but at least one lane was environment-blocked. This is not equivalent to a fully provisioned clean closeout.';
+  }
+  if (payload.finalStatus === 'not-run') {
+    return 'No closeout lane executed. This payload is a state marker, not verification evidence.';
+  }
+  if (payload.finalStatus === 'incomplete') {
+    return 'The requested lane selection was not completed. Partial results must not be treated as a successful closeout.';
+  }
+  if (payload.finalStatus === 'runner-blocked') {
+    return 'At least one lane was blocked by the wrapper, runner, or sandbox. This is not a real pass.';
+  }
+  return 'At least one lane failed at the verify or command level, so this closeout is not complete.';
+}
+
 function buildMarkdownReport(payload) {
   const lines = [
     '# Final Verification Summary',
     '',
+    `- schema_version: \`${payload.schemaVersion}\``,
+    `- run_id: \`${payload.runId}\``,
     `- generated_at: ${payload.generatedAt}`,
     `- workspace: \`${payload.workspace}\``,
-    `- total lanes: **${payload.summary.total}**`,
+    `- source_digest: \`${payload.source?.digest || '(missing)'}\``,
+    `- source_files: **${payload.source?.fileCount ?? 0}**`,
+    `- lane_catalog_digest: \`${payload.laneCatalog?.digest || '(missing)'}\``,
+    `- node: \`${payload.runtime?.nodeVersion || '(missing)'}\``,
+    `- final_status: **${payload.finalStatus || '(missing)'}**`,
+    `- requested lanes: **${payload.selection?.requestedLaneIds?.length ?? 0}**`,
+    `- completed selection: **${payload.selection?.complete === true ? 'yes' : 'no'}**`,
+    `- total results: **${payload.summary.total}**`,
     `- passed: **${payload.summary.passed}**`,
     `- environment-blocked: **${payload.summary.environmentBlocked}**`,
     `- runner-blocked: **${payload.summary.runnerBlocked}**`,
@@ -755,6 +899,8 @@ function buildMarkdownReport(payload) {
       `- selected lanes: \`${(payload.meta.laneIds || []).join(', ') || '(all)'}\``,
       `- skipped lanes: \`${(payload.meta.skipLaneIds || []).join(', ') || '(none)'}\``,
       `- resumed from: \`${payload.meta.resumeFrom || '(start)'}\``,
+      `- requested lane ids: \`${(payload.selection?.requestedLaneIds || []).join(', ') || '(none)'}\``,
+      `- completed lane ids: \`${(payload.selection?.completedLaneIds || []).join(', ') || '(none)'}\``,
       `- state file: \`${payload.meta.stateFile || '(none)'}\``
     );
   }
@@ -762,11 +908,7 @@ function buildMarkdownReport(payload) {
     '',
     '## Interpretation',
     '',
-    payload.summary.failed === 0 && payload.summary.runnerBlocked === 0
-      ? 'All selected closeout lanes passed, or were environment-blocked only. There is no active code-level verification failure in this closeout set.'
-      : payload.summary.failed > 0
-        ? 'At least one lane failed at the verify/command level, so this closeout is not complete yet.'
-        : 'No direct code failure was observed, but at least one lane was runner-blocked, so this is not a clean closeout.',
+    describeFinalStatus(payload),
     '',
     payload.summary.environmentBlocked > 0
       ? 'At least one lane was environment-blocked. It is not counted as a code failure, but still needs a fully provisioned environment.'
@@ -783,7 +925,11 @@ function buildMarkdownReport(payload) {
   return lines.join('\n');
 }
 
-function writeReports(payload, reportPaths = {}) {
+function writeReports(payload, reportPaths = {}, options = {}) {
+  const errors = validateCloseoutPayload(payload, options);
+  if (errors.length) {
+    throw new Error(`[closeout] refusing to write invalid verification report\n- ${errors.join('\n- ')}`);
+  }
   const jsonPath = reportPaths.jsonPath || REPORT_JSON_PATH;
   const mdPath = reportPaths.mdPath || REPORT_MD_PATH;
   ensureDirFor(jsonPath);
@@ -800,13 +946,18 @@ module.exports = {
   buildMarkdownReport,
   classifyEnvironmentFailure,
   classifyRunnerFailure,
+  createCloseoutContext,
+  createCloseoutPayload,
   normalizeCliArgs,
   runLane,
   selectLanes,
   readStatePayload,
+  assertCompatibleCloseoutState,
   mergeResults,
   resolveStateFile,
   summarize,
+  validateCloseoutPayload,
+  validateSelectionOptions,
   writeReports,
   writeStatePayload,
 };

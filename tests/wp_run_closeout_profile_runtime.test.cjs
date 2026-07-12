@@ -13,6 +13,7 @@ const {
 test('closeout profile runner exposes the supported manual profiles', () => {
   assert.deepEqual(ALLOWED_PROFILES, [
     'verify-core',
+    'control-plane',
     'order-pdf',
     'sketch',
     'cloud-sync',

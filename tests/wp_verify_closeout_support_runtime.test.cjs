@@ -9,11 +9,14 @@ const path = require('node:path');
 const {
   CLOSEOUT_LANES,
   CLOSEOUT_PROFILES,
+  buildMarkdownReport,
   REPORT_JSON_PATH,
   REPORT_MD_PATH,
   STATE_JSON_PATH,
   classifyEnvironmentFailure,
   classifyRunnerFailure,
+  createCloseoutContext,
+  createCloseoutPayload,
   normalizeCliArgs,
   selectLanes,
   summarize,
@@ -27,6 +30,7 @@ const {
 test('closeout lanes keep stable ids and include critical families', () => {
   const ids = CLOSEOUT_LANES.map(lane => lane.id);
   assert.deepEqual(ids, [
+    'verification-control-plane',
     'build-dist',
     'perf-smoke',
     'overlay-export-core',
@@ -97,7 +101,13 @@ test('direct profiles stay stable for order-pdf sketch and cloud-sync', () => {
     'sketch-free-boxes',
     'sketch-render-visuals',
   ]);
-  assert.deepEqual(CLOSEOUT_PROFILES['verify-core'], ['build-dist', 'perf-smoke', 'overlay-export-core']);
+  assert.deepEqual(CLOSEOUT_PROFILES['control-plane'], ['verification-control-plane']);
+  assert.deepEqual(CLOSEOUT_PROFILES['verify-core'], [
+    'verification-control-plane',
+    'build-dist',
+    'perf-smoke',
+    'overlay-export-core',
+  ]);
   assert.equal(CLOSEOUT_PROFILES['cloud-sync'].includes('cloud-sync-tabs-ui'), true);
 });
 
@@ -137,6 +147,18 @@ test('normalize args collects profiles categories lane ids skips log dir and sta
     logDir: '.artifacts/closeout-logs',
     stateFile: '.artifacts/custom-closeout-state.json',
   });
+});
+
+test('closeout CLI rejects unknown flags missing values and unknown selectors', () => {
+  assert.throws(() => normalizeCliArgs(['--profile']), /--profile requires a value/);
+  assert.throws(() => normalizeCliArgs(['--wat']), /unknown argument: --wat/);
+  assert.throws(() => selectLanes(CLOSEOUT_LANES, { profiles: ['typo'] }), /unknown profile: typo/);
+  assert.throws(() => selectLanes(CLOSEOUT_LANES, { categories: ['typo'] }), /unknown category: typo/);
+  assert.throws(() => selectLanes(CLOSEOUT_LANES, { laneIds: ['typo'] }), /unknown lane: typo/);
+  assert.throws(
+    () => selectLanes(CLOSEOUT_LANES, { profiles: ['order-pdf'], resumeFrom: 'build-dist' }),
+    /resume lane build-dist is not part of the selected lane set/
+  );
 });
 
 test('select lanes respects profile resume and skip while preserving order', () => {
@@ -201,21 +223,52 @@ test('state helpers merge by lane id and preserve canonical order', () => {
   );
 });
 
-test('state helpers roundtrip payloads and fall back when file is missing', () => {
+test('state helpers roundtrip versioned payloads and return null when the file is missing', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'closeout-state-'));
   const statePath = path.join(tempDir, 'closeout-state.json');
-  const empty = readStatePayload(statePath);
-  assert.deepEqual(empty.summary, summarize([]));
-  writeStatePayload(statePath, {
-    generatedAt: '2026-04-16T00:00:00.000Z',
+  assert.equal(readStatePayload(statePath), null);
+
+  const lane = CLOSEOUT_LANES.find(entry => entry.id === 'build-dist');
+  const context = createCloseoutContext();
+  const payload = createCloseoutPayload({
     workspace: '/tmp/workspace',
+    generatedAt: '2026-04-16T00:00:00.000Z',
+    runId: 'state-roundtrip-001',
     meta: { stateFile: statePath },
-    summary: summarize([{ status: 'passed' }]),
-    results: [{ id: 'build-dist', status: 'passed' }],
+    requestedLaneIds: ['build-dist'],
+    context,
+    results: [
+      {
+        ...lane,
+        status: 'passed',
+        exitCode: 0,
+        durationMs: 1,
+        startedAtIso: '2026-04-16T00:00:00.000Z',
+        finishedAtIso: '2026-04-16T00:00:00.001Z',
+        stdout: '',
+        stderr: '',
+      },
+    ],
   });
+  writeStatePayload(statePath, payload, { context });
   const loaded = readStatePayload(statePath);
   assert.equal(loaded.workspace, '/tmp/workspace');
-  assert.deepEqual(loaded.results, [{ id: 'build-dist', status: 'passed' }]);
+  assert.equal(loaded.runId, 'state-roundtrip-001');
+  assert.deepEqual(loaded.selection.completedLaneIds, ['build-dist']);
+  assert.equal(loaded.results[0].laneDigest, payload.results[0].laneDigest);
+});
+
+test('reset-style empty state is explicitly not-run rather than passed', () => {
+  const context = createCloseoutContext();
+  const payload = createCloseoutPayload({
+    runId: 'empty-state-001',
+    results: [],
+    requestedLaneIds: [],
+    context,
+  });
+  assert.equal(payload.summary.ok, false);
+  assert.equal(payload.finalStatus, 'not-run');
+  assert.match(buildMarkdownReport(payload), /No closeout lane executed/);
 });
 
 test('state file resolves to explicit flag or default artifact path', () => {

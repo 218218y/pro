@@ -4,6 +4,7 @@ const { spawnSync } = require('node:child_process');
 
 const ALLOWED_PROFILES = Object.freeze([
   'verify-core',
+  'control-plane',
   'order-pdf',
   'sketch',
   'cloud-sync',

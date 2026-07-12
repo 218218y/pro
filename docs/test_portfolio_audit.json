@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-12T11:00:34.239Z",
+  "generatedAt": "2026-07-12T12:28:48.251Z",
   "totals": {
-    "tests": 1190,
-    "unitRunnerTests": 1184,
+    "tests": 1192,
+    "unitRunnerTests": 1186,
     "e2eTests": 6,
     "nonTestRuntimeFiles": 30,
     "packageTestReferences": 291,
@@ -13,8 +13,8 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 388,
-    "runtime-unit": 306,
+    "contract": 389,
+    "runtime-unit": 307,
     "integration": 440,
     "e2e-smoke": 7,
     "perf-smoke": 9,
@@ -4728,6 +4728,14 @@
     {
       "file": "tests/wp_typecheck_runtime.test.js",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_verification_manifest_runtime.test.cjs",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_verification_summary_contract_runtime.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/wp_verify_closeout_support_runtime.test.cjs",

@@ -39,8 +39,10 @@ npm run test:refactor-stage-guards
 
 ## Control-plane reports, scripts, and site profiles
 
-- Checked-in audit reports must represent current repository state. `tools/wp_generated_report_contract.mjs` is the catalog for the script-duplicate, CSS, feature-public-API, legacy-fallback, and test-portfolio report pairs.
-- Report comparison is semantic: volatile `generatedAt` lines/fields are ignored, while changed counts, inventories, policies, or violations fail the check.
+- Checked-in audit reports must represent current repository state. `tools/wp_generated_report_contract.mjs` is the catalog for the final-verification, script-duplicate, CSS, feature-public-API, legacy-fallback, test-group, and test-portfolio report pairs.
+- Ordinary reports are regenerated in isolation. `FINAL_VERIFICATION_SUMMARY.*` is stateful: its JSON is the source of truth, its Markdown is derived from that JSON, and validation fails when its schema, source-tree digest, lane-catalog digest, per-lane digest, selection, summary, or final status is stale.
+- A closeout state file may be resumed only against the exact source and lane catalog that created it. After source or control-plane changes, reset the state instead of merging old results into a new run.
+- Report comparison is semantic: volatile `generatedAt` lines/fields are ignored, while changed counts, inventories, policies, source identities, or violations fail the check.
 - Large named test groups belong in `tools/wp_test_group_catalog.mjs`; package scripts should remain short facades over `tools/wp_test_group.mjs`.
 - Exact duplicate package commands are not allowed. Do not preserve aliases such as a second “strict” name when both names execute the same lane.
 - Every `sites/*/site.profile.mjs` participates in one cross-profile contract. Store ids, local-storage namespaces, Supabase tables, realtime channel prefixes, required assets, release status, and deployment URLs must be validated together.
@@ -51,6 +53,8 @@ Relevant checks:
 ```bash
 npm run check:docs-control-plane
 npm run check:generated-reports
+npm run check:verification-summary
+npm run verify:closeout:control-plane
 npm run report:generated
 npm run check:script-duplicates
 npm run check:site-profiles

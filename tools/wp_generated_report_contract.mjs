@@ -7,6 +7,14 @@ import { fileURLToPath } from 'node:url';
 
 export const GENERATED_REPORT_CATALOG = Object.freeze([
   Object.freeze({
+    id: 'verification-summary',
+    json: 'docs/FINAL_VERIFICATION_SUMMARY.json',
+    markdown: 'docs/FINAL_VERIFICATION_SUMMARY.md',
+    command({ json, markdown }) {
+      return ['tools/wp_verification_summary_contract.mjs', '--json-out', json, '--md-out', markdown];
+    },
+  }),
+  Object.freeze({
     id: 'script-duplicates',
     json: 'docs/script_duplicate_audit.json',
     markdown: 'docs/SCRIPT_DUPLICATE_AUDIT.md',

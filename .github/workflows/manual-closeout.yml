@@ -10,6 +10,7 @@ on:
         default: verify-core
         options:
           - verify-core
+          - control-plane
           - order-pdf
           - sketch
           - cloud-sync

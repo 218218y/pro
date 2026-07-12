@@ -67,6 +67,7 @@ These are available lanes to choose from, not a checklist to run after every fix
 ```bash
 npm run check:docs-control-plane
 npm run check:generated-reports
+npm run check:verification-summary
 npm run check:site-profiles
 npm run verify:parallel -- --no-bundle
 npm run test
@@ -79,6 +80,8 @@ npm run perf:browser
 ```
 
 For normal Codex handoff, prefer targeted tests for the touched area plus the nearest relevant typecheck and `npm run lint` when touched source files are linted. GitHub/CI owns the broader regression matrix after handoff; if it reports a failure, address that as a follow-up.
+
+Closeout reports are tied to a versioned source-tree and lane-catalog identity. Use `npm run verify:closeout:control-plane` for focused control-plane work. Do not copy or regenerate `FINAL_VERIFICATION_SUMMARY.*` from stale state; reset `.artifacts/closeout-state.json` after source or lane-definition changes and execute the intended profile again.
 
 Use `npm run gate` for broad shared-surface changes, high-risk architecture changes, explicit user requests, or when targeted checks are not enough evidence. Use `npm run gate:full` only before release-style handoff or when explicitly requested.
 
