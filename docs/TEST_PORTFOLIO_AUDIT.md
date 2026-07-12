@@ -1,6 +1,6 @@
 # Test portfolio audit
 
-Generated: 2026-07-12T12:28:48.251Z
+Generated: 2026-07-12T14:46:16.187Z
 
 ## Summary
 
@@ -9,10 +9,10 @@ Generated: 2026-07-12T12:28:48.251Z
 - Playwright E2E files excluded from unit runner: 6
 - Helpers/fixtures excluded by filename contract: 30
 - Package script test references: 291
-- Catalog test references: 242
-- Total explicit test references: 533
-- Catalog groups: 10
-- Catalog-backed package scripts: 10
+- Catalog test references: 246
+- Total explicit test references: 537
+- Catalog groups: 11
+- Catalog-backed package scripts: 11
 - Primary non-overlapping portfolio groups: 5
 
 | Category         | Count |

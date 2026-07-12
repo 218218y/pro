@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "runId": "28406dfe-b9ae-4f7b-9903-e9551a4c9067",
-  "generatedAt": "2026-07-12T12:37:21.953Z",
-  "workspace": "/mnt/data/pro-next/pro-linux",
+  "runId": "2763e8d4-2cbd-4fab-9615-056da6040925",
+  "generatedAt": "2026-07-12T14:48:05.564Z",
+  "workspace": "/mnt/data/pro_work/pro-linux",
   "runtime": {
     "nodeVersion": "v22.16.0",
     "platform": "linux",
@@ -11,20 +11,23 @@
   "source": {
     "kind": "source-tree",
     "algorithm": "sha256",
-    "digest": "sha256:02fede67f1b6d1037c3792233b51ac674bbcec7a20cc5a27ca6bc5b8e581ca6a",
-    "fileCount": 4197,
-    "byteCount": 22621345,
-    "git": null
+    "digest": "sha256:f1a047cf6d4ea519f5dcb80e0b7f5321d475e2c8ca285e0aacb03a57d700715a",
+    "fileCount": 4198,
+    "byteCount": 22654140,
+    "git": {
+      "commitHash": "edb72ca53647fb759979a177f87044ee4ab65e25",
+      "dirty": true
+    }
   },
   "laneCatalog": {
     "algorithm": "sha256",
-    "digest": "sha256:7a2bdd423f2bc7f579ebed592d6c21014d31e6e3e59385fb34e302f33fab5eb9",
-    "laneCount": 26,
+    "digest": "sha256:fe8957c54dd9db2f80ada621f694365cdd1f8a56b121a6429e1ce917cff56ae3",
+    "laneCount": 27,
     "profileCount": 8
   },
   "selection": {
-    "requestedLaneIds": ["verification-control-plane"],
-    "completedLaneIds": ["verification-control-plane"],
+    "requestedLaneIds": ["verification-control-plane", "toolchain-surfaces"],
+    "completedLaneIds": ["verification-control-plane", "toolchain-surfaces"],
     "complete": true
   },
   "meta": {
@@ -38,8 +41,8 @@
     "previousGeneratedAt": null
   },
   "summary": {
-    "total": 1,
-    "passed": 1,
+    "total": 2,
+    "passed": 2,
     "failed": 0,
     "environmentBlocked": 0,
     "runnerBlocked": 0,
@@ -52,22 +55,34 @@
       "label": "Verification control-plane contracts",
       "category": "toolchain",
       "expected": "pass",
-      "command": "node",
-      "args": [
-        "--test",
-        "tests/wp_verification_manifest_runtime.test.cjs",
-        "tests/wp_verify_closeout_support_runtime.test.cjs",
-        "tests/wp_generated_report_contract_runtime.test.js",
-        "tests/wp_verification_summary_contract_runtime.test.js"
-      ],
+      "testGroupId": "verification-control-plane",
+      "command": "npm",
+      "args": ["run", "test:verification-control-plane"],
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 1882,
-      "startedAtIso": "2026-07-12T12:37:20.068Z",
-      "finishedAtIso": "2026-07-12T12:37:21.952Z",
-      "stdout": "TAP version 13\n# Subtest: generated report catalog owns every checked-in audit pair\nok 1 - generated report catalog owns every checked-in audit pair\n  ---\n  duration_ms: 2.972863\n  type: 'test'\n  ...\n# Subtest: generated report selection rejects unknown ids and preserves catalog order\nok 2 - generated report selection rejects unknown ids and preserves catalog order\n  ---\n  duration_ms: 0.893213\n  type: 'test'\n  ...\n# Subtest: generated report comparison ignores timestamps but catches semantic drift\nok 3 - generated report comparison ignores timestamps but catches semantic drift\n  ---\n  duration_ms: 3.33655\n  type: 'test'\n  ...\n# Subtest: source identity is deterministic and changes when owned source changes\nok 4 - source identity is deterministic and changes when owned source changes\n  ---\n  duration_ms: 111.13779\n  type: 'test'\n  ...\n# Subtest: lane catalog identity covers lane execution and profile membership\nok 5 - lane catalog identity covers lane execution and profile membership\n  ---\n  duration_ms: 1.002949\n  type: 'test'\n  ...\n# Subtest: verification payload binds results to source lane catalog and explicit selection\nok 6 - verification payload binds results to source lane catalog and explicit selection\n  ---\n  duration_ms: 80.548734\n  type: 'test'\n  ...\n# Subtest: verification validation fails closed for source drift lane drift and summary tampering\nok 7 - verification validation fails closed for source drift lane drift and summary tampering\n  ---\n  duration_ms: 197.42336\n  type: 'test'\n  ...\n# Subtest: state compatibility rejects legacy or stale payloads with a reset instruction\nok 8 - state compatibility rejects legacy or stale payloads with a reset instruction\n  ---\n  duration_ms: 75.534293\n  type: 'test'\n  ...\n# Subtest: summary and final status preserve environment blockers without treating them as clean proof\nok 9 - summary and final status preserve environment blockers without treating them as clean proof\n  ---\n  duration_ms: 0.353007\n  type: 'test'\n  ...\n# Subtest: empty and partial selections cannot report a successful closeout\nok 10 - empty and partial selections cannot report a successful closeout\n  ---\n  duration_ms: 52.54215\n  type: 'test'\n  ...\n# Subtest: verification summary contract derives markdown from one validated JSON payload\nok 11 - verification summary contract derives markdown from one validated JSON payload\n  ---\n  duration_ms: 97.467965\n  type: 'test'\n  ...\n# Subtest: verification summary contract refuses to canonize a stale report\nok 12 - verification summary contract refuses to canonize a stale report\n  ---\n  duration_ms: 83.379174\n  type: 'test'\n  ...\n# Subtest: closeout lanes keep stable ids and include critical families\nok 13 - closeout lanes keep stable ids and include critical families\n  ---\n  duration_ms: 1.998864\n  type: 'test'\n  ...\n# Subtest: overlay export closeout lane stays direct and grouped\nok 14 - overlay export closeout lane stays direct and grouped\n  ---\n  duration_ms: 0.458775\n  type: 'test'\n  ...\n# Subtest: direct profiles stay stable for order-pdf sketch and cloud-sync\nok 15 - direct profiles stay stable for order-pdf sketch and cloud-sync\n  ---\n  duration_ms: 0.212026\n  type: 'test'\n  ...\n# Subtest: normalize args collects profiles categories lane ids skips log dir and state options\nok 16 - normalize args collects profiles categories lane ids skips log dir and state options\n  ---\n  duration_ms: 0.819902\n  type: 'test'\n  ...\n# Subtest: closeout CLI rejects unknown flags missing values and unknown selectors\nok 17 - closeout CLI rejects unknown flags missing values and unknown selectors\n  ---\n  duration_ms: 1.286314\n  type: 'test'\n  ...\n# Subtest: select lanes respects profile resume and skip while preserving order\nok 18 - select lanes respects profile resume and skip while preserving order\n  ---\n  duration_ms: 0.507306\n  type: 'test'\n  ...\n# Subtest: environment classifier recognizes playwright/browser failures\nok 19 - environment classifier recognizes playwright/browser failures\n  ---\n  duration_ms: 0.312166\n  type: 'test'\n  ...\n# Subtest: runner classifier recognizes wrapper and sandbox failures\nok 20 - runner classifier recognizes wrapper and sandbox failures\n  ---\n  duration_ms: 0.327634\n  type: 'test'\n  ...\n# Subtest: summary separates passed failures environment-blocked and runner-blocked lanes\nok 21 - summary separates passed failures environment-blocked and runner-blocked lanes\n  ---\n  duration_ms: 0.710031\n  type: 'test'\n  ...\n# Subtest: state helpers merge by lane id and preserve canonical order\nok 22 - state helpers merge by lane id and preserve canonical order\n  ---\n  duration_ms: 0.825592\n  type: 'test'\n  ...\n# Subtest: state helpers roundtrip versioned payloads and return null when the file is missing\nok 23 - state helpers roundtrip versioned payloads and return null when the file is missing\n  ---\n  duration_ms: 956.436789\n  type: 'test'\n  ...\n# Subtest: reset-\n...\n[trimmed 815 chars]",
+      "durationMs": 1496,
+      "startedAtIso": "2026-07-12T14:47:52.249Z",
+      "finishedAtIso": "2026-07-12T14:47:53.746Z",
+      "stdout": "\n> test:verification-control-plane\n> node tools/wp_test_group.mjs verification-control-plane\n\nTAP version 13\n# Subtest: generated report catalog owns every checked-in audit pair\nok 1 - generated report catalog owns every checked-in audit pair\n  ---\n  duration_ms: 2.078308\n  type: 'test'\n  ...\n# Subtest: generated report selection rejects unknown ids and preserves catalog order\nok 2 - generated report selection rejects unknown ids and preserves catalog order\n  ---\n  duration_ms: 0.597142\n  type: 'test'\n  ...\n# Subtest: generated report comparison ignores timestamps but catches semantic drift\nok 3 - generated report comparison ignores timestamps but catches semantic drift\n  ---\n  duration_ms: 2.767214\n  type: 'test'\n  ...\n# Subtest: source identity is deterministic and changes when owned source changes\nok 4 - source identity is deterministic and changes when owned source changes\n  ---\n  duration_ms: 95.220903\n  type: 'test'\n  ...\n# Subtest: lane catalog identity covers lane execution and profile membership\nok 5 - lane catalog identity covers lane execution and profile membership\n  ---\n  duration_ms: 2.44041\n  type: 'test'\n  ...\n# Subtest: verification payload binds results to source lane catalog and explicit selection\nok 6 - verification payload binds results to source lane catalog and explicit selection\n  ---\n  duration_ms: 45.061826\n  type: 'test'\n  ...\n# Subtest: verification validation fails closed for source drift lane drift and summary tampering\nok 7 - verification validation fails closed for source drift lane drift and summary tampering\n  ---\n  duration_ms: 113.625711\n  type: 'test'\n  ...\n# Subtest: state compatibility rejects legacy or stale payloads with a reset instruction\nok 8 - state compatibility rejects legacy or stale payloads with a reset instruction\n  ---\n  duration_ms: 76.115168\n  type: 'test'\n  ...\n# Subtest: summary and final status preserve environment blockers without treating them as clean proof\nok 9 - summary and final status preserve environment blockers without treating them as clean proof\n  ---\n  duration_ms: 0.243407\n  type: 'test'\n  ...\n# Subtest: empty and partial selections cannot report a successful closeout\nok 10 - empty and partial selections cannot report a successful closeout\n  ---\n  duration_ms: 30.597373\n  type: 'test'\n  ...\n# Subtest: verification summary contract derives markdown from one validated JSON payload\nok 11 - verification summary contract derives markdown from one validated JSON payload\n  ---\n  duration_ms: 84.605166\n  type: 'test'\n  ...\n# Subtest: verification summary contract refuses to canonize a stale report\nok 12 - verification summary contract refuses to canonize a stale report\n  ---\n  duration_ms: 50.824422\n  type: 'test'\n  ...\n# Subtest: closeout lanes keep stable ids and include critical families\nok 13 - closeout lanes keep stable ids and include critical families\n  ---\n  duration_ms: 1.625855\n  type: 'test'\n  ...\n# Subtest: group-backed closeout lanes delegate to canonical test-group package facades\nok 14 - group-backed closeout lanes delegate to canonical test-group package facades\n  ---\n  duration_ms: 0.241134\n  type: 'test'\n  ...\n# Subtest: overlay export closeout lane stays direct and grouped\nok 15 - overlay export closeout lane stays direct and grouped\n  ---\n  duration_ms: 0.267404\n  type: 'test'\n  ...\n# Subtest: direct profiles stay stable for order-pdf sketch and cloud-sync\nok 16 - direct profiles stay stable for order-pdf sketch and cloud-sync\n  ---\n  duration_ms: 0.116827\n  type: 'test'\n  ...\n# Subtest: normalize args collects profiles categories lane ids skips log dir and state options\nok 17 - normalize args collects profiles categories lane ids skips log dir and state options\n  ---\n  duration_ms: 0.452814\n  type: 'test'\n  ...\n# Subtest: closeout CLI rejects unknown flags missing values and unknown selectors\nok 18 - closeout CLI rejects unknown flags missing values and unknown selectors\n  ---\n  duration_ms: 0.716772\n  type: 'test'\n  ...\n# Subtest: select lanes respects profile resume and skip while preserving order\nok 19 - select lanes respects profile resume and skip while preserving order\n  ---\n  duration_ms: 0.222376\n  type: 'test'\n  ...\n# Subtest: environment classifier recognizes playwright/browser failures\nok 20 - environment classifier recognizes playwright/browser failures\n  ---\n  duration_ms: 0.137228\n  type: 'test'\n  ...\n# Subtest: runner classifier recognizes wrapper and sandbox failures\nok 21 - runner classifier recognizes wrapper and sandbox failures\n  ---\n  duration_ms: 0.361987\n  type: 'test'\n  ...\n# Subtest: summary separates passed failures environment-blocked and runner-blocked lanes\nok 22 - summary separates passed failures environment-blocked and runner-blocked lanes\n  ---\n  duration_ms: 0.391982\n  type: 'test'\n  ...\n# Subtest: state helpers merge by lane id and preserve canonical order\nok 23 - state helpers merge by lane id and preserve cano\n...\n[trimmed 1134 chars]",
       "stderr": "",
-      "laneDigest": "sha256:f3600c635cc833f11c4c32bc6a361b6792a171fa870a217dce282edd2c91df0c"
+      "laneDigest": "sha256:a470bf200464995f584a76caa4e49467758150d2ec1cdf29b4fef5e1fd230774"
+    },
+    {
+      "id": "toolchain-surfaces",
+      "label": "Toolchain surfaces (canonical group)",
+      "category": "toolchain",
+      "expected": "pass",
+      "testGroupId": "toolchain-surfaces",
+      "command": "npm",
+      "args": ["run", "test:toolchain-surfaces"],
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 11816,
+      "startedAtIso": "2026-07-12T14:47:53.746Z",
+      "finishedAtIso": "2026-07-12T14:48:05.562Z",
+      "stdout": "\n> test:toolchain-surfaces\n> node tools/wp_test_group.mjs toolchain-surfaces\n\nTAP version 13\n# Subtest: [actions.patch types] fixture uses native @ts-expect-error contracts\nok 1 - [actions.patch types] fixture uses native @ts-expect-error contracts\n  ---\n  duration_ms: 1.836133\n  type: 'test'\n  ...\n# Subtest: [actions.patch types] public/backend patch contract fixture typechecks through tsc\nok 2 - [actions.patch types] public/backend patch contract fixture typechecks through tsc\n  ---\n  duration_ms: 1991.797547\n  type: 'test'\n  ...\n# Subtest: [actions.patch types] fixture is safe if discovered by the generic runtime runner\nok 3 - [actions.patch types] fixture is safe if discovered by the generic runtime runner\n  ---\n  duration_ms: 1798.394258\n  type: 'test'\n  ...\n# Subtest: package-lock resolved tarballs stay on public registries\nok 4 - package-lock resolved tarballs stay on public registries\n  ---\n  duration_ms: 12.294605\n  type: 'test'\n  ...\n# Subtest: ts runtime loader loads a plain TS module\nok 5 - ts runtime loader loads a plain TS module\n  ---\n  duration_ms: 905.210223\n  type: 'test'\n  ...\n# Subtest: ts runtime loader resolves local .js imports to TS files\nok 6 - ts runtime loader resolves local .js imports to TS files\n  ---\n  duration_ms: 105.766123\n  type: 'test'\n  ...\n# Subtest: ts runtime loader supports object mocks by exact specifier\nok 7 - ts runtime loader supports object mocks by exact specifier\n  ---\n  duration_ms: 184.56849\n  type: 'test'\n  ...\n# Subtest: ts runtime loader supports dynamic mocks with loader context\nok 8 - ts runtime loader supports dynamic mocks with loader context\n  ---\n  duration_ms: 100.198626\n  type: 'test'\n  ...\n# Subtest: ts runtime loader cache returns the same module instance\nok 9 - ts runtime loader cache returns the same module instance\n  ---\n  duration_ms: 7.557487\n  type: 'test'\n  ...\n# Subtest: ts runtime loader transform errors include the fixture filename\nok 10 - ts runtime loader transform errors include the fixture filename\n  ---\n  duration_ms: 8.867264\n  type: 'test'\n  ...\n# Subtest: ts runtime loader evaluate errors include the fixture filename\nok 11 - ts runtime loader evaluate errors include the fixture filename\n  ---\n  duration_ms: 96.823569\n  type: 'test'\n  ...\n# Subtest: runtime tests do not reintroduce per-test TS VM loaders\nok 12 - runtime tests do not reintroduce per-test TS VM loaders\n  ---\n  duration_ms: 1207.376101\n  type: 'test'\n  ...\n# Subtest: AST adapter uses Oxc parser and parses TS/TSX through stable syntax helpers\nok 13 - AST adapter uses Oxc parser and parses TS/TSX through stable syntax helpers\n  ---\n  duration_ms: 5.747458\n  type: 'test'\n  ...\n# Subtest: AST adapter preserves import, dynamic import, member, and optional-chain shapes for callers\nok 14 - AST adapter preserves import, dynamic import, member, and optional-chain shapes for callers\n  ---\n  duration_ms: 78.118576\n  type: 'test'\n  ...\n# Subtest: AST adapter keeps token/code-line metrics independent from tool callers\nok 15 - AST adapter keeps token/code-line metrics independent from tool callers\n  ---\n  duration_ms: 1.16216\n  type: 'test'\n  ...\n# Subtest: AST adapter centralizes type-hardening AST counts\nok 16 - AST adapter centralizes type-hardening AST counts\n  ---\n  duration_ms: 0.823433\n  type: 'test'\n  ...\n# Subtest: AST adapter exposes syntax error diagnostics without TypeScript compiler API\nok 17 - AST adapter exposes syntax error diagnostics without TypeScript compiler API\n  ---\n  duration_ms: 1.307489\n  type: 'test'\n  ...\n# Subtest: no project tool/test/runtime source imports TypeScript directly\nok 18 - no project tool/test/runtime source imports TypeScript directly\n  ---\n  duration_ms: 3615.849499\n  type: 'test'\n  ...\n# Subtest: AST adapter returns injected adapter instances without exposing TypeScript module wrapping\nok 19 - AST adapter returns injected adapter instances without exposing TypeScript module wrapping\n  ---\n  duration_ms: 0.251099\n  type: 'test'\n  ...\n# Subtest: build-dist args parsing keeps clean/assets/help/unknown policy\nok 20 - build-dist args parsing keeps clean/assets/help/unknown policy\n  ---\n  duration_ms: 2.459253\n  type: 'test'\n  ...\n# Subtest: build-dist path resolution stays rooted under project dist\nok 21 - build-dist path resolution stays rooted under project dist\n  ---\n  duration_ms: 0.421646\n  type: 'test'\n  ...\n# Subtest: static asset copy mirrors html/runtime/public assets into dist\nok 22 - static asset copy mirrors html/runtime/public assets into dist\n  ---\n  duration_ms: 112.446088\n  type: 'test'\n  ...\n# Subtest: static asset copy keeps repository tests out of dist outputs\nok 23 - static asset copy keeps repository tests out of dist outputs\n  ---\n  duration_ms: 89.672668\n  type: 'test'\n  ...\n# Subtest: static asset copy fails when the canonical runtime config module is missing\nok 24 - static asset copy fails when the canonical runtime config module is mis\n...\n[trimmed 32504 chars]",
+      "stderr": "",
+      "laneDigest": "sha256:1ee666855179146ae47d7ff7d72377715a226c1d142c8cd193d04718e407b075"
     }
   ]
 }

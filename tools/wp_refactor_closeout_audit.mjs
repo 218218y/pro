@@ -1,12 +1,18 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 
 import {
   PURE_NPM_RUN_ALIAS_PATTERN,
   TEST_REF_PATTERN,
   createVerifyScriptCoverageMap,
+  validateCloseoutTestGroupBindings,
 } from './wp_refactor_closeout_audit_support.mjs';
+import { TEST_GROUP_CATALOG } from './wp_test_group_catalog.mjs';
+
+const require = createRequire(import.meta.url);
+const { CLOSEOUT_LANES } = require('./wp_verify_closeout_support.cjs');
 
 const repoRoot = process.cwd();
 const testsDir = path.join(repoRoot, 'tests');
@@ -117,6 +123,9 @@ function buildMarkdown(report, details) {
     `- package.json thin-contract refs: **${report.package_script_thin_contract_refs}**`,
     `- Family contracts missing direct test scripts: **${report.family_contract_files_missing_test_scripts}**`,
     `- Family contracts missing verify coverage: **${report.family_contract_files_missing_verify_scripts}**`,
+    `- Closeout lanes: **${report.closeout_lane_count}**`,
+    `- Closeout lanes backed by canonical test groups: **${report.closeout_test_group_lane_count}**`,
+    `- Closeout test-group binding issues: **${report.closeout_test_group_binding_issues}**`,
     `- Closeout JSON report sync mismatches: **${report.closeout_json_report_sync_mismatches}**`,
     `- Closeout Markdown report sync mismatches: **${report.closeout_markdown_report_sync_mismatches}**`,
     '',
@@ -138,6 +147,17 @@ function buildMarkdown(report, details) {
   lines.push('');
   for (const entry of details.dense_test_families) {
     lines.push(`- \`${entry.family}\`: **${entry.count}** files`);
+  }
+  lines.push('');
+
+  lines.push('## Closeout Test-Group Bindings');
+  lines.push('');
+  if (details.closeout_test_group_lanes.length) {
+    for (const entry of details.closeout_test_group_lanes) {
+      lines.push(`- \`${entry.laneId}\` → \`${entry.groupName}\` → \`${entry.script}\``);
+    }
+  } else {
+    lines.push('- No closeout lane is backed by the canonical test-group catalog.');
   }
   lines.push('');
 
@@ -269,7 +289,11 @@ const familyContractCoverage = familyContractFiles
     const rel = relative(full);
     const basename = path.basename(full, path.extname(full)).replace(/\.test$/, '');
     const directTestScripts = testScriptEntries
-      .filter(([, command]) => command.includes(rel) || command.includes(basename))
+      .filter(([scriptName, command]) => {
+        if (command.includes(rel) || command.includes(basename)) return true;
+        const coverage = verifyScriptCoverageMap.get(scriptName);
+        return Boolean(coverage?.testRefs.has(rel) || coverage?.basenames.has(basename));
+      })
       .map(([scriptName]) => scriptName)
       .sort();
     const verifyScripts = verifyScriptEntries
@@ -300,6 +324,18 @@ const familyContractsMissingTestScripts = familyContractCoverage.filter(
 const familyContractsMissingVerifyScripts = familyContractCoverage.filter(
   entry => entry.verify_scripts.length === 0
 );
+const closeoutTestGroupLanes = CLOSEOUT_LANES.filter(lane => typeof lane.testGroupId === 'string').map(
+  lane => ({
+    laneId: lane.id,
+    groupName: lane.testGroupId,
+    script: TEST_GROUP_CATALOG[lane.testGroupId]?.script || null,
+  })
+);
+const closeoutTestGroupBindingIssues = validateCloseoutTestGroupBindings({
+  lanes: CLOSEOUT_LANES,
+  scriptEntries,
+  testGroupCatalog: TEST_GROUP_CATALOG,
+});
 
 const report = {
   generated_at: new Date().toISOString(),
@@ -317,12 +353,17 @@ const report = {
   package_script_thin_contract_refs: thinContractScriptRefs.length,
   family_contract_files_missing_test_scripts: familyContractsMissingTestScripts.length,
   family_contract_files_missing_verify_scripts: familyContractsMissingVerifyScripts.length,
+  closeout_lane_count: CLOSEOUT_LANES.length,
+  closeout_test_group_lane_count: closeoutTestGroupLanes.length,
+  closeout_test_group_binding_issues: closeoutTestGroupBindingIssues.length,
   closeout_json_report_sync_mismatches: 0,
   closeout_markdown_report_sync_mismatches: 0,
 };
 
 const details = {
   family_contract_coverage: familyContractCoverage,
+  closeout_test_group_lanes: closeoutTestGroupLanes,
+  closeout_test_group_binding_issues: closeoutTestGroupBindingIssues,
   direct_alias_scripts: directAliasScripts,
   dense_test_families: denseTestFamilies,
   largest_esm_files: largestEsmFiles,
@@ -402,6 +443,12 @@ if (familyContractsMissingVerifyScripts.length) {
     console.log(`  - ${entry.file} (test scripts: ${entry.direct_test_scripts.join(', ') || 'none'})`);
   }
 }
+if (closeoutTestGroupBindingIssues.length) {
+  console.log('\n[refactor-closeout-audit] closeout test-group binding issues:');
+  for (const issue of closeoutTestGroupBindingIssues) {
+    console.log(`  - ${issue.code}: lane=${issue.laneId || 'unknown'} group=${issue.groupName || 'unknown'}`);
+  }
+}
 if (details.report_sync_mismatches.length) {
   console.log('\n[refactor-closeout-audit] persisted closeout report outputs are missing or stale:');
   for (const entry of details.report_sync_mismatches) console.log(`  - ${entry.kind}: ${entry.target}`);
@@ -414,6 +461,7 @@ if (
   thinContractScriptRefs.length ||
   familyContractsMissingTestScripts.length ||
   familyContractsMissingVerifyScripts.length ||
+  closeoutTestGroupBindingIssues.length ||
   details.report_sync_mismatches.length
 ) {
   process.exitCode = 1;

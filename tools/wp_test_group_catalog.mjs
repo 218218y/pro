@@ -308,6 +308,21 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/project_io_owner_rejection_visibility_runtime.test.ts',
     ],
   }),
+  'verification-control-plane': defineTestGroup({
+    script: 'test:verification-control-plane',
+    description: 'Verification manifest, closeout state, and generated-report contracts.',
+    kind: 'control-plane-contract',
+    owners: ['toolchain/verification'],
+    environment: 'node',
+    runner: 'node-test',
+    portfolioRole: 'focused',
+    files: [
+      'tests/wp_verification_manifest_runtime.test.cjs',
+      'tests/wp_verify_closeout_support_runtime.test.cjs',
+      'tests/wp_generated_report_contract_runtime.test.js',
+      'tests/wp_verification_summary_contract_runtime.test.js',
+    ],
+  }),
   'toolchain-surfaces': defineTestGroup({
     script: 'test:toolchain-surfaces',
     description: 'Build, release, lint, test, typecheck, and verification toolchain contracts.',

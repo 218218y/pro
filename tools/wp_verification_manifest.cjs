@@ -143,6 +143,7 @@ function normalizeLaneDefinition(lane) {
     label: lane.label,
     category: lane.category,
     expected: lane.expected,
+    testGroupId: lane.testGroupId || null,
     command: lane.command || null,
     args: Array.isArray(lane.args) ? lane.args : [],
     dependsOn: Array.isArray(lane.dependsOn) ? lane.dependsOn : [],

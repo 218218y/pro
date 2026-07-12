@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-07-12T11:00:34.076Z",
+  "generatedAt": "2026-07-12T14:46:15.530Z",
   "summary": {
-    "groups": 10,
-    "scriptBindings": 10,
-    "catalogFileReferences": 242,
+    "groups": 11,
+    "scriptBindings": 11,
+    "catalogFileReferences": 246,
     "directPackageTestReferences": 291,
     "catalogIssues": 0,
     "bindingIssues": 0,
     "portfolioRoles": {
       "primary": 5,
-      "focused": 4,
+      "focused": 5,
       "architecture": 1
     },
     "runners": {
       "tsx-test": 6,
-      "node-test": 2,
+      "node-test": 3,
       "serial-tsx": 2
     }
   },
@@ -411,6 +411,24 @@
         "tests/wp_lint_typescript_eslint_absence_runtime.test.js",
         "tests/wp_toolchain_version_policy_runtime.test.js",
         "tests/wp_test_group_catalog_report_runtime.test.js"
+      ]
+    },
+    {
+      "name": "verification-control-plane",
+      "script": "test:verification-control-plane",
+      "description": "Verification manifest, closeout state, and generated-report contracts.",
+      "kind": "control-plane-contract",
+      "owners": ["toolchain/verification"],
+      "environment": "node",
+      "runner": "node-test",
+      "portfolioRole": "focused",
+      "serialPolicy": null,
+      "fileCount": 4,
+      "files": [
+        "tests/wp_verification_manifest_runtime.test.cjs",
+        "tests/wp_verify_closeout_support_runtime.test.cjs",
+        "tests/wp_generated_report_contract_runtime.test.js",
+        "tests/wp_verification_summary_contract_runtime.test.js"
       ]
     }
   ]

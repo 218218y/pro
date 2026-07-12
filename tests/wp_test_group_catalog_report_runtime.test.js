@@ -11,11 +11,16 @@ import {
 
 test('test-group catalog report exposes execution ownership and package bindings', () => {
   const report = buildTestGroupCatalogReport();
-  assert.equal(report.summary.groups, 10);
-  assert.equal(report.summary.scriptBindings, 10);
+  assert.equal(report.summary.groups, 11);
+  assert.equal(report.summary.scriptBindings, 11);
   assert.ok(report.summary.catalogFileReferences > 240);
   assert.ok(report.summary.directPackageTestReferences < 300);
   assert.deepEqual(report.failures, { catalogIssues: [], bindingIssues: [] });
+
+  const verificationControlPlane = report.groups.find(group => group.name === 'verification-control-plane');
+  assert.equal(verificationControlPlane.runner, 'node-test');
+  assert.equal(verificationControlPlane.portfolioRole, 'focused');
+  assert.equal(verificationControlPlane.fileCount, 4);
 
   const tabSurfaces = report.groups.find(group => group.name === 'tab-surfaces');
   assert.equal(tabSurfaces.runner, 'serial-tsx');

@@ -72,8 +72,13 @@ test('lane catalog identity covers lane execution and profile membership', () =>
     profiles
   );
   const profileChanged = createLaneCatalogIdentity(lanes, { default: [], focused: ['unit'] });
+  const testGroupChanged = createLaneCatalogIdentity(
+    [{ ...lanes[0], testGroupId: 'unit-contracts' }],
+    profiles
+  );
   assert.notEqual(base.digest, commandChanged.digest);
   assert.notEqual(base.digest, profileChanged.digest);
+  assert.notEqual(base.digest, testGroupChanged.digest);
 });
 
 test('verification payload binds results to source lane catalog and explicit selection', () => {

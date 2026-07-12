@@ -31,6 +31,7 @@ test('closeout lanes keep stable ids and include critical families', () => {
   const ids = CLOSEOUT_LANES.map(lane => lane.id);
   assert.deepEqual(ids, [
     'verification-control-plane',
+    'toolchain-surfaces',
     'build-dist',
     'perf-smoke',
     'overlay-export-core',
@@ -57,6 +58,18 @@ test('closeout lanes keep stable ids and include critical families', () => {
     'e2e-preflight',
     'e2e-smoke-run',
   ]);
+});
+
+test('group-backed closeout lanes delegate to canonical test-group package facades', () => {
+  const verification = CLOSEOUT_LANES.find(entry => entry.id === 'verification-control-plane');
+  const toolchain = CLOSEOUT_LANES.find(entry => entry.id === 'toolchain-surfaces');
+  assert.deepEqual(
+    [verification, toolchain].map(lane => [lane.testGroupId, lane.command, lane.args]),
+    [
+      ['verification-control-plane', 'npm', ['run', 'test:verification-control-plane']],
+      ['toolchain-surfaces', 'npm', ['run', 'test:toolchain-surfaces']],
+    ]
+  );
 });
 
 test('overlay export closeout lane stays direct and grouped', () => {
@@ -101,9 +114,10 @@ test('direct profiles stay stable for order-pdf sketch and cloud-sync', () => {
     'sketch-free-boxes',
     'sketch-render-visuals',
   ]);
-  assert.deepEqual(CLOSEOUT_PROFILES['control-plane'], ['verification-control-plane']);
+  assert.deepEqual(CLOSEOUT_PROFILES['control-plane'], ['verification-control-plane', 'toolchain-surfaces']);
   assert.deepEqual(CLOSEOUT_PROFILES['verify-core'], [
     'verification-control-plane',
+    'toolchain-surfaces',
     'build-dist',
     'perf-smoke',
     'overlay-export-core',
