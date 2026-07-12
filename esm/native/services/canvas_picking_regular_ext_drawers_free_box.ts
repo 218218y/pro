@@ -40,8 +40,8 @@ import {
 } from './canvas_picking_shoe_drawer_base_auto_none.js';
 import { commitSketchFreePlacementHoverRecord } from './canvas_picking_sketch_free_commit.js';
 import { resolveSketchBoxStackPreviewContext } from './canvas_picking_sketch_box_stack_preview_context.js';
-import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
-import { decodeSketchBoxContentCommand } from './canvas_picking_sketch_box_content_command.js';
+import { createManualLayoutSketchBoxCommandHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
+import { decodeSketchBoxContentCommandHover } from './canvas_picking_sketch_box_content_command.js';
 import { readSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 import type {
   ExtDrawersHoverPreviewArgs,
@@ -203,7 +203,6 @@ function buildRegularDrawerPreview(args: {
   const previewOp = blockedReason ? 'blocked' : op;
   const regH = DRAWER_DIMENSIONS.external.regularHeightM;
   const shoeH = DRAWER_DIMENSIONS.external.shoeHeightM;
-  const actionStackH = isShoe ? shoeH : drawerCount * regH;
   const faceCenterX = ctx.frontOverlay
     ? ctx.frontOverlay.x
     : ctx.activeSegment
@@ -244,28 +243,12 @@ function buildRegularDrawerPreview(args: {
     }
   }
 
-  const hoverRecord = createManualLayoutSketchBoxContentHoverRecord({
+  const hoverRecord = createManualLayoutSketchBoxCommandHoverRecord({
     host: {
       tool: REGULAR_FREE_BOX_TOOL,
       moduleKey: context.host.moduleKey,
       isBottom: context.host.isBottom,
     },
-    contentKind: SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND,
-    boxId: target.boxId,
-    freePlacement: true,
-    op: blockedReason ? 'add' : op,
-    removeId: blockedReason ? null : formatIdentityValue(readIdentityValue(existing?.id)) || null,
-    contentXNorm: activeXNorm,
-    boxYNorm: activeYNorm,
-    boxBaseYNorm: clampUnit((ctx.boxBottomY - ctx.fullBoxBottomY) / Math.max(target.targetHeight, 1e-6)),
-    yCenter: baseY + actionStackH / 2,
-    baseY,
-    stackH: actionStackH,
-    drawerCount: nextRegularCount,
-    hasShoeDrawer: nextHasShoe,
-    drawerH: isShoe ? shoeH : regH,
-    drawerHeightM: isShoe ? shoeH : regH,
-    blockedReason,
     command: {
       kind: 'regular-external-drawers',
       boxId: target.boxId,
@@ -352,9 +335,10 @@ function readRecentRegularFreeBoxHover(App: AppContainer): RecordMap | null {
   if (!hover) return null;
   const ts = readNumberOrDefault(hover.ts, 0);
   if (!Number.isFinite(ts) || Date.now() - ts > HOVER_MAX_AGE_MS) return null;
-  if (hover.kind !== 'box_content') return null;
-  if (hover.contentKind !== SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND) return null;
-  if (hover.freePlacement !== true) return null;
+  const decoded = decodeSketchBoxContentCommandHover(hover);
+  if (!decoded.ok || decoded.value.contentKind !== SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND)
+    return null;
+  if (!decoded.value.command.freePlacement) return null;
   return hover;
 }
 
@@ -363,21 +347,21 @@ export function tryCommitSketchBoxRegularExternalDrawersHover(App: AppContainer)
   if (!hover) return false;
   const host = readSketchHoverHostIdentity(hover, __wp_toModuleKey);
   if (!host || host.moduleKey == null) return false;
-  const boxId = typeof hover.boxId === 'string' ? hover.boxId : null;
-  if (!boxId) return false;
-  const decoded = decodeSketchBoxContentCommand({
-    record: hover,
-    expectedContentKind: SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND,
-    expectedBoxId: boxId,
-    expectedFreePlacement: true,
-  });
-  if (!decoded.ok || decoded.value.kind !== 'regular-external-drawers') return false;
-  const command = decoded.value;
+  const commitHost = { moduleKey: host.moduleKey, isBottom: host.isBottom };
+  const decoded = decodeSketchBoxContentCommandHover(hover);
+  if (
+    !decoded.ok ||
+    decoded.value.contentKind !== SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND ||
+    decoded.value.command.kind !== 'regular-external-drawers' ||
+    !decoded.value.command.freePlacement
+  )
+    return false;
+  const command = decoded.value.command;
   const addingShoeDrawer = command.op === 'add' && command.hasShoeDrawer;
   const removingShoeDrawer = command.op === 'remove' && !command.hasShoeDrawer;
   const commit = commitSketchFreePlacementHoverRecord({
     App,
-    host,
+    host: commitHost,
     hoverRec: hover,
     freeBoxContentKind: SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND,
     floorY: 0,

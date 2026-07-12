@@ -83,20 +83,7 @@ test('sketch-box content commit preserves valid existing content when pruning mi
     boxId: 'sb1',
     contentKind: 'drawers',
     hoverRec: withSketchBoxContentCommand(
-      {
-        kind: 'box_content',
-        contentKind: 'drawers',
-        boxId: 'sb1',
-        freePlacement: false,
-        op: 'add',
-        boxYNorm: 0.6,
-        boxBaseYNorm: 0.42,
-        contentXNorm: 0.4,
-        drawerHeightM: 0.18,
-        drawerH: 0.18,
-        stackH: 0.39,
-        drawerGap: 0.03,
-      },
+      {},
       {
         kind: 'internal-drawers',
         boxId: 'sb1',

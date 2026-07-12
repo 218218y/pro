@@ -1,9 +1,6 @@
 import type { AppContainer } from '../../../types';
 import type { ManualLayoutSketchHoverHost } from './canvas_picking_manual_layout_sketch_hover_state.js';
-import {
-  readManualLayoutSketchBoxContentHoverIntent,
-  readManualLayoutSketchStackHoverIntent,
-} from './canvas_picking_manual_layout_sketch_hover_intent.js';
+import { readManualLayoutSketchStackHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
 import { __wp_toast } from './canvas_picking_core_helpers.js';
 import {
   blockRemovableSideContentBuildIfModuleSideMissing,
@@ -32,7 +29,10 @@ import {
   ensureSketchModuleBoxes,
   findSketchModuleBoxById,
 } from './canvas_picking_sketch_box_content_commit.js';
-import { decodeSketchBoxContentCommand } from './canvas_picking_sketch_box_content_command.js';
+import {
+  decodeSketchBoxContentCommandHover,
+  SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND,
+} from './canvas_picking_sketch_box_content_command.js';
 
 type RecordMap = Record<string, unknown>;
 
@@ -207,26 +207,25 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
   const isExtDrawers = args.tool.startsWith('sketch_ext_drawers:');
   if (!isDrawers && !isExtDrawers) return false;
 
-  const boxContentHover = args.hoverOk ? readManualLayoutSketchBoxContentHoverIntent(args.hoverRec) : null;
-  const hoverContentKind =
-    boxContentHover && !boxContentHover.freePlacement ? boxContentHover.contentKind : '';
-  const hoverBoxId = boxContentHover && !boxContentHover.freePlacement ? boxContentHover.boxId : '';
+  const decodedHover = args.hoverOk ? decodeSketchBoxContentCommandHover(args.hoverRec) : null;
+  if (args.hoverOk && args.hoverRec.kind === SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND && !decodedHover?.ok) {
+    args.writeSketchHover(args.App, null);
+    return true;
+  }
+  const commandHover =
+    decodedHover?.ok && !decodedHover.value.command.freePlacement ? decodedHover.value : null;
+  const hoverContentKind = commandHover?.contentKind || '';
+  const hoverBoxId = commandHover?.command.boxId || '';
 
   if (isDrawers && hoverContentKind === 'drawers' && hoverBoxId) {
     const boxes = ensureSketchModuleBoxes(args.cfg);
     const box = findSketchModuleBoxById(boxes, hoverBoxId, { freePlacement: false });
     if (!box) return true;
-    const decoded = decodeSketchBoxContentCommand({
-      record: args.hoverRec,
-      expectedContentKind: 'drawers',
-      expectedBoxId: hoverBoxId,
-      expectedFreePlacement: false,
-    });
-    if (!decoded.ok || decoded.value.kind !== 'internal-drawers') {
+    const command = commandHover?.command;
+    if (!command || command.kind !== 'internal-drawers') {
       args.writeSketchHover(args.App, null);
       return true;
     }
-    const command = decoded.value;
     if (
       command.op !== 'remove' &&
       blockSketchBoxStackCommitIfRemovedSide({
@@ -292,17 +291,11 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
     const boxes = ensureSketchModuleBoxes(args.cfg);
     const box = findSketchModuleBoxById(boxes, hoverBoxId, { freePlacement: false });
     if (!box) return true;
-    const decoded = decodeSketchBoxContentCommand({
-      record: args.hoverRec,
-      expectedContentKind: 'ext_drawers',
-      expectedBoxId: hoverBoxId,
-      expectedFreePlacement: false,
-    });
-    if (!decoded.ok || decoded.value.kind !== 'sketch-external-drawers') {
+    const command = commandHover?.command;
+    if (!command || command.kind !== 'sketch-external-drawers') {
       args.writeSketchHover(args.App, null);
       return true;
     }
-    const command = decoded.value;
     if (
       command.op !== 'remove' &&
       blockSketchStackCommitIfHexCell({

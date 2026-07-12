@@ -6,17 +6,15 @@ import type {
 } from './canvas_picking_manual_layout_sketch_contracts.js';
 import type {
   SketchBoxDividerState,
-  SketchBoxDoorPlacement,
   SketchBoxHorizontalDividerState,
   SketchBoxSegmentState,
   SketchBoxVerticalSegmentState,
 } from './canvas_picking_sketch_box_dividers.js';
 import {
   findSketchBoxDoorForSegment,
-  findSketchBoxDoorsForSegment,
   hasSketchBoxDoubleDoorPairForSegment,
 } from './canvas_picking_sketch_box_dividers.js';
-import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
+import { createManualLayoutSketchBoxCommandHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type { SketchBoxContentCommand } from './canvas_picking_sketch_box_content_command.js';
 
 type RecordMap = UnknownRecord;
@@ -85,17 +83,6 @@ function isFiniteNumber(value: unknown): value is number {
 
 function clampWoodThick(value: number): number {
   return isFiniteNumber(value) && value > 0 ? value : MATERIAL_DIMENSIONS.wood.thicknessM;
-}
-
-function pickDoorPlacementByHinge(
-  placements: SketchBoxDoorPlacement[],
-  hinge: 'left' | 'right'
-): SketchBoxDoorPlacement | null {
-  for (let i = 0; i < placements.length; i++) {
-    const placement = placements[i];
-    if (placement?.door?.hinge === hinge) return placement;
-  }
-  return null;
 }
 
 export function resolveSketchBoxDoorPreview(
@@ -176,17 +163,6 @@ export function resolveSketchBoxDoorPreview(
     cursorX: pointerX,
     cursorY: pointerY,
   });
-  const segmentDoors = findSketchBoxDoorsForSegment({
-    box: targetBox,
-    segments: boxSegments,
-    verticalSegments,
-    boxCenterX: targetGeo.centerX,
-    innerW: targetGeo.innerW,
-    boxCenterY: targetCenterY,
-    innerH: targetHeight,
-    cursorX: pointerX,
-    cursorY: pointerY,
-  });
   const hasDoor = !!existingDoor;
   const hasDoubleDoor = hasSketchBoxDoubleDoorPairForSegment({
     box: targetBox,
@@ -201,8 +177,6 @@ export function resolveSketchBoxDoorPreview(
   });
   if (contentKind === 'door_hinge' && !hasDoor) return null;
 
-  const leftDoor = pickDoorPlacementByHinge(segmentDoors, 'left');
-  const rightDoor = pickDoorPlacementByHinge(segmentDoors, 'right');
   const hinge: 'left' | 'right' = existingDoor?.door?.hinge === 'right' ? 'right' : 'left';
   const doorSegment = existingDoor?.segment || activeSegment;
   const doorVerticalSegment = existingDoor?.verticalSegment || activeVerticalSegment;
@@ -280,20 +254,7 @@ export function resolveSketchBoxDoorPreview(
           };
 
   return {
-    hoverRecord: createManualLayoutSketchBoxContentHoverRecord({
-      host,
-      contentKind,
-      boxId,
-      freePlacement,
-      op,
-      hinge,
-      contentXNorm,
-      boxYNorm,
-      doorId,
-      doorLeftId: leftDoor ? String(leftDoor.door.id || '') : '',
-      doorRightId: rightDoor ? String(rightDoor.door.id || '') : '',
-      command,
-    }),
+    hoverRecord: createManualLayoutSketchBoxCommandHoverRecord({ host, command }),
     preview: {
       kind: 'storage',
       x: (doorLeft + doorRight) / 2,

@@ -21,8 +21,8 @@ import {
 import { commitSketchModuleShelf } from './canvas_picking_sketch_module_vertical_content.js';
 import { toastSketchBoxContentBlocked } from './canvas_picking_sketch_box_content_blocked.js';
 import {
-  decodeSketchBoxContentCommand,
-  isStrictSketchBoxContentKind,
+  decodeSketchBoxContentCommandHover,
+  SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND,
 } from './canvas_picking_sketch_box_content_command.js';
 
 type RecordMap = Record<string, unknown>;
@@ -61,6 +61,49 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
     __wp_clearSketchHover,
   } = args;
 
+  const strictHover = __hoverOk ? decodeSketchBoxContentCommandHover(__hoverRec) : null;
+  if (__hoverOk && __hoverRec.kind === SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND) {
+    if (!strictHover?.ok) {
+      __wp_clearSketchHover(App);
+      return true;
+    }
+    const { command, contentKind } = strictHover.value;
+    if (
+      !command.freePlacement &&
+      (contentKind === 'door' || contentKind === 'double_door' || contentKind === 'door_hinge')
+    ) {
+      if (command.blockedReason) {
+        toastSketchBoxContentBlocked(App, contentKind, command.blockedReason);
+        __wp_clearSketchHover(App);
+        return true;
+      }
+      __patchConfigForKey(
+        __activeModuleKey,
+        cfg => {
+          const boxes = ensureSketchModuleBoxes(cfg);
+          const box = findSketchModuleBoxById(boxes, command.boxId, { freePlacement: false });
+          if (!box) return;
+          commitSketchModuleBoxContent({
+            App,
+            cfg,
+            box,
+            boxId: command.boxId,
+            contentKind,
+            hoverRec: __hoverRec,
+            hoverHost: {
+              tool: typeof __hoverRec.tool === 'string' ? __hoverRec.tool : '',
+              moduleKey: __activeModuleKey,
+              isBottom: !!__isBottomStack,
+            },
+          });
+        },
+        createCanvasPickingConfigStructuralPatchMeta(getSketchModuleBoxContentSource(contentKind))
+      );
+      __wp_clearSketchHover(App);
+      return true;
+    }
+  }
+
   const boxContentHover = __hoverOk ? readManualLayoutSketchBoxContentHoverIntent(__hoverRec) : null;
   if (boxContentHover && !boxContentHover.freePlacement && boxContentHover.boxId) {
     const contentKind = boxContentHover.contentKind;
@@ -68,27 +111,10 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
       contentKind === 'divider' ||
       contentKind === 'shelf' ||
       contentKind === 'rod' ||
-      contentKind === 'storage' ||
-      contentKind === 'door' ||
-      contentKind === 'double_door' ||
-      contentKind === 'door_hinge'
+      contentKind === 'storage'
     ) {
-      let blockedReason = boxContentHover.blockedReason;
-      if (isStrictSketchBoxContentKind(contentKind)) {
-        const decoded = decodeSketchBoxContentCommand({
-          record: __hoverRec,
-          expectedContentKind: contentKind,
-          expectedBoxId: boxContentHover.boxId,
-          expectedFreePlacement: false,
-        });
-        if (!decoded.ok) {
-          __wp_clearSketchHover(App);
-          return true;
-        }
-        blockedReason = decoded.value.blockedReason;
-      }
-      if (blockedReason) {
-        toastSketchBoxContentBlocked(App, contentKind, blockedReason);
+      if (boxContentHover.blockedReason) {
+        toastSketchBoxContentBlocked(App, contentKind, boxContentHover.blockedReason);
         __wp_clearSketchHover(App);
         return true;
       }

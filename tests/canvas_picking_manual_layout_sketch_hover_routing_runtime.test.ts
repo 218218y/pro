@@ -2,6 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryHandleManualLayoutSketchHoverPreviewImpl } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_tools_router.ts';
+import { decodeSketchBoxContentCommandHover } from '../esm/native/services/canvas_picking_sketch_box_content_command.ts';
+
+function requireSketchBoxCommandHover(value: unknown) {
+  const decoded = decodeSketchBoxContentCommandHover(value);
+  assert.equal(decoded.ok, true);
+  if (!decoded.ok) assert.fail(`Expected canonical sketch-box command hover: ${decoded.reason}`);
+  return decoded.value;
+}
 
 function createApp(overrides: Record<string, unknown> = {}) {
   const state = {
@@ -495,10 +503,11 @@ test('manual-layout free-box external drawer hover prefers the drawer stack over
   assert.equal(handled, true);
   assert.equal(calls.hideLayout, 1);
   assert.equal(calls.hover.length, 1);
-  assert.equal(calls.hover[0].kind, 'box_content');
-  assert.equal(calls.hover[0].contentKind, 'ext_drawers');
-  assert.equal(calls.hover[0].op, 'remove');
-  assert.equal(calls.hover[0].removeId, 'regular-drawer-stack');
+  const hover = requireSketchBoxCommandHover(calls.hover[0]);
+  assert.equal(hover.contentKind, 'ext_drawers');
+  assert.equal(hover.command.kind, 'sketch-external-drawers');
+  assert.equal(hover.command.op, 'remove');
+  assert.equal(hover.command.removeId, 'regular-drawer-stack');
   assert.equal(calls.previews.length, 1);
   assert.equal(calls.previews[0].kind, 'ext_drawers');
   assert.equal(calls.previews[0].op, 'remove');

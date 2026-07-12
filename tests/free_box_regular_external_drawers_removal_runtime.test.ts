@@ -6,6 +6,7 @@ import { tryApplyManualLayoutSketchDirectHitActions } from '../esm/native/servic
 import { tryHandleCanvasPickingManualOrEmptyRoute } from '../esm/native/services/canvas_picking_click_route_manual.ts';
 import { firstRenderableHitIsSketchFreeBox } from '../esm/native/services/canvas_picking_sketch_free_box_hit_policy.ts';
 import { EXT_DRAWER_MODE_HOVER_TOOL } from '../esm/native/services/canvas_picking_ext_drawer_mode_hover.ts';
+import { withSketchBoxContentCommand } from './_sketch_box_content_command_fixture.ts';
 
 function createRegularFreeBoxDrawerHit(boxId = 'free-1', drawerId = 'sbrd-1') {
   return {
@@ -220,15 +221,26 @@ test('manual sketch external drawer tool direct hit removes regularExtDrawers in
     },
     __wp_isViewportRoot: () => false,
     __hoverOk: true,
-    __hoverKind: 'box_content',
+    __hoverKind: 'box_content_command',
     __hoverOp: 'remove',
-    __hoverRec: {
-      kind: 'box_content',
-      contentKind: 'regular_ext_drawers',
-      boxId: 'free-1',
-      op: 'remove',
-      removeId: 'sbrd-1',
-    },
+    __hoverRec: withSketchBoxContentCommand(
+      { hostModuleKey: 2 },
+      {
+        kind: 'sketch-external-drawers',
+        op: 'remove',
+        boxId: 'free-1',
+        freePlacement: true,
+        blockedReason: null,
+        removeId: 'sbrd-1',
+        contentXNorm: 0.5,
+        boxYNorm: 0.4,
+        boxBaseYNorm: 0.2,
+        drawerHeightM: 0.22,
+        drawerH: 0.22,
+        stackH: 0.66,
+        drawerCount: 3,
+      }
+    ),
   });
 
   const regularIds = (((cfg.sketchExtras as any).boxes[0].regularExtDrawers as any[]) || []).map(

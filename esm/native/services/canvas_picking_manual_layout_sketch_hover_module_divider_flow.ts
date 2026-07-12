@@ -224,7 +224,6 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
         dividerYNorm,
         dividerXNorm,
         dividerAxis: 'horizontal',
-        snapToCenter,
       }),
       preview: {
         kind: 'drawer_divider',
@@ -373,7 +372,6 @@ export function tryHandleManualLayoutSketchHoverModuleDividerFlow(
       dividerXNorm,
       dividerYNorm,
       dividerAxis: 'vertical',
-      snapToCenter: dividerCentered,
     }),
     preview: {
       kind: 'drawer_divider',

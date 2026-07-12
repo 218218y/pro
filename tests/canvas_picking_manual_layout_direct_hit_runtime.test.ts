@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryApplyManualLayoutSketchDirectHitActions } from '../esm/native/services/canvas_picking_manual_layout_sketch_click_direct_hit_actions.ts';
+import { withSketchBoxContentCommand } from './_sketch_box_content_command_fixture.ts';
 
 test('manual-layout direct hit toggles one base shelf when the hit lands on a shelf board boundary', () => {
   const cfg: Record<string, unknown> = {
@@ -138,13 +139,26 @@ test('manual-layout direct hit removes a sketch-box external drawer only when ho
     },
     __wp_isViewportRoot: () => false,
     __hoverOk: true,
-    __hoverKind: 'box_content',
+    __hoverKind: 'box_content_command',
     __hoverOp: 'remove',
-    __hoverRec: {
-      contentKind: 'ext_drawers',
-      removeId: 'ed-2',
-      boxId: 'box-1',
-    },
+    __hoverRec: withSketchBoxContentCommand(
+      { hostModuleKey: 2 },
+      {
+        kind: 'sketch-external-drawers',
+        op: 'remove',
+        boxId: 'box-1',
+        freePlacement: false,
+        blockedReason: null,
+        removeId: 'ed-2',
+        contentXNorm: 0.5,
+        boxYNorm: 0.5,
+        boxBaseYNorm: 0.1,
+        drawerHeightM: 0.2,
+        drawerH: 0.2,
+        stackH: 0.4,
+        drawerCount: 2,
+      }
+    ),
   });
 
   const extDrawers = (

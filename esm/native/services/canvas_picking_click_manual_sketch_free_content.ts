@@ -2,6 +2,10 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 import { matchRecentSketchHover } from './canvas_picking_sketch_hover_matching.js';
 import { __wp_toModuleKey } from './canvas_picking_core_helpers.js';
 import { commitSketchFreePlacementHoverRecord } from './canvas_picking_sketch_free_commit.js';
+import {
+  decodeSketchBoxContentCommandHover,
+  SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND,
+} from './canvas_picking_sketch_box_content_command.js';
 import type { SketchFreeHoverHost as SketchFreeBoxHost } from './canvas_picking_sketch_free_surface_preview.js';
 
 const FREE_BOX_VERTICAL_REMOVAL_CONTENT_KINDS = ['shelf', 'rod', 'storage'] as const;
@@ -35,6 +39,25 @@ function findRecentVerticalRemovalHover(args: {
     if (hoverRec?.op === 'remove') return { hoverRec, contentKind };
   }
   return null;
+}
+
+function findRecentStackCommandHover(args: {
+  hover: unknown;
+  tool: string;
+  host: SketchFreeBoxHost;
+  contentKind: 'drawers' | 'ext_drawers';
+}): UnknownRecord | null {
+  const hoverRec = matchRecentSketchHover({
+    hover: args.hover,
+    tool: args.tool,
+    kind: SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND,
+    host: args.host,
+    toModuleKey: __wp_toModuleKey,
+  });
+  const decoded = decodeSketchBoxContentCommandHover(hoverRec);
+  if (!decoded.ok) return null;
+  if (decoded.value.contentKind !== args.contentKind || !decoded.value.command.freePlacement) return null;
+  return hoverRec;
 }
 
 type TryHandleCanvasManualSketchFreeContentArgs = {
@@ -89,18 +112,25 @@ export function tryHandleCanvasManualSketchFreeContentClick(
   }
 
   const hoverRec =
-    host != null
-      ? matchRecentSketchHover({
-          hover: currentHover,
-          tool,
-          kind: 'box_content',
-          contentKind: freeBoxContentKind,
-          host,
-          toModuleKey: __wp_toModuleKey,
-          requireFreePlacement: true,
-        })
-      : null;
-  const hoverOk = !!(host && hoverRec && hoverRec.freePlacement === true);
+    host == null
+      ? null
+      : isStackFreeBoxContentKind(freeBoxContentKind)
+        ? findRecentStackCommandHover({
+            hover: currentHover,
+            tool,
+            host,
+            contentKind: freeBoxContentKind === 'drawers' ? 'drawers' : 'ext_drawers',
+          })
+        : matchRecentSketchHover({
+            hover: currentHover,
+            tool,
+            kind: 'box_content',
+            contentKind: freeBoxContentKind,
+            host,
+            toModuleKey: __wp_toModuleKey,
+            requireFreePlacement: true,
+          });
+  const hoverOk = !!hoverRec;
   if (!hoverOk && foundModuleIndex !== null) return false;
   if (!(host && hoverRec && hoverOk)) return false;
 

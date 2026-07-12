@@ -7,6 +7,8 @@ import {
 } from './canvas_picking_manual_layout_sketch_vertical_stack.js';
 import { resolveSketchBoxStackPreview } from './canvas_picking_sketch_box_stack_preview.js';
 import { resolveSketchModuleStackPreview } from './canvas_picking_sketch_module_stack_preview.js';
+import { decodeSketchBoxContentCommandHover } from './canvas_picking_sketch_box_content_command.js';
+import { replaceManualLayoutSketchBoxCommandHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import {
   createManualLayoutSketchHoverHost,
   hideManualLayoutSketchHoverPreview,
@@ -19,8 +21,19 @@ function markSketchDrawerPreviewBlockedByHexCell(
   stackPreview: { hoverRecord?: Record<string, unknown>; preview?: Record<string, unknown> | null } | null
 ): void {
   if (!stackPreview || !shouldBlockDrawerBuildInHexCell(cfgRef)) return;
-  if (stackPreview.hoverRecord?.op === 'remove') return;
-  stackPreview.hoverRecord = { ...stackPreview.hoverRecord, blockedReason: 'hex-cell' };
+  const decoded = decodeSketchBoxContentCommandHover(stackPreview.hoverRecord);
+  if (decoded.ok) {
+    if (decoded.value.command.op === 'remove') return;
+    const replacement = replaceManualLayoutSketchBoxCommandHoverRecord(stackPreview.hoverRecord, {
+      ...decoded.value.command,
+      blockedReason: 'hex-cell',
+    });
+    if (!replacement) return;
+    stackPreview.hoverRecord = replacement;
+  } else {
+    if (stackPreview.hoverRecord?.op === 'remove') return;
+    stackPreview.hoverRecord = { ...stackPreview.hoverRecord, __wpBlockedReason: 'hex-cell' };
+  }
   stackPreview.preview = { ...stackPreview.preview, op: 'blocked', blockedReason: 'hex-cell' };
 }
 

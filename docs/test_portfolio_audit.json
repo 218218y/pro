@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-07-12T04:07:59.124Z",
+  "generatedAt": "2026-07-12T06:53:23.513Z",
   "totals": {
-    "tests": 1184,
+    "tests": 1188,
     "packageTestReferences": 442,
-    "catalogTestReferences": 86,
-    "totalTestReferences": 528
+    "catalogTestReferences": 87,
+    "totalTestReferences": 529
   },
   "categories": {
-    "contract": 386,
+    "contract": 388,
     "runtime-unit": 305,
-    "integration": 437,
+    "integration": 439,
     "e2e-smoke": 7,
     "perf-smoke": 9,
     "legacy-migration": 40
@@ -498,6 +498,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/canvas_picking_ext_drawer_mode_hover_runtime.test.ts",
+      "category": "integration"
+    },
+    {
       "file": "tests/canvas_picking_external_drawer_cross_hover_runtime.test.ts",
       "category": "integration"
     },
@@ -686,6 +690,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/canvas_picking_sketch_box_command_hover_cutover_guard.test.mjs",
+      "category": "contract"
+    },
+    {
       "file": "tests/canvas_picking_sketch_box_content_command_runtime.test.ts",
       "category": "integration"
     },
@@ -732,6 +740,14 @@
     {
       "file": "tests/canvas_picking_sketch_free_surface_preview_runtime.test.ts",
       "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_hover_identity_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_hover_identity_runtime.test.ts",
+      "category": "integration"
     },
     {
       "file": "tests/canvas_picking_sketch_hover_matching_runtime.test.ts",

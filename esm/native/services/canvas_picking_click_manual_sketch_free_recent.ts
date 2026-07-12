@@ -1,5 +1,6 @@
 import { MODES } from '../runtime/api.js';
 import { matchRecentSketchHover } from './canvas_picking_sketch_hover_matching.js';
+import { decodeSketchBoxContentCommandHover } from './canvas_picking_sketch_box_content_command.js';
 
 type RecordMap = Record<string, unknown>;
 
@@ -14,5 +15,7 @@ export function getModeConst(key: 'NONE' | 'SCREEN_NOTE', defaultValue: string):
 
 export function isRecentModuleScopedSketchHover(hover: unknown, tool: string): boolean {
   const hoverRec = matchRecentSketchHover({ hover, tool });
-  return !!hoverRec && hoverRec.freePlacement !== true;
+  if (!hoverRec) return false;
+  const decoded = decodeSketchBoxContentCommandHover(hoverRec);
+  return decoded.ok ? !decoded.value.command.freePlacement : hoverRec.freePlacement !== true;
 }

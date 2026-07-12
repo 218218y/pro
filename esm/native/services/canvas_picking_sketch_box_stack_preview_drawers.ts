@@ -6,7 +6,7 @@ import {
 import { buildSketchBoxStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import { buildSketchBoxVerticalContentBlockers } from './canvas_picking_sketch_box_vertical_content_blockers.js';
 import { withoutInternalDrawerReplaceableShelfBlockers } from './canvas_picking_internal_drawer_shelf_replacement.js';
-import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
+import { createManualLayoutSketchBoxCommandHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
   ResolveSketchBoxStackPreviewArgs,
   ResolveSketchBoxStackPreviewResult,
@@ -133,22 +133,8 @@ export function resolveSketchBoxDrawersPreview(
   });
 
   return {
-    hoverRecord: createManualLayoutSketchBoxContentHoverRecord({
+    hoverRecord: createManualLayoutSketchBoxCommandHoverRecord({
       host,
-      contentKind: 'drawers',
-      boxId,
-      freePlacement,
-      op: hoverOp,
-      removeId: hoverRemoveId,
-      contentXNorm: activeSegment ? activeSegment.xNorm : 0.5,
-      boxYNorm: clampUnit((placement.yCenter - fullBoxBottomY) / targetHeight),
-      boxBaseYNorm: clampUnit((baseY - fullBoxBottomY) / targetHeight),
-      yCenter: placement.yCenter,
-      stackH: placement.stackH,
-      drawerH: placement.drawerH,
-      drawerGap: placement.drawerGap,
-      drawerHeightM: args.drawerHeightM ?? placement.drawerH,
-      blockedReason,
       command: {
         kind: 'internal-drawers',
         boxId,

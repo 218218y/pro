@@ -232,11 +232,10 @@ export function tryCommitSketchBoxDrawerContent(args: {
 }): { handled: boolean; nextHover: Record<string, unknown> | null } {
   const { commitArgs, command, hoverOp } = args;
   const hoverMode = commitArgs.hoverMode || 'none';
-  const hoverHost = commitArgs.hoverHost || null;
   const boxId = commitArgs.boxId;
   if (commitArgs.contentKind === 'drawers') {
     if (command?.kind !== 'internal-drawers') return { handled: false, nextHover: null };
-    const { contentXNorm, boxYNorm, boxBaseYNorm, removeId, drawerHeightM, drawerH, stackH } = command;
+    const { contentXNorm, boxYNorm, boxBaseYNorm, removeId, drawerHeightM, stackH } = command;
     const list = ensureSketchBoxContentList(commitArgs.box, 'drawers');
     if (hoverOp === 'remove') {
       if (!removeId) return { handled: false, nextHover: null };
@@ -247,13 +246,10 @@ export function tryCommitSketchBoxDrawerContent(args: {
         nextHover: buildToggleHoverRecord({
           hoverMode,
           hoverRec: commitArgs.hoverRec,
-          hoverHost,
           boxId,
           contentKind: 'drawers',
           op: 'add',
           removeId: '',
-          drawerHeightM,
-          drawerH,
         }),
       };
     }
@@ -281,21 +277,17 @@ export function tryCommitSketchBoxDrawerContent(args: {
       nextHover: buildToggleHoverRecord({
         hoverMode,
         hoverRec: commitArgs.hoverRec,
-        hoverHost,
         boxId,
         contentKind: 'drawers',
         op: 'remove',
         removeId: String(item.id),
-        drawerHeightM,
-        drawerH,
       }),
     };
   }
 
   if (commitArgs.contentKind === 'ext_drawers') {
     if (command?.kind !== 'sketch-external-drawers') return { handled: false, nextHover: null };
-    const { contentXNorm, boxYNorm, boxBaseYNorm, removeId, drawerHeightM, drawerH, stackH, drawerCount } =
-      command;
+    const { contentXNorm, boxYNorm, boxBaseYNorm, removeId, drawerHeightM, stackH, drawerCount } = command;
     const list = ensureSketchBoxContentList(commitArgs.box, 'extDrawers');
     if (hoverOp === 'remove') {
       if (!removeId) return { handled: false, nextHover: null };
@@ -309,14 +301,10 @@ export function tryCommitSketchBoxDrawerContent(args: {
         nextHover: buildToggleHoverRecord({
           hoverMode,
           hoverRec: commitArgs.hoverRec,
-          hoverHost,
           boxId,
           contentKind: 'ext_drawers',
           op: 'add',
           removeId: '',
-          drawerCount,
-          drawerHeightM,
-          drawerH,
         }),
       };
     }
@@ -336,14 +324,10 @@ export function tryCommitSketchBoxDrawerContent(args: {
       nextHover: buildToggleHoverRecord({
         hoverMode,
         hoverRec: commitArgs.hoverRec,
-        hoverHost,
         boxId,
         contentKind: 'ext_drawers',
         op: 'remove',
         removeId: String(item.id),
-        drawerCount,
-        drawerHeightM,
-        drawerH,
       }),
     };
   }

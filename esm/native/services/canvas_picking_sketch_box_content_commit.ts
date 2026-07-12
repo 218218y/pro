@@ -1,6 +1,6 @@
 import { readManualLayoutSketchBoxContentHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
 import {
-  decodeSketchBoxContentCommand,
+  decodeSketchBoxContentCommandHover,
   isStrictSketchBoxContentKind,
   type SketchBoxContentCommand,
 } from './canvas_picking_sketch_box_content_command.js';
@@ -30,6 +30,7 @@ function isSideBlockingBoxContentKind(contentKind: string): boolean {
 function blockSideBlockingBoxContentIfSideMissing(
   args: CommitSketchModuleBoxContentArgs & {
     hoverOp: 'add' | 'remove';
+    freePlacement: boolean;
   }
 ): boolean {
   if (args.hoverOp === 'remove') return false;
@@ -40,29 +41,28 @@ function blockSideBlockingBoxContentIfSideMissing(
     box: args.box,
     moduleKey: args.hoverHost?.moduleKey,
     isBottomStack: args.hoverHost?.isBottom,
-    freePlacement: args.box.freePlacement === true || args.hoverRec.freePlacement === true,
+    freePlacement: args.box.freePlacement === true || args.freePlacement,
   });
 }
 
 export function commitSketchModuleBoxContent(
   args: CommitSketchModuleBoxContentArgs
 ): Record<string, unknown> | null {
-  const hoverIntent = readManualLayoutSketchBoxContentHoverIntent(args.hoverRec);
+  const strictContent = isStrictSketchBoxContentKind(args.contentKind);
+  const hoverIntent = strictContent ? null : readManualLayoutSketchBoxContentHoverIntent(args.hoverRec);
   let command: SketchBoxContentCommand | null = null;
-  if (isStrictSketchBoxContentKind(args.contentKind)) {
-    const decoded = decodeSketchBoxContentCommand({
-      record: args.hoverRec,
-      expectedContentKind: args.contentKind,
-      expectedBoxId: args.boxId,
-      expectedFreePlacement: args.box.freePlacement === true,
-    });
-    if (!decoded.ok) return null;
-    command = decoded.value;
+  if (strictContent) {
+    const decoded = decodeSketchBoxContentCommandHover(args.hoverRec);
+    if (!decoded.ok || decoded.value.contentKind !== args.contentKind) return null;
+    command = decoded.value.command;
+    if (args.boxId && command.boxId !== args.boxId) return null;
+    if (command.freePlacement !== (args.box.freePlacement === true)) return null;
     if (command.blockedReason) return null;
   }
   const hoverOp = command?.op || hoverIntent?.op || 'add';
+  const freePlacement = command?.freePlacement ?? hoverIntent?.freePlacement ?? false;
 
-  if (blockSideBlockingBoxContentIfSideMissing({ ...args, hoverOp })) return null;
+  if (blockSideBlockingBoxContentIfSideMissing({ ...args, hoverOp, freePlacement })) return null;
 
   const adornment = tryCommitSketchBoxAdornment({ commitArgs: args, hoverIntent, hoverOp });
   if (adornment.handled) return adornment.nextHover;

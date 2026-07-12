@@ -1,8 +1,11 @@
 import type { UnknownRecord } from '../../../types';
 import {
   createSketchBoxContentCommandEnvelope,
+  decodeSketchBoxContentCommandHover,
+  SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND,
   type SketchBoxContentCommand,
 } from './canvas_picking_sketch_box_content_command.js';
+import { asRecord } from '../runtime/record.js';
 import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 
 type RecordMap = UnknownRecord;
@@ -39,33 +42,18 @@ type ManualLayoutSketchBoxContentHoverArgs = {
   op: 'add' | 'remove';
   freePlacement?: boolean;
   boxYNorm?: number | null;
-  boxBaseYNorm?: number | null;
   contentXNorm?: number | null;
   dividerXNorm?: number | null;
   dividerYNorm?: number | null;
   dividerAxis?: string | null;
   dividerId?: string | null;
   dividerFrontZ?: number | null;
-  snapToCenter?: boolean | null;
   variant?: string | null;
   depthM?: number | null;
   heightM?: number | null;
   removeId?: string | null;
   removeIdx?: number | null;
-  yCenter?: number | null;
-  baseY?: number | null;
-  stackH?: number | null;
-  drawerH?: number | null;
-  drawerGap?: number | null;
-  drawerHeightM?: number | null;
-  drawerCount?: number | null;
-  hasShoeDrawer?: boolean | null;
-  hinge?: string | null;
-  doorId?: string | null;
-  doorLeftId?: string | null;
-  doorRightId?: string | null;
   blockedReason?: string | null;
-  command?: SketchBoxContentCommand | null;
 };
 
 type ManualLayoutSketchStackHoverArgs = {
@@ -97,68 +85,44 @@ function withDefined(target: RecordMap, patch: Record<string, unknown>): RecordM
   return target;
 }
 
-function projectSketchBoxContentCommand(command: SketchBoxContentCommand | null | undefined): RecordMap {
-  if (!command) return {};
-  const common: RecordMap = {
-    op: command.op,
-    boxId: command.boxId,
-    freePlacement: command.freePlacement,
-    contentXNorm: command.contentXNorm,
-    boxYNorm: command.boxYNorm,
-    __wpBlockedReason: command.blockedReason ?? undefined,
+function createManualLayoutSketchHoverIdentity(host: ManualLayoutSketchHoverHost, kind: string): RecordMap {
+  return {
+    ts: host.ts ?? Date.now(),
+    tool: host.tool,
+    ...createSketchHoverHostIdentity(host),
+    kind,
   };
-  if (command.kind === 'internal-drawers') {
-    return {
-      ...common,
-      removeId: command.removeId ?? undefined,
-      boxBaseYNorm: command.boxBaseYNorm,
-      drawerHeightM: command.drawerHeightM,
-      drawerH: command.drawerH,
-      stackH: command.stackH,
-      drawerGap: command.drawerGap,
-    };
-  }
-  if (command.kind === 'sketch-external-drawers') {
-    return {
-      ...common,
-      removeId: command.removeId ?? undefined,
-      boxBaseYNorm: command.boxBaseYNorm,
-      drawerHeightM: command.drawerHeightM,
-      drawerH: command.drawerH,
-      stackH: command.stackH,
-      drawerCount: command.drawerCount,
-    };
-  }
-  if (command.kind === 'regular-external-drawers') {
-    return {
-      ...common,
-      removeId: command.removeId ?? undefined,
-      boxBaseYNorm: command.boxBaseYNorm,
-      drawerHeightM: command.drawerHeightM,
-      drawerCount: command.drawerCount,
-      hasShoeDrawer: command.hasShoeDrawer,
-    };
-  }
-  if (command.kind === 'single-door') {
-    return {
-      ...common,
-      hinge: command.hinge,
-      doorId: command.doorId ?? undefined,
-    };
-  }
-  if (command.kind === 'door-hinge') {
-    return { ...common, doorId: command.doorId };
-  }
-  return common;
 }
 
 function createManualLayoutSketchHoverBase(args: ManualLayoutSketchHoverBaseArgs): RecordMap {
+  return { ...createManualLayoutSketchHoverIdentity(args.host, args.kind), op: args.op };
+}
+
+export function createManualLayoutSketchBoxCommandHoverRecord(args: {
+  host: ManualLayoutSketchHoverHost;
+  command: SketchBoxContentCommand;
+}): RecordMap {
   return {
-    ts: args.host.ts ?? Date.now(),
-    tool: args.host.tool,
-    ...createSketchHoverHostIdentity(args.host),
-    kind: args.kind,
-    op: args.op,
+    ...createManualLayoutSketchHoverIdentity(args.host, SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND),
+    boxContentCommand: createSketchBoxContentCommandEnvelope(args.command),
+  };
+}
+
+export function replaceManualLayoutSketchBoxCommandHoverRecord(
+  value: unknown,
+  command: SketchBoxContentCommand
+): RecordMap | null {
+  const record = asRecord(value);
+  if (!record || !decodeSketchBoxContentCommandHover(record).ok) return null;
+  if (typeof record.tool !== 'string' || typeof record.hostIsBottom !== 'boolean') return null;
+  if (!Object.prototype.hasOwnProperty.call(record, 'hostModuleKey')) return null;
+  return {
+    ts: Date.now(),
+    tool: record.tool,
+    hostModuleKey: record.hostModuleKey,
+    hostIsBottom: record.hostIsBottom,
+    kind: SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND,
+    boxContentCommand: createSketchBoxContentCommandEnvelope(command),
   };
 }
 
@@ -179,46 +143,29 @@ export function createManualLayoutSketchBoxHoverRecord(args: ManualLayoutSketchB
 export function createManualLayoutSketchBoxContentHoverRecord(
   args: ManualLayoutSketchBoxContentHoverArgs
 ): RecordMap {
-  const commandProjection = projectSketchBoxContentCommand(args.command);
   return withDefined(
     createManualLayoutSketchHoverBase({
       host: args.host,
       kind: 'box_content',
-      op: args.command?.op ?? args.op,
+      op: args.op,
     }),
     {
       contentKind: args.contentKind,
       boxId: args.boxId,
       freePlacement: args.freePlacement,
       boxYNorm: args.boxYNorm ?? undefined,
-      boxBaseYNorm: args.boxBaseYNorm ?? undefined,
       contentXNorm: args.contentXNorm ?? undefined,
       dividerXNorm: args.dividerXNorm ?? undefined,
       dividerYNorm: args.dividerYNorm ?? undefined,
       dividerAxis: args.dividerAxis ?? undefined,
       dividerId: args.dividerId ?? undefined,
       dividerFrontZ: args.dividerFrontZ ?? undefined,
-      snapToCenter: args.snapToCenter ?? undefined,
       variant: args.variant ?? undefined,
       depthM: args.depthM ?? undefined,
       heightM: args.heightM ?? undefined,
       removeId: args.removeId ?? undefined,
       removeIdx: args.removeIdx ?? undefined,
-      yCenter: args.yCenter ?? undefined,
-      baseY: args.baseY ?? undefined,
-      stackH: args.stackH ?? undefined,
-      drawerH: args.drawerH ?? undefined,
-      drawerGap: args.drawerGap ?? undefined,
-      drawerHeightM: args.drawerHeightM ?? undefined,
-      drawerCount: args.drawerCount ?? undefined,
-      hasShoeDrawer: args.hasShoeDrawer ?? undefined,
-      hinge: args.hinge ?? undefined,
-      doorId: args.doorId ?? undefined,
-      doorLeftId: args.doorLeftId ?? undefined,
-      doorRightId: args.doorRightId ?? undefined,
       __wpBlockedReason: args.blockedReason ?? undefined,
-      ...commandProjection,
-      boxContentCommand: args.command ? createSketchBoxContentCommandEnvelope(args.command) : undefined,
     }
   );
 }

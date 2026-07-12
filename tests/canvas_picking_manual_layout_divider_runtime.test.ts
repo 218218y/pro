@@ -69,13 +69,14 @@ test('manual-layout divider hover snaps to the active segment center when the cu
   assert.equal(hovers[0].boxId, 'box-1');
   assert.equal(hovers[0].dividerId ?? null, null);
   assert.equal(hovers[0].dividerXNorm, 0.5);
-  assert.equal(hovers[0].snapToCenter, true);
+  assert.equal('snapToCenter' in hovers[0], false);
   assert.equal(Number.isFinite(hovers[0].ts), true);
 
   assert.equal(previews[0].kind, 'drawer_divider');
   assert.equal(previews[0].x, 0);
   assert.equal(previews[0].y, 1);
   assert.equal(previews[0].h, 0.76);
+  assert.equal(previews[0].snapToCenter, true);
 });
 
 test('manual-layout divider hover switches into remove mode when an existing divider is nearest', () => {
@@ -95,8 +96,9 @@ test('manual-layout divider hover switches into remove mode when an existing div
   assert.equal(hovers[0].boxId, 'box-1');
   assert.equal(hovers[0].dividerId, 'div-1');
   assert.equal(hovers[0].dividerXNorm, 0.22);
-  assert.equal(hovers[0].snapToCenter, false);
+  assert.equal('snapToCenter' in hovers[0], false);
   assert.equal(previews[0].kind, 'drawer_divider');
+  assert.equal(previews[0].snapToCenter, false);
   assert.equal(previews[0].x, -0.11);
 });
 
@@ -133,6 +135,7 @@ test('manual-layout divider hover does not snap to string-encoded segment geomet
   assert.equal(hovers.length, 1);
   assert.equal(previews.length, 1);
   assert.equal(hovers[0].dividerXNorm, 0.18);
-  assert.equal(hovers[0].snapToCenter, false);
+  assert.equal('snapToCenter' in hovers[0], false);
+  assert.equal(previews[0].snapToCenter, false);
   assert.equal(previews[0].x, -0.12);
 });

@@ -134,13 +134,10 @@ test('manual-layout hover intent readers normalize box-content and vertical remo
     boxId: 'box-7',
     freePlacement: true,
     boxYNorm: 0.2,
-    boxBaseYNorm: 0.1,
     contentXNorm: 0.6,
     dividerXNorm: 0.3,
     dividerFrontZ: 0.14,
     removeIdx: 2,
-    drawerCount: 4,
-    hinge: 'RIGHT',
     baseType: 'plinth',
     baseLegStyle: 'square',
     baseLegColor: 'gold',
@@ -170,7 +167,6 @@ test('manual-layout hover intent readers normalize box-content and vertical remo
     boxId: 'box-7',
     freePlacement: true,
     boxYNorm: 0.2,
-    boxBaseYNorm: 0.1,
     contentXNorm: 0.6,
     dividerXNorm: 0.3,
     dividerId: null,
@@ -180,17 +176,6 @@ test('manual-layout hover intent readers normalize box-content and vertical remo
     heightM: null,
     removeId: null,
     removeIdx: 2,
-    yCenter: null,
-    baseY: null,
-    stackH: null,
-    drawerH: null,
-    drawerGap: null,
-    drawerHeightM: null,
-    drawerCount: 4,
-    hinge: 'right',
-    doorId: null,
-    doorLeftId: null,
-    doorRightId: null,
     baseType: 'plinth',
     baseLegStyle: 'square',
     baseLegColor: 'gold',
@@ -237,12 +222,10 @@ test('manual-layout hover intent readers reject string-encoded numeric state', (
     boxId: 'box-7',
     freePlacement: true,
     boxYNorm: '0.2',
-    boxBaseYNorm: '0.1',
     contentXNorm: '0.6',
     dividerXNorm: '0.3',
     dividerFrontZ: '0.14',
     removeIdx: '2',
-    drawerCount: '4',
     baseLegHeightCm: '14',
     baseLegWidthCm: '5.5',
     basePlinthHeightCm: '14.5',
@@ -262,12 +245,10 @@ test('manual-layout hover intent readers reject string-encoded numeric state', (
   });
 
   assert.equal(boxContent?.boxYNorm, null);
-  assert.equal(boxContent?.boxBaseYNorm, null);
   assert.equal(boxContent?.contentXNorm, null);
   assert.equal(boxContent?.dividerXNorm, null);
   assert.equal(boxContent?.dividerFrontZ, null);
   assert.equal(boxContent?.removeIdx, null);
-  assert.equal(boxContent?.drawerCount, null);
   assert.equal(boxContent?.baseLegHeightCm, null);
   assert.equal(boxContent?.baseLegWidthCm, null);
   assert.equal(boxContent?.basePlinthHeightCm, null);

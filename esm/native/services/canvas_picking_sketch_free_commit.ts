@@ -4,9 +4,8 @@ import { getModulesActions } from '../runtime/actions_access_domains.js';
 import { asRecord } from '../runtime/record.js';
 import { readSketchCommitNumber } from './canvas_picking_sketch_commit_geometry.js';
 import {
-  decodeSketchBoxContentCommand,
+  decodeSketchBoxContentCommandHover,
   isStrictSketchBoxContentKind,
-  type SketchBoxContentCommand,
 } from './canvas_picking_sketch_box_content_command.js';
 import {
   commitSketchModuleBoxContent,
@@ -173,29 +172,47 @@ export function commitSketchFreePlacementHoverRecord(
   const contentKind = typeof args.freeBoxContentKind === 'string' ? args.freeBoxContentKind : '';
   const floorY = typeof args.floorY === 'number' ? args.floorY : NaN;
 
-  if (
-    contentKind &&
-    hoverKind === 'box_content' &&
-    args.hoverRec.freePlacement === true &&
-    typeof args.hoverRec.boxId === 'string'
-  ) {
-    const hoverContentKind = readRecordString(args.hoverRec, 'contentKind') || '';
-    if (hoverContentKind !== contentKind) return { committed: false };
-    let strictCommand: SketchBoxContentCommand | null = null;
-    if (isStrictSketchBoxContentKind(contentKind)) {
-      const decoded = decodeSketchBoxContentCommand({
-        record: args.hoverRec,
-        expectedContentKind: contentKind,
-        expectedBoxId: String(args.hoverRec.boxId),
-        expectedFreePlacement: true,
-      });
-      if (!decoded.ok) return { committed: false };
-      strictCommand = decoded.value;
-    }
-    const blockedReason =
-      strictCommand?.blockedReason || readRecordString(args.hoverRec, '__wpBlockedReason');
-    if (blockedReason) {
+  const strictHover = decodeSketchBoxContentCommandHover(args.hoverRec);
+  if (contentKind && strictHover.ok) {
+    const { command, contentKind: commandContentKind } = strictHover.value;
+    if (!isStrictSketchBoxContentKind(contentKind) || commandContentKind !== contentKind)
+      return { committed: false };
+    if (!command.freePlacement) return { committed: false };
+    if (command.blockedReason) {
       // Consume blocked free-box clicks so routing cannot fall through to a module behind the box.
+      toastSketchBoxContentBlocked(args.App, contentKind, command.blockedReason);
+      return { committed: true, nextHover: null };
+    }
+
+    let nextHover: RecordMap | null = null;
+    let touched = false;
+    mods.patchForStack(
+      args.host.isBottom ? 'bottom' : 'top',
+      args.host.moduleKey,
+      (cfg: RecordMap) => {
+        nextHover = commitSketchFreePlacementContent({
+          App: args.App,
+          host: args.host,
+          cfg,
+          boxId: command.boxId,
+          contentKind,
+          hoverRec: args.hoverRec,
+          floorY,
+        });
+        touched = true;
+      },
+      createCanvasPickingModulesStructuralPatchMeta(args.contentSource || 'manualSketchBoxContentFree')
+    );
+    return touched ? { committed: true, nextHover } : { committed: false };
+  }
+
+  if (contentKind && hoverKind === 'box_content' && args.hoverRec.freePlacement === true) {
+    if (isStrictSketchBoxContentKind(contentKind)) return { committed: false };
+    const hoverContentKind = readRecordString(args.hoverRec, 'contentKind') || '';
+    const boxId = readRecordString(args.hoverRec, 'boxId');
+    if (hoverContentKind !== contentKind || !boxId) return { committed: false };
+    const blockedReason = readRecordString(args.hoverRec, '__wpBlockedReason');
+    if (blockedReason) {
       toastSketchBoxContentBlocked(args.App, contentKind, blockedReason);
       return { committed: true, nextHover: null };
     }
@@ -210,7 +227,7 @@ export function commitSketchFreePlacementHoverRecord(
           App: args.App,
           host: args.host,
           cfg,
-          boxId: String(args.hoverRec.boxId),
+          boxId,
           contentKind,
           hoverRec: args.hoverRec,
           floorY,

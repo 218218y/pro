@@ -4,8 +4,16 @@ import assert from 'node:assert/strict';
 import { tryHandleManualLayoutSketchHoverModuleStackPreview } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_stack.ts';
 import { buildManualLayoutSketchInternalDrawerBlockers } from '../esm/native/services/canvas_picking_manual_layout_sketch_stack_placement.ts';
 import { resolveSketchFreeStackContentPreview } from '../esm/native/services/canvas_picking_sketch_free_box_content_preview_stack.ts';
+import { decodeSketchBoxContentCommandHover } from '../esm/native/services/canvas_picking_sketch_box_content_command.ts';
 import { tryCommitSketchModuleStackTool } from '../esm/native/services/canvas_picking_sketch_module_stack_apply.ts';
 import { withSketchBoxContentCommand } from './_sketch_box_content_command_fixture.ts';
+
+function requireSketchBoxCommandHover(value: unknown) {
+  const decoded = decodeSketchBoxContentCommandHover(value);
+  assert.equal(decoded.ok, true);
+  if (!decoded.ok) throw new Error(decoded.reason);
+  return decoded.value;
+}
 
 function createModuleStackContext(overrides: Record<string, unknown> = {}) {
   const calls = {
@@ -86,10 +94,11 @@ test('manual-layout module stack preview routes focused box drawers through the 
 
   const hoverRecord = calls.hover[0] as Record<string, unknown>;
   const preview = calls.previews[0];
-  assert.equal(hoverRecord.kind, 'box_content');
-  assert.equal(hoverRecord.contentKind, 'drawers');
-  assert.equal(hoverRecord.boxId, 'box-1');
-  assert.equal(hoverRecord.freePlacement, false);
+  const hover = requireSketchBoxCommandHover(hoverRecord);
+  assert.equal(hover.contentKind, 'drawers');
+  assert.equal(hover.command.kind, 'internal-drawers');
+  assert.equal(hover.command.boxId, 'box-1');
+  assert.equal(hover.command.freePlacement, false);
   assert.equal(preview.anchor, ctx.hitSelectorObj);
   assert.equal(preview.kind, 'drawers');
   assert.deepEqual(
@@ -126,11 +135,12 @@ test('sketch free stack preview routes ext drawers through the canonical box-sta
   });
 
   assert.equal(result.mode, 'preview');
-  assert.equal(result.hoverRecord.kind, 'box_content');
-  assert.equal(result.hoverRecord.contentKind, 'ext_drawers');
-  assert.equal(result.hoverRecord.boxId, 'free-1');
-  assert.equal(result.hoverRecord.freePlacement, true);
-  assert.equal(result.hoverRecord.drawerCount, 4);
+  const hover = requireSketchBoxCommandHover(result.hoverRecord);
+  assert.equal(hover.contentKind, 'ext_drawers');
+  assert.equal(hover.command.kind, 'sketch-external-drawers');
+  assert.equal(hover.command.boxId, 'free-1');
+  assert.equal(hover.command.freePlacement, true);
+  assert.equal(hover.command.drawerCount, 4);
   assert.equal(result.preview.kind, 'ext_drawers');
   assert.equal(Array.isArray(result.preview.drawers), true);
   assert.equal(result.preview.drawers.length, 4);
@@ -173,8 +183,10 @@ test('sketch free external drawer removal preview does not emit a full-cell fron
   });
 
   assert.equal(result.mode, 'preview');
-  assert.equal(result.hoverRecord.op, 'remove');
-  assert.equal(result.hoverRecord.removeId, 'sed-existing');
+  const hover = requireSketchBoxCommandHover(result.hoverRecord);
+  assert.equal(hover.command.op, 'remove');
+  assert.equal(hover.command.kind, 'sketch-external-drawers');
+  assert.equal(hover.command.removeId, 'sed-existing');
   assert.equal(result.preview.kind, 'ext_drawers');
   assert.equal(result.preview.op, 'remove');
   assert.equal(result.preview.drawers.length, 2);
@@ -453,11 +465,12 @@ test('manual-layout focused box sketch internal drawer preview marks no-room hov
   assert.equal(calls.previews.length, 1);
   assert.equal(calls.hides, 0);
   assert.equal(calls.hover.length, 1);
-  assert.equal(calls.hover[0]?.kind, 'box_content');
-  assert.equal(calls.hover[0]?.contentKind, 'drawers');
-  assert.equal(calls.hover[0]?.boxId, 'box-small');
-  assert.equal(calls.hover[0]?.op, 'add');
-  assert.equal(calls.hover[0]?.__wpBlockedReason, 'no-room');
+  const hover = requireSketchBoxCommandHover(calls.hover[0]);
+  assert.equal(hover.contentKind, 'drawers');
+  assert.equal(hover.command.kind, 'internal-drawers');
+  assert.equal(hover.command.boxId, 'box-small');
+  assert.equal(hover.command.op, 'add');
+  assert.equal(hover.command.blockedReason, 'no-room');
   assert.equal(calls.previews[0]?.kind, 'drawers');
   assert.equal(calls.previews[0]?.op, 'blocked');
   assert.equal(calls.previews[0]?.blockedReason, 'no-room');
@@ -557,22 +570,7 @@ test('stack tool toggles focused box drawers through the box-content owner', () 
     tool: 'sketch_int_drawers',
     hoverOk: true,
     hoverRec: withSketchBoxContentCommand(
-      {
-        kind: 'box_content',
-        contentKind: 'drawers',
-        boxId: 'box-1',
-        freePlacement: false,
-        op: 'add',
-        boxYNorm: 0.35,
-        boxBaseYNorm: 0.21,
-        contentXNorm: 0.45,
-        yCenter: 0.8,
-        baseY: 0.58,
-        stackH: 0.44,
-        drawerH: 0.2,
-        drawerGap: 0.03,
-        drawerHeightM: 0.2,
-      },
+      {},
       {
         kind: 'internal-drawers',
         boxId: 'box-1',
@@ -605,10 +603,11 @@ test('stack tool toggles focused box drawers through the box-content owner', () 
   assert.equal(Array.isArray(boxes), true);
   assert.equal(Array.isArray(boxes[0].drawers), true);
   assert.equal(boxes[0].drawers.length, 1);
-  assert.equal(nextHover?.kind, 'box_content');
-  assert.equal(nextHover?.contentKind, 'drawers');
-  assert.equal(nextHover?.boxId, 'box-1');
-  assert.equal(nextHover?.op, 'remove');
+  const next = requireSketchBoxCommandHover(nextHover);
+  assert.equal(next.contentKind, 'drawers');
+  assert.equal(next.command.kind, 'internal-drawers');
+  assert.equal(next.command.boxId, 'box-1');
+  assert.equal(next.command.op, 'remove');
 });
 
 test('stack tool toggles focused box ext drawers through the box-content owner', () => {
@@ -625,22 +624,7 @@ test('stack tool toggles focused box ext drawers through the box-content owner',
     tool: 'sketch_ext_drawers:4',
     hoverOk: true,
     hoverRec: withSketchBoxContentCommand(
-      {
-        kind: 'box_content',
-        contentKind: 'ext_drawers',
-        boxId: 'box-1',
-        freePlacement: false,
-        op: 'add',
-        boxYNorm: 0.4,
-        boxBaseYNorm: 0.22,
-        contentXNorm: 0.5,
-        drawerCount: 4,
-        drawerHeightM: 0.3,
-        drawerH: 0.3,
-        yCenter: 0.9,
-        baseY: 0.46,
-        stackH: 1.2,
-      },
+      {},
       {
         kind: 'sketch-external-drawers',
         boxId: 'box-1',
@@ -674,12 +658,13 @@ test('stack tool toggles focused box ext drawers through the box-content owner',
   assert.equal(boxes[0].extDrawers.length, 1);
   assert.equal(boxes[0].extDrawers[0].count, 4);
   assert.equal(boxes[0].extDrawers[0].drawerHeightM, 0.3);
-  assert.equal(nextHover?.kind, 'box_content');
-  assert.equal(nextHover?.contentKind, 'ext_drawers');
-  assert.equal(nextHover?.boxId, 'box-1');
-  assert.equal(nextHover?.op, 'remove');
-  assert.equal(nextHover?.drawerCount, 4);
-  assert.equal(nextHover?.drawerHeightM, 0.3);
+  const next = requireSketchBoxCommandHover(nextHover);
+  assert.equal(next.contentKind, 'ext_drawers');
+  assert.equal(next.command.kind, 'sketch-external-drawers');
+  assert.equal(next.command.boxId, 'box-1');
+  assert.equal(next.command.op, 'remove');
+  assert.equal(next.command.drawerCount, 4);
+  assert.equal(next.command.drawerHeightM, 0.3);
 });
 
 test('stack tool remove hover for focused box ext drawers never falls back to add or collision toast', () => {
@@ -709,24 +694,7 @@ test('stack tool remove hover for focused box ext drawers never falls back to ad
     tool: 'sketch_ext_drawers:4@30',
     hoverOk: true,
     hoverRec: withSketchBoxContentCommand(
-      {
-        kind: 'box_content',
-        contentKind: 'ext_drawers',
-        boxId: 'box-1',
-        freePlacement: false,
-        op: 'remove',
-        removeId: 'sed-existing',
-        blockedReason: 'collision',
-        boxYNorm: 0.5,
-        boxBaseYNorm: 0.25,
-        contentXNorm: 0.5,
-        drawerCount: 4,
-        drawerHeightM: 0.3,
-        drawerH: 0.3,
-        yCenter: 0.9,
-        baseY: 0.3,
-        stackH: 1.2,
-      },
+      {},
       {
         kind: 'sketch-external-drawers',
         boxId: 'box-1',
@@ -758,9 +726,10 @@ test('stack tool remove hover for focused box ext drawers never falls back to ad
   const box = ((cfg.sketchExtras as any).boxes as any[])[0];
   assert.equal(box.extDrawers.length, 0);
   assert.equal(toasts.length, 0);
-  assert.equal(nextHover?.kind, 'box_content');
-  assert.equal(nextHover?.contentKind, 'ext_drawers');
-  assert.equal(nextHover?.op, 'add');
+  const next = requireSketchBoxCommandHover(nextHover);
+  assert.equal(next.contentKind, 'ext_drawers');
+  assert.equal(next.command.kind, 'sketch-external-drawers');
+  assert.equal(next.command.op, 'add');
 });
 
 test('stack tool remove hover for module ext drawers never falls back to collision placement', () => {
@@ -987,20 +956,7 @@ test('stack tool rejects focused box sketch external drawers without falling bac
     tool: 'sketch_ext_drawers:4@30',
     hoverOk: true,
     hoverRec: withSketchBoxContentCommand(
-      {
-        kind: 'box_content',
-        contentKind: 'ext_drawers',
-        boxId: 'box-1',
-        op: 'add',
-        freePlacement: false,
-        contentXNorm: 0.5,
-        boxYNorm: 0.5,
-        boxBaseYNorm: 0.1,
-        drawerCount: 4,
-        drawerHeightM: 0.3,
-        drawerH: 0.3,
-        stackH: 1.2,
-      },
+      {},
       {
         kind: 'sketch-external-drawers',
         boxId: 'box-1',

@@ -92,6 +92,7 @@ export const TEST_GROUP_CATALOG = Object.freeze({
     runner: 'tsx-test',
     files: Object.freeze([
       'tests/canvas_picking_sketch_box_content_command_runtime.test.ts',
+      'tests/canvas_picking_sketch_box_command_hover_cutover_guard.test.mjs',
       'tests/canvas_picking_sketch_box_content_commit_runtime.test.ts',
       'tests/canvas_picking_sketch_commit_geometry_runtime.test.ts',
       'tests/canvas_picking_sketch_stack_runtime.test.ts',

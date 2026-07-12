@@ -4,8 +4,10 @@ import assert from 'node:assert/strict';
 import {
   createSketchBoxContentCommandEnvelope,
   decodeSketchBoxContentCommand,
+  decodeSketchBoxContentCommandHover,
+  SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND,
 } from '../esm/native/services/canvas_picking_sketch_box_content_command.ts';
-import { createManualLayoutSketchBoxContentHoverRecord } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_state.ts';
+import { createManualLayoutSketchBoxCommandHoverRecord } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_state.ts';
 import { commitSketchModuleBoxContent } from '../esm/native/services/canvas_picking_sketch_box_content_commit.ts';
 import { commitSketchFreePlacementHoverRecord } from '../esm/native/services/canvas_picking_sketch_free_commit.ts';
 import { tryApplyManualLayoutSketchHoverClick } from '../esm/native/services/canvas_picking_manual_layout_sketch_click_hover_apply.ts';
@@ -114,32 +116,57 @@ test('sketch-box command decoder rejects partial, mismatched and non-finite comm
     }),
     { ok: false, reason: 'invalid-command' }
   );
+
+  assert.deepEqual(
+    decodeSketchBoxContentCommand({
+      record: {
+        boxContentCommand: createSketchBoxContentCommandEnvelope({
+          ...INTERNAL_DRAWER_COMMAND,
+          hinge: 'left',
+        } as never),
+      },
+      expectedContentKind: 'drawers',
+    }),
+    { ok: false, reason: 'invalid-command' }
+  );
 });
 
-test('strict hover creation projects routing fields from the command source of truth', () => {
-  const hover = createManualLayoutSketchBoxContentHoverRecord({
+test('strict hover creation emits only the canonical command record shape', () => {
+  const hover = createManualLayoutSketchBoxCommandHoverRecord({
     host: { tool: 'sketch_int_drawers', moduleKey: 2, isBottom: false, ts: 123 },
-    contentKind: 'drawers',
-    boxId: 'wrong-box',
-    freePlacement: true,
-    op: 'remove',
-    contentXNorm: 0.9,
-    boxYNorm: 0.1,
-    boxBaseYNorm: 0.1,
-    drawerHeightM: 0.4,
-    drawerH: 0.4,
-    stackH: 0.8,
-    drawerGap: 0,
     command: INTERNAL_DRAWER_COMMAND,
   });
 
-  assert.equal(hover.op, 'add');
-  assert.equal(hover.boxId, 'box-1');
-  assert.equal(hover.freePlacement, false);
-  assert.equal(hover.contentXNorm, 0.4);
-  assert.equal(hover.boxYNorm, 0.6);
-  assert.equal(hover.drawerHeightM, 0.18);
+  assert.deepEqual(Object.keys(hover).sort(), [
+    'boxContentCommand',
+    'hostIsBottom',
+    'hostModuleKey',
+    'kind',
+    'tool',
+    'ts',
+  ]);
+  assert.equal(hover.kind, SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND);
+  assert.equal('op' in hover, false);
+  assert.equal('boxId' in hover, false);
+  assert.equal('freePlacement' in hover, false);
+  assert.equal('contentKind' in hover, false);
+  assert.equal('removeId' in hover, false);
   assert.deepEqual(hover.boxContentCommand, createSketchBoxContentCommandEnvelope(INTERNAL_DRAWER_COMMAND));
+  assert.deepEqual(decodeSketchBoxContentCommandHover(hover), {
+    ok: true,
+    value: { contentKind: 'drawers', command: INTERNAL_DRAWER_COMMAND },
+  });
+
+  assert.deepEqual(decodeSketchBoxContentCommandHover({ ...hover, op: 'remove' }), {
+    ok: false,
+    reason: 'noncanonical-hover-shape',
+  });
+  const missingIdentity = { ...hover } as Record<string, unknown>;
+  delete missingIdentity.hostIsBottom;
+  assert.deepEqual(decodeSketchBoxContentCommandHover(missingIdentity), {
+    ok: false,
+    reason: 'invalid-hover-identity',
+  });
 });
 
 test('partial free-box commands are rejected before structural patch creation', () => {
@@ -169,8 +196,8 @@ test('partial free-box commands are rejected before structural patch creation', 
   assert.equal(patchCalls, 0);
 });
 
-test('strict commit consumes the command rather than contradictory legacy flat fields', () => {
-  const box: Record<string, unknown> = {
+test('strict commit consumes a canonical command and rejects records with legacy duplicates', () => {
+  const createBox = () => ({
     id: 'box-1',
     absX: 0,
     absY: 1,
@@ -178,19 +205,9 @@ test('strict commit consumes the command rather than contradictory legacy flat f
     heightM: 1,
     depthM: 0.6,
     doors: [{ id: 'door-1', xNorm: 0.5, yNorm: 0.5, hinge: 'right', enabled: true }],
-  };
+  });
   const hover = withSketchBoxContentCommand(
-    {
-      kind: 'box_content',
-      contentKind: 'door',
-      boxId: 'box-1',
-      freePlacement: false,
-      op: 'add',
-      contentXNorm: 0.1,
-      boxYNorm: 0.1,
-      hinge: 'left',
-      doorId: null,
-    },
+    {},
     {
       kind: 'single-door',
       boxId: 'box-1',
@@ -204,14 +221,26 @@ test('strict commit consumes the command rather than contradictory legacy flat f
     }
   );
 
+  const canonicalBox = createBox();
   commitSketchModuleBoxContent({
-    box: box as never,
+    box: canonicalBox as never,
     boxId: 'box-1',
     contentKind: 'door',
     hoverRec: hover,
   });
+  assert.deepEqual(canonicalBox.doors ?? [], []);
 
-  assert.deepEqual(box.doors ?? [], []);
+  const noncanonicalBox = createBox();
+  assert.equal(
+    commitSketchModuleBoxContent({
+      box: noncanonicalBox as never,
+      boxId: 'box-1',
+      contentKind: 'door',
+      hoverRec: { ...hover, op: 'remove' },
+    }),
+    null
+  );
+  assert.equal(noncanonicalBox.doors.length, 1);
 });
 
 test('blocked strict command cannot mutate even when the legacy blocked field is missing', () => {
@@ -223,16 +252,7 @@ test('blocked strict command cannot mutate even when the legacy blocked field is
     heightM: 1,
     depthM: 0.6,
   };
-  const hover = withSketchBoxContentCommand(
-    {
-      kind: 'box_content',
-      contentKind: 'drawers',
-      boxId: 'box-1',
-      freePlacement: false,
-      op: 'add',
-    },
-    { ...INTERNAL_DRAWER_COMMAND, blockedReason: 'collision' }
-  );
+  const hover = withSketchBoxContentCommand({}, { ...INTERNAL_DRAWER_COMMAND, blockedReason: 'collision' });
 
   assert.equal(
     commitSketchModuleBoxContent({
@@ -256,12 +276,11 @@ test('manual-layout routing consumes malformed strict hover without creating his
     bottomY: 0,
     __gridInfo: null,
     __hoverRec: {
-      kind: 'box_content',
-      contentKind: 'door',
-      boxId: 'box-1',
-      freePlacement: false,
-      op: 'add',
-      contentXNorm: 0.5,
+      kind: SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND,
+      tool: 'sketch_door',
+      hostModuleKey: 2,
+      hostIsBottom: false,
+      boxContentCommand: { version: 1, command: { kind: 'single-door' } },
     },
     __hoverOk: true,
     __patchConfigForKey: () => {

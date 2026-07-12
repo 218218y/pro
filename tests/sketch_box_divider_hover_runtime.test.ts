@@ -5,6 +5,7 @@ import { tryHandleManualLayoutSketchHoverModuleDividerFlow } from '../esm/native
 import { resolveSketchFreeSurfaceContentPreview } from '../esm/native/services/canvas_picking_sketch_free_surface_preview.ts';
 import { resolveSketchFreeDoorContentPreview } from '../esm/native/services/canvas_picking_sketch_free_box_content_preview_doors.ts';
 import { commitSketchModuleBoxContent } from '../esm/native/services/canvas_picking_sketch_box_content_commit.ts';
+import { decodeSketchBoxContentCommandHover } from '../esm/native/services/canvas_picking_sketch_box_content_command.ts';
 import {
   addSketchBoxDividerState,
   addSketchBoxHorizontalDividerState,
@@ -20,6 +21,13 @@ import {
   resolveSketchBoxSegments,
   resolveSketchBoxVerticalSegments,
 } from '../esm/native/services/canvas_picking_sketch_box_dividers.ts';
+
+function requireSketchBoxCommandHover(value: unknown) {
+  const decoded = decodeSketchBoxContentCommandHover(value);
+  assert.equal(decoded.ok, true);
+  if (!decoded.ok) assert.fail(`Expected canonical sketch-box command hover: ${decoded.reason}`);
+  return decoded.value;
+}
 
 function approx(actual: number, expected: number, eps = 1e-6) {
   assert.ok(Math.abs(actual - expected) <= eps, `expected ${actual} to be within ${eps} of ${expected}`);
@@ -117,7 +125,8 @@ test('module sketch-box divider hover allows free placement away from center sna
   assert.ok(hoverWrite);
   assert.ok(previewWrite);
   approx(Number(hoverWrite?.dividerXNorm), 0.7);
-  assert.equal(hoverWrite?.snapToCenter, false);
+  assert.equal(hoverWrite ? 'snapToCenter' in hoverWrite : true, false);
+  assert.equal(previewWrite?.snapToCenter, false);
   assert.equal(hoverWrite?.kind, 'box_content');
   assert.equal(hoverWrite?.contentKind, 'divider');
   assert.equal(previewWrite?.kind, 'drawer_divider');
@@ -556,17 +565,24 @@ test('free sketch-box doors respect horizontal rows created after a full-height 
 
   assert.equal(upperDoorPreview.mode, 'preview');
   assert.equal(lowerDoorPreview.mode, 'preview');
+  const upperDoorHover = requireSketchBoxCommandHover(upperDoorPreview.hoverRecord);
+  const lowerDoorHover = requireSketchBoxCommandHover(lowerDoorPreview.hoverRecord);
+  assert.equal(upperDoorHover.command.kind, 'single-door');
+  assert.equal(lowerDoorHover.command.kind, 'single-door');
+  if (upperDoorHover.command.kind !== 'single-door' || lowerDoorHover.command.kind !== 'single-door') {
+    assert.fail('Expected single-door commands for both split cells');
+  }
   assert.ok(
-    Number(upperDoorPreview.hoverRecord.contentXNorm) < 0.5,
+    upperDoorHover.command.contentXNorm < 0.5,
     'upper door should stay in the left divided column instead of expanding to the full box'
   );
   assert.ok(
-    Number(lowerDoorPreview.hoverRecord.contentXNorm) < 0.5,
+    lowerDoorHover.command.contentXNorm < 0.5,
     'lower door should stay in the left divided column instead of expanding to the full box'
   );
   assert.notEqual(
-    upperDoorPreview.hoverRecord.boxYNorm,
-    lowerDoorPreview.hoverRecord.boxYNorm,
+    upperDoorHover.command.boxYNorm,
+    lowerDoorHover.command.boxYNorm,
     'doors in the split column must be stored as separate vertical cells'
   );
   assert.ok(Number(upperDoorPreview.preview.w) < targetGeo.innerW);

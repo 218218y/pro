@@ -6,7 +6,7 @@ import {
 import { sketchStackFitsAvailableHeight } from '../features/sketch_drawer_sizing.js';
 import { buildSketchBoxVerticalContentBlockers } from './canvas_picking_sketch_box_vertical_content_blockers.js';
 import { buildSketchBoxStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
-import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
+import { createManualLayoutSketchBoxCommandHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
   RecordMap,
   ResolveSketchBoxStackPreviewArgs,
@@ -149,22 +149,8 @@ export function resolveSketchBoxExternalDrawersPreview(
   }
 
   return {
-    hoverRecord: createManualLayoutSketchBoxContentHoverRecord({
+    hoverRecord: createManualLayoutSketchBoxCommandHoverRecord({
       host,
-      contentKind: 'ext_drawers',
-      boxId,
-      freePlacement,
-      op: hoverOp,
-      removeId: hoverRemoveId,
-      contentXNorm: activeSegment ? activeSegment.xNorm : 0.5,
-      boxYNorm: clampUnit((placement.yCenter - fullBoxBottomY) / targetHeight),
-      boxBaseYNorm: clampUnit((baseY - fullBoxBottomY) / targetHeight),
-      yCenter: placement.yCenter,
-      stackH: placement.stackH,
-      drawerCount: placement.drawerCount,
-      drawerHeightM: args.drawerHeightM ?? placement.drawerH,
-      drawerH,
-      blockedReason,
       command: {
         kind: 'sketch-external-drawers',
         boxId,

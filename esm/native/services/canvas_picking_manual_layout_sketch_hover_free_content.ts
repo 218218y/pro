@@ -34,6 +34,7 @@ import {
   type SketchFreeHoverHost,
 } from './canvas_picking_sketch_free_surface_preview.js';
 import { resolveSketchFreeBoxContentPreview } from './canvas_picking_sketch_free_box_content_preview.js';
+import { decodeSketchBoxContentCommandHover } from './canvas_picking_sketch_box_content_command.js';
 
 type SketchPreviewArgs = UnknownRecord;
 type SketchFreeHoverContext = {
@@ -69,15 +70,15 @@ function isExistingStackRemovalPreview(
   contentKind: SketchFreeHoverContentKind
 ): contentPreview is { mode: 'preview'; hoverRecord: UnknownRecord; preview: UnknownRecord } {
   if (contentPreview?.mode !== 'preview') return false;
-  const hover = contentPreview.hoverRecord;
-  const removeId = hover?.removeId;
+  if (contentKind !== 'drawers' && contentKind !== 'ext_drawers') return false;
+  const decoded = decodeSketchBoxContentCommandHover(contentPreview.hoverRecord);
+  if (!decoded.ok || decoded.value.contentKind !== contentKind) return false;
+  const command = decoded.value.command;
+  if (!command.freePlacement || command.op !== 'remove') return false;
   return (
-    hover?.kind === 'box_content' &&
-    hover?.freePlacement === true &&
-    hover?.contentKind === contentKind &&
-    hover?.op === 'remove' &&
-    typeof removeId === 'string' &&
-    removeId.length > 0
+    (command.kind === 'internal-drawers' || command.kind === 'sketch-external-drawers') &&
+    typeof command.removeId === 'string' &&
+    command.removeId.length > 0
   );
 }
 

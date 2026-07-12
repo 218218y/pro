@@ -57,7 +57,6 @@ export type ManualLayoutSketchBoxContentHoverIntent = {
   boxId: string;
   freePlacement: boolean;
   boxYNorm: number | null;
-  boxBaseYNorm: number | null;
   contentXNorm: number | null;
   dividerXNorm: number | null;
   dividerYNorm?: number | null;
@@ -69,18 +68,6 @@ export type ManualLayoutSketchBoxContentHoverIntent = {
   heightM: number | null;
   removeId: string | null;
   removeIdx: number | null;
-  yCenter: number | null;
-  baseY: number | null;
-  stackH: number | null;
-  drawerH: number | null;
-  drawerGap: number | null;
-  drawerHeightM: number | null;
-  drawerCount: number | null;
-  hasShoeDrawer?: boolean | null;
-  hinge: 'left' | 'right' | null;
-  doorId: string | null;
-  doorLeftId: string | null;
-  doorRightId: string | null;
   baseType: string | null;
   baseLegStyle: string | null;
   baseLegColor: string | null;
@@ -162,12 +149,6 @@ export function readRecordString(record: unknown, key: string): string | null {
 
 export function normalizeOp(value: unknown): 'add' | 'remove' {
   return readString(value) === 'remove' ? 'remove' : 'add';
-}
-
-export function normalizeHinge(value: unknown): 'left' | 'right' | null {
-  const hinge = readString(value);
-  if (!hinge) return null;
-  return hinge.trim().toLowerCase() === 'right' ? 'right' : 'left';
 }
 
 export function emptyRecord(): RecordMap {

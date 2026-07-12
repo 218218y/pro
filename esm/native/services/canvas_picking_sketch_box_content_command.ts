@@ -3,6 +3,7 @@ import { asRecord } from '../runtime/record.js';
 
 export const SKETCH_BOX_CONTENT_COMMAND_VERSION = 1 as const;
 export const SKETCH_BOX_CONTENT_COMMAND_FIELD = 'boxContentCommand' as const;
+export const SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND = 'box_content_command' as const;
 
 export type SketchBoxDrawerContentKind = 'drawers' | 'ext_drawers' | 'regular_ext_drawers';
 export type SketchBoxDoorContentKind = 'door' | 'double_door' | 'door_hinge';
@@ -91,6 +92,9 @@ export type SketchBoxContentCommandEnvelope = {
 export type SketchBoxContentCommandDecodeFailure =
   | 'missing-envelope'
   | 'unknown-version'
+  | 'invalid-hover-kind'
+  | 'invalid-hover-identity'
+  | 'noncanonical-hover-shape'
   | 'invalid-command'
   | 'content-kind-mismatch'
   | 'box-id-mismatch'
@@ -98,6 +102,15 @@ export type SketchBoxContentCommandDecodeFailure =
 
 export type SketchBoxContentCommandDecodeResult =
   { ok: true; value: SketchBoxContentCommand } | { ok: false; reason: SketchBoxContentCommandDecodeFailure };
+
+export type SketchBoxContentCommandHoverValue = {
+  contentKind: StrictSketchBoxContentKind;
+  command: SketchBoxContentCommand;
+};
+
+export type SketchBoxContentCommandHoverDecodeResult =
+  | { ok: true; value: SketchBoxContentCommandHoverValue }
+  | { ok: false; reason: SketchBoxContentCommandDecodeFailure };
 
 const COMMAND_KIND_BY_CONTENT_KIND: Readonly<
   Record<StrictSketchBoxContentKind, SketchBoxContentCommand['kind']>
@@ -109,6 +122,92 @@ const COMMAND_KIND_BY_CONTENT_KIND: Readonly<
   double_door: 'double-door',
   door_hinge: 'door-hinge',
 };
+
+const CONTENT_KIND_BY_COMMAND_KIND: Readonly<
+  Record<SketchBoxContentCommand['kind'], StrictSketchBoxContentKind>
+> = {
+  'internal-drawers': 'drawers',
+  'sketch-external-drawers': 'ext_drawers',
+  'regular-external-drawers': 'regular_ext_drawers',
+  'single-door': 'door',
+  'double-door': 'double_door',
+  'door-hinge': 'door_hinge',
+};
+
+const COMMAND_HOVER_FIELDS = new Set([
+  'ts',
+  'tool',
+  'hostModuleKey',
+  'hostIsBottom',
+  'kind',
+  SKETCH_BOX_CONTENT_COMMAND_FIELD,
+]);
+
+const BASE_COMMAND_FIELDS = ['kind', 'boxId', 'freePlacement', 'blockedReason', 'op'] as const;
+const COMMAND_FIELDS_BY_KIND: Readonly<Record<SketchBoxContentCommand['kind'], ReadonlySet<string>>> = {
+  'internal-drawers': new Set([
+    ...BASE_COMMAND_FIELDS,
+    'removeId',
+    'contentXNorm',
+    'boxYNorm',
+    'boxBaseYNorm',
+    'drawerHeightM',
+    'drawerH',
+    'stackH',
+    'drawerGap',
+  ]),
+  'sketch-external-drawers': new Set([
+    ...BASE_COMMAND_FIELDS,
+    'removeId',
+    'contentXNorm',
+    'boxYNorm',
+    'boxBaseYNorm',
+    'drawerHeightM',
+    'drawerH',
+    'stackH',
+    'drawerCount',
+  ]),
+  'regular-external-drawers': new Set([
+    ...BASE_COMMAND_FIELDS,
+    'removeId',
+    'contentXNorm',
+    'boxYNorm',
+    'boxBaseYNorm',
+    'drawerCount',
+    'hasShoeDrawer',
+    'drawerHeightM',
+  ]),
+  'single-door': new Set([...BASE_COMMAND_FIELDS, 'contentXNorm', 'boxYNorm', 'hinge', 'doorId']),
+  'double-door': new Set([...BASE_COMMAND_FIELDS, 'contentXNorm', 'boxYNorm']),
+  'door-hinge': new Set([...BASE_COMMAND_FIELDS, 'contentXNorm', 'boxYNorm', 'doorId']),
+};
+
+function hasOnlyCommandFields(record: UnknownRecord, kind: SketchBoxContentCommand['kind']): boolean {
+  const allowed = COMMAND_FIELDS_BY_KIND[kind];
+  return Object.keys(record).every(key => allowed.has(key));
+}
+
+function isCanonicalHoverModuleKey(value: unknown): boolean {
+  return (
+    value === null ||
+    (typeof value === 'number' && Number.isInteger(value) && value >= 0) ||
+    value === 'corner' ||
+    (typeof value === 'string' && /^corner:\d+$/.test(value))
+  );
+}
+
+function hasCanonicalHoverIdentity(record: UnknownRecord): boolean {
+  return (
+    typeof record.ts === 'number' &&
+    Number.isFinite(record.ts) &&
+    typeof record.tool === 'string' &&
+    record.tool.length > 0 &&
+    record.tool.trim() === record.tool &&
+    Object.prototype.hasOwnProperty.call(record, 'hostModuleKey') &&
+    isCanonicalHoverModuleKey(record.hostModuleKey) &&
+    typeof record.hostIsBottom === 'boolean'
+  );
+}
 
 function readString(value: unknown): string | null {
   if (typeof value !== 'string' || value.length === 0 || value.trim() !== value) return null;
@@ -190,6 +289,7 @@ function decodeCommand(value: unknown): SketchBoxContentCommand | null {
   if (!base || !op) return null;
 
   if (record.kind === 'internal-drawers') {
+    if (!hasOnlyCommandFields(record, 'internal-drawers')) return null;
     const geometry = readDrawerGeometry(record);
     const removeId = readNullableString(record.removeId);
     const drawerGap = readNonNegative(record.drawerGap);
@@ -205,6 +305,7 @@ function decodeCommand(value: unknown): SketchBoxContentCommand | null {
   }
 
   if (record.kind === 'sketch-external-drawers') {
+    if (!hasOnlyCommandFields(record, 'sketch-external-drawers')) return null;
     const geometry = readDrawerGeometry(record);
     const removeId = readNullableString(record.removeId);
     const drawerCount = readIntegerInRange(record.drawerCount, 1, 5);
@@ -220,6 +321,7 @@ function decodeCommand(value: unknown): SketchBoxContentCommand | null {
   }
 
   if (record.kind === 'regular-external-drawers') {
+    if (!hasOnlyCommandFields(record, 'regular-external-drawers')) return null;
     const removeId = readNullableString(record.removeId);
     const contentXNorm = readUnit(record.contentXNorm);
     const boxYNorm = readUnit(record.boxYNorm);
@@ -254,6 +356,7 @@ function decodeCommand(value: unknown): SketchBoxContentCommand | null {
   }
 
   if (record.kind === 'single-door') {
+    if (!hasOnlyCommandFields(record, 'single-door')) return null;
     const contentXNorm = readUnit(record.contentXNorm);
     const boxYNorm = readUnit(record.boxYNorm);
     const hinge = record.hinge === 'left' || record.hinge === 'right' ? record.hinge : null;
@@ -270,6 +373,7 @@ function decodeCommand(value: unknown): SketchBoxContentCommand | null {
   }
 
   if (record.kind === 'double-door') {
+    if (!hasOnlyCommandFields(record, 'double-door')) return null;
     const contentXNorm = readUnit(record.contentXNorm);
     const boxYNorm = readUnit(record.boxYNorm);
     if (contentXNorm == null || boxYNorm == null) return null;
@@ -277,6 +381,7 @@ function decodeCommand(value: unknown): SketchBoxContentCommand | null {
   }
 
   if (record.kind === 'door-hinge') {
+    if (!hasOnlyCommandFields(record, 'door-hinge')) return null;
     const contentXNorm = readUnit(record.contentXNorm);
     const boxYNorm = readUnit(record.boxYNorm);
     const doorId = readString(record.doorId);
@@ -297,19 +402,51 @@ export function createSketchBoxContentCommandEnvelope(
   return { version: SKETCH_BOX_CONTENT_COMMAND_VERSION, command };
 }
 
+function decodeSketchBoxContentCommandEnvelope(recordValue: unknown): SketchBoxContentCommandDecodeResult {
+  const record = asRecord(recordValue);
+  const envelope = asRecord(record?.[SKETCH_BOX_CONTENT_COMMAND_FIELD]);
+  if (!envelope) return { ok: false, reason: 'missing-envelope' };
+  if (envelope.version !== SKETCH_BOX_CONTENT_COMMAND_VERSION)
+    return { ok: false, reason: 'unknown-version' };
+  const command = decodeCommand(envelope.command);
+  return command ? { ok: true, value: command } : { ok: false, reason: 'invalid-command' };
+}
+
+export function getSketchBoxContentKindForCommand(
+  command: SketchBoxContentCommand
+): StrictSketchBoxContentKind {
+  return CONTENT_KIND_BY_COMMAND_KIND[command.kind];
+}
+
+export function decodeSketchBoxContentCommandHover(
+  recordValue: unknown
+): SketchBoxContentCommandHoverDecodeResult {
+  const record = asRecord(recordValue);
+  if (record?.kind !== SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND)
+    return { ok: false, reason: 'invalid-hover-kind' };
+  if (Object.keys(record).some(key => !COMMAND_HOVER_FIELDS.has(key)))
+    return { ok: false, reason: 'noncanonical-hover-shape' };
+  if (!hasCanonicalHoverIdentity(record)) return { ok: false, reason: 'invalid-hover-identity' };
+  const decoded = decodeSketchBoxContentCommandEnvelope(record);
+  if (decoded.ok === false) return { ok: false, reason: decoded.reason };
+  return {
+    ok: true,
+    value: {
+      contentKind: getSketchBoxContentKindForCommand(decoded.value),
+      command: decoded.value,
+    },
+  };
+}
+
 export function decodeSketchBoxContentCommand(args: {
   record: unknown;
   expectedContentKind: StrictSketchBoxContentKind;
   expectedBoxId?: string | null;
   expectedFreePlacement?: boolean | null;
 }): SketchBoxContentCommandDecodeResult {
-  const record = asRecord(args.record);
-  const envelope = asRecord(record?.[SKETCH_BOX_CONTENT_COMMAND_FIELD]);
-  if (!envelope) return { ok: false, reason: 'missing-envelope' };
-  if (envelope.version !== SKETCH_BOX_CONTENT_COMMAND_VERSION)
-    return { ok: false, reason: 'unknown-version' };
-  const command = decodeCommand(envelope.command);
-  if (!command) return { ok: false, reason: 'invalid-command' };
+  const decoded = decodeSketchBoxContentCommandEnvelope(args.record);
+  if (!decoded.ok) return decoded;
+  const command = decoded.value;
   if (command.kind !== COMMAND_KIND_BY_CONTENT_KIND[args.expectedContentKind])
     return { ok: false, reason: 'content-kind-mismatch' };
   if (args.expectedBoxId && command.boxId !== args.expectedBoxId)

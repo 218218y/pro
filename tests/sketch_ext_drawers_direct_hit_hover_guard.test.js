@@ -28,20 +28,19 @@ test('[sketch-ext-drawers-direct-hit] router delegates drawer/shelf direct hits 
 test('[sketch-ext-drawers-direct-hit] removal is gated by the live hover remove target before direct-hit delete runs', () => {
   const src = WORKFLOW.map(file => fs.readFileSync(file, 'utf8')).join('\n');
   assert.match(src, /__hoverOk:\s*boolean;/);
+  assert.match(src, /decodeSketchBoxContentCommandHover\(hoverRec\)/);
+  assert.match(src, /function\s+readStrictDrawerRemoval\(/);
+  assert.match(src, /command\.op !== 'remove'/);
+  assert.match(src, /!\('removeId' in command\) \|\| !command\.removeId/);
+  assert.match(src, /const\s+removal\s*=\s*readStrictDrawerRemoval\(args\.hoverRec\);/);
   assert.match(
     src,
-    /const\s+hoverRemoveId\s*=\s*readRecordIdentity\((?:args\.hoverRec|__hoverRec), 'removeId'\);/
+    /removal\.contentKind === 'ext_drawers' \|\| removal\.contentKind === 'regular_ext_drawers'/
   );
-  assert.match(
-    src,
-    /const\s+hoverRemovesModuleDrawer\s*=\s*[\s\S]*__hoverKind === 'ext_drawers'[\s\S]*__hoverOp === 'remove'[\s\S]*hoverRemoveId === drawerId/
-  );
-  assert.match(
-    src,
-    /const\s+hoverRemovesBoxDrawer\s*=\s*[\s\S]*__hoverKind === 'box_content'[\s\S]*hoverContentKind === 'ext_drawers'[\s\S]*__hoverOp === 'remove'[\s\S]*hoverRemoveId === drawerId/
-  );
-  assert.match(src, /allowRemove = hoverRemovesModuleDrawer \|\| hoverRemovesBoxDrawer;/);
-  assert.doesNotMatch(src, /readRecordString\((?:args\.hoverRec|__hoverRec), 'removeId'\)/);
+  assert.match(src, /removal\.removeId === args\.drawerId/);
+  assert.match(src, /!args\.boxId \|\| removal\.boxId === args\.boxId/);
+  assert.doesNotMatch(src, /hoverKind === 'box_content'/);
+  assert.doesNotMatch(src, /hoverContentKind/);
 });
 
 test('[sketch-ext-drawers-direct-hit] removal can target nested box external drawers and not only the module-level list', () => {

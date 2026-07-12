@@ -16,8 +16,4 @@ export {
   readRecordNumber,
   readRecordValue,
 } from './canvas_picking_sketch_box_content_commit_records.js';
-export {
-  buildFreeToggleHover,
-  buildManualToggleHover,
-  buildToggleHoverRecord,
-} from './canvas_picking_sketch_box_content_commit_toggle.js';
+export { buildToggleHoverRecord } from './canvas_picking_sketch_box_content_commit_toggle.js';

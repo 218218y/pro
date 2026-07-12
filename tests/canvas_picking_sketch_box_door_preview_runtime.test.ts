@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { decodeSketchBoxContentCommandHover } from '../esm/native/services/canvas_picking_sketch_box_content_command.ts';
 import { resolveSketchBoxDoorPreview } from '../esm/native/services/canvas_picking_sketch_box_door_preview.ts';
 
 type Segment = {
@@ -38,6 +39,13 @@ function resolveSketchBoxSegments(): Segment[] {
 
 function pickSketchBoxSegment(): Segment {
   return fullSegment;
+}
+
+function requireSketchBoxCommandHover(value: unknown) {
+  const decoded = decodeSketchBoxContentCommandHover(value);
+  assert.equal(decoded.ok, true);
+  if (!decoded.ok) throw new Error(decoded.reason);
+  return decoded.value;
 }
 
 test('sketch-box door preview stays inert for hinge toggles when the active segment has no door', () => {
@@ -83,14 +91,14 @@ test('sketch-box door preview resolves canonical remove metadata for an existing
   });
 
   assert.ok(result);
-  assert.equal(result.hoverRecord.kind, 'box_content');
-  assert.equal(result.hoverRecord.contentKind, 'double_door');
-  assert.equal(result.hoverRecord.op, 'remove');
-  assert.equal(result.hoverRecord.freePlacement, true);
+  const hover = requireSketchBoxCommandHover(result.hoverRecord);
+  assert.equal(hover.contentKind, 'double_door');
+  assert.equal(hover.command.kind, 'double-door');
+  assert.equal(hover.command.op, 'remove');
+  assert.equal(hover.command.freePlacement, true);
+  assert.equal(hover.command.boxId, 'box-2');
   assert.equal(result.hoverRecord.hostModuleKey, 'corner');
   assert.equal('moduleKey' in result.hoverRecord, false);
-  assert.equal(result.hoverRecord.doorLeftId, 'left-door');
-  assert.equal(result.hoverRecord.doorRightId, 'right-door');
   assert.equal(result.preview.kind, 'storage');
   assert.equal(result.preview.op, 'remove');
   assert.ok(Number(result.preview.z) > targetGeo.centerZ + targetGeo.outerD / 2);
@@ -116,10 +124,12 @@ test('sketch-box door preview keeps explicit hinge/remove metadata for a single 
   });
 
   assert.ok(result);
-  assert.equal(result.hoverRecord.contentKind, 'door');
-  assert.equal(result.hoverRecord.op, 'remove');
-  assert.equal(result.hoverRecord.doorId, 'door-1');
-  assert.equal(result.hoverRecord.hinge, 'right');
-  assert.equal(result.hoverRecord.contentXNorm, 0.5);
+  const hover = requireSketchBoxCommandHover(result.hoverRecord);
+  assert.equal(hover.contentKind, 'door');
+  assert.equal(hover.command.kind, 'single-door');
+  assert.equal(hover.command.op, 'remove');
+  assert.equal(hover.command.doorId, 'door-1');
+  assert.equal(hover.command.hinge, 'right');
+  assert.equal(hover.command.contentXNorm, 0.5);
   assert.equal(result.preview.op, 'remove');
 });

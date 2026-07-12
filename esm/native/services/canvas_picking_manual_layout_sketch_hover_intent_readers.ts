@@ -1,5 +1,4 @@
 import {
-  normalizeHinge,
   normalizeOp,
   readRecordNumber,
   readRecordString,
@@ -33,13 +32,6 @@ export function readManualLayoutSketchBoxContentHoverIntent(
   if (readRecordString(record, 'kind') !== 'box_content') return null;
   const dividerYNorm = readRecordNumber(record, 'dividerYNorm');
   const dividerAxis = readRecordString(record, 'dividerAxis');
-  const hasShoeDrawerValue = readRecordValue(record, 'hasShoeDrawer');
-  const hasShoeDrawerPatch =
-    hasShoeDrawerValue === true
-      ? { hasShoeDrawer: true }
-      : hasShoeDrawerValue === false
-        ? { hasShoeDrawer: false }
-        : {};
   return {
     kind: 'box_content',
     op: normalizeOp(readRecordValue(record, 'op')),
@@ -47,7 +39,6 @@ export function readManualLayoutSketchBoxContentHoverIntent(
     boxId: readRecordString(record, 'boxId') || '',
     freePlacement: readRecordValue(record, 'freePlacement') === true,
     boxYNorm: readRecordNumber(record, 'boxYNorm'),
-    boxBaseYNorm: readRecordNumber(record, 'boxBaseYNorm'),
     contentXNorm: readRecordNumber(record, 'contentXNorm'),
     dividerXNorm: readRecordNumber(record, 'dividerXNorm'),
     ...(dividerYNorm != null ? { dividerYNorm } : {}),
@@ -59,18 +50,6 @@ export function readManualLayoutSketchBoxContentHoverIntent(
     heightM: readRecordNumber(record, 'heightM'),
     removeId: readRecordString(record, 'removeId'),
     removeIdx: readRecordNumber(record, 'removeIdx'),
-    yCenter: readRecordNumber(record, 'yCenter'),
-    baseY: readRecordNumber(record, 'baseY'),
-    stackH: readRecordNumber(record, 'stackH'),
-    drawerH: readRecordNumber(record, 'drawerH'),
-    drawerGap: readRecordNumber(record, 'drawerGap'),
-    drawerHeightM: readRecordNumber(record, 'drawerHeightM'),
-    drawerCount: readRecordNumber(record, 'drawerCount'),
-    ...hasShoeDrawerPatch,
-    hinge: normalizeHinge(readRecordValue(record, 'hinge')),
-    doorId: readRecordString(record, 'doorId'),
-    doorLeftId: readRecordString(record, 'doorLeftId'),
-    doorRightId: readRecordString(record, 'doorRightId'),
     baseType: readRecordString(record, 'baseType'),
     baseLegStyle: readRecordString(record, 'baseLegStyle'),
     baseLegColor: readRecordString(record, 'baseLegColor'),

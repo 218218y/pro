@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { decodeSketchBoxContentCommandHover } from '../esm/native/services/canvas_picking_sketch_box_content_command.ts';
 import { resolveSketchFreeBoxContentPreview } from '../esm/native/services/canvas_picking_sketch_free_box_content_preview.ts';
 
 type FreeBox = {
@@ -15,6 +16,13 @@ type FreeBox = {
 };
 
 const wardrobeBox = { centerX: 0, centerY: 1, centerZ: 0, width: 2, height: 2, depth: 0.6 } as const;
+
+function requireSketchBoxCommandHover(value: unknown) {
+  const decoded = decodeSketchBoxContentCommandHover(value);
+  assert.equal(decoded.ok, true);
+  if (!decoded.ok) throw new Error(decoded.reason);
+  return decoded.value;
+}
 
 function resolveSketchFreeBoxGeometry(args: {
   centerX: number;
@@ -147,14 +155,14 @@ test('sketch-free box content preview returns canonical double-door removal meta
   );
 
   assert.ok(result && result.mode === 'preview');
-  assert.equal(result?.hoverRecord.kind, 'box_content');
-  assert.equal(result?.hoverRecord.contentKind, 'double_door');
-  assert.equal(result?.hoverRecord.op, 'remove');
-  assert.equal(result?.hoverRecord.freePlacement, true);
+  const hover = requireSketchBoxCommandHover(result.hoverRecord);
+  assert.equal(hover.contentKind, 'double_door');
+  assert.equal(hover.command.kind, 'double-door');
+  assert.equal(hover.command.op, 'remove');
+  assert.equal(hover.command.freePlacement, true);
+  assert.equal(hover.command.boxId, 'free-2');
   assert.equal(result?.hoverRecord.hostModuleKey, 'corner');
   assert.equal('moduleKey' in (result?.hoverRecord ?? {}), false);
-  assert.equal(result?.hoverRecord.doorLeftId, 'left-door');
-  assert.equal(result?.hoverRecord.doorRightId, 'right-door');
   assert.equal(result?.preview.kind, 'storage');
   assert.equal(result?.preview.op, 'remove');
 });
@@ -182,10 +190,12 @@ test('sketch-free external drawer preview blocks construction on existing free-b
   );
 
   assert.ok(result && result.mode === 'preview');
-  assert.equal(result?.hoverRecord.kind, 'box_content');
-  assert.equal(result?.hoverRecord.contentKind, 'ext_drawers');
-  assert.equal(result?.hoverRecord.op, 'add');
-  assert.equal(result?.hoverRecord.__wpBlockedReason, 'collision');
+  const hover = requireSketchBoxCommandHover(result.hoverRecord);
+  assert.equal(hover.contentKind, 'ext_drawers');
+  assert.equal(hover.command.kind, 'sketch-external-drawers');
+  assert.equal(hover.command.op, 'add');
+  assert.equal(hover.command.blockedReason, 'collision');
+  assert.equal(hover.command.freePlacement, true);
   assert.equal(result?.preview.op, 'blocked');
   assert.equal(result?.preview.blockedReason, 'collision');
 });
