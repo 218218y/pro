@@ -63,6 +63,8 @@ test('test selection filters by pattern and skips playwright e2e specs', () => {
   fs.writeFileSync(path.join(root, 'tests', 'unit', 'door_runtime.test.js'), 'export {}\n', 'utf8');
   fs.writeFileSync(path.join(root, 'tests', 'unit', 'other_runtime.test.ts'), 'export {}\n', 'utf8');
   fs.writeFileSync(path.join(root, 'tests', 'e2e', 'smoke.spec.ts'), 'export {}\n', 'utf8');
+  fs.writeFileSync(path.join(root, 'tests', 'unit', 'ui_contract.test.cjs'), 'module.exports = {}\n', 'utf8');
+  fs.writeFileSync(path.join(root, 'tests', 'unit', 'runtime_helpers.ts'), 'export {}\n', 'utf8');
 
   const selected = selectRunnableTests({ projectRoot: root, pattern: 'door' });
   assert.equal(selected.files.length, 1);
@@ -70,7 +72,9 @@ test('test selection filters by pattern and skips playwright e2e specs', () => {
   assert.equal(selected.skippedE2E, 0, 'pattern filtering happens before e2e skip accounting');
 
   const allSelected = selectRunnableTests({ projectRoot: root, pattern: '' });
-  assert.equal(allSelected.files.length, 2);
+  assert.equal(allSelected.files.length, 3);
+  assert.ok(allSelected.files.some(file => file.endsWith('ui_contract.test.cjs')));
+  assert.ok(allSelected.files.every(file => !file.endsWith('runtime_helpers.ts')));
   assert.equal(allSelected.skippedE2E, 1);
   assert.match(createNoTestsMessage({ skippedE2E: 1 }), /Playwright E2E specs are skipped/);
   assert.match(createRunBanner({ files: allSelected.files, flags: ['forced tsx'] }), /forced tsx/);
@@ -267,4 +271,23 @@ test('getNodeArgs stays empty when only js tests exist', () => {
   fs.mkdirSync(path.join(root, 'tests'), { recursive: true });
   fs.writeFileSync(path.join(root, 'tests', 'runtime.test.js'), 'export {}\n', 'utf8');
   assert.deepEqual(getNodeArgs({ projectRoot: root, forceTsx: false }), []);
+});
+
+test('canonical test discovery accepts test/spec extensions and rejects helpers and fixtures', () => {
+  const root = tempDir();
+  fs.mkdirSync(path.join(root, 'tests', 'nested'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'tests', 'e2e', 'helpers'), { recursive: true });
+  for (const name of ['a.test.js', 'b.test.cjs', 'c.test.mjs', 'd.test.ts', 'e.test.tsx', 'f.spec.js']) {
+    fs.writeFileSync(path.join(root, 'tests', 'nested', name), '', 'utf8');
+  }
+  fs.writeFileSync(path.join(root, 'tests', 'nested', 'runtime_helpers.ts'), '', 'utf8');
+  fs.writeFileSync(path.join(root, 'tests', 'e2e', 'smoke.spec.ts'), '', 'utf8');
+  fs.writeFileSync(path.join(root, 'tests', 'e2e', 'helpers', 'fixture.ts'), '', 'utf8');
+
+  const selected = selectRunnableTests({ projectRoot: root, pattern: '', shard: null });
+  assert.equal(selected.allFiles.length, 7);
+  assert.equal(selected.files.length, 6);
+  assert.equal(selected.skippedE2E, 1);
+  assert.ok(selected.files.some(file => file.endsWith('b.test.cjs')));
+  assert.ok(selected.files.every(file => !file.includes('helpers')));
 });

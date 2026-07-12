@@ -7,7 +7,6 @@ import {
 } from './canvas_picking_sketch_box_content_commit.js';
 import { createCanvasPickingConfigStructuralPatchMeta } from './canvas_picking_config_patch_meta.js';
 import {
-  readManualLayoutSketchBoxContentHoverIntent,
   readManualLayoutSketchRodHoverIntent,
   readManualLayoutSketchShelfHoverIntent,
   readManualLayoutSketchStorageHoverIntent,
@@ -24,6 +23,10 @@ import {
   decodeSketchBoxContentCommandHover,
   SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND,
 } from './canvas_picking_sketch_box_content_command.js';
+import {
+  decodeSketchStructuralCommandHover,
+  SKETCH_STRUCTURAL_COMMAND_HOVER_KIND,
+} from './canvas_picking_sketch_structural_command.js';
 
 type RecordMap = Record<string, unknown>;
 type ModuleKey = number | 'corner' | `corner:${number}` | null;
@@ -104,32 +107,30 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
     }
   }
 
-  const boxContentHover = __hoverOk ? readManualLayoutSketchBoxContentHoverIntent(__hoverRec) : null;
-  if (boxContentHover && !boxContentHover.freePlacement && boxContentHover.boxId) {
-    const contentKind = boxContentHover.contentKind;
-    if (
-      contentKind === 'divider' ||
-      contentKind === 'shelf' ||
-      contentKind === 'rod' ||
-      contentKind === 'storage'
-    ) {
-      if (boxContentHover.blockedReason) {
-        toastSketchBoxContentBlocked(App, contentKind, boxContentHover.blockedReason);
+  const structuralHover = __hoverOk ? decodeSketchStructuralCommandHover(__hoverRec) : null;
+  if (__hoverOk && __hoverRec.kind === SKETCH_STRUCTURAL_COMMAND_HOVER_KIND) {
+    if (!structuralHover?.ok) {
+      __wp_clearSketchHover(App);
+      return true;
+    }
+    const { command, contentKind } = structuralHover.value;
+    if (!command.freePlacement) {
+      if (command.blockedReason) {
+        toastSketchBoxContentBlocked(App, contentKind, command.blockedReason);
         __wp_clearSketchHover(App);
         return true;
       }
-      const boxId = boxContentHover.boxId;
       __patchConfigForKey(
         __activeModuleKey,
         cfg => {
           const boxes = ensureSketchModuleBoxes(cfg);
-          const box = findSketchModuleBoxById(boxes, boxId, { freePlacement: false });
+          const box = findSketchModuleBoxById(boxes, command.boxId, { freePlacement: false });
           if (!box) return;
           commitSketchModuleBoxContent({
             App,
             cfg,
             box,
-            boxId,
+            boxId: command.boxId,
             contentKind,
             hoverRec: __hoverRec,
             hoverHost: {

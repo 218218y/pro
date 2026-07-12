@@ -1,9 +1,13 @@
-import { readManualLayoutSketchBoxContentHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
 import {
   decodeSketchBoxContentCommandHover,
   isStrictSketchBoxContentKind,
   type SketchBoxContentCommand,
 } from './canvas_picking_sketch_box_content_command.js';
+import {
+  decodeSketchStructuralCommandHover,
+  isStrictSketchStructuralContentKind,
+  type SketchStructuralCommand,
+} from './canvas_picking_sketch_structural_command.js';
 import { blockRemovableSideContentBuildIfSketchBoxSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
 import { tryCommitSketchBoxAdornment } from './canvas_picking_sketch_box_content_commit_adornments.js';
 import type { CommitSketchModuleBoxContentArgs } from './canvas_picking_sketch_box_content_commit_contracts.js';
@@ -49,8 +53,10 @@ export function commitSketchModuleBoxContent(
   args: CommitSketchModuleBoxContentArgs
 ): Record<string, unknown> | null {
   const strictContent = isStrictSketchBoxContentKind(args.contentKind);
-  const hoverIntent = strictContent ? null : readManualLayoutSketchBoxContentHoverIntent(args.hoverRec);
+  const strictStructuralContent = isStrictSketchStructuralContentKind(args.contentKind);
+  if (!strictContent && !strictStructuralContent) return null;
   let command: SketchBoxContentCommand | null = null;
+  let structuralCommand: SketchStructuralCommand | null = null;
   if (strictContent) {
     const decoded = decodeSketchBoxContentCommandHover(args.hoverRec);
     if (!decoded.ok || decoded.value.contentKind !== args.contentKind) return null;
@@ -58,13 +64,25 @@ export function commitSketchModuleBoxContent(
     if (args.boxId && command.boxId !== args.boxId) return null;
     if (command.freePlacement !== (args.box.freePlacement === true)) return null;
     if (command.blockedReason) return null;
+  } else if (strictStructuralContent) {
+    const decoded = decodeSketchStructuralCommandHover(args.hoverRec);
+    if (!decoded.ok || decoded.value.contentKind !== args.contentKind) return null;
+    structuralCommand = decoded.value.command;
+    if (args.boxId && structuralCommand.boxId !== args.boxId) return null;
+    if (structuralCommand.freePlacement !== (args.box.freePlacement === true)) return null;
+    if (structuralCommand.blockedReason) return null;
   }
-  const hoverOp = command?.op || hoverIntent?.op || 'add';
-  const freePlacement = command?.freePlacement ?? hoverIntent?.freePlacement ?? false;
+  const hoverOp = command?.op ?? structuralCommand?.op;
+  const freePlacement = command?.freePlacement ?? structuralCommand?.freePlacement;
+  if (!hoverOp || freePlacement == null) return null;
 
   if (blockSideBlockingBoxContentIfSideMissing({ ...args, hoverOp, freePlacement })) return null;
 
-  const adornment = tryCommitSketchBoxAdornment({ commitArgs: args, hoverIntent, hoverOp });
+  const adornment = tryCommitSketchBoxAdornment({
+    commitArgs: args,
+    structuralCommand,
+    hoverOp,
+  });
   if (adornment.handled) return adornment.nextHover;
 
   const drawers = tryCommitSketchBoxDrawerContent({ commitArgs: args, command, hoverOp });
@@ -73,7 +91,11 @@ export function commitSketchModuleBoxContent(
   const doors = tryCommitSketchBoxDoorContent({ commitArgs: args, command, hoverOp });
   if (doors.handled) return doors.nextHover;
 
-  const vertical = tryCommitSketchBoxVerticalContent({ commitArgs: args, hoverIntent, hoverOp });
+  const vertical = tryCommitSketchBoxVerticalContent({
+    commitArgs: args,
+    structuralCommand,
+    hoverOp,
+  });
   if (vertical.handled) return vertical.nextHover;
 
   return null;

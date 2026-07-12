@@ -78,6 +78,7 @@ export function resolveSketchFreePlacementBoxPreview(args: {
     hoverPlacement,
     freeBoxes,
   });
+  if (!hoverRecord) return null;
   const frontOverlay = resolveSketchFreePlacementRemoveOverlay({
     hoverPlacement,
     removeBox,

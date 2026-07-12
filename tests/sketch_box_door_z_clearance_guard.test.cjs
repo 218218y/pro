@@ -70,6 +70,12 @@ test('sketch box doors render with front-plane clearance to avoid z-fighting', (
     fs.readFileSync(path.join(__dirname, '..', 'esm/native/builder/render_interior_sketch_boxes.ts'), 'utf8'),
     sketchBoxFrontsBundle(),
   ].join('\n');
-  assert.match(src, /const doorBackClearanceZ = Math\.max\(0\.0008, Math\.min\(0\.0015, doorD \* 0\.1\)\);/);
-  assert.match(src, /const doorZ = doorFrontZ \+ doorD \/ 2 \+ doorBackClearanceZ;/);
+  assert.match(
+    src,
+    /const doorBackClearanceZ = Math\.max\([\s\S]*SKETCH_BOX_DIMENSIONS\.preview\.doorBackClearanceMinM[\s\S]*SKETCH_BOX_DIMENSIONS\.preview\.doorBackClearanceMaxM[\s\S]*doorD \* SKETCH_BOX_DIMENSIONS\.preview\.doorBackClearanceDepthRatio[\s\S]*\);/
+  );
+  assert.match(
+    src,
+    /const doorZ = isInsetDoorMount[\s\S]*doorFrontZ - doorD \/ 2 - insetReveal[\s\S]*doorFrontZ \+ doorD \/ 2 \+ doorBackClearanceZ;/
+  );
 });

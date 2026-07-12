@@ -4,8 +4,15 @@ import { __wp_toModuleKey } from './canvas_picking_core_helpers.js';
 import { commitSketchFreePlacementHoverRecord } from './canvas_picking_sketch_free_commit.js';
 import {
   decodeSketchBoxContentCommandHover,
+  isStrictSketchBoxContentKind,
   SKETCH_BOX_CONTENT_COMMAND_HOVER_KIND,
 } from './canvas_picking_sketch_box_content_command.js';
+import {
+  decodeSketchStructuralCommandHover,
+  isStrictSketchStructuralContentKind,
+  SKETCH_STRUCTURAL_COMMAND_HOVER_KIND,
+  type SketchStructuralContentKind,
+} from './canvas_picking_sketch_structural_command.js';
 import type { SketchFreeHoverHost as SketchFreeBoxHost } from './canvas_picking_sketch_free_surface_preview.js';
 
 const FREE_BOX_VERTICAL_REMOVAL_CONTENT_KINDS = ['shelf', 'rod', 'storage'] as const;
@@ -21,32 +28,56 @@ function isVerticalFreeBoxContentKind(
   return (FREE_BOX_VERTICAL_REMOVAL_CONTENT_KINDS as readonly string[]).includes(String(contentKind || ''));
 }
 
+function findRecentStructuralCommandHover(args: {
+  hover: unknown;
+  tool: string;
+  host: SketchFreeBoxHost;
+  expectedContentKind?: SketchStructuralContentKind | null;
+}): { hoverRec: UnknownRecord; contentKind: SketchStructuralContentKind } | null {
+  const hoverRec = matchRecentSketchHover({
+    hover: args.hover,
+    tool: args.tool,
+    kind: SKETCH_STRUCTURAL_COMMAND_HOVER_KIND,
+    host: args.host,
+    toModuleKey: __wp_toModuleKey,
+  });
+  if (!hoverRec) return null;
+  const decoded = decodeSketchStructuralCommandHover(hoverRec);
+  if (!decoded.ok || !decoded.value.command.freePlacement) return null;
+  if (args.expectedContentKind && decoded.value.contentKind !== args.expectedContentKind) return null;
+  return { hoverRec, contentKind: decoded.value.contentKind };
+}
+
 function findRecentVerticalRemovalHover(args: {
   hover: unknown;
   tool: string;
   host: SketchFreeBoxHost;
 }): { hoverRec: UnknownRecord; contentKind: FreeBoxVerticalRemovalContentKind } | null {
-  for (const contentKind of FREE_BOX_VERTICAL_REMOVAL_CONTENT_KINDS) {
-    const hoverRec = matchRecentSketchHover({
-      hover: args.hover,
-      tool: args.tool,
-      kind: 'box_content',
-      contentKind,
-      host: args.host,
-      toModuleKey: __wp_toModuleKey,
-      requireFreePlacement: true,
-    });
-    if (hoverRec?.op === 'remove') return { hoverRec, contentKind };
-  }
-  return null;
+  const match = findRecentStructuralCommandHover(args);
+  if (
+    !match ||
+    match.contentKind === 'divider' ||
+    match.contentKind === 'base' ||
+    match.contentKind === 'cornice'
+  )
+    return null;
+  const decoded = decodeSketchStructuralCommandHover(match.hoverRec);
+  if (
+    !decoded.ok ||
+    decoded.value.command.op !== 'remove' ||
+    !isVerticalFreeBoxContentKind(match.contentKind)
+  )
+    return null;
+  return { hoverRec: match.hoverRec, contentKind: match.contentKind };
 }
 
-function findRecentStackCommandHover(args: {
+function findRecentStrictBoxCommandHover(args: {
   hover: unknown;
   tool: string;
   host: SketchFreeBoxHost;
-  contentKind: 'drawers' | 'ext_drawers';
+  contentKind: string;
 }): UnknownRecord | null {
+  if (!isStrictSketchBoxContentKind(args.contentKind)) return null;
   const hoverRec = matchRecentSketchHover({
     hover: args.hover,
     tool: args.tool,
@@ -114,22 +145,21 @@ export function tryHandleCanvasManualSketchFreeContentClick(
   const hoverRec =
     host == null
       ? null
-      : isStackFreeBoxContentKind(freeBoxContentKind)
-        ? findRecentStackCommandHover({
+      : isStrictSketchBoxContentKind(freeBoxContentKind)
+        ? findRecentStrictBoxCommandHover({
             hover: currentHover,
             tool,
             host,
-            contentKind: freeBoxContentKind === 'drawers' ? 'drawers' : 'ext_drawers',
-          })
-        : matchRecentSketchHover({
-            hover: currentHover,
-            tool,
-            kind: 'box_content',
             contentKind: freeBoxContentKind,
-            host,
-            toModuleKey: __wp_toModuleKey,
-            requireFreePlacement: true,
-          });
+          })
+        : isStrictSketchStructuralContentKind(freeBoxContentKind)
+          ? (findRecentStructuralCommandHover({
+              hover: currentHover,
+              tool,
+              host,
+              expectedContentKind: freeBoxContentKind,
+            })?.hoverRec ?? null)
+          : null;
   const hoverOk = !!hoverRec;
   if (!hoverOk && foundModuleIndex !== null) return false;
   if (!(host && hoverRec && hoverOk)) return false;

@@ -1,6 +1,7 @@
 import type { AppContainer } from '../../../types';
 import { matchRecentSketchHover } from './canvas_picking_sketch_hover_matching.js';
 import { commitSketchFreePlacementHoverRecord } from './canvas_picking_sketch_free_commit.js';
+import { decodeSketchFreeBoxPlacementHover } from './canvas_picking_sketch_free_box_command.js';
 import { __wp_toModuleKey } from './canvas_picking_core_helpers.js';
 import { pickSketchFreeBoxHost } from './canvas_picking_sketch_free_boxes.js';
 import { getSketchFreeBoxContentKind } from './canvas_picking_sketch_box_dividers.js';
@@ -24,14 +25,8 @@ function readRecordValue(record: unknown, key: string): unknown {
 
 function isBlockedFreeBoxAddHover(hoverRec: unknown, wardrobeBox: unknown): boolean {
   if (!wardrobeBox || typeof wardrobeBox !== 'object' || Array.isArray(wardrobeBox)) return false;
-  if (readRecordValue(hoverRec, 'kind') !== 'box') return false;
-  if (readRecordValue(hoverRec, 'freePlacement') !== true) return false;
-  if (readRecordValue(hoverRec, 'op') === 'remove') return false;
-
-  const xCenter = readNumber(readRecordValue(hoverRec, 'xCenter'));
-  const yCenter = readNumber(readRecordValue(hoverRec, 'yCenter'));
-  const heightM = readNumber(readRecordValue(hoverRec, 'heightM'));
-  if (xCenter == null || yCenter == null || heightM == null) return false;
+  const decoded = decodeSketchFreeBoxPlacementHover(hoverRec);
+  if (!decoded.ok || decoded.value.kind !== 'create-free-box') return false;
 
   const measuredWardrobeBox = wardrobeBox as {
     centerX: number;
@@ -40,9 +35,9 @@ function isBlockedFreeBoxAddHover(hoverRec: unknown, wardrobeBox: unknown): bool
     height: number;
   };
   return isSketchFreeBoxUnderWardrobeColumn({
-    planeX: xCenter,
-    planeY: yCenter,
-    boxH: heightM,
+    planeX: decoded.value.geometry.centerX,
+    planeY: decoded.value.geometry.centerY,
+    boxH: decoded.value.geometry.heightM,
     wardrobeBox: measuredWardrobeBox,
   });
 }

@@ -27,13 +27,15 @@ test('order pdf sketch hooks use DOM event types for window and document listene
   const pointerInteractionSessionHooks = read(
     'esm/native/ui/react/pdf/order_pdf_overlay_sketch_card_text_layer_pointer_interaction_session_hooks.ts'
   );
-  assert.match(hooks, /globalThis\.KeyboardEvent/);
+  assert.match(hooks, /\(event: KeyboardEvent\)/);
   assert.ok(
-    /globalThis\.PointerEvent/.test(card) ||
-      /globalThis\.PointerEvent/.test(cardTextLayer) ||
-      /globalThis\.PointerEvent/.test(pointerSessionHooks) ||
-      /globalThis\.PointerEvent/.test(pointerInteractionSessionHooks)
+    /\(event: PointerEvent\)/.test(card) ||
+      /\(event: PointerEvent\)/.test(cardTextLayer) ||
+      /\(event: PointerEvent\)/.test(pointerSessionHooks) ||
+      /\(event: PointerEvent\)/.test(pointerInteractionSessionHooks)
   );
+  assert.doesNotMatch(hooks, /import type \{[^}]*KeyboardEvent[^}]*\} from 'react'/);
+  assert.doesNotMatch(pointerInteractionSessionHooks, /import type \{[^}]*PointerEvent[^}]*\} from 'react'/);
 });
 
 test('lean pdf shim stays outside shared type roots', () => {

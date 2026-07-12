@@ -5,6 +5,7 @@ import { tryHandleCanvasLayoutEditClick } from '../esm/native/services/canvas_pi
 import { tryHandleExternalDrawerModeClick } from '../esm/native/services/canvas_picking_drawer_mode_flow_external.ts';
 import { tryCommitSketchModuleStackTool } from '../esm/native/services/canvas_picking_sketch_module_stack_apply.ts';
 import { commitSketchModuleBoxContent } from '../esm/native/services/canvas_picking_sketch_box_content_commit.ts';
+import { withSketchStructuralCommand } from './_sketch_structural_command_fixture.ts';
 
 type Toast = { message: string; type: string | undefined };
 
@@ -164,14 +165,18 @@ test('sketch-box rod content is blocked when the same box side was removed', () 
     box,
     boxId: 'box-1',
     contentKind: 'rod',
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'rod',
-      boxId: 'box-1',
-      op: 'add',
-      boxYNorm: 0.5,
-      tool: 'sketch_rod',
-    },
+    hoverRec: withSketchStructuralCommand(
+      {
+        kind: 'add-rod',
+        op: 'add',
+        boxId: 'box-1',
+        freePlacement: false,
+        blockedReason: null,
+        boxYNorm: 0.5,
+        contentXNorm: 0.5,
+      },
+      { tool: 'sketch_rod', moduleKey: 0, isBottom: false }
+    ),
     hoverHost: { tool: 'sketch_rod', moduleKey: 0, isBottom: false },
   });
 

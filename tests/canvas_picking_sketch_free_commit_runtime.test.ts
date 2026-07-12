@@ -7,6 +7,7 @@ import {
   createSketchFreePlacementBoxHoverRecord,
 } from '../esm/native/services/canvas_picking_sketch_free_commit.ts';
 import { withSketchBoxContentCommand } from './_sketch_box_content_command_fixture.ts';
+import { withSketchStructuralCommand } from './_sketch_structural_command_fixture.ts';
 
 test('sketch-free placement hover record keeps canonical host/free-placement fields', () => {
   const hoverRecord = createSketchFreePlacementBoxHoverRecord({
@@ -27,14 +28,20 @@ test('sketch-free placement hover record keeps canonical host/free-placement fie
     hostModuleKey: 3,
     hostIsBottom: true,
     kind: 'box',
-    op: 'add',
     freePlacement: true,
-    xCenter: 0.25,
-    yCenter: 1.1,
-    heightM: 0.9,
-    widthM: 0.7,
-    depthM: 0.4,
-    removeId: null,
+    freeBoxPlacementCommand: {
+      version: 1,
+      command: {
+        kind: 'create-free-box',
+        geometry: {
+          centerX: 0.25,
+          centerY: 1.1,
+          heightM: 0.9,
+          widthM: 0.7,
+          depthM: 0.4,
+        },
+      },
+    },
   });
 });
 
@@ -131,6 +138,77 @@ test('sketch-free placement commit rejects string-encoded internal hover geometr
   assert.equal(boxes.length, 0);
 });
 
+test('sketch-free placement remove fails closed when its target id is missing', () => {
+  const cfg: Record<string, unknown> = {
+    sketchExtras: {
+      boxes: [
+        {
+          id: 'free-existing',
+          freePlacement: true,
+          absX: 0,
+          absY: 1,
+          widthM: 0.8,
+          depthM: 0.4,
+          heightM: 1,
+        },
+      ],
+    },
+  };
+  const App = {
+    actions: {
+      modules: {
+        patchForStack: (
+          _side: string,
+          _moduleKey: unknown,
+          patcher: (cfgRef: Record<string, unknown>) => void
+        ) => patcher(cfg),
+      },
+    },
+  } as never;
+
+  const missingTargetHover = createSketchFreePlacementBoxHoverRecord({
+    tool: 'sketch_box_free',
+    host: { moduleKey: 7, isBottom: false },
+    op: 'remove',
+    previewX: 0.15,
+    previewY: 0.95,
+    previewH: 0.9,
+    previewW: 0.72,
+    previewD: 0.42,
+    removeId: null,
+    ts: 1,
+  });
+  assert.equal(missingTargetHover, null);
+
+  const legacyAmbiguousHover = {
+    ts: 1,
+    tool: 'sketch_box_free',
+    hostModuleKey: 7,
+    hostIsBottom: false,
+    kind: 'box',
+    op: 'remove',
+    freePlacement: true,
+    xCenter: 0.15,
+    yCenter: 0.95,
+    heightM: 0.9,
+    widthM: 0.72,
+    depthM: 0.42,
+    removeId: null,
+  } as never;
+  assert.deepEqual(
+    commitSketchFreePlacementHoverRecord({
+      App,
+      host: { moduleKey: 7, isBottom: false },
+      hoverRec: legacyAmbiguousHover,
+    }),
+    { committed: false }
+  );
+
+  const boxes = ((cfg.sketchExtras as Record<string, unknown>).boxes as Array<Record<string, unknown>>) || [];
+  assert.equal(boxes.length, 1);
+  assert.equal(boxes[0]?.id, 'free-existing');
+});
+
 test('sketch-free placement content commit routes free-placement door removal through the canonical content seam', () => {
   const cfg: Record<string, unknown> = {
     sketchExtras: {
@@ -219,14 +297,20 @@ test('sketch-free placement content commit consumes blocked no-room hovers witho
       },
     } as never,
     host: { moduleKey: 3, isBottom: false },
-    hoverRec: {
-      kind: 'box_content',
-      freePlacement: true,
-      boxId: 'free-1',
-      contentKind: 'shelf',
-      op: 'add',
-      __wpBlockedReason: 'no-room',
-    } as never,
+    hoverRec: withSketchStructuralCommand(
+      {
+        kind: 'add-shelf',
+        op: 'add',
+        boxId: 'free-1',
+        freePlacement: true,
+        blockedReason: 'no-room',
+        boxYNorm: 0.5,
+        contentXNorm: 0.5,
+        variant: 'regular',
+        depthM: 0.4,
+      },
+      { tool: 'sketch_shelf:regular', moduleKey: 3 }
+    ) as never,
     freeBoxContentKind: 'shelf',
     floorY: 0,
   });
@@ -339,18 +423,19 @@ test('sketch-free vertical tools commit cross-kind vertical-content removal hove
     foundModuleIndex: null,
     host,
     floorY: 0,
-    __wp_readSketchHover: () => ({
-      ts: Date.now(),
-      tool: 'sketch_shelf:regular',
-      hostModuleKey: 2,
-      hostIsBottom: false,
-      kind: 'box_content',
-      contentKind: 'rod',
-      freePlacement: true,
-      boxId: 'free-cross-kind',
-      op: 'remove',
-      removeId: 'rod-1',
-    }),
+    __wp_readSketchHover: () =>
+      withSketchStructuralCommand(
+        {
+          kind: 'remove-rod',
+          op: 'remove',
+          boxId: 'free-cross-kind',
+          freePlacement: true,
+          blockedReason: null,
+          removeId: 'rod-1',
+          removeIdx: null,
+        },
+        { tool: 'sketch_shelf:regular', moduleKey: 2 }
+      ),
     __wp_writeSketchHover: () => {
       throw new Error('cross-kind vertical removal should clear hover after commit');
     },
@@ -386,18 +471,18 @@ test('sketch-free stack tools commit existing vertical-content removal hovers be
     },
   };
   const host = { moduleKey: 2, isBottom: false } as const;
-  const hover = {
-    ts: Date.now(),
-    tool: 'sketch_ext_drawers:3',
-    hostModuleKey: 2,
-    hostIsBottom: false,
-    kind: 'box_content',
-    contentKind: 'shelf',
-    freePlacement: true,
-    boxId: 'free-shelf-1',
-    op: 'remove',
-    removeId: 'shelf-1',
-  };
+  const hover = withSketchStructuralCommand(
+    {
+      kind: 'remove-shelf',
+      op: 'remove',
+      boxId: 'free-shelf-1',
+      freePlacement: true,
+      blockedReason: null,
+      removeId: 'shelf-1',
+      removeIdx: null,
+    },
+    { tool: 'sketch_ext_drawers:3', moduleKey: 2 }
+  );
   let cleared = false;
 
   const handled = tryHandleCanvasManualSketchFreeContentClick({

@@ -1,5 +1,5 @@
-import path from 'node:path';
 import { listTestFiles } from './wp_test_shared.js';
+import { isPlaywrightE2ETestFile } from './wp_test_file_classifier.js';
 
 function readFlagValue(argv, name) {
   const inlinePrefix = `${name}=`;
@@ -58,8 +58,7 @@ export function selectShardFiles(files, shard) {
 
 export function selectRunnableTests({ projectRoot, pattern, shard }) {
   const allFiles = listTestFiles(projectRoot).filter(filePath => matchesPattern(filePath, pattern));
-  const e2eSegment = `${path.sep}tests${path.sep}e2e${path.sep}`;
-  const runnableFiles = allFiles.filter(filePath => !filePath.includes(e2eSegment));
+  const runnableFiles = allFiles.filter(filePath => !isPlaywrightE2ETestFile(filePath, projectRoot));
   const files = selectShardFiles(runnableFiles, shard);
   return {
     allFiles,

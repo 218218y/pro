@@ -33,7 +33,7 @@ test('ui lean react shim exports jsx runtime and react-dom client seams', () => 
 
 test('notes overlay workflow uses DOM PointerEvent for window listener capture', () => {
   const raw = read('esm/native/ui/react/notes/notes_overlay_editor_workflow_events.ts');
-  assert.match(raw, /globalThis\.PointerEvent/);
+  assert.match(raw, /const onPointerDownCapture = \(ev: PointerEvent\)/);
   assert.doesNotMatch(raw, /import type \{[^}]*PointerEvent[^}]*\} from 'react'/);
 });
 

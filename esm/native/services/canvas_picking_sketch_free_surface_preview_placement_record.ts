@@ -13,7 +13,7 @@ export type SketchFreePlacementPreviewOp = Pick<
 >;
 
 export type SketchFreePlacementHoverPreviewState = {
-  hoverRecord: RecordMap;
+  hoverRecord: RecordMap | null;
   removeBox: RecordMap | null;
 };
 

@@ -167,7 +167,7 @@ export function tryHandleCanvasManualSketchFreeBoxClick(
           freeBoxes: boxes,
         });
         if (hoverPlacement) {
-          hoverRec = createSketchFreePlacementBoxHoverRecord({
+          const nextHover = createSketchFreePlacementBoxHoverRecord({
             tool,
             host,
             op: hoverPlacement.op === 'move' ? 'add' : hoverPlacement.op,
@@ -178,6 +178,7 @@ export function tryHandleCanvasManualSketchFreeBoxClick(
             previewD: hoverPlacement.previewD,
             removeId: hoverPlacement.op === 'remove' ? hoverPlacement.removeId : null,
           });
+          if (nextHover) hoverRec = nextHover;
         }
       }
     }

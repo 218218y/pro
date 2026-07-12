@@ -52,7 +52,10 @@ test('local door mode drives internal drawers by shared module ownership and loc
     /if \(!frame\.globalClickMode && !targetOpen && frame\.timeSinceToggle < frame\.delayTime\) \{/
   );
   assert.match(motion, /const moduleKey = getDrawerModuleKey\(d\);/);
-  assert.match(motion, /shouldOpen = !!\(matchesOpenModule && frame\.timeSinceToggle > frame\.delayTime\);/);
+  assert.match(
+    motion,
+    /shouldOpen = !!\([\s\S]*!frame\.interiorDoorEditActive[\s\S]*matchesOpenModule[\s\S]*scopedTimeSinceToggle > frame\.delayTime[\s\S]*\);/
+  );
 
   assert.match(
     visuals,
@@ -61,7 +64,7 @@ test('local door mode drives internal drawers by shared module ownership and loc
   assert.match(visuals, /const moduleKey = getDrawerModuleKey\(drawer\);/);
   assert.match(
     visuals,
-    /shouldOpen = !!\(!sketchEditActive && matchesOpenModule && timeSinceToggle > delayTime\);/
+    /shouldOpen = !!\(!interiorDoorEditActive && matchesOpenModule && scopedTimeSinceToggle > delayTime\);/
   );
 
   assert.match(toggleFlow, /function markLocalDoorMotion\(App: AppContainer\): void \{/);

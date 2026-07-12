@@ -5,6 +5,7 @@ import { commitSketchModuleBoxContent } from '../esm/native/services/canvas_pick
 import { decodeSketchBoxContentCommandHover } from '../esm/native/services/canvas_picking_sketch_box_content_command.ts';
 import { CARCASS_BASE_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 import { withSketchBoxContentCommand } from './_sketch_box_content_command_fixture.ts';
+import { createSetBaseCommand, withSketchStructuralCommand } from './_sketch_structural_command_fixture.ts';
 
 const LEG_PLATFORM_HEIGHT_M = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
 
@@ -114,15 +115,17 @@ test('sketch-box divider commit preserves free-placement divider front depth fro
     box,
     boxId: 'sb1',
     contentKind: 'divider',
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'divider',
-      boxId: 'sb1',
+    hoverRec: withSketchStructuralCommand({
+      kind: 'add-vertical-divider',
       op: 'add',
+      boxId: 'sb1',
       freePlacement: true,
+      blockedReason: null,
+      dividerId: null,
       dividerXNorm: 0.37,
+      dividerYNorm: null,
       dividerFrontZ: 0.14,
-    },
+    }),
   });
 
   assert.equal(Array.isArray(box.dividers), true);
@@ -138,15 +141,17 @@ test('sketch-box horizontal divider commit stores the active column scope', () =
     box,
     boxId: 'sb1',
     contentKind: 'divider',
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'divider',
-      boxId: 'sb1',
+    hoverRec: withSketchStructuralCommand({
+      kind: 'add-horizontal-divider',
       op: 'add',
-      dividerAxis: 'horizontal',
+      boxId: 'sb1',
+      freePlacement: false,
+      blockedReason: null,
+      dividerId: null,
       dividerYNorm: 0.6,
       dividerXNorm: 0.75,
-    },
+      dividerFrontZ: null,
+    }),
   });
 
   assert.equal(Array.isArray(box.horizontalDividers), true);
@@ -194,12 +199,7 @@ test('sketch-box content commit routes base/door/storage mutations through focus
     box,
     contentKind: 'base',
     floorY: 0.08,
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'base',
-      op: 'add',
-      baseType: 'plinth',
-    },
+    hoverRec: withSketchStructuralCommand(createSetBaseCommand({ boxId: 'sb1', baseType: 'plinth' })),
   });
   assert.equal(box.baseType, 'plinth');
   assert.equal(box.basePlinthHeightCm, 8);
@@ -233,14 +233,16 @@ test('sketch-box content commit routes base/door/storage mutations through focus
   commitSketchModuleBoxContent({
     box,
     contentKind: 'storage',
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'storage',
+    hoverRec: withSketchStructuralCommand({
+      kind: 'add-storage',
       op: 'add',
+      boxId: 'sb1',
+      freePlacement: false,
+      blockedReason: null,
       boxYNorm: 0.35,
       contentXNorm: 0.2,
       heightM: 0.42,
-    },
+    }),
   });
   assert.equal(Array.isArray(box.storageBarriers), true);
   assert.equal(box.storageBarriers.length, 1);
@@ -256,16 +258,16 @@ test('sketch-box base commit stores leg style color and custom height', () => {
     box,
     contentKind: 'base',
     floorY: 0.08,
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'base',
-      op: 'add',
-      baseType: 'legs',
-      baseLegStyle: 'round',
-      baseLegColor: 'gold',
-      baseLegHeightCm: 18,
-      baseLegWidthCm: 6,
-    },
+    hoverRec: withSketchStructuralCommand(
+      createSetBaseCommand({
+        boxId: 'sb1',
+        baseType: 'legs',
+        baseLegStyle: 'round',
+        baseLegColor: 'gold',
+        baseLegHeightCm: 18,
+        baseLegWidthCm: 6,
+      })
+    ),
   });
 
   assert.equal(box.baseType, 'legs');
@@ -289,18 +291,18 @@ test('sketch-box base commit stores explicit leg platform mode and overhang valu
     box,
     contentKind: 'base',
     floorY,
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'base',
-      op: 'add',
-      baseType: 'legs',
-      baseLegPlatformMode: 'plain',
-      baseLegPlatformSideMode: 'flush',
-      baseLegPlatformSideOverhangCm: 0,
-      baseLegPlatformFrontOverhangCm: 4.2,
-      baseLegHeightCm: 18,
-      baseLegWidthCm: 6,
-    },
+    hoverRec: withSketchStructuralCommand(
+      createSetBaseCommand({
+        boxId: 'sb1',
+        baseType: 'legs',
+        baseLegPlatformMode: 'plain',
+        baseLegPlatformSideMode: 'flush',
+        baseLegPlatformSideOverhangCm: 0,
+        baseLegPlatformFrontOverhangCm: 4.2,
+        baseLegHeightCm: 18,
+        baseLegWidthCm: 6,
+      })
+    ),
   });
 
   assert.equal(box.baseType, 'legs');
@@ -311,50 +313,43 @@ test('sketch-box base commit stores explicit leg platform mode and overhang valu
   assert.ok(Math.abs(box.absY - (floorY + 0.5 + 0.18)) < 1e-9);
 });
 
-test('sketch-box base commit rejects string-encoded base dimensions from raw hover records', () => {
+test('sketch-box base commit rejects string-encoded dimensions before mutation', () => {
   const floorY = 0.08;
   const legBox = createBox({ absY: floorY + 0.5, heightM: 1, baseType: 'none' });
+  const invalidLegHover = withSketchStructuralCommand(
+    createSetBaseCommand({ boxId: 'sb1', baseType: 'legs' })
+  ) as any;
+  invalidLegHover.boxStructuralCommand.command.baseLegHeightCm = '24';
 
   commitSketchModuleBoxContent({
     box: legBox,
+    boxId: 'sb1',
     contentKind: 'base',
     floorY,
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'base',
-      op: 'add',
-      baseType: 'legs',
-      baseLegHeightCm: '24',
-      baseLegWidthCm: '7',
-      baseLegPlatformSideOverhangCm: '10',
-      baseLegPlatformFrontOverhangCm: '10',
-    },
+    hoverRec: invalidLegHover,
   });
 
-  assert.equal(legBox.baseType, 'legs');
-  assert.equal(legBox.baseLegHeightCm, 12);
-  assert.equal(legBox.baseLegWidthCm, 4);
-  assert.equal(legBox.baseLegPlatformSideOverhangCm, 1.5);
-  assert.equal(legBox.baseLegPlatformFrontOverhangCm, 2);
-  assert.ok(Math.abs(legBox.absY - (floorY + 0.5 + 0.12 + LEG_PLATFORM_HEIGHT_M)) < 1e-9);
+  assert.equal(legBox.baseType, 'none');
+  assert.equal(legBox.baseLegHeightCm, undefined);
+  assert.equal(legBox.absY, floorY + 0.5);
 
   const plinthBox = createBox({ absY: floorY + 0.5, heightM: 1, baseType: 'none' });
+  const invalidPlinthHover = withSketchStructuralCommand(
+    createSetBaseCommand({ boxId: 'sb1', baseType: 'plinth' })
+  ) as any;
+  invalidPlinthHover.boxStructuralCommand.command.basePlinthHeightCm = '14.5';
+
   commitSketchModuleBoxContent({
     box: plinthBox,
+    boxId: 'sb1',
     contentKind: 'base',
     floorY,
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'base',
-      op: 'add',
-      baseType: 'plinth',
-      basePlinthHeightCm: '14.5',
-    },
+    hoverRec: invalidPlinthHover,
   });
 
-  assert.equal(plinthBox.baseType, 'plinth');
-  assert.equal(plinthBox.basePlinthHeightCm, 8);
-  assert.ok(Math.abs(plinthBox.absY - (floorY + 0.5 + 0.08)) < 1e-9);
+  assert.equal(plinthBox.baseType, 'none');
+  assert.equal(plinthBox.basePlinthHeightCm, undefined);
+  assert.equal(plinthBox.absY, floorY + 0.5);
 });
 
 test('sketch-box base commit stores custom plinth height and keeps floor anchor', () => {
@@ -365,13 +360,9 @@ test('sketch-box base commit stores custom plinth height and keeps floor anchor'
     box,
     contentKind: 'base',
     floorY,
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'base',
-      op: 'add',
-      baseType: 'plinth',
-      basePlinthHeightCm: 14.5,
-    },
+    hoverRec: withSketchStructuralCommand(
+      createSetBaseCommand({ boxId: 'sb1', baseType: 'plinth', basePlinthHeightCm: 14.5 })
+    ),
   });
 
   assert.equal(box.baseType, 'plinth');
@@ -396,12 +387,7 @@ test('sketch-box base commit keeps floor-supported legs anchored when removing o
     box,
     contentKind: 'base',
     floorY,
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'base',
-      op: 'add',
-      baseType: 'plinth',
-    },
+    hoverRec: withSketchStructuralCommand(createSetBaseCommand({ boxId: 'sb1', baseType: 'plinth' })),
   });
 
   assert.equal(box.baseType, 'plinth');
@@ -413,12 +399,13 @@ test('sketch-box base commit keeps floor-supported legs anchored when removing o
     box,
     contentKind: 'base',
     floorY,
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'base',
+    hoverRec: withSketchStructuralCommand({
+      kind: 'remove-base',
       op: 'remove',
-      baseType: 'plinth',
-    },
+      boxId: 'sb1',
+      freePlacement: false,
+      blockedReason: null,
+    }),
   });
 
   assert.equal(box.baseType, 'none');
@@ -441,16 +428,16 @@ test('sketch-box base commit updates floor-supported leg height from the floor u
     box,
     contentKind: 'base',
     floorY,
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'base',
-      op: 'add',
-      baseType: 'legs',
-      baseLegStyle: 'square',
-      baseLegColor: 'nickel',
-      baseLegHeightCm: 24,
-      baseLegWidthCm: 7,
-    },
+    hoverRec: withSketchStructuralCommand(
+      createSetBaseCommand({
+        boxId: 'sb1',
+        baseType: 'legs',
+        baseLegStyle: 'square',
+        baseLegColor: 'nickel',
+        baseLegHeightCm: 24,
+        baseLegWidthCm: 7,
+      })
+    ),
   });
 
   assert.equal(box.baseType, 'legs');
@@ -474,12 +461,7 @@ test('sketch-box base commit does not move elevated free boxes when changing bas
     box,
     contentKind: 'base',
     floorY,
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'base',
-      op: 'add',
-      baseType: 'plinth',
-    },
+    hoverRec: withSketchStructuralCommand(createSetBaseCommand({ boxId: 'sb1', baseType: 'plinth' })),
   });
 
   assert.equal(box.baseType, 'plinth');

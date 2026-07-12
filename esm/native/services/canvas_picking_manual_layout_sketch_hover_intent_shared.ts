@@ -50,38 +50,6 @@ export type ManualLayoutSketchBoxHoverIntent = {
   blockedReason: string | null;
 };
 
-export type ManualLayoutSketchBoxContentHoverIntent = {
-  kind: 'box_content';
-  op: 'add' | 'remove';
-  contentKind: string;
-  boxId: string;
-  freePlacement: boolean;
-  boxYNorm: number | null;
-  contentXNorm: number | null;
-  dividerXNorm: number | null;
-  dividerYNorm?: number | null;
-  dividerAxis?: string | null;
-  dividerId: string | null;
-  dividerFrontZ: number | null;
-  variant: string | null;
-  depthM: number | null;
-  heightM: number | null;
-  removeId: string | null;
-  removeIdx: number | null;
-  baseType: string | null;
-  baseLegStyle: string | null;
-  baseLegColor: string | null;
-  baseLegPlatformMode: string | null;
-  baseLegPlatformSideMode: string | null;
-  baseLegPlatformSideOverhangCm: number | null;
-  baseLegPlatformFrontOverhangCm: number | null;
-  baseLegHeightCm: number | null;
-  baseLegWidthCm: number | null;
-  basePlinthHeightCm: number | null;
-  corniceType: string | null;
-  blockedReason: string | null;
-};
-
 export type ManualLayoutSketchStackHoverIntent = {
   kind: 'drawers' | 'ext_drawers';
   op: 'add' | 'remove';

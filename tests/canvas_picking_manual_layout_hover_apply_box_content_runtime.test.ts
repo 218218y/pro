@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { tryApplyManualLayoutSketchHoverClick } from '../esm/native/services/canvas_picking_manual_layout_sketch_click_hover_apply.js';
+import { withSketchStructuralCommand } from './_sketch_structural_command_fixture.ts';
 
 test('manual-layout hover click commits sketch-box storage content through the canonical content owner and clears hover', () => {
   const cfg: Record<string, unknown> = {
@@ -27,15 +28,19 @@ test('manual-layout hover click commits sketch-box storage content through the c
     topY: 2.4,
     bottomY: 0,
     __gridInfo: { gridDivisions: 6 },
-    __hoverRec: {
-      kind: 'box_content',
-      contentKind: 'storage',
-      boxId: 'sb1',
-      op: 'add',
-      boxYNorm: 0.35,
-      contentXNorm: 0.2,
-      heightM: 0.42,
-    },
+    __hoverRec: withSketchStructuralCommand(
+      {
+        kind: 'add-storage',
+        op: 'add',
+        boxId: 'sb1',
+        freePlacement: false,
+        blockedReason: null,
+        boxYNorm: 0.35,
+        contentXNorm: 0.2,
+        heightM: 0.42,
+      },
+      { tool: 'sketch_storage:42', moduleKey: 2 }
+    ),
     __hoverOk: true,
     __patchConfigForKey: (_mk, patchFn, meta) => {
       patchMeta = { ...meta };
@@ -80,18 +85,20 @@ test('manual-layout hover click commits sketch-box divider from canonical hover 
     topY: 2.4,
     bottomY: 0,
     __gridInfo: { gridDivisions: 6 },
-    __hoverRec: {
-      kind: 'box_content',
-      tool: 'sketch_box_divider',
-      hostModuleKey: 2,
-      hostIsBottom: false,
-      ts: Date.now(),
-      contentKind: 'divider',
-      boxId: 'sb-divider',
-      freePlacement: false,
-      op: 'add',
-      dividerXNorm: 0.32,
-    },
+    __hoverRec: withSketchStructuralCommand(
+      {
+        kind: 'add-vertical-divider',
+        op: 'add',
+        boxId: 'sb-divider',
+        freePlacement: false,
+        blockedReason: null,
+        dividerId: null,
+        dividerXNorm: 0.32,
+        dividerYNorm: null,
+        dividerFrontZ: null,
+      },
+      { tool: 'sketch_box_divider', moduleKey: 2 }
+    ),
     __hoverOk: true,
     __patchConfigForKey: (_mk, patchFn, meta) => {
       patchMeta = { ...meta };
@@ -131,14 +138,20 @@ test('manual-layout hover click consumes blocked sketch-box content without patc
     topY: 2.4,
     bottomY: 0,
     __gridInfo: { gridDivisions: 6 },
-    __hoverRec: {
-      kind: 'box_content',
-      contentKind: 'shelf',
-      boxId: 'sb-blocked',
-      freePlacement: false,
-      op: 'add',
-      __wpBlockedReason: 'no-room',
-    },
+    __hoverRec: withSketchStructuralCommand(
+      {
+        kind: 'add-shelf',
+        op: 'add',
+        boxId: 'sb-blocked',
+        freePlacement: false,
+        blockedReason: 'no-room',
+        boxYNorm: 0.5,
+        contentXNorm: 0.5,
+        variant: 'regular',
+        depthM: 0.4,
+      },
+      { tool: 'sketch_shelf:regular', moduleKey: 2 }
+    ),
     __hoverOk: true,
     __patchConfigForKey: () => {
       patchCalls += 1;

@@ -38,6 +38,10 @@ import {
 import { toastSketchBoxContentBlocked } from './canvas_picking_sketch_box_content_blocked.js';
 import { pickSketchFreeBoxHost } from './canvas_picking_sketch_free_boxes.js';
 import { matchRecentSketchHover } from './canvas_picking_sketch_hover_matching.js';
+import {
+  decodeSketchStructuralCommandHover,
+  SKETCH_STRUCTURAL_COMMAND_HOVER_KIND,
+} from './canvas_picking_sketch_structural_command.js';
 import { createCanvasPickingModulesStructuralPatchMeta } from './canvas_picking_modules_patch_meta.js';
 import { blockRemovableSideContentBuildIfSketchBoxSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
 
@@ -50,25 +54,35 @@ const MANUAL_FREE_VERTICAL_REMOVAL_BY_TOOL: Record<string, readonly ManualFreeVe
     storage: ['storage'],
   };
 
+function findRecentManualFreeStructuralHover(args: {
+  hover: unknown;
+  tool: string;
+  host: SketchFreePlacementHostLike;
+}): { hoverRec: RecordMap; contentKind: ManualFreeVerticalRemovalContentKind; op: 'add' | 'remove' } | null {
+  const hoverRec = matchRecentSketchHover({
+    hover: args.hover,
+    tool: args.tool,
+    kind: SKETCH_STRUCTURAL_COMMAND_HOVER_KIND,
+    host: args.host,
+    toModuleKey: __wp_toModuleKey,
+  });
+  if (!hoverRec) return null;
+  const decoded = decodeSketchStructuralCommandHover(hoverRec);
+  if (!decoded.ok || !decoded.value.command.freePlacement) return null;
+  const { contentKind, command } = decoded.value;
+  if (contentKind !== 'shelf' && contentKind !== 'rod' && contentKind !== 'storage') return null;
+  return { hoverRec, contentKind, op: command.op };
+}
+
 function findRecentManualFreeVerticalRemovalHover(args: {
   hover: unknown;
   tool: string;
   host: SketchFreePlacementHostLike;
 }): { hoverRec: RecordMap; contentKind: ManualFreeVerticalRemovalContentKind } | null {
+  const match = findRecentManualFreeStructuralHover(args);
   const removalKinds = MANUAL_FREE_VERTICAL_REMOVAL_BY_TOOL[args.tool] || [];
-  for (const contentKind of removalKinds) {
-    const hoverRec = matchRecentSketchHover({
-      hover: args.hover,
-      tool: args.tool,
-      kind: 'box_content',
-      contentKind,
-      host: args.host,
-      toModuleKey: __wp_toModuleKey,
-      requireFreePlacement: true,
-    });
-    if (hoverRec && readRecordValue(hoverRec, 'op') === 'remove') return { hoverRec, contentKind };
-  }
-  return null;
+  if (!match || match.op !== 'remove' || !removalKinds.includes(match.contentKind)) return null;
+  return { hoverRec: match.hoverRec, contentKind: match.contentKind };
 }
 
 function removeShelvesInGridCell(args: {
@@ -379,16 +393,13 @@ export function tryCommitManualLayoutFreeBoxFromHover(
     return hoverRec ? commitShelfGridHover({ App, host, hoverRec }) : false;
   }
 
-  const hoverRec = matchRecentSketchHover({
+  const structuralHover = findRecentManualFreeStructuralHover({
     hover: __wp_readSketchHover(App),
     tool,
-    kind: 'box_content',
-    contentKind,
     host,
-    toModuleKey: __wp_toModuleKey,
-    requireFreePlacement: true,
   });
-  if (!hoverRec) return false;
+  if (!structuralHover || structuralHover.contentKind !== contentKind) return false;
+  const hoverRec = structuralHover.hoverRec;
   const commit = commitSketchFreePlacementHoverRecord({
     App,
     host,

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { listCanonicalTestFiles } from './wp_test_file_classifier.js';
 
 export function resolveProjectRoot() {
   const __filename = fileURLToPath(import.meta.url);
@@ -18,30 +19,7 @@ export function fileExists(filePath) {
 }
 
 export function listTestFiles(projectRoot) {
-  const testsDir = path.join(projectRoot, 'tests');
-  if (!fileExists(testsDir)) return [];
-
-  const out = [];
-  const stack = [testsDir];
-  while (stack.length) {
-    const dir = stack.pop();
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) stack.push(full);
-      else if (entry.isFile()) {
-        const isSupported =
-          entry.name.endsWith('.js') ||
-          entry.name.endsWith('.mjs') ||
-          entry.name.endsWith('.ts') ||
-          entry.name.endsWith('.tsx');
-        if (isSupported) out.push(full);
-      }
-    }
-  }
-
-  out.sort();
-  return out;
+  return listCanonicalTestFiles(projectRoot);
 }
 
 export function hasAnyTsTests(projectRoot) {

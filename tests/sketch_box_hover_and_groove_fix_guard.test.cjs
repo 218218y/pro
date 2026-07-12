@@ -30,7 +30,7 @@ test('free box door remove preview sits in front of the outside door face', () =
   assert.match(src, /const renderedDoorFrontZ = renderedDoorCenterZ \+ doorDepth \/ 2;/);
   assert.match(
     src,
-    /const previewDoorZ[\s\S]*renderedDoorFrontZ \+ doorDepth \/ 2 \+ Math\.max\(0\.002, safeWoodThick \* 0\.12\)/
+    /const previewDoorZ[\s\S]*renderedDoorFrontZ[\s\S]*doorDepth \/ 2[\s\S]*Math\.max\(previewDims\.doorRemoveOffsetMinM, safeWoodThick \* previewDims\.doorRemoveOffsetWoodRatio\)/
   );
   assert.match(src, /z: previewDoorZ,/);
 });
@@ -41,7 +41,7 @@ test('module box door remove and hinge previews sit in front of the outside door
   assert.match(src, /const renderedDoorFrontZ = renderedDoorCenterZ \+ doorDepth \/ 2;/);
   assert.match(
     src,
-    /const previewDoorZ[\s\S]*contentKind === 'door_hinge'[\s\S]*renderedDoorFrontZ \+ doorDepth \/ 2 \+ Math\.max\(0\.002, safeWoodThick \* 0\.12\)/
+    /const previewDoorZ[\s\S]*contentKind === 'door_hinge'[\s\S]*renderedDoorFrontZ[\s\S]*doorDepth \/ 2[\s\S]*Math\.max\(previewDims\.doorRemoveOffsetMinM, safeWoodThick \* previewDims\.doorRemoveOffsetWoodRatio\)/
   );
   assert.match(src, /z: previewDoorZ,/);
 });
@@ -57,11 +57,14 @@ test('sketch box groove render matches the regular flat-door stripe recipe on th
     read('esm/native/builder/render_interior_sketch_boxes.ts'),
     sketchBoxFrontsBundle(),
   ].join('\n');
-  assert.match(src, /if \(boxDoor\.groove === true\) \{/);
+  assert.match(src, /if \(groovesEnabled && boxDoor\.groove === true\) \{/);
   assert.match(src, /normalizeGrooveLinesCount\(boxDoor\.grooveLinesCount\) \?\?/);
   assert.match(src, /resolveGrooveLinesCount\(App, doorW, undefined, doorPid\);/);
-  assert.match(src, /const grooveStripW = 0\.005;/);
-  assert.match(src, /const grooveStripH = Math\.max\(0\.01, doorH - 0\.04\);/);
-  assert.match(src, /const grooveZ = doorD \/ 2 \+ 0\.001;/);
+  assert.match(src, /const grooveStripW = classicDims\.grooveStripWidthM;/);
+  assert.match(
+    src,
+    /const grooveStripH = Math\.max\(classicDims\.grooveHeightMinM, doorH - classicDims\.grooveHeightClearanceM\);/
+  );
+  assert.match(src, /const grooveZ = doorD \/ 2 \+ classicDims\.grooveSurfaceOffsetM;/);
   assert.match(src, /applySketchBoxPickMeta\(mesh, doorPid, moduleKeyStr, bid, \{ door: true \}\);/);
 });

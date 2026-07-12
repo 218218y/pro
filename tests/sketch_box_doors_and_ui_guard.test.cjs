@@ -91,7 +91,10 @@ test('sketch box renderer keeps the flat-slab path but upgrades free-box profile
   assert.match(render, /const doorPid = `\$\{boxPid\}_door_\$\{doorId\}`/);
   assert.match(render, /const doorGroup = new THREE\.Group\(\)/);
   assert.match(render, /segment: resolveSketchBoxSegmentForContent\(/);
-  assert.match(render, /const doorStyle = resolveSketchDoorStyle\(App, input\);/);
+  assert.match(
+    render,
+    /const effectiveDoorStyle = resolveEffectiveDoorStyle\(doorStyle, doorStyleMap, doorPid\);/
+  );
   assert.match(render, /export function resolveSketchBoxDoorVisualRoute\(/);
   assert.match(
     render,
@@ -99,14 +102,14 @@ test('sketch box renderer keeps the flat-slab path but upgrades free-box profile
   );
   assert.match(
     render,
-    /const styledVisual = visualRoute\.createDoorVisual\([\s\S]*visualRoute\.effectiveDoorStyle,[\s\S]*boxDoor\.groove === true,[\s\S]*doorPid/
+    /const styledVisual = visualRoute\.createDoorVisual\([\s\S]*visualRoute\.effectiveDoorStyle,[\s\S]*resolveSketchGroovesEnabled\(input\) && boxDoor\.groove === true,[\s\S]*doorPid/
   );
   assert.match(
     render,
     /const doorSlab = new THREE\.Mesh\(new THREE\.BoxGeometry\(doorW, doorH, doorD\), materials\.doorMat\)/
   );
-  assert.match(render, /shouldUseClassicAccents: !doorVisualState\.isMirror && !doorVisualState\.isGlass/);
-  assert.match(render, /if \(boxDoor\.groove === true\) \{/);
+  assert.match(render, /shouldUseClassicAccents: !isSpecialVisual/);
+  assert.match(render, /if \(groovesEnabled && boxDoor\.groove === true\) \{/);
   assert.match(render, /addAccent\(`\$\{doorPid\}_accent_top`/);
   assert.doesNotMatch(render, /const handlePid = `\$\{doorPid\}_handle`/);
   assert.match(
@@ -250,14 +253,8 @@ test('door-action hover supports dedicated handle and hinge face previews', () =
   ].join('\n');
   const hoverTargetsFace = read('esm/native/services/canvas_picking_door_hover_targets_preferred_face.ts');
 
-  assert.match(
-    hoverFlowCore,
-    /const __isHandleEditMode = __pm === \(getModeId\(App, 'HANDLE'\) \|\| 'handle'\);/
-  );
-  assert.match(
-    hoverFlowCore,
-    /const __isHingeEditMode = __pm === \(getModeId\(App, 'HINGE'\) \|\| 'hinge'\);/
-  );
+  assert.match(hoverFlowCore, /const __isHandleEditMode = __pm === \(getModeId\('HANDLE'\) \|\| 'handle'\);/);
+  assert.match(hoverFlowCore, /const __isHingeEditMode = __pm === \(getModeId\('HINGE'\) \|\| 'hinge'\);/);
   assert.match(hoverFlowCore, /isHandleEditMode: __isHandleEditMode,/);
   assert.match(hoverFlowCore, /isHingeEditMode: __isHingeEditMode,/);
   assert.match(hoverFlowNonSplit, /resolveNonSplitPreferredFacePreviewState\(args\)/);
@@ -282,7 +279,7 @@ test('door-action hover supports dedicated handle and hinge face previews', () =
   );
   assert.match(
     hoverModes,
-    /modeState\.isHandleHoverMode \|\| hoverArgs\.isGrooveEditMode \|\| modeState\.isTrimHoverMode[\s\S]*\? hoverArgs\.isDoorOrDrawerLikePartId[\s\S]*: hoverArgs\.isDoorLikePartId/
+    /modeState\.isTrimHoverMode[\s\S]*\? __wp_isDoorTrimActionTargetPartId[\s\S]*modeState\.isHandleHoverMode \|\| hoverArgs\.isGrooveEditMode[\s\S]*\? hoverArgs\.isDoorOrDrawerLikePartId[\s\S]*: hoverArgs\.isDoorLikePartId/
   );
   assert.match(
     hoverModes,

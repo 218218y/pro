@@ -3,7 +3,6 @@ import {
   readRecordNumber,
   readRecordString,
   readRecordValue,
-  type ManualLayoutSketchBoxContentHoverIntent,
   type ManualLayoutSketchBoxHoverIntent,
   type ManualLayoutSketchRodHoverIntent,
   type ManualLayoutSketchShelfHoverIntent,
@@ -22,45 +21,6 @@ export function readManualLayoutSketchBoxHoverIntent(
     yCenter: readRecordNumber(record, 'yCenter'),
     xNorm: readRecordNumber(record, 'xNorm'),
     removeId: readRecordString(record, 'removeId'),
-    blockedReason: readRecordString(record, '__wpBlockedReason'),
-  };
-}
-
-export function readManualLayoutSketchBoxContentHoverIntent(
-  record: unknown
-): ManualLayoutSketchBoxContentHoverIntent | null {
-  if (readRecordString(record, 'kind') !== 'box_content') return null;
-  const dividerYNorm = readRecordNumber(record, 'dividerYNorm');
-  const dividerAxis = readRecordString(record, 'dividerAxis');
-  return {
-    kind: 'box_content',
-    op: normalizeOp(readRecordValue(record, 'op')),
-    contentKind: readRecordString(record, 'contentKind') || '',
-    boxId: readRecordString(record, 'boxId') || '',
-    freePlacement: readRecordValue(record, 'freePlacement') === true,
-    boxYNorm: readRecordNumber(record, 'boxYNorm'),
-    contentXNorm: readRecordNumber(record, 'contentXNorm'),
-    dividerXNorm: readRecordNumber(record, 'dividerXNorm'),
-    ...(dividerYNorm != null ? { dividerYNorm } : {}),
-    ...(dividerAxis ? { dividerAxis } : {}),
-    dividerId: readRecordString(record, 'dividerId'),
-    dividerFrontZ: readRecordNumber(record, 'dividerFrontZ'),
-    variant: readRecordString(record, 'variant'),
-    depthM: readRecordNumber(record, 'depthM'),
-    heightM: readRecordNumber(record, 'heightM'),
-    removeId: readRecordString(record, 'removeId'),
-    removeIdx: readRecordNumber(record, 'removeIdx'),
-    baseType: readRecordString(record, 'baseType'),
-    baseLegStyle: readRecordString(record, 'baseLegStyle'),
-    baseLegColor: readRecordString(record, 'baseLegColor'),
-    baseLegPlatformMode: readRecordString(record, 'baseLegPlatformMode'),
-    baseLegPlatformSideMode: readRecordString(record, 'baseLegPlatformSideMode'),
-    baseLegPlatformSideOverhangCm: readRecordNumber(record, 'baseLegPlatformSideOverhangCm'),
-    baseLegPlatformFrontOverhangCm: readRecordNumber(record, 'baseLegPlatformFrontOverhangCm'),
-    baseLegHeightCm: readRecordNumber(record, 'baseLegHeightCm'),
-    baseLegWidthCm: readRecordNumber(record, 'baseLegWidthCm'),
-    basePlinthHeightCm: readRecordNumber(record, 'basePlinthHeightCm'),
-    corniceType: readRecordString(record, 'corniceType'),
     blockedReason: readRecordString(record, '__wpBlockedReason'),
   };
 }

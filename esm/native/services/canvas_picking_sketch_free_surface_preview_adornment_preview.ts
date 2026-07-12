@@ -13,7 +13,7 @@ import {
 } from '../features/platform_overhang_support.js';
 import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { resolveSketchBoxVisibleFrontOverlay } from './canvas_picking_manual_layout_sketch_front_overlay.js';
-import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
+import { createManualLayoutSketchStructuralCommandHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import {
   getSketchBoxAdornmentBaseHeight,
   normalizeSketchBoxBaseType,
@@ -70,17 +70,26 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
     const op: 'add' | 'remove' =
       currentCorniceEnabled && currentCorniceType === selectedCornice ? 'remove' : 'add';
     return {
-      hoverRecord: {
-        ts: Date.now(),
-        tool,
-        ...createSketchHoverHostIdentity(host),
-        kind: 'box_content',
-        contentKind: 'cornice',
-        boxId,
-        freePlacement: true,
-        op,
-        corniceType: selectedCornice,
-      },
+      hoverRecord: createManualLayoutSketchStructuralCommandHoverRecord({
+        host: { tool, moduleKey: host.moduleKey, isBottom: host.isBottom },
+        command:
+          op === 'remove'
+            ? {
+                kind: 'remove-cornice',
+                op: 'remove',
+                boxId,
+                freePlacement: true,
+                blockedReason: null,
+              }
+            : {
+                kind: 'set-cornice',
+                op: 'add',
+                boxId,
+                freePlacement: true,
+                blockedReason: null,
+                corniceType: selectedCornice,
+              },
+      }),
       preview: {
         kind: 'storage',
         x: targetGeo.centerX,
@@ -180,29 +189,39 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
     fullWidth: true,
   });
   return {
-    hoverRecord: {
-      ts: Date.now(),
-      tool,
-      ...createSketchHoverHostIdentity(host),
-      kind: 'box_content',
-      contentKind: 'base',
-      boxId,
-      freePlacement: true,
-      op,
-      baseType: selectedBase,
-      baseLegStyle: selectedLegOptions.style,
-      baseLegColor: selectedLegOptions.color,
-      baseLegPlatformMode: selectedBaseSpec?.baseLegPlatformMode || DEFAULT_BASE_LEG_PLATFORM_MODE,
-      baseLegPlatformSideMode:
-        selectedBaseSpec?.baseLegPlatformSideMode || DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE,
-      baseLegPlatformSideOverhangCm:
-        selectedBaseSpec?.baseLegPlatformSideOverhangCm ?? DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
-      baseLegPlatformFrontOverhangCm:
-        selectedBaseSpec?.baseLegPlatformFrontOverhangCm ?? DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
-      baseLegHeightCm: selectedLegOptions.heightCm,
-      baseLegWidthCm: selectedLegOptions.widthCm,
-      basePlinthHeightCm: selectedPlinthHeightCm,
-    },
+    hoverRecord: createManualLayoutSketchStructuralCommandHoverRecord({
+      host: { tool, moduleKey: host.moduleKey, isBottom: host.isBottom },
+      command:
+        op === 'remove'
+          ? {
+              kind: 'remove-base',
+              op: 'remove',
+              boxId,
+              freePlacement: true,
+              blockedReason: null,
+            }
+          : {
+              kind: 'set-base',
+              op: 'add',
+              boxId,
+              freePlacement: true,
+              blockedReason: null,
+              baseType: selectedBase,
+              baseLegStyle: selectedLegOptions.style,
+              baseLegColor: selectedLegOptions.color,
+              baseLegPlatformMode: selectedBaseSpec?.baseLegPlatformMode || DEFAULT_BASE_LEG_PLATFORM_MODE,
+              baseLegPlatformSideMode:
+                selectedBaseSpec?.baseLegPlatformSideMode || DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE,
+              baseLegPlatformSideOverhangCm:
+                selectedBaseSpec?.baseLegPlatformSideOverhangCm ?? DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+              baseLegPlatformFrontOverhangCm:
+                selectedBaseSpec?.baseLegPlatformFrontOverhangCm ??
+                DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+              baseLegHeightCm: selectedLegOptions.heightCm,
+              baseLegWidthCm: selectedLegOptions.widthCm,
+              basePlinthHeightCm: selectedPlinthHeightCm,
+            },
+    }),
     preview: {
       kind: 'storage',
       x: targetGeo.centerX,

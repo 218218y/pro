@@ -1,4 +1,4 @@
-import type { ManualLayoutSketchBoxContentHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
+import type { SketchStructuralCommand } from './canvas_picking_sketch_structural_command.js';
 import { CARCASS_BASE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
 import {
   normalizeBaseLegPlatformMode,
@@ -34,15 +34,6 @@ function readBaseLegOptionsFromState(source: unknown): ReturnType<typeof readBas
     baseLegHeightCm: readNumber(rec.baseLegHeightCm),
     baseLegWidthCm: readNumber(rec.baseLegWidthCm),
   });
-}
-
-function readHoverNumber(
-  hoverIntent: ManualLayoutSketchBoxContentHoverIntent | null,
-  hoverRec: Record<string, unknown>,
-  key: string
-): number | null {
-  const source = hoverIntent ? (hoverIntent as unknown as Record<string, unknown>)[key] : hoverRec[key];
-  return readNumber(source);
 }
 
 function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unknown): number {
@@ -81,92 +72,106 @@ function adjustSketchBoxCenterYForBaseSupport(args: {
 
 export function tryCommitSketchBoxAdornment(args: {
   commitArgs: CommitSketchModuleBoxContentArgs;
-  hoverIntent: ManualLayoutSketchBoxContentHoverIntent | null;
+  structuralCommand: SketchStructuralCommand | null;
   hoverOp: 'add' | 'remove';
 }): { handled: boolean; nextHover: null } {
-  const { commitArgs, hoverIntent, hoverOp } = args;
+  const { commitArgs, structuralCommand, hoverOp } = args;
 
   if (commitArgs.contentKind === 'divider') {
-    const dividerId = hoverIntent?.dividerId || '';
-    const dividerAxis = hoverIntent?.dividerAxis === 'horizontal' ? 'horizontal' : 'vertical';
-    if (dividerAxis === 'horizontal') {
-      const dividerYNorm = hoverIntent?.dividerYNorm ?? null;
-      const dividerXNorm = hoverIntent?.dividerXNorm ?? null;
-      if (hoverOp === 'remove') {
+    if (!structuralCommand) return { handled: true, nextHover: null };
+    if (structuralCommand.kind === 'remove-divider') {
+      const dividerId = structuralCommand.dividerId || '';
+      if (structuralCommand.axis === 'horizontal') {
         removeSketchBoxHorizontalDividerState(
           commitArgs.box,
           dividerId,
-          dividerYNorm ?? undefined,
-          dividerXNorm ?? undefined
+          structuralCommand.dividerYNorm ?? undefined,
+          structuralCommand.dividerXNorm ?? undefined
         );
       } else {
-        addSketchBoxHorizontalDividerState(
+        removeSketchBoxDividerState(
           commitArgs.box,
-          dividerYNorm != null ? dividerYNorm : 0.5,
           dividerId,
-          {
-            frontZ: hoverIntent?.freePlacement === true ? hoverIntent.dividerFrontZ : undefined,
-            xNorm: dividerXNorm ?? undefined,
-          }
+          structuralCommand.dividerXNorm ?? undefined,
+          structuralCommand.dividerYNorm ?? undefined
         );
       }
       return { handled: true, nextHover: null };
     }
-    const dividerXNorm = hoverIntent?.dividerXNorm ?? null;
-    const dividerYNorm = hoverIntent?.dividerYNorm ?? null;
-    if (hoverOp === 'remove') {
-      removeSketchBoxDividerState(
+    if (hoverOp !== 'add') return { handled: true, nextHover: null };
+    if (structuralCommand.kind === 'add-horizontal-divider') {
+      addSketchBoxHorizontalDividerState(
         commitArgs.box,
-        dividerId,
-        dividerXNorm ?? undefined,
-        dividerYNorm ?? undefined
+        structuralCommand.dividerYNorm,
+        structuralCommand.dividerId || '',
+        {
+          frontZ: structuralCommand.freePlacement
+            ? (structuralCommand.dividerFrontZ ?? undefined)
+            : undefined,
+          xNorm: structuralCommand.dividerXNorm ?? undefined,
+        }
       );
-    } else {
-      addSketchBoxDividerState(commitArgs.box, dividerXNorm != null ? dividerXNorm : 0.5, dividerId, {
-        frontZ: hoverIntent?.freePlacement === true ? hoverIntent.dividerFrontZ : undefined,
-        yNorm: dividerYNorm ?? undefined,
-      });
+      return { handled: true, nextHover: null };
+    }
+    if (structuralCommand.kind === 'add-vertical-divider') {
+      addSketchBoxDividerState(
+        commitArgs.box,
+        structuralCommand.dividerXNorm,
+        structuralCommand.dividerId || '',
+        {
+          frontZ: structuralCommand.freePlacement
+            ? (structuralCommand.dividerFrontZ ?? undefined)
+            : undefined,
+          yNorm: structuralCommand.dividerYNorm ?? undefined,
+        }
+      );
     }
     return { handled: true, nextHover: null };
   }
 
   if (commitArgs.contentKind === 'cornice') {
-    if (hoverOp === 'remove') {
+    if (!structuralCommand) return { handled: true, nextHover: null };
+    if (structuralCommand.kind === 'remove-cornice') {
       commitArgs.box.hasCornice = false;
       delete commitArgs.box.corniceType;
-    } else {
+    } else if (structuralCommand.kind === 'set-cornice') {
       commitArgs.box.hasCornice = true;
-      commitArgs.box.corniceType = normalizeSketchBoxCorniceType(
-        hoverIntent?.corniceType ?? commitArgs.hoverRec.corniceType
-      );
+      commitArgs.box.corniceType = normalizeSketchBoxCorniceType(structuralCommand.corniceType);
     }
     return { handled: true, nextHover: null };
   }
 
   if (commitArgs.contentKind === 'base') {
+    if (!structuralCommand) return { handled: true, nextHover: null };
     const floorY = typeof commitArgs.floorY === 'number' ? commitArgs.floorY : NaN;
-    const nextBaseType = normalizeSketchBoxBaseType(hoverIntent?.baseType ?? commitArgs.hoverRec.baseType);
-    const appliedBaseType = hoverOp === 'remove' || nextBaseType === 'none' ? 'none' : nextBaseType;
-    const nextBaseOptions = readBaseLegOptions({
-      baseLegStyle: hoverIntent?.baseLegStyle ?? commitArgs.hoverRec.baseLegStyle,
-      baseLegColor: hoverIntent?.baseLegColor ?? commitArgs.hoverRec.baseLegColor,
-      baseLegHeightCm: readHoverNumber(hoverIntent, commitArgs.hoverRec, 'baseLegHeightCm'),
-      baseLegWidthCm: readHoverNumber(hoverIntent, commitArgs.hoverRec, 'baseLegWidthCm'),
-    });
-    const nextBasePlatformMode = normalizeBaseLegPlatformMode(
-      hoverIntent?.baseLegPlatformMode ?? commitArgs.hoverRec.baseLegPlatformMode
-    );
-    const nextBasePlatformSideMode = normalizeBaseLegPlatformSideMode(
-      hoverIntent?.baseLegPlatformSideMode ?? commitArgs.hoverRec.baseLegPlatformSideMode
-    );
+    const removing = structuralCommand.kind === 'remove-base';
+    if (!removing && structuralCommand.kind !== 'set-base') {
+      return { handled: true, nextHover: null };
+    }
+    const nextBaseType = removing ? 'none' : normalizeSketchBoxBaseType(structuralCommand.baseType);
+    const appliedBaseType = removing || nextBaseType === 'none' ? 'none' : nextBaseType;
+    const nextBaseOptions = removing
+      ? readBaseLegOptions({})
+      : readBaseLegOptions({
+          baseLegStyle: structuralCommand.baseLegStyle,
+          baseLegColor: structuralCommand.baseLegColor,
+          baseLegHeightCm: structuralCommand.baseLegHeightCm,
+          baseLegWidthCm: structuralCommand.baseLegWidthCm,
+        });
+    const nextBasePlatformMode = removing
+      ? normalizeBaseLegPlatformMode(null)
+      : normalizeBaseLegPlatformMode(structuralCommand.baseLegPlatformMode);
+    const nextBasePlatformSideMode = removing
+      ? normalizeBaseLegPlatformSideMode(null)
+      : normalizeBaseLegPlatformSideMode(structuralCommand.baseLegPlatformSideMode);
     const nextBasePlatformSideOverhangCm = normalizeBaseLegPlatformSideOverhangCm(
-      readHoverNumber(hoverIntent, commitArgs.hoverRec, 'baseLegPlatformSideOverhangCm')
+      removing ? null : structuralCommand.baseLegPlatformSideOverhangCm
     );
     const nextBasePlatformFrontOverhangCm = normalizeBaseLegPlatformFrontOverhangCm(
-      readHoverNumber(hoverIntent, commitArgs.hoverRec, 'baseLegPlatformFrontOverhangCm')
+      removing ? null : structuralCommand.baseLegPlatformFrontOverhangCm
     );
     const nextBasePlinthHeightCm = normalizeBasePlinthHeightCm(
-      readHoverNumber(hoverIntent, commitArgs.hoverRec, 'basePlinthHeightCm')
+      removing ? null : structuralCommand.basePlinthHeightCm
     );
     adjustSketchBoxCenterYForBaseSupport({
       box: commitArgs.box,

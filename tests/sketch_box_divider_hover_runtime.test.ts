@@ -21,6 +21,7 @@ import {
   resolveSketchBoxSegments,
   resolveSketchBoxVerticalSegments,
 } from '../esm/native/services/canvas_picking_sketch_box_dividers.ts';
+import { requireSketchStructuralCommandHover } from './_sketch_structural_command_fixture.ts';
 
 function requireSketchBoxCommandHover(value: unknown) {
   const decoded = decodeSketchBoxContentCommandHover(value);
@@ -124,11 +125,12 @@ test('module sketch-box divider hover allows free placement away from center sna
   assert.equal(handled, true);
   assert.ok(hoverWrite);
   assert.ok(previewWrite);
-  approx(Number(hoverWrite?.dividerXNorm), 0.7);
-  assert.equal(hoverWrite ? 'snapToCenter' in hoverWrite : true, false);
+  const hoverCommand = requireSketchStructuralCommandHover(hoverWrite);
+  assert.equal(hoverCommand.command.kind, 'add-vertical-divider');
+  if (hoverCommand.command.kind !== 'add-vertical-divider') throw new Error('expected vertical divider');
+  approx(hoverCommand.command.dividerXNorm, 0.7);
   assert.equal(previewWrite?.snapToCenter, false);
-  assert.equal(hoverWrite?.kind, 'box_content');
-  assert.equal(hoverWrite?.contentKind, 'divider');
+  assert.equal(hoverCommand.contentKind, 'divider');
   assert.equal(previewWrite?.kind, 'drawer_divider');
   approx(Number(previewWrite?.x), 0.2);
   assert.equal(Array.isArray(previewWrite?.clearanceMeasurements), true);
@@ -174,12 +176,15 @@ test('free sketch-box divider preview snaps only when cursor is near a segment m
   });
 
   assert.ok(freePlacement);
-  assert.equal(freePlacement?.hoverRecord.op, 'add');
+  const freeCommand = requireSketchStructuralCommandHover(freePlacement.hoverRecord);
+  assert.equal(freeCommand.command.kind, 'add-vertical-divider');
+  if (freeCommand.command.kind !== 'add-vertical-divider') throw new Error('expected vertical divider');
+  assert.equal(freeCommand.command.op, 'add');
   approx(Number(freePlacement?.preview.x), 0.1);
   assert.equal(freePlacement?.preview.snapToCenter, false);
   approx(Number(freePlacement?.preview.w), 1);
   approx(Number(freePlacement?.preview.z), 0);
-  approx(Number(freePlacement?.hoverRecord.dividerFrontZ), 0.2);
+  approx(Number(freeCommand.command.dividerFrontZ), 0.2);
   assert.equal(Array.isArray(freePlacement?.preview.clearanceMeasurements), true);
   assert.equal((freePlacement?.preview.clearanceMeasurements as unknown[]).length, 3);
   assert.ok(
@@ -230,7 +235,8 @@ test('free sketch-box divider preview snaps only when cursor is near a segment m
   });
 
   assert.ok(snapped);
-  assert.equal(snapped?.hoverRecord.op, 'add');
+  const snappedCommand = requireSketchStructuralCommandHover(snapped.hoverRecord);
+  assert.equal(snappedCommand.command.op, 'add');
   assert.equal(snapped?.preview.snapToCenter, true);
   approx(Number(snapped?.preview.x), 0.2455, 0.01);
   assert.ok(Number(snapped?.preview.w) < 0.5);
@@ -305,9 +311,12 @@ test('free sketch-box horizontal divider preview exposes axis, y norm and vertic
   });
 
   assert.ok(preview);
-  assert.equal(preview?.hoverRecord.dividerAxis, 'horizontal');
+  const horizontalCommand = requireSketchStructuralCommandHover(preview.hoverRecord);
+  assert.equal(horizontalCommand.command.kind, 'add-horizontal-divider');
+  if (horizontalCommand.command.kind !== 'add-horizontal-divider')
+    throw new Error('expected horizontal divider');
   assert.equal(preview?.preview.dividerAxis, 'horizontal');
-  approx(Number(preview?.hoverRecord.dividerYNorm), 0.7);
+  approx(horizontalCommand.command.dividerYNorm, 0.7);
   approx(Number(preview?.preview.y), 1.2);
   approx(Number(preview?.preview.h), 0.018);
   assert.equal(Array.isArray(preview?.preview.clearanceMeasurements), true);
@@ -348,8 +357,11 @@ test('free sketch-box horizontal divider after vertical divider is scoped to the
   });
 
   assert.ok(preview);
-  assert.equal(preview?.hoverRecord.dividerAxis, 'horizontal');
-  assert.ok(Number(preview?.hoverRecord.dividerXNorm) > 0.5);
+  const horizontalCommand = requireSketchStructuralCommandHover(preview.hoverRecord);
+  assert.equal(horizontalCommand.command.kind, 'add-horizontal-divider');
+  if (horizontalCommand.command.kind !== 'add-horizontal-divider')
+    throw new Error('expected horizontal divider');
+  assert.ok(Number(horizontalCommand.command.dividerXNorm) > 0.5);
   assert.ok(Number(preview?.preview.x) > 0);
   assert.ok(Number(preview?.preview.w) < targetGeo.innerW);
 });
@@ -390,9 +402,11 @@ test('free sketch-box vertical-first workflow keeps the vertical divider full-he
   });
 
   assert.ok(verticalPreview);
-  assert.equal(verticalPreview?.hoverRecord.dividerAxis, 'vertical');
+  const verticalCommand = requireSketchStructuralCommandHover(verticalPreview.hoverRecord);
+  assert.equal(verticalCommand.command.kind, 'add-vertical-divider');
+  if (verticalCommand.command.kind !== 'add-vertical-divider') throw new Error('expected vertical divider');
   assert.equal(
-    verticalPreview?.hoverRecord.dividerYNorm,
+    verticalCommand.command.dividerYNorm,
     null,
     'a vertical divider added before any horizontal divider must stay full-height'
   );
@@ -439,8 +453,12 @@ test('free sketch-box vertical-first workflow keeps the vertical divider full-he
   });
 
   assert.ok(horizontalPreview);
+  const horizontalCommand = requireSketchStructuralCommandHover(horizontalPreview.hoverRecord);
+  assert.equal(horizontalCommand.command.kind, 'add-horizontal-divider');
+  if (horizontalCommand.command.kind !== 'add-horizontal-divider')
+    throw new Error('expected horizontal divider');
   assert.ok(
-    Number(horizontalPreview?.hoverRecord.dividerXNorm) < 0.5,
+    Number(horizontalCommand.command.dividerXNorm) < 0.5,
     'horizontal divider should be stored on the left vertical segment'
   );
   assert.ok(

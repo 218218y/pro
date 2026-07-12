@@ -24,6 +24,10 @@ import {
   resolveSketchBoxSegments,
   resolveSketchBoxVerticalSegments,
 } from '../esm/native/services/canvas_picking_sketch_box_dividers.ts';
+import {
+  requireSketchStructuralCommandHover,
+  withSketchStructuralCommand,
+} from './_sketch_structural_command_fixture.ts';
 
 type RecordMap = Record<string, unknown>;
 
@@ -345,10 +349,12 @@ test('manual-layout free-box rod hover can target an existing shelf for removal'
   });
 
   assert.ok(preview);
-  assert.equal(preview.hoverRecord.kind, 'box_content');
-  assert.equal(preview.hoverRecord.contentKind, 'shelf');
-  assert.equal(preview.hoverRecord.op, 'remove');
-  assert.equal(preview.hoverRecord.removeId, 'shelf-1');
+  const command = requireSketchStructuralCommandHover(preview.hoverRecord);
+  assert.equal(command.contentKind, 'shelf');
+  assert.equal(command.command.op, 'remove');
+  assert.equal(command.command.kind, 'remove-shelf');
+  if (command.command.kind !== 'remove-shelf') throw new Error('expected shelf removal');
+  assert.equal(command.command.removeId, 'shelf-1');
   assert.equal(preview.preview.kind, 'shelf');
   assert.equal(preview.preview.op, 'remove');
 });
@@ -399,12 +405,18 @@ test('manual-layout free-box shelf edit can target an existing rod or storage ba
     pickSketchBoxVerticalSegment,
   });
 
-  assert.equal(rodPreview?.hoverRecord.contentKind, 'rod');
-  assert.equal(rodPreview?.hoverRecord.op, 'remove');
-  assert.equal(rodPreview?.hoverRecord.removeId, 'rod-1');
-  assert.equal(storagePreview?.hoverRecord.contentKind, 'storage');
-  assert.equal(storagePreview?.hoverRecord.op, 'remove');
-  assert.equal(storagePreview?.hoverRecord.removeId, 'storage-1');
+  assert.ok(rodPreview);
+  assert.ok(storagePreview);
+  const rodCommand = requireSketchStructuralCommandHover(rodPreview.hoverRecord);
+  const storageCommand = requireSketchStructuralCommandHover(storagePreview.hoverRecord);
+  assert.equal(rodCommand.contentKind, 'rod');
+  assert.equal(rodCommand.command.kind, 'remove-rod');
+  if (rodCommand.command.kind !== 'remove-rod') throw new Error('expected rod removal');
+  assert.equal(rodCommand.command.removeId, 'rod-1');
+  assert.equal(storageCommand.contentKind, 'storage');
+  assert.equal(storageCommand.command.kind, 'remove-storage');
+  if (storageCommand.command.kind !== 'remove-storage') throw new Error('expected storage removal');
+  assert.equal(storageCommand.command.removeId, 'storage-1');
 });
 
 test('manual-layout free-box commits cross-kind removal hovers from shelf and rod tools', () => {
@@ -424,58 +436,58 @@ test('manual-layout free-box commits cross-kind removal hovers from shelf and ro
 
   const { App } = makeNoMainApp({
     patchCfg: cfg,
-    hover: {
-      ts: Date.now(),
-      tool: 'shelf',
-      hostModuleKey: 0,
-      hostIsBottom: false,
-      kind: 'box_content',
-      contentKind: 'rod',
-      op: 'remove',
-      freePlacement: true,
-      boxId: 'free-cross',
-      removeId: 'rod-1',
-      boxYNorm: 0.5,
-      contentXNorm: 0.5,
-    },
+    hover: withSketchStructuralCommand(
+      {
+        kind: 'remove-rod',
+        op: 'remove',
+        boxId: 'free-cross',
+        freePlacement: true,
+        blockedReason: null,
+        removeId: 'rod-1',
+        removeIdx: null,
+      },
+      { tool: 'shelf', moduleKey: 0 }
+    ),
   });
 
   assert.equal(tryCommitManualLayoutFreeBoxFromHover(App, 'shelf', 0), true);
   let box = (((cfg.sketchExtras as RecordMap).boxes as RecordMap[])[0] ?? {}) as RecordMap;
   assert.equal(((box.rods as RecordMap[]) ?? []).length, 0);
 
-  __wp_writeSketchHover(App, {
-    ts: Date.now(),
-    tool: 'rod',
-    hostModuleKey: 0,
-    hostIsBottom: false,
-    kind: 'box_content',
-    contentKind: 'shelf',
-    op: 'remove',
-    freePlacement: true,
-    boxId: 'free-cross',
-    removeId: 'shelf-1',
-    boxYNorm: 0.5,
-    contentXNorm: 0.5,
-  });
+  __wp_writeSketchHover(
+    App,
+    withSketchStructuralCommand(
+      {
+        kind: 'remove-shelf',
+        op: 'remove',
+        boxId: 'free-cross',
+        freePlacement: true,
+        blockedReason: null,
+        removeId: 'shelf-1',
+        removeIdx: null,
+      },
+      { tool: 'rod', moduleKey: 0 }
+    )
+  );
   assert.equal(tryCommitManualLayoutFreeBoxFromHover(App, 'rod', 0), true);
   box = (((cfg.sketchExtras as RecordMap).boxes as RecordMap[])[0] ?? {}) as RecordMap;
   assert.equal(((box.shelves as RecordMap[]) ?? []).length, 0);
 
-  __wp_writeSketchHover(App, {
-    ts: Date.now(),
-    tool: 'rod',
-    hostModuleKey: 0,
-    hostIsBottom: false,
-    kind: 'box_content',
-    contentKind: 'storage',
-    op: 'remove',
-    freePlacement: true,
-    boxId: 'free-cross',
-    removeId: 'storage-1',
-    boxYNorm: 0.5,
-    contentXNorm: 0.5,
-  });
+  __wp_writeSketchHover(
+    App,
+    withSketchStructuralCommand(
+      {
+        kind: 'remove-storage',
+        op: 'remove',
+        boxId: 'free-cross',
+        freePlacement: true,
+        blockedReason: null,
+        removeId: 'storage-1',
+        removeIdx: null,
+      },
+      { tool: 'rod', moduleKey: 0 }
+    )
+  );
   assert.equal(tryCommitManualLayoutFreeBoxFromHover(App, 'rod', 0), true);
   box = (((cfg.sketchExtras as RecordMap).boxes as RecordMap[])[0] ?? {}) as RecordMap;
   assert.equal(((box.storageBarriers as RecordMap[]) ?? []).length, 0);
@@ -508,10 +520,11 @@ test('manual-layout free-box storage removal hover covers the whole existing bar
   });
 
   assert.ok(preview);
-  assert.equal(preview.hoverRecord.kind, 'box_content');
-  assert.equal(preview.hoverRecord.contentKind, 'storage');
-  assert.equal(preview.hoverRecord.op, 'remove');
-  assert.equal(preview.hoverRecord.removeId, 'storage-wide');
+  const command = requireSketchStructuralCommandHover(preview.hoverRecord);
+  assert.equal(command.contentKind, 'storage');
+  assert.equal(command.command.kind, 'remove-storage');
+  if (command.command.kind !== 'remove-storage') throw new Error('expected storage removal');
+  assert.equal(command.command.removeId, 'storage-wide');
   assert.equal(preview.preview.kind, 'storage');
   assert.equal(preview.preview.op, 'remove');
 });

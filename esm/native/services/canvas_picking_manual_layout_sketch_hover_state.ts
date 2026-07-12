@@ -6,6 +6,12 @@ import {
   type SketchBoxContentCommand,
 } from './canvas_picking_sketch_box_content_command.js';
 import { asRecord } from '../runtime/record.js';
+import {
+  createSketchStructuralCommandEnvelope,
+  SKETCH_STRUCTURAL_COMMAND_HOVER_KIND,
+  type SketchStructuralCommand,
+  type SketchStructuralContentKind,
+} from './canvas_picking_sketch_structural_command.js';
 import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
 
 type RecordMap = UnknownRecord;
@@ -37,7 +43,7 @@ type ManualLayoutSketchBoxHoverArgs = {
 
 type ManualLayoutSketchBoxContentHoverArgs = {
   host: ManualLayoutSketchHoverHost;
-  contentKind: string;
+  contentKind: Exclude<SketchStructuralContentKind, 'base' | 'cornice'>;
   boxId: string;
   op: 'add' | 'remove';
   freePlacement?: boolean;
@@ -108,6 +114,16 @@ export function createManualLayoutSketchBoxCommandHoverRecord(args: {
   };
 }
 
+export function createManualLayoutSketchStructuralCommandHoverRecord(args: {
+  host: ManualLayoutSketchHoverHost;
+  command: SketchStructuralCommand;
+}): RecordMap {
+  return {
+    ...createManualLayoutSketchHoverIdentity(args.host, SKETCH_STRUCTURAL_COMMAND_HOVER_KIND),
+    boxStructuralCommand: createSketchStructuralCommandEnvelope(args.command),
+  };
+}
+
 export function replaceManualLayoutSketchBoxCommandHoverRecord(
   value: unknown,
   command: SketchBoxContentCommand
@@ -140,34 +156,115 @@ export function createManualLayoutSketchBoxHoverRecord(args: ManualLayoutSketchB
   });
 }
 
+function createStructuralCommandFromHoverArgs(
+  args: ManualLayoutSketchBoxContentHoverArgs
+): SketchStructuralCommand | null {
+  const base = {
+    boxId: args.boxId,
+    freePlacement: args.freePlacement === true,
+    blockedReason: args.blockedReason ?? null,
+  };
+  const removeId = args.removeId ?? null;
+  const removeIdx = args.removeIdx ?? null;
+
+  if (args.contentKind === 'shelf') {
+    if (args.op === 'remove') {
+      return removeId || removeIdx != null
+        ? { ...base, kind: 'remove-shelf', op: 'remove', removeId, removeIdx }
+        : null;
+    }
+    if (args.boxYNorm == null || args.contentXNorm == null || !args.variant || args.depthM == null)
+      return null;
+    return {
+      ...base,
+      kind: 'add-shelf',
+      op: 'add',
+      boxYNorm: args.boxYNorm,
+      contentXNorm: args.contentXNorm,
+      variant: args.variant,
+      depthM: args.depthM,
+    };
+  }
+  if (args.contentKind === 'rod') {
+    if (args.op === 'remove') {
+      return removeId || removeIdx != null
+        ? { ...base, kind: 'remove-rod', op: 'remove', removeId, removeIdx }
+        : null;
+    }
+    if (args.boxYNorm == null || args.contentXNorm == null) return null;
+    return {
+      ...base,
+      kind: 'add-rod',
+      op: 'add',
+      boxYNorm: args.boxYNorm,
+      contentXNorm: args.contentXNorm,
+    };
+  }
+  if (args.contentKind === 'storage') {
+    if (args.op === 'remove') {
+      return removeId || removeIdx != null
+        ? { ...base, kind: 'remove-storage', op: 'remove', removeId, removeIdx }
+        : null;
+    }
+    if (args.boxYNorm == null || args.contentXNorm == null || args.heightM == null) return null;
+    return {
+      ...base,
+      kind: 'add-storage',
+      op: 'add',
+      boxYNorm: args.boxYNorm,
+      contentXNorm: args.contentXNorm,
+      heightM: args.heightM,
+    };
+  }
+
+  const axis = args.dividerAxis === 'horizontal' ? 'horizontal' : 'vertical';
+  const dividerId = args.dividerId ?? null;
+  const dividerXNorm = args.dividerXNorm ?? null;
+  const dividerYNorm = args.dividerYNorm ?? null;
+  if (args.op === 'remove') {
+    return dividerId || dividerXNorm != null || dividerYNorm != null
+      ? {
+          ...base,
+          kind: 'remove-divider',
+          op: 'remove',
+          axis,
+          dividerId,
+          dividerXNorm,
+          dividerYNorm,
+        }
+      : null;
+  }
+  if (axis === 'horizontal') {
+    if (dividerYNorm == null) return null;
+    return {
+      ...base,
+      kind: 'add-horizontal-divider',
+      op: 'add',
+      dividerId,
+      dividerYNorm,
+      dividerXNorm,
+      dividerFrontZ: args.dividerFrontZ ?? null,
+    };
+  }
+  if (dividerXNorm == null) return null;
+  return {
+    ...base,
+    kind: 'add-vertical-divider',
+    op: 'add',
+    dividerId,
+    dividerXNorm,
+    dividerYNorm,
+    dividerFrontZ: args.dividerFrontZ ?? null,
+  };
+}
+
 export function createManualLayoutSketchBoxContentHoverRecord(
   args: ManualLayoutSketchBoxContentHoverArgs
 ): RecordMap {
-  return withDefined(
-    createManualLayoutSketchHoverBase({
-      host: args.host,
-      kind: 'box_content',
-      op: args.op,
-    }),
-    {
-      contentKind: args.contentKind,
-      boxId: args.boxId,
-      freePlacement: args.freePlacement,
-      boxYNorm: args.boxYNorm ?? undefined,
-      contentXNorm: args.contentXNorm ?? undefined,
-      dividerXNorm: args.dividerXNorm ?? undefined,
-      dividerYNorm: args.dividerYNorm ?? undefined,
-      dividerAxis: args.dividerAxis ?? undefined,
-      dividerId: args.dividerId ?? undefined,
-      dividerFrontZ: args.dividerFrontZ ?? undefined,
-      variant: args.variant ?? undefined,
-      depthM: args.depthM ?? undefined,
-      heightM: args.heightM ?? undefined,
-      removeId: args.removeId ?? undefined,
-      removeIdx: args.removeIdx ?? undefined,
-      __wpBlockedReason: args.blockedReason ?? undefined,
-    }
-  );
+  const command = createStructuralCommandFromHoverArgs(args);
+  return command
+    ? createManualLayoutSketchStructuralCommandHoverRecord({ host: args.host, command })
+    : createManualLayoutSketchBlockedHoverRecord(args.host);
 }
 
 export function createManualLayoutSketchStackHoverRecord(args: ManualLayoutSketchStackHoverArgs): RecordMap {

@@ -2,17 +2,25 @@ import type { AppContainer, UnknownRecord } from '../../../types';
 import type { ModuleKey } from './canvas_picking_manual_layout_sketch_contracts.js';
 import { getModulesActions } from '../runtime/actions_access_domains.js';
 import { asRecord } from '../runtime/record.js';
-import { readSketchCommitNumber } from './canvas_picking_sketch_commit_geometry.js';
 import {
   decodeSketchBoxContentCommandHover,
   isStrictSketchBoxContentKind,
 } from './canvas_picking_sketch_box_content_command.js';
+import {
+  decodeSketchStructuralCommandHover,
+  isStrictSketchStructuralContentKind,
+} from './canvas_picking_sketch_structural_command.js';
 import {
   commitSketchModuleBoxContent,
   ensureSketchModuleBoxes,
   findSketchModuleBoxById,
 } from './canvas_picking_sketch_box_content_commit.js';
 import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
+import {
+  createSketchFreeBoxPlacementCommandEnvelope,
+  decodeSketchFreeBoxPlacementHover,
+  type SketchFreeBoxPlacementCommand,
+} from './canvas_picking_sketch_free_box_command.js';
 import { toastSketchBoxContentBlocked } from './canvas_picking_sketch_box_content_blocked.js';
 import { createCanvasPickingModulesStructuralPatchMeta } from './canvas_picking_modules_patch_meta.js';
 
@@ -36,6 +44,11 @@ type CommitSketchFreePlacementHoverRecordArgs = {
 export type CommitSketchFreePlacementHoverRecordResult =
   { committed: false } | { committed: true; nextHover: RecordMap | null };
 
+function readRecordString(record: unknown, key: string): string | null {
+  const value = asRecord(record)?.[key];
+  return typeof value === 'string' && value ? value : null;
+}
+
 type CreateSketchFreePlacementBoxHoverRecordArgs = {
   tool: string;
   host: SketchFreePlacementHostLike;
@@ -48,27 +61,6 @@ type CreateSketchFreePlacementBoxHoverRecordArgs = {
   removeId?: string | null;
   ts?: number;
 };
-
-function readNumber(value: unknown): number | null {
-  return readSketchCommitNumber(value);
-}
-
-function readString(value: unknown): string | null {
-  return typeof value === 'string' && value ? value : null;
-}
-
-function readRecordValue(record: unknown, key: string): unknown {
-  const rec = asRecord(record);
-  return rec ? rec[key] : null;
-}
-
-function readRecordNumber(record: unknown, key: string): number | null {
-  return readNumber(readRecordValue(record, key));
-}
-
-function readRecordString(record: unknown, key: string): string | null {
-  return readString(readRecordValue(record, key));
-}
 
 function createRandomId(prefix: string): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36)}`;
@@ -100,37 +92,22 @@ function commitSketchFreePlacementContent(args: {
   });
 }
 
-function commitSketchFreePlacementBox(args: { cfg: RecordMap; hoverRec: RecordMap }): boolean {
-  const centerX = readRecordNumber(args.hoverRec, 'xCenter');
-  const centerY = readRecordNumber(args.hoverRec, 'yCenter');
-  const heightM = readRecordNumber(args.hoverRec, 'heightM');
-  const widthM = readRecordNumber(args.hoverRec, 'widthM');
-  const depthM = readRecordNumber(args.hoverRec, 'depthM');
-  const removeId = readRecordString(args.hoverRec, 'removeId') || '';
-  if (
-    centerX == null ||
-    centerY == null ||
-    heightM == null ||
-    !(heightM > 0) ||
-    widthM == null ||
-    !(widthM > 0) ||
-    depthM == null ||
-    !(depthM > 0)
-  ) {
-    return false;
-  }
-
+function commitSketchFreePlacementBox(args: {
+  cfg: RecordMap;
+  command: SketchFreeBoxPlacementCommand;
+}): boolean {
   const list = ensureSketchModuleBoxes(args.cfg);
-  if (removeId) {
-    const idx = list.findIndex(
-      it => it.freePlacement === true && it.id != null && String(it.id) === removeId
+  if (args.command.kind === 'remove-free-box') {
+    const boxId = args.command.boxId;
+    const index = list.findIndex(
+      item => item.freePlacement === true && item.id != null && String(item.id) === boxId
     );
-    if (idx >= 0) {
-      list.splice(idx, 1);
-      return true;
-    }
+    if (index < 0) return false;
+    list.splice(index, 1);
+    return true;
   }
 
+  const { centerX, centerY, heightM, widthM, depthM } = args.command.geometry;
   list.push({
     id: createRandomId('sbf'),
     freePlacement: true,
@@ -145,20 +122,30 @@ function commitSketchFreePlacementBox(args: { cfg: RecordMap; hoverRec: RecordMa
 
 export function createSketchFreePlacementBoxHoverRecord(
   args: CreateSketchFreePlacementBoxHoverRecordArgs
-): RecordMap {
+): RecordMap | null {
+  const command: SketchFreeBoxPlacementCommand | null =
+    args.op === 'remove'
+      ? typeof args.removeId === 'string' && args.removeId.trim()
+        ? { kind: 'remove-free-box', boxId: args.removeId.trim() }
+        : null
+      : {
+          kind: 'create-free-box',
+          geometry: {
+            centerX: args.previewX,
+            centerY: args.previewY,
+            heightM: args.previewH,
+            widthM: args.previewW,
+            depthM: args.previewD,
+          },
+        };
+  if (!command) return null;
   return {
     ts: args.ts ?? Date.now(),
     tool: args.tool,
     ...createSketchHoverHostIdentity(args.host),
     kind: 'box',
-    op: args.op,
     freePlacement: true,
-    xCenter: args.previewX,
-    yCenter: args.previewY,
-    heightM: args.previewH,
-    widthM: args.previewW,
-    depthM: args.previewD,
-    removeId: args.removeId ?? null,
+    freeBoxPlacementCommand: createSketchFreeBoxPlacementCommandEnvelope(command),
   };
 }
 
@@ -168,7 +155,6 @@ export function commitSketchFreePlacementHoverRecord(
   const mods = getModulesActions(args.App);
   if (!mods || typeof mods.patchForStack !== 'function') return { committed: false };
 
-  const hoverKind = readRecordString(args.hoverRec, 'kind') || '';
   const contentKind = typeof args.freeBoxContentKind === 'string' ? args.freeBoxContentKind : '';
   const floorY = typeof args.floorY === 'number' ? args.floorY : NaN;
 
@@ -206,14 +192,14 @@ export function commitSketchFreePlacementHoverRecord(
     return touched ? { committed: true, nextHover } : { committed: false };
   }
 
-  if (contentKind && hoverKind === 'box_content' && args.hoverRec.freePlacement === true) {
-    if (isStrictSketchBoxContentKind(contentKind)) return { committed: false };
-    const hoverContentKind = readRecordString(args.hoverRec, 'contentKind') || '';
-    const boxId = readRecordString(args.hoverRec, 'boxId');
-    if (hoverContentKind !== contentKind || !boxId) return { committed: false };
-    const blockedReason = readRecordString(args.hoverRec, '__wpBlockedReason');
-    if (blockedReason) {
-      toastSketchBoxContentBlocked(args.App, contentKind, blockedReason);
+  const structuralHover = decodeSketchStructuralCommandHover(args.hoverRec);
+  if (contentKind && structuralHover.ok) {
+    const { command, contentKind: commandContentKind } = structuralHover.value;
+    if (!isStrictSketchStructuralContentKind(contentKind) || commandContentKind !== contentKind)
+      return { committed: false };
+    if (!command.freePlacement) return { committed: false };
+    if (command.blockedReason) {
+      toastSketchBoxContentBlocked(args.App, contentKind, command.blockedReason);
       return { committed: true, nextHover: null };
     }
 
@@ -227,7 +213,7 @@ export function commitSketchFreePlacementHoverRecord(
           App: args.App,
           host: args.host,
           cfg,
-          boxId,
+          boxId: command.boxId,
           contentKind,
           hoverRec: args.hoverRec,
           floorY,
@@ -239,16 +225,15 @@ export function commitSketchFreePlacementHoverRecord(
     return touched ? { committed: true, nextHover } : { committed: false };
   }
 
-  if (!(hoverKind === 'box' && args.hoverRec.freePlacement === true)) {
-    return { committed: false };
-  }
+  const placement = decodeSketchFreeBoxPlacementHover(args.hoverRec);
+  if (!placement.ok) return { committed: false };
 
   let committed = false;
   mods.patchForStack(
     args.host.isBottom ? 'bottom' : 'top',
     args.host.moduleKey,
     (cfg: RecordMap) => {
-      committed = commitSketchFreePlacementBox({ cfg, hoverRec: args.hoverRec });
+      committed = commitSketchFreePlacementBox({ cfg, command: placement.value });
     },
     createCanvasPickingModulesStructuralPatchMeta(args.boxSource || 'manualSketchBoxFree')
   );

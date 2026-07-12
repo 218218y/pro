@@ -28,7 +28,7 @@ import type {
   SketchFreeHoverHost,
   SketchFreeSurfacePreviewResult,
 } from './canvas_picking_sketch_free_surface_preview_shared.js';
-import { createSketchHoverHostIdentity } from './canvas_picking_sketch_hover_identity.js';
+import { createManualLayoutSketchStructuralCommandHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 
 type DividerPreviewHelpers = {
   tool: string;
@@ -183,22 +183,33 @@ function resolveHorizontalDividerPreview(args: DividerPreviewHelpers): SketchFre
   });
 
   return {
-    hoverRecord: {
-      ts: Date.now(),
-      tool,
-      ...createSketchHoverHostIdentity(host),
-      kind: 'box_content',
-      contentKind: 'divider',
-      boxId: target.boxId,
-      freePlacement: true,
-      op,
-      dividerId,
-      dividerYNorm,
-      dividerXNorm,
-      dividerAxis: 'horizontal',
-      dividerFrontZ: z.frontZ,
-      snapToCenter,
-    },
+    hoverRecord: createManualLayoutSketchStructuralCommandHoverRecord({
+      host: { tool, moduleKey: host.moduleKey, isBottom: host.isBottom },
+      command:
+        op === 'remove'
+          ? {
+              kind: 'remove-divider',
+              op: 'remove',
+              boxId: target.boxId,
+              freePlacement: true,
+              blockedReason: null,
+              axis: 'horizontal',
+              dividerId,
+              dividerYNorm,
+              dividerXNorm,
+            }
+          : {
+              kind: 'add-horizontal-divider',
+              op: 'add',
+              boxId: target.boxId,
+              freePlacement: true,
+              blockedReason: null,
+              dividerId,
+              dividerYNorm,
+              dividerXNorm,
+              dividerFrontZ: z.frontZ,
+            },
+    }),
     preview: {
       kind: 'drawer_divider',
       dividerAxis: 'horizontal',
@@ -302,22 +313,33 @@ function resolveVerticalDividerPreview(args: DividerPreviewHelpers): SketchFreeS
   });
 
   return {
-    hoverRecord: {
-      ts: Date.now(),
-      tool,
-      ...createSketchHoverHostIdentity(host),
-      kind: 'box_content',
-      contentKind: 'divider',
-      boxId: target.boxId,
-      freePlacement: true,
-      op,
-      dividerId,
-      dividerXNorm,
-      dividerYNorm,
-      dividerAxis: 'vertical',
-      dividerFrontZ: z.frontZ,
-      snapToCenter,
-    },
+    hoverRecord: createManualLayoutSketchStructuralCommandHoverRecord({
+      host: { tool, moduleKey: host.moduleKey, isBottom: host.isBottom },
+      command:
+        op === 'remove'
+          ? {
+              kind: 'remove-divider',
+              op: 'remove',
+              boxId: target.boxId,
+              freePlacement: true,
+              blockedReason: null,
+              axis: 'vertical',
+              dividerId,
+              dividerXNorm,
+              dividerYNorm,
+            }
+          : {
+              kind: 'add-vertical-divider',
+              op: 'add',
+              boxId: target.boxId,
+              freePlacement: true,
+              blockedReason: null,
+              dividerId,
+              dividerXNorm,
+              dividerYNorm,
+              dividerFrontZ: z.frontZ,
+            },
+    }),
     preview: {
       kind: 'drawer_divider',
       dividerAxis: 'vertical',

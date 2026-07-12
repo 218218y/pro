@@ -13,6 +13,7 @@ import type {
   ResolveSketchBoxStackPreviewResult,
 } from './canvas_picking_sketch_box_stack_preview_contracts.js';
 import {
+  buildSketchBoxFrontOverlayFields,
   clampUnit,
   resolveSketchBoxStackPreviewContext,
 } from './canvas_picking_sketch_box_stack_preview_shared.js';
@@ -179,6 +180,7 @@ export function resolveSketchBoxExternalDrawersPreview(
       op: blockedReason ? 'blocked' : placement.op,
       blockedReason: blockedReason ?? undefined,
       clearanceMeasurements,
+      ...(placement.op === 'remove' ? {} : buildSketchBoxFrontOverlayFields(frontOverlay)),
     },
   };
 }

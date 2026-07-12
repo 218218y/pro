@@ -8,7 +8,10 @@ import {
   writeSketchCommitPositiveNumber,
 } from '../esm/native/services/canvas_picking_sketch_commit_geometry.ts';
 import { commitSketchModuleBoxContent } from '../esm/native/services/canvas_picking_sketch_box_content_commit.ts';
-import { commitSketchFreePlacementHoverRecord } from '../esm/native/services/canvas_picking_sketch_free_commit.ts';
+import {
+  commitSketchFreePlacementHoverRecord,
+  createSketchFreePlacementBoxHoverRecord,
+} from '../esm/native/services/canvas_picking_sketch_free_commit.ts';
 import { withSketchBoxContentCommand } from './_sketch_box_content_command_fixture.ts';
 
 test('sketch commit geometry accepts only finite runtime numbers and does not parse draft strings', () => {
@@ -48,15 +51,17 @@ test('sketch commit lists preserve valid existing records while pruning legacy j
       },
     } as never,
     host: { moduleKey: 1, isBottom: false },
-    hoverRec: {
-      kind: 'box',
-      freePlacement: true,
-      xCenter: 0.25,
-      yCenter: 1.1,
-      heightM: 0.9,
-      widthM: 0.7,
-      depthM: 0.4,
-    } as never,
+    hoverRec: createSketchFreePlacementBoxHoverRecord({
+      tool: 'sketch_box_free',
+      host: { moduleKey: 1, isBottom: false },
+      op: 'add',
+      previewX: 0.25,
+      previewY: 1.1,
+      previewH: 0.9,
+      previewW: 0.7,
+      previewD: 0.4,
+      ts: 1,
+    }) as never,
   });
 
   assert.deepEqual(result, { committed: true, nextHover: null });

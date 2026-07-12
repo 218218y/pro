@@ -35,7 +35,11 @@ test('sketch box UI exposes a dedicated double-door mode under the single-door a
 
   assert.match(helpers, /SKETCH_TOOL_BOX_DOUBLE_DOOR = 'sketch_box_double_door'/);
   assert.match(sections, /2 דלתות לקופסא/);
-  assert.match(sections, /props\.manualToolRaw === SKETCH_TOOL_BOX_DOUBLE_DOOR/);
+  assert.match(sections, /active=\{isDoubleDoorToolActive\}/);
+  assert.match(
+    sections,
+    /toggleSketchBoxTool\([\s\S]*'doubleDoor',[\s\S]*SKETCH_TOOL_BOX_DOUBLE_DOOR,[\s\S]*isDoubleDoorToolActive/
+  );
 });
 
 test('sketch box door helpers can upsert and remove a centered double-door pair per segment', () => {
@@ -95,7 +99,7 @@ test('sketch box renderer splits a segment into mirrored leaves with a tighter c
   );
   assert.match(
     render,
-    /const centerGap = isCenterDoubleDoorPair[\s\S]*Math\.max\(0\.0008, Math\.min\(0\.0018/
+    /const centerGap = isCenterDoubleDoorPair[\s\S]*SKETCH_BOX_DIMENSIONS\.preview\.doorDoublePairGapMinM[\s\S]*SKETCH_BOX_DIMENSIONS\.preview\.doorDoublePairGapMaxM[\s\S]*SKETCH_BOX_DIMENSIONS\.preview\.doorDoublePairGapSizeRatio/
   );
   assert.match(render, /const pairOuterInset = isCenterDoubleDoorPair/);
   assert.match(render, /const pivotX = hingeLeft \? doorFaceLeft : doorFaceRight;/);

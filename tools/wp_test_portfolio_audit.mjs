@@ -3,6 +3,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { TEST_GROUP_CATALOG } from './wp_test_group_catalog.mjs';
+import {
+  isCanonicalTestFile,
+  isPlaywrightE2ETestFile,
+  listCanonicalTestFiles,
+} from './wp_test_file_classifier.js';
 
 const ROOT = process.cwd();
 const TEST_ROOT = path.join(ROOT, 'tests');
@@ -15,7 +20,6 @@ const getArgValue = name => {
 const jsonOut = getArgValue('--json-out');
 const mdOut = getArgValue('--md-out');
 const shouldPrint = !args.has('--no-print');
-const TEST_FILE_RE = /(?:\.test\.(?:js|tsx|ts|mjs|cjs)|\.spec\.(?:js|tsx|ts|mjs|cjs))$/;
 const PACKAGE_TEST_REF_RE =
   /tests\/[^\s"']+?(?:\.test\.(?:js|tsx|ts|mjs|cjs)|\.spec\.(?:js|tsx|ts|mjs|cjs))/g;
 
@@ -87,10 +91,13 @@ function collectCatalogTestRefs() {
 }
 
 function buildReport() {
-  const tests = (fs.existsSync(TEST_ROOT) ? walk(TEST_ROOT) : [])
+  const tests = listCanonicalTestFiles(ROOT).map(normalize);
+  const nonTestRuntimeFiles = (fs.existsSync(TEST_ROOT) ? walk(TEST_ROOT) : [])
     .map(normalize)
-    .filter(rel => TEST_FILE_RE.test(rel))
+    .filter(rel => /\.(?:js|cjs|mjs|ts|tsx)$/u.test(rel) && !isCanonicalTestFile(rel))
     .sort();
+  const unitRunnerFiles = tests.filter(file => !isPlaywrightE2ETestFile(path.join(ROOT, file), ROOT));
+  const e2eFiles = tests.filter(file => isPlaywrightE2ETestFile(path.join(ROOT, file), ROOT));
   const packageRefs = collectPackageTestRefs();
   const catalogRefs = collectCatalogTestRefs();
   const refs = [
@@ -128,16 +135,34 @@ function buildReport() {
   const unreferencedStageGuards = tests.filter(
     file => /tests\/refactor_stage\d+_.*\.test\.js$/.test(file) && !testRefSet.has(file)
   );
+  const unitRunnerFileSet = new Set(unitRunnerFiles);
+  const duplicateRunnerFiles = unitRunnerFiles.filter(
+    (file, index) => unitRunnerFiles.indexOf(file) !== index
+  );
+  const e2eIncludedInUnitRunner = unitRunnerFiles.filter(file => e2eFiles.includes(file));
+  const helpersIncludedInUnitRunner = unitRunnerFiles.filter(file => nonTestRuntimeFiles.includes(file));
   return {
     generatedAt: new Date().toISOString(),
     totals: {
       tests: tests.length,
+      unitRunnerTests: unitRunnerFiles.length,
+      e2eTests: e2eFiles.length,
+      nonTestRuntimeFiles: nonTestRuntimeFiles.length,
       packageTestReferences: packageRefs.length,
       catalogTestReferences: catalogRefs.length,
       totalTestReferences: refs.length,
     },
     categories,
-    failures: { missingTestRefs, duplicateCatalogRefs, legacyRuntimeNames, unreferencedStageGuards },
+    failures: {
+      missingTestRefs,
+      duplicateCatalogRefs,
+      legacyRuntimeNames,
+      unreferencedStageGuards,
+      duplicateRunnerFiles,
+      e2eIncludedInUnitRunner,
+      helpersIncludedInUnitRunner,
+      missingFromUnitRunner: tests.filter(file => !e2eFiles.includes(file) && !unitRunnerFileSet.has(file)),
+    },
     records,
   };
 }
@@ -146,6 +171,9 @@ function renderMarkdown(report) {
   const lines = [];
   lines.push('# Test portfolio audit', '', `Generated: ${report.generatedAt}`, '', '## Summary', '');
   lines.push(`- Test files classified: ${report.totals.tests}`);
+  lines.push(`- Canonical unit/runtime runner files: ${report.totals.unitRunnerTests}`);
+  lines.push(`- Playwright E2E files excluded from unit runner: ${report.totals.e2eTests}`);
+  lines.push(`- Helpers/fixtures excluded by filename contract: ${report.totals.nonTestRuntimeFiles}`);
   lines.push(
     `- Package script test references: ${report.totals.packageTestReferences}`,
     `- Catalog test references: ${report.totals.catalogTestReferences}`,
@@ -163,7 +191,15 @@ function renderMarkdown(report) {
     `| Legacy tests are explicitly migration/compat/cleanup/root/guard/audit/contract scoped | ${report.failures.legacyRuntimeNames.length} |`
   );
   lines.push(
-    `| Refactor stage guard tests have package/catalog ownership | ${report.failures.unreferencedStageGuards.length} |`,
+    `| Refactor stage guard tests have package/catalog ownership | ${report.failures.unreferencedStageGuards.length} |`
+  );
+  lines.push(`| Unit runner has no duplicate files | ${report.failures.duplicateRunnerFiles.length} |`);
+  lines.push(`| Unit runner excludes Playwright E2E | ${report.failures.e2eIncludedInUnitRunner.length} |`);
+  lines.push(
+    `| Unit runner excludes helpers/fixtures | ${report.failures.helpersIncludedInUnitRunner.length} |`
+  );
+  lines.push(
+    `| Every non-E2E test reaches the unit runner | ${report.failures.missingFromUnitRunner.length} |`,
     ''
   );
   if (Object.values(report.failures).some(items => items.length)) {

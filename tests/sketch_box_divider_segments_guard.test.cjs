@@ -33,8 +33,12 @@ test('box rods and storage keep xNorm / segment placement across hover and commi
   assert.match(storagePreview, /contentKind: 'storage'/);
   assert.match(storagePreview, /contentXNorm: readFiniteSegmentNumber\(storageSegment, 'xNorm'\) \?\? 0\.5/);
 
-  assert.match(helpers, /commitArgs\.contentKind === 'rod' && contentXNorm != null/);
-  assert.match(helpers, /commitArgs\.contentKind === 'storage'/);
+  assert.match(helpers, /structuralCommand\.kind === 'add-rod'/);
+  assert.match(
+    helpers,
+    /writeSketchCommitClampedUnitNumber\(item, 'xNorm', structuralCommand\.contentXNorm, 0\.5\)/
+  );
+  assert.match(helpers, /structuralCommand\.kind === 'add-storage'/);
 
   assert.match(render, /xNorm: barrier\.xNorm/);
   assert.match(render, /xNorm: rod\.xNorm/);

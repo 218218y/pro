@@ -35,6 +35,7 @@ import {
 } from './canvas_picking_sketch_free_surface_preview.js';
 import { resolveSketchFreeBoxContentPreview } from './canvas_picking_sketch_free_box_content_preview.js';
 import { decodeSketchBoxContentCommandHover } from './canvas_picking_sketch_box_content_command.js';
+import { decodeSketchStructuralCommandHover } from './canvas_picking_sketch_structural_command.js';
 
 type SketchPreviewArgs = UnknownRecord;
 type SketchFreeHoverContext = {
@@ -56,12 +57,12 @@ function isExistingVerticalRemovalPreview(
   contentKind: ExistingVerticalRemovalKind
 ): contentPreview is { mode: 'preview'; hoverRecord: UnknownRecord; preview: UnknownRecord } {
   if (contentPreview?.mode !== 'preview') return false;
-  const hover = contentPreview.hoverRecord;
+  const decoded = decodeSketchStructuralCommandHover(contentPreview.hoverRecord);
   return (
-    hover?.kind === 'box_content' &&
-    hover?.freePlacement === true &&
-    hover?.contentKind === contentKind &&
-    hover?.op === 'remove'
+    decoded.ok &&
+    decoded.value.contentKind === contentKind &&
+    decoded.value.command.freePlacement &&
+    decoded.value.command.op === 'remove'
   );
 }
 

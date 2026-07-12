@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { decodeSketchBoxContentCommandHover } from '../esm/native/services/canvas_picking_sketch_box_content_command.ts';
 import { resolveSketchFreeBoxContentPreview } from '../esm/native/services/canvas_picking_sketch_free_box_content_preview.ts';
+import { requireSketchStructuralCommandHover } from './_sketch_structural_command_fixture.ts';
 
 type FreeBox = {
   id: string;
@@ -224,10 +225,12 @@ test('sketch-free vertical preview keeps removal hover available while the activ
 
   assert.ok(result && result.mode === 'preview');
   assert.equal(result?.hoverRecord.tool, 'sketch_ext_drawers:3');
-  assert.equal(result?.hoverRecord.kind, 'box_content');
-  assert.equal(result?.hoverRecord.contentKind, 'shelf');
-  assert.equal(result?.hoverRecord.op, 'remove');
-  assert.equal(result?.hoverRecord.removeId, 'shelf-1');
+  assert.ok(result);
+  const command = requireSketchStructuralCommandHover(result.hoverRecord);
+  assert.equal(command.contentKind, 'shelf');
+  assert.equal(command.command.kind, 'remove-shelf');
+  if (command.command.kind !== 'remove-shelf') throw new Error('expected shelf removal');
+  assert.equal(command.command.removeId, 'shelf-1');
   assert.equal(result?.preview.op, 'remove');
 });
 
@@ -260,9 +263,11 @@ test('sketch-free shelf removal accepts direct shelf-board hits with the same ge
   );
 
   assert.ok(result && result.mode === 'preview');
-  assert.equal(result?.hoverRecord.kind, 'box_content');
-  assert.equal(result?.hoverRecord.contentKind, 'shelf');
-  assert.equal(result?.hoverRecord.op, 'remove');
-  assert.equal(result?.hoverRecord.removeId, 'shelf-1');
+  assert.ok(result);
+  const command = requireSketchStructuralCommandHover(result.hoverRecord);
+  assert.equal(command.contentKind, 'shelf');
+  assert.equal(command.command.kind, 'remove-shelf');
+  if (command.command.kind !== 'remove-shelf') throw new Error('expected shelf removal');
+  assert.equal(command.command.removeId, 'shelf-1');
   assert.equal(result?.preview.op, 'remove');
 });

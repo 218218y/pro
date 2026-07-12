@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  readManualLayoutSketchBoxContentHoverIntent,
   readManualLayoutSketchRodHoverIntent,
   readManualLayoutSketchStackHoverIntent,
   resolveManualLayoutSketchHoverMatchState,
@@ -126,26 +125,7 @@ test('manual-layout sketch hover match state rejects records that still carry re
   assert.equal(legacyHost.hoverOk, false);
 });
 
-test('manual-layout hover intent readers normalize box-content and vertical removal payloads', () => {
-  const boxContent = readManualLayoutSketchBoxContentHoverIntent({
-    kind: 'box_content',
-    op: 'remove',
-    contentKind: 'door',
-    boxId: 'box-7',
-    freePlacement: true,
-    boxYNorm: 0.2,
-    contentXNorm: 0.6,
-    dividerXNorm: 0.3,
-    dividerFrontZ: 0.14,
-    removeIdx: 2,
-    baseType: 'plinth',
-    baseLegStyle: 'square',
-    baseLegColor: 'gold',
-    baseLegHeightCm: 14,
-    baseLegWidthCm: 5.5,
-    basePlinthHeightCm: 14.5,
-    corniceType: 'flat',
-  });
+test('manual-layout hover intent readers normalize stack and vertical removal payloads', () => {
   const stack = readManualLayoutSketchStackHoverIntent({
     kind: 'ext_drawers',
     removeKind: 'std',
@@ -160,35 +140,6 @@ test('manual-layout hover intent readers normalize box-content and vertical remo
     rodIndex: 4,
   });
 
-  assert.deepEqual(boxContent, {
-    kind: 'box_content',
-    op: 'remove',
-    contentKind: 'door',
-    boxId: 'box-7',
-    freePlacement: true,
-    boxYNorm: 0.2,
-    contentXNorm: 0.6,
-    dividerXNorm: 0.3,
-    dividerId: null,
-    dividerFrontZ: 0.14,
-    variant: null,
-    depthM: null,
-    heightM: null,
-    removeId: null,
-    removeIdx: 2,
-    baseType: 'plinth',
-    baseLegStyle: 'square',
-    baseLegColor: 'gold',
-    baseLegPlatformMode: null,
-    baseLegPlatformSideMode: null,
-    baseLegPlatformSideOverhangCm: null,
-    baseLegPlatformFrontOverhangCm: null,
-    baseLegHeightCm: 14,
-    baseLegWidthCm: 5.5,
-    basePlinthHeightCm: 14.5,
-    corniceType: 'flat',
-    blockedReason: null,
-  });
   assert.deepEqual(stack, {
     kind: 'ext_drawers',
     op: 'add',
@@ -215,21 +166,6 @@ test('manual-layout hover intent readers normalize box-content and vertical remo
 });
 
 test('manual-layout hover intent readers reject string-encoded numeric state', () => {
-  const boxContent = readManualLayoutSketchBoxContentHoverIntent({
-    kind: 'box_content',
-    op: 'remove',
-    contentKind: 'door',
-    boxId: 'box-7',
-    freePlacement: true,
-    boxYNorm: '0.2',
-    contentXNorm: '0.6',
-    dividerXNorm: '0.3',
-    dividerFrontZ: '0.14',
-    removeIdx: '2',
-    baseLegHeightCm: '14',
-    baseLegWidthCm: '5.5',
-    basePlinthHeightCm: '14.5',
-  });
   const stack = readManualLayoutSketchStackHoverIntent({
     kind: 'ext_drawers',
     removeKind: 'std',
@@ -244,14 +180,6 @@ test('manual-layout hover intent readers reject string-encoded numeric state', (
     rodIndex: '4',
   });
 
-  assert.equal(boxContent?.boxYNorm, null);
-  assert.equal(boxContent?.contentXNorm, null);
-  assert.equal(boxContent?.dividerXNorm, null);
-  assert.equal(boxContent?.dividerFrontZ, null);
-  assert.equal(boxContent?.removeIdx, null);
-  assert.equal(boxContent?.baseLegHeightCm, null);
-  assert.equal(boxContent?.baseLegWidthCm, null);
-  assert.equal(boxContent?.basePlinthHeightCm, null);
   assert.equal(stack?.removeSlot, null);
   assert.equal(stack?.drawerCount, null);
   assert.equal(rod?.removeIdx, null);

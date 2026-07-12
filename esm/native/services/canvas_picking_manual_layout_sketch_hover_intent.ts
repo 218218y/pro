@@ -1,5 +1,4 @@
 export type {
-  ManualLayoutSketchBoxContentHoverIntent,
   ManualLayoutSketchBoxHoverIntent,
   ManualLayoutSketchHoverMatchState,
   ManualLayoutSketchHoverModuleKey,
@@ -21,7 +20,6 @@ export {
 } from './canvas_picking_manual_layout_sketch_hover_intent_snapshot.js';
 
 export {
-  readManualLayoutSketchBoxContentHoverIntent,
   readManualLayoutSketchBoxHoverIntent,
   readManualLayoutSketchRodHoverIntent,
   readManualLayoutSketchShelfHoverIntent,

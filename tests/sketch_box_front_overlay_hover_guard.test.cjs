@@ -77,10 +77,17 @@ test('free-box sketch hover forwards front overlays for drawers, base, and remov
     stackPreview,
     /const frontOverlay(?:[:\s\w|]+)? = resolveSketchBoxVisibleFrontOverlay\([\s\S]*segment: activeSegment/
   );
-  assert.match(stackPreview, /kind: 'drawers',[\s\S]*\.\.\.buildSketchBoxFrontOverlayFields\(frontOverlay\)/);
+  assert.match(
+    stackPreview,
+    /kind: 'drawers',[\s\S]*placement\.op === 'remove'[\s\S]*buildSketchBoxFrontOverlayFields\(frontOverlay\)/
+  );
+  assert.match(
+    stackPreview,
+    /kind: 'ext_drawers',[\s\S]*placement\.op === 'remove'[\s\S]*buildSketchBoxFrontOverlayFields\(frontOverlay\)/
+  );
   assert.match(
     freeSurfaceContent,
-    /contentKind: 'base',[\s\S]*kind: 'storage',[\s\S]*frontOverlayZ: frontOverlay \? frontOverlay\.z : undefined/
+    /kind: 'set-base',[\s\S]*kind: 'storage',[\s\S]*frontOverlayZ: frontOverlay \? frontOverlay\.z : undefined/
   );
   assert.match(
     freeSurfacePlacement,
