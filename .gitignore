@@ -16,3 +16,12 @@ coverage/
 nodesource_setup.sh
 favicon.ico
 *.png
+
+# Source and release HTML advertise this canonical root web-icon set. Keep the
+# explicit files versioned while continuing to ignore unrelated PNG outputs.
+!/favicon.ico
+!/favicon-16x16.png
+!/favicon-32x32.png
+!/apple-touch-icon.png
+!/android-chrome-192x192.png
+!/android-chrome-512x512.png

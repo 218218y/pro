@@ -85,12 +85,12 @@ test('viewer overlay exposes notes edit and visibility controls without duplicat
   assert.match(css, /body\.wp-ui-react \.hint-bottom,[\s\S]*?position:\s*relative;/);
   assert.match(
     css,
-    /body\.wp-ui-react \.wp-viewer-notes-wrap > \.wp-viewer-note-eye\.hint-bottom \{[\s\S]*?position:\s*absolute;[\s\S]*?left:\s*-6px;[\s\S]*?right:\s*auto;[\s\S]*?bottom:\s*2px;[\s\S]*?top:\s*auto;/
+    /body\.wp-ui-react \.wp-viewer-notes-wrap > \.wp-viewer-note-eye\.hint-bottom \{[\s\S]*?position:\s*absolute;[\s\S]*?left:\s*-6px;[\s\S]*?right:\s*auto;[\s\S]*?bottom:\s*2px;[\s\S]*?top:\s*auto;[\s\S]*?z-index:\s*var\(--wp-z-tooltip\);/
   );
   assert.ok(
     css.indexOf('body.wp-ui-react .wp-viewer-notes-wrap > .wp-viewer-note-eye.hint-bottom') >
       css.indexOf('body.wp-ui-react .hint-bottom,'),
-    'notes visibility chip must re-assert absolute positioning after the shared tooltip helper'
+    'notes visibility chip must re-assert absolute positioning and stacking after the shared tooltip helper'
   );
   assert.match(
     css,

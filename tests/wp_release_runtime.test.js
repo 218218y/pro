@@ -7,6 +7,7 @@ import path from 'node:path';
 import { applyContentHashingToRelease } from '../tools/wp_release_hashing.js';
 import { resolveReleaseJsObfuscationPolicy } from '../tools/wp_release_build.js';
 import { copyRootStaticWebAssets } from '../tools/wp_release_shared.js';
+import { WEB_APP_ICON_ASSETS } from '../tools/wp_web_icon_assets.js';
 
 import { parseReleaseArgs } from '../tools/wp_release_state.js';
 import {
@@ -21,6 +22,31 @@ import {
 function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-release-'));
 }
+
+test('repository contains every canonical web-app icon advertised by source HTML and manifest', () => {
+  const root = process.cwd();
+  const advertisedAssets = [
+    'favicon.ico',
+    'favicon-16x16.png',
+    'favicon-32x32.png',
+    'apple-touch-icon.png',
+    'android-chrome-192x192.png',
+    'android-chrome-512x512.png',
+    'site.webmanifest',
+  ];
+
+  for (const name of advertisedAssets) {
+    assert.ok(WEB_APP_ICON_ASSETS.includes(name), `${name} must remain in the canonical web-icon allowlist`);
+    assert.ok(fs.existsSync(path.join(root, name)), `${name} must exist in a clean repository checkout`);
+  }
+
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, 'site.webmanifest'), 'utf8'));
+  for (const icon of manifest.icons || []) {
+    const name = String(icon?.src || '').replace(/^\/+/, '');
+    assert.ok(name, 'manifest icon entries must declare a root-relative source');
+    assert.ok(fs.existsSync(path.join(root, name)), `manifest icon ${name} must exist in the repository`);
+  }
+});
 
 test('release root static web assets copy canonical favicon/web-app icon set into target root only', () => {
   const root = tempDir();

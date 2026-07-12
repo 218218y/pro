@@ -4673,6 +4673,7 @@ body.wp-ui-react .wp-viewer-notes-wrap > .wp-viewer-note-eye.hint-bottom {
   right: auto;
   bottom: 2px;
   top: auto;
+  z-index: var(--wp-z-tooltip);
 }
 
 body.wp-ui-react .sticky-status-toast {
