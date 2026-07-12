@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-07-11T21:46:49.466Z",
+  "generatedAt": "2026-07-12T04:07:59.124Z",
   "totals": {
-    "tests": 1183,
+    "tests": 1184,
     "packageTestReferences": 442,
-    "catalogTestReferences": 77,
-    "totalTestReferences": 519
+    "catalogTestReferences": 86,
+    "totalTestReferences": 528
   },
   "categories": {
     "contract": 386,
     "runtime-unit": 305,
-    "integration": 436,
+    "integration": 437,
     "e2e-smoke": 7,
     "perf-smoke": 9,
     "legacy-migration": 40
@@ -683,6 +683,10 @@
     },
     {
       "file": "tests/canvas_picking_shoe_drawer_base_auto_none_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_box_content_command_runtime.test.ts",
       "category": "integration"
     },
     {

@@ -17,6 +17,7 @@ import {
   hasSketchBoxDoubleDoorPairForSegment,
 } from './canvas_picking_sketch_box_dividers.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
+import type { SketchBoxContentCommand } from './canvas_picking_sketch_box_content_command.js';
 
 type RecordMap = UnknownRecord;
 type ModuleKey = number | 'corner' | `corner:${number}` | null;
@@ -202,7 +203,7 @@ export function resolveSketchBoxDoorPreview(
 
   const leftDoor = pickDoorPlacementByHinge(segmentDoors, 'left');
   const rightDoor = pickDoorPlacementByHinge(segmentDoors, 'right');
-  const hinge = existingDoor?.door?.hinge === 'right' ? 'right' : 'left';
+  const hinge: 'left' | 'right' = existingDoor?.door?.hinge === 'right' ? 'right' : 'left';
   const doorSegment = existingDoor?.segment || activeSegment;
   const doorVerticalSegment = existingDoor?.verticalSegment || activeVerticalSegment;
   const op: 'add' | 'remove' =
@@ -215,7 +216,7 @@ export function resolveSketchBoxDoorPreview(
         : 'add';
   const previewDims = SKETCH_BOX_DIMENSIONS.preview;
   const contentXNorm = doorSegment ? doorSegment.xNorm : 0.5;
-  const boxYNorm = doorVerticalSegment ? doorVerticalSegment.yNorm : null;
+  const boxYNorm = doorVerticalSegment ? doorVerticalSegment.yNorm : 0.5;
   const doorId = contentKind === 'double_door' ? '' : existingDoor ? String(existingDoor.door.id || '') : '';
 
   const innerLeft = targetGeo.centerX - targetGeo.innerW / 2;
@@ -244,6 +245,39 @@ export function resolveSketchBoxDoorPreview(
         doorDepth / 2 +
         Math.max(previewDims.doorRemoveOffsetMinM, safeWoodThick * previewDims.doorRemoveOffsetWoodRatio)
       : renderedDoorCenterZ;
+  const command: SketchBoxContentCommand =
+    contentKind === 'door'
+      ? {
+          kind: 'single-door' as const,
+          boxId,
+          freePlacement,
+          op,
+          contentXNorm,
+          boxYNorm,
+          hinge,
+          doorId: doorId || null,
+          blockedReason: null,
+        }
+      : contentKind === 'double_door'
+        ? {
+            kind: 'double-door' as const,
+            boxId,
+            freePlacement,
+            op,
+            contentXNorm,
+            boxYNorm,
+            blockedReason: null,
+          }
+        : {
+            kind: 'door-hinge' as const,
+            boxId,
+            freePlacement,
+            op: 'add' as const,
+            contentXNorm,
+            boxYNorm,
+            doorId,
+            blockedReason: null,
+          };
 
   return {
     hoverRecord: createManualLayoutSketchBoxContentHoverRecord({
@@ -258,6 +292,7 @@ export function resolveSketchBoxDoorPreview(
       doorId,
       doorLeftId: leftDoor ? String(leftDoor.door.id || '') : '',
       doorRightId: rightDoor ? String(rightDoor.door.id || '') : '',
+      command,
     }),
     preview: {
       kind: 'storage',

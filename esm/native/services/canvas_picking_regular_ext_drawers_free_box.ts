@@ -41,6 +41,7 @@ import {
 import { commitSketchFreePlacementHoverRecord } from './canvas_picking_sketch_free_commit.js';
 import { resolveSketchBoxStackPreviewContext } from './canvas_picking_sketch_box_stack_preview_context.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
+import { decodeSketchBoxContentCommand } from './canvas_picking_sketch_box_content_command.js';
 import type {
   ExtDrawersHoverPreviewArgs,
   SelectorLocalBox,
@@ -264,6 +265,20 @@ function buildRegularDrawerPreview(args: {
     drawerH: isShoe ? shoeH : regH,
     drawerHeightM: isShoe ? shoeH : regH,
     blockedReason,
+    command: {
+      kind: 'regular-external-drawers',
+      boxId: target.boxId,
+      freePlacement: true,
+      op: blockedReason ? 'add' : op,
+      removeId: blockedReason ? null : formatIdentityValue(readIdentityValue(existing?.id)) || null,
+      contentXNorm: activeXNorm,
+      boxYNorm: activeYNorm,
+      boxBaseYNorm: clampUnit((ctx.boxBottomY - ctx.fullBoxBottomY) / Math.max(target.targetHeight, 1e-6)),
+      drawerCount: nextRegularCount,
+      hasShoeDrawer: nextHasShoe,
+      drawerHeightM: isShoe ? shoeH : regH,
+      blockedReason,
+    },
   });
   __wp_writeSketchHover(App, hoverRecord);
 
@@ -348,8 +363,18 @@ export function tryCommitSketchBoxRegularExternalDrawersHover(App: AppContainer)
   const moduleKey = __wp_toModuleKey(hover.hostModuleKey ?? hover.moduleKey);
   if (moduleKey == null) return false;
   const host = { moduleKey, isBottom: hover.hostIsBottom === true || hover.isBottom === true };
-  const addingShoeDrawer = hover.op === 'add' && hover.hasShoeDrawer === true;
-  const removingShoeDrawer = hover.op === 'remove' && hover.hasShoeDrawer === false;
+  const boxId = typeof hover.boxId === 'string' ? hover.boxId : null;
+  if (!boxId) return false;
+  const decoded = decodeSketchBoxContentCommand({
+    record: hover,
+    expectedContentKind: SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_CONTENT_KIND,
+    expectedBoxId: boxId,
+    expectedFreePlacement: true,
+  });
+  if (!decoded.ok || decoded.value.kind !== 'regular-external-drawers') return false;
+  const command = decoded.value;
+  const addingShoeDrawer = command.op === 'add' && command.hasShoeDrawer;
+  const removingShoeDrawer = command.op === 'remove' && !command.hasShoeDrawer;
   const commit = commitSketchFreePlacementHoverRecord({
     App,
     host,

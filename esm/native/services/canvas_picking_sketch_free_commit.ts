@@ -4,6 +4,11 @@ import { getModulesActions } from '../runtime/actions_access_domains.js';
 import { asRecord } from '../runtime/record.js';
 import { readSketchCommitNumber } from './canvas_picking_sketch_commit_geometry.js';
 import {
+  decodeSketchBoxContentCommand,
+  isStrictSketchBoxContentKind,
+  type SketchBoxContentCommand,
+} from './canvas_picking_sketch_box_content_command.js';
+import {
   commitSketchModuleBoxContent,
   ensureSketchModuleBoxes,
   findSketchModuleBoxById,
@@ -178,7 +183,19 @@ export function commitSketchFreePlacementHoverRecord(
   ) {
     const hoverContentKind = readRecordString(args.hoverRec, 'contentKind') || '';
     if (hoverContentKind !== contentKind) return { committed: false };
-    const blockedReason = readRecordString(args.hoverRec, '__wpBlockedReason');
+    let strictCommand: SketchBoxContentCommand | null = null;
+    if (isStrictSketchBoxContentKind(contentKind)) {
+      const decoded = decodeSketchBoxContentCommand({
+        record: args.hoverRec,
+        expectedContentKind: contentKind,
+        expectedBoxId: String(args.hoverRec.boxId),
+        expectedFreePlacement: true,
+      });
+      if (!decoded.ok) return { committed: false };
+      strictCommand = decoded.value;
+    }
+    const blockedReason =
+      strictCommand?.blockedReason || readRecordString(args.hoverRec, '__wpBlockedReason');
     if (blockedReason) {
       // Consume blocked free-box clicks so routing cannot fall through to a module behind the box.
       toastSketchBoxContentBlocked(args.App, contentKind, blockedReason);

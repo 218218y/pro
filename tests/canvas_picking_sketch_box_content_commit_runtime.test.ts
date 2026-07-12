@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { commitSketchModuleBoxContent } from '../esm/native/services/canvas_picking_sketch_box_content_commit.ts';
 import { CARCASS_BASE_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { withSketchBoxContentCommand } from './_sketch_box_content_command_fixture.ts';
 
 const LEG_PLATFORM_HEIGHT_M = CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
 
@@ -26,20 +27,39 @@ test('sketch-box content commit refreshes manual drawer toggle hover through the
     contentKind: 'drawers',
     hoverMode: 'manual-toggle',
     hoverHost: { tool: 'sketch_drawers', moduleKey: 2, isBottom: false } as any,
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'drawers',
-      boxId: 'sb1',
-      op: 'add',
-      boxYNorm: 0.3,
-      boxBaseYNorm: 0.2,
-      contentXNorm: 0.4,
-      yCenter: 0.5,
-      baseY: 0.25,
-      stackH: 0.4,
-      drawerH: 0.1,
-      drawerGap: 0.02,
-    },
+    hoverRec: withSketchBoxContentCommand(
+      {
+        kind: 'box_content',
+        contentKind: 'drawers',
+        boxId: 'sb1',
+        freePlacement: false,
+        op: 'add',
+        boxYNorm: 0.3,
+        boxBaseYNorm: 0.2,
+        contentXNorm: 0.4,
+        yCenter: 0.5,
+        baseY: 0.25,
+        stackH: 0.4,
+        drawerH: 0.1,
+        drawerGap: 0.02,
+        drawerHeightM: 0.1,
+      },
+      {
+        kind: 'internal-drawers',
+        boxId: 'sb1',
+        freePlacement: false,
+        blockedReason: null,
+        op: 'add',
+        removeId: null,
+        contentXNorm: 0.4,
+        boxYNorm: 0.3,
+        boxBaseYNorm: 0.2,
+        drawerHeightM: 0.1,
+        drawerH: 0.1,
+        stackH: 0.4,
+        drawerGap: 0.02,
+      }
+    ),
   });
 
   assert.equal(Array.isArray(box.drawers), true);
@@ -54,8 +74,9 @@ test('sketch-box content commit refreshes manual drawer toggle hover through the
   assert.equal(typeof nextHover?.removeId, 'string');
 });
 
-test('sketch-box content commit keeps free ext-drawer toggle semantics and clamps drawer count', () => {
+test('sketch-box content commit keeps exact free ext-drawer toggle semantics', () => {
   const box = createBox({
+    freePlacement: true,
     extDrawers: [{ id: 'ed1', yNormC: 0.5, yNorm: 0.4, count: 2 }],
   });
   const nextHover = commitSketchModuleBoxContent({
@@ -63,15 +84,38 @@ test('sketch-box content commit keeps free ext-drawer toggle semantics and clamp
     boxId: 'sb1',
     contentKind: 'ext_drawers',
     hoverMode: 'free-toggle',
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'ext_drawers',
-      boxId: 'sb1',
-      op: 'remove',
-      removeId: 'ed1',
-      drawerCount: 8,
-      freePlacement: true,
-    },
+    hoverRec: withSketchBoxContentCommand(
+      {
+        kind: 'box_content',
+        contentKind: 'ext_drawers',
+        boxId: 'sb1',
+        op: 'remove',
+        removeId: 'ed1',
+        drawerCount: 5,
+        freePlacement: true,
+        contentXNorm: 0.5,
+        boxYNorm: 0.5,
+        boxBaseYNorm: 0.4,
+        drawerHeightM: 0.2,
+        drawerH: 0.2,
+        stackH: 0.4,
+      },
+      {
+        kind: 'sketch-external-drawers',
+        boxId: 'sb1',
+        freePlacement: true,
+        blockedReason: null,
+        op: 'remove',
+        removeId: 'ed1',
+        contentXNorm: 0.5,
+        boxYNorm: 0.5,
+        boxBaseYNorm: 0.4,
+        drawerHeightM: 0.2,
+        drawerH: 0.2,
+        stackH: 0.4,
+        drawerCount: 5,
+      }
+    ),
   });
 
   assert.equal(box.extDrawers.length, 0);
@@ -140,15 +184,29 @@ test('sketch-box door commit stores the active row for divided box cells', () =>
     box,
     boxId: 'sb1',
     contentKind: 'door',
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'door',
-      boxId: 'sb1',
-      op: 'add',
-      contentXNorm: 0.75,
-      boxYNorm: 0.75,
-      hinge: 'left',
-    },
+    hoverRec: withSketchBoxContentCommand(
+      {
+        kind: 'box_content',
+        contentKind: 'door',
+        boxId: 'sb1',
+        freePlacement: false,
+        op: 'add',
+        contentXNorm: 0.75,
+        boxYNorm: 0.75,
+        hinge: 'left',
+      },
+      {
+        kind: 'single-door',
+        boxId: 'sb1',
+        freePlacement: false,
+        blockedReason: null,
+        op: 'add',
+        contentXNorm: 0.75,
+        boxYNorm: 0.75,
+        hinge: 'left',
+        doorId: null,
+      }
+    ),
   });
 
   assert.equal(Array.isArray(box.doors), true);
@@ -177,15 +235,32 @@ test('sketch-box content commit routes base/door/storage mutations through focus
 
   commitSketchModuleBoxContent({
     box,
+    boxId: 'sb1',
     contentKind: 'door',
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'door',
-      op: 'add',
-      contentXNorm: 0.61,
-      hinge: 'right',
-      doorId: 'door_1',
-    },
+    hoverRec: withSketchBoxContentCommand(
+      {
+        kind: 'box_content',
+        contentKind: 'door',
+        boxId: 'sb1',
+        freePlacement: false,
+        op: 'add',
+        contentXNorm: 0.61,
+        boxYNorm: 0.5,
+        hinge: 'right',
+        doorId: 'door_1',
+      },
+      {
+        kind: 'single-door',
+        boxId: 'sb1',
+        freePlacement: false,
+        blockedReason: null,
+        op: 'add',
+        contentXNorm: 0.61,
+        boxYNorm: 0.5,
+        hinge: 'right',
+        doorId: 'door_1',
+      }
+    ),
   });
   assert.equal(Array.isArray(box.doors), true);
   assert.equal(box.doors.length, 1);
@@ -457,17 +532,37 @@ test('sketch-box drawer commit removes shelf replaced by the internal drawer cas
     boxId: 'sb1',
     contentKind: 'drawers',
     woodThick: 0.02,
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'drawers',
-      boxId: 'sb1',
-      op: 'add',
-      boxYNorm: 0.6,
-      boxBaseYNorm: 0.42,
-      stackH: 0.36,
-      drawerH: 0.165,
-      drawerGap: 0.03,
-    },
+    hoverRec: withSketchBoxContentCommand(
+      {
+        kind: 'box_content',
+        contentKind: 'drawers',
+        boxId: 'sb1',
+        freePlacement: false,
+        op: 'add',
+        contentXNorm: 0.5,
+        boxYNorm: 0.6,
+        boxBaseYNorm: 0.42,
+        stackH: 0.36,
+        drawerH: 0.165,
+        drawerGap: 0.03,
+        drawerHeightM: 0.165,
+      },
+      {
+        kind: 'internal-drawers',
+        boxId: 'sb1',
+        freePlacement: false,
+        blockedReason: null,
+        op: 'add',
+        removeId: null,
+        contentXNorm: 0.5,
+        boxYNorm: 0.6,
+        boxBaseYNorm: 0.42,
+        drawerHeightM: 0.165,
+        drawerH: 0.165,
+        stackH: 0.36,
+        drawerGap: 0.03,
+      }
+    ),
   });
 
   assert.deepEqual(box.shelves, []);
@@ -485,17 +580,37 @@ test('sketch-box drawer commit ignores string-encoded existing shelf geometry du
     boxId: 'sb1',
     contentKind: 'drawers',
     woodThick: 0.02,
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'drawers',
-      boxId: 'sb1',
-      op: 'add',
-      boxYNorm: 0.6,
-      boxBaseYNorm: 0.42,
-      stackH: 0.36,
-      drawerH: 0.165,
-      drawerGap: 0.03,
-    },
+    hoverRec: withSketchBoxContentCommand(
+      {
+        kind: 'box_content',
+        contentKind: 'drawers',
+        boxId: 'sb1',
+        freePlacement: false,
+        op: 'add',
+        contentXNorm: 0.5,
+        boxYNorm: 0.6,
+        boxBaseYNorm: 0.42,
+        stackH: 0.36,
+        drawerH: 0.165,
+        drawerGap: 0.03,
+        drawerHeightM: 0.165,
+      },
+      {
+        kind: 'internal-drawers',
+        boxId: 'sb1',
+        freePlacement: false,
+        blockedReason: null,
+        op: 'add',
+        removeId: null,
+        contentXNorm: 0.5,
+        boxYNorm: 0.6,
+        boxBaseYNorm: 0.42,
+        drawerHeightM: 0.165,
+        drawerH: 0.165,
+        stackH: 0.36,
+        drawerGap: 0.03,
+      }
+    ),
   });
 
   assert.deepEqual(box.shelves, [{ id: 'legacy-string-shelf', yNorm: '0.4' }]);

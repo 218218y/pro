@@ -32,6 +32,7 @@ import {
   ensureSketchModuleBoxes,
   findSketchModuleBoxById,
 } from './canvas_picking_sketch_box_content_commit.js';
+import { decodeSketchBoxContentCommand } from './canvas_picking_sketch_box_content_command.js';
 
 type RecordMap = Record<string, unknown>;
 
@@ -215,8 +216,19 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
     const boxes = ensureSketchModuleBoxes(args.cfg);
     const box = findSketchModuleBoxById(boxes, hoverBoxId, { freePlacement: false });
     if (!box) return true;
+    const decoded = decodeSketchBoxContentCommand({
+      record: args.hoverRec,
+      expectedContentKind: 'drawers',
+      expectedBoxId: hoverBoxId,
+      expectedFreePlacement: false,
+    });
+    if (!decoded.ok || decoded.value.kind !== 'internal-drawers') {
+      args.writeSketchHover(args.App, null);
+      return true;
+    }
+    const command = decoded.value;
     if (
-      boxContentHover?.op !== 'remove' &&
+      command.op !== 'remove' &&
       blockSketchBoxStackCommitIfRemovedSide({
         App: args.App,
         cfg: args.cfg,
@@ -228,19 +240,7 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
       return true;
     }
     if (
-      boxContentHover?.op !== 'remove' &&
-      blockSketchBoxStackCommitIfRemovedSide({
-        App: args.App,
-        cfg: args.cfg,
-        box,
-        hoverHost: args.hoverHost,
-        writeSketchHover: args.writeSketchHover,
-      })
-    ) {
-      return true;
-    }
-    if (
-      boxContentHover?.op !== 'remove' &&
+      command.op !== 'remove' &&
       blockSketchStackCommitIfHexCell({
         App: args.App,
         cfg: args.cfg,
@@ -250,18 +250,18 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
       return true;
     }
     if (
-      boxContentHover?.op !== 'remove' &&
+      command.op !== 'remove' &&
       blockSketchStackCommitIfCollision({
         App: args.App,
         contentKind: 'drawers',
-        blockedReason: boxContentHover?.blockedReason,
+        blockedReason: command.blockedReason,
         writeSketchHover: args.writeSketchHover,
       })
     ) {
       return true;
     }
     if (
-      boxContentHover?.op !== 'remove' &&
+      command.op !== 'remove' &&
       blockSketchStackCommitIfNoRoom({
         App: args.App,
         contentKind: 'drawers',
@@ -292,8 +292,19 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
     const boxes = ensureSketchModuleBoxes(args.cfg);
     const box = findSketchModuleBoxById(boxes, hoverBoxId, { freePlacement: false });
     if (!box) return true;
+    const decoded = decodeSketchBoxContentCommand({
+      record: args.hoverRec,
+      expectedContentKind: 'ext_drawers',
+      expectedBoxId: hoverBoxId,
+      expectedFreePlacement: false,
+    });
+    if (!decoded.ok || decoded.value.kind !== 'sketch-external-drawers') {
+      args.writeSketchHover(args.App, null);
+      return true;
+    }
+    const command = decoded.value;
     if (
-      boxContentHover?.op !== 'remove' &&
+      command.op !== 'remove' &&
       blockSketchStackCommitIfHexCell({
         App: args.App,
         cfg: args.cfg,
@@ -303,18 +314,18 @@ export function tryCommitSketchModuleStackTool(args: CommitSketchModuleStackTool
       return true;
     }
     if (
-      boxContentHover?.op !== 'remove' &&
+      command.op !== 'remove' &&
       blockSketchStackCommitIfCollision({
         App: args.App,
         contentKind: 'ext_drawers',
-        blockedReason: boxContentHover?.blockedReason,
+        blockedReason: command.blockedReason,
         writeSketchHover: args.writeSketchHover,
       })
     ) {
       return true;
     }
     if (
-      boxContentHover?.op !== 'remove' &&
+      command.op !== 'remove' &&
       blockSketchStackCommitIfNoRoom({
         App: args.App,
         contentKind: 'ext_drawers',

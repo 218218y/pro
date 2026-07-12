@@ -1,4 +1,8 @@
 import type { UnknownRecord } from '../../../types';
+import {
+  createSketchBoxContentCommandEnvelope,
+  type SketchBoxContentCommand,
+} from './canvas_picking_sketch_box_content_command.js';
 
 type RecordMap = UnknownRecord;
 
@@ -60,6 +64,7 @@ type ManualLayoutSketchBoxContentHoverArgs = {
   doorLeftId?: string | null;
   doorRightId?: string | null;
   blockedReason?: string | null;
+  command?: SketchBoxContentCommand | null;
 };
 
 type ManualLayoutSketchStackHoverArgs = {
@@ -89,6 +94,61 @@ function withDefined(target: RecordMap, patch: Record<string, unknown>): RecordM
     if (value !== undefined) target[key] = value;
   }
   return target;
+}
+
+function projectSketchBoxContentCommand(command: SketchBoxContentCommand | null | undefined): RecordMap {
+  if (!command) return {};
+  const common: RecordMap = {
+    op: command.op,
+    boxId: command.boxId,
+    freePlacement: command.freePlacement,
+    contentXNorm: command.contentXNorm,
+    boxYNorm: command.boxYNorm,
+    __wpBlockedReason: command.blockedReason ?? undefined,
+  };
+  if (command.kind === 'internal-drawers') {
+    return {
+      ...common,
+      removeId: command.removeId ?? undefined,
+      boxBaseYNorm: command.boxBaseYNorm,
+      drawerHeightM: command.drawerHeightM,
+      drawerH: command.drawerH,
+      stackH: command.stackH,
+      drawerGap: command.drawerGap,
+    };
+  }
+  if (command.kind === 'sketch-external-drawers') {
+    return {
+      ...common,
+      removeId: command.removeId ?? undefined,
+      boxBaseYNorm: command.boxBaseYNorm,
+      drawerHeightM: command.drawerHeightM,
+      drawerH: command.drawerH,
+      stackH: command.stackH,
+      drawerCount: command.drawerCount,
+    };
+  }
+  if (command.kind === 'regular-external-drawers') {
+    return {
+      ...common,
+      removeId: command.removeId ?? undefined,
+      boxBaseYNorm: command.boxBaseYNorm,
+      drawerHeightM: command.drawerHeightM,
+      drawerCount: command.drawerCount,
+      hasShoeDrawer: command.hasShoeDrawer,
+    };
+  }
+  if (command.kind === 'single-door') {
+    return {
+      ...common,
+      hinge: command.hinge,
+      doorId: command.doorId ?? undefined,
+    };
+  }
+  if (command.kind === 'door-hinge') {
+    return { ...common, doorId: command.doorId };
+  }
+  return common;
 }
 
 function createManualLayoutSketchHoverBase(args: ManualLayoutSketchHoverBaseArgs): RecordMap {
@@ -121,8 +181,13 @@ export function createManualLayoutSketchBoxHoverRecord(args: ManualLayoutSketchB
 export function createManualLayoutSketchBoxContentHoverRecord(
   args: ManualLayoutSketchBoxContentHoverArgs
 ): RecordMap {
+  const commandProjection = projectSketchBoxContentCommand(args.command);
   return withDefined(
-    createManualLayoutSketchHoverBase({ host: args.host, kind: 'box_content', op: args.op }),
+    createManualLayoutSketchHoverBase({
+      host: args.host,
+      kind: 'box_content',
+      op: args.command?.op ?? args.op,
+    }),
     {
       contentKind: args.contentKind,
       boxId: args.boxId,
@@ -154,6 +219,8 @@ export function createManualLayoutSketchBoxContentHoverRecord(
       doorLeftId: args.doorLeftId ?? undefined,
       doorRightId: args.doorRightId ?? undefined,
       __wpBlockedReason: args.blockedReason ?? undefined,
+      ...commandProjection,
+      boxContentCommand: args.command ? createSketchBoxContentCommandEnvelope(args.command) : undefined,
     }
   );
 }

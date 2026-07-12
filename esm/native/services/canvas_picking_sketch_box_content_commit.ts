@@ -1,4 +1,9 @@
 import { readManualLayoutSketchBoxContentHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
+import {
+  decodeSketchBoxContentCommand,
+  isStrictSketchBoxContentKind,
+  type SketchBoxContentCommand,
+} from './canvas_picking_sketch_box_content_command.js';
 import { blockRemovableSideContentBuildIfSketchBoxSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
 import { tryCommitSketchBoxAdornment } from './canvas_picking_sketch_box_content_commit_adornments.js';
 import type { CommitSketchModuleBoxContentArgs } from './canvas_picking_sketch_box_content_commit_contracts.js';
@@ -43,17 +48,29 @@ export function commitSketchModuleBoxContent(
   args: CommitSketchModuleBoxContentArgs
 ): Record<string, unknown> | null {
   const hoverIntent = readManualLayoutSketchBoxContentHoverIntent(args.hoverRec);
-  const hoverOp = hoverIntent?.op || 'add';
+  let command: SketchBoxContentCommand | null = null;
+  if (isStrictSketchBoxContentKind(args.contentKind)) {
+    const decoded = decodeSketchBoxContentCommand({
+      record: args.hoverRec,
+      expectedContentKind: args.contentKind,
+      expectedBoxId: args.boxId,
+      expectedFreePlacement: args.box.freePlacement === true,
+    });
+    if (!decoded.ok) return null;
+    command = decoded.value;
+    if (command.blockedReason) return null;
+  }
+  const hoverOp = command?.op || hoverIntent?.op || 'add';
 
   if (blockSideBlockingBoxContentIfSideMissing({ ...args, hoverOp })) return null;
 
   const adornment = tryCommitSketchBoxAdornment({ commitArgs: args, hoverIntent, hoverOp });
   if (adornment.handled) return adornment.nextHover;
 
-  const drawers = tryCommitSketchBoxDrawerContent({ commitArgs: args, hoverIntent, hoverOp });
+  const drawers = tryCommitSketchBoxDrawerContent({ commitArgs: args, command, hoverOp });
   if (drawers.handled) return drawers.nextHover;
 
-  const doors = tryCommitSketchBoxDoorContent({ commitArgs: args, hoverIntent, hoverOp });
+  const doors = tryCommitSketchBoxDoorContent({ commitArgs: args, command, hoverOp });
   if (doors.handled) return doors.nextHover;
 
   const vertical = tryCommitSketchBoxVerticalContent({ commitArgs: args, hoverIntent, hoverOp });

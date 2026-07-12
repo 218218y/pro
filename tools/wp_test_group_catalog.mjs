@@ -85,6 +85,23 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/planar_reflector_quality_contracts.test.js',
     ]),
   }),
+  'sketch-box-content-protocol': Object.freeze({
+    description: 'Versioned preview/commit commands for sketch-box drawers and doors.',
+    kind: 'runtime-integration',
+    owners: Object.freeze(['services/canvas-picking', 'features/sketch-box']),
+    runner: 'tsx-test',
+    files: Object.freeze([
+      'tests/canvas_picking_sketch_box_content_command_runtime.test.ts',
+      'tests/canvas_picking_sketch_box_content_commit_runtime.test.ts',
+      'tests/canvas_picking_sketch_commit_geometry_runtime.test.ts',
+      'tests/canvas_picking_sketch_stack_runtime.test.ts',
+      'tests/canvas_picking_sketch_free_commit_runtime.test.ts',
+      'tests/canvas_picking_shoe_drawer_base_auto_none_runtime.test.ts',
+      'tests/canvas_picking_sketch_box_door_preview_runtime.test.ts',
+      'tests/canvas_picking_sketch_free_box_content_preview_runtime.test.ts',
+      'tests/canvas_picking_manual_layout_hover_apply_box_content_runtime.test.ts',
+    ]),
+  }),
   'order-pdf-overlay-core': Object.freeze({
     description: 'Core order-PDF overlay state, commands, interactions, and text behavior.',
     kind: 'ui-runtime-integration',

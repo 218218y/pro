@@ -10,6 +10,7 @@ import {
   restoreShoeDrawerBaseIfNoShoeDrawersRemain,
 } from '../esm/native/services/canvas_picking_shoe_drawer_base_auto_none.ts';
 import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../esm/native/features/shoe_drawer_base_constraint.ts';
+import { withSketchBoxContentCommand } from './_sketch_box_content_command_fixture.ts';
 
 function createAppHarness(baseType = 'plinth') {
   const state: Record<string, any> = {
@@ -158,25 +159,41 @@ test('free-box regular external shoe drawer commit also auto-selects base none',
       },
     ],
   };
-  App.render.cache.__lastSketchHover = {
-    ts: Date.now(),
-    tool: 'ext_drawers_regular_free_box',
-    moduleKey: 2,
-    isBottom: false,
-    hostModuleKey: 2,
-    hostIsBottom: false,
-    kind: 'box_content',
-    contentKind: 'regular_ext_drawers',
-    freePlacement: true,
-    boxId: 'free-shoe-box',
-    op: 'add',
-    contentXNorm: 0.5,
-    boxYNorm: 0.5,
-    boxBaseYNorm: 0,
-    drawerCount: 0,
-    hasShoeDrawer: true,
-    drawerHeightM: 0.2,
-  };
+  App.render.cache.__lastSketchHover = withSketchBoxContentCommand(
+    {
+      ts: Date.now(),
+      tool: 'ext_drawers_regular_free_box',
+      moduleKey: 2,
+      isBottom: false,
+      hostModuleKey: 2,
+      hostIsBottom: false,
+      kind: 'box_content',
+      contentKind: 'regular_ext_drawers',
+      freePlacement: true,
+      boxId: 'free-shoe-box',
+      op: 'add',
+      contentXNorm: 0.5,
+      boxYNorm: 0.5,
+      boxBaseYNorm: 0,
+      drawerCount: 0,
+      hasShoeDrawer: true,
+      drawerHeightM: 0.2,
+    },
+    {
+      kind: 'regular-external-drawers',
+      boxId: 'free-shoe-box',
+      freePlacement: true,
+      blockedReason: null,
+      op: 'add',
+      removeId: null,
+      contentXNorm: 0.5,
+      boxYNorm: 0.5,
+      boxBaseYNorm: 0,
+      drawerCount: 0,
+      hasShoeDrawer: true,
+      drawerHeightM: 0.2,
+    }
+  );
 
   const handled = tryCommitSketchBoxRegularExternalDrawersHover(App);
 
@@ -283,26 +300,42 @@ test('removing the final free-box shoe drawer restores the previous forced base'
       },
     ],
   };
-  App.render.cache.__lastSketchHover = {
-    ts: Date.now(),
-    tool: 'ext_drawers_regular_free_box',
-    moduleKey: 2,
-    isBottom: false,
-    hostModuleKey: 2,
-    hostIsBottom: false,
-    kind: 'box_content',
-    contentKind: 'regular_ext_drawers',
-    freePlacement: true,
-    boxId: 'free-shoe-box',
-    op: 'remove',
-    removeId: 'drawer-with-shoe',
-    contentXNorm: 0.5,
-    boxYNorm: 0.5,
-    boxBaseYNorm: 0,
-    drawerCount: 0,
-    hasShoeDrawer: false,
-    drawerHeightM: 0.2,
-  };
+  App.render.cache.__lastSketchHover = withSketchBoxContentCommand(
+    {
+      ts: Date.now(),
+      tool: 'ext_drawers_regular_free_box',
+      moduleKey: 2,
+      isBottom: false,
+      hostModuleKey: 2,
+      hostIsBottom: false,
+      kind: 'box_content',
+      contentKind: 'regular_ext_drawers',
+      freePlacement: true,
+      boxId: 'free-shoe-box',
+      op: 'remove',
+      removeId: 'drawer-with-shoe',
+      contentXNorm: 0.5,
+      boxYNorm: 0.5,
+      boxBaseYNorm: 0,
+      drawerCount: 0,
+      hasShoeDrawer: false,
+      drawerHeightM: 0.2,
+    },
+    {
+      kind: 'regular-external-drawers',
+      boxId: 'free-shoe-box',
+      freePlacement: true,
+      blockedReason: null,
+      op: 'remove',
+      removeId: 'drawer-with-shoe',
+      contentXNorm: 0.5,
+      boxYNorm: 0.5,
+      boxBaseYNorm: 0,
+      drawerCount: 0,
+      hasShoeDrawer: false,
+      drawerHeightM: 0.2,
+    }
+  );
 
   const handled = tryCommitSketchBoxRegularExternalDrawersHover(App);
 

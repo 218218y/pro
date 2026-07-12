@@ -1,19 +1,19 @@
 # Test portfolio audit
 
-Generated: 2026-07-11T21:46:49.466Z
+Generated: 2026-07-12T04:07:59.124Z
 
 ## Summary
 
-- Test files classified: 1183
+- Test files classified: 1184
 - Package script test references: 442
-- Catalog test references: 77
-- Total explicit test references: 519
+- Catalog test references: 86
+- Total explicit test references: 528
 
 | Category         | Count |
 | ---------------- | ----: |
 | contract         |   386 |
 | runtime-unit     |   305 |
-| integration      |   436 |
+| integration      |   437 |
 | e2e-smoke        |     7 |
 | perf-smoke       |     9 |
 | legacy-migration |    40 |

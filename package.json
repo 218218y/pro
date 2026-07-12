@@ -302,7 +302,8 @@
     "preview:store2:site2": "node tools/wp_release_site.js --store store-2 --variant site2 --allow-draft",
     "e2e:critical": "node tools/wp_playwright_preflight.js && playwright test -c playwright.config.ts --grep @critical",
     "e2e:critical:list": "playwright test -c playwright.config.ts --grep @critical --list",
-    "test:mirror-runtime": "node tools/wp_test_group.mjs mirror-runtime"
+    "test:mirror-runtime": "node tools/wp_test_group.mjs mirror-runtime",
+    "test:sketch-box-content-protocol": "node tools/wp_test_group.mjs sketch-box-content-protocol"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

@@ -9,6 +9,7 @@ import {
 } from '../esm/native/services/canvas_picking_sketch_commit_geometry.ts';
 import { commitSketchModuleBoxContent } from '../esm/native/services/canvas_picking_sketch_box_content_commit.ts';
 import { commitSketchFreePlacementHoverRecord } from '../esm/native/services/canvas_picking_sketch_free_commit.ts';
+import { withSketchBoxContentCommand } from './_sketch_box_content_command_fixture.ts';
 
 test('sketch commit geometry accepts only finite runtime numbers and does not parse draft strings', () => {
   assert.equal(readSketchCommitNumber(0.42), 0.42);
@@ -81,16 +82,37 @@ test('sketch-box content commit preserves valid existing content when pruning mi
     box: box as never,
     boxId: 'sb1',
     contentKind: 'drawers',
-    hoverRec: {
-      kind: 'box_content',
-      contentKind: 'drawers',
-      boxId: 'sb1',
-      op: 'add',
-      boxYNorm: 0.6,
-      boxBaseYNorm: 0.42,
-      contentXNorm: 0.4,
-      drawerHeightM: 0.18,
-    },
+    hoverRec: withSketchBoxContentCommand(
+      {
+        kind: 'box_content',
+        contentKind: 'drawers',
+        boxId: 'sb1',
+        freePlacement: false,
+        op: 'add',
+        boxYNorm: 0.6,
+        boxBaseYNorm: 0.42,
+        contentXNorm: 0.4,
+        drawerHeightM: 0.18,
+        drawerH: 0.18,
+        stackH: 0.39,
+        drawerGap: 0.03,
+      },
+      {
+        kind: 'internal-drawers',
+        boxId: 'sb1',
+        freePlacement: false,
+        blockedReason: null,
+        op: 'add',
+        removeId: null,
+        boxYNorm: 0.6,
+        boxBaseYNorm: 0.42,
+        contentXNorm: 0.4,
+        drawerHeightM: 0.18,
+        drawerH: 0.18,
+        stackH: 0.39,
+        drawerGap: 0.03,
+      }
+    ),
   });
 
   const drawers = box.drawers as Array<Record<string, unknown>>;

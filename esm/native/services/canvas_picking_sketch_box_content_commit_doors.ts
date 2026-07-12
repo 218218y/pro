@@ -1,5 +1,5 @@
 import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import type { ManualLayoutSketchBoxContentHoverIntent } from './canvas_picking_manual_layout_sketch_hover_intent.js';
+import type { SketchBoxContentCommand } from './canvas_picking_sketch_box_content_command.js';
 import {
   readSketchBoxDividers,
   readSketchBoxHorizontalDividers,
@@ -60,14 +60,14 @@ function resolveSegmentContext(
 
 export function tryCommitSketchBoxDoorContent(args: {
   commitArgs: CommitSketchModuleBoxContentArgs;
-  hoverIntent: ManualLayoutSketchBoxContentHoverIntent | null;
+  command: SketchBoxContentCommand | null;
   hoverOp: 'add' | 'remove';
 }): { handled: boolean; nextHover: null } {
-  const { commitArgs, hoverIntent, hoverOp } = args;
-  const contentXNorm = hoverIntent?.contentXNorm ?? null;
-  const boxYNorm = hoverIntent?.boxYNorm ?? null;
+  const { commitArgs, command, hoverOp } = args;
 
   if (commitArgs.contentKind === 'door') {
+    if (command?.kind !== 'single-door') return { handled: false, nextHover: null };
+    const { contentXNorm, boxYNorm } = command;
     const { boxCenterX, innerW, boxCenterY, innerH, segments, verticalSegments } = resolveSegmentContext(
       commitArgs.box,
       {
@@ -86,7 +86,7 @@ export function tryCommitSketchBoxDoorContent(args: {
         innerH,
         xNorm: contentXNorm,
         yNorm: boxYNorm,
-        doorId: hoverIntent?.doorId ?? commitArgs.hoverRec.doorId,
+        doorId: command.doorId,
       });
     } else {
       upsertSketchBoxDoorForSegment({
@@ -99,14 +99,16 @@ export function tryCommitSketchBoxDoorContent(args: {
         innerH,
         xNorm: contentXNorm,
         yNorm: boxYNorm,
-        hinge: hoverIntent?.hinge === 'right' ? 'right' : 'left',
-        doorId: hoverIntent?.doorId ?? commitArgs.hoverRec.doorId,
+        hinge: command.hinge,
+        doorId: command.doorId,
       });
     }
     return { handled: true, nextHover: null };
   }
 
   if (commitArgs.contentKind === 'double_door') {
+    if (command?.kind !== 'double-door') return { handled: false, nextHover: null };
+    const { contentXNorm, boxYNorm } = command;
     const { boxCenterX, innerW, boxCenterY, innerH, segments, verticalSegments } = resolveSegmentContext(
       commitArgs.box,
       {
@@ -143,6 +145,8 @@ export function tryCommitSketchBoxDoorContent(args: {
   }
 
   if (commitArgs.contentKind === 'door_hinge') {
+    if (command?.kind !== 'door-hinge') return { handled: false, nextHover: null };
+    const { contentXNorm, boxYNorm } = command;
     const { boxCenterX, innerW, boxCenterY, innerH, segments, verticalSegments } = resolveSegmentContext(
       commitArgs.box,
       {
@@ -160,7 +164,7 @@ export function tryCommitSketchBoxDoorContent(args: {
       innerH,
       xNorm: contentXNorm,
       yNorm: boxYNorm,
-      doorId: hoverIntent?.doorId ?? null,
+      doorId: command.doorId,
     });
     return { handled: true, nextHover: null };
   }

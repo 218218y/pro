@@ -20,6 +20,10 @@ import {
 } from './canvas_picking_manual_layout_config_ops.js';
 import { commitSketchModuleShelf } from './canvas_picking_sketch_module_vertical_content.js';
 import { toastSketchBoxContentBlocked } from './canvas_picking_sketch_box_content_blocked.js';
+import {
+  decodeSketchBoxContentCommand,
+  isStrictSketchBoxContentKind,
+} from './canvas_picking_sketch_box_content_command.js';
 
 type RecordMap = Record<string, unknown>;
 type ModuleKey = number | 'corner' | `corner:${number}` | null;
@@ -69,8 +73,22 @@ export function tryApplyManualLayoutSketchHoverClick(args: ManualLayoutSketchCli
       contentKind === 'double_door' ||
       contentKind === 'door_hinge'
     ) {
-      if (boxContentHover.blockedReason) {
-        toastSketchBoxContentBlocked(App, contentKind, boxContentHover.blockedReason);
+      let blockedReason = boxContentHover.blockedReason;
+      if (isStrictSketchBoxContentKind(contentKind)) {
+        const decoded = decodeSketchBoxContentCommand({
+          record: __hoverRec,
+          expectedContentKind: contentKind,
+          expectedBoxId: boxContentHover.boxId,
+          expectedFreePlacement: false,
+        });
+        if (!decoded.ok) {
+          __wp_clearSketchHover(App);
+          return true;
+        }
+        blockedReason = decoded.value.blockedReason;
+      }
+      if (blockedReason) {
+        toastSketchBoxContentBlocked(App, contentKind, blockedReason);
         __wp_clearSketchHover(App);
         return true;
       }

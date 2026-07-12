@@ -5,7 +5,38 @@ import type {
   SketchBoxToggleHoverMode,
 } from './canvas_picking_sketch_box_content_commit_contracts.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
+import {
+  createSketchBoxContentCommandEnvelope,
+  decodeSketchBoxContentCommand,
+  type InternalDrawersCommand,
+  type SketchExternalDrawersCommand,
+} from './canvas_picking_sketch_box_content_command.js';
 import { readRecordNumber } from './canvas_picking_sketch_box_content_commit_records.js';
+
+function buildToggledDrawerCommand(args: {
+  hoverRec: RecordMap;
+  boxId: string;
+  contentKind: 'drawers' | 'ext_drawers';
+  freePlacement: boolean;
+  op: 'add' | 'remove';
+  removeId: string;
+}): InternalDrawersCommand | SketchExternalDrawersCommand | null {
+  const decoded = decodeSketchBoxContentCommand({
+    record: args.hoverRec,
+    expectedContentKind: args.contentKind,
+    expectedBoxId: args.boxId,
+    expectedFreePlacement: args.freePlacement,
+  });
+  if (!decoded.ok) return null;
+  if (decoded.value.kind !== 'internal-drawers' && decoded.value.kind !== 'sketch-external-drawers')
+    return null;
+  return {
+    ...decoded.value,
+    op: args.op,
+    removeId: args.op === 'remove' ? args.removeId : null,
+    blockedReason: null,
+  };
+}
 
 export function buildFreeToggleHover(args: {
   hoverRec: RecordMap;
@@ -17,7 +48,17 @@ export function buildFreeToggleHover(args: {
   drawerHeightM?: number | null;
   drawerH?: number | null;
   hasShoeDrawer?: boolean | null;
-}): RecordMap {
+}): RecordMap | null {
+  if (args.contentKind === 'regular_ext_drawers') return null;
+  const command = buildToggledDrawerCommand({
+    hoverRec: args.hoverRec,
+    boxId: args.boxId,
+    contentKind: args.contentKind,
+    freePlacement: true,
+    op: args.op,
+    removeId: args.removeId,
+  });
+  if (!command) return null;
   return {
     ...args.hoverRec,
     ts: Date.now(),
@@ -32,6 +73,7 @@ export function buildFreeToggleHover(args: {
     ...(args.drawerHeightM != null ? { drawerHeightM: args.drawerHeightM } : {}),
     ...(args.drawerH != null ? { drawerH: args.drawerH } : {}),
     ...(args.hasShoeDrawer != null ? { hasShoeDrawer: args.hasShoeDrawer } : {}),
+    boxContentCommand: createSketchBoxContentCommandEnvelope(command),
   };
 }
 
@@ -46,7 +88,17 @@ export function buildManualToggleHover(args: {
   drawerHeightM?: number | null;
   drawerH?: number | null;
   hasShoeDrawer?: boolean | null;
-}): RecordMap {
+}): RecordMap | null {
+  if (args.contentKind === 'regular_ext_drawers') return null;
+  const command = buildToggledDrawerCommand({
+    hoverRec: args.hoverRec,
+    boxId: args.boxId,
+    contentKind: args.contentKind,
+    freePlacement: false,
+    op: args.op,
+    removeId: args.removeId,
+  });
+  if (!command) return null;
   return createManualLayoutSketchBoxContentHoverRecord({
     host: args.hoverHost,
     contentKind: args.contentKind,
@@ -66,6 +118,7 @@ export function buildManualToggleHover(args: {
     hasShoeDrawer:
       args.hasShoeDrawer ??
       (args.hoverRec.hasShoeDrawer === true ? true : args.hoverRec.hasShoeDrawer === false ? false : null),
+    command,
   });
 }
 
