@@ -18,7 +18,9 @@ function assertIncludesInOrder(src, parts) {
 
 const renderLoop = read('esm/native/platform/render_loop_impl.ts');
 const renderLoopRuntime = read('esm/native/platform/render_loop_impl_runtime.ts');
-const renderLoopMirror = read('esm/native/platform/render_loop_mirror_driver.ts');
+const renderLoopMirrorDriver = read('esm/native/platform/render_loop_mirror_driver.ts');
+const renderLoopMirrorTracking = read('esm/native/platform/render_loop_mirror_tracking.ts');
+const renderLoopMirrorCubePass = read('esm/native/platform/render_loop_mirror_cube_pass.ts');
 const renderLoopFrontOverlay = read('esm/native/platform/render_loop_impl_front_overlay.ts');
 const kernel = read('esm/native/kernel/kernel.ts');
 const kernelSnapshotStore = [
@@ -73,9 +75,16 @@ test('[wave4] render loop consolidates front-overlay and mirror hot-path state t
   assert.match(renderLoopFrontOverlay, /export function createRenderLoopFrontOverlayHelpers\(/);
   assert.match(renderLoopFrontOverlay, /function frontOverlayState\(/);
   assert.match(renderLoopFrontOverlay, /function collectFrontOverlayNodes\(/);
-  assert.match(renderLoopMirror, /ensureRenderMetaArray<(Any|Unknown)Record>\(A, 'mirrors'\)/);
-  assert.match(renderLoopMirror, /getMirrorHideScratch\(A\)/);
-  assert.match(renderLoopMirror, /getShadowMap\(A\)/);
+  assert.match(renderLoopMirrorDriver, /resolveTrackedMirrorState/);
+  assert.match(renderLoopMirrorDriver, /runPlanarMirrorSchedule/);
+  assert.match(renderLoopMirrorDriver, /runMirrorCubePass/);
+  assert.match(renderLoopMirrorTracking, /ensureRenderMetaArray<(Any|Unknown)Record>\(app, 'mirrors'\)/);
+  assert.match(renderLoopMirrorCubePass, /getMirrorHideScratch\(app\)/);
+  assert.match(renderLoopMirrorCubePass, /getShadowMap\(app\)/);
+  assert.doesNotMatch(
+    renderLoopMirrorDriver,
+    /ensureRenderMetaArray|refreshTrackedPlanarMirrorSurfacesNow|getMirrorCubeCamera/
+  );
   assert.doesNotMatch(renderLoop, /renderBag\.meta/);
   assert.doesNotMatch(renderLoop, /renderBag\['__mirrorHideScratch'\]/);
 });

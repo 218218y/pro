@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-07-11T19:10:58.224Z",
+  "generatedAt": "2026-07-11T21:46:49.466Z",
   "totals": {
-    "tests": 1182,
-    "packageTestReferences": 451,
-    "catalogTestReferences": 61,
-    "totalTestReferences": 512
+    "tests": 1183,
+    "packageTestReferences": 442,
+    "catalogTestReferences": 77,
+    "totalTestReferences": 519
   },
   "categories": {
     "contract": 386,
     "runtime-unit": 305,
-    "integration": 435,
+    "integration": 436,
     "e2e-smoke": 7,
     "perf-smoke": 9,
     "legacy-migration": 40
@@ -2379,6 +2379,10 @@
     },
     {
       "file": "tests/order_pdf_overlay_draft_support_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_overlay_editor_mode_state_runtime.test.ts",
       "category": "integration"
     },
     {

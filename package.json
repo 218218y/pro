@@ -193,7 +193,7 @@
     "vite:build:modules": "vite --config vite.config.mjs build --mode modules",
     "vite:dev": "vite --config vite.config.mjs --host --port 5173",
     "wiring:guard": "node tools/wp_wiring_guard.js",
-    "test:order-pdf-surfaces:overlay-core": "node tools/wp_run_tsx_tests.mjs tests/order_pdf_overlay_controller_actions_runtime.test.ts tests/order_pdf_overlay_draft_action_feedback_runtime.test.ts tests/order_pdf_overlay_draft_commands_runtime.test.ts tests/order_pdf_overlay_draft_effects_runtime.test.ts tests/order_pdf_overlay_interactions_runtime.test.ts tests/order_pdf_overlay_runtime_export_runtime.test.ts tests/order_pdf_overlay_text_details_lines_runtime.test.ts tests/order_pdf_overlay_text_runtime.test.ts tests/order_pdf_text_details_merge_support_runtime.test.ts",
+    "test:order-pdf-surfaces:overlay-core": "node tools/wp_test_group.mjs order-pdf-overlay-core",
     "test:order-pdf-surfaces:pdf-render": "node tools/wp_run_tsx_tests.mjs tests/order_pdf_overlay_pdf_import_runtime.test.ts tests/order_pdf_overlay_pdf_render_canvas_runtime.test.ts tests/order_pdf_overlay_pdf_render_cleanup_runtime.test.ts tests/order_pdf_overlay_pdf_render_runtime.test.ts tests/order_pdf_image_pdf_text_layout_runtime.test.ts",
     "test:order-pdf-surfaces:sketch": "node tools/wp_run_tsx_tests.mjs tests/order_pdf_history_shortcuts_runtime.test.ts tests/order_pdf_sketch_draft_persistence_runtime.test.ts tests/order_pdf_sketch_palette_placement_runtime.test.ts tests/order_pdf_sketch_panel_runtime.test.ts tests/order_pdf_sketch_preview_session_runtime.test.ts tests/order_pdf_sketch_shortcuts_runtime.test.ts",
     "test:order-pdf-surfaces:export-overlay": "node tools/wp_run_tsx_tests.mjs tests/order_pdf_overlay_export_ops_runtime.test.ts tests/order_pdf_overlay_export_commands_runtime.test.ts tests/order_pdf_overlay_export_singleflight_runtime.test.ts",
@@ -301,7 +301,8 @@
     "preview:store2": "node tools/wp_release_site.js --store store-2 --variant main --allow-draft",
     "preview:store2:site2": "node tools/wp_release_site.js --store store-2 --variant site2 --allow-draft",
     "e2e:critical": "node tools/wp_playwright_preflight.js && playwright test -c playwright.config.ts --grep @critical",
-    "e2e:critical:list": "playwright test -c playwright.config.ts --grep @critical --list"
+    "e2e:critical:list": "playwright test -c playwright.config.ts --grep @critical --list",
+    "test:mirror-runtime": "node tools/wp_test_group.mjs mirror-runtime"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

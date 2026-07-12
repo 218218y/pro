@@ -4,6 +4,8 @@ This file is intentionally compact. It keeps only current decomposition guard fa
 
 ## Current canonical decomposition facts
 
+- `platform/render_loop_mirror_driver.ts` is a thin frame orchestrator over typed frame policy, tracked-presence, planar-scheduler, and cube-pass owners; planar refresh is independent of cube-camera resources, tracked pruning refreshes the presence cache after compaction, and the cube pass exclusively owns hidden-mirror scratch restoration plus cube telemetry
+- Order PDF editor interaction mode is owned by `ui/react/pdf/order_pdf_overlay_editor_mode_state.ts` as a discriminated reducer; external sketch visibility is reconciled through explicit events, PDF annotation waits for asynchronous sketch close, and page/sketch drawing modes cannot be represented as simultaneously active
 - `services/canvas_picking_interior_hover_layout_family.ts` is now a thin canonical seam over focused `canvas_picking_interior_hover_layout_mode.ts`, `canvas_picking_interior_hover_manual_mode.ts`, `canvas_picking_interior_hover_brace_mode.ts`, and `canvas_picking_interior_hover_layout_family_shared.ts` owners
 - `canvas_picking_paint_flow.ts` is now a thin canonical seam over focused paint-target, paint-shared, paint-mirror, and paint-apply owners
 - `services/canvas_picking_split_hover_helpers.ts` is now a thin canonical seam over focused split-hover bounds/base-key, preview-line policy, and raycast-root owners

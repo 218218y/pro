@@ -69,6 +69,8 @@ The audit is not a snapshot test for every assertion. It protects the control pl
 - refactor stage guard tests must be reachable through the canonical `tools/wp_test_group_catalog.mjs` group used by one short package facade;
 - named test groups must not contain duplicate or missing files.
 
-Large named groups belong in `tools/wp_test_group_catalog.mjs`, not in multi-thousand-character `package.json` commands. `tools/wp_test_group.mjs` validates every member before spawning Node's test runner, and the portfolio audit reads the same catalog as its source of truth.
+Large named groups belong in `tools/wp_test_group_catalog.mjs`, not in multi-thousand-character `package.json` commands. Each group declares its verification `kind`, canonical `owners`, runner (`node-test` or `tsx-test`), and file membership. `tools/wp_test_group.mjs` validates every member before spawning the matching Node runner, and the portfolio audit reads the same catalog as its source of truth.
+
+Current centralized runtime lanes include `mirror-runtime` and `order-pdf-overlay-core`; package scripts remain short facades and do not duplicate their file lists.
 
 This keeps the test suite useful as architecture changes instead of turning it into a museum with flaky lighting.

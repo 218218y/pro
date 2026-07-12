@@ -1,10 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef } from 'react';
 import type { MutableRefObject, PointerEvent as ReactPointerEvent, PointerEventHandler } from 'react';
 
 import type {
   OrderPdfOverlayEditorStageModel,
   OrderPdfOverlaySketchModel,
 } from './order_pdf_overlay_editor_surface_contracts.js';
+import {
+  createOrderPdfOverlayEditorModeState,
+  isOrderPdfPageAnnotationModeOpen,
+  orderPdfOverlayEditorModeReducer,
+} from './order_pdf_overlay_editor_mode_state.js';
 import { revealOrderPdfSketchPreviewInStage } from './order_pdf_overlay_sketch_preview_reveal_runtime.js';
 import {
   captureStagePointerDown,
@@ -46,7 +51,12 @@ export function useOrderPdfOverlayEditorModes(args: {
     onClose: onCloseSketchPreview,
   } = sketch;
   const { onPointerDownCapture, onPointerMoveCapture, onPointerUpCapture, onPointerCancelCapture } = stage;
-  const [pdfPageAnnotationOpen, setPdfPageAnnotationOpen] = useState(false);
+  const [interactionMode, dispatchInteractionMode] = useReducer(
+    orderPdfOverlayEditorModeReducer,
+    sketchOpen,
+    createOrderPdfOverlayEditorModeState
+  );
+  const pdfPageAnnotationOpen = isOrderPdfPageAnnotationModeOpen(interactionMode);
   const pdfPageAnnotationDismissGestureRef = useRef(createInitialStageGesture());
   const editorStageRef = useRef<HTMLDivElement | null>(null);
   const sketchPreviewPanelRef = useRef<HTMLElement | null>(null);
@@ -54,7 +64,7 @@ export function useOrderPdfOverlayEditorModes(args: {
 
   const closePdfPageAnnotationMode = useCallback(() => {
     resetStageGesture(pdfPageAnnotationDismissGestureRef.current);
-    setPdfPageAnnotationOpen(false);
+    dispatchInteractionMode({ type: 'close-pdf-page-annotation' });
   }, []);
 
   const togglePdfPageAnnotationMode = useCallback(() => {
@@ -62,15 +72,20 @@ export function useOrderPdfOverlayEditorModes(args: {
       closePdfPageAnnotationMode();
       return;
     }
+    dispatchInteractionMode({ type: 'toggle-pdf-page-annotation' });
     if (sketchOpen) onCloseSketchPreview();
-    setPdfPageAnnotationOpen(true);
   }, [closePdfPageAnnotationMode, onCloseSketchPreview, pdfPageAnnotationOpen, sketchOpen]);
 
   const toggleSketchPreview = useCallback(() => {
     pendingSketchPreviewRevealRef.current = !sketchOpen;
-    if (pdfPageAnnotationOpen) closePdfPageAnnotationMode();
+    dispatchInteractionMode({ type: 'prepare-sketch-preview-toggle' });
+    if (pdfPageAnnotationOpen) resetStageGesture(pdfPageAnnotationDismissGestureRef.current);
     onToggleSketchPreview();
-  }, [closePdfPageAnnotationMode, onToggleSketchPreview, pdfPageAnnotationOpen, sketchOpen]);
+  }, [onToggleSketchPreview, pdfPageAnnotationOpen, sketchOpen]);
+
+  useEffect(() => {
+    dispatchInteractionMode({ type: 'reconcile-sketch-visibility', open: sketchOpen });
+  }, [sketchOpen]);
 
   useEffect(() => {
     if (!sketchOpen) {
@@ -141,7 +156,7 @@ export function useOrderPdfOverlayEditorModes(args: {
         if (shouldDismissPdfAnnotation) {
           event.preventDefault();
           event.stopPropagation();
-          setPdfPageAnnotationOpen(false);
+          dispatchInteractionMode({ type: 'close-pdf-page-annotation' });
         }
         return;
       }

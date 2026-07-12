@@ -114,7 +114,7 @@ test('order PDF page annotation mode shows an in-overlay edit status and consume
   assert.match(modes, /createInitialStageGesture/);
   assert.match(modes, /finishStagePointerUp/);
   assert.match(modes, /event\.target === event\.currentTarget/);
-  assert.match(modes, /setPdfPageAnnotationOpen\(false\)/);
+  assert.match(modes, /dispatchInteractionMode\(\{ type: 'close-pdf-page-annotation' \}\)/);
   assert.match(stage, /onPointerUpCapture=\{onStagePointerUpCapture\}/);
 
   assert.match(controls, /לחץ על הרקע הריק כדי לצאת מהציור/);
@@ -199,13 +199,16 @@ test('order PDF page and sketch drawing modes are mutually exclusive', () => {
   assert.match(overlay, /onClose:\s*sketchPreview\.closeSketchPreview/);
 
   assert.match(contracts, /onClose:\s*\(\) => void;/);
-  assert.match(modes, /const togglePdfPageAnnotationMode = useCallback/);
-  assert.match(modes, /if \(sketchOpen\) onCloseSketchPreview\(\);[\s\S]*?setPdfPageAnnotationOpen\(true\);/);
-  assert.match(modes, /const toggleSketchPreview = useCallback/);
-  assert.match(
-    modes,
-    /if \(pdfPageAnnotationOpen\) closePdfPageAnnotationMode\(\);[\s\S]*?onToggleSketchPreview\(\);/
-  );
+  const modeState = readSource('esm/native/ui/react/pdf/order_pdf_overlay_editor_mode_state.ts');
+  assert.match(modes, /useReducer\(/);
+  assert.match(modes, /orderPdfOverlayEditorModeReducer/);
+  assert.match(modes, /reconcile-sketch-visibility/);
+  assert.match(modes, /if \(sketchOpen\) onCloseSketchPreview\(\);/);
+  assert.match(modes, /prepare-sketch-preview-toggle/);
+  assert.match(modeState, /kind: 'pdf-page-annotation'/);
+  assert.match(modeState, /kind: 'sketch-preview'; pendingPdfPageAnnotation: boolean/);
+  assert.match(modeState, /state\.pendingPdfPageAnnotation \? PDF_PAGE_ANNOTATION_MODE : IDLE_MODE/);
+  assert.doesNotMatch(modes, /useState\(/);
   assert.match(controls, /onClick=\{onTogglePdfPageAnnotationMode\}/);
   assert.match(controls, /onClick=\{onToggleSketchPreview\}/);
 });

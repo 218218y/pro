@@ -11,10 +11,10 @@ const contractsSource = readFirstExisting(
   ['../esm/native/runtime/planar_reflector_contracts.ts'],
   import.meta.url
 );
-const driverSource = readFirstExisting(
-  ['../esm/native/platform/render_loop_mirror_driver.ts'],
-  import.meta.url
-);
+const schedulerSource = [
+  readFirstExisting(['../esm/native/platform/render_loop_mirror_shared.ts'], import.meta.url),
+  readFirstExisting(['../esm/native/platform/render_loop_mirror_planar_scheduler.ts'], import.meta.url),
+].join('\n');
 
 test('planar reflectors adapt render-target resolution by mirror size and reflector count', () => {
   assert.match(runtimeSource, /DEFAULT_REFLECTOR_SMALL_LONG_EDGE = 512/);
@@ -37,12 +37,12 @@ test('planar mirror refresh supports budgeted progressive batches', () => {
 });
 
 test('render loop keeps planar reflector motion live with motion-synchronous batches', () => {
-  assert.match(driverSource, /MIRROR_REFLECTOR_MOVE_MAX_UPDATES_PER_FRAME/);
-  assert.match(driverSource, /MIRROR_REFLECTOR_MAX_UPDATES_PER_FRAME/);
-  assert.match(driverSource, /MIRROR_REFLECTOR_MOVE_UPDATE_MS', 0/);
-  assert.match(driverSource, /motionActive \? 8 : 3/);
-  assert.match(driverSource, /__mirrorPlanarCursorIndex/);
-  assert.match(driverSource, /__mirrorPlanarBatchPending/);
-  assert.match(driverSource, /markPlanarBatchPending/);
-  assert.match(driverSource, /maxBudgetMs: resolveRemainingFrameBudgetMs/);
+  assert.match(schedulerSource, /MIRROR_REFLECTOR_MOVE_MAX_UPDATES_PER_FRAME/);
+  assert.match(schedulerSource, /MIRROR_REFLECTOR_MAX_UPDATES_PER_FRAME/);
+  assert.match(schedulerSource, /MIRROR_REFLECTOR_MOVE_UPDATE_MS', 0/);
+  assert.match(schedulerSource, /motionActive \? 8 : 3/);
+  assert.match(schedulerSource, /__mirrorPlanarCursorIndex/);
+  assert.match(schedulerSource, /__mirrorPlanarBatchPending/);
+  assert.match(schedulerSource, /markPlanarBatchPending/);
+  assert.match(schedulerSource, /maxBudgetMs: resolveRemainingFrameBudgetMs/);
 });

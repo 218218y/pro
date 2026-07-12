@@ -724,3 +724,89 @@ test('render loop keeps warmed planar reflections live while motion marks mirror
   assert.equal(slots.__mirrorDirty, false);
   assert.equal(slots.__mirrorWorkPending, false);
 });
+
+test('render loop clears cached mirror presence after periodic pruning removes every tracked mirror', () => {
+  const orphanMirror = { isMesh: true, __taggedMirror: true, visible: false };
+  const app = makeApp([orphanMirror]);
+  const slots = makeSlots({
+    __mirrorLastUpdateMs: 1500,
+    __mirrorMotionActive: false,
+    __frameStartMs: 1990,
+    __mirrorDirty: false,
+    __mirrorPresenceKnown: true,
+    __mirrorPresenceHasMirror: true,
+    __mirrorPresenceCheckedAtMs: 1900,
+    __mirrorTrackedPruneAtMs: 0,
+  });
+  const driver = createDriver(app, slots, { now: 2000 });
+  driver.updateMirrorCube();
+  assert.equal((((app.render as AnyRecord).meta as AnyRecord).mirrors as unknown[]).length, 0);
+  assert.equal(slots.__mirrorPresenceKnown, true);
+  assert.equal(slots.__mirrorPresenceHasMirror, false);
+  assert.equal(slots.__mirrorPresenceCheckedAtMs, 2000);
+  assert.equal(((app.render as AnyRecord).mirrorCubeCamera as AnyRecord).updateCalls, 0);
+});
+
+test('render loop reuses and clears the canonical hidden-mirror scratch list', () => {
+  const staleHiddenMirror = { visible: false };
+  const trackedMirror = { isMesh: true, __taggedMirror: true, parent: {}, visible: true };
+  const app = makeApp([trackedMirror]);
+  const canonicalScratch = [staleHiddenMirror];
+  (app.render as AnyRecord).__mirrorHideScratch = canonicalScratch;
+  const slots = makeSlots({
+    __mirrorLastUpdateMs: -1,
+    __mirrorMotionActive: false,
+    __frameStartMs: 100,
+    __mirrorDirty: true,
+    __mirrorPresenceKnown: true,
+    __mirrorPresenceHasMirror: true,
+    __mirrorPresenceCheckedAtMs: 80,
+    __mirrorTrackedPruneAtMs: 0,
+  });
+  const driver = createDriver(app, slots, { now: 105 });
+  driver.updateMirrorCube();
+  assert.equal(staleHiddenMirror.visible, true, 'stale scratch entries must be restored defensively');
+  assert.equal(trackedMirror.visible, true);
+  assert.equal(canonicalScratch.length, 0, 'the canonical scratch list must be empty after the pass');
+  assert.equal((app.render as AnyRecord).__mirrorHideScratch, canonicalScratch);
+});
+
+test('render loop refreshes planar mirrors without cube-camera resources', () => {
+  const planarMirror = {
+    isMesh: true,
+    __taggedMirror: true,
+    parent: {},
+    visible: true,
+    userData: {
+      __wpMirrorSurface: true,
+      __wpPlanarReflector: makeRenderablePlanarState(0),
+    },
+  };
+  const app = makeApp([planarMirror], {
+    MIRROR_REFLECTOR_ENABLED: true,
+    MIRROR_REFLECTOR_UPDATE_MS: 0,
+    MIRROR_REFLECTOR_MAX_UPDATES_PER_FRAME: 1,
+  });
+  addRenderablePlanarSurfaceRuntime(app, planarMirror);
+  delete (app.render as AnyRecord).mirrorCubeCamera;
+  delete (app.render as AnyRecord).mirrorRenderTarget;
+  const slots = makeSlots({
+    __mirrorLastUpdateMs: -1,
+    __mirrorPlanarLastUpdateMs: -1,
+    __mirrorMotionActive: false,
+    __frameStartMs: 100,
+    __mirrorDirty: true,
+    __mirrorPresenceKnown: true,
+    __mirrorPresenceHasMirror: true,
+    __mirrorPresenceCheckedAtMs: 80,
+    __mirrorTrackedPruneAtMs: 0,
+    __mirrorPlanarInitialBatchPending: false,
+  });
+  const driver = createDriver(app, slots, { now: 105 });
+  driver.updateMirrorCube();
+  const renderer = (app.render as AnyRecord).renderer as AnyRecord;
+  assert.equal(renderer.renderCalls, 1);
+  assert.equal((planarMirror.userData.__wpPlanarReflector as AnyRecord).updateCount, 1);
+  assert.equal(slots.__mirrorPlanarUpdateCount, 1);
+  assert.equal(slots.__mirrorDirty, false);
+});

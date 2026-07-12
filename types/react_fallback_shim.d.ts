@@ -5,6 +5,7 @@ declare module 'react' {
   export type DependencyList = readonly unknown[];
   export type SetStateAction<S> = S | ((prevState: S) => S);
   export type Dispatch<A> = (value: A) => void;
+  export type Reducer<S, A> = (prevState: S, action: A) => S;
   export type RefObject<T> = { readonly current: T | null };
   export type MutableRefObject<T> = { current: T };
   export type LegacyRef<T> = ((instance: T | null) => void) | MutableRefObject<T | null> | null;
@@ -229,6 +230,12 @@ declare module 'react' {
   export function createContext<T>(defaultValue: T): Context<T>;
   export function useContext<T>(context: Context<T>): T;
   export function useState<S>(initialState: S | (() => S)): [S, Dispatch<SetStateAction<S>>];
+  export function useReducer<S, A>(reducer: Reducer<S, A>, initialState: S): [S, Dispatch<A>];
+  export function useReducer<S, I, A>(
+    reducer: Reducer<S, A>,
+    initializerArg: I,
+    initializer: (arg: I) => S
+  ): [S, Dispatch<A>];
   export function useRef<T>(initialValue: T): MutableRefObject<T>;
   export function useRef<T>(initialValue: T | null): MutableRefObject<T | null>;
   export function useMemo<T>(factory: () => T, deps: DependencyList | undefined): T;

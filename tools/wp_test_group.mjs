@@ -21,7 +21,11 @@ export function parseTestGroupArgs(argv = process.argv.slice(2)) {
 export function resolveTestGroupPlan({ projectRoot = process.cwd(), groupName }) {
   const group = readTestGroup(groupName);
   if (!group) throw new Error(`[WardrobePro] unknown test group: ${groupName || '<empty>'}`);
-  if (group.runner !== 'node-test') {
+  const runnerArgs = {
+    'node-test': ['--test'],
+    'tsx-test': ['--import', 'tsx', '--test'],
+  }[group.runner];
+  if (!runnerArgs) {
     throw new Error(`[WardrobePro] unsupported runner for test group ${groupName}: ${group.runner}`);
   }
 
@@ -35,8 +39,10 @@ export function resolveTestGroupPlan({ projectRoot = process.cwd(), groupName })
   return {
     groupName,
     description: group.description,
+    kind: group.kind,
+    owners: group.owners,
     command: process.execPath,
-    args: ['--test', ...group.files],
+    args: [...runnerArgs, ...group.files],
     files: group.files,
   };
 }
@@ -74,6 +80,8 @@ function main() {
   if (flags.print || flags.dryRun) {
     console.log(`[WardrobePro] test group: ${plan.groupName}`);
     console.log(`- ${plan.description}`);
+    console.log(`- kind: ${plan.kind}`);
+    console.log(`- owners: ${plan.owners.join(', ')}`);
     for (const file of plan.files) console.log(`- ${file}`);
   }
   if (!flags.dryRun) runTestGroupPlan(plan);

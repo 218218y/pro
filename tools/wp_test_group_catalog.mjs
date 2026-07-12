@@ -4,6 +4,8 @@
 export const TEST_GROUP_CATALOG = Object.freeze({
   'refactor-stage-guards': Object.freeze({
     description: 'Completed refactor-stage architecture and closeout guards.',
+    kind: 'architecture-guard',
+    owners: Object.freeze(['architecture/control-plane']),
     runner: 'node-test',
     files: Object.freeze([
       'tests/refactor_stage3_guardrails_runtime.test.js',
@@ -69,6 +71,38 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/refactor_stage82_browser_security_headers_guard.test.js',
     ]),
   }),
+  'mirror-runtime': Object.freeze({
+    description: 'Mirror scheduling, planar rendering, recovery, and performance contracts.',
+    kind: 'runtime-integration',
+    owners: Object.freeze(['platform/render-loop', 'runtime/planar-reflector']),
+    runner: 'tsx-test',
+    files: Object.freeze([
+      'tests/render_loop_mirror_driver_runtime.test.ts',
+      'tests/planar_reflector_incremental_rebuild_runtime.test.ts',
+      'tests/planar_reflector_render_pass_runtime.test.ts',
+      'tests/planar_reflector_cube_recovery_runtime.test.ts',
+      'tests/planar_reflector_performance_contracts.test.js',
+      'tests/planar_reflector_quality_contracts.test.js',
+    ]),
+  }),
+  'order-pdf-overlay-core': Object.freeze({
+    description: 'Core order-PDF overlay state, commands, interactions, and text behavior.',
+    kind: 'ui-runtime-integration',
+    owners: Object.freeze(['ui/order-pdf']),
+    runner: 'tsx-test',
+    files: Object.freeze([
+      'tests/order_pdf_overlay_controller_actions_runtime.test.ts',
+      'tests/order_pdf_overlay_draft_action_feedback_runtime.test.ts',
+      'tests/order_pdf_overlay_draft_commands_runtime.test.ts',
+      'tests/order_pdf_overlay_draft_effects_runtime.test.ts',
+      'tests/order_pdf_overlay_editor_mode_state_runtime.test.ts',
+      'tests/order_pdf_overlay_interactions_runtime.test.ts',
+      'tests/order_pdf_overlay_runtime_export_runtime.test.ts',
+      'tests/order_pdf_overlay_text_details_lines_runtime.test.ts',
+      'tests/order_pdf_overlay_text_runtime.test.ts',
+      'tests/order_pdf_text_details_merge_support_runtime.test.ts',
+    ]),
+  }),
 });
 
 export function listTestGroupNames() {
@@ -81,6 +115,7 @@ export function readTestGroup(name) {
   if (!group) return null;
   return {
     ...group,
+    owners: Array.from(group.owners),
     files: Array.from(group.files),
   };
 }

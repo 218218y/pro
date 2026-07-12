@@ -25,7 +25,12 @@ test('[stage3-orchestration] render loop owner delegates visual effects to helpe
     read('esm/native/platform/render_loop_motion_doors.ts'),
     read('esm/native/platform/render_loop_motion_drawers.ts'),
   ].join('\n');
-  const mirror = read('esm/native/platform/render_loop_mirror_driver.ts');
+  const mirrorDriver = read('esm/native/platform/render_loop_mirror_driver.ts');
+  const mirrorPipeline = [
+    read('esm/native/platform/render_loop_mirror_tracking.ts'),
+    read('esm/native/platform/render_loop_mirror_planar_scheduler.ts'),
+    read('esm/native/platform/render_loop_mirror_cube_pass.ts'),
+  ].join('\n');
 
   assert.match(owner, /createInstalledRenderAnimate/);
   assert.match(runtime, /createRenderLoopVisualEffects/);
@@ -42,8 +47,14 @@ test('[stage3-orchestration] render loop owner delegates visual effects to helpe
   assert.match(motion, /export function createRenderLoopMotionController/);
   assert.match(motion, /(?:function updateRenderLoopDoorMotions\(|updateRenderLoopDoorMotions\()/);
   assert.match(motion, /(?:function updateRenderLoopDrawerMotions\(|updateRenderLoopDrawerMotions\()/);
-  assert.match(mirror, /export function createRenderLoopMirrorDriver/);
-  assert.match(mirror, /function updateMirrorCube/);
+  assert.match(mirrorDriver, /export function createRenderLoopMirrorDriver/);
+  assert.match(mirrorDriver, /function updateMirrorCube/);
+  assert.match(mirrorDriver, /resolveTrackedMirrorState/);
+  assert.match(mirrorDriver, /runPlanarMirrorSchedule/);
+  assert.match(mirrorDriver, /runMirrorCubePass/);
+  assert.match(mirrorPipeline, /export function resolveTrackedMirrorState/);
+  assert.match(mirrorPipeline, /export function runPlanarMirrorSchedule/);
+  assert.match(mirrorPipeline, /export function runMirrorCubePass/);
 });
 
 test('[stage3-orchestration] project io owner delegates UI bridge and runtime flows to helper factories', () => {
