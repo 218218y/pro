@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import {
+  listTestGroupNames,
   listTestGroupScriptBindings,
   readTestGroup,
   readTestGroupFiles,
@@ -13,6 +14,20 @@ import {
 import { parseTestGroupArgs, resolveTestGroupPlan } from '../tools/wp_test_group.mjs';
 
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+
+function assertCanonicalTsxPlan(plan, group) {
+  const testArgIndex = plan.args.indexOf('--test');
+  assert.notEqual(testArgIndex, -1, 'tsx test plans must include the --test boundary');
+  assert.deepEqual(plan.args.slice(testArgIndex + 1), group.files);
+
+  if (plan.command === process.execPath) {
+    assert.deepEqual(plan.args.slice(0, testArgIndex + 1), ['--import', 'tsx', '--test']);
+    return;
+  }
+
+  assert.match(path.basename(plan.command), /^npx(?:\.cmd)?$/u);
+  assert.deepEqual(plan.args.slice(0, testArgIndex + 1), ['--yes', 'tsx', '--test']);
+}
 
 test('test group catalog owns refactor-stage guard membership and metadata', () => {
   const group = readTestGroup('refactor-stage-guards');
@@ -44,8 +59,17 @@ test('test group reads return defensive owner, file, and serial-policy copies', 
 test('test group catalog validates runners, primary ownership, and unique script bindings', () => {
   assert.deepEqual(validateTestGroupCatalog(), []);
   const bindings = listTestGroupScriptBindings();
-  assert.equal(bindings.length, 10);
+  const groupNames = listTestGroupNames();
+  assert.equal(bindings.length, groupNames.length);
+  assert.deepEqual(bindings.map(binding => binding.groupName).sort(), groupNames);
   assert.equal(new Set(bindings.map(binding => binding.script)).size, bindings.length);
+  for (const binding of bindings) {
+    assert.equal(
+      packageJson.scripts[binding.script],
+      `node tools/wp_test_group.mjs ${binding.groupName}`,
+      `${binding.script} must stay a short facade over its canonical catalog group`
+    );
+  }
 
   const invalidCatalog = {
     alpha: {
@@ -99,7 +123,7 @@ test('mirror runtime group owns the typed mirror verification lane', () => {
   assert.ok(group.files.includes('tests/planar_reflector_render_pass_runtime.test.ts'));
   assert.equal(packageJson.scripts['test:mirror-runtime'], 'node tools/wp_test_group.mjs mirror-runtime');
   const plan = resolveTestGroupPlan({ groupName: 'mirror-runtime' });
-  assert.deepEqual(plan.args.slice(0, 3), ['--import', 'tsx', '--test']);
+  assertCanonicalTsxPlan(plan, group);
   assert.equal(plan.kind, 'runtime-integration');
 });
 
@@ -114,7 +138,7 @@ test('order PDF overlay core uses the central catalog instead of a package file 
     'node tools/wp_test_group.mjs order-pdf-overlay-core'
   );
   const plan = resolveTestGroupPlan({ groupName: 'order-pdf-overlay-core' });
-  assert.deepEqual(plan.args.slice(0, 3), ['--import', 'tsx', '--test']);
+  assertCanonicalTsxPlan(plan, group);
   assert.equal(plan.files.length, 10);
 });
 

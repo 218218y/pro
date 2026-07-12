@@ -1,12 +1,12 @@
 # Test group catalog
 
-Generated: 2026-07-12T14:46:15.530Z
+Generated: 2026-07-12T15:02:36.140Z
 
 ## Summary
 
 - Catalog groups: 11
 - Package script bindings owned by the catalog: 11
-- Catalog test-file references: 246
+- Catalog test-file references: 247
 - Direct package.json test-file references still remaining: 291
 - Catalog definition issues: 0
 - Package binding issues: 0
@@ -24,7 +24,7 @@ Generated: 2026-07-12T14:46:15.530Z
 | `sketch-box-content-protocol` | `test:sketch-box-content-protocol`     | focused      | tsx-test   | tsx         |    13 | services/canvas-picking, features/sketch-box                         |
 | `structure-tab-family-core`   | `test:structure-tab-family-core`       | focused      | serial-tsx | tsx         |    22 | ui/structure-tab, ui/interior-tab                                    |
 | `tab-surfaces`                | `test:tab-surfaces`                    | primary      | serial-tsx | tsx         |    51 | ui/structure-tab, ui/design-tab, ui/settings-visual, ui/interior-tab |
-| `toolchain-surfaces`          | `test:toolchain-surfaces`              | primary      | node-test  | node        |    26 | toolchain                                                            |
+| `toolchain-surfaces`          | `test:toolchain-surfaces`              | primary      | node-test  | node        |    27 | toolchain                                                            |
 | `verification-control-plane`  | `test:verification-control-plane`      | focused      | node-test  | node        |     4 | toolchain/verification                                               |
 
 ## Policy

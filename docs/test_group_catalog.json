@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-12T14:46:15.530Z",
+  "generatedAt": "2026-07-12T15:02:36.140Z",
   "summary": {
     "groups": 11,
     "scriptBindings": 11,
-    "catalogFileReferences": 246,
+    "catalogFileReferences": 247,
     "directPackageTestReferences": 291,
     "catalogIssues": 0,
     "bindingIssues": 0,
@@ -383,7 +383,7 @@
       "runner": "node-test",
       "portfolioRole": "primary",
       "serialPolicy": null,
-      "fileCount": 26,
+      "fileCount": 27,
       "files": [
         "tests/wp_toolchain_family_contracts.test.js",
         "tests/wp_build_dist_runtime.test.js",
@@ -410,6 +410,7 @@
         "tests/wp_lint_js_only_runtime.test.js",
         "tests/wp_lint_typescript_eslint_absence_runtime.test.js",
         "tests/wp_toolchain_version_policy_runtime.test.js",
+        "tests/wp_test_group_runtime.test.js",
         "tests/wp_test_group_catalog_report_runtime.test.js"
       ]
     },

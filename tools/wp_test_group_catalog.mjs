@@ -357,6 +357,7 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/wp_lint_js_only_runtime.test.js',
       'tests/wp_lint_typescript_eslint_absence_runtime.test.js',
       'tests/wp_toolchain_version_policy_runtime.test.js',
+      'tests/wp_test_group_runtime.test.js',
       'tests/wp_test_group_catalog_report_runtime.test.js',
     ],
   }),
