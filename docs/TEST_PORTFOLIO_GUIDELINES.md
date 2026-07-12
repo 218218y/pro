@@ -69,8 +69,17 @@ The audit is not a snapshot test for every assertion. It protects the control pl
 - refactor stage guard tests must be reachable through the canonical `tools/wp_test_group_catalog.mjs` group used by one short package facade;
 - named test groups must not contain duplicate or missing files.
 
-Large named groups belong in `tools/wp_test_group_catalog.mjs`, not in multi-thousand-character `package.json` commands. Each group declares its verification `kind`, canonical `owners`, runner (`node-test` or `tsx-test`), and file membership. `tools/wp_test_group.mjs` validates every member before spawning the matching Node runner, and the portfolio audit reads the same catalog as its source of truth.
+Large named groups belong in `tools/wp_test_group_catalog.mjs`, not in multi-thousand-character `package.json` commands. Each group declares its package-script binding, verification `kind`, canonical `owners`, execution `environment`, runner (`node-test`, `tsx-test`, or `serial-tsx`), portfolio role, optional serial policy, and file membership. `tools/wp_test_group.mjs` validates every member before spawning the matching canonical runner, and the portfolio audit reads the same catalog as its source of truth.
 
-Current centralized runtime lanes include `mirror-runtime` and `order-pdf-overlay-core`; package scripts remain short facades and do not duplicate their file lists.
+Use `portfolioRole: primary` only for non-overlapping top-level portfolio ownership. Use `focused` for targeted suites that intentionally reuse files from broader lanes, and `architecture` for long-lived guard collections. Primary overlap is a control-plane error; focused overlap is explicit and allowed.
+
+Current centralized lanes include the major `tab-surfaces`, `canvas-surfaces`, `project-surfaces`, `toolchain-surfaces`, and `public-surfaces` portfolios, the focused `structure-tab-family-core`, `mirror-runtime`, `sketch-box-content-protocol`, and `order-pdf-overlay-core` suites, plus the architecture-owned `refactor-stage-guards` collection. Package scripts remain short facades and do not duplicate those file lists.
+
+The generated catalog can be inspected with:
+
+```bash
+npm run report:test-groups
+npm run check:generated-reports
+```
 
 This keeps the test suite useful as architecture changes instead of turning it into a museum with flaky lighting.

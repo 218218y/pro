@@ -1,17 +1,20 @@
 {
-  "generatedAt": "2026-07-12T10:28:51.036Z",
+  "generatedAt": "2026-07-12T11:00:34.239Z",
   "totals": {
-    "tests": 1189,
-    "unitRunnerTests": 1183,
+    "tests": 1190,
+    "unitRunnerTests": 1184,
     "e2eTests": 6,
     "nonTestRuntimeFiles": 30,
-    "packageTestReferences": 442,
-    "catalogTestReferences": 90,
-    "totalTestReferences": 532
+    "packageTestReferences": 291,
+    "catalogTestReferences": 242,
+    "totalTestReferences": 533,
+    "catalogGroups": 10,
+    "catalogScriptBindings": 10,
+    "primaryCatalogGroups": 5
   },
   "categories": {
     "contract": 388,
-    "runtime-unit": 305,
+    "runtime-unit": 306,
     "integration": 440,
     "e2e-smoke": 7,
     "perf-smoke": 9,
@@ -20,6 +23,8 @@
   "failures": {
     "missingTestRefs": [],
     "duplicateCatalogRefs": [],
+    "invalidCatalogDefinitions": [],
+    "staleCatalogScriptBindings": [],
     "legacyRuntimeNames": [],
     "unreferencedStageGuards": [],
     "duplicateRunnerFiles": [],
@@ -4699,6 +4704,10 @@
     {
       "file": "tests/wp_site_profile_contract_runtime.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/wp_test_group_catalog_report_runtime.test.js",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/wp_test_group_runtime.test.js",

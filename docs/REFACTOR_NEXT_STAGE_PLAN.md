@@ -46,6 +46,23 @@ The stage catalog now carries explicit metadata for completed Stages 74-80:
 
 The catalog also records post-closeout guardrails such as `check:import-cycles` and `check:private-owner-imports`. `check:refactor-integration` validates that this metadata matches package scripts and guard files. This keeps future work honest: a stage is not just a number in prose, it has an owner, a guard, and a lane.
 
+## Test lane control-plane consolidation
+
+The next control-plane slice is complete. Large, ownership-significant runtime lanes no longer keep their file membership inside multi-thousand-character `package.json` commands. `tools/wp_test_group_catalog.mjs` now owns the group name, package-script binding, description, kind, owners, environment, runner, portfolio role, optional serial policy, and canonical file list.
+
+The catalog now owns the major `tab-surfaces`, `canvas-surfaces`, `structure-tab-family-core`, `project-surfaces`, `toolchain-surfaces`, and `public-surfaces` lanes in addition to the existing focused groups. `tools/wp_test_group.mjs` resolves Node, TSX, and serial-TSX execution from the same metadata and uses the canonical TSX runner resolver rather than assuming one local installation path.
+
+The control plane is fail-closed:
+
+- package facades must match their catalog binding exactly;
+- every member must be a canonical test/spec path;
+- primary portfolio groups may not overlap each other;
+- focused and architecture groups may intentionally reuse files;
+- serial groups must declare a valid batch/heartbeat/timeout policy;
+- generated `TEST_GROUP_CATALOG` and `TEST_PORTFOLIO_AUDIT` reports must stay semantically current.
+
+This removes duplicated ownership from `package.json` without pretending that every small test command needs a catalog entry. Future migrations should target only large or ownership-significant lanes and should preserve short package facades for compatibility.
+
 ## Project import fixture hardening
 
 The project-ingress hardening slice now uses schema v3 only. `npm run check:project-import-fixtures` runs a canonical JSON project through schema validation, UI snapshot construction, typed `ui.raw` materialization, and canonical config snapshot materialization.

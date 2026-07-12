@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { TEST_GROUP_CATALOG } from './wp_test_group_catalog.mjs';
+import { buildTestGroupCatalogReport } from './wp_test_group_catalog_report.mjs';
 import {
   isCanonicalTestFile,
   isPlaywrightE2ETestFile,
@@ -91,6 +92,7 @@ function collectCatalogTestRefs() {
 }
 
 function buildReport() {
+  const groupCatalogReport = buildTestGroupCatalogReport(ROOT);
   const tests = listCanonicalTestFiles(ROOT).map(normalize);
   const nonTestRuntimeFiles = (fs.existsSync(TEST_ROOT) ? walk(TEST_ROOT) : [])
     .map(normalize)
@@ -151,11 +153,16 @@ function buildReport() {
       packageTestReferences: packageRefs.length,
       catalogTestReferences: catalogRefs.length,
       totalTestReferences: refs.length,
+      catalogGroups: groupCatalogReport.summary.groups,
+      catalogScriptBindings: groupCatalogReport.summary.scriptBindings,
+      primaryCatalogGroups: groupCatalogReport.summary.portfolioRoles.primary || 0,
     },
     categories,
     failures: {
       missingTestRefs,
       duplicateCatalogRefs,
+      invalidCatalogDefinitions: groupCatalogReport.failures.catalogIssues,
+      staleCatalogScriptBindings: groupCatalogReport.failures.bindingIssues,
       legacyRuntimeNames,
       unreferencedStageGuards,
       duplicateRunnerFiles,
@@ -178,6 +185,9 @@ function renderMarkdown(report) {
     `- Package script test references: ${report.totals.packageTestReferences}`,
     `- Catalog test references: ${report.totals.catalogTestReferences}`,
     `- Total explicit test references: ${report.totals.totalTestReferences}`,
+    `- Catalog groups: ${report.totals.catalogGroups}`,
+    `- Catalog-backed package scripts: ${report.totals.catalogScriptBindings}`,
+    `- Primary non-overlapping portfolio groups: ${report.totals.primaryCatalogGroups}`,
     ''
   );
   lines.push('| Category | Count |', '|---|---:|');
@@ -186,6 +196,12 @@ function renderMarkdown(report) {
   lines.push(`| No stale package/catalog test references | ${report.failures.missingTestRefs.length} |`);
   lines.push(
     `| Test groups contain no duplicate file membership | ${report.failures.duplicateCatalogRefs.length} |`
+  );
+  lines.push(
+    `| Test-group catalog definitions are valid | ${report.failures.invalidCatalogDefinitions.length} |`
+  );
+  lines.push(
+    `| Catalog script bindings match package.json facades | ${report.failures.staleCatalogScriptBindings.length} |`
   );
   lines.push(
     `| Legacy tests are explicitly migration/compat/cleanup/root/guard/audit/contract scoped | ${report.failures.legacyRuntimeNames.length} |`

@@ -1,21 +1,24 @@
 # Test portfolio audit
 
-Generated: 2026-07-12T10:28:51.036Z
+Generated: 2026-07-12T11:00:34.239Z
 
 ## Summary
 
-- Test files classified: 1189
-- Canonical unit/runtime runner files: 1183
+- Test files classified: 1190
+- Canonical unit/runtime runner files: 1184
 - Playwright E2E files excluded from unit runner: 6
 - Helpers/fixtures excluded by filename contract: 30
-- Package script test references: 442
-- Catalog test references: 90
-- Total explicit test references: 532
+- Package script test references: 291
+- Catalog test references: 242
+- Total explicit test references: 533
+- Catalog groups: 10
+- Catalog-backed package scripts: 10
+- Primary non-overlapping portfolio groups: 5
 
 | Category         | Count |
 | ---------------- | ----: |
 | contract         |   388 |
-| runtime-unit     |   305 |
+| runtime-unit     |   306 |
 | integration      |   440 |
 | e2e-smoke        |     7 |
 | perf-smoke       |     9 |
@@ -27,6 +30,8 @@ Generated: 2026-07-12T10:28:51.036Z
 | ------------------------------------------------------------------------------------- | -------: |
 | No stale package/catalog test references                                              |        0 |
 | Test groups contain no duplicate file membership                                      |        0 |
+| Test-group catalog definitions are valid                                              |        0 |
+| Catalog script bindings match package.json facades                                    |        0 |
 | Legacy tests are explicitly migration/compat/cleanup/root/guard/audit/contract scoped |        0 |
 | Refactor stage guard tests have package/catalog ownership                             |        0 |
 | Unit runner has no duplicate files                                                    |        0 |

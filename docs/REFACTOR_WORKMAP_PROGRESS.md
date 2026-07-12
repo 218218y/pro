@@ -158,3 +158,11 @@ When docs are cleaned again, keep this file as the single compact integration ma
 - UI full and strict typecheck configs now explicitly include `.tsx` UI surfaces; the lean lane stays TS-only and keeps its React/PDF shims isolated in `lean_types`.
 - Type hardening now also checks that every non-declaration `types/*.ts` source module has a matching `types/*.js` runtime stub and that no extra JS stub drifts without a typed source module.
 - The second closeout slice removed avoidable legacy naming from prefixed-map alias helpers, cornice-envelope token/helpers, and renderer-lighting helper names. Alias compatibility remains behaviorally intact at canonical map boundaries, but those files no longer appear in the legacy/fallback inventory just because their old helper names contained `legacy`.
+
+## Test lane control-plane consolidation — 12 July 2026
+
+- `tools/wp_test_group_catalog.mjs` now owns ten architecture-significant test groups with package binding, owners, environment, runner, portfolio role, serial policy, and canonical file membership.
+- The large `tab-surfaces`, `canvas-surfaces`, `structure-tab-family-core`, `project-surfaces`, `toolchain-surfaces`, and `public-surfaces` package commands are now short facades over the catalog.
+- `tools/wp_test_group.mjs` resolves Node, local/npx TSX, and serial TSX execution from one plan and validates files before spawning.
+- Primary portfolio overlap, invalid serial policy, duplicate script binding, stale package facade, and non-canonical test paths are fail-closed.
+- `docs/TEST_GROUP_CATALOG.md` / `docs/test_group_catalog.json` and the expanded test-portfolio report are generated control-plane artifacts checked by `check:generated-reports`.

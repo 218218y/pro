@@ -13,7 +13,14 @@ import {
 test('generated report catalog owns every checked-in audit pair', () => {
   assert.deepEqual(
     GENERATED_REPORT_CATALOG.map(report => report.id),
-    ['script-duplicates', 'css-style', 'features-public-api', 'legacy-fallbacks', 'test-portfolio']
+    [
+      'script-duplicates',
+      'css-style',
+      'features-public-api',
+      'legacy-fallbacks',
+      'test-groups',
+      'test-portfolio',
+    ]
   );
   for (const report of GENERATED_REPORT_CATALOG) {
     assert.equal(fs.existsSync(report.json), true, `${report.json} should exist`);

@@ -4,7 +4,8 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-import { listTestGroupNames, readTestGroup } from './wp_test_group_catalog.mjs';
+import { listTestGroupNames, readTestGroup, validateTestGroupCatalog } from './wp_test_group_catalog.mjs';
+import { buildTsxTestRun } from './wp_test_runner_command.mjs';
 
 export function parseTestGroupArgs(argv = process.argv.slice(2)) {
   const flags = { groupName: '', list: false, print: false, dryRun: false };
@@ -18,15 +19,29 @@ export function parseTestGroupArgs(argv = process.argv.slice(2)) {
   return flags;
 }
 
+function buildSerialArgs(policy, files) {
+  const args = ['tools/wp_serial_tests.mjs'];
+  for (const [flag, value] of [
+    ['--batch-size', policy.batchSize],
+    ['--heartbeat-ms', policy.heartbeatMs],
+    ['--timeout-ms', policy.timeoutMs],
+  ]) {
+    args.push(flag, String(value));
+  }
+  if (policy.failedFilesPath) args.push('--failed-files-path', policy.failedFilesPath);
+  if (policy.timingsPath) args.push('--timings-path', policy.timingsPath);
+  return [...args, ...files];
+}
+
 export function resolveTestGroupPlan({ projectRoot = process.cwd(), groupName }) {
   const group = readTestGroup(groupName);
   if (!group) throw new Error(`[WardrobePro] unknown test group: ${groupName || '<empty>'}`);
-  const runnerArgs = {
-    'node-test': ['--test'],
-    'tsx-test': ['--import', 'tsx', '--test'],
-  }[group.runner];
-  if (!runnerArgs) {
-    throw new Error(`[WardrobePro] unsupported runner for test group ${groupName}: ${group.runner}`);
+
+  const catalogIssues = validateTestGroupCatalog().filter(issue => issue.group === groupName);
+  if (catalogIssues.length) {
+    throw new Error(
+      `[WardrobePro] invalid test group ${groupName}: ${catalogIssues.map(issue => issue.message).join('; ')}`
+    );
   }
 
   const missingFiles = group.files.filter(file => !fs.existsSync(path.resolve(projectRoot, file)));
@@ -36,13 +51,37 @@ export function resolveTestGroupPlan({ projectRoot = process.cwd(), groupName })
     );
   }
 
+  let command;
+  let args;
+  let spawnOptions = {};
+  if (group.runner === 'node-test') {
+    command = process.execPath;
+    args = ['--test', ...group.files];
+  } else if (group.runner === 'tsx-test') {
+    const run = buildTsxTestRun(projectRoot, group.files);
+    command = run.program;
+    args = run.args;
+    spawnOptions = run.spawnOptions ?? {};
+  } else if (group.runner === 'serial-tsx') {
+    command = process.execPath;
+    args = buildSerialArgs(group.serialPolicy, group.files);
+  } else {
+    throw new Error(`[WardrobePro] unsupported runner for test group ${groupName}: ${group.runner}`);
+  }
+
   return {
     groupName,
+    script: group.script,
     description: group.description,
     kind: group.kind,
     owners: group.owners,
-    command: process.execPath,
-    args: [...runnerArgs, ...group.files],
+    environment: group.environment,
+    runner: group.runner,
+    portfolioRole: group.portfolioRole,
+    serialPolicy: group.serialPolicy,
+    command,
+    args,
+    spawnOptions,
     files: group.files,
   };
 }
@@ -52,6 +91,7 @@ export function runTestGroupPlan(plan, { projectRoot = process.cwd(), childEnv =
     cwd: projectRoot,
     env: childEnv,
     stdio: 'inherit',
+    ...(plan.spawnOptions ?? {}),
   });
   if (result.error) throw result.error;
   if (result.status !== 0) process.exitCode = result.status ?? 1;
@@ -79,9 +119,18 @@ function main() {
   const plan = resolveTestGroupPlan({ groupName: flags.groupName });
   if (flags.print || flags.dryRun) {
     console.log(`[WardrobePro] test group: ${plan.groupName}`);
+    console.log(`- script: ${plan.script}`);
     console.log(`- ${plan.description}`);
     console.log(`- kind: ${plan.kind}`);
+    console.log(`- portfolio role: ${plan.portfolioRole}`);
+    console.log(`- environment: ${plan.environment}`);
+    console.log(`- runner: ${plan.runner}`);
     console.log(`- owners: ${plan.owners.join(', ')}`);
+    if (plan.serialPolicy) {
+      console.log(
+        `- serial policy: batch=${plan.serialPolicy.batchSize}, heartbeat=${plan.serialPolicy.heartbeatMs}ms, timeout=${plan.serialPolicy.timeoutMs}ms`
+      );
+    }
     for (const file of plan.files) console.log(`- ${file}`);
   }
   if (!flags.dryRun) runTestGroupPlan(plan);

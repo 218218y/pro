@@ -7,6 +7,7 @@ import {
   collectLintModernReadinessRows,
 } from '../tools/wp_lint_modern_readiness.mjs';
 import { collectLintRuleMatrix } from '../tools/wp_lint_rule_matrix.mjs';
+import { readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
 
 function read(rel) {
   return fs.readFileSync(new URL('../' + rel, import.meta.url), 'utf8');
@@ -119,7 +120,9 @@ test('modern readiness is wired into lint contracts and toolchain surfaces', () 
   assert.equal(pkg.scripts[OLD_DRY_RUN_SCRIPT], undefined);
   assert.equal(pkg.scripts[OLD_LINT_LEGACY], undefined);
   assert.match(pkg.scripts['lint:contracts'], /lint:modern-readiness/);
-  assert.match(pkg.scripts['test:toolchain-surfaces'], /wp_lint_modern_readiness_runtime\.test\.js/);
-  assert.match(pkg.scripts['test:toolchain-surfaces'], /wp_lint_js_only_runtime\.test\.js/);
-  assert.match(pkg.scripts['test:toolchain-surfaces'], /wp_lint_typescript_eslint_absence_runtime\.test\.js/);
+  assert.equal(pkg.scripts['test:toolchain-surfaces'], 'node tools/wp_test_group.mjs toolchain-surfaces');
+  const toolchainFiles = readTestGroupFiles('toolchain-surfaces');
+  assert.ok(toolchainFiles.includes('tests/wp_lint_modern_readiness_runtime.test.js'));
+  assert.ok(toolchainFiles.includes('tests/wp_lint_js_only_runtime.test.js'));
+  assert.ok(toolchainFiles.includes('tests/wp_lint_typescript_eslint_absence_runtime.test.js'));
 });

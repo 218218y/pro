@@ -46,6 +46,14 @@ export const GENERATED_REPORT_CATALOG = Object.freeze([
     },
   }),
   Object.freeze({
+    id: 'test-groups',
+    json: 'docs/test_group_catalog.json',
+    markdown: 'docs/TEST_GROUP_CATALOG.md',
+    command({ json, markdown }) {
+      return ['tools/wp_test_group_catalog_report.mjs', `--json-out=${json}`, `--md-out=${markdown}`];
+    },
+  }),
+  Object.freeze({
     id: 'test-portfolio',
     json: 'docs/test_portfolio_audit.json',
     markdown: 'docs/TEST_PORTFOLIO_AUDIT.md',

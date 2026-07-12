@@ -4,7 +4,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { readTestGroup, readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
+import {
+  listTestGroupScriptBindings,
+  readTestGroup,
+  readTestGroupFiles,
+  validateTestGroupCatalog,
+} from '../tools/wp_test_group_catalog.mjs';
 import { parseTestGroupArgs, resolveTestGroupPlan } from '../tools/wp_test_group.mjs';
 
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
@@ -12,6 +17,8 @@ const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 test('test group catalog owns refactor-stage guard membership and metadata', () => {
   const group = readTestGroup('refactor-stage-guards');
   assert.equal(group.runner, 'node-test');
+  assert.equal(group.environment, 'node');
+  assert.equal(group.portfolioRole, 'architecture');
   assert.equal(group.kind, 'architecture-guard');
   assert.deepEqual(group.owners, ['architecture/control-plane']);
   assert.ok(group.files.length > 50);
@@ -19,17 +26,52 @@ test('test group catalog owns refactor-stage guard membership and metadata', () 
   for (const file of group.files) assert.equal(fs.existsSync(file), true, `${file} should exist`);
 });
 
-test('test group reads return defensive owner and file copies', () => {
-  const first = readTestGroup('refactor-stage-guards');
-  const second = readTestGroup('refactor-stage-guards');
+test('test group reads return defensive owner, file, and serial-policy copies', () => {
+  const first = readTestGroup('tab-surfaces');
+  const second = readTestGroup('tab-surfaces');
   first.files.pop();
   first.owners.pop();
+  first.serialPolicy.batchSize = 99;
   assert.notEqual(first.files.length, second.files.length);
   assert.notEqual(first.owners.length, second.owners.length);
+  assert.equal(second.serialPolicy.batchSize, 1);
   const firstFiles = readTestGroupFiles('refactor-stage-guards');
   const secondFiles = readTestGroupFiles('refactor-stage-guards');
   firstFiles.pop();
   assert.notEqual(firstFiles.length, secondFiles.length);
+});
+
+test('test group catalog validates runners, primary ownership, and unique script bindings', () => {
+  assert.deepEqual(validateTestGroupCatalog(), []);
+  const bindings = listTestGroupScriptBindings();
+  assert.equal(bindings.length, 10);
+  assert.equal(new Set(bindings.map(binding => binding.script)).size, bindings.length);
+
+  const invalidCatalog = {
+    alpha: {
+      script: 'test:alpha',
+      description: 'alpha',
+      kind: 'runtime-portfolio',
+      owners: ['alpha'],
+      environment: 'tsx',
+      runner: 'tsx-test',
+      portfolioRole: 'primary',
+      files: ['tests/example_runtime.test.ts'],
+    },
+    beta: {
+      script: 'test:beta',
+      description: 'beta',
+      kind: 'runtime-portfolio',
+      owners: ['beta'],
+      environment: 'tsx',
+      runner: 'tsx-test',
+      portfolioRole: 'primary',
+      files: ['tests/example_runtime.test.ts'],
+    },
+  };
+  assert.ok(
+    validateTestGroupCatalog(invalidCatalog).some(issue => issue.code === 'primary-portfolio-overlap')
+  );
 });
 
 test('test group runner validates args and missing files before spawning', () => {
@@ -74,4 +116,38 @@ test('order PDF overlay core uses the central catalog instead of a package file 
   const plan = resolveTestGroupPlan({ groupName: 'order-pdf-overlay-core' });
   assert.deepEqual(plan.args.slice(0, 3), ['--import', 'tsx', '--test']);
   assert.equal(plan.files.length, 10);
+});
+
+test('major portfolio lanes are short package facades backed by one catalog', () => {
+  const expected = {
+    'tab-surfaces': 'test:tab-surfaces',
+    'canvas-surfaces': 'test:canvas-surfaces',
+    'structure-tab-family-core': 'test:structure-tab-family-core',
+    'project-surfaces': 'test:project-surfaces',
+    'toolchain-surfaces': 'test:toolchain-surfaces',
+    'public-surfaces': 'test:public-surfaces',
+  };
+  for (const [groupName, scriptName] of Object.entries(expected)) {
+    const group = readTestGroup(groupName);
+    assert.equal(group.script, scriptName);
+    assert.equal(packageJson.scripts[scriptName], `node tools/wp_test_group.mjs ${groupName}`);
+    assert.ok(group.files.length >= 14, `${groupName} should own a meaningful lane`);
+  }
+});
+
+test('serial portfolio groups resolve through the canonical serial runner policy', () => {
+  const plan = resolveTestGroupPlan({ groupName: 'tab-surfaces' });
+  assert.equal(plan.runner, 'serial-tsx');
+  assert.equal(plan.environment, 'tsx');
+  assert.equal(plan.command, process.execPath);
+  assert.deepEqual(plan.args.slice(0, 7), [
+    'tools/wp_serial_tests.mjs',
+    '--batch-size',
+    '1',
+    '--heartbeat-ms',
+    '0',
+    '--timeout-ms',
+    '0',
+  ]);
+  assert.equal(plan.files.length, 51);
 });
