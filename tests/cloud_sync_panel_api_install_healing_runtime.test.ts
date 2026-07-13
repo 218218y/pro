@@ -80,6 +80,7 @@ function createInstallDeps(App: any, room: string): InstallHarness & { deps: Any
       expiresAt: '2026-07-20T08:00:00.000Z',
     }),
     setRoomCredentialInUrl: () => true,
+    reinstallOwnerForRoomChange: async () => {},
     cloneRuntimeStatus: (next: AnyRecord) => ({ ...next }),
     runtimeStatus: { diagEnabled: false, room, online: true },
     updateDiagEnabled: () => undefined,

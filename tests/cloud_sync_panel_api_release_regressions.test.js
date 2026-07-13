@@ -51,6 +51,7 @@ test('cloud sync panel api shares upstream subscriptions and clones published sn
     setPrivateRoomCredential: () => true,
     issuePrivateRoom: async () => null,
     setRoomCredentialInUrl: () => true,
+    reinstallOwnerForRoomChange: async () => {},
     cloneRuntimeStatus: next => ({ ...next }),
     runtimeStatus: { diagEnabled: false },
     updateDiagEnabled: () => {},

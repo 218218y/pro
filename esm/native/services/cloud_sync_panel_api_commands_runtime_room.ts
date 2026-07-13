@@ -42,6 +42,7 @@ export function createCloudSyncPanelApiRoomCommands(
     setPrivateRoomCredential,
     issuePrivateRoom,
     setRoomCredentialInUrl,
+    reinstallOwnerForRoomChange,
     cloneRuntimeStatus,
     runtimeStatus,
     publishStatus,
@@ -64,16 +65,30 @@ export function createCloudSyncPanelApiRoomCommands(
       },
       mode
     );
-    if (result.ok) {
-      runtimeStatus.room = result.room;
-      runtimeStatus.credential = buildCloudSyncCredentialStatus({
-        isPublic: mode === 'public',
-        credential: mode === 'private' ? getPrivateRoomCredential() : null,
-      });
-      publishStatus();
-      snapshots.publishPanelSnapshot(result.room || (mode === 'public' ? cfg.publicRoom : getCurrentRoom()));
+    if (!result.ok) return result;
+
+    runtimeStatus.room = result.room;
+    runtimeStatus.credential = buildCloudSyncCredentialStatus({
+      isPublic: mode === 'public',
+      credential: mode === 'private' ? getPrivateRoomCredential() : null,
+    });
+    publishStatus();
+    snapshots.publishPanelSnapshot(result.room || (mode === 'public' ? cfg.publicRoom : getCurrentRoom()));
+
+    if (!result.changed) return result;
+
+    try {
+      await reinstallOwnerForRoomChange(result.room);
+      return result;
+    } catch (__wpErr) {
+      reportNonFatal(App, 'services/cloud_sync.ts:roomOwnerReinstall', __wpErr, { throttleMs: 4000 });
+      return {
+        ...result,
+        ok: false,
+        reason: 'error',
+        message: readCloudSyncErrorMessage(__wpErr),
+      };
     }
-    return result;
   };
 
   return {

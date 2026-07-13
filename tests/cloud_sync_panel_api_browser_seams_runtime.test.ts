@@ -47,6 +47,7 @@ test('cloud sync panel api uses injected browser seams for prompt fallback and g
     setPrivateRoomCredential: () => true,
     issuePrivateRoom: async () => null,
     setRoomCredentialInUrl: () => true,
+    reinstallOwnerForRoomChange: async () => {},
     cloneRuntimeStatus: status => ({
       ...status,
       realtime: { ...status.realtime },

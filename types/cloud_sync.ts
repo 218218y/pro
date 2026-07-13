@@ -410,6 +410,7 @@ export interface CloudSyncPanelApiDeps extends UnknownRecord {
       roomToken: string | null;
     }
   ) => boolean;
+  reinstallOwnerForRoomChange: (expectedRoom: string) => Promise<void>;
   cloneRuntimeStatus: (status: CloudSyncRuntimeStatus) => CloudSyncRuntimeStatus;
   runtimeStatus: CloudSyncRuntimeStatus;
   updateDiagEnabled: () => void;

@@ -21,6 +21,7 @@ export type CloudSyncPanelApiInstallDeps = Pick<
   | 'setPrivateRoomCredential'
   | 'issuePrivateRoom'
   | 'setRoomCredentialInUrl'
+  | 'reinstallOwnerForRoomChange'
   | 'cloneRuntimeStatus'
   | 'runtimeStatus'
   | 'updateDiagEnabled'
@@ -68,6 +69,7 @@ export function buildCloudSyncPanelApiDeps(deps: CloudSyncPanelApiInstallDeps): 
     setPrivateRoomCredential: deps.setPrivateRoomCredential,
     issuePrivateRoom: deps.issuePrivateRoom,
     setRoomCredentialInUrl: deps.setRoomCredentialInUrl,
+    reinstallOwnerForRoomChange: deps.reinstallOwnerForRoomChange,
     cloneRuntimeStatus: deps.cloneRuntimeStatus,
     runtimeStatus: deps.runtimeStatus,
     updateDiagEnabled: deps.updateDiagEnabled,

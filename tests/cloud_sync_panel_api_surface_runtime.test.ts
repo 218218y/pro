@@ -6,7 +6,12 @@ import { createCloudSyncPanelApiTestRig } from './cloud_sync_panel_api_runtime_h
 import { cloneRuntimeStatus } from '../esm/native/services/cloud_sync_support_shared.ts';
 
 test('cloud sync panel api exposes stable room/share/tabs-gate runtime surface and publishes panel snapshots', async () => {
-  const rig = createCloudSyncPanelApiTestRig();
+  const ownerReinstalls: string[] = [];
+  const rig = createCloudSyncPanelApiTestRig({
+    reinstallOwnerForRoomChange: async (room: string) => {
+      ownerReinstalls.push(room);
+    },
+  });
   const { api, pushed, patched, storage, status, state, refs, sinks } = rig;
 
   assert.equal(api.getCurrentRoom?.(), 'public');
@@ -95,6 +100,7 @@ test('cloud sync panel api exposes stable room/share/tabs-gate runtime surface a
     room: 'generated-room',
     shareLink: 'https://example.test/#room=generated-room&roomToken=signed-generated-token',
   });
+  assert.deepEqual(ownerReinstalls, ['generated-room']);
   assert.deepEqual(snapshots.at(-1), {
     room: 'generated-room',
     isPublic: false,
@@ -205,6 +211,7 @@ test('cloud sync panel api diagnostics setter stays no-op when the stored diagno
     setPrivateRoomCredential: () => true,
     issuePrivateRoom: async () => null,
     setRoomCredentialInUrl: () => true,
+    reinstallOwnerForRoomChange: async () => {},
     cloneRuntimeStatus: status => ({ ...status }) as any,
     runtimeStatus,
     updateDiagEnabled: () => {
@@ -253,4 +260,34 @@ test('cloud sync panel api diagnostics setter stays no-op when the stored diagno
   api.setDiagnosticsEnabled?.(true);
   assert.equal(publishCount, 1, 'repeating the same diagnostics toggle should stay quiet');
   assert.deepEqual(diagEvents, ['diagnostics']);
+});
+
+test('cloud sync room mode reports a failed owner transition instead of claiming the new room is active', async () => {
+  const reports: Array<{ op: string; message: string }> = [];
+  const rig = createCloudSyncPanelApiTestRig({
+    reinstallOwnerForRoomChange: async () => {
+      throw new Error('owner transition failed');
+    },
+    reportNonFatal: (_app: unknown, op: string, error: unknown) => {
+      reports.push({ op, message: error instanceof Error ? error.message : String(error) });
+    },
+  });
+
+  const result = await rig.api.goPrivate?.();
+
+  assert.deepEqual(result, {
+    ok: false,
+    changed: true,
+    mode: 'private',
+    room: 'generated-room',
+    shareLink: 'https://example.test/#room=generated-room&roomToken=signed-generated-token',
+    reason: 'error',
+    message: 'owner transition failed',
+  });
+  assert.deepEqual(reports, [
+    {
+      op: 'services/cloud_sync.ts:roomOwnerReinstall',
+      message: 'owner transition failed',
+    },
+  ]);
 });

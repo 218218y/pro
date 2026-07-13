@@ -14,6 +14,7 @@ export type CloudSyncInstallRuntimeArgs = {
   ownerContext: CloudSyncOwnerContext;
   suppressRef: { v: boolean };
   getSendRealtimeHint: () => CloudSyncHintSender;
+  reinstallOwnerForRoomChange: (expectedRoom: string) => Promise<void>;
 };
 
 export type CloudSyncInstallRuntime = {

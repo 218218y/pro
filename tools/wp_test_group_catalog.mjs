@@ -301,6 +301,7 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/cloud_sync_mutation_commands_runtime.test.ts',
       'tests/cloud_sync_mutation_commands_singleflight_runtime.test.ts',
       'tests/cloud_sync_owner_context_runtime.test.ts',
+      'tests/cloud_sync_room_transition_runtime.test.ts',
       'tests/cloud_sync_status_install_runtime.test.ts',
     ],
   }),

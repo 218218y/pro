@@ -10,7 +10,7 @@ export function installCloudSyncInstallRuntimePanelApi(
   args: CloudSyncInstallRuntimeArgs,
   runtime: CloudSyncInstallRuntime
 ): void {
-  const { App, ownerContext } = args;
+  const { App, ownerContext, reinstallOwnerForRoomChange } = args;
   const {
     cfg,
     currentRoom,
@@ -69,6 +69,7 @@ export function installCloudSyncInstallRuntimePanelApi(
     setPrivateRoomCredential,
     issuePrivateRoom,
     setRoomCredentialInUrl,
+    reinstallOwnerForRoomChange,
     cloneRuntimeStatus,
     runtimeStatus,
     updateDiagEnabled,
