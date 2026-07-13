@@ -8,14 +8,25 @@ function read(file) {
 
 test('signed-room SQL removes browser CRUD and requires tenant/store/revision ownership', () => {
   const sql = read('docs/supabase_cloud_sync.sql');
+  const copySql = read('docs/supabase_cloud_sync_multi_store.sql');
+  const lockdownSql = read('docs/supabase_cloud_sync_legacy_lockdown.sql');
   assert.match(sql, /primary key \(tenant_id, store_id, room\)/u);
   assert.match(sql, /revision bigint not null default 1/u);
   assert.match(sql, /enable row level security/u);
   assert.match(sql, /force row level security/u);
+  assert.match(sql, /security invoker/u);
+  assert.doesNotMatch(sql, /security definer/u);
   assert.match(sql, /revoke all on table public\.wp_cloud_sync_rooms from anon, authenticated, public/u);
+  assert.match(sql, /revoke all on table public\.wp_cloud_sync_rooms from service_role/u);
   assert.match(sql, /grant select, insert, update on table public\.wp_cloud_sync_rooms to service_role/u);
   assert.match(sql, /revoke delete on table public\.wp_cloud_sync_rooms from service_role/u);
   assert.doesNotMatch(sql, /grant\s+(?:select|insert|update|delete)[^;]*\bto\s+(?:anon|authenticated)\b/iu);
+  assert.match(copySql, /on conflict \(tenant_id, store_id, room\) do update/u);
+  assert.doesNotMatch(copySql, /revoke all on table public\.%I from anon/u);
+  assert.match(lockdownSql, /enable row level security/u);
+  assert.match(lockdownSql, /force row level security/u);
+  assert.match(lockdownSql, /revoke all on table public\.%I from anon, authenticated, public/u);
+  assert.match(lockdownSql, /grant select on table public\.%I to service_role/u);
 });
 
 test('Edge Function verifies signed room scope and performs bounded compare-and-swap writes', () => {

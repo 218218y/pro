@@ -18,8 +18,12 @@ create table if not exists public.wp_cloud_sync_rooms (
     check (store_id ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
   constraint wp_cloud_sync_rooms_room_check
     check (room ~ '^[a-zA-Z0-9_-]{1,128}(::[a-zA-Z0-9_-]{1,64})*$'),
+  constraint wp_cloud_sync_rooms_payload_object_check
+    check (jsonb_typeof(payload) = 'object'),
   constraint wp_cloud_sync_rooms_payload_size_check
-    check (octet_length(payload::text) <= 2000000)
+    check (octet_length(payload::text) <= 2000000),
+  constraint wp_cloud_sync_rooms_updated_by_check
+    check (updated_by ~ '^[a-zA-Z0-9:_-]{1,160}$')
 );
 
 create index if not exists wp_cloud_sync_rooms_updated_at_idx
@@ -28,7 +32,8 @@ create index if not exists wp_cloud_sync_rooms_updated_at_idx
 create or replace function public.wp_cloud_sync_set_updated_at()
 returns trigger
 language plpgsql
-set search_path = public
+security invoker
+set search_path = ''
 as $$
 begin
   new.updated_at = clock_timestamp();
@@ -55,8 +60,8 @@ create or replace function public.wp_cloud_sync_consume_rate_limit(
 )
 returns boolean
 language plpgsql
-security definer
-set search_path = public
+security invoker
+set search_path = ''
 as $$
 declare
   v_now timestamptz := clock_timestamp();
@@ -104,11 +109,20 @@ alter table public.wp_cloud_sync_rate_limits force row level security;
 
 revoke all on table public.wp_cloud_sync_rooms from anon, authenticated, public;
 revoke all on table public.wp_cloud_sync_rate_limits from anon, authenticated, public;
+revoke all on table public.wp_cloud_sync_rooms from service_role;
+revoke all on table public.wp_cloud_sync_rate_limits from service_role;
+revoke all on function public.wp_cloud_sync_set_updated_at()
+  from anon, authenticated, public;
+revoke all on function public.wp_cloud_sync_set_updated_at()
+  from service_role;
 revoke all on function public.wp_cloud_sync_consume_rate_limit(text, integer, integer)
   from anon, authenticated, public;
+revoke all on function public.wp_cloud_sync_consume_rate_limit(text, integer, integer)
+  from service_role;
 
 grant select, insert, update on table public.wp_cloud_sync_rooms to service_role;
 grant select, insert, update on table public.wp_cloud_sync_rate_limits to service_role;
 grant execute on function public.wp_cloud_sync_consume_rate_limit(text, integer, integer)
   to service_role;
 revoke delete on table public.wp_cloud_sync_rooms from service_role;
+revoke delete on table public.wp_cloud_sync_rate_limits from service_role;

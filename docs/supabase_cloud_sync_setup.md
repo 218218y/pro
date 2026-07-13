@@ -1,43 +1,100 @@
 # Supabase cloud sync setup
 
-Cloud Sync uses a no-login, signed-room capability model. A customer receives a link containing an opaque room id and a server-signed `roomToken`; possession of that link grants read/write access only to that store and room. The browser publishable key can invoke Realtime and the Edge Function, but it has no table privileges and cannot enumerate rooms or choose a table.
+Cloud Sync uses a no-login, signed-room capability model. A customer receives a link containing an opaque room id and a server-signed `roomToken`; possession of that link grants read/write access only to that store and room. The browser invokes one Edge Function and Realtime, but it has no table privileges and cannot enumerate rooms or choose a table.
 
 On first load the client persists the room id and token as one versioned local-storage value, then removes the token from the visible URL with `history.replaceState`. If durable storage fails, the token remains in the URL so access is not silently lost.
 
+## Production identity
+
+- Supabase project ref: `paqzrxrvowwndevqptdk`
+- Active main origin: `https://pro.bargig-furniture.com`
+- Active customer origin: `https://pro218.bargig-furniture.com`
+- Active store/tenant: `bargig`
+- Edge Function: `wp-cloud-sync-room`
+
+`store-1` and `store-2` are draft profiles. Do not add their placeholder domains to `WP_CLOUD_SYNC_ORIGIN_STORES`; add only their final exact HTTPS origins when those stores are activated.
+
+## API-key contract
+
+The current deployment keeps `verify_jwt = true` and therefore invokes the function with the project's legacy JWT-based `anon` key in both `apikey` and `Authorization`. Do not replace `anonKey` with an `sb_publishable_...` key while this setting remains enabled: Supabase's built-in JWT verifier does not validate the new publishable-key format.
+
+Migrating to publishable/secret keys is a separate cutover: set `verify_jwt = false`, validate the publishable key in the handler (prefer the current `@supabase/server` publishable auth mode), move server access from `SUPABASE_SERVICE_ROLE_KEY` to `SUPABASE_SECRET_KEYS`, deploy and verify, then replace the browser key. See [Supabase's API-key migration guide](https://supabase.com/docs/guides/getting-started/migrating-to-new-api-keys).
+
 ## New deployment
 
-1. Run `docs/supabase_cloud_sync.sql` in the Supabase SQL editor.
-2. Deploy `supabase/functions/wp-cloud-sync-room`.
-3. Configure the Edge Function secrets:
+1. Apply `docs/supabase_cloud_sync.sql` as one migration.
+2. Configure the Edge Function secrets. Generate a fresh random token secret of at least 32 characters and keep it out of source control:
 
 ```bash
-supabase secrets set WP_CLOUD_SYNC_ROOM_TOKEN_SECRET="<at-least-32-random-characters>"
-supabase secrets set WP_CLOUD_SYNC_ORIGIN_STORES='{"https://bargig.example.com":"bargig","https://store-1.example.com":"store-1","https://store-2.example.com":"store-2"}'
-supabase secrets set WP_CLOUD_SYNC_STORE_TENANTS='{"bargig":"bargig","store-1":"store-1","store-2":"store-2"}'
-supabase secrets set WP_CLOUD_SYNC_PUBLIC_ROOMS='{"bargig":"public","store-1":"public","store-2":"public"}'
+supabase secrets set --project-ref paqzrxrvowwndevqptdk \
+  WP_CLOUD_SYNC_ROOM_TOKEN_SECRET="<fresh-random-secret>" \
+  WP_CLOUD_SYNC_ORIGIN_STORES='{"https://pro.bargig-furniture.com":"bargig","https://pro218.bargig-furniture.com":"bargig"}' \
+  WP_CLOUD_SYNC_STORE_TENANTS='{"bargig":"bargig"}' \
+  WP_CLOUD_SYNC_PUBLIC_ROOMS='{"bargig":"public"}' \
+  WP_CLOUD_SYNC_ROOM_TOKEN_TTL_SECONDS="604800"
 ```
 
-`WP_CLOUD_SYNC_ROOM_TOKEN_TTL_SECONDS` is optional. It defaults to seven days and is constrained to one hour through thirty days. Rotating `WP_CLOUD_SYNC_ROOM_TOKEN_SECRET` invalidates existing room links.
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are platform-provided Edge Function secrets. The room-token TTL is constrained to one hour through thirty days; seven days is the production default. Rotating the room-token secret invalidates all existing signed room links.
 
-4. Keep `verify_jwt = true` for the function. The browser invokes it with the Supabase publishable/legacy anon key; room authorization is independently enforced by the signed room token.
-5. Verify the focused Cloud Sync runtime tests, room-link flow, reconnect smoke, and Supabase Function logs before release.
+3. Deploy with JWT verification enabled:
+
+```bash
+supabase functions deploy wp-cloud-sync-room \
+  --project-ref paqzrxrvowwndevqptdk \
+  --use-api
+```
+
+4. Run the gateway probes below, then deploy the signed-room client.
 
 ## Existing open-table deployment
 
-Use a maintenance window:
+Use one controlled expand/verify/contract rollout. The copy step and the final lock are intentionally separate so a still-live legacy client is not cut off early.
 
-1. Run `docs/supabase_cloud_sync.sql` to create the protected canonical table and rate-limit owner.
-2. Deploy the Edge Function and the signed-room client build.
-3. Run `docs/supabase_cloud_sync_multi_store.sql` to copy existing rows and revoke all browser-role privileges on the old tables.
-4. Verify each active store and both main/customer variants.
-5. Retain the locked legacy tables only for the agreed rollback window, then remove them deliberately.
+1. Record counts and take the normal project backup. Reject the rollout if a legacy room violates the canonical room pattern or a payload exceeds 2,000,000 bytes.
+2. Apply `docs/supabase_cloud_sync.sql`.
+3. Apply `docs/supabase_cloud_sync_multi_store.sql`. It is re-runnable and reconciles legacy rows that changed after an earlier copy; it does **not** revoke legacy browser access.
+4. Configure secrets and deploy the Edge Function.
+5. Verify allowed/disallowed origins, signed reads, writes, stale-revision conflicts, row counts, logs, and advisors.
+6. Deploy the signed-room client to both `pro.bargig-furniture.com` and `pro218.bargig-furniture.com`. Confirm their live runtime config contains `gatewayFunction` and `roomTokenParam`, and their active bundle no longer contains `/rest/v1/`.
+7. Rerun `docs/supabase_cloud_sync_multi_store.sql` immediately before cutover.
+8. Apply `docs/supabase_cloud_sync_legacy_lockdown.sql`. It fails if any legacy room is absent from the canonical table, enables and forces RLS on each legacy table, removes `anon`/`authenticated` privileges, and leaves `service_role` with read-only rollback access.
+9. Verify direct legacy REST access is rejected, then run the room-link and reconnect smoke tests on both production origins.
+
+If step 6 cannot be completed, stop before steps 7-8. The canonical schema and Edge Function may remain staged, but the legacy tables must stay available until the live clients are upgraded.
 
 Old private links contain only `room` and are intentionally rejected. Generate and share a new signed link from the main site after cutover; there is no insecure room-only fallback.
 
+## Gateway probes
+
+Use the deployed browser `anonKey` only as a public invocation key. Keep the room token returned by the first request out of logs and shell history.
+
+```bash
+export WP_SUPABASE_URL="https://paqzrxrvowwndevqptdk.supabase.co"
+export WP_SUPABASE_ANON_KEY="<legacy-anon-jwt>"
+
+curl --fail-with-body "$WP_SUPABASE_URL/functions/v1/wp-cloud-sync-room" \
+  -H 'Origin: https://pro.bargig-furniture.com' \
+  -H "apikey: $WP_SUPABASE_ANON_KEY" \
+  -H "Authorization: Bearer $WP_SUPABASE_ANON_KEY" \
+  -H 'Content-Type: application/json' \
+  --data '{"action":"issue-public","storeId":"bargig"}'
+```
+
+Expected checks:
+
+- both active origins receive HTTP 200 for `issue-public`
+- an unlisted origin receives HTTP 403 with code `origin`
+- a valid token can read only its base room and `::` subresources
+- a write with the current revision succeeds and increments `revision`
+- repeating the old `expectedRevision` receives HTTP 409 with code `revision_conflict`
+- a tampered token receives HTTP 403 with code `room_token`
+- direct `/rest/v1/wp_cloud_sync_rooms` and legacy-table requests with the anon key are rejected after lockdown
+- Edge Function logs contain no room token or payload
+
 ## Security and data-integrity contract
 
-- `anon` and `authenticated` have no `select`, `insert`, `update`, or `delete` privilege on Cloud Sync tables.
-- Only the Edge Function service role can read or compare-and-swap a row; it is not granted `delete` on room data.
+- `anon` and `authenticated` have no `select`, `insert`, `update`, or `delete` privilege on protected Cloud Sync tables.
+- Only the Edge Function's server role can read or compare-and-swap a canonical row; it has no `delete` privilege on room data.
 - Signed claims bind `tenantId`, `storeId`, the base room, permissions, and expiry.
 - A token may access only its base room and that room's internal `::` subresources.
 - Writes include `expectedRevision`; stale writes receive HTTP 409 with the current row.

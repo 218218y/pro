@@ -129,7 +129,7 @@ store-1 -> tenant/store store-1  + wp_cloud_sync_store_1
 store-2 -> tenant/store store-2  + wp_cloud_sync_store_2
 ```
 
-For an existing deployment, run `docs/supabase_cloud_sync_multi_store.sql` once after the canonical schema and Edge Function are deployed. It copies the former per-store rows into the protected table and locks the legacy tables; it does not preserve browser access to them.
+For an existing deployment, run `docs/supabase_cloud_sync_multi_store.sql` after the canonical schema is deployed and rerun it immediately before cutover. It copies or reconciles the former per-store rows without interrupting the still-live legacy client. Only after both production origins serve the signed-room client and the gateway probes pass may `docs/supabase_cloud_sync_legacy_lockdown.sql` revoke browser access to the legacy tables.
 
 ## Local browser data
 
