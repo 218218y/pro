@@ -23,11 +23,10 @@ export default {
     anonKey:
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhcXpyeHJ2b3d3bmRldnFwdGRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDExODcsImV4cCI6MjA4NTg3NzE4N30.hX4ciLINkSumjevU20rinv36wM7a72nZKr0TQYWs30o',
 
-    // Same Supabase project/account; separate table/channel per store to prevent collisions.
-    table: 'wp_shared_state_store_1',
+    gatewayFunction: 'wp-cloud-sync-room',
     publicRoom: 'public',
-    privateRoom: '',
     roomParam: 'room',
+    roomTokenParam: 'roomToken',
     shareBaseUrl: 'https://store-1-client.example.com/',
     pollMs: 1500,
     diagnostics: false,

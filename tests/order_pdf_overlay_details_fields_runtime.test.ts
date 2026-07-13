@@ -109,6 +109,6 @@ test('order pdf details fields runtime sanitizes explicit rich html before reuse
       html: '<div onclick="boom()"><span data-wp-auto="start" contenteditable="false"></span><script>alert(1)</script>Rich</div>',
       textApi: { safeStr, textToHtml },
     }),
-    '<div><span data-wp-auto="start" contenteditable="false"></span>alert(1)Rich</div>'
+    '<div><span data-wp-auto="start" contenteditable="false"></span>Rich</div>'
   );
 });

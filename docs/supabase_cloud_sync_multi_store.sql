@@ -1,84 +1,58 @@
--- WardrobePro multi-store Supabase Cloud Sync tables
+-- One-time migration from the former open per-store tables.
 --
--- Use this when multiple stores share the SAME Supabase project/account.
--- Existing Bargig table is intentionally left as public.wp_shared_state.
--- New stores get separate tables so their rooms/payloads do not collide.
---
--- IMPORTANT:
--- This matches the current app's open/no-login sync model.
--- Anyone with the anon key + room/table route can read/write that store table.
--- For real access control later, move to Auth + RLS policies or separate Supabase projects.
+-- Run docs/supabase_cloud_sync.sql first, deploy the Edge Function and signed-room
+-- client, then run this migration in the same maintenance window. The legacy
+-- tables are retained as locked rollback backups; remove them only after the new
+-- gateway has been verified in production and the backup retention window ends.
 
-create or replace function public.wp_set_updated_at()
-returns trigger
-language plpgsql
-as $$
+do $$
 begin
-  new.updated_at = now();
-  return new;
+  if to_regclass('public.wp_shared_state') is not null then
+    execute $sql$
+      insert into public.wp_cloud_sync_rooms
+        (tenant_id, store_id, room, payload, revision, updated_at, updated_by)
+      select 'bargig', 'bargig', room, payload, 1, updated_at, 'legacy-migration'
+      from public.wp_shared_state
+      on conflict (tenant_id, store_id, room) do nothing
+    $sql$;
+  end if;
+
+  if to_regclass('public.wp_shared_state_store_1') is not null then
+    execute $sql$
+      insert into public.wp_cloud_sync_rooms
+        (tenant_id, store_id, room, payload, revision, updated_at, updated_by)
+      select 'store-1', 'store-1', room, payload, 1, updated_at, 'legacy-migration'
+      from public.wp_shared_state_store_1
+      on conflict (tenant_id, store_id, room) do nothing
+    $sql$;
+  end if;
+
+  if to_regclass('public.wp_shared_state_store_2') is not null then
+    execute $sql$
+      insert into public.wp_cloud_sync_rooms
+        (tenant_id, store_id, room, payload, revision, updated_at, updated_by)
+      select 'store-2', 'store-2', room, payload, 1, updated_at, 'legacy-migration'
+      from public.wp_shared_state_store_2
+      on conflict (tenant_id, store_id, room) do nothing
+    $sql$;
+  end if;
 end;
 $$;
-
--- -------------------------
--- Store 1
--- -------------------------
-create table if not exists public.wp_shared_state_store_1 (
-  room text primary key,
-  payload jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now()
-);
-
-drop trigger if exists wp_shared_state_store_1_set_updated_at on public.wp_shared_state_store_1;
-create trigger wp_shared_state_store_1_set_updated_at
-before update on public.wp_shared_state_store_1
-for each row execute function public.wp_set_updated_at();
-
-insert into public.wp_shared_state_store_1 (room, payload)
-values ('public', '{}'::jsonb)
-on conflict (room) do nothing;
-
-alter table public.wp_shared_state_store_1 disable row level security;
-
-drop policy if exists "public read" on public.wp_shared_state_store_1;
-drop policy if exists "public insert" on public.wp_shared_state_store_1;
-drop policy if exists "public update" on public.wp_shared_state_store_1;
-drop policy if exists "public delete" on public.wp_shared_state_store_1;
-
-grant usage on schema public to anon, authenticated;
-grant select, insert, update, delete on table public.wp_shared_state_store_1 to anon;
-grant select, insert, update, delete on table public.wp_shared_state_store_1 to authenticated;
-
--- -------------------------
--- Store 2
--- -------------------------
-create table if not exists public.wp_shared_state_store_2 (
-  room text primary key,
-  payload jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now()
-);
-
-drop trigger if exists wp_shared_state_store_2_set_updated_at on public.wp_shared_state_store_2;
-create trigger wp_shared_state_store_2_set_updated_at
-before update on public.wp_shared_state_store_2
-for each row execute function public.wp_set_updated_at();
-
-insert into public.wp_shared_state_store_2 (room, payload)
-values ('public', '{}'::jsonb)
-on conflict (room) do nothing;
-
-alter table public.wp_shared_state_store_2 disable row level security;
-
-drop policy if exists "public read" on public.wp_shared_state_store_2;
-drop policy if exists "public insert" on public.wp_shared_state_store_2;
-drop policy if exists "public update" on public.wp_shared_state_store_2;
-drop policy if exists "public delete" on public.wp_shared_state_store_2;
-
-grant select, insert, update, delete on table public.wp_shared_state_store_2 to anon;
-grant select, insert, update, delete on table public.wp_shared_state_store_2 to authenticated;
-
--- Realtime note:
--- The app uses Supabase Realtime Broadcast as a lightweight hint channel and then pulls via REST.
--- No Postgres publication setup is required for Broadcast mode.
--- Store channel prefixes are configured in sites/store-1 and sites/store-2:
---   wp_cloud_sync_store_1
---   wp_cloud_sync_store_2
+do $$
+declare
+  table_name text;
+begin
+  foreach table_name in array array[
+    'wp_shared_state',
+    'wp_shared_state_store_1',
+    'wp_shared_state_store_2'
+  ]
+  loop
+    if to_regclass(format('public.%I', table_name)) is not null then
+      execute format('alter table public.%I enable row level security', table_name);
+      execute format('alter table public.%I force row level security', table_name);
+      execute format('revoke all on table public.%I from anon, authenticated, public', table_name);
+    end if;
+  end loop;
+end;
+$$;

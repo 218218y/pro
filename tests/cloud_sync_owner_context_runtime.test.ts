@@ -16,6 +16,7 @@ function createStorage(seed?: Record<string, string>) {
     KEYS: {
       SAVED_MODELS: 'saved-models',
       SAVED_COLORS: 'saved-colors',
+      PRIVATE_ROOM_CREDENTIAL: 'private-room-credential',
     },
     getString(key: unknown): string | null {
       const k = String(key || '');
@@ -32,9 +33,19 @@ function createBrowserApp(options?: { site2?: boolean; search?: string; diag?: s
   const session = new Map<string, string>();
   const local = new Map<string, string>();
   if (options?.diag) local.set('WP_CLOUDSYNC_DIAG', options.diag);
+  const pathname = options?.site2 ? '/index_site2.html' : '/index_pro.html';
   const location = {
+    href: `https://example.test${pathname}${options?.search || ''}`,
     search: options?.search || '',
-    pathname: options?.site2 ? '/index_site2.html' : '/index_pro.html',
+    pathname,
+  };
+  const history = {
+    state: null,
+    replaceState(state: unknown, _title: string, nextHref: string) {
+      history.state = state;
+      location.href = String(nextHref);
+      location.search = new URL(location.href).search;
+    },
   };
   const doc = {
     createElement() {
@@ -47,6 +58,7 @@ function createBrowserApp(options?: { site2?: boolean; search?: string; diag?: s
   const navigator = { clipboard: { writeText: async () => undefined }, userAgent: 'unit-test' };
   const win = {
     document: doc,
+    history,
     navigator,
     location,
     sessionStorage: {
@@ -86,8 +98,10 @@ function createBrowserApp(options?: { site2?: boolean; search?: string; diag?: s
         supabaseCloudSync: {
           url: 'https://example.supabase.co',
           anonKey: 'anon',
+          storeId: 'bargig',
+          gatewayFunction: 'wp-cloud-sync-room',
           publicRoom: 'public-room',
-          privateRoom: 'private-room',
+          roomTokenParam: 'roomToken',
         },
       },
     },
@@ -99,12 +113,21 @@ function createBrowserApp(options?: { site2?: boolean; search?: string; diag?: s
 }
 
 test('cloud sync owner context composes room helpers and per-tab client identity through dedicated seams', () => {
-  const { app, session } = createBrowserApp({ site2: true, search: '?room=room-42' });
+  const { app, session } = createBrowserApp({
+    site2: true,
+    search: '?room=room-42&roomToken=signed-room-token',
+  });
 
   const ctx = createCloudSyncOwnerContext(app as any);
   assert.ok(ctx);
   assert.equal(ctx?.room, 'room-42');
   assert.equal(ctx?.currentRoom(), 'room-42');
+  assert.equal(ctx?.currentRoomToken(), 'signed-room-token');
+  assert.equal(
+    ((app.deps as AnyRecord).browser as AnyRecord).location &&
+      (((app.deps as AnyRecord).browser as AnyRecord).location as AnyRecord).search,
+    '?room=room-42'
+  );
   assert.equal(ctx?.getGateBaseRoom(), 'room-42');
   assert.equal(ctx?.getSite2TabsRoom(), 'room-42::tabsGate');
   assert.equal(ctx?.getFloatingSyncRoom(), 'room-42::syncPin');
@@ -112,8 +135,9 @@ test('cloud sync owner context composes room helpers and per-tab client identity
   assert.match(String(ctx?.clientId || ''), /^client_/);
   assert.equal(session.get('wp_cloud_sync_client_id'), ctx?.clientId);
 
-  ctx?.setPrivateRoom('manual-private');
+  ctx?.setPrivateRoomCredential('manual-private', 'manual-token');
   assert.equal(ctx?.getPrivateRoom(), 'manual-private');
+  assert.equal(ctx?.getPrivateRoomToken(), 'manual-token');
   assert.equal(ctx?.keyModels, 'saved-models');
   assert.equal(ctx?.keyColors, 'saved-colors');
   assert.equal(ctx?.keyColorOrder, 'saved-colors:order');
@@ -125,7 +149,7 @@ test('cloud sync owner context uses the public room for gate rows when no room U
   const ctx = createCloudSyncOwnerContext(app as any);
   assert.ok(ctx);
   assert.equal(ctx?.currentRoom(), 'public-room');
-  assert.equal(ctx?.getPrivateRoom(), 'private-room');
+  assert.equal(ctx?.getPrivateRoom(), '');
   assert.equal(ctx?.getGateBaseRoom(), 'public-room');
   assert.equal(ctx?.getSite2TabsRoom(), 'public-room::tabsGate');
   assert.equal(ctx?.getFloatingSyncRoom(), 'public-room::syncPin');

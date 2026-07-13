@@ -15,7 +15,7 @@ import { createCloudSyncMainWriteSingleFlight } from './cloud_sync_main_write_si
 export type CreateCloudSyncMainRowOpsArgs = {
   App: AppContainer;
   cfg: SupabaseCfg;
-  restUrl: string;
+  gatewayUrl: string;
   room: string;
   storage: StorageLike;
   keyModels: string;

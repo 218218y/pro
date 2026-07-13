@@ -30,8 +30,8 @@ import {
 
 export type ResolvedCloudSyncUiActionCommands = {
   copyShareLinkCommand: (app: AppContainer) => Promise<CloudSyncShareLinkCommandResult>;
-  goPublicCommand: (app: AppContainer) => CloudSyncRoomModeCommandResult;
-  goPrivateCommand: (app: AppContainer) => CloudSyncRoomModeCommandResult;
+  goPublicCommand: (app: AppContainer) => Promise<CloudSyncRoomModeCommandResult>;
+  goPrivateCommand: (app: AppContainer) => Promise<CloudSyncRoomModeCommandResult>;
   syncSketchCommand: (app: AppContainer) => Promise<CloudSyncSketchCommandResult>;
   deleteModelsCommand: (app: AppContainer) => Promise<CloudSyncDeleteTempResult>;
   deleteColorsCommand: (app: AppContainer) => Promise<CloudSyncDeleteTempResult>;

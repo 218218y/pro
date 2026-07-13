@@ -31,7 +31,7 @@ test('cloud sync settled-write fallback reads stay quiet by default and only sta
     const quietSettled = await resolveCloudSyncSettledRowAfterWrite({
       returnedRow: null,
       reader: {
-        restUrl: 'https://example.test/rest',
+        gatewayUrl: 'https://example.test/rest',
         anonKey: 'anon',
         room: 'room-a',
         getRow: async () => {
@@ -57,7 +57,7 @@ test('cloud sync settled-write fallback reads stay quiet by default and only sta
     const countedSettled = await resolveCloudSyncSettledRowAfterWrite({
       returnedRow: null,
       reader: {
-        restUrl: 'https://example.test/rest',
+        gatewayUrl: 'https://example.test/rest',
         anonKey: 'anon',
         room: 'room-a',
         getRow: async () => ({ updated_at: '2026-04-15T12:01:00.000Z', payload: {} }) as any,

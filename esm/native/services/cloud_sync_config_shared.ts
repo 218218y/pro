@@ -13,10 +13,11 @@ export type SupabaseCfgRaw = { [K in keyof WardrobeProSupabaseCloudSyncConfig]?:
 export type SupabaseImportMetaEnvLike = UnknownRecord & {
   VITE_WP_SUPABASE_URL?: unknown;
   VITE_WP_SUPABASE_ANON_KEY?: unknown;
-  VITE_WP_SUPABASE_TABLE?: unknown;
+  VITE_WP_SUPABASE_STORE_ID?: unknown;
+  VITE_WP_SUPABASE_GATEWAY_FUNCTION?: unknown;
   VITE_WP_SUPABASE_PUBLIC_ROOM?: unknown;
-  VITE_WP_SUPABASE_PRIVATE_ROOM?: unknown;
   VITE_WP_SUPABASE_ROOM_PARAM?: unknown;
+  VITE_WP_SUPABASE_ROOM_TOKEN_PARAM?: unknown;
   VITE_WP_SUPABASE_POLL_MS?: unknown;
   VITE_WP_SUPABASE_SHARE_BASE_URL?: unknown;
   VITE_WP_SUPABASE_REALTIME?: unknown;
@@ -36,10 +37,11 @@ declare global {
 export type SupabaseCfg = {
   url: string;
   anonKey: string;
-  table: string;
+  storeId: string;
+  gatewayFunction: string;
   publicRoom: string;
-  privateRoom: string;
   roomParam: string;
+  roomTokenParam: string;
   pollMs: number;
   shareBaseUrl: string;
   realtime: boolean;
@@ -56,10 +58,11 @@ export function asSupabaseCfgRaw(v: unknown): SupabaseCfgRaw | null {
   const next: SupabaseCfgRaw = {
     url: rec.url,
     anonKey: rec.anonKey,
-    table: rec.table,
+    storeId: rec.storeId,
+    gatewayFunction: rec.gatewayFunction,
     publicRoom: rec.publicRoom,
-    privateRoom: rec.privateRoom,
     roomParam: rec.roomParam,
+    roomTokenParam: rec.roomTokenParam,
     pollMs: rec.pollMs,
     shareBaseUrl: rec.shareBaseUrl,
     realtime: rec.realtime,
@@ -105,10 +108,11 @@ export function hasAnySupabaseCfgKey(rec: SupabaseCfgRaw | null): boolean {
   return (
     rec.url !== undefined ||
     rec.anonKey !== undefined ||
-    rec.table !== undefined ||
+    rec.storeId !== undefined ||
+    rec.gatewayFunction !== undefined ||
     rec.publicRoom !== undefined ||
-    rec.privateRoom !== undefined ||
     rec.roomParam !== undefined ||
+    rec.roomTokenParam !== undefined ||
     rec.pollMs !== undefined ||
     rec.shareBaseUrl !== undefined ||
     rec.realtime !== undefined ||
@@ -133,22 +137,21 @@ function readCryptoRandomBytes(length: number): Uint8Array | null {
   }
 }
 
-function encodeRoomBytes(bytes: Uint8Array): string {
+function encodeIdBytes(bytes: Uint8Array): string {
   const alphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
   let out = '';
   for (const byte of bytes) out += alphabet[byte % alphabet.length];
   return out;
 }
 
-export function randomRoomId(): string {
+export function randomCloudSyncIdSegment(): string {
   const bytes = readCryptoRandomBytes(16);
-  if (bytes) return `room_${encodeRoomBytes(bytes)}`;
+  if (bytes) return encodeIdBytes(bytes);
 
-  // Non-browser test runtime path only. Runtime private-room mode persists the first
-  // generated room, so this does not rotate unexpectedly.
+  // Non-browser test runtime path only. Real room ids are issued exclusively by the gateway.
   const a = Math.random().toString(36).slice(2, 10);
   const b = Math.random().toString(36).slice(2, 10);
-  return `room_${a}${b}`;
+  return `${a}${b}`;
 }
 
 export function normalizeRealtimeMode(v: unknown): 'broadcast' {
@@ -156,10 +159,10 @@ export function normalizeRealtimeMode(v: unknown): 'broadcast' {
   return s === 'broadcast' ? 'broadcast' : 'broadcast';
 }
 
-export function buildRestUrl(baseUrl: string, table: string): string {
+export function buildGatewayUrl(baseUrl: string, gatewayFunction: string): string {
   const u = String(baseUrl || '').replace(/\/+$/, '');
-  const t = encodeURIComponent(String(table || 'wp_shared_state'));
-  return `${u}/rest/v1/${t}`;
+  const fn = encodeURIComponent(String(gatewayFunction || 'wp-cloud-sync-room'));
+  return `${u}/functions/v1/${fn}`;
 }
 
 export function makeHeaders(anonKey: string): HeadersInit {

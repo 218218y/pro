@@ -48,5 +48,5 @@ test('order pdf imported draft fields sanitize rich html payloads before persist
   });
 
   assert.equal(next.detailsHtml, '<div><span data-wp-auto="start" contenteditable="false"></span>פרט</div>');
-  assert.equal(next.notesHtml, '<div><font color="#123456" size="5">הערה</font>alert(1)</div>');
+  assert.equal(next.notesHtml, '<div><font color="#123456" size="5">הערה</font></div>');
 });

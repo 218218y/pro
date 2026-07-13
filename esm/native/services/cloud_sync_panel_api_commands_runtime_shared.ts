@@ -57,6 +57,7 @@ export function createCloudSyncPanelApiRuntimeShared(
   const {
     cfg,
     getCurrentRoom,
+    getCurrentRoomToken,
     runtimeStatus,
     updateDiagEnabled,
     getDiagStorageMaybe: readDiagStorageMaybe,
@@ -69,7 +70,7 @@ export function createCloudSyncPanelApiRuntimeShared(
     readDiagStorage: () => getCloudSyncDiagStorageMaybe(readDiagStorageMaybe),
     readClipboard: () => getCloudSyncClipboardMaybe(readClipboardMaybe),
     readPromptSink: () => getCloudSyncPromptSinkMaybe(readPromptSinkMaybe),
-    computeShareLink: (): string => buildCloudSyncShareLink(cfg, getCurrentRoom()),
+    computeShareLink: (): string => buildCloudSyncShareLink(cfg, getCurrentRoom(), getCurrentRoomToken()),
     syncRuntimeDiagnosticsEnabled: (): boolean => {
       const prevDiagEnabled = !!runtimeStatus.diagEnabled;
       updateDiagEnabled();

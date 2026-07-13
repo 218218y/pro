@@ -12,7 +12,7 @@ export async function writeDeleteTempPayloadAndApplyLocally(args: {
   const { owner, room, nextPayload } = args;
   const writeResult = await writeCloudSyncMainRowPayload({
     cfg: owner.cfg,
-    restUrl: owner.restUrl,
+    gatewayUrl: owner.gatewayUrl,
     room,
     payload: nextPayload,
     getRow: owner.getRow,

@@ -75,7 +75,7 @@ test('cloud sync tabs gate closes stale site2 UI on initial pull miss', async ()
     cfg: { anonKey: 'anon', roomParam: 'room', publicRoom: 'public' },
     storage,
     getGateBaseRoom: () => 'private-room',
-    restUrl: 'https://example.test',
+    gatewayUrl: 'https://example.test',
     clientId: 'client-1',
     getRow: async () => null,
     upsertRow: async () => ({ ok: true, row: null }),
@@ -106,7 +106,7 @@ test('cloud sync tabs gate uses the current gate base room for push and pull', a
     cfg: { anonKey: 'anon', roomParam: 'room', publicRoom: 'public' },
     storage,
     getGateBaseRoom: () => gateBaseRoom,
-    restUrl: 'https://example.test',
+    gatewayUrl: 'https://example.test',
     clientId: 'client-1',
     getRow: async (_rest, _anon, room) => {
       rooms.push(room);
@@ -137,9 +137,9 @@ test('cloud sync tabs gate defaults to the public room when no room URL is selec
 
   const ops = createCloudSyncTabsGateOps({
     App: app as any,
-    cfg: { anonKey: 'anon', roomParam: 'room', publicRoom: 'public', privateRoom: 'private-room' },
+    cfg: { anonKey: 'anon', roomParam: 'room', publicRoom: 'public' },
     storage,
-    restUrl: 'https://example.test',
+    gatewayUrl: 'https://example.test',
     clientId: 'client-1',
     getRow: async (_rest, _anon, room) => {
       rooms.push(room);
@@ -168,10 +168,9 @@ test('cloud sync tabs gate public-room push is visible to site2 public-room pull
         anonKey: 'anon',
         roomParam: 'room',
         publicRoom: 'public',
-        privateRoom: `${siteVariant}-private`,
       },
       storage: createStorage(),
-      restUrl: 'https://example.test',
+      gatewayUrl: 'https://example.test',
       clientId: `${siteVariant}-client`,
       getRow: async (_rest, _anon, room) => (rows.get(room) || null) as any,
       upsertRow: async (_rest, _anon, room, payload) => {
@@ -210,7 +209,7 @@ test('cloud sync tabs gate site2 ignores local open fallback when cloud row is m
     cfg: { anonKey: 'anon', roomParam: 'room', publicRoom: 'public' },
     storage,
     getGateBaseRoom: () => 'private-room',
-    restUrl: 'https://example.test',
+    gatewayUrl: 'https://example.test',
     clientId: 'client-1',
     getRow: async () => null,
     upsertRow: async () => ({ ok: true, row: null }),
@@ -244,7 +243,7 @@ test('cloud sync tabs gate snapshot subscription tracks minute boundaries and ex
       cfg: { anonKey: 'anon', roomParam: 'room', publicRoom: 'public' },
       storage,
       getGateBaseRoom: () => 'private-room',
-      restUrl: 'https://example.test',
+      gatewayUrl: 'https://example.test',
       clientId: 'client-1',
       getRow: async () => null,
       upsertRow: async () => ({ ok: true, row: null }),
@@ -295,7 +294,7 @@ test('cloud sync tabs gate direct push reports controller-only canonically on si
     cfg: { anonKey: 'anon', roomParam: 'room', publicRoom: 'public' },
     storage,
     getGateBaseRoom: () => 'private-room',
-    restUrl: 'https://example.test',
+    gatewayUrl: 'https://example.test',
     clientId: 'client-1',
     getRow: async () => null,
     upsertRow: async () => ({ ok: true, row: null }),
@@ -324,7 +323,7 @@ test('cloud sync tabs gate push shares app-scoped ownership across ops instances
       cfg: { anonKey: 'anon', roomParam: 'room', publicRoom: 'public' },
       storage,
       getGateBaseRoom: () => 'private-room',
-      restUrl: 'https://example.test',
+      gatewayUrl: 'https://example.test',
       clientId: 'client-1',
       getRow: async () => null,
       upsertRow: async (_rest, _anon, room, payload) => {

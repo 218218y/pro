@@ -12,7 +12,7 @@ export type CloudSyncMainRealtimeHintReader = () => CloudSyncRealtimeHintSender 
 
 export type WriteCloudSyncMainRowPayloadArgs = {
   cfg: SupabaseCfg;
-  restUrl: string;
+  gatewayUrl: string;
   room: string;
   payload: CloudSyncPayload;
   getRow: CloudSyncGetRowFn;
@@ -45,9 +45,7 @@ function readCloudSyncMainRowSettled(args: {
 export async function writeCloudSyncMainRowPayload(
   args: WriteCloudSyncMainRowPayloadArgs
 ): Promise<WriteCloudSyncMainRowPayloadResult> {
-  const res = await args.upsertRow(args.restUrl, args.cfg.anonKey, args.room, args.payload, {
-    returnRepresentation: true,
-  });
+  const res = await args.upsertRow(args.gatewayUrl, args.cfg.anonKey, args.room, args.payload);
   if (!res.ok) return { ok: false, row: null, payload: args.payload, settled: false };
 
   publishCloudSyncWriteActivity({
@@ -61,7 +59,7 @@ export async function writeCloudSyncMainRowPayload(
   const settledRow = await resolveCloudSyncSettledRowAfterWrite({
     returnedRow: res.row,
     reader: {
-      restUrl: args.restUrl,
+      gatewayUrl: args.gatewayUrl,
       anonKey: args.cfg.anonKey,
       room: args.room,
       getRow: args.getRow,

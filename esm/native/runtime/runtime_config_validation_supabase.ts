@@ -15,7 +15,13 @@ import {
 
 type SupabaseStringKey = keyof Pick<
   WardrobeProSupabaseCloudSyncConfig,
-  'table' | 'publicRoom' | 'privateRoom' | 'roomParam' | 'shareBaseUrl' | 'realtimeChannelPrefix'
+  | 'storeId'
+  | 'gatewayFunction'
+  | 'publicRoom'
+  | 'roomParam'
+  | 'roomTokenParam'
+  | 'shareBaseUrl'
+  | 'realtimeChannelPrefix'
 >;
 type SupabaseBooleanKey = keyof Pick<
   WardrobeProSupabaseCloudSyncConfig,
@@ -23,10 +29,11 @@ type SupabaseBooleanKey = keyof Pick<
 >;
 
 const SUPABASE_STRING_KEYS: readonly SupabaseStringKey[] = [
-  'table',
+  'storeId',
+  'gatewayFunction',
   'publicRoom',
-  'privateRoom',
   'roomParam',
+  'roomTokenParam',
   'shareBaseUrl',
   'realtimeChannelPrefix',
 ];
@@ -61,6 +68,17 @@ export function validateSupabaseCloudSync(
 
   const cfg = cloneSupabaseCloudSync(raw);
 
+  for (const retiredKey of ['table', 'privateRoom'] as const) {
+    if (typeof readOwn(cfg, retiredKey) === 'undefined') continue;
+    issues.push({
+      kind: opts.failFast ? 'error' : 'warn',
+      path: `supabaseCloudSync.${retiredKey}`,
+      message: `${retiredKey} is retired; Cloud Sync uses the signed-room gateway`,
+    });
+    deleteOwn(cfg, retiredKey);
+    if (opts.failFast) return null;
+  }
+
   const url = asString(cfg.url);
   const anonKey = asString(cfg.anonKey);
   if (!url || !anonKey) {
@@ -72,13 +90,21 @@ export function validateSupabaseCloudSync(
   cfg.url = url;
   cfg.anonKey = anonKey;
 
+  const storeId = asString(cfg.storeId);
+  if (!storeId || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(storeId)) {
+    issues.push({
+      kind: opts.failFast ? 'error' : 'warn',
+      path: 'supabaseCloudSync.storeId',
+      message: 'storeId is required and must use lowercase kebab-case',
+    });
+    if (opts.failFast) return null;
+    return null;
+  }
+  cfg.storeId = storeId;
+
   for (const key of SUPABASE_STRING_KEYS) {
     const value = readOwn(cfg, key);
     if (typeof value === 'undefined' || value === null) continue;
-    if (key === 'privateRoom' && typeof value === 'string') {
-      writeOwn(cfg, key, value.trim());
-      continue;
-    }
     const next = asString(value);
     if (!next) {
       issues.push({

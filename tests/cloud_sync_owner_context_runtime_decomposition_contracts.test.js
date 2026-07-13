@@ -38,7 +38,7 @@ test('cloud sync owner context runtime keeps a thin facade over shared/access/cl
       /getBrowserTimers\(/,
       /getStorageServiceMaybe\(/,
       /sessionStorage/,
-      /randomRoomId\(/,
+      /randomCloudSyncIdSegment\(/,
     ],
     'cloud sync owner context runtime facade'
   );
@@ -64,7 +64,7 @@ test('cloud sync owner context runtime keeps a thin facade over shared/access/cl
       /getBrowserFetchMaybe\(/,
       /getBrowserTimers\(/,
       /getStorageServiceMaybe\(/,
-      /createCloudSyncOwnerRestIo/,
+      /createCloudSyncOwnerGatewayIo/,
       /createCloudSyncOwnerTimers/,
       /resolveCloudSyncOwnerStorage/,
     ],
@@ -74,7 +74,7 @@ test('cloud sync owner context runtime keeps a thin facade over shared/access/cl
   assertMatchesAll(
     assert,
     client,
-    [/sessionStorage/, /randomRoomId\(/, /resolveCloudSyncClientId/, /CLOUD_SYNC_CLIENT_KEY/],
+    [/sessionStorage/, /randomCloudSyncIdSegment\(/, /resolveCloudSyncClientId/, /CLOUD_SYNC_CLIENT_KEY/],
     'cloud sync owner context runtime client'
   );
 });

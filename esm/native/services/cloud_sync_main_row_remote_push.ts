@@ -12,7 +12,7 @@ export function createCloudSyncMainRowPushNow(
 ): () => Promise<void> {
   const {
     cfg,
-    restUrl,
+    gatewayUrl,
     room,
     getRow,
     upsertRow,
@@ -46,7 +46,7 @@ export function createCloudSyncMainRowPushNow(
 
           const writeResult = await writeCloudSyncMainRowPayload({
             cfg,
-            restUrl,
+            gatewayUrl,
             room,
             payload: buildCloudSyncMainRowPayload(local),
             getRow,

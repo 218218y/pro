@@ -26,7 +26,7 @@ export function createCloudSyncSketchSyncNow(
     cfg,
     storage,
     getGateBaseRoom,
-    restUrl,
+    gatewayUrl,
     clientId,
     currentRoom,
     getRow,
@@ -48,7 +48,7 @@ export function createCloudSyncSketchSyncNow(
       if (!snap) return { ok: false, reason: 'capture' };
 
       const existing = await readCloudSyncRowWithPullActivity({
-        restUrl,
+        gatewayUrl,
         anonKey: cfg.anonKey,
         room: sketchRoom,
         getRow,
@@ -67,7 +67,7 @@ export function createCloudSyncSketchSyncNow(
         sketchBy: clientId,
       };
 
-      const res = await upsertRow(restUrl, cfg.anonKey, sketchRoom, payload, { returnRepresentation: true });
+      const res = await upsertRow(gatewayUrl, cfg.anonKey, sketchRoom, payload);
       if (!res.ok) return { ok: false, reason: 'write' };
       publishCloudSyncWriteActivity({
         runtimeStatus,
@@ -79,7 +79,7 @@ export function createCloudSyncSketchSyncNow(
 
       await resolveCloudSyncSettledRowAfterWrite({
         returnedRow: res.row,
-        reader: { restUrl, anonKey: cfg.anonKey, room: sketchRoom, getRow },
+        reader: { gatewayUrl, anonKey: cfg.anonKey, room: sketchRoom, getRow },
         runtimeStatus,
         publishStatus,
         onSettledUpdatedAt: value => {

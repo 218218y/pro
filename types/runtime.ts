@@ -46,10 +46,11 @@ export type WardrobeProTabId = TabId;
 export interface WardrobeProSupabaseCloudSyncConfig {
   url?: string;
   anonKey?: string;
-  table?: string;
+  storeId?: string;
+  gatewayFunction?: string;
   publicRoom?: string;
-  privateRoom?: string;
   roomParam?: string;
+  roomTokenParam?: string;
   pollMs?: number;
   shareBaseUrl?: string;
   realtime?: boolean;

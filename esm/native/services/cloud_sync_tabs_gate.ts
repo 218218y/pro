@@ -17,13 +17,16 @@ import {
 import { createCloudSyncTabsGateRemoteOps } from './cloud_sync_tabs_gate_remote.js';
 import type { CloudSyncRealtimeHintSender } from './cloud_sync_pull_scopes.js';
 
-type GetCloudSyncRow = (restUrl: string, anonKey: string, room: string) => Promise<CloudSyncStateRow | null>;
+type GetCloudSyncRow = (
+  gatewayUrl: string,
+  anonKey: string,
+  room: string
+) => Promise<CloudSyncStateRow | null>;
 type UpsertCloudSyncRow = (
-  restUrl: string,
+  gatewayUrl: string,
   anonKey: string,
   room: string,
-  payload: CloudSyncTabsGatePayload,
-  opts?: { returnRepresentation?: boolean }
+  payload: CloudSyncTabsGatePayload
 ) => Promise<CloudSyncUpsertResult>;
 
 type CreateCloudSyncTabsGateOpsDeps = {
@@ -31,7 +34,7 @@ type CreateCloudSyncTabsGateOpsDeps = {
   cfg: CloudSyncTabsGateConfig;
   storage: StorageLike;
   getGateBaseRoom?: () => string;
-  restUrl: string;
+  gatewayUrl: string;
   clientId: string;
   getRow: GetCloudSyncRow;
   upsertRow: UpsertCloudSyncRow;
@@ -60,7 +63,7 @@ export function createCloudSyncTabsGateOps(deps: CreateCloudSyncTabsGateOpsDeps)
     cfg,
     storage,
     getGateBaseRoom,
-    restUrl,
+    gatewayUrl,
     clientId,
     getRow,
     upsertRow,
@@ -83,7 +86,7 @@ export function createCloudSyncTabsGateOps(deps: CreateCloudSyncTabsGateOpsDeps)
   const remote = createCloudSyncTabsGateRemoteOps({
     App,
     cfg,
-    restUrl,
+    gatewayUrl,
     clientId,
     getRow,
     upsertRow,

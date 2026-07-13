@@ -13,7 +13,7 @@ export function createCloudSyncInstallRuntimeOps(args: CloudSyncInstallRuntimeAr
   const { App, ownerContext, suppressRef, getSendRealtimeHint } = args;
   const {
     cfg,
-    restUrl,
+    gatewayUrl,
     setTimeoutFn,
     clearTimeoutFn,
     getRow,
@@ -40,7 +40,7 @@ export function createCloudSyncInstallRuntimeOps(args: CloudSyncInstallRuntimeAr
     cfg,
     storage,
     getGateBaseRoom,
-    restUrl,
+    gatewayUrl,
     clientId,
     getRow,
     upsertRow,
@@ -56,7 +56,7 @@ export function createCloudSyncInstallRuntimeOps(args: CloudSyncInstallRuntimeAr
     cfg,
     storage,
     getGateBaseRoom,
-    restUrl,
+    gatewayUrl,
     clientId,
     currentRoom,
     getRow,
@@ -70,7 +70,7 @@ export function createCloudSyncInstallRuntimeOps(args: CloudSyncInstallRuntimeAr
   const cloudSyncMainRow = createCloudSyncMainRowOps({
     App,
     cfg,
-    restUrl,
+    gatewayUrl,
     room,
     storage,
     keyModels,
@@ -92,7 +92,7 @@ export function createCloudSyncInstallRuntimeOps(args: CloudSyncInstallRuntimeAr
   const { deleteTemporaryModelsInCloud, deleteTemporaryColorsInCloud } = createCloudSyncDeleteTempOps({
     App,
     cfg,
-    restUrl,
+    gatewayUrl,
     storage,
     keyModels,
     keyColors,

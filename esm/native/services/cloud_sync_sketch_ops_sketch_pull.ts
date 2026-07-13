@@ -15,8 +15,17 @@ export function createCloudSyncSketchPullOnce(
   deps: CreateCloudSyncSketchRoomOpsDeps,
   state: CloudSyncSketchRoomMutableState
 ): (isInitial: boolean) => Promise<void> {
-  const { App, cfg, storage, getGateBaseRoom, restUrl, currentRoom, getRow, runtimeStatus, publishStatus } =
-    deps;
+  const {
+    App,
+    cfg,
+    storage,
+    getGateBaseRoom,
+    gatewayUrl,
+    currentRoom,
+    getRow,
+    runtimeStatus,
+    publishStatus,
+  } = deps;
 
   return async (isInitial: boolean): Promise<void> => {
     try {
@@ -27,7 +36,7 @@ export function createCloudSyncSketchPullOnce(
       if (!sketchRoom) return;
 
       const row = await readCloudSyncRowWithPullActivity({
-        restUrl,
+        gatewayUrl,
         anonKey: cfg.anonKey,
         room: sketchRoom,
         getRow,

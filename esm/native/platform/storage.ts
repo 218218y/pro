@@ -15,7 +15,7 @@ export type StorageKeys = {
   SAVED_COLORS: string;
   SAVED_MODELS: string;
   AUTOSAVE_LATEST: string;
-  PRIVATE_ROOM: string;
+  PRIVATE_ROOM_CREDENTIAL: string;
 };
 
 export type StorageApi = {
@@ -43,7 +43,7 @@ const STORAGE_KEYS: StorageKeys = Object.freeze({
   SAVED_COLORS: 'wardrobeSavedColors',
   SAVED_MODELS: 'wardrobeSavedModels',
   AUTOSAVE_LATEST: 'wardrobe_autosave_latest',
-  PRIVATE_ROOM: 'wp_private_room',
+  PRIVATE_ROOM_CREDENTIAL: 'wp_private_room_credential',
 });
 
 function readStorageNamespace(app: unknown): string {
@@ -73,7 +73,7 @@ function createStorageKeys(app: unknown): StorageKeys {
     SAVED_COLORS: applyNamespaceToKey(ns, STORAGE_KEYS.SAVED_COLORS),
     SAVED_MODELS: applyNamespaceToKey(ns, STORAGE_KEYS.SAVED_MODELS),
     AUTOSAVE_LATEST: applyNamespaceToKey(ns, STORAGE_KEYS.AUTOSAVE_LATEST),
-    PRIVATE_ROOM: applyNamespaceToKey(ns, STORAGE_KEYS.PRIVATE_ROOM),
+    PRIVATE_ROOM_CREDENTIAL: applyNamespaceToKey(ns, STORAGE_KEYS.PRIVATE_ROOM_CREDENTIAL),
   });
 }
 

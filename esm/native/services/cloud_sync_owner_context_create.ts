@@ -1,13 +1,13 @@
 import type { AppContainer } from '../../../types';
 
 import { _cloudSyncReportNonFatal } from './cloud_sync_support.js';
-import { readCfg, buildRestUrl } from './cloud_sync_config.js';
+import { readCfg, buildGatewayUrl } from './cloud_sync_config.js';
 import {
   CLOUD_SYNC_DIAG_LS_KEY,
   resolveCloudSyncOwnerStorageKeys,
 } from './cloud_sync_owner_context_runtime_shared.js';
 import {
-  createCloudSyncOwnerRestIo,
+  createCloudSyncOwnerGatewayIo,
   createCloudSyncOwnerTimers,
   resolveCloudSyncOwnerStorage,
 } from './cloud_sync_owner_context_runtime_access.js';
@@ -24,13 +24,10 @@ import {
 
 export function createCloudSyncOwnerContext(App: AppContainer): CloudSyncOwnerContext | null {
   const cfg = readCfg(App);
-  if (!cfg.url || !cfg.anonKey) return null;
+  if (!cfg.url || !cfg.anonKey || !cfg.storeId) return null;
 
-  const restUrl = buildRestUrl(cfg.url, cfg.table);
+  const gatewayUrl = buildGatewayUrl(cfg.url, cfg.gatewayFunction);
   const timers = createCloudSyncOwnerTimers(App);
-  const restIo = createCloudSyncOwnerRestIo(App);
-  if (!restIo) return null;
-
   const storage = resolveCloudSyncOwnerStorage(App);
   if (!storage) return null;
 
@@ -41,11 +38,13 @@ export function createCloudSyncOwnerContext(App: AppContainer): CloudSyncOwnerCo
     room,
     currentRoom,
     getPrivateRoom,
-    setPrivateRoom,
     getGateBaseRoom,
     getSketchRoom,
     getSite2TabsRoom,
     getFloatingSyncRoom,
+    currentRoomToken,
+    getPrivateRoomToken,
+    setPrivateRoomCredential,
   } = createCloudSyncOwnerRooms({
     App,
     cfg,
@@ -54,6 +53,25 @@ export function createCloudSyncOwnerContext(App: AppContainer): CloudSyncOwnerCo
   });
 
   const clientId = resolveCloudSyncClientId(App, _cloudSyncReportNonFatal);
+  const gatewayIo = createCloudSyncOwnerGatewayIo({
+    App,
+    cfg,
+    gatewayUrl,
+    rooms: {
+      room,
+      currentRoom,
+      currentRoomToken,
+      getPrivateRoom,
+      getPrivateRoomToken,
+      setPrivateRoomCredential,
+      getGateBaseRoom,
+      getSketchRoom,
+      getSite2TabsRoom,
+      getFloatingSyncRoom,
+    },
+    clientId,
+  });
+  if (!gatewayIo) return null;
   const publicationEpoch = reserveCloudSyncPublicationEpoch(App);
   const statusRuntime = createCloudSyncOwnerStatusRuntime({
     App,
@@ -69,13 +87,14 @@ export function createCloudSyncOwnerContext(App: AppContainer): CloudSyncOwnerCo
 
   return {
     cfg,
-    restUrl,
+    gatewayUrl: gatewayUrl,
     setTimeoutFn: timers.setTimeoutFn,
     clearTimeoutFn: timers.clearTimeoutFn,
     setIntervalFn: timers.setIntervalFn,
     clearIntervalFn: timers.clearIntervalFn,
-    getRow: restIo.getRow,
-    upsertRow: restIo.upsertRow,
+    getRow: gatewayIo.getRow,
+    upsertRow: gatewayIo.upsertRow,
+    issuePrivateRoom: gatewayIo.issuePrivateRoom,
     storage,
     keyModels,
     keyColors,
@@ -84,8 +103,10 @@ export function createCloudSyncOwnerContext(App: AppContainer): CloudSyncOwnerCo
     keyHiddenPresets,
     room,
     currentRoom,
+    currentRoomToken,
     getPrivateRoom,
-    setPrivateRoom,
+    getPrivateRoomToken,
+    setPrivateRoomCredential,
     getGateBaseRoom,
     getSketchRoom,
     getSite2TabsRoom,

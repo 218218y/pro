@@ -7,6 +7,7 @@ import {
   cloudSyncPanelApiCopyShareLinkFlights,
   cloudSyncPanelApiDeleteTempFlights,
   cloudSyncPanelApiFloatingSyncFlights,
+  cloudSyncPanelApiRoomModeFlights,
   cloudSyncPanelApiSite2TabsGateFlights,
   cloudSyncPanelApiSyncSketchFlights,
 } from './cloud_sync_panel_api_commands_shared.js';
@@ -30,6 +31,22 @@ export function createCloudSyncPanelApiSingleFlightCommands(args: {
   const owner = deps.App;
 
   return {
+    goPublic: (): ReturnType<NonNullable<typeof runtime.goPublic>> =>
+      runCloudSyncPanelApiSingleFlight({
+        owner,
+        flights: cloudSyncPanelApiRoomModeFlights,
+        key: 'public',
+        run: () => runtime.goPublic(),
+        onBusy: () => ({ ok: false, mode: 'public', reason: 'busy' }),
+      }),
+    goPrivate: (): ReturnType<NonNullable<typeof runtime.goPrivate>> =>
+      runCloudSyncPanelApiSingleFlight({
+        owner,
+        flights: cloudSyncPanelApiRoomModeFlights,
+        key: 'private',
+        run: () => runtime.goPrivate(),
+        onBusy: () => ({ ok: false, mode: 'private', reason: 'busy' }),
+      }),
     copyShareLink: (): ReturnType<NonNullable<typeof runtime.copyShareLink>> =>
       runCloudSyncPanelApiSingleFlight({
         owner,

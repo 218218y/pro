@@ -10,7 +10,7 @@ export function createCloudSyncFloatingSketchSyncPullOnce(
   deps: CreateCloudSyncFloatingSketchSyncOpsDeps,
   state: CloudSyncFloatingSketchSyncMutableState
 ): (isInitial: boolean) => Promise<void> {
-  const { App, cfg, storage, getGateBaseRoom, restUrl, getRow, runtimeStatus, publishStatus } = deps;
+  const { App, cfg, storage, getGateBaseRoom, gatewayUrl, getRow, runtimeStatus, publishStatus } = deps;
 
   return async (isInitial: boolean): Promise<void> => {
     const roomNow = resolveFloatingSketchSyncRoom({
@@ -23,7 +23,7 @@ export function createCloudSyncFloatingSketchSyncPullOnce(
     if (!roomNow) return;
 
     const row = await readCloudSyncRowWithPullActivity({
-      restUrl,
+      gatewayUrl,
       anonKey: cfg.anonKey,
       room: roomNow,
       getRow,

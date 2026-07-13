@@ -60,7 +60,7 @@ test('cloud sync tabs gate reuses snapshot/expiry timers and suppresses duplicat
       cfg: { anonKey: 'anon', roomParam: 'room', publicRoom: 'public' },
       storage: {},
       getGateBaseRoom: () => 'private-room',
-      restUrl: 'https://example.test',
+      gatewayUrl: 'https://example.test',
       clientId: 'client-1',
       getRow: async () => null,
       upsertRow: async () => ({ ok: true, row: null }) as any,

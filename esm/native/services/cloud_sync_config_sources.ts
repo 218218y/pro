@@ -32,10 +32,11 @@ export function readCfgFromImportMetaEnv(): SupabaseCfgRaw | null {
     const env: SupabaseImportMetaEnvLike = {
       VITE_WP_SUPABASE_URL: envRec.VITE_WP_SUPABASE_URL,
       VITE_WP_SUPABASE_ANON_KEY: envRec.VITE_WP_SUPABASE_ANON_KEY,
-      VITE_WP_SUPABASE_TABLE: envRec.VITE_WP_SUPABASE_TABLE,
+      VITE_WP_SUPABASE_STORE_ID: envRec.VITE_WP_SUPABASE_STORE_ID,
+      VITE_WP_SUPABASE_GATEWAY_FUNCTION: envRec.VITE_WP_SUPABASE_GATEWAY_FUNCTION,
       VITE_WP_SUPABASE_PUBLIC_ROOM: envRec.VITE_WP_SUPABASE_PUBLIC_ROOM,
-      VITE_WP_SUPABASE_PRIVATE_ROOM: envRec.VITE_WP_SUPABASE_PRIVATE_ROOM,
       VITE_WP_SUPABASE_ROOM_PARAM: envRec.VITE_WP_SUPABASE_ROOM_PARAM,
+      VITE_WP_SUPABASE_ROOM_TOKEN_PARAM: envRec.VITE_WP_SUPABASE_ROOM_TOKEN_PARAM,
       VITE_WP_SUPABASE_POLL_MS: envRec.VITE_WP_SUPABASE_POLL_MS,
       VITE_WP_SUPABASE_SHARE_BASE_URL: envRec.VITE_WP_SUPABASE_SHARE_BASE_URL,
       VITE_WP_SUPABASE_REALTIME: envRec.VITE_WP_SUPABASE_REALTIME,
@@ -49,10 +50,11 @@ export function readCfgFromImportMetaEnv(): SupabaseCfgRaw | null {
     const rec: SupabaseCfgRaw = {
       url: env.VITE_WP_SUPABASE_URL,
       anonKey: env.VITE_WP_SUPABASE_ANON_KEY,
-      table: env.VITE_WP_SUPABASE_TABLE,
+      storeId: env.VITE_WP_SUPABASE_STORE_ID,
+      gatewayFunction: env.VITE_WP_SUPABASE_GATEWAY_FUNCTION,
       publicRoom: env.VITE_WP_SUPABASE_PUBLIC_ROOM,
-      privateRoom: env.VITE_WP_SUPABASE_PRIVATE_ROOM,
       roomParam: env.VITE_WP_SUPABASE_ROOM_PARAM,
+      roomTokenParam: env.VITE_WP_SUPABASE_ROOM_TOKEN_PARAM,
       pollMs: env.VITE_WP_SUPABASE_POLL_MS,
       shareBaseUrl: env.VITE_WP_SUPABASE_SHARE_BASE_URL,
       realtime: env.VITE_WP_SUPABASE_REALTIME,
@@ -76,10 +78,11 @@ export function readCfg(App: AppContainer): SupabaseCfg {
 
   const url = asString(rec?.url) || '';
   const anonKey = asString(rec?.anonKey) || '';
-  const table = asString(rec?.table) || 'wp_shared_state';
+  const storeId = asString(rec?.storeId) || '';
+  const gatewayFunction = asString(rec?.gatewayFunction) || 'wp-cloud-sync-room';
   const publicRoom = asString(rec?.publicRoom) || 'public';
-  const privateRoom = asString(rec?.privateRoom) || '';
   const roomParam = asString(rec?.roomParam) || 'room';
+  const roomTokenParam = asString(rec?.roomTokenParam) || 'roomToken';
   const pollMs = asNumber(rec?.pollMs) ?? 2000;
   const shareBaseUrl = asString(rec?.shareBaseUrl) || 'https://pro218.bargig-furniture.com/';
   const realtime = asBool(rec?.realtime) ?? true;
@@ -92,10 +95,11 @@ export function readCfg(App: AppContainer): SupabaseCfg {
   return {
     url,
     anonKey,
-    table,
+    storeId,
+    gatewayFunction,
     publicRoom,
-    privateRoom,
     roomParam,
+    roomTokenParam,
     pollMs,
     shareBaseUrl,
     realtime,

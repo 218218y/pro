@@ -1,4 +1,5 @@
 import type { OrderPdfDraft } from './order_pdf_overlay_contracts.js';
+import { sanitizeHtmlByPolicy } from '../../html_sanitize_runtime.js';
 import {
   createOrderPdfInitialDetailsFields,
   hasOrderPdfTextValue,
@@ -53,7 +54,7 @@ function readImportedRichTextAsPlainText(args: {
 }): string {
   const explicitText = safeStr(args.text);
   if (explicitText) return explicitText;
-  const html = safeStr(args.html);
+  const html = sanitizeHtmlByPolicy(null, safeStr(args.html), 'order-pdf-rich');
   if (!html) return '';
   try {
     return htmlToTextPreserveNewlines(null, html).trimEnd();

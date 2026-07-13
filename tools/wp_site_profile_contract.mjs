@@ -8,7 +8,6 @@ import { loadSiteProfile, resolveProfileAsset } from './wp_site_profiles.mjs';
 const VALID_RELEASE_STATUSES = new Set(['active', 'draft']);
 const PLACEHOLDER_HOST_RE = /(?:^|\.)(?:example\.(?:com|org|net)|invalid|test)$/i;
 const STORE_ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const SQL_IDENTIFIER_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
 function normalizeRel(projectRoot, file) {
   return path.relative(projectRoot, file).replace(/\\/g, '/');
@@ -70,8 +69,8 @@ export function validateSiteProfile({ projectRoot = process.cwd(), profile }) {
   if (profile.id !== 'bargig' && !profile.storageNamespace) {
     addIssue(errors, profile, 'missing-storage-namespace', 'non-Bargig stores require storageNamespace');
   }
-  if (!SQL_IDENTIFIER_RE.test(profile.supabase.table)) {
-    addIssue(errors, profile, 'invalid-table', `invalid Supabase table name: ${profile.supabase.table}`);
+  if (!profile.supabase.gatewayFunction) {
+    addIssue(errors, profile, 'missing-gateway-function', 'gatewayFunction is required');
   }
   if (!profile.supabase.realtimeChannelPrefix) {
     addIssue(errors, profile, 'missing-channel-prefix', 'realtimeChannelPrefix is required');
@@ -166,12 +165,6 @@ export async function auditSiteProfiles(projectRoot = process.cwd()) {
     ),
     ...collectDuplicateIssues(
       profiles,
-      'supabase-table',
-      profile => profile.supabase.table,
-      'Supabase table'
-    ),
-    ...collectDuplicateIssues(
-      profiles,
       'realtime-channel-prefix',
       profile => profile.supabase.realtimeChannelPrefix,
       'realtimeChannelPrefix'
@@ -184,7 +177,7 @@ export async function auditSiteProfiles(projectRoot = process.cwd()) {
       id: profile.id,
       releaseStatus: profile.releaseStatus,
       storageNamespace: profile.storageNamespace,
-      supabaseTable: profile.supabase.table,
+      gatewayFunction: profile.supabase.gatewayFunction,
       realtimeChannelPrefix: profile.supabase.realtimeChannelPrefix,
     })),
     errors,

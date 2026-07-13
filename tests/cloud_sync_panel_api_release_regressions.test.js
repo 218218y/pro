@@ -23,7 +23,12 @@ test('cloud sync panel api shares upstream subscriptions and clones published sn
 
   const api = createCloudSyncPanelApi({
     App: {},
-    cfg: { publicRoom: 'public', roomParam: 'room', shareBaseUrl: 'https://example.test/' },
+    cfg: {
+      publicRoom: 'public',
+      roomParam: 'room',
+      roomTokenParam: 'roomToken',
+      shareBaseUrl: 'https://example.test/',
+    },
     clientId: 'client-1',
     diagEnabledRef: { value: false },
     tabsGateOpenRef: { value: false },
@@ -41,10 +46,12 @@ test('cloud sync panel api shares upstream subscriptions and clones published sn
       };
     },
     getCurrentRoom: () => 'public',
+    getCurrentRoomToken: () => '',
     getPrivateRoom: () => '',
-    setPrivateRoom: () => {},
-    randomRoomId: () => 'generated-room',
-    setRoomInUrl: () => {},
+    getPrivateRoomToken: () => '',
+    setPrivateRoomCredential: () => {},
+    issuePrivateRoom: async () => null,
+    setRoomCredentialInUrl: () => true,
     cloneRuntimeStatus: next => ({ ...next }),
     runtimeStatus: { diagEnabled: false },
     updateDiagEnabled: () => {},

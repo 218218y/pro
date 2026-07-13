@@ -44,7 +44,7 @@ test('cloud sync sketch pull only toasts success when project load really succee
       site2SketchInitialMaxAgeHours: 12,
     },
     storage: {},
-    restUrl: 'https://example.invalid',
+    gatewayUrl: 'https://example.invalid',
     clientId: 'local-client',
     currentRoom: () => 'room-a',
     getRow: async () =>
@@ -112,14 +112,14 @@ test('cloud sync sketch routing is directional between main and site2 bundles', 
       site2SketchInitialMaxAgeHours: 12,
     },
     storage: {},
-    restUrl: 'https://example.invalid',
+    gatewayUrl: 'https://example.invalid',
     clientId: 'main-client',
     currentRoom: () => 'room-a',
-    getRow: async (_restUrl: string, _anonKey: string, room: string) => {
+    getRow: async (_gatewayUrl: string, _anonKey: string, room: string) => {
       mainReads.push(room);
       return null as any;
     },
-    upsertRow: async (_restUrl: string, _anonKey: string, room: string) => {
+    upsertRow: async (_gatewayUrl: string, _anonKey: string, room: string) => {
       mainWrites.push(room);
       return { ok: true, row: { updated_at: '2026-03-30T07:00:00.000Z' } } as any;
     },
@@ -139,14 +139,14 @@ test('cloud sync sketch routing is directional between main and site2 bundles', 
       site2SketchInitialMaxAgeHours: 12,
     },
     storage: {},
-    restUrl: 'https://example.invalid',
+    gatewayUrl: 'https://example.invalid',
     clientId: 'site2-client',
     currentRoom: () => 'room-a',
-    getRow: async (_restUrl: string, _anonKey: string, room: string) => {
+    getRow: async (_gatewayUrl: string, _anonKey: string, room: string) => {
       site2Reads.push(room);
       return null as any;
     },
-    upsertRow: async (_restUrl: string, _anonKey: string, room: string) => {
+    upsertRow: async (_gatewayUrl: string, _anonKey: string, room: string) => {
       site2Writes.push(room);
       return { ok: true, row: { updated_at: '2026-03-30T07:00:01.000Z' } } as any;
     },
@@ -190,7 +190,7 @@ test('cloud sync sketch push preserves thrown error messages', async () => {
         site2SketchInitialMaxAgeHours: 12,
       },
       storage: {},
-      restUrl: 'https://example.invalid',
+      gatewayUrl: 'https://example.invalid',
       clientId: 'local-client',
       currentRoom: () => 'room-a',
       getRow: async () => null as any,
@@ -215,12 +215,11 @@ test('floating sketch sync direct push preserves thrown error messages', async (
         anonKey: 'anon',
         roomParam: 'room',
         publicRoom: 'public',
-        privateRoom: 'private-room',
         site2SketchInitialAutoLoad: true,
         site2SketchInitialMaxAgeHours: 12,
       },
       storage: {},
-      restUrl: 'https://example.invalid',
+      gatewayUrl: 'https://example.invalid',
       clientId: 'local-client',
       currentRoom: () => 'room-a',
       getGateBaseRoom: () => 'private-room',
@@ -256,12 +255,11 @@ test('floating sketch sync defaults to the public room when no room URL is selec
       anonKey: 'anon',
       roomParam: 'room',
       publicRoom: 'public',
-      privateRoom: 'private-room',
       site2SketchInitialAutoLoad: true,
       site2SketchInitialMaxAgeHours: 12,
     },
     storage: {},
-    restUrl: 'https://example.invalid',
+    gatewayUrl: 'https://example.invalid',
     clientId: 'local-client',
     currentRoom: () => 'public',
     getRow: async () => null as any,
@@ -314,10 +312,10 @@ test('cloud sync sketch push does not contaminate pull baseline across direction
       site2SketchInitialMaxAgeHours: 12,
     },
     storage: {},
-    restUrl: 'https://example.invalid',
+    gatewayUrl: 'https://example.invalid',
     clientId: 'site2-client',
     currentRoom: () => 'room-a',
-    getRow: async (_restUrl: string, _anonKey: string, room: string) => {
+    getRow: async (_gatewayUrl: string, _anonKey: string, room: string) => {
       if (room === 'room-a::sketch::toMain') return null as any;
       pullReads += 1;
       return {
@@ -380,7 +378,7 @@ test('cloud sync sketch push settles the pushed updated_at canonically so the ne
       site2SketchInitialMaxAgeHours: 12,
     },
     storage: {},
-    restUrl: 'https://example.invalid',
+    gatewayUrl: 'https://example.invalid',
     clientId: 'local-client',
     currentRoom: () => 'room-a',
     getRow: async () => {
@@ -457,7 +455,7 @@ test('cloud sync sketch pull suppresses repeated remote payload churn when only 
       site2SketchInitialMaxAgeHours: 12,
     },
     storage: {},
-    restUrl: 'https://example.invalid',
+    gatewayUrl: 'https://example.invalid',
     clientId: 'local-client',
     currentRoom: () => 'room-a',
     getRow: async () =>
@@ -519,7 +517,7 @@ test('cloud sketch pull skips re-applying the same remote payload when hash is m
       site2SketchInitialMaxAgeHours: 12,
     },
     storage: {},
-    restUrl: 'https://example.invalid',
+    gatewayUrl: 'https://example.invalid',
     clientId: 'local-client',
     currentRoom: () => 'room-a',
     getRow: async () => {
@@ -572,12 +570,11 @@ test('floating sketch sync push shares app-scoped ownership across sketch-op ins
         anonKey: 'anon',
         roomParam: 'room',
         publicRoom: 'public',
-        privateRoom: 'private-room',
         site2SketchInitialAutoLoad: true,
         site2SketchInitialMaxAgeHours: 12,
       },
       storage: {},
-      restUrl: 'https://example.invalid',
+      gatewayUrl: 'https://example.invalid',
       clientId: 'local-client',
       currentRoom: () => 'room-a',
       getGateBaseRoom: () => 'private-room',

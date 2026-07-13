@@ -387,7 +387,7 @@ test('cloud sync family keeps one thin owner over canonical install/config/realt
       /\bcanInvokeCloudSyncPublishedDispose\b/,
       /\bclearCloudSyncPublishedState\b/,
       /getRoomFromUrl\(/,
-      /setRoomInUrl\(/,
+      /setRoomCredentialInUrl\(/,
     ],
     'cloud sync owner bundle'
   );
@@ -402,7 +402,7 @@ test('cloud sync family keeps config, site routing, and catchup decisions on sha
       /from '\.\/cloud_sync_config_sources\.js';/,
       /from '\.\/cloud_sync_config_browser\.js';/,
       /export \{ readCfgFromDepsConfig, readCfgFromImportMetaEnv, readCfg \}/,
-      /export \{ getRoomFromUrl, setRoomInUrl, isExplicitSite2Bundle \}/,
+      /setRoomCredentialInUrl/,
     ],
     'cloud sync config owner'
   );
@@ -415,7 +415,8 @@ test('cloud sync family keeps config, site routing, and catchup decisions on sha
       /sessionStorage/,
       /function createCloudSyncOwnerRooms\(/,
       /const getGateBaseRoom = \(\): string => \{/,
-      /cfg\.privateRoom/,
+      /currentRoomToken/,
+      /setPrivateRoomCredential/,
       /cfg\.publicRoom/,
     ],
     'cloud sync owner context'

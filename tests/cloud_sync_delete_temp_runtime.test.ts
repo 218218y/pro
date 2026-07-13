@@ -83,7 +83,7 @@ test('cloud sync delete temp removes unlocked colors, sanitizes payload, updates
   const ops = createCloudSyncDeleteTempOps({
     App: appHarness.App as any,
     cfg: { anonKey: 'anon-key' } as any,
-    restUrl: 'https://example.test/rest',
+    gatewayUrl: 'https://example.test/rest',
     storage: storage as any,
     keyModels: 'savedModels',
     keyColors: 'savedColors',
@@ -115,7 +115,7 @@ test('cloud sync delete temp removes unlocked colors, sanitizes payload, updates
         payload: upsertPayload,
       } as any;
     },
-    upsertRow: async (_restUrl, _anonKey, room, payload) => {
+    upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       assert.equal(room, 'room-1');
       upsertPayload = payload as AnyRecord;
       return { ok: true, row: { room, updated_at: 'ts-upsert', payload } } as any;
@@ -190,7 +190,7 @@ test('cloud sync delete temp does not stamp pull activity when the preflight row
   const ops = createCloudSyncDeleteTempOps({
     App: appHarness.App as any,
     cfg: { anonKey: 'anon-key' } as any,
-    restUrl: 'https://example.test/rest',
+    gatewayUrl: 'https://example.test/rest',
     storage: storage as any,
     keyModels: 'savedModels',
     keyColors: 'savedColors',
@@ -241,7 +241,7 @@ test('cloud sync delete temp preserves thrown message, reports nonfatal, and res
   const ops = createCloudSyncDeleteTempOps({
     App: appHarness.App as any,
     cfg: { anonKey: 'anon-key' } as any,
-    restUrl: 'https://example.test/rest',
+    gatewayUrl: 'https://example.test/rest',
     storage: storage as any,
     keyModels: 'savedModels',
     keyColors: 'savedColors',
@@ -302,7 +302,7 @@ test('cloud sync delete temp reuses duplicate same-kind writes and reports busy 
   const ops = createCloudSyncDeleteTempOps({
     App: appHarness.App as any,
     cfg: { anonKey: 'anon-key' } as any,
-    restUrl: 'https://example.test/rest',
+    gatewayUrl: 'https://example.test/rest',
     storage: storage as any,
     keyModels: 'savedModels',
     keyColors: 'savedColors',
@@ -385,7 +385,7 @@ test('cloud sync delete-temp tracks preflight pull activity and settled push act
     const ops = createCloudSyncDeleteTempOps({
       App: createAppHarness().App as any,
       cfg: { anonKey: 'anon' } as any,
-      restUrl: 'https://example.invalid',
+      gatewayUrl: 'https://example.invalid',
       storage: storage as any,
       keyModels: 'savedModels',
       keyColors: 'savedColors',
@@ -407,7 +407,7 @@ test('cloud sync delete-temp tracks preflight pull activity and settled push act
             hiddenPresets: [],
           },
         }) as any,
-      upsertRow: async (_restUrl, _anonKey, room, payload) =>
+      upsertRow: async (_gatewayUrl, _anonKey, room, payload) =>
         ({ ok: true, row: { room, payload, updated_at: '2026-04-13T11:00:30.000Z' } }) as any,
       getSendRealtimeHint: () => (scope: string, rowName?: string) => {
         hints.push({ scope, rowName });

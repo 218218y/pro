@@ -79,7 +79,7 @@ test('show contents cloud sync pushes user UI changes to a store-scoped control 
       site2SketchInitialMaxAgeHours: 12,
     },
     storage,
-    restUrl: 'https://example.invalid/rest',
+    gatewayUrl: 'https://example.invalid/rest',
     clientId: 'client-contents',
     getRow: async () => null,
     upsertRow: async (_rest, _anon, room, payload) => {
@@ -118,7 +118,7 @@ test('show contents cloud sync pull applies the remote state without echo-pushin
       site2SketchInitialMaxAgeHours: 12,
     },
     storage,
-    restUrl: 'https://example.invalid/rest',
+    gatewayUrl: 'https://example.invalid/rest',
     clientId: 'client-contents',
     getRow: async (_rest, _anon, room) => ({
       room,

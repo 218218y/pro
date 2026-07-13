@@ -12,17 +12,16 @@ import type { CloudSyncTabsGateConfig } from './cloud_sync_tabs_gate_shared.js';
 import type { CloudSyncAsyncFamilyFlight } from './cloud_sync_async_singleflight.js';
 
 export type GetCloudSyncRow = (
-  restUrl: string,
+  gatewayUrl: string,
   anonKey: string,
   room: string
 ) => Promise<CloudSyncStateRow | null>;
 
 export type UpsertCloudSyncRow = (
-  restUrl: string,
+  gatewayUrl: string,
   anonKey: string,
   room: string,
-  payload: CloudSyncTabsGatePayload,
-  opts?: { returnRepresentation?: boolean }
+  payload: CloudSyncTabsGatePayload
 ) => Promise<CloudSyncUpsertResult>;
 
 export type CloudSyncTabsGateRemoteKey = 'open' | 'close';
@@ -30,7 +29,7 @@ export type CloudSyncTabsGateRemoteKey = 'open' | 'close';
 export type CreateCloudSyncTabsGateRemoteOpsDeps = {
   App: AppContainer;
   cfg: CloudSyncTabsGateConfig;
-  restUrl: string;
+  gatewayUrl: string;
   clientId: string;
   getRow: GetCloudSyncRow;
   upsertRow: UpsertCloudSyncRow;

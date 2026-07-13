@@ -3,7 +3,7 @@ import type { AppContainer } from '../../../types';
 import {
   getRoomFromUrl,
   isExplicitSite2Bundle,
-  randomRoomId,
+  removeRoomTokenFromUrl,
   type SupabaseCfg,
 } from './cloud_sync_config.js';
 import { resolveCloudSyncSketchRooms } from './cloud_sync_sketch_rooms.js';
@@ -12,25 +12,33 @@ import type { CloudSyncReportNonFatal, StorageLike } from './cloud_sync_owner_co
 export type CloudSyncOwnerRooms = {
   room: string;
   currentRoom: () => string;
+  currentRoomToken: () => string;
   getPrivateRoom: () => string;
-  setPrivateRoom: (value: string) => void;
+  getPrivateRoomToken: () => string;
+  setPrivateRoomCredential: (room: string, token: string) => void;
   getGateBaseRoom: () => string;
   getSketchRoom: () => string;
   getSite2TabsRoom: () => string;
   getFloatingSyncRoom: () => string;
 };
 
-const PRIVATE_KEY = 'wp_private_room';
+const PRIVATE_CREDENTIAL_KEY = 'wp_private_room_credential';
 const SKETCH_ROOM_SUFFIX = '::sketch';
+
+type StoredPrivateRoomCredential = {
+  schemaVersion: 1;
+  room: string;
+  token: string;
+};
 
 function readPrivateRoomStorageKey(storage: StorageLike): string {
   try {
     const rec =
       storage && typeof storage === 'object' ? (storage as { KEYS?: Record<string, unknown> }) : null;
-    const key = rec?.KEYS?.PRIVATE_ROOM;
-    return typeof key === 'string' && key.trim() ? key.trim() : PRIVATE_KEY;
+    const key = rec?.KEYS?.PRIVATE_ROOM_CREDENTIAL;
+    return typeof key === 'string' && key.trim() ? key.trim() : PRIVATE_CREDENTIAL_KEY;
   } catch {
-    return PRIVATE_KEY;
+    return PRIVATE_CREDENTIAL_KEY;
   }
 }
 
@@ -38,52 +46,57 @@ function readRoomString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function readStoredPrivateRoom(args: {
+function readStoredPrivateCredential(args: {
   App: AppContainer;
   storage: StorageLike;
   reportNonFatal: CloudSyncReportNonFatal;
-}): string {
+}): StoredPrivateRoomCredential | null {
   const { App, storage, reportNonFatal } = args;
   try {
-    const key = readPrivateRoomStorageKey(storage);
-    return typeof storage.getString === 'function' ? readRoomString(storage.getString(key)) : '';
+    const raw =
+      typeof storage.getString === 'function' ? storage.getString(readPrivateRoomStorageKey(storage)) : null;
+    if (!raw) return null;
+    const value: unknown = JSON.parse(raw);
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    const rec = value as Record<string, unknown>;
+    const room = readRoomString(rec.room);
+    const token = readRoomString(rec.token);
+    return rec.schemaVersion === 1 && room && token ? { schemaVersion: 1, room, token } : null;
   } catch (e) {
-    reportNonFatal(App, 'privateRoom.read', e, { throttleMs: 8000 });
-    return '';
+    reportNonFatal(App, 'privateRoomCredential.read', e, { throttleMs: 8000 });
+    return null;
   }
 }
 
-function writeStoredPrivateRoom(args: {
+function writeStoredPrivateCredential(args: {
   App: AppContainer;
   storage: StorageLike;
   reportNonFatal: CloudSyncReportNonFatal;
-  value: string;
-}): void {
+  room: string;
+  token: string;
+}): boolean {
   const { App, storage, reportNonFatal } = args;
-  const next = readRoomString(args.value);
-  if (!next) return;
+  const room = readRoomString(args.room);
+  const token = readRoomString(args.token);
+  if (!room || !token) return false;
   try {
-    const key = readPrivateRoomStorageKey(storage);
-    if (typeof storage.setString === 'function') storage.setString(key, next);
+    if (typeof storage.setString === 'function') {
+      const credential: StoredPrivateRoomCredential = { schemaVersion: 1, room, token };
+      const written = storage.setString(readPrivateRoomStorageKey(storage), JSON.stringify(credential));
+      if (written) return true;
+    }
+    reportNonFatal(
+      App,
+      'privateRoomCredential.write',
+      new Error('Private room credential was not persisted'),
+      {
+        throttleMs: 8000,
+      }
+    );
   } catch (e) {
-    reportNonFatal(App, 'privateRoom.write', e, { throttleMs: 8000 });
+    reportNonFatal(App, 'privateRoomCredential.write', e, { throttleMs: 8000 });
   }
-}
-
-function resolveStablePrivateRoom(args: {
-  App: AppContainer;
-  cfg: SupabaseCfg;
-  storage: StorageLike;
-  reportNonFatal: CloudSyncReportNonFatal;
-}): string {
-  const { App, cfg, storage, reportNonFatal } = args;
-  const stored = readStoredPrivateRoom({ App, storage, reportNonFatal });
-  if (stored) return stored;
-
-  const configured = readRoomString(cfg.privateRoom);
-  const next = configured || randomRoomId();
-  writeStoredPrivateRoom({ App, storage, reportNonFatal, value: next });
-  return next;
+  return false;
 }
 
 export function createCloudSyncOwnerRooms(args: {
@@ -95,16 +108,38 @@ export function createCloudSyncOwnerRooms(args: {
   const { App, cfg, storage, reportNonFatal } = args;
 
   const room = getRoomFromUrl(App, cfg.roomParam) || cfg.publicRoom;
+  const initialRoomToken = readRoomString(getRoomFromUrl(App, cfg.roomTokenParam));
+  if (room !== cfg.publicRoom && initialRoomToken) {
+    const persisted = writeStoredPrivateCredential({
+      App,
+      storage,
+      reportNonFatal,
+      room,
+      token: initialRoomToken,
+    });
+    if (persisted) removeRoomTokenFromUrl(App, cfg.roomTokenParam);
+  }
 
   const currentRoom = (): string => {
     const resolved = getRoomFromUrl(App, cfg.roomParam);
     return resolved || cfg.publicRoom;
   };
 
-  const getPrivateRoom = (): string => resolveStablePrivateRoom({ App, cfg, storage, reportNonFatal });
+  const getPrivateCredential = (): StoredPrivateRoomCredential | null =>
+    readStoredPrivateCredential({ App, storage, reportNonFatal });
+  const getPrivateRoom = (): string => getPrivateCredential()?.room || '';
+  const getPrivateRoomToken = (): string => getPrivateCredential()?.token || '';
 
-  const setPrivateRoom = (value: string): void => {
-    writeStoredPrivateRoom({ App, storage, reportNonFatal, value });
+  const setPrivateRoomCredential = (nextRoom: string, token: string): void => {
+    writeStoredPrivateCredential({ App, storage, reportNonFatal, room: nextRoom, token });
+  };
+
+  const currentRoomToken = (): string => {
+    const current = currentRoom();
+    if (!current || current === cfg.publicRoom) return '';
+    const urlToken = readRoomString(getRoomFromUrl(App, cfg.roomTokenParam));
+    if (urlToken) return urlToken;
+    return current === getPrivateRoom() ? getPrivateRoomToken() : '';
   };
 
   const getGateBaseRoom = (): string => {
@@ -121,8 +156,10 @@ export function createCloudSyncOwnerRooms(args: {
   return {
     room,
     currentRoom,
+    currentRoomToken,
     getPrivateRoom,
-    setPrivateRoom,
+    getPrivateRoomToken,
+    setPrivateRoomCredential,
     getGateBaseRoom,
     getSketchRoom,
     getSite2TabsRoom: (): string => `${getGateBaseRoom()}::tabsGate`,

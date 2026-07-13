@@ -74,14 +74,14 @@ test('cloud sync panel api exposes stable room/share/tabs-gate runtime surface a
   assert.equal(pushed.length, 2);
   assert.deepEqual(tabsGateSnapshots.at(-1), { open: false, until: 0, minutesLeft: 0 });
 
-  const goPrivate = api.goPrivate?.();
+  const goPrivate = await api.goPrivate?.();
   state.currentRoom = String(goPrivate?.room || state.currentRoom);
   assert.deepEqual(goPrivate, {
     ok: true,
     changed: true,
     mode: 'private',
     room: 'generated-room',
-    shareLink: 'https://example.test/?room=generated-room',
+    shareLink: 'https://example.test/?room=generated-room&roomToken=signed-generated-token',
   });
   assert.deepEqual(snapshots.at(-1), {
     room: 'generated-room',
@@ -91,8 +91,15 @@ test('cloud sync panel api exposes stable room/share/tabs-gate runtime surface a
   });
 
   const copied = await api.copyShareLink?.();
-  assert.deepEqual(copied, { ok: true, copied: true, link: 'https://example.test/?room=generated-room' });
-  assert.equal(storage.get('clipboard'), 'https://example.test/?room=generated-room');
+  assert.deepEqual(copied, {
+    ok: true,
+    copied: true,
+    link: 'https://example.test/?room=generated-room&roomToken=signed-generated-token',
+  });
+  assert.equal(
+    storage.get('clipboard'),
+    'https://example.test/?room=generated-room&roomToken=signed-generated-token'
+  );
 
   if (typeof unsubscribe === 'function') unsubscribe();
   if (typeof unsubscribeTabsGate === 'function') unsubscribeTabsGate();
@@ -161,7 +168,12 @@ test('cloud sync panel api diagnostics setter stays no-op when the stored diagno
 
   const api = createCloudSyncPanelApi({
     App: {} as any,
-    cfg: { publicRoom: 'public', roomParam: 'room', shareBaseUrl: 'https://example.test/' },
+    cfg: {
+      publicRoom: 'public',
+      roomParam: 'room',
+      roomTokenParam: 'roomToken',
+      shareBaseUrl: 'https://example.test/',
+    },
     clientId: 'client-1',
     diagEnabledRef: { value: false },
     tabsGateOpenRef: { value: false },
@@ -172,10 +184,12 @@ test('cloud sync panel api diagnostics setter stays no-op when the stored diagno
     getSite2TabsGateSnapshot: () => ({ open: false, until: 0, minutesLeft: 0 }) as any,
     subscribeSite2TabsGateSnapshot: () => () => {},
     getCurrentRoom: () => 'public',
+    getCurrentRoomToken: () => '',
     getPrivateRoom: () => '',
-    setPrivateRoom: () => {},
-    randomRoomId: () => 'generated-room',
-    setRoomInUrl: () => {},
+    getPrivateRoomToken: () => '',
+    setPrivateRoomCredential: () => {},
+    issuePrivateRoom: async () => null,
+    setRoomCredentialInUrl: () => true,
     cloneRuntimeStatus: status => ({ ...status }) as any,
     runtimeStatus,
     updateDiagEnabled: () => {

@@ -5,11 +5,13 @@ import { createCloudSyncPanelApiTestRig } from './cloud_sync_panel_api_runtime_h
 
 test('cloud sync panel api single-flights duplicate inflight async commands and returns busy for conflicting family targets', async () => {
   let resolveSync: ((value: { ok: true }) => void) | null = null;
+  let resolveRoom: ((value: { room: string; token: string; expiresAt: string }) => void) | null = null;
   let resolveDeleteModels: ((value: { ok: true; removed: number }) => void) | null = null;
   let resolveSetFloatingTrue: ((value: { ok: true }) => void) | null = null;
   let resolveSetGateTrue: ((value: { ok: true }) => void) | null = null;
 
   let syncCalls = 0;
+  let roomCalls = 0;
   let deleteModelsCalls = 0;
   let deleteColorsCalls = 0;
   let setFloatingCallsTrue = 0;
@@ -19,6 +21,12 @@ test('cloud sync panel api single-flights duplicate inflight async commands and 
   let floatingEnabled = false;
 
   const { api } = createCloudSyncPanelApiTestRig({
+    issuePrivateRoom: async () => {
+      roomCalls += 1;
+      return await new Promise(resolve => {
+        resolveRoom = resolve as typeof resolveRoom;
+      });
+    },
     getFloatingSketchSyncEnabled: () => floatingEnabled,
     syncSketchNow: async () => {
       syncCalls += 1;
@@ -61,6 +69,27 @@ test('cloud sync panel api single-flights duplicate inflight async commands and 
       setGateCallsFalse += 1;
       return { ok: true } as const;
     },
+  });
+
+  const roomA = api.goPrivate?.();
+  const roomB = api.goPrivate?.();
+  const roomC = api.goPublic?.();
+  await Promise.resolve();
+  assert.equal(roomCalls, 1);
+  assert.equal(roomA, roomB);
+  assert.notEqual(roomA, roomC);
+  assert.deepEqual(await roomC, { ok: false, mode: 'public', reason: 'busy' });
+  resolveRoom?.({
+    room: 'room-single-flight',
+    token: 'signed-single-flight-token',
+    expiresAt: '2026-07-20T08:00:00.000Z',
+  });
+  assert.deepEqual(await roomA, {
+    ok: true,
+    changed: true,
+    mode: 'private',
+    room: 'room-single-flight',
+    shareLink: 'https://example.test/?room=room-single-flight&roomToken=signed-single-flight-token',
   });
 
   const syncA = api.syncSketchNow?.();

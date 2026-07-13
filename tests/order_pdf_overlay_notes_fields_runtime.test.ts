@@ -88,6 +88,6 @@ test('order pdf notes fields runtime sanitizes rich html before storing it on th
     textApi,
   });
 
-  assert.equal(fields.notes, 'הערהalert(1)\n');
-  assert.equal(fields.notesHtml, '<div><font color="#00aa00" size="4">הערה</font>alert(1)</div>');
+  assert.equal(fields.notes, 'הערה\n');
+  assert.equal(fields.notesHtml, '<div><font color="#00aa00" size="4">הערה</font></div>');
 });

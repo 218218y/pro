@@ -71,7 +71,7 @@ Current profiles:
 - `store-1` - `releaseStatus: 'draft'`; temporary profile for חנות 1, with its own replaceable logo/PDF files.
 - `store-2` - `releaseStatus: 'draft'`; temporary profile for חנות 2, with its own replaceable logo/PDF files.
 
-`npm run check:site-profiles` scans every profile together. It fails on missing assets, invalid ids/URLs, or duplicate storage namespaces, Supabase tables, and realtime channel prefixes. Placeholder deployment URLs are warnings for draft profiles and hard failures after a profile is promoted to `active`. The multi-store release wrapper runs the same audit before building, so release commands cannot bypass the shared contract.
+`npm run check:site-profiles` scans every profile together. It fails on missing assets, invalid ids/URLs, missing signed-room gateway configuration, or duplicate storage namespaces and realtime channel prefixes. Store identity is signed and enforced by the gateway instead of being inferred from a browser-selected Supabase table. Placeholder deployment URLs are warnings for draft profiles and hard failures after a profile is promoted to `active`. The multi-store release wrapper runs the same audit before building, so release commands cannot bypass the shared contract.
 
 When a new store gets its own branding, replace only these files inside that store folder:
 
@@ -121,15 +121,15 @@ dist/sites/<store-id>/<variant>/release/
 
 ## Supabase isolation
 
-The new stores currently use the same Supabase project/account as Bargig, but each has its own table and Broadcast channel prefix:
+The stores may share one Supabase project, but Cloud Sync data lives in the protected canonical table and is partitioned by signed `tenant_id` and `store_id` claims. Browser roles have no table privileges. Each deployed origin is bound to exactly one store by the Edge Function, and each store keeps a distinct Broadcast channel prefix:
 
 ```text
-bargig  -> wp_shared_state          + wp_cloud_sync
-store-1 -> wp_shared_state_store_1  + wp_cloud_sync_store_1
-store-2 -> wp_shared_state_store_2  + wp_cloud_sync_store_2
+bargig  -> tenant/store bargig   + wp_cloud_sync
+store-1 -> tenant/store store-1  + wp_cloud_sync_store_1
+store-2 -> tenant/store store-2  + wp_cloud_sync_store_2
 ```
 
-Run `docs/supabase_cloud_sync_multi_store.sql` once in the Supabase SQL editor to create the extra tables.
+For an existing deployment, run `docs/supabase_cloud_sync_multi_store.sql` once after the canonical schema and Edge Function are deployed. It copies the former per-store rows into the protected table and locks the legacy tables; it does not preserve browser access to them.
 
 ## Local browser data
 

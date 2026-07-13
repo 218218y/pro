@@ -6,15 +6,15 @@ import {
   setSanitizedElementHtmlIfChanged,
 } from '../esm/native/ui/html_sanitize_runtime.ts';
 
-test('html sanitize runtime keeps allowed order-pdf markers but strips executable attrs', () => {
+test('html sanitize runtime keeps allowed order-pdf markers and drops executable content', () => {
   const html =
-    '<div onclick="boom()"><span data-wp-auto="start" contenteditable="false"></span><font color="#ff0000" size="4" onmouseover="x">שלום</font><script>alert(1)</script></div>';
+    '<div onclick="boom()"><span data-wp-auto="start" contenteditable="false"></span><font color="#ff0000" size="4" onmouseover="x">safe</font><script>alert(1)</script></div>';
   const sanitized = sanitizeHtmlByPolicy(null, html, 'order-pdf-rich');
   assert.equal(
     sanitized,
-    '<div><span data-wp-auto="start" contenteditable="false"></span><font color="#ff0000" size="4">שלום</font>alert(1)</div>'
+    '<div><span data-wp-auto="start" contenteditable="false"></span><font color="#ff0000" size="4">safe</font></div>'
   );
-  assert.doesNotMatch(sanitized, /onclick|onmouseover/);
+  assert.doesNotMatch(sanitized, /onclick|onmouseover|alert/u);
 });
 
 test('html sanitize runtime keeps safe overlay links and drops javascript hrefs', () => {
@@ -35,6 +35,15 @@ test('html sanitize runtime keeps safe overlay links and drops javascript hrefs'
   assert.equal(unsafe, '<p><a>bad</a></p>');
 });
 
+test('html sanitize runtime drops SVG and MathML in the text-only fallback', () => {
+  const sanitized = sanitizeHtmlByPolicy(
+    null,
+    '<svg><a href="https://example.com">svg</a></svg><math><mtext>math</mtext></math><p>kept</p>',
+    'overlay-help'
+  );
+  assert.equal(sanitized, '<p>kept</p>');
+});
+
 test('html sanitize runtime writes innerHTML only when sanitized html actually changes', () => {
   const writes: string[] = [];
   const el = { innerHTML: '<div>safe</div>' } as Element & { innerHTML: string };
@@ -48,11 +57,11 @@ test('html sanitize runtime writes innerHTML only when sanitized html actually c
   assert.equal(el.innerHTML, '<div>safe</div>');
   const resultChanged = setSanitizedElementHtmlIfChanged({
     el,
-    html: '<div><font size="4">חדש</font></div>',
+    html: '<div><font size="4">new</font></div>',
     policy: 'order-pdf-rich',
   });
   if (resultChanged.changed) writes.push(el.innerHTML);
   assert.equal(resultChanged.changed, true);
-  assert.equal(el.innerHTML, '<div><font size="4">חדש</font></div>');
-  assert.deepEqual(writes, ['<div><font size="4">חדש</font></div>']);
+  assert.equal(el.innerHTML, '<div><font size="4">new</font></div>');
+  assert.deepEqual(writes, ['<div><font size="4">new</font></div>']);
 });

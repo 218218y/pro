@@ -1,12 +1,12 @@
 # Test group catalog
 
-Generated: 2026-07-12T20:57:14.408Z
+Generated: 2026-07-13T08:13:27.352Z
 
 ## Summary
 
 - Catalog groups: 29
 - Package script bindings owned by the catalog: 29
-- Catalog test-file references: 348
+- Catalog test-file references: 351
 - Direct package.json test-file references still remaining: 191
 - Catalog definition issues: 0
 - Package binding issues: 0
@@ -22,7 +22,7 @@ Generated: 2026-07-12T20:57:14.408Z
 | `cloud-sync-panel-install`       | `test:cloud-sync-surfaces:panel-install`       | focused      | tsx-test   | tsx         |     2 | ui/cloud-sync-panel                                                  |
 | `cloud-sync-panel-snapshots`     | `test:cloud-sync-surfaces:panel-snapshots`     | focused      | tsx-test   | tsx         |     3 | ui/cloud-sync-panel                                                  |
 | `cloud-sync-panel-subscriptions` | `test:cloud-sync-surfaces:panel-subscriptions` | focused      | tsx-test   | tsx         |     3 | ui/cloud-sync-panel                                                  |
-| `cloud-sync-sync-ops`            | `test:cloud-sync-surfaces:sync-ops`            | focused      | serial-tsx | tsx         |     9 | services/cloud-sync/sync-ops                                         |
+| `cloud-sync-sync-ops`            | `test:cloud-sync-surfaces:sync-ops`            | focused      | serial-tsx | tsx         |    12 | services/cloud-sync/sync-ops                                         |
 | `cloud-sync-tabs-ui`             | `test:cloud-sync-surfaces:tabs-ui`             | focused      | tsx-test   | tsx         |     5 | ui/cloud-sync-tabs                                                   |
 | `mirror-runtime`                 | `test:mirror-runtime`                          | focused      | tsx-test   | tsx         |     6 | platform/render-loop, runtime/planar-reflector                       |
 | `order-pdf-export-builders`      | `test:order-pdf-surfaces:export-builders`      | focused      | tsx-test   | tsx         |     3 | ui/export/order-pdf                                                  |

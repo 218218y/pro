@@ -14,19 +14,20 @@ import {
 
 const ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url))); // fileURLToPath keeps Windows drive-letter paths valid
 
-test('multi-store profiles keep Supabase tables/channels isolated', async () => {
+test('multi-store profiles bind store ids in the gateway and keep channels isolated', async () => {
   const store1 = await loadSiteProfile(ROOT, 'store-1');
   const store2 = await loadSiteProfile(ROOT, 'store-2');
 
-  assert.equal(store1.supabase.table, 'wp_shared_state_store_1');
-  assert.equal(store2.supabase.table, 'wp_shared_state_store_2');
-  assert.notEqual(store1.supabase.table, store2.supabase.table);
+  assert.equal(store1.supabase.storeId, 'store-1');
+  assert.equal(store2.supabase.storeId, 'store-2');
+  assert.equal(store1.supabase.gatewayFunction, 'wp-cloud-sync-room');
+  assert.equal(store2.supabase.gatewayFunction, 'wp-cloud-sync-room');
   assert.notEqual(store1.supabase.realtimeChannelPrefix, store2.supabase.realtimeChannelPrefix);
 });
 
-test('Bargig profile preserves legacy table, empty storage namespace and root assets', async () => {
+test('Bargig profile preserves its store identity, empty storage namespace and root assets', async () => {
   const bargig = await loadSiteProfile(ROOT, 'bargig');
-  assert.equal(bargig.supabase.table, 'wp_shared_state');
+  assert.equal(bargig.supabase.storeId, 'bargig');
   assert.equal(bargig.storageNamespace, '');
   assert.equal(resolveProfileAsset(ROOT, bargig, 'logoData'), path.join(ROOT, 'wp_logo_data.js'));
   assert.equal(
@@ -43,7 +44,9 @@ test('site runtime config includes store namespace, PDF template and site2 gates
 
   assert.match(source, /wp_store_1/);
   assert.match(source, /order_template\.pdf/);
-  assert.match(source, /wp_shared_state_store_1/);
+  assert.match(source, /"storeId": "store-1"/);
+  assert.match(source, /"gatewayFunction": "wp-cloud-sync-room"/);
+  assert.doesNotMatch(source, /wp_shared_state_store_1/);
   assert.match(source, /site2EnabledTabs/);
 });
 

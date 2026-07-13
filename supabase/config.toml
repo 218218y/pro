@@ -1,0 +1,3 @@
+[functions.wp-cloud-sync-room]
+verify_jwt = true
+

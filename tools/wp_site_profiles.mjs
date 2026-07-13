@@ -190,13 +190,11 @@ export function normalizeSiteProfile({ root, profileDir, profile, requestedStore
     supabase: {
       url: asString(supabase.url),
       anonKey: asString(supabase.anonKey),
-      table: asString(
-        supabase.table,
-        id === 'bargig' ? 'wp_shared_state' : `wp_shared_state_${id.replace(/[^a-zA-Z0-9]+/g, '_')}`
-      ),
+      storeId: id,
+      gatewayFunction: asString(supabase.gatewayFunction, 'wp-cloud-sync-room'),
       publicRoom: asString(supabase.publicRoom, 'public'),
-      privateRoom: typeof supabase.privateRoom === 'string' ? supabase.privateRoom.trim() : '',
       roomParam: asString(supabase.roomParam, 'room'),
+      roomTokenParam: asString(supabase.roomTokenParam, 'roomToken'),
       shareBaseUrl: asString(supabase.shareBaseUrl, 'https://pro218.bargig-furniture.com/'),
       pollMs: Number.isFinite(Number(supabase.pollMs)) ? Number(supabase.pollMs) : 1500,
       diagnostics: asBoolean(supabase.diagnostics, false),
@@ -295,7 +293,7 @@ export function buildSiteManifest(profile, variantName) {
     variant: variant.name,
     siteVariant: variant.siteVariant,
     supabase: {
-      table: profile.supabase.table,
+      gatewayFunction: profile.supabase.gatewayFunction,
       publicRoom: profile.supabase.publicRoom,
       realtimeChannelPrefix: profile.supabase.realtimeChannelPrefix,
       shareBaseUrl: variant.shareBaseUrl || profile.supabase.shareBaseUrl,

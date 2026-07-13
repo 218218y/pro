@@ -218,7 +218,7 @@ const APP_STORAGE_KEYS_RESET_BEFORE_SMOKE_NAVIGATION = [
   'wardrobeSavedModels:order',
   'wardrobeSavedModels:presetOrder',
   'wardrobeSavedModels:hiddenPresets',
-  'wp_private_room',
+  'wp_private_room_credential',
   'WP_CLOUDSYNC_DIAG',
   'wp_floating_sketch_sync_pin',
   'wp_site2_tabs_gate_open',
@@ -229,7 +229,7 @@ const APP_SESSION_STORAGE_KEYS_RESET_BEFORE_SMOKE_NAVIGATION = ['wp_cloud_sync_c
 
 const SMOKE_APP_GOTO_TIMEOUT_MS = 45_000;
 const SMOKE_APP_SHELL_TIMEOUT_MS = 30_000;
-const CLOUD_SYNC_REST_ISOLATION_INSTALLED = new WeakSet<Page>();
+const CLOUD_SYNC_GATEWAY_ISOLATION_INSTALLED = new WeakSet<Page>();
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value)
@@ -266,75 +266,101 @@ function normalizeModuleSpecialDimsSnapshot(
 
 function buildSmokeAppUrl(): string {
   const room = `e2e-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-  return `/index_pro.html?room=${encodeURIComponent(room)}`;
+  return `/index_pro.html?room=${encodeURIComponent(room)}&roomToken=e2e-signed-room-token`;
 }
 
-async function installCloudSyncRestIsolation(page: Page): Promise<void> {
-  if (CLOUD_SYNC_REST_ISOLATION_INSTALLED.has(page)) return;
-
-  await page.route('**/rest/v1/**', async route => {
-    const request = route.request();
-    const url = request.url();
-    if (!url.includes('/rest/v1/')) {
-      await route.continue();
-      return;
+async function installCloudSyncGatewayIsolation(page: Page): Promise<void> {
+  if (CLOUD_SYNC_GATEWAY_ISOLATION_INSTALLED.has(page)) return;
+  const rows = new Map<
+    string,
+    {
+      room: string;
+      payload: Record<string, unknown>;
+      revision: number;
+      updated_at: string;
+      updated_by: string;
     }
+  >();
 
+  await page.route('**/functions/v1/wp-cloud-sync-room', async route => {
+    const request = route.request();
     const method = String(request.method() || 'GET').toUpperCase();
     if (method === 'OPTIONS') {
       await route.fulfill({ status: 204, body: '' });
       return;
     }
+    if (method !== 'POST') {
+      await route.fulfill({ status: 405, contentType: 'application/json', body: '{"ok":false}' });
+      return;
+    }
 
-    if (method === 'GET') {
+    let body: Record<string, unknown> = {};
+    try {
+      const parsed: unknown = JSON.parse(String(request.postData() || '{}'));
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        body = parsed as Record<string, unknown>;
+      }
+    } catch {}
+
+    const action = typeof body.action === 'string' ? body.action : '';
+    const room = typeof body.room === 'string' ? body.room : '';
+    if (action === 'issue-public' || action === 'create-room') {
+      const issuedRoom = action === 'issue-public' ? 'public' : `room_e2e_${Date.now().toString(36)}`;
+      await route.fulfill({
+        status: action === 'issue-public' ? 200 : 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          credential: {
+            room: issuedRoom,
+            token: `e2e-token-${issuedRoom}`,
+            expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+          },
+        }),
+      });
+      return;
+    }
+    if (action === 'read') {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: '[]',
+        body: JSON.stringify({ ok: true, row: rows.get(room) || null }),
       });
       return;
     }
-
-    if (method === 'POST') {
-      let payload: Record<string, unknown> | null = null;
-      try {
-        const parsed = JSON.parse(String(request.postData() || '[]'));
-        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0] && typeof parsed[0] === 'object') {
-          payload = parsed[0] as Record<string, unknown>;
-        }
-      } catch {
-        payload = null;
+    if (action === 'write') {
+      const current = rows.get(room) || null;
+      const expectedRevision = typeof body.expectedRevision === 'number' ? body.expectedRevision : -1;
+      if ((current?.revision || 0) !== expectedRevision) {
+        await route.fulfill({
+          status: 409,
+          contentType: 'application/json',
+          body: JSON.stringify({ ok: false, code: 'revision_conflict', row: current }),
+        });
+        return;
       }
-
-      const prefer = String(request.headers().prefer || '');
-      const wantsRepresentation = prefer.includes('return=representation');
-      const responseBody =
-        wantsRepresentation && payload
-          ? JSON.stringify([
-              {
-                room: typeof payload.room === 'string' ? payload.room : '',
-                payload: payload.payload && typeof payload.payload === 'object' ? payload.payload : {},
-                updated_at: new Date().toISOString(),
-              },
-            ])
-          : '';
-
+      const next = {
+        room,
+        payload:
+          body.payload && typeof body.payload === 'object' && !Array.isArray(body.payload)
+            ? (body.payload as Record<string, unknown>)
+            : {},
+        revision: expectedRevision + 1,
+        updated_at: new Date().toISOString(),
+        updated_by: typeof body.clientId === 'string' ? body.clientId : 'e2e-client',
+      };
+      rows.set(room, next);
       await route.fulfill({
-        status: 201,
+        status: 200,
         contentType: 'application/json',
-        body: responseBody,
+        body: JSON.stringify({ ok: true, row: next }),
       });
       return;
     }
-
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: '[]',
-    });
+    await route.fulfill({ status: 400, contentType: 'application/json', body: '{"ok":false}' });
   });
 
-  CLOUD_SYNC_REST_ISOLATION_INSTALLED.add(page);
+  CLOUD_SYNC_GATEWAY_ISOLATION_INSTALLED.add(page);
 }
 
 export function collectRuntimeIssues(page: Page): RuntimeIssueCollector {
@@ -355,7 +381,7 @@ export function expectNoRuntimeIssues(issues: RuntimeIssueCollector): void {
 }
 
 export async function gotoSmokeApp(page: Page): Promise<void> {
-  await installCloudSyncRestIsolation(page);
+  await installCloudSyncGatewayIsolation(page);
   await page.addInitScript(
     ({ localKeys, sessionKeys }) => {
       try {

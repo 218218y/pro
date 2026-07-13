@@ -60,7 +60,7 @@ test('cloud sketch initial catchup is site2-only even when the remote row is fre
         site2SketchInitialMaxAgeHours: 12,
       },
       storage: {},
-      restUrl: 'https://example.invalid',
+      gatewayUrl: 'https://example.invalid',
       clientId,
       currentRoom: () => 'room-a',
       getRow: async () =>
@@ -137,7 +137,7 @@ test('cloud sketch stale initial catchup does not block the next fresh site2 upd
       site2SketchInitialMaxAgeHours: 1,
     },
     storage: {},
-    restUrl: 'https://example.invalid',
+    gatewayUrl: 'https://example.invalid',
     clientId: 'site2-client',
     currentRoom: () => 'room-a',
     getRow: async () => {

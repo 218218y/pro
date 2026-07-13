@@ -28,7 +28,7 @@ test('cloud sync remote read support marks pull activity only after a row read r
 
   try {
     const row = await readCloudSyncRowWithPullActivity({
-      restUrl: 'https://example.test/rest',
+      gatewayUrl: 'https://example.test/rest',
       anonKey: 'anon',
       room: 'room-a',
       getRow: async () => {
@@ -58,7 +58,7 @@ test('cloud sync remote read support does not mark pull activity when the row re
   await assert.rejects(
     () =>
       readCloudSyncRowWithPullActivity({
-        restUrl: 'https://example.test/rest',
+        gatewayUrl: 'https://example.test/rest',
         anonKey: 'anon',
         room: 'room-a',
         getRow: async () => {

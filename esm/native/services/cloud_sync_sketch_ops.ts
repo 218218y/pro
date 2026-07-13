@@ -28,7 +28,7 @@ type CreateCloudSyncSketchOpsDeps = {
   cfg: CloudSyncSketchConfig;
   storage: StorageLike;
   getGateBaseRoom?: () => string;
-  restUrl: string;
+  gatewayUrl: string;
   clientId: string;
   currentRoom: () => string;
   getRow: GetCloudSyncRow;

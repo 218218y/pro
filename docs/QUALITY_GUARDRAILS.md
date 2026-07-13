@@ -61,7 +61,7 @@ npm run test:refactor-stage-guards
 - Large named test groups belong in `tools/wp_test_group_catalog.mjs`; package scripts should remain short facades over `tools/wp_test_group.mjs`.
 - A closeout lane that exactly matches a canonical test group must reference that group through `testGroupId`; duplicating the same file list directly is a control-plane error. Build, perf, mixed-contract, and E2E lanes remain direct when they are not test groups.
 - Exact duplicate package commands are not allowed. Do not preserve aliases such as a second “strict” name when both names execute the same lane.
-- Every `sites/*/site.profile.mjs` participates in one cross-profile contract. Store ids, local-storage namespaces, Supabase tables, realtime channel prefixes, required assets, release status, and deployment URLs must be validated together.
+- Every `sites/*/site.profile.mjs` participates in one cross-profile contract. Store ids, local-storage namespaces, signed-room gateway configuration, realtime channel prefixes, required assets, release status, and deployment URLs must be validated together. Browser profiles must not select database tables.
 - Draft profiles may retain placeholder deployment hosts with visible warnings. Active profiles may not.
 
 Relevant checks:

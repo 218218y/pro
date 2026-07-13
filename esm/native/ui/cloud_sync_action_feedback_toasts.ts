@@ -51,6 +51,9 @@ export function getCloudSyncRoomModeToast(
   if (failure.reason === 'not-installed') {
     return createCloudSyncActionToast('החלפת מצב הסנכרון לא זמינה כרגע', 'error');
   }
+  if (failure.reason === 'busy') {
+    return createCloudSyncActionToast('החלפת מצב הסנכרון כבר בתהליך', 'warning');
+  }
   const message = readFailureMessage(failure);
   return message
     ? createCloudSyncActionToast(message, 'error')

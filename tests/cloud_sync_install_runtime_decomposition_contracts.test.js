@@ -66,8 +66,8 @@ test('cloud sync install runtime keeps a thin facade over shared/ops/panel/creat
     [
       /installCloudSyncPanelApi\(/,
       /cloneRuntimeStatus/,
-      /setRoomInUrlInBrowser/,
-      /randomRoomId/,
+      /setRoomCredentialInUrl/,
+      /issuePrivateRoom/,
       /subscribeFloatingSketchSyncEnabledState/,
     ],
     'cloud sync install runtime panel'

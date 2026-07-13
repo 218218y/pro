@@ -32,7 +32,7 @@ test('cloud sync floating remote push single-flights duplicate targets and retur
       site2SketchInitialMaxAgeHours: 12,
     },
     storage: storage as any,
-    restUrl: 'https://example.test/rest',
+    gatewayUrl: 'https://example.test/rest',
     clientId: 'client-1',
     getRow: async () => null,
     upsertRow: async (_rest, _anon, room, payload) => {
@@ -71,7 +71,7 @@ test('cloud sync tabs-gate remote push single-flights duplicate targets and retu
       roomParam: 'room',
       publicRoom: 'public-room',
     },
-    restUrl: 'https://example.test/rest',
+    gatewayUrl: 'https://example.test/rest',
     clientId: 'client-1',
     getRow: async () => null,
     upsertRow: async (_rest, _anon, room, payload) => {

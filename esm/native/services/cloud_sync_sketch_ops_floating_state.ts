@@ -22,7 +22,7 @@ export type CreateCloudSyncFloatingSketchSyncOpsDeps = {
   cfg: CloudSyncSketchConfig;
   storage: StorageLike;
   getGateBaseRoom?: () => string;
-  restUrl: string;
+  gatewayUrl: string;
   clientId: string;
   getRow: GetCloudSyncRow;
   upsertRow: UpsertCloudSyncRow;

@@ -1,7 +1,7 @@
 import type { AppContainer, CloudSyncSessionStorageLike } from '../../../types';
 
 import { getWindowMaybe } from '../runtime/api.js';
-import { randomRoomId } from './cloud_sync_config.js';
+import { randomCloudSyncIdSegment } from './cloud_sync_config.js';
 import {
   CLOUD_SYNC_CLIENT_KEY,
   type CloudSyncReportNonFatal,
@@ -25,9 +25,9 @@ export function resolveCloudSyncClientId(App: AppContainer, reportNonFatal: Clou
   if (ss) {
     const fromSession = String(ss.getItem?.(CLOUD_SYNC_CLIENT_KEY) || '').trim();
     if (fromSession) return fromSession;
-    const next = `client_${randomRoomId()}`;
+    const next = `client_${randomCloudSyncIdSegment()}`;
     ss.setItem?.(CLOUD_SYNC_CLIENT_KEY, next);
     return next;
   }
-  return `client_${randomRoomId()}`;
+  return `client_${randomCloudSyncIdSegment()}`;
 }

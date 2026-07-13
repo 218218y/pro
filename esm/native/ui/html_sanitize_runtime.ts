@@ -30,8 +30,18 @@ const POLICY_ALLOWED_TAGS: Record<HtmlSanitizePolicy, Set<string>> = {
   'overlay-help': OVERLAY_ALLOWED_TAGS,
 };
 
-const DANGEROUS_DROP_CONTENT_TAGS = new Set(['IFRAME', 'OBJECT', 'EMBED', 'TEMPLATE', 'META', 'LINK']);
-const DANGEROUS_UNWRAP_TAGS = new Set(['SCRIPT', 'STYLE']);
+const DANGEROUS_DROP_CONTENT_TAGS = new Set([
+  'SCRIPT',
+  'STYLE',
+  'IFRAME',
+  'OBJECT',
+  'EMBED',
+  'TEMPLATE',
+  'META',
+  'LINK',
+  'SVG',
+  'MATH',
+]);
 
 function isElementNode(node: Node): node is Element {
   return !!node && node.nodeType === ELEMENT_NODE && typeof Reflect.get(node, 'tagName') === 'string';
@@ -123,6 +133,9 @@ function sanitizeElementAttrs(policy: HtmlSanitizePolicy, el: Element, tag: stri
       }
       if (attr.value !== sanitized) el.setAttribute(attr.name, sanitized);
     }
+    if (policy === 'overlay-help' && tag === 'A' && el.getAttribute('target') === '_blank') {
+      el.setAttribute('rel', 'noopener noreferrer');
+    }
   } catch {}
 }
 
@@ -139,11 +152,9 @@ function sanitizeDomTree(policy: HtmlSanitizePolicy, root: Element): string {
       removeNode(node);
       return;
     }
-    if (DANGEROUS_UNWRAP_TAGS.has(tag)) {
-      unwrapNode(node);
-      return;
-    }
     if (!allowedTags.has(tag)) {
+      const children = Array.from(node.childNodes || []);
+      for (const child of children) walk(child);
       unwrapNode(node);
       return;
     }
@@ -187,8 +198,8 @@ function sanitizeTagMarkupText(
 function sanitizeHtmlTextOnly(policy: HtmlSanitizePolicy, html: string): string {
   const source = html
     .replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/<\/?(?:iframe|object|embed|template|meta|link)\b[^>]*>/gi, '')
-    .replace(/<\/?(?:script|style)\b[^>]*>/gi, '');
+    .replace(/<(script|style|iframe|object|template|svg|math)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '')
+    .replace(/<\/?(?:script|style|iframe|object|embed|template|meta|link|svg|math)\b[^>]*>/gi, '');
   const tagRe = /<(\/)?([a-zA-Z0-9:-]+)([^>]*)>/g;
   let out = '';
   let lastIndex = 0;

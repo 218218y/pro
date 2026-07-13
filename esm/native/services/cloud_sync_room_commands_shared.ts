@@ -4,6 +4,7 @@ import type {
   CloudSyncNonFatalReportOptions,
   CloudSyncPanelConfig,
   CloudSyncPromptSinkLike,
+  CloudSyncRoomCredential,
   CloudSyncRoomStatusSnapshot,
 } from '../../../types';
 
@@ -13,10 +14,20 @@ export type CloudSyncRoomCommandDeps = {
   App: AppContainer;
   cfg: CloudSyncPanelConfig;
   getCurrentRoom: () => string;
+  getCurrentRoomToken: () => string;
   getPrivateRoom: () => string;
-  setPrivateRoom: (value: string) => void;
-  randomRoomId: () => string;
-  setRoomInUrl: (app: AppContainer, param: string, value: string | null) => void;
+  getPrivateRoomToken: () => string;
+  setPrivateRoomCredential: (room: string, token: string) => void;
+  issuePrivateRoom: () => Promise<CloudSyncRoomCredential | null>;
+  setRoomCredentialInUrl: (
+    app: AppContainer,
+    args: {
+      roomParam: string;
+      room: string | null;
+      roomTokenParam: string;
+      roomToken: string | null;
+    }
+  ) => boolean;
   reportNonFatal: (
     app: AppContainer,
     op: string,
@@ -42,7 +53,11 @@ export function readRoomString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-export function buildCloudSyncShareLink(cfg: CloudSyncPanelConfig, currentRoom: string): string {
+export function buildCloudSyncShareLink(
+  cfg: CloudSyncPanelConfig,
+  currentRoom: string,
+  currentRoomToken: string
+): string {
   const base = String(cfg.shareBaseUrl || 'https://pro218.bargig-furniture.com/');
   const url = new URL(base);
   url.hash = '';
@@ -50,6 +65,9 @@ export function buildCloudSyncShareLink(cfg: CloudSyncPanelConfig, currentRoom: 
   const room = readRoomString(currentRoom);
   if (room && room !== readRoomString(cfg.publicRoom)) {
     url.searchParams.set(cfg.roomParam, room);
+    const token = readRoomString(currentRoomToken);
+    if (!token) return '';
+    url.searchParams.set(cfg.roomTokenParam, token);
   }
   return url.toString();
 }

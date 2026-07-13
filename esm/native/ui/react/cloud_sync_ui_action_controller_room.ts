@@ -8,16 +8,16 @@ import {
   type CloudSyncUiFeedbackLike,
 } from './cloud_sync_ui_action_controller_shared.js';
 
-export function runCloudSyncUiToggleRoomMode(args: {
+export async function runCloudSyncUiToggleRoomMode(args: {
   app: AppContainer;
   fb: CloudSyncUiFeedbackLike | null | undefined;
   commands: ResolvedCloudSyncUiActionCommands;
   isPublic: boolean | null | undefined;
-}): CloudSyncRoomModeCommandResult {
+}): Promise<CloudSyncRoomModeCommandResult> {
   const { app, fb, commands, isPublic } = args;
   const nextMode = isPublic ? 'private' : 'public';
   try {
-    const result = isPublic ? commands.goPrivateCommand(app) : commands.goPublicCommand(app);
+    const result = await (isPublic ? commands.goPrivateCommand(app) : commands.goPublicCommand(app));
     reportCloudSyncRoomModeResult(fb, result);
     return result;
   } catch (err) {

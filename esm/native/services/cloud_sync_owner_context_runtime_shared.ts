@@ -9,7 +9,11 @@ import { getNavigatorMaybe, getWindowMaybe } from '../runtime/api.js';
 import { asRecord } from '../runtime/record.js';
 
 export type StorageLike = {
-  KEYS?: { SAVED_MODELS?: string; SAVED_COLORS?: string };
+  KEYS?: {
+    SAVED_MODELS?: string;
+    SAVED_COLORS?: string;
+    PRIVATE_ROOM_CREDENTIAL?: string;
+  };
   getString?(key: unknown): string | null;
   setString?(key: unknown, value: unknown): boolean;
   getJSON?<T>(key: unknown, defaultValue: T): T;

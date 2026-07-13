@@ -13,6 +13,7 @@ export type CloudSyncPanelApiTestRig = {
   state: {
     currentRoom: string;
     privateRoom: string;
+    privateRoomToken: string;
     floatingEnabled: boolean;
     tabsGateSnapshot: { open: boolean; until: number; minutesLeft: number };
   };
@@ -35,6 +36,7 @@ export function createCloudSyncPanelApiTestRig(overrides: OverrideBag = {}): Clo
   const state = {
     currentRoom: 'public',
     privateRoom: '',
+    privateRoomToken: '',
     floatingEnabled: true,
     tabsGateSnapshot: { open: false, until: 0, minutesLeft: 0 },
   };
@@ -46,7 +48,12 @@ export function createCloudSyncPanelApiTestRig(overrides: OverrideBag = {}): Clo
 
   const defaults: OverrideBag = {
     App: {} as any,
-    cfg: { publicRoom: 'public', roomParam: 'room', shareBaseUrl: 'https://example.test/' },
+    cfg: {
+      publicRoom: 'public',
+      roomParam: 'room',
+      roomTokenParam: 'roomToken',
+      shareBaseUrl: 'https://example.test/',
+    },
     clientId: 'client-1',
     diagEnabledRef: { value: false },
     tabsGateOpenRef,
@@ -62,12 +69,19 @@ export function createCloudSyncPanelApiTestRig(overrides: OverrideBag = {}): Clo
       };
     },
     getCurrentRoom: () => state.currentRoom,
+    getCurrentRoomToken: () => (state.currentRoom === state.privateRoom ? state.privateRoomToken : ''),
     getPrivateRoom: () => state.privateRoom,
-    setPrivateRoom: (value: string) => {
-      state.privateRoom = value;
+    getPrivateRoomToken: () => state.privateRoomToken,
+    setPrivateRoomCredential: (room: string, token: string) => {
+      state.privateRoom = room;
+      state.privateRoomToken = token;
     },
-    randomRoomId: () => 'generated-room',
-    setRoomInUrl: () => {},
+    issuePrivateRoom: async () => ({
+      room: 'generated-room',
+      token: 'signed-generated-token',
+      expiresAt: '2026-07-20T08:00:00.000Z',
+    }),
+    setRoomCredentialInUrl: () => true,
     cloneRuntimeStatus: (next: AnyRecord) => ({ ...next }) as any,
     runtimeStatus: status as any,
     updateDiagEnabled: () => {

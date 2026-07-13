@@ -1,4 +1,5 @@
 import type { OrderPdfTextApi } from './order_pdf_overlay_text_api.js';
+import { sanitizeHtmlByPolicy } from '../../html_sanitize_runtime.js';
 import {
   hasOrderPdfTextValue,
   resolveOrderPdfRichTextHtml,
@@ -26,7 +27,7 @@ export function createOrderPdfNotesFields(args: {
 }): OrderPdfNotesFields {
   const { textApi, reportNonFatal } = args;
   const explicitNotes = textApi.safeStr(args.notes);
-  const explicitHtml = textApi.safeStr(args.notesHtml);
+  const explicitHtml = sanitizeHtmlByPolicy(null, textApi.safeStr(args.notesHtml), 'order-pdf-rich');
 
   let notes = explicitNotes;
   if (!notes && explicitHtml) {

@@ -1,9 +1,13 @@
 export {
   createCloudSyncOwnerTimers,
-  createCloudSyncOwnerRestIo,
+  createCloudSyncOwnerGatewayIo,
   resolveCloudSyncOwnerStorage,
 } from './cloud_sync_owner_context_runtime_access.js';
-export type { CloudSyncGetRowFn, CloudSyncUpsertRowFn } from './cloud_sync_owner_context_runtime_access.js';
+export type {
+  CloudSyncGetRowFn,
+  CloudSyncUpsertRowFn,
+  CloudSyncIssuePrivateRoomFn,
+} from './cloud_sync_owner_context_runtime_access.js';
 export { resolveCloudSyncClientId } from './cloud_sync_owner_context_runtime_client.js';
 export {
   CLOUD_SYNC_CLIENT_KEY,

@@ -8,7 +8,7 @@ export function createCloudSyncTabsGatePullOnce(
 ): (isInitial: boolean) => Promise<void> {
   const {
     cfg,
-    restUrl,
+    gatewayUrl,
     getRow,
     isTabsGateController,
     getSite2TabsRoom,
@@ -24,7 +24,7 @@ export function createCloudSyncTabsGatePullOnce(
     if (!roomNow) return;
 
     const row = await readCloudSyncRowWithPullActivity({
-      restUrl,
+      gatewayUrl,
       anonKey: cfg.anonKey,
       room: roomNow,
       getRow,

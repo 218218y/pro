@@ -1,7 +1,7 @@
 import type { AppContainer, CloudSyncDiagFn, CloudSyncRuntimeStatus } from '../../../types';
 
 import { _cloudSyncReportNonFatal } from './cloud_sync_support.js';
-import { randomRoomId, type SupabaseCfg } from './cloud_sync_config.js';
+import { randomCloudSyncIdSegment, type SupabaseCfg } from './cloud_sync_config.js';
 import {
   CLOUD_SYNC_DIAG_LS_KEY,
   type CloudSyncReportNonFatal,
@@ -31,7 +31,7 @@ export function createCloudSyncOwnerStatusRuntime(args: {
   const runtimeStatus: CloudSyncRuntimeStatus = {
     room,
     clientId,
-    instanceId: `cloudSync_${Date.now()}_${String(room || 'room')}_${randomRoomId()}`,
+    instanceId: `cloudSync_${Date.now()}_${String(room || 'room')}_${randomCloudSyncIdSegment()}`,
     realtime: {
       enabled: !!cfg.realtime,
       mode: cfg.realtimeMode,

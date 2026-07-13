@@ -12,7 +12,7 @@ import type { WriteCloudSyncMainRowPayloadResult } from './cloud_sync_main_row_w
 export type CreateCloudSyncMainRowRemoteOpsArgs = {
   App: AppContainer;
   cfg: SupabaseCfg;
-  restUrl: string;
+  gatewayUrl: string;
   room: string;
   getRow: CloudSyncGetRowFn;
   upsertRow: CloudSyncUpsertRowFn;

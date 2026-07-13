@@ -14,17 +14,17 @@ import {
   type InstallableCloudSyncPanelApi,
 } from './cloud_sync_panel_api_install_context_runtime.js';
 
-const NOT_INSTALLED_GO_PUBLIC_RESULT = {
+const NOT_INSTALLED_GO_PUBLIC_RESULT = Promise.resolve({
   ok: false,
   mode: 'public',
   reason: 'not-installed',
-} satisfies CloudSyncRoomModeCommandResult;
+} satisfies CloudSyncRoomModeCommandResult);
 
-const NOT_INSTALLED_GO_PRIVATE_RESULT = {
+const NOT_INSTALLED_GO_PRIVATE_RESULT = Promise.resolve({
   ok: false,
   mode: 'private',
   reason: 'not-installed',
-} satisfies CloudSyncRoomModeCommandResult;
+} satisfies CloudSyncRoomModeCommandResult);
 
 const UNAVAILABLE_SHARE_LINK_RESULT = Promise.resolve({
   ok: false,
@@ -62,10 +62,10 @@ export function installCloudSyncPanelApiMutationRefs(
     };
   });
   installStableSurfaceMethod(api, 'goPublic', '__wpCloudSyncGoPublic', () => {
-    return () => invokeCloudSyncPanelApi(context, 'goPublic', NOT_INSTALLED_GO_PUBLIC_RESULT);
+    return async () => await invokeCloudSyncPanelApi(context, 'goPublic', NOT_INSTALLED_GO_PUBLIC_RESULT);
   });
   installStableSurfaceMethod(api, 'goPrivate', '__wpCloudSyncGoPrivate', () => {
-    return () => invokeCloudSyncPanelApi(context, 'goPrivate', NOT_INSTALLED_GO_PRIVATE_RESULT);
+    return async () => await invokeCloudSyncPanelApi(context, 'goPrivate', NOT_INSTALLED_GO_PRIVATE_RESULT);
   });
   installStableSurfaceMethod(api, 'getShareLink', '__wpCloudSyncGetShareLink', () => {
     return (): string => invokeCloudSyncPanelApi(context, 'getShareLink', '');

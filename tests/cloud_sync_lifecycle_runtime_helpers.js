@@ -219,9 +219,11 @@ export function makeApp({ realtime = false, pollMs = 50, testCreateSupabaseClien
         supabaseCloudSync: {
           url: 'https://supabase.example.test',
           anonKey: 'anon-key',
-          table: 'wp_shared_state',
+          storeId: 'bargig',
+          gatewayFunction: 'wp-cloud-sync-room',
           publicRoom: 'public',
           roomParam: 'room',
+          roomTokenParam: 'roomToken',
           pollMs,
           realtime,
           diagnostics: false,

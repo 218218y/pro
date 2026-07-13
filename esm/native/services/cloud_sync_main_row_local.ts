@@ -26,7 +26,7 @@ export type CloudSyncMainRowStateAccess = {
 export type CreateCloudSyncMainRowLocalStateArgs = {
   App: AppContainer;
   cfg: SupabaseCfg;
-  restUrl: string;
+  gatewayUrl: string;
   room: string;
   storage: StorageLike;
   keyModels: string;
@@ -129,7 +129,7 @@ export function createCloudSyncMainRowLocalState(
 
     const writeResult = await writeCloudSyncMainRowPayload({
       cfg: args.cfg,
-      restUrl: args.restUrl,
+      gatewayUrl: args.gatewayUrl,
       room: args.room,
       payload,
       getRow: args.getRow,

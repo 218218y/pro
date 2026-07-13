@@ -12,6 +12,7 @@ type InstallHarness = {
   state: {
     currentRoom: string;
     privateRoom: string;
+    privateRoomToken: string;
     floatingEnabled: boolean;
     tabsGateSnapshot: { open: boolean; until: number; minutesLeft: number };
   };
@@ -23,6 +24,7 @@ function createInstallDeps(App: any, room: string): InstallHarness & { deps: Any
   const state = {
     currentRoom: room,
     privateRoom: `${room}:private`,
+    privateRoomToken: `${room}:signed-token`,
     floatingEnabled: true,
     tabsGateSnapshot: { open: false, until: 0, minutesLeft: 0 },
   };
@@ -33,7 +35,12 @@ function createInstallDeps(App: any, room: string): InstallHarness & { deps: Any
 
   const deps: AnyRecord = {
     App,
-    cfg: { publicRoom: 'public', roomParam: 'room', shareBaseUrl: 'https://example.test/' },
+    cfg: {
+      publicRoom: 'public',
+      roomParam: 'room',
+      roomTokenParam: 'roomToken',
+      shareBaseUrl: 'https://example.test/',
+    },
     clientId: `client:${room}`,
     diagEnabledRef: { value: false },
     tabsGateOpenRef,
@@ -49,12 +56,19 @@ function createInstallDeps(App: any, room: string): InstallHarness & { deps: Any
     site2TabsTtlMs: 60000,
     now: () => 1000,
     getCurrentRoom: () => state.currentRoom,
+    getCurrentRoomToken: () => (state.currentRoom === state.privateRoom ? state.privateRoomToken : ''),
     getPrivateRoom: () => state.privateRoom,
-    setPrivateRoom: (value: string) => {
-      state.privateRoom = value;
+    getPrivateRoomToken: () => state.privateRoomToken,
+    setPrivateRoomCredential: (privateRoom: string, token: string) => {
+      state.privateRoom = privateRoom;
+      state.privateRoomToken = token;
     },
-    randomRoomId: () => `${room}:generated`,
-    setRoomInUrl: () => undefined,
+    issuePrivateRoom: async () => ({
+      room: `${room}:generated`,
+      token: `${room}:generated-token`,
+      expiresAt: '2026-07-20T08:00:00.000Z',
+    }),
+    setRoomCredentialInUrl: () => true,
     cloneRuntimeStatus: (next: AnyRecord) => ({ ...next }),
     runtimeStatus: { diagEnabled: false, room, online: true },
     updateDiagEnabled: () => undefined,
@@ -498,8 +512,8 @@ test('cloud sync panel api public surface clones runtime status and snapshot rea
 test('cloud sync panel api mutation refs fall back to typed not-installed results when the impl does not expose mutation methods', async () => {
   const api = installCloudSyncPanelApiSurface({}, {} as any);
 
-  assert.deepEqual(api.goPublic?.(), { ok: false, mode: 'public', reason: 'not-installed' });
-  assert.deepEqual(api.goPrivate?.(), { ok: false, mode: 'private', reason: 'not-installed' });
+  assert.deepEqual(await api.goPublic?.(), { ok: false, mode: 'public', reason: 'not-installed' });
+  assert.deepEqual(await api.goPrivate?.(), { ok: false, mode: 'private', reason: 'not-installed' });
   assert.deepEqual(await api.syncSketchNow?.(), { ok: false, reason: 'not-installed' });
   assert.deepEqual(await api.setFloatingSketchSyncEnabled?.(true), { ok: false, reason: 'not-installed' });
   assert.deepEqual(await api.toggleFloatingSketchSyncEnabled?.(), { ok: false, reason: 'not-installed' });

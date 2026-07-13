@@ -62,7 +62,7 @@ function createHarness(rows: Array<any>, seed?: Record<string, unknown>) {
       },
     } as any,
     cfg: { anonKey: 'anon' } as any,
-    restUrl: 'https://example.test/rest',
+    gatewayUrl: 'https://example.test/rest',
     room: 'room-a',
     storage: storage as any,
     keyModels: 'savedModels',

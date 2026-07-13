@@ -25,7 +25,7 @@ test('cloud sync actions return canonical room/share, site2 tabs gate, sketch sy
     services: {
       cloudSync: {
         panelApi: {
-          goPublic() {
+          async goPublic() {
             return {
               ok: true,
               changed: true,
@@ -34,7 +34,7 @@ test('cloud sync actions return canonical room/share, site2 tabs gate, sketch sy
               shareLink: 'https://site2.test/',
             };
           },
-          goPrivate() {
+          async goPrivate() {
             return {
               ok: true,
               changed: true,
@@ -66,7 +66,7 @@ test('cloud sync actions return canonical room/share, site2 tabs gate, sketch sy
     },
   } as any;
 
-  const publicResult = goCloudSyncPublic(App);
+  const publicResult = await goCloudSyncPublic(App);
   assert.deepEqual(publicResult, {
     ok: true,
     changed: true,
@@ -76,7 +76,7 @@ test('cloud sync actions return canonical room/share, site2 tabs gate, sketch sy
   });
   assert.equal(getCloudSyncRoomModeToast(publicResult), null);
 
-  const privateResult = goCloudSyncPrivate(App);
+  const privateResult = await goCloudSyncPrivate(App);
   assert.deepEqual(privateResult, {
     ok: true,
     changed: true,
@@ -163,8 +163,8 @@ test('cloud sync actions keep local site2 handling and report missing cloud muta
     type: 'error',
   });
 
-  assert.deepEqual(goCloudSyncPublic(App), { ok: false, mode: 'public', reason: 'not-installed' });
-  assert.deepEqual(goCloudSyncPrivate(App), { ok: false, mode: 'private', reason: 'not-installed' });
+  assert.deepEqual(await goCloudSyncPublic(App), { ok: false, mode: 'public', reason: 'not-installed' });
+  assert.deepEqual(await goCloudSyncPrivate(App), { ok: false, mode: 'private', reason: 'not-installed' });
   assert.deepEqual(await copyCloudSyncShareLink(App), { ok: false, reason: 'not-installed' });
 
   const pinResult = await setFloatingSketchSyncEnabled(App, true);

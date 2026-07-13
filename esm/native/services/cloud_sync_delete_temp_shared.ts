@@ -24,7 +24,7 @@ export type DeleteTempKind = 'models' | 'colors';
 export type DeleteTempArgs = {
   App: AppContainer;
   cfg: SupabaseCfg;
-  restUrl: string;
+  gatewayUrl: string;
   storage: StorageLike;
   keyModels: string;
   keyColors: string;

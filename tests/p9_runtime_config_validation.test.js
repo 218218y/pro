@@ -57,6 +57,7 @@ test('runtime config accepts canonical typed values', () => {
     supabaseCloudSync: {
       url: 'https://example.supabase.co',
       anonKey: 'anon-key',
+      storeId: 'bargig',
       pollMs: 1500,
       diagnostics: true,
     },
@@ -109,20 +110,39 @@ test('P9: validateRuntimeConfig failFast flags missing supabase keys as error', 
   assert.equal(config.supabaseCloudSync, undefined);
 });
 
-test('P9: validateRuntimeConfig accepts empty privateRoom for generated private rooms', () => {
+test('P9: validateRuntimeConfig requires canonical signed-room gateway identity', () => {
   const { config, issues } = validateRuntimeConfig({
     supabaseCloudSync: {
       url: 'https://example.supabase.co',
       anonKey: 'anon-key',
-      privateRoom: '   ',
+      storeId: 'bargig',
+      gatewayFunction: 'wp-cloud-sync-room',
+      roomTokenParam: 'roomToken',
     },
   });
 
-  assert.equal(config.supabaseCloudSync.privateRoom, '');
-  assert.equal(
-    issues.some(i => i.path === 'supabaseCloudSync.privateRoom'),
-    false
-  );
+  assert.deepEqual(issues, []);
+  assert.equal(config.supabaseCloudSync.storeId, 'bargig');
+  assert.equal(config.supabaseCloudSync.gatewayFunction, 'wp-cloud-sync-room');
+  assert.equal(config.supabaseCloudSync.roomTokenParam, 'roomToken');
+});
+
+test('P9: validateRuntimeConfig rejects retired browser table and private-room configuration', () => {
+  for (const retired of [{ table: 'wp_shared_state' }, { privateRoom: 'room_legacy' }]) {
+    const { config, issues } = validateRuntimeConfig(
+      {
+        supabaseCloudSync: {
+          url: 'https://example.supabase.co',
+          anonKey: 'anon-key',
+          storeId: 'bargig',
+          ...retired,
+        },
+      },
+      { failFast: true }
+    );
+    assert.equal(config.supabaseCloudSync, undefined);
+    assert.ok(issues.some(issue => /is retired/u.test(issue.message)));
+  }
 });
 
 test('React boot validation rejects every config issue and stamps the canonical UI framework', () => {

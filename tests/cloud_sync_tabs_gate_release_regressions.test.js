@@ -21,7 +21,7 @@ test('cloud sync tabs gate subscribers get an immediate snapshot and isolated li
       getString: () => null,
       setString: () => true,
     },
-    restUrl: 'https://example.test/rest',
+    gatewayUrl: 'https://example.test/rest',
     clientId: 'client-1',
     getRow: async () => null,
     upsertRow: async () => ({ ok: true, row: null }),

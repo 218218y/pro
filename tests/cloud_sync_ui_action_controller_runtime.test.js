@@ -67,8 +67,8 @@ function loadCloudSyncUiActionControllerModule(reportCalls) {
         if (specifier === './actions/cloud_sync_actions.js') {
           return {
             copyCloudSyncShareLink: async () => ({ ok: false, reason: 'not-installed' }),
-            goCloudSyncPublic: () => ({ ok: false, mode: 'public', reason: 'not-installed' }),
-            goCloudSyncPrivate: () => ({ ok: false, mode: 'private', reason: 'not-installed' }),
+            goCloudSyncPublic: async () => ({ ok: false, mode: 'public', reason: 'not-installed' }),
+            goCloudSyncPrivate: async () => ({ ok: false, mode: 'private', reason: 'not-installed' }),
             setFloatingSketchSyncEnabled: async () => ({ ok: false, reason: 'not-installed' }),
             toggleFloatingSketchSyncEnabled: async () => ({ ok: false, reason: 'not-installed' }),
             toggleSite2TabsGate: async () => ({ ok: false, reason: 'not-installed' }),
@@ -93,11 +93,11 @@ test('[cloud-sync-ui-controller] panel/sidebar/dock actions flow through one can
   const controller = mod.createCloudSyncUiActionController({
     app: { id: 'app' },
     fb,
-    goCloudSyncPublic: app => {
+    goCloudSyncPublic: async app => {
       actionCalls.push(['goPublic', app]);
       return { ok: true, changed: true, mode: 'public' };
     },
-    goCloudSyncPrivate: app => {
+    goCloudSyncPrivate: async app => {
       actionCalls.push(['goPrivate', app]);
       return { ok: true, changed: true, mode: 'private' };
     },
@@ -132,11 +132,11 @@ test('[cloud-sync-ui-controller] panel/sidebar/dock actions flow through one can
   });
 
   assert.equal(
-    JSON.stringify(controller.toggleRoomMode(false)),
+    JSON.stringify(await controller.toggleRoomMode(false)),
     JSON.stringify({ ok: true, changed: true, mode: 'public' })
   );
   assert.equal(
-    JSON.stringify(controller.toggleRoomMode(true)),
+    JSON.stringify(await controller.toggleRoomMode(true)),
     JSON.stringify({ ok: true, changed: true, mode: 'private' })
   );
   await controller.copyShareLink();
@@ -298,10 +298,10 @@ test('[cloud-sync-ui-controller] thrown commands downgrade to canonical error pa
   const controller = mod.createCloudSyncUiActionController({
     app: { id: 'app' },
     fb: { toast() {} },
-    goCloudSyncPublic: () => {
+    goCloudSyncPublic: async () => {
       throw new Error('boom room');
     },
-    goCloudSyncPrivate: () => {
+    goCloudSyncPrivate: async () => {
       throw new Error('boom room');
     },
     copyCloudSyncShareLink: async () => {
@@ -328,11 +328,11 @@ test('[cloud-sync-ui-controller] thrown commands downgrade to canonical error pa
   });
 
   assert.equal(
-    JSON.stringify(controller.toggleRoomMode(false)),
+    JSON.stringify(await controller.toggleRoomMode(false)),
     JSON.stringify({ ok: false, mode: 'public', reason: 'error', message: 'boom room' })
   );
   assert.equal(
-    JSON.stringify(controller.toggleRoomMode(true)),
+    JSON.stringify(await controller.toggleRoomMode(true)),
     JSON.stringify({ ok: false, mode: 'private', reason: 'error', message: 'boom room' })
   );
   await controller.copyShareLink();

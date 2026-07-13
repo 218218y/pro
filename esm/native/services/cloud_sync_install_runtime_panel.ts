@@ -1,5 +1,5 @@
 import { cloneRuntimeStatus } from './cloud_sync_support.js';
-import { setRoomInUrl as setRoomInUrlInBrowser, randomRoomId } from './cloud_sync_config.js';
+import { setRoomCredentialInUrl } from './cloud_sync_config.js';
 import { installCloudSyncPanelApi } from './cloud_sync_owner_support.js';
 import type {
   CloudSyncInstallRuntime,
@@ -14,8 +14,11 @@ export function installCloudSyncInstallRuntimePanelApi(
   const {
     cfg,
     currentRoom,
+    currentRoomToken,
     getPrivateRoom,
-    setPrivateRoom,
+    getPrivateRoomToken,
+    setPrivateRoomCredential,
+    issuePrivateRoom,
     clientId,
     runtimeStatus,
     diagEnabledRef,
@@ -61,10 +64,12 @@ export function installCloudSyncInstallRuntimePanelApi(
     isTabsGateController,
     site2TabsTtlMs,
     getCurrentRoom: currentRoom,
+    getCurrentRoomToken: currentRoomToken,
     getPrivateRoom,
-    setPrivateRoom,
-    randomRoomId,
-    setRoomInUrl: setRoomInUrlInBrowser,
+    getPrivateRoomToken,
+    setPrivateRoomCredential,
+    issuePrivateRoom,
+    setRoomCredentialInUrl,
     cloneRuntimeStatus,
     runtimeStatus,
     updateDiagEnabled,

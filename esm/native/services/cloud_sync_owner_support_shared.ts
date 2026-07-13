@@ -16,10 +16,12 @@ export type CloudSyncPanelApiInstallDeps = Pick<
   | 'site2TabsTtlMs'
   | 'now'
   | 'getCurrentRoom'
+  | 'getCurrentRoomToken'
   | 'getPrivateRoom'
-  | 'setPrivateRoom'
-  | 'randomRoomId'
-  | 'setRoomInUrl'
+  | 'getPrivateRoomToken'
+  | 'setPrivateRoomCredential'
+  | 'issuePrivateRoom'
+  | 'setRoomCredentialInUrl'
   | 'cloneRuntimeStatus'
   | 'runtimeStatus'
   | 'updateDiagEnabled'
@@ -61,10 +63,12 @@ export function buildCloudSyncPanelApiDeps(deps: CloudSyncPanelApiInstallDeps): 
     site2TabsTtlMs: deps.site2TabsTtlMs,
     now: deps.now,
     getCurrentRoom: deps.getCurrentRoom,
+    getCurrentRoomToken: deps.getCurrentRoomToken,
     getPrivateRoom: deps.getPrivateRoom,
-    setPrivateRoom: deps.setPrivateRoom,
-    randomRoomId: deps.randomRoomId,
-    setRoomInUrl: deps.setRoomInUrl,
+    getPrivateRoomToken: deps.getPrivateRoomToken,
+    setPrivateRoomCredential: deps.setPrivateRoomCredential,
+    issuePrivateRoom: deps.issuePrivateRoom,
+    setRoomCredentialInUrl: deps.setRoomCredentialInUrl,
     cloneRuntimeStatus: deps.cloneRuntimeStatus,
     runtimeStatus: deps.runtimeStatus,
     updateDiagEnabled: deps.updateDiagEnabled,

@@ -13,12 +13,17 @@ export {
   asBool,
   mergeCfgRaw,
   hasAnySupabaseCfgKey,
-  randomRoomId,
+  randomCloudSyncIdSegment,
   normalizeRealtimeMode,
-  buildRestUrl,
+  buildGatewayUrl,
   makeHeaders,
 } from './cloud_sync_config_shared.js';
 
 export { readCfgFromDepsConfig, readCfgFromImportMetaEnv, readCfg } from './cloud_sync_config_sources.js';
 
-export { getRoomFromUrl, setRoomInUrl, isExplicitSite2Bundle } from './cloud_sync_config_browser.js';
+export {
+  getRoomFromUrl,
+  removeRoomTokenFromUrl,
+  setRoomCredentialInUrl,
+  isExplicitSite2Bundle,
+} from './cloud_sync_config_browser.js';

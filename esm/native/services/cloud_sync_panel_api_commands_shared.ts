@@ -1,5 +1,6 @@
 import type {
   CloudSyncDeleteTempResult,
+  CloudSyncRoomModeCommandResult,
   CloudSyncServiceLike,
   CloudSyncShareLinkCommandResult,
   CloudSyncSketchCommandResult,
@@ -13,12 +14,17 @@ import type { CloudSyncPanelApiRuntimeCommands } from './cloud_sync_panel_api_co
 import type { CloudSyncPanelSnapshotController } from './cloud_sync_panel_api_snapshots.js';
 
 export type CloudSyncPanelApiDeleteTempKey = 'models' | 'colors';
+export type CloudSyncPanelApiRoomModeKey = 'public' | 'private';
 export type CloudSyncPanelApiFloatingSyncKey = 'set:0' | 'set:1' | 'toggle';
 export type CloudSyncPanelApiSite2TabsGateKey = 'open:0' | 'open:1' | 'toggle';
 
 export const cloudSyncPanelApiCopyShareLinkFlights = new WeakMap<
   object,
   CloudSyncAsyncFamilyFlight<CloudSyncShareLinkCommandResult, 'copyShareLink'>
+>();
+export const cloudSyncPanelApiRoomModeFlights = new WeakMap<
+  object,
+  CloudSyncAsyncFamilyFlight<CloudSyncRoomModeCommandResult, CloudSyncPanelApiRoomModeKey>
 >();
 export const cloudSyncPanelApiSyncSketchFlights = new WeakMap<
   object,
@@ -51,8 +57,6 @@ export function createCloudSyncPanelApiStaticCommands(args: {
     getRoomParam: runtime.getRoomParam,
     getSyncRuntimeStatus: runtime.getSyncRuntimeStatus,
     setDiagnosticsEnabled: runtime.setDiagnosticsEnabled,
-    goPublic: runtime.goPublic,
-    goPrivate: runtime.goPrivate,
     getShareLink: runtime.getShareLink,
     isFloatingSketchSyncEnabled: runtime.isFloatingSketchSyncEnabled,
     subscribeFloatingSketchSyncEnabled: runtime.subscribeFloatingSketchSyncEnabled,

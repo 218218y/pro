@@ -1,24 +1,24 @@
 {
-  "generatedAt": "2026-07-13T06:35:46.232Z",
+  "generatedAt": "2026-07-13T08:13:27.643Z",
   "totals": {
-    "tests": 1196,
-    "unitRunnerTests": 1190,
-    "e2eTests": 6,
+    "tests": 1200,
+    "unitRunnerTests": 1193,
+    "e2eTests": 7,
     "nonTestRuntimeFiles": 30,
     "packageTestReferences": 191,
-    "catalogTestReferences": 348,
-    "totalTestReferences": 539,
+    "catalogTestReferences": 351,
+    "totalTestReferences": 542,
     "catalogGroups": 29,
     "catalogScriptBindings": 29,
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 390,
+    "contract": 391,
     "runtime-unit": 309,
-    "integration": 441,
-    "e2e-smoke": 7,
+    "integration": 442,
+    "e2e-smoke": 8,
     "perf-smoke": 9,
-    "legacy-migration": 40
+    "legacy-migration": 41
   },
   "failures": {
     "missingTestRefs": [],
@@ -894,6 +894,14 @@
       "category": "contract"
     },
     {
+      "file": "tests/cloud_sync_gateway_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_gateway_security_contract.test.js",
+      "category": "contract"
+    },
+    {
       "file": "tests/cloud_sync_install_lifecycle_decomposition_contracts.test.js",
       "category": "contract"
     },
@@ -1070,6 +1078,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/cloud_sync_owner_gateway_io_runtime.test.ts",
+      "category": "integration"
+    },
+    {
       "file": "tests/cloud_sync_owner_support_cleanup_runtime.test.ts",
       "category": "integration"
     },
@@ -1162,6 +1174,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/cloud_sync_payload_merge_runtime.test.ts",
+      "category": "legacy-migration"
+    },
+    {
       "file": "tests/cloud_sync_payload_readers_runtime.test.ts",
       "category": "legacy-migration"
     },
@@ -1211,10 +1227,6 @@
     },
     {
       "file": "tests/cloud_sync_remote_write_support_runtime.test.ts",
-      "category": "integration"
-    },
-    {
-      "file": "tests/cloud_sync_rest_runtime.test.ts",
       "category": "integration"
     },
     {
@@ -1711,6 +1723,10 @@
     },
     {
       "file": "tests/e2e/cloud_sync_reconnect.spec.ts",
+      "category": "e2e-smoke"
+    },
+    {
+      "file": "tests/e2e/html_sanitize_security.spec.ts",
       "category": "e2e-smoke"
     },
     {

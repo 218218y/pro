@@ -18,11 +18,6 @@ type CloudSyncAsyncCommandSpec<Args extends unknown[], Result> = {
   whenUnavailable: (...args: Args) => Result;
 };
 
-type CloudSyncSyncCommandSpec<Args extends unknown[], Result> = {
-  call: (service: CloudSyncServiceLike | null, ...args: Args) => Result | null;
-  whenUnavailable: (...args: Args) => Result;
-};
-
 function buildLocalTabsGateResult(open: boolean): CloudSyncTabsGateCommandResult {
   return { ok: true, changed: true, open: !!open, until: 0 };
 }
@@ -49,14 +44,6 @@ function buildRoomModeUnavailableResult(mode: 'public' | 'private'): CloudSyncRo
 
 function readCloudSyncService(app: AppContainer): CloudSyncServiceLike | null {
   return getCloudSyncServiceMaybe(app);
-}
-
-function runCloudSyncSyncCommand<Args extends unknown[], Result>(
-  app: AppContainer,
-  spec: CloudSyncSyncCommandSpec<Args, Result>,
-  ...args: Args
-): Result {
-  return spec.call(readCloudSyncService(app), ...args) ?? spec.whenUnavailable(...args);
 }
 
 async function runCloudSyncAsyncCommand<Args extends unknown[], Result>(
@@ -96,15 +83,6 @@ const CLOUD_SYNC_ASYNC_COMMANDS = {
       typeof service?.copyShareLink === 'function' ? service.copyShareLink() : null,
     whenUnavailable: () => buildShareLinkUnavailableResult(),
   },
-} satisfies {
-  syncSketchNow: CloudSyncAsyncCommandSpec<[], CloudSyncSketchCommandResult>;
-  deleteTemporaryModels: CloudSyncAsyncCommandSpec<[], CloudSyncDeleteTempResult>;
-  deleteTemporaryColors: CloudSyncAsyncCommandSpec<[], CloudSyncDeleteTempResult>;
-  setFloatingSketchSyncEnabled: CloudSyncAsyncCommandSpec<[boolean], CloudSyncSyncPinCommandResult>;
-  copyShareLink: CloudSyncAsyncCommandSpec<[], CloudSyncShareLinkCommandResult>;
-};
-
-const CLOUD_SYNC_SYNC_COMMANDS = {
   goPublic: {
     call: (service: CloudSyncServiceLike | null) =>
       typeof service?.goPublic === 'function' ? service.goPublic() : null,
@@ -116,8 +94,13 @@ const CLOUD_SYNC_SYNC_COMMANDS = {
     whenUnavailable: () => buildRoomModeUnavailableResult('private'),
   },
 } satisfies {
-  goPublic: CloudSyncSyncCommandSpec<[], CloudSyncRoomModeCommandResult>;
-  goPrivate: CloudSyncSyncCommandSpec<[], CloudSyncRoomModeCommandResult>;
+  syncSketchNow: CloudSyncAsyncCommandSpec<[], CloudSyncSketchCommandResult>;
+  deleteTemporaryModels: CloudSyncAsyncCommandSpec<[], CloudSyncDeleteTempResult>;
+  deleteTemporaryColors: CloudSyncAsyncCommandSpec<[], CloudSyncDeleteTempResult>;
+  setFloatingSketchSyncEnabled: CloudSyncAsyncCommandSpec<[boolean], CloudSyncSyncPinCommandResult>;
+  copyShareLink: CloudSyncAsyncCommandSpec<[], CloudSyncShareLinkCommandResult>;
+  goPublic: CloudSyncAsyncCommandSpec<[], CloudSyncRoomModeCommandResult>;
+  goPrivate: CloudSyncAsyncCommandSpec<[], CloudSyncRoomModeCommandResult>;
 };
 
 export async function toggleSite2TabsGate(
@@ -174,10 +157,10 @@ export async function copyCloudSyncShareLink(app: AppContainer): Promise<CloudSy
   return await runCloudSyncAsyncCommand(app, CLOUD_SYNC_ASYNC_COMMANDS.copyShareLink);
 }
 
-export function goCloudSyncPublic(app: AppContainer): CloudSyncRoomModeCommandResult {
-  return runCloudSyncSyncCommand(app, CLOUD_SYNC_SYNC_COMMANDS.goPublic);
+export async function goCloudSyncPublic(app: AppContainer): Promise<CloudSyncRoomModeCommandResult> {
+  return await runCloudSyncAsyncCommand(app, CLOUD_SYNC_ASYNC_COMMANDS.goPublic);
 }
 
-export function goCloudSyncPrivate(app: AppContainer): CloudSyncRoomModeCommandResult {
-  return runCloudSyncSyncCommand(app, CLOUD_SYNC_SYNC_COMMANDS.goPrivate);
+export async function goCloudSyncPrivate(app: AppContainer): Promise<CloudSyncRoomModeCommandResult> {
+  return await runCloudSyncAsyncCommand(app, CLOUD_SYNC_ASYNC_COMMANDS.goPrivate);
 }

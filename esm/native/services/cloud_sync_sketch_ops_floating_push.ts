@@ -23,7 +23,7 @@ export function createCloudSyncFloatingSketchSyncPushNow(
     cfg,
     storage,
     getGateBaseRoom,
-    restUrl,
+    gatewayUrl,
     clientId,
     getRow,
     upsertRow,
@@ -55,7 +55,7 @@ export function createCloudSyncFloatingSketchSyncPushNow(
             syncPinBy: clientId,
           };
 
-          const res = await upsertRow(restUrl, cfg.anonKey, roomNow, payload, { returnRepresentation: true });
+          const res = await upsertRow(gatewayUrl, cfg.anonKey, roomNow, payload);
           if (!res.ok) return { ok: false, reason: 'write' } satisfies CloudSyncSyncPinCommandResult;
           publishCloudSyncWriteActivity({
             runtimeStatus,
@@ -67,7 +67,7 @@ export function createCloudSyncFloatingSketchSyncPushNow(
 
           await resolveCloudSyncSettledRowAfterWrite({
             returnedRow: res.row,
-            reader: { restUrl, anonKey: cfg.anonKey, room: roomNow, getRow },
+            reader: { gatewayUrl, anonKey: cfg.anonKey, room: roomNow, getRow },
             runtimeStatus,
             publishStatus,
             onSettledUpdatedAt: value => {

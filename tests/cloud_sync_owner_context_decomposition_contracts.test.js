@@ -25,7 +25,7 @@ test('cloud sync owner context keeps a thin public facade over shared/create sea
     owner,
     [
       /readCfg\(/,
-      /buildRestUrl\(/,
+      /buildGatewayUrl\(/,
       /createCloudSyncOwnerRooms\(/,
       /createCloudSyncOwnerStatusRuntime\(/,
       /reserveCloudSyncPublicationEpoch\(/,
@@ -50,7 +50,7 @@ test('cloud sync owner context keeps a thin public facade over shared/create sea
     create,
     [
       /readCfg\(/,
-      /buildRestUrl\(/,
+      /buildGatewayUrl\(/,
       /createCloudSyncOwnerRooms\(/,
       /createCloudSyncOwnerStatusRuntime\(/,
       /reserveCloudSyncPublicationEpoch\(/,

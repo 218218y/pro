@@ -16,7 +16,7 @@ export type CloudSyncUiFeedbackLike = {
 };
 
 export type CloudSyncUiActionController = {
-  toggleRoomMode: (isPublic: boolean | null | undefined) => CloudSyncRoomModeCommandResult;
+  toggleRoomMode: (isPublic: boolean | null | undefined) => Promise<CloudSyncRoomModeCommandResult>;
   copyShareLink: () => Promise<void>;
   syncSketch: () => Promise<void>;
   deleteTemporaryModels: () => Promise<void>;
@@ -30,8 +30,8 @@ export type CreateCloudSyncUiActionControllerArgs = {
   app: AppContainer;
   fb: CloudSyncUiFeedbackLike | null | undefined;
   copyCloudSyncShareLink?: ((app: AppContainer) => Promise<CloudSyncShareLinkCommandResult>) | null;
-  goCloudSyncPublic?: ((app: AppContainer) => CloudSyncRoomModeCommandResult) | null;
-  goCloudSyncPrivate?: ((app: AppContainer) => CloudSyncRoomModeCommandResult) | null;
+  goCloudSyncPublic?: ((app: AppContainer) => Promise<CloudSyncRoomModeCommandResult>) | null;
+  goCloudSyncPrivate?: ((app: AppContainer) => Promise<CloudSyncRoomModeCommandResult>) | null;
   syncSketchNowCommand?: ((app: AppContainer) => Promise<CloudSyncSketchCommandResult>) | null;
   deleteTemporaryModelsWithConfirm?: ((app: AppContainer) => Promise<CloudSyncDeleteTempResult>) | null;
   deleteTemporaryColorsWithConfirm?: ((app: AppContainer) => Promise<CloudSyncDeleteTempResult>) | null;

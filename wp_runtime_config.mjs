@@ -15,10 +15,9 @@
 // - This is a *client-side* config surface. Anything here ships to the browser.
 //
 // Cloud Sync:
-// - The anon key is PUBLIC by design (it will be shipped to the browser).
-// - This setup intentionally keeps Cloud Sync open/no-auth. Anyone with a room link can read/write that room.
-// - Private-room mode should not use a hardcoded shared room name. Leave `privateRoom` empty so each browser
-//   generates and stores its own stable room ID locally, while share links still keep that room open/no-auth.
+// - The publishable/anon key is public and is used only to invoke the signed-room gateway and Realtime.
+// - Database table authority stays inside the Edge Function; the browser never receives a table route.
+// - Private-room links carry a server-signed bearer token and require no user login.
 //
 export default {
   // Optional: runtime flags (kept separate from config).
@@ -49,15 +48,13 @@ export default {
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhcXpyeHJ2b3d3bmRldnFwdGRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDExODcsImV4cCI6MjA4NTg3NzE4N30.hX4ciLINkSumjevU20rinv36wM7a72nZKr0TQYWs30o',
 
       // Optional:
-      table: 'wp_shared_state',
+      storeId: 'bargig',
+      gatewayFunction: 'wp-cloud-sync-room',
       publicRoom: 'public',
 
-      // Leave empty to generate a stable per-browser private room and keep it in localStorage.
-      // Cloud Sync remains open/no-auth: anyone with the generated room link can access that room.
-      privateRoom: '',
-
-      // URL query param name for room selection.
+      // URL query parameter names for the room and its signed bearer credential.
       roomParam: 'room',
+      roomTokenParam: 'roomToken',
 
       // Base URL used when copying share links (customers should open Site2).
       shareBaseUrl: 'https://pro218.bargig-furniture.com/',

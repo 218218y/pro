@@ -35,7 +35,7 @@ export type CreateCloudSyncShowContentsOpsDeps = {
   cfg: CloudSyncSketchConfig;
   storage: StorageLike;
   getGateBaseRoom?: () => string;
-  restUrl: string;
+  gatewayUrl: string;
   clientId: string;
   getRow: GetCloudSyncRow;
   upsertRow: UpsertCloudSyncRow;
@@ -113,7 +113,7 @@ function createPushShowContentsNow(
     cfg,
     storage,
     getGateBaseRoom,
-    restUrl,
+    gatewayUrl,
     clientId,
     getRow,
     upsertRow,
@@ -145,9 +145,7 @@ function createPushShowContentsNow(
             showContentsBy: clientId,
           };
 
-          const res = await upsertRow(restUrl, cfg.anonKey, roomNow, payload, {
-            returnRepresentation: true,
-          });
+          const res = await upsertRow(gatewayUrl, cfg.anonKey, roomNow, payload);
           if (!res.ok) return { ok: false, reason: 'write' } satisfies CloudSyncSyncPinCommandResult;
 
           publishCloudSyncWriteActivity({
@@ -160,7 +158,7 @@ function createPushShowContentsNow(
 
           await resolveCloudSyncSettledRowAfterWrite({
             returnedRow: res.row,
-            reader: { restUrl, anonKey: cfg.anonKey, room: roomNow, getRow },
+            reader: { gatewayUrl, anonKey: cfg.anonKey, room: roomNow, getRow },
             runtimeStatus,
             publishStatus,
             onSettledUpdatedAt: value => {
@@ -246,7 +244,7 @@ function createPullShowContentsOnce(
   deps: CreateCloudSyncShowContentsOpsDeps,
   state: ShowContentsMutableState
 ): (isInitial: boolean) => Promise<void> {
-  const { App, cfg, storage, getGateBaseRoom, restUrl, getRow, runtimeStatus, publishStatus } = deps;
+  const { App, cfg, storage, getGateBaseRoom, gatewayUrl, getRow, runtimeStatus, publishStatus } = deps;
 
   return async (isInitial: boolean): Promise<void> => {
     const roomNow = resolveShowContentsSyncRoom({
@@ -259,7 +257,7 @@ function createPullShowContentsOnce(
     if (!roomNow) return;
 
     const row = await readCloudSyncRowWithPullActivity({
-      restUrl,
+      gatewayUrl,
       anonKey: cfg.anonKey,
       room: roomNow,
       getRow,

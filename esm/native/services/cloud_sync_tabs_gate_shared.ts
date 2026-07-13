@@ -11,7 +11,6 @@ export type CloudSyncTabsGateStorageLike = {
 export type CloudSyncTabsGateConfig = {
   anonKey: string;
   roomParam: string;
-  privateRoom?: string;
   publicRoom: string;
 };
 

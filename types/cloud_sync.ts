@@ -29,12 +29,22 @@ export interface CloudSyncPayload extends UnknownRecord {
 export interface CloudSyncStateRow {
   room: string;
   payload: CloudSyncPayload;
+  revision: number;
   updated_at: string;
+  updated_by: string;
 }
 
 export interface CloudSyncUpsertResult {
   ok: boolean;
   row?: CloudSyncStateRow | null;
+  conflict?: boolean;
+  conflictKeys?: string[];
+}
+
+export interface CloudSyncRoomCredential {
+  room: string;
+  token: string;
+  expiresAt: string;
 }
 
 export type CloudSyncDeleteTempReason = 'busy' | 'room' | 'write' | 'error' | 'cancelled' | 'not-installed';
@@ -102,10 +112,11 @@ export type CloudSyncShareLinkCommandResult =
   | { ok: false; reason: 'missing-link' | 'clipboard' | 'unavailable' | 'not-installed'; link?: string }
   | { ok: false; reason: 'prompt' | 'error'; link?: string; message?: string };
 
-export type CloudSyncRoomModeCommandReason = 'error' | 'not-installed';
+export type CloudSyncRoomModeCommandReason = 'busy' | 'error' | 'not-installed';
 
 export type CloudSyncRoomModeCommandResult =
   | { ok: true; changed: boolean; mode: 'public' | 'private'; room: string; shareLink: string }
+  | { ok: false; mode: 'public' | 'private'; reason: 'busy' }
   | { ok: false; mode: 'public' | 'private'; reason: 'not-installed' }
   | { ok: false; mode: 'public' | 'private'; reason: 'error'; message?: string }
   | {
@@ -138,9 +149,10 @@ export interface CloudSyncRef<T> {
 }
 
 export interface CloudSyncPanelConfig extends UnknownRecord {
+  storeId: string;
   publicRoom: string;
   roomParam: string;
-  privateRoom?: string;
+  roomTokenParam: string;
   shareBaseUrl?: string;
 }
 
@@ -348,10 +360,20 @@ export interface CloudSyncPanelApiDeps extends UnknownRecord {
   site2TabsTtlMs: number;
   now: () => number;
   getCurrentRoom: () => string;
+  getCurrentRoomToken: () => string;
   getPrivateRoom: () => string;
-  setPrivateRoom: (value: string) => void;
-  randomRoomId: () => string;
-  setRoomInUrl: (app: AppContainer, param: string, value: string | null) => void;
+  getPrivateRoomToken: () => string;
+  setPrivateRoomCredential: (room: string, token: string) => void;
+  issuePrivateRoom: () => Promise<CloudSyncRoomCredential | null>;
+  setRoomCredentialInUrl: (
+    app: AppContainer,
+    args: {
+      roomParam: string;
+      room: string | null;
+      roomTokenParam: string;
+      roomToken: string | null;
+    }
+  ) => boolean;
   cloneRuntimeStatus: (status: CloudSyncRuntimeStatus) => CloudSyncRuntimeStatus;
   runtimeStatus: CloudSyncRuntimeStatus;
   updateDiagEnabled: () => void;
@@ -400,8 +422,8 @@ export interface CloudSyncServiceLike extends UnknownRecord {
   setDiagnosticsEnabled?: (enabled: boolean) => void;
   getPanelSnapshot?: () => CloudSyncPanelSnapshot;
   subscribePanelSnapshot?: (fn: (snapshot: CloudSyncPanelSnapshot) => void) => void | (() => void);
-  goPublic?: () => CloudSyncRoomModeCommandResult;
-  goPrivate?: () => CloudSyncRoomModeCommandResult;
+  goPublic?: () => Promise<CloudSyncRoomModeCommandResult>;
+  goPrivate?: () => Promise<CloudSyncRoomModeCommandResult>;
   getShareLink?: () => string;
   copyShareLink?: () => Promise<CloudSyncShareLinkCommandResult>;
   syncSketchNow?: () => Promise<CloudSyncSketchCommandResult>;

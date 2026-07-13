@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-12T20:57:14.408Z",
+  "generatedAt": "2026-07-13T08:13:27.352Z",
   "summary": {
     "groups": 29,
     "scriptBindings": 29,
-    "catalogFileReferences": 348,
+    "catalogFileReferences": 351,
     "directPackageTestReferences": 191,
     "catalogIssues": 0,
     "bindingIssues": 0,
@@ -183,7 +183,7 @@
     {
       "name": "cloud-sync-sync-ops",
       "script": "test:cloud-sync-surfaces:sync-ops",
-      "description": "Cloud Sync pull, push, REST, room, sketch, and support operations.",
+      "description": "Cloud Sync pull, push, signed gateway, room, merge, sketch, and support operations.",
       "kind": "service-runtime-integration",
       "owners": ["services/cloud-sync/sync-ops"],
       "environment": "tsx",
@@ -196,12 +196,15 @@
         "failedFilesPath": ".artifacts/cloud-sync-surfaces.sync-ops.failed.txt",
         "timingsPath": ".artifacts/cloud-sync-surfaces.sync-ops.timings.json"
       },
-      "fileCount": 9,
+      "fileCount": 12,
       "files": [
         "tests/cloud_sync_pull_coalescer_runtime.test.ts",
         "tests/cloud_sync_realtime_support_runtime.test.ts",
         "tests/cloud_sync_remote_push_singleflight_runtime.test.ts",
-        "tests/cloud_sync_rest_runtime.test.ts",
+        "tests/cloud_sync_gateway_runtime.test.ts",
+        "tests/cloud_sync_gateway_security_contract.test.js",
+        "tests/cloud_sync_owner_gateway_io_runtime.test.ts",
+        "tests/cloud_sync_payload_merge_runtime.test.ts",
         "tests/cloud_sync_room_commands_runtime.test.ts",
         "tests/cloud_sync_site2_sketch_behavior_runtime.test.ts",
         "tests/cloud_sync_sketch_ops_runtime.test.ts",

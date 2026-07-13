@@ -29,7 +29,7 @@ function deleteTemporaryItemsInCloud(
       let collections;
       try {
         const row = await readCloudSyncRowWithPullActivity({
-          restUrl: args.restUrl,
+          gatewayUrl: args.gatewayUrl,
           anonKey: args.cfg.anonKey,
           room: roomNow,
           getRow: args.getRow,

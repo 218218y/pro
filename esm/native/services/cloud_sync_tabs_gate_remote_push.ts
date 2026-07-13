@@ -20,7 +20,7 @@ export function createCloudSyncTabsGatePushNow(
   const {
     App,
     cfg,
-    restUrl,
+    gatewayUrl,
     clientId,
     getRow,
     upsertRow,
@@ -59,7 +59,7 @@ export function createCloudSyncTabsGatePushNow(
             tabsGateBy: clientId,
           };
 
-          const res = await upsertRow(restUrl, cfg.anonKey, roomNow, payload, { returnRepresentation: true });
+          const res = await upsertRow(gatewayUrl, cfg.anonKey, roomNow, payload);
           if (!res.ok) return { ok: false, reason: 'write' } satisfies CloudSyncTabsGateCommandResult;
           publishCloudSyncWriteActivity({
             runtimeStatus,
@@ -71,7 +71,7 @@ export function createCloudSyncTabsGatePushNow(
 
           await resolveCloudSyncSettledRowAfterWrite({
             returnedRow: res.row,
-            reader: { restUrl, anonKey: cfg.anonKey, room: roomNow, getRow },
+            reader: { gatewayUrl, anonKey: cfg.anonKey, room: roomNow, getRow },
             runtimeStatus,
             publishStatus,
             onSettledUpdatedAt: value => {

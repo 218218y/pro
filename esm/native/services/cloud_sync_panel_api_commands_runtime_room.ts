@@ -36,10 +36,12 @@ export function createCloudSyncPanelApiRoomCommands(
     App,
     cfg,
     getCurrentRoom,
+    getCurrentRoomToken,
     getPrivateRoom,
-    setPrivateRoom,
-    randomRoomId,
-    setRoomInUrl,
+    getPrivateRoomToken,
+    setPrivateRoomCredential,
+    issuePrivateRoom,
+    setRoomCredentialInUrl,
     cloneRuntimeStatus,
     runtimeStatus,
     publishStatus,
@@ -47,16 +49,18 @@ export function createCloudSyncPanelApiRoomCommands(
     reportNonFatal,
   } = deps;
 
-  const runRoomMode = (mode: 'public' | 'private'): CloudSyncRoomModeCommandResult => {
-    const result = runCloudSyncRoomModeCommand(
+  const runRoomMode = async (mode: 'public' | 'private'): Promise<CloudSyncRoomModeCommandResult> => {
+    const result = await runCloudSyncRoomModeCommand(
       {
         App,
         cfg,
         getCurrentRoom,
+        getCurrentRoomToken,
         getPrivateRoom,
-        setPrivateRoom,
-        randomRoomId,
-        setRoomInUrl,
+        getPrivateRoomToken,
+        setPrivateRoomCredential,
+        issuePrivateRoom,
+        setRoomCredentialInUrl,
         reportNonFatal,
       },
       mode
@@ -96,8 +100,8 @@ export function createCloudSyncPanelApiRoomCommands(
       }
     },
 
-    goPublic: (): CloudSyncRoomModeCommandResult => runRoomMode('public'),
-    goPrivate: (): CloudSyncRoomModeCommandResult => runRoomMode('private'),
+    goPublic: (): Promise<CloudSyncRoomModeCommandResult> => runRoomMode('public'),
+    goPrivate: (): Promise<CloudSyncRoomModeCommandResult> => runRoomMode('private'),
 
     getShareLink: (): string => {
       try {

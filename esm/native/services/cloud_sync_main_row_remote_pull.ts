@@ -51,11 +51,11 @@ function shouldApplyInitialPayloadToHydrateApp(
 export function createCloudSyncMainRowPullOnce(
   args: CreateCloudSyncMainRowRemoteOpsArgs
 ): (isInitial: boolean) => Promise<void> {
-  const { App, cfg, restUrl, room, getRow, runtimeStatus, publishStatus, localState, state } = args;
+  const { App, cfg, gatewayUrl, room, getRow, runtimeStatus, publishStatus, localState, state } = args;
 
   return async (isInitial: boolean): Promise<void> => {
     const row = await readCloudSyncRowWithPullActivity({
-      restUrl,
+      gatewayUrl,
       anonKey: cfg.anonKey,
       room,
       getRow,

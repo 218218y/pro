@@ -19,7 +19,7 @@ export function createCloudSyncMainRowOps(args: CreateCloudSyncMainRowOpsArgs): 
   const localState = createCloudSyncMainRowLocalState({
     App: args.App,
     cfg: args.cfg,
-    restUrl: args.restUrl,
+    gatewayUrl: args.gatewayUrl,
     room: args.room,
     storage: args.storage,
     keyModels: args.keyModels,
@@ -49,7 +49,7 @@ export function createCloudSyncMainRowOps(args: CreateCloudSyncMainRowOpsArgs): 
   remoteOpsRef = createCloudSyncMainRowRemoteOps({
     App: args.App,
     cfg: args.cfg,
-    restUrl: args.restUrl,
+    gatewayUrl: args.gatewayUrl,
     room: args.room,
     getRow: args.getRow,
     upsertRow: args.upsertRow,

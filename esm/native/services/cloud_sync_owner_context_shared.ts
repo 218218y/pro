@@ -17,19 +17,21 @@ import {
   type StorageLike,
 } from './cloud_sync_owner_context_runtime_shared.js';
 import type { CloudSyncGetRowFn, CloudSyncUpsertRowFn } from './cloud_sync_owner_context_runtime_access.js';
+import type { CloudSyncIssuePrivateRoomFn } from './cloud_sync_owner_context_runtime_access.js';
 
 export type { StorageLike } from './cloud_sync_owner_context_runtime_shared.js';
 export type { CloudSyncGetRowFn, CloudSyncUpsertRowFn } from './cloud_sync_owner_context_runtime_access.js';
 
 export type CloudSyncOwnerContext = {
   cfg: SupabaseCfg;
-  restUrl: string;
+  gatewayUrl: string;
   setTimeoutFn: (handler: () => void, ms: number) => TimeoutHandleLike;
   clearTimeoutFn: (id: TimeoutHandleLike | null | undefined) => void;
   setIntervalFn: (handler: () => void, ms: number) => IntervalHandleLike;
   clearIntervalFn: (id: IntervalHandleLike | null | undefined) => void;
   getRow: CloudSyncGetRowFn;
   upsertRow: CloudSyncUpsertRowFn;
+  issuePrivateRoom: CloudSyncIssuePrivateRoomFn;
   storage: StorageLike;
   keyModels: string;
   keyColors: string;
@@ -38,8 +40,10 @@ export type CloudSyncOwnerContext = {
   keyHiddenPresets: string;
   room: string;
   currentRoom: () => string;
+  currentRoomToken: () => string;
   getPrivateRoom: () => string;
-  setPrivateRoom: (value: string) => void;
+  getPrivateRoomToken: () => string;
+  setPrivateRoomCredential: (room: string, token: string) => void;
   getGateBaseRoom: () => string;
   getSketchRoom: () => string;
   getSite2TabsRoom: () => string;

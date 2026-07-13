@@ -24,23 +24,21 @@ export type StorageLike = {
 export type CloudSyncSketchConfig = {
   anonKey: string;
   roomParam: string;
-  privateRoom?: string;
   publicRoom: string;
   site2SketchInitialAutoLoad: boolean;
   site2SketchInitialMaxAgeHours: number;
 };
 
 export type GetCloudSyncRow = (
-  restUrl: string,
+  gatewayUrl: string,
   anonKey: string,
   room: string
 ) => Promise<CloudSyncStateRow | null>;
 export type UpsertCloudSyncRow = (
-  restUrl: string,
+  gatewayUrl: string,
   anonKey: string,
   room: string,
-  payload: CloudSyncSketchPayload | CloudSyncSyncPinPayload | CloudSyncContentsTogglePayload,
-  opts?: { returnRepresentation?: boolean }
+  payload: CloudSyncSketchPayload | CloudSyncSyncPinPayload | CloudSyncContentsTogglePayload
 ) => Promise<CloudSyncUpsertResult>;
 
 export type CloudSyncSketchOpsBaseDeps = {
