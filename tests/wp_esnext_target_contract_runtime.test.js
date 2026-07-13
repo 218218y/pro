@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   collectEsnextTargetViolations,
   collectRedundantImmutableSortSourceViolations,
+  collectRequiredRuntimeApiViolations,
 } from '../tools/wp_esnext_target_contract.mjs';
 
 test('ESNext target contract rejects redundant immutable array copy-sort patterns', () => {
@@ -24,4 +25,16 @@ const combined = [...left, ...right].sort(compare);
 
 test('ESNext target contract accepts the repository runtime floor and modern source patterns', async () => {
   assert.deepEqual(await collectEsnextTargetViolations(), []);
+});
+
+test('ESNext target contract reports every unavailable runtime API required by adopted source', () => {
+  assert.deepEqual(
+    collectRequiredRuntimeApiViolations({
+      'Array.prototype.toSorted': Array.prototype.toSorted,
+      'Map.groupBy': undefined,
+      'Promise.withResolvers': null,
+      'Set.prototype.difference': Set.prototype.difference,
+    }),
+    ['current Node runtime is missing Map.groupBy', 'current Node runtime is missing Promise.withResolvers']
+  );
 });

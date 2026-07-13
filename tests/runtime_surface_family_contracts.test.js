@@ -187,9 +187,10 @@ const families = [
         patterns: [
           /beginOwnedAsyncFamilyFlight/,
           /runOwnedAsyncFamilySingleFlight/,
-          /const pending = new Promise<T>\(/,
+          /Promise\.withResolvers<T>\(\)/,
           /flights\.delete\(owner\)/,
         ],
+        lacksPatterns: [/let resolvePending!/, /let rejectPending!/, /const pending = new Promise<T>\(/],
       },
     ],
   },
@@ -353,6 +354,7 @@ for (const family of families) {
     for (const owner of family.ownerChecks) {
       const source = readSource(owner.rel, import.meta.url);
       assertMatchesAll(assert, source, owner.patterns, owner.label);
+      if (owner.lacksPatterns) assertLacksAll(assert, source, owner.lacksPatterns, owner.label);
     }
   });
 }

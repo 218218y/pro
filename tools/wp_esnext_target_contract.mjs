@@ -28,6 +28,15 @@ const REDUNDANT_IMMUTABLE_SORT_PATTERNS = [
   },
 ];
 
+function readRequiredRuntimeApis() {
+  return {
+    'Array.prototype.toSorted': Array.prototype.toSorted,
+    'Map.groupBy': Map.groupBy,
+    'Promise.withResolvers': Promise.withResolvers,
+    'Set.prototype.difference': Set.prototype.difference,
+  };
+}
+
 function readJson(relativePath) {
   return JSON.parse(fs.readFileSync(path.join(ROOT, relativePath), 'utf8'));
 }
@@ -59,6 +68,14 @@ export function collectRedundantImmutableSortSourceViolations(source, relativePa
         `${relativePath}:${lineNumberAt(source, match.index)} uses redundant ${label}; use toSorted()`
       );
     }
+  }
+  return violations;
+}
+
+export function collectRequiredRuntimeApiViolations(runtimeApis = readRequiredRuntimeApis()) {
+  const violations = [];
+  for (const [label, value] of Object.entries(runtimeApis)) {
+    if (typeof value !== 'function') violations.push(`current Node runtime is missing ${label}`);
   }
   return violations;
 }
@@ -100,6 +117,7 @@ export async function collectEsnextTargetViolations() {
     packageLock.packages?.['']?.engines?.node,
     NODE_ENGINE_FLOOR
   );
+  violations.push(...collectRequiredRuntimeApiViolations());
 
   for (const fileName of fs
     .readdirSync(ROOT)
