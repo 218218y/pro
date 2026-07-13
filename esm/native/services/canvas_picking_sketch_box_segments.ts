@@ -165,7 +165,7 @@ export function pickSketchBoxVerticalSegment(args: {
   for (const segment of segments)
     if (targetY >= segment.bottomY - eps && targetY <= segment.topY + eps) return segment;
   return (
-    segments.slice().sort((a, b) => Math.abs(a.centerY - targetY) - Math.abs(b.centerY - targetY))[0] || null
+    segments.toSorted((a, b) => Math.abs(a.centerY - targetY) - Math.abs(b.centerY - targetY))[0] || null
   );
 }
 
@@ -294,6 +294,6 @@ export function pickSketchBoxSegment(args: {
   for (const segment of segments)
     if (targetX >= segment.leftX - eps && targetX <= segment.rightX + eps) return segment;
   return (
-    segments.slice().sort((a, b) => Math.abs(a.centerX - targetX) - Math.abs(b.centerX - targetX))[0] || null
+    segments.toSorted((a, b) => Math.abs(a.centerX - targetX) - Math.abs(b.centerX - targetX))[0] || null
   );
 }

@@ -127,8 +127,7 @@ function removeShelvesTouchingInternalDrawerCassette(args: {
 
   if (sketchShelfBlockers.length) {
     sketchShelfBlockers
-      .slice()
-      .sort((a, b) => (Number(b.index) || 0) - (Number(a.index) || 0))
+      .toSorted((a, b) => (Number(b.index) || 0) - (Number(a.index) || 0))
       .forEach(blocker => {
         if (removeSketchShelfByBlocker({ extra: args.extra, shelves: args.shelves, blocker })) {
           removedCount += 1;

@@ -72,7 +72,7 @@ export function createLeftShelvesContentsPlan(args: {
 
   const centerX = (postX + wallX) / 2;
   const centerZ = backInset + usableDepth / 2;
-  const shelfBottomYs = leftShelfBottomYs.slice().sort((a, b) => a - b);
+  const shelfBottomYs = leftShelfBottomYs.toSorted((a, b) => a - b);
   const plans: FoldedClothesSurfacePlan[] = [];
 
   const firstStop = shelfBottomYs.length ? shelfBottomYs[0] : shelf1BottomY;

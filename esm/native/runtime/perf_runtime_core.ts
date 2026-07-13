@@ -353,11 +353,7 @@ function summarizeEntries(entries: WardrobeProPerfEntry[]): WardrobeProPerfMetri
 
 export function getPerfSummary(App: AppContainer): Record<string, WardrobeProPerfMetricSummary> {
   const out: Record<string, WardrobeProPerfMetricSummary> = {};
-  const groups = new Map<string, WardrobeProPerfEntry[]>();
-  for (const entry of getPerfRuntimeStore(App).entries) {
-    if (!groups.has(entry.name)) groups.set(entry.name, []);
-    groups.get(entry.name)?.push(entry);
-  }
-  for (const [name, entries] of groups.entries()) out[name] = summarizeEntries(entries);
+  const groups = Map.groupBy(getPerfRuntimeStore(App).entries, entry => entry.name);
+  for (const [name, entries] of groups) out[name] = summarizeEntries(entries);
   return out;
 }

@@ -56,13 +56,13 @@ export function notifyHandleFitSuppressions(
   const byScope = readScopeMap(cache);
   const previous = new Set(uniqueSortedPartIds(byScope[scope] || []));
   const current = uniqueSortedPartIds(partIds);
-  const newlySuppressed = current.filter(id => !previous.has(id));
+  const newlySuppressed = new Set(current).difference(previous);
 
   byScope[scope] = options.completePass
     ? current
     : uniqueSortedPartIds([...(byScope[scope] || []), ...current]);
 
-  const message = buildSuppressedHandleMessage(newlySuppressed.length);
+  const message = buildSuppressedHandleMessage(newlySuppressed.size);
   if (!message) return;
 
   try {

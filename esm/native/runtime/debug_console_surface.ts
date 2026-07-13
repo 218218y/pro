@@ -112,8 +112,7 @@ function getTopBuildReasons(
 ): BuildReasonDebugStatLike[] {
   if (!stats || !stats.reasons || typeof stats.reasons !== 'object') return [];
   return Object.values(stats.reasons)
-    .slice()
-    .sort((a, b) => {
+    .toSorted((a, b) => {
       const aExec = typeof a.executeCount === 'number' ? a.executeCount : 0;
       const bExec = typeof b.executeCount === 'number' ? b.executeCount : 0;
       if (bExec !== aExec) return bExec - aExec;
@@ -184,8 +183,7 @@ function getTopSourcesFromStats(
 ): StoreSourceDebugStat[] {
   if (!stats || !stats.sources || typeof stats.sources !== 'object') return [];
   return Object.values(stats.sources)
-    .slice()
-    .sort((a, b) => {
+    .toSorted((a, b) => {
       const aTotal = typeof a.totalMs === 'number' ? a.totalMs : 0;
       const bTotal = typeof b.totalMs === 'number' ? b.totalMs : 0;
       if (bTotal !== aTotal) return bTotal - aTotal;

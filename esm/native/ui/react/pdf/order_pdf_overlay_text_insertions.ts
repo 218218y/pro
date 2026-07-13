@@ -50,7 +50,7 @@ export function applyInsertionsToNewAuto(
 ): string {
   let out = newAuto || '';
   const b = base || '';
-  const ins = (insertions || []).slice().sort((a, c) => a.pos - c.pos);
+  const ins = (insertions || []).toSorted((a, c) => a.pos - c.pos);
 
   for (const it of ins) {
     if (!it || !it.text) continue;

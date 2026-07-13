@@ -316,7 +316,7 @@ export const pickSketchBoxVerticalSegment = (args: {
   if (yNorm == null) return segments[0] || null;
   const targetY = safeCenter(args.boxCenterY) - safeSpan(args.innerH) / 2 + yNorm * safeSpan(args.innerH);
   return (
-    segments.slice().sort((a, b) => Math.abs(a.centerY - targetY) - Math.abs(b.centerY - targetY))[0] || null
+    segments.toSorted((a, b) => Math.abs(a.centerY - targetY) - Math.abs(b.centerY - targetY))[0] || null
   );
 };
 
@@ -414,7 +414,7 @@ export const pickSketchBoxSegment = (args: {
   if (xNorm == null) return null;
   const targetX = safeCenter(args.boxCenterX) - safeSpan(args.innerW) / 2 + xNorm * safeSpan(args.innerW);
   return (
-    segments.slice().sort((a, b) => Math.abs(a.centerX - targetX) - Math.abs(b.centerX - targetX))[0] || null
+    segments.toSorted((a, b) => Math.abs(a.centerX - targetX) - Math.abs(b.centerX - targetX))[0] || null
   );
 };
 

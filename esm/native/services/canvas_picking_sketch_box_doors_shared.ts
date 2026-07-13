@@ -24,8 +24,7 @@ export function writeSketchBoxDoors(box: unknown, doors: SketchBoxDoorState[]): 
   if (!rec) return;
   if (doors.length) {
     rec.doors = doors
-      .slice()
-      .sort((a, b) => (a.yNorm ?? -1) - (b.yNorm ?? -1) || a.xNorm - b.xNorm || a.id.localeCompare(b.id))
+      .toSorted((a, b) => (a.yNorm ?? -1) - (b.yNorm ?? -1) || a.xNorm - b.xNorm || a.id.localeCompare(b.id))
       .map(door => {
         const normalizedGrooveLinesCount =
           typeof door.grooveLinesCount === 'number' &&

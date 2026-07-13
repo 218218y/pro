@@ -176,8 +176,7 @@ export function resolveSketchModuleVerticalRangePlacementAgainstDrawers(args: {
         Math.max(stack.minY, stack.maxY) > freeBottomY &&
         Math.min(stack.minY, stack.maxY) < freeTopY
     )
-    .slice()
-    .sort((a, b) => Math.min(a.minY, a.maxY) - Math.min(b.minY, b.maxY));
+    .toSorted((a, b) => Math.min(a.minY, a.maxY) - Math.min(b.minY, b.maxY));
 
   const rangeOverlapsBlocker = (nextCenterY: number): boolean => {
     const minY = nextCenterY - half;

@@ -15,6 +15,18 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
+const NODE_ENGINE_FLOOR = '>=22.12.0';
+const SOURCE_EXTENSION_RE = /\.(?:js|mjs|ts|tsx)$/;
+const REDUNDANT_IMMUTABLE_SORT_PATTERNS = [
+  {
+    label: 'slice().sort()',
+    pattern: /\.slice\(\s*\)\s*\.sort\(/g,
+  },
+  {
+    label: 'single-spread array .sort()',
+    pattern: /\[\s*\.\.\.\s*[A-Za-z_$][\w$]*(?:(?:\??\.)[A-Za-z_$][\w$]*|\[[^\]\r\n]+\])*\s*\]\s*\.sort\(/g,
+  },
+];
 
 function readJson(relativePath) {
   return JSON.parse(fs.readFileSync(path.join(ROOT, relativePath), 'utf8'));
@@ -22,6 +34,43 @@ function readJson(relativePath) {
 
 function readText(relativePath) {
   return fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
+}
+
+function listSourceFiles(directory) {
+  const files = [];
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const absolutePath = path.join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...listSourceFiles(absolutePath));
+    else if (entry.isFile() && SOURCE_EXTENSION_RE.test(entry.name)) files.push(absolutePath);
+  }
+  return files.sort();
+}
+
+function lineNumberAt(source, offset) {
+  return source.slice(0, offset).split(/\r\n|\r|\n/).length;
+}
+
+export function collectRedundantImmutableSortSourceViolations(source, relativePath = '<source>') {
+  const violations = [];
+  for (const { label, pattern } of REDUNDANT_IMMUTABLE_SORT_PATTERNS) {
+    pattern.lastIndex = 0;
+    for (let match = pattern.exec(source); match; match = pattern.exec(source)) {
+      violations.push(
+        `${relativePath}:${lineNumberAt(source, match.index)} uses redundant ${label}; use toSorted()`
+      );
+    }
+  }
+  return violations;
+}
+
+function collectRedundantImmutableSortViolations() {
+  const violations = [];
+  for (const absolutePath of listSourceFiles(path.join(ROOT, 'esm'))) {
+    const source = fs.readFileSync(absolutePath, 'utf8');
+    const relativePath = path.relative(ROOT, absolutePath).split(path.sep).join('/');
+    violations.push(...collectRedundantImmutableSortSourceViolations(source, relativePath));
+  }
+  return violations;
 }
 
 function pushMismatch(violations, label, actual, expected) {
@@ -41,6 +90,16 @@ async function readViteConfig(mode) {
 
 export async function collectEsnextTargetViolations() {
   const violations = [];
+  const packageJson = readJson('package.json');
+  const packageLock = readJson('package-lock.json');
+
+  pushMismatch(violations, 'package.json engines.node', packageJson.engines?.node, NODE_ENGINE_FLOOR);
+  pushMismatch(
+    violations,
+    'package-lock.json root engines.node',
+    packageLock.packages?.['']?.engines?.node,
+    NODE_ENGINE_FLOOR
+  );
 
   for (const fileName of fs
     .readdirSync(ROOT)
@@ -116,6 +175,8 @@ export async function collectEsnextTargetViolations() {
     }
   }
 
+  violations.push(...collectRedundantImmutableSortViolations());
+
   return violations;
 }
 
@@ -129,7 +190,7 @@ async function main() {
   }
 
   console.log(
-    `[ESNext target contract] OK: TypeScript=${ESNEXT_TYPESCRIPT_TARGET}, Vite/Oxc=${ESNEXT_BUILD_TARGET}`
+    `[ESNext target contract] OK: Node${NODE_ENGINE_FLOOR}, TypeScript=${ESNEXT_TYPESCRIPT_TARGET}, Vite/Oxc=${ESNEXT_BUILD_TARGET}`
   );
 }
 

@@ -125,8 +125,7 @@ export function resolveSketchVerticalStackPlacement(args: {
           Math.max(stack.minY, stack.maxY) > freeBottomY &&
           Math.min(stack.minY, stack.maxY) < freeTopY
       )
-      .slice()
-      .sort((a, b) => Math.min(a.minY, a.maxY) - Math.min(b.minY, b.maxY));
+      .toSorted((a, b) => Math.min(a.minY, a.maxY) - Math.min(b.minY, b.maxY));
 
     let slotBottomY = freeBottomY;
     for (const stack of blockersByY) {
@@ -208,13 +207,11 @@ export function resolveSketchVerticalStackPlacement(args: {
   if (bestCenter != null) return { op: 'add', removeId: null, centerY: bestCenter, range: null };
 
   const nearest =
-    sameStacks
-      .slice()
-      .sort(
-        (a, b) =>
-          Math.abs(desiredCenterY - (a.centerY ?? (a.minY + a.maxY) / 2)) -
-          Math.abs(desiredCenterY - (b.centerY ?? (b.minY + b.maxY) / 2))
-      )[0] || null;
+    sameStacks.toSorted(
+      (a, b) =>
+        Math.abs(desiredCenterY - (a.centerY ?? (a.minY + a.maxY) / 2)) -
+        Math.abs(desiredCenterY - (b.centerY ?? (b.minY + b.maxY) / 2))
+    )[0] || null;
   if (nearest) {
     return {
       op: 'remove',

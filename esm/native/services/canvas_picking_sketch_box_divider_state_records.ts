@@ -73,8 +73,7 @@ export function writeSketchBoxDividers(box: unknown, dividers: SketchBoxDividerS
     : [];
   if (clean.length) {
     rec.dividers = clean
-      .slice()
-      .sort((a, b) => (a.yNorm ?? -1) - (b.yNorm ?? -1) || a.xNorm - b.xNorm)
+      .toSorted((a, b) => (a.yNorm ?? -1) - (b.yNorm ?? -1) || a.xNorm - b.xNorm)
       .map(divider => ({
         id: divider.id,
         xNorm: normalizeSketchBoxDividerXNorm(divider.xNorm) ?? 0.5,
@@ -103,8 +102,7 @@ export function writeSketchBoxHorizontalDividers(
     : [];
   if (clean.length) {
     rec.horizontalDividers = clean
-      .slice()
-      .sort((a, b) => (a.xNorm ?? -1) - (b.xNorm ?? -1) || a.yNorm - b.yNorm)
+      .toSorted((a, b) => (a.xNorm ?? -1) - (b.xNorm ?? -1) || a.yNorm - b.yNorm)
       .map(divider => ({
         id: divider.id,
         yNorm: normalizeSketchBoxDividerYNorm(divider.yNorm) ?? 0.5,

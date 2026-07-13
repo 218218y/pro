@@ -82,7 +82,7 @@ export function mergeSketchFreeBoxDimensionSpans(
   spans: SketchFreeBoxDimensionSpan[]
 ): SketchFreeBoxDimensionSpan[] {
   if (!spans.length) return [];
-  const sorted = [...spans].sort((a, b) => (a.min === b.min ? a.max - b.max : a.min - b.min));
+  const sorted = spans.toSorted((a, b) => (a.min === b.min ? a.max - b.max : a.min - b.min));
   const merged: SketchFreeBoxDimensionSpan[] = [];
 
   for (let i = 0; i < sorted.length; i++) {

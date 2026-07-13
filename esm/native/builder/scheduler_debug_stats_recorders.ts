@@ -39,7 +39,7 @@ function normalizeDurationMs(value: unknown): number {
 
 function percentile(values: number[], pct: number): number {
   if (!values.length) return 0;
-  const sorted = [...values].sort((left, right) => left - right);
+  const sorted = values.toSorted((left, right) => left - right);
   const rank = Math.min(sorted.length - 1, Math.max(0, Math.ceil(sorted.length * pct) - 1));
   return sorted[rank] || 0;
 }

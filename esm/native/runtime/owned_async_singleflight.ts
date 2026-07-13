@@ -33,12 +33,7 @@ export function beginOwnedAsyncFamilyFlight<T, Key extends string>(args: {
     return { status: 'busy', activeKey: active.key, promise: active.promise };
   }
 
-  let resolvePending!: (value: T | PromiseLike<T>) => void;
-  let rejectPending!: (reason?: unknown) => void;
-  const pending = new Promise<T>((resolve, reject) => {
-    resolvePending = resolve;
-    rejectPending = reject;
-  });
+  const { promise: pending, resolve: resolvePending, reject: rejectPending } = Promise.withResolvers<T>();
   flights.set(owner, { key, promise: pending });
 
   const started = startOwnedAsyncRun(run);
@@ -79,12 +74,7 @@ export function createKeyedAsyncSingleFlightRunner(): <T>(key: string, run: () =
     const existing = inflight.get(key) as Promise<T> | undefined;
     if (existing) return existing;
 
-    let resolvePending!: (value: T | PromiseLike<T>) => void;
-    let rejectPending!: (reason?: unknown) => void;
-    const pending = new Promise<T>((resolve, reject) => {
-      resolvePending = resolve;
-      rejectPending = reject;
-    });
+    const { promise: pending, resolve: resolvePending, reject: rejectPending } = Promise.withResolvers<T>();
     inflight.set(key, pending);
 
     const started = startOwnedAsyncRun(run);

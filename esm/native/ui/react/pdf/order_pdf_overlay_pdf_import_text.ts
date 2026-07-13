@@ -148,7 +148,7 @@ function normalizeExtractedFieldText(value: string): string {
 }
 
 function groupPdfTextItemsIntoLines(items: PdfTextLayerItem[]): PdfTextLayerItem[][] {
-  const sorted = items.slice().sort((a, b) => b.y - a.y || a.x - b.x);
+  const sorted = items.toSorted((a, b) => b.y - a.y || a.x - b.x);
   const lines: PdfTextLayerItem[][] = [];
 
   for (const item of sorted) {
@@ -168,7 +168,7 @@ function groupPdfTextItemsIntoLines(items: PdfTextLayerItem[]): PdfTextLayerItem
 }
 
 function joinPdfTextLineItems(items: PdfTextLayerItem[], dir: OrderPdfFieldSpec['dir']): string {
-  const sorted = items.slice().sort((a, b) => (dir === 'rtl' ? b.x - a.x : a.x - b.x));
+  const sorted = items.toSorted((a, b) => (dir === 'rtl' ? b.x - a.x : a.x - b.x));
   let out = '';
   let prev: PdfTextLayerItem | null = null;
 

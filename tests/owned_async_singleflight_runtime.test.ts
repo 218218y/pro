@@ -100,3 +100,30 @@ test('createKeyedAsyncSingleFlightRunner reuses same-key work and isolates other
   releaseAlpha?.();
   assert.equal(await alpha1, 'alpha');
 });
+
+test('owned async flights reject synchronous failures and release the owner for a retry', async () => {
+  const owner = {};
+  const flights = new WeakMap<object, { key: 'only'; promise: Promise<string> }>();
+  const failed = beginOwnedAsyncFamilyFlight({
+    owner,
+    flights,
+    key: 'only' as const,
+    run: () => {
+      throw new Error('sync failure');
+    },
+  });
+
+  assert.equal(failed.status, 'started');
+  if (failed.status !== 'started') return;
+  await assert.rejects(failed.promise, /sync failure/);
+
+  const retried = beginOwnedAsyncFamilyFlight({
+    owner,
+    flights,
+    key: 'only' as const,
+    run: async () => 'recovered',
+  });
+  assert.equal(retried.status, 'started');
+  if (retried.status !== 'started') return;
+  assert.equal(await retried.promise, 'recovered');
+});
