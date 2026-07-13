@@ -102,6 +102,10 @@ test('operator scripts deploy only the gateway and keep the write probe explicit
   assert.match(probe, /tampered token rejection/u);
   assert.match(probe, /if \(\$IncludeWriteProbe\)[\s\S]*action\s*=\s*['"]write['"]/u);
   assert.match(probe, /revision_conflict/u);
+  assert.match(probe, /three dot-separated segments/u);
+  assert.match(probe, /\$responseBody\s*=\s*if/u);
+  assert.doesNotMatch(probe, /\$body\s*=\s*if/iu);
+  assert.doesNotMatch(probe, /System\.Net\.Http\.HttpResponseMessage/u);
   assert.doesNotMatch(probe, /action\s*=\s*['"]delete['"]/u);
   assert.doesNotMatch(probe, /roomToken\s*=.*Write-Host/iu);
 });

@@ -69,6 +69,8 @@ $anonKey = Read-Host 'Legacy Supabase anon JWT'
 .\tools\wp_supabase_cloud_sync_probe.ps1 -AnonKey $anonKey
 ```
 
+At the `Read-Host` prompt, paste the key value itself and press Enter; do not paste the next PowerShell command there. Copy `anon public` from Dashboard -> Project Settings -> API Keys -> Legacy API keys. A legacy anon JWT normally begins with `eyJ` and has three dot-separated segments. Do not use `service_role`, a secret key, or an `sb_publishable_...` key for this probe.
+
 The probe issues public/private credentials, reads a newly generated empty room, renews it, and verifies blocked-origin and tampered-token rejection. It does not write a Cloud Sync row.
 
 For the required production cutover check, include the explicit write/CAS probe:

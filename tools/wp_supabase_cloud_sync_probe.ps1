@@ -11,6 +11,11 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+$AnonKey = $AnonKey.Trim()
+if ($AnonKey -notmatch '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$') {
+  throw 'AnonKey must be the legacy anon JWT itself (three dot-separated segments), not a command or an sb_publishable key.'
+}
+
 $gatewayUrl = "https://$ProjectRef.supabase.co/functions/v1/wp-cloud-sync-room"
 $mainOrigin = 'https://pro.bargig-furniture.com'
 $customerOrigin = 'https://pro218.bargig-furniture.com'
@@ -39,9 +44,18 @@ function Invoke-GatewayRequest {
   } catch {
     $response = $_.Exception.Response
     if (-not $response) { throw }
-    if ($response -is [System.Net.Http.HttpResponseMessage]) {
-      $content = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
-    } else {
+    $content = ''
+    $contentProperty = $response.PSObject.Properties['Content']
+    if ($contentProperty -and $null -ne $response.Content) {
+      $responseContent = $response.Content
+      if ($responseContent -is [string]) {
+        $content = $responseContent
+      } elseif ($responseContent.PSObject.Methods['ReadAsStringAsync']) {
+        $contentTask = $responseContent.ReadAsStringAsync()
+        $content = $contentTask.GetAwaiter().GetResult()
+      }
+    }
+    if (-not $content -and $response.PSObject.Methods['GetResponseStream']) {
       $stream = $response.GetResponseStream()
       $reader = New-Object System.IO.StreamReader($stream)
       try {
@@ -51,10 +65,19 @@ function Invoke-GatewayRequest {
         $stream.Dispose()
       }
     }
+    $responseBody = if ([string]::IsNullOrWhiteSpace($content)) {
+      [pscustomobject]@{}
+    } else {
+      try {
+        $content | ConvertFrom-Json
+      } catch {
+        [pscustomobject]@{ raw = $content }
+      }
+    }
     return [pscustomobject]@{
       Status = [int]$response.StatusCode
       Headers = $response.Headers
-      Body = $content | ConvertFrom-Json
+      Body = $responseBody
     }
   }
 }
@@ -67,10 +90,34 @@ function Assert-GatewayResult {
   )
 
   if ($Result.Status -ne $Status) {
-    throw "Expected HTTP $Status but received $($Result.Status)"
+    $actualCode = if ($Result.Body.PSObject.Properties['code']) {
+      [string]$Result.Body.code
+    } else {
+      ''
+    }
+    $requestId = if ($Result.Body.PSObject.Properties['requestId']) {
+      [string]$Result.Body.requestId
+    } else {
+      ''
+    }
+    $codeSuffix = if ($actualCode) { " (code '$actualCode')" } else { '' }
+    $requestSuffix = if ($requestId) { " (requestId '$requestId')" } else { '' }
+    $logHint = if ($actualCode -eq 'internal' -and $requestId) {
+      ' Inspect Dashboard -> Edge Functions -> wp-cloud-sync-room -> Logs and search for that requestId.'
+    } else {
+      ''
+    }
+    throw "Expected HTTP $Status but received $($Result.Status)$codeSuffix$requestSuffix.$logHint"
   }
-  if ($Code -and [string]$Result.Body.code -ne $Code) {
-    throw "Expected code '$Code' but received '$($Result.Body.code)'"
+  if ($Code) {
+    $actualCode = if ($Result.Body.PSObject.Properties['code']) {
+      [string]$Result.Body.code
+    } else {
+      ''
+    }
+    if ($actualCode -ne $Code) {
+      throw "Expected code '$Code' but received '$actualCode'"
+    }
   }
 }
 
