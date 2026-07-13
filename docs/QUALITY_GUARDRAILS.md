@@ -11,6 +11,20 @@ This file keeps the active engineering policies in one place. Historical stage n
 - New modules must not perform work on import. Expose explicit install/setup functions.
 - Production TypeScript should avoid `as any`; prefer concrete types, `unknown` plus narrowing, and narrow local casts only when unavoidable.
 
+## ESNext runtime target
+
+- Browser development and production bundles intentionally target `ESNext`; no legacy-browser transpilation target should be introduced.
+- `tsconfig.json` owns TypeScript language/type availability through `target`, `module`, and `lib`, all set to `ESNext`. Vite still needs its own explicit target because it does not use TypeScript's `target` as the bundle target.
+- `tools/wp_esnext_target_policy.mjs` is the canonical Vite/Oxc target owner. Vite development, ordinary Vite builds, the release bundle, and the Three.js vendor bundle must consume that policy.
+- ESNext syntax/API adoption must stay runtime-aware: browser-owned code may use APIs guaranteed by the supported current browsers, while Node-executed tools/tests must also satisfy the `package.json` Node engine floor. Raising the browser target does not silently raise the Node runtime.
+- Prefer modern APIs when they remove real state, mutation, or compatibility code; do not churn stable loops merely to use newer syntax.
+
+Relevant check:
+
+```bash
+npm run check:esnext-target
+```
+
 ## Public facades and external API boundaries
 
 Use `docs/FACADE_AND_PUBLIC_API_POLICY.md` as the active decision policy for split modules.

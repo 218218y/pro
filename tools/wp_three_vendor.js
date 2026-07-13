@@ -21,6 +21,8 @@ import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 
+import { ESNEXT_BUILD_TARGET } from './wp_esnext_target_policy.mjs';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -156,7 +158,7 @@ async function main() {
       cssMinify: args.minify ? 'lightningcss' : false,
       copyPublicDir: false,
       reportCompressedSize: false,
-      target: 'esnext',
+      target: ESNEXT_BUILD_TARGET,
       lib: {
         entry: entryAbs,
         formats: ['es'],

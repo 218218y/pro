@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
+import { ESNEXT_BUILD_TARGET } from './tools/wp_esnext_target_policy.mjs';
+
 import {
   createObservabilityAliasMap,
   createObservabilityBuildDefines,
@@ -37,6 +39,10 @@ export default defineConfig(({ mode }) => {
       ...createObservabilityBuildDefines(observabilityBuildMode),
     },
 
+    oxc: {
+      target: ESNEXT_BUILD_TARGET,
+    },
+
     optimizeDeps: {
       entries: ['index_pro.html', 'index_pro_esm.html', 'index_site2.html'],
       include: ['pdfjs-dist/build/pdf.mjs', 'pdfjs-dist/build/pdf.worker.min.mjs'],
@@ -44,6 +50,7 @@ export default defineConfig(({ mode }) => {
 
     build: isModules
       ? {
+          target: ESNEXT_BUILD_TARGET,
           outDir: 'dist_vite',
           sourcemap,
           rolldownOptions: {
@@ -60,6 +67,7 @@ export default defineConfig(({ mode }) => {
           },
         }
       : {
+          target: ESNEXT_BUILD_TARGET,
           outDir: 'dist_vite',
           sourcemap,
           rolldownOptions: {

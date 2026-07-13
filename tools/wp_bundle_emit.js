@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { ESNEXT_BUILD_TARGET } from './wp_esnext_target_policy.mjs';
 import {
   BUNDLE_CODE_SPLITTING_GROUPS,
   copyDir,
@@ -52,7 +53,7 @@ export function createBundleBuildConfig({ root, entryAbs, tmpDirAbs, args }) {
       cssMinify: args.minify ? 'lightningcss' : false,
       copyPublicDir: false,
       reportCompressedSize: false,
-      target: 'esnext',
+      target: ESNEXT_BUILD_TARGET,
       lib: {
         entry: entryAbs,
         formats: ['es'],
