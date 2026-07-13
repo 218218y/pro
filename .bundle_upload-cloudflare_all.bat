@@ -4,6 +4,13 @@ setlocal EnableExtensions
 title Bargig - Build and Deploy All Cloudflare Pages
 cd /d "%~dp0"
 
+set "MAIN_BUILD_SCRIPT=release:bargig:main"
+set "SITE2_BUILD_SCRIPT=release:bargig:site2"
+set "MAIN_RELEASE_DIR=dist\sites\bargig\main\release"
+set "SITE2_RELEASE_DIR=dist\sites\bargig\site2\release"
+set "MAIN_CLOUDFLARE_PROJECT=bargig-pro"
+set "SITE2_CLOUDFLARE_PROJECT=bargig-pro2"
+
 echo ==========================================
 echo  Bargig - build and deploy to Cloudflare
 echo ==========================================
@@ -32,37 +39,37 @@ if not exist "package.json" (
   goto fail
 )
 
-echo [1/4] Building main site: npm run bundle
+echo [1/4] Building main site: npm run %MAIN_BUILD_SCRIPT%
 echo ------------------------------------------
-call npm run bundle
+call npm run %MAIN_BUILD_SCRIPT%
 if errorlevel 1 goto fail
 
 echo.
-echo [2/4] Building customer site: npm run bundle:site2
+echo [2/4] Building customer site: npm run %SITE2_BUILD_SCRIPT%
 echo ------------------------------------------
-call npm run bundle:site2
+call npm run %SITE2_BUILD_SCRIPT%
 if errorlevel 1 goto fail
 
-if not exist "dist\release" (
-  echo [ERROR] Main release folder was not created: dist\release
+if not exist "%MAIN_RELEASE_DIR%" (
+  echo [ERROR] Main release folder was not created: %MAIN_RELEASE_DIR%
   goto fail
 )
 
-if not exist "dist\site2\release" (
-  echo [ERROR] Customer release folder was not created: dist\site2\release
+if not exist "%SITE2_RELEASE_DIR%" (
+  echo [ERROR] Customer release folder was not created: %SITE2_RELEASE_DIR%
   goto fail
 )
 
 echo.
-echo [3/4] Deploying main site to Cloudflare Pages: bargig-pro
+echo [3/4] Deploying main site to Cloudflare Pages: %MAIN_CLOUDFLARE_PROJECT%
 echo ------------------------------------------
-call npx --yes wrangler pages deploy "dist\release" --project-name bargig-pro --branch main
+call npx --yes wrangler pages deploy "%MAIN_RELEASE_DIR%" --project-name %MAIN_CLOUDFLARE_PROJECT% --branch main
 if errorlevel 1 goto fail
 
 echo.
-echo [4/4] Deploying customer site to Cloudflare Pages: bargig-pro2
+echo [4/4] Deploying customer site to Cloudflare Pages: %SITE2_CLOUDFLARE_PROJECT%
 echo ------------------------------------------
-call npx --yes wrangler pages deploy "dist\site2\release" --project-name bargig-pro2 --branch main
+call npx --yes wrangler pages deploy "%SITE2_RELEASE_DIR%" --project-name %SITE2_CLOUDFLARE_PROJECT% --branch main
 if errorlevel 1 goto fail
 
 echo.
