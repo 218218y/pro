@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import {
+  CLOUDFLARE_WEB_ANALYTICS_SCRIPT_SOURCES,
   CONTENT_SECURITY_POLICY_ENFORCED,
   CONTENT_SECURITY_POLICY_ENFORCED_DIRECTIVES,
   CONTENT_SECURITY_POLICY_REPORT_ONLY,
@@ -40,11 +41,13 @@ test('browser security headers use one enforced baseline and one report-only bas
 });
 
 test('CSP baseline covers app-owned resources, reporting, Supabase, Gmail, workers and embedding', () => {
+  const cloudflareAnalyticsDirective = `script-src-elem 'self' https://accounts.google.com ${CLOUDFLARE_WEB_ANALYTICS_SCRIPT_SOURCES.join(' ')}`;
   for (const directive of [
     "default-src 'self'",
     "base-uri 'self'",
     "object-src 'none'",
     "frame-ancestors 'none'",
+    cloudflareAnalyticsDirective,
     "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://accounts.google.com https://gmail.googleapis.com",
     "worker-src 'self' blob:",
     "frame-src 'self' blob: https://accounts.google.com https://mail.google.com",
@@ -65,6 +68,15 @@ test('CSP baseline covers app-owned resources, reporting, Supabase, Gmail, worke
     "frame-ancestors 'none'",
   ]);
   assert.doesNotMatch(CONTENT_SECURITY_POLICY_REPORT_ONLY, /'unsafe-inline'/);
+  assert.deepEqual(CLOUDFLARE_WEB_ANALYTICS_SCRIPT_SOURCES, [
+    'https://static.cloudflareinsights.com/beacon.min.js',
+    'https://static.cloudflareinsights.com/beacon.min.js/',
+  ]);
+  assert.match(CONTENT_SECURITY_POLICY_REPORT_ONLY, /script-src 'self' https:\/\/accounts\.google\.com;/u);
+  assert.doesNotMatch(
+    CONTENT_SECURITY_POLICY_REPORT_ONLY,
+    /script-src 'self'[^;]*static\.cloudflareinsights\.com/u
+  );
   assert.doesNotMatch(read('index_pro.html'), /<style(?:\s|>)/);
   assert.doesNotMatch(read('index_site2.html'), /<style(?:\s|>)/);
   assert.match(read('index_pro.html'), /css\/document_accessibility\.css/);

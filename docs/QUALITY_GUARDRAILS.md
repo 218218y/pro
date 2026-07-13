@@ -101,6 +101,8 @@ npm run perf:browser
 
 - `Content-Security-Policy` enforces only the low-risk `base-uri`, `object-src`, and `frame-ancestors` baseline until measured evidence supports broader enforcement.
 - The full CSP stays in `Content-Security-Policy-Report-Only` without `unsafe-inline`. Source HTML and generated release boot/404 surfaces must not add inline script or style dependencies.
+- Cloudflare Pages Web Analytics is allowed only through `script-src-elem` for the exact `static.cloudflareinsights.com/beacon.min.js` path and its versioned path prefix. Automatic Cloudflare injection reports to the same origin, so `connect-src 'self'` remains sufficient and no broad Cloudflare host allowance is added to `script-src`.
+- CSP reports attributed to browser extensions, filtering middleware, or injected helpers such as `card-injection.js` are external-environment noise. Do not weaken `style-src` with `unsafe-inline`, dynamic hashes, or third-party allowlists to silence them; reproduce in a clean browser/network before treating them as application defects.
 - `Reporting-Endpoints`, `report-to`, and `report-uri` use `/__csp-report`. The hosting profile must route that path to a collector that accepts CSP reports and retains aggregate counts by build, route, and effective directive.
 - The browser adapter listener samples and throttles violations, removes query strings and cross-origin paths, keeps a bounded session baseline, and sends best-effort reports. It must never block boot.
 - Promote additional directives to enforcement only after the collector baseline is quiet for the relevant builds/routes and the browser security header contracts pass for source and release output.

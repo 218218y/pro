@@ -1,6 +1,11 @@
 export const CSP_REPORTING_GROUP = 'csp-endpoint';
 export const CSP_REPORTING_PATH = '/__csp-report';
 
+export const CLOUDFLARE_WEB_ANALYTICS_SCRIPT_SOURCES = Object.freeze([
+  'https://static.cloudflareinsights.com/beacon.min.js',
+  'https://static.cloudflareinsights.com/beacon.min.js/',
+]);
+
 export const CONTENT_SECURITY_POLICY_ENFORCED_DIRECTIVES = Object.freeze([
   "base-uri 'self'",
   "object-src 'none'",
@@ -16,6 +21,7 @@ export const CONTENT_SECURITY_POLICY_REPORT_ONLY_DIRECTIVES = Object.freeze([
   "frame-ancestors 'none'",
   "form-action 'self' https://accounts.google.com https://mail.google.com",
   "script-src 'self' https://accounts.google.com",
+  `script-src-elem 'self' https://accounts.google.com ${CLOUDFLARE_WEB_ANALYTICS_SCRIPT_SOURCES.join(' ')}`,
   "style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
