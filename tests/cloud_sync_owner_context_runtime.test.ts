@@ -10,6 +10,11 @@ import {
 
 type AnyRecord = Record<string, unknown>;
 
+function makeRoomToken(expiresAt = '2099-01-01T00:00:00.000Z'): string {
+  const encode = (value: unknown): string => Buffer.from(JSON.stringify(value)).toString('base64url');
+  return `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode({ exp: Date.parse(expiresAt) / 1000 })}.signature`;
+}
+
 function createStorage(seed?: Record<string, string>) {
   const raw = new Map<string, string>(Object.entries(seed || {}));
   return {
@@ -29,7 +34,12 @@ function createStorage(seed?: Record<string, string>) {
   };
 }
 
-function createBrowserApp(options?: { site2?: boolean; search?: string; diag?: string }) {
+function createBrowserApp(options?: {
+  site2?: boolean;
+  search?: string;
+  diag?: string;
+  storageSeed?: Record<string, string>;
+}) {
   const session = new Map<string, string>();
   const local = new Map<string, string>();
   if (options?.diag) local.set('WP_CLOUDSYNC_DIAG', options.diag);
@@ -81,6 +91,7 @@ function createBrowserApp(options?: { site2?: boolean; search?: string; diag?: s
       return 'prompt-value';
     },
   };
+  const storage = createStorage(options?.storageSeed);
   const app: AnyRecord = {
     deps: {
       browser: {
@@ -106,23 +117,28 @@ function createBrowserApp(options?: { site2?: boolean; search?: string; diag?: s
       },
     },
     services: {
-      storage: createStorage(),
+      storage,
     },
   };
-  return { app, session, local };
+  return { app, session, local, storage };
 }
 
 test('cloud sync owner context composes room helpers and per-tab client identity through dedicated seams', () => {
+  const roomToken = makeRoomToken();
   const { app, session } = createBrowserApp({
     site2: true,
-    search: '?room=room-42&roomToken=signed-room-token',
+    search: `?room=room-42&roomToken=${encodeURIComponent(roomToken)}`,
   });
 
   const ctx = createCloudSyncOwnerContext(app as any);
   assert.ok(ctx);
   assert.equal(ctx?.room, 'room-42');
   assert.equal(ctx?.currentRoom(), 'room-42');
-  assert.equal(ctx?.currentRoomToken(), 'signed-room-token');
+  assert.deepEqual(ctx?.currentRoomCredential(), {
+    room: 'room-42',
+    token: roomToken,
+    expiresAt: '2099-01-01T00:00:00.000Z',
+  });
   assert.equal(
     ((app.deps as AnyRecord).browser as AnyRecord).location &&
       (((app.deps as AnyRecord).browser as AnyRecord).location as AnyRecord).search,
@@ -135,9 +151,19 @@ test('cloud sync owner context composes room helpers and per-tab client identity
   assert.match(String(ctx?.clientId || ''), /^client_/);
   assert.equal(session.get('wp_cloud_sync_client_id'), ctx?.clientId);
 
-  ctx?.setPrivateRoomCredential('manual-private', 'manual-token');
-  assert.equal(ctx?.getPrivateRoom(), 'manual-private');
-  assert.equal(ctx?.getPrivateRoomToken(), 'manual-token');
+  assert.equal(
+    ctx?.setPrivateRoomCredential({
+      room: 'manual-private',
+      token: 'manual-token',
+      expiresAt: '2099-02-01T00:00:00.000Z',
+    }),
+    true
+  );
+  assert.deepEqual(ctx?.getPrivateRoomCredential(), {
+    room: 'manual-private',
+    token: 'manual-token',
+    expiresAt: '2099-02-01T00:00:00.000Z',
+  });
   assert.equal(ctx?.keyModels, 'saved-models');
   assert.equal(ctx?.keyColors, 'saved-colors');
   assert.equal(ctx?.keyColorOrder, 'saved-colors:order');
@@ -149,10 +175,32 @@ test('cloud sync owner context uses the public room for gate rows when no room U
   const ctx = createCloudSyncOwnerContext(app as any);
   assert.ok(ctx);
   assert.equal(ctx?.currentRoom(), 'public-room');
-  assert.equal(ctx?.getPrivateRoom(), '');
+  assert.equal(ctx?.getPrivateRoomCredential(), null);
   assert.equal(ctx?.getGateBaseRoom(), 'public-room');
   assert.equal(ctx?.getSite2TabsRoom(), 'public-room::tabsGate');
   assert.equal(ctx?.getFloatingSyncRoom(), 'public-room::syncPin');
+});
+
+test('cloud sync owner context migrates schema-1 private credentials to schema 2 with JWT expiry', () => {
+  const token = makeRoomToken('2099-03-01T00:00:00.000Z');
+  const { app, storage } = createBrowserApp({
+    search: '?room=legacy-room',
+    storageSeed: {
+      'private-room-credential': JSON.stringify({ schemaVersion: 1, room: 'legacy-room', token }),
+    },
+  });
+  const ctx = createCloudSyncOwnerContext(app as any);
+  assert.deepEqual(ctx?.getPrivateRoomCredential(), {
+    room: 'legacy-room',
+    token,
+    expiresAt: '2099-03-01T00:00:00.000Z',
+  });
+  assert.deepEqual(JSON.parse(String(storage.getString('private-room-credential'))), {
+    schemaVersion: 2,
+    room: 'legacy-room',
+    token,
+    expiresAt: '2099-03-01T00:00:00.000Z',
+  });
 });
 
 test('cloud sync owner context starts disabled realtime with an empty channel surface', () => {

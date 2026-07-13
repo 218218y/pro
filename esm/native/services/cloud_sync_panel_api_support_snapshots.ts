@@ -8,7 +8,15 @@ function areCloudSyncRoomStatusSnapshotsEqual(
   left: CloudSyncRoomStatusSnapshot,
   right: CloudSyncRoomStatusSnapshot
 ): boolean {
-  return left.room === right.room && left.isPublic === right.isPublic && left.status === right.status;
+  return (
+    left.room === right.room &&
+    left.isPublic === right.isPublic &&
+    left.status === right.status &&
+    left.credentialState === right.credentialState &&
+    left.credentialExpiresAt === right.credentialExpiresAt &&
+    left.retryAt === right.retryAt &&
+    left.failureKind === right.failureKind
+  );
 }
 
 export function areCloudSyncPanelSnapshotsEqual(

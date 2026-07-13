@@ -1,7 +1,9 @@
 import type {
   AppContainer,
+  CloudSyncGatewayFailure,
   CloudSyncPayload,
   CloudSyncRoomCredential,
+  CloudSyncRuntimeStatus,
   CloudSyncStateRow,
   CloudSyncUpsertResult,
   IntervalHandleLike,
@@ -15,10 +17,15 @@ import {
   createPrivateRoomCredential,
   getGatewayRow,
   issuePublicRoomCredential,
+  renewPrivateRoomCredential,
   writeGatewayRow,
 } from './cloud_sync_gateway.js';
 import type { CloudSyncOwnerRooms } from './cloud_sync_owner_context_rooms.js';
 import { mergeCloudSyncPayloads } from './cloud_sync_payload_merge.js';
+import {
+  buildCloudSyncCredentialStatus,
+  classifyCloudSyncCredential,
+} from './cloud_sync_room_credentials.js';
 import { isCloudSyncStorageLike, type StorageLike } from './cloud_sync_owner_context_runtime_shared.js';
 
 export type CloudSyncGetRowFn = (
@@ -63,41 +70,130 @@ export function createCloudSyncOwnerGatewayIo(args: {
   gatewayUrl: string;
   rooms: CloudSyncOwnerRooms;
   clientId: string;
+  runtimeStatus: CloudSyncRuntimeStatus;
+  publishStatus: () => void;
 }): {
   getRow: CloudSyncGetRowFn;
   upsertRow: CloudSyncUpsertRowFn;
   issuePrivateRoom: CloudSyncIssuePrivateRoomFn;
 } | null {
-  const { App, cfg, gatewayUrl, rooms, clientId } = args;
+  const { App, cfg, gatewayUrl, rooms, clientId, runtimeStatus, publishStatus } = args;
   const fetchFn = getBrowserFetchMaybe(App);
   if (!fetchFn) return null;
   const rowCache = new Map<string, CloudSyncStateRow>();
   let publicCredential: CloudSyncRoomCredential | null = null;
   let publicCredentialPromise: Promise<CloudSyncRoomCredential | null> | null = null;
+  let privateCredentialPromise: Promise<CloudSyncRoomCredential | null> | null = null;
+  let privateCredentialMemory: CloudSyncRoomCredential | null = null;
+
+  const missingCredentialFailure = (): CloudSyncGatewayFailure => ({
+    kind: 'auth-invalid',
+    status: 403,
+    code: 'credential_missing',
+  });
+
+  const publishCredentialStatus = (
+    credential: CloudSyncRoomCredential | null,
+    failure: CloudSyncGatewayFailure | null = null
+  ): void => {
+    runtimeStatus.credential = buildCloudSyncCredentialStatus({
+      isPublic: rooms.currentRoom() === cfg.publicRoom,
+      credential,
+      failure,
+    });
+    if (failure) runtimeStatus.lastError = `credential:${failure.kind}`;
+    else if (runtimeStatus.lastError.startsWith('credential:')) runtimeStatus.lastError = '';
+    publishStatus();
+  };
 
   const isCredentialUsable = (credential: CloudSyncRoomCredential | null): boolean => {
     const expiresAt = credential ? Date.parse(credential.expiresAt) : Number.NaN;
     return !!credential?.token && Number.isFinite(expiresAt) && expiresAt > Date.now() + 60_000;
   };
 
-  const resolveRoomToken = async (room: string): Promise<string> => {
-    const baseRoom = rooms.currentRoom();
-    if (!baseRoom || (room !== baseRoom && !room.startsWith(`${baseRoom}::`))) return '';
-    if (baseRoom !== cfg.publicRoom) return rooms.currentRoomToken();
-    if (isCredentialUsable(publicCredential)) return publicCredential?.token || '';
+  const resolvePublicCredential = async (): Promise<CloudSyncRoomCredential | null> => {
+    if (isCredentialUsable(publicCredential)) return publicCredential;
     if (!publicCredentialPromise) {
       publicCredentialPromise = issuePublicRoomCredential({
         fetchFn,
         gatewayUrl,
         anonKey: cfg.anonKey,
         storeId: cfg.storeId,
+      }).then(result => {
+        if (result.ok === false) {
+          publishCredentialStatus(null, result.failure);
+          return null;
+        }
+        return result.credential;
       });
     }
     const pending = publicCredentialPromise;
     const credential = await pending;
     if (publicCredentialPromise === pending) publicCredentialPromise = null;
     publicCredential = isCredentialUsable(credential) ? credential : null;
-    return publicCredential?.token || '';
+    if (publicCredential) publishCredentialStatus(publicCredential);
+    return publicCredential;
+  };
+
+  const renewPrivateCredential = async (
+    credential: CloudSyncRoomCredential
+  ): Promise<CloudSyncRoomCredential | null> => {
+    if (!privateCredentialPromise) {
+      privateCredentialPromise = renewPrivateRoomCredential({
+        fetchFn,
+        gatewayUrl,
+        anonKey: cfg.anonKey,
+        storeId: cfg.storeId,
+        room: credential.room,
+        roomToken: credential.token,
+      }).then(result => {
+        if (result.ok === false) {
+          publishCredentialStatus(credential, result.failure);
+          return result.failure.kind === 'network' || result.failure.kind === 'rate-limit'
+            ? credential
+            : null;
+        }
+        privateCredentialMemory = result.credential;
+        rooms.setPrivateRoomCredential(result.credential);
+        publishCredentialStatus(result.credential);
+        return result.credential;
+      });
+    }
+    const pending = privateCredentialPromise;
+    const renewed = await pending;
+    if (privateCredentialPromise === pending) privateCredentialPromise = null;
+    return renewed;
+  };
+
+  const resolveRoomCredential = async (room: string): Promise<CloudSyncRoomCredential | null> => {
+    const baseRoom = rooms.currentRoom();
+    if (!baseRoom || (room !== baseRoom && !room.startsWith(`${baseRoom}::`))) {
+      publishCredentialStatus(null, missingCredentialFailure());
+      return null;
+    }
+    if (baseRoom === cfg.publicRoom) return resolvePublicCredential();
+    const storedCredential = rooms.currentRoomCredential();
+    const memoryExpiry = Date.parse(privateCredentialMemory?.expiresAt || '');
+    const storedExpiry = Date.parse(storedCredential?.expiresAt || '');
+    const memoryExpiresAt = Number.isFinite(memoryExpiry) ? memoryExpiry : Number.NEGATIVE_INFINITY;
+    const storedExpiresAt = Number.isFinite(storedExpiry) ? storedExpiry : Number.NEGATIVE_INFINITY;
+    const credential =
+      privateCredentialMemory?.room === baseRoom && memoryExpiresAt > storedExpiresAt
+        ? privateCredentialMemory
+        : storedCredential;
+    const state = classifyCloudSyncCredential(credential);
+    if (!credential || state === 'missing' || state === 'expired') {
+      publishCredentialStatus(
+        credential,
+        state === 'expired'
+          ? { kind: 'auth-expired', status: 403, code: 'room_token_expired' }
+          : missingCredentialFailure()
+      );
+      return null;
+    }
+    if (state === 'expiring') return renewPrivateCredential(credential);
+    publishCredentialStatus(credential);
+    return credential;
   };
 
   const cacheRow = (row: CloudSyncStateRow | null | undefined): void => {
@@ -106,16 +202,22 @@ export function createCloudSyncOwnerGatewayIo(args: {
 
   return {
     getRow: async (gatewayUrlIn: string, anonKeyIn: string, roomIn: string) => {
-      const roomToken = await resolveRoomToken(roomIn);
-      if (!roomToken) return null;
-      const row = await getGatewayRow({
+      const credential = await resolveRoomCredential(roomIn);
+      if (!credential) return null;
+      const result = await getGatewayRow({
         fetchFn,
         gatewayUrl: gatewayUrlIn,
         anonKey: anonKeyIn,
         storeId: cfg.storeId,
         room: roomIn,
-        roomToken,
+        roomToken: credential.token,
       });
+      if (result.ok === false) {
+        publishCredentialStatus(credential, result.failure);
+        return null;
+      }
+      publishCredentialStatus(credential);
+      const row = result.row;
       cacheRow(row);
       return row;
     },
@@ -125,8 +227,8 @@ export function createCloudSyncOwnerGatewayIo(args: {
       roomIn: string,
       payloadIn: CloudSyncPayload
     ) => {
-      const roomToken = await resolveRoomToken(roomIn);
-      if (!roomToken) return { ok: false };
+      const credential = await resolveRoomCredential(roomIn);
+      if (!credential) return { ok: false, failure: missingCredentialFailure() };
       const baseRow = rowCache.get(roomIn) || null;
       const first = await writeGatewayRow({
         fetchFn,
@@ -134,16 +236,20 @@ export function createCloudSyncOwnerGatewayIo(args: {
         anonKey: anonKeyIn,
         storeId: cfg.storeId,
         room: roomIn,
-        roomToken,
+        roomToken: credential.token,
         payload: payloadIn,
         expectedRevision: baseRow?.revision || 0,
         clientId,
       });
-      if (first.ok) {
+      if (first.ok === true) {
+        publishCredentialStatus(credential);
         cacheRow(first.row);
         return first;
       }
-      if (!first.conflict || !first.row) return first;
+      if (first.conflict !== true) {
+        publishCredentialStatus(credential, first.failure);
+        return first;
+      }
 
       const merged = mergeCloudSyncPayloads({
         base: baseRow?.payload || {},
@@ -160,21 +266,33 @@ export function createCloudSyncOwnerGatewayIo(args: {
         anonKey: anonKeyIn,
         storeId: cfg.storeId,
         room: roomIn,
-        roomToken,
+        roomToken: credential.token,
         payload: merged.payload,
         expectedRevision: first.row.revision,
         clientId,
       });
-      if (retry.ok) cacheRow(retry.row);
+      if (retry.ok === true) {
+        cacheRow(retry.row);
+        publishCredentialStatus(credential);
+      } else if (retry.conflict !== true) {
+        publishCredentialStatus(credential, retry.failure);
+      }
       return retry;
     },
-    issuePrivateRoom: () =>
-      createPrivateRoomCredential({
+    issuePrivateRoom: async () => {
+      const result = await createPrivateRoomCredential({
         fetchFn,
         gatewayUrl,
         anonKey: cfg.anonKey,
         storeId: cfg.storeId,
-      }),
+      });
+      if (result.ok === false) {
+        publishCredentialStatus(null, result.failure);
+        return null;
+      }
+      publishCredentialStatus(result.credential);
+      return result.credential;
+    },
   };
 }
 

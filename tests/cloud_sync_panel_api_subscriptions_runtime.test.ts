@@ -53,12 +53,20 @@ test('cloud sync panel api fans out panel and tabs-gate source subscriptions onc
     room: 'public',
     isPublic: true,
     status: 'מצב: ציבורי (כולם רואים)',
+    credentialState: 'public',
+    credentialExpiresAt: '',
+    retryAt: 0,
+    failureKind: '',
     floatingSync: false,
   });
   assert.deepEqual(panelSnapshotsB.at(-1), {
     room: 'public',
     isPublic: true,
     status: 'מצב: ציבורי (כולם רואים)',
+    credentialState: 'public',
+    credentialExpiresAt: '',
+    retryAt: 0,
+    failureKind: '',
     floatingSync: false,
   });
 

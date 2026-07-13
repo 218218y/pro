@@ -54,7 +54,7 @@ test('cloud sync room commands keep a thin facade over shared/mode/copy seams', 
 
   assertMatchesAll(assert, runtimeShared, [
     /import \{ buildCloudSyncShareLink \} from '\.\/cloud_sync_room_commands\.js';/,
-    /buildCloudSyncShareLink\(cfg, getCurrentRoom\(\), getCurrentRoomToken\(\)\)/,
+    /buildCloudSyncShareLink\(cfg, getCurrentRoom\(\), getCurrentRoomCredential\(\)\?\.token \|\| ''\)/,
   ]);
   assertLacksAll(assert, runtimeShared, [/export function buildCloudSyncShareLink\(/]);
 });

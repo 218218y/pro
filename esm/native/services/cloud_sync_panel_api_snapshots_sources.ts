@@ -22,9 +22,17 @@ export function ensureFloatingPanelSourceSubscription(context: CloudSyncPanelSna
   const { deps, state, panelApiOp } = context;
   if (typeof state.disposeFloatingPanelSource === 'function') return;
   try {
-    state.disposeFloatingPanelSource = deps.subscribeFloatingSketchSyncEnabledState(() => {
-      context.publishPanelSnapshot();
-    });
+    const disposeFloating = deps.subscribeFloatingSketchSyncEnabledState(() =>
+      context.publishPanelSnapshot()
+    );
+    const disposeStatus = deps.subscribeRuntimeStatus(() => context.publishPanelSnapshot());
+    state.disposeFloatingPanelSource = () => {
+      try {
+        disposeFloating();
+      } finally {
+        disposeStatus();
+      }
+    };
   } catch (__wpErr) {
     deps.reportNonFatal(deps.App, panelApiOp('panelSnapshotSourceSubscribe'), __wpErr, { throttleMs: 4000 });
     state.disposeFloatingPanelSource = null;

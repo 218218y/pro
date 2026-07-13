@@ -17,6 +17,10 @@ test('cloud sync panel snapshot controller isolates panel listener failures and 
     getSite2TabsGateSnapshot: () => ({ open: false, until: 0, minutesLeft: 0 }) as any,
     now: () => 1_000,
     getCurrentRoom: () => 'public',
+    runtimeStatus: {
+      credential: { state: 'public', expiresAt: '', retryAt: 0, failureKind: '' },
+    },
+    subscribeRuntimeStatus: () => () => {},
     getFloatingSketchSyncEnabled: () => floatingEnabled,
     subscribeFloatingSketchSyncEnabledState: fn => {
       sourceListener = () => fn(false);
@@ -72,6 +76,10 @@ test('cloud sync panel snapshot controller isolates tabs-gate listener failures 
     },
     now: () => 1_000,
     getCurrentRoom: () => 'public',
+    runtimeStatus: {
+      credential: { state: 'public', expiresAt: '', retryAt: 0, failureKind: '' },
+    },
+    subscribeRuntimeStatus: () => () => {},
     getFloatingSketchSyncEnabled: () => false,
     subscribeFloatingSketchSyncEnabledState: () => () => {},
     reportNonFatal: (_app, op) => {

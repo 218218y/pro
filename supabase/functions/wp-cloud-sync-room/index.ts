@@ -28,7 +28,7 @@ const CLIENT_PATTERN = /^[a-zA-Z0-9:_-]{1,160}$/;
 const MAX_REQUEST_BYTES = 2_100_000;
 const MAX_PAYLOAD_BYTES = 2_000_000;
 const ROW_SELECT = 'room,payload,revision,updated_at,updated_by';
-const ACTIONS = new Set(['issue-public', 'create-room', 'read', 'write']);
+const ACTIONS = new Set(['issue-public', 'create-room', 'renew-room', 'read', 'write']);
 
 function getRequiredEnv(name: string): string {
   const value = String(Deno.env.get(name) || '').trim();
@@ -108,22 +108,26 @@ async function signRoomToken(claims: RoomClaims, secret: string): Promise<string
   return `${input}.${base64UrlEncode(new Uint8Array(signature))}`;
 }
 
-async function verifyRoomToken(token: string, secret: string): Promise<RoomClaims | null> {
+type RoomTokenVerification = { ok: true; claims: RoomClaims } | { ok: false; reason: 'expired' | 'invalid' };
+
+async function verifyRoomToken(token: string, secret: string): Promise<RoomTokenVerification> {
   try {
     const parts = token.split('.');
-    if (parts.length !== 3) return null;
+    if (parts.length !== 3) return { ok: false, reason: 'invalid' };
     const [header, payload, signature] = parts;
     const headerValue: unknown = JSON.parse(decoder.decode(base64UrlDecode(header)));
-    if (!isRecord(headerValue) || headerValue.alg !== 'HS256' || headerValue.typ !== 'JWT') return null;
+    if (!isRecord(headerValue) || headerValue.alg !== 'HS256' || headerValue.typ !== 'JWT') {
+      return { ok: false, reason: 'invalid' };
+    }
     const valid = await crypto.subtle.verify(
       'HMAC',
       await importSigningKey(secret),
       base64UrlDecode(signature),
       encoder.encode(`${header}.${payload}`)
     );
-    if (!valid) return null;
+    if (!valid) return { ok: false, reason: 'invalid' };
     const value: unknown = JSON.parse(decoder.decode(base64UrlDecode(payload)));
-    if (!isRecord(value)) return null;
+    if (!isRecord(value)) return { ok: false, reason: 'invalid' };
     const claims = value as Partial<RoomClaims>;
     if (
       claims.v !== 1 ||
@@ -136,14 +140,16 @@ async function verifyRoomToken(token: string, secret: string): Promise<RoomClaim
       !STORE_PATTERN.test(claims.tenantId) ||
       !STORE_PATTERN.test(claims.storeId) ||
       !ROOM_PATTERN.test(claims.room) ||
-      claims.iat > Math.floor(Date.now() / 1000) + 60 ||
-      claims.exp <= Math.floor(Date.now() / 1000)
+      claims.iat > Math.floor(Date.now() / 1000) + 60
     ) {
-      return null;
+      return { ok: false, reason: 'invalid' };
     }
-    return claims as RoomClaims;
+    if (claims.exp <= Math.floor(Date.now() / 1000)) {
+      return { ok: false, reason: 'expired' };
+    }
+    return { ok: true, claims: claims as RoomClaims };
   } catch {
-    return null;
+    return { ok: false, reason: 'invalid' };
   }
 }
 
@@ -185,13 +191,19 @@ function corsHeaders(origin: string): HeadersInit {
   };
 }
 
-function jsonResponse(origin: string, status: number, body: JsonRecord): Response {
+function jsonResponse(
+  origin: string,
+  status: number,
+  body: JsonRecord,
+  extraHeaders: HeadersInit = {}
+): Response {
   return Response.json(body, {
     status,
     headers: {
       ...corsHeaders(origin),
       'Cache-Control': 'no-store',
       'X-Content-Type-Options': 'nosniff',
+      ...extraHeaders,
     },
   });
 }
@@ -424,10 +436,16 @@ Deno.serve(async request => {
         windowSeconds: rate.windowSeconds,
       }))
     ) {
-      return jsonResponse(responseOrigin, 429, {
-        ok: false,
-        code: 'rate_limit',
-      });
+      return jsonResponse(
+        responseOrigin,
+        429,
+        {
+          ok: false,
+          code: 'rate_limit',
+          retryAfterSeconds: rate.windowSeconds,
+        },
+        { 'Retry-After': String(rate.windowSeconds) }
+      );
     }
 
     if (action === 'issue-public') {
@@ -451,11 +469,28 @@ Deno.serve(async request => {
     if (!ROOM_PATTERN.test(room) || !roomToken) {
       return jsonResponse(responseOrigin, 400, { ok: false, code: 'room' });
     }
-    const claims = await verifyRoomToken(roomToken, secret);
-    if (!claims || !isRoomAuthorized(claims, room, storeId, tenantId)) {
+    const verification = await verifyRoomToken(roomToken, secret);
+    if (!verification.ok) {
+      return jsonResponse(responseOrigin, 403, {
+        ok: false,
+        code: verification.reason === 'expired' ? 'room_token_expired' : 'room_token',
+      });
+    }
+    const claims = verification.claims;
+    if (!isRoomAuthorized(claims, room, storeId, tenantId)) {
       return jsonResponse(responseOrigin, 403, {
         ok: false,
         code: 'room_token',
+      });
+    }
+
+    if (action === 'renew-room') {
+      if (room !== claims.room) {
+        return jsonResponse(responseOrigin, 403, { ok: false, code: 'room_token' });
+      }
+      return jsonResponse(responseOrigin, 200, {
+        ok: true,
+        credential: await issueCredential({ tenantId, storeId, room: claims.room, secret }),
       });
     }
 

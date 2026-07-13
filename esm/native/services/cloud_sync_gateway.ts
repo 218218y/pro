@@ -1,5 +1,8 @@
 import type {
+  CloudSyncCredentialIssueResult,
   CloudSyncFetchLike,
+  CloudSyncGatewayFailure,
+  CloudSyncGatewayReadResult,
   CloudSyncOrderList,
   CloudSyncPayload,
   CloudSyncRoomCredential,
@@ -14,12 +17,14 @@ import {
   normalizeList,
   normalizeModelList,
   normalizeSavedColorsList,
+  readCloudSyncErrorMessage,
 } from './cloud_sync_support.js';
 import { makeHeaders } from './cloud_sync_config.js';
 
 type CloudSyncGatewayRequest =
   | { action: 'issue-public'; storeId: string }
   | { action: 'create-room'; storeId: string }
+  | { action: 'renew-room'; storeId: string; room: string; roomToken: string }
   | { action: 'read'; storeId: string; room: string; roomToken: string }
   | {
       action: 'write';
@@ -90,7 +95,7 @@ async function postGateway(
   gatewayUrl: string,
   anonKey: string,
   request: CloudSyncGatewayRequest
-): Promise<{ ok: boolean; status: number; data: unknown }> {
+): Promise<{ ok: boolean; status: number; data: unknown; retryAfterMs?: number }> {
   const response = await fetchFn(gatewayUrl, {
     method: 'POST',
     headers: Object.assign({}, makeHeaders(anonKey), { Accept: 'application/json' }),
@@ -102,7 +107,60 @@ async function postGateway(
   } catch {
     data = null;
   }
-  return { ok: response.ok, status: response.status || 0, data };
+  const retryAfter = response.headers?.get?.('Retry-After');
+  const retryAfterSeconds = Number(retryAfter);
+  const retryAfterMs =
+    Number.isFinite(retryAfterSeconds) && retryAfterSeconds >= 0
+      ? Math.ceil(retryAfterSeconds * 1000)
+      : undefined;
+  return {
+    ok: response.ok,
+    status: response.status || 0,
+    data,
+    ...(retryAfterMs != null ? { retryAfterMs } : {}),
+  };
+}
+
+function readGatewayCode(value: unknown): string {
+  const rec = asRecord(value);
+  return asString(rec?.code) || '';
+}
+
+function readGatewayRetryAfterMs(value: unknown, headerRetryAfterMs?: number): number | undefined {
+  if (headerRetryAfterMs != null) return headerRetryAfterMs;
+  const rec = asRecord(value);
+  const retryAfterSeconds = rec?.retryAfterSeconds;
+  return typeof retryAfterSeconds === 'number' && Number.isFinite(retryAfterSeconds) && retryAfterSeconds >= 0
+    ? Math.ceil(retryAfterSeconds * 1000)
+    : undefined;
+}
+
+function readGatewayFailure(response: {
+  status: number;
+  data: unknown;
+  retryAfterMs?: number;
+}): CloudSyncGatewayFailure {
+  const code = readGatewayCode(response.data);
+  if (response.status === 403 && code === 'room_token_expired') {
+    return { kind: 'auth-expired', status: 403, code: 'room_token_expired' };
+  }
+  if (response.status === 403) {
+    return { kind: 'auth-invalid', status: 403, ...(code ? { code } : {}) };
+  }
+  if (response.status === 429) {
+    const retryAfterMs = readGatewayRetryAfterMs(response.data, response.retryAfterMs);
+    return {
+      kind: 'rate-limit',
+      status: 429,
+      code: 'rate_limit',
+      ...(retryAfterMs != null ? { retryAfterMs } : {}),
+    };
+  }
+  return { kind: 'server', status: response.status, ...(code ? { code } : {}) };
+}
+
+function readNetworkFailure(error: unknown): CloudSyncGatewayFailure {
+  return { kind: 'network', message: readCloudSyncErrorMessage(error) };
 }
 
 export async function getGatewayRow(args: {
@@ -112,7 +170,7 @@ export async function getGatewayRow(args: {
   storeId: string;
   room: string;
   roomToken: string;
-}): Promise<CloudSyncStateRow | null> {
+}): Promise<CloudSyncGatewayReadResult> {
   try {
     const response = await postGateway(args.fetchFn, args.gatewayUrl, args.anonKey, {
       action: 'read',
@@ -120,10 +178,12 @@ export async function getGatewayRow(args: {
       room: args.room,
       roomToken: args.roomToken,
     });
-    return response.ok ? readGatewayRowEnvelope(response.data) : null;
+    return response.ok
+      ? { ok: true, row: readGatewayRowEnvelope(response.data) }
+      : { ok: false, failure: readGatewayFailure(response) };
   } catch (error) {
     _cloudSyncReportNonFatal(null, 'getGatewayRow.fetch', error, { throttleMs: 6000 });
-    return null;
+    return { ok: false, failure: readNetworkFailure(error) };
   }
 }
 
@@ -151,10 +211,10 @@ export async function writeGatewayRow(args: {
     const row = readGatewayRowEnvelope(response.data);
     if (response.ok && row) return { ok: true, row };
     if (response.status === 409 && row) return { ok: false, conflict: true, row };
-    return { ok: false };
+    return { ok: false, failure: readGatewayFailure(response) };
   } catch (error) {
     _cloudSyncReportNonFatal(null, 'writeGatewayRow.fetch', error, { throttleMs: 6000 });
-    return { ok: false };
+    return { ok: false, failure: readNetworkFailure(error) };
   }
 }
 
@@ -163,30 +223,48 @@ async function issueRoomCredential(args: {
   gatewayUrl: string;
   anonKey: string;
   storeId: string;
-  action: 'issue-public' | 'create-room';
-}): Promise<CloudSyncRoomCredential | null> {
+  action: 'issue-public' | 'create-room' | 'renew-room';
+  room?: string;
+  roomToken?: string;
+}): Promise<CloudSyncCredentialIssueResult> {
   try {
-    const response = await postGateway(args.fetchFn, args.gatewayUrl, args.anonKey, {
-      action: args.action,
-      storeId: args.storeId,
-    });
-    return response.ok ? readRoomCredential(response.data) : null;
+    const request: CloudSyncGatewayRequest =
+      args.action === 'renew-room'
+        ? {
+            action: 'renew-room',
+            storeId: args.storeId,
+            room: args.room || '',
+            roomToken: args.roomToken || '',
+          }
+        : { action: args.action, storeId: args.storeId };
+    const response = await postGateway(args.fetchFn, args.gatewayUrl, args.anonKey, request);
+    const credential = response.ok ? readRoomCredential(response.data) : null;
+    return credential ? { ok: true, credential } : { ok: false, failure: readGatewayFailure(response) };
   } catch (error) {
     _cloudSyncReportNonFatal(null, `issueRoomCredential.${args.action}`, error, { throttleMs: 6000 });
-    return null;
+    return { ok: false, failure: readNetworkFailure(error) };
   }
 }
 
 export function issuePublicRoomCredential(
   args: Omit<Parameters<typeof issueRoomCredential>[0], 'action'>
-): Promise<CloudSyncRoomCredential | null> {
+): Promise<CloudSyncCredentialIssueResult> {
   return issueRoomCredential({ ...args, action: 'issue-public' });
 }
 
 export function createPrivateRoomCredential(
   args: Omit<Parameters<typeof issueRoomCredential>[0], 'action'>
-): Promise<CloudSyncRoomCredential | null> {
+): Promise<CloudSyncCredentialIssueResult> {
   return issueRoomCredential({ ...args, action: 'create-room' });
+}
+
+export function renewPrivateRoomCredential(
+  args: Omit<Parameters<typeof issueRoomCredential>[0], 'action'> & {
+    room: string;
+    roomToken: string;
+  }
+): Promise<CloudSyncCredentialIssueResult> {
+  return issueRoomCredential({ ...args, action: 'renew-room' });
 }
 
 export { readCloudSyncPayload, readCloudSyncStateRow };

@@ -12,6 +12,7 @@ import {
   type CloudSyncPanelApiRuntimeShared,
 } from './cloud_sync_panel_api_commands_runtime_shared.js';
 import { readCloudSyncErrorMessage } from './cloud_sync_support.js';
+import { buildCloudSyncCredentialStatus } from './cloud_sync_room_credentials.js';
 import type { CloudSyncPanelSnapshotController } from './cloud_sync_panel_api_snapshots.js';
 
 export type CloudSyncPanelApiRoomCommands = Pick<
@@ -36,9 +37,8 @@ export function createCloudSyncPanelApiRoomCommands(
     App,
     cfg,
     getCurrentRoom,
-    getCurrentRoomToken,
-    getPrivateRoom,
-    getPrivateRoomToken,
+    getCurrentRoomCredential,
+    getPrivateRoomCredential,
     setPrivateRoomCredential,
     issuePrivateRoom,
     setRoomCredentialInUrl,
@@ -55,9 +55,8 @@ export function createCloudSyncPanelApiRoomCommands(
         App,
         cfg,
         getCurrentRoom,
-        getCurrentRoomToken,
-        getPrivateRoom,
-        getPrivateRoomToken,
+        getCurrentRoomCredential,
+        getPrivateRoomCredential,
         setPrivateRoomCredential,
         issuePrivateRoom,
         setRoomCredentialInUrl,
@@ -65,8 +64,15 @@ export function createCloudSyncPanelApiRoomCommands(
       },
       mode
     );
-    if (result.ok)
+    if (result.ok) {
+      runtimeStatus.room = result.room;
+      runtimeStatus.credential = buildCloudSyncCredentialStatus({
+        isPublic: mode === 'public',
+        credential: mode === 'private' ? getPrivateRoomCredential() : null,
+      });
+      publishStatus();
       snapshots.publishPanelSnapshot(result.room || (mode === 'public' ? cfg.publicRoom : getCurrentRoom()));
+    }
     return result;
   };
 

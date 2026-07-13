@@ -17,6 +17,10 @@ test('cloud sync panel api exposes stable room/share/tabs-gate runtime surface a
     room: 'public',
     isPublic: true,
     status: 'מצב: ציבורי (כולם רואים)',
+    credentialState: 'public',
+    credentialExpiresAt: '',
+    retryAt: 0,
+    failureKind: '',
     floatingSync: true,
   });
 
@@ -34,6 +38,10 @@ test('cloud sync panel api exposes stable room/share/tabs-gate runtime surface a
     room: 'public',
     isPublic: true,
     status: 'מצב: ציבורי (כולם רואים)',
+    credentialState: 'public',
+    credentialExpiresAt: '',
+    retryAt: 0,
+    failureKind: '',
     floatingSync: false,
   });
 
@@ -67,6 +75,10 @@ test('cloud sync panel api exposes stable room/share/tabs-gate runtime surface a
     room: 'public',
     isPublic: true,
     status: 'מצב: ציבורי (כולם רואים)',
+    credentialState: 'public',
+    credentialExpiresAt: '',
+    retryAt: 0,
+    failureKind: '',
     floatingSync: true,
   });
 
@@ -81,12 +93,16 @@ test('cloud sync panel api exposes stable room/share/tabs-gate runtime surface a
     changed: true,
     mode: 'private',
     room: 'generated-room',
-    shareLink: 'https://example.test/?room=generated-room&roomToken=signed-generated-token',
+    shareLink: 'https://example.test/#room=generated-room&roomToken=signed-generated-token',
   });
   assert.deepEqual(snapshots.at(-1), {
     room: 'generated-room',
     isPublic: false,
-    status: 'מצב: חדר פרטי (generated-room)',
+    status: 'מצב: חדר פרטי (generated-room) — הרשאה פעילה',
+    credentialState: 'active',
+    credentialExpiresAt: '2026-07-20T08:00:00.000Z',
+    retryAt: 0,
+    failureKind: '',
     floatingSync: true,
   });
 
@@ -94,11 +110,11 @@ test('cloud sync panel api exposes stable room/share/tabs-gate runtime surface a
   assert.deepEqual(copied, {
     ok: true,
     copied: true,
-    link: 'https://example.test/?room=generated-room&roomToken=signed-generated-token',
+    link: 'https://example.test/#room=generated-room&roomToken=signed-generated-token',
   });
   assert.equal(
     storage.get('clipboard'),
-    'https://example.test/?room=generated-room&roomToken=signed-generated-token'
+    'https://example.test/#room=generated-room&roomToken=signed-generated-token'
   );
 
   if (typeof unsubscribe === 'function') unsubscribe();
@@ -184,10 +200,9 @@ test('cloud sync panel api diagnostics setter stays no-op when the stored diagno
     getSite2TabsGateSnapshot: () => ({ open: false, until: 0, minutesLeft: 0 }) as any,
     subscribeSite2TabsGateSnapshot: () => () => {},
     getCurrentRoom: () => 'public',
-    getCurrentRoomToken: () => '',
-    getPrivateRoom: () => '',
-    getPrivateRoomToken: () => '',
-    setPrivateRoomCredential: () => {},
+    getCurrentRoomCredential: () => null,
+    getPrivateRoomCredential: () => null,
+    setPrivateRoomCredential: () => true,
     issuePrivateRoom: async () => null,
     setRoomCredentialInUrl: () => true,
     cloneRuntimeStatus: status => ({ ...status }) as any,
@@ -198,6 +213,7 @@ test('cloud sync panel api diagnostics setter stays no-op when the stored diagno
     publishStatus: () => {
       publishCount += 1;
     },
+    subscribeRuntimeStatus: () => () => {},
     diag: event => {
       diagEvents.push(String(event || ''));
     },

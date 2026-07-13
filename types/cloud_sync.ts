@@ -34,17 +34,48 @@ export interface CloudSyncStateRow {
   updated_by: string;
 }
 
-export interface CloudSyncUpsertResult {
-  ok: boolean;
-  row?: CloudSyncStateRow | null;
-  conflict?: boolean;
-  conflictKeys?: string[];
-}
-
 export interface CloudSyncRoomCredential {
   room: string;
   token: string;
   expiresAt: string;
+}
+
+export type CloudSyncGatewayFailure =
+  | { kind: 'auth-expired'; status: 403; code: 'room_token_expired' }
+  | { kind: 'auth-invalid'; status: 403; code?: string }
+  | { kind: 'rate-limit'; status: 429; code: 'rate_limit'; retryAfterMs?: number }
+  | { kind: 'network'; message: string }
+  | { kind: 'server'; status: number; code?: string };
+
+export type CloudSyncGatewayReadResult =
+  { ok: true; row: CloudSyncStateRow | null } | { ok: false; failure: CloudSyncGatewayFailure };
+
+export type CloudSyncCredentialIssueResult =
+  { ok: true; credential: CloudSyncRoomCredential } | { ok: false; failure: CloudSyncGatewayFailure };
+
+export type CloudSyncUpsertResult =
+  | { ok: true; row: CloudSyncStateRow }
+  | {
+      ok: false;
+      conflict: true;
+      row: CloudSyncStateRow;
+      conflictKeys?: string[];
+    }
+  | {
+      ok: false;
+      conflict?: false;
+      row?: null;
+      failure: CloudSyncGatewayFailure;
+    };
+
+export type CloudSyncCredentialState =
+  'public' | 'active' | 'expiring' | 'expired' | 'missing' | 'rate-limited' | 'offline' | 'error';
+
+export interface CloudSyncCredentialStatus extends UnknownRecord {
+  state: CloudSyncCredentialState;
+  expiresAt: string;
+  retryAt: number;
+  failureKind: CloudSyncGatewayFailure['kind'] | '';
 }
 
 export type CloudSyncDeleteTempReason = 'busy' | 'room' | 'write' | 'error' | 'cancelled' | 'not-installed';
@@ -256,12 +287,18 @@ export interface CloudSyncRuntimeStatus extends UnknownRecord {
   lastPushAt: number;
   lastRealtimeEventAt: number;
   lastError: string;
+  credential?: CloudSyncCredentialStatus;
   diagEnabled?: boolean;
+}
+
+export interface CloudSyncFetchHeadersLike {
+  get?: (name: string) => string | null;
 }
 
 export interface CloudSyncFetchResponseLike {
   ok: boolean;
   status?: number;
+  headers?: CloudSyncFetchHeadersLike;
   json: () => Promise<unknown>;
 }
 
@@ -360,10 +397,9 @@ export interface CloudSyncPanelApiDeps extends UnknownRecord {
   site2TabsTtlMs: number;
   now: () => number;
   getCurrentRoom: () => string;
-  getCurrentRoomToken: () => string;
-  getPrivateRoom: () => string;
-  getPrivateRoomToken: () => string;
-  setPrivateRoomCredential: (room: string, token: string) => void;
+  getCurrentRoomCredential: () => CloudSyncRoomCredential | null;
+  getPrivateRoomCredential: () => CloudSyncRoomCredential | null;
+  setPrivateRoomCredential: (credential: CloudSyncRoomCredential) => boolean;
   issuePrivateRoom: () => Promise<CloudSyncRoomCredential | null>;
   setRoomCredentialInUrl: (
     app: AppContainer,
@@ -378,6 +414,7 @@ export interface CloudSyncPanelApiDeps extends UnknownRecord {
   runtimeStatus: CloudSyncRuntimeStatus;
   updateDiagEnabled: () => void;
   publishStatus: () => void;
+  subscribeRuntimeStatus: (fn: (status: CloudSyncRuntimeStatus) => void) => () => void;
   diag: CloudSyncDiagFn;
   getDiagStorageMaybe: () => CloudSyncStorageValueStoreLike | null;
   getClipboardMaybe: () => CloudSyncClipboardLike | null;
@@ -408,6 +445,10 @@ export interface CloudSyncRoomStatusSnapshot extends UnknownRecord {
   room: string;
   isPublic: boolean | null;
   status: string;
+  credentialState: CloudSyncCredentialState;
+  credentialExpiresAt: string;
+  retryAt: number;
+  failureKind: CloudSyncGatewayFailure['kind'] | '';
 }
 
 export interface CloudSyncPanelSnapshot extends CloudSyncRoomStatusSnapshot {

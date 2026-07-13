@@ -12,6 +12,7 @@ export type CloudSyncPanelSnapshotRuntimeDeps = Pick<
   | 'App'
   | 'reportNonFatal'
   | 'subscribeFloatingSketchSyncEnabledState'
+  | 'subscribeRuntimeStatus'
   | 'subscribeSite2TabsGateSnapshot'
   | 'now'
 > & {

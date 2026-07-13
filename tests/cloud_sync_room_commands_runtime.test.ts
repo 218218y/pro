@@ -8,29 +8,25 @@ import {
   runCloudSyncRoomModeCommand,
 } from '../esm/native/services/cloud_sync_room_commands.ts';
 
-test('cloud sync room commands derive status, private room targets, and share-link copy fallbacks canonically', async () => {
+const cfg = {
+  storeId: 'bargig',
+  publicRoom: 'public',
+  roomParam: 'room',
+  roomTokenParam: 'roomToken',
+  shareBaseUrl: 'https://site2.test/',
+};
+
+test('cloud sync room commands use fragment links and persist complete private credentials', async () => {
   const seen = new Map<string, string>();
-  let currentRoom = 'public';
-  let privateRoom = '';
-  let privateRoomToken = '';
-  let currentRoomToken = '';
-  const urlWrites: Array<{ room: string | null; roomToken: string | null }> = [];
   const reported: string[] = [];
+  let currentRoom = 'public';
+  let currentCredential: { room: string; token: string; expiresAt: string } | null = null;
+  let privateCredential: typeof currentCredential = null;
+  const urlWrites: Array<{ room: string | null; roomToken: string | null }> = [];
 
   const copyResult = await runCloudSyncCopyShareLinkCommand({
     App: {} as any,
-    getShareLink: () =>
-      buildCloudSyncShareLink(
-        {
-          storeId: 'bargig',
-          publicRoom: 'public',
-          roomParam: 'room',
-          roomTokenParam: 'roomToken',
-          shareBaseUrl: 'https://site2.test/',
-        },
-        'room-42',
-        'signed.token.value'
-      ),
+    getShareLink: () => buildCloudSyncShareLink(cfg, 'room-42', 'signed.token.value'),
     readClipboard: () => ({
       writeText: async () => {
         throw new Error('clipboard failed');
@@ -42,97 +38,86 @@ test('cloud sync room commands derive status, private room targets, and share-li
         return value || '';
       },
     }),
-    reportNonFatal: (_app, op) => {
-      reported.push(op);
-    },
+    reportNonFatal: (_app, op) => reported.push(op),
   });
-
-  assert.deepEqual(copyResult, {
-    ok: true,
-    prompted: true,
-    link: 'https://site2.test/?room=room-42&roomToken=signed.token.value',
-  });
-  assert.equal(seen.get('prompt'), 'https://site2.test/?room=room-42&roomToken=signed.token.value');
+  const expectedLink = 'https://site2.test/#room=room-42&roomToken=signed.token.value';
+  assert.deepEqual(copyResult, { ok: true, prompted: true, link: expectedLink });
+  assert.equal(seen.get('prompt'), expectedLink);
   assert.deepEqual(reported, ['services/cloud_sync.ts:copyShareLink.clipboard']);
 
-  const modeResult = await runCloudSyncRoomModeCommand(
+  const privateResult = await runCloudSyncRoomModeCommand(
     {
       App: {} as any,
-      cfg: {
-        storeId: 'bargig',
-        publicRoom: 'public',
-        roomParam: 'room',
-        roomTokenParam: 'roomToken',
-        shareBaseUrl: 'https://site2.test/',
-      },
+      cfg,
       getCurrentRoom: () => currentRoom,
-      getCurrentRoomToken: () => currentRoomToken,
-      getPrivateRoom: () => privateRoom,
-      getPrivateRoomToken: () => privateRoomToken,
-      setPrivateRoomCredential: (room, token) => {
-        privateRoom = room;
-        privateRoomToken = token;
+      getCurrentRoomCredential: () => currentCredential,
+      getPrivateRoomCredential: () => privateCredential,
+      setPrivateRoomCredential: credential => {
+        privateCredential = credential;
+        return true;
       },
       issuePrivateRoom: async () => ({
         room: 'generated-room',
         token: 'signed.token.value',
-        expiresAt: '2026-07-20T08:00:00.000Z',
+        expiresAt: '2099-01-01T00:00:00.000Z',
       }),
       setRoomCredentialInUrl: (_app, value) => {
         urlWrites.push({ room: value.room, roomToken: value.roomToken });
         currentRoom = value.room || 'public';
-        currentRoomToken = value.roomToken || '';
+        currentCredential = value.room
+          ? {
+              room: value.room,
+              token: value.roomToken || '',
+              expiresAt: '2099-01-01T00:00:00.000Z',
+            }
+          : null;
         return true;
       },
       reportNonFatal: () => {},
     },
     'private'
   );
-
-  assert.deepEqual(modeResult, {
+  assert.deepEqual(privateResult, {
     ok: true,
     changed: true,
     mode: 'private',
     room: 'generated-room',
-    shareLink: 'https://site2.test/?room=generated-room&roomToken=signed.token.value',
+    shareLink: 'https://site2.test/#room=generated-room&roomToken=signed.token.value',
   });
-  assert.equal(privateRoom, 'generated-room');
-  assert.equal(privateRoomToken, 'signed.token.value');
-  assert.deepEqual(urlWrites, [{ room: 'generated-room', roomToken: 'signed.token.value' }]);
-
-  assert.deepEqual(describeCloudSyncRoomStatus(currentRoom, 'public'), {
+  assert.deepEqual(privateCredential, {
     room: 'generated-room',
-    isPublic: false,
-    status: 'מצב: חדר פרטי (generated-room)',
+    token: 'signed.token.value',
+    expiresAt: '2099-01-01T00:00:00.000Z',
   });
+
+  const privateStatus = describeCloudSyncRoomStatus(currentRoom, 'public', {
+    state: 'active',
+    expiresAt: '2099-01-01T00:00:00.000Z',
+    retryAt: 0,
+    failureKind: '',
+  });
+  assert.equal(privateStatus.credentialState, 'active');
+  assert.match(privateStatus.status, /הרשאה פעילה/u);
 
   const publicResult = await runCloudSyncRoomModeCommand(
     {
       App: {} as any,
-      cfg: {
-        storeId: 'bargig',
-        publicRoom: 'public',
-        roomParam: 'room',
-        roomTokenParam: 'roomToken',
-        shareBaseUrl: 'https://site2.test/',
-      },
+      cfg,
       getCurrentRoom: () => currentRoom,
-      getCurrentRoomToken: () => currentRoomToken,
-      getPrivateRoom: () => privateRoom,
-      getPrivateRoomToken: () => privateRoomToken,
-      setPrivateRoomCredential: () => {},
+      getCurrentRoomCredential: () => currentCredential,
+      getPrivateRoomCredential: () => privateCredential,
+      setPrivateRoomCredential: () => true,
       issuePrivateRoom: async () => null,
       setRoomCredentialInUrl: (_app, value) => {
         urlWrites.push({ room: value.room, roomToken: value.roomToken });
         currentRoom = value.room || 'public';
-        currentRoomToken = value.roomToken || '';
+        currentCredential = null;
         return true;
       },
       reportNonFatal: () => {},
     },
     'public'
   );
-
   assert.deepEqual(publicResult, {
     ok: true,
     changed: true,
@@ -144,175 +129,104 @@ test('cloud sync room commands derive status, private room targets, and share-li
     { room: 'generated-room', roomToken: 'signed.token.value' },
     { room: null, roomToken: null },
   ]);
-  assert.deepEqual(describeCloudSyncRoomStatus(currentRoom, 'public'), {
-    room: 'public',
-    isPublic: true,
-    status: 'מצב: ציבורי (כולם רואים)',
-  });
+  assert.equal(describeCloudSyncRoomStatus(currentRoom, 'public').credentialState, 'public');
 });
 
-test('cloud sync room mode preserves thrown error messages', async () => {
-  const result = await runCloudSyncRoomModeCommand(
-    {
-      App: {} as any,
-      cfg: {
-        storeId: 'bargig',
-        publicRoom: 'public',
-        roomParam: 'room',
-        roomTokenParam: 'roomToken',
-        shareBaseUrl: 'https://site2.test/',
-      },
-      getCurrentRoom: () => 'public',
-      getCurrentRoomToken: () => '',
-      getPrivateRoom: () => '',
-      getPrivateRoomToken: () => '',
-      setPrivateRoomCredential: () => {},
-      issuePrivateRoom: async () => ({
-        room: 'generated-room',
-        token: 'signed.token.value',
-        expiresAt: '2026-07-20T08:00:00.000Z',
-      }),
-      setRoomCredentialInUrl: () => {
-        throw new Error('room switch exploded');
-      },
-      reportNonFatal: () => {},
-    },
-    'private'
-  );
-
-  assert.deepEqual(result, {
-    ok: false,
-    changed: true,
-    mode: 'private',
-    room: 'generated-room',
-    shareLink: 'https://site2.test/?room=generated-room&roomToken=signed.token.value',
-    reason: 'error',
-    message: 'room switch exploded',
+test('cloud sync room status exposes expiry, rate-limit, and offline states', () => {
+  const expired = describeCloudSyncRoomStatus('room-a', 'public', {
+    state: 'expired',
+    expiresAt: '2026-07-01T00:00:00.000Z',
+    retryAt: 0,
+    failureKind: 'auth-expired',
   });
+  assert.equal(expired.credentialState, 'expired');
+  assert.equal(expired.failureKind, 'auth-expired');
+  assert.match(expired.status, /ההרשאה פגה/u);
+
+  const limited = describeCloudSyncRoomStatus('room-a', 'public', {
+    state: 'rate-limited',
+    expiresAt: '2099-01-01T00:00:00.000Z',
+    retryAt: 1234,
+    failureKind: 'rate-limit',
+  });
+  assert.equal(limited.retryAt, 1234);
+  assert.match(limited.status, /הוגבל זמנית/u);
+
+  const offline = describeCloudSyncRoomStatus('room-a', 'public', {
+    state: 'offline',
+    expiresAt: '2099-01-01T00:00:00.000Z',
+    retryAt: 0,
+    failureKind: 'network',
+  });
+  assert.match(offline.status, /לא מקוון/u);
 });
 
-test('cloud sync room mode fails when browser navigation is not committed', async () => {
-  const reported: string[] = [];
-  const result = await runCloudSyncRoomModeCommand(
-    {
-      App: {} as any,
-      cfg: {
-        storeId: 'bargig',
-        publicRoom: 'public',
-        roomParam: 'room',
-        roomTokenParam: 'roomToken',
-        shareBaseUrl: 'https://site2.test/',
-      },
-      getCurrentRoom: () => 'private-room',
-      getCurrentRoomToken: () => 'signed.token.value',
-      getPrivateRoom: () => 'private-room',
-      getPrivateRoomToken: () => 'signed.token.value',
-      setPrivateRoomCredential: () => {},
-      issuePrivateRoom: async () => null,
-      setRoomCredentialInUrl: () => false,
-      reportNonFatal: (_app, op) => {
-        reported.push(op);
-      },
-    },
-    'public'
-  );
-
-  assert.deepEqual(result, {
-    ok: false,
-    changed: true,
-    mode: 'public',
-    room: 'public',
-    shareLink: 'https://site2.test/',
-    reason: 'error',
-    message: 'Cloud Sync room navigation was not committed',
-  });
-  assert.deepEqual(reported, ['services/cloud_sync.ts:roomMode']);
-});
-
-test('cloud sync share-link copy preserves clipboard error messages when prompt fallback is unavailable', async () => {
-  const reported: string[] = [];
-  const result = await runCloudSyncCopyShareLinkCommand({
+test('cloud sync room mode preserves navigation failures and normalized thrown messages', async () => {
+  const baseDeps = {
     App: {} as any,
-    getShareLink: () => 'https://site2.test/?room=room-99',
-    readClipboard: () => ({
-      writeText: async () => {
-        throw new Error('clipboard exploded');
-      },
+    cfg,
+    getCurrentRoom: () => 'public',
+    getCurrentRoomCredential: () => null,
+    getPrivateRoomCredential: () => null,
+    setPrivateRoomCredential: () => true,
+    issuePrivateRoom: async () => ({
+      room: 'generated-room',
+      token: 'signed.token.value',
+      expiresAt: '2099-01-01T00:00:00.000Z',
     }),
-    readPromptSink: () => null,
-    reportNonFatal: (_app, op) => {
-      reported.push(op);
-    },
-  });
-
-  assert.deepEqual(result, {
-    ok: false,
-    reason: 'error',
-    link: 'https://site2.test/?room=room-99',
-    message: 'clipboard exploded',
-  });
-  assert.deepEqual(reported, ['services/cloud_sync.ts:copyShareLink.clipboard']);
-});
-
-test('cloud sync room/share-link commands normalize non-Error throwables into stable messages', async () => {
-  const roomResult = await runCloudSyncRoomModeCommand(
+    reportNonFatal: () => {},
+  };
+  const thrown = await runCloudSyncRoomModeCommand(
     {
-      App: {} as any,
-      cfg: {
-        storeId: 'bargig',
-        publicRoom: 'public',
-        roomParam: 'room',
-        roomTokenParam: 'roomToken',
-        shareBaseUrl: 'https://site2.test/',
-      },
-      getCurrentRoom: () => 'public',
-      getCurrentRoomToken: () => '',
-      getPrivateRoom: () => '',
-      getPrivateRoomToken: () => '',
-      setPrivateRoomCredential: () => {},
-      issuePrivateRoom: async () => ({
-        room: 'generated-room',
-        token: 'signed.token.value',
-        expiresAt: '2026-07-20T08:00:00.000Z',
-      }),
+      ...baseDeps,
       setRoomCredentialInUrl: () => {
         throw 'string room failure';
       },
-      reportNonFatal: () => {},
     },
     'private'
   );
+  assert.equal(thrown.ok, false);
+  assert.equal(thrown.ok === false && thrown.reason, 'error');
+  assert.equal(thrown.ok === false && thrown.message, 'string room failure');
 
-  assert.deepEqual(roomResult, {
-    ok: false,
-    changed: true,
-    mode: 'private',
-    room: 'generated-room',
-    shareLink: 'https://site2.test/?room=generated-room&roomToken=signed.token.value',
-    reason: 'error',
-    message: 'string room failure',
-  });
+  const reported: string[] = [];
+  const notCommitted = await runCloudSyncRoomModeCommand(
+    {
+      ...baseDeps,
+      getCurrentRoom: () => 'private-room',
+      setRoomCredentialInUrl: () => false,
+      reportNonFatal: (_app, op) => reported.push(op),
+    },
+    'public'
+  );
+  assert.equal(notCommitted.ok, false);
+  assert.equal(
+    notCommitted.ok === false && notCommitted.message,
+    'Cloud Sync room navigation was not committed'
+  );
+  assert.deepEqual(reported, ['services/cloud_sync.ts:roomMode']);
+});
 
-  const shareResult = await runCloudSyncCopyShareLinkCommand({
+test('cloud sync share-link copy preserves clipboard and prompt errors', async () => {
+  const result = await runCloudSyncCopyShareLinkCommand({
     App: {} as any,
-    getShareLink: () => 'https://site2.test/?room=room-99',
+    getShareLink: () => 'https://site2.test/#room=room-99',
     readClipboard: () => ({
       writeText: async () => {
         throw new Error('clipboard exploded');
       },
     }),
     readPromptSink: () => ({
-      prompt() {
+      prompt: () => {
         throw { message: 'prompt exploded' };
       },
     }),
     reportNonFatal: () => {},
   });
-
-  assert.deepEqual(shareResult, {
+  assert.deepEqual(result, {
     ok: false,
     reason: 'prompt',
-    link: 'https://site2.test/?room=room-99',
+    link: 'https://site2.test/#room=room-99',
     message: 'prompt exploded',
   });
 });

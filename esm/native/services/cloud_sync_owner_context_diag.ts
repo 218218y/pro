@@ -23,6 +23,7 @@ export function createCloudSyncOwnerStatusRuntime(args: {
   diagEnabledRef: { value: boolean };
   updateDiagEnabled: () => void;
   publishStatus: () => void;
+  subscribeRuntimeStatus: (fn: (status: CloudSyncRuntimeStatus) => void) => () => void;
   diag: CloudSyncDiagFn;
 } {
   const { App, cfg, room, clientId, publicationEpoch } = args;
@@ -57,6 +58,17 @@ export function createCloudSyncOwnerStatusRuntime(args: {
     publicationEpoch,
     reportNonFatal,
   });
+  const statusSubscribers = new Set<(status: CloudSyncRuntimeStatus) => void>();
+  const publishStatus = (): void => {
+    statusPublisher.publishStatus();
+    for (const subscriber of statusSubscribers) {
+      try {
+        subscriber(runtimeStatus);
+      } catch (error) {
+        reportNonFatal(App, 'diag.runtimeStatusSubscriber', error, { throttleMs: 4000 });
+      }
+    }
+  };
 
   return {
     instanceId: runtimeStatus.instanceId,
@@ -64,7 +76,11 @@ export function createCloudSyncOwnerStatusRuntime(args: {
     runtimeStatus,
     diagEnabledRef: diagRuntime.diagEnabledRef,
     updateDiagEnabled: diagRuntime.updateDiagEnabled,
-    publishStatus: statusPublisher.publishStatus,
+    publishStatus,
+    subscribeRuntimeStatus: (fn: (status: CloudSyncRuntimeStatus) => void): (() => void) => {
+      statusSubscribers.add(fn);
+      return () => statusSubscribers.delete(fn);
+    },
     diag: diagRuntime.diag,
   };
 }

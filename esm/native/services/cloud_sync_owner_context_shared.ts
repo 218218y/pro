@@ -7,6 +7,7 @@ import type {
   TimeoutHandleLike,
   IntervalHandleLike,
   CloudSyncDiagFn,
+  CloudSyncRoomCredential,
 } from '../../../types';
 
 import type { SupabaseCfg } from './cloud_sync_config.js';
@@ -40,10 +41,9 @@ export type CloudSyncOwnerContext = {
   keyHiddenPresets: string;
   room: string;
   currentRoom: () => string;
-  currentRoomToken: () => string;
-  getPrivateRoom: () => string;
-  getPrivateRoomToken: () => string;
-  setPrivateRoomCredential: (room: string, token: string) => void;
+  currentRoomCredential: () => CloudSyncRoomCredential | null;
+  getPrivateRoomCredential: () => CloudSyncRoomCredential | null;
+  setPrivateRoomCredential: (credential: CloudSyncRoomCredential) => boolean;
   getGateBaseRoom: () => string;
   getSketchRoom: () => string;
   getSite2TabsRoom: () => string;
@@ -59,6 +59,7 @@ export type CloudSyncOwnerContext = {
   diagEnabledRef: { value: boolean };
   updateDiagEnabled: () => void;
   publishStatus: () => void;
+  subscribeRuntimeStatus: (fn: (status: CloudSyncRuntimeStatus) => void) => () => void;
   diag: CloudSyncDiagFn;
 };
 

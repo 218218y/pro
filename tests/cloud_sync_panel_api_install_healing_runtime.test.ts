@@ -56,12 +56,23 @@ function createInstallDeps(App: any, room: string): InstallHarness & { deps: Any
     site2TabsTtlMs: 60000,
     now: () => 1000,
     getCurrentRoom: () => state.currentRoom,
-    getCurrentRoomToken: () => (state.currentRoom === state.privateRoom ? state.privateRoomToken : ''),
-    getPrivateRoom: () => state.privateRoom,
-    getPrivateRoomToken: () => state.privateRoomToken,
-    setPrivateRoomCredential: (privateRoom: string, token: string) => {
-      state.privateRoom = privateRoom;
-      state.privateRoomToken = token;
+    getCurrentRoomCredential: () =>
+      state.currentRoom === state.privateRoom
+        ? {
+            room: state.privateRoom,
+            token: state.privateRoomToken,
+            expiresAt: '2099-01-01T00:00:00.000Z',
+          }
+        : null,
+    getPrivateRoomCredential: () => ({
+      room: state.privateRoom,
+      token: state.privateRoomToken,
+      expiresAt: '2099-01-01T00:00:00.000Z',
+    }),
+    setPrivateRoomCredential: (credential: { room: string; token: string }) => {
+      state.privateRoom = credential.room;
+      state.privateRoomToken = credential.token;
+      return true;
     },
     issuePrivateRoom: async () => ({
       room: `${room}:generated`,
@@ -73,6 +84,7 @@ function createInstallDeps(App: any, room: string): InstallHarness & { deps: Any
     runtimeStatus: { diagEnabled: false, room, online: true },
     updateDiagEnabled: () => undefined,
     publishStatus: () => undefined,
+    subscribeRuntimeStatus: () => () => undefined,
     diag: () => undefined,
     getDiagStorageMaybe: () => null,
     getClipboardMaybe: () => null,
@@ -334,6 +346,10 @@ test('cloud sync panel api deactivation tombstones held refs and detaches live s
     room: '',
     isPublic: null,
     status: 'offline',
+    credentialState: 'offline',
+    credentialExpiresAt: '',
+    retryAt: 0,
+    failureKind: 'network',
     floatingSync: false,
   });
   assert.deepEqual(api?.getSyncRuntimeStatus?.(), {
@@ -355,6 +371,12 @@ test('cloud sync panel api deactivation tombstones held refs and detaches live s
     lastPushAt: 0,
     lastRealtimeEventAt: 0,
     lastError: 'unavailable',
+    credential: {
+      state: 'offline',
+      expiresAt: '',
+      retryAt: 0,
+      failureKind: 'network',
+    },
     diagEnabled: false,
   });
 
@@ -401,6 +423,10 @@ test('cloud sync panel api public surface clones runtime status and snapshot rea
     room: 'room-a',
     isPublic: false,
     status: 'online',
+    credentialState: 'missing',
+    credentialExpiresAt: '',
+    retryAt: 0,
+    failureKind: '',
     floatingSync: true,
     driftedExtra: 'drop-me',
   } as AnyRecord;
@@ -449,6 +475,10 @@ test('cloud sync panel api public surface clones runtime status and snapshot rea
     room: 'room-a',
     isPublic: false,
     status: 'online',
+    credentialState: 'missing',
+    credentialExpiresAt: '',
+    retryAt: 0,
+    failureKind: '',
     floatingSync: true,
   });
   assert.equal(panelSnapshot.room, 'room-a');
@@ -480,6 +510,10 @@ test('cloud sync panel api public surface clones runtime status and snapshot rea
     room: 'room-a',
     isPublic: false,
     status: 'online',
+    credentialState: 'missing',
+    credentialExpiresAt: '',
+    retryAt: 0,
+    failureKind: '',
     floatingSync: true,
   });
   assert.equal(panelSnapshot.room, 'room-a');

@@ -25,6 +25,7 @@ export function createCloudSyncPanelSnapshotController(
     App: deps.App,
     reportNonFatal: deps.reportNonFatal,
     subscribeFloatingSketchSyncEnabledState: deps.subscribeFloatingSketchSyncEnabledState,
+    subscribeRuntimeStatus: deps.subscribeRuntimeStatus,
     subscribeSite2TabsGateSnapshot: deps.subscribeSite2TabsGateSnapshot,
     now: deps.now,
     setTimeoutFn: typeof deps.setTimeoutFn === 'function' ? deps.setTimeoutFn : timers.setTimeout,

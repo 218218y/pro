@@ -89,7 +89,7 @@ test('cloud sync panel api single-flights duplicate inflight async commands and 
     changed: true,
     mode: 'private',
     room: 'room-single-flight',
-    shareLink: 'https://example.test/?room=room-single-flight&roomToken=signed-single-flight-token',
+    shareLink: 'https://example.test/#room=room-single-flight&roomToken=signed-single-flight-token',
   });
 
   const syncA = api.syncSketchNow?.();

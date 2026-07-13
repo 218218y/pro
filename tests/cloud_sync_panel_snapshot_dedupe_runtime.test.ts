@@ -19,6 +19,10 @@ test('cloud sync panel snapshot controller suppresses duplicate panel publishes 
       readCount += 1;
       return 'public';
     },
+    runtimeStatus: {
+      credential: { state: 'public', expiresAt: '', retryAt: 0, failureKind: '' },
+    },
+    subscribeRuntimeStatus: () => () => {},
     getFloatingSketchSyncEnabled: () => floatingEnabled,
     subscribeFloatingSketchSyncEnabledState: fn => {
       sourceListener = () => fn(floatingEnabled);
@@ -66,6 +70,10 @@ test('cloud sync panel snapshot controller suppresses duplicate tabs-gate publis
     getSite2TabsGateSnapshot: () => ({ ...snapshot }) as any,
     now: () => now,
     getCurrentRoom: () => 'public',
+    runtimeStatus: {
+      credential: { state: 'public', expiresAt: '', retryAt: 0, failureKind: '' },
+    },
+    subscribeRuntimeStatus: () => () => {},
     getFloatingSketchSyncEnabled: () => false,
     subscribeFloatingSketchSyncEnabledState: () => () => {},
     reportNonFatal: () => undefined,
@@ -121,6 +129,10 @@ test('cloud sync panel snapshot controller does not create deadline timer until 
     getSite2TabsGateSnapshot: () => ({ open: true, until: 121_000, minutesLeft: 2 }) as any,
     now: () => 1_000,
     getCurrentRoom: () => 'public',
+    runtimeStatus: {
+      credential: { state: 'public', expiresAt: '', retryAt: 0, failureKind: '' },
+    },
+    subscribeRuntimeStatus: () => () => {},
     getFloatingSketchSyncEnabled: () => false,
     subscribeFloatingSketchSyncEnabledState: () => () => {},
     reportNonFatal: () => undefined,

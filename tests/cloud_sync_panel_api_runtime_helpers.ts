@@ -14,6 +14,7 @@ export type CloudSyncPanelApiTestRig = {
     currentRoom: string;
     privateRoom: string;
     privateRoomToken: string;
+    privateExpiresAt: string;
     floatingEnabled: boolean;
     tabsGateSnapshot: { open: boolean; until: number; minutesLeft: number };
   };
@@ -31,12 +32,18 @@ export function createCloudSyncPanelApiTestRig(overrides: OverrideBag = {}): Clo
   const pushed: AnyRecord[] = [];
   const patched: AnyRecord[] = [];
   const storage = new Map<string, string>();
-  const status = { diagEnabled: false, room: 'public', online: true } as AnyRecord;
+  const status = {
+    diagEnabled: false,
+    room: 'public',
+    online: true,
+    credential: { state: 'public', expiresAt: '', retryAt: 0, failureKind: '' },
+  } as AnyRecord;
 
   const state = {
     currentRoom: 'public',
     privateRoom: '',
     privateRoomToken: '',
+    privateExpiresAt: '',
     floatingEnabled: true,
     tabsGateSnapshot: { open: false, until: 0, minutesLeft: 0 },
   };
@@ -45,6 +52,7 @@ export function createCloudSyncPanelApiTestRig(overrides: OverrideBag = {}): Clo
   const tabsGateUntilRef = { value: 0 };
   let floatingSubscriber: ((enabled: boolean) => void) | null = null;
   let tabsGateSnapshotSubscriber: ((snapshot: AnyRecord) => void) | null = null;
+  let runtimeStatusSubscriber: ((status: AnyRecord) => void) | null = null;
 
   const defaults: OverrideBag = {
     App: {} as any,
@@ -69,12 +77,27 @@ export function createCloudSyncPanelApiTestRig(overrides: OverrideBag = {}): Clo
       };
     },
     getCurrentRoom: () => state.currentRoom,
-    getCurrentRoomToken: () => (state.currentRoom === state.privateRoom ? state.privateRoomToken : ''),
-    getPrivateRoom: () => state.privateRoom,
-    getPrivateRoomToken: () => state.privateRoomToken,
-    setPrivateRoomCredential: (room: string, token: string) => {
-      state.privateRoom = room;
-      state.privateRoomToken = token;
+    getCurrentRoomCredential: () =>
+      state.currentRoom === state.privateRoom && state.privateRoomToken
+        ? {
+            room: state.privateRoom,
+            token: state.privateRoomToken,
+            expiresAt: state.privateExpiresAt,
+          }
+        : null,
+    getPrivateRoomCredential: () =>
+      state.privateRoom && state.privateRoomToken
+        ? {
+            room: state.privateRoom,
+            token: state.privateRoomToken,
+            expiresAt: state.privateExpiresAt,
+          }
+        : null,
+    setPrivateRoomCredential: (credential: { room: string; token: string; expiresAt: string }) => {
+      state.privateRoom = credential.room;
+      state.privateRoomToken = credential.token;
+      state.privateExpiresAt = credential.expiresAt;
+      return true;
     },
     issuePrivateRoom: async () => ({
       room: 'generated-room',
@@ -88,6 +111,12 @@ export function createCloudSyncPanelApiTestRig(overrides: OverrideBag = {}): Clo
       status.diagEnabled = true;
     },
     publishStatus: () => {},
+    subscribeRuntimeStatus: (fn: (next: AnyRecord) => void) => {
+      runtimeStatusSubscriber = fn;
+      return () => {
+        if (runtimeStatusSubscriber === fn) runtimeStatusSubscriber = null;
+      };
+    },
     diag: () => {},
     getDiagStorageMaybe: () => ({ setItem: (key: string, value: string) => storage.set(key, value) }) as any,
     getClipboardMaybe: () =>

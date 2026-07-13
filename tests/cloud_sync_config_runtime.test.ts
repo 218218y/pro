@@ -113,12 +113,13 @@ test('cloud sync config browser helpers keep URL params and site2 detection cano
   });
   assert.equal(
     (App.deps as AnyRecord).browser.location.href,
-    'https://example.com/index_site2.html?room=private-room&roomToken=signed.token.value#viewer'
+    'https://example.com/index_site2.html#room=private-room&roomToken=signed.token.value'
   );
+  assert.equal(getRoomFromUrl(App as any, 'room'), 'private-room');
   assert.equal(removeRoomTokenFromUrl(App as any, 'roomToken'), true);
   assert.equal(
     (App.deps as AnyRecord).browser.location.href,
-    'https://example.com/index_site2.html?room=private-room#viewer'
+    'https://example.com/index_site2.html#room=private-room'
   );
   assert.equal(isExplicitSite2Bundle(App as any), true);
 });

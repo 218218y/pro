@@ -1,4 +1,4 @@
-import type { CloudSyncRoomModeCommandResult } from '../../../types';
+import type { CloudSyncRoomCredential, CloudSyncRoomModeCommandResult } from '../../../types';
 
 import { normalizeUnknownError } from '../runtime/error_normalization.js';
 
@@ -12,22 +12,24 @@ import {
 async function resolvePrivateRoomCredential(
   deps: CloudSyncRoomCommandDeps,
   currentRoom: string
-): Promise<{ room: string; token: string } | null> {
+): Promise<CloudSyncRoomCredential | null> {
   const current = readRoomString(currentRoom);
   const publicRoom = readRoomString(deps.cfg.publicRoom);
-  const currentToken = readRoomString(deps.getCurrentRoomToken());
-  if (current && current !== publicRoom && currentToken) return { room: current, token: currentToken };
+  const currentCredential = deps.getCurrentRoomCredential();
+  if (current && current !== publicRoom && currentCredential?.room === current) return currentCredential;
 
-  const storedRoom = readRoomString(deps.getPrivateRoom());
-  const storedToken = readRoomString(deps.getPrivateRoomToken());
-  if (storedRoom && storedToken) return { room: storedRoom, token: storedToken };
+  const storedCredential = deps.getPrivateRoomCredential();
+  if (storedCredential) return storedCredential;
 
   const issued = await deps.issuePrivateRoom();
   const room = readRoomString(issued?.room);
   const token = readRoomString(issued?.token);
   if (!room || !token) return null;
-  deps.setPrivateRoomCredential(room, token);
-  return { room, token };
+  const expiresAt = readRoomString(issued?.expiresAt);
+  if (!expiresAt) return null;
+  const credential = { room, token, expiresAt };
+  if (!deps.setPrivateRoomCredential(credential)) return null;
+  return credential;
 }
 
 export async function runCloudSyncRoomModeCommand(

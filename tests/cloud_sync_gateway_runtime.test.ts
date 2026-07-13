@@ -5,6 +5,7 @@ import {
   createPrivateRoomCredential,
   getGatewayRow,
   issuePublicRoomCredential,
+  renewPrivateRoomCredential,
   writeGatewayRow,
 } from '../esm/native/services/cloud_sync_gateway.ts';
 
@@ -16,7 +17,7 @@ const gateway = {
 
 test('cloud sync gateway reads only through a signed room request and normalizes the row contract', async () => {
   const requests: Array<{ url: string; init?: RequestInit }> = [];
-  const row = await getGatewayRow({
+  const result = await getGatewayRow({
     ...gateway,
     room: 'room_a::sketch',
     roomToken: 'signed.token.value',
@@ -44,10 +45,11 @@ test('cloud sync gateway reads only through a signed room request and normalizes
     },
   });
 
-  assert.equal(row?.room, 'room_a::sketch');
-  assert.equal(row?.revision, 7);
-  assert.equal(row?.updated_by, 'client-a');
-  assert.equal((row?.payload as Record<string, unknown>).sketchHash, 'hash-1');
+  assert.equal(result.ok, true);
+  assert.equal(result.ok && result.row?.room, 'room_a::sketch');
+  assert.equal(result.ok && result.row?.revision, 7);
+  assert.equal(result.ok && result.row?.updated_by, 'client-a');
+  assert.equal(result.ok && (result.row?.payload as Record<string, unknown>).sketchHash, 'hash-1');
   assert.equal(requests[0]?.url, gateway.gatewayUrl);
   assert.equal(requests[0]?.init?.method, 'POST');
   const body = JSON.parse(String(requests[0]?.init?.body || '{}'));
@@ -61,7 +63,7 @@ test('cloud sync gateway reads only through a signed room request and normalizes
 });
 
 test('cloud sync gateway returns null for a missing room without exposing a table query', async () => {
-  const row = await getGatewayRow({
+  const result = await getGatewayRow({
     ...gateway,
     room: 'room_missing',
     roomToken: 'signed.token.value',
@@ -71,7 +73,7 @@ test('cloud sync gateway returns null for a missing room without exposing a tabl
       json: async () => ({ ok: true, row: null }),
     }),
   });
-  assert.equal(row, null);
+  assert.deepEqual(result, { ok: true, row: null });
 });
 
 test('cloud sync gateway writes with an expected revision and parses the committed revision', async () => {
@@ -170,7 +172,87 @@ test('cloud sync gateway issues public and private signed credentials without ac
   const publicCredential = await issuePublicRoomCredential({ ...gateway, fetchFn });
   const privateCredential = await createPrivateRoomCredential({ ...gateway, fetchFn });
 
-  assert.equal(publicCredential?.room, 'public');
-  assert.equal(privateCredential?.room, 'room_server_generated');
+  assert.equal(publicCredential.ok && publicCredential.credential.room, 'public');
+  assert.equal(privateCredential.ok && privateCredential.credential.room, 'room_server_generated');
   assert.deepEqual(actions, ['issue-public', 'create-room']);
+});
+
+test('cloud sync gateway preserves auth expiry, rate-limit, and network failures', async () => {
+  const expired = await getGatewayRow({
+    ...gateway,
+    room: 'room_a',
+    roomToken: 'expired.token.value',
+    fetchFn: async () => ({
+      ok: false,
+      status: 403,
+      json: async () => ({ ok: false, code: 'room_token_expired' }),
+    }),
+  });
+  assert.deepEqual(expired, {
+    ok: false,
+    failure: { kind: 'auth-expired', status: 403, code: 'room_token_expired' },
+  });
+
+  const limited = await writeGatewayRow({
+    ...gateway,
+    room: 'room_a',
+    roomToken: 'signed.token.value',
+    payload: {},
+    expectedRevision: 1,
+    clientId: 'client-a',
+    fetchFn: async () => ({
+      ok: false,
+      status: 429,
+      headers: { get: name => (name === 'Retry-After' ? '12' : null) },
+      json: async () => ({ ok: false, code: 'rate_limit', retryAfterSeconds: 60 }),
+    }),
+  });
+  assert.deepEqual(limited, {
+    ok: false,
+    failure: { kind: 'rate-limit', status: 429, code: 'rate_limit', retryAfterMs: 12_000 },
+  });
+
+  const offline = await getGatewayRow({
+    ...gateway,
+    room: 'room_a',
+    roomToken: 'signed.token.value',
+    fetchFn: async () => {
+      throw new Error('offline');
+    },
+  });
+  assert.deepEqual(offline, {
+    ok: false,
+    failure: { kind: 'network', message: 'offline' },
+  });
+});
+
+test('cloud sync gateway renews a private room without allowing a room change', async () => {
+  let requestBody: Record<string, unknown> = {};
+  const result = await renewPrivateRoomCredential({
+    ...gateway,
+    room: 'room_a',
+    roomToken: 'old.signed.token',
+    fetchFn: async (_url, init) => {
+      requestBody = JSON.parse(String(init?.body || '{}')) as Record<string, unknown>;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          ok: true,
+          credential: {
+            room: 'room_a',
+            token: 'new.signed.token',
+            expiresAt: '2026-07-20T08:00:00.000Z',
+          },
+        }),
+      };
+    },
+  });
+  assert.equal(result.ok && result.credential.token, 'new.signed.token');
+  assert.deepEqual(requestBody, {
+    action: 'renew-room',
+    storeId: 'bargig',
+    room: 'room_a',
+    roomToken: 'old.signed.token',
+  });
 });

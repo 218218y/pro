@@ -24,6 +24,10 @@ const FALLBACK_PANEL_SNAPSHOT: CloudSyncPanelSnapshot = {
   room: '',
   isPublic: null,
   status: 'סנכרון לא פעיל',
+  credentialState: 'offline',
+  credentialExpiresAt: '',
+  retryAt: 0,
+  failureKind: 'network',
   floatingSync: false,
 };
 
@@ -39,6 +43,10 @@ function readCloudSyncPanelSnapshot(api: CloudSyncServiceLike | undefined): Clou
             typeof snapshot.status === 'string' && snapshot.status
               ? snapshot.status
               : FALLBACK_PANEL_SNAPSHOT.status,
+          credentialState: snapshot.credentialState || 'missing',
+          credentialExpiresAt: snapshot.credentialExpiresAt || '',
+          retryAt: Number(snapshot.retryAt) || 0,
+          failureKind: snapshot.failureKind || '',
           floatingSync: !!snapshot.floatingSync,
         };
       }
@@ -54,6 +62,10 @@ function readCloudSyncPanelSnapshot(api: CloudSyncServiceLike | undefined): Clou
           ? 'מצב: ציבורי (כולם רואים)'
           : `מצב: חדר פרטי (${room})`
         : FALLBACK_PANEL_SNAPSHOT.status,
+      credentialState: room === publicRoom ? 'public' : 'missing',
+      credentialExpiresAt: '',
+      retryAt: 0,
+      failureKind: '',
       floatingSync: api?.isFloatingSketchSyncEnabled ? !!api.isFloatingSketchSyncEnabled() : false,
     };
   } catch {
@@ -72,6 +84,10 @@ function useCloudSyncPanelSnapshot(api: CloudSyncServiceLike | undefined): Cloud
       prev.room === next.room &&
       prev.isPublic === next.isPublic &&
       prev.status === next.status &&
+      prev.credentialState === next.credentialState &&
+      prev.credentialExpiresAt === next.credentialExpiresAt &&
+      prev.retryAt === next.retryAt &&
+      prev.failureKind === next.failureKind &&
       prev.floatingSync === next.floatingSync
     ) {
       return prev;

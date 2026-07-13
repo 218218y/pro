@@ -38,10 +38,13 @@ test('cloud sync panel api uses injected browser seams for prompt fallback and g
     site2TabsTtlMs: 60_000,
     now: () => 42_000,
     getCurrentRoom: () => 'private-x',
-    getCurrentRoomToken: () => 'signed-private-x',
-    getPrivateRoom: () => '',
-    getPrivateRoomToken: () => '',
-    setPrivateRoomCredential: () => {},
+    getCurrentRoomCredential: () => ({
+      room: 'private-x',
+      token: 'signed-private-x',
+      expiresAt: '2099-01-01T00:00:00.000Z',
+    }),
+    getPrivateRoomCredential: () => null,
+    setPrivateRoomCredential: () => true,
     issuePrivateRoom: async () => null,
     setRoomCredentialInUrl: () => true,
     cloneRuntimeStatus: status => ({
@@ -52,6 +55,7 @@ test('cloud sync panel api uses injected browser seams for prompt fallback and g
     runtimeStatus,
     updateDiagEnabled: () => {},
     publishStatus: () => {},
+    subscribeRuntimeStatus: () => () => {},
     diag: () => {},
     getDiagStorageMaybe: () => null,
     getClipboardMaybe: () => null,
@@ -103,9 +107,9 @@ test('cloud sync panel api uses injected browser seams for prompt fallback and g
   assert.deepEqual(copied, {
     ok: true,
     prompted: true,
-    link: 'https://example.test/?room=private-x&roomToken=signed-private-x',
+    link: 'https://example.test/#room=private-x&roomToken=signed-private-x',
   });
-  assert.equal(seen.get('prompt'), 'https://example.test/?room=private-x&roomToken=signed-private-x');
+  assert.equal(seen.get('prompt'), 'https://example.test/#room=private-x&roomToken=signed-private-x');
 
   assert.deepEqual(await api.setSite2TabsGateOpen?.(true), {
     ok: true,

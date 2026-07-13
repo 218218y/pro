@@ -14,6 +14,7 @@ import {
 import { resolveCloudSyncClientId } from './cloud_sync_owner_context_runtime_client.js';
 import { createCloudSyncOwnerRooms } from './cloud_sync_owner_context_rooms.js';
 import { createCloudSyncOwnerStatusRuntime } from './cloud_sync_owner_context_diag.js';
+import { buildCloudSyncCredentialStatus } from './cloud_sync_room_credentials.js';
 import { reserveCloudSyncPublicationEpoch } from './cloud_sync_install_support.js';
 import {
   getClipboardMaybe,
@@ -37,13 +38,12 @@ export function createCloudSyncOwnerContext(App: AppContainer): CloudSyncOwnerCo
   const {
     room,
     currentRoom,
-    getPrivateRoom,
+    getPrivateRoomCredential,
     getGateBaseRoom,
     getSketchRoom,
     getSite2TabsRoom,
     getFloatingSyncRoom,
-    currentRoomToken,
-    getPrivateRoomToken,
+    currentRoomCredential,
     setPrivateRoomCredential,
   } = createCloudSyncOwnerRooms({
     App,
@@ -53,25 +53,6 @@ export function createCloudSyncOwnerContext(App: AppContainer): CloudSyncOwnerCo
   });
 
   const clientId = resolveCloudSyncClientId(App, _cloudSyncReportNonFatal);
-  const gatewayIo = createCloudSyncOwnerGatewayIo({
-    App,
-    cfg,
-    gatewayUrl,
-    rooms: {
-      room,
-      currentRoom,
-      currentRoomToken,
-      getPrivateRoom,
-      getPrivateRoomToken,
-      setPrivateRoomCredential,
-      getGateBaseRoom,
-      getSketchRoom,
-      getSite2TabsRoom,
-      getFloatingSyncRoom,
-    },
-    clientId,
-  });
-  if (!gatewayIo) return null;
   const publicationEpoch = reserveCloudSyncPublicationEpoch(App);
   const statusRuntime = createCloudSyncOwnerStatusRuntime({
     App,
@@ -81,6 +62,30 @@ export function createCloudSyncOwnerContext(App: AppContainer): CloudSyncOwnerCo
     publicationEpoch,
     reportNonFatal: _cloudSyncReportNonFatal,
   });
+  statusRuntime.runtimeStatus.credential = buildCloudSyncCredentialStatus({
+    isPublic: room === cfg.publicRoom,
+    credential: currentRoomCredential(),
+  });
+  const gatewayIo = createCloudSyncOwnerGatewayIo({
+    App,
+    cfg,
+    gatewayUrl,
+    rooms: {
+      room,
+      currentRoom,
+      currentRoomCredential,
+      getPrivateRoomCredential,
+      setPrivateRoomCredential,
+      getGateBaseRoom,
+      getSketchRoom,
+      getSite2TabsRoom,
+      getFloatingSyncRoom,
+    },
+    clientId,
+    runtimeStatus: statusRuntime.runtimeStatus,
+    publishStatus: statusRuntime.publishStatus,
+  });
+  if (!gatewayIo) return null;
 
   statusRuntime.updateDiagEnabled();
   statusRuntime.publishStatus();
@@ -103,9 +108,8 @@ export function createCloudSyncOwnerContext(App: AppContainer): CloudSyncOwnerCo
     keyHiddenPresets,
     room,
     currentRoom,
-    currentRoomToken,
-    getPrivateRoom,
-    getPrivateRoomToken,
+    currentRoomCredential,
+    getPrivateRoomCredential,
     setPrivateRoomCredential,
     getGateBaseRoom,
     getSketchRoom,
@@ -122,6 +126,7 @@ export function createCloudSyncOwnerContext(App: AppContainer): CloudSyncOwnerCo
     diagEnabledRef: statusRuntime.diagEnabledRef,
     updateDiagEnabled: statusRuntime.updateDiagEnabled,
     publishStatus: statusRuntime.publishStatus,
+    subscribeRuntimeStatus: statusRuntime.subscribeRuntimeStatus,
     diag: statusRuntime.diag,
   };
 }

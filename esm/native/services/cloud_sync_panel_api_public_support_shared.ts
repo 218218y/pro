@@ -16,6 +16,10 @@ export function cloneCloudSyncPanelSnapshot(snapshot: CloudSyncPanelSnapshot): C
     room: snapshot.room || '',
     isPublic: typeof snapshot.isPublic === 'boolean' ? snapshot.isPublic : null,
     status: snapshot.status || 'offline',
+    credentialState: snapshot.credentialState || 'missing',
+    credentialExpiresAt: snapshot.credentialExpiresAt || '',
+    retryAt: Number(snapshot.retryAt) || 0,
+    failureKind: snapshot.failureKind || '',
     floatingSync: !!snapshot.floatingSync,
   };
 }
@@ -25,6 +29,10 @@ export function getUnavailableCloudSyncPanelSnapshot(): CloudSyncPanelSnapshot {
     room: '',
     isPublic: null,
     status: 'offline',
+    credentialState: 'offline',
+    credentialExpiresAt: '',
+    retryAt: 0,
+    failureKind: 'network',
     floatingSync: false,
   };
 }
@@ -36,6 +44,27 @@ export function cloneCloudSyncPublicPanelSnapshot(snapshot: unknown): CloudSyncP
     room: typeof rec.room === 'string' ? rec.room : '',
     isPublic: typeof rec.isPublic === 'boolean' ? rec.isPublic : null,
     status: typeof rec.status === 'string' && rec.status ? rec.status : 'offline',
+    credentialState:
+      rec.credentialState === 'public' ||
+      rec.credentialState === 'active' ||
+      rec.credentialState === 'expiring' ||
+      rec.credentialState === 'expired' ||
+      rec.credentialState === 'missing' ||
+      rec.credentialState === 'rate-limited' ||
+      rec.credentialState === 'offline' ||
+      rec.credentialState === 'error'
+        ? rec.credentialState
+        : 'missing',
+    credentialExpiresAt: typeof rec.credentialExpiresAt === 'string' ? rec.credentialExpiresAt : '',
+    retryAt: Number(rec.retryAt) || 0,
+    failureKind:
+      rec.failureKind === 'auth-expired' ||
+      rec.failureKind === 'auth-invalid' ||
+      rec.failureKind === 'rate-limit' ||
+      rec.failureKind === 'network' ||
+      rec.failureKind === 'server'
+        ? rec.failureKind
+        : '',
     floatingSync: !!rec.floatingSync,
   });
 }
@@ -78,6 +107,12 @@ export function getUnavailableCloudSyncRuntimeStatus(): CloudSyncRuntimeStatus {
     lastPushAt: 0,
     lastRealtimeEventAt: 0,
     lastError: 'unavailable',
+    credential: {
+      state: 'offline',
+      expiresAt: '',
+      retryAt: 0,
+      failureKind: 'network',
+    },
     diagEnabled: false,
   };
 }

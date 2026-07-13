@@ -16,6 +16,10 @@ function cloneCloudSyncRoomStatusSnapshot(
     room: snapshot.room,
     isPublic: snapshot.isPublic,
     status: snapshot.status,
+    credentialState: snapshot.credentialState,
+    credentialExpiresAt: snapshot.credentialExpiresAt,
+    retryAt: snapshot.retryAt,
+    failureKind: snapshot.failureKind,
   };
 }
 
@@ -52,21 +56,29 @@ export function createCloudSyncPanelSnapshotReaders(
     now,
     getCurrentRoom,
     getFloatingSketchSyncEnabled,
+    runtimeStatus,
     reportNonFatal,
   } = deps;
 
   const panelApiOp = (name: string): string => buildCloudSyncPanelApiOp(name);
-
   const readLocalSite2TabsGateSnapshot = (): CloudSyncSite2TabsGateSnapshot =>
     readLocalCloudSyncSite2TabsGateSnapshot({ tabsGateOpenRef, tabsGateUntilRef, now });
 
   const readRoomStatusSnapshot = (roomOverride?: string | null): CloudSyncRoomStatusSnapshot => {
     try {
       const room = typeof roomOverride === 'string' ? roomOverride : getCurrentRoom();
-      return describeCloudSyncRoomStatus(room, cfg.publicRoom);
+      return describeCloudSyncRoomStatus(room, cfg.publicRoom, runtimeStatus.credential);
     } catch (__wpErr) {
       reportNonFatal(App, panelApiOp('roomStatusSnapshot'), __wpErr, { throttleMs: 4000 });
-      return { room: '', isPublic: null, status: 'סנכרון לא פעיל' };
+      return {
+        room: '',
+        isPublic: null,
+        status: 'סנכרון לא פעיל',
+        credentialState: 'missing',
+        credentialExpiresAt: '',
+        retryAt: 0,
+        failureKind: '',
+      };
     }
   };
 
@@ -95,9 +107,5 @@ export function createCloudSyncPanelSnapshotReaders(
     }
   };
 
-  return {
-    readRoomStatusSnapshot,
-    readPanelSnapshot,
-    readSite2TabsGateSnapshot,
-  };
+  return { readRoomStatusSnapshot, readPanelSnapshot, readSite2TabsGateSnapshot };
 }

@@ -266,7 +266,7 @@ function normalizeModuleSpecialDimsSnapshot(
 
 function buildSmokeAppUrl(): string {
   const room = `e2e-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-  return `/index_pro.html?room=${encodeURIComponent(room)}&roomToken=e2e-signed-room-token`;
+  return `/index_pro.html#room=${encodeURIComponent(room)}&roomToken=e2e-signed-room-token`;
 }
 
 async function installCloudSyncGatewayIsolation(page: Page): Promise<void> {

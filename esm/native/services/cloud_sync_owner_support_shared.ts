@@ -16,9 +16,8 @@ export type CloudSyncPanelApiInstallDeps = Pick<
   | 'site2TabsTtlMs'
   | 'now'
   | 'getCurrentRoom'
-  | 'getCurrentRoomToken'
-  | 'getPrivateRoom'
-  | 'getPrivateRoomToken'
+  | 'getCurrentRoomCredential'
+  | 'getPrivateRoomCredential'
   | 'setPrivateRoomCredential'
   | 'issuePrivateRoom'
   | 'setRoomCredentialInUrl'
@@ -26,6 +25,7 @@ export type CloudSyncPanelApiInstallDeps = Pick<
   | 'runtimeStatus'
   | 'updateDiagEnabled'
   | 'publishStatus'
+  | 'subscribeRuntimeStatus'
   | 'diag'
   | 'getDiagStorageMaybe'
   | 'getClipboardMaybe'
@@ -63,9 +63,8 @@ export function buildCloudSyncPanelApiDeps(deps: CloudSyncPanelApiInstallDeps): 
     site2TabsTtlMs: deps.site2TabsTtlMs,
     now: deps.now,
     getCurrentRoom: deps.getCurrentRoom,
-    getCurrentRoomToken: deps.getCurrentRoomToken,
-    getPrivateRoom: deps.getPrivateRoom,
-    getPrivateRoomToken: deps.getPrivateRoomToken,
+    getCurrentRoomCredential: deps.getCurrentRoomCredential,
+    getPrivateRoomCredential: deps.getPrivateRoomCredential,
     setPrivateRoomCredential: deps.setPrivateRoomCredential,
     issuePrivateRoom: deps.issuePrivateRoom,
     setRoomCredentialInUrl: deps.setRoomCredentialInUrl,
@@ -73,6 +72,7 @@ export function buildCloudSyncPanelApiDeps(deps: CloudSyncPanelApiInstallDeps): 
     runtimeStatus: deps.runtimeStatus,
     updateDiagEnabled: deps.updateDiagEnabled,
     publishStatus: deps.publishStatus,
+    subscribeRuntimeStatus: deps.subscribeRuntimeStatus,
     diag: deps.diag,
     getDiagStorageMaybe: deps.getDiagStorageMaybe,
     getClipboardMaybe: deps.getClipboardMaybe,

@@ -8,6 +8,12 @@ import { _cloudSyncReportNonFatal } from './cloud_sync_support.js';
 
 export function getRoomFromUrl(App: AppContainer, roomParam: string): string | null {
   try {
+    const w = getWindowMaybe(App);
+    const href = w?.location && typeof w.location.href === 'string' ? w.location.href : '';
+    const hash = href ? new URL(href).hash.replace(/^#\??/u, '') : '';
+    const hashValue = String(new URLSearchParams(hash).get(roomParam) || '').trim();
+    if (hashValue) return hashValue;
+    // Narrow external compatibility boundary for links generated before Credential v2.
     const search = getLocationSearchMaybe(App) || '';
     const sp = new URLSearchParams(search);
     const v = String(sp.get(roomParam) || '').trim();
@@ -33,14 +39,15 @@ export function setRoomCredentialInUrl(
     if (!href) return false;
 
     const url = new URL(href);
-    if (!args.room) url.searchParams.delete(args.roomParam);
-    else url.searchParams.set(args.roomParam, args.room);
-    if (args.roomTokenParam) {
-      if (!args.roomToken) url.searchParams.delete(args.roomTokenParam);
-      else url.searchParams.set(args.roomTokenParam, args.roomToken);
-    }
+    url.searchParams.delete(args.roomParam);
+    if (args.roomTokenParam) url.searchParams.delete(args.roomTokenParam);
 
-    // Keep hash.
+    const fragment = new URLSearchParams();
+    if (args.room) fragment.set(args.roomParam, args.room);
+    if (args.roomTokenParam && args.roomToken) {
+      fragment.set(args.roomTokenParam, args.roomToken);
+    }
+    url.hash = fragment.toString();
     if (!w?.location) return false;
     w.location.href = url.toString();
     return true;
@@ -57,8 +64,18 @@ export function removeRoomTokenFromUrl(App: AppContainer, roomTokenParam: string
     const href = w && w.location && typeof w.location.href === 'string' ? String(w.location.href) : '';
     if (!tokenParam || !href || !w?.history?.replaceState) return false;
     const url = new URL(href);
-    if (!url.searchParams.has(tokenParam)) return true;
-    url.searchParams.delete(tokenParam);
+    let changed = false;
+    if (url.searchParams.has(tokenParam)) {
+      url.searchParams.delete(tokenParam);
+      changed = true;
+    }
+    const fragment = new URLSearchParams(url.hash.replace(/^#\??/u, ''));
+    if (fragment.has(tokenParam)) {
+      fragment.delete(tokenParam);
+      url.hash = fragment.toString();
+      changed = true;
+    }
+    if (!changed) return true;
     w.history.replaceState(w.history.state, '', url.toString());
     return true;
   } catch (e) {
