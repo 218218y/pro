@@ -90,7 +90,7 @@ function readStoredPrivateCredential(args: {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
     const rec = value as Record<string, unknown>;
     const credential = normalizeCloudSyncRoomCredential(rec, {
-      allowTokenExpiryFallback: rec.schemaVersion === 1,
+      deriveExpiresAtFromToken: rec.schemaVersion === 1,
     });
     if (!credential || (rec.schemaVersion !== 1 && rec.schemaVersion !== 2)) return null;
     if (rec.schemaVersion === 1) {
@@ -116,7 +116,7 @@ export function createCloudSyncOwnerRooms(args: {
   if (room !== cfg.publicRoom && initialRoomToken) {
     const initialCredential = normalizeCloudSyncRoomCredential(
       { room, token: initialRoomToken },
-      { allowTokenExpiryFallback: true }
+      { deriveExpiresAtFromToken: true }
     );
     const persisted = initialCredential
       ? writeStoredPrivateCredential({ App, storage, reportNonFatal, credential: initialCredential })
@@ -142,7 +142,7 @@ export function createCloudSyncOwnerRooms(args: {
     if (urlToken) {
       return normalizeCloudSyncRoomCredential(
         { room: current, token: urlToken },
-        { allowTokenExpiryFallback: true }
+        { deriveExpiresAtFromToken: true }
       );
     }
     const stored = getPrivateRoomCredential();

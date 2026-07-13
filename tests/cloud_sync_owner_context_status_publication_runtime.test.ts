@@ -115,3 +115,31 @@ test('cloud sync owner status publisher keeps its memo in sync after a publish-f
   assert.equal(state.status, heldStatus);
   assert.equal(isCloudSyncStatusSurfaceFresh(state.status, runtimeStatus as any), true);
 });
+
+test('cloud sync owner status publisher owns subscriber fanout, disposal, and error isolation', () => {
+  const App = createApp();
+  const runtimeStatus = createRuntimeStatus();
+  const reports: string[] = [];
+  const seen: number[] = [];
+  const publisher = createCloudSyncOwnerStatusPublisher({
+    App,
+    runtimeStatus: runtimeStatus as any,
+    publicationEpoch: 1,
+    reportNonFatal: (_App, operation) => reports.push(operation),
+  });
+  const disposeThrowing = publisher.subscribeRuntimeStatus(() => {
+    throw new Error('subscriber failed');
+  });
+  const disposeSeen = publisher.subscribeRuntimeStatus(status => seen.push(status.lastPullAt));
+
+  runtimeStatus.lastPullAt = 12;
+  publisher.publishStatus();
+  assert.deepEqual(seen, [12]);
+  assert.deepEqual(reports, ['diag.runtimeStatusSubscriber']);
+
+  disposeThrowing();
+  disposeSeen();
+  runtimeStatus.lastPullAt = 13;
+  publisher.publishStatus();
+  assert.deepEqual(seen, [12]);
+});

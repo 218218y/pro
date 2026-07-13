@@ -53,10 +53,12 @@ export function createCloudSyncOwnerStatusPublisher(args: {
   reportNonFatal: CloudSyncReportNonFatal;
 }): {
   publishStatus: () => void;
+  subscribeRuntimeStatus: (fn: (status: CloudSyncRuntimeStatus) => void) => () => void;
   readLastPublishedStatusSnapshot: () => string;
 } {
   const { App, runtimeStatus, publicationEpoch, reportNonFatal } = args;
   let lastPublishedStatusSnapshot = '';
+  const statusSubscribers = new Set<(status: CloudSyncRuntimeStatus) => void>();
 
   const publishStatus = (): void => {
     try {
@@ -72,10 +74,21 @@ export function createCloudSyncOwnerStatusPublisher(args: {
     } catch (error) {
       reportNonFatal(App, 'diag.publishStatus', error, { throttleMs: 8000, noConsole: true });
     }
+    for (const subscriber of statusSubscribers) {
+      try {
+        subscriber(runtimeStatus);
+      } catch (error) {
+        reportNonFatal(App, 'diag.runtimeStatusSubscriber', error, { throttleMs: 4000 });
+      }
+    }
   };
 
   return {
     publishStatus,
+    subscribeRuntimeStatus: (fn: (status: CloudSyncRuntimeStatus) => void): (() => void) => {
+      statusSubscribers.add(fn);
+      return () => statusSubscribers.delete(fn);
+    },
     readLastPublishedStatusSnapshot: (): string => lastPublishedStatusSnapshot,
   };
 }

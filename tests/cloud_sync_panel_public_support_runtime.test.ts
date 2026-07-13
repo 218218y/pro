@@ -19,6 +19,10 @@ test('cloud sync public support clones panel and tabs-gate snapshots canonically
     room: '',
     isPublic: null,
     status: 'offline',
+    credentialState: 'offline',
+    credentialExpiresAt: '',
+    retryAt: 0,
+    failureKind: 'network',
     floatingSync: false,
   });
 
@@ -33,6 +37,10 @@ test('cloud sync public support clones panel and tabs-gate snapshots canonically
       room: 'room-a',
       isPublic: true,
       status: 'online',
+      credentialState: 'missing',
+      credentialExpiresAt: '',
+      retryAt: 0,
+      failureKind: '',
       floatingSync: true,
     }
   );
@@ -118,18 +126,23 @@ test('cloud sync public runtime status clone falls back to unavailable canonical
 });
 
 test('cloud sync panel support snapshot equality stays canonical across exact clones only', () => {
+  const panelSnapshot = {
+    room: 'room-a',
+    isPublic: false,
+    status: 'private',
+    credentialState: 'active' as const,
+    credentialExpiresAt: '2030-01-01T00:00:00.000Z',
+    retryAt: 0,
+    failureKind: '',
+    floatingSync: true,
+  };
+  assert.equal(areCloudSyncPanelSnapshotsEqual(panelSnapshot, { ...panelSnapshot }), true);
   assert.equal(
-    areCloudSyncPanelSnapshotsEqual(
-      { room: 'room-a', isPublic: false, status: 'private', floatingSync: true },
-      { room: 'room-a', isPublic: false, status: 'private', floatingSync: true }
-    ),
-    true
+    areCloudSyncPanelSnapshotsEqual(panelSnapshot, { ...panelSnapshot, floatingSync: false }),
+    false
   );
   assert.equal(
-    areCloudSyncPanelSnapshotsEqual(
-      { room: 'room-a', isPublic: false, status: 'private', floatingSync: true },
-      { room: 'room-a', isPublic: false, status: 'private', floatingSync: false }
-    ),
+    areCloudSyncPanelSnapshotsEqual(panelSnapshot, { ...panelSnapshot, credentialState: 'expired' }),
     false
   );
 

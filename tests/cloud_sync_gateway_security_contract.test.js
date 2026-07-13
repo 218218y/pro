@@ -83,7 +83,7 @@ test('private room credentials use one versioned local value and retire room-onl
 
   assert.match(source, /wp_private_room_credential/u);
   assert.match(rooms, /schemaVersion:\s*2/u);
-  assert.match(rooms, /allowTokenExpiryFallback:\s*rec\.schemaVersion === 1/u);
+  assert.match(rooms, /deriveExpiresAtFromToken:\s*rec\.schemaVersion === 1/u);
   assert.match(rooms, /expiresAt/u);
   assert.match(rooms, /removeRoomTokenFromUrl/u);
   assert.doesNotMatch(source, /wp_private_room_token/u);

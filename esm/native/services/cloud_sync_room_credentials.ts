@@ -49,7 +49,7 @@ export function readCloudSyncRoomTokenExpiresAt(token: unknown): string {
 
 export function normalizeCloudSyncRoomCredential(
   value: unknown,
-  opts: { allowTokenExpiryFallback?: boolean } = {}
+  opts: { deriveExpiresAtFromToken?: boolean } = {}
 ): CloudSyncRoomCredential | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const rec = value as Record<string, unknown>;
@@ -57,7 +57,7 @@ export function normalizeCloudSyncRoomCredential(
   const token = readString(rec.token);
   const suppliedExpiresAt = readString(rec.expiresAt);
   const expiresAt =
-    suppliedExpiresAt || (opts.allowTokenExpiryFallback ? readCloudSyncRoomTokenExpiresAt(token) : '');
+    suppliedExpiresAt || (opts.deriveExpiresAtFromToken ? readCloudSyncRoomTokenExpiresAt(token) : '');
   const expiresAtMs = Date.parse(expiresAt);
   if (!room || !token || !Number.isFinite(expiresAtMs)) return null;
   return { room, token, expiresAt: new Date(expiresAtMs).toISOString() };

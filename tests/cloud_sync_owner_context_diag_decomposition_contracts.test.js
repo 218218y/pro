@@ -57,7 +57,9 @@ test('[cloud-sync-owner-context-diag] facade stays thin while diag + status publ
       /publishCloudSyncOwnerStatusSurface\(/,
       /installCloudSyncStatusSurface\(/,
       /isCloudSyncStatusSurfaceFresh\(/,
+      /subscribeRuntimeStatus/,
     ],
     'ownerContextStatusPublicationRuntime'
   );
+  assertLacksAll(assert, facade, [/new Set</, /runtimeStatusSubscriber/], 'ownerContextDiagFacade');
 });
