@@ -1,6 +1,12 @@
 {
-  "version": "2.1",
+  "version": "2.2",
   "root": "esm",
+  "ratchet": {
+    "mode": "decrease-only",
+    "owner": "architecture-contract",
+    "reason": "V2.2 establishes complete AST budgets including TypeScript import-type queries; from this reviewed baseline proposals may lower ceilings after verified dependency removal but never raise them to absorb growth.",
+    "reviewedAt": "2026-07-14"
+  },
   "rules": [
     {
       "from": "adapters",
@@ -15,6 +21,20 @@
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Browser adapters use injected runtime access helpers."
+    },
+    {
+      "from": "adapters",
+      "to": "shared",
+      "decision": "allow",
+      "maxImporterCount": 1,
+      "maxImportCount": 1,
+      "maxTypeImporterCount": 0,
+      "maxTypeImportCount": 0,
+      "maxValueImporterCount": 1,
+      "maxValueImportCount": 1,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "Browser adapters may consume environment-neutral shared value contracts."
     },
     {
       "from": "boot",
@@ -174,10 +194,10 @@
       "from": "builder",
       "to": "features",
       "decision": "allow",
-      "maxImporterCount": 122,
-      "maxImportCount": 179,
-      "maxTypeImporterCount": 18,
-      "maxTypeImportCount": 18,
+      "maxImporterCount": 123,
+      "maxImportCount": 181,
+      "maxTypeImporterCount": 19,
+      "maxTypeImportCount": 20,
       "maxValueImporterCount": 114,
       "maxValueImportCount": 171,
       "maxDynamicImporterCount": 0,
@@ -188,15 +208,71 @@
       "from": "builder",
       "to": "runtime",
       "decision": "allow",
-      "maxImporterCount": 144,
-      "maxImportCount": 290,
-      "maxTypeImporterCount": 3,
-      "maxTypeImportCount": 3,
+      "maxImporterCount": 146,
+      "maxImportCount": 300,
+      "maxTypeImporterCount": 5,
+      "maxTypeImportCount": 13,
       "maxValueImporterCount": 142,
       "maxValueImportCount": 288,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Builder uses runtime ports for store, render, and scheduling plumbing."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "decision": "allow",
+      "maxImporterCount": 193,
+      "maxImportCount": 219,
+      "maxTypeImporterCount": 0,
+      "maxTypeImportCount": 0,
+      "maxValueImporterCount": 193,
+      "maxValueImportCount": 219,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "Builder consumes environment-neutral construction, dimension, identity, and visual policy tokens."
+    },
+    {
+      "from": "composition",
+      "to": "boot",
+      "decision": "allow",
+      "maxImporterCount": 2,
+      "maxImportCount": 3,
+      "maxTypeImporterCount": 0,
+      "maxTypeImportCount": 0,
+      "maxValueImporterCount": 2,
+      "maxValueImportCount": 3,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "Pure application composition invokes the canonical boot sequence and boot dependency contracts."
+    },
+    {
+      "from": "composition",
+      "to": "runtime",
+      "decision": "allow",
+      "maxImporterCount": 1,
+      "maxImportCount": 2,
+      "maxTypeImporterCount": 0,
+      "maxTypeImportCount": 0,
+      "maxValueImporterCount": 1,
+      "maxValueImportCount": 2,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "Release composition validates injected browser dependencies through runtime contracts."
+    },
+    {
+      "from": "composition",
+      "to": "ui",
+      "decision": "allow",
+      "maxImporterCount": 1,
+      "maxImportCount": 1,
+      "maxTypeImporterCount": 0,
+      "maxTypeImportCount": 0,
+      "maxValueImporterCount": 1,
+      "maxValueImportCount": 1,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "Release composition mounts the canonical React UI owner."
     },
     {
       "from": "core",
@@ -255,6 +331,20 @@
       "reason": "Data seeds use canonical feature normalization."
     },
     {
+      "from": "data",
+      "to": "shared",
+      "decision": "allow",
+      "maxImporterCount": 1,
+      "maxImportCount": 1,
+      "maxTypeImporterCount": 0,
+      "maxTypeImportCount": 0,
+      "maxValueImporterCount": 1,
+      "maxValueImportCount": 1,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "Canonical data seeds consume environment-neutral shared texture tokens."
+    },
+    {
       "from": "engine",
       "to": "runtime",
       "decision": "allow",
@@ -281,6 +371,104 @@
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Engine composes rendering service owners."
+    },
+    {
+      "from": "entry",
+      "to": "adapters",
+      "decision": "allow",
+      "maxImporterCount": 1,
+      "maxImportCount": 1,
+      "maxTypeImporterCount": 0,
+      "maxTypeImportCount": 0,
+      "maxValueImporterCount": 1,
+      "maxValueImportCount": 1,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "The browser entry installs browser-only telemetry through the adapter boundary."
+    },
+    {
+      "from": "entry",
+      "to": "boot",
+      "decision": "allow",
+      "maxImporterCount": 5,
+      "maxImportCount": 6,
+      "maxTypeImporterCount": 1,
+      "maxTypeImportCount": 1,
+      "maxValueImporterCount": 4,
+      "maxValueImportCount": 4,
+      "maxDynamicImporterCount": 1,
+      "maxDynamicImportCount": 1,
+      "reason": "Browser and import-probe entries invoke the canonical boot boundary and lazily load boot helpers."
+    },
+    {
+      "from": "entry",
+      "to": "composition",
+      "decision": "allow",
+      "maxImporterCount": 3,
+      "maxImportCount": 4,
+      "maxTypeImporterCount": 0,
+      "maxTypeImportCount": 0,
+      "maxValueImporterCount": 2,
+      "maxValueImportCount": 2,
+      "maxDynamicImporterCount": 1,
+      "maxDynamicImportCount": 2,
+      "reason": "Entry modules start or probe the pure application composition surface."
+    },
+    {
+      "from": "entry",
+      "to": "runtime",
+      "decision": "allow",
+      "maxImporterCount": 4,
+      "maxImportCount": 4,
+      "maxTypeImporterCount": 0,
+      "maxTypeImportCount": 0,
+      "maxValueImporterCount": 4,
+      "maxValueImportCount": 4,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "Browser entries validate and construct injected runtime dependencies at the outer boundary."
+    },
+    {
+      "from": "entry",
+      "to": "shared",
+      "decision": "allow",
+      "maxImporterCount": 2,
+      "maxImportCount": 2,
+      "maxTypeImporterCount": 0,
+      "maxTypeImportCount": 0,
+      "maxValueImporterCount": 2,
+      "maxValueImportCount": 2,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "Browser entries reuse environment-neutral display formatting contracts."
+    },
+    {
+      "from": "entry",
+      "to": "ui",
+      "decision": "allow",
+      "maxImporterCount": 4,
+      "maxImportCount": 5,
+      "maxTypeImporterCount": 1,
+      "maxTypeImportCount": 1,
+      "maxValueImporterCount": 1,
+      "maxValueImportCount": 1,
+      "maxDynamicImporterCount": 3,
+      "maxDynamicImportCount": 3,
+      "reason": "The browser entry owns lazy loading of React boot and fatal-overlay UI boundaries."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "decision": "allow",
+      "maxImporterCount": 40,
+      "maxImportCount": 58,
+      "maxTypeImporterCount": 1,
+      "maxTypeImportCount": 2,
+      "maxValueImporterCount": 40,
+      "maxValueImportCount": 57,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "Feature policies build on environment-neutral shared domain contracts and tokens."
     },
     {
       "from": "io",
@@ -325,6 +513,20 @@
       "reason": "Project IO calls the canonical services facade for finalization effects."
     },
     {
+      "from": "io",
+      "to": "shared",
+      "decision": "allow",
+      "maxImporterCount": 5,
+      "maxImportCount": 9,
+      "maxTypeImporterCount": 0,
+      "maxTypeImportCount": 0,
+      "maxValueImporterCount": 5,
+      "maxValueImportCount": 9,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "Project IO uses shared schema constants, clone helpers, and construction validation."
+    },
+    {
       "from": "kernel",
       "to": "features",
       "decision": "allow",
@@ -351,6 +553,20 @@
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Kernel installs state actions over runtime access contracts."
+    },
+    {
+      "from": "kernel",
+      "to": "shared",
+      "decision": "allow",
+      "maxImporterCount": 15,
+      "maxImportCount": 17,
+      "maxTypeImporterCount": 0,
+      "maxTypeImportCount": 0,
+      "maxValueImporterCount": 15,
+      "maxValueImportCount": 17,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "Kernel derivation uses environment-neutral shared state, identity, schema, and dimension contracts."
     },
     {
       "from": "platform",
@@ -395,6 +611,34 @@
       "reason": "Platform owns runtime store and scheduling plumbing."
     },
     {
+      "from": "platform",
+      "to": "shared",
+      "decision": "allow",
+      "maxImporterCount": 2,
+      "maxImportCount": 4,
+      "maxTypeImporterCount": 0,
+      "maxTypeImportCount": 0,
+      "maxValueImporterCount": 2,
+      "maxValueImportCount": 4,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "Platform persistence uses shared identity and door-key normalization contracts."
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "decision": "allow",
+      "maxImporterCount": 20,
+      "maxImportCount": 32,
+      "maxTypeImporterCount": 1,
+      "maxTypeImportCount": 1,
+      "maxValueImporterCount": 20,
+      "maxValueImportCount": 31,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "Runtime primitives consume environment-neutral shared normalization and policy contracts."
+    },
+    {
       "from": "services",
       "to": "features",
       "decision": "allow",
@@ -437,6 +681,20 @@
       "reason": "Services depend on focused runtime ports and accessors."
     },
     {
+      "from": "services",
+      "to": "shared",
+      "decision": "allow",
+      "maxImporterCount": 138,
+      "maxImportCount": 167,
+      "maxTypeImporterCount": 0,
+      "maxTypeImportCount": 0,
+      "maxValueImporterCount": 138,
+      "maxValueImportCount": 167,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "Services orchestrate persistence and UI-independent workflows over shared domain contracts."
+    },
+    {
       "from": "ui",
       "to": "features",
       "decision": "allow",
@@ -463,6 +721,20 @@
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "UI uses the canonical services facade instead of runtime or owner internals."
+    },
+    {
+      "from": "ui",
+      "to": "shared",
+      "decision": "allow",
+      "maxImporterCount": 25,
+      "maxImportCount": 27,
+      "maxTypeImporterCount": 1,
+      "maxTypeImportCount": 1,
+      "maxValueImporterCount": 25,
+      "maxValueImportCount": 27,
+      "maxDynamicImporterCount": 0,
+      "maxDynamicImportCount": 0,
+      "reason": "UI formatting and controllers consume environment-neutral shared display and domain contracts."
     }
   ],
   "facades": [
@@ -489,6 +761,32 @@
       "to": "kernel",
       "allowedTargets": ["esm/native/kernel/api.ts"],
       "reason": "Platform diagnostics must not bypass the kernel facade."
+    }
+  ],
+  "dynamicImportAllowlist": [
+    {
+      "fromFile": "esm/entry_pro_main_boot_support.ts",
+      "expression": "THREE_PATH",
+      "maxOccurrences": 1,
+      "reason": "The browser entry loads the deployment-selected Three.js ESM asset with Vite resolution intentionally disabled."
+    },
+    {
+      "fromFile": "esm/entry_pro_main_boot_support.ts",
+      "expression": "ORBIT_PATH",
+      "maxOccurrences": 1,
+      "reason": "The browser entry loads the deployment-selected OrbitControls ESM asset with Vite resolution intentionally disabled."
+    },
+    {
+      "fromFile": "esm/entry_pro_main_boot_support.ts",
+      "expression": "ROUNDED_BOX_PATH",
+      "maxOccurrences": 1,
+      "reason": "The browser entry loads the deployment-selected rounded-box geometry ESM asset with Vite resolution intentionally disabled."
+    },
+    {
+      "fromFile": "esm/entry_pro_main_boot_support.ts",
+      "expression": "url",
+      "maxOccurrences": 1,
+      "reason": "The browser entry imports the already validated runtime-config URL supplied by the deployment profile."
     }
   ]
 }

@@ -64,6 +64,7 @@ test('[stageC] semantic config actions exist for notes + project snapshot restor
   );
   assert.match(kernelTypes, /applyPaintSnapshot\?: \(\s*colors: unknown,/);
   assert.match(kernelTypes, /commitProjectLoadSnapshot\?: \(/);
+  assert.match(kernelTypes, /ProjectLoadTransactionState = 'prepared' \| 'committed' \| 'rolled-back'/);
   assert.match(stateApiShared, /export const PROJECT_CONFIG_REPLACE_KEYS: Record<string, true> = \{/);
   assert.match(stateApi, /installStateApiConfigNamespace\(\{/);
   assert.match(stateApi, /installStateApiProjectLoadTransaction\(\{/);
@@ -87,9 +88,10 @@ test('[stageC] semantic config actions exist for notes + project snapshot restor
   assert.match(notesService, /Missing actions\.config\.setSavedNotes/);
   assert.match(
     projectIoLoadOps,
-    /stateTransaction = transaction\.commit\(\s*\{[\s\S]*ui: uiSnap,[\s\S]*config: cfg,[\s\S]*meta: \{ dirty: false \}/
+    /stateTransaction = transaction\.applyState\(\s*\{[\s\S]*ui: uiSnap,[\s\S]*config: cfg,[\s\S]*meta: \{ dirty: false \}/
   );
-  assert.match(projectIoLoadOps, /stateTransaction\.rollback\(/);
+  assert.match(projectIoLoadOps, /transaction\.markCommitted\(stateTransaction\)/);
+  assert.match(projectIoLoadOps, /transaction\.rollbackState\(/);
   assert.doesNotMatch(notesService, /applyConfigPatch\(App, \{ savedNotes: notes \}, meta\)/);
   assert.doesNotMatch(projectIo, /cfgPatchWithReplaceKeys\(__cfg, /);
 });

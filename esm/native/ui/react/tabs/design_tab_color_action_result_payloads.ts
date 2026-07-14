@@ -134,6 +134,7 @@ type DesignTabColorFailureExtrasNormalizerMap = {
 };
 
 const normalizeFailureExtrasByKind: DesignTabColorFailureExtrasNormalizerMap = {
+  'reorder-swatches': () => ({}),
   'toggle-lock': normalizeToggleLockFailureExtras,
   'delete-color': normalizeDeleteFailureExtras,
   'upload-texture': normalizeUploadTextureFailureExtras,

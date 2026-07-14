@@ -23,6 +23,19 @@ function cloneCloudSyncRoomStatusSnapshot(
   };
 }
 
+function readConflictSnapshot(
+  conflict: CloudSyncPanelApiDeps['runtimeStatus']['conflict']
+): CloudSyncPanelSnapshot['conflict'] {
+  if (!conflict) return undefined;
+  return {
+    room: String(conflict.room || ''),
+    keys: Array.isArray(conflict.keys) ? conflict.keys.map(key => String(key)) : [],
+    remoteRevision: Number(conflict.remoteRevision) || 0,
+    detectedAt: Number(conflict.detectedAt) || 0,
+    state: conflict.state,
+  };
+}
+
 function readLocalCloudSyncSite2TabsGateSnapshot(opts: {
   tabsGateOpenRef: { value: unknown };
   tabsGateUntilRef: { value: unknown };
@@ -84,16 +97,19 @@ export function createCloudSyncPanelSnapshotReaders(
 
   const readPanelSnapshot = (roomOverride?: string | null): CloudSyncPanelSnapshot => {
     const roomStatus = readRoomStatusSnapshot(roomOverride);
+    const conflict = readConflictSnapshot(runtimeStatus?.conflict);
     try {
       return {
         ...cloneCloudSyncRoomStatusSnapshot(roomStatus),
         floatingSync: !!getFloatingSketchSyncEnabled(),
+        ...(conflict ? { conflict } : {}),
       };
     } catch (__wpErr) {
       reportNonFatal(App, panelApiOp('panelSnapshot'), __wpErr, { throttleMs: 4000 });
       return {
         ...cloneCloudSyncRoomStatusSnapshot(roomStatus),
         floatingSync: false,
+        ...(conflict ? { conflict } : {}),
       };
     }
   };

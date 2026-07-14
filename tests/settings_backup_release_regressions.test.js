@@ -40,23 +40,15 @@ function loadSettingsBackupModule() {
     '../services/api.js': {
       assertApp: app => app,
       readSavedColors: app => app.maps?.getSavedColors?.() ?? null,
-      writeColorSwatchesOrder: (app, value) => {
+      writeColorSwatchesOrderOrThrow: (app, value) => {
         app.__writtenColorOrder = value;
-        return false;
+        return true;
       },
-      writeSavedColors: (app, value) => {
+      writeSavedColorsOrThrow: (app, value) => {
         app.__writtenSavedColors = value;
         return true;
       },
       reportError: () => undefined,
-      setCfgColorSwatchesOrder: (app, value) => {
-        app.__cfgColorOrder = value;
-        return undefined;
-      },
-      setCfgSavedColors: (app, value) => {
-        app.__cfgSavedColors = value;
-        return undefined;
-      },
       renderModelUiViaActionsOrThrow: () => undefined,
       metaMerge: (_app, meta) => meta,
       metaRestore: (_app, meta) => meta,
@@ -70,7 +62,7 @@ function loadSettingsBackupModule() {
           presetOrder: [],
           hiddenPresets: [],
         },
-      updateCloudCollectionsViaServiceOrThrow: (app, mutation) => {
+      transactCloudCollectionsViaServiceOrThrow: (app, mutator) => {
         const current = app.__cloudCollections || {
           schemaVersion: 1,
           revision: 0,
@@ -80,8 +72,9 @@ function loadSettingsBackupModule() {
           presetOrder: [],
           hiddenPresets: [],
         };
+        const mutation = mutator(current);
         app.__cloudCollections = { ...current, ...mutation, revision: current.revision + 1 };
-        return app.__cloudCollections;
+        return { committed: true, envelope: app.__cloudCollections, mirrorFailures: [], warnings: [] };
       },
       getModelsServiceMaybe: app => app.services?.models ?? null,
       exportUserModelsViaService: app => app.services?.models?.exportUserModels?.(),

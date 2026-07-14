@@ -7,10 +7,10 @@ export type SavedModelsCommandController = {
   applySelected: (idOverride?: string) => void;
   saveCurrent: () => Promise<void>;
   overwriteById: (idOverride?: string) => Promise<void>;
-  toggleLock: (idOverride?: string) => void;
+  toggleLock: (idOverride?: string) => Promise<void>;
   deleteById: (idOverride?: string) => Promise<void>;
-  moveById: (id: string, dir: SavedModelsMoveDir) => void;
-  moveSelected: (dir: SavedModelsMoveDir) => void;
+  moveById: (id: string, dir: SavedModelsMoveDir) => Promise<void>;
+  moveSelected: (dir: SavedModelsMoveDir) => Promise<void>;
 };
 
 export type CreateSavedModelsCommandControllerArgs = {

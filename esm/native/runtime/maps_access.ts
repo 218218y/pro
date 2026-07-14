@@ -58,5 +58,7 @@ export {
 export {
   readSavedColors,
   writeColorSwatchesOrder,
+  writeColorSwatchesOrderOrThrow,
   writeSavedColors,
+  writeSavedColorsOrThrow,
 } from './maps_access_saved_collections.js';

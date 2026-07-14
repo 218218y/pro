@@ -24,7 +24,7 @@ export type SavedModelsTransferFn = (
   targetList: SavedModelsListType,
   overId: SavedModelId | null,
   pos: SavedModelsDropPos
-) => ModelsCommandResult;
+) => Promise<ModelsCommandResult>;
 
 export type SavedModelsReorderPlan = {
   dir: SavedModelsMoveDir;

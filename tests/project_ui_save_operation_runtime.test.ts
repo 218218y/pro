@@ -45,6 +45,7 @@ test('project save perf span and browser event settle on the terminal business r
       accepted: true as const,
       reused: false,
       operationId: 'project-save-test-1',
+      requestedAt: Date.now() - 5,
       acceptedAt: Date.now(),
       settled,
     };
@@ -84,6 +85,8 @@ test('project save perf span and browser event settle on the terminal business r
     assert.equal(saveEntries.length, 1);
     assert.equal(saveEntries[0]?.status, 'mark');
     assert.equal((saveEntries[0]?.detail as Record<string, unknown>)?.reason, 'cancelled');
+    assert.equal(typeof (saveEntries[0]?.detail as Record<string, unknown>)?.journeyDurationMs, 'number');
+    assert.equal((saveEntries[0]?.detail as Record<string, unknown>)?.requestedAt, operation.requestedAt);
     assert.deepEqual(
       projectEvents()
         .slice(2)
@@ -96,4 +99,71 @@ test('project save perf span and browser event settle on the terminal business r
   } finally {
     globalThis.CustomEvent = previousCustomEvent;
   }
+});
+
+test('project save feedback is observed once for one business operation reused by multiple intents', async () => {
+  const toasts: Array<{ message: string; type?: string }> = [];
+  const app = { deps: { config: {} }, services: {} } as any;
+  let resolveTerminal: (value: { ok: true; outcome: 'browser-delivery-completed' }) => void = () => undefined;
+  const settled = new Promise<{ ok: true; outcome: 'browser-delivery-completed' }>(resolve => {
+    resolveTerminal = resolve;
+  });
+  const requestedAt = Date.now();
+  const operation = {
+    accepted: true as const,
+    reused: false,
+    operationId: 'project-save-feedback-once-1',
+    requestedAt,
+    acceptedAt: requestedAt + 1,
+    settled,
+  };
+  const fb = {
+    toast(message: string, type?: string) {
+      toasts.push({ message, type });
+    },
+  };
+
+  runProjectUiSaveAction({ app, fb, saveProject: () => operation });
+  runProjectUiSaveAction({ app, fb, saveProject: () => ({ ...operation, reused: true }) });
+  resolveTerminal({ ok: true, outcome: 'browser-delivery-completed' });
+  await settled;
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  assert.equal(toasts.length, 1);
+  assert.equal(toasts[0]?.type, 'success');
+});
+
+test('project save observers map one rejected operation to one feedback and one failed perf entry', async () => {
+  const toasts: Array<{ message: string; type?: string }> = [];
+  const app = { deps: { config: {} }, services: {} } as any;
+  let rejectTerminal: (error: unknown) => void = () => undefined;
+  const settled = new Promise<{ ok: true }>((_resolve, reject) => {
+    rejectTerminal = reject;
+  });
+  const requestedAt = Date.now();
+  const operation = {
+    accepted: true as const,
+    reused: false,
+    operationId: 'project-save-rejected-once-1',
+    requestedAt,
+    acceptedAt: requestedAt + 1,
+    settled,
+  };
+  const fb = {
+    toast(message: string, type?: 'success' | 'error' | 'warning' | 'info') {
+      toasts.push({ message, type });
+    },
+  };
+
+  runProjectUiSaveAction({ app, fb, saveProject: () => operation });
+  runProjectUiSaveAction({ app, fb, saveProject: () => ({ ...operation, reused: true }) });
+  rejectTerminal(new Error('terminal delivery rejected'));
+  await assert.rejects(settled, /terminal delivery rejected/);
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  assert.deepEqual(toasts, [{ message: 'terminal delivery rejected', type: 'error' }]);
+  const saveEntries = getPerfEntries(app).filter(entry => entry.name === 'project.save');
+  assert.equal(saveEntries.length, 1);
+  assert.equal(saveEntries[0]?.status, 'error');
+  assert.equal(saveEntries[0]?.error, 'terminal delivery rejected');
 });

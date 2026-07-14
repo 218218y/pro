@@ -43,6 +43,7 @@ import {
 import {
   createAsyncOperationHandle,
   observeAsyncOperation,
+  readAsyncOperationStaleDiagnostics,
   reuseAsyncOperationHandle,
 } from '../runtime/async_operation.js';
 import {
@@ -95,6 +96,7 @@ export {
   normalizeProjectSaveActionResult,
   createAsyncOperationHandle,
   observeAsyncOperation,
+  readAsyncOperationStaleDiagnostics,
   reuseAsyncOperationHandle,
   buildProjectRecoverySuccessResult,
   buildProjectRestoreFailureResult,

@@ -1,13 +1,26 @@
 import type { AppContainer, ActionMetaLike, SavedColorLike } from '../../../types';
 
 import { setCfgColorSwatchesOrder, setCfgSavedColors } from '../runtime/cfg_access.js';
-import { updateCloudCollectionsViaServiceOrThrow } from '../runtime/cloud_collections_access.js';
+import { transactCloudCollectionsViaServiceOrThrow } from '../runtime/cloud_collections_access.js';
 import type { MapsApiShared } from './maps_api_shared.js';
 import {
   cloneArrayOrEmpty,
   normalizeColorSwatchesOrderSurfaceList,
   normalizeSavedColorsSurfaceList,
 } from './maps_api_shared.js';
+
+export async function mutateSavedColorsViaCanonicalRepository(
+  App: AppContainer,
+  mutate: (current: SavedColorLike[]) => SavedColorLike[],
+  meta: ActionMetaLike
+): Promise<unknown> {
+  const result = await transactCloudCollectionsViaServiceOrThrow(
+    App,
+    current => ({ savedColors: mutate(current.savedColors.slice()) }),
+    'saved-color entity mutation'
+  );
+  return setCfgSavedColors(App, result.envelope.savedColors, { ...meta, noStorageWrite: true });
+}
 
 export function installMapsApiSavedColors(App: AppContainer, shared: MapsApiShared): void {
   const { maps, metaNorm, safeCfg, shouldSkipStorageWrite, reportNonFatal } = shared;
@@ -20,15 +33,15 @@ export function installMapsApiSavedColors(App: AppContainer, shared: MapsApiShar
     return normalizeColorSwatchesOrderSurfaceList(cloneArrayOrEmpty(safeCfg().colorSwatchesOrder));
   };
 
-  maps.setColorSwatchesOrder = function setColorSwatchesOrder(arr, meta?: ActionMetaLike) {
+  maps.setColorSwatchesOrder = async function setColorSwatchesOrder(arr, meta?: ActionMetaLike) {
     meta = metaNorm(meta, 'maps:setColorSwatchesOrder');
     arr = normalizeColorSwatchesOrderSurfaceList(arr);
     try {
       if (!shouldSkipStorageWrite(meta)) {
         const colorOrder = arr.filter((value): value is string | null => value !== undefined);
-        updateCloudCollectionsViaServiceOrThrow(
+        await transactCloudCollectionsViaServiceOrThrow(
           App,
-          { colorOrder },
+          () => ({ colorOrder }),
           'maps.setColorSwatchesOrder persistence'
         );
       }
@@ -40,7 +53,7 @@ export function installMapsApiSavedColors(App: AppContainer, shared: MapsApiShar
     }
   };
 
-  maps.setSavedColors = function setSavedColors(arr, meta?: ActionMetaLike) {
+  maps.setSavedColors = async function setSavedColors(arr, meta?: ActionMetaLike) {
     meta = metaNorm(meta, 'maps:setSavedColors');
     arr = normalizeSavedColorsSurfaceList(arr);
     try {
@@ -49,7 +62,11 @@ export function installMapsApiSavedColors(App: AppContainer, shared: MapsApiShar
           (value): value is SavedColorLike =>
             !!value && typeof value === 'object' && typeof value.id === 'string'
         );
-        updateCloudCollectionsViaServiceOrThrow(App, { savedColors }, 'maps.setSavedColors persistence');
+        await transactCloudCollectionsViaServiceOrThrow(
+          App,
+          () => ({ savedColors }),
+          'maps.setSavedColors persistence'
+        );
       }
       const out = setCfgSavedColors(App, arr, meta);
       return out;

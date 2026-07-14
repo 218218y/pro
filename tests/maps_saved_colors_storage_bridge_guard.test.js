@@ -16,7 +16,7 @@ const mapsBundle = bundleSources(
 
 test('maps_api commits savedColors through the canonical collections repository', () => {
   assert.match(mapsOwner, /maps_api_saved_colors\.js/);
-  assert.match(mapsBundle, /updateCloudCollectionsViaServiceOrThrow\(/);
+  assert.match(mapsBundle, /transactCloudCollectionsViaServiceOrThrow\(/);
   assert.match(mapsBundle, /\{ savedColors \}/);
   assert.doesNotMatch(mapsBundle, /writeStorageJson/);
 });

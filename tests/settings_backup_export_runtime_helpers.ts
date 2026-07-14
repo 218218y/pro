@@ -25,6 +25,17 @@ export function createDownloadContext() {
   const downloads: string[] = [];
   const blobRecords: Array<{ href: string; blob: Blob }> = [];
   let blobSeq = 0;
+  let lockTail: Promise<void> = Promise.resolve();
+  const locks = {
+    request<T>(_name: string, callback: () => Promise<T> | T): Promise<T> {
+      const result = lockTail.then(callback);
+      lockTail = result.then(
+        () => undefined,
+        () => undefined
+      );
+      return result;
+    },
+  };
   const body = {
     appendChild(_node: DownloadAnchor) {
       return undefined;
@@ -45,7 +56,7 @@ export function createDownloadContext() {
       fn();
       return 0;
     },
-    navigator: { userAgent: 'node-test' },
+    navigator: { userAgent: 'node-test', locks },
     location: { href: 'https://example.test/' },
     document: null as Document | null,
   } as unknown as Window;

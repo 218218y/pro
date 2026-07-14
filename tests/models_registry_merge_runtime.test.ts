@@ -52,12 +52,12 @@ function resetRuntimeState() {
   modelsRuntimeState.revision = 0;
 }
 
-test('models registry ensureLoaded returns detached lists instead of the live runtime array', () => {
+test('models registry ensureLoaded returns detached lists instead of the live runtime array', async () => {
   const { App } = createApp();
   resetRuntimeState();
 
   setModelPresetsInternal(App, [] as any);
-  assert.deepEqual(mergeImportedModelsInternal(App, [{ id: 'm1', name: 'Alpha' }] as any), {
+  assert.deepEqual(await mergeImportedModelsInternal(App, [{ id: 'm1', name: 'Alpha' }] as any), {
     added: 1,
     updated: 0,
   });
@@ -78,21 +78,21 @@ test('models registry ensureLoaded returns detached lists instead of the live ru
   );
 });
 
-test('models registry merge preserves updated names and avoids stale duplicate ids', () => {
+test('models registry merge preserves updated names and avoids stale duplicate ids', async () => {
   const { App } = createApp();
   resetRuntimeState();
 
   setModelPresetsInternal(App, [] as any);
-  assert.deepEqual(mergeImportedModelsInternal(App, [{ id: 'm1', name: 'Alpha' }] as any), {
+  assert.deepEqual(await mergeImportedModelsInternal(App, [{ id: 'm1', name: 'Alpha' }] as any), {
     added: 1,
     updated: 0,
   });
-  assert.deepEqual(mergeImportedModelsInternal(App, [{ id: 'm1', name: 'Beta' }] as any), {
+  assert.deepEqual(await mergeImportedModelsInternal(App, [{ id: 'm1', name: 'Beta' }] as any), {
     added: 0,
     updated: 1,
   });
   assert.deepEqual(
-    mergeImportedModelsInternal(App, [
+    await mergeImportedModelsInternal(App, [
       { id: 'm1', name: 'Gamma' },
       { id: 'm2', name: 'Alpha' },
     ] as any),
@@ -109,13 +109,13 @@ test('models registry merge preserves updated names and avoids stale duplicate i
   );
 });
 
-test('models registry merge keeps the latest duplicate entry within a single import batch', () => {
+test('models registry merge keeps the latest duplicate entry within a single import batch', async () => {
   const { App } = createApp();
   resetRuntimeState();
 
   setModelPresetsInternal(App, [] as any);
   assert.deepEqual(
-    mergeImportedModelsInternal(App, [
+    await mergeImportedModelsInternal(App, [
       { id: 'm1', name: 'Alpha' },
       { id: 'm1', name: 'Beta' },
     ] as any),
@@ -128,21 +128,27 @@ test('models registry merge keeps the latest duplicate entry within a single imp
   assert.equal(String(loaded[0].name), 'Beta');
 });
 
-test('models registry merge treats identical imported models as a no-op update', () => {
+test('models registry merge treats identical imported models as a no-op update', async () => {
   const { App, store } = createApp();
   resetRuntimeState();
 
   setModelPresetsInternal(App, [] as any);
-  assert.deepEqual(mergeImportedModelsInternal(App, [{ id: 'm1', name: 'Alpha', locked: true }] as any), {
-    added: 1,
-    updated: 0,
-  });
+  assert.deepEqual(
+    await mergeImportedModelsInternal(App, [{ id: 'm1', name: 'Alpha', locked: true }] as any),
+    {
+      added: 1,
+      updated: 0,
+    }
+  );
 
   const firstPersisted = store.get('saved_models');
-  assert.deepEqual(mergeImportedModelsInternal(App, [{ id: 'm1', name: 'Alpha', locked: true }] as any), {
-    added: 0,
-    updated: 0,
-  });
+  assert.deepEqual(
+    await mergeImportedModelsInternal(App, [{ id: 'm1', name: 'Alpha', locked: true }] as any),
+    {
+      added: 0,
+      updated: 0,
+    }
+  );
   assert.equal(store.get('saved_models'), firstPersisted);
 
   const loaded = ensureModelsLoadedInternal(App, { forceRebuild: true, silent: true });

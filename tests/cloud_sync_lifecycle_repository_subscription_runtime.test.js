@@ -9,6 +9,25 @@ import {
 } from './cloud_sync_lifecycle_runtime_helpers.js';
 import { installCloudCollectionsService } from '../esm/native/services/cloud_collections_service.ts';
 
+function installCrossTabLockHarness(app) {
+  const tails = new Map();
+  app.deps.browser.navigator.locks = {
+    request(name, operation) {
+      const previous = tails.get(name) || Promise.resolve();
+      const request = previous.catch(() => undefined).then(operation);
+      const settled = request.then(
+        () => undefined,
+        () => undefined
+      );
+      tails.set(name, settled);
+      void settled.finally(() => {
+        if (tails.get(name) === settled) tails.delete(name);
+      });
+      return request;
+    },
+  };
+}
+
 test('cloud_sync lifecycle: canonical repository events coalesce nested commits to one push timer', async () => {
   const timers = createTimerHarness();
   const fetchStub = createFetchStub();
@@ -17,6 +36,7 @@ test('cloud_sync lifecycle: canonical repository events coalesce nested commits 
 
   try {
     const { app } = makeApp({ realtime: false, pollMs: 25 });
+    installCrossTabLockHarness(app);
 
     const collections = installCloudCollectionsService(app).repository;
     assert.ok(collections);
@@ -24,7 +44,7 @@ test('cloud_sync lifecycle: canonical repository events coalesce nested commits 
     const unsubscribe = collections.subscribe(() => {
       if (nestedWrites === 0) {
         nestedWrites++;
-        collections.update({ savedColors: [] });
+        void collections.transact(() => ({ savedColors: [{ id: 'c1', value: '#111111' }] }));
       }
     });
 
@@ -33,16 +53,17 @@ test('cloud_sync lifecycle: canonical repository events coalesce nested commits 
     assert.equal(timers.activeCount('interval'), 1);
     assert.equal(timers.activeCount('timeout'), 0);
 
-    collections.update({ savedModels: [{ id: 'm1', name: 'Model 1' }] });
+    await collections.transact(() => ({ savedModels: [{ id: 'm1', name: 'Model 1' }] }));
 
-    assert.equal(nestedWrites, 1, 'base storage method should have re-entered exactly once');
+    assert.equal(nestedWrites, 1, 'canonical repository notification should re-enter exactly once');
     assert.equal(
       timers.activeCount('timeout'),
       1,
       'nested synced writes should debounce/coalesce into one pending push timeout'
     );
 
-    collections.update({ hiddenPresets: [] });
+    await collections.transact(() => ({ hiddenPresets: [] }));
+    assert.deepEqual(collections.readEnvelope().savedColors, [{ id: 'c1', value: '#111111' }]);
     assert.equal(timers.activeCount('timeout'), 1);
 
     unsubscribe();
@@ -63,6 +84,7 @@ test('cloud_sync lifecycle: dispose during repository notification leaves no tim
 
   try {
     const { app, storage } = makeApp({ realtime: false, pollMs: 25 });
+    installCrossTabLockHarness(app);
 
     const userSetStringBeforeInstall = storage.setString;
     const collections = installCloudCollectionsService(app).repository;
@@ -80,7 +102,7 @@ test('cloud_sync lifecycle: dispose during repository notification leaves no tim
     assert.equal(storage.setString, userSetStringBeforeInstall, 'storage methods must remain unwrapped');
     assert.equal(timers.activeCount('interval'), 1);
 
-    collections.update({ savedModels: [] });
+    await collections.transact(() => ({ savedModels: [{ id: 'm1', name: 'Model 1' }] }));
 
     assert.equal(disposedInsideWrite, 1, 'dispose should have been triggered from inside storage callback');
     assert.equal(timers.activeCount('interval'), 0, 'dispose inside callback must clear polling interval');
@@ -93,7 +115,7 @@ test('cloud_sync lifecycle: dispose during repository notification leaves no tim
     assert.equal(storage.setString, userSetStringBeforeInstall);
 
     unsubscribe();
-    collections.update({ savedModels: [] });
+    await collections.transact(() => ({ savedModels: [] }));
     assert.equal(disposedInsideWrite, 1, 'restored method should not recursively dispose again');
     assert.equal(timers.activeCount('timeout'), 0);
   } finally {

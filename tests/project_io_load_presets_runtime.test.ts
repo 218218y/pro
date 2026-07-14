@@ -44,9 +44,19 @@ function createLoaderHarness() {
         };
         state.runtime = { ...state.runtime, ...structuredClone(snapshot.runtime) };
         state.meta = { ...state.meta, ...structuredClone(snapshot.meta) };
+        let transactionState: 'prepared' | 'committed' | 'rolled-back' = 'prepared';
         return {
+          get state() {
+            return transactionState;
+          },
+          commit() {
+            if (transactionState !== 'prepared') throw new Error('invalid test transaction commit');
+            transactionState = 'committed';
+          },
           rollback() {
+            if (transactionState !== 'prepared') throw new Error('invalid test transaction rollback');
             Object.assign(state, structuredClone(before));
+            transactionState = 'rolled-back';
           },
         };
       },

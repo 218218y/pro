@@ -40,24 +40,24 @@ export function applySavedModel(
   });
 }
 
-export function saveCurrentModelByName(
+export async function saveCurrentModelByName(
   modelsApi: ModelsServiceLike,
   name: string
-): SavedModelsActionResult & { kind: 'save' } {
+): Promise<SavedModelsActionResult & { kind: 'save' }> {
   const trimmedName = trimName(name);
   if (!trimmedName) return buildActionFailure('save', 'cancelled');
 
-  const res = modelsApi.saveCurrent(trimmedName);
+  const res = await modelsApi.saveCurrent(trimmedName);
   return buildCommandActionResult('save', res, {
     id: trimId(res?.id),
     name: trimmedName,
   });
 }
 
-export function overwriteSavedModel(
+export async function overwriteSavedModel(
   modelsApi: ModelsServiceLike,
   id: SavedModelId
-): SavedModelsActionResult & { kind: 'overwrite' } {
+): Promise<SavedModelsActionResult & { kind: 'overwrite' }> {
   const identified = identifyModel(modelsApi, 'overwrite', id);
   if (!identified.ok) return identified;
   if (isPresetModel(identified.model)) {
@@ -67,16 +67,16 @@ export function overwriteSavedModel(
     return buildActionFailure('overwrite', 'locked', { id: identified.id, name: identified.name });
   }
 
-  return buildCommandActionResult('overwrite', modelsApi.overwriteFromCurrent(identified.id || ''), {
+  return buildCommandActionResult('overwrite', await modelsApi.overwriteFromCurrent(identified.id || ''), {
     id: identified.id,
     name: identified.name,
   });
 }
 
-export function toggleSavedModelLock(
+export async function toggleSavedModelLock(
   modelsApi: ModelsServiceLike,
   id: SavedModelId
-): SavedModelsActionResult & { kind: 'toggle-lock' } {
+): Promise<SavedModelsActionResult & { kind: 'toggle-lock' }> {
   const identified = identifyModel(modelsApi, 'toggle-lock', id);
   if (!identified.ok) return identified;
   if (isPresetModel(identified.model)) {
@@ -84,7 +84,7 @@ export function toggleSavedModelLock(
   }
 
   const wantLocked = !isLockedModel(identified.model);
-  const res = modelsApi.setLocked(identified.id || '', wantLocked);
+  const res = await modelsApi.setLocked(identified.id || '', wantLocked);
   return buildCommandActionResult('toggle-lock', res, {
     id: identified.id,
     name: identified.name,
@@ -92,10 +92,10 @@ export function toggleSavedModelLock(
   });
 }
 
-export function deleteSavedModel(
+export async function deleteSavedModel(
   modelsApi: ModelsServiceLike,
   id: SavedModelId
-): SavedModelsActionResult & { kind: 'delete' } {
+): Promise<SavedModelsActionResult & { kind: 'delete' }> {
   const identified = identifyModel(modelsApi, 'delete', id);
   if (!identified.ok) return identified;
   if (isPresetModel(identified.model)) {
@@ -105,42 +105,42 @@ export function deleteSavedModel(
     return buildActionFailure('delete', 'locked', { id: identified.id, name: identified.name });
   }
 
-  return buildCommandActionResult('delete', modelsApi.deleteById(identified.id || ''), {
+  return buildCommandActionResult('delete', await modelsApi.deleteById(identified.id || ''), {
     id: identified.id,
     name: identified.name,
   });
 }
 
-export function moveSavedModel(
+export async function moveSavedModel(
   modelsApi: ModelsServiceLike,
   id: SavedModelId,
   dir: SavedModelsMoveDir
-): SavedModelsActionResult & { kind: 'move' } {
+): Promise<SavedModelsActionResult & { kind: 'move' }> {
   const trimmedId = trimId(id);
   if (!trimmedId) return buildActionFailure('move', 'missing-selection', { dir });
 
   const model = getModelMaybeSafe(modelsApi, trimmedId);
-  return buildCommandActionResult('move', modelsApi.move(trimmedId, dir), {
+  return buildCommandActionResult('move', await modelsApi.move(trimmedId, dir), {
     id: trimmedId,
     name: getModelName(model),
     dir,
   });
 }
 
-export function reorderSavedModelsByDnD(
+export async function reorderSavedModelsByDnD(
   modelsApi: ModelsServiceLike,
   ids: SavedModelId[],
   dragId: SavedModelId,
   overId: SavedModelId | null,
   pos: SavedModelsDropPos,
   listType: SavedModelsListType
-): SavedModelsActionResult | null {
+): Promise<SavedModelsActionResult | null> {
   const plan = buildDnDReorderPlan(ids, dragId, overId, pos);
   if (!plan) return null;
 
   let lastRes: ModelsCommandResult | null = null;
   for (let index = 0; index < plan.count; index += 1) {
-    lastRes = modelsApi.move(dragId, plan.dir);
+    lastRes = await modelsApi.move(dragId, plan.dir);
     if (!(lastRes && lastRes.ok)) break;
   }
 
@@ -151,18 +151,18 @@ export function reorderSavedModelsByDnD(
   });
 }
 
-export function transferSavedModelByDnD(
+export async function transferSavedModelByDnD(
   modelsApi: ModelsServiceLike,
   dragId: SavedModelId,
   targetList: SavedModelsListType,
   overId: SavedModelId | null,
   pos: SavedModelsDropPos
-): SavedModelsActionResult & { kind: 'transfer' } {
+): Promise<SavedModelsActionResult & { kind: 'transfer' }> {
   const trimmedId = trimId(dragId);
   if (!trimmedId) return buildActionFailure('transfer', 'missing-selection', { listType: targetList });
   const fn = getTransferFn(modelsApi);
   if (!fn) return buildActionFailure('transfer', 'not-installed', { listType: targetList, id: trimmedId });
-  return buildCommandActionResult('transfer', fn(trimmedId, targetList, overId, pos), {
+  return buildCommandActionResult('transfer', await fn(trimmedId, targetList, overId, pos), {
     id: trimmedId,
     listType: targetList,
   });

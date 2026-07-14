@@ -160,9 +160,11 @@ test('importSystemSettings merges models/colors, syncs storage order, and clears
         },
         setSavedColors(next: unknown[]) {
           colorState.splice(0, colorState.length, ...(next as typeof colorState));
+          return true;
         },
         setColorSwatchesOrder(next: unknown[]) {
           storageWrites.colorOrderState = next.slice();
+          return true;
         },
       },
       actions: {
@@ -198,7 +200,8 @@ test('importSystemSettings merges models/colors, syncs storage order, and clears
           setJSON(key: string, value: unknown) {
             storageWrites[key] = value;
           },
-          getJSON(_key: string, fallback: unknown[]) {
+          getJSON(key: string, fallback: unknown[]) {
+            if (key === 'wardrobeSavedColors') return colorState;
             return fallback;
           },
         },

@@ -39,6 +39,8 @@ export type DeleteTempArgs = {
   publishStatus?: () => void;
   runMainWriteFlight: <T>(key: string, run: () => Promise<T>, onBusy: () => T | Promise<T>) => Promise<T>;
   clearPendingPush: () => void;
+  schedulePullSoon: (opts?: { immediate?: boolean; delayMs?: number; reason?: string }) => void;
+  schedulePush: () => void;
   setLastSeenUpdatedAt: (value: string) => void;
   setLastHash: (value: string) => void;
   suppress: { v: boolean };

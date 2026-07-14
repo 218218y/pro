@@ -1,19 +1,18 @@
-import type { AppContainer, SavedModelLike } from '../../../types';
+import type {
+  AppContainer,
+  CloudCollectionsCommitResult,
+  CloudCollectionsEnvelope,
+  CloudCollectionsMutator,
+  SavedModelLike,
+} from '../../../types';
 
 import {
   readCloudCollectionsEnvelopeViaServiceOrThrow,
-  updateCloudCollectionsViaServiceOrThrow,
+  transactCloudCollectionsViaServiceOrThrow,
 } from '../runtime/cloud_collections_access.js';
-import {
-  asMutableModelsList,
-  asMutableSavedModel,
-  markModelAsSavedModel,
-  markModelAsUserPreset,
-  readModelId,
-} from './models_registry_contracts.js';
+import { readModelId } from './models_registry_contracts.js';
 import { _modelsReportNonFatal } from './models_registry_nonfatal.js';
 import { _normalizeList } from './models_registry_normalization.js';
-import { getModelsRuntimeStateForApp } from './models_registry_state.js';
 
 function normalizeIdList(ids: readonly unknown[]): string[] {
   if (!Array.isArray(ids)) return [];
@@ -46,17 +45,31 @@ function stringifyComparable(value: unknown): string {
   }
 }
 
-function persistCollectionsMutation(
+function scheduleCollectionsRepair(App: AppContainer, label: string, mutator: CloudCollectionsMutator): void {
+  void transactModelsCollectionsCanonical(App, mutator).catch(error => {
+    _modelsReportNonFatal(App, label, error, 1500);
+  });
+}
+
+export function transactModelsCollectionsCanonical(
   App: AppContainer,
-  mutation: Parameters<typeof updateCloudCollectionsViaServiceOrThrow>[1]
-): boolean {
-  try {
-    updateCloudCollectionsViaServiceOrThrow(App, mutation, 'models registry persistence');
-    return true;
-  } catch (e) {
-    _modelsReportNonFatal(App, 'persistCollectionsMutation', e, 1500);
+  mutator: CloudCollectionsMutator
+): Promise<CloudCollectionsCommitResult> {
+  return transactCloudCollectionsViaServiceOrThrow(App, mutator, 'models registry persistence');
+}
+
+function currentAvailablePresetIds(
+  current: Readonly<CloudCollectionsEnvelope>,
+  availableIds?: ReadonlySet<string> | null
+): ReadonlySet<string> | null | undefined {
+  if (!availableIds || availableIds.size <= 0) return availableIds;
+  const next = new Set(availableIds);
+  for (const model of current.savedModels) {
+    if (!model?.isPreset) continue;
+    const id = readModelId(model);
+    if (id) next.add(id);
   }
-  return false;
+  return next;
 }
 
 export function _getStoredHiddenPresets(
@@ -69,17 +82,22 @@ export function _getStoredHiddenPresets(
       'models hidden presets read'
     ).hiddenPresets;
     const normalized = filterAvailableIds(normalizeIdList(raw), availableIds);
-    if (stringifyComparable(raw) !== stringifyComparable(normalized))
-      persistCollectionsMutation(App, { hiddenPresets: normalized });
+    if (stringifyComparable(raw) !== stringifyComparable(normalized)) {
+      scheduleCollectionsRepair(App, 'repairStoredHiddenPresets', current => {
+        const repaired = filterAvailableIds(
+          normalizeIdList(current.hiddenPresets),
+          currentAvailablePresetIds(current, availableIds)
+        );
+        return stringifyComparable(current.hiddenPresets) === stringifyComparable(repaired)
+          ? {}
+          : { hiddenPresets: repaired };
+      });
+    }
     return normalized;
   } catch (e) {
     _modelsReportNonFatal(App, 'getStoredHiddenPresets', e, 1500);
   }
   return [];
-}
-
-export function _setStoredHiddenPresets(App: AppContainer, ids: string[]): boolean {
-  return persistCollectionsMutation(App, { hiddenPresets: normalizeIdList(ids) });
 }
 
 export function _getStoredPresetOrder(
@@ -89,8 +107,17 @@ export function _getStoredPresetOrder(
   try {
     const raw = readCloudCollectionsEnvelopeViaServiceOrThrow(App, 'models preset order read').presetOrder;
     const normalized = filterAvailableIds(normalizeIdList(raw), availableIds);
-    if (stringifyComparable(raw) !== stringifyComparable(normalized))
-      persistCollectionsMutation(App, { presetOrder: normalized });
+    if (stringifyComparable(raw) !== stringifyComparable(normalized)) {
+      scheduleCollectionsRepair(App, 'repairStoredPresetOrder', current => {
+        const repaired = filterAvailableIds(
+          normalizeIdList(current.presetOrder),
+          currentAvailablePresetIds(current, availableIds)
+        );
+        return stringifyComparable(current.presetOrder) === stringifyComparable(repaired)
+          ? {}
+          : { presetOrder: repaired };
+      });
+    }
     return normalized;
   } catch (e) {
     _modelsReportNonFatal(App, 'getStoredPresetOrder', e, 1500);
@@ -98,74 +125,21 @@ export function _getStoredPresetOrder(
   return [];
 }
 
-export function _setStoredPresetOrder(App: AppContainer, ids: string[]): boolean {
-  return persistCollectionsMutation(App, { presetOrder: normalizeIdList(ids) });
-}
-
-export function _persistPresetOrder(App: AppContainer): void {
-  try {
-    const state = getModelsRuntimeStateForApp(App);
-    const ids: string[] = [];
-    for (let i = 0; i < state.all.length; i++) {
-      const model = state.all[i];
-      if (!model || !model.isPreset) continue;
-      const id = readModelId(model);
-      if (id) ids.push(id);
-    }
-    _setStoredPresetOrder(App, ids);
-  } catch (e) {
-    _modelsReportNonFatal(App, 'persistPresetOrder', e, 1500);
-  }
-}
-
 export function _getStoredUserModels(App: AppContainer): SavedModelLike[] {
   try {
     const raw = readCloudCollectionsEnvelopeViaServiceOrThrow(App, 'models saved models read').savedModels;
     const normalized = _normalizeList(raw);
-    if (stringifyComparable(raw) !== stringifyComparable(normalized))
-      persistCollectionsMutation(App, { savedModels: normalized });
+    if (stringifyComparable(raw) !== stringifyComparable(normalized)) {
+      scheduleCollectionsRepair(App, 'repairStoredUserModels', current => {
+        const repaired = _normalizeList(current.savedModels);
+        return stringifyComparable(current.savedModels) === stringifyComparable(repaired)
+          ? {}
+          : { savedModels: repaired };
+      });
+    }
     return normalized;
   } catch (e) {
     _modelsReportNonFatal(App, 'getStoredUserModels', e, 1500);
   }
   return [];
-}
-
-export function _setStoredUserModels(App: AppContainer, list: SavedModelLike[]): boolean {
-  return persistCollectionsMutation(App, { savedModels: list });
-}
-
-export function _persistUserOnly(App: AppContainer): void {
-  try {
-    const state = getModelsRuntimeStateForApp(App);
-    const userOnly: SavedModelLike[] = [];
-
-    for (let i = 0; i < state.all.length; i++) {
-      const model = asMutableSavedModel(state.all[i]);
-      if (!model) continue;
-      if (!model.isPreset || model.isUserPreset) userOnly.push(model);
-    }
-
-    const normalized = asMutableModelsList(_normalizeList(userOnly));
-    for (let i = 0; i < normalized.length; i++) {
-      const record = normalized[i];
-      if (record.isPreset) {
-        try {
-          markModelAsUserPreset(record);
-        } catch (e) {
-          _modelsReportNonFatal(App, 'persistUserOnly.preset', e, 1500);
-        }
-      } else {
-        try {
-          markModelAsSavedModel(record);
-        } catch (e) {
-          _modelsReportNonFatal(App, 'persistUserOnly.saved', e, 1500);
-        }
-      }
-    }
-
-    _setStoredUserModels(App, normalized);
-  } catch (e) {
-    _modelsReportNonFatal(App, 'persistUserOnly', e, 1500);
-  }
 }

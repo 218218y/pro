@@ -1,8 +1,13 @@
 import type { AppContainer, CloudCollectionsServiceLike } from '../../../types';
 
-import { ensureServiceSlot } from '../runtime/services_root_access.js';
+import { ensureServiceSlot, getNavigatorMaybe } from '../runtime/api.js';
 import { getStorageServiceMaybe } from '../runtime/storage_access.js';
-import { createCloudCollectionsRepository } from './cloud_sync_collections_repository.js';
+import { createCloudCollectionsWebLock } from './cloud_collections_mutation_lock.js';
+import {
+  createCloudCollectionsRepository,
+  createInProcessCloudCollectionsMutationLock,
+} from './cloud_sync_collections_repository.js';
+import { _cloudSyncReportNonFatal } from './cloud_sync_support_feedback.js';
 import {
   isCloudSyncStorageLike,
   resolveCloudSyncOwnerStorageKeys,
@@ -14,8 +19,13 @@ export function installCloudCollectionsService(App: AppContainer): CloudCollecti
     throw new Error('[WardrobePro] Cloud collections requires the canonical storage service.');
   }
   const keys = resolveCloudSyncOwnerStorageKeys(storage);
+  const nav = getNavigatorMaybe(App);
+  const mutationLock = nav
+    ? createCloudCollectionsWebLock(nav.locks)
+    : createInProcessCloudCollectionsMutationLock();
   const repository = createCloudCollectionsRepository({
     storage,
+    mutationLock,
     keys: {
       models: keys.keyModels,
       colors: keys.keyColors,
@@ -23,15 +33,29 @@ export function installCloudCollectionsService(App: AppContainer): CloudCollecti
       presetOrder: keys.keyPresetOrder,
       hiddenPresets: keys.keyHiddenPresets,
     },
+    reportObserverFailure: (error, observerIndex) =>
+      _cloudSyncReportNonFatal(App, `collections.observer.${observerIndex}`, error, {
+        throttleMs: 6000,
+      }),
   });
-  repository.readEnvelope();
+  if (repository.mutationIsolation !== 'cross-tab') {
+    _cloudSyncReportNonFatal(
+      App,
+      'collections.mutationIsolation',
+      new Error(
+        `Cloud collections mutation isolation is ${repository.mutationIsolation}; cross-tab writes require Web Locks.`
+      ),
+      { throttleMs: 60000, noConsole: true }
+    );
+  }
   const service = ensureServiceSlot<CloudCollectionsServiceLike>(App, 'cloudCollections');
   service.repository = repository;
   service.readEnvelope = () => repository.readEnvelope();
   service.readResult = () => repository.readResult();
-  service.update = mutation => repository.update(mutation);
+  service.transact = mutator => repository.transact(mutator);
   service.repairMirrors = () => repository.repairMirrors();
   service.backupCorruptEnvelope = () => repository.backupCorruptEnvelope();
   service.resetCorruptEnvelope = next => repository.resetCorruptEnvelope(next);
+  repository.readEnvelope();
   return service;
 }

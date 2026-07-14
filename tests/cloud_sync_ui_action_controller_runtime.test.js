@@ -47,6 +47,7 @@ function loadCloudSyncUiActionControllerModule(reportCalls) {
               pushReportCall(['deleteTemp', fb, result, kind]),
             reportFloatingSketchSyncPinResult: (fb, result) => pushReportCall(['floatingSync', fb, result]),
             reportSite2TabsGateResult: (fb, result) => pushReportCall(['site2TabsGate', fb, result]),
+            reportCloudSyncConflictResolutionResult: (fb, result) => pushReportCall(['conflict', fb, result]),
           };
         }
         if (specifier === '../cloud_sync_mutation_commands.js') {
@@ -72,6 +73,11 @@ function loadCloudSyncUiActionControllerModule(reportCalls) {
             setFloatingSketchSyncEnabled: async () => ({ ok: false, reason: 'not-installed' }),
             toggleFloatingSketchSyncEnabled: async () => ({ ok: false, reason: 'not-installed' }),
             toggleSite2TabsGate: async () => ({ ok: false, reason: 'not-installed' }),
+            resolveCloudSyncConflict: async (_app, resolution) => ({
+              ok: false,
+              resolution,
+              reason: 'missing-conflict',
+            }),
           };
         }
         return undefined;
@@ -175,6 +181,54 @@ test('[cloud-sync-ui-controller] panel/sidebar/dock actions flow through one can
       ['site2TabsGate', { ok: true, changed: true, open: true, until: 123 }, null],
     ])
   );
+});
+
+test('[cloud-sync-ui-controller] conflict resolution uses the canonical command and reporter', async () => {
+  const reportCalls = [];
+  const mod = loadCloudSyncUiActionControllerModule(reportCalls);
+  const app = { id: 'conflict-app' };
+  const fb = { toast() {} };
+  const calls = [];
+  const controller = mod.createCloudSyncUiActionController({
+    app,
+    fb,
+    resolveCloudSyncConflict: async (receivedApp, resolution) => {
+      calls.push([receivedApp, resolution]);
+      return {
+        ok: true,
+        resolution,
+        row: {
+          room: 'room-a',
+          payload: {},
+          revision: 8,
+          updated_at: '2026-07-14T00:00:00.000Z',
+          updated_by: 'client-local',
+        },
+      };
+    },
+  });
+
+  const result = await controller.resolveConflict('keep-local');
+
+  assert.deepEqual(calls, [[app, 'keep-local']]);
+  assert.equal(result.ok, true);
+  assert.deepEqual(reportCalls, [
+    [
+      'conflict',
+      fb,
+      {
+        ok: true,
+        resolution: 'keep-local',
+        row: {
+          room: 'room-a',
+          payload: {},
+          revision: 8,
+          updated_at: '2026-07-14T00:00:00.000Z',
+          updated_by: 'client-local',
+        },
+      },
+    ],
+  ]);
 });
 
 test('[cloud-sync-ui-controller] app-scoped single-flight dedupes same cloud actions across controllers and reports busy on conflicting control mutations', async () => {

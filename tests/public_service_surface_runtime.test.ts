@@ -56,7 +56,7 @@ test('public service surface runtime: edit-state API heals drifted public reset 
   assert.deepEqual(calls, ['canonical-reset']);
 });
 
-test('public service surface runtime: models commands stay on the canonical service seam', () => {
+test('public service surface runtime: models commands stay on the canonical service seam', async () => {
   const calls: unknown[] = [];
   const App = {
     services: {
@@ -85,7 +85,7 @@ test('public service surface runtime: models commands stay on the canonical serv
     { id: 'm2', name: 'Model 2' },
   ]);
   assert.deepEqual(
-    mergeImportedModelsViaService(App, [
+    await mergeImportedModelsViaService(App, [
       { id: ' x1 ', name: ' X1 ' },
       { id: 'x1', name: 'Duplicate wins' },
       { id: 'x2', name: 'X2' },

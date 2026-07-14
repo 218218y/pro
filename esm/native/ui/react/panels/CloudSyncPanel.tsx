@@ -7,12 +7,15 @@ export function CloudSyncPanel(): ReactElement {
   const {
     status,
     isPublic,
+    conflict,
     handleToggleRoomMode,
     handleCopy,
     handleSyncSketch,
     handleDeleteModels,
     handleDeleteColors,
+    handleResolveConflict,
   } = useCloudSyncPanelActions();
+  const conflictResolving = conflict?.state === 'resolving';
 
   return (
     <div className="control-section" data-testid="cloud-sync-panel">
@@ -21,6 +24,36 @@ export function CloudSyncPanel(): ReactElement {
       <div className="wp-r-cloudsync-status" data-testid="cloud-sync-status">
         {status}
       </div>
+
+      {conflict ? (
+        <div data-testid="cloud-sync-conflict-resolution">
+          <InlineNotice>
+            הסנכרון מושהה בגלל התנגשות ב־{conflict.keys.join(', ') || 'נתונים משותפים'}. יש לבחור איזו גרסה
+            לשמור.
+          </InlineNotice>
+          <div className="wp-r-btn-row wp-r-wrap">
+            <Button
+              variant="primary"
+              inline
+              size="sm"
+              disabled={conflictResolving}
+              data-testid="cloud-sync-conflict-keep-local"
+              onClick={() => handleResolveConflict('keep-local')}
+            >
+              שמור את השינויים שלי
+            </Button>
+            <Button
+              inline
+              size="sm"
+              disabled={conflictResolving}
+              data-testid="cloud-sync-conflict-use-remote"
+              onClick={() => handleResolveConflict('use-remote')}
+            >
+              השתמש בגרסת הענן
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       <div className="wp-r-btn-row wp-r-wrap">
         <Button

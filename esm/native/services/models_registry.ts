@@ -80,11 +80,6 @@ export {
   _keyHiddenPresets,
   _keyPresetOrder,
   _notify,
-  _persistPresetOrder,
-  _persistUserOnly,
-  _setStoredHiddenPresets,
-  _setStoredPresetOrder,
-  _setStoredUserModels,
   getAppModels,
   getHistorySystem,
   getStorage,
@@ -115,7 +110,10 @@ export function exportUserModelsInternal(App: AppContainer): SavedModelLike[] {
   return exportUserModelsInternalImpl(App);
 }
 
-export function mergeImportedModelsInternal(App: AppContainer, list: SavedModelLike[]): ModelsMergeResult {
+export function mergeImportedModelsInternal(
+  App: AppContainer,
+  list: SavedModelLike[]
+): Promise<ModelsMergeResult> {
   return mergeImportedModelsInternalImpl(App, list);
 }
 

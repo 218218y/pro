@@ -1,6 +1,8 @@
 import type {
   ActionMetaLike,
   AppContainer,
+  CloudSyncConflictResolution,
+  CloudSyncConflictResolutionResult,
   CloudSyncDeleteTempResult,
   CloudSyncRoomModeCommandResult,
   CloudSyncShareLinkCommandResult,
@@ -18,6 +20,7 @@ import {
   copyCloudSyncShareLink,
   goCloudSyncPrivate,
   goCloudSyncPublic,
+  resolveCloudSyncConflict,
   setFloatingSketchSyncEnabled,
   toggleFloatingSketchSyncEnabled,
   toggleSite2TabsGate,
@@ -42,6 +45,10 @@ export type ResolvedCloudSyncUiActionCommands = {
     nextOpen: boolean,
     meta: ActionMetaLike
   ) => Promise<CloudSyncTabsGateCommandResult>;
+  resolveConflictCommand: (
+    app: AppContainer,
+    resolution: CloudSyncConflictResolution
+  ) => Promise<CloudSyncConflictResolutionResult>;
 };
 
 export function resolveCloudSyncUiActionCommands(
@@ -75,5 +82,8 @@ export function resolveCloudSyncUiActionCommands(
     toggleSite2TabsGateCommand: isCloudSyncUiActionFn(args.toggleSite2TabsGate)
       ? args.toggleSite2TabsGate
       : toggleSite2TabsGate,
+    resolveConflictCommand: isCloudSyncUiActionFn(args.resolveCloudSyncConflict)
+      ? args.resolveCloudSyncConflict
+      : resolveCloudSyncConflict,
   };
 }

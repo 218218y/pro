@@ -26,22 +26,26 @@ export type ModelsServiceOperations = {
   ensureModelsLoaded: (App: AppContainer, opts?: ModelsLoadOptions) => SavedModelLike[];
   getAllModels: (App: AppContainer) => SavedModelLike[];
   getModelById: (App: AppContainer, id: SavedModelId) => SavedModelLike | null;
-  saveCurrentModel: (App: AppContainer, name: SavedModelName) => ModelsSaveResult;
-  overwriteModelFromCurrent: (App: AppContainer, id: SavedModelId) => ModelsCommandResult;
-  deleteModelById: (App: AppContainer, id: SavedModelId) => ModelsCommandResult;
-  setModelLocked: (App: AppContainer, id: SavedModelId, locked: boolean) => ModelsLockResult;
-  deleteTemporaryUserModels: (App: AppContainer) => ModelsDeleteTemporaryResult;
-  moveModel: (App: AppContainer, id: SavedModelId, direction: ModelsMoveDirection) => ModelsCommandResult;
+  saveCurrentModel: (App: AppContainer, name: SavedModelName) => Promise<ModelsSaveResult>;
+  overwriteModelFromCurrent: (App: AppContainer, id: SavedModelId) => Promise<ModelsCommandResult>;
+  deleteModelById: (App: AppContainer, id: SavedModelId) => Promise<ModelsCommandResult>;
+  setModelLocked: (App: AppContainer, id: SavedModelId, locked: boolean) => Promise<ModelsLockResult>;
+  deleteTemporaryUserModels: (App: AppContainer) => Promise<ModelsDeleteTemporaryResult>;
+  moveModel: (
+    App: AppContainer,
+    id: SavedModelId,
+    direction: ModelsMoveDirection
+  ) => Promise<ModelsCommandResult>;
   transferModel: (
     App: AppContainer,
     id: SavedModelId,
     targetList: ModelsTransferTargetList,
     overId: SavedModelId | null,
     pos: ModelsTransferPosition
-  ) => ModelsCommandResult;
+  ) => Promise<ModelsCommandResult>;
   applyModel: (App: AppContainer, id: SavedModelId) => ModelsCommandResult;
   exportUserModels: (App: AppContainer) => SavedModelLike[];
-  mergeImportedModels: (App: AppContainer, list: SavedModelLike[]) => ModelsMergeResult;
+  mergeImportedModels: (App: AppContainer, list: SavedModelLike[]) => Promise<ModelsMergeResult>;
   onModelsChange: (App: AppContainer, fn: ModelsChangeListener) => void;
   offModelsChange: (App: AppContainer, fn: ModelsChangeListener) => void;
 };
@@ -53,21 +57,21 @@ type InstallableModelsService = ModelsServiceLike & {
   __wpEnsureLoaded?: (opts?: ModelsLoadOptions) => SavedModelLike[];
   __wpGetAll?: () => SavedModelLike[];
   __wpGetById?: (id: SavedModelId) => SavedModelLike | null;
-  __wpSaveCurrent?: (name: SavedModelName) => ModelsSaveResult;
-  __wpOverwriteFromCurrent?: (id: SavedModelId) => ModelsCommandResult;
-  __wpDeleteById?: (id: SavedModelId) => ModelsCommandResult;
-  __wpSetLocked?: (id: SavedModelId, locked: boolean) => ModelsLockResult;
-  __wpDeleteTemporary?: () => ModelsDeleteTemporaryResult;
-  __wpMove?: (id: SavedModelId, dir: ModelsMoveDirection) => ModelsCommandResult;
+  __wpSaveCurrent?: (name: SavedModelName) => Promise<ModelsSaveResult>;
+  __wpOverwriteFromCurrent?: (id: SavedModelId) => Promise<ModelsCommandResult>;
+  __wpDeleteById?: (id: SavedModelId) => Promise<ModelsCommandResult>;
+  __wpSetLocked?: (id: SavedModelId, locked: boolean) => Promise<ModelsLockResult>;
+  __wpDeleteTemporary?: () => Promise<ModelsDeleteTemporaryResult>;
+  __wpMove?: (id: SavedModelId, dir: ModelsMoveDirection) => Promise<ModelsCommandResult>;
   __wpTransfer?: (
     id: SavedModelId,
     targetList: ModelsTransferTargetList,
     overId: SavedModelId | null,
     pos: ModelsTransferPosition
-  ) => ModelsCommandResult;
+  ) => Promise<ModelsCommandResult>;
   __wpApply?: (id: SavedModelId) => ModelsCommandResult;
   __wpExportUserModels?: () => SavedModelLike[];
-  __wpMergeImportedModels?: (list: SavedModelLike[]) => ModelsMergeResult;
+  __wpMergeImportedModels?: (list: SavedModelLike[]) => Promise<ModelsMergeResult>;
   __wpOnChange?: (fn: ModelsChangeListener) => void;
   __wpOffChange?: (fn: ModelsChangeListener) => void;
 };

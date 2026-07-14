@@ -11,12 +11,12 @@ import {
 } from '../esm/native/services/models_registry.ts';
 import { syncModelsStateToApp } from '../esm/native/services/models_registry_storage_state.ts';
 import { installCloudCollectionsService } from '../esm/native/services/cloud_collections_service.ts';
+import { deleteModelByIdInternal, transferModelInternal } from '../esm/native/services/models_apply_ops.ts';
 
 import {
   _getStoredHiddenPresets,
   _getStoredPresetOrder,
-  _setStoredHiddenPresets,
-  _setStoredPresetOrder,
+  _getStoredUserModels,
 } from '../esm/native/services/models_registry.ts';
 
 function clone<T>(value: T): T {
@@ -84,7 +84,11 @@ test.after(() => {
   resetModelsRuntimeState();
 });
 
-test('models registry runtime: ensureLoaded repairs stored preset and user-model collections to canonical form', () => {
+async function flushAsyncMutations(): Promise<void> {
+  await new Promise<void>(resolve => setImmediate(resolve));
+}
+
+test('models registry runtime: ensureLoaded repairs stored preset and user-model collections to canonical form', async () => {
   const { App, writes } = createApp({
     savedModels: [
       { id: ' user-1 ', name: ' User 1 ' },
@@ -101,6 +105,7 @@ test('models registry runtime: ensureLoaded repairs stored preset and user-model
   ] as any);
 
   const loaded = ensureModelsLoadedInternal(App, { forceRebuild: true, silent: true });
+  await flushAsyncMutations();
 
   assert.deepEqual(
     loaded.map(model => model.id),
@@ -114,7 +119,7 @@ test('models registry runtime: ensureLoaded repairs stored preset and user-model
   ]);
 });
 
-test('models registry runtime: preset-order repair preserves live user presets alongside core presets', () => {
+test('models registry runtime: preset-order repair preserves live user presets alongside core presets', async () => {
   const { App, writes } = createApp({
     savedModels: [
       { id: ' user-preset ', name: ' User Preset ', isPreset: true },
@@ -127,6 +132,7 @@ test('models registry runtime: preset-order repair preserves live user presets a
   setModelPresetsInternal(App, [{ id: 'preset-a', name: 'Preset A' }] as any);
 
   const loaded = ensureModelsLoadedInternal(App, { forceRebuild: true, silent: true });
+  await flushAsyncMutations();
 
   assert.deepEqual(
     loaded.map(model => model.id),
@@ -139,8 +145,11 @@ test('models registry runtime: preset-order repair preserves live user presets a
   assert.deepEqual(writes['savedModels:presetOrder'], ['user-preset', 'preset-a']);
 });
 
-test('models registry storage: preset-order and hidden-preset writes stay canonical for string-only storage backends', () => {
-  const store = new Map<string, string>();
+test('models registry storage: preset-order and hidden-preset repairs stay canonical for string-only storage backends', async () => {
+  const store = new Map<string, string>([
+    ['savedModels:presetOrder', JSON.stringify([' preset-b ', '', 'preset-a', 'preset-b'])],
+    ['savedModels:hiddenPresets', JSON.stringify([' preset-a ', 'preset-a', '', 'preset-c'])],
+  ]);
   const writes: Record<string, string> = Object.create(null);
   const App = {
     services: {
@@ -160,13 +169,112 @@ test('models registry storage: preset-order and hidden-preset writes stay canoni
   } as any;
   installCloudCollectionsService(App);
 
-  assert.equal(_setStoredPresetOrder(App, [' preset-b ', '', 'preset-a', 'preset-b']), true);
-  assert.equal(_setStoredHiddenPresets(App, [' preset-a ', 'preset-a', '', 'preset-c']), true);
+  assert.deepEqual(_getStoredPresetOrder(App), ['preset-b', 'preset-a']);
+  assert.deepEqual(_getStoredHiddenPresets(App), ['preset-a', 'preset-c']);
+  await flushAsyncMutations();
 
   assert.equal(writes['savedModels:presetOrder'], JSON.stringify(['preset-b', 'preset-a']));
   assert.equal(writes['savedModels:hiddenPresets'], JSON.stringify(['preset-a', 'preset-c']));
   assert.deepEqual(_getStoredPresetOrder(App), ['preset-b', 'preset-a']);
   assert.deepEqual(_getStoredHiddenPresets(App), ['preset-a', 'preset-c']);
+});
+
+test('models registry storage: delayed canonical repair preserves a model committed before lock acquisition', async () => {
+  const { App, storage } = createApp({
+    savedModels: [{ id: ' user-1 ', name: ' User 1 ' }],
+    'savedModels:presetOrder': [],
+    'savedModels:hiddenPresets': [],
+  });
+  const repository = App.services.cloudCollections.repository;
+
+  assert.deepEqual(
+    _getStoredUserModels(App).map((model: any) => model.id),
+    ['user-1']
+  );
+
+  const before = repository.readEnvelope();
+  assert.equal(
+    storage.setJSON(repository.envelopeKey, {
+      ...before,
+      revision: before.revision + 1,
+      savedModels: before.savedModels.concat({ id: 'user-2', name: 'User 2' }),
+    }),
+    true
+  );
+
+  await flushAsyncMutations();
+
+  const repaired = repository.readEnvelope();
+  assert.deepEqual(
+    repaired.savedModels.map((model: any) => model.id),
+    ['user-1', 'user-2']
+  );
+  assert.equal(repaired.revision, before.revision + 2);
+  for (const model of repaired.savedModels) assertCanonicalModelShape([model]);
+});
+
+test('models command persistence failure leaves runtime state and notifications unchanged', async () => {
+  const { App, storage } = createApp({
+    savedModels: [{ id: 'user-1', name: 'User 1' }],
+    'savedModels:presetOrder': [],
+    'savedModels:hiddenPresets': [],
+  });
+  ensureModelsLoadedInternal(App, { forceRebuild: true, silent: true });
+  const stateBefore = getModelsRuntimeStateForApp(App);
+  const allBefore = stateBefore.all;
+  let notifications = 0;
+  onModelsChangeInternal(App, () => {
+    notifications += 1;
+  });
+  const revisionBefore = stateBefore.revision;
+  const originalSetJSON = storage.setJSON.bind(storage);
+  storage.setJSON = (key: string, value: unknown): boolean =>
+    key === 'savedModels:cloudCollections:v1' ? false : originalSetJSON(key, value);
+
+  const result = await deleteModelByIdInternal(App, 'user-1');
+
+  assert.equal(result.ok, false);
+  assert.equal(result.reason, 'error');
+  assert.equal(getModelsRuntimeStateForApp(App).all, allBefore);
+  assert.equal(getModelsRuntimeStateForApp(App).revision, revisionBefore);
+  assert.deepEqual(
+    getModelsRuntimeStateForApp(App).all.map(model => model.id),
+    ['user-1']
+  );
+  assert.equal(notifications, 0);
+  assert.deepEqual(
+    App.services.cloudCollections.repository.readEnvelope().savedModels.map((model: any) => model.id),
+    ['user-1']
+  );
+});
+
+test('model transfer commits saved models, preset order, and hidden presets in one canonical write', async () => {
+  const { App, storage } = createApp({
+    savedModels: [],
+    'savedModels:presetOrder': ['preset-a'],
+    'savedModels:hiddenPresets': [],
+  });
+  setModelPresetsInternal(App, [{ id: 'preset-a', name: 'Preset A' }] as any);
+  ensureModelsLoadedInternal(App, { forceRebuild: true, silent: true });
+  let canonicalWrites = 0;
+  const originalSetJSON = storage.setJSON.bind(storage);
+  storage.setJSON = (key: string, value: unknown): boolean => {
+    if (key === 'savedModels:cloudCollections:v1') canonicalWrites += 1;
+    return originalSetJSON(key, value);
+  };
+
+  const result = await transferModelInternal(App, 'preset-a', 'saved', null, 'end');
+  const envelope = App.services.cloudCollections.repository.readEnvelope();
+
+  assert.deepEqual(result, { ok: true });
+  assert.equal(canonicalWrites, 1);
+  assert.deepEqual(
+    envelope.savedModels.map((model: any) => model.id),
+    ['preset-a']
+  );
+  assert.equal(envelope.savedModels[0]?.isPreset, false);
+  assert.deepEqual(envelope.presetOrder, []);
+  assert.deepEqual(envelope.hiddenPresets, ['preset-a']);
 });
 
 test('models registry runtime: onChange listeners receive detached model snapshots instead of live state objects', () => {

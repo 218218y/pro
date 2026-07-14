@@ -97,9 +97,9 @@ test('seedMultiColorMode prefers actions.colors.setMultiMode and seeds default f
   });
 });
 
-test('seedColorSwatchesOrder reads storage order and writes normalized swatches with restore meta', () => {
+test('seedColorSwatchesOrder reads storage order and writes normalized swatches with restore meta', async () => {
   const { App, calls } = makeApp({ colorSwatchesOrder: [] });
-  seedColorSwatchesOrder(App as never);
+  await seedColorSwatchesOrder(App as never);
   assert.equal(calls.colors.length, 1);
   assert.deepEqual(calls.colors[0], {
     order: ['oak', 'white'],
@@ -116,7 +116,7 @@ test('seedColorSwatchesOrder reads storage order and writes normalized swatches 
   });
 });
 
-test('seedSavedColors hydrates an empty boot config from stored saved colors without rewriting storage', () => {
+test('seedSavedColors hydrates an empty boot config from stored saved colors without rewriting storage', async () => {
   const { App, calls } = makeApp({ savedColors: [] });
   const storage = ((App as any).services as any).storage;
   storage.getString = (key: string) => {
@@ -135,7 +135,7 @@ test('seedSavedColors hydrates an empty boot config from stored saved colors wit
     return null;
   };
 
-  seedSavedColors(App as never);
+  await seedSavedColors(App as never);
 
   assert.equal(calls.savedColors.length, 1);
   assert.deepEqual(calls.savedColors[0], {
@@ -162,19 +162,19 @@ test('seedSavedColors hydrates an empty boot config from stored saved colors wit
   });
 });
 
-test('installBootSeedsPart02 is idempotent and reuses the same boot bucket', () => {
+test('installBootSeedsPart02 is idempotent and reuses the same boot bucket', async () => {
   const { App } = makeApp({ colorSwatchesOrder: ['already'], isMultiColorMode: true });
-  const boot1 = installBootSeedsPart02(App as never);
-  const boot2 = installBootSeedsPart02(App as never);
+  const boot1 = await installBootSeedsPart02(App as never);
+  const boot2 = await installBootSeedsPart02(App as never);
   assert.equal(boot1, boot2);
   assert.equal((boot2 as any).bootSeedsPart02Installed, true);
 });
 
-test('installBootSeedsPart02 heals missing seeded config even when the old boot flag is already set', () => {
+test('installBootSeedsPart02 heals missing seeded config even when the old boot flag is already set', async () => {
   const { App, config } = makeApp({});
   (App as any).__wpInternal = { boot: { bootSeedsPart02Installed: true } };
 
-  const boot = installBootSeedsPart02(App as never);
+  const boot = await installBootSeedsPart02(App as never);
 
   assert.equal((boot as any).bootSeedsPart02Installed, true);
   assert.equal(config.isMultiColorMode, false);

@@ -104,8 +104,13 @@ export function commitProjectLoadSnapshotViaActionsOrThrow(
     );
   }
   const handle = commitProjectLoadSnapshot(snapshot, meta);
-  if (!handle || typeof handle.rollback !== 'function') {
-    throw new Error(`[WardrobePro] ${label} did not return a rollback handle.`);
+  if (
+    !handle ||
+    handle.state !== 'prepared' ||
+    typeof handle.commit !== 'function' ||
+    typeof handle.rollback !== 'function'
+  ) {
+    throw new Error(`[WardrobePro] ${label} did not return a prepared transaction handle.`);
   }
   return handle;
 }

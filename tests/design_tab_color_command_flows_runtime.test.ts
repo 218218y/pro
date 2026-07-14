@@ -15,7 +15,10 @@ import { getPerfEntries } from '../esm/native/runtime/perf_runtime_surface.ts';
 import { installCloudCollectionsService } from '../esm/native/services/cloud_collections_service.ts';
 
 function createAppHarness() {
-  const storageValues = new Map<string, unknown>();
+  const storageValues = new Map<string, unknown>([
+    ['savedColors', BASE_SAVED_COLORS],
+    ['savedColors:order', BASE_SAVED_COLORS.map(color => color.id)],
+  ]);
   const state = {
     savedColors: [] as Array<Record<string, unknown>>,
     colorSwatchesOrder: [] as string[],
@@ -100,9 +103,9 @@ const BASE_SAVED_COLORS: SavedColor[] = [
   { id: 'saved_c', name: 'ג', type: 'texture', value: 'saved_c', textureData: 'data:image/png;base64,ccc' },
 ];
 
-test('reorderSavedColorSwatches updates order and persists saved-color order when needed', () => {
+test('reorderSavedColorSwatches updates order and persists saved-color order when needed', async () => {
   const { app, state } = createAppHarness();
-  const result = reorderSavedColorSwatches(
+  const result = await reorderSavedColorSwatches(
     app as never,
     BASE_SAVED_COLORS,
     BASE_SAVED_COLORS,
@@ -130,9 +133,9 @@ test('reorderSavedColorSwatches updates order and persists saved-color order whe
   );
 });
 
-test('toggleSavedColorLock flips locked flag through canonical saved-colors write', () => {
+test('toggleSavedColorLock flips locked flag through canonical saved-colors write', async () => {
   const { app, state } = createAppHarness();
-  const result = toggleSavedColorLock(app as never, BASE_SAVED_COLORS, 'saved_b');
+  const result = await toggleSavedColorLock(app as never, BASE_SAVED_COLORS, 'saved_b');
 
   assert.deepEqual(result, {
     ok: true,
@@ -163,9 +166,9 @@ test('toggleSavedColorLock flips locked flag through canonical saved-colors writ
   );
 });
 
-test('deleteSavedColor removes color, trims order, and resets active choice when deleted color was selected', () => {
+test('deleteSavedColor removes color, trims order, and resets active choice when deleted color was selected', async () => {
   const { app, state, applyColorChoice } = createAppHarness();
-  const result = deleteSavedColor(
+  const result = await deleteSavedColor(
     app as never,
     BASE_SAVED_COLORS,
     BASE_SAVED_COLORS,
@@ -189,9 +192,9 @@ test('deleteSavedColor removes color, trims order, and resets active choice when
   assert.equal(state.batchCalls, 0);
 });
 
-test('deleteSavedColor removes an unselected color without requesting a build', () => {
+test('deleteSavedColor removes an unselected color without requesting a build', async () => {
   const { app, state, applyColorChoice } = createAppHarness();
-  const result = deleteSavedColor(
+  const result = await deleteSavedColor(
     app as never,
     BASE_SAVED_COLORS,
     BASE_SAVED_COLORS,
@@ -243,9 +246,9 @@ test('runDeleteSavedColorFlow resolves cancelled when confirm rejects', async ()
   assert.equal(result.reason, 'cancelled');
 });
 
-test('saveCustomColorByName writes new saved color, order, and activates it', () => {
+test('saveCustomColorByName writes new saved color, order, and activates it', async () => {
   const { app, state, applyColorChoice } = createAppHarness();
-  const result = saveCustomColorByName(
+  const result = await saveCustomColorByName(
     app as never,
     BASE_SAVED_COLORS,
     BASE_SAVED_COLORS,
@@ -276,9 +279,9 @@ test('saveCustomColorByName writes new saved color, order, and activates it', ()
   assert.equal(state.batchCalls, 0);
 });
 
-test('saved color add records stage-level perf entries for diagnosis', () => {
+test('saved color add records stage-level perf entries for diagnosis', async () => {
   const { app, applyColorChoice } = createAppHarness();
-  const result = saveCustomColorByName(
+  const result = await saveCustomColorByName(
     app as never,
     BASE_SAVED_COLORS,
     BASE_SAVED_COLORS,
@@ -299,11 +302,11 @@ test('saved color add records stage-level perf entries for diagnosis', () => {
   assert.ok(metricNames.includes('design.savedColor.storage.commit'));
 });
 
-test('saved color atomic fallback still persists storage exactly once per branch', () => {
+test('saved color atomic fallback still persists storage exactly once per branch', async () => {
   const { app, state, applyColorChoice } = createAppHarness();
   delete (app as { actions?: { patch?: unknown } }).actions?.patch;
 
-  const result = saveCustomColorByName(
+  const result = await saveCustomColorByName(
     app as never,
     BASE_SAVED_COLORS,
     BASE_SAVED_COLORS,
@@ -325,14 +328,14 @@ test('saved color atomic fallback still persists storage exactly once per branch
   assert.equal(state.appliedChoice, 'saved_fallback');
 });
 
-test('deleteSavedColor no-op guards avoid patch and storage writes', () => {
+test('deleteSavedColor no-op guards avoid patch and storage writes', async () => {
   const { app, state, applyColorChoice } = createAppHarness();
   const lockedSavedColors: SavedColor[] = [
     BASE_SAVED_COLORS[0] as SavedColor,
     { ...(BASE_SAVED_COLORS[1] as SavedColor), locked: true },
     BASE_SAVED_COLORS[2] as SavedColor,
   ];
-  const missing = deleteSavedColor(
+  const missing = await deleteSavedColor(
     app as never,
     lockedSavedColors,
     lockedSavedColors,
@@ -340,7 +343,7 @@ test('deleteSavedColor no-op guards avoid patch and storage writes', () => {
     'saved_missing',
     applyColorChoice
   );
-  const locked = deleteSavedColor(
+  const locked = await deleteSavedColor(
     app as never,
     lockedSavedColors,
     lockedSavedColors,

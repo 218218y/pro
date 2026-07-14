@@ -111,6 +111,12 @@ export function createCloudSyncInstallRuntimeOps(args: CloudSyncInstallRuntimeAr
     clearPendingPush: () => {
       cloudSyncMainRow.clearPendingPush();
     },
+    schedulePullSoon: opts => {
+      cloudSyncMainRow.schedulePullSoon(opts);
+    },
+    schedulePush: () => {
+      cloudSyncMainRow.schedulePush();
+    },
     setLastSeenUpdatedAt: (value: string) => {
       cloudSyncMainRow.setLastSeenUpdatedAt(value);
     },

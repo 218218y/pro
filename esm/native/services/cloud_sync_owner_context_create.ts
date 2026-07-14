@@ -84,6 +84,7 @@ export function createCloudSyncOwnerContext(App: AppContainer): CloudSyncOwnerCo
     clientId,
     runtimeStatus: statusRuntime.runtimeStatus,
     publishStatus: statusRuntime.publishStatus,
+    storage,
   });
   if (!gatewayIo) return null;
 

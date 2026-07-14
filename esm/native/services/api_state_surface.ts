@@ -158,7 +158,9 @@ export {
   writeHinge,
   readSavedColors,
   writeSavedColors,
+  writeSavedColorsOrThrow,
   writeColorSwatchesOrder,
+  writeColorSwatchesOrderOrThrow,
 } from '../runtime/maps_access.js';
 
 // Corner cells canonical API (feature-level helpers, safe for UI/runtime use)

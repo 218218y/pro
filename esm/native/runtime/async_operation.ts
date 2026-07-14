@@ -2,11 +2,30 @@ import type { AsyncOperationHandle } from '../../../types';
 
 let nextOperationSequence = 1;
 const MAX_RETAINED_OBSERVATIONS = 512;
+const MAX_RETAINED_STALE_DIAGNOSTICS = 128;
 const operationObservers = new Map<string, { settled: Promise<unknown>; complete: boolean }>();
+const staleOperationDiagnostics: AsyncOperationStaleDiagnostic[] = [];
 
 export type AsyncOperationObservation<T> = {
   observed: boolean;
   settled: Promise<T>;
+};
+
+export type AsyncOperationStaleDiagnostic = {
+  observerId: string;
+  operationId: string;
+  requestedAt: number;
+  acceptedAt: number;
+  detectedAt: number;
+  ageMs: number;
+};
+
+export type AsyncOperationWatchdog<T> = {
+  staleAfterMs: number;
+  onStale: (diagnostic: AsyncOperationStaleDiagnostic, handle: AsyncOperationHandle<T>) => void;
+  now?: () => number;
+  schedule?: (callback: () => void, delayMs: number) => unknown;
+  cancel?: (token: unknown) => void;
 };
 
 export type AsyncOperationObserverArgs<T, StartedToken = void> = {
@@ -20,6 +39,7 @@ export type AsyncOperationObserverArgs<T, StartedToken = void> = {
     startedToken: StartedToken | undefined
   ) => void;
   onObserverError?: (error: unknown) => void;
+  watchdog?: AsyncOperationWatchdog<T>;
 };
 
 function normalizeOperationPrefix(value: string): string {
@@ -31,14 +51,18 @@ function normalizeOperationPrefix(value: string): string {
 export function createAsyncOperationHandle<T>(
   prefix: string,
   settled: Promise<T>,
-  acceptedAt = Date.now()
+  acceptedAt = Date.now(),
+  requestedAt = acceptedAt
 ): AsyncOperationHandle<T> {
   const at = Number.isFinite(acceptedAt) && acceptedAt > 0 ? Math.floor(acceptedAt) : Date.now();
+  const requested =
+    Number.isFinite(requestedAt) && requestedAt > 0 && requestedAt <= at ? Math.floor(requestedAt) : at;
   const sequence = nextOperationSequence++;
   return {
     accepted: true,
     reused: false,
     operationId: `${normalizeOperationPrefix(prefix)}-${at}-${sequence}`,
+    requestedAt: requested,
     acceptedAt: at,
     settled,
   };
@@ -63,10 +87,49 @@ function reportObserverError(handler: ((error: unknown) => void) | undefined, er
   }
 }
 
+function normalizeWatchdogDelay(value: number): number {
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error('[WardrobePro] Async operation watchdog delay must be a positive number.');
+  }
+  return Math.max(1, Math.floor(value));
+}
+
+function readWatchdogTime(watchdog: AsyncOperationWatchdog<unknown>): number {
+  const value = watchdog.now?.() ?? Date.now();
+  return Number.isFinite(value) && value > 0 ? Math.floor(value) : Date.now();
+}
+
+function retainStaleDiagnostic(diagnostic: AsyncOperationStaleDiagnostic): void {
+  staleOperationDiagnostics.push(diagnostic);
+  if (staleOperationDiagnostics.length > MAX_RETAINED_STALE_DIAGNOSTICS) {
+    staleOperationDiagnostics.splice(0, staleOperationDiagnostics.length - MAX_RETAINED_STALE_DIAGNOSTICS);
+  }
+}
+
+function defaultWatchdogSchedule(callback: () => void, delayMs: number): unknown {
+  const token = setTimeout(callback, delayMs);
+  const maybeUnref = token && typeof token === 'object' ? Reflect.get(token, 'unref') : null;
+  if (typeof maybeUnref === 'function') Reflect.apply(maybeUnref, token, []);
+  return token;
+}
+
+function defaultWatchdogCancel(token: unknown): void {
+  clearTimeout(token as ReturnType<typeof setTimeout>);
+}
+
+export function readAsyncOperationStaleDiagnostics(): AsyncOperationStaleDiagnostic[] {
+  return staleOperationDiagnostics.map(diagnostic => ({ ...diagnostic }));
+}
+
+export function clearAsyncOperationStaleDiagnostics(): void {
+  staleOperationDiagnostics.length = 0;
+}
+
 export function observeAsyncOperation<T, StartedToken = void>(
   args: AsyncOperationObserverArgs<T, StartedToken>
 ): AsyncOperationObservation<T> {
-  const observerKey = `${normalizeObserverId(args.observerId)}:${args.handle.operationId}`;
+  const observerId = normalizeObserverId(args.observerId);
+  const observerKey = JSON.stringify([observerId, args.handle.operationId]);
   const existing = operationObservers.get(observerKey);
   if (existing) {
     if (existing.settled !== args.handle.settled) {
@@ -85,6 +148,37 @@ export function observeAsyncOperation<T, StartedToken = void>(
     startedToken = args.onStarted?.(args.handle);
   } catch (error) {
     reportObserverError(args.onObserverError, error);
+  }
+
+  let watchdogToken: unknown;
+  let watchdogReported = false;
+  const watchdog = args.watchdog;
+  if (watchdog) {
+    try {
+      const staleAfterMs = normalizeWatchdogDelay(watchdog.staleAfterMs);
+      const schedule = watchdog.schedule ?? defaultWatchdogSchedule;
+      watchdogToken = schedule(() => {
+        if (state.complete || watchdogReported) return;
+        watchdogReported = true;
+        const detectedAt = readWatchdogTime(watchdog as AsyncOperationWatchdog<unknown>);
+        const diagnostic: AsyncOperationStaleDiagnostic = {
+          observerId,
+          operationId: args.handle.operationId,
+          requestedAt: args.handle.requestedAt,
+          acceptedAt: args.handle.acceptedAt,
+          detectedAt,
+          ageMs: Math.max(0, detectedAt - args.handle.requestedAt),
+        };
+        retainStaleDiagnostic(diagnostic);
+        try {
+          watchdog.onStale(diagnostic, args.handle);
+        } catch (error) {
+          reportObserverError(args.onObserverError, error);
+        }
+      }, staleAfterMs);
+    } catch (error) {
+      reportObserverError(args.onObserverError, error);
+    }
   }
 
   const observedSettled = args.handle.settled
@@ -108,6 +202,13 @@ export function observeAsyncOperation<T, StartedToken = void>(
     )
     .finally(() => {
       state.complete = true;
+      if (typeof watchdogToken !== 'undefined') {
+        try {
+          (watchdog?.cancel ?? defaultWatchdogCancel)(watchdogToken);
+        } catch (error) {
+          reportObserverError(args.onObserverError, error);
+        }
+      }
       if (operationObservers.size <= MAX_RETAINED_OBSERVATIONS) return;
       for (const [key, observation] of operationObservers) {
         if (!observation.complete) continue;

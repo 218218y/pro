@@ -29,6 +29,7 @@ test('project load transaction commits all state slices once and rolls them back
     },
     { source: 'test:project.load', noBuild: true, noHistory: true, noAutosave: true }
   );
+  assert.equal(handle.state, 'prepared');
 
   const committed = store.getState();
   assert.equal(store.getDebugStats().commitCount, commitsBefore + 1);
@@ -40,6 +41,7 @@ test('project load transaction commits all state slices once and rolls them back
   assert.equal(committed.meta.dirty, false);
 
   handle.rollback({ source: 'test:project.load.rollback', silent: true });
+  assert.equal(handle.state, 'rolled-back');
   const rolledBack = store.getState();
   assert.deepEqual(rolledBack.ui, before.ui);
   assert.deepEqual(rolledBack.config, before.config);
@@ -48,6 +50,41 @@ test('project load transaction commits all state slices once and rolls them back
   assert.equal(rolledBack.meta.dirty, before.meta.dirty);
   assert.equal(store.getDebugStats().commitCount, commitsBefore + 2);
 
-  handle.rollback({ source: 'test:duplicate.rollback' });
+  assert.throws(
+    () => handle.rollback({ source: 'test:duplicate.rollback' }),
+    /cannot roll back from rolled-back/i
+  );
   assert.equal(store.getDebugStats().commitCount, commitsBefore + 2);
+});
+
+test('project load transaction commits ownership once and rejects rollback after business commit', () => {
+  const store = createStore({
+    initialState: {
+      ui: { projectName: 'before', raw: { width: 100 } },
+      config: { wardrobeType: 'hinged' },
+      runtime: {},
+      mode: { primary: 'none', opts: {} },
+      meta: { dirty: true },
+    },
+  });
+  const App = { actions: {}, services: {}, store } as any;
+  installStateApi(App);
+
+  const handle = App.actions.commitProjectLoadSnapshot(
+    {
+      ui: { projectName: 'after', raw: { width: 220 } },
+      config: { wardrobeType: 'sliding' },
+      runtime: { restoring: false },
+      mode: { primary: 'none', opts: {} },
+      meta: { dirty: false },
+    },
+    { source: 'test:project.load.commit', noBuild: true, noHistory: true, noAutosave: true }
+  );
+
+  assert.equal(handle.state, 'prepared');
+  handle.commit();
+  assert.equal(handle.state, 'committed');
+  assert.throws(() => handle.commit(), /cannot commit from committed/i);
+  assert.throws(() => handle.rollback({ source: 'test:late.rollback' }), /cannot roll back from committed/i);
+  assert.equal(store.getState().ui.projectName, 'after');
 });

@@ -203,10 +203,18 @@ test('settings and browser surfaces keep typed readers instead of loose bag cast
     [
       /export async function readBackupFileTextSafe\([\s\S]*App: AppContainer,[\s\S]*file: File[\s\S]*\): Promise<ReadBackupFileTextResult> \{/,
       /readFileTextResultViaBrowser\(file, \{/,
-      /export function mergeImportedSavedColors\(/,
-      /export function applyImportedStorageSettings\(/,
+      /export async function mergeImportedSavedColors\(/,
+      /export async function applyImportedStorageSettings\(/,
+      /writeSavedColorsOrThrow\(App, savedColors, mapsMeta\)/,
+      /writeColorSwatchesOrderOrThrow\(App, colorSwatchesOrder\.slice\(\), mapsMeta\)/,
     ],
     'settingsBackupImportSupport'
+  );
+  assertLacksAll(
+    assert,
+    settingsBackupImportSupport,
+    [/setCfgSavedColors\(/, /setCfgColorSwatchesOrder\(/],
+    'settingsBackupImportSupport canonical publication'
   );
 
   assertMatchesAll(

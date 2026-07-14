@@ -60,6 +60,9 @@ export function createCloudSyncMainRowOps(args: CreateCloudSyncMainRowOpsArgs): 
     localState,
     state,
     schedulePullSoon: pullFlow.schedulePullSoon,
+    schedulePushSoon: () => {
+      pushFlowRef?.schedulePush();
+    },
   });
 
   const pushFlow = createCloudSyncMainRowPushFlow({
@@ -86,13 +89,12 @@ export function createCloudSyncMainRowOps(args: CreateCloudSyncMainRowOpsArgs): 
     const result = await args.resolveConflict(
       args.room,
       resolution,
-      resolution === 'use-remote'
-        ? row => {
-            const applied = localState.applyRemotePayload(row.payload || {});
-            if (applied) state.setLastSeenUpdatedAt(row.updated_at || '');
-            return applied;
-          }
-        : null
+      async (row, expectedLocalRevision) => {
+        const applied = await localState.applyRemotePayload(row.payload || {}, expectedLocalRevision);
+        if (applied.ok) state.setLastSeenUpdatedAt(row.updated_at || '');
+        return applied;
+      },
+      localState.readLocalSnapshot
     );
     if (result.ok) {
       state.setLastSeenUpdatedAt(result.row.updated_at || '');

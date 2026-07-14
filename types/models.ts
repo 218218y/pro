@@ -120,6 +120,9 @@ export interface ModelsLockResult extends ModelsCommandResult {
 }
 
 export interface ModelsMergeResult {
+  ok?: boolean;
+  reason?: ModelsCommandReason;
+  message?: string;
   added: number;
   updated: number;
 }
@@ -137,21 +140,21 @@ export interface ModelsServiceLike extends UnknownRecord {
   ensureLoaded: (opts?: ModelsLoadOptions) => SavedModelLike[];
   getAll: () => SavedModelLike[];
   getById: (id: SavedModelId) => SavedModelLike | null;
-  saveCurrent: (name: SavedModelName) => ModelsSaveResult;
-  overwriteFromCurrent: (id: SavedModelId) => ModelsCommandResult;
-  deleteById: (id: SavedModelId) => ModelsCommandResult;
-  setLocked: (id: SavedModelId, locked: boolean) => ModelsLockResult;
-  deleteTemporary: () => ModelsDeleteTemporaryResult;
-  move: (id: SavedModelId, dir: ModelsMoveDirection) => ModelsCommandResult;
+  saveCurrent: (name: SavedModelName) => Promise<ModelsSaveResult>;
+  overwriteFromCurrent: (id: SavedModelId) => Promise<ModelsCommandResult>;
+  deleteById: (id: SavedModelId) => Promise<ModelsCommandResult>;
+  setLocked: (id: SavedModelId, locked: boolean) => Promise<ModelsLockResult>;
+  deleteTemporary: () => Promise<ModelsDeleteTemporaryResult>;
+  move: (id: SavedModelId, dir: ModelsMoveDirection) => Promise<ModelsCommandResult>;
   transfer: (
     id: SavedModelId,
     targetList: ModelsTransferTargetList,
     overId: SavedModelId | null,
     pos: ModelsTransferPosition
-  ) => ModelsCommandResult;
+  ) => Promise<ModelsCommandResult>;
   apply: (id: SavedModelId) => ModelsCommandResult;
   exportUserModels: () => SavedModelLike[];
-  mergeImportedModels: (list: SavedModelLike[]) => ModelsMergeResult;
+  mergeImportedModels: (list: SavedModelLike[]) => Promise<ModelsMergeResult>;
   onChange: (fn: ModelsChangeListener) => void | (() => void);
   offChange?: (fn: ModelsChangeListener) => void;
 }

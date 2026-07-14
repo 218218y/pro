@@ -7,10 +7,15 @@ import type {
   SavedColorLike,
 } from '../../../types';
 
-import { setCfgColorSwatchesOrder, setCfgMultiColorMode, setCfgSavedColors } from '../runtime/cfg_access.js';
-import { writeColorSwatchesOrder, writeIndividualColor, writeSavedColors } from '../runtime/maps_access.js';
+import { setCfgMultiColorMode } from '../runtime/cfg_access.js';
+import {
+  writeColorSwatchesOrderOrThrow,
+  writeIndividualColor,
+  writeSavedColorsOrThrow,
+} from '../runtime/maps_access.js';
 import { asRecord } from '../runtime/record.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
+import { mutateSavedColorsViaCanonicalRepository } from './maps_api_saved_colors.js';
 
 type ColorsSelect = UnknownRecord & {
   isMultiMode?: () => boolean;
@@ -108,91 +113,91 @@ export function installDomainApiColorsSection(args: InstallDomainApiColorsSectio
     return asRecord(select.colors.individualMap()) || {};
   }
 
-  function readSavedColors(): SavedColorsInput {
-    return normalizeSavedColorsInput(typeof select.colors.saved === 'function' ? select.colors.saved() : []);
-  }
-
   const setSavedColors =
     colorsActions.setSavedColors ||
-    function (nextArr: unknown, meta: ActionMetaLike | undefined) {
+    async function (nextArr: unknown, meta: ActionMetaLike | undefined) {
       meta = _meta(meta, 'actions:colors:setSavedColors');
       const arr = asUnknownArray(nextArr);
-      if (writeSavedColors(App, arr, meta)) return;
-      return setCfgSavedColors(App, arr, meta);
+      return await writeSavedColorsOrThrow(App, arr, meta);
     };
 
   colorsActions.setSavedColors = setSavedColors;
 
+  async function mutateSavedColors(
+    mutate: (current: SavedColorsInput) => SavedColorsInput,
+    meta: ActionMetaLike
+  ): Promise<unknown> {
+    return await mutateSavedColorsViaCanonicalRepository(
+      App,
+      current =>
+        mutate(normalizeSavedColorsInput(current)).filter(
+          (value): value is SavedColorLike => typeof value !== 'string'
+        ),
+      meta
+    );
+  }
+
   colorsActions.setColorSwatchesOrder =
     colorsActions.setColorSwatchesOrder ||
-    function (nextArr: unknown, meta: ActionMetaLike | undefined) {
+    async function (nextArr: unknown, meta: ActionMetaLike | undefined) {
       meta = _meta(meta, 'actions:colors:setColorSwatchesOrder');
       const arr = asUnknownArray(nextArr);
-      if (writeColorSwatchesOrder(App, arr, meta)) return;
-      return setCfgColorSwatchesOrder(App, arr, meta);
+      return await writeColorSwatchesOrderOrThrow(App, arr, meta);
     };
 
   colorsActions.save =
     colorsActions.save ||
-    function (colorObj: unknown, meta: ActionMetaLike | undefined) {
+    async function (colorObj: unknown, meta: ActionMetaLike | undefined) {
       meta = _meta(meta, 'actions:colors:save');
-      const cur = readSavedColors().slice();
       const nextColor = normalizeSavedColor(colorObj);
-      if (nextColor) cur.push(nextColor);
-      return setSavedColors(cur, meta);
+      if (!nextColor) return;
+      return await mutateSavedColors(current => current.concat(nextColor), meta);
     };
 
   colorsActions.deleteSaved =
     colorsActions.deleteSaved ||
-    function (colorId: unknown, meta: ActionMetaLike | undefined) {
+    async function (colorId: unknown, meta: ActionMetaLike | undefined) {
       meta = _meta(meta, 'actions:colors:deleteSaved');
       const id = formatIdentityValue(readIdentityValue(colorId));
       if (!id) return;
-      const cur = readSavedColors();
-      const next: SavedColorsInput = cur.filter(function (c: unknown) {
-        const cid = readColorId(c);
-        return !cid || cid !== id;
-      });
-      return setSavedColors(next, meta);
+      return await mutateSavedColors(
+        current =>
+          current.filter(function (c: unknown) {
+            const cid = readColorId(c);
+            return !cid || cid !== id;
+          }),
+        meta
+      );
     };
 
   colorsActions.importMergeSaved =
     colorsActions.importMergeSaved ||
-    function (colorsArr: unknown, meta: ActionMetaLike | undefined) {
+    async function (colorsArr: unknown, meta: ActionMetaLike | undefined) {
       meta = _meta(meta, 'actions:colors:importMergeSaved');
       const incoming = asUnknownArray(colorsArr);
-      const cur = readSavedColors();
+      return await mutateSavedColors(cur => {
+        const byId: Record<string, unknown> = {};
+        cur.forEach(function (c: unknown) {
+          const cid = readColorId(c);
+          if (cid) byId[cid] = c;
+        });
+        incoming.forEach(function (c: unknown) {
+          const cid = readColorId(c);
+          if (cid) byId[cid] = c;
+        });
 
-      const byId: Record<string, unknown> = {};
-      cur.forEach(function (c: unknown) {
-        const cid = readColorId(c);
-        if (cid) byId[cid] = c;
-      });
-      incoming.forEach(function (c: unknown) {
-        const cid = readColorId(c);
-        if (cid) byId[cid] = c;
-      });
-
-      const seen: Record<string, boolean> = {};
-      const ordered: SavedColorsInput = [];
-      cur.forEach(function (c: unknown) {
-        const cid = readColorId(c);
-        if (cid && !seen[cid]) {
-          const next = normalizeSavedColor(byId[cid]);
-          if (next) ordered.push(next);
-          seen[cid] = true;
-        }
-      });
-      incoming.forEach(function (c: unknown) {
-        const cid = readColorId(c);
-        if (cid && !seen[cid]) {
-          const next = normalizeSavedColor(byId[cid]);
-          if (next) ordered.push(next);
-          seen[cid] = true;
-        }
-      });
-
-      return setSavedColors(ordered, meta);
+        const seen: Record<string, boolean> = {};
+        const ordered: SavedColorsInput = [];
+        cur.concat(incoming as SavedColorsInput).forEach(function (c: unknown) {
+          const cid = readColorId(c);
+          if (cid && !seen[cid]) {
+            const next = normalizeSavedColor(byId[cid]);
+            if (next) ordered.push(next);
+            seen[cid] = true;
+          }
+        });
+        return ordered;
+      }, meta);
     };
 
   colorsActions.setMultiMode =

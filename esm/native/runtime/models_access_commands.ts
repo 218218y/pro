@@ -52,11 +52,14 @@ export function exportUserModelsViaService(App: unknown): SavedModelLike[] {
   return [];
 }
 
-export function mergeImportedModelsViaService(App: unknown, list: SavedModelLike[]): ModelsMergeResult {
+export async function mergeImportedModelsViaService(
+  App: unknown,
+  list: SavedModelLike[]
+): Promise<ModelsMergeResult> {
   try {
     const svc = getModelsServiceMaybe(App);
     if (svc && typeof svc.mergeImportedModels === 'function') {
-      return readMergeResult(svc.mergeImportedModels(readSavedModelList(list)));
+      return readMergeResult(await svc.mergeImportedModels(readSavedModelList(list)));
     }
   } catch (error) {
     reportModelsAccessNonFatal(App, 'models.mergeImportedModels.ownerRejected', error);
@@ -64,11 +67,11 @@ export function mergeImportedModelsViaService(App: unknown, list: SavedModelLike
   return { added: 0, updated: 0 };
 }
 
-export function mergeImportedModelsViaServiceOrThrow(
+export async function mergeImportedModelsViaServiceOrThrow(
   App: unknown,
   list: SavedModelLike[],
   label = 'services.models.mergeImportedModels'
-): ModelsMergeResult {
+): Promise<ModelsMergeResult> {
   const source = getModelsServiceSourceMaybe(App);
   const mergeImportedModels = source
     ? readOneArgUnknownFn<SavedModelLike[]>(source.mergeImportedModels)
@@ -76,7 +79,7 @@ export function mergeImportedModelsViaServiceOrThrow(
   if (!mergeImportedModels) {
     throw new Error(`[WardrobePro] ${label} requires canonical services.models.mergeImportedModels(list).`);
   }
-  return readMergeResult(mergeImportedModels(readSavedModelList(list)));
+  return readMergeResult(await mergeImportedModels(readSavedModelList(list)));
 }
 
 export function setModelNormalizerViaService(App: unknown, normalizer: ModelsNormalizer | null): boolean {

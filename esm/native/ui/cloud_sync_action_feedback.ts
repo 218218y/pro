@@ -23,6 +23,7 @@ export {
 
 export {
   reportCloudDeleteTempResult,
+  reportCloudSyncConflictResolutionResult,
   reportCloudSketchSyncResult,
   reportCloudSyncRoomModeResult,
   reportCloudSyncShareLinkResult,

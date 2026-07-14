@@ -24,18 +24,9 @@ export async function readCloudSyncRowWithPullActivity(
   args: CloudSyncRemoteRowReaderArgs
 ): Promise<CloudSyncReadResult> {
   markCloudSyncPullAttempt(args.runtimeStatus, args.publishStatus);
-  const conflict = args.runtimeStatus?.conflict;
-  if (
-    conflict?.room === args.room &&
-    (conflict.state === 'awaiting-resolution' || conflict.state === 'resolving')
-  ) {
-    markCloudSyncPullFailure(args.runtimeStatus, args.publishStatus);
-    return {
-      ok: false,
-      failure: { kind: 'server', status: 409, code: 'unresolved_conflict' },
-    };
-  }
   try {
+    // The gateway owner performs the canonical conflict-store preflight. Calling it even
+    // while the published status is blocked lets a live tab observe another tab's resolution.
     const result = await readCloudSyncRow(args);
     if (result.ok) markCloudSyncPullSuccess(args.runtimeStatus, args.publishStatus);
     else markCloudSyncPullFailure(args.runtimeStatus, args.publishStatus);

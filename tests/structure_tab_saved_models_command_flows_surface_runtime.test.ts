@@ -11,7 +11,7 @@ import {
 } from '../esm/native/ui/react/tabs/structure_tab_saved_models_command_flows.ts';
 import { createSavedModelByIdModelsApi } from './structure_tab_saved_models_command_flows_runtime_helpers.ts';
 
-test('saved-model apply/move/reorder/transfer commands expose canonical result details', () => {
+test('saved-model apply/move/reorder/transfer commands expose canonical result details', async () => {
   const moves: string[] = [];
   const modelsApi = createSavedModelByIdModelsApi(
     {
@@ -38,21 +38,21 @@ test('saved-model apply/move/reorder/transfer commands expose canonical result d
     id: 'a',
     name: 'Alpha',
   });
-  assert.deepEqual(moveSavedModel(modelsApi, 'a', 'up'), {
+  assert.deepEqual(await moveSavedModel(modelsApi, 'a', 'up'), {
     ok: true,
     kind: 'move',
     id: 'a',
     name: 'Alpha',
     dir: 'up',
   });
-  assert.deepEqual(reorderSavedModelsByDnD(modelsApi, ['a', 'b'], 'a', 'b', 'after', 'saved'), {
+  assert.deepEqual(await reorderSavedModelsByDnD(modelsApi, ['a', 'b'], 'a', 'b', 'after', 'saved'), {
     ok: true,
     kind: 'reorder',
     id: 'a',
     dir: 'down',
     listType: 'saved',
   });
-  assert.deepEqual(transferSavedModelByDnD(modelsApi, 'a', 'preset', null, 'end'), {
+  assert.deepEqual(await transferSavedModelByDnD(modelsApi, 'a', 'preset', null, 'end'), {
     ok: true,
     kind: 'transfer',
     id: 'a',
@@ -81,7 +81,7 @@ test('saved-model apply command preserves underlying model-load messages', () =>
   });
 });
 
-test('saved-model command flows normalize missing or unknown service reasons to canonical failures', () => {
+test('saved-model command flows normalize missing or unknown service reasons to canonical failures', async () => {
   const modelsApi = createSavedModelByIdModelsApi(
     { broken: { id: 'broken', name: 'Broken', isPreset: false } },
     {
@@ -116,7 +116,7 @@ test('saved-model command flows normalize missing or unknown service reasons to 
     id: 'broken',
     name: 'Broken',
   });
-  assert.deepEqual(saveCurrentModelByName(modelsApi, 'Broken 2'), {
+  assert.deepEqual(await saveCurrentModelByName(modelsApi, 'Broken 2'), {
     ok: false,
     kind: 'save',
     reason: 'error',
@@ -124,7 +124,7 @@ test('saved-model command flows normalize missing or unknown service reasons to 
     id: '',
     name: 'Broken 2',
   });
-  assert.deepEqual(toggleSavedModelLock(modelsApi, 'broken'), {
+  assert.deepEqual(await toggleSavedModelLock(modelsApi, 'broken'), {
     ok: false,
     kind: 'toggle-lock',
     reason: 'error',
@@ -132,7 +132,7 @@ test('saved-model command flows normalize missing or unknown service reasons to 
     name: 'Broken',
     locked: true,
   });
-  assert.deepEqual(moveSavedModel(modelsApi, 'broken', 'down'), {
+  assert.deepEqual(await moveSavedModel(modelsApi, 'broken', 'down'), {
     ok: false,
     kind: 'move',
     reason: 'error',
@@ -140,7 +140,7 @@ test('saved-model command flows normalize missing or unknown service reasons to 
     name: 'Broken',
     dir: 'down',
   });
-  assert.deepEqual(transferSavedModelByDnD(modelsApi, 'broken', 'saved', null, 'end'), {
+  assert.deepEqual(await transferSavedModelByDnD(modelsApi, 'broken', 'saved', null, 'end'), {
     ok: false,
     kind: 'transfer',
     reason: 'error',

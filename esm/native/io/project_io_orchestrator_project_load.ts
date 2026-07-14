@@ -25,8 +25,8 @@ import {
 } from './project_load_canonical_snapshot.js';
 import { setAutoCameraBuildKey } from '../runtime/render_access.js';
 import {
-  nextProjectIoRestoreGeneration,
   isProjectIoRestoreGenerationCurrent,
+  nextProjectIoRestoreGeneration,
 } from '../runtime/project_io_access.js';
 import {
   adjustCameraForChest,
@@ -55,6 +55,12 @@ import {
   suspendProjectIoAutosaveBeforeLoad,
 } from './project_io_orchestrator_autosave.js';
 import { createProjectLoadTransactionContext } from './project_load_transaction_context.js';
+import {
+  getProjectLoadCoordinator,
+  isProjectLoadQueuedError,
+  isProjectLoadSupersededError,
+  type ProjectLoadCoordinatorLease,
+} from './project_load_coordinator.js';
 
 function assertProjectLoadConfigReplaceOwnedBranches(cfg: UnknownRecord): UnknownRecord {
   const missing = Object.keys(PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS).filter(key => {
@@ -69,10 +75,15 @@ function assertProjectLoadConfigReplaceOwnedBranches(cfg: UnknownRecord): Unknow
 export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
   const { App, showToast, reportNonFatal, metaRestore, deepCloneJson } = deps;
   const transaction = createProjectLoadTransactionContext(deps);
+  const coordinator = getProjectLoadCoordinator(App, {
+    nextRestoreGeneration: () => nextProjectIoRestoreGeneration(App),
+    isRestoreGenerationCurrent: restoreGen => isProjectIoRestoreGenerationCurrent(App, restoreGen),
+  });
 
-  return function loadProjectData(
+  function runProjectDataLoad(
     input: ProjectLoadInputLike,
-    options?: ProjectLoadOpts
+    options: ProjectLoadOpts | undefined,
+    coordinatorLease: ProjectLoadCoordinatorLease
   ): ProjectLoadActionResult {
     const data = normalizeProjectData(input);
     const opts = readProjectLoadOpts(options);
@@ -119,12 +130,11 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
     let stateTransaction: ProjectLoadTransactionHandleLike | null = null;
     let historySnapshot: ReturnType<typeof transaction.captureHistory> = null;
     let autosaveSuspension: AutosaveSuspensionLike | null = null;
-    let committed = false;
     const warnings: ProjectLoadWarning[] = [];
 
-    const addWarning = (warning: ProjectLoadWarning, op: string): void => {
+    const addWarning = (warning: ProjectLoadWarning, op: string, cause?: unknown): void => {
       warnings.push(warning);
-      reportNonFatal(op, new Error(warning.message), 6000);
+      reportNonFatal(op, cause ?? new Error(warning.message), 6000);
     };
 
     try {
@@ -155,10 +165,11 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       const requiresHistoryReset = !isHistoryApply && !isModelApply && !isCloudApply;
       transaction.assertReady(requiresHistoryReset);
       historySnapshot = transaction.captureHistory(requiresHistoryReset);
+      restoreGen = coordinator.enterCritical(coordinatorLease);
 
       autosaveSuspension = suspendProjectIoAutosaveBeforeLoad(App);
-      restoreGen = nextProjectIoRestoreGeneration(App);
-      stateTransaction = transaction.commit(
+      coordinator.assertCurrent(coordinatorLease, 'autosave suspension');
+      stateTransaction = transaction.applyState(
         {
           ui: uiSnap,
           config: cfg,
@@ -172,11 +183,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
         },
         metaNoBuild
       );
-
-      if (!isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
-        autosaveSuspension.commit();
-        return buildProjectLoadFailureResult('superseded', { restoreGen });
-      }
+      coordinator.assertCurrent(coordinatorLease, 'state commit');
 
       if (requiresHistoryReset) {
         try {
@@ -191,19 +198,37 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
         }
       }
 
-      if (!isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
+      coordinator.assertCurrent(coordinatorLease, 'history finalize');
+
+      transaction.markCommitted(stateTransaction);
+      coordinator.markCommitted(coordinatorLease);
+
+      try {
         autosaveSuspension.commit();
-        return buildProjectLoadFailureResult('superseded', { restoreGen });
+      } catch (err) {
+        addWarning(
+          {
+            effect: 'autosave-finalize',
+            message: 'Project loaded, but autosave suspension could not be finalized.',
+          },
+          'project.load.finalizeAutosave',
+          err
+        );
       }
 
-      committed = true;
-      autosaveSuspension.commit();
+      if (!coordinator.isCurrent(coordinatorLease)) {
+        return buildProjectLoadFailureResult('superseded', { restoreGen });
+      }
 
       if (!resetAllEditModesViaService(App)) {
         addWarning(
           { effect: 'edit-modes', message: 'Project loaded, but edit modes could not be reset.' },
           'project.load.resetEditModes'
         );
+      }
+
+      if (!coordinator.isCurrent(coordinatorLease)) {
+        return buildProjectLoadFailureResult('superseded', { restoreGen });
       }
 
       const autosaveRefreshed = refreshProjectIoAutosaveAfterLoad({
@@ -225,7 +250,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
         );
       }
 
-      if (!isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
+      if (!coordinator.isCurrent(coordinatorLease)) {
         return buildProjectLoadFailureResult('superseded', { restoreGen });
       }
 
@@ -266,7 +291,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
         reportNonFatal('project.load.updateSceneLights', err);
       }
 
-      if (!isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
+      if (!coordinator.isCurrent(coordinatorLease)) {
         return buildProjectLoadFailureResult('superseded', { restoreGen });
       }
 
@@ -284,7 +309,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
         );
       }
 
-      if (!isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
+      if (!coordinator.isCurrent(coordinatorLease)) {
         return buildProjectLoadFailureResult('superseded', { restoreGen });
       }
 
@@ -297,10 +322,12 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       }
       return buildProjectLoadSuccessResult({ restoreGen, warnings });
     } catch (err) {
-      reportNonFatal('project.load.error', err);
-      if (!committed && stateTransaction && isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
+      if (isProjectLoadQueuedError(err)) throw err;
+      const superseded = isProjectLoadSupersededError(err);
+      if (!superseded) reportNonFatal('project.load.error', err);
+      if (stateTransaction?.state === 'prepared') {
         try {
-          stateTransaction.rollback(metaRestore('project.load.rollback', { silent: true }));
+          transaction.rollbackState(stateTransaction, metaRestore('project.load.rollback', { silent: true }));
         } catch (rollbackErr) {
           reportNonFatal('project.load.rollbackState', rollbackErr);
         }
@@ -310,12 +337,17 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
           reportNonFatal('project.load.rollbackHistory', rollbackErr);
         }
       }
-      if (!committed) {
+      if (stateTransaction?.state !== 'committed') {
         try {
           autosaveSuspension?.resume();
         } catch (resumeErr) {
           reportNonFatal('project.load.resumeAutosave', resumeErr);
         }
+      }
+      if (superseded) {
+        return buildProjectLoadFailureResult('superseded', {
+          restoreGen: restoreGen || err.restoreGen,
+        });
       }
       if (toastEnabled) {
         try {
@@ -328,6 +360,39 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
         restoreGen,
         message: normalizeUnknownError(err, 'שגיאה בטעינת הנתונים').message,
       });
+    }
+  }
+
+  return function loadProjectData(
+    input: ProjectLoadInputLike,
+    options?: ProjectLoadOpts
+  ): ProjectLoadActionResult {
+    const coordinatorLease = coordinator.begin();
+    try {
+      try {
+        return runProjectDataLoad(input, options, coordinatorLease);
+      } catch (error) {
+        if (!isProjectLoadQueuedError(error)) throw error;
+        const queuedInput = deepCloneJson(input);
+        const queuedOptions = typeof options === 'undefined' ? undefined : deepCloneJson(options);
+        coordinator.enqueueRetry(
+          coordinatorLease,
+          () => {
+            const result = loadProjectData(queuedInput, queuedOptions);
+            if (result.ok === false && result.reason !== 'superseded') {
+              reportNonFatal(
+                'project.load.queuedRetryResult',
+                new Error(result.message || `Queued project load failed: ${result.reason}`),
+                6000
+              );
+            }
+          },
+          retryError => reportNonFatal('project.load.queuedRetry', retryError, 6000)
+        );
+        return buildProjectLoadSuccessResult({ pending: true });
+      }
+    } finally {
+      coordinator.finish(coordinatorLease);
     }
   };
 }

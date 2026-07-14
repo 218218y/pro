@@ -54,29 +54,40 @@ export type CloudSyncGatewayReadResult = CloudSyncReadResult;
 
 export type CloudSyncConflictState = 'awaiting-resolution' | 'resolving' | 'resolved';
 
-export interface CloudSyncConflictRecord extends UnknownRecord {
+export interface CloudSyncConflictStatus extends UnknownRecord {
   room: string;
   keys: string[];
   remoteRevision: number;
   detectedAt: number;
   state: CloudSyncConflictState;
+}
+
+export interface CloudSyncConflictRecord extends CloudSyncConflictStatus {
   base: CloudSyncPayload;
   local: CloudSyncPayload;
   remote: CloudSyncPayload;
 }
 
-export type CloudSyncConflictStatus = CloudSyncConflictRecord;
 export type CloudSyncConflictResolution = 'keep-local' | 'use-remote';
 
+export type CloudSyncRemoteAdoptionResult =
+  | { ok: true; uiRefreshWarning: boolean }
+  | { ok: false; uiRefreshWarning: false; reason: 'commit' | 'revision-mismatch' };
+
 export type CloudSyncConflictResolutionResult =
-  | { ok: true; resolution: CloudSyncConflictResolution; row: CloudSyncStateRow }
+  | {
+      ok: true;
+      resolution: CloudSyncConflictResolution;
+      row: CloudSyncStateRow;
+      uiRefreshWarning?: boolean;
+    }
   | { ok: false; resolution: CloudSyncConflictResolution; reason: 'missing-conflict' | 'busy' }
   | {
       ok: false;
       resolution: CloudSyncConflictResolution;
       reason: 'write' | 'adoption' | 'read';
       failure?: CloudSyncGatewayFailure;
-      conflict?: CloudSyncConflictRecord;
+      conflict?: CloudSyncConflictStatus;
     };
 
 export type CloudSyncCredentialIssueResult =
@@ -260,10 +271,16 @@ export type CloudCollectionsMutation = Partial<
   >
 >;
 
+export type CloudCollectionsMutator = (
+  current: Readonly<CloudCollectionsEnvelope>
+) => CloudCollectionsMutation;
+
 export interface CloudCollectionsCorruption {
   kind: 'corrupt';
+  reason: 'json' | 'schema' | 'shape';
   envelopeKey: string;
   rawBackupKey: string;
+  raw: string;
   repairAvailable: true;
 }
 
@@ -271,20 +288,39 @@ export type CloudCollectionsReadResult =
   { ok: true; envelope: CloudCollectionsEnvelope } | { ok: false; corruption: CloudCollectionsCorruption };
 
 export interface CloudCollectionsCommitResult {
+  committed: boolean;
+  reason?: 'no-change' | 'revision-mismatch';
   envelope: CloudCollectionsEnvelope;
   mirrorFailures: string[];
+  warnings: Array<{
+    kind: 'observer_failure';
+    observerIndex: number;
+    message: string;
+  }>;
+}
+
+export type CloudCollectionsMutationIsolation = 'cross-tab' | 'process' | 'unavailable';
+
+export interface CloudCollectionsMutationLockLike {
+  readonly isolation: CloudCollectionsMutationIsolation;
+  runExclusive<T>(name: string, operation: () => Promise<T> | T): Promise<T>;
 }
 
 export interface CloudCollectionsRepositoryLike {
   readonly envelopeKey: string;
+  readonly mutationIsolation: CloudCollectionsMutationIsolation;
   read(): CloudSyncLocalCollections;
   readEnvelope(): CloudCollectionsEnvelope;
   readResult(): CloudCollectionsReadResult;
-  update(mutation: CloudCollectionsMutation): CloudCollectionsCommitResult;
-  commit(next: CloudSyncLocalCollections): CloudCollectionsCommitResult;
+  transact(mutator: CloudCollectionsMutator): Promise<CloudCollectionsCommitResult>;
+  commit(next: CloudSyncLocalCollections): Promise<CloudCollectionsCommitResult>;
+  commitIfRevision(
+    expectedRevision: number,
+    next: CloudSyncLocalCollections
+  ): Promise<CloudCollectionsCommitResult>;
   repairMirrors(): string[];
   backupCorruptEnvelope(): string;
-  resetCorruptEnvelope(next: CloudSyncLocalCollections): CloudCollectionsCommitResult;
+  resetCorruptEnvelope(next: CloudSyncLocalCollections): Promise<CloudCollectionsCommitResult>;
   subscribe(listener: (envelope: CloudCollectionsEnvelope) => void): () => void;
 }
 
@@ -292,10 +328,10 @@ export interface CloudCollectionsServiceLike extends UnknownRecord {
   repository?: CloudCollectionsRepositoryLike;
   readEnvelope?: () => CloudCollectionsEnvelope;
   readResult?: () => CloudCollectionsReadResult;
-  update?: (mutation: CloudCollectionsMutation) => CloudCollectionsCommitResult;
+  transact?: (mutator: CloudCollectionsMutator) => Promise<CloudCollectionsCommitResult>;
   repairMirrors?: () => string[];
   backupCorruptEnvelope?: () => string;
-  resetCorruptEnvelope?: (next: CloudSyncLocalCollections) => CloudCollectionsCommitResult;
+  resetCorruptEnvelope?: (next: CloudSyncLocalCollections) => Promise<CloudCollectionsCommitResult>;
 }
 
 export interface CloudSyncTabsGatePayload extends UnknownRecord {
@@ -556,6 +592,7 @@ export interface CloudSyncRoomStatusSnapshot extends UnknownRecord {
 
 export interface CloudSyncPanelSnapshot extends CloudSyncRoomStatusSnapshot {
   floatingSync: boolean;
+  conflict?: CloudSyncConflictStatus;
 }
 
 export interface CloudSyncServiceLike extends UnknownRecord {

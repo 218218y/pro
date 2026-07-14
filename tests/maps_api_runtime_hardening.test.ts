@@ -40,7 +40,7 @@ test('runtime split key helpers use the door split authoring base for visual sur
   );
 });
 
-test('maps_api keeps map writes store-backed and mirrors saved colors to storage without stale array reuse', () => {
+test('maps_api keeps map writes store-backed and mirrors saved colors to storage without stale array reuse', async () => {
   const storageValues = new Map<string, unknown>();
   const storageWrites: Array<[string, unknown]> = [];
   const configPatchWrites: Array<Record<string, unknown>> = [];
@@ -103,8 +103,8 @@ test('maps_api keeps map writes store-backed and mirrors saved colors to storage
     'savedColors should be cloned on read'
   );
 
-  App.maps.setSavedColors([{ id: 'walnut' }, { id: 'white' }], { source: 'test:saved-colors' });
-  App.maps.setColorSwatchesOrder(['white', 'walnut'], { source: 'test:swatches' });
+  await App.maps.setSavedColors([{ id: 'walnut' }, { id: 'white' }], { source: 'test:saved-colors' });
+  await App.maps.setColorSwatchesOrder(['white', 'walnut'], { source: 'test:swatches' });
 
   assert.deepEqual(state.config.savedColors, [{ id: 'walnut' }, { id: 'white' }]);
   assert.deepEqual(state.config.colorSwatchesOrder, ['white', 'walnut']);
@@ -120,13 +120,13 @@ test('maps_api keeps map writes store-backed and mirrors saved colors to storage
   assert.deepEqual(storageWrites[1]?.[1], [{ id: 'walnut' }, { id: 'white' }]);
   assert.deepEqual(storageWrites[3]?.[1], ['white', 'walnut']);
 
-  App.maps.setSavedColors(
+  await App.maps.setSavedColors(
     ['walnut', 'walnut', { id: 'saved_a', value: '#111' }, { id: 'saved_a', value: '#222' }],
     {
       source: 'test:saved-colors:dedupe',
     }
   );
-  App.maps.setColorSwatchesOrder(['saved_a', ' saved_a ', 'walnut', 7, '7', '', null], {
+  await App.maps.setColorSwatchesOrder(['saved_a', ' saved_a ', 'walnut', 7, '7', '', null], {
     source: 'test:swatches:dedupe',
   });
 
@@ -134,7 +134,7 @@ test('maps_api keeps map writes store-backed and mirrors saved colors to storage
   assert.deepEqual(state.config.colorSwatchesOrder, ['saved_a', 'walnut', '7']);
 
   const writesBeforeNoStorage = storageWrites.length;
-  App.maps.setSavedColors(['black'], { source: 'test:no-storage', noStorageWrite: true });
+  await App.maps.setSavedColors(['black'], { source: 'test:no-storage', noStorageWrite: true });
   assert.equal(
     storageWrites.length,
     writesBeforeNoStorage,

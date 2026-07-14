@@ -207,6 +207,7 @@ export function loadProjectSaveLoadControllerModule(overrides = {}) {
                 accepted: true,
                 reused: false,
                 operationId: `project-save-test-${++operationSequence}`,
+                requestedAt: Date.now(),
                 acceptedAt: Date.now(),
                 settled,
               };

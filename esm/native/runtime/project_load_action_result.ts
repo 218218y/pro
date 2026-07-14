@@ -4,7 +4,8 @@ import { asRecord } from './record.js';
 export type ProjectLoadFailureReason =
   'missing-file' | 'invalid' | 'not-installed' | 'superseded' | 'busy' | 'error';
 
-export type ProjectLoadWarningEffect = 'edit-modes' | 'autosave-refresh' | 'notes' | 'build';
+export type ProjectLoadWarningEffect =
+  'edit-modes' | 'autosave-finalize' | 'autosave-refresh' | 'notes' | 'build';
 
 export type ProjectLoadWarning = {
   effect: ProjectLoadWarningEffect;

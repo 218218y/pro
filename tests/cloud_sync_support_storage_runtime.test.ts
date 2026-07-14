@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { applyRemote } from '../esm/native/services/cloud_sync_support_storage.ts';
+import { createCloudCollectionsRepository } from '../esm/native/services/cloud_sync_collections_repository.ts';
 
-test('cloud_sync support storage: applyRemote writes normalized payload into storage and always clears suppress flag', () => {
+test('cloud_sync support storage: applyRemote writes normalized payload without holding global suppression', async () => {
   const writes = new Map<string, string>();
   const storage = {
     setString(key: unknown, value: unknown) {
@@ -11,9 +12,22 @@ test('cloud_sync support storage: applyRemote writes normalized payload into sto
       return true;
     },
   };
-  const suppress = { v: false };
+  let observerCalls = 0;
+  const repository = createCloudCollectionsRepository({
+    storage,
+    keys: {
+      models: 'models',
+      colors: 'colors',
+      colorOrder: 'colorOrder',
+      presetOrder: 'presetOrder',
+      hiddenPresets: 'hiddenPresets',
+    },
+  });
+  repository.subscribe(() => {
+    observerCalls += 1;
+  });
 
-  const applied = applyRemote(
+  const applied = await applyRemote(
     {} as never,
     storage,
     'models',
@@ -27,12 +41,11 @@ test('cloud_sync support storage: applyRemote writes normalized payload into sto
       colorSwatchesOrder: ['c1'],
       presetOrder: ['p1'],
       hiddenPresets: ['hidden-1'],
-    },
-    suppress
+    }
   );
 
-  assert.equal(applied, true);
-  assert.equal(suppress.v, false);
+  assert.deepEqual(applied, { ok: true, uiRefreshWarning: true });
+  assert.equal(observerCalls, 1);
   assert.deepEqual(JSON.parse(writes.get('models:cloudCollections:v1') || '{}'), {
     schemaVersion: 1,
     revision: 1,
@@ -49,7 +62,7 @@ test('cloud_sync support storage: applyRemote writes normalized payload into sto
   assert.equal(writes.get('hiddenPresets'), JSON.stringify(['hidden-1']));
 });
 
-test('cloud_sync support storage: applyRemote reports failed storage writes and clears suppression', () => {
+test('cloud_sync support storage: applyRemote reports failed storage writes', async () => {
   const reports: Array<{ error: unknown; ctx: any }> = [];
   const App = {
     services: {
@@ -60,14 +73,13 @@ test('cloud_sync support storage: applyRemote reports failed storage writes and 
       },
     },
   } as any;
-  const suppress = { v: false };
   const storage = {
     setString() {
       return false;
     },
   };
 
-  const applied = applyRemote(
+  const applied = await applyRemote(
     App,
     storage,
     'models',
@@ -81,12 +93,10 @@ test('cloud_sync support storage: applyRemote reports failed storage writes and 
       colorSwatchesOrder: [],
       presetOrder: [],
       hiddenPresets: [],
-    },
-    suppress
+    }
   );
 
-  assert.equal(applied, false);
-  assert.equal(suppress.v, false);
+  assert.deepEqual(applied, { ok: false, uiRefreshWarning: false, reason: 'commit' });
   assert.equal(reports.length, 1);
   assert.equal(reports[0].ctx?.where, 'services/cloud_sync');
   assert.equal(reports[0].ctx?.op, 'applyRemote.commitCollections');

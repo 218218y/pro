@@ -41,6 +41,9 @@ switch; do not restore configurable mount ids, optional roots, or CSS rules that
 
 ## Layer map
 
+- `esm/entry_*` and top-level `esm/test_*` probes are browser/executable entry boundaries.
+- `esm/main.ts`, `esm/release_main.ts`, and `esm/app_container.ts` are application composition roots.
+- `esm/shared/*` owns environment-neutral value, schema, identity, and policy contracts; shared code must not depend on application layers.
 - `esm/boot/*` — boot order and install manifests.
 - `esm/native/runtime/*` — low-level helpers, assertions, stable-surface primitives.
 - `esm/native/platform/*` — store/platform/browser orchestration.
@@ -53,12 +56,20 @@ switch; do not restore configurable mount ids, optional roots, or CSS rules that
 - `tools/*` — verification, release, bundle, audit, and smoke scripts.
 
 The layer contract is an explicit target policy, not an auto-updated snapshot. `npm run contract:layers`
-parses ESM imports through the AST, distinguishes type, value, and dynamic dependencies, rejects unlisted
-cross-layer edges, and enforces separate importer and import-count budgets for every dependency kind. It
-also rejects stale or malformed rules and enforces declared public facades. Use
-`npm run contract:layers:propose` only to inspect a candidate policy: the proposal preserves reviewed
-reasons and facades and reports edge and budget diffs, but it never edits `tools/wp_layer_baseline.json`.
-Lower a budget only when a verified owner/facade migration has actually removed the corresponding imports.
+parses ESM imports through the AST, classifies native layers plus `shared`, `entry`, and `composition`,
+distinguishes type declarations/import-type queries, value imports, and literal dynamic dependencies, rejects unlisted cross-layer edges, and
+enforces separate importer and import-count budgets for every dependency kind. New top-level source files
+must receive an explicit classification. Non-literal dynamic imports require an exact file/expression
+allowlist entry with a reason and occurrence budget; `require()` and TypeScript import-equals are forbidden
+throughout scanned ESM source. Facade `/**` patterns match path segments rather than string prefixes.
+
+The baseline uses a decrease-only ratchet. `npm run contract:layers:propose` preserves reviewed reasons,
+facades, dynamic-import approvals, deny rules, and ratchet ownership. A proposal lowers a ceiling only after
+the dependency graph has actually shrunk; it reports growth as a ratchet violation and never raises an
+existing budget to absorb it. The command only prints a review candidate and never edits
+`tools/wp_layer_baseline.json`. If an edge owned by a facade disappears, the candidate retains both its rule
+and facade, reports `requiresFacadeDecision`, and exits non-zero until a reviewer explicitly removes or
+retains that public boundary.
 
 ## Change workflow
 

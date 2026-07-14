@@ -113,42 +113,44 @@ export function readModelsService(value: unknown): ModelsServiceLike | null {
       const out = getByIdRaw ? getByIdRaw(id) : defaults.getById(id);
       return readSavedModel(out);
     },
-    saveCurrent: (name: SavedModelName) =>
-      readSaveResult(saveCurrentRaw ? saveCurrentRaw(name) : defaults.saveCurrent(name)),
-    overwriteFromCurrent: (id: SavedModelId) =>
+    saveCurrent: async (name: SavedModelName) =>
+      readSaveResult(await (saveCurrentRaw ? saveCurrentRaw(name) : defaults.saveCurrent(name))),
+    overwriteFromCurrent: async (id: SavedModelId) =>
       readCommandResult(
-        overwriteFromCurrentRaw ? overwriteFromCurrentRaw(id) : defaults.overwriteFromCurrent(id)
+        await (overwriteFromCurrentRaw ? overwriteFromCurrentRaw(id) : defaults.overwriteFromCurrent(id))
       ),
-    deleteById: (id: SavedModelId) =>
-      readCommandResult(deleteByIdRaw ? deleteByIdRaw(id) : defaults.deleteById(id)),
-    setLocked: (id: SavedModelId, locked: boolean) =>
-      readLockResult(setLockedRaw ? setLockedRaw(id, locked) : defaults.setLocked(id, locked)),
-    deleteTemporary: () =>
-      readDeleteTemporaryResult(deleteTemporaryRaw ? deleteTemporaryRaw() : defaults.deleteTemporary()),
-    move: (id: SavedModelId, dir: ModelsMoveDirection) =>
-      readCommandResult(moveRaw ? moveRaw(id, dir) : defaults.move(id, dir)),
-    transfer: (
+    deleteById: async (id: SavedModelId) =>
+      readCommandResult(await (deleteByIdRaw ? deleteByIdRaw(id) : defaults.deleteById(id))),
+    setLocked: async (id: SavedModelId, locked: boolean) =>
+      readLockResult(await (setLockedRaw ? setLockedRaw(id, locked) : defaults.setLocked(id, locked))),
+    deleteTemporary: async () =>
+      readDeleteTemporaryResult(
+        await (deleteTemporaryRaw ? deleteTemporaryRaw() : defaults.deleteTemporary())
+      ),
+    move: async (id: SavedModelId, dir: ModelsMoveDirection) =>
+      readCommandResult(await (moveRaw ? moveRaw(id, dir) : defaults.move(id, dir))),
+    transfer: async (
       id: SavedModelId,
       targetList: ModelsTransferTargetList,
       overId: SavedModelId | null,
       pos: ModelsTransferPosition
     ) =>
       readCommandResult(
-        transferRaw
+        await (transferRaw
           ? transferRaw(id, targetList, overId, pos)
-          : defaults.transfer(id, targetList, overId, pos)
+          : defaults.transfer(id, targetList, overId, pos))
       ),
     apply: (id: SavedModelId) => readCommandResult(applyRaw ? applyRaw(id) : defaults.apply(id)),
     exportUserModels: () => {
       const out = exportUserModelsRaw ? exportUserModelsRaw() : defaults.exportUserModels();
       return readSavedModelList(out);
     },
-    mergeImportedModels: (list: SavedModelLike[]) => {
+    mergeImportedModels: async (list: SavedModelLike[]) => {
       const normalizedList = readSavedModelList(list);
       const out = mergeImportedModelsRaw
         ? mergeImportedModelsRaw(normalizedList)
         : defaults.mergeImportedModels(normalizedList);
-      return readMergeResult(out);
+      return readMergeResult(await out);
     },
     onChange,
   };

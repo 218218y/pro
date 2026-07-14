@@ -1,4 +1,9 @@
-import type { ActionMetaLike, AppContainer, CloudSyncPayload } from '../../../types';
+import type {
+  ActionMetaLike,
+  AppContainer,
+  CloudSyncPayload,
+  CloudSyncRemoteAdoptionResult,
+} from '../../../types';
 
 import { ensureModelsLoadedViaService } from '../runtime/models_access.js';
 import { writeSavedColors, writeColorSwatchesOrder } from '../runtime/maps_access.js';
@@ -12,7 +17,7 @@ import {
 import type { StorageLike } from './cloud_sync_support_storage_shared.js';
 import { createCloudCollectionsRepository } from './cloud_sync_collections_repository.js';
 
-export function applyRemote(
+export async function applyRemote(
   App: AppContainer,
   storage: StorageLike,
   keyModels: string,
@@ -21,8 +26,8 @@ export function applyRemote(
   keyPresetOrder: string,
   keyHiddenPresets: string,
   payload: CloudSyncPayload,
-  suppress: { v: boolean }
-): boolean {
+  expectedLocalRevision?: number
+): Promise<CloudSyncRemoteAdoptionResult> {
   const models = normalizeModelList(payload?.savedModels);
   const colors = normalizeSavedColorsList(payload?.savedColors);
   const hasColorOrder = hasPayloadKey(payload, 'colorSwatchesOrder');
@@ -40,16 +45,22 @@ export function applyRemote(
     },
   });
 
-  suppress.v = true;
   try {
     const current = repository.read();
-    const commitResult = repository.commit({
+    const nextCollections = {
       m: models,
       c: colors,
       o: hasColorOrder ? colorOrder || [] : current.o,
       p: presetOrder,
       h: hiddenPresets,
-    });
+    };
+    const commitResult =
+      typeof expectedLocalRevision === 'number'
+        ? await repository.commitIfRevision(expectedLocalRevision, nextCollections)
+        : await repository.commit(nextCollections);
+    if (!commitResult.committed && commitResult.reason === 'revision-mismatch') {
+      return { ok: false, uiRefreshWarning: false, reason: 'revision-mismatch' };
+    }
     if (commitResult.mirrorFailures.length) {
       _cloudSyncReportNonFatal(
         App,
@@ -60,23 +71,28 @@ export function applyRemote(
     }
   } catch (e) {
     _cloudSyncReportNonFatal(App, 'applyRemote.commitCollections', e, { throttleMs: 6000 });
-    return false;
-  } finally {
-    suppress.v = false;
+    return { ok: false, uiRefreshWarning: false, reason: 'commit' };
   }
 
+  let uiRefreshWarning = false;
   try {
-    ensureModelsLoadedViaService(App, { forceRebuild: true, silent: false });
+    if (!ensureModelsLoadedViaService(App, { forceRebuild: true, silent: false })) {
+      uiRefreshWarning = true;
+    }
   } catch (e) {
+    uiRefreshWarning = true;
     _cloudSyncReportNonFatal(App, 'applyRemote.refreshModelsUi', e, { throttleMs: 6000 });
   }
 
   try {
     const mapsMeta: ActionMetaLike = { source: 'cloudSync.pull', noStorageWrite: true };
-    writeSavedColors(App, colors, mapsMeta);
-    if (hasColorOrder) writeColorSwatchesOrder(App, colorOrder || [], mapsMeta);
+    if (!(await writeSavedColors(App, colors, mapsMeta))) uiRefreshWarning = true;
+    if (hasColorOrder && !(await writeColorSwatchesOrder(App, colorOrder || [], mapsMeta))) {
+      uiRefreshWarning = true;
+    }
   } catch (e) {
+    uiRefreshWarning = true;
     _cloudSyncReportNonFatal(App, 'applyRemote.refreshColorsUi', e, { throttleMs: 6000 });
   }
-  return true;
+  return { ok: true, uiRefreshWarning };
 }

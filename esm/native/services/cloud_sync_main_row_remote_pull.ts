@@ -51,9 +51,22 @@ function shouldApplyInitialPayloadToHydrateApp(
 export function createCloudSyncMainRowPullOnce(
   args: CreateCloudSyncMainRowRemoteOpsArgs
 ): (isInitial: boolean) => Promise<void> {
-  const { App, cfg, gatewayUrl, room, getRow, runtimeStatus, publishStatus, localState, state } = args;
+  const {
+    App,
+    cfg,
+    gatewayUrl,
+    room,
+    getRow,
+    runtimeStatus,
+    publishStatus,
+    localState,
+    state,
+    schedulePullSoon,
+    schedulePushSoon,
+  } = args;
 
   return async (isInitial: boolean): Promise<void> => {
+    const localSnapshot = localState.readLocalSnapshot();
     const readResult = await readCloudSyncRowWithPullActivity({
       gatewayUrl,
       anonKey: cfg.anonKey,
@@ -82,7 +95,10 @@ export function createCloudSyncMainRowPullOnce(
         state.setLastHash(nextHash);
         return;
       }
-      if (localState.applyRemotePayload(payload)) state.setLastSeenUpdatedAt(updatedAt);
+      const adoption = await localState.applyRemotePayload(payload, localSnapshot.revision);
+      if (adoption.ok) state.setLastSeenUpdatedAt(updatedAt);
+      else if (adoption.ok === false && adoption.reason === 'revision-mismatch') schedulePushSoon();
+      else schedulePullSoon({ reason: 'pull-local-commit-recovery' });
       return;
     }
 
@@ -92,7 +108,10 @@ export function createCloudSyncMainRowPullOnce(
         state.setLastHash(nextHash);
         return;
       }
-      if (localState.applyRemotePayload(payload)) state.setLastSeenUpdatedAt(updatedAt);
+      const adoption = await localState.applyRemotePayload(payload, localSnapshot.revision);
+      if (adoption.ok) state.setLastSeenUpdatedAt(updatedAt);
+      else if (adoption.ok === false && adoption.reason === 'revision-mismatch') schedulePushSoon();
+      else schedulePullSoon({ reason: 'pull-local-commit-recovery' });
     }
   };
 }

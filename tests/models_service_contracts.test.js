@@ -176,8 +176,8 @@ test('models contracts keep canonical service, helper, and typed access seams', 
       /export function ensureModelsLoadedViaService\(App: unknown, opts\?: ModelsLoadOptions\): boolean/,
       /export function ensureModelsLoadedViaServiceOrThrow\(/,
       /export function exportUserModelsViaService\(App: unknown\): SavedModelLike\[\]/,
-      /export function mergeImportedModelsViaService\(App: unknown, list: SavedModelLike\[\]\): ModelsMergeResult/,
-      /export function mergeImportedModelsViaServiceOrThrow\(/,
+      /export async function mergeImportedModelsViaService\([\s\S]*?\): Promise<ModelsMergeResult>/,
+      /export async function mergeImportedModelsViaServiceOrThrow\(/,
       /export function setModelNormalizerViaService\(/,
       /export function setPresetModelsViaService\(/,
     ],
@@ -226,13 +226,39 @@ test('models contracts keep canonical service, helper, and typed access seams', 
     assertLacksAll(assert, readSource(rel, import.meta.url), [/export default\s+/], rel);
   }
 
+  const retiredSplitPersistence = [
+    /_setStoredHiddenPresets/,
+    /_setStoredPresetOrder/,
+    /_setStoredUserModels/,
+    /_persistPresetOrder/,
+    /_persistUserOnly/,
+  ];
+  assertLacksAll(
+    assert,
+    readSource('../esm/native/services/models_registry.ts', import.meta.url),
+    retiredSplitPersistence,
+    'modelsRegistryRetiredSplitPersistence'
+  );
+  assertLacksAll(
+    assert,
+    readSource('../esm/native/services/models_registry_storage.ts', import.meta.url),
+    retiredSplitPersistence,
+    'modelsStorageRetiredSplitPersistence'
+  );
+  assertLacksAll(
+    assert,
+    readSource('../esm/native/services/models_registry_storage_persistence.ts', import.meta.url),
+    retiredSplitPersistence,
+    'modelsStoragePersistenceRetiredSplitPersistence'
+  );
+
   assertMatchesAll(
     assert,
     modelsHelpers,
     [
       /export type \{[\s\S]*AppModelsState[\s\S]*StorageLike[\s\S]*\};/,
       /export function ensureModelsLoadedInternal\(App: AppContainer, opts\?: ModelsOpts\): SavedModelLike\[\]/,
-      /export function mergeImportedModelsInternal\(App: AppContainer, list: SavedModelLike\[\]\): ModelsMergeResult/,
+      /export function mergeImportedModelsInternal\([\s\S]*?\): Promise<ModelsMergeResult>/,
       /export function saveCurrentModelInternal\(/,
       /export function transferModelInternal\(/,
       /export function applyModelInternal\(App: AppContainer, id: SavedModelId\): ModelsCommandResult/,
@@ -334,7 +360,7 @@ test('models top-level owners stay thin and delegate command/storage policy to d
       /\.\/models_registry_shared\.js/,
       /export type \{[\s\S]*AppModelsState[\s\S]*StorageLike[\s\S]*\};/,
       /export function ensureModelsLoadedInternal\(App: AppContainer, opts\?: ModelsOpts\): SavedModelLike\[\]/,
-      /export function mergeImportedModelsInternal\(App: AppContainer, list: SavedModelLike\[\]\): ModelsMergeResult/,
+      /export function mergeImportedModelsInternal\([\s\S]*?\): Promise<ModelsMergeResult>/,
     ],
     'modelsRegistryThinOwner'
   );

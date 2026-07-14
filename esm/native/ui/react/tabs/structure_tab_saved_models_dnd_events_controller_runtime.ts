@@ -42,7 +42,7 @@ type SavedModelsDndCommandLike = {
     dragId: SavedModelId,
     overId: SavedModelId | null,
     pos: SavedModelsDropPos
-  ) => void;
+  ) => Promise<void>;
 };
 
 export type SavedModelsDndEventsController = {
@@ -127,7 +127,7 @@ export function createSavedModelsDndEventsController(
     overId: SavedModelId | null,
     pos: SavedModelsDropPos
   ) {
-    commandController.applyDrop(listType, dragId, overId, pos);
+    void commandController.applyDrop(listType, dragId, overId, pos);
   }
 
   return {

@@ -37,7 +37,7 @@ function assertModelsReport(report: Report, message: RegExp, op: string): void {
   assert.equal(report.ctx.fatal, false);
 }
 
-test('models service access reports owner rejection for read/load seams while preserving local recovery', () => {
+test('models service access reports owner rejection for read/load seams while preserving local recovery', async () => {
   const { App, reports } = createReportingModelsApp({
     ensureLoaded() {
       throw new Error('installed models load rejected');
@@ -52,7 +52,7 @@ test('models service access reports owner rejection for read/load seams while pr
 
   assert.equal(ensureModelsLoadedViaService(App, { silent: true }), false);
   assert.deepEqual(exportUserModelsViaService(App), []);
-  assert.deepEqual(mergeImportedModelsViaService(App, [{ id: 'm1', name: 'Model 1' }] as any), {
+  assert.deepEqual(await mergeImportedModelsViaService(App, [{ id: 'm1', name: 'Model 1' }] as any), {
     added: 0,
     updated: 0,
   });

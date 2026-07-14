@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createCloudSyncDeleteTempOps } from '../esm/native/services/cloud_sync_delete_temp.ts';
 import { createCloudSyncMainWriteSingleFlight } from '../esm/native/services/cloud_sync_main_write_singleflight.ts';
+import { createCloudCollectionsRepository } from '../esm/native/services/cloud_sync_collections_repository.ts';
 
 type AnyRecord = Record<string, unknown>;
 
@@ -132,6 +133,8 @@ test('cloud sync delete temp removes unlocked colors, sanitizes payload, updates
     clearPendingPush: () => {
       clearPendingPushCalls += 1;
     },
+    schedulePullSoon: () => {},
+    schedulePush: () => {},
     setLastSeenUpdatedAt: value => {
       lastSeenUpdatedAt = value;
     },
@@ -172,6 +175,79 @@ test('cloud sync delete temp removes unlocked colors, sanitizes payload, updates
     1,
     'delete-temp should reuse returned representation instead of forcing a second refresh'
   );
+});
+
+test('cloud sync delete temp preserves a concurrent local mutation and queues push reconciliation', async () => {
+  const storage = createStorageHarness();
+  const appHarness = createAppHarness();
+  let schedulePushCalls = 0;
+  let lastSeenUpdatedAt = '';
+  const repository = createCloudCollectionsRepository({
+    storage: storage as any,
+    keys: {
+      models: 'savedModels',
+      colors: 'savedColors',
+      colorOrder: 'colorSwatchesOrder',
+      presetOrder: 'presetOrder',
+      hiddenPresets: 'hiddenPresets',
+    },
+  });
+
+  const ops = createCloudSyncDeleteTempOps({
+    App: appHarness.App as any,
+    cfg: { anonKey: 'anon-key' } as any,
+    gatewayUrl: 'https://example.test/rest',
+    storage: storage as any,
+    keyModels: 'savedModels',
+    keyColors: 'savedColors',
+    keyColorOrder: 'colorSwatchesOrder',
+    keyPresetOrder: 'presetOrder',
+    keyHiddenPresets: 'hiddenPresets',
+    currentRoom: () => 'room-1',
+    getRow: async () =>
+      cloudRead({
+        room: 'room-1',
+        revision: 4,
+        updated_at: 'ts-before-delete',
+        updated_by: 'remote-client',
+        payload: {
+          savedModels: [{ id: 'remote-model', name: 'Remote Model' }],
+          savedColors: [{ id: 'temp-color', value: '#ffffff' }],
+          colorSwatchesOrder: ['temp-color'],
+          presetOrder: [],
+          hiddenPresets: [],
+        },
+      } as any),
+    upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
+      await repository.transact(() => ({
+        savedModels: [{ id: 'local-during-delete', name: 'Local During Delete' }],
+      }));
+      return {
+        ok: true,
+        row: { room, revision: 5, updated_at: 'ts-after-delete', updated_by: 'client-a', payload },
+      } as any;
+    },
+    getSendRealtimeHint: () => null,
+    runMainWriteFlight: (_key, run) => Promise.resolve().then(run),
+    clearPendingPush: () => {},
+    schedulePullSoon: () => {},
+    schedulePush: () => {
+      schedulePushCalls += 1;
+    },
+    setLastSeenUpdatedAt: value => {
+      lastSeenUpdatedAt = value;
+    },
+    setLastHash: () => {},
+    suppress: { v: false },
+    reportNonFatal: () => {},
+  });
+
+  const result = await ops.deleteTemporaryColorsInCloud();
+
+  assert.deepEqual(result, { ok: false, removed: 0, reason: 'write' });
+  assert.deepEqual(repository.read().m, [{ id: 'local-during-delete', name: 'Local During Delete' }]);
+  assert.equal(lastSeenUpdatedAt, '', 'unadopted remote state must not advance the local row cursor');
+  assert.equal(schedulePushCalls, 1);
 });
 
 test('cloud sync delete temp records a failed preflight attempt without stamping pull success', async () => {
@@ -219,6 +295,8 @@ test('cloud sync delete temp records a failed preflight attempt without stamping
     },
     runMainWriteFlight: (key, run, onBusy) => Promise.resolve().then(run),
     clearPendingPush: () => {},
+    schedulePullSoon: () => {},
+    schedulePush: () => {},
     setLastSeenUpdatedAt: () => {},
     setLastHash: () => {},
     suppress: { v: false },
@@ -280,6 +358,8 @@ test('cloud sync delete temp preserves thrown message, reports nonfatal, and res
       return Promise.resolve().then(run);
     },
     clearPendingPush: () => {},
+    schedulePullSoon: () => {},
+    schedulePush: () => {},
     setLastSeenUpdatedAt: () => {},
     setLastHash: () => {},
     suppress: { v: false },
@@ -338,6 +418,8 @@ test('cloud sync delete temp reuses duplicate same-kind writes and reports busy 
     getSendRealtimeHint: () => null,
     runMainWriteFlight: (key, run, onBusy) => mainWrite.run(key, run, onBusy),
     clearPendingPush: () => {},
+    schedulePullSoon: () => {},
+    schedulePush: () => {},
     setLastSeenUpdatedAt: () => {},
     setLastHash: () => {},
     suppress: { v: false },
@@ -436,6 +518,8 @@ test('cloud sync delete-temp tracks preflight pull activity and settled push act
           () => ({ ok: false, removed: 0, reason: 'busy' }) as any
         ),
       clearPendingPush: () => undefined,
+      schedulePullSoon: () => undefined,
+      schedulePush: () => undefined,
       setLastSeenUpdatedAt: () => undefined,
       setLastHash: () => undefined,
       suppress: { v: false },

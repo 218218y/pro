@@ -278,7 +278,11 @@ export interface ProjectLoadStateSnapshotLike {
   meta: MetaSlicePatch;
 }
 
+export type ProjectLoadTransactionState = 'prepared' | 'committed' | 'rolled-back';
+
 export interface ProjectLoadTransactionHandleLike {
+  readonly state: ProjectLoadTransactionState;
+  commit: () => void;
   rollback: (meta?: ActionMetaLike) => void;
 }
 

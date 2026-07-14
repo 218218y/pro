@@ -112,7 +112,7 @@ test('cloud sync remote read support records a failed attempt when the row read 
   assert.equal(publishCount, 2);
 });
 
-test('cloud sync remote read support blocks auto-pull while the same room has an unresolved conflict', async () => {
+test('cloud sync remote read support delegates conflict preflight to the canonical gateway owner', async () => {
   const runtimeStatus = createRuntimeStatus();
   runtimeStatus.conflict = {
     room: 'room-a',
@@ -120,9 +120,6 @@ test('cloud sync remote read support blocks auto-pull while the same room has an
     remoteRevision: 2,
     detectedAt: 1,
     state: 'awaiting-resolution',
-    base: {},
-    local: { savedModels: [{ id: 'model-1', name: 'Local' }] },
-    remote: { savedModels: [{ id: 'model-1', name: 'Remote' }] },
   };
   let reads = 0;
 
@@ -132,14 +129,17 @@ test('cloud sync remote read support blocks auto-pull while the same room has an
     room: 'room-a',
     getRow: async () => {
       reads += 1;
-      return { ok: true, row: null };
+      return {
+        ok: false,
+        failure: { kind: 'server', status: 409, code: 'conflict_unresolved' },
+      };
     },
     runtimeStatus,
   });
 
   assert.deepEqual(result, {
     ok: false,
-    failure: { kind: 'server', status: 409, code: 'unresolved_conflict' },
+    failure: { kind: 'server', status: 409, code: 'conflict_unresolved' },
   });
-  assert.equal(reads, 0);
+  assert.equal(reads, 1);
 });

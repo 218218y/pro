@@ -1,5 +1,4 @@
 import { createCloudSyncAsyncSingleFlightRunner } from './cloud_sync_async_singleflight.js';
-import { buildCloudSyncMainRowPayload } from './cloud_sync_main_row_local.js';
 import { writeCloudSyncMainRowPayload } from './cloud_sync_main_row_write_support.js';
 import {
   settleCloudSyncMainRowWrite,
@@ -23,6 +22,7 @@ export function createCloudSyncMainRowPushNow(
     localState,
     state,
     schedulePullSoon,
+    schedulePushSoon,
   } = args;
 
   const runPushFlight = createCloudSyncAsyncSingleFlightRunner();
@@ -32,8 +32,8 @@ export function createCloudSyncMainRowPushNow(
       'push',
       () =>
         runPushFlight('pushNow', async () => {
-          const local = localState.readCurrentLocal();
-          const nextHash = localState.computeHashForLocal(local);
+          const localSnapshot = localState.readLocalSnapshot();
+          const nextHash = localState.computeAppliedPayloadHash(localSnapshot.payload);
           if (
             shouldSkipCloudSyncMainRowPush({
               suppressRef,
@@ -48,23 +48,22 @@ export function createCloudSyncMainRowPushNow(
             cfg,
             gatewayUrl,
             room,
-            payload: buildCloudSyncMainRowPayload(local),
+            payload: localSnapshot.payload,
             getRow,
             upsertRow,
             getSendRealtimeHint,
             runtimeStatus,
             publishStatus,
-            setLastSeenUpdatedAt: value => {
-              state.setLastSeenUpdatedAt(value);
-            },
           });
           if (!writeResult.ok) return;
-          settleCloudSyncMainRowWrite({
+          await settleCloudSyncMainRowWrite({
             writeResult,
             localState,
             state,
             nextHash,
+            expectedLocalRevision: localSnapshot.revision,
             schedulePullSoon,
+            schedulePushSoon,
           });
         }),
       () => undefined

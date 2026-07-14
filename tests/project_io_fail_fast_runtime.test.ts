@@ -23,6 +23,10 @@ function createProjectIoApp(overrides?: {
   showToastError?: Error;
   buildResult?: boolean;
   supersedeOnEditReset?: boolean;
+  onHistoryReset?: () => void;
+  onAutosaveCommit?: () => void;
+  autosaveCommitError?: Error;
+  onStoreRead?: () => void;
   confirmOpen?:
     | ((title: unknown, message: unknown, onYes?: (() => void) | null, onNo?: (() => void) | null) => void)
     | null;
@@ -94,9 +98,19 @@ function createProjectIoApp(overrides?: {
             state.meta = { ...state.meta, ...structuredClone(snapshot.meta) };
             runtimeFlags.push({ key: 'sketchMode', value: snapshot.runtime.sketchMode });
             runtimeFlags.push({ key: 'wardrobeTypeProfiles', value: snapshot.runtime.wardrobeTypeProfiles });
+            let transactionState: 'prepared' | 'committed' | 'rolled-back' = 'prepared';
             return {
+              get state() {
+                return transactionState;
+              },
+              commit() {
+                if (transactionState !== 'prepared') throw new Error('invalid test transaction commit');
+                transactionState = 'committed';
+              },
               rollback() {
+                if (transactionState !== 'prepared') throw new Error('invalid test transaction rollback');
                 Object.assign(state, structuredClone(before));
+                transactionState = 'rolled-back';
               },
             };
           }
@@ -128,6 +142,8 @@ function createProjectIoApp(overrides?: {
               if (!active) return;
               active = false;
               autosaveCalls.push('commit');
+              overrides?.onAutosaveCommit?.();
+              if (overrides?.autosaveCommitError) throw overrides.autosaveCommitError;
             },
             resume() {
               if (!active) return;
@@ -181,6 +197,7 @@ function createProjectIoApp(overrides?: {
                         historyState.lastCoalesceAt = 0;
                         calls.push(`history:${String(meta?.source || '')}`);
                         events.push(`history:${String(meta?.source || '')}`);
+                        overrides?.onHistoryReset?.();
                         if (overrides?.historyFaultAfterMutation) {
                           throw new Error('history finalize fault');
                         }
@@ -211,6 +228,7 @@ function createProjectIoApp(overrides?: {
     },
     store: {
       getState() {
+        overrides?.onStoreRead?.();
         return state;
       },
     },
@@ -436,6 +454,191 @@ test('project io load restores state after a history-baseline fault following co
     assert.deepEqual(harness.autosaveCalls, ['suspend', 'resume']);
     assert.deepEqual(harness.buildCalls, []);
   });
+});
+
+test('project io load restores the pre-chain state when a superseding reentrant load fails before commit', () => {
+  let successorResult: unknown = null;
+  let harness!: ReturnType<typeof createProjectIoApp>;
+  harness = createProjectIoApp({
+    onHistoryReset() {
+      successorResult = harness.orchestrator.loadProjectData(
+        { settings: { wardrobeType: 'hinged' } } as never,
+        { toast: false }
+      );
+    },
+  });
+  const before = structuredClone(harness.state);
+  const historyBefore = structuredClone(harness.historyState);
+
+  const firstResult = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.deepEqual(successorResult, { ok: false, reason: 'invalid' });
+  assert.deepEqual(firstResult, { ok: false, reason: 'superseded', restoreGen: 1 });
+  assert.deepEqual(harness.state, before);
+  assert.deepEqual(harness.historyState, historyBefore);
+  assert.deepEqual(harness.autosaveCalls, ['suspend', 'resume']);
+  assert.deepEqual(harness.buildCalls, []);
+});
+
+test('project io load serializes a valid reentrant successor after predecessor compensation', () => {
+  let successorRequested = false;
+  let successorAccepted: unknown = null;
+  let harness!: ReturnType<typeof createProjectIoApp>;
+  const successorProject = {
+    ...VALID_PROJECT,
+    projectName: 'Successor project',
+    settings: {
+      ...VALID_PROJECT.settings,
+      width: 180,
+    },
+  };
+  harness = createProjectIoApp({
+    onHistoryReset() {
+      if (successorRequested) return;
+      successorRequested = true;
+      successorAccepted = harness.orchestrator.loadProjectData(successorProject as never, {
+        toast: true,
+        toastMessage: 'successor loaded',
+      });
+    },
+  });
+
+  const firstResult = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.deepEqual(successorAccepted, { ok: true, pending: true });
+  assert.deepEqual(firstResult, { ok: false, reason: 'superseded', restoreGen: 1 });
+  assert.equal(harness.state.ui.projectName, 'Successor project');
+  assert.equal(harness.state.ui.raw.width, 180);
+  assert.equal((harness.App.services.projectIO as any).runtime.restoreGen, 2);
+  assert.deepEqual(harness.autosaveCalls, ['suspend', 'resume', 'suspend', 'commit', 'force']);
+  assert.equal(harness.buildCalls.length, 1);
+  assert.deepEqual(harness.toasts, [{ message: 'successor loaded', type: 'success' }]);
+});
+
+test('project io load keeps its business commit when autosave finalization throws', () => {
+  const harness = createProjectIoApp({
+    autosaveCommitError: new Error('autosave suspension commit exploded'),
+  });
+
+  const result = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.deepEqual(result, {
+    ok: true,
+    restoreGen: 1,
+    warnings: [
+      {
+        effect: 'autosave-finalize',
+        message: 'Project loaded, but autosave suspension could not be finalized.',
+      },
+    ],
+  });
+  assert.equal(harness.state.meta.dirty, false);
+  assert.deepEqual(harness.historyState.undoStack, []);
+  assert.deepEqual(harness.autosaveCalls, ['suspend', 'commit', 'force']);
+  assert.equal(
+    harness.reports.some(
+      report =>
+        report.op === 'project.load.finalizeAutosave' &&
+        /autosave suspension commit exploded/i.test(report.message)
+    ),
+    true
+  );
+});
+
+test('project io load allows a reentrant successor after business commit without rolling either project back', () => {
+  let successorRequested = false;
+  let successorResult: unknown = null;
+  let harness!: ReturnType<typeof createProjectIoApp>;
+  const successorProject = {
+    ...VALID_PROJECT,
+    projectName: 'Autosave successor',
+    settings: {
+      ...VALID_PROJECT.settings,
+      width: 185,
+    },
+  };
+  harness = createProjectIoApp({
+    onAutosaveCommit() {
+      if (successorRequested) return;
+      successorRequested = true;
+      successorResult = harness.orchestrator.loadProjectData(successorProject as never, {
+        toast: false,
+      });
+    },
+  });
+
+  const firstResult = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.deepEqual(successorResult, { ok: true, restoreGen: 2 });
+  assert.deepEqual(firstResult, { ok: false, reason: 'superseded', restoreGen: 1 });
+  assert.equal(harness.state.ui.projectName, 'Autosave successor');
+  assert.equal(harness.state.ui.raw.width, 185);
+  assert.deepEqual(harness.autosaveCalls, ['suspend', 'commit', 'suspend', 'commit', 'force']);
+  assert.equal(harness.buildCalls.length, 1);
+});
+
+test('project io load drains three nested requests in request order so the latest valid load wins', () => {
+  let firstHistoryReset = true;
+  let startingMiddleLoad = false;
+  let newestRequested = false;
+  let middleAccepted: unknown = null;
+  let newestAccepted: unknown = null;
+  let harness!: ReturnType<typeof createProjectIoApp>;
+  const middleProject = {
+    ...VALID_PROJECT,
+    projectName: 'Middle project',
+    settings: {
+      ...VALID_PROJECT.settings,
+      width: 180,
+    },
+  };
+  const newestProject = {
+    ...VALID_PROJECT,
+    projectName: 'Newest project',
+    settings: {
+      ...VALID_PROJECT.settings,
+      width: 190,
+    },
+  };
+  harness = createProjectIoApp({
+    onHistoryReset() {
+      if (!firstHistoryReset) return;
+      firstHistoryReset = false;
+      startingMiddleLoad = true;
+      middleAccepted = harness.orchestrator.loadProjectData(middleProject as never, {
+        toast: false,
+      });
+      startingMiddleLoad = false;
+    },
+    onStoreRead() {
+      if (!startingMiddleLoad || newestRequested) return;
+      startingMiddleLoad = false;
+      newestRequested = true;
+      newestAccepted = harness.orchestrator.loadProjectData(newestProject as never, {
+        toast: false,
+      });
+    },
+  });
+
+  const firstResult = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.deepEqual(middleAccepted, { ok: true, pending: true });
+  assert.deepEqual(newestAccepted, { ok: true, pending: true });
+  assert.deepEqual(firstResult, { ok: false, reason: 'superseded', restoreGen: 1 });
+  assert.equal(harness.state.ui.projectName, 'Newest project');
+  assert.equal(harness.state.ui.raw.width, 190);
+  assert.equal((harness.App.services.projectIO as any).runtime.restoreGen, 3);
+  assert.deepEqual(harness.autosaveCalls, [
+    'suspend',
+    'resume',
+    'suspend',
+    'commit',
+    'force',
+    'suspend',
+    'commit',
+    'force',
+  ]);
+  assert.equal(harness.buildCalls.length, 2);
 });
 
 test('project io load never rolls back a committed project when the success toast throws', () => {

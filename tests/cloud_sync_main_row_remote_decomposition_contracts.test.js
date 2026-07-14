@@ -46,7 +46,7 @@ test('[cloud-sync-main-row-remote] facade stays thin while shared, push, and pul
       /export type CreateCloudSyncMainRowRemoteOpsArgs = \{/,
       /export type CloudSyncMainRowRemoteOps = \{/,
       /export function shouldSkipCloudSyncMainRowPush\(/,
-      /export function settleCloudSyncMainRowWrite\(/,
+      /export async function settleCloudSyncMainRowWrite\(/,
     ],
     'mainRowRemoteSharedOwner'
   );

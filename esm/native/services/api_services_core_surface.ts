@@ -20,7 +20,8 @@ export {
   getCloudCollectionsRepositoryViaServiceOrThrow,
   readCloudCollectionsEnvelopeViaServiceOrThrow,
   readCloudCollectionsResultViaServiceOrThrow,
-  updateCloudCollectionsViaServiceOrThrow,
+  transactCloudCollectionsViaServiceOrThrow,
+  commitCloudCollectionsViaServiceOrThrow,
   resetCorruptCloudCollectionsViaServiceOrThrow,
 } from '../runtime/cloud_collections_access.js';
 export {

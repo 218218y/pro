@@ -345,9 +345,9 @@ async function installProjectActionRecorder(page) {
   });
 }
 
-async function waitForProjectAction(page, action) {
+async function waitForProjectAction(page, action, options = {}) {
   return await page.evaluate(
-    expectedAction =>
+    ({ expectedAction, expectedPhase }) =>
       new Promise(resolve => {
         const timer = window.setTimeout(
           () => resolve({ action: expectedAction, ok: false, reason: 'timeout' }),
@@ -356,13 +356,14 @@ async function waitForProjectAction(page, action) {
         const onAction = event => {
           const detail = (event && event.detail) || {};
           if (detail.action !== expectedAction) return;
+          if (expectedPhase && detail.phase !== expectedPhase) return;
           window.clearTimeout(timer);
           window.removeEventListener('wardrobepro:project-action', onAction);
           resolve(detail);
         };
         window.addEventListener('wardrobepro:project-action', onAction);
       }),
-    action
+    { expectedAction: action, expectedPhase: options.phase }
   );
 }
 
@@ -456,7 +457,7 @@ async function fillProjectNameViaActiveInput(page, value) {
 
 async function saveProjectViaHeader(page, saveName) {
   const downloadPromise = page.waitForEvent('download');
-  const saveEventPromise = waitForProjectAction(page, 'save');
+  const saveEventPromise = waitForProjectAction(page, 'save', { phase: 'settled' });
   await page.locator('button[data-testid="header-project-save-button"]').click();
   await expect(page.locator('#customPromptModal.open')).toBeVisible();
   await page.locator('#modalInput').fill(String(saveName || '').trim() || `browser-perf-save-${Date.now()}`);

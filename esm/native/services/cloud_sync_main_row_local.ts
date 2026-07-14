@@ -1,4 +1,9 @@
-import type { AppContainer, CloudSyncLocalCollections, CloudSyncPayload } from '../../../types';
+import type {
+  AppContainer,
+  CloudSyncLocalCollections,
+  CloudSyncPayload,
+  CloudSyncRemoteAdoptionResult,
+} from '../../../types';
 
 import type { SupabaseCfg } from './cloud_sync_config.js';
 import type { CloudSyncGetRowFn, CloudSyncUpsertRowFn, StorageLike } from './cloud_sync_owner_context.js';
@@ -43,11 +48,16 @@ export type CreateCloudSyncMainRowLocalStateArgs = {
 
 export type CloudSyncMainRowLocalState = {
   readCurrentLocal: () => CloudSyncLocalCollections;
+  readEnvelopeRevision: () => number;
+  readLocalSnapshot: () => { payload: CloudSyncPayload; revision: number };
   computeHashForLocal: (local: CloudSyncLocalCollections) => string;
   computeCurrentHash: () => string;
   computeAppliedPayloadHash: (payload: CloudSyncPayload) => string;
   syncHashFromLocal: () => string;
-  applyRemotePayload: (payload: CloudSyncPayload) => boolean;
+  applyRemotePayload: (
+    payload: CloudSyncPayload,
+    expectedLocalRevision?: number
+  ) => Promise<CloudSyncRemoteAdoptionResult>;
   subscribeCollections: (listener: () => void) => () => void;
   seedMissingRowFromLocal: () => Promise<void>;
 };
@@ -76,6 +86,20 @@ export function createCloudSyncMainRowLocalState(
     },
   });
   const readCurrentLocal = (): CloudSyncLocalCollections => repository.read();
+  const readEnvelopeRevision = (): number => repository.readEnvelope().revision;
+  const readLocalSnapshot = (): { payload: CloudSyncPayload; revision: number } => {
+    const envelope = repository.readEnvelope();
+    return {
+      payload: buildCloudSyncMainRowPayload({
+        m: envelope.savedModels,
+        c: envelope.savedColors,
+        o: envelope.colorOrder,
+        p: envelope.presetOrder,
+        h: envelope.hiddenPresets,
+      }),
+      revision: envelope.revision,
+    };
+  };
 
   const computeHashForLocal = (local: CloudSyncLocalCollections): string =>
     computeHash(local.m, local.c, local.o, local.p, local.h);
@@ -101,8 +125,11 @@ export function createCloudSyncMainRowLocalState(
     return nextHash;
   };
 
-  const applyRemotePayload = (payload: CloudSyncPayload): boolean => {
-    const committed = applyRemote(
+  const applyRemotePayload = async (
+    payload: CloudSyncPayload,
+    expectedLocalRevision?: number
+  ): Promise<CloudSyncRemoteAdoptionResult> => {
+    const committed = await applyRemote(
       args.App,
       args.storage,
       args.keyModels,
@@ -111,9 +138,9 @@ export function createCloudSyncMainRowLocalState(
       args.keyPresetOrder,
       args.keyHiddenPresets,
       payload,
-      args.suppressRef
+      expectedLocalRevision
     );
-    if (committed) syncHashFromLocal();
+    if (committed.ok) syncHashFromLocal();
     return committed;
   };
 
@@ -151,6 +178,8 @@ export function createCloudSyncMainRowLocalState(
 
   return {
     readCurrentLocal,
+    readEnvelopeRevision,
+    readLocalSnapshot,
     computeHashForLocal,
     computeCurrentHash,
     computeAppliedPayloadHash,

@@ -55,9 +55,26 @@ This is the compact lifecycle contract for cloud sync. Keep implementation detai
 - While rate-limited, the owner suppresses ordinary pull/push work until the published retry deadline and
   schedules only the lifecycle recovery attempt.
 - A merge that leaves conflict keys publishes an unresolved conflict with those keys and the remote
-  revision. Automatic conflict retry stops rather than silently choosing a payload.
+  revision. Automatic conflict retry stops rather than silently choosing a payload. The private owner
+  persists the full base/local/remote record per room; public React status exposes metadata only.
+- `keep-local` rebases the user's choices for the conflicting keys onto the latest verified remote row.
+  Unrelated remote fields and unrelated entity changes are preserved. `use-remote` adopts the verified
+  row locally before the conflict is cleared. A corrupt persisted conflict fails closed and permits only
+  an explicit remote recovery.
 - The local collections repository commits one schema-versioned envelope before UI refresh or Cloud push.
   Per-collection keys are deployment mirrors for existing consumers, not the canonical Cloud read source.
+- Browser read-modify-write mutations run under the injected Web Lock for the envelope and re-read the
+  canonical value inside that lock. A non-browser process lock is an explicit diagnostic mode only; a
+  browser without Web Locks fails closed for mutation rather than claiming cross-tab safety.
+- Local entity/list commands pass a functional mutator that is evaluated against that locked reread; a
+  precomputed partial collection snapshot is not a valid mutation input. Remote and import snapshots use
+  the explicit whole-envelope commit boundary.
+- `services.cloudCollections` is the installation owner for the browser lock capability and is installed
+  before model and Cloud Sync consumers. Repository caching preserves that first isolation owner and rejects
+  a later mode change instead of silently downgrading or upgrading an already-published repository.
+- The per-collection deployment mirrors are reconciled on service install through 2026-10-15. After that
+  window, remove their writers and readers once telemetry plus the repository consumer guard prove that no
+  production consumer remains; the canonical envelope must not gain a fallback read during retirement.
 
 ## Verification focus
 

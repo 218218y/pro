@@ -68,16 +68,16 @@ export function createEmptyModelsService(): ModelsServiceLike {
     ensureLoaded: () => [],
     getAll: () => [],
     getById: () => null,
-    saveCurrent: () => ({ ok: false, reason: 'not-installed' }),
-    overwriteFromCurrent: () => ({ ok: false, reason: 'not-installed' }),
-    deleteById: () => ({ ok: false, reason: 'not-installed' }),
-    setLocked: () => ({ ok: false, reason: 'not-installed', locked: false }),
-    deleteTemporary: () => ({ ok: false, reason: 'not-installed', removed: 0 }),
-    move: () => ({ ok: false, reason: 'not-installed' }),
-    transfer: () => ({ ok: false, reason: 'not-installed' }),
+    saveCurrent: async () => ({ ok: false, reason: 'not-installed' }),
+    overwriteFromCurrent: async () => ({ ok: false, reason: 'not-installed' }),
+    deleteById: async () => ({ ok: false, reason: 'not-installed' }),
+    setLocked: async () => ({ ok: false, reason: 'not-installed', locked: false }),
+    deleteTemporary: async () => ({ ok: false, reason: 'not-installed', removed: 0 }),
+    move: async () => ({ ok: false, reason: 'not-installed' }),
+    transfer: async () => ({ ok: false, reason: 'not-installed' }),
     apply: () => ({ ok: false, reason: 'not-installed' }),
     exportUserModels: () => [],
-    mergeImportedModels: () => ({ added: 0, updated: 0 }),
+    mergeImportedModels: async () => ({ added: 0, updated: 0 }),
     onChange: () => {},
   };
 }
@@ -90,6 +90,11 @@ export function readMergeResult(value: unknown): ModelsMergeResult {
   if (!isRecord(value)) return { added: 0, updated: 0 };
   const added = Number.isFinite(Number(value.added)) ? Number(value.added) : 0;
   const updated = Number.isFinite(Number(value.updated)) ? Number(value.updated) : 0;
+  if (value.ok === false) {
+    const reason = normalizeModelsCommandReason(value.reason, 'error');
+    const message = typeof value.message === 'string' && value.message ? value.message : undefined;
+    return { ok: false, reason, ...(message ? { message } : {}), added, updated };
+  }
   return { added, updated };
 }
 

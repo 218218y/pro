@@ -23,7 +23,15 @@ export function areCloudSyncPanelSnapshotsEqual(
   left: CloudSyncPanelSnapshot,
   right: CloudSyncPanelSnapshot
 ): boolean {
-  return areCloudSyncRoomStatusSnapshotsEqual(left, right) && !!left.floatingSync === !!right.floatingSync;
+  return (
+    areCloudSyncRoomStatusSnapshotsEqual(left, right) &&
+    !!left.floatingSync === !!right.floatingSync &&
+    (left.conflict?.room || '') === (right.conflict?.room || '') &&
+    (left.conflict?.keys || []).join('|') === (right.conflict?.keys || []).join('|') &&
+    Number(left.conflict?.remoteRevision || 0) === Number(right.conflict?.remoteRevision || 0) &&
+    Number(left.conflict?.detectedAt || 0) === Number(right.conflict?.detectedAt || 0) &&
+    (left.conflict?.state || '') === (right.conflict?.state || '')
+  );
 }
 
 export function areCloudSyncSite2TabsGateSnapshotsEqual(

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-14T13:00:30.837Z",
+  "generatedAt": "2026-07-14T16:15:43.362Z",
   "totals": {
-    "tests": 1207,
-    "unitRunnerTests": 1200,
+    "tests": 1209,
+    "unitRunnerTests": 1202,
     "e2eTests": 7,
     "nonTestRuntimeFiles": 31,
     "packageTestReferences": 191,
@@ -14,7 +14,7 @@
   },
   "categories": {
     "contract": 392,
-    "runtime-unit": 310,
+    "runtime-unit": 312,
     "integration": 447,
     "e2e-smoke": 8,
     "perf-smoke": 9,
@@ -1615,6 +1615,10 @@
     },
     {
       "file": "tests/domain_api_browser_ui_ops_healing_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/domain_api_colors_persistence_runtime.test.ts",
       "category": "runtime-unit"
     },
     {
@@ -3711,6 +3715,10 @@
     },
     {
       "file": "tests/settings_backup_action_result_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/settings_backup_color_transaction_runtime.test.ts",
       "category": "runtime-unit"
     },
     {

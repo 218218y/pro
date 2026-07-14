@@ -1,19 +1,9 @@
 import type {
   CloudSyncCredentialStatus,
   CloudSyncPollingStatus,
-  CloudSyncPayload,
   CloudSyncRealtimeStatus,
   CloudSyncRuntimeStatus,
 } from '../../../types';
-
-function cloneConflictPayload(payload: CloudSyncPayload): CloudSyncPayload {
-  const source = payload && typeof payload === 'object' ? payload : {};
-  try {
-    return JSON.parse(JSON.stringify(source)) as CloudSyncPayload;
-  } catch {
-    return { ...source };
-  }
-}
 
 export function cloneRuntimeStatus(status: CloudSyncRuntimeStatus): CloudSyncRuntimeStatus {
   const sourceRealtime = status.realtime || ({} as CloudSyncRealtimeStatus);
@@ -44,9 +34,6 @@ export function cloneRuntimeStatus(status: CloudSyncRuntimeStatus): CloudSyncRun
         remoteRevision: Number(status.conflict.remoteRevision) || 0,
         detectedAt: Number(status.conflict.detectedAt) || 0,
         state: status.conflict.state,
-        base: cloneConflictPayload(status.conflict.base),
-        local: cloneConflictPayload(status.conflict.local),
-        remote: cloneConflictPayload(status.conflict.remote),
       }
     : null;
   return {

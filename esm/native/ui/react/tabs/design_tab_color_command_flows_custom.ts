@@ -23,7 +23,7 @@ import { runPromptedAction } from '../../feedback_action_runtime.js';
 import type { SavedColor } from './design_tab_multicolor_panel.js';
 import { runSavedColorPerfStep } from './design_tab_saved_colors_perf_runtime.js';
 
-export function saveCustomColorByName(
+export async function saveCustomColorByName(
   app: AppContainer,
   savedColors: SavedColor[],
   orderedSwatches: SavedColor[],
@@ -32,7 +32,7 @@ export function saveCustomColorByName(
   name: string,
   applyColorChoice: DesignTabApplyColorChoice,
   idFactory?: () => string
-): DesignTabColorActionResult {
+): Promise<DesignTabColorActionResult> {
   const trimmedName = trim(name);
   if (!trimmedName) return buildDesignTabColorActionFailure('save-custom-color', 'cancelled');
 
@@ -44,37 +44,39 @@ export function saveCustomColorByName(
   }
 
   const id = nextSavedColorId(idFactory);
-  const next = runSavedColorPerfStep(app, 'design.savedColor.add.prepare', () => {
-    const prepared: SavedColor[] = savedColors.slice();
-    prepared.push(
-      isTexture
-        ? { id, name: trimmedName, type: 'texture', value: id, textureData: texture }
-        : { id, name: trimmedName, type: 'color', value: hex, textureData: null }
-    );
-    return prepared;
-  });
-
-  const nextOrder = runSavedColorPerfStep(app, 'design.savedColor.add.order', () =>
-    buildSavedColorOrder(orderedSwatches)
-      .filter(value => value !== id)
-      .concat(id)
-  );
+  const nextColor: SavedColor = isTexture
+    ? { id, name: trimmedName, type: 'texture', value: id, textureData: texture }
+    : { id, name: trimmedName, type: 'color', value: hex, textureData: null };
   const meta = createStructuralMutationMeta('react:design:savedColors:add', {
     buildTiming: 'coalesced',
   });
-  runSavedColorPerfStep(app, 'design.savedColor.add.mutation', () =>
+  const committed = await runSavedColorPerfStep(app, 'design.savedColor.add.mutation', () =>
     applySavedColorsAtomicMutation(
       app,
-      {
-        savedColors: next,
-        colorSwatchesOrder: nextOrder,
+      current => ({
+        savedColors: runSavedColorPerfStep(app, 'design.savedColor.add.prepare', () =>
+          current.savedColors.concat(nextColor)
+        ),
+        colorSwatchesOrder: runSavedColorPerfStep(app, 'design.savedColor.add.order', () =>
+          (current.colorSwatchesOrder.length
+            ? current.colorSwatchesOrder
+            : buildSavedColorOrder(current.savedColors)
+          )
+            .filter(value => value !== id)
+            .concat(id)
+        ),
         colorChoice: id,
-      },
+      }),
       meta
     )
   );
+  if (!committed) {
+    return buildDesignTabColorActionFailure('save-custom-color', 'error', { id, name: trimmedName });
+  }
 
   void applyColorChoice;
+  void savedColors;
+  void orderedSwatches;
   return buildDesignTabColorActionSuccess('save-custom-color', {
     id,
     name: trimmedName,

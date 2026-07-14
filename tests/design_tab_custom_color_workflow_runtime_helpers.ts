@@ -17,6 +17,15 @@ export function createFeedbackSpy() {
 }
 
 export function createAppHarness() {
+  let envelope = {
+    schemaVersion: 1 as const,
+    revision: 0,
+    savedModels: [] as Array<Record<string, unknown>>,
+    savedColors: SAVED_COLORS.slice() as Array<Record<string, unknown>>,
+    colorOrder: SAVED_COLORS.map(color => color.id),
+    presetOrder: [] as string[],
+    hiddenPresets: [] as string[],
+  };
   const state = {
     savedColors: [] as Array<Record<string, unknown>>,
     colorSwatchesOrder: [] as string[],
@@ -29,6 +38,30 @@ export function createAppHarness() {
   };
 
   const app = {
+    services: {
+      cloudCollections: {
+        repository: {
+          readEnvelope() {
+            return envelope;
+          },
+          async transact(mutate: (current: typeof envelope) => Partial<typeof envelope>) {
+            const mutation = mutate(envelope);
+            envelope = {
+              ...envelope,
+              ...mutation,
+              schemaVersion: 1,
+              revision: envelope.revision + 1,
+            };
+            return {
+              committed: true,
+              envelope,
+              mirrorFailures: [],
+              warnings: [],
+            };
+          },
+        },
+      },
+    },
     actions: {
       patch(patch: Record<string, unknown>, meta?: Record<string, unknown>) {
         state.patchCalls.push({ patch, meta: meta || {} });

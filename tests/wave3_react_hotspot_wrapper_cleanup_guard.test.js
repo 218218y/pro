@@ -60,7 +60,7 @@ const pdfOverlay = [
   readFirstExisting(['../esm/native/ui/react/pdf/order_pdf_overlay_export_ops.ts'], import.meta.url),
 ].join('\n');
 
-test('[wave3] React hotspots route history/colors writes through centralized wrappers', () => {
+test('[wave3] React hotspots persist saved colors transactionally before centralized store publication', () => {
   assert.match(storeActions, /function setCfgSavedColors\(/);
   assert.match(storeActions, /function setCfgColorSwatchesOrder\(/);
   assert.match(storeActions, /function runHistoryBatch\(/);
@@ -68,7 +68,12 @@ test('[wave3] React hotspots route history/colors writes through centralized wra
   assert.match(storeActions, /const historyNs = getHistoryNamespace\(app\)/);
 
   assert.match(designTab, /useDesignTabController\(/);
-  assert.match(designColorManager, /function applySavedColorsAtomicMutation\(/);
+  assert.match(designColorManager, /async function applySavedColorsAtomicMutation\(/);
+  assert.match(designColorManager, /transactCloudCollectionsViaServiceOrThrow\(/);
+  assert.match(
+    designColorManager,
+    /const mutation = await resolveSavedColorsMutation\([\s\S]*const patch = buildSavedColorsMutationPatch\(mutation\)[\s\S]*patchViaActions\(app, patch, meta\)/
+  );
   assert.match(designColorManager, /runHistoryBatch\(\s*app,\s*\(\) => \{/);
   assert.match(designColorManager, /setCfgSavedColors\(app,\s*(?:savedColors|next),\s*meta\)/);
   assert.match(
@@ -79,10 +84,8 @@ test('[wave3] React hotspots route history/colors writes through centralized wra
     designColorManager,
     /createStructuralMutationMeta\(source,\s*\{\s*buildTiming:\s*'none'\s*\}\)/
   );
-  assert.match(
-    designColorManager,
-    /applySavedColorsAtomicMutation\(app,\s*\{\s*savedColors:\s*next\s*\},\s*meta\)/
-  );
+  assert.match(designColorManager, /applySavedColorsAtomicMutation\([\s\S]*current =>/);
+  assert.doesNotMatch(designColorManager, /applySavedColorsAtomicMutation\(app,\s*\{/);
   assert.doesNotMatch(designColorManager, /setCfgSavedColors\(app,\s*next,\s*\{\s*source\s*\}\)/);
   assert.doesNotMatch(designController + designColorManager, /useActions\(/);
   assert.doesNotMatch(designController + designColorManager, /actions\.colors|actions\.history/);

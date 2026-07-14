@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { runEnsureSaveProjectAction } from '../esm/native/ui/project_save_runtime.ts';
+import { runProjectUiSaveAction } from '../esm/native/ui/react/project_ui_action_controller_save.ts';
 import type { ProjectSaveAcceptedResult } from '../esm/native/runtime/project_save_action_result.ts';
 
 function assertAcceptedSave(value: unknown): ProjectSaveAcceptedResult {
@@ -10,7 +11,9 @@ function assertAcceptedSave(value: unknown): ProjectSaveAcceptedResult {
   assert.equal(result.accepted, true);
   assert.equal(typeof result.reused, 'boolean');
   assert.match(result.operationId, /^project-save-/);
+  assert.equal(Number.isFinite(result.requestedAt), true);
   assert.equal(Number.isFinite(result.acceptedAt), true);
+  assert.equal(result.requestedAt <= result.acceptedAt, true);
   assert.equal(typeof result.settled?.then, 'function');
   return result;
 }
@@ -115,6 +118,15 @@ test('project save runtime: successful save downloads normalized json and clears
 
   assert.equal(typeof saveProject, 'function');
   const operation = assertAcceptedSave(saveProject?.());
+  runProjectUiSaveAction({
+    app: App,
+    fb: {
+      toast(message: string, type?: 'success' | 'error' | 'warning' | 'info') {
+        toasts.push({ message, type });
+      },
+    },
+    saveProject: () => operation,
+  });
   await new Promise(resolve => setTimeout(resolve, 0));
   assert.deepEqual(await operation.settled, {
     ok: true,
@@ -379,4 +391,49 @@ test('project save runtime: dirty reset owner rejection is reported without fail
   assert.equal(reported[0].ctx?.where, 'native/ui/project_save_runtime_action');
   assert.equal(reported[0].ctx?.op, 'saveProject.clearDirty');
   assert.equal(reported[0].ctx?.fatal, false);
+});
+
+test('project save runtime: toast microtask failures are isolated after terminal success', async () => {
+  const reported: Array<{ err: unknown; ctx: any }> = [];
+  const { win, doc } = createDownloadHarness();
+  const App = {
+    services: {
+      platform: {
+        reportError(err: unknown, ctx: unknown) {
+          reported.push({ err, ctx });
+        },
+      },
+      projectIO: {
+        exportCurrentProject() {
+          return { jsonStr: '{"version":8}', defaultBaseName: 'demo_project' };
+        },
+      },
+      uiFeedback: {
+        openCustomPrompt(_title: string, _defaultValue: string, cb: (value: string | null) => void) {
+          cb('toast_failure_isolated');
+        },
+      },
+    },
+    actions: { meta: { setDirty() {} } },
+  } as any;
+
+  const saveProject = runEnsureSaveProjectAction(App, {
+    win,
+    doc,
+    toast() {
+      throw new Error('toast exploded in microtask');
+    },
+  });
+  const operation = assertAcceptedSave(saveProject?.());
+  assert.deepEqual(await operation.settled, {
+    ok: true,
+    outcome: 'browser-delivery-completed',
+  });
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  assert.equal(reported.length, 1);
+  assert.match(String((reported[0]?.err as Error)?.message), /toast exploded in microtask/);
+  assert.equal(reported[0]?.ctx?.where, 'native/ui/project_save_runtime_action');
+  assert.equal(reported[0]?.ctx?.op, 'saveProject.feedback.callback');
+  assert.equal(reported[0]?.ctx?.fatal, false);
 });

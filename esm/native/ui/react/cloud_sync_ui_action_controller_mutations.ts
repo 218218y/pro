@@ -1,8 +1,15 @@
-import type { ActionMetaLike, AppContainer, CloudSyncDeleteTempResult } from '../../../../types';
+import type {
+  ActionMetaLike,
+  AppContainer,
+  CloudSyncConflictResolution,
+  CloudSyncConflictResolutionResult,
+  CloudSyncDeleteTempResult,
+} from '../../../../types';
 
 import { runAppActionFamilySingleFlight, type AppActionFamilyFlight } from '../action_family_singleflight.js';
 import {
   reportCloudDeleteTempResult,
+  reportCloudSyncConflictResolutionResult,
   reportCloudSketchSyncResult,
   reportCloudSyncShareLinkResult,
   reportFloatingSketchSyncPinResult,
@@ -38,6 +45,10 @@ const sketchSyncFlights = new WeakMap<object, CloudSyncUiActionFlight<'syncSketc
 const deleteTempFlights = new WeakMap<object, CloudSyncUiActionFlight<DeleteTempKind>>();
 const floatingSyncFlights = new WeakMap<object, CloudSyncUiActionFlight<'set:0' | 'set:1' | 'toggle'>>();
 const site2TabsGateFlights = new WeakMap<object, CloudSyncUiActionFlight<'open:0' | 'open:1'>>();
+const conflictResolutionFlights = new WeakMap<
+  object,
+  AppActionFamilyFlight<CloudSyncConflictResolutionResult, CloudSyncConflictResolution>
+>();
 
 function reportDeleteTempBusy(fb: CloudSyncUiFeedbackLike | null | undefined, kind: DeleteTempKind): void {
   reportCloudDeleteTempResult(fb, buildDeleteTempBusyResult(), kind);
@@ -175,6 +186,41 @@ export async function runCloudSyncUiToggleSite2TabsGate(
         reportSite2TabsGateResult(fb, result);
       } catch (err) {
         reportSite2TabsGateResult(fb, buildTabsGateErrorResult(err));
+      }
+    },
+  });
+}
+
+export async function runCloudSyncUiResolveConflict(
+  args: MutationRunArgs & { resolution: CloudSyncConflictResolution }
+): Promise<CloudSyncConflictResolutionResult> {
+  const { app, fb, commands, resolution } = args;
+  return await runAppActionFamilySingleFlight({
+    app,
+    flights: conflictResolutionFlights,
+    key: resolution,
+    onBusy: () => {
+      const result: CloudSyncConflictResolutionResult = {
+        ok: false,
+        resolution,
+        reason: 'busy',
+      };
+      reportCloudSyncConflictResolutionResult(fb, result);
+      return result;
+    },
+    run: async () => {
+      try {
+        const result = await commands.resolveConflictCommand(app, resolution);
+        reportCloudSyncConflictResolutionResult(fb, result);
+        return result;
+      } catch {
+        const result: CloudSyncConflictResolutionResult = {
+          ok: false,
+          resolution,
+          reason: 'write',
+        };
+        reportCloudSyncConflictResolutionResult(fb, result);
+        return result;
       }
     },
   });

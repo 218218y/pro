@@ -5,20 +5,25 @@ import { createSourceFile, walkAst } from './wp_ast_adapter.mjs';
 
 const SOURCE_EXTENSIONS = new Set(['.js', '.mjs', '.ts', '.tsx']);
 const IMPORT_KINDS = Object.freeze(['type', 'value', 'dynamic']);
-export const LAYER_CONTRACT_VERSION = '2.1';
+const COMPOSITION_FILES = new Set(['app_container.ts', 'main.ts', 'release_main.ts']);
+const RATCHET_MODE = 'decrease-only';
+export const LAYER_CONTRACT_VERSION = '2.2';
 export const KNOWN_LAYERS = Object.freeze([
   'adapters',
   'boot',
   'builder',
+  'composition',
   'core',
   'data',
   'engine',
+  'entry',
   'features',
   'io',
   'kernel',
   'platform',
   'runtime',
   'services',
+  'shared',
   'ui',
 ]);
 
@@ -65,14 +70,36 @@ function resolveRelativeImport(fromFile, specifier) {
   return candidates.find(candidate => fs.existsSync(candidate) && fs.statSync(candidate).isFile()) || null;
 }
 
-function readStringLiteral(node) {
+function readStaticModuleSpecifier(node) {
   if (!node || typeof node !== 'object') return null;
-  if (typeof node.value === 'string') return node.value;
-  if (typeof node.text === 'string') return node.text;
+  if (node.type === 'Literal' && typeof node.value === 'string') return node.value;
+  if (
+    node.type === 'TemplateLiteral' &&
+    Array.isArray(node.expressions) &&
+    node.expressions.length === 0 &&
+    Array.isArray(node.quasis) &&
+    node.quasis.length === 1
+  ) {
+    return String(node.quasis[0]?.value?.cooked ?? node.quasis[0]?.value?.raw ?? '');
+  }
   return null;
 }
 
+function sourceRangeText(sourceText, node) {
+  const start = Number(node?.start);
+  const end = Number(node?.end);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || end < start) return '<unknown>';
+  return sourceText.slice(start, end).replace(/\s+/g, ' ').trim() || '<unknown>';
+}
+
+function sourceLocation(sourceFile, node) {
+  const start = Number.isFinite(Number(node?.start)) ? Number(node.start) : 0;
+  const position = sourceFile.getLineAndCharacterOfPosition(start);
+  return { line: position.line + 1, column: position.character + 1, statementStart: start };
+}
+
 function staticModuleKinds(node) {
+  if (node?.type === 'TSImportType') return ['type'];
   if (node?.type === 'ImportExpression') return ['dynamic'];
   const declarationKind = node?.type === 'ImportDeclaration' ? node.importKind : node?.exportKind;
   if (declarationKind === 'type') return ['type'];
@@ -84,21 +111,57 @@ function staticModuleKinds(node) {
   return [...(hasType ? ['type'] : []), ...(hasValue ? ['value'] : [])];
 }
 
-export function collectStaticModuleImports(file, sourceText) {
+export function analyzeModuleDependencies(file, sourceText) {
   const sourceFile = createSourceFile(file, sourceText, { label: 'wp_layer_contract' });
   const imports = [];
+  const unresolvedDynamicImports = [];
+  const forbiddenModuleSyntax = [];
   walkAst(sourceFile, node => {
+    if (node?.type === 'TSImportEqualsDeclaration') {
+      forbiddenModuleSyntax.push({
+        syntax: 'import-equals',
+        expression: sourceRangeText(sourceText, node),
+        ...sourceLocation(sourceFile, node),
+      });
+      return;
+    }
+    if (
+      node?.type === 'CallExpression' &&
+      node.callee?.type === 'Identifier' &&
+      node.callee.name === 'require'
+    ) {
+      forbiddenModuleSyntax.push({
+        syntax: 'require-call',
+        expression: sourceRangeText(sourceText, node),
+        ...sourceLocation(sourceFile, node),
+      });
+      return;
+    }
     const isStaticDeclaration =
       node?.type === 'ImportDeclaration' ||
       node?.type === 'ExportNamedDeclaration' ||
-      node?.type === 'ExportAllDeclaration';
+      node?.type === 'ExportAllDeclaration' ||
+      node?.type === 'TSImportType';
     if (!isStaticDeclaration && node?.type !== 'ImportExpression') return;
-    const specifier = readStringLiteral(node.source || node.moduleSpecifier || node.arguments?.[0]);
-    if (!specifier) return;
+    const sourceNode = node.source || node.moduleSpecifier || node.argument || node.arguments?.[0];
+    const specifier = readStaticModuleSpecifier(sourceNode);
+    if (!specifier) {
+      if (node.type === 'ImportExpression') {
+        unresolvedDynamicImports.push({
+          expression: sourceRangeText(sourceText, sourceNode),
+          ...sourceLocation(sourceFile, node),
+        });
+      }
+      return;
+    }
     const statementStart = Number.isFinite(Number(node.start)) ? Number(node.start) : imports.length;
     for (const kind of staticModuleKinds(node)) imports.push({ specifier, kind, statementStart });
   });
-  return imports;
+  return { imports, unresolvedDynamicImports, forbiddenModuleSyntax };
+}
+
+export function collectStaticModuleImports(file, sourceText) {
+  return analyzeModuleDependencies(file, sourceText).imports;
 }
 
 export function collectStaticModuleSpecifiers(file, sourceText) {
@@ -108,7 +171,14 @@ export function collectStaticModuleSpecifiers(file, sourceText) {
 export function layerOfRelativeFile(relativeFile) {
   const parts = toPosix(relativeFile).split('/');
   if (parts[0] === 'esm' && parts[1] === 'boot') return 'boot';
-  if (parts[0] === 'esm' && parts[1] === 'native' && parts[2]) return parts[2];
+  if (parts[0] === 'esm' && parts[1] === 'shared' && parts[2]) return 'shared';
+  if (parts[0] === 'esm' && parts[1] === 'native' && KNOWN_LAYERS.includes(parts[2])) {
+    return parts[2];
+  }
+  if (parts[0] === 'esm' && parts.length === 2) {
+    if (COMPOSITION_FILES.has(parts[1])) return 'composition';
+    if (parts[1].startsWith('entry_') || parts[1].startsWith('test_')) return 'entry';
+  }
   return 'other';
 }
 
@@ -126,12 +196,25 @@ export function collectLayerContractGraph({ root }) {
   const esmDir = path.join(root, 'esm');
   if (!fs.existsSync(esmDir)) throw new Error('wp_layer_contract: missing ./esm directory');
   const imports = [];
+  const unresolvedDynamicImports = [];
+  const forbiddenModuleSyntax = [];
+  const unclassifiedSourceFiles = [];
   for (const file of walkSourceFiles(esmDir)) {
     const fromFile = toPosix(path.relative(root, file));
     const fromLayer = layerOfRelativeFile(fromFile);
-    if (fromLayer === 'other') continue;
+    if (fromLayer === 'other') {
+      unclassifiedSourceFiles.push(fromFile);
+      continue;
+    }
     const sourceText = fs.readFileSync(file, 'utf8');
-    for (const moduleImport of collectStaticModuleImports(file, sourceText)) {
+    const analysis = analyzeModuleDependencies(file, sourceText);
+    unresolvedDynamicImports.push(
+      ...analysis.unresolvedDynamicImports.map(issue => ({ fromFile, fromLayer, ...issue }))
+    );
+    forbiddenModuleSyntax.push(
+      ...analysis.forbiddenModuleSyntax.map(issue => ({ fromFile, fromLayer, ...issue }))
+    );
+    for (const moduleImport of analysis.imports) {
       const resolved = resolveRelativeImport(file, moduleImport.specifier);
       if (!resolved) continue;
       const toFile = toPosix(path.relative(root, resolved));
@@ -185,7 +268,13 @@ export function collectLayerContractGraph({ root }) {
       ),
     }))
     .sort((left, right) => edgeKey(left.from, left.to).localeCompare(edgeKey(right.from, right.to)));
-  return { imports, edges };
+  return {
+    imports,
+    edges,
+    unresolvedDynamicImports,
+    forbiddenModuleSyntax,
+    unclassifiedSourceFiles: unclassifiedSourceFiles.sort(),
+  };
 }
 
 function assertNonNegativeBudget(value, label) {
@@ -198,8 +287,25 @@ export function validateLayerContractSchema(contract) {
   if (!contract || contract.version !== LAYER_CONTRACT_VERSION || contract.root !== 'esm') {
     throw new Error(`wp_layer_contract: baseline must use version ${LAYER_CONTRACT_VERSION} and root esm`);
   }
-  if (!Array.isArray(contract.rules) || !Array.isArray(contract.facades)) {
-    throw new Error('wp_layer_contract: rules and facades must be arrays');
+  if (
+    !Array.isArray(contract.rules) ||
+    !Array.isArray(contract.facades) ||
+    !Array.isArray(contract.dynamicImportAllowlist)
+  ) {
+    throw new Error('wp_layer_contract: rules, facades, and dynamicImportAllowlist must be arrays');
+  }
+  if (
+    contract.ratchet?.mode !== RATCHET_MODE ||
+    typeof contract.ratchet?.owner !== 'string' ||
+    !contract.ratchet.owner.trim() ||
+    typeof contract.ratchet?.reason !== 'string' ||
+    !contract.ratchet.reason.trim() ||
+    typeof contract.ratchet?.reviewedAt !== 'string' ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(contract.ratchet.reviewedAt)
+  ) {
+    throw new Error(
+      'wp_layer_contract: ratchet requires decrease-only mode, owner, reason, and reviewedAt (YYYY-MM-DD)'
+    );
   }
   const known = new Set(KNOWN_LAYERS);
   const rules = new Map();
@@ -264,14 +370,44 @@ export function validateLayerContractSchema(contract) {
     }
     facades.add(key);
   }
+
+  const dynamicAllowlist = new Set();
+  for (const entry of contract.dynamicImportAllowlist) {
+    const fromFile = toPosix(String(entry?.fromFile || ''));
+    const expression = String(entry?.expression || '').trim();
+    const reason = String(entry?.reason || '').trim();
+    if (
+      !fromFile.startsWith('esm/') ||
+      layerOfRelativeFile(fromFile) === 'other' ||
+      !expression ||
+      !reason ||
+      !Number.isInteger(entry?.maxOccurrences) ||
+      entry.maxOccurrences < 1
+    ) {
+      throw new Error(
+        'wp_layer_contract: dynamicImportAllowlist entries require a classified esm fromFile, expression, reason, and positive maxOccurrences'
+      );
+    }
+    const key = `${fromFile}::${expression}`;
+    if (dynamicAllowlist.has(key)) {
+      throw new Error(`wp_layer_contract: duplicate dynamic import allowlist entry for ${key}`);
+    }
+    dynamicAllowlist.add(key);
+  }
   return contract;
 }
 
 function matchesAllowedTarget(target, allowedTargets) {
   return allowedTargets.some(allowed => {
     const normalized = toPosix(String(allowed));
-    return normalized.endsWith('/**') ? target.startsWith(normalized.slice(0, -3)) : target === normalized;
+    if (!normalized.endsWith('/**')) return target === normalized;
+    const directory = normalized.slice(0, -3).replace(/\/$/, '');
+    return target === directory || target.startsWith(`${directory}/`);
   });
+}
+
+function unresolvedDynamicKey(entry) {
+  return `${toPosix(String(entry.fromFile))}::${String(entry.expression).trim()}`;
 }
 
 const BUDGET_DIMENSIONS = Object.freeze([
@@ -290,6 +426,43 @@ export function evaluateLayerContract(graph, contract) {
   const ruleMap = new Map(contract.rules.map(rule => [edgeKey(rule.from, rule.to), rule]));
   const currentMap = new Map(graph.edges.map(edge => [edgeKey(edge.from, edge.to), edge]));
   const failures = [];
+
+  for (const fromFile of graph.unclassifiedSourceFiles || []) {
+    failures.push({ kind: 'unclassified-source-file', fromFile });
+  }
+
+  for (const issue of graph.forbiddenModuleSyntax || []) {
+    failures.push({ kind: 'forbidden-module-syntax', ...issue });
+  }
+
+  const unresolved = graph.unresolvedDynamicImports || [];
+  const unresolvedCounts = new Map();
+  for (const issue of unresolved) {
+    const key = unresolvedDynamicKey(issue);
+    unresolvedCounts.set(key, (unresolvedCounts.get(key) || 0) + 1);
+  }
+  const dynamicAllowlist = new Map(
+    contract.dynamicImportAllowlist.map(entry => [unresolvedDynamicKey(entry), entry])
+  );
+  for (const issue of unresolved) {
+    if (!dynamicAllowlist.has(unresolvedDynamicKey(issue))) {
+      failures.push({ kind: 'unresolved-dynamic-import', ...issue });
+    }
+  }
+  for (const entry of contract.dynamicImportAllowlist) {
+    const occurrences = unresolvedCounts.get(unresolvedDynamicKey(entry)) || 0;
+    if (occurrences === 0) {
+      failures.push({ kind: 'stale-dynamic-import-allowlist', ...entry });
+    } else if (occurrences > entry.maxOccurrences) {
+      failures.push({
+        kind: 'dynamic-import-allowlist-growth',
+        fromFile: entry.fromFile,
+        expression: entry.expression,
+        current: occurrences,
+        budget: entry.maxOccurrences,
+      });
+    }
+  }
 
   for (const edge of graph.edges) {
     const rule = ruleMap.get(edgeKey(edge.from, edge.to));
@@ -339,18 +512,21 @@ export function evaluateLayerContract(graph, contract) {
 }
 
 function ruleForEdge(edge, previousRule) {
+  if (previousRule?.decision === 'deny') return JSON.parse(JSON.stringify(previousRule));
+  const ratchetedBudget = (field, current) =>
+    previousRule?.decision === 'allow' ? Math.min(previousRule[field], current) : current;
   return {
     from: edge.from,
     to: edge.to,
     decision: 'allow',
-    maxImporterCount: edge.importerCount,
-    maxImportCount: edge.importCount,
-    maxTypeImporterCount: edge.typeImporterCount,
-    maxTypeImportCount: edge.typeImportCount,
-    maxValueImporterCount: edge.valueImporterCount,
-    maxValueImportCount: edge.valueImportCount,
-    maxDynamicImporterCount: edge.dynamicImporterCount,
-    maxDynamicImportCount: edge.dynamicImportCount,
+    maxImporterCount: ratchetedBudget('maxImporterCount', edge.importerCount),
+    maxImportCount: ratchetedBudget('maxImportCount', edge.importCount),
+    maxTypeImporterCount: ratchetedBudget('maxTypeImporterCount', edge.typeImporterCount),
+    maxTypeImportCount: ratchetedBudget('maxTypeImportCount', edge.typeImportCount),
+    maxValueImporterCount: ratchetedBudget('maxValueImporterCount', edge.valueImporterCount),
+    maxValueImportCount: ratchetedBudget('maxValueImportCount', edge.valueImportCount),
+    maxDynamicImporterCount: ratchetedBudget('maxDynamicImporterCount', edge.dynamicImporterCount),
+    maxDynamicImportCount: ratchetedBudget('maxDynamicImportCount', edge.dynamicImportCount),
     reason: previousRule?.reason || 'REVIEW REQUIRED',
     ...(Array.isArray(previousRule?.approvedImporters)
       ? { approvedImporters: previousRule.approvedImporters.slice() }
@@ -361,6 +537,10 @@ function ruleForEdge(edge, previousRule) {
 export function buildLayerContractProposal(graph, currentContract) {
   validateLayerContractSchema(currentContract);
   const previousRules = new Map(currentContract.rules.map(rule => [edgeKey(rule.from, rule.to), rule]));
+  const observedEdgeKeys = new Set(graph.edges.map(edge => edgeKey(edge.from, edge.to)));
+  const facadeByEdge = new Map(
+    currentContract.facades.map(facade => [edgeKey(facade.from, facade.to), facade])
+  );
   const previousEdges = new Map(
     currentContract.rules
       .filter(rule => rule.decision === 'allow')
@@ -369,9 +549,21 @@ export function buildLayerContractProposal(graph, currentContract) {
   const nextRules = graph.edges.map(edge =>
     ruleForEdge(edge, previousRules.get(edgeKey(edge.from, edge.to)))
   );
+  for (const rule of currentContract.rules) {
+    const key = edgeKey(rule.from, rule.to);
+    const requiresFacadeDecision =
+      rule.decision === 'allow' && facadeByEdge.has(key) && !observedEdgeKeys.has(key);
+    if (
+      (rule.decision === 'deny' || requiresFacadeDecision) &&
+      !nextRules.some(next => edgeKey(next.from, next.to) === key)
+    ) {
+      nextRules.push(JSON.parse(JSON.stringify(rule)));
+    }
+  }
+  nextRules.sort((left, right) => edgeKey(left.from, left.to).localeCompare(edgeKey(right.from, right.to)));
   const nextKeys = new Set(nextRules.map(rule => edgeKey(rule.from, rule.to)));
   const addedEdges = nextRules
-    .filter(rule => !previousEdges.has(edgeKey(rule.from, rule.to)))
+    .filter(rule => rule.decision === 'allow' && !previousEdges.has(edgeKey(rule.from, rule.to)))
     .map(rule => edgeKey(rule.from, rule.to));
   const removedEdges = [...previousEdges.keys()].filter(key => !nextKeys.has(key));
   const budgetChanges = nextRules.flatMap(rule => {
@@ -384,14 +576,48 @@ export function buildLayerContractProposal(graph, currentContract) {
     );
     return changes.length ? [{ edge: edgeKey(rule.from, rule.to), changes }] : [];
   });
+  const currentEdges = new Map(graph.edges.map(edge => [edgeKey(edge.from, edge.to), edge]));
+  const ratchetViolations = currentContract.rules.flatMap(rule => {
+    if (rule.decision !== 'allow') return [];
+    const edge = currentEdges.get(edgeKey(rule.from, rule.to));
+    if (!edge) return [];
+    const growth = BUDGET_DIMENSIONS.flatMap(([currentField, budgetField]) =>
+      edge[currentField] > rule[budgetField]
+        ? [{ field: budgetField, budget: rule[budgetField], observed: edge[currentField] }]
+        : []
+    );
+    return growth.length ? [{ edge: edgeKey(rule.from, rule.to), growth }] : [];
+  });
+  const requiresFacadeDecision = currentContract.facades.flatMap(facade => {
+    const key = edgeKey(facade.from, facade.to);
+    if (observedEdgeKeys.has(key)) return [];
+    return [
+      {
+        edge: key,
+        reason: facade.reason,
+        allowedTargets: facade.allowedTargets.slice(),
+      },
+    ];
+  });
+
+  const proposedContract = {
+    version: LAYER_CONTRACT_VERSION,
+    root: 'esm',
+    ratchet: JSON.parse(JSON.stringify(currentContract.ratchet)),
+    rules: nextRules,
+    facades: JSON.parse(JSON.stringify(currentContract.facades)),
+    dynamicImportAllowlist: JSON.parse(JSON.stringify(currentContract.dynamicImportAllowlist)),
+  };
+  validateLayerContractSchema(proposedContract);
 
   return {
-    contract: {
-      version: LAYER_CONTRACT_VERSION,
-      root: 'esm',
-      rules: nextRules,
-      facades: JSON.parse(JSON.stringify(currentContract.facades)),
+    contract: proposedContract,
+    diff: {
+      addedEdges,
+      removedEdges,
+      budgetChanges,
+      ratchetViolations,
+      requiresFacadeDecision,
     },
-    diff: { addedEdges, removedEdges, budgetChanges },
   };
 }

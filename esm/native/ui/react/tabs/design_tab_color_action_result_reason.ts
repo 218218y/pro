@@ -87,6 +87,7 @@ type DesignTabColorReasonNormalizerMap = {
 };
 
 const normalizeFailureReasonByKind: DesignTabColorReasonNormalizerMap = {
+  'reorder-swatches': () => 'error',
   'toggle-lock': normalizeToggleLockReason,
   'delete-color': normalizeDeleteReason,
   'upload-texture': normalizeUploadTextureReason,

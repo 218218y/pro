@@ -185,9 +185,11 @@ test('settings backup roundtrip restores models/colors/orders and emits a single
         },
         setSavedColors(next: unknown[]) {
           colorState.splice(0, colorState.length, ...(next as typeof colorState));
+          return true;
         },
         setColorSwatchesOrder(next: unknown[]) {
           storageWrites.colorOrderState = next.slice();
+          return true;
         },
       },
       actions: {
@@ -223,7 +225,8 @@ test('settings backup roundtrip restores models/colors/orders and emits a single
           setJSON(key: string, value: unknown) {
             storageWrites[key] = value;
           },
-          getJSON(_key: string, fallback: unknown[]) {
+          getJSON(key: string, fallback: unknown[]) {
+            if (key === 'wardrobeSavedColors') return colorState;
             return fallback;
           },
         },

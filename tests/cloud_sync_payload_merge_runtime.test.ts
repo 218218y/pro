@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { mergeCloudSyncPayloads } from '../esm/native/services/cloud_sync_payload_merge.ts';
+import {
+  mergeCloudSyncPayloads,
+  rebaseCloudSyncKeepLocal,
+} from '../esm/native/services/cloud_sync_payload_merge.ts';
 
 test('cloud sync three-way merge preserves unrelated concurrent collection changes', () => {
   const result = mergeCloudSyncPayloads({
@@ -72,4 +75,33 @@ test('cloud sync three-way merge rejects competing edits and delete-versus-updat
     remote: { savedModels: [{ id: 'model-1', name: 'Remote edit' }] },
   });
   assert.deepEqual(deleteVsUpdate, { ok: false, conflictKeys: ['savedModels'] });
+});
+
+test('keep-local rebases only conflicting local entity changes onto the latest remote payload', () => {
+  const result = rebaseCloudSyncKeepLocal({
+    conflictKeys: ['savedColors'],
+    base: {
+      savedColors: [{ id: 'color-1', value: '#111111' }],
+      savedModels: [{ id: 'model-1', name: 'Original' }],
+    },
+    local: {
+      savedColors: [{ id: 'color-1', value: '#222222' }],
+      savedModels: [{ id: 'model-1', name: 'Local edit' }],
+    },
+    latestRemote: {
+      savedColors: [{ id: 'color-1', value: '#333333' }],
+      savedModels: [
+        { id: 'model-1', name: 'Original' },
+        { id: 'model-2', name: 'Added by a third client' },
+      ],
+    },
+  });
+
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.deepEqual(result.payload.savedColors, [{ id: 'color-1', value: '#222222' }]);
+  assert.deepEqual(result.payload.savedModels, [
+    { id: 'model-1', name: 'Local edit' },
+    { id: 'model-2', name: 'Added by a third client' },
+  ]);
 });

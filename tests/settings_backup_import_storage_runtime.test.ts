@@ -69,7 +69,7 @@ test('importSystemSettings skips storage and order writes when imported collecti
         },
         setColorSwatchesOrder(next: string[]) {
           liveColorOrders.push(next.slice());
-          return undefined;
+          return true;
         },
       },
       actions: {
@@ -108,6 +108,7 @@ test('importSystemSettings skips storage and order writes when imported collecti
           getJSON(key: string, fallback: unknown[]) {
             if (key === 'wardrobeSavedModels:presetOrder') return ['preset-a', 'preset-b'];
             if (key === 'wardrobeSavedModels:hiddenPresets') return ['preset-b'];
+            if (key === 'wardrobeSavedColors') return colorState;
             if (key === 'wardrobeSavedColors:order') return ['new-color', '7'];
             return fallback;
           },

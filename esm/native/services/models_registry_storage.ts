@@ -11,11 +11,6 @@ export { syncModelsStateToApp, _hydrateFromApp, _notify } from './models_registr
 
 export {
   _getStoredHiddenPresets,
-  _setStoredHiddenPresets,
   _getStoredPresetOrder,
-  _setStoredPresetOrder,
-  _persistPresetOrder,
   _getStoredUserModels,
-  _setStoredUserModels,
-  _persistUserOnly,
 } from './models_registry_storage_persistence.js';

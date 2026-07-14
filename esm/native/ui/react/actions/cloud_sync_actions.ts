@@ -2,6 +2,8 @@ import type {
   AppContainer,
   ActionMetaLike,
   CloudSyncDeleteTempResult,
+  CloudSyncConflictResolution,
+  CloudSyncConflictResolutionResult,
   CloudSyncRoomModeCommandResult,
   CloudSyncServiceLike,
   CloudSyncShareLinkCommandResult,
@@ -40,6 +42,12 @@ function buildShareLinkUnavailableResult(): CloudSyncShareLinkCommandResult {
 
 function buildRoomModeUnavailableResult(mode: 'public' | 'private'): CloudSyncRoomModeCommandResult {
   return { ok: false, mode, reason: 'not-installed' };
+}
+
+function buildConflictResolutionUnavailableResult(
+  resolution: CloudSyncConflictResolution
+): CloudSyncConflictResolutionResult {
+  return { ok: false, resolution, reason: 'missing-conflict' };
 }
 
 function readCloudSyncService(app: AppContainer): CloudSyncServiceLike | null {
@@ -93,6 +101,12 @@ const CLOUD_SYNC_ASYNC_COMMANDS = {
       typeof service?.goPrivate === 'function' ? service.goPrivate() : null,
     whenUnavailable: () => buildRoomModeUnavailableResult('private'),
   },
+  resolveConflict: {
+    call: (service: CloudSyncServiceLike | null, resolution: CloudSyncConflictResolution) =>
+      typeof service?.resolveConflict === 'function' ? service.resolveConflict(resolution) : null,
+    whenUnavailable: (resolution: CloudSyncConflictResolution) =>
+      buildConflictResolutionUnavailableResult(resolution),
+  },
 } satisfies {
   syncSketchNow: CloudSyncAsyncCommandSpec<[], CloudSyncSketchCommandResult>;
   deleteTemporaryModels: CloudSyncAsyncCommandSpec<[], CloudSyncDeleteTempResult>;
@@ -101,6 +115,10 @@ const CLOUD_SYNC_ASYNC_COMMANDS = {
   copyShareLink: CloudSyncAsyncCommandSpec<[], CloudSyncShareLinkCommandResult>;
   goPublic: CloudSyncAsyncCommandSpec<[], CloudSyncRoomModeCommandResult>;
   goPrivate: CloudSyncAsyncCommandSpec<[], CloudSyncRoomModeCommandResult>;
+  resolveConflict: CloudSyncAsyncCommandSpec<
+    [CloudSyncConflictResolution],
+    CloudSyncConflictResolutionResult
+  >;
 };
 
 export async function toggleSite2TabsGate(
@@ -163,4 +181,11 @@ export async function goCloudSyncPublic(app: AppContainer): Promise<CloudSyncRoo
 
 export async function goCloudSyncPrivate(app: AppContainer): Promise<CloudSyncRoomModeCommandResult> {
   return await runCloudSyncAsyncCommand(app, CLOUD_SYNC_ASYNC_COMMANDS.goPrivate);
+}
+
+export async function resolveCloudSyncConflict(
+  app: AppContainer,
+  resolution: CloudSyncConflictResolution
+): Promise<CloudSyncConflictResolutionResult> {
+  return await runCloudSyncAsyncCommand(app, CLOUD_SYNC_ASYNC_COMMANDS.resolveConflict, resolution);
 }

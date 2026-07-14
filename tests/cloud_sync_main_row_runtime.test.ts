@@ -49,6 +49,8 @@ function createHarness(opts?: {
   rows?: Array<any>;
   App?: any;
   resolveConflict?: (...args: any[]) => Promise<any>;
+  getRow?: (room: string) => Promise<any>;
+  upsertRow?: (room: string, payload: Record<string, unknown>) => Promise<any>;
 }) {
   const storage = createMemoryStorage(
     opts?.localSeed || {
@@ -74,16 +76,16 @@ function createHarness(opts?: {
         services: {
           models: {
             ensureLoaded() {
-              return undefined;
+              return [];
             },
           },
         },
         maps: {
           setSavedColors() {
-            return undefined;
+            return true;
           },
           setColorSwatchesOrder() {
-            return undefined;
+            return true;
           },
         },
       } as any),
@@ -98,10 +100,12 @@ function createHarness(opts?: {
     keyHiddenPresets: 'hiddenPresets',
     getRow: async (_gatewayUrl, _anonKey, room) => {
       getRowCalls.push({ room });
+      if (opts?.getRow) return cloudRead(await opts.getRow(room));
       return cloudRead(rows.length ? (rows.shift() ?? null) : null);
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       upsertCalls.push({ room, payload: payload as Record<string, unknown> });
+      if (opts?.upsertRow) return await opts.upsertRow(room, payload as Record<string, unknown>);
       return { ok: true } as any;
     },
     resolveConflict:
@@ -150,11 +154,11 @@ function runNextActiveTimer(harness: ReturnType<typeof createHarness>): void {
   timer!.handler();
 }
 
-function updateHarnessModels(
+async function updateHarnessModels(
   harness: ReturnType<typeof createHarness>,
   savedModels: Array<{ id: string; name: string }>
-): void {
-  createCloudCollectionsRepository({
+): Promise<void> {
+  await createCloudCollectionsRepository({
     storage: harness.storage,
     keys: {
       models: 'savedModels',
@@ -163,7 +167,7 @@ function updateHarnessModels(
       presetOrder: 'presetOrder',
       hiddenPresets: 'hiddenPresets',
     },
-  }).update({ savedModels });
+  }).transact(() => ({ savedModels }));
 }
 
 function runActiveTimerWhere(
@@ -214,6 +218,53 @@ test('cloud sync main row never seeds local collections after a failed initial r
 
   assert.equal(harness.getRowCalls.length, 1);
   assert.equal(harness.upsertCalls.length, 0);
+});
+
+test('cloud sync main row preserves a local mutation made while a normal pull is in flight', async () => {
+  let resolveRemoteRow: ((row: Record<string, unknown>) => void) | null = null;
+  const harness = createHarness({
+    getRow: async () =>
+      await new Promise<Record<string, unknown>>(resolve => {
+        resolveRemoteRow = resolve;
+      }),
+  });
+
+  const pull = harness.ops.pullOnce(false);
+  await Promise.resolve();
+  await updateHarnessModels(harness, [{ id: 'local-during-pull', name: 'Local During Pull' }]);
+
+  resolveRemoteRow?.({
+    room: 'room-a',
+    revision: 7,
+    updated_at: '2026-07-14T10:00:00.000Z',
+    updated_by: 'remote-client',
+    payload: {
+      savedModels: [{ id: 'remote-before-local', name: 'Remote Before Local' }],
+      savedColors: [{ id: 'remote-color', type: 'solid', value: '#abcdef' }],
+      colorSwatchesOrder: ['remote-color'],
+      presetOrder: [],
+      hiddenPresets: [],
+    },
+  });
+  await pull;
+
+  const local = createCloudCollectionsRepository({
+    storage: harness.storage,
+    keys: {
+      models: 'savedModels',
+      colors: 'savedColors',
+      colorOrder: 'colorOrder',
+      presetOrder: 'presetOrder',
+      hiddenPresets: 'hiddenPresets',
+    },
+  }).read();
+  assert.deepEqual(local.m, [{ id: 'local-during-pull', name: 'Local During Pull' }]);
+  assert.deepEqual(local.c, [{ id: 'color-1', type: 'solid', value: '#111111' }]);
+  assert.deepEqual(
+    harness.timers.filter(timer => timer.active).map(timer => timer.ms),
+    [700],
+    'revision mismatch must queue local push reconciliation instead of another destructive pull'
+  );
 });
 
 test('cloud sync main row initial seed reuses returned representation when the upsert already returns the row', async () => {
@@ -516,9 +567,13 @@ test('cloud sync main row use-remote resolution adopts the verified row before r
     },
   };
   const harness = createHarness({
-    resolveConflict: async (_room, resolution, adoptRemote) => {
+    resolveConflict: async (_room, resolution, adoptRemote, readLocalSnapshot) => {
       assert.equal(resolution, 'use-remote');
-      assert.equal(adoptRemote(remoteRow), true);
+      const localSnapshot = readLocalSnapshot();
+      assert.deepEqual(await adoptRemote(remoteRow, localSnapshot.revision), {
+        ok: true,
+        uiRefreshWarning: false,
+      });
       return { ok: true, resolution, row: remoteRow };
     },
   });
@@ -527,6 +582,48 @@ test('cloud sync main row use-remote resolution adopts the verified row before r
 
   assert.equal(result.ok, true);
   assert.deepEqual(harness.storage.dump().savedModels, [{ id: 'remote-resolved', name: 'Remote Resolved' }]);
+});
+
+test('cloud sync main row keep-local resolution adopts the server-confirmed row before reporting success', async () => {
+  const confirmedRow = {
+    room: 'room-a',
+    revision: 5,
+    updated_at: '2026-04-02T20:11:00.000Z',
+    updated_by: 'client-local',
+    payload: {
+      savedModels: [
+        { id: 'local-kept', name: 'Local Kept' },
+        { id: 'remote-added', name: 'Remote Added' },
+      ],
+      savedColors: [{ id: 'remote-color', type: 'solid', value: '#abcdef' }],
+      colorSwatchesOrder: ['remote-color'],
+      presetOrder: ['remote-preset'],
+      hiddenPresets: ['remote-hidden'],
+    },
+  };
+  const harness = createHarness({
+    resolveConflict: async (_room, resolution, adoptRemote, readLocalSnapshot) => {
+      assert.equal(resolution, 'keep-local');
+      const localSnapshot = readLocalSnapshot();
+      const adoption = await adoptRemote(confirmedRow, localSnapshot.revision);
+      assert.equal(adoption.ok, true);
+      return { resolution, row: confirmedRow, ...adoption };
+    },
+  });
+
+  const result = await harness.ops.resolveConflict('keep-local');
+
+  assert.equal(result.ok, true);
+  const dump = harness.storage.dump();
+  assert.deepEqual(dump.savedModels, confirmedRow.payload.savedModels);
+  assert.deepEqual(dump.savedColors, confirmedRow.payload.savedColors);
+  assert.deepEqual(dump.colorOrder, confirmedRow.payload.colorSwatchesOrder);
+  assert.deepEqual(dump.presetOrder, confirmedRow.payload.presetOrder);
+  assert.deepEqual(dump.hiddenPresets, confirmedRow.payload.hiddenPresets);
+  assert.deepEqual(
+    (dump['savedModels:cloudCollections:v1'] as { savedModels: unknown[] }).savedModels,
+    confirmedRow.payload.savedModels
+  );
 });
 
 test('cloud sync main row first remote pull hydrates app maps even when stored hash already matches remote', async () => {
@@ -719,6 +816,65 @@ test('cloud sync main row push applies settled remote payload locally without fo
   );
   const dump = harness.storage.dump();
   assert.deepEqual(dump.hiddenPresets, ['server-hidden']);
+});
+
+test('cloud sync main row push settlement preserves a newer local revision and requeues that local state', async () => {
+  let resolveFirstWrite: ((value: unknown) => void) | null = null;
+  let writeCount = 0;
+  const harness = createHarness({
+    upsertRow: async (room, payload) => {
+      writeCount += 1;
+      if (writeCount === 1) {
+        return await new Promise(resolve => {
+          resolveFirstWrite = resolve;
+        });
+      }
+      return {
+        ok: true,
+        row: {
+          room,
+          revision: writeCount,
+          updated_at: `2026-07-14T10:00:0${writeCount}.000Z`,
+          updated_by: 'local-client',
+          payload,
+        },
+      };
+    },
+  });
+
+  const firstPush = harness.ops.pushNow();
+  await Promise.resolve();
+  const firstPayload = harness.upsertCalls[0]?.payload;
+  assert.ok(firstPayload);
+
+  await updateHarnessModels(harness, [{ id: 'local-during-push', name: 'Local During Push' }]);
+  resolveFirstWrite?.({
+    ok: true,
+    row: {
+      room: 'room-a',
+      revision: 1,
+      updated_at: '2026-07-14T10:00:01.000Z',
+      updated_by: 'local-client',
+      payload: { ...firstPayload, hiddenPresets: ['server-settled'] },
+    },
+  });
+  await firstPush;
+  for (let i = 0; i < 6 && harness.upsertCalls.length < 2; i += 1) await Promise.resolve();
+
+  const local = createCloudCollectionsRepository({
+    storage: harness.storage,
+    keys: {
+      models: 'savedModels',
+      colors: 'savedColors',
+      colorOrder: 'colorOrder',
+      presetOrder: 'presetOrder',
+      hiddenPresets: 'hiddenPresets',
+    },
+  }).read();
+  assert.deepEqual(local.m, [{ id: 'local-during-push', name: 'Local During Push' }]);
+  assert.deepEqual(local.h, [], 'the stale settled payload must not overwrite the newer local envelope');
+  assert.equal(harness.upsertCalls.length, 2, 'revision mismatch must start one follow-up local push');
+  assert.deepEqual(harness.upsertCalls[1]?.payload.savedModels, local.m);
 });
 
 test('cloud sync main row collapses pull retries during a push into one post-push follow-up pull', async () => {
@@ -1441,7 +1597,7 @@ test('cloud sync main row preserves one follow-up push request raised while a pu
   });
 
   const pushA = harness.ops.pushNow();
-  updateHarnessModels(harness, [{ id: 'model-2', name: 'Model 2' }]);
+  await updateHarnessModels(harness, [{ id: 'model-2', name: 'Model 2' }]);
   harness.ops.schedulePush();
   assert.equal(
     harness.timers.filter(timer => timer.active).length,
@@ -1552,7 +1708,7 @@ test('cloud sync main row parks recovery pulls behind a debounced pending push s
     });
   });
 
-  updateHarnessModels(harness, [{ id: 'model-2', name: 'Model 2' }]);
+  await updateHarnessModels(harness, [{ id: 'model-2', name: 'Model 2' }]);
   harness.ops.schedulePush();
   harness.ops.schedulePullSoon({ immediate: true, reason: 'realtime.main' });
 

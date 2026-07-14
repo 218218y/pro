@@ -119,11 +119,11 @@ test('importSystemSettings sanitizes mixed backup payload arrays and imports onl
         },
         setSavedColors(next: Array<Record<string, unknown> | string>) {
           colorState.splice(0, colorState.length, ...next);
-          return undefined;
+          return true;
         },
         setColorSwatchesOrder(next: Array<string | number>) {
           colorOrderState.splice(0, colorOrderState.length, ...next);
-          return undefined;
+          return true;
         },
       },
       actions: {
@@ -249,11 +249,11 @@ test('importSystemSettings upgrades duplicate saved color ids from legacy string
         },
         setSavedColors(next: Array<Record<string, unknown> | string>) {
           colorState.splice(0, colorState.length, ...next);
-          return undefined;
+          return true;
         },
         setColorSwatchesOrder(next: string[]) {
           storageWrites.colorOrderState = next.slice();
-          return undefined;
+          return true;
         },
       },
       actions: {
@@ -334,11 +334,11 @@ test('importSystemSettings upgrades existing live legacy saved-color aliases to 
         },
         setSavedColors(next: Array<Record<string, unknown> | string>) {
           colorState.splice(0, colorState.length, ...next);
-          return undefined;
+          return true;
         },
         setColorSwatchesOrder(next: string[]) {
           storageWrites.colorOrderState = next.slice();
-          return undefined;
+          return true;
         },
       },
       actions: {
@@ -369,6 +369,9 @@ test('importSystemSettings upgrades existing live legacy saved-color aliases to 
             return undefined;
           },
           getJSON(key: string, fallback: unknown[]) {
+            if (key === 'wardrobeSavedColors') {
+              return [{ id: 'oak' }, { id: 'solid', value: '#ffffff' }];
+            }
             if (key === 'wardrobeSavedColors:order') return ['solid', 'oak'];
             return fallback;
           },
@@ -419,11 +422,11 @@ test('importSystemSettings preserves live-only swatch order ids even when storag
         },
         setSavedColors(next: Array<Record<string, unknown> | string>) {
           colorState.splice(0, colorState.length, ...next);
-          return undefined;
+          return true;
         },
         setColorSwatchesOrder(next: string[]) {
           storageWrites.colorOrderState = next.slice();
-          return undefined;
+          return true;
         },
       },
       actions: {
@@ -454,6 +457,7 @@ test('importSystemSettings preserves live-only swatch order ids even when storag
             return undefined;
           },
           getJSON(key: string, fallback: unknown[]) {
+            if (key === 'wardrobeSavedColors') return colorState;
             if (key === 'wardrobeSavedColors:order') return ['existing'];
             return fallback;
           },
@@ -505,11 +509,11 @@ test('importSystemSettings preserves existing live swatch order entries that are
         },
         setSavedColors(next: Array<Record<string, unknown> | string>) {
           colorState.splice(0, colorState.length, ...next);
-          return undefined;
+          return true;
         },
         setColorSwatchesOrder(next: string[]) {
           storageWrites.colorOrderState = next.slice();
-          return undefined;
+          return true;
         },
       },
       actions: {
@@ -540,6 +544,7 @@ test('importSystemSettings preserves existing live swatch order entries that are
             return undefined;
           },
           getJSON(key: string, fallback: unknown[]) {
+            if (key === 'wardrobeSavedColors') return colorState;
             if (key === 'wardrobeSavedColors:order') return ['existing', 'solid'];
             return fallback;
           },
@@ -588,11 +593,11 @@ test('importSystemSettings normalizes backup order ids to canonical unique strin
         },
         setSavedColors(next: Array<Record<string, unknown>>) {
           colorState.splice(0, colorState.length, ...next);
-          return undefined;
+          return true;
         },
         setColorSwatchesOrder(next: string[]) {
           storageWrites.colorOrderState = next.slice();
-          return undefined;
+          return true;
         },
       },
       actions: {
@@ -622,7 +627,8 @@ test('importSystemSettings normalizes backup order ids to canonical unique strin
             storageWrites[key] = value;
             return undefined;
           },
-          getJSON(_key: string, fallback: unknown[]) {
+          getJSON(key: string, fallback: unknown[]) {
+            if (key === 'wardrobeSavedColors') return colorState;
             return fallback;
           },
         },
@@ -671,10 +677,10 @@ test('importSystemSettings canonicalizes saved model config snapshots before mer
           return [];
         },
         setSavedColors() {
-          return undefined;
+          return true;
         },
         setColorSwatchesOrder() {
-          return undefined;
+          return true;
         },
       },
       actions: {

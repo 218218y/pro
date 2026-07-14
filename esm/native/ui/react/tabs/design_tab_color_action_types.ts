@@ -76,11 +76,18 @@ export type DesignTabColorActionSuccessResult =
   | DesignTabColorRemoveTextureSuccessResult;
 
 export type DesignTabColorToggleLockFailureReason = 'missing' | 'missing-selection' | 'error';
+export type DesignTabColorReorderFailureReason = 'error';
 export type DesignTabColorDeleteFailureReason =
   'busy' | 'cancelled' | 'error' | 'locked' | 'missing' | 'missing-selection';
 export type DesignTabColorUploadTextureFailureReason =
   'busy' | 'missing-file' | 'read-failed' | 'unavailable';
 export type DesignTabColorSaveCustomColorFailureReason = 'busy' | 'cancelled' | 'error' | 'missing-input';
+
+export type DesignTabColorReorderFailureResult = DesignTabColorActionBase & {
+  ok: false;
+  kind: 'reorder-swatches';
+  reason: DesignTabColorReorderFailureReason;
+};
 
 export type DesignTabColorToggleLockFailureResult = DesignTabColorActionBase & {
   ok: false;
@@ -107,6 +114,7 @@ export type DesignTabColorSaveCustomColorFailureResult = DesignTabColorActionBas
 };
 
 export type DesignTabColorActionFailureResult =
+  | DesignTabColorReorderFailureResult
   | DesignTabColorToggleLockFailureResult
   | DesignTabColorDeleteFailureResult
   | DesignTabColorUploadTextureFailureResult
@@ -129,6 +137,7 @@ export type DesignTabColorSuccessExtrasByKind = {
 };
 
 export type DesignTabColorFailureReasonByKind = {
+  'reorder-swatches': DesignTabColorReorderFailureReason;
   'toggle-lock': DesignTabColorToggleLockFailureReason;
   'delete-color': DesignTabColorDeleteFailureReason;
   'upload-texture': DesignTabColorUploadTextureFailureReason;
@@ -136,6 +145,7 @@ export type DesignTabColorFailureReasonByKind = {
 };
 
 export type DesignTabColorFailureExtrasByKind = {
+  'reorder-swatches': Record<never, never>;
   'toggle-lock': Omit<DesignTabColorToggleLockFailureResult, 'ok' | 'kind' | 'reason' | 'message'>;
   'delete-color': Omit<DesignTabColorDeleteFailureResult, 'ok' | 'kind' | 'reason' | 'message'>;
   'upload-texture': Omit<DesignTabColorUploadTextureFailureResult, 'ok' | 'kind' | 'reason' | 'message'>;

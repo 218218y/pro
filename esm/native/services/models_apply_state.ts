@@ -3,15 +3,11 @@ import type { AppContainer, SavedModelLike } from '../../../types';
 import {
   _cloneJSON,
   _normalizeModel,
-  _notify,
-  _persistPresetOrder,
-  _persistUserOnly,
   asMutableSavedModel,
   markModelAsCorePreset,
   markModelAsSavedModel,
   markModelAsUserPreset,
   readModelId,
-  syncModelsStateToApp,
 } from './models_registry.js';
 import { getModelsRuntimeStateForApp } from './models_registry_state.js';
 
@@ -108,13 +104,4 @@ export function computeInsertIndex(
   const overIndex = findInListById(arr, overId);
   if (overIndex < 0) return arr.length;
   return dropPos === 'before' ? overIndex : overIndex + 1;
-}
-
-export function commitModels(App: AppContainer, presets: SavedModelLike[], saved: SavedModelLike[]): void {
-  const state = getModelsRuntimeStateForApp(App);
-  state.all = presets.concat(saved);
-  _persistUserOnly(App);
-  _persistPresetOrder(App);
-  syncModelsStateToApp(App);
-  _notify(App);
 }

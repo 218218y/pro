@@ -29,6 +29,7 @@ test('project ui action events build canonical detail for success, explicit fail
       accepted: true,
       reused: true,
       operationId: 'save-event-1',
+      requestedAt: 2200,
       acceptedAt: 2222,
     }),
     {
@@ -38,14 +39,22 @@ test('project ui action events build canonical detail for success, explicit fail
       pending: true,
       phase: 'started',
       operationId: 'save-event-1',
-      at: 2222,
+      requestedAt: 2200,
+      acceptedAt: 2222,
+      at: 2200,
     }
   );
 
   assert.deepEqual(
     buildProjectUiActionEventDetail(
       'save',
-      { ok: true, outcome: 'browser-delivery-completed', operationId: 'save-event-1' },
+      {
+        ok: true,
+        outcome: 'browser-delivery-completed',
+        operationId: 'save-event-1',
+        requestedAt: 2200,
+        acceptedAt: 2222,
+      },
       { at: 3333 }
     ),
     {
@@ -55,6 +64,8 @@ test('project ui action events build canonical detail for success, explicit fail
       phase: 'settled',
       outcome: 'browser-delivery-completed',
       operationId: 'save-event-1',
+      requestedAt: 2200,
+      acceptedAt: 2222,
       at: 3333,
     }
   );
@@ -83,6 +94,15 @@ test('project ui action events build canonical detail for success, explicit fail
   );
   assert.equal(blank.message, undefined);
   assert.equal(blank.pending, false);
+
+  const terminalWithoutExplicitTime = buildProjectUiActionEventDetail('save', {
+    ok: true,
+    operationId: 'save-event-2',
+    requestedAt: 1,
+    acceptedAt: 2,
+  });
+  assert.equal(terminalWithoutExplicitTime.phase, 'settled');
+  assert.equal(terminalWithoutExplicitTime.at > terminalWithoutExplicitTime.acceptedAt!, true);
 });
 
 test('project ui action events publish generic and action-specific browser events when window surface exists', () => {

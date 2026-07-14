@@ -1,7 +1,11 @@
 import type { ProjectExportResultLike } from '../../../types';
 
 import type { BrowserFileDownloadResult } from './browser_file_download.js';
-import { reportProjectSaveResult, type ProjectSaveActionResult } from './project_action_feedback.js';
+import {
+  reportProjectSaveResult,
+  type ProjectFeedbackLike,
+  type ProjectSaveActionResult,
+} from './project_action_feedback.js';
 import type { ProjectSaveRuntimeToastFn } from './project_save_runtime_contracts.js';
 import type { ProjectExportAccessResult, ProjectSaveFailureReason } from '../services/api.js';
 
@@ -47,18 +51,32 @@ export function reportSaveResultWithToast(
 }
 
 export function scheduleSaveResultToast(
-  toast: ProjectSaveRuntimeToastFn,
-  result: ProjectSaveActionResult
+  feedback: ProjectFeedbackLike | null | undefined,
+  result: ProjectSaveActionResult,
+  onError?: (error: unknown) => void
 ): void {
-  try {
-    if (typeof queueMicrotask === 'function') {
+  const report = () => {
+    try {
+      reportProjectSaveResult(feedback, result);
+    } catch (error) {
+      try {
+        onError?.(error);
+      } catch {
+        // Feedback diagnostics must not change the completed save result.
+      }
+    }
+  };
+
+  if (typeof queueMicrotask === 'function') {
+    try {
       queueMicrotask(() => {
-        reportProjectSaveResult({ toast }, result);
+        // This callback runs later, so its body owns the error boundary.
+        report();
       });
       return;
+    } catch {
+      // Fall through when scheduling itself fails.
     }
-  } catch {
-    // fall through to immediate reporting
   }
-  reportProjectSaveResult({ toast }, result);
+  report();
 }

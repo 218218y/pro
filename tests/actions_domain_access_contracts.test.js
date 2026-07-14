@@ -179,8 +179,11 @@ test('[actions-domain] project IO, notes persistence, and boot paths use canonic
     projectIoBundle,
     [
       /createProjectLoadTransactionContext\(/,
-      /transaction\.commit\(/,
-      /stateTransaction\.rollback\(/,
+      /getProjectLoadCoordinator\(/,
+      /transaction\.applyState\(/,
+      /transaction\.markCommitted\(/,
+      /transaction\.rollbackState\(/,
+      /coordinator\.enqueueRetry\(/,
       /resetHistoryBaselineRequiredOrThrow\(/,
     ],
     'projectIoBundle'

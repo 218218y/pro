@@ -15,6 +15,8 @@ export type ProjectUiActionEventDetail = {
   message?: string;
   restoreGen?: number;
   operationId?: string;
+  requestedAt?: number;
+  acceptedAt?: number;
   phase: 'started' | 'settled';
   at: number;
 };
@@ -38,6 +40,7 @@ type ProjectUiActionResultRecord = {
   message?: unknown;
   restoreGen?: unknown;
   operationId?: unknown;
+  requestedAt?: unknown;
   acceptedAt?: unknown;
 };
 
@@ -79,6 +82,7 @@ export function buildProjectUiActionEventDetail(
   const message = readOptionalString(rec?.message);
   const restoreGen = readOptionalRestoreGen(rec?.restoreGen);
   const operationId = readOptionalString(rec?.operationId);
+  const requestedAt = Number(rec?.requestedAt);
   const acceptedAt = Number(rec?.acceptedAt);
   return {
     action,
@@ -91,8 +95,17 @@ export function buildProjectUiActionEventDetail(
     ...(message ? { message } : {}),
     ...(typeof restoreGen === 'number' ? { restoreGen } : {}),
     ...(operationId ? { operationId } : {}),
+    ...(Number.isFinite(requestedAt) && requestedAt > 0 ? { requestedAt: Math.floor(requestedAt) } : {}),
+    ...(Number.isFinite(acceptedAt) && acceptedAt > 0 ? { acceptedAt: Math.floor(acceptedAt) } : {}),
     at: normalizeEventTime(
-      options?.at ?? (Number.isFinite(acceptedAt) && acceptedAt > 0 ? acceptedAt : undefined)
+      options?.at ??
+        (pending
+          ? Number.isFinite(requestedAt) && requestedAt > 0
+            ? requestedAt
+            : Number.isFinite(acceptedAt) && acceptedAt > 0
+              ? acceptedAt
+              : undefined
+          : undefined)
     ),
   };
 }

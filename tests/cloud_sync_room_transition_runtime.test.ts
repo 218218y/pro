@@ -259,7 +259,7 @@ test('cloud sync room transition reinstalls the room-scoped owner before subsequ
   const publicWritesBeforeLocalMutation = requests.filter(
     request => request.action === 'write' && request.room === 'public'
   ).length;
-  createCloudCollectionsRepository({
+  await createCloudCollectionsRepository({
     storage,
     keys: {
       models: 'saved-models',
@@ -268,7 +268,7 @@ test('cloud sync room transition reinstalls the room-scoped owner before subsequ
       presetOrder: 'saved-models:presetOrder',
       hiddenPresets: 'saved-models:hiddenPresets',
     },
-  }).update({ savedModels: [{ id: 'after-room-switch', name: 'After room switch' }] });
+  }).transact(() => ({ savedModels: [{ id: 'after-room-switch', name: 'After room switch' }] }));
   await waitFor(
     () =>
       requests.some(

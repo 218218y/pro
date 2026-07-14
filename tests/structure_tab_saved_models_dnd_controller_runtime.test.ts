@@ -93,7 +93,7 @@ test('saved models dnd controller opens collapsed lists lazily and resolves drag
   assert.equal(controller.resolveDraggedId('preset:1', { getData: () => ' user:2 ' }), 'preset:1');
 });
 
-test('saved models dnd controller reorders within saved/preset lists and reports through canonical feedback seam', () => {
+test('saved models dnd controller reorders within saved/preset lists and reports through canonical feedback seam', async () => {
   const feedback = createFeedbackSpy();
   const { api, state } = createModelsApiHarness();
   const savedController = createSavedModelsDndController({
@@ -121,8 +121,8 @@ test('saved models dnd controller reorders within saved/preset lists and reports
     setSavedModelsOpen() {},
   });
 
-  savedController.applyDrop('saved', 'user:1', 'user:2', 'after');
-  presetController.applyDrop('preset', 'preset:2', 'preset:1', 'before');
+  await savedController.applyDrop('saved', 'user:1', 'user:2', 'after');
+  await presetController.applyDrop('preset', 'preset:2', 'preset:1', 'before');
 
   assert.deepEqual(state.saved, ['user:2', 'user:1']);
   assert.deepEqual(state.preset, ['preset:2', 'preset:1']);
@@ -132,7 +132,7 @@ test('saved models dnd controller reorders within saved/preset lists and reports
   ]);
 });
 
-test('saved models dnd controller transfers across lists, refreshes, and reports via canonical seam', () => {
+test('saved models dnd controller transfers across lists, refreshes, and reports via canonical seam', async () => {
   const feedback = createFeedbackSpy();
   const { api, state } = createModelsApiHarness();
   let refreshCount = 0;
@@ -151,7 +151,7 @@ test('saved models dnd controller transfers across lists, refreshes, and reports
     setSavedModelsOpen() {},
   });
 
-  controller.applyDrop('preset', 'user:2', 'preset:1', 'before');
+  await controller.applyDrop('preset', 'user:2', 'preset:1', 'before');
 
   assert.equal(refreshCount, 1);
   assert.deepEqual(state.transfers, [

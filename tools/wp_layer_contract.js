@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  LAYER_CONTRACT_VERSION,
   buildLayerContractProposal,
   collectLayerContractGraph,
   evaluateLayerContract,
@@ -29,15 +30,18 @@ try {
   const graph = collectLayerContractGraph({ root });
   const contract = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
   if (propose) {
-    print(buildLayerContractProposal(graph, contract));
-    process.exit(0);
+    const proposal = buildLayerContractProposal(graph, contract);
+    print(proposal);
+    process.exit(proposal.diff.requiresFacadeDecision.length > 0 ? 1 : 0);
   }
   const report = evaluateLayerContract(graph, contract);
   if (jsonOutput) print(report);
   else if (report.ok) {
-    console.log(`Layer contract v2.1 OK (${report.edges.length} allowed cross-layer edges)`);
+    console.log(
+      `Layer contract v${LAYER_CONTRACT_VERSION} OK (${report.edges.length} allowed cross-layer edges)`
+    );
   } else {
-    console.error('Layer contract v2.1 failed:');
+    console.error(`Layer contract v${LAYER_CONTRACT_VERSION} failed:`);
     for (const failure of report.failures) console.error(` - ${JSON.stringify(failure)}`);
   }
   process.exit(report.ok ? 0 : 1);

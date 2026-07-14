@@ -1,6 +1,7 @@
 import type { CloudSyncDeleteTempResult } from '../../../types';
 
 import { readCloudSyncRowWithPullActivity } from './cloud_sync_remote_read_support.js';
+import { createCloudCollectionsRepository } from './cloud_sync_collections_repository.js';
 import {
   type DeleteTempArgs,
   type DeleteTempKind,
@@ -18,13 +19,26 @@ function deleteTemporaryItemsInCloud(
   args: DeleteTempArgs,
   kind: DeleteTempKind
 ): Promise<CloudSyncDeleteTempResult> {
-  return args.runMainWriteFlight(
+  let reconcileLocalAfterFlight = false;
+  let settleRemoteAfterFlight = false;
+  const flight = args.runMainWriteFlight<CloudSyncDeleteTempResult>(
     `delete:${kind}`,
     async () => {
       args.clearPendingPush();
 
       const roomNow = args.currentRoom();
       if (!roomNow) return { ok: false, removed: 0, reason: 'room' };
+
+      const expectedLocalRevision = createCloudCollectionsRepository({
+        storage: args.storage,
+        keys: {
+          models: args.keyModels,
+          colors: args.keyColors,
+          colorOrder: args.keyColorOrder,
+          presetOrder: args.keyPresetOrder,
+          hiddenPresets: args.keyHiddenPresets,
+        },
+      }).readEnvelope().revision;
 
       let collections;
       try {
@@ -49,18 +63,32 @@ function deleteTemporaryItemsInCloud(
       if (removed <= 0 || !nextPayload) return { ok: true, removed: 0 };
 
       try {
-        const ok = await writeDeleteTempPayloadAndApplyLocally({
+        const writeResult = await writeDeleteTempPayloadAndApplyLocally({
           owner: args,
           room: roomNow,
           nextPayload,
+          expectedLocalRevision,
         });
-        return ok ? { ok: true, removed } : { ok: false, removed: 0, reason: 'write' };
+        if (writeResult.ok === false) {
+          if (writeResult.reason === 'revision-mismatch') reconcileLocalAfterFlight = true;
+          return { ok: false, removed: 0, reason: 'write' };
+        }
+        if (!writeResult.settled) settleRemoteAfterFlight = true;
+        return { ok: true, removed };
       } catch (err) {
         return buildDeleteTempErrorResult(args, kind, err, readDeleteTempDefaultErrorMessage(kind));
       }
     },
     () => ({ ok: false, removed: 0, reason: 'busy' })
   );
+  void flight.then(
+    () => {
+      if (reconcileLocalAfterFlight) args.schedulePush();
+      else if (settleRemoteAfterFlight) args.schedulePullSoon({ reason: 'delete-temp-settle' });
+    },
+    () => undefined
+  );
+  return flight;
 }
 
 export function createCloudSyncDeleteTempOps(args: DeleteTempArgs): {

@@ -119,12 +119,12 @@ export function useDesignTabSavedSwatches(args: UseDesignTabSavedSwatchesArgs): 
   );
 
   const toggleSelectedColorLock = useCallback(() => {
-    commandController.toggleSelectedLock(selectedCustom);
+    void commandController.toggleSelectedLock(selectedCustom);
   }, [commandController, selectedCustom]);
 
   const toggleColorLockById = useCallback(
     (id: string) => {
-      commandController.toggleLockById(id);
+      void commandController.toggleLockById(id);
     },
     [commandController]
   );

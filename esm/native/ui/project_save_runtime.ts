@@ -10,6 +10,8 @@ import type {
   UiFeedbackPromptLike,
 } from './project_save_runtime_contracts.js';
 
+export { observeProjectSaveFeedback, observeProjectSaveWatchdog } from './project_save_runtime_action.js';
+
 export type { ProjectSaveRuntimeDeps, ProjectSaveRuntimeToastFn, PromptFnLike, UiFeedbackPromptLike };
 
 export function asUiFeedbackPrompt(value: unknown): UiFeedbackPromptLike | null {

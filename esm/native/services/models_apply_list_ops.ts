@@ -9,119 +9,170 @@ import type {
 } from '../../../types';
 
 import { _modelsReportNonFatal } from './models_registry.js';
-import { getModelsRuntimeStateForApp } from './models_registry_state.js';
 import {
-  findModelIndexById,
+  cloneNormalizedModel,
+  findInListById,
   isLockedModel,
   isPresetModel,
   isUserPresetModel,
   setLockedFlag,
 } from './models_apply_state.js';
+import { ensureModelsCommandState } from './models_apply_ops_shared.js';
 import {
-  commitPresetOrderMutation,
-  commitUserModelsMutation,
-  ensureModelsCommandState,
-} from './models_apply_ops_shared.js';
+  collectPersistedUserModels,
+  collectPresetOrder,
+  runModelsCollectionsTransaction,
+} from './models_collections_transaction.js';
+import { readModelId } from './models_registry_contracts.js';
 
-export function deleteModelByIdInternalImpl(App: AppContainer, id: SavedModelId): ModelsCommandResult {
+export async function deleteModelByIdInternalImpl(
+  App: AppContainer,
+  id: SavedModelId
+): Promise<ModelsCommandResult> {
   ensureModelsCommandState(App);
   if (!id) return { ok: false, reason: 'id' };
 
-  const state = getModelsRuntimeStateForApp(App);
-  const idx = findModelIndexById(App, id);
-  if (idx === -1) return { ok: false, reason: 'missing' };
-
-  const model = state.all[idx];
-  if (isPresetModel(model) && !isUserPresetModel(model)) return { ok: false, reason: 'preset' };
-  if (isLockedModel(model)) return { ok: false, reason: 'locked' };
-
-  state.all.splice(idx, 1);
-  commitUserModelsMutation(App);
-  return { ok: true };
+  const transaction = await runModelsCollectionsTransaction<ModelsCommandResult>(App, snapshot => {
+    const idx = snapshot.envelope.savedModels.findIndex(model => readModelId(model) === id);
+    if (idx < 0) {
+      const corePreset = snapshot.presets.find(model => readModelId(model) === id);
+      return {
+        result: corePreset ? { ok: false, reason: 'preset' } : { ok: false, reason: 'missing' },
+        mutation: {},
+      };
+    }
+    const model = snapshot.envelope.savedModels[idx];
+    if (isPresetModel(model) && !isUserPresetModel(model)) {
+      return { result: { ok: false, reason: 'preset' }, mutation: {} };
+    }
+    if (isLockedModel(model)) return { result: { ok: false, reason: 'locked' }, mutation: {} };
+    return {
+      result: { ok: true },
+      mutation: {
+        savedModels: snapshot.envelope.savedModels.filter(entry => readModelId(entry) !== id),
+        ...(isPresetModel(model)
+          ? { presetOrder: snapshot.envelope.presetOrder.filter(entry => entry !== id) }
+          : {}),
+      },
+    };
+  });
+  if (transaction.ok === false) {
+    return { ok: false, reason: transaction.failure.reason, message: transaction.failure.message };
+  }
+  return transaction.value;
 }
 
-export function setModelLockedInternalImpl(
+export async function setModelLockedInternalImpl(
   App: AppContainer,
   id: SavedModelId,
   locked: boolean
-): ModelsLockResult {
+): Promise<ModelsLockResult> {
   ensureModelsCommandState(App);
   if (!id) return { ok: false, reason: 'id' };
 
   const want = !!locked;
-  const state = getModelsRuntimeStateForApp(App);
-  const idx = findModelIndexById(App, id);
-  if (idx === -1) return { ok: false, reason: 'missing' };
-
-  const model = state.all[idx];
-  if (isPresetModel(model) && !isUserPresetModel(model)) return { ok: false, reason: 'preset' };
-
-  try {
-    setLockedFlag(model, want);
-  } catch (e) {
-    _modelsReportNonFatal(App, 'setModelLocked', e, 1500);
+  const transaction = await runModelsCollectionsTransaction<ModelsLockResult>(App, snapshot => {
+    const idx = snapshot.envelope.savedModels.findIndex(model => readModelId(model) === id);
+    if (idx < 0) {
+      const corePreset = snapshot.presets.find(model => readModelId(model) === id);
+      return {
+        result: corePreset
+          ? { ok: false, reason: 'preset', locked: false }
+          : { ok: false, reason: 'missing', locked: false },
+        mutation: {},
+      };
+    }
+    const model = snapshot.envelope.savedModels[idx];
+    if (isPresetModel(model) && !isUserPresetModel(model)) {
+      return { result: { ok: false, reason: 'preset', locked: false }, mutation: {} };
+    }
+    const nextModel = cloneNormalizedModel(App, model);
+    if (!nextModel) return { result: { ok: false, reason: 'normalize', locked: false }, mutation: {} };
+    try {
+      setLockedFlag(nextModel, want);
+    } catch (e) {
+      _modelsReportNonFatal(App, 'setModelLocked', e, 1500);
+    }
+    const savedModels = snapshot.envelope.savedModels.slice();
+    savedModels[idx] = nextModel;
+    return { result: { ok: true, locked: want }, mutation: { savedModels } };
+  });
+  if (transaction.ok === false) {
+    return {
+      ok: false,
+      reason: transaction.failure.reason,
+      message: transaction.failure.message,
+      locked: false,
+    };
   }
-
-  commitUserModelsMutation(App);
-  return { ok: true, locked: want };
+  return transaction.value;
 }
 
-export function deleteTemporaryUserModelsInternalImpl(App: AppContainer): ModelsDeleteTemporaryResult {
+export async function deleteTemporaryUserModelsInternalImpl(
+  App: AppContainer
+): Promise<ModelsDeleteTemporaryResult> {
   ensureModelsCommandState(App);
 
-  const state = getModelsRuntimeStateForApp(App);
-  let removed = 0;
-  const next: SavedModelLike[] = [];
-  for (let i = 0; i < state.all.length; i++) {
-    const model = state.all[i];
-    if (!model) continue;
-    if (model.isPreset || isLockedModel(model)) next.push(model);
-    else removed += 1;
+  const transaction = await runModelsCollectionsTransaction<ModelsDeleteTemporaryResult>(App, snapshot => {
+    let removed = 0;
+    const savedModels: SavedModelLike[] = [];
+    for (const model of snapshot.envelope.savedModels) {
+      if (model.isPreset || isLockedModel(model)) savedModels.push(model);
+      else removed += 1;
+    }
+    return {
+      result: { ok: true, removed },
+      mutation: removed > 0 ? { savedModels } : {},
+    };
+  });
+  if (transaction.ok === false) {
+    return {
+      ok: false,
+      reason: transaction.failure.reason,
+      message: transaction.failure.message,
+      removed: 0,
+    };
   }
-
-  if (removed > 0) {
-    state.all.splice(0, state.all.length, ...next);
-    commitUserModelsMutation(App);
-  }
-
-  return { ok: true, removed };
+  return transaction.value;
 }
 
-export function moveModelInternalImpl(
+export async function moveModelInternalImpl(
   App: AppContainer,
   id: SavedModelId,
   direction: ModelsMoveDirection
-): ModelsCommandResult {
+): Promise<ModelsCommandResult> {
   ensureModelsCommandState(App);
   if (!id) return { ok: false, reason: 'id' };
 
-  const state = getModelsRuntimeStateForApp(App);
-  const idx = findModelIndexById(App, id);
-  if (idx === -1) return { ok: false, reason: 'missing' };
-
-  const model = state.all[idx];
-  const isPreset = isPresetModel(model);
-  if (!isPreset && isLockedModel(model)) return { ok: false, reason: 'locked' };
-
-  if (direction === 'up') {
-    if (idx <= 0) return { ok: false, reason: 'edge' };
-    const previous = state.all[idx - 1];
-    if (isPreset) {
-      if (!isPresetModel(previous)) return { ok: false, reason: 'edge' };
-    } else if (isPresetModel(previous)) {
-      return { ok: false, reason: 'overPreset' };
+  if (direction !== 'up' && direction !== 'down') return { ok: false, reason: 'direction' };
+  const transaction = await runModelsCollectionsTransaction<ModelsCommandResult>(App, snapshot => {
+    const presetIndex = findInListById(snapshot.presets, id);
+    const savedIndex = findInListById(snapshot.saved, id);
+    const isPreset = presetIndex >= 0;
+    const list = isPreset ? snapshot.presets : snapshot.saved;
+    const idx = isPreset ? presetIndex : savedIndex;
+    if (idx < 0) return { result: { ok: false, reason: 'missing' }, mutation: {} };
+    const model = list[idx];
+    if (!isPreset && isLockedModel(model)) {
+      return { result: { ok: false, reason: 'locked' }, mutation: {} };
     }
-    [state.all[idx - 1], state.all[idx]] = [state.all[idx], state.all[idx - 1]];
-  } else if (direction === 'down') {
-    if (idx >= state.all.length - 1) return { ok: false, reason: 'edge' };
-    const next = state.all[idx + 1];
-    if (isPreset && !isPresetModel(next)) return { ok: false, reason: 'edge' };
-    [state.all[idx + 1], state.all[idx]] = [state.all[idx], state.all[idx + 1]];
-  } else {
-    return { ok: false, reason: 'direction' };
+    if (!isPreset && direction === 'up' && idx === 0 && snapshot.presets.length > 0) {
+      return { result: { ok: false, reason: 'overPreset' }, mutation: {} };
+    }
+    const swapWith = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapWith < 0 || swapWith >= list.length) {
+      return { result: { ok: false, reason: 'edge' }, mutation: {} };
+    }
+    [list[idx], list[swapWith]] = [list[swapWith], list[idx]];
+    return {
+      result: { ok: true },
+      mutation: isPreset
+        ? { presetOrder: collectPresetOrder(snapshot.presets) }
+        : { savedModels: collectPersistedUserModels(snapshot.presets, snapshot.saved) },
+    };
+  });
+  if (transaction.ok === false) {
+    return { ok: false, reason: transaction.failure.reason, message: transaction.failure.message };
   }
-
-  if (isPreset) commitPresetOrderMutation(App);
-  else commitUserModelsMutation(App);
-  return { ok: true };
+  return transaction.value;
 }

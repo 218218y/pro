@@ -82,6 +82,10 @@ function buildToggleLockFailure(
   };
 }
 
+function buildReorderFailure(): DesignTabColorFailureResultByKind<'reorder-swatches'> {
+  return { ok: false, kind: 'reorder-swatches', reason: 'error' };
+}
+
 function buildDeleteFailure(
   reason: DesignTabColorFailureReasonByKind['delete-color'],
   extras: DesignTabColorFailureExtrasByKind['delete-color'],
@@ -160,6 +164,7 @@ type DesignTabColorFailureBuilderMap = {
 };
 
 const buildFailureByKind: DesignTabColorFailureBuilderMap = {
+  'reorder-swatches': () => buildReorderFailure(),
   'toggle-lock': (reason, extras, message) =>
     buildToggleLockFailure(
       normalizeDesignTabColorToggleLockReason(reason),
@@ -204,6 +209,7 @@ type DesignTabColorErrorBuilderMap = {
 };
 
 const buildErrorByKind: DesignTabColorErrorBuilderMap = {
+  'reorder-swatches': () => buildReorderFailure(),
   'toggle-lock': (normalizedMessage, extras, defaultReason) =>
     buildToggleLockFailure(
       normalizeDesignTabColorToggleLockReason('error', readToggleLockDefaultReason(defaultReason)),

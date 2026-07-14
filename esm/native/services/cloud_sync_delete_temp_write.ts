@@ -5,12 +5,16 @@ import { applyRemote, computeHash } from './cloud_sync_support.js';
 import { createCloudCollectionsRepository } from './cloud_sync_collections_repository.js';
 import type { DeleteTempArgs } from './cloud_sync_delete_temp_shared.js';
 
+export type CloudSyncDeleteTempWriteResult =
+  { ok: true; settled: boolean } | { ok: false; reason: 'write' | 'commit' | 'revision-mismatch' };
+
 export async function writeDeleteTempPayloadAndApplyLocally(args: {
   owner: DeleteTempArgs;
   room: string;
   nextPayload: CloudSyncPayload;
-}): Promise<boolean> {
-  const { owner, room, nextPayload } = args;
+  expectedLocalRevision: number;
+}): Promise<CloudSyncDeleteTempWriteResult> {
+  const { owner, room, nextPayload, expectedLocalRevision } = args;
   const writeResult = await writeCloudSyncMainRowPayload({
     cfg: owner.cfg,
     gatewayUrl: owner.gatewayUrl,
@@ -21,13 +25,10 @@ export async function writeDeleteTempPayloadAndApplyLocally(args: {
     getSendRealtimeHint: owner.getSendRealtimeHint,
     runtimeStatus: owner.runtimeStatus,
     publishStatus: owner.publishStatus,
-    setLastSeenUpdatedAt: value => {
-      owner.setLastSeenUpdatedAt(value);
-    },
   });
-  if (!writeResult.ok) return false;
+  if (!writeResult.ok) return { ok: false, reason: 'write' };
 
-  const applied = applyRemote(
+  const applied = await applyRemote(
     owner.App,
     owner.storage,
     owner.keyModels,
@@ -36,9 +37,10 @@ export async function writeDeleteTempPayloadAndApplyLocally(args: {
     owner.keyPresetOrder,
     owner.keyHiddenPresets,
     writeResult.payload,
-    owner.suppress
+    expectedLocalRevision
   );
-  if (!applied) return false;
+  if (applied.ok === false) return { ok: false, reason: applied.reason };
+  if (writeResult.row?.updated_at) owner.setLastSeenUpdatedAt(writeResult.row.updated_at);
   const local = createCloudCollectionsRepository({
     storage: owner.storage,
     keys: {
@@ -50,5 +52,5 @@ export async function writeDeleteTempPayloadAndApplyLocally(args: {
     },
   }).read();
   owner.setLastHash(computeHash(local.m, local.c, local.o, local.p, local.h));
-  return true;
+  return { ok: true, settled: writeResult.settled };
 }

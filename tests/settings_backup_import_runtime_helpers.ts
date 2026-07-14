@@ -71,10 +71,10 @@ export function createImportApp(opts?: { confirm?: boolean }) {
         return [];
       },
       setSavedColors() {
-        return undefined;
+        return true;
       },
       setColorSwatchesOrder() {
-        return undefined;
+        return true;
       },
     },
     actions: {

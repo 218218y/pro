@@ -11,7 +11,24 @@ export function asCloudSyncPublicRecord(value: unknown): UnknownRecord | null {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
 }
 
+function cloneCloudSyncConflictStatus(value: unknown): CloudSyncPanelSnapshot['conflict'] | undefined {
+  const conflict = asCloudSyncPublicRecord(value);
+  if (!conflict) return undefined;
+  const state = conflict.state;
+  if (state !== 'awaiting-resolution' && state !== 'resolving' && state !== 'resolved') {
+    return undefined;
+  }
+  return {
+    room: typeof conflict.room === 'string' ? conflict.room : '',
+    keys: Array.isArray(conflict.keys) ? conflict.keys.map(key => String(key)) : [],
+    remoteRevision: Number(conflict.remoteRevision) || 0,
+    detectedAt: Number(conflict.detectedAt) || 0,
+    state,
+  };
+}
+
 export function cloneCloudSyncPanelSnapshot(snapshot: CloudSyncPanelSnapshot): CloudSyncPanelSnapshot {
+  const conflict = cloneCloudSyncConflictStatus(snapshot.conflict);
   return {
     room: snapshot.room || '',
     isPublic: typeof snapshot.isPublic === 'boolean' ? snapshot.isPublic : null,
@@ -21,6 +38,7 @@ export function cloneCloudSyncPanelSnapshot(snapshot: CloudSyncPanelSnapshot): C
     retryAt: Number(snapshot.retryAt) || 0,
     failureKind: snapshot.failureKind || '',
     floatingSync: !!snapshot.floatingSync,
+    ...(conflict ? { conflict } : {}),
   };
 }
 
@@ -66,6 +84,9 @@ export function cloneCloudSyncPublicPanelSnapshot(snapshot: unknown): CloudSyncP
         ? rec.failureKind
         : '',
     floatingSync: !!rec.floatingSync,
+    ...(cloneCloudSyncConflictStatus(rec.conflict)
+      ? { conflict: cloneCloudSyncConflictStatus(rec.conflict) }
+      : {}),
   });
 }
 

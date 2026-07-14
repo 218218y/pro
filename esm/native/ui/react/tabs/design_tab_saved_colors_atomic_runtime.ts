@@ -2,8 +2,9 @@ import type { ActionMetaLike, AppContainer } from '../../../../../types';
 
 import {
   patchViaActions,
+  readCloudCollectionsEnvelopeViaServiceOrThrow,
   reportError,
-  updateCloudCollectionsViaServiceOrThrow,
+  transactCloudCollectionsViaServiceOrThrow,
 } from '../../../services/api.js';
 import {
   runHistoryBatch,
@@ -24,6 +25,11 @@ type SavedColorsAtomicMutation = {
   colorChoice?: string;
 };
 
+export type SavedColorsAtomicMutator = (current: {
+  savedColors: SavedColor[];
+  colorSwatchesOrder: string[];
+}) => SavedColorsAtomicMutation;
+
 function shouldSkipStorageWrite(meta: ActionMetaLike | undefined): boolean {
   return !!(meta && typeof meta === 'object' && meta.noStorageWrite === true);
 }
@@ -36,6 +42,10 @@ function cloneSavedColors(savedColors: SavedColor[] | undefined): SavedColor[] |
 function cloneColorSwatchesOrder(colorSwatchesOrder: string[] | undefined): string[] | undefined {
   if (!Array.isArray(colorSwatchesOrder)) return undefined;
   return colorSwatchesOrder.map(value => String(value || ''));
+}
+
+function readStringColorOrder(values: readonly unknown[]): string[] {
+  return values.filter((value): value is string => typeof value === 'string');
 }
 
 function buildSavedColorsMutationPatch(mutation: SavedColorsAtomicMutation): Record<string, unknown> {
@@ -69,34 +79,58 @@ function reportSavedColorsStorageWriteFailure(app: AppContainer, error: unknown)
   );
 }
 
-function persistSavedColorsStorage(
+async function resolveSavedColorsMutation(
   app: AppContainer,
-  mutation: SavedColorsAtomicMutation,
+  mutator: SavedColorsAtomicMutator,
   meta?: ActionMetaLike
-): void {
-  if (shouldSkipStorageWrite(meta)) return;
-  if (typeof mutation.savedColors === 'undefined' && typeof mutation.colorSwatchesOrder === 'undefined')
-    return;
+): Promise<SavedColorsAtomicMutation | null> {
+  if (shouldSkipStorageWrite(meta)) {
+    const current = readCloudCollectionsEnvelopeViaServiceOrThrow(
+      app,
+      'design saved colors store-only mutation'
+    );
+    return mutator({
+      savedColors: current.savedColors.slice() as SavedColor[],
+      colorSwatchesOrder: readStringColorOrder(current.colorOrder),
+    });
+  }
 
   const metricPrefix = readSavedColorPerfMetricPrefix(meta, 'design.savedColor.storage');
-  runSavedColorPerfStep(app, `${metricPrefix}.storage`, () => {
+  return await runSavedColorPerfStep(app, `${metricPrefix}.storage`, async () => {
     try {
-      runSavedColorPerfStep(app, 'design.savedColor.storage.commit', () =>
-        updateCloudCollectionsViaServiceOrThrow(
+      let requested: SavedColorsAtomicMutation = {};
+      const result = await runSavedColorPerfStep(app, 'design.savedColor.storage.commit', () =>
+        transactCloudCollectionsViaServiceOrThrow(
           app,
-          {
-            ...(typeof mutation.savedColors !== 'undefined'
-              ? { savedColors: cloneSavedColors(mutation.savedColors) || [] }
-              : {}),
-            ...(typeof mutation.colorSwatchesOrder !== 'undefined'
-              ? { colorOrder: cloneColorSwatchesOrder(mutation.colorSwatchesOrder) || [] }
-              : {}),
+          current => {
+            requested = mutator({
+              savedColors: current.savedColors.slice() as SavedColor[],
+              colorSwatchesOrder: readStringColorOrder(current.colorOrder),
+            });
+            return {
+              ...(typeof requested.savedColors !== 'undefined'
+                ? { savedColors: cloneSavedColors(requested.savedColors) || [] }
+                : {}),
+              ...(typeof requested.colorSwatchesOrder !== 'undefined'
+                ? { colorOrder: cloneColorSwatchesOrder(requested.colorSwatchesOrder) || [] }
+                : {}),
+            };
           },
           'design saved colors persistence'
         )
       );
+      return {
+        ...(typeof requested.savedColors !== 'undefined'
+          ? { savedColors: result.envelope.savedColors as SavedColor[] }
+          : {}),
+        ...(typeof requested.colorSwatchesOrder !== 'undefined'
+          ? { colorSwatchesOrder: readStringColorOrder(result.envelope.colorOrder) }
+          : {}),
+        ...(typeof requested.colorChoice === 'string' ? { colorChoice: requested.colorChoice } : {}),
+      };
     } catch (error) {
       reportSavedColorsStorageWriteFailure(app, error);
+      return null;
     }
   });
 }
@@ -105,18 +139,19 @@ function createStoreOnlyMutationMeta(meta: ActionMetaLike | undefined): ActionMe
   return { ...meta, noStorageWrite: true };
 }
 
-export function applySavedColorsAtomicMutation(
+export async function applySavedColorsAtomicMutation(
   app: AppContainer,
-  mutation: SavedColorsAtomicMutation,
+  mutator: SavedColorsAtomicMutator,
   meta?: ActionMetaLike
-): void {
+): Promise<boolean> {
+  const mutation = await resolveSavedColorsMutation(app, mutator, meta);
+  if (!mutation) return false;
   const patch = buildSavedColorsMutationPatch(mutation);
-  if (!Object.keys(patch).length) return;
+  if (!Object.keys(patch).length) return true;
 
   const metricPrefix = readSavedColorPerfMetricPrefix(meta);
   if (runSavedColorPerfStep(app, `${metricPrefix}.patch`, () => patchViaActions(app, patch, meta))) {
-    persistSavedColorsStorage(app, mutation, meta);
-    return;
+    return true;
   }
 
   const savedColors = cloneSavedColors(mutation.savedColors);
@@ -140,5 +175,5 @@ export function applySavedColorsAtomicMutation(
   runSavedColorPerfStep(app, `${metricPrefix}.direct`, () =>
     runDirectStoreMutation(createStoreOnlyMutationMeta(ownerMeta))
   );
-  persistSavedColorsStorage(app, mutation, ownerMeta);
+  return true;
 }

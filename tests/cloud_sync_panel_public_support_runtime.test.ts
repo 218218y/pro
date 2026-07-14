@@ -47,6 +47,30 @@ test('cloud sync public support clones panel and tabs-gate snapshots canonically
 
   assert.deepEqual(cloneCloudSyncPublicPanelSnapshot(null), getUnavailableCloudSyncPanelSnapshot());
 
+  const conflictSnapshot = cloneCloudSyncPublicPanelSnapshot({
+    room: 'room-a',
+    isPublic: false,
+    status: 'conflict',
+    floatingSync: false,
+    conflict: {
+      room: 'room-a',
+      keys: ['savedColors'],
+      remoteRevision: 7,
+      detectedAt: 12,
+      state: 'awaiting-resolution',
+      base: { secret: 'must-not-leak' },
+      local: { secret: 'must-not-leak' },
+      remote: { secret: 'must-not-leak' },
+    },
+  });
+  assert.deepEqual(conflictSnapshot.conflict, {
+    room: 'room-a',
+    keys: ['savedColors'],
+    remoteRevision: 7,
+    detectedAt: 12,
+    state: 'awaiting-resolution',
+  });
+
   assert.deepEqual(getUnavailableCloudSyncSite2TabsGateSnapshot(), {
     open: false,
     until: 0,
@@ -147,6 +171,31 @@ test('cloud sync panel support snapshot equality stays canonical across exact cl
   );
   assert.equal(
     areCloudSyncPanelSnapshotsEqual(panelSnapshot, { ...panelSnapshot, credentialState: 'expired' }),
+    false
+  );
+  assert.equal(
+    areCloudSyncPanelSnapshotsEqual(
+      {
+        ...panelSnapshot,
+        conflict: {
+          room: 'room-a',
+          keys: ['savedColors'],
+          remoteRevision: 1,
+          detectedAt: 1,
+          state: 'awaiting-resolution',
+        },
+      },
+      {
+        ...panelSnapshot,
+        conflict: {
+          room: 'room-a',
+          keys: ['savedModels'],
+          remoteRevision: 1,
+          detectedAt: 1,
+          state: 'awaiting-resolution',
+        },
+      }
+    ),
     false
   );
 

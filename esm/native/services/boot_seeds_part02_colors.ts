@@ -78,7 +78,7 @@ export function seedMultiColorMode(App: AppLike): void {
   } catch (_) {}
 }
 
-export function seedSavedColors(App: AppLike): void {
+export async function seedSavedColors(App: AppLike): Promise<void> {
   if (!App || typeof App !== 'object') return;
 
   const cfg0 = readCfg(App);
@@ -105,11 +105,11 @@ export function seedSavedColors(App: AppLike): void {
 
   try {
     const meta = cfgMetaRestoreProfile(App, { noStorageWrite: true }, 'core:initSavedColorsSeed');
-    writeSavedColors(App, cloneStoredArray(vSavedColors), meta);
+    await writeSavedColors(App, cloneStoredArray(vSavedColors), meta);
   } catch (_) {}
 }
 
-export function seedColorSwatchesOrder(App: AppLike): void {
+export async function seedColorSwatchesOrder(App: AppLike): Promise<void> {
   if (!App || typeof App !== 'object') return;
 
   const cfg0 = readCfg(App);
@@ -134,6 +134,6 @@ export function seedColorSwatchesOrder(App: AppLike): void {
 
   try {
     const meta = cfgMetaRestoreProfile(App, { noStorageWrite: true }, 'core:initColorSwatchOrderSeed');
-    writeColorSwatchesOrder(App, clean, meta);
+    await writeColorSwatchesOrder(App, clean, meta);
   } catch (_) {}
 }

@@ -25,50 +25,58 @@ import { requestConfirmationFromFeedback } from '../../feedback_confirm_runtime.
 import { runConfirmedAction } from '../../feedback_action_runtime.js';
 import { runSavedColorPerfStep } from './design_tab_saved_colors_perf_runtime.js';
 
-export function reorderSavedColorSwatches(
+export async function reorderSavedColorSwatches(
   app: AppContainer,
   savedColors: SavedColor[],
   orderedSwatches: SavedColor[],
   dragId: string,
   overId: string | null,
   pos: DesignTabSwatchReorderPos
-): DesignTabColorActionResult | null {
+): Promise<DesignTabColorActionResult | null> {
   const ids = runSavedColorPerfStep(app, 'design.savedColor.reorder.order', () =>
     buildSavedColorOrder(orderedSwatches)
   );
   const nextIds = reorderIds(ids, dragId, overId, pos);
   if (!nextIds) return null;
 
-  const nextSaved = runSavedColorPerfStep(app, 'design.savedColor.reorder.prepare', () =>
-    reorderSavedColors(savedColors, nextIds)
-  );
-  const sameSavedOrder =
-    nextSaved.length === savedColors.length &&
-    nextSaved.every((color, index) => readSavedColorId(color) === readSavedColorId(savedColors[index]));
-
   const meta = createStructuralMutationMeta('react:design:colorSwatches:reorder', {
     buildTiming: 'none',
   });
-  runSavedColorPerfStep(app, 'design.savedColor.reorder.mutation', () =>
+  const committed = await runSavedColorPerfStep(app, 'design.savedColor.reorder.mutation', () =>
     applySavedColorsAtomicMutation(
       app,
-      {
-        colorSwatchesOrder: nextIds,
-        ...(sameSavedOrder ? {} : { savedColors: nextSaved }),
+      current => {
+        const currentIds = current.colorSwatchesOrder.length
+          ? current.colorSwatchesOrder
+          : buildSavedColorOrder(current.savedColors);
+        const rebasedIds = reorderIds(currentIds, dragId, overId, pos);
+        if (!rebasedIds) return {};
+        const rebasedSaved = reorderSavedColors(current.savedColors, rebasedIds);
+        const unchanged =
+          rebasedSaved.length === current.savedColors.length &&
+          rebasedSaved.every(
+            (color, index) => readSavedColorId(color) === readSavedColorId(current.savedColors[index])
+          );
+        return {
+          colorSwatchesOrder: rebasedIds,
+          ...(unchanged ? {} : { savedColors: rebasedSaved }),
+        };
       },
       meta
     )
   );
+  if (!committed) return buildDesignTabColorActionFailure('reorder-swatches', 'error');
 
+  void savedColors;
   return buildDesignTabColorActionSuccess('reorder-swatches');
 }
 
-export function toggleSavedColorLock(
+export async function toggleSavedColorLock(
   app: AppContainer,
   savedColors: SavedColor[],
   id: string,
   source = 'react:design:savedColors:toggleLock'
-): DesignTabColorActionResult {
+): Promise<DesignTabColorActionResult> {
   const targetId = trim(id);
   if (!targetId) return buildDesignTabColorActionFailure('toggle-lock', 'missing-selection');
 
@@ -76,14 +84,19 @@ export function toggleSavedColorLock(
   if (!existing) return buildDesignTabColorActionFailure('toggle-lock', 'missing', { id: targetId });
 
   const lockedNow = !!existing.locked;
-  const next = runSavedColorPerfStep(app, 'design.savedColor.toggleLock.prepare', () =>
-    toggleLockedSavedColor(savedColors, targetId)
-  );
-
   const meta = createStructuralMutationMeta(source, { buildTiming: 'none' });
-  runSavedColorPerfStep(app, 'design.savedColor.toggleLock.mutation', () =>
-    applySavedColorsAtomicMutation(app, { savedColors: next }, meta)
+  const committed = await runSavedColorPerfStep(app, 'design.savedColor.toggleLock.mutation', () =>
+    applySavedColorsAtomicMutation(
+      app,
+      current => ({
+        savedColors: runSavedColorPerfStep(app, 'design.savedColor.toggleLock.prepare', () =>
+          toggleLockedSavedColor(current.savedColors, targetId)
+        ),
+      }),
+      meta
+    )
   );
+  if (!committed) return buildDesignTabColorActionFailure('toggle-lock', 'error', { id: targetId });
   return buildDesignTabColorActionSuccess('toggle-lock', {
     id: targetId,
     name: trim(existing.name),
@@ -91,14 +104,14 @@ export function toggleSavedColorLock(
   });
 }
 
-export function deleteSavedColor(
+export async function deleteSavedColor(
   app: AppContainer,
   savedColors: SavedColor[],
   orderedSwatches: SavedColor[],
   colorChoice: string,
   id: string,
   applyColorChoice: DesignTabApplyColorChoice
-): DesignTabColorActionResult {
+): Promise<DesignTabColorActionResult> {
   const targetId = trim(id);
   if (!targetId) return buildDesignTabColorActionFailure('delete-color', 'missing-selection');
 
@@ -111,30 +124,35 @@ export function deleteSavedColor(
     });
   }
 
-  const nextSaved = runSavedColorPerfStep(app, 'design.savedColor.delete.prepare', () =>
-    savedColors.filter(color => trim(color.id) !== targetId)
-  );
-  const nextOrder = runSavedColorPerfStep(app, 'design.savedColor.delete.order', () =>
-    buildSavedColorOrder(orderedSwatches).filter(value => value !== targetId)
-  );
   const deletedWasSelected = trim(colorChoice) === targetId;
   const meta = createStructuralMutationMeta('react:design:savedColors:delete', {
     buildTiming: deletedWasSelected ? 'coalesced' : 'none',
   });
 
-  runSavedColorPerfStep(app, 'design.savedColor.delete.mutation', () =>
+  const committed = await runSavedColorPerfStep(app, 'design.savedColor.delete.mutation', () =>
     applySavedColorsAtomicMutation(
       app,
-      {
-        savedColors: nextSaved,
-        colorSwatchesOrder: nextOrder,
+      current => ({
+        savedColors: runSavedColorPerfStep(app, 'design.savedColor.delete.prepare', () =>
+          current.savedColors.filter(color => trim(color.id) !== targetId)
+        ),
+        colorSwatchesOrder: runSavedColorPerfStep(app, 'design.savedColor.delete.order', () =>
+          current.colorSwatchesOrder.filter(value => value !== targetId)
+        ),
         ...(deletedWasSelected ? { colorChoice: '#ffffff' } : {}),
-      },
+      }),
       meta
     )
   );
+  if (!committed) {
+    return buildDesignTabColorActionFailure('delete-color', 'error', {
+      id: targetId,
+      name: trim(existing.name),
+    });
+  }
 
   void applyColorChoice;
+  void orderedSwatches;
 
   return buildDesignTabColorActionSuccess('delete-color', {
     id: targetId,

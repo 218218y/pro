@@ -1,6 +1,10 @@
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react';
 
-import type { CloudSyncPanelSnapshot, CloudSyncServiceLike } from '../../../../../types';
+import type {
+  CloudSyncConflictResolution,
+  CloudSyncPanelSnapshot,
+  CloudSyncServiceLike,
+} from '../../../../../types';
 
 import { getCloudSyncServiceMaybe } from '../../../services/api.js';
 import { createCloudSyncUiActionController } from '../cloud_sync_ui_action_controller_runtime.js';
@@ -12,12 +16,14 @@ export type CloudSyncPanelActionsState = {
   status: string;
   isPublic: boolean | null;
   floatingSync: boolean;
+  conflict: CloudSyncPanelSnapshot['conflict'];
   handleToggleRoomMode: () => void;
   handleCopy: () => void;
   handleSyncSketch: () => void;
   handleDeleteModels: () => void;
   handleDeleteColors: () => void;
   handleFloatingSyncChange: (enabled: boolean) => Promise<void>;
+  handleResolveConflict: (resolution: CloudSyncConflictResolution) => void;
 };
 
 const FALLBACK_PANEL_SNAPSHOT: CloudSyncPanelSnapshot = {
@@ -48,6 +54,19 @@ function readCloudSyncPanelSnapshot(api: CloudSyncServiceLike | undefined): Clou
           retryAt: Number(snapshot.retryAt) || 0,
           failureKind: snapshot.failureKind || '',
           floatingSync: !!snapshot.floatingSync,
+          ...(snapshot.conflict
+            ? {
+                conflict: {
+                  room: String(snapshot.conflict.room || ''),
+                  keys: Array.isArray(snapshot.conflict.keys)
+                    ? snapshot.conflict.keys.map(key => String(key))
+                    : [],
+                  remoteRevision: Number(snapshot.conflict.remoteRevision) || 0,
+                  detectedAt: Number(snapshot.conflict.detectedAt) || 0,
+                  state: snapshot.conflict.state,
+                },
+              }
+            : {}),
         };
       }
     }
@@ -88,7 +107,12 @@ function useCloudSyncPanelSnapshot(api: CloudSyncServiceLike | undefined): Cloud
       prev.credentialExpiresAt === next.credentialExpiresAt &&
       prev.retryAt === next.retryAt &&
       prev.failureKind === next.failureKind &&
-      prev.floatingSync === next.floatingSync
+      prev.floatingSync === next.floatingSync &&
+      (prev.conflict?.room || '') === (next.conflict?.room || '') &&
+      (prev.conflict?.keys || []).join('|') === (next.conflict?.keys || []).join('|') &&
+      Number(prev.conflict?.remoteRevision || 0) === Number(next.conflict?.remoteRevision || 0) &&
+      Number(prev.conflict?.detectedAt || 0) === Number(next.conflict?.detectedAt || 0) &&
+      (prev.conflict?.state || '') === (next.conflict?.state || '')
     ) {
       return prev;
     }
@@ -123,7 +147,7 @@ export function useCloudSyncPanelActions(): CloudSyncPanelActionsState {
   const fb = useUiFeedback();
   const api: CloudSyncServiceLike | undefined = getCloudSyncServiceMaybe(app) || undefined;
   const panelSnapshot = useCloudSyncPanelSnapshot(api);
-  const { status, isPublic, floatingSync } = panelSnapshot;
+  const { status, isPublic, floatingSync, conflict } = panelSnapshot;
   const cloudSyncUiController = useMemo(() => createCloudSyncUiActionController({ app, fb }), [app, fb]);
 
   const handleToggleRoomMode = useCallback(() => {
@@ -187,16 +211,33 @@ export function useCloudSyncPanelActions(): CloudSyncPanelActionsState {
     [app, cloudSyncUiController]
   );
 
+  const handleResolveConflict = useCallback(
+    (resolution: CloudSyncConflictResolution) => {
+      void runPerfAction(
+        app,
+        `cloudSync.conflict.${resolution}`,
+        () => cloudSyncUiController.resolveConflict(resolution),
+        {
+          detail: { resolution, keys: conflict?.keys || [] },
+          resolveEndOptions: result => buildPerfEntryOptionsFromActionResult(result),
+        }
+      );
+    },
+    [app, cloudSyncUiController, conflict]
+  );
+
   return {
     api,
     status,
     isPublic,
     floatingSync,
+    conflict,
     handleToggleRoomMode,
     handleCopy,
     handleSyncSketch,
     handleDeleteModels,
     handleDeleteColors,
     handleFloatingSyncChange,
+    handleResolveConflict,
   };
 }

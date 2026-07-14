@@ -80,14 +80,28 @@ export function installStateApiProjectLoadTransaction(ctx: ProjectLoadTransactio
     const commitMeta = normMeta(meta, 'actions:commitProjectLoadSnapshot');
     store.patch(payload, commitMeta, withStoreConfigMapWriteCapability({ forceCommit: true }));
 
-    let active = true;
+    let state: ProjectLoadTransactionHandleLike['state'] = 'prepared';
     return {
+      get state(): ProjectLoadTransactionHandleLike['state'] {
+        return state;
+      },
+      commit(): void {
+        if (state !== 'prepared') {
+          throw new Error(`[WardrobePro] project load transaction cannot commit from ${state}.`);
+        }
+        state = 'committed';
+      },
       rollback(rollbackMeta?: ActionMetaLike): void {
-        if (!active) return;
-        active = false;
-        store.setRoot?.(previous, normMeta(rollbackMeta, 'actions:rollbackProjectLoadSnapshot'), {
+        if (state !== 'prepared') {
+          throw new Error(`[WardrobePro] project load transaction cannot roll back from ${state}.`);
+        }
+        if (typeof store.setRoot !== 'function') {
+          throw new Error('[WardrobePro] project load transaction lost its root rollback seam.');
+        }
+        store.setRoot(previous, normMeta(rollbackMeta, 'actions:rollbackProjectLoadSnapshot'), {
           forceCommit: true,
         });
+        state = 'rolled-back';
       },
     };
   };

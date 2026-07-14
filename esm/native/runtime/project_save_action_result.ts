@@ -36,6 +36,7 @@ type ProjectSaveResultRecord = {
   reason?: unknown;
   message?: unknown;
   operationId?: unknown;
+  requestedAt?: unknown;
   acceptedAt?: unknown;
   settled?: unknown;
 };
@@ -85,12 +86,16 @@ export function normalizeProjectSaveActionResult(
 
   if (rec.accepted === true) {
     const operationId = typeof rec.operationId === 'string' ? rec.operationId.trim() : '';
+    const requestedAt = Number(rec.requestedAt);
     const acceptedAt = Number(rec.acceptedAt);
     const settled = rec.settled as Promise<ProjectSaveTerminalResult> | undefined;
     if (
       !operationId ||
+      !Number.isFinite(requestedAt) ||
+      requestedAt <= 0 ||
       !Number.isFinite(acceptedAt) ||
       acceptedAt <= 0 ||
+      requestedAt > acceptedAt ||
       !settled ||
       typeof settled.then !== 'function'
     ) {
@@ -104,6 +109,7 @@ export function normalizeProjectSaveActionResult(
       accepted: true,
       reused: rec.reused === true,
       operationId,
+      requestedAt: Math.floor(requestedAt),
       acceptedAt: Math.floor(acceptedAt),
       settled: Promise.resolve(settled),
     };

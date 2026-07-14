@@ -92,27 +92,27 @@ export function exportUserModels(App: AppContainer): SavedModelLike[] {
   return exportUserModelsInternal(App);
 }
 
-export function mergeImportedModels(App: AppContainer, list: SavedModelLike[]): ModelsMergeResult {
+export function mergeImportedModels(App: AppContainer, list: SavedModelLike[]): Promise<ModelsMergeResult> {
   return mergeImportedModelsInternal(App, list);
 }
 
-export function saveCurrentModel(App: AppContainer, name: SavedModelName): ModelsSaveResult {
+export function saveCurrentModel(App: AppContainer, name: SavedModelName): Promise<ModelsSaveResult> {
   return saveCurrentModelInternal(App, name);
 }
 
-export function overwriteModelFromCurrent(App: AppContainer, id: SavedModelId): ModelsCommandResult {
+export function overwriteModelFromCurrent(App: AppContainer, id: SavedModelId): Promise<ModelsCommandResult> {
   return overwriteModelFromCurrentInternal(App, id);
 }
 
-export function deleteModelById(App: AppContainer, id: SavedModelId): ModelsCommandResult {
+export function deleteModelById(App: AppContainer, id: SavedModelId): Promise<ModelsCommandResult> {
   return deleteModelByIdInternal(App, id);
 }
 
-function setModelLocked(App: AppContainer, id: SavedModelId, locked: boolean): ModelsLockResult {
+function setModelLocked(App: AppContainer, id: SavedModelId, locked: boolean): Promise<ModelsLockResult> {
   return setModelLockedInternal(App, id, locked);
 }
 
-function deleteTemporaryUserModels(App: AppContainer): ModelsDeleteTemporaryResult {
+function deleteTemporaryUserModels(App: AppContainer): Promise<ModelsDeleteTemporaryResult> {
   return deleteTemporaryUserModelsInternal(App);
 }
 
@@ -120,7 +120,7 @@ export function moveModel(
   App: AppContainer,
   id: SavedModelId,
   direction: ModelsMoveDirection
-): ModelsCommandResult {
+): Promise<ModelsCommandResult> {
   return moveModelInternal(App, id, direction);
 }
 
@@ -130,7 +130,7 @@ export function transferModel(
   targetList: ModelsTransferTargetList,
   overId: SavedModelId | null,
   pos: ModelsTransferPosition
-): ModelsCommandResult {
+): Promise<ModelsCommandResult> {
   return transferModelInternal(App, id, targetList, overId, pos);
 }
 

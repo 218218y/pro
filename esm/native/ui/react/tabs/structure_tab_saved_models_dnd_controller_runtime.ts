@@ -23,7 +23,7 @@ export type SavedModelsDndController = {
     dragId: SavedModelId,
     overId: SavedModelId | null,
     pos: SavedModelsDropPos
-  ) => void;
+  ) => Promise<void>;
 };
 
 type SavedModelsOpenSetter = (value: boolean | ((prev: boolean) => boolean)) => void;
@@ -61,25 +61,25 @@ export function createSavedModelsDndController(
     setSavedModelsOpen,
   } = args;
 
-  function reorderWithinList(
+  async function reorderWithinList(
     ids: SavedModelId[],
     dragId: SavedModelId,
     overId: SavedModelId | null,
     pos: SavedModelsDropPos,
     listType: SavedModelsListType
   ) {
-    const result = reorderSavedModelsByDnD(modelsApi, ids, dragId, overId, pos, listType);
+    const result = await reorderSavedModelsByDnD(modelsApi, ids, dragId, overId, pos, listType);
     if (!result) return;
     reportSavedModelsActionResult(fb, result);
   }
 
-  function transferByDnD(
+  async function transferByDnD(
     dragId: SavedModelId,
     targetList: SavedModelsListType,
     overId: SavedModelId | null,
     pos: SavedModelsDropPos
   ) {
-    const result = transferSavedModelByDnD(modelsApi, dragId, targetList, overId, pos);
+    const result = await transferSavedModelByDnD(modelsApi, dragId, targetList, overId, pos);
     if (result.ok) refresh();
     reportSavedModelsActionResult(fb, result);
   }
@@ -97,7 +97,7 @@ export function createSavedModelsDndController(
       return String(draggingModelId || getDragIdFromDataTransfer(dataTransfer)).trim();
     },
 
-    applyDrop(
+    async applyDrop(
       listType: SavedModelsListType,
       dragId: SavedModelId,
       overId: SavedModelId | null,
@@ -105,14 +105,14 @@ export function createSavedModelsDndController(
     ) {
       if (!dragId) return;
       if (draggingListType && draggingListType !== listType) {
-        transferByDnD(dragId, listType, overId, pos);
+        await transferByDnD(dragId, listType, overId, pos);
         return;
       }
       if (listType === 'preset') {
-        reorderWithinList(readModelIds(presetModels), dragId, overId, pos, 'preset');
+        await reorderWithinList(readModelIds(presetModels), dragId, overId, pos, 'preset');
         return;
       }
-      reorderWithinList(readModelIds(savedModels), dragId, overId, pos, 'saved');
+      await reorderWithinList(readModelIds(savedModels), dragId, overId, pos, 'saved');
     },
   };
 }

@@ -29,20 +29,20 @@ function hasBootSeedsPart02Contract(App: AppLike): boolean {
   }
 }
 
-export function applyBootSeedsPart02(App: AppLike): void {
+export async function applyBootSeedsPart02(App: AppLike): Promise<void> {
   seedInternalGridMap(App);
   seedMultiColorMode(App);
-  seedSavedColors(App);
-  seedColorSwatchesOrder(App);
+  await seedSavedColors(App);
+  await seedColorSwatchesOrder(App);
   seedWardrobeType(App);
   seedManualWidthFlag(App);
 }
 
-export function installBootSeedsPart02(App: AppLike): UnknownRecord {
+export async function installBootSeedsPart02(App: AppLike): Promise<UnknownRecord> {
   if (!App || typeof App !== 'object') throw new Error('installBootSeedsPart02(App): App is required');
 
   const boot = getBootFlags(App);
-  if (!hasBootSeedsPart02Contract(App)) applyBootSeedsPart02(App);
+  if (!hasBootSeedsPart02Contract(App)) await applyBootSeedsPart02(App);
 
   boot.bootSeedsPart02Installed = hasBootSeedsPart02Contract(App);
   return boot;

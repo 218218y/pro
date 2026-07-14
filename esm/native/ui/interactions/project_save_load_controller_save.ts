@@ -3,7 +3,12 @@ import type { AppContainer } from '../../../../types';
 import { buildProjectSaveActionErrorResult, normalizeProjectSaveActionResult } from '../../services/api.js';
 import { reportProjectSaveResult, type ProjectSaveActionResult } from '../project_action_feedback.js';
 import { executeProjectActionResult } from '../project_action_execution.js';
-import { runEnsureSaveProjectAction, type ProjectSaveRuntimeDeps } from '../project_save_runtime.js';
+import {
+  observeProjectSaveFeedback,
+  observeProjectSaveWatchdog,
+  runEnsureSaveProjectAction,
+  type ProjectSaveRuntimeDeps,
+} from '../project_save_runtime.js';
 import type {
   CreateProjectSaveLoadInteractionActions,
   ProjectSaveLoadToastFn,
@@ -28,7 +33,7 @@ export function performProjectSaveLoadSave(
     'saveProjectResultViaActions' | 'saveProjectViaActions'
   >
 ): ProjectSaveActionResult {
-  return executeProjectActionResult<
+  const result = executeProjectActionResult<
     { toast: ProjectSaveLoadToastFn | null | undefined },
     ProjectSaveActionResult
   >({
@@ -41,4 +46,9 @@ export function performProjectSaveLoadSave(
     buildError: buildProjectSaveActionErrorResult,
     fallbackMessage: 'שמירת פרויקט נכשלה',
   });
+  if (result.accepted === true) {
+    observeProjectSaveFeedback(App, result, { toast });
+    observeProjectSaveWatchdog(App, result);
+  }
+  return result;
 }

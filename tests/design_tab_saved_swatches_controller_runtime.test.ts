@@ -6,6 +6,7 @@ import {
   resolveSelectedSavedColor,
 } from '../esm/native/ui/react/tabs/design_tab_saved_swatches_controller_runtime.ts';
 import type { SavedColor } from '../esm/native/ui/react/tabs/design_tab_multicolor_panel.js';
+import { installCloudCollectionsForTestApp } from './cloud_collections_test_support.ts';
 
 function createFeedbackSpy() {
   const seen: Array<{ message: string; type?: string }> = [];
@@ -24,6 +25,10 @@ function createFeedbackSpy() {
 }
 
 function createAppHarness() {
+  const storageValues = new Map<string, unknown>([
+    ['savedColors', SAVED_COLORS],
+    ['savedColors:order', SAVED_COLORS.map(color => color.id)],
+  ]);
   const state = {
     savedColors: [] as Array<Record<string, unknown>>,
     colorSwatchesOrder: [] as string[],
@@ -55,7 +60,20 @@ function createAppHarness() {
         },
       },
     },
+    services: {
+      storage: {
+        KEYS: { SAVED_MODELS: 'savedModels', SAVED_COLORS: 'savedColors' },
+        getJSON(key: string, fallback: unknown) {
+          return storageValues.has(key) ? storageValues.get(key) : fallback;
+        },
+        setJSON(key: string, value: unknown) {
+          storageValues.set(key, value);
+          return true;
+        },
+      },
+    },
   } as const;
+  installCloudCollectionsForTestApp(app as never);
 
   const applyColorChoice = (choice: string, source?: string) => {
     state.appliedChoice = String(choice || '');
@@ -80,7 +98,7 @@ test('resolveSelectedSavedColor keeps saved-only active choice lookup canonical'
   assert.equal(resolveSelectedSavedColor(SAVED_COLORS, 'saved_missing'), null);
 });
 
-test('saved swatches controller reorders and reports through canonical feedback seam', () => {
+test('saved swatches controller reorders and reports through canonical feedback seam', async () => {
   const feedback = createFeedbackSpy();
   const { app, state, applyColorChoice } = createAppHarness();
   const controller = createDesignTabSavedSwatchesController({
@@ -92,7 +110,7 @@ test('saved swatches controller reorders and reports through canonical feedback 
     applyColorChoice,
   });
 
-  controller.reorderByDnD('saved_a', 'saved_b', 'after');
+  await controller.reorderByDnD('saved_a', 'saved_b', 'after');
 
   assert.equal(state.batchCalls, 1);
   assert.deepEqual(state.colorSwatchesOrder, ['saved_b', 'saved_a']);
@@ -123,7 +141,7 @@ test('saved swatches controller toggles selected lock and routes delete flow thr
     applyColorChoice,
   });
 
-  controller.toggleSelectedLock(SAVED_COLORS[0]);
+  await controller.toggleSelectedLock(SAVED_COLORS[0]);
   await controller.deleteSelected(SAVED_COLORS[0]);
 
   assert.equal(confirmed, true);
@@ -152,7 +170,7 @@ test('saved swatches controller leaves null selected actions inert', async () =>
     applyColorChoice,
   });
 
-  controller.toggleSelectedLock(null);
+  await controller.toggleSelectedLock(null);
   await controller.deleteSelected(null);
 
   assert.deepEqual(feedback.seen, []);

@@ -31,7 +31,7 @@ test('[cloud-sync-support-storage] facade exposes canonical storage access and r
     [
       /function isStorageLike\(/,
       /export function readLocal\(/,
-      /export function applyRemote\(/,
+      /export (?:async )?function applyRemote\(/,
       /cloud_sync_support_storage_read/,
       /storageWithMarker/,
     ],
@@ -54,7 +54,7 @@ test('[cloud-sync-support-storage] facade exposes canonical storage access and r
     assert,
     storageWriteOwner,
     [
-      /export function applyRemote\(/,
+      /export async function applyRemote\(/,
       /createCloudCollectionsRepository\(/,
       /repository\.commit\(/,
       /commitResult\.mirrorFailures/,

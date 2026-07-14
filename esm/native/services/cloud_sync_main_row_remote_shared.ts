@@ -25,6 +25,7 @@ export type CreateCloudSyncMainRowRemoteOpsArgs = {
     runMainWriteFlight: <T>(key: string, run: () => Promise<T>, onBusy: () => T | Promise<T>) => Promise<T>;
   };
   schedulePullSoon: (opts?: { immediate?: boolean; delayMs?: number; reason?: string }) => void;
+  schedulePushSoon: () => void;
 };
 
 export type CloudSyncMainRowRemoteOps = {
@@ -40,20 +41,33 @@ export function shouldSkipCloudSyncMainRowPush(args: {
   return args.suppressRef.v || args.nextHash === args.getLastHash();
 }
 
-export function settleCloudSyncMainRowWrite(args: {
+export async function settleCloudSyncMainRowWrite(args: {
   writeResult: WriteCloudSyncMainRowPayloadResult;
   localState: CloudSyncMainRowLocalState;
   state: CloudSyncMainRowStateAccess;
   nextHash: string;
+  expectedLocalRevision: number;
   schedulePullSoon: (opts?: { immediate?: boolean; delayMs?: number; reason?: string }) => void;
-}): void {
-  const { writeResult, localState, state, nextHash, schedulePullSoon } = args;
+  schedulePushSoon: () => void;
+}): Promise<void> {
+  const {
+    writeResult,
+    localState,
+    state,
+    nextHash,
+    expectedLocalRevision,
+    schedulePullSoon,
+    schedulePushSoon,
+  } = args;
   const settledHash = localState.computeAppliedPayloadHash(writeResult.payload);
   if (settledHash !== nextHash) {
-    if (!localState.applyRemotePayload(writeResult.payload)) {
-      schedulePullSoon({ reason: 'push-local-commit-recovery' });
+    const adoption = await localState.applyRemotePayload(writeResult.payload, expectedLocalRevision);
+    if (adoption.ok === false) {
+      if (adoption.reason === 'revision-mismatch') schedulePushSoon();
+      else schedulePullSoon({ reason: 'push-local-commit-recovery' });
       return;
     }
   } else state.setLastHash(settledHash);
+  if (writeResult.row?.updated_at) state.setLastSeenUpdatedAt(writeResult.row.updated_at);
   if (!writeResult.settled) schedulePullSoon({ reason: 'push-settle' });
 }

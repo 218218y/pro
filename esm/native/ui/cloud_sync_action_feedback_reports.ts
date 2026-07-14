@@ -1,5 +1,6 @@
 import type {
   CloudSyncDeleteTempResult,
+  CloudSyncConflictResolutionResult,
   CloudSyncRoomModeCommandResult,
   CloudSyncShareLinkCommandResult,
   CloudSyncSketchCommandResult,
@@ -82,4 +83,41 @@ export function reportFloatingSketchSyncPinResult(
     );
   }
   return emitCloudSyncActionToast(fb, createCloudSyncActionToast('הצמדת הסנכרון נכשלה', 'error'));
+}
+
+export function reportCloudSyncConflictResolutionResult(
+  fb: CloudSyncFeedbackLike | null | undefined,
+  result: CloudSyncConflictResolutionResult | null | undefined
+): CloudSyncActionToastLike | null {
+  if (result?.ok === true) {
+    if (result.uiRefreshWarning) {
+      return emitCloudSyncActionToast(
+        fb,
+        createCloudSyncActionToast(
+          'ההתנגשות נפתרה, אך רענון התצוגה לא הושלם. מומלץ לרענן את העמוד',
+          'warning'
+        )
+      );
+    }
+    return emitCloudSyncActionToast(
+      fb,
+      createCloudSyncActionToast('התנגשות הסנכרון נפתרה ואומתה מול הענן', 'success')
+    );
+  }
+  if (!result) {
+    return emitCloudSyncActionToast(
+      fb,
+      createCloudSyncActionToast('פתרון ההתנגשות לא אושר; הסנכרון עדיין מושהה', 'error')
+    );
+  }
+  if (result.reason === 'busy') {
+    return emitCloudSyncActionToast(fb, createCloudSyncActionToast('פתרון ההתנגשות כבר מתבצע', 'warning'));
+  }
+  if (result.reason === 'missing-conflict') {
+    return emitCloudSyncActionToast(fb, createCloudSyncActionToast('ההתנגשות כבר אינה פעילה', 'info'));
+  }
+  return emitCloudSyncActionToast(
+    fb,
+    createCloudSyncActionToast('פתרון ההתנגשות לא אושר; הסנכרון עדיין מושהה', 'error')
+  );
 }

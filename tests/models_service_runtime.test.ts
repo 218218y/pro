@@ -12,7 +12,7 @@ import {
   normalizeModelsCommandReason,
 } from '../esm/native/runtime/models_access.ts';
 
-test('models access runtime: canonical access helpers drive the models service surface', () => {
+test('models access runtime: canonical access helpers drive the models service surface', async () => {
   const calls: string[] = [];
   const App: Record<string, unknown> = {
     services: {
@@ -29,12 +29,12 @@ test('models access runtime: canonical access helpers drive the models service s
   assert.equal(ensureModelsLoadedViaService(App, { silent: true }), true);
   ensureModelsLoadedViaServiceOrThrow(App, { forceRebuild: true });
   assert.deepEqual(exportUserModelsViaService(App), [{ id: 'm1', name: 'Model A' }]);
-  assert.deepEqual(mergeImportedModelsViaService(App, [{ id: 'a' }]), { added: 2, updated: 1 });
-  assert.deepEqual(mergeImportedModelsViaServiceOrThrow(App, [{ id: 'a' }]), { added: 2, updated: 1 });
+  assert.deepEqual(await mergeImportedModelsViaService(App, [{ id: 'a' }]), { added: 2, updated: 1 });
+  assert.deepEqual(await mergeImportedModelsViaServiceOrThrow(App, [{ id: 'a' }]), { added: 2, updated: 1 });
   assert.deepEqual(calls, ['ensureLoaded', 'ensureLoaded']);
 });
 
-test('models access runtime: export and merge flows canonicalize saved model collections', () => {
+test('models access runtime: export and merge flows canonicalize saved model collections', async () => {
   const mergeCalls: unknown[] = [];
   const presetCalls: unknown[] = [];
   const App = {
@@ -71,7 +71,7 @@ test('models access runtime: export and merge flows canonicalize saved model col
   ]);
 
   assert.deepEqual(
-    mergeImportedModelsViaService(App, [
+    await mergeImportedModelsViaService(App, [
       { id: '  m9 ', name: ' Imported 9 ' },
       { id: 'm9', name: 'duplicate drop' },
       { id: ' ', name: 'broken' },
@@ -101,10 +101,10 @@ test('models access runtime: export and merge flows canonicalize saved model col
     ],
   ]);
 });
-test('models access runtime: strict helpers fail closed when canonical merge/load seams are missing', () => {
+test('models access runtime: strict helpers fail closed when canonical merge/load seams are missing', async () => {
   assert.throws(() => ensureModelsLoadedViaServiceOrThrow({} as any), /services\.models\.ensureLoaded/i);
-  assert.throws(
-    () => mergeImportedModelsViaServiceOrThrow({} as any, [{ id: 'm1', name: 'Model A' }] as any),
+  await assert.rejects(
+    mergeImportedModelsViaServiceOrThrow({} as any, [{ id: 'm1', name: 'Model A' }] as any),
     /services\.models\.mergeImportedModels/i
   );
 });
@@ -139,7 +139,7 @@ test('models access runtime: normalized command results preserve command message
   });
 });
 
-test('models access runtime: normalized saved model collections are deeply detached from live payloads', () => {
+test('models access runtime: normalized saved model collections are deeply detached from live payloads', async () => {
   const sourceProject = { settings: { width: 100 }, savedNotes: [{ id: 'n1', html: '<b>x</b>' }] };
   const App = {
     services: {
@@ -180,7 +180,7 @@ test('models access runtime: normalized saved model collections are deeply detac
   assert.equal((sourceProject.savedNotes[0] as any).html, '<b>x</b>');
 
   const mergeInput = [{ id: 'merge-1', name: 'Merge 1', project: sourceProject }];
-  mergeImportedModelsViaService(App, mergeInput as any);
+  await mergeImportedModelsViaService(App, mergeInput as any);
   assert.equal(Array.isArray(mergeCalls[0]), true);
   assert.notEqual((mergeCalls[0] as any[])[0].project, sourceProject);
   (mergeCalls[0] as any[])[0].project.settings.width = 900;

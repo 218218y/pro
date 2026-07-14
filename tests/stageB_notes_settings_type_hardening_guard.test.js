@@ -164,7 +164,7 @@ test('[stageB] settings backup uses typed backup payload + storage seam helpers'
   assertMatchesAll(
     assert,
     settingsBackupImportSupport,
-    [/readFileTextResultViaBrowser\(file, \{/, /export function applyImportedStorageSettings\(/],
+    [/readFileTextResultViaBrowser\(file, \{/, /export async function applyImportedStorageSettings\(/],
     'settingsBackupImportSupport'
   );
   assertLacksAll(

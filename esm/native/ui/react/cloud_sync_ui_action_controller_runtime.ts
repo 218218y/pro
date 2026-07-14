@@ -1,6 +1,7 @@
 import {
   runCloudSyncUiCopyShareLink,
   runCloudSyncUiDeleteTemporary,
+  runCloudSyncUiResolveConflict,
   runCloudSyncUiSetFloatingSyncEnabled,
   runCloudSyncUiSyncSketch,
   runCloudSyncUiToggleFloatingSyncEnabled,
@@ -56,6 +57,10 @@ export function createCloudSyncUiActionController(
 
     async toggleSite2TabsGate(nextOpen, meta) {
       return await runCloudSyncUiToggleSite2TabsGate({ app, fb, commands, nextOpen, meta });
+    },
+
+    async resolveConflict(resolution) {
+      return await runCloudSyncUiResolveConflict({ app, fb, commands, resolution });
     },
   };
 }

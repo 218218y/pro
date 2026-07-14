@@ -17,6 +17,12 @@ type HistoryRollbackSnapshot = {
   snapshot: HistorySystemSnapshotLike;
 };
 
+function readProjectLoadTransactionState(
+  handle: ProjectLoadTransactionHandleLike
+): ProjectLoadTransactionHandleLike['state'] {
+  return handle.state;
+}
+
 function isHistoryTransactionSystem(system: HistorySystemLike | null): system is HistoryTransactionSystem {
   return (
     !!system &&
@@ -29,7 +35,12 @@ function isHistoryTransactionSystem(system: HistorySystemLike | null): system is
 export type ProjectLoadTransactionContext = {
   assertReady: (requiresHistoryReset: boolean) => void;
   captureHistory: (requiresHistoryReset: boolean) => HistoryRollbackSnapshot | null;
-  commit: (snapshot: ProjectLoadStateSnapshotLike, meta: ActionMetaLike) => ProjectLoadTransactionHandleLike;
+  applyState: (
+    snapshot: ProjectLoadStateSnapshotLike,
+    meta: ActionMetaLike
+  ) => ProjectLoadTransactionHandleLike;
+  markCommitted: (handle: ProjectLoadTransactionHandleLike) => void;
+  rollbackState: (handle: ProjectLoadTransactionHandleLike, meta: ActionMetaLike) => void;
   rollbackHistory: (snapshot: HistoryRollbackSnapshot | null) => void;
 };
 
@@ -68,13 +79,36 @@ export function createProjectLoadTransactionContext(
       };
     },
 
-    commit(snapshot: ProjectLoadStateSnapshotLike, meta: ActionMetaLike): ProjectLoadTransactionHandleLike {
+    applyState(
+      snapshot: ProjectLoadStateSnapshotLike,
+      meta: ActionMetaLike
+    ): ProjectLoadTransactionHandleLike {
       return commitProjectLoadSnapshotViaActionsOrThrow(
         App,
         snapshot,
         meta,
         'project.load atomic state commit'
       );
+    },
+
+    markCommitted(handle: ProjectLoadTransactionHandleLike): void {
+      if (handle.state !== 'prepared') {
+        throw new Error(`[WardrobePro] project load transaction cannot finalize from ${handle.state}.`);
+      }
+      handle.commit();
+      if (readProjectLoadTransactionState(handle) !== 'committed') {
+        throw new Error('[WardrobePro] project load transaction did not enter committed state.');
+      }
+    },
+
+    rollbackState(handle: ProjectLoadTransactionHandleLike, meta: ActionMetaLike): void {
+      if (handle.state !== 'prepared') {
+        throw new Error(`[WardrobePro] project load transaction cannot compensate from ${handle.state}.`);
+      }
+      handle.rollback(meta);
+      if (readProjectLoadTransactionState(handle) !== 'rolled-back') {
+        throw new Error('[WardrobePro] project load transaction did not enter rolled-back state.');
+      }
     },
 
     rollbackHistory(snapshot: HistoryRollbackSnapshot | null): void {

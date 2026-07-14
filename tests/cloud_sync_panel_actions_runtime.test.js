@@ -101,6 +101,14 @@ function loadCloudSyncPanelActionsModule(options = {}) {
                   controllerCalls.push(['setFloatingSyncEnabled', enabled]);
                   return { ok: true, changed: true, enabled };
                 },
+                resolveConflict: async resolution => {
+                  controllerCalls.push(['resolveConflict', resolution]);
+                  return {
+                    ok: false,
+                    resolution,
+                    reason: 'write',
+                  };
+                },
               },
           };
         }
@@ -128,6 +136,13 @@ test('cloud sync panel actions derive stable snapshot state and route handlers t
       isPublic: true,
       status: 'מצב: ציבורי (כולם רואים)',
       floatingSync: false,
+      conflict: {
+        room: 'public',
+        keys: ['savedColors'],
+        remoteRevision: 4,
+        detectedAt: 12,
+        state: 'awaiting-resolution',
+      },
     }),
     subscribePanelSnapshot(cb) {
       panelSnapshotSubscribers.push(cb);
@@ -145,6 +160,7 @@ test('cloud sync panel actions derive stable snapshot state and route handlers t
   assert.equal(state.status, 'מצב: ציבורי (כולם רואים)');
   assert.equal(state.isPublic, true);
   assert.equal(state.floatingSync, false);
+  assert.deepEqual(state.conflict?.keys, ['savedColors']);
   assert.equal(panelSnapshotSubscribers.length, 0, 'subscribe shim should clean up immediately');
 
   state.handleToggleRoomMode();
@@ -153,6 +169,8 @@ test('cloud sync panel actions derive stable snapshot state and route handlers t
   state.handleDeleteModels();
   state.handleDeleteColors();
   await state.handleFloatingSyncChange(true);
+  state.handleResolveConflict('keep-local');
+  await Promise.resolve();
 
   assert.deepEqual(controllerCalls, [
     ['toggleRoomMode', true],
@@ -161,6 +179,7 @@ test('cloud sync panel actions derive stable snapshot state and route handlers t
     ['deleteTemporaryModels'],
     ['deleteTemporaryColors'],
     ['setFloatingSyncEnabled', true],
+    ['resolveConflict', 'keep-local'],
   ]);
 
   assert.equal(
@@ -179,6 +198,11 @@ test('cloud sync panel actions derive stable snapshot state and route handlers t
         'cloudSync.floatingSync.toggle',
         { enabled: true },
         { result: { ok: true, changed: true, enabled: true } },
+      ],
+      [
+        'cloudSync.conflict.keep-local',
+        { resolution: 'keep-local', keys: ['savedColors'] },
+        { result: { ok: false, resolution: 'keep-local', reason: 'write' } },
       ],
     ])
   );

@@ -12,18 +12,15 @@ import {
   readModelId,
   readModelName,
 } from './models_registry.js';
-import { getModelsRuntimeStateForApp } from './models_registry_state.js';
 import { buildProjectStructureFromModel, captureCurrentSnapshot } from './models_apply_project.js';
-import {
-  cloneNormalizedModel,
-  findModelIndexById,
-  isLockedModel,
-  isPresetModel,
-  setLockedFlag,
-} from './models_apply_state.js';
-import { commitUserModelsMutation, ensureModelsCommandState } from './models_apply_ops_shared.js';
+import { cloneNormalizedModel, isLockedModel, isPresetModel, setLockedFlag } from './models_apply_state.js';
+import { ensureModelsCommandState } from './models_apply_ops_shared.js';
+import { runModelsCollectionsTransaction } from './models_collections_transaction.js';
 
-export function saveCurrentModelInternalImpl(App: AppContainer, name: SavedModelName): ModelsSaveResult {
+export async function saveCurrentModelInternalImpl(
+  App: AppContainer,
+  name: SavedModelName
+): Promise<ModelsSaveResult> {
   ensureModelsCommandState(App);
 
   const nm = name != null ? String(name).trim() : '';
@@ -32,7 +29,6 @@ export function saveCurrentModelInternalImpl(App: AppContainer, name: SavedModel
   const snap = captureCurrentSnapshot(App);
   if (!snap?.settings) return { ok: false, reason: 'capture' };
 
-  const state = getModelsRuntimeStateForApp(App);
   const modelData = cloneNormalizedModel(App, {
     ...snap,
     id: `model_${Date.now()}`,
@@ -41,50 +37,57 @@ export function saveCurrentModelInternalImpl(App: AppContainer, name: SavedModel
   });
   if (!modelData) return { ok: false, reason: 'normalize' };
 
-  state.all.push(modelData);
-  commitUserModelsMutation(App);
-  return { ok: true, id: modelData.id };
+  const transaction = await runModelsCollectionsTransaction<ModelsSaveResult>(App, snapshot => ({
+    result: { ok: true, id: modelData.id },
+    mutation: { savedModels: snapshot.envelope.savedModels.concat(modelData) },
+  }));
+  if (transaction.ok === false) {
+    return { ok: false, reason: transaction.failure.reason, message: transaction.failure.message };
+  }
+  return transaction.value;
 }
 
-export function overwriteModelFromCurrentInternalImpl(
+export async function overwriteModelFromCurrentInternalImpl(
   App: AppContainer,
   id: SavedModelId
-): ModelsCommandResult {
+): Promise<ModelsCommandResult> {
   ensureModelsCommandState(App);
   if (!id) return { ok: false, reason: 'id' };
 
-  const state = getModelsRuntimeStateForApp(App);
-  const idx = findModelIndexById(App, id);
-  if (idx === -1) return { ok: false, reason: 'missing' };
-
-  const prev = state.all[idx] || getModelByIdInternal(App, id);
-  if (isPresetModel(prev)) return { ok: false, reason: 'preset' };
-  if (isLockedModel(prev)) return { ok: false, reason: 'locked' };
-
   const snap = captureCurrentSnapshot(App);
-  if (!snap?.settings || !prev) return { ok: false, reason: 'capture' };
+  if (!snap?.settings) return { ok: false, reason: 'capture' };
 
-  const keepLocked = isLockedModel(prev);
-  const prevId = readModelId(prev);
-  const prevName = readModelName(prev) || prevId;
-  const modelData = cloneNormalizedModel(App, {
-    ...snap,
-    id: prevId,
-    name: prevName,
-    isPreset: false,
-    locked: keepLocked,
+  const transaction = await runModelsCollectionsTransaction<ModelsCommandResult>(App, snapshot => {
+    const idx = snapshot.envelope.savedModels.findIndex(model => readModelId(model) === id);
+    if (idx < 0) return { result: { ok: false, reason: 'missing' }, mutation: {} };
+    const prev = snapshot.envelope.savedModels[idx];
+    if (isPresetModel(prev)) return { result: { ok: false, reason: 'preset' }, mutation: {} };
+    if (isLockedModel(prev)) return { result: { ok: false, reason: 'locked' }, mutation: {} };
+
+    const keepLocked = isLockedModel(prev);
+    const prevId = readModelId(prev);
+    const prevName = readModelName(prev) || prevId;
+    const modelData = cloneNormalizedModel(App, {
+      ...snap,
+      id: prevId,
+      name: prevName,
+      isPreset: false,
+      locked: keepLocked,
+    });
+    if (!modelData) return { result: { ok: false, reason: 'normalize' }, mutation: {} };
+    try {
+      setLockedFlag(modelData, keepLocked);
+    } catch (e) {
+      _modelsReportNonFatal(App, 'overwriteModelFromCurrent.locked', e, 1500);
+    }
+    const savedModels = snapshot.envelope.savedModels.slice();
+    savedModels[idx] = modelData;
+    return { result: { ok: true }, mutation: { savedModels } };
   });
-  if (!modelData) return { ok: false, reason: 'normalize' };
-
-  try {
-    setLockedFlag(modelData, keepLocked);
-  } catch (e) {
-    _modelsReportNonFatal(App, 'overwriteModelFromCurrent.locked', e, 1500);
+  if (transaction.ok === false) {
+    return { ok: false, reason: transaction.failure.reason, message: transaction.failure.message };
   }
-
-  state.all[idx] = modelData;
-  commitUserModelsMutation(App);
-  return { ok: true };
+  return transaction.value;
 }
 
 export function buildProjectStructureFromCurrentModel(

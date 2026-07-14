@@ -21,21 +21,21 @@ export function createSavedModelsSelectionCommands(
       reportSavedModelsActionResult(fb, applySavedModel(modelsApi, id));
     },
 
-    toggleLock(idOverride?: string) {
+    async toggleLock(idOverride?: string) {
       const id = resolveCommandTargetId(selectedId, idOverride);
-      reportSavedModelsActionResult(fb, toggleSavedModelLock(modelsApi, id));
+      reportSavedModelsActionResult(fb, await toggleSavedModelLock(modelsApi, id));
     },
 
-    moveById(id: string, dir) {
-      reportSavedModelsActionResult(fb, moveSavedModel(modelsApi, id, dir));
+    async moveById(id: string, dir) {
+      reportSavedModelsActionResult(fb, await moveSavedModel(modelsApi, id, dir));
     },
 
-    moveSelected(dir) {
+    async moveSelected(dir) {
       if (!selectedId) {
         reportSavedModelsActionResult(fb, { ok: false, kind: 'move', reason: 'missing-selection', dir });
         return;
       }
-      reportSavedModelsActionResult(fb, moveSavedModel(modelsApi, selectedId, dir));
+      reportSavedModelsActionResult(fb, await moveSavedModel(modelsApi, selectedId, dir));
     },
   };
 }

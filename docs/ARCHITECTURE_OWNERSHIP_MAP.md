@@ -4,12 +4,14 @@ Use this map to find the owner before editing. The goal is to prevent “just on
 
 ## Boot and entry
 
-| Surface                       | Canonical owner                                          |
-| ----------------------------- | -------------------------------------------------------- |
-| Browser dependency collection | `esm/entry_*`                                            |
-| Pure app boot                 | `esm/main.ts`                                            |
-| Layer install order           | `esm/boot/boot_manifest.ts`, `esm/boot/boot_sequence.ts` |
-| UI module install order       | `esm/native/ui/ui_manifest.ts`                           |
+| Surface                       | Canonical owner                                              |
+| ----------------------------- | ------------------------------------------------------------ |
+| Browser dependency collection | `esm/entry_*`                                                |
+| Pure app boot                 | `esm/main.ts`                                                |
+| Application composition       | `esm/main.ts`, `esm/release_main.ts`, `esm/app_container.ts` |
+| Environment-neutral contracts | `esm/shared/*`                                               |
+| Layer install order           | `esm/boot/boot_manifest.ts`, `esm/boot/boot_sequence.ts`     |
+| UI module install order       | `esm/native/ui/ui_manifest.ts`                               |
 
 ## Runtime/platform/kernel
 
@@ -43,7 +45,7 @@ Use this map to find the owner before editing. The goal is to prevent “just on
 | Order PDF                    | order-pdf overlay/editor/draft/sketch/export runtime owners                                                              |
 | Saved models service         | `esm/native/services/models.ts` public facade plus focused `models_*` owners                                             |
 | Cloud sync                   | `esm/native/services/cloud_sync_*` lifecycle, transport, panel, scope, and collections repository owners                 |
-| Project load transaction     | `esm/native/io/project_load_transaction_context.ts` over the canonical kernel state transaction                          |
+| Project load transaction     | App-scoped `esm/native/io/project_load_coordinator.ts` plus transaction context over the canonical kernel state handle   |
 | Async operation handles      | `esm/native/runtime/async_operation.ts`, exposed to consumers through their owning public facade                         |
 | Autosave/history/project I/O | focused service owners under `esm/native/services/*` and `esm/native/io/*`                                               |
 

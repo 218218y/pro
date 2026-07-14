@@ -54,6 +54,7 @@ test('project actions expose normalized save/load/restore command results', asyn
     accepted: true,
     reused: false,
     operationId: 'project-save-test-1',
+    requestedAt: 1,
     acceptedAt: 1,
     settled,
   });
@@ -62,6 +63,7 @@ test('project actions expose normalized save/load/restore command results', asyn
     accepted: true,
     reused: false,
     operationId: 'project-save-test-1',
+    requestedAt: 1,
     acceptedAt: 1,
     settled,
   });

@@ -107,7 +107,7 @@ test('saved-model confirm-backed flows preserve confirm-surface failures with me
   });
 });
 
-test('saved-model overwrite/delete commands normalize unknown service reasons to canonical failures', () => {
+test('saved-model overwrite/delete commands normalize unknown service reasons to canonical failures', async () => {
   const modelsApi = createSavedModelByIdModelsApi(
     { broken: { id: 'broken', name: 'Broken', isPreset: false } },
     {
@@ -120,14 +120,14 @@ test('saved-model overwrite/delete commands normalize unknown service reasons to
     }
   );
 
-  assert.deepEqual(overwriteSavedModel(modelsApi, 'broken'), {
+  assert.deepEqual(await overwriteSavedModel(modelsApi, 'broken'), {
     ok: false,
     kind: 'overwrite',
     reason: 'error',
     id: 'broken',
     name: 'Broken',
   });
-  assert.deepEqual(deleteSavedModel(modelsApi, 'broken'), {
+  assert.deepEqual(await deleteSavedModel(modelsApi, 'broken'), {
     ok: false,
     kind: 'delete',
     reason: 'error',

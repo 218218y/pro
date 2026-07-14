@@ -27,15 +27,18 @@ import {
 } from './models_apply_snapshot_ops.js';
 import { transferModelInternalImpl } from './models_apply_transfer_ops.js';
 
-export function saveCurrentModelInternal(App: AppContainer, name: SavedModelName): ModelsSaveResult {
+export function saveCurrentModelInternal(App: AppContainer, name: SavedModelName): Promise<ModelsSaveResult> {
   return saveCurrentModelInternalImpl(App, name);
 }
 
-export function overwriteModelFromCurrentInternal(App: AppContainer, id: SavedModelId): ModelsCommandResult {
+export function overwriteModelFromCurrentInternal(
+  App: AppContainer,
+  id: SavedModelId
+): Promise<ModelsCommandResult> {
   return overwriteModelFromCurrentInternalImpl(App, id);
 }
 
-export function deleteModelByIdInternal(App: AppContainer, id: SavedModelId): ModelsCommandResult {
+export function deleteModelByIdInternal(App: AppContainer, id: SavedModelId): Promise<ModelsCommandResult> {
   return deleteModelByIdInternalImpl(App, id);
 }
 
@@ -43,11 +46,11 @@ export function setModelLockedInternal(
   App: AppContainer,
   id: SavedModelId,
   locked: boolean
-): ModelsLockResult {
+): Promise<ModelsLockResult> {
   return setModelLockedInternalImpl(App, id, locked);
 }
 
-export function deleteTemporaryUserModelsInternal(App: AppContainer): ModelsDeleteTemporaryResult {
+export function deleteTemporaryUserModelsInternal(App: AppContainer): Promise<ModelsDeleteTemporaryResult> {
   return deleteTemporaryUserModelsInternalImpl(App);
 }
 
@@ -55,7 +58,7 @@ export function moveModelInternal(
   App: AppContainer,
   id: SavedModelId,
   direction: ModelsMoveDirection
-): ModelsCommandResult {
+): Promise<ModelsCommandResult> {
   return moveModelInternalImpl(App, id, direction);
 }
 
@@ -65,7 +68,7 @@ export function transferModelInternal(
   targetList: ModelsTransferTargetList,
   overId: SavedModelId | null,
   pos: ModelsTransferPosition
-): ModelsCommandResult {
+): Promise<ModelsCommandResult> {
   return transferModelInternalImpl(App, id, targetList, overId, pos);
 }
 

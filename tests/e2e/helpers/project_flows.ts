@@ -23,10 +23,17 @@ export type ProjectActionEventName = 'load' | 'save' | 'reset-default' | 'restor
 export type ProjectActionEventDetail = {
   action?: ProjectActionEventName;
   ok?: boolean;
+  accepted?: true;
+  reused?: boolean;
   pending?: boolean;
+  outcome?: string;
   reason?: string;
   message?: string;
   restoreGen?: number;
+  operationId?: string;
+  requestedAt?: number;
+  acceptedAt?: number;
+  phase?: 'started' | 'settled';
   at?: number;
 };
 
@@ -976,10 +983,11 @@ async function dismissStickyEditModeToastIfPresent(page: Page): Promise<void> {
 
 export async function waitForProjectActionEvent(
   page: Page,
-  action: ProjectActionEventName
+  action: ProjectActionEventName,
+  options?: { phase?: 'started' | 'settled' }
 ): Promise<ProjectActionEventDetail> {
   return await page.evaluate(
-    expectedAction =>
+    ({ expectedAction, expectedPhase }) =>
       new Promise(resolve => {
         const timer = window.setTimeout(
           () => resolve({ action: expectedAction, ok: false, reason: 'timeout' }),
@@ -988,13 +996,14 @@ export async function waitForProjectActionEvent(
         const onAction = (event: Event) => {
           const detail = ((event as CustomEvent).detail || {}) as ProjectActionEventDetail;
           if (detail.action !== expectedAction) return;
+          if (expectedPhase && detail.phase !== expectedPhase) return;
           window.clearTimeout(timer);
           window.removeEventListener('wardrobepro:project-action', onAction as EventListener);
           resolve(detail);
         };
         window.addEventListener('wardrobepro:project-action', onAction as EventListener);
       }),
-    action
+    { expectedAction: action, expectedPhase: options?.phase }
   );
 }
 
@@ -1038,7 +1047,7 @@ export async function saveProjectViaHeader(
   await expect(saveButton).toBeVisible();
 
   const downloadPromise = page.waitForEvent('download');
-  const saveEventPromise = waitForProjectActionEvent(page, 'save');
+  const saveEventPromise = waitForProjectActionEvent(page, 'save', { phase: 'settled' });
   await saveButton.click();
 
   const promptModal = page.locator('#customPromptModal.open');

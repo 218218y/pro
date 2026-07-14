@@ -12,6 +12,8 @@ export type {
   DesignTabColorFailureReasonByKind,
   DesignTabColorFailureResultByKind,
   DesignTabColorRemoveTextureSuccessResult,
+  DesignTabColorReorderFailureReason,
+  DesignTabColorReorderFailureResult,
   DesignTabColorReorderSuccessResult,
   DesignTabColorSaveCustomColorFailureReason,
   DesignTabColorSaveCustomColorFailureResult,

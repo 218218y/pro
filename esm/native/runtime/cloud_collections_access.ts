@@ -1,7 +1,7 @@
 import type {
   CloudCollectionsCommitResult,
   CloudCollectionsEnvelope,
-  CloudCollectionsMutation,
+  CloudCollectionsMutator,
   CloudCollectionsReadResult,
   CloudCollectionsRepositoryLike,
   CloudCollectionsServiceLike,
@@ -42,18 +42,26 @@ export function readCloudCollectionsResultViaServiceOrThrow(
   return getCloudCollectionsRepositoryViaServiceOrThrow(App, context).readResult();
 }
 
-export function updateCloudCollectionsViaServiceOrThrow(
+export function transactCloudCollectionsViaServiceOrThrow(
   App: unknown,
-  mutation: CloudCollectionsMutation,
+  mutator: CloudCollectionsMutator,
   context?: string
-): CloudCollectionsCommitResult {
-  return getCloudCollectionsRepositoryViaServiceOrThrow(App, context).update(mutation);
+): Promise<CloudCollectionsCommitResult> {
+  return getCloudCollectionsRepositoryViaServiceOrThrow(App, context).transact(mutator);
+}
+
+export function commitCloudCollectionsViaServiceOrThrow(
+  App: unknown,
+  next: CloudSyncLocalCollections,
+  context?: string
+): Promise<CloudCollectionsCommitResult> {
+  return getCloudCollectionsRepositoryViaServiceOrThrow(App, context).commit(next);
 }
 
 export function resetCorruptCloudCollectionsViaServiceOrThrow(
   App: unknown,
   next: CloudSyncLocalCollections,
   context?: string
-): CloudCollectionsCommitResult {
+): Promise<CloudCollectionsCommitResult> {
   return getCloudCollectionsRepositoryViaServiceOrThrow(App, context).resetCorruptEnvelope(next);
 }

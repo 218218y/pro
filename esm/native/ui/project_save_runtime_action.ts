@@ -5,7 +5,9 @@ import {
   createAsyncOperationHandle,
   exportProjectResultViaService,
   getUiFeedback,
+  markPerfPoint,
   metaUiOnly,
+  observeAsyncOperation,
   reportError,
   reuseAsyncOperationHandle,
   setDirtyViaActions,
@@ -13,7 +15,7 @@ import {
   type ProjectSaveTerminalResult,
 } from '../services/api.js';
 import { downloadJsonTextResultViaBrowser, normalizeDownloadFilename } from './browser_file_download.js';
-import type { ProjectSaveActionResult } from './project_action_feedback.js';
+import type { ProjectFeedbackLike, ProjectSaveActionResult } from './project_action_feedback.js';
 import type { ProjectSaveRuntimeDeps } from './project_save_runtime_contracts.js';
 import { asUiFeedbackPrompt, createProjectSaveBrowserPrompt } from './project_save_runtime_prompt.js';
 import { runPromptedAction } from './feedback_action_runtime.js';
@@ -25,8 +27,12 @@ import {
   buildProjectSaveExportFailureResult,
   buildProjectSaveFailureResult,
   reportSaveResultWithToast,
-  scheduleSaveResultToast,
 } from './project_save_runtime_results.js';
+import {
+  observeProjectSaveFeedback as observeProjectSaveFeedbackWithCapabilities,
+  observeProjectSaveWatchdog as observeProjectSaveWatchdogWithCapabilities,
+  type ProjectSaveObserverCapabilities,
+} from './project_save_operation_observers.js';
 
 const activeSaveOperations = new WeakMap<AppContainer, ProjectSaveAcceptedResult>();
 
@@ -41,6 +47,38 @@ function reportProjectSaveRuntimeNonFatal(App: AppContainer, op: string, error: 
     { where: 'native/ui/project_save_runtime_action', op, fatal: false },
     { consoleOutput: false }
   );
+}
+
+function createProjectSaveObserverCapabilities(App: AppContainer): ProjectSaveObserverCapabilities {
+  return {
+    observe: args => observeAsyncOperation(args),
+    buildRejected: error => buildProjectSaveActionErrorResult(error, 'Project save failed.'),
+    reportObserverError: (op, error) => {
+      reportProjectSaveRuntimeNonFatal(App, `saveProject.${op}`, error);
+    },
+    reportStale: diagnostic => {
+      markPerfPoint(App, 'project.save.pending-stale', { detail: diagnostic });
+      reportProjectSaveRuntimeNonFatal(
+        App,
+        'saveProject.watchdog.stale',
+        new Error(
+          `[WardrobePro] Project save ${diagnostic.operationId} has been pending for ${diagnostic.ageMs}ms.`
+        )
+      );
+    },
+  };
+}
+
+export function observeProjectSaveFeedback(
+  App: AppContainer,
+  handle: ProjectSaveAcceptedResult,
+  feedback: ProjectFeedbackLike | null | undefined
+): void {
+  observeProjectSaveFeedbackWithCapabilities(handle, feedback, createProjectSaveObserverCapabilities(App));
+}
+
+export function observeProjectSaveWatchdog(App: AppContainer, handle: ProjectSaveAcceptedResult): void {
+  observeProjectSaveWatchdogWithCapabilities(handle, createProjectSaveObserverCapabilities(App));
 }
 
 function prepareProjectSaveExport(App: AppContainer): PreparedProjectSaveExport {
@@ -116,6 +154,7 @@ export function runEnsureSaveProjectAction(
     const promptHost = asUiFeedbackPrompt(getUiFeedback(App));
 
     return function saveProject() {
+      const requestedAt = Date.now();
       const actionFamily = beginProjectActionFamily(App, 'save');
       if (actionFamily.status === 'busy') {
         return buildProjectSaveFailureResult('busy');
@@ -137,20 +176,17 @@ export function runEnsureSaveProjectAction(
         .catch(error => buildProjectSaveActionErrorResult(error, 'Project save failed.'));
       const operation = createAsyncOperationHandle(
         'project-save',
-        settled
+        settled,
+        Date.now(),
+        requestedAt
       ) satisfies ProjectSaveAcceptedResult;
       activeSaveOperations.set(App, operation);
-      settled
-        .then(result => {
-          scheduleSaveResultToast(toast, result);
-        })
-        .catch(error => {
-          scheduleSaveResultToast(toast, buildProjectSaveActionErrorResult(error, 'אירעה שגיאה בעת השמירה'));
-        })
-        .finally(() => {
-          if (activeSaveOperations.get(App) === operation) activeSaveOperations.delete(App);
-          actionFamily.release();
-        });
+      observeProjectSaveFeedback(App, operation, { toast });
+      observeProjectSaveWatchdog(App, operation);
+      void settled.finally(() => {
+        if (activeSaveOperations.get(App) === operation) activeSaveOperations.delete(App);
+        actionFamily.release();
+      });
       return operation;
     };
   } catch (error) {

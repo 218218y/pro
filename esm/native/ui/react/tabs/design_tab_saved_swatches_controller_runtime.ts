@@ -18,9 +18,9 @@ import type { SavedColor } from './design_tab_multicolor_panel.js';
 import type { DesignTabColorActionResult } from './design_tab_color_action_result.js';
 
 export type DesignTabSavedSwatchesController = {
-  reorderByDnD: (dragId: string, overId: string | null, pos: DesignTabSwatchReorderPos) => void;
-  toggleSelectedLock: (selected: SavedColor | null) => void;
-  toggleLockById: (id: string) => void;
+  reorderByDnD: (dragId: string, overId: string | null, pos: DesignTabSwatchReorderPos) => Promise<void>;
+  toggleSelectedLock: (selected: SavedColor | null) => Promise<void>;
+  toggleLockById: (id: string) => Promise<void>;
   deleteSelected: (selected: SavedColor | null) => Promise<DesignTabColorActionResult | undefined>;
 };
 
@@ -45,18 +45,18 @@ export function createDesignTabSavedSwatchesController(
   const { app, feedback, savedColors, orderedSwatches, colorChoice, applyColorChoice } = args;
 
   return {
-    reorderByDnD(dragId: string, overId: string | null, pos: DesignTabSwatchReorderPos) {
+    async reorderByDnD(dragId: string, overId: string | null, pos: DesignTabSwatchReorderPos) {
       reportDesignTabColorActionResult(
         feedback,
-        reorderSavedColorSwatches(app, savedColors, orderedSwatches, dragId, overId, pos)
+        await reorderSavedColorSwatches(app, savedColors, orderedSwatches, dragId, overId, pos)
       );
     },
 
-    toggleSelectedLock(selected: SavedColor | null) {
+    async toggleSelectedLock(selected: SavedColor | null) {
       if (!selected) return;
       reportDesignTabColorActionResult(
         feedback,
-        toggleSavedColorLock(
+        await toggleSavedColorLock(
           app,
           savedColors,
           String(selected.id || ''),
@@ -65,10 +65,10 @@ export function createDesignTabSavedSwatchesController(
       );
     },
 
-    toggleLockById(id: string) {
+    async toggleLockById(id: string) {
       reportDesignTabColorActionResult(
         feedback,
-        toggleSavedColorLock(app, savedColors, id, 'react:design:savedColors:toggleLock:swatchIcon')
+        await toggleSavedColorLock(app, savedColors, id, 'react:design:savedColors:toggleLock:swatchIcon')
       );
     },
 
