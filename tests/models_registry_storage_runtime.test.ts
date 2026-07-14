@@ -10,6 +10,7 @@ import {
   setModelsNormalizerInternal,
 } from '../esm/native/services/models_registry.ts';
 import { syncModelsStateToApp } from '../esm/native/services/models_registry_storage_state.ts';
+import { installCloudCollectionsService } from '../esm/native/services/cloud_collections_service.ts';
 
 import {
   _getStoredHiddenPresets,
@@ -54,14 +55,15 @@ function createApp(initialStore: Record<string, unknown>) {
   const store = new Map<string, unknown>(Object.entries(clone(initialStore)));
   const writes: Record<string, unknown> = Object.create(null);
   const storage = {
-    KEYS: { SAVED_MODELS: 'savedModels' },
+    KEYS: { SAVED_MODELS: 'savedModels', SAVED_COLORS: 'savedColors' },
     getJSON<T>(key: string, fallback: T): T {
       return store.has(key) ? clone(store.get(key) as T) : fallback;
     },
-    setJSON(key: string, value: unknown): void {
+    setJSON(key: string, value: unknown): boolean {
       const next = clone(value);
       writes[key] = next;
       store.set(key, next);
+      return true;
     },
   };
   const App = {
@@ -70,6 +72,7 @@ function createApp(initialStore: Record<string, unknown>) {
       storage,
     },
   } as any;
+  installCloudCollectionsService(App);
   return { App, storage, writes, store };
 }
 
@@ -143,17 +146,19 @@ test('models registry storage: preset-order and hidden-preset writes stay canoni
     services: {
       models: {},
       storage: {
-        KEYS: { SAVED_MODELS: 'savedModels' },
+        KEYS: { SAVED_MODELS: 'savedModels', SAVED_COLORS: 'savedColors' },
         getString(key: string): string {
           return store.get(key) ?? '';
         },
-        setString(key: string, value: string): void {
+        setString(key: string, value: string): boolean {
           writes[key] = value;
           store.set(key, value);
+          return true;
         },
       },
     },
   } as any;
+  installCloudCollectionsService(App);
 
   assert.equal(_setStoredPresetOrder(App, [' preset-b ', '', 'preset-a', 'preset-b']), true);
   assert.equal(_setStoredHiddenPresets(App, [' preset-a ', 'preset-a', '', 'preset-c']), true);

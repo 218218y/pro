@@ -4,10 +4,18 @@ import { asRecord } from './record.js';
 export type ProjectLoadFailureReason =
   'missing-file' | 'invalid' | 'not-installed' | 'superseded' | 'busy' | 'error';
 
+export type ProjectLoadWarningEffect = 'edit-modes' | 'autosave-refresh' | 'notes' | 'build';
+
+export type ProjectLoadWarning = {
+  effect: ProjectLoadWarningEffect;
+  message: string;
+};
+
 export type ProjectLoadSuccessResult = {
   ok: true;
   pending?: true | undefined;
   restoreGen?: number | undefined;
+  warnings?: ProjectLoadWarning[] | undefined;
 };
 
 export type ProjectLoadFailureResult = {
@@ -25,6 +33,7 @@ type ProjectLoadResultRecord = {
   restoreGen?: unknown;
   reason?: unknown;
   message?: unknown;
+  warnings?: unknown;
 };
 
 function normalizeProjectLoadMessage(value: unknown): string | undefined {
@@ -39,12 +48,25 @@ function normalizeProjectLoadRestoreGen(value: unknown): number | undefined {
 export function buildProjectLoadSuccessResult(options?: {
   pending?: unknown;
   restoreGen?: unknown;
+  warnings?: unknown;
 }): ProjectLoadSuccessResult {
   const restoreGen = normalizeProjectLoadRestoreGen(options?.restoreGen);
+  const warnings = Array.isArray(options?.warnings)
+    ? options.warnings.filter((warning): warning is ProjectLoadWarning => {
+        const rec = asRecord<ProjectLoadWarning>(warning);
+        return !!(
+          rec &&
+          typeof rec.effect === 'string' &&
+          typeof rec.message === 'string' &&
+          rec.message.trim()
+        );
+      })
+    : [];
   return {
     ok: true,
     ...(options?.pending === true ? { pending: true } : {}),
     ...(typeof restoreGen === 'number' ? { restoreGen } : {}),
+    ...(warnings.length ? { warnings } : {}),
   };
 }
 

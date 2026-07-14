@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { exportSystemSettings, importSystemSettings } from '../esm/native/ui/settings_backup.ts';
 import { createDownloadContext, createStore } from './settings_backup_export_runtime_helpers.ts';
 import { createImportApp, installFakeFilePrimitives } from './settings_backup_import_runtime_helpers.ts';
+import { installCloudCollectionsForTestApp } from './cloud_collections_test_support.ts';
 
 test('exportSystemSettings reuses one inflight export per app and allows a later fresh export', async () => {
   const { doc, downloads } = createDownloadContext();
@@ -26,6 +27,8 @@ test('exportSystemSettings reuses one inflight export per app and allows a later
       },
     },
   };
+
+  installCloudCollectionsForTestApp(app);
 
   const first = exportSystemSettings(app as never);
   const second = exportSystemSettings(app as never);
@@ -151,6 +154,8 @@ test('settings backup family blocks conflicting export/import flights while reus
         },
       },
     };
+
+    installCloudCollectionsForTestApp(app);
 
     const payload = {
       type: 'system_backup',

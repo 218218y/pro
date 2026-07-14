@@ -226,7 +226,7 @@ test('cloud sync runtime snapshot key canonicalizes drifted runtime branches bef
     instanceId: 'instance_1',
     realtime: { enabled: true, mode: 'broadcast', state: 'subscribed', channel: 'wp:public::sketch' },
     polling: { active: false, intervalMs: 5000, reason: '' },
-    lastPullAt: 100,
+    lastPullSuccessAt: 100,
     lastPushAt: 200,
     lastRealtimeEventAt: 300,
     lastError: '',
@@ -260,7 +260,7 @@ test('cloud sync owner context memoizes runtime status publishes and keeps the c
   assert.equal(firstRealtime, secondStatus.realtime);
   assert.equal(firstPolling, secondStatus.polling);
 
-  ctx!.runtimeStatus.lastPullAt = 123;
+  ctx!.runtimeStatus.lastPullSuccessAt = 123;
   ctx!.runtimeStatus.realtime.state = 'subscribed';
   ctx!.runtimeStatus.polling.reason = 'after-update';
   ctx?.publishStatus();
@@ -269,7 +269,7 @@ test('cloud sync owner context memoizes runtime status publishes and keeps the c
   assert.equal(thirdStatus, secondStatus);
   assert.equal(thirdStatus.realtime, firstRealtime);
   assert.equal(thirdStatus.polling, firstPolling);
-  assert.equal(thirdStatus.lastPullAt, 123);
+  assert.equal(thirdStatus.lastPullSuccessAt, 123);
   assert.equal(thirdStatus.realtime.state, 'subscribed');
   assert.equal(thirdStatus.polling.reason, 'after-update');
 });

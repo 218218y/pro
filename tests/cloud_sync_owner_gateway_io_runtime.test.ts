@@ -52,7 +52,10 @@ function createRuntimeStatus() {
     instanceId: 'instance-local',
     realtime: { enabled: false, mode: 'broadcast', state: 'disabled', channel: '' },
     polling: { active: false, intervalMs: 5000, reason: '' },
-    lastPullAt: 0,
+    lastPullSuccessAt: 0,
+    lastPullAttemptAt: 0,
+    lastPullSuccessAt: 0,
+    lastPullFailureAt: 0,
     lastPushAt: 0,
     lastRealtimeEventAt: 0,
     lastError: '',
@@ -199,12 +202,142 @@ test('owner gateway rejects competing edits without a blind retry', async () => 
     keys: ['sketchHash'],
     remoteRevision: 5,
     detectedAt: runtimeStatus.conflict.detectedAt,
+    state: 'awaiting-resolution',
+    base: { sketchHash: 'base' },
+    local: { sketchHash: 'local' },
+    remote: { sketchHash: 'remote' },
   });
   assert.equal(runtimeStatus.lastError, 'conflict:sketchHash');
 
   const repeated = await io.upsertRow('gateway', 'anon-key', 'room_a', { sketchHash: 'local' });
   assert.deepEqual(repeated.conflictKeys, ['sketchHash']);
-  assert.equal(writeCount, 2, 'an unresolved conflict must not advance the cached base revision');
+  assert.equal(writeCount, 1, 'an unresolved conflict must block automatic retry writes');
+});
+
+test('owner gateway keep-local resolution closes conflict only after the server confirms the write', async () => {
+  let readCount = 0;
+  let writeCount = 0;
+  const writes: RequestBody[] = [];
+  const fetch = async (_url: string, init?: RequestInit) => {
+    const body = JSON.parse(String(init?.body || '{}')) as RequestBody;
+    if (body.action === 'read') {
+      readCount += 1;
+      return response(200, {
+        ok: true,
+        row: {
+          room: 'room_a',
+          payload: { sketchHash: readCount === 1 ? 'base' : 'remote' },
+          revision: readCount === 1 ? 1 : 2,
+          updated_at: `2026-07-13T08:00:0${readCount}.000Z`,
+          updated_by: 'client-b',
+        },
+      });
+    }
+    writeCount += 1;
+    writes.push(body);
+    if (writeCount === 1) {
+      return response(409, {
+        ok: false,
+        code: 'revision_conflict',
+        row: {
+          room: 'room_a',
+          payload: { sketchHash: 'remote' },
+          revision: 2,
+          updated_at: '2026-07-13T08:00:02.000Z',
+          updated_by: 'client-b',
+        },
+      });
+    }
+    return response(200, {
+      ok: true,
+      row: {
+        room: 'room_a',
+        payload: body.payload,
+        revision: 3,
+        updated_at: '2026-07-13T08:00:03.000Z',
+        updated_by: 'client-local',
+      },
+    });
+  };
+  const runtimeStatus = createRuntimeStatus() as any;
+  const states: string[] = [];
+  const io = createCloudSyncOwnerGatewayIo({
+    App: { deps: { browser: { fetch } } } as any,
+    cfg,
+    gatewayUrl: 'gateway',
+    rooms: createRooms(),
+    clientId: 'client-local',
+    runtimeStatus,
+    publishStatus: () => states.push(runtimeStatus.conflict?.state || 'cleared'),
+  });
+  assert.ok(io);
+
+  await io.getRow('gateway', 'anon', 'room_a');
+  await io.upsertRow('gateway', 'anon', 'room_a', { sketchHash: 'local' });
+  const result = await io.resolveConflict('room_a', 'keep-local');
+
+  assert.equal(result.ok, true);
+  assert.equal(writes[1]?.expectedRevision, 2);
+  assert.deepEqual(writes[1]?.payload, { sketchHash: 'local' });
+  assert.equal(runtimeStatus.conflict, undefined);
+  assert.deepEqual(states.slice(-3), ['resolving', 'resolved', 'cleared']);
+});
+
+test('owner gateway use-remote resolution clears conflict only after local adoption succeeds', async () => {
+  let readCount = 0;
+  const fetch = async (_url: string, init?: RequestInit) => {
+    const body = JSON.parse(String(init?.body || '{}')) as RequestBody;
+    if (body.action === 'read') {
+      readCount += 1;
+      return response(200, {
+        ok: true,
+        row: {
+          room: 'room_a',
+          payload: { sketchHash: readCount === 1 ? 'base' : 'remote-latest' },
+          revision: readCount === 1 ? 1 : 3,
+          updated_at: '2026-07-13T08:00:03.000Z',
+          updated_by: 'client-b',
+        },
+      });
+    }
+    return response(409, {
+      ok: false,
+      code: 'revision_conflict',
+      row: {
+        room: 'room_a',
+        payload: { sketchHash: 'remote' },
+        revision: 2,
+        updated_at: '2026-07-13T08:00:02.000Z',
+        updated_by: 'client-b',
+      },
+    });
+  };
+  const runtimeStatus = createRuntimeStatus() as any;
+  const io = createCloudSyncOwnerGatewayIo({
+    App: { deps: { browser: { fetch } } } as any,
+    cfg,
+    gatewayUrl: 'gateway',
+    rooms: createRooms(),
+    clientId: 'client-local',
+    runtimeStatus,
+    publishStatus: () => {},
+  });
+  assert.ok(io);
+
+  await io.getRow('gateway', 'anon', 'room_a');
+  await io.upsertRow('gateway', 'anon', 'room_a', { sketchHash: 'local' });
+  const failed = await io.resolveConflict('room_a', 'use-remote', () => false);
+  assert.equal(failed.ok, false);
+  assert.equal(runtimeStatus.conflict?.state, 'awaiting-resolution');
+
+  const adopted: unknown[] = [];
+  const resolved = await io.resolveConflict('room_a', 'use-remote', row => {
+    adopted.push(row.payload);
+    return true;
+  });
+  assert.equal(resolved.ok, true);
+  assert.deepEqual(adopted, [{ sketchHash: 'remote-latest' }]);
+  assert.equal(runtimeStatus.conflict, undefined);
 });
 
 test('owner gateway renews an expiring private credential once for concurrent callers', async () => {

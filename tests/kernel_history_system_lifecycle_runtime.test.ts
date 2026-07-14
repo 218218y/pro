@@ -153,6 +153,31 @@ test('kernel history lifecycle: resumeAfterRestore keeps only the latest pending
   assert.deepEqual(h.reports, []);
 });
 
+test('kernel history lifecycle: owner snapshot restores stacks, coalescing, pause, and derived status', () => {
+  const { system } = createHarness();
+  system.undoStack = ['undo-before'];
+  system.redoStack = ['redo-before'];
+  system.lastSavedJSON = 'saved-before';
+  system.isPaused = true;
+  system._lastCoalesceKey = 'notes:n1';
+  system._lastCoalesceAt = 77;
+  system.__isApplyingState = true;
+  const before = system.captureSnapshot();
+
+  system.resetBaseline({ source: 'test:baseline' });
+  system.__isApplyingState = false;
+  system.restoreSnapshot(before, { source: 'test:rollback' });
+
+  assert.deepEqual(system.captureSnapshot(), before);
+  assert.deepEqual(system.getStatus(), {
+    canUndo: true,
+    canRedo: true,
+    undoCount: 1,
+    redoCount: 1,
+    isPaused: true,
+  });
+});
+
 test('kernel history lifecycle: applyState uses the same latest-token restore resume path', () => {
   const h = createHarness();
 

@@ -157,6 +157,31 @@ test('autosave service: flush invalidates an older idle callback so stale autosa
   cancelAutosaveTimer();
 });
 
+test('autosave service: suspension resumes pending work on rollback and discards it on commit', () => {
+  cancelAutosaveTimer();
+
+  const first = createApp('suspend-resume');
+  const firstService = installAutosaveService(first.App);
+  scheduleAutosave(first.App);
+
+  const rollbackSuspension = firstService.suspend?.();
+  assert.ok(rollbackSuspension);
+  assert.deepEqual(first.cleared, [first.timers[0].handle]);
+  rollbackSuspension?.resume();
+  assert.equal(first.timers.length, 2);
+  assert.equal(first.timers[1].ms <= 4000, true);
+
+  const second = createApp('suspend-commit');
+  const secondService = installAutosaveService(second.App);
+  scheduleAutosave(second.App);
+  const committedSuspension = secondService.suspend?.();
+  committedSuspension?.commit();
+  committedSuspension?.resume();
+  assert.equal(second.timers.length, 1, 'committed suspension must not restore cancelled work');
+
+  cancelAutosaveTimer();
+});
+
 test('autosave service: scheduling is isolated per app instead of one app cancelling another app timer', () => {
   cancelAutosaveTimer();
 

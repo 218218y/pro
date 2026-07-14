@@ -6,6 +6,7 @@ import { withSuppressedConsole } from './_console_silence.ts';
 import {
   createImportApp,
   createStore,
+  installCollectionsForImportApp,
   installFakeFilePrimitives,
 } from './settings_backup_import_runtime_helpers.ts';
 
@@ -159,6 +160,7 @@ test('importSystemSettings sanitizes mixed backup payload arrays and imports onl
         },
       },
     };
+    installCollectionsForImportApp(app);
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -287,6 +289,7 @@ test('importSystemSettings upgrades duplicate saved color ids from legacy string
         },
       },
     };
+    installCollectionsForImportApp(app);
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -372,6 +375,7 @@ test('importSystemSettings upgrades existing live legacy saved-color aliases to 
         },
       },
     };
+    installCollectionsForImportApp(app);
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -456,6 +460,7 @@ test('importSystemSettings preserves live-only swatch order ids even when storag
         },
       },
     };
+    installCollectionsForImportApp(app);
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -541,6 +546,7 @@ test('importSystemSettings preserves existing live swatch order entries that are
         },
       },
     };
+    installCollectionsForImportApp(app);
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -622,6 +628,7 @@ test('importSystemSettings normalizes backup order ids to canonical unique strin
         },
       },
     };
+    installCollectionsForImportApp(app);
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -703,6 +710,7 @@ test('importSystemSettings canonicalizes saved model config snapshots before mer
         },
       },
     };
+    installCollectionsForImportApp(app);
     const file = new env.FakeFile(
       [
         JSON.stringify({

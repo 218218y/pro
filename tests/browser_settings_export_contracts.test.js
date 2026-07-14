@@ -191,8 +191,7 @@ test('settings and browser surfaces keep typed readers instead of loose bag cast
     settingsBackupSupport,
     [
       /assertApp\(app, 'ui\/settings_backup'\)/,
-      /getStorageKey\(App, 'SAVED_MODELS', 'wardrobeSavedModels'\)/,
-      /getStorageKey\(App, 'SAVED_COLORS', 'wardrobeSavedColors'\)/,
+      /readCloudCollectionsEnvelopeViaServiceOrThrow\(App, 'settings backup export'\)/,
       /export function buildExportBackupData\(App: AppContainer\): SettingsBackupData \{/,
     ],
     'settingsBackupSupport'

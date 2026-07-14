@@ -4,7 +4,7 @@
 // dedicated support modules:
 // - shared normalization + payload readers
 // - feedback/reporting/meta helpers
-// - storage wrapping + local/remote collections
+// - canonical storage access + remote collection application
 // - sketch capture helpers
 
 export {
@@ -41,14 +41,7 @@ export {
   __wp_toast,
 } from './cloud_sync_support_feedback.js';
 
-export {
-  storageWithMarker,
-  restoreWrappedStorageFns,
-  rememberWrappedStorageFns,
-  getStorage,
-  readLocal,
-  applyRemote,
-} from './cloud_sync_support_storage.js';
+export { getStorage, applyRemote } from './cloud_sync_support_storage.js';
 
 export {
   captureSketchSnapshot,

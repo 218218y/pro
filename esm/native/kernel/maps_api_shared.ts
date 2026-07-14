@@ -11,15 +11,8 @@ import type {
 import { getCfg } from './store_access.js';
 import { reportErrorThrottled } from '../runtime/api.js';
 import { normalizeColorSwatchesOrder, normalizeSavedColorsList } from '../runtime/maps_access_shared.js';
-import { getStorageServiceMaybe } from '../runtime/storage_access.js';
 
 type Obj = Record<string, unknown>;
-export type StorageKeysLike = Obj & { SAVED_COLORS?: string };
-export type StorageSurfaceLike = Obj & {
-  KEYS?: StorageKeysLike;
-  setJSON?: (key: string, value: unknown) => unknown;
-  setString?: (key: string, value: string) => unknown;
-};
 export type MapsNamespaceRecord = MapsNamespaceLike & Obj;
 export type CfgSnapshotLike = UnknownRecord & {
   savedColors?: unknown;
@@ -66,12 +59,6 @@ export interface MapsApiShared {
   readConfigMap: (mapName: string) => UnknownRecord;
   readNamedMap: <K extends KnownMapName>(mapName: K) => MapsByName[K];
   shouldSkipStorageWrite: (meta: ActionMetaLike | UnknownRecord | null | undefined) => boolean;
-  writeStorageJson: (key: string, value: unknown, op: string) => void;
-  getSavedColorsStorageKey: () => string;
-}
-
-function readStorage(App: AppContainer): StorageSurfaceLike | null {
-  return asObject<StorageSurfaceLike>(getStorageServiceMaybe(App));
 }
 
 function ensureMapsNamespace(App: AppContainer): MapsNamespaceRecord {
@@ -138,34 +125,6 @@ export function createMapsApiShared(App: AppContainer): MapsApiShared {
     }
   }
 
-  function writeStorageJson(key: string, value: unknown, op: string): void {
-    try {
-      const storage = readStorage(App);
-      if (!storage) return;
-      if (typeof storage.setJSON === 'function') {
-        storage.setJSON(key, value);
-        return;
-      }
-      if (typeof storage.setString === 'function') {
-        storage.setString(key, JSON.stringify(value));
-      }
-    } catch (_e) {
-      reportNonFatal(op, _e, 6000);
-    }
-  }
-
-  function getSavedColorsStorageKey(): string {
-    try {
-      const storage = readStorage(App);
-      const keys = storage ? asObject<StorageKeysLike>(storage.KEYS) || {} : {};
-      const k = typeof keys.SAVED_COLORS === 'string' ? String(keys.SAVED_COLORS) : '';
-      return k || 'wardrobeSavedColors';
-    } catch (_e) {
-      reportNonFatal('getSavedColorsStorageKey', _e, 6000);
-      return 'wardrobeSavedColors';
-    }
-  }
-
   return {
     maps,
     reportNonFatal,
@@ -174,7 +133,5 @@ export function createMapsApiShared(App: AppContainer): MapsApiShared {
     readConfigMap,
     readNamedMap,
     shouldSkipStorageWrite,
-    writeStorageJson,
-    getSavedColorsStorageKey,
   };
 }

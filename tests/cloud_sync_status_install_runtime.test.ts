@@ -23,7 +23,7 @@ function createStatus(seed?: Partial<any>) {
       intervalMs: 5000,
       reason: '',
     },
-    lastPullAt: 0,
+    lastPullSuccessAt: 0,
     lastPushAt: 0,
     lastRealtimeEventAt: 0,
     lastError: '',
@@ -49,7 +49,7 @@ test('cloud sync status install keeps canonical root and nested branches stable 
       intervalMs: 4000,
       reason: 'fallback',
     },
-    lastPullAt: 11,
+    lastPullSuccessAt: 11,
     lastError: 'none',
     extraFlag: true,
   });
@@ -63,7 +63,7 @@ test('cloud sync status install keeps canonical root and nested branches stable 
   assert.equal(refreshed.realtime.channel, 'prefix:room-b');
   assert.equal(refreshed.polling.active, true);
   assert.equal(refreshed.polling.reason, 'fallback');
-  assert.equal(refreshed.lastPullAt, 11);
+  assert.equal(refreshed.lastPullSuccessAt, 11);
   assert.equal('extraFlag' in refreshed, false);
 
   const thirdSource = createStatus({
@@ -189,7 +189,7 @@ test('cloud sync status install heals drifted branch shells back to canonical pl
     instanceId: source.instanceId,
     realtime: [] as unknown[],
     polling: [] as unknown[],
-    lastPullAt: source.lastPullAt,
+    lastPullSuccessAt: source.lastPullSuccessAt,
     lastPushAt: source.lastPushAt,
     lastRealtimeEventAt: source.lastRealtimeEventAt,
     lastError: source.lastError,

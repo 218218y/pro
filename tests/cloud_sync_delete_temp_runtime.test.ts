@@ -174,7 +174,7 @@ test('cloud sync delete temp removes unlocked colors, sanitizes payload, updates
   );
 });
 
-test('cloud sync delete temp does not stamp pull activity when the preflight row read fails', async () => {
+test('cloud sync delete temp records a failed preflight attempt without stamping pull success', async () => {
   const storage = createStorageHarness();
   const appHarness = createAppHarness();
   const runtimeStatus = {
@@ -183,7 +183,9 @@ test('cloud sync delete temp does not stamp pull activity when the preflight row
     room: 'room-3',
     clientId: 'client-1',
     instanceId: 'instance-1',
-    lastPullAt: 0,
+    lastPullAttemptAt: 0,
+    lastPullSuccessAt: 0,
+    lastPullFailureAt: 0,
     lastPushAt: 0,
     lastRealtimeEventAt: 0,
     lastError: '',
@@ -231,9 +233,11 @@ test('cloud sync delete temp does not stamp pull activity when the preflight row
     reason: 'error',
     message: 'preflight exploded',
   });
-  assert.equal(runtimeStatus.lastPullAt, 0);
+  assert.equal(runtimeStatus.lastPullSuccessAt, 0);
+  assert.equal(runtimeStatus.lastPullAttemptAt > 0, true);
+  assert.equal(runtimeStatus.lastPullFailureAt >= runtimeStatus.lastPullAttemptAt, true);
   assert.equal(runtimeStatus.lastPushAt, 0);
-  assert.equal(publishCount, 0);
+  assert.equal(publishCount, 2);
 });
 
 test('cloud sync delete temp preserves thrown message, reports nonfatal, and resets push flag on errors', async () => {
@@ -372,14 +376,16 @@ test('cloud sync delete-temp tracks preflight pull activity and settled push act
     room: 'room-a',
     clientId: 'client-a',
     instanceId: 'instance-a',
-    lastPullAt: 0,
+    lastPullAttemptAt: 0,
+    lastPullSuccessAt: 0,
+    lastPullFailureAt: 0,
     lastPushAt: 0,
     lastRealtimeEventAt: 0,
     lastError: '',
     diagEnabled: false,
   } as any;
 
-  const publishSnapshots: Array<{ lastPullAt: number; lastPushAt: number }> = [];
+  const publishSnapshots: Array<{ lastPullSuccessAt: number; lastPushAt: number }> = [];
   const hints: Array<{ scope: string; rowName?: string }> = [];
   let nowMs = 500;
   const realNow = Date.now;
@@ -418,7 +424,10 @@ test('cloud sync delete-temp tracks preflight pull activity and settled push act
       },
       runtimeStatus,
       publishStatus: () => {
-        publishSnapshots.push({ lastPullAt: runtimeStatus.lastPullAt, lastPushAt: runtimeStatus.lastPushAt });
+        publishSnapshots.push({
+          lastPullSuccessAt: runtimeStatus.lastPullSuccessAt,
+          lastPushAt: runtimeStatus.lastPushAt,
+        });
       },
       runMainWriteFlight: (key, run) =>
         createCloudSyncMainWriteSingleFlight({}).run(
@@ -436,12 +445,13 @@ test('cloud sync delete-temp tracks preflight pull activity and settled push act
     const result = await ops.deleteTemporaryColorsInCloud();
 
     assert.deepEqual(result, { ok: true, removed: 1 });
-    assert.equal(runtimeStatus.lastPullAt > 0, true);
-    assert.equal(runtimeStatus.lastPushAt > runtimeStatus.lastPullAt, true);
+    assert.equal(runtimeStatus.lastPullSuccessAt > 0, true);
+    assert.equal(runtimeStatus.lastPushAt > runtimeStatus.lastPullSuccessAt, true);
     assert.deepEqual(hints, [{ scope: 'main', rowName: 'room-a' }]);
     assert.deepEqual(publishSnapshots, [
-      { lastPullAt: runtimeStatus.lastPullAt, lastPushAt: 0 },
-      { lastPullAt: runtimeStatus.lastPullAt, lastPushAt: runtimeStatus.lastPushAt },
+      { lastPullSuccessAt: 0, lastPushAt: 0 },
+      { lastPullSuccessAt: runtimeStatus.lastPullSuccessAt, lastPushAt: 0 },
+      { lastPullSuccessAt: runtimeStatus.lastPullSuccessAt, lastPushAt: runtimeStatus.lastPushAt },
     ]);
   } finally {
     Date.now = realNow;

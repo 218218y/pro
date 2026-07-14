@@ -156,8 +156,7 @@ test('[stageB] settings backup uses typed backup payload + storage seam helpers'
     assert,
     settingsBackupSupport,
     [
-      /getStorageKey\(App, 'SAVED_MODELS', 'wardrobeSavedModels'\)/,
-      /getStorageKey\(App, 'SAVED_COLORS', 'wardrobeSavedColors'\)/,
+      /readCloudCollectionsEnvelopeViaServiceOrThrow\(App, 'settings backup export'\)/,
       /export function buildExportBackupData\(App: AppContainer\): SettingsBackupData \{/,
     ],
     'settingsBackupSupport'

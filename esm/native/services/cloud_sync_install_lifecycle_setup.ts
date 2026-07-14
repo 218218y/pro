@@ -2,7 +2,6 @@ import type { AppContainer, CloudSyncDiagFn, TimeoutHandleLike } from '../../../
 
 import { type CloudSyncMaybeAsyncPull } from './cloud_sync_async_pull.js';
 import { addCloudSyncCleanup } from './cloud_sync_owner_support.js';
-import { createCloudSyncStorageWrap } from './cloud_sync_storage_wrap.js';
 import { createCloudSyncPullCoalescerFactory } from './cloud_sync_install_support.js';
 import {
   cancelCloudSyncPullScopeMap,
@@ -10,27 +9,16 @@ import {
   createCloudSyncPullCoalescerMap,
 } from './cloud_sync_pull_scopes.js';
 
-export function installCloudSyncLifecycleStorageWrap(args: {
-  App: AppContainer;
-  storage: object;
-  keysToSync: string[];
+export function installCloudSyncLifecycleCollectionsSubscription(args: {
   suppressRef: { v: boolean };
   schedulePush: () => void;
-  commitCollectionsSnapshot: () => void;
+  subscribeCollections: (listener: () => void) => () => void;
   cleanup: Array<() => void>;
 }): void {
-  const { App, storage, keysToSync, suppressRef, schedulePush, commitCollectionsSnapshot, cleanup } = args;
-  const cloudSyncStorageWrap = createCloudSyncStorageWrap({
-    App,
-    storage,
-    keysToSync,
-    suppressRef,
-    schedulePush,
-    commitCollectionsSnapshot,
+  const unsubscribe = args.subscribeCollections(() => {
+    if (!args.suppressRef.v) args.schedulePush();
   });
-  addCloudSyncCleanup(cleanup, () => {
-    cloudSyncStorageWrap.dispose();
-  });
+  addCloudSyncCleanup(args.cleanup, unsubscribe);
 }
 
 export function createCloudSyncInstallPullCoalescers(args: {

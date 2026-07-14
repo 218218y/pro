@@ -82,6 +82,25 @@ export function createCloudSyncMainRowOps(args: CreateCloudSyncMainRowOpsArgs): 
     }
   };
 
+  const resolveConflict: CloudSyncMainRowOps['resolveConflict'] = async resolution => {
+    const result = await args.resolveConflict(
+      args.room,
+      resolution,
+      resolution === 'use-remote'
+        ? row => {
+            const applied = localState.applyRemotePayload(row.payload || {});
+            if (applied) state.setLastSeenUpdatedAt(row.updated_at || '');
+            return applied;
+          }
+        : null
+    );
+    if (result.ok) {
+      state.setLastSeenUpdatedAt(result.row.updated_at || '');
+      localState.syncHashFromLocal();
+    }
+    return result;
+  };
+
   return {
     schedulePullSoon: pullFlow.schedulePullSoon,
     schedulePush: pushFlow.schedulePush,
@@ -93,7 +112,8 @@ export function createCloudSyncMainRowOps(args: CreateCloudSyncMainRowOpsArgs): 
     runMainWriteFlight: state.runMainWriteFlight,
     setLastSeenUpdatedAt: state.setLastSeenUpdatedAt,
     setLastHash: state.setLastHash,
-    commitPerKeyCollections: localState.commitPerKeyCollections,
+    subscribeCollections: localState.subscribeCollections,
+    resolveConflict,
     dispose,
   };
 }

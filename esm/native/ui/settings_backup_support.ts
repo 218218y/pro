@@ -3,11 +3,10 @@ import { getCfg } from './store_access.js';
 import {
   assertApp,
   getModelsServiceMaybe,
-  getStorageKey,
-  getStorageServiceMaybe,
   metaMerge,
   metaRestore,
   normalizeUnknownError,
+  readCloudCollectionsEnvelopeViaServiceOrThrow,
   readSavedColors,
   reportError,
 } from '../services/api.js';
@@ -22,35 +21,11 @@ import {
   sanitizeSettingsBackupCollectionIds,
   type SettingsBackupData,
   type SettingsBackupIdList,
-  type SettingsStorageKeys,
-  type SettingsStorageServiceLike,
-  isRecord,
   SettingsBackupActionError,
 } from './settings_backup_shared.js';
 
-function isSettingsStorageService(value: unknown): value is SettingsStorageServiceLike {
-  return isRecord(value);
-}
-
 export function requireSettingsBackupApp(app: unknown): AppContainer {
   return assertApp(app, 'ui/settings_backup');
-}
-
-export function getSettingsStorage(App: AppContainer): SettingsStorageServiceLike | null {
-  const storage = getStorageServiceMaybe(App);
-  return isSettingsStorageService(storage) ? storage : null;
-}
-
-export function buildSettingsStorageKeys(App: AppContainer): SettingsStorageKeys {
-  const models = getStorageKey(App, 'SAVED_MODELS', 'wardrobeSavedModels');
-  const colors = getStorageKey(App, 'SAVED_COLORS', 'wardrobeSavedColors');
-  return {
-    models,
-    presetOrder: `${models}:presetOrder`,
-    hiddenPresets: `${models}:hiddenPresets`,
-    colors,
-    colorSwatchesOrder: `${colors}:order`,
-  };
 }
 
 export function settingsBackupReport(
@@ -73,42 +48,6 @@ export function buildRestoreMeta(
 ): ActionMetaLike {
   const restored = metaRestore(App, meta || {}, source);
   return metaMerge(App, restored, undefined, source);
-}
-
-export function readStorageArray(storage: SettingsStorageServiceLike | null, key: string): unknown[] {
-  try {
-    if (storage && typeof storage.getJSON === 'function') {
-      const value = storage.getJSON(key, []);
-      return Array.isArray(value) ? value : [];
-    }
-    if (storage && typeof storage.getString === 'function') {
-      const value = storage.getString(key);
-      if (!value) return [];
-      const parsed = JSON.parse(String(value));
-      return Array.isArray(parsed) ? parsed : [];
-    }
-  } catch {
-    // ignore secondary export-read failures
-  }
-  return [];
-}
-
-export function writeStorageArray(
-  storage: SettingsStorageServiceLike | null,
-  key: string,
-  value: unknown
-): boolean {
-  const arr = Array.isArray(value) ? value : [];
-  if (!storage) return false;
-  if (typeof storage.setJSON === 'function') {
-    storage.setJSON(key, arr);
-    return true;
-  }
-  if (typeof storage.setString === 'function') {
-    storage.setString(key, JSON.stringify(arr));
-    return true;
-  }
-  return false;
 }
 
 function readAvailablePresetIds(App: AppContainer): Set<string> | null {
@@ -144,14 +83,13 @@ export function sanitizePresetCollections(
 
 function readCurrentExportColorSwatchesOrder(
   cfg: Record<string, unknown> | null,
-  storage: SettingsStorageServiceLike | null,
-  keys: SettingsStorageKeys,
+  storedOrder: unknown,
   savedColors: unknown
 ): SettingsBackupIdList {
   const liveOrder = readSettingsBackupIdList(
     cfg && Array.isArray(cfg.colorSwatchesOrder) ? cfg.colorSwatchesOrder : []
   );
-  const storageOrder = readSettingsBackupIdList(readStorageArray(storage, keys.colorSwatchesOrder));
+  const storageOrder = readSettingsBackupIdList(storedOrder);
   const canonicalSavedColorOrder = readCanonicalSavedColorOrder(savedColors);
   return resolveColorSwatchesOrder(savedColors, liveOrder, storageOrder, canonicalSavedColorOrder);
 }
@@ -172,11 +110,9 @@ function readExportedModelsForBackup(App: AppContainer): unknown[] {
 }
 
 export function buildExportBackupData(App: AppContainer): SettingsBackupData {
-  const storage = getSettingsStorage(App);
-  const keys = buildSettingsStorageKeys(App);
+  const envelope = readCloudCollectionsEnvelopeViaServiceOrThrow(App, 'settings backup export');
   const exportedModels = readExportedModelsForBackup(App);
-  const modelsToSave =
-    exportedModels.length > 0 ? cloneJsonArray(exportedModels) : readStorageArray(storage, keys.models);
+  const modelsToSave = exportedModels.length > 0 ? cloneJsonArray(exportedModels) : envelope.savedModels;
 
   const cfg = getCfg(App) || null;
   const savedColorsFromStore =
@@ -184,14 +120,10 @@ export function buildExportBackupData(App: AppContainer): SettingsBackupData {
   const colorsToSave =
     Array.isArray(savedColorsFromStore) && savedColorsFromStore.length > 0
       ? savedColorsFromStore
-      : readStorageArray(storage, keys.colors);
+      : envelope.savedColors;
   const savedModels = readSavedModelList(modelsToSave);
   const savedColors = readSavedColorList(colorsToSave);
-  const presetCollections = sanitizePresetCollections(
-    App,
-    readStorageArray(storage, keys.presetOrder),
-    readStorageArray(storage, keys.hiddenPresets)
-  );
+  const presetCollections = sanitizePresetCollections(App, envelope.presetOrder, envelope.hiddenPresets);
 
   return {
     type: 'system_backup',
@@ -200,6 +132,6 @@ export function buildExportBackupData(App: AppContainer): SettingsBackupData {
     hiddenPresets: presetCollections.hiddenPresets,
     savedModels,
     savedColors,
-    colorSwatchesOrder: readCurrentExportColorSwatchesOrder(cfg, storage, keys, savedColors),
+    colorSwatchesOrder: readCurrentExportColorSwatchesOrder(cfg, envelope.colorOrder, savedColors),
   };
 }

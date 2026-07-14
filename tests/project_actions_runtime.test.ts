@@ -51,16 +51,16 @@ test('project actions expose normalized save/load/restore command results', asyn
 
   const settled = Promise.resolve({ ok: true } as const);
   App.actions.saveProject = () => ({
-    ok: true,
-    pending: true,
+    accepted: true,
+    reused: false,
     operationId: 'project-save-test-1',
     acceptedAt: 1,
     settled,
   });
   const pending = saveProject(App);
   assert.deepEqual(pending, {
-    ok: true,
-    pending: true,
+    accepted: true,
+    reused: false,
     operationId: 'project-save-test-1',
     acceptedAt: 1,
     settled,

@@ -13,7 +13,7 @@ import { createCloudSyncLifecyclePullAllNow } from '../esm/native/services/cloud
 test('cloud sync pull-all-now always schedules main + sketch and only pulls controls when requested', () => {
   const calls: Array<[string, string]> = [];
   const mainPulls: Array<{ reason?: string; immediate?: boolean }> = [];
-  const runtimeStatus = { lastPullAt: 0 } as { lastPullAt: number };
+  const runtimeStatus = { lastPullSuccessAt: 0 } as { lastPullSuccessAt: number };
 
   const pullCoalescers = {
     sketch: {
@@ -39,7 +39,7 @@ test('cloud sync pull-all-now always schedules main + sketch and only pulls cont
   });
 
   assert.deepEqual(mainPulls, [{ reason: 'focus.main', immediate: true }]);
-  assert.equal(runtimeStatus.lastPullAt, 0);
+  assert.equal(runtimeStatus.lastPullSuccessAt, 0);
   assert.deepEqual(calls, [['sketch', 'focus.sketch']]);
 
   calls.length = 0;
@@ -126,7 +126,7 @@ test('cloud sync lifecycle refresh requests use one canonical gate for hidden/of
   assert.deepEqual(pullCalls, [
     { includeControls: false, reason: 'attention:focus', minRecentPullGapMs: 8000 },
   ]);
-  assert.equal('lastPullAt' in runtimeStatus, false);
+  assert.equal('lastPullSuccessAt' in runtimeStatus, false);
 
   win.document.visibilityState = 'hidden';
   assert.deepEqual(request(), { accepted: false, blockedBy: 'hidden' });
@@ -172,7 +172,7 @@ test('cloud sync lifecycle refresh requests report recent-pull gating through th
     const runtimeStatus = {
       realtime: { enabled: true, state: 'disconnected', channel: '' },
       polling: { active: false, intervalMs: 0, reason: '' },
-      lastPullAt: 18_500,
+      lastPullSuccessAt: 18_500,
     } as any;
 
     const request = () =>
@@ -252,7 +252,7 @@ test('cloud sync lifecycle pull-all owner skips reconnect/broadcast fanout right
   Date.now = () => now;
 
   try {
-    const runtimeStatus = { lastPullAt: 18_500 } as any;
+    const runtimeStatus = { lastPullSuccessAt: 18_500 } as any;
     const pullAllNow = createCloudSyncLifecyclePullAllNow({
       suppressRef: { v: false },
       mainPullTrigger: {
@@ -284,7 +284,7 @@ test('cloud sync lifecycle pull-all owner skips reconnect/broadcast fanout right
 });
 
 test('cloud sync pull-all-now does not stamp pull activity before any remote row operation actually runs', () => {
-  const runtimeStatus = { lastPullAt: 0 } as { lastPullAt: number };
+  const runtimeStatus = { lastPullSuccessAt: 0 } as { lastPullSuccessAt: number };
 
   runCloudSyncPullAllNow({
     suppressRef: { v: false },
@@ -299,7 +299,7 @@ test('cloud sync pull-all-now does not stamp pull activity before any remote row
     opts: { reason: 'realtime-gap', minRecentPullGapMs: 4000 },
   });
 
-  assert.equal(runtimeStatus.lastPullAt, 0);
+  assert.equal(runtimeStatus.lastPullSuccessAt, 0);
 });
 
 test('cloud sync polling fallback kicks an immediate recovery pull and reconnect attempt when realtime drops', () => {
@@ -374,7 +374,7 @@ test('cloud sync polling skips ticks right after a recent pull and resumes after
     const runtimeStatus = {
       realtime: { state: 'disconnected', channel: '' },
       polling: { active: false, intervalMs: 0, reason: '' },
-      lastPullAt: 12_000,
+      lastPullSuccessAt: 12_000,
     } as any;
 
     startCloudSyncPolling({
@@ -424,7 +424,7 @@ test('cloud sync polling tick keeps retrying realtime while fallback polling is 
   const runtimeStatus = {
     realtime: { enabled: true, state: 'timeout', channel: '' },
     polling: { active: false, intervalMs: 0, reason: '' },
-    lastPullAt: 0,
+    lastPullSuccessAt: 0,
   } as any;
   const win = {
     navigator: { onLine: true, userAgent: 'unit-test' },

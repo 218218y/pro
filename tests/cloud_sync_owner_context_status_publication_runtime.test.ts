@@ -26,7 +26,7 @@ function createRuntimeStatus() {
       intervalMs: 5000,
       reason: '',
     },
-    lastPullAt: 0,
+    lastPullSuccessAt: 0,
     lastPushAt: 0,
     lastRealtimeEventAt: 0,
     lastError: '',
@@ -130,16 +130,16 @@ test('cloud sync owner status publisher owns subscriber fanout, disposal, and er
   const disposeThrowing = publisher.subscribeRuntimeStatus(() => {
     throw new Error('subscriber failed');
   });
-  const disposeSeen = publisher.subscribeRuntimeStatus(status => seen.push(status.lastPullAt));
+  const disposeSeen = publisher.subscribeRuntimeStatus(status => seen.push(status.lastPullSuccessAt));
 
-  runtimeStatus.lastPullAt = 12;
+  runtimeStatus.lastPullSuccessAt = 12;
   publisher.publishStatus();
   assert.deepEqual(seen, [12]);
   assert.deepEqual(reports, ['diag.runtimeStatusSubscriber']);
 
   disposeThrowing();
   disposeSeen();
-  runtimeStatus.lastPullAt = 13;
+  runtimeStatus.lastPullSuccessAt = 13;
   publisher.publishStatus();
   assert.deepEqual(seen, [12]);
 });

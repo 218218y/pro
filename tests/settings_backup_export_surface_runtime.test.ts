@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { exportSystemSettings } from '../esm/native/ui/settings_backup.ts';
+import { installCloudCollectionsService } from '../esm/native/services/cloud_collections_service.ts';
 import { createDownloadContext, createStore } from './settings_backup_export_runtime_helpers.ts';
 
 function summarizeSavedModels(value: unknown) {
@@ -22,6 +23,19 @@ function assertCanonicalModelShape(value: unknown): void {
   assert.equal(Array.isArray(first?.modulesConfiguration), true);
   assert.equal(Array.isArray(first?.stackSplitLowerModulesConfiguration), true);
   assert.equal(typeof first?.cornerConfiguration, 'object');
+}
+
+function installCollectionsForExport(app: any): void {
+  const storage = app.services.storage;
+  const committed = new Map<string, unknown>();
+  const readExisting = storage.getJSON?.bind(storage);
+  storage.getJSON = (key: string, fallback: unknown) =>
+    committed.has(key) ? committed.get(key) : (readExisting?.(key, fallback) ?? fallback);
+  storage.setJSON = (key: string, value: unknown) => {
+    committed.set(key, value);
+    return true;
+  };
+  installCloudCollectionsService(app);
 }
 
 test('exportSystemSettings serializes a complete backup payload and triggers a browser download', async () => {
@@ -52,6 +66,7 @@ test('exportSystemSettings serializes a complete backup payload and triggers a b
     },
   };
 
+  installCollectionsForExport(app);
   const result = await exportSystemSettings(app as never);
   assert.deepEqual(result, { ok: true, kind: 'export', modelsCount: 1, colorsCount: 1 });
   assert.equal(downloads.length, 1);
@@ -98,6 +113,7 @@ test('exportSystemSettings collapses duplicate saved color identities and prefer
     },
   };
 
+  installCollectionsForExport(app);
   const result = await exportSystemSettings(app as never);
   assert.deepEqual(result, { ok: true, kind: 'export', modelsCount: 0, colorsCount: 2 });
   assert.equal(blobRecords.length, 1);
@@ -138,6 +154,7 @@ test('exportSystemSettings normalizes model/color order collections to unique ca
     },
   };
 
+  installCollectionsForExport(app);
   const result = await exportSystemSettings(app as never);
   assert.deepEqual(result, { ok: true, kind: 'export', modelsCount: 1, colorsCount: 2 });
   assert.equal(blobRecords.length, 1);
@@ -184,6 +201,7 @@ test('exportSystemSettings sanitizes saved model payloads and drops stale preset
     },
   };
 
+  installCollectionsForExport(app);
   const result = await exportSystemSettings(app as never);
   assert.deepEqual(result, { ok: true, kind: 'export', modelsCount: 2, colorsCount: 0 });
   assert.equal(blobRecords.length, 1);
@@ -226,6 +244,7 @@ test('exportSystemSettings prefers live swatch order and appends remaining saved
     },
   };
 
+  installCollectionsForExport(app);
   const result = await exportSystemSettings(app as never);
   assert.deepEqual(result, { ok: true, kind: 'export', modelsCount: 0, colorsCount: 3 });
   assert.equal(blobRecords.length, 1);
@@ -260,6 +279,7 @@ test('exportSystemSettings materializes color swatch order from canonical saved-
     },
   };
 
+  installCollectionsForExport(app);
   const result = await exportSystemSettings(app as never);
   assert.deepEqual(result, { ok: true, kind: 'export', modelsCount: 0, colorsCount: 2 });
   assert.equal(blobRecords.length, 1);

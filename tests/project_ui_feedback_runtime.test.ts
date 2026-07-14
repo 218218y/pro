@@ -65,7 +65,16 @@ test('project ui feedback helpers map command results to stable user-facing mess
     message: 'הפרויקט נשמר בהצלחה!',
     type: 'success',
   });
-  assert.equal(getProjectSaveToast({ ok: true, pending: true }), null);
+  assert.equal(
+    getProjectSaveToast({
+      accepted: true,
+      reused: false,
+      operationId: 'save-feedback-1',
+      acceptedAt: 1,
+      settled: Promise.resolve({ ok: true }),
+    }),
+    null
+  );
   assert.equal(getProjectSaveToast({ ok: false, reason: 'cancelled' }), null);
   assert.deepEqual(getProjectSaveToast({ ok: false, reason: 'download-unavailable' }), {
     message: 'הדפדפן לא זמין לשמירה',
@@ -124,7 +133,16 @@ test('project ui feedback reporters emit exactly one toast and stay quiet for ca
     message: 'העריכה שוחזרה בהצלחה!',
     type: 'success',
   });
-  assert.equal(reportProjectSaveResult(fb, { ok: true, pending: true }), null);
+  assert.equal(
+    reportProjectSaveResult(fb, {
+      accepted: true,
+      reused: false,
+      operationId: 'save-feedback-2',
+      acceptedAt: 1,
+      settled: Promise.resolve({ ok: true }),
+    }),
+    null
+  );
   assert.deepEqual(reportProjectSaveResult(fb, { ok: true }), {
     message: 'הפרויקט נשמר בהצלחה!',
     type: 'success',

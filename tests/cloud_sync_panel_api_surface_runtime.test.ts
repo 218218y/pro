@@ -17,6 +17,11 @@ test('cloud sync panel api exposes stable room/share/tabs-gate runtime surface a
   assert.equal(api.getCurrentRoom?.(), 'public');
   assert.equal(api.getPublicRoom?.(), 'public');
   assert.equal(api.getRoomParam?.(), 'room');
+  assert.deepEqual(await api.resolveConflict?.('keep-local'), {
+    ok: false,
+    resolution: 'keep-local',
+    reason: 'missing-conflict',
+  });
   assert.equal(api.getShareLink?.(), 'https://example.test/');
   assert.deepEqual(api.getPanelSnapshot?.(), {
     room: 'public',
@@ -209,7 +214,15 @@ test('cloud sync panel api diagnostics setter stays no-op when the stored diagno
     getCurrentRoomCredential: () => null,
     getPrivateRoomCredential: () => null,
     setPrivateRoomCredential: () => true,
-    issuePrivateRoom: async () => null,
+    issuePrivateRoom: async () => ({
+      ok: false as const,
+      failure: { kind: 'server' as const, status: 500 },
+    }),
+    resolveConflict: async (resolution: 'keep-local' | 'use-remote') => ({
+      ok: false as const,
+      resolution,
+      reason: 'missing-conflict' as const,
+    }),
     setRoomCredentialInUrl: () => true,
     reinstallOwnerForRoomChange: async () => {},
     cloneRuntimeStatus: status => ({ ...status }) as any,

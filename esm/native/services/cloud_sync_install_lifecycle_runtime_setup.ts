@@ -10,7 +10,7 @@ import {
 } from './cloud_sync_install_lifecycle_shared.js';
 import {
   createCloudSyncInstallPullCoalescers,
-  installCloudSyncLifecycleStorageWrap,
+  installCloudSyncLifecycleCollectionsSubscription,
 } from './cloud_sync_install_lifecycle_setup.js';
 import { createCloudSyncRateLimitRecovery } from './cloud_sync_rate_limit_recovery.js';
 import { _cloudSyncReportNonFatal } from './cloud_sync_support.js';
@@ -30,12 +30,6 @@ export function prepareCloudSyncInstallLifecycle(
   const { App, ownerContext, runtime, cleanup, suppressRef, disposedRef, setSendRealtimeHint } = args;
   const {
     cfg,
-    storage,
-    keyModels,
-    keyColors,
-    keyColorOrder,
-    keyPresetOrder,
-    keyHiddenPresets,
     room,
     clientId,
     runtimeStatus,
@@ -62,15 +56,10 @@ export function prepareCloudSyncInstallLifecycle(
     disposedRef,
   });
 
-  installCloudSyncLifecycleStorageWrap({
-    App,
-    storage,
-    keysToSync: [keyModels, keyColors, keyColorOrder, keyPresetOrder, keyHiddenPresets],
+  installCloudSyncLifecycleCollectionsSubscription({
     suppressRef,
-    schedulePush: () => {
-      cloudSyncMainRow.schedulePush();
-    },
-    commitCollectionsSnapshot: cloudSyncMainRow.commitPerKeyCollections,
+    schedulePush: cloudSyncMainRow.schedulePush,
+    subscribeCollections: cloudSyncMainRow.subscribeCollections,
     cleanup,
   });
 

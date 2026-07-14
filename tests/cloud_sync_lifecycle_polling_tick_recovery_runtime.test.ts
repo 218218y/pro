@@ -43,7 +43,7 @@ test('cloud sync polling tick reports restart and refresh failures without detac
   const runtimeStatus = {
     realtime: { enabled: true, mode: 'broadcast', state: 'timeout', channel: '' },
     polling: { active: false, intervalMs: 0, reason: '' },
-    lastPullAt: 0,
+    lastPullSuccessAt: 0,
   } as any;
   const pollTimerRef = { current: null as number | null };
   let restartCalls = 0;
@@ -101,7 +101,7 @@ test('cloud sync polling tick reports async restart and refresh rejections witho
   const runtimeStatus = {
     realtime: { enabled: true, mode: 'broadcast', state: 'timeout', channel: '' },
     polling: { active: false, intervalMs: 0, reason: '' },
-    lastPullAt: 0,
+    lastPullSuccessAt: 0,
   } as any;
   const pollTimerRef = { current: null as number | null };
   let restartCalls = 0;
@@ -160,7 +160,7 @@ test('cloud sync polling tick reports auto-stop failures without throwing from t
   const runtimeStatus = {
     realtime: { enabled: true, mode: 'broadcast', state: 'timeout', channel: '' },
     polling: { active: false, intervalMs: 0, reason: '' },
-    lastPullAt: 0,
+    lastPullSuccessAt: 0,
   } as any;
   const pollTimerRef = { current: null as number | null };
 

@@ -52,12 +52,32 @@ export type CloudSyncReadResult =
 
 export type CloudSyncGatewayReadResult = CloudSyncReadResult;
 
-export interface CloudSyncConflictStatus extends UnknownRecord {
+export type CloudSyncConflictState = 'awaiting-resolution' | 'resolving' | 'resolved';
+
+export interface CloudSyncConflictRecord extends UnknownRecord {
   room: string;
   keys: string[];
   remoteRevision: number;
   detectedAt: number;
+  state: CloudSyncConflictState;
+  base: CloudSyncPayload;
+  local: CloudSyncPayload;
+  remote: CloudSyncPayload;
 }
+
+export type CloudSyncConflictStatus = CloudSyncConflictRecord;
+export type CloudSyncConflictResolution = 'keep-local' | 'use-remote';
+
+export type CloudSyncConflictResolutionResult =
+  | { ok: true; resolution: CloudSyncConflictResolution; row: CloudSyncStateRow }
+  | { ok: false; resolution: CloudSyncConflictResolution; reason: 'missing-conflict' | 'busy' }
+  | {
+      ok: false;
+      resolution: CloudSyncConflictResolution;
+      reason: 'write' | 'adoption' | 'read';
+      failure?: CloudSyncGatewayFailure;
+      conflict?: CloudSyncConflictRecord;
+    };
 
 export type CloudSyncCredentialIssueResult =
   { ok: true; credential: CloudSyncRoomCredential } | { ok: false; failure: CloudSyncGatewayFailure };
@@ -165,7 +185,13 @@ export type CloudSyncRoomModeCommandResult =
   | { ok: true; changed: boolean; mode: 'public' | 'private'; room: string; shareLink: string }
   | { ok: false; mode: 'public' | 'private'; reason: 'busy' }
   | { ok: false; mode: 'public' | 'private'; reason: 'not-installed' }
-  | { ok: false; mode: 'public' | 'private'; reason: 'error'; message?: string }
+  | {
+      ok: false;
+      mode: 'public' | 'private';
+      reason: 'error';
+      message?: string;
+      failure?: CloudSyncGatewayFailure;
+    }
   | {
       ok: false;
       changed: boolean;
@@ -174,6 +200,7 @@ export type CloudSyncRoomModeCommandResult =
       shareLink: string;
       reason: 'error';
       message?: string;
+      failure?: CloudSyncGatewayFailure;
     };
 
 export interface CloudSyncStorageValueStoreLike {
@@ -224,6 +251,51 @@ export interface CloudCollectionsEnvelope {
   colorOrder: CloudSyncOrderList;
   presetOrder: CloudSyncOrderList;
   hiddenPresets: CloudSyncOrderList;
+}
+
+export type CloudCollectionsMutation = Partial<
+  Pick<
+    CloudCollectionsEnvelope,
+    'savedModels' | 'savedColors' | 'colorOrder' | 'presetOrder' | 'hiddenPresets'
+  >
+>;
+
+export interface CloudCollectionsCorruption {
+  kind: 'corrupt';
+  envelopeKey: string;
+  rawBackupKey: string;
+  repairAvailable: true;
+}
+
+export type CloudCollectionsReadResult =
+  { ok: true; envelope: CloudCollectionsEnvelope } | { ok: false; corruption: CloudCollectionsCorruption };
+
+export interface CloudCollectionsCommitResult {
+  envelope: CloudCollectionsEnvelope;
+  mirrorFailures: string[];
+}
+
+export interface CloudCollectionsRepositoryLike {
+  readonly envelopeKey: string;
+  read(): CloudSyncLocalCollections;
+  readEnvelope(): CloudCollectionsEnvelope;
+  readResult(): CloudCollectionsReadResult;
+  update(mutation: CloudCollectionsMutation): CloudCollectionsCommitResult;
+  commit(next: CloudSyncLocalCollections): CloudCollectionsCommitResult;
+  repairMirrors(): string[];
+  backupCorruptEnvelope(): string;
+  resetCorruptEnvelope(next: CloudSyncLocalCollections): CloudCollectionsCommitResult;
+  subscribe(listener: (envelope: CloudCollectionsEnvelope) => void): () => void;
+}
+
+export interface CloudCollectionsServiceLike extends UnknownRecord {
+  repository?: CloudCollectionsRepositoryLike;
+  readEnvelope?: () => CloudCollectionsEnvelope;
+  readResult?: () => CloudCollectionsReadResult;
+  update?: (mutation: CloudCollectionsMutation) => CloudCollectionsCommitResult;
+  repairMirrors?: () => string[];
+  backupCorruptEnvelope?: () => string;
+  resetCorruptEnvelope?: (next: CloudSyncLocalCollections) => CloudCollectionsCommitResult;
 }
 
 export interface CloudSyncTabsGatePayload extends UnknownRecord {
@@ -309,7 +381,9 @@ export interface CloudSyncRuntimeStatus extends UnknownRecord {
   instanceId: string;
   realtime: CloudSyncRealtimeStatus;
   polling: CloudSyncPollingStatus;
-  lastPullAt: number;
+  lastPullAttemptAt: number;
+  lastPullSuccessAt: number;
+  lastPullFailureAt: number;
   lastPushAt: number;
   lastRealtimeEventAt: number;
   lastError: string;
@@ -427,7 +501,8 @@ export interface CloudSyncPanelApiDeps extends UnknownRecord {
   getCurrentRoomCredential: () => CloudSyncRoomCredential | null;
   getPrivateRoomCredential: () => CloudSyncRoomCredential | null;
   setPrivateRoomCredential: (credential: CloudSyncRoomCredential) => boolean;
-  issuePrivateRoom: () => Promise<CloudSyncRoomCredential | null>;
+  issuePrivateRoom: () => Promise<CloudSyncCredentialIssueResult>;
+  resolveConflict: (resolution: CloudSyncConflictResolution) => Promise<CloudSyncConflictResolutionResult>;
   setRoomCredentialInUrl: (
     app: AppContainer,
     args: {
@@ -493,6 +568,7 @@ export interface CloudSyncServiceLike extends UnknownRecord {
   subscribePanelSnapshot?: (fn: (snapshot: CloudSyncPanelSnapshot) => void) => void | (() => void);
   goPublic?: () => Promise<CloudSyncRoomModeCommandResult>;
   goPrivate?: () => Promise<CloudSyncRoomModeCommandResult>;
+  resolveConflict?: (resolution: CloudSyncConflictResolution) => Promise<CloudSyncConflictResolutionResult>;
   getShareLink?: () => string;
   copyShareLink?: () => Promise<CloudSyncShareLinkCommandResult>;
   syncSketchNow?: (options?: CloudSyncSketchSyncOptions) => Promise<CloudSyncSketchCommandResult>;

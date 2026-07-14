@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-14T09:26:19.131Z",
+  "generatedAt": "2026-07-14T13:00:30.837Z",
   "totals": {
-    "tests": 1206,
-    "unitRunnerTests": 1199,
+    "tests": 1207,
+    "unitRunnerTests": 1200,
     "e2eTests": 7,
-    "nonTestRuntimeFiles": 30,
+    "nonTestRuntimeFiles": 31,
     "packageTestReferences": 191,
     "catalogTestReferences": 352,
     "totalTestReferences": 543,
@@ -14,7 +14,7 @@
   },
   "categories": {
     "contract": 392,
-    "runtime-unit": 309,
+    "runtime-unit": 310,
     "integration": 447,
     "e2e-smoke": 8,
     "perf-smoke": 9,
@@ -87,6 +87,10 @@
     },
     {
       "file": "tests/app_start_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/async_operation_runtime.test.ts",
       "category": "runtime-unit"
     },
     {
@@ -986,6 +990,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/cloud_sync_lifecycle_repository_subscription_runtime.test.js",
+      "category": "integration"
+    },
+    {
       "file": "tests/cloud_sync_lifecycle_start_idempotent_runtime.test.ts",
       "category": "integration"
     },
@@ -995,10 +1003,6 @@
     },
     {
       "file": "tests/cloud_sync_lifecycle_status_runtime.test.ts",
-      "category": "integration"
-    },
-    {
-      "file": "tests/cloud_sync_lifecycle_storage_wrap_runtime.test.js",
       "category": "integration"
     },
     {

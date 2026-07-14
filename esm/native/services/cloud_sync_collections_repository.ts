@@ -1,20 +1,20 @@
 import type {
+  CloudCollectionsCommitResult,
   CloudCollectionsEnvelope,
+  CloudCollectionsMutation,
+  CloudCollectionsReadResult,
+  CloudCollectionsRepositoryLike,
   CloudSyncLocalCollections,
   CloudSyncOrderList,
   SavedColorLike,
   SavedModelLike,
 } from '../../../types';
 
-import {
-  normalizeList,
-  normalizeModelList,
-  normalizeSavedColorsList,
-  safeParseJSON,
-} from './cloud_sync_support_shared.js';
+import { normalizeList, normalizeModelList, normalizeSavedColorsList } from './cloud_sync_support_shared.js';
 import type { StorageLike } from './cloud_sync_support_storage_shared.js';
 
 const CLOUD_COLLECTIONS_SCHEMA_VERSION = 1 as const;
+const repositoryCache = new WeakMap<object, Map<string, CloudCollectionsRepository>>();
 
 export type CloudCollectionsRepositoryKeys = {
   models: string;
@@ -24,26 +24,42 @@ export type CloudCollectionsRepositoryKeys = {
   hiddenPresets: string;
 };
 
-export type CloudCollectionsCommitResult = {
-  envelope: CloudCollectionsEnvelope;
-  mirrorFailures: string[];
-};
+export interface CloudCollectionsRepository extends CloudCollectionsRepositoryLike {}
 
-export interface CloudCollectionsRepository {
-  readonly envelopeKey: string;
-  read(): CloudSyncLocalCollections;
-  readEnvelope(): CloudCollectionsEnvelope;
-  commit(next: CloudSyncLocalCollections): CloudCollectionsCommitResult;
-  commitPerKeySnapshot(): CloudCollectionsEnvelope;
+type StoredEnvelopeValue =
+  { kind: 'missing' } | { kind: 'value'; value: unknown } | { kind: 'corrupt'; raw: string };
+
+export class CloudCollectionsCorruptionError extends Error {
+  readonly result: Extract<CloudCollectionsReadResult, { ok: false }>;
+
+  constructor(result: Extract<CloudCollectionsReadResult, { ok: false }>) {
+    super(`Cloud collections envelope is corrupt for ${result.corruption.envelopeKey}`);
+    this.name = 'CloudCollectionsCorruptionError';
+    this.result = result;
+  }
+}
+
+function readStorageEntry(storage: StorageLike, key: string): StoredEnvelopeValue {
+  if (typeof storage.getString === 'function') {
+    const raw = storage.getString(key);
+    if (typeof raw !== 'string' || !raw) return { kind: 'missing' };
+    try {
+      return { kind: 'value', value: JSON.parse(raw) };
+    } catch {
+      return { kind: 'corrupt', raw };
+    }
+  }
+  if (typeof storage.getJSON === 'function') {
+    const missing = Object.freeze({ __cloudCollectionsMissing: true });
+    const value = storage.getJSON(key, missing);
+    return value === missing ? { kind: 'missing' } : { kind: 'value', value };
+  }
+  return { kind: 'missing' };
 }
 
 function readStorageValue(storage: StorageLike, key: string): unknown {
-  if (typeof storage.getString === 'function') {
-    const raw = storage.getString(key);
-    return typeof raw === 'string' && raw ? safeParseJSON(raw) : null;
-  }
-  if (typeof storage.getJSON === 'function') return storage.getJSON(key, null);
-  return null;
+  const entry = readStorageEntry(storage, key);
+  return entry.kind === 'value' ? entry.value : null;
 }
 
 function writeStorageValue(storage: StorageLike, key: string, value: unknown): void {
@@ -100,6 +116,29 @@ function toCollections(envelope: CloudCollectionsEnvelope): CloudSyncLocalCollec
   };
 }
 
+function applyMutation(
+  current: CloudCollectionsEnvelope,
+  mutation: CloudCollectionsMutation
+): CloudSyncLocalCollections {
+  return {
+    m: Object.prototype.hasOwnProperty.call(mutation, 'savedModels')
+      ? normalizeModelList(mutation.savedModels)
+      : current.savedModels,
+    c: Object.prototype.hasOwnProperty.call(mutation, 'savedColors')
+      ? normalizeSavedColorsList(mutation.savedColors)
+      : current.savedColors,
+    o: Object.prototype.hasOwnProperty.call(mutation, 'colorOrder')
+      ? normalizeList(mutation.colorOrder)
+      : current.colorOrder,
+    p: Object.prototype.hasOwnProperty.call(mutation, 'presetOrder')
+      ? normalizeList(mutation.presetOrder)
+      : current.presetOrder,
+    h: Object.prototype.hasOwnProperty.call(mutation, 'hiddenPresets')
+      ? normalizeList(mutation.hiddenPresets)
+      : current.hiddenPresets,
+  };
+}
+
 function readPerKeyCollections(
   storage: StorageLike,
   keys: CloudCollectionsRepositoryKeys
@@ -113,27 +152,34 @@ function readPerKeyCollections(
   };
 }
 
-function mirrorEnvelopeToPerKeyStorage(
-  storage: StorageLike,
+function perKeyEntries(
   keys: CloudCollectionsRepositoryKeys,
   envelope: CloudCollectionsEnvelope
-): string[] {
-  const entries: Array<[string, unknown]> = [
+): Array<[string, unknown]> {
+  return [
     [keys.models, envelope.savedModels],
     [keys.colors, envelope.savedColors],
     [keys.colorOrder, envelope.colorOrder],
     [keys.presetOrder, envelope.presetOrder],
     [keys.hiddenPresets, envelope.hiddenPresets],
   ];
-  const failures: string[] = [];
-  for (const [key, value] of entries) {
-    try {
-      writeStorageValue(storage, key, value);
-    } catch {
-      failures.push(key);
-    }
-  }
-  return failures;
+}
+
+function repositoryCacheKey(keys: CloudCollectionsRepositoryKeys): string {
+  return `${keys.models}:cloudCollections:v1`;
+}
+
+function mirrorKeysForMutation(
+  keys: CloudCollectionsRepositoryKeys,
+  mutation: CloudCollectionsMutation
+): Set<string> {
+  const out = new Set<string>();
+  if (Object.prototype.hasOwnProperty.call(mutation, 'savedModels')) out.add(keys.models);
+  if (Object.prototype.hasOwnProperty.call(mutation, 'savedColors')) out.add(keys.colors);
+  if (Object.prototype.hasOwnProperty.call(mutation, 'colorOrder')) out.add(keys.colorOrder);
+  if (Object.prototype.hasOwnProperty.call(mutation, 'presetOrder')) out.add(keys.presetOrder);
+  if (Object.prototype.hasOwnProperty.call(mutation, 'hiddenPresets')) out.add(keys.hiddenPresets);
+  return out;
 }
 
 export function createCloudCollectionsRepository(args: {
@@ -141,42 +187,128 @@ export function createCloudCollectionsRepository(args: {
   keys: CloudCollectionsRepositoryKeys;
 }): CloudCollectionsRepository {
   const { storage, keys } = args;
-  const envelopeKey = `${keys.models}:cloudCollections:v1`;
+  const envelopeKey = repositoryCacheKey(keys);
+  const storageObject = storage as object;
+  const cached = repositoryCache.get(storageObject)?.get(envelopeKey);
+  if (cached) return cached;
 
-  const readStoredEnvelope = (): CloudCollectionsEnvelope | null => {
-    const raw = readStorageValue(storage, envelopeKey);
-    if (raw === null) return null;
-    const envelope = normalizeEnvelope(raw);
-    if (!envelope) throw new Error(`Cloud collections envelope is invalid for ${envelopeKey}`);
-    return envelope;
+  const listeners = new Set<(envelope: CloudCollectionsEnvelope) => void>();
+  const pendingMirrorKeys = new Set<string>();
+  const rawBackupKey = `${envelopeKey}:corrupt-backup`;
+
+  const readStoredEnvelopeResult = (): CloudCollectionsReadResult | null => {
+    const entry = readStorageEntry(storage, envelopeKey);
+    if (entry.kind === 'missing') return null;
+    const envelope = entry.kind === 'value' ? normalizeEnvelope(entry.value) : null;
+    if (envelope) return { ok: true, envelope };
+    return {
+      ok: false,
+      corruption: {
+        kind: 'corrupt',
+        envelopeKey,
+        rawBackupKey,
+        repairAvailable: true,
+      },
+    };
   };
 
-  const readEnvelope = (): CloudCollectionsEnvelope => {
-    const stored = readStoredEnvelope();
-    if (stored) return stored;
+  const readEnvelopeWithoutRepair = (): CloudCollectionsEnvelope => {
+    const stored = readStoredEnvelopeResult();
+    if (stored?.ok === false) throw new CloudCollectionsCorruptionError(stored);
+    if (stored?.ok === true) return stored.envelope;
     const migrated = buildEnvelope(readPerKeyCollections(storage, keys), 0);
     writeStorageValue(storage, envelopeKey, migrated);
     return migrated;
   };
 
-  return {
+  const mirrorEnvelope = (envelope: CloudCollectionsEnvelope, onlyKeys?: ReadonlySet<string>): string[] => {
+    const failures: string[] = [];
+    for (const [key, value] of perKeyEntries(keys, envelope)) {
+      if (onlyKeys && !onlyKeys.has(key)) continue;
+      try {
+        writeStorageValue(storage, key, value);
+        pendingMirrorKeys.delete(key);
+      } catch {
+        pendingMirrorKeys.add(key);
+        failures.push(key);
+      }
+    }
+    return failures;
+  };
+
+  const notifyCommitted = (envelope: CloudCollectionsEnvelope): void => {
+    const committedListeners = Array.from(listeners);
+    for (const listener of committedListeners) listener(envelope);
+  };
+
+  const repairMirrors = (): string[] => {
+    if (!pendingMirrorKeys.size) return [];
+    return mirrorEnvelope(readEnvelopeWithoutRepair(), new Set(pendingMirrorKeys));
+  };
+
+  const commitEnvelope = (
+    envelope: CloudCollectionsEnvelope,
+    mirrorKeys?: ReadonlySet<string>
+  ): CloudCollectionsCommitResult => {
+    writeStorageValue(storage, envelopeKey, envelope);
+    const mirrorFailures = mirrorEnvelope(envelope, mirrorKeys);
+    notifyCommitted(envelope);
+    return { envelope, mirrorFailures };
+  };
+
+  const repository: CloudCollectionsRepository = {
     envelopeKey,
-    read: (): CloudSyncLocalCollections => toCollections(readEnvelope()),
-    readEnvelope,
-    commit(next: CloudSyncLocalCollections): CloudCollectionsCommitResult {
-      const current = readEnvelope();
-      const envelope = buildEnvelope(next, current.revision + 1);
-      writeStorageValue(storage, envelopeKey, envelope);
-      return {
-        envelope,
-        mirrorFailures: mirrorEnvelopeToPerKeyStorage(storage, keys, envelope),
-      };
-    },
-    commitPerKeySnapshot(): CloudCollectionsEnvelope {
-      const current = readEnvelope();
-      const envelope = buildEnvelope(readPerKeyCollections(storage, keys), current.revision + 1);
-      writeStorageValue(storage, envelopeKey, envelope);
+    read: (): CloudSyncLocalCollections => toCollections(repository.readEnvelope()),
+    readEnvelope(): CloudCollectionsEnvelope {
+      const envelope = readEnvelopeWithoutRepair();
+      repairMirrors();
       return envelope;
     },
+    readResult(): CloudCollectionsReadResult {
+      const stored = readStoredEnvelopeResult();
+      if (stored) return stored;
+      try {
+        return { ok: true, envelope: readEnvelopeWithoutRepair() };
+      } catch (error) {
+        if (error instanceof CloudCollectionsCorruptionError) return error.result;
+        throw error;
+      }
+    },
+    update(mutation: CloudCollectionsMutation): CloudCollectionsCommitResult {
+      const current = readEnvelopeWithoutRepair();
+      return commitEnvelope(
+        buildEnvelope(applyMutation(current, mutation), current.revision + 1),
+        mirrorKeysForMutation(keys, mutation)
+      );
+    },
+    commit(next: CloudSyncLocalCollections): CloudCollectionsCommitResult {
+      const current = readEnvelopeWithoutRepair();
+      return commitEnvelope(buildEnvelope(next, current.revision + 1));
+    },
+    repairMirrors,
+    backupCorruptEnvelope(): string {
+      const entry = readStorageEntry(storage, envelopeKey);
+      if (entry.kind !== 'corrupt') {
+        throw new Error(`Cloud collections envelope is not corrupt for ${envelopeKey}`);
+      }
+      writeStorageValue(storage, rawBackupKey, { raw: entry.raw, capturedAt: Date.now() });
+      return rawBackupKey;
+    },
+    resetCorruptEnvelope(next: CloudSyncLocalCollections): CloudCollectionsCommitResult {
+      const stored = readStoredEnvelopeResult();
+      if (stored?.ok !== false) {
+        throw new Error(`Cloud collections corruption reset requires a corrupt envelope for ${envelopeKey}`);
+      }
+      return commitEnvelope(buildEnvelope(next, 0));
+    },
+    subscribe(listener: (envelope: CloudCollectionsEnvelope) => void): () => void {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
   };
+
+  const byKey = repositoryCache.get(storageObject) || new Map<string, CloudCollectionsRepository>();
+  byKey.set(envelopeKey, repository);
+  repositoryCache.set(storageObject, byKey);
+  return repository;
 }

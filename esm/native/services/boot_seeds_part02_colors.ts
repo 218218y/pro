@@ -1,4 +1,5 @@
 import { getCfg as __getCfgStore } from '../kernel/api.js';
+import { readCloudCollectionsEnvelopeViaServiceOrThrow } from '../runtime/cloud_collections_access.js';
 import { setCfgMultiColorMode } from '../runtime/cfg_access.js';
 import { metaMerge, metaRestore } from '../runtime/meta_profiles_access.js';
 import { writeColorSwatchesOrder, writeSavedColors } from '../runtime/maps_access.js';
@@ -8,7 +9,6 @@ import {
   cloneUnknownArray,
   getCfgSafe,
   getColorsActions,
-  getStorage,
   isRecord,
 } from './boot_seeds_part02_shared.js';
 
@@ -38,29 +38,6 @@ function cfgMetaRestoreProfile(
   } catch (_) {
     return cfgMeta(App, m);
   }
-}
-
-function readSavedColorsStorageKey(storage: ReturnType<typeof getStorage>): string {
-  const key = storage?.KEYS?.SAVED_COLORS;
-  return typeof key === 'string' && key ? key : 'wardrobeSavedColors';
-}
-
-function readStorageJsonArray(storage: ReturnType<typeof getStorage>, key: string): unknown[] {
-  if (!storage) return [];
-
-  if (typeof storage.getString === 'function') {
-    const raw = storage.getString(key);
-    if (raw == null) return [];
-    const parsed = raw ? JSON.parse(String(raw)) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  }
-
-  if (typeof storage.getJSON === 'function') {
-    const parsed = storage.getJSON(key, []);
-    return Array.isArray(parsed) ? parsed : [];
-  }
-
-  return [];
 }
 
 function normalizeStoredColorOrder(value: unknown[]): string[] {
@@ -111,10 +88,7 @@ export function seedSavedColors(App: AppLike): void {
 
   let vSavedColors: unknown[] = [];
   try {
-    const storage = getStorage(App);
-    if (storage) {
-      vSavedColors = readStorageJsonArray(storage, readSavedColorsStorageKey(storage));
-    }
+    vSavedColors = readCloudCollectionsEnvelopeViaServiceOrThrow(App, 'boot saved colors seed').savedColors;
   } catch (_) {
     vSavedColors = [];
   }
@@ -149,12 +123,9 @@ export function seedColorSwatchesOrder(App: AppLike): void {
 
   let clean: string[] = [];
   try {
-    const storage = getStorage(App);
-    if (!storage) return;
-
-    const keyColors = readSavedColorsStorageKey(storage);
-    const keyOrder = `${keyColors}:order`;
-    clean = normalizeStoredColorOrder(readStorageJsonArray(storage, keyOrder));
+    clean = normalizeStoredColorOrder(
+      readCloudCollectionsEnvelopeViaServiceOrThrow(App, 'boot color order seed').colorOrder
+    );
   } catch (_) {
     clean = [];
   }

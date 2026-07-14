@@ -57,9 +57,12 @@ test('cloud sync room commands use fragment links and persist complete private c
         return true;
       },
       issuePrivateRoom: async () => ({
-        room: 'generated-room',
-        token: 'signed.token.value',
-        expiresAt: '2099-01-01T00:00:00.000Z',
+        ok: true as const,
+        credential: {
+          room: 'generated-room',
+          token: 'signed.token.value',
+          expiresAt: '2099-01-01T00:00:00.000Z',
+        },
       }),
       setRoomCredentialInUrl: (_app, value) => {
         urlWrites.push({ room: value.room, roomToken: value.roomToken });
@@ -107,7 +110,10 @@ test('cloud sync room commands use fragment links and persist complete private c
       getCurrentRoomCredential: () => currentCredential,
       getPrivateRoomCredential: () => privateCredential,
       setPrivateRoomCredential: () => true,
-      issuePrivateRoom: async () => null,
+      issuePrivateRoom: async () => ({
+        ok: false as const,
+        failure: { kind: 'server' as const, status: 500 },
+      }),
       setRoomCredentialInUrl: (_app, value) => {
         urlWrites.push({ room: value.room, roomToken: value.roomToken });
         currentRoom = value.room || 'public';
@@ -161,6 +167,34 @@ test('cloud sync room status exposes expiry, rate-limit, and offline states', ()
   assert.match(offline.status, /לא מקוון/u);
 });
 
+test('cloud sync private room issuance preserves the typed gateway failure to the command boundary', async () => {
+  const result = await runCloudSyncRoomModeCommand(
+    {
+      App: {} as any,
+      cfg,
+      getCurrentRoom: () => 'public',
+      getCurrentRoomCredential: () => null,
+      getPrivateRoomCredential: () => null,
+      setPrivateRoomCredential: () => true,
+      issuePrivateRoom: async () => ({
+        ok: false,
+        failure: { kind: 'rate-limit', status: 429, code: 'rate_limit', retryAfterMs: 2500 },
+      }),
+      setRoomCredentialInUrl: () => true,
+      reportNonFatal: () => {},
+    },
+    'private'
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    mode: 'private',
+    reason: 'error',
+    message: 'Failed to issue a private room token (rate-limit)',
+    failure: { kind: 'rate-limit', status: 429, code: 'rate_limit', retryAfterMs: 2500 },
+  });
+});
+
 test('cloud sync room mode preserves navigation failures and normalized thrown messages', async () => {
   const baseDeps = {
     App: {} as any,
@@ -170,9 +204,12 @@ test('cloud sync room mode preserves navigation failures and normalized thrown m
     getPrivateRoomCredential: () => null,
     setPrivateRoomCredential: () => true,
     issuePrivateRoom: async () => ({
-      room: 'generated-room',
-      token: 'signed.token.value',
-      expiresAt: '2099-01-01T00:00:00.000Z',
+      ok: true as const,
+      credential: {
+        room: 'generated-room',
+        token: 'signed.token.value',
+        expiresAt: '2099-01-01T00:00:00.000Z',
+      },
     }),
     reportNonFatal: () => {},
   };

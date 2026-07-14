@@ -8,6 +8,7 @@ import {
   getAllModelsInternal,
 } from '../esm/native/services/models_registry.ts';
 import { modelsRuntimeState } from '../esm/native/services/models_registry_shared.ts';
+import { installCloudCollectionsForTestApp } from './cloud_collections_test_support.ts';
 
 function createApp() {
   const store = new Map<string, string>();
@@ -33,14 +34,13 @@ function createApp() {
     },
   };
 
-  return {
-    App: {
-      STORAGE: storage,
-      AppSettings: { STORAGE: storage },
-      services: { storage, models: {} },
-    } as any,
-    store,
-  };
+  const App = {
+    STORAGE: storage,
+    AppSettings: { STORAGE: storage },
+    services: { storage, models: {} },
+  } as any;
+  installCloudCollectionsForTestApp(App);
+  return { App, store };
 }
 
 function resetRuntimeState() {

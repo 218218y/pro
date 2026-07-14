@@ -1,4 +1,4 @@
-import type { AutosaveServiceLike, ProjectLoadInputLike } from '../../../types';
+import type { AutosaveServiceLike, AutosaveSuspensionLike, ProjectLoadInputLike } from '../../../types';
 
 import { asRecord } from './record.js';
 import { ensureServiceSlot, getServiceSlotMaybe } from './services_root_access.js';
@@ -158,4 +158,16 @@ export function forceAutosaveNowViaService(App: unknown): boolean {
     // ignore
   }
   return false;
+}
+
+export function suspendAutosaveViaServiceOrThrow(App: unknown): AutosaveSuspensionLike {
+  const service = getAutosaveServiceMaybe(App);
+  if (!service || typeof service.suspend !== 'function') {
+    throw new Error('[WardrobePro] project load requires services.autosave.suspend().');
+  }
+  const suspension = Reflect.apply(service.suspend, service, []);
+  if (!suspension || typeof suspension.commit !== 'function' || typeof suspension.resume !== 'function') {
+    throw new Error('[WardrobePro] autosave.suspend() returned an invalid compensation handle.');
+  }
+  return suspension;
 }

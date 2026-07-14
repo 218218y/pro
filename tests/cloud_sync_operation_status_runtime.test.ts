@@ -12,7 +12,10 @@ function createRuntimeStatus() {
     room: 'room-a',
     clientId: 'client-a',
     instanceId: 'instance-a',
-    lastPullAt: 0,
+    lastPullSuccessAt: 0,
+    lastPullAttemptAt: 0,
+    lastPullSuccessAt: 0,
+    lastPullFailureAt: 0,
     lastPushAt: 0,
     lastRealtimeEventAt: 0,
     lastError: '',
@@ -134,7 +137,7 @@ function createTabsStorage(seed?: Record<string, string>) {
 
 test('cloud sync main row fallback settlement read stays inside push activity instead of stamping a synthetic pull', async () => {
   const runtimeStatus = createRuntimeStatus();
-  const publishEvents: Array<{ lastPullAt: number; lastPushAt: number }> = [];
+  const publishEvents: Array<{ lastPullSuccessAt: number; lastPushAt: number }> = [];
   let nowMs = 100;
   const realNow = Date.now;
   Date.now = () => (nowMs += 10);
@@ -157,7 +160,10 @@ test('cloud sync main row fallback settlement read stays inside push activity in
       clearTimeoutFn: () => undefined,
       runtimeStatus,
       publishStatus: () => {
-        publishEvents.push({ lastPullAt: runtimeStatus.lastPullAt, lastPushAt: runtimeStatus.lastPushAt });
+        publishEvents.push({
+          lastPullSuccessAt: runtimeStatus.lastPullSuccessAt,
+          lastPushAt: runtimeStatus.lastPushAt,
+        });
       },
       suppressRef: { v: false },
       getSendRealtimeHint: () => null,
@@ -166,8 +172,8 @@ test('cloud sync main row fallback settlement read stays inside push activity in
     await ops.pushNow();
 
     assert.equal(runtimeStatus.lastPushAt > 0, true);
-    assert.equal(runtimeStatus.lastPullAt, 0);
-    assert.deepEqual(publishEvents, [{ lastPullAt: 0, lastPushAt: runtimeStatus.lastPushAt }]);
+    assert.equal(runtimeStatus.lastPullSuccessAt, 0);
+    assert.deepEqual(publishEvents, [{ lastPullSuccessAt: 0, lastPushAt: runtimeStatus.lastPushAt }]);
   } finally {
     Date.now = realNow;
   }
@@ -188,7 +194,11 @@ test('cloud sync tabs gate tracks control-row push and pull activity through run
       getGateBaseRoom: () => 'private-room',
       gatewayUrl: 'https://example.test',
       clientId: 'client-1',
-      getRow: async () => ({ updated_at: '2026-04-13T10:01:00.000Z', payload: {} }) as any,
+      getRow: async () =>
+        ({
+          ok: true,
+          row: { updated_at: '2026-04-13T10:01:00.000Z', payload: {} },
+        }) as any,
       upsertRow: async () => ({ ok: true, row: null }) as any,
       setTimeoutFn: (() => 0) as any,
       clearTimeoutFn: (() => undefined) as any,
@@ -200,13 +210,13 @@ test('cloud sync tabs gate tracks control-row push and pull activity through run
     });
 
     await ops.pushTabsGateNow(true, 0);
-    const afterPushSettle = runtimeStatus.lastPullAt;
+    const afterPushSettle = runtimeStatus.lastPullSuccessAt;
     await ops.pullTabsGateOnce(false);
 
     assert.equal(runtimeStatus.lastPushAt > 0, true);
     assert.equal(afterPushSettle, 0);
-    assert.equal(runtimeStatus.lastPullAt > runtimeStatus.lastPushAt, true);
-    assert.equal(publishCount, 2);
+    assert.equal(runtimeStatus.lastPullSuccessAt > runtimeStatus.lastPushAt, true);
+    assert.equal(publishCount, 3);
   } finally {
     Date.now = realNow;
   }
@@ -214,7 +224,7 @@ test('cloud sync tabs gate tracks control-row push and pull activity through run
 
 test('cloud sync sketch preflight read marks pull activity before the push path settles', async () => {
   const runtimeStatus = createRuntimeStatus();
-  const publishSnapshots: Array<{ lastPullAt: number; lastPushAt: number }> = [];
+  const publishSnapshots: Array<{ lastPullSuccessAt: number; lastPushAt: number }> = [];
   let nowMs = 260;
   const realNow = Date.now;
   Date.now = () => (nowMs += 10);
@@ -240,18 +250,22 @@ test('cloud sync sketch preflight read marks pull activity before the push path 
       emitRealtimeHint: () => undefined,
       runtimeStatus,
       publishStatus: () => {
-        publishSnapshots.push({ lastPullAt: runtimeStatus.lastPullAt, lastPushAt: runtimeStatus.lastPushAt });
+        publishSnapshots.push({
+          lastPullSuccessAt: runtimeStatus.lastPullSuccessAt,
+          lastPushAt: runtimeStatus.lastPushAt,
+        });
       },
       diag: () => undefined,
     });
 
     await ops.syncSketchNow();
 
-    assert.equal(runtimeStatus.lastPullAt > 0, true);
-    assert.equal(runtimeStatus.lastPushAt > runtimeStatus.lastPullAt, true);
+    assert.equal(runtimeStatus.lastPullSuccessAt > 0, true);
+    assert.equal(runtimeStatus.lastPushAt > runtimeStatus.lastPullSuccessAt, true);
     assert.deepEqual(publishSnapshots, [
-      { lastPullAt: runtimeStatus.lastPullAt, lastPushAt: 0 },
-      { lastPullAt: runtimeStatus.lastPullAt, lastPushAt: runtimeStatus.lastPushAt },
+      { lastPullSuccessAt: 0, lastPushAt: 0 },
+      { lastPullSuccessAt: runtimeStatus.lastPullSuccessAt, lastPushAt: 0 },
+      { lastPullSuccessAt: runtimeStatus.lastPullSuccessAt, lastPushAt: runtimeStatus.lastPushAt },
     ]);
   } finally {
     Date.now = realNow;
@@ -260,7 +274,7 @@ test('cloud sync sketch preflight read marks pull activity before the push path 
 
 test('cloud sync sketch and floating-sync paths share canonical runtime status activity stamps', async () => {
   const runtimeStatus = createRuntimeStatus();
-  const publishSnapshots: Array<{ lastPullAt: number; lastPushAt: number }> = [];
+  const publishSnapshots: Array<{ lastPullSuccessAt: number; lastPushAt: number }> = [];
   let nowMs = 300;
   const realNow = Date.now;
   Date.now = () => (nowMs += 10);
@@ -282,14 +296,20 @@ test('cloud sync sketch and floating-sync paths share canonical runtime status a
       currentRoom: () => 'room-a',
       getRow: async (_rest, _anon, room) => {
         if (String(room).includes('syncPin'))
-          return { updated_at: '2026-04-13T10:03:00.000Z', payload: {} } as any;
+          return {
+            ok: true,
+            row: { updated_at: '2026-04-13T10:03:00.000Z', payload: {} },
+          } as any;
         return {
-          updated_at: '2026-04-13T10:02:00.000Z',
-          payload: {
-            sketchRev: 1,
-            sketchHash: 'remote-hash',
-            sketchBy: 'remote',
-            sketch: { settings: { width: 50 } },
+          ok: true,
+          row: {
+            updated_at: '2026-04-13T10:02:00.000Z',
+            payload: {
+              sketchRev: 1,
+              sketchHash: 'remote-hash',
+              sketchBy: 'remote',
+              sketch: { settings: { width: 50 } },
+            },
           },
         } as any;
       },
@@ -300,7 +320,10 @@ test('cloud sync sketch and floating-sync paths share canonical runtime status a
       emitRealtimeHint: () => undefined,
       runtimeStatus,
       publishStatus: () => {
-        publishSnapshots.push({ lastPullAt: runtimeStatus.lastPullAt, lastPushAt: runtimeStatus.lastPushAt });
+        publishSnapshots.push({
+          lastPullSuccessAt: runtimeStatus.lastPullSuccessAt,
+          lastPushAt: runtimeStatus.lastPushAt,
+        });
       },
       diag: () => undefined,
     });
@@ -308,12 +331,12 @@ test('cloud sync sketch and floating-sync paths share canonical runtime status a
     await ops.syncSketchNow();
     const afterSketchPush = runtimeStatus.lastPushAt;
     await ops.pullSketchOnce(false);
-    const afterSketchPull = runtimeStatus.lastPullAt;
+    const afterSketchPull = runtimeStatus.lastPullSuccessAt;
     await ops.pushFloatingSketchSyncPinnedNow(true);
 
     assert.equal(afterSketchPush > 0, true);
     assert.equal(afterSketchPull > afterSketchPush, true);
-    assert.equal(runtimeStatus.lastPullAt, afterSketchPull);
+    assert.equal(runtimeStatus.lastPullSuccessAt, afterSketchPull);
     assert.equal(runtimeStatus.lastPushAt > afterSketchPull, true);
     assert.equal(publishSnapshots.length >= 4, true);
   } finally {

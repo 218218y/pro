@@ -12,8 +12,10 @@ import {
 } from '../esm/native/ui/react/tabs/design_tab_color_command_flows.js';
 import type { SavedColor } from '../esm/native/ui/react/tabs/design_tab_multicolor_panel.js';
 import { getPerfEntries } from '../esm/native/runtime/perf_runtime_surface.ts';
+import { installCloudCollectionsService } from '../esm/native/services/cloud_collections_service.ts';
 
 function createAppHarness() {
+  const storageValues = new Map<string, unknown>();
   const state = {
     savedColors: [] as Array<Record<string, unknown>>,
     colorSwatchesOrder: [] as string[],
@@ -69,14 +71,20 @@ function createAppHarness() {
     },
     services: {
       storage: {
-        KEYS: { SAVED_COLORS: 'savedColors' },
+        KEYS: { SAVED_COLORS: 'savedColors', SAVED_MODELS: 'savedModels' },
+        getJSON(key: string, fallback: unknown) {
+          return storageValues.has(key) ? storageValues.get(key) : fallback;
+        },
         setJSON(key: string, value: unknown) {
+          storageValues.set(key, value);
           state.storageCalls.push({ key, value });
           return true;
         },
       },
     },
   } as const;
+  installCloudCollectionsService(app as never);
+  state.storageCalls.length = 0;
 
   const applyColorChoice = (choice: string, source?: string) => {
     state.appliedChoice = String(choice || '');
@@ -118,7 +126,7 @@ test('reorderSavedColorSwatches updates order and persists saved-color order whe
   });
   assert.deepEqual(
     state.storageCalls.map(call => call.key),
-    ['savedColors', 'savedColors:order']
+    ['savedModels:cloudCollections:v1', 'savedColors', 'savedColors:order']
   );
 });
 
@@ -151,7 +159,7 @@ test('toggleSavedColorLock flips locked flag through canonical saved-colors writ
   });
   assert.deepEqual(
     state.storageCalls.map(call => call.key),
-    ['savedColors']
+    ['savedModels:cloudCollections:v1', 'savedColors']
   );
 });
 
@@ -206,7 +214,7 @@ test('deleteSavedColor removes an unselected color without requesting a build', 
   });
   assert.deepEqual(
     state.storageCalls.map(call => call.key),
-    ['savedColors', 'savedColors:order']
+    ['savedModels:cloudCollections:v1', 'savedColors', 'savedColors:order']
   );
   assert.equal(state.batchCalls, 0);
 });
@@ -288,7 +296,7 @@ test('saved color add records stage-level perf entries for diagnosis', () => {
   assert.ok(metricNames.includes('design.savedColor.add.mutation'));
   assert.ok(metricNames.includes('design.savedColor.add.patch'));
   assert.ok(metricNames.includes('design.savedColor.add.storage'));
-  assert.ok(metricNames.includes('design.savedColor.storage.write'));
+  assert.ok(metricNames.includes('design.savedColor.storage.commit'));
 });
 
 test('saved color atomic fallback still persists storage exactly once per branch', () => {
@@ -311,7 +319,7 @@ test('saved color atomic fallback still persists storage exactly once per branch
   assert.equal(state.patchCalls.length, 0);
   assert.deepEqual(
     state.storageCalls.map(call => call.key),
-    ['savedColors', 'savedColors:order']
+    ['savedModels:cloudCollections:v1', 'savedColors', 'savedColors:order']
   );
   assert.deepEqual(state.colorSwatchesOrder.at(-1), 'saved_fallback');
   assert.equal(state.appliedChoice, 'saved_fallback');

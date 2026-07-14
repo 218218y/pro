@@ -55,7 +55,7 @@ test('cloud sync install lifecycle keeps a thin facade over shared/setup/runtime
     assert,
     setup,
     [
-      /createCloudSyncStorageWrap\(/,
+      /installCloudSyncLifecycleCollectionsSubscription\(/,
       /createCloudSyncPullCoalescerFactory\(/,
       /createCloudSyncInstallPullRunnerMap\(/,
       /createCloudSyncPullCoalescerMap\(/,
@@ -81,7 +81,7 @@ test('cloud sync install lifecycle keeps a thin facade over shared/setup/runtime
     runtimeSetup,
     [
       /createCloudSyncInstallLiveness\(/,
-      /installCloudSyncLifecycleStorageWrap\(/,
+      /installCloudSyncLifecycleCollectionsSubscription\(/,
       /createCloudSyncInstallPullCoalescers\(/,
       /createCloudSyncLifecycleStatusPublisher\(/,
       /createCloudSyncLifecycleHintSetter\(/,

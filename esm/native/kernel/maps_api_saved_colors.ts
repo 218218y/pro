@@ -1,6 +1,7 @@
-import type { AppContainer, ActionMetaLike } from '../../../types';
+import type { AppContainer, ActionMetaLike, SavedColorLike } from '../../../types';
 
 import { setCfgColorSwatchesOrder, setCfgSavedColors } from '../runtime/cfg_access.js';
+import { updateCloudCollectionsViaServiceOrThrow } from '../runtime/cloud_collections_access.js';
 import type { MapsApiShared } from './maps_api_shared.js';
 import {
   cloneArrayOrEmpty,
@@ -9,15 +10,7 @@ import {
 } from './maps_api_shared.js';
 
 export function installMapsApiSavedColors(App: AppContainer, shared: MapsApiShared): void {
-  const {
-    maps,
-    metaNorm,
-    safeCfg,
-    shouldSkipStorageWrite,
-    writeStorageJson,
-    getSavedColorsStorageKey,
-    reportNonFatal,
-  } = shared;
+  const { maps, metaNorm, safeCfg, shouldSkipStorageWrite, reportNonFatal } = shared;
 
   maps.getSavedColors = function getSavedColors() {
     return normalizeSavedColorsSurfaceList(cloneArrayOrEmpty(safeCfg().savedColors));
@@ -31,11 +24,15 @@ export function installMapsApiSavedColors(App: AppContainer, shared: MapsApiShar
     meta = metaNorm(meta, 'maps:setColorSwatchesOrder');
     arr = normalizeColorSwatchesOrderSurfaceList(arr);
     try {
-      const out = setCfgColorSwatchesOrder(App, arr, meta);
       if (!shouldSkipStorageWrite(meta)) {
-        const keyColors = getSavedColorsStorageKey();
-        writeStorageJson(`${keyColors}:order`, arr, 'maps.setColorSwatchesOrder.writeStorage');
+        const colorOrder = arr.filter((value): value is string | null => value !== undefined);
+        updateCloudCollectionsViaServiceOrThrow(
+          App,
+          { colorOrder },
+          'maps.setColorSwatchesOrder persistence'
+        );
       }
+      const out = setCfgColorSwatchesOrder(App, arr, meta);
       return out;
     } catch (_e) {
       reportNonFatal('maps.setColorSwatchesOrder.cfgSetScalar', _e, 6000);
@@ -47,10 +44,14 @@ export function installMapsApiSavedColors(App: AppContainer, shared: MapsApiShar
     meta = metaNorm(meta, 'maps:setSavedColors');
     arr = normalizeSavedColorsSurfaceList(arr);
     try {
-      const out = setCfgSavedColors(App, arr, meta);
       if (!shouldSkipStorageWrite(meta)) {
-        writeStorageJson(getSavedColorsStorageKey(), arr, 'maps.setSavedColors.writeStorage');
+        const savedColors = arr.filter(
+          (value): value is SavedColorLike =>
+            !!value && typeof value === 'object' && typeof value.id === 'string'
+        );
+        updateCloudCollectionsViaServiceOrThrow(App, { savedColors }, 'maps.setSavedColors persistence');
       }
+      const out = setCfgSavedColors(App, arr, meta);
       return out;
     } catch (_e1) {
       reportNonFatal('maps.setSavedColors.cfgSetScalar', _e1, 6000);

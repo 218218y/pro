@@ -29,7 +29,15 @@ test('cloud sync panel api republishes panel snapshot even when floating pin com
     getCurrentRoomCredential: () => null,
     getPrivateRoomCredential: () => null,
     setPrivateRoomCredential: () => true,
-    issuePrivateRoom: async () => null,
+    issuePrivateRoom: async () => ({
+      ok: false as const,
+      failure: { kind: 'server' as const, status: 500 },
+    }),
+    resolveConflict: async (resolution: 'keep-local' | 'use-remote') => ({
+      ok: false as const,
+      resolution,
+      reason: 'missing-conflict' as const,
+    }),
     setRoomCredentialInUrl: () => true,
     reinstallOwnerForRoomChange: async () => {},
     cloneRuntimeStatus: status => ({ ...status }) as any,
@@ -108,7 +116,15 @@ test('cloud sync panel api republishes tabs-gate snapshot with local optimistic 
     getCurrentRoomCredential: () => null,
     getPrivateRoomCredential: () => null,
     setPrivateRoomCredential: () => true,
-    issuePrivateRoom: async () => null,
+    issuePrivateRoom: async () => ({
+      ok: false as const,
+      failure: { kind: 'server' as const, status: 500 },
+    }),
+    resolveConflict: async (resolution: 'keep-local' | 'use-remote') => ({
+      ok: false as const,
+      resolution,
+      reason: 'missing-conflict' as const,
+    }),
     setRoomCredentialInUrl: () => true,
     reinstallOwnerForRoomChange: async () => {},
     cloneRuntimeStatus: status => ({ ...status }) as any,

@@ -24,6 +24,7 @@ export type CloudSyncPanelApiRoomCommands = Pick<
   | 'setDiagnosticsEnabled'
   | 'goPublic'
   | 'goPrivate'
+  | 'resolveConflict'
   | 'getShareLink'
   | 'copyShareLink'
 >;
@@ -41,6 +42,7 @@ export function createCloudSyncPanelApiRoomCommands(
     getPrivateRoomCredential,
     setPrivateRoomCredential,
     issuePrivateRoom,
+    resolveConflict,
     setRoomCredentialInUrl,
     reinstallOwnerForRoomChange,
     cloneRuntimeStatus,
@@ -123,6 +125,7 @@ export function createCloudSyncPanelApiRoomCommands(
 
     goPublic: (): Promise<CloudSyncRoomModeCommandResult> => runRoomMode('public'),
     goPrivate: (): Promise<CloudSyncRoomModeCommandResult> => runRoomMode('private'),
+    resolveConflict,
 
     getShareLink: (): string => {
       try {

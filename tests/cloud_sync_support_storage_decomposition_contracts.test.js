@@ -8,25 +8,19 @@ const storageSharedOwner = readSource(
   '../esm/native/services/cloud_sync_support_storage_shared.ts',
   import.meta.url
 );
-const storageReadOwner = readSource(
-  '../esm/native/services/cloud_sync_support_storage_read.ts',
-  import.meta.url
-);
 const storageWriteOwner = readSource(
   '../esm/native/services/cloud_sync_support_storage_write.ts',
   import.meta.url
 );
 
-test('[cloud-sync-support-storage] facade stays thin while marker/getStorage, local reads, and remote apply live in dedicated owners', () => {
+test('[cloud-sync-support-storage] facade exposes canonical storage access and remote apply owners only', () => {
   assertMatchesAll(
     assert,
     storageFacade,
     [
       /from '\.\/cloud_sync_support_storage_shared\.js';/,
-      /from '\.\/cloud_sync_support_storage_read\.js';/,
       /from '\.\/cloud_sync_support_storage_write\.js';/,
-      /export \{[\s\S]*storageWithMarker,[\s\S]*restoreWrappedStorageFns,[\s\S]*rememberWrappedStorageFns,[\s\S]*getStorage,[\s\S]*\} from '\.\/cloud_sync_support_storage_shared\.js';/,
-      /export \{ readLocal \} from '\.\/cloud_sync_support_storage_read\.js';/,
+      /export \{ getStorage \} from '\.\/cloud_sync_support_storage_shared\.js';/,
       /export \{ applyRemote \} from '\.\/cloud_sync_support_storage_write\.js';/,
     ],
     'storageFacade'
@@ -38,7 +32,8 @@ test('[cloud-sync-support-storage] facade stays thin while marker/getStorage, lo
       /function isStorageLike\(/,
       /export function readLocal\(/,
       /export function applyRemote\(/,
-      /__wp_cloudSync_origStorageFns/,
+      /cloud_sync_support_storage_read/,
+      /storageWithMarker/,
     ],
     'storageFacade'
   );
@@ -46,31 +41,15 @@ test('[cloud-sync-support-storage] facade stays thin while marker/getStorage, lo
   assertMatchesAll(
     assert,
     storageSharedOwner,
-    [
-      /export function isStorageLike\(/,
-      /export function storageWithMarker\(/,
-      /export function restoreWrappedStorageFns\(/,
-      /export function rememberWrappedStorageFns\(/,
-      /export function getStorage\(/,
-      /export function readLocalOrderList\(/,
-      /export function buildEmptyCloudSyncLocalCollections\(/,
-    ],
+    [/export function isStorageLike\(/, /export function getStorage\(/],
     'storageSharedOwner'
   );
-
-  assertMatchesAll(
+  assertLacksAll(
     assert,
-    storageReadOwner,
-    [
-      /export function readLocal\(/,
-      /readLocalModelList\(/,
-      /readLocalSavedColorsList\(/,
-      /readLocalOrderList\(/,
-      /buildEmptyCloudSyncLocalCollections\(/,
-    ],
-    'storageReadOwner'
+    storageSharedOwner,
+    [/storageWithMarker/, /restoreWrappedStorageFns/, /rememberWrappedStorageFns/],
+    'storageSharedOwner'
   );
-
   assertMatchesAll(
     assert,
     storageWriteOwner,

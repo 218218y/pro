@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installMapsApi } from '../esm/native/kernel/maps_api.ts';
+import { installCloudCollectionsService } from '../esm/native/services/cloud_collections_service.ts';
 import * as cfgAccessMaps from '../esm/native/runtime/cfg_access_maps.ts';
 import { setCfgDoorStyleMap } from '../esm/native/runtime/cfg_access.ts';
 import {
@@ -40,6 +41,7 @@ test('runtime split key helpers use the door split authoring base for visual sur
 });
 
 test('maps_api keeps map writes store-backed and mirrors saved colors to storage without stale array reuse', () => {
+  const storageValues = new Map<string, unknown>();
   const storageWrites: Array<[string, unknown]> = [];
   const configPatchWrites: Array<Record<string, unknown>> = [];
   const state = {
@@ -68,9 +70,13 @@ test('maps_api keeps map writes store-backed and mirrors saved colors to storage
     },
     services: {
       storage: {
-        KEYS: { SAVED_COLORS: 'saved-colors' },
+        KEYS: { SAVED_COLORS: 'saved-colors', SAVED_MODELS: 'saved-models' },
+        getJSON: (key: string, fallback: unknown) =>
+          storageValues.has(key) ? storageValues.get(key) : fallback,
         setJSON: (key: string, value: unknown) => {
+          storageValues.set(key, value);
           storageWrites.push([key, value]);
+          return true;
         },
       },
     },
@@ -86,6 +92,8 @@ test('maps_api keeps map writes store-backed and mirrors saved colors to storage
     },
   };
 
+  installCloudCollectionsService(App);
+  storageWrites.length = 0;
   installMapsApi(App);
 
   assert.deepEqual(App.maps.getSavedColors(), ['oak']);
@@ -95,15 +103,22 @@ test('maps_api keeps map writes store-backed and mirrors saved colors to storage
     'savedColors should be cloned on read'
   );
 
-  App.maps.setSavedColors(['walnut', 'white'], { source: 'test:saved-colors' });
+  App.maps.setSavedColors([{ id: 'walnut' }, { id: 'white' }], { source: 'test:saved-colors' });
   App.maps.setColorSwatchesOrder(['white', 'walnut'], { source: 'test:swatches' });
 
-  assert.deepEqual(state.config.savedColors, ['walnut', 'white']);
+  assert.deepEqual(state.config.savedColors, [{ id: 'walnut' }, { id: 'white' }]);
   assert.deepEqual(state.config.colorSwatchesOrder, ['white', 'walnut']);
-  assert.deepEqual(storageWrites, [
-    ['saved-colors', ['walnut', 'white']],
-    ['saved-colors:order', ['white', 'walnut']],
-  ]);
+  assert.deepEqual(
+    storageWrites.map(([key]) => key),
+    [
+      'saved-models:cloudCollections:v1',
+      'saved-colors',
+      'saved-models:cloudCollections:v1',
+      'saved-colors:order',
+    ]
+  );
+  assert.deepEqual(storageWrites[1]?.[1], [{ id: 'walnut' }, { id: 'white' }]);
+  assert.deepEqual(storageWrites[3]?.[1], ['white', 'walnut']);
 
   App.maps.setSavedColors(
     ['walnut', 'walnut', { id: 'saved_a', value: '#111' }, { id: 'saved_a', value: '#222' }],

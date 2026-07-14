@@ -16,6 +16,14 @@ export {
   getCloudSyncTestHooksMaybe,
 } from '../runtime/cloud_sync_access.js';
 export {
+  getCloudCollectionsServiceMaybe,
+  getCloudCollectionsRepositoryViaServiceOrThrow,
+  readCloudCollectionsEnvelopeViaServiceOrThrow,
+  readCloudCollectionsResultViaServiceOrThrow,
+  updateCloudCollectionsViaServiceOrThrow,
+  resetCorruptCloudCollectionsViaServiceOrThrow,
+} from '../runtime/cloud_collections_access.js';
+export {
   getBuildInfoServiceMaybe,
   ensureBuildInfoService,
   getBuildTagsSnapshot,

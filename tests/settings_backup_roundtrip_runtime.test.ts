@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { exportSystemSettings, importSystemSettings } from '../esm/native/ui/settings_backup.ts';
 import { reportSettingsBackupActionResult } from '../esm/native/ui/settings_backup_action_feedback.ts';
+import { installCloudCollectionsForTestApp } from './cloud_collections_test_support.ts';
 
 function createStore(config: Record<string, unknown>) {
   return {
@@ -164,6 +165,8 @@ test('settings backup roundtrip restores models/colors/orders and emits a single
     },
   };
 
+  installCloudCollectionsForTestApp(sourceApp);
+
   const exportResult = await exportSystemSettings(sourceApp as never);
   assert.deepEqual(exportResult, { ok: true, kind: 'export', modelsCount: 1, colorsCount: 1 });
   const exportedText = await sourceDownload.readDownloadedText();
@@ -226,6 +229,8 @@ test('settings backup roundtrip restores models/colors/orders and emits a single
         },
       },
     };
+
+    installCloudCollectionsForTestApp(targetApp);
 
     const file = new env.FakeFile([exportedText], 'backup.json', { type: 'application/json' });
     const input = { value: 'backup.json', files: [file] };

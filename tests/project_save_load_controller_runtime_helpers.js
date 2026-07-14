@@ -119,7 +119,10 @@ export function loadProjectSaveLoadControllerModule(overrides = {}) {
                 if (!win || typeof win.prompt !== 'function') throw new Error('שמירה לא זמינה כרגע (prompt)');
                 cb(win.prompt(title, def));
               });
+            let activeOperation = null;
+            let operationSequence = 0;
             return function saveProject() {
+              if (activeOperation) return { ...activeOperation, reused: true };
               const exportResult = overrides.api?.exportProjectResultViaService
                 ? overrides.api.exportProjectResultViaService(
                     App,
@@ -141,46 +144,42 @@ export function loadProjectSaveLoadControllerModule(overrides = {}) {
               const defaultName =
                 (typeof exported.defaultBaseName === 'string' && exported.defaultBaseName.trim()) ||
                 'wardrobe_project_' + new Date().toISOString().slice(0, 10);
-              promptFn('בחר שם לקובץ השמירה:', defaultName, fileName => {
-                if (!fileName || !String(fileName).trim()) {
-                  queueMicrotask(() =>
-                    overrides.feedback.reportProjectSaveResult({ toast }, { ok: false, reason: 'cancelled' })
-                  );
-                  return;
-                }
+              const settled = new Promise(resolve => {
                 try {
-                  const trimmed = String(fileName).trim();
-                  const normalizedFileName = overrides.browser.normalizeDownloadFilename(
-                    trimmed,
-                    defaultName,
-                    '.json'
-                  );
-                  const downloadResult = overrides.browser.downloadJsonTextResultViaBrowser(
-                    { docMaybe: doc, winMaybe: win },
-                    normalizedFileName,
-                    exported.jsonStr
-                  );
-                  if (downloadResult.ok === false) {
-                    queueMicrotask(() =>
-                      overrides.feedback.reportProjectSaveResult(
-                        { toast },
-                        { ok: false, reason: downloadResult.reason, message: downloadResult.message }
-                      )
-                    );
-                    return;
-                  }
-                  try {
-                    const meta = overrides.api?.metaUiOnly
-                      ? overrides.api.metaUiOnly(App, undefined, 'saveProject')
-                      : null;
-                    overrides.api?.setDirtyViaActions?.(App, false, meta);
-                  } catch {}
-                  queueMicrotask(() => overrides.feedback.reportProjectSaveResult({ toast }, { ok: true }));
-                } catch (error) {
-                  queueMicrotask(() =>
-                    overrides.feedback.reportProjectSaveResult(
-                      { toast },
-                      {
+                  promptFn('בחר שם לקובץ השמירה:', defaultName, fileName => {
+                    if (!fileName || !String(fileName).trim()) {
+                      resolve({ ok: false, reason: 'cancelled' });
+                      return;
+                    }
+                    try {
+                      const trimmed = String(fileName).trim();
+                      const normalizedFileName = overrides.browser.normalizeDownloadFilename(
+                        trimmed,
+                        defaultName,
+                        '.json'
+                      );
+                      const downloadResult = overrides.browser.downloadJsonTextResultViaBrowser(
+                        { docMaybe: doc, winMaybe: win },
+                        normalizedFileName,
+                        exported.jsonStr
+                      );
+                      if (downloadResult.ok === false) {
+                        resolve({
+                          ok: false,
+                          reason: downloadResult.reason,
+                          message: downloadResult.message,
+                        });
+                        return;
+                      }
+                      try {
+                        const meta = overrides.api?.metaUiOnly
+                          ? overrides.api.metaUiOnly(App, undefined, 'saveProject')
+                          : null;
+                        overrides.api?.setDirtyViaActions?.(App, false, meta);
+                      } catch {}
+                      resolve({ ok: true, outcome: 'browser-delivery-completed' });
+                    } catch (error) {
+                      resolve({
                         ok: false,
                         reason: 'error',
                         message:
@@ -190,12 +189,34 @@ export function loadProjectSaveLoadControllerModule(overrides = {}) {
                           error.message
                             ? error.message
                             : 'אירעה שגיאה בעת השמירה',
-                      }
-                    )
-                  );
+                      });
+                    }
+                  });
+                } catch (error) {
+                  resolve({
+                    ok: false,
+                    reason: 'error',
+                    message:
+                      error && typeof error === 'object' && typeof error.message === 'string' && error.message
+                        ? error.message
+                        : 'אירעה שגיאה בעת השמירה',
+                  });
                 }
               });
-              return { ok: true, pending: true };
+              const operation = {
+                accepted: true,
+                reused: false,
+                operationId: `project-save-test-${++operationSequence}`,
+                acceptedAt: Date.now(),
+                settled,
+              };
+              activeOperation = operation;
+              void settled
+                .then(result => overrides.feedback.reportProjectSaveResult({ toast }, result))
+                .finally(() => {
+                  if (activeOperation === operation) activeOperation = null;
+                });
+              return operation;
             };
           } catch (error) {
             const result = {

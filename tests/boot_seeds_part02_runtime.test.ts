@@ -7,9 +7,11 @@ import {
   seedMultiColorMode,
   seedSavedColors,
 } from '../esm/native/services/boot_seeds_part02.ts';
+import { installCloudCollectionsService } from '../esm/native/services/cloud_collections_service.ts';
 
 function makeApp(config: Record<string, unknown> = {}) {
   const cfg = { ...config };
+  const storageValues = new Map<string, string>();
   const calls: Record<string, unknown[]> = {
     multi: [],
     colors: [],
@@ -47,10 +49,16 @@ function makeApp(config: Record<string, unknown> = {}) {
     },
     services: {
       storage: {
-        KEYS: { SAVED_COLORS: 'wardrobeSavedColors' },
+        KEYS: { SAVED_COLORS: 'wardrobeSavedColors', SAVED_MODELS: 'wardrobeSavedModels' },
         getString(key: string) {
+          const stored = storageValues.get(key);
+          if (stored) return stored;
           if (key !== 'wardrobeSavedColors:order') return null;
           return JSON.stringify(['  oak  ', '', 'white', 'oak']);
+        },
+        setString(key: string, value: string) {
+          storageValues.set(key, value);
+          return true;
         },
       },
     },
@@ -67,6 +75,7 @@ function makeApp(config: Record<string, unknown> = {}) {
       },
     },
   };
+  installCloudCollectionsService(App as never);
   return { App, calls, config: cfg };
 }
 

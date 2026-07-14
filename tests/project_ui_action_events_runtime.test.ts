@@ -25,6 +25,41 @@ test('project ui action events build canonical detail for success, explicit fail
   );
 
   assert.deepEqual(
+    buildProjectUiActionEventDetail('save', {
+      accepted: true,
+      reused: true,
+      operationId: 'save-event-1',
+      acceptedAt: 2222,
+    }),
+    {
+      action: 'save',
+      accepted: true,
+      reused: true,
+      pending: true,
+      phase: 'started',
+      operationId: 'save-event-1',
+      at: 2222,
+    }
+  );
+
+  assert.deepEqual(
+    buildProjectUiActionEventDetail(
+      'save',
+      { ok: true, outcome: 'browser-delivery-completed', operationId: 'save-event-1' },
+      { at: 3333 }
+    ),
+    {
+      action: 'save',
+      ok: true,
+      pending: false,
+      phase: 'settled',
+      outcome: 'browser-delivery-completed',
+      operationId: 'save-event-1',
+      at: 3333,
+    }
+  );
+
+  assert.deepEqual(
     buildProjectUiActionEventDetail(
       'reset-default',
       { ok: false, reason: 'invalid', message: 'bad payload' },

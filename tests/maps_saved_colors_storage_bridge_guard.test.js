@@ -14,19 +14,16 @@ const mapsBundle = bundleSources(
   import.meta.url
 );
 
-test('maps_api mirrors savedColors writes back to storage for cloud sync', () => {
+test('maps_api commits savedColors through the canonical collections repository', () => {
   assert.match(mapsOwner, /maps_api_saved_colors\.js/);
-  assert.match(
-    mapsBundle,
-    /writeStorageJson\(getSavedColorsStorageKey\(\), arr, 'maps\.setSavedColors\.writeStorage'\)/
-  );
+  assert.match(mapsBundle, /updateCloudCollectionsViaServiceOrThrow\(/);
+  assert.match(mapsBundle, /\{ savedColors \}/);
+  assert.doesNotMatch(mapsBundle, /writeStorageJson/);
 });
 
-test('maps_api mirrors colorSwatchesOrder writes back to storage for cloud sync', () => {
-  assert.match(
-    mapsBundle,
-    /writeStorageJson\(`\$\{keyColors\}:order`, arr, 'maps\.setColorSwatchesOrder\.writeStorage'\)/
-  );
+test('maps_api commits color order through the same canonical repository', () => {
+  assert.match(mapsBundle, /\{ colorOrder \}/);
+  assert.doesNotMatch(mapsBundle, /SAVED_COLORS|:order/);
 });
 
 test('maps_api respects noStorageWrite to avoid cloud-pull write loops', () => {

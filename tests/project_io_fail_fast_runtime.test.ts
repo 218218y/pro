@@ -19,6 +19,10 @@ function createProjectIoApp(overrides?: {
   resetAllEditModes?: (() => void) | null;
   autosaveData?: string | null;
   flushAutosaveResult?: boolean;
+  historyFaultAfterMutation?: boolean;
+  showToastError?: Error;
+  buildResult?: boolean;
+  supersedeOnEditReset?: boolean;
   confirmOpen?:
     | ((title: unknown, message: unknown, onYes?: (() => void) | null, onNo?: (() => void) | null) => void)
     | null;
@@ -31,6 +35,17 @@ function createProjectIoApp(overrides?: {
   const reports: Array<{ op: string; message: string }> = [];
   const runtimeFlags: Array<{ key: string; value: unknown }> = [];
   const toasts: Array<{ message: unknown; type: unknown }> = [];
+  const historyState = {
+    undoStack: ['before-undo'],
+    redoStack: ['before-redo'],
+    maxSteps: 30,
+    lastSavedJSON: 'before-json' as string | null,
+    isPaused: true,
+    lastCoalesceKey: 'before-key',
+    lastCoalesceAt: 42,
+    didInit: true,
+    isApplyingState: false,
+  };
   const state: Record<string, any> = {
     ui: {
       width: 120,
@@ -105,6 +120,22 @@ function createProjectIoApp(overrides?: {
           autosaveCalls.push('force');
           return true;
         },
+        suspend() {
+          autosaveCalls.push('suspend');
+          let active = true;
+          return {
+            commit() {
+              if (!active) return;
+              active = false;
+              autosaveCalls.push('commit');
+            },
+            resume() {
+              if (!active) return;
+              active = false;
+              autosaveCalls.push('resume');
+            },
+          };
+        },
       },
       storage: {
         KEYS: { AUTOSAVE_LATEST: 'autosave-key' },
@@ -124,9 +155,16 @@ function createProjectIoApp(overrides?: {
                 overrides?.resetAllEditModes === undefined
                   ? () => {
                       editStateCalls.push('reset');
+                      if (overrides?.supersedeOnEditReset) {
+                        const runtime = (App.services.projectIO as any).runtime;
+                        runtime.restoreGen = Number(runtime.restoreGen || 0) + 1;
+                      }
                     }
                   : overrides.resetAllEditModes,
             },
+      notes: {
+        restoreFromSave() {},
+      },
       history:
         overrides?.resetBaseline === null
           ? { system: {} }
@@ -135,17 +173,32 @@ function createProjectIoApp(overrides?: {
                 resetBaseline:
                   overrides?.resetBaseline === undefined
                     ? (meta?: Record<string, unknown>) => {
+                        historyState.undoStack = [];
+                        historyState.redoStack = [];
+                        historyState.lastSavedJSON = 'loaded-json';
+                        historyState.isPaused = false;
+                        historyState.lastCoalesceKey = '';
+                        historyState.lastCoalesceAt = 0;
                         calls.push(`history:${String(meta?.source || '')}`);
                         events.push(`history:${String(meta?.source || '')}`);
+                        if (overrides?.historyFaultAfterMutation) {
+                          throw new Error('history finalize fault');
+                        }
                       }
                     : overrides.resetBaseline,
+                captureSnapshot() {
+                  return structuredClone(historyState);
+                },
+                restoreSnapshot(snapshot: typeof historyState) {
+                  Object.assign(historyState, structuredClone(snapshot));
+                },
               },
             },
       builder: {
         requestBuild(uiOverride: unknown, meta?: Record<string, unknown>) {
           buildCalls.push({ uiOverride, meta });
           events.push(`build:${String(meta?.reason || meta?.source || '')}`);
-          return true;
+          return overrides?.buildResult !== false;
         },
       },
       platform: {
@@ -166,6 +219,7 @@ function createProjectIoApp(overrides?: {
   const orchestrator = createProjectIoOrchestrator({
     App: App as never,
     showToast(message, type) {
+      if (overrides?.showToastError) throw overrides.showToastError;
       toasts.push({ message, type });
     },
     openCustomConfirm(title, message, onYes, onNo) {
@@ -197,6 +251,7 @@ function createProjectIoApp(overrides?: {
     reports,
     runtimeFlags,
     toasts,
+    historyState,
     orchestrator,
   };
 }
@@ -248,7 +303,7 @@ test('project io fail-fast: a rejected atomic commit does not run finalize work'
     assert.equal(result.reason, 'error');
     assert.match(String(result.message || ''), /atomic project commit rejected/i);
     assert.deepEqual(calls, []);
-    assert.deepEqual(autosaveCalls, ['cancel']);
+    assert.deepEqual(autosaveCalls, ['suspend', 'resume']);
     assert.deepEqual(editStateCalls, []);
   });
 });
@@ -271,7 +326,7 @@ test('project io fail-fast: full project loads require canonical history baselin
       meta: { source: 'history.undoRedo' },
     });
     assert.deepEqual(historyApply, { ok: true, restoreGen: 1 });
-    assert.deepEqual(missingHistory.autosaveCalls, ['cancel']);
+    assert.deepEqual(missingHistory.autosaveCalls, ['suspend', 'commit']);
   });
 });
 
@@ -313,7 +368,7 @@ test('project io restoreLastSession strips legacy autosave version metadata befo
 
   assert.deepEqual(result, { ok: true, pending: true });
   assert.deepEqual(toasts, [{ message: 'העריכה שוחזרה בהצלחה!', type: 'success' }]);
-  assert.deepEqual(autosaveCalls, ['cancel', 'force']);
+  assert.deepEqual(autosaveCalls, ['suspend', 'commit', 'force']);
   assert.deepEqual(calls, ['transaction:project.load', 'history:project.load']);
 });
 
@@ -326,11 +381,11 @@ test('project io reset-default loads preserve last-session autosave instead of o
   });
 
   assert.deepEqual(result, { ok: true, restoreGen: 1 });
-  assert.deepEqual(autosaveCalls, ['flush']);
+  assert.deepEqual(autosaveCalls, ['suspend', 'commit']);
   assert.deepEqual(calls, ['transaction:project.load', 'history:project.load']);
 });
 
-test('project io reset-default falls back to cancelling pending autosave when preserve flush is unavailable', () => {
+test('project io reset-default commits its autosave suspension without flushing preserved data', () => {
   const { orchestrator, autosaveCalls } = createProjectIoApp({ flushAutosaveResult: false });
 
   const result = orchestrator.loadProjectData(VALID_PROJECT as never, {
@@ -339,7 +394,7 @@ test('project io reset-default falls back to cancelling pending autosave when pr
   });
 
   assert.deepEqual(result, { ok: true, restoreGen: 1 });
-  assert.deepEqual(autosaveCalls, ['flush', 'cancel']);
+  assert.deepEqual(autosaveCalls, ['suspend', 'commit']);
 });
 
 test('project io handleFileLoad now delegates through canonical project file ingress and preserves final success semantics', async () => {
@@ -354,7 +409,7 @@ test('project io handleFileLoad now delegates through canonical project file ing
   assert.deepEqual(result, { ok: true, restoreGen: 1 });
   assert.deepEqual(toasts, [{ message: 'הפרויקט נטען בהצלחה!', type: 'success' }]);
   assert.deepEqual(calls, ['transaction:project.load', 'history:project.load']);
-  assert.deepEqual(autosaveCalls, ['cancel', 'force']);
+  assert.deepEqual(autosaveCalls, ['suspend', 'commit', 'force']);
 });
 
 test('project io load clears active edit modes so transient authoring state does not leak across project roundtrips', () => {
@@ -368,20 +423,59 @@ test('project io load clears active edit modes so transient authoring state does
 
 test('project io load restores state after a history-baseline fault following commit', () => {
   return withSuppressedConsole(async () => {
-    const harness = createProjectIoApp({
-      resetBaseline() {
-        throw new Error('history finalize fault');
-      },
-    });
+    const harness = createProjectIoApp({ historyFaultAfterMutation: true });
     const before = structuredClone(harness.state);
+    const historyBefore = structuredClone(harness.historyState);
 
     const result = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
 
     assert.equal(result.ok, false);
     assert.match(String(result.message || ''), /history finalize fault/);
     assert.deepEqual(harness.state, before);
+    assert.deepEqual(harness.historyState, historyBefore);
+    assert.deepEqual(harness.autosaveCalls, ['suspend', 'resume']);
     assert.deepEqual(harness.buildCalls, []);
   });
+});
+
+test('project io load never rolls back a committed project when the success toast throws', () => {
+  const harness = createProjectIoApp({ showToastError: new Error('toast exploded') });
+
+  const result = harness.orchestrator.loadProjectData(VALID_PROJECT as never);
+
+  assert.deepEqual(result, { ok: true, restoreGen: 1 });
+  assert.equal(harness.state.meta.dirty, false);
+  assert.deepEqual(harness.historyState.undoStack, []);
+  assert.equal(
+    harness.reports.some(
+      report => report.op === 'project.load.successToast' && /toast exploded/.test(report.message)
+    ),
+    true
+  );
+});
+
+test('project io load reports an unaccepted rebuild as committed success with a typed warning', () => {
+  const harness = createProjectIoApp({ buildResult: false });
+
+  const result = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.ok ? result.warnings : undefined, [
+    {
+      effect: 'build',
+      message: 'Project loaded, but the required rebuild was not accepted.',
+    },
+  ]);
+  assert.equal(harness.state.meta.dirty, false);
+});
+
+test('project io load stops post-commit effects as soon as a reentrant load supersedes it', () => {
+  const harness = createProjectIoApp({ supersedeOnEditReset: true });
+
+  const result = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.deepEqual(result, { ok: false, reason: 'superseded', restoreGen: 1 });
+  assert.deepEqual(harness.buildCalls, []);
 });
 
 test('project io load syncs persisted sketch mode into the runtime SSOT', () => {
@@ -463,7 +557,7 @@ test('project io load uses explicit snapshot APIs even when a root patch surface
   assert.deepEqual(result, { ok: true, restoreGen: 1 });
   assert.equal(rootPatches.length, 0);
   assert.deepEqual(calls, ['transaction:project.load', 'history:project.load']);
-  assert.deepEqual(autosaveCalls, ['cancel', 'force']);
+  assert.deepEqual(autosaveCalls, ['suspend', 'commit', 'force']);
   assert.deepEqual(runtimeFlags, [
     { key: 'sketchMode', value: true },
     { key: 'wardrobeTypeProfiles', value: null },

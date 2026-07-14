@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { installHistoryService } from '../esm/native/services/history.ts';
 import { installModelsService } from '../esm/native/services/models.ts';
 import { installPresetModels } from '../esm/boot/boot_manifest_shared.ts';
+import { installCloudCollectionsForTestApp } from './cloud_collections_test_support.ts';
 
 test('history/models install healing runtime: history reinstall preserves live refs and heals missing methods', () => {
   const App: any = {
@@ -208,6 +209,9 @@ test('history/models install healing runtime: models stable refs follow the late
     },
   };
 
+  installCloudCollectionsForTestApp(App1);
+  installCloudCollectionsForTestApp(App2);
+
   const firstInstall = installModelsService(App1);
   const ensureLoadedRef = firstInstall.ensureLoaded;
   assert.deepEqual(
@@ -240,6 +244,8 @@ test('history/models install healing runtime: first install replaces placeholder
     },
   };
 
+  installCloudCollectionsForTestApp(App);
+
   const models = installModelsService(App);
   assert.equal(models.__wpModelsServiceInstalled, true);
 
@@ -267,6 +273,8 @@ test('history/models install healing runtime: preset boot step populates built-i
       },
     },
   };
+
+  installCloudCollectionsForTestApp(App);
 
   installModelsService(App);
   assert.equal(installPresetModels(App), true);

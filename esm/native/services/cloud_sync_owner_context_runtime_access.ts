@@ -1,5 +1,9 @@
 import type {
   AppContainer,
+  CloudSyncConflictRecord,
+  CloudSyncConflictResolution,
+  CloudSyncConflictResolutionResult,
+  CloudSyncCredentialIssueResult,
   CloudSyncGatewayFailure,
   CloudSyncGatewayReadResult,
   CloudSyncPayload,
@@ -42,7 +46,12 @@ export type CloudSyncUpsertRowFn = (
   payloadIn: CloudSyncPayload
 ) => Promise<CloudSyncUpsertResult>;
 
-export type CloudSyncIssuePrivateRoomFn = () => Promise<CloudSyncRoomCredential | null>;
+export type CloudSyncIssuePrivateRoomFn = () => Promise<CloudSyncCredentialIssueResult>;
+export type CloudSyncResolveConflictFn = (
+  room: string,
+  resolution: CloudSyncConflictResolution,
+  adoptRemote?: ((row: CloudSyncStateRow) => boolean) | null
+) => Promise<CloudSyncConflictResolutionResult>;
 
 export function createCloudSyncOwnerTimers(App: AppContainer): {
   setTimeoutFn: (handler: () => void, ms: number) => TimeoutHandleLike;
@@ -77,6 +86,7 @@ export function createCloudSyncOwnerGatewayIo(args: {
   getRow: CloudSyncGetRowFn;
   upsertRow: CloudSyncUpsertRowFn;
   issuePrivateRoom: CloudSyncIssuePrivateRoomFn;
+  resolveConflict: CloudSyncResolveConflictFn;
 } | null {
   const { App, cfg, gatewayUrl, rooms, clientId, runtimeStatus, publishStatus } = args;
   const fetchFn = getBrowserFetchMaybe(App);
@@ -219,6 +229,24 @@ export function createCloudSyncOwnerGatewayIo(args: {
     if (row) rowCache.set(row.room, row);
   };
 
+  const clonePayload = (payload: CloudSyncPayload): CloudSyncPayload => {
+    const source = payload && typeof payload === 'object' ? payload : {};
+    try {
+      return JSON.parse(JSON.stringify(source)) as CloudSyncPayload;
+    } catch {
+      return { ...source };
+    }
+  };
+
+  const isConflictOpen = (room: string): boolean => {
+    const conflict = runtimeStatus.conflict;
+    return !!(
+      conflict &&
+      conflict.room === room &&
+      (conflict.state === 'awaiting-resolution' || conflict.state === 'resolving')
+    );
+  };
+
   const clearConflictStatus = (room: string): void => {
     if (runtimeStatus.conflict?.room !== room) return;
     delete runtimeStatus.conflict;
@@ -226,15 +254,37 @@ export function createCloudSyncOwnerGatewayIo(args: {
     publishStatus();
   };
 
-  const publishConflictStatus = (room: string, row: CloudSyncStateRow, keys: string[]): void => {
+  const publishConflictStatus = (args: {
+    room: string;
+    row: CloudSyncStateRow;
+    keys: string[];
+    base: CloudSyncPayload;
+    local: CloudSyncPayload;
+  }): CloudSyncConflictRecord => {
+    const { room, row, keys, base, local } = args;
     const normalizedKeys = [...new Set(keys.map(key => String(key).trim()).filter(Boolean))];
-    runtimeStatus.conflict = {
+    const conflict: CloudSyncConflictRecord = {
       room,
       keys: normalizedKeys,
       remoteRevision: row.revision,
       detectedAt: Date.now(),
+      state: 'awaiting-resolution',
+      base: clonePayload(base),
+      local: clonePayload(local),
+      remote: clonePayload(row.payload || {}),
     };
+    runtimeStatus.conflict = conflict;
     runtimeStatus.lastError = `conflict:${normalizedKeys.join(',') || 'revision'}`;
+    publishStatus();
+    return conflict;
+  };
+
+  const publishConflictState = (
+    conflict: CloudSyncConflictRecord,
+    state: CloudSyncConflictRecord['state']
+  ): void => {
+    conflict.state = state;
+    runtimeStatus.conflict = conflict;
     publishStatus();
   };
 
@@ -267,6 +317,22 @@ export function createCloudSyncOwnerGatewayIo(args: {
       roomIn: string,
       payloadIn: CloudSyncPayload
     ) => {
+      if (isConflictOpen(roomIn)) {
+        const conflict = runtimeStatus.conflict as CloudSyncConflictRecord;
+        const remoteRow = rowCache.get(roomIn) || {
+          room: roomIn,
+          payload: clonePayload(conflict.remote),
+          revision: conflict.remoteRevision,
+          updated_at: '',
+          updated_by: '',
+        };
+        return {
+          ok: false,
+          conflict: true,
+          row: remoteRow,
+          conflictKeys: conflict.keys.slice(),
+        };
+      }
       const credential = await resolveRoomCredential(roomIn);
       if (!credential) {
         return { ok: false, failure: lastCredentialFailure || missingCredentialFailure() };
@@ -300,7 +366,14 @@ export function createCloudSyncOwnerGatewayIo(args: {
         remote: first.row.payload,
       });
       if (merged.ok === false) {
-        publishConflictStatus(roomIn, first.row, merged.conflictKeys);
+        cacheRow(first.row);
+        publishConflictStatus({
+          room: roomIn,
+          row: first.row,
+          keys: merged.conflictKeys,
+          base: baseRow?.payload || {},
+          local: payloadIn,
+        });
         return { ...first, conflictKeys: merged.conflictKeys };
       }
 
@@ -321,12 +394,117 @@ export function createCloudSyncOwnerGatewayIo(args: {
         clearConflictStatus(roomIn);
       } else if (retry.conflict === true) {
         const conflictKeys = retry.conflictKeys?.length ? retry.conflictKeys : ['revision'];
-        publishConflictStatus(roomIn, retry.row, conflictKeys);
+        cacheRow(retry.row);
+        publishConflictStatus({
+          room: roomIn,
+          row: retry.row,
+          keys: conflictKeys,
+          base: first.row.payload || {},
+          local: merged.payload,
+        });
         return { ...retry, conflictKeys };
       } else {
         publishCredentialStatus(credential, retry.failure);
       }
       return retry;
+    },
+    resolveConflict: async (roomIn, resolution, adoptRemote = null) => {
+      const conflict = runtimeStatus.conflict;
+      if (!conflict || conflict.room !== roomIn || conflict.state === 'resolved') {
+        return { ok: false, resolution, reason: 'missing-conflict' };
+      }
+      if (conflict.state === 'resolving') {
+        return { ok: false, resolution, reason: 'busy' };
+      }
+
+      publishConflictState(conflict, 'resolving');
+      const credential = await resolveRoomCredential(roomIn);
+      if (!credential) {
+        publishConflictState(conflict, 'awaiting-resolution');
+        return {
+          ok: false,
+          resolution,
+          reason: resolution === 'keep-local' ? 'write' : 'read',
+          failure: lastCredentialFailure || missingCredentialFailure(),
+          conflict,
+        };
+      }
+
+      const latest = await getGatewayRow({
+        fetchFn,
+        gatewayUrl,
+        anonKey: cfg.anonKey,
+        storeId: cfg.storeId,
+        room: roomIn,
+        roomToken: credential.token,
+      });
+      if (latest.ok === false) {
+        publishCredentialStatus(credential, latest.failure);
+        publishConflictState(conflict, 'awaiting-resolution');
+        return { ok: false, resolution, reason: 'read', failure: latest.failure, conflict };
+      }
+      if (!latest.row) {
+        const failure: CloudSyncGatewayFailure = {
+          kind: 'server',
+          status: 404,
+          code: 'conflict_row_missing',
+        };
+        publishConflictState(conflict, 'awaiting-resolution');
+        return { ok: false, resolution, reason: 'read', failure, conflict };
+      }
+      cacheRow(latest.row);
+
+      if (resolution === 'use-remote') {
+        if (!adoptRemote || !adoptRemote(latest.row)) {
+          const failure: CloudSyncGatewayFailure = {
+            kind: 'server',
+            status: 500,
+            code: 'local_conflict_adoption_failed',
+          };
+          conflict.remoteRevision = latest.row.revision;
+          conflict.remote = clonePayload(latest.row.payload || {});
+          publishConflictState(conflict, 'awaiting-resolution');
+          return { ok: false, resolution, reason: 'adoption', failure, conflict };
+        }
+        publishCredentialStatus(credential);
+        publishConflictState(conflict, 'resolved');
+        clearConflictStatus(roomIn);
+        return { ok: true, resolution, row: latest.row };
+      }
+
+      const written = await writeGatewayRow({
+        fetchFn,
+        gatewayUrl,
+        anonKey: cfg.anonKey,
+        storeId: cfg.storeId,
+        room: roomIn,
+        roomToken: credential.token,
+        payload: conflict.local,
+        expectedRevision: latest.row.revision,
+        clientId,
+      });
+      if (written.ok === false) {
+        if (written.conflict === true) {
+          cacheRow(written.row);
+          const nextConflict = publishConflictStatus({
+            room: roomIn,
+            row: written.row,
+            keys: conflict.keys.length ? conflict.keys : ['revision'],
+            base: latest.row.payload || {},
+            local: conflict.local,
+          });
+          return { ok: false, resolution, reason: 'write', conflict: nextConflict };
+        }
+        publishCredentialStatus(credential, written.failure);
+        publishConflictState(conflict, 'awaiting-resolution');
+        return { ok: false, resolution, reason: 'write', failure: written.failure, conflict };
+      }
+
+      cacheRow(written.row);
+      publishCredentialStatus(credential);
+      publishConflictState(conflict, 'resolved');
+      clearConflictStatus(roomIn);
+      return { ok: true, resolution, row: written.row };
     },
     issuePrivateRoom: async () => {
       const result = await createPrivateRoomCredential({
@@ -337,10 +515,10 @@ export function createCloudSyncOwnerGatewayIo(args: {
       });
       if (result.ok === false) {
         publishCredentialStatus(null, result.failure);
-        return null;
+        return result;
       }
       publishCredentialStatus(result.credential);
-      return result.credential;
+      return result;
     },
   };
 }

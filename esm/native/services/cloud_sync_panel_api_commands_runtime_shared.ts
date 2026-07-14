@@ -28,6 +28,7 @@ export type CloudSyncPanelApiRuntimeCommands = Required<
     | 'setDiagnosticsEnabled'
     | 'goPublic'
     | 'goPrivate'
+    | 'resolveConflict'
     | 'getShareLink'
     | 'copyShareLink'
     | 'syncSketchNow'

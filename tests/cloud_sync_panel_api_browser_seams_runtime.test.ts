@@ -15,7 +15,7 @@ test('cloud sync panel api uses injected browser seams for prompt fallback and g
     instanceId: 'inst-2',
     realtime: { enabled: true, mode: 'broadcast' as const, state: 'ok', channel: 'chan' },
     polling: { active: true, intervalMs: 5000, reason: 'poll' },
-    lastPullAt: 0,
+    lastPullSuccessAt: 0,
     lastPushAt: 0,
     lastRealtimeEventAt: 0,
     lastError: '',
@@ -45,7 +45,15 @@ test('cloud sync panel api uses injected browser seams for prompt fallback and g
     }),
     getPrivateRoomCredential: () => null,
     setPrivateRoomCredential: () => true,
-    issuePrivateRoom: async () => null,
+    issuePrivateRoom: async () => ({
+      ok: false as const,
+      failure: { kind: 'server' as const, status: 500 },
+    }),
+    resolveConflict: async (resolution: 'keep-local' | 'use-remote') => ({
+      ok: false as const,
+      resolution,
+      reason: 'missing-conflict' as const,
+    }),
     setRoomCredentialInUrl: () => true,
     reinstallOwnerForRoomChange: async () => {},
     cloneRuntimeStatus: status => ({

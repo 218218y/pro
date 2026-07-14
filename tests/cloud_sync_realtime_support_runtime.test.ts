@@ -298,7 +298,7 @@ test('cloud sync realtime subscribed gap refresh respects the canonical recent-p
     const runtimeStatus = {
       realtime: { state: 'connecting', channel: '' },
       polling: { active: false, intervalMs: 5000, reason: '' },
-      lastPullAt: 18_500,
+      lastPullSuccessAt: 18_500,
     } as any;
     const pullCalls: Array<Record<string, unknown> | undefined> = [];
 

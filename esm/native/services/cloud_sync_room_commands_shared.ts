@@ -2,6 +2,7 @@ import type {
   AppContainer,
   CloudSyncClipboardLike,
   CloudSyncCredentialStatus,
+  CloudSyncCredentialIssueResult,
   CloudSyncNonFatalReportOptions,
   CloudSyncPanelConfig,
   CloudSyncPromptSinkLike,
@@ -18,7 +19,7 @@ export type CloudSyncRoomCommandDeps = {
   getCurrentRoomCredential: () => CloudSyncRoomCredential | null;
   getPrivateRoomCredential: () => CloudSyncRoomCredential | null;
   setPrivateRoomCredential: (credential: CloudSyncRoomCredential) => boolean;
-  issuePrivateRoom: () => Promise<CloudSyncRoomCredential | null>;
+  issuePrivateRoom: () => Promise<CloudSyncCredentialIssueResult>;
   setRoomCredentialInUrl: (
     app: AppContainer,
     args: {

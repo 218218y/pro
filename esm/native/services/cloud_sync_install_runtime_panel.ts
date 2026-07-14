@@ -32,6 +32,7 @@ export function installCloudSyncInstallRuntimePanelApi(
   } = ownerContext;
   const { cloudSyncTabsGate, cloudSyncSketch, deleteTemporaryModelsInCloud, deleteTemporaryColorsInCloud } =
     runtime;
+  const { resolveConflict } = runtime.cloudSyncMainRow;
   const {
     isTabsGateController,
     site2TabsTtlMs,
@@ -68,6 +69,7 @@ export function installCloudSyncInstallRuntimePanelApi(
     getPrivateRoomCredential,
     setPrivateRoomCredential,
     issuePrivateRoom,
+    resolveConflict,
     setRoomCredentialInUrl,
     reinstallOwnerForRoomChange,
     cloneRuntimeStatus,

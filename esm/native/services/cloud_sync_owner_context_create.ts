@@ -100,6 +100,7 @@ export function createCloudSyncOwnerContext(App: AppContainer): CloudSyncOwnerCo
     getRow: gatewayIo.getRow,
     upsertRow: gatewayIo.upsertRow,
     issuePrivateRoom: gatewayIo.issuePrivateRoom,
+    resolveConflict: gatewayIo.resolveConflict,
     storage,
     keyModels,
     keyColors,

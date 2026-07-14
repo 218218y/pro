@@ -1,16 +1,24 @@
-import type { AppContainer, ModelsMergeResult, SavedModelLike, UnknownRecord } from '../../../types';
+import type {
+  AppContainer,
+  ModelsMergeResult,
+  SavedColorLike,
+  SavedModelLike,
+  UnknownRecord,
+} from '../../../types';
 import { getCfg } from './store_access.js';
 import {
   ensureModelsLoadedViaServiceOrThrow,
   mergeImportedModelsViaServiceOrThrow,
   normalizeUnknownError,
   patchViaActions,
+  readCloudCollectionsEnvelopeViaServiceOrThrow,
   readFileTextResultViaBrowser,
   readSavedColors,
   runPerfAction,
   renderModelUiViaActionsOrThrow,
   setCfgColorSwatchesOrder,
   setCfgSavedColors,
+  updateCloudCollectionsViaServiceOrThrow,
   writeColorSwatchesOrder,
   writeSavedColors,
 } from '../services/api.js';
@@ -30,12 +38,8 @@ import {
 } from './settings_backup_shared.js';
 import {
   buildRestoreMeta,
-  buildSettingsStorageKeys,
-  getSettingsStorage,
-  readStorageArray,
   sanitizePresetCollections,
   settingsBackupReport,
-  writeStorageArray,
 } from './settings_backup_support.js';
 
 async function readBackupFileText(App: AppContainer, file: File): Promise<string> {
@@ -104,6 +108,13 @@ function cloneImportedColorOrder(value: string[] | undefined): string[] | undefi
   return Array.isArray(value) ? value.map(entry => String(entry || '')) : undefined;
 }
 
+function toCanonicalSavedColors(value: SettingsBackupSavedColorEntry[] | undefined): SavedColorLike[] {
+  if (!Array.isArray(value)) return [];
+  return value.map(entry =>
+    typeof entry === 'string' ? { id: entry } : { ...entry, id: String(entry.id || '').trim() }
+  );
+}
+
 function buildImportedColorConfigPatch(mutation: ImportedColorMutation): UnknownRecord {
   const configPatch: UnknownRecord = {};
   if (typeof mutation.savedColors !== 'undefined') {
@@ -119,26 +130,11 @@ function runSettingsBackupImportPerfStep<T>(App: AppContainer, metricName: strin
   return typeof runPerfAction === 'function' ? runPerfAction(App, metricName, run) : run();
 }
 
-function writeImportedColorStorage(
-  App: AppContainer,
-  op: string,
-  storage: ReturnType<typeof getSettingsStorage>,
-  key: string,
-  value: unknown[]
-): void {
-  const ok = runSettingsBackupImportPerfStep(App, 'settingsBackup.import.storage.write', () =>
-    writeStorageArray(storage, key, value)
-  );
-  if (ok) return;
-  settingsBackupReport(App, op, new Error(`${op} storage write unavailable`), true);
-}
-
 function applyImportedColorMutation(
   App: AppContainer,
-  storage: ReturnType<typeof getSettingsStorage>,
-  keys: ReturnType<typeof buildSettingsStorageKeys>,
   mutation: ImportedColorMutation,
-  metaSource: string
+  metaSource: string,
+  persist = true
 ): void {
   const patch = buildImportedColorConfigPatch(mutation);
   if (!Object.keys(patch).length) return;
@@ -147,19 +143,20 @@ function applyImportedColorMutation(
   const savedColors = cloneImportedSavedColors(mutation.savedColors);
   const colorSwatchesOrder = cloneImportedColorOrder(mutation.colorSwatchesOrder);
 
-  if (typeof patchViaActions === 'function' && patchViaActions(App, patch, meta)) {
-    if (typeof savedColors !== 'undefined') {
-      writeImportedColorStorage(App, `${metaSource}:savedColors`, storage, keys.colors, savedColors);
-    }
-    if (typeof colorSwatchesOrder !== 'undefined') {
-      writeImportedColorStorage(
+  if (persist) {
+    runSettingsBackupImportPerfStep(App, 'settingsBackup.import.collections.commit', () =>
+      updateCloudCollectionsViaServiceOrThrow(
         App,
-        `${metaSource}:colorSwatchesOrder`,
-        storage,
-        keys.colorSwatchesOrder,
-        colorSwatchesOrder
-      );
-    }
+        {
+          ...(typeof savedColors !== 'undefined' ? { savedColors: toCanonicalSavedColors(savedColors) } : {}),
+          ...(typeof colorSwatchesOrder !== 'undefined' ? { colorOrder: colorSwatchesOrder } : {}),
+        },
+        `${metaSource} collections persistence`
+      )
+    );
+  }
+
+  if (typeof patchViaActions === 'function' && patchViaActions(App, patch, meta)) {
     return;
   }
 
@@ -168,19 +165,11 @@ function applyImportedColorMutation(
   if (typeof savedColors !== 'undefined') {
     const appliedViaMaps = writeSavedColors(App, savedColors, mapsMeta);
     if (!appliedViaMaps) setCfgSavedColors(App, savedColors, meta);
-    writeImportedColorStorage(App, `${metaSource}:savedColors`, storage, keys.colors, savedColors);
   }
 
   if (typeof colorSwatchesOrder !== 'undefined') {
     const appliedViaMaps = writeColorSwatchesOrder(App, colorSwatchesOrder.slice(), mapsMeta);
     if (!appliedViaMaps) setCfgColorSwatchesOrder(App, colorSwatchesOrder.slice(), meta);
-    writeImportedColorStorage(
-      App,
-      `${metaSource}:colorSwatchesOrder`,
-      storage,
-      keys.colorSwatchesOrder,
-      colorSwatchesOrder
-    );
   }
 }
 
@@ -191,55 +180,29 @@ export function mergeImportedSavedColors(App: AppContainer, value: SettingsBacku
   const merged = mergeSavedColorLists(currentSaved, value);
   if (!merged.changed) return 0;
 
-  const storage = getSettingsStorage(App);
-  const keys = buildSettingsStorageKeys(App);
-  applyImportedColorMutation(App, storage, keys, { savedColors: merged.list }, 'savedColors.import');
+  applyImportedColorMutation(App, { savedColors: merged.list }, 'savedColors.import');
 
   return merged.added;
 }
 
-function writeStorageIdListIfChanged(
-  App: AppContainer,
-  op: string,
-  storage: ReturnType<typeof getSettingsStorage>,
-  key: string,
-  currentValue: unknown,
-  nextValue: string[]
-): void {
-  if (sameSettingsBackupIdList(currentValue, nextValue)) return;
-  if (
-    runSettingsBackupImportPerfStep(App, 'settingsBackup.import.storage.write', () =>
-      writeStorageArray(storage, key, nextValue)
-    )
-  ) {
-    return;
-  }
-  settingsBackupReport(App, op, new Error(`${op} storage write unavailable`), true);
-}
-
-function readCurrentColorSwatchesOrder(
-  App: AppContainer,
-  storage: ReturnType<typeof getSettingsStorage>,
-  keys: ReturnType<typeof buildSettingsStorageKeys>
-): string[] {
+function readCurrentColorSwatchesOrder(App: AppContainer, storedOrder: unknown): string[] {
   const cfg = getCfg(App) || {};
   if (Array.isArray(cfg.colorSwatchesOrder)) {
     return readSettingsBackupIdList(cfg.colorSwatchesOrder);
   }
-  return readSettingsBackupIdList(readStorageArray(storage, keys.colorSwatchesOrder));
+  return readSettingsBackupIdList(storedOrder);
 }
 
 export function applyImportedStorageSettings(App: AppContainer, data: SettingsBackupData): void {
-  const storage = getSettingsStorage(App);
-  const keys = buildSettingsStorageKeys(App);
-  const currentPresetOrder = readStorageArray(storage, keys.presetOrder);
-  const currentHiddenPresets = readStorageArray(storage, keys.hiddenPresets);
-  const currentStorageColorOrder = readStorageArray(storage, keys.colorSwatchesOrder);
+  const current = readCloudCollectionsEnvelopeViaServiceOrThrow(App, 'settings storage import');
+  const currentPresetOrder = current.presetOrder;
+  const currentHiddenPresets = current.hiddenPresets;
+  const currentStorageColorOrder = current.colorOrder;
   const presetCollections = sanitizePresetCollections(App, data.presetOrder, data.hiddenPresets);
   const presetOrder = presetCollections.presetOrder;
   const hiddenPresets = presetCollections.hiddenPresets;
   const currentSavedColors = readCurrentSavedColors(App);
-  const currentLiveColorOrder = readCurrentColorSwatchesOrder(App, storage, keys);
+  const currentLiveColorOrder = readCurrentColorSwatchesOrder(App, currentStorageColorOrder);
   const currentStorageOrderIds = readSettingsBackupIdList(currentStorageColorOrder);
   const canonicalSavedColorOrder = readCanonicalSavedColorOrder(currentSavedColors);
   const colorSwatchesOrder = resolveColorSwatchesOrder(
@@ -250,42 +213,40 @@ export function applyImportedStorageSettings(App: AppContainer, data: SettingsBa
     canonicalSavedColorOrder
   );
 
-  writeStorageIdListIfChanged(
-    App,
-    'import:presetOrder',
-    storage,
-    keys.presetOrder,
-    currentPresetOrder,
-    presetOrder
-  );
-  writeStorageIdListIfChanged(
-    App,
-    'import:hiddenPresets',
-    storage,
-    keys.hiddenPresets,
-    currentHiddenPresets,
-    hiddenPresets
-  );
+  const presetOrderChanged = !sameSettingsBackupIdList(currentPresetOrder, presetOrder);
+  const hiddenPresetsChanged = !sameSettingsBackupIdList(currentHiddenPresets, hiddenPresets);
   const colorOrderStorageChanged = !sameSettingsBackupIdList(currentStorageColorOrder, colorSwatchesOrder);
   const colorOrderLiveChanged = !sameSettingsBackupIdList(currentLiveColorOrder, colorSwatchesOrder);
-  if (!colorOrderStorageChanged && !colorOrderLiveChanged) return;
+  if (presetOrderChanged || hiddenPresetsChanged || colorOrderStorageChanged) {
+    runSettingsBackupImportPerfStep(App, 'settingsBackup.import.collections.commit', () =>
+      updateCloudCollectionsViaServiceOrThrow(
+        App,
+        {
+          ...(presetOrderChanged ? { presetOrder } : {}),
+          ...(hiddenPresetsChanged ? { hiddenPresets } : {}),
+          ...(colorOrderStorageChanged ? { colorOrder: colorSwatchesOrder } : {}),
+        },
+        'settings storage import persistence'
+      )
+    );
+  }
+  if (!colorOrderLiveChanged) return;
 
-  applyImportedColorMutation(App, storage, keys, { colorSwatchesOrder }, 'colorSwatchesOrder.import');
+  applyImportedColorMutation(App, { colorSwatchesOrder }, 'colorSwatchesOrder.import', false);
 }
 
 export function applyImportedColorSettings(App: AppContainer, data: SettingsBackupData): number {
-  const storage = getSettingsStorage(App);
-  const keys = buildSettingsStorageKeys(App);
-  const currentPresetOrder = readStorageArray(storage, keys.presetOrder);
-  const currentHiddenPresets = readStorageArray(storage, keys.hiddenPresets);
-  const currentStorageColorOrder = readStorageArray(storage, keys.colorSwatchesOrder);
+  const current = readCloudCollectionsEnvelopeViaServiceOrThrow(App, 'settings color import');
+  const currentPresetOrder = current.presetOrder;
+  const currentHiddenPresets = current.hiddenPresets;
+  const currentStorageColorOrder = current.colorOrder;
   const presetCollections = sanitizePresetCollections(App, data.presetOrder, data.hiddenPresets);
   const presetOrder = presetCollections.presetOrder;
   const hiddenPresets = presetCollections.hiddenPresets;
   const currentSavedColors = readCurrentSavedColors(App);
   const merged = mergeSavedColorLists(currentSavedColors, data.savedColors);
   const savedColorsForOrder = merged.changed ? merged.list : currentSavedColors;
-  const currentLiveColorOrder = readCurrentColorSwatchesOrder(App, storage, keys);
+  const currentLiveColorOrder = readCurrentColorSwatchesOrder(App, currentStorageColorOrder);
   const currentStorageOrderIds = readSettingsBackupIdList(currentStorageColorOrder);
   const canonicalSavedColorOrder = readCanonicalSavedColorOrder(savedColorsForOrder);
   const colorSwatchesOrder = resolveColorSwatchesOrder(
@@ -296,29 +257,28 @@ export function applyImportedColorSettings(App: AppContainer, data: SettingsBack
     canonicalSavedColorOrder
   );
 
-  writeStorageIdListIfChanged(
-    App,
-    'import:presetOrder',
-    storage,
-    keys.presetOrder,
-    currentPresetOrder,
-    presetOrder
-  );
-  writeStorageIdListIfChanged(
-    App,
-    'import:hiddenPresets',
-    storage,
-    keys.hiddenPresets,
-    currentHiddenPresets,
-    hiddenPresets
-  );
-
+  const presetOrderChanged = !sameSettingsBackupIdList(currentPresetOrder, presetOrder);
+  const hiddenPresetsChanged = !sameSettingsBackupIdList(currentHiddenPresets, hiddenPresets);
   const colorOrderStorageChanged = !sameSettingsBackupIdList(currentStorageColorOrder, colorSwatchesOrder);
   const colorOrderLiveChanged = !sameSettingsBackupIdList(currentLiveColorOrder, colorSwatchesOrder);
   const mutation: ImportedColorMutation = {};
   if (merged.changed) mutation.savedColors = merged.list;
   if (colorOrderStorageChanged || colorOrderLiveChanged) mutation.colorSwatchesOrder = colorSwatchesOrder;
-  applyImportedColorMutation(App, storage, keys, mutation, 'settingsColors.import');
+  if (presetOrderChanged || hiddenPresetsChanged || merged.changed || colorOrderStorageChanged) {
+    runSettingsBackupImportPerfStep(App, 'settingsBackup.import.collections.commit', () =>
+      updateCloudCollectionsViaServiceOrThrow(
+        App,
+        {
+          ...(presetOrderChanged ? { presetOrder } : {}),
+          ...(hiddenPresetsChanged ? { hiddenPresets } : {}),
+          ...(merged.changed ? { savedColors: toCanonicalSavedColors(merged.list) } : {}),
+          ...(colorOrderStorageChanged ? { colorOrder: colorSwatchesOrder } : {}),
+        },
+        'settings color import persistence'
+      )
+    );
+  }
+  applyImportedColorMutation(App, mutation, 'settingsColors.import', false);
   return merged.added;
 }
 

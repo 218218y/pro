@@ -6,8 +6,11 @@ export type ProjectUiActionName = 'load' | 'save' | 'reset-default' | 'restore-l
 
 export type ProjectUiActionEventDetail = {
   action: ProjectUiActionName;
-  ok: boolean;
+  ok?: boolean;
+  accepted?: true;
+  reused?: boolean;
   pending: boolean;
+  outcome?: string;
   reason?: string;
   message?: string;
   restoreGen?: number;
@@ -26,8 +29,11 @@ const ACTION_EVENT_NAME_MAP: Record<ProjectUiActionName, string> = {
 };
 
 type ProjectUiActionResultRecord = {
+  accepted?: unknown;
+  reused?: unknown;
   ok?: unknown;
   pending?: unknown;
+  outcome?: unknown;
   reason?: unknown;
   message?: unknown;
   restoreGen?: unknown;
@@ -63,8 +69,12 @@ export function buildProjectUiActionEventDetail(
   options?: { at?: unknown }
 ): ProjectUiActionEventDetail {
   const rec = asRecord(result);
+  const accepted = rec?.accepted === true;
+  const hasTerminalResult = result === true || result === false || rec?.ok === true || rec?.ok === false;
   const ok = result === true || rec?.ok === true;
-  const pending = rec?.pending === true;
+  const pending = accepted || rec?.pending === true;
+  const reused = accepted && rec?.reused === true;
+  const outcome = readOptionalString(rec?.outcome);
   const reason = readOptionalString(rec?.reason);
   const message = readOptionalString(rec?.message);
   const restoreGen = readOptionalRestoreGen(rec?.restoreGen);
@@ -72,9 +82,11 @@ export function buildProjectUiActionEventDetail(
   const acceptedAt = Number(rec?.acceptedAt);
   return {
     action,
-    ok,
+    ...(hasTerminalResult ? { ok } : {}),
+    ...(accepted ? { accepted: true as const, reused } : {}),
     pending,
     phase: pending ? 'started' : 'settled',
+    ...(outcome ? { outcome } : {}),
     ...(reason ? { reason } : {}),
     ...(message ? { message } : {}),
     ...(typeof restoreGen === 'number' ? { restoreGen } : {}),

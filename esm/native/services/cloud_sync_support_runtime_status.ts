@@ -1,9 +1,19 @@
 import type {
   CloudSyncCredentialStatus,
   CloudSyncPollingStatus,
+  CloudSyncPayload,
   CloudSyncRealtimeStatus,
   CloudSyncRuntimeStatus,
 } from '../../../types';
+
+function cloneConflictPayload(payload: CloudSyncPayload): CloudSyncPayload {
+  const source = payload && typeof payload === 'object' ? payload : {};
+  try {
+    return JSON.parse(JSON.stringify(source)) as CloudSyncPayload;
+  } catch {
+    return { ...source };
+  }
+}
 
 export function cloneRuntimeStatus(status: CloudSyncRuntimeStatus): CloudSyncRuntimeStatus {
   const sourceRealtime = status.realtime || ({} as CloudSyncRealtimeStatus);
@@ -33,6 +43,10 @@ export function cloneRuntimeStatus(status: CloudSyncRuntimeStatus): CloudSyncRun
         keys: Array.isArray(status.conflict.keys) ? status.conflict.keys.map(key => String(key)) : [],
         remoteRevision: Number(status.conflict.remoteRevision) || 0,
         detectedAt: Number(status.conflict.detectedAt) || 0,
+        state: status.conflict.state,
+        base: cloneConflictPayload(status.conflict.base),
+        local: cloneConflictPayload(status.conflict.local),
+        remote: cloneConflictPayload(status.conflict.remote),
       }
     : null;
   return {
@@ -41,7 +55,9 @@ export function cloneRuntimeStatus(status: CloudSyncRuntimeStatus): CloudSyncRun
     instanceId: String(status.instanceId || ''),
     realtime,
     polling,
-    lastPullAt: Number(status.lastPullAt) || 0,
+    lastPullAttemptAt: Number(status.lastPullAttemptAt) || 0,
+    lastPullSuccessAt: Number(status.lastPullSuccessAt) || 0,
+    lastPullFailureAt: Number(status.lastPullFailureAt) || 0,
     lastPushAt: Number(status.lastPushAt) || 0,
     lastRealtimeEventAt: Number(status.lastRealtimeEventAt) || 0,
     lastError: String(status.lastError || ''),
@@ -66,7 +82,9 @@ export function buildRuntimeStatusSnapshotKey(status: CloudSyncRuntimeStatus): s
     polling.active ? '1' : '0',
     String(polling.intervalMs),
     polling.reason,
-    String(snapshot.lastPullAt),
+    String(snapshot.lastPullAttemptAt),
+    String(snapshot.lastPullSuccessAt),
+    String(snapshot.lastPullFailureAt),
     String(snapshot.lastPushAt),
     String(snapshot.lastRealtimeEventAt),
     snapshot.lastError,
@@ -78,6 +96,7 @@ export function buildRuntimeStatusSnapshotKey(status: CloudSyncRuntimeStatus): s
     (snapshot.conflict?.keys || []).join(','),
     String(snapshot.conflict?.remoteRevision || 0),
     String(snapshot.conflict?.detectedAt || 0),
+    snapshot.conflict?.state || '',
     snapshot.diagEnabled ? '1' : '0',
   ].join('|');
 }

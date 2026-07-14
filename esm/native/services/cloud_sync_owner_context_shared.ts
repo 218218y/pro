@@ -19,6 +19,7 @@ import {
 } from './cloud_sync_owner_context_runtime_shared.js';
 import type { CloudSyncGetRowFn, CloudSyncUpsertRowFn } from './cloud_sync_owner_context_runtime_access.js';
 import type { CloudSyncIssuePrivateRoomFn } from './cloud_sync_owner_context_runtime_access.js';
+import type { CloudSyncResolveConflictFn } from './cloud_sync_owner_context_runtime_access.js';
 
 export type { StorageLike } from './cloud_sync_owner_context_runtime_shared.js';
 export type { CloudSyncGetRowFn, CloudSyncUpsertRowFn } from './cloud_sync_owner_context_runtime_access.js';
@@ -33,6 +34,7 @@ export type CloudSyncOwnerContext = {
   getRow: CloudSyncGetRowFn;
   upsertRow: CloudSyncUpsertRowFn;
   issuePrivateRoom: CloudSyncIssuePrivateRoomFn;
+  resolveConflict: CloudSyncResolveConflictFn;
   storage: StorageLike;
   keyModels: string;
   keyColors: string;

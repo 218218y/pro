@@ -10,7 +10,9 @@ function createRuntimeStatus() {
     room: 'room-a',
     clientId: 'client-a',
     instanceId: 'instance-a',
-    lastPullAt: 0,
+    lastPullAttemptAt: 0,
+    lastPullFailureAt: 0,
+    lastPullSuccessAt: 0,
     lastPushAt: 0,
     lastRealtimeEventAt: 0,
     lastError: '',
@@ -54,7 +56,7 @@ test('cloud sync settled-write fallback reads stay quiet by default and only sta
     assert.equal(quietSettled?.updated_at, '2026-04-15T12:00:00.000Z');
     assert.equal(rowReads, 1);
     assert.equal(settledAt, '2026-04-15T12:00:00.000Z');
-    assert.equal(runtimeStatus.lastPullAt, 0);
+    assert.equal(runtimeStatus.lastPullSuccessAt, 0);
     assert.equal(publishCount, 0);
 
     const countedSettled = await resolveCloudSyncSettledRowAfterWrite({
@@ -76,8 +78,9 @@ test('cloud sync settled-write fallback reads stay quiet by default and only sta
     });
 
     assert.equal(countedSettled?.updated_at, '2026-04-15T12:01:00.000Z');
-    assert.equal(runtimeStatus.lastPullAt > 0, true);
-    assert.equal(publishCount, 1);
+    assert.equal(runtimeStatus.lastPullAttemptAt > 0, true);
+    assert.equal(runtimeStatus.lastPullSuccessAt > 0, true);
+    assert.equal(publishCount, 2);
   } finally {
     Date.now = realNow;
   }

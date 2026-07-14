@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createCloudSyncMainRowOps } from '../esm/native/services/cloud_sync_main_row.ts';
+import { createCloudCollectionsRepository } from '../esm/native/services/cloud_sync_collections_repository.ts';
 
 function cloudRead(row: any) {
   if (row && typeof row === 'object' && typeof row.ok === 'boolean') return row;
@@ -43,7 +44,12 @@ function createMemoryStorage(seed?: Record<string, unknown>) {
   };
 }
 
-function createHarness(opts?: { localSeed?: Record<string, unknown>; rows?: Array<any>; App?: any }) {
+function createHarness(opts?: {
+  localSeed?: Record<string, unknown>;
+  rows?: Array<any>;
+  App?: any;
+  resolveConflict?: (...args: any[]) => Promise<any>;
+}) {
   const storage = createMemoryStorage(
     opts?.localSeed || {
       savedModels: [{ id: 'model-1', name: 'Model 1' }],
@@ -98,6 +104,9 @@ function createHarness(opts?: { localSeed?: Record<string, unknown>; rows?: Arra
       upsertCalls.push({ room, payload: payload as Record<string, unknown> });
       return { ok: true } as any;
     },
+    resolveConflict:
+      opts?.resolveConflict ||
+      (async (_room, resolution) => ({ ok: false, resolution, reason: 'missing-conflict' })),
     setTimeoutFn: (handler, ms) => {
       const timer = { handler, active: true, ms: Number(ms) || 0 };
       timers.push(timer);
@@ -113,7 +122,9 @@ function createHarness(opts?: { localSeed?: Record<string, unknown>; rows?: Arra
       room: 'room-a',
       clientId: 'client-a',
       instanceId: 'instance-a',
-      lastPullAt: 0,
+      lastPullAttemptAt: 0,
+      lastPullSuccessAt: 0,
+      lastPullFailureAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',
@@ -137,6 +148,22 @@ function runNextActiveTimer(harness: ReturnType<typeof createHarness>): void {
   assert.ok(timer, 'expected an active timer');
   timer!.active = false;
   timer!.handler();
+}
+
+function updateHarnessModels(
+  harness: ReturnType<typeof createHarness>,
+  savedModels: Array<{ id: string; name: string }>
+): void {
+  createCloudCollectionsRepository({
+    storage: harness.storage,
+    keys: {
+      models: 'savedModels',
+      colors: 'savedColors',
+      colorOrder: 'colorOrder',
+      presetOrder: 'presetOrder',
+      hiddenPresets: 'hiddenPresets',
+    },
+  }).update({ savedModels });
 }
 
 function runActiveTimerWhere(
@@ -242,7 +269,9 @@ test('cloud sync main row initial seed reuses returned representation when the u
       room: 'room-a',
       clientId: 'client-a',
       instanceId: 'instance-a',
-      lastPullAt: 0,
+      lastPullAttemptAt: 0,
+      lastPullSuccessAt: 0,
+      lastPullFailureAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',
@@ -329,7 +358,9 @@ test('cloud sync main row push reuses returned representation instead of forcing
       room: 'room-a',
       clientId: 'client-a',
       instanceId: 'instance-a',
-      lastPullAt: 0,
+      lastPullAttemptAt: 0,
+      lastPullSuccessAt: 0,
+      lastPullFailureAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',
@@ -407,7 +438,9 @@ test('cloud sync main row reuses the same pending push promise for duplicate dir
       room: 'room-a',
       clientId: 'client-a',
       instanceId: 'instance-a',
-      lastPullAt: 0,
+      lastPullAttemptAt: 0,
+      lastPullSuccessAt: 0,
+      lastPullFailureAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',
@@ -466,6 +499,34 @@ test('cloud sync main row pull applies newer remote payloads into local storage'
   assert.deepEqual(dump.colorOrder, ['remote-color-2']);
   assert.deepEqual(dump.presetOrder, ['preset-2']);
   assert.deepEqual(dump.hiddenPresets, []);
+});
+
+test('cloud sync main row use-remote resolution adopts the verified row before reporting success', async () => {
+  const remoteRow = {
+    room: 'room-a',
+    revision: 4,
+    updated_at: '2026-04-02T20:10:00.000Z',
+    updated_by: 'remote-client',
+    payload: {
+      savedModels: [{ id: 'remote-resolved', name: 'Remote Resolved' }],
+      savedColors: [],
+      colorSwatchesOrder: [],
+      presetOrder: [],
+      hiddenPresets: [],
+    },
+  };
+  const harness = createHarness({
+    resolveConflict: async (_room, resolution, adoptRemote) => {
+      assert.equal(resolution, 'use-remote');
+      assert.equal(adoptRemote(remoteRow), true);
+      return { ok: true, resolution, row: remoteRow };
+    },
+  });
+
+  const result = await harness.ops.resolveConflict('use-remote');
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(harness.storage.dump().savedModels, [{ id: 'remote-resolved', name: 'Remote Resolved' }]);
 });
 
 test('cloud sync main row first remote pull hydrates app maps even when stored hash already matches remote', async () => {
@@ -633,7 +694,9 @@ test('cloud sync main row push applies settled remote payload locally without fo
       room: 'room-a',
       clientId: 'client-a',
       instanceId: 'instance-a',
-      lastPullAt: 0,
+      lastPullAttemptAt: 0,
+      lastPullSuccessAt: 0,
+      lastPullFailureAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',
@@ -714,7 +777,9 @@ test('cloud sync main row collapses pull retries during a push into one post-pus
       room: 'room-a',
       clientId: 'client-a',
       instanceId: 'instance-a',
-      lastPullAt: 0,
+      lastPullAttemptAt: 0,
+      lastPullSuccessAt: 0,
+      lastPullFailureAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',
@@ -823,7 +888,9 @@ test('cloud sync main row keeps the earliest queued post-push pull delay across 
       room: 'room-a',
       clientId: 'client-a',
       instanceId: 'instance-a',
-      lastPullAt: 0,
+      lastPullAttemptAt: 0,
+      lastPullSuccessAt: 0,
+      lastPullFailureAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',
@@ -913,7 +980,9 @@ test('cloud sync main row notifies push-settled listeners only after the push fl
       room: 'room-a',
       clientId: 'client-a',
       instanceId: 'instance-a',
-      lastPullAt: 0,
+      lastPullAttemptAt: 0,
+      lastPullSuccessAt: 0,
+      lastPullFailureAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',
@@ -1002,7 +1071,9 @@ test('cloud sync main row keeps the earliest queued post-pull delay across mixed
       room: 'room-a',
       clientId: 'client-a',
       instanceId: 'instance-a',
-      lastPullAt: 0,
+      lastPullAttemptAt: 0,
+      lastPullSuccessAt: 0,
+      lastPullFailureAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',
@@ -1102,7 +1173,9 @@ test('cloud sync main row shares app-scoped push ownership across main-row insta
         room: 'room-a',
         clientId: 'client-a',
         instanceId: 'instance-a',
-        lastPullAt: 0,
+        lastPullAttemptAt: 0,
+        lastPullSuccessAt: 0,
+        lastPullFailureAt: 0,
         lastPushAt: 0,
         lastRealtimeEventAt: 0,
         lastError: '',
@@ -1222,7 +1295,9 @@ test('cloud sync main row collapses pull requests that arrive while a pull is al
       room: 'room-a',
       clientId: 'client-a',
       instanceId: 'instance-a',
-      lastPullAt: 0,
+      lastPullAttemptAt: 0,
+      lastPullSuccessAt: 0,
+      lastPullFailureAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',
@@ -1350,7 +1425,9 @@ test('cloud sync main row preserves one follow-up push request raised while a pu
       room: 'room-a',
       clientId: 'client-a',
       instanceId: 'instance-a',
-      lastPullAt: 0,
+      lastPullAttemptAt: 0,
+      lastPullSuccessAt: 0,
+      lastPullFailureAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',
@@ -1364,8 +1441,7 @@ test('cloud sync main row preserves one follow-up push request raised while a pu
   });
 
   const pushA = harness.ops.pushNow();
-  harness.storage.setJSON('savedModels', [{ id: 'model-2', name: 'Model 2' }]);
-  harness.ops.commitPerKeyCollections();
+  updateHarnessModels(harness, [{ id: 'model-2', name: 'Model 2' }]);
   harness.ops.schedulePush();
   assert.equal(
     harness.timers.filter(timer => timer.active).length,
@@ -1456,7 +1532,9 @@ test('cloud sync main row parks recovery pulls behind a debounced pending push s
       room: 'room-a',
       clientId: 'client-a',
       instanceId: 'instance-a',
-      lastPullAt: 0,
+      lastPullAttemptAt: 0,
+      lastPullSuccessAt: 0,
+      lastPullFailureAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',
@@ -1474,8 +1552,7 @@ test('cloud sync main row parks recovery pulls behind a debounced pending push s
     });
   });
 
-  harness.storage.setJSON('savedModels', [{ id: 'model-2', name: 'Model 2' }]);
-  harness.ops.commitPerKeyCollections();
+  updateHarnessModels(harness, [{ id: 'model-2', name: 'Model 2' }]);
   harness.ops.schedulePush();
   harness.ops.schedulePullSoon({ immediate: true, reason: 'realtime.main' });
 
@@ -1610,7 +1687,9 @@ test('cloud sync main row keeps canonical main pull reasons across a push-blocke
       room: 'room-a',
       clientId: 'client-a',
       instanceId: 'instance-a',
-      lastPullAt: 0,
+      lastPullAttemptAt: 0,
+      lastPullSuccessAt: 0,
+      lastPullFailureAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',

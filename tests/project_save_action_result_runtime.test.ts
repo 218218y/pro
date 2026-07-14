@@ -12,8 +12,8 @@ test('project save action result normalization keeps reasons canonical and strip
   assert.deepEqual(normalizeProjectSaveActionResult(false), { ok: false, reason: 'not-installed' });
   assert.deepEqual(
     normalizeProjectSaveActionResult({
-      ok: true,
-      pending: true,
+      accepted: true,
+      reused: false,
       operationId: 'save-1',
       acceptedAt: 123,
       settled,
@@ -21,8 +21,8 @@ test('project save action result normalization keeps reasons canonical and strip
       message: 'ignore me',
     }),
     {
-      ok: true,
-      pending: true,
+      accepted: true,
+      reused: false,
       operationId: 'save-1',
       acceptedAt: 123,
       settled,
@@ -31,7 +31,11 @@ test('project save action result normalization keeps reasons canonical and strip
   assert.deepEqual(normalizeProjectSaveActionResult({ ok: true, pending: true }), {
     ok: false,
     reason: 'invalid',
-    message: 'Project save pending result is missing its terminal operation handle.',
+    message: 'Legacy project save pending results are not supported; return an accepted operation handle.',
+  });
+  assert.deepEqual(normalizeProjectSaveActionResult({ ok: true, outcome: 'browser-delivery-completed' }), {
+    ok: true,
+    outcome: 'browser-delivery-completed',
   });
   assert.deepEqual(
     normalizeProjectSaveActionResult({

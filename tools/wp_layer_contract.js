@@ -27,17 +27,17 @@ try {
     throw new Error(`wp_layer_contract: unsupported argument(s): ${unknownArgs.join(', ')}`);
   }
   const graph = collectLayerContractGraph({ root });
+  const contract = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
   if (propose) {
-    print(buildLayerContractProposal(graph));
+    print(buildLayerContractProposal(graph, contract));
     process.exit(0);
   }
-  const contract = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
   const report = evaluateLayerContract(graph, contract);
   if (jsonOutput) print(report);
   else if (report.ok) {
-    console.log(`Layer contract v2 OK (${report.edges.length} allowed cross-layer edges)`);
+    console.log(`Layer contract v2.1 OK (${report.edges.length} allowed cross-layer edges)`);
   } else {
-    console.error('Layer contract v2 failed:');
+    console.error('Layer contract v2.1 failed:');
     for (const failure of report.failures) console.error(` - ${JSON.stringify(failure)}`);
   }
   process.exit(report.ok ? 0 : 1);

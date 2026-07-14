@@ -15,8 +15,9 @@ export function getProjectSaveToast(
   result: ProjectSaveActionResult | null | undefined
 ): ProjectActionToastLike | null {
   if (!result) return { message: 'שמירת פרויקט נכשלה', type: 'error' };
+  if (result.accepted === true) return null;
   if (result.ok === true) {
-    return result.pending === true ? null : { message: 'הפרויקט נשמר בהצלחה!', type: 'success' };
+    return { message: 'הפרויקט נשמר בהצלחה!', type: 'success' };
   }
   const failure = result;
   const reason = failure.reason;

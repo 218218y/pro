@@ -119,15 +119,14 @@ test('[project-save-load-controller] thrown save/load handlers preserve real err
   const inputTarget = { value: 'x' };
   await controller.handleLoadInputChange({ currentTarget: inputTarget });
   controller.performSave();
+  await new Promise(resolve => setTimeout(resolve, 0));
 
   assert.equal(inputTarget.value, '');
-  assert.equal(
-    JSON.stringify(reportCalls),
-    JSON.stringify([
-      ['load', { ok: false, reason: 'error', message: 'load exploded' }],
-      ['save', { ok: false, reason: 'error', message: 'prompt exploded' }],
-    ])
-  );
+  assert.deepEqual(reportCalls[0], ['load', { ok: false, reason: 'error', message: 'load exploded' }]);
+  assert.equal(reportCalls[1][0], 'save');
+  assert.equal(reportCalls[1][1].accepted, true);
+  assert.equal(reportCalls[1][1].reused, false);
+  assert.deepEqual(reportCalls[2], ['save', { ok: false, reason: 'error', message: 'prompt exploded' }]);
 });
 
 test('[project-save-load-controller] browser download failures preserve actionable messages from the canonical download seam', async () => {
@@ -173,13 +172,13 @@ test('[project-save-load-controller] browser download failures preserve actionab
   controller.performSave();
   await new Promise(resolve => setTimeout(resolve, 0));
 
-  assert.equal(
-    JSON.stringify(reportCalls),
-    JSON.stringify([
-      ['save', { ok: true, pending: true }],
-      ['save', { ok: false, reason: 'download-unavailable', message: 'browser blob download unavailable' }],
-    ])
-  );
+  assert.equal(reportCalls[0][0], 'save');
+  assert.equal(reportCalls[0][1].accepted, true);
+  assert.equal(reportCalls[0][1].reused, false);
+  assert.deepEqual(reportCalls[1], [
+    'save',
+    { ok: false, reason: 'download-unavailable', message: 'browser blob download unavailable' },
+  ]);
 });
 
 test('[project-save-load-controller] thrown non-Error save failures keep canonical actionable messages', async () => {
@@ -228,9 +227,13 @@ test('[project-save-load-controller] thrown non-Error save failures keep canonic
   const controller = createSaveLoadController(mod, saveActionHolder);
   controller.ensureSaveProjectAction();
   controller.performSave();
+  await new Promise(resolve => setTimeout(resolve, 0));
 
-  assert.equal(
-    JSON.stringify(reportCalls),
-    JSON.stringify([['save', { ok: false, reason: 'error', message: 'prompt record exploded' }]])
-  );
+  assert.equal(reportCalls[0][0], 'save');
+  assert.equal(reportCalls[0][1].accepted, true);
+  assert.equal(reportCalls[0][1].reused, false);
+  assert.deepEqual(reportCalls[1], [
+    'save',
+    { ok: false, reason: 'error', message: 'prompt record exploded' },
+  ]);
 });

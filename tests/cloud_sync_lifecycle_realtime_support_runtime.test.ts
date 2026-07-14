@@ -31,7 +31,7 @@ test('cloud sync realtime broadcast routing normalizes empty scope and rejects m
     runtimeStatus: {
       realtime: { enabled: true, state: 'subscribed', channel: 'wp:room-a' },
       polling: { active: false, intervalMs: 5000, reason: '' },
-      lastPullAt: 0,
+      lastPullSuccessAt: 0,
     } as any,
     suppressRef: { v: false },
     markRealtimeEvent: () => {
@@ -99,7 +99,7 @@ test('cloud sync realtime broadcast fallback refresh respects the canonical rece
       runtimeStatus: {
         realtime: { enabled: true, state: 'subscribed', channel: 'wp:room-a' },
         polling: { active: false, intervalMs: 5000, reason: '' },
-        lastPullAt: 18_900,
+        lastPullSuccessAt: 18_900,
       } as any,
       suppressRef: { v: false },
       markRealtimeEvent: () => {
@@ -176,7 +176,7 @@ test('cloud sync realtime broadcast routing ignores malformed/self/foreign hints
     runtimeStatus: {
       realtime: { enabled: true, state: 'subscribed', channel: 'wp:room-a' },
       polling: { active: false, intervalMs: 5000, reason: '' },
-      lastPullAt: 0,
+      lastPullSuccessAt: 0,
     } as any,
     suppressRef: { v: false },
     markRealtimeEvent: () => {

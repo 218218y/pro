@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { exportSystemSettings } from '../esm/native/ui/settings_backup.ts';
 import { createDownloadContext, createStore } from './settings_backup_export_runtime_helpers.ts';
+import { installCloudCollectionsForTestApp } from './cloud_collections_test_support.ts';
 
 test('exportSystemSettings reports download-unavailable when browser download primitives are missing', async () => {
   const app = {
@@ -20,6 +21,8 @@ test('exportSystemSettings reports download-unavailable when browser download pr
       },
     },
   };
+
+  installCloudCollectionsForTestApp(app);
 
   const result = await exportSystemSettings(app as never);
   assert.deepEqual(result, {
@@ -63,6 +66,8 @@ test('exportSystemSettings preserves actionable browser download failure message
     },
   };
 
+  installCloudCollectionsForTestApp(app);
+
   const result = await exportSystemSettings(app as never);
   assert.deepEqual(result, { ok: false, kind: 'export', reason: 'error', message: 'download exploded' });
 });
@@ -83,6 +88,8 @@ test('exportSystemSettings preserves upstream backup-build failures with actiona
       },
     },
   };
+
+  installCloudCollectionsForTestApp(app);
 
   const result = await exportSystemSettings(app as never);
   assert.deepEqual(result, { ok: false, kind: 'export', reason: 'error', message: 'export models exploded' });

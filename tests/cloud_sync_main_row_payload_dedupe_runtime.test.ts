@@ -83,7 +83,7 @@ function createHarness(rows: Array<any>, seed?: Record<string, unknown>) {
       room: 'room-a',
       clientId: 'client-a',
       instanceId: 'instance-a',
-      lastPullAt: 0,
+      lastPullSuccessAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',

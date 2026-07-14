@@ -241,6 +241,31 @@ export function installKernelHistoryLifecycle(
     historySystem.updateButtons(m);
   };
 
+  historySystem.captureSnapshot = () => ({
+    undoStack: historySystem.undoStack.slice(),
+    redoStack: historySystem.redoStack.slice(),
+    maxSteps: historySystem.maxSteps,
+    lastSavedJSON: historySystem.lastSavedJSON,
+    isPaused: historySystem.isPaused,
+    lastCoalesceKey: historySystem._lastCoalesceKey,
+    lastCoalesceAt: historySystem._lastCoalesceAt,
+    didInit: historySystem.__didInit,
+    isApplyingState: historySystem.__isApplyingState === true,
+  });
+
+  historySystem.restoreSnapshot = (snapshot, meta) => {
+    historySystem.undoStack = snapshot.undoStack.slice();
+    historySystem.redoStack = snapshot.redoStack.slice();
+    historySystem.maxSteps = snapshot.maxSteps;
+    historySystem.lastSavedJSON = snapshot.lastSavedJSON;
+    historySystem.isPaused = snapshot.isPaused;
+    historySystem._lastCoalesceKey = snapshot.lastCoalesceKey;
+    historySystem._lastCoalesceAt = snapshot.lastCoalesceAt;
+    historySystem.__didInit = snapshot.didInit;
+    historySystem.__isApplyingState = snapshot.isApplyingState;
+    historySystem.updateButtons(args.asRecord(meta, {}));
+  };
+
   historySystem.ensureBaseline = () => {
     if (!historySystem.lastSavedJSON) historySystem.lastSavedJSON = historySystem.getCurrentSnapshot();
     historySystem.updateButtons();

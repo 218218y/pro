@@ -11,7 +11,7 @@ function createStatus(retryAt: number): CloudSyncRuntimeStatus {
     instanceId: 'instance-a',
     realtime: { enabled: false, mode: 'broadcast', state: '', channel: '' },
     polling: { active: true, intervalMs: 2500, reason: 'fallback' },
-    lastPullAt: 0,
+    lastPullSuccessAt: 0,
     lastPushAt: 0,
     lastRealtimeEventAt: 0,
     lastError: 'credential:rate-limit',

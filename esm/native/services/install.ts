@@ -8,6 +8,7 @@ export { installHistoryService } from './history.js';
 export { installEditStateService } from './edit_state.js';
 export { installAutosaveService } from './autosave.js';
 export { installModelsService } from './models.js';
+export { installCloudCollectionsService } from './cloud_collections_service.js';
 export { installCameraService } from './camera.js';
 export { installSceneViewService } from './scene_view.js';
 export { installBuildReactionsService } from './build_reactions.js';

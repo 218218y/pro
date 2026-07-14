@@ -2,7 +2,7 @@
 // Split from ./build.ts into domain-focused seams to keep the public type surface stable while reducing monolith churn.
 
 import type { ToolsNamespaceLike } from './tools';
-import type { CloudSyncServiceStateLike } from './cloud_sync';
+import type { CloudCollectionsServiceLike, CloudSyncServiceStateLike } from './cloud_sync';
 import type { ModelsServiceLike } from './models';
 import type { UnknownRecord } from './common';
 import type { StateKernelLike } from './state';
@@ -54,11 +54,25 @@ export interface HistorySystemLike {
   getStatus?: () => HistoryStatusLike;
   updateButtons?: (meta?: ActionMetaLike) => void;
   resetBaseline?: (meta?: ActionMetaLike) => void;
+  captureSnapshot?: () => HistorySystemSnapshotLike;
+  restoreSnapshot?: (snapshot: HistorySystemSnapshotLike, meta?: ActionMetaLike) => void;
   ensureBaseline?: () => void;
   init?: () => void;
   onStatusChange?: HistoryStatusListener;
   subscribeStatus?: (listener: HistoryStatusListener) => () => void;
   [k: string]: unknown;
+}
+
+export interface HistorySystemSnapshotLike {
+  undoStack: string[];
+  redoStack: string[];
+  maxSteps: number;
+  lastSavedJSON: string | null;
+  isPaused: boolean;
+  lastCoalesceKey: string;
+  lastCoalesceAt: number;
+  didInit: boolean;
+  isApplyingState: boolean;
 }
 
 export interface HistoryServiceLike {
@@ -164,6 +178,12 @@ export interface AutosaveServiceLike extends UnknownRecord {
   cancelPending?: () => boolean;
   flushPending?: () => boolean;
   forceSaveNow?: () => boolean;
+  suspend?: () => AutosaveSuspensionLike;
+}
+
+export interface AutosaveSuspensionLike {
+  commit: () => void;
+  resume: () => void;
 }
 
 export type CanvasPickingNdcHandler = (x: number, y: number) => unknown;
@@ -469,6 +489,7 @@ export interface ServicesNamespace {
   uiBoot?: UiBootServiceLike;
   uiBootRuntime?: UiBootRuntimeServiceLike;
   storage?: StorageNamespaceLike;
+  cloudCollections?: CloudCollectionsServiceLike;
   autosave?: AutosaveServiceLike;
   project?: ProjectCaptureServiceLike;
   notes?: NotesNamespaceLike;

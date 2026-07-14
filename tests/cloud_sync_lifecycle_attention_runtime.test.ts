@@ -100,7 +100,7 @@ test('cloud sync attention pulls stay quiet right after a recent remote pull and
   try {
     const runtimeStatus = {
       realtime: { state: 'disconnected' },
-      lastPullAt: 15_500,
+      lastPullSuccessAt: 15_500,
     } as any;
 
     bindCloudSyncAttentionPulls({

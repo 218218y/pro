@@ -5,7 +5,9 @@ import { createCloudSyncPanelApiTestRig } from './cloud_sync_panel_api_runtime_h
 
 test('cloud sync panel api single-flights duplicate inflight async commands and returns busy for conflicting family targets', async () => {
   let resolveSync: ((value: { ok: true }) => void) | null = null;
-  let resolveRoom: ((value: { room: string; token: string; expiresAt: string }) => void) | null = null;
+  let resolveRoom:
+    ((value: { ok: true; credential: { room: string; token: string; expiresAt: string } }) => void) | null =
+    null;
   let resolveDeleteModels: ((value: { ok: true; removed: number }) => void) | null = null;
   let resolveSetFloatingTrue: ((value: { ok: true }) => void) | null = null;
   let resolveSetGateTrue: ((value: { ok: true }) => void) | null = null;
@@ -80,9 +82,12 @@ test('cloud sync panel api single-flights duplicate inflight async commands and 
   assert.notEqual(roomA, roomC);
   assert.deepEqual(await roomC, { ok: false, mode: 'public', reason: 'busy' });
   resolveRoom?.({
-    room: 'room-single-flight',
-    token: 'signed-single-flight-token',
-    expiresAt: '2026-07-20T08:00:00.000Z',
+    ok: true,
+    credential: {
+      room: 'room-single-flight',
+      token: 'signed-single-flight-token',
+      expiresAt: '2026-07-20T08:00:00.000Z',
+    },
   });
   assert.deepEqual(await roomA, {
     ok: true,

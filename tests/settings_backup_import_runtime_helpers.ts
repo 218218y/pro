@@ -1,3 +1,5 @@
+import { installCloudCollectionsForTestApp } from './cloud_collections_test_support.ts';
+
 export function createStore(config: Record<string, unknown>) {
   return {
     getState() {
@@ -104,7 +106,7 @@ export function createImportApp(opts?: { confirm?: boolean }) {
           SAVED_COLORS: 'wardrobeSavedColors',
         },
         setJSON() {
-          return undefined;
+          return true;
         },
         getJSON(_key: string, fallback: unknown[]) {
           return fallback;
@@ -112,5 +114,10 @@ export function createImportApp(opts?: { confirm?: boolean }) {
       },
     },
   };
+  installCollectionsForImportApp(app);
   return { app, confirmed };
+}
+
+export function installCollectionsForImportApp(app: any): void {
+  installCloudCollectionsForTestApp(app);
 }

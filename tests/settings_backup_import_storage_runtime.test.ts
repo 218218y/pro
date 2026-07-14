@@ -5,6 +5,7 @@ import { importSystemSettings } from '../esm/native/ui/settings_backup.ts';
 import {
   createImportApp,
   createStore,
+  installCollectionsForImportApp,
   installFakeFilePrimitives,
 } from './settings_backup_import_runtime_helpers.ts';
 
@@ -22,6 +23,8 @@ test('importSystemSettings drops stale preset collection ids when live preset re
       storageWrites[key] = value;
       return undefined;
     };
+    installCollectionsForImportApp(app);
+    storageWrites.length = 0;
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -111,6 +114,8 @@ test('importSystemSettings skips storage and order writes when imported collecti
         },
       },
     };
+    installCollectionsForImportApp(app);
+    storageWrites.length = 0;
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -133,7 +138,16 @@ test('importSystemSettings skips storage and order writes when imported collecti
     const result = await importSystemSettings(app as never, { currentTarget: input });
     assert.deepEqual(result, { ok: true, kind: 'import', modelsAdded: 0, colorsAdded: 0 });
     assert.equal(input.value, '');
-    assert.deepEqual(storageWrites, [['wardrobeSavedColors:order', ['new-color', '7', 'existing']]]);
+    assert.deepEqual(
+      storageWrites.map(([key]) => key),
+      ['wardrobeSavedModels:cloudCollections:v1', 'wardrobeSavedColors:order']
+    );
+    assert.deepEqual((storageWrites[0]?.[1] as { colorOrder?: unknown }).colorOrder, [
+      'new-color',
+      '7',
+      'existing',
+    ]);
+    assert.deepEqual(storageWrites[1]?.[1], ['new-color', '7', 'existing']);
     assert.deepEqual(liveColorOrders, [['new-color', '7', 'existing']]);
   } finally {
     env.restore();

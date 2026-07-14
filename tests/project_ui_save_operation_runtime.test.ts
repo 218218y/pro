@@ -42,8 +42,8 @@ test('project save perf span and browser event settle on the terminal business r
       resolveTerminal = resolve;
     });
     const operation = {
-      ok: true as const,
-      pending: true as const,
+      accepted: true as const,
+      reused: false,
       operationId: 'project-save-test-1',
       acceptedAt: Date.now(),
       settled,
@@ -54,8 +54,15 @@ test('project save perf span and browser event settle on the terminal business r
       fb: null,
       saveProject: () => operation,
     });
+    const reused = { ...operation, reused: true };
+    const reusedReturned = runProjectUiSaveAction({
+      app,
+      fb: null,
+      saveProject: () => reused,
+    });
 
     assert.equal(returned, operation);
+    assert.equal(reusedReturned, reused);
     assert.equal(
       getPerfEntries(app).some(entry => entry.name === 'project.save'),
       false

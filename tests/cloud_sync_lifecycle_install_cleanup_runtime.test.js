@@ -8,8 +8,9 @@ import {
   makeApp,
 } from './cloud_sync_lifecycle_runtime_helpers.js';
 import { clearCloudSyncPublishedState } from '../esm/native/services/cloud_sync_install_support.ts';
+import { installCloudCollectionsService } from '../esm/native/services/cloud_collections_service.ts';
 
-test('cloud_sync lifecycle: double install/uninstall stays idempotent and cleans listeners/wrappers', async () => {
+test('cloud_sync lifecycle: double install/uninstall stays idempotent and cleans listeners/subscriptions', async () => {
   const timers = createTimerHarness();
   const fetchStub = createFetchStub();
   timers.install();
@@ -18,16 +19,16 @@ test('cloud_sync lifecycle: double install/uninstall stays idempotent and cleans
   try {
     const { app, win, doc, storage } = makeApp({ realtime: false, pollMs: 25 });
 
+    installCloudCollectionsService(app);
     await installCloudSyncService(app);
     assert.equal(typeof app.services.cloudSync.dispose, 'function');
     assert.equal(timers.activeCount('interval'), 1);
     assert.equal(win.listenerCount('focus'), 1);
     assert.equal(win.listenerCount('online'), 1);
     assert.equal(doc.listenerCount('visibilitychange'), 1);
-    assert.notEqual(storage.setString, storage.__origFns.setString);
-    assert.notEqual(storage.setJSON, storage.__origFns.setJSON);
-    assert.notEqual(storage.remove, storage.__origFns.remove);
-    assert.ok(storage.__wp_cloudSync_origStorageFns);
+    assert.equal(storage.setString, storage.__origFns.setString);
+    assert.equal(storage.setJSON, storage.__origFns.setJSON);
+    assert.equal(storage.remove, storage.__origFns.remove);
 
     await installCloudSyncService(app);
     assert.equal(typeof app.services.cloudSync.dispose, 'function');
@@ -52,7 +53,6 @@ test('cloud_sync lifecycle: double install/uninstall stays idempotent and cleans
     assert.equal(storage.setString, storage.__origFns.setString);
     assert.equal(storage.setJSON, storage.__origFns.setJSON);
     assert.equal(storage.remove, storage.__origFns.remove);
-    assert.equal('__wp_cloudSync_origStorageFns' in storage, false);
   } finally {
     fetchStub.restore();
     timers.restore();
@@ -67,6 +67,7 @@ test('cloud_sync lifecycle: no timer/listener leaks after dispose', async () => 
 
   try {
     const { app, win } = makeApp({ realtime: false, pollMs: 25 });
+    installCloudCollectionsService(app);
     await installCloudSyncService(app);
 
     const fetchCountBeforeDispose = fetchStub.calls.length;

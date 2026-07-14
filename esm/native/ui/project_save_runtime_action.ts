@@ -7,8 +7,9 @@ import {
   getUiFeedback,
   metaUiOnly,
   reportError,
+  reuseAsyncOperationHandle,
   setDirtyViaActions,
-  type ProjectSavePendingResult,
+  type ProjectSaveAcceptedResult,
   type ProjectSaveTerminalResult,
 } from '../services/api.js';
 import { downloadJsonTextResultViaBrowser, normalizeDownloadFilename } from './browser_file_download.js';
@@ -27,7 +28,7 @@ import {
   scheduleSaveResultToast,
 } from './project_save_runtime_results.js';
 
-const activeSaveOperations = new WeakMap<AppContainer, ProjectSavePendingResult>();
+const activeSaveOperations = new WeakMap<AppContainer, ProjectSaveAcceptedResult>();
 
 type PreparedProjectSaveExport =
   | { ok: true; exported: ProjectExportResultLike; defaultName: string }
@@ -98,7 +99,10 @@ function runPreparedProjectSaveFlow(
         reportProjectSaveRuntimeNonFatal(App, 'saveProject.clearDirty', error);
       }
 
-      return { ok: true } satisfies ProjectSaveActionResult;
+      return {
+        ok: true,
+        outcome: 'browser-delivery-completed',
+      } satisfies ProjectSaveActionResult;
     },
   });
 }
@@ -117,7 +121,8 @@ export function runEnsureSaveProjectAction(
         return buildProjectSaveFailureResult('busy');
       }
       if (actionFamily.status === 'reused') {
-        return activeSaveOperations.get(App) || buildProjectSaveFailureResult('busy');
+        const active = activeSaveOperations.get(App);
+        return active ? reuseAsyncOperationHandle(active) : buildProjectSaveFailureResult('busy');
       }
 
       const prepared = prepareProjectSaveExport(App);
@@ -130,11 +135,10 @@ export function runEnsureSaveProjectAction(
       const settled: Promise<ProjectSaveTerminalResult> = flight
         .then(result => result as ProjectSaveTerminalResult)
         .catch(error => buildProjectSaveActionErrorResult(error, 'Project save failed.'));
-      const operation = {
-        ok: true,
-        pending: true,
-        ...createAsyncOperationHandle('project-save', settled),
-      } satisfies ProjectSavePendingResult;
+      const operation = createAsyncOperationHandle(
+        'project-save',
+        settled
+      ) satisfies ProjectSaveAcceptedResult;
       activeSaveOperations.set(App, operation);
       settled
         .then(result => {

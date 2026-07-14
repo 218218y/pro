@@ -1,5 +1,7 @@
 import type {
   AppContainer,
+  CloudSyncConflictResolution,
+  CloudSyncConflictResolutionResult,
   CloudSyncDiagFn,
   CloudSyncRuntimeStatus,
   TimeoutHandleLike,
@@ -7,6 +9,7 @@ import type {
 
 import type { SupabaseCfg } from './cloud_sync_config.js';
 import type { CloudSyncGetRowFn, CloudSyncUpsertRowFn, StorageLike } from './cloud_sync_owner_context.js';
+import type { CloudSyncResolveConflictFn } from './cloud_sync_owner_context_runtime_access.js';
 import type { CloudSyncMainRowLocalState } from './cloud_sync_main_row_local.js';
 import type { CloudSyncMainRowRemoteOps } from './cloud_sync_main_row_remote.js';
 import type { CloudSyncRealtimeHintSender } from './cloud_sync_pull_scopes.js';
@@ -25,6 +28,7 @@ export type CreateCloudSyncMainRowOpsArgs = {
   keyHiddenPresets: string;
   getRow: CloudSyncGetRowFn;
   upsertRow: CloudSyncUpsertRowFn;
+  resolveConflict: CloudSyncResolveConflictFn;
   setTimeoutFn: (handler: () => void, ms: number) => TimeoutHandleLike;
   clearTimeoutFn: (id: TimeoutHandleLike | null | undefined) => void;
   runtimeStatus: CloudSyncRuntimeStatus;
@@ -45,7 +49,8 @@ export type CloudSyncMainRowOps = {
   runMainWriteFlight: <T>(key: string, run: () => Promise<T>, onBusy: () => T | Promise<T>) => Promise<T>;
   setLastSeenUpdatedAt: (value: string) => void;
   setLastHash: (value: string) => void;
-  commitPerKeyCollections: () => void;
+  subscribeCollections: (listener: () => void) => () => void;
+  resolveConflict: (resolution: CloudSyncConflictResolution) => Promise<CloudSyncConflictResolutionResult>;
   dispose: () => void;
 };
 

@@ -5,6 +5,7 @@ import type {
   ProjectIoLoadResultLike,
   ProjectLoadOpts,
   ProjectPdfStateLike,
+  HistorySystemSnapshotLike,
   UnknownRecord,
 } from '../../../types/index.js';
 import {
@@ -22,11 +23,8 @@ export type ProjectPdfPatchLike = Pick<ProjectPdfStateLike, 'orderPdfEditorDraft
 export type ProjectIoUiStateLike = ProjectPdfStateLike & UnknownRecord & { raw?: UnknownRecord | undefined };
 export type HistorySystemLike = UnknownRecord & {
   resetBaseline?: (meta?: ActionMetaLike) => unknown;
-  getCurrentSnapshot?: () => string;
-  updateButtons?: () => unknown;
-  undoStack?: unknown[];
-  redoStack?: unknown[];
-  lastSavedJSON?: string;
+  captureSnapshot?: () => HistorySystemSnapshotLike;
+  restoreSnapshot?: (snapshot: HistorySystemSnapshotLike, meta?: ActionMetaLike) => unknown;
 };
 
 export type ProjectIoRuntimeContext = {

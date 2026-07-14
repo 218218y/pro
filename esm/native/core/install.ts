@@ -14,6 +14,7 @@ import { installHistoryService } from '../services/history.js';
 import { installEditStateService } from '../services/edit_state.js';
 import { installAutosaveService } from '../services/autosave.js';
 import { installModelsService } from '../services/models.js';
+import { installCloudCollectionsService } from '../services/cloud_collections_service.js';
 import { installCloudSyncService } from '../services/cloud_sync.js';
 import { installAppStartService } from '../services/app_start.js';
 import { installBootFinalizers } from '../services/boot_finalizers.js';
@@ -27,6 +28,7 @@ const CORE_INSTALL_SURFACE = Object.freeze({
   installEditStateService,
   installAutosaveService,
   installModelsService,
+  installCloudCollectionsService,
   installCloudSyncService,
   installAppStartService,
   installBootFinalizers,
@@ -66,6 +68,7 @@ export { installHistoryService };
 export { installEditStateService };
 export { installAutosaveService };
 export { installModelsService };
+export { installCloudCollectionsService };
 export { installCloudSyncService };
 export { installAppStartService };
 export { installBootFinalizers };

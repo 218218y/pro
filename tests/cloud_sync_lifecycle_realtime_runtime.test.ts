@@ -17,7 +17,7 @@ type RealtimeHarness = {
     room: string;
     clientId: string;
     instanceId: string;
-    lastPullAt: number;
+    lastPullSuccessAt: number;
     lastPushAt: number;
     lastRealtimeEventAt: number;
     lastError: string;
@@ -54,7 +54,7 @@ function createHarness(opts?: {
       instanceId: 'instance-a',
       realtime: { enabled: true, mode: 'broadcast', state: 'idle', channel: '' },
       polling: { active: false, intervalMs: 5000, reason: '' },
-      lastPullAt: 0,
+      lastPullSuccessAt: 0,
       lastPushAt: 0,
       lastRealtimeEventAt: 0,
       lastError: '',

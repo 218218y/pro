@@ -53,12 +53,23 @@ function createLoaderHarness() {
     },
     services: {
       projectIO: { runtime: {} },
+      autosave: {
+        suspend() {
+          return { commit() {}, resume() {} };
+        },
+      },
       notes: { restoreFromSave() {} },
       history: { resetBaseline() {} },
       camera: { adjustForChest() {}, adjustForCorner() {}, resetPreset() {} },
       render: { setAutoCameraBuildKey() {}, requestBuild() {} },
       lights: { update() {} },
       editModes: { resetAll() {} },
+      editState: { resetAllEditModes() {} },
+      builder: {
+        requestBuild() {
+          return true;
+        },
+      },
     },
     store: {
       getState() {

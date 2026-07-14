@@ -25,7 +25,7 @@ function makeRuntimeStatus(overrides?: Partial<any>): any {
       reason: '',
       ...(overrides?.polling || {}),
     },
-    lastPullAt: 0,
+    lastPullSuccessAt: 0,
     lastPushAt: 0,
     lastRealtimeEventAt: 0,
     lastError: '',

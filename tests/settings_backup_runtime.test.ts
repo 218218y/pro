@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { exportSystemSettings, importSystemSettings } from '../esm/native/ui/settings_backup.ts';
 import { getPerfEntries } from '../esm/native/runtime/perf_runtime_surface.ts';
+import { installCloudCollectionsForTestApp } from './cloud_collections_test_support.ts';
 
 type DownloadAnchor = {
   href: string;
@@ -106,6 +107,8 @@ test('exportSystemSettings returns a success result and triggers browser downloa
     },
   };
 
+  installCloudCollectionsForTestApp(app);
+
   const result = await exportSystemSettings(app as never);
   assert.deepEqual(result, { ok: true, kind: 'export', modelsCount: 1, colorsCount: 1 });
   assert.equal(downloads.length, 1);
@@ -202,6 +205,8 @@ test('importSystemSettings merges models/colors, syncs storage order, and clears
       },
     };
 
+    installCloudCollectionsForTestApp(app);
+
     const payload = {
       type: 'system_backup',
       timestamp: Date.now(),
@@ -242,7 +247,7 @@ test('importSystemSettings merges models/colors, syncs storage order, and clears
     assert.equal(getPerfEntries(app as never, 'settingsBackup.import.models.merge').length, 1);
     assert.equal(getPerfEntries(app as never, 'settingsBackup.import.colors').length, 1);
     assert.equal(getPerfEntries(app as never, 'settingsBackup.import.models.finalize').length, 1);
-    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.storage.write').length, 4);
+    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.collections.commit').length, 1);
   } finally {
     (globalThis as { FileReader?: unknown }).FileReader = originalReader;
     (globalThis as { File?: unknown }).File = originalFile;

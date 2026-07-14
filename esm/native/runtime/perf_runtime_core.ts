@@ -99,12 +99,14 @@ export function buildPerfEntryOptionsFromActionResult(result: unknown): PerfEntr
 
   const reason = typeof rec.reason === 'string' && rec.reason.trim() ? rec.reason.trim() : undefined;
   const message = typeof rec.message === 'string' && rec.message.trim() ? rec.message.trim() : undefined;
+  const outcome = typeof rec.outcome === 'string' && rec.outcome.trim() ? rec.outcome.trim() : undefined;
   const perfStatus = normalizePerfResultStatus(rec.perfStatus);
   const perfError = normalizeErrorMessage(rec.perfError);
 
   const detail: Record<string, unknown> = {};
   if (reason) detail.reason = reason;
   if (rec.pending === true) detail.pending = true;
+  if (outcome) detail.outcome = outcome;
   if (message) detail.message = message;
 
   if (perfStatus) {

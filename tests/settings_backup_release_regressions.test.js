@@ -60,8 +60,29 @@ function loadSettingsBackupModule() {
       renderModelUiViaActionsOrThrow: () => undefined,
       metaMerge: (_app, meta) => meta,
       metaRestore: (_app, meta) => meta,
-      getStorageServiceMaybe: app => app.services?.storage ?? null,
-      getStorageKey: (_app, _slot, fallback) => fallback,
+      readCloudCollectionsEnvelopeViaServiceOrThrow: app =>
+        app.__cloudCollections || {
+          schemaVersion: 1,
+          revision: 0,
+          savedModels: [],
+          savedColors: [],
+          colorOrder: [],
+          presetOrder: [],
+          hiddenPresets: [],
+        },
+      updateCloudCollectionsViaServiceOrThrow: (app, mutation) => {
+        const current = app.__cloudCollections || {
+          schemaVersion: 1,
+          revision: 0,
+          savedModels: [],
+          savedColors: [],
+          colorOrder: [],
+          presetOrder: [],
+          hiddenPresets: [],
+        };
+        app.__cloudCollections = { ...current, ...mutation, revision: current.revision + 1 };
+        return app.__cloudCollections;
+      },
       getModelsServiceMaybe: app => app.services?.models ?? null,
       exportUserModelsViaService: app => app.services?.models?.exportUserModels?.(),
       mergeImportedModelsViaServiceOrThrow: (app, list) =>

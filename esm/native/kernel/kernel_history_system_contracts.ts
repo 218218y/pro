@@ -14,6 +14,18 @@ interface BrowserTimersLike {
 export type KernelHistoryStatus = HistoryStatusLike;
 export type KernelHistoryStatusListener = HistoryStatusListener;
 
+export interface KernelHistorySnapshot {
+  undoStack: string[];
+  redoStack: string[];
+  maxSteps: number;
+  lastSavedJSON: string | null;
+  isPaused: boolean;
+  lastCoalesceKey: string;
+  lastCoalesceAt: number;
+  didInit: boolean;
+  isApplyingState: boolean;
+}
+
 export interface KernelHistorySystem {
   undoStack: string[];
   redoStack: string[];
@@ -37,6 +49,8 @@ export interface KernelHistorySystem {
   getStatus: () => KernelHistoryStatus;
   updateButtons: (meta?: ActionMetaLike) => void;
   resetBaseline: (meta?: ActionMetaLike) => void;
+  captureSnapshot: () => KernelHistorySnapshot;
+  restoreSnapshot: (snapshot: KernelHistorySnapshot, meta?: ActionMetaLike) => void;
   ensureBaseline: () => void;
   init: () => void;
   onStatusChange?: KernelHistoryStatusListener;

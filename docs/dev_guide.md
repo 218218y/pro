@@ -53,10 +53,12 @@ switch; do not restore configurable mount ids, optional roots, or CSS rules that
 - `tools/*` — verification, release, bundle, audit, and smoke scripts.
 
 The layer contract is an explicit target policy, not an auto-updated snapshot. `npm run contract:layers`
-parses ESM imports through the AST, rejects unlisted cross-layer edges, fails when an approved edge gains
-importer files beyond its reviewed budget, rejects stale rules, and enforces declared public facades. Use
-`npm run contract:layers:propose` only to inspect a candidate policy; review its reasons, budgets, and
-facades before editing `tools/wp_layer_baseline.json` deliberately.
+parses ESM imports through the AST, distinguishes type, value, and dynamic dependencies, rejects unlisted
+cross-layer edges, and enforces separate importer and import-count budgets for every dependency kind. It
+also rejects stale or malformed rules and enforces declared public facades. Use
+`npm run contract:layers:propose` only to inspect a candidate policy: the proposal preserves reviewed
+reasons and facades and reports edge and budget diffs, but it never edits `tools/wp_layer_baseline.json`.
+Lower a budget only when a verified owner/facade migration has actually removed the corresponding imports.
 
 ## Change workflow
 

@@ -13,7 +13,9 @@ import {
 } from './autosave_shared.js';
 import { commitAutosaveNow } from './autosave_runtime.js';
 
-import type { AppContainer } from '../../../types';
+import type { AppContainer, AutosaveSuspensionLike } from '../../../types';
+
+const DEFAULT_AUTOSAVE_DELAY_MS = 4000;
 
 export function cancelAutosaveTimer(App?: AppContainer): void {
   if (App && typeof App === 'object') {
@@ -30,7 +32,7 @@ export function flushAutosavePending(App: AppContainer): boolean {
   return commitAutosaveNow(App);
 }
 
-export function scheduleAutosave(App: AppContainer): void {
+function scheduleAutosaveAfter(App: AppContainer, delayMs: number): void {
   if (!canAutosaveRun(App)) return;
 
   const state = ensureAutosaveScheduleState(App);
@@ -51,7 +53,8 @@ export function scheduleAutosave(App: AppContainer): void {
       // ignore
     }
   };
-  state.timerDueAt = Date.now() + 4000;
+  const safeDelayMs = Math.max(0, Math.floor(Number(delayMs) || 0));
+  state.timerDueAt = Date.now() + safeDelayMs;
   state.timer = timers.setTimeout(() => {
     state.timer = null;
     state.timerDueAt = null;
@@ -85,6 +88,29 @@ export function scheduleAutosave(App: AppContainer): void {
         // ignore
       }
     }
-  }, 4000);
+  }, safeDelayMs);
   refreshAutosaveScheduleStateRegistration(state);
+}
+
+export function scheduleAutosave(App: AppContainer): void {
+  scheduleAutosaveAfter(App, DEFAULT_AUTOSAVE_DELAY_MS);
+}
+
+export function suspendAutosaveSchedule(App: AppContainer): AutosaveSuspensionLike {
+  const state = ensureAutosaveScheduleState(App);
+  const hadPending = !!(state.timer || state.idlePending || state.idleTimeoutTimer);
+  const remainingDelayMs = state.timer ? Math.max(0, Number(state.timerDueAt || Date.now()) - Date.now()) : 0;
+  cancelAutosaveScheduleState(state);
+
+  let active = true;
+  return {
+    commit(): void {
+      active = false;
+    },
+    resume(): void {
+      if (!active) return;
+      active = false;
+      if (hadPending) scheduleAutosaveAfter(App, remainingDelayMs);
+    },
+  };
 }

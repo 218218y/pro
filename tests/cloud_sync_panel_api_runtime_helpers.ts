@@ -100,9 +100,17 @@ export function createCloudSyncPanelApiTestRig(overrides: OverrideBag = {}): Clo
       return true;
     },
     issuePrivateRoom: async () => ({
-      room: 'generated-room',
-      token: 'signed-generated-token',
-      expiresAt: '2026-07-20T08:00:00.000Z',
+      ok: true as const,
+      credential: {
+        room: 'generated-room',
+        token: 'signed-generated-token',
+        expiresAt: '2026-07-20T08:00:00.000Z',
+      },
+    }),
+    resolveConflict: async (resolution: 'keep-local' | 'use-remote') => ({
+      ok: false as const,
+      resolution,
+      reason: 'missing-conflict' as const,
     }),
     setRoomCredentialInUrl: () => true,
     reinstallOwnerForRoomChange: async () => {},

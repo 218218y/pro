@@ -34,6 +34,7 @@ import {
   installEditStateService,
   installAutosaveService,
   installModelsService,
+  installCloudCollectionsService,
   installCloudSyncService,
   installAppStartService,
   installBootFinalizers,
@@ -179,6 +180,11 @@ export const BOOT_STEPS: BootStep[] = [
     id: 'services.autosave',
     phase: 'services',
     run: requireBootInstaller(installAutosaveService, 'services.autosave'),
+  },
+  {
+    id: 'services.cloudCollections',
+    phase: 'services',
+    run: requireBootInstaller(installCloudCollectionsService, 'services.cloudCollections'),
   },
   {
     id: 'services.models',

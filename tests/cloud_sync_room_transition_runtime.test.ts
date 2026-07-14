@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { installCloudSyncService } from '../esm/native/services/cloud_sync.ts';
+import { createCloudCollectionsRepository } from '../esm/native/services/cloud_sync_collections_repository.ts';
 import {
   getCloudSyncServiceMaybe,
   getCloudSyncServiceStateMaybe,
@@ -258,7 +259,16 @@ test('cloud sync room transition reinstalls the room-scoped owner before subsequ
   const publicWritesBeforeLocalMutation = requests.filter(
     request => request.action === 'write' && request.room === 'public'
   ).length;
-  storage.setJSON('saved-models', [{ id: 'after-room-switch', name: 'After room switch' }]);
+  createCloudCollectionsRepository({
+    storage,
+    keys: {
+      models: 'saved-models',
+      colors: 'saved-colors',
+      colorOrder: 'saved-colors:order',
+      presetOrder: 'saved-models:presetOrder',
+      hiddenPresets: 'saved-models:hiddenPresets',
+    },
+  }).update({ savedModels: [{ id: 'after-room-switch', name: 'After room switch' }] });
   await waitFor(
     () =>
       requests.some(

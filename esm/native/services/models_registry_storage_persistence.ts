@@ -1,6 +1,10 @@
 import type { AppContainer, SavedModelLike } from '../../../types';
 
 import {
+  readCloudCollectionsEnvelopeViaServiceOrThrow,
+  updateCloudCollectionsViaServiceOrThrow,
+} from '../runtime/cloud_collections_access.js';
+import {
   asMutableModelsList,
   asMutableSavedModel,
   markModelAsSavedModel,
@@ -9,7 +13,6 @@ import {
 } from './models_registry_contracts.js';
 import { _modelsReportNonFatal } from './models_registry_nonfatal.js';
 import { _normalizeList } from './models_registry_normalization.js';
-import { getStorage, _key, _keyHiddenPresets, _keyPresetOrder } from './models_registry_storage_keys.js';
 import { getModelsRuntimeStateForApp } from './models_registry_state.js';
 
 function normalizeIdList(ids: readonly unknown[]): string[] {
@@ -35,25 +38,6 @@ function filterAvailableIds(ids: string[], availableIds?: ReadonlySet<string> | 
   return out;
 }
 
-function readStoredJsonArray(st: ReturnType<typeof getStorage>, key: string): unknown[] {
-  if (!st) return [];
-  if (typeof st.getJSON === 'function') {
-    const arr = st.getJSON<unknown[]>(key, []);
-    return Array.isArray(arr) ? arr : [];
-  }
-  if (typeof st.getString === 'function') {
-    const raw = st.getString(key);
-    if (!raw) return [];
-    try {
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (e) {
-      _modelsReportNonFatal(null, 'readStoredJsonArray.parse', e, 1500);
-    }
-  }
-  return [];
-}
-
 function stringifyComparable(value: unknown): string {
   try {
     return JSON.stringify(value);
@@ -62,20 +46,15 @@ function stringifyComparable(value: unknown): string {
   }
 }
 
-function persistCanonicalArray(App: AppContainer, key: string, value: unknown[]): boolean {
+function persistCollectionsMutation(
+  App: AppContainer,
+  mutation: Parameters<typeof updateCloudCollectionsViaServiceOrThrow>[1]
+): boolean {
   try {
-    const st = getStorage(App);
-    if (!st) return false;
-    if (typeof st.setJSON === 'function') {
-      st.setJSON(key, value);
-      return true;
-    }
-    if (typeof st.setString === 'function') {
-      st.setString(key, JSON.stringify(value));
-      return true;
-    }
+    updateCloudCollectionsViaServiceOrThrow(App, mutation, 'models registry persistence');
+    return true;
   } catch (e) {
-    _modelsReportNonFatal(App, 'persistCanonicalArray', e, 1500);
+    _modelsReportNonFatal(App, 'persistCollectionsMutation', e, 1500);
   }
   return false;
 }
@@ -85,12 +64,13 @@ export function _getStoredHiddenPresets(
   availableIds?: ReadonlySet<string> | null
 ): string[] {
   try {
-    const st = getStorage(App);
-    const key = _keyHiddenPresets(App);
-    const raw = readStoredJsonArray(st, key);
+    const raw = readCloudCollectionsEnvelopeViaServiceOrThrow(
+      App,
+      'models hidden presets read'
+    ).hiddenPresets;
     const normalized = filterAvailableIds(normalizeIdList(raw), availableIds);
     if (stringifyComparable(raw) !== stringifyComparable(normalized))
-      persistCanonicalArray(App, key, normalized);
+      persistCollectionsMutation(App, { hiddenPresets: normalized });
     return normalized;
   } catch (e) {
     _modelsReportNonFatal(App, 'getStoredHiddenPresets', e, 1500);
@@ -99,7 +79,7 @@ export function _getStoredHiddenPresets(
 }
 
 export function _setStoredHiddenPresets(App: AppContainer, ids: string[]): boolean {
-  return persistCanonicalArray(App, _keyHiddenPresets(App), normalizeIdList(ids));
+  return persistCollectionsMutation(App, { hiddenPresets: normalizeIdList(ids) });
 }
 
 export function _getStoredPresetOrder(
@@ -107,12 +87,10 @@ export function _getStoredPresetOrder(
   availableIds?: ReadonlySet<string> | null
 ): string[] {
   try {
-    const st = getStorage(App);
-    const key = _keyPresetOrder(App);
-    const raw = readStoredJsonArray(st, key);
+    const raw = readCloudCollectionsEnvelopeViaServiceOrThrow(App, 'models preset order read').presetOrder;
     const normalized = filterAvailableIds(normalizeIdList(raw), availableIds);
     if (stringifyComparable(raw) !== stringifyComparable(normalized))
-      persistCanonicalArray(App, key, normalized);
+      persistCollectionsMutation(App, { presetOrder: normalized });
     return normalized;
   } catch (e) {
     _modelsReportNonFatal(App, 'getStoredPresetOrder', e, 1500);
@@ -121,7 +99,7 @@ export function _getStoredPresetOrder(
 }
 
 export function _setStoredPresetOrder(App: AppContainer, ids: string[]): boolean {
-  return persistCanonicalArray(App, _keyPresetOrder(App), normalizeIdList(ids));
+  return persistCollectionsMutation(App, { presetOrder: normalizeIdList(ids) });
 }
 
 export function _persistPresetOrder(App: AppContainer): void {
@@ -142,12 +120,10 @@ export function _persistPresetOrder(App: AppContainer): void {
 
 export function _getStoredUserModels(App: AppContainer): SavedModelLike[] {
   try {
-    const st = getStorage(App);
-    const key = _key(App);
-    const raw = readStoredJsonArray(st, key);
+    const raw = readCloudCollectionsEnvelopeViaServiceOrThrow(App, 'models saved models read').savedModels;
     const normalized = _normalizeList(raw);
     if (stringifyComparable(raw) !== stringifyComparable(normalized))
-      persistCanonicalArray(App, key, normalized);
+      persistCollectionsMutation(App, { savedModels: normalized });
     return normalized;
   } catch (e) {
     _modelsReportNonFatal(App, 'getStoredUserModels', e, 1500);
@@ -156,7 +132,7 @@ export function _getStoredUserModels(App: AppContainer): SavedModelLike[] {
 }
 
 export function _setStoredUserModels(App: AppContainer, list: SavedModelLike[]): boolean {
-  return persistCanonicalArray(App, _key(App), list);
+  return persistCollectionsMutation(App, { savedModels: list });
 }
 
 export function _persistUserOnly(App: AppContainer): void {

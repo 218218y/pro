@@ -222,14 +222,19 @@ test('[contracts-design-color-feedback] DesignTab color workflows use stable fee
     [
       /export function applySavedColorsAtomicMutation\(/,
       /patchViaActions\(/,
-      /getStorageKey\(/,
-      /setStorageJSON\(/,
+      /updateCloudCollectionsViaServiceOrThrow\(/,
       /runHistoryBatch\(/,
       /setCfgSavedColors\(/,
       /setCfgColorSwatchesOrder\(/,
       /setUiColorChoice\(/,
     ],
     'design saved colors atomic mutation helper'
+  );
+  assertLacksAll(
+    assert,
+    designSavedColorsAtomic,
+    [/getStorageKey\(/, /setStorageJSON\(/],
+    'design saved colors direct storage access'
   );
 
   assertMatchesAll(

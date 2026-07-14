@@ -23,7 +23,7 @@ function createRuntimeStatus() {
       channel: '',
     },
     polling: { active: false, intervalMs: 25, reason: '' },
-    lastPullAt: 0,
+    lastPullSuccessAt: 0,
     lastPushAt: 0,
     lastRealtimeEventAt: 0,
     lastError: '',

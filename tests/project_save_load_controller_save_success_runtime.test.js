@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadProjectSaveLoadControllerModule } from './project_save_load_controller_runtime_helpers.js';
 
-test('[project-save-load-controller] installed save action exports current project at click time and reports pending/final results canonically', async () => {
+test('[project-save-load-controller] installed save action reports accepted/reused and one terminal business result', async () => {
   const toasts = [];
   const reportCalls = [];
   const setDirtyCalls = [];
@@ -86,30 +86,26 @@ test('[project-save-load-controller] installed save action exports current proje
   controller.performSave();
   await new Promise(resolve => setTimeout(resolve, 0));
 
-  assert.deepEqual(exportCalls, ['{"version":1}', '{"version":2}']);
-  assert.deepEqual(promptCalls, [
-    ['בחר שם לקובץ השמירה:', 'demo_project'],
-    ['בחר שם לקובץ השמירה:', 'demo_project'],
-  ]);
-  assert.equal(downloadCalls.length, 2);
+  assert.deepEqual(exportCalls, ['{"version":1}']);
+  assert.deepEqual(promptCalls, [['בחר שם לקובץ השמירה:', 'demo_project']]);
+  assert.equal(downloadCalls.length, 1);
   assert.equal(downloadCalls[0][1], 'saved_name.json');
   assert.equal(downloadCalls[0][2], '{"version":1}');
-  assert.equal(downloadCalls[1][2], '{"version":2}');
-  assert.deepEqual(setDirtyCalls, [
-    [false, { source: 'saveProject' }],
-    [false, { source: 'saveProject' }],
-  ]);
-  assert.deepEqual(toasts, [
-    ['הפרויקט נשמר בהצלחה!', 'success'],
-    ['הפרויקט נשמר בהצלחה!', 'success'],
-  ]);
-  assert.equal(
-    JSON.stringify(reportCalls),
-    JSON.stringify([
-      ['save', { ok: true, pending: true }],
-      ['save', { ok: true, pending: true }],
-      ['save', { ok: true }],
-      ['save', { ok: true }],
-    ])
+  assert.deepEqual(setDirtyCalls, [[false, { source: 'saveProject' }]]);
+  assert.deepEqual(toasts, [['הפרויקט נשמר בהצלחה!', 'success']]);
+  assert.equal(reportCalls.length, 3);
+  assert.deepEqual(
+    reportCalls.map(([action, result]) => [
+      action,
+      result.accepted,
+      result.reused,
+      result.ok,
+      result.outcome,
+    ]),
+    [
+      ['save', true, false, undefined, undefined],
+      ['save', true, true, undefined, undefined],
+      ['save', undefined, undefined, true, 'browser-delivery-completed'],
+    ]
   );
 });

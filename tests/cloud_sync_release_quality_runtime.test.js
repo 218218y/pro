@@ -45,7 +45,7 @@ test('cloud sync runtime status snapshot key stays stable for equal statuses and
     instanceId: 'instance_1',
     realtime: { enabled: true, mode: 'broadcast', state: 'subscribed', channel: 'wp:public::sketch' },
     polling: { active: false, intervalMs: 5000, reason: '' },
-    lastPullAt: 100,
+    lastPullSuccessAt: 100,
     lastPushAt: 200,
     lastRealtimeEventAt: 300,
     lastError: '',
@@ -54,7 +54,7 @@ test('cloud sync runtime status snapshot key stays stable for equal statuses and
 
   const same = cloneRuntimeStatus(base);
   const changed = cloneRuntimeStatus(base);
-  changed.lastPullAt = 101;
+  changed.lastPullSuccessAt = 101;
 
   assert.equal(buildRuntimeStatusSnapshotKey(base), buildRuntimeStatusSnapshotKey(same));
   assert.notEqual(buildRuntimeStatusSnapshotKey(base), buildRuntimeStatusSnapshotKey(changed));

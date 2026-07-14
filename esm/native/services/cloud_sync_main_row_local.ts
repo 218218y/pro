@@ -48,7 +48,7 @@ export type CloudSyncMainRowLocalState = {
   computeAppliedPayloadHash: (payload: CloudSyncPayload) => string;
   syncHashFromLocal: () => string;
   applyRemotePayload: (payload: CloudSyncPayload) => boolean;
-  commitPerKeyCollections: () => void;
+  subscribeCollections: (listener: () => void) => () => void;
   seedMissingRowFromLocal: () => Promise<void>;
 };
 
@@ -117,10 +117,6 @@ export function createCloudSyncMainRowLocalState(
     return committed;
   };
 
-  const commitPerKeyCollections = (): void => {
-    repository.commitPerKeySnapshot();
-  };
-
   const seedMissingRowFromLocal = async (): Promise<void> => {
     const local = readCurrentLocal();
     const hasLocalData = local.m.length > 0 || local.c.length > 0 || local.p.length > 0;
@@ -160,7 +156,7 @@ export function createCloudSyncMainRowLocalState(
     computeAppliedPayloadHash,
     syncHashFromLocal,
     applyRemotePayload,
-    commitPerKeyCollections,
+    subscribeCollections: listener => repository.subscribe(() => listener()),
     seedMissingRowFromLocal,
   };
 }

@@ -246,7 +246,6 @@ const cloudSupportBundle = [
   readSource('../esm/native/services/cloud_sync_support_serialize.ts', import.meta.url),
   readSource('../esm/native/services/cloud_sync_support_storage.ts', import.meta.url),
   readSource('../esm/native/services/cloud_sync_support_storage_shared.ts', import.meta.url),
-  readSource('../esm/native/services/cloud_sync_support_storage_read.ts', import.meta.url),
   readSource('../esm/native/services/cloud_sync_support_storage_write.ts', import.meta.url),
   readSource('../esm/native/services/cloud_sync_support_capture.ts', import.meta.url),
 ].join('\n');

@@ -11,6 +11,7 @@ export type {
   CreateKernelHistorySystemArgs,
   KernelHistoryStatus,
   KernelHistoryStatusListener,
+  KernelHistorySnapshot,
   KernelHistorySystem,
 } from './kernel_history_system_contracts.js';
 import type {

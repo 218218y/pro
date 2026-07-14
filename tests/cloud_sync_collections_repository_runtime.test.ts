@@ -58,8 +58,11 @@ test('cloud collections repository migrates legacy keys once into a versioned ca
 
   values.set('models', JSON.stringify([{ id: 'm2', name: 'new legacy model' }]));
   assert.equal(repository.read().m[0]?.id, 'm1');
-  assert.equal(repository.commitPerKeySnapshot().revision, 1);
-  assert.equal(repository.read().m[0]?.id, 'm2');
+  assert.equal(
+    repository.update({ savedModels: [{ id: 'm3', name: 'canonical model' }] }).envelope.revision,
+    1
+  );
+  assert.equal(repository.read().m[0]?.id, 'm3');
 });
 
 test('cloud collections repository does not mirror or publish a revision when the envelope commit fails', () => {
@@ -114,4 +117,64 @@ test('cloud collections repository keeps the complete envelope authoritative whe
     h: ['h2'],
   });
   assert.deepEqual(JSON.parse(values.get('colors') || '[]'), []);
+
+  storage.setString = baseSetString;
+  repository.readEnvelope();
+  assert.deepEqual(JSON.parse(values.get('colors') || '[]'), [{ id: 'c2', value: '#222' }]);
+});
+
+test('cloud collections repository commits a multi-collection mutation with one canonical write', () => {
+  const { storage } = createMapStorage({
+    models: [],
+    colors: [],
+    colorOrder: [],
+    presetOrder: [],
+    hiddenPresets: [],
+  });
+  let canonicalWrites = 0;
+  const baseSetString = storage.setString;
+  storage.setString = (key: unknown, value: unknown) => {
+    if (String(key).includes(':cloudCollections:v1')) canonicalWrites += 1;
+    return baseSetString(key, value);
+  };
+  const repository = createCloudCollectionsRepository({ storage, keys });
+  repository.readEnvelope();
+  canonicalWrites = 0;
+
+  repository.update({
+    savedModels: [{ id: 'm1', name: 'model' }],
+    savedColors: [{ id: 'c1', value: '#111' }],
+    colorOrder: ['c1'],
+  });
+
+  assert.equal(canonicalWrites, 1);
+  assert.deepEqual(repository.read(), {
+    m: [{ id: 'm1', name: 'model' }],
+    c: [{ id: 'c1', value: '#111' }],
+    o: ['c1'],
+    p: [],
+    h: [],
+  });
+});
+
+test('cloud collections repository reports corruption without rebuilding from legacy mirrors', () => {
+  const { values, storage } = createMapStorage({
+    models: [{ id: 'legacy', name: 'must not be adopted' }],
+  });
+  const repository = createCloudCollectionsRepository({ storage, keys });
+  values.set(repository.envelopeKey, '{broken-json');
+
+  const result = repository.readResult();
+  assert.equal(result.ok, false);
+  if (result.ok) return;
+  assert.equal(result.corruption.kind, 'corrupt');
+  assert.equal(result.corruption.repairAvailable, true);
+  assert.throws(() => repository.readEnvelope(), /envelope is corrupt/);
+
+  const backupKey = repository.backupCorruptEnvelope();
+  assert.equal(backupKey, result.corruption.rawBackupKey);
+  assert.equal(JSON.parse(values.get(backupKey) || '{}').raw, '{broken-json');
+
+  repository.resetCorruptEnvelope({ m: [], c: [], o: [], p: [], h: [] });
+  assert.deepEqual(repository.read().m, []);
 });

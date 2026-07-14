@@ -1,5 +1,6 @@
 import type {
   CloudSyncDeleteTempResult,
+  CloudSyncConflictResolutionResult,
   CloudSyncRoomModeCommandResult,
   CloudSyncServiceLike,
   CloudSyncShareLinkCommandResult,
@@ -18,6 +19,7 @@ export type CloudSyncPanelApiRoomModeKey = 'public' | 'private';
 export type CloudSyncPanelApiFloatingSyncKey = 'set:0' | 'set:1' | 'toggle';
 export type CloudSyncPanelApiSite2TabsGateKey = 'open:0' | 'open:1' | 'toggle';
 export type CloudSyncPanelApiSyncSketchKey = 'snapshot' | 'clear';
+export type CloudSyncPanelApiConflictResolutionKey = 'keep-local' | 'use-remote';
 
 export const cloudSyncPanelApiCopyShareLinkFlights = new WeakMap<
   object,
@@ -26,6 +28,10 @@ export const cloudSyncPanelApiCopyShareLinkFlights = new WeakMap<
 export const cloudSyncPanelApiRoomModeFlights = new WeakMap<
   object,
   CloudSyncAsyncFamilyFlight<CloudSyncRoomModeCommandResult, CloudSyncPanelApiRoomModeKey>
+>();
+export const cloudSyncPanelApiConflictResolutionFlights = new WeakMap<
+  object,
+  CloudSyncAsyncFamilyFlight<CloudSyncConflictResolutionResult, CloudSyncPanelApiConflictResolutionKey>
 >();
 export const cloudSyncPanelApiSyncSketchFlights = new WeakMap<
   object,

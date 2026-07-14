@@ -1,4 +1,5 @@
 import type {
+  AutosaveSuspensionLike,
   ProjectLoadInputLike,
   ProjectLoadOpts,
   ProjectLoadTransactionHandleLike,
@@ -39,6 +40,7 @@ import { normalizeUnknownError } from '../runtime/error_normalization.js';
 import {
   buildProjectLoadFailureResult,
   buildProjectLoadSuccessResult,
+  type ProjectLoadWarning,
   type ProjectLoadActionResult,
 } from '../runtime/project_load_action_result.js';
 import {
@@ -49,8 +51,8 @@ import {
   type ProjectPdfPatchLike,
 } from './project_io_orchestrator_shared.js';
 import {
-  prepareProjectIoAutosaveBeforeLoad,
   refreshProjectIoAutosaveAfterLoad,
+  suspendProjectIoAutosaveBeforeLoad,
 } from './project_io_orchestrator_autosave.js';
 import { createProjectLoadTransactionContext } from './project_load_transaction_context.js';
 
@@ -116,6 +118,14 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
     let restoreGen = 0;
     let stateTransaction: ProjectLoadTransactionHandleLike | null = null;
     let historySnapshot: ReturnType<typeof transaction.captureHistory> = null;
+    let autosaveSuspension: AutosaveSuspensionLike | null = null;
+    let committed = false;
+    const warnings: ProjectLoadWarning[] = [];
+
+    const addWarning = (warning: ProjectLoadWarning, op: string): void => {
+      warnings.push(warning);
+      reportNonFatal(op, new Error(warning.message), 6000);
+    };
 
     try {
       const cfg: UnknownRecord = assertProjectLoadConfigReplaceOwnedBranches(
@@ -146,7 +156,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       transaction.assertReady(requiresHistoryReset);
       historySnapshot = transaction.captureHistory(requiresHistoryReset);
 
-      prepareProjectIoAutosaveBeforeLoad({ App, preserveAutosave, reportNonFatal });
+      autosaveSuspension = suspendProjectIoAutosaveBeforeLoad(App);
       restoreGen = nextProjectIoRestoreGeneration(App);
       stateTransaction = transaction.commit(
         {
@@ -163,6 +173,11 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
         metaNoBuild
       );
 
+      if (!isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
+        autosaveSuspension.commit();
+        return buildProjectLoadFailureResult('superseded', { restoreGen });
+      }
+
       if (requiresHistoryReset) {
         try {
           resetHistoryBaselineRequiredOrThrow(
@@ -176,9 +191,22 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
         }
       }
 
-      resetAllEditModesViaService(App);
+      if (!isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
+        autosaveSuspension.commit();
+        return buildProjectLoadFailureResult('superseded', { restoreGen });
+      }
 
-      refreshProjectIoAutosaveAfterLoad({
+      committed = true;
+      autosaveSuspension.commit();
+
+      if (!resetAllEditModesViaService(App)) {
+        addWarning(
+          { effect: 'edit-modes', message: 'Project loaded, but edit modes could not be reset.' },
+          'project.load.resetEditModes'
+        );
+      }
+
+      const autosaveRefreshed = refreshProjectIoAutosaveAfterLoad({
         App,
         restoreGen,
         isHistoryApply,
@@ -187,6 +215,19 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
         preserveAutosave,
         reportNonFatal,
       });
+      if (!autosaveRefreshed) {
+        addWarning(
+          {
+            effect: 'autosave-refresh',
+            message: 'Project loaded, but autosave refresh did not complete.',
+          },
+          'project.load.refreshAutosave.warning'
+        );
+      }
+
+      if (!isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
+        return buildProjectLoadFailureResult('superseded', { restoreGen });
+      }
 
       try {
         const nextChestMode = !!uiState.isChestMode;
@@ -218,37 +259,62 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       }
 
       try {
-        updateSceneLightsViaService(App, true);
+        if (!updateSceneLightsViaService(App, true)) {
+          throw new Error('Scene light refresh was rejected after project commit.');
+        }
       } catch (err) {
         reportNonFatal('project.load.updateSceneLights', err);
-      }
-
-      try {
-        restoreNotesFromSaveViaService(App, savedNotes);
-      } catch (err) {
-        reportNonFatal('project.load.restoreNotes', err);
-      }
-
-      try {
-        requestBuilderForcedBuild(App, { reason: 'project.load' });
-      } catch (err) {
-        reportNonFatal('project.load.requestBuilderForcedBuild', err);
       }
 
       if (!isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
         return buildProjectLoadFailureResult('superseded', { restoreGen });
       }
 
-      if (toastEnabled) showToast(toastMessage, 'success');
-      return buildProjectLoadSuccessResult({ restoreGen });
+      if (!restoreNotesFromSaveViaService(App, savedNotes)) {
+        addWarning(
+          { effect: 'notes', message: 'Project loaded, but saved notes could not be restored.' },
+          'project.load.restoreNotes'
+        );
+      }
+
+      if (!requestBuilderForcedBuild(App, { reason: 'project.load' })) {
+        addWarning(
+          { effect: 'build', message: 'Project loaded, but the required rebuild was not accepted.' },
+          'project.load.requestBuilderForcedBuild'
+        );
+      }
+
+      if (!isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
+        return buildProjectLoadFailureResult('superseded', { restoreGen });
+      }
+
+      if (toastEnabled) {
+        try {
+          showToast(toastMessage, 'success');
+        } catch (toastErr) {
+          reportNonFatal('project.load.successToast', toastErr);
+        }
+      }
+      return buildProjectLoadSuccessResult({ restoreGen, warnings });
     } catch (err) {
       reportNonFatal('project.load.error', err);
-      if (stateTransaction && isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
+      if (!committed && stateTransaction && isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
         try {
           stateTransaction.rollback(metaRestore('project.load.rollback', { silent: true }));
+        } catch (rollbackErr) {
+          reportNonFatal('project.load.rollbackState', rollbackErr);
+        }
+        try {
           transaction.rollbackHistory(historySnapshot);
         } catch (rollbackErr) {
-          reportNonFatal('project.load.rollback', rollbackErr);
+          reportNonFatal('project.load.rollbackHistory', rollbackErr);
+        }
+      }
+      if (!committed) {
+        try {
+          autosaveSuspension?.resume();
+        } catch (resumeErr) {
+          reportNonFatal('project.load.resumeAutosave', resumeErr);
         }
       }
       if (toastEnabled) {

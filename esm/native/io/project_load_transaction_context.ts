@@ -1,5 +1,6 @@
 import type {
   ActionMetaLike,
+  HistorySystemSnapshotLike,
   ProjectLoadStateSnapshotLike,
   ProjectLoadTransactionHandleLike,
 } from '../../../types';
@@ -8,15 +9,22 @@ import { getActionFn } from '../runtime/actions_access_core.js';
 import { commitProjectLoadSnapshotViaActionsOrThrow } from '../runtime/actions_access_mutations.js';
 import type { HistorySystemLike, ProjectIoOwnerDeps } from './project_io_orchestrator_shared.js';
 
+type HistoryTransactionSystem = HistorySystemLike &
+  Required<Pick<HistorySystemLike, 'resetBaseline' | 'captureSnapshot' | 'restoreSnapshot'>>;
+
 type HistoryRollbackSnapshot = {
-  system: HistorySystemLike;
-  hadUndoStack: boolean;
-  undoStack: unknown[] | undefined;
-  hadRedoStack: boolean;
-  redoStack: unknown[] | undefined;
-  hadLastSavedJSON: boolean;
-  lastSavedJSON: string | undefined;
+  system: HistoryTransactionSystem;
+  snapshot: HistorySystemSnapshotLike;
 };
+
+function isHistoryTransactionSystem(system: HistorySystemLike | null): system is HistoryTransactionSystem {
+  return (
+    !!system &&
+    typeof system.resetBaseline === 'function' &&
+    typeof system.captureSnapshot === 'function' &&
+    typeof system.restoreSnapshot === 'function'
+  );
+}
 
 export type ProjectLoadTransactionContext = {
   assertReady: (requiresHistoryReset: boolean) => void;
@@ -25,20 +33,16 @@ export type ProjectLoadTransactionContext = {
   rollbackHistory: (snapshot: HistoryRollbackSnapshot | null) => void;
 };
 
-function cloneStack(value: unknown): unknown[] | undefined {
-  return Array.isArray(value) ? value.slice() : undefined;
-}
-
 export function createProjectLoadTransactionContext(
   deps: Pick<ProjectIoOwnerDeps, 'App' | 'getHistorySystem'>
 ): ProjectLoadTransactionContext {
   const { App, getHistorySystem } = deps;
 
-  const readRequiredHistorySystem = (): HistorySystemLike => {
+  const readRequiredHistorySystem = (): HistoryTransactionSystem => {
     const history = getHistorySystem();
-    if (!history || typeof history.resetBaseline !== 'function') {
+    if (!isHistoryTransactionSystem(history)) {
       throw new Error(
-        '[WardrobePro] project.load history baseline requires canonical history.system.resetBaseline(meta).'
+        '[WardrobePro] project.load history baseline requires canonical history transaction ownership.'
       );
     }
     return history;
@@ -60,12 +64,7 @@ export function createProjectLoadTransactionContext(
       const system = readRequiredHistorySystem();
       return {
         system,
-        hadUndoStack: Object.prototype.hasOwnProperty.call(system, 'undoStack'),
-        undoStack: cloneStack(system.undoStack),
-        hadRedoStack: Object.prototype.hasOwnProperty.call(system, 'redoStack'),
-        redoStack: cloneStack(system.redoStack),
-        hadLastSavedJSON: Object.prototype.hasOwnProperty.call(system, 'lastSavedJSON'),
-        lastSavedJSON: typeof system.lastSavedJSON === 'string' ? system.lastSavedJSON : undefined,
+        snapshot: system.captureSnapshot(),
       };
     },
 
@@ -80,14 +79,7 @@ export function createProjectLoadTransactionContext(
 
     rollbackHistory(snapshot: HistoryRollbackSnapshot | null): void {
       if (!snapshot) return;
-      const { system } = snapshot;
-      if (snapshot.hadUndoStack) system.undoStack = snapshot.undoStack?.slice();
-      else delete system.undoStack;
-      if (snapshot.hadRedoStack) system.redoStack = snapshot.redoStack?.slice();
-      else delete system.redoStack;
-      if (snapshot.hadLastSavedJSON) system.lastSavedJSON = snapshot.lastSavedJSON;
-      else delete system.lastSavedJSON;
-      if (typeof system.updateButtons === 'function') system.updateButtons();
+      snapshot.system.restoreSnapshot(snapshot.snapshot, { source: 'project.load.rollback.history' });
     },
   };
 }

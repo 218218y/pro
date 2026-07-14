@@ -5,30 +5,34 @@ import type { AsyncOperationHandle } from '../../../types';
 export type ProjectSaveFailureReason =
   'cancelled' | 'download-unavailable' | 'not-installed' | 'invalid' | 'superseded' | 'busy' | 'error';
 
-export type ProjectSavePendingResult = AsyncOperationHandle<ProjectSaveTerminalResult> & {
-  ok: true;
-  pending: true;
-};
+export type ProjectSaveSuccessOutcome = 'browser-delivery-completed';
+
+export type ProjectSaveAcceptedResult = AsyncOperationHandle<ProjectSaveTerminalResult>;
 
 export type ProjectSaveSuccessResult = {
+  accepted?: false | undefined;
   ok: true;
-  pending?: false | undefined;
+  outcome?: ProjectSaveSuccessOutcome;
 };
 
 export type ProjectSaveFailureResult = {
+  accepted?: false | undefined;
   ok: false;
   reason: ProjectSaveFailureReason;
   message?: string;
 };
 
 export type ProjectSaveActionResult =
-  ProjectSavePendingResult | ProjectSaveSuccessResult | ProjectSaveFailureResult;
+  ProjectSaveAcceptedResult | ProjectSaveSuccessResult | ProjectSaveFailureResult;
 
 export type ProjectSaveTerminalResult = ProjectSaveSuccessResult | ProjectSaveFailureResult;
 
 type ProjectSaveResultRecord = {
+  accepted?: unknown;
+  reused?: unknown;
   ok?: unknown;
   pending?: unknown;
+  outcome?: unknown;
   reason?: unknown;
   message?: unknown;
   operationId?: unknown;
@@ -71,8 +75,15 @@ export function normalizeProjectSaveActionResult(
   const rec = asRecord<ProjectSaveResultRecord>(value);
   if (!rec) return { ok: false, reason: defaultReason };
 
-  if (rec.ok === true) {
-    if (rec.pending !== true) return { ok: true };
+  if (rec.pending === true) {
+    return {
+      ok: false,
+      reason: 'invalid',
+      message: 'Legacy project save pending results are not supported; return an accepted operation handle.',
+    };
+  }
+
+  if (rec.accepted === true) {
     const operationId = typeof rec.operationId === 'string' ? rec.operationId.trim() : '';
     const acceptedAt = Number(rec.acceptedAt);
     const settled = rec.settled as Promise<ProjectSaveTerminalResult> | undefined;
@@ -86,16 +97,22 @@ export function normalizeProjectSaveActionResult(
       return {
         ok: false,
         reason: 'invalid',
-        message: 'Project save pending result is missing its terminal operation handle.',
+        message: 'Project save accepted result is missing its terminal operation handle.',
       };
     }
     return {
-      ok: true,
-      pending: true,
+      accepted: true,
+      reused: rec.reused === true,
       operationId,
       acceptedAt: Math.floor(acceptedAt),
       settled: Promise.resolve(settled),
     };
+  }
+
+  if (rec.ok === true) {
+    return rec.outcome === 'browser-delivery-completed'
+      ? { ok: true, outcome: 'browser-delivery-completed' }
+      : { ok: true };
   }
 
   const reason = normalizeProjectSaveFailureReason(rec.reason, defaultReason);

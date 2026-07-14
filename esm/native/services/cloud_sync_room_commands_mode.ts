@@ -1,4 +1,4 @@
-import type { CloudSyncRoomCredential, CloudSyncRoomModeCommandResult } from '../../../types';
+import type { CloudSyncCredentialIssueResult, CloudSyncRoomModeCommandResult } from '../../../types';
 
 import { normalizeUnknownError } from '../runtime/error_normalization.js';
 
@@ -12,24 +12,36 @@ import {
 async function resolvePrivateRoomCredential(
   deps: CloudSyncRoomCommandDeps,
   currentRoom: string
-): Promise<CloudSyncRoomCredential | null> {
+): Promise<CloudSyncCredentialIssueResult> {
   const current = readRoomString(currentRoom);
   const publicRoom = readRoomString(deps.cfg.publicRoom);
   const currentCredential = deps.getCurrentRoomCredential();
-  if (current && current !== publicRoom && currentCredential?.room === current) return currentCredential;
+  if (current && current !== publicRoom && currentCredential?.room === current) {
+    return { ok: true, credential: currentCredential };
+  }
 
   const storedCredential = deps.getPrivateRoomCredential();
-  if (storedCredential) return storedCredential;
+  if (storedCredential) return { ok: true, credential: storedCredential };
 
   const issued = await deps.issuePrivateRoom();
-  const room = readRoomString(issued?.room);
-  const token = readRoomString(issued?.token);
-  if (!room || !token) return null;
-  const expiresAt = readRoomString(issued?.expiresAt);
-  if (!expiresAt) return null;
+  if (issued.ok === false) return issued;
+  const room = readRoomString(issued.credential.room);
+  const token = readRoomString(issued.credential.token);
+  const expiresAt = readRoomString(issued.credential.expiresAt);
+  if (!room || !token || !expiresAt) {
+    return {
+      ok: false,
+      failure: { kind: 'server', status: 500, code: 'invalid_issued_credential' },
+    };
+  }
   const credential = { room, token, expiresAt };
-  if (!deps.setPrivateRoomCredential(credential)) return null;
-  return credential;
+  if (!deps.setPrivateRoomCredential(credential)) {
+    return {
+      ok: false,
+      failure: { kind: 'server', status: 500, code: 'credential_persist_failed' },
+    };
+  }
+  return { ok: true, credential };
 }
 
 export async function runCloudSyncRoomModeCommand(
@@ -39,11 +51,18 @@ export async function runCloudSyncRoomModeCommand(
   const currentRoom = readRoomString(deps.getCurrentRoom());
   const publicRoom = readRoomString(deps.cfg.publicRoom) || 'public';
   const targetMode: CloudSyncRoomMode = mode === 'private' ? 'private' : 'public';
-  const privateCredential =
+  const privateCredentialResult =
     targetMode === 'private' ? await resolvePrivateRoomCredential(deps, currentRoom) : null;
-  if (targetMode === 'private' && !privateCredential) {
-    return { ok: false, mode: targetMode, reason: 'error', message: 'Failed to issue a private room token' };
+  if (privateCredentialResult?.ok === false) {
+    return {
+      ok: false,
+      mode: targetMode,
+      reason: 'error',
+      message: `Failed to issue a private room token (${privateCredentialResult.failure.kind})`,
+      failure: privateCredentialResult.failure,
+    };
   }
+  const privateCredential = privateCredentialResult?.ok ? privateCredentialResult.credential : null;
   const targetRoom = targetMode === 'public' ? publicRoom : privateCredential?.room || '';
   const targetToken = targetMode === 'public' ? '' : privateCredential?.token || '';
   const changed = targetMode === 'public' ? currentRoom !== publicRoom : currentRoom !== targetRoom;

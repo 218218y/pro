@@ -1,10 +1,16 @@
-import type { CloudSyncPanelApiDeps, CloudSyncServiceLike, CloudSyncSketchSyncOptions } from '../../../types';
+import type {
+  CloudSyncConflictResolution,
+  CloudSyncPanelApiDeps,
+  CloudSyncServiceLike,
+  CloudSyncSketchSyncOptions,
+} from '../../../types';
 
 import { runCloudSyncOwnedAsyncFamilySingleFlight } from './cloud_sync_async_singleflight.js';
 import type { CloudSyncPanelApiControlCommands } from './cloud_sync_panel_api_commands_controls.js';
 import type { CloudSyncPanelApiRuntimeCommands } from './cloud_sync_panel_api_commands_runtime.js';
 import {
   cloudSyncPanelApiCopyShareLinkFlights,
+  cloudSyncPanelApiConflictResolutionFlights,
   cloudSyncPanelApiDeleteTempFlights,
   cloudSyncPanelApiFloatingSyncFlights,
   cloudSyncPanelApiRoomModeFlights,
@@ -46,6 +52,16 @@ export function createCloudSyncPanelApiSingleFlightCommands(args: {
         key: 'private',
         run: () => runtime.goPrivate(),
         onBusy: () => ({ ok: false, mode: 'private', reason: 'busy' }),
+      }),
+    resolveConflict: (
+      resolution: CloudSyncConflictResolution
+    ): ReturnType<NonNullable<typeof runtime.resolveConflict>> =>
+      runCloudSyncPanelApiSingleFlight({
+        owner,
+        flights: cloudSyncPanelApiConflictResolutionFlights,
+        key: resolution,
+        run: () => runtime.resolveConflict(resolution),
+        onBusy: () => ({ ok: false, resolution, reason: 'busy' }),
       }),
     copyShareLink: (): ReturnType<NonNullable<typeof runtime.copyShareLink>> =>
       runCloudSyncPanelApiSingleFlight({
