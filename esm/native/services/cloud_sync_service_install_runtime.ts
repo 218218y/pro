@@ -12,8 +12,17 @@ import {
 import { handleCloudSyncInstallError } from './cloud_sync_service_install_error.js';
 import { getCloudSyncServiceMaybe } from '../runtime/cloud_sync_access.js';
 
-async function installCloudSyncOwnerRuntime(App: AppContainer): Promise<void> {
-  disposePreviousCloudSyncInstall(App);
+type CloudSyncOwnerInstallOptions = {
+  preserveStableSurfaces?: boolean;
+};
+
+async function installCloudSyncOwnerRuntime(
+  App: AppContainer,
+  opts: CloudSyncOwnerInstallOptions = {}
+): Promise<void> {
+  disposePreviousCloudSyncInstall(App, {
+    preserveStableSurfaces: opts.preserveStableSurfaces === true,
+  });
 
   const ownerContext = createCloudSyncOwnerContext(App);
   if (!ownerContext) {
@@ -28,7 +37,7 @@ async function installCloudSyncOwnerRuntime(App: AppContainer): Promise<void> {
 
   const reinstallOwnerForRoomChange = async (expectedRoom: string): Promise<void> => {
     try {
-      await installCloudSyncOwnerRuntime(App);
+      await installCloudSyncOwnerRuntime(App, { preserveStableSurfaces: true });
       const activeRoom = String(getCloudSyncServiceMaybe(App)?.getCurrentRoom?.() || '').trim();
       if (activeRoom !== expectedRoom) {
         throw new Error(

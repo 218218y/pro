@@ -16,6 +16,8 @@ type CloudSyncPublishedPreservationSpec = {
 };
 
 const CLOUD_SYNC_PUBLISHED_PRESERVABLE_ORDER = [
+  'panelApi',
+  'status',
   'dispose',
   '__disposePublicationEpoch',
   '__testHooks',
@@ -25,6 +27,20 @@ const CLOUD_SYNC_PUBLISHED_PRESERVATION_SPECS: Record<
   CloudSyncPublishedPreservableSlot,
   CloudSyncPublishedPreservationSpec
 > = {
+  panelApi: {
+    shouldPreserve: (state, opts) => opts.preserveStableSurfaces && !!state.panelApi,
+    readValue: state => state.panelApi,
+    restoreValue: (state, value) => {
+      if (value && typeof value === 'object') state.panelApi = value;
+    },
+  },
+  status: {
+    shouldPreserve: (state, opts) => opts.preserveStableSurfaces && !!state.status,
+    readValue: state => state.status,
+    restoreValue: (state, value) => {
+      if (value && typeof value === 'object') state.status = value;
+    },
+  },
   dispose: {
     shouldPreserve: (state, opts) => opts.preserveDispose && typeof state.dispose === 'function',
     readValue: state => state.dispose,

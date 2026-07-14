@@ -278,3 +278,78 @@ test('cloud sync room transition reinstalls the room-scoped owner before subsequ
 
   getCloudSyncServiceStateMaybe(app)?.dispose?.();
 });
+
+test('cloud sync room transition preserves the live public api and isolates the private tabs gate', async () => {
+  const { app, requests } = createCloudSyncRoomTransitionRig();
+
+  await installCloudSyncService(app as any);
+  await waitFor(
+    () => requests.some(request => request.action === 'write' && request.room === 'public'),
+    'initial public owner should seed the public main row'
+  );
+
+  const heldService = getCloudSyncServiceMaybe(app);
+  assert.ok(heldService?.goPrivate);
+  assert.ok(heldService?.setSite2TabsGateOpen);
+
+  const snapshots: Array<{ open: boolean; until: number }> = [];
+  const unsubscribe = heldService.subscribeSite2TabsGateSnapshot?.(snapshot => {
+    snapshots.push({ open: !!snapshot.open, until: Number(snapshot.until) || 0 });
+  });
+
+  const publicOpen = await heldService.setSite2TabsGateOpen(true);
+  assert.equal(publicOpen.ok, true);
+  await waitFor(
+    () => requests.some(request => request.action === 'write' && request.room === 'public::tabsGate'),
+    'public tabs gate should be written before the room transition'
+  );
+  assert.equal(heldService.getSite2TabsGateSnapshot?.().open, true);
+
+  const result = await heldService.goPrivate();
+  assert.equal(result.ok, true);
+  assert.equal(result.room, 'room-new');
+  assert.equal(
+    getCloudSyncServiceMaybe(app),
+    heldService,
+    'room replacement must heal the existing public api object instead of publishing a new identity'
+  );
+
+  await waitFor(
+    () => requests.some(request => request.action === 'read' && request.room === 'room-new::tabsGate'),
+    'the new owner should read the private tabs-gate row'
+  );
+  await waitFor(
+    () => heldService.getSite2TabsGateSnapshot?.().open === false,
+    'a new private room without a tabs-gate row must start closed'
+  );
+  assert.equal(
+    requests.some(request => request.action === 'write' && request.room === 'room-new::tabsGate'),
+    false,
+    'public tabs-gate state must not be copied into a new private room'
+  );
+
+  const privateOpen = await heldService.setSite2TabsGateOpen(true);
+  assert.equal(privateOpen.ok, true);
+  await waitFor(
+    () => requests.some(request => request.action === 'write' && request.room === 'room-new::tabsGate'),
+    'the held api should remain actionable and write the private tabs gate without a reload'
+  );
+  await waitFor(
+    () => heldService.getSite2TabsGateSnapshot?.().open === true,
+    'the held api snapshot should update after opening the private tabs gate'
+  );
+
+  const privateClose = await heldService.setSite2TabsGateOpen(false);
+  assert.equal(privateClose.ok, true);
+  await waitFor(
+    () => heldService.getSite2TabsGateSnapshot?.().open === false,
+    'the same held api should also close the private tabs gate without a reload'
+  );
+  assert.ok(
+    snapshots.some(snapshot => snapshot.open === false) && snapshots.some(snapshot => snapshot.open === true),
+    'existing snapshot subscribers should be bridged onto the replacement owner'
+  );
+
+  unsubscribe?.();
+  getCloudSyncServiceStateMaybe(app)?.dispose?.();
+});

@@ -16,11 +16,18 @@ export type CloudSyncPublishedStateLike = {
 export type ClearCloudSyncPublishedStateOptions = {
   preserveDispose?: boolean;
   preserveTestHooks?: boolean;
+  preserveStableSurfaces?: boolean;
   invalidatePublicationEpoch?: boolean;
   publicationEpoch?: number | null;
 };
 
-export type CloudSyncPublishedPreservableSlot = 'dispose' | '__disposePublicationEpoch' | '__testHooks';
+export type CloudSyncPublishedPreservableSlot =
+  'panelApi' | 'status' | 'dispose' | '__disposePublicationEpoch' | '__testHooks';
+
+export type CloudSyncPublishedDisposeOptions = Pick<
+  ClearCloudSyncPublishedStateOptions,
+  'preserveStableSurfaces'
+>;
 
 export type CloudSyncPublishedPreservedState = Partial<
   Pick<CloudSyncPublishedStateLike, CloudSyncPublishedPreservableSlot>

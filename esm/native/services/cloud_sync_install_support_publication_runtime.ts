@@ -4,6 +4,7 @@ import { ensureCloudSyncServiceState } from '../runtime/cloud_sync_access.js';
 import { _cloudSyncReportNonFatal } from './cloud_sync_support.js';
 import {
   type ClearCloudSyncPublishedStateOptions,
+  type CloudSyncPublishedDisposeOptions,
   type CloudSyncPublishedStateLike,
   canInvokeCloudSyncPublishedDispose,
   invalidateCloudSyncPublicationEpoch,
@@ -22,6 +23,7 @@ export function clearCloudSyncPublishedState(
     const resolvedOptions: Required<ClearCloudSyncPublishedStateOptions> = {
       preserveDispose: false,
       preserveTestHooks: true,
+      preserveStableSurfaces: false,
       invalidatePublicationEpoch: false,
       publicationEpoch: null,
       ...opts,
@@ -45,15 +47,21 @@ export function clearCloudSyncPublishedState(
   }
 }
 
-export function disposePreviousCloudSyncInstall(App: AppContainer): void {
+export function disposePreviousCloudSyncInstall(
+  App: AppContainer,
+  opts?: CloudSyncPublishedDisposeOptions
+): void {
   try {
     const state = ensureCloudSyncServiceState(App);
     const dispose = state && typeof state.dispose === 'function' ? state.dispose : null;
     if (dispose && canInvokeCloudSyncPublishedDispose(App, state)) {
-      dispose();
+      (dispose as (disposeOpts?: CloudSyncPublishedDisposeOptions) => void)(opts);
       return;
     }
-    clearCloudSyncPublishedState(App, { invalidatePublicationEpoch: true });
+    clearCloudSyncPublishedState(App, {
+      invalidatePublicationEpoch: true,
+      preserveStableSurfaces: opts?.preserveStableSurfaces === true,
+    });
   } catch (error) {
     _cloudSyncReportNonFatal(App, 'install.disposePrev', error, { throttleMs: 6000 });
   }
@@ -69,7 +77,7 @@ export function publishCloudSyncDispose(
     const state = ensureCloudSyncServiceState(App);
     if (state && typeof state === 'object') {
       let disposed = false;
-      state.dispose = (): void => {
+      state.dispose = (disposeOpts?: CloudSyncPublishedDisposeOptions): void => {
         if (disposed) return;
         if (!isCloudSyncPublicationEpochCurrent(App, publicationEpoch)) return;
         disposed = true;
@@ -78,6 +86,7 @@ export function publishCloudSyncDispose(
         } finally {
           clearCloudSyncPublishedState(App, {
             preserveDispose: true,
+            preserveStableSurfaces: disposeOpts?.preserveStableSurfaces === true,
             invalidatePublicationEpoch: true,
             publicationEpoch,
           });

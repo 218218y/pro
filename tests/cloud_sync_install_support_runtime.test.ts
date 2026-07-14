@@ -123,6 +123,57 @@ test('cloud sync install support clears only canonical published slots and prese
   assert.equal(App.services.cloudSync.__publicationEpoch, 5);
 });
 
+test('cloud sync install support can preserve deactivated stable surfaces across an owner replacement', () => {
+  const panelApi = {
+    __wpCloudSyncPanelApiInstalled: true,
+    __wpCloudSyncPanelApiImpl: { getCurrentRoom: () => 'room-a' },
+    getCurrentRoom: () => 'room-a',
+  };
+  const status = {
+    room: 'room-a',
+    clientId: 'client-a',
+    instanceId: 'instance-a',
+    realtime: { enabled: true, mode: 'broadcast', state: 'live', channel: 'room-a' },
+    polling: { active: true, intervalMs: 5000, reason: 'live' },
+    lastPullAt: 1,
+    lastPushAt: 2,
+    lastRealtimeEventAt: 3,
+    lastError: '',
+    credential: {
+      state: 'active',
+      expiresAt: '2099-01-01T00:00:00.000Z',
+      retryAt: 0,
+      failureKind: '',
+    },
+    diagEnabled: false,
+  };
+  const App = {
+    services: {
+      cloudSync: {
+        __publicationEpoch: 4,
+        panelApi,
+        status,
+        installedAt: 456,
+      },
+    },
+  } as any;
+
+  clearCloudSyncPublishedState(App, {
+    invalidatePublicationEpoch: true,
+    publicationEpoch: 4,
+    preserveStableSurfaces: true,
+  });
+
+  assert.equal(App.services.cloudSync.panelApi, panelApi);
+  assert.equal(App.services.cloudSync.status, status);
+  assert.equal('installedAt' in App.services.cloudSync, false);
+  assert.equal(panelApi.__wpCloudSyncPanelApiImpl, undefined);
+  assert.equal(status.room, '');
+  assert.equal(status.realtime.state, 'unavailable');
+  assert.equal(status.polling.reason, 'unavailable');
+  assert.equal(App.services.cloudSync.__publicationEpoch, 5);
+});
+
 test('cloud sync install support preserves canonical test hooks by default while clearing published slots', () => {
   const hooks = { createSupabaseClient: () => ({}) };
   const App = {
