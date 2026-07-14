@@ -612,3 +612,237 @@ test('floating sketch sync push shares app-scoped ownership across sketch-op ins
   resolvePush?.({ ok: true });
   assert.deepEqual(await enableA, { ok: true, changed: true, enabled: true });
 });
+
+test('cloud sync sketch reset clears the remote sketch with a tombstone and becomes a no-op once cleared', async () => {
+  const writes: Array<{ room: string; payload: Record<string, unknown> }> = [];
+  let remotePayload: Record<string, unknown> = {
+    sketchRev: 10,
+    sketchHash: 'old-custom-hash',
+    sketchBy: 'main-client',
+    sketch: { settings: { width: 180 } },
+  };
+
+  const ops = createCloudSyncSketchOps({
+    App: {} as any,
+    cfg: {
+      anonKey: 'anon',
+      roomParam: 'room',
+      publicRoom: 'public',
+      site2SketchInitialAutoLoad: true,
+      site2SketchInitialMaxAgeHours: 12,
+    },
+    storage: {},
+    gatewayUrl: 'https://example.invalid',
+    clientId: 'main-client',
+    currentRoom: () => 'room-a',
+    getRow: async () =>
+      ({
+        updated_at: '2026-07-14T04:00:00.000Z',
+        payload: remotePayload,
+      }) as any,
+    upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
+      remotePayload = payload as Record<string, unknown>;
+      writes.push({ room, payload: remotePayload });
+      return {
+        ok: true,
+        row: { updated_at: '2026-07-14T04:01:00.000Z', payload: remotePayload },
+      } as any;
+    },
+    emitRealtimeHint: () => undefined,
+    runtimeStatus: { realtime: { status: 'idle' } } as any,
+    publishStatus: () => undefined,
+    diag: () => undefined,
+  });
+
+  assert.deepEqual(await ops.syncSketchNow({ mode: 'clear' }), {
+    ok: true,
+    changed: true,
+    reason: 'cleared',
+    hash: '',
+  });
+  assert.equal(writes.length, 1);
+  assert.equal(writes[0].room, 'room-a::sketch::toSite2');
+  assert.equal(writes[0].payload.sketch, null);
+  assert.equal(writes[0].payload.sketchHash, null);
+  assert.equal(writes[0].payload.sketchBy, 'main-client');
+  assert.equal(typeof writes[0].payload.sketchRev, 'number');
+
+  assert.deepEqual(await ops.syncSketchNow({ mode: 'clear' }), {
+    ok: true,
+    changed: false,
+    reason: 'noop',
+    hash: '',
+  });
+  assert.equal(writes.length, 1);
+});
+
+test('cloud sync sketch clear never treats an unavailable read as proof that the remote sketch is absent', async () => {
+  let writeCalls = 0;
+  const ops = createCloudSyncSketchOps({
+    App: {} as any,
+    cfg: {
+      anonKey: 'anon',
+      roomParam: 'room',
+      publicRoom: 'public',
+      site2SketchInitialAutoLoad: true,
+      site2SketchInitialMaxAgeHours: 12,
+    },
+    storage: {},
+    gatewayUrl: 'https://example.invalid',
+    clientId: 'main-client',
+    currentRoom: () => 'room-a',
+    getRow: async () => null as any,
+    upsertRow: async () => {
+      writeCalls += 1;
+      return { ok: false } as any;
+    },
+    emitRealtimeHint: () => undefined,
+    runtimeStatus: { realtime: { status: 'idle' } } as any,
+    publishStatus: () => undefined,
+    diag: () => undefined,
+  });
+
+  assert.deepEqual(await ops.syncSketchNow({ mode: 'clear' }), {
+    ok: false,
+    reason: 'write',
+  });
+  assert.equal(writeCalls, 1);
+});
+
+test('cloud sync sketch snapshot treats the canonical default project as a clear operation', async () => {
+  const defaultDesign = {
+    settings: { width: 120, height: 240 },
+    toggles: { sketchMode: false },
+    modulesConfiguration: [],
+  };
+  const writes: Array<Record<string, unknown>> = [];
+  const App = {
+    services: {
+      projectIO: {
+        buildDefaultProjectData() {
+          return defaultDesign;
+        },
+        exportCurrentProject() {
+          const projectData = {
+            ...defaultDesign,
+            __schema: 'wardrobepro',
+            __version: 3,
+            __createdAt: '2026-07-14T04:00:00.000Z',
+            __savedAt: 100,
+            __scope: 'persist',
+            __app: { buildTags: { commit: 'build-a' } },
+            projectName: 'ארון חדש',
+            timestamp: 200,
+          };
+          return { projectData, jsonStr: JSON.stringify(projectData) };
+        },
+      },
+    },
+  } as any;
+
+  const ops = createCloudSyncSketchOps({
+    App,
+    cfg: {
+      anonKey: 'anon',
+      roomParam: 'room',
+      publicRoom: 'public',
+      site2SketchInitialAutoLoad: true,
+      site2SketchInitialMaxAgeHours: 12,
+    },
+    storage: {},
+    gatewayUrl: 'https://example.invalid',
+    clientId: 'main-client',
+    currentRoom: () => 'room-a',
+    getRow: async () =>
+      ({
+        updated_at: '2026-07-14T03:00:00.000Z',
+        payload: {
+          sketchRev: 1,
+          sketchHash: 'custom-hash',
+          sketchBy: 'main-client',
+          sketch: { settings: { width: 180 } },
+        },
+      }) as any,
+    upsertRow: async (_gatewayUrl, _anonKey, _room, payload) => {
+      writes.push(payload as Record<string, unknown>);
+      return { ok: true, row: { updated_at: '2026-07-14T04:01:00.000Z', payload } } as any;
+    },
+    emitRealtimeHint: () => undefined,
+    runtimeStatus: { realtime: { status: 'idle' } } as any,
+    publishStatus: () => undefined,
+    diag: () => undefined,
+  });
+
+  assert.deepEqual(await ops.syncSketchNow(), {
+    ok: true,
+    changed: true,
+    reason: 'cleared',
+    hash: '',
+  });
+  assert.equal(writes.length, 1);
+  assert.equal(writes[0].sketch, null);
+  assert.equal(writes[0].sketchHash, null);
+});
+
+test('cloud sync site2 initial catchup ignores a fresh cleared-sketch tombstone without loading or toast', async () => {
+  let loadCalls = 0;
+  const toastCalls: string[] = [];
+  const App = {
+    store: {
+      getState() {
+        return { config: { siteVariant: 'site2' } };
+      },
+    },
+    services: {
+      uiFeedback: {
+        toast(message: string) {
+          toastCalls.push(message);
+        },
+      },
+      projectIO: {
+        exportCurrentProject() {
+          const projectData = { settings: { width: 120 } };
+          return { projectData, jsonStr: JSON.stringify(projectData) };
+        },
+        loadProjectData() {
+          loadCalls += 1;
+          return { ok: true };
+        },
+      },
+    },
+  } as any;
+
+  const ops = createCloudSyncSketchOps({
+    App,
+    cfg: {
+      anonKey: 'anon',
+      roomParam: 'room',
+      publicRoom: 'public',
+      site2SketchInitialAutoLoad: true,
+      site2SketchInitialMaxAgeHours: 12,
+    },
+    storage: {},
+    gatewayUrl: 'https://example.invalid',
+    clientId: 'site2-client',
+    currentRoom: () => 'room-a',
+    getRow: async () =>
+      ({
+        updated_at: new Date().toISOString(),
+        payload: {
+          sketchRev: Date.now(),
+          sketchHash: null,
+          sketchBy: 'main-client',
+          sketch: null,
+        },
+      }) as any,
+    upsertRow: async () => ({ ok: true }) as any,
+    emitRealtimeHint: () => undefined,
+    runtimeStatus: { realtime: { status: 'idle' } } as any,
+    publishStatus: () => undefined,
+    diag: () => undefined,
+  });
+
+  await ops.pullSketchOnce(true);
+  assert.equal(loadCalls, 0);
+  assert.deepEqual(toastCalls, []);
+});

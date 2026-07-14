@@ -1,4 +1,4 @@
-import type { CloudSyncPanelApiDeps, CloudSyncServiceLike } from '../../../types';
+import type { CloudSyncPanelApiDeps, CloudSyncServiceLike, CloudSyncSketchSyncOptions } from '../../../types';
 
 import { runCloudSyncOwnedAsyncFamilySingleFlight } from './cloud_sync_async_singleflight.js';
 import type { CloudSyncPanelApiControlCommands } from './cloud_sync_panel_api_commands_controls.js';
@@ -54,13 +54,18 @@ export function createCloudSyncPanelApiSingleFlightCommands(args: {
         key: 'copyShareLink',
         run: () => runtime.copyShareLink(),
       }),
-    syncSketchNow: (): ReturnType<NonNullable<typeof runtime.syncSketchNow>> =>
-      runCloudSyncPanelApiSingleFlight({
+    syncSketchNow: (
+      options?: CloudSyncSketchSyncOptions
+    ): ReturnType<NonNullable<typeof runtime.syncSketchNow>> => {
+      const key = options?.mode === 'clear' ? 'clear' : 'snapshot';
+      return runCloudSyncPanelApiSingleFlight({
         owner,
         flights: cloudSyncPanelApiSyncSketchFlights,
-        key: 'syncSketchNow',
-        run: () => runtime.syncSketchNow(),
-      }),
+        key,
+        run: () => runtime.syncSketchNow(options),
+        onBusy: () => ({ ok: false, reason: 'busy' }),
+      });
+    },
     setFloatingSketchSyncEnabled: (
       enabled: boolean
     ): ReturnType<NonNullable<typeof runtime.setFloatingSketchSyncEnabled>> =>

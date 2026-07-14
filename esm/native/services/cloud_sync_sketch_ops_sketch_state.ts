@@ -3,6 +3,7 @@ import type {
   CloudSyncDiagFn,
   CloudSyncRuntimeStatus,
   CloudSyncSketchCommandResult,
+  CloudSyncSketchSyncOptions,
 } from '../../../types';
 
 import type { CloudSyncRealtimeHintSender } from './cloud_sync_pull_scopes.js';
@@ -30,7 +31,7 @@ export type CreateCloudSyncSketchRoomOpsDeps = {
 };
 
 export type CloudSyncSketchRoomOps = {
-  syncSketchNow: () => Promise<CloudSyncSketchCommandResult>;
+  syncSketchNow: (options?: CloudSyncSketchSyncOptions) => Promise<CloudSyncSketchCommandResult>;
   pullSketchOnce: (isInitial: boolean) => Promise<void>;
 };
 

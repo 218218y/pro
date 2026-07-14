@@ -17,6 +17,7 @@ export type CloudSyncPanelApiDeleteTempKey = 'models' | 'colors';
 export type CloudSyncPanelApiRoomModeKey = 'public' | 'private';
 export type CloudSyncPanelApiFloatingSyncKey = 'set:0' | 'set:1' | 'toggle';
 export type CloudSyncPanelApiSite2TabsGateKey = 'open:0' | 'open:1' | 'toggle';
+export type CloudSyncPanelApiSyncSketchKey = 'snapshot' | 'clear';
 
 export const cloudSyncPanelApiCopyShareLinkFlights = new WeakMap<
   object,
@@ -28,7 +29,7 @@ export const cloudSyncPanelApiRoomModeFlights = new WeakMap<
 >();
 export const cloudSyncPanelApiSyncSketchFlights = new WeakMap<
   object,
-  CloudSyncAsyncFamilyFlight<CloudSyncSketchCommandResult, 'syncSketchNow'>
+  CloudSyncAsyncFamilyFlight<CloudSyncSketchCommandResult, CloudSyncPanelApiSyncSketchKey>
 >();
 export const cloudSyncPanelApiDeleteTempFlights = new WeakMap<
   object,

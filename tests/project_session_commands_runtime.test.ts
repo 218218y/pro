@@ -311,3 +311,123 @@ test('project session commands single-flight duplicate reset requests and report
   assert.equal(confirmCount, 1);
   assert.equal(loadCalls, 1);
 });
+
+test('project reset clears the active cloud sketch only after a successful confirmed reset', async () => {
+  const cloudCalls: unknown[] = [];
+  const App = {
+    services: {
+      uiFeedback: {
+        confirm(_title: string, _message: string, onYes?: (() => void) | null) {
+          onYes?.();
+        },
+      },
+      projectIO: {
+        buildDefaultProjectData() {
+          return { settings: {}, toggles: {}, modulesConfiguration: [] };
+        },
+        loadProjectData() {
+          return { ok: true, restoreGen: 13 };
+        },
+      },
+      cloudSync: {
+        panelApi: {
+          async syncSketchNow(options?: unknown) {
+            cloudCalls.push(options);
+            return { ok: true, changed: true, reason: 'cleared' } as const;
+          },
+        },
+      },
+    },
+  } as any;
+
+  assert.deepEqual(await resetProjectToDefaultWithConfirm(App), { ok: true, restoreGen: 13 });
+  assert.deepEqual(cloudCalls, [{ mode: 'clear' }]);
+});
+
+test('project reset does not clear cloud sketch when reset is cancelled or local reset fails', async () => {
+  let cloudCalls = 0;
+  const cloudSync = {
+    panelApi: {
+      async syncSketchNow() {
+        cloudCalls += 1;
+        return { ok: true } as const;
+      },
+    },
+  };
+  const cancelledApp = {
+    services: {
+      uiFeedback: {
+        openCustomConfirm(
+          _title: string,
+          _message: string,
+          _onYes?: (() => void) | null,
+          onNo?: (() => void) | null
+        ) {
+          onNo?.();
+        },
+      },
+      cloudSync,
+    },
+  } as any;
+  assert.deepEqual(await resetProjectToDefaultWithConfirm(cancelledApp), {
+    ok: false,
+    reason: 'cancelled',
+  });
+
+  const failedApp = {
+    services: {
+      uiFeedback: {
+        confirm(_title: string, _message: string, onYes?: (() => void) | null) {
+          onYes?.();
+        },
+      },
+      projectIO: {
+        buildDefaultProjectData() {
+          return { settings: {}, toggles: {}, modulesConfiguration: [] };
+        },
+        loadProjectData() {
+          return { ok: false, reason: 'invalid' };
+        },
+      },
+      cloudSync,
+    },
+  } as any;
+  assert.deepEqual(await resetProjectToDefaultWithConfirm(failedApp), {
+    ok: false,
+    reason: 'invalid',
+  });
+  assert.equal(cloudCalls, 0);
+});
+
+test('project reset reports a partial failure when the local reset succeeds but cloud sketch clearing fails', async () => {
+  const App = {
+    services: {
+      uiFeedback: {
+        confirm(_title: string, _message: string, onYes?: (() => void) | null) {
+          onYes?.();
+        },
+      },
+      projectIO: {
+        buildDefaultProjectData() {
+          return { settings: {}, toggles: {}, modulesConfiguration: [] };
+        },
+        loadProjectData() {
+          return { ok: true };
+        },
+      },
+      cloudSync: {
+        panelApi: {
+          async syncSketchNow() {
+            return { ok: false, reason: 'write' } as const;
+          },
+        },
+      },
+    },
+  } as any;
+
+  assert.deepEqual(await resetProjectToDefaultWithConfirm(App), {
+    ok: false,
+    reason: 'error',
+    message: 'הארון אופס, אך ניקוי סנכרון הסקיצה נכשל. נסה שוב.',
+  });
+});

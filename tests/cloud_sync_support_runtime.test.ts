@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   _cloudSyncReportNonFatal,
   captureSketchSnapshot,
-  hashString32,
+  computeCloudSketchSemanticHash,
 } from '../esm/native/services/cloud_sync_support.ts';
 import { withSuppressedConsole } from './_console_silence.ts';
 
@@ -46,8 +46,13 @@ test('cloud sync support: capture sketch requires the canonical ProjectIO export
   });
 });
 
-test('cloud sync support: capture sketch uses the canonical ProjectIO payload and hash', () => {
-  const projectData = { settings: { width: 120 }, projectName: 'canonical' };
+test('cloud sync support: capture sketch uses a semantic design hash', () => {
+  const projectData = {
+    settings: { width: 120 },
+    projectName: 'canonical',
+    timestamp: 123,
+    __createdAt: '2026-07-14T04:00:00.000Z',
+  };
   const jsonStr = JSON.stringify(projectData);
   const App = {
     services: {
@@ -60,7 +65,45 @@ test('cloud sync support: capture sketch uses the canonical ProjectIO payload an
   } as any;
 
   const snapshot = captureSketchSnapshot(App);
-  assert.deepEqual(snapshot, { data: projectData, jsonStr, hash: hashString32(jsonStr) });
+  assert.deepEqual(snapshot, {
+    data: projectData,
+    jsonStr,
+    hash: computeCloudSketchSemanticHash(projectData),
+  });
+});
+
+test('cloud sync support: semantic sketch hash ignores export metadata but detects design changes', () => {
+  const first = {
+    __schema: 'wardrobepro',
+    __version: 3,
+    __createdAt: '2026-07-14T04:00:00.000Z',
+    __savedAt: 1,
+    __scope: 'persist',
+    __app: { buildTags: { commit: 'a' }, timeZone: 'Asia/Jerusalem' },
+    projectName: 'first name',
+    timestamp: 100,
+    orderPdfEditorDraft: { pages: [1] },
+    orderPdfEditorZoom: 1.5,
+    settings: { width: 120, height: 240 },
+    modulesConfiguration: [{ shelves: 3 }],
+  };
+  const sameDesign = {
+    ...first,
+    __createdAt: '2026-07-14T05:00:00.000Z',
+    __savedAt: 999,
+    __app: { buildTags: { commit: 'b' }, timeZone: 'UTC' },
+    projectName: 'another name',
+    timestamp: 200,
+    orderPdfEditorDraft: null,
+    orderPdfEditorZoom: 2,
+  };
+  const changedDesign = {
+    ...sameDesign,
+    settings: { width: 121, height: 240 },
+  };
+
+  assert.equal(computeCloudSketchSemanticHash(first), computeCloudSketchSemanticHash(sameDesign));
+  assert.notEqual(computeCloudSketchSemanticHash(first), computeCloudSketchSemanticHash(changedDesign));
 });
 
 test('cloud sync support reports non-fatal failures through canonical app diagnostics', () => {

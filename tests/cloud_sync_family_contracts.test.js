@@ -472,7 +472,8 @@ test('cloud sync family keeps project/browser/panel seams canonical without dire
     [
       /exportProjectResultViaService\(\s*App,\s*\{ source: 'cloudSketch\.capture' \}/,
       /ProjectIO export unavailable/,
-      /hashString32\(ex\.jsonStr\)/,
+      /computeCloudSketchSemanticHash\(ex\.projectData\)/,
+      /buildDefaultProjectDataViaServiceOrThrow\(/,
     ],
     'cloud sync support'
   );

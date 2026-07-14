@@ -2,6 +2,7 @@ import type {
   AppContainer,
   CloudSyncRuntimeStatus,
   CloudSyncSketchCommandResult,
+  CloudSyncSketchSyncOptions,
   CloudSyncSyncPinCommandResult,
   CloudSyncDiagFn,
 } from '../../../types';
@@ -40,7 +41,7 @@ type CreateCloudSyncSketchOpsDeps = {
 };
 
 export type CloudSyncSketchOps = {
-  syncSketchNow: () => Promise<CloudSyncSketchCommandResult>;
+  syncSketchNow: (options?: CloudSyncSketchSyncOptions) => Promise<CloudSyncSketchCommandResult>;
   pullSketchOnce: (isInitial: boolean) => Promise<void>;
   pushFloatingSketchSyncPinnedNow: (enabled: boolean) => Promise<CloudSyncSyncPinCommandResult>;
   pullFloatingSketchSyncPinnedOnce: (isInitial: boolean) => Promise<void>;

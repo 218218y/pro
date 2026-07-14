@@ -1,4 +1,8 @@
-import type { CloudSyncSketchCommandResult, CloudSyncSketchPayload } from '../../../types';
+import type {
+  CloudSyncSketchCommandResult,
+  CloudSyncSketchPayload,
+  CloudSyncSketchSyncOptions,
+} from '../../../types';
 
 import { readCloudSyncRowWithPullActivity } from './cloud_sync_remote_read_support.js';
 import {
@@ -13,14 +17,51 @@ import type {
 import {
   _cloudSyncReportNonFatal,
   captureSketchSnapshot,
+  isDefaultCloudSketchSnapshot,
   readCloudSyncErrorMessage,
   readCloudSyncJsonField,
 } from './cloud_sync_support.js';
 
+type CloudSyncSketchWriteIntent = { kind: 'clear' } | { kind: 'snapshot'; data: unknown; hash: string };
+
+function resolveCloudSyncSketchWriteIntent(
+  deps: CreateCloudSyncSketchRoomOpsDeps,
+  options?: CloudSyncSketchSyncOptions
+): CloudSyncSketchWriteIntent | null {
+  if (options?.mode === 'clear') return { kind: 'clear' };
+  const snapshot = captureSketchSnapshot(deps.App);
+  if (!snapshot) return null;
+  if (isDefaultCloudSketchSnapshot(deps.App, snapshot)) return { kind: 'clear' };
+  return { kind: 'snapshot', data: snapshot.data, hash: snapshot.hash };
+}
+
+function isCloudSketchAlreadyCleared(existingPayload: ReturnType<typeof parseSketchPayload> | null): boolean {
+  return !!existingPayload && !existingPayload.hash && !existingPayload.sketch;
+}
+
+function buildCloudSketchPayload(
+  intent: CloudSyncSketchWriteIntent,
+  clientId: string
+): CloudSyncSketchPayload {
+  return intent.kind === 'clear'
+    ? {
+        sketch: null,
+        sketchHash: null,
+        sketchRev: Date.now(),
+        sketchBy: clientId,
+      }
+    : {
+        sketch: readCloudSyncJsonField(intent.data),
+        sketchHash: intent.hash,
+        sketchRev: Date.now(),
+        sketchBy: clientId,
+      };
+}
+
 export function createCloudSyncSketchSyncNow(
   deps: CreateCloudSyncSketchRoomOpsDeps,
   state: CloudSyncSketchRoomMutableState
-): () => Promise<CloudSyncSketchCommandResult> {
+): (options?: CloudSyncSketchSyncOptions) => Promise<CloudSyncSketchCommandResult> {
   const {
     App,
     cfg,
@@ -36,7 +77,7 @@ export function createCloudSyncSketchSyncNow(
     publishStatus,
   } = deps;
 
-  return async (): Promise<CloudSyncSketchCommandResult> => {
+  return async (options?: CloudSyncSketchSyncOptions): Promise<CloudSyncSketchCommandResult> => {
     try {
       const sketchRoom = resolveCloudSyncSketchRoom(
         { App, cfg, storage, getGateBaseRoom, currentRoom },
@@ -44,8 +85,8 @@ export function createCloudSyncSketchSyncNow(
       );
       if (!sketchRoom) return { ok: false, reason: 'room' };
 
-      const snap = captureSketchSnapshot(App);
-      if (!snap) return { ok: false, reason: 'capture' };
+      const intent = resolveCloudSyncSketchWriteIntent(deps, options);
+      if (!intent) return { ok: false, reason: 'capture' };
 
       const existing = await readCloudSyncRowWithPullActivity({
         gatewayUrl,
@@ -56,18 +97,20 @@ export function createCloudSyncSketchSyncNow(
         publishStatus,
       });
       const existingPayload = existing ? parseSketchPayload(existing.payload) : null;
-      if (existingPayload && existingPayload.hash && existingPayload.hash === snap.hash) {
-        return { ok: true, changed: false, reason: 'noop', hash: snap.hash };
+      if (intent.kind === 'clear') {
+        if (isCloudSketchAlreadyCleared(existingPayload)) {
+          return { ok: true, changed: false, reason: 'noop', hash: '' };
+        }
+      } else if (existingPayload?.hash && existingPayload.hash === intent.hash) {
+        return { ok: true, changed: false, reason: 'noop', hash: intent.hash };
       }
 
-      const payload: CloudSyncSketchPayload = {
-        sketch: readCloudSyncJsonField(snap.data),
-        sketchHash: snap.hash,
-        sketchRev: Date.now(),
-        sketchBy: clientId,
-      };
-
-      const res = await upsertRow(gatewayUrl, cfg.anonKey, sketchRoom, payload);
+      const res = await upsertRow(
+        gatewayUrl,
+        cfg.anonKey,
+        sketchRoom,
+        buildCloudSketchPayload(intent, clientId)
+      );
       if (!res.ok) return { ok: false, reason: 'write' };
       publishCloudSyncWriteActivity({
         runtimeStatus,
@@ -89,7 +132,9 @@ export function createCloudSyncSketchSyncNow(
 
       state.sketchBaselineDone = true;
 
-      return { ok: true, changed: true, hash: snap.hash };
+      return intent.kind === 'clear'
+        ? { ok: true, changed: true, reason: 'cleared', hash: '' }
+        : { ok: true, changed: true, hash: intent.hash };
     } catch (e) {
       _cloudSyncReportNonFatal(App, 'cloudSketch.push', e, { throttleMs: 4000 });
       return { ok: false, reason: 'error', message: readCloudSyncErrorMessage(e) };

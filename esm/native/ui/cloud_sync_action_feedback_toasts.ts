@@ -86,6 +86,9 @@ export function getCloudSketchSyncToast(
 ): CloudSyncActionToastLike {
   if (!result) return createCloudSyncActionToast('סנכרון סקיצה נכשל', 'error');
   if (result.ok === true) {
+    if (result.reason === 'cleared') {
+      return createCloudSyncActionToast('סקיצת הענן נוקתה', 'success');
+    }
     if (result.changed === false || result.reason === 'noop') {
       return createCloudSyncActionToast('הסקיצה כבר מעודכנת בענן', 'info');
     }
@@ -93,6 +96,8 @@ export function getCloudSketchSyncToast(
   }
   const failure: FailureResult<CloudSyncSketchCommandResult> = result;
   switch (failure.reason) {
+    case 'busy':
+      return createCloudSyncActionToast('סנכרון הסקיצה כבר בתהליך', 'warning');
     case 'not-installed':
       return createCloudSyncActionToast('סנכרון הסקיצה לא זמין כרגע', 'error');
     case 'capture':

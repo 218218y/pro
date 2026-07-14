@@ -50,4 +50,8 @@ export {
   applyRemote,
 } from './cloud_sync_support_storage.js';
 
-export { captureSketchSnapshot } from './cloud_sync_support_capture.js';
+export {
+  captureSketchSnapshot,
+  computeCloudSketchSemanticHash,
+  isDefaultCloudSketchSnapshot,
+} from './cloud_sync_support_capture.js';

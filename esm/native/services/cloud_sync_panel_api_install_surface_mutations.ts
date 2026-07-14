@@ -3,6 +3,7 @@ import type {
   CloudSyncRoomModeCommandResult,
   CloudSyncShareLinkCommandResult,
   CloudSyncSketchCommandResult,
+  CloudSyncSketchSyncOptions,
   CloudSyncSyncPinCommandResult,
   CloudSyncTabsGateCommandResult,
 } from '../../../types';
@@ -74,8 +75,8 @@ export function installCloudSyncPanelApiMutationRefs(
     return async () => await invokeCloudSyncPanelApi(context, 'copyShareLink', UNAVAILABLE_SHARE_LINK_RESULT);
   });
   installStableSurfaceMethod(api, 'syncSketchNow', '__wpCloudSyncSyncSketchNow', () => {
-    return async () =>
-      await invokeCloudSyncPanelApi(context, 'syncSketchNow', NOT_INSTALLED_SKETCH_SYNC_RESULT);
+    return async (options?: CloudSyncSketchSyncOptions) =>
+      await invokeCloudSyncPanelApi(context, 'syncSketchNow', NOT_INSTALLED_SKETCH_SYNC_RESULT, options);
   });
   installStableSurfaceMethod(
     api,

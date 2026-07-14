@@ -28,7 +28,7 @@ test('cloud sync panel api single-flights duplicate inflight async commands and 
       });
     },
     getFloatingSketchSyncEnabled: () => floatingEnabled,
-    syncSketchNow: async () => {
+    syncSketchNow: async (_options?: { mode?: 'snapshot' | 'clear' }) => {
       syncCalls += 1;
       return await new Promise(resolve => {
         resolveSync = resolve as typeof resolveSync;
@@ -93,10 +93,13 @@ test('cloud sync panel api single-flights duplicate inflight async commands and 
   });
 
   const syncA = api.syncSketchNow?.();
-  const syncB = api.syncSketchNow?.();
+  const syncB = api.syncSketchNow?.({ mode: 'snapshot' });
+  const clearWhileSyncPending = api.syncSketchNow?.({ mode: 'clear' });
   await Promise.resolve();
   assert.equal(syncCalls, 1);
   assert.equal(syncA, syncB);
+  assert.notEqual(syncA, clearWhileSyncPending);
+  assert.deepEqual(await clearWhileSyncPending, { ok: false, reason: 'busy' });
   resolveSync?.({ ok: true });
   assert.deepEqual(await syncA, { ok: true });
 
@@ -195,7 +198,7 @@ test('cloud sync panel api shares app-scoped single-flight ownership across api 
       floatingEnabled = !!enabled;
       return changed;
     },
-    syncSketchNow: async () => {
+    syncSketchNow: async (_options?: { mode?: 'snapshot' | 'clear' }) => {
       syncCalls += 1;
       return await new Promise(resolve => {
         resolveSync = resolve as typeof resolveSync;

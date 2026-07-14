@@ -2,6 +2,7 @@ import type {
   CloudSyncDeleteTempResult,
   CloudSyncPanelApiDeps,
   CloudSyncSketchCommandResult,
+  CloudSyncSketchSyncOptions,
   CloudSyncSyncPinCommandResult,
 } from '../../../types';
 
@@ -44,7 +45,8 @@ export function createCloudSyncPanelApiMutationCommands(
   } = deps;
 
   return {
-    syncSketchNow: async (): Promise<CloudSyncSketchCommandResult> => await syncSketchNow(),
+    syncSketchNow: async (options?: CloudSyncSketchSyncOptions): Promise<CloudSyncSketchCommandResult> =>
+      await syncSketchNow(options),
 
     isFloatingSketchSyncEnabled: (): boolean => {
       try {

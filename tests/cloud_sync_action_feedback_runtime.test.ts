@@ -58,6 +58,14 @@ test('cloud sync feedback reporters emit canonical toasts and preserve silent su
     type: 'info',
   });
   assert.deepEqual(sketchFb.seen, [{ message: 'הסקיצה כבר מעודכנת בענן', type: 'info' }]);
+  assert.deepEqual(getCloudSketchSyncToast({ ok: true, changed: true, reason: 'cleared' }), {
+    message: 'סקיצת הענן נוקתה',
+    type: 'success',
+  });
+  assert.deepEqual(getCloudSketchSyncToast({ ok: false, reason: 'busy' }), {
+    message: 'סנכרון הסקיצה כבר בתהליך',
+    type: 'warning',
+  });
 
   const deleteFb = createToastSpy();
   const deleteResult = { ok: false, removed: 0, reason: 'cancelled' };

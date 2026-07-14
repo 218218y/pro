@@ -85,11 +85,18 @@ export type CloudSyncDeleteTempResult =
   | { ok: false; removed: 0; reason: 'busy' | 'room' | 'cancelled' | 'not-installed' }
   | { ok: false; removed: 0; reason: 'write' | 'error'; message?: string };
 
-export type CloudSyncSketchCommandReason = 'noop' | 'room' | 'capture' | 'write' | 'error' | 'not-installed';
+export type CloudSyncSketchSyncMode = 'snapshot' | 'clear';
+
+export interface CloudSyncSketchSyncOptions {
+  mode?: CloudSyncSketchSyncMode;
+}
+
+export type CloudSyncSketchCommandReason =
+  'noop' | 'cleared' | 'busy' | 'room' | 'capture' | 'write' | 'error' | 'not-installed';
 
 export type CloudSyncSketchCommandResult =
-  | { ok: true; changed?: boolean; hash?: string; reason?: 'noop' }
-  | { ok: false; reason: 'room' | 'capture' | 'write' | 'not-installed' }
+  | { ok: true; changed?: boolean; hash?: string; reason?: 'noop' | 'cleared' }
+  | { ok: false; reason: 'busy' | 'room' | 'capture' | 'write' | 'not-installed' }
   | { ok: false; reason: 'error'; message?: string };
 
 export type CloudSyncTabsGateCommandReason =
@@ -427,7 +434,7 @@ export interface CloudSyncPanelApiDeps extends UnknownRecord {
     opts?: CloudSyncNonFatalReportOptions
   ) => void;
   toast: (app: AppContainer, message: string, type?: string) => unknown;
-  syncSketchNow: () => Promise<CloudSyncSketchCommandResult>;
+  syncSketchNow: (options?: CloudSyncSketchSyncOptions) => Promise<CloudSyncSketchCommandResult>;
   getFloatingSketchSyncEnabled: () => boolean;
   setFloatingSketchSyncEnabledState: (enabled: boolean) => boolean;
   pushFloatingSketchSyncPinnedNow: (enabled: boolean) => Promise<CloudSyncSyncPinCommandResult>;
@@ -468,7 +475,7 @@ export interface CloudSyncServiceLike extends UnknownRecord {
   goPrivate?: () => Promise<CloudSyncRoomModeCommandResult>;
   getShareLink?: () => string;
   copyShareLink?: () => Promise<CloudSyncShareLinkCommandResult>;
-  syncSketchNow?: () => Promise<CloudSyncSketchCommandResult>;
+  syncSketchNow?: (options?: CloudSyncSketchSyncOptions) => Promise<CloudSyncSketchCommandResult>;
   isFloatingSketchSyncEnabled?: () => boolean;
   setFloatingSketchSyncEnabled?: (enabled: boolean) => Promise<CloudSyncSyncPinCommandResult>;
   toggleFloatingSketchSyncEnabled?: () => Promise<CloudSyncSyncPinCommandResult>;
