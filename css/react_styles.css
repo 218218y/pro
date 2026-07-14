@@ -2580,7 +2580,8 @@
   transition:
     background-color 0.3s,
     border-bottom-color 0.3s,
-    color 0.3s;
+    color 0.3s,
+    box-shadow 0.2s;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -2595,9 +2596,14 @@
   color: var(--primary);
   border-bottom-color: var(--primary);
   font-weight: 700;
+  background-color: rgba(59, 130, 246, 0.1);
+  box-shadow: var(--wp-r-shadow-ring-primary-3-inset);
 }
 
-#reactSidebarRoot .tab:focus,
+#reactSidebarRoot .tab:focus {
+  outline: none;
+}
+
 #reactSidebarRoot .type-option:focus-visible,
 body.wp-ui-react .btn-header-sketch:focus-visible {
   outline: none;

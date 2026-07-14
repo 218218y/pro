@@ -33,6 +33,12 @@ test('modern pressed states use gradient and pressed shadows without checkmark g
   );
   assert.match(
     css,
+    /#reactSidebarRoot \.tab\.active \{[\s\S]*?background-color:\s*rgba\(59, 130, 246, 0\.1\);[\s\S]*?box-shadow:\s*var\(--wp-r-shadow-ring-primary-3-inset\);/
+  );
+  assert.match(css, /#reactSidebarRoot \.tab:focus \{\s*outline:\s*none;\s*\}/);
+  assert.doesNotMatch(css, /#reactSidebarRoot \.tab:focus,\s*#reactSidebarRoot \.type-option:focus-visible/);
+  assert.match(
+    css,
     /body\.wp-ui-react \.wp-pdf-editor-toggle\.is-on \{[\s\S]*?box-shadow:\s*var\(--wp-r-shadow-pdf-toggle-on\);/
   );
   assert.match(modeToggle, /aria-pressed=\{active\}/);
