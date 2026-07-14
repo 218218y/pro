@@ -70,6 +70,9 @@
   --wp-r-shadow-ring-primary-3-medium: 0 0 0 3px rgba(59, 130, 246, 0.18);
   --wp-r-shadow-ring-primary-3-soft: 0 0 0 3px rgba(59, 130, 246, 0.12);
   --wp-r-shadow-ring-primary-3-strong: 0 0 0 3px rgba(59, 130, 246, 0.4);
+  --wp-r-tab-hover-bg: rgba(59, 130, 246, 0.1);
+  --wp-r-shadow-tab-hover: inset 0 0 0 1px rgba(59, 130, 246, 0.18);
+  --wp-r-shadow-tab-active: inset 0 0 0 1px rgba(59, 130, 246, 0.38);
   --wp-r-shadow-ring-reset-focus: 0 0 0 3px rgba(59, 130, 246, 0.18), 0 8px 20px rgba(148, 163, 184, 0.14);
   --wp-r-shadow-reset: 0 1px 2px rgba(15, 23, 42, 0.08), 0 8px 20px rgba(148, 163, 184, 0.12);
   --wp-r-shadow-success-elevated: 0 4px 6px -1px rgba(16, 185, 129, 0.3);

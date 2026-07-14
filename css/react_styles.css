@@ -2589,7 +2589,8 @@
 
 #reactSidebarRoot .tab:hover {
   color: var(--primary);
-  background: rgba(59, 130, 246, 0.05);
+  background: var(--wp-r-tab-hover-bg);
+  box-shadow: var(--wp-r-shadow-tab-hover);
 }
 
 #reactSidebarRoot .tab.active {
@@ -2597,7 +2598,7 @@
   border-bottom-color: var(--primary);
   font-weight: 700;
   background-color: rgba(59, 130, 246, 0.1);
-  box-shadow: var(--wp-r-shadow-ring-primary-3-inset);
+  box-shadow: var(--wp-r-shadow-tab-active);
 }
 
 #reactSidebarRoot .tab:focus {
@@ -6914,6 +6915,9 @@ body.wp-ui-react .wp-pdf-page-annotation-tools .wp-pdf-sketch-toolbar--floating 
   --wp-r-shadow-ring-primary-3-intense: 0 0 0 3px rgba(77, 182, 172, 0.52);
   --wp-r-shadow-ring-primary-3-medium: 0 0 0 3px rgba(77, 182, 172, 0.2);
   --wp-r-shadow-ring-primary-3-soft: 0 0 0 3px rgba(77, 182, 172, 0.16);
+  --wp-r-tab-hover-bg: rgba(77, 182, 172, 0.16);
+  --wp-r-shadow-tab-hover: inset 0 0 0 1px rgba(77, 182, 172, 0.24);
+  --wp-r-shadow-tab-active: inset 0 0 0 1px rgba(77, 182, 172, 0.42);
   --wp-r-shadow-pressed-control:
     inset 0 1px 2px rgba(0, 0, 0, 0.36), 0 0 0 3px rgba(77, 182, 172, 0.14), 0 10px 20px rgba(0, 0, 0, 0.22);
   --wp-r-shadow-pressed-control-compact:
@@ -6952,7 +6956,7 @@ body.wp-ui-react .wp-pdf-page-annotation-tools .wp-pdf-sketch-toolbar--floating 
 
 #reactSidebarRoot .wp-r-theme-dark .tab:hover {
   color: #76d8ce;
-  background: rgba(77, 182, 172, 0.12);
+  background: var(--wp-r-tab-hover-bg);
 }
 
 #reactSidebarRoot .wp-r-theme-dark .tab.active {

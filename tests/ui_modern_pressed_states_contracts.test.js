@@ -31,9 +31,28 @@ test('modern pressed states use gradient and pressed shadows without checkmark g
     css,
     /#reactSidebarRoot \.wp-r-header \.btn-header-sketch\.wp-r-btn-active \{[\s\S]*?background:\s*linear-gradient\(180deg, #fff7ed, #ffedd5\);[\s\S]*?box-shadow:\s*var\(--wp-r-shadow-pressed-control-compact\);/
   );
+  assert.match(tokens, /--wp-r-tab-hover-bg:\s*rgba\(59, 130, 246, 0\.1\);/);
+  assert.match(tokens, /--wp-r-shadow-tab-hover:\s*inset 0 0 0 1px rgba\(59, 130, 246, 0\.18\);/);
+  assert.match(tokens, /--wp-r-shadow-tab-active:\s*inset 0 0 0 1px rgba\(59, 130, 246, 0\.38\);/);
   assert.match(
     css,
-    /#reactSidebarRoot \.tab\.active \{[\s\S]*?background-color:\s*rgba\(59, 130, 246, 0\.1\);[\s\S]*?box-shadow:\s*var\(--wp-r-shadow-ring-primary-3-inset\);/
+    /#reactSidebarRoot \.tab:hover \{[\s\S]*?background:\s*var\(--wp-r-tab-hover-bg\);[\s\S]*?box-shadow:\s*var\(--wp-r-shadow-tab-hover\);/
+  );
+  assert.match(
+    css,
+    /#reactSidebarRoot \.tab\.active \{[\s\S]*?background-color:\s*rgba\(59, 130, 246, 0\.1\);[\s\S]*?box-shadow:\s*var\(--wp-r-shadow-tab-active\);/
+  );
+  assert.match(
+    css,
+    /#reactSidebarRoot \.wp-r-theme-dark \{[\s\S]*?--wp-r-tab-hover-bg:\s*rgba\(77, 182, 172, 0\.16\);[\s\S]*?--wp-r-shadow-tab-hover:\s*inset 0 0 0 1px rgba\(77, 182, 172, 0\.24\);[\s\S]*?--wp-r-shadow-tab-active:\s*inset 0 0 0 1px rgba\(77, 182, 172, 0\.42\);/
+  );
+  assert.match(
+    css,
+    /#reactSidebarRoot \.wp-r-theme-dark \.tab:hover \{[\s\S]*?background:\s*var\(--wp-r-tab-hover-bg\);/
+  );
+  assert.doesNotMatch(
+    css,
+    /#reactSidebarRoot \.tab\.active \{[^}]*box-shadow:\s*var\(--wp-r-shadow-ring-primary-3-inset\);/s
   );
   assert.match(css, /#reactSidebarRoot \.tab:focus \{\s*outline:\s*none;\s*\}/);
   assert.doesNotMatch(css, /#reactSidebarRoot \.tab:focus,\s*#reactSidebarRoot \.type-option:focus-visible/);
