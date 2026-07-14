@@ -5,6 +5,10 @@ import { createCloudSyncTabsGateOps } from '../esm/native/services/cloud_sync_ta
 
 type AnyRecord = Record<string, unknown>;
 
+function cloudRead(row: unknown) {
+  return { ok: true as const, row: row ?? null };
+}
+
 type StorageMapLike = {
   getString(key: unknown): string | null;
   setString(key: unknown, value: unknown): boolean;
@@ -77,7 +81,7 @@ test('cloud sync tabs gate closes stale site2 UI on initial pull miss', async ()
     getGateBaseRoom: () => 'private-room',
     gatewayUrl: 'https://example.test',
     clientId: 'client-1',
-    getRow: async () => null,
+    getRow: async () => cloudRead(null),
     upsertRow: async () => ({ ok: true, row: null }),
     setTimeoutFn: (() => 0) as any,
     clearTimeoutFn: (() => undefined) as any,
@@ -110,7 +114,7 @@ test('cloud sync tabs gate uses the current gate base room for push and pull', a
     clientId: 'client-1',
     getRow: async (_rest, _anon, room) => {
       rooms.push(room);
-      return null;
+      return cloudRead(null);
     },
     upsertRow: async (_rest, _anon, room) => {
       rooms.push(room);
@@ -143,7 +147,7 @@ test('cloud sync tabs gate defaults to the public room when no room URL is selec
     clientId: 'client-1',
     getRow: async (_rest, _anon, room) => {
       rooms.push(room);
-      return null;
+      return cloudRead(null);
     },
     upsertRow: async (_rest, _anon, room) => {
       rooms.push(room);
@@ -172,7 +176,7 @@ test('cloud sync tabs gate public-room push is visible to site2 public-room pull
       storage: createStorage(),
       gatewayUrl: 'https://example.test',
       clientId: `${siteVariant}-client`,
-      getRow: async (_rest, _anon, room) => (rows.get(room) || null) as any,
+      getRow: async (_rest, _anon, room) => cloudRead((rows.get(room) || null) as any),
       upsertRow: async (_rest, _anon, room, payload) => {
         const row = {
           updated_at: new Date().toISOString(),
@@ -211,7 +215,7 @@ test('cloud sync tabs gate site2 ignores local open fallback when cloud row is m
     getGateBaseRoom: () => 'private-room',
     gatewayUrl: 'https://example.test',
     clientId: 'client-1',
-    getRow: async () => null,
+    getRow: async () => cloudRead(null),
     upsertRow: async () => ({ ok: true, row: null }),
     setTimeoutFn: (() => 0) as any,
     clearTimeoutFn: (() => undefined) as any,
@@ -245,7 +249,7 @@ test('cloud sync tabs gate snapshot subscription tracks minute boundaries and ex
       getGateBaseRoom: () => 'private-room',
       gatewayUrl: 'https://example.test',
       clientId: 'client-1',
-      getRow: async () => null,
+      getRow: async () => cloudRead(null),
       upsertRow: async () => ({ ok: true, row: null }),
       setTimeoutFn: ((handler: () => void) => {
         timers.push(handler);
@@ -296,7 +300,7 @@ test('cloud sync tabs gate direct push reports controller-only canonically on si
     getGateBaseRoom: () => 'private-room',
     gatewayUrl: 'https://example.test',
     clientId: 'client-1',
-    getRow: async () => null,
+    getRow: async () => cloudRead(null),
     upsertRow: async () => ({ ok: true, row: null }),
     setTimeoutFn: (() => 0) as any,
     clearTimeoutFn: (() => undefined) as any,
@@ -325,7 +329,7 @@ test('cloud sync tabs gate push shares app-scoped ownership across ops instances
       getGateBaseRoom: () => 'private-room',
       gatewayUrl: 'https://example.test',
       clientId: 'client-1',
-      getRow: async () => null,
+      getRow: async () => cloudRead(null),
       upsertRow: async (_rest, _anon, room, payload) => {
         assert.equal(room, 'private-room::tabsGate');
         if (payload && (payload as any).tabsGateOpen) {

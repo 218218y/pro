@@ -20,7 +20,8 @@ export type CloudSyncLifecycleRefreshPolicy = {
 
 export type CloudSyncLifecycleRefreshRequestResult = {
   accepted: boolean;
-  blockedBy: CloudSyncLifecycleRefreshBlockReason | 'suppressed' | 'recent-pull' | 'pull-error' | null;
+  blockedBy:
+    CloudSyncLifecycleRefreshBlockReason | 'suppressed' | 'rate-limit' | 'recent-pull' | 'pull-error' | null;
 };
 
 export type CloudSyncLifecycleRefreshRequestArgs = {
@@ -65,6 +66,11 @@ export function requestCloudSyncLifecycleRefresh(
     reportOp = 'cloudSyncLifecycle.refreshPull',
   } = args;
   if (suppressRef.v) return { accepted: false, blockedBy: 'suppressed' };
+
+  const retryAt = Number(runtimeStatus.credential?.retryAt) || 0;
+  if (runtimeStatus.credential?.state === 'rate-limited' && retryAt > Date.now()) {
+    return { accepted: false, blockedBy: 'rate-limit' };
+  }
 
   const blockedBy = readCloudSyncLifecycleRefreshBlockReason({
     App,

@@ -3,8 +3,13 @@ import type { CreateProjectUiActionControllerArgs } from './project_ui_action_co
 
 import { reportProjectSaveResult } from '../project_action_feedback.js';
 import { executeProjectActionResult } from '../project_action_execution.js';
-import { buildProjectSaveActionErrorResult } from '../../services/api.js';
-import { buildPerfEntryOptionsFromActionResult, markPerfPoint, runPerfAction } from '../../services/api.js';
+import {
+  buildPerfEntryOptionsFromActionResult,
+  buildProjectSaveActionErrorResult,
+  endPerfSpan,
+  markPerfPoint,
+  startPerfSpan,
+} from '../../services/api.js';
 import { publishProjectUiActionEvent } from './project_ui_action_events.js';
 
 export function runProjectUiSaveAction(
@@ -12,21 +17,39 @@ export function runProjectUiSaveAction(
 ): ProjectSaveActionResult {
   const { app, fb, saveProject } = args;
   markPerfPoint(app, 'project.save.dispatched');
-  const result = runPerfAction(
-    app,
-    'project.save',
-    () =>
-      executeProjectActionResult({
-        feedback: fb,
-        run: () => saveProject(app),
-        report: reportProjectSaveResult,
-        buildError: buildProjectSaveActionErrorResult,
-        fallbackMessage: 'שמירת פרויקט נכשלה',
-      }),
-    {
-      resolveEndOptions: result => buildPerfEntryOptionsFromActionResult(result),
-    }
-  );
+  const spanId = startPerfSpan(app, 'project.save');
+  const result = executeProjectActionResult({
+    feedback: fb,
+    run: () => saveProject(app),
+    report: reportProjectSaveResult,
+    buildError: buildProjectSaveActionErrorResult,
+    fallbackMessage: 'Project save failed.',
+  });
   publishProjectUiActionEvent(app, 'save', result);
+
+  if (result.ok === true && result.pending === true) {
+    void result.settled.then(
+      settled => {
+        endPerfSpan(app, spanId, buildPerfEntryOptionsFromActionResult(settled));
+        publishProjectUiActionEvent(app, 'save', {
+          ...settled,
+          operationId: result.operationId,
+          acceptedAt: result.acceptedAt,
+        });
+      },
+      error => {
+        const failure = buildProjectSaveActionErrorResult(error, 'Project save failed.');
+        endPerfSpan(app, spanId, buildPerfEntryOptionsFromActionResult(failure));
+        reportProjectSaveResult(fb, failure);
+        publishProjectUiActionEvent(app, 'save', {
+          ...failure,
+          operationId: result.operationId,
+          acceptedAt: result.acceptedAt,
+        });
+      }
+    );
+  } else {
+    endPerfSpan(app, spanId, buildPerfEntryOptionsFromActionResult(result));
+  }
   return result;
 }

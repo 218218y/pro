@@ -49,7 +49,11 @@ export function settleCloudSyncMainRowWrite(args: {
 }): void {
   const { writeResult, localState, state, nextHash, schedulePullSoon } = args;
   const settledHash = localState.computeAppliedPayloadHash(writeResult.payload);
-  if (settledHash !== nextHash) localState.applyRemotePayload(writeResult.payload);
-  else state.setLastHash(settledHash);
+  if (settledHash !== nextHash) {
+    if (!localState.applyRemotePayload(writeResult.payload)) {
+      schedulePullSoon({ reason: 'push-local-commit-recovery' });
+      return;
+    }
+  } else state.setLastHash(settledHash);
   if (!writeResult.settled) schedulePullSoon({ reason: 'push-settle' });
 }

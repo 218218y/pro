@@ -4,13 +4,13 @@ import type { SupabaseCfg } from './cloud_sync_config.js';
 import type { CloudSyncGetRowFn, CloudSyncUpsertRowFn, StorageLike } from './cloud_sync_owner_context.js';
 import { writeCloudSyncMainRowPayload } from './cloud_sync_main_row_write_support.js';
 import type { CloudSyncRealtimeHintSender } from './cloud_sync_pull_scopes.js';
+import { createCloudCollectionsRepository } from './cloud_sync_collections_repository.js';
 import {
   applyRemote,
   computeHash,
   hasPayloadKey,
   normalizeModelList,
   normalizeSavedColorsList,
-  readLocal,
   readPayloadList,
 } from './cloud_sync_support.js';
 
@@ -47,7 +47,8 @@ export type CloudSyncMainRowLocalState = {
   computeCurrentHash: () => string;
   computeAppliedPayloadHash: (payload: CloudSyncPayload) => string;
   syncHashFromLocal: () => string;
-  applyRemotePayload: (payload: CloudSyncPayload) => void;
+  applyRemotePayload: (payload: CloudSyncPayload) => boolean;
+  commitPerKeyCollections: () => void;
   seedMissingRowFromLocal: () => Promise<void>;
 };
 
@@ -64,16 +65,17 @@ export function buildCloudSyncMainRowPayload(local: CloudSyncLocalCollections): 
 export function createCloudSyncMainRowLocalState(
   args: CreateCloudSyncMainRowLocalStateArgs
 ): CloudSyncMainRowLocalState {
-  const readCurrentLocal = (): CloudSyncLocalCollections =>
-    readLocal(
-      args.storage,
-      args.keyModels,
-      args.keyColors,
-      args.keyColorOrder,
-      args.keyPresetOrder,
-      args.keyHiddenPresets,
-      { App: args.App }
-    );
+  const repository = createCloudCollectionsRepository({
+    storage: args.storage,
+    keys: {
+      models: args.keyModels,
+      colors: args.keyColors,
+      colorOrder: args.keyColorOrder,
+      presetOrder: args.keyPresetOrder,
+      hiddenPresets: args.keyHiddenPresets,
+    },
+  });
+  const readCurrentLocal = (): CloudSyncLocalCollections => repository.read();
 
   const computeHashForLocal = (local: CloudSyncLocalCollections): string =>
     computeHash(local.m, local.c, local.o, local.p, local.h);
@@ -99,8 +101,8 @@ export function createCloudSyncMainRowLocalState(
     return nextHash;
   };
 
-  const applyRemotePayload = (payload: CloudSyncPayload): void => {
-    applyRemote(
+  const applyRemotePayload = (payload: CloudSyncPayload): boolean => {
+    const committed = applyRemote(
       args.App,
       args.storage,
       args.keyModels,
@@ -111,7 +113,12 @@ export function createCloudSyncMainRowLocalState(
       payload,
       args.suppressRef
     );
-    syncHashFromLocal();
+    if (committed) syncHashFromLocal();
+    return committed;
+  };
+
+  const commitPerKeyCollections = (): void => {
+    repository.commitPerKeySnapshot();
   };
 
   const seedMissingRowFromLocal = async (): Promise<void> => {
@@ -153,6 +160,7 @@ export function createCloudSyncMainRowLocalState(
     computeAppliedPayloadHash,
     syncHashFromLocal,
     applyRemotePayload,
+    commitPerKeyCollections,
     seedMissingRowFromLocal,
   };
 }

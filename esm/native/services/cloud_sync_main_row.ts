@@ -93,6 +93,7 @@ export function createCloudSyncMainRowOps(args: CreateCloudSyncMainRowOpsArgs): 
     runMainWriteFlight: state.runMainWriteFlight,
     setLastSeenUpdatedAt: state.setLastSeenUpdatedAt,
     setLastHash: state.setLastHash,
+    commitPerKeyCollections: localState.commitPerKeyCollections,
     dispose,
   };
 }

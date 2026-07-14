@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-13T08:13:27.352Z",
+  "generatedAt": "2026-07-14T09:26:18.818Z",
   "summary": {
     "groups": 29,
     "scriptBindings": 29,
-    "catalogFileReferences": 351,
+    "catalogFileReferences": 352,
     "directPackageTestReferences": 191,
     "catalogIssues": 0,
     "bindingIssues": 0,
@@ -103,7 +103,7 @@
         "failedFilesPath": ".artifacts/cloud-sync-surfaces.main-row.failed.txt",
         "timingsPath": ".artifacts/cloud-sync-surfaces.main-row.timings.json"
       },
-      "fileCount": 7,
+      "fileCount": 8,
       "files": [
         "tests/cloud_sync_main_row_payload_dedupe_runtime.test.ts",
         "tests/cloud_sync_main_row_runtime.test.ts",
@@ -111,6 +111,7 @@
         "tests/cloud_sync_mutation_commands_runtime.test.ts",
         "tests/cloud_sync_mutation_commands_singleflight_runtime.test.ts",
         "tests/cloud_sync_owner_context_runtime.test.ts",
+        "tests/cloud_sync_room_transition_runtime.test.ts",
         "tests/cloud_sync_status_install_runtime.test.ts"
       ]
     },

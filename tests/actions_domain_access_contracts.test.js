@@ -105,7 +105,7 @@ test('[actions-domain] namespace, domain, save, and meta helpers stay centralize
       /export \* from '\.\/actions_access_mutations\.js';/,
       /export \{[\s\S]*ensureActionsRoot,[\s\S]*\} from '\.\/actions_access_core\.js';/,
       /export \{[\s\S]*getMetaActions,[\s\S]*\} from '\.\/actions_access_domains\.js';/,
-      /export \{[\s\S]*commitUiSnapshotViaActions,[\s\S]*commitUiSnapshotViaActionsOrThrow,[\s\S]*applyProjectConfigSnapshotViaActionsOrThrow,[\s\S]*\} from '\.\/actions_access_mutations\.js';/,
+      /export \{[\s\S]*commitUiSnapshotViaActions,[\s\S]*commitProjectLoadSnapshotViaActionsOrThrow,[\s\S]*applyProjectConfigSnapshotViaActionsOrThrow,[\s\S]*\} from '\.\/actions_access_mutations\.js';/,
     ],
     'actionsAccessEntry'
   );
@@ -129,6 +129,7 @@ test('[actions-domain] namespace, domain, save, and meta helpers stay centralize
       /export function listModulesActionFns/,
       /export function commitUiSnapshotViaActions\(/,
       /export function commitUiSnapshotViaActionsOrThrow\(/,
+      /export function commitProjectLoadSnapshotViaActionsOrThrow\(/,
       /export function setDirtyViaActions\(/,
       /export function setDirtyViaActionsOrThrow\(/,
       /export function applyProjectConfigSnapshotViaActionsOrThrow\(/,
@@ -157,6 +158,7 @@ test('[actions-domain] namespace, domain, save, and meta helpers stay centralize
     [
       /commitUiSnapshotViaActions/,
       /commitUiSnapshotViaActionsOrThrow/,
+      /commitProjectLoadSnapshotViaActionsOrThrow/,
       /setDirtyViaActions/,
       /setDirtyViaActionsOrThrow/,
       /applyProjectConfigSnapshotViaActionsOrThrow/,
@@ -176,9 +178,9 @@ test('[actions-domain] project IO, notes persistence, and boot paths use canonic
     assert,
     projectIoBundle,
     [
-      /applyProjectConfigSnapshotViaActionsOrThrow\(/,
-      /commitUiSnapshotViaActionsOrThrow\(/,
-      /setDirtyViaActionsOrThrow\(/,
+      /createProjectLoadTransactionContext\(/,
+      /transaction\.commit\(/,
+      /stateTransaction\.rollback\(/,
       /resetHistoryBaselineRequiredOrThrow\(/,
     ],
     'projectIoBundle'

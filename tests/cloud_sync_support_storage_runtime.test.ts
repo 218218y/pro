@@ -77,7 +77,7 @@ test('cloud_sync support storage: applyRemote writes normalized payload into sto
   };
   const suppress = { v: false };
 
-  applyRemote(
+  const applied = applyRemote(
     {} as never,
     storage,
     'models',
@@ -95,7 +95,17 @@ test('cloud_sync support storage: applyRemote writes normalized payload into sto
     suppress
   );
 
+  assert.equal(applied, true);
   assert.equal(suppress.v, false);
+  assert.deepEqual(JSON.parse(writes.get('models:cloudCollections:v1') || '{}'), {
+    schemaVersion: 1,
+    revision: 1,
+    savedModels: [{ id: 'm1', name: 'Model 1' }],
+    savedColors: [{ id: 'c1', value: '#fff' }],
+    colorOrder: ['c1'],
+    presetOrder: ['p1'],
+    hiddenPresets: ['hidden-1'],
+  });
   assert.equal(writes.get('models'), JSON.stringify([{ id: 'm1', name: 'Model 1' }]));
   assert.equal(writes.get('colors'), JSON.stringify([{ id: 'c1', value: '#fff' }]));
   assert.equal(writes.get('colorOrder'), JSON.stringify(['c1']));
@@ -149,7 +159,7 @@ test('cloud_sync support storage: applyRemote reports failed storage writes and 
     },
   };
 
-  applyRemote(
+  const applied = applyRemote(
     App,
     storage,
     'models',
@@ -167,10 +177,11 @@ test('cloud_sync support storage: applyRemote reports failed storage writes and 
     suppress
   );
 
+  assert.equal(applied, false);
   assert.equal(suppress.v, false);
   assert.equal(reports.length, 1);
   assert.equal(reports[0].ctx?.where, 'services/cloud_sync');
-  assert.equal(reports[0].ctx?.op, 'applyRemote.writeStorage');
+  assert.equal(reports[0].ctx?.op, 'applyRemote.commitCollections');
   assert.equal(reports[0].ctx?.nonFatal, true);
-  assert.match(String((reports[0].error as Error).message), /storage write failed/i);
+  assert.match(String((reports[0].error as Error).message), /atomic commit failed/i);
 });

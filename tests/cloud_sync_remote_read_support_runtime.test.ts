@@ -27,13 +27,16 @@ test('cloud sync remote read support marks pull activity only after a row read r
   Date.now = () => ++nowMs;
 
   try {
-    const row = await readCloudSyncRowWithPullActivity({
+    const result = await readCloudSyncRowWithPullActivity({
       gatewayUrl: 'https://example.test/rest',
       anonKey: 'anon',
       room: 'room-a',
       getRow: async () => {
         phases.push(`getRow:lastPullAt=${runtimeStatus.lastPullAt}`);
-        return { updated_at: '2026-04-13T12:00:00.000Z', payload: {} } as any;
+        return {
+          ok: true,
+          row: { updated_at: '2026-04-13T12:00:00.000Z', payload: {} } as any,
+        };
       },
       runtimeStatus,
       publishStatus: () => {
@@ -42,13 +45,33 @@ test('cloud sync remote read support marks pull activity only after a row read r
       },
     });
 
-    assert.equal(row?.updated_at, '2026-04-13T12:00:00.000Z');
+    assert.equal(result.ok && result.row?.updated_at, '2026-04-13T12:00:00.000Z');
     assert.equal(runtimeStatus.lastPullAt > 0, true);
     assert.equal(publishCount, 1);
     assert.deepEqual(phases, ['getRow:lastPullAt=0', `publish:lastPullAt=${runtimeStatus.lastPullAt}`]);
   } finally {
     Date.now = realNow;
   }
+});
+
+test('cloud sync remote read support preserves typed failures instead of collapsing them to a missing row', async () => {
+  const runtimeStatus = createRuntimeStatus();
+  const result = await readCloudSyncRowWithPullActivity({
+    gatewayUrl: 'https://example.test/rest',
+    anonKey: 'anon',
+    room: 'room-a',
+    getRow: async () => ({
+      ok: false,
+      failure: { kind: 'rate-limit', status: 429, code: 'rate_limit', retryAfterMs: 5000 },
+    }),
+    runtimeStatus,
+  });
+
+  assert.deepEqual(result, {
+    ok: false,
+    failure: { kind: 'rate-limit', status: 429, code: 'rate_limit', retryAfterMs: 5000 },
+  });
+  assert.equal(runtimeStatus.lastPullAt > 0, true);
 });
 
 test('cloud sync remote read support does not mark pull activity when the row read throws', async () => {

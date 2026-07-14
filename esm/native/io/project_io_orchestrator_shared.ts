@@ -44,8 +44,6 @@ export type ProjectIoRecordReader = (App: AppContainer) => ProjectIoUiStateLike;
 
 export type ProjectIoOwnerDeps = ProjectIoRuntimeContext & {
   metaRestore: ProjectIoMetaBuilder;
-  metaUiOnly: ProjectIoMetaBuilder;
-  setProjectIoRestoring: (on: boolean, meta: ActionMetaLike) => void;
   getHistorySystem: () => HistorySystemLike | null;
   deepCloneJson: <T = unknown>(value: T) => T;
   getProjectNameFromState: () => string;

@@ -2,6 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { runEnsureSaveProjectAction } from '../esm/native/ui/project_save_runtime.ts';
+import type { ProjectSavePendingResult } from '../esm/native/runtime/project_save_action_result.ts';
+
+function assertPendingSave(value: unknown): ProjectSavePendingResult {
+  assert.equal(!!value && typeof value === 'object', true);
+  const result = value as ProjectSavePendingResult;
+  assert.equal(result.ok, true);
+  assert.equal(result.pending, true);
+  assert.match(result.operationId, /^project-save-/);
+  assert.equal(Number.isFinite(result.acceptedAt), true);
+  assert.equal(typeof result.settled?.then, 'function');
+  return result;
+}
 
 type AnchorLike = {
   href: string;
@@ -102,8 +114,9 @@ test('project save runtime: successful save downloads normalized json and clears
   });
 
   assert.equal(typeof saveProject, 'function');
-  assert.deepEqual(saveProject?.(), { ok: true, pending: true });
+  const operation = assertPendingSave(saveProject?.());
   await new Promise(resolve => setTimeout(resolve, 0));
+  assert.deepEqual(await operation.settled, { ok: true });
 
   assert.deepEqual(prompts, [['בחר שם לקובץ השמירה:', 'demo_project']]);
   assert.deepEqual(exportMeta, [{ source: 'ui:saveProject' }]);
@@ -152,8 +165,9 @@ test('project save runtime: blank/cancelled prompt stays quiet and does not down
   });
 
   assert.equal(typeof saveProject, 'function');
-  assert.deepEqual(saveProject?.(), { ok: true, pending: true });
+  const operation = assertPendingSave(saveProject?.());
   await new Promise(resolve => setTimeout(resolve, 0));
+  assert.deepEqual(await operation.settled, { ok: false, reason: 'cancelled' });
 
   assert.deepEqual(clicked, []);
   assert.deepEqual(dirtyCalls, []);
@@ -201,8 +215,9 @@ test('project save runtime: duplicate save clicks reuse one open prompt until th
   });
 
   assert.equal(typeof saveProject, 'function');
-  assert.deepEqual(saveProject?.(), { ok: true, pending: true });
-  assert.deepEqual(saveProject?.(), { ok: true, pending: true });
+  const firstOperation = assertPendingSave(saveProject?.());
+  const reusedOperation = assertPendingSave(saveProject?.());
+  assert.equal(reusedOperation, firstOperation);
   assert.equal(promptCallbacks.length, 1);
   assert.deepEqual(promptDefaults, ['demo_project']);
   assert.deepEqual(exportMeta, [{ source: 'ui:saveProject' }]);
@@ -217,7 +232,7 @@ test('project save runtime: duplicate save clicks reuse one open prompt until th
   assert.equal(dirtyCalls.length, 1);
   assert.deepEqual(toasts, [{ message: 'הפרויקט נשמר בהצלחה!', type: 'success' }]);
 
-  assert.deepEqual(saveProject?.(), { ok: true, pending: true });
+  const secondOperation = assertPendingSave(saveProject?.());
   assert.equal(promptCallbacks.length, 2);
   assert.deepEqual(exportMeta, [{ source: 'ui:saveProject' }, { source: 'ui:saveProject' }]);
 
@@ -252,7 +267,7 @@ test('project save runtime: conflicting restore reports busy while save prompt i
 
   const saveProject = runEnsureSaveProjectAction(App, { win, doc, toast() {} });
   assert.equal(typeof saveProject, 'function');
-  assert.deepEqual(saveProject?.(), { ok: true, pending: true });
+  assertPendingSave(saveProject?.());
 
   const { runProjectRestoreAction } = await import('../esm/native/ui/project_recovery_runtime_restore.ts');
   assert.deepEqual(await runProjectRestoreAction(App, null, async () => ({ ok: true, restoreGen: 1 })), {
@@ -300,7 +315,7 @@ test('project save runtime: failed export releases project-action family so the 
     reason: 'error',
     message: 'export exploded',
   });
-  assert.deepEqual(saveProject?.(), { ok: true, pending: true });
+  assertPendingSave(saveProject?.());
   assert.equal(promptCallbacks.length, 1);
 });
 
@@ -345,7 +360,7 @@ test('project save runtime: dirty reset owner rejection is reported without fail
   });
 
   assert.equal(typeof saveProject, 'function');
-  assert.deepEqual(saveProject?.(), { ok: true, pending: true });
+  assertPendingSave(saveProject?.());
   await new Promise(resolve => setTimeout(resolve, 0));
 
   assert.deepEqual(clicked, [

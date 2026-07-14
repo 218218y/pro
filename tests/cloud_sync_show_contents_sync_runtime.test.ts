@@ -81,7 +81,7 @@ test('show contents cloud sync pushes user UI changes to a store-scoped control 
     storage,
     gatewayUrl: 'https://example.invalid/rest',
     clientId: 'client-contents',
-    getRow: async () => null,
+    getRow: async () => ({ ok: true, row: null }),
     upsertRow: async (_rest, _anon, room, payload) => {
       writes.push({ room, payload });
       return { ok: true, row: { updated_at: '2026-05-30T19:00:00.000Z', payload } } as any;
@@ -121,12 +121,15 @@ test('show contents cloud sync pull applies the remote state without echo-pushin
     gatewayUrl: 'https://example.invalid/rest',
     clientId: 'client-contents',
     getRow: async (_rest, _anon, room) => ({
-      room,
-      updated_at: '2026-05-30T19:02:00.000Z',
-      payload: {
-        showContentsEnabled: true,
-        showContentsRev: 5,
-        showContentsBy: 'other-client',
+      ok: true,
+      row: {
+        room,
+        updated_at: '2026-05-30T19:02:00.000Z',
+        payload: {
+          showContentsEnabled: true,
+          showContentsRev: 5,
+          showContentsBy: 'other-client',
+        },
       },
     }),
     upsertRow: async () => {

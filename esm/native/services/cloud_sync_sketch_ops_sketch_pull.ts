@@ -35,7 +35,7 @@ export function createCloudSyncSketchPullOnce(
       );
       if (!sketchRoom) return;
 
-      const row = await readCloudSyncRowWithPullActivity({
+      const readResult = await readCloudSyncRowWithPullActivity({
         gatewayUrl,
         anonKey: cfg.anonKey,
         room: sketchRoom,
@@ -43,6 +43,8 @@ export function createCloudSyncSketchPullOnce(
         runtimeStatus,
         publishStatus,
       });
+      if (readResult.ok === false) return;
+      const row = readResult.row;
       const rowUpdatedAt = (row && row.updated_at) || '';
 
       if (isInitial) {

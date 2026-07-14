@@ -1,8 +1,8 @@
 import type {
   AppContainer,
   CloudSyncContentsTogglePayload,
+  CloudSyncReadResult,
   CloudSyncSketchPayload,
-  CloudSyncStateRow,
   CloudSyncSyncPinPayload,
   CloudSyncUpsertResult,
 } from '../../../types';
@@ -33,7 +33,7 @@ export type GetCloudSyncRow = (
   gatewayUrl: string,
   anonKey: string,
   room: string
-) => Promise<CloudSyncStateRow | null>;
+) => Promise<CloudSyncReadResult>;
 export type UpsertCloudSyncRow = (
   gatewayUrl: string,
   anonKey: string,

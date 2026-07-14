@@ -65,12 +65,15 @@ test('cloud sketch initial catchup is site2-only even when the remote row is fre
       currentRoom: () => 'room-a',
       getRow: async () =>
         ({
-          updated_at: updatedAt,
-          payload: {
-            sketchRev: 5,
-            sketchHash: 'remote-fresh',
-            sketchBy: 'remote-client',
-            sketch: { settings: { width: 140 } },
+          ok: true,
+          row: {
+            updated_at: updatedAt,
+            payload: {
+              sketchRev: 5,
+              sketchHash: 'remote-fresh',
+              sketchBy: 'remote-client',
+              sketch: { settings: { width: 140 } },
+            },
           },
         }) as any,
       upsertRow: async () => ({ ok: true }) as any,
@@ -144,22 +147,28 @@ test('cloud sketch stale initial catchup does not block the next fresh site2 upd
       callCount += 1;
       if (callCount === 1) {
         return {
-          updated_at: '2026-03-27T08:00:00.000Z',
-          payload: {
-            sketchRev: 1,
-            sketchHash: 'stale-remote',
-            sketchBy: 'main-client',
-            sketch: { settings: { width: 111 } },
+          ok: true,
+          row: {
+            updated_at: '2026-03-27T08:00:00.000Z',
+            payload: {
+              sketchRev: 1,
+              sketchHash: 'stale-remote',
+              sketchBy: 'main-client',
+              sketch: { settings: { width: 111 } },
+            },
           },
         } as any;
       }
       return {
-        updated_at: '2026-03-27T11:30:00.000Z',
-        payload: {
-          sketchRev: 2,
-          sketchHash: 'fresh-remote',
-          sketchBy: 'main-client',
-          sketch: { settings: { width: 222 } },
+        ok: true,
+        row: {
+          updated_at: '2026-03-27T11:30:00.000Z',
+          payload: {
+            sketchRev: 2,
+            sketchHash: 'fresh-remote',
+            sketchBy: 'main-client',
+            sketch: { settings: { width: 222 } },
+          },
         },
       } as any;
     },

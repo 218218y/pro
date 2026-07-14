@@ -223,7 +223,7 @@ export function createStoreCommitPipeline(deps: StoreCommitPipelineDeps) {
 
     if (pld.config && typeof pld.config === 'object') {
       assertStoreConfigMapWriteAllowed(pld.config, configApiName, opts2);
-      next.config = applyStoreConfigPatch(current.config, pld.config, meta, current.ui, opts2);
+      next.config = applyStoreConfigPatch(current.config, pld.config, meta, next.ui, opts2);
     }
 
     if (pld.mode) {

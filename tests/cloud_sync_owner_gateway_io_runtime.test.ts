@@ -175,13 +175,14 @@ test('owner gateway rejects competing edits without a blind retry', async () => 
       },
     });
   };
+  const runtimeStatus = createRuntimeStatus() as any;
   const io = createCloudSyncOwnerGatewayIo({
     App: { deps: { browser: { fetch } } } as any,
     cfg,
     gatewayUrl: 'https://example.supabase.co/functions/v1/wp-cloud-sync-room',
     rooms: createRooms(),
     clientId: 'client-local',
-    runtimeStatus: createRuntimeStatus() as any,
+    runtimeStatus,
     publishStatus: () => {},
   });
   assert.ok(io);
@@ -193,6 +194,13 @@ test('owner gateway rejects competing edits without a blind retry', async () => 
   assert.equal(result.ok, false);
   assert.equal(result.conflict, true);
   assert.equal(writeCount, 1);
+  assert.deepEqual(runtimeStatus.conflict, {
+    room: 'room_a',
+    keys: ['sketchHash'],
+    remoteRevision: 5,
+    detectedAt: runtimeStatus.conflict.detectedAt,
+  });
+  assert.equal(runtimeStatus.lastError, 'conflict:sketchHash');
 
   const repeated = await io.upsertRow('gateway', 'anon-key', 'room_a', { sketchHash: 'local' });
   assert.deepEqual(repeated.conflictKeys, ['sketchHash']);
@@ -267,7 +275,10 @@ test('owner gateway blocks an expired private credential before network access',
     runtimeStatus,
     publishStatus: () => {},
   });
-  assert.equal(await io?.getRow('gateway', 'anon', 'room_a'), null);
+  assert.deepEqual(await io?.getRow('gateway', 'anon', 'room_a'), {
+    ok: false,
+    failure: { kind: 'auth-expired', status: 403, code: 'room_token_expired' },
+  });
   assert.equal(fetchCount, 0);
   assert.equal(runtimeStatus.credential.state, 'expired');
   assert.equal(runtimeStatus.credential.failureKind, 'auth-expired');
@@ -325,4 +336,73 @@ test('a second tab reuses the credential renewed by the first tab', async () => 
   await secondTab?.getRow('gateway', 'anon', 'room_a');
   assert.equal(renewCount, 1);
   assert.equal(sharedCredential.token, 'renewed.shared.token');
+});
+
+for (const scenario of [
+  {
+    name: 'authorization failure',
+    fetch: async () => response(403, { ok: false, code: 'room_token_invalid' }),
+    expected: { kind: 'auth-invalid', status: 403, code: 'room_token_invalid' },
+  },
+  {
+    name: 'rate limit',
+    fetch: async () => response(429, { ok: false, code: 'rate_limit', retryAfterSeconds: 60 }),
+    expected: { kind: 'rate-limit', status: 429, code: 'rate_limit', retryAfterMs: 60_000 },
+  },
+  {
+    name: 'network failure',
+    fetch: async () => {
+      throw new Error('offline');
+    },
+    expected: { kind: 'network', message: 'offline' },
+  },
+] as const) {
+  test(`owner gateway preserves typed ${scenario.name} read results`, async () => {
+    const io = createCloudSyncOwnerGatewayIo({
+      App: { deps: { browser: { fetch: scenario.fetch } } } as any,
+      cfg,
+      gatewayUrl: 'gateway',
+      rooms: createRooms(),
+      clientId: 'client-local',
+      runtimeStatus: createRuntimeStatus() as any,
+      publishStatus: () => {},
+    });
+
+    assert.deepEqual(await io?.getRow('gateway', 'anon', 'room_a'), {
+      ok: false,
+      failure: scenario.expected,
+    });
+  });
+}
+
+test('owner gateway blocks repeated reads until the rate-limit retry deadline', async () => {
+  let fetchCount = 0;
+  const runtimeStatus = createRuntimeStatus() as any;
+  const io = createCloudSyncOwnerGatewayIo({
+    App: {
+      deps: {
+        browser: {
+          fetch: async () => {
+            fetchCount += 1;
+            return response(429, { ok: false, code: 'rate_limit', retryAfterSeconds: 60 });
+          },
+        },
+      },
+    } as any,
+    cfg,
+    gatewayUrl: 'gateway',
+    rooms: createRooms(),
+    clientId: 'client-local',
+    runtimeStatus,
+    publishStatus: () => {},
+  });
+
+  const first = await io?.getRow('gateway', 'anon', 'room_a');
+  const second = await io?.getRow('gateway', 'anon', 'room_a');
+
+  assert.equal(first?.ok, false);
+  assert.equal(second?.ok, false);
+  assert.equal(fetchCount, 1);
+  assert.equal(runtimeStatus.credential.state, 'rate-limited');
+  assert.equal(runtimeStatus.credential.retryAt > Date.now(), true);
 });

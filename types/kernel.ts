@@ -270,9 +270,25 @@ export interface ViewActionsLike extends UnknownRecord {
 
 export type SaveProjectAction = () => unknown;
 
+export interface ProjectLoadStateSnapshotLike {
+  ui: UnknownRecord;
+  config: UnknownRecord;
+  runtime: RuntimeSlicePatch;
+  mode: ModeSlicePatch;
+  meta: MetaSlicePatch;
+}
+
+export interface ProjectLoadTransactionHandleLike {
+  rollback: (meta?: ActionMetaLike) => void;
+}
+
 export interface ActionsNamespaceLike extends UnknownRecord {
   patch?: (partial: ActionRootPatchPayload, meta?: ActionMetaLike) => unknown;
   commitUiSnapshot?: (uiSnapshot: UnknownRecord, meta?: ActionMetaLike) => unknown;
+  commitProjectLoadSnapshot?: (
+    snapshot: ProjectLoadStateSnapshotLike,
+    meta?: ActionMetaLike
+  ) => ProjectLoadTransactionHandleLike;
   applyConfig?: (cfg: ConfigNonMapPatch, meta?: ActionMetaLike) => unknown;
   setCfgScalar?: {
     <K extends ConfigScalarKey>(key: K, valueOrFn: ConfigScalarValueMap[K], meta?: ActionMetaLike): unknown;

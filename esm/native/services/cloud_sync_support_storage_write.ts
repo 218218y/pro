@@ -10,49 +10,7 @@ import {
   readPayloadList,
 } from './cloud_sync_support_shared.js';
 import type { StorageLike } from './cloud_sync_support_storage_shared.js';
-
-function assertStorageWriteOk(ok: boolean, key: string): void {
-  if (ok) return;
-  throw new Error(`Cloud Sync storage write failed for ${key}`);
-}
-
-function writeRemoteCollectionsToStorage(
-  storage: StorageLike,
-  keyModels: string,
-  keyColors: string,
-  keyColorOrder: string,
-  keyPresetOrder: string,
-  keyHiddenPresets: string,
-  models: ReturnType<typeof normalizeModelList>,
-  colors: ReturnType<typeof normalizeSavedColorsList>,
-  hasColorOrder: boolean,
-  colorOrder: ReturnType<typeof readPayloadList> | null,
-  presetOrder: ReturnType<typeof readPayloadList>,
-  hiddenPresets: ReturnType<typeof readPayloadList>
-): void {
-  if (typeof storage.setString === 'function') {
-    assertStorageWriteOk(storage.setString(keyModels, JSON.stringify(models)), keyModels);
-    assertStorageWriteOk(storage.setString(keyColors, JSON.stringify(colors)), keyColors);
-    if (hasColorOrder) {
-      assertStorageWriteOk(storage.setString(keyColorOrder, JSON.stringify(colorOrder || [])), keyColorOrder);
-    }
-    assertStorageWriteOk(storage.setString(keyPresetOrder, JSON.stringify(presetOrder)), keyPresetOrder);
-    assertStorageWriteOk(
-      storage.setString(keyHiddenPresets, JSON.stringify(hiddenPresets)),
-      keyHiddenPresets
-    );
-    return;
-  }
-  if (typeof storage.setJSON === 'function') {
-    assertStorageWriteOk(storage.setJSON(keyModels, models), keyModels);
-    assertStorageWriteOk(storage.setJSON(keyColors, colors), keyColors);
-    if (hasColorOrder) {
-      assertStorageWriteOk(storage.setJSON(keyColorOrder, colorOrder || []), keyColorOrder);
-    }
-    assertStorageWriteOk(storage.setJSON(keyPresetOrder, presetOrder), keyPresetOrder);
-    assertStorageWriteOk(storage.setJSON(keyHiddenPresets, hiddenPresets), keyHiddenPresets);
-  }
-}
+import { createCloudCollectionsRepository } from './cloud_sync_collections_repository.js';
 
 export function applyRemote(
   App: AppContainer,
@@ -64,32 +22,45 @@ export function applyRemote(
   keyHiddenPresets: string,
   payload: CloudSyncPayload,
   suppress: { v: boolean }
-): void {
+): boolean {
   const models = normalizeModelList(payload?.savedModels);
   const colors = normalizeSavedColorsList(payload?.savedColors);
   const hasColorOrder = hasPayloadKey(payload, 'colorSwatchesOrder');
   const colorOrder = hasColorOrder ? readPayloadList(payload, 'colorSwatchesOrder') : null;
   const presetOrder = readPayloadList(payload, 'presetOrder');
   const hiddenPresets = readPayloadList(payload, 'hiddenPresets');
+  const repository = createCloudCollectionsRepository({
+    storage,
+    keys: {
+      models: keyModels,
+      colors: keyColors,
+      colorOrder: keyColorOrder,
+      presetOrder: keyPresetOrder,
+      hiddenPresets: keyHiddenPresets,
+    },
+  });
 
   suppress.v = true;
   try {
-    writeRemoteCollectionsToStorage(
-      storage,
-      keyModels,
-      keyColors,
-      keyColorOrder,
-      keyPresetOrder,
-      keyHiddenPresets,
-      models,
-      colors,
-      hasColorOrder,
-      colorOrder,
-      presetOrder,
-      hiddenPresets
-    );
+    const current = repository.read();
+    const commitResult = repository.commit({
+      m: models,
+      c: colors,
+      o: hasColorOrder ? colorOrder || [] : current.o,
+      p: presetOrder,
+      h: hiddenPresets,
+    });
+    if (commitResult.mirrorFailures.length) {
+      _cloudSyncReportNonFatal(
+        App,
+        'applyRemote.mirrorPerKeyStorage',
+        new Error(`Cloud collections per-key mirror failed for ${commitResult.mirrorFailures.join(', ')}`),
+        { throttleMs: 6000 }
+      );
+    }
   } catch (e) {
-    _cloudSyncReportNonFatal(App, 'applyRemote.writeStorage', e, { throttleMs: 6000 });
+    _cloudSyncReportNonFatal(App, 'applyRemote.commitCollections', e, { throttleMs: 6000 });
+    return false;
   } finally {
     suppress.v = false;
   }
@@ -107,4 +78,5 @@ export function applyRemote(
   } catch (e) {
     _cloudSyncReportNonFatal(App, 'applyRemote.refreshColorsUi', e, { throttleMs: 6000 });
   }
+  return true;
 }

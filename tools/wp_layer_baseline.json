@@ -1,42 +1,190 @@
 {
-  "version": 1,
-  "generated_at": "2026-04-07T10:23:45.712Z",
+  "version": 2,
   "root": "esm",
-  "allowed_edges": [
-    ["adapters", "runtime"],
-    ["boot", "adapters"],
-    ["boot", "builder"],
-    ["boot", "core"],
-    ["boot", "data"],
-    ["boot", "engine"],
-    ["boot", "io"],
-    ["boot", "kernel"],
-    ["boot", "platform"],
-    ["boot", "runtime"],
-    ["boot", "services"],
-    ["boot", "ui"],
-    ["builder", "features"],
-    ["builder", "runtime"],
-    ["core", "features"],
-    ["core", "runtime"],
-    ["core", "services"],
-    ["data", "features"],
-    ["engine", "runtime"],
-    ["engine", "services"],
-    ["io", "features"],
-    ["io", "runtime"],
-    ["io", "services"],
-    ["kernel", "features"],
-    ["kernel", "runtime"],
-    ["platform", "features"],
-    ["platform", "kernel"],
-    ["platform", "runtime"],
-    ["services", "features"],
-    ["services", "io"],
-    ["services", "kernel"],
-    ["services", "runtime"],
-    ["ui", "features"],
-    ["ui", "runtime"],
-    ["ui", "services"]
+  "rules": [
+    {
+      "from": "adapters",
+      "to": "runtime",
+      "maxImporters": 10,
+      "reason": "Browser adapters use injected runtime access helpers."
+    },
+    {
+      "from": "boot",
+      "to": "adapters",
+      "maxImporters": 2,
+      "reason": "Boot is the composition root for browser adapters."
+    },
+    { "from": "boot", "to": "builder", "maxImporters": 1, "reason": "Boot installs the builder owner." },
+    { "from": "boot", "to": "core", "maxImporters": 1, "reason": "Boot installs the core owner." },
+    { "from": "boot", "to": "data", "maxImporters": 1, "reason": "Boot installs canonical data seeds." },
+    {
+      "from": "boot",
+      "to": "engine",
+      "maxImporters": 1,
+      "reason": "Boot installs the rendering engine owner."
+    },
+    { "from": "boot", "to": "io", "maxImporters": 1, "reason": "Boot installs Project IO." },
+    { "from": "boot", "to": "kernel", "maxImporters": 1, "reason": "Boot installs kernel state actions." },
+    {
+      "from": "boot",
+      "to": "platform",
+      "maxImporters": 1,
+      "reason": "Boot installs platform infrastructure."
+    },
+    {
+      "from": "boot",
+      "to": "runtime",
+      "maxImporters": 5,
+      "reason": "Boot uses runtime install and access contracts."
+    },
+    { "from": "boot", "to": "services", "maxImporters": 1, "reason": "Boot installs service orchestration." },
+    { "from": "boot", "to": "ui", "maxImporters": 2, "reason": "Boot installs the UI composition surface." },
+    {
+      "from": "builder",
+      "to": "features",
+      "maxImporters": 122,
+      "reason": "Builder consumes shared domain feature policies."
+    },
+    {
+      "from": "builder",
+      "to": "runtime",
+      "maxImporters": 144,
+      "reason": "Builder uses runtime ports for store, render, and scheduling plumbing."
+    },
+    {
+      "from": "core",
+      "to": "features",
+      "maxImporters": 1,
+      "reason": "Core installation uses shared feature contracts."
+    },
+    {
+      "from": "core",
+      "to": "runtime",
+      "maxImporters": 2,
+      "reason": "Core installation resolves canonical runtime seams."
+    },
+    { "from": "core", "to": "services", "maxImporters": 2, "reason": "Core composes service owners." },
+    {
+      "from": "data",
+      "to": "features",
+      "maxImporters": 1,
+      "reason": "Data seeds use canonical feature normalization."
+    },
+    {
+      "from": "engine",
+      "to": "runtime",
+      "maxImporters": 2,
+      "reason": "Engine integration uses runtime access seams."
+    },
+    {
+      "from": "engine",
+      "to": "services",
+      "maxImporters": 2,
+      "reason": "Engine composes rendering service owners."
+    },
+    {
+      "from": "io",
+      "to": "features",
+      "maxImporters": 7,
+      "reason": "Project IO normalizes feature-owned project data."
+    },
+    {
+      "from": "io",
+      "to": "runtime",
+      "maxImporters": 14,
+      "reason": "Project IO uses runtime capability accessors."
+    },
+    {
+      "from": "io",
+      "to": "services",
+      "maxImporters": 1,
+      "reason": "Project IO calls the canonical services facade for finalization effects."
+    },
+    {
+      "from": "kernel",
+      "to": "features",
+      "maxImporters": 17,
+      "reason": "Kernel derives state with feature-owned domain policies."
+    },
+    {
+      "from": "kernel",
+      "to": "runtime",
+      "maxImporters": 50,
+      "reason": "Kernel installs state actions over runtime access contracts."
+    },
+    {
+      "from": "platform",
+      "to": "features",
+      "maxImporters": 3,
+      "reason": "Platform persistence and commits sanitize feature data."
+    },
+    {
+      "from": "platform",
+      "to": "kernel",
+      "maxImporters": 2,
+      "reason": "Platform diagnostics read kernel state only through its facade."
+    },
+    {
+      "from": "platform",
+      "to": "runtime",
+      "maxImporters": 41,
+      "reason": "Platform owns runtime store and scheduling plumbing."
+    },
+    {
+      "from": "services",
+      "to": "features",
+      "maxImporters": 106,
+      "reason": "Services orchestrate feature-owned domain operations."
+    },
+    {
+      "from": "services",
+      "to": "kernel",
+      "maxImporters": 18,
+      "reason": "Services read canonical kernel state through kernel/api."
+    },
+    {
+      "from": "services",
+      "to": "runtime",
+      "maxImporters": 254,
+      "reason": "Services depend on focused runtime ports and accessors."
+    },
+    {
+      "from": "ui",
+      "to": "features",
+      "maxImporters": 46,
+      "reason": "UI controllers consume feature contracts and presentation policies."
+    },
+    {
+      "from": "ui",
+      "to": "services",
+      "maxImporters": 182,
+      "reason": "UI uses the canonical services facade instead of runtime or owner internals."
+    }
+  ],
+  "facades": [
+    {
+      "from": "io",
+      "to": "services",
+      "allowedTargets": ["esm/native/services/api.ts"],
+      "reason": "Project IO must not import private service owners."
+    },
+    {
+      "from": "ui",
+      "to": "services",
+      "allowedTargets": ["esm/native/services/api.ts"],
+      "reason": "UI must use the stable services facade."
+    },
+    {
+      "from": "services",
+      "to": "kernel",
+      "allowedTargets": ["esm/native/kernel/api.ts"],
+      "reason": "Services must not bypass the kernel facade."
+    },
+    {
+      "from": "platform",
+      "to": "kernel",
+      "allowedTargets": ["esm/native/kernel/api.ts"],
+      "reason": "Platform diagnostics must not bypass the kernel facade."
+    }
   ]
 }

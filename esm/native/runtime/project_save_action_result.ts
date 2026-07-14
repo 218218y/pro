@@ -1,10 +1,11 @@
 import { normalizeUnknownError } from './error_normalization.js';
 import { asRecord } from './record.js';
+import type { AsyncOperationHandle } from '../../../types';
 
 export type ProjectSaveFailureReason =
   'cancelled' | 'download-unavailable' | 'not-installed' | 'invalid' | 'superseded' | 'busy' | 'error';
 
-export type ProjectSavePendingResult = {
+export type ProjectSavePendingResult = AsyncOperationHandle<ProjectSaveTerminalResult> & {
   ok: true;
   pending: true;
 };
@@ -23,11 +24,16 @@ export type ProjectSaveFailureResult = {
 export type ProjectSaveActionResult =
   ProjectSavePendingResult | ProjectSaveSuccessResult | ProjectSaveFailureResult;
 
+export type ProjectSaveTerminalResult = ProjectSaveSuccessResult | ProjectSaveFailureResult;
+
 type ProjectSaveResultRecord = {
   ok?: unknown;
   pending?: unknown;
   reason?: unknown;
   message?: unknown;
+  operationId?: unknown;
+  acceptedAt?: unknown;
+  settled?: unknown;
 };
 
 export function normalizeProjectSaveFailureReason(
@@ -66,7 +72,30 @@ export function normalizeProjectSaveActionResult(
   if (!rec) return { ok: false, reason: defaultReason };
 
   if (rec.ok === true) {
-    return rec.pending === true ? { ok: true, pending: true } : { ok: true };
+    if (rec.pending !== true) return { ok: true };
+    const operationId = typeof rec.operationId === 'string' ? rec.operationId.trim() : '';
+    const acceptedAt = Number(rec.acceptedAt);
+    const settled = rec.settled as Promise<ProjectSaveTerminalResult> | undefined;
+    if (
+      !operationId ||
+      !Number.isFinite(acceptedAt) ||
+      acceptedAt <= 0 ||
+      !settled ||
+      typeof settled.then !== 'function'
+    ) {
+      return {
+        ok: false,
+        reason: 'invalid',
+        message: 'Project save pending result is missing its terminal operation handle.',
+      };
+    }
+    return {
+      ok: true,
+      pending: true,
+      operationId,
+      acceptedAt: Math.floor(acceptedAt),
+      settled: Promise.resolve(settled),
+    };
   }
 
   const reason = normalizeProjectSaveFailureReason(rec.reason, defaultReason);

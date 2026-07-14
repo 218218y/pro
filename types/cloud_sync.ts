@@ -47,8 +47,17 @@ export type CloudSyncGatewayFailure =
   | { kind: 'network'; message: string }
   | { kind: 'server'; status: number; code?: string };
 
-export type CloudSyncGatewayReadResult =
+export type CloudSyncReadResult =
   { ok: true; row: CloudSyncStateRow | null } | { ok: false; failure: CloudSyncGatewayFailure };
+
+export type CloudSyncGatewayReadResult = CloudSyncReadResult;
+
+export interface CloudSyncConflictStatus extends UnknownRecord {
+  room: string;
+  keys: string[];
+  remoteRevision: number;
+  detectedAt: number;
+}
 
 export type CloudSyncCredentialIssueResult =
   { ok: true; credential: CloudSyncRoomCredential } | { ok: false; failure: CloudSyncGatewayFailure };
@@ -207,6 +216,16 @@ export interface CloudSyncLocalCollections {
   h: CloudSyncOrderList;
 }
 
+export interface CloudCollectionsEnvelope {
+  schemaVersion: 1;
+  revision: number;
+  savedModels: SavedModelLike[];
+  savedColors: SavedColorLike[];
+  colorOrder: CloudSyncOrderList;
+  presetOrder: CloudSyncOrderList;
+  hiddenPresets: CloudSyncOrderList;
+}
+
 export interface CloudSyncTabsGatePayload extends UnknownRecord {
   tabsGateOpen?: boolean | number | string | null;
   tabsGateUntil?: number | string | null;
@@ -295,6 +314,7 @@ export interface CloudSyncRuntimeStatus extends UnknownRecord {
   lastRealtimeEventAt: number;
   lastError: string;
   credential?: CloudSyncCredentialStatus;
+  conflict?: CloudSyncConflictStatus;
   diagEnabled?: boolean;
 }
 

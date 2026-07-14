@@ -6,8 +6,7 @@ import type {
 } from '../../../types/index.js';
 
 import { getHistorySystemMaybe } from '../runtime/history_system_access.js';
-import { metaRestore, metaUiOnly } from '../runtime/meta_profiles_access.js';
-import { setRuntimeRestoring } from '../services/api.js';
+import { metaRestore } from '../runtime/meta_profiles_access.js';
 import { logViaPlatform } from '../runtime/platform_access.js';
 import {
   asProjectIoRecord as asRecord,
@@ -29,14 +28,6 @@ export function createProjectIoOrchestrator(ctx: ProjectIoRuntimeContext) {
 
   function buildMetaRestore(source: string, meta?: ActionMetaLike | UnknownRecord): ActionMetaLike {
     return metaRestore(App, mergeProjectIoSourceMeta(source, meta), source);
-  }
-
-  function buildMetaUiOnly(source: string, meta?: ActionMetaLike | UnknownRecord): ActionMetaLike {
-    return metaUiOnly(App, mergeProjectIoSourceMeta(source, meta), source);
-  }
-
-  function setProjectIoRestoring(on: boolean, meta: ActionMetaLike): void {
-    setRuntimeRestoring(App, on, meta);
   }
 
   function getHistorySystem(): HistorySystemLike | null {
@@ -78,8 +69,6 @@ export function createProjectIoOrchestrator(ctx: ProjectIoRuntimeContext) {
   const deps: ProjectIoOwnerDeps = {
     ...ctx,
     metaRestore: buildMetaRestore,
-    metaUiOnly: buildMetaUiOnly,
-    setProjectIoRestoring,
     getHistorySystem,
     deepCloneJson,
     getProjectNameFromState,

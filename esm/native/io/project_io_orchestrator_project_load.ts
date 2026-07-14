@@ -1,4 +1,9 @@
-import type { ProjectLoadInputLike, ProjectLoadOpts, UnknownRecord } from '../../../types/index.js';
+import type {
+  ProjectLoadInputLike,
+  ProjectLoadOpts,
+  ProjectLoadTransactionHandleLike,
+  UnknownRecord,
+} from '../../../types/index.js';
 
 import {
   buildProjectPdfUiPatch,
@@ -11,13 +16,6 @@ import {
 import { requestBuilderForcedBuild } from '../runtime/builder_service_access.js';
 import { restoreNotesFromSaveViaService } from '../runtime/notes_access.js';
 import { resetHistoryBaselineRequiredOrThrow } from '../runtime/history_system_access.js';
-import { getActionFn } from '../runtime/actions_access_core.js';
-import { getConfigActionFn } from '../runtime/actions_access_domains.js';
-import {
-  applyProjectConfigSnapshotViaActionsOrThrow,
-  commitUiSnapshotViaActionsOrThrow,
-  setDirtyViaActionsOrThrow,
-} from '../runtime/actions_access_mutations.js';
 import { assertCanonicalUiRawDims } from '../runtime/ui_raw_selectors.js';
 import {
   buildCanonicalProjectConfigSnapshot,
@@ -34,8 +32,6 @@ import {
   adjustCameraForCorner,
   resetCameraPreset,
   resetAllEditModesViaService,
-  setRuntimeScalar,
-  setRuntimeSketchMode,
   updateSceneLightsViaService,
 } from '../services/api.js';
 import { normalizeProjectData } from './project_schema.js';
@@ -56,22 +52,7 @@ import {
   prepareProjectIoAutosaveBeforeLoad,
   refreshProjectIoAutosaveAfterLoad,
 } from './project_io_orchestrator_autosave.js';
-
-function assertProjectLoadSnapshotMutationSeamsReadyOrThrow(App: unknown): void {
-  const applyProjectSnapshot = getConfigActionFn(App, 'applyProjectSnapshot');
-  if (typeof applyProjectSnapshot !== 'function') {
-    throw new Error(
-      '[WardrobePro] project.load config apply requires canonical actions.config.applyProjectSnapshot(snapshot, meta).'
-    );
-  }
-
-  const commitUiSnapshot = getActionFn(App, 'commitUiSnapshot');
-  if (typeof commitUiSnapshot !== 'function') {
-    throw new Error(
-      '[WardrobePro] project.load UI snapshot commit requires canonical actions.commitUiSnapshot(snapshot, meta).'
-    );
-  }
-}
+import { createProjectLoadTransactionContext } from './project_load_transaction_context.js';
 
 function assertProjectLoadConfigReplaceOwnedBranches(cfg: UnknownRecord): UnknownRecord {
   const missing = Object.keys(PROJECT_CONFIG_SNAPSHOT_REPLACE_KEYS).filter(key => {
@@ -84,8 +65,8 @@ function assertProjectLoadConfigReplaceOwnedBranches(cfg: UnknownRecord): Unknow
 }
 
 export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
-  const { App, showToast, reportNonFatal, metaRestore, metaUiOnly, setProjectIoRestoring, deepCloneJson } =
-    deps;
+  const { App, showToast, reportNonFatal, metaRestore, deepCloneJson } = deps;
+  const transaction = createProjectLoadTransactionContext(deps);
 
   return function loadProjectData(
     input: ProjectLoadInputLike,
@@ -133,25 +114,79 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
     const preserveAutosave = shouldPreserveProjectAutosaveOnLoad(opts);
 
     let restoreGen = 0;
-
-    prepareProjectIoAutosaveBeforeLoad({ App, preserveAutosave, reportNonFatal });
-
-    try {
-      setProjectIoRestoring(true, metaRestore('project.load', { silent: false }));
-    } catch (err) {
-      reportNonFatal('project.load.setRestoring.true', err);
-    }
-
-    restoreGen = nextProjectIoRestoreGeneration(App);
+    let stateTransaction: ProjectLoadTransactionHandleLike | null = null;
+    let historySnapshot: ReturnType<typeof transaction.captureHistory> = null;
 
     try {
       const cfg: UnknownRecord = assertProjectLoadConfigReplaceOwnedBranches(
         buildCanonicalProjectConfigSnapshot(data) as UnknownRecord
       );
       const metaNoBuild = metaRestore('project.load', { silent: false });
-      assertProjectLoadSnapshotMutationSeamsReadyOrThrow(App);
-
       const { uiState, savedNotes } = loadSnapshot;
+
+      let uiSnap = normalizeProjectIoUiState(buildCanonicalProjectUiSnapshot(uiState));
+      assertCanonicalUiRawDims(uiSnap, 'project.load.uiState');
+
+      try {
+        const preserved = preserveUiEphemeral(uiSnap, readUiStateRecord(App));
+        uiSnap = normalizeProjectIoUiState(buildCanonicalProjectUiSnapshot(preserved));
+        assertCanonicalUiRawDims(uiSnap, 'project.load.preservedUiState');
+      } catch (err) {
+        reportNonFatal('loadProjectData.preserveUiEphemeral', err, 6000);
+      }
+
+      try {
+        const pdfPatch: ProjectPdfPatchLike = buildProjectPdfUiPatch(data, deepCloneJson);
+        uiSnap = normalizeProjectIoUiState({ ...uiSnap, ...pdfPatch });
+      } catch (err) {
+        reportNonFatal('project.load.pdfDraft', err);
+      }
+
+      const requiresHistoryReset = !isHistoryApply && !isModelApply && !isCloudApply;
+      transaction.assertReady(requiresHistoryReset);
+      historySnapshot = transaction.captureHistory(requiresHistoryReset);
+
+      prepareProjectIoAutosaveBeforeLoad({ App, preserveAutosave, reportNonFatal });
+      restoreGen = nextProjectIoRestoreGeneration(App);
+      stateTransaction = transaction.commit(
+        {
+          ui: uiSnap,
+          config: cfg,
+          runtime: {
+            sketchMode: !!uiSnap.sketchMode,
+            wardrobeTypeProfiles: null,
+            restoring: false,
+          },
+          mode: { primary: 'none', opts: {} },
+          meta: { dirty: false },
+        },
+        metaNoBuild
+      );
+
+      if (requiresHistoryReset) {
+        try {
+          resetHistoryBaselineRequiredOrThrow(
+            App,
+            { source: 'project.load' },
+            'project.load history baseline'
+          );
+        } catch (err) {
+          reportNonFatal('project.load.resetHistoryBaseline', err);
+          throw err;
+        }
+      }
+
+      resetAllEditModesViaService(App);
+
+      refreshProjectIoAutosaveAfterLoad({
+        App,
+        restoreGen,
+        isHistoryApply,
+        isModelApply,
+        isCloudApply,
+        preserveAutosave,
+        reportNonFatal,
+      });
 
       try {
         const nextChestMode = !!uiState.isChestMode;
@@ -172,7 +207,6 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
         if (shouldTouchCamera) {
           if (cornerMode) adjustCameraForCorner(App, side);
           else resetCameraPreset(App);
-
           try {
             setAutoCameraBuildKey(App, cornerMode ? `corner:${side}` : 'normal');
           } catch (err) {
@@ -196,92 +230,6 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       }
 
       try {
-        let uiSnap = normalizeProjectIoUiState(buildCanonicalProjectUiSnapshot(uiState));
-        assertCanonicalUiRawDims(uiSnap, 'project.load.uiState');
-
-        try {
-          const preserved = preserveUiEphemeral(uiSnap, readUiStateRecord(App));
-          uiSnap = normalizeProjectIoUiState(buildCanonicalProjectUiSnapshot(preserved));
-          assertCanonicalUiRawDims(uiSnap, 'project.load.preservedUiState');
-        } catch (err) {
-          reportNonFatal('loadProjectData.preserveUiEphemeral', err, 6000);
-        }
-
-        try {
-          const pdfPatch: ProjectPdfPatchLike = buildProjectPdfUiPatch(data, deepCloneJson);
-          uiSnap = normalizeProjectIoUiState({ ...uiSnap, ...pdfPatch });
-        } catch (err) {
-          reportNonFatal('project.load.pdfDraft', err);
-        }
-
-        commitUiSnapshotViaActionsOrThrow(App, uiSnap, metaNoBuild, 'project.load UI snapshot commit');
-        applyProjectConfigSnapshotViaActionsOrThrow(App, cfg, metaNoBuild, 'project.load config apply');
-
-        try {
-          setRuntimeSketchMode(
-            App,
-            !!uiSnap.sketchMode,
-            metaRestore('project.load:sketchMode', { silent: false })
-          );
-          setRuntimeScalar(
-            App,
-            'wardrobeTypeProfiles',
-            null,
-            metaRestore('project.load:clearWardrobeTypeProfiles', { silent: false })
-          );
-        } catch (err) {
-          reportNonFatal('project.load.syncRuntimeSnapshotState', err);
-          throw err;
-        }
-
-        try {
-          setDirtyViaActionsOrThrow(
-            App,
-            false,
-            metaUiOnly('project.load', { silent: true }),
-            'project.load dirty clear'
-          );
-        } catch (err) {
-          reportNonFatal('project.load.clearDirty', err);
-          throw err;
-        }
-
-        try {
-          setProjectIoRestoring(false, metaRestore('project.load', { silent: true }));
-        } catch (err) {
-          reportNonFatal('project.load.setRestoring.false', err);
-        }
-      } catch (err) {
-        reportNonFatal('project.load.commitUiSnapshot', err);
-        throw err;
-      }
-
-      resetAllEditModesViaService(App);
-
-      refreshProjectIoAutosaveAfterLoad({
-        App,
-        restoreGen,
-        isHistoryApply,
-        isModelApply,
-        isCloudApply,
-        preserveAutosave,
-        reportNonFatal,
-      });
-
-      if (!isHistoryApply && !isModelApply && !isCloudApply) {
-        try {
-          resetHistoryBaselineRequiredOrThrow(
-            App,
-            { source: 'project.load' },
-            'project.load history baseline'
-          );
-        } catch (err) {
-          reportNonFatal('project.load.resetHistoryBaseline', err);
-          throw err;
-        }
-      }
-
-      try {
         requestBuilderForcedBuild(App, { reason: 'project.load' });
       } catch (err) {
         reportNonFatal('project.load.requestBuilderForcedBuild', err);
@@ -295,17 +243,20 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       return buildProjectLoadSuccessResult({ restoreGen });
     } catch (err) {
       reportNonFatal('project.load.error', err);
+      if (stateTransaction && isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
+        try {
+          stateTransaction.rollback(metaRestore('project.load.rollback', { silent: true }));
+          transaction.rollbackHistory(historySnapshot);
+        } catch (rollbackErr) {
+          reportNonFatal('project.load.rollback', rollbackErr);
+        }
+      }
       if (toastEnabled) {
         try {
           showToast('שגיאה בטעינת הנתונים', 'error');
         } catch (toastErr) {
           reportNonFatal('project.load.errorToast', toastErr);
         }
-      }
-      try {
-        setProjectIoRestoring(false, metaRestore('project.load', { silent: true }));
-      } catch (resetErr) {
-        reportNonFatal('project.load.setRestoring.errorReset', resetErr);
       }
       return buildProjectLoadFailureResult('error', {
         restoreGen,

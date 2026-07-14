@@ -109,6 +109,7 @@ const rawStoreBackendTypeAllowPaths = new Set([
   'esm/native/kernel/state_api_install_support.ts',
   'esm/native/kernel/kernel_state_kernel_config_shared.ts',
   'esm/native/kernel/kernel_snapshot_store_commits_ops.ts',
+  'esm/native/kernel/state_api_project_load_transaction.ts',
   'esm/native/kernel/state_api_config_namespace.ts',
   'esm/native/kernel/state_api_config_namespace_core.ts',
   'esm/native/kernel/state_api_config_namespace_shared.ts',
@@ -147,6 +148,7 @@ const storeConfigMapWriteCapabilityNames = [
 const storeConfigMapWriteCapabilityAllowPaths = new Set([
   'esm/native/kernel/kernel_install_support.ts',
   'esm/native/kernel/state_api_install_support.ts',
+  'esm/native/kernel/state_api_project_load_transaction.ts',
   'esm/native/platform/store_commit_pipeline.ts',
   'esm/native/platform/store_patch_apply.ts',
   'esm/native/runtime/cfg_access_map_owner.ts',
@@ -168,6 +170,7 @@ const configReplaceMetadataBuilderAllowPaths = new Set([
   'esm/native/kernel/state_api_config_namespace_core.ts',
   'esm/native/kernel/state_api_config_namespace_maps.ts',
   'esm/native/kernel/state_api_config_namespace_scalars.ts',
+  'esm/native/kernel/state_api_project_load_transaction.ts',
   'esm/native/runtime/cfg_access_map_owner.ts',
   'esm/native/runtime/cfg_access_patch_metadata.ts',
   'esm/native/runtime/cfg_access_scalars.ts',

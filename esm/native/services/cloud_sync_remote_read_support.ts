@@ -1,4 +1,4 @@
-import type { CloudSyncRuntimeStatus, CloudSyncStateRow } from '../../../types';
+import type { CloudSyncReadResult, CloudSyncRuntimeStatus } from '../../../types';
 
 import type { CloudSyncGetRowFn } from './cloud_sync_owner_context.js';
 import { markCloudSyncPullActivity } from './cloud_sync_operation_status.js';
@@ -12,16 +12,14 @@ export type CloudSyncRemoteRowReaderArgs = {
   publishStatus?: (() => void) | null;
 };
 
-export async function readCloudSyncRow(
-  args: CloudSyncRemoteRowReaderArgs
-): Promise<CloudSyncStateRow | null> {
+export async function readCloudSyncRow(args: CloudSyncRemoteRowReaderArgs): Promise<CloudSyncReadResult> {
   return await args.getRow(args.gatewayUrl, args.anonKey, args.room);
 }
 
 export async function readCloudSyncRowWithPullActivity(
   args: CloudSyncRemoteRowReaderArgs
-): Promise<CloudSyncStateRow | null> {
-  const row = await readCloudSyncRow(args);
+): Promise<CloudSyncReadResult> {
+  const result = await readCloudSyncRow(args);
   markCloudSyncPullActivity(args.runtimeStatus, args.publishStatus);
-  return row;
+  return result;
 }

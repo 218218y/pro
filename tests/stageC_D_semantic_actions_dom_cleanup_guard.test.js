@@ -15,6 +15,7 @@ const stateApiConfigNamespace = [
   read('esm/native/kernel/state_api_config_namespace_maps.ts'),
 ].join('\n');
 const stateApiShared = read('esm/native/kernel/state_api_shared.ts');
+const stateApiProjectLoadTransaction = read('esm/native/kernel/state_api_project_load_transaction.ts');
 const actionsAccess = [
   read('esm/native/runtime/actions_access.ts'),
   read('esm/native/runtime/actions_access_mutations.ts'),
@@ -30,6 +31,7 @@ const projectIoLoadOps = [
   read('esm/native/io/project_io_orchestrator_load_ops.ts'),
   read('esm/native/io/project_io_orchestrator_load_file.ts'),
   read('esm/native/io/project_io_orchestrator_project_load.ts'),
+  read('esm/native/io/project_load_transaction_context.ts'),
   read('esm/native/io/project_io_orchestrator_restore.ts'),
 ].join('\n');
 const domAccess = read('esm/native/runtime/dom_access.ts');
@@ -61,8 +63,14 @@ test('[stageC] semantic config actions exist for notes + project snapshot restor
     /applyProjectSnapshot\?: \(snapshot: UnknownRecord, meta\?: ActionMetaLike\) => unknown;/
   );
   assert.match(kernelTypes, /applyPaintSnapshot\?: \(\s*colors: unknown,/);
+  assert.match(kernelTypes, /commitProjectLoadSnapshot\?: \(/);
   assert.match(stateApiShared, /export const PROJECT_CONFIG_REPLACE_KEYS: Record<string, true> = \{/);
   assert.match(stateApi, /installStateApiConfigNamespace\(\{/);
+  assert.match(stateApi, /installStateApiProjectLoadTransaction\(\{/);
+  assert.match(
+    stateApiProjectLoadTransaction,
+    /store\.patch\(\s*payload,\s*commitMeta,\s*withStoreConfigMapWriteCapability/
+  );
   assert.match(
     stateApiConfigNamespace,
     /configNs\.applyProjectSnapshot = function applyProjectSnapshot\(snapshot: UnknownRecord, meta\?: ActionMetaLike\)/
@@ -79,8 +87,9 @@ test('[stageC] semantic config actions exist for notes + project snapshot restor
   assert.match(notesService, /Missing actions\.config\.setSavedNotes/);
   assert.match(
     projectIoLoadOps,
-    /applyProjectConfigSnapshotViaActionsOrThrow\(\s*App,\s*cfg,\s*metaNoBuild,\s*'project\.load config apply'\s*\)/
+    /stateTransaction = transaction\.commit\(\s*\{[\s\S]*ui: uiSnap,[\s\S]*config: cfg,[\s\S]*meta: \{ dirty: false \}/
   );
+  assert.match(projectIoLoadOps, /stateTransaction\.rollback\(/);
   assert.doesNotMatch(notesService, /applyConfigPatch\(App, \{ savedNotes: notes \}, meta\)/);
   assert.doesNotMatch(projectIo, /cfgPatchWithReplaceKeys\(__cfg, /);
 });

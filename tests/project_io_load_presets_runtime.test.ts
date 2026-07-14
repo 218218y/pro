@@ -29,33 +29,26 @@ function createLoaderHarness() {
   };
   const App: any = {
     actions: {
-      commitUiSnapshot(snapshot: Record<string, unknown>) {
-        calls.push('ui');
-        state.ui = { ...state.ui, ...snapshot };
-      },
-      config: {
-        applyProjectSnapshot(snapshot: Record<string, unknown>) {
-          calls.push('config');
-          state.config = {
-            ...state.config,
-            ...snapshot,
-            modulesConfiguration: materializeTopModulesConfigurationFromUiConfig(
-              snapshot.modulesConfiguration,
-              state.ui,
-              { ...state.config, ...snapshot }
-            ),
-          };
-        },
-      },
-      meta: {
-        setDirty(next: boolean) {
-          state.meta.isDirty = next;
-        },
-      },
-      runtime: {
-        setScalar(key: string, value: unknown) {
-          state.runtime[key] = value;
-        },
+      commitProjectLoadSnapshot(snapshot: Record<string, any>) {
+        calls.push('transaction');
+        const before = structuredClone(state);
+        state.ui = structuredClone(snapshot.ui);
+        state.config = {
+          ...state.config,
+          ...structuredClone(snapshot.config),
+          modulesConfiguration: materializeTopModulesConfigurationFromUiConfig(
+            snapshot.config.modulesConfiguration,
+            snapshot.ui,
+            { ...state.config, ...snapshot.config }
+          ),
+        };
+        state.runtime = { ...state.runtime, ...structuredClone(snapshot.runtime) };
+        state.meta = { ...state.meta, ...structuredClone(snapshot.meta) };
+        return {
+          rollback() {
+            Object.assign(state, structuredClone(before));
+          },
+        };
       },
     },
     services: {
@@ -87,12 +80,6 @@ function createLoaderHarness() {
     },
     metaRestore(source, meta) {
       return { source, ...(asRecord(meta) || {}) };
-    },
-    metaUiOnly(source, meta) {
-      return { source, ...(asRecord(meta) || {}) };
-    },
-    setProjectIoRestoring(on) {
-      App.services.projectIO.runtime.restoring = on;
     },
     getHistorySystem() {
       return { resetBaseline() {} } as any;
@@ -137,7 +124,7 @@ for (const presetCase of [
 
     assert.equal(result.ok, true);
     assert.deepEqual(reports, []);
-    assert.deepEqual(calls.slice(0, 2), ['ui', 'config']);
+    assert.deepEqual(calls, ['transaction']);
     assert.deepEqual(
       state.config.modulesConfiguration.map((module: any) => ({
         doors: module.doors,

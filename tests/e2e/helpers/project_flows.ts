@@ -268,9 +268,20 @@ function normalizeModuleSpecialDimsSnapshot(
   };
 }
 
-function buildE2eRoomToken(): string {
+const E2E_ROOM_CREDENTIAL_TTL_MS = 7 * 86_400_000;
+
+function buildE2eRoomToken(expiresAtMs = Date.now() + E2E_ROOM_CREDENTIAL_TTL_MS): string {
   const encode = (value: unknown): string => Buffer.from(JSON.stringify(value), 'utf8').toString('base64url');
-  return `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode({ exp: Math.floor(Date.now() / 1000) + 86_400 })}.e2e-signature`;
+  return `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode({ exp: Math.floor(expiresAtMs / 1000) })}.e2e-signature`;
+}
+
+function buildE2eRoomCredential(room: string): { room: string; token: string; expiresAt: string } {
+  const expiresAtMs = Date.now() + E2E_ROOM_CREDENTIAL_TTL_MS;
+  return {
+    room,
+    token: buildE2eRoomToken(expiresAtMs),
+    expiresAt: new Date(expiresAtMs).toISOString(),
+  };
 }
 
 function buildSmokeAppUrl(initialCloudSyncRoom: 'private' | 'public'): string {
@@ -321,18 +332,15 @@ async function installCloudSyncGatewayIsolation(page: Page): Promise<void> {
     const requests = CLOUD_SYNC_GATEWAY_REQUESTS.get(page) || [];
     requests.push({ action, room, payload });
     CLOUD_SYNC_GATEWAY_REQUESTS.set(page, requests);
-    if (action === 'issue-public' || action === 'create-room') {
+    if (action === 'issue-public' || action === 'create-room' || action === 'renew-room') {
       const issuedRoom = action === 'issue-public' ? 'public' : `room_e2e_${Date.now().toString(36)}`;
+      const credentialRoom = action === 'renew-room' ? room : issuedRoom;
       await route.fulfill({
-        status: action === 'issue-public' ? 200 : 201,
+        status: action === 'create-room' ? 201 : 200,
         contentType: 'application/json',
         body: JSON.stringify({
           ok: true,
-          credential: {
-            room: issuedRoom,
-            token: buildE2eRoomToken(),
-            expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
-          },
+          credential: buildE2eRoomCredential(credentialRoom),
         }),
       });
       return;

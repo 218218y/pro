@@ -52,6 +52,12 @@ switch; do not restore configurable mount ids, optional roots, or CSS rules that
 - `tests/*` — behavior and architecture guards.
 - `tools/*` — verification, release, bundle, audit, and smoke scripts.
 
+The layer contract is an explicit target policy, not an auto-updated snapshot. `npm run contract:layers`
+parses ESM imports through the AST, rejects unlisted cross-layer edges, fails when an approved edge gains
+importer files beyond its reviewed budget, rejects stale rules, and enforces declared public facades. Use
+`npm run contract:layers:propose` only to inspect a candidate policy; review its reasons, budgets, and
+facades before editing `tools/wp_layer_baseline.json` deliberately.
+
 ## Change workflow
 
 1. Read `package.json`, this guide, `QUALITY_GUARDRAILS.md`, `layering_completion_audit.md`, and the directly affected tests/files.

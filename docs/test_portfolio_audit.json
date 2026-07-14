@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-07-13T08:13:27.643Z",
+  "generatedAt": "2026-07-14T09:26:19.131Z",
   "totals": {
-    "tests": 1200,
-    "unitRunnerTests": 1193,
+    "tests": 1206,
+    "unitRunnerTests": 1199,
     "e2eTests": 7,
     "nonTestRuntimeFiles": 30,
     "packageTestReferences": 191,
-    "catalogTestReferences": 351,
-    "totalTestReferences": 542,
+    "catalogTestReferences": 352,
+    "totalTestReferences": 543,
     "catalogGroups": 29,
     "catalogScriptBindings": 29,
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 391,
+    "contract": 392,
     "runtime-unit": 309,
-    "integration": 442,
+    "integration": 447,
     "e2e-smoke": 8,
     "perf-smoke": 9,
     "legacy-migration": 41
@@ -874,6 +874,10 @@
       "category": "contract"
     },
     {
+      "file": "tests/cloud_sync_collections_repository_runtime.test.ts",
+      "category": "integration"
+    },
+    {
       "file": "tests/cloud_sync_command_shared_runtime.test.ts",
       "category": "integration"
     },
@@ -1198,6 +1202,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/cloud_sync_rate_limit_recovery_runtime.test.ts",
+      "category": "integration"
+    },
+    {
       "file": "tests/cloud_sync_realtime_channel_subscribe_status_runtime.test.ts",
       "category": "integration"
     },
@@ -1235,6 +1243,10 @@
     },
     {
       "file": "tests/cloud_sync_room_commands_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_room_transition_runtime.test.ts",
       "category": "integration"
     },
     {
@@ -2914,6 +2926,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/project_load_transaction_runtime.test.ts",
+      "category": "integration"
+    },
+    {
       "file": "tests/project_migration_boundary_contracts.test.js",
       "category": "legacy-migration"
     },
@@ -3011,6 +3027,10 @@
     },
     {
       "file": "tests/project_ui_feedback_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/project_ui_save_operation_runtime.test.ts",
       "category": "integration"
     },
     {
@@ -4663,6 +4683,10 @@
     },
     {
       "file": "tests/wp_generated_report_contract_runtime.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wp_layer_contract_v2_runtime.test.js",
       "category": "contract"
     },
     {

@@ -234,7 +234,7 @@ test('cloud sync sketch preflight read marks pull activity before the push path 
       gatewayUrl: 'https://example.test',
       clientId: 'client-1',
       currentRoom: () => 'room-a',
-      getRow: async () => null as any,
+      getRow: async () => ({ ok: true, row: null }) as any,
       upsertRow: async () =>
         ({ ok: true, row: { updated_at: '2026-04-13T10:02:30.000Z', payload: {} } }) as any,
       emitRealtimeHint: () => undefined,

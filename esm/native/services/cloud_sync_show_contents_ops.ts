@@ -256,7 +256,7 @@ function createPullShowContentsOnce(
     });
     if (!roomNow) return;
 
-    const row = await readCloudSyncRowWithPullActivity({
+    const readResult = await readCloudSyncRowWithPullActivity({
       gatewayUrl,
       anonKey: cfg.anonKey,
       room: roomNow,
@@ -264,6 +264,8 @@ function createPullShowContentsOnce(
       runtimeStatus,
       publishStatus,
     });
+    if (readResult.ok === false) return;
+    const row = readResult.row;
 
     if (!row || !row.updated_at) {
       if (isInitial) {

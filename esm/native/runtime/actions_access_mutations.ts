@@ -6,6 +6,8 @@
 import type {
   ActionMetaLike,
   ModulesGeometrySnapshotLike,
+  ProjectLoadStateSnapshotLike,
+  ProjectLoadTransactionHandleLike,
   SaveProjectAction,
   UnknownRecord,
 } from '../../../types';
@@ -85,6 +87,27 @@ export function commitUiSnapshotViaActionsOrThrow(
     throw new Error(`[WardrobePro] ${label} requires canonical actions.commitUiSnapshot(snapshot, meta).`);
   }
   commitUiSnapshot(snapshot, meta);
+}
+
+export function commitProjectLoadSnapshotViaActionsOrThrow(
+  App: unknown,
+  snapshot: ProjectLoadStateSnapshotLike,
+  meta?: ActionMetaLike,
+  label = 'actions.commitProjectLoadSnapshot'
+): ProjectLoadTransactionHandleLike {
+  const commitProjectLoadSnapshot = getActionFn<
+    (value: ProjectLoadStateSnapshotLike, actionMeta?: ActionMetaLike) => ProjectLoadTransactionHandleLike
+  >(App, 'commitProjectLoadSnapshot');
+  if (typeof commitProjectLoadSnapshot !== 'function') {
+    throw new Error(
+      `[WardrobePro] ${label} requires canonical actions.commitProjectLoadSnapshot(snapshot, meta).`
+    );
+  }
+  const handle = commitProjectLoadSnapshot(snapshot, meta);
+  if (!handle || typeof handle.rollback !== 'function') {
+    throw new Error(`[WardrobePro] ${label} did not return a rollback handle.`);
+  }
+  return handle;
 }
 
 export function setDirtyViaActions(App: unknown, isDirty: boolean, meta?: ActionMetaLike): boolean {

@@ -45,6 +45,7 @@ export type CloudSyncMainRowOps = {
   runMainWriteFlight: <T>(key: string, run: () => Promise<T>, onBusy: () => T | Promise<T>) => Promise<T>;
   setLastSeenUpdatedAt: (value: string) => void;
   setLastHash: (value: string) => void;
+  commitPerKeyCollections: () => void;
   dispose: () => void;
 };
 

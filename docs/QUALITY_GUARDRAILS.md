@@ -186,6 +186,10 @@ npm run e2e:canvas-pointer-parity
 - Browser attention listeners must report non-fatal pull errors and remain usable for later events.
 - Offline attention attempts must not consume reconnect eligibility; hidden reconnects must wait for a visible return before pulling.
 - Browser reconnect smoke should prove the visible Cloud Sync panel stays stable across offline/online transitions and that a real Cloud Sync action remains usable after reconnect.
+- A successful read with `row: null` is the only missing-row result. Authorization, rate-limit, network, and server failures stay typed through the domain owner and must never trigger local seeding.
+- A rate-limited owner pauses Cloud reads until the gateway retry deadline; background polling must not create a retry storm.
+- Unmergeable CAS conflicts publish their conflict keys and remote revision, and automatic retry remains stopped until the conflict is resolved explicitly.
+- Cloud collections are committed through the single versioned envelope repository. Per-collection keys are deployment mirrors only; Cloud refresh/push begins only after the canonical envelope commit succeeds.
 
 Relevant docs/checks:
 
@@ -204,6 +208,9 @@ npm run e2e:cloud-sync-reconnect
 - After load/import canonicalization, runtime and builder paths should read canonical state only.
 - Tolerant compatibility readers may remain for staged migration, but new live paths should prefer canonical readers/assertions.
 - Real project import fixtures under `tests/fixtures/project_import/` guard current-schema ingress, canonical `ui.raw` validation, config replace-owned branches, and map cleanup behavior.
+- Project load preparation is side-effect free. Canonical UI, config, runtime, and meta state enter the store through one transaction commit; history baseline is part of the critical finalize boundary, and a critical failure rolls state and history back to their exact pre-load snapshots.
+- Camera, lighting, notes, build scheduling, notifications, and telemetry run only after the critical state/history commit succeeds.
+- Long-running user actions return an operation handle with `operationId`, `acceptedAt`, and one terminal `settled` promise. A pending result without a terminal handle is invalid; UI events and performance spans close from the same settled business result.
 
 Relevant checks:
 

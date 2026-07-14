@@ -36,7 +36,10 @@ test('cloud sync settled-write fallback reads stay quiet by default and only sta
         room: 'room-a',
         getRow: async () => {
           rowReads += 1;
-          return { updated_at: '2026-04-15T12:00:00.000Z', payload: {} } as any;
+          return {
+            ok: true,
+            row: { updated_at: '2026-04-15T12:00:00.000Z', payload: {} } as any,
+          } as const;
         },
       },
       runtimeStatus,
@@ -60,7 +63,10 @@ test('cloud sync settled-write fallback reads stay quiet by default and only sta
         gatewayUrl: 'https://example.test/rest',
         anonKey: 'anon',
         room: 'room-a',
-        getRow: async () => ({ updated_at: '2026-04-15T12:01:00.000Z', payload: {} }) as any,
+        getRow: async () => ({
+          ok: true,
+          row: { updated_at: '2026-04-15T12:01:00.000Z', payload: {} } as any,
+        }),
       },
       runtimeStatus,
       publishStatus: () => {

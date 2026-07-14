@@ -49,8 +49,22 @@ test('project actions expose normalized save/load/restore command results', asyn
   assert.deepEqual(saveProject(App), { ok: true });
   assert.deepEqual(saveProject({} as any), { ok: false, reason: 'not-installed' });
 
-  App.actions.saveProject = () => ({ ok: true, pending: true });
-  assert.deepEqual(saveProject(App), { ok: true, pending: true });
+  const settled = Promise.resolve({ ok: true } as const);
+  App.actions.saveProject = () => ({
+    ok: true,
+    pending: true,
+    operationId: 'project-save-test-1',
+    acceptedAt: 1,
+    settled,
+  });
+  const pending = saveProject(App);
+  assert.deepEqual(pending, {
+    ok: true,
+    pending: true,
+    operationId: 'project-save-test-1',
+    acceptedAt: 1,
+    settled,
+  });
 
   App.actions.saveProject = () => ({ ok: false, reason: 'busy' });
   assert.deepEqual(saveProject(App), { ok: false, reason: 'busy' });

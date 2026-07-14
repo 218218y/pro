@@ -22,7 +22,7 @@ export function createCloudSyncFloatingSketchSyncPullOnce(
     });
     if (!roomNow) return;
 
-    const row = await readCloudSyncRowWithPullActivity({
+    const readResult = await readCloudSyncRowWithPullActivity({
       gatewayUrl,
       anonKey: cfg.anonKey,
       room: roomNow,
@@ -30,6 +30,8 @@ export function createCloudSyncFloatingSketchSyncPullOnce(
       runtimeStatus,
       publishStatus,
     });
+    if (readResult.ok === false) return;
+    const row = readResult.row;
     if (!row || !row.updated_at) {
       if (isInitial) {
         applyFloatingSketchSyncPinnedInPlace(

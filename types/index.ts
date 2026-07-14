@@ -6,6 +6,7 @@
 // Keep this file as a *barrel only* to avoid circular type-only dependencies.
 
 export * from './common';
+export * from './async_operation';
 export * from './kernel';
 export * from './domain';
 export * from './config_scalar';

@@ -42,13 +42,14 @@ export async function resolveCloudSyncSettledRowAfterWrite(args: {
     args;
   let settledRow = hasCloudSyncSettledUpdatedAt(returnedRow) ? returnedRow : null;
   if (!settledRow) {
-    const fetchedRow = countSettleReadAsPull
+    const readResult = countSettleReadAsPull
       ? await readCloudSyncRowWithPullActivity({
           ...reader,
           runtimeStatus,
           publishStatus,
         })
       : await readCloudSyncRow(reader);
+    const fetchedRow = readResult.ok ? readResult.row : null;
     settledRow = hasCloudSyncSettledUpdatedAt(fetchedRow) ? fetchedRow : null;
   }
   if (settledRow?.updated_at) onSettledUpdatedAt?.(settledRow.updated_at);

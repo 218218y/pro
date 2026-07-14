@@ -88,7 +88,7 @@ export function createCloudSyncSketchSyncNow(
       const intent = resolveCloudSyncSketchWriteIntent(deps, options);
       if (!intent) return { ok: false, reason: 'capture' };
 
-      const existing = await readCloudSyncRowWithPullActivity({
+      const existingResult = await readCloudSyncRowWithPullActivity({
         gatewayUrl,
         anonKey: cfg.anonKey,
         room: sketchRoom,
@@ -96,6 +96,10 @@ export function createCloudSyncSketchSyncNow(
         runtimeStatus,
         publishStatus,
       });
+      if (existingResult.ok === false) {
+        return { ok: false, reason: 'write' };
+      }
+      const existing = existingResult.row;
       const existingPayload = existing ? parseSketchPayload(existing.payload) : null;
       if (intent.kind === 'clear') {
         if (isCloudSketchAlreadyCleared(existingPayload)) {

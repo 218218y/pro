@@ -36,7 +36,8 @@ test('cloud sync delete-temp keeps a thin facade over shared/write/runtime seams
   assertMatchesAll(assert, write, [
     /writeCloudSyncMainRowPayload\(/,
     /applyRemote\(/,
-    /readLocal\(/,
+    /createCloudCollectionsRepository\(/,
+    /\.read\(\)/,
     /computeHash\(/,
     /export async function writeDeleteTempPayloadAndApplyLocally\(/,
   ]);

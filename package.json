@@ -24,7 +24,7 @@
     "contract:api": "node tools/wp_public_api_contract.js",
     "contract:boot": "node tools/wp_build_dist.js --no-assets && node tools/wp_boot_contract.js",
     "contract:layers": "node tools/wp_layer_contract.js",
-    "contract:layers:update": "node tools/wp_layer_contract.js --update",
+    "contract:layers:propose": "node tools/wp_layer_contract.js --propose",
     "contract:three-vendor": "node tools/wp_three_vendor_contract.js",
     "dev:react": "vite --open index_pro.html?ui=react",
     "e2e:install": "npx playwright install",

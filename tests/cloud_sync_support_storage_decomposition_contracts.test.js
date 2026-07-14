@@ -75,12 +75,20 @@ test('[cloud-sync-support-storage] facade stays thin while marker/getStorage, lo
     assert,
     storageWriteOwner,
     [
-      /function writeRemoteCollectionsToStorage\(/,
       /export function applyRemote\(/,
+      /createCloudCollectionsRepository\(/,
+      /repository\.commit\(/,
+      /commitResult\.mirrorFailures/,
       /ensureModelsLoadedViaService\(/,
       /writeSavedColors\(/,
       /writeColorSwatchesOrder\(/,
     ],
+    'storageWriteOwner'
+  );
+  assertLacksAll(
+    assert,
+    storageWriteOwner,
+    [/function writeRemoteCollectionsToStorage\(/],
     'storageWriteOwner'
   );
 });

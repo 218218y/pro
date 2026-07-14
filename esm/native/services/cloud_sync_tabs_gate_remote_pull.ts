@@ -23,7 +23,7 @@ export function createCloudSyncTabsGatePullOnce(
     const roomNow = getSite2TabsRoom();
     if (!roomNow) return;
 
-    const row = await readCloudSyncRowWithPullActivity({
+    const readResult = await readCloudSyncRowWithPullActivity({
       gatewayUrl,
       anonKey: cfg.anonKey,
       room: roomNow,
@@ -31,6 +31,8 @@ export function createCloudSyncTabsGatePullOnce(
       runtimeStatus,
       publishStatus,
     });
+    if (readResult.ok === false) return;
+    const row = readResult.row;
     if (!row || !row.updated_at) {
       patchSite2TabsGateUi(false, 0, 'none');
       if (isTabsGateController) writeSite2TabsGateLocal(false, 0);

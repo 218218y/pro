@@ -12,6 +12,8 @@ import {
   createCloudSyncInstallPullCoalescers,
   installCloudSyncLifecycleStorageWrap,
 } from './cloud_sync_install_lifecycle_setup.js';
+import { createCloudSyncRateLimitRecovery } from './cloud_sync_rate_limit_recovery.js';
+import { _cloudSyncReportNonFatal } from './cloud_sync_support.js';
 
 export type PreparedCloudSyncInstallLifecycle = {
   liveness: CloudSyncInstallLiveness;
@@ -40,6 +42,7 @@ export function prepareCloudSyncInstallLifecycle(
     diagStorageKey,
     updateDiagEnabled,
     publishStatus,
+    subscribeRuntimeStatus,
     diag,
     setTimeoutFn,
     clearTimeoutFn,
@@ -67,6 +70,7 @@ export function prepareCloudSyncInstallLifecycle(
     schedulePush: () => {
       cloudSyncMainRow.schedulePush();
     },
+    commitCollectionsSnapshot: cloudSyncMainRow.commitPerKeyCollections,
     cleanup,
   });
 
@@ -95,8 +99,8 @@ export function prepareCloudSyncInstallLifecycle(
     pullSketchOnce,
     pullTabsGateOnce,
     pullFloatingSketchSyncPinnedOnce,
-    createLifecycleOps: () =>
-      createCloudSyncLifecycleOps({
+    createLifecycleOps: () => {
+      const lifecycleOps = createCloudSyncLifecycleOps({
         App,
         cfg,
         room,
@@ -127,6 +131,21 @@ export function prepareCloudSyncInstallLifecycle(
           disposedRef,
           setSendRealtimeHint,
         }),
-      }),
+      });
+      const rateLimitRecovery = createCloudSyncRateLimitRecovery({
+        runtimeStatus,
+        subscribeRuntimeStatus,
+        setTimeoutFn,
+        clearTimeoutFn,
+        isLive: liveness.isInstallLive,
+        pushMainNow: cloudSyncMainRow.pushNow,
+        pullAllNow: lifecycleOps.pullAllNow,
+        reportFailure: error => {
+          _cloudSyncReportNonFatal(App, 'cloudSync.rateLimitRecovery', error, { throttleMs: 8000 });
+        },
+      });
+      addCloudSyncCleanup(cleanup, rateLimitRecovery.dispose);
+      return lifecycleOps;
+    },
   };
 }

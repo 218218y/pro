@@ -48,6 +48,17 @@ This is the compact lifecycle contract for cloud sync. Keep implementation detai
 - Private renewal is allowed only while the old credential is still valid and only for its exact base room.
 - Runtime-status publication drives panel snapshots, so credential state changes are visible without a reload.
 
+## Read, conflict, and local commit rules
+
+- `row: null` means a successful gateway response with no row. Typed authorization, rate-limit, network,
+  and server failures remain failures through the domain owner and cannot seed a remote row.
+- While rate-limited, the owner suppresses ordinary pull/push work until the published retry deadline and
+  schedules only the lifecycle recovery attempt.
+- A merge that leaves conflict keys publishes an unresolved conflict with those keys and the remote
+  revision. Automatic conflict retry stops rather than silently choosing a payload.
+- The local collections repository commits one schema-versioned envelope before UI refresh or Cloud push.
+  Per-collection keys are deployment mirrors for existing consumers, not the canonical Cloud read source.
+
 ## Verification focus
 
 Tests should cover lifecycle transitions, duplicate suppression, panel action publication, snapshot coalescing, async pull hardening, recovery from stale/missing remote rows, schema-1 migration, fragment links, proactive renewal singleflight, local expiry rejection, typed 403/429/network failures, and panel status publication.

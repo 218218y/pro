@@ -11,6 +11,8 @@ export type ProjectUiActionEventDetail = {
   reason?: string;
   message?: string;
   restoreGen?: number;
+  operationId?: string;
+  phase: 'started' | 'settled';
   at: number;
 };
 
@@ -29,6 +31,8 @@ type ProjectUiActionResultRecord = {
   reason?: unknown;
   message?: unknown;
   restoreGen?: unknown;
+  operationId?: unknown;
+  acceptedAt?: unknown;
 };
 
 function asRecord(value: unknown): ProjectUiActionResultRecord | null {
@@ -64,14 +68,20 @@ export function buildProjectUiActionEventDetail(
   const reason = readOptionalString(rec?.reason);
   const message = readOptionalString(rec?.message);
   const restoreGen = readOptionalRestoreGen(rec?.restoreGen);
+  const operationId = readOptionalString(rec?.operationId);
+  const acceptedAt = Number(rec?.acceptedAt);
   return {
     action,
     ok,
     pending,
+    phase: pending ? 'started' : 'settled',
     ...(reason ? { reason } : {}),
     ...(message ? { message } : {}),
     ...(typeof restoreGen === 'number' ? { restoreGen } : {}),
-    at: normalizeEventTime(options?.at),
+    ...(operationId ? { operationId } : {}),
+    at: normalizeEventTime(
+      options?.at ?? (Number.isFinite(acceptedAt) && acceptedAt > 0 ? acceptedAt : undefined)
+    ),
   };
 }
 

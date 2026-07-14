@@ -70,7 +70,10 @@ function createHarness(rows: Array<any>, seed?: Record<string, unknown>) {
     keyColorOrder: 'colorOrder',
     keyPresetOrder: 'presetOrder',
     keyHiddenPresets: 'hiddenPresets',
-    getRow: async () => (getRowQueue.length ? (getRowQueue.shift() ?? null) : null),
+    getRow: async () => ({
+      ok: true,
+      row: getRowQueue.length ? (getRowQueue.shift() ?? null) : null,
+    }),
     upsertRow: async () => ({ ok: true }) as any,
     setTimeoutFn: handler => handler as any,
     clearTimeoutFn: () => undefined,

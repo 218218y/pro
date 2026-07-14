@@ -2,11 +2,14 @@ import type { AppContainer, ProjectExportResultLike, SaveProjectAction } from '.
 
 import {
   buildProjectSaveActionErrorResult,
+  createAsyncOperationHandle,
   exportProjectResultViaService,
   getUiFeedback,
   metaUiOnly,
   reportError,
   setDirtyViaActions,
+  type ProjectSavePendingResult,
+  type ProjectSaveTerminalResult,
 } from '../services/api.js';
 import { downloadJsonTextResultViaBrowser, normalizeDownloadFilename } from './browser_file_download.js';
 import type { ProjectSaveActionResult } from './project_action_feedback.js';
@@ -23,6 +26,8 @@ import {
   reportSaveResultWithToast,
   scheduleSaveResultToast,
 } from './project_save_runtime_results.js';
+
+const activeSaveOperations = new WeakMap<AppContainer, ProjectSavePendingResult>();
 
 type PreparedProjectSaveExport =
   | { ok: true; exported: ProjectExportResultLike; defaultName: string }
@@ -112,7 +117,7 @@ export function runEnsureSaveProjectAction(
         return buildProjectSaveFailureResult('busy');
       }
       if (actionFamily.status === 'reused') {
-        return { ok: true, pending: true } satisfies ProjectSaveActionResult;
+        return activeSaveOperations.get(App) || buildProjectSaveFailureResult('busy');
       }
 
       const prepared = prepareProjectSaveExport(App);
@@ -122,7 +127,16 @@ export function runEnsureSaveProjectAction(
       }
 
       const flight = runPreparedProjectSaveFlow(App, deps, promptHost, prepared);
-      flight
+      const settled: Promise<ProjectSaveTerminalResult> = flight
+        .then(result => result as ProjectSaveTerminalResult)
+        .catch(error => buildProjectSaveActionErrorResult(error, 'Project save failed.'));
+      const operation = {
+        ok: true,
+        pending: true,
+        ...createAsyncOperationHandle('project-save', settled),
+      } satisfies ProjectSavePendingResult;
+      activeSaveOperations.set(App, operation);
+      settled
         .then(result => {
           scheduleSaveResultToast(toast, result);
         })
@@ -130,9 +144,10 @@ export function runEnsureSaveProjectAction(
           scheduleSaveResultToast(toast, buildProjectSaveActionErrorResult(error, 'אירעה שגיאה בעת השמירה'));
         })
         .finally(() => {
+          if (activeSaveOperations.get(App) === operation) activeSaveOperations.delete(App);
           actionFamily.release();
         });
-      return { ok: true, pending: true } satisfies ProjectSaveActionResult;
+      return operation;
     };
   } catch (error) {
     reportProjectSaveRuntimeNonFatal(App, 'saveProject.install', error);

@@ -28,7 +28,7 @@ function deleteTemporaryItemsInCloud(
 
       let collections;
       try {
-        const row = await readCloudSyncRowWithPullActivity({
+        const readResult = await readCloudSyncRowWithPullActivity({
           gatewayUrl: args.gatewayUrl,
           anonKey: args.cfg.anonKey,
           room: roomNow,
@@ -36,6 +36,10 @@ function deleteTemporaryItemsInCloud(
           runtimeStatus: args.runtimeStatus,
           publishStatus: args.publishStatus,
         });
+        if (readResult.ok === false) {
+          throw new Error(`Cloud Sync read failed: ${readResult.failure.kind}`);
+        }
+        const row = readResult.row;
         collections = readDeleteTempCollections((row && row.payload) || null);
       } catch (err) {
         return buildDeleteTempErrorResult(args, kind, err, readDeleteTempDefaultErrorMessage(kind));

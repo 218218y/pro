@@ -54,7 +54,7 @@ export function createCloudSyncMainRowPullOnce(
   const { App, cfg, gatewayUrl, room, getRow, runtimeStatus, publishStatus, localState, state } = args;
 
   return async (isInitial: boolean): Promise<void> => {
-    const row = await readCloudSyncRowWithPullActivity({
+    const readResult = await readCloudSyncRowWithPullActivity({
       gatewayUrl,
       anonKey: cfg.anonKey,
       room,
@@ -62,6 +62,9 @@ export function createCloudSyncMainRowPullOnce(
       runtimeStatus,
       publishStatus,
     });
+
+    if (readResult.ok === false) return;
+    const row = readResult.row;
 
     if (!row) {
       if (isInitial) await localState.seedMissingRowFromLocal();
@@ -74,22 +77,22 @@ export function createCloudSyncMainRowPullOnce(
     const nextHash = localState.computeAppliedPayloadHash(payload);
 
     if (!state.getLastSeenUpdatedAt()) {
-      state.setLastSeenUpdatedAt(updatedAt);
       if (nextHash === currentHash && !shouldApplyInitialPayloadToHydrateApp(App, payload)) {
+        state.setLastSeenUpdatedAt(updatedAt);
         state.setLastHash(nextHash);
         return;
       }
-      localState.applyRemotePayload(payload);
+      if (localState.applyRemotePayload(payload)) state.setLastSeenUpdatedAt(updatedAt);
       return;
     }
 
     if (updatedAt && updatedAt !== state.getLastSeenUpdatedAt()) {
-      state.setLastSeenUpdatedAt(updatedAt);
       if (nextHash === state.getLastHash()) {
+        state.setLastSeenUpdatedAt(updatedAt);
         state.setLastHash(nextHash);
         return;
       }
-      localState.applyRemotePayload(payload);
+      if (localState.applyRemotePayload(payload)) state.setLastSeenUpdatedAt(updatedAt);
     }
   };
 }

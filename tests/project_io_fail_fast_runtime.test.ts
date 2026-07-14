@@ -12,11 +12,9 @@ type ProjectIoTestApp = {
 };
 
 function createProjectIoApp(overrides?: {
-  applyProjectSnapshot?:
-    ((snapshot: Record<string, unknown>, meta?: Record<string, unknown>) => unknown) | null;
+  commitProjectLoadSnapshot?:
+    ((snapshot: Record<string, any>, meta?: Record<string, unknown>) => unknown) | null;
   patch?: ((patch: Record<string, unknown>, meta?: Record<string, unknown>) => unknown) | null;
-  commitUiSnapshot?: ((snapshot: Record<string, unknown>, meta?: Record<string, unknown>) => unknown) | null;
-  setDirty?: ((next: boolean, meta?: Record<string, unknown>) => unknown) | null;
   resetBaseline?: ((meta?: Record<string, unknown>) => unknown) | null;
   resetAllEditModes?: (() => void) | null;
   autosaveData?: string | null;
@@ -33,6 +31,20 @@ function createProjectIoApp(overrides?: {
   const reports: Array<{ op: string; message: string }> = [];
   const runtimeFlags: Array<{ key: string; value: unknown }> = [];
   const toasts: Array<{ message: unknown; type: unknown }> = [];
+  const state: Record<string, any> = {
+    ui: {
+      width: 120,
+      height: 240,
+      depth: 60,
+      doors: 4,
+      activeTab: 'design',
+      site2TabsGateOpen: true,
+    },
+    config: {},
+    runtime: {},
+    mode: {},
+    meta: { dirty: true },
+  };
 
   const actions: Record<string, unknown> = {
     config: {},
@@ -53,34 +65,27 @@ function createProjectIoApp(overrides?: {
           };
   }
 
-  if (overrides?.applyProjectSnapshot !== null) {
-    (actions.config as Record<string, unknown>).applyProjectSnapshot =
-      overrides?.applyProjectSnapshot === undefined
-        ? (_snapshot: Record<string, unknown>, meta?: Record<string, unknown>) => {
-            calls.push(`config:${String(meta?.source || '')}`);
-            events.push(`config:${String(meta?.source || '')}`);
+  if (overrides?.commitProjectLoadSnapshot !== null) {
+    actions.commitProjectLoadSnapshot =
+      overrides?.commitProjectLoadSnapshot === undefined
+        ? (snapshot: Record<string, any>, meta?: Record<string, unknown>) => {
+            const before = structuredClone(state);
+            const source = String(meta?.source || '');
+            calls.push(`transaction:${source}`);
+            events.push(`transaction:${source}`);
+            state.ui = structuredClone(snapshot.ui);
+            state.config = { ...state.config, ...structuredClone(snapshot.config) };
+            state.runtime = { ...state.runtime, ...structuredClone(snapshot.runtime) };
+            state.meta = { ...state.meta, ...structuredClone(snapshot.meta) };
+            runtimeFlags.push({ key: 'sketchMode', value: snapshot.runtime.sketchMode });
+            runtimeFlags.push({ key: 'wardrobeTypeProfiles', value: snapshot.runtime.wardrobeTypeProfiles });
+            return {
+              rollback() {
+                Object.assign(state, structuredClone(before));
+              },
+            };
           }
-        : overrides.applyProjectSnapshot;
-  }
-
-  if (overrides?.commitUiSnapshot !== null) {
-    actions.commitUiSnapshot =
-      overrides?.commitUiSnapshot === undefined
-        ? (_snapshot: Record<string, unknown>, meta?: Record<string, unknown>) => {
-            calls.push(`commit:${String(meta?.source || '')}`);
-            events.push(`commit:${String(meta?.source || '')}`);
-          }
-        : overrides.commitUiSnapshot;
-  }
-
-  if (overrides?.setDirty !== null) {
-    (actions.meta as Record<string, unknown>).setDirty =
-      overrides?.setDirty === undefined
-        ? (next: boolean, meta?: Record<string, unknown>) => {
-            calls.push(`dirty:${next}:${String(meta?.source || '')}`);
-            events.push(`dirty:${next}:${String(meta?.source || '')}`);
-          }
-        : overrides.setDirty;
+        : overrides.commitProjectLoadSnapshot;
   }
 
   const App: ProjectIoTestApp = {
@@ -153,20 +158,7 @@ function createProjectIoApp(overrides?: {
     },
     store: {
       getState() {
-        return {
-          ui: {
-            width: 120,
-            height: 240,
-            depth: 60,
-            doors: 4,
-            activeTab: 'design',
-            site2TabsGateOpen: true,
-          },
-          config: {},
-          runtime: {},
-          mode: {},
-          meta: {},
-        };
+        return state;
       },
     },
   };
@@ -196,6 +188,7 @@ function createProjectIoApp(overrides?: {
 
   return {
     App,
+    state,
     calls,
     autosaveCalls,
     editStateCalls,
@@ -221,10 +214,10 @@ const VALID_PROJECT = {
   toggles: {},
 };
 
-test('project io fail-fast: full project loads now fail closed when canonical config apply seam is missing', () => {
+test('project io fail-fast: full project loads require the atomic state transaction seam', () => {
   return withSuppressedConsole(async () => {
     const { orchestrator, calls, autosaveCalls, runtimeFlags } = createProjectIoApp({
-      applyProjectSnapshot: null,
+      commitProjectLoadSnapshot: null,
     });
 
     const result = orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
@@ -233,28 +226,30 @@ test('project io fail-fast: full project loads now fail closed when canonical co
     assert.equal(result.reason, 'error');
     assert.match(
       String(result.message || ''),
-      /project\.load config apply|actions\.config\.applyProjectSnapshot/i
+      /project\.load requires canonical actions\.commitProjectLoadSnapshot/i
     );
     assert.deepEqual(calls, []);
-    assert.deepEqual(autosaveCalls, ['cancel']);
-    assert.deepEqual(runtimeFlags, [
-      { key: 'restoring', value: true },
-      { key: 'restoring', value: false },
-    ]);
+    assert.deepEqual(autosaveCalls, []);
+    assert.deepEqual(runtimeFlags, []);
   });
 });
 
-test('project io fail-fast: missing commitUiSnapshot seam no longer lets project loads limp forward', () => {
+test('project io fail-fast: a rejected atomic commit does not run finalize work', () => {
   return withSuppressedConsole(async () => {
-    const { orchestrator, calls, autosaveCalls } = createProjectIoApp({ commitUiSnapshot: null });
+    const { orchestrator, calls, autosaveCalls, editStateCalls } = createProjectIoApp({
+      commitProjectLoadSnapshot() {
+        throw new Error('atomic project commit rejected');
+      },
+    });
 
     const result = orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
 
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'error');
-    assert.match(String(result.message || ''), /project\.load ui snapshot commit|actions\.commitUiSnapshot/i);
+    assert.match(String(result.message || ''), /atomic project commit rejected/i);
     assert.deepEqual(calls, []);
     assert.deepEqual(autosaveCalls, ['cancel']);
+    assert.deepEqual(editStateCalls, []);
   });
 });
 
@@ -269,14 +264,14 @@ test('project io fail-fast: full project loads require canonical history baselin
       String(fullLoad.message || ''),
       /project\.load history baseline|canonical history system|resetBaseline/i
     );
-    assert.deepEqual(missingHistory.autosaveCalls, ['cancel', 'force']);
+    assert.deepEqual(missingHistory.autosaveCalls, []);
 
     const historyApply = missingHistory.orchestrator.loadProjectData(VALID_PROJECT as never, {
       toast: false,
       meta: { source: 'history.undoRedo' },
     });
-    assert.deepEqual(historyApply, { ok: true, restoreGen: 2 });
-    assert.deepEqual(missingHistory.autosaveCalls, ['cancel', 'force', 'cancel']);
+    assert.deepEqual(historyApply, { ok: true, restoreGen: 1 });
+    assert.deepEqual(missingHistory.autosaveCalls, ['cancel']);
   });
 });
 
@@ -284,7 +279,7 @@ test('project io restoreLastSession preserves precise restore failure toasts thr
   return withSuppressedConsole(async () => {
     const { orchestrator, toasts } = createProjectIoApp({
       autosaveData: JSON.stringify(VALID_PROJECT),
-      applyProjectSnapshot: () => {
+      commitProjectLoadSnapshot: () => {
         throw new Error('restore snapshot apply exploded');
       },
     });
@@ -319,12 +314,7 @@ test('project io restoreLastSession strips legacy autosave version metadata befo
   assert.deepEqual(result, { ok: true, pending: true });
   assert.deepEqual(toasts, [{ message: 'העריכה שוחזרה בהצלחה!', type: 'success' }]);
   assert.deepEqual(autosaveCalls, ['cancel', 'force']);
-  assert.deepEqual(calls, [
-    'commit:project.load',
-    'config:project.load',
-    'dirty:false:project.load',
-    'history:project.load',
-  ]);
+  assert.deepEqual(calls, ['transaction:project.load', 'history:project.load']);
 });
 
 test('project io reset-default loads preserve last-session autosave instead of overwriting it', () => {
@@ -337,12 +327,7 @@ test('project io reset-default loads preserve last-session autosave instead of o
 
   assert.deepEqual(result, { ok: true, restoreGen: 1 });
   assert.deepEqual(autosaveCalls, ['flush']);
-  assert.deepEqual(calls, [
-    'commit:project.load',
-    'config:project.load',
-    'dirty:false:project.load',
-    'history:project.load',
-  ]);
+  assert.deepEqual(calls, ['transaction:project.load', 'history:project.load']);
 });
 
 test('project io reset-default falls back to cancelling pending autosave when preserve flush is unavailable', () => {
@@ -368,12 +353,7 @@ test('project io handleFileLoad now delegates through canonical project file ing
 
   assert.deepEqual(result, { ok: true, restoreGen: 1 });
   assert.deepEqual(toasts, [{ message: 'הפרויקט נטען בהצלחה!', type: 'success' }]);
-  assert.deepEqual(calls, [
-    'commit:project.load',
-    'config:project.load',
-    'dirty:false:project.load',
-    'history:project.load',
-  ]);
+  assert.deepEqual(calls, ['transaction:project.load', 'history:project.load']);
   assert.deepEqual(autosaveCalls, ['cancel', 'force']);
 });
 
@@ -384,6 +364,24 @@ test('project io load clears active edit modes so transient authoring state does
 
   assert.deepEqual(result, { ok: true, restoreGen: 1 });
   assert.deepEqual(editStateCalls, ['reset']);
+});
+
+test('project io load restores state after a history-baseline fault following commit', () => {
+  return withSuppressedConsole(async () => {
+    const harness = createProjectIoApp({
+      resetBaseline() {
+        throw new Error('history finalize fault');
+      },
+    });
+    const before = structuredClone(harness.state);
+
+    const result = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+    assert.equal(result.ok, false);
+    assert.match(String(result.message || ''), /history finalize fault/);
+    assert.deepEqual(harness.state, before);
+    assert.deepEqual(harness.buildCalls, []);
+  });
 });
 
 test('project io load syncs persisted sketch mode into the runtime SSOT', () => {
@@ -422,13 +420,7 @@ test('project io load emits exactly one final builder request after a valid load
   const result = valid.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
 
   assert.deepEqual(result, { ok: true, restoreGen: 1 });
-  assert.deepEqual(valid.events, [
-    'commit:project.load',
-    'config:project.load',
-    'dirty:false:project.load',
-    'history:project.load',
-    'build:project.load',
-  ]);
+  assert.deepEqual(valid.events, ['transaction:project.load', 'history:project.load', 'build:project.load']);
   assert.equal(valid.buildCalls.length, 1);
   assert.deepEqual(valid.buildCalls[0], {
     uiOverride: null,
@@ -470,18 +462,11 @@ test('project io load uses explicit snapshot APIs even when a root patch surface
 
   assert.deepEqual(result, { ok: true, restoreGen: 1 });
   assert.equal(rootPatches.length, 0);
-  assert.deepEqual(calls, [
-    'commit:project.load',
-    'config:project.load',
-    'dirty:false:project.load',
-    'history:project.load',
-  ]);
+  assert.deepEqual(calls, ['transaction:project.load', 'history:project.load']);
   assert.deepEqual(autosaveCalls, ['cancel', 'force']);
   assert.deepEqual(runtimeFlags, [
-    { key: 'restoring', value: true },
     { key: 'sketchMode', value: true },
     { key: 'wardrobeTypeProfiles', value: null },
-    { key: 'restoring', value: false },
   ]);
 });
 
@@ -492,7 +477,7 @@ test('project io handleFileLoad now preserves canonical file-read/load errors in
     };
     file.name = 'project.json';
     const { orchestrator, toasts } = createProjectIoApp({
-      applyProjectSnapshot: () => {
+      commitProjectLoadSnapshot: () => {
         throw new Error('file snapshot apply exploded');
       },
     });

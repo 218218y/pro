@@ -1,6 +1,7 @@
 import type {
   AppContainer,
   CloudSyncGatewayFailure,
+  CloudSyncGatewayReadResult,
   CloudSyncPayload,
   CloudSyncRoomCredential,
   CloudSyncRuntimeStatus,
@@ -32,7 +33,7 @@ export type CloudSyncGetRowFn = (
   gatewayUrlIn: string,
   anonKeyIn: string,
   roomIn: string
-) => Promise<CloudSyncStateRow | null>;
+) => Promise<CloudSyncGatewayReadResult>;
 
 export type CloudSyncUpsertRowFn = (
   gatewayUrlIn: string,
@@ -85,6 +86,7 @@ export function createCloudSyncOwnerGatewayIo(args: {
   let publicCredentialPromise: Promise<CloudSyncRoomCredential | null> | null = null;
   let privateCredentialPromise: Promise<CloudSyncRoomCredential | null> | null = null;
   let privateCredentialMemory: CloudSyncRoomCredential | null = null;
+  let lastCredentialFailure: CloudSyncGatewayFailure | null = null;
 
   const missingCredentialFailure = (): CloudSyncGatewayFailure => ({
     kind: 'auth-invalid',
@@ -96,6 +98,7 @@ export function createCloudSyncOwnerGatewayIo(args: {
     credential: CloudSyncRoomCredential | null,
     failure: CloudSyncGatewayFailure | null = null
   ): void => {
+    lastCredentialFailure = failure;
     runtimeStatus.credential = buildCloudSyncCredentialStatus({
       isPublic: rooms.currentRoom() === cfg.publicRoom,
       credential,
@@ -109,6 +112,19 @@ export function createCloudSyncOwnerGatewayIo(args: {
   const isCredentialUsable = (credential: CloudSyncRoomCredential | null): boolean => {
     const expiresAt = credential ? Date.parse(credential.expiresAt) : Number.NaN;
     return !!credential?.token && Number.isFinite(expiresAt) && expiresAt > Date.now() + 60_000;
+  };
+
+  const readActiveRateLimitFailure = (): CloudSyncGatewayFailure | null => {
+    const status = runtimeStatus.credential;
+    const retryAt = Number(status?.retryAt) || 0;
+    const remainingMs = retryAt - Date.now();
+    if (status?.state !== 'rate-limited' || remainingMs <= 0) return null;
+    return {
+      kind: 'rate-limit',
+      status: 429,
+      code: 'rate_limit',
+      retryAfterMs: remainingMs,
+    };
   };
 
   const resolvePublicCredential = async (): Promise<CloudSyncRoomCredential | null> => {
@@ -149,9 +165,7 @@ export function createCloudSyncOwnerGatewayIo(args: {
       }).then(result => {
         if (result.ok === false) {
           publishCredentialStatus(credential, result.failure);
-          return result.failure.kind === 'network' || result.failure.kind === 'rate-limit'
-            ? credential
-            : null;
+          return null;
         }
         privateCredentialMemory = result.credential;
         rooms.setPrivateRoomCredential(result.credential);
@@ -166,6 +180,11 @@ export function createCloudSyncOwnerGatewayIo(args: {
   };
 
   const resolveRoomCredential = async (room: string): Promise<CloudSyncRoomCredential | null> => {
+    const rateLimitFailure = readActiveRateLimitFailure();
+    if (rateLimitFailure) {
+      lastCredentialFailure = rateLimitFailure;
+      return null;
+    }
     const baseRoom = rooms.currentRoom();
     if (!baseRoom || (room !== baseRoom && !room.startsWith(`${baseRoom}::`))) {
       publishCredentialStatus(null, missingCredentialFailure());
@@ -200,10 +219,31 @@ export function createCloudSyncOwnerGatewayIo(args: {
     if (row) rowCache.set(row.room, row);
   };
 
+  const clearConflictStatus = (room: string): void => {
+    if (runtimeStatus.conflict?.room !== room) return;
+    delete runtimeStatus.conflict;
+    if (runtimeStatus.lastError.startsWith('conflict:')) runtimeStatus.lastError = '';
+    publishStatus();
+  };
+
+  const publishConflictStatus = (room: string, row: CloudSyncStateRow, keys: string[]): void => {
+    const normalizedKeys = [...new Set(keys.map(key => String(key).trim()).filter(Boolean))];
+    runtimeStatus.conflict = {
+      room,
+      keys: normalizedKeys,
+      remoteRevision: row.revision,
+      detectedAt: Date.now(),
+    };
+    runtimeStatus.lastError = `conflict:${normalizedKeys.join(',') || 'revision'}`;
+    publishStatus();
+  };
+
   return {
     getRow: async (gatewayUrlIn: string, anonKeyIn: string, roomIn: string) => {
       const credential = await resolveRoomCredential(roomIn);
-      if (!credential) return null;
+      if (!credential) {
+        return { ok: false, failure: lastCredentialFailure || missingCredentialFailure() };
+      }
       const result = await getGatewayRow({
         fetchFn,
         gatewayUrl: gatewayUrlIn,
@@ -214,12 +254,12 @@ export function createCloudSyncOwnerGatewayIo(args: {
       });
       if (result.ok === false) {
         publishCredentialStatus(credential, result.failure);
-        return null;
+        return result;
       }
       publishCredentialStatus(credential);
       const row = result.row;
       cacheRow(row);
-      return row;
+      return result;
     },
     upsertRow: async (
       gatewayUrlIn: string,
@@ -228,7 +268,9 @@ export function createCloudSyncOwnerGatewayIo(args: {
       payloadIn: CloudSyncPayload
     ) => {
       const credential = await resolveRoomCredential(roomIn);
-      if (!credential) return { ok: false, failure: missingCredentialFailure() };
+      if (!credential) {
+        return { ok: false, failure: lastCredentialFailure || missingCredentialFailure() };
+      }
       const baseRow = rowCache.get(roomIn) || null;
       const first = await writeGatewayRow({
         fetchFn,
@@ -244,6 +286,7 @@ export function createCloudSyncOwnerGatewayIo(args: {
       if (first.ok === true) {
         publishCredentialStatus(credential);
         cacheRow(first.row);
+        clearConflictStatus(roomIn);
         return first;
       }
       if (first.conflict !== true) {
@@ -257,6 +300,7 @@ export function createCloudSyncOwnerGatewayIo(args: {
         remote: first.row.payload,
       });
       if (merged.ok === false) {
+        publishConflictStatus(roomIn, first.row, merged.conflictKeys);
         return { ...first, conflictKeys: merged.conflictKeys };
       }
 
@@ -274,7 +318,12 @@ export function createCloudSyncOwnerGatewayIo(args: {
       if (retry.ok === true) {
         cacheRow(retry.row);
         publishCredentialStatus(credential);
-      } else if (retry.conflict !== true) {
+        clearConflictStatus(roomIn);
+      } else if (retry.conflict === true) {
+        const conflictKeys = retry.conflictKeys?.length ? retry.conflictKeys : ['revision'];
+        publishConflictStatus(roomIn, retry.row, conflictKeys);
+        return { ...retry, conflictKeys };
+      } else {
         publishCredentialStatus(credential, retry.failure);
       }
       return retry;

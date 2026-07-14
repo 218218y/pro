@@ -27,6 +27,14 @@ export function cloneRuntimeStatus(status: CloudSyncRuntimeStatus): CloudSyncRun
         failureKind: status.credential.failureKind || '',
       }
     : null;
+  const conflict = status.conflict
+    ? {
+        room: String(status.conflict.room || ''),
+        keys: Array.isArray(status.conflict.keys) ? status.conflict.keys.map(key => String(key)) : [],
+        remoteRevision: Number(status.conflict.remoteRevision) || 0,
+        detectedAt: Number(status.conflict.detectedAt) || 0,
+      }
+    : null;
   return {
     room: String(status.room || ''),
     clientId: String(status.clientId || ''),
@@ -38,6 +46,7 @@ export function cloneRuntimeStatus(status: CloudSyncRuntimeStatus): CloudSyncRun
     lastRealtimeEventAt: Number(status.lastRealtimeEventAt) || 0,
     lastError: String(status.lastError || ''),
     ...(credential ? { credential } : {}),
+    ...(conflict ? { conflict } : {}),
     diagEnabled: !!status.diagEnabled,
   };
 }
@@ -65,6 +74,10 @@ export function buildRuntimeStatusSnapshotKey(status: CloudSyncRuntimeStatus): s
     snapshot.credential?.expiresAt || '',
     String(snapshot.credential?.retryAt || 0),
     snapshot.credential?.failureKind || '',
+    snapshot.conflict?.room || '',
+    (snapshot.conflict?.keys || []).join(','),
+    String(snapshot.conflict?.remoteRevision || 0),
+    String(snapshot.conflict?.detectedAt || 0),
     snapshot.diagEnabled ? '1' : '0',
   ].join('|');
 }

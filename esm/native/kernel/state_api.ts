@@ -27,6 +27,7 @@ import {
 import type { SetCfgScalarFn } from './state_api_shared.js';
 import { installStateApiSurfaceNamespaces } from './state_api_surface_namespaces.js';
 import { createStateApiInstallSupport } from './state_api_install_support.js';
+import { installStateApiProjectLoadTransaction } from './state_api_project_load_transaction.js';
 
 export function isStateApiInstalled(app: unknown): boolean {
   const rec = asObj(app);
@@ -127,6 +128,13 @@ export function installStateApi(App: AppContainer): void {
     projectConfigReplaceKeys: PROJECT_CONFIG_REPLACE_KEYS,
     paintConfigReplaceKeys: PAINT_CONFIG_REPLACE_KEYS,
     modulesGeometryReplaceKeys: MODULES_GEOMETRY_REPLACE_KEYS,
+  });
+
+  installStateApiProjectLoadTransaction({
+    actions,
+    store,
+    normMeta,
+    shallowCloneObj,
   });
 
   installStateApiHistoryMetaReactivity({

@@ -3,6 +3,11 @@ import assert from 'node:assert/strict';
 
 import { createCloudSyncMainRowOps } from '../esm/native/services/cloud_sync_main_row.ts';
 
+function cloudRead(row: any) {
+  if (row && typeof row === 'object' && typeof row.ok === 'boolean') return row;
+  return { ok: true as const, row: row ?? null };
+}
+
 function createMemoryStorage(seed?: Record<string, unknown>) {
   const store = new Map<string, string>();
   Object.entries(seed || {}).forEach(([key, value]) => {
@@ -87,7 +92,7 @@ function createHarness(opts?: { localSeed?: Record<string, unknown>; rows?: Arra
     keyHiddenPresets: 'hiddenPresets',
     getRow: async (_gatewayUrl, _anonKey, room) => {
       getRowCalls.push({ room });
-      return rows.length ? (rows.shift() ?? null) : null;
+      return cloudRead(rows.length ? (rows.shift() ?? null) : null);
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       upsertCalls.push({ room, payload: payload as Record<string, unknown> });
@@ -168,6 +173,22 @@ test('cloud sync main row seeds a missing row from local collections on the init
   assert.equal(harness.getRowCalls.length, 2);
 });
 
+test('cloud sync main row never seeds local collections after a failed initial read', async () => {
+  const harness = createHarness({
+    rows: [
+      {
+        ok: false,
+        failure: { kind: 'rate-limit', status: 429, code: 'rate_limit', retryAfterMs: 60_000 },
+      },
+    ],
+  });
+
+  await harness.ops.pullOnce(true);
+
+  assert.equal(harness.getRowCalls.length, 1);
+  assert.equal(harness.upsertCalls.length, 0);
+});
+
 test('cloud sync main row initial seed reuses returned representation when the upsert already returns the row', async () => {
   const harness = createHarness({ rows: [null] });
   harness.getRowCalls.length = 0;
@@ -200,7 +221,7 @@ test('cloud sync main row initial seed reuses returned representation when the u
     keyHiddenPresets: 'hiddenPresets',
     getRow: async (_gatewayUrl, _anonKey, room) => {
       harness.getRowCalls.push({ room });
-      return null;
+      return cloudRead(null);
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       harness.upsertCalls.push({ room, payload: payload as Record<string, unknown> });
@@ -287,7 +308,7 @@ test('cloud sync main row push reuses returned representation instead of forcing
     keyHiddenPresets: 'hiddenPresets',
     getRow: async (_gatewayUrl, _anonKey, room) => {
       harness.getRowCalls.push({ room });
-      return { updated_at: '2026-04-02T20:10:00.000Z', payload: {} } as any;
+      return cloudRead({ updated_at: '2026-04-02T20:10:00.000Z', payload: {} } as any);
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       harness.upsertCalls.push({ room, payload: payload as Record<string, unknown> });
@@ -363,7 +384,7 @@ test('cloud sync main row reuses the same pending push promise for duplicate dir
     keyHiddenPresets: 'hiddenPresets',
     getRow: async (_gatewayUrl, _anonKey, room) => {
       slowHarness.getRowCalls.push({ room });
-      return pendingRows.length ? (pendingRows.shift() ?? null) : null;
+      return cloudRead(pendingRows.length ? (pendingRows.shift() ?? null) : null);
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       slowHarness.upsertCalls.push({ room, payload: payload as Record<string, unknown> });
@@ -581,7 +602,7 @@ test('cloud sync main row push applies settled remote payload locally without fo
     keyHiddenPresets: 'hiddenPresets',
     getRow: async (_gatewayUrl, _anonKey, room) => {
       harness.getRowCalls.push({ room });
-      return null;
+      return cloudRead(null);
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       harness.upsertCalls.push({ room, payload: payload as Record<string, unknown> });
@@ -670,7 +691,7 @@ test('cloud sync main row collapses pull retries during a push into one post-pus
     keyHiddenPresets: 'hiddenPresets',
     getRow: async (_gatewayUrl, _anonKey, room) => {
       harness.getRowCalls.push({ room });
-      return { updated_at: '2026-04-02T20:10:00.000Z', payload: {} } as any;
+      return cloudRead({ updated_at: '2026-04-02T20:10:00.000Z', payload: {} } as any);
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       harness.upsertCalls.push({ room, payload: payload as Record<string, unknown> });
@@ -779,7 +800,7 @@ test('cloud sync main row keeps the earliest queued post-push pull delay across 
     keyHiddenPresets: 'hiddenPresets',
     getRow: async (_gatewayUrl, _anonKey, room) => {
       harness.getRowCalls.push({ room });
-      return { updated_at: '2026-04-02T20:10:00.000Z', payload: {} } as any;
+      return cloudRead({ updated_at: '2026-04-02T20:10:00.000Z', payload: {} } as any);
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       harness.upsertCalls.push({ room, payload: payload as Record<string, unknown> });
@@ -869,7 +890,7 @@ test('cloud sync main row notifies push-settled listeners only after the push fl
     keyHiddenPresets: 'hiddenPresets',
     getRow: async (_gatewayUrl, _anonKey, room) => {
       harness.getRowCalls.push({ room });
-      return { updated_at: '2026-04-02T20:10:00.000Z', payload: {} } as any;
+      return cloudRead({ updated_at: '2026-04-02T20:10:00.000Z', payload: {} } as any);
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       harness.upsertCalls.push({ room, payload: payload as Record<string, unknown> });
@@ -956,9 +977,11 @@ test('cloud sync main row keeps the earliest queued post-pull delay across mixed
     keyHiddenPresets: 'hiddenPresets',
     getRow: async (_gatewayUrl, _anonKey, room) => {
       harness.getRowCalls.push({ room });
-      return await new Promise(resolve => {
-        resolveRow = resolve as typeof resolveRow;
-      });
+      return cloudRead(
+        await new Promise(resolve => {
+          resolveRow = resolve as typeof resolveRow;
+        })
+      );
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       harness.upsertCalls.push({ room, payload: payload as Record<string, unknown> });
@@ -1063,7 +1086,7 @@ test('cloud sync main row shares app-scoped push ownership across main-row insta
       keyColorOrder: 'colorOrder',
       keyPresetOrder: 'presetOrder',
       keyHiddenPresets: 'hiddenPresets',
-      getRow: async () => rows.shift() ?? null,
+      getRow: async () => cloudRead(rows.shift() ?? null),
       upsertRow: async (_gatewayUrl, _anonKey, room) => {
         upsertCalls.push(room);
         await new Promise<void>(resolve => {
@@ -1174,9 +1197,11 @@ test('cloud sync main row collapses pull requests that arrive while a pull is al
     keyHiddenPresets: 'hiddenPresets',
     getRow: async (_gatewayUrl, _anonKey, room) => {
       harness.getRowCalls.push({ room });
-      return await new Promise(resolve => {
-        resolveRow = resolve as typeof resolveRow;
-      });
+      return cloudRead(
+        await new Promise(resolve => {
+          resolveRow = resolve as typeof resolveRow;
+        })
+      );
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       harness.upsertCalls.push({ room, payload: payload as Record<string, unknown> });
@@ -1284,7 +1309,7 @@ test('cloud sync main row preserves one follow-up push request raised while a pu
     keyHiddenPresets: 'hiddenPresets',
     getRow: async (_gatewayUrl, _anonKey, room) => {
       harness.getRowCalls.push({ room });
-      return rows.length ? (rows.shift() ?? null) : null;
+      return cloudRead(rows.length ? (rows.shift() ?? null) : null);
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       harness.upsertCalls.push({ room, payload: payload as Record<string, unknown> });
@@ -1340,6 +1365,7 @@ test('cloud sync main row preserves one follow-up push request raised while a pu
 
   const pushA = harness.ops.pushNow();
   harness.storage.setJSON('savedModels', [{ id: 'model-2', name: 'Model 2' }]);
+  harness.ops.commitPerKeyCollections();
   harness.ops.schedulePush();
   assert.equal(
     harness.timers.filter(timer => timer.active).length,
@@ -1398,7 +1424,7 @@ test('cloud sync main row parks recovery pulls behind a debounced pending push s
     keyHiddenPresets: 'hiddenPresets',
     getRow: async (_gatewayUrl, _anonKey, room) => {
       harness.getRowCalls.push({ room });
-      return rows.length ? (rows.shift() ?? null) : null;
+      return cloudRead(rows.length ? (rows.shift() ?? null) : null);
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       harness.upsertCalls.push({ room, payload: payload as Record<string, unknown> });
@@ -1449,6 +1475,7 @@ test('cloud sync main row parks recovery pulls behind a debounced pending push s
   });
 
   harness.storage.setJSON('savedModels', [{ id: 'model-2', name: 'Model 2' }]);
+  harness.ops.commitPerKeyCollections();
   harness.ops.schedulePush();
   harness.ops.schedulePullSoon({ immediate: true, reason: 'realtime.main' });
 
@@ -1560,7 +1587,7 @@ test('cloud sync main row keeps canonical main pull reasons across a push-blocke
     keyHiddenPresets: 'hiddenPresets',
     getRow: async (_gatewayUrl, _anonKey, room) => {
       harness.getRowCalls.push({ room });
-      return { updated_at: '2026-04-02T20:10:00.000Z', payload: {} } as any;
+      return cloudRead({ updated_at: '2026-04-02T20:10:00.000Z', payload: {} } as any);
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       harness.upsertCalls.push({ room, payload: payload as Record<string, unknown> });

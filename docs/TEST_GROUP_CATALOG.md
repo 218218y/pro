@@ -1,12 +1,12 @@
 # Test group catalog
 
-Generated: 2026-07-13T08:13:27.352Z
+Generated: 2026-07-14T09:26:18.818Z
 
 ## Summary
 
 - Catalog groups: 29
 - Package script bindings owned by the catalog: 29
-- Catalog test-file references: 351
+- Catalog test-file references: 352
 - Direct package.json test-file references still remaining: 191
 - Catalog definition issues: 0
 - Package binding issues: 0
@@ -17,7 +17,7 @@ Generated: 2026-07-13T08:13:27.352Z
 | -------------------------------- | ---------------------------------------------- | ------------ | ---------- | ----------- | ----: | -------------------------------------------------------------------- |
 | `canvas-surfaces`                | `test:canvas-surfaces`                         | primary      | tsx-test   | tsx         |    14 | services/canvas-picking                                              |
 | `cloud-sync-lifecycle`           | `test:cloud-sync-surfaces:lifecycle`           | focused      | serial-tsx | tsx         |    16 | services/cloud-sync/lifecycle                                        |
-| `cloud-sync-main-row`            | `test:cloud-sync-surfaces:main-row`            | focused      | serial-tsx | tsx         |     7 | services/cloud-sync/main-row                                         |
+| `cloud-sync-main-row`            | `test:cloud-sync-surfaces:main-row`            | focused      | serial-tsx | tsx         |     8 | services/cloud-sync/main-row                                         |
 | `cloud-sync-panel-controller`    | `test:cloud-sync-surfaces:panel-controller`    | focused      | tsx-test   | tsx         |     2 | ui/cloud-sync-panel                                                  |
 | `cloud-sync-panel-install`       | `test:cloud-sync-surfaces:panel-install`       | focused      | tsx-test   | tsx         |     2 | ui/cloud-sync-panel                                                  |
 | `cloud-sync-panel-snapshots`     | `test:cloud-sync-surfaces:panel-snapshots`     | focused      | tsx-test   | tsx         |     3 | ui/cloud-sync-panel                                                  |

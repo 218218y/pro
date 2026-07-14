@@ -6,6 +6,10 @@ import { createCloudSyncMainWriteSingleFlight } from '../esm/native/services/clo
 
 type AnyRecord = Record<string, unknown>;
 
+function cloudRead(row: unknown) {
+  return { ok: true as const, row: row ?? null };
+}
+
 function createStorageHarness() {
   const raw = new Map<string, string>();
   return {
@@ -94,7 +98,7 @@ test('cloud sync delete temp removes unlocked colors, sanitizes payload, updates
     getRow: async () => {
       getRowCalls += 1;
       if (getRowCalls === 1) {
-        return {
+        return cloudRead({
           room: 'room-1',
           updated_at: 'ts-1',
           payload: {
@@ -107,13 +111,13 @@ test('cloud sync delete temp removes unlocked colors, sanitizes payload, updates
             presetOrder: ['preset-a', 2, { bad: true }],
             hiddenPresets: ['hidden-a', false, 9],
           },
-        } as any;
+        } as any);
       }
-      return {
+      return cloudRead({
         room: 'room-1',
         updated_at: 'ts-2',
         payload: upsertPayload,
-      } as any;
+      } as any);
     },
     upsertRow: async (_gatewayUrl, _anonKey, room, payload) => {
       assert.equal(room, 'room-1');
@@ -250,7 +254,7 @@ test('cloud sync delete temp preserves thrown message, reports nonfatal, and res
     keyHiddenPresets: 'hiddenPresets',
     currentRoom: () => 'room-2',
     getRow: async () =>
-      ({
+      cloudRead({
         room: 'room-2',
         updated_at: 'ts-1',
         payload: {
@@ -260,7 +264,7 @@ test('cloud sync delete temp preserves thrown message, reports nonfatal, and res
           ],
           savedColors: [],
         },
-      }) as any,
+      } as any),
     upsertRow: async () => {
       throw new Error('upsert exploded');
     },
@@ -317,14 +321,14 @@ test('cloud sync delete temp reuses duplicate same-kind writes and reports busy 
           releaseGetRow = resolve;
         });
       }
-      return {
+      return cloudRead({
         room: 'room-3',
         updated_at: 'ts-1',
         payload: {
           savedModels: [{ id: 'temp-1', name: 'Temp 1' }],
           savedColors: [],
         },
-      } as any;
+      } as any);
     },
     upsertRow: async () => ({ ok: true }) as any,
     getSendRealtimeHint: () => null,
@@ -394,7 +398,7 @@ test('cloud sync delete-temp tracks preflight pull activity and settled push act
       keyHiddenPresets: 'hiddenPresets',
       currentRoom: () => 'room-a',
       getRow: async () =>
-        ({
+        cloudRead({
           updated_at: '2026-04-13T11:00:00.000Z',
           payload: {
             savedModels: [],
@@ -406,7 +410,7 @@ test('cloud sync delete-temp tracks preflight pull activity and settled push act
             presetOrder: [],
             hiddenPresets: [],
           },
-        }) as any,
+        } as any),
       upsertRow: async (_gatewayUrl, _anonKey, room, payload) =>
         ({ ok: true, row: { room, payload, updated_at: '2026-04-13T11:00:30.000Z' } }) as any,
       getSendRealtimeHint: () => (scope: string, rowName?: string) => {

@@ -16,6 +16,7 @@ type CreateCloudSyncStorageWrapArgs = {
   keysToSync: string[];
   suppressRef: { v: boolean };
   schedulePush: () => void;
+  commitCollectionsSnapshot: () => void;
 };
 
 type StorageWriteMethodKey = 'setString' | 'setJSON' | 'remove';
@@ -62,9 +63,13 @@ export function createCloudSyncStorageWrap(args: CreateCloudSyncStorageWrapArgs)
         const ok = origSetString(k, v);
         try {
           const kk = String(k);
-          if (!args.suppressRef.v && keysToSync.has(kk)) args.schedulePush();
+          if (ok && !args.suppressRef.v && keysToSync.has(kk)) {
+            args.commitCollectionsSnapshot();
+            args.schedulePush();
+          }
         } catch (err) {
           _cloudSyncReportNonFatal(args.App, 'cloudSyncStorageWrap.setString', err, { throttleMs: 8000 });
+          return false;
         }
         return ok;
       };
@@ -75,9 +80,13 @@ export function createCloudSyncStorageWrap(args: CreateCloudSyncStorageWrapArgs)
         const ok = origSetJSON(k, v);
         try {
           const kk = String(k);
-          if (!args.suppressRef.v && keysToSync.has(kk)) args.schedulePush();
+          if (ok && !args.suppressRef.v && keysToSync.has(kk)) {
+            args.commitCollectionsSnapshot();
+            args.schedulePush();
+          }
         } catch (err) {
           _cloudSyncReportNonFatal(args.App, 'cloudSyncStorageWrap.setJSON', err, { throttleMs: 8000 });
+          return false;
         }
         return ok;
       };
@@ -88,9 +97,13 @@ export function createCloudSyncStorageWrap(args: CreateCloudSyncStorageWrapArgs)
         const ok = origRemove(k);
         try {
           const kk = String(k);
-          if (!args.suppressRef.v && keysToSync.has(kk)) args.schedulePush();
+          if (ok && !args.suppressRef.v && keysToSync.has(kk)) {
+            args.commitCollectionsSnapshot();
+            args.schedulePush();
+          }
         } catch (err) {
           _cloudSyncReportNonFatal(args.App, 'cloudSyncStorageWrap.remove', err, { throttleMs: 8000 });
+          return false;
         }
         return ok;
       };

@@ -18,6 +18,7 @@ test('project ui action events build canonical detail for success, explicit fail
       action: 'load',
       ok: true,
       pending: true,
+      phase: 'started',
       restoreGen: 7,
       at: 1234,
     }
@@ -33,6 +34,7 @@ test('project ui action events build canonical detail for success, explicit fail
       action: 'reset-default',
       ok: false,
       pending: false,
+      phase: 'settled',
       reason: 'invalid',
       message: 'bad payload',
       at: 4321,
@@ -98,6 +100,7 @@ test('project ui action events publish generic and action-specific browser event
     action: 'restore-last-session',
     ok: false,
     pending: false,
+    phase: 'settled',
     reason: 'missing-autosave',
     message: 'nothing to restore',
     at: 456,

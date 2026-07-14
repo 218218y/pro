@@ -204,6 +204,46 @@ test('cloud sync lifecycle refresh requests report recent-pull gating through th
   }
 });
 
+test('cloud sync lifecycle refresh blocks polling until the gateway rate-limit deadline', () => {
+  const originalNow = Date.now;
+  let now = 50_000;
+  Date.now = () => now;
+  let pullCalls = 0;
+  const runtimeStatus = {
+    realtime: { enabled: false, state: 'disabled', channel: '' },
+    polling: { active: true, intervalMs: 5000, reason: 'fallback' },
+    credential: {
+      state: 'rate-limited',
+      expiresAt: '',
+      retryAt: 60_000,
+      failureKind: 'rate-limit',
+    },
+  } as any;
+
+  try {
+    const request = () =>
+      requestCloudSyncLifecycleRefresh({
+        App: {} as any,
+        runtimeStatus,
+        suppressRef: { v: false },
+        pullAllNow: () => {
+          pullCalls += 1;
+        },
+        policy: { allowWhenRealtime: true, allowWhenOffline: true, allowWhenHidden: true },
+      });
+
+    assert.deepEqual(request(), { accepted: false, blockedBy: 'rate-limit' });
+    assert.deepEqual(request(), { accepted: false, blockedBy: 'rate-limit' });
+    assert.equal(pullCalls, 0);
+
+    now = 60_000;
+    assert.deepEqual(request(), { accepted: true, blockedBy: null });
+    assert.equal(pullCalls, 1);
+  } finally {
+    Date.now = originalNow;
+  }
+});
+
 test('cloud sync lifecycle pull-all owner skips reconnect/broadcast fanout right after a real pull and resumes after cooldown', () => {
   const mainCalls: string[] = [];
   const scopeCalls: string[] = [];

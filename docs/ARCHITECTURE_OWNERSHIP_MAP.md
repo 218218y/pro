@@ -42,7 +42,9 @@ Use this map to find the owner before editing. The goal is to prevent “just on
 | Notes overlay                | notes overlay state/persistence/palette runtime owners                                                                   |
 | Order PDF                    | order-pdf overlay/editor/draft/sketch/export runtime owners                                                              |
 | Saved models service         | `esm/native/services/models.ts` public facade plus focused `models_*` owners                                             |
-| Cloud sync                   | `esm/native/services/cloud_sync_*` lifecycle, transport, panel, and scope owners                                         |
+| Cloud sync                   | `esm/native/services/cloud_sync_*` lifecycle, transport, panel, scope, and collections repository owners                 |
+| Project load transaction     | `esm/native/io/project_load_transaction_context.ts` over the canonical kernel state transaction                          |
+| Async operation handles      | `esm/native/runtime/async_operation.ts`, exposed to consumers through their owning public facade                         |
 | Autosave/history/project I/O | focused service owners under `esm/native/services/*` and `esm/native/io/*`                                               |
 
 ## UI
@@ -58,7 +60,7 @@ Use this map to find the owner before editing. The goal is to prevent “just on
 
 | Surface                        | Canonical owner                                                                                               |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| Architecture layer contracts   | `tools/wp_layer_contract.js`, `tools/wp_public_api_contract.js`                                               |
+| Architecture layer contracts   | `tools/wp_layer_contract.js`, `tools/wp_layer_contract_support.mjs`, `tools/wp_public_api_contract.js`        |
 | Docs control plane             | `tools/wp_docs_control_plane_audit.mjs`                                                                       |
 | Generated audit report catalog | `tools/wp_generated_report_contract.mjs`                                                                      |
 | Named test-group catalog       | `tools/wp_test_group_catalog.mjs` + `tools/wp_test_group.mjs`                                                 |

@@ -7,15 +7,32 @@ import {
 } from '../esm/native/runtime/project_save_action_result.ts';
 
 test('project save action result normalization keeps reasons canonical and strips junk from success results', () => {
+  const settled = Promise.resolve({ ok: true } as const);
   assert.deepEqual(normalizeProjectSaveActionResult(true), { ok: true });
   assert.deepEqual(normalizeProjectSaveActionResult(false), { ok: false, reason: 'not-installed' });
   assert.deepEqual(
-    normalizeProjectSaveActionResult({ ok: true, pending: true, reason: 'error', message: 'ignore me' }),
+    normalizeProjectSaveActionResult({
+      ok: true,
+      pending: true,
+      operationId: 'save-1',
+      acceptedAt: 123,
+      settled,
+      reason: 'error',
+      message: 'ignore me',
+    }),
     {
       ok: true,
       pending: true,
+      operationId: 'save-1',
+      acceptedAt: 123,
+      settled,
     }
   );
+  assert.deepEqual(normalizeProjectSaveActionResult({ ok: true, pending: true }), {
+    ok: false,
+    reason: 'invalid',
+    message: 'Project save pending result is missing its terminal operation handle.',
+  });
   assert.deepEqual(
     normalizeProjectSaveActionResult({
       ok: false,

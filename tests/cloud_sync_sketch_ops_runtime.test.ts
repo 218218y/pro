@@ -1,8 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createCloudSyncSketchOps } from '../esm/native/services/cloud_sync_sketch_ops.ts';
+import { createCloudSyncSketchOps as createCloudSyncSketchOpsImpl } from '../esm/native/services/cloud_sync_sketch_ops.ts';
 import { withSuppressedConsole } from './_console_silence.ts';
+
+function createCloudSyncSketchOps(deps: any) {
+  const getRow = deps.getRow;
+  return createCloudSyncSketchOpsImpl({
+    ...deps,
+    getRow: async (...args: unknown[]) => {
+      const value = await getRow(...args);
+      if (value && typeof value === 'object' && typeof value.ok === 'boolean') return value;
+      return { ok: true, row: value ?? null };
+    },
+  });
+}
 
 test('cloud sync sketch pull only toasts success when project load really succeeds', async () => {
   const toastCalls: Array<{ msg: string; type?: string }> = [];
@@ -691,7 +703,10 @@ test('cloud sync sketch clear never treats an unavailable read as proof that the
     gatewayUrl: 'https://example.invalid',
     clientId: 'main-client',
     currentRoom: () => 'room-a',
-    getRow: async () => null as any,
+    getRow: async () => ({
+      ok: false,
+      failure: { kind: 'network', message: 'offline' },
+    }),
     upsertRow: async () => {
       writeCalls += 1;
       return { ok: false } as any;
@@ -706,7 +721,7 @@ test('cloud sync sketch clear never treats an unavailable read as proof that the
     ok: false,
     reason: 'write',
   });
-  assert.equal(writeCalls, 1);
+  assert.equal(writeCalls, 0);
 });
 
 test('cloud sync sketch snapshot treats the canonical default project as a clear operation', async () => {

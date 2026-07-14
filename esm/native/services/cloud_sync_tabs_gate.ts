@@ -1,7 +1,7 @@
 import type {
   AppContainer,
+  CloudSyncReadResult,
   CloudSyncRuntimeStatus,
-  CloudSyncStateRow,
   CloudSyncTabsGateCommandResult,
   CloudSyncTabsGatePayload,
   CloudSyncSite2TabsGateSnapshot,
@@ -17,11 +17,7 @@ import {
 import { createCloudSyncTabsGateRemoteOps } from './cloud_sync_tabs_gate_remote.js';
 import type { CloudSyncRealtimeHintSender } from './cloud_sync_pull_scopes.js';
 
-type GetCloudSyncRow = (
-  gatewayUrl: string,
-  anonKey: string,
-  room: string
-) => Promise<CloudSyncStateRow | null>;
+type GetCloudSyncRow = (gatewayUrl: string, anonKey: string, room: string) => Promise<CloudSyncReadResult>;
 type UpsertCloudSyncRow = (
   gatewayUrl: string,
   anonKey: string,

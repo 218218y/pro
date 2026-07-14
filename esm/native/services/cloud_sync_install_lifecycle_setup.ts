@@ -16,15 +16,17 @@ export function installCloudSyncLifecycleStorageWrap(args: {
   keysToSync: string[];
   suppressRef: { v: boolean };
   schedulePush: () => void;
+  commitCollectionsSnapshot: () => void;
   cleanup: Array<() => void>;
 }): void {
-  const { App, storage, keysToSync, suppressRef, schedulePush, cleanup } = args;
+  const { App, storage, keysToSync, suppressRef, schedulePush, commitCollectionsSnapshot, cleanup } = args;
   const cloudSyncStorageWrap = createCloudSyncStorageWrap({
     App,
     storage,
     keysToSync,
     suppressRef,
     schedulePush,
+    commitCollectionsSnapshot,
   });
   addCloudSyncCleanup(cleanup, () => {
     cloudSyncStorageWrap.dispose();

@@ -36,7 +36,10 @@ import {
   type ProjectSaveActionResult,
   type ProjectSaveFailureReason,
   type ProjectSaveFailureResult,
+  type ProjectSavePendingResult,
+  type ProjectSaveTerminalResult,
 } from '../runtime/project_save_action_result.js';
+import { createAsyncOperationHandle } from '../runtime/async_operation.js';
 import {
   buildProjectRecoverySuccessResult,
   buildProjectRestoreFailureResult,
@@ -85,6 +88,7 @@ export {
   normalizeProjectLoadActionResult,
   buildProjectSaveActionErrorResult,
   normalizeProjectSaveActionResult,
+  createAsyncOperationHandle,
   buildProjectRecoverySuccessResult,
   buildProjectRestoreFailureResult,
   buildProjectResetDefaultFailureResult,
@@ -107,6 +111,8 @@ export type {
   ProjectSaveActionResult,
   ProjectSaveFailureReason,
   ProjectSaveFailureResult,
+  ProjectSavePendingResult,
+  ProjectSaveTerminalResult,
   ProjectRecoverySuccessResult,
   ProjectResetDefaultActionResult,
   ProjectResetDefaultFailureReason,
