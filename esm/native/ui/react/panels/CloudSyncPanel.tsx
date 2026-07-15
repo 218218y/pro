@@ -16,6 +16,12 @@ export function CloudSyncPanel(): ReactElement {
     handleResolveConflict,
   } = useCloudSyncPanelActions();
   const conflictResolving = conflict?.state === 'resolving';
+  const conflictLimitationMessage =
+    conflict?.limitationReason === 'projection-too-large'
+      ? 'ההתנגשות גדולה מכדי לשחזר אוטומטית את הגרסה המקומית. ניתן להשתמש בגרסת הענן או לייצא תחילה את המצב המקומי.'
+      : conflict?.limitationReason === 'projection-corrupt'
+        ? 'פרטי הגרסה המקומית של ההתנגשות אינם תקינים. ניתן להשתמש בגרסת הענן או לייצא תחילה את המצב המקומי.'
+        : '';
 
   return (
     <div className="control-section" data-testid="cloud-sync-panel">
@@ -31,12 +37,17 @@ export function CloudSyncPanel(): ReactElement {
             הסנכרון מושהה בגלל התנגשות ב־{conflict.keys.join(', ') || 'נתונים משותפים'}. יש לבחור איזו גרסה
             לשמור.
           </InlineNotice>
+          {conflictLimitationMessage ? (
+            <div data-testid="cloud-sync-conflict-limitation">
+              <InlineNotice>{conflictLimitationMessage}</InlineNotice>
+            </div>
+          ) : null}
           <div className="wp-r-btn-row wp-r-wrap">
             <Button
               variant="primary"
               inline
               size="sm"
-              disabled={conflictResolving}
+              disabled={conflictResolving || !conflict.canKeepLocal}
               data-testid="cloud-sync-conflict-keep-local"
               onClick={() => handleResolveConflict('keep-local')}
             >
@@ -45,7 +56,7 @@ export function CloudSyncPanel(): ReactElement {
             <Button
               inline
               size="sm"
-              disabled={conflictResolving}
+              disabled={conflictResolving || !conflict.canUseRemote}
               data-testid="cloud-sync-conflict-use-remote"
               onClick={() => handleResolveConflict('use-remote')}
             >

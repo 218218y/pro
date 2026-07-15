@@ -6,10 +6,11 @@ import {
   getProjectIoServiceMaybe,
   nextProjectIoRestoreGeneration,
   isProjectIoRestoreGenerationCurrent,
-  loadProjectDataResultViaService,
-  loadProjectDataResultViaServiceOrThrow,
+  loadProjectDataActionResultViaService,
+  loadProjectDataActionResultViaServiceOrThrow,
   exportProjectResultViaService,
 } from '../esm/native/runtime/project_io_access.ts';
+import { createProjectLoadAcceptedResult } from '../esm/native/runtime/project_load_action_result.ts';
 
 test('project io access runtime: canonical access helpers keep restore-generation and command seams stable', () => {
   const calls: string[] = [];
@@ -29,9 +30,12 @@ test('project io access runtime: canonical access helpers keep restore-generatio
   const gen = nextProjectIoRestoreGeneration(App);
   assert.equal(gen, 1);
   assert.equal(isProjectIoRestoreGenerationCurrent(App, gen), true);
-  assert.deepEqual(loadProjectDataResultViaService(App, { ok: true }, { meta: { source: 'test' } } as any), {
-    ok: true,
-  });
+  assert.deepEqual(
+    loadProjectDataActionResultViaService(App, { ok: true }, { meta: { source: 'test' } } as any),
+    {
+      ok: true,
+    }
+  );
   assert.deepEqual(exportProjectResultViaService(App, { source: 'test' }), {
     ok: true,
     exported: { jsonStr: '{"ok":true}', projectData: { ok: true } },
@@ -86,7 +90,7 @@ test('project io access runtime: export result seam preserves not-installed, inv
   });
 });
 
-test('project io access runtime: strict load-result seam throws on missing installs, invalid results, pending results, and preserves real messages', () => {
+test('project io access runtime: strict action seam throws on terminal failures and preserves accepted handles', async () => {
   const okApp: Record<string, unknown> = {
     services: {
       projectIO: {
@@ -95,7 +99,7 @@ test('project io access runtime: strict load-result seam throws on missing insta
     },
   };
   assert.deepEqual(
-    loadProjectDataResultViaServiceOrThrow(
+    loadProjectDataActionResultViaServiceOrThrow(
       okApp,
       { settings: {} } as any,
       { meta: { source: 'test' } } as any
@@ -105,7 +109,7 @@ test('project io access runtime: strict load-result seam throws on missing insta
 
   assert.throws(
     () =>
-      loadProjectDataResultViaServiceOrThrow(
+      loadProjectDataActionResultViaServiceOrThrow(
         { services: {} },
         { settings: {} } as any,
         undefined,
@@ -125,7 +129,7 @@ test('project io access runtime: strict load-result seam throws on missing insta
   };
   assert.throws(
     () =>
-      loadProjectDataResultViaServiceOrThrow(
+      loadProjectDataActionResultViaServiceOrThrow(
         invalidApp,
         { settings: {} } as any,
         undefined,
@@ -136,25 +140,24 @@ test('project io access runtime: strict load-result seam throws on missing insta
     /history\.load returned an invalid result/i
   );
 
+  const accepted = createProjectLoadAcceptedResult(Promise.resolve({ ok: true, restoreGen: 4 }));
   const pendingApp: Record<string, unknown> = {
     services: {
       projectIO: {
-        loadProjectData: () => ({ ok: true, pending: true }),
+        loadProjectData: () => accepted,
       },
     },
   };
-  assert.throws(
-    () =>
-      loadProjectDataResultViaServiceOrThrow(
-        pendingApp,
-        { settings: {} } as any,
-        undefined,
-        'not-installed',
-        'fallback message',
-        'history.load'
-      ),
-    /history\.load returned an unexpected pending result/i
+  const acceptedResult = loadProjectDataActionResultViaServiceOrThrow(
+    pendingApp,
+    { settings: {} } as any,
+    undefined,
+    'not-installed',
+    'fallback message',
+    'queued.load'
   );
+  assert.equal(acceptedResult, accepted);
+  assert.deepEqual(await accepted.settled, { ok: true, restoreGen: 4 });
 
   const messageApp: Record<string, unknown> = {
     services: {
@@ -165,7 +168,7 @@ test('project io access runtime: strict load-result seam throws on missing insta
   };
   assert.throws(
     () =>
-      loadProjectDataResultViaServiceOrThrow(
+      loadProjectDataActionResultViaServiceOrThrow(
         messageApp,
         { settings: {} } as any,
         undefined,

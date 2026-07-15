@@ -53,6 +53,7 @@ export type CloudSyncReadResult =
 export type CloudSyncGatewayReadResult = CloudSyncReadResult;
 
 export type CloudSyncConflictState = 'awaiting-resolution' | 'resolving' | 'resolved';
+export type CloudSyncConflictLimitationReason = 'projection-too-large' | 'projection-corrupt';
 
 export interface CloudSyncConflictStatus extends UnknownRecord {
   conflictId: string;
@@ -62,6 +63,9 @@ export interface CloudSyncConflictStatus extends UnknownRecord {
   remoteRevision: number;
   detectedAt: number;
   state: CloudSyncConflictState;
+  canKeepLocal: boolean;
+  canUseRemote: boolean;
+  limitationReason?: CloudSyncConflictLimitationReason;
 }
 
 export type CloudSyncConflictValue = { present: false } | { present: true; value: unknown };
@@ -75,6 +79,10 @@ export type CloudSyncConflictFieldProjection =
     }
   | {
       kind: 'entities';
+      localBaseline: Array<{
+        id: string;
+        fingerprint: string;
+      }>;
       entities: Array<{
         id: string;
         base: CloudSyncConflictValue;

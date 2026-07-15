@@ -8,7 +8,7 @@ export type ProjectLoadFailureReason =
   'missing-file' | 'invalid' | 'not-installed' | 'superseded' | 'busy' | 'error';
 
 export type ProjectLoadWarningEffect =
-  'edit-modes' | 'autosave-finalize' | 'autosave-refresh' | 'notes' | 'build';
+  'edit-modes' | 'autosave-finalize' | 'autosave-refresh' | 'notes' | 'build' | 'post-effects-superseded';
 
 export type ProjectLoadWarning = {
   effect: ProjectLoadWarningEffect;

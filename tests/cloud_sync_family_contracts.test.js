@@ -493,7 +493,7 @@ test('cloud sync family keeps project/browser/panel seams canonical without dire
     cloudSketchPullLoadSrc,
     [
       /from '\.\.\/runtime\/project_io_access\.js';/,
-      /loadProjectDataResultViaService\([\s\S]*'cloudSketch\.pull'[\s\S]*'cloud-sketch-load'/,
+      /loadProjectDataActionResultViaService\([\s\S]*'cloudSketch\.pull'/,
     ],
     'cloud sync sketch pull load'
   );
@@ -509,7 +509,7 @@ test('cloud sync family keeps project/browser/panel seams canonical without dire
     kernelSrc,
     [
       /getProjectCaptureServiceMaybe\(App\)/,
-      /loadProjectData(?:ResultViaServiceOrThrow|ViaService)\(\s*App,\s*(?:rec|record),\s*\{/,
+      /loadProjectDataActionResultViaServiceOrThrow\(\s*App,\s*(?:rec|record),\s*\{[\s\S]*queueIfBusy:\s*false/,
     ],
     'kernel project access'
   );
@@ -520,6 +520,7 @@ test('cloud sync family keeps project/browser/panel seams canonical without dire
       /App\?\.services\?\.projectIO/,
       /getServicesRecord\(App\)\?\.projectIO/,
       /getProjectIoServiceMaybe\(App\)/,
+      /loadProjectDataResultViaService/,
     ],
     'kernel project access'
   );

@@ -140,7 +140,7 @@ export {
   resetProjectToDefaultActionResult,
   resetProjectToDefault,
   normalizeProjectIoLoadResult,
-  loadProjectDataResultViaService,
+  loadProjectDataActionResultViaService,
   loadProjectFileInputViaService,
   readAutosaveProjectPayload,
   restoreProjectAutosavePayloadActionResultViaService,

@@ -205,6 +205,8 @@ test('owner gateway rejects competing edits without a blind retry', async () => 
     remoteRevision: 5,
     detectedAt: runtimeStatus.conflict.detectedAt,
     state: 'awaiting-resolution',
+    canKeepLocal: true,
+    canUseRemote: true,
   });
   assert.equal(runtimeStatus.lastError, 'conflict:sketchHash');
 
@@ -354,7 +356,7 @@ test('owner gateway keep-local resolution closes conflict only after the server 
   assert.deepEqual(states.slice(-3), ['resolving', 'resolved', 'cleared']);
 });
 
-test('owner gateway keep-local preserves a third client change outside the conflicting collection', async () => {
+test('owner gateway keep-local preserves post-conflict local and remote additions in the conflicting collection', async () => {
   let readCount = 0;
   let writeCount = 0;
   const writes: RequestBody[] = [];
@@ -374,7 +376,10 @@ test('owner gateway keep-local preserves a third client change outside the confl
             readCount === 1
               ? basePayload
               : {
-                  savedColors: [{ id: 'color-1', value: '#333333' }],
+                  savedColors: [
+                    { id: 'color-1', value: '#333333' },
+                    { id: 'color-3', value: '#cccccc' },
+                  ],
                   savedModels: [
                     { id: 'model-1', name: 'Original' },
                     { id: 'model-2', name: 'Added by a third client' },
@@ -437,7 +442,10 @@ test('owner gateway keep-local preserves a third client change outside the confl
     async () => ({ ok: true, uiRefreshWarning: false }),
     () => ({
       payload: {
-        savedColors: [{ id: 'color-1', value: '#444444' }],
+        savedColors: [
+          { id: 'color-1', value: '#444444' },
+          { id: 'color-2', value: '#bbbbbb' },
+        ],
         savedModels: [{ id: 'model-1', name: 'Local edit after conflict' }],
       },
       revision: 12,
@@ -447,7 +455,11 @@ test('owner gateway keep-local preserves a third client change outside the confl
   assert.equal(result.ok, true);
   assert.equal(writes[1]?.expectedRevision, 3);
   assert.deepEqual(writes[1]?.payload, {
-    savedColors: [{ id: 'color-1', value: '#444444' }],
+    savedColors: [
+      { id: 'color-1', value: '#444444' },
+      { id: 'color-3', value: '#cccccc' },
+      { id: 'color-2', value: '#bbbbbb' },
+    ],
     savedModels: [
       { id: 'model-1', name: 'Local edit after conflict' },
       { id: 'model-2', name: 'Added by a third client' },
@@ -857,6 +869,9 @@ test('owner gateway fails closed when the persisted conflict record is corrupt',
   assert.equal(keepLocal.ok, false);
   assert.equal(keepLocal.reason, 'read');
   assert.equal(runtimeStatus.conflict?.keys[0], 'conflict-record-corrupt');
+  assert.equal(runtimeStatus.conflict?.canKeepLocal, false);
+  assert.equal(runtimeStatus.conflict?.canUseRemote, true);
+  assert.equal(runtimeStatus.conflict?.limitationReason, 'projection-corrupt');
   assert.equal(networkCalls, 0);
 });
 

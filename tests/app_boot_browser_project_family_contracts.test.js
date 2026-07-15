@@ -886,6 +886,9 @@ import {
     assert.match(cloudSyncPanel, /data-testid="cloud-sync-sync-sketch-button"/);
     assert.match(cloudSyncPanel, /data-testid="cloud-sync-delete-models-button"/);
     assert.match(cloudSyncPanel, /data-testid="cloud-sync-delete-colors-button"/);
+    assert.match(cloudSyncPanel, /data-testid="cloud-sync-conflict-limitation"/);
+    assert.match(cloudSyncPanel, /disabled=\{conflictResolving \|\| !conflict\.canKeepLocal\}/);
+    assert.match(cloudSyncPanel, /disabled=\{conflictResolving \|\| !conflict\.canUseRemote\}/);
     assert.doesNotMatch(cloudSyncPanel, /data-testid="cloud-sync-floating-pin-toggle"/);
     assert.match(quickActionsDock, /data-testid="quick-actions-sync-pin-button"/);
     assert.match(quickActionsDock, /toggleFloatingSyncEnabled\(\)/);

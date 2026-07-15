@@ -49,23 +49,31 @@ export function createCloudSyncSketchPullOnce(
 
       if (isInitial) {
         state.sketchBaselineDone = true;
-        state.lastSketchPullUpdatedAt = rowUpdatedAt;
         if (!row) return;
 
-        runInitialCloudSketchCatchup(deps, state, rowUpdatedAt, parseSketchPayload(row.payload), parsed =>
-          tryLoadEligibleRemoteSketch(deps, state, parsed)
+        const settled = await runInitialCloudSketchCatchup(
+          deps,
+          state,
+          rowUpdatedAt,
+          parseSketchPayload(row.payload),
+          parsed => tryLoadEligibleRemoteSketch(deps, state, parsed)
         );
+        if (settled) state.lastSketchPullUpdatedAt = rowUpdatedAt;
         return;
       }
 
       if (!state.sketchBaselineDone) state.sketchBaselineDone = true;
       if (!row || !rowUpdatedAt) return;
       if (rowUpdatedAt === state.lastSketchPullUpdatedAt) return;
-      state.lastSketchPullUpdatedAt = rowUpdatedAt;
-
-      const loaded = tryLoadEligibleRemoteSketch(deps, state, parseSketchPayload(row.payload));
-      if (!loaded) return;
-      finishPulledSketchLoad(deps, state, loaded);
+      const decision = tryLoadEligibleRemoteSketch(deps, state, parseSketchPayload(row.payload));
+      if (decision.kind === 'pending') return;
+      if (decision.kind === 'settled') {
+        state.lastSketchPullUpdatedAt = rowUpdatedAt;
+        return;
+      }
+      if (await finishPulledSketchLoad(deps, state, decision.loaded)) {
+        state.lastSketchPullUpdatedAt = rowUpdatedAt;
+      }
     } catch (e) {
       _cloudSyncReportNonFatal(App, 'cloudSketch.pull', e, { throttleMs: 4000 });
     }

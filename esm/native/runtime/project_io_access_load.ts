@@ -1,7 +1,6 @@
 import type {
   ProjectDataLike,
   ProjectExportResultLike,
-  ProjectIoLoadResultLike,
   ProjectLoadInputLike,
   ProjectLoadOpts,
   UnknownRecord,
@@ -19,9 +18,7 @@ import {
   buildProjectIoLoadFailureMessage,
   getProjectIoServiceMaybe,
   reportProjectIoAccessNonFatal,
-  normalizeProjectIoLoadResult,
   normalizeProjectLoadActionResultViaProjectIo,
-  type ProjectIoLoadFailureLike,
 } from './project_io_access_shared.js';
 
 type ProjectIoLoadDataFn = (data: ProjectLoadInputLike, opts?: ProjectLoadOpts) => unknown;
@@ -61,26 +58,6 @@ function getProjectIoLoadProjectDataFn(App: unknown): ProjectIoLoadDataFn | null
   return svc && typeof svc.loadProjectData === 'function' ? svc.loadProjectData : null;
 }
 
-export function loadProjectDataResultViaService(
-  App: unknown,
-  data: ProjectLoadInputLike,
-  opts?: ProjectLoadOpts,
-  defaultReason: ProjectIoLoadFailureLike = 'not-installed',
-  defaultErrorMessage = '[WardrobePro] Project load failed.'
-): ProjectIoLoadResultLike {
-  const loadProjectData = getProjectIoLoadProjectDataFn(App);
-  if (typeof loadProjectData !== 'function') {
-    return { ok: false, reason: 'not-installed' };
-  }
-
-  try {
-    return normalizeProjectIoLoadResult(loadProjectData(data, opts), defaultReason);
-  } catch (error) {
-    reportProjectIoAccessNonFatal(App, 'projectIO.loadProjectData.resultOwnerRejected', error);
-    return buildNormalizedErrorResult('error', error, defaultErrorMessage);
-  }
-}
-
 export function loadProjectDataActionResultViaService(
   App: unknown,
   data: ProjectLoadInputLike,
@@ -101,19 +78,6 @@ export function loadProjectDataActionResultViaService(
   }
 }
 
-export function loadProjectDataResultViaServiceOrThrow(
-  App: unknown,
-  data: ProjectLoadInputLike,
-  opts?: ProjectLoadOpts,
-  defaultReason: ProjectIoLoadFailureLike = 'not-installed',
-  defaultErrorMessage = '[WardrobePro] Project load failed.',
-  label = 'projectIO.loadProjectData'
-): ProjectIoLoadResultLike {
-  const result = loadProjectDataResultViaService(App, data, opts, defaultReason, defaultErrorMessage);
-  if (result.ok && result.pending !== true) return result;
-  throw new Error(buildProjectIoLoadFailureMessage(result, label, defaultErrorMessage));
-}
-
 export function loadProjectDataActionResultViaServiceOrThrow(
   App: unknown,
   data: ProjectLoadInputLike,
@@ -125,19 +89,6 @@ export function loadProjectDataActionResultViaServiceOrThrow(
   const result = loadProjectDataActionResultViaService(App, data, opts, defaultReason, defaultErrorMessage);
   if (isProjectLoadAcceptedResult(result) || result.ok) return result;
   throw new Error(buildProjectIoLoadFailureMessage(result, label, defaultErrorMessage));
-}
-
-export function loadProjectDataViaServiceOrThrow(
-  App: unknown,
-  data: ProjectLoadInputLike,
-  opts?: ProjectLoadOpts,
-  label = 'projectIO.loadProjectData'
-): unknown {
-  const loadProjectData = getProjectIoLoadProjectDataFn(App);
-  if (typeof loadProjectData !== 'function') {
-    throw new Error(`[WardrobePro] ${label} is not installed.`);
-  }
-  return loadProjectData(data, opts);
 }
 
 function getProjectIoBuildDefaultProjectDataFn(App: unknown): ProjectIoBuildDefaultDataFn | null {

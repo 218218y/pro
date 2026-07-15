@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   buildDefaultProjectDataViaServiceOrThrow,
   exportProjectResultViaService,
-  loadProjectDataResultViaService,
+  loadProjectDataActionResultViaService,
 } from '../esm/native/runtime/project_io_access.ts';
 
 type Report = { error: unknown; ctx: any };
@@ -42,14 +42,14 @@ test('project io access reports loadProjectData owner rejection while preserving
     },
   });
 
-  const result = loadProjectDataResultViaService(App, { settings: {} });
+  const result = loadProjectDataActionResultViaService(App, { settings: {} });
 
   assert.deepEqual(result, { ok: false, reason: 'error', message: 'installed project loader rejected' });
   assert.equal(reports.length, 1);
   assertProjectIoReport(
     reports[0],
     /installed project loader rejected/,
-    'projectIO.loadProjectData.resultOwnerRejected'
+    'projectIO.loadProjectData.actionOwnerRejected'
   );
 });
 

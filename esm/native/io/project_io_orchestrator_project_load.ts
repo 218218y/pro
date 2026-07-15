@@ -140,6 +140,17 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       reportNonFatal(op, cause ?? new Error(warning.message), 6000);
     };
 
+    const finishSupersededAfterCommit = (): ProjectLoadTerminalResult => {
+      addWarning(
+        {
+          effect: 'post-effects-superseded',
+          message: 'Project state was committed, but remaining post-load effects were skipped.',
+        },
+        'project.load.postEffectsSuperseded'
+      );
+      return buildProjectLoadSuccessResult({ restoreGen, warnings });
+    };
+
     try {
       const cfg: UnknownRecord = assertProjectLoadConfigReplaceOwnedBranches(
         buildCanonicalProjectConfigSnapshot(data) as UnknownRecord
@@ -220,7 +231,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       }
 
       if (!coordinator.isCurrent(coordinatorLease)) {
-        return buildProjectLoadFailureResult('superseded', { restoreGen });
+        return finishSupersededAfterCommit();
       }
 
       if (!resetAllEditModesViaService(App)) {
@@ -231,7 +242,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       }
 
       if (!coordinator.isCurrent(coordinatorLease)) {
-        return buildProjectLoadFailureResult('superseded', { restoreGen });
+        return finishSupersededAfterCommit();
       }
 
       const autosaveRefreshed = refreshProjectIoAutosaveAfterLoad({
@@ -254,7 +265,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       }
 
       if (!coordinator.isCurrent(coordinatorLease)) {
-        return buildProjectLoadFailureResult('superseded', { restoreGen });
+        return finishSupersededAfterCommit();
       }
 
       try {
@@ -295,7 +306,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       }
 
       if (!coordinator.isCurrent(coordinatorLease)) {
-        return buildProjectLoadFailureResult('superseded', { restoreGen });
+        return finishSupersededAfterCommit();
       }
 
       if (!restoreNotesFromSaveViaService(App, savedNotes)) {
@@ -313,7 +324,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       }
 
       if (!coordinator.isCurrent(coordinatorLease)) {
-        return buildProjectLoadFailureResult('superseded', { restoreGen });
+        return finishSupersededAfterCommit();
       }
 
       if (toastEnabled) {

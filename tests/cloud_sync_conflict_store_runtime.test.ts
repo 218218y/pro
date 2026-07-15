@@ -35,6 +35,8 @@ function createConflict(value: unknown): CloudSyncConflictRecord {
     remoteRevision: 9,
     detectedAt: 100,
     state: 'awaiting-resolution',
+    canKeepLocal: true,
+    canUseRemote: true,
     projectionAvailable: true,
     fields: {
       savedColors: {
@@ -60,6 +62,9 @@ test('cloud conflict persistence keeps an oversized conflict blocked with a boun
   if (restored.kind !== 'record') return;
   assert.equal(restored.conflict.conflictId, conflict.conflictId);
   assert.equal(restored.conflict.projectionAvailable, false);
+  assert.equal(restored.conflict.canKeepLocal, false);
+  assert.equal(restored.conflict.canUseRemote, true);
+  assert.equal(restored.conflict.limitationReason, 'projection-too-large');
   assert.deepEqual(restored.conflict.fields, {});
 });
 

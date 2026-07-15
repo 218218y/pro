@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createCloudSyncSketchOps as createCloudSyncSketchOpsImpl } from '../esm/native/services/cloud_sync_sketch_ops.ts';
+import { createProjectLoadAcceptedResult } from '../esm/native/runtime/project_load_action_result.ts';
 import { withSuppressedConsole } from './_console_silence.ts';
 
 function createCloudSyncSketchOps(deps: any) {
@@ -84,6 +85,164 @@ test('cloud sync sketch pull only toasts success when project load really succee
 
   await ops.pullSketchOnce(false);
   assert.deepEqual(toastCalls, [{ msg: 'סקיצה חדשה התעדכנה', type: 'success' }]);
+});
+
+test('cloud sketch waits for queued load settlement and deduplicates the same pending fingerprint', async () => {
+  const toastCalls: string[] = [];
+  const diagCalls: string[] = [];
+  const flushCalls: string[] = [];
+  let loadCalls = 0;
+  let markLoadStarted!: () => void;
+  const loadStarted = new Promise<void>(resolve => {
+    markLoadStarted = resolve;
+  });
+  let resolveLoad!: (result: { ok: true; restoreGen: number }) => void;
+  const settled = new Promise<{ ok: true; restoreGen: number }>(resolve => {
+    resolveLoad = resolve;
+  });
+  let readSequence = 0;
+  const App = {
+    services: {
+      uiFeedback: {
+        toast(message: string) {
+          toastCalls.push(message);
+        },
+      },
+      history: {
+        flushPendingPush() {
+          flushCalls.push('flush');
+          return true;
+        },
+      },
+      projectIO: {
+        exportCurrentProject() {
+          return {
+            projectData: { settings: { width: 80 } },
+            jsonStr: JSON.stringify({ settings: { width: 80 } }),
+          };
+        },
+        loadProjectData() {
+          loadCalls += 1;
+          markLoadStarted();
+          return createProjectLoadAcceptedResult(settled, 2, 1);
+        },
+      },
+    },
+  } as any;
+  const ops = createCloudSyncSketchOps({
+    App,
+    cfg: {
+      anonKey: 'anon',
+      roomParam: 'room',
+      publicRoom: 'public',
+      site2SketchInitialAutoLoad: true,
+      site2SketchInitialMaxAgeHours: 12,
+    },
+    storage: {},
+    gatewayUrl: 'https://example.invalid',
+    clientId: 'local-client',
+    currentRoom: () => 'room-a',
+    getRow: async () =>
+      ({
+        updated_at: `2026-03-27T11:0${readSequence++}:00.000Z`,
+        payload: {
+          sketchRev: 7,
+          sketchHash: 'same-pending-sketch',
+          sketchBy: 'remote-client',
+          sketch: { settings: { width: 140 } },
+        },
+      }) as any,
+    upsertRow: async () => ({ ok: true }) as any,
+    emitRealtimeHint: () => undefined,
+    runtimeStatus: { realtime: { status: 'idle' } } as any,
+    publishStatus: () => undefined,
+    diag: (event: string) => diagCalls.push(event),
+  });
+
+  const firstPull = ops.pullSketchOnce(false);
+  await loadStarted;
+  assert.equal(loadCalls, 1);
+  assert.deepEqual(toastCalls, []);
+  assert.deepEqual(flushCalls, []);
+
+  await ops.pullSketchOnce(false);
+  assert.equal(loadCalls, 1);
+  assert.deepEqual(diagCalls, []);
+
+  resolveLoad({ ok: true, restoreGen: 9 });
+  await firstPull;
+  assert.equal(flushCalls.length, 1);
+  assert.equal(toastCalls.length, 1);
+
+  await ops.pullSketchOnce(false);
+  assert.equal(loadCalls, 1);
+});
+
+test('cloud sketch does not flush, toast, or settle its fingerprint when a queued load fails', async () => {
+  const toastCalls: string[] = [];
+  const diagCalls: string[] = [];
+  const flushCalls: string[] = [];
+  let loadCalls = 0;
+  const App = {
+    services: {
+      uiFeedback: { toast: (message: string) => toastCalls.push(message) },
+      history: { flushPendingPush: () => flushCalls.push('flush') },
+      projectIO: {
+        exportCurrentProject() {
+          return {
+            projectData: { settings: { width: 80 } },
+            jsonStr: JSON.stringify({ settings: { width: 80 } }),
+          };
+        },
+        loadProjectData() {
+          loadCalls += 1;
+          return createProjectLoadAcceptedResult(
+            Promise.resolve({ ok: false as const, reason: 'error' as const, message: 'queued failure' }),
+            2,
+            1
+          );
+        },
+      },
+    },
+  } as any;
+  const ops = createCloudSyncSketchOps({
+    App,
+    cfg: {
+      anonKey: 'anon',
+      roomParam: 'room',
+      publicRoom: 'public',
+      site2SketchInitialAutoLoad: true,
+      site2SketchInitialMaxAgeHours: 12,
+    },
+    storage: {},
+    gatewayUrl: 'https://example.invalid',
+    clientId: 'local-client',
+    currentRoom: () => 'room-a',
+    getRow: async () =>
+      ({
+        updated_at: '2026-03-27T12:00:00.000Z',
+        payload: {
+          sketchRev: 8,
+          sketchHash: 'failed-pending-sketch',
+          sketchBy: 'remote-client',
+          sketch: { settings: { width: 150 } },
+        },
+      }) as any,
+    upsertRow: async () => ({ ok: true }) as any,
+    emitRealtimeHint: () => undefined,
+    runtimeStatus: { realtime: { status: 'idle' } } as any,
+    publishStatus: () => undefined,
+    diag: (event: string) => diagCalls.push(event),
+  });
+
+  await ops.pullSketchOnce(false);
+  assert.equal(loadCalls, 1);
+  assert.deepEqual(toastCalls, []);
+  assert.deepEqual(flushCalls, []);
+  assert.equal(diagCalls.includes('sketch:pull:load-skipped'), true);
+
+  await ops.pullSketchOnce(false);
+  assert.equal(loadCalls, 2);
 });
 
 test('cloud sync sketch routing is directional between main and site2 bundles', async () => {

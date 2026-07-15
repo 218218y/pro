@@ -6,7 +6,7 @@ import type {
 
 import type { StorageLike } from './cloud_sync_owner_context_runtime_shared.js';
 
-const CONFLICT_SCHEMA_VERSION = 2 as const;
+const CONFLICT_SCHEMA_VERSION = 3 as const;
 export const CLOUD_SYNC_CONFLICT_PERSISTENCE_MAX_BYTES = 256 * 1024;
 
 type StoredConflictRecord = CloudSyncConflictRecord & {
@@ -44,7 +44,24 @@ function isFieldProjection(value: unknown): value is CloudSyncConflictFieldProje
       isConflictValue(candidate.base) && isConflictValue(candidate.local) && isConflictValue(candidate.remote)
     );
   }
-  if (candidate.kind !== 'entities' || !Array.isArray(candidate.entities)) return false;
+  if (
+    candidate.kind !== 'entities' ||
+    !Array.isArray(candidate.entities) ||
+    !Array.isArray(candidate.localBaseline)
+  ) {
+    return false;
+  }
+  const baselineIds = new Set<string>();
+  const validBaseline = candidate.localBaseline.every(entry => {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false;
+    const baseline = entry as Record<string, unknown>;
+    const id = typeof baseline.id === 'string' ? baseline.id.trim() : '';
+    const fingerprint = typeof baseline.fingerprint === 'string' ? baseline.fingerprint.trim() : '';
+    if (!id || !fingerprint || baselineIds.has(id)) return false;
+    baselineIds.add(id);
+    return true;
+  });
+  if (!validBaseline) return false;
   const ids = new Set<string>();
   return candidate.entities.every(entity => {
     if (!entity || typeof entity !== 'object' || Array.isArray(entity)) return false;
@@ -73,6 +90,8 @@ function normalizeStoredConflict(value: unknown, room: string): CloudSyncConflic
     Number(record.detectedAt) <= 0 ||
     (record.state !== 'awaiting-resolution' && record.state !== 'resolving') ||
     typeof record.projectionAvailable !== 'boolean' ||
+    typeof record.canKeepLocal !== 'boolean' ||
+    typeof record.canUseRemote !== 'boolean' ||
     !record.fields ||
     typeof record.fields !== 'object' ||
     Array.isArray(record.fields)
@@ -81,6 +100,17 @@ function normalizeStoredConflict(value: unknown, room: string): CloudSyncConflic
   }
   const keys = [...new Set(record.keys.map(key => String(key).trim()).filter(Boolean))];
   if (!keys.length) return null;
+  const limitationReason =
+    record.limitationReason === 'projection-too-large' || record.limitationReason === 'projection-corrupt'
+      ? record.limitationReason
+      : undefined;
+  if (
+    record.canUseRemote !== true ||
+    (record.projectionAvailable && (record.canKeepLocal !== true || limitationReason)) ||
+    (!record.projectionAvailable && (record.canKeepLocal !== false || !limitationReason))
+  ) {
+    return null;
+  }
   const rawFields = record.fields as Record<string, unknown>;
   if (record.projectionAvailable && keys.some(key => !isFieldProjection(rawFields[key]))) return null;
   if (Object.values(rawFields).some(field => !isFieldProjection(field))) return null;
@@ -92,6 +122,9 @@ function normalizeStoredConflict(value: unknown, room: string): CloudSyncConflic
     remoteRevision: Number(record.remoteRevision),
     detectedAt: Number(record.detectedAt),
     state: 'awaiting-resolution',
+    canKeepLocal: record.canKeepLocal,
+    canUseRemote: record.canUseRemote,
+    ...(limitationReason ? { limitationReason } : {}),
     fields: cloneJson(rawFields) as Record<string, CloudSyncConflictFieldProjection>,
     projectionAvailable: record.projectionAvailable,
   };
@@ -123,6 +156,9 @@ function writeConflict(storage: StorageLike, key: string, conflict: CloudSyncCon
       ...conflict,
       fields: {},
       projectionAvailable: false,
+      canKeepLocal: false,
+      canUseRemote: true,
+      limitationReason: 'projection-too-large',
     };
     const blockedSerialized = serializeWithinBudget(blocked);
     return !!blockedSerialized && persistString(storage, key, blockedSerialized, blocked);

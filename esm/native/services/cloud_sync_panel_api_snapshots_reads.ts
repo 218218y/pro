@@ -35,6 +35,9 @@ function readConflictSnapshot(
     remoteRevision: Number(conflict.remoteRevision) || 0,
     detectedAt: Number(conflict.detectedAt) || 0,
     state: conflict.state,
+    canKeepLocal: conflict.canKeepLocal === true,
+    canUseRemote: conflict.canUseRemote === true,
+    ...(conflict.limitationReason ? { limitationReason: conflict.limitationReason } : {}),
   };
 }
 

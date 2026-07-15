@@ -36,6 +36,9 @@ export function cloneRuntimeStatus(status: CloudSyncRuntimeStatus): CloudSyncRun
         remoteRevision: Number(status.conflict.remoteRevision) || 0,
         detectedAt: Number(status.conflict.detectedAt) || 0,
         state: status.conflict.state,
+        canKeepLocal: status.conflict.canKeepLocal === true,
+        canUseRemote: status.conflict.canUseRemote === true,
+        ...(status.conflict.limitationReason ? { limitationReason: status.conflict.limitationReason } : {}),
       }
     : null;
   return {

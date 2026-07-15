@@ -142,6 +142,8 @@ test('cloud sync panel actions derive stable snapshot state and route handlers t
         remoteRevision: 4,
         detectedAt: 12,
         state: 'awaiting-resolution',
+        canKeepLocal: true,
+        canUseRemote: true,
       },
     }),
     subscribePanelSnapshot(cb) {

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-15T09:12:57.145Z",
+  "generatedAt": "2026-07-15T14:38:05.720Z",
   "totals": {
-    "tests": 1212,
-    "unitRunnerTests": 1204,
+    "tests": 1213,
+    "unitRunnerTests": 1205,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 31,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 392,
+    "contract": 393,
     "runtime-unit": 312,
     "integration": 448,
     "e2e-smoke": 9,
@@ -900,6 +900,10 @@
     {
       "file": "tests/cloud_sync_delete_temp_runtime.test.ts",
       "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_dev_environment_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/cloud_sync_family_contracts.test.js",

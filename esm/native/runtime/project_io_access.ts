@@ -15,9 +15,6 @@ import {
   exportProjectResultViaService,
   loadProjectDataActionResultViaService,
   loadProjectDataActionResultViaServiceOrThrow,
-  loadProjectDataResultViaService,
-  loadProjectDataResultViaServiceOrThrow,
-  loadProjectDataViaServiceOrThrow,
   normalizeProjectExportResult,
 } from './project_io_access_load.js';
 import {
@@ -47,16 +44,18 @@ export {
   normalizeProjectLoadActionResultViaProjectIo,
   normalizeProjectExportResult,
   exportProjectResultViaService,
-  loadProjectDataResultViaService,
   loadProjectDataActionResultViaService,
-  loadProjectDataResultViaServiceOrThrow,
   loadProjectDataActionResultViaServiceOrThrow,
   readAutosaveProjectPayload,
   restoreProjectAutosavePayloadActionResultViaService,
   restoreProjectSessionActionResultViaService,
   restoreProjectSessionActionResultViaServiceOrThrow,
-  loadProjectDataViaServiceOrThrow,
   buildDefaultProjectDataViaServiceOrThrow,
 };
 
-export { isProjectLoadAcceptedResult } from './project_load_action_result.js';
+export {
+  buildProjectLoadActionErrorResult,
+  isProjectLoadAcceptedResult,
+  settleProjectLoadActionResult,
+} from './project_load_action_result.js';
+export type { ProjectLoadActionResult, ProjectLoadTerminalResult } from './project_load_action_result.js';

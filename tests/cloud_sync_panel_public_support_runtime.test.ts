@@ -60,6 +60,9 @@ test('cloud sync public support clones panel and tabs-gate snapshots canonically
       remoteRevision: 7,
       detectedAt: 12,
       state: 'awaiting-resolution',
+      canKeepLocal: false,
+      canUseRemote: true,
+      limitationReason: 'projection-too-large',
       base: { secret: 'must-not-leak' },
       local: { secret: 'must-not-leak' },
       remote: { secret: 'must-not-leak' },
@@ -73,6 +76,9 @@ test('cloud sync public support clones panel and tabs-gate snapshots canonically
     remoteRevision: 7,
     detectedAt: 12,
     state: 'awaiting-resolution',
+    canKeepLocal: false,
+    canUseRemote: true,
+    limitationReason: 'projection-too-large',
   });
 
   assert.deepEqual(getUnavailableCloudSyncSite2TabsGateSnapshot(), {
@@ -182,24 +188,58 @@ test('cloud sync panel support snapshot equality stays canonical across exact cl
       {
         ...panelSnapshot,
         conflict: {
+          conflictId: 'conflict-a',
+          generation: 1,
           room: 'room-a',
           keys: ['savedColors'],
           remoteRevision: 1,
           detectedAt: 1,
           state: 'awaiting-resolution',
+          canKeepLocal: true,
+          canUseRemote: true,
         },
       },
       {
         ...panelSnapshot,
         conflict: {
+          conflictId: 'conflict-a',
+          generation: 1,
           room: 'room-a',
           keys: ['savedModels'],
           remoteRevision: 1,
           detectedAt: 1,
           state: 'awaiting-resolution',
+          canKeepLocal: true,
+          canUseRemote: true,
         },
       }
     ),
+    false
+  );
+
+  const conflictSnapshot = {
+    ...panelSnapshot,
+    conflict: {
+      conflictId: 'conflict-capability',
+      generation: 1,
+      room: 'room-a',
+      keys: ['savedColors'],
+      remoteRevision: 1,
+      detectedAt: 1,
+      state: 'awaiting-resolution' as const,
+      canKeepLocal: true,
+      canUseRemote: true,
+    },
+  };
+  assert.equal(
+    areCloudSyncPanelSnapshotsEqual(conflictSnapshot, {
+      ...conflictSnapshot,
+      conflict: {
+        ...conflictSnapshot.conflict,
+        canKeepLocal: false,
+        limitationReason: 'projection-too-large',
+      },
+    }),
     false
   );
 

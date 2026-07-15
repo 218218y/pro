@@ -1,11 +1,10 @@
-import type {
-  AppContainer,
-  CloudSyncSketchState,
-  ProjectIoLoadResultLike,
-  ProjectLoadInputLike,
-} from '../../../types';
+import type { AppContainer, CloudSyncSketchState, ProjectLoadInputLike } from '../../../types';
 
-import { loadProjectDataResultViaService } from '../runtime/project_io_access.js';
+import {
+  buildProjectLoadActionErrorResult,
+  loadProjectDataActionResultViaService,
+  settleProjectLoadActionResult,
+} from '../runtime/project_io_access.js';
 import { parseIsoTimeMs } from './cloud_sync_support.js';
 import { stableSerializeCloudSyncValue } from './cloud_sync_support_shared.js';
 
@@ -19,6 +18,9 @@ export type CloudSketchInitialCatchupDecision = {
     site: 'site2';
   };
 };
+
+export type CloudSketchProjectLoadActionResult = ReturnType<typeof loadProjectDataActionResultViaService>;
+export type CloudSketchProjectLoadTerminalResult = Awaited<ReturnType<typeof settleProjectLoadActionResult>>;
 
 export type CloudSketchPullEligibility = {
   shouldApply: boolean;
@@ -105,16 +107,28 @@ export function resolveCloudSketchPullEligibility(args: {
 export function loadCloudSketchProjectData(
   App: AppContainer,
   sketch: ProjectLoadInputLike
-): ProjectIoLoadResultLike {
-  return loadProjectDataResultViaService(
+): CloudSketchProjectLoadActionResult {
+  return loadProjectDataActionResultViaService(
     App,
     sketch,
     { toast: false, meta: { source: 'cloudSketch.pull' } },
-    'cloud-sketch-load',
+    'error',
     '[WardrobePro] Cloud sketch load failed.'
   );
 }
 
-export function shouldToastCloudSketchApplied(result: ProjectIoLoadResultLike | null | undefined): boolean {
-  return !!result && result.ok === true && result.pending !== true;
+export function shouldToastCloudSketchApplied(
+  result: CloudSketchProjectLoadTerminalResult | null | undefined
+): boolean {
+  return !!result && result.ok === true;
+}
+
+export async function settleCloudSketchProjectLoadAction(
+  result: CloudSketchProjectLoadActionResult
+): Promise<CloudSketchProjectLoadTerminalResult> {
+  return settleProjectLoadActionResult(result);
+}
+
+export function buildCloudSketchProjectLoadError(error: unknown): CloudSketchProjectLoadTerminalResult {
+  return buildProjectLoadActionErrorResult(error, '[WardrobePro] Cloud sketch load failed.');
 }

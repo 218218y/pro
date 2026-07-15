@@ -9,7 +9,7 @@ import {
   shouldToastCloudSketchApplied,
 } from '../esm/native/services/cloud_sync_sketch_pull_load.ts';
 
-test('cloud sketch pull helpers normalize initial catchup, eligibility, and project-load result flow', () => {
+test('cloud sketch pull helpers normalize initial catchup, eligibility, and project-load result flow', async () => {
   const fresh = resolveInitialCloudSketchCatchupDecision({
     isSite2: true,
     autoLoadEnabled: true,
@@ -83,8 +83,21 @@ test('cloud sketch pull helpers normalize initial catchup, eligibility, and proj
     restoreGen: 5,
   });
   assert.equal(shouldToastCloudSketchApplied({ ok: true }), true);
-  assert.equal(shouldToastCloudSketchApplied({ ok: true, pending: true }), false);
   assert.equal(shouldToastCloudSketchApplied({ ok: false, reason: 'invalid' }), false);
+
+  const settled = Promise.resolve({ ok: true as const, restoreGen: 6 });
+  const accepted = {
+    accepted: true as const,
+    reused: false,
+    operationId: 'project-load-test',
+    requestedAt: 1,
+    acceptedAt: 1,
+    settled,
+  };
+  (app.services.projectIO as any).loadProjectData = () => accepted;
+  const action = loadCloudSketchProjectData(app, { settings: { width: 100 } });
+  assert.equal(action, accepted);
+  assert.deepEqual(await accepted.settled, { ok: true, restoreGen: 6 });
 });
 
 test('cloud sketch pull load preserves concrete project-loader failures', () => {

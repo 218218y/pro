@@ -249,9 +249,8 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /export function isProjectIoRestoreGenerationCurrent\(/,
       /export function normalizeProjectIoLoadResult\(/,
       /export function exportProjectResultViaService\(/,
-      /export function loadProjectDataResultViaService\(/,
       /export function loadProjectDataActionResultViaService\(/,
-      /export function loadProjectDataResultViaServiceOrThrow\(/,
+      /export function loadProjectDataActionResultViaServiceOrThrow\(/,
       /export function restoreProjectSessionActionResultViaService\(/,
       /export function buildDefaultProjectDataViaServiceOrThrow\(/,
       /getServiceSlotMaybe\(App, 'projectIO'\)/,
@@ -268,6 +267,9 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /getProjectIoHandleFileLoadFn/,
       /export function exportProjectViaService\(/,
       /export function loadProjectDataViaService\(/,
+      /export function loadProjectDataViaServiceOrThrow\(/,
+      /export function loadProjectDataResultViaService\(/,
+      /export function loadProjectDataResultViaServiceOrThrow\(/,
       /export function restoreProjectSessionViaService\(/,
       /export function buildDefaultProjectDataViaService\(/,
     ],
@@ -281,7 +283,6 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /readResetDefaultProjectPayload/,
       /resetProjectToDefaultActionResult/,
       /resetProjectToDefault/,
-      /loadProjectDataResultViaService/,
       /loadProjectDataActionResultViaService/,
       /loadProjectFileInputViaService/,
       /nextProjectIoRestoreGeneration/,
@@ -289,7 +290,12 @@ test('project-io access, restore-generation, and callers stay on canonical servi
     ],
     'servicesApi'
   );
-  assertLacksAll(assert, servicesApi, [/handleProjectFileLoadViaService/], 'servicesApi');
+  assertLacksAll(
+    assert,
+    servicesApi,
+    [/handleProjectFileLoadViaService/, /loadProjectDataResultViaService/],
+    'servicesApi'
+  );
 
   assertMatchesAll(
     assert,
@@ -343,6 +349,7 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /handleProjectSaveLoadInputChange\(App, toast, evt\)|runProjectLoadAction\(App, \{ toast \}, asProjectFileLoadEvent\(evt\) \?\? evt/,
       /loadProjectFileInputViaService\(App, file\)|runProjectLoadAction\(App, \{ toast \}, file/,
       /exportProjectResultViaService\(App, \{ source: 'smoke' \}/,
+      /loadProjectDataActionResultViaServiceOrThrow\([\s\S]*meta:\s*\{ source: 'smoke' \}[\s\S]*queueIfBusy:\s*false/,
     ],
     'projectIoBundle'
   );

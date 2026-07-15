@@ -149,6 +149,9 @@ export function createCloudSyncOwnerGatewayIo(args: {
       remoteRevision: 0,
       detectedAt: Date.now(),
       state: 'awaiting-resolution',
+      canKeepLocal: false,
+      canUseRemote: true,
+      limitationReason: 'projection-corrupt',
       fields: {},
       projectionAvailable: false,
     };
@@ -162,6 +165,9 @@ export function createCloudSyncOwnerGatewayIo(args: {
     remoteRevision: conflict.remoteRevision,
     detectedAt: conflict.detectedAt,
     state: conflict.state,
+    canKeepLocal: conflict.canKeepLocal,
+    canUseRemote: conflict.canUseRemote,
+    ...(conflict.limitationReason ? { limitationReason: conflict.limitationReason } : {}),
   });
 
   if (activeConflict) {
@@ -181,6 +187,16 @@ export function createCloudSyncOwnerGatewayIo(args: {
   const persistConflict = (conflict: CloudSyncConflictRecord): boolean => {
     const persisted = !conflictStore || conflictStore.write(conflict);
     if (!persisted) reportConflictPersistenceFailure('write');
+    if (persisted && conflictStore && conflict.projectionAvailable) {
+      const stored = conflictStore.read(conflict.room);
+      if (stored.kind === 'record' && !stored.conflict.projectionAvailable) {
+        conflict.fields = {};
+        conflict.projectionAvailable = false;
+        conflict.canKeepLocal = false;
+        conflict.canUseRemote = stored.conflict.canUseRemote;
+        conflict.limitationReason = stored.conflict.limitationReason;
+      }
+    }
     return persisted;
   };
 
@@ -385,6 +401,8 @@ export function createCloudSyncOwnerGatewayIo(args: {
       remoteRevision: row.revision,
       detectedAt: Date.now(),
       state: 'awaiting-resolution',
+      canKeepLocal: true,
+      canUseRemote: true,
       fields: buildCloudSyncConflictFields({
         conflictKeys: normalizedKeys,
         base,
@@ -455,6 +473,9 @@ export function createCloudSyncOwnerGatewayIo(args: {
           remoteRevision: 0,
           detectedAt: Date.now(),
           state: 'awaiting-resolution',
+          canKeepLocal: false,
+          canUseRemote: true,
+          limitationReason: 'projection-corrupt',
           fields: {},
           projectionAvailable: false,
         };
@@ -635,12 +656,19 @@ export function createCloudSyncOwnerGatewayIo(args: {
             if (conflict.state === 'resolving') {
               return { ok: false, resolution, reason: 'busy' };
             }
-            if (resolution === 'keep-local' && isCorruptStoredConflict(conflict)) {
+            if (resolution === 'keep-local' && !conflict.canKeepLocal) {
               return {
                 ok: false,
                 resolution,
                 reason: 'read',
-                failure: { kind: 'server', status: 409, code: 'conflict_record_corrupt' },
+                failure: {
+                  kind: 'server',
+                  status: 409,
+                  code:
+                    conflict.limitationReason === 'projection-too-large'
+                      ? 'conflict_projection_too_large'
+                      : 'conflict_record_corrupt',
+                },
                 conflict: toConflictStatus(conflict),
               };
             }

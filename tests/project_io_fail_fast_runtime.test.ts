@@ -596,7 +596,16 @@ test('project io load allows a reentrant successor after business commit without
   const firstResult = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
 
   assert.deepEqual(successorResult, { ok: true, restoreGen: 2 });
-  assert.deepEqual(firstResult, { ok: false, reason: 'superseded', restoreGen: 1 });
+  assert.deepEqual(firstResult, {
+    ok: true,
+    restoreGen: 1,
+    warnings: [
+      {
+        effect: 'post-effects-superseded',
+        message: 'Project state was committed, but remaining post-load effects were skipped.',
+      },
+    ],
+  });
   assert.equal(harness.state.ui.projectName, 'Autosave successor');
   assert.equal(harness.state.ui.raw.width, 185);
   assert.deepEqual(harness.autosaveCalls, ['suspend', 'commit', 'suspend', 'commit', 'force']);
@@ -705,8 +714,56 @@ test('project io load stops post-commit effects as soon as a reentrant load supe
 
   const result = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
 
-  assert.deepEqual(result, { ok: false, reason: 'superseded', restoreGen: 1 });
+  assert.deepEqual(result, {
+    ok: true,
+    restoreGen: 1,
+    warnings: [
+      {
+        effect: 'post-effects-superseded',
+        message: 'Project state was committed, but remaining post-load effects were skipped.',
+      },
+    ],
+  });
   assert.deepEqual(harness.buildCalls, []);
+});
+
+test('project io keeps a committed predecessor successful when its post-commit successor rolls back', () => {
+  let successorResult: unknown = null;
+  let historyResetCount = 0;
+  let harness!: ReturnType<typeof createProjectIoApp>;
+  harness = createProjectIoApp({
+    resetBaseline() {
+      historyResetCount += 1;
+      if (historyResetCount > 1) throw new Error('successor history failure');
+    },
+    onAutosaveCommit() {
+      if (successorResult) return;
+      successorResult = harness.orchestrator.loadProjectData(
+        {
+          ...VALID_PROJECT,
+          projectName: 'Failing successor',
+          settings: { ...VALID_PROJECT.settings, width: 199 },
+        } as never,
+        { toast: false }
+      );
+    },
+  });
+
+  const result = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.equal((successorResult as any)?.ok, false);
+  assert.match(String((successorResult as any)?.message || ''), /successor history failure/i);
+  assert.equal(harness.state.ui.raw.width, VALID_PROJECT.settings.width);
+  assert.deepEqual(result, {
+    ok: true,
+    restoreGen: 1,
+    warnings: [
+      {
+        effect: 'post-effects-superseded',
+        message: 'Project state was committed, but remaining post-load effects were skipped.',
+      },
+    ],
+  });
 });
 
 test('project io load syncs persisted sketch mode into the runtime SSOT', () => {

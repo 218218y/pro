@@ -53,6 +53,18 @@ function readEntity(map: Map<string, unknown>, id: string): MergeValue {
   return map.has(id) ? present(map.get(id)) : MISSING;
 }
 
+function fingerprintConflictEntity(value: unknown): string {
+  const serialized = stableSerializeCloudSyncValue(value);
+  let first = 0x811c9dc5;
+  let second = 0x9e3779b9;
+  for (let index = 0; index < serialized.length; index += 1) {
+    const code = serialized.charCodeAt(index);
+    first = Math.imul(first ^ code, 0x01000193);
+    second = Math.imul(second ^ code, 0x85ebca6b);
+  }
+  return `${serialized.length}:${(first >>> 0).toString(16)}:${(second >>> 0).toString(16)}`;
+}
+
 function toConflictValue(value: MergeValue): CloudSyncConflictValue {
   return value.present ? { present: true, value: value.value } : { present: false };
 }
@@ -156,7 +168,10 @@ export function buildCloudSyncConflictFields(args: {
             local: toConflictValue(readEntity(localMap, id)),
             remote: toConflictValue(readEntity(remoteMap, id)),
           }));
-        fields[key] = { kind: 'entities', entities };
+        const localBaseline = Array.from(localMap.entries())
+          .map(([id, value]) => ({ id, fingerprint: fingerprintConflictEntity(value) }))
+          .sort((left, right) => left.id.localeCompare(right.id));
+        fields[key] = { kind: 'entities', localBaseline, entities };
         continue;
       }
     }
@@ -213,14 +228,38 @@ export function rebaseCloudSyncKeepLocal(args: {
       continue;
     }
     const resolved = new Map(remoteMap);
-    for (const entity of field.entities) {
-      const local = readEntity(currentLocalMap, entity.id);
-      if (local.present) resolved.set(entity.id, local.value);
-      else resolved.delete(entity.id);
+    const baselineFingerprints = new Map(
+      field.localBaseline.map(entry => [entry.id, entry.fingerprint] as const)
+    );
+    const localChangesSinceConflict = new Set<string>();
+    const localIds = new Set([...baselineFingerprints.keys(), ...currentLocalMap.keys()]);
+    for (const id of localIds) {
+      const baselineFingerprint = baselineFingerprints.get(id);
+      const currentValue = currentLocalMap.get(id);
+      if (typeof baselineFingerprint === 'undefined' || typeof currentValue === 'undefined') {
+        if (typeof baselineFingerprint !== 'undefined' || typeof currentValue !== 'undefined') {
+          localChangesSinceConflict.add(id);
+        }
+        continue;
+      }
+      if (fingerprintConflictEntity(currentValue) !== baselineFingerprint) {
+        localChangesSinceConflict.add(id);
+      }
+    }
+    const locallyOwnedIds = new Set([
+      ...field.entities.map(entity => entity.id),
+      ...localChangesSinceConflict,
+    ]);
+    for (const id of locallyOwnedIds) {
+      const local = readEntity(currentLocalMap, id);
+      if (local.present) resolved.set(id, local.value);
+      else resolved.delete(id);
     }
     const order = [
       ...remoteMap.keys(),
-      ...Array.from(currentLocalMap.keys()).filter(id => !remoteMap.has(id) && resolved.has(id)),
+      ...Array.from(currentLocalMap.keys()).filter(
+        id => locallyOwnedIds.has(id) && !remoteMap.has(id) && resolved.has(id)
+      ),
     ];
     payload[key] = order.flatMap(id => (resolved.has(id) ? [resolved.get(id)] : []));
   }

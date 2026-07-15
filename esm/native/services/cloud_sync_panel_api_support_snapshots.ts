@@ -26,11 +26,16 @@ export function areCloudSyncPanelSnapshotsEqual(
   return (
     areCloudSyncRoomStatusSnapshotsEqual(left, right) &&
     !!left.floatingSync === !!right.floatingSync &&
+    (left.conflict?.conflictId || '') === (right.conflict?.conflictId || '') &&
+    Number(left.conflict?.generation || 0) === Number(right.conflict?.generation || 0) &&
     (left.conflict?.room || '') === (right.conflict?.room || '') &&
     (left.conflict?.keys || []).join('|') === (right.conflict?.keys || []).join('|') &&
     Number(left.conflict?.remoteRevision || 0) === Number(right.conflict?.remoteRevision || 0) &&
     Number(left.conflict?.detectedAt || 0) === Number(right.conflict?.detectedAt || 0) &&
-    (left.conflict?.state || '') === (right.conflict?.state || '')
+    (left.conflict?.state || '') === (right.conflict?.state || '') &&
+    !!left.conflict?.canKeepLocal === !!right.conflict?.canKeepLocal &&
+    !!left.conflict?.canUseRemote === !!right.conflict?.canUseRemote &&
+    (left.conflict?.limitationReason || '') === (right.conflict?.limitationReason || '')
   );
 }
 

@@ -26,6 +26,12 @@ function cloneCloudSyncConflictStatus(value: unknown): CloudSyncPanelSnapshot['c
     remoteRevision: Number(conflict.remoteRevision) || 0,
     detectedAt: Number(conflict.detectedAt) || 0,
     state,
+    canKeepLocal: conflict.canKeepLocal === true,
+    canUseRemote: conflict.canUseRemote === true,
+    ...(conflict.limitationReason === 'projection-too-large' ||
+    conflict.limitationReason === 'projection-corrupt'
+      ? { limitationReason: conflict.limitationReason }
+      : {}),
   };
 }
 

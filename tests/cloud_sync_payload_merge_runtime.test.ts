@@ -88,6 +88,8 @@ test('keep-local rebases only conflicting local entity changes onto the latest r
       remoteRevision: 3,
       detectedAt: 1,
       state: 'awaiting-resolution',
+      canKeepLocal: true,
+      canUseRemote: true,
       projectionAvailable: true,
       fields: buildCloudSyncConflictFields({
         conflictKeys: ['savedColors'],
@@ -128,5 +130,70 @@ test('keep-local rebases only conflicting local entity changes onto the latest r
   assert.deepEqual(result.payload.savedModels, [
     { id: 'model-1', name: 'Local edit' },
     { id: 'model-2', name: 'Added by a third client' },
+  ]);
+});
+
+test('keep-local preserves local add, update, and delete made after an entity conflict was detected', () => {
+  const baseColors = [
+    { id: 'color-a', value: '#111111' },
+    { id: 'color-delete', value: '#444444' },
+    { id: 'color-update', value: '#555555' },
+  ];
+  const conflictTimeLocal = [
+    { id: 'color-a', value: '#222222' },
+    { id: 'color-delete', value: '#444444' },
+    { id: 'color-update', value: '#555555' },
+  ];
+  const fields = buildCloudSyncConflictFields({
+    conflictKeys: ['savedColors'],
+    base: { savedColors: baseColors },
+    local: { savedColors: conflictTimeLocal },
+    remote: {
+      savedColors: [
+        { id: 'color-a', value: '#333333' },
+        { id: 'color-delete', value: '#444444' },
+        { id: 'color-update', value: '#555555' },
+      ],
+    },
+  });
+
+  const result = rebaseCloudSyncKeepLocal({
+    conflict: {
+      conflictId: 'conflict-local-delta',
+      generation: 1,
+      room: 'room-a',
+      keys: ['savedColors'],
+      remoteRevision: 4,
+      detectedAt: 1,
+      state: 'awaiting-resolution',
+      canKeepLocal: true,
+      canUseRemote: true,
+      projectionAvailable: true,
+      fields,
+    },
+    currentLocal: {
+      savedColors: [
+        { id: 'color-a', value: '#222222' },
+        { id: 'color-update', value: '#666666' },
+        { id: 'color-b', value: '#bbbbbb' },
+      ],
+    },
+    latestRemote: {
+      savedColors: [
+        { id: 'color-a', value: '#333333' },
+        { id: 'color-delete', value: '#444444' },
+        { id: 'color-update', value: '#555555' },
+        { id: 'color-c', value: '#cccccc' },
+      ],
+    },
+  });
+
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.deepEqual(result.payload.savedColors, [
+    { id: 'color-a', value: '#222222' },
+    { id: 'color-update', value: '#666666' },
+    { id: 'color-c', value: '#cccccc' },
+    { id: 'color-b', value: '#bbbbbb' },
   ]);
 });

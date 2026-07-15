@@ -7,7 +7,6 @@ import {
   getProjectIoRestoreGeneration,
   loadProjectDataActionResultViaService,
   isProjectIoRestoreGenerationCurrent,
-  loadProjectDataResultViaService,
   nextProjectIoRestoreGeneration,
   readAutosaveProjectPayload,
   restoreProjectAutosavePayloadActionResultViaService,
@@ -31,9 +30,9 @@ test('project io access tracks restore generation on the canonical runtime seam'
   assert.equal(isProjectIoRestoreGenerationCurrent(App, 1), false);
 });
 
-test('project io access preserves concrete load failures through the shared load-result seam', () => {
+test('project io access preserves concrete load failures through the terminal action-result seam', () => {
   const missingApp = {} as any;
-  assert.deepEqual(loadProjectDataResultViaService(missingApp, { settings: {} }), {
+  assert.deepEqual(loadProjectDataActionResultViaService(missingApp, { settings: {} }), {
     ok: false,
     reason: 'not-installed',
   });
@@ -42,7 +41,7 @@ test('project io access preserves concrete load failures through the shared load
   const svc = ensureProjectIoService(App) as any;
   App.services.platform = { reportError() {} };
   svc.loadProjectData = () => ({ ok: false, reason: 'invalid', message: 'bad snapshot' });
-  assert.deepEqual(loadProjectDataResultViaService(App, { settings: {} }, undefined, 'load'), {
+  assert.deepEqual(loadProjectDataActionResultViaService(App, { settings: {} }, undefined, 'error'), {
     ok: false,
     reason: 'invalid',
     message: 'bad snapshot',
@@ -52,11 +51,11 @@ test('project io access preserves concrete load failures through the shared load
     throw new Error('loader exploded');
   };
   assert.deepEqual(
-    loadProjectDataResultViaService(
+    loadProjectDataActionResultViaService(
       App,
       { settings: {} },
       { toast: false } as any,
-      'load',
+      'error',
       '[WardrobePro] Shared load seam failed.'
     ),
     {

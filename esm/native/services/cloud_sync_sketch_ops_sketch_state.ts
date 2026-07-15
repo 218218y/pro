@@ -39,6 +39,7 @@ export type CloudSyncSketchRoomMutableState = {
   sketchBaselineDone: boolean;
   lastSketchPullUpdatedAt: string;
   lastSettledRemoteSketchFingerprint: string;
+  pendingRemoteSketchFingerprints: Set<string>;
 };
 
 export function createCloudSyncSketchRoomMutableState(): CloudSyncSketchRoomMutableState {
@@ -46,6 +47,7 @@ export function createCloudSyncSketchRoomMutableState(): CloudSyncSketchRoomMuta
     sketchBaselineDone: false,
     lastSketchPullUpdatedAt: '',
     lastSettledRemoteSketchFingerprint: '',
+    pendingRemoteSketchFingerprints: new Set<string>(),
   };
 }
 

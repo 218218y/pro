@@ -66,6 +66,11 @@ function readCloudSyncPanelSnapshot(api: CloudSyncServiceLike | undefined): Clou
                   remoteRevision: Number(snapshot.conflict.remoteRevision) || 0,
                   detectedAt: Number(snapshot.conflict.detectedAt) || 0,
                   state: snapshot.conflict.state,
+                  canKeepLocal: snapshot.conflict.canKeepLocal === true,
+                  canUseRemote: snapshot.conflict.canUseRemote === true,
+                  ...(snapshot.conflict.limitationReason
+                    ? { limitationReason: snapshot.conflict.limitationReason }
+                    : {}),
                 },
               }
             : {}),
