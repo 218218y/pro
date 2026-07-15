@@ -399,6 +399,55 @@ test('project reset does not clear cloud sketch when reset is cancelled or local
   assert.equal(cloudCalls, 0);
 });
 
+test('project reset and autosave restore fail fast while another project load owns the critical section', async () => {
+  const loadOptions: Array<Record<string, unknown> | undefined> = [];
+  let queuedMutations = 0;
+  let cloudClearCalls = 0;
+  const App = {
+    services: {
+      storage: {
+        KEYS: { AUTOSAVE_LATEST: 'autosave-key' },
+        getString() {
+          return JSON.stringify({ settings: {} });
+        },
+      },
+      uiFeedback: {
+        confirm(_title: string, _message: string, onYes?: (() => void) | null) {
+          onYes?.();
+        },
+      },
+      projectIO: {
+        buildDefaultProjectData() {
+          return { settings: {}, toggles: {}, modulesConfiguration: [] };
+        },
+        loadProjectData(_data: unknown, opts?: Record<string, unknown>) {
+          loadOptions.push(opts);
+          if (opts?.queueIfBusy !== false) queuedMutations += 1;
+          return { ok: false, reason: 'busy' };
+        },
+      },
+      cloudSync: {
+        panelApi: {
+          async syncSketchNow() {
+            cloudClearCalls += 1;
+            return { ok: true } as const;
+          },
+        },
+      },
+    },
+  } as any;
+
+  assert.deepEqual(await resetProjectToDefaultWithConfirm(App), { ok: false, reason: 'busy' });
+  assert.deepEqual(await restoreProjectSessionWithConfirm(App), { ok: false, reason: 'busy' });
+  assert.equal(loadOptions.length, 2);
+  assert.equal(
+    loadOptions.every(opts => opts?.queueIfBusy === false),
+    true
+  );
+  assert.equal(queuedMutations, 0);
+  assert.equal(cloudClearCalls, 0);
+});
+
 test('project reset reports a partial failure when the local reset succeeds but cloud sketch clearing fails', async () => {
   const App = {
     services: {

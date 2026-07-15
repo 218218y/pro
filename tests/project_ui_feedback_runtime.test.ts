@@ -59,7 +59,10 @@ test('project ui feedback helpers map command results to stable user-facing mess
     message: 'העריכה שוחזרה בהצלחה!',
     type: 'success',
   });
-  assert.equal(getProjectRestoreToast({ ok: true, pending: true }), null);
+  assert.deepEqual(getProjectRestoreToast({ ok: true, pending: true }), {
+    message: 'Legacy pending restore results are not supported; recovery operations must settle terminally.',
+    type: 'error',
+  });
 
   assert.deepEqual(getProjectSaveToast({ ok: false, reason: 'not-installed' }), {
     message: 'שמירת פרויקט לא זמינה כרגע',

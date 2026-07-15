@@ -49,6 +49,7 @@ export function buildResetDefaultProjectLoadOpts(opts?: ProjectLoadOpts | null):
   nextMeta.preserveAutosave = true;
   return {
     ...(opts && typeof opts === 'object' ? opts : {}),
+    queueIfBusy: false,
     toast: typeof opts?.toast === 'boolean' ? opts.toast : false,
     toastMessage:
       typeof opts?.toastMessage === 'string' && opts.toastMessage.trim()

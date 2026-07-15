@@ -149,6 +149,7 @@ export function buildAutosaveRestoreLoadOpts(opts?: ProjectLoadOpts): ProjectLoa
   if (typeof nextMeta.source !== 'string' || !nextMeta.source.trim()) nextMeta.source = 'restore.local';
   return {
     ...(opts && typeof opts === 'object' ? opts : {}),
+    queueIfBusy: false,
     toast: typeof opts?.toast === 'boolean' ? opts.toast : false,
     meta: nextMeta,
   };

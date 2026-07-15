@@ -130,6 +130,7 @@ test('project io access centralizes autosave payload parsing and restore-load op
   if (!payload.ok) return;
   assert.deepEqual(payload.data, { settings: { depth: 60 } });
   assert.equal(payload.opts.toast, false);
+  assert.equal(payload.opts.queueIfBusy, false);
   assert.equal((payload.opts.meta as any)?.source, 'restore.local');
   assert.equal((payload.opts.meta as any)?.scope, 'runtime-test');
   assert.equal(loadCalls, 0);
@@ -197,5 +198,42 @@ test('project io access preserves concrete restore-load failures through the aut
     ok: false,
     reason: 'error',
     message: 'restore seam exploded',
+  });
+});
+
+test('project io autosave restore is fail-fast and never requests a queued project mutation', () => {
+  const loadOptions: Array<Record<string, unknown> | undefined> = [];
+  const App = {} as any;
+  const svc = ensureProjectIoService(App) as any;
+  const autosavePayload = {
+    ok: true,
+    data: { settings: { width: 120 } },
+    opts: { queueIfBusy: true, toast: false, meta: { source: 'restore.local' } },
+  } as const;
+
+  svc.loadProjectData = (_data: unknown, opts?: Record<string, unknown>) => {
+    loadOptions.push(opts);
+    return { ok: false, reason: 'busy' };
+  };
+
+  assert.deepEqual(restoreProjectAutosavePayloadActionResultViaService(App, autosavePayload), {
+    ok: false,
+    reason: 'busy',
+  });
+  assert.equal(loadOptions.length, 1);
+  assert.equal(loadOptions[0]?.queueIfBusy, false);
+
+  svc.loadProjectData = () => ({
+    accepted: true,
+    reused: false,
+    operationId: 'unexpected-restore-queue',
+    requestedAt: 1,
+    acceptedAt: 1,
+    settled: Promise.resolve({ ok: true }),
+  });
+  assert.deepEqual(restoreProjectAutosavePayloadActionResultViaService(App, autosavePayload), {
+    ok: false,
+    reason: 'error',
+    message: '[WardrobePro] Autosave restore violated its fail-fast load contract.',
   });
 });

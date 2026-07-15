@@ -2,11 +2,12 @@ import type { ProjectLoadInputLike, ProjectLoadOpts } from '../../../types';
 
 import { readAutosavePayloadFromStorageResult } from './autosave_access.js';
 import {
+  buildProjectRestoreFailureResult,
   normalizeProjectRestoreActionResult,
   type ProjectRestoreActionResult,
   type ProjectRestoreFailureReason,
 } from './project_recovery_action_result.js';
-import type { ProjectLoadFailureReason } from './project_load_action_result.js';
+import { isProjectLoadAcceptedResult, type ProjectLoadFailureReason } from './project_load_action_result.js';
 import {
   buildAutosaveRestoreLoadOpts,
   buildProjectIoLoadFailureMessage,
@@ -44,16 +45,22 @@ export function restoreProjectAutosavePayloadActionResultViaService(
   loadDefaultReason: ProjectLoadFailureReason = 'not-installed',
   defaultErrorMessage = '[WardrobePro] Restore session load failed.'
 ): ProjectRestoreActionResult {
-  return normalizeProjectRestoreActionResult(
-    loadProjectDataActionResultViaService(
-      App,
-      autosavePayload.data,
-      autosavePayload.opts,
-      loadDefaultReason,
-      defaultErrorMessage
-    ),
-    defaultReason
+  const loadResult = loadProjectDataActionResultViaService(
+    App,
+    autosavePayload.data,
+    {
+      ...autosavePayload.opts,
+      queueIfBusy: false,
+    },
+    loadDefaultReason,
+    defaultErrorMessage
   );
+  if (isProjectLoadAcceptedResult(loadResult)) {
+    return buildProjectRestoreFailureResult('error', {
+      message: '[WardrobePro] Autosave restore violated its fail-fast load contract.',
+    });
+  }
+  return normalizeProjectRestoreActionResult(loadResult, defaultReason);
 }
 
 export function restoreProjectSessionActionResultViaService(
@@ -95,6 +102,6 @@ export function restoreProjectSessionActionResultViaServiceOrThrow(
     loadDefaultReason,
     defaultErrorMessage
   );
-  if (result.ok && result.pending !== true) return result;
+  if (result.ok) return result;
   throw new Error(buildProjectIoLoadFailureMessage(result, label, defaultErrorMessage));
 }

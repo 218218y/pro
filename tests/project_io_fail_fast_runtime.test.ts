@@ -357,21 +357,25 @@ test('project io restoreLastSession preserves precise restore failure toasts thr
       },
     });
 
-    const pending = orchestrator.restoreLastSession();
-    assert.deepEqual(pending, { ok: true, pending: true });
+    const result = await orchestrator.restoreLastSession();
+    assert.deepEqual(result, {
+      ok: false,
+      reason: 'error',
+      message: 'restore snapshot apply exploded',
+    });
     assert.deepEqual(toasts, [{ message: 'restore snapshot apply exploded', type: 'error' }]);
   });
 });
 
-test('project io restoreLastSession reports invalid autosave payloads as immediate invalid results', () => {
+test('project io restoreLastSession reports invalid autosave payloads as terminal invalid results', async () => {
   const { orchestrator, toasts } = createProjectIoApp({ autosaveData: '{bad-json' });
 
-  const result = orchestrator.restoreLastSession();
+  const result = await orchestrator.restoreLastSession();
   assert.deepEqual(result, { ok: false, reason: 'invalid' });
   assert.deepEqual(toasts, [{ message: 'נתוני השחזור לא תקינים', type: 'error' }]);
 });
 
-test('project io restoreLastSession strips legacy autosave version metadata before load validation', () => {
+test('project io restoreLastSession strips legacy autosave version metadata before load validation', async () => {
   const legacyAutosave = {
     ...VALID_PROJECT,
     version: '2.1',
@@ -382,9 +386,9 @@ test('project io restoreLastSession strips legacy autosave version metadata befo
     autosaveData: JSON.stringify(legacyAutosave),
   });
 
-  const result = orchestrator.restoreLastSession();
+  const result = await orchestrator.restoreLastSession();
 
-  assert.deepEqual(result, { ok: true, pending: true });
+  assert.deepEqual(result, { ok: true, restoreGen: 1 });
   assert.deepEqual(toasts, [{ message: 'העריכה שוחזרה בהצלחה!', type: 'success' }]);
   assert.deepEqual(autosaveCalls, ['suspend', 'commit', 'force']);
   assert.deepEqual(calls, ['transaction:project.load', 'history:project.load']);

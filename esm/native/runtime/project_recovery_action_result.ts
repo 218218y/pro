@@ -5,7 +5,6 @@ import { asRecord } from './record.js';
 
 export type ProjectRecoverySuccessResult = {
   ok: true;
-  pending?: true | undefined;
   restoreGen?: number | undefined;
 };
 
@@ -48,14 +47,24 @@ function normalizeRecoveryRestoreGen(value: unknown): number | undefined {
 }
 
 export function buildProjectRecoverySuccessResult(options?: {
-  pending?: unknown;
   restoreGen?: unknown;
 }): ProjectRecoverySuccessResult {
   const restoreGen = normalizeRecoveryRestoreGen(options?.restoreGen);
   const result: ProjectRecoverySuccessResult = { ok: true };
-  if (options?.pending === true) result.pending = true;
   if (typeof restoreGen === 'number') result.restoreGen = restoreGen;
   return result;
+}
+
+function buildUnsupportedPendingRestoreFailure(): ProjectRestoreFailureResult {
+  return buildProjectRestoreFailureResult('error', {
+    message: 'Legacy pending restore results are not supported; recovery operations must settle terminally.',
+  });
+}
+
+function buildUnsupportedPendingResetFailure(): ProjectResetDefaultFailureResult {
+  return buildProjectResetDefaultFailureResult('error', {
+    message: 'Legacy pending reset results are not supported; recovery operations must settle terminally.',
+  });
 }
 
 function normalizeProjectRestoreFailureReason(
@@ -152,6 +161,7 @@ export function normalizeProjectRestoreActionResult(
 
   const rec = asRecord<ProjectRecoveryResultRecord>(value);
   if (!rec) return buildProjectRestoreFailureResult(defaultReason);
+  if (rec.pending === true) return buildUnsupportedPendingRestoreFailure();
   if (rec.ok === true) return buildProjectRecoverySuccessResult(rec);
 
   return buildProjectRestoreFailureResult(
@@ -169,6 +179,7 @@ export function normalizeProjectResetDefaultActionResult(
 
   const rec = asRecord<ProjectRecoveryResultRecord>(value);
   if (!rec) return buildProjectResetDefaultFailureResult(defaultReason);
+  if (rec.pending === true) return buildUnsupportedPendingResetFailure();
   if (rec.ok === true) return buildProjectRecoverySuccessResult(rec);
 
   return buildProjectResetDefaultFailureResult(

@@ -112,6 +112,7 @@ test('reset default payload reader returns canonical payload/load opts and preci
       stackSplitLower: { modulesConfiguration: [] },
     });
     assert.deepEqual(payload.opts, {
+      queueIfBusy: false,
       toast: false,
       toastMessage: 'הארון אופס לברירת המחדל',
       meta: { source: 'react:header:resetDefault', resetDefault: true, preserveAutosave: true },
@@ -249,6 +250,7 @@ test('reset default action result keeps canonical defaults but allows explicit l
   );
   assert.equal(calls.length, 1);
   assert.equal(calls[0].opts.toast, true);
+  assert.equal(calls[0].opts.queueIfBusy, false);
   assert.equal(calls[0].opts.toastMessage, 'custom toast');
   assert.equal(calls[0].opts.meta.source, 'custom.reset');
   assert.equal(calls[0].opts.meta.resetDefault, true);
@@ -299,6 +301,7 @@ test('reset default command routes the cleaned payload through canonical project
     stackSplitLower: { modulesConfiguration: [] },
   });
   assert.equal(calls[0].opts.toast, false);
+  assert.equal(calls[0].opts.queueIfBusy, false);
   assert.equal(calls[0].opts.toastMessage, 'הארון אופס לברירת המחדל');
   assert.equal(calls[0].opts.meta.source, 'react:header:resetDefault');
   assert.equal(calls[0].opts.meta.resetDefault, true);
@@ -343,5 +346,32 @@ test('reset default preserves builder/load failure causes instead of flattening 
     ok: false,
     reason: 'error',
     message: 'default load exploded',
+  });
+});
+
+test('reset default rejects an accepted load handle because reset is a terminal fail-fast action', () => {
+  const App = {
+    services: {
+      projectIO: {
+        buildDefaultProjectData: () => ({ settings: {}, toggles: {}, modulesConfiguration: [] }),
+        loadProjectData(_data: unknown, opts?: Record<string, unknown>) {
+          assert.equal(opts?.queueIfBusy, false);
+          return {
+            accepted: true,
+            reused: false,
+            operationId: 'unexpected-reset-queue',
+            requestedAt: 1,
+            acceptedAt: 1,
+            settled: Promise.resolve({ ok: true }),
+          };
+        },
+      },
+    },
+  } as any;
+
+  assert.deepEqual(resetProjectToDefaultActionResult(App), {
+    ok: false,
+    reason: 'error',
+    message: '[WardrobePro] Default project reset violated its fail-fast load contract.',
   });
 });

@@ -33,6 +33,16 @@ test('project recovery action results normalize restore/reset reasons and saniti
     ok: false,
     reason: 'not-installed',
   });
+  assert.deepEqual(normalizeProjectRestoreActionResult({ ok: true, pending: true }), {
+    ok: false,
+    reason: 'error',
+    message: 'Legacy pending restore results are not supported; recovery operations must settle terminally.',
+  });
+  assert.deepEqual(normalizeProjectResetDefaultActionResult({ ok: true, pending: true }), {
+    ok: false,
+    reason: 'error',
+    message: 'Legacy pending reset results are not supported; recovery operations must settle terminally.',
+  });
 });
 
 test('project recovery action errors preserve actionable messages from strings and records', () => {

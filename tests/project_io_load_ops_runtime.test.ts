@@ -9,7 +9,7 @@ function asRecord(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-test('project io load ops normalize restore callback results before restore toasts', () => {
+test('project io load ops settle restore callback results before restore toasts', async () => {
   const toasts: Array<{ message: unknown; type: unknown }> = [];
   const App = {
     services: {
@@ -59,13 +59,13 @@ test('project io load ops normalize restore callback results before restore toas
     log() {},
   });
 
-  const pending = loadOps.restoreLastSession();
+  const result = await loadOps.restoreLastSession();
 
-  assert.deepEqual(pending, { ok: true, pending: true });
+  assert.deepEqual(result, { ok: false, reason: 'not-installed' });
   assert.deepEqual(toasts, [{ message: 'שחזור העריכה לא זמין כרגע', type: 'error' }]);
 });
 
-test('project io load ops use the shared autosave-restore seam for concrete restore failures', () => {
+test('project io load ops use the shared autosave-restore seam for concrete restore failures', async () => {
   const toasts: Array<{ message: unknown; type: unknown }> = [];
   const App = {
     services: {
@@ -115,8 +115,12 @@ test('project io load ops use the shared autosave-restore seam for concrete rest
     log() {},
   });
 
-  const pending = loadOps.restoreLastSession();
+  const result = await loadOps.restoreLastSession();
 
-  assert.deepEqual(pending, { ok: true, pending: true });
+  assert.deepEqual(result, {
+    ok: false,
+    reason: 'error',
+    message: 'restore failure reason',
+  });
   assert.deepEqual(toasts, [{ message: 'restore failure reason', type: 'error' }]);
 });

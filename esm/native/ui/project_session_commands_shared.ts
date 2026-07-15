@@ -25,7 +25,6 @@ type ProjectSessionConfirmedResult = {
   ok: boolean;
   reason?: string;
   message?: string;
-  pending?: true;
   restoreGen?: number;
 };
 

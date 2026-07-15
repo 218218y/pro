@@ -449,3 +449,19 @@ test('project io + project action helper seams stay named-only after delete-pass
     'project named surfaces'
   );
 });
+
+test('project recovery reset and restore remain terminal fail-fast operations', () => {
+  const recoveryResult = readSource(
+    '../esm/native/runtime/project_recovery_action_result.ts',
+    import.meta.url
+  );
+  const restoreAccess = readSource('../esm/native/runtime/project_io_access_restore.ts', import.meta.url);
+  const resetPayload = readSource('../esm/native/services/project_reset_default_payload.ts', import.meta.url);
+  const sessionRestore = readSource('../esm/native/io/project_io_orchestrator_restore.ts', import.meta.url);
+
+  assert.match(resetPayload, /queueIfBusy:\s*false/);
+  assert.match(restoreAccess, /queueIfBusy:\s*false/);
+  assert.match(sessionRestore, /async function restoreLastSession\(\): Promise<ProjectRestoreActionResult>/);
+  assert.doesNotMatch(recoveryResult, /ProjectRecoverySuccessResult\s*=\s*\{[^}]*pending/s);
+  assert.doesNotMatch(recoveryResult, /result\.pending\s*=\s*true/);
+});

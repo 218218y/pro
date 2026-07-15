@@ -46,7 +46,7 @@ export function getProjectRestoreToast(
   if (!result) return { message: 'שחזור העריכה לא זמין כרגע', type: 'error' };
   const normalized = normalizeProjectRestoreActionResult(result, 'error');
   if (normalized.ok === true) {
-    return normalized.pending === true ? null : { message: 'העריכה שוחזרה בהצלחה!', type: 'success' };
+    return { message: 'העריכה שוחזרה בהצלחה!', type: 'success' };
   }
   const failure = normalized;
   const reason = readActionReason(failure.reason);

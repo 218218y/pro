@@ -19,8 +19,8 @@ export function createProjectIoLoadOps(deps: ProjectIoOwnerDeps) {
     return loadProjectDataImpl(input, options);
   }
 
-  function restoreLastSession(): ProjectRestoreActionResult {
-    return restoreLastSessionImpl();
+  async function restoreLastSession(): Promise<ProjectRestoreActionResult> {
+    return await restoreLastSessionImpl();
   }
 
   return {

@@ -356,7 +356,7 @@ export interface ProjectIoServiceLike extends UnknownRecord {
   exportCurrentProject?: (meta?: UnknownRecord) => ProjectExportResultLike | null | undefined;
   handleFileLoad?: (eventOrFile: unknown) => unknown;
   loadProjectData?: (data: ProjectLoadInputLike, opts?: ProjectLoadOpts) => unknown;
-  restoreLastSession?: () => unknown;
+  restoreLastSession?: () => Promise<unknown>;
   buildDefaultProjectData?: () => ProjectDataLike;
   runtime?: ProjectIoRuntimeLike;
   [k: string]: unknown;
