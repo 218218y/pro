@@ -34,7 +34,7 @@ test('project recovery hardening clears invalid autosave payloads and does not o
         },
       },
       projectIO: {
-        loadProjectData() {
+        loadProjectDataFailFast() {
           calls.push(['loadProjectData']);
           return { ok: true };
         },

@@ -232,7 +232,7 @@ test('reset default action result keeps canonical defaults but allows explicit l
     services: {
       projectIO: {
         buildDefaultProjectData: () => ({ settings: {}, toggles: {}, modulesConfiguration: [] }),
-        loadProjectData(data: unknown, opts?: unknown) {
+        loadProjectDataFailFast(data: unknown, opts?: unknown) {
           calls.push({ data, opts });
           return { ok: true, restoreGen: 11 };
         },
@@ -257,6 +257,37 @@ test('reset default action result keeps canonical defaults but allows explicit l
   assert.equal(calls[0].opts.meta.preserveAutosave, true);
 });
 
+test('reset default preserves successful Project Load warnings', () => {
+  const App = {
+    services: {
+      projectIO: {
+        buildDefaultProjectData: () => ({ settings: {}, toggles: {}, modulesConfiguration: [] }),
+        loadProjectDataFailFast: () => ({
+          ok: true,
+          restoreGen: 12,
+          warnings: [
+            {
+              effect: 'post-effects-superseded',
+              message: 'post-load effects were superseded',
+            },
+          ],
+        }),
+      },
+    },
+  } as any;
+
+  assert.deepEqual(resetProjectToDefaultActionResult(App), {
+    ok: true,
+    restoreGen: 12,
+    warnings: [
+      {
+        effect: 'post-effects-superseded',
+        message: 'post-load effects were superseded',
+      },
+    ],
+  });
+});
+
 test('reset default command routes the cleaned payload through canonical project io load semantics', () => {
   const calls: Array<{ data: any; opts: any }> = [];
   const App = {
@@ -275,7 +306,7 @@ test('reset default command routes the cleaned payload through canonical project
           stackSplitLowerModulesConfiguration: [{ id: 'lower', extDrawersCount: '2' }],
           cornerConfiguration: { modulesConfiguration: [{ id: 'corner' }] },
         }),
-        loadProjectData: (data: unknown, opts?: unknown) => {
+        loadProjectDataFailFast: (data: unknown, opts?: unknown) => {
           calls.push({ data, opts });
           return { ok: true, restoreGen: 9 };
         },
@@ -336,7 +367,7 @@ test('reset default preserves builder/load failure causes instead of flattening 
     services: {
       projectIO: {
         buildDefaultProjectData: () => ({ settings: {}, toggles: {}, modulesConfiguration: [] }),
-        loadProjectData() {
+        loadProjectDataFailFast() {
           throw new Error('default load exploded');
         },
       },
@@ -354,7 +385,7 @@ test('reset default rejects an accepted load handle because reset is a terminal 
     services: {
       projectIO: {
         buildDefaultProjectData: () => ({ settings: {}, toggles: {}, modulesConfiguration: [] }),
-        loadProjectData(_data: unknown, opts?: Record<string, unknown>) {
+        loadProjectDataFailFast(_data: unknown, opts?: Record<string, unknown>) {
           assert.equal(opts?.queueIfBusy, false);
           return {
             accepted: true,
@@ -372,6 +403,6 @@ test('reset default rejects an accepted load handle because reset is a terminal 
   assert.deepEqual(resetProjectToDefaultActionResult(App), {
     ok: false,
     reason: 'error',
-    message: '[WardrobePro] Default project reset violated its fail-fast load contract.',
+    message: '[WardrobePro] Fail-fast Project Load service returned an accepted operation.',
   });
 });

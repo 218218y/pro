@@ -184,14 +184,35 @@ test('project io access preserves concrete restore-load failures through the aut
     opts: { toast: false, meta: { source: 'restore.local' } },
   } as const;
 
-  svc.loadProjectData = () => ({ ok: false, reason: 'load', message: 'legacy restore reason' });
+  svc.loadProjectDataFailFast = () => ({
+    ok: true,
+    restoreGen: 6,
+    warnings: [
+      { effect: 'build', message: 'final build failed' },
+      { effect: 'autosave-refresh', message: 'autosave refresh failed' },
+    ],
+  });
+  assert.deepEqual(restoreProjectAutosavePayloadActionResultViaService(App, autosavePayload), {
+    ok: true,
+    restoreGen: 6,
+    warnings: [
+      { effect: 'build', message: 'final build failed' },
+      { effect: 'autosave-refresh', message: 'autosave refresh failed' },
+    ],
+  });
+
+  svc.loadProjectDataFailFast = () => ({
+    ok: false,
+    reason: 'load',
+    message: 'legacy restore reason',
+  });
   assert.deepEqual(restoreProjectAutosavePayloadActionResultViaService(App, autosavePayload), {
     ok: false,
     reason: 'error',
     message: 'legacy restore reason',
   });
 
-  svc.loadProjectData = () => {
+  svc.loadProjectDataFailFast = () => {
     throw new Error('restore seam exploded');
   };
   assert.deepEqual(restoreProjectAutosavePayloadActionResultViaService(App, autosavePayload), {
@@ -211,7 +232,7 @@ test('project io autosave restore is fail-fast and never requests a queued proje
     opts: { queueIfBusy: true, toast: false, meta: { source: 'restore.local' } },
   } as const;
 
-  svc.loadProjectData = (_data: unknown, opts?: Record<string, unknown>) => {
+  svc.loadProjectDataFailFast = (_data: unknown, opts?: Record<string, unknown>) => {
     loadOptions.push(opts);
     return { ok: false, reason: 'busy' };
   };
@@ -223,7 +244,7 @@ test('project io autosave restore is fail-fast and never requests a queued proje
   assert.equal(loadOptions.length, 1);
   assert.equal(loadOptions[0]?.queueIfBusy, false);
 
-  svc.loadProjectData = () => ({
+  svc.loadProjectDataFailFast = () => ({
     accepted: true,
     reused: false,
     operationId: 'unexpected-restore-queue',
@@ -234,6 +255,6 @@ test('project io autosave restore is fail-fast and never requests a queued proje
   assert.deepEqual(restoreProjectAutosavePayloadActionResultViaService(App, autosavePayload), {
     ok: false,
     reason: 'error',
-    message: '[WardrobePro] Autosave restore violated its fail-fast load contract.',
+    message: '[WardrobePro] Fail-fast Project Load service returned an accepted operation.',
   });
 });

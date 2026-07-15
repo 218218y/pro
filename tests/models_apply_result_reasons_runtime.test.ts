@@ -19,7 +19,7 @@ test('model apply load result preserves canonical project load failure reasons',
           },
         },
         projectIO: {
-          loadProjectData() {
+          loadProjectDataFailFast() {
             seen.push(`load:${reason}`);
             return { ok: false, reason };
           },
@@ -70,7 +70,7 @@ test('model apply load result preserves project-load error messages and thrown f
         },
       },
       projectIO: {
-        loadProjectData() {
+        loadProjectDataFailFast() {
           return { ok: false, reason: 'error', message: 'snapshot apply failed' };
         },
       },
@@ -85,7 +85,7 @@ test('model apply load result preserves project-load error messages and thrown f
         },
       },
       projectIO: {
-        loadProjectData() {
+        loadProjectDataFailFast() {
           throw new Error('project loader exploded');
         },
       },

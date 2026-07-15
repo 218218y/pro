@@ -1,5 +1,6 @@
 import type {
   ActionMetaLike,
+  ProjectLoadFailFastOpts,
   ProjectLoadInputLike,
   ProjectLoadOpts,
   UnknownRecord,
@@ -90,6 +91,10 @@ export function createProjectIoOrchestrator(ctx: ProjectIoRuntimeContext) {
     return loadOps.loadProjectData(input, options);
   }
 
+  function loadProjectDataFailFast(input: ProjectLoadInputLike, options?: ProjectLoadFailFastOpts) {
+    return loadOps.loadProjectDataFailFast(input, options);
+  }
+
   function restoreLastSession() {
     return loadOps.restoreLastSession();
   }
@@ -105,6 +110,7 @@ export function createProjectIoOrchestrator(ctx: ProjectIoRuntimeContext) {
   return {
     handleFileLoad,
     loadProjectData,
+    loadProjectDataFailFast,
     restoreLastSession,
     exportCurrentProject,
     buildDefaultProjectData,

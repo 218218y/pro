@@ -12,15 +12,23 @@ import { readProjectRestoreToastMessage, type ProjectIoOwnerDeps } from './proje
 export function createProjectSessionRestore(deps: ProjectIoOwnerDeps) {
   const { App, showToast } = deps;
 
+  const showRestoreToastNonFatal = (message: string, type: 'success' | 'warning' | 'error'): void => {
+    try {
+      showToast(message, type);
+    } catch (error) {
+      deps.reportNonFatal('restoreLastSession.feedback', error);
+    }
+  };
+
   return async function restoreLastSession(): Promise<ProjectRestoreActionResult> {
     const autosavePayload = readAutosaveProjectPayload(App);
     if (autosavePayload.ok === false) {
       if (autosavePayload.reason === 'missing-autosave') {
-        showToast('לא נמצאה היסטוריה לשחזור', 'error');
+        showRestoreToastNonFatal('לא נמצאה היסטוריה לשחזור', 'error');
         return buildProjectRestoreFailureResult('missing-autosave');
       }
 
-      showToast('נתוני השחזור לא תקינים', 'error');
+      showRestoreToastNonFatal('נתוני השחזור לא תקינים', 'error');
       return buildProjectRestoreFailureResult('invalid');
     }
 
@@ -45,8 +53,13 @@ export function createProjectSessionRestore(deps: ProjectIoOwnerDeps) {
               '[WardrobePro] Restore session load failed.'
             );
             const toastMessage = readProjectRestoreToastMessage(restoreResult);
-            if (toastMessage) showToast(toastMessage, restoreResult.ok ? 'success' : 'error');
             settle(restoreResult);
+            if (toastMessage) {
+              showRestoreToastNonFatal(
+                toastMessage,
+                restoreResult.ok ? (restoreResult.warnings?.length ? 'warning' : 'success') : 'error'
+              );
+            }
           },
           () => settle(buildProjectRestoreFailureResult('cancelled'))
         );

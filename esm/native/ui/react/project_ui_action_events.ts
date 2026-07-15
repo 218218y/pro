@@ -14,6 +14,8 @@ export type ProjectUiActionEventDetail = {
   reason?: string;
   message?: string;
   restoreGen?: number;
+  warningCount?: number;
+  warningEffects?: string[];
   operationId?: string;
   requestedAt?: number;
   acceptedAt?: number;
@@ -42,6 +44,7 @@ type ProjectUiActionResultRecord = {
   operationId?: unknown;
   requestedAt?: unknown;
   acceptedAt?: unknown;
+  warnings?: unknown;
 };
 
 function asRecord(value: unknown): ProjectUiActionResultRecord | null {
@@ -60,6 +63,16 @@ function readOptionalRestoreGen(value: unknown): number | undefined {
 function normalizeEventTime(value: unknown): number {
   const n = Number(value);
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : Date.now();
+}
+
+function readProjectActionWarningEffects(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map(warning => {
+      const rec = warning && typeof warning === 'object' ? (warning as { effect?: unknown }) : null;
+      return readOptionalString(rec?.effect);
+    })
+    .filter((effect): effect is string => typeof effect === 'string');
 }
 
 export function readProjectUiActionEventName(action: ProjectUiActionName): string {
@@ -84,6 +97,7 @@ export function buildProjectUiActionEventDetail(
   const operationId = readOptionalString(rec?.operationId);
   const requestedAt = Number(rec?.requestedAt);
   const acceptedAt = Number(rec?.acceptedAt);
+  const warningEffects = readProjectActionWarningEffects(rec?.warnings);
   return {
     action,
     ...(hasTerminalResult ? { ok } : {}),
@@ -94,6 +108,7 @@ export function buildProjectUiActionEventDetail(
     ...(reason ? { reason } : {}),
     ...(message ? { message } : {}),
     ...(typeof restoreGen === 'number' ? { restoreGen } : {}),
+    ...(warningEffects.length ? { warningCount: warningEffects.length, warningEffects } : {}),
     ...(operationId ? { operationId } : {}),
     ...(Number.isFinite(requestedAt) && requestedAt > 0 ? { requestedAt: Math.floor(requestedAt) } : {}),
     ...(Number.isFinite(acceptedAt) && acceptedAt > 0 ? { acceptedAt: Math.floor(acceptedAt) } : {}),

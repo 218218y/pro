@@ -29,7 +29,12 @@ import type {
   WardrobeProDebugCanvasHitInfo,
 } from './runtime';
 import type { BuilderServiceLike, RoomDesignServiceLike } from './build_builder';
-import type { ProjectDataLike, ProjectLoadOpts } from './build_state';
+import type { ProjectDataLike } from './build_state';
+import type {
+  ProjectLoadActionFn,
+  ProjectLoadFailFastFn,
+  ProjectRestoreActionResult,
+} from './project_io_operations';
 import type { Vec3Like } from './build_ops';
 
 export interface HistorySystemLike {
@@ -350,13 +355,12 @@ export interface ProjectExportResultLike extends UnknownRecord {
   meta?: UnknownRecord | null;
 }
 
-export type ProjectLoadInputLike = ProjectDataLike | UnknownRecord | object;
-
 export interface ProjectIoServiceLike extends UnknownRecord {
   exportCurrentProject?: (meta?: UnknownRecord) => ProjectExportResultLike | null | undefined;
   handleFileLoad?: (eventOrFile: unknown) => unknown;
-  loadProjectData?: (data: ProjectLoadInputLike, opts?: ProjectLoadOpts) => unknown;
-  restoreLastSession?: () => Promise<unknown>;
+  loadProjectData?: ProjectLoadActionFn;
+  loadProjectDataFailFast?: ProjectLoadFailFastFn;
+  restoreLastSession?: () => Promise<ProjectRestoreActionResult>;
   buildDefaultProjectData?: () => ProjectDataLike;
   runtime?: ProjectIoRuntimeLike;
   [k: string]: unknown;

@@ -1,36 +1,27 @@
-import type { AsyncOperationHandle } from '../../../types';
+import type {
+  ProjectLoadAcceptedResult,
+  ProjectLoadActionResult,
+  ProjectLoadFailureReason,
+  ProjectLoadFailureResult,
+  ProjectLoadSuccessResult,
+  ProjectLoadTerminalResult,
+  ProjectLoadWarning,
+} from '../../../types';
+
+export type {
+  ProjectLoadAcceptedResult,
+  ProjectLoadActionResult,
+  ProjectLoadFailureReason,
+  ProjectLoadFailureResult,
+  ProjectLoadSuccessResult,
+  ProjectLoadTerminalResult,
+  ProjectLoadWarning,
+  ProjectLoadWarningEffect,
+} from '../../../types';
 
 import { createAsyncOperationHandle } from './async_operation.js';
 import { normalizeUnknownError } from './error_normalization.js';
 import { asRecord } from './record.js';
-
-export type ProjectLoadFailureReason =
-  'missing-file' | 'invalid' | 'not-installed' | 'superseded' | 'busy' | 'error';
-
-export type ProjectLoadWarningEffect =
-  'edit-modes' | 'autosave-finalize' | 'autosave-refresh' | 'notes' | 'build' | 'post-effects-superseded';
-
-export type ProjectLoadWarning = {
-  effect: ProjectLoadWarningEffect;
-  message: string;
-};
-
-export type ProjectLoadSuccessResult = {
-  ok: true;
-  restoreGen?: number | undefined;
-  warnings?: ProjectLoadWarning[] | undefined;
-};
-
-export type ProjectLoadFailureResult = {
-  ok: false;
-  reason: ProjectLoadFailureReason;
-  message?: string;
-  restoreGen?: number | undefined;
-};
-
-export type ProjectLoadTerminalResult = ProjectLoadSuccessResult | ProjectLoadFailureResult;
-export type ProjectLoadAcceptedResult = AsyncOperationHandle<ProjectLoadTerminalResult>;
-export type ProjectLoadActionResult = ProjectLoadTerminalResult | ProjectLoadAcceptedResult;
 
 export function createProjectLoadAcceptedResult(
   settled: Promise<ProjectLoadTerminalResult>,
@@ -63,6 +54,15 @@ function normalizeProjectLoadRestoreGen(value: unknown): number | undefined {
   return Number.isFinite(restoreGen) && restoreGen > 0 ? Math.floor(restoreGen) : undefined;
 }
 
+const PROJECT_LOAD_WARNING_EFFECTS = new Set([
+  'edit-modes',
+  'autosave-finalize',
+  'autosave-refresh',
+  'notes',
+  'build',
+  'post-effects-superseded',
+]);
+
 export function buildProjectLoadSuccessResult(options?: {
   restoreGen?: unknown;
   warnings?: unknown;
@@ -74,6 +74,7 @@ export function buildProjectLoadSuccessResult(options?: {
         return !!(
           rec &&
           typeof rec.effect === 'string' &&
+          PROJECT_LOAD_WARNING_EFFECTS.has(rec.effect) &&
           typeof rec.message === 'string' &&
           rec.message.trim()
         );

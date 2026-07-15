@@ -114,7 +114,11 @@ export function readProjectRestoreToastMessage(
 ): string | null {
   if (!result) return null;
   const normalized = normalizeProjectRestoreActionResult(result, 'error');
-  if (normalized.ok) return 'העריכה שוחזרה בהצלחה!';
+  if (normalized.ok) {
+    return normalized.warnings?.length
+      ? 'העריכה שוחזרה, אך חלק מפעולות ההשלמה לא הסתיימו'
+      : 'העריכה שוחזרה בהצלחה!';
+  }
   const reason =
     'reason' in normalized && typeof normalized.reason === 'string' ? normalized.reason.trim() : '';
   const message =

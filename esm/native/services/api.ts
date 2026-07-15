@@ -141,6 +141,8 @@ export {
   resetProjectToDefault,
   normalizeProjectIoLoadResult,
   loadProjectDataActionResultViaService,
+  loadProjectDataFailFastResultViaService,
+  loadProjectDataFailFastResultViaServiceOrThrow,
   loadProjectFileInputViaService,
   readAutosaveProjectPayload,
   restoreProjectAutosavePayloadActionResultViaService,

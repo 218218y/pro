@@ -6,6 +6,10 @@ import {
   restoreLastSession,
   saveProject,
 } from '../esm/native/ui/react/actions/project_actions.ts';
+import {
+  runProjectResetDefaultAction,
+  runProjectRestoreAction,
+} from '../esm/native/ui/project_recovery_runtime.ts';
 
 test('project actions expose normalized save/load/restore command results', async () => {
   const App = {
@@ -23,6 +27,7 @@ test('project actions expose normalized save/load/restore command results', asyn
       },
       projectIO: {
         loadProjectData: () => ({ ok: false, reason: 'invalid' }),
+        loadProjectDataFailFast: () => ({ ok: false, reason: 'invalid' }),
         buildDefaultProjectData: () => ({ settings: {}, toggles: {}, modulesConfiguration: [] }),
       },
     },
@@ -70,6 +75,42 @@ test('project actions expose normalized save/load/restore command results', asyn
 
   App.actions.saveProject = () => ({ ok: false, reason: 'busy' });
   assert.deepEqual(saveProject(App), { ok: false, reason: 'busy' });
+});
+
+test('project recovery feedback failures stay non-fatal after terminal success', async () => {
+  const reports: string[] = [];
+  const App = {
+    services: {
+      errors: {
+        report(error: unknown) {
+          reports.push((error as Error).message);
+        },
+      },
+    },
+  } as any;
+  let toastCalls = 0;
+  const feedback = {
+    toast() {
+      toastCalls += 1;
+      throw new Error(`recovery toast exploded ${toastCalls}`);
+    },
+  };
+
+  assert.deepEqual(
+    await runProjectRestoreAction(App, feedback, async () => ({
+      ok: true,
+      warnings: [{ effect: 'build', message: 'final build failed' }],
+    })),
+    {
+      ok: true,
+      warnings: [{ effect: 'build', message: 'final build failed' }],
+    }
+  );
+  assert.deepEqual(
+    await runProjectResetDefaultAction(App, feedback, async () => ({ ok: true, restoreGen: 3 })),
+    { ok: true, restoreGen: 3 }
+  );
+  assert.deepEqual(reports, ['recovery toast exploded 1', 'recovery toast exploded 2']);
 });
 
 test('project save action preserves actionable thrown messages through the canonical action seam', () => {

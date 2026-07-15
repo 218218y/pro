@@ -169,7 +169,7 @@ test('project/model release regressions route model apply through silent canonic
         },
       },
       projectIO: {
-        loadProjectData(data, opts) {
+        loadProjectDataFailFast(data, opts) {
           seen.push(['projectIO.load', data, opts]);
           return { ok: true, restoreGen: 11 };
         },

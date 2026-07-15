@@ -509,7 +509,7 @@ test('cloud sync family keeps project/browser/panel seams canonical without dire
     kernelSrc,
     [
       /getProjectCaptureServiceMaybe\(App\)/,
-      /loadProjectDataActionResultViaServiceOrThrow\(\s*App,\s*(?:rec|record),\s*\{[\s\S]*queueIfBusy:\s*false/,
+      /loadProjectDataFailFastResultViaServiceOrThrow\(\s*App,\s*(?:rec|record),\s*\{[\s\S]*queueIfBusy:\s*false/,
     ],
     'kernel project access'
   );
@@ -521,6 +521,7 @@ test('cloud sync family keeps project/browser/panel seams canonical without dire
       /getServicesRecord\(App\)\?\.projectIO/,
       /getProjectIoServiceMaybe\(App\)/,
       /loadProjectDataResultViaService/,
+      /loadProjectDataActionResultViaService(?:OrThrow)?\(/,
     ],
     'kernel project access'
   );

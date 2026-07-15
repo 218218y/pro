@@ -87,6 +87,31 @@ test('project ui action events build canonical detail for success, explicit fail
     }
   );
 
+  assert.deepEqual(
+    buildProjectUiActionEventDetail(
+      'restore-last-session',
+      {
+        ok: true,
+        restoreGen: 8,
+        warnings: [
+          { effect: 'build', message: 'build failed' },
+          { effect: 'autosave-refresh', message: 'autosave failed' },
+        ],
+      },
+      { at: 5000 }
+    ),
+    {
+      action: 'restore-last-session',
+      ok: true,
+      pending: false,
+      phase: 'settled',
+      restoreGen: 8,
+      warningCount: 2,
+      warningEffects: ['build', 'autosave-refresh'],
+      at: 5000,
+    }
+  );
+
   const blank = buildProjectUiActionEventDetail(
     'save',
     { ok: false, reason: 'busy', message: '   ' },

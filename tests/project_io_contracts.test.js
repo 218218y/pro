@@ -147,6 +147,17 @@ const projectIoCallerBundle = bundleSources(
   { stripNoise: true }
 );
 
+const projectIoFailFastConsumerBundle = bundleSources(
+  [
+    '../esm/native/services/project_reset_default_action.ts',
+    '../esm/native/runtime/project_io_access_restore.ts',
+    '../esm/native/services/models_apply_project_load.ts',
+    '../esm/native/kernel/kernel.ts',
+    '../esm/native/platform/smoke_checks_scenario.ts',
+  ],
+  import.meta.url
+);
+
 const projectLoadBundle = bundleSources(
   [
     '../esm/native/io/project_io_load_helpers.ts',
@@ -251,6 +262,8 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /export function exportProjectResultViaService\(/,
       /export function loadProjectDataActionResultViaService\(/,
       /export function loadProjectDataActionResultViaServiceOrThrow\(/,
+      /export function loadProjectDataFailFastResultViaService\(/,
+      /export function loadProjectDataFailFastResultViaServiceOrThrow\(/,
       /export function restoreProjectSessionActionResultViaService\(/,
       /export function buildDefaultProjectDataViaServiceOrThrow\(/,
       /getServiceSlotMaybe\(App, 'projectIO'\)/,
@@ -284,6 +297,7 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /resetProjectToDefaultActionResult/,
       /resetProjectToDefault/,
       /loadProjectDataActionResultViaService/,
+      /loadProjectDataFailFastResultViaService/,
       /loadProjectFileInputViaService/,
       /nextProjectIoRestoreGeneration/,
       /isProjectIoRestoreGenerationCurrent/,
@@ -306,6 +320,7 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /Object\.assign\(ProjectIO, \{/,
       /export function exportCurrentProject\(App: AppContainer, meta\?: UnknownRecord \| null\): ProjectExportResultLike \| null/,
       /export function loadProjectData\(\s*App: AppContainer,\s*data: ProjectLoadInputLike,/s,
+      /export function loadProjectDataFailFast\(\s*App: AppContainer,\s*data: ProjectLoadInputLike,/s,
     ],
     'projectIoOwner'
   );
@@ -349,7 +364,7 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /handleProjectSaveLoadInputChange\(App, toast, evt\)|runProjectLoadAction\(App, \{ toast \}, asProjectFileLoadEvent\(evt\) \?\? evt/,
       /loadProjectFileInputViaService\(App, file\)|runProjectLoadAction\(App, \{ toast \}, file/,
       /exportProjectResultViaService\(App, \{ source: 'smoke' \}/,
-      /loadProjectDataActionResultViaServiceOrThrow\([\s\S]*meta:\s*\{ source: 'smoke' \}[\s\S]*queueIfBusy:\s*false/,
+      /loadProjectDataFailFastResultViaServiceOrThrow\([\s\S]*meta:\s*\{ source: 'smoke' \}[\s\S]*queueIfBusy:\s*false/,
     ],
     'projectIoBundle'
   );
@@ -366,6 +381,22 @@ test('project-io access, restore-generation, and callers stay on canonical servi
     'projectIoBundle'
   );
   assertLacksAll(assert, projectIoCallerBundle, [/services\.projectIO/], 'projectIoCallerBundle');
+  assertMatchesAll(
+    assert,
+    projectIoFailFastConsumerBundle,
+    [/loadProjectDataFailFastResultViaService\(/, /loadProjectDataFailFastResultViaServiceOrThrow\(/],
+    'projectIoFailFastConsumerBundle'
+  );
+  assertLacksAll(
+    assert,
+    projectIoFailFastConsumerBundle,
+    [
+      /loadProjectDataActionResultViaService\(/,
+      /loadProjectDataActionResultViaServiceOrThrow\(/,
+      /isProjectLoadAcceptedResult\(/,
+    ],
+    'projectIoFailFastConsumerBundle'
+  );
 });
 
 test('project load/save helpers preserve semantic load flags, UI ephemera, and browser download seams', () => {

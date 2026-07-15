@@ -1,21 +1,20 @@
-import type { ProjectLoadInputLike, ProjectLoadOpts } from '../../../types';
+import type { ProjectLoadFailFastOpts, ProjectLoadInputLike, ProjectLoadOpts } from '../../../types';
 
 import { readAutosavePayloadFromStorageResult } from './autosave_access.js';
 import {
-  buildProjectRestoreFailureResult,
   normalizeProjectRestoreActionResult,
   type ProjectRestoreActionResult,
   type ProjectRestoreFailureReason,
 } from './project_recovery_action_result.js';
-import { isProjectLoadAcceptedResult, type ProjectLoadFailureReason } from './project_load_action_result.js';
+import type { ProjectLoadFailureReason } from './project_load_action_result.js';
 import {
   buildAutosaveRestoreLoadOpts,
   buildProjectIoLoadFailureMessage,
 } from './project_io_access_shared.js';
-import { loadProjectDataActionResultViaService } from './project_io_access_load.js';
+import { loadProjectDataFailFastResultViaService } from './project_io_access_load.js';
 
 export type ProjectAutosavePayloadReadResult =
-  | { ok: true; data: ProjectLoadInputLike; opts: ProjectLoadOpts }
+  | { ok: true; data: ProjectLoadInputLike; opts: ProjectLoadFailFastOpts }
   | { ok: false; reason: 'missing-autosave' | 'invalid' };
 
 export type ProjectAutosavePayloadSuccessResult = Extract<ProjectAutosavePayloadReadResult, { ok: true }>;
@@ -45,7 +44,7 @@ export function restoreProjectAutosavePayloadActionResultViaService(
   loadDefaultReason: ProjectLoadFailureReason = 'not-installed',
   defaultErrorMessage = '[WardrobePro] Restore session load failed.'
 ): ProjectRestoreActionResult {
-  const loadResult = loadProjectDataActionResultViaService(
+  const loadResult = loadProjectDataFailFastResultViaService(
     App,
     autosavePayload.data,
     {
@@ -55,11 +54,6 @@ export function restoreProjectAutosavePayloadActionResultViaService(
     loadDefaultReason,
     defaultErrorMessage
   );
-  if (isProjectLoadAcceptedResult(loadResult)) {
-    return buildProjectRestoreFailureResult('error', {
-      message: '[WardrobePro] Autosave restore violated its fail-fast load contract.',
-    });
-  }
   return normalizeProjectRestoreActionResult(loadResult, defaultReason);
 }
 

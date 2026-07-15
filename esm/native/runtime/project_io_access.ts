@@ -15,6 +15,8 @@ import {
   exportProjectResultViaService,
   loadProjectDataActionResultViaService,
   loadProjectDataActionResultViaServiceOrThrow,
+  loadProjectDataFailFastResultViaService,
+  loadProjectDataFailFastResultViaServiceOrThrow,
   normalizeProjectExportResult,
 } from './project_io_access_load.js';
 import {
@@ -46,6 +48,8 @@ export {
   exportProjectResultViaService,
   loadProjectDataActionResultViaService,
   loadProjectDataActionResultViaServiceOrThrow,
+  loadProjectDataFailFastResultViaService,
+  loadProjectDataFailFastResultViaServiceOrThrow,
   readAutosaveProjectPayload,
   restoreProjectAutosavePayloadActionResultViaService,
   restoreProjectSessionActionResultViaService,

@@ -59,6 +59,16 @@ test('project ui feedback helpers map command results to stable user-facing mess
     message: 'העריכה שוחזרה בהצלחה!',
     type: 'success',
   });
+  assert.deepEqual(
+    getProjectRestoreToast({
+      ok: true,
+      warnings: [{ effect: 'build', message: 'final build failed' }],
+    }),
+    {
+      message: 'העריכה שוחזרה, אך חלק מפעולות ההשלמה לא הסתיימו',
+      type: 'warning',
+    }
+  );
   assert.deepEqual(getProjectRestoreToast({ ok: true, pending: true }), {
     message: 'Legacy pending restore results are not supported; recovery operations must settle terminally.',
     type: 'error',
@@ -119,6 +129,21 @@ test('project ui feedback helpers map command results to stable user-facing mess
     message: 'הארון אופס לברירת המחדל',
     type: 'success',
   });
+  assert.deepEqual(
+    getResetDefaultToast({
+      ok: true,
+      warnings: [
+        {
+          effect: 'post-effects-superseded',
+          message: 'post-commit effects were superseded',
+        },
+      ],
+    }),
+    {
+      message: 'הארון אופס, אך חלק מפעולות ההשלמה לא הסתיימו',
+      type: 'warning',
+    }
+  );
 });
 
 test('project ui feedback reporters emit exactly one toast and stay quiet for cancelled flows', () => {

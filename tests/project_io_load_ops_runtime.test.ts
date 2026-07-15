@@ -20,7 +20,7 @@ test('project io load ops settle restore callback results before restore toasts'
         },
       },
       projectIO: {
-        loadProjectData() {
+        loadProjectDataFailFast() {
           return { ok: false, reason: 'not installed' };
         },
       },
@@ -76,7 +76,7 @@ test('project io load ops use the shared autosave-restore seam for concrete rest
         },
       },
       projectIO: {
-        loadProjectData() {
+        loadProjectDataFailFast() {
           return { ok: false, reason: 'load', message: 'restore failure reason' };
         },
       },
@@ -123,4 +123,68 @@ test('project io load ops use the shared autosave-restore seam for concrete rest
     message: 'restore failure reason',
   });
   assert.deepEqual(toasts, [{ message: 'restore failure reason', type: 'error' }]);
+});
+
+test('project io restore settles committed success before non-fatal warning feedback', async () => {
+  const reports: string[] = [];
+  const App = {
+    services: {
+      storage: {
+        KEYS: { AUTOSAVE_LATEST: 'autosave-key' },
+        getString() {
+          return JSON.stringify({ settings: { width: 120 } });
+        },
+      },
+      projectIO: {
+        loadProjectDataFailFast() {
+          return {
+            ok: true,
+            restoreGen: 4,
+            warnings: [{ effect: 'build', message: 'final build failed' }],
+          };
+        },
+      },
+    },
+  } as any;
+
+  const loadOps = createProjectIoLoadOps({
+    App,
+    showToast() {
+      throw new Error('toast exploded');
+    },
+    openCustomConfirm(_title, _message, onConfirm) {
+      if (typeof onConfirm === 'function') onConfirm();
+    },
+    userAgent: 'node:test',
+    schemaId: 'schema:test',
+    schemaVersion: 1,
+    reportNonFatal(op, error) {
+      reports.push(`${op}:${(error as Error).message}`);
+    },
+    metaRestore(source, meta) {
+      return { source, ...(asRecord(meta) || {}) };
+    },
+    metaUiOnly(source, meta) {
+      return { source, ...(asRecord(meta) || {}) };
+    },
+    setProjectIoRestoring() {},
+    getHistorySystem() {
+      return null;
+    },
+    deepCloneJson(value) {
+      return JSON.parse(JSON.stringify(value));
+    },
+    getProjectNameFromState() {
+      return '';
+    },
+    asRecord,
+    log() {},
+  } as any);
+
+  assert.deepEqual(await loadOps.restoreLastSession(), {
+    ok: true,
+    restoreGen: 4,
+    warnings: [{ effect: 'build', message: 'final build failed' }],
+  });
+  assert.deepEqual(reports, ['restoreLastSession.feedback:toast exploded']);
 });

@@ -7,8 +7,7 @@ import { getCanvasPickingClickHandler } from '../runtime/canvas_picking_access.j
 import {
   exportProjectResultViaService,
   getProjectIoServiceMaybe,
-  isProjectLoadAcceptedResult,
-  loadProjectDataActionResultViaServiceOrThrow,
+  loadProjectDataFailFastResultViaServiceOrThrow,
 } from '../runtime/project_io_access.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { getCfg } from '../kernel/api.js';
@@ -280,7 +279,7 @@ export function runSmokeChecksScenario(App: SmokeAppRootLike): string[] {
 
   try {
     if (ex?.projectData) {
-      const result = loadProjectDataActionResultViaServiceOrThrow(
+      loadProjectDataFailFastResultViaServiceOrThrow(
         App,
         ex.projectData,
         {
@@ -293,7 +292,6 @@ export function runSmokeChecksScenario(App: SmokeAppRootLike): string[] {
         '[WardrobePro] Smoke project reload failed.',
         'project.reload'
       );
-      assertSmoke(!isProjectLoadAcceptedResult(result), 'smoke project reload must not be queued');
     }
   } catch (err) {
     assertSmoke(false, 'project reload threw', { error: errMsg(err) });

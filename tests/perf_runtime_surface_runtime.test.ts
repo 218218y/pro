@@ -289,4 +289,20 @@ test('perf runtime surface classifies non-error action results as marks and keep
       message: 'note only',
     },
   });
+
+  assert.deepEqual(
+    buildPerfEntryOptionsFromActionResult({
+      ok: true,
+      warnings: [
+        { effect: 'build', message: 'build failed' },
+        { effect: 'autosave-refresh', message: 'autosave failed' },
+      ],
+    }),
+    {
+      detail: {
+        warningCount: 2,
+        warningEffects: ['build', 'autosave-refresh'],
+      },
+    }
+  );
 });

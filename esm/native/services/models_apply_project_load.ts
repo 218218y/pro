@@ -2,10 +2,7 @@ import type { AppContainer, ModelsCommandResult, ProjectDataLike } from '../../.
 
 import { flushOrPushHistoryStateMaybe } from '../runtime/history_system_access.js';
 import { normalizeUnknownError } from '../runtime/error_normalization.js';
-import {
-  isProjectLoadAcceptedResult,
-  loadProjectDataActionResultViaService,
-} from '../runtime/project_io_access.js';
+import { loadProjectDataFailFastResultViaService } from '../runtime/project_io_access.js';
 
 import { _modelsReportNonFatal } from './models_registry.js';
 import { buildModelLoadFailureResult, normalizeModelLoadReason } from './models_apply_project_contracts.js';
@@ -30,7 +27,7 @@ export function loadProjectStructureResult(
   try {
     pushHistoryStateSafely(App, 'applyModel.pushBefore');
 
-    const loadResult = loadProjectDataActionResultViaService(
+    const loadResult = loadProjectDataFailFastResultViaService(
       App,
       projectStructure,
       {
@@ -42,9 +39,6 @@ export function loadProjectStructureResult(
       '[WardrobePro] Model apply project load failed.'
     );
 
-    if (isProjectLoadAcceptedResult(loadResult)) {
-      return buildModelLoadFailureResult('locked');
-    }
     if (loadResult.ok === false) {
       return buildModelLoadFailureResult(
         normalizeModelLoadReason(loadResult.reason),

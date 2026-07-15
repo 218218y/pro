@@ -13,6 +13,45 @@ test('project recovery action results normalize restore/reset reasons and saniti
     ok: true,
     restoreGen: 7,
   });
+  assert.deepEqual(
+    normalizeProjectRestoreActionResult({
+      ok: true,
+      restoreGen: 8,
+      warnings: [
+        { effect: 'build', message: 'final build failed' },
+        { effect: 'autosave-refresh', message: 'autosave refresh failed' },
+        { effect: 'unknown-effect', message: 'must be rejected' },
+      ],
+    }),
+    {
+      ok: true,
+      restoreGen: 8,
+      warnings: [
+        { effect: 'build', message: 'final build failed' },
+        { effect: 'autosave-refresh', message: 'autosave refresh failed' },
+      ],
+    }
+  );
+  assert.deepEqual(
+    normalizeProjectResetDefaultActionResult({
+      ok: true,
+      warnings: [
+        {
+          effect: 'post-effects-superseded',
+          message: 'post-commit effects were superseded',
+        },
+      ],
+    }),
+    {
+      ok: true,
+      warnings: [
+        {
+          effect: 'post-effects-superseded',
+          message: 'post-commit effects were superseded',
+        },
+      ],
+    }
+  );
   assert.deepEqual(normalizeProjectRestoreActionResult({ ok: false, reason: 'missing_autosave' }), {
     ok: false,
     reason: 'missing-autosave',

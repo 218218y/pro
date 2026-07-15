@@ -46,6 +46,12 @@ export function getProjectRestoreToast(
   if (!result) return { message: 'שחזור העריכה לא זמין כרגע', type: 'error' };
   const normalized = normalizeProjectRestoreActionResult(result, 'error');
   if (normalized.ok === true) {
+    if (normalized.warnings?.length) {
+      return {
+        message: 'העריכה שוחזרה, אך חלק מפעולות ההשלמה לא הסתיימו',
+        type: 'warning',
+      };
+    }
     return { message: 'העריכה שוחזרה בהצלחה!', type: 'success' };
   }
   const failure = normalized;

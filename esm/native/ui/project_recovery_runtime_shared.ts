@@ -3,6 +3,7 @@ import type { AppContainer } from '../../../types';
 import type { ProjectFeedbackLike } from './project_action_feedback.js';
 import { executeAsyncProjectActionResult } from './project_action_execution.js';
 import { beginProjectActionFamilyFlight } from './project_action_family_shared.js';
+import { __uiFeedbackReportNonFatal } from './feedback_shared.js';
 
 export type ProjectRecoveryRunFn<Result> = ((app: AppContainer) => Promise<Result>) | null | undefined;
 
@@ -11,9 +12,30 @@ type ProjectRecoveryActionLike = {
   ok: boolean;
   reason?: string;
   message?: string;
-  pending?: true;
   restoreGen?: number;
+  warnings?: unknown[];
 };
+
+function reportRecoveryFeedbackFailure(App: AppContainer, error: unknown): void {
+  try {
+    __uiFeedbackReportNonFatal(App, 'projectRecovery.feedback.report', error);
+  } catch {
+    // Diagnostics are non-fatal and must not replace the recovery result.
+  }
+}
+
+function reportRecoveryResultSafely<Feedback, Result>(
+  App: AppContainer,
+  feedback: Feedback,
+  result: Result,
+  report: (feedback: Feedback, result: Result) => unknown
+): void {
+  try {
+    report(feedback, result);
+  } catch (error) {
+    reportRecoveryFeedbackFailure(App, error);
+  }
+}
 
 export function runProjectRecoveryActionResult<Result extends ProjectRecoveryActionLike>(args: {
   app: AppContainer;
@@ -39,7 +61,7 @@ export function runProjectRecoveryActionResult<Result extends ProjectRecoveryAct
   } = args;
   if (typeof run !== 'function') {
     const result = createNotInstalled();
-    report(feedback, result);
+    reportRecoveryResultSafely(app, feedback, result, report);
     return Promise.resolve(result);
   }
 
@@ -54,12 +76,13 @@ export function runProjectRecoveryActionResult<Result extends ProjectRecoveryAct
         report,
         buildError,
         fallbackMessage,
+        onReportError: error => reportRecoveryFeedbackFailure(app, error),
       }),
   });
   if (flight.status === 'reused') return flight.promise;
   if (flight.status === 'busy') {
     const result = createBusy();
-    report(feedback, result);
+    reportRecoveryResultSafely(app, feedback, result, report);
     return Promise.resolve(result);
   }
   return flight.promise;

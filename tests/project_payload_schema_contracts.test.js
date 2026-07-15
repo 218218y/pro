@@ -8,6 +8,7 @@ const mapsTypes = readSource('../types/maps.ts', import.meta.url);
 const projectTypes = readSource('../types/project.ts', import.meta.url);
 const buildTypes = readBuildTypesBundle(import.meta.url);
 const typesIndex = readSource('../types/index.ts', import.meta.url);
+const projectIoOperationTypes = readSource('../types/project_io_operations.ts', import.meta.url);
 const configScalarTypes = readSource('../types/config_scalar.ts', import.meta.url);
 const loadHelpers = readSource('../esm/native/io/project_io_load_helpers.ts', import.meta.url);
 const projectSchema = bundleSources(
@@ -102,7 +103,12 @@ test('project payload/schema contracts stay typed across types, schema normaliza
     ],
     'projectTypes'
   );
-  assertMatchesAll(assert, typesIndex, [/export \* from '\.\/project';/], 'typesIndex');
+  assertMatchesAll(
+    assert,
+    typesIndex,
+    [/export \* from '\.\/project';/, /export \* from '\.\/project_io_operations';/],
+    'typesIndex'
+  );
 
   assertMatchesAll(
     assert,
@@ -119,9 +125,21 @@ test('project payload/schema contracts stay typed across types, schema normaliza
       /export type ProjectLoadInputLike = ProjectDataLike \| UnknownRecord \| object;/,
       /export interface ProjectIoServiceLike extends UnknownRecord/,
       /exportCurrentProject\?: \(meta\?: UnknownRecord\) => ProjectExportResultLike \| null \| undefined;/,
-      /loadProjectData\?: \(\s*data: ProjectLoadInputLike,/s,
+      /loadProjectData\?: ProjectLoadActionFn;/,
+      /loadProjectDataFailFast\?: ProjectLoadFailFastFn;/,
     ],
     'buildTypes'
+  );
+  assertMatchesAll(
+    assert,
+    projectIoOperationTypes,
+    [
+      /export type ProjectLoadActionFn = \(/,
+      /export type ProjectLoadFailFastFn = \(/,
+      /export type ProjectRecoverySuccessResult = \{[\s\S]*warnings\?: ProjectLoadWarning\[\]/,
+      /export type ProjectRestoreActionResult =/,
+    ],
+    'projectIoOperationTypes'
   );
   assertMatchesAll(
     assert,

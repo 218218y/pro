@@ -2,6 +2,7 @@ import type {
   ProjectIoLoadResultLike,
   ProjectIoRuntimeLike,
   ProjectIoServiceLike,
+  ProjectLoadFailFastOpts,
   ProjectLoadOpts,
 } from '../../../types';
 
@@ -144,7 +145,7 @@ export function buildProjectIoLoadFailureMessage(
   return defaultErrorMessage;
 }
 
-export function buildAutosaveRestoreLoadOpts(opts?: ProjectLoadOpts): ProjectLoadOpts {
+export function buildAutosaveRestoreLoadOpts(opts?: ProjectLoadOpts): ProjectLoadFailFastOpts {
   const nextMeta = opts?.meta && typeof opts.meta === 'object' ? { ...opts.meta } : {};
   if (typeof nextMeta.source !== 'string' || !nextMeta.source.trim()) nextMeta.source = 'restore.local';
   return {

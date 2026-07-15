@@ -256,6 +256,8 @@ function createProjectIoApp(overrides?: {
   });
 
   (App.services.projectIO as Record<string, unknown>).loadProjectData = orchestrator.loadProjectData;
+  (App.services.projectIO as Record<string, unknown>).loadProjectDataFailFast =
+    orchestrator.loadProjectDataFailFast;
   (App.services.projectIO as Record<string, unknown>).restoreLastSession = orchestrator.restoreLastSession;
 
   return {

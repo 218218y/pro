@@ -7,10 +7,7 @@ import { getUi, getRuntime } from './store_access.js';
 import { captureSavedNotesViaService } from '../runtime/notes_access.js';
 import { getHistorySystem, setHistorySystem } from './history_access.js';
 import { flushOrPushHistoryStateMaybe, scheduleHistoryPushMaybe } from '../runtime/history_system_access.js';
-import {
-  isProjectLoadAcceptedResult,
-  loadProjectDataActionResultViaServiceOrThrow,
-} from '../runtime/project_io_access.js';
+import { loadProjectDataFailFastResultViaServiceOrThrow } from '../runtime/project_io_access.js';
 import {
   ensureProjectCaptureService,
   getProjectCaptureServiceMaybe,
@@ -149,7 +146,7 @@ export function installKernel(App: AppContainer | null | undefined): void {
     captureSavedNotes: () => captureSavedNotesViaService(App),
     getCurrentUiSnapshot: () => asRecord(getUi(App), {}),
     loadProjectSnapshot: (record: UnknownRecord) => {
-      const result = loadProjectDataActionResultViaServiceOrThrow(
+      loadProjectDataFailFastResultViaServiceOrThrow(
         App,
         record,
         {
@@ -161,9 +158,6 @@ export function installKernel(App: AppContainer | null | undefined): void {
         '[WardrobePro] Undo/Redo project load failed.',
         'history.undoRedo loadProjectData'
       );
-      if (isProjectLoadAcceptedResult(result)) {
-        throw new Error('[WardrobePro] Undo/Redo project load cannot be queued.');
-      }
     },
     flushPendingPushViaAccess: opts => flushOrPushHistoryStateMaybe(App, opts),
     schedulePushViaAccess: meta => scheduleHistoryPushMaybe(App, meta),

@@ -29,7 +29,7 @@ test('project session commands resolve final restore/reset results after confirm
         buildDefaultProjectData() {
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
         },
-        loadProjectData(data: unknown, opts?: Record<string, unknown>) {
+        loadProjectDataFailFast(data: unknown, opts?: Record<string, unknown>) {
           loadCalls.push({ data, opts });
           return { ok: true, restoreGen: 7 };
         },
@@ -70,7 +70,7 @@ test('project session commands report cancel, invalid autosave, and missing depe
         buildDefaultProjectData() {
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
         },
-        loadProjectData() {
+        loadProjectDataFailFast() {
           cancelledLoadCalls += 1;
           return { ok: true };
         },
@@ -136,7 +136,7 @@ test('project session commands preserve real load/reset failures instead of flat
         },
       },
       projectIO: {
-        loadProjectData() {
+        loadProjectDataFailFast() {
           throw new Error('restore load exploded');
         },
       },
@@ -169,7 +169,7 @@ test('project session commands preserve confirm-surface failures instead of trea
         buildDefaultProjectData() {
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
         },
-        loadProjectData() {
+        loadProjectDataFailFast() {
           loadCalls += 1;
           return { ok: true };
         },
@@ -202,7 +202,7 @@ test('project session commands normalize reset-internal reasons to canonical rec
         buildDefaultProjectData() {
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
         },
-        loadProjectData() {
+        loadProjectDataFailFast() {
           return { ok: false, reason: 'reset', message: 'default load exploded' };
         },
       },
@@ -239,7 +239,7 @@ test('project session commands single-flight duplicate restore requests and bloc
         buildDefaultProjectData() {
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
         },
-        loadProjectData() {
+        loadProjectDataFailFast() {
           loadCalls += 1;
           return { ok: true, restoreGen: 11 };
         },
@@ -287,7 +287,7 @@ test('project session commands single-flight duplicate reset requests and report
         buildDefaultProjectData() {
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
         },
-        loadProjectData() {
+        loadProjectDataFailFast() {
           loadCalls += 1;
           return { ok: true, restoreGen: 12 };
         },
@@ -325,7 +325,7 @@ test('project reset clears the active cloud sketch only after a successful confi
         buildDefaultProjectData() {
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
         },
-        loadProjectData() {
+        loadProjectDataFailFast() {
           return { ok: true, restoreGen: 13 };
         },
       },
@@ -385,7 +385,7 @@ test('project reset does not clear cloud sketch when reset is cancelled or local
         buildDefaultProjectData() {
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
         },
-        loadProjectData() {
+        loadProjectDataFailFast() {
           return { ok: false, reason: 'invalid' };
         },
       },
@@ -420,7 +420,7 @@ test('project reset and autosave restore fail fast while another project load ow
         buildDefaultProjectData() {
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
         },
-        loadProjectData(_data: unknown, opts?: Record<string, unknown>) {
+        loadProjectDataFailFast(_data: unknown, opts?: Record<string, unknown>) {
           loadOptions.push(opts);
           if (opts?.queueIfBusy !== false) queuedMutations += 1;
           return { ok: false, reason: 'busy' };
@@ -460,7 +460,7 @@ test('project reset reports a partial failure when the local reset succeeds but 
         buildDefaultProjectData() {
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
         },
-        loadProjectData() {
+        loadProjectDataFailFast() {
           return { ok: true };
         },
       },

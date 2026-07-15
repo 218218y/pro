@@ -1,4 +1,4 @@
-import type { AppContainer, ProjectDataLike, ProjectLoadOpts } from '../../../types';
+import type { AppContainer, ProjectDataLike, ProjectLoadFailFastOpts, ProjectLoadOpts } from '../../../types';
 
 import { buildDefaultProjectDataViaServiceOrThrow } from '../runtime/project_io_access.js';
 import {
@@ -39,9 +39,9 @@ export function buildResetDefaultProjectData(App: AppContainer): ProjectDataLike
 }
 
 export type ResetDefaultProjectPayloadReadResult =
-  { ok: true; data: ProjectDataLike; opts: ProjectLoadOpts } | ProjectResetDefaultFailureResult;
+  { ok: true; data: ProjectDataLike; opts: ProjectLoadFailFastOpts } | ProjectResetDefaultFailureResult;
 
-export function buildResetDefaultProjectLoadOpts(opts?: ProjectLoadOpts | null): ProjectLoadOpts {
+export function buildResetDefaultProjectLoadOpts(opts?: ProjectLoadOpts | null): ProjectLoadFailFastOpts {
   const nextMeta = opts?.meta && typeof opts.meta === 'object' ? { ...opts.meta } : {};
   if (typeof nextMeta.source !== 'string' || !nextMeta.source.trim())
     nextMeta.source = 'react:header:resetDefault';

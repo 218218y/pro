@@ -102,12 +102,21 @@ export function buildPerfEntryOptionsFromActionResult(result: unknown): PerfEntr
   const outcome = typeof rec.outcome === 'string' && rec.outcome.trim() ? rec.outcome.trim() : undefined;
   const perfStatus = normalizePerfResultStatus(rec.perfStatus);
   const perfError = normalizeErrorMessage(rec.perfError);
+  const warningEffects = Array.isArray(rec.warnings)
+    ? rec.warnings
+        .map(warning => asRecord<Record<string, unknown>>(warning)?.effect)
+        .filter((effect): effect is string => typeof effect === 'string' && !!effect.trim())
+    : [];
 
   const detail: Record<string, unknown> = {};
   if (reason) detail.reason = reason;
   if (rec.pending === true) detail.pending = true;
   if (outcome) detail.outcome = outcome;
   if (message) detail.message = message;
+  if (warningEffects.length) {
+    detail.warningCount = warningEffects.length;
+    detail.warningEffects = warningEffects;
+  }
 
   if (perfStatus) {
     return {

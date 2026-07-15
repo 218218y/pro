@@ -9,8 +9,21 @@ export type ProjectActionExecutionArgsBase<Feedback, Result> = {
   report: ProjectActionReporter<Feedback, Result>;
   buildError: ProjectActionErrorBuilder<Result>;
   fallbackMessage: string;
+  onReportError?: ((error: unknown) => void) | null;
   finally?: (() => void) | null;
 };
+
+export function reportProjectActionObserverError(
+  error: unknown,
+  onReportError?: ((error: unknown) => void) | null
+): void {
+  if (typeof onReportError !== 'function') return;
+  try {
+    onReportError(error);
+  } catch {
+    // Observer diagnostics must not replace the business result either.
+  }
+}
 
 export function runProjectActionFinally(handler?: (() => void) | null): void {
   if (typeof handler !== 'function') return;

@@ -1,33 +1,27 @@
-import type { ProjectIoLoadResultLike } from '../../../types';
+import type {
+  ProjectIoLoadResultLike,
+  ProjectRecoverySuccessResult,
+  ProjectResetDefaultActionResult,
+  ProjectResetDefaultFailureReason,
+  ProjectResetDefaultFailureResult,
+  ProjectRestoreActionResult,
+  ProjectRestoreFailureReason,
+  ProjectRestoreFailureResult,
+} from '../../../types';
+
+export type {
+  ProjectRecoverySuccessResult,
+  ProjectResetDefaultActionResult,
+  ProjectResetDefaultFailureReason,
+  ProjectResetDefaultFailureResult,
+  ProjectRestoreActionResult,
+  ProjectRestoreFailureReason,
+  ProjectRestoreFailureResult,
+} from '../../../types';
 
 import { normalizeUnknownError } from './error_normalization.js';
 import { asRecord } from './record.js';
-
-export type ProjectRecoverySuccessResult = {
-  ok: true;
-  restoreGen?: number | undefined;
-};
-
-export type ProjectRestoreFailureReason =
-  'busy' | 'cancelled' | 'missing-autosave' | 'invalid' | 'not-installed' | 'superseded' | 'error';
-
-export type ProjectResetDefaultFailureReason =
-  'busy' | 'cancelled' | 'invalid' | 'not-installed' | 'superseded' | 'error';
-
-export type ProjectRestoreFailureResult = {
-  ok: false;
-  reason: ProjectRestoreFailureReason;
-  message?: string;
-};
-
-export type ProjectResetDefaultFailureResult = {
-  ok: false;
-  reason: ProjectResetDefaultFailureReason;
-  message?: string;
-};
-
-export type ProjectRestoreActionResult = ProjectRecoverySuccessResult | ProjectRestoreFailureResult;
-export type ProjectResetDefaultActionResult = ProjectRecoverySuccessResult | ProjectResetDefaultFailureResult;
+import { buildProjectLoadSuccessResult } from './project_load_action_result.js';
 
 type ProjectRecoveryResultRecord = {
   ok?: unknown;
@@ -35,24 +29,18 @@ type ProjectRecoveryResultRecord = {
   restoreGen?: unknown;
   reason?: unknown;
   message?: unknown;
+  warnings?: unknown;
 };
 
 function normalizeRecoveryMessage(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 }
 
-function normalizeRecoveryRestoreGen(value: unknown): number | undefined {
-  const restoreGen = Number(value);
-  return Number.isFinite(restoreGen) && restoreGen > 0 ? Math.floor(restoreGen) : undefined;
-}
-
 export function buildProjectRecoverySuccessResult(options?: {
   restoreGen?: unknown;
+  warnings?: unknown;
 }): ProjectRecoverySuccessResult {
-  const restoreGen = normalizeRecoveryRestoreGen(options?.restoreGen);
-  const result: ProjectRecoverySuccessResult = { ok: true };
-  if (typeof restoreGen === 'number') result.restoreGen = restoreGen;
-  return result;
+  return buildProjectLoadSuccessResult(options);
 }
 
 function buildUnsupportedPendingRestoreFailure(): ProjectRestoreFailureResult {

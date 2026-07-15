@@ -44,7 +44,15 @@ export function getResetDefaultToast(
 ): ProjectActionToastLike | null {
   if (!result) return { message: 'האיפוס נכשל', type: 'error' };
   const normalized = normalizeProjectResetDefaultActionResult(result, 'error');
-  if (normalized.ok === true) return { message: 'הארון אופס לברירת המחדל', type: 'success' };
+  if (normalized.ok === true) {
+    if (normalized.warnings?.length) {
+      return {
+        message: 'הארון אופס, אך חלק מפעולות ההשלמה לא הסתיימו',
+        type: 'warning',
+      };
+    }
+    return { message: 'הארון אופס לברירת המחדל', type: 'success' };
+  }
   const failure = normalized;
   const reason = readActionReason(failure.reason);
   const message = readActionMessage(failure.message);

@@ -1,5 +1,6 @@
 import type {
   AutosaveSuspensionLike,
+  ProjectLoadFailFastOpts,
   ProjectLoadInputLike,
   ProjectLoadOpts,
   ProjectLoadTransactionHandleLike,
@@ -75,7 +76,15 @@ function assertProjectLoadConfigReplaceOwnedBranches(cfg: UnknownRecord): Unknow
   return cfg;
 }
 
-export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
+type ProjectDataLoader = {
+  (
+    input: ProjectLoadInputLike,
+    options: ProjectLoadFailFastOpts & { queueIfBusy: false }
+  ): ProjectLoadTerminalResult;
+  (input: ProjectLoadInputLike, options?: ProjectLoadOpts): ProjectLoadActionResult;
+};
+
+export function createProjectDataLoader(deps: ProjectIoOwnerDeps): ProjectDataLoader {
   const { App, showToast, reportNonFatal, metaRestore, deepCloneJson } = deps;
   const transaction = createProjectLoadTransactionContext(deps);
   const coordinator = getProjectLoadCoordinator(App, {
@@ -377,10 +386,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
     }
   }
 
-  return function loadProjectData(
-    input: ProjectLoadInputLike,
-    options?: ProjectLoadOpts
-  ): ProjectLoadActionResult {
+  function loadProjectData(input: ProjectLoadInputLike, options?: ProjectLoadOpts): ProjectLoadActionResult {
     const requestedAt = Date.now();
     const coordinatorLease = coordinator.begin();
     try {
@@ -420,5 +426,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
     } finally {
       coordinator.finish(coordinatorLease);
     }
-  };
+  }
+
+  return loadProjectData as ProjectDataLoader;
 }

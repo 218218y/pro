@@ -102,6 +102,8 @@ export interface ProjectDataLike extends UnknownRecord {
   [k: string]: unknown;
 }
 
+export type ProjectLoadInputLike = ProjectDataLike | UnknownRecord | object;
+
 export interface ProjectLoadOpts extends UnknownRecord {
   silent?: boolean;
   toast?: boolean;

@@ -9,6 +9,7 @@
 import type {
   AppContainer,
   ProjectExportResultLike,
+  ProjectLoadFailFastOpts,
   ProjectIoServiceLike,
   ProjectLoadInputLike,
   ProjectLoadOpts,
@@ -101,6 +102,7 @@ export function installProjectIo(App: AppContainer, options?: UnknownRecord): In
     exportCurrentProject: runtime.exportCurrentProject,
     handleFileLoad: runtime.handleFileLoad,
     loadProjectData: runtime.loadProjectData,
+    loadProjectDataFailFast: runtime.loadProjectDataFailFast,
     buildDefaultProjectData: runtime.buildDefaultProjectData,
     restoreLastSession: runtime.restoreLastSession,
   });
@@ -138,6 +140,14 @@ export function handleFileLoad(App: AppContainer, eventOrFile: unknown) {
  */
 export function loadProjectData(App: AppContainer, data: ProjectLoadInputLike, opts?: ProjectLoadOpts) {
   return ensureProjectIoInstalled(App).loadProjectData(data, opts);
+}
+
+export function loadProjectDataFailFast(
+  App: AppContainer,
+  data: ProjectLoadInputLike,
+  opts?: ProjectLoadFailFastOpts
+) {
+  return ensureProjectIoInstalled(App).loadProjectDataFailFast(data, opts);
 }
 
 export function restoreLastSession(App: AppContainer) {

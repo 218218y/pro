@@ -1,6 +1,7 @@
 import type {
   ProjectDataLike,
   ProjectExportResultLike,
+  ProjectLoadFailFastOpts,
   ProjectLoadInputLike,
   ProjectLoadOpts,
   UnknownRecord,
@@ -12,6 +13,7 @@ import {
   isProjectLoadAcceptedResult,
   type ProjectLoadActionResult,
   type ProjectLoadFailureReason,
+  type ProjectLoadTerminalResult,
 } from './project_load_action_result.js';
 import { asRecord } from './record.js';
 import {
@@ -22,6 +24,7 @@ import {
 } from './project_io_access_shared.js';
 
 type ProjectIoLoadDataFn = (data: ProjectLoadInputLike, opts?: ProjectLoadOpts) => unknown;
+type ProjectIoFailFastLoadDataFn = (data: ProjectLoadInputLike, opts?: ProjectLoadFailFastOpts) => unknown;
 type ProjectIoBuildDefaultDataFn = () => ProjectDataLike;
 
 export type ProjectExportAccessResult =
@@ -58,6 +61,11 @@ function getProjectIoLoadProjectDataFn(App: unknown): ProjectIoLoadDataFn | null
   return svc && typeof svc.loadProjectData === 'function' ? svc.loadProjectData : null;
 }
 
+function getProjectIoFailFastLoadProjectDataFn(App: unknown): ProjectIoFailFastLoadDataFn | null {
+  const svc = getProjectIoServiceMaybe(App);
+  return svc && typeof svc.loadProjectDataFailFast === 'function' ? svc.loadProjectDataFailFast : null;
+}
+
 export function loadProjectDataActionResultViaService(
   App: unknown,
   data: ProjectLoadInputLike,
@@ -88,6 +96,49 @@ export function loadProjectDataActionResultViaServiceOrThrow(
 ): ProjectLoadActionResult {
   const result = loadProjectDataActionResultViaService(App, data, opts, defaultReason, defaultErrorMessage);
   if (isProjectLoadAcceptedResult(result) || result.ok) return result;
+  throw new Error(buildProjectIoLoadFailureMessage(result, label, defaultErrorMessage));
+}
+
+export function loadProjectDataFailFastResultViaService(
+  App: unknown,
+  data: ProjectLoadInputLike,
+  opts?: ProjectLoadFailFastOpts,
+  defaultReason: ProjectLoadFailureReason = 'not-installed',
+  defaultErrorMessage = '[WardrobePro] Project load failed.'
+): ProjectLoadTerminalResult {
+  const loadProjectDataFailFast = getProjectIoFailFastLoadProjectDataFn(App);
+  if (typeof loadProjectDataFailFast !== 'function') {
+    return { ok: false, reason: 'not-installed' };
+  }
+
+  try {
+    const result = normalizeProjectLoadActionResultViaProjectIo(
+      loadProjectDataFailFast(data, { ...opts, queueIfBusy: false }),
+      defaultReason
+    );
+    if (isProjectLoadAcceptedResult(result)) {
+      return buildProjectLoadActionErrorResult(
+        new Error('[WardrobePro] Fail-fast Project Load service returned an accepted operation.'),
+        defaultErrorMessage
+      );
+    }
+    return result;
+  } catch (error) {
+    reportProjectIoAccessNonFatal(App, 'projectIO.loadProjectDataFailFast.ownerRejected', error);
+    return buildProjectLoadActionErrorResult(error, defaultErrorMessage);
+  }
+}
+
+export function loadProjectDataFailFastResultViaServiceOrThrow(
+  App: unknown,
+  data: ProjectLoadInputLike,
+  opts?: ProjectLoadFailFastOpts,
+  defaultReason: ProjectLoadFailureReason = 'not-installed',
+  defaultErrorMessage = '[WardrobePro] Project load failed.',
+  label = 'projectIO.loadProjectDataFailFast'
+): ProjectLoadTerminalResult {
+  const result = loadProjectDataFailFastResultViaService(App, data, opts, defaultReason, defaultErrorMessage);
+  if (result.ok) return result;
   throw new Error(buildProjectIoLoadFailureMessage(result, label, defaultErrorMessage));
 }
 

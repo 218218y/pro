@@ -43,7 +43,7 @@ test('model apply only reports success when project io confirms a successful loa
         },
       },
       projectIO: {
-        loadProjectData() {
+        loadProjectDataFailFast() {
           calls.push('fail:load');
           return { ok: false, reason: 'error' };
         },
@@ -64,7 +64,7 @@ test('model apply only reports success when project io confirms a successful loa
         },
       },
       projectIO: {
-        loadProjectData() {
+        loadProjectDataFailFast() {
           calls.push('ok:load');
           return { ok: true, restoreGen: 7 };
         },

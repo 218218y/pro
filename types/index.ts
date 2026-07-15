@@ -7,6 +7,7 @@
 
 export * from './common';
 export * from './async_operation';
+export * from './project_io_operations';
 export * from './kernel';
 export * from './domain';
 export * from './config_scalar';

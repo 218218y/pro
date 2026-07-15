@@ -37,6 +37,11 @@ function loadModule() {
           report(feedback, result);
           return result;
         },
+        reportProjectActionObserverError: (error, onReportError) => {
+          try {
+            onReportError?.(error);
+          } catch {}
+        },
       };
     }
     if (specifier === './project_action_execution_sync.js') {
@@ -64,17 +69,20 @@ function loadModule() {
       const shared = localRequire('./project_action_execution_shared.js');
       return {
         executeAsyncProjectActionResult: async args => {
-          const { feedback, run, report, buildError, fallbackMessage } = args;
+          const { feedback, run, report, buildError, fallbackMessage, onReportError } = args;
           try {
-            return shared.reportProjectActionResult(feedback, await run(), report);
-          } catch (error) {
-            return shared.buildProjectActionErrorResultFromThrown(
-              feedback,
-              error,
-              report,
-              buildError,
-              fallbackMessage
-            );
+            let result;
+            try {
+              result = await run();
+            } catch (error) {
+              result = buildError(error, fallbackMessage);
+            }
+            try {
+              report(feedback, result);
+            } catch (error) {
+              shared.reportProjectActionObserverError(error, onReportError);
+            }
+            return result;
           } finally {
             shared.runProjectActionFinally(args.finally);
           }
@@ -166,4 +174,19 @@ test('[project-action-execution] async execution reports awaited results, preser
 
   assert.deepEqual(failed, { ok: false, reason: 'error', message: 'async exploded' });
   assert.deepEqual(seen[1], ['error', { ok: false, reason: 'error', message: 'async exploded' }]);
+
+  const observerErrors = [];
+  const committed = await mod.executeAsyncProjectActionResult({
+    feedback: null,
+    run: async () => ({ ok: true, restoreGen: 9 }),
+    report: () => {
+      throw new Error('toast exploded');
+    },
+    onReportError: error => observerErrors.push(error.message),
+    buildError: () => ({ ok: false, reason: 'error' }),
+    fallbackMessage: 'fallback',
+  });
+
+  assert.deepEqual(committed, { ok: true, restoreGen: 9 });
+  assert.deepEqual(observerErrors, ['toast exploded']);
 });

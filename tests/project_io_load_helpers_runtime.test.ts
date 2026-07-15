@@ -8,6 +8,8 @@ import {
   isProjectIoRestoreGenerationCurrent,
   loadProjectDataActionResultViaService,
   loadProjectDataActionResultViaServiceOrThrow,
+  loadProjectDataFailFastResultViaService,
+  loadProjectDataFailFastResultViaServiceOrThrow,
   exportProjectResultViaService,
 } from '../esm/native/runtime/project_io_access.ts';
 import { createProjectLoadAcceptedResult } from '../esm/native/runtime/project_load_action_result.ts';
@@ -177,5 +179,46 @@ test('project io access runtime: strict action seam throws on terminal failures 
         'history.load'
       ),
     /loader exploded/
+  );
+});
+
+test('project io access runtime: fail-fast seam is terminal and never falls back to the queue-capable owner', () => {
+  let generalCalls = 0;
+  const seenOptions: Array<Record<string, unknown> | undefined> = [];
+  const App: Record<string, unknown> = {
+    services: {
+      projectIO: {
+        loadProjectData() {
+          generalCalls += 1;
+          return createProjectLoadAcceptedResult(Promise.resolve({ ok: true }));
+        },
+        loadProjectDataFailFast(_data: unknown, opts?: Record<string, unknown>) {
+          seenOptions.push(opts);
+          return { ok: true, restoreGen: 5 };
+        },
+      },
+    },
+  };
+
+  assert.deepEqual(
+    loadProjectDataFailFastResultViaService(App, { settings: {} } as any, {
+      meta: { source: 'terminal-test' },
+    }),
+    { ok: true, restoreGen: 5 }
+  );
+  assert.equal(generalCalls, 0);
+  assert.equal(seenOptions[0]?.queueIfBusy, false);
+
+  assert.throws(
+    () =>
+      loadProjectDataFailFastResultViaServiceOrThrow(
+        { services: {} },
+        { settings: {} } as any,
+        undefined,
+        'not-installed',
+        'fallback message',
+        'history.failFast'
+      ),
+    /history\.failFast is not installed/i
   );
 });
