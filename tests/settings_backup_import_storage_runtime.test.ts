@@ -13,7 +13,7 @@ test('importSystemSettings drops stale preset collection ids when live preset re
   const env = installFakeFilePrimitives();
   try {
     const storageWrites: Record<string, unknown> = {};
-    const { app } = createImportApp();
+    const { app } = await createImportApp();
     app.services.models.getAll = () => [
       { id: 'preset-a', name: 'Preset A', isPreset: true },
       { id: 'preset-b', name: 'Preset B', isPreset: true },
@@ -23,7 +23,7 @@ test('importSystemSettings drops stale preset collection ids when live preset re
       storageWrites[key] = value;
       return undefined;
     };
-    installCollectionsForImportApp(app);
+    await installCollectionsForImportApp(app);
     storageWrites.length = 0;
     const file = new env.FakeFile(
       [
@@ -115,7 +115,7 @@ test('importSystemSettings skips storage and order writes when imported collecti
         },
       },
     };
-    installCollectionsForImportApp(app);
+    await installCollectionsForImportApp(app);
     storageWrites.length = 0;
     const file = new env.FakeFile(
       [

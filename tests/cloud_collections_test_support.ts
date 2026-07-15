@@ -9,7 +9,8 @@ type TestStorage = {
 
 export function installCloudCollectionsForTestApp(app: {
   services: { storage: TestStorage; [key: string]: unknown };
-}): void {
+  deps?: Record<string, any>;
+}): Promise<void> {
   const storage = app.services.storage;
   const committed = new Map<string, unknown>();
   const committedStrings = new Map<string, string>();
@@ -37,5 +38,28 @@ export function installCloudCollectionsForTestApp(app: {
     };
   }
 
-  installCloudCollectionsService(app as never);
+  const tails = new Map<string, Promise<void>>();
+  const browser = (app.deps ||= {}).browser || {};
+  const navigatorValue = browser.navigator || { userAgent: 'node:test' };
+  if (typeof navigatorValue.userAgent !== 'string') navigatorValue.userAgent = 'node:test';
+  if (!navigatorValue.locks || typeof navigatorValue.locks.request !== 'function') {
+    navigatorValue.locks = {
+      request<T>(name: string, operation: () => Promise<T> | T): Promise<T> {
+        const previous = tails.get(name) || Promise.resolve();
+        const result = previous.then(operation, operation);
+        tails.set(
+          name,
+          result.then(
+            () => undefined,
+            () => undefined
+          )
+        );
+        return result;
+      },
+    };
+  }
+  browser.navigator = navigatorValue;
+  app.deps.browser = browser;
+
+  return installCloudCollectionsService(app as never).then(() => undefined);
 }

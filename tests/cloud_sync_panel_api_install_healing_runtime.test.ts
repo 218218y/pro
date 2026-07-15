@@ -560,6 +560,11 @@ test('cloud sync panel api mutation refs fall back to typed not-installed result
 
   assert.deepEqual(await api.goPublic?.(), { ok: false, mode: 'public', reason: 'not-installed' });
   assert.deepEqual(await api.goPrivate?.(), { ok: false, mode: 'private', reason: 'not-installed' });
+  assert.deepEqual(await api.resolveConflict?.('keep-local', 'conflict-1'), {
+    ok: false,
+    resolution: 'keep-local',
+    reason: 'missing-conflict',
+  });
   assert.deepEqual(await api.syncSketchNow?.(), { ok: false, reason: 'not-installed' });
   assert.deepEqual(await api.setFloatingSketchSyncEnabled?.(true), { ok: false, reason: 'not-installed' });
   assert.deepEqual(await api.toggleFloatingSketchSyncEnabled?.(), { ok: false, reason: 'not-installed' });
@@ -568,4 +573,17 @@ test('cloud sync panel api mutation refs fall back to typed not-installed result
   assert.deepEqual(await api.setSite2TabsGateOpen?.(true), { ok: false, reason: 'not-installed' });
   assert.deepEqual(await api.toggleSite2TabsGateOpen?.(), { ok: false, reason: 'not-installed' });
   assert.deepEqual(await api.copyShareLink?.(), { ok: false, reason: 'unavailable' });
+});
+
+test('cloud sync panel api stable surface forwards the expected conflict identity', async () => {
+  const calls: unknown[][] = [];
+  const api = installCloudSyncPanelApiSurface({}, {
+    resolveConflict: async (resolution: string, expectedConflictId?: string) => {
+      calls.push([resolution, expectedConflictId]);
+      return { ok: false, resolution, reason: 'missing-conflict' };
+    },
+  } as any);
+
+  await api.resolveConflict?.('use-remote', 'conflict-current');
+  assert.deepEqual(calls, [['use-remote', 'conflict-current']]);
 });

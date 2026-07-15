@@ -1,5 +1,6 @@
 import type { ProjectIoLoadResultLike } from '../../../types';
 import {
+  isProjectLoadAcceptedResult,
   normalizeProjectLoadActionResult,
   normalizeProjectRestoreActionResult,
   type ProjectLoadActionResult,
@@ -17,8 +18,9 @@ export function getProjectLoadToast(
 ): ProjectActionToastLike | null {
   if (!result) return { message: 'טעינת קובץ נכשלה', type: 'error' };
   const normalized = normalizeProjectLoadActionResult(result, 'error');
+  if (isProjectLoadAcceptedResult(normalized)) return null;
   if (normalized.ok === true) {
-    return normalized.pending === true ? null : { message: 'הפרויקט נטען בהצלחה!', type: 'success' };
+    return { message: 'הפרויקט נטען בהצלחה!', type: 'success' };
   }
   const failure = normalized;
   const reason = readActionReason(failure.reason);

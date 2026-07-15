@@ -57,6 +57,8 @@ function readCloudSyncPanelSnapshot(api: CloudSyncServiceLike | undefined): Clou
           ...(snapshot.conflict
             ? {
                 conflict: {
+                  conflictId: String(snapshot.conflict.conflictId || ''),
+                  generation: Number(snapshot.conflict.generation) || 0,
                   room: String(snapshot.conflict.room || ''),
                   keys: Array.isArray(snapshot.conflict.keys)
                     ? snapshot.conflict.keys.map(key => String(key))
@@ -216,7 +218,7 @@ export function useCloudSyncPanelActions(): CloudSyncPanelActionsState {
       void runPerfAction(
         app,
         `cloudSync.conflict.${resolution}`,
-        () => cloudSyncUiController.resolveConflict(resolution),
+        () => cloudSyncUiController.resolveConflict(resolution, conflict?.conflictId),
         {
           detail: { resolution, keys: conflict?.keys || [] },
           resolveEndOptions: result => buildPerfEntryOptionsFromActionResult(result),

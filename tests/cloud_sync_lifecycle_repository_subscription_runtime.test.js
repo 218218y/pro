@@ -38,7 +38,7 @@ test('cloud_sync lifecycle: canonical repository events coalesce nested commits 
     const { app } = makeApp({ realtime: false, pollMs: 25 });
     installCrossTabLockHarness(app);
 
-    const collections = installCloudCollectionsService(app).repository;
+    const collections = (await installCloudCollectionsService(app)).repository;
     assert.ok(collections);
     let nestedWrites = 0;
     const unsubscribe = collections.subscribe(() => {
@@ -87,7 +87,7 @@ test('cloud_sync lifecycle: dispose during repository notification leaves no tim
     installCrossTabLockHarness(app);
 
     const userSetStringBeforeInstall = storage.setString;
-    const collections = installCloudCollectionsService(app).repository;
+    const collections = (await installCloudCollectionsService(app)).repository;
     assert.ok(collections);
     let disposedInsideWrite = 0;
     await installCloudSyncService(app);

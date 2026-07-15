@@ -49,7 +49,7 @@ export function isProjectLoadQueuedError(error: unknown): error is ProjectLoadQu
 
 export type ProjectLoadCoordinator = {
   begin: () => ProjectLoadCoordinatorLease;
-  enterCritical: (lease: ProjectLoadCoordinatorLease) => number;
+  enterCritical: (lease: ProjectLoadCoordinatorLease, supersedeActive?: boolean) => number;
   assertCurrent: (lease: ProjectLoadCoordinatorLease, stage: string) => void;
   isCurrent: (lease: ProjectLoadCoordinatorLease) => boolean;
   markCommitted: (lease: ProjectLoadCoordinatorLease) => void;
@@ -125,11 +125,10 @@ function createProjectLoadCoordinator(
 
   return {
     begin(): ProjectLoadCoordinatorLease {
-      // A synchronous reentrant caller may validate, but it cannot own a second critical
-      // section. Superseding the predecessor makes that owner compensate before release.
+      // A successor may complete pure validation while another request owns admission.
+      // Superseding is delayed until enterCritical so invalid input cannot cancel valid work.
       const predecessor =
         active && (active.state === 'preparing' || active.state === 'critical') ? active : null;
-      if (predecessor) predecessor.superseded = true;
 
       const lease: MutableProjectLoadCoordinatorLease = {
         requestId: (nextRequestId += 1),
@@ -143,7 +142,7 @@ function createProjectLoadCoordinator(
       return lease;
     },
 
-    enterCritical(value: ProjectLoadCoordinatorLease): number {
+    enterCritical(value: ProjectLoadCoordinatorLease, supersedeActive = true): number {
       const lease = readOwnedLease(value);
       if (lease.state !== 'preparing') {
         throw new Error(
@@ -154,6 +153,7 @@ function createProjectLoadCoordinator(
         lease.blockedBy &&
         (lease.blockedBy.state === 'preparing' || lease.blockedBy.state === 'critical')
       ) {
+        if (supersedeActive) lease.blockedBy.superseded = true;
         throw new ProjectLoadQueuedError(lease.requestId);
       }
       if (lease.superseded) throwSuperseded(lease, 'critical admission');

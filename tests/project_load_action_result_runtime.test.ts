@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   buildProjectLoadActionErrorResult,
+  createProjectLoadAcceptedResult,
   normalizeProjectLoadActionResult,
   normalizeProjectLoadFailureReason,
 } from '../esm/native/runtime/project_load_action_result.ts';
@@ -15,9 +16,10 @@ test('project load action result normalization keeps file-load outcomes canonica
   });
   assert.deepEqual(normalizeProjectLoadActionResult({ ok: true, pending: true, restoreGen: 7 }), {
     ok: true,
-    pending: true,
     restoreGen: 7,
   });
+  const accepted = createProjectLoadAcceptedResult(Promise.resolve({ ok: true, restoreGen: 8 }), 2, 1);
+  assert.equal(normalizeProjectLoadActionResult(accepted), accepted);
   assert.deepEqual(
     normalizeProjectLoadActionResult({ ok: false, reason: 'missing_file', message: ' pick a file ' }),
     { ok: false, reason: 'missing-file', message: 'pick a file' }

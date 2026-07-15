@@ -1,16 +1,16 @@
 import type {
   AppContainer,
+  CloudCollectionsMutation,
   ModelsMergeResult,
   SavedColorLike,
-  SavedModelLike,
   UnknownRecord,
 } from '../../../types';
 import { getCfg } from './store_access.js';
 import {
   ensureModelsLoadedViaServiceOrThrow,
-  mergeImportedModelsViaServiceOrThrow,
   normalizeUnknownError,
   patchViaActions,
+  planImportedModelsCollectionsMutation,
   readFileTextResultViaBrowser,
   runPerfAction,
   renderModelUiViaActionsOrThrow,
@@ -36,6 +36,7 @@ import {
   sanitizePresetCollections,
   settingsBackupReport,
 } from './settings_backup_support.js';
+import type { SettingsBackupImportWarning } from './settings_backup_contracts.js';
 
 async function readBackupFileText(App: AppContainer, file: File): Promise<string> {
   const result = await readFileTextResultViaBrowser(file, {
@@ -76,6 +77,27 @@ export function parseSettingsBackupSafe(text: string): ParseSettingsBackupResult
       message: normalizeUnknownError(error, '[WardrobePro] Settings backup JSON parse failed.').message,
     };
   }
+}
+
+export interface SettingsImportPlan {
+  data: SettingsBackupData;
+  presetOrder: string[];
+  hiddenPresets: string[];
+}
+
+export interface SettingsImportCommitResult {
+  modelsMergeResult: ModelsMergeResult;
+  colorsAdded: number;
+  warnings: SettingsBackupImportWarning[];
+}
+
+export function buildSettingsImportPlan(App: AppContainer, data: SettingsBackupData): SettingsImportPlan {
+  const presetCollections = sanitizePresetCollections(App, data.presetOrder, data.hiddenPresets);
+  return {
+    data,
+    presetOrder: presetCollections.presetOrder,
+    hiddenPresets: presetCollections.hiddenPresets,
+  };
 }
 
 type ImportedColorMutation = {
@@ -140,6 +162,93 @@ async function publishImportedColorMutation(
   if (typeof colorSwatchesOrder !== 'undefined') {
     await writeColorSwatchesOrderOrThrow(App, colorSwatchesOrder.slice(), mapsMeta);
   }
+}
+
+export async function commitSettingsImportPlan(
+  App: AppContainer,
+  plan: SettingsImportPlan
+): Promise<SettingsImportCommitResult> {
+  if (plan.data.savedModels.length > 0) {
+    try {
+      ensureModelsLoadedViaServiceOrThrow(App, { silent: true }, 'settings backup import models preparation');
+    } catch (error) {
+      throw new SettingsBackupActionError(
+        'models-unavailable',
+        normalizeUnknownError(error, '[WardrobePro] Settings backup model preparation failed.').message
+      );
+    }
+  }
+
+  let modelsMergeResult: ModelsMergeResult = { added: 0, updated: 0 };
+  let colorsAdded = 0;
+  let savedColorsChanged = false;
+  let savedColorsForPublish: SettingsBackupSavedColorEntry[] = [];
+  let colorOrderLiveChanged = false;
+  let colorOrderStorageChanged = false;
+  let modelCollectionsChanged = false;
+
+  const commit = await runSettingsBackupImportPerfStep(App, 'settingsBackup.import.collections.commit', () =>
+    transactCloudCollectionsViaServiceOrThrow(
+      App,
+      current => {
+        const modelDecision = planImportedModelsCollectionsMutation(App, current, plan.data.savedModels);
+        modelsMergeResult = modelDecision.result;
+        modelCollectionsChanged = !!modelDecision.mutation.savedModels;
+
+        const mergedColors = mergeSavedColorLists(current.savedColors, plan.data.savedColors);
+        const savedColorsForOrder = mergedColors.changed ? mergedColors.list : current.savedColors;
+        const currentLiveColorOrder = readCurrentColorSwatchesOrder(App, current.colorOrder);
+        const currentStorageOrderIds = readSettingsBackupIdList(current.colorOrder);
+        const canonicalSavedColorOrder = readCanonicalSavedColorOrder(savedColorsForOrder);
+        const colorSwatchesOrder = resolveColorSwatchesOrder(
+          savedColorsForOrder,
+          plan.data.colorSwatchesOrder,
+          currentLiveColorOrder,
+          currentStorageOrderIds,
+          canonicalSavedColorOrder
+        );
+
+        colorsAdded = mergedColors.added;
+        savedColorsChanged = mergedColors.changed;
+        savedColorsForPublish = mergedColors.list;
+        colorOrderStorageChanged = !sameSettingsBackupIdList(current.colorOrder, colorSwatchesOrder);
+        colorOrderLiveChanged = !sameSettingsBackupIdList(currentLiveColorOrder, colorSwatchesOrder);
+        const presetOrderChanged = !sameSettingsBackupIdList(current.presetOrder, plan.presetOrder);
+        const hiddenPresetsChanged = !sameSettingsBackupIdList(current.hiddenPresets, plan.hiddenPresets);
+        modelCollectionsChanged = modelCollectionsChanged || presetOrderChanged || hiddenPresetsChanged;
+
+        const mutation: CloudCollectionsMutation = {
+          ...modelDecision.mutation,
+          ...(savedColorsChanged ? { savedColors: toCanonicalSavedColors(mergedColors.list) } : {}),
+          ...(colorOrderStorageChanged ? { colorOrder: colorSwatchesOrder } : {}),
+          ...(presetOrderChanged ? { presetOrder: plan.presetOrder } : {}),
+          ...(hiddenPresetsChanged ? { hiddenPresets: plan.hiddenPresets } : {}),
+        };
+        return mutation;
+      },
+      'settings backup import canonical transaction'
+    )
+  );
+
+  const warnings: SettingsBackupImportWarning[] = [];
+  const colorMutation: ImportedColorMutation = {};
+  if (savedColorsChanged) colorMutation.savedColors = savedColorsForPublish;
+  if (colorOrderStorageChanged || colorOrderLiveChanged) {
+    colorMutation.colorSwatchesOrder = readSettingsBackupIdList(commit.envelope.colorOrder);
+  }
+  try {
+    await publishImportedColorMutation(App, colorMutation, 'settingsBackup.import');
+  } catch (error) {
+    settingsBackupReport(App, 'import:colors.refresh', error, true);
+    warnings.push({
+      effect: 'colors-refresh',
+      message: 'Settings were imported, but the live color controls could not be refreshed.',
+    });
+  }
+
+  const modelWarning = finalizeImportedModels(App, modelsMergeResult, modelCollectionsChanged);
+  if (modelWarning) warnings.push(modelWarning);
+  return { modelsMergeResult, colorsAdded, warnings };
 }
 
 export async function mergeImportedSavedColors(
@@ -277,32 +386,14 @@ export async function applyImportedColorSettings(
   return colorsAdded;
 }
 
-export async function mergeImportedModelsStrict(
+export function finalizeImportedModels(
   App: AppContainer,
-  list: SavedModelLike[]
-): Promise<ModelsMergeResult> {
-  try {
-    const result = await mergeImportedModelsViaServiceOrThrow(
-      App,
-      list,
-      'settings backup import models merge'
-    );
-    if (result.ok === false) {
-      throw new Error(result.message || 'Settings backup model persistence failed.');
-    }
-    return result;
-  } catch (error) {
-    throw new SettingsBackupActionError(
-      'models-unavailable',
-      normalizeUnknownError(error, '[WardrobePro] Settings backup model merge failed.').message
-    );
-  }
-}
-
-export function finalizeImportedModels(App: AppContainer, result: ModelsMergeResult): void {
+  result: ModelsMergeResult,
+  force = false
+): SettingsBackupImportWarning | null {
   const added = Number.isFinite(Number(result.added)) ? Number(result.added) : 0;
   const updated = Number.isFinite(Number(result.updated)) ? Number(result.updated) : 0;
-  if (added + updated <= 0) return;
+  if (!force && added + updated <= 0) return null;
 
   try {
     ensureModelsLoadedViaServiceOrThrow(
@@ -311,7 +402,12 @@ export function finalizeImportedModels(App: AppContainer, result: ModelsMergeRes
       'settings backup import models refresh'
     );
     renderModelUiViaActionsOrThrow(App, 'settings backup import models render');
+    return null;
   } catch (error) {
     settingsBackupReport(App, 'import:models.refresh', error, true);
+    return {
+      effect: 'models-refresh',
+      message: 'Settings were imported, but the live model controls could not be refreshed.',
+    };
   }
 }

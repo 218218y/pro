@@ -21,6 +21,7 @@ export type CloudSyncServiceMethodKey =
   | 'subscribePanelSnapshot'
   | 'goPublic'
   | 'goPrivate'
+  | 'resolveConflict'
   | 'getShareLink'
   | 'copyShareLink'
   | 'syncSketchNow'

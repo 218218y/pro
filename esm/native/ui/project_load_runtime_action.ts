@@ -4,6 +4,7 @@ import {
   buildProjectLoadFailureResult,
   loadProjectFileInputViaService,
   normalizeProjectLoadActionResult,
+  settleProjectLoadActionResult,
   type ProjectLoadActionResult,
 } from '../services/api.js';
 import {
@@ -35,7 +36,7 @@ export async function runProjectLoadActionResult(
     ProjectLoadActionResult
   >({
     feedback,
-    run,
+    run: async () => settleProjectLoadActionResult(normalizeProjectLoadActionResult(await run())),
     report: reportProjectLoadResult,
     buildError: buildProjectActionErrorResult,
     fallbackMessage: resolveProjectLoadDefaultMessage(options?.fallbackMessage),

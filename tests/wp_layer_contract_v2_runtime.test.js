@@ -1,5 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
   analyzeModuleDependencies,
@@ -503,6 +508,7 @@ test('layer contract proposal preserves reviewed facades and reports edge and bu
       { field: 'maxValueImportCount', budget: 1, observed: 3 },
     ],
   });
+  assert.equal(proposal.reviewRequired, true);
   assert.equal(proposal.contract.rules[0].maxImporterCount, 1);
   assert.equal(proposal.contract.rules[0].maxImportCount, 1);
 });
@@ -572,4 +578,36 @@ test('layer contract proposal preserves explicit deny decisions', () => {
     deniedRule
   );
   assert.deepEqual(proposal.diff.addedEdges, []);
+});
+
+test('layer contract proposal CLI exits nonzero when ratchet growth requires review', () => {
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const baseline = JSON.parse(
+    fs.readFileSync(path.join(repositoryRoot, 'tools', 'wp_layer_baseline.json'), 'utf8')
+  );
+  const observedRule = baseline.rules.find(
+    rule => rule.decision === 'allow' && Number(rule.maxImportCount) > 0
+  );
+  assert.ok(observedRule, 'fixture requires one observed allow rule');
+  for (const key of Object.keys(observedRule)) {
+    if (key.startsWith('max') && typeof observedRule[key] === 'number') observedRule[key] = 0;
+  }
+
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'wp-layer-contract-'));
+  try {
+    const baselinePath = path.join(tempRoot, 'baseline.json');
+    fs.writeFileSync(baselinePath, JSON.stringify(baseline));
+    const result = spawnSync(
+      process.execPath,
+      [path.join(repositoryRoot, 'tools', 'wp_layer_contract.js'), '--propose', '--baseline', baselinePath],
+      { cwd: repositoryRoot, encoding: 'utf8' }
+    );
+
+    assert.equal(result.status, 1, result.stderr);
+    const proposal = JSON.parse(result.stdout);
+    assert.equal(proposal.reviewRequired, true);
+    assert.ok(proposal.diff.ratchetViolations.length > 0);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
 });

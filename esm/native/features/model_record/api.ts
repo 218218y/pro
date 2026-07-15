@@ -5,7 +5,10 @@ import {
   canonicalizeProjectConfigListsForLoad,
 } from '../project_config/api.js';
 import { calculateModuleStructure } from '../modules_configuration/calc_module_structure.js';
-import { materializeTopModulesConfigurationForStructure } from '../modules_configuration/modules_config_api.js';
+import {
+  cloneModulesConfigurationSnapshot,
+  materializeTopModulesConfigurationForStructure,
+} from '../modules_configuration/modules_config_api.js';
 
 type SavedModelRecordLike = Record<string, unknown> & {
   settings?: unknown;
@@ -73,6 +76,17 @@ function buildTopModulesStructure(settings: unknown): unknown[] {
   }
 }
 
+function normalizeCornerModuleLists(value: unknown): UnknownRecord {
+  const corner = cloneMapRecord(value);
+  corner.modulesConfiguration = cloneModulesConfigurationSnapshot(corner, 'modulesConfiguration');
+  const lower = cloneRecord(corner.stackSplitLower);
+  if (lower) {
+    lower.modulesConfiguration = cloneModulesConfigurationSnapshot(lower, 'modulesConfiguration');
+    corner.stackSplitLower = lower;
+  }
+  return corner;
+}
+
 export function normalizeModelRecord(model: SavedModelRecordLike): SavedModelLike {
   const presetId =
     typeof model.id === 'string' && model.id.trim()
@@ -111,7 +125,7 @@ export function normalizeModelRecord(model: SavedModelRecordLike): SavedModelLik
     buildTopModulesStructure(out.settings)
   );
   out.stackSplitLowerModulesConfiguration = canonicalConfigLists.stackSplitLowerModulesConfiguration;
-  out.cornerConfiguration = canonicalConfigLists.cornerConfiguration;
+  out.cornerConfiguration = normalizeCornerModuleLists(canonicalConfigLists.cornerConfiguration);
 
   const mapKeys = [
     'groovesMap',

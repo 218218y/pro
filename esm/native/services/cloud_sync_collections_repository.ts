@@ -1,6 +1,7 @@
 import type {
   CloudCollectionsCommitResult,
   CloudCollectionsEnvelope,
+  CloudCollectionsInitializationResult,
   CloudCollectionsMutation,
   CloudCollectionsMutationLockLike,
   CloudCollectionsMutator,
@@ -674,13 +675,11 @@ export function createCloudCollectionsRepository(args: {
     };
   };
 
-  const readEnvelopeWithoutRepair = (): CloudCollectionsEnvelope => {
+  const readEnvelopeSnapshot = (): CloudCollectionsEnvelope => {
     const stored = readStoredEnvelopeResult();
     if (stored?.ok === false) throw new CloudCollectionsCorruptionError(stored);
     if (stored?.ok === true) return stored.envelope;
-    const migrated = buildEnvelope(readPerKeyCollections(storage, keys), 0);
-    writeStorageValue(storage, envelopeKey, migrated);
-    return migrated;
+    return buildEnvelope(readPerKeyCollections(storage, keys), 0);
   };
 
   const mirrorEnvelope = (envelope: CloudCollectionsEnvelope, onlyKeys?: ReadonlySet<string>): string[] => {
@@ -717,8 +716,7 @@ export function createCloudCollectionsRepository(args: {
     return warnings;
   };
 
-  const repairMirrors = (): string[] => {
-    const envelope = readEnvelopeWithoutRepair();
+  const reconcileMirrorsWithinLock = (envelope: CloudCollectionsEnvelope): string[] => {
     const keysToRepair = new Set(pendingMirrorKeys);
     for (const [key, value] of perKeyEntries(keys, envelope)) {
       const stored = readStorageEntry(storage, key);
@@ -727,6 +725,21 @@ export function createCloudCollectionsRepository(args: {
       }
     }
     return keysToRepair.size ? mirrorEnvelope(envelope, keysToRepair) : [];
+  };
+
+  const ensureInitializedWithinLock = (): CloudCollectionsInitializationResult => {
+    const stored = readStoredEnvelopeResult();
+    if (stored?.ok === false) throw new CloudCollectionsCorruptionError(stored);
+    if (stored?.ok === true) {
+      return { initialized: false, envelope: stored.envelope, mirrorFailures: [] };
+    }
+    const migrated = buildEnvelope(readPerKeyCollections(storage, keys), 0);
+    writeStorageValue(storage, envelopeKey, migrated);
+    return {
+      initialized: true,
+      envelope: migrated,
+      mirrorFailures: mirrorEnvelope(migrated),
+    };
   };
 
   const commitEnvelope = (
@@ -743,7 +756,7 @@ export function createCloudCollectionsRepository(args: {
     committed: false,
     reason: 'no-change',
     envelope,
-    mirrorFailures: repairMirrors(),
+    mirrorFailures: [],
     warnings: [],
   });
 
@@ -752,23 +765,31 @@ export function createCloudCollectionsRepository(args: {
     mutationIsolation: mutationLock.isolation,
     read: (): CloudSyncLocalCollections => toCollections(repository.readEnvelope()),
     readEnvelope(): CloudCollectionsEnvelope {
-      const envelope = readEnvelopeWithoutRepair();
-      repairMirrors();
-      return envelope;
+      return readEnvelopeSnapshot();
     },
     readResult(): CloudCollectionsReadResult {
       const stored = readStoredEnvelopeResult();
       if (stored) return stored;
       try {
-        return { ok: true, envelope: readEnvelopeWithoutRepair() };
+        return { ok: true, envelope: readEnvelopeSnapshot() };
       } catch (error) {
         if (error instanceof CloudCollectionsCorruptionError) return error.result;
         throw error;
       }
     },
+    ensureInitialized(): Promise<CloudCollectionsInitializationResult> {
+      return mutationLock.runExclusive(mutationLockName, () => ensureInitializedWithinLock());
+    },
+    reconcileMirrors(): Promise<string[]> {
+      return mutationLock.runExclusive(mutationLockName, () => {
+        const initialized = ensureInitializedWithinLock();
+        const repaired = reconcileMirrorsWithinLock(initialized.envelope);
+        return [...new Set([...initialized.mirrorFailures, ...repaired])];
+      });
+    },
     transact(mutator: CloudCollectionsMutator): Promise<CloudCollectionsCommitResult> {
       return mutationLock.runExclusive(mutationLockName, () => {
-        const current = readEnvelopeWithoutRepair();
+        const current = ensureInitializedWithinLock().envelope;
         const mutation = mutator(buildEnvelope(toCollections(current), current.revision));
         const next = applyMutation(current, mutation);
         if (sameCollections(current, next)) return noChangeResult(current);
@@ -780,7 +801,7 @@ export function createCloudCollectionsRepository(args: {
     },
     commit(next: CloudSyncLocalCollections): Promise<CloudCollectionsCommitResult> {
       return mutationLock.runExclusive(mutationLockName, () => {
-        const current = readEnvelopeWithoutRepair();
+        const current = ensureInitializedWithinLock().envelope;
         const normalized = toCollections(buildEnvelope(next, current.revision));
         if (sameCollections(current, normalized)) return noChangeResult(current);
         return commitEnvelope(buildEnvelope(next, current.revision + 1));
@@ -791,7 +812,7 @@ export function createCloudCollectionsRepository(args: {
       next: CloudSyncLocalCollections
     ): Promise<CloudCollectionsCommitResult> {
       return mutationLock.runExclusive(mutationLockName, () => {
-        const current = readEnvelopeWithoutRepair();
+        const current = ensureInitializedWithinLock().envelope;
         if (current.revision !== normalizeRevision(expectedRevision)) {
           return {
             committed: false,
@@ -806,7 +827,6 @@ export function createCloudCollectionsRepository(args: {
         return commitEnvelope(buildEnvelope(next, current.revision + 1));
       });
     },
-    repairMirrors,
     backupCorruptEnvelope(): string {
       const stored = readStoredEnvelopeResult();
       if (stored?.ok !== false) {

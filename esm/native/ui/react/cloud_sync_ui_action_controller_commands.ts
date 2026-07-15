@@ -47,7 +47,8 @@ export type ResolvedCloudSyncUiActionCommands = {
   ) => Promise<CloudSyncTabsGateCommandResult>;
   resolveConflictCommand: (
     app: AppContainer,
-    resolution: CloudSyncConflictResolution
+    resolution: CloudSyncConflictResolution,
+    expectedConflictId?: string
   ) => Promise<CloudSyncConflictResolutionResult>;
 };
 

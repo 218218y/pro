@@ -1,3 +1,6 @@
+import type { AsyncOperationHandle } from '../../../types';
+
+import { createAsyncOperationHandle } from './async_operation.js';
 import { normalizeUnknownError } from './error_normalization.js';
 import { asRecord } from './record.js';
 
@@ -14,7 +17,6 @@ export type ProjectLoadWarning = {
 
 export type ProjectLoadSuccessResult = {
   ok: true;
-  pending?: true | undefined;
   restoreGen?: number | undefined;
   warnings?: ProjectLoadWarning[] | undefined;
 };
@@ -26,11 +28,26 @@ export type ProjectLoadFailureResult = {
   restoreGen?: number | undefined;
 };
 
-export type ProjectLoadActionResult = ProjectLoadSuccessResult | ProjectLoadFailureResult;
+export type ProjectLoadTerminalResult = ProjectLoadSuccessResult | ProjectLoadFailureResult;
+export type ProjectLoadAcceptedResult = AsyncOperationHandle<ProjectLoadTerminalResult>;
+export type ProjectLoadActionResult = ProjectLoadTerminalResult | ProjectLoadAcceptedResult;
+
+export function createProjectLoadAcceptedResult(
+  settled: Promise<ProjectLoadTerminalResult>,
+  acceptedAt = Date.now(),
+  requestedAt = acceptedAt
+): ProjectLoadAcceptedResult {
+  return createAsyncOperationHandle('project-load', settled, acceptedAt, requestedAt);
+}
 
 type ProjectLoadResultRecord = {
   ok?: unknown;
-  pending?: unknown;
+  accepted?: unknown;
+  reused?: unknown;
+  operationId?: unknown;
+  requestedAt?: unknown;
+  acceptedAt?: unknown;
+  settled?: unknown;
   restoreGen?: unknown;
   reason?: unknown;
   message?: unknown;
@@ -47,7 +64,6 @@ function normalizeProjectLoadRestoreGen(value: unknown): number | undefined {
 }
 
 export function buildProjectLoadSuccessResult(options?: {
-  pending?: unknown;
   restoreGen?: unknown;
   warnings?: unknown;
 }): ProjectLoadSuccessResult {
@@ -65,10 +81,28 @@ export function buildProjectLoadSuccessResult(options?: {
     : [];
   return {
     ok: true,
-    ...(options?.pending === true ? { pending: true } : {}),
     ...(typeof restoreGen === 'number' ? { restoreGen } : {}),
     ...(warnings.length ? { warnings } : {}),
   };
+}
+
+export function isProjectLoadAcceptedResult(value: unknown): value is ProjectLoadAcceptedResult {
+  const rec = asRecord<ProjectLoadResultRecord>(value);
+  return !!(
+    rec?.accepted === true &&
+    typeof rec.operationId === 'string' &&
+    rec.operationId.trim() &&
+    Number.isFinite(Number(rec.requestedAt)) &&
+    Number.isFinite(Number(rec.acceptedAt)) &&
+    rec.settled &&
+    typeof (rec.settled as PromiseLike<unknown>).then === 'function'
+  );
+}
+
+export async function settleProjectLoadActionResult(
+  result: ProjectLoadActionResult
+): Promise<ProjectLoadTerminalResult> {
+  return isProjectLoadAcceptedResult(result) ? await result.settled : result;
 }
 
 export function normalizeProjectLoadFailureReason(
@@ -127,6 +161,7 @@ export function normalizeProjectLoadActionResult(
 
   const rec = asRecord<ProjectLoadResultRecord>(value);
   if (!rec) return buildProjectLoadFailureResult(defaultReason);
+  if (isProjectLoadAcceptedResult(rec)) return rec;
   if (rec.ok === true) return buildProjectLoadSuccessResult(rec);
 
   return buildProjectLoadFailureResult(normalizeProjectLoadFailureReason(rec.reason, defaultReason), rec);

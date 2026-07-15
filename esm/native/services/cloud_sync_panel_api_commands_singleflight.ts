@@ -54,13 +54,14 @@ export function createCloudSyncPanelApiSingleFlightCommands(args: {
         onBusy: () => ({ ok: false, mode: 'private', reason: 'busy' }),
       }),
     resolveConflict: (
-      resolution: CloudSyncConflictResolution
+      resolution: CloudSyncConflictResolution,
+      expectedConflictId?: string
     ): ReturnType<NonNullable<typeof runtime.resolveConflict>> =>
       runCloudSyncPanelApiSingleFlight({
         owner,
         flights: cloudSyncPanelApiConflictResolutionFlights,
         key: resolution,
-        run: () => runtime.resolveConflict(resolution),
+        run: () => runtime.resolveConflict(resolution, expectedConflictId),
         onBusy: () => ({ ok: false, resolution, reason: 'busy' }),
       }),
     copyShareLink: (): ReturnType<NonNullable<typeof runtime.copyShareLink>> =>

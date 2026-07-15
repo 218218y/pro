@@ -29,6 +29,8 @@ export function cloneRuntimeStatus(status: CloudSyncRuntimeStatus): CloudSyncRun
     : null;
   const conflict = status.conflict
     ? {
+        conflictId: String(status.conflict.conflictId || ''),
+        generation: Number(status.conflict.generation) || 0,
         room: String(status.conflict.room || ''),
         keys: Array.isArray(status.conflict.keys) ? status.conflict.keys.map(key => String(key)) : [],
         remoteRevision: Number(status.conflict.remoteRevision) || 0,
@@ -80,6 +82,8 @@ export function buildRuntimeStatusSnapshotKey(status: CloudSyncRuntimeStatus): s
     String(snapshot.credential?.retryAt || 0),
     snapshot.credential?.failureKind || '',
     snapshot.conflict?.room || '',
+    snapshot.conflict?.conflictId || '',
+    String(snapshot.conflict?.generation || 0),
     (snapshot.conflict?.keys || []).join(','),
     String(snapshot.conflict?.remoteRevision || 0),
     String(snapshot.conflict?.detectedAt || 0),

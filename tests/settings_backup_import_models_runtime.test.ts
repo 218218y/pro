@@ -10,12 +10,16 @@ import {
   installFakeFilePrimitives,
 } from './settings_backup_import_runtime_helpers.ts';
 
+function readCanonicalModels(app: any): any[] {
+  return app.services.cloudCollections.repository.readEnvelope().savedModels;
+}
+
 test('importSystemSettings fails closed with models-unavailable when saved models exist but canonical model merge is missing', async () => {
   const env = installFakeFilePrimitives();
   try {
     await withSuppressedConsole(async () => {
-      const { app } = createImportApp();
-      delete (app as any).services.models.mergeImportedModels;
+      const { app } = await createImportApp();
+      delete (app as any).services.models;
       const file = new env.FakeFile(
         [
           JSON.stringify({
@@ -29,13 +33,10 @@ test('importSystemSettings fails closed with models-unavailable when saved model
       );
       const input = { value: 'backup.json', files: [file] };
       const result = await importSystemSettings(app as never, { currentTarget: input });
-      assert.deepEqual(result, {
-        ok: false,
-        kind: 'import',
-        reason: 'models-unavailable',
-        message:
-          '[WardrobePro] settings backup import models merge requires canonical services.models.mergeImportedModels(list).',
-      });
+      assert.equal(result.ok, false);
+      if (result.ok) return;
+      assert.equal(result.reason, 'models-unavailable');
+      assert.match(String(result.message || ''), /models preparation|models service/i);
       assert.equal(input.value, '');
     });
   } finally {
@@ -47,13 +48,8 @@ test('importSystemSettings keeps a successful model import successful when only 
   const env = installFakeFilePrimitives();
   try {
     await withSuppressedConsole(async () => {
-      const mergedModels: unknown[][] = [];
-      const { app } = createImportApp();
+      const { app } = await createImportApp();
       delete (app as any).actions.models;
-      app.services.models.mergeImportedModels = (list: unknown[]) => {
-        mergedModels.push(list);
-        return { added: list.length, updated: 0 };
-      };
 
       const file = new env.FakeFile(
         [
@@ -69,10 +65,20 @@ test('importSystemSettings keeps a successful model import successful when only 
       const input = { value: 'backup.json', files: [file] };
       const result = await importSystemSettings(app as never, { currentTarget: input });
 
-      assert.deepEqual(result, { ok: true, kind: 'import', modelsAdded: 1, colorsAdded: 0 });
+      assert.deepEqual(result, {
+        ok: true,
+        kind: 'import',
+        modelsAdded: 1,
+        colorsAdded: 0,
+        warnings: [
+          {
+            effect: 'models-refresh',
+            message: 'Settings were imported, but the live model controls could not be refreshed.',
+          },
+        ],
+      });
       assert.equal(input.value, '');
-      assert.equal(mergedModels.length, 1);
-      assert.equal((mergedModels[0] as any[])[0].id, 'm1');
+      assert.equal(readCanonicalModels(app)[0].id, 'm1');
     });
   } finally {
     env.restore();
@@ -81,7 +87,7 @@ test('importSystemSettings keeps a successful model import successful when only 
 test('importSystemSettings still succeeds for color-only backups even when model import seams are absent', async () => {
   const env = installFakeFilePrimitives();
   try {
-    const { app } = createImportApp();
+    const { app } = await createImportApp();
     delete (app as any).services.models;
     delete (app as any).actions.models;
     const file = new env.FakeFile(
@@ -107,7 +113,6 @@ test('importSystemSettings still succeeds for color-only backups even when model
 test('importSystemSettings sanitizes mixed backup payload arrays and imports only valid models/colors/order ids', async () => {
   const env = installFakeFilePrimitives();
   try {
-    const mergedModels: unknown[][] = [];
     const colorState: Array<Record<string, unknown> | string> = [];
     const colorOrderState: Array<string | number> = [];
     const storageWrites: Record<string, unknown> = {};
@@ -140,10 +145,6 @@ test('importSystemSettings sanitizes mixed backup payload arrays and imports onl
           },
         },
         models: {
-          mergeImportedModels(list: unknown[]) {
-            mergedModels.push(list);
-            return { added: list.length, updated: 0 };
-          },
           ensureLoaded() {
             return undefined;
           },
@@ -160,7 +161,7 @@ test('importSystemSettings sanitizes mixed backup payload arrays and imports onl
         },
       },
     };
-    installCollectionsForImportApp(app);
+    await installCollectionsForImportApp(app);
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -178,11 +179,12 @@ test('importSystemSettings sanitizes mixed backup payload arrays and imports onl
     const result = await importSystemSettings(app as never, { currentTarget: input });
     assert.deepEqual(result, { ok: true, kind: 'import', modelsAdded: 1, colorsAdded: 2 });
     assert.equal(input.value, '');
-    assert.equal((mergedModels[0] as any[])[0].id, 'm1');
-    assert.equal((mergedModels[0] as any[])[0].name, 'Model 1');
-    assert.equal((mergedModels[0] as any[])[0].width, 180);
-    assert.ok(Array.isArray((mergedModels[0] as any[])[0].modulesConfiguration));
-    assert.equal((mergedModels[0] as any[])[0].cornerConfiguration.layout, 'shelves');
+    const canonicalModels = readCanonicalModels(app);
+    assert.equal(canonicalModels[0].id, 'm1');
+    assert.equal(canonicalModels[0].name, 'Model 1');
+    assert.equal(canonicalModels[0].width, 180);
+    assert.ok(Array.isArray(canonicalModels[0].modulesConfiguration));
+    assert.equal(canonicalModels[0].cornerConfiguration.layout, 'shelves');
     assert.deepEqual(colorState, [{ id: 'c1', value: '#fff' }, 'legacy-string-color']);
     assert.deepEqual(colorOrderState, ['c1', 'legacy-string-color']);
     assert.deepEqual(storageWrites['wardrobeSavedColors:order'], ['c1', 'legacy-string-color']);
@@ -194,12 +196,7 @@ test('importSystemSettings sanitizes mixed backup payload arrays and imports onl
 test('importSystemSettings keeps the latest duplicate saved model entry within a single backup payload', async () => {
   const env = installFakeFilePrimitives();
   try {
-    const mergedModels: unknown[][] = [];
-    const { app } = createImportApp();
-    app.services.models.mergeImportedModels = (list: unknown[]) => {
-      mergedModels.push(list);
-      return { added: list.length, updated: 0 };
-    };
+    const { app } = await createImportApp();
 
     const file = new env.FakeFile(
       [
@@ -222,16 +219,16 @@ test('importSystemSettings keeps the latest duplicate saved model entry within a
 
     assert.deepEqual(result, { ok: true, kind: 'import', modelsAdded: 2, colorsAdded: 0 });
     assert.equal(input.value, '');
-    assert.equal(mergedModels.length, 1);
-    assert.equal((mergedModels[0] as any[]).length, 2);
-    assert.equal((mergedModels[0] as any[])[0].id, 'm1');
-    assert.equal((mergedModels[0] as any[])[0].name, 'Model 1 updated');
-    assert.equal((mergedModels[0] as any[])[0].width, 180);
-    assert.deepEqual((mergedModels[0] as any[])[0].savedNotes, [{ id: 'n1', text: 'latest' }]);
-    assert.ok(Array.isArray((mergedModels[0] as any[])[0].modulesConfiguration));
-    assert.equal((mergedModels[0] as any[])[1].id, 'm2');
-    assert.equal((mergedModels[0] as any[])[1].name, 'Model 2');
-    assert.equal((mergedModels[0] as any[])[1].width, 200);
+    const canonicalModels = readCanonicalModels(app);
+    assert.equal(canonicalModels.length, 2);
+    assert.equal(canonicalModels[0].id, 'm1');
+    assert.equal(canonicalModels[0].name, 'Model 1 updated');
+    assert.equal(canonicalModels[0].width, 180);
+    assert.deepEqual(canonicalModels[0].savedNotes, [{ id: 'n1', text: 'latest' }]);
+    assert.ok(Array.isArray(canonicalModels[0].modulesConfiguration));
+    assert.equal(canonicalModels[1].id, 'm2');
+    assert.equal(canonicalModels[1].name, 'Model 2');
+    assert.equal(canonicalModels[1].width, 200);
   } finally {
     env.restore();
   }
@@ -289,7 +286,7 @@ test('importSystemSettings upgrades duplicate saved color ids from legacy string
         },
       },
     };
-    installCollectionsForImportApp(app);
+    await installCollectionsForImportApp(app);
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -378,7 +375,7 @@ test('importSystemSettings upgrades existing live legacy saved-color aliases to 
         },
       },
     };
-    installCollectionsForImportApp(app);
+    await installCollectionsForImportApp(app);
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -464,7 +461,7 @@ test('importSystemSettings preserves live-only swatch order ids even when storag
         },
       },
     };
-    installCollectionsForImportApp(app);
+    await installCollectionsForImportApp(app);
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -551,7 +548,7 @@ test('importSystemSettings preserves existing live swatch order entries that are
         },
       },
     };
-    installCollectionsForImportApp(app);
+    await installCollectionsForImportApp(app);
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -634,7 +631,7 @@ test('importSystemSettings normalizes backup order ids to canonical unique strin
         },
       },
     };
-    installCollectionsForImportApp(app);
+    await installCollectionsForImportApp(app);
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -669,7 +666,6 @@ test('importSystemSettings normalizes backup order ids to canonical unique strin
 test('importSystemSettings canonicalizes saved model config snapshots before merge', async () => {
   const env = installFakeFilePrimitives();
   try {
-    const mergedModels: unknown[][] = [];
     const app = {
       store: createStore({ savedColors: [] }),
       maps: {
@@ -697,10 +693,6 @@ test('importSystemSettings canonicalizes saved model config snapshots before mer
           },
         },
         models: {
-          mergeImportedModels(list: unknown[]) {
-            mergedModels.push(list);
-            return { added: list.length, updated: 0 };
-          },
           ensureLoaded() {
             return undefined;
           },
@@ -716,7 +708,7 @@ test('importSystemSettings canonicalizes saved model config snapshots before mer
         },
       },
     };
-    installCollectionsForImportApp(app);
+    await installCollectionsForImportApp(app);
     const file = new env.FakeFile(
       [
         JSON.stringify({
@@ -741,9 +733,10 @@ test('importSystemSettings canonicalizes saved model config snapshots before mer
     const result = await importSystemSettings(app as never, { currentTarget: input });
     assert.deepEqual(result, { ok: true, kind: 'import', modelsAdded: 1, colorsAdded: 0 });
     assert.equal(input.value, '');
-    assert.equal((mergedModels[0] as any[])[0].modulesConfiguration[2].doors, 1);
-    assert.equal((mergedModels[0] as any[])[0].stackSplitLowerModulesConfiguration[0].extDrawersCount, 3);
-    assert.equal((mergedModels[0] as any[])[0].cornerConfiguration.layout, 'shelves');
+    const canonicalModel = readCanonicalModels(app)[0];
+    assert.equal(canonicalModel.modulesConfiguration[2].doors, 1);
+    assert.equal(canonicalModel.stackSplitLowerModulesConfiguration[0].extDrawersCount, 3);
+    assert.equal(canonicalModel.cornerConfiguration.layout, 'shelves');
   } finally {
     env.restore();
   }

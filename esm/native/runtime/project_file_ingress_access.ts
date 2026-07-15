@@ -4,7 +4,8 @@ import { readFileTextResultViaBrowser } from './browser_file_read.js';
 import {
   buildProjectLoadActionErrorResult,
   normalizeProjectLoadActionResult,
-  type ProjectLoadActionResult,
+  settleProjectLoadActionResult,
+  type ProjectLoadTerminalResult,
 } from './project_load_action_result.js';
 import { loadProjectDataActionResultViaService } from './project_io_access.js';
 import { resolveProjectFileLoadInput } from './project_file_input_resolver.js';
@@ -33,7 +34,7 @@ export async function readProjectFileText(file: ProjectFileLike, App?: AppContai
 export async function loadProjectFileInput(
   App: AppContainer,
   eventOrFile: unknown
-): Promise<ProjectLoadActionResult> {
+): Promise<ProjectLoadTerminalResult> {
   const { file, target } = resolveProjectFileLoadInput(eventOrFile);
   try {
     if (!file) return { ok: false, reason: 'missing-file' };
@@ -55,15 +56,17 @@ export async function loadProjectFileInput(
       return { ok: false, reason: 'invalid' };
     }
 
-    return normalizeProjectLoadActionResult(
-      loadProjectDataActionResultViaService(
-        App,
-        data,
-        { toast: false, meta: { source: 'load.file' } },
-        'not-installed',
-        '[WardrobePro] Project file load failed.'
-      ),
-      'not-installed'
+    return await settleProjectLoadActionResult(
+      normalizeProjectLoadActionResult(
+        loadProjectDataActionResultViaService(
+          App,
+          data,
+          { toast: false, meta: { source: 'load.file' } },
+          'not-installed',
+          '[WardrobePro] Project file load failed.'
+        ),
+        'not-installed'
+      )
     );
   } finally {
     clearFileInputValue(target);

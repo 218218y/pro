@@ -9,6 +9,7 @@ import type {
   SettingsBackupImportFailureReason,
   SettingsBackupImportFailureResult,
   SettingsBackupImportSuccessResult,
+  SettingsBackupImportWarning,
 } from './settings_backup_contracts.js';
 
 type SettingsBackupActionResultRecord = {
@@ -20,6 +21,7 @@ type SettingsBackupActionResultRecord = {
   colorsCount?: unknown;
   modelsAdded?: unknown;
   colorsAdded?: unknown;
+  warnings?: unknown;
 };
 
 function normalizeBackupCount(value: unknown): number {
@@ -94,13 +96,26 @@ export function buildSettingsBackupExportSuccessResult(
 
 export function buildSettingsBackupImportSuccessResult(
   modelsAdded: unknown,
-  colorsAdded: unknown
+  colorsAdded: unknown,
+  warnings?: unknown
 ): SettingsBackupImportSuccessResult {
+  const normalizedWarnings = Array.isArray(warnings)
+    ? warnings.filter((warning): warning is SettingsBackupImportWarning => {
+        const rec = asRecord<SettingsBackupImportWarning>(warning);
+        return !!(
+          rec &&
+          (rec.effect === 'models-refresh' || rec.effect === 'colors-refresh') &&
+          typeof rec.message === 'string' &&
+          rec.message.trim()
+        );
+      })
+    : [];
   return {
     ok: true,
     kind: 'import',
     modelsAdded: normalizeBackupCount(modelsAdded),
     colorsAdded: normalizeBackupCount(colorsAdded),
+    ...(normalizedWarnings.length ? { warnings: normalizedWarnings } : {}),
   };
 }
 
@@ -151,7 +166,7 @@ export function normalizeSettingsBackupActionResult(
   const kind = rec.kind === 'import' ? 'import' : 'export';
   if (rec.ok === true) {
     return kind === 'import'
-      ? buildSettingsBackupImportSuccessResult(rec.modelsAdded, rec.colorsAdded)
+      ? buildSettingsBackupImportSuccessResult(rec.modelsAdded, rec.colorsAdded, rec.warnings)
       : buildSettingsBackupExportSuccessResult(rec.modelsCount, rec.colorsCount);
   }
 

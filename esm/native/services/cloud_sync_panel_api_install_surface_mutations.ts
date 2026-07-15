@@ -1,4 +1,6 @@
 import type {
+  CloudSyncConflictResolution,
+  CloudSyncConflictResolutionResult,
   CloudSyncDeleteTempResult,
   CloudSyncRoomModeCommandResult,
   CloudSyncShareLinkCommandResult,
@@ -26,6 +28,12 @@ const NOT_INSTALLED_GO_PRIVATE_RESULT = Promise.resolve({
   mode: 'private',
   reason: 'not-installed',
 } satisfies CloudSyncRoomModeCommandResult);
+
+function missingConflictResult(
+  resolution: CloudSyncConflictResolution
+): Promise<CloudSyncConflictResolutionResult> {
+  return Promise.resolve({ ok: false, resolution, reason: 'missing-conflict' });
+}
 
 const UNAVAILABLE_SHARE_LINK_RESULT = Promise.resolve({
   ok: false,
@@ -67,6 +75,16 @@ export function installCloudSyncPanelApiMutationRefs(
   });
   installStableSurfaceMethod(api, 'goPrivate', '__wpCloudSyncGoPrivate', () => {
     return async () => await invokeCloudSyncPanelApi(context, 'goPrivate', NOT_INSTALLED_GO_PRIVATE_RESULT);
+  });
+  installStableSurfaceMethod(api, 'resolveConflict', '__wpCloudSyncResolveConflict', () => {
+    return async (resolution: CloudSyncConflictResolution, expectedConflictId?: string) =>
+      await invokeCloudSyncPanelApi(
+        context,
+        'resolveConflict',
+        missingConflictResult(resolution),
+        resolution,
+        expectedConflictId
+      );
   });
   installStableSurfaceMethod(api, 'getShareLink', '__wpCloudSyncGetShareLink', () => {
     return (): string => invokeCloudSyncPanelApi(context, 'getShareLink', '');

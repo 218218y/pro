@@ -51,7 +51,7 @@ function assertCanonicalModelShape(value: unknown): void {
   assert.equal(typeof first?.cornerConfiguration, 'object');
 }
 
-function createApp(initialStore: Record<string, unknown>) {
+async function createApp(initialStore: Record<string, unknown>) {
   const store = new Map<string, unknown>(Object.entries(clone(initialStore)));
   const writes: Record<string, unknown> = Object.create(null);
   const storage = {
@@ -72,7 +72,7 @@ function createApp(initialStore: Record<string, unknown>) {
       storage,
     },
   } as any;
-  installCloudCollectionsService(App);
+  await installCloudCollectionsService(App);
   return { App, storage, writes, store };
 }
 
@@ -89,7 +89,7 @@ async function flushAsyncMutations(): Promise<void> {
 }
 
 test('models registry runtime: ensureLoaded repairs stored preset and user-model collections to canonical form', async () => {
-  const { App, writes } = createApp({
+  const { App, writes } = await createApp({
     savedModels: [
       { id: ' user-1 ', name: ' User 1 ' },
       { id: 'user-1', name: 'Duplicate should drop' },
@@ -120,7 +120,7 @@ test('models registry runtime: ensureLoaded repairs stored preset and user-model
 });
 
 test('models registry runtime: preset-order repair preserves live user presets alongside core presets', async () => {
-  const { App, writes } = createApp({
+  const { App, writes } = await createApp({
     savedModels: [
       { id: ' user-preset ', name: ' User Preset ', isPreset: true },
       { id: 'user-preset', name: 'duplicate drop', isPreset: true },
@@ -167,7 +167,7 @@ test('models registry storage: preset-order and hidden-preset repairs stay canon
       },
     },
   } as any;
-  installCloudCollectionsService(App);
+  await installCloudCollectionsService(App);
 
   assert.deepEqual(_getStoredPresetOrder(App), ['preset-b', 'preset-a']);
   assert.deepEqual(_getStoredHiddenPresets(App), ['preset-a', 'preset-c']);
@@ -180,7 +180,7 @@ test('models registry storage: preset-order and hidden-preset repairs stay canon
 });
 
 test('models registry storage: delayed canonical repair preserves a model committed before lock acquisition', async () => {
-  const { App, storage } = createApp({
+  const { App, storage } = await createApp({
     savedModels: [{ id: ' user-1 ', name: ' User 1 ' }],
     'savedModels:presetOrder': [],
     'savedModels:hiddenPresets': [],
@@ -214,7 +214,7 @@ test('models registry storage: delayed canonical repair preserves a model commit
 });
 
 test('models command persistence failure leaves runtime state and notifications unchanged', async () => {
-  const { App, storage } = createApp({
+  const { App, storage } = await createApp({
     savedModels: [{ id: 'user-1', name: 'User 1' }],
     'savedModels:presetOrder': [],
     'savedModels:hiddenPresets': [],
@@ -249,7 +249,7 @@ test('models command persistence failure leaves runtime state and notifications 
 });
 
 test('model transfer commits saved models, preset order, and hidden presets in one canonical write', async () => {
-  const { App, storage } = createApp({
+  const { App, storage } = await createApp({
     savedModels: [],
     'savedModels:presetOrder': ['preset-a'],
     'savedModels:hiddenPresets': [],
@@ -277,8 +277,8 @@ test('model transfer commits saved models, preset order, and hidden presets in o
   assert.deepEqual(envelope.hiddenPresets, ['preset-a']);
 });
 
-test('models registry runtime: onChange listeners receive detached model snapshots instead of live state objects', () => {
-  const { App } = createApp({ savedModels: [{ id: ' user-1 ', name: ' User 1 ' }] });
+test('models registry runtime: onChange listeners receive detached model snapshots instead of live state objects', async () => {
+  const { App } = await createApp({ savedModels: [{ id: ' user-1 ', name: ' User 1 ' }] });
   setModelPresetsInternal(App, [{ id: 'preset-a', name: 'Preset A' }] as any);
   ensureModelsLoadedInternal(App, { forceRebuild: true, silent: true });
 
@@ -297,9 +297,9 @@ test('models registry runtime: onChange listeners receive detached model snapsho
   assert.equal(state.all[0]?.name, 'Preset A');
 });
 
-test('models registry runtime: app-scoped runtime state keeps normalizers and loaded collections isolated per app', () => {
-  const a = createApp({ savedModels: [{ id: ' shared ', name: ' Shared ' }] });
-  const b = createApp({ savedModels: [{ id: ' shared ', name: ' Shared ' }] });
+test('models registry runtime: app-scoped runtime state keeps normalizers and loaded collections isolated per app', async () => {
+  const a = await createApp({ savedModels: [{ id: ' shared ', name: ' Shared ' }] });
+  const b = await createApp({ savedModels: [{ id: ' shared ', name: ' Shared ' }] });
 
   setModelsNormalizerInternal(
     a.App,
@@ -346,8 +346,8 @@ test('models registry runtime: app-scoped runtime state keeps normalizers and lo
   assert.equal(stateA.all[0]?.name, 'A:Preset A');
 });
 
-test('models registry storage: repeated runtime mirror sync reuses the published runtime mirror snapshots when state revision is unchanged', () => {
-  const { App } = createApp({ savedModels: [{ id: ' user-1 ', name: ' User 1 ' }] });
+test('models registry storage: repeated runtime mirror sync reuses the published runtime mirror snapshots when state revision is unchanged', async () => {
+  const { App } = await createApp({ savedModels: [{ id: ' user-1 ', name: ' User 1 ' }] });
   setModelPresetsInternal(App, [{ id: 'preset-a', name: 'Preset A' }] as any);
   ensureModelsLoadedInternal(App, { forceRebuild: true, silent: true });
 
@@ -364,8 +364,8 @@ test('models registry storage: repeated runtime mirror sync reuses the published
   assert.equal(App.services.models.__wpRuntimeMirrorRevision, firstRevision);
 });
 
-test('models registry storage: no-op preset and normalizer installs do not trigger rebuild notifications', () => {
-  const { App } = createApp({ savedModels: [{ id: ' user-1 ', name: ' User 1 ' }] });
+test('models registry storage: no-op preset and normalizer installs do not trigger rebuild notifications', async () => {
+  const { App } = await createApp({ savedModels: [{ id: ' user-1 ', name: ' User 1 ' }] });
   const seen: string[] = [];
   const normalizer = (model: any) => ({ ...model, name: `N:${String(model?.name || '')}` });
 

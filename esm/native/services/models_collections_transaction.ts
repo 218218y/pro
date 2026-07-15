@@ -33,7 +33,7 @@ export type ModelsCollectionsFailure = {
   message: string;
 };
 
-function buildSnapshot(
+export function buildModelsCollectionsSnapshot(
   App: AppContainer,
   envelope: Readonly<CloudCollectionsEnvelope>
 ): ModelsCollectionsSnapshot {
@@ -57,7 +57,7 @@ function errorMessage(error: unknown): string {
 }
 
 function publishCommittedEnvelope(App: AppContainer, envelope: CloudCollectionsEnvelope): void {
-  const snapshot = buildSnapshot(App, envelope);
+  const snapshot = buildModelsCollectionsSnapshot(App, envelope);
   const state = getModelsRuntimeStateForApp(App);
   state.all = snapshot.presets.concat(snapshot.saved);
   state.loaded = true;
@@ -89,7 +89,7 @@ export async function runModelsCollectionsTransaction<T>(
   const decisionRef: { value: ModelsCollectionsDecision<T> | null } = { value: null };
   try {
     const commit = await transactModelsCollectionsCanonical(App, current => {
-      const decision = build(buildSnapshot(App, current));
+      const decision = build(buildModelsCollectionsSnapshot(App, current));
       decisionRef.value = decision;
       return decision.mutation;
     });

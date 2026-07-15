@@ -165,7 +165,7 @@ test('settings backup roundtrip restores models/colors/orders and emits a single
     },
   };
 
-  installCloudCollectionsForTestApp(sourceApp);
+  await installCloudCollectionsForTestApp(sourceApp);
 
   const exportResult = await exportSystemSettings(sourceApp as never);
   assert.deepEqual(exportResult, { ok: true, kind: 'export', modelsCount: 1, colorsCount: 1 });
@@ -233,7 +233,7 @@ test('settings backup roundtrip restores models/colors/orders and emits a single
       },
     };
 
-    installCloudCollectionsForTestApp(targetApp);
+    await installCloudCollectionsForTestApp(targetApp);
 
     const file = new env.FakeFile([exportedText], 'backup.json', { type: 'application/json' });
     const input = { value: 'backup.json', files: [file] };
@@ -241,14 +241,19 @@ test('settings backup roundtrip restores models/colors/orders and emits a single
 
     assert.deepEqual(importResult, { ok: true, kind: 'import', modelsAdded: 1, colorsAdded: 1 });
     assert.equal(input.value, '');
-    assert.deepEqual(mergedModels.map(summarizeSavedModels), [
-      [{ id: 'm1', name: 'Source Model', width: 180 }],
+    assert.deepEqual(mergedModels, [], 'the canonical transaction must not call the legacy merge command');
+    const importedEnvelope = targetApp.services.cloudCollections.repository.readEnvelope();
+    assert.deepEqual(summarizeSavedModels(importedEnvelope.savedModels), [
+      { id: 'm1', name: 'Source Model', width: 180 },
     ]);
     assert.equal(
-      Array.isArray((mergedModels[0]?.[0] as Record<string, unknown>)?.modulesConfiguration),
+      Array.isArray((importedEnvelope.savedModels[0] as Record<string, unknown>)?.modulesConfiguration),
       true
     );
-    assert.equal(typeof (mergedModels[0]?.[0] as Record<string, unknown>)?.cornerConfiguration, 'object');
+    assert.equal(
+      typeof (importedEnvelope.savedModels[0] as Record<string, unknown>)?.cornerConfiguration,
+      'object'
+    );
     assert.deepEqual(colorState, [
       { id: 'existing', value: '#111111' },
       { id: 'c1', value: '#f7f7f7' },
@@ -257,7 +262,7 @@ test('settings backup roundtrip restores models/colors/orders and emits a single
     assert.deepEqual(storageWrites['wardrobeSavedModels:hiddenPresets'], ['legacy-hidden']);
     assert.deepEqual(storageWrites['wardrobeSavedColors:order'], ['c1', 'existing']);
     assert.deepEqual(storageWrites.colorOrderState, ['c1', 'existing']);
-    assert.deepEqual(lifecycle, ['ensure', 'render']);
+    assert.deepEqual(lifecycle, ['ensure', 'ensure', 'render']);
 
     const seen: Array<{ message: string; type?: string }> = [];
     const toast = reportSettingsBackupActionResult(

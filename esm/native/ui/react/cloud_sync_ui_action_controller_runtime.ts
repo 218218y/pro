@@ -59,8 +59,14 @@ export function createCloudSyncUiActionController(
       return await runCloudSyncUiToggleSite2TabsGate({ app, fb, commands, nextOpen, meta });
     },
 
-    async resolveConflict(resolution) {
-      return await runCloudSyncUiResolveConflict({ app, fb, commands, resolution });
+    async resolveConflict(resolution, expectedConflictId) {
+      return await runCloudSyncUiResolveConflict({
+        app,
+        fb,
+        commands,
+        resolution,
+        expectedConflictId,
+      });
     },
   };
 }

@@ -92,7 +92,7 @@ test('maps_api keeps map writes store-backed and mirrors saved colors to storage
     },
   };
 
-  installCloudCollectionsService(App);
+  await installCloudCollectionsService(App);
   storageWrites.length = 0;
   installMapsApi(App);
 

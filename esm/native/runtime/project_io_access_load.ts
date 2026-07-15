@@ -10,6 +10,7 @@ import type {
 import { buildErrorResult as buildNormalizedErrorResult } from './error_normalization.js';
 import {
   buildProjectLoadActionErrorResult,
+  isProjectLoadAcceptedResult,
   type ProjectLoadActionResult,
   type ProjectLoadFailureReason,
 } from './project_load_action_result.js';
@@ -122,7 +123,7 @@ export function loadProjectDataActionResultViaServiceOrThrow(
   label = 'projectIO.loadProjectData'
 ): ProjectLoadActionResult {
   const result = loadProjectDataActionResultViaService(App, data, opts, defaultReason, defaultErrorMessage);
-  if (result.ok && result.pending !== true) return result;
+  if (isProjectLoadAcceptedResult(result) || result.ok) return result;
   throw new Error(buildProjectIoLoadFailureMessage(result, label, defaultErrorMessage));
 }
 

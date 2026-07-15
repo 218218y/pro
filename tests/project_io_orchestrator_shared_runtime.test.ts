@@ -7,6 +7,7 @@ import {
   readProjectLoadToastMessage,
   readProjectRestoreToastMessage,
 } from '../esm/native/io/project_io_orchestrator_shared.ts';
+import { createProjectLoadAcceptedResult } from '../esm/native/runtime/project_load_action_result.ts';
 
 test('project io shared normalizes ui snapshots without leaking null raw payloads', () => {
   assert.deepEqual(normalizeProjectIoUiState({ projectName: 'A', raw: null }), { projectName: 'A' });
@@ -19,7 +20,10 @@ test('project io shared normalizes ui snapshots without leaking null raw payload
 
 test('project io shared toast readers preserve canonical result semantics', () => {
   assert.equal(readProjectLoadToastMessage(buildProjectIoLoadResult(true)), 'הפרויקט נטען בהצלחה!');
-  assert.equal(readProjectLoadToastMessage(buildProjectIoLoadResult(true, { pending: true })), null);
+  assert.equal(
+    readProjectLoadToastMessage(createProjectLoadAcceptedResult(Promise.resolve({ ok: true }), 2, 1)),
+    null
+  );
   assert.equal(
     readProjectLoadToastMessage(buildProjectIoLoadResult(false, { reason: 'invalid' })),
     'קובץ הפרויקט לא תקין'

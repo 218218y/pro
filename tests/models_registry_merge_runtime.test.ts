@@ -10,7 +10,7 @@ import {
 import { modelsRuntimeState } from '../esm/native/services/models_registry_shared.ts';
 import { installCloudCollectionsForTestApp } from './cloud_collections_test_support.ts';
 
-function createApp() {
+async function createApp() {
   const store = new Map<string, string>();
   const storage = {
     KEYS: { SAVED_MODELS: 'saved_models' },
@@ -39,7 +39,7 @@ function createApp() {
     AppSettings: { STORAGE: storage },
     services: { storage, models: {} },
   } as any;
-  installCloudCollectionsForTestApp(App);
+  await installCloudCollectionsForTestApp(App);
   return { App, store };
 }
 
@@ -53,7 +53,7 @@ function resetRuntimeState() {
 }
 
 test('models registry ensureLoaded returns detached lists instead of the live runtime array', async () => {
-  const { App } = createApp();
+  const { App } = await createApp();
   resetRuntimeState();
 
   setModelPresetsInternal(App, [] as any);
@@ -79,7 +79,7 @@ test('models registry ensureLoaded returns detached lists instead of the live ru
 });
 
 test('models registry merge preserves updated names and avoids stale duplicate ids', async () => {
-  const { App } = createApp();
+  const { App } = await createApp();
   resetRuntimeState();
 
   setModelPresetsInternal(App, [] as any);
@@ -110,7 +110,7 @@ test('models registry merge preserves updated names and avoids stale duplicate i
 });
 
 test('models registry merge keeps the latest duplicate entry within a single import batch', async () => {
-  const { App } = createApp();
+  const { App } = await createApp();
   resetRuntimeState();
 
   setModelPresetsInternal(App, [] as any);
@@ -129,7 +129,7 @@ test('models registry merge keeps the latest duplicate entry within a single imp
 });
 
 test('models registry merge treats identical imported models as a no-op update', async () => {
-  const { App, store } = createApp();
+  const { App, store } = await createApp();
   resetRuntimeState();
 
   setModelPresetsInternal(App, [] as any);

@@ -60,6 +60,8 @@ test('cloud collections repository migrates legacy keys once into a versioned ca
     p: ['p1'],
     h: ['h1'],
   });
+  assert.equal(values.has(repository.envelopeKey), false);
+  await repository.ensureInitialized();
   assert.deepEqual(JSON.parse(values.get(repository.envelopeKey) || '{}'), {
     schemaVersion: 1,
     revision: 0,
@@ -80,8 +82,11 @@ test('cloud collections repository migrates legacy keys once into a versioned ca
   assert.equal(repository.read().m[0]?.id, 'm3');
 });
 
-test('cloud collections repository does not mirror or publish a revision when the envelope commit fails', () => {
-  const { values, storage } = createMapStorage({ models: [{ id: 'm1' }], colors: [] });
+test('cloud collections repository does not mirror or publish a revision when the envelope commit fails', async () => {
+  const { values, storage } = createMapStorage({
+    models: [{ id: 'm1', name: 'Model 1' }],
+    colors: [],
+  });
   const repository = createRepository({
     storage: {
       ...storage,
@@ -93,9 +98,10 @@ test('cloud collections repository does not mirror or publish a revision when th
     keys,
   });
 
-  assert.throws(() => repository.read(), /atomic commit failed/);
+  assert.deepEqual(repository.read().m, [{ id: 'm1', name: 'Model 1' }]);
+  await assert.rejects(repository.ensureInitialized(), /atomic commit failed/);
   assert.equal(values.has(repository.envelopeKey), false);
-  assert.deepEqual(JSON.parse(values.get('models') || '[]'), [{ id: 'm1' }]);
+  assert.deepEqual(JSON.parse(values.get('models') || '[]'), [{ id: 'm1', name: 'Model 1' }]);
 });
 
 test('cloud collections repository keeps the complete envelope authoritative when a per-key mirror fails', async () => {
@@ -107,7 +113,7 @@ test('cloud collections repository keeps the complete envelope authoritative whe
     hiddenPresets: [],
   });
   const repository = createRepository({ storage, keys });
-  repository.read();
+  await repository.ensureInitialized();
   const baseSetString = storage.setString;
   storage.setString = (key: unknown, value: unknown) => {
     if (String(key) === 'colors') return false;
@@ -134,7 +140,7 @@ test('cloud collections repository keeps the complete envelope authoritative whe
   assert.deepEqual(JSON.parse(values.get('colors') || '[]'), []);
 
   storage.setString = baseSetString;
-  repository.readEnvelope();
+  await repository.reconcileMirrors();
   assert.deepEqual(JSON.parse(values.get('colors') || '[]'), [{ id: 'c2', value: '#222' }]);
 });
 
@@ -153,7 +159,7 @@ test('cloud collections repository commits a multi-collection mutation with one 
     return baseSetString(key, value);
   };
   const repository = createRepository({ storage, keys });
-  repository.readEnvelope();
+  await repository.ensureInitialized();
   canonicalWrites = 0;
 
   await repository.transact(() => ({
@@ -208,7 +214,7 @@ test('cloud collections repository isolates observer failures after the canonica
     keys,
     reportObserverFailure: (error, observerIndex) => reported.push({ error, observerIndex }),
   });
-  repository.readEnvelope();
+  await repository.ensureInitialized();
   repository.subscribe(() => {
     throw new Error('observer failed');
   });
@@ -234,7 +240,7 @@ test('cloud collections repository repairs stale mirrors after repository recrea
     hiddenPresets: [],
   });
   const repository = createRepository({ storage, keys });
-  repository.readEnvelope();
+  await repository.ensureInitialized();
   await repository.transact(() => ({ savedModels: [{ id: 'm1', name: 'canonical' }] }));
   values.set('models', JSON.stringify([{ id: 'stale', name: 'stale mirror' }]));
 
@@ -243,7 +249,7 @@ test('cloud collections repository repairs stale mirrors after repository recrea
     setString: storage.setString.bind(storage),
   };
   const recreated = createRepository({ storage: recreatedStorage, keys });
-  recreated.readEnvelope();
+  await recreated.reconcileMirrors();
 
   assert.deepEqual(JSON.parse(values.get('models') || '[]'), [{ id: 'm1', name: 'canonical' }]);
 });
@@ -507,7 +513,7 @@ test('cloud collections repository rejects malformed nested entries and backs up
   assert.equal(backup.reason, 'shape');
 });
 
-test('cloud collections service publishes corruption recovery APIs before install reports the corrupt envelope', () => {
+test('cloud collections service publishes corruption recovery APIs before install reports the corrupt envelope', async () => {
   const values = new Map<string, string>();
   const raw = JSON.stringify({
     schemaVersion: 1,
@@ -533,7 +539,7 @@ test('cloud collections service publishes corruption recovery APIs before instal
     },
   } as any;
 
-  assert.throws(() => installCloudCollectionsService(App), /envelope is corrupt/i);
+  await assert.rejects(installCloudCollectionsService(App), /envelope is corrupt/i);
   const service = App.services.cloudCollections;
   assert.equal(typeof service?.readResult, 'function');
   assert.equal(typeof service?.backupCorruptEnvelope, 'function');
@@ -553,7 +559,7 @@ test('cloud collections repository does not publish or advance revision for a ca
     hiddenPresets: [],
   });
   const repository = createRepository({ storage, keys });
-  const initial = repository.readEnvelope();
+  const initial = (await repository.ensureInitialized()).envelope;
   let notifications = 0;
   repository.subscribe(() => {
     notifications += 1;
@@ -594,7 +600,6 @@ test('cloud collections Web Lock preserves concurrent mutations from separate re
     keys,
     mutationLock: webLock,
   });
-  repositoryA.readEnvelope();
   const repositoryB = createCloudCollectionsRepository({
     storage: createStorageView(),
     keys,
@@ -611,6 +616,50 @@ test('cloud collections Web Lock preserves concurrent mutations from separate re
   assert.equal(envelope.revision, 2);
   assert.deepEqual(envelope.savedColors, [{ id: 'c1', value: '#111' }]);
   assert.deepEqual(envelope.savedModels, [{ id: 'm1', name: 'model' }]);
+});
+
+test('cloud collections mirror reconciliation cannot overwrite a concurrent committed mirror', async () => {
+  const values = new Map<string, string>();
+  const createStorageView = () => ({
+    getString(key: unknown) {
+      return values.get(String(key)) ?? null;
+    },
+    setString(key: unknown, value: unknown) {
+      values.set(String(key), String(value));
+      return true;
+    },
+  });
+  let tail = Promise.resolve();
+  const webLock = createCloudCollectionsWebLock({
+    request<T>(_name: string, operation: () => Promise<T> | T): Promise<T> {
+      const result = tail.then(operation, operation);
+      tail = result.then(
+        () => undefined,
+        () => undefined
+      );
+      return result;
+    },
+  });
+  const repositoryA = createCloudCollectionsRepository({
+    storage: createStorageView(),
+    keys,
+    mutationLock: webLock,
+  });
+  const repositoryB = createCloudCollectionsRepository({
+    storage: createStorageView(),
+    keys,
+    mutationLock: webLock,
+  });
+  await repositoryA.ensureInitialized();
+  values.set('models', JSON.stringify([{ id: 'stale', name: 'Stale mirror' }]));
+
+  await Promise.all([
+    repositoryA.reconcileMirrors(),
+    repositoryB.transact(() => ({ savedModels: [{ id: 'new', name: 'New model' }] })),
+  ]);
+
+  assert.deepEqual(JSON.parse(values.get('models') || '[]'), [{ id: 'new', name: 'New model' }]);
+  assert.deepEqual(repositoryA.readEnvelope().savedModels, [{ id: 'new', name: 'New model' }]);
 });
 
 test('cloud collections Web Lock evaluates same-collection entity mutations after the locked reread', async () => {
@@ -640,7 +689,6 @@ test('cloud collections Web Lock evaluates same-collection entity mutations afte
     keys,
     mutationLock: webLock,
   });
-  repositoryA.readEnvelope();
   const repositoryB = createCloudCollectionsRepository({
     storage: createStorageView(),
     keys,

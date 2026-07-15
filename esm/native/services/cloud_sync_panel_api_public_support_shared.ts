@@ -19,6 +19,8 @@ function cloneCloudSyncConflictStatus(value: unknown): CloudSyncPanelSnapshot['c
     return undefined;
   }
   return {
+    conflictId: typeof conflict.conflictId === 'string' ? conflict.conflictId : '',
+    generation: Number(conflict.generation) || 0,
     room: typeof conflict.room === 'string' ? conflict.room : '',
     keys: Array.isArray(conflict.keys) ? conflict.keys.map(key => String(key)) : [],
     remoteRevision: Number(conflict.remoteRevision) || 0,

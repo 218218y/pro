@@ -7,6 +7,7 @@ import {
   reportProjectSaveResult,
   reportResetDefaultResult,
 } from '../esm/native/ui/project_action_feedback.ts';
+import { createProjectLoadAcceptedResult } from '../esm/native/runtime/project_load_action_result.ts';
 
 test('project action feedback reporters keep flow semantics stable across load/restore/save/reset', () => {
   const seen: Array<{ message: string; type?: string }> = [];
@@ -16,7 +17,10 @@ test('project action feedback reporters keep flow semantics stable across load/r
     },
   };
 
-  assert.equal(reportProjectLoadResult(fb, { ok: true, pending: true }), null);
+  assert.equal(
+    reportProjectLoadResult(fb, createProjectLoadAcceptedResult(Promise.resolve({ ok: true }), 2, 1)),
+    null
+  );
   assert.deepEqual(reportProjectLoadResult(fb, { ok: true }), {
     message: 'הפרויקט נטען בהצלחה!',
     type: 'success',

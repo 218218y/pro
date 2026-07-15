@@ -102,8 +102,14 @@ const CLOUD_SYNC_ASYNC_COMMANDS = {
     whenUnavailable: () => buildRoomModeUnavailableResult('private'),
   },
   resolveConflict: {
-    call: (service: CloudSyncServiceLike | null, resolution: CloudSyncConflictResolution) =>
-      typeof service?.resolveConflict === 'function' ? service.resolveConflict(resolution) : null,
+    call: (
+      service: CloudSyncServiceLike | null,
+      resolution: CloudSyncConflictResolution,
+      expectedConflictId?: string
+    ) =>
+      typeof service?.resolveConflict === 'function'
+        ? service.resolveConflict(resolution, expectedConflictId)
+        : null,
     whenUnavailable: (resolution: CloudSyncConflictResolution) =>
       buildConflictResolutionUnavailableResult(resolution),
   },
@@ -116,7 +122,7 @@ const CLOUD_SYNC_ASYNC_COMMANDS = {
   goPublic: CloudSyncAsyncCommandSpec<[], CloudSyncRoomModeCommandResult>;
   goPrivate: CloudSyncAsyncCommandSpec<[], CloudSyncRoomModeCommandResult>;
   resolveConflict: CloudSyncAsyncCommandSpec<
-    [CloudSyncConflictResolution],
+    [CloudSyncConflictResolution, string?],
     CloudSyncConflictResolutionResult
   >;
 };
@@ -185,7 +191,13 @@ export async function goCloudSyncPrivate(app: AppContainer): Promise<CloudSyncRo
 
 export async function resolveCloudSyncConflict(
   app: AppContainer,
-  resolution: CloudSyncConflictResolution
+  resolution: CloudSyncConflictResolution,
+  expectedConflictId?: string
 ): Promise<CloudSyncConflictResolutionResult> {
-  return await runCloudSyncAsyncCommand(app, CLOUD_SYNC_ASYNC_COMMANDS.resolveConflict, resolution);
+  return await runCloudSyncAsyncCommand(
+    app,
+    CLOUD_SYNC_ASYNC_COMMANDS.resolveConflict,
+    resolution,
+    expectedConflictId
+  );
 }

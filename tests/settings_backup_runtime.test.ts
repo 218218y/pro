@@ -107,7 +107,7 @@ test('exportSystemSettings returns a success result and triggers browser downloa
     },
   };
 
-  installCloudCollectionsForTestApp(app);
+  await installCloudCollectionsForTestApp(app);
 
   const result = await exportSystemSettings(app as never);
   assert.deepEqual(result, { ok: true, kind: 'export', modelsCount: 1, colorsCount: 1 });
@@ -208,7 +208,7 @@ test('importSystemSettings merges models/colors, syncs storage order, and clears
       },
     };
 
-    installCloudCollectionsForTestApp(app);
+    await installCloudCollectionsForTestApp(app);
 
     const payload = {
       type: 'system_backup',
@@ -239,7 +239,7 @@ test('importSystemSettings merges models/colors, syncs storage order, and clears
     assert.deepEqual(storageWrites['wardrobeSavedModels:hiddenPresets'], ['b']);
     assert.deepEqual(storageWrites['wardrobeSavedColors:order'], ['new-color', 'existing']);
     assert.deepEqual(storageWrites.colorOrderState, ['new-color', 'existing']);
-    assert.deepEqual(rendered, ['ensure', 'render']);
+    assert.deepEqual(rendered, ['ensure', 'ensure', 'render']);
     assert.equal(confirmed.length, 1);
     const perfEntries = getPerfEntries(app as never, 'settingsBackup.import');
     assert.equal(perfEntries.length, 1);
@@ -247,9 +247,10 @@ test('importSystemSettings merges models/colors, syncs storage order, and clears
     assert.equal(getPerfEntries(app as never, 'settingsBackup.import.confirm').length, 1);
     assert.equal(getPerfEntries(app as never, 'settingsBackup.import.readFile').length, 1);
     assert.equal(getPerfEntries(app as never, 'settingsBackup.import.parse').length, 1);
-    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.models.merge').length, 1);
-    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.colors').length, 1);
-    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.models.finalize').length, 1);
+    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.models.merge').length, 0);
+    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.colors').length, 0);
+    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.models.finalize').length, 0);
+    assert.equal(getPerfEntries(app as never, 'settingsBackup.import.commit').length, 1);
     assert.equal(getPerfEntries(app as never, 'settingsBackup.import.collections.commit').length, 1);
   } finally {
     (globalThis as { FileReader?: unknown }).FileReader = originalReader;

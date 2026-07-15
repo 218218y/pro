@@ -55,6 +55,8 @@ export type CloudSyncGatewayReadResult = CloudSyncReadResult;
 export type CloudSyncConflictState = 'awaiting-resolution' | 'resolving' | 'resolved';
 
 export interface CloudSyncConflictStatus extends UnknownRecord {
+  conflictId: string;
+  generation: number;
   room: string;
   keys: string[];
   remoteRevision: number;
@@ -62,10 +64,28 @@ export interface CloudSyncConflictStatus extends UnknownRecord {
   state: CloudSyncConflictState;
 }
 
+export type CloudSyncConflictValue = { present: false } | { present: true; value: unknown };
+
+export type CloudSyncConflictFieldProjection =
+  | {
+      kind: 'field';
+      base: CloudSyncConflictValue;
+      local: CloudSyncConflictValue;
+      remote: CloudSyncConflictValue;
+    }
+  | {
+      kind: 'entities';
+      entities: Array<{
+        id: string;
+        base: CloudSyncConflictValue;
+        local: CloudSyncConflictValue;
+        remote: CloudSyncConflictValue;
+      }>;
+    };
+
 export interface CloudSyncConflictRecord extends CloudSyncConflictStatus {
-  base: CloudSyncPayload;
-  local: CloudSyncPayload;
-  remote: CloudSyncPayload;
+  fields: Record<string, CloudSyncConflictFieldProjection>;
+  projectionAvailable: boolean;
 }
 
 export type CloudSyncConflictResolution = 'keep-local' | 'use-remote';
@@ -299,6 +319,12 @@ export interface CloudCollectionsCommitResult {
   }>;
 }
 
+export interface CloudCollectionsInitializationResult {
+  initialized: boolean;
+  envelope: CloudCollectionsEnvelope;
+  mirrorFailures: string[];
+}
+
 export type CloudCollectionsMutationIsolation = 'cross-tab' | 'process' | 'unavailable';
 
 export interface CloudCollectionsMutationLockLike {
@@ -312,13 +338,14 @@ export interface CloudCollectionsRepositoryLike {
   read(): CloudSyncLocalCollections;
   readEnvelope(): CloudCollectionsEnvelope;
   readResult(): CloudCollectionsReadResult;
+  ensureInitialized(): Promise<CloudCollectionsInitializationResult>;
+  reconcileMirrors(): Promise<string[]>;
   transact(mutator: CloudCollectionsMutator): Promise<CloudCollectionsCommitResult>;
   commit(next: CloudSyncLocalCollections): Promise<CloudCollectionsCommitResult>;
   commitIfRevision(
     expectedRevision: number,
     next: CloudSyncLocalCollections
   ): Promise<CloudCollectionsCommitResult>;
-  repairMirrors(): string[];
   backupCorruptEnvelope(): string;
   resetCorruptEnvelope(next: CloudSyncLocalCollections): Promise<CloudCollectionsCommitResult>;
   subscribe(listener: (envelope: CloudCollectionsEnvelope) => void): () => void;
@@ -328,8 +355,9 @@ export interface CloudCollectionsServiceLike extends UnknownRecord {
   repository?: CloudCollectionsRepositoryLike;
   readEnvelope?: () => CloudCollectionsEnvelope;
   readResult?: () => CloudCollectionsReadResult;
+  ensureInitialized?: () => Promise<CloudCollectionsInitializationResult>;
+  reconcileMirrors?: () => Promise<string[]>;
   transact?: (mutator: CloudCollectionsMutator) => Promise<CloudCollectionsCommitResult>;
-  repairMirrors?: () => string[];
   backupCorruptEnvelope?: () => string;
   resetCorruptEnvelope?: (next: CloudSyncLocalCollections) => Promise<CloudCollectionsCommitResult>;
 }
@@ -538,7 +566,10 @@ export interface CloudSyncPanelApiDeps extends UnknownRecord {
   getPrivateRoomCredential: () => CloudSyncRoomCredential | null;
   setPrivateRoomCredential: (credential: CloudSyncRoomCredential) => boolean;
   issuePrivateRoom: () => Promise<CloudSyncCredentialIssueResult>;
-  resolveConflict: (resolution: CloudSyncConflictResolution) => Promise<CloudSyncConflictResolutionResult>;
+  resolveConflict: (
+    resolution: CloudSyncConflictResolution,
+    expectedConflictId?: string
+  ) => Promise<CloudSyncConflictResolutionResult>;
   setRoomCredentialInUrl: (
     app: AppContainer,
     args: {
@@ -605,7 +636,10 @@ export interface CloudSyncServiceLike extends UnknownRecord {
   subscribePanelSnapshot?: (fn: (snapshot: CloudSyncPanelSnapshot) => void) => void | (() => void);
   goPublic?: () => Promise<CloudSyncRoomModeCommandResult>;
   goPrivate?: () => Promise<CloudSyncRoomModeCommandResult>;
-  resolveConflict?: (resolution: CloudSyncConflictResolution) => Promise<CloudSyncConflictResolutionResult>;
+  resolveConflict?: (
+    resolution: CloudSyncConflictResolution,
+    expectedConflictId?: string
+  ) => Promise<CloudSyncConflictResolutionResult>;
   getShareLink?: () => string;
   copyShareLink?: () => Promise<CloudSyncShareLinkCommandResult>;
   syncSketchNow?: (options?: CloudSyncSketchSyncOptions) => Promise<CloudSyncSketchCommandResult>;

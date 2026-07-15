@@ -198,6 +198,8 @@ test('owner gateway rejects competing edits without a blind retry', async () => 
   assert.equal(result.conflict, true);
   assert.equal(writeCount, 1);
   assert.deepEqual(runtimeStatus.conflict, {
+    conflictId: runtimeStatus.conflict.conflictId,
+    generation: 1,
     room: 'room_a',
     keys: ['sketchHash'],
     remoteRevision: 5,
@@ -614,13 +616,34 @@ test('live owners reconcile cross-tab conflict creation and resolution before ma
   assert.equal(readCount, 1);
   assert.equal(writeCount, 1);
 
-  const resolved = await ownerA.resolveConflict(
-    'room_a',
-    'use-remote',
-    async () => ({ ok: true, uiRefreshWarning: false }),
-    () => ({ payload: { sketchHash: 'local' }, revision: 9 })
-  );
-  assert.equal(resolved.ok, true);
+  let adoptionCount = 0;
+  const [keepLocal, staleUseRemote] = await Promise.all([
+    ownerA.resolveConflict(
+      'room_a',
+      'keep-local',
+      async () => {
+        adoptionCount += 1;
+        return { ok: true, uiRefreshWarning: false };
+      },
+      () => ({ payload: { sketchHash: 'local' }, revision: 9 })
+    ),
+    ownerB.resolveConflict(
+      'room_a',
+      'use-remote',
+      async () => {
+        adoptionCount += 1;
+        return { ok: true, uiRefreshWarning: false };
+      },
+      () => ({ payload: { sketchHash: 'tab-b' }, revision: 10 })
+    ),
+  ]);
+  assert.equal(keepLocal.ok, true);
+  assert.deepEqual(staleUseRemote, {
+    ok: false,
+    resolution: 'use-remote',
+    reason: 'missing-conflict',
+  });
+  assert.equal(adoptionCount, 1, 'only one tab may adopt or write a conflict resolution');
 
   const unblockedPull = await ownerB.getRow('gateway', 'anon', 'room_a');
   const unblockedPush = await ownerB.upsertRow('gateway', 'anon', 'room_a', {
@@ -630,7 +653,7 @@ test('live owners reconcile cross-tab conflict creation and resolution before ma
   assert.equal(unblockedPush.ok, true);
   assert.equal(runtimeB.conflict, undefined);
   assert.equal(readCount, 3);
-  assert.equal(writeCount, 2);
+  assert.equal(writeCount, 3);
 });
 
 test('owner gateway publishes an explicit status when conflict persistence fails', async () => {

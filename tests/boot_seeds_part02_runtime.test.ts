@@ -9,7 +9,7 @@ import {
 } from '../esm/native/services/boot_seeds_part02.ts';
 import { installCloudCollectionsService } from '../esm/native/services/cloud_collections_service.ts';
 
-function makeApp(config: Record<string, unknown> = {}) {
+async function makeApp(config: Record<string, unknown> = {}) {
   const cfg = { ...config };
   const storageValues = new Map<string, string>();
   const calls: Record<string, unknown[]> = {
@@ -75,12 +75,12 @@ function makeApp(config: Record<string, unknown> = {}) {
       },
     },
   };
-  installCloudCollectionsService(App as never);
+  await installCloudCollectionsService(App as never);
   return { App, calls, config: cfg };
 }
 
-test('seedMultiColorMode prefers actions.colors.setMultiMode and seeds default false meta', () => {
-  const { App, calls } = makeApp({});
+test('seedMultiColorMode prefers actions.colors.setMultiMode and seeds default false meta', async () => {
+  const { App, calls } = await makeApp({});
   seedMultiColorMode(App as never);
   assert.equal(calls.multi.length, 1);
   assert.deepEqual(calls.multi[0], {
@@ -98,7 +98,7 @@ test('seedMultiColorMode prefers actions.colors.setMultiMode and seeds default f
 });
 
 test('seedColorSwatchesOrder reads storage order and writes normalized swatches with restore meta', async () => {
-  const { App, calls } = makeApp({ colorSwatchesOrder: [] });
+  const { App, calls } = await makeApp({ colorSwatchesOrder: [] });
   await seedColorSwatchesOrder(App as never);
   assert.equal(calls.colors.length, 1);
   assert.deepEqual(calls.colors[0], {
@@ -117,7 +117,7 @@ test('seedColorSwatchesOrder reads storage order and writes normalized swatches 
 });
 
 test('seedSavedColors hydrates an empty boot config from stored saved colors without rewriting storage', async () => {
-  const { App, calls } = makeApp({ savedColors: [] });
+  const { App, calls } = await makeApp({ savedColors: [] });
   const storage = ((App as any).services as any).storage;
   storage.getString = (key: string) => {
     if (key === 'wardrobeSavedColors') {
@@ -163,7 +163,7 @@ test('seedSavedColors hydrates an empty boot config from stored saved colors wit
 });
 
 test('installBootSeedsPart02 is idempotent and reuses the same boot bucket', async () => {
-  const { App } = makeApp({ colorSwatchesOrder: ['already'], isMultiColorMode: true });
+  const { App } = await makeApp({ colorSwatchesOrder: ['already'], isMultiColorMode: true });
   const boot1 = await installBootSeedsPart02(App as never);
   const boot2 = await installBootSeedsPart02(App as never);
   assert.equal(boot1, boot2);
@@ -171,7 +171,7 @@ test('installBootSeedsPart02 is idempotent and reuses the same boot bucket', asy
 });
 
 test('installBootSeedsPart02 heals missing seeded config even when the old boot flag is already set', async () => {
-  const { App, config } = makeApp({});
+  const { App, config } = await makeApp({});
   (App as any).__wpInternal = { boot: { bootSeedsPart02Installed: true } };
 
   const boot = await installBootSeedsPart02(App as never);

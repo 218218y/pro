@@ -46,6 +46,16 @@ function createServicesApiStub() {
       }
       return { ok: false, reason: fallbackReason };
     },
+    isProjectLoadAcceptedResult(value) {
+      return !!(
+        value &&
+        typeof value === 'object' &&
+        value.accepted === true &&
+        typeof value.operationId === 'string' &&
+        value.settled &&
+        typeof value.settled.then === 'function'
+      );
+    },
     normalizeProjectRestoreActionResult(value, fallbackReason = 'error') {
       if (value && typeof value === 'object' && value.ok === true) return value;
       if (value && typeof value === 'object' && value.ok === false) {

@@ -1,4 +1,4 @@
-import type { AppContainer, ModelsMergeResult } from '../../../types';
+import type { AppContainer } from '../../../types';
 import { normalizeUnknownError } from '../services/api.js';
 import type { SettingsBackupActionResult } from './settings_backup_contracts.js';
 import {
@@ -9,9 +9,8 @@ import {
 import { clearInputValue, getImportFile, SettingsBackupActionError } from './settings_backup_shared.js';
 import { requireSettingsBackupApp, settingsBackupReport } from './settings_backup_support.js';
 import {
-  applyImportedColorSettings,
-  finalizeImportedModels,
-  mergeImportedModelsStrict,
+  buildSettingsImportPlan,
+  commitSettingsImportPlan,
   parseSettingsBackupSafe,
   readBackupFileTextSafe,
 } from './settings_backup_import_support.js';
@@ -57,28 +56,15 @@ export async function importSystemSettings(
               return buildSettingsBackupImportFailureResult(parsed.reason, parsed.message);
             }
 
-            const data = parsed.data;
-            let modelsAdded = 0;
-            let modelsMergeResult: ModelsMergeResult = { added: 0, updated: 0 };
-
-            if (data.savedModels.length > 0) {
-              modelsMergeResult = await runSettingsBackupPerfAction(
-                App,
-                'settingsBackup.import.models.merge',
-                () => mergeImportedModelsStrict(App, data.savedModels)
-              );
-              modelsAdded = Number.isFinite(Number(modelsMergeResult.added))
-                ? Number(modelsMergeResult.added)
-                : 0;
-            }
-
-            const colorsAdded = await runSettingsBackupPerfAction(App, 'settingsBackup.import.colors', () =>
-              applyImportedColorSettings(App, data)
+            const plan = buildSettingsImportPlan(App, parsed.data);
+            const committed = await runSettingsBackupPerfAction(App, 'settingsBackup.import.commit', () =>
+              commitSettingsImportPlan(App, plan)
             );
-            await runSettingsBackupPerfAction(App, 'settingsBackup.import.models.finalize', () =>
-              finalizeImportedModels(App, modelsMergeResult)
+            return buildSettingsBackupImportSuccessResult(
+              committed.modelsMergeResult.added,
+              committed.colorsAdded,
+              committed.warnings
             );
-            return buildSettingsBackupImportSuccessResult(modelsAdded, colorsAdded);
           },
         })
     );

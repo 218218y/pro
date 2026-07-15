@@ -177,7 +177,7 @@ test('history/models install healing runtime: history stable refs follow the lat
   assert.equal(system2.resumeCalls, 1);
 });
 
-test('history/models install healing runtime: models stable refs follow the latest owner when a shared service surface is reinstalled under another App', () => {
+test('history/models install healing runtime: models stable refs follow the latest owner when a shared service surface is reinstalled under another App', async () => {
   const sharedModels: any = {
     _all: [],
     _listeners: [],
@@ -209,8 +209,8 @@ test('history/models install healing runtime: models stable refs follow the late
     },
   };
 
-  installCloudCollectionsForTestApp(App1);
-  installCloudCollectionsForTestApp(App2);
+  await installCloudCollectionsForTestApp(App1);
+  await installCloudCollectionsForTestApp(App2);
 
   const firstInstall = installModelsService(App1);
   const ensureLoadedRef = firstInstall.ensureLoaded;
@@ -230,7 +230,7 @@ test('history/models install healing runtime: models stable refs follow the late
   );
 });
 
-test('history/models install healing runtime: first install replaces placeholder models stubs with the live service bindings', () => {
+test('history/models install healing runtime: first install replaces placeholder models stubs with the live service bindings', async () => {
   const App: any = {
     services: {
       models: {},
@@ -244,7 +244,7 @@ test('history/models install healing runtime: first install replaces placeholder
     },
   };
 
-  installCloudCollectionsForTestApp(App);
+  await installCloudCollectionsForTestApp(App);
 
   const models = installModelsService(App);
   assert.equal(models.__wpModelsServiceInstalled, true);
@@ -260,7 +260,7 @@ test('history/models install healing runtime: first install replaces placeholder
   assert.equal(models.getAll().length, 1);
 });
 
-test('history/models install healing runtime: preset boot step populates built-in models through the live models service', () => {
+test('history/models install healing runtime: preset boot step populates built-in models through the live models service', async () => {
   const App: any = {
     services: {
       models: {},
@@ -274,7 +274,7 @@ test('history/models install healing runtime: preset boot step populates built-i
     },
   };
 
-  installCloudCollectionsForTestApp(App);
+  await installCloudCollectionsForTestApp(App);
 
   installModelsService(App);
   assert.equal(installPresetModels(App), true);

@@ -192,9 +192,9 @@ export async function runCloudSyncUiToggleSite2TabsGate(
 }
 
 export async function runCloudSyncUiResolveConflict(
-  args: MutationRunArgs & { resolution: CloudSyncConflictResolution }
+  args: MutationRunArgs & { resolution: CloudSyncConflictResolution; expectedConflictId?: string }
 ): Promise<CloudSyncConflictResolutionResult> {
-  const { app, fb, commands, resolution } = args;
+  const { app, fb, commands, resolution, expectedConflictId } = args;
   return await runAppActionFamilySingleFlight({
     app,
     flights: conflictResolutionFlights,
@@ -210,7 +210,7 @@ export async function runCloudSyncUiResolveConflict(
     },
     run: async () => {
       try {
-        const result = await commands.resolveConflictCommand(app, resolution);
+        const result = await commands.resolveConflictCommand(app, resolution, expectedConflictId);
         reportCloudSyncConflictResolutionResult(fb, result);
         return result;
       } catch {

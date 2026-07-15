@@ -58,3 +58,5 @@ export {
   loadProjectDataViaServiceOrThrow,
   buildDefaultProjectDataViaServiceOrThrow,
 };
+
+export { isProjectLoadAcceptedResult } from './project_load_action_result.js';

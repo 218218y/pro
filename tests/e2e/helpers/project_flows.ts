@@ -242,6 +242,25 @@ const CLOUD_SYNC_GATEWAY_REQUESTS = new WeakMap<
   Array<{ action: string; room: string; payload: Record<string, unknown> }>
 >();
 
+export type CloudSyncGatewayIsolationRow = {
+  room: string;
+  payload: Record<string, unknown>;
+  revision: number;
+  updated_at: string;
+  updated_by: string;
+};
+
+export type CloudSyncGatewayIsolationState = {
+  rows: Map<string, CloudSyncGatewayIsolationRow>;
+  readDelayMs?: number;
+};
+
+export function createCloudSyncGatewayIsolationState(
+  rows: readonly CloudSyncGatewayIsolationRow[] = []
+): CloudSyncGatewayIsolationState {
+  return { rows: new Map(rows.map(row => [row.room, { ...row, payload: { ...row.payload } }])) };
+}
+
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -291,24 +310,25 @@ function buildE2eRoomCredential(room: string): { room: string; token: string; ex
   };
 }
 
-function buildSmokeAppUrl(initialCloudSyncRoom: 'private' | 'public'): string {
+function buildSmokeAppUrl(
+  initialCloudSyncRoom: 'private' | 'public',
+  requestedRoom?: string,
+  requestedToken?: string
+): string {
   if (initialCloudSyncRoom === 'public') return '/index_pro.html';
-  const room = `e2e-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-  return `/index_pro.html#room=${encodeURIComponent(room)}&roomToken=${encodeURIComponent(buildE2eRoomToken())}`;
+  const room =
+    String(requestedRoom || '').trim() ||
+    `e2e-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  const token = String(requestedToken || '').trim() || buildE2eRoomToken();
+  return `/index_pro.html#room=${encodeURIComponent(room)}&roomToken=${encodeURIComponent(token)}`;
 }
 
-async function installCloudSyncGatewayIsolation(page: Page): Promise<void> {
+async function installCloudSyncGatewayIsolation(
+  page: Page,
+  gatewayState: CloudSyncGatewayIsolationState = createCloudSyncGatewayIsolationState()
+): Promise<void> {
   if (CLOUD_SYNC_GATEWAY_ISOLATION_INSTALLED.has(page)) return;
-  const rows = new Map<
-    string,
-    {
-      room: string;
-      payload: Record<string, unknown>;
-      revision: number;
-      updated_at: string;
-      updated_by: string;
-    }
-  >();
+  const rows = gatewayState.rows;
 
   await page.route('**/functions/v1/wp-cloud-sync-room', async route => {
     const request = route.request();
@@ -353,6 +373,9 @@ async function installCloudSyncGatewayIsolation(page: Page): Promise<void> {
       return;
     }
     if (action === 'read') {
+      if (gatewayState.readDelayMs && gatewayState.readDelayMs > 0) {
+        await new Promise(resolve => setTimeout(resolve, gatewayState.readDelayMs));
+      }
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -411,6 +434,9 @@ export function expectNoRuntimeIssues(issues: RuntimeIssueCollector): void {
 
 export type GotoSmokeAppOptions = {
   initialCloudSyncRoom?: 'private' | 'public';
+  cloudSyncRoom?: string;
+  cloudSyncRoomToken?: string;
+  cloudSyncGatewayState?: CloudSyncGatewayIsolationState;
 };
 
 export function readCloudSyncGatewayRequests(
@@ -423,7 +449,7 @@ export function readCloudSyncGatewayRequests(
 }
 
 export async function gotoSmokeApp(page: Page, options: GotoSmokeAppOptions = {}): Promise<void> {
-  await installCloudSyncGatewayIsolation(page);
+  await installCloudSyncGatewayIsolation(page, options.cloudSyncGatewayState);
   CLOUD_SYNC_GATEWAY_REQUESTS.set(page, []);
   await page.addInitScript(
     ({ localKeys, sessionKeys }) => {
@@ -447,10 +473,17 @@ export async function gotoSmokeApp(page: Page, options: GotoSmokeAppOptions = {}
       sessionKeys: [...APP_SESSION_STORAGE_KEYS_RESET_BEFORE_SMOKE_NAVIGATION],
     }
   );
-  await page.goto(buildSmokeAppUrl(options.initialCloudSyncRoom || 'private'), {
-    waitUntil: 'load',
-    timeout: SMOKE_APP_GOTO_TIMEOUT_MS,
-  });
+  await page.goto(
+    buildSmokeAppUrl(
+      options.initialCloudSyncRoom || 'private',
+      options.cloudSyncRoom,
+      options.cloudSyncRoomToken
+    ),
+    {
+      waitUntil: 'load',
+      timeout: SMOKE_APP_GOTO_TIMEOUT_MS,
+    }
+  );
   await page.evaluate(() => {
     const win = window as typeof window & {
       __WP_PROJECT_ACTION_EVENTS__?: ProjectActionEventDetail[];

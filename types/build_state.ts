@@ -106,6 +106,7 @@ export interface ProjectLoadOpts extends UnknownRecord {
   silent?: boolean;
   toast?: boolean;
   toastMessage?: string;
+  queueIfBusy?: boolean;
   meta?: UnknownRecord;
 }
 

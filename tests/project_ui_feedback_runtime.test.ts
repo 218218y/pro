@@ -12,6 +12,7 @@ import {
   reportProjectSaveResult,
   reportResetDefaultResult,
 } from '../esm/native/ui/project_action_feedback.ts';
+import { createProjectLoadAcceptedResult } from '../esm/native/runtime/project_load_action_result.ts';
 
 test('project ui feedback helpers map command results to stable user-facing messages', () => {
   assert.deepEqual(getProjectLoadToast({ ok: false, reason: 'not-installed' }), {
@@ -34,7 +35,10 @@ test('project ui feedback helpers map command results to stable user-facing mess
     type: 'error',
   });
   assert.equal(getProjectLoadToast({ ok: false, reason: 'superseded' }), null);
-  assert.equal(getProjectLoadToast({ ok: true, pending: true }), null);
+  assert.equal(
+    getProjectLoadToast(createProjectLoadAcceptedResult(Promise.resolve({ ok: true }), 2, 1)),
+    null
+  );
   assert.deepEqual(getProjectLoadToast({ ok: true }), {
     message: 'הפרויקט נטען בהצלחה!',
     type: 'success',

@@ -9,6 +9,7 @@ import type {
   UnknownRecord,
 } from '../../../types/index.js';
 import {
+  isProjectLoadAcceptedResult,
   normalizeProjectLoadActionResult,
   type ProjectLoadActionResult,
 } from '../runtime/project_load_action_result.js';
@@ -95,7 +96,8 @@ export function readProjectLoadToastMessage(
 ): string | null {
   if (!result) return 'טעינת קובץ נכשלה';
   const normalized = normalizeProjectLoadActionResult(result, 'error');
-  if (normalized.ok) return normalized.pending === true ? null : 'הפרויקט נטען בהצלחה!';
+  if (isProjectLoadAcceptedResult(normalized)) return null;
+  if (normalized.ok) return 'הפרויקט נטען בהצלחה!';
   const reason =
     'reason' in normalized && typeof normalized.reason === 'string' ? normalized.reason.trim() : '';
   const message =

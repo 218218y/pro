@@ -19,7 +19,7 @@ test('cloud_sync lifecycle: double install/uninstall stays idempotent and cleans
   try {
     const { app, win, doc, storage } = makeApp({ realtime: false, pollMs: 25 });
 
-    installCloudCollectionsService(app);
+    await installCloudCollectionsService(app);
     await installCloudSyncService(app);
     assert.equal(typeof app.services.cloudSync.dispose, 'function');
     assert.equal(timers.activeCount('interval'), 1);
@@ -67,7 +67,7 @@ test('cloud_sync lifecycle: no timer/listener leaks after dispose', async () => 
 
   try {
     const { app, win } = makeApp({ realtime: false, pollMs: 25 });
-    installCloudCollectionsService(app);
+    await installCloudCollectionsService(app);
     await installCloudSyncService(app);
 
     const fetchCountBeforeDispose = fetchStub.calls.length;

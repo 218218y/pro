@@ -1,5 +1,10 @@
 export type SettingsBackupActionKind = 'export' | 'import';
 
+export type SettingsBackupImportWarning = {
+  effect: 'models-refresh' | 'colors-refresh';
+  message: string;
+};
+
 export type SettingsBackupExportFailureReason = 'download-unavailable' | 'busy' | 'error';
 
 export type SettingsBackupImportFailureReason =
@@ -17,6 +22,7 @@ export type SettingsBackupImportSuccessResult = {
   kind: 'import';
   modelsAdded: number;
   colorsAdded: number;
+  warnings?: SettingsBackupImportWarning[];
 };
 
 export type SettingsBackupSuccessResult =

@@ -1,6 +1,7 @@
 import type {
   CloudCollectionsCommitResult,
   CloudCollectionsEnvelope,
+  CloudCollectionsInitializationResult,
   CloudCollectionsMutator,
   CloudCollectionsReadResult,
   CloudCollectionsRepositoryLike,
@@ -48,6 +49,20 @@ export function transactCloudCollectionsViaServiceOrThrow(
   context?: string
 ): Promise<CloudCollectionsCommitResult> {
   return getCloudCollectionsRepositoryViaServiceOrThrow(App, context).transact(mutator);
+}
+
+export function ensureCloudCollectionsInitializedViaServiceOrThrow(
+  App: unknown,
+  context?: string
+): Promise<CloudCollectionsInitializationResult> {
+  return getCloudCollectionsRepositoryViaServiceOrThrow(App, context).ensureInitialized();
+}
+
+export function reconcileCloudCollectionMirrorsViaServiceOrThrow(
+  App: unknown,
+  context?: string
+): Promise<string[]> {
+  return getCloudCollectionsRepositoryViaServiceOrThrow(App, context).reconcileMirrors();
 }
 
 export function commitCloudCollectionsViaServiceOrThrow(

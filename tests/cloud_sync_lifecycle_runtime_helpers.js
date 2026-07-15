@@ -194,7 +194,26 @@ export function createFetchStub() {
 export function makeApp({ realtime = false, pollMs = 50, testCreateSupabaseClient = null } = {}) {
   const win = createEventTarget('window');
   win.location = { search: '', href: 'https://example.test/index_pro.html' };
-  win.navigator = { onLine: true, userAgent: 'unit-test' };
+  const lockTails = new Map();
+  win.navigator = {
+    onLine: true,
+    userAgent: 'unit-test',
+    locks: {
+      request(name, operation) {
+        const previous = lockTails.get(name) || Promise.resolve();
+        const request = previous.catch(() => undefined).then(operation);
+        const settled = request.then(
+          () => undefined,
+          () => undefined
+        );
+        lockTails.set(name, settled);
+        void settled.finally(() => {
+          if (lockTails.get(name) === settled) lockTails.delete(name);
+        });
+        return request;
+      },
+    },
+  };
   const doc = Object.assign(createEventTarget('document'), {
     visibilityState: 'visible',
     defaultView: win,

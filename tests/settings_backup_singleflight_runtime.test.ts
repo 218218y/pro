@@ -28,7 +28,7 @@ test('exportSystemSettings reuses one inflight export per app and allows a later
     },
   };
 
-  installCloudCollectionsForTestApp(app);
+  await installCloudCollectionsForTestApp(app);
 
   const first = exportSystemSettings(app as never);
   const second = exportSystemSettings(app as never);
@@ -47,18 +47,13 @@ test('exportSystemSettings reuses one inflight export per app and allows a later
 test('importSystemSettings reuses one inflight import per app, clears duplicate inputs, and allows a later fresh import', async () => {
   const { FakeFile, restore } = installFakeFilePrimitives();
   let confirmCalls = 0;
-  let mergeCalls = 0;
   let confirmResolve: (() => void) | null = null;
   try {
-    const { app } = createImportApp();
+    const { app } = await createImportApp();
     app.services.uiFeedback.confirm = (_title: string, _message: string, onYes: () => void) => {
       confirmCalls += 1;
       if (confirmCalls === 1) confirmResolve = onYes;
       else onYes();
-    };
-    app.services.models.mergeImportedModels = (list: unknown[]) => {
-      mergeCalls += 1;
-      return { added: list.length, updated: 0 };
     };
     const payload = {
       type: 'system_backup',
@@ -83,13 +78,13 @@ test('importSystemSettings reuses one inflight import per app, clears duplicate 
     assert.deepEqual(result, { ok: true, kind: 'import', modelsAdded: 1, colorsAdded: 0 });
     assert.deepEqual(duplicateResult, result);
     assert.equal(firstInput.value, '');
-    assert.equal(mergeCalls, 1);
+    assert.equal(app.services.cloudCollections.repository.readEnvelope().savedModels.length, 1);
 
     const thirdInput = { value: 'backup-again.json', files: [file] };
     const third = await importSystemSettings(app as never, { currentTarget: thirdInput });
-    assert.deepEqual(third, { ok: true, kind: 'import', modelsAdded: 1, colorsAdded: 0 });
+    assert.deepEqual(third, { ok: true, kind: 'import', modelsAdded: 0, colorsAdded: 0 });
     assert.equal(confirmCalls, 2);
-    assert.equal(mergeCalls, 2);
+    assert.equal(app.services.cloudCollections.repository.readEnvelope().savedModels.length, 1);
     assert.equal(thirdInput.value, '');
   } finally {
     restore();
@@ -155,7 +150,7 @@ test('settings backup family blocks conflicting export/import flights while reus
       },
     };
 
-    installCloudCollectionsForTestApp(app);
+    await installCloudCollectionsForTestApp(app);
 
     const payload = {
       type: 'system_backup',

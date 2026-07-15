@@ -28,6 +28,8 @@ function readConflictSnapshot(
 ): CloudSyncPanelSnapshot['conflict'] {
   if (!conflict) return undefined;
   return {
+    conflictId: String(conflict.conflictId || ''),
+    generation: Number(conflict.generation) || 0,
     room: String(conflict.room || ''),
     keys: Array.isArray(conflict.keys) ? conflict.keys.map(key => String(key)) : [],
     remoteRevision: Number(conflict.remoteRevision) || 0,

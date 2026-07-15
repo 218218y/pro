@@ -85,7 +85,7 @@ export function createCloudSyncMainRowOps(args: CreateCloudSyncMainRowOpsArgs): 
     }
   };
 
-  const resolveConflict: CloudSyncMainRowOps['resolveConflict'] = async resolution => {
+  const resolveConflict: CloudSyncMainRowOps['resolveConflict'] = async (resolution, expectedConflictId) => {
     const result = await args.resolveConflict(
       args.room,
       resolution,
@@ -94,7 +94,8 @@ export function createCloudSyncMainRowOps(args: CreateCloudSyncMainRowOpsArgs): 
         if (applied.ok) state.setLastSeenUpdatedAt(row.updated_at || '');
         return applied;
       },
-      localState.readLocalSnapshot
+      localState.readLocalSnapshot,
+      expectedConflictId
     );
     if (result.ok) {
       state.setLastSeenUpdatedAt(result.row.updated_at || '');

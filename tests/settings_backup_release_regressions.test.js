@@ -80,6 +80,13 @@ function loadSettingsBackupModule() {
       exportUserModelsViaService: app => app.services?.models?.exportUserModels?.(),
       mergeImportedModelsViaServiceOrThrow: (app, list) =>
         app.services?.models?.mergeImportedModels?.(list) ?? { added: 0, updated: 0 },
+      planImportedModelsCollectionsMutation: (_app, envelope, list) => ({
+        result: { added: Array.isArray(list) ? list.length : 0, updated: 0 },
+        mutation:
+          Array.isArray(list) && list.length > 0
+            ? { savedModels: [...(envelope.savedModels || []), ...list] }
+            : {},
+      }),
       ensureModelsLoadedViaServiceOrThrow: app => app.services?.models?.ensureLoaded?.(),
       readFileTextResultViaBrowser: async file => ({ ok: true, value: await file.text() }),
       normalizeUnknownError: (error, fallback = '') => {

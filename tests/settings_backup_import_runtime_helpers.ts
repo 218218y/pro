@@ -62,7 +62,7 @@ export function installFakeFilePrimitives(mode: 'success' | 'read-error' = 'succ
   };
 }
 
-export function createImportApp(opts?: { confirm?: boolean }) {
+export async function createImportApp(opts?: { confirm?: boolean }) {
   const confirmed: string[] = [];
   const app = {
     store: createStore({ savedColors: [] }),
@@ -114,10 +114,10 @@ export function createImportApp(opts?: { confirm?: boolean }) {
       },
     },
   };
-  installCollectionsForImportApp(app);
+  await installCollectionsForImportApp(app);
   return { app, confirmed };
 }
 
-export function installCollectionsForImportApp(app: any): void {
-  installCloudCollectionsForTestApp(app);
+export function installCollectionsForImportApp(app: any): Promise<void> {
+  return installCloudCollectionsForTestApp(app);
 }

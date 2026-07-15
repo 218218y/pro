@@ -26,7 +26,10 @@ export type CloudSyncUiActionController = {
   setFloatingSyncEnabled: (enabled: boolean) => Promise<void>;
   toggleFloatingSyncEnabled: () => Promise<void>;
   toggleSite2TabsGate: (nextOpen: boolean, meta: ActionMetaLike) => Promise<void>;
-  resolveConflict: (resolution: CloudSyncConflictResolution) => Promise<CloudSyncConflictResolutionResult>;
+  resolveConflict: (
+    resolution: CloudSyncConflictResolution,
+    expectedConflictId?: string
+  ) => Promise<CloudSyncConflictResolutionResult>;
 };
 
 export type CreateCloudSyncUiActionControllerArgs = {
@@ -51,7 +54,8 @@ export type CreateCloudSyncUiActionControllerArgs = {
   resolveCloudSyncConflict?:
     | ((
         app: AppContainer,
-        resolution: CloudSyncConflictResolution
+        resolution: CloudSyncConflictResolution,
+        expectedConflictId?: string
       ) => Promise<CloudSyncConflictResolutionResult>)
     | null;
 };

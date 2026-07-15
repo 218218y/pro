@@ -1,5 +1,7 @@
 // Project/data workflow service access public API section extracted from api_services_surface.ts
 
+import type { AppContainer, CloudCollectionsEnvelope, SavedModelLike } from '../../../types';
+
 import {
   getProjectIoServiceMaybe,
   ensureProjectIoService,
@@ -25,10 +27,14 @@ import { loadProjectFileInputViaService } from './project_file_ingress_service.j
 import {
   buildProjectLoadActionErrorResult,
   buildProjectLoadFailureResult,
+  isProjectLoadAcceptedResult,
   normalizeProjectLoadActionResult,
+  settleProjectLoadActionResult,
+  type ProjectLoadAcceptedResult,
   type ProjectLoadActionResult,
   type ProjectLoadFailureReason,
   type ProjectLoadFailureResult,
+  type ProjectLoadTerminalResult,
 } from '../runtime/project_load_action_result.js';
 import {
   buildProjectSaveActionErrorResult,
@@ -66,6 +72,7 @@ import {
 } from '../runtime/project_recovery_action_result.js';
 import { normalizeModelsCommandReason } from '../runtime/models_access.js';
 import { normalizeModelRecord, normalizeModelList } from '../features/model_record/api.js';
+import { planImportedModelsCollectionsMutationFromCanonicalModels } from './models_registry_mutations.js';
 
 export {
   getProjectIoServiceMaybe,
@@ -92,6 +99,8 @@ export {
   buildProjectLoadActionErrorResult,
   buildProjectLoadFailureResult,
   normalizeProjectLoadActionResult,
+  isProjectLoadAcceptedResult,
+  settleProjectLoadActionResult,
   buildProjectSaveActionErrorResult,
   normalizeProjectSaveActionResult,
   createAsyncOperationHandle,
@@ -115,8 +124,10 @@ export {
 export type {
   ProjectExportAccessResult,
   ProjectLoadActionResult,
+  ProjectLoadAcceptedResult,
   ProjectLoadFailureReason,
   ProjectLoadFailureResult,
+  ProjectLoadTerminalResult,
   ProjectSaveActionResult,
   ProjectSaveAcceptedResult,
   ProjectSaveFailureReason,
@@ -177,3 +188,10 @@ export {
   setModelNormalizerViaService,
   setPresetModelsViaService,
 } from '../runtime/models_access.js';
+export function planImportedModelsCollectionsMutation(
+  App: AppContainer,
+  envelope: Readonly<CloudCollectionsEnvelope>,
+  list: SavedModelLike[]
+) {
+  return planImportedModelsCollectionsMutationFromCanonicalModels(App, envelope, normalizeModelList(list));
+}

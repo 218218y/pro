@@ -40,8 +40,11 @@ import { normalizeUnknownError } from '../runtime/error_normalization.js';
 import {
   buildProjectLoadFailureResult,
   buildProjectLoadSuccessResult,
+  createProjectLoadAcceptedResult,
+  settleProjectLoadActionResult,
   type ProjectLoadWarning,
   type ProjectLoadActionResult,
+  type ProjectLoadTerminalResult,
 } from '../runtime/project_load_action_result.js';
 import {
   normalizeProjectIoUiState,
@@ -84,7 +87,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
     input: ProjectLoadInputLike,
     options: ProjectLoadOpts | undefined,
     coordinatorLease: ProjectLoadCoordinatorLease
-  ): ProjectLoadActionResult {
+  ): ProjectLoadTerminalResult {
     const data = normalizeProjectData(input);
     const opts = readProjectLoadOpts(options);
     const toastEnabled =
@@ -165,7 +168,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
       const requiresHistoryReset = !isHistoryApply && !isModelApply && !isCloudApply;
       transaction.assertReady(requiresHistoryReset);
       historySnapshot = transaction.captureHistory(requiresHistoryReset);
-      restoreGen = coordinator.enterCritical(coordinatorLease);
+      restoreGen = coordinator.enterCritical(coordinatorLease, opts.queueIfBusy !== false);
 
       autosaveSuspension = suspendProjectIoAutosaveBeforeLoad(App);
       coordinator.assertCurrent(coordinatorLease, 'autosave suspension');
@@ -367,29 +370,41 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps) {
     input: ProjectLoadInputLike,
     options?: ProjectLoadOpts
   ): ProjectLoadActionResult {
+    const requestedAt = Date.now();
     const coordinatorLease = coordinator.begin();
     try {
       try {
         return runProjectDataLoad(input, options, coordinatorLease);
       } catch (error) {
         if (!isProjectLoadQueuedError(error)) throw error;
+        if (options?.queueIfBusy === false) return buildProjectLoadFailureResult('busy');
         const queuedInput = deepCloneJson(input);
         const queuedOptions = typeof options === 'undefined' ? undefined : deepCloneJson(options);
+        let settleQueued!: (result: ProjectLoadTerminalResult) => void;
+        const settled = new Promise<ProjectLoadTerminalResult>(resolve => {
+          settleQueued = resolve;
+        });
+        const settleQueuedFailure = (retryError: unknown): void => {
+          reportNonFatal('project.load.queuedRetry', retryError, 6000);
+          settleQueued(
+            buildProjectLoadFailureResult('error', {
+              message: normalizeUnknownError(retryError, '[WardrobePro] Queued project load failed.').message,
+            })
+          );
+        };
         coordinator.enqueueRetry(
           coordinatorLease,
           () => {
-            const result = loadProjectData(queuedInput, queuedOptions);
-            if (result.ok === false && result.reason !== 'superseded') {
-              reportNonFatal(
-                'project.load.queuedRetryResult',
-                new Error(result.message || `Queued project load failed: ${result.reason}`),
-                6000
-              );
+            try {
+              const result = loadProjectData(queuedInput, queuedOptions);
+              void settleProjectLoadActionResult(result).then(settleQueued, settleQueuedFailure);
+            } catch (retryError) {
+              settleQueuedFailure(retryError);
             }
           },
-          retryError => reportNonFatal('project.load.queuedRetry', retryError, 6000)
+          settleQueuedFailure
         );
-        return buildProjectLoadSuccessResult({ pending: true });
+        return createProjectLoadAcceptedResult(settled, Date.now(), requestedAt);
       }
     } finally {
       coordinator.finish(coordinatorLease);

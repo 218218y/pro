@@ -50,7 +50,10 @@ export type CloudSyncMainRowOps = {
   setLastSeenUpdatedAt: (value: string) => void;
   setLastHash: (value: string) => void;
   subscribeCollections: (listener: () => void) => () => void;
-  resolveConflict: (resolution: CloudSyncConflictResolution) => Promise<CloudSyncConflictResolutionResult>;
+  resolveConflict: (
+    resolution: CloudSyncConflictResolution,
+    expectedConflictId?: string
+  ) => Promise<CloudSyncConflictResolutionResult>;
   dispose: () => void;
 };
 

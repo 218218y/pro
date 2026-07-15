@@ -13,7 +13,9 @@ import {
   resolveCloudSyncOwnerStorageKeys,
 } from './cloud_sync_owner_context_runtime_shared.js';
 
-export function installCloudCollectionsService(App: AppContainer): CloudCollectionsServiceLike {
+export async function installCloudCollectionsService(
+  App: AppContainer
+): Promise<CloudCollectionsServiceLike> {
   const storage = getStorageServiceMaybe(App);
   if (!isCloudSyncStorageLike(storage)) {
     throw new Error('[WardrobePro] Cloud collections requires the canonical storage service.');
@@ -52,10 +54,20 @@ export function installCloudCollectionsService(App: AppContainer): CloudCollecti
   service.repository = repository;
   service.readEnvelope = () => repository.readEnvelope();
   service.readResult = () => repository.readResult();
+  service.ensureInitialized = () => repository.ensureInitialized();
+  service.reconcileMirrors = () => repository.reconcileMirrors();
   service.transact = mutator => repository.transact(mutator);
-  service.repairMirrors = () => repository.repairMirrors();
   service.backupCorruptEnvelope = () => repository.backupCorruptEnvelope();
   service.resetCorruptEnvelope = next => repository.resetCorruptEnvelope(next);
-  repository.readEnvelope();
+  await repository.ensureInitialized();
+  const mirrorFailures = await repository.reconcileMirrors();
+  if (mirrorFailures.length) {
+    _cloudSyncReportNonFatal(
+      App,
+      'collections.mirrorReconciliation',
+      new Error(`Cloud collections mirror reconciliation failed for ${mirrorFailures.join(', ')}`),
+      { throttleMs: 6000 }
+    );
+  }
   return service;
 }

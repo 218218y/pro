@@ -53,6 +53,8 @@ test('cloud sync public support clones panel and tabs-gate snapshots canonically
     status: 'conflict',
     floatingSync: false,
     conflict: {
+      conflictId: 'conflict-1',
+      generation: 3,
       room: 'room-a',
       keys: ['savedColors'],
       remoteRevision: 7,
@@ -64,6 +66,8 @@ test('cloud sync public support clones panel and tabs-gate snapshots canonically
     },
   });
   assert.deepEqual(conflictSnapshot.conflict, {
+    conflictId: 'conflict-1',
+    generation: 3,
     room: 'room-a',
     keys: ['savedColors'],
     remoteRevision: 7,

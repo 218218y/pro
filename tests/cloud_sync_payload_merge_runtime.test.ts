@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  buildCloudSyncConflictFields,
   mergeCloudSyncPayloads,
   rebaseCloudSyncKeepLocal,
 } from '../esm/native/services/cloud_sync_payload_merge.ts';
@@ -79,12 +80,32 @@ test('cloud sync three-way merge rejects competing edits and delete-versus-updat
 
 test('keep-local rebases only conflicting local entity changes onto the latest remote payload', () => {
   const result = rebaseCloudSyncKeepLocal({
-    conflictKeys: ['savedColors'],
-    base: {
-      savedColors: [{ id: 'color-1', value: '#111111' }],
-      savedModels: [{ id: 'model-1', name: 'Original' }],
+    conflict: {
+      conflictId: 'conflict-1',
+      generation: 1,
+      room: 'room-a',
+      keys: ['savedColors'],
+      remoteRevision: 3,
+      detectedAt: 1,
+      state: 'awaiting-resolution',
+      projectionAvailable: true,
+      fields: buildCloudSyncConflictFields({
+        conflictKeys: ['savedColors'],
+        base: {
+          savedColors: [{ id: 'color-1', value: '#111111' }],
+          savedModels: [{ id: 'model-1', name: 'Original' }],
+        },
+        local: {
+          savedColors: [{ id: 'color-1', value: '#222222' }],
+          savedModels: [{ id: 'model-1', name: 'Local edit' }],
+        },
+        remote: {
+          savedColors: [{ id: 'color-1', value: '#333333' }],
+          savedModels: [{ id: 'model-1', name: 'Original' }],
+        },
+      }),
     },
-    local: {
+    currentLocal: {
       savedColors: [{ id: 'color-1', value: '#222222' }],
       savedModels: [{ id: 'model-1', name: 'Local edit' }],
     },
@@ -94,6 +115,10 @@ test('keep-local rebases only conflicting local entity changes onto the latest r
         { id: 'model-1', name: 'Original' },
         { id: 'model-2', name: 'Added by a third client' },
       ],
+    },
+    transientBase: {
+      savedColors: [{ id: 'color-1', value: '#111111' }],
+      savedModels: [{ id: 'model-1', name: 'Original' }],
     },
   });
 

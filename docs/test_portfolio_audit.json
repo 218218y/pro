@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-14T16:15:43.362Z",
+  "generatedAt": "2026-07-15T09:12:57.145Z",
   "totals": {
-    "tests": 1209,
-    "unitRunnerTests": 1202,
-    "e2eTests": 7,
+    "tests": 1212,
+    "unitRunnerTests": 1204,
+    "e2eTests": 8,
     "nonTestRuntimeFiles": 31,
     "packageTestReferences": 191,
     "catalogTestReferences": 352,
@@ -15,10 +15,10 @@
   "categories": {
     "contract": 392,
     "runtime-unit": 312,
-    "integration": 447,
-    "e2e-smoke": 8,
+    "integration": 448,
+    "e2e-smoke": 9,
     "perf-smoke": 9,
-    "legacy-migration": 41
+    "legacy-migration": 42
   },
   "failures": {
     "missingTestRefs": [],
@@ -890,6 +890,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/cloud_sync_conflict_store_runtime.test.ts",
+      "category": "integration"
+    },
+    {
       "file": "tests/cloud_sync_delete_temp_decomposition_contracts.test.js",
       "category": "contract"
     },
@@ -1739,6 +1743,10 @@
     },
     {
       "file": "tests/e2e/canvas_pointer_parity.spec.ts",
+      "category": "e2e-smoke"
+    },
+    {
+      "file": "tests/e2e/cloud_sync_conflict_resolution.spec.ts",
       "category": "e2e-smoke"
     },
     {
@@ -3732,6 +3740,10 @@
     {
       "file": "tests/settings_backup_file_read_diagnostics_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/settings_backup_import_atomic_runtime.test.ts",
+      "category": "legacy-migration"
     },
     {
       "file": "tests/settings_backup_import_models_runtime.test.ts",

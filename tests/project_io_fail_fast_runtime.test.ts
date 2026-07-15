@@ -456,7 +456,7 @@ test('project io load restores state after a history-baseline fault following co
   });
 });
 
-test('project io load restores the pre-chain state when a superseding reentrant load fails before commit', () => {
+test('project io load does not supersede valid work when a reentrant successor fails validation', () => {
   let successorResult: unknown = null;
   let harness!: ReturnType<typeof createProjectIoApp>;
   harness = createProjectIoApp({
@@ -473,14 +473,14 @@ test('project io load restores the pre-chain state when a superseding reentrant 
   const firstResult = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
 
   assert.deepEqual(successorResult, { ok: false, reason: 'invalid' });
-  assert.deepEqual(firstResult, { ok: false, reason: 'superseded', restoreGen: 1 });
-  assert.deepEqual(harness.state, before);
-  assert.deepEqual(harness.historyState, historyBefore);
-  assert.deepEqual(harness.autosaveCalls, ['suspend', 'resume']);
-  assert.deepEqual(harness.buildCalls, []);
+  assert.deepEqual(firstResult, { ok: true, restoreGen: 1 });
+  assert.notDeepEqual(harness.state, before);
+  assert.notDeepEqual(harness.historyState, historyBefore);
+  assert.deepEqual(harness.autosaveCalls, ['suspend', 'commit', 'force']);
+  assert.equal(harness.buildCalls.length, 1);
 });
 
-test('project io load serializes a valid reentrant successor after predecessor compensation', () => {
+test('project io load serializes a valid reentrant successor with a terminal operation handle', async () => {
   let successorRequested = false;
   let successorAccepted: unknown = null;
   let harness!: ReturnType<typeof createProjectIoApp>;
@@ -505,7 +505,9 @@ test('project io load serializes a valid reentrant successor after predecessor c
 
   const firstResult = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
 
-  assert.deepEqual(successorAccepted, { ok: true, pending: true });
+  assert.equal((successorAccepted as any)?.accepted, true);
+  assert.equal('ok' in (successorAccepted as any), false);
+  assert.deepEqual(await (successorAccepted as any).settled, { ok: true, restoreGen: 2 });
   assert.deepEqual(firstResult, { ok: false, reason: 'superseded', restoreGen: 1 });
   assert.equal(harness.state.ui.projectName, 'Successor project');
   assert.equal(harness.state.ui.raw.width, 180);
@@ -513,6 +515,30 @@ test('project io load serializes a valid reentrant successor after predecessor c
   assert.deepEqual(harness.autosaveCalls, ['suspend', 'resume', 'suspend', 'commit', 'force']);
   assert.equal(harness.buildCalls.length, 1);
   assert.deepEqual(harness.toasts, [{ message: 'successor loaded', type: 'success' }]);
+});
+
+test('project io queued retry failure settles back to the original caller', async () => {
+  let successorAccepted: unknown = null;
+  let successorRequested = false;
+  let harness!: ReturnType<typeof createProjectIoApp>;
+  harness = createProjectIoApp({
+    historyFaultAfterMutation: true,
+    onHistoryReset() {
+      if (successorRequested) return;
+      successorRequested = true;
+      successorAccepted = harness.orchestrator.loadProjectData(VALID_PROJECT as never, {
+        toast: false,
+      });
+    },
+  });
+
+  harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.equal((successorAccepted as any)?.accepted, true);
+  const settled = await (successorAccepted as any).settled;
+  assert.equal(settled.ok, false);
+  assert.equal(settled.reason, 'error');
+  assert.match(String(settled.message || ''), /history finalize fault/i);
 });
 
 test('project io load keeps its business commit when autosave finalization throws', () => {
@@ -577,7 +603,7 @@ test('project io load allows a reentrant successor after business commit without
   assert.equal(harness.buildCalls.length, 1);
 });
 
-test('project io load drains three nested requests in request order so the latest valid load wins', () => {
+test('project io load drains three nested requests in request order so the latest valid load wins', async () => {
   let firstHistoryReset = true;
   let startingMiddleLoad = false;
   let newestRequested = false;
@@ -622,8 +648,10 @@ test('project io load drains three nested requests in request order so the lates
 
   const firstResult = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
 
-  assert.deepEqual(middleAccepted, { ok: true, pending: true });
-  assert.deepEqual(newestAccepted, { ok: true, pending: true });
+  assert.equal((middleAccepted as any)?.accepted, true);
+  assert.equal((newestAccepted as any)?.accepted, true);
+  assert.deepEqual(await (middleAccepted as any).settled, { ok: true, restoreGen: 2 });
+  assert.deepEqual(await (newestAccepted as any).settled, { ok: true, restoreGen: 3 });
   assert.deepEqual(firstResult, { ok: false, reason: 'superseded', restoreGen: 1 });
   assert.equal(harness.state.ui.projectName, 'Newest project');
   assert.equal(harness.state.ui.raw.width, 190);

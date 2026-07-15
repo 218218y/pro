@@ -610,7 +610,11 @@ export function buildLayerContractProposal(graph, currentContract) {
   };
   validateLayerContractSchema(proposedContract);
 
+  const reviewRequired =
+    addedEdges.length > 0 || ratchetViolations.length > 0 || requiresFacadeDecision.length > 0;
+
   return {
+    reviewRequired,
     contract: proposedContract,
     diff: {
       addedEdges,

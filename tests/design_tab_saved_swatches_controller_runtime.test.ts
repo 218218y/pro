@@ -24,7 +24,7 @@ function createFeedbackSpy() {
   };
 }
 
-function createAppHarness() {
+async function createAppHarness() {
   const storageValues = new Map<string, unknown>([
     ['savedColors', SAVED_COLORS],
     ['savedColors:order', SAVED_COLORS.map(color => color.id)],
@@ -73,7 +73,7 @@ function createAppHarness() {
       },
     },
   } as const;
-  installCloudCollectionsForTestApp(app as never);
+  await installCloudCollectionsForTestApp(app as never);
 
   const applyColorChoice = (choice: string, source?: string) => {
     state.appliedChoice = String(choice || '');
@@ -100,7 +100,7 @@ test('resolveSelectedSavedColor keeps saved-only active choice lookup canonical'
 
 test('saved swatches controller reorders and reports through canonical feedback seam', async () => {
   const feedback = createFeedbackSpy();
-  const { app, state, applyColorChoice } = createAppHarness();
+  const { app, state, applyColorChoice } = await createAppHarness();
   const controller = createDesignTabSavedSwatchesController({
     app: app as never,
     feedback,
@@ -123,7 +123,7 @@ test('saved swatches controller reorders and reports through canonical feedback 
 
 test('saved swatches controller toggles selected lock and routes delete flow through canonical reporter', async () => {
   const feedback = createFeedbackSpy();
-  const { app, state, applyColorChoice } = createAppHarness();
+  const { app, state, applyColorChoice } = await createAppHarness();
   let confirmed = false;
   const customFeedback = {
     ...feedback,
@@ -160,7 +160,7 @@ test('saved swatches controller toggles selected lock and routes delete flow thr
 
 test('saved swatches controller leaves null selected actions inert', async () => {
   const feedback = createFeedbackSpy();
-  const { app, applyColorChoice } = createAppHarness();
+  const { app, applyColorChoice } = await createAppHarness();
   const controller = createDesignTabSavedSwatchesController({
     app: app as never,
     feedback,

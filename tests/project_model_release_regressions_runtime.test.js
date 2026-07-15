@@ -152,7 +152,7 @@ test('project/model release regressions preserve current PDF draft, canonicalize
   model.doorTrimMap.d1_full[0].color = 'black';
   assert.equal(built.modulesConfiguration[2].doors, 1);
   assert.equal(built.stackSplitLowerModulesConfiguration[0].extDrawersCount, 3);
-  assert.equal(built.cornerConfiguration.modulesConfiguration[0].doors, '5');
+  assert.equal(built.cornerConfiguration.modulesConfiguration[0].doors, 5);
   assert.equal(built.doorTrimMap.d1_full[0].color, 'gold');
 });
 
@@ -182,7 +182,11 @@ test('project/model release regressions route model apply through silent canonic
   assert.deepEqual(result, { ok: true });
   assert.deepEqual(seen, [
     ['history.push'],
-    ['projectIO.load', projectStructure, { toast: false, meta: { source: 'model.apply' } }],
+    [
+      'projectIO.load',
+      projectStructure,
+      { toast: false, queueIfBusy: false, meta: { source: 'model.apply' } },
+    ],
     ['history.push'],
   ]);
 });
