@@ -46,7 +46,7 @@ import { resolveNpmRunLaunchOptions } from './wp_npm_spawn_support.js';
 import { resolveBrowserPerfBaselinePath } from './wp_browser_perf_paths.js';
 
 const projectRoot = process.cwd();
-const baseUrl = 'http://127.0.0.1:5174';
+const baseUrl = 'http://127.0.0.1:5175';
 const browserPerfRoomId = `browser-perf-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 const pageUrl = `${baseUrl}/index_pro.html?room=${encodeURIComponent(browserPerfRoomId)}`;
 const latestJsonPath = path.join(projectRoot, '.artifacts/browser-perf/latest.json');

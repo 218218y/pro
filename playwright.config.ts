@@ -24,7 +24,7 @@ export default defineConfig({
     },
   ],
   use: {
-    baseURL: 'http://127.0.0.1:5174',
+    baseURL: 'http://127.0.0.1:5175',
     headless: true,
     viewport: { width: 1280, height: 800 },
     actionTimeout: 15_000,
@@ -32,7 +32,7 @@ export default defineConfig({
   },
   webServer: {
     command: webServerCommand,
-    url: 'http://127.0.0.1:5174/index_pro.html',
+    url: 'http://127.0.0.1:5175/index_pro.html',
     reuseExistingServer: true,
     timeout: 120_000,
   },

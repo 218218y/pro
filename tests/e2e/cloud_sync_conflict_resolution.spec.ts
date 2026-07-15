@@ -17,7 +17,7 @@ function createRoomToken(): string {
 }
 
 async function createSecondContextPage(browser: Browser, testInfo: TestInfo): Promise<Page> {
-  const baseURL = String(testInfo.project.use.baseURL || 'http://127.0.0.1:5174');
+  const baseURL = String(testInfo.project.use.baseURL || 'http://127.0.0.1:5175');
   const context = await browser.newContext({ baseURL });
   return await context.newPage();
 }

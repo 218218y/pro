@@ -14,6 +14,37 @@ New private links carry `room` and `roomToken` in the URL fragment, so the beare
 
 `store-1` and `store-2` are draft profiles. Do not add their placeholder domains to `WP_CLOUD_SYNC_ORIGIN_STORES`; add only their final exact HTTPS origins when those stores are activated.
 
+The canonical exact-origin mappings are stored in `supabase/cloud_sync_origins.json`. Production deployment and local-development setup both read that file through `tools/wp_cloud_sync_origin_config.mjs`; do not maintain a second hard-coded origin list in another script.
+
+## Local main + site2 development
+
+The Edge Function authorizes the browser's exact origin, including its port. `http://localhost:5173` and `http://localhost:5174` are therefore separate callers even though both variants use the `bargig` store id. Fixed ports are intentional because automatic Vite fallback ports make Cloud Sync authorization nondeterministic.
+
+Enable the two local origins in the existing Supabase project without creating another project, table, tenant, or Edge Function:
+
+```powershell
+.\tools\wp_supabase_cloud_sync_origins.ps1 -Environment Development
+```
+
+Then run both variants:
+
+```powershell
+npm run start:pair
+```
+
+- Main: `http://localhost:5173/index_pro.html`
+- Site2: `http://localhost:5174/index_site2.html`
+
+The origin helper changes only `WP_CLOUD_SYNC_ORIGIN_STORES`. It does not read or rotate `WP_CLOUD_SYNC_ROOM_TOKEN_SECRET`, and an Edge Function redeploy is not required. When local Cloud Sync testing is finished, remove the localhost entries while preserving every production origin:
+
+```powershell
+.\tools\wp_supabase_cloud_sync_origins.ps1 -Environment Production
+```
+
+Use the exact `localhost` URLs above. `127.0.0.1`, another port, or a LAN hostname is a different origin and is rejected unless deliberately added to the central config.
+
+Port `5175` is reserved for the isolated Playwright/E2E server, so automated tests cannot occupy the Site2 development port.
+
 ## API-key contract
 
 The current deployment keeps `verify_jwt = true` and therefore invokes the function with the project's legacy JWT-based `anon` key in both `apikey` and `Authorization`. Do not replace `anonKey` with an `sb_publishable_...` key while this setting remains enabled: Supabase's built-in JWT verifier does not validate the new publishable-key format.
@@ -26,9 +57,10 @@ Migrating to publishable/secret keys is a separate cutover: set `verify_jwt = fa
 2. Configure the Edge Function secrets. Generate a fresh random token secret of at least 32 characters and keep it out of source control:
 
 ```bash
+ORIGIN_STORES="$(node tools/wp_cloud_sync_origin_config.mjs --environment production)"
 supabase secrets set --project-ref paqzrxrvowwndevqptdk \
   WP_CLOUD_SYNC_ROOM_TOKEN_SECRET="<fresh-random-secret>" \
-  WP_CLOUD_SYNC_ORIGIN_STORES='{"https://pro.bargig-furniture.com":"bargig","https://pro218.bargig-furniture.com":"bargig"}' \
+  WP_CLOUD_SYNC_ORIGIN_STORES="$ORIGIN_STORES" \
   WP_CLOUD_SYNC_STORE_TENANTS='{"bargig":"bargig"}' \
   WP_CLOUD_SYNC_PUBLIC_ROOMS='{"bargig":"public"}' \
   WP_CLOUD_SYNC_ROOM_TOKEN_TTL_SECONDS="604800"

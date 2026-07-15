@@ -12,10 +12,16 @@ The canonical architecture + rules live here:
 ```bash
 npm install
 
-# Open the production-like entry HTML (recommended)
+# Main development site (fixed Cloud Sync origin: localhost:5173)
 npm run start:local
 
-# Or run the Vite dev server
+# Customer/site2 development site (fixed Cloud Sync origin: localhost:5174)
+npm run start:site2
+
+# Run both development sites together
+npm run start:pair
+
+# Or run the generic Vite dev server
 npm run vite:dev
 ```
 

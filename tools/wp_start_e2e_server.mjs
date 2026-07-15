@@ -9,7 +9,7 @@ const viteBinPath = path.join(projectRoot, 'node_modules', 'vite', 'bin', 'vite.
 
 const child = spawn(
   process.execPath,
-  [viteBinPath, '--host', '127.0.0.1', '--port', '5174', '--strictPort'],
+  [viteBinPath, '--host', '127.0.0.1', '--port', '5175', '--strictPort'],
   {
     cwd: projectRoot,
     stdio: 'inherit',

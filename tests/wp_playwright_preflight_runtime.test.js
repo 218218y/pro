@@ -30,7 +30,7 @@ test('classifyPlaywrightPreflightError detects permission-denied launches', () =
 
 test('classifyPlaywrightPreflightError detects navigation-blocked browser policies', () => {
   const error = new Error(
-    'page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:5174/index_pro.html'
+    'page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:5175/index_pro.html'
   );
   assert.equal(classifyPlaywrightPreflightError(error), 'navigation-blocked');
 });

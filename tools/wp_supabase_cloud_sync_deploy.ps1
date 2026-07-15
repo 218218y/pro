@@ -15,12 +15,19 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $functionPath = Join-Path $repoRoot 'supabase/functions/wp-cloud-sync-room/index.ts'
 $configPath = Join-Path $repoRoot 'supabase/config.toml'
+$originConfigToolPath = Join-Path $repoRoot 'tools/wp_cloud_sync_origin_config.mjs'
 
 if (-not (Test-Path -LiteralPath $functionPath -PathType Leaf)) {
   throw "Missing Edge Function entrypoint: $functionPath"
 }
 if (-not (Test-Path -LiteralPath $configPath -PathType Leaf)) {
   throw "Missing Supabase config: $configPath"
+}
+if (-not (Test-Path -LiteralPath $originConfigToolPath -PathType Leaf)) {
+  throw "Missing Cloud Sync origin config tool: $originConfigToolPath"
+}
+if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
+  throw 'Node.js is required.'
 }
 if (-not (Get-Command npx -ErrorAction SilentlyContinue)) {
   throw 'npx is required. Install Node.js, then rerun this script.'
@@ -39,18 +46,47 @@ function Invoke-SupabaseCli {
 }
 
 if (-not $SkipSecrets) {
-  Write-Host 'Setting Cloud Sync Edge Function secrets...'
-  Invoke-SupabaseCli -Arguments @(
-    'secrets',
-    'set',
-    '--project-ref',
-    $ProjectRef,
-    "WP_CLOUD_SYNC_ROOM_TOKEN_SECRET=$RoomTokenSecret",
-    'WP_CLOUD_SYNC_ORIGIN_STORES={"https://pro.bargig-furniture.com":"bargig","https://pro218.bargig-furniture.com":"bargig"}',
-    'WP_CLOUD_SYNC_STORE_TENANTS={"bargig":"bargig"}',
-    'WP_CLOUD_SYNC_PUBLIC_ROOMS={"bargig":"public"}',
-    'WP_CLOUD_SYNC_ROOM_TOKEN_TTL_SECONDS=604800'
+  $originStoresOutput = & node $originConfigToolPath '--environment' 'production'
+  if ($LASTEXITCODE -ne 0) {
+    throw "Cloud Sync origin config validation failed with exit code $LASTEXITCODE"
+  }
+  $originStoresJson = ($originStoresOutput -join [Environment]::NewLine).Trim()
+  if ([string]::IsNullOrWhiteSpace($originStoresJson)) {
+    throw 'Cloud Sync origin config tool returned an empty value.'
+  }
+
+  $tempEnvPath = Join-Path ([System.IO.Path]::GetTempPath()) (
+    'wp-cloud-sync-deploy-' + [Guid]::NewGuid().ToString('N') + '.env'
   )
+
+  try {
+    $envFileContent = @(
+      "WP_CLOUD_SYNC_ROOM_TOKEN_SECRET=$RoomTokenSecret"
+      "WP_CLOUD_SYNC_ORIGIN_STORES=$originStoresJson"
+      'WP_CLOUD_SYNC_STORE_TENANTS={"bargig":"bargig"}'
+      'WP_CLOUD_SYNC_PUBLIC_ROOMS={"bargig":"public"}'
+      'WP_CLOUD_SYNC_ROOM_TOKEN_TTL_SECONDS=604800'
+    ) -join "`n"
+    $envFileContent += "`n"
+
+    [System.IO.File]::WriteAllText(
+      $tempEnvPath,
+      $envFileContent,
+      [System.Text.UTF8Encoding]::new($false)
+    )
+
+    Write-Host 'Setting Cloud Sync Edge Function secrets...'
+    Invoke-SupabaseCli -Arguments @(
+      'secrets',
+      'set',
+      '--project-ref',
+      $ProjectRef,
+      '--env-file',
+      $tempEnvPath
+    )
+  } finally {
+    Remove-Item -LiteralPath $tempEnvPath -Force -ErrorAction SilentlyContinue
+  }
 }
 
 if (-not $SkipFunctionDeploy) {

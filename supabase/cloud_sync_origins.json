@@ -1,0 +1,10 @@
+{
+  "production": {
+    "https://pro.bargig-furniture.com": "bargig",
+    "https://pro218.bargig-furniture.com": "bargig"
+  },
+  "development": {
+    "http://localhost:5173": "bargig",
+    "http://localhost:5174": "bargig"
+  }
+}
