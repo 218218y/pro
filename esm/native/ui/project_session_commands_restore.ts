@@ -2,7 +2,7 @@ import type { AppContainer } from '../../../types';
 
 import {
   readAutosaveProjectPayload,
-  restoreProjectAutosavePayloadActionResultViaService,
+  restoreProjectAutosaveFailFastResultViaService,
 } from '../services/api.js';
 import {
   buildProjectRestoreActionErrorResult,
@@ -28,11 +28,9 @@ export async function restoreProjectSessionWithConfirm(
     onCancelled: () => ({ ok: false, reason: 'cancelled' }),
     onBusy: () => ({ ok: false, reason: 'busy' }),
     runConfirmed: () =>
-      restoreProjectAutosavePayloadActionResultViaService(
+      restoreProjectAutosaveFailFastResultViaService(
         App,
-        autosavePayload,
-        'error',
-        'not-installed',
+        autosavePayload.opts,
         '[WardrobePro] Restore session load failed.'
       ),
   });

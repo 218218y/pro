@@ -45,7 +45,6 @@ test('project io export uses the canonical project capture and preserves pdf dra
   const orchestrator = createProjectIoOrchestrator({
     App,
     showToast() {},
-    openCustomConfirm() {},
     userAgent: 'node:test',
     schemaId: 'schema:test',
     schemaVersion: 123,
@@ -119,7 +118,6 @@ test('project io export sanitizes toxic pdf draft branches instead of aliasing t
   const orchestrator = createProjectIoOrchestrator({
     App,
     showToast() {},
-    openCustomConfirm() {},
     userAgent: 'node:test',
     schemaId: 'schema:test',
     schemaVersion: 123,
@@ -195,7 +193,6 @@ test('project io export preserves live door-mount thickness overrides through sa
   const orchestrator = createProjectIoOrchestrator({
     App,
     showToast() {},
-    openCustomConfirm() {},
     userAgent: 'node:test',
     schemaId: 'schema:test',
     schemaVersion: 123,
@@ -264,7 +261,6 @@ test('project io export removes undefined optional numeric fields before canonic
   const orchestrator = createProjectIoOrchestrator({
     App,
     showToast() {},
-    openCustomConfirm() {},
     userAgent: 'node:test',
     schemaId: 'schema:test',
     schemaVersion: 123,
@@ -304,7 +300,6 @@ test('project io export fails visibly when canonical project capture is unavaila
   const orchestrator = createProjectIoOrchestrator({
     App,
     showToast() {},
-    openCustomConfirm() {},
     userAgent: 'node:test',
     schemaId: 'schema:test',
     schemaVersion: 123,

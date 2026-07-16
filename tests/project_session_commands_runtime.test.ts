@@ -13,6 +13,7 @@ test('project session commands resolve final restore/reset results after confirm
 
   const App = {
     services: {
+      platform: { reportError() {} },
       storage: {
         KEYS: { AUTOSAVE_LATEST: 'autosave-key' },
         getString(key: string) {
@@ -28,6 +29,10 @@ test('project session commands resolve final restore/reset results after confirm
       projectIO: {
         buildDefaultProjectData() {
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
+        },
+        restoreAutosaveFailFast(opts?: Record<string, unknown>) {
+          loadCalls.push({ restore: true, opts });
+          return { ok: true, restoreGen: 7 };
         },
         loadProjectDataFailFast(data: unknown, opts?: Record<string, unknown>) {
           loadCalls.push({ data, opts });
@@ -71,6 +76,10 @@ test('project session commands report cancel, invalid autosave, and missing depe
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
         },
         loadProjectDataFailFast() {
+          cancelledLoadCalls += 1;
+          return { ok: true };
+        },
+        restoreAutosaveFailFast() {
           cancelledLoadCalls += 1;
           return { ok: true };
         },
@@ -124,6 +133,7 @@ test('project session commands report cancel, invalid autosave, and missing depe
 test('project session commands preserve real load/reset failures instead of flattening them', async () => {
   const restoreApp = {
     services: {
+      platform: { reportError() {} },
       storage: {
         KEYS: { AUTOSAVE_LATEST: 'autosave-key' },
         getString() {
@@ -136,7 +146,7 @@ test('project session commands preserve real load/reset failures instead of flat
         },
       },
       projectIO: {
-        loadProjectDataFailFast() {
+        restoreAutosaveFailFast() {
           throw new Error('restore load exploded');
         },
       },
@@ -170,6 +180,10 @@ test('project session commands preserve confirm-surface failures instead of trea
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
         },
         loadProjectDataFailFast() {
+          loadCalls += 1;
+          return { ok: true };
+        },
+        restoreAutosaveFailFast() {
           loadCalls += 1;
           return { ok: true };
         },
@@ -240,6 +254,10 @@ test('project session commands single-flight duplicate restore requests and bloc
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
         },
         loadProjectDataFailFast() {
+          loadCalls += 1;
+          return { ok: true, restoreGen: 11 };
+        },
+        restoreAutosaveFailFast() {
           loadCalls += 1;
           return { ok: true, restoreGen: 11 };
         },
@@ -421,6 +439,11 @@ test('project reset and autosave restore fail fast while another project load ow
           return { settings: {}, toggles: {}, modulesConfiguration: [] };
         },
         loadProjectDataFailFast(_data: unknown, opts?: Record<string, unknown>) {
+          loadOptions.push(opts);
+          if (opts?.queueIfBusy !== false) queuedMutations += 1;
+          return { ok: false, reason: 'busy' };
+        },
+        restoreAutosaveFailFast(opts?: Record<string, unknown>) {
           loadOptions.push(opts);
           if (opts?.queueIfBusy !== false) queuedMutations += 1;
           return { ok: false, reason: 'busy' };

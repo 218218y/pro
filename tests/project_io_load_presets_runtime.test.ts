@@ -92,7 +92,6 @@ function createLoaderHarness() {
   const loader = createProjectDataLoader({
     App,
     showToast() {},
-    openCustomConfirm() {},
     userAgent: 'node:test',
     schemaId: 'schema:test',
     schemaVersion: 123,

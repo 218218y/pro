@@ -1,6 +1,6 @@
 import { createProjectDataLoader } from './project_io_orchestrator_project_load.js';
 import { createProjectFileLoadHandler } from './project_io_orchestrator_load_file.js';
-import { createProjectSessionRestore } from './project_io_orchestrator_restore.js';
+import { createProjectAutosaveRestore } from './project_io_orchestrator_restore.js';
 import type {
   ProjectLoadActionResult,
   ProjectLoadFailFastOpts,
@@ -14,7 +14,6 @@ import type { ProjectIoOwnerDeps } from './project_io_orchestrator_shared.js';
 export function createProjectIoLoadOps(deps: ProjectIoOwnerDeps) {
   const handleFileLoadImpl = createProjectFileLoadHandler(deps);
   const loadProjectDataImpl = createProjectDataLoader(deps);
-  const restoreLastSessionImpl = createProjectSessionRestore(deps);
 
   async function handleFileLoad(eventOrFile: unknown): Promise<ProjectLoadActionResult> {
     return handleFileLoadImpl(eventOrFile);
@@ -34,14 +33,16 @@ export function createProjectIoLoadOps(deps: ProjectIoOwnerDeps) {
     });
   }
 
-  async function restoreLastSession(): Promise<ProjectRestoreActionResult> {
-    return await restoreLastSessionImpl();
+  const restoreAutosaveFailFastImpl = createProjectAutosaveRestore(deps, loadProjectDataFailFast);
+
+  function restoreAutosaveFailFast(opts?: ProjectLoadFailFastOpts): ProjectRestoreActionResult {
+    return restoreAutosaveFailFastImpl(opts);
   }
 
   return {
     handleFileLoad,
     loadProjectData,
     loadProjectDataFailFast,
-    restoreLastSession,
+    restoreAutosaveFailFast,
   };
 }

@@ -27,9 +27,6 @@ function createProjectIoApp(overrides?: {
   onAutosaveCommit?: () => void;
   autosaveCommitError?: Error;
   onStoreRead?: () => void;
-  confirmOpen?:
-    | ((title: unknown, message: unknown, onYes?: (() => void) | null, onNo?: (() => void) | null) => void)
-    | null;
 }) {
   const calls: string[] = [];
   const autosaveCalls: string[] = [];
@@ -240,13 +237,6 @@ function createProjectIoApp(overrides?: {
       if (overrides?.showToastError) throw overrides.showToastError;
       toasts.push({ message, type });
     },
-    openCustomConfirm(title, message, onYes, onNo) {
-      if (overrides?.confirmOpen) {
-        overrides.confirmOpen(title, message, onYes as any, onNo as any);
-        return;
-      }
-      if (typeof onYes === 'function') onYes();
-    },
     userAgent: 'node:test',
     schemaId: 'schema:test',
     schemaVersion: 1,
@@ -258,7 +248,8 @@ function createProjectIoApp(overrides?: {
   (App.services.projectIO as Record<string, unknown>).loadProjectData = orchestrator.loadProjectData;
   (App.services.projectIO as Record<string, unknown>).loadProjectDataFailFast =
     orchestrator.loadProjectDataFailFast;
-  (App.services.projectIO as Record<string, unknown>).restoreLastSession = orchestrator.restoreLastSession;
+  (App.services.projectIO as Record<string, unknown>).restoreAutosaveFailFast =
+    orchestrator.restoreAutosaveFailFast;
 
   return {
     App,
@@ -350,7 +341,7 @@ test('project io fail-fast: full project loads require canonical history baselin
   });
 });
 
-test('project io restoreLastSession preserves precise restore failure toasts through the shared load-result seam', () => {
+test('project io restoreAutosaveFailFast preserves precise failures without owning feedback', () => {
   return withSuppressedConsole(async () => {
     const { orchestrator, toasts } = createProjectIoApp({
       autosaveData: JSON.stringify(VALID_PROJECT),
@@ -359,25 +350,25 @@ test('project io restoreLastSession preserves precise restore failure toasts thr
       },
     });
 
-    const result = await orchestrator.restoreLastSession();
+    const result = orchestrator.restoreAutosaveFailFast();
     assert.deepEqual(result, {
       ok: false,
       reason: 'error',
       message: 'restore snapshot apply exploded',
     });
-    assert.deepEqual(toasts, [{ message: 'restore snapshot apply exploded', type: 'error' }]);
+    assert.deepEqual(toasts, []);
   });
 });
 
-test('project io restoreLastSession reports invalid autosave payloads as terminal invalid results', async () => {
+test('project io restoreAutosaveFailFast reports invalid autosave payloads terminally', () => {
   const { orchestrator, toasts } = createProjectIoApp({ autosaveData: '{bad-json' });
 
-  const result = await orchestrator.restoreLastSession();
+  const result = orchestrator.restoreAutosaveFailFast();
   assert.deepEqual(result, { ok: false, reason: 'invalid' });
-  assert.deepEqual(toasts, [{ message: 'נתוני השחזור לא תקינים', type: 'error' }]);
+  assert.deepEqual(toasts, []);
 });
 
-test('project io restoreLastSession strips legacy autosave version metadata before load validation', async () => {
+test('project io restoreAutosaveFailFast strips legacy autosave version metadata before load validation', () => {
   const legacyAutosave = {
     ...VALID_PROJECT,
     version: '2.1',
@@ -388,10 +379,10 @@ test('project io restoreLastSession strips legacy autosave version metadata befo
     autosaveData: JSON.stringify(legacyAutosave),
   });
 
-  const result = await orchestrator.restoreLastSession();
+  const result = orchestrator.restoreAutosaveFailFast();
 
   assert.deepEqual(result, { ok: true, restoreGen: 1 });
-  assert.deepEqual(toasts, [{ message: 'העריכה שוחזרה בהצלחה!', type: 'success' }]);
+  assert.deepEqual(toasts, []);
   assert.deepEqual(autosaveCalls, ['suspend', 'commit', 'force']);
   assert.deepEqual(calls, ['transaction:project.load', 'history:project.load']);
 });

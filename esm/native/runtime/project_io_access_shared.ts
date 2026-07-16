@@ -14,7 +14,6 @@ import {
   type ProjectLoadActionResult,
   type ProjectLoadFailureReason,
 } from './project_load_action_result.js';
-import type { ProjectRestoreActionResult } from './project_recovery_action_result.js';
 
 type ProjectIoLoadFailureLike = string;
 
@@ -129,7 +128,7 @@ export function normalizeProjectLoadActionResultViaProjectIo(
 }
 
 export function buildProjectIoLoadFailureMessage(
-  result: ProjectLoadActionResult | ProjectIoLoadResultLike | ProjectRestoreActionResult,
+  result: ProjectLoadActionResult | ProjectIoLoadResultLike,
   label: string,
   defaultErrorMessage: string
 ): string {

@@ -6,8 +6,6 @@ export {
   normalizeProjectResetDefaultActionResult,
   buildProjectRestoreActionErrorResult,
   buildProjectResetDefaultActionErrorResult,
-  normalizeProjectRestoreLoadResult,
-  normalizeProjectResetDefaultLoadResult,
 } from '../services/api.js';
 
 export type {

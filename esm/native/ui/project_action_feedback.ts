@@ -48,14 +48,14 @@ export function reportProjectLoadResult(
 }
 
 export function getProjectRestoreToast(
-  result: ProjectRestoreActionResult | ProjectIoLoadResultLike | null | undefined
+  result: ProjectRestoreActionResult | null | undefined
 ): ProjectActionToastLike | null {
   return getProjectRestoreToastImpl(result);
 }
 
 export function reportProjectRestoreResult(
   fb: ProjectFeedbackLike | null | undefined,
-  result: ProjectRestoreActionResult | ProjectIoLoadResultLike | null | undefined
+  result: ProjectRestoreActionResult | null | undefined
 ): ProjectActionToastLike | null {
   return reportProjectRestoreResultImpl(fb, result);
 }
@@ -74,14 +74,14 @@ export function reportProjectSaveResult(
 }
 
 export function getResetDefaultToast(
-  result: ProjectResetDefaultActionResult | ProjectIoLoadResultLike | null | undefined
+  result: ProjectResetDefaultActionResult | null | undefined
 ): ProjectActionToastLike | null {
   return getResetDefaultToastImpl(result);
 }
 
 export function reportResetDefaultResult(
   fb: ProjectFeedbackLike | null | undefined,
-  result: ProjectResetDefaultActionResult | ProjectIoLoadResultLike | null | undefined
+  result: ProjectResetDefaultActionResult | null | undefined
 ): ProjectActionToastLike | null {
   return reportResetDefaultResultImpl(fb, result);
 }

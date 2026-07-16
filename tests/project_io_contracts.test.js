@@ -264,7 +264,7 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /export function loadProjectDataActionResultViaServiceOrThrow\(/,
       /export function loadProjectDataFailFastResultViaService\(/,
       /export function loadProjectDataFailFastResultViaServiceOrThrow\(/,
-      /export function restoreProjectSessionActionResultViaService\(/,
+      /export function restoreProjectAutosaveFailFastResultViaService\(/,
       /export function buildDefaultProjectDataViaServiceOrThrow\(/,
       /getServiceSlotMaybe\(App, 'projectIO'\)/,
       /readAutosavePayloadFromStorageResult\(App\)/,
@@ -284,6 +284,8 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /export function loadProjectDataResultViaService\(/,
       /export function loadProjectDataResultViaServiceOrThrow\(/,
       /export function restoreProjectSessionViaService\(/,
+      /export function restoreProjectSessionActionResultViaService\(/,
+      /export function restoreProjectAutosavePayloadActionResultViaService\(/,
       /export function buildDefaultProjectDataViaService\(/,
     ],
     'projectIoAccess'
@@ -298,6 +300,7 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /resetProjectToDefault/,
       /loadProjectDataActionResultViaService/,
       /loadProjectDataFailFastResultViaService/,
+      /restoreProjectAutosaveFailFastResultViaService/,
       /loadProjectFileInputViaService/,
       /nextProjectIoRestoreGeneration/,
       /isProjectIoRestoreGenerationCurrent/,
@@ -321,6 +324,8 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /export function exportCurrentProject\(App: AppContainer, meta\?: UnknownRecord \| null\): ProjectExportResultLike \| null/,
       /export function loadProjectData\(\s*App: AppContainer,\s*data: ProjectLoadInputLike,/s,
       /export function loadProjectDataFailFast\(\s*App: AppContainer,\s*data: ProjectLoadInputLike,/s,
+      /export function restoreAutosaveFailFast\(App: AppContainer, opts\?: ProjectLoadFailFastOpts\)/,
+      /Reflect\.deleteProperty\(ProjectIO, 'restoreLastSession'\)/,
     ],
     'projectIoOwner'
   );
@@ -481,7 +486,7 @@ test('project io + project action helper seams stay named-only after delete-pass
   );
 });
 
-test('project recovery reset and restore remain terminal fail-fast operations', () => {
+test('project recovery reset and restore remain exact terminal fail-fast operations', () => {
   const recoveryResult = readSource(
     '../esm/native/runtime/project_recovery_action_result.ts',
     import.meta.url
@@ -489,10 +494,30 @@ test('project recovery reset and restore remain terminal fail-fast operations', 
   const restoreAccess = readSource('../esm/native/runtime/project_io_access_restore.ts', import.meta.url);
   const resetPayload = readSource('../esm/native/services/project_reset_default_payload.ts', import.meta.url);
   const sessionRestore = readSource('../esm/native/io/project_io_orchestrator_restore.ts', import.meta.url);
+  const restoreFeedback = readSource(
+    '../esm/native/ui/project_action_feedback_load_restore.ts',
+    import.meta.url
+  );
+  const resetFeedback = readSource('../esm/native/ui/project_action_feedback_save_reset.ts', import.meta.url);
+  const feedbackFacade = readSource('../esm/native/ui/project_action_feedback.ts', import.meta.url);
 
   assert.match(resetPayload, /queueIfBusy:\s*false/);
   assert.match(restoreAccess, /queueIfBusy:\s*false/);
-  assert.match(sessionRestore, /async function restoreLastSession\(\): Promise<ProjectRestoreActionResult>/);
+  assert.match(sessionRestore, /return function restoreAutosaveFailFast\(/);
+  assert.doesNotMatch(sessionRestore, /showToast|openCustomConfirm|new Promise/);
   assert.doesNotMatch(recoveryResult, /ProjectRecoverySuccessResult\s*=\s*\{[^}]*pending/s);
   assert.doesNotMatch(recoveryResult, /result\.pending\s*=\s*true/);
+  assert.doesNotMatch(
+    recoveryResult,
+    /normalizeProjectRestoreLoadResult|normalizeProjectResetDefaultLoadResult/
+  );
+  assert.doesNotMatch(
+    restoreFeedback,
+    /function (?:getProjectRestoreToast|reportProjectRestoreResult)\([\s\S]{0,220}ProjectIoLoadResultLike/
+  );
+  assert.doesNotMatch(resetFeedback, /ProjectIoLoadResultLike|pending/);
+  assert.doesNotMatch(
+    feedbackFacade,
+    /function (?:getProjectRestoreToast|reportProjectRestoreResult|getResetDefaultToast|reportResetDefaultResult)\([\s\S]{0,220}ProjectIoLoadResultLike/
+  );
 });

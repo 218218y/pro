@@ -95,8 +95,8 @@ export function createProjectIoOrchestrator(ctx: ProjectIoRuntimeContext) {
     return loadOps.loadProjectDataFailFast(input, options);
   }
 
-  function restoreLastSession() {
-    return loadOps.restoreLastSession();
+  function restoreAutosaveFailFast(options?: ProjectLoadFailFastOpts) {
+    return loadOps.restoreAutosaveFailFast(options);
   }
 
   function exportCurrentProject(meta: UnknownRecord | null | undefined) {
@@ -111,7 +111,7 @@ export function createProjectIoOrchestrator(ctx: ProjectIoRuntimeContext) {
     handleFileLoad,
     loadProjectData,
     loadProjectDataFailFast,
-    restoreLastSession,
+    restoreAutosaveFailFast,
     exportCurrentProject,
     buildDefaultProjectData,
   };

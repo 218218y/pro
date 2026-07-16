@@ -18,9 +18,7 @@ import {
   loadProjectDataFailFastResultViaService,
   loadProjectDataFailFastResultViaServiceOrThrow,
   readAutosaveProjectPayload,
-  restoreProjectAutosavePayloadActionResultViaService,
-  restoreProjectSessionActionResultViaService,
-  restoreProjectSessionActionResultViaServiceOrThrow,
+  restoreProjectAutosaveFailFastResultViaService,
   type ProjectExportAccessResult,
 } from '../runtime/project_io_access.js';
 import { loadProjectFileInputViaService } from './project_file_ingress_service.js';
@@ -60,8 +58,6 @@ import {
   buildProjectRestoreActionErrorResult,
   normalizeProjectResetDefaultActionResult,
   normalizeProjectRestoreActionResult,
-  normalizeProjectRestoreLoadResult,
-  normalizeProjectResetDefaultLoadResult,
   type ProjectRecoverySuccessResult,
   type ProjectResetDefaultActionResult,
   type ProjectResetDefaultFailureReason,
@@ -90,9 +86,7 @@ export {
   loadProjectDataFailFastResultViaService,
   loadProjectDataFailFastResultViaServiceOrThrow,
   readAutosaveProjectPayload,
-  restoreProjectAutosavePayloadActionResultViaService,
-  restoreProjectSessionActionResultViaService,
-  restoreProjectSessionActionResultViaServiceOrThrow,
+  restoreProjectAutosaveFailFastResultViaService,
 };
 
 export {
@@ -114,8 +108,6 @@ export {
   buildProjectRestoreActionErrorResult,
   normalizeProjectResetDefaultActionResult,
   normalizeProjectRestoreActionResult,
-  normalizeProjectRestoreLoadResult,
-  normalizeProjectResetDefaultLoadResult,
   normalizeModelsCommandReason,
   normalizeModelRecord,
   normalizeModelList,

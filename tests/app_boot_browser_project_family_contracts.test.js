@@ -546,7 +546,7 @@ import {
       [
         /export function createProjectFileLoadHandler\(/,
         /export function createProjectDataLoader\(/,
-        /export function createProjectSessionRestore\(/,
+        /export function createProjectAutosaveRestore\(/,
       ],
       'projectLoadOpsBundle'
     );

@@ -21,18 +21,11 @@ import {
 } from './project_io_access_load.js';
 import {
   type ProjectAutosavePayloadReadResult,
-  type ProjectAutosavePayloadSuccessResult,
   readAutosaveProjectPayload,
-  restoreProjectAutosavePayloadActionResultViaService,
-  restoreProjectSessionActionResultViaService,
-  restoreProjectSessionActionResultViaServiceOrThrow,
+  restoreProjectAutosaveFailFastResultViaService,
 } from './project_io_access_restore.js';
 
-export type {
-  ProjectExportAccessResult,
-  ProjectAutosavePayloadReadResult,
-  ProjectAutosavePayloadSuccessResult,
-};
+export type { ProjectExportAccessResult, ProjectAutosavePayloadReadResult };
 
 export {
   getProjectIoServiceMaybe,
@@ -51,9 +44,7 @@ export {
   loadProjectDataFailFastResultViaService,
   loadProjectDataFailFastResultViaServiceOrThrow,
   readAutosaveProjectPayload,
-  restoreProjectAutosavePayloadActionResultViaService,
-  restoreProjectSessionActionResultViaService,
-  restoreProjectSessionActionResultViaServiceOrThrow,
+  restoreProjectAutosaveFailFastResultViaService,
   buildDefaultProjectDataViaServiceOrThrow,
 };
 

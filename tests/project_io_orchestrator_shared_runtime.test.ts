@@ -5,7 +5,6 @@ import {
   buildProjectIoLoadResult,
   normalizeProjectIoUiState,
   readProjectLoadToastMessage,
-  readProjectRestoreToastMessage,
 } from '../esm/native/io/project_io_orchestrator_shared.ts';
 import { createProjectLoadAcceptedResult } from '../esm/native/runtime/project_load_action_result.ts';
 
@@ -18,7 +17,7 @@ test('project io shared normalizes ui snapshots without leaking null raw payload
   assert.deepEqual(normalizeProjectIoUiState(null), {});
 });
 
-test('project io shared toast readers preserve canonical result semantics', () => {
+test('project io shared load toast reader preserves canonical result semantics', () => {
   assert.equal(readProjectLoadToastMessage(buildProjectIoLoadResult(true)), 'הפרויקט נטען בהצלחה!');
   assert.equal(
     readProjectLoadToastMessage(createProjectLoadAcceptedResult(Promise.resolve({ ok: true }), 2, 1)),
@@ -34,25 +33,5 @@ test('project io shared toast readers preserve canonical result semantics', () =
       buildProjectIoLoadResult(false, { reason: 'error', message: 'real failure' })
     ),
     'real failure'
-  );
-
-  assert.equal(
-    readProjectRestoreToastMessage(buildProjectIoLoadResult(false, { reason: 'missing-autosave' })),
-    null
-  );
-  assert.equal(readProjectRestoreToastMessage({ ok: false, reason: 'missing_autosave' } as never), null);
-  assert.equal(
-    readProjectRestoreToastMessage(buildProjectIoLoadResult(false, { reason: 'not-installed' })),
-    'שחזור העריכה לא זמין כרגע'
-  );
-  assert.equal(
-    readProjectRestoreToastMessage({ ok: false, reason: 'not installed' } as never),
-    'שחזור העריכה לא זמין כרגע'
-  );
-  assert.equal(
-    readProjectRestoreToastMessage(
-      buildProjectIoLoadResult(false, { reason: 'error', message: 'restore exploded' })
-    ),
-    'restore exploded'
   );
 });

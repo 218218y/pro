@@ -88,7 +88,6 @@ export function installProjectIo(App: AppContainer, options?: UnknownRecord): In
           return createProjectIoOrchestrator({
             App,
             showToast: bridge.showToast,
-            openCustomConfirm: bridge.openCustomConfirm,
             userAgent: bridge.userAgent,
             schemaId: PROJECT_SCHEMA_ID,
             schemaVersion: PROJECT_SCHEMA_VERSION,
@@ -104,8 +103,9 @@ export function installProjectIo(App: AppContainer, options?: UnknownRecord): In
     loadProjectData: runtime.loadProjectData,
     loadProjectDataFailFast: runtime.loadProjectDataFailFast,
     buildDefaultProjectData: runtime.buildDefaultProjectData,
-    restoreLastSession: runtime.restoreLastSession,
+    restoreAutosaveFailFast: runtime.restoreAutosaveFailFast,
   });
+  Reflect.deleteProperty(ProjectIO, 'restoreLastSession');
   installedRuntimes.set(ProjectIO, { app: App, runtime });
 
   return ProjectIO as InstalledProjectIoService;
@@ -150,8 +150,8 @@ export function loadProjectDataFailFast(
   return ensureProjectIoInstalled(App).loadProjectDataFailFast(data, opts);
 }
 
-export function restoreLastSession(App: AppContainer) {
-  return ensureProjectIoInstalled(App).restoreLastSession();
+export function restoreAutosaveFailFast(App: AppContainer, opts?: ProjectLoadFailFastOpts) {
+  return ensureProjectIoInstalled(App).restoreAutosaveFailFast(opts);
 }
 
 export function buildDefaultProjectData(App: AppContainer) {

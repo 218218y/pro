@@ -103,20 +103,28 @@ test('structural installs remain idempotent without namespace install flags', ()
     exportCurrentProject: staleProjectIoMethod,
     handleFileLoad: staleProjectIoMethod,
     loadProjectData: staleProjectIoMethod,
+    loadProjectDataFailFast: staleProjectIoMethod,
     buildDefaultProjectData: staleProjectIoMethod,
     restoreLastSession: staleProjectIoMethod,
+    restoreAutosaveFailFast: staleProjectIoMethod,
   };
   const projectIO1 = installProjectIo(App as never);
   const canonicalExport = projectIO1.exportCurrentProject;
   const canonicalLoad = projectIO1.loadProjectData;
+  const canonicalRestore = projectIO1.restoreAutosaveFailFast;
   assert.notEqual(canonicalExport, staleProjectIoMethod);
   assert.notEqual(canonicalLoad, staleProjectIoMethod);
+  assert.notEqual(canonicalRestore, staleProjectIoMethod);
+  assert.equal('restoreLastSession' in projectIO1, false);
 
   projectIO1.exportCurrentProject = staleProjectIoMethod as never;
+  projectIO1.restoreAutosaveFailFast = staleProjectIoMethod as never;
   const projectIO2 = installProjectIo(App as never);
   assert.equal(projectIO1, projectIO2);
   assert.equal(projectIO2.exportCurrentProject, canonicalExport);
   assert.equal(projectIO2.loadProjectData, canonicalLoad);
+  assert.equal(projectIO2.restoreAutosaveFailFast, canonicalRestore);
+  assert.equal('restoreLastSession' in projectIO2, false);
   assert.equal(projectIO2.SCHEMA_VERSION, 3);
 
   const storeNs: any = {};

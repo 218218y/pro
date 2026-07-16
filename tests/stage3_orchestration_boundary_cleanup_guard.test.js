@@ -67,8 +67,9 @@ test('[stage3-orchestration] project io owner delegates UI bridge and runtime fl
   assert.match(owner, /ensureProjectIoService\(App\)/);
 
   assert.match(bridge, /function createProjectIoFeedbackBridge/);
+  assert.doesNotMatch(bridge, /openCustomConfirm/);
   assert.match(orchestrator, /function createProjectIoOrchestrator/);
   assert.match(orchestrator, /function loadProjectData/);
   assert.match(orchestrator, /function exportCurrentProject/);
-  assert.match(orchestrator, /function restoreLastSession/);
+  assert.match(orchestrator, /function restoreAutosaveFailFast/);
 });

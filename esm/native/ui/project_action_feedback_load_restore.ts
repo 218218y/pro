@@ -41,7 +41,7 @@ export function reportProjectLoadResult(
 }
 
 export function getProjectRestoreToast(
-  result: ProjectRestoreActionResult | ProjectIoLoadResultLike | null | undefined
+  result: ProjectRestoreActionResult | null | undefined
 ): ProjectActionToastLike | null {
   if (!result) return { message: 'שחזור העריכה לא זמין כרגע', type: 'error' };
   const normalized = normalizeProjectRestoreActionResult(result, 'error');
@@ -67,7 +67,7 @@ export function getProjectRestoreToast(
 
 export function reportProjectRestoreResult(
   fb: ProjectFeedbackLike | null | undefined,
-  result: ProjectRestoreActionResult | ProjectIoLoadResultLike | null | undefined
+  result: ProjectRestoreActionResult | null | undefined
 ): ProjectActionToastLike | null {
   return emitProjectActionToast(fb, getProjectRestoreToast(result));
 }

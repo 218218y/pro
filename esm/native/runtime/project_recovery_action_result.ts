@@ -1,5 +1,4 @@
 import type {
-  ProjectIoLoadResultLike,
   ProjectRecoverySuccessResult,
   ProjectResetDefaultActionResult,
   ProjectResetDefaultFailureReason,
@@ -192,12 +191,4 @@ export function buildProjectResetDefaultActionErrorResult(
   return buildProjectResetDefaultFailureResult('error', {
     message: normalizeUnknownError(error, defaultMessage).message,
   });
-}
-
-export function normalizeProjectRestoreLoadResult(value: unknown): ProjectIoLoadResultLike {
-  return normalizeProjectRestoreActionResult(value, 'error');
-}
-
-export function normalizeProjectResetDefaultLoadResult(value: unknown): ProjectIoLoadResultLike {
-  return normalizeProjectResetDefaultActionResult(value, 'error');
 }

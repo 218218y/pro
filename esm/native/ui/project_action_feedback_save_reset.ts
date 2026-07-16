@@ -1,4 +1,3 @@
-import type { ProjectIoLoadResultLike } from '../../../types';
 import {
   normalizeProjectResetDefaultActionResult,
   type ProjectResetDefaultActionResult,
@@ -40,7 +39,7 @@ export function reportProjectSaveResult(
 }
 
 export function getResetDefaultToast(
-  result: ProjectResetDefaultActionResult | ProjectIoLoadResultLike | null | undefined
+  result: ProjectResetDefaultActionResult | null | undefined
 ): ProjectActionToastLike | null {
   if (!result) return { message: 'האיפוס נכשל', type: 'error' };
   const normalized = normalizeProjectResetDefaultActionResult(result, 'error');
@@ -66,7 +65,7 @@ export function getResetDefaultToast(
 
 export function reportResetDefaultResult(
   fb: ProjectFeedbackLike | null | undefined,
-  result: ProjectResetDefaultActionResult | ProjectIoLoadResultLike | null | undefined
+  result: ProjectResetDefaultActionResult | null | undefined
 ): ProjectActionToastLike | null {
   return emitProjectActionToast(fb, getResetDefaultToast(result));
 }

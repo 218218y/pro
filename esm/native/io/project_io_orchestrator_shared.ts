@@ -13,11 +13,6 @@ import {
   normalizeProjectLoadActionResult,
   type ProjectLoadActionResult,
 } from '../runtime/project_load_action_result.js';
-import {
-  normalizeProjectRestoreActionResult,
-  type ProjectRestoreActionResult,
-} from '../runtime/project_recovery_action_result.js';
-
 import { readUiStateFromApp } from '../runtime/root_state_access.js';
 
 export type ProjectPdfPatchLike = Pick<ProjectPdfStateLike, 'orderPdfEditorDraft' | 'orderPdfEditorZoom'>;
@@ -31,7 +26,6 @@ export type HistorySystemLike = UnknownRecord & {
 export type ProjectIoRuntimeContext = {
   App: AppContainer;
   showToast: (message: unknown, type: unknown) => void;
-  openCustomConfirm: (title: unknown, message: unknown, onConfirm: unknown, onCancel?: unknown) => void;
   userAgent: string | null;
   schemaId: string;
   schemaVersion: number;
@@ -107,27 +101,6 @@ export function readProjectLoadToastMessage(
   if (reason === 'invalid') return 'קובץ הפרויקט לא תקין';
   if (reason === 'error' && message) return message;
   return 'טעינת קובץ נכשלה';
-}
-
-export function readProjectRestoreToastMessage(
-  result: ProjectRestoreActionResult | ProjectIoLoadResultLike | null | undefined
-): string | null {
-  if (!result) return null;
-  const normalized = normalizeProjectRestoreActionResult(result, 'error');
-  if (normalized.ok) {
-    return normalized.warnings?.length
-      ? 'העריכה שוחזרה, אך חלק מפעולות ההשלמה לא הסתיימו'
-      : 'העריכה שוחזרה בהצלחה!';
-  }
-  const reason =
-    'reason' in normalized && typeof normalized.reason === 'string' ? normalized.reason.trim() : '';
-  const message =
-    'message' in normalized && typeof normalized.message === 'string' ? normalized.message.trim() : '';
-  if (reason === 'missing-autosave' || reason === 'cancelled' || reason === 'superseded') return null;
-  if (reason === 'not-installed') return 'שחזור העריכה לא זמין כרגע';
-  if (reason === 'invalid') return 'נתוני השחזור לא תקינים';
-  if (reason === 'error' && message) return message;
-  return 'שגיאה בטעינת הנתונים';
 }
 
 export function readHistorySystemRecord(value: unknown): HistorySystemLike | null {

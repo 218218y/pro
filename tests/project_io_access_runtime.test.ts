@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { withSuppressedConsole } from './_console_silence.ts';
+
 import {
   ensureProjectIoRuntime,
   ensureProjectIoService,
@@ -9,8 +11,7 @@ import {
   isProjectIoRestoreGenerationCurrent,
   nextProjectIoRestoreGeneration,
   readAutosaveProjectPayload,
-  restoreProjectAutosavePayloadActionResultViaService,
-  restoreProjectSessionActionResultViaService,
+  restoreProjectAutosaveFailFastResultViaService,
 } from '../esm/native/runtime/project_io_access.ts';
 
 test('project io access tracks restore generation on the canonical runtime seam', () => {
@@ -136,55 +137,17 @@ test('project io access centralizes autosave payload parsing and restore-load op
   assert.equal(loadCalls, 0);
 });
 
-test('project io access centralizes autosave restore action results for runtime/service callers', () => {
-  const missingApp = {} as any;
-  assert.deepEqual(restoreProjectSessionActionResultViaService(missingApp), {
-    ok: false,
-    reason: 'missing-autosave',
-  });
-
-  const invalidApp = {
-    services: {
-      storage: {
-        KEYS: { AUTOSAVE_LATEST: 'autosave-key' },
-        getString() {
-          return '{bad-json';
-        },
-      },
-    },
-  } as any;
-  assert.deepEqual(restoreProjectSessionActionResultViaService(invalidApp), {
-    ok: false,
-    reason: 'invalid',
-  });
-
-  const notInstalledApp = {
-    services: {
-      storage: {
-        KEYS: { AUTOSAVE_LATEST: 'autosave-key' },
-        getString() {
-          return JSON.stringify({ settings: { width: 120 } });
-        },
-      },
-    },
-  } as any;
-  assert.deepEqual(restoreProjectSessionActionResultViaService(notInstalledApp), {
+test('project io access exposes only the terminal autosave restore owner', async () => {
+  assert.deepEqual(restoreProjectAutosaveFailFastResultViaService({}), {
     ok: false,
     reason: 'not-installed',
   });
-});
 
-test('project io access preserves concrete restore-load failures through the autosave restore seam', () => {
   const App = {} as any;
   const svc = ensureProjectIoService(App) as any;
   App.services.platform = { reportError() {} };
-  const autosavePayload = {
-    ok: true,
-    data: { settings: { width: 120 } },
-    opts: { toast: false, meta: { source: 'restore.local' } },
-  } as const;
 
-  svc.loadProjectDataFailFast = () => ({
+  svc.restoreAutosaveFailFast = () => ({
     ok: true,
     restoreGen: 6,
     warnings: [
@@ -192,7 +155,7 @@ test('project io access preserves concrete restore-load failures through the aut
       { effect: 'autosave-refresh', message: 'autosave refresh failed' },
     ],
   });
-  assert.deepEqual(restoreProjectAutosavePayloadActionResultViaService(App, autosavePayload), {
+  assert.deepEqual(restoreProjectAutosaveFailFastResultViaService(App), {
     ok: true,
     restoreGen: 6,
     warnings: [
@@ -201,60 +164,53 @@ test('project io access preserves concrete restore-load failures through the aut
     ],
   });
 
-  svc.loadProjectDataFailFast = () => ({
+  svc.restoreAutosaveFailFast = () => ({
     ok: false,
     reason: 'load',
     message: 'legacy restore reason',
   });
-  assert.deepEqual(restoreProjectAutosavePayloadActionResultViaService(App, autosavePayload), {
+  assert.deepEqual(restoreProjectAutosaveFailFastResultViaService(App), {
     ok: false,
     reason: 'error',
     message: 'legacy restore reason',
   });
 
-  svc.loadProjectDataFailFast = () => {
+  svc.restoreAutosaveFailFast = () => {
     throw new Error('restore seam exploded');
   };
-  assert.deepEqual(restoreProjectAutosavePayloadActionResultViaService(App, autosavePayload), {
-    ok: false,
-    reason: 'error',
-    message: 'restore seam exploded',
+  App.services.platform.reportError = () => {
+    throw new Error('diagnostics exploded');
+  };
+  await withSuppressedConsole(async () => {
+    assert.deepEqual(restoreProjectAutosaveFailFastResultViaService(App), {
+      ok: false,
+      reason: 'error',
+      message: 'restore seam exploded',
+    });
   });
 });
 
-test('project io autosave restore is fail-fast and never requests a queued project mutation', () => {
-  const loadOptions: Array<Record<string, unknown> | undefined> = [];
+test('project io autosave restore access enforces fail-fast options and rejects legacy pending results', () => {
+  const restoreOptions: Array<Record<string, unknown> | undefined> = [];
   const App = {} as any;
   const svc = ensureProjectIoService(App) as any;
-  const autosavePayload = {
-    ok: true,
-    data: { settings: { width: 120 } },
-    opts: { queueIfBusy: true, toast: false, meta: { source: 'restore.local' } },
-  } as const;
 
-  svc.loadProjectDataFailFast = (_data: unknown, opts?: Record<string, unknown>) => {
-    loadOptions.push(opts);
+  svc.restoreAutosaveFailFast = (opts?: Record<string, unknown>) => {
+    restoreOptions.push(opts);
     return { ok: false, reason: 'busy' };
   };
 
-  assert.deepEqual(restoreProjectAutosavePayloadActionResultViaService(App, autosavePayload), {
+  assert.deepEqual(restoreProjectAutosaveFailFastResultViaService(App, { queueIfBusy: true } as never), {
     ok: false,
     reason: 'busy',
   });
-  assert.equal(loadOptions.length, 1);
-  assert.equal(loadOptions[0]?.queueIfBusy, false);
+  assert.equal(restoreOptions.length, 1);
+  assert.equal(restoreOptions[0]?.queueIfBusy, false);
 
-  svc.loadProjectDataFailFast = () => ({
-    accepted: true,
-    reused: false,
-    operationId: 'unexpected-restore-queue',
-    requestedAt: 1,
-    acceptedAt: 1,
-    settled: Promise.resolve({ ok: true }),
-  });
-  assert.deepEqual(restoreProjectAutosavePayloadActionResultViaService(App, autosavePayload), {
+  svc.restoreAutosaveFailFast = () => ({ ok: true, pending: true });
+  assert.deepEqual(restoreProjectAutosaveFailFastResultViaService(App), {
     ok: false,
     reason: 'error',
-    message: '[WardrobePro] Fail-fast Project Load service returned an accepted operation.',
+    message: 'Legacy pending restore results are not supported; recovery operations must settle terminally.',
   });
 });

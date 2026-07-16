@@ -28,6 +28,7 @@ test('project actions expose normalized save/load/restore command results', asyn
       projectIO: {
         loadProjectData: () => ({ ok: false, reason: 'invalid' }),
         loadProjectDataFailFast: () => ({ ok: false, reason: 'invalid' }),
+        restoreAutosaveFailFast: () => ({ ok: false, reason: 'invalid' }),
         buildDefaultProjectData: () => ({ settings: {}, toggles: {}, modulesConfiguration: [] }),
       },
     },

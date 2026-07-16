@@ -33,6 +33,7 @@ import type { ProjectDataLike } from './build_state';
 import type {
   ProjectLoadActionFn,
   ProjectLoadFailFastFn,
+  ProjectLoadFailFastOpts,
   ProjectRestoreActionResult,
 } from './project_io_operations';
 import type { Vec3Like } from './build_ops';
@@ -360,7 +361,7 @@ export interface ProjectIoServiceLike extends UnknownRecord {
   handleFileLoad?: (eventOrFile: unknown) => unknown;
   loadProjectData?: ProjectLoadActionFn;
   loadProjectDataFailFast?: ProjectLoadFailFastFn;
-  restoreLastSession?: () => Promise<ProjectRestoreActionResult>;
+  restoreAutosaveFailFast?: (opts?: ProjectLoadFailFastOpts) => ProjectRestoreActionResult;
   buildDefaultProjectData?: () => ProjectDataLike;
   runtime?: ProjectIoRuntimeLike;
   [k: string]: unknown;
