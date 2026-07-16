@@ -15,7 +15,7 @@ create table if not exists wp_cloud_sync_private.retention_policies (
   tenant_id text not null,
   store_id text not null,
   public_room text not null,
-  private_room_retention interval not null default interval '45 days',
+  private_room_retention interval not null default interval '7 days',
   room_batch_limit integer not null default 100,
   enabled boolean not null default false,
   updated_at timestamptz not null default now(),
@@ -27,10 +27,20 @@ create table if not exists wp_cloud_sync_private.retention_policies (
   constraint wp_cloud_sync_retention_public_room_check
     check (public_room ~ '^[a-zA-Z0-9_-]{1,128}$'),
   constraint wp_cloud_sync_retention_interval_check
-    check (private_room_retention between interval '1 day' and interval '365 days'),
+    check (private_room_retention between interval '7 days' and interval '365 days'),
   constraint wp_cloud_sync_retention_room_batch_check
     check (room_batch_limit between 1 and 1000)
 );
+
+-- Keep re-runs authoritative when an earlier revision of this migration used a
+-- longer retention window. Reducing retention always requires a fresh dry-run.
+alter table wp_cloud_sync_private.retention_policies
+  alter column private_room_retention set default interval '7 days';
+alter table wp_cloud_sync_private.retention_policies
+  drop constraint if exists wp_cloud_sync_retention_interval_check;
+alter table wp_cloud_sync_private.retention_policies
+  add constraint wp_cloud_sync_retention_interval_check
+    check (private_room_retention between interval '7 days' and interval '365 days');
 
 create table if not exists wp_cloud_sync_private.room_leases (
   tenant_id text not null,
@@ -98,8 +108,22 @@ insert into wp_cloud_sync_private.retention_policies (
   room_batch_limit,
   enabled
 )
-values ('bargig', 'bargig', 'public', interval '45 days', 100, false)
-on conflict (tenant_id, store_id) do nothing;
+values ('bargig', 'bargig', 'public', interval '7 days', 100, false)
+on conflict (tenant_id, store_id) do update
+set
+  private_room_retention = excluded.private_room_retention,
+  enabled = false,
+  updated_at = clock_timestamp();
+
+-- An explicit policy reduction must also update leases created by an older
+-- migration. Cleanup remains disabled until the operator reviews a new dry-run.
+update wp_cloud_sync_private.room_leases lease
+set expires_at = lease.last_activity_at + policy.private_room_retention
+from wp_cloud_sync_private.retention_policies policy
+where policy.tenant_id = lease.tenant_id
+  and policy.store_id = lease.store_id
+  and not lease.is_public
+  and lease.expires_at is distinct from lease.last_activity_at + policy.private_room_retention;
 
 create or replace function public.wp_cloud_sync_touch_room_lease(
   p_tenant_id text,

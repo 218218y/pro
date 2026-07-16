@@ -121,7 +121,7 @@ This writes only to the newly generated private probe room, verifies HTTP 200 pl
 Retention is owned by `wp_cloud_sync_private`, not by the browser or the gateway role:
 
 - The public room family is permanent and has no expiry.
-- A private room lease expires 45 days after its latest authenticated issue, renewal, read, or write. Forty-five days exceeds the maximum 30-day room-token TTL, so a still-valid token has a safety window to renew the lease.
+- A private room lease expires seven days after its latest authenticated issue, renewal, read, or write. Token validity is independent from data retention: a room token can remain cryptographically valid after inactive room data has expired, and the token alone does not keep that data alive.
 - Main rows, `::sketch`, `::tabsGate`, `::showContents`, and cleared-sketch tombstones share the base-room lease and are deleted together. A tombstone therefore remains for the full private-room lifecycle and cannot disappear while the room remains active.
 - Newly generated probe rooms follow the same private-room policy.
 - Rate-limit buckets expire after 48 hours, longer than the maximum allowed 24-hour rate-limit window.
@@ -203,7 +203,7 @@ Expected checks:
 - `anon` and `authenticated` have no `select`, `insert`, `update`, or `delete` privilege on protected Cloud Sync tables.
 - Only the Edge Function's server role can read or compare-and-swap a canonical row; it has no `delete` privilege on room data.
 - The Edge Function can touch only the server-owned base-room lease. It cannot execute cleanup functions; scheduled deletion remains owned by the database maintenance role.
-- Public room families never expire. Authenticated private-room activity extends a 45-day lease, and expired room families are removed in bounded batches only after the retention policy is explicitly enabled.
+- Public room families never expire. Authenticated private-room activity extends a seven-day lease, and expired room families are removed in bounded batches only after the retention policy is explicitly enabled.
 - Signed claims bind `tenantId`, `storeId`, the base room, permissions, and expiry.
 - Private credentials renew through a per-owner singleflight during the final 24 hours of validity. An already-expired token is never sent and cannot renew itself; the UI reports that a fresh link is required.
 - Gateway failures preserve authentication, rate-limit, network, and server identity through the owner status and panel snapshot; a 403 is not treated as a missing row and a 429 is not treated as a generic network failure.

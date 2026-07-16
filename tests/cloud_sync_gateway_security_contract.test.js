@@ -70,7 +70,11 @@ test('Cloud Sync retention is bounded, dry-run first, and owned outside browser 
 
   for (const required of [
     /create schema if not exists wp_cloud_sync_private/u,
-    /private_room_retention interval not null default interval '45 days'/u,
+    /private_room_retention interval not null default interval '7 days'/u,
+    /private_room_retention between interval '7 days' and interval '365 days'/u,
+    /values \('bargig', 'bargig', 'public', interval '7 days', 100, false\)/u,
+    /private_room_retention = excluded\.private_room_retention,[\s\S]*enabled = false/u,
+    /set expires_at = lease\.last_activity_at \+ policy\.private_room_retention/u,
     /rate_limit_retention interval not null default interval '48 hours'/u,
     /enabled boolean not null default false/u,
     /p_dry_run boolean default true/u,
@@ -84,6 +88,7 @@ test('Cloud Sync retention is bounded, dry-run first, and owned outside browser 
   ]) {
     assert.match(retentionSql, required);
   }
+  assert.doesNotMatch(retentionSql, /45 days/u);
 
   const auditTable = retentionSql.match(
     /create table if not exists wp_cloud_sync_private\.cleanup_audit \([\s\S]*?\n\);/u
