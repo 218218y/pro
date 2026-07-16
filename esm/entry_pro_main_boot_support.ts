@@ -9,6 +9,7 @@ import {
   getOverlayCallback,
   isRecord,
   isThreeLikeNamespace,
+  mergeRuntimeConfigModuleResults,
   parseRuntimeConfigModule,
   parseSite2EnabledTabs,
   parseSiteVariantFromMeta,
@@ -142,13 +143,25 @@ export async function loadThreeEsm(): Promise<ThreeLike> {
   });
 }
 
-export async function loadRuntimeConfigModule(): Promise<RuntimeConfigModuleResult> {
+export async function loadRuntimeConfigModule(doc: Document | null): Promise<RuntimeConfigModuleResult> {
   const url = new URL('../wp_runtime_config.mjs', import.meta.url).toString();
   const mod: unknown = await import(/* @vite-ignore */ url);
   if (!isRecord(mod) || !Object.prototype.hasOwnProperty.call(mod, 'default')) {
     throw new Error('[WardrobePro][runtime-config] wp_runtime_config.mjs must have a default export.');
   }
-  return parseRuntimeConfigModule(mod.default);
+  const common = parseRuntimeConfigModule(mod.default);
+  if (typeof mod.runtimeConfigOverlays === 'undefined') return common;
+  if (!isRecord(mod.runtimeConfigOverlays)) {
+    throw new Error('[WardrobePro][runtime-config] runtimeConfigOverlays must be an object.');
+  }
+  const variant = parseSiteVariantFromMeta(readMetaContent(doc, 'wp-site-variant')) || 'main';
+  if (!Object.prototype.hasOwnProperty.call(mod.runtimeConfigOverlays, variant)) {
+    throw new Error(`[WardrobePro][runtime-config] Missing ${variant} runtime config overlay.`);
+  }
+  return mergeRuntimeConfigModuleResults(
+    common,
+    parseRuntimeConfigModule(mod.runtimeConfigOverlays[variant])
+  );
 }
 
 export function mergeRuntimeFlags(deps: Deps3D, runtimeFlags: WardrobeProRuntimeFlags | null): void {

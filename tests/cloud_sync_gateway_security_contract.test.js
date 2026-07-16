@@ -65,9 +65,12 @@ test('Edge Function verifies signed room scope and performs bounded compare-and-
 
 test('Cloud Sync retention is bounded, dry-run first, and owned outside browser and gateway roles', () => {
   const retentionSql = read('supabase/migrations/202607160001_cloud_sync_retention.sql');
+  const expirySql = read('supabase/migrations/202607160002_cloud_sync_room_expiry.sql');
+  const retentionMigrations = `${retentionSql}\n${expirySql}`;
   const scheduleSql = read('docs/supabase_cloud_sync_retention_schedule.sql');
   const verifySql = read('docs/supabase_cloud_sync_retention_verify.sql');
   const scheduleVerifySql = read('docs/supabase_cloud_sync_retention_schedule_verify.sql');
+  const preflightSql = read('docs/supabase_cloud_sync_retention_preflight.sql');
   const gateway = read('supabase/functions/wp-cloud-sync-room/index.ts');
 
   for (const required of [
@@ -88,12 +91,14 @@ test('Cloud Sync retention is bounded, dry-run first, and owned outside browser 
     /not lease\.is_public/u,
     /security definer/u,
     /revoke all on schema wp_cloud_sync_private from public, anon, authenticated, service_role/u,
-    /grant execute on function public\.wp_cloud_sync_touch_room_lease\(text, text, text, text\)\s+to service_role/u,
+    /grant execute on function public\.wp_cloud_sync_touch_room_lease\(text, text, text, text, boolean\)\s+to service_role/u,
+    /if p_allow_create then/u,
+    /return jsonb_build_object\('ok', false, 'code', 'room_expired'\)/u,
     /revoke all on function wp_cloud_sync_private\.cleanup_store[^;]+from public, anon, authenticated, service_role/su,
     /create or replace function wp_cloud_sync_private\.reconcile_room_leases/u,
     /revoke all on function wp_cloud_sync_private\.reconcile_room_leases\(text, text\)[^;]+service_role/su,
   ]) {
-    assert.match(retentionSql, required);
+    assert.match(retentionMigrations, required);
   }
   assert.doesNotMatch(retentionSql, /45 days/u);
   const roomPathConstraint = retentionSql.match(
@@ -112,6 +117,9 @@ test('Cloud Sync retention is bounded, dry-run first, and owned outside browser 
   assert.doesNotMatch(auditTable, /payload|jsonb|room_token|bucket_key/iu);
   assert.match(gateway, /room: claims\.room,[\s\S]*publicRoom,/u);
   assert.equal((gateway.match(/await touchRoomLease\(/gu) || []).length, 3);
+  assert.match(gateway, /allowCreate: true/gu);
+  assert.match(gateway, /allowCreate: false/gu);
+  assert.match(gateway, /jsonResponse\(responseOrigin, 410, \{ ok: false, code: 'room_expired' \}\)/u);
   assert.doesNotMatch(gateway, /\.delete\s*\(/u);
 
   assert.match(scheduleSql, /to_regnamespace\('cron'\) is null/u);
@@ -137,6 +145,12 @@ test('Cloud Sync retention is bounded, dry-run first, and owned outside browser 
   assert.match(scheduleVerifySql, /latest_run_succeeded/u);
   assert.match(scheduleVerifySql, /latest_run_within_budget/u);
   assert.match(scheduleVerifySql, /no_consecutive_failures/u);
+  assert.match(preflightSql, /set transaction read only/u);
+  assert.match(preflightSql, /unapproved_room_path_count/u);
+  assert.match(preflightSql, /maximum_rows_in_family/u);
+  assert.match(preflightSql, /tenant_store_without_planned_policy_count/u);
+  assert.match(preflightSql, /invalid_public_base_count/u);
+  assert.doesNotMatch(preflightSql, /^\s*(?:insert|update|delete|alter|drop|create|grant|revoke)\b/imu);
 });
 
 test('browser Cloud Sync has one gateway route and no direct table or PostgREST authority', () => {
@@ -181,6 +195,8 @@ test('operator scripts deploy only the gateway and keep the write probe explicit
   assert.match(probe, /tampered token rejection/u);
   assert.match(probe, /if \(\$IncludeWriteProbe\)[\s\S]*action\s*=\s*['"]write['"]/u);
   assert.match(probe, /revision_conflict/u);
+  assert.match(probe, /leaseTouchedAt/u);
+  assert.match(probe, /signed read and lease touch from customer origin/u);
   assert.match(probe, /three dot-separated segments/u);
   assert.match(probe, /\$responseBody\s*=\s*if/u);
   assert.doesNotMatch(probe, /\$body\s*=\s*if/iu);

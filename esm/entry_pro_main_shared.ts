@@ -38,6 +38,8 @@ export type RuntimeConfigModuleResult = {
   flags: WardrobeProRuntimeFlags | null;
 };
 
+export type RuntimeConfigVariant = 'main' | 'site2';
+
 export type WindowWithBootFlag = Window & { __WP_BEFOREUNLOAD_GUARD__?: boolean };
 
 const SITE2_ALLOWED_TAB_IDS = [
@@ -132,6 +134,31 @@ export function parseRuntimeConfigModule(raw: unknown): RuntimeConfigModuleResul
   const flags = isRecord(raw.flags) ? coerceRuntimeFlags(raw.flags) : null;
   const config = isRecord(raw.config) ? coerceRuntimeConfig(raw.config) : null;
   return { config, flags };
+}
+
+export function mergeRuntimeConfigModuleResults(
+  base: RuntimeConfigModuleResult,
+  overlay: RuntimeConfigModuleResult
+): RuntimeConfigModuleResult {
+  const baseConfig = base.config || {};
+  const overlayConfig = overlay.config || {};
+  const config: WardrobeProRuntimeConfig = { ...baseConfig, ...overlayConfig };
+  if (isRecord(baseConfig.orderPdf) || isRecord(overlayConfig.orderPdf)) {
+    config.orderPdf = {
+      ...(isRecord(baseConfig.orderPdf) ? baseConfig.orderPdf : {}),
+      ...(isRecord(overlayConfig.orderPdf) ? overlayConfig.orderPdf : {}),
+    };
+  }
+  if (isRecord(baseConfig.supabaseCloudSync) || isRecord(overlayConfig.supabaseCloudSync)) {
+    config.supabaseCloudSync = {
+      ...(isRecord(baseConfig.supabaseCloudSync) ? baseConfig.supabaseCloudSync : {}),
+      ...(isRecord(overlayConfig.supabaseCloudSync) ? overlayConfig.supabaseCloudSync : {}),
+    };
+  }
+  return {
+    flags: { ...base.flags, ...overlay.flags },
+    config,
+  };
 }
 
 export function parseSiteVariantFromMeta(

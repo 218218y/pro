@@ -54,9 +54,10 @@ Migrating to publishable/secret keys is a separate cutover: set `verify_jwt = fa
 ## New deployment
 
 1. Apply `docs/supabase_cloud_sync.sql` as one migration.
-2. Apply the versioned migration `supabase/migrations/202607160001_cloud_sync_retention.sql`. It creates a server-only lease/cleanup owner, restricts room-family paths, backfills leases, and leaves the Bargig deletion policy disabled.
-3. Run `docs/supabase_cloud_sync_retention_verify.sql`. Review the dry-run counts; this verification never deletes data.
-4. Configure the Edge Function secrets. Generate a fresh random token secret of at least 32 characters and keep it out of source control:
+2. Run `docs/supabase_cloud_sync_retention_preflight.sql`. Stop if any invalid base/path, over-limit family, missing planned policy, or public-family anomaly count is nonzero.
+3. Apply the versioned migrations `supabase/migrations/202607160001_cloud_sync_retention.sql` and then `supabase/migrations/202607160002_cloud_sync_room_expiry.sql`. They create the server-only retention owner, restrict room-family paths, backfill leases, make deletion terminal for old room tokens, and leave the Bargig deletion policy disabled.
+4. Run `docs/supabase_cloud_sync_retention_verify.sql`. Review the dry-run counts; this verification never deletes data.
+5. Configure the Edge Function secrets. Generate a fresh random token secret of at least 32 characters and keep it out of source control:
 
 ```bash
 ORIGIN_STORES="$(node tools/wp_cloud_sync_origin_config.mjs --environment production)"
@@ -70,7 +71,7 @@ supabase secrets set --project-ref paqzrxrvowwndevqptdk \
 
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are platform-provided Edge Function secrets. The room-token TTL is constrained to one hour through thirty days; seven days is the production default. Rotating the room-token secret invalidates all existing signed room links.
 
-5. Deploy with JWT verification enabled:
+6. Deploy with JWT verification enabled:
 
 ```bash
 supabase functions deploy wp-cloud-sync-room \
@@ -78,9 +79,9 @@ supabase functions deploy wp-cloud-sync-room \
   --use-api
 ```
 
-6. Run the gateway probes below, then deploy the signed-room client.
-7. After the signed-room client is live, run `select * from wp_cloud_sync_private.reconcile_room_leases('bargig', 'bargig');`, rerun `docs/supabase_cloud_sync_retention_verify.sql`, and review a fresh dry-run. Enable the Supabase Cron integration (`pg_cron`) only after the missing/stale lease counts are zero, then apply `docs/supabase_cloud_sync_retention_schedule.sql`. The schedule migration reconciles once more and fails closed when Cron or lease integrity is unavailable.
-8. After the first scheduled execution, run `docs/supabase_cloud_sync_retention_schedule_verify.sql` and require one active job, a successful latest run, a duration under five minutes, and no consecutive failures.
+7. Run the gateway probe below. It requires a DB-generated `leaseTouchedAt` value to advance on authenticated reads from both production origins; this fails against an older Edge Function that does not touch leases. Then deploy the signed-room client.
+8. After the signed-room client is live, run `select * from wp_cloud_sync_private.reconcile_room_leases('bargig', 'bargig');`, rerun `docs/supabase_cloud_sync_retention_verify.sql`, and review a fresh dry-run. Enable the Supabase Cron integration (`pg_cron`) only after the missing/stale lease counts are zero, then apply `docs/supabase_cloud_sync_retention_schedule.sql`. The schedule migration reconciles once more and fails closed when Cron or lease integrity is unavailable.
+9. After the first scheduled execution, run `docs/supabase_cloud_sync_retention_schedule_verify.sql` and require one active job, a successful latest run, a duration under five minutes, and no consecutive failures.
 
 ### Windows one-command function deployment
 
@@ -124,7 +125,7 @@ This writes only to the newly generated private probe room, verifies HTTP 200 pl
 Retention is owned by `wp_cloud_sync_private`, not by the browser or the gateway role:
 
 - The public room family is permanent and has no expiry.
-- A private room lease expires seven days after its latest authenticated issue, renewal, read, or write. Token validity is independent from data retention: a room token can remain cryptographically valid after inactive room data has expired, and the token alone does not keep that data alive.
+- A private room lease expires seven days after its latest authenticated issue, renewal, read, or write. Token validity is independent from data retention: a room token can remain cryptographically valid after inactive room data has expired, but read/write/renew then return HTTP 410 with `room_expired` and can never recreate the lease or data.
 - Main rows, `::sketch`, `::tabsGate`, `::showContents`, and cleared-sketch tombstones share the base-room lease and are deleted together. A tombstone therefore remains for the full private-room lifecycle and cannot disappear while the room remains active.
 - The gateway and database accept only the fixed base/sketch/tabsGate/syncPin/showContents row namespace. A room family therefore contains at most seven rows and one family cannot expand into an unbounded delete.
 - Newly generated probe rooms follow the same private-room policy.
@@ -150,7 +151,7 @@ Use one controlled expand/verify/contract rollout. The copy step and the final l
 2. Apply `docs/supabase_cloud_sync.sql`.
 3. Apply `docs/supabase_cloud_sync_multi_store.sql`. It is re-runnable and reconciles legacy rows that changed after an earlier copy; it does **not** revoke legacy browser access.
    Then run `docs/supabase_cloud_sync_verify.sql`: both canonical tables must have RLS enabled/forced, every canonical privilege row must match, every `missing_room_count` must be zero, and all six invalid-data counts must be zero.
-4. Apply `supabase/migrations/202607160001_cloud_sync_retention.sql`, then run `docs/supabase_cloud_sync_retention_verify.sql`. The migration backfills leases but keeps deletion disabled.
+4. Apply `supabase/migrations/202607160001_cloud_sync_retention.sql` followed by `supabase/migrations/202607160002_cloud_sync_room_expiry.sql`, then run `docs/supabase_cloud_sync_retention_verify.sql`. The migrations backfill leases, prevent deleted-room resurrection, and keep deletion disabled.
 5. Configure secrets and deploy the Edge Function.
 6. Run the PowerShell probe with `-IncludeWriteProbe`, then verify row counts, Edge Function logs, lease activity, and Supabase security/performance advisors.
 7. Deploy the signed-room client to both `pro.bargig-furniture.com` and `pro218.bargig-furniture.com`. Confirm their live runtime config contains `gatewayFunction` and `roomTokenParam`, and their active bundle no longer contains `/rest/v1/`.
@@ -198,6 +199,7 @@ Expected checks:
 - repeating the old `expectedRevision` receives HTTP 409 with code `revision_conflict`
 - a tampered token receives HTTP 403 with code `room_token`
 - an expired token receives HTTP 403 with code `room_token_expired`
+- a cryptographically valid token for a retention-deleted room receives HTTP 410 with code `room_expired`; read, write, and renewal do not recreate it
 - `renew-room` accepts only a still-valid token for its exact base room and returns a replacement credential
 - HTTP 429 includes code `rate_limit`, `Retry-After`, and `retryAfterSeconds`
 - direct `/rest/v1/wp_cloud_sync_rooms` and legacy-table requests with the anon key are rejected after lockdown
@@ -211,7 +213,7 @@ Expected checks:
 - Public room families never expire. Authenticated private-room activity extends a seven-day lease, and expired room families are removed in bounded batches only after the retention policy is explicitly enabled.
 - Signed claims bind `tenantId`, `storeId`, the base room, permissions, and expiry.
 - Private credentials renew through a per-owner singleflight during the final 24 hours of validity. An already-expired token is never sent and cannot renew itself; the UI reports that a fresh link is required.
-- Gateway failures preserve authentication, rate-limit, network, and server identity through the owner status and panel snapshot; a 403 is not treated as a missing row and a 429 is not treated as a generic network failure.
+- Gateway failures preserve room-expiry, authentication, rate-limit, network, and server identity through the owner status and panel snapshot; HTTP 410 is terminal for the deleted room, a 403 is not treated as a missing row, and a 429 is not treated as a generic network failure.
 - A token may access only its base room and that room's internal `::` subresources.
 - Writes include `expectedRevision`; stale writes receive HTTP 409 with the current row.
 - The client performs a three-way merge for disjoint fields and disjoint saved-model/color ids, then retries one CAS. Conflicting edits to the same value are rejected rather than silently overwritten.

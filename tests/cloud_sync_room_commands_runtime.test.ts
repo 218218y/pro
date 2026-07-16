@@ -147,6 +147,14 @@ test('cloud sync room status exposes expiry, rate-limit, and offline states', ()
   });
   assert.equal(expired.credentialState, 'expired');
   assert.equal(expired.failureKind, 'auth-expired');
+  const deleted = describeCloudSyncRoomStatus('room-a', 'public', {
+    state: 'room-expired',
+    expiresAt: '',
+    retryAt: 0,
+    failureKind: 'room-expired',
+  });
+  assert.equal(deleted.credentialState, 'room-expired');
+  assert.equal(deleted.failureKind, 'room-expired');
   assert.match(expired.status, /ההרשאה פגה/u);
 
   const limited = describeCloudSyncRoomStatus('room-a', 'public', {

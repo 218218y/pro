@@ -193,6 +193,21 @@ test('cloud sync gateway preserves auth expiry, rate-limit, and network failures
     failure: { kind: 'auth-expired', status: 403, code: 'room_token_expired' },
   });
 
+  const deletedRoom = await getGatewayRow({
+    ...gateway,
+    room: 'room_deleted',
+    roomToken: 'still.cryptographically.valid',
+    fetchFn: async () => ({
+      ok: false,
+      status: 410,
+      json: async () => ({ ok: false, code: 'room_expired' }),
+    }),
+  });
+  assert.deepEqual(deletedRoom, {
+    ok: false,
+    failure: { kind: 'room-expired', status: 410, code: 'room_expired' },
+  });
+
   const limited = await writeGatewayRow({
     ...gateway,
     room: 'room_a',

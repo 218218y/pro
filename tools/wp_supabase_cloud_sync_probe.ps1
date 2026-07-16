@@ -121,6 +121,35 @@ function Assert-GatewayResult {
   }
 }
 
+function Read-LeaseTouchedAt {
+  param(
+    [Parameter(Mandatory = $true)]$Result,
+    [Parameter(Mandatory = $true)][string]$Operation
+  )
+
+  if (-not $Result.Body.PSObject.Properties['leaseTouchedAt']) {
+    throw "$Operation did not return leaseTouchedAt; the deployed Edge Function is not retention-ready"
+  }
+  $raw = [string]$Result.Body.leaseTouchedAt
+  $parsed = [DateTimeOffset]::MinValue
+  if (-not [DateTimeOffset]::TryParse($raw, [ref]$parsed)) {
+    throw "$Operation returned an invalid leaseTouchedAt value"
+  }
+  return $parsed
+}
+
+function Assert-LeaseAdvanced {
+  param(
+    [Parameter(Mandatory = $true)][DateTimeOffset]$Before,
+    [Parameter(Mandatory = $true)][DateTimeOffset]$After,
+    [Parameter(Mandatory = $true)][string]$Operation
+  )
+
+  if ($After -le $Before) {
+    throw "$Operation did not advance the server-owned room lease"
+  }
+}
+
 foreach ($origin in @($mainOrigin, $customerOrigin)) {
   $public = Invoke-GatewayRequest -Origin $origin -Body @{ action = 'issue-public'; storeId = 'bargig' }
   Assert-GatewayResult -Result $public -Status 200
@@ -144,6 +173,7 @@ if (-not $credential.room -or -not $credential.token -or -not $credential.expire
   throw 'create-room returned an incomplete credential'
 }
 Write-Host 'PASS create-room'
+$createdLeaseTouchedAt = Read-LeaseTouchedAt -Result $created -Operation 'create-room'
 
 $read = Invoke-GatewayRequest -Origin $mainOrigin -Body @{
   action = 'read'
@@ -152,7 +182,23 @@ $read = Invoke-GatewayRequest -Origin $mainOrigin -Body @{
   roomToken = [string]$credential.token
 }
 Assert-GatewayResult -Result $read -Status 200
-Write-Host 'PASS signed read'
+$mainLeaseTouchedAt = Read-LeaseTouchedAt -Result $read -Operation 'signed read from main origin'
+Assert-LeaseAdvanced -Before $createdLeaseTouchedAt -After $mainLeaseTouchedAt `
+  -Operation 'signed read from main origin'
+Write-Host 'PASS signed read and lease touch from main origin'
+
+$customerRead = Invoke-GatewayRequest -Origin $customerOrigin -Body @{
+  action = 'read'
+  storeId = 'bargig'
+  room = [string]$credential.room
+  roomToken = [string]$credential.token
+}
+Assert-GatewayResult -Result $customerRead -Status 200
+$customerLeaseTouchedAt = Read-LeaseTouchedAt -Result $customerRead `
+  -Operation 'signed read from customer origin'
+Assert-LeaseAdvanced -Before $mainLeaseTouchedAt -After $customerLeaseTouchedAt `
+  -Operation 'signed read from customer origin'
+Write-Host 'PASS signed read and lease touch from customer origin'
 
 if ($IncludeWriteProbe) {
   $clientId = "probe-$([guid]::NewGuid().ToString('N'))"

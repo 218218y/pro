@@ -45,6 +45,7 @@ export function createCloudSyncOwnerContext(App: AppContainer): CloudSyncOwnerCo
     getFloatingSyncRoom,
     currentRoomCredential,
     setPrivateRoomCredential,
+    clearPrivateRoomCredential,
   } = createCloudSyncOwnerRooms({
     App,
     cfg,
@@ -76,6 +77,7 @@ export function createCloudSyncOwnerContext(App: AppContainer): CloudSyncOwnerCo
       currentRoomCredential,
       getPrivateRoomCredential,
       setPrivateRoomCredential,
+      clearPrivateRoomCredential,
       getGateBaseRoom,
       getSketchRoom,
       getSite2TabsRoom,

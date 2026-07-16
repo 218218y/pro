@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { runCoalescedBuild } from '../esm/native/builder/build_runner.ts';
+import { createBuildRunnerRuntimeContext } from '../esm/native/builder/build_runner_runtime.ts';
 
 function createState(signature: string, activeId = '', forceBuild = false) {
   return {
@@ -26,10 +27,11 @@ function createBuildRunnerHarness(onRun: (state: any, buildWardrobe: (state: any
       builder: {},
     },
   };
+  const context = createBuildRunnerRuntimeContext(App);
 
   const buildWardrobe: any = function buildWardrobe(state: any) {
     return runCoalescedBuild({
-      App,
+      context,
       bwFn: buildWardrobe,
       args: [state],
       run: () => {
@@ -154,7 +156,7 @@ test('build runner runtime: shadow autoUpdate is restored and post-build reactio
 
   const buildWardrobe: any = function buildWardrobe(state: any) {
     return runCoalescedBuild({
-      App,
+      context: createBuildRunnerRuntimeContext(App),
       bwFn: buildWardrobe,
       args: [state],
       run: () => {
@@ -168,4 +170,31 @@ test('build runner runtime: shadow autoUpdate is restored and post-build reactio
   assert.throws(() => buildWardrobe(createState('sig:throw')), /build failed/);
   assert.equal(App.render.renderer.shadowMap.autoUpdate, true);
   assert.deepEqual(afterBuild, [false]);
+});
+
+test('build runner runtime: a failing reaction observer cannot change a successful build result', () => {
+  const App: any = {
+    render: { renderer: { shadowMap: { autoUpdate: true } } },
+    services: {
+      builder: {},
+      buildReactions: {
+        afterBuild() {
+          throw new Error('observer failed');
+        },
+      },
+    },
+  };
+  const context = createBuildRunnerRuntimeContext(App);
+  const expected = { committed: true };
+  const buildWardrobe: any = () =>
+    runCoalescedBuild({
+      context,
+      bwFn: buildWardrobe,
+      args: [expected],
+      run: () => expected,
+    });
+  App.services.builder.buildWardrobe = buildWardrobe;
+
+  assert.equal(buildWardrobe(), expected);
+  assert.equal(App.render.renderer.shadowMap.autoUpdate, true);
 });

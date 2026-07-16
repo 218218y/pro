@@ -6,7 +6,8 @@
 // This module is intentionally dependency-light and delegates hot-path side
 // effects to build_runner_runtime.
 
-import type { AppContainer, UnknownCallable } from '../../../types';
+import type { UnknownCallable } from '../../../types';
+import type { BuildRunnerRuntimeContext } from './build_runner_runtime.js';
 
 import {
   readBuildRunnerArgsSignature,
@@ -27,7 +28,7 @@ type CoalescedBuildFn = UnknownCallable & {
 };
 
 type CoalescedBuildOpts = {
-  App: AppContainer;
+  context: BuildRunnerRuntimeContext;
   bwFn: CoalescedBuildFn;
   args: readonly unknown[];
   run: () => unknown;
@@ -44,25 +45,25 @@ type CoalescedBuildOpts = {
  * and restores it afterwards.
  *
  * @param {{
- *   App: AppContainer,
+ *   context: BuildRunnerRuntimeContext,
  *   bwFn: CoalescedBuildFn,
  *   args: readonly unknown[],
  *   run: ()=>unknown,
  * }} opts
  */
 export function runCoalescedBuild(opts: CoalescedBuildOpts): unknown {
-  if (!opts || !opts.App || typeof opts.run !== 'function' || typeof opts.bwFn !== 'function') {
+  if (!opts || !opts.context || typeof opts.run !== 'function' || typeof opts.bwFn !== 'function') {
     throw new Error('[builder/build_runner] Invalid arguments');
   }
 
-  const { App, bwFn, args, run } = opts;
+  const { context, bwFn, args, run } = opts;
   const nextArgs = Array.isArray(args) ? args : [];
   const nextSignature = readBuildRunnerArgsSignature(nextArgs);
   const decision = stageCoalescedBuildRequest(bwFn, nextArgs, nextSignature);
   if (decision.kind !== 'run') return;
 
-  const shadowState = readBuildRunnerShadowAutoUpdateState(App);
-  disableBuildRunnerShadowAutoUpdate(App, shadowState);
+  const shadowState = readBuildRunnerShadowAutoUpdateState(context);
+  disableBuildRunnerShadowAutoUpdate(context, shadowState);
 
   let result: unknown;
   let runErr: unknown = null;
@@ -72,8 +73,8 @@ export function runCoalescedBuild(opts: CoalescedBuildOpts): unknown {
   } catch (error) {
     runErr = error;
   } finally {
-    restoreBuildRunnerShadowAutoUpdate(App, shadowState, runErr);
-    finalizeCoalescedBuildRunRuntime(App, bwFn, runErr);
+    restoreBuildRunnerShadowAutoUpdate(context, shadowState, runErr);
+    finalizeCoalescedBuildRunRuntime(context, bwFn, runErr);
   }
 
   if (runErr) throw runErr;

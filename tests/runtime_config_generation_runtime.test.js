@@ -5,7 +5,13 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { buildRuntimeConfigEnvelope, loadSiteProfile } from '../tools/wp_site_profiles.mjs';
+import {
+  buildCommonRuntimeConfigEnvelope,
+  buildRuntimeConfigVariantOverlay,
+  loadSiteProfile,
+  mergeRuntimeConfigEnvelopes,
+  normalizeSiteProfile,
+} from '../tools/wp_site_profiles.mjs';
 import {
   assertRootRuntimeConfigCurrent,
   readExpectedRootRuntimeConfig,
@@ -19,15 +25,74 @@ test('root runtime config is generated exactly from the Bargig profile', async (
   const expectedSource = await readExpectedRootRuntimeConfig(ROOT);
   const actualSource = fs.readFileSync(path.join(ROOT, 'wp_runtime_config.mjs'), 'utf8');
   const runtimeModule = await import(new URL('../wp_runtime_config.mjs', import.meta.url));
-  const expectedEnvelope = buildRuntimeConfigEnvelope(profile, 'main', {
-    includeVariantIdentity: false,
-  });
+  const expectedEnvelope = buildCommonRuntimeConfigEnvelope(profile);
 
   assert.equal(actualSource, expectedSource);
   assert.deepEqual(runtimeModule.default, expectedEnvelope);
+  assert.deepEqual(runtimeModule.runtimeConfigOverlays, {
+    main: buildRuntimeConfigVariantOverlay(profile, 'main'),
+    site2: buildRuntimeConfigVariantOverlay(profile, 'site2'),
+  });
   assert.equal('siteVariant' in runtimeModule.default.config, false);
   assert.equal('site2EnabledTabs' in runtimeModule.default.config, false);
   await assertRootRuntimeConfigCurrent(ROOT);
+});
+
+test('root common config and explicit variant overlays never leak main policy into site2', () => {
+  const profile = normalizeSiteProfile({
+    root: ROOT,
+    profileDir: path.join(ROOT, 'sites', 'fixture'),
+    requestedStoreId: 'fixture',
+    profile: {
+      id: 'fixture',
+      displayName: 'Fixture',
+      storageNamespace: 'common-storage',
+      config: { commonOnly: true },
+      flags: { commonFlag: true },
+      supabase: {
+        url: 'https://example.supabase.co',
+        anonKey: 'anon',
+        shareBaseUrl: 'https://common.example/',
+        showRoomWidget: true,
+      },
+      variants: {
+        main: {
+          storageNamespace: 'main-storage',
+          shareBaseUrl: 'https://main.example/',
+          showRoomWidget: true,
+          orderPdfTemplateUrl: 'main.pdf',
+          config: { variantValue: 'main' },
+          flags: { variantFlag: 'main' },
+        },
+        site2: {
+          storageNamespace: 'site2-storage',
+          shareBaseUrl: 'https://site2.example/',
+          showRoomWidget: false,
+          orderPdfTemplateUrl: 'site2.pdf',
+          config: { variantValue: 'site2' },
+          flags: { variantFlag: 'site2' },
+        },
+      },
+    },
+  });
+  const common = buildCommonRuntimeConfigEnvelope(profile);
+  const main = mergeRuntimeConfigEnvelopes(common, buildRuntimeConfigVariantOverlay(profile, 'main'));
+  const site2 = mergeRuntimeConfigEnvelopes(common, buildRuntimeConfigVariantOverlay(profile, 'site2'));
+
+  assert.equal(common.config.storageNamespace, 'common-storage');
+  assert.equal(common.config.supabaseCloudSync.shareBaseUrl, 'https://common.example/');
+  assert.equal(common.config.variantValue, undefined);
+  assert.equal(main.config.storageNamespace, 'main-storage');
+  assert.equal(main.config.supabaseCloudSync.shareBaseUrl, 'https://main.example/');
+  assert.equal(main.config.orderPdf.templateUrl, 'main.pdf');
+  assert.equal(main.config.variantValue, 'main');
+  assert.equal(main.flags.variantFlag, 'main');
+  assert.equal(site2.config.storageNamespace, 'site2-storage');
+  assert.equal(site2.config.supabaseCloudSync.shareBaseUrl, 'https://site2.example/');
+  assert.equal(site2.config.supabaseCloudSync.showRoomWidget, false);
+  assert.equal(site2.config.orderPdf.templateUrl, 'site2.pdf');
+  assert.equal(site2.config.variantValue, 'site2');
+  assert.equal(site2.flags.variantFlag, 'site2');
 });
 
 test('root build and dev entrypoints fail fast on stale generated runtime config', () => {

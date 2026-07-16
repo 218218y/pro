@@ -9,7 +9,7 @@ import { getPlatformReportError } from '../runtime/platform_access.js';
 
 import type { AppContainer, RendererLike, UnknownCallable } from '../../../types';
 
-type BuildRunnerSoftErrorExtra = {
+export type BuildRunnerSoftErrorExtra = {
   preserveOriginalBuildError?: boolean;
 };
 
@@ -30,13 +30,6 @@ export type CoalescedBuildFn = UnknownCallable & {
   __lastCompletedBuildSignature?: unknown;
 };
 
-export type CoalescedBuildOpts = {
-  App: AppContainer;
-  bwFn: CoalescedBuildFn;
-  args: readonly unknown[];
-  run: () => unknown;
-};
-
 export type CoalescedBuildDecision =
   { kind: 'skip' } | { kind: 'queued' } | { kind: 'run'; signature: unknown };
 
@@ -51,29 +44,65 @@ export type BuildRunnerShadowAutoUpdateState = {
   prevShadowAuto: boolean;
 };
 
+export type BuildRunnerRuntimeContext = Readonly<{
+  readShadowMap: () => ShadowMapLike | null;
+  reportSoftError: (where: string, error: unknown, extra?: BuildRunnerSoftErrorExtra) => void;
+  runPostBuildReactions: (ok: boolean, preserveOriginalBuildError: boolean) => void;
+  scheduleMicrotask: (fn: () => void) => void;
+  replayBuild: (bwFn: CoalescedBuildFn, args: readonly unknown[]) => void;
+}>;
+
 function reportBuildRunnerSoftError(
-  App: AppContainer | null | undefined,
+  context: BuildRunnerRuntimeContext,
   where: string,
   error: unknown,
   extra?: BuildRunnerSoftErrorExtra
 ): void {
-  try {
-    const reportError = getPlatformReportError(App);
-    if (reportError) {
-      reportError(error, { where, fatal: false, ...extra });
+  context.reportSoftError(where, error, extra);
+}
+
+export function createBuildRunnerRuntimeContext(App: AppContainer): BuildRunnerRuntimeContext {
+  const reportSoftError = (where: string, error: unknown, extra?: BuildRunnerSoftErrorExtra): void => {
+    try {
+      const reportError = getPlatformReportError(App);
+      if (reportError) reportError(error, { where, fatal: false, ...extra });
+    } catch {
+      // Diagnostics are observational and cannot change the build result.
     }
-  } catch {
-    // swallow
-  }
+  };
+  return Object.freeze({
+    readShadowMap: () => {
+      const renderer = asRecord<RendererWithShadowMap>(getRenderer(App));
+      return asRecord<ShadowMapLike>(renderer?.shadowMap);
+    },
+    reportSoftError,
+    runPostBuildReactions: (ok, preserveOriginalBuildError) => {
+      try {
+        const service = getBuildReactionsServiceMaybe(App);
+        const afterBuild = service && typeof service.afterBuild === 'function' ? service.afterBuild : null;
+        if (afterBuild) afterBuild.call(service, ok);
+      } catch (error) {
+        reportSoftError('native/builder/build_runner.afterBuildReactions', error, {
+          preserveOriginalBuildError,
+        });
+      }
+    },
+    scheduleMicrotask: fn => {
+      const enqueue = queueMicrotaskMaybe(App);
+      if (typeof enqueue === 'function') enqueue(fn);
+      else void Promise.resolve().then(fn);
+    },
+    replayBuild: (bwFn, args) => {
+      const builder = requireBuilderService(App, 'builder/build_runner.coalesced');
+      bwFn.apply(builder, Array.isArray(args) ? args : []);
+    },
+  });
 }
 
-function readBuildRunnerShadowMap(App: AppContainer): ShadowMapLike | null {
-  const renderer = asRecord<RendererWithShadowMap>(getRenderer(App));
-  return asRecord<ShadowMapLike>(renderer?.shadowMap);
-}
-
-export function readBuildRunnerShadowAutoUpdateState(App: AppContainer): BuildRunnerShadowAutoUpdateState {
-  const shadowMap = readBuildRunnerShadowMap(App);
+export function readBuildRunnerShadowAutoUpdateState(
+  context: BuildRunnerRuntimeContext
+): BuildRunnerShadowAutoUpdateState {
+  const shadowMap = context.readShadowMap();
   const hadShadowAuto = !!(shadowMap && Object.prototype.hasOwnProperty.call(shadowMap, 'autoUpdate'));
   const prevShadowAuto = hadShadowAuto ? !!shadowMap?.autoUpdate : false;
   return {
@@ -84,19 +113,19 @@ export function readBuildRunnerShadowAutoUpdateState(App: AppContainer): BuildRu
 }
 
 export function disableBuildRunnerShadowAutoUpdate(
-  App: AppContainer,
+  context: BuildRunnerRuntimeContext,
   state: BuildRunnerShadowAutoUpdateState
 ): void {
   if (!state.shadowMap || !state.hadShadowAuto) return;
   try {
     state.shadowMap.autoUpdate = false;
   } catch (error) {
-    reportBuildRunnerSoftError(App, 'native/builder/build_runner.disableShadowAutoUpdate', error);
+    reportBuildRunnerSoftError(context, 'native/builder/build_runner.disableShadowAutoUpdate', error);
   }
 }
 
 export function restoreBuildRunnerShadowAutoUpdate(
-  App: AppContainer,
+  context: BuildRunnerRuntimeContext,
   state: BuildRunnerShadowAutoUpdateState,
   runErr: unknown
 ): void {
@@ -104,27 +133,18 @@ export function restoreBuildRunnerShadowAutoUpdate(
   try {
     state.shadowMap.autoUpdate = state.prevShadowAuto;
   } catch (error) {
-    reportBuildRunnerSoftError(App, 'native/builder/build_runner.restoreShadowAutoUpdate', error, {
+    reportBuildRunnerSoftError(context, 'native/builder/build_runner.restoreShadowAutoUpdate', error, {
       preserveOriginalBuildError: !!runErr,
     });
   }
 }
 
 export function runBuildRunnerPostBuildReactions(
-  App: AppContainer,
+  context: BuildRunnerRuntimeContext,
   ok: boolean,
   preserveOriginalBuildError: boolean
 ): void {
-  try {
-    const svc = getBuildReactionsServiceMaybe(App);
-    const fn = svc && typeof svc.afterBuild === 'function' ? svc.afterBuild : null;
-    if (!fn) return;
-    fn.call(svc, ok);
-  } catch (error) {
-    reportBuildRunnerSoftError(App, 'native/builder/build_runner.afterBuildReactions', error, {
-      preserveOriginalBuildError,
-    });
-  }
+  context.runPostBuildReactions(ok, preserveOriginalBuildError);
 }
 
 export function readBuildRunnerArgsSignature(args: readonly unknown[]): unknown {
@@ -185,35 +205,23 @@ export function takePendingCoalescedReplay(bwFn: CoalescedBuildFn): PendingCoale
   return { args, pendingSignature };
 }
 
-function scheduleMicrotask(App: AppContainer, fn: () => void): void {
-  const enqueue = queueMicrotaskMaybe(App);
-  if (typeof enqueue === 'function') {
-    enqueue(fn);
-    return;
-  }
-  void Promise.resolve().then(fn);
-}
-
 export function schedulePendingCoalescedReplay(
-  App: AppContainer,
+  context: BuildRunnerRuntimeContext,
   bwFn: CoalescedBuildFn,
   args: readonly unknown[]
 ): void {
-  scheduleMicrotask(App, () => {
-    const bsvc = requireBuilderService(App, 'builder/build_runner.coalesced');
-    bwFn.apply(bsvc, Array.isArray(args) ? args : []);
-  });
+  context.scheduleMicrotask(() => context.replayBuild(bwFn, args));
 }
 
 export function finalizeCoalescedBuildRunRuntime(
-  App: AppContainer,
+  context: BuildRunnerRuntimeContext,
   bwFn: CoalescedBuildFn,
   runErr: unknown
 ): void {
   finishCoalescedBuildRun(bwFn);
-  runBuildRunnerPostBuildReactions(App, !runErr, !!runErr);
+  runBuildRunnerPostBuildReactions(context, !runErr, !!runErr);
   const pendingReplay = takePendingCoalescedReplay(bwFn);
   if (pendingReplay) {
-    schedulePendingCoalescedReplay(App, bwFn, pendingReplay.args);
+    schedulePendingCoalescedReplay(context, bwFn, pendingReplay.args);
   }
 }

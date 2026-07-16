@@ -96,6 +96,14 @@ export function buildCloudSyncCredentialStatus(args: {
       failureKind: args.failure.kind,
     };
   }
+  if (args.failure?.kind === 'room-expired') {
+    return {
+      state: 'room-expired',
+      expiresAt: '',
+      retryAt: 0,
+      failureKind: args.failure.kind,
+    };
+  }
   if (args.failure) {
     return {
       state: args.failure.kind === 'auth-expired' ? 'expired' : 'error',

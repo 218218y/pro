@@ -220,6 +220,22 @@ test('cloud sync main row never seeds local collections after a failed initial r
   assert.equal(harness.upsertCalls.length, 0);
 });
 
+test('cloud sync main row never seeds a retention-deleted room', async () => {
+  const harness = createHarness({
+    rows: [
+      {
+        ok: false,
+        failure: { kind: 'room-expired', status: 410, code: 'room_expired' },
+      },
+    ],
+  });
+
+  await harness.ops.pullOnce(true);
+
+  assert.equal(harness.getRowCalls.length, 1);
+  assert.equal(harness.upsertCalls.length, 0);
+});
+
 test('cloud sync main row preserves a local mutation made while a normal pull is in flight', async () => {
   let resolveRemoteRow: ((row: Record<string, unknown>) => void) | null = null;
   const harness = createHarness({

@@ -124,6 +124,7 @@ export function createCloudSyncOwnerGatewayIo(args: {
   let publicCredentialPromise: Promise<CloudSyncRoomCredential | null> | null = null;
   let privateCredentialPromise: Promise<CloudSyncRoomCredential | null> | null = null;
   let privateCredentialMemory: CloudSyncRoomCredential | null = null;
+  let expiredPrivateRoom = '';
   let lastCredentialFailure: CloudSyncGatewayFailure | null = null;
   const conflictStore = args.storage
     ? createCloudSyncConflictStore({ storage: args.storage, storeId: cfg.storeId })
@@ -213,6 +214,14 @@ export function createCloudSyncOwnerGatewayIo(args: {
     credential: CloudSyncRoomCredential | null,
     failure: CloudSyncGatewayFailure | null = null
   ): void => {
+    if (failure?.kind === 'room-expired' && rooms.currentRoom() !== cfg.publicRoom) {
+      const expiredRoom = credential?.room || rooms.currentRoom();
+      const firstObservation = expiredPrivateRoom !== expiredRoom;
+      expiredPrivateRoom = expiredRoom;
+      privateCredentialMemory = null;
+      if (firstObservation) rooms.clearPrivateRoomCredential();
+      credential = null;
+    }
     lastCredentialFailure = failure;
     runtimeStatus.credential = buildCloudSyncCredentialStatus({
       isPublic: rooms.currentRoom() === cfg.publicRoom,
@@ -282,6 +291,7 @@ export function createCloudSyncOwnerGatewayIo(args: {
           publishCredentialStatus(credential, result.failure);
           return null;
         }
+        expiredPrivateRoom = '';
         privateCredentialMemory = result.credential;
         rooms.setPrivateRoomCredential(result.credential);
         publishCredentialStatus(result.credential);
@@ -306,6 +316,10 @@ export function createCloudSyncOwnerGatewayIo(args: {
       return null;
     }
     if (baseRoom === cfg.publicRoom) return resolvePublicCredential();
+    if (expiredPrivateRoom === baseRoom) {
+      publishCredentialStatus(null, { kind: 'room-expired', status: 410, code: 'room_expired' });
+      return null;
+    }
     const storedCredential = rooms.currentRoomCredential();
     const memoryExpiry = Date.parse(privateCredentialMemory?.expiresAt || '');
     const storedExpiry = Date.parse(storedCredential?.expiresAt || '');
@@ -982,6 +996,7 @@ export function createCloudSyncOwnerGatewayIo(args: {
         publishCredentialStatus(null, result.failure);
         return result;
       }
+      expiredPrivateRoom = '';
       publishCredentialStatus(result.credential);
       return result;
     },

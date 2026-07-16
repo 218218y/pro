@@ -14,17 +14,17 @@ select
 select
   has_function_privilege(
     'anon',
-    'public.wp_cloud_sync_touch_room_lease(text, text, text, text)',
+    'public.wp_cloud_sync_touch_room_lease(text, text, text, text, boolean)',
     'EXECUTE'
   ) as anon_can_touch_lease,
   has_function_privilege(
     'authenticated',
-    'public.wp_cloud_sync_touch_room_lease(text, text, text, text)',
+    'public.wp_cloud_sync_touch_room_lease(text, text, text, text, boolean)',
     'EXECUTE'
   ) as authenticated_can_touch_lease,
   has_function_privilege(
     'service_role',
-    'public.wp_cloud_sync_touch_room_lease(text, text, text, text)',
+    'public.wp_cloud_sync_touch_room_lease(text, text, text, text, boolean)',
     'EXECUTE'
   ) as service_role_can_touch_lease,
   has_function_privilege(

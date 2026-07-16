@@ -75,6 +75,7 @@ export function cloneCloudSyncPublicPanelSnapshot(snapshot: unknown): CloudSyncP
       rec.credentialState === 'active' ||
       rec.credentialState === 'expiring' ||
       rec.credentialState === 'expired' ||
+      rec.credentialState === 'room-expired' ||
       rec.credentialState === 'missing' ||
       rec.credentialState === 'rate-limited' ||
       rec.credentialState === 'offline' ||
@@ -85,6 +86,7 @@ export function cloneCloudSyncPublicPanelSnapshot(snapshot: unknown): CloudSyncP
     retryAt: Number(rec.retryAt) || 0,
     failureKind:
       rec.failureKind === 'auth-expired' ||
+      rec.failureKind === 'room-expired' ||
       rec.failureKind === 'auth-invalid' ||
       rec.failureKind === 'rate-limit' ||
       rec.failureKind === 'network' ||

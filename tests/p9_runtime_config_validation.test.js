@@ -6,7 +6,7 @@ import {
   validateRuntimeFlags,
 } from '../esm/native/runtime/runtime_config_validation.ts';
 import { validateReactBootDeps } from '../esm/native/runtime/runtime_boot_config.ts';
-import { parseRuntimeConfigModule } from '../esm/entry_pro_main_shared.ts';
+import { mergeRuntimeConfigModuleResults, parseRuntimeConfigModule } from '../esm/entry_pro_main_shared.ts';
 
 test('runtime config module accepts only the canonical flags/config envelope', () => {
   assert.deepEqual(parseRuntimeConfigModule({ flags: {}, config: {} }), {
@@ -20,6 +20,33 @@ test('runtime config module accepts only the canonical flags/config envelope', (
     /Unexpected top-level key\(s\): cacheBudgetMb/
   );
   assert.throws(() => parseRuntimeConfigModule({ config: null }), /config must be an object/);
+});
+
+test('runtime config overlays merge known nested owners without dropping common values', () => {
+  const merged = mergeRuntimeConfigModuleResults(
+    parseRuntimeConfigModule({
+      flags: { common: true },
+      config: {
+        storageNamespace: 'common',
+        orderPdf: { templateUrl: 'common.pdf' },
+        supabaseCloudSync: { url: 'https://example.supabase.co', showRoomWidget: true },
+      },
+    }),
+    parseRuntimeConfigModule({
+      flags: { variant: true },
+      config: {
+        siteVariant: 'site2',
+        orderPdf: { templateUrl: 'site2.pdf' },
+        supabaseCloudSync: { showRoomWidget: false },
+      },
+    })
+  );
+
+  assert.deepEqual(merged.flags, { common: true, variant: true });
+  assert.equal(merged.config?.siteVariant, 'site2');
+  assert.equal(merged.config?.orderPdf?.templateUrl, 'site2.pdf');
+  assert.equal(merged.config?.supabaseCloudSync?.url, 'https://example.supabase.co');
+  assert.equal(merged.config?.supabaseCloudSync?.showRoomWidget, false);
 });
 
 test('runtime flags accept canonical known values and preserve unknown feature keys', () => {

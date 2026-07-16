@@ -42,6 +42,7 @@ export interface CloudSyncRoomCredential {
 
 export type CloudSyncGatewayFailure =
   | { kind: 'auth-expired'; status: 403; code: 'room_token_expired' }
+  | { kind: 'room-expired'; status: 410; code: 'room_expired' }
   | { kind: 'auth-invalid'; status: 403; code?: string }
   | { kind: 'rate-limit'; status: 429; code: 'rate_limit'; retryAfterMs?: number }
   | { kind: 'network'; message: string }
@@ -137,7 +138,15 @@ export type CloudSyncUpsertResult =
     };
 
 export type CloudSyncCredentialState =
-  'public' | 'active' | 'expiring' | 'expired' | 'missing' | 'rate-limited' | 'offline' | 'error';
+  | 'public'
+  | 'active'
+  | 'expiring'
+  | 'expired'
+  | 'room-expired'
+  | 'missing'
+  | 'rate-limited'
+  | 'offline'
+  | 'error';
 
 export interface CloudSyncCredentialStatus extends UnknownRecord {
   state: CloudSyncCredentialState;

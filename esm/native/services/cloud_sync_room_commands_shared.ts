@@ -109,6 +109,7 @@ export function describeCloudSyncRoomStatus(
     active: 'הרשאה פעילה',
     expiring: 'ההרשאה עומדת לפוג ומתחדשת אוטומטית',
     expired: 'ההרשאה פגה; יש לפתוח קישור חדש',
+    'room-expired': 'החדר נמחק לאחר חוסר פעילות; יש ליצור קישור חדש',
     missing: 'חסרה הרשאת חדר',
     'rate-limited': 'קצב הבקשות הוגבל זמנית',
     offline: 'לא מקוון; הסנכרון יתחדש עם החיבור',

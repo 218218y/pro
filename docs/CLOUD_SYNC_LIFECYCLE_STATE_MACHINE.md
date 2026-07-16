@@ -38,6 +38,7 @@ This is the compact lifecycle contract for cloud sync. Keep implementation detai
 | `active`       | A private credential is valid for more than 24 hours.                            |
 | `expiring`     | The credential is inside the 24-hour renewal window; one `renew-room` is shared. |
 | `expired`      | No read/write request is sent; the user must open a fresh signed link.           |
+| `room-expired` | Retention deleted the room; the credential is cleared and cannot recreate it.    |
 | `rate-limited` | Retry waits for the gateway `Retry-After`/`retryAfterSeconds` deadline.          |
 | `offline`      | Network recovery may retry without discarding a still-valid credential.          |
 | `error`        | Invalid authorization or a server failure is visible and is not a missing row.   |
@@ -46,6 +47,8 @@ This is the compact lifecycle contract for cloud sync. Keep implementation detai
 - Schema 1 is migrated from the signed token's `exp` claim; invalid legacy values fail closed.
 - New share links use a URL fragment. Query parsing exists only for previously issued signed links and must not be used by link generation.
 - Private renewal is allowed only while the old credential is still valid and only for its exact base room.
+- A still-valid token cannot resurrect a retention-deleted room: read, write and renewal receive typed
+  `room_expired`, clear the local credential, and never enter the missing-row seed path.
 - Runtime-status publication drives panel snapshots, so credential state changes are visible without a reload.
 
 ## Read, conflict, and local commit rules

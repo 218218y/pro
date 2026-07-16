@@ -16,6 +16,7 @@ export type CloudSyncOwnerRooms = {
   currentRoomCredential: () => CloudSyncRoomCredential | null;
   getPrivateRoomCredential: () => CloudSyncRoomCredential | null;
   setPrivateRoomCredential: (credential: CloudSyncRoomCredential) => boolean;
+  clearPrivateRoomCredential: () => boolean;
   getGateBaseRoom: () => string;
   getSketchRoom: () => string;
   getSite2TabsRoom: () => string;
@@ -103,6 +104,28 @@ function readStoredPrivateCredential(args: {
   }
 }
 
+function clearStoredPrivateCredential(args: {
+  App: AppContainer;
+  storage: StorageLike;
+  reportNonFatal: CloudSyncReportNonFatal;
+}): boolean {
+  const { App, storage, reportNonFatal } = args;
+  try {
+    if (typeof storage.getString === 'function' && !storage.getString(readPrivateRoomStorageKey(storage))) {
+      return true;
+    }
+    if (typeof storage.remove === 'function' && storage.remove(readPrivateRoomStorageKey(storage))) {
+      return true;
+    }
+    reportNonFatal(App, 'privateRoomCredential.clear', new Error('Private room credential was not removed'), {
+      throttleMs: 8000,
+    });
+  } catch (error) {
+    reportNonFatal(App, 'privateRoomCredential.clear', error, { throttleMs: 8000 });
+  }
+  return false;
+}
+
 export function createCloudSyncOwnerRooms(args: {
   App: AppContainer;
   cfg: SupabaseCfg;
@@ -135,6 +158,9 @@ export function createCloudSyncOwnerRooms(args: {
   const setPrivateRoomCredential = (credential: CloudSyncRoomCredential): boolean =>
     writeStoredPrivateCredential({ App, storage, reportNonFatal, credential });
 
+  const clearPrivateRoomCredential = (): boolean =>
+    clearStoredPrivateCredential({ App, storage, reportNonFatal });
+
   const currentRoomCredential = (): CloudSyncRoomCredential | null => {
     const current = currentRoom();
     if (!current || current === cfg.publicRoom) return null;
@@ -166,6 +192,7 @@ export function createCloudSyncOwnerRooms(args: {
     currentRoomCredential,
     getPrivateRoomCredential,
     setPrivateRoomCredential,
+    clearPrivateRoomCredential,
     getGateBaseRoom,
     getSketchRoom,
     getSite2TabsRoom: (): string => `${getGateBaseRoom()}::tabsGate`,

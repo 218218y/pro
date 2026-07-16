@@ -12,6 +12,7 @@ import { assertApp, assertBrowserWindow } from '../runtime/api.js';
 import { requireBuilderDepsReady } from '../runtime/builder_deps_access.js';
 import { reportError } from '../runtime/errors.js';
 import { runCoalescedBuild } from './build_runner.js';
+import { createBuildRunnerRuntimeContext } from './build_runner_runtime.js';
 import { buildWardrobeFlow } from './build_wardrobe_flow.js';
 import { ensureBuilderService, getBuilderService } from '../runtime/builder_service_access.js';
 import { setBuildTag } from '../runtime/build_info_access.js';
@@ -60,6 +61,7 @@ export function installBuilderCore(AppIn: unknown) {
 
   // Build tags are useful diagnostics (and safe in dev). They are not required for runtime.
   setBuildTag(App, 'builderCore', 'stage22_coreSlim_buildFlow');
+  const buildRunnerContext = createBuildRunnerRuntimeContext(App);
 
   // Builder core (ESM): keep this file as a small installer/orchestrator.
   B.buildWardrobe = function buildWardrobe(stateOrOverride: unknown) {
@@ -80,7 +82,7 @@ export function installBuilderCore(AppIn: unknown) {
     }
 
     return runCoalescedBuild({
-      App,
+      context: buildRunnerContext,
       bwFn: buildWardrobe,
       args: [stateOrOverride],
       run: () =>

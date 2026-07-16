@@ -144,6 +144,9 @@ function readGatewayFailure(response: {
   if (response.status === 403 && code === 'room_token_expired') {
     return { kind: 'auth-expired', status: 403, code: 'room_token_expired' };
   }
+  if (response.status === 410 && code === 'room_expired') {
+    return { kind: 'room-expired', status: 410, code: 'room_expired' };
+  }
   if (response.status === 403) {
     return { kind: 'auth-invalid', status: 403, ...(code ? { code } : {}) };
   }

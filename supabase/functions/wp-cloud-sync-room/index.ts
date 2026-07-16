@@ -239,14 +239,26 @@ async function touchRoomLease(args: {
   storeId: string;
   room: string;
   publicRoom: string;
-}): Promise<void> {
-  const { error } = await args.client.rpc('wp_cloud_sync_touch_room_lease', {
+  allowCreate: boolean;
+}): Promise<{ ok: true; touchedAt: string; expiresAt: string | null } | { ok: false; code: 'room_expired' }> {
+  const { data, error } = await args.client.rpc('wp_cloud_sync_touch_room_lease', {
     p_tenant_id: args.tenantId,
     p_store_id: args.storeId,
     p_room: args.room,
     p_public_room: args.publicRoom,
+    p_allow_create: args.allowCreate,
   });
   if (error) throw error;
+  if (!isRecord(data)) throw new Error('Cloud Sync lease touch returned an invalid result');
+  if (data.ok === false && data.code === 'room_expired') return { ok: false, code: 'room_expired' };
+  if (data.ok !== true || typeof data.touchedAt !== 'string') {
+    throw new Error('Cloud Sync lease touch returned an invalid success result');
+  }
+  return {
+    ok: true,
+    touchedAt: data.touchedAt,
+    expiresAt: typeof data.expiresAt === 'string' ? data.expiresAt : null,
+  };
 }
 
 function normalizeRow(value: unknown): RoomRow | null {
@@ -461,19 +473,37 @@ Deno.serve(async request => {
 
     if (action === 'issue-public') {
       const room = publicRoom;
-      await touchRoomLease({ client: supabase, tenantId, storeId, room, publicRoom });
+      const lease = await touchRoomLease({
+        client: supabase,
+        tenantId,
+        storeId,
+        room,
+        publicRoom,
+        allowCreate: true,
+      });
+      if (!lease.ok) throw new Error('Public room lease could not be created');
       return jsonResponse(responseOrigin, 200, {
         ok: true,
         credential: await issueCredential({ tenantId, storeId, room, secret }),
+        leaseTouchedAt: lease.touchedAt,
       });
     }
 
     if (action === 'create-room') {
       const room = `room_${crypto.randomUUID().replaceAll('-', '')}`;
-      await touchRoomLease({ client: supabase, tenantId, storeId, room, publicRoom });
+      const lease = await touchRoomLease({
+        client: supabase,
+        tenantId,
+        storeId,
+        room,
+        publicRoom,
+        allowCreate: true,
+      });
+      if (!lease.ok) throw new Error('Private room lease could not be created');
       return jsonResponse(responseOrigin, 201, {
         ok: true,
         credential: await issueCredential({ tenantId, storeId, room, secret }),
+        leaseTouchedAt: lease.touchedAt,
       });
     }
 
@@ -496,13 +526,17 @@ Deno.serve(async request => {
         code: 'room_token',
       });
     }
-    await touchRoomLease({
+    const lease = await touchRoomLease({
       client: supabase,
       tenantId,
       storeId,
       room: claims.room,
       publicRoom,
+      allowCreate: false,
     });
+    if (!lease.ok) {
+      return jsonResponse(responseOrigin, 410, { ok: false, code: 'room_expired' });
+    }
 
     if (action === 'renew-room') {
       if (room !== claims.room) {
@@ -511,6 +545,7 @@ Deno.serve(async request => {
       return jsonResponse(responseOrigin, 200, {
         ok: true,
         credential: await issueCredential({ tenantId, storeId, room: claims.room, secret }),
+        leaseTouchedAt: lease.touchedAt,
       });
     }
 
@@ -518,6 +553,7 @@ Deno.serve(async request => {
       return jsonResponse(responseOrigin, 200, {
         ok: true,
         row: await readRow(supabase, tenantId, storeId, room),
+        leaseTouchedAt: lease.touchedAt,
       });
     }
 
@@ -553,7 +589,11 @@ Deno.serve(async request => {
         clientId,
       });
       return result.ok
-        ? jsonResponse(responseOrigin, 200, { ok: true, row: result.row })
+        ? jsonResponse(responseOrigin, 200, {
+            ok: true,
+            row: result.row,
+            leaseTouchedAt: lease.touchedAt,
+          })
         : jsonResponse(responseOrigin, 409, {
             ok: false,
             code: 'revision_conflict',

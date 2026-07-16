@@ -38,6 +38,10 @@ function createRooms() {
       credential = next;
       return true;
     },
+    clearPrivateRoomCredential: () => {
+      credential = null as unknown as typeof credential;
+      return true;
+    },
     getGateBaseRoom: () => 'room_a',
     getSketchRoom: () => 'room_a::sketch',
     getSite2TabsRoom: () => 'room_a::tabsGate',
@@ -1301,6 +1305,43 @@ test('owner gateway blocks an expired private credential before network access',
   assert.equal(runtimeStatus.credential.failureKind, 'auth-expired');
 });
 
+test('owner gateway clears a deleted-room credential and never retries or seeds it as a missing row', async () => {
+  const rooms = createRooms();
+  let fetchCount = 0;
+  const runtimeStatus = createRuntimeStatus() as any;
+  const io = createCloudSyncOwnerGatewayIo({
+    App: {
+      deps: {
+        browser: {
+          fetch: async () => {
+            fetchCount += 1;
+            return response(410, { ok: false, code: 'room_expired' });
+          },
+        },
+      },
+    } as any,
+    cfg,
+    gatewayUrl: 'gateway',
+    rooms,
+    clientId: 'client-local',
+    runtimeStatus,
+    publishStatus: () => {},
+  });
+
+  const first = await io?.getRow('gateway', 'anon', 'room_a');
+  const second = await io?.getRow('gateway', 'anon', 'room_a');
+
+  assert.deepEqual(first, {
+    ok: false,
+    failure: { kind: 'room-expired', status: 410, code: 'room_expired' },
+  });
+  assert.deepEqual(second, first);
+  assert.equal(fetchCount, 1);
+  assert.equal(rooms.getPrivateRoomCredential(), null);
+  assert.equal(runtimeStatus.credential.state, 'room-expired');
+  assert.equal(runtimeStatus.credential.failureKind, 'room-expired');
+});
+
 test('a second tab reuses the credential renewed by the first tab', async () => {
   let sharedCredential = {
     room: 'room_a',
@@ -1316,6 +1357,7 @@ test('a second tab reuses the credential renewed by the first tab', async () => 
       sharedCredential = credential;
       return true;
     },
+    clearPrivateRoomCredential: () => false,
     getGateBaseRoom: () => 'room_a',
     getSketchRoom: () => 'room_a::sketch',
     getSite2TabsRoom: () => 'room_a::tabsGate',

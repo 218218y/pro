@@ -46,12 +46,19 @@ test('[build-hotpath-runtime-cleanup] hot-path entry seams stay thin while runti
     buildRunnerRuntime,
     [
       /export function readBuildRunnerShadowAutoUpdateState\(/,
+      /export function createBuildRunnerRuntimeContext\(/,
       /export function disableBuildRunnerShadowAutoUpdate\(/,
       /export function restoreBuildRunnerShadowAutoUpdate\(/,
       /export function runBuildRunnerPostBuildReactions\(/,
       /export function finalizeCoalescedBuildRunRuntime\(/,
     ],
     'buildRunnerRuntime'
+  );
+  assertLacksAll(
+    assert,
+    buildRunnerEntry,
+    [/AppContainer/, /\bApp\b/],
+    'buildRunnerEntry capability boundary'
   );
 
   assertMatchesAll(
