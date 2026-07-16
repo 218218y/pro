@@ -36,11 +36,10 @@ test('signed-room SQL removes browser CRUD and requires tenant/store/revision ow
 
 test('Edge Function verifies signed room scope and performs bounded compare-and-swap writes', () => {
   const source = read('supabase/functions/wp-cloud-sync-room/index.ts');
+  const roomScope = read('supabase/functions/wp-cloud-sync-room/room_scope.ts');
   for (const required of [
     /verifyRoomToken\(/u,
-    /isRoomAuthorized\(/u,
-    /claims\.storeId === storeId/u,
-    /claims\.tenantId === tenantId/u,
+    /isCloudSyncRoomAuthorized\(/u,
     /expectedRevision/u,
     /\.eq\(["']revision["'], args\.expectedRevision\)/u,
     /revision_conflict/u,
@@ -60,22 +59,28 @@ test('Edge Function verifies signed room scope and performs bounded compare-and-
   }
   assert.doesNotMatch(source, /\.delete\s*\(/u);
   assert.doesNotMatch(source, /roomToken[^\n]*console/u);
+  assert.match(roomScope, /CLOUD_SYNC_ALLOWED_ROOM_PATHS/u);
+  assert.doesNotMatch(roomScope, /startsWith\(`\$\{claims\.room\}::`\)\s*\)\s*;/u);
 });
 
 test('Cloud Sync retention is bounded, dry-run first, and owned outside browser and gateway roles', () => {
-  const retentionSql = read('docs/supabase_cloud_sync_retention.sql');
+  const retentionSql = read('supabase/migrations/202607160001_cloud_sync_retention.sql');
   const scheduleSql = read('docs/supabase_cloud_sync_retention_schedule.sql');
   const verifySql = read('docs/supabase_cloud_sync_retention_verify.sql');
+  const scheduleVerifySql = read('docs/supabase_cloud_sync_retention_schedule_verify.sql');
   const gateway = read('supabase/functions/wp-cloud-sync-room/index.ts');
 
   for (const required of [
     /create schema if not exists wp_cloud_sync_private/u,
+    /wp_cloud_sync_rooms_path_check/u,
+    /wp_cloud_sync_rooms_family_idx/u,
     /private_room_retention interval not null default interval '7 days'/u,
     /private_room_retention between interval '7 days' and interval '365 days'/u,
     /values \('bargig', 'bargig', 'public', interval '7 days', 100, false\)/u,
     /private_room_retention = excluded\.private_room_retention,[\s\S]*enabled = false/u,
     /set expires_at = lease\.last_activity_at \+ policy\.private_room_retention/u,
     /rate_limit_retention interval not null default interval '48 hours'/u,
+    /rate_limit_retention between interval '25 hours' and interval '30 days'/u,
     /enabled boolean not null default false/u,
     /p_dry_run boolean default true/u,
     /limit v_effective_limit\s+for update skip locked/u,
@@ -85,10 +90,20 @@ test('Cloud Sync retention is bounded, dry-run first, and owned outside browser 
     /revoke all on schema wp_cloud_sync_private from public, anon, authenticated, service_role/u,
     /grant execute on function public\.wp_cloud_sync_touch_room_lease\(text, text, text, text\)\s+to service_role/u,
     /revoke all on function wp_cloud_sync_private\.cleanup_store[^;]+from public, anon, authenticated, service_role/su,
+    /create or replace function wp_cloud_sync_private\.reconcile_room_leases/u,
+    /revoke all on function wp_cloud_sync_private\.reconcile_room_leases\(text, text\)[^;]+service_role/su,
   ]) {
     assert.match(retentionSql, required);
   }
   assert.doesNotMatch(retentionSql, /45 days/u);
+  const roomPathConstraint = retentionSql.match(
+    /add constraint wp_cloud_sync_rooms_path_check[\s\S]*?substring\(room from position\('::' in room\)\) in \(([\s\S]*?)\n\s*\)/u
+  )?.[1];
+  assert.ok(roomPathConstraint);
+  assert.deepEqual(
+    [...roomPathConstraint.matchAll(/'([^']+)'/gu)].map(match => match[1]),
+    ['::sketch', '::sketch::toMain', '::sketch::toSite2', '::tabsGate', '::syncPin', '::showContents']
+  );
 
   const auditTable = retentionSql.match(
     /create table if not exists wp_cloud_sync_private\.cleanup_audit \([\s\S]*?\n\);/u
@@ -103,6 +118,8 @@ test('Cloud Sync retention is bounded, dry-run first, and owned outside browser 
   assert.match(scheduleSql, /enable the pg_cron integration before scheduling retention/u);
   assert.doesNotMatch(scheduleSql, /create extension/u);
   assert.match(scheduleSql, /cron\.unschedule/u);
+  assert.match(scheduleSql, /reconcile_room_leases\('bargig', 'bargig'\)/u);
+  assert.match(scheduleSql, /Cloud Sync lease reconciliation failed/u);
   assert.match(scheduleSql, /wp_cloud_sync_private\.run_retention\(false\)/u);
   assert.match(
     scheduleSql,
@@ -112,7 +129,14 @@ test('Cloud Sync retention is bounded, dry-run first, and owned outside browser 
   assert.match(verifySql, /set transaction read only/u);
   assert.match(verifySql, /cleanup_store\('bargig', 'bargig', true, 100/u);
   assert.match(verifySql, /service_role_can_cleanup_rooms/u);
+  assert.match(verifySql, /missing_room_family_lease_count/u);
+  assert.match(verifySql, /stale_room_family_lease_count/u);
   assert.doesNotMatch(verifySql, /cleanup_(?:store|rate_limits)\([^;]*false/iu);
+
+  assert.match(scheduleVerifySql, /exactly_one_job/u);
+  assert.match(scheduleVerifySql, /latest_run_succeeded/u);
+  assert.match(scheduleVerifySql, /latest_run_within_budget/u);
+  assert.match(scheduleVerifySql, /no_consecutive_failures/u);
 });
 
 test('browser Cloud Sync has one gateway route and no direct table or PostgREST authority', () => {
@@ -123,8 +147,8 @@ test('browser Cloud Sync has one gateway route and no direct table or PostgREST 
   const perfFlow = read('tools/wp_browser_perf_smoke.mjs');
   const browserSources = `${config}\n${gateway}\n${configOwner}\n${browserFlow}\n${perfFlow}`;
 
-  assert.match(config, /gatewayFunction:\s*'wp-cloud-sync-room'/u);
-  assert.match(config, /roomTokenParam:\s*'roomToken'/u);
+  assert.match(config, /gatewayFunction:\s*["']wp-cloud-sync-room["']/u);
+  assert.match(config, /roomTokenParam:\s*["']roomToken["']/u);
   assert.doesNotMatch(browserSources, /\/rest\/v1\//u);
   assert.doesNotMatch(config, /\btable:\s*'wp_shared_state/u);
   assert.doesNotMatch(configOwner, /buildRestUrl/u);

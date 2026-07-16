@@ -62,6 +62,7 @@ npm run test:refactor-stage-guards
 - A closeout lane that exactly matches a canonical test group must reference that group through `testGroupId`; duplicating the same file list directly is a control-plane error. Build, perf, mixed-contract, and E2E lanes remain direct when they are not test groups.
 - Exact duplicate package commands are not allowed. Do not preserve aliases such as a second “strict” name when both names execute the same lane.
 - Every `sites/*/site.profile.mjs` participates in one cross-profile contract. Store ids, local-storage namespaces, signed-room gateway configuration, realtime channel prefixes, required assets, release status, and deployment URLs must be validated together. Browser profiles must not select database tables.
+- `sites/bargig/site.profile.mjs` is the sole source of Bargig runtime values. The root `wp_runtime_config.mjs` is generated, and dev/build/release entrypoints fail when it is stale.
 - Draft profiles may retain placeholder deployment hosts with visible warnings. Active profiles may not.
 
 Relevant checks:
@@ -191,6 +192,7 @@ npm run e2e:canvas-pointer-parity
 - Unmergeable CAS conflicts publish their conflict keys and remote revision, and automatic retry remains stopped until the conflict is resolved explicitly.
 - Cloud collections are committed through the single versioned envelope repository. Per-collection keys are deployment mirrors only; Cloud refresh/push begins only after the canonical envelope commit succeeds.
 - Cloud retention is lease-based per base room. Public room families never expire; authenticated private-room issue/renew/read/write activity extends the reviewed lease for the full family, including subresources and tombstones.
+- Cloud room capabilities accept only the fixed seven-row family namespace. Scheduled deletion reconciles leases before enablement and is verified after its first Cron run.
 - Browser and Edge gateway roles never receive cleanup or table-delete authority. Retention starts in dry-run mode, deletes only bounded tenant/store batches through the database maintenance owner, and records counts without room ids, bucket hashes, tokens, or payloads.
 
 Relevant docs/checks:

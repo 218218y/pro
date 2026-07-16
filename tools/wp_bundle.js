@@ -14,6 +14,7 @@ import {
 } from './wp_bundle_state.js';
 import { buildDistModules } from './wp_bundle_dist.js';
 import { buildBundleArtifacts } from './wp_bundle_emit.js';
+import { assertRootRuntimeConfigCurrent } from './wp_runtime_config_generation.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,6 +28,7 @@ export async function runBundleCli(argv = process.argv.slice(2)) {
   for (const option of unknownOptions) console.warn('[WP Bundle] Unknown option:', option);
 
   const root = path.resolve(__dirname, '..');
+  await assertRootRuntimeConfigCurrent(root);
   const entryAbs = buildDistModules(root, { forceDistRebuild: args.forceDistRebuild });
   const { outFileAbs, outDirAbs, staleTmpDirAbs } = resolveBundlePaths({ root, outFile: args.outFile });
 

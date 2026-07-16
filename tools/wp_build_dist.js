@@ -8,8 +8,9 @@
 import { resolveProjectRoot } from './wp_build_dist_shared.js';
 import { createBuildDistHelpText, parseBuildDistArgs } from './wp_build_dist_state.js';
 import { runBuildDistFlow } from './wp_build_dist_flow.js';
+import { assertRootRuntimeConfigCurrent } from './wp_runtime_config_generation.mjs';
 
-function main() {
+async function main() {
   const args = parseBuildDistArgs(process.argv.slice(2));
   if (args.help) {
     console.log(createBuildDistHelpText());
@@ -19,6 +20,7 @@ function main() {
   const root = resolveProjectRoot(import.meta.url);
 
   try {
+    await assertRootRuntimeConfigCurrent(root);
     const result = runBuildDistFlow({ root, args });
     console.log(result.successMessage);
   } catch (err) {

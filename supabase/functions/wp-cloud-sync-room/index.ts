@@ -1,5 +1,7 @@
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.97.0';
 
+import { isCloudSyncRoomAuthorized } from './room_scope.ts';
+
 type JsonRecord = Record<string, unknown>;
 
 type RoomClaims = {
@@ -171,14 +173,6 @@ function resolvePublicRoom(storeId: string): string {
     return configured;
   }
   throw new Error('WP_CLOUD_SYNC_PUBLIC_ROOMS contains an invalid room id');
-}
-
-function isRoomAuthorized(claims: RoomClaims, room: string, storeId: string, tenantId: string): boolean {
-  return (
-    claims.storeId === storeId &&
-    claims.tenantId === tenantId &&
-    (room === claims.room || room.startsWith(`${claims.room}::`))
-  );
 }
 
 function corsHeaders(origin: string): HeadersInit {
@@ -496,7 +490,7 @@ Deno.serve(async request => {
       });
     }
     const claims = verification.claims;
-    if (!isRoomAuthorized(claims, room, storeId, tenantId)) {
+    if (!isCloudSyncRoomAuthorized(claims, room, storeId, tenantId)) {
       return jsonResponse(responseOrigin, 403, {
         ok: false,
         code: 'room_token',

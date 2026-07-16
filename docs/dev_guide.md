@@ -32,6 +32,11 @@ the same React boot contract and fail before application boot on missing modules
 invalid types, or out-of-range values. Do not restore flat config exports, string coercion, range clamping,
 or missing-file fallbacks.
 
+The root runtime module is generated from `sites/bargig/site.profile.mjs`. Edit the profile and run
+`npm run generate:runtime-config`; Vite, dist, bundle, release, and the site-profile contract reject a stale
+generated file. The root artifact intentionally omits variant identity so the Site2 HTML metadata remains
+the owner of the simultaneous local Site2 variant.
+
 The browser shell is React-only. Every source and release HTML template must provide exactly one
 `#reactSidebarRoot` directly inside `#sidebar` and one `#reactOverlayRoot` directly inside
 `#viewer-container`. `bootReactUi` validates both hosts before installing UI interactions, rejects

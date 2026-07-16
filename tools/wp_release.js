@@ -35,6 +35,7 @@ import {
   maybeMinifyCssDir,
   maybeObfuscateReleaseJs,
 } from './wp_release_build.js';
+import { assertRootRuntimeConfigCurrent } from './wp_runtime_config_generation.mjs';
 
 export { applyContentHashingToRelease } from './wp_release_hashing.js';
 export { resolveReleaseJsObfuscationPolicy } from './wp_release_build.js';
@@ -49,6 +50,7 @@ export {
 
 async function main() {
   const root = process.cwd();
+  await assertRootRuntimeConfigCurrent(root);
   const config = parseReleaseArgs({ root, args: process.argv.slice(2) });
   const { distDir, bundlePath, bundleMapPath, releaseDir } = resolveReleasePaths({
     root,

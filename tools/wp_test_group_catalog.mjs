@@ -380,6 +380,7 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/cloud_sync_remote_push_singleflight_runtime.test.ts',
       'tests/cloud_sync_gateway_runtime.test.ts',
       'tests/cloud_sync_gateway_security_contract.test.js',
+      'tests/cloud_sync_room_scope_runtime.test.ts',
       'tests/cloud_sync_owner_gateway_io_runtime.test.ts',
       'tests/cloud_sync_payload_merge_runtime.test.ts',
       'tests/cloud_sync_room_commands_runtime.test.ts',

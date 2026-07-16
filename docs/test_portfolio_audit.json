@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-07-16T13:26:37.289Z",
+  "generatedAt": "2026-07-16T15:27:23.787Z",
   "totals": {
-    "tests": 1212,
-    "unitRunnerTests": 1204,
+    "tests": 1214,
+    "unitRunnerTests": 1206,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 31,
     "packageTestReferences": 191,
-    "catalogTestReferences": 351,
-    "totalTestReferences": 542,
+    "catalogTestReferences": 352,
+    "totalTestReferences": 543,
     "catalogGroups": 29,
     "catalogScriptBindings": 29,
     "primaryCatalogGroups": 5
   },
   "categories": {
     "contract": 393,
-    "runtime-unit": 312,
-    "integration": 448,
+    "runtime-unit": 313,
+    "integration": 449,
     "e2e-smoke": 9,
     "perf-smoke": 9,
     "legacy-migration": 41
@@ -1255,6 +1255,10 @@
     },
     {
       "file": "tests/cloud_sync_room_commands_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/cloud_sync_room_scope_runtime.test.ts",
       "category": "integration"
     },
     {
@@ -3600,6 +3604,10 @@
     {
       "file": "tests/runtime_callable_surface_hardening_guard.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/runtime_config_generation_runtime.test.js",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/runtime_config_platform_contracts.test.js",

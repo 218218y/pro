@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-16T13:26:36.334Z",
+  "generatedAt": "2026-07-16T15:27:22.919Z",
   "summary": {
     "groups": 29,
     "scriptBindings": 29,
-    "catalogFileReferences": 351,
+    "catalogFileReferences": 352,
     "directPackageTestReferences": 191,
     "catalogIssues": 0,
     "bindingIssues": 0,
@@ -197,13 +197,14 @@
         "failedFilesPath": ".artifacts/cloud-sync-surfaces.sync-ops.failed.txt",
         "timingsPath": ".artifacts/cloud-sync-surfaces.sync-ops.timings.json"
       },
-      "fileCount": 12,
+      "fileCount": 13,
       "files": [
         "tests/cloud_sync_pull_coalescer_runtime.test.ts",
         "tests/cloud_sync_realtime_support_runtime.test.ts",
         "tests/cloud_sync_remote_push_singleflight_runtime.test.ts",
         "tests/cloud_sync_gateway_runtime.test.ts",
         "tests/cloud_sync_gateway_security_contract.test.js",
+        "tests/cloud_sync_room_scope_runtime.test.ts",
         "tests/cloud_sync_owner_gateway_io_runtime.test.ts",
         "tests/cloud_sync_payload_merge_runtime.test.ts",
         "tests/cloud_sync_room_commands_runtime.test.ts",

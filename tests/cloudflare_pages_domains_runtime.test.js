@@ -15,9 +15,9 @@ function read(rel) {
 }
 
 test('[cloudflare-pages-domains] Bargig runtime config copies customer links to the Cloudflare customer site', async () => {
-  const runtimeConfig = read('wp_runtime_config.mjs');
-  assert.match(runtimeConfig, /shareBaseUrl:\s*'https:\/\/pro218\.bargig-furniture\.com\/'/);
-  assert.doesNotMatch(runtimeConfig, /bargig218\.netlify\.app/);
+  const runtimeConfig = await import(new URL('../wp_runtime_config.mjs', import.meta.url));
+  assert.equal(runtimeConfig.default.config.supabaseCloudSync.shareBaseUrl, CLIENT_URL);
+  assert.doesNotMatch(JSON.stringify(runtimeConfig.default), /bargig218\.netlify\.app/);
 
   const profile = await loadSiteProfile(ROOT, 'bargig');
   assert.equal(profile.supabase.shareBaseUrl, CLIENT_URL);

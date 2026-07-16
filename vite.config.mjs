@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
 import { ESNEXT_BUILD_TARGET } from './tools/wp_esnext_target_policy.mjs';
+import { assertRootRuntimeConfigCurrent } from './tools/wp_runtime_config_generation.mjs';
 
 import {
   createObservabilityAliasMap,
@@ -16,7 +17,8 @@ function shouldEmitSourceMaps(mode) {
   return mode !== 'production' && process.env.WP_SOURCEMAP === '1';
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
+  await assertRootRuntimeConfigCurrent(path.resolve('.'));
   const isModules = mode === 'modules';
   const observabilityBuildMode = resolveObservabilityBuildModeFromViteMode(mode);
   const sourcemap = shouldEmitSourceMaps(mode);

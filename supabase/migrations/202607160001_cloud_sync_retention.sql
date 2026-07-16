@@ -1,4 +1,4 @@
--- WardrobePro Cloud Sync retention owner.
+-- WardrobePro Cloud Sync versioned retention owner migration.
 --
 -- Apply after supabase_cloud_sync.sql and before deploying the Edge Function
 -- version that calls wp_cloud_sync_touch_room_lease(). This migration does not
@@ -7,6 +7,29 @@
 
 begin;
 set local statement_timeout = '60s';
+
+alter table public.wp_cloud_sync_rooms
+  drop constraint if exists wp_cloud_sync_rooms_path_check;
+alter table public.wp_cloud_sync_rooms
+  add constraint wp_cloud_sync_rooms_path_check
+    check (
+      position('::' in room) = 0
+      or substring(room from position('::' in room)) in (
+        '::sketch',
+        '::sketch::toMain',
+        '::sketch::toSite2',
+        '::tabsGate',
+        '::syncPin',
+        '::showContents'
+      )
+    );
+
+create index if not exists wp_cloud_sync_rooms_family_idx
+  on public.wp_cloud_sync_rooms (
+    tenant_id,
+    store_id,
+    (split_part(room, '::', 1))
+  );
 
 create schema if not exists wp_cloud_sync_private;
 revoke all on schema wp_cloud_sync_private from public, anon, authenticated, service_role;
@@ -69,12 +92,18 @@ create table if not exists wp_cloud_sync_private.retention_settings (
   rate_limit_batch_limit integer not null default 5000,
   audit_retention interval not null default interval '90 days',
   constraint wp_cloud_sync_rate_retention_interval_check
-    check (rate_limit_retention between interval '1 hour' and interval '30 days'),
+    check (rate_limit_retention between interval '25 hours' and interval '30 days'),
   constraint wp_cloud_sync_rate_retention_batch_check
     check (rate_limit_batch_limit between 1 and 50000),
   constraint wp_cloud_sync_audit_retention_interval_check
     check (audit_retention between interval '7 days' and interval '365 days')
 );
+
+alter table wp_cloud_sync_private.retention_settings
+  drop constraint if exists wp_cloud_sync_rate_retention_interval_check;
+alter table wp_cloud_sync_private.retention_settings
+  add constraint wp_cloud_sync_rate_retention_interval_check
+    check (rate_limit_retention between interval '25 hours' and interval '30 days');
 
 create table if not exists wp_cloud_sync_private.cleanup_audit (
   run_id bigint generated always as identity primary key,
@@ -229,6 +258,120 @@ set
     when excluded.is_public then null
     else greatest(wp_cloud_sync_private.room_leases.expires_at, excluded.expires_at)
   end;
+
+create or replace function wp_cloud_sync_private.reconcile_room_leases(
+  p_tenant_id text,
+  p_store_id text
+)
+returns table (
+  missing_lease_count integer,
+  stale_lease_count integer,
+  changed_lease_count integer
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_policy wp_cloud_sync_private.retention_policies%rowtype;
+  v_missing_count integer := 0;
+  v_stale_count integer := 0;
+  v_changed_count integer := 0;
+begin
+  select *
+  into v_policy
+  from wp_cloud_sync_private.retention_policies policy
+  where policy.tenant_id = p_tenant_id
+    and policy.store_id = p_store_id;
+
+  if not found then
+    raise exception 'Cloud Sync retention policy is not configured for tenant/store';
+  end if;
+
+  with room_families as (
+    select
+      room_row.tenant_id,
+      room_row.store_id,
+      split_part(room_row.room, '::', 1) as room,
+      max(room_row.updated_at) as last_activity_at
+    from public.wp_cloud_sync_rooms room_row
+    where room_row.tenant_id = p_tenant_id
+      and room_row.store_id = p_store_id
+    group by room_row.tenant_id, room_row.store_id, split_part(room_row.room, '::', 1)
+  )
+  select
+    count(*) filter (where lease.room is null)::integer,
+    count(*) filter (
+      where lease.room is not null
+        and (
+          lease.is_public is distinct from (family.room = v_policy.public_room)
+          or lease.last_activity_at < family.last_activity_at
+          or ((family.room = v_policy.public_room) and lease.expires_at is not null)
+          or (
+            family.room <> v_policy.public_room
+            and (
+              lease.expires_at is null
+              or lease.expires_at < family.last_activity_at + v_policy.private_room_retention
+            )
+          )
+        )
+    )::integer
+  into v_missing_count, v_stale_count
+  from room_families family
+  left join wp_cloud_sync_private.room_leases lease
+    on lease.tenant_id = family.tenant_id
+   and lease.store_id = family.store_id
+   and lease.room = family.room;
+
+  insert into wp_cloud_sync_private.room_leases (
+    tenant_id,
+    store_id,
+    room,
+    is_public,
+    last_activity_at,
+    expires_at
+  )
+  select
+    room_row.tenant_id,
+    room_row.store_id,
+    split_part(room_row.room, '::', 1) as room,
+    split_part(room_row.room, '::', 1) = v_policy.public_room as is_public,
+    max(room_row.updated_at) as last_activity_at,
+    case
+      when split_part(room_row.room, '::', 1) = v_policy.public_room then null
+      else max(room_row.updated_at) + v_policy.private_room_retention
+    end as expires_at
+  from public.wp_cloud_sync_rooms room_row
+  where room_row.tenant_id = p_tenant_id
+    and room_row.store_id = p_store_id
+  group by room_row.tenant_id, room_row.store_id, split_part(room_row.room, '::', 1)
+  on conflict (tenant_id, store_id, room) do update
+  set
+    is_public = excluded.is_public,
+    last_activity_at = greatest(
+      wp_cloud_sync_private.room_leases.last_activity_at,
+      excluded.last_activity_at
+    ),
+    expires_at = case
+      when excluded.is_public then null
+      else greatest(wp_cloud_sync_private.room_leases.expires_at, excluded.expires_at)
+    end
+  where
+    wp_cloud_sync_private.room_leases.is_public is distinct from excluded.is_public
+    or wp_cloud_sync_private.room_leases.last_activity_at < excluded.last_activity_at
+    or (excluded.is_public and wp_cloud_sync_private.room_leases.expires_at is not null)
+    or (
+      not excluded.is_public
+      and (
+        wp_cloud_sync_private.room_leases.expires_at is null
+        or wp_cloud_sync_private.room_leases.expires_at < excluded.expires_at
+      )
+    );
+  get diagnostics v_changed_count = row_count;
+
+  return query select v_missing_count, v_stale_count, v_changed_count;
+end;
+$$;
 
 create or replace function wp_cloud_sync_private.cleanup_store(
   p_tenant_id text,
@@ -498,6 +641,8 @@ end;
 $$;
 
 revoke all on function wp_cloud_sync_private.cleanup_store(text, text, boolean, integer, timestamptz)
+  from public, anon, authenticated, service_role;
+revoke all on function wp_cloud_sync_private.reconcile_room_leases(text, text)
   from public, anon, authenticated, service_role;
 revoke all on function wp_cloud_sync_private.cleanup_rate_limits(boolean, integer, timestamptz)
   from public, anon, authenticated, service_role;

@@ -54,7 +54,7 @@ Migrating to publishable/secret keys is a separate cutover: set `verify_jwt = fa
 ## New deployment
 
 1. Apply `docs/supabase_cloud_sync.sql` as one migration.
-2. Apply `docs/supabase_cloud_sync_retention.sql`. It creates a server-only lease/cleanup owner, backfills leases, and leaves the Bargig deletion policy disabled.
+2. Apply the versioned migration `supabase/migrations/202607160001_cloud_sync_retention.sql`. It creates a server-only lease/cleanup owner, restricts room-family paths, backfills leases, and leaves the Bargig deletion policy disabled.
 3. Run `docs/supabase_cloud_sync_retention_verify.sql`. Review the dry-run counts; this verification never deletes data.
 4. Configure the Edge Function secrets. Generate a fresh random token secret of at least 32 characters and keep it out of source control:
 
@@ -79,7 +79,8 @@ supabase functions deploy wp-cloud-sync-room \
 ```
 
 6. Run the gateway probes below, then deploy the signed-room client.
-7. After the signed-room client has touched live leases and the reviewed dry-run is correct, enable the Supabase Cron integration (`pg_cron`) in the project dashboard, then apply `docs/supabase_cloud_sync_retention_schedule.sql` to enable the Bargig policy and schedule the bounded daily cleanup. The schedule migration fails closed when Cron is unavailable.
+7. After the signed-room client is live, run `select * from wp_cloud_sync_private.reconcile_room_leases('bargig', 'bargig');`, rerun `docs/supabase_cloud_sync_retention_verify.sql`, and review a fresh dry-run. Enable the Supabase Cron integration (`pg_cron`) only after the missing/stale lease counts are zero, then apply `docs/supabase_cloud_sync_retention_schedule.sql`. The schedule migration reconciles once more and fails closed when Cron or lease integrity is unavailable.
+8. After the first scheduled execution, run `docs/supabase_cloud_sync_retention_schedule_verify.sql` and require one active job, a successful latest run, a duration under five minutes, and no consecutive failures.
 
 ### Windows one-command function deployment
 
@@ -96,6 +97,8 @@ The script sets only the five documented Cloud Sync secrets and deploys only `wp
 ```powershell
 .\tools\wp_supabase_cloud_sync_deploy.ps1 -SkipSecrets
 ```
+
+The canonical deployment script renders the `production` origin set and therefore does not add `localhost:5173` or `localhost:5174`. Use `wp_supabase_cloud_sync_origins.ps1 -Environment Development` explicitly for temporary local access; a normal production redeploy must remain production-only.
 
 Run the non-data-mutating probes with the active legacy anon JWT. The value is accepted as a parameter and is not printed by the script:
 
@@ -123,6 +126,7 @@ Retention is owned by `wp_cloud_sync_private`, not by the browser or the gateway
 - The public room family is permanent and has no expiry.
 - A private room lease expires seven days after its latest authenticated issue, renewal, read, or write. Token validity is independent from data retention: a room token can remain cryptographically valid after inactive room data has expired, and the token alone does not keep that data alive.
 - Main rows, `::sketch`, `::tabsGate`, `::showContents`, and cleared-sketch tombstones share the base-room lease and are deleted together. A tombstone therefore remains for the full private-room lifecycle and cannot disappear while the room remains active.
+- The gateway and database accept only the fixed base/sketch/tabsGate/syncPin/showContents row namespace. A room family therefore contains at most seven rows and one family cannot expand into an unbounded delete.
 - Newly generated probe rooms follow the same private-room policy.
 - Rate-limit buckets expire after 48 hours, longer than the maximum allowed 24-hour rate-limit window.
 - Cleanup is bounded to 100 room families and 5,000 rate-limit buckets per run. Backlogs drain over repeated daily runs rather than through an unbounded delete.
@@ -146,14 +150,15 @@ Use one controlled expand/verify/contract rollout. The copy step and the final l
 2. Apply `docs/supabase_cloud_sync.sql`.
 3. Apply `docs/supabase_cloud_sync_multi_store.sql`. It is re-runnable and reconciles legacy rows that changed after an earlier copy; it does **not** revoke legacy browser access.
    Then run `docs/supabase_cloud_sync_verify.sql`: both canonical tables must have RLS enabled/forced, every canonical privilege row must match, every `missing_room_count` must be zero, and all six invalid-data counts must be zero.
-4. Apply `docs/supabase_cloud_sync_retention.sql`, then run `docs/supabase_cloud_sync_retention_verify.sql`. The migration backfills leases but keeps deletion disabled.
+4. Apply `supabase/migrations/202607160001_cloud_sync_retention.sql`, then run `docs/supabase_cloud_sync_retention_verify.sql`. The migration backfills leases but keeps deletion disabled.
 5. Configure secrets and deploy the Edge Function.
 6. Run the PowerShell probe with `-IncludeWriteProbe`, then verify row counts, Edge Function logs, lease activity, and Supabase security/performance advisors.
 7. Deploy the signed-room client to both `pro.bargig-furniture.com` and `pro218.bargig-furniture.com`. Confirm their live runtime config contains `gatewayFunction` and `roomTokenParam`, and their active bundle no longer contains `/rest/v1/`.
 8. Rerun `docs/supabase_cloud_sync_multi_store.sql` immediately before cutover.
 9. Apply `docs/supabase_cloud_sync_legacy_lockdown.sql`. It fails if any legacy room is absent from the canonical table, enables and forces RLS on each legacy table, removes `anon`/`authenticated` privileges, and leaves `service_role` with read-only rollback access.
 10. Rerun both verification SQL files. Verify direct legacy REST access is rejected, then run the room-link and reconnect smoke tests on both production origins.
-11. Review a final retention dry-run and apply `docs/supabase_cloud_sync_retention_schedule.sql`. Do not enable scheduled deletion before the signed-room client is live and legacy writes are locked down.
+11. Run lease reconciliation, require zero missing/stale leases in the verification query, review a final retention dry-run, and apply `docs/supabase_cloud_sync_retention_schedule.sql`. Do not enable scheduled deletion before the signed-room client is live and legacy writes are locked down.
+12. After the first Cron execution, run `docs/supabase_cloud_sync_retention_schedule_verify.sql` and review recent execution health.
 
 If step 6 cannot be completed, stop before steps 7-8. The canonical schema and Edge Function may remain staged, but the legacy tables must stay available until the live clients are upgraded.
 

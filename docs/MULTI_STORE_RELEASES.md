@@ -4,12 +4,12 @@ The project supports store-specific builds without forking the shared applicatio
 
 ## Source of truth
 
-There are two kinds of store-related files, and they intentionally have different roles:
+The site profile is the single source of store-specific runtime values. Root assets and generated artifacts have different roles:
 
 ```text
 wp_logo_data.js               # root Bargig default logo used by the existing root build
 public/order_template.pdf     # root Bargig default PDF used by the existing root build
-wp_runtime_config.mjs         # root Bargig default runtime config used by npm run bundle / bundle:site2
+wp_runtime_config.mjs         # generated Bargig root runtime config; never edited manually
 
 sites/<store-id>/site.profile.mjs  # profile used by the multi-store release wrapper
 sites/store-1/wp_logo_data.js      # store-specific logo copy for חנות 1
@@ -37,7 +37,7 @@ public/order_template.pdf
 wp_runtime_config.mjs
 ```
 
-They are still used by:
+`wp_runtime_config.mjs` is checked in only as a generated boot artifact. Regenerate it with `npm run generate:runtime-config`; root dev/build/release commands fail if it differs from `sites/bargig/site.profile.mjs`. These files are used by:
 
 ```bash
 npm run bundle
@@ -61,7 +61,7 @@ The Cloud Sync share/copy-link base URL for Bargig must point to the customer si
 shareBaseUrl = https://pro218.bargig-furniture.com/
 ```
 
-This value is defined in both the backward-compatible root runtime config (`wp_runtime_config.mjs`) and the multi-store Bargig profile (`sites/bargig/site.profile.mjs`).
+This value is defined once in `sites/bargig/site.profile.mjs`; the root runtime config and multi-store artifacts are generated from it.
 
 ## Profiles
 
@@ -104,6 +104,8 @@ Profile contract:
 
 ```bash
 npm run check:site-profiles
+npm run check:runtime-config
+npm run generate:runtime-config
 ```
 
 Generic command:
