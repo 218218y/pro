@@ -6,8 +6,17 @@ import { withSuppressedConsole } from './_console_silence.ts';
 
 function createPrepared() {
   const App: any = {};
+  const orchestrationCalls: string[] = [];
   return {
     App,
+    orchestrationCalls,
+    orchestration: {
+      reportBuildFailure: (_label: string, error: unknown) =>
+        orchestrationCalls.push(`report:${String((error as Error).message)}`),
+      reportFinalizeFailure: (_label: string, error: unknown) =>
+        orchestrationCalls.push(`finalize-report:${String((error as Error).message)}`),
+      finalizeBestEffort: () => orchestrationCalls.push('bestEffort'),
+    },
     label: 'native/builder/test',
     deps: {
       pruneCachesSafe() {},
@@ -23,6 +32,25 @@ function createPrepared() {
     },
   } as any;
 }
+
+test('build wardrobe flow runtime uses orchestration ports without reading App', () => {
+  const prepared = createPrepared();
+  const boom = new Error('port-owned failure');
+
+  assert.throws(
+    () =>
+      runPreparedBuildWardrobeFlow(prepared, {
+        execute: () => {
+          throw boom;
+        },
+      }),
+    error => {
+      assert.equal(error, boom);
+      return true;
+    }
+  );
+  assert.deepEqual(prepared.orchestrationCalls, ['report:port-owned failure', 'bestEffort']);
+});
 
 test('build wardrobe flow runtime: successful execute finalizes canonical build context path', () => {
   const prepared = createPrepared();

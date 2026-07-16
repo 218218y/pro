@@ -1,12 +1,8 @@
-import { guardVoid, reportError } from '../runtime/api.js';
-import { finalizeBuild, finalizeBuildBestEffort } from './post_build_finalize.js';
+import { finalizeBuild } from './post_build_finalize.js';
 import { readFunction } from './build_flow_readers.js';
 
-import type {
-  BuildContextLike,
-  BuilderDrawerRebuildSnapshot,
-  BuilderRebuildDrawerMetaFn,
-} from '../../../types';
+import type { BuildContextLike, BuilderRebuildDrawerMetaFn } from '../../../types';
+import type { BuildFlowFinalizeFallback } from './build_flow_orchestration.js';
 import type { PreparedBuildWardrobeFlow } from './build_wardrobe_flow_prepare.js';
 
 type BuildWardrobeExecutor = (prepared: PreparedBuildWardrobeFlow) => BuildContextLike | null;
@@ -14,27 +10,12 @@ type BuildWardrobeExecutor = (prepared: PreparedBuildWardrobeFlow) => BuildConte
 type BuildWardrobeRuntimeOptions = {
   execute: BuildWardrobeExecutor;
   finalizeBuild?: (ctx: BuildContextLike) => void;
-  finalizeBuildBestEffort?: (args: {
-    App: unknown;
-    cfgSnapshot?: unknown;
-    pruneCachesSafe?: ((scene: unknown) => void) | null;
-    drawerRebuildSnapshot?: BuilderDrawerRebuildSnapshot | null;
-    rebuildDrawerMeta?: BuilderRebuildDrawerMetaFn | null;
-  }) => void;
+  finalizeBuildBestEffort?: (args: BuildFlowFinalizeFallback) => void;
   reportBuildFailure?: (prepared: PreparedBuildWardrobeFlow, error: unknown) => void;
 };
 
 function reportBuildWardrobeFailure(prepared: PreparedBuildWardrobeFlow, error: unknown): void {
-  const { App, label, deps } = prepared;
-  const { showToast } = deps;
-
-  reportError(App, error, { where: label, fatal: true });
-
-  guardVoid(App, { where: label, op: 'showToast', fatal: true, failFast: true }, () => {
-    if (typeof showToast === 'function') {
-      showToast('אירעה שגיאה בבניית הדגם.', 'error');
-    }
-  });
+  prepared.orchestration.reportBuildFailure(prepared.label, error, prepared.deps.showToast);
 }
 
 function finalizePreparedBuildWardrobeFlow(
@@ -42,7 +23,7 @@ function finalizePreparedBuildWardrobeFlow(
   buildCtx: BuildContextLike | null,
   options: BuildWardrobeRuntimeOptions
 ): void {
-  const { App, deps } = prepared;
+  const { deps, orchestration } = prepared;
   const { pruneCachesSafe, rebuildDrawerMeta } = deps;
 
   if (buildCtx) {
@@ -50,8 +31,7 @@ function finalizePreparedBuildWardrobeFlow(
     return;
   }
 
-  (options.finalizeBuildBestEffort || finalizeBuildBestEffort)({
-    App,
+  (options.finalizeBuildBestEffort || orchestration.finalizeBestEffort)({
     pruneCachesSafe: readFunction<(scene: unknown) => void>(pruneCachesSafe),
     drawerRebuildSnapshot: prepared.buildState.drawerRebuildSnapshot,
     rebuildDrawerMeta: readFunction<BuilderRebuildDrawerMetaFn>(rebuildDrawerMeta),
@@ -62,7 +42,7 @@ export function runPreparedBuildWardrobeFlow(
   prepared: PreparedBuildWardrobeFlow,
   options: BuildWardrobeRuntimeOptions
 ): BuildContextLike | null {
-  const { App, label } = prepared;
+  const { label, orchestration } = prepared;
 
   let buildCtx: BuildContextLike | null = null;
   let buildError: unknown = null;
@@ -79,7 +59,7 @@ export function runPreparedBuildWardrobeFlow(
       finalizePreparedBuildWardrobeFlow(prepared, buildCtx, options);
     } catch (error) {
       finalizeError = error;
-      reportError(App, error, { where: label, op: 'finalizeBuild', fatal: true });
+      orchestration.reportFinalizeFailure(label, error);
     }
   }
 

@@ -5,6 +5,19 @@ import { pathToFileURL } from 'node:url';
 const DEFAULT_SITE2_TABS = ['structure', 'design', 'interior', 'sketch', 'settings'];
 const VALID_VARIANTS = new Set(['main', 'site2', 'client']);
 const VALID_TABS = new Set(DEFAULT_SITE2_TABS);
+const RESERVED_RUNTIME_CONFIG_KEYS = new Set([
+  'branding',
+  'cacheBudgetMb',
+  'cacheMaxItems',
+  'debugBootTimings',
+  'orderPdf',
+  'runtimeConfigOverlays',
+  'site2EnabledTabs',
+  'siteVariant',
+  'storageNamespace',
+  'storeId',
+  'supabaseCloudSync',
+]);
 
 function isRecord(value) {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -72,6 +85,14 @@ function escapeHtml(value) {
 
 function safeJson(value) {
   return JSON.stringify(value, null, 2);
+}
+
+function assertNoReservedRuntimeConfigKeys(config, label) {
+  const conflicts = Object.keys(isRecord(config) ? config : {})
+    .filter(key => RESERVED_RUNTIME_CONFIG_KEYS.has(key))
+    .sort();
+  if (!conflicts.length) return;
+  throw new Error(`[WP Site Profile] ${label} uses reserved runtime config key(s): ${conflicts.join(', ')}`);
 }
 
 export function parseSiteReleaseArgs(args = []) {
@@ -173,6 +194,8 @@ export function normalizeSiteProfile({ root, profileDir, profile, requestedStore
   const assets = isRecord(profile.assets) ? profile.assets : {};
   const supabase = isRecord(profile.supabase) ? profile.supabase : {};
   const variantsRaw = isRecord(profile.variants) ? profile.variants : {};
+  const commonConfig = isRecord(profile.config) ? { ...profile.config } : {};
+  assertNoReservedRuntimeConfigKeys(commonConfig, `${id} common config`);
 
   const normalized = {
     id,
@@ -182,7 +205,7 @@ export function normalizeSiteProfile({ root, profileDir, profile, requestedStore
     profileDir,
     profileRelDir: path.relative(root, profileDir).replace(/\\/g, '/'),
     storageNamespace: asString(profile.storageNamespace),
-    commonConfig: isRecord(profile.config) ? { ...profile.config } : {},
+    commonConfig,
     commonFlags: isRecord(profile.flags) ? { ...profile.flags } : {},
     assets: {
       logoData: asString(assets.logoData, './wp_logo_data.js'),
@@ -217,6 +240,8 @@ export function normalizeSiteProfile({ root, profileDir, profile, requestedStore
 
   for (const name of ['main', 'site2']) {
     const raw = isRecord(variantsRaw[name]) ? variantsRaw[name] : {};
+    const extraConfig = isRecord(raw.config) ? { ...raw.config } : {};
+    assertNoReservedRuntimeConfigKeys(extraConfig, `${id}/${name} config`);
     const isSite2 = name === 'site2';
     normalized.variants[name] = {
       name,
@@ -229,7 +254,7 @@ export function normalizeSiteProfile({ root, profileDir, profile, requestedStore
       showRoomWidget: asBoolean(raw.showRoomWidget, normalized.supabase.showRoomWidget),
       storageNamespace: asString(raw.storageNamespace, normalized.storageNamespace),
       orderPdfTemplateUrl: asString(raw.orderPdfTemplateUrl, 'order_template.pdf'),
-      extraConfig: isRecord(raw.config) ? { ...raw.config } : {},
+      extraConfig,
       extraFlags: isRecord(raw.flags) ? { ...raw.flags } : {},
     };
   }

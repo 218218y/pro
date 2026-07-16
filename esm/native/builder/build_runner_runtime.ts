@@ -1,24 +1,14 @@
-import { queueMicrotaskMaybe } from '../runtime/api.js';
-import { asRecord } from '../runtime/record.js';
 import { readBuildInputFingerprintFromArgs } from './build_input_fingerprint.js';
 import { readBuildStructureSignature } from './build_structure_signature.js';
-import { requireBuilderService } from '../runtime/builder_service_access.js';
-import { getRenderer } from '../runtime/render_access.js';
-import { getBuildReactionsServiceMaybe } from '../runtime/build_reactions_access.js';
-import { getPlatformReportError } from '../runtime/platform_access.js';
 
-import type { AppContainer, RendererLike, UnknownCallable } from '../../../types';
+import type { UnknownCallable } from '../../../types';
 
 export type BuildRunnerSoftErrorExtra = {
   preserveOriginalBuildError?: boolean;
 };
 
-type ShadowMapLike = {
+export type BuildRunnerShadowMapLike = {
   autoUpdate?: boolean;
-};
-
-type RendererWithShadowMap = RendererLike & {
-  shadowMap?: ShadowMapLike | null;
 };
 
 export type CoalescedBuildFn = UnknownCallable & {
@@ -39,13 +29,13 @@ export type PendingCoalescedReplay = {
 };
 
 export type BuildRunnerShadowAutoUpdateState = {
-  shadowMap: ShadowMapLike | null;
+  shadowMap: BuildRunnerShadowMapLike | null;
   hadShadowAuto: boolean;
   prevShadowAuto: boolean;
 };
 
 export type BuildRunnerRuntimeContext = Readonly<{
-  readShadowMap: () => ShadowMapLike | null;
+  readShadowMap: () => BuildRunnerShadowMapLike | null;
   reportSoftError: (where: string, error: unknown, extra?: BuildRunnerSoftErrorExtra) => void;
   runPostBuildReactions: (ok: boolean, preserveOriginalBuildError: boolean) => void;
   scheduleMicrotask: (fn: () => void) => void;
@@ -58,45 +48,11 @@ function reportBuildRunnerSoftError(
   error: unknown,
   extra?: BuildRunnerSoftErrorExtra
 ): void {
-  context.reportSoftError(where, error, extra);
-}
-
-export function createBuildRunnerRuntimeContext(App: AppContainer): BuildRunnerRuntimeContext {
-  const reportSoftError = (where: string, error: unknown, extra?: BuildRunnerSoftErrorExtra): void => {
-    try {
-      const reportError = getPlatformReportError(App);
-      if (reportError) reportError(error, { where, fatal: false, ...extra });
-    } catch {
-      // Diagnostics are observational and cannot change the build result.
-    }
-  };
-  return Object.freeze({
-    readShadowMap: () => {
-      const renderer = asRecord<RendererWithShadowMap>(getRenderer(App));
-      return asRecord<ShadowMapLike>(renderer?.shadowMap);
-    },
-    reportSoftError,
-    runPostBuildReactions: (ok, preserveOriginalBuildError) => {
-      try {
-        const service = getBuildReactionsServiceMaybe(App);
-        const afterBuild = service && typeof service.afterBuild === 'function' ? service.afterBuild : null;
-        if (afterBuild) afterBuild.call(service, ok);
-      } catch (error) {
-        reportSoftError('native/builder/build_runner.afterBuildReactions', error, {
-          preserveOriginalBuildError,
-        });
-      }
-    },
-    scheduleMicrotask: fn => {
-      const enqueue = queueMicrotaskMaybe(App);
-      if (typeof enqueue === 'function') enqueue(fn);
-      else void Promise.resolve().then(fn);
-    },
-    replayBuild: (bwFn, args) => {
-      const builder = requireBuilderService(App, 'builder/build_runner.coalesced');
-      bwFn.apply(builder, Array.isArray(args) ? args : []);
-    },
-  });
+  try {
+    context.reportSoftError(where, error, extra);
+  } catch {
+    // Diagnostics are observational and cannot change the build result.
+  }
 }
 
 export function readBuildRunnerShadowAutoUpdateState(
@@ -144,7 +100,13 @@ export function runBuildRunnerPostBuildReactions(
   ok: boolean,
   preserveOriginalBuildError: boolean
 ): void {
-  context.runPostBuildReactions(ok, preserveOriginalBuildError);
+  try {
+    context.runPostBuildReactions(ok, preserveOriginalBuildError);
+  } catch (error) {
+    reportBuildRunnerSoftError(context, 'native/builder/build_runner.afterBuildReactions', error, {
+      preserveOriginalBuildError,
+    });
+  }
 }
 
 export function readBuildRunnerArgsSignature(args: readonly unknown[]): unknown {
@@ -210,7 +172,17 @@ export function schedulePendingCoalescedReplay(
   bwFn: CoalescedBuildFn,
   args: readonly unknown[]
 ): void {
-  context.scheduleMicrotask(() => context.replayBuild(bwFn, args));
+  try {
+    context.scheduleMicrotask(() => {
+      try {
+        context.replayBuild(bwFn, args);
+      } catch (error) {
+        reportBuildRunnerSoftError(context, 'native/builder/build_runner.replay', error);
+      }
+    });
+  } catch (error) {
+    reportBuildRunnerSoftError(context, 'native/builder/build_runner.replaySchedule', error);
+  }
 }
 
 export function finalizeCoalescedBuildRunRuntime(

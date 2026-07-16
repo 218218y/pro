@@ -95,6 +95,35 @@ test('root common config and explicit variant overlays never leak main policy in
   assert.equal(site2.flags.variantFlag, 'site2');
 });
 
+test('site profiles reject reserved runtime config overrides at common and variant boundaries', () => {
+  const base = {
+    id: 'fixture',
+    displayName: 'Fixture',
+    supabase: { url: 'https://example.supabase.co', anonKey: 'anon' },
+    variants: { main: {}, site2: {} },
+  };
+  const normalize = profile =>
+    normalizeSiteProfile({
+      root: ROOT,
+      profileDir: path.join(ROOT, 'sites', 'fixture'),
+      requestedStoreId: 'fixture',
+      profile,
+    });
+
+  assert.throws(
+    () => normalize({ ...base, config: { storageNamespace: 'forbidden' } }),
+    /fixture common config uses reserved runtime config key\(s\): storageNamespace/u
+  );
+  assert.throws(
+    () =>
+      normalize({
+        ...base,
+        variants: { main: {}, site2: { config: { supabaseCloudSync: {} } } },
+      }),
+    /fixture\/site2 config uses reserved runtime config key\(s\): supabaseCloudSync/u
+  );
+});
+
 test('root build and dev entrypoints fail fast on stale generated runtime config', () => {
   for (const file of [
     'tools/wp_build_dist.js',

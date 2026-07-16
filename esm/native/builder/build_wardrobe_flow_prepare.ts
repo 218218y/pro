@@ -1,10 +1,4 @@
-import { resetInternalGridMaps } from '../runtime/cache_access.js';
-import { captureLocalOpenStateBeforeBuild } from '../runtime/doors_access.js';
-import { ensureBuilderService } from '../runtime/builder_service_access.js';
 import { resolveBuilderDepsOrThrow } from './builder_deps_resolver.js';
-import { resolveBuildStateOrThrow } from './build_state_resolver.js';
-import { sanitizeBuildDimsAndSyncRuntime } from './state_sanitize_pipeline.js';
-import { resetEdgeHandleDefaultNoneCacheMaps } from './edge_handle_default_none_runtime.js';
 import { bindDoorVisualRenderPolicy } from './door_visual_render_policy.js';
 
 import type {
@@ -14,25 +8,19 @@ import type {
   BuilderDepsRootLike,
   BuildStateResolvedLike,
 } from '../../../types';
-
-function __builderGuardStrict<T>(
-  _App: AppContainer,
-  _op: string,
-  fn: (() => T) | null | undefined
-): T | undefined {
-  if (typeof fn !== 'function') return undefined;
-  return fn();
-}
+import type { BuildFlowOrchestrationContext } from './build_flow_orchestration.js';
 
 export type BuildWardrobeFlowArgs = {
   App: AppContainer;
   builderDeps: BuilderDepsRootLike;
+  orchestration: BuildFlowOrchestrationContext;
   stateOrOverride: unknown;
   label?: string;
 };
 
 export type PreparedBuildWardrobeFlow = {
   App: AppContainer;
+  orchestration: BuildFlowOrchestrationContext;
   label: string;
   deps: ReturnType<typeof resolveBuilderDepsOrThrow>;
   buildState: BuildStateResolvedLike;
@@ -51,34 +39,20 @@ export function prepareBuildWardrobeFlow(
 ): PreparedBuildWardrobeFlow | null {
   if (!args || !args.App) throw new Error('[WardrobePro] buildWardrobeFlow requires args.App');
 
-  const { App, builderDeps, stateOrOverride } = args;
+  const { App, builderDeps, orchestration, stateOrOverride } = args;
+  if (!orchestration) {
+    throw new Error('[WardrobePro] buildWardrobeFlow requires an orchestration context');
+  }
   const label = args.label || 'native/builder/build_wardrobe_flow';
   const deps = resolveBuilderDepsOrThrow({ App, builderDeps, label });
-  const buildState = resolveBuildStateOrThrow({ App, stateOrOverride });
+  const buildState = orchestration.resolveState(stateOrOverride);
   const { ui, runtime, cfgSnapshot } = buildState;
 
-  resetInternalGridMaps(App);
+  orchestration.resetCaches();
+  orchestration.captureOpenState();
+  orchestration.publishBuildUi(ui);
 
-  resetEdgeHandleDefaultNoneCacheMaps(App);
-
-  captureLocalOpenStateBeforeBuild(App, {
-    includeDrawers: true,
-    includeSlidingTrackDoors: true,
-  });
-
-  const handleControlEnabled = !!ui.handleControl;
-  const showHangerEnabled = !!ui.showHanger;
-  const showContentsEnabled = !!ui.showContents;
-  __builderGuardStrict(App, 'builderService.buildUiSnapshot', () => {
-    const builder = ensureBuilderService(App, 'native/builder/build_wardrobe_flow');
-    builder.buildUi = Object.assign({}, ui || {}, {
-      handleControl: handleControlEnabled,
-      showHanger: showHangerEnabled,
-      showContents: showContentsEnabled,
-    });
-  });
-
-  const dims = sanitizeBuildDimsAndSyncRuntime({ App, ui, cfg: cfgSnapshot });
+  const dims = orchestration.sanitizeDimensions(ui, cfgSnapshot);
   if (dims && dims.skipBuild) return null;
 
   const sketchMode = !!runtime.sketchMode;
@@ -90,6 +64,7 @@ export function prepareBuildWardrobeFlow(
 
   return {
     App,
+    orchestration,
     label,
     deps,
     buildState,

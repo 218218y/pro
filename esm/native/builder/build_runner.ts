@@ -27,12 +27,31 @@ type CoalescedBuildFn = UnknownCallable & {
   __lastCompletedBuildSignature?: unknown;
 };
 
-type CoalescedBuildOpts = {
+export type SynchronousBuildRun<TResult> = () => TResult;
+
+type CoalescedBuildOpts<TResult> = {
   context: BuildRunnerRuntimeContext;
   bwFn: CoalescedBuildFn;
   args: readonly unknown[];
-  run: () => unknown;
+  run: SynchronousBuildRun<TResult>;
 };
+
+function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
+  if ((typeof value !== 'object' && typeof value !== 'function') || value === null) return false;
+  return typeof (value as { then?: unknown }).then === 'function';
+}
+
+function observeUnexpectedAsyncBuild(context: BuildRunnerRuntimeContext, value: PromiseLike<unknown>): void {
+  void Promise.resolve(value).catch(error => {
+    try {
+      context.reportSoftError('native/builder/build_runner.asyncBuildRejection', error, {
+        preserveOriginalBuildError: true,
+      });
+    } catch {
+      // The invariant error remains authoritative even if diagnostics fail.
+    }
+  });
+}
 
 /**
  * Run a build function with "coalescing" semantics:
@@ -51,7 +70,7 @@ type CoalescedBuildOpts = {
  *   run: ()=>unknown,
  * }} opts
  */
-export function runCoalescedBuild(opts: CoalescedBuildOpts): unknown {
+export function runCoalescedBuild<TResult>(opts: CoalescedBuildOpts<TResult>): TResult | undefined {
   if (!opts || !opts.context || typeof opts.run !== 'function' || typeof opts.bwFn !== 'function') {
     throw new Error('[builder/build_runner] Invalid arguments');
   }
@@ -65,11 +84,15 @@ export function runCoalescedBuild(opts: CoalescedBuildOpts): unknown {
   const shadowState = readBuildRunnerShadowAutoUpdateState(context);
   disableBuildRunnerShadowAutoUpdate(context, shadowState);
 
-  let result: unknown;
+  let result: TResult | undefined;
   let runErr: unknown = null;
 
   try {
     result = run();
+    if (isPromiseLike(result)) {
+      observeUnexpectedAsyncBuild(context, result);
+      throw new Error('[builder/build_runner] Build callback must be synchronous');
+    }
   } catch (error) {
     runErr = error;
   } finally {

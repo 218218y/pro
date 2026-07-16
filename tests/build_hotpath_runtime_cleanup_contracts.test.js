@@ -5,11 +5,14 @@ import { readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.j
 
 const buildRunnerEntry = readSource('../esm/native/builder/build_runner.ts', import.meta.url);
 const buildRunnerRuntime = readSource('../esm/native/builder/build_runner_runtime.ts', import.meta.url);
+const buildAppContext = readSource('../esm/native/builder/build_app_context.ts', import.meta.url);
 const buildExecuteEntry = readSource('../esm/native/builder/build_wardrobe_flow_execute.ts', import.meta.url);
 const buildExecuteRuntime = readSource(
   '../esm/native/builder/build_wardrobe_flow_execute_runtime.ts',
   import.meta.url
 );
+const buildFlowRuntime = readSource('../esm/native/builder/build_wardrobe_flow_runtime.ts', import.meta.url);
+const buildFlowPrepare = readSource('../esm/native/builder/build_wardrobe_flow_prepare.ts', import.meta.url);
 const buildRequestRuntime = readSource(
   '../esm/native/runtime/builder_service_access_build_request_runtime.ts',
   import.meta.url
@@ -23,7 +26,7 @@ test('[build-hotpath-runtime-cleanup] hot-path entry seams stay thin while runti
       /from '\.\/build_runner_runtime\.js'/,
       /readBuildRunnerShadowAutoUpdateState\(/,
       /finalizeCoalescedBuildRunRuntime\(/,
-      /export function runCoalescedBuild\(/,
+      /export function runCoalescedBuild(?:<[^>]+>)?\(/,
     ],
     'buildRunnerEntry'
   );
@@ -46,7 +49,6 @@ test('[build-hotpath-runtime-cleanup] hot-path entry seams stay thin while runti
     buildRunnerRuntime,
     [
       /export function readBuildRunnerShadowAutoUpdateState\(/,
-      /export function createBuildRunnerRuntimeContext\(/,
       /export function disableBuildRunnerShadowAutoUpdate\(/,
       /export function restoreBuildRunnerShadowAutoUpdate\(/,
       /export function runBuildRunnerPostBuildReactions\(/,
@@ -56,9 +58,50 @@ test('[build-hotpath-runtime-cleanup] hot-path entry seams stay thin while runti
   );
   assertLacksAll(
     assert,
-    buildRunnerEntry,
-    [/AppContainer/, /\bApp\b/],
-    'buildRunnerEntry capability boundary'
+    `${buildRunnerEntry}\n${buildRunnerRuntime}`,
+    [/AppContainer/, /\bApp\b/, /getRenderer\(/, /getPlatformReportError\(/],
+    'build runner capability boundary'
+  );
+  assertMatchesAll(
+    assert,
+    buildAppContext,
+    [/createBuildRunnerRuntimeContext\(/, /AppContainer/, /getRenderer\(/],
+    'builder App adapter'
+  );
+  assertLacksAll(
+    assert,
+    buildFlowRuntime,
+    [/AppContainer/, /\bApp\b/, /reportError\(/, /guardVoid\(/],
+    'prepared build flow runtime capability boundary'
+  );
+  assertMatchesAll(
+    assert,
+    buildFlowPrepare,
+    [
+      /orchestration\.resolveState\(/,
+      /orchestration\.resetCaches\(/,
+      /orchestration\.captureOpenState\(/,
+      /orchestration\.publishBuildUi\(/,
+      /orchestration\.sanitizeDimensions\(/,
+    ],
+    'prepared build flow orchestration ports'
+  );
+  assertLacksAll(
+    assert,
+    buildFlowPrepare,
+    [
+      /resetInternalGridMaps/,
+      /captureLocalOpenStateBeforeBuild/,
+      /resolveBuildStateOrThrow/,
+      /sanitizeBuildDimsAndSyncRuntime/,
+    ],
+    'prepared build flow App access'
+  );
+  assertMatchesAll(
+    assert,
+    buildAppContext,
+    [/AppContainer/, /resolveBuildStateOrThrow\(/, /resetInternalGridMaps\(/, /reportError\(/],
+    'prepared build flow App adapter'
   );
 
   assertMatchesAll(

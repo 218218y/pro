@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { runCoalescedBuild } from '../esm/native/builder/build_runner.ts';
-import { createBuildRunnerRuntimeContext } from '../esm/native/builder/build_runner_runtime.ts';
+import { createBuildRunnerRuntimeContext } from '../esm/native/builder/build_app_context.ts';
+import type { BuildRunnerRuntimeContext } from '../esm/native/builder/build_runner_runtime.ts';
 
 function createState(signature: string, activeId = '', forceBuild = false) {
   return {
@@ -18,6 +19,43 @@ async function flushMicrotasks(count = 3) {
   for (let i = 0; i < count; i += 1) {
     await Promise.resolve();
   }
+}
+
+function createRuntimeContext(overrides: Partial<BuildRunnerRuntimeContext> = {}): {
+  context: BuildRunnerRuntimeContext;
+  diagnostics: string[];
+} {
+  const diagnostics: string[] = [];
+  return {
+    diagnostics,
+    context: {
+      readShadowMap: () => null,
+      reportSoftError: where => diagnostics.push(where),
+      runPostBuildReactions: () => {},
+      scheduleMicrotask: fn => queueMicrotask(fn),
+      replayBuild: () => {},
+      ...overrides,
+    },
+  };
+}
+
+function runBuildWithPendingReplay(args: { context: BuildRunnerRuntimeContext; error?: Error }): unknown {
+  let nested = false;
+  const buildWardrobe: any = (state: any) =>
+    runCoalescedBuild({
+      context: args.context,
+      bwFn: buildWardrobe,
+      args: [state],
+      run: () => {
+        if (!nested) {
+          nested = true;
+          buildWardrobe(createState('sig:pending'));
+        }
+        if (args.error) throw args.error;
+        return state;
+      },
+    });
+  return buildWardrobe(createState('sig:current'));
 }
 
 function createBuildRunnerHarness(onRun: (state: any, buildWardrobe: (state: any) => unknown) => void) {
@@ -197,4 +235,79 @@ test('build runner runtime: a failing reaction observer cannot change a successf
 
   assert.equal(buildWardrobe(), expected);
   assert.equal(App.render.renderer.shadowMap.autoUpdate, true);
+});
+
+test('build runner runtime: synchronous replay scheduling failure cannot change a successful build', () => {
+  const harness = createRuntimeContext({
+    scheduleMicrotask: () => {
+      throw new Error('scheduler unavailable');
+    },
+  });
+
+  assert.deepEqual(runBuildWithPendingReplay({ context: harness.context }), createState('sig:current'));
+  assert.deepEqual(harness.diagnostics, ['native/builder/build_runner.replaySchedule']);
+});
+
+test('build runner runtime: replay scheduling failure preserves the original build error', () => {
+  const original = new Error('original build failure');
+  const harness = createRuntimeContext({
+    scheduleMicrotask: () => {
+      throw new Error('scheduler unavailable');
+    },
+  });
+
+  assert.throws(
+    () => runBuildWithPendingReplay({ context: harness.context, error: original }),
+    error => {
+      assert.equal(error, original);
+      return true;
+    }
+  );
+  assert.deepEqual(harness.diagnostics, ['native/builder/build_runner.replaySchedule']);
+});
+
+test('build runner runtime: replay callback failure is contained and reported', () => {
+  const scheduled: Array<() => void> = [];
+  const harness = createRuntimeContext({
+    scheduleMicrotask: fn => scheduled.push(fn),
+    replayBuild: () => {
+      throw new Error('replay failed');
+    },
+  });
+
+  assert.deepEqual(runBuildWithPendingReplay({ context: harness.context }), createState('sig:current'));
+  assert.equal(scheduled.length, 1);
+  assert.doesNotThrow(() => scheduled[0]?.());
+  assert.deepEqual(harness.diagnostics, ['native/builder/build_runner.replay']);
+});
+
+test('build runner runtime: reaction and replay failures remain secondary to build success', () => {
+  const harness = createRuntimeContext({
+    runPostBuildReactions: () => {
+      throw new Error('reaction failed');
+    },
+    scheduleMicrotask: () => {
+      throw new Error('scheduler failed');
+    },
+  });
+
+  assert.deepEqual(runBuildWithPendingReplay({ context: harness.context }), createState('sig:current'));
+  assert.deepEqual(harness.diagnostics, [
+    'native/builder/build_runner.afterBuildReactions',
+    'native/builder/build_runner.replaySchedule',
+  ]);
+});
+
+test('build runner runtime: Promise-returning build callbacks fail the synchronous invariant', async () => {
+  const harness = createRuntimeContext();
+  const buildWardrobe: any = () =>
+    runCoalescedBuild({
+      context: harness.context,
+      bwFn: buildWardrobe,
+      args: [],
+      run: async () => ({ committed: true }),
+    });
+
+  assert.throws(() => buildWardrobe(), /Build callback must be synchronous/);
+  await flushMicrotasks();
 });
