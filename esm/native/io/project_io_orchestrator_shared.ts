@@ -2,7 +2,6 @@ import type {
   ActionMetaLike,
   AppContainer,
   ProjectExportResultLike,
-  ProjectIoLoadResultLike,
   ProjectLoadOpts,
   ProjectPdfStateLike,
   HistorySystemSnapshotLike,
@@ -86,7 +85,7 @@ export function readProjectLoadOptsRecord(options?: ProjectLoadOpts): ProjectLoa
 }
 
 export function readProjectLoadToastMessage(
-  result: ProjectLoadActionResult | ProjectIoLoadResultLike | null | undefined
+  result: ProjectLoadActionResult | null | undefined
 ): string | null {
   if (!result) return 'טעינת קובץ נכשלה';
   const normalized = normalizeProjectLoadActionResult(result, 'error');
@@ -105,31 +104,6 @@ export function readProjectLoadToastMessage(
 
 export function readHistorySystemRecord(value: unknown): HistorySystemLike | null {
   return asProjectIoRecord(value);
-}
-
-export function buildProjectIoLoadResult(
-  ok: boolean,
-  options?: {
-    restoreGen?: unknown;
-    pending?: boolean;
-    reason?: unknown;
-    message?: unknown;
-  }
-): ProjectIoLoadResultLike {
-  const restoreGenRaw = Number(options?.restoreGen);
-  const restoreGen =
-    Number.isFinite(restoreGenRaw) && restoreGenRaw > 0 ? Math.floor(restoreGenRaw) : undefined;
-  const reason =
-    typeof options?.reason === 'string' && options.reason.trim() ? options.reason.trim() : undefined;
-  const message =
-    typeof options?.message === 'string' && options.message.trim() ? options.message.trim() : undefined;
-  return {
-    ok,
-    ...(typeof restoreGen === 'number' ? { restoreGen } : {}),
-    ...(options?.pending === true ? { pending: true } : {}),
-    ...(!ok && reason ? { reason } : {}),
-    ...(message ? { message } : {}),
-  };
 }
 
 export function buildProjectExportResult(options: {

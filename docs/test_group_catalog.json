@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-14T09:26:18.818Z",
+  "generatedAt": "2026-07-16T13:26:36.334Z",
   "summary": {
     "groups": 29,
     "scriptBindings": 29,
-    "catalogFileReferences": 352,
+    "catalogFileReferences": 351,
     "directPackageTestReferences": 191,
     "catalogIssues": 0,
     "bindingIssues": 0,
@@ -392,7 +392,7 @@
       "runner": "tsx-test",
       "portfolioRole": "primary",
       "serialPolicy": null,
-      "fileCount": 19,
+      "fileCount": 18,
       "files": [
         "tests/project_actions_runtime.test.ts",
         "tests/project_session_commands_runtime.test.ts",
@@ -402,7 +402,6 @@
         "tests/project_io_fail_fast_runtime.test.ts",
         "tests/project_io_load_helpers_runtime.test.ts",
         "tests/project_io_load_ops_runtime.test.ts",
-        "tests/project_io_load_result_runtime.test.ts",
         "tests/project_io_orchestrator_shared_runtime.test.ts",
         "tests/project_file_ingress_service_runtime.test.ts",
         "tests/project_config_lists_canonical_runtime.test.ts",

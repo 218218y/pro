@@ -1,12 +1,12 @@
 # Test group catalog
 
-Generated: 2026-07-14T09:26:18.818Z
+Generated: 2026-07-16T13:26:36.334Z
 
 ## Summary
 
 - Catalog groups: 29
 - Package script bindings owned by the catalog: 29
-- Catalog test-file references: 352
+- Catalog test-file references: 351
 - Direct package.json test-file references still remaining: 191
 - Catalog definition issues: 0
 - Package binding issues: 0
@@ -32,7 +32,7 @@ Generated: 2026-07-14T09:26:18.818Z
 | `order-pdf-overlay-core`         | `test:order-pdf-surfaces:overlay-core`         | focused      | tsx-test   | tsx         |    10 | ui/order-pdf                                                         |
 | `order-pdf-pdf-render`           | `test:order-pdf-surfaces:pdf-render`           | focused      | tsx-test   | tsx         |     5 | ui/order-pdf/pdf-runtime                                             |
 | `order-pdf-sketch`               | `test:order-pdf-surfaces:sketch`               | focused      | tsx-test   | tsx         |     6 | ui/order-pdf/sketch                                                  |
-| `project-surfaces`               | `test:project-surfaces`                        | primary      | tsx-test   | tsx         |    19 | io/project, ui/project-session                                       |
+| `project-surfaces`               | `test:project-surfaces`                        | primary      | tsx-test   | tsx         |    18 | io/project, ui/project-session                                       |
 | `public-surfaces`                | `test:public-surfaces`                         | primary      | tsx-test   | tsx         |    20 | public-api, platform/browser, services/models                        |
 | `refactor-stage-guards`          | `test:refactor-stage-guards`                   | architecture | node-test  | node        |    61 | architecture/control-plane                                           |
 | `sketch-box-content-protocol`    | `test:sketch-box-content-protocol`             | focused      | tsx-test   | tsx         |    13 | services/canvas-picking, features/sketch-box                         |

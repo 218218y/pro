@@ -35,7 +35,6 @@ test('[project-save-load-controller] installed save action reports accepted/reus
         },
       }),
       loadProjectFileInputViaService: async () => ({ ok: true }),
-      normalizeProjectIoLoadResult: value => value,
       metaUiOnly: (_app, _meta, source) => ({ source }),
       setDirtyViaActions: (_app, dirty, meta) => setDirtyCalls.push([dirty, meta]),
     },

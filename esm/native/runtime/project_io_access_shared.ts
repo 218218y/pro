@@ -1,5 +1,4 @@
 import type {
-  ProjectIoLoadResultLike,
   ProjectIoRuntimeLike,
   ProjectIoServiceLike,
   ProjectLoadFailFastOpts,
@@ -9,15 +8,7 @@ import type {
 import { asRecord, createNullRecord } from './record.js';
 import { reportError } from './errors.js';
 import { ensureServiceSlot, getServiceSlotMaybe } from './services_root_access.js';
-import {
-  normalizeProjectLoadActionResult,
-  type ProjectLoadActionResult,
-  type ProjectLoadFailureReason,
-} from './project_load_action_result.js';
-
-type ProjectIoLoadFailureLike = string;
-
-export type { ProjectIoLoadFailureLike };
+import type { ProjectLoadActionResult } from './project_load_action_result.js';
 
 export function reportProjectIoAccessNonFatal(App: unknown, op: string, error: unknown): void {
   reportError(App, error, {
@@ -88,47 +79,8 @@ export function isProjectIoRestoreGenerationCurrent(App: unknown, restoreGen: un
   return getProjectIoRestoreGeneration(App) === Math.floor(expected);
 }
 
-function readProjectIoLoadResultRecord(value: unknown): ProjectIoLoadResultLike | null {
-  return asRecord<ProjectIoLoadResultLike>(value);
-}
-
-export function normalizeProjectIoLoadResult(
-  value: unknown,
-  defaultReason: ProjectIoLoadFailureLike = 'result'
-): ProjectIoLoadResultLike {
-  if (value === true) return { ok: true };
-  if (value === false) return { ok: false, reason: defaultReason };
-
-  const rec = readProjectIoLoadResultRecord(value);
-  if (!rec) return { ok: false, reason: defaultReason };
-
-  const ok = rec.ok === true;
-  const pending = rec.pending === true;
-  const restoreGenRaw = Number(rec.restoreGen);
-  const restoreGen =
-    Number.isFinite(restoreGenRaw) && restoreGenRaw > 0 ? Math.floor(restoreGenRaw) : undefined;
-  const reason =
-    typeof rec.reason === 'string' && rec.reason.trim() ? rec.reason.trim() : ok ? undefined : defaultReason;
-  const message = typeof rec.message === 'string' && rec.message.trim() ? rec.message.trim() : undefined;
-
-  return {
-    ok,
-    ...(typeof restoreGen === 'number' ? { restoreGen } : {}),
-    ...(pending ? { pending: true } : {}),
-    ...(reason ? { reason } : {}),
-    ...(message ? { message } : {}),
-  };
-}
-
-export function normalizeProjectLoadActionResultViaProjectIo(
-  value: unknown,
-  defaultReason: ProjectLoadFailureReason = 'error'
-): ProjectLoadActionResult {
-  return normalizeProjectLoadActionResult(value, defaultReason);
-}
-
 export function buildProjectIoLoadFailureMessage(
-  result: ProjectLoadActionResult | ProjectIoLoadResultLike,
+  result: ProjectLoadActionResult,
   label: string,
   defaultErrorMessage: string
 ): string {
@@ -138,9 +90,6 @@ export function buildProjectIoLoadFailureMessage(
   if (reason === 'not-installed') return `[WardrobePro] ${label} is not installed.`;
   if (reason === 'invalid') return `[WardrobePro] ${label} returned an invalid result.`;
   if (reason === 'superseded') return `[WardrobePro] ${label} was superseded.`;
-  if ('pending' in result && result.pending === true) {
-    return `[WardrobePro] ${label} returned an unexpected pending result.`;
-  }
   return defaultErrorMessage;
 }
 

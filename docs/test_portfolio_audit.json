@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-15T14:38:05.720Z",
+  "generatedAt": "2026-07-16T13:26:37.289Z",
   "totals": {
-    "tests": 1213,
-    "unitRunnerTests": 1205,
+    "tests": 1212,
+    "unitRunnerTests": 1204,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 31,
     "packageTestReferences": 191,
-    "catalogTestReferences": 352,
-    "totalTestReferences": 543,
+    "catalogTestReferences": 351,
+    "totalTestReferences": 542,
     "catalogGroups": 29,
     "catalogScriptBindings": 29,
     "primaryCatalogGroups": 5
@@ -18,7 +18,7 @@
     "integration": 448,
     "e2e-smoke": 9,
     "perf-smoke": 9,
-    "legacy-migration": 42
+    "legacy-migration": 41
   },
   "failures": {
     "missingTestRefs": [],
@@ -2923,10 +2923,6 @@
     },
     {
       "file": "tests/project_io_load_presets_runtime.test.ts",
-      "category": "legacy-migration"
-    },
-    {
-      "file": "tests/project_io_load_result_runtime.test.ts",
       "category": "legacy-migration"
     },
     {

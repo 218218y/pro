@@ -16,6 +16,7 @@ const projectIoAccess = bundleSources(
 );
 const servicesApi = readServicesApiPublicSurface(import.meta.url);
 const projectIoOwner = readSource('../esm/native/io/project_io.ts', import.meta.url);
+const buildRuntimeTypes = readSource('../types/build_runtime.ts', import.meta.url);
 const stackRouter = bundleSources(
   [
     '../esm/native/kernel/state_api_stack_router.ts',
@@ -258,7 +259,6 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /export function nextProjectIoRestoreGeneration\(/,
       /export function getProjectIoRestoreGeneration\(/,
       /export function isProjectIoRestoreGenerationCurrent\(/,
-      /export function normalizeProjectIoLoadResult\(/,
       /export function exportProjectResultViaService\(/,
       /export function loadProjectDataActionResultViaService\(/,
       /export function loadProjectDataActionResultViaServiceOrThrow\(/,
@@ -283,6 +283,10 @@ test('project-io access, restore-generation, and callers stay on canonical servi
       /export function loadProjectDataViaServiceOrThrow\(/,
       /export function loadProjectDataResultViaService\(/,
       /export function loadProjectDataResultViaServiceOrThrow\(/,
+      /ProjectIoLoadResultLike/,
+      /normalizeProjectIoLoadResult/,
+      /normalizeProjectLoadActionResultViaProjectIo/,
+      /buildProjectIoLoadResult/,
       /export function restoreProjectSessionViaService\(/,
       /export function restoreProjectSessionActionResultViaService\(/,
       /export function restoreProjectAutosavePayloadActionResultViaService\(/,
@@ -290,6 +294,7 @@ test('project-io access, restore-generation, and callers stay on canonical servi
     ],
     'projectIoAccess'
   );
+  assert.doesNotMatch(buildRuntimeTypes, /ProjectIoLoadResultLike|pending\?: boolean/);
   assertMatchesAll(
     assert,
     servicesApi,
@@ -439,7 +444,6 @@ test('project load/save helpers preserve semantic load flags, UI ephemera, and b
       /saveProjectResultViaActions, saveProjectViaActions|performProjectSaveLoadSave\(App, toast, actions\)/,
       /exportProjectResultViaService\(\s*App,\s*\{ source: 'ui:saveProject' \}/,
       /handleProjectSaveLoadInputChange\(App, toast, evt\)|runProjectLoadAction\(App, \{ toast \}, asProjectFileLoadEvent\(evt\) \?\? evt/,
-      /normalizeProjectIoLoadResult\(/,
       /createProjectUiActionController\(/,
       /handleProjectSaveLoadInputChange\(App, toast, evt\)|openProjectSaveLoadInput\(input\)|runProjectUiLoadInputChange\(args, evt\)/,
       /reportProjectSaveResult\(\{ toast \}, result\)|reportProjectSaveResult\(fb, result\)/,
@@ -511,13 +515,7 @@ test('project recovery reset and restore remain exact terminal fail-fast operati
     recoveryResult,
     /normalizeProjectRestoreLoadResult|normalizeProjectResetDefaultLoadResult/
   );
-  assert.doesNotMatch(
-    restoreFeedback,
-    /function (?:getProjectRestoreToast|reportProjectRestoreResult)\([\s\S]{0,220}ProjectIoLoadResultLike/
-  );
+  assert.doesNotMatch(restoreFeedback, /ProjectIoLoadResultLike/);
   assert.doesNotMatch(resetFeedback, /ProjectIoLoadResultLike|pending/);
-  assert.doesNotMatch(
-    feedbackFacade,
-    /function (?:getProjectRestoreToast|reportProjectRestoreResult|getResetDefaultToast|reportResetDefaultResult)\([\s\S]{0,220}ProjectIoLoadResultLike/
-  );
+  assert.doesNotMatch(feedbackFacade, /ProjectIoLoadResultLike/);
 });

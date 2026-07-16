@@ -20,8 +20,8 @@ import {
   buildProjectIoLoadFailureMessage,
   getProjectIoServiceMaybe,
   reportProjectIoAccessNonFatal,
-  normalizeProjectLoadActionResultViaProjectIo,
 } from './project_io_access_shared.js';
+import { normalizeProjectLoadActionResult } from './project_load_action_result.js';
 
 type ProjectIoLoadDataFn = (data: ProjectLoadInputLike, opts?: ProjectLoadOpts) => unknown;
 type ProjectIoFailFastLoadDataFn = (data: ProjectLoadInputLike, opts?: ProjectLoadFailFastOpts) => unknown;
@@ -79,7 +79,7 @@ export function loadProjectDataActionResultViaService(
   }
 
   try {
-    return normalizeProjectLoadActionResultViaProjectIo(loadProjectData(data, opts), defaultReason);
+    return normalizeProjectLoadActionResult(loadProjectData(data, opts), defaultReason);
   } catch (error) {
     reportProjectIoAccessNonFatal(App, 'projectIO.loadProjectData.actionOwnerRejected', error);
     return buildProjectLoadActionErrorResult(error, defaultErrorMessage);
@@ -112,7 +112,7 @@ export function loadProjectDataFailFastResultViaService(
   }
 
   try {
-    const result = normalizeProjectLoadActionResultViaProjectIo(
+    const result = normalizeProjectLoadActionResult(
       loadProjectDataFailFast(data, { ...opts, queueIfBusy: false }),
       defaultReason
     );

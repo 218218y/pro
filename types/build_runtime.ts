@@ -340,14 +340,6 @@ export interface ProjectIoRuntimeLike extends UnknownRecord {
   restoreGen?: number;
 }
 
-export interface ProjectIoLoadResultLike extends UnknownRecord {
-  ok: boolean;
-  restoreGen?: number;
-  pending?: boolean;
-  reason?: string;
-  message?: string;
-}
-
 export interface ProjectExportResultLike extends UnknownRecord {
   projectData?: ProjectDataLike;
   jsonStr: string;

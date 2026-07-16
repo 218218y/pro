@@ -53,11 +53,61 @@ test('Edge Function verifies signed room scope and performs bounded compare-and-
     /room_token_expired/u,
     /Retry-After/u,
     /retryAfterSeconds/u,
+    /touchRoomLease\(/u,
+    /wp_cloud_sync_touch_room_lease/u,
   ]) {
     assert.match(source, required);
   }
   assert.doesNotMatch(source, /\.delete\s*\(/u);
   assert.doesNotMatch(source, /roomToken[^\n]*console/u);
+});
+
+test('Cloud Sync retention is bounded, dry-run first, and owned outside browser and gateway roles', () => {
+  const retentionSql = read('docs/supabase_cloud_sync_retention.sql');
+  const scheduleSql = read('docs/supabase_cloud_sync_retention_schedule.sql');
+  const verifySql = read('docs/supabase_cloud_sync_retention_verify.sql');
+  const gateway = read('supabase/functions/wp-cloud-sync-room/index.ts');
+
+  for (const required of [
+    /create schema if not exists wp_cloud_sync_private/u,
+    /private_room_retention interval not null default interval '45 days'/u,
+    /rate_limit_retention interval not null default interval '48 hours'/u,
+    /enabled boolean not null default false/u,
+    /p_dry_run boolean default true/u,
+    /limit v_effective_limit\s+for update skip locked/u,
+    /split_part\(room_row\.room, '::', 1\) = any\(v_rooms\)/u,
+    /not lease\.is_public/u,
+    /security definer/u,
+    /revoke all on schema wp_cloud_sync_private from public, anon, authenticated, service_role/u,
+    /grant execute on function public\.wp_cloud_sync_touch_room_lease\(text, text, text, text\)\s+to service_role/u,
+    /revoke all on function wp_cloud_sync_private\.cleanup_store[^;]+from public, anon, authenticated, service_role/su,
+  ]) {
+    assert.match(retentionSql, required);
+  }
+
+  const auditTable = retentionSql.match(
+    /create table if not exists wp_cloud_sync_private\.cleanup_audit \([\s\S]*?\n\);/u
+  )?.[0];
+  assert.ok(auditTable);
+  assert.doesNotMatch(auditTable, /payload|jsonb|room_token|bucket_key/iu);
+  assert.match(gateway, /room: claims\.room,[\s\S]*publicRoom,/u);
+  assert.equal((gateway.match(/await touchRoomLease\(/gu) || []).length, 3);
+  assert.doesNotMatch(gateway, /\.delete\s*\(/u);
+
+  assert.match(scheduleSql, /to_regnamespace\('cron'\) is null/u);
+  assert.match(scheduleSql, /enable the pg_cron integration before scheduling retention/u);
+  assert.doesNotMatch(scheduleSql, /create extension/u);
+  assert.match(scheduleSql, /cron\.unschedule/u);
+  assert.match(scheduleSql, /wp_cloud_sync_private\.run_retention\(false\)/u);
+  assert.match(
+    scheduleSql,
+    /where tenant_id = 'bargig'[\s\S]*store_id = 'bargig'[\s\S]*public_room = 'public'/u
+  );
+
+  assert.match(verifySql, /set transaction read only/u);
+  assert.match(verifySql, /cleanup_store\('bargig', 'bargig', true, 100/u);
+  assert.match(verifySql, /service_role_can_cleanup_rooms/u);
+  assert.doesNotMatch(verifySql, /cleanup_(?:store|rate_limits)\([^;]*false/iu);
 });
 
 test('browser Cloud Sync has one gateway route and no direct table or PostgREST authority', () => {

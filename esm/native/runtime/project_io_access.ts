@@ -5,8 +5,6 @@ import {
   getProjectIoRuntime,
   getProjectIoServiceMaybe,
   isProjectIoRestoreGenerationCurrent,
-  normalizeProjectIoLoadResult,
-  normalizeProjectLoadActionResultViaProjectIo,
   nextProjectIoRestoreGeneration,
 } from './project_io_access_shared.js';
 import {
@@ -35,8 +33,6 @@ export {
   nextProjectIoRestoreGeneration,
   getProjectIoRestoreGeneration,
   isProjectIoRestoreGenerationCurrent,
-  normalizeProjectIoLoadResult,
-  normalizeProjectLoadActionResultViaProjectIo,
   normalizeProjectExportResult,
   exportProjectResultViaService,
   loadProjectDataActionResultViaService,

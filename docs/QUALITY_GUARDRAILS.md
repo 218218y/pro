@@ -190,6 +190,8 @@ npm run e2e:canvas-pointer-parity
 - A rate-limited owner pauses Cloud reads until the gateway retry deadline; background polling must not create a retry storm.
 - Unmergeable CAS conflicts publish their conflict keys and remote revision, and automatic retry remains stopped until the conflict is resolved explicitly.
 - Cloud collections are committed through the single versioned envelope repository. Per-collection keys are deployment mirrors only; Cloud refresh/push begins only after the canonical envelope commit succeeds.
+- Cloud retention is lease-based per base room. Public room families never expire; authenticated private-room issue/renew/read/write activity extends the reviewed lease for the full family, including subresources and tombstones.
+- Browser and Edge gateway roles never receive cleanup or table-delete authority. Retention starts in dry-run mode, deletes only bounded tenant/store batches through the database maintenance owner, and records counts without room ids, bucket hashes, tokens, or payloads.
 
 Relevant docs/checks:
 

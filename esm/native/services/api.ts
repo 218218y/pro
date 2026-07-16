@@ -139,7 +139,6 @@ export {
   readResetDefaultProjectPayload,
   resetProjectToDefaultActionResult,
   resetProjectToDefault,
-  normalizeProjectIoLoadResult,
   loadProjectDataActionResultViaService,
   loadProjectDataFailFastResultViaService,
   loadProjectDataFailFastResultViaServiceOrThrow,

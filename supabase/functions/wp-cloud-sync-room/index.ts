@@ -239,6 +239,22 @@ async function consumeRateLimit(args: {
   return data === true;
 }
 
+async function touchRoomLease(args: {
+  client: SupabaseClient;
+  tenantId: string;
+  storeId: string;
+  room: string;
+  publicRoom: string;
+}): Promise<void> {
+  const { error } = await args.client.rpc('wp_cloud_sync_touch_room_lease', {
+    p_tenant_id: args.tenantId,
+    p_store_id: args.storeId,
+    p_room: args.room,
+    p_public_room: args.publicRoom,
+  });
+  if (error) throw error;
+}
+
 function normalizeRow(value: unknown): RoomRow | null {
   if (!isRecord(value)) return null;
   if (
@@ -414,6 +430,7 @@ Deno.serve(async request => {
 
     const secret = getRequiredEnv('WP_CLOUD_SYNC_ROOM_TOKEN_SECRET');
     const tenantId = resolveTenantId(storeId);
+    const publicRoom = resolvePublicRoom(storeId);
     const supabase = createClient(
       getRequiredEnv('SUPABASE_URL'),
       getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY'),
@@ -449,7 +466,8 @@ Deno.serve(async request => {
     }
 
     if (action === 'issue-public') {
-      const room = resolvePublicRoom(storeId);
+      const room = publicRoom;
+      await touchRoomLease({ client: supabase, tenantId, storeId, room, publicRoom });
       return jsonResponse(responseOrigin, 200, {
         ok: true,
         credential: await issueCredential({ tenantId, storeId, room, secret }),
@@ -458,6 +476,7 @@ Deno.serve(async request => {
 
     if (action === 'create-room') {
       const room = `room_${crypto.randomUUID().replaceAll('-', '')}`;
+      await touchRoomLease({ client: supabase, tenantId, storeId, room, publicRoom });
       return jsonResponse(responseOrigin, 201, {
         ok: true,
         credential: await issueCredential({ tenantId, storeId, room, secret }),
@@ -483,6 +502,13 @@ Deno.serve(async request => {
         code: 'room_token',
       });
     }
+    await touchRoomLease({
+      client: supabase,
+      tenantId,
+      storeId,
+      room: claims.room,
+      publicRoom,
+    });
 
     if (action === 'renew-room') {
       if (room !== claims.room) {

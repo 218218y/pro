@@ -1,4 +1,3 @@
-import type { ProjectIoLoadResultLike } from '../../../types';
 import {
   isProjectLoadAcceptedResult,
   normalizeProjectLoadActionResult,
@@ -14,7 +13,7 @@ import {
 } from './project_action_feedback_shared.js';
 
 export function getProjectLoadToast(
-  result: ProjectLoadActionResult | ProjectIoLoadResultLike | null | undefined
+  result: ProjectLoadActionResult | null | undefined
 ): ProjectActionToastLike | null {
   if (!result) return { message: 'טעינת קובץ נכשלה', type: 'error' };
   const normalized = normalizeProjectLoadActionResult(result, 'error');
@@ -35,7 +34,7 @@ export function getProjectLoadToast(
 
 export function reportProjectLoadResult(
   fb: ProjectFeedbackLike | null | undefined,
-  result: ProjectLoadActionResult | ProjectIoLoadResultLike | null | undefined
+  result: ProjectLoadActionResult | null | undefined
 ): ProjectActionToastLike | null {
   return emitProjectActionToast(fb, getProjectLoadToast(result));
 }

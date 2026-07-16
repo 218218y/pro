@@ -620,7 +620,6 @@ export const TEST_GROUP_CATALOG = Object.freeze({
       'tests/project_io_fail_fast_runtime.test.ts',
       'tests/project_io_load_helpers_runtime.test.ts',
       'tests/project_io_load_ops_runtime.test.ts',
-      'tests/project_io_load_result_runtime.test.ts',
       'tests/project_io_orchestrator_shared_runtime.test.ts',
       'tests/project_file_ingress_service_runtime.test.ts',
       'tests/project_config_lists_canonical_runtime.test.ts',

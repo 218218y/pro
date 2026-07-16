@@ -1,4 +1,3 @@
-import type { ProjectIoLoadResultLike } from '../../../types';
 import type {
   ProjectLoadActionResult,
   ProjectResetDefaultActionResult,
@@ -35,14 +34,14 @@ export function buildProjectActionErrorResult(
 }
 
 export function getProjectLoadToast(
-  result: ProjectLoadActionResult | ProjectIoLoadResultLike | null | undefined
+  result: ProjectLoadActionResult | null | undefined
 ): ProjectActionToastLike | null {
   return getProjectLoadToastImpl(result);
 }
 
 export function reportProjectLoadResult(
   fb: ProjectFeedbackLike | null | undefined,
-  result: ProjectLoadActionResult | ProjectIoLoadResultLike | null | undefined
+  result: ProjectLoadActionResult | null | undefined
 ): ProjectActionToastLike | null {
   return reportProjectLoadResultImpl(fb, result);
 }
