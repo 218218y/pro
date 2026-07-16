@@ -6,6 +6,8 @@ import { readSource, assertMatchesAll, assertLacksAll } from './_source_bundle.j
 const buildRunnerEntry = readSource('../esm/native/builder/build_runner.ts', import.meta.url);
 const buildRunnerRuntime = readSource('../esm/native/builder/build_runner_runtime.ts', import.meta.url);
 const buildAppContext = readSource('../esm/native/builder/build_app_context.ts', import.meta.url);
+const builderCore = readSource('../esm/native/builder/core.ts', import.meta.url);
+const buildFlowEntry = readSource('../esm/native/builder/build_wardrobe_flow.ts', import.meta.url);
 const buildExecuteEntry = readSource('../esm/native/builder/build_wardrobe_flow_execute.ts', import.meta.url);
 const buildExecuteRuntime = readSource(
   '../esm/native/builder/build_wardrobe_flow_execute_runtime.ts',
@@ -13,6 +15,7 @@ const buildExecuteRuntime = readSource(
 );
 const buildFlowRuntime = readSource('../esm/native/builder/build_wardrobe_flow_runtime.ts', import.meta.url);
 const buildFlowPrepare = readSource('../esm/native/builder/build_wardrobe_flow_prepare.ts', import.meta.url);
+const buildFlowContext = readSource('../esm/native/builder/build_wardrobe_flow_context.ts', import.meta.url);
 const buildRequestRuntime = readSource(
   '../esm/native/runtime/builder_service_access_build_request_runtime.ts',
   import.meta.url
@@ -30,6 +33,13 @@ test('[build-hotpath-runtime-cleanup] hot-path entry seams stay thin while runti
     ],
     'buildRunnerEntry'
   );
+  assertMatchesAll(
+    assert,
+    buildFlowEntry,
+    [/BuildContextLike \| null \| undefined/, /runPreparedBuildWardrobeFlow\(/],
+    'synchronous build flow result'
+  );
+  assertLacksAll(assert, builderCore, [/run:\s*async\b/], 'builder production synchronous callsite');
   assertLacksAll(
     assert,
     buildRunnerEntry,
@@ -100,8 +110,37 @@ test('[build-hotpath-runtime-cleanup] hot-path entry seams stay thin while runti
   assertMatchesAll(
     assert,
     buildAppContext,
-    [/AppContainer/, /resolveBuildStateOrThrow\(/, /resetInternalGridMaps\(/, /reportError\(/],
+    [
+      /AppContainer/,
+      /resolveBuildStateOrThrow\(/,
+      /resetInternalGridMaps\(/,
+      /reportError\(/,
+      /maybeRenderNoMainSketchHost\(/,
+      /finalizeStackSplitUpperShift\(/,
+      /makeHandleCreator\(/,
+    ],
     'prepared build flow App adapter'
+  );
+  assertMatchesAll(
+    assert,
+    buildFlowContext,
+    [
+      /orchestration\.createHandleBindings\(/,
+      /orchestration\.readWardrobeChildCount\(/,
+      /orchestration\.syncNoMainWorkspaceMetrics\(/,
+    ],
+    'prepared build context orchestration ports'
+  );
+  assertLacksAll(
+    assert,
+    buildFlowContext,
+    [
+      /bindEdgeHandleDefaultNoneReader/,
+      /makeHandleCreator/,
+      /getWardrobeGroup/,
+      /syncNoMainSketchWorkspaceMetrics/,
+    ],
+    'prepared build context App-owned bindings'
   );
 
   assertMatchesAll(
@@ -136,10 +175,22 @@ test('[build-hotpath-runtime-cleanup] hot-path entry seams stay thin while runti
       /export function runPreparedBuildWardrobePlan\(/,
       /export function completePreparedBuildWardrobeExecution\(/,
       /buildModulesLoop\(/,
-      /maybeRenderNoMainSketchHost\(/,
+      /orchestration\.renderNoMainSketchHost\(/,
+      /orchestration\.finalizeStackSplitUpperShift\(/,
       /applyPostBuildExtras\(/,
     ],
     'buildExecuteRuntime'
+  );
+  assertLacksAll(
+    assert,
+    buildExecuteRuntime,
+    [
+      /prepared\.App/,
+      /\bApp\b/,
+      /from '\.\/build_no_main_sketch_host\.js'/,
+      /from '\.\/build_stack_split_pipeline\.js'/,
+    ],
+    'prepared build execute App boundary'
   );
 
   assertMatchesAll(

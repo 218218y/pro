@@ -5,7 +5,12 @@ import { pickChestModeUi } from './build_wardrobe_flow_context_ui.js';
 import { resolveBuildWardrobeContextReaders } from './build_wardrobe_flow_context_readers.js';
 import { createBuildStringNormalizer } from './build_string_normalizer.js';
 
-import type { ConfigStateLike, ProjectSavedNotesLike, UnknownRecord } from '../../../types';
+import type {
+  BuilderContentsRenderPolicy,
+  ConfigStateLike,
+  ProjectSavedNotesLike,
+  UnknownRecord,
+} from '../../../types';
 import type { PreparedBuildWardrobeFlow } from './build_wardrobe_flow_prepare.js';
 
 export type PreparedBuildWardrobeContextSetup = {
@@ -88,7 +93,7 @@ export function prepareBuildWardrobeContextSetup(
             chestCommodeMirrorHeightCm: number;
             chestCommodeMirrorWidthCm: number;
             cfgSnapshot: ConfigStateLike | UnknownRecord;
-            renderPolicy: typeof renderPolicy;
+            renderPolicy: BuilderContentsRenderPolicy;
           }) => void
         >(buildChestOnly) || undefined,
       renderPolicy,

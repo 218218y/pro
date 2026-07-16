@@ -27,13 +27,17 @@ type CoalescedBuildFn = UnknownCallable & {
   __lastCompletedBuildSignature?: unknown;
 };
 
-export type SynchronousBuildRun<TResult> = () => TResult;
+export type NonPromiseBuildResult<TResult> = TResult extends PromiseLike<unknown> ? never : TResult;
 
-type CoalescedBuildOpts<TResult> = {
+export type SynchronousBuildRun<TResult> = () => NonPromiseBuildResult<TResult>;
+
+type UnknownBuildRun = () => unknown;
+
+type CoalescedBuildOpts<TRun extends UnknownBuildRun> = {
   context: BuildRunnerRuntimeContext;
   bwFn: CoalescedBuildFn;
   args: readonly unknown[];
-  run: SynchronousBuildRun<TResult>;
+  run: TRun & SynchronousBuildRun<ReturnType<TRun>>;
 };
 
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
@@ -70,7 +74,9 @@ function observeUnexpectedAsyncBuild(context: BuildRunnerRuntimeContext, value: 
  *   run: ()=>unknown,
  * }} opts
  */
-export function runCoalescedBuild<TResult>(opts: CoalescedBuildOpts<TResult>): TResult | undefined {
+export function runCoalescedBuild<TRun extends UnknownBuildRun>(
+  opts: CoalescedBuildOpts<TRun>
+): NonPromiseBuildResult<ReturnType<TRun>> | undefined {
   if (!opts || !opts.context || typeof opts.run !== 'function' || typeof opts.bwFn !== 'function') {
     throw new Error('[builder/build_runner] Invalid arguments');
   }
@@ -84,7 +90,7 @@ export function runCoalescedBuild<TResult>(opts: CoalescedBuildOpts<TResult>): T
   const shadowState = readBuildRunnerShadowAutoUpdateState(context);
   disableBuildRunnerShadowAutoUpdate(context, shadowState);
 
-  let result: TResult | undefined;
+  let result: unknown;
   let runErr: unknown = null;
 
   try {
@@ -101,5 +107,5 @@ export function runCoalescedBuild<TResult>(opts: CoalescedBuildOpts<TResult>): T
   }
 
   if (runErr) throw runErr;
-  return result;
+  return result as NonPromiseBuildResult<ReturnType<TRun>>;
 }

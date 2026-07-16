@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { runCoalescedBuild } from '../esm/native/builder/build_runner.ts';
+import { runCoalescedBuild, type SynchronousBuildRun } from '../esm/native/builder/build_runner.ts';
 import { createBuildRunnerRuntimeContext } from '../esm/native/builder/build_app_context.ts';
 import type { BuildRunnerRuntimeContext } from '../esm/native/builder/build_runner_runtime.ts';
 
@@ -300,14 +300,39 @@ test('build runner runtime: reaction and replay failures remain secondary to bui
 
 test('build runner runtime: Promise-returning build callbacks fail the synchronous invariant', async () => {
   const harness = createRuntimeContext();
+  const unexpectedAsyncRun = (async () => ({ committed: true })) as unknown as SynchronousBuildRun<{
+    committed: boolean;
+  }>;
   const buildWardrobe: any = () =>
     runCoalescedBuild({
       context: harness.context,
       bwFn: buildWardrobe,
       args: [],
-      run: async () => ({ committed: true }),
+      run: unexpectedAsyncRun,
     });
 
   assert.throws(() => buildWardrobe(), /Build callback must be synchronous/);
   await flushMicrotasks();
+});
+
+test('build runner runtime: cast thenable rejection is observed without escaping the invariant boundary', async () => {
+  const harness = createRuntimeContext();
+  const rejectedThenable: PromiseLike<never> = {
+    then(_resolve, reject) {
+      reject?.(new Error('late async rejection'));
+      return rejectedThenable;
+    },
+  };
+  const unexpectedThenableRun = (() => rejectedThenable) as unknown as SynchronousBuildRun<never>;
+  const buildWardrobe: any = () =>
+    runCoalescedBuild({
+      context: harness.context,
+      bwFn: buildWardrobe,
+      args: [],
+      run: unexpectedThenableRun,
+    });
+
+  assert.throws(() => buildWardrobe(), /Build callback must be synchronous/);
+  await flushMicrotasks();
+  assert.deepEqual(harness.diagnostics, ['native/builder/build_runner.asyncBuildRejection']);
 });

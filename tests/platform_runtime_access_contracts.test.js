@@ -238,6 +238,7 @@ const threeTargets = {
   buildWardrobeFlow: [
     read('esm/native/builder/build_wardrobe_flow.ts'),
     read('esm/native/builder/build_wardrobe_flow_runtime.ts'),
+    read('esm/native/builder/build_app_context.ts'),
   ].join('\n'),
   stackSplitPipeline: [
     read('esm/native/builder/build_stack_split_pipeline.ts'),

@@ -1,4 +1,4 @@
-import { guardVoid, queueMicrotaskMaybe } from '../runtime/api.js';
+import { queueMicrotaskMaybe } from '../runtime/api.js';
 import { requireBuilderService, ensureBuilderService } from '../runtime/builder_service_access.js';
 import { getBuildReactionsServiceMaybe } from '../runtime/build_reactions_access.js';
 import { resetInternalGridMaps } from '../runtime/cache_access.js';
@@ -6,14 +6,27 @@ import { captureLocalOpenStateBeforeBuild } from '../runtime/doors_access.js';
 import { reportError } from '../runtime/errors.js';
 import { getPlatformReportError } from '../runtime/platform_access.js';
 import { asRecord } from '../runtime/record.js';
-import { getRenderer } from '../runtime/render_access.js';
+import { getRenderer, getWardrobeGroup } from '../runtime/render_access.js';
+import {
+  maybeRenderNoMainSketchHost,
+  syncNoMainSketchWorkspaceMetrics,
+} from './build_no_main_sketch_host.js';
 import { resolveBuildStateOrThrow } from './build_state_resolver.js';
-import { resetEdgeHandleDefaultNoneCacheMaps } from './edge_handle_default_none_runtime.js';
+import { finalizeStackSplitUpperShift } from './build_stack_split_pipeline.js';
+import { makeHandleTypeResolver } from './doors_state_utils.js';
+import {
+  bindEdgeHandleDefaultNoneReader,
+  resetEdgeHandleDefaultNoneCacheMaps,
+} from './edge_handle_default_none_runtime.js';
+import { makeHandleCreator } from './handle_factory.js';
 import { finalizeBuildBestEffort } from './post_build_finalize.js';
 import { sanitizeBuildDimsAndSyncRuntime } from './state_sanitize_pipeline.js';
 
 import type { AppContainer, RendererLike } from '../../../types';
-import type { BuildFlowOrchestrationContext } from './build_flow_orchestration.js';
+import type {
+  BuildFlowOrchestrationContext,
+  BuildFlowSecondaryFailureContext,
+} from './build_flow_orchestration.js';
 import type {
   BuildRunnerRuntimeContext,
   BuildRunnerShadowMapLike,
@@ -24,8 +37,12 @@ type RendererWithShadowMap = RendererLike & {
   shadowMap?: BuildRunnerShadowMapLike | null;
 };
 
-export function createBuildRunnerRuntimeContext(App: AppContainer): BuildRunnerRuntimeContext {
-  const reportSoftError = (where: string, error: unknown, extra?: BuildRunnerSoftErrorExtra): void => {
+function createBuildSoftErrorReporter(App: AppContainer) {
+  return (
+    where: string,
+    error: unknown,
+    extra?: BuildRunnerSoftErrorExtra | BuildFlowSecondaryFailureContext
+  ): void => {
     try {
       const reportPlatformError = getPlatformReportError(App);
       if (reportPlatformError) reportPlatformError(error, { where, fatal: false, ...extra });
@@ -33,6 +50,10 @@ export function createBuildRunnerRuntimeContext(App: AppContainer): BuildRunnerR
       // Diagnostics are observational and cannot change the build result.
     }
   };
+}
+
+export function createBuildRunnerRuntimeContext(App: AppContainer): BuildRunnerRuntimeContext {
+  const reportSoftError = createBuildSoftErrorReporter(App);
 
   return Object.freeze({
     readShadowMap: () => {
@@ -58,6 +79,8 @@ export function createBuildRunnerRuntimeContext(App: AppContainer): BuildRunnerR
 }
 
 export function createBuildFlowOrchestrationContext(App: AppContainer): BuildFlowOrchestrationContext {
+  const reportSecondaryFailure = createBuildSoftErrorReporter(App);
+
   return Object.freeze({
     resolveState: stateOrOverride => resolveBuildStateOrThrow({ App, stateOrOverride }),
     resetCaches: () => {
@@ -79,17 +102,39 @@ export function createBuildFlowOrchestrationContext(App: AppContainer): BuildFlo
       });
     },
     sanitizeDimensions: (ui, cfg) => sanitizeBuildDimsAndSyncRuntime({ App, ui, cfg }),
+    readWardrobeChildCount: () => {
+      const group = asRecord(getWardrobeGroup(App));
+      if (!group) return -1;
+      return Array.isArray(group.children) ? group.children.length : 0;
+    },
+    createHandleBindings: ({ THREE, addOutlines, cfg, doorState, stackKey }) => ({
+      getHandleType: makeHandleTypeResolver({
+        cfg,
+        doorState,
+        isEdgeHandleDefaultNone: bindEdgeHandleDefaultNoneReader(App, stackKey),
+      }),
+      createHandleMesh: makeHandleCreator({ App, THREE, addOutlines }),
+    }),
+    syncNoMainWorkspaceMetrics: input => syncNoMainSketchWorkspaceMetrics({ App, ...input }),
+    renderNoMainSketchHost: input => maybeRenderNoMainSketchHost({ App, ...input }),
+    finalizeStackSplitUpperShift: input => finalizeStackSplitUpperShift({ App, ...input }),
     reportBuildFailure: (label, error, showToast) => {
       reportError(App, error, { where: label, fatal: true });
-      guardVoid(App, { where: label, op: 'showToast', fatal: true, failFast: true }, () => {
+      try {
         if (typeof showToast === 'function') {
           Reflect.apply(showToast, null, ['אירעה שגיאה בבניית הדגם.', 'error']);
         }
-      });
+      } catch (toastError) {
+        reportSecondaryFailure(`${label}.showToast`, toastError, {
+          operation: 'toast',
+          originalError: error,
+        });
+      }
     },
     reportFinalizeFailure: (label, error) => {
       reportError(App, error, { where: label, op: 'finalizeBuild', fatal: true });
     },
+    reportSecondaryFailure,
     finalizeBestEffort: args => finalizeBuildBestEffort({ App, ...args }),
   });
 }

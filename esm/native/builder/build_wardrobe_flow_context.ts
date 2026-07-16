@@ -1,14 +1,8 @@
-import {
-  makeDoorStateAccessors,
-  makeDoorRemovalChecker,
-  makeHandleTypeResolver,
-} from './doors_state_utils.js';
+import { makeDoorStateAccessors, makeDoorRemovalChecker } from './doors_state_utils.js';
 import {
   isRemoveDoorModeFromSnapshot,
   resolveRemoveDoorsEnabledFromSnapshots,
 } from '../features/door_authoring/api.js';
-import { bindEdgeHandleDefaultNoneReader } from './edge_handle_default_none_runtime.js';
-import { makeHandleCreator } from './handle_factory.js';
 import { resolveBuildFlowPlan } from './build_flow_plan.js';
 import { createBuildFlowContext } from './build_flow_context_factory.js';
 import { prepareBuildWardrobeContextSetup } from './build_wardrobe_flow_context_setup.js';
@@ -18,9 +12,6 @@ import {
   resolveBuildWardrobeCarcassMetrics,
 } from './build_wardrobe_flow_context_carcass.js';
 import { resolveBuildWardrobeHingedContext } from './build_wardrobe_flow_context_hinged.js';
-import { syncNoMainSketchWorkspaceMetrics } from './build_no_main_sketch_host.js';
-import { getWardrobeGroup } from '../runtime/render_access.js';
-import { readRecord, readUnknownArray } from './build_flow_readers.js';
 
 import type { BuildContextLike } from '../../../types';
 import type { BuildFlowPlan } from './build_flow_plan.js';
@@ -33,11 +24,6 @@ export type PreparedBuildWardrobeExecution = {
   splitDzTop: number;
   splitUpperStartIndex: number;
 };
-
-function getWardrobeChildCount(App: unknown): number {
-  const group = readRecord(getWardrobeGroup(App));
-  return group ? readUnknownArray(group.children).length : -1;
-}
 
 export function prepareBuildWardrobeExecution(
   prepared: PreparedBuildWardrobeFlow
@@ -108,12 +94,13 @@ export function prepareBuildWardrobeExecution(
   const isRemoveDoorMode = isRemoveDoorModeFromSnapshot(state.mode);
   const removeDoorsEnabled = resolveRemoveDoorsEnabledFromSnapshots(ui, state.mode);
   const isDoorRemoved = makeDoorRemovalChecker(cfg);
-  const getHandleType = makeHandleTypeResolver({
+  const { getHandleType, createHandleMesh } = prepared.orchestration.createHandleBindings({
+    THREE,
+    addOutlines,
     cfg,
     doorState,
-    isEdgeHandleDefaultNone: bindEdgeHandleDefaultNoneReader(App, 'top'),
+    stackKey: 'top',
   });
-  const createHandleMesh = makeHandleCreator({ App, THREE, addOutlines });
 
   const { splitY, splitDzTop, splitUpperStartIndex } = resolveBuildWardrobeSplitMetrics({
     prepared,
@@ -139,7 +126,7 @@ export function prepareBuildWardrobeExecution(
     addOutlinesMesh,
   });
   const effectiveSplitUpperStartIndex = plan.stackSplitUnifiedFrame
-    ? getWardrobeChildCount(App)
+    ? prepared.orchestration.readWardrobeChildCount()
     : splitUpperStartIndex;
   const topStartY = plan.stackSplitUnifiedFrame ? 0 : startY;
   const topCabinetBodyHeight = plan.stackSplitUnifiedFrame ? plan.H : cabinetBodyHeight;
@@ -209,8 +196,7 @@ export function prepareBuildWardrobeExecution(
     removeDoorsEnabled,
   });
 
-  syncNoMainSketchWorkspaceMetrics({
-    App,
+  prepared.orchestration.syncNoMainWorkspaceMetrics({
     enabled: plan.noMainWardrobe,
     cfg,
     totalW: plan.totalW,

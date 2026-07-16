@@ -26,6 +26,44 @@ import {
   readThreeLike,
 } from './build_flow_readers.js';
 
+export type NoMainSketchWorkspaceMetricsInput = {
+  enabled: boolean;
+  cfg: UnknownRecord | null | undefined;
+  totalW: number;
+  H: number;
+  woodThick: number;
+  internalDepth: number;
+  internalZ: number;
+};
+
+export type NoMainSketchRenderInput = {
+  THREE: unknown;
+  cfg: UnknownRecord | null | undefined;
+  ui: UnknownRecord | null | undefined;
+  totalW: number;
+  H: number;
+  D: number;
+  woodThick: number;
+  shelfThick: number;
+  depthReduction: number;
+  internalDepth: number;
+  internalZ: number;
+  bodyMat: unknown;
+  legMat: unknown;
+  createBoard: unknown;
+  getPartMaterial: unknown;
+  getPartColorValue: unknown;
+  createDoorVisual: unknown;
+  createInternalDrawerBox: unknown;
+  addOutlines: unknown;
+  addHangingClothes: unknown;
+  addFoldedClothes: unknown;
+  addRealisticHanger: unknown;
+  isInternalDrawersEnabled: boolean;
+  showHangerEnabled: boolean;
+  showContentsEnabled: boolean;
+};
+
 function isFreePlacementSketchBox(value: unknown): value is BuilderSketchBoxLike {
   const rec = readRecord(value);
   return !!rec && rec.freePlacement === true;
@@ -145,16 +183,9 @@ function estimateNoMainWorkspaceWidthM(config: ModuleConfigLike | null | undefin
   return Math.max(0, maxX - minX + NO_MAIN_SKETCH_DIMENSIONS.workspacePaddingM);
 }
 
-export function syncNoMainSketchWorkspaceMetrics(args: {
-  App: AppContainer;
-  enabled: boolean;
-  cfg: UnknownRecord | null | undefined;
-  totalW: number;
-  H: number;
-  woodThick: number;
-  internalDepth: number;
-  internalZ: number;
-}): void {
+export function syncNoMainSketchWorkspaceMetrics(
+  args: NoMainSketchWorkspaceMetricsInput & { App: AppContainer }
+): void {
   try {
     const cache = getCacheBag(args.App);
     if (!args.enabled) {
@@ -191,34 +222,7 @@ export function syncNoMainSketchWorkspaceMetrics(args: {
   }
 }
 
-export function maybeRenderNoMainSketchHost(args: {
-  App: AppContainer;
-  THREE: unknown;
-  cfg: UnknownRecord | null | undefined;
-  ui: UnknownRecord | null | undefined;
-  totalW: number;
-  H: number;
-  D: number;
-  woodThick: number;
-  shelfThick: number;
-  depthReduction: number;
-  internalDepth: number;
-  internalZ: number;
-  bodyMat: unknown;
-  legMat: unknown;
-  createBoard: unknown;
-  getPartMaterial: unknown;
-  getPartColorValue: unknown;
-  createDoorVisual: unknown;
-  createInternalDrawerBox: unknown;
-  addOutlines: unknown;
-  addHangingClothes: unknown;
-  addFoldedClothes: unknown;
-  addRealisticHanger: unknown;
-  isInternalDrawersEnabled: boolean;
-  showHangerEnabled: boolean;
-  showContentsEnabled: boolean;
-}): boolean {
+export function maybeRenderNoMainSketchHost(args: NoMainSketchRenderInput & { App: AppContainer }): boolean {
   const cfg = readRecord(args.cfg);
   const list = cfg ? readModulesConfigurationListFromConfigSnapshot(cfg, 'modulesConfiguration') : [];
   const moduleCfg = createNoMainSketchModuleConfig(list[0]);

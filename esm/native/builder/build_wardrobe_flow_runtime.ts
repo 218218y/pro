@@ -18,6 +18,42 @@ function reportBuildWardrobeFailure(prepared: PreparedBuildWardrobeFlow, error: 
   prepared.orchestration.reportBuildFailure(prepared.label, error, prepared.deps.showToast);
 }
 
+function reportSecondaryFailureSafely(
+  prepared: PreparedBuildWardrobeFlow,
+  error: unknown,
+  operation: 'build-failure-report' | 'finalize-failure-report',
+  originalError: unknown
+): void {
+  try {
+    prepared.orchestration.reportSecondaryFailure(prepared.label, error, {
+      operation,
+      originalError,
+    });
+  } catch {
+    // Secondary diagnostics cannot replace the authoritative build/finalize result.
+  }
+}
+
+function reportBuildFailureSafely(
+  prepared: PreparedBuildWardrobeFlow,
+  error: unknown,
+  reportFailure: NonNullable<BuildWardrobeRuntimeOptions['reportBuildFailure']>
+): void {
+  try {
+    reportFailure(prepared, error);
+  } catch (reportingError) {
+    reportSecondaryFailureSafely(prepared, reportingError, 'build-failure-report', error);
+  }
+}
+
+function reportFinalizeFailureSafely(prepared: PreparedBuildWardrobeFlow, error: unknown): void {
+  try {
+    prepared.orchestration.reportFinalizeFailure(prepared.label, error);
+  } catch (reportingError) {
+    reportSecondaryFailureSafely(prepared, reportingError, 'finalize-failure-report', error);
+  }
+}
+
 function finalizePreparedBuildWardrobeFlow(
   prepared: PreparedBuildWardrobeFlow,
   buildCtx: BuildContextLike | null,
@@ -42,8 +78,6 @@ export function runPreparedBuildWardrobeFlow(
   prepared: PreparedBuildWardrobeFlow,
   options: BuildWardrobeRuntimeOptions
 ): BuildContextLike | null {
-  const { label, orchestration } = prepared;
-
   let buildCtx: BuildContextLike | null = null;
   let buildError: unknown = null;
   let finalizeError: unknown = null;
@@ -53,13 +87,13 @@ export function runPreparedBuildWardrobeFlow(
   } catch (error) {
     buildError = error;
     const reportFailure = options.reportBuildFailure || reportBuildWardrobeFailure;
-    reportFailure(prepared, error);
+    reportBuildFailureSafely(prepared, error, reportFailure);
   } finally {
     try {
       finalizePreparedBuildWardrobeFlow(prepared, buildCtx, options);
     } catch (error) {
       finalizeError = error;
-      orchestration.reportFinalizeFailure(label, error);
+      reportFinalizeFailureSafely(prepared, error);
     }
   }
 

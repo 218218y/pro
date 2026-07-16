@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { runPreparedBuildWardrobeFlow } from '../esm/native/builder/build_wardrobe_flow_runtime.ts';
+import { createBuildFlowOrchestrationContext } from '../esm/native/builder/build_app_context.ts';
 import { withSuppressedConsole } from './_console_silence.ts';
 
 function createPrepared() {
@@ -15,6 +16,8 @@ function createPrepared() {
         orchestrationCalls.push(`report:${String((error as Error).message)}`),
       reportFinalizeFailure: (_label: string, error: unknown) =>
         orchestrationCalls.push(`finalize-report:${String((error as Error).message)}`),
+      reportSecondaryFailure: (_label: string, error: unknown, context: { operation: string }) =>
+        orchestrationCalls.push(`secondary:${context.operation}:${String((error as Error).message)}`),
       finalizeBestEffort: () => orchestrationCalls.push('bestEffort'),
     },
     label: 'native/builder/test',
@@ -98,6 +101,70 @@ test('build wardrobe flow runtime: build failure still runs best-effort finalize
   assert.deepEqual(calls, ['report:boom', 'bestEffort']);
 });
 
+test('build wardrobe flow runtime: reporter failure cannot replace the original build error', () => {
+  const prepared = createPrepared();
+  const originalError = new Error('original-error');
+
+  assert.throws(
+    () =>
+      runPreparedBuildWardrobeFlow(prepared, {
+        execute: () => {
+          throw originalError;
+        },
+        reportBuildFailure: () => {
+          throw new Error('reporter-error');
+        },
+        finalizeBuildBestEffort: () => {},
+      }),
+    error => {
+      assert.equal(error, originalError);
+      return true;
+    }
+  );
+  assert.deepEqual(prepared.orchestrationCalls, ['secondary:build-failure-report:reporter-error']);
+});
+
+test('build wardrobe flow runtime: fail-fast toast failure stays secondary to the build error', () => {
+  const reports: Array<{ error: unknown; context: any }> = [];
+  const App: any = {
+    services: {
+      platform: {
+        reportError(error: unknown, context: unknown) {
+          reports.push({ error, context });
+        },
+      },
+    },
+    store: {
+      getState: () => ({ runtime: { failFast: true } }),
+    },
+  };
+  const prepared = createPrepared();
+  prepared.App = App;
+  prepared.orchestration = createBuildFlowOrchestrationContext(App);
+  prepared.deps.showToast = () => {
+    throw new Error('toast-error');
+  };
+  const originalError = new Error('original-error');
+
+  assert.throws(
+    () =>
+      runPreparedBuildWardrobeFlow(prepared, {
+        execute: () => {
+          throw originalError;
+        },
+        finalizeBuildBestEffort: () => {},
+      }),
+    error => {
+      assert.equal(error, originalError);
+      return true;
+    }
+  );
+  assert.equal(reports[0]?.error, originalError);
+  assert.equal((reports[1]?.error as Error)?.message, 'toast-error');
+  assert.equal(reports[1]?.context?.operation, 'toast');
+  assert.equal(reports[1]?.context?.originalError, originalError);
+});
+
 test('build wardrobe flow runtime: finalize failure is surfaced after a successful execute', async () => {
   const prepared = createPrepared();
   const buildCtx = { id: 'ctx' } as any;
@@ -115,4 +182,29 @@ test('build wardrobe flow runtime: finalize failure is surfaced after a successf
       /finalize failed/
     );
   });
+});
+
+test('build wardrobe flow runtime: finalize reporter failure cannot replace the finalize error', () => {
+  const prepared = createPrepared();
+  const finalizeError = new Error('finalize-error');
+  prepared.orchestration.reportFinalizeFailure = () => {
+    throw new Error('finalize-reporter-error');
+  };
+
+  assert.throws(
+    () =>
+      runPreparedBuildWardrobeFlow(prepared, {
+        execute: () => ({ id: 'ctx' }) as any,
+        finalizeBuild: () => {
+          throw finalizeError;
+        },
+      }),
+    error => {
+      assert.equal(error, finalizeError);
+      return true;
+    }
+  );
+  assert.deepEqual(prepared.orchestrationCalls, [
+    'secondary:finalize-failure-report:finalize-reporter-error',
+  ]);
 });

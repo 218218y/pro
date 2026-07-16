@@ -6,6 +6,7 @@ import type {
   BuilderContentsRenderPolicy,
   BuilderCreateDoorVisualFn,
   BuilderDepsRootLike,
+  BuilderOutlineFn,
   BuildStateResolvedLike,
 } from '../../../types';
 import type { BuildFlowOrchestrationContext } from './build_flow_orchestration.js';
@@ -17,6 +18,11 @@ export type BuildWardrobeFlowArgs = {
   stateOrOverride: unknown;
   label?: string;
 };
+
+type PreparedBuildRenderPolicy = BuilderContentsRenderPolicy &
+  Readonly<{
+    addOutlines: BuilderOutlineFn;
+  }>;
 
 export type PreparedBuildWardrobeFlow = {
   App: AppContainer;
@@ -30,7 +36,7 @@ export type PreparedBuildWardrobeFlow = {
   doorsCount: number;
   chestDrawersCount: number;
   sketchMode: boolean;
-  renderPolicy: BuilderContentsRenderPolicy;
+  renderPolicy: PreparedBuildRenderPolicy;
   createDoorVisual: BuilderCreateDoorVisualFn;
 };
 
@@ -60,7 +66,7 @@ export function prepareBuildWardrobeFlow(
   if (typeof addOutlines !== 'function') {
     throw new Error('[WardrobePro] materials.createOutlineBinding must return an outline function');
   }
-  const renderPolicy: BuilderContentsRenderPolicy = Object.freeze({ sketchMode, addOutlines });
+  const renderPolicy: PreparedBuildRenderPolicy = Object.freeze({ sketchMode, addOutlines });
 
   return {
     App,
