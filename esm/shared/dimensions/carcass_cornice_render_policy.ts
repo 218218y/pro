@@ -1,12 +1,16 @@
 import { MATERIAL_THICKNESS_POLICY } from './material_thickness_policy.js';
 import { meters } from './units.js';
 
+export const CARCASS_CORNICE_ANGLE_POLICY = Object.freeze({
+  thetaClampRad: 0.01,
+});
+
 export const CARCASS_CORNICE_COMMON_POLICY = Object.freeze({
   epsilonM: meters(0.000001),
   yLiftM: meters(0.0006),
   minSegmentLengthM: meters(0.02),
   minBoxDimensionM: meters(0.001),
-  thetaClampM: meters(0.01),
+  thetaClampM: CARCASS_CORNICE_ANGLE_POLICY.thetaClampRad,
 });
 
 export const CARCASS_CORNICE_WAVE_POLICY = Object.freeze({

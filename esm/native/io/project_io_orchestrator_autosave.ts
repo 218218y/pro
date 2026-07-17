@@ -1,6 +1,7 @@
 import type { AppContainer, AutosaveRefreshResult, AutosaveSuspensionLike } from '../../../types/index.js';
 
 import {
+  createAutosaveOwnerDiagnosticError,
   forceAutosaveNowResultViaService,
   suspendAutosaveViaServiceOrThrow,
 } from '../runtime/autosave_access.js';
@@ -33,7 +34,7 @@ export function refreshProjectIoAutosaveAfterLoad(args: ProjectIoAutosaveRefresh
       reportNonFatal('project.load.refreshAutosave.owner-threw', error, 6000);
     });
   } catch (err) {
-    reportNonFatal('project.load.refreshAutosave.owner-threw', err, 6000);
+    reportNonFatal('project.load.refreshAutosave.owner-threw', createAutosaveOwnerDiagnosticError(err), 6000);
     return { ok: false, reason: 'owner-rejected', detail: 'owner-threw' };
   }
 }

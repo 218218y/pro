@@ -34,6 +34,7 @@ import {
 import { CHEST_STRUCTURAL_DIMENSIONS as CHEST_STRUCTURAL_DIMENSIONS_OWNER } from './dimensions/chest_structural_policy.js';
 import { MATERIAL_THICKNESS_POLICY } from './dimensions/material_thickness_policy.js';
 import { CARCASS_CORNICE_RENDER_POLICY } from './dimensions/carcass_cornice_render_policy.js';
+import { CHEST_MODE_DIMENSIONS as CHEST_MODE_DIMENSIONS_OWNER } from './dimensions/chest_mode_policy.js';
 import {
   STACK_SPLIT_LOWER_DEPTH_MAX,
   STACK_SPLIT_LOWER_DEPTH_MIN,
@@ -82,6 +83,7 @@ const BASE_LEG_LAYOUT_DIMENSIONS = legacyDimensionNumberView(BASE_LEG_LAYOUT_POL
 const CHEST_STRUCTURAL_DIMENSIONS = legacyDimensionNumberView(CHEST_STRUCTURAL_DIMENSIONS_OWNER);
 const MATERIAL_DIMENSIONS = legacyDimensionNumberView(MATERIAL_THICKNESS_POLICY);
 const CARCASS_CORNICE_DIMENSIONS = legacyDimensionNumberView(CARCASS_CORNICE_RENDER_POLICY);
+const CHEST_MODE_DIMENSIONS = legacyDimensionNumberView(CHEST_MODE_DIMENSIONS_OWNER);
 
 const WARDROBE_DEFAULTS = Object.freeze({
   ...WARDROBE_DEFAULTS_OWNER,
@@ -251,7 +253,7 @@ export const CARCASS_BASE_DIMENSIONS = Object.freeze({
   chest: CHEST_STRUCTURAL_DIMENSIONS,
 });
 
-export { BASE_LEG_DIMENSIONS, CARCASS_CORNICE_DIMENSIONS, MATERIAL_DIMENSIONS };
+export { BASE_LEG_DIMENSIONS, CARCASS_CORNICE_DIMENSIONS, CHEST_MODE_DIMENSIONS, MATERIAL_DIMENSIONS };
 
 export const DOOR_SYSTEM_DIMENSIONS = Object.freeze({
   hinged: Object.freeze({
@@ -1418,50 +1420,6 @@ export const CORNER_CONNECTOR_INTERIOR_DIMENSIONS = Object.freeze({
     pentagonSafeDepthMinM: 0.22,
     pentagonSafeDepthMaxM: 0.34,
     pentagonSafeDepthEndClearanceM: 0.12,
-  }),
-});
-
-export const CHEST_MODE_DIMENSIONS = Object.freeze({
-  activeDefaults: Object.freeze({
-    doorsCount: 0,
-    widthCm: 50,
-    heightCm: 50,
-    depthCm: 40,
-    drawersCount: WARDROBE_LIMITS.chestDrawers.min,
-    baseType: 'legs',
-  }),
-  commode: Object.freeze({
-    defaultMirrorHeightCm: 70,
-    minMirrorHeightCm: 30,
-    maxMirrorHeightCm: 180,
-    minMirrorWidthCm: WARDROBE_LIMITS.width.chestMinCm,
-    maxMirrorWidthCm: WARDROBE_LIMITS.width.maxCm,
-    backPanelThicknessM: 0.018,
-    mirrorThicknessM: 0.003,
-    mirrorInsetM: 0.03,
-    backPanelYOffsetM: 0.002,
-    mirrorSurfaceLiftM: 0.0015,
-  }),
-  drawerBox: Object.freeze({
-    panelThicknessM: 0.015,
-    accentZOffsetM: 0.0008,
-    accentMinWidthM: 0.12,
-    accentMinHeightM: 0.08,
-    accentThicknessMinM: 0.0022,
-    accentThicknessMaxM: 0.004,
-    accentThicknessRatio: 0.035,
-    accentStripDepthM: 0.001,
-    accentRenderOrder: 2,
-    handleWidthM: 0.12,
-    handleHeightM: 0.02,
-    handleDepthM: 0.015,
-    handleFrontOffsetM: 0.005,
-  }),
-  dimensionGuideSideOffsetM: 0.15,
-  dimensionGuideTopOffsetM: 0.1,
-  dimensionGuideTextScale: Object.freeze({
-    total: Object.freeze({ scale: 0.66, styleKey: 'compactTotal' }),
-    segment: 0.6,
   }),
 });
 

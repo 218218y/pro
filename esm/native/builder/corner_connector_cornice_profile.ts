@@ -1,4 +1,7 @@
-import { CARCASS_CORNICE_RENDER_POLICY } from '../../shared/dimensions/carcass_cornice_render_policy.js';
+import {
+  CARCASS_CORNICE_ANGLE_POLICY,
+  CARCASS_CORNICE_RENDER_POLICY,
+} from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import type {
   CornerConnectorCorniceCtx,
   CornerConnectorCorniceHelpers,
@@ -195,7 +198,8 @@ export function applyCornerConnectorProfileCornice(args: {
 
     const clamp01 = (v: number) => Math.max(-1, Math.min(1, v));
     const safeCotHalf = (theta: number) => {
-      const t = Math.max(corniceCommon.thetaClampM, Math.min(Math.PI - corniceCommon.thetaClampM, theta));
+      const thetaClampRad = CARCASS_CORNICE_ANGLE_POLICY.thetaClampRad;
+      const t = Math.max(thetaClampRad, Math.min(Math.PI - thetaClampRad, theta));
       const h = Math.tan(t / 2);
       return h !== 0 ? 1 / h : 0;
     };

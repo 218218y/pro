@@ -1,6 +1,9 @@
 // Builder core carcass cornice assembly.
 
-import { CARCASS_CORNICE_RENDER_POLICY } from '../../shared/dimensions/carcass_cornice_render_policy.js';
+import {
+  CARCASS_CORNICE_ANGLE_POLICY,
+  CARCASS_CORNICE_RENDER_POLICY,
+} from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import type { MutableRecord } from './core_pure_shared.js';
 import { CARCASS_BACK_INSET_Z, type PreparedCarcassInput } from './core_carcass_shared.js';
 import { resolveHexCellGeometry, type HexCellGeometry } from '../features/hex_cell/index.js';
@@ -11,6 +14,7 @@ const CORNICE_PROFILE = CARCASS_CORNICE_RENDER_POLICY.profile;
 
 const CORNICE_EPS = CORNICE_COMMON.epsilonM;
 const CORNICE_Y_EPS = CORNICE_COMMON.yLiftM;
+const CORNICE_THETA_CLAMP_RAD = CARCASS_CORNICE_ANGLE_POLICY.thetaClampRad;
 
 const WAVE_MAX_HEIGHT = CORNICE_WAVE.maxHeightM;
 const WAVE_CYCLES = CORNICE_WAVE.cycles;
@@ -479,7 +483,7 @@ function miterExtensionForPathJoint(
   const bCoeffX = -bDir.x;
   const bCoeffZ = -bDir.z;
   const det = aDir.x * bCoeffZ - aDir.z * bCoeffX;
-  if (!Number.isFinite(det) || Math.abs(det) <= CORNICE_COMMON.thetaClampM * CORNICE_COMMON.thetaClampM) {
+  if (!Number.isFinite(det) || Math.abs(det) <= CORNICE_THETA_CLAMP_RAD * CORNICE_THETA_CLAMP_RAD) {
     const mutualTrim = mutualPathJointMiterTrim(a, b, Math.min(aOverhang, bOverhang));
     return { aEnd: mutualTrim, bStart: mutualTrim };
   }
@@ -499,9 +503,9 @@ function miterTrimForPathJoint(
   profileOverhang: number
 ): number {
   const angle = pathTurnAngle(a, b);
-  if (angle <= CORNICE_COMMON.thetaClampM) return 0;
+  if (angle <= CORNICE_THETA_CLAMP_RAD) return 0;
   const trim =
-    Math.max(0, profileOverhang) * Math.tan(Math.min(Math.PI - CORNICE_COMMON.thetaClampM, angle) / 2);
+    Math.max(0, profileOverhang) * Math.tan(Math.min(Math.PI - CORNICE_THETA_CLAMP_RAD, angle) / 2);
   return Number.isFinite(trim) ? trim + PROFILE_SEAM_EPS : 0;
 }
 

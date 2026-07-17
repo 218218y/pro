@@ -4,7 +4,7 @@
 // Best-effort side effects are preserved (render/update/finalize are wrapped)
 // to avoid breaking UX during chest-only edits.
 
-import { CHEST_MODE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CHEST_MODE_DIMENSIONS } from '../../shared/dimensions/chest_mode_policy.js';
 import {
   getDefaultBaseLegWidthCm,
   normalizeBaseLegHeightCm,

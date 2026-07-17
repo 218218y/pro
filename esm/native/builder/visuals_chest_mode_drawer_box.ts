@@ -1,4 +1,4 @@
-import { CHEST_MODE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CHEST_MODE_DIMENSIONS } from '../../shared/dimensions/chest_mode_policy.js';
 import type { AppContainer, BuilderCreateInternalDrawerBoxFn } from '../../../types/index.js';
 
 import { ensureChestModeApp, ensureChestModeTHREE } from './visuals_chest_mode_runtime.js';

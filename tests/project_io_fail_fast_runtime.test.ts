@@ -5,7 +5,6 @@ import { createProjectIoOrchestrator } from '../esm/native/io/project_io_orchest
 import { refreshProjectIoAutosaveAfterLoad } from '../esm/native/io/project_io_orchestrator_autosave.ts';
 import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../esm/shared/project_schema_constants.ts';
 import { withSuppressedConsole } from './_console_silence.ts';
-import type { AutosaveRefreshResult } from '../types/index.ts';
 
 type ProjectIoTestApp = {
   actions: Record<string, unknown>;
@@ -28,7 +27,7 @@ function createProjectIoApp(overrides?: {
   onHistoryReset?: () => void;
   onAutosaveCommit?: () => void;
   autosaveCommitError?: Error;
-  autosaveRefreshResult?: AutosaveRefreshResult;
+  autosaveRefreshResult?: unknown;
   autosaveRefreshError?: Error;
   onStoreRead?: () => void;
 }) {
@@ -771,8 +770,9 @@ test('project io load keeps its public warning stable while diagnostics include 
   );
 });
 
-test('project io load reports the original autosave owner exception nonfatally without replacing success', () => {
-  const ownerError = new Error('autosave owner exploded');
+test('project io load reports a sanitized autosave owner exception nonfatally without replacing success', () => {
+  const sensitiveValue = 'autosave-key:{"projectPayload":"private"}';
+  const ownerError = new Error(sensitiveValue);
   const harness = createProjectIoApp({ autosaveRefreshError: ownerError });
 
   const result = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
@@ -790,15 +790,47 @@ test('project io load reports the original autosave owner exception nonfatally w
   assert.equal(
     harness.reports.some(
       report =>
-        report.op === 'project.load.refreshAutosave.owner-threw' && report.message === ownerError.message
+        report.op === 'project.load.refreshAutosave.owner-threw' &&
+        report.message === 'Autosave owner threw: Error'
     ),
     true
+  );
+  assert.equal(
+    harness.reports.some(report => report.message.includes(sensitiveValue)),
+    false
   );
   assert.equal(
     harness.reports.some(
       report =>
         report.op === 'project.load.refreshAutosave.warning.owner-rejected.owner-threw' &&
         report.message === 'Project load autosave refresh failed: owner-rejected.owner-threw'
+    ),
+    true
+  );
+});
+
+test('project io load keeps committed success with warning for a malformed autosave owner result', () => {
+  const harness = createProjectIoApp({
+    autosaveRefreshResult: { ok: true, reason: 'storage-write-failed' },
+  });
+
+  const result = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.deepEqual(result, {
+    ok: true,
+    restoreGen: 1,
+    warnings: [
+      {
+        effect: 'autosave-refresh',
+        message: 'Project loaded, but autosave refresh did not complete.',
+      },
+    ],
+  });
+  assert.equal(
+    harness.reports.some(
+      report =>
+        report.op === 'project.load.refreshAutosave.warning.owner-rejected.owner-invalid-result' &&
+        report.message === 'Project load autosave refresh failed: owner-rejected.owner-invalid-result'
     ),
     true
   );

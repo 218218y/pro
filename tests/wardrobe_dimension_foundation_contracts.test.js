@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 271, statements: 271 }),
+  'static-import': Object.freeze({ importers: 269, statements: 269 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 1, statements: 1 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 273, statements: 274 }),
+  total: Object.freeze({ importers: 271, statements: 272 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -238,11 +238,186 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/shared/dimensions/carcass_cornice_render_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
 });
+const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
+  'esm/native/builder/core_carcass_shared.ts',
+  'esm/native/builder/core_doors_compute.ts',
+  'esm/native/builder/core_layout_compute.ts',
+  'esm/native/builder/core_storage_compute_external_drawers.ts',
+  'esm/native/builder/corner_wing_cell_interiors_shelves.ts',
+  'esm/native/builder/post_build_sketch_door_cuts_rebuild.ts',
+  'esm/native/builder/render_interior_custom_ops.ts',
+  'esm/native/builder/render_interior_custom_ops_shelves.ts',
+  'esm/native/builder/render_interior_preset_ops.ts',
+  'esm/native/builder/render_interior_rod_clearance.ts',
+  'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
+  'esm/native/builder/render_interior_sketch_layout_geometry.ts',
+  'esm/native/builder/render_interior_sketch_ops_input.ts',
+  'esm/native/builder/render_interior_sketch_support_shelves.ts',
+  'esm/native/builder/render_preview_interior_hover_apply.ts',
+  'esm/native/builder/render_preview_sketch_pipeline_shared.ts',
+  'esm/native/features/sketch_internal_drawer_cassette.ts',
+  'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
+  'esm/native/services/canvas_picking_hover_preview_modes_divider.ts',
+  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
+  'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
+  'esm/native/services/canvas_picking_manual_layout_free_box_content.ts',
+  'esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts',
+  'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts',
+  'esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts',
+  'esm/native/services/canvas_picking_manual_layout_sketch_tools.ts',
+  'esm/native/services/canvas_picking_manual_layout_vertical_blockers.ts',
+  'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts',
+  'esm/native/services/canvas_picking_selector_internal_metrics.ts',
+  'esm/native/services/canvas_picking_sketch_box_content_commit_doors.ts',
+  'esm/native/services/canvas_picking_sketch_box_content_commit_drawers.ts',
+  'esm/native/services/canvas_picking_sketch_box_door_preview.ts',
+  'esm/native/services/canvas_picking_sketch_box_vertical_content_blockers.ts',
+  'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts',
+  'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
+  'esm/native/services/canvas_picking_sketch_free_box_content_preview_doors.ts',
+  'esm/native/services/canvas_picking_sketch_free_box_content_preview_stack.ts',
+  'esm/native/services/canvas_picking_sketch_free_box_content_preview_vertical.ts',
+  'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
+  'esm/native/services/canvas_picking_sketch_free_box_hover_finalize.ts',
+  'esm/native/services/canvas_picking_sketch_free_box_hover_scan.ts',
+  'esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts',
+  'esm/native/services/canvas_picking_sketch_free_surface_preview_divider.ts',
+  'esm/native/services/canvas_picking_sketch_free_surface_preview_placement.ts',
+  'esm/native/services/canvas_picking_sketch_free_surface_preview_placement_remove.ts',
+  'esm/native/services/canvas_picking_sketch_free_surface_preview_target_candidate.ts',
+  'esm/native/services/canvas_picking_sketch_module_box_blockers.ts',
+  'esm/native/services/canvas_picking_sketch_module_vertical_content_collision.ts',
+  'esm/native/services/canvas_picking_sketch_module_vertical_content_preview.ts',
+  'esm/native/services/canvas_picking_sketch_neighbor_measurements.ts',
+  'esm/native/services/canvas_picking_split_hover_preview_line.ts',
+]);
+const APPROVED_MATERIAL_LEGACY_DEPENDENCIES = Object.freeze(
+  Object.fromEntries(
+    APPROVED_MATERIAL_LEGACY_IMPORTERS.map(file => [file, ['MATERIAL_DIMENSIONS@static-import']])
+  )
+);
+const APPROVED_MATERIAL_GLASS_SHELF_ONLY_IMPORTERS = new Set([
+  'esm/native/builder/corner_wing_cell_interiors_shelves.ts',
+  'esm/native/builder/render_interior_custom_ops_shelves.ts',
+  'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
+  'esm/native/builder/render_interior_sketch_support_shelves.ts',
+  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
+  'esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts',
+  'esm/native/services/canvas_picking_sketch_box_vertical_content_blockers.ts',
+  'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts',
+  'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
+  'esm/native/services/canvas_picking_sketch_module_vertical_content_preview.ts',
+  'esm/native/services/canvas_picking_sketch_neighbor_measurements.ts',
+]);
+const APPROVED_MATERIAL_WOOD_AND_GLASS_IMPORTERS = new Set([
+  'esm/native/builder/render_preview_interior_hover_apply.ts',
+  'esm/native/services/canvas_picking_manual_layout_vertical_blockers.ts',
+  'esm/native/services/canvas_picking_sketch_box_content_commit_drawers.ts',
+  'esm/native/services/canvas_picking_sketch_module_vertical_content_collision.ts',
+]);
+const APPROVED_MATERIAL_LEGACY_FIELD_USAGE = Object.freeze(
+  Object.fromEntries(
+    APPROVED_MATERIAL_LEGACY_IMPORTERS.map(file => [
+      file,
+      APPROVED_MATERIAL_WOOD_AND_GLASS_IMPORTERS.has(file)
+        ? ['glassShelf', 'glassShelf.thicknessM', 'wood', 'wood.thicknessM']
+        : APPROVED_MATERIAL_GLASS_SHELF_ONLY_IMPORTERS.has(file)
+          ? ['glassShelf', 'glassShelf.thicknessM']
+          : ['wood', 'wood.thicknessM'],
+    ])
+  )
+);
 const APPROVED_CARCASS_CORNICE_OWNER_IMPORTS = Object.freeze({
-  'esm/native/builder/core_carcass_cornice.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
-  'esm/native/builder/corner_connector_cornice_profile.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
+  'esm/native/builder/core_carcass_cornice.ts': Object.freeze([
+    'CARCASS_CORNICE_ANGLE_POLICY',
+    'CARCASS_CORNICE_RENDER_POLICY',
+  ]),
+  'esm/native/builder/corner_connector_cornice_profile.ts': Object.freeze([
+    'CARCASS_CORNICE_ANGLE_POLICY',
+    'CARCASS_CORNICE_RENDER_POLICY',
+  ]),
   'esm/native/builder/corner_connector_cornice_wave.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
+});
+const APPROVED_CORNICE_THETA_CLAMP_M_USAGE = Object.freeze({
+  'esm/native/builder/corner_wing_cornice_path.ts': Object.freeze(['thetaClampM']),
+});
+const APPROVED_CHEST_MODE_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/chest_mode_pipeline.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
+  'esm/native/builder/visuals_chest_mode_drawer_box.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
+});
+const APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES = Object.freeze({
+  'esm/native/builder/render_drawer_ops_internal.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
+  'esm/native/builder/visuals_chest_mode_build.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
+  'esm/native/builder/visuals_chest_mode_inputs.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
+  'esm/native/runtime/api.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
+  'esm/native/runtime/default_state.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
+  'esm/native/services/api.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
+  'esm/native/services/api_runtime_base_surface.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
+  'esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts': [
+    'CHEST_MODE_DIMENSIONS@static-import',
+  ],
+  'esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
+  'esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
+});
+const APPROVED_CHEST_MODE_LEGACY_FIELD_USAGE = Object.freeze({
+  'esm/native/builder/render_drawer_ops_internal.ts': [
+    'drawerBox',
+    'drawerBox.accentStripDepthM',
+    'drawerBox.accentZOffsetM',
+  ],
+  'esm/native/builder/visuals_chest_mode_build.ts': [
+    'commode',
+    'commode.backPanelThicknessM',
+    'commode.backPanelYOffsetM',
+    'commode.minMirrorHeightCm',
+    'commode.minMirrorWidthCm',
+    'commode.mirrorInsetM',
+    'commode.mirrorSurfaceLiftM',
+    'commode.mirrorThicknessM',
+    'dimensionGuideSideOffsetM',
+    'dimensionGuideTextScale',
+    'dimensionGuideTextScale.segment',
+    'dimensionGuideTextScale.total',
+    'dimensionGuideTopOffsetM',
+  ],
+  'esm/native/builder/visuals_chest_mode_inputs.ts': [
+    'commode',
+    'commode.defaultMirrorHeightCm',
+    'commode.maxMirrorHeightCm',
+    'commode.maxMirrorWidthCm',
+    'commode.minMirrorHeightCm',
+    'commode.minMirrorWidthCm',
+  ],
+  'esm/native/runtime/default_state.ts': [
+    'activeDefaults',
+    'activeDefaults.widthCm',
+    'commode',
+    'commode.defaultMirrorHeightCm',
+  ],
+  'esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts': [
+    'activeDefaults',
+    'activeDefaults.baseType',
+    'activeDefaults.depthCm',
+    'activeDefaults.doorsCount',
+    'activeDefaults.drawersCount',
+    'activeDefaults.heightCm',
+    'activeDefaults.widthCm',
+    'commode',
+    'commode.defaultMirrorHeightCm',
+  ],
+  'esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts': [
+    'commode',
+    'commode.maxMirrorHeightCm',
+    'commode.maxMirrorWidthCm',
+    'commode.minMirrorHeightCm',
+    'commode.minMirrorWidthCm',
+  ],
+  'esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts': [
+    'commode',
+    'commode.defaultMirrorHeightCm',
+  ],
 });
 const APPROVED_CORNICE_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/corner_connector_cornice_shared.ts': Object.freeze(['common', 'common.epsilonM']),
@@ -493,6 +668,143 @@ function collectDimensionFacadeBroadDependencies(sources) {
   return dependencies.sort((left, right) =>
     `${left.file}:${left.syntax}`.localeCompare(`${right.file}:${right.syntax}`)
   );
+}
+
+function collectLegacyDimensionSymbolDependencies(sources, symbol, ownerSpecifier) {
+  const usage = new Map();
+  for (const [file, source, analyzedDependencies] of sources) {
+    const dependencies = analyzedDependencies || analyzeModuleDependencies(file, source).imports;
+    for (const dependency of dependencies) {
+      if (dependency.specifier.endsWith(ownerSpecifier)) continue;
+      if (!dependency.importedSymbols.includes(symbol)) continue;
+      const relativeFile = file.replaceAll('\\', '/');
+      if (!usage.has(relativeFile)) usage.set(relativeFile, new Set());
+      usage.get(relativeFile).add(`${symbol}@${dependency.syntax}`);
+    }
+  }
+  return normalizedSymbolUsage(usage);
+}
+
+function readPolicyMemberPath(node) {
+  const properties = [];
+  let current = node;
+  while (current?.type === 'MemberExpression') {
+    let propertyName = readAstBindingName(current.property);
+    if (current.computed && current.property?.type === 'Identifier') propertyName = '<computed>';
+    if (!propertyName) propertyName = '<computed>';
+    properties.unshift(propertyName);
+    current = current.object;
+  }
+  const rootName = readAstBindingName(current);
+  return rootName ? { rootName, properties } : null;
+}
+
+function collectLegacyDimensionPolicyFieldUsage(sources, symbol, ownerSpecifier) {
+  const usage = new Map();
+
+  for (const [file, source, analyzedDependencies] of sources) {
+    const dependencies = analyzedDependencies || analyzeModuleDependencies(file, source).imports;
+    const rootAliases = new Set();
+    const namespaceAliases = new Set();
+    for (const dependency of dependencies) {
+      if (dependency.specifier.endsWith(ownerSpecifier)) continue;
+      for (const binding of dependency.bindings || []) {
+        if (binding.importedName === symbol && binding.localName) rootAliases.add(binding.localName);
+        if (
+          binding.importedName === '*' &&
+          binding.localName &&
+          (dependency.specifier.includes(FACADE_SPECIFIER) || source.includes(symbol))
+        ) {
+          namespaceAliases.add(binding.localName);
+        }
+      }
+    }
+    if (!rootAliases.size && !namespaceAliases.size) continue;
+
+    const sourceFile = createSourceFile(file, source, { label: 'legacy_dimension_policy_contract' });
+    const declarators = collectVariableDeclarators(sourceFile);
+    const aliasPaths = new Map([...rootAliases].map(alias => [alias, []]));
+
+    const classifyPath = memberPath => {
+      if (!memberPath) return null;
+      if (aliasPaths.has(memberPath.rootName)) {
+        return [...aliasPaths.get(memberPath.rootName), ...memberPath.properties];
+      }
+      if (namespaceAliases.has(memberPath.rootName) && memberPath.properties[0] === symbol) {
+        return memberPath.properties.slice(1);
+      }
+      return null;
+    };
+
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const declaration of declarators) {
+        const localName = readAstBindingName(declaration.id);
+        const initName = readAstBindingName(declaration.init);
+        const properties =
+          classifyPath(readPolicyMemberPath(declaration.init)) ||
+          (initName && aliasPaths.has(initName) ? aliasPaths.get(initName) : null);
+
+        if (localName && properties && !aliasPaths.has(localName)) {
+          aliasPaths.set(localName, properties);
+          changed = true;
+        }
+
+        for (const { key, localName: destructuredLocal } of readObjectPatternEntries(declaration.id)) {
+          if (!destructuredLocal) continue;
+          if (properties && !aliasPaths.has(destructuredLocal)) {
+            aliasPaths.set(destructuredLocal, [...properties, key]);
+            changed = true;
+          }
+          if (namespaceAliases.has(initName) && key === symbol && !aliasPaths.has(destructuredLocal)) {
+            aliasPaths.set(destructuredLocal, []);
+            changed = true;
+          }
+        }
+      }
+    }
+
+    const fields = new Set();
+    const recordProperties = properties => {
+      if (!properties?.length) return;
+      for (let index = 1; index <= properties.length; index += 1) {
+        fields.add(properties.slice(0, index).join('.'));
+      }
+    };
+
+    for (const declaration of declarators) {
+      const initName = readAstBindingName(declaration.init);
+      const properties =
+        classifyPath(readPolicyMemberPath(declaration.init)) ||
+        (initName && aliasPaths.has(initName) ? aliasPaths.get(initName) : null);
+      if (!properties) continue;
+      recordProperties(properties);
+      for (const { key } of readObjectPatternEntries(declaration.id)) {
+        recordProperties([...properties, key]);
+      }
+    }
+    walkAst(sourceFile, node => {
+      if (node?.type === 'MemberExpression') recordProperties(classifyPath(readPolicyMemberPath(node)));
+    });
+    if (fields.size) usage.set(file.replaceAll('\\', '/'), fields);
+  }
+
+  return normalizedSymbolUsage(usage);
+}
+
+function collectMemberPropertyUsage(sources, propertyName) {
+  const usage = new Map();
+  for (const [file, source] of sources) {
+    const sourceFile = createSourceFile(file, source, { label: 'dimension_member_property_contract' });
+    const fields = new Set();
+    walkAst(sourceFile, node => {
+      if (node?.type !== 'MemberExpression') return;
+      if (readAstBindingName(node.property) === propertyName) fields.add(propertyName);
+    });
+    if (fields.size) usage.set(file.replaceAll('\\', '/'), fields);
+  }
+  return normalizedSymbolUsage(usage);
 }
 
 function collectChestLegacyFieldUsage(sources) {
@@ -911,6 +1223,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   const chestStructuralPolicy = read('esm/shared/dimensions/chest_structural_policy.ts');
   const materialThicknessPolicy = read('esm/shared/dimensions/material_thickness_policy.ts');
   const carcassCorniceRenderPolicy = read('esm/shared/dimensions/carcass_cornice_render_policy.ts');
+  const chestModePolicy = read('esm/shared/dimensions/chest_mode_policy.ts');
 
   assert.match(facade, /from '\.\/dimensions\/units\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/wardrobe_defaults\.js'/u);
@@ -924,6 +1237,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /from '\.\/dimensions\/chest_structural_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/material_thickness_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/carcass_cornice_render_policy\.js'/u);
+  assert.match(facade, /from '\.\/dimensions\/chest_mode_policy\.js'/u);
   assert.doesNotMatch(facade, /export const WARDROBE_DEFAULTS =/u);
   assert.doesNotMatch(facade, /export const WARDROBE_LIMITS =/u);
 
@@ -957,6 +1271,9 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(materialThicknessPolicy, /const MATERIAL_THICKNESS_M = meters\(0\.018\)/u);
   assert.match(materialThicknessPolicy, /thicknessM: MATERIAL_THICKNESS_M/u);
   assert.match(carcassCorniceRenderPolicy, /export const CARCASS_CORNICE_COMMON_POLICY = Object\.freeze/u);
+  assert.match(carcassCorniceRenderPolicy, /export const CARCASS_CORNICE_ANGLE_POLICY = Object\.freeze/u);
+  assert.match(carcassCorniceRenderPolicy, /thetaClampRad: 0\.01/u);
+  assert.match(carcassCorniceRenderPolicy, /thetaClampM: CARCASS_CORNICE_ANGLE_POLICY\.thetaClampRad/u);
   assert.match(carcassCorniceRenderPolicy, /export const CARCASS_CORNICE_WAVE_POLICY = Object\.freeze/u);
   assert.match(carcassCorniceRenderPolicy, /export const CARCASS_CORNICE_PROFILE_POLICY = Object\.freeze/u);
   assert.match(carcassCorniceRenderPolicy, /export const CARCASS_CORNICE_RENDER_POLICY = Object\.freeze/u);
@@ -964,6 +1281,14 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
     carcassCorniceRenderPolicy,
     /fallbackWoodThicknessM: MATERIAL_THICKNESS_POLICY\.wood\.thicknessM/u
   );
+  assert.match(chestModePolicy, /export const CHEST_MODE_ACTIVE_DEFAULTS_POLICY = Object\.freeze/u);
+  assert.match(chestModePolicy, /export const CHEST_MODE_COMMODE_CONSTRAINTS_POLICY = Object\.freeze/u);
+  assert.match(chestModePolicy, /export const CHEST_MODE_COMMODE_RENDER_POLICY = Object\.freeze/u);
+  assert.match(chestModePolicy, /export const CHEST_MODE_DRAWER_BOX_RENDER_POLICY = Object\.freeze/u);
+  assert.match(chestModePolicy, /export const CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY = Object\.freeze/u);
+  assert.match(chestModePolicy, /export const CHEST_MODE_DIMENSIONS = Object\.freeze/u);
+  assert.match(chestModePolicy, /widthCm: centimeters\(50\)/u);
+  assert.match(chestModePolicy, /backPanelThicknessM: meters\(0\.018\)/u);
   assert.match(facade, /plinth: BASE_PLINTH_DIMENSIONS/u);
   assert.match(facade, /legs: BASE_LEG_LAYOUT_DIMENSIONS/u);
   assert.match(facade, /legacyDimensionNumberView\(BASE_PLINTH_POLICY\)/u);
@@ -974,8 +1299,10 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.doesNotMatch(facade, /export const CARCASS_(?:SHELL|INTERIOR)_DIMENSIONS =/u);
   assert.match(facade, /legacyDimensionNumberView\(MATERIAL_THICKNESS_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(CARCASS_CORNICE_RENDER_POLICY\)/u);
+  assert.match(facade, /legacyDimensionNumberView\(CHEST_MODE_DIMENSIONS_OWNER\)/u);
   assert.doesNotMatch(facade, /export const MATERIAL_DIMENSIONS = Object\.freeze/u);
   assert.doesNotMatch(facade, /export const CARCASS_CORNICE_DIMENSIONS = Object\.freeze/u);
+  assert.doesNotMatch(facade, /export const CHEST_MODE_DIMENSIONS = Object\.freeze/u);
 
   assert.doesNotMatch(defaults, /stackSplit|decorativeSeparator/u);
   assert.doesNotMatch(limits, /wardrobe_defaults/u);
@@ -987,7 +1314,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(decorativeSeparator, /dimensions\/stack_split_render_policy\.js/u);
 
   assert.doesNotMatch(
-    `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}\n${chestStructuralPolicy}\n${materialThicknessPolicy}\n${carcassCorniceRenderPolicy}`,
+    `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}\n${chestStructuralPolicy}\n${materialThicknessPolicy}\n${carcassCorniceRenderPolicy}\n${chestModePolicy}`,
     /wardrobe_dimension_tokens_shared/u
   );
 });
@@ -1101,6 +1428,11 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     'Carcass Cornice owner consumer allowlist'
   );
   assertApprovedSymbolUsage(
+    collectOwnerImports(analyzedSources, 'chest_mode_policy.js'),
+    APPROVED_CHEST_MODE_OWNER_IMPORTS,
+    'Chest Mode owner consumer allowlist'
+  );
+  assertApprovedSymbolUsage(
     collectShellGridFieldUsage(analyzedSources),
     APPROVED_SHELL_GRID_FIELD_USAGE,
     'Carcass Shell grid-field compatibility allowlist'
@@ -1120,6 +1452,47 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectCorniceLegacyFieldUsage(analyzedSources),
     APPROVED_CORNICE_LEGACY_FIELD_USAGE,
     'Carcass Cornice legacy facade field allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectMemberPropertyUsage(analyzedSources, 'thetaClampM'),
+    APPROVED_CORNICE_THETA_CLAMP_M_USAGE,
+    'Cornice thetaClampM compatibility field allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionSymbolDependencies(
+      analyzedSources,
+      'MATERIAL_DIMENSIONS',
+      'dimensions/material_thickness_policy.js'
+    ),
+    APPROVED_MATERIAL_LEGACY_DEPENDENCIES,
+    'Material legacy dependency allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionPolicyFieldUsage(
+      analyzedSources,
+      'MATERIAL_DIMENSIONS',
+      'dimensions/material_thickness_policy.js'
+    ),
+    APPROVED_MATERIAL_LEGACY_FIELD_USAGE,
+    'Material legacy field allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionSymbolDependencies(
+      analyzedSources,
+      'CHEST_MODE_DIMENSIONS',
+      'dimensions/chest_mode_policy.js'
+    ),
+    APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES,
+    'Chest Mode legacy dependency allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionPolicyFieldUsage(
+      analyzedSources,
+      'CHEST_MODE_DIMENSIONS',
+      'dimensions/chest_mode_policy.js'
+    ),
+    APPROVED_CHEST_MODE_LEGACY_FIELD_USAGE,
+    'Chest Mode legacy field allowlist'
   );
 });
 
@@ -1248,6 +1621,125 @@ test('[dimension-foundation] Cornice legacy guard detects named, aliased, namesp
   });
   assert.throws(
     () => assertApprovedSymbolUsage(fixtureUsage, {}, 'Cornice fixture legacy facade field allowlist'),
+    /review-blocked/u
+  );
+});
+
+test('[dimension-foundation] Material legacy guard detects aliases, namespace access, destructuring, and dynamic fields', () => {
+  const sources = [
+    [
+      'esm/native/builder/named_material_consumer.ts',
+      `
+        import { MATERIAL_DIMENSIONS as material } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const materialAlias = material;
+        const { wood } = materialAlias;
+        const thickness = wood['thicknessM'];
+        export const dynamic = materialAlias[key];
+        export { thickness };
+      `,
+    ],
+    [
+      'esm/native/builder/namespace_material_consumer.ts',
+      `
+        import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const material = dimensions.MATERIAL_DIMENSIONS;
+        export const thickness = material.glassShelf.thicknessM;
+      `,
+    ],
+  ];
+  assert.deepEqual(
+    collectLegacyDimensionPolicyFieldUsage(
+      sources,
+      'MATERIAL_DIMENSIONS',
+      'dimensions/material_thickness_policy.js'
+    ),
+    {
+      'esm/native/builder/named_material_consumer.ts': ['<computed>', 'wood', 'wood.thicknessM'],
+      'esm/native/builder/namespace_material_consumer.ts': ['glassShelf', 'glassShelf.thicknessM'],
+    }
+  );
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        collectLegacyDimensionPolicyFieldUsage(
+          sources,
+          'MATERIAL_DIMENSIONS',
+          'dimensions/material_thickness_policy.js'
+        ),
+        {},
+        'Material fixture legacy field allowlist'
+      ),
+    /review-blocked/u
+  );
+});
+
+test('[dimension-foundation] Chest Mode guard detects aliases, namespace access, nested fields, and dynamic fields', () => {
+  const sources = [
+    [
+      'esm/native/builder/named_chest_mode_consumer.ts',
+      `
+        import { CHEST_MODE_DIMENSIONS as chestMode } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const chestModeAlias = chestMode;
+        const { activeDefaults } = chestModeAlias;
+        const width = activeDefaults['widthCm'];
+        export const dynamic = chestModeAlias[key];
+        export { width };
+      `,
+    ],
+    [
+      'esm/native/builder/namespace_chest_mode_consumer.ts',
+      `
+        import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const chestMode = dimensions.CHEST_MODE_DIMENSIONS;
+        const { dimensionGuideTextScale: scale } = chestMode;
+        export const totalScale = scale.total.scale;
+      `,
+    ],
+  ];
+  assert.deepEqual(
+    collectLegacyDimensionPolicyFieldUsage(
+      sources,
+      'CHEST_MODE_DIMENSIONS',
+      'dimensions/chest_mode_policy.js'
+    ),
+    {
+      'esm/native/builder/named_chest_mode_consumer.ts': [
+        '<computed>',
+        'activeDefaults',
+        'activeDefaults.widthCm',
+      ],
+      'esm/native/builder/namespace_chest_mode_consumer.ts': [
+        'dimensionGuideTextScale',
+        'dimensionGuideTextScale.total',
+        'dimensionGuideTextScale.total.scale',
+      ],
+    }
+  );
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        collectLegacyDimensionPolicyFieldUsage(
+          sources,
+          'CHEST_MODE_DIMENSIONS',
+          'dimensions/chest_mode_policy.js'
+        ),
+        {},
+        'Chest Mode fixture legacy field allowlist'
+      ),
+    /review-blocked/u
+  );
+});
+
+test('[dimension-foundation] thetaClampM is compatibility-only and new internal member access is blocked', () => {
+  const fixtureUsage = collectMemberPropertyUsage(
+    [['esm/native/builder/new_theta_consumer.ts', `export const theta = cornice.common['thetaClampM'];`]],
+    'thetaClampM'
+  );
+  assert.deepEqual(fixtureUsage, {
+    'esm/native/builder/new_theta_consumer.ts': ['thetaClampM'],
+  });
+  assert.throws(
+    () => assertApprovedSymbolUsage(fixtureUsage, {}, 'Cornice theta fixture allowlist'),
     /review-blocked/u
   );
 });

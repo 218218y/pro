@@ -62,6 +62,24 @@ test('autosave access preserves safe failure reasons and rejects invalid owner r
     reason: 'storage-write-failed',
   });
 
+  App.services.autosave.forceSaveNowResult = () => ({ ok: true });
+  assert.deepEqual(forceAutosaveNowResultViaService(App), { ok: true });
+
+  for (const invalidResult of [
+    { ok: true, reason: 'storage-write-failed' },
+    { ok: true, detail: 'owner-threw' },
+    { ok: true, extra: true },
+    Promise.resolve({ ok: true }),
+    { ok: true, then() {} },
+  ]) {
+    App.services.autosave.forceSaveNowResult = () => invalidResult;
+    assert.deepEqual(forceAutosaveNowResultViaService(App), {
+      ok: false,
+      reason: 'owner-rejected',
+      detail: 'owner-invalid-result',
+    });
+  }
+
   App.services.autosave.forceSaveNowResult = () => ({ ok: false, reason: 'project-payload' });
   assert.deepEqual(forceAutosaveNowResultViaService(App), {
     ok: false,
@@ -70,6 +88,9 @@ test('autosave access preserves safe failure reasons and rejects invalid owner r
   });
 
   App.services.autosave.forceSaveNowResult = undefined;
+  App.services.autosave.forceSaveNow = () => true;
+  assert.deepEqual(forceAutosaveNowResultViaService(App), { ok: true });
+
   App.services.autosave.forceSaveNow = () => false;
   assert.deepEqual(forceAutosaveNowResultViaService(App), {
     ok: false,
@@ -77,14 +98,24 @@ test('autosave access preserves safe failure reasons and rejects invalid owner r
     detail: 'legacy-owner-returned-false',
   });
 
+  for (const invalidLegacyResult of [Promise.resolve(false), {}, 'yes', 1]) {
+    App.services.autosave.forceSaveNow = () => invalidLegacyResult;
+    assert.deepEqual(forceAutosaveNowResultViaService(App), {
+      ok: false,
+      reason: 'owner-rejected',
+      detail: 'owner-invalid-result',
+    });
+  }
+
   assert.deepEqual(forceAutosaveNowResultViaService({ services: {} }), {
     ok: false,
     reason: 'service-unavailable',
   });
 });
 
-test('autosave access reports the original owner exception and returns only safe diagnostic detail', () => {
-  const ownerError = new Error('autosave owner exploded');
+test('autosave access sanitizes owner exceptions and returns only safe diagnostic detail', () => {
+  const sensitiveValue = 'wardrobe_autosave_latest:{"privateProject":"secret"}';
+  const ownerError = new Error(sensitiveValue);
   const reports: unknown[] = [];
   const App = {
     services: {
@@ -102,7 +133,18 @@ test('autosave access reports the original owner exception and returns only safe
     }),
     { ok: false, reason: 'owner-rejected', detail: 'owner-threw' }
   );
-  assert.deepEqual(reports, [ownerError]);
+  assert.equal(reports.length, 1);
+  assert.notEqual(reports[0], ownerError);
+  assert.equal(reports[0] instanceof Error, true);
+  assert.equal((reports[0] as Error).message, 'Autosave owner threw: Error');
+  assert.equal((reports[0] as Error).message.includes(sensitiveValue), false);
+
+  assert.deepEqual(
+    forceAutosaveNowResultViaService(App, () => {
+      throw new Error('reporter failed');
+    }),
+    { ok: false, reason: 'owner-rejected', detail: 'owner-threw' }
+  );
 });
 
 test('autosave access: canonical autosave info normalization keeps restore availability but drops junk fields', () => {

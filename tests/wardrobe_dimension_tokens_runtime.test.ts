@@ -7,6 +7,7 @@ import {
   CARCASS_CORNICE_DIMENSIONS as FACADE_CARCASS_CORNICE_DIMENSIONS,
   CARCASS_INTERIOR_DIMENSIONS as FACADE_CARCASS_INTERIOR_DIMENSIONS,
   CARCASS_SHELL_DIMENSIONS as FACADE_CARCASS_SHELL_DIMENSIONS,
+  CHEST_MODE_DIMENSIONS as FACADE_CHEST_MODE_DIMENSIONS,
   DOOR_SYSTEM_DIMENSIONS,
   DOOR_TRIM_DIMENSIONS,
   DRAWER_DIMENSIONS,
@@ -30,11 +31,20 @@ import {
 } from '../esm/shared/dimensions/chest_structural_policy.ts';
 import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
 import {
+  CARCASS_CORNICE_ANGLE_POLICY,
   CARCASS_CORNICE_COMMON_POLICY,
   CARCASS_CORNICE_PROFILE_POLICY,
   CARCASS_CORNICE_RENDER_POLICY,
   CARCASS_CORNICE_WAVE_POLICY,
 } from '../esm/shared/dimensions/carcass_cornice_render_policy.ts';
+import {
+  CHEST_MODE_ACTIVE_DEFAULTS_POLICY,
+  CHEST_MODE_COMMODE_CONSTRAINTS_POLICY,
+  CHEST_MODE_COMMODE_RENDER_POLICY,
+  CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY,
+  CHEST_MODE_DIMENSIONS,
+  CHEST_MODE_DRAWER_BOX_RENDER_POLICY,
+} from '../esm/shared/dimensions/chest_mode_policy.ts';
 import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
@@ -321,6 +331,7 @@ test('Material Thickness and Cornice render policies preserve values, references
   assert.equal(CARCASS_CORNICE_RENDER_POLICY.wave, CARCASS_CORNICE_WAVE_POLICY);
   assert.equal(CARCASS_CORNICE_RENDER_POLICY.profile, CARCASS_CORNICE_PROFILE_POLICY);
   assert.equal(CARCASS_CORNICE_WAVE_POLICY.fallbackWoodThicknessM, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
+  assert.deepEqual(CARCASS_CORNICE_ANGLE_POLICY, { thetaClampRad: 0.01 });
 
   assert.deepEqual(MATERIAL_THICKNESS_POLICY, {
     wood: { thicknessM: 0.018 },
@@ -377,6 +388,81 @@ test('Material Thickness and Cornice render policies preserve values, references
     common: CARCASS_CORNICE_COMMON_POLICY,
     wave: CARCASS_CORNICE_WAVE_POLICY,
     profile: CARCASS_CORNICE_PROFILE_POLICY,
+  });
+});
+
+test('Chest Mode policy preserves every default, render value, nested reference, and facade identity', () => {
+  assert.equal(FACADE_CHEST_MODE_DIMENSIONS, CHEST_MODE_DIMENSIONS);
+  assert.equal(CHEST_MODE_DIMENSIONS.activeDefaults, CHEST_MODE_ACTIVE_DEFAULTS_POLICY);
+  assert.equal(CHEST_MODE_DIMENSIONS.drawerBox, CHEST_MODE_DRAWER_BOX_RENDER_POLICY);
+  assert.equal(
+    CHEST_MODE_DIMENSIONS.dimensionGuideSideOffsetM,
+    CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.sideOffsetM
+  );
+  assert.equal(
+    CHEST_MODE_DIMENSIONS.dimensionGuideTopOffsetM,
+    CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.topOffsetM
+  );
+  assert.equal(
+    CHEST_MODE_DIMENSIONS.dimensionGuideTextScale,
+    CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.textScale
+  );
+
+  assert.deepEqual(CHEST_MODE_ACTIVE_DEFAULTS_POLICY, {
+    doorsCount: 0,
+    widthCm: 50,
+    heightCm: 50,
+    depthCm: 40,
+    drawersCount: 2,
+    baseType: 'legs',
+  });
+  assert.deepEqual(CHEST_MODE_COMMODE_CONSTRAINTS_POLICY, {
+    defaultMirrorHeightCm: 70,
+    minMirrorHeightCm: 30,
+    maxMirrorHeightCm: 180,
+    minMirrorWidthCm: 20,
+    maxMirrorWidthCm: 560,
+  });
+  assert.deepEqual(CHEST_MODE_COMMODE_RENDER_POLICY, {
+    backPanelThicknessM: 0.018,
+    mirrorThicknessM: 0.003,
+    mirrorInsetM: 0.03,
+    backPanelYOffsetM: 0.002,
+    mirrorSurfaceLiftM: 0.0015,
+  });
+  assert.deepEqual(CHEST_MODE_DRAWER_BOX_RENDER_POLICY, {
+    panelThicknessM: 0.015,
+    accentZOffsetM: 0.0008,
+    accentMinWidthM: 0.12,
+    accentMinHeightM: 0.08,
+    accentThicknessMinM: 0.0022,
+    accentThicknessMaxM: 0.004,
+    accentThicknessRatio: 0.035,
+    accentStripDepthM: 0.001,
+    accentRenderOrder: 2,
+    handleWidthM: 0.12,
+    handleHeightM: 0.02,
+    handleDepthM: 0.015,
+    handleFrontOffsetM: 0.005,
+  });
+  assert.deepEqual(CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY, {
+    sideOffsetM: 0.15,
+    topOffsetM: 0.1,
+    textScale: {
+      total: { scale: 0.66, styleKey: 'compactTotal' },
+      segment: 0.6,
+    },
+  });
+  assert.deepEqual(CHEST_MODE_DIMENSIONS, {
+    activeDefaults: CHEST_MODE_ACTIVE_DEFAULTS_POLICY,
+    commode: {
+      ...CHEST_MODE_COMMODE_CONSTRAINTS_POLICY,
+      ...CHEST_MODE_COMMODE_RENDER_POLICY,
+    },
+    drawerBox: CHEST_MODE_DRAWER_BOX_RENDER_POLICY,
+    dimensionGuideSideOffsetM: 0.15,
+    dimensionGuideTopOffsetM: 0.1,
+    dimensionGuideTextScale: CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.textScale,
   });
 });
 

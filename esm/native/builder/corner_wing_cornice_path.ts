@@ -8,6 +8,7 @@ import { resolveCornerWingCorniceTopY } from './corner_wing_cornice_contracts.js
 
 const CORNICE_COMMON = CARCASS_CORNICE_DIMENSIONS.common;
 const CORNICE_PROFILE = CARCASS_CORNICE_DIMENSIONS.profile;
+const CORNICE_THETA_CLAMP_RAD = Number(CORNICE_COMMON.thetaClampM);
 
 export const CORNER_CORNICE_EPS = CORNICE_COMMON.epsilonM;
 export const CORNER_CORNICE_MIN_SEGMENT_LENGTH = CORNICE_COMMON.minSegmentLengthM;
@@ -469,7 +470,7 @@ export function cornerMiterExtensionForPathJoint(
   const bCoeffX = -bDir.x;
   const bCoeffZ = -bDir.z;
   const det = aDir.x * bCoeffZ - aDir.z * bCoeffX;
-  if (!Number.isFinite(det) || Math.abs(det) <= CORNICE_COMMON.thetaClampM * CORNICE_COMMON.thetaClampM) {
+  if (!Number.isFinite(det) || Math.abs(det) <= CORNICE_THETA_CLAMP_RAD * CORNICE_THETA_CLAMP_RAD) {
     const mutualTrim = cornerMutualPathJointMiterTrim(a, b, Math.min(aOverhang, bOverhang));
     return { aEnd: mutualTrim, bStart: mutualTrim };
   }
@@ -502,9 +503,9 @@ export function cornerMiterTrimForPathJoint(
   profileOverhang: number
 ): number {
   const angle = cornerPathTurnAngle(a, b);
-  if (angle <= CORNICE_COMMON.thetaClampM) return 0;
+  if (angle <= CORNICE_THETA_CLAMP_RAD) return 0;
   const trim =
-    Math.max(0, profileOverhang) * Math.tan(Math.min(Math.PI - CORNICE_COMMON.thetaClampM, angle) / 2);
+    Math.max(0, profileOverhang) * Math.tan(Math.min(Math.PI - CORNICE_THETA_CLAMP_RAD, angle) / 2);
   return Number.isFinite(trim) ? trim + CORNER_CORNICE_PROFILE_SEAM_EPS : 0;
 }
 

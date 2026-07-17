@@ -29,6 +29,17 @@ const AUTOSAVE_READINESS_DETAILS = new Set<AutosaveReadinessDiagnosticDetail>([
   'runtime-state-unavailable',
 ]);
 
+const SAFE_AUTOSAVE_OWNER_ERROR_NAMES = new Set([
+  'Error',
+  'TypeError',
+  'RangeError',
+  'ReferenceError',
+  'SyntaxError',
+  'URIError',
+  'EvalError',
+  'AggregateError',
+]);
+
 function asAutosaveService(value: unknown): AutosaveServiceLike | null {
   return asRecord<AutosaveServiceLike>(value);
 }
@@ -174,12 +185,29 @@ export function forceAutosaveNowViaService(App: unknown): boolean {
 
 function normalizeAutosaveOwnerRefreshResult(value: unknown): AutosaveOwnerRefreshResult | null {
   const result = asRecord<Record<string, unknown>>(value);
-  if (result?.ok === true) return { ok: true };
+  if (!result) return null;
+  try {
+    if (typeof result.then === 'function') return null;
+  } catch {
+    return null;
+  }
+
+  const hasExactKeys = (expected: readonly string[]): boolean => {
+    try {
+      const keys = Reflect.ownKeys(result);
+      return keys.length === expected.length && expected.every(key => keys.includes(key));
+    } catch {
+      return false;
+    }
+  };
+
+  if (result.ok === true) return hasExactKeys(['ok']) ? { ok: true } : null;
   const reason = result?.reason;
   if (result?.ok !== false || typeof reason !== 'string') return null;
 
   if (
     reason === 'autosave-not-ready' &&
+    hasExactKeys(['ok', 'reason', 'detail']) &&
     typeof result.detail === 'string' &&
     AUTOSAVE_READINESS_DETAILS.has(result.detail as AutosaveReadinessDiagnosticDetail)
   ) {
@@ -189,18 +217,29 @@ function normalizeAutosaveOwnerRefreshResult(value: unknown): AutosaveOwnerRefre
       detail: result.detail as AutosaveReadinessDiagnosticDetail,
     };
   }
-  if (result.detail === undefined && reason === 'snapshot-unavailable') {
+  if (reason === 'snapshot-unavailable' && hasExactKeys(['ok', 'reason'])) {
     return { ok: false, reason: 'snapshot-unavailable' };
   }
-  if (result.detail === undefined && reason === 'storage-write-failed') {
+  if (reason === 'storage-write-failed' && hasExactKeys(['ok', 'reason'])) {
     return { ok: false, reason: 'storage-write-failed' };
   }
   return null;
 }
 
+export function createAutosaveOwnerDiagnosticError(error: unknown): Error {
+  let safeErrorName = 'Error';
+  try {
+    const candidate = error instanceof Error ? error.name : '';
+    if (SAFE_AUTOSAVE_OWNER_ERROR_NAMES.has(candidate)) safeErrorName = candidate;
+  } catch {
+    // A hostile thrown value must not leak through diagnostic normalization.
+  }
+  return new Error(`Autosave owner threw: ${safeErrorName}`);
+}
+
 export function forceAutosaveNowResultViaService(
   App: unknown,
-  reportOwnerThrow?: (error: unknown) => void
+  reportOwnerThrow?: (error: Error) => void
 ): AutosaveRuntimeRefreshResult {
   let service: AutosaveRefreshResultOwner | null;
   try {
@@ -219,15 +258,18 @@ export function forceAutosaveNowResultViaService(
     }
 
     if (typeof service.forceSaveNow === 'function') {
-      return Reflect.apply(service.forceSaveNow, service, [])
-        ? { ok: true }
-        : { ok: false, reason: 'owner-rejected', detail: 'legacy-owner-returned-false' };
+      const legacyResult = Reflect.apply(service.forceSaveNow, service, []);
+      if (legacyResult === true) return { ok: true };
+      if (legacyResult === false) {
+        return { ok: false, reason: 'owner-rejected', detail: 'legacy-owner-returned-false' };
+      }
+      return { ok: false, reason: 'owner-rejected', detail: 'owner-invalid-result' };
     }
 
     return { ok: false, reason: 'service-unavailable' };
   } catch (error) {
     try {
-      reportOwnerThrow?.(error);
+      reportOwnerThrow?.(createAutosaveOwnerDiagnosticError(error));
     } catch {
       // Diagnostics must not replace the autosave owner failure.
     }
