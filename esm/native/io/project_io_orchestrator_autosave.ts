@@ -29,9 +29,11 @@ export function refreshProjectIoAutosaveAfterLoad(args: ProjectIoAutosaveRefresh
   }
 
   try {
-    return forceAutosaveNowResultViaService(App);
+    return forceAutosaveNowResultViaService(App, error => {
+      reportNonFatal('project.load.refreshAutosave.owner-threw', error, 6000);
+    });
   } catch (err) {
-    reportNonFatal('project.load.refreshAutosave', err, 6000);
-    return { ok: false, reason: 'owner-rejected' };
+    reportNonFatal('project.load.refreshAutosave.owner-threw', err, 6000);
+    return { ok: false, reason: 'owner-rejected', detail: 'owner-threw' };
   }
 }

@@ -265,13 +265,18 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps): ProjectDataLo
       });
       if (autosaveRefreshResult.ok === false) {
         const autosaveRefreshReason = autosaveRefreshResult.reason;
+        const autosaveRefreshDetail =
+          'detail' in autosaveRefreshResult ? autosaveRefreshResult.detail : undefined;
+        const autosaveRefreshDiagnostic = autosaveRefreshDetail
+          ? `${autosaveRefreshReason}.${autosaveRefreshDetail}`
+          : autosaveRefreshReason;
         addWarning(
           {
             effect: 'autosave-refresh',
             message: 'Project loaded, but autosave refresh did not complete.',
           },
-          `project.load.refreshAutosave.warning.${autosaveRefreshReason}`,
-          new Error(`Project load autosave refresh failed: ${autosaveRefreshReason}`)
+          `project.load.refreshAutosave.warning.${autosaveRefreshDiagnostic}`,
+          new Error(`Project load autosave refresh failed: ${autosaveRefreshDiagnostic}`)
         );
       }
 

@@ -8,6 +8,9 @@ import { getStoreSurfaceMaybe } from './store_surface_access.js';
 import { EMPTY_RUNTIME } from './runtime_selectors_shared.js';
 import { readRuntimeScalarFromSnapshot, readRuntimeScalarOrDefault } from './runtime_selectors_snapshot.js';
 
+export type RuntimeStateReadResult =
+  { ok: true; state: RuntimeStateLike } | { ok: false; reason: 'runtime-state-unavailable' };
+
 /**
  * Read the current store.runtime snapshot (store-only).
  */
@@ -16,6 +19,16 @@ export function readRuntimeStateFromApp(App: unknown): RuntimeStateLike {
     return readRuntimeStateFromStore(getStoreSurfaceMaybe(App));
   } catch {
     return EMPTY_RUNTIME;
+  }
+}
+
+export function readRuntimeStateFromAppResult(App: unknown): RuntimeStateReadResult {
+  const store = getStoreSurfaceMaybe(App);
+  if (!store) return { ok: false, reason: 'runtime-state-unavailable' };
+  try {
+    return { ok: true, state: readRuntimeStateFromStore(store) };
+  } catch {
+    return { ok: false, reason: 'runtime-state-unavailable' };
   }
 }
 

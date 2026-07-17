@@ -2,8 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createProjectIoOrchestrator } from '../esm/native/io/project_io_orchestrator.ts';
+import { refreshProjectIoAutosaveAfterLoad } from '../esm/native/io/project_io_orchestrator_autosave.ts';
 import { PROJECT_SCHEMA_ID, PROJECT_SCHEMA_VERSION } from '../esm/shared/project_schema_constants.ts';
 import { withSuppressedConsole } from './_console_silence.ts';
+import type { AutosaveRefreshResult } from '../types/index.ts';
 
 type ProjectIoTestApp = {
   actions: Record<string, unknown>;
@@ -26,18 +28,8 @@ function createProjectIoApp(overrides?: {
   onHistoryReset?: () => void;
   onAutosaveCommit?: () => void;
   autosaveCommitError?: Error;
-  autosaveRefreshResult?:
-    | { ok: true }
-    | {
-        ok: false;
-        reason:
-          | 'stale-restore-generation'
-          | 'service-unavailable'
-          | 'autosave-not-ready'
-          | 'snapshot-unavailable'
-          | 'storage-write-failed'
-          | 'owner-rejected';
-      };
+  autosaveRefreshResult?: AutosaveRefreshResult;
+  autosaveRefreshError?: Error;
   onStoreRead?: () => void;
 }) {
   const calls: string[] = [];
@@ -141,6 +133,7 @@ function createProjectIoApp(overrides?: {
         },
         forceSaveNowResult() {
           autosaveCalls.push('force');
+          if (overrides?.autosaveRefreshError) throw overrides.autosaveRefreshError;
           return overrides?.autosaveRefreshResult ?? { ok: true };
         },
         suspend() {
@@ -744,6 +737,104 @@ test('project io load preserves its public warning while diagnostics identify th
       },
     ]
   );
+});
+
+test('project io load keeps its public warning stable while diagnostics include readiness detail', () => {
+  const harness = createProjectIoApp({
+    autosaveRefreshResult: {
+      ok: false,
+      reason: 'autosave-not-ready',
+      detail: 'restore-in-progress',
+    },
+  });
+
+  const result = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.deepEqual(result, {
+    ok: true,
+    restoreGen: 1,
+    warnings: [
+      {
+        effect: 'autosave-refresh',
+        message: 'Project loaded, but autosave refresh did not complete.',
+      },
+    ],
+  });
+  assert.deepEqual(
+    harness.reports.filter(report => report.op.includes('refreshAutosave.warning')),
+    [
+      {
+        op: 'project.load.refreshAutosave.warning.autosave-not-ready.restore-in-progress',
+        message: 'Project load autosave refresh failed: autosave-not-ready.restore-in-progress',
+      },
+    ]
+  );
+});
+
+test('project io load reports the original autosave owner exception nonfatally without replacing success', () => {
+  const ownerError = new Error('autosave owner exploded');
+  const harness = createProjectIoApp({ autosaveRefreshError: ownerError });
+
+  const result = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.deepEqual(result, {
+    ok: true,
+    restoreGen: 1,
+    warnings: [
+      {
+        effect: 'autosave-refresh',
+        message: 'Project loaded, but autosave refresh did not complete.',
+      },
+    ],
+  });
+  assert.equal(
+    harness.reports.some(
+      report =>
+        report.op === 'project.load.refreshAutosave.owner-threw' && report.message === ownerError.message
+    ),
+    true
+  );
+  assert.equal(
+    harness.reports.some(
+      report =>
+        report.op === 'project.load.refreshAutosave.warning.owner-rejected.owner-threw' &&
+        report.message === 'Project load autosave refresh failed: owner-rejected.owner-threw'
+    ),
+    true
+  );
+});
+
+test('project io owns stale restore generation without dispatching the autosave owner', () => {
+  let forceCalls = 0;
+  const App = {
+    services: {
+      projectIO: { runtime: { restoreGen: 2 } },
+      autosave: {
+        forceSaveNowResult() {
+          forceCalls += 1;
+          return { ok: true };
+        },
+      },
+    },
+  } as any;
+  const reports: unknown[] = [];
+
+  assert.deepEqual(
+    refreshProjectIoAutosaveAfterLoad({
+      App,
+      restoreGen: 1,
+      isHistoryApply: false,
+      isModelApply: false,
+      isCloudApply: false,
+      preserveAutosave: false,
+      reportNonFatal(_op, error) {
+        reports.push(error);
+      },
+    }),
+    { ok: false, reason: 'stale-restore-generation' }
+  );
+  assert.equal(forceCalls, 0);
+  assert.deepEqual(reports, []);
 });
 
 test('project io load stops post-commit effects as soon as a reentrant load supersedes it', () => {

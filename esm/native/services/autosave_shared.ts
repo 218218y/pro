@@ -1,4 +1,4 @@
-import { readRuntimeScalarOrDefaultFromApp } from '../runtime/runtime_selectors.js';
+import { readRuntimeScalarOrDefault, readRuntimeStateFromAppResult } from '../runtime/runtime_selectors.js';
 import { getStorageKey, setStorageString } from '../runtime/storage_access.js';
 import {
   ensureAutosaveService,
@@ -12,6 +12,7 @@ import { setUiScalarSoft } from '../runtime/ui_write_access.js';
 import type {
   AppContainer,
   AutosaveServiceLike,
+  AutosaveReadinessDiagnosticDetail,
   AutosaveSnapshotLike,
   TimeoutHandleLike,
   UnknownRecord,
@@ -155,18 +156,27 @@ export function stampAutosaveInfoUi(App: AppContainer, info: AutosaveSnapshotLik
   }
 }
 
-export function canAutosaveRun(App: AppContainer): boolean {
-  try {
-    const ready = !!readRuntimeScalarOrDefaultFromApp(App, 'systemReady', false);
-    if (!ready) return false;
+export type AutosaveReadinessResult = { ok: true } | { ok: false; detail: AutosaveReadinessDiagnosticDetail };
 
-    const restoring = !!readRuntimeScalarOrDefaultFromApp(App, 'restoring', false);
-    if (restoring) return false;
+export function readAutosaveReadiness(App: AppContainer): AutosaveReadinessResult {
+  try {
+    const runtimeState = readRuntimeStateFromAppResult(App);
+    if (runtimeState.ok === false) return { ok: false, detail: runtimeState.reason };
+
+    const ready = !!readRuntimeScalarOrDefault(runtimeState.state, 'systemReady', false);
+    if (!ready) return { ok: false, detail: 'system-not-ready' };
+
+    const restoring = !!readRuntimeScalarOrDefault(runtimeState.state, 'restoring', false);
+    if (restoring) return { ok: false, detail: 'restore-in-progress' };
   } catch {
-    return false;
+    return { ok: false, detail: 'runtime-state-unavailable' };
   }
 
-  return true;
+  return { ok: true };
+}
+
+export function canAutosaveRun(App: AppContainer): boolean {
+  return readAutosaveReadiness(App).ok;
 }
 
 export function getAutosaveStorageKey(App: AppContainer): string {

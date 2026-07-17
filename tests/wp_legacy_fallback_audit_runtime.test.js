@@ -141,3 +141,13 @@ test('legacy fallback audit summarizes and lock-checks the categorized inventory
   assert.equal(comparison.ok, false);
   assert.ok(comparison.failures.some(item => item.kind === 'new-file'));
 });
+
+test('legacy fallback audit excludes the typed autosave diagnostic label from live compatibility inventory', () => {
+  const projectRoot = tempProject();
+  writeFile(
+    path.join(projectRoot, 'esm/native/runtime/autosave_access.ts'),
+    "return { ok: false, reason: 'owner-rejected', detail: 'legacy-owner-returned-false' };\n"
+  );
+
+  assert.deepEqual(collectLegacyFallbackOccurrences({ projectRoot, sourceRoot: 'esm' }), []);
+});

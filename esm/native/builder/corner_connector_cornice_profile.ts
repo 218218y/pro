@@ -1,4 +1,4 @@
-import { CARCASS_CORNICE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_CORNICE_RENDER_POLICY } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import type {
   CornerConnectorCorniceCtx,
   CornerConnectorCorniceHelpers,
@@ -21,13 +21,13 @@ export function applyCornerConnectorProfileCornice(args: {
   const { THREE, bodyMat, addOutlines, getCornerMat, __sketchMode } = ctx;
   const { pts, cornerGroup, interiorX, interiorZ, mx } = locals;
   const { readNumFrom, asRecord } = helpers;
-  const corniceCommon = CARCASS_CORNICE_DIMENSIONS.common;
-  const corniceProfile = CARCASS_CORNICE_DIMENSIONS.profile;
+  const corniceCommon = CARCASS_CORNICE_RENDER_POLICY.common;
+  const corniceProfile = CARCASS_CORNICE_RENDER_POLICY.profile;
   const cHeight = corniceProfile.heightM;
 
   const overhang = corniceProfile.overhangZM;
   const sideOverhang = corniceProfile.overhangXM;
-  const insetOnRoof = corniceProfile.insetOnRoofM;
+  const insetOnRoof = Number(corniceProfile.insetOnRoofM);
   const backStep = corniceProfile.backStepM;
 
   const topY = resolveCornerConnectorCorniceTopY(ctx);

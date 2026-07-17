@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   BASE_LEG_DIMENSIONS as FACADE_BASE_LEG_DIMENSIONS,
   CARCASS_BASE_DIMENSIONS as FACADE_CARCASS_BASE_DIMENSIONS,
+  CARCASS_CORNICE_DIMENSIONS as FACADE_CARCASS_CORNICE_DIMENSIONS,
   CARCASS_INTERIOR_DIMENSIONS as FACADE_CARCASS_INTERIOR_DIMENSIONS,
   CARCASS_SHELL_DIMENSIONS as FACADE_CARCASS_SHELL_DIMENSIONS,
   DOOR_SYSTEM_DIMENSIONS,
@@ -27,6 +28,13 @@ import {
   CHEST_SHELL_POLICY,
   CHEST_STRUCTURAL_DIMENSIONS,
 } from '../esm/shared/dimensions/chest_structural_policy.ts';
+import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
+import {
+  CARCASS_CORNICE_COMMON_POLICY,
+  CARCASS_CORNICE_PROFILE_POLICY,
+  CARCASS_CORNICE_RENDER_POLICY,
+  CARCASS_CORNICE_WAVE_POLICY,
+} from '../esm/shared/dimensions/carcass_cornice_render_policy.ts';
 import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
@@ -303,6 +311,72 @@ test('Chest Structural policy preserves every value, aggregate reference, and fa
     ...CHEST_CONNECTOR_POLICY,
     ...CHEST_MOTION_POLICY,
     wheels: CHEST_CASTER_RENDER_POLICY,
+  });
+});
+
+test('Material Thickness and Cornice render policies preserve values, references, and facade identity', () => {
+  assert.equal(MATERIAL_DIMENSIONS, MATERIAL_THICKNESS_POLICY);
+  assert.equal(FACADE_CARCASS_CORNICE_DIMENSIONS, CARCASS_CORNICE_RENDER_POLICY);
+  assert.equal(CARCASS_CORNICE_RENDER_POLICY.common, CARCASS_CORNICE_COMMON_POLICY);
+  assert.equal(CARCASS_CORNICE_RENDER_POLICY.wave, CARCASS_CORNICE_WAVE_POLICY);
+  assert.equal(CARCASS_CORNICE_RENDER_POLICY.profile, CARCASS_CORNICE_PROFILE_POLICY);
+  assert.equal(CARCASS_CORNICE_WAVE_POLICY.fallbackWoodThicknessM, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
+
+  assert.deepEqual(MATERIAL_THICKNESS_POLICY, {
+    wood: { thicknessM: 0.018 },
+    glassShelf: { thicknessM: 0.018 },
+  });
+  assert.equal(MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
+  assert.deepEqual(CARCASS_CORNICE_COMMON_POLICY, {
+    epsilonM: 0.000001,
+    yLiftM: 0.0006,
+    minSegmentLengthM: 0.02,
+    minBoxDimensionM: 0.001,
+    thetaClampM: 0.01,
+  });
+  assert.deepEqual(CARCASS_CORNICE_WAVE_POLICY, {
+    maxHeightM: 0.095,
+    cycles: 2,
+    frameThicknessMinM: 0.01,
+    frameThicknessMaxM: 0.028,
+    fallbackWoodThicknessM: 0.018,
+    amplitudeRatio: 0.03,
+    amplitudeMinM: 0.03,
+    amplitudeMaxM: 0.06,
+    sampleSpacingM: 0.02,
+    sampleCountMin: 24,
+    sampleCountMax: 180,
+    connectorInsetM: 0.0004,
+    minInteriorNormalLengthSq: 0.000001,
+  });
+  assert.deepEqual(CARCASS_CORNICE_PROFILE_POLICY, {
+    heightM: 0.08,
+    overhangXM: 0.06,
+    overhangZM: 0.04,
+    insetOnRoofM: 0.03,
+    backStepM: 0.02,
+    seamEpsilonM: 0,
+    baseHeightM: 0.022,
+    step1OutM: 0.006,
+    slopeHeightM: 0.03,
+    slopeOutM: 0.018,
+    step2OutM: 0.006,
+    capRiseM: 0.012,
+    capOutM: 0.004,
+    topLipOutM: 0.003,
+    minOverhangM: 0.001,
+    xMaxDefaultM: 1,
+    baseHeightRatio: 0.6,
+    slopeHeightRatio: 0.92,
+    capHeightRatio: 0.96,
+    miterEpsilonZM: 0.0005,
+    baseSealEpsilonM: 0.003,
+    baseBandEpsilonM: 0.000001,
+  });
+  assert.deepEqual(CARCASS_CORNICE_RENDER_POLICY, {
+    common: CARCASS_CORNICE_COMMON_POLICY,
+    wave: CARCASS_CORNICE_WAVE_POLICY,
+    profile: CARCASS_CORNICE_PROFILE_POLICY,
   });
 });
 

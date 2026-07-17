@@ -1,4 +1,4 @@
-import { CARCASS_CORNICE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_CORNICE_RENDER_POLICY } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import type {
   CornerConnectorCorniceCtx,
   CornerConnectorCorniceLocals,
@@ -55,8 +55,8 @@ export function applyCornerConnectorWaveCornice(args: {
   // - bottom sits on the roof plane
   // - inner face flush to the diagonal cabinet front
   // - only the TOP edge is wavy (peaks at ends + center)
-  const corniceCommon = CARCASS_CORNICE_DIMENSIONS.common;
-  const corniceWave = CARCASS_CORNICE_DIMENSIONS.wave;
+  const corniceCommon = CARCASS_CORNICE_RENDER_POLICY.common;
+  const corniceWave = CARCASS_CORNICE_RENDER_POLICY.wave;
   const topY = resolveCornerConnectorCorniceTopY(ctx);
   const epsY = corniceCommon.yLiftM;
   const yPlace = topY + epsY;

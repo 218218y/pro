@@ -42,6 +42,7 @@ test('autosave service guards: runtime gating blocks writes until the app is rea
   assert.deepEqual(commitAutosaveNowResult(notReady.App), {
     ok: false,
     reason: 'autosave-not-ready',
+    detail: 'system-not-ready',
   });
   assert.deepEqual(notReady.writes, []);
 
@@ -51,8 +52,21 @@ test('autosave service guards: runtime gating blocks writes until the app is rea
   assert.deepEqual(commitAutosaveNowResult(restoring.App), {
     ok: false,
     reason: 'autosave-not-ready',
+    detail: 'restore-in-progress',
   });
   assert.deepEqual(restoring.writes, []);
+
+  const unavailable = createApp({ systemReady: true, restoring: false });
+  unavailable.App.store.getState = () => {
+    throw new Error('runtime selector failed');
+  };
+  assert.equal(canAutosaveRun(unavailable.App), false);
+  assert.deepEqual(commitAutosaveNowResult(unavailable.App), {
+    ok: false,
+    reason: 'autosave-not-ready',
+    detail: 'runtime-state-unavailable',
+  });
+  assert.deepEqual(unavailable.writes, []);
 });
 
 test('autosave service reports storage write failures without marking the save successful', () => {

@@ -32,6 +32,8 @@ import {
   BASE_LEG_LAYOUT_POLICY,
 } from './dimensions/base_leg_policy.js';
 import { CHEST_STRUCTURAL_DIMENSIONS as CHEST_STRUCTURAL_DIMENSIONS_OWNER } from './dimensions/chest_structural_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from './dimensions/material_thickness_policy.js';
+import { CARCASS_CORNICE_RENDER_POLICY } from './dimensions/carcass_cornice_render_policy.js';
 import {
   STACK_SPLIT_LOWER_DEPTH_MAX,
   STACK_SPLIT_LOWER_DEPTH_MIN,
@@ -78,6 +80,8 @@ const BASE_LEG_DIMENSIONS = legacyDimensionNumberView(BASE_LEG_DIMENSIONS_OWNER)
 const BASE_PLINTH_DIMENSIONS = legacyDimensionNumberView(BASE_PLINTH_POLICY);
 const BASE_LEG_LAYOUT_DIMENSIONS = legacyDimensionNumberView(BASE_LEG_LAYOUT_POLICY);
 const CHEST_STRUCTURAL_DIMENSIONS = legacyDimensionNumberView(CHEST_STRUCTURAL_DIMENSIONS_OWNER);
+const MATERIAL_DIMENSIONS = legacyDimensionNumberView(MATERIAL_THICKNESS_POLICY);
+const CARCASS_CORNICE_DIMENSIONS = legacyDimensionNumberView(CARCASS_CORNICE_RENDER_POLICY);
 
 const WARDROBE_DEFAULTS = Object.freeze({
   ...WARDROBE_DEFAULTS_OWNER,
@@ -247,65 +251,7 @@ export const CARCASS_BASE_DIMENSIONS = Object.freeze({
   chest: CHEST_STRUCTURAL_DIMENSIONS,
 });
 
-export const MATERIAL_DIMENSIONS = Object.freeze({
-  wood: Object.freeze({
-    thicknessM: 0.018,
-  }),
-  glassShelf: Object.freeze({
-    thicknessM: 0.018,
-  }),
-});
-
-export { BASE_LEG_DIMENSIONS };
-
-export const CARCASS_CORNICE_DIMENSIONS = Object.freeze({
-  common: Object.freeze({
-    epsilonM: 1e-6,
-    yLiftM: 0.0006,
-    minSegmentLengthM: 0.02,
-    minBoxDimensionM: 0.001,
-    thetaClampM: 0.01,
-  }),
-  wave: Object.freeze({
-    maxHeightM: 0.095,
-    cycles: 2,
-    frameThicknessMinM: 0.01,
-    frameThicknessMaxM: 0.028,
-    fallbackWoodThicknessM: MATERIAL_DIMENSIONS.wood.thicknessM,
-    amplitudeRatio: 0.03,
-    amplitudeMinM: 0.03,
-    amplitudeMaxM: 0.06,
-    sampleSpacingM: 0.02,
-    sampleCountMin: 24,
-    sampleCountMax: 180,
-    connectorInsetM: 0.0004,
-    minInteriorNormalLengthSq: 1e-6,
-  }),
-  profile: Object.freeze({
-    heightM: 0.08,
-    overhangXM: 0.06,
-    overhangZM: 0.04,
-    insetOnRoofM: 0.03,
-    backStepM: 0.02,
-    seamEpsilonM: 0,
-    baseHeightM: 0.022,
-    step1OutM: 0.006,
-    slopeHeightM: 0.03,
-    slopeOutM: 0.018,
-    step2OutM: 0.006,
-    capRiseM: 0.012,
-    capOutM: 0.004,
-    topLipOutM: 0.003,
-    minOverhangM: 0.001,
-    xMaxDefaultM: 1,
-    baseHeightRatio: 0.6,
-    slopeHeightRatio: 0.92,
-    capHeightRatio: 0.96,
-    miterEpsilonZM: 0.0005,
-    baseSealEpsilonM: 0.003,
-    baseBandEpsilonM: 1e-6,
-  }),
-});
+export { BASE_LEG_DIMENSIONS, CARCASS_CORNICE_DIMENSIONS, MATERIAL_DIMENSIONS };
 
 export const DOOR_SYSTEM_DIMENSIONS = Object.freeze({
   hinged: Object.freeze({

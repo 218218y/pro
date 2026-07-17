@@ -22,7 +22,7 @@ import { commitAutosaveNow, commitAutosaveNowResult } from './autosave_runtime.j
 import { flushAutosavePending, scheduleAutosave, suspendAutosaveSchedule } from './autosave_schedule.js';
 import type {
   AppContainer,
-  AutosaveRefreshResult,
+  AutosaveOwnerRefreshResult,
   AutosaveServiceLike,
   AutosaveSuspensionLike,
 } from '../../../types';
@@ -32,8 +32,8 @@ type InstallableAutosaveService = AutosaveServiceLike & {
   __wpCancelPending?: () => boolean;
   __wpFlushPending?: () => boolean;
   __wpForceSaveNow?: () => boolean;
-  forceSaveNowResult?: () => AutosaveRefreshResult;
-  __wpForceSaveNowResult?: () => AutosaveRefreshResult;
+  forceSaveNowResult?: () => AutosaveOwnerRefreshResult;
+  __wpForceSaveNowResult?: () => AutosaveOwnerRefreshResult;
   __wpSuspend?: () => AutosaveSuspensionLike;
 };
 

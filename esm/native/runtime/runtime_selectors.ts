@@ -24,4 +24,6 @@ export {
   readRuntimeScalarOrDefaultFromApp,
   readRuntimeScalarOrDefaultFromStore,
   readRuntimeStateFromApp,
+  readRuntimeStateFromAppResult,
 } from './runtime_selectors_store.js';
+export type { RuntimeStateReadResult } from './runtime_selectors_store.js';

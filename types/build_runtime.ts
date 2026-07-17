@@ -186,7 +186,38 @@ export type AutosaveRefreshFailureReason =
   | 'storage-write-failed'
   | 'owner-rejected';
 
-export type AutosaveRefreshResult = { ok: true } | { ok: false; reason: AutosaveRefreshFailureReason };
+export type AutosaveReadinessDiagnosticDetail =
+  'system-not-ready' | 'restore-in-progress' | 'runtime-state-unavailable';
+
+export type AutosaveRuntimeAccessDiagnosticDetail =
+  'owner-threw' | 'owner-invalid-result' | 'legacy-owner-returned-false';
+
+export type AutosaveOwnerRefreshFailure =
+  | {
+      ok: false;
+      reason: 'autosave-not-ready';
+      detail: AutosaveReadinessDiagnosticDetail;
+    }
+  | { ok: false; reason: 'snapshot-unavailable' }
+  | { ok: false; reason: 'storage-write-failed' };
+
+export type AutosaveOwnerRefreshResult = { ok: true } | AutosaveOwnerRefreshFailure;
+
+export type AutosaveRuntimeRefreshFailure =
+  | AutosaveOwnerRefreshFailure
+  | { ok: false; reason: 'service-unavailable' }
+  | {
+      ok: false;
+      reason: 'owner-rejected';
+      detail: AutosaveRuntimeAccessDiagnosticDetail;
+    };
+
+export type AutosaveRuntimeRefreshResult = { ok: true } | AutosaveRuntimeRefreshFailure;
+
+export type AutosaveRefreshFailure =
+  AutosaveRuntimeRefreshFailure | { ok: false; reason: 'stale-restore-generation' };
+
+export type AutosaveRefreshResult = { ok: true } | AutosaveRefreshFailure;
 
 export interface AutosaveServiceLike extends UnknownRecord {
   allow?: boolean;

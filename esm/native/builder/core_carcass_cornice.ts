@@ -1,13 +1,13 @@
 // Builder core carcass cornice assembly.
 
-import { CARCASS_CORNICE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_CORNICE_RENDER_POLICY } from '../../shared/dimensions/carcass_cornice_render_policy.js';
 import type { MutableRecord } from './core_pure_shared.js';
 import { CARCASS_BACK_INSET_Z, type PreparedCarcassInput } from './core_carcass_shared.js';
 import { resolveHexCellGeometry, type HexCellGeometry } from '../features/hex_cell/index.js';
 
-const CORNICE_COMMON = CARCASS_CORNICE_DIMENSIONS.common;
-const CORNICE_WAVE = CARCASS_CORNICE_DIMENSIONS.wave;
-const CORNICE_PROFILE = CARCASS_CORNICE_DIMENSIONS.profile;
+const CORNICE_COMMON = CARCASS_CORNICE_RENDER_POLICY.common;
+const CORNICE_WAVE = CARCASS_CORNICE_RENDER_POLICY.wave;
+const CORNICE_PROFILE = CARCASS_CORNICE_RENDER_POLICY.profile;
 
 const CORNICE_EPS = CORNICE_COMMON.epsilonM;
 const CORNICE_Y_EPS = CORNICE_COMMON.yLiftM;
@@ -18,7 +18,7 @@ const WAVE_CYCLES = CORNICE_WAVE.cycles;
 const PROFILE_HEIGHT = CORNICE_PROFILE.heightM;
 const PROFILE_OVERHANG_X = CORNICE_PROFILE.overhangXM;
 const PROFILE_OVERHANG_Z = CORNICE_PROFILE.overhangZM;
-const PROFILE_INSET_ON_ROOF = CORNICE_PROFILE.insetOnRoofM;
+const PROFILE_INSET_ON_ROOF = Number(CORNICE_PROFILE.insetOnRoofM);
 const PROFILE_BACK_STEP = CORNICE_PROFILE.backStepM;
 const PROFILE_SEAM_EPS = CORNICE_PROFILE.seamEpsilonM;
 

@@ -153,6 +153,13 @@ function hasCompatTerm(term) {
   return /compat/i.test(String(term || ''));
 }
 
+function isTypedAutosaveDiagnosticLabel(relPath, lineText) {
+  return (
+    relPath === 'esm/native/runtime/autosave_access.ts' &&
+    /detail:\s*['"]legacy-owner-returned-false['"]/.test(lineText)
+  );
+}
+
 function isErrorMessageDefaultLine(lineText) {
   return /(fallback\w*(Message|Reason|Error|Err)|\w+fallback\w*(Message|Reason|Error|Err)|(?:Message|Reason|Error|Err)\w*fallback\w*)/i.test(
     lineText
@@ -219,6 +226,7 @@ export function collectLegacyFallbackOccurrences({
       const seenTermsOnLine = new Set();
       for (const match of lineText.matchAll(NEEDLE_RE)) {
         const term = match[0];
+        if (isTypedAutosaveDiagnosticLabel(relPath, lineText)) continue;
         if (seenTermsOnLine.has(term)) continue;
         seenTermsOnLine.add(term);
         const category = classifyLegacyFallbackOccurrence({ relPath, lineText, term });

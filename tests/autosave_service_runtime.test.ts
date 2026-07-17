@@ -66,12 +66,43 @@ test('autosave access preserves safe failure reasons and rejects invalid owner r
   assert.deepEqual(forceAutosaveNowResultViaService(App), {
     ok: false,
     reason: 'owner-rejected',
+    detail: 'owner-invalid-result',
+  });
+
+  App.services.autosave.forceSaveNowResult = undefined;
+  App.services.autosave.forceSaveNow = () => false;
+  assert.deepEqual(forceAutosaveNowResultViaService(App), {
+    ok: false,
+    reason: 'owner-rejected',
+    detail: 'legacy-owner-returned-false',
   });
 
   assert.deepEqual(forceAutosaveNowResultViaService({ services: {} }), {
     ok: false,
     reason: 'service-unavailable',
   });
+});
+
+test('autosave access reports the original owner exception and returns only safe diagnostic detail', () => {
+  const ownerError = new Error('autosave owner exploded');
+  const reports: unknown[] = [];
+  const App = {
+    services: {
+      autosave: {
+        forceSaveNowResult() {
+          throw ownerError;
+        },
+      },
+    },
+  };
+
+  assert.deepEqual(
+    forceAutosaveNowResultViaService(App, error => {
+      reports.push(error);
+    }),
+    { ok: false, reason: 'owner-rejected', detail: 'owner-threw' }
+  );
+  assert.deepEqual(reports, [ownerError]);
 });
 
 test('autosave access: canonical autosave info normalization keeps restore availability but drops junk fields', () => {

@@ -1,6 +1,7 @@
 import type {
-  AutosaveRefreshFailureReason,
-  AutosaveRefreshResult,
+  AutosaveOwnerRefreshResult,
+  AutosaveReadinessDiagnosticDetail,
+  AutosaveRuntimeRefreshResult,
   AutosaveServiceLike,
   AutosaveSuspensionLike,
   ProjectLoadInputLike,
@@ -19,16 +20,13 @@ export type AutosavePayloadStorageReadResult =
   { ok: true; payload: ProjectLoadInputLike } | { ok: false; reason: 'missing-autosave' | 'invalid' };
 
 type AutosaveRefreshResultOwner = AutosaveServiceLike & {
-  forceSaveNowResult?: () => AutosaveRefreshResult;
+  forceSaveNowResult?: () => AutosaveOwnerRefreshResult;
 };
 
-const AUTOSAVE_REFRESH_FAILURE_REASONS = new Set<AutosaveRefreshFailureReason>([
-  'stale-restore-generation',
-  'service-unavailable',
-  'autosave-not-ready',
-  'snapshot-unavailable',
-  'storage-write-failed',
-  'owner-rejected',
+const AUTOSAVE_READINESS_DETAILS = new Set<AutosaveReadinessDiagnosticDetail>([
+  'system-not-ready',
+  'restore-in-progress',
+  'runtime-state-unavailable',
 ]);
 
 function asAutosaveService(value: unknown): AutosaveServiceLike | null {
@@ -174,39 +172,66 @@ export function forceAutosaveNowViaService(App: unknown): boolean {
   return forceAutosaveNowResultViaService(App).ok;
 }
 
-function normalizeAutosaveRefreshResult(value: unknown): AutosaveRefreshResult | null {
+function normalizeAutosaveOwnerRefreshResult(value: unknown): AutosaveOwnerRefreshResult | null {
   const result = asRecord<Record<string, unknown>>(value);
   if (result?.ok === true) return { ok: true };
   const reason = result?.reason;
+  if (result?.ok !== false || typeof reason !== 'string') return null;
+
   if (
-    result?.ok === false &&
-    typeof reason === 'string' &&
-    AUTOSAVE_REFRESH_FAILURE_REASONS.has(reason as AutosaveRefreshFailureReason)
+    reason === 'autosave-not-ready' &&
+    typeof result.detail === 'string' &&
+    AUTOSAVE_READINESS_DETAILS.has(result.detail as AutosaveReadinessDiagnosticDetail)
   ) {
-    return { ok: false, reason: reason as AutosaveRefreshFailureReason };
+    return {
+      ok: false,
+      reason: 'autosave-not-ready',
+      detail: result.detail as AutosaveReadinessDiagnosticDetail,
+    };
+  }
+  if (result.detail === undefined && reason === 'snapshot-unavailable') {
+    return { ok: false, reason: 'snapshot-unavailable' };
+  }
+  if (result.detail === undefined && reason === 'storage-write-failed') {
+    return { ok: false, reason: 'storage-write-failed' };
   }
   return null;
 }
 
-export function forceAutosaveNowResultViaService(App: unknown): AutosaveRefreshResult {
+export function forceAutosaveNowResultViaService(
+  App: unknown,
+  reportOwnerThrow?: (error: unknown) => void
+): AutosaveRuntimeRefreshResult {
+  let service: AutosaveRefreshResultOwner | null;
   try {
-    const service = getAutosaveServiceMaybe(App) as AutosaveRefreshResultOwner | null;
-    if (!service) return { ok: false, reason: 'service-unavailable' };
+    service = getAutosaveServiceMaybe(App) as AutosaveRefreshResultOwner | null;
+  } catch {
+    return { ok: false, reason: 'service-unavailable' };
+  }
+  if (!service) return { ok: false, reason: 'service-unavailable' };
 
+  try {
     if (typeof service.forceSaveNowResult === 'function') {
-      const result = normalizeAutosaveRefreshResult(Reflect.apply(service.forceSaveNowResult, service, []));
-      return result || { ok: false, reason: 'owner-rejected' };
+      const result = normalizeAutosaveOwnerRefreshResult(
+        Reflect.apply(service.forceSaveNowResult, service, [])
+      );
+      return result || { ok: false, reason: 'owner-rejected', detail: 'owner-invalid-result' };
     }
 
     if (typeof service.forceSaveNow === 'function') {
       return Reflect.apply(service.forceSaveNow, service, [])
         ? { ok: true }
-        : { ok: false, reason: 'owner-rejected' };
+        : { ok: false, reason: 'owner-rejected', detail: 'legacy-owner-returned-false' };
     }
 
     return { ok: false, reason: 'service-unavailable' };
-  } catch {
-    return { ok: false, reason: 'owner-rejected' };
+  } catch (error) {
+    try {
+      reportOwnerThrow?.(error);
+    } catch {
+      // Diagnostics must not replace the autosave owner failure.
+    }
+    return { ok: false, reason: 'owner-rejected', detail: 'owner-threw' };
   }
 }
 

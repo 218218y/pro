@@ -3,18 +3,21 @@ import { reportError } from '../runtime/errors.js';
 import { getAutosaveServiceMaybe } from '../runtime/autosave_access.js';
 
 import {
-  canAutosaveRun,
   getAutosaveStorageKey,
   isAutosaveServiceLike,
+  readAutosaveReadiness,
   stampAutosaveInfoUi,
   writeAutosavePayloadToStorage,
 } from './autosave_shared.js';
 import { captureAutosaveSnapshot } from './autosave_snapshot.js';
 
-import type { AppContainer, AutosaveRefreshResult, AutosaveServiceLike } from '../../../types';
+import type { AppContainer, AutosaveOwnerRefreshResult, AutosaveServiceLike } from '../../../types';
 
-export function commitAutosaveNowResult(App: AppContainer): AutosaveRefreshResult {
-  if (!canAutosaveRun(App)) return { ok: false, reason: 'autosave-not-ready' };
+export function commitAutosaveNowResult(App: AppContainer): AutosaveOwnerRefreshResult {
+  const readiness = readAutosaveReadiness(App);
+  if (readiness.ok === false) {
+    return { ok: false, reason: 'autosave-not-ready', detail: readiness.detail };
+  }
 
   const dataObj = captureAutosaveSnapshot(App);
   if (!dataObj) return { ok: false, reason: 'snapshot-unavailable' };
@@ -29,7 +32,7 @@ export function commitAutosaveNowResult(App: AppContainer): AutosaveRefreshResul
     reportError(
       App,
       new Error('Autosave storage write failed'),
-      { where: 'services/autosave', op: 'commitAutosaveNow.writeStorage', storageKey, nonFatal: true },
+      { where: 'services/autosave', op: 'commitAutosaveNow.writeStorage', nonFatal: true },
       { consoleOutput: false }
     );
   }
