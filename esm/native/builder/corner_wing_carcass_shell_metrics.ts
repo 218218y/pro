@@ -1,4 +1,4 @@
-import { CARCASS_SHELL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
 import type { CornerCell } from './corner_geometry_plan.js';
 import type { CornerWingCarcassFlowParams } from './corner_wing_carcass_shared.js';
 
@@ -44,7 +44,7 @@ export function resolveCornerWingHorizPlacement(
   params: CornerWingCarcassFlowParams,
   metrics: CornerWingCarcassShellMetrics,
   baseDepth: number,
-  minDepth = CARCASS_SHELL_DIMENSIONS.bodyMinDepthM
+  minDepth: number = CARCASS_SHELL_DIMENSIONS.bodyMinDepthM
 ): CornerWingShellPlacement {
   const { wingD } = params.ctx;
   const d0 = Number.isFinite(baseDepth) && baseDepth > 0 ? baseDepth : wingD;
@@ -57,7 +57,7 @@ export function resolveCornerWingWallPlacement(
   params: CornerWingCarcassFlowParams,
   metrics: CornerWingCarcassShellMetrics,
   baseDepth: number,
-  minDepth = CARCASS_SHELL_DIMENSIONS.bodyMinDepthM
+  minDepth: number = CARCASS_SHELL_DIMENSIONS.bodyMinDepthM
 ): CornerWingShellPlacement {
   const { wingD } = params.ctx;
   const d0 = Number.isFinite(baseDepth) && baseDepth > 0 ? baseDepth : wingD;

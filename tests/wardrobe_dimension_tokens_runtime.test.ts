@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 import {
   BASE_LEG_DIMENSIONS,
+  CARCASS_INTERIOR_DIMENSIONS as FACADE_CARCASS_INTERIOR_DIMENSIONS,
+  CARCASS_SHELL_DIMENSIONS as FACADE_CARCASS_SHELL_DIMENSIONS,
   DOOR_SYSTEM_DIMENSIONS,
   DOOR_TRIM_DIMENSIONS,
   DRAWER_DIMENSIONS,
@@ -10,6 +12,8 @@ import {
   WARDROBE_DEFAULTS as FACADE_WARDROBE_DEFAULTS,
   resolveExternalDrawerGeometry,
 } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { CARCASS_SHELL_DIMENSIONS } from '../esm/shared/dimensions/carcass_shell_policy.ts';
+import { CARCASS_INTERIOR_DIMENSIONS } from '../esm/shared/dimensions/carcass_interior_policy.ts';
 import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
@@ -140,6 +144,37 @@ test('dimension foundation uses explicit unit constructors and conversions witho
   assert.equal(worldUnitsToMeters(metersToWorldUnits(centimetersToMeters(centimeters(55)))), 0.55);
   assert.equal(pixels(320), 320);
   assert.throws(() => centimeters(Number.NaN), /finite number/);
+});
+
+test('carcass shell and interior policies preserve facade identity and every migrated value', () => {
+  assert.equal(FACADE_CARCASS_SHELL_DIMENSIONS, CARCASS_SHELL_DIMENSIONS);
+  assert.equal(FACADE_CARCASS_INTERIOR_DIMENSIONS, CARCASS_INTERIOR_DIMENSIONS);
+  assert.deepEqual(CARCASS_SHELL_DIMENSIONS, {
+    frontInsetZM: 0.005,
+    backInsetZM: 0.0078,
+    boardMinDimensionM: 0.001,
+    boardMinDepthM: 0.02,
+    bodyMinDepthM: 0.05,
+    bodyMinHeightM: 0.05,
+    floorCeilWidthClearanceM: 0.001,
+    backPanelWidthClearanceM: 0.002,
+    backPanelSegmentWidthClearanceM: 0.002,
+    backPanelThicknessM: 0.005,
+    backPanelZM: 0.005,
+    sideDepthClearanceM: 0.0078,
+    sideZOffsetM: 0.0039,
+    internalBackInsetM: 0.005,
+    drawerGridDivisions: 6,
+    drawerSplitGridLineIndex: 4,
+  });
+  assert.deepEqual(CARCASS_INTERIOR_DIMENSIONS, {
+    minTopBodyHeightM: 0.05,
+    slidingDepthReductionM: 0.12,
+    hingedDepthReductionM: 0.03,
+    internalBackInsetM: 0.005,
+  });
+  assert.equal(CARCASS_INTERIOR_DIMENSIONS.minTopBodyHeightM, CARCASS_SHELL_DIMENSIONS.bodyMinHeightM);
+  assert.equal(CARCASS_INTERIOR_DIMENSIONS.internalBackInsetM, CARCASS_SHELL_DIMENSIONS.internalBackInsetM);
 });
 
 test('feature facades read physical dimensions from the shared token source', () => {

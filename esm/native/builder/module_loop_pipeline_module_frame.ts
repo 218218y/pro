@@ -1,4 +1,4 @@
-import { CARCASS_SHELL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
 import { resolveExternalDrawerFitFromBody } from '../../shared/wardrobe_construction_validation_shared.js';
 import { resolveModuleDepthProfile } from './module_loop_pipeline_module_depth.js';
 

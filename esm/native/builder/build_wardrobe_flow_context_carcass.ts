@@ -1,4 +1,4 @@
-import { CARCASS_SHELL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
 import { applyCarcassAndGetCabinetMetrics } from './carcass_pipeline.js';
 
 import type { AppContainer, BuilderOutlineFn, ThreeLike, UnknownRecord } from '../../../types';

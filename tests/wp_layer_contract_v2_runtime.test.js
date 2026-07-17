@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import {
   analyzeModuleDependencies,
   buildLayerContractProposal,
+  collectNamedModuleExports,
   collectStaticModuleImports,
   collectStaticModuleSpecifiers,
   evaluateLayerContract,
@@ -105,6 +106,66 @@ test('layer contract parser reads AST imports and classifies type, value, and dy
       '../services/types.js',
     ].sort()
   );
+
+  const namedBindings = collectStaticModuleImports(
+    'fixture.ts',
+    `
+      import { STACK_SPLIT_SEAM_GAP_M as seamGap, type StackOptions } from '../shared/facade.js';
+      export { DEFAULT_STACK_SPLIT_LOWER_HEIGHT as defaultLowerHeight } from '../shared/facade.js';
+    `
+  ).map(({ kind, importedSymbols, exportedSymbols }) => ({
+    kind,
+    importedSymbols,
+    exportedSymbols,
+  }));
+  assert.deepEqual(namedBindings, [
+    { kind: 'type', importedSymbols: ['StackOptions'], exportedSymbols: [] },
+    { kind: 'value', importedSymbols: ['STACK_SPLIT_SEAM_GAP_M'], exportedSymbols: [] },
+    {
+      kind: 'value',
+      importedSymbols: ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT'],
+      exportedSymbols: ['defaultLowerHeight'],
+    },
+  ]);
+});
+
+test('layer contract parser collects named local exports and re-export aliases', () => {
+  const exports = collectNamedModuleExports(
+    'fixture.ts',
+    `
+      const STACK_SPLIT_LOCAL = 1;
+      export { STACK_SPLIT_LOCAL, STACK_SPLIT_LOCAL as STACK_SPLIT_ALIAS };
+      export const DEFAULT_STACK_SPLIT_POLICY = 2;
+      export { STACK_SPLIT_SEAM_GAP_M as seamGap } from '../shared/facade.js';
+    `
+  ).map(({ localName, exportedName, source, kind }) => ({ localName, exportedName, source, kind }));
+
+  assert.deepEqual(exports, [
+    {
+      localName: 'STACK_SPLIT_LOCAL',
+      exportedName: 'STACK_SPLIT_LOCAL',
+      source: null,
+      kind: 'value',
+    },
+    {
+      localName: 'STACK_SPLIT_LOCAL',
+      exportedName: 'STACK_SPLIT_ALIAS',
+      source: null,
+      kind: 'value',
+    },
+    {
+      localName: 'DEFAULT_STACK_SPLIT_POLICY',
+      exportedName: 'DEFAULT_STACK_SPLIT_POLICY',
+      source: null,
+      kind: 'value',
+    },
+    {
+      localName: 'STACK_SPLIT_SEAM_GAP_M',
+      exportedName: 'seamGap',
+      source: '../shared/facade.js',
+      kind: 'value',
+    },
+  ]);
 });
 
 test('layer contract classifies shared, entry, composition, and executable import probes explicitly', () => {

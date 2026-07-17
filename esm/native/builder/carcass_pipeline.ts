@@ -14,7 +14,7 @@ import type {
 import { asRecord } from '../runtime/record.js';
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { computeCarcassOps } from './pure_api.js';
-import { CARCASS_SHELL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
 import { CARCASS_BACK_INSET_Z, CARCASS_FRONT_INSET_Z } from './core_carcass_shared.js';
 import {
   readCarcassPipelineIntegerOr,

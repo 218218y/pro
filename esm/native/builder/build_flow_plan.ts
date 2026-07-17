@@ -1,4 +1,4 @@
-import { CARCASS_INTERIOR_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_INTERIOR_DIMENSIONS } from '../../shared/dimensions/carcass_interior_policy.js';
 import { resolveBuildFlowPlanInputs } from './build_flow_plan_inputs.js';
 
 import type { BuildFlowPlan, BuildFlowPlanResolveArgs } from './build_flow_plan_contracts.js';

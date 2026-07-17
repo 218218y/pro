@@ -1,4 +1,4 @@
-import { CARCASS_SHELL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
 import { getWardrobeGroup } from '../runtime/render_access.js';
 import { resolveHexCellGeometry } from '../features/hex_cell/index.js';
 import {

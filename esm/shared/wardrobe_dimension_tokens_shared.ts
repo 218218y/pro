@@ -24,6 +24,8 @@ import {
   STACK_SPLIT_SEAM_GAP_M,
 } from './dimensions/stack_split_policy.js';
 import { STACK_SPLIT_RENDER_POLICY } from './dimensions/stack_split_render_policy.js';
+import { CARCASS_SHELL_DIMENSIONS } from './dimensions/carcass_shell_policy.js';
+import { CARCASS_INTERIOR_DIMENSIONS } from './dimensions/carcass_interior_policy.js';
 import {
   STACK_SPLIT_LOWER_DEPTH_MAX,
   STACK_SPLIT_LOWER_DEPTH_MIN,
@@ -87,6 +89,7 @@ export {
   WARDROBE_DEFAULTS,
 };
 export type { WardrobeDimensionDefaultType } from './dimensions/wardrobe_defaults.js';
+export { CARCASS_SHELL_DIMENSIONS, CARCASS_INTERIOR_DIMENSIONS };
 export {
   STACK_SPLIT_LOWER_DEPTH_MAX,
   STACK_SPLIT_LOWER_DEPTH_MIN,
@@ -215,32 +218,6 @@ export const LIBRARY_PRESET_DIMENSIONS = Object.freeze({
   minTopHeightCm: STACK_SPLIT_POLICY.limits.minTopHeightCm,
   defaultLowerHeightCm: 80,
   lowerDepthInsetCm: 5,
-});
-
-export const CARCASS_SHELL_DIMENSIONS = Object.freeze({
-  frontInsetZM: 0.005,
-  backInsetZM: 0.0078,
-  boardMinDimensionM: 0.001,
-  boardMinDepthM: 0.02,
-  bodyMinDepthM: 0.05,
-  bodyMinHeightM: 0.05,
-  floorCeilWidthClearanceM: 0.001,
-  backPanelWidthClearanceM: 0.002,
-  backPanelSegmentWidthClearanceM: 0.002,
-  backPanelThicknessM: 0.005,
-  backPanelZM: 0.005,
-  sideDepthClearanceM: 0.0078,
-  sideZOffsetM: 0.0039,
-  internalBackInsetM: 0.005,
-  drawerGridDivisions: 6,
-  drawerSplitGridLineIndex: 4,
-});
-
-export const CARCASS_INTERIOR_DIMENSIONS = Object.freeze({
-  minTopBodyHeightM: CARCASS_SHELL_DIMENSIONS.bodyMinHeightM,
-  slidingDepthReductionM: 0.12,
-  hingedDepthReductionM: 0.03,
-  internalBackInsetM: CARCASS_SHELL_DIMENSIONS.internalBackInsetM,
 });
 
 export const CARCASS_BASE_DIMENSIONS = Object.freeze({

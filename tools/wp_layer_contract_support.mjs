@@ -120,6 +120,83 @@ function moduleDependencySyntax(node) {
   return 'type-import';
 }
 
+function readModuleBindingName(node) {
+  if (!node || typeof node !== 'object') return null;
+  if (typeof node.name === 'string' && node.name) return node.name;
+  if (typeof node.value === 'string' && node.value) return node.value;
+  return null;
+}
+
+function moduleSpecifierKind(node, specifier) {
+  const declarationKind = node?.type === 'ImportDeclaration' ? node.importKind : node?.exportKind;
+  if (declarationKind === 'type') return 'type';
+  const specifierKind = node?.type === 'ImportDeclaration' ? specifier?.importKind : specifier?.exportKind;
+  return specifierKind === 'type' ? 'type' : 'value';
+}
+
+function moduleDependencyBindings(node, kind) {
+  if (node?.type === 'ImportExpression' || node?.type === 'TSImportType') {
+    return { importedSymbols: ['*'], exportedSymbols: [] };
+  }
+  if (node?.type === 'ExportAllDeclaration') {
+    const exportedName = readModuleBindingName(node.exported) || '*';
+    return { importedSymbols: ['*'], exportedSymbols: [exportedName] };
+  }
+
+  const importedSymbols = [];
+  const exportedSymbols = [];
+  for (const specifier of Array.isArray(node?.specifiers) ? node.specifiers : []) {
+    if (moduleSpecifierKind(node, specifier) !== kind) continue;
+    if (specifier?.type === 'ImportDefaultSpecifier') {
+      importedSymbols.push('default');
+      continue;
+    }
+    if (specifier?.type === 'ImportNamespaceSpecifier') {
+      importedSymbols.push('*');
+      continue;
+    }
+    if (specifier?.type === 'ImportSpecifier') {
+      const importedName = readModuleBindingName(specifier.imported);
+      if (importedName) importedSymbols.push(importedName);
+      continue;
+    }
+    if (specifier?.type === 'ExportSpecifier') {
+      const importedName = readModuleBindingName(specifier.local);
+      const exportedName = readModuleBindingName(specifier.exported);
+      if (importedName) importedSymbols.push(importedName);
+      if (exportedName) exportedSymbols.push(exportedName);
+    }
+  }
+  return { importedSymbols, exportedSymbols };
+}
+
+function collectBindingPatternNames(node, out) {
+  const name = readModuleBindingName(node);
+  if (name) {
+    out.push(name);
+    return;
+  }
+  if (node?.type === 'ObjectPattern') {
+    for (const property of node.properties || []) {
+      collectBindingPatternNames(property?.value || property?.argument, out);
+    }
+  } else if (node?.type === 'ArrayPattern') {
+    for (const element of node.elements || []) collectBindingPatternNames(element, out);
+  } else if (node?.type === 'AssignmentPattern' || node?.type === 'RestElement') {
+    collectBindingPatternNames(node.left || node.argument, out);
+  }
+}
+
+function exportedDeclarationNames(declaration) {
+  const names = [];
+  if (declaration?.type === 'VariableDeclaration') {
+    for (const item of declaration.declarations || []) collectBindingPatternNames(item?.id, names);
+  } else {
+    collectBindingPatternNames(declaration?.id, names);
+  }
+  return names;
+}
+
 export function analyzeModuleDependencies(file, sourceText) {
   const sourceFile = createSourceFile(file, sourceText, { label: 'wp_layer_contract' });
   const imports = [];
@@ -166,10 +243,66 @@ export function analyzeModuleDependencies(file, sourceText) {
     const statementStart = Number.isFinite(Number(node.start)) ? Number(node.start) : imports.length;
     const syntax = moduleDependencySyntax(node);
     for (const kind of staticModuleKinds(node)) {
-      imports.push({ specifier, kind, statementStart, syntax });
+      const bindings = moduleDependencyBindings(node, kind);
+      imports.push({ specifier, kind, statementStart, syntax, ...bindings });
     }
   });
   return { imports, unresolvedDynamicImports, forbiddenModuleSyntax };
+}
+
+export function collectNamedModuleExports(file, sourceText) {
+  const sourceFile = createSourceFile(file, sourceText, { label: 'wp_layer_contract_exports' });
+  const exports = [];
+  walkAst(sourceFile, node => {
+    if (node?.type === 'ExportDefaultDeclaration') {
+      exports.push({
+        localName: readModuleBindingName(node.declaration?.id),
+        exportedName: 'default',
+        source: null,
+        kind: 'value',
+        statementStart: Number(node.start) || 0,
+      });
+      return;
+    }
+    if (node?.type === 'ExportAllDeclaration') {
+      exports.push({
+        localName: '*',
+        exportedName: readModuleBindingName(node.exported) || '*',
+        source: readStaticModuleSpecifier(node.source),
+        kind: node.exportKind === 'type' ? 'type' : 'value',
+        statementStart: Number(node.start) || 0,
+      });
+      return;
+    }
+    if (node?.type !== 'ExportNamedDeclaration') return;
+
+    const source = readStaticModuleSpecifier(node.source);
+    for (const specifier of node.specifiers || []) {
+      if (specifier?.type !== 'ExportSpecifier') continue;
+      const localName = readModuleBindingName(specifier.local);
+      const exportedName = readModuleBindingName(specifier.exported);
+      if (!exportedName) continue;
+      exports.push({
+        localName,
+        exportedName,
+        source,
+        kind: moduleSpecifierKind(node, specifier),
+        statementStart: Number(node.start) || 0,
+      });
+    }
+    const declarationKind =
+      node.exportKind === 'type' || String(node.declaration?.type || '').startsWith('TS') ? 'type' : 'value';
+    for (const name of exportedDeclarationNames(node.declaration)) {
+      exports.push({
+        localName: name,
+        exportedName: name,
+        source: null,
+        kind: declarationKind,
+        statementStart: Number(node.start) || 0,
+      });
+    }
+  });
+  return exports;
 }
 
 export function collectStaticModuleImports(file, sourceText) {

@@ -179,7 +179,7 @@ test('decorative stack split lower carcass keeps the bottom leg stage and suppre
     },
   } as any;
 
-  prepareStackSplitLowerSetup({
+  const prepared = prepareStackSplitLowerSetup({
     App,
     THREE: FAKE_THREE,
     state: {},
@@ -262,6 +262,28 @@ test('decorative stack split lower carcass keeps the bottom leg stage and suppre
     calculateModuleStructure: (doorsCount: number) => [{ doors: doorsCount / 2 }, { doors: doorsCount / 2 }],
     notesToPreserve: null,
   } as any);
+
+  const roundGeometry = (value: number): number => Math.round(value * 1_000_000) / 1_000_000;
+  assert.deepEqual(
+    {
+      splitY: roundGeometry(prepared.splitY),
+      bottomStartY: roundGeometry(prepared.bottomStartY),
+      bottomCabinetBodyHeight: roundGeometry(prepared.bottomCabinetBodyHeight),
+      bottomCabinetTopY: roundGeometry(prepared.bottomCabinetTopY),
+      bottomInternalDepth: roundGeometry(prepared.bottomInternalDepth),
+      bottomInternalZ: roundGeometry(prepared.bottomInternalZ),
+      bottomSplitLineY: roundGeometry(prepared.bottomSplitLineY),
+    },
+    {
+      splitY: 1.002,
+      bottomStartY: 0.148,
+      bottomCabinetBodyHeight: 0.852,
+      bottomCabinetTopY: 1,
+      bottomInternalDepth: 0.53,
+      bottomInternalZ: -0.03,
+      bottomSplitLineY: 0.71,
+    }
+  );
 
   assert.equal(renderedOps.length, 1);
   const platforms = renderedOps[0]?.base?.platforms || [];

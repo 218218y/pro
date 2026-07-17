@@ -2,7 +2,7 @@
 
 import { __asNum } from './core_pure_shared.js';
 import type { MutableRecord } from './core_pure_shared.js';
-import { CARCASS_SHELL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
 import {
   CARCASS_BACK_INSET_Z,
   CARCASS_FRONT_INSET_Z,

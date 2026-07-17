@@ -1,4 +1,4 @@
-import { CARCASS_SHELL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
 import { computeInteriorPresetOps } from '../features/interior_layout_presets/api.js';
 import { __wp_resolveInteriorHoverTarget } from './canvas_picking_local_helpers.js';
 import type { CanvasInteriorHoverFlowArgs } from './canvas_picking_interior_hover_shared.js';
