@@ -5,6 +5,19 @@ import { runPreparedBuildWardrobeFlow } from '../esm/native/builder/build_wardro
 import { createBuildFlowOrchestrationContext } from '../esm/native/builder/build_app_context.ts';
 import { withSuppressedConsole } from './_console_silence.ts';
 
+function captureThrownValue(run: () => unknown): unknown {
+  let didThrow = false;
+  let thrownValue: unknown;
+  try {
+    run();
+  } catch (error) {
+    didThrow = true;
+    thrownValue = error;
+  }
+  assert.equal(didThrow, true, 'expected callback to throw');
+  return thrownValue;
+}
+
 function createPrepared() {
   const App: any = {};
   const orchestrationCalls: string[] = [];
@@ -124,6 +137,31 @@ test('build wardrobe flow runtime: reporter failure cannot replace the original 
   assert.deepEqual(prepared.orchestrationCalls, ['secondary:build-failure-report:reporter-error']);
 });
 
+test('build wardrobe flow runtime: falsy build errors survive reporter failure and best-effort finalize', () => {
+  for (const thrownValue of [0, '', false, null, undefined]) {
+    const prepared = createPrepared();
+    const calls: string[] = [];
+
+    const caught = captureThrownValue(() =>
+      runPreparedBuildWardrobeFlow(prepared, {
+        execute: () => {
+          throw thrownValue;
+        },
+        reportBuildFailure: () => {
+          throw new Error('reporter-error');
+        },
+        finalizeBuildBestEffort: () => {
+          calls.push('bestEffort');
+        },
+      })
+    );
+
+    assert.equal(Object.is(caught, thrownValue), true);
+    assert.deepEqual(calls, ['bestEffort']);
+    assert.deepEqual(prepared.orchestrationCalls, ['secondary:build-failure-report:reporter-error']);
+  }
+});
+
 test('build wardrobe flow runtime: fail-fast toast failure stays secondary to the build error', () => {
   const reports: Array<{ error: unknown; context: any }> = [];
   const App: any = {
@@ -207,4 +245,27 @@ test('build wardrobe flow runtime: finalize reporter failure cannot replace the 
   assert.deepEqual(prepared.orchestrationCalls, [
     'secondary:finalize-failure-report:finalize-reporter-error',
   ]);
+});
+
+test('build wardrobe flow runtime: falsy finalize errors remain authoritative when reporting throws', () => {
+  for (const thrownValue of [0, '', false, null, undefined]) {
+    const prepared = createPrepared();
+    prepared.orchestration.reportFinalizeFailure = () => {
+      throw new Error('finalize-reporter-error');
+    };
+
+    const caught = captureThrownValue(() =>
+      runPreparedBuildWardrobeFlow(prepared, {
+        execute: () => ({ id: 'ctx' }) as any,
+        finalizeBuild: () => {
+          throw thrownValue;
+        },
+      })
+    );
+
+    assert.equal(Object.is(caught, thrownValue), true);
+    assert.deepEqual(prepared.orchestrationCalls, [
+      'secondary:finalize-failure-report:finalize-reporter-error',
+    ]);
+  }
 });

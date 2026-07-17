@@ -10,16 +10,20 @@ import {
   DEFAULT_HEIGHT,
   DEFAULT_HINGED_DOORS,
   DEFAULT_SLIDING_DOORS,
-  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
   DEFAULT_WIDTH,
   HINGED_DEFAULT_DEPTH,
   HINGED_DEFAULT_PER_DOOR_WIDTH,
   SLIDING_DEFAULT_DEPTH,
   SLIDING_DEFAULT_PER_DOOR_WIDTH,
-  STACK_SPLIT_SEAM_GAP_M,
-  WARDROBE_DEFAULTS,
+  WARDROBE_DEFAULTS as WARDROBE_DEFAULTS_OWNER,
 } from './dimensions/wardrobe_defaults.js';
 import type { WardrobeDimensionDefaultType } from './dimensions/wardrobe_defaults.js';
+import {
+  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
+  STACK_SPLIT_POLICY,
+  STACK_SPLIT_SEAM_GAP_M,
+} from './dimensions/stack_split_policy.js';
+import { STACK_SPLIT_RENDER_POLICY } from './dimensions/stack_split_render_policy.js';
 import {
   STACK_SPLIT_LOWER_DEPTH_MAX,
   STACK_SPLIT_LOWER_DEPTH_MIN,
@@ -51,6 +55,18 @@ import {
   WARDROBE_WIDTH_MAX,
   WARDROBE_WIDTH_MIN,
 } from './dimensions/product_limits.js';
+
+const WARDROBE_DEFAULTS = Object.freeze({
+  ...WARDROBE_DEFAULTS_OWNER,
+  stackSplit: Object.freeze({
+    lowerHeightCm: STACK_SPLIT_POLICY.defaults.lowerHeightCm,
+    minTopHeightCm: STACK_SPLIT_POLICY.limits.minTopHeightCm,
+    minLowerHeightCm: STACK_SPLIT_POLICY.limits.minLowerHeightCm,
+    seamGapM: STACK_SPLIT_POLICY.seam.gapM,
+    lowerWidthDefaultCm: STACK_SPLIT_POLICY.defaults.lowerWidthCm,
+    decorativeSeparator: STACK_SPLIT_RENDER_POLICY.decorativeSeparator,
+  }),
+});
 
 export { CM_PER_METER, MM_PER_METER, clampDimension, cmToM, mToCm };
 export type { Centimeters, Meters, Millimeters, Pixels, WorldUnits } from './dimensions/units.js';
@@ -194,9 +210,9 @@ export const LIBRARY_PRESET_DIMENSIONS = Object.freeze({
   topGridDivisions: 5,
   lowerGridDivisions: 2,
   minWidthCm: 20,
-  minLowerDepthCm: WARDROBE_LIMITS.stackSplit.lowerDepthMinCm,
-  minLowerHeightCm: WARDROBE_DEFAULTS.stackSplit.minLowerHeightCm,
-  minTopHeightCm: WARDROBE_DEFAULTS.stackSplit.minTopHeightCm,
+  minLowerDepthCm: STACK_SPLIT_POLICY.limits.lowerDepthMinCm,
+  minLowerHeightCm: STACK_SPLIT_POLICY.limits.minLowerHeightCm,
+  minTopHeightCm: STACK_SPLIT_POLICY.limits.minTopHeightCm,
   defaultLowerHeightCm: 80,
   lowerDepthInsetCm: 5,
 });
@@ -1023,7 +1039,7 @@ export const DRAWER_DIMENSIONS = Object.freeze({
     shoeHeightM: 0.2,
     regularHeightM: 0.22,
     frontOffsetZM: 0.01,
-    doorTopGapM: WARDROBE_DEFAULTS.stackSplit.seamGapM,
+    doorTopGapM: STACK_SPLIT_POLICY.seam.gapM,
     openOffsetZM: 0.35,
     visualWidthClearanceM: 0.004,
     visualThicknessM: 0.02,

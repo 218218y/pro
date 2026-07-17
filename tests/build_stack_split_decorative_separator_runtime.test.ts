@@ -86,6 +86,10 @@ function makeArgs(enabled: boolean, calls: unknown[][]) {
   } as any;
 }
 
+function roundGeometryCall(call: unknown[]): number[] {
+  return call.slice(0, 6).map(value => Number(Number(value).toFixed(6)));
+}
+
 test('stack split decorative separator renders an overhanging slab plus front lip as one paint target', () => {
   const calls: unknown[][] = [];
   addStackSplitDecorativeSeparatorIfNeeded(makeArgs(true, calls));
@@ -95,6 +99,8 @@ test('stack split decorative separator renders an overhanging slab plus front li
   assert.equal(calls[1][7], 'stack_split_separator');
   assert.equal(calls[0][6], 'part-material:stack_split_separator');
   assert.equal(calls[1][6], 'part-material:stack_split_separator');
+  assert.deepEqual(roundGeometryCall(calls[0]), [1.83, 0.039, 0.62, 0, 0.7085, 0.01]);
+  assert.deepEqual(roundGeometryCall(calls[1]), [1.83, 0.039, 0.014, 0, 0.7085, 0.314]);
   assert.ok(Number(calls[0][0]) > 1.8, 'separator slab should overhang the wider unit');
   assert.ok(Number(calls[0][2]) > 0.6, 'separator slab should protrude beyond the front depth');
   assert.equal(

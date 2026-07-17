@@ -1,18 +1,22 @@
-import { CARCASS_BASE_DIMENSIONS, WARDROBE_DEFAULTS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_FRONT_OVERHANG_CM,
+  DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_SIDE_OVERHANG_CM,
+} from '../../shared/dimensions/stack_split_render_policy.js';
+import {
+  DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+} from './base_leg_support.js';
+
+export {
+  DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
+  DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_FRONT_OVERHANG_CM,
+  DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_SIDE_OVERHANG_CM,
+};
 
 export const PLATFORM_OVERHANG_MIN_CM = 0;
 export const PLATFORM_OVERHANG_MAX_CM = 20;
 export const PLATFORM_OVERHANG_STEP_CM = 0.1;
-
-export const DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM =
-  Math.round(CARCASS_BASE_DIMENSIONS.legs.platform.sideOverhangM * 1000) / 10;
-export const DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM =
-  Math.round(CARCASS_BASE_DIMENSIONS.legs.platform.frontOverhangM * 1000) / 10;
-
-export const DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_SIDE_OVERHANG_CM =
-  Math.round(WARDROBE_DEFAULTS.stackSplit.decorativeSeparator.sideOverhangM * 1000) / 10;
-export const DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_FRONT_OVERHANG_CM =
-  Math.round(WARDROBE_DEFAULTS.stackSplit.decorativeSeparator.frontOverhangM * 1000) / 10;
 
 function parseFiniteNumber(value: unknown): number {
   return typeof value === 'number'

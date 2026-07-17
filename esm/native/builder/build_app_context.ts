@@ -83,10 +83,16 @@ export function createBuildRunnerRuntimeContext(App: AppContainer): BuildRunnerR
       if (afterBuild) afterBuild.call(service, ok);
     },
     scheduleMicrotask: fn => {
+      let consumed = false;
+      const runOnce = () => {
+        if (consumed) return;
+        consumed = true;
+        fn();
+      };
       const enqueue = queueMicrotaskMaybe(App);
       if (typeof enqueue === 'function') {
         try {
-          enqueue(fn);
+          enqueue(runOnce);
           return;
         } catch (error) {
           reportSoftError('native/builder/build_runner.primaryReplayScheduler', error);
@@ -94,7 +100,7 @@ export function createBuildRunnerRuntimeContext(App: AppContainer): BuildRunnerR
       }
 
       void Promise.resolve()
-        .then(fn)
+        .then(runOnce)
         .catch(error => {
           reportSoftError('native/builder/build_runner.fallbackReplay', error);
         });

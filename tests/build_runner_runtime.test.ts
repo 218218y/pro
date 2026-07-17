@@ -21,6 +21,19 @@ async function flushMicrotasks(count = 3) {
   }
 }
 
+function captureThrownValue(run: () => unknown): unknown {
+  let didThrow = false;
+  let thrownValue: unknown;
+  try {
+    run();
+  } catch (error) {
+    didThrow = true;
+    thrownValue = error;
+  }
+  assert.equal(didThrow, true, 'expected callback to throw');
+  return thrownValue;
+}
+
 function createRuntimeContext(overrides: Partial<BuildRunnerRuntimeContext> = {}): {
   context: BuildRunnerRuntimeContext;
   diagnostics: string[];
@@ -210,6 +223,60 @@ test('build runner runtime: shadow autoUpdate is restored and post-build reactio
   assert.deepEqual(afterBuild, [false]);
 });
 
+test('build runner runtime: every falsy thrown value remains an error and reactions receive failure status', () => {
+  for (const thrownValue of [0, '', false, null, undefined]) {
+    const reactions: Array<{ ok: boolean; preserveOriginalBuildError: boolean }> = [];
+    const harness = createRuntimeContext({
+      runPostBuildReactions: (ok, preserveOriginalBuildError) => {
+        reactions.push({ ok, preserveOriginalBuildError });
+      },
+    });
+    const buildWardrobe: any = () =>
+      runCoalescedBuild({
+        context: harness.context,
+        bwFn: buildWardrobe,
+        args: [],
+        run: () => {
+          throw thrownValue;
+        },
+      });
+
+    const caught = captureThrownValue(buildWardrobe);
+
+    assert.equal(Object.is(caught, thrownValue), true);
+    assert.deepEqual(reactions, [{ ok: false, preserveOriginalBuildError: true }]);
+    assert.equal(buildWardrobe.__buildRunning, false);
+  }
+});
+
+test('build runner runtime: shadow-map read failure is diagnostic and cannot lock later builds', () => {
+  const harness = createRuntimeContext({
+    readShadowMap: () => {
+      throw new Error('shadow map unavailable');
+    },
+  });
+  let runs = 0;
+  const buildWardrobe: any = () =>
+    runCoalescedBuild({
+      context: harness.context,
+      bwFn: buildWardrobe,
+      args: [],
+      run: () => {
+        runs += 1;
+        return runs;
+      },
+    });
+
+  assert.equal(buildWardrobe(), 1);
+  assert.equal(buildWardrobe.__buildRunning, false);
+  assert.equal(buildWardrobe(), 2);
+  assert.equal(buildWardrobe.__buildRunning, false);
+  assert.deepEqual(harness.diagnostics, [
+    'native/builder/build_runner.readShadowAutoUpdate',
+    'native/builder/build_runner.readShadowAutoUpdate',
+  ]);
+});
+
 test('build runner runtime: a failing reaction observer cannot change a successful build result', () => {
   const App: any = {
     render: { renderer: { shadowMap: { autoUpdate: true } } },
@@ -291,6 +358,53 @@ test('build runner app context: primary scheduler failure falls back without los
   await flushMicrotasks();
 
   assert.deepEqual(runs, ['sig:current', 'sig:fallback']);
+  assert.deepEqual(diagnostics, ['native/builder/build_runner.primaryReplayScheduler']);
+});
+
+test('build runner app context: scheduler dispatch followed by throw cannot replay the pending build twice', async () => {
+  const diagnostics: string[] = [];
+  const runs: string[] = [];
+  let nested = false;
+  const App: any = {
+    deps: {
+      browser: {
+        queueMicrotask(fn: () => void) {
+          fn();
+          throw new Error('primary scheduler failed after dispatch');
+        },
+      },
+    },
+    services: {
+      builder: {},
+      platform: {
+        reportError(_error: unknown, context: { where?: string }) {
+          diagnostics.push(String(context?.where || ''));
+        },
+      },
+    },
+  };
+  const context = createBuildRunnerRuntimeContext(App);
+  const buildWardrobe: any = function buildWardrobe(state: any) {
+    return runCoalescedBuild({
+      context,
+      bwFn: buildWardrobe,
+      args: [state],
+      run: () => {
+        runs.push(String(state?.build?.signature || ''));
+        if (!nested) {
+          nested = true;
+          buildWardrobe(createState('sig:dispatched-once'));
+        }
+        return state;
+      },
+    });
+  };
+  App.services.builder.buildWardrobe = buildWardrobe;
+
+  assert.deepEqual(buildWardrobe(createState('sig:current')), createState('sig:current'));
+  await flushMicrotasks();
+
+  assert.deepEqual(runs, ['sig:current', 'sig:dispatched-once']);
   assert.deepEqual(diagnostics, ['native/builder/build_runner.primaryReplayScheduler']);
 });
 

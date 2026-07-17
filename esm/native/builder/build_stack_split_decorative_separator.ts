@@ -1,4 +1,7 @@
-import { WARDROBE_DEFAULTS } from '../../shared/dimensions/wardrobe_defaults.js';
+import {
+  STACK_SPLIT_RENDER_POLICY,
+  stackSplitCentimetersToMeters,
+} from '../../shared/dimensions/stack_split_render_policy.js';
 import {
   DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_FRONT_OVERHANG_CM,
   DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_SIDE_OVERHANG_CM,
@@ -129,13 +132,19 @@ export function addStackSplitDecorativeSeparatorIfNeeded(args: {
     throw new Error('[WardrobePro] Stack split decorative separator requires createBoard');
   }
 
-  const dims = WARDROBE_DEFAULTS.stackSplit.decorativeSeparator;
-  const topW = readPositive(buildArgs.widthCm, 0) / 100;
-  const bottomW = readPositive(prepared.bottomWidthCm, buildArgs.lowerWidthCm) / 100;
+  const dims = STACK_SPLIT_RENDER_POLICY.decorativeSeparator;
+  const topW = stackSplitCentimetersToMeters(readPositive(buildArgs.widthCm, 0));
+  const bottomW = stackSplitCentimetersToMeters(readPositive(prepared.bottomWidthCm, buildArgs.lowerWidthCm));
   const totalW = Math.max(topW, bottomW, dims.minWidthM);
 
-  const topD = readPositive(buildArgs.carcassDepthM, readPositive(buildArgs.depthCm, 0) / 100);
-  const bottomD = readPositive(prepared.bottomD, readPositive(buildArgs.lowerDepthCm, 0) / 100);
+  const topD = readPositive(
+    buildArgs.carcassDepthM,
+    stackSplitCentimetersToMeters(readPositive(buildArgs.depthCm, 0))
+  );
+  const bottomD = readPositive(
+    prepared.bottomD,
+    stackSplitCentimetersToMeters(readPositive(buildArgs.lowerDepthCm, 0))
+  );
   const totalD = Math.max(topD, bottomD, dims.minDepthM);
 
   const visibleHeight = Math.max(dims.zFightLiftM, dims.visibleHeightM);

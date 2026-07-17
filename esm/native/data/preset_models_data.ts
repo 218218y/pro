@@ -1,4 +1,5 @@
 import {
+  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
   LIBRARY_PRESET_DIMENSIONS,
   WARDROBE_DEFAULTS,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
@@ -14,7 +15,7 @@ const PRESET_DEPTH_CM = HINGED_PRESET_DIMENSIONS.depthCm;
 const PRESET_CORNER_WIDTH_CM = WARDROBE_DEFAULTS.corner.widthCm;
 const PRESET_CORNER_DOORS_COUNT = WARDROBE_DEFAULTS.corner.doorsCount;
 const PRESET_CHEST_DRAWERS_COUNT = WARDROBE_DEFAULTS.chestDrawersCount;
-const PRESET_STACK_SPLIT_LOWER_HEIGHT_CM = WARDROBE_DEFAULTS.stackSplit.lowerHeightCm;
+const PRESET_STACK_SPLIT_LOWER_HEIGHT_CM = DEFAULT_STACK_SPLIT_LOWER_HEIGHT;
 
 function presetWidthForDoors(doors: number): number {
   return HINGED_PRESET_DIMENSIONS.perDoorWidthCm * doors;

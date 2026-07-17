@@ -1,4 +1,4 @@
-import { WARDROBE_DEFAULTS } from './wardrobe_defaults.js';
+import { STACK_SPLIT_POLICY } from './stack_split_policy.js';
 
 export const WARDROBE_LIMITS = Object.freeze({
   width: Object.freeze({ minCm: 40, chestMinCm: 20, maxCm: 560 }),
@@ -15,12 +15,14 @@ export const WARDROBE_LIMITS = Object.freeze({
     depthMaxCm: 150,
   }),
   stackSplit: Object.freeze({
-    lowerDepthMinCm: 20,
-    lowerDepthMaxCm: 150,
-    lowerWidthMinCm: 30,
-    lowerWidthMaxCm: 800,
-    lowerDoorsMin: 0,
-    lowerDoorsMax: 20,
+    minTopHeightCm: STACK_SPLIT_POLICY.limits.minTopHeightCm,
+    minLowerHeightCm: STACK_SPLIT_POLICY.limits.minLowerHeightCm,
+    lowerDepthMinCm: STACK_SPLIT_POLICY.limits.lowerDepthMinCm,
+    lowerDepthMaxCm: STACK_SPLIT_POLICY.limits.lowerDepthMaxCm,
+    lowerWidthMinCm: STACK_SPLIT_POLICY.limits.lowerWidthMinCm,
+    lowerWidthMaxCm: STACK_SPLIT_POLICY.limits.lowerWidthMaxCm,
+    lowerDoorsMin: STACK_SPLIT_POLICY.limits.lowerDoorsMin,
+    lowerDoorsMax: STACK_SPLIT_POLICY.limits.lowerDoorsMax,
   }),
 });
 
@@ -51,11 +53,13 @@ export const WARDROBE_CELL_HEIGHT_MAX: number = WARDROBE_LIMITS.cell.heightMaxCm
 export const WARDROBE_CELL_DEPTH_MIN: number = WARDROBE_LIMITS.cell.depthMinCm;
 export const WARDROBE_CELL_DEPTH_MAX: number = WARDROBE_LIMITS.cell.depthMaxCm;
 
-export const STACK_SPLIT_LOWER_HEIGHT_MIN: number = WARDROBE_DEFAULTS.stackSplit.minLowerHeightCm;
-export const STACK_SPLIT_MIN_TOP_HEIGHT: number = WARDROBE_DEFAULTS.stackSplit.minTopHeightCm;
-export const STACK_SPLIT_LOWER_DEPTH_MIN: number = WARDROBE_LIMITS.stackSplit.lowerDepthMinCm;
-export const STACK_SPLIT_LOWER_DEPTH_MAX: number = WARDROBE_LIMITS.stackSplit.lowerDepthMaxCm;
-export const STACK_SPLIT_LOWER_WIDTH_MIN: number = WARDROBE_LIMITS.stackSplit.lowerWidthMinCm;
-export const STACK_SPLIT_LOWER_WIDTH_MAX: number = WARDROBE_LIMITS.stackSplit.lowerWidthMaxCm;
-export const STACK_SPLIT_LOWER_DOORS_MIN: number = WARDROBE_LIMITS.stackSplit.lowerDoorsMin;
-export const STACK_SPLIT_LOWER_DOORS_MAX: number = WARDROBE_LIMITS.stackSplit.lowerDoorsMax;
+export {
+  STACK_SPLIT_LOWER_DEPTH_MAX,
+  STACK_SPLIT_LOWER_DEPTH_MIN,
+  STACK_SPLIT_LOWER_DOORS_MAX,
+  STACK_SPLIT_LOWER_DOORS_MIN,
+  STACK_SPLIT_LOWER_HEIGHT_MIN,
+  STACK_SPLIT_LOWER_WIDTH_MAX,
+  STACK_SPLIT_LOWER_WIDTH_MIN,
+  STACK_SPLIT_MIN_TOP_HEIGHT,
+} from './stack_split_policy.js';

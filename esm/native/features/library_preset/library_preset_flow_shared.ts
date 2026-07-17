@@ -28,8 +28,8 @@ import {
   readLibraryPresetUiRawState,
 } from './library_preset_shared.js';
 import {
+  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
   LIBRARY_PRESET_DIMENSIONS,
-  WARDROBE_DEFAULTS,
 } from '../../../shared/wardrobe_dimension_tokens_shared.js';
 import { calcLibraryPresetAutoWidth, LIBRARY_PRESET_DEFAULT_DOORS } from './module_defaults.js';
 
@@ -171,7 +171,7 @@ export function seedBottomDimensions(
     !!args.stackSplitEnabled &&
     Number.isFinite(args.stackSplitLowerHeight) &&
     args.stackSplitLowerHeight > 0 &&
-    Math.abs(args.stackSplitLowerHeight - WARDROBE_DEFAULTS.stackSplit.lowerHeightCm) > 0.01;
+    Math.abs(args.stackSplitLowerHeight - DEFAULT_STACK_SPLIT_LOWER_HEIGHT) > 0.01;
 
   const defaultBottomH = Math.min(
     LIBRARY_PRESET_DIMENSIONS.defaultLowerHeightCm,

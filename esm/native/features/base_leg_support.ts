@@ -1,6 +1,9 @@
 import type { UnknownRecord } from '../../../types/index.js';
 
-import { BASE_LEG_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  BASE_LEG_DIMENSIONS,
+  CARCASS_BASE_DIMENSIONS,
+} from '../../shared/wardrobe_dimension_tokens_shared.js';
 import { METAL_FINISH_PALETTE_BY_COLOR } from './finish_palette/api.js';
 
 export type BaseLegStyle = 'tapered' | 'round' | 'square' | 'wheels';
@@ -38,6 +41,10 @@ export const DEFAULT_BASE_LEG_HEIGHT_CM: number = BASE_LEG_DIMENSIONS.defaults.h
 export const BASE_LEG_HEIGHT_MIN_CM: number = BASE_LEG_DIMENSIONS.limits.heightMinCm;
 export const BASE_LEG_HEIGHT_MAX_CM: number = BASE_LEG_DIMENSIONS.limits.heightMaxCm;
 export const DEFAULT_BASE_LEG_WIDTH_CM: number = BASE_LEG_DIMENSIONS.defaults.widthCm;
+export const DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM: number =
+  Math.round(CARCASS_BASE_DIMENSIONS.legs.platform.sideOverhangM * 1000) / 10;
+export const DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM: number =
+  Math.round(CARCASS_BASE_DIMENSIONS.legs.platform.frontOverhangM * 1000) / 10;
 export const DEFAULT_BASE_LEG_PLATFORM_MODE: BaseLegPlatformMode = 'stage';
 export const DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE: BaseLegPlatformSideMode = 'overhang';
 export const DEFAULT_TAPERED_BASE_LEG_WIDTH_CM: number = BASE_LEG_DIMENSIONS.defaults.taperedWidthCm;

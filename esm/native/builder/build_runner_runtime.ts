@@ -58,7 +58,12 @@ function reportBuildRunnerSoftError(
 export function readBuildRunnerShadowAutoUpdateState(
   context: BuildRunnerRuntimeContext
 ): BuildRunnerShadowAutoUpdateState {
-  const shadowMap = context.readShadowMap();
+  let shadowMap: BuildRunnerShadowMapLike | null = null;
+  try {
+    shadowMap = context.readShadowMap();
+  } catch (error) {
+    reportBuildRunnerSoftError(context, 'native/builder/build_runner.readShadowAutoUpdate', error);
+  }
   const hadShadowAuto = !!(shadowMap && Object.prototype.hasOwnProperty.call(shadowMap, 'autoUpdate'));
   const prevShadowAuto = hadShadowAuto ? !!shadowMap?.autoUpdate : false;
   return {
@@ -83,14 +88,14 @@ export function disableBuildRunnerShadowAutoUpdate(
 export function restoreBuildRunnerShadowAutoUpdate(
   context: BuildRunnerRuntimeContext,
   state: BuildRunnerShadowAutoUpdateState,
-  runErr: unknown
+  preserveOriginalBuildError: boolean
 ): void {
   if (!state.shadowMap || !state.hadShadowAuto) return;
   try {
     state.shadowMap.autoUpdate = state.prevShadowAuto;
   } catch (error) {
     reportBuildRunnerSoftError(context, 'native/builder/build_runner.restoreShadowAutoUpdate', error, {
-      preserveOriginalBuildError: !!runErr,
+      preserveOriginalBuildError,
     });
   }
 }
@@ -188,10 +193,10 @@ export function schedulePendingCoalescedReplay(
 export function finalizeCoalescedBuildRunRuntime(
   context: BuildRunnerRuntimeContext,
   bwFn: CoalescedBuildFn,
-  runErr: unknown
+  didRunThrow: boolean
 ): void {
   finishCoalescedBuildRun(bwFn);
-  runBuildRunnerPostBuildReactions(context, !runErr, !!runErr);
+  runBuildRunnerPostBuildReactions(context, !didRunThrow, didRunThrow);
   const pendingReplay = takePendingCoalescedReplay(bwFn);
   if (pendingReplay) {
     schedulePendingCoalescedReplay(context, bwFn, pendingReplay.args);

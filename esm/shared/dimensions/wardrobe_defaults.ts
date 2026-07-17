@@ -20,23 +20,6 @@ export const WARDROBE_DEFAULTS = Object.freeze({
     widthCm: 120,
     doorsCount: 3,
   }),
-  stackSplit: Object.freeze({
-    lowerHeightCm: 60,
-    minTopHeightCm: 40,
-    minLowerHeightCm: 20,
-    seamGapM: 0.002,
-    lowerWidthDefaultCm: 50,
-    decorativeSeparator: Object.freeze({
-      visibleHeightM: 0.039,
-      apronDepthM: 0.014,
-      frontOverhangM: 0.02,
-      sideOverhangM: 0.015,
-      minWidthM: 0.2,
-      minDepthM: 0.12,
-      seamCoverDropM: 0.012,
-      zFightLiftM: 0.001,
-    }),
-  }),
 });
 
 export const DEFAULT_WIDTH: number = WARDROBE_DEFAULTS.widthCm;
@@ -54,6 +37,3 @@ export const SLIDING_DEFAULT_PER_DOOR_WIDTH: number = WARDROBE_DEFAULTS.byType.s
 
 export const DEFAULT_CORNER_WIDTH: number = WARDROBE_DEFAULTS.corner.widthCm;
 export const DEFAULT_CORNER_DOORS: number = WARDROBE_DEFAULTS.corner.doorsCount;
-
-export const DEFAULT_STACK_SPLIT_LOWER_HEIGHT: number = WARDROBE_DEFAULTS.stackSplit.lowerHeightCm;
-export const STACK_SPLIT_SEAM_GAP_M: number = WARDROBE_DEFAULTS.stackSplit.seamGapM;

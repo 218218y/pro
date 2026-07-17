@@ -91,7 +91,8 @@ export function runCoalescedBuild<TRun extends UnknownBuildRun>(
   disableBuildRunnerShadowAutoUpdate(context, shadowState);
 
   let result: unknown;
-  let runErr: unknown = null;
+  let didRunThrow = false;
+  let runError: unknown;
 
   try {
     result = run();
@@ -100,12 +101,13 @@ export function runCoalescedBuild<TRun extends UnknownBuildRun>(
       throw new Error('[builder/build_runner] Build callback must be synchronous');
     }
   } catch (error) {
-    runErr = error;
+    didRunThrow = true;
+    runError = error;
   } finally {
-    restoreBuildRunnerShadowAutoUpdate(context, shadowState, runErr);
-    finalizeCoalescedBuildRunRuntime(context, bwFn, runErr);
+    restoreBuildRunnerShadowAutoUpdate(context, shadowState, didRunThrow);
+    finalizeCoalescedBuildRunRuntime(context, bwFn, didRunThrow);
   }
 
-  if (runErr) throw runErr;
+  if (didRunThrow) throw runError;
   return result as NonPromiseBuildResult<ReturnType<TRun>>;
 }

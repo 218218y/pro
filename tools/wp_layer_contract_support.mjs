@@ -111,6 +111,15 @@ function staticModuleKinds(node) {
   return [...(hasType ? ['type'] : []), ...(hasValue ? ['value'] : [])];
 }
 
+function moduleDependencySyntax(node) {
+  if (node?.type === 'ImportDeclaration') return 'static-import';
+  if (node?.type === 'ExportNamedDeclaration' || node?.type === 'ExportAllDeclaration') {
+    return 'static-re-export';
+  }
+  if (node?.type === 'ImportExpression') return 'dynamic-import';
+  return 'type-import';
+}
+
 export function analyzeModuleDependencies(file, sourceText) {
   const sourceFile = createSourceFile(file, sourceText, { label: 'wp_layer_contract' });
   const imports = [];
@@ -155,7 +164,10 @@ export function analyzeModuleDependencies(file, sourceText) {
       return;
     }
     const statementStart = Number.isFinite(Number(node.start)) ? Number(node.start) : imports.length;
-    for (const kind of staticModuleKinds(node)) imports.push({ specifier, kind, statementStart });
+    const syntax = moduleDependencySyntax(node);
+    for (const kind of staticModuleKinds(node)) {
+      imports.push({ specifier, kind, statementStart, syntax });
+    }
   });
   return { imports, unresolvedDynamicImports, forbiddenModuleSyntax };
 }

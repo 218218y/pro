@@ -19,12 +19,22 @@ import {
 import {
   DEFAULT_HINGED_DOORS,
   DEFAULT_SLIDING_DOORS,
-  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
   DEFAULT_WIDTH,
   HINGED_DEFAULT_DEPTH,
   SLIDING_DEFAULT_DEPTH,
   WARDROBE_DEFAULTS,
 } from '../esm/shared/dimensions/wardrobe_defaults.ts';
+import { WARDROBE_LIMITS } from '../esm/shared/dimensions/product_limits.ts';
+import {
+  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
+  STACK_SPLIT_POLICY,
+} from '../esm/shared/dimensions/stack_split_policy.ts';
+import {
+  DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_FRONT_OVERHANG_CM,
+  DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_SIDE_OVERHANG_CM,
+  STACK_SPLIT_RENDER_POLICY,
+  stackSplitCentimetersToMeters,
+} from '../esm/shared/dimensions/stack_split_render_policy.ts';
 import {
   centimeters,
   centimetersToMeters,
@@ -55,7 +65,9 @@ import {
 import { computeExternalDrawersOpsForModule } from '../esm/native/builder/core_storage_compute_external_drawers.ts';
 
 test('wardrobe default tokens preserve hinged and sliding business defaults', () => {
-  assert.equal(FACADE_WARDROBE_DEFAULTS, WARDROBE_DEFAULTS);
+  assert.notEqual(FACADE_WARDROBE_DEFAULTS, WARDROBE_DEFAULTS);
+  assert.equal(FACADE_WARDROBE_DEFAULTS.widthCm, WARDROBE_DEFAULTS.widthCm);
+  assert.equal(FACADE_WARDROBE_DEFAULTS.byType, WARDROBE_DEFAULTS.byType);
   assert.equal(DEFAULT_WIDTH, WARDROBE_DEFAULTS.widthCm);
   assert.equal(HINGED_DEFAULT_DEPTH, 55);
   assert.equal(SLIDING_DEFAULT_DEPTH, 60);
@@ -69,6 +81,57 @@ test('wardrobe default tokens preserve hinged and sliding business defaults', ()
   assert.equal(getDefaultDoorsForWardrobeType('sliding'), 2);
   assert.equal(getDefaultWidthForWardrobeType('hinged'), 160);
   assert.equal(getDefaultWidthForWardrobeType('sliding'), 160);
+});
+
+test('stack split policy preserves business limits, defaults, facade parity, and render geometry', () => {
+  assert.deepEqual(STACK_SPLIT_POLICY.defaults, {
+    lowerHeightCm: 60,
+    lowerWidthCm: 50,
+    lowerDoorsCount: 4,
+  });
+  assert.deepEqual(STACK_SPLIT_POLICY.limits, {
+    minTopHeightCm: 40,
+    minLowerHeightCm: 20,
+    lowerDepthMinCm: 20,
+    lowerDepthMaxCm: 150,
+    lowerWidthMinCm: 30,
+    lowerWidthMaxCm: 800,
+    lowerDoorsMin: 0,
+    lowerDoorsMax: 20,
+  });
+  assert.deepEqual(STACK_SPLIT_POLICY.seam, { gapM: 0.002 });
+  assert.deepEqual(WARDROBE_LIMITS.stackSplit, {
+    minTopHeightCm: 40,
+    minLowerHeightCm: 20,
+    lowerDepthMinCm: 20,
+    lowerDepthMaxCm: 150,
+    lowerWidthMinCm: 30,
+    lowerWidthMaxCm: 800,
+    lowerDoorsMin: 0,
+    lowerDoorsMax: 20,
+  });
+  assert.deepEqual(STACK_SPLIT_RENDER_POLICY.decorativeSeparator, {
+    visibleHeightM: 0.039,
+    apronDepthM: 0.014,
+    frontOverhangM: 0.02,
+    sideOverhangM: 0.015,
+    minWidthM: 0.2,
+    minDepthM: 0.12,
+    seamCoverDropM: 0.012,
+    zFightLiftM: 0.001,
+  });
+  assert.equal(DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_SIDE_OVERHANG_CM, 1.5);
+  assert.equal(DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_FRONT_OVERHANG_CM, 2);
+  assert.equal(stackSplitCentimetersToMeters(55), 0.55);
+
+  assert.deepEqual(FACADE_WARDROBE_DEFAULTS.stackSplit, {
+    lowerHeightCm: 60,
+    minTopHeightCm: 40,
+    minLowerHeightCm: 20,
+    seamGapM: 0.002,
+    lowerWidthDefaultCm: 50,
+    decorativeSeparator: STACK_SPLIT_RENDER_POLICY.decorativeSeparator,
+  });
 });
 
 test('dimension foundation uses explicit unit constructors and conversions without changing scale', () => {

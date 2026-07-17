@@ -79,12 +79,15 @@ export function runPreparedBuildWardrobeFlow(
   options: BuildWardrobeRuntimeOptions
 ): BuildContextLike | null {
   let buildCtx: BuildContextLike | null = null;
-  let buildError: unknown = null;
-  let finalizeError: unknown = null;
+  let didBuildThrow = false;
+  let buildError: unknown;
+  let didFinalizeThrow = false;
+  let finalizeError: unknown;
 
   try {
     buildCtx = options.execute(prepared);
   } catch (error) {
+    didBuildThrow = true;
     buildError = error;
     const reportFailure = options.reportBuildFailure || reportBuildWardrobeFailure;
     reportBuildFailureSafely(prepared, error, reportFailure);
@@ -92,12 +95,13 @@ export function runPreparedBuildWardrobeFlow(
     try {
       finalizePreparedBuildWardrobeFlow(prepared, buildCtx, options);
     } catch (error) {
+      didFinalizeThrow = true;
       finalizeError = error;
       reportFinalizeFailureSafely(prepared, error);
     }
   }
 
-  if (buildError) throw buildError;
-  if (finalizeError) throw finalizeError;
+  if (didBuildThrow) throw buildError;
+  if (didFinalizeThrow) throw finalizeError;
   return buildCtx;
 }

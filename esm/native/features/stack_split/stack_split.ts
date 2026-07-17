@@ -1,4 +1,4 @@
-import { WARDROBE_DEFAULTS, WARDROBE_LIMITS } from '../../../shared/wardrobe_dimension_tokens_shared.js';
+import { STACK_SPLIT_POLICY, stackSplitCentimeters } from '../../../shared/dimensions/stack_split_policy.js';
 
 // Stack Split Feature (stacked wardrobes: lower + upper)
 //
@@ -88,17 +88,17 @@ export function normalizeStackSplit(args: {
   // (We may still *recommend* more in the UI, but we don't block it.)
   const minTopCm =
     typeof args.minTopCm === 'number' && Number.isFinite(args.minTopCm)
-      ? args.minTopCm
-      : WARDROBE_DEFAULTS.stackSplit.minTopHeightCm;
+      ? stackSplitCentimeters(args.minTopCm)
+      : STACK_SPLIT_POLICY.limits.minTopHeightCm;
   const minLowerCm =
     typeof args.minLowerCm === 'number' && Number.isFinite(args.minLowerCm)
-      ? args.minLowerCm
-      : WARDROBE_DEFAULTS.stackSplit.minLowerHeightCm;
+      ? stackSplitCentimeters(args.minLowerCm)
+      : STACK_SPLIT_POLICY.limits.minLowerHeightCm;
 
   const defaultLowerHeightCm =
     typeof args.defaultLowerHeightCm === 'number' && Number.isFinite(args.defaultLowerHeightCm)
-      ? args.defaultLowerHeightCm
-      : WARDROBE_DEFAULTS.stackSplit.lowerHeightCm;
+      ? stackSplitCentimeters(args.defaultLowerHeightCm)
+      : STACK_SPLIT_POLICY.defaults.lowerHeightCm;
 
   // Lower height is always its own value.
   let lowerHeightCm = asFinitePositiveNumber(args.rawLowerHeightCm, defaultLowerHeightCm);
@@ -122,16 +122,16 @@ export function normalizeStackSplit(args: {
     Number.isFinite(args.overallDoorsCount) &&
     args.overallDoorsCount >= 0
       ? Math.max(0, Math.round(args.overallDoorsCount))
-      : WARDROBE_DEFAULTS.byType.hinged.doorsCount;
+      : STACK_SPLIT_POLICY.defaults.lowerDoorsCount;
 
   let lowerWidthCm = lowerWidthManual
     ? asFinitePositiveNumber(
         args.rawLowerWidthCm,
-        defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthDefaultCm
+        defaultOverallWidth || STACK_SPLIT_POLICY.defaults.lowerWidthCm
       )
     : asFinitePositiveNumber(
-        defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthDefaultCm,
-        defaultOverallWidth || WARDROBE_DEFAULTS.stackSplit.lowerWidthDefaultCm
+        defaultOverallWidth || STACK_SPLIT_POLICY.defaults.lowerWidthCm,
+        defaultOverallWidth || STACK_SPLIT_POLICY.defaults.lowerWidthCm
       );
 
   let lowerDoorsCount = lowerDoorsManual
@@ -152,13 +152,13 @@ export function normalizeStackSplit(args: {
         typeof args.lowerDepthClamp.min === 'number' &&
         Number.isFinite(args.lowerDepthClamp.min)
           ? args.lowerDepthClamp.min
-          : WARDROBE_LIMITS.stackSplit.lowerDepthMinCm;
+          : STACK_SPLIT_POLICY.limits.lowerDepthMinCm;
       const maxLowerDepth =
         args.lowerDepthClamp &&
         typeof args.lowerDepthClamp.max === 'number' &&
         Number.isFinite(args.lowerDepthClamp.max)
           ? args.lowerDepthClamp.max
-          : WARDROBE_LIMITS.stackSplit.lowerDepthMaxCm;
+          : STACK_SPLIT_POLICY.limits.lowerDepthMaxCm;
 
       lowerDepthCm = clamp(lowerDepthCm, minLowerDepth, maxLowerDepth);
 
@@ -167,13 +167,13 @@ export function normalizeStackSplit(args: {
         typeof args.lowerWidthClamp.min === 'number' &&
         Number.isFinite(args.lowerWidthClamp.min)
           ? args.lowerWidthClamp.min
-          : WARDROBE_LIMITS.stackSplit.lowerWidthMinCm;
+          : STACK_SPLIT_POLICY.limits.lowerWidthMinCm;
       const maxLowerWidth =
         args.lowerWidthClamp &&
         typeof args.lowerWidthClamp.max === 'number' &&
         Number.isFinite(args.lowerWidthClamp.max)
           ? args.lowerWidthClamp.max
-          : WARDROBE_LIMITS.stackSplit.lowerWidthMaxCm;
+          : STACK_SPLIT_POLICY.limits.lowerWidthMaxCm;
 
       lowerWidthCm = clamp(lowerWidthCm, minLowerWidth, maxLowerWidth);
 
@@ -182,13 +182,13 @@ export function normalizeStackSplit(args: {
         typeof args.lowerDoorsClamp.min === 'number' &&
         Number.isFinite(args.lowerDoorsClamp.min)
           ? args.lowerDoorsClamp.min
-          : WARDROBE_LIMITS.stackSplit.lowerDoorsMin;
+          : STACK_SPLIT_POLICY.limits.lowerDoorsMin;
       const maxLowerDoors =
         args.lowerDoorsClamp &&
         typeof args.lowerDoorsClamp.max === 'number' &&
         Number.isFinite(args.lowerDoorsClamp.max)
           ? args.lowerDoorsClamp.max
-          : WARDROBE_LIMITS.stackSplit.lowerDoorsMax;
+          : STACK_SPLIT_POLICY.limits.lowerDoorsMax;
 
       lowerDoorsCount = clamp(lowerDoorsCount, minLowerDoors, maxLowerDoors);
     }

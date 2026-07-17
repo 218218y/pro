@@ -22,7 +22,7 @@ import { readUiState } from './build_flow_readers.js';
 import {
   CARCASS_INTERIOR_DIMENSIONS,
   resolveDoorMountThicknessesFromConfig,
-  WARDROBE_DEFAULTS,
+  STACK_SPLIT_SEAM_GAP_M,
 } from '../../shared/wardrobe_dimension_tokens_shared.js';
 
 import type { BuildFlowPlanInputs, BuildFlowPlanInputsArgs } from './build_flow_plan_contracts.js';
@@ -131,12 +131,11 @@ export function resolveBuildFlowPlanInputs(args: BuildFlowPlanInputsArgs): Build
       overallDepthCm: depthCm,
       overallWidthCm: widthCm,
     });
-  const splitSeamGapM =
-    splitActiveForBuild && !stackSplitUnifiedFrame ? WARDROBE_DEFAULTS.stackSplit.seamGapM : 0;
+  const splitSeamGapM = splitActiveForBuild && !stackSplitUnifiedFrame ? STACK_SPLIT_SEAM_GAP_M : 0;
 
   const H = Math.max(
     CARCASS_INTERIOR_DIMENSIONS.minTopBodyHeightM,
-    split.topHeightCm / 100 + (stackSplitUnifiedFrame ? woodThick : -splitSeamGapM)
+    split.topHeightCm / 100 + (stackSplitUnifiedFrame ? woodThick : -Number(splitSeamGapM))
   );
   const totalW = widthCm / 100;
   const D = split.topDepthCm / 100;
