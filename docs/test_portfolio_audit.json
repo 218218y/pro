@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-17T04:57:54.727Z",
+  "generatedAt": "2026-07-17T06:03:48.514Z",
   "totals": {
-    "tests": 1219,
-    "unitRunnerTests": 1211,
+    "tests": 1220,
+    "unitRunnerTests": 1212,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 32,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 396,
+    "contract": 397,
     "runtime-unit": 314,
     "integration": 450,
     "e2e-smoke": 9,
@@ -116,6 +116,10 @@
     {
       "file": "tests/base_leg_support_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/base_support_dimension_policy_runtime.test.ts",
+      "category": "contract"
     },
     {
       "file": "tests/boot_app_shared_runtime.test.ts",

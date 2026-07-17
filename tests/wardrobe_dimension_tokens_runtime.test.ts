@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  BASE_LEG_DIMENSIONS,
+  BASE_LEG_DIMENSIONS as FACADE_BASE_LEG_DIMENSIONS,
+  CARCASS_BASE_DIMENSIONS as FACADE_CARCASS_BASE_DIMENSIONS,
   CARCASS_INTERIOR_DIMENSIONS as FACADE_CARCASS_INTERIOR_DIMENSIONS,
   CARCASS_SHELL_DIMENSIONS as FACADE_CARCASS_SHELL_DIMENSIONS,
   DOOR_SYSTEM_DIMENSIONS,
@@ -14,6 +15,10 @@ import {
 } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 import { CARCASS_SHELL_DIMENSIONS } from '../esm/shared/dimensions/carcass_shell_policy.ts';
 import { CARCASS_INTERIOR_DIMENSIONS } from '../esm/shared/dimensions/carcass_interior_policy.ts';
+import { CARCASS_INTERIOR_GRID_POLICY } from '../esm/shared/dimensions/carcass_interior_grid_policy.ts';
+import { BASE_PLINTH_POLICY } from '../esm/shared/dimensions/base_plinth_policy.ts';
+import { BASE_LEG_DIMENSIONS, BASE_LEG_LAYOUT_POLICY } from '../esm/shared/dimensions/base_leg_policy.ts';
+import { BASE_PLATFORM_RENDER_POLICY } from '../esm/shared/dimensions/base_platform_render_policy.ts';
 import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
@@ -175,6 +180,78 @@ test('carcass shell and interior policies preserve facade identity and every mig
   });
   assert.equal(CARCASS_INTERIOR_DIMENSIONS.minTopBodyHeightM, CARCASS_SHELL_DIMENSIONS.bodyMinHeightM);
   assert.equal(CARCASS_INTERIOR_DIMENSIONS.internalBackInsetM, CARCASS_SHELL_DIMENSIONS.internalBackInsetM);
+  assert.deepEqual(CARCASS_INTERIOR_GRID_POLICY, {
+    divisions: 6,
+    drawerSplitLineIndex: 4,
+  });
+  assert.equal(CARCASS_SHELL_DIMENSIONS.drawerGridDivisions, CARCASS_INTERIOR_GRID_POLICY.divisions);
+  assert.equal(
+    CARCASS_SHELL_DIMENSIONS.drawerSplitGridLineIndex,
+    CARCASS_INTERIOR_GRID_POLICY.drawerSplitLineIndex
+  );
+});
+
+test('Base Support policies preserve every value and facade nested-object identity', () => {
+  assert.equal(FACADE_CARCASS_BASE_DIMENSIONS.plinth, BASE_PLINTH_POLICY);
+  assert.equal(FACADE_CARCASS_BASE_DIMENSIONS.legs, BASE_LEG_LAYOUT_POLICY);
+  assert.equal(FACADE_CARCASS_BASE_DIMENSIONS.legs.platform, BASE_PLATFORM_RENDER_POLICY);
+  assert.equal(FACADE_BASE_LEG_DIMENSIONS, BASE_LEG_DIMENSIONS);
+
+  assert.deepEqual(BASE_PLINTH_POLICY, {
+    heightM: 0.08,
+    heightMinCm: 1,
+    heightMaxCm: 60,
+    widthClearanceM: 0.04,
+    fallbackWidthClearanceM: 0.02,
+    depthClearanceM: 0.05,
+    frontInsetM: 0.015,
+    minSegmentWidthM: 0.05,
+    minSegmentDepthM: 0.05,
+    segmentWidthEpsilonM: 0.001,
+    steppedMinSegmentDepthM: 0.02,
+    steppedBackInsetM: 0.01,
+    connectorShapeInsetM: 0.04,
+    connectorMaxToeRatio: 0.35,
+    connectorToeEndTrimMaxM: 0.03,
+    connectorWallInsetM: 0.01,
+    connectorTinyEpsilonM: 0.0005,
+  });
+  assert.deepEqual(BASE_LEG_LAYOUT_POLICY, {
+    cornerInsetM: 0.05,
+    centerSupportDoorsThreshold: 5,
+    chestCenterSupportWidthThresholdM: 1.2,
+    connectorInsetM: 0.06,
+    connectorBackInsetM: 0.01,
+    depthSteppedMinFrontBackGapM: 0.03,
+    platform: BASE_PLATFORM_RENDER_POLICY,
+  });
+  assert.deepEqual(BASE_PLATFORM_RENDER_POLICY, {
+    heightM: 0.028,
+    apronDepthM: 0.014,
+    frontOverhangM: 0.02,
+    sideOverhangM: 0.015,
+    minWidthM: 0.2,
+    minDepthM: 0.12,
+    zFightLiftM: 0.001,
+  });
+  assert.deepEqual(BASE_LEG_DIMENSIONS, {
+    defaults: {
+      style: 'tapered',
+      color: 'black',
+      heightCm: 12,
+      widthCm: 3.5,
+      taperedWidthCm: 4,
+      wheelWidthCm: 5,
+    },
+    limits: {
+      heightMinCm: 1,
+      heightMaxCm: 60,
+      widthMinCm: 1,
+      widthMaxCm: 30,
+    },
+  });
+  assert.equal(FACADE_CARCASS_BASE_DIMENSIONS.chest.backThicknessM, 0.005);
+  assert.equal(FACADE_CARCASS_BASE_DIMENSIONS.chest.wheels.heightM, 0.07);
 });
 
 test('feature facades read physical dimensions from the shared token source', () => {

@@ -26,6 +26,11 @@ import {
 import { STACK_SPLIT_RENDER_POLICY } from './dimensions/stack_split_render_policy.js';
 import { CARCASS_SHELL_DIMENSIONS } from './dimensions/carcass_shell_policy.js';
 import { CARCASS_INTERIOR_DIMENSIONS } from './dimensions/carcass_interior_policy.js';
+import { BASE_PLINTH_POLICY } from './dimensions/base_plinth_policy.js';
+import {
+  BASE_LEG_DIMENSIONS as BASE_LEG_DIMENSIONS_OWNER,
+  BASE_LEG_LAYOUT_POLICY,
+} from './dimensions/base_leg_policy.js';
 import {
   STACK_SPLIT_LOWER_DEPTH_MAX,
   STACK_SPLIT_LOWER_DEPTH_MIN,
@@ -57,6 +62,20 @@ import {
   WARDROBE_WIDTH_MAX,
   WARDROBE_WIDTH_MIN,
 } from './dimensions/product_limits.js';
+
+type LegacyDimensionNumberView<T> = T extends number
+  ? number
+  : T extends object
+    ? { readonly [Key in keyof T]: LegacyDimensionNumberView<T[Key]> }
+    : T;
+
+function legacyDimensionNumberView<T>(value: T): LegacyDimensionNumberView<T> {
+  return value as LegacyDimensionNumberView<T>;
+}
+
+const BASE_LEG_DIMENSIONS = legacyDimensionNumberView(BASE_LEG_DIMENSIONS_OWNER);
+const BASE_PLINTH_DIMENSIONS = legacyDimensionNumberView(BASE_PLINTH_POLICY);
+const BASE_LEG_LAYOUT_DIMENSIONS = legacyDimensionNumberView(BASE_LEG_LAYOUT_POLICY);
 
 const WARDROBE_DEFAULTS = Object.freeze({
   ...WARDROBE_DEFAULTS_OWNER,
@@ -221,42 +240,8 @@ export const LIBRARY_PRESET_DIMENSIONS = Object.freeze({
 });
 
 export const CARCASS_BASE_DIMENSIONS = Object.freeze({
-  plinth: Object.freeze({
-    heightM: 0.08,
-    heightMinCm: 1,
-    heightMaxCm: 60,
-    widthClearanceM: 0.04,
-    fallbackWidthClearanceM: 0.02,
-    depthClearanceM: 0.05,
-    frontInsetM: 0.015,
-    minSegmentWidthM: 0.05,
-    minSegmentDepthM: 0.05,
-    segmentWidthEpsilonM: 0.001,
-    steppedMinSegmentDepthM: 0.02,
-    steppedBackInsetM: 0.01,
-    connectorShapeInsetM: 0.04,
-    connectorMaxToeRatio: 0.35,
-    connectorToeEndTrimMaxM: 0.03,
-    connectorWallInsetM: 0.01,
-    connectorTinyEpsilonM: 0.0005,
-  }),
-  legs: Object.freeze({
-    cornerInsetM: 0.05,
-    centerSupportDoorsThreshold: 5,
-    chestCenterSupportWidthThresholdM: 1.2,
-    connectorInsetM: 0.06,
-    connectorBackInsetM: 0.01,
-    depthSteppedMinFrontBackGapM: 0.03,
-    platform: Object.freeze({
-      heightM: 0.028,
-      apronDepthM: 0.014,
-      frontOverhangM: 0.02,
-      sideOverhangM: 0.015,
-      minWidthM: 0.2,
-      minDepthM: 0.12,
-      zFightLiftM: 0.001,
-    }),
-  }),
+  plinth: BASE_PLINTH_DIMENSIONS,
+  legs: BASE_LEG_LAYOUT_DIMENSIONS,
   chest: Object.freeze({
     backThicknessM: 0.005,
     backInsetM: 0.005,
@@ -297,22 +282,7 @@ export const MATERIAL_DIMENSIONS = Object.freeze({
   }),
 });
 
-export const BASE_LEG_DIMENSIONS = Object.freeze({
-  defaults: Object.freeze({
-    style: 'tapered',
-    color: 'black',
-    heightCm: 12,
-    widthCm: 3.5,
-    taperedWidthCm: 4,
-    wheelWidthCm: 5,
-  }),
-  limits: Object.freeze({
-    heightMinCm: 1,
-    heightMaxCm: 60,
-    widthMinCm: 1,
-    widthMaxCm: 30,
-  }),
-});
+export { BASE_LEG_DIMENSIONS };
 
 export const CARCASS_CORNICE_DIMENSIONS = Object.freeze({
   common: Object.freeze({

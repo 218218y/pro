@@ -1,3 +1,4 @@
+import { CARCASS_INTERIOR_GRID_POLICY } from './carcass_interior_grid_policy.js';
 import { meters } from './units.js';
 
 export const CARCASS_SHELL_DIMENSIONS = Object.freeze({
@@ -15,6 +16,6 @@ export const CARCASS_SHELL_DIMENSIONS = Object.freeze({
   sideDepthClearanceM: meters(0.0078),
   sideZOffsetM: meters(0.0039),
   internalBackInsetM: meters(0.005),
-  drawerGridDivisions: 6,
-  drawerSplitGridLineIndex: 4,
+  drawerGridDivisions: CARCASS_INTERIOR_GRID_POLICY.divisions,
+  drawerSplitGridLineIndex: CARCASS_INTERIOR_GRID_POLICY.drawerSplitLineIndex,
 });

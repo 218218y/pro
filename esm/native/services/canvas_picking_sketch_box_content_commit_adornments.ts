@@ -1,5 +1,5 @@
 import type { SketchStructuralCommand } from './canvas_picking_sketch_structural_command.js';
-import { CARCASS_BASE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { BASE_PLATFORM_RENDER_POLICY } from '../../shared/dimensions/base_platform_render_policy.js';
 import {
   normalizeBaseLegPlatformMode,
   normalizeBaseLegPlatformSideMode,
@@ -43,7 +43,7 @@ function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unknown): n
     const bottomPlatformHeight =
       normalizeBaseLegPlatformMode((source as Record<string, unknown> | null)?.baseLegPlatformMode) ===
       'stage'
-        ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM
+        ? BASE_PLATFORM_RENDER_POLICY.heightM
         : 0;
     if (heightCm != null && heightCm > 0) return Math.max(0.01, heightCm / 100) + bottomPlatformHeight;
     return readBaseLegOptionsFromState(source).heightM + bottomPlatformHeight;

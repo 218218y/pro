@@ -1,4 +1,4 @@
-import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
+import { CARCASS_INTERIOR_GRID_POLICY } from '../../shared/dimensions/carcass_interior_grid_policy.js';
 import { resolveExternalDrawerFitFromBody } from '../../shared/wardrobe_construction_validation_shared.js';
 import { resolveModuleDepthProfile } from './module_loop_pipeline_module_depth.js';
 
@@ -120,12 +120,12 @@ export function resolveModuleVerticalMetrics(
   const localSplitLineY =
     runtime.startY +
     runtime.woodThick +
-    CARCASS_SHELL_DIMENSIONS.drawerSplitGridLineIndex *
-      (internalTotalH / CARCASS_SHELL_DIMENSIONS.drawerGridDivisions);
+    CARCASS_INTERIOR_GRID_POLICY.drawerSplitLineIndex *
+      (internalTotalH / CARCASS_INTERIOR_GRID_POLICY.divisions);
   const gridDivisions =
     frame.config.isCustom && typeof frame.config.gridDivisions === 'number' && frame.config.gridDivisions > 0
       ? frame.config.gridDivisions
-      : CARCASS_SHELL_DIMENSIONS.drawerGridDivisions;
+      : CARCASS_INTERIOR_GRID_POLICY.divisions;
   const localGridStep = availableInternalHeight / gridDivisions;
 
   return {

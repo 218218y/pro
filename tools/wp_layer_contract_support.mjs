@@ -111,10 +111,10 @@ function staticModuleKinds(node) {
   return [...(hasType ? ['type'] : []), ...(hasValue ? ['value'] : [])];
 }
 
-function moduleDependencySyntax(node) {
-  if (node?.type === 'ImportDeclaration') return 'static-import';
+function moduleDependencySyntax(node, kind) {
+  if (node?.type === 'ImportDeclaration') return kind === 'type' ? 'type-import' : 'static-import';
   if (node?.type === 'ExportNamedDeclaration' || node?.type === 'ExportAllDeclaration') {
-    return 'static-re-export';
+    return kind === 'type' ? 'type-re-export' : 'static-re-export';
   }
   if (node?.type === 'ImportExpression') return 'dynamic-import';
   return 'type-import';
@@ -136,28 +136,49 @@ function moduleSpecifierKind(node, specifier) {
 
 function moduleDependencyBindings(node, kind) {
   if (node?.type === 'ImportExpression' || node?.type === 'TSImportType') {
-    return { importedSymbols: ['*'], exportedSymbols: [] };
+    return {
+      importedSymbols: ['*'],
+      exportedSymbols: [],
+      bindings: [{ importedName: '*', localName: null, exportedName: null }],
+    };
   }
   if (node?.type === 'ExportAllDeclaration') {
     const exportedName = readModuleBindingName(node.exported) || '*';
-    return { importedSymbols: ['*'], exportedSymbols: [exportedName] };
+    return {
+      importedSymbols: ['*'],
+      exportedSymbols: [exportedName],
+      bindings: [{ importedName: '*', localName: null, exportedName }],
+    };
   }
 
   const importedSymbols = [];
   const exportedSymbols = [];
+  const bindings = [];
   for (const specifier of Array.isArray(node?.specifiers) ? node.specifiers : []) {
     if (moduleSpecifierKind(node, specifier) !== kind) continue;
     if (specifier?.type === 'ImportDefaultSpecifier') {
       importedSymbols.push('default');
+      bindings.push({
+        importedName: 'default',
+        localName: readModuleBindingName(specifier.local),
+        exportedName: null,
+      });
       continue;
     }
     if (specifier?.type === 'ImportNamespaceSpecifier') {
       importedSymbols.push('*');
+      bindings.push({
+        importedName: '*',
+        localName: readModuleBindingName(specifier.local),
+        exportedName: null,
+      });
       continue;
     }
     if (specifier?.type === 'ImportSpecifier') {
       const importedName = readModuleBindingName(specifier.imported);
+      const localName = readModuleBindingName(specifier.local);
       if (importedName) importedSymbols.push(importedName);
+      if (importedName) bindings.push({ importedName, localName, exportedName: null });
       continue;
     }
     if (specifier?.type === 'ExportSpecifier') {
@@ -165,9 +186,10 @@ function moduleDependencyBindings(node, kind) {
       const exportedName = readModuleBindingName(specifier.exported);
       if (importedName) importedSymbols.push(importedName);
       if (exportedName) exportedSymbols.push(exportedName);
+      if (importedName) bindings.push({ importedName, localName: null, exportedName });
     }
   }
-  return { importedSymbols, exportedSymbols };
+  return { importedSymbols, exportedSymbols, bindings };
 }
 
 function collectBindingPatternNames(node, out) {
@@ -241,8 +263,8 @@ export function analyzeModuleDependencies(file, sourceText) {
       return;
     }
     const statementStart = Number.isFinite(Number(node.start)) ? Number(node.start) : imports.length;
-    const syntax = moduleDependencySyntax(node);
     for (const kind of staticModuleKinds(node)) {
+      const syntax = moduleDependencySyntax(node, kind);
       const bindings = moduleDependencyBindings(node, kind);
       imports.push({ specifier, kind, statementStart, syntax, ...bindings });
     }

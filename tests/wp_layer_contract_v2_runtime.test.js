@@ -129,6 +129,116 @@ test('layer contract parser reads AST imports and classifies type, value, and dy
   ]);
 });
 
+test('layer contract parser classifies type/value imports and re-exports without double-counting mixed statements', () => {
+  const dependencies = analyzeModuleDependencies(
+    'fixture.ts',
+    `
+      import type { X } from './type-only-import.js';
+      import { type X, Y } from './mixed-import.js';
+      export type { X } from './type-only-export.js';
+      export { type X, Y } from './mixed-export.js';
+      import { X as Alias } from './aliased-import.js';
+      export { X as Alias } from './aliased-export.js';
+    `
+  ).imports;
+
+  assert.deepEqual(
+    dependencies.map(({ specifier, kind, syntax, importedSymbols, exportedSymbols, bindings }) => ({
+      specifier,
+      kind,
+      syntax,
+      importedSymbols,
+      exportedSymbols,
+      bindings,
+    })),
+    [
+      {
+        specifier: './type-only-import.js',
+        kind: 'type',
+        syntax: 'type-import',
+        importedSymbols: ['X'],
+        exportedSymbols: [],
+        bindings: [{ importedName: 'X', localName: 'X', exportedName: null }],
+      },
+      {
+        specifier: './mixed-import.js',
+        kind: 'type',
+        syntax: 'type-import',
+        importedSymbols: ['X'],
+        exportedSymbols: [],
+        bindings: [{ importedName: 'X', localName: 'X', exportedName: null }],
+      },
+      {
+        specifier: './mixed-import.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['Y'],
+        exportedSymbols: [],
+        bindings: [{ importedName: 'Y', localName: 'Y', exportedName: null }],
+      },
+      {
+        specifier: './type-only-export.js',
+        kind: 'type',
+        syntax: 'type-re-export',
+        importedSymbols: ['X'],
+        exportedSymbols: ['X'],
+        bindings: [{ importedName: 'X', localName: null, exportedName: 'X' }],
+      },
+      {
+        specifier: './mixed-export.js',
+        kind: 'type',
+        syntax: 'type-re-export',
+        importedSymbols: ['X'],
+        exportedSymbols: ['X'],
+        bindings: [{ importedName: 'X', localName: null, exportedName: 'X' }],
+      },
+      {
+        specifier: './mixed-export.js',
+        kind: 'value',
+        syntax: 'static-re-export',
+        importedSymbols: ['Y'],
+        exportedSymbols: ['Y'],
+        bindings: [{ importedName: 'Y', localName: null, exportedName: 'Y' }],
+      },
+      {
+        specifier: './aliased-import.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['X'],
+        exportedSymbols: [],
+        bindings: [{ importedName: 'X', localName: 'Alias', exportedName: null }],
+      },
+      {
+        specifier: './aliased-export.js',
+        kind: 'value',
+        syntax: 'static-re-export',
+        importedSymbols: ['X'],
+        exportedSymbols: ['Alias'],
+        bindings: [{ importedName: 'X', localName: null, exportedName: 'Alias' }],
+      },
+    ]
+  );
+
+  const categoryCounts = Object.fromEntries(
+    ['static-import', 'type-import', 'static-re-export', 'type-re-export', 'dynamic-import'].map(syntax => [
+      syntax,
+      new Set(
+        dependencies
+          .filter(dependency => dependency.syntax === syntax)
+          .map(dependency => dependency.statementStart)
+      ).size,
+    ])
+  );
+  assert.deepEqual(categoryCounts, {
+    'static-import': 2,
+    'type-import': 2,
+    'static-re-export': 2,
+    'type-re-export': 2,
+    'dynamic-import': 0,
+  });
+  assert.equal(new Set(dependencies.map(dependency => dependency.statementStart)).size, 6);
+});
+
 test('layer contract parser collects named local exports and re-export aliases', () => {
   const exports = collectNamedModuleExports(
     'fixture.ts',

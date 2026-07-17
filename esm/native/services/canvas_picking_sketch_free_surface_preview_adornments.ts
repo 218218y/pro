@@ -6,7 +6,7 @@ import {
   parseSketchBoxCorniceTool,
 } from './canvas_picking_sketch_box_dividers.js';
 import { isSketchInternalDrawersTool } from '../features/sketch_drawer_sizing.js';
-import { CARCASS_BASE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { BASE_PLATFORM_RENDER_POLICY } from '../../shared/dimensions/base_platform_render_policy.js';
 import { normalizeBaseLegPlatformMode } from '../features/base_leg_support.js';
 import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
 import type { SketchFreeHoverContentKind } from './canvas_picking_sketch_free_surface_preview_contracts.js';
@@ -28,7 +28,7 @@ export function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unkn
     const bottomPlatformHeight =
       normalizeBaseLegPlatformMode((source as Record<string, unknown> | null)?.baseLegPlatformMode) ===
       'stage'
-        ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM
+        ? BASE_PLATFORM_RENDER_POLICY.heightM
         : 0;
     return legHeight + bottomPlatformHeight;
   }

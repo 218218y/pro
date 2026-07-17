@@ -1,4 +1,4 @@
-import { CARCASS_BASE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { BASE_PLATFORM_RENDER_POLICY } from '../../shared/dimensions/base_platform_render_policy.js';
 import { normalizeBaseLegPlatformMode, readBaseLegOptions } from '../features/base_leg_support.js';
 import { getBasePlinthHeightM } from '../features/base_plinth_support.js';
 
@@ -38,7 +38,7 @@ export function getSketchBoxAdornmentBaseHeight(baseType: unknown, source?: unkn
     const bottomPlatformHeight =
       normalizeBaseLegPlatformMode((source as Record<string, unknown> | null)?.baseLegPlatformMode) ===
       'stage'
-        ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM
+        ? BASE_PLATFORM_RENDER_POLICY.heightM
         : 0;
     return readBaseLegOptionsFromState(source).heightM + bottomPlatformHeight;
   }
