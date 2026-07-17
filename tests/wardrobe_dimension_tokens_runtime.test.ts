@@ -20,6 +20,14 @@ import { BASE_PLINTH_POLICY } from '../esm/shared/dimensions/base_plinth_policy.
 import { BASE_LEG_DIMENSIONS, BASE_LEG_LAYOUT_POLICY } from '../esm/shared/dimensions/base_leg_policy.ts';
 import { BASE_PLATFORM_RENDER_POLICY } from '../esm/shared/dimensions/base_platform_render_policy.ts';
 import {
+  CHEST_CASTER_RENDER_POLICY,
+  CHEST_CONNECTOR_POLICY,
+  CHEST_DRAWER_GEOMETRY_POLICY,
+  CHEST_MOTION_POLICY,
+  CHEST_SHELL_POLICY,
+  CHEST_STRUCTURAL_DIMENSIONS,
+} from '../esm/shared/dimensions/chest_structural_policy.ts';
+import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
   getDefaultWidthForWardrobeType,
@@ -250,8 +258,52 @@ test('Base Support policies preserve every value and facade nested-object identi
       widthMaxCm: 30,
     },
   });
-  assert.equal(FACADE_CARCASS_BASE_DIMENSIONS.chest.backThicknessM, 0.005);
-  assert.equal(FACADE_CARCASS_BASE_DIMENSIONS.chest.wheels.heightM, 0.07);
+});
+
+test('Chest Structural policy preserves every value, aggregate reference, and facade identity', () => {
+  assert.equal(FACADE_CARCASS_BASE_DIMENSIONS.chest, CHEST_STRUCTURAL_DIMENSIONS);
+  assert.equal(CHEST_STRUCTURAL_DIMENSIONS.wheels, CHEST_CASTER_RENDER_POLICY);
+
+  assert.deepEqual(CHEST_SHELL_POLICY, {
+    backThicknessM: 0.005,
+    backInsetM: 0.005,
+    backPanelWidthClearanceM: 0.002,
+    backPanelHeightClearanceM: 0.002,
+  });
+  assert.deepEqual(CHEST_DRAWER_GEOMETRY_POLICY, {
+    drawerGapM: 0.004,
+    drawerWidthClearanceM: 0.004,
+    drawerFrontThicknessM: 0.018,
+    drawerShadowLineThicknessM: 0.001,
+    drawerBoxWidthClearanceM: 0.03,
+    drawerBoxHeightClearanceM: 0.05,
+    drawerBoxDepthClearanceM: 0.05,
+  });
+  assert.deepEqual(CHEST_CONNECTOR_POLICY, {
+    connectorDepthM: 0.02,
+    connectorBackInsetM: 0.003,
+    connectorWidthClearanceM: 0.08,
+    connectorHeightClearanceM: 0.02,
+  });
+  assert.deepEqual(CHEST_MOTION_POLICY, { openOffsetZM: 0.35 });
+  assert.deepEqual(CHEST_CASTER_RENDER_POLICY, {
+    heightM: 0.07,
+    radiusM: 0.025,
+    thicknessM: 0.018,
+    plateWidthM: 0.06,
+    plateHeightM: 0.006,
+    plateDepthM: 0.05,
+    forkWidthM: 0.008,
+    forkHeightM: 0.032,
+    forkDepthM: 0.006,
+  });
+  assert.deepEqual(CHEST_STRUCTURAL_DIMENSIONS, {
+    ...CHEST_SHELL_POLICY,
+    ...CHEST_DRAWER_GEOMETRY_POLICY,
+    ...CHEST_CONNECTOR_POLICY,
+    ...CHEST_MOTION_POLICY,
+    wheels: CHEST_CASTER_RENDER_POLICY,
+  });
 });
 
 test('feature facades read physical dimensions from the shared token source', () => {

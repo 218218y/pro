@@ -1,4 +1,10 @@
-import type { AutosaveServiceLike, AutosaveSuspensionLike, ProjectLoadInputLike } from '../../../types';
+import type {
+  AutosaveRefreshFailureReason,
+  AutosaveRefreshResult,
+  AutosaveServiceLike,
+  AutosaveSuspensionLike,
+  ProjectLoadInputLike,
+} from '../../../types';
 
 import { asRecord } from './record.js';
 import { ensureServiceSlot, getServiceSlotMaybe } from './services_root_access.js';
@@ -11,6 +17,19 @@ export type AutosaveInfoLike = {
 
 export type AutosavePayloadStorageReadResult =
   { ok: true; payload: ProjectLoadInputLike } | { ok: false; reason: 'missing-autosave' | 'invalid' };
+
+type AutosaveRefreshResultOwner = AutosaveServiceLike & {
+  forceSaveNowResult?: () => AutosaveRefreshResult;
+};
+
+const AUTOSAVE_REFRESH_FAILURE_REASONS = new Set<AutosaveRefreshFailureReason>([
+  'stale-restore-generation',
+  'service-unavailable',
+  'autosave-not-ready',
+  'snapshot-unavailable',
+  'storage-write-failed',
+  'owner-rejected',
+]);
 
 function asAutosaveService(value: unknown): AutosaveServiceLike | null {
   return asRecord<AutosaveServiceLike>(value);
@@ -152,12 +171,43 @@ export function flushAutosavePendingViaService(App: unknown): boolean {
 }
 
 export function forceAutosaveNowViaService(App: unknown): boolean {
-  try {
-    return callBooleanMethod(getAutosaveServiceMaybe(App), 'forceSaveNow');
-  } catch {
-    // ignore
+  return forceAutosaveNowResultViaService(App).ok;
+}
+
+function normalizeAutosaveRefreshResult(value: unknown): AutosaveRefreshResult | null {
+  const result = asRecord<Record<string, unknown>>(value);
+  if (result?.ok === true) return { ok: true };
+  const reason = result?.reason;
+  if (
+    result?.ok === false &&
+    typeof reason === 'string' &&
+    AUTOSAVE_REFRESH_FAILURE_REASONS.has(reason as AutosaveRefreshFailureReason)
+  ) {
+    return { ok: false, reason: reason as AutosaveRefreshFailureReason };
   }
-  return false;
+  return null;
+}
+
+export function forceAutosaveNowResultViaService(App: unknown): AutosaveRefreshResult {
+  try {
+    const service = getAutosaveServiceMaybe(App) as AutosaveRefreshResultOwner | null;
+    if (!service) return { ok: false, reason: 'service-unavailable' };
+
+    if (typeof service.forceSaveNowResult === 'function') {
+      const result = normalizeAutosaveRefreshResult(Reflect.apply(service.forceSaveNowResult, service, []));
+      return result || { ok: false, reason: 'owner-rejected' };
+    }
+
+    if (typeof service.forceSaveNow === 'function') {
+      return Reflect.apply(service.forceSaveNow, service, [])
+        ? { ok: true }
+        : { ok: false, reason: 'owner-rejected' };
+    }
+
+    return { ok: false, reason: 'service-unavailable' };
+  } catch {
+    return { ok: false, reason: 'owner-rejected' };
+  }
 }
 
 export function suspendAutosaveViaServiceOrThrow(App: unknown): AutosaveSuspensionLike {

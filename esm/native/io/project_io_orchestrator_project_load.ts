@@ -254,7 +254,7 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps): ProjectDataLo
         return finishSupersededAfterCommit();
       }
 
-      const autosaveRefreshed = refreshProjectIoAutosaveAfterLoad({
+      const autosaveRefreshResult = refreshProjectIoAutosaveAfterLoad({
         App,
         restoreGen,
         isHistoryApply,
@@ -263,13 +263,15 @@ export function createProjectDataLoader(deps: ProjectIoOwnerDeps): ProjectDataLo
         preserveAutosave,
         reportNonFatal,
       });
-      if (!autosaveRefreshed) {
+      if (autosaveRefreshResult.ok === false) {
+        const autosaveRefreshReason = autosaveRefreshResult.reason;
         addWarning(
           {
             effect: 'autosave-refresh',
             message: 'Project loaded, but autosave refresh did not complete.',
           },
-          'project.load.refreshAutosave.warning'
+          `project.load.refreshAutosave.warning.${autosaveRefreshReason}`,
+          new Error(`Project load autosave refresh failed: ${autosaveRefreshReason}`)
         );
       }
 

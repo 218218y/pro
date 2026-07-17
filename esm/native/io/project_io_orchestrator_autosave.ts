@@ -1,6 +1,9 @@
-import type { AppContainer, AutosaveSuspensionLike } from '../../../types/index.js';
+import type { AppContainer, AutosaveRefreshResult, AutosaveSuspensionLike } from '../../../types/index.js';
 
-import { forceAutosaveNowViaService, suspendAutosaveViaServiceOrThrow } from '../runtime/autosave_access.js';
+import {
+  forceAutosaveNowResultViaService,
+  suspendAutosaveViaServiceOrThrow,
+} from '../runtime/autosave_access.js';
 import { isProjectIoRestoreGenerationCurrent } from '../runtime/project_io_access.js';
 
 export type ProjectIoAutosaveRefreshArgs = {
@@ -17,16 +20,18 @@ export function suspendProjectIoAutosaveBeforeLoad(App: AppContainer): AutosaveS
   return suspendAutosaveViaServiceOrThrow(App);
 }
 
-export function refreshProjectIoAutosaveAfterLoad(args: ProjectIoAutosaveRefreshArgs): boolean {
+export function refreshProjectIoAutosaveAfterLoad(args: ProjectIoAutosaveRefreshArgs): AutosaveRefreshResult {
   const { App, restoreGen, isHistoryApply, isModelApply, isCloudApply, preserveAutosave, reportNonFatal } =
     args;
-  if (preserveAutosave || isHistoryApply || isModelApply || isCloudApply) return true;
-  if (!isProjectIoRestoreGenerationCurrent(App, restoreGen)) return false;
+  if (preserveAutosave || isHistoryApply || isModelApply || isCloudApply) return { ok: true };
+  if (!isProjectIoRestoreGenerationCurrent(App, restoreGen)) {
+    return { ok: false, reason: 'stale-restore-generation' };
+  }
 
   try {
-    return forceAutosaveNowViaService(App);
+    return forceAutosaveNowResultViaService(App);
   } catch (err) {
     reportNonFatal('project.load.refreshAutosave', err, 6000);
-    return false;
+    return { ok: false, reason: 'owner-rejected' };
   }
 }

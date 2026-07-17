@@ -11,13 +11,13 @@ import {
 } from './autosave_shared.js';
 import { captureAutosaveSnapshot } from './autosave_snapshot.js';
 
-import type { AppContainer, AutosaveServiceLike } from '../../../types';
+import type { AppContainer, AutosaveRefreshResult, AutosaveServiceLike } from '../../../types';
 
-export function commitAutosaveNow(App: AppContainer): boolean {
-  if (!canAutosaveRun(App)) return false;
+export function commitAutosaveNowResult(App: AppContainer): AutosaveRefreshResult {
+  if (!canAutosaveRun(App)) return { ok: false, reason: 'autosave-not-ready' };
 
   const dataObj = captureAutosaveSnapshot(App);
-  if (!dataObj) return false;
+  if (!dataObj) return { ok: false, reason: 'snapshot-unavailable' };
 
   dataObj.timestamp = Date.now();
   dataObj.dateString = new Date().toLocaleTimeString();
@@ -52,7 +52,11 @@ export function commitAutosaveNow(App: AppContainer): boolean {
     // ignore
   }
 
-  return ok;
+  return ok ? { ok: true } : { ok: false, reason: 'storage-write-failed' };
+}
+
+export function commitAutosaveNow(App: AppContainer): boolean {
+  return commitAutosaveNowResult(App).ok;
 }
 
 export function getAutosaveService(App: AppContainer): AutosaveServiceLike | null {

@@ -26,6 +26,18 @@ function createProjectIoApp(overrides?: {
   onHistoryReset?: () => void;
   onAutosaveCommit?: () => void;
   autosaveCommitError?: Error;
+  autosaveRefreshResult?:
+    | { ok: true }
+    | {
+        ok: false;
+        reason:
+          | 'stale-restore-generation'
+          | 'service-unavailable'
+          | 'autosave-not-ready'
+          | 'snapshot-unavailable'
+          | 'storage-write-failed'
+          | 'owner-rejected';
+      };
   onStoreRead?: () => void;
 }) {
   const calls: string[] = [];
@@ -127,9 +139,9 @@ function createProjectIoApp(overrides?: {
           autosaveCalls.push('flush');
           return overrides?.flushAutosaveResult !== false;
         },
-        forceSaveNow() {
+        forceSaveNowResult() {
           autosaveCalls.push('force');
-          return true;
+          return overrides?.autosaveRefreshResult ?? { ok: true };
         },
         suspend() {
           autosaveCalls.push('suspend');
@@ -704,6 +716,34 @@ test('project io load reports an unaccepted rebuild as committed success with a 
     },
   ]);
   assert.equal(harness.state.meta.dirty, false);
+});
+
+test('project io load preserves its public warning while diagnostics identify the autosave refresh reason', () => {
+  const harness = createProjectIoApp({
+    autosaveRefreshResult: { ok: false, reason: 'storage-write-failed' },
+  });
+
+  const result = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+  assert.deepEqual(result, {
+    ok: true,
+    restoreGen: 1,
+    warnings: [
+      {
+        effect: 'autosave-refresh',
+        message: 'Project loaded, but autosave refresh did not complete.',
+      },
+    ],
+  });
+  assert.deepEqual(
+    harness.reports.filter(report => report.op.includes('refreshAutosave.warning')),
+    [
+      {
+        op: 'project.load.refreshAutosave.warning.storage-write-failed',
+        message: 'Project load autosave refresh failed: storage-write-failed',
+      },
+    ]
+  );
 });
 
 test('project io load stops post-commit effects as soon as a reentrant load supersedes it', () => {

@@ -178,6 +178,16 @@ export interface AutosaveSnapshotLike extends UnknownRecord {
   orderPdfEditorZoom?: number;
 }
 
+export type AutosaveRefreshFailureReason =
+  | 'stale-restore-generation'
+  | 'service-unavailable'
+  | 'autosave-not-ready'
+  | 'snapshot-unavailable'
+  | 'storage-write-failed'
+  | 'owner-rejected';
+
+export type AutosaveRefreshResult = { ok: true } | { ok: false; reason: AutosaveRefreshFailureReason };
+
 export interface AutosaveServiceLike extends UnknownRecord {
   allow?: boolean;
   schedule?: () => void;

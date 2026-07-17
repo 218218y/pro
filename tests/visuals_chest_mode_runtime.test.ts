@@ -641,6 +641,73 @@ test('visuals chest mode builds the rear panel as an inset paintable body board'
   );
 });
 
+test('visuals chest mode keeps plinth and plain-leg structural base geometry unchanged', () => {
+  const plinthHarness = createChestApp();
+  buildChestOnly(plinthHarness.App, {
+    renderPolicy: plinthHarness.App.__outlineRenderPolicy,
+    H: 0.9,
+    totalW: 1.6,
+    D: 0.45,
+    drawersCount: 3,
+    baseType: 'plinth',
+    basePlinthHeightCm: 12,
+    baseLegStyle: 'square',
+    baseLegColor: 'black',
+    baseLegHeightCm: 15,
+    baseLegWidthCm: 5,
+    colorChoice: '#ffffff',
+    cfgSnapshot: createChestCfg({ showDimensions: false }),
+  });
+
+  const plinth = plinthHarness.wardrobeGroup.children.find(
+    (child: any) => child?.userData?.partId === 'chest_plinth'
+  );
+  assert.ok(plinth);
+  assert.deepEqual(plinth.geometry.args, [1.56, 0.12, 0.4]);
+  assert.deepEqual(
+    { x: plinth.position.x, y: plinth.position.y, z: plinth.position.z },
+    { x: 0, y: 0.06, z: -0.015 }
+  );
+  assert.equal(
+    plinthHarness.wardrobeGroup.children.some((child: any) =>
+      String(child?.userData?.partId || '').startsWith('chest_leg_platform')
+    ),
+    false
+  );
+
+  const legsHarness = createChestApp();
+  buildChestOnly(legsHarness.App, {
+    renderPolicy: legsHarness.App.__outlineRenderPolicy,
+    H: 0.9,
+    totalW: 1.6,
+    D: 0.45,
+    drawersCount: 3,
+    baseType: 'legs',
+    baseLegStyle: 'square',
+    baseLegColor: 'black',
+    baseLegHeightCm: 15,
+    baseLegWidthCm: 5,
+    baseLegPlatformMode: 'plain',
+    colorChoice: '#ffffff',
+    cfgSnapshot: createChestCfg({ showDimensions: false }),
+  });
+
+  const plainLegs = legsHarness.wardrobeGroup.children.filter(
+    (child: any) =>
+      child?.geometry?.type === 'BoxGeometry' &&
+      child.geometry.args[0] === 0.05 &&
+      child.geometry.args[1] === 0.15 &&
+      child.geometry.args[2] === 0.05
+  );
+  assert.equal(plainLegs.length, 6);
+  assert.equal(
+    legsHarness.wardrobeGroup.children.some((child: any) =>
+      String(child?.userData?.partId || '').startsWith('chest_leg_platform')
+    ),
+    false
+  );
+});
+
 test('visuals chest mode build adds commode back panel, tracked mirror surface, and commode dimensions', () => {
   const { App, wardrobeGroup, dimensionCalls } = createChestApp();
   buildChestOnly(App, {

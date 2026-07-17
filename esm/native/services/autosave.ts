@@ -18,15 +18,22 @@ import {
   cancelAutosaveScheduleState,
   ensureAutosaveScheduleState,
 } from './autosave_shared.js';
-import { commitAutosaveNow } from './autosave_runtime.js';
+import { commitAutosaveNow, commitAutosaveNowResult } from './autosave_runtime.js';
 import { flushAutosavePending, scheduleAutosave, suspendAutosaveSchedule } from './autosave_schedule.js';
-import type { AppContainer, AutosaveServiceLike, AutosaveSuspensionLike } from '../../../types';
+import type {
+  AppContainer,
+  AutosaveRefreshResult,
+  AutosaveServiceLike,
+  AutosaveSuspensionLike,
+} from '../../../types';
 
 type InstallableAutosaveService = AutosaveServiceLike & {
   __wpSchedule?: () => void;
   __wpCancelPending?: () => boolean;
   __wpFlushPending?: () => boolean;
   __wpForceSaveNow?: () => boolean;
+  forceSaveNowResult?: () => AutosaveRefreshResult;
+  __wpForceSaveNowResult?: () => AutosaveRefreshResult;
   __wpSuspend?: () => AutosaveSuspensionLike;
 };
 
@@ -51,6 +58,12 @@ function fillAutosaveServiceSurface(
     return () => {
       cancelAutosaveScheduleState(ensureAutosaveScheduleState(context.App));
       return commitAutosaveNow(context.App);
+    };
+  });
+  installStableSurfaceMethod(svc, 'forceSaveNowResult', '__wpForceSaveNowResult', () => {
+    return () => {
+      cancelAutosaveScheduleState(ensureAutosaveScheduleState(context.App));
+      return commitAutosaveNowResult(context.App);
     };
   });
   installStableSurfaceMethod(svc, 'suspend', '__wpSuspend', () => () => suspendAutosaveSchedule(context.App));

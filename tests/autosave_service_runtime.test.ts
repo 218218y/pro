@@ -9,6 +9,7 @@ import {
   cancelAutosavePendingViaService,
   flushAutosavePendingViaService,
   forceAutosaveNowViaService,
+  forceAutosaveNowResultViaService,
   normalizeAutosaveInfo,
   normalizeAutosavePayload,
   readAutosaveInfoFromStorage,
@@ -29,6 +30,7 @@ test('autosave/project-capture runtime: canonical access helpers drive the servi
   autosave.cancelPending = () => (calls.push('cancel'), true);
   autosave.flushPending = () => (calls.push('flush'), true);
   autosave.forceSaveNow = () => (calls.push('force'), true);
+  autosave.forceSaveNowResult = () => (calls.push('force-result'), { ok: true });
 
   assert.equal(getAutosaveServiceMaybe(App), autosave);
   assert.equal(setAutosaveAllowed(App, true), true);
@@ -37,12 +39,39 @@ test('autosave/project-capture runtime: canonical access helpers drive the servi
   assert.equal(cancelAutosavePendingViaService(App), true);
   assert.equal(flushAutosavePendingViaService(App), true);
   assert.equal(forceAutosaveNowViaService(App), true);
+  assert.deepEqual(forceAutosaveNowResultViaService(App), { ok: true });
 
   const project = ensureProjectCaptureService(App);
   project.capture = (scope: unknown) => ({ scope, ok: true });
   assert.deepEqual(captureProjectSnapshotMaybe(App, 'persist'), { scope: 'persist', ok: true });
 
-  assert.deepEqual(calls, ['schedule', 'cancel', 'flush', 'force']);
+  assert.deepEqual(calls, ['schedule', 'cancel', 'flush', 'force-result', 'force-result']);
+});
+
+test('autosave access preserves safe failure reasons and rejects invalid owner results', () => {
+  const App: Record<string, any> = {
+    services: {
+      autosave: {
+        forceSaveNowResult: () => ({ ok: false, reason: 'storage-write-failed' }),
+      },
+    },
+  };
+
+  assert.deepEqual(forceAutosaveNowResultViaService(App), {
+    ok: false,
+    reason: 'storage-write-failed',
+  });
+
+  App.services.autosave.forceSaveNowResult = () => ({ ok: false, reason: 'project-payload' });
+  assert.deepEqual(forceAutosaveNowResultViaService(App), {
+    ok: false,
+    reason: 'owner-rejected',
+  });
+
+  assert.deepEqual(forceAutosaveNowResultViaService({ services: {} }), {
+    ok: false,
+    reason: 'service-unavailable',
+  });
 });
 
 test('autosave access: canonical autosave info normalization keeps restore availability but drops junk fields', () => {

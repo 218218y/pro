@@ -225,6 +225,45 @@ const APPROVED_BASE_SUPPORT_FACADE_IMPORTS = Object.freeze({
     'CARCASS_BASE_DIMENSIONS',
   ]),
 });
+const APPROVED_DIMENSION_FACADE_BROAD_DEPENDENCIES = Object.freeze([
+  Object.freeze({
+    file: 'esm/native/features/dimensions/index.ts',
+    syntax: 'static-re-export',
+  }),
+]);
+const APPROVED_CHEST_STRUCTURAL_OWNER_IMPORTS = Object.freeze({
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_STRUCTURAL_DIMENSIONS']),
+});
+const APPROVED_CHEST_LEGACY_FIELD_USAGE = Object.freeze({
+  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze([
+    'backInsetM',
+    'backPanelHeightClearanceM',
+    'backPanelWidthClearanceM',
+    'backThicknessM',
+    'chest',
+    'connectorBackInsetM',
+    'connectorDepthM',
+    'connectorHeightClearanceM',
+    'connectorWidthClearanceM',
+    'drawerBoxDepthClearanceM',
+    'drawerBoxHeightClearanceM',
+    'drawerBoxWidthClearanceM',
+    'drawerFrontThicknessM',
+    'drawerGapM',
+    'drawerWidthClearanceM',
+    'openOffsetZM',
+    'wheels',
+    'wheels.forkDepthM',
+    'wheels.forkHeightM',
+    'wheels.forkWidthM',
+    'wheels.plateDepthM',
+    'wheels.plateHeightM',
+    'wheels.plateWidthM',
+    'wheels.radiusM',
+    'wheels.thicknessM',
+  ]),
+  'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['chest', 'wheels', 'wheels.heightM']),
+});
 
 function read(relativePath) {
   return fs.readFileSync(relativePath, 'utf8');
@@ -290,6 +329,39 @@ function readAstBindingName(node) {
   return null;
 }
 
+function readAstMemberPath(node) {
+  const properties = [];
+  let current = node;
+  while (current?.type === 'MemberExpression') {
+    const propertyName = readAstBindingName(current.property);
+    if (!propertyName) return null;
+    properties.unshift(propertyName);
+    current = current.object;
+  }
+  const rootName = readAstBindingName(current);
+  return rootName ? { rootName, properties } : null;
+}
+
+function collectVariableDeclarators(sourceFile) {
+  const declarators = [];
+  walkAst(sourceFile, node => {
+    if (node?.type === 'VariableDeclarator') declarators.push(node);
+  });
+  return declarators;
+}
+
+function readObjectPatternEntries(pattern) {
+  if (pattern?.type !== 'ObjectPattern') return [];
+  const entries = [];
+  for (const property of pattern.properties || []) {
+    if (property?.type !== 'Property') continue;
+    const key = readAstBindingName(property.key);
+    const localName = readAstBindingName(property.value);
+    if (key) entries.push({ key, localName });
+  }
+  return entries;
+}
+
 function collectShellGridFieldUsage(sources) {
   const usage = new Map();
   const gridFields = new Set(['drawerGridDivisions', 'drawerSplitGridLineIndex']);
@@ -305,17 +377,201 @@ function collectShellGridFieldUsage(sources) {
     }
     if (!localShellBindings.size) continue;
 
-    const fields = new Set();
     const sourceFile = createSourceFile(file, source, { label: 'dimension_grid_contract' });
+    const declarators = collectVariableDeclarators(sourceFile);
+    const shellAliases = new Set(localShellBindings);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const declaration of declarators) {
+        const initName = readAstBindingName(declaration.init);
+        const localName = readAstBindingName(declaration.id);
+        if (initName && shellAliases.has(initName) && localName && !shellAliases.has(localName)) {
+          shellAliases.add(localName);
+          changed = true;
+        }
+      }
+    }
+
+    const fields = new Set();
+    for (const declaration of declarators) {
+      const initName = readAstBindingName(declaration.init);
+      if (!initName || !shellAliases.has(initName)) continue;
+      for (const { key } of readObjectPatternEntries(declaration.id)) {
+        if (gridFields.has(key)) fields.add(key);
+      }
+    }
     walkAst(sourceFile, node => {
       if (node?.type !== 'MemberExpression') return;
       const objectName = readAstBindingName(node.object);
-      if (!objectName || !localShellBindings.has(objectName)) return;
+      if (!objectName || !shellAliases.has(objectName)) return;
       const propertyName = readAstBindingName(node.property);
       if (propertyName && gridFields.has(propertyName)) fields.add(propertyName);
     });
     if (fields.size) usage.set(file.replaceAll('\\', '/'), fields);
   }
+  return normalizedSymbolUsage(usage);
+}
+
+function collectDimensionFacadeBroadDependencies(sources) {
+  const dependencies = [];
+  for (const [file, source, analyzedDependencies] of sources) {
+    const analyzed = analyzedDependencies || analyzeModuleDependencies(file, source).imports;
+    for (const dependency of analyzed) {
+      if (!dependency.specifier.includes(FACADE_SPECIFIER)) continue;
+      if (dependency.syntax !== 'dynamic-import' && !dependency.importedSymbols.includes('*')) continue;
+      dependencies.push({ file: file.replaceAll('\\', '/'), syntax: dependency.syntax });
+    }
+  }
+  return dependencies.sort((left, right) =>
+    `${left.file}:${left.syntax}`.localeCompare(`${right.file}:${right.syntax}`)
+  );
+}
+
+function collectChestLegacyFieldUsage(sources) {
+  const usage = new Map();
+
+  for (const [file, source, analyzedDependencies] of sources) {
+    const dependencies = analyzedDependencies || analyzeModuleDependencies(file, source).imports;
+    const baseAliases = new Set();
+    const namespaceAliases = new Set();
+    for (const dependency of dependencies) {
+      if (!dependency.specifier.includes(FACADE_SPECIFIER)) continue;
+      for (const binding of dependency.bindings || []) {
+        if (binding.importedName === 'CARCASS_BASE_DIMENSIONS' && binding.localName) {
+          baseAliases.add(binding.localName);
+        }
+        if (binding.importedName === '*' && binding.localName) namespaceAliases.add(binding.localName);
+      }
+    }
+    if (!baseAliases.size && !namespaceAliases.size) continue;
+
+    const sourceFile = createSourceFile(file, source, { label: 'chest_legacy_dimension_contract' });
+    const declarators = collectVariableDeclarators(sourceFile);
+    const chestAliases = new Set();
+    const wheelAliases = new Set();
+
+    const classifyPath = path => {
+      if (!path) return null;
+      if (baseAliases.has(path.rootName)) return { kind: 'base', properties: path.properties };
+      if (namespaceAliases.has(path.rootName) && path.properties[0] === 'CARCASS_BASE_DIMENSIONS') {
+        return { kind: 'base', properties: path.properties.slice(1) };
+      }
+      if (chestAliases.has(path.rootName)) return { kind: 'chest', properties: path.properties };
+      if (wheelAliases.has(path.rootName)) return { kind: 'wheels', properties: path.properties };
+      return null;
+    };
+
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const declaration of declarators) {
+        const localName = readAstBindingName(declaration.id);
+        const classified = classifyPath(readAstMemberPath(declaration.init));
+        const initName = readAstBindingName(declaration.init);
+        const directKind = initName
+          ? baseAliases.has(initName)
+            ? 'base'
+            : chestAliases.has(initName)
+              ? 'chest'
+              : wheelAliases.has(initName)
+                ? 'wheels'
+                : null
+          : null;
+        const kind = classified?.kind || directKind;
+        const properties = classified?.properties || [];
+
+        if (localName) {
+          if (kind === 'base' && properties.length === 0 && !baseAliases.has(localName)) {
+            baseAliases.add(localName);
+            changed = true;
+          } else if (
+            ((kind === 'base' && properties[0] === 'chest') ||
+              (kind === 'chest' && properties.length === 0)) &&
+            !chestAliases.has(localName)
+          ) {
+            chestAliases.add(localName);
+            changed = true;
+          } else if (
+            ((kind === 'chest' && properties[0] === 'wheels') ||
+              (kind === 'base' && properties[0] === 'chest' && properties[1] === 'wheels') ||
+              (kind === 'wheels' && properties.length === 0)) &&
+            !wheelAliases.has(localName)
+          ) {
+            wheelAliases.add(localName);
+            changed = true;
+          }
+        }
+
+        for (const { key, localName: destructuredLocal } of readObjectPatternEntries(declaration.id)) {
+          if (kind === 'base' && properties.length === 0 && key === 'chest' && destructuredLocal) {
+            if (!chestAliases.has(destructuredLocal)) {
+              chestAliases.add(destructuredLocal);
+              changed = true;
+            }
+          }
+          if (kind === 'chest' && properties.length === 0 && key === 'wheels' && destructuredLocal) {
+            if (!wheelAliases.has(destructuredLocal)) {
+              wheelAliases.add(destructuredLocal);
+              changed = true;
+            }
+          }
+        }
+      }
+    }
+
+    const fields = new Set();
+    const recordClassifiedUsage = classified => {
+      if (!classified) return;
+      let properties = classified.properties;
+      if (classified.kind === 'base') {
+        if (properties[0] !== 'chest') return;
+        fields.add('chest');
+        properties = properties.slice(1);
+      } else if (classified.kind === 'chest') {
+        fields.add('chest');
+      } else {
+        fields.add('chest');
+        fields.add('wheels');
+        if (properties[0]) fields.add(`wheels.${properties[0]}`);
+        return;
+      }
+      if (!properties[0]) return;
+      fields.add(properties[0]);
+      if (properties[0] === 'wheels' && properties[1]) fields.add(`wheels.${properties[1]}`);
+    };
+
+    for (const declaration of declarators) {
+      const classified =
+        classifyPath(readAstMemberPath(declaration.init)) ||
+        (() => {
+          const initName = readAstBindingName(declaration.init);
+          if (initName && baseAliases.has(initName)) return { kind: 'base', properties: [] };
+          if (initName && chestAliases.has(initName)) return { kind: 'chest', properties: [] };
+          if (initName && wheelAliases.has(initName)) return { kind: 'wheels', properties: [] };
+          return null;
+        })();
+      if (!classified) continue;
+      for (const { key } of readObjectPatternEntries(declaration.id)) {
+        if (classified.kind === 'base' && classified.properties.length === 0 && key === 'chest') {
+          fields.add('chest');
+        } else if (classified.kind === 'chest' && classified.properties.length === 0) {
+          fields.add('chest');
+          fields.add(key);
+        } else if (classified.kind === 'wheels' && classified.properties.length === 0) {
+          fields.add('chest');
+          fields.add('wheels');
+          fields.add(`wheels.${key}`);
+        }
+      }
+    }
+    walkAst(sourceFile, node => {
+      if (node?.type !== 'MemberExpression') return;
+      recordClassifiedUsage(classifyPath(readAstMemberPath(node)));
+    });
+    if (fields.size) usage.set(file.replaceAll('\\', '/'), fields);
+  }
+
   return normalizedSymbolUsage(usage);
 }
 
@@ -422,6 +678,21 @@ function assertApprovedSymbolUsage(actual, approved, label) {
   );
 }
 
+function assertApprovedDimensionFacadeBroadDependencies(actual) {
+  assert.deepEqual(
+    actual,
+    APPROVED_DIMENSION_FACADE_BROAD_DEPENDENCIES,
+    `dimension facade namespace/wildcard/dynamic dependency surface changed and requires review:\n${JSON.stringify(
+      {
+        approved: APPROVED_DIMENSION_FACADE_BROAD_DEPENDENCIES,
+        actual,
+      },
+      null,
+      2
+    )}`
+  );
+}
+
 function assertApprovedStackSplitFacadeSymbols(actual) {
   assert.deepEqual(
     actual,
@@ -449,6 +720,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   const basePlinthPolicy = read('esm/shared/dimensions/base_plinth_policy.ts');
   const baseLegPolicy = read('esm/shared/dimensions/base_leg_policy.ts');
   const basePlatformRenderPolicy = read('esm/shared/dimensions/base_platform_render_policy.ts');
+  const chestStructuralPolicy = read('esm/shared/dimensions/chest_structural_policy.ts');
 
   assert.match(facade, /from '\.\/dimensions\/units\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/wardrobe_defaults\.js'/u);
@@ -459,6 +731,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /from '\.\/dimensions\/carcass_interior_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/base_plinth_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/base_leg_policy\.js'/u);
+  assert.match(facade, /from '\.\/dimensions\/chest_structural_policy\.js'/u);
   assert.doesNotMatch(facade, /export const WARDROBE_DEFAULTS =/u);
   assert.doesNotMatch(facade, /export const WARDROBE_LIMITS =/u);
 
@@ -482,12 +755,19 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(baseLegPolicy, /export const BASE_LEG_DIMENSIONS = Object\.freeze/u);
   assert.match(baseLegPolicy, /export const BASE_LEG_LAYOUT_POLICY = Object\.freeze/u);
   assert.match(basePlatformRenderPolicy, /export const BASE_PLATFORM_RENDER_POLICY = Object\.freeze/u);
+  assert.match(chestStructuralPolicy, /export const CHEST_SHELL_POLICY = Object\.freeze/u);
+  assert.match(chestStructuralPolicy, /export const CHEST_DRAWER_GEOMETRY_POLICY = Object\.freeze/u);
+  assert.match(chestStructuralPolicy, /export const CHEST_CONNECTOR_POLICY = Object\.freeze/u);
+  assert.match(chestStructuralPolicy, /export const CHEST_MOTION_POLICY = Object\.freeze/u);
+  assert.match(chestStructuralPolicy, /export const CHEST_CASTER_RENDER_POLICY = Object\.freeze/u);
+  assert.match(chestStructuralPolicy, /export const CHEST_STRUCTURAL_DIMENSIONS = Object\.freeze/u);
   assert.match(facade, /plinth: BASE_PLINTH_DIMENSIONS/u);
   assert.match(facade, /legs: BASE_LEG_LAYOUT_DIMENSIONS/u);
   assert.match(facade, /legacyDimensionNumberView\(BASE_PLINTH_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(BASE_LEG_LAYOUT_POLICY\)/u);
   assert.doesNotMatch(facade, /export const BASE_LEG_DIMENSIONS = Object\.freeze/u);
-  assert.match(facade, /chest: Object\.freeze/u);
+  assert.match(facade, /chest: CHEST_STRUCTURAL_DIMENSIONS/u);
+  assert.doesNotMatch(facade, /chest: Object\.freeze/u);
   assert.doesNotMatch(facade, /export const CARCASS_(?:SHELL|INTERIOR)_DIMENSIONS =/u);
 
   assert.doesNotMatch(defaults, /stackSplit|decorativeSeparator/u);
@@ -500,7 +780,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(decorativeSeparator, /dimensions\/stack_split_render_policy\.js/u);
 
   assert.doesNotMatch(
-    `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}`,
+    `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}\n${chestStructuralPolicy}`,
     /wardrobe_dimension_tokens_shared/u
   );
 });
@@ -599,6 +879,11 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     'Base platform owner consumer allowlist'
   );
   assertApprovedSymbolUsage(
+    collectOwnerImports(analyzedSources, 'chest_structural_policy.js'),
+    APPROVED_CHEST_STRUCTURAL_OWNER_IMPORTS,
+    'Chest Structural owner consumer allowlist'
+  );
+  assertApprovedSymbolUsage(
     collectShellGridFieldUsage(analyzedSources),
     APPROVED_SHELL_GRID_FIELD_USAGE,
     'Carcass Shell grid-field compatibility allowlist'
@@ -608,21 +893,107 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     APPROVED_BASE_SUPPORT_FACADE_IMPORTS,
     'Base Support facade compatibility allowlist'
   );
+  assertApprovedDimensionFacadeBroadDependencies(collectDimensionFacadeBroadDependencies(analyzedSources));
+  assertApprovedSymbolUsage(
+    collectChestLegacyFieldUsage(analyzedSources),
+    APPROVED_CHEST_LEGACY_FIELD_USAGE,
+    'Chest Structural legacy facade field allowlist'
+  );
 });
 
-test('[dimension-foundation] Shell grid compatibility guard detects aliased new consumers', () => {
+test('[dimension-foundation] Shell grid compatibility guard detects aliases, destructuring, and computed fields', () => {
   const fixtureUsage = collectShellGridFieldUsage([
     [
       'esm/native/builder/new_grid_consumer.ts',
       `
         import { CARCASS_SHELL_DIMENSIONS as shell } from '../../shared/dimensions/carcass_shell_policy.js';
-        export const divisions = shell.drawerGridDivisions;
+        const shellAlias = shell;
+        const { drawerGridDivisions } = shell;
+        const { drawerSplitGridLineIndex: line } = shellAlias;
+        export const divisions = shellAlias['drawerGridDivisions'];
+        export { drawerGridDivisions, line };
       `,
     ],
   ]);
+  assert.deepEqual(fixtureUsage, {
+    'esm/native/builder/new_grid_consumer.ts': ['drawerGridDivisions', 'drawerSplitGridLineIndex'],
+  });
   assert.throws(
     () =>
       assertApprovedSymbolUsage(fixtureUsage, {}, 'Carcass Shell fixture grid-field compatibility allowlist'),
+    /review-blocked/u
+  );
+
+  assert.deepEqual(
+    collectShellGridFieldUsage([
+      [
+        'esm/native/builder/safe_shell_consumer.ts',
+        `
+          import { CARCASS_SHELL_DIMENSIONS as shell } from '../../shared/dimensions/carcass_shell_policy.js';
+          const unrelated = { drawerGridDivisions: 9 };
+          export const values = [shell.backThicknessM, unrelated.drawerGridDivisions];
+        `,
+      ],
+    ]),
+    {}
+  );
+});
+
+test('[dimension-foundation] facade guards reject namespace, wildcard, and dynamic dependency swaps', () => {
+  const sources = [
+    [
+      'esm/native/builder/namespace_dimensions.ts',
+      `
+        import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+        export const base = dimensions.CARCASS_BASE_DIMENSIONS;
+      `,
+    ],
+    [
+      'esm/native/builder/dynamic_dimensions.ts',
+      `export const dimensions = import('../../shared/wardrobe_dimension_tokens_shared.js');`,
+    ],
+    [
+      'esm/native/builder/wildcard_dimensions.ts',
+      `export * from '../../shared/wardrobe_dimension_tokens_shared.js';`,
+    ],
+  ];
+  const broadDependencies = collectDimensionFacadeBroadDependencies(sources);
+  assert.deepEqual(broadDependencies, [
+    { file: 'esm/native/builder/dynamic_dimensions.ts', syntax: 'dynamic-import' },
+    { file: 'esm/native/builder/namespace_dimensions.ts', syntax: 'static-import' },
+    { file: 'esm/native/builder/wildcard_dimensions.ts', syntax: 'static-re-export' },
+  ]);
+  assert.throws(() => assertApprovedDimensionFacadeBroadDependencies(broadDependencies), /requires review/u);
+});
+
+test('[dimension-foundation] Chest legacy guard detects named, aliased, namespace, destructured, and computed access', () => {
+  const fixtureUsage = collectChestLegacyFieldUsage([
+    [
+      'esm/native/builder/named_chest_consumer.ts',
+      `
+        import { CARCASS_BASE_DIMENSIONS as base } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const baseAlias = base;
+        const { chest: structural } = baseAlias;
+        const { connectorDepthM: depth } = structural;
+        const wheelPolicy = structural['wheels'];
+        export const values = [depth, wheelPolicy.radiusM];
+      `,
+    ],
+    [
+      'esm/native/builder/namespace_chest_consumer.ts',
+      `
+        import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const base = dimensions.CARCASS_BASE_DIMENSIONS;
+        export const gap = base.chest['drawerGapM'];
+      `,
+    ],
+  ]);
+  assert.deepEqual(fixtureUsage, {
+    'esm/native/builder/named_chest_consumer.ts': ['chest', 'connectorDepthM', 'wheels', 'wheels.radiusM'],
+    'esm/native/builder/namespace_chest_consumer.ts': ['chest', 'drawerGapM'],
+  });
+  assert.throws(
+    () => assertApprovedSymbolUsage(fixtureUsage, {}, 'Chest fixture legacy facade field allowlist'),
     /review-blocked/u
   );
 });

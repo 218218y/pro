@@ -97,6 +97,7 @@ test('autosave service: install exposes restore info immediately and schedule re
   assert.equal(typeof svc.cancelPending, 'function');
   assert.equal(typeof svc.flushPending, 'function');
   assert.equal(typeof svc.forceSaveNow, 'function');
+  assert.equal(typeof (svc as Record<string, unknown>).forceSaveNowResult, 'function');
   assert.equal(uiWrites[0].key, 'autosaveInfo');
   assert.deepEqual(uiWrites[0].value, { timestamp: 111, dateString: '08:45' });
   assert.equal(uiWrites[0].meta?.source, 'autosave:info');

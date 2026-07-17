@@ -31,6 +31,7 @@ import {
   BASE_LEG_DIMENSIONS as BASE_LEG_DIMENSIONS_OWNER,
   BASE_LEG_LAYOUT_POLICY,
 } from './dimensions/base_leg_policy.js';
+import { CHEST_STRUCTURAL_DIMENSIONS as CHEST_STRUCTURAL_DIMENSIONS_OWNER } from './dimensions/chest_structural_policy.js';
 import {
   STACK_SPLIT_LOWER_DEPTH_MAX,
   STACK_SPLIT_LOWER_DEPTH_MIN,
@@ -76,6 +77,7 @@ function legacyDimensionNumberView<T>(value: T): LegacyDimensionNumberView<T> {
 const BASE_LEG_DIMENSIONS = legacyDimensionNumberView(BASE_LEG_DIMENSIONS_OWNER);
 const BASE_PLINTH_DIMENSIONS = legacyDimensionNumberView(BASE_PLINTH_POLICY);
 const BASE_LEG_LAYOUT_DIMENSIONS = legacyDimensionNumberView(BASE_LEG_LAYOUT_POLICY);
+const CHEST_STRUCTURAL_DIMENSIONS = legacyDimensionNumberView(CHEST_STRUCTURAL_DIMENSIONS_OWNER);
 
 const WARDROBE_DEFAULTS = Object.freeze({
   ...WARDROBE_DEFAULTS_OWNER,
@@ -242,35 +244,7 @@ export const LIBRARY_PRESET_DIMENSIONS = Object.freeze({
 export const CARCASS_BASE_DIMENSIONS = Object.freeze({
   plinth: BASE_PLINTH_DIMENSIONS,
   legs: BASE_LEG_LAYOUT_DIMENSIONS,
-  chest: Object.freeze({
-    backThicknessM: 0.005,
-    backInsetM: 0.005,
-    backPanelWidthClearanceM: 0.002,
-    backPanelHeightClearanceM: 0.002,
-    drawerGapM: 0.004,
-    drawerWidthClearanceM: 0.004,
-    drawerFrontThicknessM: 0.018,
-    drawerShadowLineThicknessM: 0.001,
-    drawerBoxWidthClearanceM: 0.03,
-    drawerBoxHeightClearanceM: 0.05,
-    drawerBoxDepthClearanceM: 0.05,
-    connectorDepthM: 0.02,
-    connectorBackInsetM: 0.003,
-    connectorWidthClearanceM: 0.08,
-    connectorHeightClearanceM: 0.02,
-    openOffsetZM: 0.35,
-    wheels: Object.freeze({
-      heightM: 0.07,
-      radiusM: 0.025,
-      thicknessM: 0.018,
-      plateWidthM: 0.06,
-      plateHeightM: 0.006,
-      plateDepthM: 0.05,
-      forkWidthM: 0.008,
-      forkHeightM: 0.032,
-      forkDepthM: 0.006,
-    }),
-  }),
+  chest: CHEST_STRUCTURAL_DIMENSIONS,
 });
 
 export const MATERIAL_DIMENSIONS = Object.freeze({
