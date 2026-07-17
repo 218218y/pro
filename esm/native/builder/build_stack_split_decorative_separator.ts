@@ -1,4 +1,4 @@
-import { WARDROBE_DEFAULTS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { WARDROBE_DEFAULTS } from '../../shared/dimensions/wardrobe_defaults.js';
 import {
   DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_FRONT_OVERHANG_CM,
   DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_SIDE_OVERHANG_CM,

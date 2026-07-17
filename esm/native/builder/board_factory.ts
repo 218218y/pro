@@ -4,21 +4,12 @@
 // fail-fast wrapper around Render Ops.
 
 import type {
-  AppContainer,
   BuilderCreateBoardArgsLike,
   BuilderCreateBoardOptions,
   BuilderOutlineFn,
   ThreeLike,
   UnknownRecord,
 } from '../../../types';
-import { assertApp } from '../runtime/api.js';
-import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
-import { asRecord } from '../runtime/record.js';
-import { getPlatformReportError } from '../runtime/platform_access.js';
-
-function isRecord(x: unknown): x is UnknownRecord {
-  return !!x && typeof x === 'object' && !Array.isArray(x);
-}
 
 type CreateBoardFn = (
   w: number,
@@ -34,40 +25,21 @@ type CreateBoardFn = (
 
 type AddOutlinesFn = BuilderOutlineFn;
 
-type BoardFactoryArgs = {
-  App: AppContainer;
+export type BoardFactoryArgs = {
   THREE: ThreeLike | null;
   sketchMode: boolean;
   addOutlines: AddOutlinesFn | null;
+  runtime: BoardFactoryRuntime;
 };
 
-function readAddOutlines(value: unknown): AddOutlinesFn | null {
-  if (typeof value !== 'function') return null;
-  const raw = value;
-  return (...invokeArgs: unknown[]) => Reflect.apply(raw, undefined, invokeArgs);
-}
-
-function readThreeLike(value: unknown): ThreeLike | null {
-  return asRecord<ThreeLike>(value);
-}
-
-function readBoardFactoryArgs(args: unknown): BoardFactoryArgs | null {
-  if (!isRecord(args)) return null;
-  try {
-    return {
-      App: assertApp(args.App, 'builder/board_factory.makeBoardCreator'),
-      THREE: readThreeLike(args.THREE) || null,
-      sketchMode: !!args.sketchMode,
-      addOutlines: readAddOutlines(args.addOutlines),
-    };
-  } catch {
-    return null;
-  }
-}
+export type BoardFactoryRuntime = Readonly<{
+  createBoard: (args: BuilderCreateBoardArgsLike) => unknown;
+  reportError: ((error: unknown, context: UnknownRecord) => void) | null;
+}>;
 
 function attachBoardContext(error: unknown, context: UnknownRecord): void {
-  if (!isRecord(error)) return;
-  error.context = context;
+  if (!error || typeof error !== 'object' || Array.isArray(error)) return;
+  (error as UnknownRecord).context = context;
 }
 
 /**
@@ -80,14 +52,14 @@ function attachBoardContext(error: unknown, context: UnknownRecord): void {
  * @param {BuilderOutlineFn|null|undefined} args.addOutlines
  * @returns {(w:number,h:number,d:number,x:number,y:number,z:number,mat:unknown,partId?:string|null)=>unknown}
  */
-export function makeBoardCreator(args: unknown): CreateBoardFn {
-  const resolved = readBoardFactoryArgs(args);
-  if (!resolved) throw new Error('[builder/board_factory] makeBoardCreator: args missing');
+export function makeBoardCreator(args: BoardFactoryArgs | null | undefined): CreateBoardFn {
+  if (!args) throw new Error('[builder/board_factory] makeBoardCreator: args missing');
 
-  const { App, THREE, sketchMode, addOutlines } = resolved;
+  const { THREE, sketchMode, addOutlines, runtime } = args;
   if (!THREE) throw new Error('[builder/board_factory] makeBoardCreator: THREE missing');
-
-  const reportError = getPlatformReportError(App);
+  if (!runtime || typeof runtime.createBoard !== 'function') {
+    throw new Error('[builder/board_factory] makeBoardCreator: runtime.createBoard missing');
+  }
 
   return function createBoard(
     w: number,
@@ -100,16 +72,8 @@ export function makeBoardCreator(args: unknown): CreateBoardFn {
     partId: string | null = null,
     options: BuilderCreateBoardOptions | null = null
   ) {
-    const ro = getBuilderRenderOps(App);
-    if (!ro || typeof ro.createBoard !== 'function') {
-      throw new Error(
-        '[builder/board_factory] builderRenderOps.createBoard missing (Pure ESM expects Render Ops installed)'
-      );
-    }
-
     try {
       const boardArgs: BuilderCreateBoardArgsLike = {
-        App,
         THREE,
         w,
         h,
@@ -131,7 +95,7 @@ export function makeBoardCreator(args: unknown): CreateBoardFn {
         boardArgs.roundedShelfSegments = options.roundedShelfSegments;
       }
 
-      const mesh = ro.createBoard(boardArgs);
+      const mesh = runtime.createBoard(boardArgs);
 
       if (!mesh) {
         throw new Error('[builder/board_factory] createBoard returned empty mesh');
@@ -145,8 +109,10 @@ export function makeBoardCreator(args: unknown): CreateBoardFn {
         dims: { w, h, d },
         pos: { x, y, z },
       };
-      if (reportError) {
-        reportError(err, context);
+      try {
+        runtime.reportError?.(err, context);
+      } catch {
+        // Diagnostics cannot replace the board creation error.
       }
       attachBoardContext(err, context);
       throw err;

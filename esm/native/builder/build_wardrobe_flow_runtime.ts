@@ -2,7 +2,7 @@ import { finalizeBuild } from './post_build_finalize.js';
 import { readFunction } from './build_flow_readers.js';
 
 import type { BuildContextLike, BuilderRebuildDrawerMetaFn } from '../../../types';
-import type { BuildFlowFinalizeFallback } from './build_flow_orchestration.js';
+import type { BuildFlowFinalizeBestEffort } from './build_flow_orchestration.js';
 import type { PreparedBuildWardrobeFlow } from './build_wardrobe_flow_prepare.js';
 
 type BuildWardrobeExecutor = (prepared: PreparedBuildWardrobeFlow) => BuildContextLike | null;
@@ -10,7 +10,7 @@ type BuildWardrobeExecutor = (prepared: PreparedBuildWardrobeFlow) => BuildConte
 type BuildWardrobeRuntimeOptions = {
   execute: BuildWardrobeExecutor;
   finalizeBuild?: (ctx: BuildContextLike) => void;
-  finalizeBuildBestEffort?: (args: BuildFlowFinalizeFallback) => void;
+  finalizeBuildBestEffort?: (args: BuildFlowFinalizeBestEffort) => void;
   reportBuildFailure?: (prepared: PreparedBuildWardrobeFlow, error: unknown) => void;
 };
 

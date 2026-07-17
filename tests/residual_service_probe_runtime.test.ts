@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildChestModeIfNeeded } from '../esm/native/builder/chest_mode_pipeline.ts';
+import { createBuildFlowOrchestrationContext } from '../esm/native/builder/build_app_context.ts';
 import { applyMaterials } from '../esm/native/builder/materials_apply.ts';
 import { captureMaterialsApplySnapshot } from '../esm/native/builder/materials_apply_snapshot.ts';
 import { finalizeBuildBestEffort } from '../esm/native/builder/post_build_finalize.ts';
@@ -68,8 +68,7 @@ test('residual slot access runtime: scene/project seams and chest-mode builder h
   calls.length = 0;
   const built: unknown[] = [];
   assert.equal(
-    buildChestModeIfNeeded({
-      App,
+    createBuildFlowOrchestrationContext(App).buildChestModeIfNeeded({
       ui: { isChestMode: true, baseType: 'floor', colorChoice: 'white', customColor: '' },
       widthCm: 100,
       heightCm: 120,

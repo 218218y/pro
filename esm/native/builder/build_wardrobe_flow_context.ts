@@ -74,7 +74,7 @@ export function prepareBuildWardrobeExecution(
 
   const doorState = makeDoorStateAccessors(cfg);
   const plan = resolveBuildFlowPlan({
-    App,
+    orchestration: prepared.orchestration,
     THREE,
     state,
     ui,

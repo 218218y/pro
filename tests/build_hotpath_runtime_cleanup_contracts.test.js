@@ -16,6 +16,11 @@ const buildExecuteRuntime = readSource(
 const buildFlowRuntime = readSource('../esm/native/builder/build_wardrobe_flow_runtime.ts', import.meta.url);
 const buildFlowPrepare = readSource('../esm/native/builder/build_wardrobe_flow_prepare.ts', import.meta.url);
 const buildFlowContext = readSource('../esm/native/builder/build_wardrobe_flow_context.ts', import.meta.url);
+const buildFlowContextSetup = readSource(
+  '../esm/native/builder/build_wardrobe_flow_context_setup.ts',
+  import.meta.url
+);
+const buildFlowPlan = readSource('../esm/native/builder/build_flow_plan.ts', import.meta.url);
 const buildRequestRuntime = readSource(
   '../esm/native/runtime/builder_service_access_build_request_runtime.ts',
   import.meta.url
@@ -103,6 +108,7 @@ test('[build-hotpath-runtime-cleanup] hot-path entry seams stay thin while runti
       /resetInternalGridMaps/,
       /captureLocalOpenStateBeforeBuild/,
       /resolveBuildStateOrThrow/,
+      /resolveBuilderDepsOrThrow/,
       /sanitizeBuildDimsAndSyncRuntime/,
     ],
     'prepared build flow App access'
@@ -118,8 +124,46 @@ test('[build-hotpath-runtime-cleanup] hot-path entry seams stay thin while runti
       /maybeRenderNoMainSketchHost\(/,
       /finalizeStackSplitUpperShift\(/,
       /makeHandleCreator\(/,
+      /prepareBuildScene\(/,
+      /buildChestModeIfNeeded\(/,
+      /resolveBuildFlowPlanMaterials\(/,
+      /resolveBuildFlowPlanLayout\(/,
+      /makeBoardCreator\(/,
     ],
     'prepared build flow App adapter'
+  );
+  assertMatchesAll(
+    assert,
+    buildFlowContextSetup,
+    [/orchestration\.prepareScene\(/, /orchestration\.buildChestModeIfNeeded\(/],
+    'prepared build setup capability ports'
+  );
+  assertLacksAll(
+    assert,
+    buildFlowContextSetup,
+    [/\bApp\b/, /from '\.\/pre_build_reset\.js'/, /from '\.\/chest_mode_pipeline\.js'/],
+    'prepared build setup App boundary'
+  );
+  assertMatchesAll(
+    assert,
+    buildFlowPlan,
+    [
+      /orchestration\.resolvePlanMaterials\(/,
+      /orchestration\.computeModuleLayout\(/,
+      /orchestration\.createBoardFactory\(/,
+    ],
+    'build plan infrastructure ports'
+  );
+  assertLacksAll(
+    assert,
+    buildFlowPlan,
+    [
+      /\bApp\b/,
+      /from '\.\/build_flow_plan_materials\.js'/,
+      /from '\.\/build_flow_plan_layout\.js'/,
+      /from '\.\/board_factory\.js'/,
+    ],
+    'build plan App boundary'
   );
   assertMatchesAll(
     assert,

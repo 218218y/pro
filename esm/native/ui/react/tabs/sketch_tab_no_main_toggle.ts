@@ -5,7 +5,7 @@ import type {
   UnknownRecord,
 } from '../../../../../types';
 import { UI_RAW_SCALAR_KEYS } from '../../../../../types/ui_raw.js';
-import { WARDROBE_DEFAULTS } from '../../../../shared/wardrobe_dimension_tokens_shared.js';
+import { WARDROBE_DEFAULTS } from '../../../../shared/dimensions/wardrobe_defaults.js';
 
 import {
   applyProjectConfigSnapshot,

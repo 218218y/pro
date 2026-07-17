@@ -3,6 +3,7 @@ import type {
   UiStateLike,
   BuilderCalculateModuleStructureFn,
   BuilderDoorStateAccessorsLike,
+  BuilderOutlineFn,
   AppContainer,
   BuildStateLike,
   ModuleConfigLike,
@@ -14,7 +15,7 @@ import type { GetMaterialFn } from './build_flow_readers.js';
 type MaterialResolverResult = ReturnType<typeof import('./material_resolver.js').makeMaterialResolver>;
 type CommonMatsLike = ReturnType<typeof import('./common_mats_resolver.js').getCommonMatsOrThrow>;
 type ModuleLayoutResult = ReturnType<typeof import('./module_layout_pipeline.js').computeModulesAndLayout>;
-type BoardCreator = ReturnType<typeof import('./board_factory.js').makeBoardCreator>;
+export type BuildFlowBoardCreator = ReturnType<typeof import('./board_factory.js').makeBoardCreator>;
 
 export type PartMaterialResolver = MaterialResolverResult['getPartMaterial'];
 export type PartColorValueResolver = MaterialResolverResult['getPartColorValue'];
@@ -88,7 +89,7 @@ export type BuildFlowPlan = {
   moduleDepthsTotal: number[];
   carcassH: number;
   carcassD: number;
-  createBoard: BoardCreator;
+  createBoard: BuildFlowBoardCreator;
 };
 
 export type BuildFlowPlanInputs = Pick<
@@ -204,14 +205,29 @@ export type BuildFlowPlanLayoutArgs = {
   D: number;
 };
 
-export type BuildFlowPlanResolveArgs = BuildFlowPlanMaterialsArgs &
+export type BuildFlowPlanMaterialsInput = Omit<BuildFlowPlanMaterialsArgs, 'App'>;
+export type BuildFlowPlanLayoutInput = Omit<BuildFlowPlanLayoutArgs, 'App'>;
+export type BuildFlowBoardFactoryInput = Readonly<{
+  THREE: ThreeLike;
+  sketchMode: boolean;
+  addOutlines: BuilderOutlineFn | null;
+}>;
+
+export type BuildFlowPlanInfrastructurePorts = Readonly<{
+  resolvePlanMaterials: (input: BuildFlowPlanMaterialsInput) => BuildFlowPlanMaterials;
+  computeModuleLayout: (input: BuildFlowPlanLayoutInput) => BuildFlowPlanLayoutMetrics;
+  createBoardFactory: (input: BuildFlowBoardFactoryInput) => BuildFlowBoardCreator;
+}>;
+
+export type BuildFlowPlanResolveArgs = BuildFlowPlanMaterialsInput &
   Pick<
     BuildFlowPlanInputsArgs,
     'ui' | 'cfg' | 'widthCm' | 'heightCm' | 'depthCm' | 'doorsCount' | 'toStr'
   > & {
+    orchestration: BuildFlowPlanInfrastructurePorts;
     state: BuildStateLike;
     sketchMode: boolean;
-    addOutlines: unknown;
+    addOutlines: BuilderOutlineFn;
     calculateModuleStructureFn: BuilderCalculateModuleStructureFn | null;
     doorState?: BuilderDoorStateAccessorsLike;
   };

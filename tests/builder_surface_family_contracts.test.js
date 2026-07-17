@@ -889,9 +889,9 @@ test('[builder-surface-family] orchestration owners remain thin around canonical
     buildFlowPlan,
     [
       /build_flow_plan_inputs\.js/,
-      /build_flow_plan_materials\.js/,
-      /build_flow_plan_layout\.js/,
-      /build_flow_plan_dimensions\.js/,
+      /orchestration\.resolvePlanMaterials\(/,
+      /orchestration\.computeModuleLayout\(/,
+      /orchestration\.createBoardFactory\(/,
       /export type \{ BuildFlowPlan \} from '\.\/build_flow_plan_contracts\.js';/,
     ],
     'build flow plan owner'

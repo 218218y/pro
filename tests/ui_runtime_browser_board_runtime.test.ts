@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { getUiRuntime } from '../esm/native/ui/runtime/ui_runtime.ts';
 import { installBrowserDomAdapter } from '../esm/native/adapters/browser/dom.ts';
-import { makeBoardCreator } from '../esm/native/builder/board_factory.ts';
+import { createBuildFlowOrchestrationContext } from '../esm/native/builder/build_app_context.ts';
 
 function makeApp(overrides: Record<string, unknown> = {}) {
   return {
@@ -84,7 +84,11 @@ test('board factory calls builder renderOps and attaches structured context on f
     },
   });
 
-  const createBoard = makeBoardCreator({ App, THREE: { BoxGeometry: true }, sketchMode: true });
+  const createBoard = createBuildFlowOrchestrationContext(App as any).createBoardFactory({
+    THREE: { BoxGeometry: true } as any,
+    sketchMode: true,
+    addOutlines: null,
+  });
   const mesh = createBoard(1, 2, 3, 4, 5, 6, 'oak', 'p1') as Record<string, unknown>;
   assert.equal(mesh.kind, 'board');
   assert.equal((mesh.input as Record<string, unknown>).sketchMode, true);
@@ -106,7 +110,11 @@ test('board factory calls builder renderOps and attaches structured context on f
     },
   });
 
-  const brokenCreateBoard = makeBoardCreator({ App: brokenApp, THREE: { BoxGeometry: true } });
+  const brokenCreateBoard = createBuildFlowOrchestrationContext(brokenApp as any).createBoardFactory({
+    THREE: { BoxGeometry: true } as any,
+    sketchMode: false,
+    addOutlines: null,
+  });
   assert.throws(
     () => brokenCreateBoard(7, 8, 9, 1, 2, 3, 'white', 'p2'),
     (err: unknown) => {

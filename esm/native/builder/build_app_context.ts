@@ -1,18 +1,31 @@
-import { queueMicrotaskMaybe } from '../runtime/api.js';
-import { requireBuilderService, ensureBuilderService } from '../runtime/builder_service_access.js';
+import { guardVoid, queueMicrotaskMaybe } from '../runtime/api.js';
+import {
+  ensureBuilderService,
+  getBuilderRenderOps,
+  requireBuilderRegistry,
+  requireBuilderService,
+  runBuilderChestModeFollowThrough,
+} from '../runtime/builder_service_access.js';
 import { getBuildReactionsServiceMaybe } from '../runtime/build_reactions_access.js';
 import { resetInternalGridMaps } from '../runtime/cache_access.js';
 import { captureLocalOpenStateBeforeBuild } from '../runtime/doors_access.js';
 import { reportError } from '../runtime/errors.js';
-import { getPlatformReportError } from '../runtime/platform_access.js';
+import {
+  cleanGroupViaPlatform,
+  getPlatformReportError,
+  markPlatformPerfFlagsDirty,
+} from '../runtime/platform_access.js';
 import { asRecord } from '../runtime/record.js';
-import { getRenderer, getWardrobeGroup } from '../runtime/render_access.js';
+import { getRenderer, getWardrobeGroup, invalidateMirrorTracking } from '../runtime/render_access.js';
+import { capturePlanarReflectorWarmCache } from '../runtime/planar_reflector_runtime.js';
 import {
   maybeRenderNoMainSketchHost,
   syncNoMainSketchWorkspaceMetrics,
 } from './build_no_main_sketch_host.js';
 import { resolveBuildStateOrThrow } from './build_state_resolver.js';
 import { finalizeStackSplitUpperShift } from './build_stack_split_pipeline.js';
+import { makeBoardCreator } from './board_factory.js';
+import { buildChestModeIfNeeded } from './chest_mode_pipeline.js';
 import { makeHandleTypeResolver } from './doors_state_utils.js';
 import {
   bindEdgeHandleDefaultNoneReader,
@@ -20,9 +33,12 @@ import {
 } from './edge_handle_default_none_runtime.js';
 import { makeHandleCreator } from './handle_factory.js';
 import { finalizeBuildBestEffort } from './post_build_finalize.js';
+import { prepareBuildScene } from './pre_build_reset.js';
+import { resolveBuildFlowPlanLayout } from './build_flow_plan_layout.js';
+import { resolveBuildFlowPlanMaterials } from './build_flow_plan_materials.js';
 import { sanitizeBuildDimsAndSyncRuntime } from './state_sanitize_pipeline.js';
 
-import type { AppContainer, RendererLike } from '../../../types';
+import type { AppContainer, BuilderCreateBoardArgsLike, RendererLike } from '../../../types';
 import type {
   BuildFlowOrchestrationContext,
   BuildFlowSecondaryFailureContext,
@@ -68,8 +84,20 @@ export function createBuildRunnerRuntimeContext(App: AppContainer): BuildRunnerR
     },
     scheduleMicrotask: fn => {
       const enqueue = queueMicrotaskMaybe(App);
-      if (typeof enqueue === 'function') enqueue(fn);
-      else void Promise.resolve().then(fn);
+      if (typeof enqueue === 'function') {
+        try {
+          enqueue(fn);
+          return;
+        } catch (error) {
+          reportSoftError('native/builder/build_runner.primaryReplayScheduler', error);
+        }
+      }
+
+      void Promise.resolve()
+        .then(fn)
+        .catch(error => {
+          reportSoftError('native/builder/build_runner.fallbackReplay', error);
+        });
     },
     replayBuild: (bwFn, args) => {
       const builder = requireBuilderService(App, 'builder/build_runner.coalesced');
@@ -80,6 +108,29 @@ export function createBuildRunnerRuntimeContext(App: AppContainer): BuildRunnerR
 
 export function createBuildFlowOrchestrationContext(App: AppContainer): BuildFlowOrchestrationContext {
   const reportSecondaryFailure = createBuildSoftErrorReporter(App);
+  const prepareSceneRuntime = Object.freeze({
+    capturePlanarReflectorWarmCache: () => capturePlanarReflectorWarmCache(App),
+    readWardrobeGroup: () => getWardrobeGroup(App),
+    cleanGroupViaPlatform: (group: unknown) => cleanGroupViaPlatform(App, group),
+    invalidateMirrorTracking: () => invalidateMirrorTracking(App),
+    resetBuilderRegistry: () => {
+      const registry = requireBuilderRegistry(App, 'builder/pre_build_reset');
+      if (typeof registry.reset === 'function') {
+        registry.reset();
+        return;
+      }
+      const error = new Error(
+        '[WardrobePro] builder registry reset is missing (expected App.services.builder.registry.reset)'
+      );
+      try {
+        reportError(App, error, 'builder.preBuildReset');
+      } catch {
+        // The missing required capability remains the authoritative error.
+      }
+      throw error;
+    },
+    markPerfFlagsDirty: () => markPlatformPerfFlagsDirty(App, true),
+  });
 
   return Object.freeze({
     resolveState: stateOrOverride => resolveBuildStateOrThrow({ App, stateOrOverride }),
@@ -106,6 +157,51 @@ export function createBuildFlowOrchestrationContext(App: AppContainer): BuildFlo
       const group = asRecord(getWardrobeGroup(App));
       if (!group) return -1;
       return Array.isArray(group.children) ? group.children.length : 0;
+    },
+    prepareScene: input => prepareBuildScene({ ...input, runtime: prepareSceneRuntime }),
+    buildChestModeIfNeeded: input =>
+      buildChestModeIfNeeded({
+        ...input,
+        followThrough: ({ cfgSnapshot, addOutlines }) => {
+          guardVoid(
+            App,
+            {
+              where: 'builder/chest_mode_pipeline',
+              op: 'builder.chestModeFollowThrough',
+              failFast: true,
+            },
+            () => {
+              runBuilderChestModeFollowThrough(App, {
+                applyHandles: true,
+                renderViewport: true,
+                finalizeRegistry: true,
+                cfgSnapshot,
+                addOutlines,
+                removeDoorsEnabled: false,
+              });
+            }
+          );
+        },
+      }),
+    resolvePlanMaterials: input => resolveBuildFlowPlanMaterials({ App, ...input }),
+    computeModuleLayout: input => resolveBuildFlowPlanLayout({ App, ...input }),
+    createBoardFactory: input => {
+      const reportBoardError = getPlatformReportError(App);
+      return makeBoardCreator({
+        ...input,
+        runtime: {
+          createBoard: (args: BuilderCreateBoardArgsLike) => {
+            const renderOps = getBuilderRenderOps(App);
+            if (!renderOps || typeof renderOps.createBoard !== 'function') {
+              throw new Error(
+                '[builder/board_factory] builderRenderOps.createBoard missing (Pure ESM expects Render Ops installed)'
+              );
+            }
+            return renderOps.createBoard({ ...args, App });
+          },
+          reportError: reportBoardError,
+        },
+      });
     },
     createHandleBindings: ({ THREE, addOutlines, cfg, doorState, stackKey }) => ({
       getHandleType: makeHandleTypeResolver({

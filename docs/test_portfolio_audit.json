@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-16T15:27:23.787Z",
+  "generatedAt": "2026-07-17T02:54:34.197Z",
   "totals": {
-    "tests": 1214,
-    "unitRunnerTests": 1206,
+    "tests": 1218,
+    "unitRunnerTests": 1210,
     "e2eTests": 8,
-    "nonTestRuntimeFiles": 31,
+    "nonTestRuntimeFiles": 32,
     "packageTestReferences": 191,
     "catalogTestReferences": 352,
     "totalTestReferences": 543,
@@ -13,9 +13,9 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 393,
-    "runtime-unit": 313,
-    "integration": 449,
+    "contract": 395,
+    "runtime-unit": 314,
+    "integration": 450,
     "e2e-smoke": 9,
     "perf-smoke": 9,
     "legacy-migration": 41
@@ -282,6 +282,10 @@
       "category": "integration"
     },
     {
+      "file": "tests/build_wardrobe_flow_execute_runtime.test.ts",
+      "category": "integration"
+    },
+    {
       "file": "tests/build_wardrobe_flow_runtime.test.ts",
       "category": "integration"
     },
@@ -379,6 +383,10 @@
     },
     {
       "file": "tests/builder_surface_family_contracts.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/builder_synchronous_run_type_contract.test.js",
       "category": "contract"
     },
     {
@@ -3614,6 +3622,10 @@
       "category": "contract"
     },
     {
+      "file": "tests/runtime_config_root_variant_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
       "file": "tests/runtime_globals_runtime.test.ts",
       "category": "runtime-unit"
     },
@@ -4648,6 +4660,10 @@
     {
       "file": "tests/wardrobe_construction_validation_shared_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wardrobe_dimension_foundation_contracts.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/wardrobe_dimension_tokens_runtime.test.ts",

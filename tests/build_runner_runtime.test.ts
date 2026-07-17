@@ -248,6 +248,52 @@ test('build runner runtime: synchronous replay scheduling failure cannot change 
   assert.deepEqual(harness.diagnostics, ['native/builder/build_runner.replaySchedule']);
 });
 
+test('build runner app context: primary scheduler failure falls back without losing the pending replay', async () => {
+  const diagnostics: string[] = [];
+  const runs: string[] = [];
+  let nested = false;
+  const App: any = {
+    deps: {
+      browser: {
+        queueMicrotask() {
+          throw new Error('primary scheduler unavailable');
+        },
+      },
+    },
+    services: {
+      builder: {},
+      platform: {
+        reportError(_error: unknown, context: { where?: string }) {
+          diagnostics.push(String(context?.where || ''));
+        },
+      },
+    },
+  };
+  const context = createBuildRunnerRuntimeContext(App);
+  const buildWardrobe: any = function buildWardrobe(state: any) {
+    return runCoalescedBuild({
+      context,
+      bwFn: buildWardrobe,
+      args: [state],
+      run: () => {
+        runs.push(String(state?.build?.signature || ''));
+        if (!nested) {
+          nested = true;
+          buildWardrobe(createState('sig:fallback'));
+        }
+        return state;
+      },
+    });
+  };
+  App.services.builder.buildWardrobe = buildWardrobe;
+
+  assert.deepEqual(buildWardrobe(createState('sig:current')), createState('sig:current'));
+  await flushMicrotasks();
+
+  assert.deepEqual(runs, ['sig:current', 'sig:fallback']);
+  assert.deepEqual(diagnostics, ['native/builder/build_runner.primaryReplayScheduler']);
+});
+
 test('build runner runtime: replay scheduling failure preserves the original build error', () => {
   const original = new Error('original build failure');
   const harness = createRuntimeContext({

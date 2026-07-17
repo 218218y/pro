@@ -1,19 +1,18 @@
-import { resolveBuilderDepsOrThrow } from './builder_deps_resolver.js';
 import { bindDoorVisualRenderPolicy } from './door_visual_render_policy.js';
 
 import type {
   AppContainer,
   BuilderContentsRenderPolicy,
   BuilderCreateDoorVisualFn,
-  BuilderDepsRootLike,
   BuilderOutlineFn,
   BuildStateResolvedLike,
 } from '../../../types';
+import type { ResolvedBuilderCapabilities } from './builder_deps_resolver.js';
 import type { BuildFlowOrchestrationContext } from './build_flow_orchestration.js';
 
 export type BuildWardrobeFlowArgs = {
   App: AppContainer;
-  builderDeps: BuilderDepsRootLike;
+  deps: ResolvedBuilderCapabilities;
   orchestration: BuildFlowOrchestrationContext;
   stateOrOverride: unknown;
   label?: string;
@@ -28,7 +27,7 @@ export type PreparedBuildWardrobeFlow = {
   App: AppContainer;
   orchestration: BuildFlowOrchestrationContext;
   label: string;
-  deps: ReturnType<typeof resolveBuilderDepsOrThrow>;
+  deps: ResolvedBuilderCapabilities;
   buildState: BuildStateResolvedLike;
   widthCm: number;
   heightCm: number;
@@ -45,12 +44,14 @@ export function prepareBuildWardrobeFlow(
 ): PreparedBuildWardrobeFlow | null {
   if (!args || !args.App) throw new Error('[WardrobePro] buildWardrobeFlow requires args.App');
 
-  const { App, builderDeps, orchestration, stateOrOverride } = args;
+  const { App, deps, orchestration, stateOrOverride } = args;
   if (!orchestration) {
     throw new Error('[WardrobePro] buildWardrobeFlow requires an orchestration context');
   }
   const label = args.label || 'native/builder/build_wardrobe_flow';
-  const deps = resolveBuilderDepsOrThrow({ App, builderDeps, label });
+  if (!deps) {
+    throw new Error('[WardrobePro] buildWardrobeFlow requires resolved builder capabilities');
+  }
   const buildState = orchestration.resolveState(stateOrOverride);
   const { ui, runtime, cfgSnapshot } = buildState;
 

@@ -14,6 +14,7 @@ import { reportError } from '../runtime/errors.js';
 import { runCoalescedBuild } from './build_runner.js';
 import { createBuildFlowOrchestrationContext, createBuildRunnerRuntimeContext } from './build_app_context.js';
 import { buildWardrobeFlow } from './build_wardrobe_flow.js';
+import { resolveBuilderDepsOrThrow } from './builder_deps_resolver.js';
 import { ensureBuilderService, getBuilderService } from '../runtime/builder_service_access.js';
 import { setBuildTag } from '../runtime/build_info_access.js';
 
@@ -86,14 +87,20 @@ export function installBuilderCore(AppIn: unknown) {
       context: buildRunnerContext,
       bwFn: buildWardrobe,
       args: [stateOrOverride],
-      run: () =>
-        buildWardrobeFlow({
+      run: () => {
+        const resolvedCapabilities = resolveBuilderDepsOrThrow({
           App,
           builderDeps: deps,
+          label: 'native/builder/core.buildWardrobe',
+        });
+        return buildWardrobeFlow({
+          App,
+          deps: resolvedCapabilities,
           orchestration: buildFlowOrchestration,
           stateOrOverride,
           label: 'native/builder/core.buildWardrobe',
-        }),
+        });
+      },
     });
   };
 

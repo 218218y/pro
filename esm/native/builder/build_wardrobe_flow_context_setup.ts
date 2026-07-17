@@ -1,6 +1,4 @@
 import { readFunction } from './build_flow_readers.js';
-import { prepareBuildScene } from './pre_build_reset.js';
-import { buildChestModeIfNeeded } from './chest_mode_pipeline.js';
 import { pickChestModeUi } from './build_wardrobe_flow_context_ui.js';
 import { resolveBuildWardrobeContextReaders } from './build_wardrobe_flow_context_readers.js';
 import { createBuildStringNormalizer } from './build_string_normalizer.js';
@@ -27,9 +25,9 @@ export function prepareBuildWardrobeContextSetup(
   prepared: PreparedBuildWardrobeFlow
 ): PreparedBuildWardrobeContextSetup | null {
   const {
-    App,
     label,
     deps,
+    orchestration,
     buildState,
     widthCm,
     heightCm,
@@ -50,8 +48,7 @@ export function prepareBuildWardrobeContextSetup(
     addOutlines: renderPolicy.addOutlines,
   });
 
-  const pre = prepareBuildScene({
-    App,
+  const pre = orchestration.prepareScene({
     state,
     cleanGroup: readFunction<(g: unknown) => void>(cleanGroup),
     getNotesForSave: readFunction<() => ProjectSavedNotesLike>(getNotesForSave),
@@ -60,8 +57,7 @@ export function prepareBuildWardrobeContextSetup(
   const notesToPreserve = pre && pre.notesToPreserve ? pre.notesToPreserve : null;
 
   if (
-    buildChestModeIfNeeded({
-      App,
+    orchestration.buildChestModeIfNeeded({
       ui: pickChestModeUi(ui),
       widthCm,
       heightCm,

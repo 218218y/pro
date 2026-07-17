@@ -5,7 +5,6 @@
 // to avoid breaking UX during chest-only edits.
 
 import { CHEST_MODE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { guardVoid } from '../runtime/api.js';
 import {
   getDefaultBaseLegWidthCm,
   normalizeBaseLegHeightCm,
@@ -17,7 +16,6 @@ import {
   normalizeBaseLegPlatformFrontOverhangCm,
   normalizeBaseLegPlatformSideOverhangCm,
 } from '../features/platform_overhang_support.js';
-import { runBuilderChestModeFollowThrough } from '../runtime/builder_service_access.js';
 import { requireChestModeConfigSnapshot } from './visuals_chest_mode_config.js';
 
 import type { BuilderContentsRenderPolicy, ConfigStateLike, UnknownRecord } from '../../../types/index.js';
@@ -27,8 +25,7 @@ function asFiniteNumber(v: unknown, name: string): number {
   throw new Error(`[WardrobePro] Chest mode: ${name} must be a finite number`);
 }
 
-type BuildChestModeIfNeededParams = {
-  App?: unknown;
+export type BuildChestModeIfNeededParams = {
   ui?: {
     isChestMode?: boolean;
     baseType?: string;
@@ -80,10 +77,18 @@ type BuildChestModeIfNeededParams = {
     cfgSnapshot: ConfigStateLike | UnknownRecord;
     renderPolicy: BuilderContentsRenderPolicy;
   }) => void;
+  followThrough: (input: BuildChestModeFollowThroughInput) => void;
 };
 
+export type BuildChestModeFollowThroughInput = Readonly<{
+  cfgSnapshot: ConfigStateLike | UnknownRecord;
+  addOutlines: BuilderContentsRenderPolicy['addOutlines'];
+}>;
+
+export type BuildChestModeInput = Omit<BuildChestModeIfNeededParams, 'followThrough'>;
+
 export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | null | undefined) {
-  const p = params || {};
+  const p: Partial<BuildChestModeIfNeededParams> = params || {};
   const ui = p.ui || null;
 
   if (!ui?.isChestMode) return false;
@@ -137,17 +142,9 @@ export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | nu
     renderPolicy,
   });
 
-  const base = { where: 'builder/chest_mode_pipeline' };
-
-  guardVoid(p.App, { ...base, op: 'builder.chestModeFollowThrough', failFast: true }, () => {
-    runBuilderChestModeFollowThrough(p.App, {
-      applyHandles: true,
-      renderViewport: true,
-      finalizeRegistry: true,
-      cfgSnapshot,
-      addOutlines: renderPolicy.addOutlines,
-      removeDoorsEnabled: false,
-    });
-  });
+  if (typeof p.followThrough !== 'function') {
+    throw new Error('[WardrobePro] Chest mode: follow-through capability is required');
+  }
+  p.followThrough({ cfgSnapshot, addOutlines: renderPolicy.addOutlines });
   return true;
 }

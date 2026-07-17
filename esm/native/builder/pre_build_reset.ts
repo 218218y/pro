@@ -7,20 +7,19 @@
 //
 // This module intentionally does NOT read UI from DOM. It only uses state/config.
 
-import type { AppContainer, ProjectSavedNotesLike, SavedNote } from '../../../types';
+import type { ProjectSavedNotesLike, SavedNote } from '../../../types';
 
-import { getWardrobeGroup, invalidateMirrorTracking } from '../runtime/render_access.js';
-import { capturePlanarReflectorWarmCache } from '../runtime/planar_reflector_runtime.js';
-import { cleanGroupViaPlatform, markPlatformPerfFlagsDirty } from '../runtime/platform_access.js';
-import { reportError } from '../runtime/errors.js';
-import { requireBuilderRegistry } from '../runtime/builder_service_access.js';
-import { asRecord } from '../runtime/record.js';
+function readRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
 
 function readSavedNotes(value: unknown): ProjectSavedNotesLike {
   if (!Array.isArray(value)) return [];
   const out: SavedNote[] = [];
   for (let i = 0; i < value.length; i += 1) {
-    const note = asRecord<SavedNote>(value[i]);
+    const note = readRecord(value[i]) as SavedNote | null;
     if (note) out.push(note);
   }
   return out;
@@ -30,31 +29,39 @@ type BuildStateLike = {
   config?: unknown;
 };
 
-type PrepareBuildSceneArgs = {
-  App: AppContainer;
+export type PrepareBuildSceneInput = {
   state: BuildStateLike | null | undefined;
   cleanGroup: ((g: unknown) => void) | null;
   getNotesForSave: (() => ProjectSavedNotesLike) | null;
 };
 
-type PrepareBuildSceneResult = {
+export type PrepareBuildSceneRuntime = Readonly<{
+  capturePlanarReflectorWarmCache: () => void;
+  readWardrobeGroup: () => unknown;
+  cleanGroupViaPlatform: (group: unknown) => boolean;
+  invalidateMirrorTracking: () => void;
+  resetBuilderRegistry: () => void;
+  markPerfFlagsDirty: () => void;
+}>;
+
+export type PrepareBuildSceneArgs = PrepareBuildSceneInput & {
+  runtime: PrepareBuildSceneRuntime;
+};
+
+export type PrepareBuildSceneResult = {
   notesToPreserve: ProjectSavedNotesLike;
 };
 
 /**
  * Capture notes + reset render/builder state before a rebuild.
  *
- * @param {{
- *   App: AppContainer,
- *   state: BuildStateLike | null | undefined,
- *   cleanGroup: ((g: unknown)=>void) | null,
- *   getNotesForSave: (()=>ProjectSavedNotesLike) | null,
- * }} args
+ * The caller supplies runtime capabilities explicitly; this owner does not
+ * reach through an application container.
  * @returns {PrepareBuildSceneResult}
  */
 export function prepareBuildScene(args: PrepareBuildSceneArgs): PrepareBuildSceneResult {
-  if (!args || !args.App) throw new Error('[builder/pre_build_reset] App is required');
-  const { App, state, cleanGroup, getNotesForSave } = args;
+  if (!args?.runtime) throw new Error('[builder/pre_build_reset] runtime capabilities are required');
+  const { runtime, state, cleanGroup, getNotesForSave } = args;
 
   let notesToPreserve: ProjectSavedNotesLike = [];
 
@@ -65,19 +72,19 @@ export function prepareBuildScene(args: PrepareBuildSceneArgs): PrepareBuildScen
     if (Array.isArray(n) && n.length) notesToPreserve = n;
   }
   if ((!notesToPreserve || notesToPreserve.length === 0) && state?.config) {
-    const saved = readSavedNotes(asRecord(state.config)?.savedNotes);
+    const saved = readSavedNotes(readRecord(state.config)?.savedNotes);
     if (saved.length) notesToPreserve = saved;
   }
 
   // Preserve already-rendered planar mirror targets before scene cleanup.
   // This lets a rebuild reuse unchanged mirror reflections instead of flashing/re-rendering
   // every door when only one mirror was added.
-  capturePlanarReflectorWarmCache(App);
+  runtime.capturePlanarReflectorWarmCache();
 
   // Clear wardrobe group
-  const wardrobeGroup = getWardrobeGroup(App);
+  const wardrobeGroup = runtime.readWardrobeGroup();
   if (wardrobeGroup) {
-    if (cleanGroupViaPlatform(App, wardrobeGroup)) {
+    if (runtime.cleanGroupViaPlatform(wardrobeGroup)) {
       // cleaned via canonical platform seam
     } else if (typeof cleanGroup === 'function') {
       cleanGroup(wardrobeGroup);
@@ -88,23 +95,12 @@ export function prepareBuildScene(args: PrepareBuildSceneArgs): PrepareBuildScen
 
   // Mirror reflection tracking caches are render-loop hot-path inputs.
   // Rebuilds change scene contents dramatically; invalidate so the next frames can cheaply re-detect.
-  invalidateMirrorTracking(App);
+  runtime.invalidateMirrorTracking();
 
   // Reset builder registry (required).
-  const reg = requireBuilderRegistry(App, 'builder/pre_build_reset');
-  if (typeof reg.reset === 'function') {
-    reg.reset();
-  } else {
-    const err = new Error(
-      '[WardrobePro] builder registry reset is missing (expected App.services.builder.registry.reset)'
-    );
-    try {
-      reportError(App, err, 'builder.preBuildReset');
-    } catch (_e) {}
-    throw err;
-  }
+  runtime.resetBuilderRegistry();
 
-  markPlatformPerfFlagsDirty(App, true);
+  runtime.markPerfFlagsDirty();
 
   return { notesToPreserve };
 }

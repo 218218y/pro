@@ -32,6 +32,8 @@ export type ResolveBuilderDepsRequest = {
   label?: string;
 };
 
+export type ResolvedBuilderCapabilities = BuilderDepsResolvedLike;
+
 /**
  * Resolve and validate builder dependencies from the canonical builder deps surface.
  *
@@ -41,7 +43,7 @@ export type ResolveBuilderDepsRequest = {
  */
 export function resolveBuilderDepsOrThrow(
   request: ResolveBuilderDepsRequest | null | undefined
-): BuilderDepsResolvedLike {
+): ResolvedBuilderCapabilities {
   const App = request?.App;
   const B = request?.builderDeps;
   const label = request?.label || 'native/builder/deps';

@@ -1,8 +1,5 @@
 import { CARCASS_INTERIOR_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
-import { makeBoardCreator } from './board_factory.js';
 import { resolveBuildFlowPlanInputs } from './build_flow_plan_inputs.js';
-import { resolveBuildFlowPlanMaterials } from './build_flow_plan_materials.js';
-import { resolveBuildFlowPlanLayout } from './build_flow_plan_layout.js';
 
 import type { BuildFlowPlan, BuildFlowPlanResolveArgs } from './build_flow_plan_contracts.js';
 
@@ -11,7 +8,7 @@ export { collectModuleHeights } from './build_flow_plan_dimensions.js';
 
 export function resolveBuildFlowPlan(args: BuildFlowPlanResolveArgs): BuildFlowPlan {
   const {
-    App,
+    orchestration,
     THREE,
     state,
     ui,
@@ -36,8 +33,7 @@ export function resolveBuildFlowPlan(args: BuildFlowPlanResolveArgs): BuildFlowP
     doorsCount,
     toStr,
   });
-  const materials = resolveBuildFlowPlanMaterials({
-    App,
+  const materials = orchestration.resolvePlanMaterials({
     THREE,
     ui,
     cfg,
@@ -45,8 +41,7 @@ export function resolveBuildFlowPlan(args: BuildFlowPlanResolveArgs): BuildFlowP
     toStr,
     getMaterialFn,
   });
-  const layout = resolveBuildFlowPlanLayout({
-    App,
+  const layout = orchestration.computeModuleLayout({
     state,
     cfg,
     ui,
@@ -63,8 +58,7 @@ export function resolveBuildFlowPlan(args: BuildFlowPlanResolveArgs): BuildFlowP
 
   const internalDepth = Math.max(inputs.woodThick, layout.carcassD - inputs.depthReduction);
   const internalZ = -layout.carcassD / 2 + internalDepth / 2 + CARCASS_INTERIOR_DIMENSIONS.internalBackInsetM;
-  const createBoard = makeBoardCreator({
-    App,
+  const createBoard = orchestration.createBoardFactory({
     THREE,
     sketchMode,
     addOutlines,

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { pickChestModeUi } from '../esm/native/builder/build_wardrobe_flow_context_ui.ts';
+import { createBuildFlowOrchestrationContext } from '../esm/native/builder/build_app_context.ts';
 import { prepareBuildWardrobeContextSetup } from '../esm/native/builder/build_wardrobe_flow_context_setup.ts';
 import { resolveBuildWardrobeContextReaders } from '../esm/native/builder/build_wardrobe_flow_context_readers.ts';
 import { resolveBuildWardrobeSplitMetrics } from '../esm/native/builder/build_wardrobe_flow_context_split.ts';
@@ -96,6 +97,7 @@ test('build wardrobe context runtime: chest-only path forwards the canonical cfg
 
   const result = prepareBuildWardrobeContextSetup({
     App,
+    orchestration: createBuildFlowOrchestrationContext(App),
     label: 'unit',
     deps: {
       cleanGroup(group: any) {

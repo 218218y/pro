@@ -17,10 +17,13 @@ import type {
 } from './build_no_main_sketch_host.js';
 import type { FinalizeStackSplitUpperShiftArgs } from './build_stack_split_shared.js';
 import type { EdgeHandleDefaultNoneStackKey } from './edge_handle_default_none_runtime.js';
+import type { BuildFlowPlanInfrastructurePorts } from './build_flow_plan_contracts.js';
 import type { makeHandleCreator } from './handle_factory.js';
+import type { BuildChestModeInput } from './chest_mode_pipeline.js';
+import type { PrepareBuildSceneInput, PrepareBuildSceneResult } from './pre_build_reset.js';
 import type { sanitizeBuildDimsAndSyncRuntime } from './state_sanitize_pipeline.js';
 
-export type BuildFlowFinalizeFallback = {
+export type BuildFlowFinalizeBestEffort = {
   pruneCachesSafe: ((scene: unknown) => void) | null;
   drawerRebuildSnapshot: BuilderDrawerRebuildSnapshot | null;
   rebuildDrawerMeta: BuilderRebuildDrawerMetaFn | null;
@@ -56,6 +59,8 @@ export type BuildFlowOrchestrationContext = Readonly<{
     cfg: ConfigStateLike | UnknownRecord
   ) => ReturnType<typeof sanitizeBuildDimsAndSyncRuntime>;
   readWardrobeChildCount: () => number;
+  prepareScene: (input: PrepareBuildSceneInput) => PrepareBuildSceneResult;
+  buildChestModeIfNeeded: (input: BuildChestModeInput) => boolean;
   createHandleBindings: (input: BuildFlowHandleBindingsInput) => BuildFlowHandleBindings;
   syncNoMainWorkspaceMetrics: (input: NoMainSketchWorkspaceMetricsInput) => void;
   renderNoMainSketchHost: (input: NoMainSketchRenderInput) => boolean;
@@ -63,5 +68,6 @@ export type BuildFlowOrchestrationContext = Readonly<{
   reportBuildFailure: (label: string, error: unknown, showToast: unknown) => void;
   reportFinalizeFailure: (label: string, error: unknown) => void;
   reportSecondaryFailure: (label: string, error: unknown, context: BuildFlowSecondaryFailureContext) => void;
-  finalizeBestEffort: (args: BuildFlowFinalizeFallback) => void;
-}>;
+  finalizeBestEffort: (args: BuildFlowFinalizeBestEffort) => void;
+}> &
+  BuildFlowPlanInfrastructurePorts;

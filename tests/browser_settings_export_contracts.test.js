@@ -304,16 +304,16 @@ test('settings and browser surfaces keep typed readers instead of loose bag cast
     assert,
     boardFactory,
     [
-      /function readBoardFactoryArgs\(args: unknown\): BoardFactoryArgs \| null \{/,
+      /export type BoardFactoryRuntime = Readonly<\{/,
       /function attachBoardContext\(/,
-      /const ro = getBuilderRenderOps\(App\);/,
+      /const mesh = runtime\.createBoard\(boardArgs\);/,
     ],
     'boardFactory'
   );
   assertLacksAll(
     assert,
     boardFactory,
-    [/getBuilderRenderOps\(App\) as RenderOpsLike/, /const App = a\.App as AppContainer/],
+    [/getBuilderRenderOps\(/, /AppContainer/, /readBoardFactoryArgs\(args: unknown\)/],
     'boardFactory'
   );
 });

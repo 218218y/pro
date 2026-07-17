@@ -17,7 +17,7 @@ import {
   DEFAULT_HINGED_DOORS,
   DEFAULT_WIDTH,
   HINGED_DEFAULT_DEPTH,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+} from '../../shared/dimensions/wardrobe_defaults.js';
 
 function readCanonicalUiScalarValue<K extends UiRawScalarKey>(
   key: K,

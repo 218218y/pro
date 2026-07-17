@@ -7,8 +7,14 @@ import {
   DOOR_TRIM_DIMENSIONS,
   DRAWER_DIMENSIONS,
   MATERIAL_DIMENSIONS,
-  WARDROBE_DEFAULTS,
+  WARDROBE_DEFAULTS as FACADE_WARDROBE_DEFAULTS,
   resolveExternalDrawerGeometry,
+} from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import {
+  getDefaultDepthForWardrobeType,
+  getDefaultDoorsForWardrobeType,
+  getDefaultWidthForWardrobeType,
+  resolveDoorMountThicknessesFromConfig,
 } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
 import {
   DEFAULT_HINGED_DOORS,
@@ -17,11 +23,17 @@ import {
   DEFAULT_WIDTH,
   HINGED_DEFAULT_DEPTH,
   SLIDING_DEFAULT_DEPTH,
-  getDefaultDepthForWardrobeType,
-  getDefaultDoorsForWardrobeType,
-  getDefaultWidthForWardrobeType,
-  resolveDoorMountThicknessesFromConfig,
-} from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+  WARDROBE_DEFAULTS,
+} from '../esm/shared/dimensions/wardrobe_defaults.ts';
+import {
+  centimeters,
+  centimetersToMeters,
+  metersToWorldUnits,
+  millimeters,
+  millimetersToCentimeters,
+  pixels,
+  worldUnitsToMeters,
+} from '../esm/shared/dimensions/units.ts';
 import {
   DEFAULT_BASE_LEG_HEIGHT_CM,
   DEFAULT_TAPERED_BASE_LEG_WIDTH_CM,
@@ -43,6 +55,7 @@ import {
 import { computeExternalDrawersOpsForModule } from '../esm/native/builder/core_storage_compute_external_drawers.ts';
 
 test('wardrobe default tokens preserve hinged and sliding business defaults', () => {
+  assert.equal(FACADE_WARDROBE_DEFAULTS, WARDROBE_DEFAULTS);
   assert.equal(DEFAULT_WIDTH, WARDROBE_DEFAULTS.widthCm);
   assert.equal(HINGED_DEFAULT_DEPTH, 55);
   assert.equal(SLIDING_DEFAULT_DEPTH, 60);
@@ -56,6 +69,14 @@ test('wardrobe default tokens preserve hinged and sliding business defaults', ()
   assert.equal(getDefaultDoorsForWardrobeType('sliding'), 2);
   assert.equal(getDefaultWidthForWardrobeType('hinged'), 160);
   assert.equal(getDefaultWidthForWardrobeType('sliding'), 160);
+});
+
+test('dimension foundation uses explicit unit constructors and conversions without changing scale', () => {
+  assert.equal(millimetersToCentimeters(millimeters(180)), 18);
+  assert.equal(centimetersToMeters(centimeters(240)), 2.4);
+  assert.equal(worldUnitsToMeters(metersToWorldUnits(centimetersToMeters(centimeters(55)))), 0.55);
+  assert.equal(pixels(320), 320);
+  assert.throws(() => centimeters(Number.NaN), /finite number/);
 });
 
 test('feature facades read physical dimensions from the shared token source', () => {

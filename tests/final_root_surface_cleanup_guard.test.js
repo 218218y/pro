@@ -12,13 +12,19 @@ test('final root-surface cleanup routes residual runtime/build/service hotspots 
     read('esm/native/builder/build_runner.ts'),
     read('esm/native/builder/build_runner_runtime.ts'),
   ].join('\n');
-  assert.match(buildRunner, /from '\.\.\/runtime\/platform_access\.js';/);
-  assert.match(buildRunner, /const reportError = getPlatformReportError\(App\);/);
+  const buildAppContext = read('esm/native/builder/build_app_context.ts');
+  assert.doesNotMatch(buildRunner, /AppContainer/);
+  assert.doesNotMatch(buildRunner, /from '\.\.\/runtime\/platform_access\.js';/);
+  assert.doesNotMatch(buildRunner, /getPlatformReportError\(/);
   assert.doesNotMatch(buildRunner, /app\?\.platform/);
+  assert.match(buildAppContext, /from '\.\.\/runtime\/platform_access\.js';/);
+  assert.match(buildAppContext, /const reportPlatformError = getPlatformReportError\(App\);/);
 
   const chestMode = read('esm/native/builder/chest_mode_pipeline.ts');
-  assert.match(chestMode, /from '\.\.\/runtime\/builder_service_access\.js';/);
-  assert.match(chestMode, /runBuilderChestModeFollowThrough\(p\.App, \{/);
+  assert.doesNotMatch(chestMode, /AppContainer/);
+  assert.doesNotMatch(chestMode, /from '\.\.\/runtime\/builder_service_access\.js';/);
+  assert.match(chestMode, /followThrough: \(input: BuildChestModeFollowThroughInput\) => void;/);
+  assert.match(buildAppContext, /runBuilderChestModeFollowThrough\(App, \{/);
   assert.doesNotMatch(chestMode, /app\?\.render/);
 
   const kernel = [

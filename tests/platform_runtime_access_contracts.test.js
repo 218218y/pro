@@ -224,6 +224,7 @@ const platformConsumerBundle = bundleSources(
 );
 
 const threeTargets = {
+  buildAppContext: read('esm/native/builder/build_app_context.ts'),
   buildStateResolver: read('esm/native/builder/build_state_resolver.ts'),
   builderDepsResolver: read('esm/native/builder/builder_deps_resolver.ts'),
   moduleLayout: read('esm/native/builder/module_layout_pipeline.ts'),
@@ -499,8 +500,13 @@ test('[platform-runtime] app start and major callsites prefer canonical boot ent
     threeTargets.moduleLayout,
     /reportError\(App, e, \{\s*where: 'native\/builder\/module_layout_pipeline',\s*op: 'computeHingedDoorPivotMap',\s*fatal: false,\s*\}\)/
   );
-  assert.match(threeTargets.preBuildReset, /cleanGroupViaPlatform\(App, wardrobeGroup\)/);
-  assert.match(threeTargets.preBuildReset, /reportError\(App, err, 'builder\.preBuildReset'\)/);
+  assert.doesNotMatch(threeTargets.preBuildReset, /AppContainer/);
+  assert.doesNotMatch(threeTargets.preBuildReset, /from '\.\.\/runtime\/platform_access\.js';/);
+  assert.match(
+    threeTargets.buildAppContext,
+    /cleanGroupViaPlatform: \(group: unknown\) => cleanGroupViaPlatform\(App, group\)/
+  );
+  assert.match(threeTargets.buildAppContext, /reportError\(App, error, 'builder\.preBuildReset'\)/);
   assert.match(
     bootFinalizers,
     /export function wardrobeClean\(App: AppContainer, group: unknown\): unknown \{/
