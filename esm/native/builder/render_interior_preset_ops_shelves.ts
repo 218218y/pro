@@ -6,7 +6,10 @@ import type {
   InteriorOpsCallable,
   InteriorTHREESurface,
 } from './render_interior_ops_contracts.js';
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  INTERIOR_SHELF_PIN_RENDER_POLICY,
+  INTERIOR_SHELF_POLICY,
+} from '../../shared/dimensions/interior_fittings_policy.js';
 import {
   SHELF_GROUP_PART_ID,
   createModuleShelfPartId,
@@ -95,9 +98,9 @@ export function createAddGridShelf(args: {
     renderOpsHandleCatch,
   } = args;
 
-  const pinRadius = INTERIOR_FITTINGS_DIMENSIONS.pins.radiusM;
-  const pinLength = INTERIOR_FITTINGS_DIMENSIONS.pins.lengthM;
-  const pinEdgeOffsetDefault = INTERIOR_FITTINGS_DIMENSIONS.pins.edgeOffsetDefaultM;
+  const pinRadius = INTERIOR_SHELF_PIN_RENDER_POLICY.radiusM;
+  const pinLength = INTERIOR_SHELF_PIN_RENDER_POLICY.lengthM;
+  const pinEdgeOffsetDefault = INTERIOR_SHELF_PIN_RENDER_POLICY.edgeOffsetDefaultM;
   let pinGeometry: InteriorGeometryLike | null = null;
   let pinMaterial: InteriorMaterialLike | null = null;
 
@@ -109,7 +112,7 @@ export function createAddGridShelf(args: {
           pinRadius,
           pinRadius,
           pinLength,
-          INTERIOR_FITTINGS_DIMENSIONS.pins.radialSegments
+          INTERIOR_SHELF_PIN_RENDER_POLICY.radialSegments
         );
       if (!pinMaterial) {
         pinMaterial = new threeSurface.MeshStandardMaterial({
@@ -148,12 +151,12 @@ export function createAddGridShelf(args: {
     if (!ensurePinResources()) return;
 
     const shelfBottom = shelfY - shelfH / 2;
-    const yPin = shelfBottom - pinRadius + INTERIOR_FITTINGS_DIMENSIONS.pins.bottomYOffsetM;
+    const yPin = shelfBottom - pinRadius + INTERIOR_SHELF_PIN_RENDER_POLICY.bottomYOffsetM;
     const backEdge = shelfZ - shelfDepth / 2;
     const frontEdge = shelfZ + shelfDepth / 2;
-    const maxOffset = shelfDepth / 2 - INTERIOR_FITTINGS_DIMENSIONS.pins.maxDepthSideClearanceM;
+    const maxOffset = shelfDepth / 2 - INTERIOR_SHELF_PIN_RENDER_POLICY.maxDepthSideClearanceM;
     const edgeOffset = Math.max(
-      INTERIOR_FITTINGS_DIMENSIONS.pins.minEdgeOffsetM,
+      INTERIOR_SHELF_PIN_RENDER_POLICY.minEdgeOffsetM,
       Math.min(pinEdgeOffsetDefault, maxOffset)
     );
     const zBack = backEdge + edgeOffset;
@@ -182,10 +185,7 @@ export function createAddGridShelf(args: {
   function resolveBaseContentsMaxHeight(shelfH: number): number {
     if (!shelfSet[1]) return 0;
     const firstShelfBottomY = effectiveBottomY + localGridStep - shelfH / 2;
-    return Math.max(
-      0,
-      firstShelfBottomY - effectiveBottomY - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsHeightClearanceM
-    );
+    return Math.max(0, firstShelfBottomY - effectiveBottomY - INTERIOR_SHELF_POLICY.contentsHeightClearanceM);
   }
 
   function addBaseShelfContents(): void {
@@ -200,7 +200,7 @@ export function createAddGridShelf(args: {
       internalCenterX,
       effectiveBottomY,
       shelfZ,
-      innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM,
+      innerW - INTERIOR_SHELF_POLICY.contentsWidthClearanceM,
       group,
       maxHeight,
       shelfDepth,
@@ -220,7 +220,7 @@ export function createAddGridShelf(args: {
       }
     }
 
-    return Math.max(0, topLimitY - shelfTopY - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsHeightClearanceM);
+    return Math.max(0, topLimitY - shelfTopY - INTERIOR_SHELF_POLICY.contentsHeightClearanceM);
   }
 
   addBaseShelfContents();
@@ -274,7 +274,7 @@ export function createAddGridShelf(args: {
         internalCenterX,
         y + shelfThick / 2,
         shelfZ,
-        innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM,
+        innerW - INTERIOR_SHELF_POLICY.contentsWidthClearanceM,
         group,
         resolveShelfContentsMaxHeight(gridKey, y, shelfThick),
         shelfDepth,

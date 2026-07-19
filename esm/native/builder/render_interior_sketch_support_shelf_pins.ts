@@ -1,4 +1,4 @@
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_SHELF_PIN_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import { SHELF_GROUP_PART_ID, markShelfBoardUserData } from '../features/part_identity/api.js';
 import type {
   InteriorGroupLike,
@@ -25,7 +25,7 @@ export function createShelfPinAdder(args: {
     if (!THREE || !pinGeo || !pinMat) return;
     if (!(shelfW > 0) || !(shelfDepth > 0)) return;
 
-    const pinDims = INTERIOR_FITTINGS_DIMENSIONS.pins;
+    const pinDims = INTERIOR_SHELF_PIN_RENDER_POLICY;
     const shelfBottom = shelfY - shelfH / 2;
     const yPin = shelfBottom - pinRadius + pinDims.bottomYOffsetM;
     const backEdge = shelfZ - shelfDepth / 2;

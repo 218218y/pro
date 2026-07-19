@@ -1,4 +1,4 @@
-import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { buildSketchModuleDrawerVerticalBlockers } from './canvas_picking_sketch_module_vertical_content_collision.js';
 import { buildManualLayoutVerticalContentBlockers } from './canvas_picking_manual_layout_vertical_blockers.js';
@@ -39,7 +39,7 @@ export function buildSketchModuleBoxVerticalBlockers(args: {
   const woodThick =
     typeof args.woodThick === 'number' && Number.isFinite(args.woodThick) && args.woodThick > 0
       ? args.woodThick
-      : MATERIAL_DIMENSIONS.wood.thicknessM;
+      : MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const extras = readSketchExtrasRecord(args.cfgRef ?? null);
   const boxes = Array.isArray(args.boxes) ? args.boxes : readRecordArray(extras, 'boxes');
   if (!boxes.length) return [];

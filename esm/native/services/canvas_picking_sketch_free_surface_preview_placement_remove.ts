@@ -1,4 +1,4 @@
-import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import { resolveSketchBoxVisibleFrontOverlay } from './canvas_picking_manual_layout_sketch_front_overlay.js';
 import type {
   ResolveSketchBoxSegmentsArgs,
@@ -44,7 +44,7 @@ export function resolveSketchFreePlacementRemoveOverlay(args: {
     wardrobeDepth,
     backZ: wardrobeBackZ,
     centerX: readRecordNumber(removeBox, 'absX') ?? hoverPlacement.previewX,
-    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
+    woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
     widthM: readRecordNumber(removeBox, 'widthM'),
     depthM: readRecordNumber(removeBox, 'depthM'),
   });
@@ -52,13 +52,13 @@ export function resolveSketchFreePlacementRemoveOverlay(args: {
     dividers: readSketchBoxDividers(removeBox),
     boxCenterX: removeBoxGeo.centerX,
     innerW: removeBoxGeo.innerW,
-    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
+    woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
   });
   const frontOverlay = resolveSketchBoxVisibleFrontOverlay({
     box: removeBox,
     boxCenterY: hoverPlacement.previewY,
     boxHeight: hoverPlacement.previewH,
-    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
+    woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
     geo: removeBoxGeo,
     segments: removeBoxSegments,
     fullWidth: true,

@@ -1,4 +1,4 @@
-import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import { asFiniteNumberOrNaN, asNumberOrNull } from './canvas_picking_sketch_free_box_shared.js';
 import {
   resolveSketchFreeBoxNonOverlappingPlacement,
@@ -57,7 +57,7 @@ export function finalizeSketchFreeBoxHoverPlacement(args: {
     wardrobeWidth: asNumberOrNull(context.wardrobeBox.width) ?? 0,
     wardrobeDepth: asNumberOrNull(context.wardrobeBox.depth) ?? 0,
     backZ: context.wardrobeBackZ,
-    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
+    woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
     freeBoxes: context.freeBoxes,
     pad: context.workspacePad,
     attachment: attachPlacement

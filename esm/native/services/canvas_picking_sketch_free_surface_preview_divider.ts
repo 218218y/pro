@@ -1,4 +1,4 @@
-import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
   buildSketchBoxDividerMeasurementEntries,
   buildSketchBoxHorizontalDividerMeasurementEntries,
@@ -74,7 +74,7 @@ function resolveVerticalContext(args: DividerPreviewHelpers): {
   dividerHeight: number;
   dividerYNorm: number | null;
 } {
-  const woodThick = MATERIAL_DIMENSIONS.wood.thicknessM;
+  const woodThick = MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const horizontalDividers = args.readSketchBoxHorizontalDividers(args.target.targetBox);
   const hasHorizontalRows = horizontalDividers.length > 0;
   const verticalSegments = hasHorizontalRows
@@ -117,7 +117,7 @@ function resolveVerticalContext(args: DividerPreviewHelpers): {
 
 function resolveHorizontalDividerPreview(args: DividerPreviewHelpers): SketchFreeSurfacePreviewResult {
   const { tool, host, target } = args;
-  const woodThick = MATERIAL_DIMENSIONS.wood.thicknessM;
+  const woodThick = MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const existingDividers = args.readSketchBoxDividers(target.targetBox);
   const existingHorizontalDividers = args.readSketchBoxHorizontalDividers(target.targetBox);
   const columnSegments = args.resolveSketchBoxSegments({
@@ -230,7 +230,7 @@ function resolveHorizontalDividerPreview(args: DividerPreviewHelpers): SketchFre
 
 function resolveVerticalDividerPreview(args: DividerPreviewHelpers): SketchFreeSurfacePreviewResult {
   const { tool, host, target } = args;
-  const woodThick = MATERIAL_DIMENSIONS.wood.thicknessM;
+  const woodThick = MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const existingDividers = args.readSketchBoxDividers(target.targetBox);
   const row = resolveVerticalContext(args);
   const segments = args.resolveSketchBoxSegments({

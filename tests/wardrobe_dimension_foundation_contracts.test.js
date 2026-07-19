@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 187, statements: 187 }),
+  'static-import': Object.freeze({ importers: 170, statements: 170 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 189, statements: 190 }),
+  total: Object.freeze({ importers: 172, statements: 173 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -235,6 +235,40 @@ const APPROVED_CHEST_STRUCTURAL_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_STRUCTURAL_DIMENSIONS']),
 });
 const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/render_preview_sketch_pipeline_shared.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/native/services/canvas_picking_hover_preview_modes_divider.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_box_content_preview_doors.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_box_content_preview_stack.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_box_content_preview_vertical.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_box_hover_finalize.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_box_hover_scan.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_surface_preview_divider.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_surface_preview_placement.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_surface_preview_placement_remove.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_surface_preview_target_candidate.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_box_blockers.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
   'esm/shared/dimensions/carcass_cornice_render_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/door_mount_thickness_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/door_system_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
@@ -257,10 +291,8 @@ const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/builder/render_interior_sketch_ops_input.ts',
   'esm/native/builder/render_interior_sketch_support_shelves.ts',
   'esm/native/builder/render_preview_interior_hover_apply.ts',
-  'esm/native/builder/render_preview_sketch_pipeline_shared.ts',
   'esm/native/features/sketch_internal_drawer_cassette.ts',
   'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
-  'esm/native/services/canvas_picking_hover_preview_modes_divider.ts',
   'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
   'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
   'esm/native/services/canvas_picking_manual_layout_free_box_content.ts',
@@ -277,18 +309,8 @@ const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/services/canvas_picking_sketch_box_vertical_content_blockers.ts',
   'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts',
   'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
-  'esm/native/services/canvas_picking_sketch_free_box_content_preview_doors.ts',
-  'esm/native/services/canvas_picking_sketch_free_box_content_preview_stack.ts',
-  'esm/native/services/canvas_picking_sketch_free_box_content_preview_vertical.ts',
   'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
-  'esm/native/services/canvas_picking_sketch_free_box_hover_finalize.ts',
-  'esm/native/services/canvas_picking_sketch_free_box_hover_scan.ts',
   'esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts',
-  'esm/native/services/canvas_picking_sketch_free_surface_preview_divider.ts',
-  'esm/native/services/canvas_picking_sketch_free_surface_preview_placement.ts',
-  'esm/native/services/canvas_picking_sketch_free_surface_preview_placement_remove.ts',
-  'esm/native/services/canvas_picking_sketch_free_surface_preview_target_candidate.ts',
-  'esm/native/services/canvas_picking_sketch_module_box_blockers.ts',
   'esm/native/services/canvas_picking_sketch_module_vertical_content_collision.ts',
   'esm/native/services/canvas_picking_sketch_module_vertical_content_preview.ts',
   'esm/native/services/canvas_picking_sketch_neighbor_measurements.ts',
@@ -636,7 +658,231 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
     'INTERIOR_STORAGE_CLAMP_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
-  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['INTERIOR_STORAGE_POLICY']),
+  'esm/shared/dimensions/interior_fittings_policy.ts': Object.freeze(['INTERIOR_STORAGE_POLICY']),
+});
+const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/render_interior_preset_ops_shelves.ts': Object.freeze([
+    'INTERIOR_SHELF_PIN_RENDER_POLICY',
+    'INTERIOR_SHELF_POLICY',
+  ]),
+  'esm/native/builder/render_interior_rod_ops.ts': Object.freeze([
+    'INTERIOR_ROD_CONTENT_CLEARANCE_POLICY',
+    'INTERIOR_ROD_DEPTH_CLEARANCE_POLICY',
+    'INTERIOR_ROD_RENDER_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_support_materials.ts': Object.freeze([
+    'INTERIOR_SHELF_PIN_RENDER_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_support_rods.ts': Object.freeze([
+    'INTERIOR_ROD_CONTENT_CLEARANCE_POLICY',
+    'INTERIOR_ROD_DEPTH_CLEARANCE_POLICY',
+    'INTERIOR_ROD_RENDER_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_support_shelf_pins.ts': Object.freeze([
+    'INTERIOR_SHELF_PIN_RENDER_POLICY',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['INTERIOR_FITTINGS_POLICY']),
+});
+const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
+  'esm/native/builder/core_storage_compute_custom.ts': Object.freeze(['rods', 'rods.defaultYOffsetM']),
+  'esm/native/builder/corner_wing_cell_interiors_shelves.ts': Object.freeze([
+    'pins',
+    'pins.bottomYOffsetM',
+    'pins.edgeOffsetDefaultM',
+    'pins.lengthM',
+    'pins.maxDepthSideClearanceM',
+    'pins.minEdgeOffsetM',
+    'pins.radialSegments',
+    'pins.radiusM',
+    'shelves',
+    'shelves.doubleThicknessMultiplier',
+  ]),
+  'esm/native/builder/corner_wing_cell_interiors_storage.ts': Object.freeze([
+    'rods',
+    'rods.radialSegments',
+    'rods.radiusM',
+  ]),
+  'esm/native/builder/corner_wing_cell_layouts.ts': Object.freeze([
+    'presets',
+    'presets.fullShelfRows',
+    'presets.hangingRodYFactor',
+    'presets.hangingShelfRows',
+    'presets.mixedRodYFactor',
+    'presets.splitLowerRodYFactor',
+    'presets.splitShelfRows',
+    'presets.splitUpperRodLimitFactor',
+    'presets.splitUpperRodYFactor',
+    'presets.storageRodLimitFactor',
+    'presets.storageRodYFactor',
+    'rods',
+    'rods.defaultYOffsetM',
+  ]),
+  'esm/native/builder/render_interior_custom_ops.ts': Object.freeze([
+    'shelves',
+    'shelves.braceWidthClearanceM',
+    'shelves.regularDepthM',
+    'shelves.regularWidthClearanceM',
+  ]),
+  'esm/native/builder/render_interior_custom_ops_shelves.ts': Object.freeze([
+    'pins',
+    'pins.bottomYOffsetM',
+    'pins.edgeOffsetDefaultM',
+    'pins.lengthM',
+    'pins.maxDepthSideClearanceM',
+    'pins.minEdgeOffsetM',
+    'pins.radiusM',
+    'shelves',
+    'shelves.contentsHeightClearanceM',
+    'shelves.contentsWidthClearanceM',
+    'shelves.doubleThicknessMultiplier',
+  ]),
+  'esm/native/builder/render_interior_preset_ops.ts': Object.freeze([
+    'shelves',
+    'shelves.braceWidthClearanceM',
+    'shelves.regularDepthM',
+    'shelves.regularWidthClearanceM',
+  ]),
+  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
+    'presets',
+    'presets.fullShelfRows',
+    'presets.hangingRodYFactor',
+    'presets.hangingShelfRows',
+    'presets.mixedRodYFactor',
+    'presets.splitLowerRodYFactor',
+    'presets.splitShelfRows',
+    'presets.splitUpperRodYFactor',
+    'presets.storageRodYFactor',
+    'rods',
+    'rods.defaultYOffsetM',
+    'shelves',
+    'shelves.contentsHeightClearanceM',
+  ]),
+  'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts': Object.freeze([
+    'rods',
+    'rods.radialSegments',
+    'rods.radiusM',
+  ]),
+  'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts': Object.freeze([
+    'shelves',
+    'shelves.contentsHeightClearanceM',
+    'shelves.contentsWidthClearanceM',
+  ]),
+  'esm/native/builder/render_interior_sketch_boxes_shell_apply.ts': Object.freeze([
+    'shelves',
+    'shelves.regularDepthM',
+  ]),
+  'esm/native/builder/render_interior_sketch_ops_input.ts': Object.freeze([
+    'shelves',
+    'shelves.braceWidthClearanceM',
+    'shelves.regularDepthM',
+    'shelves.regularWidthClearanceM',
+    'shelves.spanMinHeightM',
+  ]),
+  'esm/native/builder/render_interior_sketch_support_shelves.ts': Object.freeze([
+    'shelves',
+    'shelves.braceWidthClearanceM',
+    'shelves.contentsHeightClearanceM',
+    'shelves.contentsWidthClearanceM',
+    'shelves.doubleThicknessMultiplier',
+    'shelves.regularWidthClearanceM',
+  ]),
+  'esm/native/builder/render_ops_primitives.ts': Object.freeze([
+    'shelves',
+    'shelves.roundedCornerRadiusM',
+    'shelves.roundedCornerSegments',
+  ]),
+  'esm/native/builder/render_preview_interior_hover_apply.ts': Object.freeze([
+    'shelves',
+    'shelves.regularDepthM',
+  ]),
+  'esm/native/features/interior_layout_presets/ops.ts': Object.freeze([
+    'presets',
+    'presets.fullShelfRows',
+    'presets.hangingRodYFactor',
+    'presets.hangingShelfRows',
+    'presets.mixedRodYFactor',
+    'presets.splitLowerRodLimitFactor',
+    'presets.splitLowerRodYFactor',
+    'presets.splitShelfRows',
+    'presets.splitUpperRodLimitFactor',
+    'presets.splitUpperRodYFactor',
+    'presets.storageRodLimitFactor',
+    'presets.storageRodYFactor',
+  ]),
+  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
+    'rods',
+    'rods.defaultYOffsetM',
+    'shelves',
+    'shelves.doubleThicknessMultiplier',
+  ]),
+  'esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts': Object.freeze([
+    'shelves',
+    'shelves.doubleThicknessMultiplier',
+    'shelves.regularDepthM',
+  ]),
+  'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts': Object.freeze([
+    'rods',
+    'rods.radiusM',
+    'shelves',
+    'shelves.spanMinHeightM',
+  ]),
+  'esm/native/services/canvas_picking_manual_layout_vertical_blockers.ts': Object.freeze([
+    'rods',
+    'rods.defaultYOffsetM',
+    'rods.radiusM',
+    'shelves',
+    'shelves.doubleThicknessMultiplier',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_content_commit_drawers.ts': Object.freeze([
+    'shelves',
+    'shelves.doubleThicknessMultiplier',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_vertical_content_blockers.ts': Object.freeze([
+    'rods',
+    'rods.radiusM',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts': Object.freeze([
+    'shelves',
+    'shelves.regularDepthM',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_rod.ts': Object.freeze([
+    'rods',
+    'rods.radiusM',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts': Object.freeze([
+    'shelves',
+    'shelves.regularDepthM',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_surface_preview_flow.ts': Object.freeze([
+    'shelves',
+    'shelves.regularDepthM',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts': Object.freeze([
+    'presets',
+    'presets.hangingRodYFactor',
+    'presets.mixedRodYFactor',
+    'presets.splitLowerRodYFactor',
+    'presets.splitUpperRodYFactor',
+    'presets.storageRodYFactor',
+    'rods',
+    'rods.defaultYOffsetM',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_vertical_content_collision.ts': Object.freeze([
+    'rods',
+    'rods.radiusM',
+    'shelves',
+    'shelves.doubleThicknessMultiplier',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_vertical_content_preview.ts': Object.freeze([
+    'shelves',
+    'shelves.braceWidthClearanceM',
+    'shelves.doubleThicknessMultiplier',
+    'shelves.regularWidthClearanceM',
+  ]),
+  'esm/native/ui/react/tabs/interior_tab_local_state_shared.ts': Object.freeze([
+    'shelves',
+    'shelves.regularDepthM',
+  ]),
 });
 const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/core_storage_compute_custom.ts': Object.freeze([
@@ -1717,6 +1963,27 @@ function collectLegacyInteriorStorageFieldUsage(sources) {
   return filtered;
 }
 
+function collectLegacyInteriorFittingsFieldUsage(sources) {
+  const usage = collectLegacyDimensionPolicyFieldUsage(
+    sources,
+    'INTERIOR_FITTINGS_DIMENSIONS',
+    'dimensions/interior_fittings_policy.js'
+  );
+  const filtered = {};
+  for (const [file, fields] of Object.entries(usage)) {
+    const fittingsFields = fields.filter(
+      field =>
+        field === '<computed>' ||
+        field.startsWith('shelves') ||
+        field.startsWith('pins') ||
+        field.startsWith('rods') ||
+        field.startsWith('presets')
+    );
+    if (fittingsFields.length) filtered[file] = fittingsFields;
+  }
+  return filtered;
+}
+
 function collectMemberPropertyUsage(sources, propertyName) {
   const usage = new Map();
   for (const [file, source] of sources) {
@@ -2154,6 +2421,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   const doorTrimPolicy = read('esm/shared/dimensions/door_trim_policy.ts');
   const externalDrawerPolicy = read('esm/shared/dimensions/external_drawer_policy.ts');
   const internalDrawerPolicy = read('esm/shared/dimensions/internal_drawer_policy.ts');
+  const interiorFittingsPolicy = read('esm/shared/dimensions/interior_fittings_policy.ts');
   const interiorStoragePolicy = read('esm/shared/dimensions/interior_storage_policy.ts');
   const drawerSketchPolicy = read('esm/shared/dimensions/drawer_sketch_policy.ts');
   const frontRevealFramePolicy = read('esm/shared/dimensions/front_reveal_frame_policy.ts');
@@ -2182,7 +2450,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /from '\.\/dimensions\/door_trim_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/external_drawer_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/internal_drawer_policy\.js'/u);
-  assert.match(facade, /from '\.\/dimensions\/interior_storage_policy\.js'/u);
+  assert.match(facade, /from '\.\/dimensions\/interior_fittings_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/drawer_sketch_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/front_reveal_frame_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/handle_policy\.js'/u);
@@ -2296,6 +2564,27 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(internalDrawerPolicy, /export const INTERNAL_DRAWER_MOTION_POLICY = Object\.freeze/u);
   assert.match(internalDrawerPolicy, /export const INTERNAL_DRAWER_CONTENTS_POLICY = Object\.freeze/u);
   assert.match(internalDrawerPolicy, /export const INTERNAL_DRAWER_POLICY = Object\.freeze/u);
+  assert.match(interiorFittingsPolicy, /export const INTERIOR_SHELF_GEOMETRY_POLICY = Object\.freeze/u);
+  assert.match(
+    interiorFittingsPolicy,
+    /export const INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY = Object\.freeze/u
+  );
+  assert.match(interiorFittingsPolicy, /export const INTERIOR_SHELF_ROUNDED_RENDER_POLICY = Object\.freeze/u);
+  assert.match(interiorFittingsPolicy, /export const INTERIOR_SHELF_POLICY = Object\.freeze/u);
+  assert.match(interiorFittingsPolicy, /export const INTERIOR_SHELF_PIN_RENDER_POLICY = Object\.freeze/u);
+  assert.match(interiorFittingsPolicy, /export const INTERIOR_ROD_RENDER_POLICY = Object\.freeze/u);
+  assert.match(interiorFittingsPolicy, /export const INTERIOR_ROD_PLACEMENT_POLICY = Object\.freeze/u);
+  assert.match(interiorFittingsPolicy, /export const INTERIOR_ROD_DEPTH_CLEARANCE_POLICY = Object\.freeze/u);
+  assert.match(
+    interiorFittingsPolicy,
+    /export const INTERIOR_ROD_CONTENT_CLEARANCE_POLICY = Object\.freeze/u
+  );
+  assert.match(interiorFittingsPolicy, /export const INTERIOR_ROD_POLICY = Object\.freeze/u);
+  assert.match(interiorFittingsPolicy, /export const INTERIOR_PRESET_SHELF_ROWS_POLICY = Object\.freeze/u);
+  assert.match(interiorFittingsPolicy, /export const INTERIOR_PRESET_ROD_FACTORS_POLICY = Object\.freeze/u);
+  assert.match(interiorFittingsPolicy, /export const INTERIOR_PRESET_POLICY = Object\.freeze/u);
+  assert.match(interiorFittingsPolicy, /export const INTERIOR_FITTINGS_POLICY = Object\.freeze/u);
+  assert.match(interiorFittingsPolicy, /storage: INTERIOR_STORAGE_POLICY/u);
   assert.match(interiorStoragePolicy, /export const INTERIOR_STORAGE_GRID_POLICY = Object\.freeze/u);
   assert.match(interiorStoragePolicy, /export const INTERIOR_STORAGE_BARRIER_POLICY = Object\.freeze/u);
   assert.match(interiorStoragePolicy, /export const INTERIOR_STORAGE_PREVIEW_POLICY = Object\.freeze/u);
@@ -2382,7 +2671,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /legacyDimensionNumberView\(DOOR_TRIM_DIMENSIONS_OWNER\)/u);
   assert.match(facade, /legacyDimensionNumberView\(EXTERNAL_DRAWER_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(INTERNAL_DRAWER_POLICY\)/u);
-  assert.match(facade, /legacyDimensionNumberView\(INTERIOR_STORAGE_POLICY\)/u);
+  assert.match(facade, /legacyDimensionNumberView\(INTERIOR_FITTINGS_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(DRAWER_SKETCH_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(FRONT_REVEAL_FRAME_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(HANDLE_POLICY\)/u);
@@ -2392,7 +2681,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /hangingClothes: HANGING_CLOTHES_VISUAL_POLICY/u);
   assert.match(facade, /sketchBoxClassic: SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY/u);
   assert.doesNotMatch(facade, /export const HANDLE_DIMENSIONS = Object\.freeze/u);
-  assert.match(facade, /storage: INTERIOR_STORAGE_DIMENSIONS/u);
+  assert.doesNotMatch(facade, /export const INTERIOR_FITTINGS_DIMENSIONS = Object\.freeze/u);
   assert.match(facade, /sketch: DRAWER_SKETCH_DIMENSIONS/u);
   assert.match(facade, /external: EXTERNAL_DRAWER_DIMENSIONS/u);
   assert.match(facade, /internal: INTERNAL_DRAWER_DIMENSIONS/u);
@@ -2638,9 +2927,26 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
         .map(([file]) => [file, ['INTERIOR_STORAGE_POLICY']])
     ),
     {
-      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['INTERIOR_STORAGE_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts': ['INTERIOR_STORAGE_POLICY'],
     },
-    'INTERIOR_STORAGE_POLICY aggregate is imported directly only by the legacy facade'
+    'INTERIOR_STORAGE_POLICY aggregate is imported directly only by the Interior Fittings owner'
+  );
+  const interiorFittingsOwnerImports = collectOwnerImports(analyzedSources, 'interior_fittings_policy.js');
+  assertApprovedSymbolUsage(
+    interiorFittingsOwnerImports,
+    APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS,
+    'Interior Fittings owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(interiorFittingsOwnerImports)
+        .filter(([, symbols]) => symbols.includes('INTERIOR_FITTINGS_POLICY'))
+        .map(([file]) => [file, ['INTERIOR_FITTINGS_POLICY']])
+    ),
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['INTERIOR_FITTINGS_POLICY'],
+    },
+    'INTERIOR_FITTINGS_POLICY aggregate is imported directly only by the legacy facade'
   );
   const drawerSketchOwnerImports = collectOwnerImports(analyzedSources, 'drawer_sketch_policy.js');
   assertApprovedSymbolUsage(
@@ -2865,6 +3171,11 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectLegacyInteriorStorageFieldUsage(analyzedSources),
     APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE,
     'Interior Storage legacy facade field allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyInteriorFittingsFieldUsage(analyzedSources),
+    APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE,
+    'Interior Fittings legacy facade field allowlist'
   );
   assertApprovedSymbolUsage(
     collectLegacyDimensionSymbolDependencies(
@@ -3623,6 +3934,90 @@ test('[dimension-foundation] Interior Storage guards detect aliases, namespace a
         aggregateOwnerImports,
         APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS,
         'Interior Storage fixture owner consumer allowlist'
+      ),
+    /review-blocked/u
+  );
+});
+
+test('[dimension-foundation] Interior Fittings guards detect aliases, namespace access, nested destructuring, computed access, and broad dependencies', () => {
+  const sources = [
+    [
+      'esm/native/builder/named_interior_fittings_consumer.ts',
+      `
+        import { INTERIOR_FITTINGS_DIMENSIONS as fittings } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const oneHop = fittings;
+        const rods = oneHop.rods;
+        const { shelves: { regularDepthM } } = oneHop;
+        export const literal = rods['radiusM'];
+        export const dynamic = rods[key];
+        export { regularDepthM };
+      `,
+    ],
+    [
+      'esm/native/builder/namespace_interior_fittings_consumer.ts',
+      `
+        import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const { presets: { fullShelfRows } } = dimensions.INTERIOR_FITTINGS_DIMENSIONS;
+        export { fullShelfRows };
+      `,
+    ],
+    [
+      'esm/native/runtime/interior_fittings_wildcard.ts',
+      `export * from '../../shared/wardrobe_dimension_tokens_shared.js';`,
+    ],
+    [
+      'esm/native/runtime/interior_fittings_dynamic.ts',
+      `export const dimensions = import('../../shared/wardrobe_dimension_tokens_shared.js');`,
+    ],
+  ];
+
+  assert.deepEqual(collectLegacyInteriorFittingsFieldUsage(sources), {
+    'esm/native/builder/named_interior_fittings_consumer.ts': [
+      'rods',
+      'rods.<computed>',
+      'rods.radiusM',
+      'shelves',
+      'shelves.regularDepthM',
+    ],
+    'esm/native/builder/namespace_interior_fittings_consumer.ts': ['presets', 'presets.fullShelfRows'],
+  });
+  assert.deepEqual(collectDimensionFacadeBroadDependencies(sources), [
+    { file: 'esm/native/builder/namespace_interior_fittings_consumer.ts', syntax: 'static-import' },
+    { file: 'esm/native/runtime/interior_fittings_dynamic.ts', syntax: 'dynamic-import' },
+    { file: 'esm/native/runtime/interior_fittings_wildcard.ts', syntax: 'static-re-export' },
+  ]);
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        collectLegacyInteriorFittingsFieldUsage(sources),
+        {},
+        'Interior Fittings fixture legacy field allowlist'
+      ),
+    /review-blocked/u
+  );
+  assert.throws(
+    () => assertApprovedDimensionFacadeBroadDependencies(collectDimensionFacadeBroadDependencies(sources)),
+    /requires review/u
+  );
+
+  const aggregateOwnerImports = collectOwnerImports(
+    [
+      [
+        'esm/native/builder/new_interior_fittings_aggregate_consumer.ts',
+        `import { INTERIOR_FITTINGS_POLICY as fittings } from '../../shared/dimensions/interior_fittings_policy.js';`,
+      ],
+    ],
+    'interior_fittings_policy.js'
+  );
+  assert.deepEqual(aggregateOwnerImports, {
+    'esm/native/builder/new_interior_fittings_aggregate_consumer.ts': ['INTERIOR_FITTINGS_POLICY'],
+  });
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        aggregateOwnerImports,
+        APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS,
+        'Interior Fittings fixture owner consumer allowlist'
       ),
     /review-blocked/u
   );

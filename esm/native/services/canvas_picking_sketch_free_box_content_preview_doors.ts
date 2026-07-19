@@ -1,4 +1,4 @@
-import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import { resolveSketchBoxDoorPreview } from './canvas_picking_sketch_box_door_preview.js';
 import type {
   SketchFreeBoxContentPreviewResult,
@@ -29,7 +29,7 @@ export function resolveSketchFreeDoorContentPreview(
     targetHeight,
     pointerX,
     pointerY: target.pointerY,
-    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
+    woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
     readSketchBoxDividers,
     readSketchBoxHorizontalDividers: args.readSketchBoxHorizontalDividers,
     resolveSketchBoxSegments,

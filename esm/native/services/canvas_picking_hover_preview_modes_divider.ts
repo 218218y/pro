@@ -1,6 +1,6 @@
 import type { DrawerVisualEntryLike } from '../../../types';
 
-import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { getCfg } from '../kernel/api.js';
 import { getCamera, getWardrobeGroup } from '../runtime/render_access.js';
@@ -183,7 +183,7 @@ export function tryHandleDrawerDividerHoverPreview(args: DrawerDividerHoverPrevi
       w: Math.max(0.03, previewBox.width),
       h: Math.max(0.03, previewBox.height),
       d: Math.max(0.03, previewBox.depth),
-      woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
+      woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
       op: hasDivider ? 'remove' : 'add',
       drawerMotionPreview: true,
       drawerMotionDrawerId: motion.targetId,

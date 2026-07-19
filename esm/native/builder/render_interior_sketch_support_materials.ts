@@ -1,4 +1,4 @@
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_SHELF_PIN_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import type { AppContainer } from '../../../types';
 
 import type {
@@ -25,9 +25,9 @@ export function createSketchPlacementMaterialResources(args: {
 }): SketchPlacementMaterialResources {
   const { App, THREE, matCache } = args;
   let glassMat: InteriorMaterialLike | null = null;
-  const pinRadius = INTERIOR_FITTINGS_DIMENSIONS.pins.radiusM;
-  const pinLen = INTERIOR_FITTINGS_DIMENSIONS.pins.lengthM;
-  const pinEdgeOffsetDefault = INTERIOR_FITTINGS_DIMENSIONS.pins.edgeOffsetDefaultM;
+  const pinRadius = INTERIOR_SHELF_PIN_RENDER_POLICY.radiusM;
+  const pinLen = INTERIOR_SHELF_PIN_RENDER_POLICY.lengthM;
+  const pinEdgeOffsetDefault = INTERIOR_SHELF_PIN_RENDER_POLICY.edgeOffsetDefaultM;
   let pinGeo: unknown = null;
   let pinMat: InteriorMaterialLike | null = null;
 

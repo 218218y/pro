@@ -12,6 +12,7 @@ const productDimensionTokenSources = [
   'esm/shared/dimensions/door_trim_policy.ts',
   'esm/shared/dimensions/external_drawer_policy.ts',
   'esm/shared/dimensions/internal_drawer_policy.ts',
+  'esm/shared/dimensions/interior_fittings_policy.ts',
   'esm/shared/dimensions/interior_storage_policy.ts',
   'esm/shared/dimensions/drawer_sketch_policy.ts',
   'esm/shared/dimensions/front_reveal_frame_policy.ts',
@@ -118,7 +119,7 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
 
 test('[dimension tokens] interior presets and sketch drawer sizing read canonical dimensions', () => {
   const tokens = readProductDimensionTokens();
-  assert.match(tokens, /presets: Object\.freeze\(\{/);
+  assert.match(tokens, /export const INTERIOR_PRESET_POLICY = Object\.freeze\(\{/);
   assert.match(tokens, /heightTokenEpsilonCm:/);
 
   for (const rel of [
@@ -424,10 +425,7 @@ test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage 
   assertUsesToken('esm/native/builder/handles_mesh.ts', 'EDGE_HANDLE_SIZE_POLICY');
   assertUsesToken('esm/native/builder/handles_mesh.ts', 'STANDARD_HANDLE_RENDER_POLICY');
 
-  assertUsesToken(
-    'esm/native/builder/render_interior_sketch_support_rods.ts',
-    'INTERIOR_FITTINGS_DIMENSIONS'
-  );
+  assertUsesToken('esm/native/builder/render_interior_sketch_support_rods.ts', 'INTERIOR_ROD_RENDER_POLICY');
   for (const tokenName of [
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_CLAMP_POLICY',
@@ -554,6 +552,69 @@ test('[dimension tokens] Interior Storage owner preserves focused production con
   }
 });
 
+test('[dimension tokens] Remaining Interior Fittings owner preserves focused production consumption', () => {
+  const tokens = readProductDimensionTokens();
+  for (const policyName of [
+    'INTERIOR_SHELF_GEOMETRY_POLICY',
+    'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
+    'INTERIOR_SHELF_ROUNDED_RENDER_POLICY',
+    'INTERIOR_SHELF_POLICY',
+    'INTERIOR_SHELF_PIN_RENDER_POLICY',
+    'INTERIOR_ROD_RENDER_POLICY',
+    'INTERIOR_ROD_PLACEMENT_POLICY',
+    'INTERIOR_ROD_DEPTH_CLEARANCE_POLICY',
+    'INTERIOR_ROD_CONTENT_CLEARANCE_POLICY',
+    'INTERIOR_ROD_POLICY',
+    'INTERIOR_PRESET_SHELF_ROWS_POLICY',
+    'INTERIOR_PRESET_ROD_FACTORS_POLICY',
+    'INTERIOR_PRESET_POLICY',
+    'INTERIOR_FITTINGS_POLICY',
+  ]) {
+    assert.match(tokens, new RegExp(`export const ${policyName} = Object\\.freeze\\(\\{`, 'u'));
+  }
+  assertLinearDimensionsUseOwnersOrMeters('esm/shared/dimensions/interior_fittings_policy.ts');
+
+  const expectedConsumers = [
+    ['esm/native/builder/render_interior_preset_ops_shelves.ts', 'INTERIOR_SHELF_POLICY'],
+    ['esm/native/builder/render_interior_preset_ops_shelves.ts', 'INTERIOR_SHELF_PIN_RENDER_POLICY'],
+    ['esm/native/builder/render_interior_rod_ops.ts', 'INTERIOR_ROD_RENDER_POLICY'],
+    ['esm/native/builder/render_interior_rod_ops.ts', 'INTERIOR_ROD_DEPTH_CLEARANCE_POLICY'],
+    ['esm/native/builder/render_interior_rod_ops.ts', 'INTERIOR_ROD_CONTENT_CLEARANCE_POLICY'],
+    ['esm/native/builder/render_interior_sketch_support_materials.ts', 'INTERIOR_SHELF_PIN_RENDER_POLICY'],
+    ['esm/native/builder/render_interior_sketch_support_rods.ts', 'INTERIOR_ROD_RENDER_POLICY'],
+    ['esm/native/builder/render_interior_sketch_support_rods.ts', 'INTERIOR_ROD_DEPTH_CLEARANCE_POLICY'],
+    ['esm/native/builder/render_interior_sketch_support_rods.ts', 'INTERIOR_ROD_CONTENT_CLEARANCE_POLICY'],
+    ['esm/native/builder/render_interior_sketch_support_shelf_pins.ts', 'INTERIOR_SHELF_PIN_RENDER_POLICY'],
+  ];
+  for (const [file, symbol] of expectedConsumers) assertUsesToken(file, symbol);
+  for (const file of new Set(expectedConsumers.map(([file]) => file))) {
+    assert.doesNotMatch(read(file), /\bINTERIOR_FITTINGS_DIMENSIONS\b/u);
+  }
+});
+
+test('[dimension tokens] pure Material consumers use the canonical thickness owner', () => {
+  const expectedConsumers = [
+    'esm/native/builder/render_preview_sketch_pipeline_shared.ts',
+    'esm/native/services/canvas_picking_hover_preview_modes_divider.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_content_preview_doors.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_content_preview_stack.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_content_preview_vertical.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_hover_finalize.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_hover_scan.ts',
+    'esm/native/services/canvas_picking_sketch_free_surface_preview_divider.ts',
+    'esm/native/services/canvas_picking_sketch_free_surface_preview_placement.ts',
+    'esm/native/services/canvas_picking_sketch_free_surface_preview_placement_remove.ts',
+    'esm/native/services/canvas_picking_sketch_free_surface_preview_target_candidate.ts',
+    'esm/native/services/canvas_picking_sketch_module_box_blockers.ts',
+  ];
+
+  for (const file of expectedConsumers) {
+    assertUsesToken(file, 'MATERIAL_THICKNESS_POLICY');
+    assert.doesNotMatch(read(file), /\bMATERIAL_DIMENSIONS\b/u);
+    assert.doesNotMatch(read(file), /\b0\.018\b/u);
+  }
+});
+
 test('[dimension tokens] Drawer Sketch owner preserves focused production consumption', () => {
   const tokens = readProductDimensionTokens();
   for (const policyName of [
@@ -649,7 +710,7 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ],
     ['esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts', ['DRAWER_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_drawers_external_plan.ts', ['DRAWER_DIMENSIONS']],
-    ['esm/native/builder/render_interior_sketch_support_shelf_pins.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
+    ['esm/native/builder/render_interior_sketch_support_shelf_pins.ts', ['INTERIOR_SHELF_PIN_RENDER_POLICY']],
     ['esm/native/builder/render_interior_sketch_support_shelves.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts', ['SKETCH_BOX_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_support_placement.ts', ['SKETCH_BOX_DIMENSIONS']],

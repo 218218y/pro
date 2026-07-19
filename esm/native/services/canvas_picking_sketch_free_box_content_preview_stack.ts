@@ -1,4 +1,4 @@
-import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
   parseSketchExtDrawerCount,
   parseSketchExtDrawerHeightM,
@@ -37,7 +37,7 @@ export function resolveSketchFreeStackContentPreview(
     targetHeight,
     pointerX,
     pointerY,
-    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
+    woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
     selectedDrawerCount: contentKind === 'ext_drawers' ? parseSketchExtDrawerCount(tool) : null,
     drawerHeightM:
       contentKind === 'ext_drawers' ? parseSketchExtDrawerHeightM(tool) : parseSketchIntDrawerHeightM(tool),

@@ -123,6 +123,22 @@ import {
   INTERIOR_STORAGE_PREVIEW_POLICY,
 } from '../esm/shared/dimensions/interior_storage_policy.ts';
 import {
+  INTERIOR_FITTINGS_POLICY,
+  INTERIOR_PRESET_POLICY,
+  INTERIOR_PRESET_ROD_FACTORS_POLICY,
+  INTERIOR_PRESET_SHELF_ROWS_POLICY,
+  INTERIOR_ROD_CONTENT_CLEARANCE_POLICY,
+  INTERIOR_ROD_DEPTH_CLEARANCE_POLICY,
+  INTERIOR_ROD_PLACEMENT_POLICY,
+  INTERIOR_ROD_POLICY,
+  INTERIOR_ROD_RENDER_POLICY,
+  INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY,
+  INTERIOR_SHELF_GEOMETRY_POLICY,
+  INTERIOR_SHELF_PIN_RENDER_POLICY,
+  INTERIOR_SHELF_POLICY,
+  INTERIOR_SHELF_ROUNDED_RENDER_POLICY,
+} from '../esm/shared/dimensions/interior_fittings_policy.ts';
+import {
   DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY,
   DRAWER_SKETCH_DOOR_CUT_POLICY,
   DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY,
@@ -982,6 +998,107 @@ test('External and Internal Drawer policies preserve facade identity, values, an
     INTERNAL_DRAWER_MOTION_POLICY,
     INTERNAL_DRAWER_CONTENTS_POLICY,
     INTERNAL_DRAWER_POLICY,
+  ]) {
+    assert.equal(Object.isFrozen(policy), true);
+  }
+});
+
+test('Interior Fittings policy preserves every value, section identity, and preset array identity', () => {
+  assert.equal(INTERIOR_FITTINGS_DIMENSIONS, INTERIOR_FITTINGS_POLICY);
+  assert.equal(INTERIOR_FITTINGS_POLICY.shelves, INTERIOR_SHELF_POLICY);
+  assert.equal(INTERIOR_FITTINGS_POLICY.pins, INTERIOR_SHELF_PIN_RENDER_POLICY);
+  assert.equal(INTERIOR_FITTINGS_POLICY.rods, INTERIOR_ROD_POLICY);
+  assert.equal(INTERIOR_FITTINGS_POLICY.storage, INTERIOR_STORAGE_POLICY);
+  assert.equal(INTERIOR_FITTINGS_POLICY.presets, INTERIOR_PRESET_POLICY);
+
+  assert.deepEqual(INTERIOR_SHELF_POLICY, {
+    regularDepthM: 0.45,
+    regularWidthClearanceM: 0.014,
+    braceWidthClearanceM: 0,
+    contentsWidthClearanceM: 0.06,
+    contentsHeightClearanceM: 0.006,
+    spanMinHeightM: 0.05,
+    doubleThicknessMultiplier: 2,
+    roundedCornerRadiusM: 0.12,
+    roundedCornerSegments: 18,
+  });
+  assert.deepEqual(INTERIOR_SHELF_PIN_RENDER_POLICY, {
+    radiusM: 0.0025,
+    lengthM: 0.012,
+    edgeOffsetDefaultM: 0.04,
+    bottomYOffsetM: 0.0005,
+    maxDepthSideClearanceM: 0.02,
+    minEdgeOffsetM: 0.015,
+    radialSegments: 12,
+  });
+  assert.deepEqual(INTERIOR_ROD_POLICY, {
+    radiusM: 0.015,
+    widthClearanceM: 0.04,
+    radialSegments: 12,
+    drawerVerticalGuardM: 0.05,
+    minHangingHeightM: 0.75,
+    depthBackClearanceM: 0.04,
+    doorFrontClearanceM: 0.025,
+    storageDepthLimitM: 0.3,
+    depthHintMinM: 0.12,
+    depthHintMaxM: 0.45,
+    contentsWidthClearanceM: 0.06,
+    defaultYOffsetM: -0.08,
+  });
+  assert.deepEqual(INTERIOR_PRESET_POLICY, {
+    fullShelfRows: [1, 2, 3, 4, 5],
+    hangingShelfRows: [5, 4],
+    splitShelfRows: [5, 1],
+    mixedRodYFactor: 3.5,
+    hangingRodYFactor: 3.8,
+    splitUpperRodYFactor: 4.8,
+    splitUpperRodLimitFactor: 2.5,
+    splitLowerRodYFactor: 2.3,
+    splitLowerRodLimitFactor: 1.3,
+    storageRodYFactor: 3.8,
+    storageRodLimitFactor: 3.8,
+  });
+
+  assert.equal(INTERIOR_SHELF_POLICY.regularDepthM, INTERIOR_SHELF_GEOMETRY_POLICY.regularDepthM);
+  assert.equal(
+    INTERIOR_SHELF_POLICY.contentsWidthClearanceM,
+    INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM
+  );
+  assert.equal(
+    INTERIOR_SHELF_POLICY.roundedCornerRadiusM,
+    INTERIOR_SHELF_ROUNDED_RENDER_POLICY.roundedCornerRadiusM
+  );
+  assert.equal(INTERIOR_ROD_POLICY.radiusM, INTERIOR_ROD_RENDER_POLICY.radiusM);
+  assert.equal(INTERIOR_ROD_POLICY.defaultYOffsetM, INTERIOR_ROD_PLACEMENT_POLICY.defaultYOffsetM);
+  assert.equal(INTERIOR_ROD_POLICY.depthHintMinM, INTERIOR_ROD_DEPTH_CLEARANCE_POLICY.depthHintMinM);
+  assert.equal(
+    INTERIOR_ROD_POLICY.contentsWidthClearanceM,
+    INTERIOR_ROD_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM
+  );
+
+  assert.equal(INTERIOR_PRESET_POLICY.fullShelfRows, INTERIOR_PRESET_SHELF_ROWS_POLICY.fullShelfRows);
+  assert.equal(INTERIOR_PRESET_POLICY.hangingShelfRows, INTERIOR_PRESET_SHELF_ROWS_POLICY.hangingShelfRows);
+  assert.equal(INTERIOR_PRESET_POLICY.splitShelfRows, INTERIOR_PRESET_SHELF_ROWS_POLICY.splitShelfRows);
+  assert.equal(INTERIOR_PRESET_POLICY.mixedRodYFactor, INTERIOR_PRESET_ROD_FACTORS_POLICY.mixedRodYFactor);
+  assert.equal(Object.isFrozen(INTERIOR_PRESET_POLICY.fullShelfRows), true);
+  assert.equal(Object.isFrozen(INTERIOR_PRESET_POLICY.hangingShelfRows), true);
+  assert.equal(Object.isFrozen(INTERIOR_PRESET_POLICY.splitShelfRows), true);
+
+  for (const policy of [
+    INTERIOR_SHELF_GEOMETRY_POLICY,
+    INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY,
+    INTERIOR_SHELF_ROUNDED_RENDER_POLICY,
+    INTERIOR_SHELF_POLICY,
+    INTERIOR_SHELF_PIN_RENDER_POLICY,
+    INTERIOR_ROD_RENDER_POLICY,
+    INTERIOR_ROD_PLACEMENT_POLICY,
+    INTERIOR_ROD_DEPTH_CLEARANCE_POLICY,
+    INTERIOR_ROD_CONTENT_CLEARANCE_POLICY,
+    INTERIOR_ROD_POLICY,
+    INTERIOR_PRESET_SHELF_ROWS_POLICY,
+    INTERIOR_PRESET_ROD_FACTORS_POLICY,
+    INTERIOR_PRESET_POLICY,
+    INTERIOR_FITTINGS_POLICY,
   ]) {
     assert.equal(Object.isFrozen(policy), true);
   }

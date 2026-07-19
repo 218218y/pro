@@ -1,4 +1,8 @@
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  INTERIOR_ROD_CONTENT_CLEARANCE_POLICY,
+  INTERIOR_ROD_DEPTH_CLEARANCE_POLICY,
+  INTERIOR_ROD_RENDER_POLICY,
+} from '../../shared/dimensions/interior_fittings_policy.js';
 import {
   canSingleHangerFitBelowRod,
   resolveInteriorRodAvailableHeight,
@@ -191,9 +195,9 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
     });
     const rod = new THREE.Mesh(
       new THREE.CylinderGeometry(
-        INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
-        INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
-        innerW - INTERIOR_FITTINGS_DIMENSIONS.rods.widthClearanceM,
+        INTERIOR_ROD_RENDER_POLICY.radiusM,
+        INTERIOR_ROD_RENDER_POLICY.radiusM,
+        innerW - INTERIOR_ROD_RENDER_POLICY.widthClearanceM,
         12
       ),
       rodMat
@@ -252,22 +256,22 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
       if (internalDepth != null) {
         depthLimit = Math.min(
           depthLimit,
-          internalDepth - INTERIOR_FITTINGS_DIMENSIONS.rods.depthBackClearanceM
+          internalDepth - INTERIOR_ROD_DEPTH_CLEARANCE_POLICY.depthBackClearanceM
         );
       }
 
       if (doorFrontZ != null) {
-        const availFront = doorFrontZ - INTERIOR_FITTINGS_DIMENSIONS.rods.doorFrontClearanceM - internalZ;
+        const availFront = doorFrontZ - INTERIOR_ROD_DEPTH_CLEARANCE_POLICY.doorFrontClearanceM - internalZ;
         if (Number.isFinite(availFront)) depthLimit = Math.min(depthLimit, 2 * availFront);
       }
 
       if (hasStorageBarrier)
-        depthLimit = Math.min(depthLimit, INTERIOR_FITTINGS_DIMENSIONS.rods.storageDepthLimitM);
+        depthLimit = Math.min(depthLimit, INTERIOR_ROD_DEPTH_CLEARANCE_POLICY.storageDepthLimitM);
 
       if (Number.isFinite(depthLimit) && depthLimit > 0) {
         depthHint = Math.min(
-          INTERIOR_FITTINGS_DIMENSIONS.rods.depthHintMaxM,
-          Math.max(INTERIOR_FITTINGS_DIMENSIONS.rods.depthHintMinM, depthLimit)
+          INTERIOR_ROD_DEPTH_CLEARANCE_POLICY.depthHintMaxM,
+          Math.max(INTERIOR_ROD_DEPTH_CLEARANCE_POLICY.depthHintMinM, depthLimit)
         );
       }
 
@@ -275,7 +279,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
         internalCenterX,
         yPos,
         internalZ,
-        innerW - INTERIOR_FITTINGS_DIMENSIONS.rods.contentsWidthClearanceM,
+        innerW - INTERIOR_ROD_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM,
         group,
         availableHeight,
         depthHint,

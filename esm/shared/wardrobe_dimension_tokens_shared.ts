@@ -41,7 +41,7 @@ import { DOOR_VISUAL_DIMENSIONS as DOOR_VISUAL_DIMENSIONS_OWNER } from './dimens
 import { DOOR_TRIM_DIMENSIONS as DOOR_TRIM_DIMENSIONS_OWNER } from './dimensions/door_trim_policy.js';
 import { EXTERNAL_DRAWER_POLICY } from './dimensions/external_drawer_policy.js';
 import { INTERNAL_DRAWER_POLICY } from './dimensions/internal_drawer_policy.js';
-import { INTERIOR_STORAGE_POLICY } from './dimensions/interior_storage_policy.js';
+import { INTERIOR_FITTINGS_POLICY } from './dimensions/interior_fittings_policy.js';
 import { DRAWER_SKETCH_POLICY } from './dimensions/drawer_sketch_policy.js';
 import { FRONT_REVEAL_FRAME_POLICY } from './dimensions/front_reveal_frame_policy.js';
 import { HANDLE_POLICY } from './dimensions/handle_policy.js';
@@ -115,7 +115,7 @@ const DOOR_VISUAL_DIMENSIONS = legacyDimensionNumberView(DOOR_VISUAL_DIMENSIONS_
 const DOOR_TRIM_DIMENSIONS = legacyDimensionNumberView(DOOR_TRIM_DIMENSIONS_OWNER);
 const EXTERNAL_DRAWER_DIMENSIONS = legacyDimensionNumberView(EXTERNAL_DRAWER_POLICY);
 const INTERNAL_DRAWER_DIMENSIONS = legacyDimensionNumberView(INTERNAL_DRAWER_POLICY);
-const INTERIOR_STORAGE_DIMENSIONS = legacyDimensionNumberView(INTERIOR_STORAGE_POLICY);
+const INTERIOR_FITTINGS_DIMENSIONS = legacyDimensionNumberView(INTERIOR_FITTINGS_POLICY);
 const DRAWER_SKETCH_DIMENSIONS = legacyDimensionNumberView(DRAWER_SKETCH_POLICY);
 const FRONT_REVEAL_FRAME_DIMENSIONS = legacyDimensionNumberView(FRONT_REVEAL_FRAME_POLICY);
 const HANDLE_DIMENSIONS = legacyDimensionNumberView(HANDLE_POLICY);
@@ -309,59 +309,9 @@ export {
   CARCASS_CORNICE_DIMENSIONS,
   CHEST_MODE_DIMENSIONS,
   DOOR_SYSTEM_DIMENSIONS,
+  INTERIOR_FITTINGS_DIMENSIONS,
   MATERIAL_DIMENSIONS,
 };
-
-export const INTERIOR_FITTINGS_DIMENSIONS = Object.freeze({
-  shelves: Object.freeze({
-    regularDepthM: 0.45,
-    regularWidthClearanceM: 0.014,
-    braceWidthClearanceM: 0,
-    contentsWidthClearanceM: 0.06,
-    contentsHeightClearanceM: 0.006,
-    spanMinHeightM: 0.05,
-    doubleThicknessMultiplier: 2,
-    roundedCornerRadiusM: 0.12,
-    roundedCornerSegments: 18,
-  }),
-  pins: Object.freeze({
-    radiusM: 0.0025,
-    lengthM: 0.012,
-    edgeOffsetDefaultM: 0.04,
-    bottomYOffsetM: 0.0005,
-    maxDepthSideClearanceM: 0.02,
-    minEdgeOffsetM: 0.015,
-    radialSegments: 12,
-  }),
-  rods: Object.freeze({
-    radiusM: 0.015,
-    widthClearanceM: 0.04,
-    radialSegments: 12,
-    drawerVerticalGuardM: 0.05,
-    minHangingHeightM: 0.75,
-    depthBackClearanceM: 0.04,
-    doorFrontClearanceM: 0.025,
-    storageDepthLimitM: 0.3,
-    depthHintMinM: 0.12,
-    depthHintMaxM: 0.45,
-    contentsWidthClearanceM: 0.06,
-    defaultYOffsetM: -0.08,
-  }),
-  storage: INTERIOR_STORAGE_DIMENSIONS,
-  presets: Object.freeze({
-    fullShelfRows: Object.freeze([1, 2, 3, 4, 5]),
-    hangingShelfRows: Object.freeze([5, 4]),
-    splitShelfRows: Object.freeze([5, 1]),
-    mixedRodYFactor: 3.5,
-    hangingRodYFactor: 3.8,
-    splitUpperRodYFactor: 4.8,
-    splitUpperRodLimitFactor: 2.5,
-    splitLowerRodYFactor: 2.3,
-    splitLowerRodLimitFactor: 1.3,
-    storageRodYFactor: 3.8,
-    storageRodLimitFactor: 3.8,
-  }),
-});
 
 export const CONTENT_VISUAL_DIMENSIONS: ContentVisualDimensionsNumberView = Object.freeze({
   books: BOOK_CONTENT_VISUAL_POLICY,

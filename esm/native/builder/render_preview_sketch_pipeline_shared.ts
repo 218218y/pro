@@ -1,4 +1,4 @@
-import { MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
   readPreviewNumber,
   readPreviewPositiveNumber,
@@ -100,7 +100,7 @@ export function createSketchPlacementPreviewContext(args: ApplySketchPlacementPr
   const w = rawW ?? 0;
   const h = rawH ?? 0;
   const d = rawD ?? 0;
-  const woodThick = readPreviewPositiveNumberOr(input.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
+  const woodThick = readPreviewPositiveNumberOr(input.woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
   const hasFinitePlacement = rawX != null && rawY != null && rawZ != null && rawW != null && rawD != null;
 
   const setVisible = (m: PreviewMeshLike | null, on: boolean) => {
