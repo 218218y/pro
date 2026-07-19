@@ -41,10 +41,8 @@ import { DOOR_VISUAL_DIMENSIONS as DOOR_VISUAL_DIMENSIONS_OWNER } from './dimens
 import { DOOR_TRIM_DIMENSIONS as DOOR_TRIM_DIMENSIONS_OWNER } from './dimensions/door_trim_policy.js';
 import { EXTERNAL_DRAWER_POLICY } from './dimensions/external_drawer_policy.js';
 import { INTERNAL_DRAWER_POLICY } from './dimensions/internal_drawer_policy.js';
-import {
-  INTERIOR_STORAGE_GRID_POLICY,
-  INTERIOR_STORAGE_POLICY,
-} from './dimensions/interior_storage_policy.js';
+import { INTERIOR_STORAGE_POLICY } from './dimensions/interior_storage_policy.js';
+import { DRAWER_SKETCH_POLICY } from './dimensions/drawer_sketch_policy.js';
 import {
   STACK_SPLIT_LOWER_DEPTH_MAX,
   STACK_SPLIT_LOWER_DEPTH_MIN,
@@ -101,6 +99,7 @@ const DOOR_TRIM_DIMENSIONS = legacyDimensionNumberView(DOOR_TRIM_DIMENSIONS_OWNE
 const EXTERNAL_DRAWER_DIMENSIONS = legacyDimensionNumberView(EXTERNAL_DRAWER_POLICY);
 const INTERNAL_DRAWER_DIMENSIONS = legacyDimensionNumberView(INTERNAL_DRAWER_POLICY);
 const INTERIOR_STORAGE_DIMENSIONS = legacyDimensionNumberView(INTERIOR_STORAGE_POLICY);
+const DRAWER_SKETCH_DIMENSIONS = legacyDimensionNumberView(DRAWER_SKETCH_POLICY);
 
 const WARDROBE_DEFAULTS = Object.freeze({
   ...WARDROBE_DEFAULTS_OWNER,
@@ -499,88 +498,6 @@ export const CONTENT_VISUAL_DIMENSIONS = Object.freeze({
     grooveDepthM: 0.002,
     grooveSurfaceOffsetM: 0.001,
   }),
-});
-
-const DRAWER_SKETCH_DIMENSIONS = Object.freeze({
-  heightMinCm: 5,
-  heightMaxCm: 120,
-  externalDefaultHeightCm: 22,
-  internalDefaultHeightCm: 16.5,
-  heightTokenEpsilonCm: 0.0001,
-  externalCountMin: 1,
-  externalCountMax: 5,
-  externalPreviewDefaultCount: 3,
-  minRenderHeightM: 0.01,
-  internalGapM: 0.03,
-  internalStackCount: 2,
-  previewDrawerBottomLiftM: 0.01,
-  previewStackExtraHeightM: 0.02,
-  previewExternalDefaultHeightM: 0.08,
-  previewOverlayThicknessMinM: 0.004,
-  previewOverlayThicknessMaxM: 0.02,
-  previewDividerMinM: 0.003,
-  previewDividerMaxM: 0.012,
-  previewDividerWidthRatio: 0.04,
-  previewDividerDepthExtraM: 0.002,
-  externalDoorCutFrontInsetM: 0.004,
-  externalDoorCutSurroundingGapM: 0.006,
-  externalPreviewMinWidthM: 0.08,
-  externalPreviewMinDepthM: 0.1,
-  externalPreviewDepthClearanceM: 0.05,
-  externalPreviewCenterZInsetM: 0.025,
-  externalPreviewFrontZOffsetM: 0.001,
-  externalPreviewVisualMinWidthM: 0.05,
-  externalPreviewVisualMinHeightM: 0.05,
-  externalPreviewVisualMinDepthM: 0.005,
-  externalPreviewBoxMinDimensionM: 0.05,
-  externalPreviewMeasurementZOffsetMinM: 0.004,
-  externalPreviewMeasurementZOffsetThicknessRatio: 0.25,
-  internalPreviewMinWidthM: 0.05,
-  internalPreviewMinDepthM: 0.05,
-  internalPreviewWidthClearanceM: 0.03,
-  internalPreviewDepthClearanceM: 0.02,
-  internalPreviewMeasurementZOffsetMinM: 0.004,
-  internalPreviewMeasurementZOffsetDepthRatio: 0.08,
-  internalPreviewGridDivisionsMin: 2,
-  internalPreviewGridDivisionsMax: 12,
-  internalPreviewGridDivisionsDefault: INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault,
-  internalPreviewGridHeadClearanceM: 0.02,
-  internalPreviewSingleDrawerGapM: 0.02,
-  internalPreviewDefaultSingleHeightM: 0.11,
-  internalPreviewRemovalHalfExtraM: 0.01,
-  internalPreviewRemovalToleranceMinM: 0.045,
-  internalPreviewRemovalToleranceMaxM: 0.14,
-  internalPreviewRemovalToleranceExtraM: 0.02,
-  internalClampPadMinM: 0.001,
-  internalClampPadMaxM: 0.006,
-  internalClampPadWoodRatio: 0.2,
-  internalWidthMinM: 0.05,
-  internalDepthMinM: 0.05,
-  internalWidthClearanceM: 0.03,
-  internalDepthClearanceM: 0.02,
-  internalSideFillerWidthM: 0.05,
-  internalSideFillerFrontInsetM: 0.03,
-  internalOpenOffsetZM: 0.25,
-  internalBottomLiftMaxM: 0.002,
-  internalBottomLiftWoodRatio: 0.15,
-  verticalStackCollisionGapM: 0.008,
-  doorCutHorizontalOverlapMinM: 0.005,
-  doorCutNoOpToleranceM: 0.002,
-  doorCutIntervalMinHeightM: 0.01,
-  doorCutIntervalMergeGapM: 0.002,
-  doorCutVisibleSegmentMinHeightM: 0.012,
-  rebuiltSegmentMinHeightForHandleM: 0.12,
-  rebuiltSegmentHandleMinHeightM: 0.02,
-  rebuiltSegmentHandlePaddingMinM: 0.02,
-  rebuiltSegmentHandlePaddingMaxM: 0.1,
-  rebuiltSegmentHandlePaddingHeightRatio: 0.2,
-  rebuiltSegmentRestoreTargetMinDimensionM: 0.02,
-  rebuiltSegmentRestoreTargetMinThicknessM: 0.002,
-  rebuiltSegmentDefaultHandlePaddingM: 0.01,
-  rebuiltSegmentVisualMinDimensionM: 0.02,
-  rebuiltSegmentVisualWidthClearanceM: 0.004,
-  faceVerticalAlignmentEpsilonM: 0.003,
-  faceVerticalAlignmentMinHeightM: 0.012,
 });
 
 export const DRAWER_DIMENSIONS = Object.freeze({

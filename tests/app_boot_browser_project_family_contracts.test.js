@@ -956,6 +956,12 @@ import {
     assert.match(smokeHelpers, /LazyErrorBoundary rendered an import failure/);
     assert.match(smokeHelpers, /an Order PDF chunk request failed/);
     assert.match(smokeHelpers, /the editor mounted but is not visible/);
+    assert.match(
+      smokeHelpers,
+      /request\.resourceType\(\) === 'script' &&[\s\S]*OrderPdfInPlaceEditorOverlay/u
+    );
+    assert.match(smokeHelpers, /response\.status\(\) >= 400/u);
+    assert.doesNotMatch(smokeHelpers, /response\.ok\(\)/u);
     assert.doesNotMatch(smoke, /export-open-pdf-button/);
     assert.match(smoke, /openOrderPdfOverlayFromExport\(/);
     assert.match(smoke, /closeOrderPdfOverlay\(/);

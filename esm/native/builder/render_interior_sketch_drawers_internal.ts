@@ -1,5 +1,5 @@
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import {
   resolveSketchInternalDrawerCassetteDrawerWidth,
   resolveSketchInternalDrawerCassetteRange,
@@ -151,10 +151,10 @@ export function buildSketchInternalDrawerOps(args: {
   } = args;
 
   const padDrawer = Math.min(
-    DRAWER_DIMENSIONS.sketch.internalClampPadMaxM,
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadMaxM,
     Math.max(
-      DRAWER_DIMENSIONS.sketch.internalClampPadMinM,
-      woodThick * DRAWER_DIMENSIONS.sketch.internalClampPadWoodRatio
+      DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadMinM,
+      woodThick * DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadWoodRatio
     )
   );
 
@@ -163,12 +163,12 @@ export function buildSketchInternalDrawerOps(args: {
   const width = resolveSketchInternalDrawerCassetteDrawerWidth({
     outerWidth: innerW,
     woodThick,
-    clearanceM: DRAWER_DIMENSIONS.sketch.internalWidthClearanceM,
-    minWidthM: DRAWER_DIMENSIONS.sketch.internalWidthMinM,
+    clearanceM: DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthClearanceM,
+    minWidthM: DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthMinM,
   });
   const depth = Math.max(
-    DRAWER_DIMENSIONS.sketch.internalDepthMinM,
-    internalDepth - DRAWER_DIMENSIONS.sketch.internalDepthClearanceM
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalDepthMinM,
+    internalDepth - DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalDepthClearanceM
   );
   const availableStackHeightM = Math.max(0, effectiveTopY - effectiveBottomY - padDrawer * 2);
   const externalBlockers = buildSketchExternalDrawerCollisionRanges({
@@ -228,8 +228,8 @@ export function buildSketchInternalDrawerOps(args: {
       ? `div_int_sketch_${moduleKeyStr}_${drawerId}`
       : `div_int_sketch_${drawerId}`;
     const drawerBottomLift = Math.min(
-      DRAWER_DIMENSIONS.sketch.internalBottomLiftMaxM,
-      woodThick * DRAWER_DIMENSIONS.sketch.internalBottomLiftWoodRatio
+      DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalBottomLiftMaxM,
+      woodThick * DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalBottomLiftWoodRatio
     );
 
     for (let j = 0; j < 2; j++) {
@@ -253,7 +253,7 @@ export function buildSketchInternalDrawerOps(args: {
         x: internalCenterX,
         y: yFinal,
         z: internalZ,
-        openZ: internalZ + DRAWER_DIMENSIONS.sketch.internalOpenOffsetZM,
+        openZ: internalZ + DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalOpenOffsetZM,
         hasDivider,
         dividerKey: partId,
         cassetteBaseY: baseY,

@@ -1,5 +1,9 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY,
+  DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY,
+  DRAWER_SKETCH_SIZING_POLICY,
+} from '../../shared/dimensions/drawer_sketch_policy.js';
 import { getDrawersArray } from '../runtime/render_access.js';
 import {
   asCrossDrawerNode,
@@ -116,7 +120,7 @@ export function resolveInternalCrossDrawerStackPreview(args: {
   let drawerGap =
     typeof args.drawerGap === 'number' && Number.isFinite(args.drawerGap) && args.drawerGap >= 0
       ? args.drawerGap
-      : DRAWER_DIMENSIONS.sketch.internalGapM;
+      : DRAWER_SKETCH_SIZING_POLICY.internalGapM;
 
   for (let i = 0; i < boxes.length; i++) {
     const box = boxes[i];
@@ -150,11 +154,11 @@ export function resolveInternalCrossDrawerStackPreview(args: {
     x: (minX + maxX) / 2,
     y: minY,
     z: (minZ + maxZ) / 2,
-    w: Math.max(args.minWidth ?? DRAWER_DIMENSIONS.sketch.internalWidthMinM, maxX - minX),
-    d: Math.max(args.minDepth ?? DRAWER_DIMENSIONS.sketch.internalDepthMinM, maxZ - minZ),
+    w: Math.max(args.minWidth ?? DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthMinM, maxX - minX),
+    d: Math.max(args.minDepth ?? DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalDepthMinM, maxZ - minZ),
     stackH: Math.max(0, maxY - minY),
     drawerH: Math.max(
-      args.minHeight ?? DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
+      args.minHeight ?? DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
       drawerH || args.targetBox.height
     ),
     drawerGap,

@@ -3,7 +3,7 @@ import {
   markShelfBoardUserData,
   resolveShelfPartMaterial,
 } from '../features/part_identity/api.js';
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import {
   createSketchInternalDrawerCassettePartId,
   resolveSketchInternalDrawerCassetteFrameOuterWidth,
@@ -124,10 +124,13 @@ export function emitSketchInternalDrawerCassettePanels(args: SketchInternalDrawe
 
   if (sideFillerWidth > 0) {
     const frontInset = Math.min(
-      Math.max(0, depth - DRAWER_DIMENSIONS.sketch.internalDepthMinM),
-      DRAWER_DIMENSIONS.sketch.internalSideFillerFrontInsetM
+      Math.max(0, depth - DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalDepthMinM),
+      DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalSideFillerFrontInsetM
     );
-    const sideFillerDepth = Math.max(DRAWER_DIMENSIONS.sketch.internalDepthMinM, depth - frontInset);
+    const sideFillerDepth = Math.max(
+      DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalDepthMinM,
+      depth - frontInset
+    );
     const sideFillerZ = args.centerZ - (depth - sideFillerDepth) / 2;
     panels.push(
       {

@@ -5,7 +5,7 @@
 import { getDrawersArray } from '../runtime/render_access.js';
 import { isSplitEnabledInMap, readSplitPosListFromMap } from '../runtime/maps_access.js';
 import { resolveDoorSplitAuthoringBaseKey } from '../../shared/door_visual_key_contracts_shared.js';
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_DOOR_CUT_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import type { AppContainer, BuildContextLike, ThreeLike } from '../../../types/index.js';
 import { getMirrorMaterial } from './render_ops.js';
 
@@ -99,7 +99,7 @@ export function applySketchBoxExternalDrawerDoorCuts(args: {
 }): void {
   const { App, THREE, ctx, cfg, bodyMat, globalFrontMat } = args;
   const stackBounds = collectSketchBoxExternalDrawerStackBounds(App);
-  const surroundingGap = DRAWER_DIMENSIONS.sketch.externalDoorCutSurroundingGapM;
+  const surroundingGap = DRAWER_SKETCH_DOOR_CUT_POLICY.externalDoorCutSurroundingGapM;
   const boxStacks = groupSketchDrawerStackBounds(
     stackBounds.map(item => ({ key: item.key, ...expandSketchDrawerCutBounds(item, surroundingGap) }))
   );

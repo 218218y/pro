@@ -5,7 +5,10 @@
 import { getDrawersArray } from '../runtime/render_access.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { getMirrorMaterial } from './render_ops.js';
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DRAWER_SKETCH_DOOR_CUT_POLICY,
+  DRAWER_SKETCH_SIZING_POLICY,
+} from '../../shared/dimensions/drawer_sketch_policy.js';
 import type { AppContainer, BuildContextLike, ThreeLike } from '../../../types/index.js';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
@@ -71,10 +74,10 @@ function readSketchExternalDrawerCutsForModule(cfg: unknown, gridEntry: unknown)
     const countRaw = parseNum(readKey(it, 'count'));
     const drawerCount = Number.isFinite(countRaw)
       ? Math.max(
-          DRAWER_DIMENSIONS.sketch.externalCountMin,
-          Math.min(DRAWER_DIMENSIONS.sketch.externalCountMax, Math.floor(countRaw))
+          DRAWER_SKETCH_SIZING_POLICY.externalCountMin,
+          Math.min(DRAWER_SKETCH_SIZING_POLICY.externalCountMax, Math.floor(countRaw))
         )
-      : DRAWER_DIMENSIONS.sketch.externalCountMin;
+      : DRAWER_SKETCH_SIZING_POLICY.externalCountMin;
     const metrics = resolveSketchExternalDrawerMetrics({
       drawerCount,
       drawerHeightM: readSketchDrawerHeightMFromItem(it, DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M),
@@ -90,8 +93,8 @@ function readSketchExternalDrawerCutsForModule(cfg: unknown, gridEntry: unknown)
     });
     if (centerY == null || !Number.isFinite(centerY)) continue;
     const baseY = centerY - stackH / 2;
-    const frontInset = DRAWER_DIMENSIONS.sketch.externalDoorCutFrontInsetM;
-    const surroundingGap = DRAWER_DIMENSIONS.sketch.externalDoorCutSurroundingGapM;
+    const frontInset = DRAWER_SKETCH_DOOR_CUT_POLICY.externalDoorCutFrontInsetM;
+    const surroundingGap = DRAWER_SKETCH_DOOR_CUT_POLICY.externalDoorCutSurroundingGapM;
     const faceMinY = baseY + frontInset - surroundingGap;
     const faceMaxY = baseY + stackH - frontInset + surroundingGap;
     cuts.push({ yMin: faceMinY, yMax: faceMaxY });
@@ -168,7 +171,7 @@ export function applySketchExternalDrawerDoorCuts(args: {
 }): void {
   const { App, THREE, ctx, cfg, bodyMat, globalFrontMat, stackKey } = args;
   const allowConfigDerivedCuts = args.allowConfigDerivedCuts !== false;
-  const surroundingGap = DRAWER_DIMENSIONS.sketch.externalDoorCutSurroundingGapM;
+  const surroundingGap = DRAWER_SKETCH_DOOR_CUT_POLICY.externalDoorCutSurroundingGapM;
   const runtimeStackCollection = collectSketchModuleExternalDrawerStackBounds(App);
   const runtimeBounds = runtimeStackCollection.bounds
     .filter(item => item.stackKey === stackKey)

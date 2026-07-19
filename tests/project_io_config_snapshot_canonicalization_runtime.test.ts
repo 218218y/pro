@@ -457,3 +457,48 @@ test('project save/load roundtrip preserves top and Stack Split storage configur
     lowerStorage.sketchExtras.storageBarriers
   );
 });
+
+test('project save/load roundtrip preserves Sketch Drawer maps for top and Stack Split modules', () => {
+  const topSketchExtras = {
+    drawers: [{ id: 'top-internal-drawer', xNorm: 0.25, yNorm: 0.35, drawerHeightM: 0.165 }],
+    extDrawers: [{ id: 'top-external-drawers', xNorm: 0.5, yNorm: 0.65, drawerHeightM: 0.22, count: 3 }],
+  };
+  const lowerSketchExtras = {
+    drawers: [{ id: 'lower-internal-drawer', xNorm: 0.4, yNorm: 0.3, drawerHeightM: 0.165 }],
+    extDrawers: [{ id: 'lower-external-drawers', xNorm: 0.55, yNorm: 0.6, drawerHeightM: 0.22, count: 2 }],
+  };
+  const source = canonicalProjectSource({
+    settings: {
+      doors: 1,
+      wardrobeType: 'hinged',
+      singleDoorPos: 'left',
+      structureSelection: '[1]',
+    },
+    modulesConfiguration: [
+      {
+        layout: 'custom',
+        isCustom: true,
+        gridDivisions: 6,
+        sketchExtras: topSketchExtras,
+      },
+    ],
+    stackSplitLowerModulesConfiguration: [
+      {
+        layout: 'custom',
+        isCustom: true,
+        gridDivisions: 6,
+        sketchExtras: lowerSketchExtras,
+      },
+    ],
+  });
+
+  const saved = finalizeProjectForSavePayload(source as never, {
+    cloneJson: value => JSON.parse(JSON.stringify(value)),
+    schemaId: 'wardrobepro.test',
+    schemaVersion: 77,
+  });
+  const loaded = buildProjectConfigSnapshot(saved as never);
+
+  assert.deepEqual(loaded.modulesConfiguration[0].sketchExtras, topSketchExtras);
+  assert.deepEqual(loaded.stackSplitLowerModulesConfiguration[0].sketchExtras, lowerSketchExtras);
+});

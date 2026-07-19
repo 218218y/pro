@@ -1268,8 +1268,15 @@ type OrderPdfChunkFailure = {
   detail: string;
 };
 
-function isOrderPdfChunkRequest(request: Request): boolean {
-  return request.resourceType() === 'script' || /OrderPdf|order_pdf|order-pdf/u.test(request.url());
+export function isOrderPdfChunkRequest(request: Request): boolean {
+  return (
+    request.resourceType() === 'script' &&
+    /OrderPdfInPlaceEditorOverlay|OrderPdf|order_pdf|order-pdf/u.test(request.url())
+  );
+}
+
+export function isOrderPdfChunkHttpFailure(response: Response): boolean {
+  return response.status() >= 400 && isOrderPdfChunkRequest(response.request());
 }
 
 async function readOrderPdfEditorOpen(page: Page): Promise<boolean | null> {
@@ -1337,8 +1344,7 @@ async function openOrderPdfOverlay(
     });
   };
   const onResponse = (response: Response): void => {
-    const request = response.request();
-    if (response.ok() || !isOrderPdfChunkRequest(request)) return;
+    if (!isOrderPdfChunkHttpFailure(response)) return;
     chunkFailures.push({
       kind: 'http',
       url: response.url(),

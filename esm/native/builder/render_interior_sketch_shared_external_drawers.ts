@@ -1,4 +1,4 @@
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 import type { SketchExternalDrawerFaceVerticalAlignment } from './render_interior_sketch_shared_types.js';
 import { toFiniteNumber } from './render_interior_sketch_shared_numbers.js';
@@ -77,7 +77,7 @@ export function resolveSketchExternalDrawerFaceVerticalAlignment(args: {
   const epsilon =
     typeof args.epsilon === 'number' && Number.isFinite(args.epsilon) && args.epsilon >= 0
       ? args.epsilon
-      : DRAWER_DIMENSIONS.sketch.faceVerticalAlignmentEpsilonM;
+      : DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY.faceVerticalAlignmentEpsilonM;
   const drawerIndexRaw = toFiniteNumber(args.drawerIndex);
   const drawerCountRaw = toFiniteNumber(args.drawerCount);
   const drawerIndex = Math.max(0, Math.floor(drawerIndexRaw ?? 0));
@@ -107,7 +107,7 @@ export function resolveSketchExternalDrawerFaceVerticalAlignment(args: {
   const minY = flushBottom ? targetMinY : currentMinY;
   const maxY = flushTop ? targetMaxY : currentMaxY;
   const height = maxY - minY;
-  if (!(height > DRAWER_DIMENSIONS.sketch.faceVerticalAlignmentMinHeightM)) {
+  if (!(height > DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY.faceVerticalAlignmentMinHeightM)) {
     return {
       height: visualH,
       offsetY: 0,

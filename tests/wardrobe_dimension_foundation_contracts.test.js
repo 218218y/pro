@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 219, statements: 219 }),
+  'static-import': Object.freeze({ importers: 205, statements: 205 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 221, statements: 222 }),
+  total: Object.freeze({ importers: 207, statements: 208 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -593,9 +593,17 @@ const APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_drawers_external_motion.ts': Object.freeze([
     'EXTERNAL_DRAWER_MOTION_POLICY',
   ]),
+  'esm/shared/dimensions/drawer_sketch_policy.ts': Object.freeze([
+    'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
+    'EXTERNAL_DRAWER_SIZE_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['EXTERNAL_DRAWER_POLICY']),
 });
 const APPROVED_INTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
+  'esm/shared/dimensions/drawer_sketch_policy.ts': Object.freeze([
+    'INTERNAL_DRAWER_LAYOUT_POLICY',
+    'INTERNAL_DRAWER_MOTION_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['INTERNAL_DRAWER_POLICY']),
 });
 const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
@@ -618,10 +626,11 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_PREVIEW_POLICY',
   ]),
-  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze([
+  'esm/shared/dimensions/drawer_sketch_policy.ts': Object.freeze([
+    'INTERIOR_STORAGE_CLAMP_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
-    'INTERIOR_STORAGE_POLICY',
   ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['INTERIOR_STORAGE_POLICY']),
 });
 const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/core_storage_compute_custom.ts': Object.freeze([
@@ -768,6 +777,205 @@ const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
     'storage.barrierHeightM',
   ]),
 });
+const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/post_build_sketch_door_cuts_box.ts': Object.freeze(['DRAWER_SKETCH_DOOR_CUT_POLICY']),
+  'esm/native/builder/post_build_sketch_door_cuts_intervals.ts': Object.freeze([
+    'DRAWER_SKETCH_DOOR_CUT_POLICY',
+  ]),
+  'esm/native/builder/post_build_sketch_door_cuts_modules.ts': Object.freeze([
+    'DRAWER_SKETCH_DOOR_CUT_POLICY',
+    'DRAWER_SKETCH_SIZING_POLICY',
+  ]),
+  'esm/native/builder/post_build_sketch_door_cuts_rebuild_visual.ts': Object.freeze([
+    'DRAWER_SKETCH_DOOR_CUT_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_boxes_contents_drawers.ts': Object.freeze([
+    'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_drawers_internal.ts': Object.freeze([
+    'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_internal_drawer_cassette.ts': Object.freeze([
+    'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_shared_external_drawers.ts': Object.freeze([
+    'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_stack_collision.ts': Object.freeze([
+    'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
+  ]),
+  'esm/native/features/sketch_box_regular_external_drawers.ts': Object.freeze([
+    'DRAWER_SKETCH_SIZING_POLICY',
+    'EXTERNAL_DRAWER_SIZE_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_drawer_cross_family_preview.ts': Object.freeze([
+    'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+    'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+    'DRAWER_SKETCH_SIZING_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_hover_preview_modes_ext_drawers.ts': Object.freeze([
+    'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+    'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+    'DRAWER_SKETCH_SIZING_POLICY',
+    'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
+    'EXTERNAL_DRAWER_SIZE_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_manual_layout_sketch_hover_standard_drawer.ts': Object.freeze([
+    'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+    'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+    'DRAWER_SKETCH_SIZING_POLICY',
+    'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_manual_layout_sketch_vertical_stack.ts': Object.freeze([
+    'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
+    'DRAWER_SKETCH_SIZING_POLICY',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['DRAWER_SKETCH_POLICY']),
+});
+const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
+  'esm/native/builder/post_build_sketch_door_cuts_apply.ts': Object.freeze([
+    'sketch',
+    'sketch.doorCutHorizontalOverlapMinM',
+    'sketch.doorCutNoOpToleranceM',
+  ]),
+  'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts': Object.freeze([
+    'sketch',
+    'sketch.rebuiltSegmentHandleMinHeightM',
+  ]),
+  'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts': Object.freeze([
+    'sketch',
+    'sketch.rebuiltSegmentDefaultHandlePaddingM',
+    'sketch.rebuiltSegmentRestoreTargetMinDimensionM',
+    'sketch.rebuiltSegmentRestoreTargetMinThicknessM',
+  ]),
+  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
+    'sketch',
+    'sketch.internalClampPadMaxM',
+    'sketch.internalClampPadMinM',
+    'sketch.internalClampPadWoodRatio',
+  ]),
+  'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts': Object.freeze([
+    'sketch',
+    'sketch.externalPreviewMinDepthM',
+  ]),
+  'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts': Object.freeze([
+    'sketch',
+    'sketch.externalPreviewBoxMinDimensionM',
+    'sketch.externalPreviewMinWidthM',
+    'sketch.externalPreviewVisualMinDepthM',
+    'sketch.externalPreviewVisualMinHeightM',
+    'sketch.externalPreviewVisualMinWidthM',
+    'sketch.faceVerticalAlignmentEpsilonM',
+  ]),
+  'esm/native/builder/render_interior_sketch_drawers_external_context.ts': Object.freeze([
+    'sketch',
+    'sketch.externalPreviewDepthClearanceM',
+    'sketch.externalPreviewMinDepthM',
+    'sketch.externalPreviewMinWidthM',
+  ]),
+  'esm/native/builder/render_interior_sketch_drawers_external_plan.ts': Object.freeze([
+    'sketch',
+    'sketch.externalPreviewBoxMinDimensionM',
+    'sketch.externalPreviewVisualMinDepthM',
+    'sketch.externalPreviewVisualMinHeightM',
+    'sketch.externalPreviewVisualMinWidthM',
+  ]),
+  'esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts': Object.freeze([
+    'sketch',
+    'sketch.internalGapM',
+    'sketch.internalStackCount',
+    'sketch.previewDividerDepthExtraM',
+    'sketch.previewDividerMaxM',
+    'sketch.previewDividerMinM',
+    'sketch.previewDividerWidthRatio',
+    'sketch.previewDrawerBottomLiftM',
+    'sketch.previewExternalDefaultHeightM',
+    'sketch.previewOverlayThicknessMaxM',
+    'sketch.previewOverlayThicknessMinM',
+    'sketch.previewStackExtraHeightM',
+  ]),
+  'esm/native/features/sketch_drawer_sizing.ts': Object.freeze([
+    'sketch',
+    'sketch.externalCountMax',
+    'sketch.externalCountMin',
+    'sketch.externalDefaultHeightCm',
+    'sketch.heightMaxCm',
+    'sketch.heightMinCm',
+    'sketch.heightTokenEpsilonCm',
+    'sketch.internalDefaultHeightCm',
+    'sketch.internalGapM',
+    'sketch.internalStackCount',
+    'sketch.minRenderHeightM',
+  ]),
+  'esm/native/features/sketch_internal_drawer_cassette.ts': Object.freeze([
+    'sketch',
+    'sketch.internalSideFillerWidthM',
+    'sketch.internalWidthClearanceM',
+    'sketch.internalWidthMinM',
+  ]),
+  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
+    'sketch',
+    'sketch.internalClampPadMaxM',
+    'sketch.internalClampPadMinM',
+    'sketch.internalClampPadWoodRatio',
+  ]),
+  'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts': Object.freeze([
+    'sketch',
+    'sketch.internalClampPadMaxM',
+    'sketch.internalClampPadMinM',
+    'sketch.internalClampPadWoodRatio',
+  ]),
+  'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts': Object.freeze([
+    'sketch',
+    'sketch.externalPreviewVisualMinHeightM',
+    'sketch.externalPreviewVisualMinWidthM',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_stack_preview_drawers.ts': Object.freeze([
+    'sketch',
+    'sketch.internalPreviewDepthClearanceM',
+    'sketch.internalPreviewMeasurementZOffsetDepthRatio',
+    'sketch.internalPreviewMeasurementZOffsetMinM',
+    'sketch.internalPreviewMinDepthM',
+    'sketch.internalPreviewMinWidthM',
+    'sketch.internalPreviewWidthClearanceM',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_stack_preview_ext_drawers.ts': Object.freeze([
+    'sketch',
+    'sketch.externalPreviewDefaultCount',
+    'sketch.externalPreviewMeasurementZOffsetMinM',
+    'sketch.externalPreviewMeasurementZOffsetThicknessRatio',
+    'sketch.externalPreviewVisualMinHeightM',
+    'sketch.externalPreviewVisualMinWidthM',
+    'sketch.verticalStackCollisionGapM',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_stack_preview_drawers.ts': Object.freeze([
+    'sketch',
+    'sketch.internalPreviewDepthClearanceM',
+    'sketch.internalPreviewMeasurementZOffsetDepthRatio',
+    'sketch.internalPreviewMeasurementZOffsetMinM',
+    'sketch.internalPreviewMinDepthM',
+    'sketch.internalPreviewMinWidthM',
+    'sketch.internalPreviewWidthClearanceM',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_stack_preview_ext_drawers.ts': Object.freeze([
+    'sketch',
+    'sketch.externalPreviewCenterZInsetM',
+    'sketch.externalPreviewDefaultCount',
+    'sketch.externalPreviewDepthClearanceM',
+    'sketch.externalPreviewFrontZOffsetM',
+    'sketch.externalPreviewMeasurementZOffsetMinM',
+    'sketch.externalPreviewMeasurementZOffsetThicknessRatio',
+    'sketch.externalPreviewMinDepthM',
+    'sketch.externalPreviewMinWidthM',
+    'sketch.externalPreviewVisualMinHeightM',
+    'sketch.externalPreviewVisualMinWidthM',
+    'sketch.verticalStackCollisionGapM',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_vertical_content_collision.ts': Object.freeze([
+    'sketch',
+    'sketch.verticalStackCollisionGapM',
+  ]),
+});
 const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/build_handle_policy.ts': Object.freeze([
     'external',
@@ -799,23 +1007,6 @@ const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts': Object.freeze([
     'external',
     'external.shoeHeightM',
-  ]),
-  'esm/native/features/sketch_box_regular_external_drawers.ts': Object.freeze([
-    'external',
-    'external.regularHeightM',
-    'external.shoeHeightM',
-  ]),
-  'esm/native/services/canvas_picking_hover_preview_modes_ext_drawers.ts': Object.freeze([
-    'external',
-    'external.regularHeightM',
-    'external.shoeHeightM',
-    'external.visualHeightClearanceM',
-    'external.visualThicknessM',
-    'external.visualWidthClearanceM',
-  ]),
-  'esm/native/services/canvas_picking_manual_layout_sketch_hover_standard_drawer.ts': Object.freeze([
-    'external',
-    'external.visualThicknessM',
   ]),
   'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts': Object.freeze([
     'external',
@@ -1323,6 +1514,20 @@ function collectLegacyDrawerExternalInternalFieldUsage(sources) {
   return filtered;
 }
 
+function collectLegacyDrawerSketchFieldUsage(sources) {
+  const usage = collectLegacyDimensionPolicyFieldUsage(
+    sources,
+    'DRAWER_DIMENSIONS',
+    'dimensions/drawer_sketch_policy.js'
+  );
+  const filtered = {};
+  for (const [file, fields] of Object.entries(usage)) {
+    const sketchFields = fields.filter(field => field === '<computed>' || field.startsWith('sketch'));
+    if (sketchFields.length) filtered[file] = sketchFields;
+  }
+  return filtered;
+}
+
 function collectLegacyInteriorStorageFieldUsage(sources) {
   const usage = collectLegacyDimensionPolicyFieldUsage(
     sources,
@@ -1775,6 +1980,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   const externalDrawerPolicy = read('esm/shared/dimensions/external_drawer_policy.ts');
   const internalDrawerPolicy = read('esm/shared/dimensions/internal_drawer_policy.ts');
   const interiorStoragePolicy = read('esm/shared/dimensions/interior_storage_policy.ts');
+  const drawerSketchPolicy = read('esm/shared/dimensions/drawer_sketch_policy.ts');
 
   assert.match(facade, /from '\.\/dimensions\/units\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/wardrobe_defaults\.js'/u);
@@ -1796,6 +2002,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /from '\.\/dimensions\/external_drawer_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/internal_drawer_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/interior_storage_policy\.js'/u);
+  assert.match(facade, /from '\.\/dimensions\/drawer_sketch_policy\.js'/u);
   assert.doesNotMatch(facade, /export const WARDROBE_DEFAULTS =/u);
   assert.doesNotMatch(facade, /export const WARDROBE_LIMITS =/u);
 
@@ -1913,6 +2120,26 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(interiorStoragePolicy, /export const INTERIOR_STORAGE_POLICY = Object\.freeze/u);
   assert.match(interiorStoragePolicy, /barrierHeightM: meters\(0\.5\)/u);
   assert.match(interiorStoragePolicy, /defaultLowerShelfSlots: DEFAULT_LOWER_SHELF_SLOTS/u);
+  assert.match(drawerSketchPolicy, /export const DRAWER_SKETCH_SIZING_POLICY = Object\.freeze/u);
+  assert.match(drawerSketchPolicy, /export const DRAWER_SKETCH_PREVIEW_RENDER_POLICY = Object\.freeze/u);
+  assert.match(drawerSketchPolicy, /export const DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY = Object\.freeze/u);
+  assert.match(drawerSketchPolicy, /export const DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY = Object\.freeze/u);
+  assert.match(drawerSketchPolicy, /export const DRAWER_SKETCH_DOOR_CUT_POLICY = Object\.freeze/u);
+  assert.match(drawerSketchPolicy, /export const DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY = Object\.freeze/u);
+  assert.match(drawerSketchPolicy, /export const DRAWER_SKETCH_POLICY = Object\.freeze/u);
+  assert.match(
+    drawerSketchPolicy,
+    /externalDefaultHeightCm: metersToCentimeters\(EXTERNAL_DRAWER_SIZE_POLICY\.regularHeightM\)/u
+  );
+  assert.match(
+    drawerSketchPolicy,
+    /internalDefaultHeightCm: metersToCentimeters\([\s\S]*INTERNAL_DRAWER_LAYOUT_POLICY\.defaultSingleDrawerHeightM/u
+  );
+  assert.match(
+    drawerSketchPolicy,
+    /internalPreviewGridDivisionsDefault: INTERIOR_STORAGE_GRID_POLICY\.gridDivisionsDefault/u
+  );
+  assert.match(drawerSketchPolicy, /internalClampPadMinM: INTERIOR_STORAGE_CLAMP_POLICY\.clampPadMinM/u);
   assert.match(facade, /plinth: BASE_PLINTH_DIMENSIONS/u);
   assert.match(facade, /legs: BASE_LEG_LAYOUT_DIMENSIONS/u);
   assert.match(facade, /legacyDimensionNumberView\(BASE_PLINTH_POLICY\)/u);
@@ -1931,11 +2158,9 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /legacyDimensionNumberView\(EXTERNAL_DRAWER_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(INTERNAL_DRAWER_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(INTERIOR_STORAGE_POLICY\)/u);
+  assert.match(facade, /legacyDimensionNumberView\(DRAWER_SKETCH_POLICY\)/u);
   assert.match(facade, /storage: INTERIOR_STORAGE_DIMENSIONS/u);
-  assert.match(
-    facade,
-    /internalPreviewGridDivisionsDefault: INTERIOR_STORAGE_GRID_POLICY\.gridDivisionsDefault/u
-  );
+  assert.match(facade, /sketch: DRAWER_SKETCH_DIMENSIONS/u);
   assert.match(facade, /external: EXTERNAL_DRAWER_DIMENSIONS/u);
   assert.match(facade, /internal: INTERNAL_DRAWER_DIMENSIONS/u);
   assert.doesNotMatch(facade, /export const MATERIAL_DIMENSIONS = Object\.freeze/u);
@@ -1958,7 +2183,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(decorativeSeparator, /dimensions\/stack_split_render_policy\.js/u);
 
   assert.doesNotMatch(
-    `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}\n${chestStructuralPolicy}\n${materialThicknessPolicy}\n${carcassCorniceRenderPolicy}\n${chestModePolicy}\n${doorSystemPolicy}\n${doorMountThicknessPolicy}\n${doorVisualPolicy}\n${doorTrimPolicy}\n${interiorStoragePolicy}`,
+    `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}\n${chestStructuralPolicy}\n${materialThicknessPolicy}\n${carcassCorniceRenderPolicy}\n${chestModePolicy}\n${doorSystemPolicy}\n${doorMountThicknessPolicy}\n${doorVisualPolicy}\n${doorTrimPolicy}\n${interiorStoragePolicy}\n${drawerSketchPolicy}`,
     /wardrobe_dimension_tokens_shared/u
   );
 });
@@ -2156,7 +2381,11 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     'Internal Drawer owner consumer allowlist'
   );
   assert.deepEqual(
-    internalDrawerOwnerImports,
+    Object.fromEntries(
+      Object.entries(internalDrawerOwnerImports)
+        .filter(([, symbols]) => symbols.includes('INTERNAL_DRAWER_POLICY'))
+        .map(([file]) => [file, ['INTERNAL_DRAWER_POLICY']])
+    ),
     {
       'esm/shared/wardrobe_dimension_tokens_shared.ts': ['INTERNAL_DRAWER_POLICY'],
     },
@@ -2178,6 +2407,23 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
       'esm/shared/wardrobe_dimension_tokens_shared.ts': ['INTERIOR_STORAGE_POLICY'],
     },
     'INTERIOR_STORAGE_POLICY aggregate is imported directly only by the legacy facade'
+  );
+  const drawerSketchOwnerImports = collectOwnerImports(analyzedSources, 'drawer_sketch_policy.js');
+  assertApprovedSymbolUsage(
+    drawerSketchOwnerImports,
+    APPROVED_DRAWER_SKETCH_OWNER_IMPORTS,
+    'Drawer Sketch owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(drawerSketchOwnerImports)
+        .filter(([, symbols]) => symbols.includes('DRAWER_SKETCH_POLICY'))
+        .map(([file]) => [file, ['DRAWER_SKETCH_POLICY']])
+    ),
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['DRAWER_SKETCH_POLICY'],
+    },
+    'DRAWER_SKETCH_POLICY aggregate is imported directly only by the legacy facade'
   );
   assertApprovedSymbolUsage(
     collectShellGridFieldUsage(analyzedSources),
@@ -2317,6 +2563,11 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectLegacyDrawerExternalInternalFieldUsage(analyzedSources),
     APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE,
     'Drawer External/Internal legacy facade field allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDrawerSketchFieldUsage(analyzedSources),
+    APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE,
+    'Drawer Sketch legacy facade field allowlist'
   );
   assertApprovedSymbolUsage(
     collectLegacyInteriorStorageFieldUsage(analyzedSources),
@@ -3026,6 +3277,89 @@ test('[dimension-foundation] Interior Storage guards detect aliases, namespace a
         aggregateOwnerImports,
         APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS,
         'Interior Storage fixture owner consumer allowlist'
+      ),
+    /review-blocked/u
+  );
+});
+
+test('[dimension-foundation] Drawer Sketch guards detect aliases, namespace access, nested destructuring, computed access, and broad dependencies', () => {
+  const sources = [
+    [
+      'esm/native/builder/named_drawer_sketch_consumer.ts',
+      `
+        import { DRAWER_DIMENSIONS as drawers } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const oneHop = drawers;
+        const sketch = oneHop.sketch;
+        const { internalPreviewMinWidthM } = sketch;
+        export const literal = sketch['externalPreviewMinDepthM'];
+        export const dynamic = sketch[key];
+        export { internalPreviewMinWidthM };
+      `,
+    ],
+    [
+      'esm/native/builder/namespace_drawer_sketch_consumer.ts',
+      `
+        import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const { sketch: { doorCutNoOpToleranceM } } = dimensions.DRAWER_DIMENSIONS;
+        export { doorCutNoOpToleranceM };
+      `,
+    ],
+    [
+      'esm/native/runtime/drawer_sketch_wildcard.ts',
+      `export * from '../../shared/wardrobe_dimension_tokens_shared.js';`,
+    ],
+    [
+      'esm/native/runtime/drawer_sketch_dynamic.ts',
+      `export const dimensions = import('../../shared/wardrobe_dimension_tokens_shared.js');`,
+    ],
+  ];
+
+  assert.deepEqual(collectLegacyDrawerSketchFieldUsage(sources), {
+    'esm/native/builder/named_drawer_sketch_consumer.ts': [
+      'sketch',
+      'sketch.<computed>',
+      'sketch.externalPreviewMinDepthM',
+      'sketch.internalPreviewMinWidthM',
+    ],
+    'esm/native/builder/namespace_drawer_sketch_consumer.ts': ['sketch', 'sketch.doorCutNoOpToleranceM'],
+  });
+  assert.deepEqual(collectDimensionFacadeBroadDependencies(sources), [
+    { file: 'esm/native/builder/namespace_drawer_sketch_consumer.ts', syntax: 'static-import' },
+    { file: 'esm/native/runtime/drawer_sketch_dynamic.ts', syntax: 'dynamic-import' },
+    { file: 'esm/native/runtime/drawer_sketch_wildcard.ts', syntax: 'static-re-export' },
+  ]);
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        collectLegacyDrawerSketchFieldUsage(sources),
+        {},
+        'Drawer Sketch fixture legacy field allowlist'
+      ),
+    /review-blocked/u
+  );
+  assert.throws(
+    () => assertApprovedDimensionFacadeBroadDependencies(collectDimensionFacadeBroadDependencies(sources)),
+    /requires review/u
+  );
+
+  const aggregateOwnerImports = collectOwnerImports(
+    [
+      [
+        'esm/native/builder/new_drawer_sketch_aggregate_consumer.ts',
+        `import { DRAWER_SKETCH_POLICY as sketch } from '../../shared/dimensions/drawer_sketch_policy.js';`,
+      ],
+    ],
+    'drawer_sketch_policy.js'
+  );
+  assert.deepEqual(aggregateOwnerImports, {
+    'esm/native/builder/new_drawer_sketch_aggregate_consumer.ts': ['DRAWER_SKETCH_POLICY'],
+  });
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        aggregateOwnerImports,
+        APPROVED_DRAWER_SKETCH_OWNER_IMPORTS,
+        'Drawer Sketch fixture owner consumer allowlist'
       ),
     /review-blocked/u
   );

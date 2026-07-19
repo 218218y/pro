@@ -120,6 +120,15 @@ import {
   INTERIOR_STORAGE_PREVIEW_POLICY,
 } from '../esm/shared/dimensions/interior_storage_policy.ts';
 import {
+  DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY,
+  DRAWER_SKETCH_DOOR_CUT_POLICY,
+  DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY,
+  DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY,
+  DRAWER_SKETCH_POLICY,
+  DRAWER_SKETCH_PREVIEW_RENDER_POLICY,
+  DRAWER_SKETCH_SIZING_POLICY,
+} from '../esm/shared/dimensions/drawer_sketch_policy.ts';
+import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
   getDefaultWidthForWardrobeType,
@@ -988,6 +997,142 @@ test('Interior Storage policy preserves facade identity, values, frozen defaults
     INTERIOR_STORAGE_DEFAULTS_POLICY,
     INTERIOR_STORAGE_DEFAULTS_POLICY.defaultLowerShelfSlots,
     INTERIOR_STORAGE_POLICY,
+  ]) {
+    assert.equal(Object.isFrozen(policy), true);
+  }
+});
+
+test('Drawer Sketch policy preserves facade identity, every value, focused owners, and frozen policies', () => {
+  assert.equal(DRAWER_DIMENSIONS.sketch, DRAWER_SKETCH_POLICY);
+  assert.equal(
+    DRAWER_SKETCH_SIZING_POLICY.externalDefaultHeightCm,
+    EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM * 100
+  );
+  assert.equal(
+    DRAWER_SKETCH_SIZING_POLICY.internalDefaultHeightCm,
+    INTERNAL_DRAWER_LAYOUT_POLICY.defaultSingleDrawerHeightM * 100
+  );
+  assert.equal(DRAWER_SKETCH_SIZING_POLICY.minRenderHeightM, INTERNAL_DRAWER_LAYOUT_POLICY.minDrawerHeightM);
+  assert.equal(DRAWER_SKETCH_SIZING_POLICY.internalGapM, INTERNAL_DRAWER_LAYOUT_POLICY.betweenDrawersGapM);
+  assert.equal(DRAWER_SKETCH_SIZING_POLICY.internalStackCount, INTERNAL_DRAWER_LAYOUT_POLICY.stackCount);
+  assert.equal(
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthClearanceM,
+    INTERNAL_DRAWER_LAYOUT_POLICY.widthClearanceM
+  );
+  assert.equal(
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalDepthClearanceM,
+    INTERNAL_DRAWER_LAYOUT_POLICY.depthClearanceM
+  );
+  assert.equal(
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalOpenOffsetZM,
+    INTERNAL_DRAWER_MOTION_POLICY.openOffsetZM
+  );
+  assert.equal(
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadMinM,
+    INTERIOR_STORAGE_CLAMP_POLICY.clampPadMinM
+  );
+  assert.equal(
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadMaxM,
+    INTERIOR_STORAGE_CLAMP_POLICY.clampPadMaxM
+  );
+  assert.equal(
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadWoodRatio,
+    INTERIOR_STORAGE_CLAMP_POLICY.clampPadWoodRatio
+  );
+  assert.equal(
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewGridDivisionsDefault,
+    INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault
+  );
+  assert.deepEqual(DRAWER_SKETCH_POLICY, {
+    heightMinCm: 5,
+    heightMaxCm: 120,
+    externalDefaultHeightCm: 22,
+    internalDefaultHeightCm: 16.5,
+    heightTokenEpsilonCm: 0.0001,
+    externalCountMin: 1,
+    externalCountMax: 5,
+    externalPreviewDefaultCount: 3,
+    minRenderHeightM: 0.01,
+    internalGapM: 0.03,
+    internalStackCount: 2,
+    previewDrawerBottomLiftM: 0.01,
+    previewStackExtraHeightM: 0.02,
+    previewExternalDefaultHeightM: 0.08,
+    previewOverlayThicknessMinM: 0.004,
+    previewOverlayThicknessMaxM: 0.02,
+    previewDividerMinM: 0.003,
+    previewDividerMaxM: 0.012,
+    previewDividerWidthRatio: 0.04,
+    previewDividerDepthExtraM: 0.002,
+    externalDoorCutFrontInsetM: 0.004,
+    externalDoorCutSurroundingGapM: 0.006,
+    externalPreviewMinWidthM: 0.08,
+    externalPreviewMinDepthM: 0.1,
+    externalPreviewDepthClearanceM: 0.05,
+    externalPreviewCenterZInsetM: 0.025,
+    externalPreviewFrontZOffsetM: 0.001,
+    externalPreviewVisualMinWidthM: 0.05,
+    externalPreviewVisualMinHeightM: 0.05,
+    externalPreviewVisualMinDepthM: 0.005,
+    externalPreviewBoxMinDimensionM: 0.05,
+    externalPreviewMeasurementZOffsetMinM: 0.004,
+    externalPreviewMeasurementZOffsetThicknessRatio: 0.25,
+    internalPreviewMinWidthM: 0.05,
+    internalPreviewMinDepthM: 0.05,
+    internalPreviewWidthClearanceM: 0.03,
+    internalPreviewDepthClearanceM: 0.02,
+    internalPreviewMeasurementZOffsetMinM: 0.004,
+    internalPreviewMeasurementZOffsetDepthRatio: 0.08,
+    internalPreviewGridDivisionsMin: 2,
+    internalPreviewGridDivisionsMax: 12,
+    internalPreviewGridDivisionsDefault: 6,
+    internalPreviewGridHeadClearanceM: 0.02,
+    internalPreviewSingleDrawerGapM: 0.02,
+    internalPreviewDefaultSingleHeightM: 0.11,
+    internalPreviewRemovalHalfExtraM: 0.01,
+    internalPreviewRemovalToleranceMinM: 0.045,
+    internalPreviewRemovalToleranceMaxM: 0.14,
+    internalPreviewRemovalToleranceExtraM: 0.02,
+    internalClampPadMinM: 0.001,
+    internalClampPadMaxM: 0.006,
+    internalClampPadWoodRatio: 0.2,
+    internalWidthMinM: 0.05,
+    internalDepthMinM: 0.05,
+    internalWidthClearanceM: 0.03,
+    internalDepthClearanceM: 0.02,
+    internalSideFillerWidthM: 0.05,
+    internalSideFillerFrontInsetM: 0.03,
+    internalOpenOffsetZM: 0.25,
+    internalBottomLiftMaxM: 0.002,
+    internalBottomLiftWoodRatio: 0.15,
+    verticalStackCollisionGapM: 0.008,
+    doorCutHorizontalOverlapMinM: 0.005,
+    doorCutNoOpToleranceM: 0.002,
+    doorCutIntervalMinHeightM: 0.01,
+    doorCutIntervalMergeGapM: 0.002,
+    doorCutVisibleSegmentMinHeightM: 0.012,
+    rebuiltSegmentMinHeightForHandleM: 0.12,
+    rebuiltSegmentHandleMinHeightM: 0.02,
+    rebuiltSegmentHandlePaddingMinM: 0.02,
+    rebuiltSegmentHandlePaddingMaxM: 0.1,
+    rebuiltSegmentHandlePaddingHeightRatio: 0.2,
+    rebuiltSegmentRestoreTargetMinDimensionM: 0.02,
+    rebuiltSegmentRestoreTargetMinThicknessM: 0.002,
+    rebuiltSegmentDefaultHandlePaddingM: 0.01,
+    rebuiltSegmentVisualMinDimensionM: 0.02,
+    rebuiltSegmentVisualWidthClearanceM: 0.004,
+    faceVerticalAlignmentEpsilonM: 0.003,
+    faceVerticalAlignmentMinHeightM: 0.012,
+  });
+
+  for (const policy of [
+    DRAWER_SKETCH_SIZING_POLICY,
+    DRAWER_SKETCH_PREVIEW_RENDER_POLICY,
+    DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY,
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY,
+    DRAWER_SKETCH_DOOR_CUT_POLICY,
+    DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY,
+    DRAWER_SKETCH_POLICY,
   ]) {
     assert.equal(Object.isFrozen(policy), true);
   }

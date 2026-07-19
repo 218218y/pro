@@ -9,7 +9,7 @@ import {
   toCanonicalDoorGrooveTargetKey,
   toCanonicalGroovesMapKey,
 } from '../../shared/door_groove_key_contracts_shared.js';
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_DOOR_CUT_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 
 import { asRecord, isObject3DLike, type ValueRecord } from './post_build_extras_shared.js';
 
@@ -171,10 +171,10 @@ export function createSegmentVisual(args: {
     try {
       visual = createDoorVisual(
         Math.max(
-          DRAWER_DIMENSIONS.sketch.rebuiltSegmentVisualMinDimensionM,
-          width - DRAWER_DIMENSIONS.sketch.rebuiltSegmentVisualWidthClearanceM
+          DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentVisualMinDimensionM,
+          width - DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentVisualWidthClearanceM
         ),
-        Math.max(DRAWER_DIMENSIONS.sketch.rebuiltSegmentVisualMinDimensionM, segHeight),
+        Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentVisualMinDimensionM, segHeight),
         thickness,
         flags.segmentIsMirror ? segmentMirrorMat : segmentPartMat,
         flags.segmentIsGlass ? 'glass' : flags.effectiveDoorStyle,
@@ -201,10 +201,10 @@ export function createSegmentVisual(args: {
     : new THREE.Mesh(
         new THREE.BoxGeometry(
           Math.max(
-            DRAWER_DIMENSIONS.sketch.rebuiltSegmentVisualMinDimensionM,
-            width - DRAWER_DIMENSIONS.sketch.rebuiltSegmentVisualWidthClearanceM
+            DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentVisualMinDimensionM,
+            width - DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentVisualWidthClearanceM
           ),
-          Math.max(DRAWER_DIMENSIONS.sketch.rebuiltSegmentVisualMinDimensionM, segHeight),
+          Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentVisualMinDimensionM, segHeight),
           thickness
         ),
         segmentPartMat

@@ -1,6 +1,11 @@
 import type { UnknownRecord } from '../../../types';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY,
+  DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY,
+  DRAWER_SKETCH_SIZING_POLICY,
+  EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
+} from '../../shared/dimensions/drawer_sketch_policy.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { isSketchInternalDrawersTool } from '../features/sketch_drawer_sizing.js';
 import { __wp_measureObjectLocalBox } from './canvas_picking_local_helpers.js';
@@ -90,17 +95,17 @@ export function tryHandleSketchHoverOverStandardDrawer(args: SketchStandardDrawe
   const host = { tool, moduleKey, isBottom };
 
   if (family === 'standard_external') {
-    const visualT = DRAWER_DIMENSIONS.external.visualThicknessM;
+    const visualT = EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM;
     const stackPreview = resolveExternalCrossDrawerStackPreview({
       App,
       target,
       measureObjectLocalBox: __wp_measureObjectLocalBox,
       family: 'standard_external',
-      minWidth: DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM,
-      minHeight: DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
-      minDepth: DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinDepthM,
+      minWidth: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM,
+      minHeight: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
+      minDepth: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinDepthM,
       visualThickness: visualT,
-      frontZOffset: DRAWER_DIMENSIONS.sketch.externalPreviewFrontZOffsetM,
+      frontZOffset: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewFrontZOffsetM,
     });
     const previewBaseY = stackPreview?.y ?? baseY;
     const previewStackH = stackPreview?.stackH ?? box.height;
@@ -135,14 +140,21 @@ export function tryHandleSketchHoverOverStandardDrawer(args: SketchStandardDrawe
         y: previewBaseY,
         z:
           stackPreview?.z ??
-          box.centerZ + box.depth / 2 + visualT / 2 + DRAWER_DIMENSIONS.sketch.externalPreviewFrontZOffsetM,
-        w: stackPreview?.w ?? Math.max(DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM, box.width),
-        d: stackPreview?.d ?? Math.max(DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinDepthM, visualT),
+          box.centerZ +
+            box.depth / 2 +
+            visualT / 2 +
+            DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewFrontZOffsetM,
+        w:
+          stackPreview?.w ??
+          Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM, box.width),
+        d:
+          stackPreview?.d ??
+          Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinDepthM, visualT),
         woodThick: visualT,
         drawers: stackPreview?.drawers ?? [
           {
             y: box.centerY,
-            h: Math.max(DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM, box.height),
+            h: Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM, box.height),
           },
         ],
         op: 'remove',
@@ -154,17 +166,17 @@ export function tryHandleSketchHoverOverStandardDrawer(args: SketchStandardDrawe
   if (family === 'sketch_external') {
     const drawerId = readString(userData?.__wpSketchExtDrawerId);
     if (!drawerId) return false;
-    const visualT = DRAWER_DIMENSIONS.external.visualThicknessM;
+    const visualT = EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM;
     const stackPreview = resolveExternalCrossDrawerStackPreview({
       App,
       target,
       measureObjectLocalBox: __wp_measureObjectLocalBox,
       family: 'sketch_external',
-      minWidth: DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM,
-      minHeight: DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
-      minDepth: DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinDepthM,
+      minWidth: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM,
+      minHeight: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
+      minDepth: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinDepthM,
       visualThickness: visualT,
-      frontZOffset: DRAWER_DIMENSIONS.sketch.externalPreviewFrontZOffsetM,
+      frontZOffset: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewFrontZOffsetM,
     });
     const previewBaseY = stackPreview?.y ?? baseY;
     const previewStackH = stackPreview?.stackH ?? box.height;
@@ -197,14 +209,21 @@ export function tryHandleSketchHoverOverStandardDrawer(args: SketchStandardDrawe
         y: previewBaseY,
         z:
           stackPreview?.z ??
-          box.centerZ + box.depth / 2 + visualT / 2 + DRAWER_DIMENSIONS.sketch.externalPreviewFrontZOffsetM,
-        w: stackPreview?.w ?? Math.max(DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM, box.width),
-        d: stackPreview?.d ?? Math.max(DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinDepthM, visualT),
+          box.centerZ +
+            box.depth / 2 +
+            visualT / 2 +
+            DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewFrontZOffsetM,
+        w:
+          stackPreview?.w ??
+          Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM, box.width),
+        d:
+          stackPreview?.d ??
+          Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinDepthM, visualT),
         woodThick: visualT,
         drawers: stackPreview?.drawers ?? [
           {
             y: box.centerY,
-            h: Math.max(DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM, box.height),
+            h: Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM, box.height),
           },
         ],
         op: 'remove',
@@ -228,7 +247,7 @@ export function tryHandleSketchHoverOverStandardDrawer(args: SketchStandardDrawe
     const previewBaseY = stackPreview?.y ?? baseY;
     const previewStackH = stackPreview?.stackH ?? box.height;
     const previewDrawerH = stackPreview?.drawerH ?? box.height;
-    const previewDrawerGap = stackPreview?.drawerGap ?? DRAWER_DIMENSIONS.sketch.internalGapM;
+    const previewDrawerGap = stackPreview?.drawerGap ?? DRAWER_SKETCH_SIZING_POLICY.internalGapM;
     __wp_writeSketchHover(
       App,
       createManualLayoutSketchStackHoverRecord({
@@ -255,11 +274,11 @@ export function tryHandleSketchHoverOverStandardDrawer(args: SketchStandardDrawe
         x: stackPreview?.x ?? box.centerX,
         y: previewBaseY,
         z: stackPreview?.z ?? box.centerZ,
-        w: stackPreview?.w ?? Math.max(DRAWER_DIMENSIONS.sketch.internalWidthMinM, box.width),
-        d: stackPreview?.d ?? Math.max(DRAWER_DIMENSIONS.sketch.internalDepthMinM, box.depth),
+        w: stackPreview?.w ?? Math.max(DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthMinM, box.width),
+        d: stackPreview?.d ?? Math.max(DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalDepthMinM, box.depth),
         drawerH: previewDrawerH,
         drawerGap: previewDrawerGap,
-        woodThick: DRAWER_DIMENSIONS.external.visualThicknessM,
+        woodThick: EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM,
         op: 'remove',
       });
     }

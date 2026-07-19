@@ -8,6 +8,7 @@ import { pathToFileURL } from 'node:url';
 import {
   resolveChildExitCode,
   resolveChildTermination,
+  spawnManagedChild,
   terminateChildWithEscalation,
 } from '../tools/wp_child_process_protocol.mjs';
 
@@ -15,6 +16,7 @@ const projectRoot = process.cwd();
 const serialRunnerPath = path.join(projectRoot, 'tools', 'wp_serial_tests.mjs');
 const rerunListPath = path.join(projectRoot, 'tools', 'wp_run_test_file_list.mjs');
 const directTsxRunnerPath = path.join(projectRoot, 'tools', 'wp_run_tsx_tests.mjs');
+const childRunDiagnostics = new WeakMap();
 
 function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-serial-tests-'));
@@ -40,16 +42,19 @@ function runNode(args, options = {}) {
 function runNodeAsync(args, options = {}) {
   const env = { ...process.env };
   delete env.NODE_TEST_CONTEXT;
-  const child = spawn(process.execPath, args, {
+  const { managed = false, ...spawnOptions } = options;
+  const spawnChild = managed ? spawnManagedChild : spawn;
+  const child = spawnChild(process.execPath, args, {
     cwd: projectRoot,
     env,
     stdio: ['ignore', 'pipe', 'pipe'],
-    ...options,
+    ...spawnOptions,
   });
 
   let stdout = '';
   let stderr = '';
   const stderrWaiters = new Set();
+  const readinessMarkers = new Set();
 
   const matchesPattern = (pattern, value) => {
     pattern.lastIndex = 0;
@@ -67,6 +72,9 @@ SIGNAL: ${result.signal}`;
   const flushStderrWaiters = () => {
     for (const waiter of stderrWaiters) {
       if (!matchesPattern(waiter.pattern, stderr)) continue;
+      waiter.pattern.lastIndex = 0;
+      const marker = waiter.pattern.exec(stderr)?.[0];
+      if (marker) readinessMarkers.add(marker);
       clearTimeout(waiter.timer);
       stderrWaiters.delete(waiter);
       waiter.resolve(stderr);
@@ -107,12 +115,25 @@ SIGNAL: ${result.signal}`;
     });
   });
 
+  childRunDiagnostics.set(child, {
+    snapshot: () => ({
+      stdout,
+      stderr,
+      readinessMarkers: [...readinessMarkers],
+    }),
+  });
+
   return {
     child,
     exited,
     completed,
     waitForStderr(pattern, timeoutMs = 5000) {
-      if (matchesPattern(pattern, stderr)) return Promise.resolve(stderr);
+      if (matchesPattern(pattern, stderr)) {
+        pattern.lastIndex = 0;
+        const marker = pattern.exec(stderr)?.[0];
+        if (marker) readinessMarkers.add(marker);
+        return Promise.resolve(stderr);
+      }
       return new Promise((resolve, reject) => {
         const waiter = { pattern, resolve, reject, timedOut: false, timer: null };
         waiter.timer = setTimeout(() => {
@@ -123,6 +144,57 @@ SIGNAL: ${result.signal}`;
       });
     },
   };
+}
+
+function formatIpcSignalFailure(child, signal, error) {
+  const diagnostic = childRunDiagnostics.get(child)?.snapshot?.() || {
+    stdout: '',
+    stderr: '',
+    readinessMarkers: [],
+  };
+  const reason =
+    error instanceof Error ? `${error.name}: ${error.message}` : String(error || 'unknown error');
+  return new Error(`IPC ${signal} delivery failed: ${reason}
+EXIT CODE: ${child.exitCode}
+EXIT SIGNAL: ${child.signalCode}
+CONNECTED: ${child.connected === true}
+READINESS MARKERS: ${JSON.stringify(diagnostic.readinessMarkers)}
+STDERR:
+${diagnostic.stderr}
+STDOUT:
+${diagnostic.stdout}`);
+}
+
+async function sendIpcSignal(child, signal) {
+  if (!child.connected) {
+    throw formatIpcSignalFailure(
+      child,
+      signal,
+      new Error('IPC channel closed before the interruption request')
+    );
+  }
+
+  await new Promise((resolve, reject) => {
+    try {
+      child.send(signal, error => {
+        if (error) reject(formatIpcSignalFailure(child, signal, error));
+        else resolve();
+      });
+    } catch (error) {
+      reject(formatIpcSignalFailure(child, signal, error));
+    }
+  });
+}
+
+async function cleanupManagedTestRun(run) {
+  const controller = terminateChildWithEscalation(run.child, 'SIGTERM', { graceMs: 500 });
+  if (controller) await controller.completion;
+  if (run.child.connected) {
+    try {
+      run.child.disconnect();
+    } catch {}
+  }
+  return await run.completed;
 }
 
 function assertInterruptedExitLike(result, message) {
@@ -634,6 +706,34 @@ test(
   }
 );
 
+test('safe IPC signal delivery reports closed-channel exit and readiness diagnostics', async () => {
+  const child = {
+    connected: false,
+    exitCode: 97,
+    signalCode: null,
+  };
+  childRunDiagnostics.set(child, {
+    snapshot: () => ({
+      stdout: 'wrapper stdout',
+      stderr: '[serial-tests batch 1/1] ready\n[fixture] npx-signal-handler-ready:4321',
+      readinessMarkers: ['[serial-tests batch 1/1] ready', '[fixture] npx-signal-handler-ready:4321'],
+    }),
+  });
+
+  await assert.rejects(
+    () => sendIpcSignal(child, 'SIGTERM'),
+    error => {
+      assert.match(error.message, /IPC channel closed before the interruption request/u);
+      assert.match(error.message, /EXIT CODE: 97/u);
+      assert.match(error.message, /EXIT SIGNAL: null/u);
+      assert.match(error.message, /CONNECTED: false/u);
+      assert.match(error.message, /npx-signal-handler-ready:4321/u);
+      assert.match(error.message, /wrapper stdout/u);
+      return true;
+    }
+  );
+});
+
 test('serial npx fallback interruption leaves no active test process or active summary', async () => {
   const root = tempDir();
   const probePath = path.join(root, 'npx-probe.txt');
@@ -653,7 +753,6 @@ test('serial npx fallback interruption leaves no active test process or active s
       });
       fs.writeFileSync(probePath, String(process.pid) + ':ready\\n', 'utf8');
       console.error('[fixture] npx-signal-handler-ready:' + process.pid);
-      setTimeout(() => process.exit(97), 10000);
       test('npx interruption probe', async () => {
         await new Promise(() => {});
       });
@@ -679,34 +778,40 @@ test('serial npx fallback interruption leaves no active test process or active s
   delete env.NODE_TEST_CONTEXT;
   const run = runNodeAsync(
     [signalHost, '--failed-files-path', failedFilesPath, '--timings-path', timingsPath, probe],
-    { env, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] }
+    { env, stdio: ['ignore', 'pipe', 'pipe', 'ipc'], managed: true }
   );
 
-  await run.waitForStderr(/\[serial-tests batch 1\/1\] ready/u);
-  const readyOutput = await run.waitForStderr(/\[fixture\] npx-signal-handler-ready:\d+/u);
-  const pid = Number(/npx-signal-handler-ready:(\d+)/u.exec(readyOutput)?.[1]);
-  assert.equal(Number.isInteger(pid) && pid > 0, true, readyOutput);
-  run.child.send('SIGTERM');
-  const exitResult = await run.exited;
-  assertInterruptedExitLike(
-    { ...exitResult, stdout: '', stderr: '' },
-    'interrupted npx fallback should preserve wrapper interruption'
-  );
+  let pid = null;
+  try {
+    await run.waitForStderr(/\[serial-tests batch 1\/1\] ready/u);
+    const readyOutput = await run.waitForStderr(/\[fixture\] npx-signal-handler-ready:\d+/u);
+    pid = Number(/npx-signal-handler-ready:(\d+)/u.exec(readyOutput)?.[1]);
+    assert.equal(Number.isInteger(pid) && pid > 0, true, readyOutput);
+    await sendIpcSignal(run.child, 'SIGTERM');
+    const exitResult = await run.exited;
+    assertInterruptedExitLike(
+      { ...exitResult, stdout: '', stderr: '' },
+      'interrupted npx fallback should preserve wrapper interruption'
+    );
 
-  const exited = await waitForProcessExit(pid);
-  if (!exited) {
-    try {
-      process.kill(pid, 'SIGKILL');
-    } catch {}
+    const exited = await waitForProcessExit(pid);
+    if (!exited) throw new Error(`npx fallback left test process ${pid} running`);
+    await run.completed;
+    const summary = JSON.parse(fs.readFileSync(timingsPath, 'utf8'));
+    assert.equal(summary.completedBatches, 1);
+    assert.equal(summary.batches.length, 1);
+    assert.equal(summary.batches[0].outcome, 'interrupted');
+    assert.equal(summary.batches[0].requestedSignal, 'SIGTERM');
+    assert.ok(summary.batches[0].durationMs > 0, 'final summary must replace the active recovery snapshot');
+  } finally {
+    const result = await cleanupManagedTestRun(run);
+    if (Number.isInteger(pid) && pid > 0 && !(await waitForProcessExit(pid))) {
+      try {
+        process.kill(pid, 'SIGKILL');
+      } catch {}
+      assert.fail(`npx fallback cleanup left test process ${pid} running\n${result.stderr}`);
+    }
   }
-  const result = await run.completed;
-  assert.equal(exited, true, `npx fallback left test process ${pid} running\n${result.stderr}`);
-  const summary = JSON.parse(fs.readFileSync(timingsPath, 'utf8'));
-  assert.equal(summary.completedBatches, 1);
-  assert.equal(summary.batches.length, 1);
-  assert.equal(summary.batches[0].outcome, 'interrupted');
-  assert.equal(summary.batches[0].requestedSignal, 'SIGTERM');
-  assert.ok(summary.batches[0].durationMs > 0, 'final summary must replace the active recovery snapshot');
 });
 
 test(

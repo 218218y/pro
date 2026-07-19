@@ -2,7 +2,7 @@
 //
 // Owns interval normalization/subtraction and grouped drawer-stack bounds helpers.
 
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_DOOR_CUT_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import type {
   SketchDrawerCutSegment,
   SketchDrawerStackBounds,
@@ -15,7 +15,7 @@ export function normalizeSketchDrawerCutIntervals(
   const minHeight =
     typeof options.minHeight === 'number' && Number.isFinite(options.minHeight)
       ? Math.max(0, options.minHeight)
-      : DRAWER_DIMENSIONS.sketch.doorCutIntervalMinHeightM;
+      : DRAWER_SKETCH_DOOR_CUT_POLICY.doorCutIntervalMinHeightM;
   const sorted = list
     .filter(seg => Number.isFinite(seg.yMin) && Number.isFinite(seg.yMax) && seg.yMax - seg.yMin > minHeight)
     .sort((a, b) => a.yMin - b.yMin);
@@ -24,7 +24,7 @@ export function normalizeSketchDrawerCutIntervals(
   for (let i = 1; i < sorted.length; i++) {
     const prev = merged[merged.length - 1];
     const cur = sorted[i];
-    if (cur.yMin <= prev.yMax + DRAWER_DIMENSIONS.sketch.doorCutIntervalMergeGapM) {
+    if (cur.yMin <= prev.yMax + DRAWER_SKETCH_DOOR_CUT_POLICY.doorCutIntervalMergeGapM) {
       prev.yMax = Math.max(prev.yMax, cur.yMax);
       continue;
     }
@@ -44,13 +44,13 @@ export function subtractSketchDrawerIntervals(
     const cut = cuts[i];
     if (cut.yMax <= cursor) continue;
     if (cut.yMin >= doorMax) break;
-    if (cut.yMin > cursor + DRAWER_DIMENSIONS.sketch.doorCutVisibleSegmentMinHeightM) {
+    if (cut.yMin > cursor + DRAWER_SKETCH_DOOR_CUT_POLICY.doorCutVisibleSegmentMinHeightM) {
       visible.push({ yMin: cursor, yMax: Math.min(doorMax, cut.yMin) });
     }
     cursor = Math.max(cursor, cut.yMax);
     if (cursor >= doorMax) break;
   }
-  if (cursor < doorMax - DRAWER_DIMENSIONS.sketch.doorCutVisibleSegmentMinHeightM)
+  if (cursor < doorMax - DRAWER_SKETCH_DOOR_CUT_POLICY.doorCutVisibleSegmentMinHeightM)
     visible.push({ yMin: cursor, yMax: doorMax });
   return visible;
 }

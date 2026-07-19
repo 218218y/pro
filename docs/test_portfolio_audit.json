@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-19T05:08:45.534Z",
+  "generatedAt": "2026-07-19T10:50:40.242Z",
   "totals": {
-    "tests": 1221,
-    "unitRunnerTests": 1213,
+    "tests": 1222,
+    "unitRunnerTests": 1214,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -15,7 +15,7 @@
   "categories": {
     "contract": 398,
     "runtime-unit": 314,
-    "integration": 450,
+    "integration": 451,
     "e2e-smoke": 9,
     "perf-smoke": 9,
     "legacy-migration": 41
@@ -2455,6 +2455,10 @@
     },
     {
       "file": "tests/order_pdf_details_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_diagnostic_classifier_runtime.test.ts",
       "category": "integration"
     },
     {

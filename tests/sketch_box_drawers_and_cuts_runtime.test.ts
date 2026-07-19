@@ -768,12 +768,12 @@ test('sketch external drawer cut envelope matches drawer front envelope', async 
     '../esm/native/builder/post_build_sketch_door_cuts_box.ts',
     '../esm/native/builder/post_build_sketch_door_cuts_modules.ts',
   ]);
-  const tokens = await readSourceFiles(['../esm/shared/wardrobe_dimension_tokens_shared.ts']);
+  const tokens = await readSourceFiles(['../esm/shared/dimensions/drawer_sketch_policy.ts']);
   const mod = await import('../esm/native/builder/post_build_extras_pipeline.ts');
-  assert.match(tokens, /externalDoorCutFrontInsetM:\s*0\.004,/);
-  assert.match(tokens, /externalDoorCutSurroundingGapM:\s*0\.006,/);
-  assert.match(src, /const frontInset = DRAWER_DIMENSIONS\.sketch\.externalDoorCutFrontInsetM;/);
-  assert.match(src, /const surroundingGap = DRAWER_DIMENSIONS\.sketch\.externalDoorCutSurroundingGapM;/);
+  assert.match(tokens, /externalDoorCutFrontInsetM:\s*meters\(0\.004\),/);
+  assert.match(tokens, /externalDoorCutSurroundingGapM:\s*meters\(0\.006\),/);
+  assert.match(src, /const frontInset = DRAWER_SKETCH_DOOR_CUT_POLICY\.externalDoorCutFrontInsetM;/);
+  assert.match(src, /const surroundingGap = DRAWER_SKETCH_DOOR_CUT_POLICY\.externalDoorCutSurroundingGapM;/);
   assert.doesNotMatch(src, /const surroundingGap = 0\.006;/);
   assert.match(src, /const faceMinY = baseY \+ frontInset - surroundingGap;/);
   assert.match(src, /const faceMaxY = baseY \+ stackH - frontInset \+ surroundingGap;/);

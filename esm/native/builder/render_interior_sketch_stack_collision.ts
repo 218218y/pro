@@ -1,4 +1,4 @@
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M,
@@ -32,7 +32,7 @@ function rangeFromCenter(centerY: number, stackH: number, id: string): SketchSta
 export function sketchStackRangeOverlaps(
   range: SketchStackCollisionRange,
   blockers: SketchStackCollisionRange[],
-  gap: number = DRAWER_DIMENSIONS.sketch.verticalStackCollisionGapM
+  gap: number = DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY.verticalStackCollisionGapM
 ): boolean {
   return blockers.some(blocker => range.maxY > blocker.minY - gap && range.minY < blocker.maxY + gap);
 }

@@ -13,6 +13,7 @@ const productDimensionTokenSources = [
   'esm/shared/dimensions/external_drawer_policy.ts',
   'esm/shared/dimensions/internal_drawer_policy.ts',
   'esm/shared/dimensions/interior_storage_policy.ts',
+  'esm/shared/dimensions/drawer_sketch_policy.ts',
 ];
 
 function readProductDimensionTokens() {
@@ -346,12 +347,16 @@ test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage 
 
   for (const rel of [
     'esm/native/builder/post_build_sketch_door_cuts_apply.ts',
-    'esm/native/builder/post_build_sketch_door_cuts_intervals.ts',
     'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts',
     'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts',
-    'esm/native/builder/post_build_sketch_door_cuts_rebuild_visual.ts',
   ]) {
     assertUsesToken(rel, 'DRAWER_DIMENSIONS');
+  }
+  for (const rel of [
+    'esm/native/builder/post_build_sketch_door_cuts_intervals.ts',
+    'esm/native/builder/post_build_sketch_door_cuts_rebuild_visual.ts',
+  ]) {
+    assertUsesToken(rel, 'DRAWER_SKETCH_DOOR_CUT_POLICY');
   }
 
   for (const rel of [
@@ -491,6 +496,70 @@ test('[dimension tokens] Interior Storage owner preserves focused production con
   }
 });
 
+test('[dimension tokens] Drawer Sketch owner preserves focused production consumption', () => {
+  const tokens = readProductDimensionTokens();
+  for (const policyName of [
+    'DRAWER_SKETCH_SIZING_POLICY',
+    'DRAWER_SKETCH_PREVIEW_RENDER_POLICY',
+    'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+    'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+    'DRAWER_SKETCH_DOOR_CUT_POLICY',
+    'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
+    'DRAWER_SKETCH_POLICY',
+  ]) {
+    assert.match(tokens, new RegExp(`export const ${policyName} = Object\\.freeze\\(\\{`, 'u'));
+  }
+
+  const expectedConsumers = [
+    ['esm/native/builder/post_build_sketch_door_cuts_box.ts', 'DRAWER_SKETCH_DOOR_CUT_POLICY'],
+    ['esm/native/builder/post_build_sketch_door_cuts_intervals.ts', 'DRAWER_SKETCH_DOOR_CUT_POLICY'],
+    ['esm/native/builder/post_build_sketch_door_cuts_modules.ts', 'DRAWER_SKETCH_SIZING_POLICY'],
+    ['esm/native/builder/post_build_sketch_door_cuts_rebuild_visual.ts', 'DRAWER_SKETCH_DOOR_CUT_POLICY'],
+    [
+      'esm/native/builder/render_interior_sketch_boxes_contents_drawers.ts',
+      'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_drawers_internal.ts',
+      'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_internal_drawer_cassette.ts',
+      'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_shared_external_drawers.ts',
+      'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_stack_collision.ts',
+      'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
+    ],
+    ['esm/native/features/sketch_box_regular_external_drawers.ts', 'DRAWER_SKETCH_SIZING_POLICY'],
+    [
+      'esm/native/services/canvas_picking_drawer_cross_family_preview.ts',
+      'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+    ],
+    [
+      'esm/native/services/canvas_picking_hover_preview_modes_ext_drawers.ts',
+      'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+    ],
+    [
+      'esm/native/services/canvas_picking_manual_layout_sketch_hover_standard_drawer.ts',
+      'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+    ],
+    [
+      'esm/native/services/canvas_picking_manual_layout_sketch_vertical_stack.ts',
+      'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
+    ],
+  ];
+  for (const [file, symbol] of expectedConsumers) assertUsesToken(file, symbol);
+
+  for (const file of new Set(expectedConsumers.map(([file]) => file))) {
+    assert.doesNotMatch(read(file), /\bDRAWER_DIMENSIONS\b/u);
+  }
+});
+
 test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canonical dimensions', () => {
   const tokens = readProductDimensionTokens();
   for (const tokenPattern of [
@@ -526,7 +595,10 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ['esm/native/builder/render_interior_sketch_support_shelves.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts', ['SKETCH_BOX_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_support_placement.ts', ['SKETCH_BOX_DIMENSIONS']],
-    ['esm/native/builder/render_interior_sketch_shared_external_drawers.ts', ['DRAWER_DIMENSIONS']],
+    [
+      'esm/native/builder/render_interior_sketch_shared_external_drawers.ts',
+      ['DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY'],
+    ],
     ['esm/native/builder/hinged_doors_module_ops_full.ts', ['HINGED_DOOR_SPLIT_GEOMETRY_POLICY']],
     ['esm/native/builder/hinged_doors_module_ops_segments.ts', ['HINGED_DOOR_SPLIT_GEOMETRY_POLICY']],
     ['esm/native/builder/hinged_doors_module_ops_split_routes.ts', ['HINGED_DOOR_SPLIT_GEOMETRY_POLICY']],

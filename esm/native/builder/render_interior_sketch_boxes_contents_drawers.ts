@@ -1,4 +1,4 @@
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import {
   resolveSketchInternalDrawerCassetteDrawerWidth,
   resolveSketchInternalDrawerCassetteRange,
@@ -142,7 +142,7 @@ export function renderSketchBoxDrawerContents(args: RenderSketchBoxContentsArgs)
   const boxExtDrawers = asRecordArray<SketchExternalDrawerExtra>(box.extDrawers).concat(
     readSketchBoxRegularExternalDrawersForRender(box) as SketchExternalDrawerExtra[]
   );
-  const drawerDims = DRAWER_DIMENSIONS.sketch;
+  const drawerDims = DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY;
   if (!boxDrawers.length) return;
 
   try {

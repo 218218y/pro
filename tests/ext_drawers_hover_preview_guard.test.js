@@ -17,7 +17,7 @@ const CROSS_DRAWER_DIRECT_HIT = path.resolve(
   process.cwd(),
   'esm/native/services/canvas_picking_drawer_cross_family_direct_hit.ts'
 );
-const TOKENS = path.resolve(process.cwd(), 'esm/shared/wardrobe_dimension_tokens_shared.ts');
+const DRAWER_SKETCH_POLICY = path.resolve(process.cwd(), 'esm/shared/dimensions/drawer_sketch_policy.ts');
 const EXTERNAL_DRAWER_POLICY = path.resolve(process.cwd(), 'esm/shared/dimensions/external_drawer_policy.ts');
 
 test('[ext-drawers-hover] preview payload passes finite y to sketch placement preview', () => {
@@ -37,12 +37,12 @@ test('[ext-drawers-hover] preview payload passes finite y to sketch placement pr
 
 test('[ext-drawers-hover] preview front z is pushed to the visible front face', () => {
   const src = fs.readFileSync(SRC, 'utf8');
-  const tokens = fs.readFileSync(TOKENS, 'utf8');
-  assert.match(tokens, /externalPreviewFrontZOffsetM:\s*0\.001,/);
+  const drawerSketchPolicy = fs.readFileSync(DRAWER_SKETCH_POLICY, 'utf8');
+  assert.match(drawerSketchPolicy, /externalPreviewFrontZOffsetM:\s*meters\(0\.001\),/);
   assert.match(src, /const\s+frontPlaneZ\s*=\s*centerZ\s*\+\s*outerD\s*\/\s*2\s*;/);
   assert.match(
     src,
-    /const\s+frontZ\s*=\s*frontPlaneZ\s*\+\s*visualT\s*\/\s*2\s*\+\s*DRAWER_DIMENSIONS\.sketch\.externalPreviewFrontZOffsetM\s*;/
+    /const\s+frontZ\s*=\s*frontPlaneZ\s*\+\s*visualT\s*\/\s*2\s*\+\s*DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY\.externalPreviewFrontZOffsetM\s*;/
   );
   assert.doesNotMatch(src, /const\s+frontZ\s*=\s*frontPlaneZ\s*\+\s*visualT\s*\/\s*2\s*\+\s*0\.001\s*;/);
 });
@@ -51,7 +51,7 @@ test('[ext-drawers-hover] regular drawers preview stacks above shoe drawer when 
   const src = fs.readFileSync(SRC, 'utf8');
   const externalDrawerPolicy = fs.readFileSync(EXTERNAL_DRAWER_POLICY, 'utf8');
   assert.match(externalDrawerPolicy, /shoeHeightM:\s*meters\(0\.2\),/);
-  assert.match(src, /const\s+shoeH\s*=\s*DRAWER_DIMENSIONS\.external\.shoeHeightM\s*;/);
+  assert.match(src, /const\s+shoeH\s*=\s*EXTERNAL_DRAWER_SIZE_POLICY\.shoeHeightM\s*;/);
   assert.doesNotMatch(src, /const\s+shoeH\s*=\s*0\.2\s*;/);
   assert.match(
     src,

@@ -1,4 +1,7 @@
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DRAWER_SKETCH_SIZING_POLICY,
+  EXTERNAL_DRAWER_SIZE_POLICY,
+} from '../../shared/dimensions/drawer_sketch_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 export const SKETCH_BOX_REGULAR_EXTERNAL_DRAWERS_KEY = 'regularExtDrawers';
@@ -47,17 +50,17 @@ function readCellUnit(value: unknown, defaultValue: number): number | null {
 
 export function normalizeSketchBoxRegularExternalDrawerCount(value: unknown): number {
   const n = parseNumberToken(value);
-  if (n == null) return DRAWER_DIMENSIONS.sketch.externalCountMin;
+  if (n == null) return DRAWER_SKETCH_SIZING_POLICY.externalCountMin;
   return Math.max(
-    DRAWER_DIMENSIONS.sketch.externalCountMin,
-    Math.min(DRAWER_DIMENSIONS.sketch.externalCountMax, Math.floor(n))
+    DRAWER_SKETCH_SIZING_POLICY.externalCountMin,
+    Math.min(DRAWER_SKETCH_SIZING_POLICY.externalCountMax, Math.floor(n))
   );
 }
 
 export function normalizeStoredSketchBoxRegularExternalDrawerCount(value: unknown): number {
   const n = readNumber(value);
   if (n == null) return 0;
-  return Math.max(0, Math.min(DRAWER_DIMENSIONS.sketch.externalCountMax, Math.floor(n)));
+  return Math.max(0, Math.min(DRAWER_SKETCH_SIZING_POLICY.externalCountMax, Math.floor(n)));
 }
 
 export function sketchBoxRegularExternalDrawerHasShoe(item: unknown): boolean {
@@ -72,8 +75,8 @@ export function getSketchBoxRegularExternalDrawerStackHeight(value: unknown): nu
     ? normalizeStoredSketchBoxRegularExternalDrawerCount(countSource)
     : normalizeSketchBoxRegularExternalDrawerCount(countSource);
   const shoeHeight =
-    rec && sketchBoxRegularExternalDrawerHasShoe(rec) ? DRAWER_DIMENSIONS.external.shoeHeightM : 0;
-  return shoeHeight + regularCount * DRAWER_DIMENSIONS.external.regularHeightM;
+    rec && sketchBoxRegularExternalDrawerHasShoe(rec) ? EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM : 0;
+  return shoeHeight + regularCount * EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM;
 }
 
 export function readSketchBoxRegularExternalDrawers(box: unknown): RecordMap[] {
@@ -92,8 +95,8 @@ export function readSketchBoxRegularExternalDrawersForRender(box: unknown): Reco
         id: formatIdentityValue(readIdentityValue(item.id)) || `sbrd_${index}`,
         count,
         hasShoeDrawer,
-        drawerHeightM: DRAWER_DIMENSIONS.external.regularHeightM,
-        shoeDrawerHeightM: DRAWER_DIMENSIONS.external.shoeHeightM,
+        drawerHeightM: EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM,
+        shoeDrawerHeightM: EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM,
         yAnchor: 'bottom',
         __wpRegularExternalDrawer: true,
       };
@@ -126,8 +129,8 @@ export function createSketchBoxRegularExternalDrawerItem(args: {
     yAnchor: 'bottom',
     count: normalizeStoredSketchBoxRegularExternalDrawerCount(args.count),
     hasShoeDrawer: args.hasShoeDrawer === true,
-    drawerHeightM: DRAWER_DIMENSIONS.external.regularHeightM,
-    shoeDrawerHeightM: DRAWER_DIMENSIONS.external.shoeHeightM,
+    drawerHeightM: EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM,
+    shoeDrawerHeightM: EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM,
     __wpRegularExternalDrawer: true,
   };
 }

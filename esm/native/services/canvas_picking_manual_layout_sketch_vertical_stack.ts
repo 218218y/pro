@@ -1,6 +1,9 @@
 import { asRecord } from '../runtime/record.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY,
+  DRAWER_SKETCH_SIZING_POLICY,
+} from '../../shared/dimensions/drawer_sketch_policy.js';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M,
@@ -46,7 +49,7 @@ function createVerticalOccupancyRange(args: VerticalOccupancyRange): VerticalOcc
 }
 
 export function parseSketchExtDrawerCount(tool: string): number {
-  return parseSketchExternalDrawersTool(tool)?.count ?? DRAWER_DIMENSIONS.sketch.externalCountMin;
+  return parseSketchExternalDrawersTool(tool)?.count ?? DRAWER_SKETCH_SIZING_POLICY.externalCountMin;
 }
 
 export function parseSketchExtDrawerHeightM(tool: string): number {
@@ -76,7 +79,7 @@ export function resolveSketchVerticalStackPlacement(args: {
   const gap =
     typeof args.gap === 'number' && Number.isFinite(args.gap) && args.gap >= 0
       ? args.gap
-      : DRAWER_DIMENSIONS.sketch.verticalStackCollisionGapM;
+      : DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY.verticalStackCollisionGapM;
   const pointerCenterY = args.clampCenter(args.desiredCenterY, args.selectedStackH);
   const relocateOnCollision = args.relocateOnCollision !== false;
   const sameStacks = Array.isArray(args.sameStacks) ? args.sameStacks.filter(Boolean) : [];

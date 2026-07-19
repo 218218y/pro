@@ -7,7 +7,13 @@ import {
   resolveExternalCrossDrawerStackPreview,
   resolveInternalCrossDrawerStackPreview,
 } from './canvas_picking_drawer_cross_family.js';
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY,
+  DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY,
+  DRAWER_SKETCH_SIZING_POLICY,
+  EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
+  EXTERNAL_DRAWER_SIZE_POLICY,
+} from '../../shared/dimensions/drawer_sketch_policy.js';
 import { tryHandleSketchBoxRegularExternalDrawersHoverPreview } from './canvas_picking_regular_ext_drawers_free_box.js';
 import {
   clearExtDrawerModeHover,
@@ -131,17 +137,17 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
     );
     const drawerFamily = classifyCrossDrawerPart(drawerPartId, drawerUserData);
     if (drawerTarget && drawerFamily === 'sketch_external') {
-      const visualT = DRAWER_DIMENSIONS.external.visualThicknessM;
+      const visualT = EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM;
       const stackPreview = resolveExternalCrossDrawerStackPreview({
         App,
         target: drawerTarget,
         measureObjectLocalBox,
         family: 'sketch_external',
-        minWidth: DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM,
-        minHeight: DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
-        minDepth: DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinDepthM,
+        minWidth: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM,
+        minHeight: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
+        minDepth: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinDepthM,
         visualThickness: visualT,
-        frontZOffset: DRAWER_DIMENSIONS.sketch.externalPreviewFrontZOffsetM,
+        frontZOffset: DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewFrontZOffsetM,
       });
       const box = drawerTarget.box;
       setPreview({
@@ -154,14 +160,19 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
         y: stackPreview?.y ?? box.centerY - box.height / 2,
         z:
           stackPreview?.z ??
-          box.centerZ + box.depth / 2 + visualT / 2 + DRAWER_DIMENSIONS.sketch.externalPreviewFrontZOffsetM,
-        w: stackPreview?.w ?? Math.max(DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM, box.width),
+          box.centerZ +
+            box.depth / 2 +
+            visualT / 2 +
+            DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewFrontZOffsetM,
+        w:
+          stackPreview?.w ??
+          Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM, box.width),
         d: stackPreview?.d ?? visualT,
-        woodThick: DRAWER_DIMENSIONS.external.visualThicknessM,
+        woodThick: EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM,
         drawers: stackPreview?.drawers ?? [
           {
             y: box.centerY,
-            h: Math.max(DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM, box.height),
+            h: Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM, box.height),
           },
         ],
         op: 'remove',
@@ -207,7 +218,7 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
       const previewBaseY = stackPreview?.y ?? box.centerY - box.height / 2;
       const previewStackH = stackPreview?.stackH ?? box.height;
       const previewDrawerH = stackPreview?.drawerH ?? box.height;
-      const previewDrawerGap = stackPreview?.drawerGap ?? DRAWER_DIMENSIONS.sketch.internalGapM;
+      const previewDrawerGap = stackPreview?.drawerGap ?? DRAWER_SKETCH_SIZING_POLICY.internalGapM;
       setPreview({
         App,
         THREE,
@@ -217,11 +228,11 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
         x: stackPreview?.x ?? box.centerX,
         y: previewBaseY,
         z: stackPreview?.z ?? box.centerZ,
-        w: stackPreview?.w ?? Math.max(DRAWER_DIMENSIONS.sketch.internalWidthMinM, box.width),
-        d: stackPreview?.d ?? Math.max(DRAWER_DIMENSIONS.sketch.internalDepthMinM, box.depth),
+        w: stackPreview?.w ?? Math.max(DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthMinM, box.width),
+        d: stackPreview?.d ?? Math.max(DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalDepthMinM, box.depth),
         drawerH: previewDrawerH,
         drawerGap: previewDrawerGap,
-        woodThick: DRAWER_DIMENSIONS.external.visualThicknessM,
+        woodThick: EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM,
         op: 'remove',
       });
       const moduleKey = readDrawerModeModuleKey(drawerUserData, drawerPartId);
@@ -262,12 +273,12 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
     const cfgRef = readInteriorModuleConfigRef(App, target.hitModuleKey, !!target.isBottom);
     const ui = __readRecord(readUi(App));
     const drawerType = __readString(ui, 'currentExtDrawerType', 'regular');
-    const countRaw = __readNumber(ui, 'currentExtDrawerCount', DRAWER_DIMENSIONS.sketch.externalCountMin);
+    const countRaw = __readNumber(ui, 'currentExtDrawerCount', DRAWER_SKETCH_SIZING_POLICY.externalCountMin);
     const drawerCount =
-      countRaw >= DRAWER_DIMENSIONS.sketch.externalCountMin &&
-      countRaw <= DRAWER_DIMENSIONS.sketch.externalCountMax
+      countRaw >= DRAWER_SKETCH_SIZING_POLICY.externalCountMin &&
+      countRaw <= DRAWER_SKETCH_SIZING_POLICY.externalCountMax
         ? Math.floor(countRaw)
-        : DRAWER_DIMENSIONS.sketch.externalCountMin;
+        : DRAWER_SKETCH_SIZING_POLICY.externalCountMin;
     const currentCount = __readNumber(cfgRef, 'extDrawersCount', 0);
     const hasShoe = !!cfgRef?.hasShoeDrawer;
     const op =
@@ -289,40 +300,42 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
       selectorBox && selectorBox.width > 0
         ? selectorBox.width
         : Math.max(
-            DRAWER_DIMENSIONS.sketch.externalPreviewMinWidthM,
+            DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewMinWidthM,
             Number(target.innerW) + Number(target.woodThick) * 2
           );
     const outerD =
       selectorBox && selectorBox.depth > 0
         ? selectorBox.depth
         : Math.max(
-            DRAWER_DIMENSIONS.sketch.externalPreviewMinDepthM,
-            Number(target.internalDepth) + DRAWER_DIMENSIONS.sketch.externalPreviewDepthClearanceM
+            DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewMinDepthM,
+            Number(target.internalDepth) +
+              DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewDepthClearanceM
           );
     const centerX = selectorBox ? selectorBox.centerX : target.internalCenterX;
     const centerZ = selectorBox
       ? selectorBox.centerZ
-      : Number(target.internalZ) + DRAWER_DIMENSIONS.sketch.externalPreviewCenterZInsetM;
+      : Number(target.internalZ) + DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewCenterZInsetM;
     const baseY = selectorBox
       ? selectorBox.centerY - selectorBox.height / 2
       : Number(target.bottomY) - Number(target.woodThick);
     const visualW = Math.max(
-      DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM,
-      Number(outerW) - DRAWER_DIMENSIONS.external.visualWidthClearanceM
+      DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM,
+      Number(outerW) - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualWidthClearanceM
     );
-    const visualT = DRAWER_DIMENSIONS.external.visualThicknessM;
+    const visualT = EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM;
     const frontPlaneZ = centerZ + outerD / 2;
-    const frontZ = frontPlaneZ + visualT / 2 + DRAWER_DIMENSIONS.sketch.externalPreviewFrontZOffsetM;
+    const frontZ =
+      frontPlaneZ + visualT / 2 + DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewFrontZOffsetM;
     const drawers = [];
-    const shoeH = DRAWER_DIMENSIONS.external.shoeHeightM;
-    const regH = DRAWER_DIMENSIONS.external.regularHeightM;
+    const shoeH = EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM;
+    const regH = EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM;
     const baseStackOffset = drawerType === 'shoe' ? 0 : hasShoe ? shoeH : 0;
     if (drawerType === 'shoe') {
       drawers.push({
         y: baseY + Number(target.woodThick) + shoeH / 2,
         h: Math.max(
-          DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
-          shoeH - DRAWER_DIMENSIONS.external.visualHeightClearanceM
+          DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
+          shoeH - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM
         ),
       });
     } else {
@@ -330,8 +343,8 @@ export function tryHandleExtDrawersHoverPreview(args: ExtDrawersHoverPreviewArgs
         drawers.push({
           y: baseY + Number(target.woodThick) + baseStackOffset + i * regH + regH / 2,
           h: Math.max(
-            DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
-            regH - DRAWER_DIMENSIONS.external.visualHeightClearanceM
+            DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
+            regH - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM
           ),
         });
       }
