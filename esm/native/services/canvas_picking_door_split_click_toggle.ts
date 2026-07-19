@@ -2,7 +2,7 @@ import type {
   CanvasDoorSplitBounds,
   CanvasDoorSplitClickArgs,
 } from './canvas_picking_door_split_click_contracts.js';
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
+import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { __wp_getRegularSplitPreviewLineY } from './canvas_picking_core_helpers.js';
 import { requestDoorAuthoringBurstRefresh } from './canvas_picking_door_authoring_burst.js';
 import { resolveCanvasDoorSplitPointerWorldY } from './canvas_picking_door_split_pointer_y.js';
@@ -57,14 +57,14 @@ function resolveSketchBoxStandardSplitLineNorm(args: {
 
   if (!Number.isFinite(Number(lineY))) {
     if (isBottomRegion) {
-      lineY = minY + Math.min(height / 3, DOOR_SYSTEM_DIMENSIONS.hinged.split.storageLiftM);
+      lineY = minY + Math.min(height / 3, HINGED_DOOR_SPLIT_GEOMETRY_POLICY.storageLiftM);
     } else {
       lineY = minY + (4 * height) / 6;
     }
   }
 
-  const padBottom = DOOR_SYSTEM_DIMENSIONS.hinged.split.bottomClampOffsetM;
-  const padTop = DOOR_SYSTEM_DIMENSIONS.hinged.split.topClampOffsetM;
+  const padBottom = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.bottomClampOffsetM;
+  const padTop = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.topClampOffsetM;
   const clampedY = clampCanvasDoorSplitNumber(Number(lineY), minY + padBottom, maxY - padTop);
   if (!Number.isFinite(clampedY)) return null;
   return clampCanvasDoorSplitNumber((clampedY - minY) / height, 0, 1);
@@ -76,10 +76,10 @@ function readSketchBoxStandardSplitToleranceNorm(bounds: CanvasDoorSplitBounds):
   const height = maxY - minY;
   if (!Number.isFinite(height) || height <= 0) return 0.02;
   return Math.max(
-    DOOR_SYSTEM_DIMENSIONS.hinged.split.duplicateCutToleranceMinM / height,
+    HINGED_DOOR_SPLIT_GEOMETRY_POLICY.duplicateCutToleranceMinM / height,
     Math.min(
-      DOOR_SYSTEM_DIMENSIONS.hinged.split.duplicateCutToleranceMaxM / height,
-      DOOR_SYSTEM_DIMENSIONS.hinged.split.duplicateCutToleranceHeightRatio
+      HINGED_DOOR_SPLIT_GEOMETRY_POLICY.duplicateCutToleranceMaxM / height,
+      HINGED_DOOR_SPLIT_GEOMETRY_POLICY.duplicateCutToleranceHeightRatio
     )
   );
 }

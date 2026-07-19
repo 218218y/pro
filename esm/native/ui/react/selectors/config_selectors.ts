@@ -23,7 +23,7 @@ import { readModulesConfigurationListFromConfigSnapshot } from '../../../feature
 import { moduleHasAnyActiveSpecialDims } from '../../../features/special_dims/index.js';
 import { moduleHasHexCell } from '../../../features/hex_cell/index.js';
 import { hasSketchInternalDrawersDirtyOrData } from '../../../features/sketch_drawer_sizing.js';
-import { resolveDoorMountThicknessesFromConfig } from '../../../../shared/wardrobe_dimension_tokens_shared.js';
+import { resolveDoorMountThicknessesFromConfig } from '../../../../shared/dimensions/door_mount_thickness_policy.js';
 
 type CornerDrawersLike = {
   sketchExtras?: { drawers?: unknown[] } | null;

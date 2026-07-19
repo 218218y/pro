@@ -1,5 +1,5 @@
 import type { UnknownRecord } from '../../../types';
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
+import { HINGED_DOOR_SPLIT_AUTHORING_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import {
   hasCanvasDoorCustomSplitHeightAlignment,
   setCanvasDoorCustomSplitHoverMeasurements,
@@ -110,7 +110,7 @@ export function tryHandleSplitDoorHover(args: SplitDoorHoverArgs): boolean {
   const bounds = screenRemoveCandidate?.bounds || readSplitHoverDoorBounds(App, String(doorBaseKey || ''));
   const minY = bounds ? bounds.minY : Infinity;
   const maxY = bounds ? bounds.maxY : -Infinity;
-  const splitHoverDims = DOOR_SYSTEM_DIMENSIONS.hinged.split;
+  const splitHoverDims = HINGED_DOOR_SPLIT_AUTHORING_POLICY;
 
   if (
     !isFinite(minY) ||

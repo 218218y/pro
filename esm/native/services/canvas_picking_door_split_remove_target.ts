@@ -1,7 +1,7 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type { HitObjectLike } from './canvas_picking_engine.js';
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
+import { HINGED_DOOR_SPLIT_AUTHORING_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { getCamera } from '../runtime/render_access.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import type { CanvasDoorSplitBounds } from './canvas_picking_door_split_click_contracts.js';
@@ -22,7 +22,7 @@ function readDoorMarkerPlaneZ(hitDoorGroup: unknown): number {
   const group = asRecord(hitDoorGroup);
   const userData = asRecord(group?.userData);
   const zSign = isFiniteNumber(userData?.__handleZSign) ? Number(userData.__handleZSign) : 1;
-  const zOff = DOOR_SYSTEM_DIMENSIONS.hinged.split.hoverMarkerZOffsetM;
+  const zOff = HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverMarkerZOffsetM;
   return zOff * (zSign === -1 ? -1 : 1);
 }
 
@@ -37,7 +37,7 @@ function readDoorLocalXSpan(hitDoorGroup: unknown): { minX: number; maxX: number
 
   const width = isFiniteNumber(userData?.__doorWidth)
     ? Math.max(0.01, Number(userData.__doorWidth))
-    : DOOR_SYSTEM_DIMENSIONS.hinged.split.hoverDefaultDoorWidthM;
+    : HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverDefaultDoorWidthM;
   const meshOffsetX = isFiniteNumber(userData?.__doorMeshOffsetX) ? Number(userData.__doorMeshOffsetX) : 0;
   return { minX: meshOffsetX - width / 2, maxX: meshOffsetX + width / 2 };
 }
@@ -148,7 +148,7 @@ function resolveCutLineScreenDistance(args: {
 
 export function resolveCanvasDoorCustomSplitRemoveTolerance(bounds: CanvasDoorSplitBounds): number {
   const H = Number(bounds.maxY) - Number(bounds.minY);
-  const dims = DOOR_SYSTEM_DIMENSIONS.hinged.split;
+  const dims = HINGED_DOOR_SPLIT_AUTHORING_POLICY;
   return Math.max(
     dims.hoverCustomRemoveToleranceMinM,
     Math.min(dims.hoverCustomRemoveToleranceMaxM, H * dims.hoverCustomRemoveToleranceRatio)
@@ -172,7 +172,7 @@ export function resolveCanvasDoorCustomSplitRemoveTarget(args: {
   const H = maxY - minY;
   if (!Number.isFinite(H) || !(H > 0.05) || !Array.isArray(prevList) || !prevList.length) return null;
 
-  const dims = DOOR_SYSTEM_DIMENSIONS.hinged.split;
+  const dims = HINGED_DOOR_SPLIT_AUTHORING_POLICY;
   const padAbs = dims.hoverCustomEdgePadM;
   const tolAbs = isFiniteNumber(args.toleranceAbs)
     ? Math.max(0, Number(args.toleranceAbs))

@@ -2,7 +2,7 @@ import { resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
+import { HINGED_DOOR_RENDER_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import type { BuilderRenderDoorDeps } from './render_door_ops_shared.js';
 import {
   isFunction,
@@ -41,7 +41,7 @@ export function createApplyHingedDoorsOps(deps: BuilderRenderDoorDeps) {
     const ops = args && Array.isArray(args.ops) ? args.ops : null;
 
     if (!THREE || !ops) return false;
-    const hingedDims = DOOR_SYSTEM_DIMENSIONS.hinged;
+    const hingedDims = HINGED_DOOR_RENDER_POLICY;
     const wardrobeGroup = readObject3D(__wardrobeGroup(App));
     if (!wardrobeGroup) return false;
 

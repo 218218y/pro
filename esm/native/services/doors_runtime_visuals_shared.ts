@@ -1,4 +1,4 @@
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
+import { SLIDING_DOOR_CONSTRUCTION_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import {
   isSlidingDoorTrackOpenMode,
@@ -17,7 +17,7 @@ import {
   reportDoorsRuntimeNonFatal,
 } from './doors_runtime_shared.js';
 
-export const DOOR_OVERLAP = DOOR_SYSTEM_DIMENSIONS.sliding.overlapM;
+export const DOOR_OVERLAP = SLIDING_DOOR_CONSTRUCTION_POLICY.overlapM;
 
 export function readDoorsTotalWidth(App: AppLike): number {
   return readNumber(readRecord(getDimsMFromPlatform(App)), 'w', 0);
@@ -57,7 +57,7 @@ export function resolveSlidingDoorClosedState(
     const doorsCount =
       typeof door.total === 'number' && Number.isFinite(door.total)
         ? door.total
-        : DOOR_SYSTEM_DIMENSIONS.sliding.defaultDoorsCount;
+        : SLIDING_DOOR_CONSTRUCTION_POLICY.defaultDoorsCount;
     const idx = typeof door.index === 'number' && Number.isFinite(door.index) ? door.index : 0;
     doorW = (totalW + (doorsCount - 1) * DOOR_OVERLAP) / doorsCount;
     closedX = idx * (doorW - DOOR_OVERLAP) - totalW / 2 + doorW / 2;
@@ -78,7 +78,7 @@ export function resolveSlidingDoorClosedState(
     const doorsCount =
       typeof door.total === 'number' && Number.isFinite(door.total)
         ? door.total
-        : DOOR_SYSTEM_DIMENSIONS.sliding.defaultDoorsCount;
+        : SLIDING_DOOR_CONSTRUCTION_POLICY.defaultDoorsCount;
     doorW = (totalW + (doorsCount - 1) * DOOR_OVERLAP) / doorsCount;
   }
 

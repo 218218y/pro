@@ -1,5 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
+import { HINGED_DOOR_SPLIT_AUTHORING_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import {
   buildRectClearanceMeasurementEntries,
   markCenteredRectClearanceMeasurements,
@@ -62,7 +62,7 @@ export function resolveCanvasDoorCustomSplitHeightAlignmentTolerance(bounds: {
   maxY: number;
 }): number {
   const height = Math.max(0, Number(bounds.maxY) - Number(bounds.minY));
-  const splitDims = DOOR_SYSTEM_DIMENSIONS.hinged.split;
+  const splitDims = HINGED_DOOR_SPLIT_AUTHORING_POLICY;
   return Math.max(
     splitDims.hoverCustomAlignmentToleranceMinM,
     Math.min(

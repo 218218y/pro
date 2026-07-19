@@ -2,7 +2,7 @@ import type {
   CanvasDoorSplitBounds,
   CanvasDoorSplitClickArgs,
 } from './canvas_picking_door_split_click_contracts.js';
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
+import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { getCamera, getDoorsArray } from '../runtime/render_access.js';
 import { __wp_toast } from './canvas_picking_core_helpers.js';
 import { requestDoorAuthoringBurstRefresh } from './canvas_picking_door_authoring_burst.js';
@@ -37,7 +37,7 @@ function readCanvasDoorCustomSplitPolicy(bounds: CanvasDoorSplitBounds): {
   duplicateTolerance: number;
 } {
   const height = Number(bounds.maxY) - Number(bounds.minY);
-  const splitDims = DOOR_SYSTEM_DIMENSIONS.hinged.split;
+  const splitDims = HINGED_DOOR_SPLIT_GEOMETRY_POLICY;
   return {
     height,
     padAbs: splitDims.topClampOffsetM,

@@ -13,7 +13,7 @@ import {
   readProjectToggles,
 } from './project_io_load_helpers_shared.js';
 import { asObjectRecord } from './project_payload_shared.js';
-import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { normalizeDoorMountThicknessCm } from '../../shared/dimensions/door_mount_thickness_policy.js';
 
 function buildComparableLoadConfigSnapshot(
   rec: UnknownRecord,

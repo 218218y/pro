@@ -1,4 +1,4 @@
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
+import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { computeDefaultHandleAbsY } from './hinged_doors_module_ops_shared.js';
 import type {
   HingedDoorIterationState,
@@ -51,7 +51,7 @@ export function appendSplitHingedDoorOps(
     throw new Error('[WardrobePro] Hinged door ops list missing (split)');
   }
 
-  const splitGap = DOOR_SYSTEM_DIMENSIONS.hinged.split.splitGapM;
+  const splitGap = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM;
   const visual = resolveHingedDoorSplitVisualState(ctx, state, splitGap);
   const bottomLineY = computeBottomSplitLineY(ctx, state, splitGap);
   const topSplitLineY = computeTopSplitLineY(ctx, state);
@@ -70,7 +70,7 @@ export function appendSplitHingedDoorOps(
   if (
     state.topSplitEnabled &&
     state.bottomSplitEnabled &&
-    bottomLineY < topSplitLineY - DOOR_SYSTEM_DIMENSIONS.hinged.split.minSegmentHeightM
+    bottomLineY < topSplitLineY - HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minSegmentHeightM
   ) {
     appendTripleSplitHingedDoorSegments(ctx, state, visual, topSplitLineY, bottomLineY);
     return;

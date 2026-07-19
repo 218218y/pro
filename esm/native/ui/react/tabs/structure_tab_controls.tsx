@@ -16,7 +16,7 @@ import {
   DOOR_MOUNT_THICKNESS_DIMENSIONS,
   normalizeDoorMountThicknessCm,
   type DoorMountThicknessConfigKey,
-} from '../../../../shared/wardrobe_dimension_tokens_shared.js';
+} from '../../../../shared/dimensions/door_mount_thickness_policy.js';
 
 export { DimField } from './structure_tab_dim_field.js';
 export { OptionalDimField } from './structure_tab_optional_dim_field.js';

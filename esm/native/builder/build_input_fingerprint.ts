@@ -8,7 +8,7 @@ import type { BuildStateLike, ConfigStateLike, UiStateLike, UnknownRecord } from
 import {
   DOOR_MOUNT_THICKNESS_CONFIG_KEYS,
   resolveDoorMountThicknessesFromConfig,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+} from '../../shared/dimensions/door_mount_thickness_policy.js';
 import { asRecord } from '../runtime/record.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { applyBuildVisibleConfigMapGates } from './build_visible_config_gates.js';

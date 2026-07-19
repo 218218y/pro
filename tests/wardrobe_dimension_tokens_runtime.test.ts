@@ -8,6 +8,8 @@ import {
   CARCASS_INTERIOR_DIMENSIONS as FACADE_CARCASS_INTERIOR_DIMENSIONS,
   CARCASS_SHELL_DIMENSIONS as FACADE_CARCASS_SHELL_DIMENSIONS,
   CHEST_MODE_DIMENSIONS as FACADE_CHEST_MODE_DIMENSIONS,
+  DOOR_MOUNT_THICKNESS_CONFIG_KEYS as FACADE_DOOR_MOUNT_THICKNESS_CONFIG_KEYS,
+  DOOR_MOUNT_THICKNESS_DIMENSIONS as FACADE_DOOR_MOUNT_THICKNESS_DIMENSIONS,
   DOOR_SYSTEM_DIMENSIONS,
   DOOR_TRIM_DIMENSIONS,
   DRAWER_DIMENSIONS,
@@ -58,6 +60,15 @@ import {
   SLIDING_DOOR_MOTION_POLICY,
   SLIDING_DOOR_SYSTEM_POLICY,
 } from '../esm/shared/dimensions/door_system_policy.ts';
+import {
+  DOOR_MOUNT_THICKNESS_CONFIG_KEYS,
+  DOOR_MOUNT_THICKNESS_DIMENSIONS,
+  getDefaultDoorMountThicknessCm,
+  getDefaultDoorMountThicknessM,
+  getDoorMountThicknessConfigKey,
+  normalizeDoorMountThicknessCm,
+  resolveDoorMountThicknessesFromConfig as resolveDoorMountThicknessesFromOwner,
+} from '../esm/shared/dimensions/door_mount_thickness_policy.ts';
 import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
@@ -615,6 +626,57 @@ test('door mount thickness resolver treats sliding wardrobes as overlay construc
   assert.equal(resolved.shelfKey, 'overlayShelfThicknessCm');
   assert.equal(resolved.frameThicknessCm, 2.4);
   assert.equal(resolved.shelfThicknessCm, 1.2);
+});
+
+test('Door Mount Thickness policy preserves facade identity, defaults, keys, normalization, and step rounding', () => {
+  assert.equal(FACADE_DOOR_MOUNT_THICKNESS_DIMENSIONS, DOOR_MOUNT_THICKNESS_DIMENSIONS);
+  assert.equal(FACADE_DOOR_MOUNT_THICKNESS_CONFIG_KEYS, DOOR_MOUNT_THICKNESS_CONFIG_KEYS);
+  assert.equal(resolveDoorMountThicknessesFromConfig, resolveDoorMountThicknessesFromOwner);
+  assert.deepEqual(DOOR_MOUNT_THICKNESS_DIMENSIONS, {
+    stepCm: 0.1,
+    minCm: 0.4,
+    maxCm: 8,
+  });
+  assert.deepEqual(DOOR_MOUNT_THICKNESS_CONFIG_KEYS, {
+    overlay: {
+      frame: 'overlayFrameThicknessCm',
+      shelf: 'overlayShelfThicknessCm',
+    },
+    inset: {
+      frame: 'insetFrameThicknessCm',
+      shelf: 'insetShelfThicknessCm',
+    },
+  });
+
+  assert.equal(getDefaultDoorMountThicknessM('overlay'), MATERIAL_THICKNESS_POLICY.wood.thicknessM);
+  assert.equal(getDefaultDoorMountThicknessM('inset'), HINGED_DOOR_MOUNT_POLICY.insetFrameThicknessM);
+  assert.equal(getDefaultDoorMountThicknessCm('overlay'), 1.8);
+  assert.equal(getDefaultDoorMountThicknessCm('inset'), 3.6);
+  assert.equal(getDoorMountThicknessConfigKey('overlay', 'frame'), 'overlayFrameThicknessCm');
+  assert.equal(getDoorMountThicknessConfigKey('overlay', 'shelf'), 'overlayShelfThicknessCm');
+  assert.equal(getDoorMountThicknessConfigKey('inset', 'frame'), 'insetFrameThicknessCm');
+  assert.equal(getDoorMountThicknessConfigKey('inset', 'shelf'), 'insetShelfThicknessCm');
+
+  for (const value of [null, undefined, '', Number.NaN, Number.POSITIVE_INFINITY]) {
+    assert.equal(normalizeDoorMountThicknessCm(value), null);
+  }
+  assert.equal(normalizeDoorMountThicknessCm(0.39), 0.4);
+  assert.equal(normalizeDoorMountThicknessCm(0.44), 0.4);
+  assert.equal(normalizeDoorMountThicknessCm(0.45), 0.5);
+  assert.equal(normalizeDoorMountThicknessCm(1.84), 1.8);
+  assert.equal(normalizeDoorMountThicknessCm(1.85), 1.9);
+  assert.equal(normalizeDoorMountThicknessCm(8.1), 8);
+  assert.equal(normalizeDoorMountThicknessCm(0.3), 0.4);
+  assert.equal(String(normalizeDoorMountThicknessCm(1.85)), '1.9');
+
+  const sliding = resolveDoorMountThicknessesFromOwner({
+    wardrobeType: 'sliding',
+    doorMountMode: 'inset',
+  });
+  assert.equal(sliding.mode, 'overlay');
+  assert.equal(sliding.defaultThicknessCm, 1.8);
+  assert.equal(sliding.frameThicknessM, 1.8 / 100);
+  assert.equal(sliding.shelfThicknessM, 1.8 / 100);
 });
 
 test('external drawer compute and fallback geometry share the same dimensional policy', () => {

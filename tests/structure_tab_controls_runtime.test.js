@@ -172,7 +172,7 @@ function loadStructureTabControlsModule(stubs = {}) {
         selectWardrobeType: cfg => String(cfg.wardrobeType || ''),
       };
     }
-    if (specifier === '../../../../shared/wardrobe_dimension_tokens_shared.js') {
+    if (specifier === '../../../../shared/dimensions/door_mount_thickness_policy.js') {
       return {
         DOOR_MOUNT_THICKNESS_DIMENSIONS: { stepCm: 0.1, minCm: 0.4, maxCm: 8 },
         normalizeDoorMountThicknessCm,

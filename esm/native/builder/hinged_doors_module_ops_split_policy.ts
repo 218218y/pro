@@ -1,4 +1,4 @@
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
+import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { readSplitPosListSafe } from './hinged_doors_module_ops_shared.js';
 import type {
   HingedDoorIterationState,
@@ -8,7 +8,7 @@ import type {
 function normalizeSplitCuts(ctx: HingedDoorModuleOpsContext, values: readonly number[]): number[] {
   const topEdge = ctx.effectiveTopLimit;
   const height = topEdge - ctx.doorBottomY;
-  const minSegH = DOOR_SYSTEM_DIMENSIONS.hinged.split.minSegmentHeightM;
+  const minSegH = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minSegmentHeightM;
   const kept: number[] = [];
   let prevBottom = ctx.doorBottomY;
 
@@ -22,10 +22,10 @@ function normalizeSplitCuts(ctx: HingedDoorModuleOpsContext, values: readonly nu
 
   const out: number[] = [];
   const tol = Math.max(
-    DOOR_SYSTEM_DIMENSIONS.hinged.split.duplicateCutToleranceMinM,
+    HINGED_DOOR_SPLIT_GEOMETRY_POLICY.duplicateCutToleranceMinM,
     Math.min(
-      DOOR_SYSTEM_DIMENSIONS.hinged.split.duplicateCutToleranceMaxM,
-      height * DOOR_SYSTEM_DIMENSIONS.hinged.split.duplicateCutToleranceHeightRatio
+      HINGED_DOOR_SPLIT_GEOMETRY_POLICY.duplicateCutToleranceMaxM,
+      height * HINGED_DOOR_SPLIT_GEOMETRY_POLICY.duplicateCutToleranceHeightRatio
     )
   );
   for (let i = 0; i < kept.length; i++) {
@@ -44,30 +44,30 @@ export function computeBottomSplitLineY(
   splitGap: number
 ): number {
   try {
-    let storageLift = DOOR_SYSTEM_DIMENSIONS.hinged.split.storageLiftM;
+    let storageLift = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.storageLiftM;
     if (
       ctx.configRecord &&
       (ctx.configRecord.layout === 'storage' || ctx.configRecord.layout === 'storage_shelf')
     ) {
-      storageLift = DOOR_SYSTEM_DIMENSIONS.hinged.split.storageLiftM;
+      storageLift = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.storageLiftM;
     }
     if (
       ctx.configRecord.customData &&
       typeof ctx.configRecord.customData === 'object' &&
       'storage' in ctx.configRecord.customData
     ) {
-      storageLift = DOOR_SYSTEM_DIMENSIONS.hinged.split.storageLiftM;
+      storageLift = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.storageLiftM;
     }
     let y = ctx.effectiveBottomY + storageLift;
     if (ctx.doorBottomY > ctx.effectiveBottomY) {
       y += ctx.doorBottomY - ctx.effectiveBottomY + splitGap / 2;
     }
-    y = Math.max(y, ctx.doorBottomY + DOOR_SYSTEM_DIMENSIONS.hinged.split.bottomClampOffsetM);
-    y = Math.min(y, ctx.effectiveTopLimit - DOOR_SYSTEM_DIMENSIONS.hinged.split.topClampOffsetM);
+    y = Math.max(y, ctx.doorBottomY + HINGED_DOOR_SPLIT_GEOMETRY_POLICY.bottomClampOffsetM);
+    y = Math.min(y, ctx.effectiveTopLimit - HINGED_DOOR_SPLIT_GEOMETRY_POLICY.topClampOffsetM);
     return y;
   } catch (error) {
     ctx.reportDoorSoftOnce('computeBottomSplitLineY', error, { doorId: state.currentDoorId });
-    return ctx.doorBottomY + DOOR_SYSTEM_DIMENSIONS.hinged.split.storageLiftM;
+    return ctx.doorBottomY + HINGED_DOOR_SPLIT_GEOMETRY_POLICY.storageLiftM;
   }
 }
 
@@ -81,8 +81,8 @@ export function computeTopSplitLineY(
     if (!Number.isFinite(n0)) return ctx.splitLineY;
     const topEdge = ctx.effectiveTopLimit;
     const height = topEdge - ctx.doorBottomY;
-    if (!(height > DOOR_SYSTEM_DIMENSIONS.hinged.split.minHeightForSplitM)) return ctx.splitLineY;
-    const padAbs = DOOR_SYSTEM_DIMENSIONS.hinged.split.topClampOffsetM;
+    if (!(height > HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minHeightForSplitM)) return ctx.splitLineY;
+    const padAbs = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.topClampOffsetM;
     const y0 = ctx.doorBottomY + Math.max(0, Math.min(1, n0)) * height;
     return Math.max(ctx.doorBottomY + padAbs, Math.min(topEdge - padAbs, y0));
   } catch {
@@ -100,9 +100,9 @@ export function computeCustomSplitCutsY(
 
     const topEdge = ctx.effectiveTopLimit;
     const height = topEdge - ctx.doorBottomY;
-    if (!(height > DOOR_SYSTEM_DIMENSIONS.hinged.split.minHeightForSplitM)) return [];
+    if (!(height > HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minHeightForSplitM)) return [];
 
-    const padAbs = DOOR_SYSTEM_DIMENSIONS.hinged.split.topClampOffsetM;
+    const padAbs = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.topClampOffsetM;
     const abs: number[] = [];
     for (let i = 0; i < norms.length; i++) {
       const raw = norms[i];

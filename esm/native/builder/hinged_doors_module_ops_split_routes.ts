@@ -1,4 +1,4 @@
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
+import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import {
   clampHandleAbsY,
   hasExplicitHandleOverride,
@@ -40,7 +40,7 @@ export function appendCustomSplitHingedDoorSegments(
     const segTopY =
       segmentIndex === segCount - 1 ? ctx.effectiveTopLimit : cuts[segmentIndex] - visual.splitGap / 2;
     const segH = segTopY - segBottomY;
-    if (!(segH > DOOR_SYSTEM_DIMENSIONS.hinged.split.renderMinSegmentHeightM)) continue;
+    if (!(segH > HINGED_DOOR_SPLIT_GEOMETRY_POLICY.renderMinSegmentHeightM)) continue;
 
     const partId = partIdForSegment(state, segCount, segmentIndex);
     const curtainVal = ctx.cfg.isMultiColorMode

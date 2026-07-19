@@ -118,6 +118,20 @@ export {
   WARDROBE_DEFAULTS,
 };
 export type { WardrobeDimensionDefaultType } from './dimensions/wardrobe_defaults.js';
+export {
+  DOOR_MOUNT_THICKNESS_CONFIG_KEYS,
+  DOOR_MOUNT_THICKNESS_DIMENSIONS,
+  getDefaultDoorMountThicknessCm,
+  getDefaultDoorMountThicknessM,
+  getDoorMountThicknessConfigKey,
+  normalizeDoorMountThicknessCm,
+  resolveDoorMountThicknessesFromConfig,
+} from './dimensions/door_mount_thickness_policy.js';
+export type {
+  DoorMountConstructionMode,
+  DoorMountThicknessConfigKey,
+  DoorMountThicknessKind,
+} from './dimensions/door_mount_thickness_policy.js';
 export { CARCASS_SHELL_DIMENSIONS, CARCASS_INTERIOR_DIMENSIONS };
 export {
   STACK_SPLIT_LOWER_DEPTH_MAX,
@@ -615,109 +629,6 @@ export const DOOR_VISUAL_DIMENSIONS = Object.freeze({
     layoutSizeEpsilonCm: 1e-3,
   }),
 });
-
-export type DoorMountConstructionMode = 'overlay' | 'inset';
-export type DoorMountThicknessKind = 'frame' | 'shelf';
-export type DoorMountThicknessConfigKey =
-  'overlayFrameThicknessCm' | 'overlayShelfThicknessCm' | 'insetFrameThicknessCm' | 'insetShelfThicknessCm';
-
-export const DOOR_MOUNT_THICKNESS_DIMENSIONS = Object.freeze({
-  stepCm: 0.1,
-  minCm: 0.4,
-  maxCm: 8,
-});
-
-export const DOOR_MOUNT_THICKNESS_CONFIG_KEYS = Object.freeze({
-  overlay: Object.freeze({
-    frame: 'overlayFrameThicknessCm',
-    shelf: 'overlayShelfThicknessCm',
-  }),
-  inset: Object.freeze({
-    frame: 'insetFrameThicknessCm',
-    shelf: 'insetShelfThicknessCm',
-  }),
-} satisfies Record<DoorMountConstructionMode, Record<DoorMountThicknessKind, DoorMountThicknessConfigKey>>);
-
-function normalizeDoorMountConstructionMode(value: unknown): DoorMountConstructionMode {
-  return value === 'inset' ? 'inset' : 'overlay';
-}
-
-function roundDoorMountThicknessCm(value: number): number {
-  return Math.round(value * 10) / 10;
-}
-
-export function normalizeDoorMountThicknessCm(value: unknown): number | null {
-  if (value === null || typeof value === 'undefined' || value === '') return null;
-  const n = Number(value);
-  if (!Number.isFinite(n)) return null;
-  const clamped = Math.min(
-    DOOR_MOUNT_THICKNESS_DIMENSIONS.maxCm,
-    Math.max(DOOR_MOUNT_THICKNESS_DIMENSIONS.minCm, n)
-  );
-  return roundDoorMountThicknessCm(clamped);
-}
-
-export function getDefaultDoorMountThicknessM(mode: unknown): number {
-  return normalizeDoorMountConstructionMode(mode) === 'inset'
-    ? DOOR_SYSTEM_DIMENSIONS.hinged.insetFrameThicknessM
-    : MATERIAL_DIMENSIONS.wood.thicknessM;
-}
-
-export function getDefaultDoorMountThicknessCm(mode: unknown): number {
-  return roundDoorMountThicknessCm(getDefaultDoorMountThicknessM(mode) * 100);
-}
-
-export function getDoorMountThicknessConfigKey(
-  mode: unknown,
-  kind: DoorMountThicknessKind
-): DoorMountThicknessConfigKey {
-  const normalizedMode = normalizeDoorMountConstructionMode(mode);
-  return DOOR_MOUNT_THICKNESS_CONFIG_KEYS[normalizedMode][kind];
-}
-
-type DoorMountThicknessConfigLike = Partial<
-  Record<DoorMountThicknessConfigKey | 'doorMountMode' | 'wardrobeType', unknown>
->;
-
-function normalizeDoorMountConstructionModeFromConfig(
-  cfg: DoorMountThicknessConfigLike | null | undefined
-): DoorMountConstructionMode {
-  return cfg?.wardrobeType === 'sliding' ? 'overlay' : normalizeDoorMountConstructionMode(cfg?.doorMountMode);
-}
-
-export function resolveDoorMountThicknessesFromConfig(cfg: DoorMountThicknessConfigLike | null | undefined): {
-  mode: DoorMountConstructionMode;
-  defaultThicknessCm: number;
-  frameKey: DoorMountThicknessConfigKey;
-  shelfKey: DoorMountThicknessConfigKey;
-  frameThicknessCm: number;
-  shelfThicknessCm: number;
-  frameThicknessM: number;
-  shelfThicknessM: number;
-  frameOverrideCm: number | null;
-  shelfOverrideCm: number | null;
-} {
-  const mode = normalizeDoorMountConstructionModeFromConfig(cfg);
-  const defaultThicknessCm = getDefaultDoorMountThicknessCm(mode);
-  const frameKey = getDoorMountThicknessConfigKey(mode, 'frame');
-  const shelfKey = getDoorMountThicknessConfigKey(mode, 'shelf');
-  const frameOverrideCm = normalizeDoorMountThicknessCm(cfg?.[frameKey]);
-  const shelfOverrideCm = normalizeDoorMountThicknessCm(cfg?.[shelfKey]);
-  const frameThicknessCm = frameOverrideCm ?? defaultThicknessCm;
-  const shelfThicknessCm = shelfOverrideCm ?? defaultThicknessCm;
-  return {
-    mode,
-    defaultThicknessCm,
-    frameKey,
-    shelfKey,
-    frameThicknessCm,
-    shelfThicknessCm,
-    frameThicknessM: frameThicknessCm / 100,
-    shelfThicknessM: shelfThicknessCm / 100,
-    frameOverrideCm,
-    shelfOverrideCm,
-  };
-}
 
 export const DOOR_TRIM_DIMENSIONS = Object.freeze({
   defaults: Object.freeze({

@@ -1,5 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
+import { HINGED_DOOR_SPLIT_AUTHORING_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { getCamera } from '../runtime/render_access.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import type { MouseVectorLike, RaycasterLike } from './canvas_picking_engine.js';
@@ -17,7 +17,7 @@ function readDoorMarkerPlaneZ(hitDoorGroup: unknown): number {
   const group = asRecord(hitDoorGroup);
   const userData = asRecord(group?.userData);
   const zSign = isFiniteNumber(userData?.__handleZSign) ? Number(userData.__handleZSign) : 1;
-  const zOff = DOOR_SYSTEM_DIMENSIONS.hinged.split.hoverMarkerZOffsetM;
+  const zOff = HINGED_DOOR_SPLIT_AUTHORING_POLICY.hoverMarkerZOffsetM;
   return zOff * (zSign === -1 ? -1 : 1);
 }
 

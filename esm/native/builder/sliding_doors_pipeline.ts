@@ -5,7 +5,7 @@
 // - No silent recovery path: if ops are missing, throw with context
 // - BuildContext-only API
 
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
+import { SLIDING_DOOR_CONSTRUCTION_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { isBuildContext } from './build_context.js';
 import { computeSlidingDoorOps } from './pure_api.js';
@@ -85,9 +85,9 @@ export function applySlidingDoorsIfNeeded(ctx: BuildContextLike) {
     cabinetBodyHeight: cabinetBodyHeight,
     startY: startY,
     numDoors: numDoors,
-    overlap: DOOR_SYSTEM_DIMENSIONS.sliding.overlapM,
-    railHeight: DOOR_SYSTEM_DIMENSIONS.sliding.railHeightM,
-    railDepth: DOOR_SYSTEM_DIMENSIONS.sliding.railDepthM,
+    overlap: SLIDING_DOOR_CONSTRUCTION_POLICY.overlapM,
+    railHeight: SLIDING_DOOR_CONSTRUCTION_POLICY.railHeightM,
+    railDepth: SLIDING_DOOR_CONSTRUCTION_POLICY.railDepthM,
   });
   const stackKey = ctx.flags && typeof ctx.flags.__wpStack === 'string' ? String(ctx.flags.__wpStack) : 'top';
   const ops = scopeSlidingDoorOpsForStack(rawOps, stackKey);

@@ -7,7 +7,7 @@ import type {
 } from '../../../../types/index.js';
 
 import { normalizeSavedColorsList } from '../../../shared/maps_access_collections_shared.js';
-import { normalizeDoorMountThicknessCm } from '../../../shared/wardrobe_dimension_tokens_shared.js';
+import { normalizeDoorMountThicknessCm } from '../../../shared/dimensions/door_mount_thickness_policy.js';
 import { cloneCornerConfigurationListsSnapshot } from '../modules_configuration/corner_cells_api.js';
 import { cloneModulesConfigurationSnapshot } from '../modules_configuration/modules_config_api.js';
 import { cloneProjectJson } from '../../../shared/project_json_clone.js';

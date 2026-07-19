@@ -5,7 +5,7 @@ import type {
   UnknownRecord,
 } from '../../../types/index.js';
 
-import { normalizeDoorMountThicknessCm } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { normalizeDoorMountThicknessCm } from '../../shared/dimensions/door_mount_thickness_policy.js';
 import { asRecord as asUnknownRecord } from './record.js';
 
 export type BoardMaterialValue = ConfigScalarValueMap['boardMaterial'];

@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 253, statements: 253 }),
+  'static-import': Object.freeze({ importers: 246, statements: 246 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
-  'type-import': Object.freeze({ importers: 1, statements: 1 }),
+  'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 255, statements: 256 }),
+  total: Object.freeze({ importers: 248, statements: 249 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -236,6 +236,7 @@ const APPROVED_CHEST_STRUCTURAL_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/shared/dimensions/carcass_cornice_render_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/shared/dimensions/door_mount_thickness_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/door_system_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
 });
@@ -421,26 +422,91 @@ const APPROVED_CHEST_MODE_LEGACY_FIELD_USAGE = Object.freeze({
   ],
 });
 const APPROVED_DOOR_SYSTEM_OWNER_IMPORTS = Object.freeze({
-  'esm/native/builder/hinged_doors_module_ops_full.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
-  'esm/native/builder/hinged_doors_module_ops_segments.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
-  'esm/native/builder/hinged_doors_module_ops_split.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
-  'esm/native/builder/hinged_doors_module_ops_split_policy.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
-  'esm/native/builder/hinged_doors_module_ops_split_routes.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
-  'esm/native/builder/render_door_ops_hinged.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
-  'esm/native/builder/render_door_ops_sliding.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
-  'esm/native/builder/sliding_doors_pipeline.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
-  'esm/native/runtime/sliding_door_motion.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
-  'esm/native/services/canvas_picking_door_split_click_custom.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
-  'esm/native/services/canvas_picking_door_split_click_toggle.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
-  'esm/native/services/canvas_picking_door_split_hover_feedback.ts': Object.freeze([
-    'DOOR_SYSTEM_DIMENSIONS',
+  'esm/native/builder/hinged_doors_module_ops_full.ts': Object.freeze(['HINGED_DOOR_SPLIT_GEOMETRY_POLICY']),
+  'esm/native/builder/hinged_doors_module_ops_segments.ts': Object.freeze([
+    'HINGED_DOOR_SPLIT_GEOMETRY_POLICY',
   ]),
-  'esm/native/services/canvas_picking_door_split_hover_flow.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
-  'esm/native/services/canvas_picking_door_split_pointer_y.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
-  'esm/native/services/canvas_picking_door_split_remove_target.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
-  'esm/native/services/doors_runtime_visuals_shared.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
+  'esm/native/builder/hinged_doors_module_ops_split.ts': Object.freeze(['HINGED_DOOR_SPLIT_GEOMETRY_POLICY']),
+  'esm/native/builder/hinged_doors_module_ops_split_policy.ts': Object.freeze([
+    'HINGED_DOOR_SPLIT_GEOMETRY_POLICY',
+  ]),
+  'esm/native/builder/hinged_doors_module_ops_split_routes.ts': Object.freeze([
+    'HINGED_DOOR_SPLIT_GEOMETRY_POLICY',
+  ]),
+  'esm/native/builder/render_door_ops_hinged.ts': Object.freeze(['HINGED_DOOR_RENDER_POLICY']),
+  'esm/native/builder/render_door_ops_sliding.ts': Object.freeze([
+    'SLIDING_DOOR_CONSTRUCTION_POLICY',
+    'SLIDING_DOOR_HANDLE_RENDER_POLICY',
+    'SLIDING_DOOR_MOTION_POLICY',
+  ]),
+  'esm/native/builder/sliding_doors_pipeline.ts': Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY']),
+  'esm/native/runtime/sliding_door_motion.ts': Object.freeze([
+    'SLIDING_DOOR_CONSTRUCTION_POLICY',
+    'SLIDING_DOOR_MOTION_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_door_split_click_custom.ts': Object.freeze([
+    'HINGED_DOOR_SPLIT_GEOMETRY_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_door_split_click_toggle.ts': Object.freeze([
+    'HINGED_DOOR_SPLIT_GEOMETRY_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_door_split_hover_feedback.ts': Object.freeze([
+    'HINGED_DOOR_SPLIT_AUTHORING_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_door_split_hover_flow.ts': Object.freeze([
+    'HINGED_DOOR_SPLIT_AUTHORING_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_door_split_pointer_y.ts': Object.freeze([
+    'HINGED_DOOR_SPLIT_AUTHORING_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_door_split_remove_target.ts': Object.freeze([
+    'HINGED_DOOR_SPLIT_AUTHORING_POLICY',
+  ]),
+  'esm/native/services/doors_runtime_visuals_shared.ts': Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY']),
+  'esm/shared/dimensions/door_mount_thickness_policy.ts': Object.freeze(['HINGED_DOOR_MOUNT_POLICY']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
 });
+const DOOR_MOUNT_THICKNESS_FACADE_SYMBOLS = Object.freeze([
+  'DOOR_MOUNT_THICKNESS_CONFIG_KEYS',
+  'DOOR_MOUNT_THICKNESS_DIMENSIONS',
+  'DoorMountConstructionMode',
+  'DoorMountThicknessConfigKey',
+  'DoorMountThicknessKind',
+  'getDefaultDoorMountThicknessCm',
+  'getDefaultDoorMountThicknessM',
+  'getDoorMountThicknessConfigKey',
+  'normalizeDoorMountThicknessCm',
+  'resolveDoorMountThicknessesFromConfig',
+]);
+const APPROVED_DOOR_MOUNT_THICKNESS_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/build_input_fingerprint.ts': Object.freeze([
+    'DOOR_MOUNT_THICKNESS_CONFIG_KEYS',
+    'resolveDoorMountThicknessesFromConfig',
+  ]),
+  'esm/native/features/project_config/project_config_persisted_snapshot.ts': Object.freeze([
+    'normalizeDoorMountThicknessCm',
+  ]),
+  'esm/native/features/project_config/project_config_snapshot_canonical_scalar_runtime.ts': Object.freeze([
+    'normalizeDoorMountThicknessCm',
+  ]),
+  'esm/native/io/project_io_load_helpers_config.ts': Object.freeze(['normalizeDoorMountThicknessCm']),
+  'esm/native/runtime/config_selectors_shared.ts': Object.freeze(['normalizeDoorMountThicknessCm']),
+  'esm/native/ui/react/selectors/config_selectors.ts': Object.freeze([
+    'resolveDoorMountThicknessesFromConfig',
+  ]),
+  'esm/native/ui/react/tabs/structure_tab_controls.tsx': Object.freeze([
+    'DOOR_MOUNT_THICKNESS_DIMENSIONS',
+    'DoorMountThicknessConfigKey',
+    'normalizeDoorMountThicknessCm',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': DOOR_MOUNT_THICKNESS_FACADE_SYMBOLS,
+});
+const APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_DEPENDENCIES = Object.freeze({
+  'esm/native/builder/build_flow_plan_inputs.ts': ['resolveDoorMountThicknessesFromConfig@static-import'],
+  'esm/native/builder/visuals_chest_mode_build.ts': ['resolveDoorMountThicknessesFromConfig@static-import'],
+  'esm/native/kernel/kernel_project_capture_payload.ts': ['normalizeDoorMountThicknessCm@static-import'],
+});
+const APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DOOR_SYSTEM_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/builder/core_doors_compute.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
   'esm/native/builder/hinged_doors_module_ops_context.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
@@ -762,14 +828,20 @@ function collectDimensionFacadeBroadDependencies(sources) {
 
 function collectLegacyDimensionSymbolDependencies(sources, symbol, ownerSpecifier) {
   const usage = new Map();
+  const approvedSymbols = new Set(Array.isArray(symbol) ? symbol : [symbol]);
   for (const [file, source, analyzedDependencies] of sources) {
     const dependencies = analyzedDependencies || analyzeModuleDependencies(file, source).imports;
     for (const dependency of dependencies) {
       if (dependency.specifier.endsWith(ownerSpecifier)) continue;
-      if (!dependency.importedSymbols.includes(symbol)) continue;
+      const matchedSymbols = dependency.importedSymbols.filter(importedSymbol =>
+        approvedSymbols.has(importedSymbol)
+      );
+      if (!matchedSymbols.length) continue;
       const relativeFile = file.replaceAll('\\', '/');
       if (!usage.has(relativeFile)) usage.set(relativeFile, new Set());
-      usage.get(relativeFile).add(`${symbol}@${dependency.syntax}`);
+      for (const matchedSymbol of matchedSymbols) {
+        usage.get(relativeFile).add(`${matchedSymbol}@${dependency.syntax}`);
+      }
     }
   }
   return normalizedSymbolUsage(usage);
@@ -1315,6 +1387,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   const carcassCorniceRenderPolicy = read('esm/shared/dimensions/carcass_cornice_render_policy.ts');
   const chestModePolicy = read('esm/shared/dimensions/chest_mode_policy.ts');
   const doorSystemPolicy = read('esm/shared/dimensions/door_system_policy.ts');
+  const doorMountThicknessPolicy = read('esm/shared/dimensions/door_mount_thickness_policy.ts');
 
   assert.match(facade, /from '\.\/dimensions\/units\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/wardrobe_defaults\.js'/u);
@@ -1330,6 +1403,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /from '\.\/dimensions\/carcass_cornice_render_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/chest_mode_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/door_system_policy\.js'/u);
+  assert.match(facade, /from '\.\/dimensions\/door_mount_thickness_policy\.js'/u);
   assert.doesNotMatch(facade, /export const WARDROBE_DEFAULTS =/u);
   assert.doesNotMatch(facade, /export const WARDROBE_LIMITS =/u);
 
@@ -1392,6 +1466,15 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(doorSystemPolicy, /export const DOOR_SYSTEM_DIMENSIONS = Object\.freeze/u);
   assert.match(doorSystemPolicy, /visualThicknessM: MATERIAL_THICKNESS_POLICY\.wood\.thicknessM/u);
   assert.match(doorSystemPolicy, /defaultDoorsCount: WARDROBE_DEFAULTS\.byType\.sliding\.doorsCount/u);
+  assert.match(doorMountThicknessPolicy, /export const DOOR_MOUNT_THICKNESS_DIMENSIONS = Object\.freeze/u);
+  assert.match(doorMountThicknessPolicy, /stepCm: centimeters\(0\.1\)/u);
+  assert.match(doorMountThicknessPolicy, /minCm: centimeters\(0\.4\)/u);
+  assert.match(doorMountThicknessPolicy, /maxCm: centimeters\(8\)/u);
+  assert.match(doorMountThicknessPolicy, /HINGED_DOOR_MOUNT_POLICY\.insetFrameThicknessM/u);
+  assert.match(doorMountThicknessPolicy, /MATERIAL_THICKNESS_POLICY\.wood\.thicknessM/u);
+  assert.match(doorMountThicknessPolicy, /const stepCm = Number\(DOOR_MOUNT_THICKNESS_DIMENSIONS\.stepCm\)/u);
+  assert.match(doorMountThicknessPolicy, /frameThicknessM: cmToM\(frameThicknessCm\)/u);
+  assert.match(doorMountThicknessPolicy, /shelfThicknessM: cmToM\(shelfThicknessCm\)/u);
   assert.match(facade, /plinth: BASE_PLINTH_DIMENSIONS/u);
   assert.match(facade, /legs: BASE_LEG_LAYOUT_DIMENSIONS/u);
   assert.match(facade, /legacyDimensionNumberView\(BASE_PLINTH_POLICY\)/u);
@@ -1408,6 +1491,9 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.doesNotMatch(facade, /export const CARCASS_CORNICE_DIMENSIONS = Object\.freeze/u);
   assert.doesNotMatch(facade, /export const CHEST_MODE_DIMENSIONS = Object\.freeze/u);
   assert.doesNotMatch(facade, /export const DOOR_SYSTEM_DIMENSIONS = Object\.freeze/u);
+  assert.doesNotMatch(facade, /export const DOOR_MOUNT_THICKNESS_DIMENSIONS = Object\.freeze/u);
+  assert.doesNotMatch(facade, /function roundDoorMountThicknessCm/u);
+  assert.doesNotMatch(facade, /function normalizeDoorMountConstructionMode/u);
 
   assert.doesNotMatch(defaults, /stackSplit|decorativeSeparator/u);
   assert.doesNotMatch(limits, /wardrobe_defaults/u);
@@ -1419,7 +1505,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(decorativeSeparator, /dimensions\/stack_split_render_policy\.js/u);
 
   assert.doesNotMatch(
-    `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}\n${chestStructuralPolicy}\n${materialThicknessPolicy}\n${carcassCorniceRenderPolicy}\n${chestModePolicy}\n${doorSystemPolicy}`,
+    `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}\n${chestStructuralPolicy}\n${materialThicknessPolicy}\n${carcassCorniceRenderPolicy}\n${chestModePolicy}\n${doorSystemPolicy}\n${doorMountThicknessPolicy}`,
     /wardrobe_dimension_tokens_shared/u
   );
 });
@@ -1537,10 +1623,27 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     APPROVED_CHEST_MODE_OWNER_IMPORTS,
     'Chest Mode owner consumer allowlist'
   );
+  const doorSystemOwnerImports = collectOwnerImports(analyzedSources, 'door_system_policy.js');
   assertApprovedSymbolUsage(
-    collectOwnerImports(analyzedSources, 'door_system_policy.js'),
+    doorSystemOwnerImports,
     APPROVED_DOOR_SYSTEM_OWNER_IMPORTS,
     'Door System owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(doorSystemOwnerImports)
+        .filter(([, symbols]) => symbols.includes('DOOR_SYSTEM_DIMENSIONS'))
+        .map(([file]) => [file, ['DOOR_SYSTEM_DIMENSIONS']])
+    ),
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['DOOR_SYSTEM_DIMENSIONS'],
+    },
+    'DOOR_SYSTEM_DIMENSIONS is compatibility-only and may be imported directly only by the legacy facade'
+  );
+  assertApprovedSymbolUsage(
+    collectOwnerImports(analyzedSources, 'door_mount_thickness_policy.js'),
+    APPROVED_DOOR_MOUNT_THICKNESS_OWNER_IMPORTS,
+    'Door Mount Thickness owner consumer allowlist'
   );
   assertApprovedSymbolUsage(
     collectShellGridFieldUsage(analyzedSources),
@@ -1621,6 +1724,24 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     ),
     APPROVED_DOOR_SYSTEM_LEGACY_FIELD_USAGE,
     'Door System legacy field allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionSymbolDependencies(
+      analyzedSources,
+      DOOR_MOUNT_THICKNESS_FACADE_SYMBOLS,
+      'dimensions/door_mount_thickness_policy.js'
+    ),
+    APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_DEPENDENCIES,
+    'Door Mount Thickness legacy dependency allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionPolicyFieldUsage(
+      analyzedSources,
+      'DOOR_MOUNT_THICKNESS_DIMENSIONS',
+      'dimensions/door_mount_thickness_policy.js'
+    ),
+    APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_FIELD_USAGE,
+    'Door Mount Thickness legacy field allowlist'
   );
 });
 
@@ -1910,6 +2031,94 @@ test('[dimension-foundation] Door System guard detects aliases, namespace access
         'Door System fixture legacy field allowlist'
       ),
     /review-blocked/u
+  );
+});
+
+test('[dimension-foundation] Door Mount guard detects value/type aliases, namespace fields, and broad dependencies', () => {
+  const sources = [
+    [
+      'esm/native/builder/named_door_mount_consumer.ts',
+      `
+        import { DOOR_MOUNT_THICKNESS_DIMENSIONS as dimensions } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        import { normalizeDoorMountThicknessCm as normalize } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        import type { DoorMountThicknessConfigKey as ConfigKey } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const alias = dimensions;
+        const { minCm } = alias;
+        export const step = alias['stepCm'];
+        export const dynamic = alias[key];
+        export type { ConfigKey };
+        export { minCm, normalize };
+      `,
+    ],
+    [
+      'esm/native/builder/namespace_door_mount_consumer.ts',
+      `
+        import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const policy = dimensions.DOOR_MOUNT_THICKNESS_DIMENSIONS;
+        export const max = policy.maxCm;
+      `,
+    ],
+    [
+      'esm/native/runtime/door_mount_type_reexport.ts',
+      `export type { DoorMountConstructionMode as MountMode } from '../../shared/wardrobe_dimension_tokens_shared.js';`,
+    ],
+    [
+      'esm/native/runtime/door_mount_wildcard.ts',
+      `export * from '../../shared/wardrobe_dimension_tokens_shared.js';`,
+    ],
+    [
+      'esm/native/runtime/door_mount_dynamic.ts',
+      `export const dimensions = import('../../shared/wardrobe_dimension_tokens_shared.js');`,
+    ],
+  ];
+
+  assert.deepEqual(
+    collectLegacyDimensionSymbolDependencies(
+      sources,
+      DOOR_MOUNT_THICKNESS_FACADE_SYMBOLS,
+      'dimensions/door_mount_thickness_policy.js'
+    ),
+    {
+      'esm/native/builder/named_door_mount_consumer.ts': [
+        'DOOR_MOUNT_THICKNESS_DIMENSIONS@static-import',
+        'DoorMountThicknessConfigKey@type-import',
+        'normalizeDoorMountThicknessCm@static-import',
+      ],
+      'esm/native/runtime/door_mount_type_reexport.ts': ['DoorMountConstructionMode@type-re-export'],
+    }
+  );
+  assert.deepEqual(
+    collectLegacyDimensionPolicyFieldUsage(
+      sources,
+      'DOOR_MOUNT_THICKNESS_DIMENSIONS',
+      'dimensions/door_mount_thickness_policy.js'
+    ),
+    {
+      'esm/native/builder/named_door_mount_consumer.ts': ['<computed>', 'minCm', 'stepCm'],
+      'esm/native/builder/namespace_door_mount_consumer.ts': ['maxCm'],
+    }
+  );
+  assert.deepEqual(collectDimensionFacadeBroadDependencies(sources), [
+    { file: 'esm/native/builder/namespace_door_mount_consumer.ts', syntax: 'static-import' },
+    { file: 'esm/native/runtime/door_mount_dynamic.ts', syntax: 'dynamic-import' },
+    { file: 'esm/native/runtime/door_mount_wildcard.ts', syntax: 'static-re-export' },
+  ]);
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        collectLegacyDimensionSymbolDependencies(
+          sources,
+          DOOR_MOUNT_THICKNESS_FACADE_SYMBOLS,
+          'dimensions/door_mount_thickness_policy.js'
+        ),
+        {},
+        'Door Mount fixture legacy dependency allowlist'
+      ),
+    /review-blocked/u
+  );
+  assert.throws(
+    () => assertApprovedDimensionFacadeBroadDependencies(collectDimensionFacadeBroadDependencies(sources)),
+    /requires review/u
   );
 });
 

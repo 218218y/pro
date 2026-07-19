@@ -1,4 +1,4 @@
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
+import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import {
   listDoorGrooveTargetLookupKeys,
   toCanonicalGroovesMapKey,
@@ -39,7 +39,7 @@ export function appendFullHingedDoorOps(
 
   const colorKey = state.sourceKey;
   const doorHeight = ctx.totalDoorSpace;
-  if (!(doorHeight > DOOR_SYSTEM_DIMENSIONS.hinged.split.renderMinSegmentHeightM)) return;
+  if (!(doorHeight > HINGED_DOOR_SPLIT_GEOMETRY_POLICY.renderMinSegmentHeightM)) return;
   const doorCenterY = ctx.doorBottomY + doorHeight / 2;
   const curtain = ctx.cfg.isMultiColorMode ? ctx.resolveCurtainForPart(colorKey, null) : null;
   const special = ctx.cfg.isMultiColorMode ? ctx.resolveSpecialForPart(colorKey, curtain) : null;

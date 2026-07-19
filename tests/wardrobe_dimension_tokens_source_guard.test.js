@@ -7,6 +7,7 @@ const read = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8
 const productDimensionTokenSources = [
   'esm/shared/wardrobe_dimension_tokens_shared.ts',
   'esm/shared/dimensions/door_system_policy.ts',
+  'esm/shared/dimensions/door_mount_thickness_policy.ts',
 ];
 
 function readProductDimensionTokens() {
@@ -222,7 +223,10 @@ test('[dimension tokens] door split and cell dimension hover preview measurement
   assert.match(tokens, /hoverStandardLineHeightRatio:/);
   assert.match(tokens, /cellDimsPreview: Object\.freeze\(\{/);
 
-  assertUsesToken('esm/native/services/canvas_picking_door_split_hover_flow.ts', 'DOOR_SYSTEM_DIMENSIONS');
+  assertUsesToken(
+    'esm/native/services/canvas_picking_door_split_hover_flow.ts',
+    'HINGED_DOOR_SPLIT_AUTHORING_POLICY'
+  );
   assertUsesToken(
     'esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts',
     'WARDROBE_LAYOUT_DIMENSIONS'
@@ -417,7 +421,7 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
 
   const expectedTokenUse = new Map([
     ['esm/native/builder/corner_wing_cell_layouts.ts', ['INTERIOR_FITTINGS_DIMENSIONS', 'presetDims']],
-    ['esm/native/builder/render_door_ops_hinged.ts', ['DOOR_SYSTEM_DIMENSIONS', 'hingedDims']],
+    ['esm/native/builder/render_door_ops_hinged.ts', ['HINGED_DOOR_RENDER_POLICY', 'hingedDims']],
     ['esm/native/builder/render_interior_preset_ops.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
     [
       'esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts',
@@ -430,9 +434,9 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ['esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts', ['SKETCH_BOX_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_support_placement.ts', ['SKETCH_BOX_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_shared_external_drawers.ts', ['DRAWER_DIMENSIONS']],
-    ['esm/native/builder/hinged_doors_module_ops_full.ts', ['DOOR_SYSTEM_DIMENSIONS']],
-    ['esm/native/builder/hinged_doors_module_ops_segments.ts', ['DOOR_SYSTEM_DIMENSIONS']],
-    ['esm/native/builder/hinged_doors_module_ops_split_routes.ts', ['DOOR_SYSTEM_DIMENSIONS']],
+    ['esm/native/builder/hinged_doors_module_ops_full.ts', ['HINGED_DOOR_SPLIT_GEOMETRY_POLICY']],
+    ['esm/native/builder/hinged_doors_module_ops_segments.ts', ['HINGED_DOOR_SPLIT_GEOMETRY_POLICY']],
+    ['esm/native/builder/hinged_doors_module_ops_split_routes.ts', ['HINGED_DOOR_SPLIT_GEOMETRY_POLICY']],
     ['esm/native/builder/corner_wing_cell_doors_context.ts', ['CORNER_WING_DIMENSIONS']],
     ['esm/native/builder/corner_wing_cell_doors_split.ts', ['CORNER_WING_DIMENSIONS']],
     [

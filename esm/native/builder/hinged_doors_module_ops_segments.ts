@@ -1,4 +1,4 @@
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
+import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import { hasMirrorSurfaceOnFace, resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { readDoorVisualMirrorLayout } from './door_visual_lookup_state.js';
 import { readSplitPosListFromMap } from '../runtime/maps_access.js';
@@ -30,7 +30,7 @@ export function pushHingedDoorSegment(
   if (!ctx.opsList) {
     throw new Error('[WardrobePro] Hinged door ops list missing');
   }
-  if (!args.partId || !(args.segH > DOOR_SYSTEM_DIMENSIONS.hinged.split.renderMinSegmentHeightM)) return;
+  if (!args.partId || !(args.segH > HINGED_DOOR_SPLIT_GEOMETRY_POLICY.renderMinSegmentHeightM)) return;
   const special = ctx.cfg.isMultiColorMode ? ctx.resolveSpecialForPart(args.partId, args.curtainVal) : null;
   const isMirror = special === 'mirror';
   const adhesiveGlassKind = resolveAdhesiveGlassKind(special);
