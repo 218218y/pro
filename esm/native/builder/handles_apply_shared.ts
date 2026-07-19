@@ -1,4 +1,4 @@
-import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_HANDLE_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { getDoorsArray } from '../runtime/render_access.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
@@ -163,14 +163,14 @@ function clampAbsYToGroup(absY: number, centerY: number, height: number): number
     !Number.isFinite(y) ||
     !Number.isFinite(H) ||
     !Number.isFinite(CY) ||
-    !(H > HANDLE_DIMENSIONS.placement.absYClampMinHeightM)
+    !(H > DRAWER_HANDLE_PLACEMENT_POLICY.absYClampMinHeightM)
   )
     return absY;
   const pad = Math.min(
-    HANDLE_DIMENSIONS.placement.absYClampPaddingMaxM,
+    DRAWER_HANDLE_PLACEMENT_POLICY.absYClampPaddingMaxM,
     Math.max(
-      HANDLE_DIMENSIONS.placement.absYClampPaddingMinM,
-      H * HANDLE_DIMENSIONS.placement.absYClampPaddingHeightRatio
+      DRAWER_HANDLE_PLACEMENT_POLICY.absYClampPaddingMinM,
+      H * DRAWER_HANDLE_PLACEMENT_POLICY.absYClampPaddingHeightRatio
     )
   );
   const minY = CY - H / 2 + pad;

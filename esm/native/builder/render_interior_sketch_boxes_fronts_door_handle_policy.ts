@@ -1,4 +1,4 @@
-import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
 import type { RenderSketchBoxDoorFrontsArgs } from './render_interior_sketch_boxes_fronts_door_contracts.js';
 import type { SketchBoxDoorPlacement } from './render_interior_sketch_boxes_fronts_support.js';
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
@@ -25,8 +25,8 @@ function hasLongEdgeHandleVariant(cfg: InteriorValueRecord | null): boolean {
 
 function resolveSketchFreeBoxHandleClampPadding(cfg: InteriorValueRecord | null): number {
   return hasLongEdgeHandleVariant(cfg)
-    ? HANDLE_DIMENSIONS.edge.longClampPaddingM
-    : HANDLE_DIMENSIONS.edge.shortClampPaddingM;
+    ? EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.longClampPaddingM
+    : EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.shortClampPaddingM;
 }
 
 function resolveSketchFreeBoxDoorBoundsY(
@@ -93,7 +93,7 @@ export function resolveSketchFreeBoxDoorHandleAbsY(args: {
   const requestedAbsY =
     typeof args.sharedHandleAbsY === 'number' && Number.isFinite(args.sharedHandleAbsY)
       ? args.sharedHandleAbsY
-      : HANDLE_DIMENSIONS.edge.defaultGlobalAbsYM;
+      : EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.defaultGlobalAbsYM;
   const bounds = resolveSketchFreeBoxDoorBoundsY(renderArgs, placement);
   if (!bounds) return Number.isFinite(requestedAbsY) ? requestedAbsY : null;
 
@@ -133,11 +133,12 @@ export function resolveSketchFreeBoxSharedHandleAbsY(args: RenderSketchBoxDoorFr
 
   const inputCfg = asValueRecord(asValueRecord(frontsArgs.args.input)?.cfgSnapshot);
   const extraLongEdgeLift =
-    maxDrawerCount >= HANDLE_DIMENSIONS.edge.longLiftDrawerCountThreshold &&
+    maxDrawerCount >= EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.longLiftDrawerCountThreshold &&
     hasLongEdgeHandleVariant(inputCfg)
-      ? HANDLE_DIMENSIONS.edge.longLiftExtraM
+      ? EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.longLiftExtraM
       : 0;
-  const liftedHandleAbsY = maxDrawerTopY + HANDLE_DIMENSIONS.edge.drawerLiftClearanceM + extraLongEdgeLift;
+  const liftedHandleAbsY =
+    maxDrawerTopY + EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.drawerLiftClearanceM + extraLongEdgeLift;
   const currentCenteredAbsY = readGeometryRuntimeNumber(shell.centerY);
   const sharedAbsY = Math.max(currentCenteredAbsY ?? liftedHandleAbsY, liftedHandleAbsY);
 

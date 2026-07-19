@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 201, statements: 201 }),
+  'static-import': Object.freeze({ importers: 187, statements: 187 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 203, statements: 204 }),
+  total: Object.freeze({ importers: 189, statements: 190 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -602,6 +602,7 @@ const APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
   'esm/shared/dimensions/front_reveal_frame_policy.ts': Object.freeze([
     'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
   ]),
+  'esm/shared/dimensions/handle_policy.ts': Object.freeze(['EXTERNAL_DRAWER_SIZE_POLICY']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['EXTERNAL_DRAWER_POLICY']),
 });
 const APPROVED_INTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
@@ -855,6 +856,153 @@ const APPROVED_FRONT_REVEAL_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_FRONT_REVEAL_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_FRONT_REVEAL_LEGACY_FIELD_USAGE = Object.freeze({});
+const APPROVED_HANDLE_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/build_wardrobe_flow_context_hinged.ts': Object.freeze([
+    'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
+  ]),
+  'esm/native/builder/corner_connector_door_emit_policy.ts': Object.freeze([
+    'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
+  ]),
+  'esm/native/builder/edge_handle_profile.ts': Object.freeze(['EDGE_HANDLE_PROFILE_RENDER_POLICY']),
+  'esm/native/builder/handles_apply_doors.ts': Object.freeze([
+    'EDGE_HANDLE_SIZE_POLICY',
+    'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
+    'STANDARD_HANDLE_RENDER_POLICY',
+  ]),
+  'esm/native/builder/handles_apply_drawers.ts': Object.freeze(['DRAWER_HANDLE_PLACEMENT_POLICY']),
+  'esm/native/builder/handles_apply_shared.ts': Object.freeze(['DRAWER_HANDLE_PLACEMENT_POLICY']),
+  'esm/native/builder/handles_mesh.ts': Object.freeze([
+    'EDGE_HANDLE_SIZE_POLICY',
+    'STANDARD_HANDLE_RENDER_POLICY',
+  ]),
+  'esm/native/builder/hinged_doors_shared.ts': Object.freeze(['EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY']),
+  'esm/native/builder/render_interior_sketch_boxes_fronts_door_handle_policy.ts': Object.freeze([
+    'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_door_action_hover_preview_manual_handle.ts': Object.freeze([
+    'EDGE_HANDLE_PROFILE_RENDER_POLICY',
+    'EDGE_HANDLE_SIZE_POLICY',
+    'STANDARD_HANDLE_RENDER_POLICY',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['HANDLE_POLICY']),
+});
+const APPROVED_HANDLE_LEGACY_DEPENDENCIES = Object.freeze({
+  'esm/native/builder/build_handle_policy.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
+  'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
+  'esm/native/builder/corner_wing_extension_cells_handles.ts': Object.freeze([
+    'HANDLE_DIMENSIONS@static-import',
+  ]),
+  'esm/native/builder/hinged_doors_module_ops_context.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
+  'esm/native/builder/hinged_doors_module_ops_handle_policy.ts': Object.freeze([
+    'HANDLE_DIMENSIONS@static-import',
+  ]),
+  'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts': Object.freeze([
+    'HANDLE_DIMENSIONS@static-import',
+  ]),
+  'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts': Object.freeze([
+    'HANDLE_DIMENSIONS@static-import',
+  ]),
+  'esm/native/builder/render_ops_primitives.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
+  'esm/shared/wardrobe_construction_validation_shared.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
+});
+const APPROVED_HANDLE_LEGACY_FIELD_USAGE = Object.freeze({
+  'esm/native/builder/build_handle_policy.ts': Object.freeze([
+    'edge',
+    'edge.longLiftDrawerCountThreshold',
+    'edge.longLiftExtraM',
+  ]),
+  'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze([
+    'edge',
+    'edge.defaultGlobalAbsYM',
+    'edge.drawerLiftClearanceM',
+    'edge.drawerLiftThresholdYM',
+  ]),
+  'esm/native/builder/corner_wing_extension_cells_handles.ts': Object.freeze([
+    'edge',
+    'edge.defaultGlobalAbsYM',
+  ]),
+  'esm/native/builder/hinged_doors_module_ops_context.ts': Object.freeze(['edge', 'edge.defaultGlobalAbsYM']),
+  'esm/native/builder/hinged_doors_module_ops_handle_policy.ts': Object.freeze([
+    'edge',
+    'edge.defaultGlobalAbsYM',
+    'edge.drawerLiftClearanceM',
+    'edge.drawerLiftThresholdYM',
+    'edge.longClampPaddingM',
+    'edge.shortClampPaddingM',
+  ]),
+  'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts': Object.freeze([
+    'edge',
+    'edge.doorAnchorOffsetM',
+    'standard',
+    'standard.doorOffsetM',
+  ]),
+  'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts': Object.freeze([
+    'edge',
+    'edge.defaultGlobalAbsYM',
+    'edge.longClampPaddingM',
+    'edge.shortClampPaddingM',
+  ]),
+  'esm/native/builder/render_ops_primitives.ts': Object.freeze([
+    'edge',
+    'edge.longLengthM',
+    'edge.renderPrimitiveDoorAnchorInsetM',
+    'edge.shortLengthM',
+    'standard',
+    'standard.doorDepthM',
+    'standard.doorHeightM',
+    'standard.doorOffsetM',
+    'standard.doorWidthM',
+    'standard.frontZM',
+  ]),
+  'esm/shared/wardrobe_construction_validation_shared.ts': Object.freeze([
+    'edge',
+    'edge.longLengthM',
+    'edge.shortLengthM',
+    'standard',
+    'standard.doorHeightM',
+  ]),
+});
+const APPROVED_CONTENT_VISUAL_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/visuals_contents_folded.ts': Object.freeze([
+    'BOOK_CONTENT_VISUAL_POLICY',
+    'FOLDED_CLOTHES_VISUAL_POLICY',
+  ]),
+  'esm/native/builder/visuals_contents_hanger.ts': Object.freeze(['HANGER_VISUAL_POLICY']),
+  'esm/native/builder/visuals_contents_hanging.ts': Object.freeze(['HANGING_CLOTHES_VISUAL_POLICY']),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze([
+    'BOOK_CONTENT_VISUAL_POLICY',
+    'FOLDED_CLOTHES_VISUAL_POLICY',
+    'HANGER_VISUAL_POLICY',
+    'HANGING_CLOTHES_VISUAL_POLICY',
+  ]),
+});
+const APPROVED_SKETCH_BOX_CLASSIC_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts': Object.freeze([
+    'SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY']),
+});
+const APPROVED_CONTENT_VISUAL_LEGACY_DEPENDENCIES = Object.freeze({
+  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
+    'CONTENT_VISUAL_DIMENSIONS@static-import',
+  ]),
+});
+const APPROVED_CONTENT_VISUAL_LEGACY_FIELD_USAGE = Object.freeze({
+  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
+    'foldedClothes',
+    'foldedClothes.itemHeightM',
+    'foldedClothes.randomItemsRange',
+    'foldedClothes.stackBaseItems',
+    'hanger',
+    'hanger.barRadiusM',
+    'hanger.barYOffsetM',
+    'hanger.halfWidthM',
+    'hanger.moduleWidthClearanceM',
+    'hanger.rodYOffsetM',
+    'hanger.shoulderDropM',
+    'hanger.shoulderHeightM',
+  ]),
+});
 const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/post_build_sketch_door_cuts_apply.ts': Object.freeze([
     'sketch',
@@ -1248,13 +1396,17 @@ function normalizedSymbolUsage(usage) {
   );
 }
 
+function matchesOwnerSpecifier(specifier, ownerSpecifier) {
+  return specifier === ownerSpecifier || specifier.endsWith(`/${ownerSpecifier}`);
+}
+
 function collectOwnerImports(sources, ownerSpecifier) {
   const usage = new Map();
   for (const [file, source, analyzedDependencies] of sources) {
     const relativeFile = file.replaceAll('\\', '/');
     const dependencies = analyzedDependencies || analyzeModuleDependencies(file, source).imports;
     for (const dependency of dependencies) {
-      if (!dependency.specifier.endsWith(ownerSpecifier)) continue;
+      if (!matchesOwnerSpecifier(dependency.specifier, ownerSpecifier)) continue;
       if (!usage.has(relativeFile)) usage.set(relativeFile, new Set());
       for (const symbol of dependency.importedSymbols) usage.get(relativeFile).add(symbol);
     }
@@ -1396,7 +1548,7 @@ function collectLegacyDimensionSymbolDependencies(sources, symbol, ownerSpecifie
   for (const [file, source, analyzedDependencies] of sources) {
     const dependencies = analyzedDependencies || analyzeModuleDependencies(file, source).imports;
     for (const dependency of dependencies) {
-      if (dependency.specifier.endsWith(ownerSpecifier)) continue;
+      if (matchesOwnerSpecifier(dependency.specifier, ownerSpecifier)) continue;
       const matchedSymbols = dependency.importedSymbols.filter(importedSymbol =>
         approvedSymbols.has(importedSymbol)
       );
@@ -1433,7 +1585,7 @@ function collectLegacyDimensionPolicyFieldUsage(sources, symbol, ownerSpecifier)
     const rootAliases = new Set();
     const namespaceAliases = new Set();
     for (const dependency of dependencies) {
-      if (dependency.specifier.endsWith(ownerSpecifier)) continue;
+      if (matchesOwnerSpecifier(dependency.specifier, ownerSpecifier)) continue;
       for (const binding of dependency.bindings || []) {
         if (binding.importedName === symbol && binding.localName) rootAliases.add(binding.localName);
         if (
@@ -2005,6 +2157,11 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   const interiorStoragePolicy = read('esm/shared/dimensions/interior_storage_policy.ts');
   const drawerSketchPolicy = read('esm/shared/dimensions/drawer_sketch_policy.ts');
   const frontRevealFramePolicy = read('esm/shared/dimensions/front_reveal_frame_policy.ts');
+  const handlePolicy = read('esm/shared/dimensions/handle_policy.ts');
+  const contentVisualPolicy = read('esm/shared/dimensions/content_visual_policy.ts');
+  const sketchBoxClassicDoorVisualPolicy = read(
+    'esm/shared/dimensions/sketch_box_classic_door_visual_policy.ts'
+  );
 
   assert.match(facade, /from '\.\/dimensions\/units\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/wardrobe_defaults\.js'/u);
@@ -2028,6 +2185,9 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /from '\.\/dimensions\/interior_storage_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/drawer_sketch_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/front_reveal_frame_policy\.js'/u);
+  assert.match(facade, /from '\.\/dimensions\/handle_policy\.js'/u);
+  assert.match(facade, /from '\.\/dimensions\/content_visual_policy\.js'/u);
+  assert.match(facade, /from '\.\/dimensions\/sketch_box_classic_door_visual_policy\.js'/u);
   assert.doesNotMatch(facade, /export const WARDROBE_DEFAULTS =/u);
   assert.doesNotMatch(facade, /export const WARDROBE_LIMITS =/u);
 
@@ -2180,6 +2340,31 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
     /drawerFrontThicknessM: EXTERNAL_DRAWER_FRONT_RENDER_POLICY\.visualThicknessM/u
   );
   assert.doesNotMatch(frontRevealFramePolicy, /meters\(0\.(?:022|018|02)\)/u);
+  assert.match(handlePolicy, /export const EDGE_HANDLE_SIZE_POLICY = Object\.freeze/u);
+  assert.match(handlePolicy, /export const EDGE_HANDLE_PROFILE_RENDER_POLICY = Object\.freeze/u);
+  assert.match(handlePolicy, /export const EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY = Object\.freeze/u);
+  assert.match(handlePolicy, /export const STANDARD_HANDLE_RENDER_POLICY = Object\.freeze/u);
+  assert.match(handlePolicy, /export const DRAWER_HANDLE_PLACEMENT_POLICY = Object\.freeze/u);
+  assert.match(handlePolicy, /export const HANDLE_POLICY = Object\.freeze/u);
+  assert.match(handlePolicy, /drawerDefaultHeightM: EXTERNAL_DRAWER_SIZE_POLICY\.shoeHeightM/u);
+  assert.doesNotMatch(handlePolicy, /drawerDefaultHeightM: meters\(0\.2\)/u);
+  assert.match(contentVisualPolicy, /export const BOOK_CONTENT_VISUAL_POLICY = Object\.freeze/u);
+  assert.match(contentVisualPolicy, /export const FOLDED_CLOTHES_VISUAL_POLICY = Object\.freeze/u);
+  assert.match(contentVisualPolicy, /export const HANGER_VISUAL_POLICY = Object\.freeze/u);
+  assert.match(contentVisualPolicy, /export const HANGING_CLOTHES_VISUAL_POLICY = Object\.freeze/u);
+  assert.match(contentVisualPolicy, /export const CONTENT_VISUAL_POLICY = Object\.freeze/u);
+  assert.match(
+    sketchBoxClassicDoorVisualPolicy,
+    /export const SKETCH_BOX_CLASSIC_ACCENT_POLICY = Object\.freeze/u
+  );
+  assert.match(
+    sketchBoxClassicDoorVisualPolicy,
+    /export const SKETCH_BOX_CLASSIC_GROOVE_POLICY = Object\.freeze/u
+  );
+  assert.match(
+    sketchBoxClassicDoorVisualPolicy,
+    /export const SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY = Object\.freeze/u
+  );
   assert.match(facade, /plinth: BASE_PLINTH_DIMENSIONS/u);
   assert.match(facade, /legs: BASE_LEG_LAYOUT_DIMENSIONS/u);
   assert.match(facade, /legacyDimensionNumberView\(BASE_PLINTH_POLICY\)/u);
@@ -2200,6 +2385,13 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /legacyDimensionNumberView\(INTERIOR_STORAGE_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(DRAWER_SKETCH_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(FRONT_REVEAL_FRAME_POLICY\)/u);
+  assert.match(facade, /legacyDimensionNumberView\(HANDLE_POLICY\)/u);
+  assert.match(facade, /books: BOOK_CONTENT_VISUAL_POLICY/u);
+  assert.match(facade, /foldedClothes: FOLDED_CLOTHES_VISUAL_POLICY/u);
+  assert.match(facade, /hanger: HANGER_VISUAL_POLICY/u);
+  assert.match(facade, /hangingClothes: HANGING_CLOTHES_VISUAL_POLICY/u);
+  assert.match(facade, /sketchBoxClassic: SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY/u);
+  assert.doesNotMatch(facade, /export const HANDLE_DIMENSIONS = Object\.freeze/u);
   assert.match(facade, /storage: INTERIOR_STORAGE_DIMENSIONS/u);
   assert.match(facade, /sketch: DRAWER_SKETCH_DIMENSIONS/u);
   assert.match(facade, /external: EXTERNAL_DRAWER_DIMENSIONS/u);
@@ -2270,7 +2462,8 @@ test('[dimension-foundation] pure Carcass Shell and Interior consumers use focus
     assert.equal(
       dependencies.some(
         dependency =>
-          dependency.specifier.endsWith(ownerSpecifier) && dependency.importedSymbols.includes(symbol)
+          matchesOwnerSpecifier(dependency.specifier, ownerSpecifier) &&
+          dependency.importedSymbols.includes(symbol)
       ),
       true,
       `${file} must import ${symbol} from ${ownerSpecifier}`
@@ -2483,6 +2676,47 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     },
     'FRONT_REVEAL_FRAME_POLICY aggregate is imported directly only by the legacy facade'
   );
+  const handleOwnerImports = collectOwnerImports(analyzedSources, 'handle_policy.js');
+  assertApprovedSymbolUsage(
+    handleOwnerImports,
+    APPROVED_HANDLE_OWNER_IMPORTS,
+    'Handle owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(handleOwnerImports)
+        .filter(([, symbols]) => symbols.includes('HANDLE_POLICY'))
+        .map(([file]) => [file, ['HANDLE_POLICY']])
+    ),
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['HANDLE_POLICY'],
+    },
+    'HANDLE_POLICY aggregate is imported directly only by the legacy facade'
+  );
+  const contentVisualOwnerImports = collectOwnerImports(analyzedSources, 'content_visual_policy.js');
+  assertApprovedSymbolUsage(
+    contentVisualOwnerImports,
+    APPROVED_CONTENT_VISUAL_OWNER_IMPORTS,
+    'Content Visual owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(contentVisualOwnerImports)
+        .filter(([, symbols]) => symbols.includes('CONTENT_VISUAL_POLICY'))
+        .map(([file]) => [file, ['CONTENT_VISUAL_POLICY']])
+    ),
+    {},
+    'CONTENT_VISUAL_POLICY aggregate has no production importers'
+  );
+  const sketchBoxClassicOwnerImports = collectOwnerImports(
+    analyzedSources,
+    'sketch_box_classic_door_visual_policy.js'
+  );
+  assertApprovedSymbolUsage(
+    sketchBoxClassicOwnerImports,
+    APPROVED_SKETCH_BOX_CLASSIC_OWNER_IMPORTS,
+    'Sketch Box Classic owner consumer allowlist'
+  );
   assertApprovedSymbolUsage(
     collectShellGridFieldUsage(analyzedSources),
     APPROVED_SHELL_GRID_FIELD_USAGE,
@@ -2649,6 +2883,42 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     ),
     APPROVED_FRONT_REVEAL_LEGACY_FIELD_USAGE,
     'Front Reveal legacy field allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionSymbolDependencies(
+      analyzedSources,
+      'HANDLE_DIMENSIONS',
+      'dimensions/handle_policy.js'
+    ),
+    APPROVED_HANDLE_LEGACY_DEPENDENCIES,
+    'Handle legacy dependency allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionPolicyFieldUsage(
+      analyzedSources,
+      'HANDLE_DIMENSIONS',
+      'dimensions/handle_policy.js'
+    ),
+    APPROVED_HANDLE_LEGACY_FIELD_USAGE,
+    'Handle legacy field allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionSymbolDependencies(
+      analyzedSources,
+      'CONTENT_VISUAL_DIMENSIONS',
+      'dimensions/content_visual_policy.js'
+    ),
+    APPROVED_CONTENT_VISUAL_LEGACY_DEPENDENCIES,
+    'Content Visual legacy dependency allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionPolicyFieldUsage(
+      analyzedSources,
+      'CONTENT_VISUAL_DIMENSIONS',
+      'dimensions/content_visual_policy.js'
+    ),
+    APPROVED_CONTENT_VISUAL_LEGACY_FIELD_USAGE,
+    'Content Visual legacy field allowlist'
   );
 });
 
@@ -3524,6 +3794,232 @@ test('[dimension-foundation] Front Reveal guards detect aliases, namespace acces
         aggregateOwnerImports,
         APPROVED_FRONT_REVEAL_OWNER_IMPORTS,
         'Front Reveal fixture owner consumer allowlist'
+      ),
+    /review-blocked/u
+  );
+});
+
+test('[dimension-foundation] Handle guards detect aliases, namespace access, nested destructuring, computed access, and broad dependencies', () => {
+  const sources = [
+    [
+      'esm/native/builder/named_handle_consumer.ts',
+      `
+        import { HANDLE_DIMENSIONS as handles } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const oneHop = handles;
+        const edge = oneHop.edge;
+        const { edge: { shortLengthM } } = oneHop;
+        export const literal = edge['longLengthM'];
+        export const dynamic = edge[key];
+        export { shortLengthM };
+      `,
+    ],
+    [
+      'esm/native/builder/namespace_handle_consumer.ts',
+      `
+        import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const { standard: { doorHeightM } } = dimensions.HANDLE_DIMENSIONS;
+        export { doorHeightM };
+      `,
+    ],
+    [
+      'esm/native/runtime/handle_wildcard.ts',
+      `export * from '../../shared/wardrobe_dimension_tokens_shared.js';`,
+    ],
+    [
+      'esm/native/runtime/handle_dynamic.ts',
+      `export const dimensions = import('../../shared/wardrobe_dimension_tokens_shared.js');`,
+    ],
+  ];
+
+  assert.deepEqual(
+    collectLegacyDimensionPolicyFieldUsage(sources, 'HANDLE_DIMENSIONS', 'dimensions/handle_policy.js'),
+    {
+      'esm/native/builder/named_handle_consumer.ts': [
+        'edge',
+        'edge.<computed>',
+        'edge.longLengthM',
+        'edge.shortLengthM',
+      ],
+      'esm/native/builder/namespace_handle_consumer.ts': ['standard', 'standard.doorHeightM'],
+    }
+  );
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        collectLegacyDimensionPolicyFieldUsage(sources, 'HANDLE_DIMENSIONS', 'dimensions/handle_policy.js'),
+        APPROVED_HANDLE_LEGACY_FIELD_USAGE,
+        'Handle fixture legacy field allowlist'
+      ),
+    /review-blocked/u
+  );
+  assert.throws(
+    () => assertApprovedDimensionFacadeBroadDependencies(collectDimensionFacadeBroadDependencies(sources)),
+    /requires review/u
+  );
+
+  const aggregateOwnerImports = collectOwnerImports(
+    [
+      [
+        'esm/native/builder/new_handle_aggregate_consumer.ts',
+        `import { HANDLE_POLICY as handles } from '../../shared/dimensions/handle_policy.js';`,
+      ],
+      [
+        'esm/native/builder/new_handle_owner_dynamic.ts',
+        `export const policy = import('../../shared/dimensions/handle_policy.js');`,
+      ],
+      [
+        'esm/native/builder/new_handle_owner_wildcard.ts',
+        `export * from '../../shared/dimensions/handle_policy.js';`,
+      ],
+    ],
+    'handle_policy.js'
+  );
+  assert.deepEqual(aggregateOwnerImports, {
+    'esm/native/builder/new_handle_aggregate_consumer.ts': ['HANDLE_POLICY'],
+    'esm/native/builder/new_handle_owner_dynamic.ts': ['*'],
+    'esm/native/builder/new_handle_owner_wildcard.ts': ['*'],
+  });
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        aggregateOwnerImports,
+        APPROVED_HANDLE_OWNER_IMPORTS,
+        'Handle fixture owner consumer allowlist'
+      ),
+    /review-blocked/u
+  );
+});
+
+test('[dimension-foundation] Content Visual guards detect aliases, namespace access, nested destructuring, computed access, and owner bridges', () => {
+  const sources = [
+    [
+      'esm/native/builder/named_content_visual_consumer.ts',
+      `
+        import { CONTENT_VISUAL_DIMENSIONS as content } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const oneHop = content;
+        const books = oneHop.books;
+        const { hanger: { halfWidthM } } = oneHop;
+        export const literal = books['depthMarginM'];
+        export const dynamic = books[key];
+        export { halfWidthM };
+      `,
+    ],
+    [
+      'esm/native/builder/namespace_content_visual_consumer.ts',
+      `
+        import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const { foldedClothes: { itemHeightM } } = dimensions.CONTENT_VISUAL_DIMENSIONS;
+        export { itemHeightM };
+      `,
+    ],
+    [
+      'esm/native/runtime/content_visual_wildcard.ts',
+      `export * from '../../shared/wardrobe_dimension_tokens_shared.js';`,
+    ],
+    [
+      'esm/native/runtime/content_visual_dynamic.ts',
+      `export const dimensions = import('../../shared/wardrobe_dimension_tokens_shared.js');`,
+    ],
+  ];
+
+  assert.deepEqual(
+    collectLegacyDimensionPolicyFieldUsage(
+      sources,
+      'CONTENT_VISUAL_DIMENSIONS',
+      'dimensions/content_visual_policy.js'
+    ),
+    {
+      'esm/native/builder/named_content_visual_consumer.ts': [
+        'books',
+        'books.<computed>',
+        'books.depthMarginM',
+        'hanger',
+        'hanger.halfWidthM',
+      ],
+      'esm/native/builder/namespace_content_visual_consumer.ts': [
+        'foldedClothes',
+        'foldedClothes.itemHeightM',
+      ],
+    }
+  );
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        collectLegacyDimensionPolicyFieldUsage(
+          sources,
+          'CONTENT_VISUAL_DIMENSIONS',
+          'dimensions/content_visual_policy.js'
+        ),
+        APPROVED_CONTENT_VISUAL_LEGACY_FIELD_USAGE,
+        'Content Visual fixture legacy field allowlist'
+      ),
+    /review-blocked/u
+  );
+  assert.throws(
+    () => assertApprovedDimensionFacadeBroadDependencies(collectDimensionFacadeBroadDependencies(sources)),
+    /requires review/u
+  );
+
+  const aggregateOwnerImports = collectOwnerImports(
+    [
+      [
+        'esm/native/builder/new_content_visual_aggregate_consumer.ts',
+        `import { CONTENT_VISUAL_POLICY as content } from '../../shared/dimensions/content_visual_policy.js';`,
+      ],
+      [
+        'esm/native/builder/new_content_visual_bridge.ts',
+        `export * from '../../shared/dimensions/content_visual_policy.js';`,
+      ],
+      [
+        'esm/native/builder/new_content_visual_dynamic.ts',
+        `export const policy = import('../../shared/dimensions/content_visual_policy.js');`,
+      ],
+    ],
+    'content_visual_policy.js'
+  );
+  assert.deepEqual(aggregateOwnerImports, {
+    'esm/native/builder/new_content_visual_aggregate_consumer.ts': ['CONTENT_VISUAL_POLICY'],
+    'esm/native/builder/new_content_visual_bridge.ts': ['*'],
+    'esm/native/builder/new_content_visual_dynamic.ts': ['*'],
+  });
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        aggregateOwnerImports,
+        APPROVED_CONTENT_VISUAL_OWNER_IMPORTS,
+        'Content Visual fixture owner consumer allowlist'
+      ),
+    /review-blocked/u
+  );
+
+  const sketchBoxOwnerImports = collectOwnerImports(
+    [
+      [
+        'esm/native/builder/new_sketch_classic_policy_consumer.ts',
+        `import { SKETCH_BOX_CLASSIC_ACCENT_POLICY as accent } from '../../shared/dimensions/sketch_box_classic_door_visual_policy.js';`,
+      ],
+      [
+        'esm/native/builder/new_sketch_classic_policy_dynamic.ts',
+        `export const policy = import('../../shared/dimensions/sketch_box_classic_door_visual_policy.js');`,
+      ],
+      [
+        'esm/native/builder/new_sketch_classic_policy_bridge.ts',
+        `export * from '../../shared/dimensions/sketch_box_classic_door_visual_policy.js';`,
+      ],
+    ],
+    'sketch_box_classic_door_visual_policy.js'
+  );
+  assert.deepEqual(sketchBoxOwnerImports, {
+    'esm/native/builder/new_sketch_classic_policy_bridge.ts': ['*'],
+    'esm/native/builder/new_sketch_classic_policy_consumer.ts': ['SKETCH_BOX_CLASSIC_ACCENT_POLICY'],
+    'esm/native/builder/new_sketch_classic_policy_dynamic.ts': ['*'],
+  });
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        sketchBoxOwnerImports,
+        APPROVED_SKETCH_BOX_CLASSIC_OWNER_IMPORTS,
+        'Sketch Box Classic fixture owner consumer allowlist'
       ),
     /review-blocked/u
   );

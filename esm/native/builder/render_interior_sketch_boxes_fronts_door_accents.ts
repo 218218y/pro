@@ -1,4 +1,4 @@
-import { CONTENT_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY } from '../../shared/dimensions/sketch_box_classic_door_visual_policy.js';
 import { normalizeGrooveLinesCount, resolveGrooveLinesCount } from './groove_lines_count.js';
 
 import type { AppContainer } from '../../../types/index.js';
@@ -64,7 +64,7 @@ export function appendClassicDoorAccentAndGrooves(args: {
     // ignore
   }
 
-  const classicDims = CONTENT_VISUAL_DIMENSIONS.sketchBoxClassic;
+  const classicDims = SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY;
   const accentInset = Math.max(
     classicDims.accentInsetMinM,
     Math.min(classicDims.accentInsetMaxM, Math.min(doorW, doorH) * classicDims.accentInsetDoorRatio)

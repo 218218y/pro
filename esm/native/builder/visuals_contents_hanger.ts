@@ -1,4 +1,4 @@
-import { CONTENT_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { HANGER_VISUAL_POLICY } from '../../shared/dimensions/content_visual_policy.js';
 import {
   ensureVisualsContentsApp,
   ensureVisualsContentsTHREE,
@@ -32,7 +32,7 @@ export const addRealisticHanger: AppAwareAddRealisticHangerFn = (
   if (!resolveShowHanger(policy)) return;
   const addOutlines = resolveContentsOutline(policy);
 
-  const dims = CONTENT_VISUAL_DIMENSIONS.hanger;
+  const dims: Readonly<Record<keyof typeof HANGER_VISUAL_POLICY, number>> = HANGER_VISUAL_POLICY;
   const hangerGroup = new THREE.Group();
   markHangerFitting(hangerGroup, 'single_hanger_group');
   const woodMat = new THREE.MeshStandardMaterial({ color: 0xeaddcf, roughness: 0.7, metalness: 0.1 });

@@ -44,6 +44,14 @@ import { INTERNAL_DRAWER_POLICY } from './dimensions/internal_drawer_policy.js';
 import { INTERIOR_STORAGE_POLICY } from './dimensions/interior_storage_policy.js';
 import { DRAWER_SKETCH_POLICY } from './dimensions/drawer_sketch_policy.js';
 import { FRONT_REVEAL_FRAME_POLICY } from './dimensions/front_reveal_frame_policy.js';
+import { HANDLE_POLICY } from './dimensions/handle_policy.js';
+import {
+  BOOK_CONTENT_VISUAL_POLICY,
+  FOLDED_CLOTHES_VISUAL_POLICY,
+  HANGER_VISUAL_POLICY,
+  HANGING_CLOTHES_VISUAL_POLICY,
+} from './dimensions/content_visual_policy.js';
+import { SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY } from './dimensions/sketch_box_classic_door_visual_policy.js';
 import {
   STACK_SPLIT_LOWER_DEPTH_MAX,
   STACK_SPLIT_LOWER_DEPTH_MIN,
@@ -86,6 +94,14 @@ function legacyDimensionNumberView<T>(value: T): LegacyDimensionNumberView<T> {
   return value as LegacyDimensionNumberView<T>;
 }
 
+type ContentVisualDimensionsNumberView = {
+  readonly books: LegacyDimensionNumberView<typeof BOOK_CONTENT_VISUAL_POLICY>;
+  readonly foldedClothes: LegacyDimensionNumberView<typeof FOLDED_CLOTHES_VISUAL_POLICY>;
+  readonly hanger: LegacyDimensionNumberView<typeof HANGER_VISUAL_POLICY>;
+  readonly hangingClothes: LegacyDimensionNumberView<typeof HANGING_CLOTHES_VISUAL_POLICY>;
+  readonly sketchBoxClassic: LegacyDimensionNumberView<typeof SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY>;
+};
+
 const BASE_LEG_DIMENSIONS = legacyDimensionNumberView(BASE_LEG_DIMENSIONS_OWNER);
 const BASE_PLINTH_DIMENSIONS = legacyDimensionNumberView(BASE_PLINTH_POLICY);
 const BASE_LEG_LAYOUT_DIMENSIONS = legacyDimensionNumberView(BASE_LEG_LAYOUT_POLICY);
@@ -102,6 +118,7 @@ const INTERNAL_DRAWER_DIMENSIONS = legacyDimensionNumberView(INTERNAL_DRAWER_POL
 const INTERIOR_STORAGE_DIMENSIONS = legacyDimensionNumberView(INTERIOR_STORAGE_POLICY);
 const DRAWER_SKETCH_DIMENSIONS = legacyDimensionNumberView(DRAWER_SKETCH_POLICY);
 const FRONT_REVEAL_FRAME_DIMENSIONS = legacyDimensionNumberView(FRONT_REVEAL_FRAME_POLICY);
+const HANDLE_DIMENSIONS = legacyDimensionNumberView(HANDLE_POLICY);
 
 const WARDROBE_DEFAULTS = Object.freeze({
   ...WARDROBE_DEFAULTS_OWNER,
@@ -346,160 +363,12 @@ export const INTERIOR_FITTINGS_DIMENSIONS = Object.freeze({
   }),
 });
 
-export const CONTENT_VISUAL_DIMENSIONS = Object.freeze({
-  books: Object.freeze({
-    depthMarginM: 0.018,
-    sideMarginM: 0.035,
-    topSafetyM: 0.014,
-    minHeightM: 0.07,
-    minStackHeightM: 0.04,
-    defaultMaxDepthM: 0.38,
-    depthMaxM: 0.32,
-    depthMinM: 0.12,
-    depthRandomTrimRangeM: 0.045,
-    depthViabilityMinM: 0.06,
-    cursorEndGapM: 0.018,
-    maxCount: 96,
-    widthBaseM: 0.022,
-    widthRandomRangeM: 0.026,
-    setWidthBaseM: 0.026,
-    setWidthRandomRangeM: 0.012,
-    talmudSetWidthBaseM: 0.032,
-    talmudSetWidthRandomRangeM: 0.01,
-    narrowSetWidthBaseM: 0.019,
-    narrowSetWidthRandomRangeM: 0.009,
-    gapBaseM: 0.003,
-    gapRandomRangeM: 0.006,
-    setGapBaseM: 0.0016,
-    setGapRandomRangeM: 0.0022,
-    setTrailingGapM: 0.007,
-    tiltZRangeRad: 0.045,
-    setTiltZRangeRad: 0.018,
-    edgeTiltZRangeRad: 0.04,
-    angleCosMin: 0.001,
-    heightBaseM: 0.16,
-    heightRandomRangeM: 0.18,
-    alignedHeightRatioBase: 0.78,
-    alignedHeightRatioRange: 0.15,
-    setHeightVariationM: 0.012,
-    edgeHeightVariationM: 0.028,
-    talmudHeightBoostM: 0.028,
-    narrowSetHeightTrimM: 0.018,
-    edgeZoneRatio: 0.14,
-    edgeZoneMaxM: 0.13,
-    setChance: 0.76,
-    talmudSetChance: 0.34,
-    narrowSetChance: 0.28,
-    setMinVolumes: 5,
-    setMaxVolumes: 14,
-    shortRunMinVolumes: 2,
-    shortRunMaxVolumes: 5,
-    widthMinM: 0.01,
-    spineBandChance: 0.82,
-    spineBandHeightM: 0.008,
-    spineBandThicknessM: 0.003,
-    spineBandWidthInsetRatio: 0.18,
-    spineBandYOffsetRatioA: 0.22,
-    spineBandYOffsetRatioB: -0.18,
-    stackChance: 0.08,
-    stackLookaheadM: 0.04,
-    stackMaxItems: 2,
-    stackWidthBaseM: 0.07,
-    stackWidthRandomRangeM: 0.035,
-    stackTrailingGapM: 0.012,
-    stackWidthMinM: 0.035,
-    stackHeightBaseM: 0.04,
-    stackHeightRandomRangeM: 0.018,
-    stackDepthScaleBase: 0.92,
-    stackDepthScaleRange: 0.08,
-    stackXOffsetM: 0.014,
-    stackCursorAdvanceM: 0.035,
-    stackTiltYRangeRad: 0.04,
-  }),
-  foldedClothes: Object.freeze({
-    defaultMaxHeightM: 0.5,
-    baseItemDepthM: 0.36,
-    depthMarginM: 0.015,
-    minItemDepthM: 0.12,
-    zSpreadMaxM: 0.015,
-    zSpreadRatio: 0.35,
-    itemHeightM: 0.025,
-    heightHeadroomM: 0.03,
-    stackPitchM: 0.3,
-    stackXInsetM: 0.15,
-    randomItemsRange: 4,
-    stackBaseItems: 4,
-    minHeightForSingleItemM: 0.06,
-    itemWidthM: 0.26,
-    cornerRadiusM: 0.008,
-    randomOffsetXM: 0.015,
-    rotationYRangeRad: 0.08,
-  }),
-  hanger: Object.freeze({
-    hookRadiusM: 0.02,
-    hookTubeRadiusM: 0.0025,
-    hookRadialSegments: 8,
-    hookTubularSegments: 16,
-    hookArcMultiplier: 1.5,
-    hookYOffsetM: 0.045,
-    stemRadiusM: 0.0025,
-    stemHeightM: 0.04,
-    stemYOffsetM: 0.02,
-    halfWidthM: 0.22,
-    shoulderHeightM: 0.15,
-    centerHeightM: 0.015,
-    bottomNeckYM: 0.002,
-    shoulderCurveLiftM: 0.01,
-    shoulderDropM: 0.015,
-    bodyDepthM: 0.012,
-    bevelThicknessM: 0.002,
-    bevelSizeM: 0.002,
-    bodyBackOffsetM: 0.006,
-    barRadiusM: 0.009,
-    barLengthHalfWidthMultiplier: 1.8,
-    barYOffsetM: 0.01,
-    moduleWidthClearanceM: 0.05,
-    rodYOffsetM: 0.055,
-    rotationYDivisor: 8,
-  }),
-  hangingClothes: Object.freeze({
-    minAvailableHeightM: 0.5,
-    spacingM: 0.04,
-    xOffsetM: 0.02,
-    defaultDepthM: 0.45,
-    framedDoorDepthM: 0.38,
-    restrictedDepthMinM: 0.12,
-    restrictedDepthDefaultM: 0.3,
-    hangerRadiusM: 0.015,
-    hangerTubeRadiusM: 0.002,
-    hangerRadialSegments: 4,
-    hangerTubularSegments: 12,
-    hangerYOffsetM: 0.01,
-    coatProbabilityThreshold: 0.7,
-    coatHeightM: 1.1,
-    shirtHeightM: 0.7,
-    bottomClearanceM: 0.05,
-    minRenderableHeightM: 0.1,
-    clothWidthM: 0.03,
-    clothYOffsetM: 0.02,
-    clothRotationYRangeRad: 0.15,
-  }),
-  sketchBoxClassic: Object.freeze({
-    accentInsetMinM: 0.0025,
-    accentInsetMaxM: 0.0045,
-    accentInsetDoorRatio: 0.015,
-    accentLineThicknessMinM: 0.0013,
-    accentLineThicknessMaxM: 0.0019,
-    accentLineThicknessDoorRatio: 0.0045,
-    accentInnerMinM: 0.02,
-    accentSurfaceOffsetM: 0.0008,
-    accentStripDepthM: 0.001,
-    grooveStripWidthM: 0.005,
-    grooveHeightMinM: 0.01,
-    grooveHeightClearanceM: 0.04,
-    grooveDepthM: 0.002,
-    grooveSurfaceOffsetM: 0.001,
-  }),
+export const CONTENT_VISUAL_DIMENSIONS: ContentVisualDimensionsNumberView = Object.freeze({
+  books: BOOK_CONTENT_VISUAL_POLICY,
+  foldedClothes: FOLDED_CLOTHES_VISUAL_POLICY,
+  hanger: HANGER_VISUAL_POLICY,
+  hangingClothes: HANGING_CLOTHES_VISUAL_POLICY,
+  sketchBoxClassic: SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY,
 });
 
 export const DRAWER_DIMENSIONS = Object.freeze({
@@ -974,57 +843,7 @@ export const CORNER_CONNECTOR_INTERIOR_DIMENSIONS = Object.freeze({
   }),
 });
 
-export const HANDLE_DIMENSIONS = Object.freeze({
-  edge: Object.freeze({
-    shortLengthM: 0.2,
-    longLengthM: 0.4,
-    minLengthM: 0.1,
-    drawerWidthClearanceM: 0.04,
-    doorAnchorOffsetM: 0.002,
-    renderPrimitiveDoorAnchorInsetM: 0.0025,
-    mountThicknessM: 0.0045,
-    mountDepthM: 0.014,
-    mountFrontZM: 0.006,
-    returnThicknessM: 0.012,
-    returnDepthM: 0.008,
-    returnFrontZM: 0.022,
-    returnInsetM: 0.0115,
-    bridgeThicknessM: 0.007,
-    bridgeOverlapM: 0.004,
-    drawerReturnDropM: 0.0135,
-    defaultGlobalAbsYM: 1.05,
-    drawerLiftThresholdYM: 0.9,
-    drawerLiftClearanceM: 0.15,
-    longLiftDrawerCountThreshold: 4,
-    longLiftExtraM: 0.1,
-    shortClampPaddingM: 0.1,
-    longClampPaddingM: 0.2,
-  }),
-  standard: Object.freeze({
-    drawerWidthM: 0.16,
-    drawerHeightM: 0.01,
-    drawerDepthM: 0.02,
-    doorWidthM: 0.01,
-    doorHeightM: 0.16,
-    doorDepthM: 0.02,
-    doorOffsetM: 0.05,
-    frontZM: 0.02,
-  }),
-  placement: Object.freeze({
-    drawerDefaultWidthM: 0.4,
-    drawerDefaultHeightM: EXTERNAL_DRAWER_DIMENSIONS.shoeHeightM,
-    frontZDefaultM: 0.02,
-    zPositionEpsilonM: 0.0005,
-    maxTrustedLocalZM: 2,
-    drawerEdgeVisibleProtrusionM: 0.0135,
-    shortDrawerStandardYOffsetM: 0.02,
-    shortDrawerHeightThresholdM: 0.21,
-    absYClampMinHeightM: 0.05,
-    absYClampPaddingMinM: 0.02,
-    absYClampPaddingMaxM: 0.1,
-    absYClampPaddingHeightRatio: 0.2,
-  }),
-});
+export { HANDLE_DIMENSIONS };
 
 export type ExternalDrawerGeometry = {
   zClosed: number;

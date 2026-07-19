@@ -1,5 +1,9 @@
 import { getDoorsArray } from '../runtime/render_access.js';
-import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  EDGE_HANDLE_SIZE_POLICY,
+  EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY,
+  STANDARD_HANDLE_RENDER_POLICY,
+} from '../../shared/dimensions/handle_policy.js';
 import {
   clampDoorHandleLocalCenterYToFit,
   resolveDoorHandleVerticalFit,
@@ -228,8 +232,8 @@ function resolveSegmentManualHandleLocalY(args: {
 
 function resolveSegmentHandleClampPadding(edgeHandleVariant: unknown): number {
   return edgeHandleVariant === 'long'
-    ? HANDLE_DIMENSIONS.edge.longClampPaddingM
-    : HANDLE_DIMENSIONS.edge.shortClampPaddingM;
+    ? EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.longClampPaddingM
+    : EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.shortClampPaddingM;
 }
 
 function resolveSegmentAutoHandleLocalY(args: {
@@ -316,10 +320,10 @@ function refreshSketchSegmentedDoorHandles(
 function resolveDefaultHandleAnchorX(hType: string, doorW: number, isLeftHinge: boolean): number {
   if (hType === 'edge') {
     return isLeftHinge
-      ? doorW + HANDLE_DIMENSIONS.edge.doorAnchorOffsetM
-      : -doorW - HANDLE_DIMENSIONS.edge.doorAnchorOffsetM;
+      ? doorW + EDGE_HANDLE_SIZE_POLICY.doorAnchorOffsetM
+      : -doorW - EDGE_HANDLE_SIZE_POLICY.doorAnchorOffsetM;
   }
-  const offset = HANDLE_DIMENSIONS.standard.doorOffsetM;
+  const offset = STANDARD_HANDLE_RENDER_POLICY.doorOffsetM;
   return isLeftHinge ? doorW - offset : -doorW + offset;
 }
 

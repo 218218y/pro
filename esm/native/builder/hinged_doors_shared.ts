@@ -5,7 +5,7 @@
 // op assembly logic.
 
 import { assertThreeViaDeps } from '../runtime/three_access.js';
-import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
 import type {
   BuildContextLike,
   BuilderCurtainResolver,
@@ -165,8 +165,8 @@ export function edgeHandleLongLiftAbsY(
     if (count > maxExtDrawersCount) maxExtDrawersCount = count;
   });
 
-  return maxExtDrawersCount >= HANDLE_DIMENSIONS.edge.longLiftDrawerCountThreshold
-    ? HANDLE_DIMENSIONS.edge.longLiftExtraM
+  return maxExtDrawersCount >= EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.longLiftDrawerCountThreshold
+    ? EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.longLiftExtraM
     : 0;
 }
 
@@ -197,8 +197,8 @@ export function topSplitHandleInsetForPart(
   partId: string
 ): number {
   return isLongEdgeHandleVariantForPart(cfg, partId)
-    ? HANDLE_DIMENSIONS.edge.longClampPaddingM
-    : HANDLE_DIMENSIONS.edge.shortClampPaddingM;
+    ? EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.longClampPaddingM
+    : EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.shortClampPaddingM;
 }
 
 export function requireThree(ctx: BuildContextLike): ThreeLike {

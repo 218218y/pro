@@ -1,6 +1,6 @@
 import { getDrawersArray, getWardrobeGroup } from '../runtime/render_access.js';
 import { isDrawerBoxPartId, resolveDrawerBoxOwnerPartId } from '../features/part_identity/api.js';
-import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_HANDLE_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
 import { resolveManualHandleLocalPosition } from '../features/manual_handle_position.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { createHandleMeshV7 } from './handles_mesh.js';
@@ -32,10 +32,10 @@ export function applyDrawerHandles(runtime: HandlesApplyRuntime): void {
 
     const drawW =
       readGeometryUserDataPositiveNumberKey(g.userData, '__doorWidth') ??
-      HANDLE_DIMENSIONS.placement.drawerDefaultWidthM;
+      DRAWER_HANDLE_PLACEMENT_POLICY.drawerDefaultWidthM;
     const drawH =
       readGeometryUserDataPositiveNumberKey(g.userData, '__doorHeight') ??
-      HANDLE_DIMENSIONS.placement.drawerDefaultHeightM;
+      DRAWER_HANDLE_PLACEMENT_POLICY.drawerDefaultHeightM;
     const handle = createHandleMeshV7(hType, drawW, drawH, true, true, {
       App: runtime.App,
       addOutlines: runtime.addOutlines,
@@ -145,16 +145,16 @@ function hasDrawerAncestor(node: NodeLike | null | undefined): boolean {
 
 function createGroupMaxZLocalReader(runtime: HandlesApplyRuntime): (root: NodeLike) => number {
   const { THREE } = runtime;
-  if (!THREE || !THREE.Box3 || !THREE.Matrix4) return () => HANDLE_DIMENSIONS.placement.frontZDefaultM;
+  if (!THREE || !THREE.Box3 || !THREE.Matrix4) return () => DRAWER_HANDLE_PLACEMENT_POLICY.frontZDefaultM;
 
   const __tmpBox3 = readBox3(new THREE.Box3());
   const __tmpInvM4 = readMatrix4(new THREE.Matrix4());
   const __tmpM4 = readMatrix4(new THREE.Matrix4());
-  if (!__tmpBox3 || !__tmpInvM4 || !__tmpM4) return () => HANDLE_DIMENSIONS.placement.frontZDefaultM;
+  if (!__tmpBox3 || !__tmpInvM4 || !__tmpM4) return () => DRAWER_HANDLE_PLACEMENT_POLICY.frontZDefaultM;
 
   return (root: NodeLike): number => {
     try {
-      if (!root) return HANDLE_DIMENSIONS.placement.frontZDefaultM;
+      if (!root) return DRAWER_HANDLE_PLACEMENT_POLICY.frontZDefaultM;
       if (typeof root.updateWorldMatrix === 'function') root.updateWorldMatrix(true, true);
       __tmpInvM4.copy(root.matrixWorld).invert();
 
@@ -177,12 +177,12 @@ function createGroupMaxZLocalReader(runtime: HandlesApplyRuntime): (root: NodeLi
       if (
         !Number.isFinite(maxZ) ||
         maxZ === -Infinity ||
-        maxZ > HANDLE_DIMENSIONS.placement.maxTrustedLocalZM
+        maxZ > DRAWER_HANDLE_PLACEMENT_POLICY.maxTrustedLocalZM
       )
-        return HANDLE_DIMENSIONS.placement.frontZDefaultM;
+        return DRAWER_HANDLE_PLACEMENT_POLICY.frontZDefaultM;
       return maxZ;
     } catch (_) {
-      return HANDLE_DIMENSIONS.placement.frontZDefaultM;
+      return DRAWER_HANDLE_PLACEMENT_POLICY.frontZDefaultM;
     }
   };
 }
@@ -201,7 +201,7 @@ function positionDrawerHandleZ(
     maxZ = computeGroupMaxZLocal(group);
   }
 
-  const eps = HANDLE_DIMENSIONS.placement.zPositionEpsilonM;
+  const eps = DRAWER_HANDLE_PLACEMENT_POLICY.zPositionEpsilonM;
   let handleMinZ = Infinity;
   let handleMaxZ = -Infinity;
   handle.traverse?.((ch: NodeLike) => {
@@ -222,7 +222,7 @@ function positionDrawerHandleZ(
 
   if (hType === 'edge' && Number.isFinite(handleMaxZ)) {
     const handleDepthZ = handleMaxZ - handleMinZ;
-    const targetVisibleProtrusionZ = HANDLE_DIMENSIONS.placement.drawerEdgeVisibleProtrusionM;
+    const targetVisibleProtrusionZ = DRAWER_HANDLE_PLACEMENT_POLICY.drawerEdgeVisibleProtrusionM;
     const seatInsetZ = Math.max(0, handleDepthZ - targetVisibleProtrusionZ);
     handle.position.z -= seatInsetZ;
   }
@@ -235,7 +235,7 @@ function positionDrawerHandleY(
   hType: string,
   drawH: number
 ): void {
-  const eps = HANDLE_DIMENSIONS.placement.zPositionEpsilonM;
+  const eps = DRAWER_HANDLE_PLACEMENT_POLICY.zPositionEpsilonM;
   if (hType === 'edge') {
     const doorHeight = readGeometryUserDataPositiveNumberKey(group.userData, '__doorHeight');
     if (doorHeight != null) {
@@ -272,7 +272,7 @@ function positionDrawerHandleY(
   }
 
   handle.position.y =
-    drawH < HANDLE_DIMENSIONS.placement.shortDrawerHeightThresholdM
-      ? HANDLE_DIMENSIONS.placement.shortDrawerStandardYOffsetM
+    drawH < DRAWER_HANDLE_PLACEMENT_POLICY.shortDrawerHeightThresholdM
+      ? DRAWER_HANDLE_PLACEMENT_POLICY.shortDrawerStandardYOffsetM
       : 0;
 }

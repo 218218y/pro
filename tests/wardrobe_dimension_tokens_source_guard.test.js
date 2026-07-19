@@ -15,6 +15,9 @@ const productDimensionTokenSources = [
   'esm/shared/dimensions/interior_storage_policy.ts',
   'esm/shared/dimensions/drawer_sketch_policy.ts',
   'esm/shared/dimensions/front_reveal_frame_policy.ts',
+  'esm/shared/dimensions/handle_policy.ts',
+  'esm/shared/dimensions/content_visual_policy.ts',
+  'esm/shared/dimensions/sketch_box_classic_door_visual_policy.ts',
 ];
 
 function readProductDimensionTokens() {
@@ -26,16 +29,46 @@ function assertUsesToken(rel, tokenName) {
   assert.match(src, new RegExp(`\\b${tokenName}\\b`), `${rel} should read ${tokenName}`);
 }
 
+function assertLinearDimensionsUseOwnersOrMeters(rel) {
+  assert.doesNotMatch(
+    read(rel),
+    /^\s*[A-Za-z_$][\w$]*(?:M|YM|ZM):\s*-?(?:\d|\.\d)/mu,
+    `${rel} must construct linear dimensions with meters(...) or reference a canonical owner`
+  );
+}
+
 test('[dimension tokens] visual content product dimensions are centralized', () => {
   const tokens = readProductDimensionTokens();
-  assert.match(tokens, /export const CONTENT_VISUAL_DIMENSIONS = Object\.freeze\(\{/);
+  assert.match(tokens, /export const CONTENT_VISUAL_DIMENSIONS[^=]*= Object\.freeze\(\{/);
+  assert.match(tokens, /export const BOOK_CONTENT_VISUAL_POLICY = Object\.freeze\(\{/);
+  assert.match(tokens, /export const FOLDED_CLOTHES_VISUAL_POLICY = Object\.freeze\(\{/);
+  assert.match(tokens, /export const HANGER_VISUAL_POLICY = Object\.freeze\(\{/);
+  assert.match(tokens, /export const HANGING_CLOTHES_VISUAL_POLICY = Object\.freeze\(\{/);
+  assert.match(tokens, /export const SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY = Object\.freeze\(\{/);
+
+  for (const rel of [
+    'esm/shared/dimensions/content_visual_policy.ts',
+    'esm/shared/dimensions/sketch_box_classic_door_visual_policy.ts',
+  ]) {
+    assertLinearDimensionsUseOwnersOrMeters(rel);
+  }
+
+  assertUsesToken('esm/native/builder/visuals_contents_folded.ts', 'BOOK_CONTENT_VISUAL_POLICY');
+  assertUsesToken('esm/native/builder/visuals_contents_folded.ts', 'FOLDED_CLOTHES_VISUAL_POLICY');
+  assertUsesToken('esm/native/builder/visuals_contents_hanger.ts', 'HANGER_VISUAL_POLICY');
+  assertUsesToken('esm/native/builder/visuals_contents_hanging.ts', 'HANGING_CLOTHES_VISUAL_POLICY');
+  assertUsesToken(
+    'esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts',
+    'SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY'
+  );
 
   for (const rel of [
     'esm/native/builder/visuals_contents_folded.ts',
     'esm/native/builder/visuals_contents_hanger.ts',
     'esm/native/builder/visuals_contents_hanging.ts',
+    'esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts',
   ]) {
-    assertUsesToken(rel, 'CONTENT_VISUAL_DIMENSIONS');
+    assert.doesNotMatch(read(rel), /CONTENT_VISUAL_DIMENSIONS/);
   }
 });
 
@@ -366,9 +399,10 @@ test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage 
   const tokens = readProductDimensionTokens();
   assert.match(tokens, /doorCutHorizontalOverlapMinM:/);
   assert.match(tokens, /rebuiltSegmentHandlePaddingHeightRatio:/);
-  assert.match(tokens, /placement: Object\.freeze\(\{/);
+  assert.match(tokens, /export const DRAWER_HANDLE_PLACEMENT_POLICY = Object\.freeze\(\{/);
   assert.match(tokens, /separatorBoardWidthClearanceM:/);
   assert.match(tokens, /clampPadWoodRatio:/);
+  assertLinearDimensionsUseOwnersOrMeters('esm/shared/dimensions/handle_policy.ts');
 
   for (const rel of [
     'esm/native/builder/post_build_sketch_door_cuts_apply.ts',
@@ -384,12 +418,11 @@ test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage 
     assertUsesToken(rel, 'DRAWER_SKETCH_DOOR_CUT_POLICY');
   }
 
-  for (const rel of [
-    'esm/native/builder/handles_apply_drawers.ts',
-    'esm/native/builder/handles_apply_shared.ts',
-  ]) {
-    assertUsesToken(rel, 'HANDLE_DIMENSIONS');
-  }
+  assertUsesToken('esm/native/builder/handles_apply_drawers.ts', 'DRAWER_HANDLE_PLACEMENT_POLICY');
+  assertUsesToken('esm/native/builder/handles_apply_shared.ts', 'DRAWER_HANDLE_PLACEMENT_POLICY');
+  assertUsesToken('esm/native/builder/edge_handle_profile.ts', 'EDGE_HANDLE_PROFILE_RENDER_POLICY');
+  assertUsesToken('esm/native/builder/handles_mesh.ts', 'EDGE_HANDLE_SIZE_POLICY');
+  assertUsesToken('esm/native/builder/handles_mesh.ts', 'STANDARD_HANDLE_RENDER_POLICY');
 
   assertUsesToken(
     'esm/native/builder/render_interior_sketch_support_rods.ts',
@@ -588,7 +621,7 @@ test('[dimension tokens] Drawer Sketch owner preserves focused production consum
 test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canonical dimensions', () => {
   const tokens = readProductDimensionTokens();
   for (const tokenPattern of [
-    /sketchBoxClassic: Object\.freeze\(\{/,
+    /sketchBoxClassic: SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY/,
     /externalPreviewBoxMinDimensionM:/,
     /measurementLabelZOffsetM:/,
     /objectBoxPadXYWoodRatio:/,
@@ -612,7 +645,7 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ['esm/native/builder/render_interior_preset_ops.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
     [
       'esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts',
-      ['CONTENT_VISUAL_DIMENSIONS', 'sketchBoxClassic'],
+      ['SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY'],
     ],
     ['esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts', ['DRAWER_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_drawers_external_plan.ts', ['DRAWER_DIMENSIONS']],

@@ -1,4 +1,8 @@
-import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  EDGE_HANDLE_PROFILE_RENDER_POLICY,
+  EDGE_HANDLE_SIZE_POLICY,
+  STANDARD_HANDLE_RENDER_POLICY,
+} from '../../shared/dimensions/handle_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { getDoorsArray, getDrawersArray } from '../runtime/render_access.js';
 import { readMapOrEmpty } from '../runtime/maps_access.js';
@@ -76,37 +80,37 @@ function resolvePreviewSize(args: {
   if (handleType === 'edge') {
     const targetLength =
       readEdgeVariant(modeOpts) === 'long'
-        ? HANDLE_DIMENSIONS.edge.longLengthM
-        : HANDLE_DIMENSIONS.edge.shortLengthM;
+        ? EDGE_HANDLE_SIZE_POLICY.longLengthM
+        : EDGE_HANDLE_SIZE_POLICY.shortLengthM;
     if (isDrawerHost) {
       const hostWidth = Math.max(0, rect.maxX - rect.minX);
       const handleWidth = Math.max(
-        HANDLE_DIMENSIONS.edge.minLengthM,
-        Math.min(Math.max(0, hostWidth - HANDLE_DIMENSIONS.edge.drawerWidthClearanceM), targetLength)
+        EDGE_HANDLE_SIZE_POLICY.minLengthM,
+        Math.min(Math.max(0, hostWidth - EDGE_HANDLE_SIZE_POLICY.drawerWidthClearanceM), targetLength)
       );
       return {
         width: handleWidth,
-        height: HANDLE_DIMENSIONS.edge.mountThicknessM,
-        depth: HANDLE_DIMENSIONS.edge.mountDepthM,
+        height: EDGE_HANDLE_PROFILE_RENDER_POLICY.mountThicknessM,
+        depth: EDGE_HANDLE_PROFILE_RENDER_POLICY.mountDepthM,
       };
     }
     return {
-      width: HANDLE_DIMENSIONS.edge.mountThicknessM,
+      width: EDGE_HANDLE_PROFILE_RENDER_POLICY.mountThicknessM,
       height: targetLength,
-      depth: HANDLE_DIMENSIONS.edge.mountDepthM,
+      depth: EDGE_HANDLE_PROFILE_RENDER_POLICY.mountDepthM,
     };
   }
   if (isDrawerHost) {
     return {
-      width: HANDLE_DIMENSIONS.standard.drawerWidthM,
-      height: HANDLE_DIMENSIONS.standard.drawerHeightM,
-      depth: HANDLE_DIMENSIONS.standard.drawerDepthM,
+      width: STANDARD_HANDLE_RENDER_POLICY.drawerWidthM,
+      height: STANDARD_HANDLE_RENDER_POLICY.drawerHeightM,
+      depth: STANDARD_HANDLE_RENDER_POLICY.drawerDepthM,
     };
   }
   return {
-    width: HANDLE_DIMENSIONS.standard.doorWidthM,
-    height: HANDLE_DIMENSIONS.standard.doorHeightM,
-    depth: HANDLE_DIMENSIONS.standard.doorDepthM,
+    width: STANDARD_HANDLE_RENDER_POLICY.doorWidthM,
+    height: STANDARD_HANDLE_RENDER_POLICY.doorHeightM,
+    depth: STANDARD_HANDLE_RENDER_POLICY.doorDepthM,
   };
 }
 

@@ -1,4 +1,4 @@
-import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
 import { getModulesActions } from '../runtime/actions_access_domains.js';
 
 import { markEdgeHandleDefaultNone } from './edge_handle_default_none_runtime.js';
@@ -62,7 +62,7 @@ function getCornerPentSharedAlignedHandleBaseAbsY(ctx: CornerConnectorDoorContex
       ctx.woodThick
     );
   } catch {
-    return HANDLE_DIMENSIONS.edge.defaultGlobalAbsYM;
+    return EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.defaultGlobalAbsYM;
   }
 }
 

@@ -8,7 +8,10 @@ import {
   type NodeLike,
 } from './handles_shared.js';
 import { normalizeHandleFinishColor, resolveHandleFinishPalette } from '../features/finish_palette/api.js';
-import { HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  EDGE_HANDLE_SIZE_POLICY,
+  STANDARD_HANDLE_RENDER_POLICY,
+} from '../../shared/dimensions/handle_policy.js';
 
 export function createHandleMeshV7(
   type: unknown,
@@ -50,11 +53,11 @@ export function createHandleMeshV7(
     if (isDrawer) {
       const targetEdgeLen =
         edgeHandleVariant === 'long'
-          ? HANDLE_DIMENSIONS.edge.longLengthM
-          : HANDLE_DIMENSIONS.edge.shortLengthM;
+          ? EDGE_HANDLE_SIZE_POLICY.longLengthM
+          : EDGE_HANDLE_SIZE_POLICY.shortLengthM;
       const handleW = Math.max(
-        HANDLE_DIMENSIONS.edge.minLengthM,
-        Math.min(w - HANDLE_DIMENSIONS.edge.drawerWidthClearanceM, targetEdgeLen)
+        EDGE_HANDLE_SIZE_POLICY.minLengthM,
+        Math.min(w - EDGE_HANDLE_SIZE_POLICY.drawerWidthClearanceM, targetEdgeLen)
       );
       const profile = createDrawerEdgeHandleProfile({
         THREE,
@@ -65,11 +68,11 @@ export function createHandleMeshV7(
     } else {
       const handleH =
         edgeHandleVariant === 'long'
-          ? HANDLE_DIMENSIONS.edge.longLengthM
-          : HANDLE_DIMENSIONS.edge.shortLengthM;
+          ? EDGE_HANDLE_SIZE_POLICY.longLengthM
+          : EDGE_HANDLE_SIZE_POLICY.shortLengthM;
       const xPos = isLeftHinge
-        ? w + HANDLE_DIMENSIONS.edge.doorAnchorOffsetM
-        : -w - HANDLE_DIMENSIONS.edge.doorAnchorOffsetM;
+        ? w + EDGE_HANDLE_SIZE_POLICY.doorAnchorOffsetM
+        : -w - EDGE_HANDLE_SIZE_POLICY.doorAnchorOffsetM;
       const profile = createDoorEdgeHandleProfile({
         THREE,
         material: edgeMat,
@@ -94,13 +97,13 @@ export function createHandleMeshV7(
 
   if (isDrawer) {
     const geo = new THREE.BoxGeometry(
-      HANDLE_DIMENSIONS.standard.drawerWidthM,
-      HANDLE_DIMENSIONS.standard.drawerHeightM,
-      HANDLE_DIMENSIONS.standard.drawerDepthM
+      STANDARD_HANDLE_RENDER_POLICY.drawerWidthM,
+      STANDARD_HANDLE_RENDER_POLICY.drawerHeightM,
+      STANDARD_HANDLE_RENDER_POLICY.drawerDepthM
     );
     const mesh = new THREE.Mesh(geo, stdMat);
     mesh.userData = { __keepMaterial: true };
-    mesh.position.set(0, 0, HANDLE_DIMENSIONS.standard.frontZM);
+    mesh.position.set(0, 0, STANDARD_HANDLE_RENDER_POLICY.frontZM);
     if (typeof ctx?.addOutlines !== 'function') {
       throw new TypeError('[handles_mesh] snapshot outline binding is required');
     }
@@ -108,15 +111,15 @@ export function createHandleMeshV7(
     g.add(mesh);
   } else {
     const geo = new THREE.BoxGeometry(
-      HANDLE_DIMENSIONS.standard.doorWidthM,
-      HANDLE_DIMENSIONS.standard.doorHeightM,
-      HANDLE_DIMENSIONS.standard.doorDepthM
+      STANDARD_HANDLE_RENDER_POLICY.doorWidthM,
+      STANDARD_HANDLE_RENDER_POLICY.doorHeightM,
+      STANDARD_HANDLE_RENDER_POLICY.doorDepthM
     );
     const mesh = new THREE.Mesh(geo, stdMat);
     mesh.userData = { __keepMaterial: true };
-    const offset = HANDLE_DIMENSIONS.standard.doorOffsetM;
+    const offset = STANDARD_HANDLE_RENDER_POLICY.doorOffsetM;
     const xPos = isLeftHinge ? w - offset : -w + offset;
-    mesh.position.set(xPos, 0, HANDLE_DIMENSIONS.standard.frontZM);
+    mesh.position.set(xPos, 0, STANDARD_HANDLE_RENDER_POLICY.frontZM);
     if (typeof ctx?.addOutlines !== 'function') {
       throw new TypeError('[handles_mesh] snapshot outline binding is required');
     }

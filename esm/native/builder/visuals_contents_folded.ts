@@ -1,4 +1,7 @@
-import { CONTENT_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  BOOK_CONTENT_VISUAL_POLICY,
+  FOLDED_CLOTHES_VISUAL_POLICY,
+} from '../../shared/dimensions/content_visual_policy.js';
 import {
   ensureVisualsContentsApp,
   ensureVisualsContentsTHREE,
@@ -52,7 +55,7 @@ function resolveBackAlignedZ(args: {
 }
 
 function resolveBookDepth(baseDepth: number): number {
-  const dims = CONTENT_VISUAL_DIMENSIONS.books;
+  const dims = BOOK_CONTENT_VISUAL_POLICY;
   const trimRange = Math.min(dims.depthRandomTrimRangeM, Math.max(0, baseDepth - dims.depthMinM));
   const randomizedDepth = baseDepth - seededRandom.random() * trimRange;
   return clamp(randomizedDepth, dims.depthMinM, baseDepth);
@@ -79,7 +82,7 @@ function createShelfBookRun(args: {
   minBookHeight: number;
   edgeRun: boolean;
 }): ShelfBookRun {
-  const dims = CONTENT_VISUAL_DIMENSIONS.books;
+  const dims = BOOK_CONTENT_VISUAL_POLICY;
   const { baseHeight, availableHeight, minBookHeight, edgeRun } = args;
   const roll = seededRandom.random();
   const isTalmudSet = roll < dims.talmudSetChance;
@@ -129,7 +132,7 @@ function addBookSpineBands(args: {
   depth: number;
 }): void {
   const { THREE, book, width, height, depth } = args;
-  const dims = CONTENT_VISUAL_DIMENSIONS.books;
+  const dims = BOOK_CONTENT_VISUAL_POLICY;
   if (!(width > dims.widthMinM * 1.5) || !(height > dims.minHeightM * 1.45)) return;
   if (seededRandom.random() > dims.spineBandChance) return;
 
@@ -168,7 +171,7 @@ function addShelfBooks(args: {
 }): void {
   const { THREE, shelfX, shelfY, shelfZ, width, parentGroup, maxHeight, maxDepth, addOutlines, isSketch } =
     args;
-  const dims = CONTENT_VISUAL_DIMENSIONS.books;
+  const dims = BOOK_CONTENT_VISUAL_POLICY;
   const depthMargin = dims.depthMarginM;
   const sideMargin = dims.sideMarginM;
   const topSafety = dims.topSafetyM;
@@ -376,7 +379,7 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
   App = ensureVisualsContentsApp(App);
   const THREE = ensureVisualsContentsTHREE(App);
   if (typeof maxHeight === 'undefined' || maxHeight === null) {
-    maxHeight = CONTENT_VISUAL_DIMENSIONS.foldedClothes.defaultMaxHeightM;
+    maxHeight = FOLDED_CLOTHES_VISUAL_POLICY.defaultMaxHeightM;
   }
   const resolvedMaxHeight = readVisualContentRuntimeNumber(maxHeight) ?? 0;
 
@@ -405,7 +408,7 @@ export const addFoldedClothes: AppAwareAddFoldedClothesFn = (
     return;
   }
 
-  const dims = CONTENT_VISUAL_DIMENSIONS.foldedClothes;
+  const dims = FOLDED_CLOTHES_VISUAL_POLICY;
   const baseItemDepth = dims.baseItemDepthM;
   const depthMargin = dims.depthMarginM;
   const resolvedMaxDepth = readPositiveVisualContentRuntimeNumber(maxDepth);

@@ -1,4 +1,4 @@
-import { CONTENT_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { HANGING_CLOTHES_VISUAL_POLICY } from '../../shared/dimensions/content_visual_policy.js';
 import {
   ensureVisualsContentsApp,
   ensureVisualsContentsTHREE,
@@ -200,7 +200,7 @@ function addGarmentDetails(args: {
 
 function createStyledHanger(args: {
   THREE: ReturnType<typeof ensureVisualsContentsTHREE>;
-  dims: typeof CONTENT_VISUAL_DIMENSIONS.hangingClothes;
+  dims: Readonly<Record<keyof typeof HANGING_CLOTHES_VISUAL_POLICY, number>>;
   xPos: number;
   rodY: number;
   rodZ: number;
@@ -280,7 +280,8 @@ export const addHangingClothes: AppAwareAddHangingClothesFn = (
 ) => {
   App = ensureVisualsContentsApp(App);
   const THREE = ensureVisualsContentsTHREE(App);
-  const dims = CONTENT_VISUAL_DIMENSIONS.hangingClothes;
+  const dims: Readonly<Record<keyof typeof HANGING_CLOTHES_VISUAL_POLICY, number>> =
+    HANGING_CLOTHES_VISUAL_POLICY;
   if (maxHeight < dims.minAvailableHeightM) return;
 
   const currentStyle = resolveContentsDoorStyle(policy);
