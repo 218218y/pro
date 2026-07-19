@@ -27,7 +27,12 @@ import {
   readDoorTrimFinite,
   resolveDoorTrimCenterPair,
 } from '../../../../shared/door_trim_value_contracts_shared.js';
-import { DOOR_TRIM_DIMENSIONS } from '../../../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DOOR_TRIM_AUTHORING_DEFAULTS_POLICY,
+  DOOR_TRIM_LIMITS_POLICY,
+  DOOR_TRIM_RENDER_POLICY,
+  DOOR_TRIM_SNAP_POLICY,
+} from '../../../../shared/dimensions/door_trim_policy.js';
 
 export type { DoorTrimAxis, DoorTrimColor, DoorTrimEntry, DoorTrimMap, DoorTrimSpan, UnknownRecord };
 export {
@@ -61,14 +66,14 @@ export const DOOR_TRIM_SPANS: readonly DoorTrimSpan[] = [
   'custom',
 ];
 
-export const DEFAULT_DOOR_TRIM_THICKNESS_M: number = DOOR_TRIM_DIMENSIONS.defaults.thicknessM;
-export const DEFAULT_DOOR_TRIM_DEPTH_M: number = DOOR_TRIM_DIMENSIONS.defaults.depthM;
-export const DOOR_TRIM_CENTER_SNAP_NORM_THRESHOLD: number = DOOR_TRIM_DIMENSIONS.snap.centerNormThreshold;
-export const MIN_DOOR_TRIM_SPAN_M: number = DOOR_TRIM_DIMENSIONS.limits.minSpanM;
-export const DEFAULT_DOOR_TRIM_CROSS_SIZE_CM: number = DOOR_TRIM_DIMENSIONS.defaults.crossSizeCm;
-export const DOOR_TRIM_MIRROR_SNAP_ZONE_M: number = DOOR_TRIM_DIMENSIONS.snap.mirrorZoneM;
+export const DEFAULT_DOOR_TRIM_THICKNESS_M: number = DOOR_TRIM_RENDER_POLICY.thicknessM;
+export const DEFAULT_DOOR_TRIM_DEPTH_M: number = DOOR_TRIM_RENDER_POLICY.depthM;
+export const DOOR_TRIM_CENTER_SNAP_NORM_THRESHOLD: number = DOOR_TRIM_SNAP_POLICY.centerNormThreshold;
+export const MIN_DOOR_TRIM_SPAN_M: number = DOOR_TRIM_LIMITS_POLICY.minSpanM;
+export const DEFAULT_DOOR_TRIM_CROSS_SIZE_CM: number = DOOR_TRIM_AUTHORING_DEFAULTS_POLICY.crossSizeCm;
+export const DOOR_TRIM_MIRROR_SNAP_ZONE_M: number = DOOR_TRIM_SNAP_POLICY.mirrorZoneM;
 // Keep trims visually attached to mirrors while still avoiding edge shimmer / aliasing.
-export const DOOR_TRIM_MIRROR_EDGE_GAP_M: number = DOOR_TRIM_DIMENSIONS.snap.mirrorEdgeGapM;
+export const DOOR_TRIM_MIRROR_EDGE_GAP_M: number = DOOR_TRIM_SNAP_POLICY.mirrorEdgeGapM;
 
 export type DoorTrimRect = {
   minX: number;

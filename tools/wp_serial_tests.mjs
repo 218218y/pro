@@ -2,8 +2,13 @@
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
-import osConstants from 'node:os';
 import path from 'node:path';
+import {
+  isChildRunning,
+  resolveChildExitCode,
+  signalToExitCode,
+  terminateChildWithEscalation,
+} from './wp_child_process_protocol.mjs';
 import { buildTsxTestRun } from './wp_test_runner_command.mjs';
 
 function parseArgs(argv) {
@@ -96,13 +101,6 @@ function buildRerunCommand(batch) {
   return buildTsxTestRun(process.cwd(), batch).command;
 }
 
-function signalToExitCode(signal) {
-  if (!signal) return 1;
-  const normalized = signal.startsWith('SIG') ? signal : `SIG${signal}`;
-  const code = osConstants.constants.signals[normalized];
-  return Number.isInteger(code) ? 128 + code : 1;
-}
-
 async function clearArtifactFile(filePath) {
   if (!filePath) return;
   await rm(filePath, { force: true });
@@ -191,14 +189,16 @@ function createBatchRunner({ heartbeatMs, timeoutMs }) {
   let requestedSignal = null;
 
   function terminateActiveChild(signal) {
-    if (!activeChild || activeChild.killed) return false;
+    if (!isChildRunning(activeChild)) return false;
     requestedSignal = signal;
-    activeChild.kill(signal);
     if (activeChildKillTimer) clearTimeout(activeChildKillTimer);
-    activeChildKillTimer = setTimeout(() => {
-      if (activeChild && !activeChild.killed) activeChild.kill('SIGKILL');
-    }, 2000);
-    activeChildKillTimer.unref?.();
+    activeChildKillTimer = terminateChildWithEscalation(activeChild, signal, {
+      onEscalate(escalationSignal) {
+        console.error(
+          `[serial-tests] child still running after ${signal} grace period; escalating to ${escalationSignal}`
+        );
+      },
+    });
     return true;
   }
 
@@ -220,6 +220,9 @@ function createBatchRunner({ heartbeatMs, timeoutMs }) {
       });
       activeChild = child;
       requestedSignal = null;
+      child.once('spawn', () => {
+        console.error(`${label} ready`);
+      });
 
       let heartbeatTimer = null;
       if (heartbeatMs > 0) {
@@ -272,11 +275,7 @@ function createBatchRunner({ heartbeatMs, timeoutMs }) {
           console.error(`${label} ok (${formatMs(durationMs)})`);
         }
         resolve({
-          exitCode: signal
-            ? signalToExitCode(signal)
-            : requestedSignal && code !== 0
-              ? signalToExitCode(requestedSignal)
-              : (code ?? 1),
+          exitCode: resolveChildExitCode({ code, signal, requestedSignal }),
           batch,
           durationMs,
           label,

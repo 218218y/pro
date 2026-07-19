@@ -11,6 +11,8 @@ import {
   resolveDoorTrimPlacements,
 } from '../esm/native/features/door_authoring/api.ts';
 import { readDoorTrimConfigMap } from '../esm/native/features/project_config/project_config_map_readers.ts';
+import { resolveDoorTrimSpanM } from '../esm/native/features/door_authoring/internal/trim_placement_geometry.ts';
+import { resolveDoorTrimRemoveToleranceM } from '../esm/native/features/door_authoring/internal/trim_placement_match.ts';
 
 const rect = { minX: 0, maxX: 1, minY: 0, maxY: 1 };
 
@@ -105,4 +107,30 @@ test('door trim value normalization is shared by project config and authoring re
   const projectB = readDoorTrimConfigMap({ d1_full: [missingIdRaw] }).d1_full?.[0];
   assert.equal(projectA?.id, projectB?.id);
   assert.match(String(projectA?.id || ''), /^trim_[a-z0-9]+$/);
+});
+
+test('door trim span fractions, custom clamping, and remove tolerance preserve geometry policy', () => {
+  assert.equal(resolveDoorTrimSpanM('full', null, 1), 1);
+  assert.equal(resolveDoorTrimSpanM('three_quarters', null, 1), 0.75);
+  assert.equal(resolveDoorTrimSpanM('half', null, 1), 0.5);
+  assert.equal(resolveDoorTrimSpanM('third', null, 1), 1 / 3);
+  assert.equal(resolveDoorTrimSpanM('quarter', null, 1), 0.25);
+  assert.equal(resolveDoorTrimSpanM('custom', 24, 1), 0.24);
+  assert.equal(resolveDoorTrimSpanM('custom', 1, 1), 0.04);
+  assert.equal(resolveDoorTrimSpanM('custom', 999, 1), 1);
+
+  assert.equal(
+    resolveDoorTrimRemoveToleranceM({
+      rect: { minX: 0, maxX: 1, minY: 0, maxY: 1 },
+      axis: 'horizontal',
+    }),
+    0.09
+  );
+  assert.equal(
+    resolveDoorTrimRemoveToleranceM({
+      rect: { minX: 0, maxX: 1, minY: 0, maxY: 0.2 },
+      axis: 'horizontal',
+    }),
+    0.035 * 1.15
+  );
 });

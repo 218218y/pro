@@ -38,6 +38,7 @@ import { CHEST_MODE_DIMENSIONS as CHEST_MODE_DIMENSIONS_OWNER } from './dimensio
 import { DOOR_SYSTEM_DIMENSIONS as DOOR_SYSTEM_DIMENSIONS_OWNER } from './dimensions/door_system_policy.js';
 import { DOOR_MOUNT_THICKNESS_DIMENSIONS as DOOR_MOUNT_THICKNESS_DIMENSIONS_OWNER } from './dimensions/door_mount_thickness_policy.js';
 import { DOOR_VISUAL_DIMENSIONS as DOOR_VISUAL_DIMENSIONS_OWNER } from './dimensions/door_visual_policy.js';
+import { DOOR_TRIM_DIMENSIONS as DOOR_TRIM_DIMENSIONS_OWNER } from './dimensions/door_trim_policy.js';
 import {
   STACK_SPLIT_LOWER_DEPTH_MAX,
   STACK_SPLIT_LOWER_DEPTH_MIN,
@@ -90,6 +91,7 @@ const CHEST_MODE_DIMENSIONS = legacyDimensionNumberView(CHEST_MODE_DIMENSIONS_OW
 const DOOR_SYSTEM_DIMENSIONS = legacyDimensionNumberView(DOOR_SYSTEM_DIMENSIONS_OWNER);
 const DOOR_MOUNT_THICKNESS_DIMENSIONS = legacyDimensionNumberView(DOOR_MOUNT_THICKNESS_DIMENSIONS_OWNER);
 const DOOR_VISUAL_DIMENSIONS = legacyDimensionNumberView(DOOR_VISUAL_DIMENSIONS_OWNER);
+const DOOR_TRIM_DIMENSIONS = legacyDimensionNumberView(DOOR_TRIM_DIMENSIONS_OWNER);
 
 const WARDROBE_DEFAULTS = Object.freeze({
   ...WARDROBE_DEFAULTS_OWNER,
@@ -115,6 +117,7 @@ export {
   DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
   DEFAULT_WIDTH,
   DOOR_MOUNT_THICKNESS_DIMENSIONS,
+  DOOR_TRIM_DIMENSIONS,
   DOOR_VISUAL_DIMENSIONS,
   HINGED_DEFAULT_DEPTH,
   HINGED_DEFAULT_PER_DOOR_WIDTH,
@@ -501,39 +504,6 @@ export const CONTENT_VISUAL_DIMENSIONS = Object.freeze({
     grooveHeightClearanceM: 0.04,
     grooveDepthM: 0.002,
     grooveSurfaceOffsetM: 0.001,
-  }),
-});
-
-export const DOOR_TRIM_DIMENSIONS = Object.freeze({
-  defaults: Object.freeze({
-    thicknessM: 0.035,
-    depthM: 0.01,
-    frontZM: 0.011,
-    frontSurfaceNudgeM: 0.0005,
-    centerNorm: 0.5,
-    crossSizeCm: 3.5,
-  }),
-  limits: Object.freeze({
-    minSpanM: 0.04,
-    customMinCm: 4,
-    customMaxCm: 400,
-    crossSizeMinCm: 1,
-    crossSizeMaxCm: 120,
-  }),
-  snap: Object.freeze({
-    centerNormThreshold: 0.04,
-    centerNormThresholdMax: 0.25,
-    mirrorZoneM: 0.006,
-    mirrorEdgeGapM: 0.0008,
-  }),
-  normalize: Object.freeze({
-    centerEpsilonNorm: 1e-4,
-    rectSpanMinM: 0.0001,
-  }),
-  removeTolerance: Object.freeze({
-    thicknessMultiplier: 1.15,
-    maxM: 0.09,
-    crossSpanRatio: 0.12,
   }),
 });
 

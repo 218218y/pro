@@ -5,7 +5,7 @@ import type {
   ResolvedDoorTrimPlacement,
 } from './trim_placement_contracts.js';
 import { DOOR_TRIM_MIRROR_EDGE_GAP_M, DOOR_TRIM_MIRROR_SNAP_ZONE_M } from './trim_shared.js';
-import { DOOR_TRIM_DIMENSIONS } from '../../../../shared/wardrobe_dimension_tokens_shared.js';
+import { DOOR_TRIM_NORMALIZATION_POLICY } from '../../../../shared/dimensions/door_trim_policy.js';
 import {
   buildDoorTrimCenterNormFromResolvedCenter,
   buildDoorTrimRectFromPlacement,
@@ -128,8 +128,8 @@ export function resolveDoorTrimPlacementAvoidingMirror(
   if (!candidates.length) return base;
   candidates.sort((a, b) => a.rank - b.rank || a.delta - b.delta);
   const best = candidates[0];
-  const width = Math.max(DOOR_TRIM_DIMENSIONS.normalize.rectSpanMinM, args.rect.maxX - args.rect.minX);
-  const height = Math.max(DOOR_TRIM_DIMENSIONS.normalize.rectSpanMinM, args.rect.maxY - args.rect.minY);
+  const width = Math.max(DOOR_TRIM_NORMALIZATION_POLICY.rectSpanMinM, args.rect.maxX - args.rect.minX);
+  const height = Math.max(DOOR_TRIM_NORMALIZATION_POLICY.rectSpanMinM, args.rect.maxY - args.rect.minY);
   return {
     ...base,
     centerX: best.centerX,

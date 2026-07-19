@@ -12,7 +12,7 @@ import {
   DOOR_MOUNT_THICKNESS_DIMENSIONS as FACADE_DOOR_MOUNT_THICKNESS_DIMENSIONS,
   DOOR_VISUAL_DIMENSIONS as FACADE_DOOR_VISUAL_DIMENSIONS,
   DOOR_SYSTEM_DIMENSIONS,
-  DOOR_TRIM_DIMENSIONS,
+  DOOR_TRIM_DIMENSIONS as FACADE_DOOR_TRIM_DIMENSIONS,
   DRAWER_DIMENSIONS,
   MATERIAL_DIMENSIONS,
   WARDROBE_DEFAULTS as FACADE_WARDROBE_DEFAULTS,
@@ -83,6 +83,16 @@ import {
   DOOR_VISUAL_COMMON_POLICY,
   DOOR_VISUAL_DIMENSIONS as OWNER_DOOR_VISUAL_DIMENSIONS,
 } from '../esm/shared/dimensions/door_visual_policy.ts';
+import {
+  DOOR_TRIM_AUTHORING_DEFAULTS_POLICY,
+  DOOR_TRIM_DEFAULTS_POLICY,
+  DOOR_TRIM_DIMENSIONS,
+  DOOR_TRIM_LIMITS_POLICY,
+  DOOR_TRIM_NORMALIZATION_POLICY,
+  DOOR_TRIM_REMOVE_TOLERANCE_POLICY,
+  DOOR_TRIM_RENDER_POLICY,
+  DOOR_TRIM_SNAP_POLICY,
+} from '../esm/shared/dimensions/door_trim_policy.ts';
 import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
@@ -776,11 +786,70 @@ test('Door Visual policy preserves every value, section reference, and facade id
 test('feature facades read physical dimensions from the shared token source', () => {
   assert.equal(DEFAULT_BASE_LEG_HEIGHT_CM, BASE_LEG_DIMENSIONS.defaults.heightCm);
   assert.equal(DEFAULT_TAPERED_BASE_LEG_WIDTH_CM, BASE_LEG_DIMENSIONS.defaults.taperedWidthCm);
-  assert.equal(DEFAULT_DOOR_TRIM_CROSS_SIZE_CM, DOOR_TRIM_DIMENSIONS.defaults.crossSizeCm);
+  assert.equal(DEFAULT_DOOR_TRIM_CROSS_SIZE_CM, FACADE_DOOR_TRIM_DIMENSIONS.defaults.crossSizeCm);
   assert.equal(DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM, DRAWER_DIMENSIONS.sketch.externalDefaultHeightCm);
   assert.equal(SKETCH_EXTERNAL_DRAWER_COUNT_MAX, DRAWER_DIMENSIONS.sketch.externalCountMax);
   assert.equal(MATERIAL_DIMENSIONS.wood.thicknessM, 0.018);
   assert.equal(MATERIAL_DIMENSIONS.glassShelf.thicknessM, 0.018);
+});
+
+test('Door Trim policy preserves every value, nested policy reference, and facade identity', () => {
+  assert.equal(FACADE_DOOR_TRIM_DIMENSIONS, DOOR_TRIM_DIMENSIONS);
+  assert.equal(DOOR_TRIM_DIMENSIONS.defaults, DOOR_TRIM_DEFAULTS_POLICY);
+  assert.equal(DOOR_TRIM_DIMENSIONS.limits, DOOR_TRIM_LIMITS_POLICY);
+  assert.equal(DOOR_TRIM_DIMENSIONS.snap, DOOR_TRIM_SNAP_POLICY);
+  assert.equal(DOOR_TRIM_DIMENSIONS.normalize, DOOR_TRIM_NORMALIZATION_POLICY);
+  assert.equal(DOOR_TRIM_DIMENSIONS.removeTolerance, DOOR_TRIM_REMOVE_TOLERANCE_POLICY);
+  assert.equal(DOOR_TRIM_DEFAULTS_POLICY.thicknessM, DOOR_TRIM_RENDER_POLICY.thicknessM);
+  assert.equal(DOOR_TRIM_DEFAULTS_POLICY.depthM, DOOR_TRIM_RENDER_POLICY.depthM);
+  assert.equal(DOOR_TRIM_DEFAULTS_POLICY.frontZM, DOOR_TRIM_RENDER_POLICY.frontZM);
+  assert.equal(DOOR_TRIM_DEFAULTS_POLICY.frontSurfaceNudgeM, DOOR_TRIM_RENDER_POLICY.frontSurfaceNudgeM);
+  assert.equal(DOOR_TRIM_DEFAULTS_POLICY.centerNorm, DOOR_TRIM_AUTHORING_DEFAULTS_POLICY.centerNorm);
+  assert.equal(DOOR_TRIM_DEFAULTS_POLICY.crossSizeCm, DOOR_TRIM_AUTHORING_DEFAULTS_POLICY.crossSizeCm);
+  for (const policy of [
+    DOOR_TRIM_RENDER_POLICY,
+    DOOR_TRIM_AUTHORING_DEFAULTS_POLICY,
+    DOOR_TRIM_LIMITS_POLICY,
+    DOOR_TRIM_SNAP_POLICY,
+    DOOR_TRIM_NORMALIZATION_POLICY,
+    DOOR_TRIM_REMOVE_TOLERANCE_POLICY,
+    DOOR_TRIM_DEFAULTS_POLICY,
+    DOOR_TRIM_DIMENSIONS,
+  ]) {
+    assert.equal(Object.isFrozen(policy), true);
+  }
+  assert.deepEqual(FACADE_DOOR_TRIM_DIMENSIONS, {
+    defaults: {
+      thicknessM: 0.035,
+      depthM: 0.01,
+      frontZM: 0.011,
+      frontSurfaceNudgeM: 0.0005,
+      centerNorm: 0.5,
+      crossSizeCm: 3.5,
+    },
+    limits: {
+      minSpanM: 0.04,
+      customMinCm: 4,
+      customMaxCm: 400,
+      crossSizeMinCm: 1,
+      crossSizeMaxCm: 120,
+    },
+    snap: {
+      centerNormThreshold: 0.04,
+      centerNormThresholdMax: 0.25,
+      mirrorZoneM: 0.006,
+      mirrorEdgeGapM: 0.0008,
+    },
+    normalize: {
+      centerEpsilonNorm: 0.0001,
+      rectSpanMinM: 0.0001,
+    },
+    removeTolerance: {
+      thicknessMultiplier: 1.15,
+      maxM: 0.09,
+      crossSpanRatio: 0.12,
+    },
+  });
 });
 
 test('door mount thickness resolver treats sliding wardrobes as overlay construction', () => {

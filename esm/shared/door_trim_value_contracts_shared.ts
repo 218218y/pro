@@ -5,7 +5,11 @@ import type {
   DoorTrimSpan,
   UnknownRecord,
 } from '../../types/index.js';
-import { DOOR_TRIM_DIMENSIONS } from './wardrobe_dimension_tokens_shared.js';
+import {
+  DOOR_TRIM_AUTHORING_DEFAULTS_POLICY,
+  DOOR_TRIM_LIMITS_POLICY,
+  DOOR_TRIM_NORMALIZATION_POLICY,
+} from './dimensions/door_trim_policy.js';
 
 export type DoorTrimStableIdParts = {
   axis: DoorTrimAxis;
@@ -25,13 +29,13 @@ export type DoorTrimValueNormalizationOptions = {
 export const DEFAULT_DOOR_TRIM_COLOR: DoorTrimColor = 'nickel';
 export const DEFAULT_DOOR_TRIM_SPAN: DoorTrimSpan = 'full';
 export const DEFAULT_DOOR_TRIM_AXIS: DoorTrimAxis = 'horizontal';
-export const DEFAULT_DOOR_TRIM_CENTER_NORM: number = DOOR_TRIM_DIMENSIONS.defaults.centerNorm;
-export const MIN_DOOR_TRIM_CUSTOM_CM: number = DOOR_TRIM_DIMENSIONS.limits.customMinCm;
-export const MAX_DOOR_TRIM_CUSTOM_CM: number = DOOR_TRIM_DIMENSIONS.limits.customMaxCm;
-export const MIN_DOOR_TRIM_CROSS_SIZE_CM: number = DOOR_TRIM_DIMENSIONS.limits.crossSizeMinCm;
-export const MAX_DOOR_TRIM_CROSS_SIZE_CM: number = DOOR_TRIM_DIMENSIONS.limits.crossSizeMaxCm;
+export const DEFAULT_DOOR_TRIM_CENTER_NORM: number = DOOR_TRIM_AUTHORING_DEFAULTS_POLICY.centerNorm;
+export const MIN_DOOR_TRIM_CUSTOM_CM: number = DOOR_TRIM_LIMITS_POLICY.customMinCm;
+export const MAX_DOOR_TRIM_CUSTOM_CM: number = DOOR_TRIM_LIMITS_POLICY.customMaxCm;
+export const MIN_DOOR_TRIM_CROSS_SIZE_CM: number = DOOR_TRIM_LIMITS_POLICY.crossSizeMinCm;
+export const MAX_DOOR_TRIM_CROSS_SIZE_CM: number = DOOR_TRIM_LIMITS_POLICY.crossSizeMaxCm;
 
-const CENTER_EPSILON = DOOR_TRIM_DIMENSIONS.normalize.centerEpsilonNorm;
+const CENTER_EPSILON = DOOR_TRIM_NORMALIZATION_POLICY.centerEpsilonNorm;
 
 export function isDoorTrimValueRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);

@@ -4,7 +4,7 @@ import {
   resolveDoorTrimPlacements,
   type DoorTrimSurfacePlane,
 } from '../features/door_authoring/api.js';
-import { DOOR_TRIM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DOOR_TRIM_RENDER_POLICY } from '../../shared/dimensions/door_trim_policy.js';
 import { ensureDoorTrimMaterialCache } from '../runtime/door_trim_visuals_access.js';
 import { resolveMetalFinishPalette } from '../features/finish_palette/api.js';
 import {
@@ -91,7 +91,7 @@ function resolveSurfaceCenterCoord(args: {
   faceSign: number;
   surfaceFaceCoord?: number;
 }): number {
-  const nudge = DEFAULT_DOOR_TRIM_DEPTH_M * 0.5 + DOOR_TRIM_DIMENSIONS.defaults.frontSurfaceNudgeM;
+  const nudge = DEFAULT_DOOR_TRIM_DEPTH_M * 0.5 + DOOR_TRIM_RENDER_POLICY.frontSurfaceNudgeM;
   const sign = args.faceSign < 0 ? -1 : 1;
   if (args.plane === 'xy') return (args.frontZ + nudge) * sign;
   return readFinite(args.surfaceFaceCoord, args.frontZ * sign) + sign * nudge;
@@ -159,7 +159,7 @@ export function appendDoorTrimVisuals(args: DoorTrimVisualArgs): void {
     doorWidth,
     doorHeight,
     doorMeshOffsetX = 0,
-    frontZ = DOOR_TRIM_DIMENSIONS.defaults.frontZM,
+    frontZ = DOOR_TRIM_RENDER_POLICY.frontZM,
     faceSign = 1,
     surfacePlane = 'xy',
     surfaceFaceCoord,
@@ -171,7 +171,7 @@ export function appendDoorTrimVisuals(args: DoorTrimVisualArgs): void {
   const height = readGeometryUserDataPositiveNumber(doorHeight);
   if (width == null || height == null) return;
   const meshOffsetX = readGeometryUserDataNumber(doorMeshOffsetX) ?? 0;
-  const resolvedFrontZ = readGeometryUserDataNumber(frontZ) ?? DOOR_TRIM_DIMENSIONS.defaults.frontZM;
+  const resolvedFrontZ = readGeometryUserDataNumber(frontZ) ?? DOOR_TRIM_RENDER_POLICY.frontZM;
   const rect = {
     minX: meshOffsetX - width / 2,
     maxX: meshOffsetX + width / 2,

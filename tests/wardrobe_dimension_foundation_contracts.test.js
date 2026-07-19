@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 235, statements: 235 }),
+  'static-import': Object.freeze({ importers: 229, statements: 229 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 237, statements: 238 }),
+  total: Object.freeze({ importers: 231, statements: 232 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -551,6 +551,33 @@ const APPROVED_DOOR_VISUAL_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_DOOR_VISUAL_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_DOOR_VISUAL_LEGACY_FIELD_USAGE = Object.freeze({});
+const APPROVED_DOOR_TRIM_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/door_trim_visuals.ts': Object.freeze(['DOOR_TRIM_RENDER_POLICY']),
+  'esm/native/features/door_authoring/internal/trim_placement_geometry.ts': Object.freeze([
+    'DOOR_TRIM_NORMALIZATION_POLICY',
+    'DOOR_TRIM_SNAP_POLICY',
+  ]),
+  'esm/native/features/door_authoring/internal/trim_placement_match.ts': Object.freeze([
+    'DOOR_TRIM_REMOVE_TOLERANCE_POLICY',
+  ]),
+  'esm/native/features/door_authoring/internal/trim_placement_mirror.ts': Object.freeze([
+    'DOOR_TRIM_NORMALIZATION_POLICY',
+  ]),
+  'esm/native/features/door_authoring/internal/trim_shared.ts': Object.freeze([
+    'DOOR_TRIM_AUTHORING_DEFAULTS_POLICY',
+    'DOOR_TRIM_LIMITS_POLICY',
+    'DOOR_TRIM_RENDER_POLICY',
+    'DOOR_TRIM_SNAP_POLICY',
+  ]),
+  'esm/shared/door_trim_value_contracts_shared.ts': Object.freeze([
+    'DOOR_TRIM_AUTHORING_DEFAULTS_POLICY',
+    'DOOR_TRIM_LIMITS_POLICY',
+    'DOOR_TRIM_NORMALIZATION_POLICY',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['DOOR_TRIM_DIMENSIONS']),
+});
+const APPROVED_DOOR_TRIM_LEGACY_DEPENDENCIES = Object.freeze({});
+const APPROVED_DOOR_TRIM_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DOOR_SYSTEM_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/builder/core_doors_compute.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
   'esm/native/builder/hinged_doors_module_ops_context.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
@@ -1441,6 +1468,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   const doorSystemPolicy = read('esm/shared/dimensions/door_system_policy.ts');
   const doorMountThicknessPolicy = read('esm/shared/dimensions/door_mount_thickness_policy.ts');
   const doorVisualPolicy = read('esm/shared/dimensions/door_visual_policy.ts');
+  const doorTrimPolicy = read('esm/shared/dimensions/door_trim_policy.ts');
 
   assert.match(facade, /from '\.\/dimensions\/units\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/wardrobe_defaults\.js'/u);
@@ -1543,6 +1571,16 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(doorVisualPolicy, /export const DOOR_MIRROR_POLICY = Object\.freeze/u);
   assert.match(doorVisualPolicy, /export const DOOR_VISUAL_DIMENSIONS = Object\.freeze/u);
   assert.match(doorVisualPolicy, /layoutSizeEpsilonCm: centimeters\(0\.001\)/u);
+  assert.match(doorTrimPolicy, /export const DOOR_TRIM_RENDER_POLICY = Object\.freeze/u);
+  assert.match(doorTrimPolicy, /export const DOOR_TRIM_AUTHORING_DEFAULTS_POLICY = Object\.freeze/u);
+  assert.match(doorTrimPolicy, /export const DOOR_TRIM_LIMITS_POLICY = Object\.freeze/u);
+  assert.match(doorTrimPolicy, /export const DOOR_TRIM_SNAP_POLICY = Object\.freeze/u);
+  assert.match(doorTrimPolicy, /export const DOOR_TRIM_NORMALIZATION_POLICY = Object\.freeze/u);
+  assert.match(doorTrimPolicy, /export const DOOR_TRIM_REMOVE_TOLERANCE_POLICY = Object\.freeze/u);
+  assert.match(doorTrimPolicy, /export const DOOR_TRIM_DEFAULTS_POLICY = Object\.freeze/u);
+  assert.match(doorTrimPolicy, /export const DOOR_TRIM_DIMENSIONS = Object\.freeze/u);
+  assert.match(doorTrimPolicy, /thicknessM: meters\(0\.035\)/u);
+  assert.match(doorTrimPolicy, /crossSizeCm: centimeters\(3\.5\)/u);
   assert.match(facade, /plinth: BASE_PLINTH_DIMENSIONS/u);
   assert.match(facade, /legs: BASE_LEG_LAYOUT_DIMENSIONS/u);
   assert.match(facade, /legacyDimensionNumberView\(BASE_PLINTH_POLICY\)/u);
@@ -1557,12 +1595,14 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /legacyDimensionNumberView\(DOOR_SYSTEM_DIMENSIONS_OWNER\)/u);
   assert.match(facade, /legacyDimensionNumberView\(\s*DOOR_MOUNT_THICKNESS_DIMENSIONS_OWNER\s*\)/u);
   assert.match(facade, /legacyDimensionNumberView\(DOOR_VISUAL_DIMENSIONS_OWNER\)/u);
+  assert.match(facade, /legacyDimensionNumberView\(DOOR_TRIM_DIMENSIONS_OWNER\)/u);
   assert.doesNotMatch(facade, /export const MATERIAL_DIMENSIONS = Object\.freeze/u);
   assert.doesNotMatch(facade, /export const CARCASS_CORNICE_DIMENSIONS = Object\.freeze/u);
   assert.doesNotMatch(facade, /export const CHEST_MODE_DIMENSIONS = Object\.freeze/u);
   assert.doesNotMatch(facade, /export const DOOR_SYSTEM_DIMENSIONS = Object\.freeze/u);
   assert.doesNotMatch(facade, /export const DOOR_MOUNT_THICKNESS_DIMENSIONS = Object\.freeze/u);
   assert.doesNotMatch(facade, /export const DOOR_VISUAL_DIMENSIONS = Object\.freeze/u);
+  assert.doesNotMatch(facade, /export const DOOR_TRIM_DIMENSIONS = Object\.freeze/u);
   assert.doesNotMatch(facade, /function roundDoorMountThicknessCm/u);
   assert.doesNotMatch(facade, /function normalizeDoorMountConstructionMode/u);
 
@@ -1576,7 +1616,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(decorativeSeparator, /dimensions\/stack_split_render_policy\.js/u);
 
   assert.doesNotMatch(
-    `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}\n${chestStructuralPolicy}\n${materialThicknessPolicy}\n${carcassCorniceRenderPolicy}\n${chestModePolicy}\n${doorSystemPolicy}\n${doorMountThicknessPolicy}\n${doorVisualPolicy}`,
+    `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}\n${chestStructuralPolicy}\n${materialThicknessPolicy}\n${carcassCorniceRenderPolicy}\n${chestModePolicy}\n${doorSystemPolicy}\n${doorMountThicknessPolicy}\n${doorVisualPolicy}\n${doorTrimPolicy}`,
     /wardrobe_dimension_tokens_shared/u
   );
 });
@@ -1733,6 +1773,23 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     },
     'DOOR_VISUAL_DIMENSIONS is compatibility-only and may be imported directly only by the legacy facade'
   );
+  const doorTrimOwnerImports = collectOwnerImports(analyzedSources, 'door_trim_policy.js');
+  assertApprovedSymbolUsage(
+    doorTrimOwnerImports,
+    APPROVED_DOOR_TRIM_OWNER_IMPORTS,
+    'Door Trim owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(doorTrimOwnerImports)
+        .filter(([, symbols]) => symbols.includes('DOOR_TRIM_DIMENSIONS'))
+        .map(([file]) => [file, ['DOOR_TRIM_DIMENSIONS']])
+    ),
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['DOOR_TRIM_DIMENSIONS'],
+    },
+    'DOOR_TRIM_DIMENSIONS is compatibility-only and may be imported directly only by the legacy facade'
+  );
   assertApprovedSymbolUsage(
     collectShellGridFieldUsage(analyzedSources),
     APPROVED_SHELL_GRID_FIELD_USAGE,
@@ -1848,6 +1905,24 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     ),
     APPROVED_DOOR_VISUAL_LEGACY_FIELD_USAGE,
     'Door Visual legacy field allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionSymbolDependencies(
+      analyzedSources,
+      'DOOR_TRIM_DIMENSIONS',
+      'dimensions/door_trim_policy.js'
+    ),
+    APPROVED_DOOR_TRIM_LEGACY_DEPENDENCIES,
+    'Door Trim legacy dependency allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionPolicyFieldUsage(
+      analyzedSources,
+      'DOOR_TRIM_DIMENSIONS',
+      'dimensions/door_trim_policy.js'
+    ),
+    APPROVED_DOOR_TRIM_LEGACY_FIELD_USAGE,
+    'Door Trim legacy field allowlist'
   );
 });
 
@@ -2303,6 +2378,82 @@ test('[dimension-foundation] Door Visual guard detects aliases, nested fields, a
         ),
         {},
         'Door Visual fixture legacy field allowlist'
+      ),
+    /review-blocked/u
+  );
+});
+
+test('[dimension-foundation] Door Trim guard detects aliases, nested fields, and broad dependencies', () => {
+  const sources = [
+    [
+      'esm/native/builder/named_door_trim_consumer.ts',
+      `
+        import { DOOR_TRIM_DIMENSIONS as trims } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const trimAlias = trims;
+        const { defaults: { frontZM: front } } = trimAlias;
+        const { snap: snapPolicy } = trimAlias;
+        export const zone = snapPolicy['mirrorZoneM'];
+        export const dynamic = trimAlias[key];
+        export { front };
+      `,
+    ],
+    [
+      'esm/native/builder/namespace_door_trim_consumer.ts',
+      `
+        import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const trims = dimensions.DOOR_TRIM_DIMENSIONS;
+        const { removeTolerance } = trims;
+        export const max = removeTolerance['maxM'];
+      `,
+    ],
+    [
+      'esm/native/runtime/door_trim_wildcard.ts',
+      `export * from '../../shared/wardrobe_dimension_tokens_shared.js';`,
+    ],
+    [
+      'esm/native/runtime/door_trim_dynamic.ts',
+      `export const dimensions = import('../../shared/wardrobe_dimension_tokens_shared.js');`,
+    ],
+  ];
+
+  assert.deepEqual(
+    collectLegacyDimensionSymbolDependencies(
+      sources,
+      'DOOR_TRIM_DIMENSIONS',
+      'dimensions/door_trim_policy.js'
+    ),
+    {
+      'esm/native/builder/named_door_trim_consumer.ts': ['DOOR_TRIM_DIMENSIONS@static-import'],
+    }
+  );
+  assert.deepEqual(
+    collectLegacyDimensionPolicyFieldUsage(sources, 'DOOR_TRIM_DIMENSIONS', 'dimensions/door_trim_policy.js'),
+    {
+      'esm/native/builder/named_door_trim_consumer.ts': [
+        '<computed>',
+        'defaults',
+        'defaults.frontZM',
+        'snap',
+        'snap.mirrorZoneM',
+      ],
+      'esm/native/builder/namespace_door_trim_consumer.ts': ['removeTolerance', 'removeTolerance.maxM'],
+    }
+  );
+  assert.deepEqual(collectDimensionFacadeBroadDependencies(sources), [
+    { file: 'esm/native/builder/namespace_door_trim_consumer.ts', syntax: 'static-import' },
+    { file: 'esm/native/runtime/door_trim_dynamic.ts', syntax: 'dynamic-import' },
+    { file: 'esm/native/runtime/door_trim_wildcard.ts', syntax: 'static-re-export' },
+  ]);
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        collectLegacyDimensionPolicyFieldUsage(
+          sources,
+          'DOOR_TRIM_DIMENSIONS',
+          'dimensions/door_trim_policy.js'
+        ),
+        {},
+        'Door Trim fixture legacy field allowlist'
       ),
     /review-blocked/u
   );

@@ -27,15 +27,18 @@ import {
   resolveDoorTrimCenterPair,
   resolveDoorTrimNormalizedCenter,
 } from './trim_shared.js';
-import { DOOR_TRIM_DIMENSIONS } from '../../../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DOOR_TRIM_NORMALIZATION_POLICY,
+  DOOR_TRIM_SNAP_POLICY,
+} from '../../../../shared/dimensions/door_trim_policy.js';
 
 export function buildDoorTrimCenterFromLocal(args: DoorTrimCenterFromLocalArgs): {
   centerXNorm: number;
   centerYNorm: number;
 } {
   const { rect, localX, localY } = args;
-  const width = Math.max(DOOR_TRIM_DIMENSIONS.normalize.rectSpanMinM, rect.maxX - rect.minX);
-  const height = Math.max(DOOR_TRIM_DIMENSIONS.normalize.rectSpanMinM, rect.maxY - rect.minY);
+  const width = Math.max(DOOR_TRIM_NORMALIZATION_POLICY.rectSpanMinM, rect.maxX - rect.minX);
+  const height = Math.max(DOOR_TRIM_NORMALIZATION_POLICY.rectSpanMinM, rect.maxY - rect.minY);
   const centerXNorm = normalizeDoorTrimCenterNorm((localX - rect.minX) / width);
   const centerYNorm = normalizeDoorTrimCenterNorm((localY - rect.minY) / height);
   return {
@@ -55,10 +58,7 @@ export function buildSnappedDoorTrimCenterFromLocal(args: DoorTrimSnappedCenterF
     typeof args.thresholdNorm === 'number' && Number.isFinite(args.thresholdNorm)
       ? Number(args.thresholdNorm)
       : DOOR_TRIM_CENTER_SNAP_NORM_THRESHOLD;
-  const thresholdNorm = Math.max(
-    0,
-    Math.min(DOOR_TRIM_DIMENSIONS.snap.centerNormThresholdMax, thresholdNormRaw)
-  );
+  const thresholdNorm = Math.max(0, Math.min(DOOR_TRIM_SNAP_POLICY.centerNormThresholdMax, thresholdNormRaw));
   const base = buildDoorTrimCenterFromLocal({
     rect: args.rect,
     localX: args.localX,

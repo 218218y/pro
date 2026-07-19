@@ -1,14 +1,12 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process';
-import osConstants from 'node:os';
+import {
+  isChildRunning,
+  resolveChildExitCode,
+  signalToExitCode,
+  terminateChildWithEscalation,
+} from './wp_child_process_protocol.mjs';
 import { buildTsxTestRun } from './wp_test_runner_command.mjs';
-
-function signalToExitCode(signal) {
-  if (!signal) return 1;
-  const normalized = signal.startsWith('SIG') ? signal : `SIG${signal}`;
-  const code = osConstants.constants.signals[normalized];
-  return Number.isInteger(code) ? 128 + code : 1;
-}
 
 const rawArgs = process.argv.slice(2);
 const separatorIndex = rawArgs.indexOf('--');
@@ -36,18 +34,23 @@ let killTimer = null;
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () => {
     forwardedSignal = signal;
-    if (!child.killed) child.kill(signal);
     if (killTimer) clearTimeout(killTimer);
-    killTimer = setTimeout(() => {
-      if (!child.killed) child.kill('SIGKILL');
-    }, 2000);
-    killTimer.unref?.();
+    killTimer = terminateChildWithEscalation(child, signal, {
+      onEscalate(escalationSignal) {
+        console.error(
+          `[run-tsx-tests] child still running after SIGTERM grace period; escalating to ${escalationSignal}`
+        );
+      },
+    });
+    if (!killTimer && !isChildRunning(child)) process.exit(signalToExitCode(signal));
   });
 }
 
+child.once('spawn', () => {
+  console.error('[run-tsx-tests] ready');
+});
+
 child.on('exit', (code, signal) => {
   if (killTimer) clearTimeout(killTimer);
-  if (signal) process.exit(signalToExitCode(signal));
-  if (forwardedSignal && code !== 0) process.exit(signalToExitCode(forwardedSignal));
-  process.exit(code ?? 1);
+  process.exit(resolveChildExitCode({ code, signal, requestedSignal: forwardedSignal }));
 });

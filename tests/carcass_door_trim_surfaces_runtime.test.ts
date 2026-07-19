@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createApplyCarcassBaseOps } from '../esm/native/builder/render_carcass_ops_base.ts';
+import { appendDoorTrimVisuals } from '../esm/native/builder/door_trim_visuals.ts';
 
 class BoxGeometry {
   args: [number, number, number];
@@ -119,4 +120,39 @@ test('carcass rendering tags side/top boards as trim surfaces and renders config
   assert.ok(Math.abs(trim.position.last[0] + 0.0145) < 1e-12);
   assert.equal(trim.position.last[1], 0);
   assert.equal(trim.position.last[2], 0);
+});
+
+test('door trim visuals preserve XY, YZ, and XZ geometry, front offset, and surface nudge', () => {
+  const expected = {
+    xy: { geometry: [1, 0.035, 0.01], position: [0, 0, 0.0165] },
+    yz: { geometry: [0.01, 0.035, 1], position: [0.0165, 0, 0] },
+    xz: { geometry: [1, 0.01, 0.035], position: [0, 0.0165, 0] },
+  } as const;
+
+  for (const surfacePlane of ['xy', 'yz', 'xz'] as const) {
+    const children: unknown[] = [];
+    appendDoorTrimVisuals({
+      App: { services: {} },
+      THREE,
+      group: {
+        add(child: unknown) {
+          children.push(child);
+        },
+      },
+      partId: `trim-${surfacePlane}`,
+      trims: [{ id: `trim-${surfacePlane}`, axis: 'horizontal', span: 'full', color: 'nickel' }],
+      doorWidth: 1,
+      doorHeight: 2,
+      frontZ: 0.011,
+      faceSign: 1,
+      surfacePlane,
+      surfaceFaceCoord: 0.011,
+    });
+
+    assert.equal(children.length, 1);
+    const trim = children[0] as Mesh;
+    assert.deepEqual((trim.geometry as BoxGeometry).args, expected[surfacePlane].geometry);
+    assert.deepEqual(trim.position.last, expected[surfacePlane].position);
+    assert.equal(trim.userData.__wpDoorTrimSurfacePlane, surfacePlane);
+  }
 });

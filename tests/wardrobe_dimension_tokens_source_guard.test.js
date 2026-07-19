@@ -9,6 +9,7 @@ const productDimensionTokenSources = [
   'esm/shared/dimensions/door_system_policy.ts',
   'esm/shared/dimensions/door_mount_thickness_policy.ts',
   'esm/shared/dimensions/door_visual_policy.ts',
+  'esm/shared/dimensions/door_trim_policy.ts',
 ];
 
 function readProductDimensionTokens() {
@@ -210,7 +211,7 @@ test('[dimension tokens] door visual miter/profile/trim preview geometry is cent
     'esm/native/builder/visuals_and_contents_door_visual_profile.ts',
     'DOOR_PROFILE_RENDER_POLICY'
   );
-  assertUsesToken('esm/native/builder/door_trim_visuals.ts', 'DOOR_TRIM_DIMENSIONS');
+  assertUsesToken('esm/native/builder/door_trim_visuals.ts', 'DOOR_TRIM_RENDER_POLICY');
 
   const miter = read('esm/native/builder/visuals_and_contents_door_visual_miter_frame.ts');
   assert.doesNotMatch(miter, /Math\.max\(0\.001, Math\.min\(bandW/);
@@ -252,18 +253,25 @@ test('[dimension tokens] door split and cell dimension hover preview measurement
 
 test('[dimension tokens] door trim placement and front reveal frame geometry are centralized', () => {
   const tokens = readProductDimensionTokens();
-  assert.match(tokens, /removeTolerance: Object\.freeze\(\{/);
-  assert.match(tokens, /normalize: Object\.freeze\(\{/);
+  assert.match(tokens, /export const DOOR_TRIM_REMOVE_TOLERANCE_POLICY = Object\.freeze\(\{/);
+  assert.match(tokens, /export const DOOR_TRIM_NORMALIZATION_POLICY = Object\.freeze\(\{/);
+  assert.match(tokens, /export const DOOR_TRIM_RENDER_POLICY = Object\.freeze\(\{/);
+  assert.match(tokens, /export const DOOR_TRIM_DIMENSIONS = Object\.freeze\(\{/);
   assert.match(tokens, /export const FRONT_REVEAL_FRAME_DIMENSIONS = Object\.freeze\(\{/);
 
-  for (const rel of [
-    'esm/native/features/door_authoring/internal/trim_shared.ts',
+  assertUsesToken('esm/native/features/door_authoring/internal/trim_shared.ts', 'DOOR_TRIM_RENDER_POLICY');
+  assertUsesToken(
     'esm/native/features/door_authoring/internal/trim_placement_geometry.ts',
+    'DOOR_TRIM_SNAP_POLICY'
+  );
+  assertUsesToken(
     'esm/native/features/door_authoring/internal/trim_placement_match.ts',
+    'DOOR_TRIM_REMOVE_TOLERANCE_POLICY'
+  );
+  assertUsesToken(
     'esm/native/features/door_authoring/internal/trim_placement_mirror.ts',
-  ]) {
-    assertUsesToken(rel, 'DOOR_TRIM_DIMENSIONS');
-  }
+    'DOOR_TRIM_NORMALIZATION_POLICY'
+  );
 
   for (const rel of [
     'esm/native/builder/post_build_front_reveal_frames_runtime.ts',
