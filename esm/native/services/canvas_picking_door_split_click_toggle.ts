@@ -2,7 +2,7 @@ import type {
   CanvasDoorSplitBounds,
   CanvasDoorSplitClickArgs,
 } from './canvas_picking_door_split_click_contracts.js';
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
 import { __wp_getRegularSplitPreviewLineY } from './canvas_picking_core_helpers.js';
 import { requestDoorAuthoringBurstRefresh } from './canvas_picking_door_authoring_burst.js';
 import { resolveCanvasDoorSplitPointerWorldY } from './canvas_picking_door_split_pointer_y.js';

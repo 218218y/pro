@@ -5,7 +5,7 @@
 // - No silent recovery path: if ops are missing, throw with context
 // - BuildContext-only API
 
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { isBuildContext } from './build_context.js';
 import { computeSlidingDoorOps } from './pure_api.js';

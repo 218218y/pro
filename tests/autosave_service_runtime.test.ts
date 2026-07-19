@@ -147,6 +147,70 @@ test('autosave access sanitizes owner exceptions and returns only safe diagnosti
   );
 });
 
+test('autosave access observes malformed rejected thenables without awaiting or leaking rejection data', async () => {
+  const sensitiveValue = 'wardrobe_autosave_latest:{"privateProject":"secret"}';
+  const unhandledRejections: unknown[] = [];
+  const reports: unknown[] = [];
+  const onUnhandledRejection = (reason: unknown) => {
+    unhandledRejections.push(reason);
+  };
+  process.on('unhandledRejection', onUnhandledRejection);
+
+  const App: Record<string, any> = {
+    services: {
+      autosave: {},
+    },
+  };
+  const expectedInvalidResult = {
+    ok: false,
+    reason: 'owner-rejected',
+    detail: 'owner-invalid-result',
+  };
+
+  try {
+    for (const typedThenable of [
+      Promise.resolve({ ok: true }),
+      Promise.reject(new Error(sensitiveValue)),
+      {
+        then(_resolve: (value: unknown) => void, reject: (reason: unknown) => void) {
+          reject({ sensitiveValue });
+        },
+      },
+      Object.create(
+        Object.defineProperty({}, 'then', {
+          get() {
+            throw new Error(sensitiveValue);
+          },
+        }),
+        { ok: { value: true, enumerable: true } }
+      ),
+    ]) {
+      App.services.autosave.forceSaveNowResult = () => typedThenable;
+      assert.deepEqual(
+        forceAutosaveNowResultViaService(App, error => reports.push(error)),
+        expectedInvalidResult
+      );
+    }
+
+    App.services.autosave.forceSaveNowResult = undefined;
+    for (const legacyThenable of [Promise.resolve(false), Promise.reject({ sensitiveValue })]) {
+      App.services.autosave.forceSaveNow = () => legacyThenable;
+      assert.deepEqual(
+        forceAutosaveNowResultViaService(App, error => reports.push(error)),
+        expectedInvalidResult
+      );
+    }
+
+    await Promise.resolve();
+    await new Promise<void>(resolve => setImmediate(resolve));
+
+    assert.deepEqual(unhandledRejections, []);
+    assert.deepEqual(reports, []);
+  } finally {
+    process.off('unhandledRejection', onUnhandledRejection);
+  }
+});
+
 test('autosave access: canonical autosave info normalization keeps restore availability but drops junk fields', () => {
   assert.deepEqual(normalizeAutosaveInfo({ timestamp: 123, dateString: 'saved', junk: true }), {
     timestamp: 123,

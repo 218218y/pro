@@ -836,6 +836,53 @@ test('project io load keeps committed success with warning for a malformed autos
   );
 });
 
+test('project io load contains a rejected malformed autosave result and preserves its public warning', async () => {
+  const sensitiveValue = 'autosave-key:{"projectPayload":"private"}';
+  const unhandledRejections: unknown[] = [];
+  const onUnhandledRejection = (reason: unknown) => {
+    unhandledRejections.push(reason);
+  };
+  process.on('unhandledRejection', onUnhandledRejection);
+
+  try {
+    const harness = createProjectIoApp({
+      autosaveRefreshResult: Promise.reject(new Error(sensitiveValue)),
+    });
+
+    const result = harness.orchestrator.loadProjectData(VALID_PROJECT as never, { toast: false });
+
+    assert.deepEqual(result, {
+      ok: true,
+      restoreGen: 1,
+      warnings: [
+        {
+          effect: 'autosave-refresh',
+          message: 'Project loaded, but autosave refresh did not complete.',
+        },
+      ],
+    });
+    assert.equal(
+      harness.reports.some(
+        report =>
+          report.op === 'project.load.refreshAutosave.warning.owner-rejected.owner-invalid-result' &&
+          report.message === 'Project load autosave refresh failed: owner-rejected.owner-invalid-result'
+      ),
+      true
+    );
+
+    await Promise.resolve();
+    await new Promise<void>(resolve => setImmediate(resolve));
+
+    assert.deepEqual(unhandledRejections, []);
+    assert.equal(
+      harness.reports.some(report => report.message.includes(sensitiveValue)),
+      false
+    );
+  } finally {
+    process.off('unhandledRejection', onUnhandledRejection);
+  }
+});
+
 test('project io owns stale restore generation without dispatching the autosave owner', () => {
   let forceCalls = 0;
   const App = {

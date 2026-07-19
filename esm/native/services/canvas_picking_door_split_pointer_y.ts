@@ -1,5 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
 import { getCamera } from '../runtime/render_access.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import type { MouseVectorLike, RaycasterLike } from './canvas_picking_engine.js';

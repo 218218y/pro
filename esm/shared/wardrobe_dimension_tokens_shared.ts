@@ -35,6 +35,7 @@ import { CHEST_STRUCTURAL_DIMENSIONS as CHEST_STRUCTURAL_DIMENSIONS_OWNER } from
 import { MATERIAL_THICKNESS_POLICY } from './dimensions/material_thickness_policy.js';
 import { CARCASS_CORNICE_RENDER_POLICY } from './dimensions/carcass_cornice_render_policy.js';
 import { CHEST_MODE_DIMENSIONS as CHEST_MODE_DIMENSIONS_OWNER } from './dimensions/chest_mode_policy.js';
+import { DOOR_SYSTEM_DIMENSIONS as DOOR_SYSTEM_DIMENSIONS_OWNER } from './dimensions/door_system_policy.js';
 import {
   STACK_SPLIT_LOWER_DEPTH_MAX,
   STACK_SPLIT_LOWER_DEPTH_MIN,
@@ -84,6 +85,7 @@ const CHEST_STRUCTURAL_DIMENSIONS = legacyDimensionNumberView(CHEST_STRUCTURAL_D
 const MATERIAL_DIMENSIONS = legacyDimensionNumberView(MATERIAL_THICKNESS_POLICY);
 const CARCASS_CORNICE_DIMENSIONS = legacyDimensionNumberView(CARCASS_CORNICE_RENDER_POLICY);
 const CHEST_MODE_DIMENSIONS = legacyDimensionNumberView(CHEST_MODE_DIMENSIONS_OWNER);
+const DOOR_SYSTEM_DIMENSIONS = legacyDimensionNumberView(DOOR_SYSTEM_DIMENSIONS_OWNER);
 
 const WARDROBE_DEFAULTS = Object.freeze({
   ...WARDROBE_DEFAULTS_OWNER,
@@ -253,85 +255,13 @@ export const CARCASS_BASE_DIMENSIONS = Object.freeze({
   chest: CHEST_STRUCTURAL_DIMENSIONS,
 });
 
-export { BASE_LEG_DIMENSIONS, CARCASS_CORNICE_DIMENSIONS, CHEST_MODE_DIMENSIONS, MATERIAL_DIMENSIONS };
-
-export const DOOR_SYSTEM_DIMENSIONS = Object.freeze({
-  hinged: Object.freeze({
-    visualWidthClearanceM: 0.004,
-    visualHeightClearanceM: 0.004,
-    visualThicknessM: MATERIAL_DIMENSIONS.wood.thicknessM,
-    insetFrameThicknessM: 0.036,
-    insetRevealM: 0.003,
-    frontTrimZOffsetM: 0.011,
-    opFrontZOffsetM: 0.01,
-    sameModuleLeafGapMaxM: 0.003,
-    sameModuleLeafGapWoodDivisor: 10,
-    sameModuleLeafGapSpanRatioMax: 0.1,
-    split: Object.freeze({
-      minSegmentHeightM: 0.12,
-      renderMinSegmentHeightM: 0.1,
-      splitGapM: 0.006,
-      duplicateCutToleranceMinM: 0.004,
-      duplicateCutToleranceMaxM: 0.02,
-      duplicateCutToleranceHeightRatio: 0.01,
-      storageLiftM: 0.5,
-      bottomClampOffsetM: 0.08,
-      topClampOffsetM: 0.12,
-      minHeightForSplitM: 0.2,
-      hoverMinDoorHeightM: 0.05,
-      hoverDefaultDoorWidthM: 0.45,
-      hoverRegionMinHeightM: 0.05,
-      hoverStandardLineMinHeightM: 0.014,
-      hoverStandardLineMaxHeightM: 0.026,
-      hoverStandardLineHeightRatio: 0.018,
-      hoverCustomEdgePadM: 0.12,
-      hoverCustomRemoveToleranceMinM: 0.03,
-      hoverCustomRemoveToleranceMaxM: 0.08,
-      hoverCustomRemoveToleranceRatio: 0.06,
-      hoverCustomMarkerMinHeightM: 0.02,
-      hoverCustomMarkerMaxHeightM: 0.06,
-      hoverCustomMarkerHeightRatio: 0.03,
-      hoverCustomAlignmentToleranceMinM: 0.002,
-      hoverCustomAlignmentToleranceMaxM: 0.008,
-      hoverCustomAlignmentToleranceHeightRatio: 0.003,
-      hoverMarkerZOffsetM: 0.02,
-      hoverMarkerScaleMinM: 0.01,
-      hoverMarkerWidthClearanceM: 0.01,
-      hoverMarkerHeightClearanceM: 0.001,
-    }),
-  }),
-  sliding: Object.freeze({
-    defaultDoorsCount: WARDROBE_DEFAULTS.byType.sliding.doorsCount,
-    overlapM: 0.03,
-    railHeightM: 0.04,
-    railDepthM: 0.075,
-    railBackInsetM: 0.002,
-    shellClearanceMinM: 0.0006,
-    shellClearanceMaxM: 0.002,
-    shellClearanceWoodDivisor: 6,
-    doorTopOverlapMaxM: 0.015,
-    doorTopOverlapRailInsetM: 0.004,
-    doorHeightMinM: 0.05,
-    railLineOffsetYExtraM: 0.001,
-    railTrackLaneDivisor: 4,
-    trackOuterOffsetM: 0.012,
-    trackInnerLaneGapM: 0.03,
-    visualThicknessM: 0.022,
-    trimFrontZM: 0.014,
-    handleProfileZOffsetM: 0.024,
-    standardHandleProfileWidthM: 0.025,
-    standardHandleProfileDepthM: 0.025,
-    standardHandleProfileInsetM: 0.0125,
-    standardHandleProfileFrontZM: 0.025,
-    edgeHandleWidthM: 0.01,
-    edgeHandleDepthM: 0.03,
-    edgeHandleInsetM: 0.005,
-    runtimeOpenEpsilonXM: 0.002,
-    runtimeStackZStepDefaultM: 0.055,
-    runtimeStackZStepMinM: 0.03,
-    runtimeStackZStepGapM: 0.006,
-  }),
-});
+export {
+  BASE_LEG_DIMENSIONS,
+  CARCASS_CORNICE_DIMENSIONS,
+  CHEST_MODE_DIMENSIONS,
+  DOOR_SYSTEM_DIMENSIONS,
+  MATERIAL_DIMENSIONS,
+};
 
 export const INTERIOR_FITTINGS_DIMENSIONS = Object.freeze({
   shelves: Object.freeze({

@@ -4,7 +4,14 @@ import fs from 'node:fs';
 
 const read = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
 
-const productDimensionTokenSource = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
+const productDimensionTokenSources = [
+  'esm/shared/wardrobe_dimension_tokens_shared.ts',
+  'esm/shared/dimensions/door_system_policy.ts',
+];
+
+function readProductDimensionTokens() {
+  return productDimensionTokenSources.map(read).join('\n');
+}
 
 function assertUsesToken(rel, tokenName) {
   const src = read(rel);
@@ -12,7 +19,7 @@ function assertUsesToken(rel, tokenName) {
 }
 
 test('[dimension tokens] visual content product dimensions are centralized', () => {
-  const tokens = read(productDimensionTokenSource);
+  const tokens = readProductDimensionTokens();
   assert.match(tokens, /export const CONTENT_VISUAL_DIMENSIONS = Object\.freeze\(\{/);
 
   for (const rel of [
@@ -25,7 +32,7 @@ test('[dimension tokens] visual content product dimensions are centralized', () 
 });
 
 test('[dimension tokens] sketch box geometry and preview dimensions are centralized', () => {
-  const tokens = read(productDimensionTokenSource);
+  const tokens = readProductDimensionTokens();
   assert.match(tokens, /export const SKETCH_BOX_DIMENSIONS = Object\.freeze\(\{/);
 
   for (const rel of [
@@ -47,7 +54,7 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
 });
 
 test('[dimension tokens] library presets and saved preset defaults read canonical dimensions', () => {
-  const tokens = read(productDimensionTokenSource);
+  const tokens = readProductDimensionTokens();
   assert.match(tokens, /export const LIBRARY_PRESET_DIMENSIONS = Object\.freeze\(\{/);
 
   for (const rel of [
@@ -69,7 +76,7 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
 });
 
 test('[dimension tokens] interior presets and sketch drawer sizing read canonical dimensions', () => {
-  const tokens = read(productDimensionTokenSource);
+  const tokens = readProductDimensionTokens();
   assert.match(tokens, /presets: Object\.freeze\(\{/);
   assert.match(tokens, /heightTokenEpsilonCm:/);
 
@@ -96,7 +103,7 @@ test('[dimension tokens] interior presets and sketch drawer sizing read canonica
 });
 
 test('[dimension tokens] sketch divider, attachment, and free-box measurement overlays are centralized', () => {
-  const tokens = read(productDimensionTokenSource);
+  const tokens = readProductDimensionTokens();
   assert.match(tokens, /dividers: Object\.freeze\(\{/);
   assert.match(tokens, /dimensionOverlay: Object\.freeze\(\{/);
   assert.match(tokens, /attachIntentMinOverlapMinM:/);
@@ -130,7 +137,7 @@ test('[dimension tokens] sketch divider, attachment, and free-box measurement ov
 });
 
 test('[dimension tokens] wardrobe dimension guide offsets are centralized', () => {
-  const tokens = read(productDimensionTokenSource);
+  const tokens = readProductDimensionTokens();
   assert.match(tokens, /export const WARDROBE_DIMENSION_GUIDE_DIMENSIONS = Object\.freeze\(\{/);
   assert.match(tokens, /verticalPlacement: Object\.freeze\(\{/);
   assert.match(tokens, /expandedWidthYOffsetM:/);
@@ -156,7 +163,7 @@ test('[dimension tokens] wardrobe dimension guide offsets are centralized', () =
 });
 
 test('[dimension tokens] mirror layout measurements read door visual dimension tokens', () => {
-  const tokens = read(productDimensionTokenSource);
+  const tokens = readProductDimensionTokens();
   assert.match(tokens, /layoutFullInsetM:/);
   assert.match(tokens, /layoutRemoveToleranceSizeRatio:/);
 
@@ -182,7 +189,7 @@ test('[dimension tokens] mirror layout measurements read door visual dimension t
 });
 
 test('[dimension tokens] door visual miter/profile/trim preview geometry is centralized', () => {
-  const tokens = read(productDimensionTokenSource);
+  const tokens = readProductDimensionTokens();
   assert.match(tokens, /miter: Object\.freeze\(\{/);
   assert.match(tokens, /roundedBeadThicknessRatio:/);
   assert.match(tokens, /outerAccentLineThicknessM:/);
@@ -211,7 +218,7 @@ test('[dimension tokens] door visual miter/profile/trim preview geometry is cent
 });
 
 test('[dimension tokens] door split and cell dimension hover preview measurements are centralized', () => {
-  const tokens = read(productDimensionTokenSource);
+  const tokens = readProductDimensionTokens();
   assert.match(tokens, /hoverStandardLineHeightRatio:/);
   assert.match(tokens, /cellDimsPreview: Object\.freeze\(\{/);
 
@@ -232,7 +239,7 @@ test('[dimension tokens] door split and cell dimension hover preview measurement
 });
 
 test('[dimension tokens] door trim placement and front reveal frame geometry are centralized', () => {
-  const tokens = read(productDimensionTokenSource);
+  const tokens = readProductDimensionTokens();
   assert.match(tokens, /removeTolerance: Object\.freeze\(\{/);
   assert.match(tokens, /normalize: Object\.freeze\(\{/);
   assert.match(tokens, /export const FRONT_REVEAL_FRAME_DIMENSIONS = Object\.freeze\(\{/);
@@ -276,7 +283,7 @@ test('[dimension tokens] door trim placement and front reveal frame geometry are
 });
 
 test('[dimension tokens] corner wing and connector shell dimensions read canonical tokens', () => {
-  const tokens = read(productDimensionTokenSource);
+  const tokens = readProductDimensionTokens();
   assert.match(tokens, /shellMinWallHeightM:/);
   assert.match(tokens, /shellPanelMinLengthM:/);
   assert.match(tokens, /minBlindWidthM:/);
@@ -307,7 +314,7 @@ test('[dimension tokens] corner wing and connector shell dimensions read canonic
 });
 
 test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage dimensions are centralized', () => {
-  const tokens = read(productDimensionTokenSource);
+  const tokens = readProductDimensionTokens();
   assert.match(tokens, /doorCutHorizontalOverlapMinM:/);
   assert.match(tokens, /rebuiltSegmentHandlePaddingHeightRatio:/);
   assert.match(tokens, /placement: Object\.freeze\(\{/);
@@ -388,7 +395,7 @@ test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage 
 });
 
 test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canonical dimensions', () => {
-  const tokens = read(productDimensionTokenSource);
+  const tokens = readProductDimensionTokens();
   for (const tokenPattern of [
     /sketchBoxClassic: Object\.freeze\(\{/,
     /externalPreviewBoxMinDimensionM:/,

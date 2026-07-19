@@ -46,6 +46,19 @@ import {
   CHEST_MODE_DRAWER_BOX_RENDER_POLICY,
 } from '../esm/shared/dimensions/chest_mode_policy.ts';
 import {
+  DOOR_SYSTEM_DIMENSIONS as OWNER_DOOR_SYSTEM_DIMENSIONS,
+  HINGED_DOOR_MOUNT_POLICY,
+  HINGED_DOOR_RENDER_POLICY,
+  HINGED_DOOR_SPLIT_AUTHORING_POLICY,
+  HINGED_DOOR_SPLIT_GEOMETRY_POLICY,
+  HINGED_DOOR_SPLIT_POLICY,
+  HINGED_DOOR_SYSTEM_POLICY,
+  SLIDING_DOOR_CONSTRUCTION_POLICY,
+  SLIDING_DOOR_HANDLE_RENDER_POLICY,
+  SLIDING_DOOR_MOTION_POLICY,
+  SLIDING_DOOR_SYSTEM_POLICY,
+} from '../esm/shared/dimensions/door_system_policy.ts';
+import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
   getDefaultWidthForWardrobeType,
@@ -463,6 +476,117 @@ test('Chest Mode policy preserves every default, render value, nested reference,
     dimensionGuideSideOffsetM: 0.15,
     dimensionGuideTopOffsetM: 0.1,
     dimensionGuideTextScale: CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.textScale,
+  });
+});
+
+test('Door System policy preserves every value, dependency reference, object shape, and facade identity', () => {
+  assert.equal(DOOR_SYSTEM_DIMENSIONS, OWNER_DOOR_SYSTEM_DIMENSIONS);
+  assert.equal(OWNER_DOOR_SYSTEM_DIMENSIONS.hinged, HINGED_DOOR_SYSTEM_POLICY);
+  assert.equal(OWNER_DOOR_SYSTEM_DIMENSIONS.sliding, SLIDING_DOOR_SYSTEM_POLICY);
+  assert.equal(HINGED_DOOR_SYSTEM_POLICY.split, HINGED_DOOR_SPLIT_POLICY);
+  assert.equal(HINGED_DOOR_RENDER_POLICY.visualThicknessM, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
+  assert.equal(
+    SLIDING_DOOR_CONSTRUCTION_POLICY.defaultDoorsCount,
+    WARDROBE_DEFAULTS.byType.sliding.doorsCount
+  );
+
+  assert.deepEqual(HINGED_DOOR_RENDER_POLICY, {
+    visualWidthClearanceM: 0.004,
+    visualHeightClearanceM: 0.004,
+    visualThicknessM: 0.018,
+    frontTrimZOffsetM: 0.011,
+    opFrontZOffsetM: 0.01,
+  });
+  assert.deepEqual(HINGED_DOOR_MOUNT_POLICY, {
+    insetFrameThicknessM: 0.036,
+    insetRevealM: 0.003,
+    sameModuleLeafGapMaxM: 0.003,
+    sameModuleLeafGapWoodDivisor: 10,
+    sameModuleLeafGapSpanRatioMax: 0.1,
+  });
+  assert.deepEqual(HINGED_DOOR_SPLIT_GEOMETRY_POLICY, {
+    minSegmentHeightM: 0.12,
+    renderMinSegmentHeightM: 0.1,
+    splitGapM: 0.006,
+    duplicateCutToleranceMinM: 0.004,
+    duplicateCutToleranceMaxM: 0.02,
+    duplicateCutToleranceHeightRatio: 0.01,
+    storageLiftM: 0.5,
+    bottomClampOffsetM: 0.08,
+    topClampOffsetM: 0.12,
+    minHeightForSplitM: 0.2,
+  });
+  assert.deepEqual(HINGED_DOOR_SPLIT_AUTHORING_POLICY, {
+    hoverMinDoorHeightM: 0.05,
+    hoverDefaultDoorWidthM: 0.45,
+    hoverRegionMinHeightM: 0.05,
+    hoverStandardLineMinHeightM: 0.014,
+    hoverStandardLineMaxHeightM: 0.026,
+    hoverStandardLineHeightRatio: 0.018,
+    hoverCustomEdgePadM: 0.12,
+    hoverCustomRemoveToleranceMinM: 0.03,
+    hoverCustomRemoveToleranceMaxM: 0.08,
+    hoverCustomRemoveToleranceRatio: 0.06,
+    hoverCustomMarkerMinHeightM: 0.02,
+    hoverCustomMarkerMaxHeightM: 0.06,
+    hoverCustomMarkerHeightRatio: 0.03,
+    hoverCustomAlignmentToleranceMinM: 0.002,
+    hoverCustomAlignmentToleranceMaxM: 0.008,
+    hoverCustomAlignmentToleranceHeightRatio: 0.003,
+    hoverMarkerZOffsetM: 0.02,
+    hoverMarkerScaleMinM: 0.01,
+    hoverMarkerWidthClearanceM: 0.01,
+    hoverMarkerHeightClearanceM: 0.001,
+  });
+  assert.deepEqual(SLIDING_DOOR_CONSTRUCTION_POLICY, {
+    defaultDoorsCount: WARDROBE_DEFAULTS.byType.sliding.doorsCount,
+    overlapM: 0.03,
+    railHeightM: 0.04,
+    railDepthM: 0.075,
+    railBackInsetM: 0.002,
+    shellClearanceMinM: 0.0006,
+    shellClearanceMaxM: 0.002,
+    shellClearanceWoodDivisor: 6,
+    doorTopOverlapMaxM: 0.015,
+    doorTopOverlapRailInsetM: 0.004,
+    doorHeightMinM: 0.05,
+    railLineOffsetYExtraM: 0.001,
+    railTrackLaneDivisor: 4,
+    trackOuterOffsetM: 0.012,
+    trackInnerLaneGapM: 0.03,
+    visualThicknessM: 0.022,
+    trimFrontZM: 0.014,
+  });
+  assert.deepEqual(SLIDING_DOOR_HANDLE_RENDER_POLICY, {
+    handleProfileZOffsetM: 0.024,
+    standardHandleProfileWidthM: 0.025,
+    standardHandleProfileDepthM: 0.025,
+    standardHandleProfileInsetM: 0.0125,
+    standardHandleProfileFrontZM: 0.025,
+    edgeHandleWidthM: 0.01,
+    edgeHandleDepthM: 0.03,
+    edgeHandleInsetM: 0.005,
+  });
+  assert.deepEqual(SLIDING_DOOR_MOTION_POLICY, {
+    runtimeOpenEpsilonXM: 0.002,
+    runtimeStackZStepDefaultM: 0.055,
+    runtimeStackZStepMinM: 0.03,
+    runtimeStackZStepGapM: 0.006,
+  });
+  assert.deepEqual(OWNER_DOOR_SYSTEM_DIMENSIONS, {
+    hinged: {
+      ...HINGED_DOOR_RENDER_POLICY,
+      ...HINGED_DOOR_MOUNT_POLICY,
+      split: {
+        ...HINGED_DOOR_SPLIT_GEOMETRY_POLICY,
+        ...HINGED_DOOR_SPLIT_AUTHORING_POLICY,
+      },
+    },
+    sliding: {
+      ...SLIDING_DOOR_CONSTRUCTION_POLICY,
+      ...SLIDING_DOOR_HANDLE_RENDER_POLICY,
+      ...SLIDING_DOOR_MOTION_POLICY,
+    },
   });
 });
 

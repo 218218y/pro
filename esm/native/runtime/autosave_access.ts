@@ -183,11 +183,32 @@ export function forceAutosaveNowViaService(App: unknown): boolean {
   return forceAutosaveNowResultViaService(App).ok;
 }
 
+function observeRejectedThenable(value: unknown): boolean {
+  if (!value || (typeof value !== 'object' && typeof value !== 'function')) return false;
+
+  let then: unknown;
+  try {
+    then = Reflect.get(value, 'then');
+  } catch {
+    return false;
+  }
+  if (typeof then !== 'function') return false;
+
+  try {
+    void Promise.resolve(value).catch(() => {
+      // Malformed async owners remain isolated; rejection data is intentionally discarded.
+    });
+  } catch {
+    // Thenable observation is diagnostic containment only and must remain best-effort.
+  }
+  return true;
+}
+
 function normalizeAutosaveOwnerRefreshResult(value: unknown): AutosaveOwnerRefreshResult | null {
   const result = asRecord<Record<string, unknown>>(value);
   if (!result) return null;
   try {
-    if (typeof result.then === 'function') return null;
+    if (typeof Reflect.get(result, 'then') === 'function') return null;
   } catch {
     return null;
   }
@@ -251,9 +272,11 @@ export function forceAutosaveNowResultViaService(
 
   try {
     if (typeof service.forceSaveNowResult === 'function') {
-      const result = normalizeAutosaveOwnerRefreshResult(
-        Reflect.apply(service.forceSaveNowResult, service, [])
-      );
+      const ownerResult = Reflect.apply(service.forceSaveNowResult, service, []);
+      if (observeRejectedThenable(ownerResult)) {
+        return { ok: false, reason: 'owner-rejected', detail: 'owner-invalid-result' };
+      }
+      const result = normalizeAutosaveOwnerRefreshResult(ownerResult);
       return result || { ok: false, reason: 'owner-rejected', detail: 'owner-invalid-result' };
     }
 
@@ -263,6 +286,7 @@ export function forceAutosaveNowResultViaService(
       if (legacyResult === false) {
         return { ok: false, reason: 'owner-rejected', detail: 'legacy-owner-returned-false' };
       }
+      observeRejectedThenable(legacyResult);
       return { ok: false, reason: 'owner-rejected', detail: 'owner-invalid-result' };
     }
 

@@ -1,4 +1,4 @@
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
 
 export type SlidingDoorMotionEntryLike = {
   total?: unknown;

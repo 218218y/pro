@@ -2,7 +2,7 @@ import { resolveAdhesiveGlassKind } from '../features/door_authoring/api.js';
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
 import type { BuilderRenderDoorDeps } from './render_door_ops_shared.js';
 import {
   isFunction,

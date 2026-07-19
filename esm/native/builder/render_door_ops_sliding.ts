@@ -1,4 +1,4 @@
-import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DOOR_SYSTEM_DIMENSIONS } from '../../shared/dimensions/door_system_policy.js';
 import { toCanonicalGroovesMapKey } from '../../shared/door_groove_key_contracts_shared.js';
 import { resolveConfiguredHandleColor } from './handle_finish_runtime.js';
 import { resolveHandleFinishPalette } from '../features/finish_palette/api.js';
