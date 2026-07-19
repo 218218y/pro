@@ -1,6 +1,38 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+
+let cachedTestIsolationNoneArgument;
+let testIsolationSupportResolved = false;
+
+function resolveTestIsolationNoneArgumentFromHelp(helpText) {
+  if (/(?:^|[\s,])--test-isolation(?:=|[\s,]|$)/mu.test(helpText)) {
+    return '--test-isolation=none';
+  }
+  if (/(?:^|[\s,])--experimental-test-isolation(?:=|[\s,]|$)/mu.test(helpText)) {
+    return '--experimental-test-isolation=none';
+  }
+  return null;
+}
+
+export function resolveTestIsolationNoneArgument(helpText) {
+  if (typeof helpText === 'string') {
+    return resolveTestIsolationNoneArgumentFromHelp(helpText);
+  }
+  if (testIsolationSupportResolved) return cachedTestIsolationNoneArgument;
+
+  const helpResult = spawnSync(process.execPath, ['--help'], {
+    encoding: 'utf8',
+    windowsHide: true,
+  });
+  cachedTestIsolationNoneArgument =
+    helpResult.status === 0
+      ? resolveTestIsolationNoneArgumentFromHelp(String(helpResult.stdout || ''))
+      : null;
+  testIsolationSupportResolved = true;
+  return cachedTestIsolationNoneArgument;
+}
 
 function getNpxCommand() {
   return process.platform === 'win32' ? 'npx.cmd' : 'npx';

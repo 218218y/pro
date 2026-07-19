@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 205, statements: 205 }),
+  'static-import': Object.freeze({ importers: 201, statements: 201 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 207, statements: 208 }),
+  total: Object.freeze({ importers: 203, statements: 204 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -238,6 +238,7 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/shared/dimensions/carcass_cornice_render_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/door_mount_thickness_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/door_system_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/shared/dimensions/front_reveal_frame_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
 });
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
@@ -464,6 +465,7 @@ const APPROVED_DOOR_SYSTEM_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/services/doors_runtime_visuals_shared.ts': Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY']),
   'esm/shared/dimensions/door_mount_thickness_policy.ts': Object.freeze(['HINGED_DOOR_MOUNT_POLICY']),
+  'esm/shared/dimensions/front_reveal_frame_policy.ts': Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['DOOR_SYSTEM_DIMENSIONS']),
 });
 const DOOR_MOUNT_THICKNESS_FACADE_SYMBOLS = Object.freeze([
@@ -596,6 +598,9 @@ const APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
   'esm/shared/dimensions/drawer_sketch_policy.ts': Object.freeze([
     'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
     'EXTERNAL_DRAWER_SIZE_POLICY',
+  ]),
+  'esm/shared/dimensions/front_reveal_frame_policy.ts': Object.freeze([
+    'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['EXTERNAL_DRAWER_POLICY']),
 });
@@ -832,6 +837,24 @@ const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['DRAWER_SKETCH_POLICY']),
 });
+const APPROVED_FRONT_REVEAL_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/post_build_front_reveal_frames_doors.ts': Object.freeze([
+    'FRONT_REVEAL_THICKNESS_POLICY',
+  ]),
+  'esm/native/builder/post_build_front_reveal_frames_drawers.ts': Object.freeze([
+    'FRONT_REVEAL_PRESENCE_POLICY',
+    'FRONT_REVEAL_THICKNESS_POLICY',
+  ]),
+  'esm/native/builder/post_build_front_reveal_frames_geometry.ts': Object.freeze([
+    'FRONT_REVEAL_GEOMETRY_POLICY',
+  ]),
+  'esm/native/builder/post_build_front_reveal_frames_runtime.ts': Object.freeze([
+    'FRONT_REVEAL_GEOMETRY_POLICY',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['FRONT_REVEAL_FRAME_POLICY']),
+});
+const APPROVED_FRONT_REVEAL_LEGACY_DEPENDENCIES = Object.freeze({});
+const APPROVED_FRONT_REVEAL_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/post_build_sketch_door_cuts_apply.ts': Object.freeze([
     'sketch',
@@ -1981,6 +2004,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   const internalDrawerPolicy = read('esm/shared/dimensions/internal_drawer_policy.ts');
   const interiorStoragePolicy = read('esm/shared/dimensions/interior_storage_policy.ts');
   const drawerSketchPolicy = read('esm/shared/dimensions/drawer_sketch_policy.ts');
+  const frontRevealFramePolicy = read('esm/shared/dimensions/front_reveal_frame_policy.ts');
 
   assert.match(facade, /from '\.\/dimensions\/units\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/wardrobe_defaults\.js'/u);
@@ -2003,6 +2027,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /from '\.\/dimensions\/internal_drawer_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/interior_storage_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/drawer_sketch_policy\.js'/u);
+  assert.match(facade, /from '\.\/dimensions\/front_reveal_frame_policy\.js'/u);
   assert.doesNotMatch(facade, /export const WARDROBE_DEFAULTS =/u);
   assert.doesNotMatch(facade, /export const WARDROBE_LIMITS =/u);
 
@@ -2140,6 +2165,21 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
     /internalPreviewGridDivisionsDefault: INTERIOR_STORAGE_GRID_POLICY\.gridDivisionsDefault/u
   );
   assert.match(drawerSketchPolicy, /internalClampPadMinM: INTERIOR_STORAGE_CLAMP_POLICY\.clampPadMinM/u);
+  assert.match(frontRevealFramePolicy, /export const FRONT_REVEAL_GEOMETRY_POLICY = Object\.freeze/u);
+  assert.match(frontRevealFramePolicy, /export const FRONT_REVEAL_PRESENCE_POLICY = Object\.freeze/u);
+  assert.match(frontRevealFramePolicy, /export const FRONT_REVEAL_THICKNESS_POLICY = Object\.freeze/u);
+  assert.match(frontRevealFramePolicy, /export const FRONT_REVEAL_FRAME_POLICY = Object\.freeze/u);
+  assert.match(frontRevealFramePolicy, /zNudgeM: meters\(0\.0008\)/u);
+  assert.match(
+    frontRevealFramePolicy,
+    /slidingFrontThicknessM: SLIDING_DOOR_CONSTRUCTION_POLICY\.visualThicknessM/u
+  );
+  assert.match(frontRevealFramePolicy, /hingedFrontThicknessM: MATERIAL_THICKNESS_POLICY\.wood\.thicknessM/u);
+  assert.match(
+    frontRevealFramePolicy,
+    /drawerFrontThicknessM: EXTERNAL_DRAWER_FRONT_RENDER_POLICY\.visualThicknessM/u
+  );
+  assert.doesNotMatch(frontRevealFramePolicy, /meters\(0\.(?:022|018|02)\)/u);
   assert.match(facade, /plinth: BASE_PLINTH_DIMENSIONS/u);
   assert.match(facade, /legs: BASE_LEG_LAYOUT_DIMENSIONS/u);
   assert.match(facade, /legacyDimensionNumberView\(BASE_PLINTH_POLICY\)/u);
@@ -2159,6 +2199,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /legacyDimensionNumberView\(INTERNAL_DRAWER_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(INTERIOR_STORAGE_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(DRAWER_SKETCH_POLICY\)/u);
+  assert.match(facade, /legacyDimensionNumberView\(FRONT_REVEAL_FRAME_POLICY\)/u);
   assert.match(facade, /storage: INTERIOR_STORAGE_DIMENSIONS/u);
   assert.match(facade, /sketch: DRAWER_SKETCH_DIMENSIONS/u);
   assert.match(facade, /external: EXTERNAL_DRAWER_DIMENSIONS/u);
@@ -2183,7 +2224,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(decorativeSeparator, /dimensions\/stack_split_render_policy\.js/u);
 
   assert.doesNotMatch(
-    `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}\n${chestStructuralPolicy}\n${materialThicknessPolicy}\n${carcassCorniceRenderPolicy}\n${chestModePolicy}\n${doorSystemPolicy}\n${doorMountThicknessPolicy}\n${doorVisualPolicy}\n${doorTrimPolicy}\n${interiorStoragePolicy}\n${drawerSketchPolicy}`,
+    `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}\n${chestStructuralPolicy}\n${materialThicknessPolicy}\n${carcassCorniceRenderPolicy}\n${chestModePolicy}\n${doorSystemPolicy}\n${doorMountThicknessPolicy}\n${doorVisualPolicy}\n${doorTrimPolicy}\n${interiorStoragePolicy}\n${drawerSketchPolicy}\n${frontRevealFramePolicy}`,
     /wardrobe_dimension_tokens_shared/u
   );
 });
@@ -2425,6 +2466,23 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     },
     'DRAWER_SKETCH_POLICY aggregate is imported directly only by the legacy facade'
   );
+  const frontRevealOwnerImports = collectOwnerImports(analyzedSources, 'front_reveal_frame_policy.js');
+  assertApprovedSymbolUsage(
+    frontRevealOwnerImports,
+    APPROVED_FRONT_REVEAL_OWNER_IMPORTS,
+    'Front Reveal owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(frontRevealOwnerImports)
+        .filter(([, symbols]) => symbols.includes('FRONT_REVEAL_FRAME_POLICY'))
+        .map(([file]) => [file, ['FRONT_REVEAL_FRAME_POLICY']])
+    ),
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['FRONT_REVEAL_FRAME_POLICY'],
+    },
+    'FRONT_REVEAL_FRAME_POLICY aggregate is imported directly only by the legacy facade'
+  );
   assertApprovedSymbolUsage(
     collectShellGridFieldUsage(analyzedSources),
     APPROVED_SHELL_GRID_FIELD_USAGE,
@@ -2573,6 +2631,24 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectLegacyInteriorStorageFieldUsage(analyzedSources),
     APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE,
     'Interior Storage legacy facade field allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionSymbolDependencies(
+      analyzedSources,
+      'FRONT_REVEAL_FRAME_DIMENSIONS',
+      'dimensions/front_reveal_frame_policy.js'
+    ),
+    APPROVED_FRONT_REVEAL_LEGACY_DEPENDENCIES,
+    'Front Reveal legacy dependency allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionPolicyFieldUsage(
+      analyzedSources,
+      'FRONT_REVEAL_FRAME_DIMENSIONS',
+      'dimensions/front_reveal_frame_policy.js'
+    ),
+    APPROVED_FRONT_REVEAL_LEGACY_FIELD_USAGE,
+    'Front Reveal legacy field allowlist'
   );
 });
 
@@ -3360,6 +3436,94 @@ test('[dimension-foundation] Drawer Sketch guards detect aliases, namespace acce
         aggregateOwnerImports,
         APPROVED_DRAWER_SKETCH_OWNER_IMPORTS,
         'Drawer Sketch fixture owner consumer allowlist'
+      ),
+    /review-blocked/u
+  );
+});
+
+test('[dimension-foundation] Front Reveal guards detect aliases, namespace access, destructuring, computed access, and broad dependencies', () => {
+  const sources = [
+    [
+      'esm/native/builder/named_front_reveal_consumer.ts',
+      `
+        import { FRONT_REVEAL_FRAME_DIMENSIONS as frame } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const oneHop = frame;
+        const { zNudgeM } = oneHop;
+        export const literal = oneHop['dualInnerInsetM'];
+        export const dynamic = oneHop[key];
+        export { zNudgeM };
+      `,
+    ],
+    [
+      'esm/native/builder/namespace_front_reveal_consumer.ts',
+      `
+        import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const { drawerFrontThicknessM } = dimensions.FRONT_REVEAL_FRAME_DIMENSIONS;
+        export { drawerFrontThicknessM };
+      `,
+    ],
+    [
+      'esm/native/runtime/front_reveal_wildcard.ts',
+      `export * from '../../shared/wardrobe_dimension_tokens_shared.js';`,
+    ],
+    [
+      'esm/native/runtime/front_reveal_dynamic.ts',
+      `export const dimensions = import('../../shared/wardrobe_dimension_tokens_shared.js');`,
+    ],
+  ];
+
+  assert.deepEqual(
+    collectLegacyDimensionPolicyFieldUsage(
+      sources,
+      'FRONT_REVEAL_FRAME_DIMENSIONS',
+      'dimensions/front_reveal_frame_policy.js'
+    ),
+    {
+      'esm/native/builder/named_front_reveal_consumer.ts': ['<computed>', 'dualInnerInsetM', 'zNudgeM'],
+      'esm/native/builder/namespace_front_reveal_consumer.ts': ['drawerFrontThicknessM'],
+    }
+  );
+  assert.deepEqual(collectDimensionFacadeBroadDependencies(sources), [
+    { file: 'esm/native/builder/namespace_front_reveal_consumer.ts', syntax: 'static-import' },
+    { file: 'esm/native/runtime/front_reveal_dynamic.ts', syntax: 'dynamic-import' },
+    { file: 'esm/native/runtime/front_reveal_wildcard.ts', syntax: 'static-re-export' },
+  ]);
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        collectLegacyDimensionPolicyFieldUsage(
+          sources,
+          'FRONT_REVEAL_FRAME_DIMENSIONS',
+          'dimensions/front_reveal_frame_policy.js'
+        ),
+        APPROVED_FRONT_REVEAL_LEGACY_FIELD_USAGE,
+        'Front Reveal fixture legacy field allowlist'
+      ),
+    /review-blocked/u
+  );
+  assert.throws(
+    () => assertApprovedDimensionFacadeBroadDependencies(collectDimensionFacadeBroadDependencies(sources)),
+    /requires review/u
+  );
+
+  const aggregateOwnerImports = collectOwnerImports(
+    [
+      [
+        'esm/native/builder/new_front_reveal_aggregate_consumer.ts',
+        `import { FRONT_REVEAL_FRAME_POLICY as frame } from '../../shared/dimensions/front_reveal_frame_policy.js';`,
+      ],
+    ],
+    'front_reveal_frame_policy.js'
+  );
+  assert.deepEqual(aggregateOwnerImports, {
+    'esm/native/builder/new_front_reveal_aggregate_consumer.ts': ['FRONT_REVEAL_FRAME_POLICY'],
+  });
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        aggregateOwnerImports,
+        APPROVED_FRONT_REVEAL_OWNER_IMPORTS,
+        'Front Reveal fixture owner consumer allowlist'
       ),
     /review-blocked/u
   );

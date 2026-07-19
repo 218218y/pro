@@ -3,7 +3,10 @@
 // Owns drawer iteration, scene-derived drawer discovery, and drawer reveal placement.
 
 import { getDrawersArray } from '../runtime/render_access.js';
-import { FRONT_REVEAL_FRAME_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  FRONT_REVEAL_PRESENCE_POLICY,
+  FRONT_REVEAL_THICKNESS_POLICY,
+} from '../../shared/dimensions/front_reveal_frame_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type { Object3DLike } from '../../../types/index.js';
 
@@ -90,7 +93,7 @@ export function applyFrontRevealDrawerFrames(runtime: FrontRevealFramesRuntime):
     const explicitFrontMax = readGeometryUserDataNumberKey(ud, '__frontMaxZ') ?? NaN;
     if (
       Number.isFinite(explicitFrontMax) &&
-      Math.abs(explicitFrontMax) > FRONT_REVEAL_FRAME_DIMENSIONS.frontZPresenceEpsilonM
+      Math.abs(explicitFrontMax) > FRONT_REVEAL_PRESENCE_POLICY.frontZPresenceEpsilonM
     ) {
       z = explicitFrontMax + (explicitFrontMax >= 0 ? runtime.zNudge : -runtime.zNudge);
     }
@@ -100,7 +103,7 @@ export function applyFrontRevealDrawerFrames(runtime: FrontRevealFramesRuntime):
       const localFrontMax = readGeometryUserDataNumber(localBounds?.max?.z) ?? NaN;
       if (
         Number.isFinite(localFrontMax) &&
-        Math.abs(localFrontMax) > FRONT_REVEAL_FRAME_DIMENSIONS.frontZPresenceEpsilonM
+        Math.abs(localFrontMax) > FRONT_REVEAL_PRESENCE_POLICY.frontZPresenceEpsilonM
       ) {
         z = localFrontMax + (localFrontMax >= 0 ? runtime.zNudge : -runtime.zNudge);
       }
@@ -108,7 +111,7 @@ export function applyFrontRevealDrawerFrames(runtime: FrontRevealFramesRuntime):
 
     if (z == null) {
       const t = readGeometryUserDataPositiveNumberKey(ud, '__wpFrontThickness');
-      const thickness = t != null ? t : FRONT_REVEAL_FRAME_DIMENSIONS.drawerFrontThicknessM;
+      const thickness = t != null ? t : FRONT_REVEAL_THICKNESS_POLICY.drawerFrontThicknessM;
       let sign = (readGeometryUserDataNumber(g.position.z) ?? 0) >= 0 ? 1 : -1;
       const ov = runtime.getRevealZSignOverride(asRecord(ud));
       if (ov != null) sign = ov;

@@ -79,3 +79,52 @@ test('front reveal door frames clear but do not redraw lines on removed sketch d
   assert.deepEqual((removedSegment as any).__added, []);
   assert.deepEqual((visibleSegment as any).__added, [{ kind: 'lines' }]);
 });
+
+test('front reveal door frames preserve sliding and hinged owner thickness defaults', () => {
+  const App: Record<string, unknown> = {};
+  const captured: Array<{ id: string; z: number }> = [];
+  for (const [partId, type] of [
+    ['sliding-default', 'sliding'],
+    ['hinged-default', 'hinged'],
+  ] as const) {
+    const group = {
+      children: [],
+      position: { x: 0, y: 0, z: 0.04 },
+      rotation: {},
+      userData: { partId, __doorWidth: 0.8, __doorHeight: 1.6 },
+      add() {},
+      remove() {},
+    };
+    getDoorsArray(App).push({ group, type } as any);
+  }
+
+  applyFrontRevealDoorFrames({} as any, {
+    App: App as any,
+    THREE: {} as any,
+    wardrobeGroup: { traverse() {} } as any,
+    zNudge: 0.0008,
+    localName: 'frontRevealFrames',
+    reportSoft() {},
+    cleanupStaleLocalFrames() {},
+    getRevealZSignOverride() {
+      return null;
+    },
+    getObjectLocalBounds() {
+      return null;
+    },
+    pickRevealLineMaterial() {
+      return { kind: 'lineMat' } as any;
+    },
+    buildRectLines(_xL, _xR, _yB, _yT, z) {
+      const current = getDoorsArray(App)[captured.length] as any;
+      captured.push({ id: String(current.group.userData.partId), z });
+      return { kind: 'lines' } as any;
+    },
+    removeLocalFrames() {},
+  });
+
+  assert.deepEqual(captured, [
+    { id: 'sliding-default', z: 0.0118 },
+    { id: 'hinged-default', z: 0.0098 },
+  ]);
+});

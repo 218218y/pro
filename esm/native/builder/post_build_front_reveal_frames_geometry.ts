@@ -3,7 +3,7 @@
 // Owns reveal z-sign resolution, local-bounds measurement, and local line geometry emission.
 
 import type { Object3DLike, ThreeLike } from '../../../types/index.js';
-import { FRONT_REVEAL_FRAME_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { FRONT_REVEAL_GEOMETRY_POLICY } from '../../shared/dimensions/front_reveal_frame_policy.js';
 
 import {
   getGeometry,
@@ -37,7 +37,7 @@ export function createFrontRevealGeometryRuntime(
   args: CreateFrontRevealGeometryRuntimeArgs
 ): FrontRevealGeometryRuntime {
   const { THREE, baseLineMaterial, localName } = args;
-  const xyInset = FRONT_REVEAL_FRAME_DIMENSIONS.localLineInsetM;
+  const xyInset = FRONT_REVEAL_GEOMETRY_POLICY.localLineInsetM;
 
   const getRevealZSignOverride = (ud: ValueRecord | null): number | null => {
     const raw = ud?.__wpRevealZSign ?? ud?.__wpDoorOpenZSign ?? ud?.__handleZSign ?? ud?.__wpDoorOpenDirSign;
@@ -119,10 +119,10 @@ export function createFrontRevealGeometryRuntime(
       const g = new THREE.Group();
       g.name = localName;
       g.userData = { kind: 'frontRevealFramesLines', local: true, hideWhenOpen: false };
-      const g1 = makeRectGeom(0, sign * FRONT_REVEAL_FRAME_DIMENSIONS.dualOuterZOffsetM);
+      const g1 = makeRectGeom(0, sign * FRONT_REVEAL_GEOMETRY_POLICY.dualOuterZOffsetM);
       const g2 = makeRectGeom(
-        FRONT_REVEAL_FRAME_DIMENSIONS.dualInnerInsetM,
-        sign * FRONT_REVEAL_FRAME_DIMENSIONS.dualInnerZOffsetM
+        FRONT_REVEAL_GEOMETRY_POLICY.dualInnerInsetM,
+        sign * FRONT_REVEAL_GEOMETRY_POLICY.dualInnerZOffsetM
       );
       const l1 = makeLine(g1, baseLineMaterial, localName + '_outer');
       const l2 = makeLine(g2, baseLineMaterial, localName + '_inner');

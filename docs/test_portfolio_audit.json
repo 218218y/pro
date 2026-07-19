@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-19T10:50:40.242Z",
+  "generatedAt": "2026-07-19T13:45:25.033Z",
   "totals": {
-    "tests": 1222,
-    "unitRunnerTests": 1214,
+    "tests": 1225,
+    "unitRunnerTests": 1217,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -14,7 +14,7 @@
   },
   "categories": {
     "contract": 398,
-    "runtime-unit": 314,
+    "runtime-unit": 317,
     "integration": 451,
     "e2e-smoke": 9,
     "perf-smoke": 9,
@@ -2818,12 +2818,20 @@
       "category": "runtime-unit"
     },
     {
+      "file": "tests/post_build_front_reveal_frames_cleanup_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
       "file": "tests/post_build_front_reveal_frames_doors_runtime.test.ts",
       "category": "integration"
     },
     {
       "file": "tests/post_build_front_reveal_frames_drawers_runtime.test.ts",
       "category": "integration"
+    },
+    {
+      "file": "tests/post_build_front_reveal_frames_geometry_runtime.test.ts",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/post_build_front_reveal_frames_materials_runtime.test.ts",
@@ -4831,6 +4839,10 @@
     },
     {
       "file": "tests/wp_test_group_runtime.test.js",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wp_test_runner_command_runtime.test.js",
       "category": "runtime-unit"
     },
     {

@@ -3,7 +3,7 @@
 // Owns hinged/sliding door iteration and segmented sketch-door local frames.
 
 import { getDoorsArray } from '../runtime/render_access.js';
-import { FRONT_REVEAL_FRAME_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { FRONT_REVEAL_THICKNESS_POLICY } from '../../shared/dimensions/front_reveal_frame_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type { BuildContextLike, Object3DLike } from '../../../types/index.js';
 
@@ -106,8 +106,8 @@ export function applyFrontRevealDoorFrames(ctx: BuildContextLike, runtime: Front
       t != null
         ? t
         : type === 'sliding'
-          ? FRONT_REVEAL_FRAME_DIMENSIONS.slidingFrontThicknessM
-          : FRONT_REVEAL_FRAME_DIMENSIONS.hingedFrontThicknessM;
+          ? FRONT_REVEAL_THICKNESS_POLICY.slidingFrontThicknessM
+          : FRONT_REVEAL_THICKNESS_POLICY.hingedFrontThicknessM;
 
     let sign = 1;
     if (type === 'hinged') {

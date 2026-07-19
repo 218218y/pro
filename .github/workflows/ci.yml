@@ -294,6 +294,38 @@ jobs:
           include-hidden-files: true
           retention-days: 7
 
+  test-runner-node-compat:
+    name: Test Runner compatibility (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22.12.0', '24']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run Test Runner compatibility contracts
+        run: node --test tests/wp_test_runner_command_runtime.test.js tests/wp_serial_tests_runtime.test.js
+
+      - name: Check Test Runner tool syntax
+        run: |
+          node --check tools/wp_test_runner_command.mjs
+          node --check tools/wp_run_tsx_tests.mjs
+          node --check tools/wp_run_test_file_list.mjs
+          node --check tools/wp_serial_tests.mjs
+
   build-smoke:
     name: Build smoke
     runs-on: ubuntu-latest
@@ -366,6 +398,7 @@ jobs:
       - typecheck
       - contracts
       - runtime-tests
+      - test-runner-node-compat
       - build-smoke
       - audit
       - e2e-critical
@@ -378,6 +411,7 @@ jobs:
           TYPECHECK_RESULT: ${{ needs['typecheck'].result }}
           CONTRACTS_RESULT: ${{ needs['contracts'].result }}
           RUNTIME_TESTS_RESULT: ${{ needs['runtime-tests'].result }}
+          TEST_RUNNER_NODE_COMPAT_RESULT: ${{ needs['test-runner-node-compat'].result }}
           BUILD_SMOKE_RESULT: ${{ needs['build-smoke'].result }}
           AUDIT_RESULT: ${{ needs['audit'].result }}
           E2E_CRITICAL_RESULT: ${{ needs['e2e-critical'].result }}
@@ -389,6 +423,7 @@ jobs:
             "typecheck:$TYPECHECK_RESULT" \
             "contracts:$CONTRACTS_RESULT" \
             "runtime-tests:$RUNTIME_TESTS_RESULT" \
+            "test-runner-node-compat:$TEST_RUNNER_NODE_COMPAT_RESULT" \
             "build-smoke:$BUILD_SMOKE_RESULT" \
             "audit:$AUDIT_RESULT" \
             "e2e-critical:$E2E_CRITICAL_RESULT"

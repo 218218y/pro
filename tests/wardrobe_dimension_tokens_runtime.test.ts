@@ -14,6 +14,7 @@ import {
   DOOR_SYSTEM_DIMENSIONS,
   DOOR_TRIM_DIMENSIONS as FACADE_DOOR_TRIM_DIMENSIONS,
   DRAWER_DIMENSIONS,
+  FRONT_REVEAL_FRAME_DIMENSIONS as FACADE_FRONT_REVEAL_FRAME_DIMENSIONS,
   INTERIOR_FITTINGS_DIMENSIONS,
   MATERIAL_DIMENSIONS,
   WARDROBE_DEFAULTS as FACADE_WARDROBE_DEFAULTS,
@@ -128,6 +129,12 @@ import {
   DRAWER_SKETCH_PREVIEW_RENDER_POLICY,
   DRAWER_SKETCH_SIZING_POLICY,
 } from '../esm/shared/dimensions/drawer_sketch_policy.ts';
+import {
+  FRONT_REVEAL_FRAME_POLICY,
+  FRONT_REVEAL_GEOMETRY_POLICY,
+  FRONT_REVEAL_PRESENCE_POLICY,
+  FRONT_REVEAL_THICKNESS_POLICY,
+} from '../esm/shared/dimensions/front_reveal_frame_policy.ts';
 import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
@@ -1133,6 +1140,42 @@ test('Drawer Sketch policy preserves facade identity, every value, focused owner
     DRAWER_SKETCH_DOOR_CUT_POLICY,
     DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY,
     DRAWER_SKETCH_POLICY,
+  ]) {
+    assert.equal(Object.isFrozen(policy), true);
+  }
+});
+
+test('Front Reveal Frame policy preserves facade identity, values, and thickness owner references', () => {
+  assert.equal(FACADE_FRONT_REVEAL_FRAME_DIMENSIONS, FRONT_REVEAL_FRAME_POLICY);
+  assert.equal(
+    FRONT_REVEAL_THICKNESS_POLICY.slidingFrontThicknessM,
+    SLIDING_DOOR_CONSTRUCTION_POLICY.visualThicknessM
+  );
+  assert.equal(
+    FRONT_REVEAL_THICKNESS_POLICY.hingedFrontThicknessM,
+    MATERIAL_THICKNESS_POLICY.wood.thicknessM
+  );
+  assert.equal(
+    FRONT_REVEAL_THICKNESS_POLICY.drawerFrontThicknessM,
+    EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM
+  );
+  assert.deepEqual(FRONT_REVEAL_FRAME_POLICY, {
+    zNudgeM: 0.0008,
+    localLineInsetM: 0.0015,
+    dualOuterZOffsetM: 0.00008,
+    dualInnerInsetM: 0.0011,
+    dualInnerZOffsetM: 0.00016,
+    frontZPresenceEpsilonM: 0.000001,
+    slidingFrontThicknessM: 0.022,
+    hingedFrontThicknessM: 0.018,
+    drawerFrontThicknessM: 0.02,
+  });
+
+  for (const policy of [
+    FRONT_REVEAL_GEOMETRY_POLICY,
+    FRONT_REVEAL_PRESENCE_POLICY,
+    FRONT_REVEAL_THICKNESS_POLICY,
+    FRONT_REVEAL_FRAME_POLICY,
   ]) {
     assert.equal(Object.isFrozen(policy), true);
   }

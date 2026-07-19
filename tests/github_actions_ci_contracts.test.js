@@ -18,6 +18,7 @@ test('GitHub CI keeps required verification split by concern', () => {
   assert.match(ci, /^  typecheck:/m);
   assert.match(ci, /^  contracts:/m);
   assert.match(ci, /^  runtime-tests:/m);
+  assert.match(ci, /^  test-runner-node-compat:/m);
   assert.match(ci, /^  build-smoke:/m);
   assert.match(ci, /^  audit:/m);
   assert.match(ci, /^  required-checks:/m);
@@ -39,14 +40,21 @@ test('GitHub CI keeps required verification split by concern', () => {
   assert.match(ci, /strategy:\n      fail-fast: false\n      matrix:\n        shard: \[1, 2\]/);
   assert.match(ci, /run: npm run test -- --shard=\$\{\{ matrix\.shard \}\}\/2/);
   assert.match(ci, /name: runtime-test-diagnostics-shard-\$\{\{ matrix\.shard \}\}-of-2/);
+  assert.match(ci, /node: \['22\.12\.0', '24'\]/);
+  assert.match(
+    ci,
+    /run: node --test tests\/wp_test_runner_command_runtime\.test\.js tests\/wp_serial_tests_runtime\.test\.js/
+  );
+  assert.match(ci, /node --check tools\/wp_test_runner_command\.mjs/);
   assert.match(ci, /run: npm run esm:check/);
 
   assert.match(
     ci,
-    /needs:\n      - strict-gate\n      - lint\n      - typecheck\n      - contracts\n      - runtime-tests\n      - build-smoke\n      - audit/
+    /needs:\n      - strict-gate\n      - lint\n      - typecheck\n      - contracts\n      - runtime-tests\n      - test-runner-node-compat\n      - build-smoke\n      - audit/
   );
   assert.match(ci, /STRICT_GATE_RESULT: \$\{\{ needs\['strict-gate'\]\.result \}\}/);
   assert.match(ci, /RUNTIME_TESTS_RESULT: \$\{\{ needs\['runtime-tests'\]\.result \}\}/);
+  assert.match(ci, /TEST_RUNNER_NODE_COMPAT_RESULT: \$\{\{ needs\['test-runner-node-compat'\]\.result \}\}/);
   assert.match(ci, /BUILD_SMOKE_RESULT: \$\{\{ needs\['build-smoke'\]\.result \}\}/);
   assert.doesNotMatch(ci, /\$\{\{ needs\.[a-z0-9-]+\.result \}\}/);
 });

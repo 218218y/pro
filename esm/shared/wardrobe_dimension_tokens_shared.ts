@@ -43,6 +43,7 @@ import { EXTERNAL_DRAWER_POLICY } from './dimensions/external_drawer_policy.js';
 import { INTERNAL_DRAWER_POLICY } from './dimensions/internal_drawer_policy.js';
 import { INTERIOR_STORAGE_POLICY } from './dimensions/interior_storage_policy.js';
 import { DRAWER_SKETCH_POLICY } from './dimensions/drawer_sketch_policy.js';
+import { FRONT_REVEAL_FRAME_POLICY } from './dimensions/front_reveal_frame_policy.js';
 import {
   STACK_SPLIT_LOWER_DEPTH_MAX,
   STACK_SPLIT_LOWER_DEPTH_MIN,
@@ -100,6 +101,7 @@ const EXTERNAL_DRAWER_DIMENSIONS = legacyDimensionNumberView(EXTERNAL_DRAWER_POL
 const INTERNAL_DRAWER_DIMENSIONS = legacyDimensionNumberView(INTERNAL_DRAWER_POLICY);
 const INTERIOR_STORAGE_DIMENSIONS = legacyDimensionNumberView(INTERIOR_STORAGE_POLICY);
 const DRAWER_SKETCH_DIMENSIONS = legacyDimensionNumberView(DRAWER_SKETCH_POLICY);
+const FRONT_REVEAL_FRAME_DIMENSIONS = legacyDimensionNumberView(FRONT_REVEAL_FRAME_POLICY);
 
 const WARDROBE_DEFAULTS = Object.freeze({
   ...WARDROBE_DEFAULTS_OWNER,
@@ -506,17 +508,7 @@ export const DRAWER_DIMENSIONS = Object.freeze({
   internal: INTERNAL_DRAWER_DIMENSIONS,
 });
 
-export const FRONT_REVEAL_FRAME_DIMENSIONS = Object.freeze({
-  zNudgeM: 0.0008,
-  localLineInsetM: 0.0015,
-  dualOuterZOffsetM: 0.00008,
-  dualInnerInsetM: 0.0011,
-  dualInnerZOffsetM: 0.00016,
-  frontZPresenceEpsilonM: 1e-6,
-  slidingFrontThicknessM: DOOR_SYSTEM_DIMENSIONS.sliding.visualThicknessM,
-  hingedFrontThicknessM: MATERIAL_DIMENSIONS.wood.thicknessM,
-  drawerFrontThicknessM: EXTERNAL_DRAWER_DIMENSIONS.visualThicknessM,
-});
+export { FRONT_REVEAL_FRAME_DIMENSIONS };
 
 export const SKETCH_BOX_DIMENSIONS = Object.freeze({
   geometry: Object.freeze({

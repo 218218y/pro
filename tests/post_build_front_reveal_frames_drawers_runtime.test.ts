@@ -109,3 +109,59 @@ test('front reveal drawer frames apply to chest-mode drawer groups', () => {
   assert.ok(rectCall);
   assert.deepEqual((drawerGroup as any).__added, [fakeLines]);
 });
+
+test('front reveal drawer frames preserve local-front presence and owner thickness fallback placement', () => {
+  const cases = [
+    {
+      partId: 'drawer-local-front',
+      positionZ: 0.04,
+      localFrontMax: -0.015,
+      expectedZ: -0.0158,
+    },
+    {
+      partId: 'drawer-thickness-fallback',
+      positionZ: -0.04,
+      localFrontMax: 0,
+      expectedZ: -0.0108,
+    },
+  ];
+
+  for (const drawerCase of cases) {
+    const App: Record<string, unknown> = {};
+    const drawerGroup = createDrawerGroup();
+    drawerGroup.userData.partId = drawerCase.partId;
+    drawerGroup.userData.__frontMaxZ = 0;
+    drawerGroup.position.z = drawerCase.positionZ;
+    getDrawersArray(App).push({ group: drawerGroup } as any);
+
+    let capturedZ: number | null = null;
+    applyFrontRevealDrawerFrames({
+      App: App as any,
+      THREE: {} as any,
+      wardrobeGroup: { traverse() {} } as any,
+      zNudge: 0.0008,
+      localName: 'frontRevealFrames',
+      reportSoft() {},
+      cleanupStaleLocalFrames() {},
+      getRevealZSignOverride() {
+        return null;
+      },
+      getObjectLocalBounds() {
+        return {
+          min: { x: -0.4, y: -0.15, z: -0.02 },
+          max: { x: 0.4, y: 0.15, z: drawerCase.localFrontMax },
+        } as any;
+      },
+      pickRevealLineMaterial() {
+        return { kind: 'lineMat' } as any;
+      },
+      buildRectLines(_xL, _xR, _yB, _yT, z) {
+        capturedZ = z;
+        return { kind: 'lines' } as any;
+      },
+      removeLocalFrames() {},
+    });
+
+    assert.ok(capturedZ != null && Math.abs(capturedZ - drawerCase.expectedZ) < 1e-12, drawerCase.partId);
+  }
+});

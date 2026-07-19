@@ -14,6 +14,7 @@ const productDimensionTokenSources = [
   'esm/shared/dimensions/internal_drawer_policy.ts',
   'esm/shared/dimensions/interior_storage_policy.ts',
   'esm/shared/dimensions/drawer_sketch_policy.ts',
+  'esm/shared/dimensions/front_reveal_frame_policy.ts',
 ];
 
 function readProductDimensionTokens() {
@@ -261,7 +262,11 @@ test('[dimension tokens] door trim placement and front reveal frame geometry are
   assert.match(tokens, /export const DOOR_TRIM_NORMALIZATION_POLICY = Object\.freeze\(\{/);
   assert.match(tokens, /export const DOOR_TRIM_RENDER_POLICY = Object\.freeze\(\{/);
   assert.match(tokens, /export const DOOR_TRIM_DIMENSIONS = Object\.freeze\(\{/);
-  assert.match(tokens, /export const FRONT_REVEAL_FRAME_DIMENSIONS = Object\.freeze\(\{/);
+  assert.match(tokens, /export const FRONT_REVEAL_GEOMETRY_POLICY = Object\.freeze\(\{/);
+  assert.match(tokens, /export const FRONT_REVEAL_PRESENCE_POLICY = Object\.freeze\(\{/);
+  assert.match(tokens, /export const FRONT_REVEAL_THICKNESS_POLICY = Object\.freeze\(\{/);
+  assert.match(tokens, /export const FRONT_REVEAL_FRAME_POLICY = Object\.freeze\(\{/);
+  assert.match(tokens, /legacyDimensionNumberView\(FRONT_REVEAL_FRAME_POLICY\)/);
 
   assertUsesToken('esm/native/features/door_authoring/internal/trim_shared.ts', 'DOOR_TRIM_RENDER_POLICY');
   assertUsesToken(
@@ -277,13 +282,33 @@ test('[dimension tokens] door trim placement and front reveal frame geometry are
     'DOOR_TRIM_NORMALIZATION_POLICY'
   );
 
+  assertUsesToken(
+    'esm/native/builder/post_build_front_reveal_frames_runtime.ts',
+    'FRONT_REVEAL_GEOMETRY_POLICY'
+  );
+  assertUsesToken(
+    'esm/native/builder/post_build_front_reveal_frames_geometry.ts',
+    'FRONT_REVEAL_GEOMETRY_POLICY'
+  );
+  assertUsesToken(
+    'esm/native/builder/post_build_front_reveal_frames_doors.ts',
+    'FRONT_REVEAL_THICKNESS_POLICY'
+  );
+  assertUsesToken(
+    'esm/native/builder/post_build_front_reveal_frames_drawers.ts',
+    'FRONT_REVEAL_PRESENCE_POLICY'
+  );
+  assertUsesToken(
+    'esm/native/builder/post_build_front_reveal_frames_drawers.ts',
+    'FRONT_REVEAL_THICKNESS_POLICY'
+  );
   for (const rel of [
     'esm/native/builder/post_build_front_reveal_frames_runtime.ts',
     'esm/native/builder/post_build_front_reveal_frames_geometry.ts',
     'esm/native/builder/post_build_front_reveal_frames_doors.ts',
     'esm/native/builder/post_build_front_reveal_frames_drawers.ts',
   ]) {
-    assertUsesToken(rel, 'FRONT_REVEAL_FRAME_DIMENSIONS');
+    assert.doesNotMatch(read(rel), /FRONT_REVEAL_FRAME_DIMENSIONS/);
   }
 
   const trimShared = read('esm/native/features/door_authoring/internal/trim_shared.ts');

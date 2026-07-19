@@ -42,6 +42,8 @@ test('front reveal runtime takes sketch mode from the build context, not live Ap
 
   assert.ok(sketchRuntime);
   assert.ok(normalRuntime);
+  assert.equal(sketchRuntime.zNudge, 0.0008);
+  assert.equal(normalRuntime.zNudge, 0.0008);
   assert.equal((sketchRuntime.pickRevealLineMaterial(null) as any).opacity, 0.5625);
   assert.equal((normalRuntime.pickRevealLineMaterial(null) as any).opacity, 0.75);
 });

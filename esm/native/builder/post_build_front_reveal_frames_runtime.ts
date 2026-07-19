@@ -10,7 +10,7 @@ import {
 } from '../runtime/render_access.js';
 import { getDocumentMaybe } from '../runtime/api.js';
 import type { BuildContextLike } from '../../../types/index.js';
-import { FRONT_REVEAL_FRAME_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { FRONT_REVEAL_GEOMETRY_POLICY } from '../../shared/dimensions/front_reveal_frame_policy.js';
 
 import { asTraversable, reportPostBuildSoft } from './post_build_extras_shared.js';
 import type { FrontRevealFramesRuntime } from './post_build_front_reveal_frames_contracts.js';
@@ -36,7 +36,7 @@ export function createFrontRevealFramesRuntime(ctx: BuildContextLike): FrontReve
 
   const readLineMaterial = (key: string) => readRenderMaterialSlot(App, key);
   const writeLineMaterial = (key: string, value: unknown) => writeRenderMaterialSlot(App, key, value);
-  const zNudge = FRONT_REVEAL_FRAME_DIMENSIONS.zNudgeM;
+  const zNudge = FRONT_REVEAL_GEOMETRY_POLICY.zNudgeM;
   const localName = 'wp_front_reveal_frame_local';
 
   const materials = createFrontRevealMaterialsRuntime({

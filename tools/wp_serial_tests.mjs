@@ -9,7 +9,7 @@ import {
   spawnManagedChild,
   terminateChildWithEscalation,
 } from './wp_child_process_protocol.mjs';
-import { buildTsxTestRun } from './wp_test_runner_command.mjs';
+import { buildTsxTestRun, resolveTestIsolationNoneArgument } from './wp_test_runner_command.mjs';
 
 function parseArgs(argv) {
   let batchSize = 1;
@@ -17,6 +17,7 @@ function parseArgs(argv) {
   let timeoutMs = 0;
   let failedFilesPath = '';
   let timingsPath = '';
+  const testRunnerArgs = [];
   const files = [];
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -26,7 +27,8 @@ function parseArgs(argv) {
       arg === '--heartbeat-ms' ||
       arg === '--timeout-ms' ||
       arg === '--failed-files-path' ||
-      arg === '--timings-path'
+      arg === '--timings-path' ||
+      arg === '--test-runner-arg'
     ) {
       const raw = argv[index + 1];
       if (!raw) {
@@ -35,6 +37,7 @@ function parseArgs(argv) {
       }
       if (arg === '--failed-files-path') failedFilesPath = raw;
       else if (arg === '--timings-path') timingsPath = raw;
+      else if (arg === '--test-runner-arg') testRunnerArgs.push(raw);
       else {
         const parsed = Number.parseInt(raw, 10);
         if (arg === '--batch-size') batchSize = parsed;
@@ -64,6 +67,10 @@ function parseArgs(argv) {
       timingsPath = arg.slice('--timings-path='.length);
       continue;
     }
+    if (arg.startsWith('--test-runner-arg=')) {
+      testRunnerArgs.push(arg.slice('--test-runner-arg='.length));
+      continue;
+    }
     files.push(arg);
   }
 
@@ -79,8 +86,23 @@ function parseArgs(argv) {
     console.error(`Invalid --timeout-ms value: ${timeoutMs}`);
     process.exit(1);
   }
+  const supportedIsolationArgument = resolveTestIsolationNoneArgument();
+  for (const testRunnerArg of testRunnerArgs) {
+    if (!supportedIsolationArgument || testRunnerArg !== supportedIsolationArgument) {
+      console.error(`Unsupported --test-runner-arg value: ${testRunnerArg}`);
+      process.exit(1);
+    }
+  }
 
-  return { batchSize, heartbeatMs, timeoutMs, failedFilesPath, timingsPath, files };
+  return {
+    batchSize,
+    heartbeatMs,
+    timeoutMs,
+    failedFilesPath,
+    timingsPath,
+    testRunnerArgs,
+    files,
+  };
 }
 
 function chunkFiles(files, batchSize) {
@@ -97,8 +119,8 @@ function formatMs(ms) {
   return `${seconds}s`;
 }
 
-function buildRerunCommand(batch) {
-  return buildTsxTestRun(process.cwd(), batch).command;
+function buildRerunCommand(batch, testRunnerArgs) {
+  return buildTsxTestRun(process.cwd(), batch, testRunnerArgs).command;
 }
 
 async function clearArtifactFile(filePath) {
@@ -134,12 +156,12 @@ function cloneSummary(summary) {
   return JSON.parse(JSON.stringify(summary));
 }
 
-function buildInterruptedBatch(batch, requestedSignal, childExitSignal = null) {
+function buildInterruptedBatch(batch, requestedSignal, childExitSignal = null, testRunnerArgs = []) {
   return {
     files: [...batch],
     signal: requestedSignal,
     childExitSignal,
-    rerunCommand: buildRerunCommand(batch),
+    rerunCommand: buildRerunCommand(batch, testRunnerArgs),
   };
 }
 
@@ -148,6 +170,7 @@ function persistActiveBatchArtifactsSync({
   timingsPath,
   summary,
   batch,
+  testRunnerArgs,
   signal = 'SIGTERM',
 }) {
   if (!batch || batch.length === 0) return;
@@ -158,7 +181,7 @@ function persistActiveBatchArtifactsSync({
   persistedSummary.completedBatches = summary.batches.length;
   persistedSummary.interrupted = true;
   persistedSummary.interruptedBySignal = signal;
-  const interruptedBatch = buildInterruptedBatch(batch, signal);
+  const interruptedBatch = buildInterruptedBatch(batch, signal, null, testRunnerArgs);
   persistedSummary.interruptedBatch = interruptedBatch;
   persistedSummary.batches = [
     ...summary.batches.map(batchSummary => ({ ...batchSummary })),
@@ -187,7 +210,7 @@ function summarizeOutcome(code, signal, timedOut, interruptedBySignal) {
   return 'passed';
 }
 
-function createBatchRunner({ heartbeatMs, timeoutMs }) {
+function createBatchRunner({ heartbeatMs, timeoutMs, testRunnerArgs }) {
   let activeChild = null;
   let activeTerminationController = null;
   let activeTerminationResult = null;
@@ -227,7 +250,7 @@ function createBatchRunner({ heartbeatMs, timeoutMs }) {
           : `${batch.length} file${batch.length === 1 ? '' : 's'} (${batch[0]}${batch.length > 1 ? ` … ${batch[batch.length - 1]}` : ''})`;
       console.error(`${label} ${batchRange}`);
 
-      const testRun = buildTsxTestRun(process.cwd(), batch);
+      const testRun = buildTsxTestRun(process.cwd(), batch, testRunnerArgs);
       const child = spawnManagedChild(testRun.program, testRun.args, {
         stdio: 'inherit',
         env: process.env,
@@ -335,12 +358,12 @@ function createBatchRunner({ heartbeatMs, timeoutMs }) {
   return { runBatch, terminateActiveChild };
 }
 
-const { batchSize, heartbeatMs, timeoutMs, failedFilesPath, timingsPath, files } = parseArgs(
+const { batchSize, heartbeatMs, timeoutMs, failedFilesPath, timingsPath, testRunnerArgs, files } = parseArgs(
   process.argv.slice(2)
 );
 if (files.length === 0) {
   console.error(
-    'Usage: node tools/wp_serial_tests.mjs [--batch-size N] [--heartbeat-ms N] [--timeout-ms N] [--failed-files-path path] [--timings-path path] <test-file> [more-tests...]'
+    'Usage: node tools/wp_serial_tests.mjs [--batch-size N] [--heartbeat-ms N] [--timeout-ms N] [--failed-files-path path] [--timings-path path] [--test-runner-arg value] <test-file> [more-tests...]'
   );
   process.exit(1);
 }
@@ -357,13 +380,14 @@ const summary = {
   totalFiles: files.length,
   totalBatches: batches.length,
   failedFilesPath: failedFilesPath || null,
+  testRunnerArgs: [...testRunnerArgs],
   batches: [],
   interrupted: false,
   interruptedBySignal: null,
   interruptedBatch: null,
 };
 
-const runner = createBatchRunner({ heartbeatMs, timeoutMs });
+const runner = createBatchRunner({ heartbeatMs, timeoutMs, testRunnerArgs });
 let activeBatch = null;
 let aborting = false;
 
@@ -377,7 +401,7 @@ async function abortRun(signal) {
     summary.interruptedBySignal = signal;
     summary.totalDurationMs = Date.now() - runStartedAt;
     if (activeBatch) {
-      summary.interruptedBatch = buildInterruptedBatch(activeBatch, signal);
+      summary.interruptedBatch = buildInterruptedBatch(activeBatch, signal, null, testRunnerArgs);
     }
     if (activeBatch && failedFilesPath) {
       writeArtifactFileSync(failedFilesPath, `${activeBatch.join('\n')}\n`);
@@ -406,6 +430,7 @@ for (let index = 0; index < batches.length; index += 1) {
     timingsPath,
     summary,
     batch: activeBatch,
+    testRunnerArgs,
     signal: 'SIGTERM',
   });
   const result = await runner.runBatch(activeBatch, index, batches.length, files.length);
@@ -421,7 +446,7 @@ for (let index = 0; index < batches.length; index += 1) {
     childExitSignal: result.childExitSignal,
     timedOut: result.timedOut,
     exitCode: result.exitCode,
-    rerunCommand: buildRerunCommand(result.batch),
+    rerunCommand: buildRerunCommand(result.batch, testRunnerArgs),
   });
   summary.completedBatches = summary.batches.length;
   summary.totalDurationMs = Date.now() - runStartedAt;
@@ -431,7 +456,8 @@ for (let index = 0; index < batches.length; index += 1) {
     summary.interruptedBatch = buildInterruptedBatch(
       result.batch,
       result.requestedSignal,
-      result.childExitSignal
+      result.childExitSignal,
+      testRunnerArgs
     );
     if (failedFilesPath) {
       writeArtifactFileSync(failedFilesPath, `${result.batch.join('\n')}\n`);
@@ -447,7 +473,7 @@ for (let index = 0; index < batches.length; index += 1) {
       console.error(`${result.label} failing batch file list written to ${failedFilesPath}`);
     }
     console.error(`${result.label} rerun command:`);
-    console.error(buildRerunCommand(result.batch));
+    console.error(buildRerunCommand(result.batch, testRunnerArgs));
     process.exit(result.exitCode);
   }
 }

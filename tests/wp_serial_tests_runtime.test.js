@@ -11,12 +11,18 @@ import {
   spawnManagedChild,
   terminateChildWithEscalation,
 } from '../tools/wp_child_process_protocol.mjs';
+import { resolveTestIsolationNoneArgument } from '../tools/wp_test_runner_command.mjs';
 
 const projectRoot = process.cwd();
 const serialRunnerPath = path.join(projectRoot, 'tools', 'wp_serial_tests.mjs');
 const rerunListPath = path.join(projectRoot, 'tools', 'wp_run_test_file_list.mjs');
 const directTsxRunnerPath = path.join(projectRoot, 'tools', 'wp_run_tsx_tests.mjs');
 const childRunDiagnostics = new WeakMap();
+const testIsolationNoneArgument = resolveTestIsolationNoneArgument();
+const forwardedIsolationArguments = testIsolationNoneArgument ? ['--', testIsolationNoneArgument] : [];
+const serialIsolationArguments = testIsolationNoneArgument
+  ? ['--test-runner-arg', testIsolationNoneArgument]
+  : [];
 
 function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'wp-serial-tests-'));
@@ -473,7 +479,9 @@ test(
     skip:
       process.platform === 'win32'
         ? 'Windows terminates child processes instead of delivering SIGTERM'
-        : false,
+        : testIsolationNoneArgument
+          ? false
+          : 'Current Node test runner does not expose test isolation control',
   },
   async () => {
     const root = tempDir();
@@ -489,7 +497,7 @@ test(
       });
     `
     );
-    const run = runNodeAsync([directTsxRunnerPath, handlesSignal, '--', '--test-isolation=none']);
+    const run = runNodeAsync([directTsxRunnerPath, handlesSignal, ...forwardedIsolationArguments]);
     await run.waitForStderr(/\[run-tsx-tests\] ready/u);
     await run.waitForStderr(/\[fixture\] signal-handler-ready:exit-zero/u);
     run.child.kill('SIGTERM');
@@ -506,7 +514,9 @@ test(
     skip:
       process.platform === 'win32'
         ? 'Windows terminates child processes instead of delivering SIGTERM'
-        : false,
+        : testIsolationNoneArgument
+          ? false
+          : 'Current Node test runner does not expose test isolation control',
   },
   async () => {
     const root = tempDir();
@@ -522,7 +532,7 @@ test(
       });
     `
     );
-    const run = runNodeAsync([directTsxRunnerPath, ignoresSignal, '--', '--test-isolation=none']);
+    const run = runNodeAsync([directTsxRunnerPath, ignoresSignal, ...forwardedIsolationArguments]);
     await run.waitForStderr(/\[run-tsx-tests\] ready/u);
     await run.waitForStderr(/\[fixture\] signal-handler-ready:ignore/u);
     run.child.kill('SIGTERM');
@@ -622,12 +632,19 @@ test('runner wrappers keep readiness, live-child, and single-timeout termination
   assert.equal(serialSource.match(/terminateActiveChild\('SIGTERM'\)/gu)?.length, 1);
 });
 
-test('direct and file-list runner wrappers preserve requested SIGINT diagnostics and exit code', async t => {
-  const root = tempDir();
-  const handlesSignal = writeRuntimeTest(
-    root,
-    'handles_sigint.test.js',
-    `
+test(
+  'direct and file-list runner wrappers preserve requested SIGINT diagnostics and exit code',
+  {
+    skip: testIsolationNoneArgument
+      ? false
+      : 'Current Node test runner does not expose test isolation control',
+  },
+  async t => {
+    const root = tempDir();
+    const handlesSignal = writeRuntimeTest(
+      root,
+      'handles_sigint.test.js',
+      `
       import test from 'node:test';
       process.on('SIGINT', () => process.exit(0));
       console.error('[fixture] signal-handler-ready:sigint');
@@ -635,47 +652,48 @@ test('direct and file-list runner wrappers preserve requested SIGINT diagnostics
         await new Promise(() => {});
       });
     `
-  );
-  const listPath = path.join(root, 'sigint-files.txt');
-  fs.writeFileSync(listPath, `${handlesSignal}\n`, 'utf8');
+    );
+    const listPath = path.join(root, 'sigint-files.txt');
+    fs.writeFileSync(listPath, `${handlesSignal}\n`, 'utf8');
 
-  for (const runner of [
-    {
-      label: 'run-tsx-tests',
-      modulePath: directTsxRunnerPath,
-      args: [handlesSignal, '--', '--test-isolation=none'],
-    },
-    {
-      label: 'run-test-file-list',
-      modulePath: rerunListPath,
-      args: [listPath, '--', '--test-isolation=none'],
-    },
-  ]) {
-    await t.test(runner.label, async () => {
-      const signalHost = writeRuntimeTest(
-        root,
-        `${runner.label}_sigint_host.mjs`,
-        `
+    for (const runner of [
+      {
+        label: 'run-tsx-tests',
+        modulePath: directTsxRunnerPath,
+        args: [handlesSignal, ...forwardedIsolationArguments],
+      },
+      {
+        label: 'run-test-file-list',
+        modulePath: rerunListPath,
+        args: [listPath, ...forwardedIsolationArguments],
+      },
+    ]) {
+      await t.test(runner.label, async () => {
+        const signalHost = writeRuntimeTest(
+          root,
+          `${runner.label}_sigint_host.mjs`,
+          `
           process.argv = [process.execPath, ${JSON.stringify(runner.modulePath)}, ...process.argv.slice(2)];
           process.on('message', message => {
             if (message === 'SIGINT') process.emit('SIGINT');
           });
           await import(${JSON.stringify(pathToFileURL(runner.modulePath).href)});
         `
-      );
-      const run = runNodeAsync([signalHost, ...runner.args], {
-        stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
-      });
-      await run.waitForStderr(new RegExp(`\\[${runner.label}\\] ready`, 'u'));
-      await run.waitForStderr(/\[fixture\] signal-handler-ready:sigint/u);
-      run.child.send('SIGINT');
-      const result = await run.completed;
+        );
+        const run = runNodeAsync([signalHost, ...runner.args], {
+          stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
+        });
+        await run.waitForStderr(new RegExp(`\\[${runner.label}\\] ready`, 'u'));
+        await run.waitForStderr(/\[fixture\] signal-handler-ready:sigint/u);
+        await sendIpcSignal(run.child, 'SIGINT');
+        const result = await run.completed;
 
-      assert.equal(result.code, 130, result.stderr || result.stdout);
-      assert.match(result.stderr, /signal-handler-ready:sigint/u);
-    });
+        assert.equal(result.code, 130, result.stderr || result.stdout);
+        assert.match(result.stderr, /signal-handler-ready:sigint/u);
+      });
+    }
   }
-});
+);
 
 test(
   'serial runner can force npx tsx fallback when local tsx is unavailable or intentionally bypassed',
@@ -734,15 +752,22 @@ test('safe IPC signal delivery reports closed-channel exit and readiness diagnos
   );
 });
 
-test('serial npx fallback interruption leaves no active test process or active summary', async () => {
-  const root = tempDir();
-  const probePath = path.join(root, 'npx-probe.txt');
-  const failedFilesPath = path.join(root, 'failed.txt');
-  const timingsPath = path.join(root, 'timings.json');
-  const probe = writeRuntimeTest(
-    root,
-    'npx_interrupt_probe.test.js',
-    `
+test(
+  'serial npx fallback interruption leaves no active test process or active summary',
+  {
+    skip: testIsolationNoneArgument
+      ? false
+      : 'Current Node test runner does not expose test isolation control',
+  },
+  async () => {
+    const root = tempDir();
+    const probePath = path.join(root, 'npx-probe.txt');
+    const failedFilesPath = path.join(root, 'failed.txt');
+    const timingsPath = path.join(root, 'timings.json');
+    const probe = writeRuntimeTest(
+      root,
+      'npx_interrupt_probe.test.js',
+      `
       import test from 'node:test';
       import fs from 'node:fs';
       const probePath = process.env.WP_NPX_SIGNAL_PROBE_PATH;
@@ -757,62 +782,73 @@ test('serial npx fallback interruption leaves no active test process or active s
         await new Promise(() => {});
       });
     `
-  );
-  const signalHost = writeRuntimeTest(
-    root,
-    'serial_signal_host.mjs',
-    `
+    );
+    const signalHost = writeRuntimeTest(
+      root,
+      'serial_signal_host.mjs',
+      `
       process.argv = [process.execPath, ${JSON.stringify(serialRunnerPath)}, ...process.argv.slice(2)];
       process.on('message', message => {
         if (message === 'SIGTERM' || message === 'SIGINT') process.emit(message);
       });
       await import(${JSON.stringify(pathToFileURL(serialRunnerPath).href)});
     `
-  );
-  const env = {
-    ...process.env,
-    NODE_OPTIONS: [process.env.NODE_OPTIONS, '--test-isolation=none'].filter(Boolean).join(' '),
-    WP_NPX_SIGNAL_PROBE_PATH: probePath,
-    WP_TEST_RUNNER_FORCE_NPX: '1',
-  };
-  delete env.NODE_TEST_CONTEXT;
-  const run = runNodeAsync(
-    [signalHost, '--failed-files-path', failedFilesPath, '--timings-path', timingsPath, probe],
-    { env, stdio: ['ignore', 'pipe', 'pipe', 'ipc'], managed: true }
-  );
-
-  let pid = null;
-  try {
-    await run.waitForStderr(/\[serial-tests batch 1\/1\] ready/u);
-    const readyOutput = await run.waitForStderr(/\[fixture\] npx-signal-handler-ready:\d+/u);
-    pid = Number(/npx-signal-handler-ready:(\d+)/u.exec(readyOutput)?.[1]);
-    assert.equal(Number.isInteger(pid) && pid > 0, true, readyOutput);
-    await sendIpcSignal(run.child, 'SIGTERM');
-    const exitResult = await run.exited;
-    assertInterruptedExitLike(
-      { ...exitResult, stdout: '', stderr: '' },
-      'interrupted npx fallback should preserve wrapper interruption'
+    );
+    const env = {
+      ...process.env,
+      WP_NPX_SIGNAL_PROBE_PATH: probePath,
+      WP_TEST_RUNNER_FORCE_NPX: '1',
+    };
+    delete env.NODE_TEST_CONTEXT;
+    const run = runNodeAsync(
+      [
+        signalHost,
+        '--failed-files-path',
+        failedFilesPath,
+        '--timings-path',
+        timingsPath,
+        ...serialIsolationArguments,
+        probe,
+      ],
+      { env, stdio: ['ignore', 'pipe', 'pipe', 'ipc'], managed: true }
     );
 
-    const exited = await waitForProcessExit(pid);
-    if (!exited) throw new Error(`npx fallback left test process ${pid} running`);
-    await run.completed;
-    const summary = JSON.parse(fs.readFileSync(timingsPath, 'utf8'));
-    assert.equal(summary.completedBatches, 1);
-    assert.equal(summary.batches.length, 1);
-    assert.equal(summary.batches[0].outcome, 'interrupted');
-    assert.equal(summary.batches[0].requestedSignal, 'SIGTERM');
-    assert.ok(summary.batches[0].durationMs > 0, 'final summary must replace the active recovery snapshot');
-  } finally {
-    const result = await cleanupManagedTestRun(run);
-    if (Number.isInteger(pid) && pid > 0 && !(await waitForProcessExit(pid))) {
-      try {
-        process.kill(pid, 'SIGKILL');
-      } catch {}
-      assert.fail(`npx fallback cleanup left test process ${pid} running\n${result.stderr}`);
+    let pid = null;
+    try {
+      await run.waitForStderr(/\[serial-tests batch 1\/1\] ready/u);
+      const readyOutput = await run.waitForStderr(/\[fixture\] npx-signal-handler-ready:\d+/u);
+      pid = Number(/npx-signal-handler-ready:(\d+)/u.exec(readyOutput)?.[1]);
+      assert.equal(Number.isInteger(pid) && pid > 0, true, readyOutput);
+      await sendIpcSignal(run.child, 'SIGTERM');
+      const exitResult = await run.exited;
+      assertInterruptedExitLike(
+        { ...exitResult, stdout: '', stderr: '' },
+        'interrupted npx fallback should preserve wrapper interruption'
+      );
+
+      const exited = await waitForProcessExit(pid);
+      if (!exited) throw new Error(`npx fallback left test process ${pid} running`);
+      await run.completed;
+      const summary = JSON.parse(fs.readFileSync(timingsPath, 'utf8'));
+      assert.equal(summary.completedBatches, 1);
+      assert.equal(summary.batches.length, 1);
+      assert.equal(summary.batches[0].outcome, 'interrupted');
+      assert.equal(summary.batches[0].requestedSignal, 'SIGTERM');
+      assert.deepEqual(summary.testRunnerArgs, [testIsolationNoneArgument]);
+      assert.equal(summary.batches[0].rerunCommand.includes(testIsolationNoneArgument), true);
+      assert.equal(summary.interruptedBatch.rerunCommand.includes(testIsolationNoneArgument), true);
+      assert.ok(summary.batches[0].durationMs > 0, 'final summary must replace the active recovery snapshot');
+    } finally {
+      const result = await cleanupManagedTestRun(run);
+      if (Number.isInteger(pid) && pid > 0 && !(await waitForProcessExit(pid))) {
+        try {
+          process.kill(pid, 'SIGKILL');
+        } catch {}
+        assert.fail(`npx fallback cleanup left test process ${pid} running\n${result.stderr}`);
+      }
     }
   }
-});
+);
 
 test(
   'serial runner interrupt writes interrupted batch summary and returns signal exit code',
@@ -873,7 +909,9 @@ test(
     skip:
       process.platform === 'win32'
         ? 'Windows terminates child processes instead of delivering catchable SIGTERM'
-        : false,
+        : testIsolationNoneArgument
+          ? false
+          : 'Current Node test runner does not expose test isolation control',
   },
   async () => {
     const root = tempDir();
@@ -892,10 +930,7 @@ test(
         });
       `
     );
-    const env = {
-      ...process.env,
-      NODE_OPTIONS: [process.env.NODE_OPTIONS, '--test-isolation=none'].filter(Boolean).join(' '),
-    };
+    const env = { ...process.env };
     delete env.NODE_TEST_CONTEXT;
     const run = runNodeAsync(
       [
@@ -904,6 +939,7 @@ test(
         failedFilesPath,
         '--timings-path',
         timingsPath,
+        ...serialIsolationArguments,
         ignoresSignal,
       ],
       { env }
