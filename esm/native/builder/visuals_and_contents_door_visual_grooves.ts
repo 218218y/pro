@@ -1,4 +1,4 @@
-import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DOOR_GROOVE_RENDER_POLICY } from '../../shared/dimensions/door_visual_policy.js';
 import { normalizeGrooveLinesCount, resolveGrooveLinesCount } from './groove_lines_count.js';
 import {
   createDoorVisualCacheKey,
@@ -54,14 +54,12 @@ export function appendGrooveStrips(args: {
   const gap = targetW / (stripesCount + 1);
   const stripGeo = getCachedDoorVisualGeometry(
     App,
-    createDoorVisualCacheKey('door_groove_strip', [
-      targetH - DOOR_VISUAL_DIMENSIONS.grooves.heightClearanceM,
-    ]),
+    createDoorVisualCacheKey('door_groove_strip', [targetH - DOOR_GROOVE_RENDER_POLICY.heightClearanceM]),
     () =>
       new THREE.BoxGeometry(
-        DOOR_VISUAL_DIMENSIONS.grooves.stripWidthM,
-        targetH - DOOR_VISUAL_DIMENSIONS.grooves.heightClearanceM,
-        DOOR_VISUAL_DIMENSIONS.grooves.stripDepthM
+        DOOR_GROOVE_RENDER_POLICY.stripWidthM,
+        targetH - DOOR_GROOVE_RENDER_POLICY.heightClearanceM,
+        DOOR_GROOVE_RENDER_POLICY.stripDepthM
       )
   );
   for (let i = 1; i <= stripesCount; i++) {
@@ -69,11 +67,7 @@ export function appendGrooveStrips(args: {
     strip.userData = strip.userData || {};
     strip.userData.__keepMaterial = true;
     tagDoorVisualPart(strip, 'door_groove_strip');
-    strip.position.set(
-      -targetW / 2 + i * gap,
-      0,
-      zOffset + DOOR_VISUAL_DIMENSIONS.grooves.surfaceOffsetM * zSign
-    );
+    strip.position.set(-targetW / 2 + i * gap, 0, zOffset + DOOR_GROOVE_RENDER_POLICY.surfaceOffsetM * zSign);
     visualGroup.add(strip);
   }
 }

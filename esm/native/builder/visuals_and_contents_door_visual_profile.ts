@@ -6,7 +6,7 @@ import {
   createDoorVisualCacheKey,
   getCachedDoorVisualGeometry,
 } from './visuals_and_contents_door_visual_cache.js';
-import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DOOR_PROFILE_RENDER_POLICY } from '../../shared/dimensions/door_visual_policy.js';
 
 import type { StyledDoorVisualArgs } from './visuals_and_contents_door_visual_style_contracts.js';
 
@@ -41,7 +41,7 @@ export function createProfileDoorVisual(args: StyledDoorVisualArgs) {
     mat,
     zSign,
   });
-  const profileDims = DOOR_VISUAL_DIMENSIONS.profile;
+  const profileDims = DOOR_PROFILE_RENDER_POLICY;
   const { centerW, centerH, centerDepth, innerFrameW, stepSpanW, stepSpanH, centerFaceZ } = layout;
 
   const centerPanel = new THREE.Mesh(

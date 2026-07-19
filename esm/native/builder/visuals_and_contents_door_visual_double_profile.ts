@@ -1,4 +1,7 @@
-import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DOOR_DOUBLE_PROFILE_RENDER_POLICY,
+  DOOR_VISUAL_COMMON_POLICY,
+} from '../../shared/dimensions/door_visual_policy.js';
 import { appendSubtleDoorAccentBorder } from './visuals_and_contents_door_visual_accent.js';
 import { appendGrooveStrips } from './visuals_and_contents_door_visual_grooves.js';
 import {
@@ -31,24 +34,24 @@ export function createDoubleProfileDoorVisual(args: StyledDoorVisualArgs) {
     zSign,
   } = args;
 
-  const rawFrameW = DOOR_VISUAL_DIMENSIONS.doubleProfile.frameWidthM;
+  const rawFrameW = DOOR_DOUBLE_PROFILE_RENDER_POLICY.frameWidthM;
   const frameW = Math.max(
-    DOOR_VISUAL_DIMENSIONS.doubleProfile.frameMinM,
+    DOOR_DOUBLE_PROFILE_RENDER_POLICY.frameMinM,
     Math.min(
       rawFrameW,
-      w / 2 - DOOR_VISUAL_DIMENSIONS.doubleProfile.frameEdgeClearanceM,
-      h / 2 - DOOR_VISUAL_DIMENSIONS.doubleProfile.frameEdgeClearanceM
+      w / 2 - DOOR_DOUBLE_PROFILE_RENDER_POLICY.frameEdgeClearanceM,
+      h / 2 - DOOR_DOUBLE_PROFILE_RENDER_POLICY.frameEdgeClearanceM
     )
   );
   const recessDepth = Math.max(
-    DOOR_VISUAL_DIMENSIONS.doubleProfile.recessDepthMinM,
+    DOOR_DOUBLE_PROFILE_RENDER_POLICY.recessDepthMinM,
     Math.min(
-      DOOR_VISUAL_DIMENSIONS.doubleProfile.recessDepthMaxM,
-      thickness - DOOR_VISUAL_DIMENSIONS.doubleProfile.recessDepthThicknessClearanceM
+      DOOR_DOUBLE_PROFILE_RENDER_POLICY.recessDepthMaxM,
+      thickness - DOOR_DOUBLE_PROFILE_RENDER_POLICY.recessDepthThicknessClearanceM
     )
   );
-  const innerW = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, w - 2 * frameW);
-  const innerH = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, h - 2 * frameW);
+  const innerW = Math.max(DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM, w - 2 * frameW);
+  const innerH = Math.max(DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM, h - 2 * frameW);
 
   const centerPanel = new THREE.Mesh(
     getCachedDoorVisualGeometry(
@@ -56,13 +59,13 @@ export function createDoubleProfileDoorVisual(args: StyledDoorVisualArgs) {
       createDoorVisualCacheKey('door_double_profile_center', [
         innerW,
         innerH,
-        Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM / 10, thickness - recessDepth),
+        Math.max(DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM / 10, thickness - recessDepth),
       ]),
       () =>
         new THREE.BoxGeometry(
           innerW,
           innerH,
-          Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM / 10, thickness - recessDepth)
+          Math.max(DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM / 10, thickness - recessDepth)
         )
     ),
     mat
@@ -83,7 +86,7 @@ export function createDoubleProfileDoorVisual(args: StyledDoorVisualArgs) {
   bot.position.set(0, -(h / 2 - frameW / 2), 0);
   visualGroup.add(bot);
 
-  const sideSpan = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, h - 2 * frameW);
+  const sideSpan = Math.max(DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM, h - 2 * frameW);
   const vGeo = getCachedDoorVisualGeometry(
     App,
     createDoorVisualCacheKey('door_double_profile_v', [frameW, sideSpan, thickness]),
@@ -114,44 +117,44 @@ export function createDoubleProfileDoorVisual(args: StyledDoorVisualArgs) {
   });
 
   const innerRaisedInset = Math.max(
-    DOOR_VISUAL_DIMENSIONS.doubleProfile.innerRaisedInsetMinM,
+    DOOR_DOUBLE_PROFILE_RENDER_POLICY.innerRaisedInsetMinM,
     Math.min(
-      frameW * DOOR_VISUAL_DIMENSIONS.doubleProfile.innerRaisedInsetFrameRatio,
-      DOOR_VISUAL_DIMENSIONS.doubleProfile.innerRaisedInsetMaxM
+      frameW * DOOR_DOUBLE_PROFILE_RENDER_POLICY.innerRaisedInsetFrameRatio,
+      DOOR_DOUBLE_PROFILE_RENDER_POLICY.innerRaisedInsetMaxM
     )
   );
   const innerRaisedOuterW = Math.max(
-    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+    DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM,
     innerW - 2 * innerRaisedInset
   );
   const innerRaisedOuterH = Math.max(
-    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+    DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM,
     innerH - 2 * innerRaisedInset
   );
   const innerRaisedBandW = Math.max(
-    DOOR_VISUAL_DIMENSIONS.doubleProfile.innerRaisedBandMinM,
+    DOOR_DOUBLE_PROFILE_RENDER_POLICY.innerRaisedBandMinM,
     Math.min(
-      frameW * DOOR_VISUAL_DIMENSIONS.doubleProfile.innerRaisedBandFrameRatio,
-      innerRaisedOuterW / 2 - DOOR_VISUAL_DIMENSIONS.doubleProfile.innerRaisedBandEdgeClearanceM,
-      innerRaisedOuterH / 2 - DOOR_VISUAL_DIMENSIONS.doubleProfile.innerRaisedBandEdgeClearanceM
+      frameW * DOOR_DOUBLE_PROFILE_RENDER_POLICY.innerRaisedBandFrameRatio,
+      innerRaisedOuterW / 2 - DOOR_DOUBLE_PROFILE_RENDER_POLICY.innerRaisedBandEdgeClearanceM,
+      innerRaisedOuterH / 2 - DOOR_DOUBLE_PROFILE_RENDER_POLICY.innerRaisedBandEdgeClearanceM
     )
   );
   const mirrorPlacementW = Math.max(
-    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+    DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM,
     innerRaisedOuterW - 2 * innerRaisedBandW
   );
   const mirrorPlacementH = Math.max(
-    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+    DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM,
     innerRaisedOuterH - 2 * innerRaisedBandW
   );
   applyMirrorPlacementRectMetadata(centerPanel, mirrorPlacementW, mirrorPlacementH);
   const innerRaisedZ =
     Math.max(
-      DOOR_VISUAL_DIMENSIONS.doubleProfile.innerRaisedZMinM,
+      DOOR_DOUBLE_PROFILE_RENDER_POLICY.innerRaisedZMinM,
       Math.min(
-        DOOR_VISUAL_DIMENSIONS.doubleProfile.innerRaisedZMaxM,
-        thickness * DOOR_VISUAL_DIMENSIONS.doubleProfile.innerRaisedZThicknessRatio,
-        frameW * DOOR_VISUAL_DIMENSIONS.doubleProfile.innerRaisedZFrameRatio
+        DOOR_DOUBLE_PROFILE_RENDER_POLICY.innerRaisedZMaxM,
+        thickness * DOOR_DOUBLE_PROFILE_RENDER_POLICY.innerRaisedZThicknessRatio,
+        frameW * DOOR_DOUBLE_PROFILE_RENDER_POLICY.innerRaisedZFrameRatio
       )
     ) * zSign;
   appendRoundedMiterDoorFrame({
@@ -184,11 +187,11 @@ export function createDoubleProfileDoorVisual(args: StyledDoorVisualArgs) {
     targetH: innerH,
     faceZ: centerFaceZ,
     inset: Math.min(
-      frameW * DOOR_VISUAL_DIMENSIONS.doubleProfile.accentInsetFrameRatio,
-      DOOR_VISUAL_DIMENSIONS.doubleProfile.accentInsetMaxM
+      frameW * DOOR_DOUBLE_PROFILE_RENDER_POLICY.accentInsetFrameRatio,
+      DOOR_DOUBLE_PROFILE_RENDER_POLICY.accentInsetMaxM
     ),
-    lineT: DOOR_VISUAL_DIMENSIONS.doubleProfile.accentLineThicknessM,
-    opacity: DOOR_VISUAL_DIMENSIONS.doubleProfile.accentOpacity,
+    lineT: DOOR_DOUBLE_PROFILE_RENDER_POLICY.accentLineThicknessM,
+    opacity: DOOR_DOUBLE_PROFILE_RENDER_POLICY.accentOpacity,
   });
   appendGrooveStrips({
     App,

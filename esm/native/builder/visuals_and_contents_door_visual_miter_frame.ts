@@ -3,7 +3,7 @@ import {
   getCachedDoorVisualGeometry,
   getCachedDoorVisualMaterial,
 } from './visuals_and_contents_door_visual_cache.js';
-import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DOOR_MITER_RENDER_POLICY } from '../../shared/dimensions/door_visual_policy.js';
 import type { ShapeRuntimeLike } from './visuals_and_contents_shared.js';
 import type { AppContainer, Object3DLike, ThreeLike } from '../../../types/index.js';
 import type { TagDoorVisualPartFn } from './visuals_and_contents_door_visual_support_contracts.js';
@@ -46,7 +46,7 @@ function appendMiterFrameSeamLines(args: {
   const { App, THREE, visualGroup, tagDoorVisualPart, zSign, outerW, outerH, bandW, faceZ, isSketch } = args;
   const partPrefix = args.partPrefix || 'door_frame';
   if (!Number.isFinite(outerW) || !Number.isFinite(outerH) || !Number.isFinite(bandW)) return;
-  const miterDims = DOOR_VISUAL_DIMENSIONS.miter;
+  const miterDims = DOOR_MITER_RENDER_POLICY;
   const bw = Math.max(
     miterDims.bandMinM,
     Math.min(bandW, outerW / 2 - miterDims.bandEdgeClearanceM, outerH / 2 - miterDims.bandEdgeClearanceM)
@@ -128,7 +128,7 @@ export function appendMiterFaceFrameCaps(args: {
   } = args;
 
   if (!Number.isFinite(outerW) || !Number.isFinite(outerH) || !Number.isFinite(bandW)) return;
-  const miterDims = DOOR_VISUAL_DIMENSIONS.miter;
+  const miterDims = DOOR_MITER_RENDER_POLICY;
   const bw = Math.max(
     miterDims.bandMinM,
     Math.min(bandW, outerW / 2 - miterDims.bandEdgeClearanceM, outerH / 2 - miterDims.bandEdgeClearanceM)
@@ -252,7 +252,7 @@ export function appendRoundedMiterDoorFrame(args: {
     zOffset = 0,
   } = args;
   if (!Number.isFinite(outerW) || !Number.isFinite(outerH) || !Number.isFinite(bandW)) return;
-  const miterDims = DOOR_VISUAL_DIMENSIONS.miter;
+  const miterDims = DOOR_MITER_RENDER_POLICY;
   const bw = Math.max(
     miterDims.bandMinM,
     Math.min(bandW, outerW / 2 - miterDims.bandEdgeClearanceM, outerH / 2 - miterDims.bandEdgeClearanceM)

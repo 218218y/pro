@@ -28,11 +28,18 @@ function normalizeDoorMountConstructionMode(value: unknown): DoorMountConstructi
   return value === 'inset' ? 'inset' : 'overlay';
 }
 
+function decimalPlaces(value: number): number {
+  const [coefficient, exponentText] = String(value).toLowerCase().split('e');
+  const fractionLength = coefficient.split('.')[1]?.length ?? 0;
+  const exponent = exponentText ? Number(exponentText) : 0;
+  return Math.max(0, fractionLength - exponent);
+}
+
 function roundDoorMountThicknessCm(value: number): number {
   const stepCm = Number(DOOR_MOUNT_THICKNESS_DIMENSIONS.stepCm);
-  const scaledValue = value / stepCm;
-  const rounded = Math.round(scaledValue + Number.EPSILON * Math.max(1, Math.abs(scaledValue))) * stepCm;
-  return Number(rounded.toFixed(12));
+  const decimalScale = 10 ** decimalPlaces(stepCm);
+  const stepUnits = Math.round(stepCm * decimalScale);
+  return (Math.round((value * decimalScale) / stepUnits) * stepUnits) / decimalScale;
 }
 
 export function normalizeDoorMountThicknessCm(value: unknown): number | null {

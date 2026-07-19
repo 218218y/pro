@@ -5,20 +5,20 @@ import type {
   UnknownRecord,
 } from '../../types/index.js';
 import { isCanonicalDoorVisualMapKey } from './door_visual_key_contracts_shared.js';
-import { DOOR_VISUAL_DIMENSIONS } from './wardrobe_dimension_tokens_shared.js';
+import { DOOR_MIRROR_LAYOUT_POLICY } from './dimensions/door_visual_policy.js';
 
 export const DEFAULT_CENTER_NORM = 0.5;
 export const DEFAULT_FACE_SIGN = 1;
-export const FULL_MIRROR_INSET_M: number = DOOR_VISUAL_DIMENSIONS.mirror.layoutFullInsetM;
-export const MIN_MIRROR_SIZE_M: number = DOOR_VISUAL_DIMENSIONS.mirror.layoutMinSizeM;
-export const CENTER_EPSILON: number = DOOR_VISUAL_DIMENSIONS.mirror.layoutCenterEpsilon;
-export const SIZE_EPSILON_CM: number = DOOR_VISUAL_DIMENSIONS.mirror.layoutSizeEpsilonCm;
+export const FULL_MIRROR_INSET_M: number = DOOR_MIRROR_LAYOUT_POLICY.layoutFullInsetM;
+export const MIN_MIRROR_SIZE_M: number = DOOR_MIRROR_LAYOUT_POLICY.layoutMinSizeM;
+export const CENTER_EPSILON: number = DOOR_MIRROR_LAYOUT_POLICY.layoutCenterEpsilon;
+export const SIZE_EPSILON_CM: number = DOOR_MIRROR_LAYOUT_POLICY.layoutSizeEpsilonCm;
 export const MIRROR_CENTER_SNAP_NORM_THRESHOLD: number =
-  DOOR_VISUAL_DIMENSIONS.mirror.layoutCenterSnapNormThreshold;
-export const DEFAULT_REMOVE_TOLERANCE_M: number = DOOR_VISUAL_DIMENSIONS.mirror.layoutRemoveToleranceDefaultM;
-export const MAX_REMOVE_TOLERANCE_M: number = DOOR_VISUAL_DIMENSIONS.mirror.layoutRemoveToleranceMaxM;
+  DOOR_MIRROR_LAYOUT_POLICY.layoutCenterSnapNormThreshold;
+export const DEFAULT_REMOVE_TOLERANCE_M: number = DOOR_MIRROR_LAYOUT_POLICY.layoutRemoveToleranceDefaultM;
+export const MAX_REMOVE_TOLERANCE_M: number = DOOR_MIRROR_LAYOUT_POLICY.layoutRemoveToleranceMaxM;
 export const MIRROR_REMOVE_TOLERANCE_SIZE_RATIO: number =
-  DOOR_VISUAL_DIMENSIONS.mirror.layoutRemoveToleranceSizeRatio;
+  DOOR_MIRROR_LAYOUT_POLICY.layoutRemoveToleranceSizeRatio;
 
 export type MirrorDraftInput = {
   widthCm?: unknown;

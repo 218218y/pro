@@ -3,7 +3,10 @@ import {
   readGeometryRuntimeNumber,
   readGeometryRuntimePositiveBoxDimension,
 } from './geometry_runtime_contracts.js';
-import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DOOR_MIRROR_RENDER_POLICY,
+  DOOR_VISUAL_COMMON_POLICY,
+} from '../../shared/dimensions/door_visual_policy.js';
 import { createProfileDoorVisual } from './visuals_and_contents_door_visual_profile.js';
 import { createDoubleProfileDoorVisual } from './visuals_and_contents_door_visual_double_profile.js';
 import {
@@ -77,19 +80,19 @@ function readPanelGeometry(value: Object3DLike): unknown {
 }
 
 function resolveMirrorDepthLayout(thickness: number): MirrorDepthLayout {
-  const baseDoorThick = Math.max(DOOR_VISUAL_DIMENSIONS.mirror.doorThicknessMinM, thickness);
+  const baseDoorThick = Math.max(DOOR_MIRROR_RENDER_POLICY.doorThicknessMinM, thickness);
   const mirrorThick = Math.max(
-    DOOR_VISUAL_DIMENSIONS.mirror.mirrorThicknessMinM,
+    DOOR_MIRROR_RENDER_POLICY.mirrorThicknessMinM,
     Math.min(
-      DOOR_VISUAL_DIMENSIONS.mirror.mirrorThicknessMaxM,
-      baseDoorThick * DOOR_VISUAL_DIMENSIONS.mirror.mirrorThicknessDoorRatio
+      DOOR_MIRROR_RENDER_POLICY.mirrorThicknessMaxM,
+      baseDoorThick * DOOR_MIRROR_RENDER_POLICY.mirrorThicknessDoorRatio
     )
   );
   const adhesiveGap = Math.max(
-    DOOR_VISUAL_DIMENSIONS.mirror.adhesiveGapMinM,
+    DOOR_MIRROR_RENDER_POLICY.adhesiveGapMinM,
     Math.min(
-      DOOR_VISUAL_DIMENSIONS.mirror.adhesiveGapMaxM,
-      mirrorThick * DOOR_VISUAL_DIMENSIONS.mirror.adhesiveGapMirrorRatio
+      DOOR_MIRROR_RENDER_POLICY.adhesiveGapMaxM,
+      mirrorThick * DOOR_MIRROR_RENDER_POLICY.adhesiveGapMirrorRatio
     )
   );
   return { mirrorThick, adhesiveGap };
@@ -245,14 +248,8 @@ export function createStyledFullMirrorDoorVisual(args: CreateStyledMirrorDoorVis
   const layoutList = Array.isArray(args.mirrorLayout) && args.mirrorLayout.length ? args.mirrorLayout : [];
   const fullInsideLayouts = layoutList.filter(layout => readMirrorLayoutFaceSign(layout, args.zSign) === -1);
   const depthLayout = resolveMirrorDepthLayout(args.thickness);
-  const mirrorWidth = Math.max(
-    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
-    args.w - FULL_MIRROR_INSET_M
-  );
-  const mirrorHeight = Math.max(
-    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
-    args.h - FULL_MIRROR_INSET_M
-  );
+  const mirrorWidth = Math.max(DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM, args.w - FULL_MIRROR_INSET_M);
+  const mirrorHeight = Math.max(DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM, args.h - FULL_MIRROR_INSET_M);
 
   for (let i = 0; i < fullInsideLayouts.length; i += 1) {
     const mirrorMesh = new args.THREE.Mesh(
@@ -280,7 +277,7 @@ export function createStyledFullMirrorDoorVisual(args: CreateStyledMirrorDoorVis
       0,
       0,
       -(
-        Math.max(DOOR_VISUAL_DIMENSIONS.mirror.doorThicknessMinM, args.thickness) / 2 +
+        Math.max(DOOR_MIRROR_RENDER_POLICY.doorThicknessMinM, args.thickness) / 2 +
         depthLayout.adhesiveGap +
         depthLayout.mirrorThick / 2
       )

@@ -10,6 +10,7 @@ import {
   CHEST_MODE_DIMENSIONS as FACADE_CHEST_MODE_DIMENSIONS,
   DOOR_MOUNT_THICKNESS_CONFIG_KEYS as FACADE_DOOR_MOUNT_THICKNESS_CONFIG_KEYS,
   DOOR_MOUNT_THICKNESS_DIMENSIONS as FACADE_DOOR_MOUNT_THICKNESS_DIMENSIONS,
+  DOOR_VISUAL_DIMENSIONS as FACADE_DOOR_VISUAL_DIMENSIONS,
   DOOR_SYSTEM_DIMENSIONS,
   DOOR_TRIM_DIMENSIONS,
   DRAWER_DIMENSIONS,
@@ -69,6 +70,19 @@ import {
   normalizeDoorMountThicknessCm,
   resolveDoorMountThicknessesFromConfig as resolveDoorMountThicknessesFromOwner,
 } from '../esm/shared/dimensions/door_mount_thickness_policy.ts';
+import {
+  DOOR_ACCENT_RENDER_POLICY,
+  DOOR_DOUBLE_PROFILE_RENDER_POLICY,
+  DOOR_GLASS_RENDER_POLICY,
+  DOOR_GROOVE_RENDER_POLICY,
+  DOOR_MIRROR_LAYOUT_POLICY,
+  DOOR_MIRROR_POLICY,
+  DOOR_MIRROR_RENDER_POLICY,
+  DOOR_MITER_RENDER_POLICY,
+  DOOR_PROFILE_RENDER_POLICY,
+  DOOR_VISUAL_COMMON_POLICY,
+  DOOR_VISUAL_DIMENSIONS as OWNER_DOOR_VISUAL_DIMENSIONS,
+} from '../esm/shared/dimensions/door_visual_policy.ts';
 import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
@@ -601,6 +615,164 @@ test('Door System policy preserves every value, dependency reference, object sha
   });
 });
 
+test('Door Visual policy preserves every value, section reference, and facade identity', () => {
+  assert.equal(FACADE_DOOR_VISUAL_DIMENSIONS, OWNER_DOOR_VISUAL_DIMENSIONS);
+  assert.equal(OWNER_DOOR_VISUAL_DIMENSIONS.common, DOOR_VISUAL_COMMON_POLICY);
+  assert.equal(OWNER_DOOR_VISUAL_DIMENSIONS.accent, DOOR_ACCENT_RENDER_POLICY);
+  assert.equal(OWNER_DOOR_VISUAL_DIMENSIONS.grooves, DOOR_GROOVE_RENDER_POLICY);
+  assert.equal(OWNER_DOOR_VISUAL_DIMENSIONS.glass, DOOR_GLASS_RENDER_POLICY);
+  assert.equal(OWNER_DOOR_VISUAL_DIMENSIONS.profile, DOOR_PROFILE_RENDER_POLICY);
+  assert.equal(OWNER_DOOR_VISUAL_DIMENSIONS.miter, DOOR_MITER_RENDER_POLICY);
+  assert.equal(OWNER_DOOR_VISUAL_DIMENSIONS.doubleProfile, DOOR_DOUBLE_PROFILE_RENDER_POLICY);
+  assert.equal(OWNER_DOOR_VISUAL_DIMENSIONS.mirror, DOOR_MIRROR_POLICY);
+  for (const policy of [
+    DOOR_VISUAL_COMMON_POLICY,
+    DOOR_ACCENT_RENDER_POLICY,
+    DOOR_GROOVE_RENDER_POLICY,
+    DOOR_GLASS_RENDER_POLICY,
+    DOOR_PROFILE_RENDER_POLICY,
+    DOOR_MITER_RENDER_POLICY,
+    DOOR_DOUBLE_PROFILE_RENDER_POLICY,
+    DOOR_MIRROR_RENDER_POLICY,
+    DOOR_MIRROR_LAYOUT_POLICY,
+    DOOR_MIRROR_POLICY,
+    OWNER_DOOR_VISUAL_DIMENSIONS,
+  ]) {
+    assert.equal(Object.isFrozen(policy), true);
+  }
+
+  assert.deepEqual(OWNER_DOOR_VISUAL_DIMENSIONS, {
+    common: {
+      minPanelDimensionM: 0.02,
+      minDoorDimensionForAccentM: 0.04,
+      minStripThicknessM: 0.001,
+      frontSurfaceNudgeM: 0.0009,
+    },
+    accent: {
+      defaultInsetM: 0.01,
+      defaultLineThicknessM: 0.0022,
+      defaultOpacity: 0.18,
+      sketchOpacityExtra: 0.08,
+      sketchOpacityMax: 0.35,
+      safeInsetEdgeM: 0.01,
+      minLineThicknessM: 0.0014,
+      stripDepthM: 0.001,
+      renderOrder: 3,
+    },
+    grooves: {
+      stripWidthM: 0.005,
+      heightClearanceM: 0.04,
+      stripDepthM: 0.002,
+      surfaceOffsetM: 0.001,
+    },
+    glass: {
+      paneDepthM: 0.005,
+      paneRenderOrder: 2,
+      curtainRenderOrder: 1,
+      curtainSegments: 256,
+      curtainWaveAmplitudeM: 0.008,
+      curtainWaveFrequency: 120,
+      curtainDefaultGapM: 0.015,
+      curtainForcedGapM: 0.012,
+      curtainForcedEmissiveIntensity: 0.12,
+      flatInsetMinM: 0.002,
+      flatInsetMaxM: 0.006,
+      flatInsetRatio: 0.01,
+      opacity: 0.16,
+      curtainOpacity: 0.72,
+    },
+    profile: {
+      outerFrameWidthM: 0.03,
+      innerFrameWidthM: 0.027,
+      outerFrameMinM: 0.015,
+      innerFrameMinM: 0.012,
+      frameEdgeClearanceM: 0.03,
+      innerFrameEdgeClearanceM: 0.015,
+      centerDepthMinM: 0.01,
+      centerDepthMaxM: 0.02,
+      centerDepthThicknessClearanceM: 0.004,
+      stepDepthMinM: 0.002,
+      stepDepthMaxM: 0.004,
+      roundBulgeScale: 0.94,
+      roundInsetMinM: 0.003,
+      roundInsetMaxM: 0.012,
+      roundInsetOuterFrameRatio: 0.24,
+      centerPanelDepthMinM: 0.002,
+      outerAccentInsetFrameRatio: 0.2,
+      outerAccentInsetMaxM: 0.01,
+      outerAccentLineThicknessM: 0.0018,
+      innerAccentInsetFrameRatio: 0.28,
+      innerAccentInsetMaxM: 0.012,
+      innerAccentLineThicknessM: 0.0016,
+      grooveDensityOverride: 12,
+    },
+    miter: {
+      bandMinM: 0.001,
+      bandEdgeClearanceM: 0.006,
+      seamInsetMinM: 0.0018,
+      seamInsetBackoffM: 0.00025,
+      seamZOffsetM: 0.0014,
+      capSurfaceOffsetM: 0.0008,
+      roundedBeadDepthMinM: 0.003,
+      roundedBeadThicknessRatio: 0.96,
+      roundedBeadScaleBase: 0.62,
+      roundedBeadScaleBulgeRatio: 0.42,
+      roundedBevelSizeMinM: 0.0014,
+      roundedBevelSizeBandRatio: 0.49,
+      roundedBevelSizeDepthRatio: 0.98,
+      roundedBevelSizeEdgeBackoffM: 0.00045,
+      roundedBevelThicknessMinM: 0.0012,
+      roundedBevelThicknessBaseRatio: 0.46,
+      roundedBevelThicknessBulgeRatio: 0.08,
+      roundedBevelThicknessDepthBackoffM: 0.00025,
+      roundedBevelOffsetMaxM: 0.0006,
+      roundedBevelOffsetBandRatio: 0.03,
+      roundedOuterFaceZMinM: 0.0016,
+      roundedOuterFaceZBevelRatio: 1.35,
+      roundedOuterFaceZDepthRatio: 0.42,
+    },
+    doubleProfile: {
+      frameWidthM: 0.045,
+      frameMinM: 0.02,
+      frameEdgeClearanceM: 0.02,
+      recessDepthMinM: 0.008,
+      recessDepthMaxM: 0.014,
+      recessDepthThicknessClearanceM: 0.004,
+      innerRaisedInsetMinM: 0.006,
+      innerRaisedInsetMaxM: 0.014,
+      innerRaisedInsetFrameRatio: 0.22,
+      innerRaisedBandMinM: 0.006,
+      innerRaisedBandFrameRatio: 0.24,
+      innerRaisedBandEdgeClearanceM: 0.012,
+      innerRaisedZMinM: 0.0022,
+      innerRaisedZMaxM: 0.0042,
+      innerRaisedZThicknessRatio: 0.24,
+      innerRaisedZFrameRatio: 0.08,
+      accentInsetFrameRatio: 0.18,
+      accentInsetMaxM: 0.012,
+      accentLineThicknessM: 0.0022,
+      accentOpacity: 0.16,
+    },
+    mirror: {
+      doorThicknessMinM: 0.002,
+      mirrorThicknessMinM: 0.002,
+      mirrorThicknessMaxM: 0.004,
+      mirrorThicknessDoorRatio: 0.35,
+      adhesiveGapMinM: 0.0006,
+      adhesiveGapMaxM: 0.0012,
+      adhesiveGapMirrorRatio: 0.3,
+      layoutFullInsetM: 0.002,
+      layoutMinSizeM: 0.02,
+      layoutCenterSnapNormThreshold: 0.04,
+      layoutRemoveToleranceDefaultM: 0.03,
+      layoutRemoveToleranceMaxM: 0.06,
+      layoutRemoveToleranceSizeRatio: 0.18,
+      layoutCenterEpsilon: 0.0001,
+      layoutSizeEpsilonCm: 0.001,
+    },
+  });
+});
+
 test('feature facades read physical dimensions from the shared token source', () => {
   assert.equal(DEFAULT_BASE_LEG_HEIGHT_CM, BASE_LEG_DIMENSIONS.defaults.heightCm);
   assert.equal(DEFAULT_TAPERED_BASE_LEG_WIDTH_CM, BASE_LEG_DIMENSIONS.defaults.taperedWidthCm);
@@ -663,11 +835,19 @@ test('Door Mount Thickness policy preserves facade identity, defaults, keys, nor
   assert.equal(normalizeDoorMountThicknessCm(0.39), 0.4);
   assert.equal(normalizeDoorMountThicknessCm(0.44), 0.4);
   assert.equal(normalizeDoorMountThicknessCm(0.45), 0.5);
+  assert.equal(normalizeDoorMountThicknessCm(0.4499999999999999), 0.4);
   assert.equal(normalizeDoorMountThicknessCm(1.84), 1.8);
   assert.equal(normalizeDoorMountThicknessCm(1.85), 1.9);
+  assert.equal(normalizeDoorMountThicknessCm(1.8499999999999996), 1.8);
   assert.equal(normalizeDoorMountThicknessCm(8.1), 8);
   assert.equal(normalizeDoorMountThicknessCm(0.3), 0.4);
   assert.equal(String(normalizeDoorMountThicknessCm(1.85)), '1.9');
+
+  for (let thousandths = 400; thousandths <= 8000; thousandths += 1) {
+    const value = thousandths / 1000;
+    const legacyRounded = Math.round(value * 10) / 10;
+    assert.equal(normalizeDoorMountThicknessCm(value), legacyRounded, `legacy rounding parity for ${value}`);
+  }
 
   const sliding = resolveDoorMountThicknessesFromOwner({
     wardrobeType: 'sliding',

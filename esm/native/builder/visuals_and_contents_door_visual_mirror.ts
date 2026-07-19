@@ -5,7 +5,7 @@
 
 import { createCanvasViaPlatform } from '../runtime/platform_access.js';
 import { installPlanarMirrorReflector } from '../runtime/render_access.js';
-import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DOOR_MIRROR_RENDER_POLICY } from '../../shared/dimensions/door_visual_policy.js';
 import { getCacheBag } from '../runtime/cache_access.js';
 import {
   readMirrorLayoutFaceSign,
@@ -90,19 +90,19 @@ type MirrorDoorDepthLayout = {
 };
 
 function resolveMirrorDoorDepthLayout(thickness: number): MirrorDoorDepthLayout {
-  const baseDoorThick = Math.max(DOOR_VISUAL_DIMENSIONS.mirror.doorThicknessMinM, thickness);
+  const baseDoorThick = Math.max(DOOR_MIRROR_RENDER_POLICY.doorThicknessMinM, thickness);
   const mirrorThick = Math.max(
-    DOOR_VISUAL_DIMENSIONS.mirror.mirrorThicknessMinM,
+    DOOR_MIRROR_RENDER_POLICY.mirrorThicknessMinM,
     Math.min(
-      DOOR_VISUAL_DIMENSIONS.mirror.mirrorThicknessMaxM,
-      baseDoorThick * DOOR_VISUAL_DIMENSIONS.mirror.mirrorThicknessDoorRatio
+      DOOR_MIRROR_RENDER_POLICY.mirrorThicknessMaxM,
+      baseDoorThick * DOOR_MIRROR_RENDER_POLICY.mirrorThicknessDoorRatio
     )
   );
   const adhesiveGap = Math.max(
-    DOOR_VISUAL_DIMENSIONS.mirror.adhesiveGapMinM,
+    DOOR_MIRROR_RENDER_POLICY.adhesiveGapMinM,
     Math.min(
-      DOOR_VISUAL_DIMENSIONS.mirror.adhesiveGapMaxM,
-      mirrorThick * DOOR_VISUAL_DIMENSIONS.mirror.adhesiveGapMirrorRatio
+      DOOR_MIRROR_RENDER_POLICY.adhesiveGapMaxM,
+      mirrorThick * DOOR_MIRROR_RENDER_POLICY.adhesiveGapMirrorRatio
     )
   );
   const mirrorCenterZ = baseDoorThick / 2 + adhesiveGap + mirrorThick / 2;

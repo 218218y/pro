@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-17T06:03:48.514Z",
+  "generatedAt": "2026-07-19T05:08:45.534Z",
   "totals": {
-    "tests": 1220,
-    "unitRunnerTests": 1212,
+    "tests": 1221,
+    "unitRunnerTests": 1213,
     "e2eTests": 8,
-    "nonTestRuntimeFiles": 32,
+    "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
     "catalogTestReferences": 352,
     "totalTestReferences": 543,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 397,
+    "contract": 398,
     "runtime-unit": 314,
     "integration": 450,
     "e2e-smoke": 9,
@@ -1692,6 +1692,10 @@
     {
       "file": "tests/door_mirror_visual_depth_runtime.test.js",
       "category": "integration"
+    },
+    {
+      "file": "tests/door_mount_dimension_type_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/door_paint_hover_preview_guard.test.js",

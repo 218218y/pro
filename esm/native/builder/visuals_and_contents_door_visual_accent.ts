@@ -1,4 +1,7 @@
-import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DOOR_ACCENT_RENDER_POLICY,
+  DOOR_VISUAL_COMMON_POLICY,
+} from '../../shared/dimensions/door_visual_policy.js';
 import {
   createDoorVisualCacheKey,
   getCachedDoorVisualGeometry,
@@ -31,15 +34,15 @@ export function appendSubtleDoorAccentBorder(args: {
     targetW,
     targetH,
     faceZ,
-    inset = DOOR_VISUAL_DIMENSIONS.accent.defaultInsetM,
-    lineT = DOOR_VISUAL_DIMENSIONS.accent.defaultLineThicknessM,
-    opacity = DOOR_VISUAL_DIMENSIONS.accent.defaultOpacity,
+    inset = DOOR_ACCENT_RENDER_POLICY.defaultInsetM,
+    lineT = DOOR_ACCENT_RENDER_POLICY.defaultLineThicknessM,
+    opacity = DOOR_ACCENT_RENDER_POLICY.defaultOpacity,
   } = args;
   if (
     !Number.isFinite(targetW) ||
     !Number.isFinite(targetH) ||
-    !(targetW > DOOR_VISUAL_DIMENSIONS.common.minDoorDimensionForAccentM) ||
-    !(targetH > DOOR_VISUAL_DIMENSIONS.common.minDoorDimensionForAccentM)
+    !(targetW > DOOR_VISUAL_COMMON_POLICY.minDoorDimensionForAccentM) ||
+    !(targetH > DOOR_VISUAL_COMMON_POLICY.minDoorDimensionForAccentM)
   ) {
     return;
   }
@@ -48,22 +51,19 @@ export function appendSubtleDoorAccentBorder(args: {
     0,
     Math.min(
       inset,
-      targetW / 2 - DOOR_VISUAL_DIMENSIONS.accent.safeInsetEdgeM,
-      targetH / 2 - DOOR_VISUAL_DIMENSIONS.accent.safeInsetEdgeM
+      targetW / 2 - DOOR_ACCENT_RENDER_POLICY.safeInsetEdgeM,
+      targetH / 2 - DOOR_ACCENT_RENDER_POLICY.safeInsetEdgeM
     )
   );
   const innerW = targetW - 2 * safeInset;
   const innerH = targetH - 2 * safeInset;
   if (
-    !(innerW > DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM) ||
-    !(innerH > DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM)
+    !(innerW > DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM) ||
+    !(innerH > DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM)
   ) {
     return;
   }
-  const t = Math.max(
-    DOOR_VISUAL_DIMENSIONS.accent.minLineThicknessM,
-    Math.min(lineT, innerW / 6, innerH / 6)
-  );
+  const t = Math.max(DOOR_ACCENT_RENDER_POLICY.minLineThicknessM, Math.min(lineT, innerW / 6, innerH / 6));
   if (!(innerW > 2 * t) || !(innerH > 2 * t)) return;
 
   const accentMat = getCachedDoorVisualMaterial(
@@ -75,8 +75,8 @@ export function appendSubtleDoorAccentBorder(args: {
         transparent: true,
         opacity: isSketch
           ? Math.min(
-              DOOR_VISUAL_DIMENSIONS.accent.sketchOpacityMax,
-              opacity + DOOR_VISUAL_DIMENSIONS.accent.sketchOpacityExtra
+              DOOR_ACCENT_RENDER_POLICY.sketchOpacityMax,
+              opacity + DOOR_ACCENT_RENDER_POLICY.sketchOpacityExtra
             )
           : opacity,
         depthWrite: false,
@@ -89,22 +89,22 @@ export function appendSubtleDoorAccentBorder(args: {
     // ignore
   }
 
-  const z = faceZ + DOOR_VISUAL_DIMENSIONS.common.frontSurfaceNudgeM * zSign;
+  const z = faceZ + DOOR_VISUAL_COMMON_POLICY.frontSurfaceNudgeM * zSign;
   const addStrip = (sw: number, sh: number, x: number, y: number, partId: string) => {
     if (!(sw > 0) || !(sh > 0)) return;
     const geometry = getCachedDoorVisualGeometry(
       App,
       createDoorVisualCacheKey('door_accent_strip', [sw, sh]),
-      () => new THREE.BoxGeometry(sw, sh, DOOR_VISUAL_DIMENSIONS.accent.stripDepthM)
+      () => new THREE.BoxGeometry(sw, sh, DOOR_ACCENT_RENDER_POLICY.stripDepthM)
     );
     const strip = new THREE.Mesh(geometry, accentMat);
     strip.position.set(x, y, z);
-    strip.renderOrder = DOOR_VISUAL_DIMENSIONS.accent.renderOrder;
+    strip.renderOrder = DOOR_ACCENT_RENDER_POLICY.renderOrder;
     tagDoorVisualPart(strip, partId);
     visualGroup.add(strip);
   };
 
-  const sideH = Math.max(DOOR_VISUAL_DIMENSIONS.common.minStripThicknessM, innerH - 2 * t);
+  const sideH = Math.max(DOOR_VISUAL_COMMON_POLICY.minStripThicknessM, innerH - 2 * t);
   addStrip(innerW, t, 0, innerH / 2 - t / 2, 'door_accent_top');
   addStrip(innerW, t, 0, -(innerH / 2 - t / 2), 'door_accent_bottom');
   addStrip(t, sideH, -(innerW / 2 - t / 2), 0, 'door_accent_left');

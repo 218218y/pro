@@ -1,4 +1,8 @@
-import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DOOR_DOUBLE_PROFILE_RENDER_POLICY,
+  DOOR_GLASS_RENDER_POLICY,
+  DOOR_VISUAL_COMMON_POLICY,
+} from '../../shared/dimensions/door_visual_policy.js';
 import {
   readGeometryRuntimeNumber,
   readGeometryRuntimePositiveBoxDimension,
@@ -148,7 +152,7 @@ function createGlassMaterial(args: GlassDoorVisualArgs) {
   const glassMat = new THREE.MeshStandardMaterial({
     color: 0xffffff,
     transparent: true,
-    opacity: DOOR_VISUAL_DIMENSIONS.glass.opacity,
+    opacity: DOOR_GLASS_RENDER_POLICY.opacity,
     roughness: 0.08,
     metalness: 0.0,
   });
@@ -164,7 +168,7 @@ function createGlassMaterial(args: GlassDoorVisualArgs) {
 
 function appendGlassPane(args: GlassDoorVisualArgs, glassW: number, glassH: number, glassFaceZ: number) {
   const { THREE, visualGroup, tagDoorVisualPart, zSign } = args;
-  const glassDepth = DOOR_VISUAL_DIMENSIONS.glass.paneDepthM;
+  const glassDepth = DOOR_GLASS_RENDER_POLICY.paneDepthM;
   const glassPane = new THREE.Mesh(
     new THREE.BoxGeometry(glassW, glassH, glassDepth),
     createGlassMaterial(args)
@@ -173,7 +177,7 @@ function appendGlassPane(args: GlassDoorVisualArgs, glassW: number, glassH: numb
   glassPane.userData.__keepMaterial = true;
   applyDoorFaceIdentityMetadata(glassPane, zSign);
   applyMirrorPlacementRectMetadata(glassPane, glassW, glassH);
-  glassPane.renderOrder = DOOR_VISUAL_DIMENSIONS.glass.paneRenderOrder;
+  glassPane.renderOrder = DOOR_GLASS_RENDER_POLICY.paneRenderOrder;
   glassPane.position.set(0, 0, glassFaceZ - (glassDepth / 2) * zSign);
   tagDoorVisualPart(glassPane, 'door_glass_center_panel');
   visualGroup.add(glassPane);
@@ -196,7 +200,7 @@ function appendCurtain(args: GlassDoorVisualArgs, glassW: number, glassH: number
     side: THREE.DoubleSide,
     flatShading: false,
     transparent: true,
-    opacity: DOOR_VISUAL_DIMENSIONS.glass.curtainOpacity,
+    opacity: DOOR_GLASS_RENDER_POLICY.curtainOpacity,
   });
   curtainMat.depthWrite = false;
   try {
@@ -207,13 +211,13 @@ function appendCurtain(args: GlassDoorVisualArgs, glassW: number, glassH: number
   if (forceCurtainFix) {
     try {
       curtainMat.emissive = new THREE.Color(curtainColor);
-      curtainMat.emissiveIntensity = DOOR_VISUAL_DIMENSIONS.glass.curtainForcedEmissiveIntensity;
+      curtainMat.emissiveIntensity = DOOR_GLASS_RENDER_POLICY.curtainForcedEmissiveIntensity;
     } catch {
       // ignore
     }
   }
 
-  const curtainGeo = new THREE.PlaneGeometry(glassW, glassH, DOOR_VISUAL_DIMENSIONS.glass.curtainSegments, 1);
+  const curtainGeo = new THREE.PlaneGeometry(glassW, glassH, DOOR_GLASS_RENDER_POLICY.curtainSegments, 1);
   const posAttribute =
     curtainGeo.attributes && curtainGeo.attributes.position
       ? __asBufferAttribute(curtainGeo.attributes.position)
@@ -222,8 +226,8 @@ function appendCurtain(args: GlassDoorVisualArgs, glassW: number, glassH: number
     for (let i = 0; i < posAttribute.count; i++) {
       const x = posAttribute.getX(i);
       const waveZ =
-        DOOR_VISUAL_DIMENSIONS.glass.curtainWaveAmplitudeM *
-        Math.sin(x * DOOR_VISUAL_DIMENSIONS.glass.curtainWaveFrequency);
+        DOOR_GLASS_RENDER_POLICY.curtainWaveAmplitudeM *
+        Math.sin(x * DOOR_GLASS_RENDER_POLICY.curtainWaveFrequency);
       posAttribute.setZ(i, waveZ);
     }
   }
@@ -232,11 +236,11 @@ function appendCurtain(args: GlassDoorVisualArgs, glassW: number, glassH: number
   curtainMesh.userData = curtainMesh.userData || {};
   curtainMesh.userData.__keepMaterial = true;
   applyDoorFaceIdentityMetadata(curtainMesh, zSign);
-  curtainMesh.renderOrder = DOOR_VISUAL_DIMENSIONS.glass.curtainRenderOrder;
+  curtainMesh.renderOrder = DOOR_GLASS_RENDER_POLICY.curtainRenderOrder;
   const curtainGap = forceCurtainFix
-    ? DOOR_VISUAL_DIMENSIONS.glass.curtainForcedGapM
-    : DOOR_VISUAL_DIMENSIONS.glass.curtainDefaultGapM;
-  const curtainZ = glassPaneZ - (DOOR_VISUAL_DIMENSIONS.glass.paneDepthM / 2 + curtainGap) * zSign;
+    ? DOOR_GLASS_RENDER_POLICY.curtainForcedGapM
+    : DOOR_GLASS_RENDER_POLICY.curtainDefaultGapM;
+  const curtainZ = glassPaneZ - (DOOR_GLASS_RENDER_POLICY.paneDepthM / 2 + curtainGap) * zSign;
   curtainMesh.position.set(0, 0, curtainZ);
   tagDoorVisualPart(curtainMesh, 'door_glass_curtain');
   visualGroup.add(curtainMesh);
@@ -298,20 +302,20 @@ function buildDoubleProfileGlass(args: GlassDoorVisualArgs): {
   const center = findCenterPanelMetrics(args.visualGroup, 'door_double_profile_center_panel', args.zSign);
   if (!center) {
     const fallbackW = Math.max(
-      DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
-      args.w - 2 * DOOR_VISUAL_DIMENSIONS.doubleProfile.frameWidthM
+      DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM,
+      args.w - 2 * DOOR_DOUBLE_PROFILE_RENDER_POLICY.frameWidthM
     );
     const fallbackH = Math.max(
-      DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
-      args.h - 2 * DOOR_VISUAL_DIMENSIONS.doubleProfile.frameWidthM
+      DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM,
+      args.h - 2 * DOOR_DOUBLE_PROFILE_RENDER_POLICY.frameWidthM
     );
     const fallbackFaceZ =
       (args.thickness / 2 -
         Math.max(
-          DOOR_VISUAL_DIMENSIONS.doubleProfile.recessDepthMinM,
+          DOOR_DOUBLE_PROFILE_RENDER_POLICY.recessDepthMinM,
           Math.min(
-            DOOR_VISUAL_DIMENSIONS.doubleProfile.recessDepthMaxM,
-            args.thickness - DOOR_VISUAL_DIMENSIONS.doubleProfile.recessDepthThicknessClearanceM
+            DOOR_DOUBLE_PROFILE_RENDER_POLICY.recessDepthMaxM,
+            args.thickness - DOOR_DOUBLE_PROFILE_RENDER_POLICY.recessDepthThicknessClearanceM
           )
         )) *
       args.zSign;
@@ -323,11 +327,11 @@ function buildDoubleProfileGlass(args: GlassDoorVisualArgs): {
   removeNode(args.visualGroup, center.node);
 
   const openingW = Math.max(
-    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+    DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM,
     Math.min(center.width, (openingRect?.maxX ?? center.width / 2) - (openingRect?.minX ?? -center.width / 2))
   );
   const openingH = Math.max(
-    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
+    DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM,
     Math.min(
       center.height,
       (openingRect?.maxY ?? center.height / 2) - (openingRect?.minY ?? -center.height / 2)
@@ -344,14 +348,14 @@ function buildDoubleProfileGlass(args: GlassDoorVisualArgs): {
 
 function buildFlatGlass(args: GlassDoorVisualArgs): { glassW: number; glassH: number; glassPaneZ: number } {
   const glassInset = Math.max(
-    DOOR_VISUAL_DIMENSIONS.glass.flatInsetMinM,
+    DOOR_GLASS_RENDER_POLICY.flatInsetMinM,
     Math.min(
-      DOOR_VISUAL_DIMENSIONS.glass.flatInsetMaxM,
-      Math.min(args.w, args.h) * DOOR_VISUAL_DIMENSIONS.glass.flatInsetRatio
+      DOOR_GLASS_RENDER_POLICY.flatInsetMaxM,
+      Math.min(args.w, args.h) * DOOR_GLASS_RENDER_POLICY.flatInsetRatio
     )
   );
-  const glassW = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, args.w - 2 * glassInset);
-  const glassH = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, args.h - 2 * glassInset);
+  const glassW = Math.max(DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM, args.w - 2 * glassInset);
+  const glassH = Math.max(DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM, args.h - 2 * glassInset);
   const faceZ = (args.thickness / 2) * args.zSign;
   const { glassPane } = appendGlassPane(args, glassW, glassH, faceZ);
   return { glassW, glassH, glassPaneZ: glassPane.position.z };

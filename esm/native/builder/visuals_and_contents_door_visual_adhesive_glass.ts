@@ -1,4 +1,8 @@
-import { DOOR_VISUAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DOOR_GLASS_RENDER_POLICY,
+  DOOR_MIRROR_RENDER_POLICY,
+  DOOR_VISUAL_COMMON_POLICY,
+} from '../../shared/dimensions/door_visual_policy.js';
 import { FULL_MIRROR_INSET_M } from '../../shared/mirror_layout_contracts_shared.js';
 import {
   readGeometryRuntimeNumber,
@@ -75,14 +79,14 @@ function resolveOverlayKind(value: unknown): AdhesiveGlassKind {
 }
 
 function resolveOverlayDepthLayout(thickness: number): OverlayDepthLayout {
-  const baseDoorThick = Math.max(DOOR_VISUAL_DIMENSIONS.mirror.doorThicknessMinM, thickness);
+  const baseDoorThick = Math.max(DOOR_MIRROR_RENDER_POLICY.doorThicknessMinM, thickness);
   const glassThick = Math.max(
-    DOOR_VISUAL_DIMENSIONS.mirror.mirrorThicknessMinM,
-    Math.min(DOOR_VISUAL_DIMENSIONS.glass.paneDepthM, baseDoorThick * 0.28)
+    DOOR_MIRROR_RENDER_POLICY.mirrorThicknessMinM,
+    Math.min(DOOR_GLASS_RENDER_POLICY.paneDepthM, baseDoorThick * 0.28)
   );
   const adhesiveGap = Math.max(
-    DOOR_VISUAL_DIMENSIONS.mirror.adhesiveGapMinM,
-    Math.min(DOOR_VISUAL_DIMENSIONS.mirror.adhesiveGapMaxM, glassThick * 0.25)
+    DOOR_MIRROR_RENDER_POLICY.adhesiveGapMinM,
+    Math.min(DOOR_MIRROR_RENDER_POLICY.adhesiveGapMaxM, glassThick * 0.25)
   );
   const glassCenterZ = baseDoorThick / 2 + adhesiveGap + glassThick / 2;
   return { baseDoorThick, glassThick, adhesiveGap, glassCenterZ };
@@ -290,7 +294,7 @@ function appendAdhesiveGlassPane(args: {
     role: args.role,
     tagDoorVisualPart: args.tagDoorVisualPart,
   });
-  pane.renderOrder = DOOR_VISUAL_DIMENSIONS.glass.paneRenderOrder;
+  pane.renderOrder = DOOR_GLASS_RENDER_POLICY.paneRenderOrder;
   pane.position.set(args.x, args.y, args.z);
   args.group.add(pane);
   try {
@@ -488,11 +492,8 @@ export function createStyledFullAdhesiveGlassDoorVisual(
   const layoutList = Array.isArray(args.mirrorLayout) && args.mirrorLayout.length ? args.mirrorLayout : [];
   const fullInsideLayouts = layoutList.filter(layout => readMirrorLayoutFaceSign(layout, args.zSign) === -1);
   const depthLayout = resolveOverlayDepthLayout(args.thickness);
-  const glassWidth = Math.max(DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM, args.w - FULL_MIRROR_INSET_M);
-  const glassHeight = Math.max(
-    DOOR_VISUAL_DIMENSIONS.common.minPanelDimensionM,
-    args.h - FULL_MIRROR_INSET_M
-  );
+  const glassWidth = Math.max(DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM, args.w - FULL_MIRROR_INSET_M);
+  const glassHeight = Math.max(DOOR_VISUAL_COMMON_POLICY.minPanelDimensionM, args.h - FULL_MIRROR_INSET_M);
 
   for (let i = 0; i < fullInsideLayouts.length; i += 1) {
     appendAdhesiveGlassPane({
@@ -506,7 +507,7 @@ export function createStyledFullAdhesiveGlassDoorVisual(
       x: 0,
       y: 0,
       z: -(
-        Math.max(DOOR_VISUAL_DIMENSIONS.mirror.doorThicknessMinM, args.thickness) / 2 +
+        Math.max(DOOR_MIRROR_RENDER_POLICY.doorThicknessMinM, args.thickness) / 2 +
         depthLayout.adhesiveGap +
         depthLayout.glassThick / 2
       ),

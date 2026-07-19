@@ -8,6 +8,7 @@ const productDimensionTokenSources = [
   'esm/shared/wardrobe_dimension_tokens_shared.ts',
   'esm/shared/dimensions/door_system_policy.ts',
   'esm/shared/dimensions/door_mount_thickness_policy.ts',
+  'esm/shared/dimensions/door_visual_policy.ts',
 ];
 
 function readProductDimensionTokens() {
@@ -175,12 +176,17 @@ test('[dimension tokens] mirror layout measurements read door visual dimension t
   ]) {
     assertUsesToken(
       rel,
-      rel.endsWith('mirror_geometry.ts') ? 'MIRROR_REMOVE_TOLERANCE_SIZE_RATIO' : 'FULL_MIRROR_INSET_M'
+      rel.endsWith('mirror_layout_contracts_shared.ts')
+        ? 'DOOR_MIRROR_LAYOUT_POLICY'
+        : rel.endsWith('mirror_geometry.ts')
+          ? 'MIRROR_REMOVE_TOLERANCE_SIZE_RATIO'
+          : 'FULL_MIRROR_INSET_M'
     );
   }
 
   const contracts = read('esm/shared/mirror_layout_contracts_shared.ts');
-  assert.match(contracts, /DOOR_VISUAL_DIMENSIONS/);
+  assert.match(contracts, /DOOR_MIRROR_LAYOUT_POLICY/);
+  assert.doesNotMatch(contracts, /DOOR_VISUAL_DIMENSIONS/);
   assert.doesNotMatch(contracts, /FULL_MIRROR_INSET_M\s*=\s*0\.002/);
   assert.doesNotMatch(contracts, /MIN_MIRROR_SIZE_M\s*=\s*0\.02/);
   assert.doesNotMatch(contracts, /DEFAULT_REMOVE_TOLERANCE_M\s*=\s*0\.03/);
@@ -191,17 +197,19 @@ test('[dimension tokens] mirror layout measurements read door visual dimension t
 
 test('[dimension tokens] door visual miter/profile/trim preview geometry is centralized', () => {
   const tokens = readProductDimensionTokens();
-  assert.match(tokens, /miter: Object\.freeze\(\{/);
+  assert.match(tokens, /export const DOOR_MITER_RENDER_POLICY = Object\.freeze\(\{/);
   assert.match(tokens, /roundedBeadThicknessRatio:/);
   assert.match(tokens, /outerAccentLineThicknessM:/);
   assert.match(tokens, /frontSurfaceNudgeM:/);
 
-  for (const rel of [
+  assertUsesToken(
     'esm/native/builder/visuals_and_contents_door_visual_miter_frame.ts',
+    'DOOR_MITER_RENDER_POLICY'
+  );
+  assertUsesToken(
     'esm/native/builder/visuals_and_contents_door_visual_profile.ts',
-  ]) {
-    assertUsesToken(rel, 'DOOR_VISUAL_DIMENSIONS');
-  }
+    'DOOR_PROFILE_RENDER_POLICY'
+  );
   assertUsesToken('esm/native/builder/door_trim_visuals.ts', 'DOOR_TRIM_DIMENSIONS');
 
   const miter = read('esm/native/builder/visuals_and_contents_door_visual_miter_frame.ts');
