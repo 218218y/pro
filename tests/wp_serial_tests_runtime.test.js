@@ -378,6 +378,7 @@ test(
       `
       import test from 'node:test';
       process.on('SIGTERM', () => process.exit(0));
+      console.error('[fixture] SIGTERM handler ready');
       test('handles signal', async () => {
         await new Promise(() => {});
       });
@@ -385,6 +386,7 @@ test(
     );
     const run = runNodeAsync([directTsxRunnerPath, handlesSignal, '--', '--test-isolation=none']);
     await run.waitForStderr(/\[run-tsx-tests\] ready/u);
+    await run.waitForStderr(/\[fixture\] SIGTERM handler ready/u);
     run.child.kill('SIGTERM');
     const result = await run.completed;
 
@@ -409,6 +411,7 @@ test(
       `
       import test from 'node:test';
       process.on('SIGTERM', () => console.error('[fixture] ignored SIGTERM'));
+      console.error('[fixture] SIGTERM handler ready');
       test('ignores signal', async () => {
         await new Promise(() => {});
       });
@@ -416,6 +419,7 @@ test(
     );
     const run = runNodeAsync([directTsxRunnerPath, ignoresSignal, '--', '--test-isolation=none']);
     await run.waitForStderr(/\[run-tsx-tests\] ready/u);
+    await run.waitForStderr(/\[fixture\] SIGTERM handler ready/u);
     run.child.kill('SIGTERM');
     const result = await run.completed;
 
