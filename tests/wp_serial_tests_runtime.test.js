@@ -484,17 +484,50 @@ test('termination escalation checks live exit state instead of child.killed', as
     kill(signal) {
       this.killed = true;
       deliveredSignals.push(signal);
+      if (signal === 'SIGKILL') this.signalCode = signal;
       return true;
     },
   };
 
-  await new Promise(resolve => {
-    terminateChildWithEscalation(fakeChild, 'SIGTERM', {
-      graceMs: 0,
-      onEscalate: resolve,
-    });
+  const controller = terminateChildWithEscalation(fakeChild, 'SIGTERM', {
+    graceMs: 0,
   });
+  assert.ok(controller);
+  const termination = await controller.completion;
   assert.deepEqual(deliveredSignals, ['SIGTERM', 'SIGKILL']);
+  assert.deepEqual(termination, {
+    requestedSignal: 'SIGTERM',
+    escalationSignal: 'SIGKILL',
+    cancelled: false,
+  });
+});
+
+test('termination escalation follows the managed tree after its process-group leader exits', async () => {
+  const deliveredSignals = [];
+  let processTreeRunning = true;
+  const fakeGroupLeader = {
+    exitCode: null,
+    signalCode: null,
+  };
+
+  const controller = terminateChildWithEscalation(fakeGroupLeader, 'SIGTERM', {
+    graceMs: 0,
+    isTreeRunning: () => processTreeRunning,
+    signalTree: (_child, signal) => {
+      deliveredSignals.push(signal);
+      if (signal === 'SIGTERM') fakeGroupLeader.signalCode = 'SIGTERM';
+      if (signal === 'SIGKILL') processTreeRunning = false;
+    },
+  });
+  assert.ok(controller);
+  const termination = await controller.completion;
+
+  assert.deepEqual(deliveredSignals, ['SIGTERM', 'SIGKILL']);
+  assert.deepEqual(termination, {
+    requestedSignal: 'SIGTERM',
+    escalationSignal: 'SIGKILL',
+    cancelled: false,
+  });
 });
 
 test('runner wrappers keep readiness, live-child, and single-timeout termination contracts', () => {
@@ -506,6 +539,9 @@ test('runner wrappers keep readiness, live-child, and single-timeout termination
   assert.match(directSource, /\[run-tsx-tests\] ready/u);
   assert.match(listSource, /\[run-test-file-list\] ready/u);
   assert.match(serialSource, /console\.error\(`\$\{label\} ready`\)/u);
+  assert.match(directSource, /spawnManagedChild\(/u);
+  assert.match(listSource, /spawnManagedChild\(/u);
+  assert.match(serialSource, /spawnManagedChild\(/u);
   assert.doesNotMatch(combined, /\.killed\b/u);
   assert.doesNotMatch(combined, /requestedSignal && code !== 0|forwardedSignal && code !== 0/u);
   assert.equal(serialSource.match(/terminateActiveChild\('SIGTERM'\)/gu)?.length, 1);

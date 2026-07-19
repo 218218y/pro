@@ -73,6 +73,7 @@ export function createCloudSyncPanelApiRoomCommands(
     runtimeStatus.credential = buildCloudSyncCredentialStatus({
       isPublic: mode === 'public',
       credential: mode === 'private' ? getPrivateRoomCredential() : null,
+      now: deps.now(),
     });
     publishStatus();
     snapshots.publishPanelSnapshot(result.room || (mode === 'public' ? cfg.publicRoom : getCurrentRoom()));

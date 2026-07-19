@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 import { readFile } from 'node:fs/promises';
-import { spawn } from 'node:child_process';
 import {
-  isChildRunning,
   resolveChildExitCode,
   signalToExitCode,
+  spawnManagedChild,
   terminateChildWithEscalation,
 } from './wp_child_process_protocol.mjs';
 import { buildTsxTestRun } from './wp_test_runner_command.mjs';
@@ -32,26 +31,32 @@ console.error(
 );
 console.error(`[run-test-file-list] ${testRun.command}`);
 
-const child = spawn(testRun.program, testRun.args, {
+const child = spawnManagedChild(testRun.program, testRun.args, {
   stdio: 'inherit',
   env: process.env,
   ...(testRun.spawnOptions ?? {}),
 });
 
 let forwardedSignal = null;
-let killTimer = null;
+let terminationController = null;
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () => {
+    if (forwardedSignal) return;
     forwardedSignal = signal;
-    if (killTimer) clearTimeout(killTimer);
-    killTimer = terminateChildWithEscalation(child, signal, {
+    terminationController = terminateChildWithEscalation(child, signal, {
       onEscalate(escalationSignal) {
         console.error(
-          `[run-test-file-list] child still running after SIGTERM grace period; escalating to ${escalationSignal}`
+          `[run-test-file-list] child process tree still running after ${signal} grace period; escalating to ${escalationSignal}`
         );
       },
     });
-    if (!killTimer && !isChildRunning(child)) process.exit(signalToExitCode(signal));
+    if (!terminationController) {
+      process.exit(signalToExitCode(signal));
+      return;
+    }
+    void terminationController.completion.then(() => {
+      process.exit(signalToExitCode(signal));
+    });
   });
 }
 
@@ -60,6 +65,6 @@ child.once('spawn', () => {
 });
 
 child.on('exit', (code, signal) => {
-  if (killTimer) clearTimeout(killTimer);
+  if (forwardedSignal) return;
   process.exit(resolveChildExitCode({ code, signal, requestedSignal: forwardedSignal }));
 });

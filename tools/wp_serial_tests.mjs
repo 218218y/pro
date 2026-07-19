@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
-  isChildRunning,
+  isChildProcessTreeRunning,
   resolveChildTermination,
   signalToExitCode,
+  spawnManagedChild,
   terminateChildWithEscalation,
 } from './wp_child_process_protocol.mjs';
 import { buildTsxTestRun } from './wp_test_runner_command.mjs';
@@ -189,21 +189,30 @@ function summarizeOutcome(code, signal, timedOut, interruptedBySignal) {
 
 function createBatchRunner({ heartbeatMs, timeoutMs }) {
   let activeChild = null;
-  let activeChildKillTimer = null;
+  let activeTerminationController = null;
+  let activeTerminationResult = null;
+  let onActiveTerminationComplete = null;
   let requestedSignal = null;
   let terminationRequestedSignal = null;
 
   function terminateActiveChild(signal, { requestedByWrapper = false } = {}) {
-    if (!isChildRunning(activeChild)) return false;
+    if (!isChildProcessTreeRunning(activeChild)) return false;
     terminationRequestedSignal = signal;
     if (requestedByWrapper) requestedSignal = signal;
-    if (activeChildKillTimer) clearTimeout(activeChildKillTimer);
-    activeChildKillTimer = terminateChildWithEscalation(activeChild, signal, {
+    if (activeTerminationController) return true;
+    const controller = terminateChildWithEscalation(activeChild, signal, {
       onEscalate(escalationSignal) {
         console.error(
-          `[serial-tests] child still running after ${signal} grace period; escalating to ${escalationSignal}`
+          `[serial-tests] child process tree still running after ${signal} grace period; escalating to ${escalationSignal}`
         );
       },
+    });
+    if (!controller) return false;
+    activeTerminationController = controller;
+    void controller.completion.then(result => {
+      if (activeTerminationController !== controller) return;
+      activeTerminationResult = result;
+      onActiveTerminationComplete?.();
     });
     return true;
   }
@@ -219,12 +228,14 @@ function createBatchRunner({ heartbeatMs, timeoutMs }) {
       console.error(`${label} ${batchRange}`);
 
       const testRun = buildTsxTestRun(process.cwd(), batch);
-      const child = spawn(testRun.program, testRun.args, {
+      const child = spawnManagedChild(testRun.program, testRun.args, {
         stdio: 'inherit',
         env: process.env,
         ...(testRun.spawnOptions ?? {}),
       });
       activeChild = child;
+      activeTerminationController = null;
+      activeTerminationResult = null;
       requestedSignal = null;
       terminationRequestedSignal = null;
       child.once('spawn', () => {
@@ -255,32 +266,43 @@ function createBatchRunner({ heartbeatMs, timeoutMs }) {
       const cleanupTimers = () => {
         if (heartbeatTimer) clearInterval(heartbeatTimer);
         if (timeoutTimer) clearTimeout(timeoutTimer);
-        if (activeChildKillTimer) clearTimeout(activeChildKillTimer);
-        activeChildKillTimer = null;
       };
 
+      let childExit = null;
+      let batchSettled = false;
       child.on('error', error => {
+        batchSettled = true;
+        onActiveTerminationComplete = null;
         cleanupTimers();
+        activeTerminationController?.cancel();
+        activeTerminationController = null;
+        activeTerminationResult = null;
         activeChild = null;
         reject(error);
       });
 
-      child.on('exit', (code, signal) => {
+      const finishBatch = () => {
+        if (batchSettled || !childExit) return;
+        if (activeTerminationController && !activeTerminationResult) return;
+        batchSettled = true;
+        onActiveTerminationComplete = null;
         cleanupTimers();
         activeChild = null;
+        const { code, signal: directChildExitSignal } = childExit;
+        const childExitSignal = activeTerminationResult?.escalationSignal ?? directChildExitSignal;
         const durationMs = Date.now() - startedAt;
-        const outcome = summarizeOutcome(code, signal, timedOut, requestedSignal);
+        const outcome = summarizeOutcome(code, childExitSignal, timedOut, requestedSignal);
         const termination = resolveChildTermination({
           code,
-          signal,
+          signal: childExitSignal,
           requestedSignal: requestedSignal ?? terminationRequestedSignal,
         });
         if (timedOut) {
           console.error(`${label} timed out after ${formatMs(durationMs)}`);
         } else if (requestedSignal) {
           console.error(`${label} interrupted after ${formatMs(durationMs)} (${requestedSignal})`);
-        } else if (signal) {
-          console.error(`${label} FAILED after ${formatMs(durationMs)} (signal ${signal})`);
+        } else if (childExitSignal) {
+          console.error(`${label} FAILED after ${formatMs(durationMs)} (signal ${childExitSignal})`);
         } else if (code !== 0) {
           console.error(`${label} FAILED after ${formatMs(durationMs)}`);
         } else {
@@ -298,6 +320,14 @@ function createBatchRunner({ heartbeatMs, timeoutMs }) {
           childExitSignal: termination.childExitSignal,
           timedOut,
         });
+        activeTerminationController = null;
+        activeTerminationResult = null;
+      };
+      onActiveTerminationComplete = finishBatch;
+
+      child.on('exit', (code, signal) => {
+        childExit = { code, signal };
+        finishBatch();
       });
     });
   }
