@@ -24,7 +24,7 @@ import {
   removeStackItemById,
 } from './canvas_picking_sketch_module_stack_commit_mutation.js';
 import { resolveInternalDrawerHoverIntent } from './canvas_picking_sketch_module_stack_commit_hover.js';
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_STORAGE_GRID_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
 import { resolveSketchInternalDrawerMetrics } from '../features/sketch_drawer_sizing.js';
 import { markSketchInternalDrawersDirty } from '../features/sketch_drawer_sizing.js';
 import {
@@ -42,7 +42,7 @@ function readGridDivisions(cfg: RecordMap): number {
   const value = typeof raw === 'number' && Number.isFinite(raw) ? raw : NaN;
   return Number.isFinite(value) && value > 1
     ? Math.floor(value)
-    : INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+    : INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
 }
 
 function removeSketchShelfByBlocker(args: {

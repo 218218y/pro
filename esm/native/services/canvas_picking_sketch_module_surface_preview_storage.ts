@@ -1,4 +1,7 @@
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  INTERIOR_STORAGE_PREVIEW_POLICY,
+} from '../../shared/dimensions/interior_storage_policy.js';
 import { clampSketchModuleStorageCenterY } from './canvas_picking_sketch_module_vertical_content.js';
 import {
   createStorageRemoveHoverRecord,
@@ -48,8 +51,7 @@ function resolveSketchStorageRemoveMatch(args: {
   spanH: number;
   pointerY: number;
 }): StorageRemoveMatch | null {
-  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
-  const defaultHeight = storageDims.barrierHeightM;
+  const defaultHeight = INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM;
   let best: StorageRemoveMatch | null = null;
 
   const consider = (match: StorageRemoveMatch) => {
@@ -114,7 +116,6 @@ export function resolveSketchModuleStorageRemovePreview(args: {
   });
   if (!storageMatch || storageMatch.dy > args.removeEpsBox) return null;
 
-  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
   const previewY = clampSketchModuleStorageCenterY({
     bottomY: args.bottomY,
     topY: args.topY,
@@ -135,10 +136,13 @@ export function resolveSketchModuleStorageRemovePreview(args: {
       kind: 'storage',
       x: args.internalCenterX,
       y: previewY,
-      z: zFront + storageDims.barrierFrontZOffsetM,
-      w: Math.max(storageDims.barrierWidthMinM, args.innerW - storageDims.barrierWidthClearanceM),
+      z: zFront + INTERIOR_STORAGE_BARRIER_POLICY.barrierFrontZOffsetM,
+      w: Math.max(
+        INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthMinM,
+        args.innerW - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
+      ),
       h: storageMatch.heightM,
-      d: Math.max(storageDims.previewThicknessMinM, args.woodThick),
+      d: Math.max(INTERIOR_STORAGE_PREVIEW_POLICY.previewThicknessMinM, args.woodThick),
       woodThick: args.woodThick,
       op: 'remove',
     },

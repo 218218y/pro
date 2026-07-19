@@ -904,6 +904,7 @@ import {
     assert.match(settingsTab, /testId="export-open-pdf-button"/);
     assert.doesNotMatch(settingsTab, /<ProjectPanel/);
     assert.match(orderPdfEditorSurface, /data-testid="order-pdf-overlay"/);
+    assert.match(orderPdfEditorSurface, /data-order-pdf-ready="true"/);
     assert.match(orderPdfEditorSurface, /<OrderPdfOverlayEditorModeControls/);
     assert.match(orderPdfEditorModeControls, /data-testid="order-pdf-page-annotation-toggle"/);
     assert.match(orderPdfToolbar, /data-testid="order-pdf-close-button"/);
@@ -948,6 +949,13 @@ import {
     assert.match(smoke, /toggleViewerNotesVisibility\(/);
     assert.match(smoke, /toggleViewerContentsVisibility\(/);
     assert.match(smokeHelpers, /export-open-pdf-button/);
+    assert.match(smokeHelpers, /order-pdf-overlay-loading/);
+    assert.match(smokeHelpers, /order-pdf-overlay-error/);
+    assert.match(smokeHelpers, /orderPdfEditorOpen was not set/);
+    assert.match(smokeHelpers, /loading displayed but the lazy module did not complete/);
+    assert.match(smokeHelpers, /LazyErrorBoundary rendered an import failure/);
+    assert.match(smokeHelpers, /an Order PDF chunk request failed/);
+    assert.match(smokeHelpers, /the editor mounted but is not visible/);
     assert.doesNotMatch(smoke, /export-open-pdf-button/);
     assert.match(smoke, /openOrderPdfOverlayFromExport\(/);
     assert.match(smoke, /closeOrderPdfOverlay\(/);

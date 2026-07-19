@@ -12,6 +12,7 @@ const productDimensionTokenSources = [
   'esm/shared/dimensions/door_trim_policy.ts',
   'esm/shared/dimensions/external_drawer_policy.ts',
   'esm/shared/dimensions/internal_drawer_policy.ts',
+  'esm/shared/dimensions/interior_storage_policy.ts',
 ];
 
 function readProductDimensionTokens() {
@@ -360,11 +361,17 @@ test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage 
     assertUsesToken(rel, 'HANDLE_DIMENSIONS');
   }
 
-  for (const rel of [
+  assertUsesToken(
     'esm/native/builder/render_interior_sketch_support_rods.ts',
-    'esm/native/builder/render_interior_sketch_support_storage.ts',
+    'INTERIOR_FITTINGS_DIMENSIONS'
+  );
+  for (const tokenName of [
+    'INTERIOR_STORAGE_BARRIER_POLICY',
+    'INTERIOR_STORAGE_CLAMP_POLICY',
+    'INTERIOR_STORAGE_LAYOUT_POLICY',
+    'INTERIOR_STORAGE_PREVIEW_POLICY',
   ]) {
-    assertUsesToken(rel, 'INTERIOR_FITTINGS_DIMENSIONS');
+    assertUsesToken('esm/native/builder/render_interior_sketch_support_storage.ts', tokenName);
   }
 
   assertUsesToken('esm/native/builder/external_drawer_shelf.ts', 'EXTERNAL_DRAWER_SEPARATOR_POLICY');
@@ -437,6 +444,50 @@ test('[dimension tokens] External and Internal Drawer owners preserve focused pr
 
   for (const file of new Set(expectedConsumers.map(([file]) => file))) {
     assert.doesNotMatch(read(file), /\bDRAWER_DIMENSIONS\b/u);
+  }
+});
+
+test('[dimension tokens] Interior Storage owner preserves focused production consumption', () => {
+  const tokens = readProductDimensionTokens();
+  for (const policyName of [
+    'INTERIOR_STORAGE_GRID_POLICY',
+    'INTERIOR_STORAGE_BARRIER_POLICY',
+    'INTERIOR_STORAGE_PREVIEW_POLICY',
+    'INTERIOR_STORAGE_CLAMP_POLICY',
+    'INTERIOR_STORAGE_LAYOUT_POLICY',
+    'INTERIOR_STORAGE_DEFAULTS_POLICY',
+    'INTERIOR_STORAGE_POLICY',
+  ]) {
+    assert.match(tokens, new RegExp(`export const ${policyName} = Object\\.freeze\\(\\{`, 'u'));
+  }
+
+  const expectedConsumers = [
+    ['esm/native/builder/render_interior_custom_ops_layout.ts', 'INTERIOR_STORAGE_BARRIER_POLICY'],
+    ['esm/native/builder/render_interior_sketch_support_storage.ts', 'INTERIOR_STORAGE_BARRIER_POLICY'],
+    ['esm/native/builder/render_interior_sketch_support_storage.ts', 'INTERIOR_STORAGE_CLAMP_POLICY'],
+    ['esm/native/builder/render_interior_sketch_support_storage.ts', 'INTERIOR_STORAGE_LAYOUT_POLICY'],
+    ['esm/native/builder/render_interior_sketch_support_storage.ts', 'INTERIOR_STORAGE_PREVIEW_POLICY'],
+    [
+      'esm/native/services/canvas_picking_manual_layout_free_box_commit.ts',
+      'INTERIOR_STORAGE_BARRIER_POLICY',
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_stack_commit_drawers.ts',
+      'INTERIOR_STORAGE_GRID_POLICY',
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_surface_preview_storage.ts',
+      'INTERIOR_STORAGE_BARRIER_POLICY',
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_surface_preview_storage.ts',
+      'INTERIOR_STORAGE_PREVIEW_POLICY',
+    ],
+  ];
+  for (const [file, symbol] of expectedConsumers) assertUsesToken(file, symbol);
+
+  for (const file of new Set(expectedConsumers.map(([file]) => file))) {
+    assert.doesNotMatch(read(file), /\bINTERIOR_FITTINGS_DIMENSIONS\b/u);
   }
 });
 

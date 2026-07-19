@@ -1,5 +1,12 @@
 import { readFile } from 'node:fs/promises';
-import { expect, type Download, type Locator, type Page } from '@playwright/test';
+import {
+  expect,
+  type Download,
+  type Locator,
+  type Page,
+  type Request,
+  type Response,
+} from '@playwright/test';
 
 export type RuntimeIssueCollector = {
   readonly pageErrors: string[];
@@ -1247,16 +1254,115 @@ export async function resetProjectViaHeader(
 
 export async function openOrderPdfOverlayFromExport(page: Page): Promise<void> {
   const openButton = page.locator('button[data-testid="export-open-pdf-button"]');
-  await expect(openButton).toBeVisible();
-  await openButton.click();
-  await expect(page.locator('[data-testid="order-pdf-overlay"]')).toBeVisible();
+  await openOrderPdfOverlay(page, openButton, 'export');
 }
 
 export async function openOrderPdfOverlayFromHeader(page: Page): Promise<void> {
   const openButton = page.locator('button[data-testid="header-open-pdf-button"]');
-  await expect(openButton).toBeVisible();
-  await openButton.click();
-  await expect(page.locator('[data-testid="order-pdf-overlay"]')).toBeVisible();
+  await openOrderPdfOverlay(page, openButton, 'header');
+}
+
+type OrderPdfChunkFailure = {
+  kind: 'requestfailed' | 'http';
+  url: string;
+  detail: string;
+};
+
+function isOrderPdfChunkRequest(request: Request): boolean {
+  return request.resourceType() === 'script' || /OrderPdf|order_pdf|order-pdf/u.test(request.url());
+}
+
+async function readOrderPdfEditorOpen(page: Page): Promise<boolean | null> {
+  return await page.evaluate(() => {
+    const state = window.__WP_DEBUG__?.store?.getState?.();
+    if (!state || typeof state !== 'object' || Array.isArray(state)) return null;
+    const ui = (state as { ui?: unknown }).ui;
+    if (!ui || typeof ui !== 'object' || Array.isArray(ui)) return null;
+    return (ui as { orderPdfEditorOpen?: unknown }).orderPdfEditorOpen === true;
+  });
+}
+
+async function buildOrderPdfReadinessDiagnostic(args: {
+  page: Page;
+  source: 'export' | 'header';
+  chunkFailures: readonly OrderPdfChunkFailure[];
+  cause: unknown;
+}): Promise<Error> {
+  const loading = args.page.locator('[data-testid="order-pdf-overlay-loading"]');
+  const editor = args.page.locator('[data-testid="order-pdf-overlay"]');
+  const lazyError = args.page.locator('[data-testid="order-pdf-overlay-error"]');
+  const snapshot = {
+    source: args.source,
+    orderPdfEditorOpen: await readOrderPdfEditorOpen(args.page),
+    loadingVisible: await loading.isVisible().catch(() => false),
+    editorMounted: (await editor.count().catch(() => 0)) > 0,
+    editorVisible: await editor.isVisible().catch(() => false),
+    lazyErrorBoundaryVisible: await lazyError.isVisible().catch(() => false),
+    chunkFailures: args.chunkFailures,
+  };
+  const classifications: string[] = [];
+  if (snapshot.orderPdfEditorOpen === false) classifications.push('orderPdfEditorOpen was not set');
+  if (snapshot.loadingVisible && !snapshot.editorMounted) {
+    classifications.push('loading displayed but the lazy module did not complete');
+  }
+  if (snapshot.lazyErrorBoundaryVisible) classifications.push('LazyErrorBoundary rendered an import failure');
+  if (snapshot.chunkFailures.length > 0) classifications.push('an Order PDF chunk request failed');
+  if (snapshot.editorMounted && !snapshot.editorVisible) {
+    classifications.push('the editor mounted but is not visible');
+  }
+  if (classifications.length === 0) classifications.push('no Order PDF readiness state remained observable');
+
+  const causeMessage = args.cause instanceof Error ? args.cause.message : String(args.cause);
+  return new Error(
+    `Order PDF readiness failed (${classifications.join('; ')}).\n` +
+      `Snapshot: ${JSON.stringify(snapshot, null, 2)}\n` +
+      `Playwright cause: ${causeMessage}`
+  );
+}
+
+async function openOrderPdfOverlay(
+  page: Page,
+  openButton: Locator,
+  source: 'export' | 'header'
+): Promise<void> {
+  const loading = page.locator('[data-testid="order-pdf-overlay-loading"]');
+  const editor = page.locator('[data-testid="order-pdf-overlay"][data-order-pdf-ready="true"]');
+  const chunkFailures: OrderPdfChunkFailure[] = [];
+  const onRequestFailed = (request: Request): void => {
+    if (!isOrderPdfChunkRequest(request)) return;
+    chunkFailures.push({
+      kind: 'requestfailed',
+      url: request.url(),
+      detail: request.failure()?.errorText || 'request failed without an error message',
+    });
+  };
+  const onResponse = (response: Response): void => {
+    const request = response.request();
+    if (response.ok() || !isOrderPdfChunkRequest(request)) return;
+    chunkFailures.push({
+      kind: 'http',
+      url: response.url(),
+      detail: `HTTP ${response.status()} ${response.statusText()}`,
+    });
+  };
+
+  page.on('requestfailed', onRequestFailed);
+  page.on('response', onResponse);
+  try {
+    await expect(openButton).toBeVisible();
+    await openButton.click();
+    await expect
+      .poll(async () => (await loading.isVisible()) || (await editor.isVisible()), {
+        message: 'Expected Order PDF loading or editor-ready state immediately after the open request',
+      })
+      .toBe(true);
+    await expect(editor).toBeVisible();
+  } catch (cause) {
+    throw await buildOrderPdfReadinessDiagnostic({ page, source, chunkFailures, cause });
+  } finally {
+    page.off('requestfailed', onRequestFailed);
+    page.off('response', onResponse);
+  }
 }
 
 export async function closeOrderPdfOverlay(page: Page): Promise<void> {

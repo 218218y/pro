@@ -14,6 +14,7 @@ import {
   DOOR_SYSTEM_DIMENSIONS,
   DOOR_TRIM_DIMENSIONS as FACADE_DOOR_TRIM_DIMENSIONS,
   DRAWER_DIMENSIONS,
+  INTERIOR_FITTINGS_DIMENSIONS,
   MATERIAL_DIMENSIONS,
   WARDROBE_DEFAULTS as FACADE_WARDROBE_DEFAULTS,
   resolveExternalDrawerGeometry,
@@ -110,6 +111,15 @@ import {
   INTERNAL_DRAWER_POLICY,
 } from '../esm/shared/dimensions/internal_drawer_policy.ts';
 import {
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  INTERIOR_STORAGE_CLAMP_POLICY,
+  INTERIOR_STORAGE_DEFAULTS_POLICY,
+  INTERIOR_STORAGE_GRID_POLICY,
+  INTERIOR_STORAGE_LAYOUT_POLICY,
+  INTERIOR_STORAGE_POLICY,
+  INTERIOR_STORAGE_PREVIEW_POLICY,
+} from '../esm/shared/dimensions/interior_storage_policy.ts';
+import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
   getDefaultWidthForWardrobeType,
@@ -148,6 +158,14 @@ import {
   DEFAULT_TAPERED_BASE_LEG_WIDTH_CM,
 } from '../esm/native/features/base_leg_support.ts';
 import { DEFAULT_DOOR_TRIM_CROSS_SIZE_CM } from '../esm/native/features/door_authoring/api.ts';
+import {
+  DEFAULT_MODULE_CELL_COUNT,
+  createDefaultModuleCustomData,
+} from '../esm/native/features/modules_configuration/module_defaults.ts';
+import {
+  createDefaultLowerModuleConfig,
+  createDefaultTopModuleConfig as createDefaultStackTopModuleConfig,
+} from '../esm/native/features/stack_split/module_config.ts';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
@@ -929,6 +947,75 @@ test('External and Internal Drawer policies preserve facade identity, values, an
   ]) {
     assert.equal(Object.isFrozen(policy), true);
   }
+});
+
+test('Interior Storage policy preserves facade identity, values, frozen defaults, and drawer grid parity', () => {
+  assert.equal(INTERIOR_FITTINGS_DIMENSIONS.storage, INTERIOR_STORAGE_POLICY);
+  assert.equal(
+    INTERIOR_STORAGE_POLICY.defaultLowerShelfSlots,
+    INTERIOR_STORAGE_DEFAULTS_POLICY.defaultLowerShelfSlots
+  );
+  assert.equal(
+    INTERIOR_FITTINGS_DIMENSIONS.storage.defaultLowerShelfSlots,
+    INTERIOR_STORAGE_DEFAULTS_POLICY.defaultLowerShelfSlots
+  );
+  assert.equal(
+    DRAWER_DIMENSIONS.sketch.internalPreviewGridDivisionsDefault,
+    INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault
+  );
+  assert.deepEqual(INTERIOR_STORAGE_POLICY, {
+    gridDivisionsDefault: 6,
+    barrierHeightM: 0.5,
+    barrierHeightMinM: 0.05,
+    barrierHeightMaxM: 1.2,
+    barrierFrontZOffsetM: -0.06,
+    barrierWidthMinM: 0.05,
+    barrierWidthClearanceM: 0.025,
+    previewThicknessMinM: 0.0001,
+    clampPadMinM: 0.001,
+    clampPadMaxM: 0.006,
+    clampPadWoodRatio: 0.2,
+    minHeightExtraM: 0.02,
+    minHeightWoodMultiplier: 2,
+    defaultLowerShelfSlots: [false, true, false, true, false, false],
+  });
+  for (const policy of [
+    INTERIOR_STORAGE_GRID_POLICY,
+    INTERIOR_STORAGE_BARRIER_POLICY,
+    INTERIOR_STORAGE_PREVIEW_POLICY,
+    INTERIOR_STORAGE_CLAMP_POLICY,
+    INTERIOR_STORAGE_LAYOUT_POLICY,
+    INTERIOR_STORAGE_DEFAULTS_POLICY,
+    INTERIOR_STORAGE_DEFAULTS_POLICY.defaultLowerShelfSlots,
+    INTERIOR_STORAGE_POLICY,
+  ]) {
+    assert.equal(Object.isFrozen(policy), true);
+  }
+});
+
+test('module and Stack Split defaults preserve Interior Storage grid and lower-shelf policy', () => {
+  assert.equal(DEFAULT_MODULE_CELL_COUNT, INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault);
+  assert.deepEqual(createDefaultModuleCustomData(), {
+    shelves: [false, false, false, false, false, false],
+    rods: [false, false, false, false, false, false],
+    storage: false,
+  });
+  assert.deepEqual(createDefaultStackTopModuleConfig(0).customData, {
+    shelves: [false, false, false, false, false, false],
+    rods: [false, false, false, false, false, false],
+    storage: false,
+  });
+
+  const lower = createDefaultLowerModuleConfig(0);
+  assert.equal(lower.gridDivisions, INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault);
+  assert.deepEqual(lower.customData?.shelves, INTERIOR_STORAGE_DEFAULTS_POLICY.defaultLowerShelfSlots);
+  assert.notEqual(
+    lower.customData?.shelves,
+    INTERIOR_STORAGE_DEFAULTS_POLICY.defaultLowerShelfSlots,
+    'mutable module state must clone the frozen policy default'
+  );
+  assert.deepEqual(lower.customData?.rods, [false, false, false, false, false, false]);
+  assert.equal(lower.customData?.storage, false);
 });
 
 test('door mount thickness resolver treats sliding wardrobes as overlay construction', () => {

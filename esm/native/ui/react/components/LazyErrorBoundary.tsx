@@ -14,6 +14,7 @@ import { Button } from './Button.js';
 type Props = {
   label?: string;
   app?: unknown;
+  errorTestId?: string;
   children: ReactNode;
 };
 
@@ -82,7 +83,7 @@ export class LazyErrorBoundary extends Component<Props, State> {
 
     const label = this.props.label ? String(this.props.label) : 'רכיב';
     return (
-      <div style={{ padding: 16 }} data-no-dismiss-edit="1">
+      <div style={{ padding: 16 }} data-no-dismiss-edit="1" data-testid={this.props.errorTestId}>
         <div style={{ fontWeight: 800, marginBottom: 8 }}>שגיאת טעינה: {label}</div>
         <div style={{ opacity: 0.9, lineHeight: 1.6 }}>
           לפעמים זה קורה בגלל קאש ישן או קובץ JS שחסר בשרת. נסה לרענן.

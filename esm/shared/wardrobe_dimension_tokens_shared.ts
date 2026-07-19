@@ -42,6 +42,10 @@ import { DOOR_TRIM_DIMENSIONS as DOOR_TRIM_DIMENSIONS_OWNER } from './dimensions
 import { EXTERNAL_DRAWER_POLICY } from './dimensions/external_drawer_policy.js';
 import { INTERNAL_DRAWER_POLICY } from './dimensions/internal_drawer_policy.js';
 import {
+  INTERIOR_STORAGE_GRID_POLICY,
+  INTERIOR_STORAGE_POLICY,
+} from './dimensions/interior_storage_policy.js';
+import {
   STACK_SPLIT_LOWER_DEPTH_MAX,
   STACK_SPLIT_LOWER_DEPTH_MIN,
   STACK_SPLIT_LOWER_DOORS_MAX,
@@ -96,6 +100,7 @@ const DOOR_VISUAL_DIMENSIONS = legacyDimensionNumberView(DOOR_VISUAL_DIMENSIONS_
 const DOOR_TRIM_DIMENSIONS = legacyDimensionNumberView(DOOR_TRIM_DIMENSIONS_OWNER);
 const EXTERNAL_DRAWER_DIMENSIONS = legacyDimensionNumberView(EXTERNAL_DRAWER_POLICY);
 const INTERNAL_DRAWER_DIMENSIONS = legacyDimensionNumberView(INTERNAL_DRAWER_POLICY);
+const INTERIOR_STORAGE_DIMENSIONS = legacyDimensionNumberView(INTERIOR_STORAGE_POLICY);
 
 const WARDROBE_DEFAULTS = Object.freeze({
   ...WARDROBE_DEFAULTS_OWNER,
@@ -324,22 +329,7 @@ export const INTERIOR_FITTINGS_DIMENSIONS = Object.freeze({
     contentsWidthClearanceM: 0.06,
     defaultYOffsetM: -0.08,
   }),
-  storage: Object.freeze({
-    gridDivisionsDefault: 6,
-    barrierHeightM: 0.5,
-    barrierHeightMinM: 0.05,
-    barrierHeightMaxM: 1.2,
-    barrierFrontZOffsetM: -0.06,
-    barrierWidthMinM: 0.05,
-    barrierWidthClearanceM: 0.025,
-    previewThicknessMinM: 0.0001,
-    clampPadMinM: 0.001,
-    clampPadMaxM: 0.006,
-    clampPadWoodRatio: 0.2,
-    minHeightExtraM: 0.02,
-    minHeightWoodMultiplier: 2,
-    defaultLowerShelfSlots: Object.freeze([false, true, false, true, false, false]),
-  }),
+  storage: INTERIOR_STORAGE_DIMENSIONS,
   presets: Object.freeze({
     fullShelfRows: Object.freeze([1, 2, 3, 4, 5]),
     hangingShelfRows: Object.freeze([5, 4]),
@@ -553,7 +543,7 @@ const DRAWER_SKETCH_DIMENSIONS = Object.freeze({
   internalPreviewMeasurementZOffsetDepthRatio: 0.08,
   internalPreviewGridDivisionsMin: 2,
   internalPreviewGridDivisionsMax: 12,
-  internalPreviewGridDivisionsDefault: INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault,
+  internalPreviewGridDivisionsDefault: INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault,
   internalPreviewGridHeadClearanceM: 0.02,
   internalPreviewSingleDrawerGapM: 0.02,
   internalPreviewDefaultSingleHeightM: 0.11,

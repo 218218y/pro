@@ -400,3 +400,60 @@ test('project io corner config tolerates sparse customData snapshots and remater
   assert.deepEqual(finalized.cornerConfiguration.customData.rods, [false, false, false, false, false, false]);
   assert.equal(finalized.cornerConfiguration.stackSplitLower.modulesConfiguration[0].layout, 'shelves');
 });
+
+test('project save/load roundtrip preserves top and Stack Split storage configuration', () => {
+  const topStorage = {
+    layout: 'custom',
+    isCustom: true,
+    gridDivisions: 6,
+    customData: {
+      shelves: [false, true, false, false, true, false],
+      rods: [false, false, true, false, false, false],
+      storage: true,
+    },
+    sketchExtras: {
+      storageBarriers: [{ id: 'top-storage', yNorm: 0.35, heightM: 0.5 }],
+    },
+  };
+  const lowerStorage = {
+    layout: 'shelves',
+    isCustom: true,
+    gridDivisions: 6,
+    customData: {
+      shelves: [false, true, false, true, false, false],
+      rods: [false, false, false, false, false, false],
+      storage: true,
+    },
+    sketchExtras: {
+      storageBarriers: [{ id: 'lower-storage', yNorm: 0.5, heightM: 0.5 }],
+    },
+  };
+  const source = canonicalProjectSource({
+    settings: {
+      doors: 1,
+      wardrobeType: 'hinged',
+      singleDoorPos: 'left',
+      structureSelection: '[1]',
+    },
+    modulesConfiguration: [topStorage],
+    stackSplitLowerModulesConfiguration: [lowerStorage],
+  });
+
+  const saved = finalizeProjectForSavePayload(source as never, {
+    cloneJson: value => JSON.parse(JSON.stringify(value)),
+    schemaId: 'wardrobepro.test',
+    schemaVersion: 77,
+  });
+  const loaded = buildProjectConfigSnapshot(saved as never);
+
+  assert.deepEqual(loaded.modulesConfiguration[0].customData, topStorage.customData);
+  assert.deepEqual(
+    loaded.modulesConfiguration[0].sketchExtras?.storageBarriers,
+    topStorage.sketchExtras.storageBarriers
+  );
+  assert.deepEqual(loaded.stackSplitLowerModulesConfiguration[0].customData, lowerStorage.customData);
+  assert.deepEqual(
+    loaded.stackSplitLowerModulesConfiguration[0].sketchExtras?.storageBarriers,
+    lowerStorage.sketchExtras.storageBarriers
+  );
+});

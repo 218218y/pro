@@ -25,6 +25,9 @@ function PdfEditorLoadingOverlay() {
     if (!doc || !doc.body) return null;
     return createPortal(
       <div
+        data-testid="order-pdf-overlay-loading"
+        role="status"
+        aria-live="polite"
         style={{
           position: 'fixed',
           inset: 0,
@@ -51,7 +54,7 @@ export function OverlayPdfHost() {
   const app = useApp();
 
   return (
-    <LazyErrorBoundary label="עורך PDF" app={app}>
+    <LazyErrorBoundary label="עורך PDF" app={app} errorTestId="order-pdf-overlay-error">
       <Suspense fallback={<PdfEditorLoadingOverlay />}>
         <OrderPdfOverlayLazy />
       </Suspense>

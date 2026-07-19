@@ -250,6 +250,7 @@ test('render interior sketch support rejects string-encoded shelf and storage ge
     storageBarriers: [
       { id: 'legacy', yNorm: '0.5', heightM: '0.2' } as any,
       { id: 'typed', yNorm: 0.5, heightM: 0.2 } as any,
+      { id: 'minimum', yNorm: 0.1, heightM: 0.01 } as any,
     ],
     effectiveBottomY: 0,
     effectiveTopY: 1,
@@ -268,8 +269,11 @@ test('render interior sketch support rejects string-encoded shelf and storage ge
     },
   });
 
-  assert.equal(storageBoards.length, 1);
+  assert.equal(storageBoards.length, 2);
   assert.equal(storageBoards[0][7], 'sketch_storage_m1_typed');
+  assert.deepEqual(storageBoards[0].slice(0, 6), [0.775, 0.2, 0.02, 0, 0.5, 0.19]);
+  assert.equal(storageBoards[1][7], 'sketch_storage_m1_minimum');
+  assert.deepEqual(storageBoards[1].slice(0, 6), [0.775, 0.06, 0.02, 0, 0.1, 0.19]);
 });
 
 test('removed frame side sketch shelves preserve glass and double variants on forced brace geometry', () => {

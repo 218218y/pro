@@ -28,6 +28,7 @@ export function OrderPdfOverlayEditorSurface(props: OrderPdfOverlayEditorSurface
       role="dialog"
       aria-modal="true"
       data-testid="order-pdf-overlay"
+      data-order-pdf-ready="true"
       data-wp-history-shortcuts="suspend"
     >
       {toolbar}

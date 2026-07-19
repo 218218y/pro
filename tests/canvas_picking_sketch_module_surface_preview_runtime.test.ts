@@ -290,6 +290,17 @@ test('module surface preview resolves preset storage hover as remove when remova
   assert.equal(result.preview?.op, 'remove');
   assert.equal(result.hoverRecord?.kind, 'storage');
   assert.equal(result.hoverRecord?.removeKind, 'base');
+  assert.deepEqual(result.preview, {
+    kind: 'storage',
+    x: 0,
+    y: 0.253,
+    z: 0.21500000000000002,
+    w: 0.975,
+    h: 0.5,
+    d: 0.018,
+    woodThick: 0.018,
+    op: 'remove',
+  });
 });
 
 test('module surface preview resolves sketch storage barrier hover as remove when removal probe is enabled', () => {
@@ -340,6 +351,17 @@ test('module surface preview resolves sketch storage barrier hover as remove whe
   assert.equal(result.hoverRecord?.kind, 'storage');
   assert.equal(result.hoverRecord?.removeKind, 'sketch');
   assert.equal(result.hoverRecord?.removeIdx, 0);
+  assert.deepEqual(result.preview, {
+    kind: 'storage',
+    x: 0,
+    y: 0.72,
+    z: 0.21500000000000002,
+    w: 0.975,
+    h: 0.32,
+    d: 0.018,
+    woodThick: 0.018,
+    op: 'remove',
+  });
 });
 
 test('module surface preview resolves base shelf hover remove while sketch external drawers tool is active', () => {

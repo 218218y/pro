@@ -1,5 +1,5 @@
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_STORAGE_BARRIER_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
 import {
   __isFn,
   asRecord,
@@ -101,7 +101,7 @@ export function applyCustomStorageBarrier(args: {
   if (!(barrierH > 0)) return;
   const zOff = readCustomRenderNumber(
     storageBarrier.zFrontOffset,
-    INTERIOR_FITTINGS_DIMENSIONS.storage.barrierFrontZOffsetM
+    INTERIOR_STORAGE_BARRIER_POLICY.barrierFrontZOffsetM
   );
   const partId = moduleKey ? `storage_barrier_${moduleKey}` : 'storage_barrier';
   let material = bodyMat;
@@ -120,7 +120,7 @@ export function applyCustomStorageBarrier(args: {
   }
 
   createBoard(
-    innerW - INTERIOR_FITTINGS_DIMENSIONS.storage.barrierWidthClearanceM,
+    innerW - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM,
     barrierH,
     woodThick,
     internalCenterX,

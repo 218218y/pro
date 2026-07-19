@@ -1,4 +1,9 @@
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  INTERIOR_STORAGE_CLAMP_POLICY,
+  INTERIOR_STORAGE_LAYOUT_POLICY,
+  INTERIOR_STORAGE_PREVIEW_POLICY,
+} from '../../shared/dimensions/interior_storage_policy.js';
 import type { ApplySketchStorageBarriersArgs } from './render_interior_sketch_support_contracts.js';
 import { toFiniteNumber } from './render_interior_sketch_shared.js';
 
@@ -21,15 +26,20 @@ export function applySketchStorageBarriers(args: ApplySketchStorageBarriersArgs)
   } = args;
   if (!storageBarriers.length) return;
 
-  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
   const padFront = Math.min(
-    storageDims.clampPadMaxM,
-    Math.max(storageDims.clampPadMinM, woodThick * storageDims.clampPadWoodRatio)
+    INTERIOR_STORAGE_CLAMP_POLICY.clampPadMaxM,
+    Math.max(
+      INTERIOR_STORAGE_CLAMP_POLICY.clampPadMinM,
+      woodThick * INTERIOR_STORAGE_CLAMP_POLICY.clampPadWoodRatio
+    )
   );
   const frontZ = internalZ + internalDepth / 2;
-  const barrierZ = frontZ + storageDims.barrierFrontZOffsetM;
-  const barrierW = Math.max(storageDims.barrierWidthMinM, innerW - storageDims.barrierWidthClearanceM);
-  const barrierD = Math.max(storageDims.previewThicknessMinM, woodThick);
+  const barrierZ = frontZ + INTERIOR_STORAGE_BARRIER_POLICY.barrierFrontZOffsetM;
+  const barrierW = Math.max(
+    INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthMinM,
+    innerW - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
+  );
+  const barrierD = Math.max(INTERIOR_STORAGE_PREVIEW_POLICY.previewThicknessMinM, woodThick);
 
   for (let i = 0; i < storageBarriers.length; i++) {
     const barrier = storageBarriers[i] || null;
@@ -38,8 +48,14 @@ export function applySketchStorageBarriers(args: ApplySketchStorageBarriersArgs)
     let heightM = toFiniteNumber(barrier.heightM);
     if (heightM == null) heightM = toFiniteNumber(barrier.hM);
     if (heightM == null) continue;
-    if (heightM < woodThick * storageDims.minHeightWoodMultiplier + storageDims.minHeightExtraM) {
-      heightM = woodThick * storageDims.minHeightWoodMultiplier + storageDims.minHeightExtraM;
+    if (
+      heightM <
+      woodThick * INTERIOR_STORAGE_LAYOUT_POLICY.minHeightWoodMultiplier +
+        INTERIOR_STORAGE_LAYOUT_POLICY.minHeightExtraM
+    ) {
+      heightM =
+        woodThick * INTERIOR_STORAGE_LAYOUT_POLICY.minHeightWoodMultiplier +
+        INTERIOR_STORAGE_LAYOUT_POLICY.minHeightExtraM;
     }
     if (heightM > spanH) heightM = spanH;
     const halfH = heightM / 2;

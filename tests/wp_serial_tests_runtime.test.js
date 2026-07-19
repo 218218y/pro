@@ -544,7 +544,65 @@ test('runner wrappers keep readiness, live-child, and single-timeout termination
   assert.match(serialSource, /spawnManagedChild\(/u);
   assert.doesNotMatch(combined, /\.killed\b/u);
   assert.doesNotMatch(combined, /requestedSignal && code !== 0|forwardedSignal && code !== 0/u);
+  assert.match(directSource, /after \$\{signal\} grace period/u);
+  assert.match(listSource, /after \$\{signal\} grace period/u);
+  assert.doesNotMatch(`${directSource}\n${listSource}`, /after SIGTERM grace period/u);
   assert.equal(serialSource.match(/terminateActiveChild\('SIGTERM'\)/gu)?.length, 1);
+});
+
+test('direct and file-list runner wrappers preserve requested SIGINT diagnostics and exit code', async t => {
+  const root = tempDir();
+  const handlesSignal = writeRuntimeTest(
+    root,
+    'handles_sigint.test.js',
+    `
+      import test from 'node:test';
+      process.on('SIGINT', () => process.exit(0));
+      console.error('[fixture] signal-handler-ready:sigint');
+      test('handles SIGINT', async () => {
+        await new Promise(() => {});
+      });
+    `
+  );
+  const listPath = path.join(root, 'sigint-files.txt');
+  fs.writeFileSync(listPath, `${handlesSignal}\n`, 'utf8');
+
+  for (const runner of [
+    {
+      label: 'run-tsx-tests',
+      modulePath: directTsxRunnerPath,
+      args: [handlesSignal, '--', '--test-isolation=none'],
+    },
+    {
+      label: 'run-test-file-list',
+      modulePath: rerunListPath,
+      args: [listPath, '--', '--test-isolation=none'],
+    },
+  ]) {
+    await t.test(runner.label, async () => {
+      const signalHost = writeRuntimeTest(
+        root,
+        `${runner.label}_sigint_host.mjs`,
+        `
+          process.argv = [process.execPath, ${JSON.stringify(runner.modulePath)}, ...process.argv.slice(2)];
+          process.on('message', message => {
+            if (message === 'SIGINT') process.emit('SIGINT');
+          });
+          await import(${JSON.stringify(pathToFileURL(runner.modulePath).href)});
+        `
+      );
+      const run = runNodeAsync([signalHost, ...runner.args], {
+        stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
+      });
+      await run.waitForStderr(new RegExp(`\\[${runner.label}\\] ready`, 'u'));
+      await run.waitForStderr(/\[fixture\] signal-handler-ready:sigint/u);
+      run.child.send('SIGINT');
+      const result = await run.completed;
+
+      assert.equal(result.code, 130, result.stderr || result.stdout);
+      assert.match(result.stderr, /signal-handler-ready:sigint/u);
+    });
+  }
 });
 
 test(

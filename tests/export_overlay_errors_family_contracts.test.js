@@ -370,6 +370,10 @@ test('[overlay-export-family] overlay ui seams stay wiring-first while controlle
     [
       /const OrderPdfOverlayLazy = (?:React\.lazy|lazy)\(/,
       /function PdfEditorLoadingOverlay\(/,
+      /data-testid="order-pdf-overlay-loading"/,
+      /role="status"/,
+      /aria-live="polite"/,
+      /errorTestId="order-pdf-overlay-error"/,
       /createPortal\(/,
     ],
     'overlay pdf host'

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-17T08:20:33.818Z",
+  "generatedAt": "2026-07-19T09:13:02.865Z",
   "sourceRoot": "esm",
   "summary": {
     "totalOccurrences": 8,
@@ -78,7 +78,7 @@
   "occurrences": [
     {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",
-      "line": 55,
+      "line": 58,
       "term": "fallback",
       "category": "framework-default",
       "text": "<Suspense fallback={<PdfEditorLoadingOverlay />}>"

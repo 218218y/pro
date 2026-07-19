@@ -1,7 +1,7 @@
 import type { AppContainer } from '../../../types/index.js';
 
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_STORAGE_BARRIER_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
 import { getModulesActions } from '../runtime/actions_access_domains.js';
 import { __wp_toModuleKey } from './canvas_picking_core_helpers.js';
 import {
@@ -280,7 +280,7 @@ function commitPresetLayoutHover(args: {
           heightM:
             storageHeightM != null && storageHeightM > 0
               ? storageHeightM
-              : INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM,
+              : INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM,
         });
       }
     },
