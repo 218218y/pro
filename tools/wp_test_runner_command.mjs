@@ -6,6 +6,15 @@ function getNpxCommand() {
   return process.platform === 'win32' ? 'npx.cmd' : 'npx';
 }
 
+function resolveNpxCliPath() {
+  const candidates = [];
+  if (process.env.npm_execpath) {
+    candidates.push(path.join(path.dirname(process.env.npm_execpath), 'npx-cli.js'));
+  }
+  candidates.push(path.join(path.dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npx-cli.js'));
+  return candidates.find(candidate => fs.existsSync(candidate)) ?? null;
+}
+
 function hasLocalTsx(projectRoot) {
   return fs.existsSync(path.join(projectRoot, 'node_modules', 'tsx', 'package.json'));
 }
@@ -23,16 +32,17 @@ export function resolveTsxTestRunner(projectRoot = process.cwd()) {
       spawnOptions: { windowsHide: true },
     };
   }
-  const npx = getNpxCommand();
+  const npxCliPath = resolveNpxCliPath();
+  const npx = npxCliPath ? process.execPath : getNpxCommand();
   return {
     program: npx,
-    baseArgs: ['--yes', 'tsx', '--test'],
+    baseArgs: [...(npxCliPath ? [npxCliPath] : []), '--yes', 'tsx', '--test'],
     label: 'npx --yes tsx --test',
     commandPrefix: 'npx --yes tsx --test',
     mode: 'npx',
     spawnOptions: {
       windowsHide: true,
-      ...(process.platform === 'win32' ? { shell: true } : null),
+      ...(process.platform === 'win32' && !npxCliPath ? { shell: true } : null),
     },
   };
 }

@@ -4,7 +4,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
-import { resolveChildExitCode, terminateChildWithEscalation } from '../tools/wp_child_process_protocol.mjs';
+import { pathToFileURL } from 'node:url';
+import {
+  resolveChildExitCode,
+  resolveChildTermination,
+  terminateChildWithEscalation,
+} from '../tools/wp_child_process_protocol.mjs';
 
 const projectRoot = process.cwd();
 const serialRunnerPath = path.join(projectRoot, 'tools', 'wp_serial_tests.mjs');
@@ -76,6 +81,10 @@ SIGNAL: ${result.signal}`;
     flushStderrWaiters();
   });
 
+  const exited = new Promise((resolve, reject) => {
+    child.on('error', reject);
+    child.on('exit', (code, signal) => resolve({ code, signal }));
+  });
   const completed = new Promise((resolve, reject) => {
     child.on('error', reject);
     child.on('close', (code, signal) => {
@@ -100,6 +109,7 @@ SIGNAL: ${result.signal}`;
 
   return {
     child,
+    exited,
     completed,
     waitForStderr(pattern, timeoutMs = 5000) {
       if (matchesPattern(pattern, stderr)) return Promise.resolve(stderr);
@@ -130,6 +140,25 @@ ${result.stdout}
 CODE: ${result.code}
 SIGNAL: ${result.signal}`
   );
+}
+
+function isProcessRunning(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    if (error?.code === 'ESRCH') return false;
+    throw error;
+  }
+}
+
+async function waitForProcessExit(pid, timeoutMs = 3000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (!isProcessRunning(pid)) return true;
+    await new Promise(resolve => setTimeout(resolve, 25));
+  }
+  return !isProcessRunning(pid);
 }
 
 test(
@@ -271,6 +300,10 @@ test(
     const summary = JSON.parse(fs.readFileSync(timingsPath, 'utf8'));
     assert.equal(summary.batches[0].outcome, 'timed_out');
     assert.equal(summary.batches[0].timedOut, true);
+    assert.equal(summary.interrupted, false);
+    assert.equal(summary.interruptedBySignal, null);
+    assert.equal(summary.batches[0].requestedSignal, null);
+    assert.equal(summary.batches[0].terminationRequestedSignal, 'SIGTERM');
   }
 );
 
@@ -378,7 +411,7 @@ test(
       `
       import test from 'node:test';
       process.on('SIGTERM', () => process.exit(0));
-      console.error('[fixture] SIGTERM handler ready');
+      console.error('[fixture] signal-handler-ready:exit-zero');
       test('handles signal', async () => {
         await new Promise(() => {});
       });
@@ -386,7 +419,7 @@ test(
     );
     const run = runNodeAsync([directTsxRunnerPath, handlesSignal, '--', '--test-isolation=none']);
     await run.waitForStderr(/\[run-tsx-tests\] ready/u);
-    await run.waitForStderr(/\[fixture\] SIGTERM handler ready/u);
+    await run.waitForStderr(/\[fixture\] signal-handler-ready:exit-zero/u);
     run.child.kill('SIGTERM');
     const result = await run.completed;
 
@@ -411,7 +444,7 @@ test(
       `
       import test from 'node:test';
       process.on('SIGTERM', () => console.error('[fixture] ignored SIGTERM'));
-      console.error('[fixture] SIGTERM handler ready');
+      console.error('[fixture] signal-handler-ready:ignore');
       test('ignores signal', async () => {
         await new Promise(() => {});
       });
@@ -419,7 +452,7 @@ test(
     );
     const run = runNodeAsync([directTsxRunnerPath, ignoresSignal, '--', '--test-isolation=none']);
     await run.waitForStderr(/\[run-tsx-tests\] ready/u);
-    await run.waitForStderr(/\[fixture\] SIGTERM handler ready/u);
+    await run.waitForStderr(/\[fixture\] signal-handler-ready:ignore/u);
     run.child.kill('SIGTERM');
     const result = await run.completed;
 
@@ -432,6 +465,14 @@ test(
 
 test('interruption exit resolution gives the requested signal priority over child exit zero', () => {
   assert.equal(resolveChildExitCode({ code: 0, signal: null, requestedSignal: 'SIGTERM' }), 143);
+});
+
+test('termination mapping preserves requested SIGTERM separately from child SIGKILL', () => {
+  assert.deepEqual(resolveChildTermination({ code: null, signal: 'SIGKILL', requestedSignal: 'SIGTERM' }), {
+    requestedSignal: 'SIGTERM',
+    childExitSignal: 'SIGKILL',
+    exitCode: 143,
+  });
 });
 
 test('termination escalation checks live exit state instead of child.killed', async () => {
@@ -498,6 +539,82 @@ test(
     assert.match(summary.batches[0].rerunCommand, /npx --yes tsx --test/);
   }
 );
+
+test('serial npx fallback interruption leaves no active test process or active summary', async () => {
+  const root = tempDir();
+  const probePath = path.join(root, 'npx-probe.txt');
+  const failedFilesPath = path.join(root, 'failed.txt');
+  const timingsPath = path.join(root, 'timings.json');
+  const probe = writeRuntimeTest(
+    root,
+    'npx_interrupt_probe.test.js',
+    `
+      import test from 'node:test';
+      import fs from 'node:fs';
+      const probePath = process.env.WP_NPX_SIGNAL_PROBE_PATH;
+      if (!probePath) throw new Error('missing npx signal probe path');
+      process.on('SIGTERM', () => {
+        fs.appendFileSync(probePath, 'handled\\n', 'utf8');
+        process.exit(0);
+      });
+      fs.writeFileSync(probePath, String(process.pid) + ':ready\\n', 'utf8');
+      console.error('[fixture] npx-signal-handler-ready:' + process.pid);
+      setTimeout(() => process.exit(97), 10000);
+      test('npx interruption probe', async () => {
+        await new Promise(() => {});
+      });
+    `
+  );
+  const signalHost = writeRuntimeTest(
+    root,
+    'serial_signal_host.mjs',
+    `
+      process.argv = [process.execPath, ${JSON.stringify(serialRunnerPath)}, ...process.argv.slice(2)];
+      process.on('message', message => {
+        if (message === 'SIGTERM' || message === 'SIGINT') process.emit(message);
+      });
+      await import(${JSON.stringify(pathToFileURL(serialRunnerPath).href)});
+    `
+  );
+  const env = {
+    ...process.env,
+    NODE_OPTIONS: [process.env.NODE_OPTIONS, '--test-isolation=none'].filter(Boolean).join(' '),
+    WP_NPX_SIGNAL_PROBE_PATH: probePath,
+    WP_TEST_RUNNER_FORCE_NPX: '1',
+  };
+  delete env.NODE_TEST_CONTEXT;
+  const run = runNodeAsync(
+    [signalHost, '--failed-files-path', failedFilesPath, '--timings-path', timingsPath, probe],
+    { env, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] }
+  );
+
+  await run.waitForStderr(/\[serial-tests batch 1\/1\] ready/u);
+  const readyOutput = await run.waitForStderr(/\[fixture\] npx-signal-handler-ready:\d+/u);
+  const pid = Number(/npx-signal-handler-ready:(\d+)/u.exec(readyOutput)?.[1]);
+  assert.equal(Number.isInteger(pid) && pid > 0, true, readyOutput);
+  run.child.send('SIGTERM');
+  const exitResult = await run.exited;
+  assertInterruptedExitLike(
+    { ...exitResult, stdout: '', stderr: '' },
+    'interrupted npx fallback should preserve wrapper interruption'
+  );
+
+  const exited = await waitForProcessExit(pid);
+  if (!exited) {
+    try {
+      process.kill(pid, 'SIGKILL');
+    } catch {}
+  }
+  const result = await run.completed;
+  assert.equal(exited, true, `npx fallback left test process ${pid} running\n${result.stderr}`);
+  const summary = JSON.parse(fs.readFileSync(timingsPath, 'utf8'));
+  assert.equal(summary.completedBatches, 1);
+  assert.equal(summary.batches.length, 1);
+  assert.equal(summary.batches[0].outcome, 'interrupted');
+  assert.equal(summary.batches[0].requestedSignal, 'SIGTERM');
+  assert.ok(summary.batches[0].durationMs > 0, 'final summary must replace the active recovery snapshot');
+});
+
 test(
   'serial runner interrupt writes interrupted batch summary and returns signal exit code',
   { concurrency: false },
@@ -544,6 +661,70 @@ test(
     assert.equal(summary.interruptedBatch.signal, 'SIGTERM');
     assert.match(summary.interruptedBatch.rerunCommand, /(?:--import tsx --test|npx --yes tsx --test)/);
     assert.equal(summary.batches[0].outcome, 'interrupted');
+    assert.equal(summary.batches[0].exitCode, 143);
+    assert.equal(summary.batches[0].requestedSignal, 'SIGTERM');
+    assert.equal(summary.batches[0].terminationRequestedSignal, 'SIGTERM');
+    assert.equal(summary.interruptedBatch.childExitSignal, summary.batches[0].childExitSignal);
+  }
+);
+
+test(
+  'serial escalation preserves requested SIGTERM and records child SIGKILL',
+  {
+    skip:
+      process.platform === 'win32'
+        ? 'Windows terminates child processes instead of delivering catchable SIGTERM'
+        : false,
+  },
+  async () => {
+    const root = tempDir();
+    const failedFilesPath = path.join(root, 'failed.txt');
+    const timingsPath = path.join(root, 'timings.json');
+    const ignoresSignal = writeRuntimeTest(
+      root,
+      'serial_ignores_signal.test.js',
+      `
+        import test from 'node:test';
+        process.on('SIGTERM', () => console.error('[fixture] serial ignored SIGTERM'));
+        console.error('[fixture] signal-handler-ready:serial-ignore');
+        setTimeout(() => process.exit(97), 10000);
+        test('serial ignores signal', async () => {
+          await new Promise(() => {});
+        });
+      `
+    );
+    const env = {
+      ...process.env,
+      NODE_OPTIONS: [process.env.NODE_OPTIONS, '--test-isolation=none'].filter(Boolean).join(' '),
+    };
+    delete env.NODE_TEST_CONTEXT;
+    const run = runNodeAsync(
+      [
+        serialRunnerPath,
+        '--failed-files-path',
+        failedFilesPath,
+        '--timings-path',
+        timingsPath,
+        ignoresSignal,
+      ],
+      { env }
+    );
+
+    await run.waitForStderr(/\[serial-tests batch 1\/1\] ready/u);
+    await run.waitForStderr(/\[fixture\] signal-handler-ready:serial-ignore/u);
+    run.child.kill('SIGTERM');
+    const result = await run.completed;
+    assert.equal(result.code, 143, result.stderr || result.stdout);
+    assert.match(result.stderr, /escalating to SIGKILL/u);
+
+    const summary = JSON.parse(fs.readFileSync(timingsPath, 'utf8'));
+    assert.equal(summary.interrupted, true);
+    assert.equal(summary.interruptedBySignal, 'SIGTERM');
+    assert.equal(summary.interruptedBatch.signal, 'SIGTERM');
+    assert.equal(summary.interruptedBatch.childExitSignal, 'SIGKILL');
+    assert.equal(summary.batches[0].outcome, 'interrupted');
+    assert.equal(summary.batches[0].requestedSignal, 'SIGTERM');
+    assert.equal(summary.batches[0].childExitSignal, 'SIGKILL');
     assert.equal(summary.batches[0].exitCode, 143);
   }
 );

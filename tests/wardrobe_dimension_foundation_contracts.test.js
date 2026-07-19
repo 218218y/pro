@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 229, statements: 229 }),
+  'static-import': Object.freeze({ importers: 224, statements: 224 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 231, statements: 232 }),
+  total: Object.freeze({ importers: 226, statements: 227 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -578,6 +578,109 @@ const APPROVED_DOOR_TRIM_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_DOOR_TRIM_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_DOOR_TRIM_LEGACY_FIELD_USAGE = Object.freeze({});
+const APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/external_drawer_shelf.ts': Object.freeze(['EXTERNAL_DRAWER_SEPARATOR_POLICY']),
+  'esm/native/builder/render_drawer_ops_external.ts': Object.freeze([
+    'EXTERNAL_DRAWER_CONTENTS_POLICY',
+    'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_box.ts': Object.freeze([
+    'EXTERNAL_DRAWER_CONTENTS_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_drawers_external_box.ts': Object.freeze([
+    'EXTERNAL_DRAWER_CONTENTS_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_drawers_external_motion.ts': Object.freeze([
+    'EXTERNAL_DRAWER_MOTION_POLICY',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['EXTERNAL_DRAWER_POLICY']),
+});
+const APPROVED_INTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['INTERNAL_DRAWER_POLICY']),
+});
+const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({
+  'esm/native/builder/build_handle_policy.ts': Object.freeze([
+    'external',
+    'external.regularHeightM',
+    'external.shoeHeightM',
+  ]),
+  'esm/native/builder/core_storage_compute_external_drawers.ts': Object.freeze([
+    'external',
+    'external.boxHeightClearanceM',
+    'external.regularHeightM',
+    'external.shoeHeightM',
+    'external.visualHeightClearanceM',
+  ]),
+  'esm/native/builder/hinged_doors_module_ops_context.ts': Object.freeze([
+    'external',
+    'external.doorTopGapM',
+  ]),
+  'esm/native/builder/hinged_doors_module_ops_handle_policy.ts': Object.freeze([
+    'external',
+    'external.regularHeightM',
+    'external.shoeHeightM',
+  ]),
+  'esm/native/builder/render_drawer_ops_internal.ts': Object.freeze([
+    'internal',
+    'internal.contentsBottomInsetM',
+    'internal.contentsHeightClearanceM',
+    'internal.contentsWidthClearanceM',
+  ]),
+  'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts': Object.freeze([
+    'external',
+    'external.shoeHeightM',
+  ]),
+  'esm/native/features/sketch_box_regular_external_drawers.ts': Object.freeze([
+    'external',
+    'external.regularHeightM',
+    'external.shoeHeightM',
+  ]),
+  'esm/native/services/canvas_picking_hover_preview_modes_ext_drawers.ts': Object.freeze([
+    'external',
+    'external.regularHeightM',
+    'external.shoeHeightM',
+    'external.visualHeightClearanceM',
+    'external.visualThicknessM',
+    'external.visualWidthClearanceM',
+  ]),
+  'esm/native/services/canvas_picking_manual_layout_sketch_hover_standard_drawer.ts': Object.freeze([
+    'external',
+    'external.visualThicknessM',
+  ]),
+  'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts': Object.freeze([
+    'external',
+    'external.frontOffsetZM',
+    'external.regularHeightM',
+    'external.shoeHeightM',
+    'external.visualHeightClearanceM',
+    'external.visualThicknessM',
+    'external.visualWidthClearanceM',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_stack_preview_ext_drawers.ts': Object.freeze([
+    'external',
+    'external.frontOffsetZM',
+    'external.visualHeightClearanceM',
+    'external.visualThicknessM',
+    'external.visualWidthClearanceM',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_stack_preview_ext_drawers.ts': Object.freeze([
+    'external',
+    'external.visualHeightClearanceM',
+    'external.visualThicknessM',
+    'external.visualWidthClearanceM',
+  ]),
+  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
+    'external',
+    'external.doorTopGapM',
+    'external.regularHeightM',
+    'external.shoeHeightM',
+  ]),
+  'esm/shared/wardrobe_construction_validation_shared.ts': Object.freeze([
+    'external',
+    'external.regularHeightM',
+    'external.shoeHeightM',
+  ]),
+});
 const APPROVED_DOOR_SYSTEM_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/builder/core_doors_compute.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
   'esm/native/builder/hinged_doors_module_ops_context.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
@@ -1034,6 +1137,22 @@ function collectLegacyDimensionPolicyFieldUsage(sources, symbol, ownerSpecifier)
   return normalizedSymbolUsage(usage);
 }
 
+function collectLegacyDrawerExternalInternalFieldUsage(sources) {
+  const usage = collectLegacyDimensionPolicyFieldUsage(
+    sources,
+    'DRAWER_DIMENSIONS',
+    'dimensions/external_drawer_policy.js'
+  );
+  const filtered = {};
+  for (const [file, fields] of Object.entries(usage)) {
+    const externalInternalFields = fields.filter(
+      field => field === '<computed>' || field.startsWith('external') || field.startsWith('internal')
+    );
+    if (externalInternalFields.length) filtered[file] = externalInternalFields;
+  }
+  return filtered;
+}
+
 function collectMemberPropertyUsage(sources, propertyName) {
   const usage = new Map();
   for (const [file, source] of sources) {
@@ -1469,6 +1588,8 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   const doorMountThicknessPolicy = read('esm/shared/dimensions/door_mount_thickness_policy.ts');
   const doorVisualPolicy = read('esm/shared/dimensions/door_visual_policy.ts');
   const doorTrimPolicy = read('esm/shared/dimensions/door_trim_policy.ts');
+  const externalDrawerPolicy = read('esm/shared/dimensions/external_drawer_policy.ts');
+  const internalDrawerPolicy = read('esm/shared/dimensions/internal_drawer_policy.ts');
 
   assert.match(facade, /from '\.\/dimensions\/units\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/wardrobe_defaults\.js'/u);
@@ -1486,6 +1607,9 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /from '\.\/dimensions\/door_system_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/door_mount_thickness_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/door_visual_policy\.js'/u);
+  assert.match(facade, /from '\.\/dimensions\/door_trim_policy\.js'/u);
+  assert.match(facade, /from '\.\/dimensions\/external_drawer_policy\.js'/u);
+  assert.match(facade, /from '\.\/dimensions\/internal_drawer_policy\.js'/u);
   assert.doesNotMatch(facade, /export const WARDROBE_DEFAULTS =/u);
   assert.doesNotMatch(facade, /export const WARDROBE_LIMITS =/u);
 
@@ -1581,6 +1705,19 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(doorTrimPolicy, /export const DOOR_TRIM_DIMENSIONS = Object\.freeze/u);
   assert.match(doorTrimPolicy, /thicknessM: meters\(0\.035\)/u);
   assert.match(doorTrimPolicy, /crossSizeCm: centimeters\(3\.5\)/u);
+  assert.match(externalDrawerPolicy, /export const EXTERNAL_DRAWER_SIZE_POLICY = Object\.freeze/u);
+  assert.match(externalDrawerPolicy, /export const EXTERNAL_DRAWER_MOTION_POLICY = Object\.freeze/u);
+  assert.match(externalDrawerPolicy, /export const EXTERNAL_DRAWER_FRONT_RENDER_POLICY = Object\.freeze/u);
+  assert.match(externalDrawerPolicy, /export const EXTERNAL_DRAWER_BOX_POLICY = Object\.freeze/u);
+  assert.match(externalDrawerPolicy, /export const EXTERNAL_DRAWER_CONNECTOR_POLICY = Object\.freeze/u);
+  assert.match(externalDrawerPolicy, /export const EXTERNAL_DRAWER_SEPARATOR_POLICY = Object\.freeze/u);
+  assert.match(externalDrawerPolicy, /export const EXTERNAL_DRAWER_CONTENTS_POLICY = Object\.freeze/u);
+  assert.match(externalDrawerPolicy, /export const EXTERNAL_DRAWER_POLICY = Object\.freeze/u);
+  assert.match(externalDrawerPolicy, /doorTopGapM: STACK_SPLIT_POLICY\.seam\.gapM/u);
+  assert.match(internalDrawerPolicy, /export const INTERNAL_DRAWER_LAYOUT_POLICY = Object\.freeze/u);
+  assert.match(internalDrawerPolicy, /export const INTERNAL_DRAWER_MOTION_POLICY = Object\.freeze/u);
+  assert.match(internalDrawerPolicy, /export const INTERNAL_DRAWER_CONTENTS_POLICY = Object\.freeze/u);
+  assert.match(internalDrawerPolicy, /export const INTERNAL_DRAWER_POLICY = Object\.freeze/u);
   assert.match(facade, /plinth: BASE_PLINTH_DIMENSIONS/u);
   assert.match(facade, /legs: BASE_LEG_LAYOUT_DIMENSIONS/u);
   assert.match(facade, /legacyDimensionNumberView\(BASE_PLINTH_POLICY\)/u);
@@ -1596,6 +1733,10 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /legacyDimensionNumberView\(\s*DOOR_MOUNT_THICKNESS_DIMENSIONS_OWNER\s*\)/u);
   assert.match(facade, /legacyDimensionNumberView\(DOOR_VISUAL_DIMENSIONS_OWNER\)/u);
   assert.match(facade, /legacyDimensionNumberView\(DOOR_TRIM_DIMENSIONS_OWNER\)/u);
+  assert.match(facade, /legacyDimensionNumberView\(EXTERNAL_DRAWER_POLICY\)/u);
+  assert.match(facade, /legacyDimensionNumberView\(INTERNAL_DRAWER_POLICY\)/u);
+  assert.match(facade, /external: EXTERNAL_DRAWER_DIMENSIONS/u);
+  assert.match(facade, /internal: INTERNAL_DRAWER_DIMENSIONS/u);
   assert.doesNotMatch(facade, /export const MATERIAL_DIMENSIONS = Object\.freeze/u);
   assert.doesNotMatch(facade, /export const CARCASS_CORNICE_DIMENSIONS = Object\.freeze/u);
   assert.doesNotMatch(facade, /export const CHEST_MODE_DIMENSIONS = Object\.freeze/u);
@@ -1790,6 +1931,36 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     },
     'DOOR_TRIM_DIMENSIONS is compatibility-only and may be imported directly only by the legacy facade'
   );
+  const externalDrawerOwnerImports = collectOwnerImports(analyzedSources, 'external_drawer_policy.js');
+  assertApprovedSymbolUsage(
+    externalDrawerOwnerImports,
+    APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS,
+    'External Drawer owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(externalDrawerOwnerImports)
+        .filter(([, symbols]) => symbols.includes('EXTERNAL_DRAWER_POLICY'))
+        .map(([file]) => [file, ['EXTERNAL_DRAWER_POLICY']])
+    ),
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['EXTERNAL_DRAWER_POLICY'],
+    },
+    'EXTERNAL_DRAWER_POLICY aggregate is compatibility-only outside approved focused consumers'
+  );
+  const internalDrawerOwnerImports = collectOwnerImports(analyzedSources, 'internal_drawer_policy.js');
+  assertApprovedSymbolUsage(
+    internalDrawerOwnerImports,
+    APPROVED_INTERNAL_DRAWER_OWNER_IMPORTS,
+    'Internal Drawer owner consumer allowlist'
+  );
+  assert.deepEqual(
+    internalDrawerOwnerImports,
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['INTERNAL_DRAWER_POLICY'],
+    },
+    'INTERNAL_DRAWER_POLICY aggregate is imported directly only by the legacy facade'
+  );
   assertApprovedSymbolUsage(
     collectShellGridFieldUsage(analyzedSources),
     APPROVED_SHELL_GRID_FIELD_USAGE,
@@ -1923,6 +2094,11 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     ),
     APPROVED_DOOR_TRIM_LEGACY_FIELD_USAGE,
     'Door Trim legacy field allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDrawerExternalInternalFieldUsage(analyzedSources),
+    APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE,
+    'Drawer External/Internal legacy facade field allowlist'
   );
 });
 
@@ -2454,6 +2630,90 @@ test('[dimension-foundation] Door Trim guard detects aliases, nested fields, and
         ),
         {},
         'Door Trim fixture legacy field allowlist'
+      ),
+    /review-blocked/u
+  );
+});
+
+test('[dimension-foundation] Drawer External/Internal guards detect aliases, nested fields, and broad dependencies', () => {
+  const sources = [
+    [
+      'esm/native/builder/named_drawer_consumer.ts',
+      `
+        import { DRAWER_DIMENSIONS as drawers } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const drawerAlias = drawers;
+        const { external: { shoeHeightM } } = drawerAlias;
+        const internal = drawerAlias['internal'];
+        export const bottomInset = internal.contentsBottomInsetM;
+        export const dynamic = drawerAlias[key];
+        export { shoeHeightM };
+      `,
+    ],
+    [
+      'esm/native/builder/namespace_drawer_consumer.ts',
+      `
+        import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const { external } = dimensions.DRAWER_DIMENSIONS;
+        export const clearance = external['visualWidthClearanceM'];
+      `,
+    ],
+    [
+      'esm/native/runtime/drawer_wildcard.ts',
+      `export * from '../../shared/wardrobe_dimension_tokens_shared.js';`,
+    ],
+    [
+      'esm/native/runtime/drawer_dynamic.ts',
+      `export const dimensions = import('../../shared/wardrobe_dimension_tokens_shared.js');`,
+    ],
+  ];
+
+  assert.deepEqual(collectLegacyDrawerExternalInternalFieldUsage(sources), {
+    'esm/native/builder/named_drawer_consumer.ts': [
+      '<computed>',
+      'external',
+      'external.shoeHeightM',
+      'internal',
+      'internal.contentsBottomInsetM',
+    ],
+    'esm/native/builder/namespace_drawer_consumer.ts': ['external', 'external.visualWidthClearanceM'],
+  });
+  assert.deepEqual(collectDimensionFacadeBroadDependencies(sources), [
+    { file: 'esm/native/builder/namespace_drawer_consumer.ts', syntax: 'static-import' },
+    { file: 'esm/native/runtime/drawer_dynamic.ts', syntax: 'dynamic-import' },
+    { file: 'esm/native/runtime/drawer_wildcard.ts', syntax: 'static-re-export' },
+  ]);
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        collectLegacyDrawerExternalInternalFieldUsage(sources),
+        {},
+        'Drawer External/Internal fixture legacy field allowlist'
+      ),
+    /review-blocked/u
+  );
+  assert.throws(
+    () => assertApprovedDimensionFacadeBroadDependencies(collectDimensionFacadeBroadDependencies(sources)),
+    /requires review/u
+  );
+
+  const aggregateOwnerImports = collectOwnerImports(
+    [
+      [
+        'esm/native/builder/new_external_aggregate_consumer.ts',
+        `import { EXTERNAL_DRAWER_POLICY as drawers } from '../../shared/dimensions/external_drawer_policy.js';`,
+      ],
+    ],
+    'external_drawer_policy.js'
+  );
+  assert.deepEqual(aggregateOwnerImports, {
+    'esm/native/builder/new_external_aggregate_consumer.ts': ['EXTERNAL_DRAWER_POLICY'],
+  });
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        aggregateOwnerImports,
+        APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS,
+        'External Drawer fixture owner consumer allowlist'
       ),
     /review-blocked/u
   );

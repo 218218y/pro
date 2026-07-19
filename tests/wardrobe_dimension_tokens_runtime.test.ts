@@ -94,6 +94,22 @@ import {
   DOOR_TRIM_SNAP_POLICY,
 } from '../esm/shared/dimensions/door_trim_policy.ts';
 import {
+  EXTERNAL_DRAWER_BOX_POLICY,
+  EXTERNAL_DRAWER_CONNECTOR_POLICY,
+  EXTERNAL_DRAWER_CONTENTS_POLICY,
+  EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
+  EXTERNAL_DRAWER_MOTION_POLICY,
+  EXTERNAL_DRAWER_POLICY,
+  EXTERNAL_DRAWER_SEPARATOR_POLICY,
+  EXTERNAL_DRAWER_SIZE_POLICY,
+} from '../esm/shared/dimensions/external_drawer_policy.ts';
+import {
+  INTERNAL_DRAWER_CONTENTS_POLICY,
+  INTERNAL_DRAWER_LAYOUT_POLICY,
+  INTERNAL_DRAWER_MOTION_POLICY,
+  INTERNAL_DRAWER_POLICY,
+} from '../esm/shared/dimensions/internal_drawer_policy.ts';
+import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
   getDefaultWidthForWardrobeType,
@@ -850,6 +866,69 @@ test('Door Trim policy preserves every value, nested policy reference, and facad
       crossSpanRatio: 0.12,
     },
   });
+});
+
+test('External and Internal Drawer policies preserve facade identity, values, and focused owners', () => {
+  assert.equal(DRAWER_DIMENSIONS.external, EXTERNAL_DRAWER_POLICY);
+  assert.equal(DRAWER_DIMENSIONS.internal, INTERNAL_DRAWER_POLICY);
+  assert.equal(EXTERNAL_DRAWER_POLICY.doorTopGapM, STACK_SPLIT_POLICY.seam.gapM);
+  assert.deepEqual(EXTERNAL_DRAWER_POLICY, {
+    shoeHeightM: 0.2,
+    regularHeightM: 0.22,
+    frontOffsetZM: 0.01,
+    doorTopGapM: 0.002,
+    openOffsetZM: 0.35,
+    visualWidthClearanceM: 0.004,
+    visualThicknessM: 0.02,
+    visualHeightClearanceM: 0.008,
+    boxWidthClearanceM: 0.044,
+    boxHeightClearanceM: 0.04,
+    boxDepthBackClearanceM: 0.1,
+    boxOffsetZM: 0.005,
+    connectorDepthM: 0.03,
+    connectorFrontZM: -0.01,
+    connectorBackInsetM: 0.003,
+    connectorWidthClearanceM: 0.09,
+    connectorHeightClearanceM: 0.06,
+    separatorBoardWidthClearanceM: 0.025,
+    contentsBottomInsetM: 0.015,
+    contentsWidthClearanceM: 0.05,
+    contentsHeightClearanceM: 0.03,
+  });
+  assert.deepEqual(INTERNAL_DRAWER_POLICY, {
+    defaultGridStepM: 0.25,
+    defaultDepthM: 0.5,
+    defaultInnerWidthM: 0.6,
+    maxSingleDrawerHeightM: 0.35,
+    defaultSingleDrawerHeightM: 0.165,
+    verticalInsetM: 0.02,
+    minDrawerHeightM: 0.01,
+    widthClearanceM: 0.03,
+    depthClearanceM: 0.02,
+    firstDrawerBottomGapM: 0.01,
+    betweenDrawersGapM: 0.03,
+    stackCount: 2,
+    openOffsetZM: 0.25,
+    contentsBottomInsetM: 0.015,
+    contentsWidthClearanceM: 0.05,
+    contentsHeightClearanceM: 0.03,
+  });
+  for (const policy of [
+    EXTERNAL_DRAWER_SIZE_POLICY,
+    EXTERNAL_DRAWER_MOTION_POLICY,
+    EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
+    EXTERNAL_DRAWER_BOX_POLICY,
+    EXTERNAL_DRAWER_CONNECTOR_POLICY,
+    EXTERNAL_DRAWER_SEPARATOR_POLICY,
+    EXTERNAL_DRAWER_CONTENTS_POLICY,
+    EXTERNAL_DRAWER_POLICY,
+    INTERNAL_DRAWER_LAYOUT_POLICY,
+    INTERNAL_DRAWER_MOTION_POLICY,
+    INTERNAL_DRAWER_CONTENTS_POLICY,
+    INTERNAL_DRAWER_POLICY,
+  ]) {
+    assert.equal(Object.isFrozen(policy), true);
+  }
 });
 
 test('door mount thickness resolver treats sliding wardrobes as overlay construction', () => {

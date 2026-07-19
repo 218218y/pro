@@ -10,6 +10,8 @@ const productDimensionTokenSources = [
   'esm/shared/dimensions/door_mount_thickness_policy.ts',
   'esm/shared/dimensions/door_visual_policy.ts',
   'esm/shared/dimensions/door_trim_policy.ts',
+  'esm/shared/dimensions/external_drawer_policy.ts',
+  'esm/shared/dimensions/internal_drawer_policy.ts',
 ];
 
 function readProductDimensionTokens() {
@@ -365,7 +367,7 @@ test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage 
     assertUsesToken(rel, 'INTERIOR_FITTINGS_DIMENSIONS');
   }
 
-  assertUsesToken('esm/native/builder/external_drawer_shelf.ts', 'DRAWER_DIMENSIONS');
+  assertUsesToken('esm/native/builder/external_drawer_shelf.ts', 'EXTERNAL_DRAWER_SEPARATOR_POLICY');
 
   const cutsApply = read('esm/native/builder/post_build_sketch_door_cuts_apply.ts');
   assert.doesNotMatch(cutsApply, /overlap > 0\.005/);
@@ -412,6 +414,30 @@ test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage 
 
   const externalPipeline = read('esm/native/builder/external_drawers_pipeline.ts');
   assert.doesNotMatch(externalPipeline, /innerW - 0\.025/);
+});
+
+test('[dimension tokens] External and Internal Drawer owners preserve focused production consumption', () => {
+  const tokens = readProductDimensionTokens();
+  assert.match(tokens, /export const EXTERNAL_DRAWER_POLICY = Object\.freeze\(\{/u);
+  assert.match(tokens, /export const INTERNAL_DRAWER_POLICY = Object\.freeze\(\{/u);
+  assert.match(tokens, /doorTopGapM: STACK_SPLIT_POLICY\.seam\.gapM/u);
+
+  const expectedConsumers = [
+    ['esm/native/builder/external_drawer_shelf.ts', 'EXTERNAL_DRAWER_SEPARATOR_POLICY'],
+    ['esm/native/builder/render_drawer_ops_external.ts', 'EXTERNAL_DRAWER_FRONT_RENDER_POLICY'],
+    ['esm/native/builder/render_drawer_ops_external.ts', 'EXTERNAL_DRAWER_CONTENTS_POLICY'],
+    [
+      'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_box.ts',
+      'EXTERNAL_DRAWER_CONTENTS_POLICY',
+    ],
+    ['esm/native/builder/render_interior_sketch_drawers_external_box.ts', 'EXTERNAL_DRAWER_CONTENTS_POLICY'],
+    ['esm/native/builder/render_interior_sketch_drawers_external_motion.ts', 'EXTERNAL_DRAWER_MOTION_POLICY'],
+  ];
+  for (const [file, symbol] of expectedConsumers) assertUsesToken(file, symbol);
+
+  for (const file of new Set(expectedConsumers.map(([file]) => file))) {
+    assert.doesNotMatch(read(file), /\bDRAWER_DIMENSIONS\b/u);
+  }
 });
 
 test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canonical dimensions', () => {

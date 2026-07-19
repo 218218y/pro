@@ -1,7 +1,10 @@
 import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/part_identity/api.js';
 import { appendDoorTrimVisuals } from './door_trim_visuals.js';
 import { resolveDoorVisualStyle } from './render_door_ops_shared.js';
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  EXTERNAL_DRAWER_CONTENTS_POLICY,
+  EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
+} from '../../shared/dimensions/external_drawer_policy.js';
 import { toCanonicalGroovesMapKey } from '../../shared/door_groove_key_contracts_shared.js';
 import type { BuilderRenderDrawerDeps } from './render_drawer_ops_shared.js';
 import {
@@ -120,7 +123,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
         visual = createDoorVisual(
           faceW,
           drawerOp.visualH,
-          drawerOp.visualT || DRAWER_DIMENSIONS.external.visualThicknessM,
+          drawerOp.visualT || EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM,
           drawerVisualState.isMirror ? drawerMirrorMat : drawerWoodMat,
           effectiveDrawerStyle,
           hasGroove && !drawerVisualState.isGlass && !hasAdhesiveGlass,
@@ -142,7 +145,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
           new THREE.BoxGeometry(
             faceW,
             drawerOp.visualH,
-            drawerOp.visualT || DRAWER_DIMENSIONS.external.visualThicknessM
+            drawerOp.visualT || EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM
           ),
           specificMat || bodyMat
         );
@@ -178,11 +181,11 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       if (showContentsEnabled && addFoldedClothes) {
         addFoldedClothes(
           0,
-          -(drawerOp.boxH || 0) / 2 + DRAWER_DIMENSIONS.external.contentsBottomInsetM,
+          -(drawerOp.boxH || 0) / 2 + EXTERNAL_DRAWER_CONTENTS_POLICY.contentsBottomInsetM,
           0,
-          (drawerOp.boxW || 0) - DRAWER_DIMENSIONS.external.contentsWidthClearanceM,
+          (drawerOp.boxW || 0) - EXTERNAL_DRAWER_CONTENTS_POLICY.contentsWidthClearanceM,
           drawerBox,
-          Math.max(0, (drawerOp.boxH || 0) - DRAWER_DIMENSIONS.external.contentsHeightClearanceM),
+          Math.max(0, (drawerOp.boxH || 0) - EXTERNAL_DRAWER_CONTENTS_POLICY.contentsHeightClearanceM),
           drawerOp.boxD,
           {
             showContentsEnabled,
@@ -195,7 +198,7 @@ export function createApplyExternalDrawersOps(deps: BuilderRenderDrawerDeps) {
 
       group.add(drawerBox);
       group.add(visual);
-      const visualThickness = drawerOp.visualT || DRAWER_DIMENSIONS.external.visualThicknessM;
+      const visualThickness = drawerOp.visualT || EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM;
       appendDoorTrimVisuals({
         App,
         THREE,

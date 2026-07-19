@@ -1,5 +1,5 @@
 import type { InteriorGroupLike } from './render_interior_ops_contracts.js';
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { EXTERNAL_DRAWER_CONTENTS_POLICY } from '../../shared/dimensions/external_drawer_policy.js';
 import type {
   SketchExternalDrawerOpPlan,
   SketchExternalDrawerRenderContext,
@@ -66,11 +66,11 @@ function addSketchExternalDrawerBox(
   if (context.input.showContentsEnabled === true && context.isFn(context.input.addFoldedClothes)) {
     context.input.addFoldedClothes(
       0,
-      -opPlan.boxH / 2 + DRAWER_DIMENSIONS.external.contentsBottomInsetM,
+      -opPlan.boxH / 2 + EXTERNAL_DRAWER_CONTENTS_POLICY.contentsBottomInsetM,
       0,
-      opPlan.boxW - DRAWER_DIMENSIONS.external.contentsWidthClearanceM,
+      opPlan.boxW - EXTERNAL_DRAWER_CONTENTS_POLICY.contentsWidthClearanceM,
       drawerBoxObj,
-      Math.max(0, opPlan.boxH - DRAWER_DIMENSIONS.external.contentsHeightClearanceM),
+      Math.max(0, opPlan.boxH - EXTERNAL_DRAWER_CONTENTS_POLICY.contentsHeightClearanceM),
       opPlan.boxD,
       {
         showContentsEnabled: context.input.showContentsEnabled === true,

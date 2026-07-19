@@ -5,7 +5,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
   isChildRunning,
-  resolveChildExitCode,
+  resolveChildTermination,
   signalToExitCode,
   terminateChildWithEscalation,
 } from './wp_child_process_protocol.mjs';
@@ -134,10 +134,11 @@ function cloneSummary(summary) {
   return JSON.parse(JSON.stringify(summary));
 }
 
-function buildInterruptedBatch(batch, signal) {
+function buildInterruptedBatch(batch, requestedSignal, childExitSignal = null) {
   return {
     files: [...batch],
-    signal,
+    signal: requestedSignal,
+    childExitSignal,
     rerunCommand: buildRerunCommand(batch),
   };
 }
@@ -167,6 +168,9 @@ function persistActiveBatchArtifactsSync({
       durationMs: 0,
       outcome: 'interrupted',
       signal,
+      requestedSignal: signal,
+      terminationRequestedSignal: signal,
+      childExitSignal: null,
       timedOut: false,
       exitCode: signalToExitCode(signal),
       rerunCommand: interruptedBatch.rerunCommand,
@@ -187,10 +191,12 @@ function createBatchRunner({ heartbeatMs, timeoutMs }) {
   let activeChild = null;
   let activeChildKillTimer = null;
   let requestedSignal = null;
+  let terminationRequestedSignal = null;
 
-  function terminateActiveChild(signal) {
+  function terminateActiveChild(signal, { requestedByWrapper = false } = {}) {
     if (!isChildRunning(activeChild)) return false;
-    requestedSignal = signal;
+    terminationRequestedSignal = signal;
+    if (requestedByWrapper) requestedSignal = signal;
     if (activeChildKillTimer) clearTimeout(activeChildKillTimer);
     activeChildKillTimer = terminateChildWithEscalation(activeChild, signal, {
       onEscalate(escalationSignal) {
@@ -220,6 +226,7 @@ function createBatchRunner({ heartbeatMs, timeoutMs }) {
       });
       activeChild = child;
       requestedSignal = null;
+      terminationRequestedSignal = null;
       child.once('spawn', () => {
         console.error(`${label} ready`);
       });
@@ -262,10 +269,15 @@ function createBatchRunner({ heartbeatMs, timeoutMs }) {
         cleanupTimers();
         activeChild = null;
         const durationMs = Date.now() - startedAt;
-        const effectiveSignal = signal ?? requestedSignal;
-        const interruptionSignal = requestedSignal || null;
-        const outcome = summarizeOutcome(code, signal, timedOut, interruptionSignal);
-        if (requestedSignal) {
+        const outcome = summarizeOutcome(code, signal, timedOut, requestedSignal);
+        const termination = resolveChildTermination({
+          code,
+          signal,
+          requestedSignal: requestedSignal ?? terminationRequestedSignal,
+        });
+        if (timedOut) {
+          console.error(`${label} timed out after ${formatMs(durationMs)}`);
+        } else if (requestedSignal) {
           console.error(`${label} interrupted after ${formatMs(durationMs)} (${requestedSignal})`);
         } else if (signal) {
           console.error(`${label} FAILED after ${formatMs(durationMs)} (signal ${signal})`);
@@ -275,12 +287,15 @@ function createBatchRunner({ heartbeatMs, timeoutMs }) {
           console.error(`${label} ok (${formatMs(durationMs)})`);
         }
         resolve({
-          exitCode: resolveChildExitCode({ code, signal, requestedSignal }),
+          exitCode: termination.exitCode,
           batch,
           durationMs,
           label,
           outcome,
-          signal: effectiveSignal ?? null,
+          signal: requestedSignal ?? termination.childExitSignal ?? terminationRequestedSignal,
+          requestedSignal,
+          terminationRequestedSignal,
+          childExitSignal: termination.childExitSignal,
           timedOut,
         });
       });
@@ -339,7 +354,7 @@ async function abortRun(signal) {
       console.error(`[serial-tests] active batch file list written to ${failedFilesPath}`);
     }
     persistSummarySync(timingsPath, summary);
-    const forwarded = runner.terminateActiveChild(signal);
+    const forwarded = runner.terminateActiveChild(signal, { requestedByWrapper: true });
     if (!forwarded) process.exit(signalToExitCode(signal));
   })();
   return abortPromise;
@@ -371,6 +386,9 @@ for (let index = 0; index < batches.length; index += 1) {
     durationMs: result.durationMs,
     outcome: result.outcome,
     signal: result.signal,
+    requestedSignal: result.requestedSignal,
+    terminationRequestedSignal: result.terminationRequestedSignal,
+    childExitSignal: result.childExitSignal,
     timedOut: result.timedOut,
     exitCode: result.exitCode,
     rerunCommand: buildRerunCommand(result.batch),
@@ -379,8 +397,12 @@ for (let index = 0; index < batches.length; index += 1) {
   summary.totalDurationMs = Date.now() - runStartedAt;
   if (result.outcome === 'interrupted') {
     summary.interrupted = true;
-    summary.interruptedBySignal = result.signal;
-    summary.interruptedBatch = buildInterruptedBatch(result.batch, result.signal);
+    summary.interruptedBySignal = result.requestedSignal;
+    summary.interruptedBatch = buildInterruptedBatch(
+      result.batch,
+      result.requestedSignal,
+      result.childExitSignal
+    );
     if (failedFilesPath) {
       writeArtifactFileSync(failedFilesPath, `${result.batch.join('\n')}\n`);
       console.error(`${result.label} interrupted batch file list written to ${failedFilesPath}`);

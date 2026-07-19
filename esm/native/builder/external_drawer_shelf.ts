@@ -1,4 +1,4 @@
-import { DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { EXTERNAL_DRAWER_SEPARATOR_POLICY } from '../../shared/dimensions/external_drawer_policy.js';
 import {
   SHELF_GROUP_PART_ID,
   markShelfBoardUserData,
@@ -45,7 +45,7 @@ export function emitExternalDrawerBraceShelf(args: EmitExternalDrawerBraceShelfA
     getPartMaterial: args.getPartMaterial,
   });
   const shelf = args.createBoard(
-    args.innerWidth - DRAWER_DIMENSIONS.external.separatorBoardWidthClearanceM,
+    args.innerWidth - EXTERNAL_DRAWER_SEPARATOR_POLICY.separatorBoardWidthClearanceM,
     args.shelfThick,
     args.depth,
     args.centerX,
