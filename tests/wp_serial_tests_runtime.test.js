@@ -34,6 +34,38 @@ function writeRuntimeTest(dir, fileName, source) {
   return filePath;
 }
 
+// A node:test harness may exit after SIGTERM even when a test-file handler ran.
+// Keep a real process-group member alive so escalation tests exercise the tree contract.
+function writeSigtermResistantProcessTreeTest(dir, { fileName, testName, readyMarker, ignoredMarker }) {
+  const descendantPath = writeRuntimeTest(
+    dir,
+    fileName.replace(/\.test\.js$/u, '_descendant.mjs'),
+    `
+      process.on('SIGTERM', () => console.error(${JSON.stringify(ignoredMarker)}));
+      console.error(${JSON.stringify(readyMarker)} + ':' + process.pid);
+      setInterval(() => {}, 1000);
+    `
+  );
+  return writeRuntimeTest(
+    dir,
+    fileName,
+    `
+      import test from 'node:test';
+      import { spawn } from 'node:child_process';
+      const descendant = spawn(process.execPath, [${JSON.stringify(descendantPath)}], {
+        stdio: ['ignore', 'ignore', 'inherit'],
+      });
+      descendant.once('error', error => {
+        console.error('[fixture] resistant descendant spawn failed', error);
+        process.exit(98);
+      });
+      test(${JSON.stringify(testName)}, async () => {
+        await new Promise(() => {});
+      });
+    `
+  );
+}
+
 function runNode(args, options = {}) {
   const env = { ...process.env };
   delete env.NODE_TEST_CONTEXT;
@@ -201,6 +233,17 @@ async function cleanupManagedTestRun(run) {
     } catch {}
   }
   return await run.completed;
+}
+
+async function cleanupTestRunWithProbe(run, probePid, label) {
+  const result = await cleanupManagedTestRun(run);
+  if (!Number.isInteger(probePid) || probePid <= 0 || (await waitForProcessExit(probePid))) {
+    return result;
+  }
+  try {
+    process.kill(probePid, 'SIGKILL');
+  } catch {}
+  assert.fail(`${label} left resistant descendant ${probePid} running\n${result.stderr}`);
 }
 
 function assertInterruptedExitLike(result, message) {
@@ -520,28 +563,29 @@ test(
   },
   async () => {
     const root = tempDir();
-    const ignoresSignal = writeRuntimeTest(
-      root,
-      'ignores_signal.test.js',
-      `
-      import test from 'node:test';
-      process.on('SIGTERM', () => console.error('[fixture] ignored SIGTERM'));
-      console.error('[fixture] signal-handler-ready:ignore');
-      test('ignores signal', async () => {
-        await new Promise(() => {});
-      });
-    `
-    );
+    const ignoresSignal = writeSigtermResistantProcessTreeTest(root, {
+      fileName: 'ignores_signal.test.js',
+      testName: 'keeps a resistant descendant alive',
+      readyMarker: '[fixture] signal-handler-ready:ignore',
+      ignoredMarker: '[fixture] ignored SIGTERM',
+    });
     const run = runNodeAsync([directTsxRunnerPath, ignoresSignal, ...forwardedIsolationArguments]);
-    await run.waitForStderr(/\[run-tsx-tests\] ready/u);
-    await run.waitForStderr(/\[fixture\] signal-handler-ready:ignore/u);
-    run.child.kill('SIGTERM');
-    const result = await run.completed;
+    let probePid = null;
+    try {
+      await run.waitForStderr(/\[run-tsx-tests\] ready/u);
+      const readyOutput = await run.waitForStderr(/\[fixture\] signal-handler-ready:ignore:\d+/u);
+      probePid = Number(/signal-handler-ready:ignore:(\d+)/u.exec(readyOutput)?.[1]);
+      assert.equal(Number.isInteger(probePid) && probePid > 0, true, readyOutput);
+      run.child.kill('SIGTERM');
+      const result = await run.completed;
 
-    assertInterruptedExitLike(result, 'an ignored SIGTERM must be escalated and remain interrupted');
-    assert.equal(result.code, 143, result.stderr || result.stdout);
-    assert.match(result.stderr, /\[fixture\] ignored SIGTERM/u);
-    assert.match(result.stderr, /escalating to SIGKILL/u);
+      assertInterruptedExitLike(result, 'an ignored SIGTERM must be escalated and remain interrupted');
+      assert.equal(result.code, 143, result.stderr || result.stdout);
+      assert.match(result.stderr, /\[fixture\] ignored SIGTERM/u);
+      assert.match(result.stderr, /escalating to SIGKILL/u);
+    } finally {
+      await cleanupTestRunWithProbe(run, probePid, 'direct wrapper escalation fixture');
+    }
   }
 );
 
@@ -917,19 +961,12 @@ test(
     const root = tempDir();
     const failedFilesPath = path.join(root, 'failed.txt');
     const timingsPath = path.join(root, 'timings.json');
-    const ignoresSignal = writeRuntimeTest(
-      root,
-      'serial_ignores_signal.test.js',
-      `
-        import test from 'node:test';
-        process.on('SIGTERM', () => console.error('[fixture] serial ignored SIGTERM'));
-        console.error('[fixture] signal-handler-ready:serial-ignore');
-        setTimeout(() => process.exit(97), 10000);
-        test('serial ignores signal', async () => {
-          await new Promise(() => {});
-        });
-      `
-    );
+    const ignoresSignal = writeSigtermResistantProcessTreeTest(root, {
+      fileName: 'serial_ignores_signal.test.js',
+      testName: 'keeps a resistant serial descendant alive',
+      readyMarker: '[fixture] signal-handler-ready:serial-ignore',
+      ignoredMarker: '[fixture] serial ignored SIGTERM',
+    });
     const env = { ...process.env };
     delete env.NODE_TEST_CONTEXT;
     const run = runNodeAsync(
@@ -945,22 +982,30 @@ test(
       { env }
     );
 
-    await run.waitForStderr(/\[serial-tests batch 1\/1\] ready/u);
-    await run.waitForStderr(/\[fixture\] signal-handler-ready:serial-ignore/u);
-    run.child.kill('SIGTERM');
-    const result = await run.completed;
-    assert.equal(result.code, 143, result.stderr || result.stdout);
-    assert.match(result.stderr, /escalating to SIGKILL/u);
+    let probePid = null;
+    try {
+      await run.waitForStderr(/\[serial-tests batch 1\/1\] ready/u);
+      const readyOutput = await run.waitForStderr(/\[fixture\] signal-handler-ready:serial-ignore:\d+/u);
+      probePid = Number(/signal-handler-ready:serial-ignore:(\d+)/u.exec(readyOutput)?.[1]);
+      assert.equal(Number.isInteger(probePid) && probePid > 0, true, readyOutput);
+      run.child.kill('SIGTERM');
+      const result = await run.completed;
+      assert.equal(result.code, 143, result.stderr || result.stdout);
+      assert.match(result.stderr, /\[fixture\] serial ignored SIGTERM/u);
+      assert.match(result.stderr, /escalating to SIGKILL/u);
 
-    const summary = JSON.parse(fs.readFileSync(timingsPath, 'utf8'));
-    assert.equal(summary.interrupted, true);
-    assert.equal(summary.interruptedBySignal, 'SIGTERM');
-    assert.equal(summary.interruptedBatch.signal, 'SIGTERM');
-    assert.equal(summary.interruptedBatch.childExitSignal, 'SIGKILL');
-    assert.equal(summary.batches[0].outcome, 'interrupted');
-    assert.equal(summary.batches[0].requestedSignal, 'SIGTERM');
-    assert.equal(summary.batches[0].childExitSignal, 'SIGKILL');
-    assert.equal(summary.batches[0].exitCode, 143);
+      const summary = JSON.parse(fs.readFileSync(timingsPath, 'utf8'));
+      assert.equal(summary.interrupted, true);
+      assert.equal(summary.interruptedBySignal, 'SIGTERM');
+      assert.equal(summary.interruptedBatch.signal, 'SIGTERM');
+      assert.equal(summary.interruptedBatch.childExitSignal, 'SIGKILL');
+      assert.equal(summary.batches[0].outcome, 'interrupted');
+      assert.equal(summary.batches[0].requestedSignal, 'SIGTERM');
+      assert.equal(summary.batches[0].childExitSignal, 'SIGKILL');
+      assert.equal(summary.batches[0].exitCode, 143);
+    } finally {
+      await cleanupTestRunWithProbe(run, probePid, 'serial wrapper escalation fixture');
+    }
   }
 );
 
