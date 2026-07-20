@@ -796,10 +796,32 @@ test('[dimension tokens] Service Interior and Material readers use focused canon
   }
 
   const splitHover = read('esm/native/services/canvas_picking_split_hover_preview_line.ts');
-  assert.match(splitHover, /wardrobe_dimension_tokens_shared/u);
-  assert.match(splitHover, /\bINTERIOR_FITTINGS_DIMENSIONS\b/u);
-  assert.match(splitHover, /\bMATERIAL_DIMENSIONS\b/u);
-  assert.doesNotMatch(splitHover, /\bSKETCH_BOX_DIMENSIONS\b/u);
+  for (const policy of [
+    'BASE_PLINTH_POLICY',
+    'CARCASS_INTERIOR_GRID_POLICY',
+    'CARCASS_SHELL_DIMENSIONS',
+    'HINGED_DOOR_SPLIT_GEOMETRY_POLICY',
+    'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
+    'EXTERNAL_DRAWER_SIZE_POLICY',
+    'INTERIOR_STORAGE_BARRIER_POLICY',
+    'MATERIAL_THICKNESS_POLICY',
+  ]) {
+    assertUsesToken('esm/native/services/canvas_picking_split_hover_preview_line.ts', policy);
+  }
+  assert.doesNotMatch(splitHover, /wardrobe_dimension_tokens_shared/u);
+  assert.doesNotMatch(
+    splitHover,
+    /\b(?:CARCASS_BASE_DIMENSIONS|DOOR_SYSTEM_DIMENSIONS|DRAWER_DIMENSIONS|INTERIOR_FITTINGS_DIMENSIONS|MATERIAL_DIMENSIONS|SKETCH_BOX_DIMENSIONS)\b/u
+  );
+  assert.doesNotMatch(splitHover, /CARCASS_SHELL_DIMENSIONS\.drawer(?:GridDivisions|SplitGridLineIndex)/u);
+  assert.match(splitHover, /CARCASS_INTERIOR_GRID_POLICY\.drawerSplitLineIndex/u);
+  assert.match(splitHover, /CARCASS_INTERIOR_GRID_POLICY\.divisions/u);
+  assert.doesNotMatch(
+    splitHover,
+    /\b(?:HINGED_DOOR_SYSTEM_POLICY|EXTERNAL_DRAWER_POLICY|INTERIOR_STORAGE_POLICY)\b/u
+  );
+  assert.doesNotMatch(splitHover, /import\s+\*\s+as/u);
+  assert.doesNotMatch(splitHover, /export\s+(?:type\s+)?(?:\*|\{)/u);
 
   const remainingHandleConsumers = listFilesRecursively(path.join(ROOT, 'esm'))
     .filter(file => {

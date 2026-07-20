@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-20T10:20:53.728Z",
+  "generatedAt": "2026-07-20T17:39:35.070Z",
   "totals": {
-    "tests": 1229,
-    "unitRunnerTests": 1221,
+    "tests": 1230,
+    "unitRunnerTests": 1222,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -15,7 +15,7 @@
   "categories": {
     "contract": 401,
     "runtime-unit": 318,
-    "integration": 451,
+    "integration": 452,
     "e2e-smoke": 9,
     "perf-smoke": 9,
     "legacy-migration": 41
@@ -832,6 +832,10 @@
     {
       "file": "tests/canvas_picking_sketch_workflow_contracts.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_split_hover_preview_line_runtime.test.ts",
+      "category": "integration"
     },
     {
       "file": "tests/canvas_picking_structural_refresh_runtime.test.ts",

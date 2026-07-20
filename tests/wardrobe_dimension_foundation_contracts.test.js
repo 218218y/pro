@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 113, statements: 113 }),
+  'static-import': Object.freeze({ importers: 112, statements: 112 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 115, statements: 116 }),
+  total: Object.freeze({ importers: 114, statements: 115 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -155,6 +155,7 @@ const CARCASS_SHELL_DIRECT_CONSUMERS = Object.freeze([
   'esm/native/builder/core_carcass_shell.ts',
   'esm/native/builder/corner_wing_carcass_shell_metrics.ts',
   'esm/native/builder/module_loop_pipeline_hex_cell.ts',
+  'esm/native/services/canvas_picking_split_hover_preview_line.ts',
   'esm/shared/dimensions/corner_system_policy.ts',
 ]);
 const CARCASS_INTERIOR_DIRECT_CONSUMERS = Object.freeze(['esm/native/builder/build_flow_plan.ts']);
@@ -166,6 +167,9 @@ const APPROVED_INTERIOR_GRID_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_interior_hover_layout_mode.ts': Object.freeze([
     'CARCASS_INTERIOR_GRID_POLICY',
   ]),
+  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
+    'CARCASS_INTERIOR_GRID_POLICY',
+  ]),
   'esm/shared/dimensions/carcass_shell_policy.ts': Object.freeze(['CARCASS_INTERIOR_GRID_POLICY']),
 });
 const APPROVED_SHELL_GRID_FIELD_USAGE = Object.freeze({
@@ -174,13 +178,10 @@ const APPROVED_SHELL_GRID_FIELD_USAGE = Object.freeze({
     'drawerSplitGridLineIndex',
   ]),
   'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['drawerGridDivisions']),
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
-    'drawerGridDivisions',
-    'drawerSplitGridLineIndex',
-  ]),
 });
 const APPROVED_BASE_PLINTH_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/features/base_plinth_support.ts': Object.freeze([
     'BASE_PLINTH_POLICY',
     'basePlinthCentimetersToMeters',
@@ -226,9 +227,6 @@ const APPROVED_BASE_SUPPORT_FACADE_IMPORTS = Object.freeze({
   'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
   'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
   'esm/native/runtime/default_state.ts': Object.freeze(['BASE_LEG_DIMENSIONS', 'CARCASS_BASE_DIMENSIONS']),
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
-    'CARCASS_BASE_DIMENSIONS',
-  ]),
 });
 const APPROVED_DIMENSION_FACADE_BROAD_DEPENDENCIES = Object.freeze([
   Object.freeze({
@@ -310,6 +308,9 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_sketch_neighbor_measurements.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
+  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
 });
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/builder/core_carcass_shared.ts',
@@ -337,7 +338,6 @@ const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
   'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
   'esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts',
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts',
 ]);
 const APPROVED_MATERIAL_LEGACY_DEPENDENCIES = Object.freeze(
   Object.fromEntries(
@@ -503,6 +503,9 @@ const APPROVED_DOOR_SYSTEM_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_door_split_remove_target.ts': Object.freeze([
     'HINGED_DOOR_SPLIT_AUTHORING_POLICY',
   ]),
+  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
+    'HINGED_DOOR_SPLIT_GEOMETRY_POLICY',
+  ]),
   'esm/native/services/doors_runtime_visuals_shared.ts': Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY']),
   'esm/shared/dimensions/door_mount_thickness_policy.ts': Object.freeze(['HINGED_DOOR_MOUNT_POLICY']),
   'esm/shared/dimensions/front_reveal_frame_policy.ts': Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY']),
@@ -628,6 +631,10 @@ const APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/hinged_doors_module_ops_handle_policy.ts': Object.freeze([
     'EXTERNAL_DRAWER_SIZE_POLICY',
   ]),
+  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
+    'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
+    'EXTERNAL_DRAWER_SIZE_POLICY',
+  ]),
   'esm/shared/wardrobe_construction_validation_shared.ts': Object.freeze(['EXTERNAL_DRAWER_SIZE_POLICY']),
   'esm/native/builder/external_drawer_shelf.ts': Object.freeze(['EXTERNAL_DRAWER_SEPARATOR_POLICY']),
   'esm/native/builder/render_drawer_ops_external.ts': Object.freeze([
@@ -713,6 +720,9 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/services/canvas_picking_sketch_neighbor_measurements.ts': Object.freeze([
     'INTERIOR_STORAGE_GRID_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
+    'INTERIOR_STORAGE_BARRIER_POLICY',
   ]),
 });
 const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
@@ -1131,10 +1141,6 @@ const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
     'storage',
     'storage.gridDivisionsDefault',
   ]),
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
-    'storage',
-    'storage.barrierHeightM',
-  ]),
 });
 const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts': Object.freeze([
@@ -1496,12 +1502,6 @@ const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({
     'external.visualThicknessM',
     'external.visualWidthClearanceM',
   ]),
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
-    'external',
-    'external.doorTopGapM',
-    'external.regularHeightM',
-    'external.shoeHeightM',
-  ]),
 });
 const APPROVED_DOOR_SYSTEM_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/builder/core_doors_compute.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
@@ -1511,7 +1511,6 @@ const APPROVED_DOOR_SYSTEM_LEGACY_DEPENDENCIES = Object.freeze({
   ],
   'esm/native/builder/visuals_chest_mode_build.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
   'esm/native/platform/render_loop_motion_doors.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
 });
 const APPROVED_DOOR_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/core_doors_compute.ts': [
@@ -1553,15 +1552,6 @@ const APPROVED_DOOR_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({
     'sliding',
     'sliding.defaultDoorsCount',
     'sliding.overlapM',
-  ],
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': [
-    'hinged',
-    'hinged.split',
-    'hinged.split.bottomClampOffsetM',
-    'hinged.split.minHeightForSplitM',
-    'hinged.split.splitGapM',
-    'hinged.split.storageLiftM',
-    'hinged.split.topClampOffsetM',
   ],
 });
 const APPROVED_CORNICE_LEGACY_FIELD_USAGE = Object.freeze({

@@ -6,20 +6,22 @@ import type { ModulesConfigBucketKey } from '../features/modules_configuration/m
 import { readCornerConfigurationCellForStack } from '../features/modules_configuration/corner_cells_api.js';
 import { __wp_asRecord, __wp_cfg, __wp_isCornerKey, __wp_toModuleKey } from './canvas_picking_core_shared.js';
 import type { SplitHoverDoorBounds } from './canvas_picking_split_hover_bounds.js';
+import { BASE_PLINTH_POLICY } from '../../shared/dimensions/base_plinth_policy.js';
+import { CARCASS_INTERIOR_GRID_POLICY } from '../../shared/dimensions/carcass_interior_grid_policy.js';
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
+import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import {
-  CARCASS_BASE_DIMENSIONS,
-  CARCASS_SHELL_DIMENSIONS,
-  DOOR_SYSTEM_DIMENSIONS,
-  DRAWER_DIMENSIONS,
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
+  EXTERNAL_DRAWER_SIZE_POLICY,
+} from '../../shared/dimensions/external_drawer_policy.js';
+import { INTERIOR_STORAGE_BARRIER_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 
 function clampSplitHoverLineY(
   bounds: SplitHoverDoorBounds,
   y: unknown,
-  padBottom = DOOR_SYSTEM_DIMENSIONS.hinged.split.bottomClampOffsetM,
-  padTop = DOOR_SYSTEM_DIMENSIONS.hinged.split.topClampOffsetM
+  padBottom = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.bottomClampOffsetM,
+  padTop = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.topClampOffsetM
 ): number | null {
   const minY = Number(bounds.minY);
   const maxY = Number(bounds.maxY);
@@ -80,15 +82,13 @@ function resolveBoundsLocalRegularSplitPreviewLineY(args: {
   if (isBottomRegion) {
     return clampSplitHoverLineY(
       bounds,
-      minY + Math.min(span / 3, DOOR_SYSTEM_DIMENSIONS.hinged.split.storageLiftM)
+      minY + Math.min(span / 3, HINGED_DOOR_SPLIT_GEOMETRY_POLICY.storageLiftM)
     );
   }
 
   return clampSplitHoverLineY(
     bounds,
-    minY +
-      (CARCASS_SHELL_DIMENSIONS.drawerSplitGridLineIndex * span) /
-        CARCASS_SHELL_DIMENSIONS.drawerGridDivisions
+    minY + (CARCASS_INTERIOR_GRID_POLICY.drawerSplitLineIndex * span) / CARCASS_INTERIOR_GRID_POLICY.divisions
   );
 }
 
@@ -129,10 +129,10 @@ function readSplitHoverPreviewMetrics(args: {
 
     const cfgRef = readSplitHoverPreviewModuleConfig({ App, moduleKey, isBottomStack: !!isBottomStack });
     if (cfgRef) {
-      if (cfgRef.hasShoeDrawer) drawerHeightTotal += DRAWER_DIMENSIONS.external.shoeHeightM;
+      if (cfgRef.hasShoeDrawer) drawerHeightTotal += EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM;
       const extCount = Number(cfgRef.extDrawersCount || 0);
       if (Number.isFinite(extCount) && extCount > 0)
-        drawerHeightTotal += extCount * DRAWER_DIMENSIONS.external.regularHeightM;
+        drawerHeightTotal += extCount * EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM;
     }
   } catch {
     // Best-effort hover helper only.
@@ -148,9 +148,9 @@ function readSplitHoverPreviewMetrics(args: {
     woodThick =
       Number.isFinite(est) &&
       est > CARCASS_SHELL_DIMENSIONS.boardMinDimensionM &&
-      est < CARCASS_BASE_DIMENSIONS.plinth.heightM
+      est < BASE_PLINTH_POLICY.heightM
         ? est
-        : MATERIAL_DIMENSIONS.wood.thicknessM;
+        : MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   }
 
   return { effectiveBottomY, effectiveTopY, woodThick, drawerHeightTotal };
@@ -180,35 +180,33 @@ export function __wp_getRegularSplitPreviewLineY(args: {
   });
 
   const internalStartY = effectiveBottomY - Math.max(0, drawerHeightTotal);
-  const gapAboveDrawer = drawerHeightTotal > 0 ? DRAWER_DIMENSIONS.external.doorTopGapM : 0;
+  const gapAboveDrawer = drawerHeightTotal > 0 ? EXTERNAL_DRAWER_FRONT_RENDER_POLICY.doorTopGapM : 0;
   const doorBottomY = effectiveBottomY + gapAboveDrawer;
   const effectiveTopLimit = effectiveTopY + Number(woodThick || 0) / 2;
-  const splitGap = DOOR_SYSTEM_DIMENSIONS.hinged.split.splitGapM;
+  const splitGap = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM;
 
   if (isBottomRegion) {
-    let y = effectiveBottomY + INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM;
+    let y = effectiveBottomY + INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM;
     if (doorBottomY > effectiveBottomY) y += doorBottomY - effectiveBottomY + splitGap / 2;
-    y = Math.max(y, doorBottomY + DOOR_SYSTEM_DIMENSIONS.hinged.split.bottomClampOffsetM);
-    y = Math.min(y, effectiveTopLimit - DOOR_SYSTEM_DIMENSIONS.hinged.split.topClampOffsetM);
+    y = Math.max(y, doorBottomY + HINGED_DOOR_SPLIT_GEOMETRY_POLICY.bottomClampOffsetM);
+    y = Math.min(y, effectiveTopLimit - HINGED_DOOR_SPLIT_GEOMETRY_POLICY.topClampOffsetM);
     return clampSplitHoverLineY(bounds, y);
   }
 
   const fullInternalHeight = effectiveTopY - internalStartY;
   if (
     Number.isFinite(fullInternalHeight) &&
-    fullInternalHeight > DOOR_SYSTEM_DIMENSIONS.hinged.split.minHeightForSplitM
+    fullInternalHeight > HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minHeightForSplitM
   ) {
     const y =
       internalStartY +
-      (CARCASS_SHELL_DIMENSIONS.drawerSplitGridLineIndex * fullInternalHeight) /
-        CARCASS_SHELL_DIMENSIONS.drawerGridDivisions;
+      (CARCASS_INTERIOR_GRID_POLICY.drawerSplitLineIndex * fullInternalHeight) /
+        CARCASS_INTERIOR_GRID_POLICY.divisions;
     return clampSplitHoverLineY(bounds, y);
   }
 
   return clampSplitHoverLineY(
     bounds,
-    minY +
-      (CARCASS_SHELL_DIMENSIONS.drawerSplitGridLineIndex * span) /
-        CARCASS_SHELL_DIMENSIONS.drawerGridDivisions
+    minY + (CARCASS_INTERIOR_GRID_POLICY.drawerSplitLineIndex * span) / CARCASS_INTERIOR_GRID_POLICY.divisions
   );
 }

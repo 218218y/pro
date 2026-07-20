@@ -2011,6 +2011,222 @@
       },
       "reason": "The sketch neighbor measurement resolver replaces one legacy facade statement with the canonical storage grid owner plus the material thickness owner on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed neighbor-measurement composition seam eliminates the extra material statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLINTH_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_SPLIT_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_BASE_DIMENSIONS",
+          "CARCASS_SHELL_DIMENSIONS",
+          "DOOR_SYSTEM_DIMENSIONS",
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "reason": "The split-hover preview-line resolver replaces one legacy facade statement with the canonical Hinged Door Split owner plus the focused Base Plinth height owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed split-hover preview composition seam eliminates the extra Base Plinth height statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/carcass_interior_grid_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_INTERIOR_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_SPLIT_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_BASE_DIMENSIONS",
+          "CARCASS_SHELL_DIMENSIONS",
+          "DOOR_SYSTEM_DIMENSIONS",
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "reason": "The split-hover preview-line resolver replaces one legacy facade statement with the canonical Hinged Door Split owner plus the focused Carcass Interior Grid split ratio owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed split-hover preview composition seam eliminates the extra Carcass Interior Grid split ratio statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_SPLIT_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_BASE_DIMENSIONS",
+          "CARCASS_SHELL_DIMENSIONS",
+          "DOOR_SYSTEM_DIMENSIONS",
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "reason": "The split-hover preview-line resolver replaces one legacy facade statement with the canonical Hinged Door Split owner plus the focused Carcass Shell minimum board dimension owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed split-hover preview composition seam eliminates the extra Carcass Shell minimum board dimension statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/external_drawer_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EXTERNAL_DRAWER_FRONT_RENDER_POLICY", "EXTERNAL_DRAWER_SIZE_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_SPLIT_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_BASE_DIMENSIONS",
+          "CARCASS_SHELL_DIMENSIONS",
+          "DOOR_SYSTEM_DIMENSIONS",
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "reason": "The split-hover preview-line resolver replaces one legacy facade statement with the canonical Hinged Door Split owner plus the focused External Drawer stack and front-gap dimensions owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed split-hover preview composition seam eliminates the extra External Drawer stack and front-gap dimensions statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_SPLIT_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_BASE_DIMENSIONS",
+          "CARCASS_SHELL_DIMENSIONS",
+          "DOOR_SYSTEM_DIMENSIONS",
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "reason": "The split-hover preview-line resolver replaces one legacy facade statement with the canonical Hinged Door Split owner plus the focused Interior Storage barrier height owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed split-hover preview composition seam eliminates the extra Interior Storage barrier height statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_SPLIT_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_BASE_DIMENSIONS",
+          "CARCASS_SHELL_DIMENSIONS",
+          "DOOR_SYSTEM_DIMENSIONS",
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "reason": "The split-hover preview-line resolver replaces one legacy facade statement with the canonical Hinged Door Split owner plus the focused Material Thickness fallback owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed split-hover preview composition seam eliminates the extra Material Thickness fallback statement without reintroducing the legacy facade."
     }
   ]
 }

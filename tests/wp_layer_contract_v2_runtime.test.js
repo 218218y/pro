@@ -881,7 +881,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at forty-one reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at forty-seven reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -1015,8 +1015,37 @@ test('project migration ledger stays exact at forty-one reviewed statements with
       'esm/native/services/canvas_picking_sketch_neighbor_measurements.ts',
       'esm/shared/dimensions/material_thickness_policy.ts',
     ],
+    [
+      'esm/native/services/canvas_picking_split_hover_preview_line.ts',
+      'esm/shared/dimensions/base_plinth_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_split_hover_preview_line.ts',
+      'esm/shared/dimensions/carcass_interior_grid_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_split_hover_preview_line.ts',
+      'esm/shared/dimensions/carcass_shell_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_split_hover_preview_line.ts',
+      'esm/shared/dimensions/external_drawer_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_split_hover_preview_line.ts',
+      'esm/shared/dimensions/interior_storage_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_split_hover_preview_line.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
   ];
 
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets.slice(0, 41)),
+    '3f529bc4b53c478ea6afd6b8ac80202a77cb530189a7bf45f0aada7fc05c9b9c',
+    'the forty-one previously reviewed migration entries must remain semantically unchanged'
+  );
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 30)),
     '9f2047a5d47e2f73f4b0f9621ee60d593eea946a439df2b17961902ff375fb42',
@@ -1043,7 +1072,7 @@ test('project migration ledger stays exact at forty-one reviewed statements with
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 41);
+  assert.equal(report.migrationBudgets.length, 47);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
@@ -1052,7 +1081,7 @@ test('project migration ledger stays exact at forty-one reviewed statements with
   const expectedEdges = new Map([
     ['builder>shared', { observed: 246, migration: 27, reviewed: 219, budget: 219 }],
     ['features>shared', { observed: 59, migration: 1, reviewed: 58, budget: 58 }],
-    ['services>shared', { observed: 180, migration: 13, reviewed: 167, budget: 167 }],
+    ['services>shared', { observed: 186, migration: 19, reviewed: 167, budget: 167 }],
   ]);
   for (const [key, expected] of expectedEdges) {
     const [from, to] = key.split('>');
@@ -1513,7 +1542,7 @@ test('repository Drawer and Handle migration ledger entries are exact and additi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools', 'wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 41);
+  assert.equal(baseline.migrationBudgets.length, 47);
 
   const expected = [
     [
@@ -1591,7 +1620,7 @@ test('repository Builder Interior ownership migration entries are exact and addi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 41);
+  assert.equal(baseline.migrationBudgets.length, 47);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 22)),
     'f77d520ad443232af84217ded9adf59546df8d7fcf530b54ac1152ae5ca5cdd4'
@@ -1695,7 +1724,7 @@ test('repository Service Interior and Material migration entries are exact and a
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 41);
+  assert.equal(baseline.migrationBudgets.length, 47);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 30)),
     '9f2047a5d47e2f73f4b0f9621ee60d593eea946a439df2b17961902ff375fb42',
@@ -1788,7 +1817,7 @@ test('repository Service Interior and Material migration entries are exact and a
   ];
 
   const actual = baseline.migrationBudgets
-    .slice(30)
+    .slice(30, 41)
     .map(entry => [
       entry.fromFile,
       entry.addedImport.toFile,
@@ -1798,7 +1827,7 @@ test('repository Service Interior and Material migration entries are exact and a
     ]);
   assert.deepEqual(actual, expected);
 
-  for (const entry of baseline.migrationBudgets.slice(30)) {
+  for (const entry of baseline.migrationBudgets.slice(30, 41)) {
     assert.equal(entry.from, 'services');
     assert.equal(entry.to, 'shared');
     assert.equal(entry.additionalStatements, 1);
@@ -1811,5 +1840,69 @@ test('repository Service Interior and Material migration entries are exact and a
     assert.equal(entry.removedImport.syntax, 'static-import');
     assert.equal(entry.reviewedAt, '2026-07-20');
     assert.equal(entry.reviewBy, '2026-10-18');
+  }
+});
+
+test('repository Split Hover Preview Line migration entries are exact and additive-only', () => {
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const baseline = JSON.parse(
+    fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
+  );
+  assert.equal(baseline.migrationBudgets.length, 47);
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets.slice(0, 41)),
+    '3f529bc4b53c478ea6afd6b8ac80202a77cb530189a7bf45f0aada7fc05c9b9c',
+    'the forty-one previously reviewed migration entries must remain semantically unchanged'
+  );
+
+  const expected = [
+    ['esm/shared/dimensions/base_plinth_policy.ts', ['BASE_PLINTH_POLICY']],
+    ['esm/shared/dimensions/carcass_interior_grid_policy.ts', ['CARCASS_INTERIOR_GRID_POLICY']],
+    ['esm/shared/dimensions/carcass_shell_policy.ts', ['CARCASS_SHELL_DIMENSIONS']],
+    [
+      'esm/shared/dimensions/external_drawer_policy.ts',
+      ['EXTERNAL_DRAWER_FRONT_RENDER_POLICY', 'EXTERNAL_DRAWER_SIZE_POLICY'],
+    ],
+    ['esm/shared/dimensions/interior_storage_policy.ts', ['INTERIOR_STORAGE_BARRIER_POLICY']],
+    ['esm/shared/dimensions/material_thickness_policy.ts', ['MATERIAL_THICKNESS_POLICY']],
+  ];
+  const entries = baseline.migrationBudgets.slice(41);
+  assert.deepEqual(
+    entries.map(entry => [entry.addedImport.toFile, entry.addedImport.importedSymbols]),
+    expected
+  );
+
+  const removedSymbols = [
+    'CARCASS_BASE_DIMENSIONS',
+    'CARCASS_SHELL_DIMENSIONS',
+    'DOOR_SYSTEM_DIMENSIONS',
+    'DRAWER_DIMENSIONS',
+    'INTERIOR_FITTINGS_DIMENSIONS',
+    'MATERIAL_DIMENSIONS',
+  ];
+  for (const entry of entries) {
+    assert.equal(entry.from, 'services');
+    assert.equal(entry.to, 'shared');
+    assert.equal(entry.fromFile, 'esm/native/services/canvas_picking_split_hover_preview_line.ts');
+    assert.equal(entry.additionalStatements, 1);
+    assert.equal(entry.owner, 'dimension-ownership-migration');
+    assert.equal(entry.addedImport.kind, 'value');
+    assert.equal(entry.addedImport.syntax, 'static-import');
+    assert.deepEqual(entry.companionImport, {
+      toFile: 'esm/shared/dimensions/door_system_policy.ts',
+      kind: 'value',
+      importedSymbols: ['HINGED_DOOR_SPLIT_GEOMETRY_POLICY'],
+      syntax: 'static-import',
+    });
+    assert.deepEqual(entry.removedImport, {
+      toFile: 'esm/shared/wardrobe_dimension_tokens_shared.ts',
+      kind: 'value',
+      importedSymbols: removedSymbols,
+      syntax: 'static-import',
+    });
+    assert.equal(entry.reviewedAt, '2026-07-20');
+    assert.equal(entry.reviewBy, '2026-10-18');
+    assert.match(entry.reason, /split-hover preview-line resolver/u);
+    assert.match(entry.removalCondition, /split-hover preview composition seam/u);
   }
 });
