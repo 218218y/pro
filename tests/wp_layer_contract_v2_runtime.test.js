@@ -865,7 +865,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at sixteen reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at twenty-two reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -914,6 +914,24 @@ test('project migration ledger stays exact at sixteen reviewed statements with u
       'esm/shared/dimensions/base_platform_render_policy.ts',
     ],
     ['esm/native/builder/corner_state_normalize_layout.ts', 'esm/shared/dimensions/wardrobe_defaults.ts'],
+    ['esm/native/builder/build_handle_policy.ts', 'esm/shared/dimensions/external_drawer_policy.ts'],
+    [
+      'esm/native/builder/hinged_doors_module_ops_context.ts',
+      'esm/shared/dimensions/external_drawer_policy.ts',
+    ],
+    ['esm/native/builder/hinged_doors_module_ops_context.ts', 'esm/shared/dimensions/handle_policy.ts'],
+    [
+      'esm/native/builder/hinged_doors_module_ops_handle_policy.ts',
+      'esm/shared/dimensions/external_drawer_policy.ts',
+    ],
+    [
+      'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts',
+      'esm/shared/dimensions/drawer_sketch_policy.ts',
+    ],
+    [
+      'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts',
+      'esm/shared/dimensions/handle_policy.ts',
+    ],
   ];
 
   assert.deepEqual(
@@ -932,14 +950,14 @@ test('project migration ledger stays exact at sixteen reviewed statements with u
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 16);
+  assert.equal(report.migrationBudgets.length, 22);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
   );
 
   const expectedEdges = new Map([
-    ['builder>shared', { observed: 232, migration: 13, reviewed: 219, budget: 219 }],
+    ['builder>shared', { observed: 238, migration: 19, reviewed: 219, budget: 219 }],
     ['features>shared', { observed: 59, migration: 1, reviewed: 58, budget: 58 }],
     ['services>shared', { observed: 169, migration: 2, reviewed: 167, budget: 167 }],
   ]);
@@ -1394,5 +1412,83 @@ test('layer contract proposal CLI exits nonzero when ratchet growth requires rev
     assert.ok(proposal.diff.ratchetViolations.length > 0);
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test('repository Drawer and Handle migration ledger entries are exact and additive-only', () => {
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const baseline = JSON.parse(
+    fs.readFileSync(path.join(repositoryRoot, 'tools', 'wp_layer_baseline.json'), 'utf8')
+  );
+  assert.equal(baseline.migrationBudgets.length, 22);
+
+  const expected = [
+    [
+      'esm/native/builder/build_handle_policy.ts',
+      'esm/shared/dimensions/external_drawer_policy.ts',
+      ['EXTERNAL_DRAWER_SIZE_POLICY'],
+      'esm/shared/dimensions/handle_policy.ts',
+      ['EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY'],
+    ],
+    [
+      'esm/native/builder/hinged_doors_module_ops_context.ts',
+      'esm/shared/dimensions/external_drawer_policy.ts',
+      ['EXTERNAL_DRAWER_FRONT_RENDER_POLICY'],
+      'esm/shared/dimensions/door_system_policy.ts',
+      ['HINGED_DOOR_MOUNT_POLICY', 'HINGED_DOOR_RENDER_POLICY'],
+    ],
+    [
+      'esm/native/builder/hinged_doors_module_ops_context.ts',
+      'esm/shared/dimensions/handle_policy.ts',
+      ['EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY'],
+      'esm/shared/dimensions/door_system_policy.ts',
+      ['HINGED_DOOR_MOUNT_POLICY', 'HINGED_DOOR_RENDER_POLICY'],
+    ],
+    [
+      'esm/native/builder/hinged_doors_module_ops_handle_policy.ts',
+      'esm/shared/dimensions/external_drawer_policy.ts',
+      ['EXTERNAL_DRAWER_SIZE_POLICY'],
+      'esm/shared/dimensions/handle_policy.ts',
+      ['EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY'],
+    ],
+    [
+      'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts',
+      'esm/shared/dimensions/drawer_sketch_policy.ts',
+      ['DRAWER_SKETCH_DOOR_CUT_POLICY'],
+      'esm/shared/dimensions/handle_policy.ts',
+      ['EDGE_HANDLE_SIZE_POLICY', 'STANDARD_HANDLE_RENDER_POLICY'],
+    ],
+    [
+      'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts',
+      'esm/shared/dimensions/handle_policy.ts',
+      ['EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY'],
+      'esm/shared/dimensions/drawer_sketch_policy.ts',
+      ['DRAWER_SKETCH_DOOR_CUT_POLICY'],
+    ],
+  ];
+
+  const actual = baseline.migrationBudgets
+    .slice(16)
+    .map(entry => [
+      entry.fromFile,
+      entry.addedImport.toFile,
+      entry.addedImport.importedSymbols,
+      entry.companionImport.toFile,
+      entry.companionImport.importedSymbols,
+    ]);
+  assert.deepEqual(actual, expected);
+
+  for (const entry of baseline.migrationBudgets.slice(16)) {
+    assert.equal(entry.from, 'builder');
+    assert.equal(entry.to, 'shared');
+    assert.equal(entry.additionalStatements, 1);
+    assert.equal(entry.addedImport.kind, 'value');
+    assert.equal(entry.addedImport.syntax, 'static-import');
+    assert.equal(entry.companionImport.kind, 'value');
+    assert.equal(entry.companionImport.syntax, 'static-import');
+    assert.equal(entry.removedImport.toFile, 'esm/shared/wardrobe_dimension_tokens_shared.ts');
+    assert.equal(entry.removedImport.syntax, 'static-import');
+    assert.equal(entry.reviewedAt, '2026-07-20');
+    assert.equal(entry.reviewBy, '2026-10-18');
   }
 });

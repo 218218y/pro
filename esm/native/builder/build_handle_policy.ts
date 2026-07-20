@@ -1,4 +1,5 @@
-import { DRAWER_DIMENSIONS, HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { EXTERNAL_DRAWER_SIZE_POLICY } from '../../shared/dimensions/external_drawer_policy.js';
+import { EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
 import { readRecord } from './build_flow_readers.js';
 
 export function getExtraLongEdgeHandleLiftAbsY(
@@ -47,8 +48,8 @@ export function getExtraLongEdgeHandleLiftAbsY(
   // Long vertical edge handle is 40cm vs 20cm regular.
   // Keep the same ~5cm bottom clearance from the door bottom:
   // center should move up by half the delta => +10cm.
-  return maxExtDrawersCount >= HANDLE_DIMENSIONS.edge.longLiftDrawerCountThreshold
-    ? HANDLE_DIMENSIONS.edge.longLiftExtraM
+  return maxExtDrawersCount >= EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.longLiftDrawerCountThreshold
+    ? EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.longLiftExtraM
     : 0;
 }
 
@@ -59,7 +60,7 @@ export function getMaxGlobalExternalDrawerHeightM(moduleCfgList: unknown[] | nul
     const mm = readRecord(mod);
     if (!mm) continue;
     let h = 0;
-    if (mm.hasShoeDrawer || mm.extDrawers === 'shoe') h += DRAWER_DIMENSIONS.external.shoeHeightM;
+    if (mm.hasShoeDrawer || mm.extDrawers === 'shoe') h += EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM;
     const drawerCount =
       typeof mm.extDrawersCount === 'number'
         ? mm.extDrawersCount
@@ -67,7 +68,7 @@ export function getMaxGlobalExternalDrawerHeightM(moduleCfgList: unknown[] | nul
           ? mm.extDrawers
           : 0;
     if (Number.isFinite(drawerCount) && drawerCount > 0) {
-      h += drawerCount * DRAWER_DIMENSIONS.external.regularHeightM;
+      h += drawerCount * EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM;
     }
     if (h > maxGlobalDrawerH) maxGlobalDrawerH = h;
   }

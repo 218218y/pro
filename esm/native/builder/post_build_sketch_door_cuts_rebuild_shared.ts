@@ -2,7 +2,8 @@
 //
 // Owns Object3D-like helpers, subtree pick-meta tagging, segment part-id policy, and door-metric metadata writes.
 
-import { DRAWER_DIMENSIONS, HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_DOOR_CUT_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
+import { EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
 import { asObject3D, asRecord, type ValueRecord } from './post_build_extras_shared.js';
 
 import type {
@@ -206,9 +207,9 @@ export function createRemovedDoorRestoreTarget(args: {
   const target = asSketchDoorNode(
     new THREE.Mesh(
       new THREE.BoxGeometry(
-        Math.max(DRAWER_DIMENSIONS.sketch.rebuiltSegmentRestoreTargetMinDimensionM, width),
-        Math.max(DRAWER_DIMENSIONS.sketch.rebuiltSegmentRestoreTargetMinDimensionM, height),
-        Math.max(DRAWER_DIMENSIONS.sketch.rebuiltSegmentRestoreTargetMinThicknessM, thickness)
+        Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentRestoreTargetMinDimensionM, width),
+        Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentRestoreTargetMinDimensionM, height),
+        Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentRestoreTargetMinThicknessM, thickness)
       ),
       new THREE.MeshBasicMaterial({
         color: 0xff0000,
@@ -278,8 +279,8 @@ export function buildSketchSegmentUserData(args: {
 
 export function resolveSegmentHandleClampPadding(edgeHandleVariant?: unknown): number {
   return edgeHandleVariant === 'long'
-    ? HANDLE_DIMENSIONS.edge.longClampPaddingM
-    : HANDLE_DIMENSIONS.edge.shortClampPaddingM;
+    ? EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.longClampPaddingM
+    : EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.shortClampPaddingM;
 }
 
 export function resolveSegmentHandleAbsY(args: {
@@ -287,11 +288,11 @@ export function resolveSegmentHandleAbsY(args: {
   handleAbsY: number | null;
   padding?: number;
 }): number | null {
-  const { seg, padding = DRAWER_DIMENSIONS.sketch.rebuiltSegmentDefaultHandlePaddingM } = args;
+  const { seg, padding = DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentDefaultHandlePaddingM } = args;
   const requestedAbsY =
     args.handleAbsY != null && Number.isFinite(args.handleAbsY)
       ? args.handleAbsY
-      : HANDLE_DIMENSIONS.edge.defaultGlobalAbsYM;
+      : EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.defaultGlobalAbsYM;
   if (!Number.isFinite(seg.yMin) || !Number.isFinite(seg.yMax) || !(seg.yMax > seg.yMin)) return null;
   const safePadding = Number.isFinite(padding) && padding > 0 ? padding : 0;
   const minY = seg.yMin + safePadding;

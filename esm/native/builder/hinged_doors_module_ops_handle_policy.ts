@@ -1,4 +1,5 @@
-import { DRAWER_DIMENSIONS, HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { EXTERNAL_DRAWER_SIZE_POLICY } from '../../shared/dimensions/external_drawer_policy.js';
+import { EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
 import {
   edgeHandleLongLiftAbsY as edgeHandleLongLiftAbsYImpl,
@@ -21,7 +22,7 @@ export function computeDefaultHandleAbsY(ctx: HingedDoorModuleOpsContext, doorId
       const mm = readModuleConfigRecord(m);
       if (!mm) return;
       let hh = 0;
-      if (mm.hasShoeDrawer || mm.extDrawers === 'shoe') hh += DRAWER_DIMENSIONS.external.shoeHeightM;
+      if (mm.hasShoeDrawer || mm.extDrawers === 'shoe') hh += EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM;
       const drawerCount =
         typeof mm.extDrawersCount === 'number'
           ? mm.extDrawersCount
@@ -29,18 +30,19 @@ export function computeDefaultHandleAbsY(ctx: HingedDoorModuleOpsContext, doorId
             ? mm.extDrawers
             : 0;
       if (Number.isFinite(drawerCount) && drawerCount > 0) {
-        hh += drawerCount * DRAWER_DIMENSIONS.external.regularHeightM;
+        hh += drawerCount * EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM;
       }
       if (hh > maxGlobalDrawerH) maxGlobalDrawerH = hh;
     });
   } catch (e) {
     ctx.reportDoorSoftOnce('computeDefaultHandleAbsY.modulesConfig', e, { doorId });
   }
-  let handleAbsHeight = HANDLE_DIMENSIONS.edge.defaultGlobalAbsYM;
+  let handleAbsHeight: number = EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.defaultGlobalAbsYM;
   const maxDoorBottom = ctx.startY + ctx.woodThick + maxGlobalDrawerH;
-  if (maxDoorBottom > HANDLE_DIMENSIONS.edge.drawerLiftThresholdYM) {
+  if (maxDoorBottom > EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.drawerLiftThresholdYM) {
     const extraLongEdgeLift = edgeHandleLongLiftAbsYImpl(ctx.cfg, modsCfg);
-    handleAbsHeight = maxDoorBottom + HANDLE_DIMENSIONS.edge.drawerLiftClearanceM + extraLongEdgeLift;
+    handleAbsHeight =
+      maxDoorBottom + EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.drawerLiftClearanceM + extraLongEdgeLift;
   }
   return handleAbsHeight;
 }
@@ -69,8 +71,8 @@ export function clampHandleAbsY(
   partId?: string
 ): number {
   const pad = isLongEdgeHandleVariantForPart(ctx.cfg, partId || '')
-    ? HANDLE_DIMENSIONS.edge.longClampPaddingM
-    : HANDLE_DIMENSIONS.edge.shortClampPaddingM;
+    ? EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.longClampPaddingM
+    : EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.shortClampPaddingM;
   let y = absY;
   const minY = segBottomY + pad;
   const maxY = segTopY - pad;

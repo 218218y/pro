@@ -1269,6 +1269,180 @@
       },
       "reason": "The Corner layout normalizer replaces one legacy facade statement with focused Corner policies plus the canonical wardrobe defaults owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when the normalizer no longer needs wardrobe defaults or a reviewed ownership seam eliminates the extra statement."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/build_handle_policy.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/external_drawer_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EXTERNAL_DRAWER_SIZE_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/handle_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "HANDLE_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The handle build policy replaces one legacy facade statement with the focused handle placement owner plus the canonical external drawer size owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed handle-policy composition seam eliminates the extra external drawer statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/hinged_doors_module_ops_context.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/external_drawer_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EXTERNAL_DRAWER_FRONT_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_MOUNT_POLICY", "HINGED_DOOR_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DOOR_SYSTEM_DIMENSIONS", "DRAWER_DIMENSIONS", "HANDLE_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The hinged-door context replaces one legacy facade statement with focused door-system policies plus the canonical external drawer front-render owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed hinged-door context seam eliminates the extra external drawer statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/hinged_doors_module_ops_context.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/handle_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_MOUNT_POLICY", "HINGED_DOOR_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DOOR_SYSTEM_DIMENSIONS", "DRAWER_DIMENSIONS", "HANDLE_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The hinged-door context replaces one legacy facade statement with focused door-system policies plus the canonical edge-handle placement owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed hinged-door context seam eliminates the extra handle statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/hinged_doors_module_ops_handle_policy.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/external_drawer_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EXTERNAL_DRAWER_SIZE_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/handle_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "HANDLE_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The hinged-door handle policy replaces one legacy facade statement with the focused handle placement owner plus the canonical external drawer size owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed hinged handle-policy seam eliminates the extra external drawer statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_DOOR_CUT_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/handle_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EDGE_HANDLE_SIZE_POLICY", "STANDARD_HANDLE_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "HANDLE_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The sketch door-cut handle rebuild replaces one legacy facade statement with focused handle owners plus the canonical drawer-sketch door-cut owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed sketch door-cut composition seam eliminates the extra drawer-sketch statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/handle_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_DOOR_CUT_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "HANDLE_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The sketch door-cut shared rebuild replaces one legacy facade statement with the focused drawer-sketch owner plus the canonical edge-handle placement owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed sketch door-cut composition seam eliminates the extra handle statement without reintroducing the legacy facade."
     }
   ]
 }

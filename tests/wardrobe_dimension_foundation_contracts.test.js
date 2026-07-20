@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 132, statements: 132 }),
+  'static-import': Object.freeze({ importers: 126, statements: 126 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 134, statements: 135 }),
+  total: Object.freeze({ importers: 128, statements: 129 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -451,6 +451,10 @@ const APPROVED_CHEST_MODE_LEGACY_FIELD_USAGE = Object.freeze({
   ],
 });
 const APPROVED_DOOR_SYSTEM_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/hinged_doors_module_ops_context.ts': Object.freeze([
+    'HINGED_DOOR_MOUNT_POLICY',
+    'HINGED_DOOR_RENDER_POLICY',
+  ]),
   'esm/native/builder/hinged_doors_module_ops_full.ts': Object.freeze(['HINGED_DOOR_SPLIT_GEOMETRY_POLICY']),
   'esm/native/builder/hinged_doors_module_ops_segments.ts': Object.freeze([
     'HINGED_DOOR_SPLIT_GEOMETRY_POLICY',
@@ -609,6 +613,14 @@ const APPROVED_DOOR_TRIM_OWNER_IMPORTS = Object.freeze({
 const APPROVED_DOOR_TRIM_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_DOOR_TRIM_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/build_handle_policy.ts': Object.freeze(['EXTERNAL_DRAWER_SIZE_POLICY']),
+  'esm/native/builder/hinged_doors_module_ops_context.ts': Object.freeze([
+    'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
+  ]),
+  'esm/native/builder/hinged_doors_module_ops_handle_policy.ts': Object.freeze([
+    'EXTERNAL_DRAWER_SIZE_POLICY',
+  ]),
+  'esm/shared/wardrobe_construction_validation_shared.ts': Object.freeze(['EXTERNAL_DRAWER_SIZE_POLICY']),
   'esm/native/builder/external_drawer_shelf.ts': Object.freeze(['EXTERNAL_DRAWER_SEPARATOR_POLICY']),
   'esm/native/builder/render_drawer_ops_external.ts': Object.freeze([
     'EXTERNAL_DRAWER_CONTENTS_POLICY',
@@ -1171,6 +1183,12 @@ const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
   ]),
 });
 const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts': Object.freeze([
+    'DRAWER_SKETCH_DOOR_CUT_POLICY',
+  ]),
+  'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts': Object.freeze([
+    'DRAWER_SKETCH_DOOR_CUT_POLICY',
+  ]),
   'esm/native/builder/post_build_sketch_door_cuts_box.ts': Object.freeze(['DRAWER_SKETCH_DOOR_CUT_POLICY']),
   'esm/native/builder/post_build_sketch_door_cuts_intervals.ts': Object.freeze([
     'DRAWER_SKETCH_DOOR_CUT_POLICY',
@@ -1244,6 +1262,24 @@ const APPROVED_FRONT_REVEAL_OWNER_IMPORTS = Object.freeze({
 const APPROVED_FRONT_REVEAL_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_FRONT_REVEAL_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_HANDLE_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/build_handle_policy.ts': Object.freeze(['EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY']),
+  'esm/native/builder/hinged_doors_module_ops_context.ts': Object.freeze([
+    'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
+  ]),
+  'esm/native/builder/hinged_doors_module_ops_handle_policy.ts': Object.freeze([
+    'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
+  ]),
+  'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts': Object.freeze([
+    'EDGE_HANDLE_SIZE_POLICY',
+    'STANDARD_HANDLE_RENDER_POLICY',
+  ]),
+  'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts': Object.freeze([
+    'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
+  ]),
+  'esm/shared/wardrobe_construction_validation_shared.ts': Object.freeze([
+    'EDGE_HANDLE_SIZE_POLICY',
+    'STANDARD_HANDLE_RENDER_POLICY',
+  ]),
   'esm/native/builder/corner_wing_extension_cells_handles.ts': Object.freeze([
     'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
   ]),
@@ -1277,53 +1313,15 @@ const APPROVED_HANDLE_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['HANDLE_POLICY']),
 });
 const APPROVED_HANDLE_LEGACY_DEPENDENCIES = Object.freeze({
-  'esm/native/builder/build_handle_policy.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
   'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
-  'esm/native/builder/hinged_doors_module_ops_context.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
-  'esm/native/builder/hinged_doors_module_ops_handle_policy.ts': Object.freeze([
-    'HANDLE_DIMENSIONS@static-import',
-  ]),
-  'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts': Object.freeze([
-    'HANDLE_DIMENSIONS@static-import',
-  ]),
-  'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts': Object.freeze([
-    'HANDLE_DIMENSIONS@static-import',
-  ]),
   'esm/native/builder/render_ops_primitives.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
-  'esm/shared/wardrobe_construction_validation_shared.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
 });
 const APPROVED_HANDLE_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/build_handle_policy.ts': Object.freeze([
-    'edge',
-    'edge.longLiftDrawerCountThreshold',
-    'edge.longLiftExtraM',
-  ]),
   'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze([
     'edge',
     'edge.defaultGlobalAbsYM',
     'edge.drawerLiftClearanceM',
     'edge.drawerLiftThresholdYM',
-  ]),
-  'esm/native/builder/hinged_doors_module_ops_context.ts': Object.freeze(['edge', 'edge.defaultGlobalAbsYM']),
-  'esm/native/builder/hinged_doors_module_ops_handle_policy.ts': Object.freeze([
-    'edge',
-    'edge.defaultGlobalAbsYM',
-    'edge.drawerLiftClearanceM',
-    'edge.drawerLiftThresholdYM',
-    'edge.longClampPaddingM',
-    'edge.shortClampPaddingM',
-  ]),
-  'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts': Object.freeze([
-    'edge',
-    'edge.doorAnchorOffsetM',
-    'standard',
-    'standard.doorOffsetM',
-  ]),
-  'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts': Object.freeze([
-    'edge',
-    'edge.defaultGlobalAbsYM',
-    'edge.longClampPaddingM',
-    'edge.shortClampPaddingM',
   ]),
   'esm/native/builder/render_ops_primitives.ts': Object.freeze([
     'edge',
@@ -1336,13 +1334,6 @@ const APPROVED_HANDLE_LEGACY_FIELD_USAGE = Object.freeze({
     'standard.doorOffsetM',
     'standard.doorWidthM',
     'standard.frontZM',
-  ]),
-  'esm/shared/wardrobe_construction_validation_shared.ts': Object.freeze([
-    'edge',
-    'edge.longLengthM',
-    'edge.shortLengthM',
-    'standard',
-    'standard.doorHeightM',
   ]),
 });
 const APPROVED_CONTENT_VISUAL_OWNER_IMPORTS = Object.freeze({
@@ -1391,16 +1382,6 @@ const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
     'sketch',
     'sketch.doorCutHorizontalOverlapMinM',
     'sketch.doorCutNoOpToleranceM',
-  ]),
-  'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts': Object.freeze([
-    'sketch',
-    'sketch.rebuiltSegmentHandleMinHeightM',
-  ]),
-  'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts': Object.freeze([
-    'sketch',
-    'sketch.rebuiltSegmentDefaultHandlePaddingM',
-    'sketch.rebuiltSegmentRestoreTargetMinDimensionM',
-    'sketch.rebuiltSegmentRestoreTargetMinThicknessM',
   ]),
   'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
     'sketch',
@@ -1531,26 +1512,12 @@ const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
   ]),
 });
 const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/build_handle_policy.ts': Object.freeze([
-    'external',
-    'external.regularHeightM',
-    'external.shoeHeightM',
-  ]),
   'esm/native/builder/core_storage_compute_external_drawers.ts': Object.freeze([
     'external',
     'external.boxHeightClearanceM',
     'external.regularHeightM',
     'external.shoeHeightM',
     'external.visualHeightClearanceM',
-  ]),
-  'esm/native/builder/hinged_doors_module_ops_context.ts': Object.freeze([
-    'external',
-    'external.doorTopGapM',
-  ]),
-  'esm/native/builder/hinged_doors_module_ops_handle_policy.ts': Object.freeze([
-    'external',
-    'external.regularHeightM',
-    'external.shoeHeightM',
   ]),
   'esm/native/builder/render_drawer_ops_internal.ts': Object.freeze([
     'internal',
@@ -1590,15 +1557,9 @@ const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({
     'external.regularHeightM',
     'external.shoeHeightM',
   ]),
-  'esm/shared/wardrobe_construction_validation_shared.ts': Object.freeze([
-    'external',
-    'external.regularHeightM',
-    'external.shoeHeightM',
-  ]),
 });
 const APPROVED_DOOR_SYSTEM_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/builder/core_doors_compute.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
-  'esm/native/builder/hinged_doors_module_ops_context.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
   'esm/native/builder/post_build_sketch_door_cuts_apply.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
   'esm/native/builder/render_interior_sketch_boxes_door_geometry.ts': [
     'DOOR_SYSTEM_DIMENSIONS@static-import',
@@ -1628,12 +1589,6 @@ const APPROVED_DOOR_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({
     'sliding.shellClearanceMaxM',
     'sliding.shellClearanceMinM',
     'sliding.shellClearanceWoodDivisor',
-  ],
-  'esm/native/builder/hinged_doors_module_ops_context.ts': [
-    'hinged',
-    'hinged.insetRevealM',
-    'hinged.opFrontZOffsetM',
-    'hinged.visualThicknessM',
   ],
   'esm/native/builder/post_build_sketch_door_cuts_apply.ts': [
     'hinged',

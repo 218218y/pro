@@ -2,7 +2,11 @@
 //
 // Owns handle placement/clamping for segmented sketch-door rebuild flows.
 
-import { DRAWER_DIMENSIONS, HANDLE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_DOOR_CUT_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
+import {
+  EDGE_HANDLE_SIZE_POLICY,
+  STANDARD_HANDLE_RENDER_POLICY,
+} from '../../shared/dimensions/handle_policy.js';
 import { clampDoorHandleLocalCenterYToFit } from '../../shared/wardrobe_construction_validation_shared.js';
 import { resolveManualHandleLocalPosition } from '../features/manual_handle_position.js';
 import { asObject3D, asRecord } from './post_build_extras_shared.js';
@@ -49,7 +53,7 @@ export function maybeAttachSegmentHandle(args: {
     const handle = createHandleMesh(
       handleType,
       width,
-      Math.max(DRAWER_DIMENSIONS.sketch.rebuiltSegmentHandleMinHeightM, segHeight),
+      Math.max(DRAWER_SKETCH_DOOR_CUT_POLICY.rebuiltSegmentHandleMinHeightM, segHeight),
       isLeftHinge,
       {
         edgeHandleVariant,
@@ -104,10 +108,10 @@ export function maybeAttachSegmentHandle(args: {
 function resolveDefaultSegmentHandleAnchorX(handleType: string, width: number, isLeftHinge: boolean): number {
   if (handleType === 'edge') {
     return isLeftHinge
-      ? width + HANDLE_DIMENSIONS.edge.doorAnchorOffsetM
-      : -width - HANDLE_DIMENSIONS.edge.doorAnchorOffsetM;
+      ? width + EDGE_HANDLE_SIZE_POLICY.doorAnchorOffsetM
+      : -width - EDGE_HANDLE_SIZE_POLICY.doorAnchorOffsetM;
   }
-  const offset = HANDLE_DIMENSIONS.standard.doorOffsetM;
+  const offset = STANDARD_HANDLE_RENDER_POLICY.doorOffsetM;
   return isLeftHinge ? width - offset : -width + offset;
 }
 

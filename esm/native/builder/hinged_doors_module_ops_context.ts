@@ -2,10 +2,11 @@ import { reportError, shouldFailFast } from '../runtime/api.js';
 import { isDoorSpecialSurfaceValue, readDoorVisualMapValue } from '../features/door_authoring/api.js';
 import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
 import {
-  DOOR_SYSTEM_DIMENSIONS,
-  DRAWER_DIMENSIONS,
-  HANDLE_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  HINGED_DOOR_MOUNT_POLICY,
+  HINGED_DOOR_RENDER_POLICY,
+} from '../../shared/dimensions/door_system_policy.js';
+import { EXTERNAL_DRAWER_FRONT_RENDER_POLICY } from '../../shared/dimensions/external_drawer_policy.js';
+import { EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
 import type { AppendHingedDoorOpsParams, HingedDoorPipelineCfg } from './hinged_doors_shared.js';
 import { readFiniteNumber, readRecord, readTextMap, readUnknownArray } from './hinged_doors_shared.js';
 import type { HingedDoorModuleOpsContext, HingedDoorPivotSpec } from './hinged_doors_module_ops_contracts.js';
@@ -70,11 +71,11 @@ export function createHingedDoorModuleOpsContext(
       : D / 2;
   const isInsetDoorMount = cfg.doorMountMode === 'inset';
   const insetReveal = isInsetDoorMount
-    ? Math.min(DOOR_SYSTEM_DIMENSIONS.hinged.insetRevealM, Math.max(0, woodThick / 3))
+    ? Math.min(HINGED_DOOR_MOUNT_POLICY.insetRevealM, Math.max(0, woodThick / 3))
     : 0;
   const doorOpZ = isInsetDoorMount
-    ? doorFrontZ - DOOR_SYSTEM_DIMENSIONS.hinged.visualThicknessM / 2 - insetReveal
-    : doorFrontZ + DOOR_SYSTEM_DIMENSIONS.hinged.opFrontZOffsetM;
+    ? doorFrontZ - HINGED_DOOR_RENDER_POLICY.visualThicknessM / 2 - insetReveal
+    : doorFrontZ + HINGED_DOOR_RENDER_POLICY.opFrontZOffsetM;
   const splitLineY = params && typeof params.splitLineY === 'number' ? params.splitLineY : 0;
   const splitDoors = !!(params && params.splitDoors);
   const stackKey = typeof params.__wpStack === 'string' ? String(params.__wpStack) : 'top';
@@ -84,7 +85,7 @@ export function createHingedDoorModuleOpsContext(
   const globalHandleAbsY =
     params && typeof params.globalHandleAbsY === 'number'
       ? params.globalHandleAbsY
-      : HANDLE_DIMENSIONS.edge.defaultGlobalAbsYM;
+      : EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY.defaultGlobalAbsYM;
   const configRecord = readRecord((params && params.config) || {}) || {};
   const moduleCfgList = readUnknownArray(params && params.moduleCfgList);
   const isGroovesEnabled = !!(params && params.isGroovesEnabled);
@@ -190,7 +191,7 @@ export function createHingedDoorModuleOpsContext(
 
   if (cfg.wardrobeType !== 'hinged') return null;
 
-  const gapAboveDrawer = drawerHeightTotal > 0 ? DRAWER_DIMENSIONS.external.doorTopGapM : 0;
+  const gapAboveDrawer = drawerHeightTotal > 0 ? EXTERNAL_DRAWER_FRONT_RENDER_POLICY.doorTopGapM : 0;
   const drawerTopEdgeAbsolute = effectiveBottomY;
   const doorBottomY = drawerTopEdgeAbsolute + gapAboveDrawer + insetReveal;
   const effectiveTopLimit = isInsetDoorMount

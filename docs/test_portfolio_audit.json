@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-20T07:07:55.984Z",
+  "generatedAt": "2026-07-20T10:20:53.728Z",
   "totals": {
-    "tests": 1228,
-    "unitRunnerTests": 1220,
+    "tests": 1229,
+    "unitRunnerTests": 1221,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 400,
+    "contract": 401,
     "runtime-unit": 318,
     "integration": 451,
     "e2e-smoke": 9,
@@ -240,6 +240,10 @@
     {
       "file": "tests/build_flow_plan_special_height_runtime.test.ts",
       "category": "integration"
+    },
+    {
+      "file": "tests/build_handle_policy_runtime.test.ts",
+      "category": "contract"
     },
     {
       "file": "tests/build_hotpath_runtime_cleanup_contracts.test.js",

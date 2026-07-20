@@ -1,4 +1,5 @@
-import { DRAWER_DIMENSIONS, HANDLE_DIMENSIONS } from './wardrobe_dimension_tokens_shared.js';
+import { EXTERNAL_DRAWER_SIZE_POLICY } from './dimensions/external_drawer_policy.js';
+import { EDGE_HANDLE_SIZE_POLICY, STANDARD_HANDLE_RENDER_POLICY } from './dimensions/handle_policy.js';
 
 const FIT_EPSILON_M = 1e-9;
 
@@ -59,8 +60,8 @@ export function getExternalDrawerStackHeightM(args: { hasShoe: unknown; regCount
   const hasShoe = args.hasShoe === true;
   const regCount = normalizeExternalDrawerCount(args.regCount);
   return (
-    (hasShoe ? DRAWER_DIMENSIONS.external.shoeHeightM : 0) +
-    regCount * DRAWER_DIMENSIONS.external.regularHeightM
+    (hasShoe ? EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM : 0) +
+    regCount * EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM
   );
 }
 
@@ -88,8 +89,8 @@ export function resolveExternalDrawerFitFromBounds(input: ExternalDrawerFitInput
   const availableInternalHeightM = clampNonNegative(effectiveTopY - internalStartY);
   const usableDrawerStackHeightM = clampNonNegative(availableInternalHeightM - woodThick);
 
-  const shoeHeight = DRAWER_DIMENSIONS.external.shoeHeightM;
-  const regHeight = DRAWER_DIMENSIONS.external.regularHeightM;
+  const shoeHeight = EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM;
+  const regHeight = EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM;
   const hasShoe = requestedHasShoe && shoeHeight <= usableDrawerStackHeightM + FIT_EPSILON_M;
   const remainingForRegular = clampNonNegative(usableDrawerStackHeightM - (hasShoe ? shoeHeight : 0));
   const maxRegularDrawers = Math.max(0, Math.floor((remainingForRegular + FIT_EPSILON_M) / regHeight));
@@ -114,10 +115,10 @@ export function getDoorHandleFootprintHeightM(handleType: unknown, edgeHandleVar
   if (handleType === 'none' || handleType == null) return 0;
   if (handleType === 'edge') {
     return edgeHandleVariant === 'long'
-      ? HANDLE_DIMENSIONS.edge.longLengthM
-      : HANDLE_DIMENSIONS.edge.shortLengthM;
+      ? EDGE_HANDLE_SIZE_POLICY.longLengthM
+      : EDGE_HANDLE_SIZE_POLICY.shortLengthM;
   }
-  return HANDLE_DIMENSIONS.standard.doorHeightM;
+  return STANDARD_HANDLE_RENDER_POLICY.doorHeightM;
 }
 
 export function resolveDoorHandleVerticalFit(input: DoorHandleFitInput): DoorHandleFitResult {

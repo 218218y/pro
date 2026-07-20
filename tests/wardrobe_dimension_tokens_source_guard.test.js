@@ -544,7 +544,7 @@ test('[dimension tokens] Corner dimension/default readers use focused owners and
   assert.match(canvas, /CORNER_WING_BODY_POLICY\.defaultWidthCm/u);
 });
 
-test('[dimension tokens] remaining Corner mixed consumers use only canonical focused owners', () => {
+test('[dimension tokens] migrated Corner mixed consumers use only canonical focused owners', () => {
   const consumers = new Map([
     [
       'esm/native/builder/corner_connector_cornice_shared.ts',
@@ -607,6 +607,66 @@ test('[dimension tokens] remaining Corner mixed consumers use only canonical foc
   assert.deepEqual(productionConsumers, [], 'CORNER_WING_DIMENSIONS must have no production consumers');
 });
 
+test('[dimension tokens] Drawer and Handle mixed consumers use only focused canonical owners', () => {
+  const consumers = new Map([
+    [
+      'esm/shared/wardrobe_construction_validation_shared.ts',
+      ['EXTERNAL_DRAWER_SIZE_POLICY', 'EDGE_HANDLE_SIZE_POLICY', 'STANDARD_HANDLE_RENDER_POLICY'],
+    ],
+    [
+      'esm/native/builder/build_handle_policy.ts',
+      ['EXTERNAL_DRAWER_SIZE_POLICY', 'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY'],
+    ],
+    [
+      'esm/native/builder/hinged_doors_module_ops_context.ts',
+      [
+        'HINGED_DOOR_MOUNT_POLICY',
+        'HINGED_DOOR_RENDER_POLICY',
+        'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
+        'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
+      ],
+    ],
+    [
+      'esm/native/builder/hinged_doors_module_ops_handle_policy.ts',
+      ['EXTERNAL_DRAWER_SIZE_POLICY', 'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY'],
+    ],
+    [
+      'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts',
+      ['DRAWER_SKETCH_DOOR_CUT_POLICY', 'EDGE_HANDLE_SIZE_POLICY', 'STANDARD_HANDLE_RENDER_POLICY'],
+    ],
+    [
+      'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts',
+      ['DRAWER_SKETCH_DOOR_CUT_POLICY', 'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY'],
+    ],
+  ]);
+
+  for (const [rel, policies] of consumers) {
+    const source = read(rel);
+    for (const policy of policies) assertUsesToken(rel, policy);
+    assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared/u);
+    assert.doesNotMatch(source, /\bDRAWER_DIMENSIONS\b/u);
+    assert.doesNotMatch(source, /\bHANDLE_DIMENSIONS\b/u);
+    assert.doesNotMatch(source, /\bDOOR_SYSTEM_DIMENSIONS\b/u);
+    assert.doesNotMatch(
+      source,
+      /\b(?:EXTERNAL_DRAWER_POLICY|DRAWER_SKETCH_POLICY|HANDLE_POLICY|HINGED_DOOR_SYSTEM_POLICY)\b/u
+    );
+    assert.doesNotMatch(source, /import\s+\*\s+as/u);
+    assert.doesNotMatch(source, /export\s+(?:type\s+)?(?:\*|\{)/u);
+  }
+
+  const remainingHandleConsumers = listFilesRecursively(path.join(ROOT, 'esm'))
+    .filter(file => {
+      if (file.endsWith('wardrobe_dimension_tokens_shared.ts')) return false;
+      return /\bHANDLE_DIMENSIONS\b/u.test(fs.readFileSync(file, 'utf8'));
+    })
+    .map(file => path.relative(ROOT, file).replaceAll('\\', '/'));
+  assert.deepEqual(remainingHandleConsumers, [
+    'esm/native/builder/build_stack_split_lower_setup.ts',
+    'esm/native/builder/render_ops_primitives.ts',
+  ]);
+});
+
 test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage dimensions are centralized', () => {
   const tokens = readProductDimensionTokens();
   assert.match(tokens, /doorCutHorizontalOverlapMinM:/);
@@ -616,12 +676,12 @@ test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage 
   assert.match(tokens, /clampPadWoodRatio:/);
   assertLinearDimensionsUseOwnersOrMeters('esm/shared/dimensions/handle_policy.ts');
 
+  assertUsesToken('esm/native/builder/post_build_sketch_door_cuts_apply.ts', 'DRAWER_DIMENSIONS');
   for (const rel of [
-    'esm/native/builder/post_build_sketch_door_cuts_apply.ts',
     'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts',
     'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts',
   ]) {
-    assertUsesToken(rel, 'DRAWER_DIMENSIONS');
+    assertUsesToken(rel, 'DRAWER_SKETCH_DOOR_CUT_POLICY');
   }
   for (const rel of [
     'esm/native/builder/post_build_sketch_door_cuts_intervals.ts',
