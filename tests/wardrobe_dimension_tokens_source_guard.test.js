@@ -1,8 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const read = rel => fs.readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const read = rel => fs.readFileSync(path.join(ROOT, rel), 'utf8');
+
+function listFilesRecursively(dir) {
+  const files = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const absolute = path.join(dir, entry.name);
+    if (entry.isDirectory()) files.push(...listFilesRecursively(absolute));
+    else if (entry.isFile()) files.push(absolute);
+  }
+  return files;
+}
 
 const productDimensionTokenSources = [
   'esm/shared/wardrobe_dimension_tokens_shared.ts',
@@ -401,7 +414,15 @@ test('[dimension tokens] corner wing and connector shell dimensions read canonic
     'CORNER_CONNECTOR_SHELL_POLICY'
   );
   assertUsesToken('esm/native/builder/corner_wing_carcass_shell_dividers.ts', 'CORNER_WING_PANEL_POLICY');
-  assertUsesToken('esm/native/builder/corner_wing_carcass_shell_floor_base.ts', 'CORNER_WING_DIMENSIONS');
+  for (const token of [
+    'BASE_PLATFORM_RENDER_POLICY',
+    'BASE_PLINTH_POLICY',
+    'CORNER_CONNECTOR_SHELL_POLICY',
+    'CORNER_WING_PANEL_POLICY',
+    'CORNER_WING_SELECTOR_POLICY',
+  ]) {
+    assertUsesToken('esm/native/builder/corner_wing_carcass_shell_floor_base.ts', token);
+  }
   assertUsesToken(
     'esm/native/builder/corner_connector_emit_shell_panels.ts',
     'CORNER_CONNECTOR_SHELL_POLICY'
@@ -521,6 +542,69 @@ test('[dimension tokens] Corner dimension/default readers use focused owners and
   assert.match(canvas, /shared\/dimensions\/wardrobe_defaults\.js/u);
   assert.match(canvas, /CORNER_CONNECTOR_LAYOUT_POLICY\.defaultWallLengthM/u);
   assert.match(canvas, /CORNER_WING_BODY_POLICY\.defaultWidthCm/u);
+});
+
+test('[dimension tokens] remaining Corner mixed consumers use only canonical focused owners', () => {
+  const consumers = new Map([
+    [
+      'esm/native/builder/corner_connector_cornice_shared.ts',
+      ['CARCASS_CORNICE_COMMON_POLICY', 'CORNER_CONNECTOR_CORNICE_HIT_POLICY'],
+    ],
+    [
+      'esm/native/builder/corner_state_normalize_layout.ts',
+      [
+        'BASE_PLATFORM_RENDER_POLICY',
+        'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+        'CORNER_CONNECTOR_LAYOUT_POLICY',
+        'CORNER_WING_BODY_POLICY',
+        'WARDROBE_DEFAULTS',
+      ],
+    ],
+    [
+      'esm/native/builder/corner_wing_carcass_shell_floor_base.ts',
+      [
+        'BASE_PLATFORM_RENDER_POLICY',
+        'BASE_PLINTH_POLICY',
+        'CORNER_CONNECTOR_SHELL_POLICY',
+        'CORNER_WING_PANEL_POLICY',
+        'CORNER_WING_SELECTOR_POLICY',
+      ],
+    ],
+    [
+      'esm/native/builder/corner_wing_cell_interiors_shelves.ts',
+      [
+        'CORNER_WING_INTERIOR_POLICY',
+        'INTERIOR_SHELF_GEOMETRY_POLICY',
+        'INTERIOR_SHELF_PIN_RENDER_POLICY',
+        'MATERIAL_THICKNESS_POLICY',
+      ],
+    ],
+    [
+      'esm/native/builder/corner_wing_cell_interiors_storage.ts',
+      ['CORNER_WING_DRAWER_POLICY', 'INTERIOR_ROD_RENDER_POLICY'],
+    ],
+    [
+      'esm/native/builder/corner_wing_extension_cells_handles.ts',
+      ['CORNER_WING_BODY_POLICY', 'CORNER_WING_CELL_POLICY', 'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY'],
+    ],
+  ]);
+
+  for (const [rel, policies] of consumers) {
+    const source = read(rel);
+    for (const policy of policies) assertUsesToken(rel, policy);
+    assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared/u);
+    assert.doesNotMatch(source, /CORNER_WING_DIMENSIONS/u);
+    assert.doesNotMatch(source, /CORNER_SYSTEM_POLICY/u);
+    assert.doesNotMatch(source, /export\s+(?:type\s+)?(?:\*|\{)/u);
+  }
+
+  const productionFiles = listFilesRecursively(path.join(ROOT, 'esm')).filter(
+    file => !file.endsWith('wardrobe_dimension_tokens_shared.ts')
+  );
+  const productionConsumers = productionFiles.filter(file =>
+    /CORNER_WING_DIMENSIONS/u.test(fs.readFileSync(file, 'utf8'))
+  );
+  assert.deepEqual(productionConsumers, [], 'CORNER_WING_DIMENSIONS must have no production consumers');
 });
 
 test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage dimensions are centralized', () => {
@@ -860,7 +944,7 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ],
     [
       'esm/native/builder/corner_wing_cell_interiors_storage.ts',
-      ['CORNER_WING_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+      ['CORNER_WING_DRAWER_POLICY', 'INTERIOR_ROD_RENDER_POLICY'],
     ],
     [
       'esm/native/builder/corner_connector_interior_special_apply.ts',

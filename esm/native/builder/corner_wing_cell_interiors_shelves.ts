@@ -1,8 +1,9 @@
+import { CORNER_WING_INTERIOR_POLICY } from '../../shared/dimensions/corner_system_policy.js';
 import {
-  CORNER_WING_DIMENSIONS,
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_SHELF_GEOMETRY_POLICY,
+  INTERIOR_SHELF_PIN_RENDER_POLICY,
+} from '../../shared/dimensions/interior_fittings_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import type { CornerCellCfg } from './corner_geometry_plan.js';
 import {
   CORNER_SHELF_GROUP_PART_ID,
@@ -39,10 +40,10 @@ export function createCornerWingInteriorShelfRuntime(
 ): CornerWingInteriorShelfRuntime {
   const shelfMat = runtime.getCornerShelfMat(CORNER_SHELF_GROUP_PART_ID, false);
   const braceShelfMat = runtime.getCornerShelfMat(CORNER_SHELF_GROUP_PART_ID, true);
-  const GLASS_SHELF_THICK = MATERIAL_DIMENSIONS.glassShelf.thicknessM;
+  const GLASS_SHELF_THICK = MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM;
   const DOUBLE_SHELF_THICK = Math.max(
     runtime.woodThick,
-    runtime.woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier
+    runtime.woodThick * INTERIOR_SHELF_GEOMETRY_POLICY.doubleThicknessMultiplier
   );
   let glassShelfMat: unknown = null;
 
@@ -84,9 +85,9 @@ export function createCornerWingInteriorShelfRuntime(
     return 'regular';
   };
 
-  const pinRadius = INTERIOR_FITTINGS_DIMENSIONS.pins.radiusM;
-  const pinLen = INTERIOR_FITTINGS_DIMENSIONS.pins.lengthM;
-  const pinEdgeOffsetDefault = INTERIOR_FITTINGS_DIMENSIONS.pins.edgeOffsetDefaultM;
+  const pinRadius = INTERIOR_SHELF_PIN_RENDER_POLICY.radiusM;
+  const pinLen = INTERIOR_SHELF_PIN_RENDER_POLICY.lengthM;
+  const pinEdgeOffsetDefault = INTERIOR_SHELF_PIN_RENDER_POLICY.edgeOffsetDefaultM;
   let pinGeo: unknown = null;
   let pinMat: ReturnType<CornerWingInteriorRuntime['asRecord']> | null = null;
 
@@ -97,7 +98,7 @@ export function createCornerWingInteriorShelfRuntime(
           pinRadius,
           pinRadius,
           pinLen,
-          INTERIOR_FITTINGS_DIMENSIONS.pins.radialSegments
+          INTERIOR_SHELF_PIN_RENDER_POLICY.radialSegments
         );
       if (!pinMat) {
         pinMat = runtime.asRecord(runtime.getMaterial(null, 'metal'));
@@ -125,12 +126,12 @@ export function createCornerWingInteriorShelfRuntime(
     if (!ensurePinResources()) return;
 
     const shelfBottom = shelfY - shelfH / 2;
-    const yPin = shelfBottom - pinRadius + INTERIOR_FITTINGS_DIMENSIONS.pins.bottomYOffsetM;
+    const yPin = shelfBottom - pinRadius + INTERIOR_SHELF_PIN_RENDER_POLICY.bottomYOffsetM;
     const backEdge = shelfZ - shelfDepth / 2;
     const frontEdge = shelfZ + shelfDepth / 2;
-    const maxOff = shelfDepth / 2 - INTERIOR_FITTINGS_DIMENSIONS.pins.maxDepthSideClearanceM;
+    const maxOff = shelfDepth / 2 - INTERIOR_SHELF_PIN_RENDER_POLICY.maxDepthSideClearanceM;
     const edgeOff = Math.max(
-      INTERIOR_FITTINGS_DIMENSIONS.pins.minEdgeOffsetM,
+      INTERIOR_SHELF_PIN_RENDER_POLICY.minEdgeOffsetM,
       Math.min(pinEdgeOffsetDefault, maxOff)
     );
     const zBack = backEdge + edgeOff;
@@ -203,7 +204,7 @@ function resolveCornerShelfContentsMaxHeight(
     }
   }
 
-  return Math.max(0, topLimitY - shelfTopY - CORNER_WING_DIMENSIONS.interior.shelfContentsTopClearanceM);
+  return Math.max(0, topLimitY - shelfTopY - CORNER_WING_INTERIOR_POLICY.shelfContentsTopClearanceM);
 }
 
 export function addCornerWingGridShelf(
@@ -213,7 +214,7 @@ export function addCornerWingGridShelf(
 ): void {
   const { runtime, cfgCell, cellKey, cellShelfW, cellInnerCenterX, cellInnerW, __braceSet } = cellRuntime;
   const y = cellRuntime.effectiveBottomY + gridIndex * cellRuntime.localGridStep;
-  if (!(y < cellRuntime.effectiveTopY - CORNER_WING_DIMENSIONS.interior.shelfTopPlacementGuardM)) return;
+  if (!(y < cellRuntime.effectiveTopY - CORNER_WING_INTERIOR_POLICY.shelfTopPlacementGuardM)) return;
 
   const shelfVariant = shelfRuntime.readCornerShelfVariant(cfgCell, gridIndex);
   const isBraceShelf = !!__braceSet[gridIndex] || shelfVariant === 'brace';
@@ -270,8 +271,8 @@ export function addCornerWingGridShelf(
       y + shelfH / 2,
       shelfZ,
       Math.max(
-        CORNER_WING_DIMENSIONS.interior.foldedContentsMinWidthM,
-        cellInnerW - CORNER_WING_DIMENSIONS.interior.foldedContentsWidthClearanceM
+        CORNER_WING_INTERIOR_POLICY.foldedContentsMinWidthM,
+        cellInnerW - CORNER_WING_INTERIOR_POLICY.foldedContentsWidthClearanceM
       ),
       runtime.wingGroup,
       resolveCornerShelfContentsMaxHeight(cellRuntime, shelfRuntime, gridIndex, y, shelfH),

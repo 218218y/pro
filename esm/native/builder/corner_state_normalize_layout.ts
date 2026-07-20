@@ -1,9 +1,11 @@
 import type { CornerBuildMeta, CornerBuildUI } from './corner_state_normalize_contracts.js';
+import { BASE_PLATFORM_RENDER_POLICY } from '../../shared/dimensions/base_platform_render_policy.js';
 import {
-  CARCASS_BASE_DIMENSIONS,
-  CORNER_WING_DIMENSIONS,
-  WARDROBE_DEFAULTS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  CORNER_CONNECTOR_DOOR_RENDER_POLICY,
+  CORNER_CONNECTOR_LAYOUT_POLICY,
+  CORNER_WING_BODY_POLICY,
+} from '../../shared/dimensions/corner_system_policy.js';
+import { WARDROBE_DEFAULTS } from '../../shared/dimensions/wardrobe_defaults.js';
 import {
   normalizeBaseLegPlatformMode,
   normalizeBaseLegPlatformSideMode,
@@ -27,9 +29,6 @@ import {
   readPositiveCm,
   readStringValue,
 } from './corner_state_normalize_shared.js';
-
-const CORNER_WING = CORNER_WING_DIMENSIONS.wing;
-const CORNER_CONNECTOR = CORNER_WING_DIMENSIONS.connector;
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -214,7 +213,7 @@ export function resolveCornerWingMetrics(args: {
   const cornerConnectorActive = true;
 
   let wingLengthCM = uiAny.cornerWidth != null ? readPositiveCm(uiAny.cornerWidth) : NaN;
-  if (!Number.isFinite(wingLengthCM)) wingLengthCM = CORNER_WING.defaultWidthCm;
+  if (!Number.isFinite(wingLengthCM)) wingLengthCM = CORNER_WING_BODY_POLICY.defaultWidthCm;
   if (wingLengthCM < 0) wingLengthCM = 0;
 
   const cornerSide: 'left' | 'right' = uiAny.cornerSide === 'left' ? 'left' : 'right';
@@ -241,7 +240,7 @@ export function resolveCornerWingMetrics(args: {
 
   const __stackCornerTopBodyH =
     Number.isFinite(__cornerHeightCM) && __stackSplitEnabled && __stackKey === 'top'
-      ? Math.max(CORNER_WING.minBodyHeightM, __cornerHeightCM / 100 - startY)
+      ? Math.max(CORNER_WING_BODY_POLICY.minBodyHeightM, __cornerHeightCM / 100 - startY)
       : NaN;
 
   const wingH = __stackSplitEnabled
@@ -249,14 +248,16 @@ export function resolveCornerWingMetrics(args: {
       ? __stackCornerTopBodyH
       : mainH
     : Number.isFinite(__cornerHeightCM)
-      ? Math.max(CORNER_WING.minBodyHeightM, __cornerHeightCM / 100 - startY)
+      ? Math.max(CORNER_WING_BODY_POLICY.minBodyHeightM, __cornerHeightCM / 100 - startY)
       : mainH;
 
   const wingD = Number.isFinite(__cornerDepthCM)
-    ? Math.max(CORNER_WING.minDepthM, __cornerDepthCM / 100)
+    ? Math.max(CORNER_WING_BODY_POLICY.minDepthM, __cornerDepthCM / 100)
     : mainD;
   const wingW = wingLengthCM / 100;
-  const blindWidth = cornerConnectorActive ? 0 : Math.max(mainD, wingD) + CORNER_WING.blindClearanceM;
+  const blindWidth = cornerConnectorActive
+    ? 0
+    : Math.max(mainD, wingD) + CORNER_WING_BODY_POLICY.blindClearanceM;
   const activeWidth = wingW - blindWidth - woodThick;
   const activeFaceCenter = blindWidth + activeWidth / 2;
 
@@ -402,9 +403,7 @@ export function resolveCornerWingPlacement(args: {
     DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM
   );
   const requestedLegPlatformHeightM =
-    baseType === 'legs' && baseLegPlatformMode === 'stage'
-      ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM
-      : 0;
+    baseType === 'legs' && baseLegPlatformMode === 'stage' ? BASE_PLATFORM_RENDER_POLICY.heightM : 0;
 
   let baseH =
     baseType === 'plinth'
@@ -412,13 +411,14 @@ export function resolveCornerWingPlacement(args: {
       : baseType === 'legs'
         ? legOptions.heightM + requestedLegPlatformHeightM
         : 0;
-  if (startY < CORNER_CONNECTOR.doorMinHeightM && baseH > startY) baseH = Math.max(0, startY);
+  if (startY < CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorMinHeightM && baseH > startY)
+    baseH = Math.max(0, startY);
 
   const baseLegBottomPlatformHeightM = baseType === 'legs' ? Math.min(requestedLegPlatformHeightM, baseH) : 0;
   const baseLegHeightM = baseType === 'legs' ? Math.max(0, baseH - baseLegBottomPlatformHeightM) : 0;
   const baseLegTopPlatformHeightM =
     baseType === 'legs' && baseLegPlatformMode === 'stage' && baseLegHeightM > 0
-      ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM
+      ? BASE_PLATFORM_RENDER_POLICY.heightM
       : 0;
 
   const stackOffsetY = Math.max(0, startY - baseH);
@@ -426,14 +426,14 @@ export function resolveCornerWingPlacement(args: {
 
   const rawWallLen = uiAny.cornerCabinetWallLenCm;
   const wallLenCm = readFiniteNumber(rawWallLen);
-  let cornerWallL = wallLenCm != null ? wallLenCm / 100 : CORNER_CONNECTOR.defaultWallLengthM;
-  if (!Number.isFinite(cornerWallL) || cornerWallL <= CORNER_CONNECTOR.minWallLengthM) {
-    cornerWallL = CORNER_CONNECTOR.defaultWallLengthM;
+  let cornerWallL = wallLenCm != null ? wallLenCm / 100 : CORNER_CONNECTOR_LAYOUT_POLICY.defaultWallLengthM;
+  if (!Number.isFinite(cornerWallL) || cornerWallL <= CORNER_CONNECTOR_LAYOUT_POLICY.minWallLengthM) {
+    cornerWallL = CORNER_CONNECTOR_LAYOUT_POLICY.defaultWallLengthM;
   }
   if (__stackSplitEnabled && __stackKey === 'bottom') {
     const lowerConnectorWallCm = readPositiveConnectorSpecialCm(config, 'widthCm');
     if (lowerConnectorWallCm != null) {
-      cornerWallL = Math.max(CORNER_CONNECTOR.minWallLengthM, lowerConnectorWallCm / 100);
+      cornerWallL = Math.max(CORNER_CONNECTOR_LAYOUT_POLICY.minWallLengthM, lowerConnectorWallCm / 100);
     }
   }
 

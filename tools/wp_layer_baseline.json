@@ -992,6 +992,283 @@
       "reviewedAt": "2026-07-20",
       "reviewBy": "2026-10-18",
       "removalCondition": "Remove this entry when the Canvas context no longer requires wardrobe defaults or a reviewed ownership seam eliminates the extra statement."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_connector_cornice_shared.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_CORNICE_COMMON_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_CONNECTOR_CORNICE_HIT_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_CORNICE_DIMENSIONS", "CORNER_WING_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner connector cornice consumer replaces one legacy facade statement with the focused Corner hit policy plus the canonical carcass cornice owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed ownership seam eliminates the extra carcass cornice statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_wing_carcass_shell_floor_base.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLINTH_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CORNER_CONNECTOR_SHELL_POLICY",
+          "CORNER_WING_PANEL_POLICY",
+          "CORNER_WING_SELECTOR_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_BASE_DIMENSIONS", "CORNER_WING_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner floor/base consumer replaces one legacy facade statement with focused Corner policies plus the canonical base plinth owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed base composition seam eliminates the extra plinth statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_wing_carcass_shell_floor_base.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CORNER_CONNECTOR_SHELL_POLICY",
+          "CORNER_WING_PANEL_POLICY",
+          "CORNER_WING_SELECTOR_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_BASE_DIMENSIONS", "CORNER_WING_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner floor/base consumer replaces one legacy facade statement with focused Corner policies plus the canonical base platform owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed base composition seam eliminates the extra platform statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_wing_cell_interiors_shelves.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY", "INTERIOR_SHELF_PIN_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_WING_INTERIOR_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_WING_DIMENSIONS", "INTERIOR_FITTINGS_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner shelf consumer replaces one legacy facade statement with the focused Corner interior policy plus canonical shelf geometry and pin owners on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Corner interior composition seam eliminates the extra interior fittings statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_wing_cell_interiors_shelves.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_WING_INTERIOR_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_WING_DIMENSIONS", "INTERIOR_FITTINGS_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner shelf consumer replaces one legacy facade statement with the focused Corner interior policy plus the canonical material thickness owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Corner shelf composition seam eliminates the extra material statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_wing_cell_interiors_storage.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_ROD_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_WING_DRAWER_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_WING_DIMENSIONS", "INTERIOR_FITTINGS_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner storage consumer replaces one legacy facade statement with the focused Corner drawer policy plus the canonical rod render owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Corner storage composition seam eliminates the extra rod statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_wing_extension_cells_handles.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/handle_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_WING_BODY_POLICY", "CORNER_WING_CELL_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_WING_DIMENSIONS", "HANDLE_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner extension handle consumer replaces one legacy facade statement with focused Corner policies plus the canonical edge-handle placement owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Corner handle composition seam eliminates the extra handle statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_state_normalize_layout.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CORNER_CONNECTOR_DOOR_RENDER_POLICY",
+          "CORNER_CONNECTOR_LAYOUT_POLICY",
+          "CORNER_WING_BODY_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_BASE_DIMENSIONS", "CORNER_WING_DIMENSIONS", "WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner layout normalizer replaces one legacy facade statement with focused Corner policies plus the canonical base platform owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed normalization seam eliminates the extra platform statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_state_normalize_layout.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": ["WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CORNER_CONNECTOR_DOOR_RENDER_POLICY",
+          "CORNER_CONNECTOR_LAYOUT_POLICY",
+          "CORNER_WING_BODY_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_BASE_DIMENSIONS", "CORNER_WING_DIMENSIONS", "WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner layout normalizer replaces one legacy facade statement with focused Corner policies plus the canonical wardrobe defaults owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when the normalizer no longer needs wardrobe defaults or a reviewed ownership seam eliminates the extra statement."
     }
   ]
 }

@@ -136,17 +136,22 @@ function migrationImport({
   };
 }
 
+function migrationImportsFromSource(source, toFile, statementKey) {
+  return analyzeModuleDependencies('example.ts', source).imports.map(dependency =>
+    migrationImport({
+      toFile,
+      importedSymbols: dependency.importedSymbols,
+      statementKey,
+      kind: dependency.kind,
+      syntax: dependency.syntax,
+    })
+  );
+}
+
 function migrationImportFromSource(source, toFile, statementKey) {
-  const dependencies = analyzeModuleDependencies('example.ts', source).imports;
+  const dependencies = migrationImportsFromSource(source, toFile, statementKey);
   assert.equal(dependencies.length, 1, 'fixture must contain exactly one module dependency');
-  const [dependency] = dependencies;
-  return migrationImport({
-    toFile,
-    importedSymbols: dependency.importedSymbols,
-    statementKey,
-    kind: dependency.kind,
-    syntax: dependency.syntax,
-  });
+  return dependencies[0];
 }
 
 test('layer contract parser reads AST imports and classifies type, value, and dynamic dependencies', () => {
@@ -645,6 +650,70 @@ test('layer contract migration budget rejects the static re-export regression ex
   );
 });
 
+test('layer contract migration budgets diagnose one mixed statement without treating it as statement growth', () => {
+  const budget = migrationBudget();
+  const baseline = contract({ migrationBudgets: [budget] });
+  const companion = migrationImport({
+    toFile: budget.companionImport.toFile,
+    importedSymbols: budget.companionImport.importedSymbols,
+    statementKey: 'policy-statement',
+  });
+
+  for (const [label, source, expectedSyntaxes] of [
+    [
+      'mixed import',
+      `import { type SomeType, CM_PER_METER } from '../services/units.js';`,
+      ['static-import', 'type-import'],
+    ],
+    [
+      'mixed re-export',
+      `export { type SomeType, CM_PER_METER } from '../services/units.js';`,
+      ['static-re-export', 'type-re-export'],
+    ],
+  ]) {
+    const mixedEntries = migrationImportsFromSource(source, budget.addedImport.toFile, `${label}-statement`);
+    assert.equal(mixedEntries.length, 2, `${label} must expose type and value dependency entries`);
+    assert.equal(
+      new Set(mixedEntries.map(entry => entry.statementKey)).size,
+      1,
+      `${label} must remain one physical statement`
+    );
+
+    const report = evaluateLayerContract(
+      {
+        edges: [
+          edge({
+            importCount: 2,
+            typeImportCount: 1,
+            typeImporterCount: 1,
+            typeImporterFiles: ['esm/native/ui/example.ts'],
+            valueImportCount: 2,
+          }),
+        ],
+        imports: [companion, ...mixedEntries],
+      },
+      baseline,
+      { currentDate: TEST_CURRENT_DATE }
+    );
+
+    assert.equal(report.ok, false, `${label} must not consume a pure migration allowance`);
+    const failure = report.failures.find(
+      entry => entry.kind === 'migration-import-mixed-kind-drift' && entry.field === 'addedImport'
+    );
+    assert.ok(failure, `${label} must receive a mixed-kind diagnostic`);
+    assert.deepEqual(failure.currentKinds, ['type', 'value']);
+    assert.deepEqual(failure.currentSyntaxes, expectedSyntaxes);
+    assert.equal(failure.statementKey, `${label}-statement`);
+    assert.equal(
+      report.failures.some(
+        entry => entry.kind === 'migration-budget-growth' && entry.field === 'addedImport'
+      ),
+      false,
+      `${label} is one statement and must not be reported as statement growth`
+    );
+  }
+});
+
 test('layer contract migration budgets keep multiple matching statements as growth', () => {
   const budget = migrationBudget();
   const added = migrationImport({
@@ -796,7 +865,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at seven reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at sixteen reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -815,6 +884,36 @@ test('project migration ledger stays exact at seven reviewed statements with unc
       'esm/native/services/canvas_picking_cell_dims_corner_context.ts',
       'esm/shared/dimensions/wardrobe_defaults.ts',
     ],
+    [
+      'esm/native/builder/corner_connector_cornice_shared.ts',
+      'esm/shared/dimensions/carcass_cornice_render_policy.ts',
+    ],
+    [
+      'esm/native/builder/corner_wing_carcass_shell_floor_base.ts',
+      'esm/shared/dimensions/base_plinth_policy.ts',
+    ],
+    [
+      'esm/native/builder/corner_wing_carcass_shell_floor_base.ts',
+      'esm/shared/dimensions/base_platform_render_policy.ts',
+    ],
+    [
+      'esm/native/builder/corner_wing_cell_interiors_shelves.ts',
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+    ],
+    [
+      'esm/native/builder/corner_wing_cell_interiors_shelves.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
+    [
+      'esm/native/builder/corner_wing_cell_interiors_storage.ts',
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+    ],
+    ['esm/native/builder/corner_wing_extension_cells_handles.ts', 'esm/shared/dimensions/handle_policy.ts'],
+    [
+      'esm/native/builder/corner_state_normalize_layout.ts',
+      'esm/shared/dimensions/base_platform_render_policy.ts',
+    ],
+    ['esm/native/builder/corner_state_normalize_layout.ts', 'esm/shared/dimensions/wardrobe_defaults.ts'],
   ];
 
   assert.deepEqual(
@@ -833,14 +932,14 @@ test('project migration ledger stays exact at seven reviewed statements with unc
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 7);
+  assert.equal(report.migrationBudgets.length, 16);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
   );
 
   const expectedEdges = new Map([
-    ['builder>shared', { observed: 223, migration: 4, reviewed: 219, budget: 219 }],
+    ['builder>shared', { observed: 232, migration: 13, reviewed: 219, budget: 219 }],
     ['features>shared', { observed: 59, migration: 1, reviewed: 58, budget: 58 }],
     ['services>shared', { observed: 169, migration: 2, reviewed: 167, budget: 167 }],
   ]);

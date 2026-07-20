@@ -40,10 +40,7 @@ test('[corner-stack-ext-drawers] lower stack corner drawers are stack-scoped and
   assert.match(src, /__wpType\s*=\s*'extDrawer';|__wpType: 'extDrawer',/);
   assert.match(src, /__doorWidth\s*=\s*dW;/);
   assert.match(src, /__doorHeight\s*=\s*height;/);
-  assert.match(
-    src,
-    /__wpFrontZ\s*=\s*cellRuntime\.__z\(CORNER_WING_DIMENSIONS\.drawers\.externalFrontOffsetZM\);/
-  );
+  assert.match(src, /__wpFrontZ\s*=\s*cellRuntime\.__z\(CORNER_WING_DRAWER_POLICY\.externalFrontOffsetZM\);/);
   assert.doesNotMatch(src, /__wpFrontZ\s*=\s*cellRuntime\.__z\(0\.01\);/);
 });
 

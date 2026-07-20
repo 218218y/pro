@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 138, statements: 138 }),
+  'static-import': Object.freeze({ importers: 132, statements: 132 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 140, statements: 141 }),
+  total: Object.freeze({ importers: 134, statements: 135 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -180,6 +180,7 @@ const APPROVED_SHELL_GRID_FIELD_USAGE = Object.freeze({
   ]),
 });
 const APPROVED_BASE_PLINTH_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/features/base_plinth_support.ts': Object.freeze([
     'BASE_PLINTH_POLICY',
     'basePlinthCentimetersToMeters',
@@ -200,6 +201,10 @@ const APPROVED_BASE_LEG_OWNER_IMPORTS = Object.freeze({
   ]),
 });
 const APPROVED_BASE_PLATFORM_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/corner_state_normalize_layout.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
+  'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze([
+    'BASE_PLATFORM_RENDER_POLICY',
+  ]),
   'esm/native/builder/render_interior_sketch_visuals_adornments_normalize.ts': Object.freeze([
     'BASE_PLATFORM_RENDER_POLICY',
   ]),
@@ -218,8 +223,6 @@ const APPROVED_BASE_PLATFORM_OWNER_IMPORTS = Object.freeze({
 const APPROVED_BASE_SUPPORT_FACADE_IMPORTS = Object.freeze({
   'esm/native/builder/core_carcass_shared.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
-  'esm/native/builder/corner_state_normalize_layout.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
-  'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
   'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
   'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
   'esm/native/runtime/default_state.ts': Object.freeze(['BASE_LEG_DIMENSIONS', 'CARCASS_BASE_DIMENSIONS']),
@@ -237,6 +240,7 @@ const APPROVED_CHEST_STRUCTURAL_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_STRUCTURAL_DIMENSIONS']),
 });
 const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/corner_wing_cell_interiors_shelves.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/render_preview_sketch_pipeline_shared.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/services/canvas_picking_hover_preview_modes_divider.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
@@ -283,7 +287,6 @@ const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/builder/core_doors_compute.ts',
   'esm/native/builder/core_layout_compute.ts',
   'esm/native/builder/core_storage_compute_external_drawers.ts',
-  'esm/native/builder/corner_wing_cell_interiors_shelves.ts',
   'esm/native/builder/post_build_sketch_door_cuts_rebuild.ts',
   'esm/native/builder/render_interior_custom_ops.ts',
   'esm/native/builder/render_interior_custom_ops_shelves.ts',
@@ -325,7 +328,6 @@ const APPROVED_MATERIAL_LEGACY_DEPENDENCIES = Object.freeze(
   )
 );
 const APPROVED_MATERIAL_GLASS_SHELF_ONLY_IMPORTERS = new Set([
-  'esm/native/builder/corner_wing_cell_interiors_shelves.ts',
   'esm/native/builder/render_interior_custom_ops_shelves.ts',
   'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
   'esm/native/builder/render_interior_sketch_support_shelves.ts',
@@ -356,6 +358,7 @@ const APPROVED_MATERIAL_LEGACY_FIELD_USAGE = Object.freeze(
   )
 );
 const APPROVED_CARCASS_CORNICE_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/corner_connector_cornice_shared.ts': Object.freeze(['CARCASS_CORNICE_COMMON_POLICY']),
   'esm/native/builder/core_carcass_cornice.ts': Object.freeze([
     'CARCASS_CORNICE_ANGLE_POLICY',
     'CARCASS_CORNICE_RENDER_POLICY',
@@ -671,6 +674,11 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
   'esm/shared/dimensions/interior_fittings_policy.ts': Object.freeze(['INTERIOR_STORAGE_POLICY']),
 });
 const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/corner_wing_cell_interiors_shelves.ts': Object.freeze([
+    'INTERIOR_SHELF_GEOMETRY_POLICY',
+    'INTERIOR_SHELF_PIN_RENDER_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_cell_interiors_storage.ts': Object.freeze(['INTERIOR_ROD_RENDER_POLICY']),
   'esm/native/builder/render_interior_preset_ops_shelves.ts': Object.freeze([
     'INTERIOR_SHELF_PIN_RENDER_POLICY',
     'INTERIOR_SHELF_POLICY',
@@ -699,23 +707,6 @@ const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/core_storage_compute_custom.ts': Object.freeze(['rods', 'rods.defaultYOffsetM']),
-  'esm/native/builder/corner_wing_cell_interiors_shelves.ts': Object.freeze([
-    'pins',
-    'pins.bottomYOffsetM',
-    'pins.edgeOffsetDefaultM',
-    'pins.lengthM',
-    'pins.maxDepthSideClearanceM',
-    'pins.minEdgeOffsetM',
-    'pins.radialSegments',
-    'pins.radiusM',
-    'shelves',
-    'shelves.doubleThicknessMultiplier',
-  ]),
-  'esm/native/builder/corner_wing_cell_interiors_storage.ts': Object.freeze([
-    'rods',
-    'rods.radialSegments',
-    'rods.radiusM',
-  ]),
   'esm/native/builder/corner_wing_cell_layouts.ts': Object.freeze([
     'presets',
     'presets.fullShelfRows',
@@ -982,6 +973,25 @@ const APPROVED_CORNER_SYSTEM_OWNER_IMPORTS = Object.freeze({
     'CORNER_WING_BODY_POLICY',
   ]),
   'esm/native/builder/corner_wing_hex_cell_geometry.ts': Object.freeze(['CORNER_WING_SELECTOR_POLICY']),
+  'esm/native/builder/corner_connector_cornice_shared.ts': Object.freeze([
+    'CORNER_CONNECTOR_CORNICE_HIT_POLICY',
+  ]),
+  'esm/native/builder/corner_state_normalize_layout.ts': Object.freeze([
+    'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+    'CORNER_CONNECTOR_LAYOUT_POLICY',
+    'CORNER_WING_BODY_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze([
+    'CORNER_CONNECTOR_SHELL_POLICY',
+    'CORNER_WING_PANEL_POLICY',
+    'CORNER_WING_SELECTOR_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_cell_interiors_shelves.ts': Object.freeze(['CORNER_WING_INTERIOR_POLICY']),
+  'esm/native/builder/corner_wing_cell_interiors_storage.ts': Object.freeze(['CORNER_WING_DRAWER_POLICY']),
+  'esm/native/builder/corner_wing_extension_cells_handles.ts': Object.freeze([
+    'CORNER_WING_BODY_POLICY',
+    'CORNER_WING_CELL_POLICY',
+  ]),
   'esm/native/builder/post_build_dimensions_corner.ts': Object.freeze([
     'CORNER_CONNECTOR_LAYOUT_POLICY',
     'CORNER_WING_BODY_POLICY',
@@ -1013,71 +1023,7 @@ const APPROVED_CORNER_CONNECTOR_INTERIOR_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CORNER_CONNECTOR_INTERIOR_POLICY']),
 });
 
-const APPROVED_CORNER_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/corner_connector_cornice_shared.ts': Object.freeze([
-    'connector',
-    'connector.corniceHitHeightClearanceM',
-    'connector.corniceHitMinWidthM',
-  ]),
-  'esm/native/builder/corner_state_normalize_layout.ts': Object.freeze([
-    'connector',
-    'connector.defaultWallLengthM',
-    'connector.doorMinHeightM',
-    'connector.minWallLengthM',
-    'wing',
-    'wing.blindClearanceM',
-    'wing.defaultWidthCm',
-    'wing.minBodyHeightM',
-    'wing.minDepthM',
-  ]),
-  'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze([
-    'connector',
-    'connector.shellWallHeightClearanceM',
-    'panels',
-    'panels.minBlindWidthM',
-    'panels.minCellDepthM',
-    'panels.minWallDepthM',
-    'selector',
-    'selector.fallbackMinWidthM',
-  ]),
-  'esm/native/builder/corner_wing_cell_interiors_shelves.ts': Object.freeze([
-    'interior',
-    'interior.foldedContentsMinWidthM',
-    'interior.foldedContentsWidthClearanceM',
-    'interior.shelfContentsTopClearanceM',
-    'interior.shelfTopPlacementGuardM',
-  ]),
-  'esm/native/builder/corner_wing_cell_interiors_storage.ts': Object.freeze([
-    'drawers',
-    'drawers.drawerShadowDepthM',
-    'drawers.drawerShadowFrontOffsetM',
-    'drawers.drawerShadowHeightM',
-    'drawers.drawerShadowWidthClearanceM',
-    'drawers.externalBoxDepthBackClearanceM',
-    'drawers.externalBoxHeightClearanceM',
-    'drawers.externalBoxOffsetZM',
-    'drawers.externalBoxWidthClearanceM',
-    'drawers.externalFrontOffsetZM',
-    'drawers.externalOpenOffsetZM',
-    'drawers.externalRegularHeightM',
-    'drawers.externalVisualWidthClearanceM',
-    'drawers.hangingClothesWidthClearanceM',
-    'drawers.internalMinDepthM',
-    'drawers.internalMinWidthM',
-    'drawers.rodMinLengthM',
-    'drawers.rodWidthClearanceM',
-    'drawers.shelfOverDrawerDepthClearanceM',
-    'drawers.shelfOverDrawerMinDepthM',
-    'drawers.shoeHeightM',
-  ]),
-  'esm/native/builder/corner_wing_extension_cells_handles.ts': Object.freeze([
-    'cells',
-    'cells.doorsPerCell',
-    'cells.minDoorUnitWidthM',
-    'wing',
-    'wing.minActiveWidthM',
-  ]),
-});
+const APPROVED_CORNER_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({});
 
 const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/core_storage_compute_custom.ts': Object.freeze([
@@ -1298,6 +1244,9 @@ const APPROVED_FRONT_REVEAL_OWNER_IMPORTS = Object.freeze({
 const APPROVED_FRONT_REVEAL_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_FRONT_REVEAL_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_HANDLE_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/corner_wing_extension_cells_handles.ts': Object.freeze([
+    'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
+  ]),
   'esm/native/builder/build_wardrobe_flow_context_hinged.ts': Object.freeze([
     'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
   ]),
@@ -1330,9 +1279,6 @@ const APPROVED_HANDLE_OWNER_IMPORTS = Object.freeze({
 const APPROVED_HANDLE_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/builder/build_handle_policy.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
   'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
-  'esm/native/builder/corner_wing_extension_cells_handles.ts': Object.freeze([
-    'HANDLE_DIMENSIONS@static-import',
-  ]),
   'esm/native/builder/hinged_doors_module_ops_context.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
   'esm/native/builder/hinged_doors_module_ops_handle_policy.ts': Object.freeze([
     'HANDLE_DIMENSIONS@static-import',
@@ -1357,10 +1303,6 @@ const APPROVED_HANDLE_LEGACY_FIELD_USAGE = Object.freeze({
     'edge.defaultGlobalAbsYM',
     'edge.drawerLiftClearanceM',
     'edge.drawerLiftThresholdYM',
-  ]),
-  'esm/native/builder/corner_wing_extension_cells_handles.ts': Object.freeze([
-    'edge',
-    'edge.defaultGlobalAbsYM',
   ]),
   'esm/native/builder/hinged_doors_module_ops_context.ts': Object.freeze(['edge', 'edge.defaultGlobalAbsYM']),
   'esm/native/builder/hinged_doors_module_ops_handle_policy.ts': Object.freeze([
@@ -1723,7 +1665,6 @@ const APPROVED_DOOR_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({
   ],
 });
 const APPROVED_CORNICE_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/corner_connector_cornice_shared.ts': Object.freeze(['common', 'common.epsilonM']),
   'esm/native/builder/corner_wing_cornice_path.ts': Object.freeze([
     'common',
     'common.epsilonM',

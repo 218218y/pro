@@ -1,7 +1,5 @@
-import {
-  CORNER_WING_DIMENSIONS,
-  INTERIOR_FITTINGS_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_WING_DRAWER_POLICY } from '../../shared/dimensions/corner_system_policy.js';
+import { INTERIOR_ROD_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import {
   resolveEffectiveDoorStyle,
   readDoorTrimListForPart,
@@ -32,15 +30,15 @@ export function createCornerWingInteriorLayoutOps(
 ): CornerWingInteriorLayoutOps {
   const createRod = (yPos: number, limitHeight: number | null = null) => {
     const rodLen = Math.max(
-      CORNER_WING_DIMENSIONS.drawers.rodMinLengthM,
-      cellRuntime.cellInnerW - CORNER_WING_DIMENSIONS.drawers.rodWidthClearanceM
+      CORNER_WING_DRAWER_POLICY.rodMinLengthM,
+      cellRuntime.cellInnerW - CORNER_WING_DRAWER_POLICY.rodWidthClearanceM
     );
     const rod = new runtime.THREE.Mesh(
       new runtime.THREE.CylinderGeometry(
-        INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
-        INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
+        INTERIOR_ROD_RENDER_POLICY.radiusM,
+        INTERIOR_ROD_RENDER_POLICY.radiusM,
         rodLen,
-        INTERIOR_FITTINGS_DIMENSIONS.rods.radialSegments
+        INTERIOR_ROD_RENDER_POLICY.radialSegments
       ),
       runtime.getMaterial(null, 'metal')
     );
@@ -71,8 +69,8 @@ export function createCornerWingInteriorLayoutOps(
         yPos,
         cellRuntime.__fullDepthCenterZ,
         Math.max(
-          CORNER_WING_DIMENSIONS.drawers.rodMinLengthM,
-          cellRuntime.cellInnerW - CORNER_WING_DIMENSIONS.drawers.hangingClothesWidthClearanceM
+          CORNER_WING_DRAWER_POLICY.rodMinLengthM,
+          cellRuntime.cellInnerW - CORNER_WING_DRAWER_POLICY.hangingClothesWidthClearanceM
         ),
         runtime.wingGroup,
         distToBottom,
@@ -103,8 +101,8 @@ export function emitCornerWingExternalDrawers(
   const drawerHeightTotal = cell.drawerHeightTotal;
   if (!(drawerHeightTotal > 0)) return;
 
-  const shoeDrawerHeight = CORNER_WING_DIMENSIONS.drawers.shoeHeightM;
-  const regDrawerHeight = CORNER_WING_DIMENSIONS.drawers.externalRegularHeightM;
+  const shoeDrawerHeight = CORNER_WING_DRAWER_POLICY.shoeHeightM;
+  const regDrawerHeight = CORNER_WING_DRAWER_POLICY.externalRegularHeightM;
   const scopeExtDrawerKey = (id: string): string =>
     runtime.__stackKey === 'bottom' ? runtime.__stackScopePartKey(id) : id;
 
@@ -114,8 +112,8 @@ export function emitCornerWingExternalDrawers(
       cellW,
       runtime.woodThick,
       Math.max(
-        CORNER_WING_DIMENSIONS.drawers.shelfOverDrawerMinDepthM,
-        cellD - CORNER_WING_DIMENSIONS.drawers.shelfOverDrawerDepthClearanceM
+        CORNER_WING_DRAWER_POLICY.shelfOverDrawerMinDepthM,
+        cellD - CORNER_WING_DRAWER_POLICY.shelfOverDrawerDepthClearanceM
       )
     ),
     runtime.getCornerShelfMat(shelfOverDrawersPartId, false)
@@ -139,12 +137,12 @@ export function emitCornerWingExternalDrawers(
     const id = scopeExtDrawerKey(idRaw);
     const divId = scopeExtDrawerKey(divIdRaw);
     const dW = Math.max(
-      CORNER_WING_DIMENSIONS.drawers.internalMinWidthM,
-      cellW - CORNER_WING_DIMENSIONS.drawers.externalVisualWidthClearanceM
+      CORNER_WING_DRAWER_POLICY.internalMinWidthM,
+      cellW - CORNER_WING_DRAWER_POLICY.externalVisualWidthClearanceM
     );
     const boxW = Math.max(
-      CORNER_WING_DIMENSIONS.drawers.internalMinWidthM,
-      cellW - CORNER_WING_DIMENSIONS.drawers.externalBoxWidthClearanceM
+      CORNER_WING_DRAWER_POLICY.internalMinWidthM,
+      cellW - CORNER_WING_DRAWER_POLICY.externalBoxWidthClearanceM
     );
     const divMap = runtime.readMap('drawerDividersMap');
     const hasDivider = !!(divMap && (divMap[divId] || divMap[id]));
@@ -185,7 +183,7 @@ export function emitCornerWingExternalDrawers(
     dGroup.userData.__doorHeight = height;
     dGroup.userData.__wpFaceOffsetX = 0;
     dGroup.userData.__wpFaceOffsetY = 0;
-    dGroup.userData.__wpFrontZ = cellRuntime.__z(CORNER_WING_DIMENSIONS.drawers.externalFrontOffsetZM);
+    dGroup.userData.__wpFrontZ = cellRuntime.__z(CORNER_WING_DRAWER_POLICY.externalFrontOffsetZM);
     dGroup.userData.__wpFrontThickness = runtime.woodThick;
 
     const dVis = runtime.createDoorVisual(
@@ -212,12 +210,12 @@ export function emitCornerWingExternalDrawers(
     dVis.position.set(0, 0, 0);
 
     const drawerBoxDepth = Math.max(
-      CORNER_WING_DIMENSIONS.drawers.internalMinDepthM,
-      cellD - CORNER_WING_DIMENSIONS.drawers.externalBoxDepthBackClearanceM
+      CORNER_WING_DRAWER_POLICY.internalMinDepthM,
+      cellD - CORNER_WING_DRAWER_POLICY.externalBoxDepthBackClearanceM
     );
     const dBox = runtime.createInternalDrawerBox(
       boxW,
-      height - CORNER_WING_DIMENSIONS.drawers.externalBoxHeightClearanceM,
+      height - CORNER_WING_DRAWER_POLICY.externalBoxHeightClearanceM,
       drawerBoxDepth,
       drawerBoxMat,
       drawerBoxMat,
@@ -226,7 +224,7 @@ export function emitCornerWingExternalDrawers(
       false,
       isGlass ? { omitFrontPanel: true } : null
     );
-    dBox.position.set(0, 0, -cellD / 2 + CORNER_WING_DIMENSIONS.drawers.externalBoxOffsetZM);
+    dBox.position.set(0, 0, -cellD / 2 + CORNER_WING_DRAWER_POLICY.externalBoxOffsetZM);
     dBox.userData = {
       ...dBox.userData,
       partId: drawerBoxPartId,
@@ -236,7 +234,7 @@ export function emitCornerWingExternalDrawers(
       __wpDrawerBox: true,
       __wpDrawerOwnerPartId: id,
       __doorWidth: boxW,
-      __doorHeight: height - CORNER_WING_DIMENSIONS.drawers.externalBoxHeightClearanceM,
+      __doorHeight: height - CORNER_WING_DRAWER_POLICY.externalBoxHeightClearanceM,
     };
 
     dGroup.add(dBox);
@@ -261,12 +259,12 @@ export function emitCornerWingExternalDrawers(
     const closed = new runtime.THREE.Vector3(
       cellCenterX,
       yPos,
-      cellRuntime.__z(CORNER_WING_DIMENSIONS.drawers.externalFrontOffsetZM)
+      cellRuntime.__z(CORNER_WING_DRAWER_POLICY.externalFrontOffsetZM)
     );
     const open = new runtime.THREE.Vector3(
       cellCenterX,
       yPos,
-      cellRuntime.__z(CORNER_WING_DIMENSIONS.drawers.externalOpenOffsetZM)
+      cellRuntime.__z(CORNER_WING_DRAWER_POLICY.externalOpenOffsetZM)
     );
     dGroup.position.copy(closed);
     runtime.wingGroup.add(dGroup);
@@ -308,18 +306,18 @@ export function emitCornerWingExternalDrawers(
   const shadowPlane = new runtime.THREE.Mesh(
     new runtime.THREE.BoxGeometry(
       Math.max(
-        CORNER_WING_DIMENSIONS.drawers.rodMinLengthM,
-        cellW - CORNER_WING_DIMENSIONS.drawers.drawerShadowWidthClearanceM
+        CORNER_WING_DRAWER_POLICY.rodMinLengthM,
+        cellW - CORNER_WING_DRAWER_POLICY.drawerShadowWidthClearanceM
       ),
-      CORNER_WING_DIMENSIONS.drawers.drawerShadowHeightM,
-      CORNER_WING_DIMENSIONS.drawers.drawerShadowDepthM
+      CORNER_WING_DRAWER_POLICY.drawerShadowHeightM,
+      CORNER_WING_DRAWER_POLICY.drawerShadowDepthM
     ),
     runtime.shadowMat
   );
   shadowPlane.position.set(
     cellCenterX,
     cellRuntime.effectiveBottomY,
-    cellRuntime.__z(CORNER_WING_DIMENSIONS.drawers.drawerShadowFrontOffsetM)
+    cellRuntime.__z(CORNER_WING_DRAWER_POLICY.drawerShadowFrontOffsetM)
   );
   shadowPlane.name = `wp_drawer_shadow_plane_corner_c${cell.idx}`;
   shadowPlane.userData = shadowPlane.userData || {};

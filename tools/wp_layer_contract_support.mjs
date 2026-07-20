@@ -729,8 +729,33 @@ const BUDGET_DIMENSIONS = Object.freeze([
   ['dynamicImportCount', 'maxDynamicImportCount', 'dynamic-import-growth', 'dynamicImporterFiles'],
 ]);
 
-function matchingMigrationImports(graph, fromFile, spec) {
-  return (graph.imports || []).filter(entry => entry.fromFile === fromFile && entry.toFile === spec.toFile);
+function matchingMigrationStatements(graph, fromFile, spec) {
+  const statements = new Map();
+  for (const entry of graph.imports || []) {
+    if (entry.fromFile !== fromFile || entry.toFile !== spec.toFile) continue;
+    const statementKey = String(entry.statementKey || `${entry.fromFile}:${entry.toFile}:${statements.size}`);
+    const statement = statements.get(statementKey) || { statementKey, entries: [] };
+    statement.entries.push(entry);
+    statements.set(statementKey, statement);
+  }
+  return [...statements.values()];
+}
+
+function mixedMigrationStatementDetails(statement) {
+  const kinds = [...new Set(statement.entries.map(entry => entry.kind))].sort();
+  if (kinds.length <= 1) return null;
+  return {
+    statementKey: statement.statementKey,
+    currentKinds: kinds,
+    currentSyntaxes: [...new Set(statement.entries.map(entry => entry.syntax))].sort(),
+    entries: statement.entries
+      .map(entry => ({
+        kind: entry.kind,
+        syntax: entry.syntax,
+        importedSymbols: [...(entry.importedSymbols || [])].sort(),
+      }))
+      .sort((left, right) => left.kind.localeCompare(right.kind)),
+  };
 }
 
 function migrationImportFailureKind(field, count) {
@@ -758,8 +783,8 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
         reviewBy: budget.reviewBy,
       });
     }
-    const addedMatches = matchingMigrationImports(graph, fromFile, budget.addedImport);
-    const companionMatches = matchingMigrationImports(graph, fromFile, budget.companionImport);
+    const addedMatches = matchingMigrationStatements(graph, fromFile, budget.addedImport);
+    const companionMatches = matchingMigrationStatements(graph, fromFile, budget.companionImport);
     const removedMatches = (graph.imports || []).filter(
       entry => entry.fromFile === fromFile && entry.toFile === budget.removedImport.toFile
     );
@@ -782,7 +807,24 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
         });
         continue;
       }
-      if (matches[0].syntax !== expected.syntax) {
+      const statement = matches[0];
+      const mixedDetails = mixedMigrationStatementDetails(statement);
+      if (mixedDetails) {
+        entryFailures.push({
+          kind: 'migration-import-mixed-kind-drift',
+          from: budget.from,
+          to: budget.to,
+          fromFile,
+          field,
+          toFile: expected.toFile,
+          expectedKind: expected.kind,
+          expectedSyntax: expected.syntax,
+          ...mixedDetails,
+        });
+        continue;
+      }
+      const [match] = statement.entries;
+      if (match.syntax !== expected.syntax) {
         entryFailures.push({
           kind: 'migration-import-syntax-drift',
           from: budget.from,
@@ -790,12 +832,12 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
           fromFile,
           field,
           toFile: expected.toFile,
-          currentSyntax: matches[0].syntax,
+          currentSyntax: match.syntax,
           expectedSyntax: expected.syntax,
         });
         continue;
       }
-      if (matches[0].kind !== expected.kind) {
+      if (match.kind !== expected.kind) {
         entryFailures.push({
           kind: 'migration-import-kind-drift',
           from: budget.from,
@@ -803,12 +845,12 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
           fromFile,
           field,
           toFile: expected.toFile,
-          currentKind: matches[0].kind,
+          currentKind: match.kind,
           expectedKind: expected.kind,
         });
         continue;
       }
-      if (!sameStringList(matches[0].importedSymbols, expected.importedSymbols)) {
+      if (!sameStringList(match.importedSymbols, expected.importedSymbols)) {
         entryFailures.push({
           kind: 'migration-import-symbol-drift',
           from: budget.from,
@@ -817,7 +859,7 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
           field,
           toFile: expected.toFile,
           importKind: expected.kind,
-          currentSymbols: [...(matches[0].importedSymbols || [])].sort(),
+          currentSymbols: [...(match.importedSymbols || [])].sort(),
           expectedSymbols: [...expected.importedSymbols].sort(),
         });
       }
@@ -838,7 +880,7 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
 
     failures.push(...entryFailures);
     if (entryFailures.length === 0) {
-      const added = addedMatches[0];
+      const [added] = addedMatches[0].entries;
       const current = approvedStatements.get(edge) || {
         all: new Set(),
         type: new Set(),

@@ -1,7 +1,10 @@
+import { BASE_PLATFORM_RENDER_POLICY } from '../../shared/dimensions/base_platform_render_policy.js';
+import { BASE_PLINTH_POLICY } from '../../shared/dimensions/base_plinth_policy.js';
 import {
-  CARCASS_BASE_DIMENSIONS,
-  CORNER_WING_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  CORNER_CONNECTOR_SHELL_POLICY,
+  CORNER_WING_PANEL_POLICY,
+  CORNER_WING_SELECTOR_POLICY,
+} from '../../shared/dimensions/corner_system_policy.js';
 import type { CornerWingCarcassFlowParams } from './corner_wing_carcass_shared.js';
 import { addCornerHexHorizontalBoard } from './corner_wing_hex_cell_geometry.js';
 import { isCornerMultiColorModeEnabled } from './corner_config_readers.js';
@@ -10,8 +13,8 @@ import {
   resolveCornerWingHorizPlacement,
 } from './corner_wing_carcass_shell_metrics.js';
 
-const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
-const LEG_PLATFORM_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs.platform;
+const PLINTH_DIMENSIONS = BASE_PLINTH_POLICY;
+const LEG_PLATFORM_DIMENSIONS = BASE_PLATFORM_RENDER_POLICY;
 
 function asFinitePositive(value: unknown, defaultValue = 0): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : defaultValue;
@@ -69,7 +72,7 @@ export function applyCornerWingCarcassFloorAndBase(
 
   const __frameFloorMat = getCornerMat('corner_floor', bodyMat);
   const __useUnifiedTopMiddleFloorKey = __stackSplitUnifiedFrame && __stackKey === 'top';
-  const __floorY = startY + woodThick / 2 + CORNER_WING_DIMENSIONS.connector.shellWallHeightClearanceM;
+  const __floorY = startY + woodThick / 2 + CORNER_CONNECTOR_SHELL_POLICY.shellWallHeightClearanceM;
 
   const __resolveFloorPartId = (partId: string): string => {
     if (!__useUnifiedTopMiddleFloorKey) return partId;
@@ -87,12 +90,7 @@ export function applyCornerWingCarcassFloorAndBase(
     moduleIndex?: string
   ) => {
     const d = Number.isFinite(depth) && depth > 0 ? depth : wingD;
-    const __hz = resolveCornerWingHorizPlacement(
-      params,
-      metrics,
-      d,
-      CORNER_WING_DIMENSIONS.panels.minWallDepthM
-    );
+    const __hz = resolveCornerWingHorizPlacement(params, metrics, d, CORNER_WING_PANEL_POLICY.minWallDepthM);
     const floorD = __hz.depth;
     const w = Math.max(PLINTH_DIMENSIONS.minSegmentWidthM, segW + PLINTH_DIMENSIONS.segmentWidthEpsilonM);
     const paintPartId = __resolveFloorPartId(partId);
@@ -110,7 +108,7 @@ export function applyCornerWingCarcassFloorAndBase(
   };
 
   if (cornerCells.length > 0) {
-    if (blindWidth > CORNER_WING_DIMENSIONS.panels.minBlindWidthM) {
+    if (blindWidth > CORNER_WING_PANEL_POLICY.minBlindWidthM) {
       __addFloorSeg(blindWidth, blindWidth / 2, wingD, 'corner_floor_blind', 'corner');
     }
     if (metrics.__wingIsUnifiedCabinet) {
@@ -120,7 +118,7 @@ export function applyCornerWingCarcassFloorAndBase(
         const cx = readNumFrom(cell, 'centerX', 0);
         const w = readNumFrom(cell, 'width', 0);
         const d0 = readNumFrom(cell, 'depth', NaN);
-        const d = Number.isFinite(d0) ? Math.max(CORNER_WING_DIMENSIONS.panels.minCellDepthM, d0) : wingD;
+        const d = Number.isFinite(d0) ? Math.max(CORNER_WING_PANEL_POLICY.minCellDepthM, d0) : wingD;
         const idx = Math.floor(readNumFrom(cell, 'idx', 0));
         const pid = `corner_floor_c${idx}`;
         const key = readStrFrom(cell, 'key', 'corner');
@@ -142,12 +140,12 @@ export function applyCornerWingCarcassFloorAndBase(
       }
     }
   } else {
-    const floorW = Math.max(CORNER_WING_DIMENSIONS.selector.fallbackMinWidthM, wingW - woodThick);
+    const floorW = Math.max(CORNER_WING_SELECTOR_POLICY.fallbackMinWidthM, wingW - woodThick);
     const __hz = resolveCornerWingHorizPlacement(
       params,
       metrics,
       wingD,
-      CORNER_WING_DIMENSIONS.panels.minWallDepthM
+      CORNER_WING_PANEL_POLICY.minWallDepthM
     );
     const paintPartId = __resolveFloorPartId('corner_floor');
     const floorMat = paintPartId === 'corner_floor' ? __frameFloorMat : getCornerMat(paintPartId, bodyMat);
@@ -249,7 +247,7 @@ export function applyCornerWingCarcassFloorAndBase(
 
   if (baseType === 'legs' && baseLegPlatformMode === 'stage') {
     if (cornerCells.length > 0) {
-      const hasBlind = blindWidth > CORNER_WING_DIMENSIONS.panels.minBlindWidthM;
+      const hasBlind = blindWidth > CORNER_WING_PANEL_POLICY.minBlindWidthM;
       if (hasBlind) {
         __addLegPlatformPair(blindWidth, blindWidth / 2, wingD, 'corner', true, false);
       }
@@ -261,18 +259,18 @@ export function applyCornerWingCarcassFloorAndBase(
           const cx = readNumFrom(cell, 'centerX', 0);
           const w = readNumFrom(cell, 'width', 0);
           const d0 = readNumFrom(cell, 'depth', NaN);
-          const d = Number.isFinite(d0) ? Math.max(CORNER_WING_DIMENSIONS.panels.minCellDepthM, d0) : wingD;
+          const d = Number.isFinite(d0) ? Math.max(CORNER_WING_PANEL_POLICY.minCellDepthM, d0) : wingD;
           const key = readStrFrom(cell, 'key', 'corner');
           __addLegPlatformPair(w, cx, d, key, !hasBlind && i === 0, i === cornerCells.length - 1);
         }
       }
     } else {
-      const platformW = Math.max(CORNER_WING_DIMENSIONS.selector.fallbackMinWidthM, wingW - woodThick);
+      const platformW = Math.max(CORNER_WING_SELECTOR_POLICY.fallbackMinWidthM, wingW - woodThick);
       __addLegPlatformPair(platformW, platformW / 2, wingD, 'corner', true, true);
     }
   }
 
-  if (baseType !== 'plinth' || baseH <= CORNER_WING_DIMENSIONS.panels.minBlindWidthM) return;
+  if (baseType !== 'plinth' || baseH <= CORNER_WING_PANEL_POLICY.minBlindWidthM) return;
 
   let __plinthMat = bodyMat;
   if (isCornerMultiColorModeEnabled(__cfg) && __individualColors['corner_plinth']) {
@@ -300,7 +298,7 @@ export function applyCornerWingCarcassFloorAndBase(
   };
 
   if (cornerCells.length > 0) {
-    if (blindWidth > CORNER_WING_DIMENSIONS.panels.minBlindWidthM) {
+    if (blindWidth > CORNER_WING_PANEL_POLICY.minBlindWidthM) {
       __addPlinthSeg(blindWidth, blindWidth / 2, wingD, 'corner_plinth_blind', 'corner');
     }
     if (metrics.__wingIsUnifiedCabinet) {
@@ -310,7 +308,7 @@ export function applyCornerWingCarcassFloorAndBase(
         const cx = readNumFrom(cell, 'centerX', 0);
         const w = readNumFrom(cell, 'width', 0);
         const d0 = readNumFrom(cell, 'depth', NaN);
-        const d = Number.isFinite(d0) ? Math.max(CORNER_WING_DIMENSIONS.panels.minCellDepthM, d0) : wingD;
+        const d = Number.isFinite(d0) ? Math.max(CORNER_WING_PANEL_POLICY.minCellDepthM, d0) : wingD;
         const idx = Math.floor(readNumFrom(cell, 'idx', 0));
         const pid = `corner_plinth_c${idx}`;
         const key = readStrFrom(cell, 'key', 'corner');
