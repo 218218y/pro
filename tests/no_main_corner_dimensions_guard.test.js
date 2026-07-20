@@ -22,10 +22,34 @@ test('[no-main corner] standalone corner dimensions stay enabled and wing dimens
     dimensionsCorner,
     /getBuildUIFromPlatform|reportPostBuildSoft|dimensions\.cornerUiRead/
   );
+  assert.match(
+    dimensionsCorner,
+    /import\s*\{[\s\S]*CORNER_CONNECTOR_LAYOUT_POLICY,[\s\S]*CORNER_WING_BODY_POLICY,[\s\S]*\}\s*from\s*'\.\.\/\.\.\/shared\/dimensions\/corner_system_policy\.js';/
+  );
+  assert.match(
+    dimensionsCorner,
+    /import \{ CM_PER_METER \} from '\.\.\/\.\.\/shared\/dimensions\/units\.js';/
+  );
+  assert.match(
+    dimensionsCorner,
+    /import \{ WARDROBE_DEFAULTS \} from '\.\.\/\.\.\/shared\/dimensions\/wardrobe_defaults\.js';/
+  );
+  assert.doesNotMatch(
+    dimensionsCorner,
+    /wardrobe_dimension_tokens_shared|CORNER_WING_DIMENSIONS|CORNER_SYSTEM_POLICY/
+  );
   assert.match(dimensionsCorner, /let cornerWingDoorCount: number = WARDROBE_DEFAULTS\.corner\.doorsCount;/);
   assert.match(
     dimensionsCorner,
-    /let cornerWingLenM = CORNER_WING_DIMENSIONS\.wing\.defaultWidthCm \/ CM_PER_METER;/
+    /let cornerWallLenM: number = CORNER_CONNECTOR_LAYOUT_POLICY\.defaultWallLengthM;/
+  );
+  assert.match(
+    dimensionsCorner,
+    /let cornerWingLenM = CORNER_WING_BODY_POLICY\.defaultWidthCm \/ CM_PER_METER;/
+  );
+  assert.match(
+    dimensionsCorner,
+    /wallLenCm > CORNER_CONNECTOR_LAYOUT_POLICY\.minWallLengthM \* CM_PER_METER/
   );
   assert.match(dimensionsCorner, /const cornerDoorsRaw = readKey\(ui, 'cornerDoors'\);/);
 
