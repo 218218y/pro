@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 112, statements: 112 }),
+  'static-import': Object.freeze({ importers: 111, statements: 111 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 114, statements: 115 }),
+  total: Object.freeze({ importers: 113, statements: 114 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -134,7 +134,6 @@ const APPROVED_STACK_SPLIT_FACADE_SYMBOLS = Object.freeze([
 ]);
 const APPROVED_STACK_SPLIT_FACADE_IMPORTS = Object.freeze({
   'esm/native/builder/build_flow_plan_inputs.ts': Object.freeze(['STACK_SPLIT_SEAM_GAP_M']),
-  'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze(['DEFAULT_STACK_SPLIT_LOWER_HEIGHT']),
   'esm/native/data/preset_models_data.ts': Object.freeze(['DEFAULT_STACK_SPLIT_LOWER_HEIGHT']),
   'esm/native/features/library_preset/library_preset_flow_shared.ts': Object.freeze([
     'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
@@ -158,12 +157,16 @@ const CARCASS_SHELL_DIRECT_CONSUMERS = Object.freeze([
   'esm/native/services/canvas_picking_split_hover_preview_line.ts',
   'esm/shared/dimensions/corner_system_policy.ts',
 ]);
-const CARCASS_INTERIOR_DIRECT_CONSUMERS = Object.freeze(['esm/native/builder/build_flow_plan.ts']);
+const CARCASS_INTERIOR_DIRECT_CONSUMERS = Object.freeze([
+  'esm/native/builder/build_flow_plan.ts',
+  'esm/native/builder/build_stack_split_lower_setup.ts',
+]);
 const APPROVED_INTERIOR_GRID_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/build_wardrobe_flow_context_carcass.ts': Object.freeze([
     'CARCASS_INTERIOR_GRID_POLICY',
   ]),
   'esm/native/builder/module_loop_pipeline_module_frame.ts': Object.freeze(['CARCASS_INTERIOR_GRID_POLICY']),
+  'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze(['CARCASS_INTERIOR_GRID_POLICY']),
   'esm/native/services/canvas_picking_interior_hover_layout_mode.ts': Object.freeze([
     'CARCASS_INTERIOR_GRID_POLICY',
   ]),
@@ -173,10 +176,6 @@ const APPROVED_INTERIOR_GRID_OWNER_IMPORTS = Object.freeze({
   'esm/shared/dimensions/carcass_shell_policy.ts': Object.freeze(['CARCASS_INTERIOR_GRID_POLICY']),
 });
 const APPROVED_SHELL_GRID_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze([
-    'drawerGridDivisions',
-    'drawerSplitGridLineIndex',
-  ]),
   'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['drawerGridDivisions']),
 });
 const APPROVED_BASE_PLINTH_OWNER_IMPORTS = Object.freeze({
@@ -1226,6 +1225,9 @@ const APPROVED_FRONT_REVEAL_OWNER_IMPORTS = Object.freeze({
 const APPROVED_FRONT_REVEAL_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_FRONT_REVEAL_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_HANDLE_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze([
+    'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
+  ]),
   'esm/native/builder/render_ops_primitives.ts': Object.freeze([
     'EDGE_HANDLE_SIZE_POLICY',
     'STANDARD_HANDLE_RENDER_POLICY',
@@ -1280,17 +1282,8 @@ const APPROVED_HANDLE_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['HANDLE_POLICY']),
 });
-const APPROVED_HANDLE_LEGACY_DEPENDENCIES = Object.freeze({
-  'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
-});
-const APPROVED_HANDLE_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze([
-    'edge',
-    'edge.defaultGlobalAbsYM',
-    'edge.drawerLiftClearanceM',
-    'edge.drawerLiftThresholdYM',
-  ]),
-});
+const APPROVED_HANDLE_LEGACY_DEPENDENCIES = Object.freeze({});
+const APPROVED_HANDLE_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_CONTENT_VISUAL_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/visuals_contents_folded.ts': Object.freeze([
     'BOOK_CONTENT_VISUAL_POLICY',

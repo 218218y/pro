@@ -661,7 +661,7 @@ test('[dimension tokens] Drawer and Handle mixed consumers use only focused cano
       return /\bHANDLE_DIMENSIONS\b/u.test(fs.readFileSync(file, 'utf8'));
     })
     .map(file => path.relative(ROOT, file).replaceAll('\\', '/'));
-  assert.deepEqual(remainingHandleConsumers, ['esm/native/builder/build_stack_split_lower_setup.ts']);
+  assert.deepEqual(remainingHandleConsumers, []);
 });
 
 test('[dimension tokens] Builder Interior ownership and render primitives use focused canonical owners', () => {
@@ -725,7 +725,7 @@ test('[dimension tokens] Builder Interior ownership and render primitives use fo
       return /\bHANDLE_DIMENSIONS\b/u.test(fs.readFileSync(file, 'utf8'));
     })
     .map(file => path.relative(ROOT, file).replaceAll('\\', '/'));
-  assert.deepEqual(remainingHandleConsumers, ['esm/native/builder/build_stack_split_lower_setup.ts']);
+  assert.deepEqual(remainingHandleConsumers, []);
 });
 
 test('[dimension tokens] Service Interior and Material readers use focused canonical owners without Sketch Box', () => {
@@ -829,7 +829,40 @@ test('[dimension tokens] Service Interior and Material readers use focused canon
       return /\bHANDLE_DIMENSIONS\b/u.test(fs.readFileSync(file, 'utf8'));
     })
     .map(file => path.relative(ROOT, file).replaceAll('\\', '/'));
-  assert.deepEqual(remainingHandleConsumers, ['esm/native/builder/build_stack_split_lower_setup.ts']);
+  assert.deepEqual(remainingHandleConsumers, []);
+});
+
+test('[dimension tokens] Stack Split Lower uses only focused canonical owners', () => {
+  const rel = 'esm/native/builder/build_stack_split_lower_setup.ts';
+  const source = read(rel);
+  for (const policy of [
+    'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
+    'CARCASS_INTERIOR_DIMENSIONS',
+    'CARCASS_INTERIOR_GRID_POLICY',
+    'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
+  ]) {
+    assertUsesToken(rel, policy);
+  }
+  assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared/u);
+  assert.doesNotMatch(source, /\b(?:HANDLE_DIMENSIONS|CARCASS_SHELL_DIMENSIONS)\b/u);
+  assert.doesNotMatch(source, /\b(?:HANDLE_POLICY|STACK_SPLIT_POLICY)\b/u);
+  assert.doesNotMatch(source, /CARCASS_SHELL_DIMENSIONS\.drawer(?:GridDivisions|SplitGridLineIndex)/u);
+  assert.match(source, /CARCASS_INTERIOR_GRID_POLICY\.divisions/u);
+  assert.match(source, /CARCASS_INTERIOR_GRID_POLICY\.drawerSplitLineIndex/u);
+  assert.match(source, /CARCASS_INTERIOR_DIMENSIONS\.internalBackInsetM/u);
+  assert.match(source, /EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY\.defaultGlobalAbsYM/u);
+  assert.match(source, /EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY\.drawerLiftThresholdYM/u);
+  assert.match(source, /EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY\.drawerLiftClearanceM/u);
+  assert.doesNotMatch(source, /import\s+\*\s+as/u);
+  assert.doesNotMatch(source, /export\s+(?:type\s+)?(?:\*|\{)/u);
+
+  const remainingHandleConsumers = listFilesRecursively(path.join(ROOT, 'esm'))
+    .filter(file => {
+      if (file.endsWith('wardrobe_dimension_tokens_shared.ts')) return false;
+      return /\bHANDLE_DIMENSIONS\b/u.test(fs.readFileSync(file, 'utf8'));
+    })
+    .map(file => path.relative(ROOT, file).replaceAll('\\', '/'));
+  assert.deepEqual(remainingHandleConsumers, []);
 });
 
 test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage dimensions are centralized', () => {

@@ -2227,6 +2227,108 @@
       },
       "reason": "The split-hover preview-line resolver replaces one legacy facade statement with the canonical Hinged Door Split owner plus the focused Material Thickness fallback owner on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed split-hover preview composition seam eliminates the extra Material Thickness fallback statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/build_stack_split_lower_setup.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_INTERIOR_DIMENSIONS",
+          "CARCASS_SHELL_DIMENSIONS",
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "HANDLE_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/carcass_interior_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_INTERIOR_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Stack Split Lower setup replaces one legacy facade statement with the canonical Stack Split default owner plus the focused Carcass Interior back-inset owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Stack Split Lower composition seam eliminates the extra Carcass Interior back-inset statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/build_stack_split_lower_setup.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_INTERIOR_DIMENSIONS",
+          "CARCASS_SHELL_DIMENSIONS",
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "HANDLE_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/carcass_interior_grid_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_INTERIOR_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Stack Split Lower setup replaces one legacy facade statement with the canonical Stack Split default owner plus the focused Carcass Interior Grid split-ratio owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Stack Split Lower composition seam eliminates the extra Carcass Interior Grid split-ratio statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/build_stack_split_lower_setup.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_INTERIOR_DIMENSIONS",
+          "CARCASS_SHELL_DIMENSIONS",
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "HANDLE_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/handle_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Stack Split Lower setup replaces one legacy facade statement with the canonical Stack Split default owner plus the focused Handle vertical-placement owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Stack Split Lower composition seam eliminates the extra Handle vertical-placement statement without reintroducing the legacy facade."
     }
   ]
 }

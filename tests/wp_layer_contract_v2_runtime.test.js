@@ -881,7 +881,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at forty-seven reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at fifty reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -1039,8 +1039,22 @@ test('project migration ledger stays exact at forty-seven reviewed statements wi
       'esm/native/services/canvas_picking_split_hover_preview_line.ts',
       'esm/shared/dimensions/material_thickness_policy.ts',
     ],
+    [
+      'esm/native/builder/build_stack_split_lower_setup.ts',
+      'esm/shared/dimensions/carcass_interior_policy.ts',
+    ],
+    [
+      'esm/native/builder/build_stack_split_lower_setup.ts',
+      'esm/shared/dimensions/carcass_interior_grid_policy.ts',
+    ],
+    ['esm/native/builder/build_stack_split_lower_setup.ts', 'esm/shared/dimensions/handle_policy.ts'],
   ];
 
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets.slice(0, 47)),
+    '5bccd600217eaa992d4442c13b85143d25e5d05f79ce92222406a99b39ea5da6',
+    'the forty-seven previously reviewed migration entries must remain semantically unchanged'
+  );
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 41)),
     '3f529bc4b53c478ea6afd6b8ac80202a77cb530189a7bf45f0aada7fc05c9b9c',
@@ -1072,14 +1086,14 @@ test('project migration ledger stays exact at forty-seven reviewed statements wi
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 47);
+  assert.equal(report.migrationBudgets.length, 50);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
   );
 
   const expectedEdges = new Map([
-    ['builder>shared', { observed: 246, migration: 27, reviewed: 219, budget: 219 }],
+    ['builder>shared', { observed: 249, migration: 30, reviewed: 219, budget: 219 }],
     ['features>shared', { observed: 59, migration: 1, reviewed: 58, budget: 58 }],
     ['services>shared', { observed: 186, migration: 19, reviewed: 167, budget: 167 }],
   ]);
@@ -1542,7 +1556,7 @@ test('repository Drawer and Handle migration ledger entries are exact and additi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools', 'wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 47);
+  assert.equal(baseline.migrationBudgets.length, 50);
 
   const expected = [
     [
@@ -1620,7 +1634,7 @@ test('repository Builder Interior ownership migration entries are exact and addi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 47);
+  assert.equal(baseline.migrationBudgets.length, 50);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 22)),
     'f77d520ad443232af84217ded9adf59546df8d7fcf530b54ac1152ae5ca5cdd4'
@@ -1724,7 +1738,7 @@ test('repository Service Interior and Material migration entries are exact and a
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 47);
+  assert.equal(baseline.migrationBudgets.length, 50);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 30)),
     '9f2047a5d47e2f73f4b0f9621ee60d593eea946a439df2b17961902ff375fb42',
@@ -1848,7 +1862,7 @@ test('repository Split Hover Preview Line migration entries are exact and additi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 47);
+  assert.equal(baseline.migrationBudgets.length, 50);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 41)),
     '3f529bc4b53c478ea6afd6b8ac80202a77cb530189a7bf45f0aada7fc05c9b9c',
@@ -1866,7 +1880,7 @@ test('repository Split Hover Preview Line migration entries are exact and additi
     ['esm/shared/dimensions/interior_storage_policy.ts', ['INTERIOR_STORAGE_BARRIER_POLICY']],
     ['esm/shared/dimensions/material_thickness_policy.ts', ['MATERIAL_THICKNESS_POLICY']],
   ];
-  const entries = baseline.migrationBudgets.slice(41);
+  const entries = baseline.migrationBudgets.slice(41, 47);
   assert.deepEqual(
     entries.map(entry => [entry.addedImport.toFile, entry.addedImport.importedSymbols]),
     expected
@@ -1904,5 +1918,60 @@ test('repository Split Hover Preview Line migration entries are exact and additi
     assert.equal(entry.reviewBy, '2026-10-18');
     assert.match(entry.reason, /split-hover preview-line resolver/u);
     assert.match(entry.removalCondition, /split-hover preview composition seam/u);
+  }
+});
+
+test('repository Stack Split Lower migration entries are exact and additive-only', () => {
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const baseline = JSON.parse(
+    fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
+  );
+  assert.equal(baseline.migrationBudgets.length, 50);
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets.slice(0, 47)),
+    '5bccd600217eaa992d4442c13b85143d25e5d05f79ce92222406a99b39ea5da6',
+    'the forty-seven previously reviewed migration entries must remain semantically unchanged'
+  );
+
+  const entries = baseline.migrationBudgets.slice(47);
+  assert.deepEqual(
+    entries.map(entry => [entry.addedImport.toFile, entry.addedImport.importedSymbols]),
+    [
+      ['esm/shared/dimensions/carcass_interior_policy.ts', ['CARCASS_INTERIOR_DIMENSIONS']],
+      ['esm/shared/dimensions/carcass_interior_grid_policy.ts', ['CARCASS_INTERIOR_GRID_POLICY']],
+      ['esm/shared/dimensions/handle_policy.ts', ['EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY']],
+    ]
+  );
+
+  const removedSymbols = [
+    'CARCASS_INTERIOR_DIMENSIONS',
+    'CARCASS_SHELL_DIMENSIONS',
+    'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
+    'HANDLE_DIMENSIONS',
+  ];
+  for (const entry of entries) {
+    assert.equal(entry.from, 'builder');
+    assert.equal(entry.to, 'shared');
+    assert.equal(entry.fromFile, 'esm/native/builder/build_stack_split_lower_setup.ts');
+    assert.equal(entry.additionalStatements, 1);
+    assert.equal(entry.owner, 'dimension-ownership-migration');
+    assert.equal(entry.addedImport.kind, 'value');
+    assert.equal(entry.addedImport.syntax, 'static-import');
+    assert.deepEqual(entry.companionImport, {
+      toFile: 'esm/shared/dimensions/stack_split_policy.ts',
+      kind: 'value',
+      importedSymbols: ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT'],
+      syntax: 'static-import',
+    });
+    assert.deepEqual(entry.removedImport, {
+      toFile: 'esm/shared/wardrobe_dimension_tokens_shared.ts',
+      kind: 'value',
+      importedSymbols: removedSymbols,
+      syntax: 'static-import',
+    });
+    assert.equal(entry.reviewedAt, '2026-07-20');
+    assert.equal(entry.reviewBy, '2026-10-18');
+    assert.match(entry.reason, /Stack Split Lower setup/u);
+    assert.match(entry.removalCondition, /Stack Split Lower composition seam/u);
   }
 });
