@@ -1,4 +1,8 @@
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  CORNER_CONNECTOR_DOOR_RENDER_POLICY,
+  CORNER_CONNECTOR_HANDLE_POLICY,
+  CORNER_WING_DRAWER_POLICY,
+} from '../../shared/dimensions/corner_system_policy.js';
 import type { HexCellGeometry } from '../features/hex_cell/index.js';
 // Corner wing: shared geometry + plan helpers
 //
@@ -105,8 +109,8 @@ export function __isLongEdgeHandleVariantForPart(
 
 export function __topSplitHandleInsetForPart(cfg: ValueRecord | null | undefined, partId: string): number {
   return __isLongEdgeHandleVariantForPart(cfg, partId)
-    ? CORNER_WING_DIMENSIONS.connector.edgeHandleLongInsetM
-    : CORNER_WING_DIMENSIONS.connector.edgeHandleShortInsetM;
+    ? CORNER_CONNECTOR_HANDLE_POLICY.edgeHandleLongInsetM
+    : CORNER_CONNECTOR_HANDLE_POLICY.edgeHandleShortInsetM;
 }
 
 export function __edgeHandleLongLiftAbsYForCell(
@@ -116,8 +120,8 @@ export function __edgeHandleLongLiftAbsYForCell(
   const handleCfg = readCornerHandleCfg(cfg);
   if (!handleCfg || handleCfg.globalHandleType !== 'edge') return 0;
   const count = readExternalDrawerCount(cellCfg);
-  return count >= CORNER_WING_DIMENSIONS.connector.edgeHandleLiftDrawerCountThreshold
-    ? CORNER_WING_DIMENSIONS.connector.edgeHandleLongLiftM
+  return count >= CORNER_CONNECTOR_HANDLE_POLICY.edgeHandleLiftDrawerCountThreshold
+    ? CORNER_CONNECTOR_HANDLE_POLICY.edgeHandleLongLiftM
     : 0;
 }
 
@@ -133,7 +137,7 @@ export function __edgeHandleLongLiftAbsYForCornerCells(
     const cellCfg = isRecord(list[i]) ? list[i] : null;
     const lift = __edgeHandleLongLiftAbsYForCell(cfg, cellCfg);
     if (lift > maxLift) maxLift = lift;
-    if (maxLift >= CORNER_WING_DIMENSIONS.connector.edgeHandleLongLiftM) break;
+    if (maxLift >= CORNER_CONNECTOR_HANDLE_POLICY.edgeHandleLongLiftM) break;
   }
   return maxLift;
 }
@@ -146,7 +150,7 @@ export function __edgeHandleAlignedBaseAbsYForCornerCells(
 ): number {
   const handleCfg = readCornerHandleCfg(cfg);
   if (!handleCfg || handleCfg.globalHandleType !== 'edge')
-    return CORNER_WING_DIMENSIONS.connector.edgeHandleDefaultAbsY;
+    return CORNER_CONNECTOR_HANDLE_POLICY.edgeHandleDefaultAbsY;
 
   const list = Array.isArray(cornerCellCfgs) ? cornerCellCfgs : [];
   let maxDrawerH = 0;
@@ -156,10 +160,10 @@ export function __edgeHandleAlignedBaseAbsYForCornerCells(
     if (!c) continue;
 
     let h = 0;
-    if (hasShoeDrawer(c)) h += CORNER_WING_DIMENSIONS.drawers.shoeHeightM;
+    if (hasShoeDrawer(c)) h += CORNER_WING_DRAWER_POLICY.shoeHeightM;
 
     const count = readExternalDrawerCount(c);
-    if (count > 0) h += count * CORNER_WING_DIMENSIONS.drawers.externalRegularHeightM;
+    if (count > 0) h += count * CORNER_WING_DRAWER_POLICY.externalRegularHeightM;
 
     if (h > maxDrawerH) maxDrawerH = h;
   }
@@ -168,11 +172,11 @@ export function __edgeHandleAlignedBaseAbsYForCornerCells(
     startY +
     woodThick +
     maxDrawerH +
-    (maxDrawerH > 0 ? CORNER_WING_DIMENSIONS.connector.doorBottomOffsetM : 0);
-  if (maxDoorBottom > CORNER_WING_DIMENSIONS.connector.edgeHandleLiftDoorBottomThresholdM) {
-    return maxDoorBottom + CORNER_WING_DIMENSIONS.connector.edgeHandleLiftExtraM;
+    (maxDrawerH > 0 ? CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorBottomOffsetM : 0);
+  if (maxDoorBottom > CORNER_CONNECTOR_HANDLE_POLICY.edgeHandleLiftDoorBottomThresholdM) {
+    return maxDoorBottom + CORNER_CONNECTOR_HANDLE_POLICY.edgeHandleLiftExtraM;
   }
-  return CORNER_WING_DIMENSIONS.connector.edgeHandleDefaultAbsY;
+  return CORNER_CONNECTOR_HANDLE_POLICY.edgeHandleDefaultAbsY;
 }
 
 export function __clampHandleAbsYForPart(
@@ -183,8 +187,8 @@ export function __clampHandleAbsYForPart(
   segTopY: number
 ): number {
   const pad = __isLongEdgeHandleVariantForPart(cfg, partId)
-    ? CORNER_WING_DIMENSIONS.connector.edgeHandleLongInsetM
-    : CORNER_WING_DIMENSIONS.connector.edgeHandleShortInsetM;
+    ? CORNER_CONNECTOR_HANDLE_POLICY.edgeHandleLongInsetM
+    : CORNER_CONNECTOR_HANDLE_POLICY.edgeHandleShortInsetM;
   let y = absY;
   const minY = segBottomY + pad;
   const maxY = segTopY - pad;

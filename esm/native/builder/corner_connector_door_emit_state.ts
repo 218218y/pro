@@ -1,4 +1,4 @@
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_CONNECTOR_DOOR_RENDER_POLICY } from '../../shared/dimensions/corner_system_policy.js';
 import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 import type {
   CornerConnectorDoorContext,
@@ -41,11 +41,11 @@ export function readCornerConnectorCustomSplitCutsYInternal(
     const norms = ctx.readSplitPosListFromMap(ctx.splitMap0, partKey);
     if (!Array.isArray(norms) || !norms.length) return [];
 
-    const topEdge = ctx.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM;
+    const topEdge = ctx.effectiveTopLimit - CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorTopClearanceM;
     const height = topEdge - ctx.doorBottomY;
-    if (!(height > CORNER_WING_DIMENSIONS.connector.visualMinHeightM)) return [];
+    if (!(height > CORNER_CONNECTOR_DOOR_RENDER_POLICY.visualMinHeightM)) return [];
 
-    const padAbs = CORNER_WING_DIMENSIONS.connector.splitCutMinGapM;
+    const padAbs = CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitCutMinGapM;
     const abs: number[] = [];
     for (let i = 0; i < norms.length; i++) {
       const rawNorm = readGeometryRuntimeNumber(norms[i]);
@@ -59,10 +59,10 @@ export function readCornerConnectorCustomSplitCutsYInternal(
 
     const out: number[] = [];
     const tol = Math.max(
-      CORNER_WING_DIMENSIONS.connector.splitCutToleranceMinM,
+      CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitCutToleranceMinM,
       Math.min(
-        CORNER_WING_DIMENSIONS.connector.splitCutToleranceMaxM,
-        height * CORNER_WING_DIMENSIONS.connector.splitCutToleranceRatio
+        CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitCutToleranceMaxM,
+        height * CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitCutToleranceRatio
       )
     );
     for (let i = 0; i < abs.length; i++) {
@@ -81,9 +81,9 @@ export function mergeCornerConnectorSplitCutsInternal(
   ctx: CornerConnectorDoorContext,
   cutsMerged0: number[]
 ): number[] {
-  const topEdge = ctx.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM;
+  const topEdge = ctx.effectiveTopLimit - CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorTopClearanceM;
   const H = topEdge - ctx.doorBottomY;
-  const minSegH = CORNER_WING_DIMENSIONS.connector.minSegmentHeightM;
+  const minSegH = CORNER_CONNECTOR_DOOR_RENDER_POLICY.minSegmentHeightM;
   const xs = cutsMerged0.slice().filter(v => Number.isFinite(v));
   xs.sort((a, b) => a - b);
   const kept: number[] = [];
@@ -97,10 +97,10 @@ export function mergeCornerConnectorSplitCutsInternal(
   }
   const out: number[] = [];
   const tol = Math.max(
-    CORNER_WING_DIMENSIONS.connector.splitCutToleranceMinM,
+    CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitCutToleranceMinM,
     Math.min(
-      CORNER_WING_DIMENSIONS.connector.splitCutToleranceMaxM,
-      H * CORNER_WING_DIMENSIONS.connector.splitCutToleranceRatio
+      CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitCutToleranceMaxM,
+      H * CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitCutToleranceRatio
     )
   );
   for (let i = 0; i < kept.length; i++) {

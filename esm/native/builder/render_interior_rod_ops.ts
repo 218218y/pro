@@ -198,7 +198,7 @@ export function createBuilderRenderInteriorRodOps(deps: RenderInteriorOpsDeps) {
         INTERIOR_ROD_RENDER_POLICY.radiusM,
         INTERIOR_ROD_RENDER_POLICY.radiusM,
         innerW - INTERIOR_ROD_RENDER_POLICY.widthClearanceM,
-        12
+        INTERIOR_ROD_RENDER_POLICY.radialSegments
       ),
       rodMat
     );

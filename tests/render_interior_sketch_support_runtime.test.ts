@@ -9,6 +9,7 @@ import {
   createSketchBoxLocator,
 } from '../esm/native/builder/render_interior_sketch_support.ts';
 import { INTERIOR_FITTINGS_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { INTERIOR_SHELF_PIN_RENDER_POLICY } from '../esm/shared/dimensions/interior_fittings_policy.ts';
 import { createSketchInteriorHarness, FakeMaterial } from './sketch_box_runtime_helpers.ts';
 
 class FakeVector3 {
@@ -120,6 +121,10 @@ test('render interior sketch support clamps placement, emits shelf pins, and kee
   assert.equal(added.filter(entry => entry?.userData?.__kind === 'shelf_pin').length, 4);
   assert.equal(added.filter(entry => entry?.userData?.__kind === 'brace_seam').length, 0);
   assert.equal(added[0]?.userData?.partId, 'all_shelves');
+  assert.equal(
+    (added[0]?.geometry as FakeCylinderGeometry).args[3],
+    INTERIOR_SHELF_PIN_RENDER_POLICY.radialSegments
+  );
   assert.equal(App.__matCache.__sketchShelfPinMat.__keepMaterial, true);
 });
 

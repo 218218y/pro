@@ -1,4 +1,4 @@
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_CONNECTOR_DOOR_RENDER_POLICY } from '../../shared/dimensions/corner_system_policy.js';
 
 // Corner wing split-door cut policy.
 //
@@ -15,12 +15,12 @@ export function readCustomSplitCutsY(ctx: CornerWingDoorContext, state: CornerWi
     );
     if (!norms.length) return [];
 
-    const topEdge = state.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM;
+    const topEdge = state.effectiveTopLimit - CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorTopClearanceM;
     const height = topEdge - state.doorBottomY;
-    if (!(height > CORNER_WING_DIMENSIONS.connector.visualMinHeightM)) return [];
+    if (!(height > CORNER_CONNECTOR_DOOR_RENDER_POLICY.visualMinHeightM)) return [];
 
-    const padAbs = CORNER_WING_DIMENSIONS.connector.minSegmentHeightM;
-    const minSegH = CORNER_WING_DIMENSIONS.connector.minSegmentHeightM;
+    const padAbs = CORNER_CONNECTOR_DOOR_RENDER_POLICY.minSegmentHeightM;
+    const minSegH = CORNER_CONNECTOR_DOOR_RENDER_POLICY.minSegmentHeightM;
     const abs: number[] = [];
     for (let i = 0; i < norms.length; i++) {
       const rawNorm = norms[i];
@@ -43,9 +43,9 @@ export function mergeSplitCuts(
   state: CornerWingDoorState,
   cuts: number[]
 ): number[] {
-  const topEdge = state.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM;
+  const topEdge = state.effectiveTopLimit - CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorTopClearanceM;
   const height = topEdge - state.doorBottomY;
-  const minSegH = CORNER_WING_DIMENSIONS.connector.minSegmentHeightM;
+  const minSegH = CORNER_CONNECTOR_DOOR_RENDER_POLICY.minSegmentHeightM;
   const xs = cuts.slice().filter(value => Number.isFinite(value));
   xs.sort((a, b) => a - b);
   return dedupeCuts(state, keepValidCuts(state, xs, minSegH), height);
@@ -68,7 +68,7 @@ export function partIdForSegment(
 }
 
 function keepValidCuts(state: CornerWingDoorState, cuts: number[], minSegH: number): number[] {
-  const topEdge = state.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM;
+  const topEdge = state.effectiveTopLimit - CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorTopClearanceM;
   const kept: number[] = [];
   let prevBottom = state.doorBottomY;
   for (let i = 0; i < cuts.length; i++) {
@@ -84,10 +84,10 @@ function keepValidCuts(state: CornerWingDoorState, cuts: number[], minSegH: numb
 function dedupeCuts(state: CornerWingDoorState, cuts: number[], height: number): number[] {
   const out: number[] = [];
   const tolerance = Math.max(
-    CORNER_WING_DIMENSIONS.connector.splitCutToleranceMinM,
+    CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitCutToleranceMinM,
     Math.min(
-      CORNER_WING_DIMENSIONS.connector.splitCutToleranceMaxM,
-      height * CORNER_WING_DIMENSIONS.connector.splitCutToleranceRatio
+      CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitCutToleranceMaxM,
+      height * CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitCutToleranceRatio
     )
   );
   for (let i = 0; i < cuts.length; i++) {

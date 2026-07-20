@@ -1,4 +1,7 @@
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  CORNER_WING_BODY_POLICY,
+  CORNER_WING_PANEL_POLICY,
+} from '../../shared/dimensions/corner_system_policy.js';
 import { addCornerHexDiagonalPanels } from './corner_wing_hex_cell_geometry.js';
 import {
   cloneMaterialRecord,
@@ -67,12 +70,12 @@ export function applyCornerWingCarcassPanels(
     moduleIndex?: string
   ) => {
     const h = Number.isFinite(bodyH) && bodyH > 0 ? bodyH : cabinetBodyHeight;
-    const w = Number.isFinite(segW) && segW > 0 ? segW : CORNER_WING_DIMENSIONS.panels.fallbackSegmentWidthM;
+    const w = Number.isFinite(segW) && segW > 0 ? segW : CORNER_WING_PANEL_POLICY.fallbackSegmentWidthM;
 
-    const panelH = Math.max(CORNER_WING_DIMENSIONS.panels.minPanelHeightM, h - __backPanelYPad * 2);
+    const panelH = Math.max(CORNER_WING_PANEL_POLICY.minPanelHeightM, h - __backPanelYPad * 2);
     const panelW = Math.max(
-      CORNER_WING_DIMENSIONS.panels.minPanelWidthM,
-      w - CORNER_WING_DIMENSIONS.panels.panelWidthClearanceM
+      CORNER_WING_PANEL_POLICY.minPanelWidthM,
+      w - CORNER_WING_PANEL_POLICY.panelWidthClearanceM
     );
 
     const bp = new THREE.Mesh(
@@ -89,7 +92,7 @@ export function applyCornerWingCarcassPanels(
     wingGroup.add(bp);
   };
 
-  if (blindWidth > CORNER_WING_DIMENSIONS.panels.minBlindWidthM) {
+  if (blindWidth > CORNER_WING_PANEL_POLICY.minBlindWidthM) {
     __addBackSeg(blindWidth, cabinetBodyHeight, blindWidth / 2, 'corner_wing_back_blind', 'corner');
   }
 
@@ -108,7 +111,7 @@ export function applyCornerWingCarcassPanels(
         __addBackSeg(cell.width, cell.bodyHeight, cell.centerX, pid, cell.key);
       }
     }
-  } else if (activeWidth > CORNER_WING_DIMENSIONS.wing.minActiveWidthM) {
+  } else if (activeWidth > CORNER_WING_BODY_POLICY.minActiveWidthM) {
     __addBackSeg(activeWidth, cabinetBodyHeight, blindWidth + activeWidth / 2, 'corner_wing_back', 'corner');
   }
 
@@ -123,16 +126,16 @@ export function applyCornerWingCarcassPanels(
 
   const __lastCell = cornerCells.length > 0 ? cornerCells[cornerCells.length - 1] : null;
   const __rightH = __lastCell
-    ? Math.max(CORNER_WING_DIMENSIONS.panels.minPanelHeightM, __lastCell.bodyHeight)
+    ? Math.max(CORNER_WING_PANEL_POLICY.minPanelHeightM, __lastCell.bodyHeight)
     : cabinetBodyHeight;
   const __rightCellD = __lastCell
-    ? Math.max(CORNER_WING_DIMENSIONS.panels.minCellDepthM, __lastCell.depth)
+    ? Math.max(CORNER_WING_PANEL_POLICY.minCellDepthM, __lastCell.depth)
     : wingD;
   const __rt = resolveCornerWingWallPlacement(
     params,
     metrics,
     __rightCellD,
-    CORNER_WING_DIMENSIONS.panels.minWallDepthM
+    CORNER_WING_PANEL_POLICY.minWallDepthM
   );
 
   const __rightId = 'corner_wing_side_right';
@@ -153,16 +156,14 @@ export function applyCornerWingCarcassPanels(
 
   const __leftCell = cornerCells.length > 0 ? cornerCells[0] : null;
   const __leftH = __leftCell
-    ? Math.max(CORNER_WING_DIMENSIONS.panels.minPanelHeightM, __leftCell.bodyHeight)
+    ? Math.max(CORNER_WING_PANEL_POLICY.minPanelHeightM, __leftCell.bodyHeight)
     : cabinetBodyHeight;
-  const __leftCellD = __leftCell
-    ? Math.max(CORNER_WING_DIMENSIONS.panels.minCellDepthM, __leftCell.depth)
-    : wingD;
+  const __leftCellD = __leftCell ? Math.max(CORNER_WING_PANEL_POLICY.minCellDepthM, __leftCell.depth) : wingD;
   const __lt = resolveCornerWingWallPlacement(
     params,
     metrics,
     __leftCellD,
-    CORNER_WING_DIMENSIONS.panels.minWallDepthM
+    CORNER_WING_PANEL_POLICY.minWallDepthM
   );
 
   const __leftId = 'corner_wing_side_left';
@@ -172,7 +173,7 @@ export function applyCornerWingCarcassPanels(
   }
   const leftPanel = new THREE.Mesh(new THREE.BoxGeometry(woodThick, __leftH, __lt.depth), __leftMat);
   const __wingAttachNoZFightingInsetX = cornerConnectorActive
-    ? CORNER_WING_DIMENSIONS.panels.noZFightAttachInsetM
+    ? CORNER_WING_PANEL_POLICY.noZFightAttachInsetM
     : 0;
   leftPanel.position.set(
     blindWidth + woodThick / 2 + __wingAttachNoZFightingInsetX,

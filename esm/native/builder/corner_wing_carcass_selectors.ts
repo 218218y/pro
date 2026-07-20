@@ -1,4 +1,4 @@
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_WING_SELECTOR_POLICY } from '../../shared/dimensions/corner_system_policy.js';
 import { getCornerHexHitDepth } from './corner_wing_hex_cell_geometry.js';
 import type { CornerWingCarcassFlowParams } from './corner_wing_carcass_shared.js';
 
@@ -24,8 +24,8 @@ export function applyCornerWingCarcassSelectors(params: CornerWingCarcassFlowPar
       const hitBox = new THREE.Mesh(
         new THREE.BoxGeometry(
           Math.max(
-            CORNER_WING_DIMENSIONS.selector.minWidthM,
-            cell.width - CORNER_WING_DIMENSIONS.selector.widthClearanceM
+            CORNER_WING_SELECTOR_POLICY.minWidthM,
+            cell.width - CORNER_WING_SELECTOR_POLICY.widthClearanceM
           ),
           __h,
           __hd
@@ -49,7 +49,7 @@ export function applyCornerWingCarcassSelectors(params: CornerWingCarcassFlowPar
     hitMat.side = THREE.DoubleSide;
     const hitBox = new THREE.Mesh(
       new THREE.BoxGeometry(
-        Math.max(CORNER_WING_DIMENSIONS.selector.fallbackMinWidthM, activeWidth),
+        Math.max(CORNER_WING_SELECTOR_POLICY.fallbackMinWidthM, activeWidth),
         cabinetBodyHeight,
         wingD
       ),

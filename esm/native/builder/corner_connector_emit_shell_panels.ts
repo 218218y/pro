@@ -4,7 +4,7 @@ import type {
   EdgePanelOpts,
   P2,
 } from './corner_connector_emit_shared.js';
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_CONNECTOR_SHELL_POLICY } from '../../shared/dimensions/corner_system_policy.js';
 import type { CornerConnectorShellMetrics } from './corner_connector_emit_shell_metrics.js';
 
 type BackPanelShrink = boolean | number;
@@ -45,7 +45,7 @@ export function createCornerConnectorEdgePanelAdder(
     const dx0 = bx - ax;
     const dz0 = bz - az;
     const len0 = Math.sqrt(dx0 * dx0 + dz0 * dz0);
-    if (!Number.isFinite(len0) || len0 <= CORNER_WING_DIMENSIONS.connector.shellPanelMinLengthM) return;
+    if (!Number.isFinite(len0) || len0 <= CORNER_CONNECTOR_SHELL_POLICY.shellPanelMinLengthM) return;
     const ux0 = dx0 / len0;
     const uz0 = dz0 / len0;
     if (shrinkS > 0) {
@@ -60,7 +60,7 @@ export function createCornerConnectorEdgePanelAdder(
     const dx = bx - ax;
     const dz = bz - az;
     const len = Math.sqrt(dx * dx + dz * dz);
-    if (!Number.isFinite(len) || len <= CORNER_WING_DIMENSIONS.connector.shellPanelMinLengthM) return;
+    if (!Number.isFinite(len) || len <= CORNER_CONNECTOR_SHELL_POLICY.shellPanelMinLengthM) return;
 
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(len, wallH, panelThick), getCornerMat(partId, bodyMat));
     const midX = (ax + bx) / 2;
@@ -76,7 +76,7 @@ export function createCornerConnectorEdgePanelAdder(
       const eps =
         typeof opts.eps === 'number' && Number.isFinite(opts.eps)
           ? Math.max(0, opts.eps)
-          : CORNER_WING_DIMENSIONS.connector.shellAttachFaceEpsilonM;
+          : CORNER_CONNECTOR_SHELL_POLICY.shellAttachFaceEpsilonM;
       offX = nux * sign * (panelThick / 2 + eps);
       offZ = nuz * sign * (panelThick / 2 + eps);
     }
@@ -107,7 +107,7 @@ function appendCornerConnectorBackEdgePanel(
     cornerGroup,
     ctx: { startY, wingH, __stackKey },
   } = setup;
-  const junctionInset = CORNER_WING_DIMENSIONS.connector.shellBackJunctionInsetM;
+  const junctionInset = CORNER_CONNECTOR_SHELL_POLICY.shellBackJunctionInsetM;
   const startInset = resolveBackPanelInset(shrinkStart, junctionInset);
   const endInset = resolveBackPanelInset(shrinkEnd, junctionInset);
 
@@ -118,7 +118,7 @@ function appendCornerConnectorBackEdgePanel(
   const dx0 = bx - ax;
   const dz0 = bz - az;
   const len0 = Math.sqrt(dx0 * dx0 + dz0 * dz0);
-  if (!Number.isFinite(len0) || len0 <= CORNER_WING_DIMENSIONS.connector.shellPanelMinLengthM) return;
+  if (!Number.isFinite(len0) || len0 <= CORNER_CONNECTOR_SHELL_POLICY.shellPanelMinLengthM) return;
   const ux = dx0 / len0;
   const uz = dz0 / len0;
   if (startInset > 0) {
@@ -133,7 +133,7 @@ function appendCornerConnectorBackEdgePanel(
   const dx = bx - ax;
   const dz = bz - az;
   const len = Math.sqrt(dx * dx + dz * dz);
-  if (!Number.isFinite(len) || len <= CORNER_WING_DIMENSIONS.connector.shellPanelMinLengthM) return;
+  if (!Number.isFinite(len) || len <= CORNER_CONNECTOR_SHELL_POLICY.shellPanelMinLengthM) return;
 
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(len, metrics.backWallH, metrics.backPanelThick),
@@ -165,11 +165,11 @@ export function applyCornerConnectorShellPanels(
   const cornerBackPanelNoOverlapInsetX =
     metrics.backPanelThick +
     metrics.backPanelOutsideInsetX +
-    CORNER_WING_DIMENSIONS.connector.shellNoOverlapInsetExtraM;
+    CORNER_CONNECTOR_SHELL_POLICY.shellNoOverlapInsetExtraM;
   const cornerBackPanelNoOverlapInsetZ =
     metrics.backPanelThick +
     metrics.backPanelOutsideInsetZ +
-    CORNER_WING_DIMENSIONS.connector.shellNoOverlapInsetExtraM;
+    CORNER_CONNECTOR_SHELL_POLICY.shellNoOverlapInsetExtraM;
 
   appendCornerConnectorBackEdgePanel(
     setup,
@@ -195,12 +195,12 @@ export function applyCornerConnectorShellPanels(
   addEdgePanel(pts[1], pts[2], 'corner_pent_attach_wing', true, {
     alignOuterFaceToFootprint: cornerConnectorAsStandaloneCabinet,
     shrinkStart: carcassBackInsetX,
-    eps: CORNER_WING_DIMENSIONS.connector.shellAttachPanelEpsilonM,
+    eps: CORNER_CONNECTOR_SHELL_POLICY.shellAttachPanelEpsilonM,
   });
   addEdgePanel(pts[3], pts[4], 'corner_pent_attach_main', true, {
     alignOuterFaceToFootprint: cornerConnectorAsStandaloneCabinet,
     shrinkEnd: carcassBackInsetZ,
-    eps: CORNER_WING_DIMENSIONS.connector.shellAttachPanelEpsilonM,
+    eps: CORNER_CONNECTOR_SHELL_POLICY.shellAttachPanelEpsilonM,
   });
 
   return addEdgePanel;

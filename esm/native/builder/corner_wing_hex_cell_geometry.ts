@@ -7,7 +7,7 @@ import {
   createHexCellDiagonalGlassVisual,
   resolveHexCellDiagonalGlassState,
 } from './hex_cell_diagonal_visual.js';
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_WING_SELECTOR_POLICY } from '../../shared/dimensions/corner_system_policy.js';
 
 type P2 = { x: number; z: number };
 
@@ -75,7 +75,7 @@ export function getCornerHexHitDepth(cell: CornerCell): number {
   const geometry = cell.__hexCellGeometry;
   const sideDepth = Number.isFinite(cell.depth) ? cell.depth : 0;
   const doorDepth = geometry && Number.isFinite(geometry.doorDepthM) ? geometry.doorDepthM : sideDepth;
-  return Math.max(sideDepth, doorDepth, CORNER_WING_DIMENSIONS.selector.minDepthM);
+  return Math.max(sideDepth, doorDepth, CORNER_WING_SELECTOR_POLICY.minDepthM);
 }
 
 export function buildCornerHexFootprint(args: {

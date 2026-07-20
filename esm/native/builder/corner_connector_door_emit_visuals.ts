@@ -1,4 +1,4 @@
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_CONNECTOR_DOOR_RENDER_POLICY } from '../../shared/dimensions/corner_system_policy.js';
 import type { MirrorLayoutList } from '../../../types';
 import {
   hasMirrorSurfaceOnFace,
@@ -42,7 +42,7 @@ export function pushCornerConnectorDoorSegmentVisual(
     __doorWidth: ctx.doorW,
     __doorHeight: segH,
     __doorMeshOffsetX: state.meshOffset,
-    __wpFrontThickness: CORNER_WING_DIMENSIONS.connector.frontThicknessM,
+    __wpFrontThickness: CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM,
     __hingeLeft: state.hingeSide === 'left',
     __handleAbsY: handleAbsY,
     __wpStack: ctx.stackKey,
@@ -75,14 +75,14 @@ export function pushCornerConnectorDoorSegmentVisual(
 
   const vis = ctx.createDoorVisual(
     Math.max(
-      CORNER_WING_DIMENSIONS.connector.visualMinWidthM,
-      ctx.doorW - CORNER_WING_DIMENSIONS.connector.visualWidthClearanceM
+      CORNER_CONNECTOR_DOOR_RENDER_POLICY.visualMinWidthM,
+      ctx.doorW - CORNER_CONNECTOR_DOOR_RENDER_POLICY.visualWidthClearanceM
     ),
     Math.max(
-      CORNER_WING_DIMENSIONS.connector.visualMinHeightM,
-      segH - CORNER_WING_DIMENSIONS.connector.visualHeightClearanceM
+      CORNER_CONNECTOR_DOOR_RENDER_POLICY.visualMinHeightM,
+      segH - CORNER_CONNECTOR_DOOR_RENDER_POLICY.visualHeightClearanceM
     ),
-    CORNER_WING_DIMENSIONS.connector.frontThicknessM,
+    CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM,
     isMirror ? ctx.getMirrorMat() : woodMat,
     style || effectiveFrameStyle,
     hasGroove,
@@ -116,7 +116,7 @@ export function pushCornerConnectorDoorSegmentVisual(
     doorWidth: ctx.doorW,
     doorHeight: segH,
     doorMeshOffsetX: state.meshOffset,
-    frontZ: CORNER_WING_DIMENSIONS.connector.frontTrimZOffsetM,
+    frontZ: CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontTrimZOffsetM,
     faceSign: ctx.outwardZSign,
   });
   ctx.addOutlines(vis);
@@ -136,7 +136,7 @@ function maybeAppendRemovedDoorHitbox(
 ): void {
   if (!isRemoveDoorModeFromSnapshot({ primary: ctx.primaryMode })) return;
   const box = new ctx.THREE.Mesh(
-    new ctx.THREE.BoxGeometry(ctx.doorW, segH, CORNER_WING_DIMENSIONS.connector.hitboxThicknessM),
+    new ctx.THREE.BoxGeometry(ctx.doorW, segH, CORNER_CONNECTOR_DOOR_RENDER_POLICY.hitboxThicknessM),
     new ctx.THREE.MeshBasicMaterial({
       color: 0xff0000,
       transparent: true,

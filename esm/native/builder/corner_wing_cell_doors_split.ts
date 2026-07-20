@@ -1,4 +1,9 @@
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  CORNER_CONNECTOR_LAYOUT_POLICY,
+  CORNER_CONNECTOR_DOOR_RENDER_POLICY,
+  CORNER_CONNECTOR_HANDLE_POLICY,
+  CORNER_WING_DRAWER_POLICY,
+} from '../../shared/dimensions/corner_system_policy.js';
 
 // Corner wing split-door emission.
 //
@@ -22,7 +27,7 @@ export function appendCornerWingSplitDoor(ctx: CornerWingDoorContext, state: Cor
   const topId = `${state.doorBaseId}_top`;
   const midId = `${state.doorBaseId}_mid`;
   const botId = `${state.doorBaseId}_bot`;
-  const topEdge = state.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM;
+  const topEdge = state.effectiveTopLimit - CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorTopClearanceM;
   const customSplitCutsY = readCustomSplitCutsY(ctx, state);
 
   if (state.topSplitEnabled && customSplitCutsY.length) {
@@ -34,7 +39,7 @@ export function appendCornerWingSplitDoor(ctx: CornerWingDoorContext, state: Cor
       const segBottomY = segmentIndex === 0 ? state.doorBottomY : cuts[segmentIndex - 1] + ctx.splitGap / 2;
       const segTopY = segmentIndex === segCount - 1 ? topEdge : cuts[segmentIndex] - ctx.splitGap / 2;
       const segH = segTopY - segBottomY;
-      if (!(segH > CORNER_WING_DIMENSIONS.connector.edgeHandleShortInsetM)) continue;
+      if (!(segH > CORNER_CONNECTOR_HANDLE_POLICY.edgeHandleShortInsetM)) continue;
       const segY = segBottomY + segH / 2;
       const partId = partIdForSegment(state, segCount, segmentIndex);
       const defaultHandleAbsY = defaultHandleAbsYForPart(ctx, partId);
@@ -53,7 +58,7 @@ export function appendCornerWingSplitDoor(ctx: CornerWingDoorContext, state: Cor
   if (
     state.topSplitEnabled &&
     state.bottomSplitEnabled &&
-    state.bottomLineY < state.splitLineY - CORNER_WING_DIMENSIONS.connector.minSegmentHeightM
+    state.bottomLineY < state.splitLineY - CORNER_CONNECTOR_DOOR_RENDER_POLICY.minSegmentHeightM
   ) {
     const topTopY = topEdge;
     const topBottomY = state.splitLineY + ctx.splitGap / 2;
@@ -177,18 +182,14 @@ function pushSegment(
 ): void {
   const isRemovedDoor = ctx.removeDoorsEnabled && ctx.isDoorRemoved(partId);
   const group = createCornerDoorGroup(ctx, state, partId, segH, handleAbsY, isRemovedDoor);
-  group.position.set(
-    state.pivotX,
-    segY,
-    CORNER_WING_DIMENSIONS.drawers.externalFrontOffsetZM + state.doorZShift
-  );
+  group.position.set(state.pivotX, segY, CORNER_WING_DRAWER_POLICY.externalFrontOffsetZM + state.doorZShift);
 
   const added = processCornerDoorVisual(ctx, partId, {
     partId,
-    width: state.doorW - CORNER_WING_DIMENSIONS.connector.visualWidthClearanceM,
+    width: state.doorW - CORNER_CONNECTOR_DOOR_RENDER_POLICY.visualWidthClearanceM,
     height: Math.max(
-      CORNER_WING_DIMENSIONS.connector.minFrontLengthM,
-      segH - CORNER_WING_DIMENSIONS.connector.visualHeightClearanceM
+      CORNER_CONNECTOR_LAYOUT_POLICY.minFrontLengthM,
+      segH - CORNER_CONNECTOR_DOOR_RENDER_POLICY.visualHeightClearanceM
     ),
     group,
     meshOffset: state.meshOffset,

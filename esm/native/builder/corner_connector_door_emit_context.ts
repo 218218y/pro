@@ -1,4 +1,7 @@
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  CORNER_CONNECTOR_LAYOUT_POLICY,
+  CORNER_CONNECTOR_DOOR_RENDER_POLICY,
+} from '../../shared/dimensions/corner_system_policy.js';
 import { readDoorTrimMap } from '../features/door_authoring/api.js';
 
 import type { CornerConnectorDoorContext } from './corner_connector_door_emit_contracts.js';
@@ -68,7 +71,7 @@ export function createCornerConnectorDoorContextInternal(
   const dx = b.x - a.x;
   const dz = b.z - a.z;
   const len = Math.sqrt(dx * dx + dz * dz);
-  if (!Number.isFinite(len) || len <= CORNER_WING_DIMENSIONS.connector.minFrontLengthM) {
+  if (!Number.isFinite(len) || len <= CORNER_CONNECTOR_LAYOUT_POLICY.minFrontLengthM) {
     addEdgePanel(pts[2], pts[3], 'corner_pent_front', showFrontPanel);
     return null;
   }
@@ -86,16 +89,16 @@ export function createCornerConnectorDoorContextInternal(
   };
   cornerGroup.add(mount);
 
-  const gap = CORNER_WING_DIMENSIONS.connector.frontDoorGapM;
-  const doorW = Math.max(CORNER_WING_DIMENSIONS.connector.doorMinWidthM, (len - gap) / 2);
+  const gap = CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontDoorGapM;
+  const doorW = Math.max(CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorMinWidthM, (len - gap) / 2);
   const effectiveTopLimit = startY + wingH - woodThick / 2;
-  const doorBottomY = startY + woodThick + CORNER_WING_DIMENSIONS.connector.doorBottomOffsetM;
+  const doorBottomY = startY + woodThick + CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorBottomOffsetM;
   const doorH = Math.max(
-    CORNER_WING_DIMENSIONS.connector.doorMinHeightM,
-    effectiveTopLimit - doorBottomY - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM
+    CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorMinHeightM,
+    effectiveTopLimit - doorBottomY - CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorTopClearanceM
   );
   const doorCenterY = doorBottomY + doorH / 2;
-  const zOut = panelThick / 2 + CORNER_WING_DIMENSIONS.connector.doorOutsetM;
+  const zOut = panelThick / 2 + CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorOutsetM;
 
   const plusZ = new THREE.Vector3(0, 0, 1).applyEuler(mount.rotation).normalize();
   const insideV = new THREE.Vector3(interiorX - midX, 0, interiorZ - midZ);
@@ -113,12 +116,12 @@ export function createCornerConnectorDoorContextInternal(
   const doorTrimMap = readDoorTrimMap(cfg0.doorTrimMap);
   const splitMap0 = readMap('splitDoorsMap');
   const splitBottomMap0 = readMap('splitDoorsBottomMap');
-  const splitGap = CORNER_WING_DIMENSIONS.connector.splitGapM;
+  const splitGap = CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitGapM;
   const splitLineY =
     startY +
     woodThick +
-    (CORNER_WING_DIMENSIONS.connector.splitGridLineIndex * (effectiveTopLimit - (startY + woodThick))) /
-      CORNER_WING_DIMENSIONS.connector.splitGridDivisions;
+    (CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitGridLineIndex * (effectiveTopLimit - (startY + woodThick))) /
+      CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitGridDivisions;
   const bottomLineY = computeBottomLineY(
     cfg0,
     uiAny,
@@ -205,14 +208,14 @@ export function computeBottomLineY(
   effectiveTopLimit: number,
   asRecord: (value: unknown) => ValueRecord
 ): number {
-  let h = CORNER_WING_DIMENSIONS.connector.bottomStorageHeightM;
+  let h = CORNER_CONNECTOR_DOOR_RENDER_POLICY.bottomStorageHeightM;
   const layout = uiAny.layout ?? cfg0.layout;
   if (layout === 'storage' || layout === 'storage_shelf')
-    h = CORNER_WING_DIMENSIONS.connector.bottomStorageHeightM;
-  if (asRecord(cfg0.customData).storage) h = CORNER_WING_DIMENSIONS.connector.bottomStorageHeightM;
+    h = CORNER_CONNECTOR_DOOR_RENDER_POLICY.bottomStorageHeightM;
+  if (asRecord(cfg0.customData).storage) h = CORNER_CONNECTOR_DOOR_RENDER_POLICY.bottomStorageHeightM;
   const effectiveBottomY = startY + woodThick;
   let y = effectiveBottomY + h;
-  y = Math.max(y, doorBottomY + CORNER_WING_DIMENSIONS.connector.bottomLineMinGapM);
-  y = Math.min(y, effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.bottomLineTopGapM);
+  y = Math.max(y, doorBottomY + CORNER_CONNECTOR_DOOR_RENDER_POLICY.bottomLineMinGapM);
+  y = Math.min(y, effectiveTopLimit - CORNER_CONNECTOR_DOOR_RENDER_POLICY.bottomLineTopGapM);
   return y;
 }

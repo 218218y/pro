@@ -1,4 +1,7 @@
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  CORNER_CONNECTOR_DOOR_RENDER_POLICY,
+  CORNER_WING_CELL_POLICY,
+} from '../../shared/dimensions/corner_system_policy.js';
 import { readFiniteNumber } from './corner_geometry_plan.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
@@ -78,9 +81,9 @@ export function hingeDirExplicit(ctx: CornerWingDoorContext, hingeKey: unknown):
 }
 
 export function defaultHingeDir(ctx: CornerWingDoorContext, doorIdx: number): 'left' | 'right' {
-  if (ctx.doorCount % CORNER_WING_DIMENSIONS.cells.doorsPerCell === 1 && doorIdx === ctx.doorCount - 1)
+  if (ctx.doorCount % CORNER_WING_CELL_POLICY.doorsPerCell === 1 && doorIdx === ctx.doorCount - 1)
     return 'right';
-  return doorIdx % CORNER_WING_DIMENSIONS.cells.doorsPerCell === 0 ? 'left' : 'right';
+  return doorIdx % CORNER_WING_CELL_POLICY.doorsPerCell === 0 ? 'left' : 'right';
 }
 
 export function maybeSeedEdgeHandleDefaultNone(
@@ -103,8 +106,8 @@ export function maybeSeedEdgeHandleDefaultNone(
   if (!doorsInCell) doorsInCell = Math.max(1, ctx.doorCount);
 
   if (
-    doorsInCell >= CORNER_WING_DIMENSIONS.cells.doorsPerCell &&
-    within % CORNER_WING_DIMENSIONS.cells.doorsPerCell === 0 &&
+    doorsInCell >= CORNER_WING_CELL_POLICY.doorsPerCell &&
+    within % CORNER_WING_CELL_POLICY.doorsPerCell === 0 &&
     within + 1 < doorsInCell
   ) {
     markEdgeHandleDefaultNone(ctx.App, ctx.stackKey === 'bottom' ? 'bottom' : 'top', doorBaseId, 'corner');
@@ -118,17 +121,17 @@ export function computeBottomLineY(
   doorBottomY: number,
   effectiveTopLimit: number
 ): number {
-  let storageHeight = CORNER_WING_DIMENSIONS.connector.bottomStorageHeightM;
+  let storageHeight = CORNER_CONNECTOR_DOOR_RENDER_POLICY.bottomStorageHeightM;
   const layout = (cellCfg && cellCfg.layout) || (ctx.uiAny.layout ?? null);
   if (layout === 'storage' || layout === 'storage_shelf')
-    storageHeight = CORNER_WING_DIMENSIONS.connector.bottomStorageHeightM;
+    storageHeight = CORNER_CONNECTOR_DOOR_RENDER_POLICY.bottomStorageHeightM;
   if (cellCfg && cellCfg.customData && cellCfg.customData.storage)
-    storageHeight = CORNER_WING_DIMENSIONS.connector.bottomStorageHeightM;
+    storageHeight = CORNER_CONNECTOR_DOOR_RENDER_POLICY.bottomStorageHeightM;
   let y = cellEffBottomY + storageHeight;
   if (doorBottomY > cellEffBottomY) {
     y += doorBottomY - cellEffBottomY + ctx.splitGap / 2;
   }
-  y = Math.max(y, doorBottomY + CORNER_WING_DIMENSIONS.connector.bottomLineMinGapM);
-  y = Math.min(y, effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.bottomLineTopGapM);
+  y = Math.max(y, doorBottomY + CORNER_CONNECTOR_DOOR_RENDER_POLICY.bottomLineMinGapM);
+  y = Math.min(y, effectiveTopLimit - CORNER_CONNECTOR_DOOR_RENDER_POLICY.bottomLineTopGapM);
   return y;
 }

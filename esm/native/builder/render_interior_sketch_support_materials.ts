@@ -53,7 +53,12 @@ export function createSketchPlacementMaterialResources(args: {
       glassMat = asMaterial(cache.__sketchGlassShelfMat);
 
       if (!cache.__sketchShelfPinGeo) {
-        cache.__sketchShelfPinGeo = new THREE.CylinderGeometry(pinRadius, pinRadius, pinLen, 12);
+        cache.__sketchShelfPinGeo = new THREE.CylinderGeometry(
+          pinRadius,
+          pinRadius,
+          pinLen,
+          INTERIOR_SHELF_PIN_RENDER_POLICY.radialSegments
+        );
       }
       if (!cache.__sketchShelfPinMat) {
         cache.__sketchShelfPinMat = new THREE.MeshStandardMaterial({

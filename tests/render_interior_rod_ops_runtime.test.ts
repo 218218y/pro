@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createBuilderRenderInteriorRodOps } from '../esm/native/builder/render_interior_rod_ops.ts';
+import { INTERIOR_ROD_RENDER_POLICY } from '../esm/shared/dimensions/interior_fittings_policy.ts';
 import {
   resolveInteriorRodAvailableHeight,
   resolveSingleHangerRequiredClearance,
@@ -89,6 +90,7 @@ test('render interior rod keeps rod material independent from base leg material'
   assert.equal(added.length, 1);
   assert.notEqual(added[0].material, legMat);
   assert.equal(added[0].material, cache.interiorRodMat);
+  assert.equal((added[0].geometry as { args: unknown[] }).args[3], INTERIOR_ROD_RENDER_POLICY.radialSegments);
   assert.deepEqual((added[0].material as any).params, {
     color: 0x888888,
     metalness: 0.8,

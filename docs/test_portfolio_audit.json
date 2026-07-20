@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-19T13:45:25.033Z",
+  "generatedAt": "2026-07-20T02:37:45.386Z",
   "totals": {
-    "tests": 1225,
-    "unitRunnerTests": 1217,
+    "tests": 1226,
+    "unitRunnerTests": 1218,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 398,
+    "contract": 399,
     "runtime-unit": 317,
     "integration": 451,
     "e2e-smoke": 9,
@@ -1488,6 +1488,10 @@
     {
       "file": "tests/corner_state_normalize_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/corner_system_policy_runtime.test.ts",
+      "category": "contract"
     },
     {
       "file": "tests/corner_wing_carcass_ceiling_runtime.test.ts",

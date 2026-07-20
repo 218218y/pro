@@ -14,6 +14,7 @@ const productDimensionTokenSources = [
   'esm/shared/dimensions/internal_drawer_policy.ts',
   'esm/shared/dimensions/interior_fittings_policy.ts',
   'esm/shared/dimensions/interior_storage_policy.ts',
+  'esm/shared/dimensions/corner_system_policy.ts',
   'esm/shared/dimensions/drawer_sketch_policy.ts',
   'esm/shared/dimensions/front_reveal_frame_policy.ts',
   'esm/shared/dimensions/handle_policy.ts',
@@ -365,19 +366,46 @@ test('[dimension tokens] door trim placement and front reveal frame geometry are
   assert.doesNotMatch(revealDrawers, /const thickness = Number\.isFinite\(t\) && t > 0 \? t : 0\.02/);
 });
 
+test('[dimension tokens] interior cylinder radial segments are owned by focused policies', () => {
+  const rodOps = read('esm/native/builder/render_interior_rod_ops.ts');
+  const sketchMaterials = read('esm/native/builder/render_interior_sketch_support_materials.ts');
+
+  assert.match(
+    rodOps,
+    /new THREE\.CylinderGeometry\([\s\S]*?INTERIOR_ROD_RENDER_POLICY\.radialSegments\s*\)/u
+  );
+  assert.doesNotMatch(
+    rodOps,
+    /new THREE\.CylinderGeometry\([\s\S]*?innerW - INTERIOR_ROD_RENDER_POLICY\.widthClearanceM,\s*12\s*\)/u
+  );
+
+  assert.match(
+    sketchMaterials,
+    /new THREE\.CylinderGeometry\([\s\S]*?INTERIOR_SHELF_PIN_RENDER_POLICY\.radialSegments\s*\)/u
+  );
+  assert.doesNotMatch(
+    sketchMaterials,
+    /new THREE\.CylinderGeometry\(\s*pinRadius,\s*pinRadius,\s*pinLen,\s*12\s*\)/u
+  );
+});
+
 test('[dimension tokens] corner wing and connector shell dimensions read canonical tokens', () => {
   const tokens = readProductDimensionTokens();
   assert.match(tokens, /shellMinWallHeightM:/);
   assert.match(tokens, /shellPanelMinLengthM:/);
   assert.match(tokens, /minBlindWidthM:/);
 
-  for (const rel of [
+  assertUsesToken(
     'esm/native/builder/corner_wing_carcass_shell_dividers.ts',
-    'esm/native/builder/corner_wing_carcass_shell_floor_base.ts',
+    'CORNER_CONNECTOR_SHELL_POLICY'
+  );
+  assertUsesToken('esm/native/builder/corner_wing_carcass_shell_dividers.ts', 'CORNER_WING_PANEL_POLICY');
+  assertUsesToken('esm/native/builder/corner_wing_carcass_shell_floor_base.ts', 'CORNER_WING_DIMENSIONS');
+  assertUsesToken(
     'esm/native/builder/corner_connector_emit_shell_panels.ts',
-  ]) {
-    assertUsesToken(rel, 'CORNER_WING_DIMENSIONS');
-  }
+    'CORNER_CONNECTOR_SHELL_POLICY'
+  );
+  assertLinearDimensionsUseOwnersOrMeters('esm/shared/dimensions/corner_system_policy.ts');
 
   const dividers = read('esm/native/builder/corner_wing_carcass_shell_dividers.ts');
   assert.doesNotMatch(dividers, /Math\.max\(0\.001, woodThick\)/);
@@ -721,8 +749,16 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ['esm/native/builder/hinged_doors_module_ops_full.ts', ['HINGED_DOOR_SPLIT_GEOMETRY_POLICY']],
     ['esm/native/builder/hinged_doors_module_ops_segments.ts', ['HINGED_DOOR_SPLIT_GEOMETRY_POLICY']],
     ['esm/native/builder/hinged_doors_module_ops_split_routes.ts', ['HINGED_DOOR_SPLIT_GEOMETRY_POLICY']],
-    ['esm/native/builder/corner_wing_cell_doors_context.ts', ['CORNER_WING_DIMENSIONS']],
-    ['esm/native/builder/corner_wing_cell_doors_split.ts', ['CORNER_WING_DIMENSIONS']],
+    ['esm/native/builder/corner_wing_cell_doors_context.ts', ['CORNER_CONNECTOR_DOOR_RENDER_POLICY']],
+    [
+      'esm/native/builder/corner_wing_cell_doors_split.ts',
+      [
+        'CORNER_CONNECTOR_LAYOUT_POLICY',
+        'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+        'CORNER_CONNECTOR_HANDLE_POLICY',
+        'CORNER_WING_DRAWER_POLICY',
+      ],
+    ],
     [
       'esm/native/builder/corner_wing_cell_interiors_storage.ts',
       ['CORNER_WING_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],

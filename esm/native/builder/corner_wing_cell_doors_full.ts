@@ -1,4 +1,7 @@
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  CORNER_CONNECTOR_DOOR_RENDER_POLICY,
+  CORNER_WING_DRAWER_POLICY,
+} from '../../shared/dimensions/corner_system_policy.js';
 
 // Corner wing full-door emission.
 //
@@ -25,21 +28,17 @@ export function appendCornerWingFullDoor(ctx: CornerWingDoorContext, state: Corn
     fullId,
     handleAbsY,
     state.doorBottomY,
-    state.effectiveTopLimit - CORNER_WING_DIMENSIONS.connector.doorTopClearanceM
+    state.effectiveTopLimit - CORNER_CONNECTOR_DOOR_RENDER_POLICY.doorTopClearanceM
   );
 
   const isRemovedDoor = ctx.removeDoorsEnabled && ctx.isDoorRemoved(fullId);
   const group = createCornerDoorGroup(ctx, state, fullId, fullH, handleAbsY, isRemovedDoor);
-  group.position.set(
-    state.pivotX,
-    fullY,
-    CORNER_WING_DIMENSIONS.drawers.externalFrontOffsetZM + state.doorZShift
-  );
+  group.position.set(state.pivotX, fullY, CORNER_WING_DRAWER_POLICY.externalFrontOffsetZM + state.doorZShift);
 
   const added = processCornerDoorVisual(ctx, fullId, {
     partId: fullId,
-    width: state.doorW - CORNER_WING_DIMENSIONS.connector.visualWidthClearanceM,
-    height: fullH - CORNER_WING_DIMENSIONS.connector.visualHeightClearanceM,
+    width: state.doorW - CORNER_CONNECTOR_DOOR_RENDER_POLICY.visualWidthClearanceM,
+    height: fullH - CORNER_CONNECTOR_DOOR_RENDER_POLICY.visualHeightClearanceM,
     group,
     meshOffset: state.meshOffset,
     groovePartId: fullId,

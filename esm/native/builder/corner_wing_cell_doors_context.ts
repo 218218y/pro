@@ -1,4 +1,4 @@
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_CONNECTOR_DOOR_RENDER_POLICY } from '../../shared/dimensions/corner_system_policy.js';
 // Corner wing door context creation.
 //
 // Keep stack-scoped map access, hinge defaults, and trim readers out of the
@@ -67,6 +67,6 @@ export function createCornerWingDoorContext(params: CornerWingCellFlowParams): C
     splitMap0: helpers.readMap('splitDoorsMap'),
     splitBottomMap0: helpers.readMap('splitDoorsBottomMap'),
     fallbackDoorW: ctx.activeWidth / locals.doorCount,
-    splitGap: CORNER_WING_DIMENSIONS.connector.splitGapM,
+    splitGap: CORNER_CONNECTOR_DOOR_RENDER_POLICY.splitGapM,
   };
 }

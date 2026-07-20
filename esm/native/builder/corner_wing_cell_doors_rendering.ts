@@ -3,7 +3,7 @@
 // Keep mirror/trim/material lookup and door render bookkeeping in one place so
 // split/full emitters can focus on segment sizing only.
 
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_CONNECTOR_DOOR_RENDER_POLICY } from '../../shared/dimensions/corner_system_policy.js';
 import {
   hasMirrorSurfaceOnFace,
   readMirrorLayoutListForPart,
@@ -71,7 +71,7 @@ export function createCornerDoorGroup(
     __hingeLeft: state.isLeftHinge,
     __doorMeshOffsetX: state.meshOffset,
     __handleAbsY: handleAbsY,
-    __wpFrontThickness: CORNER_WING_DIMENSIONS.connector.frontThicknessM,
+    __wpFrontThickness: CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM,
     __wpDoorRemoved: isRemovedDoor,
   };
   return group;
@@ -85,7 +85,11 @@ export function processCornerDoorVisual(
   if (ctx.removeDoorsEnabled && ctx.isDoorRemoved(id)) {
     if (isRemoveDoorModeFromSnapshot({ primary: ctx.primaryMode })) {
       const box = new ctx.THREE.Mesh(
-        new ctx.THREE.BoxGeometry(args.width, args.height, CORNER_WING_DIMENSIONS.connector.hitboxThicknessM),
+        new ctx.THREE.BoxGeometry(
+          args.width,
+          args.height,
+          CORNER_CONNECTOR_DOOR_RENDER_POLICY.hitboxThicknessM
+        ),
         new ctx.THREE.MeshBasicMaterial({
           color: 0xff0000,
           transparent: true,
@@ -123,7 +127,7 @@ export function processCornerDoorVisual(
   const vis = ctx.createDoorVisual(
     args.width,
     args.height,
-    CORNER_WING_DIMENSIONS.connector.frontThicknessM,
+    CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontThicknessM,
     isMirror ? ctx.getMirrorMat() : woodMat,
     style || effectiveFrameStyle,
     hasGroove,
@@ -157,7 +161,7 @@ export function processCornerDoorVisual(
     doorWidth: args.width,
     doorHeight: args.height,
     doorMeshOffsetX: args.meshOffset,
-    frontZ: CORNER_WING_DIMENSIONS.connector.frontTrimZOffsetM,
+    frontZ: CORNER_CONNECTOR_DOOR_RENDER_POLICY.frontTrimZOffsetM,
     faceSign: frontSign,
   });
   return true;

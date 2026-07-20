@@ -5,7 +5,10 @@
 // lives in dedicated helpers.
 
 import { getWardrobeGroup } from '../runtime/render_access.js';
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  CORNER_CONNECTOR_LAYOUT_POLICY,
+  CORNER_CONNECTOR_SHELL_POLICY,
+} from '../../shared/dimensions/corner_system_policy.js';
 import { asRecord, isRecord } from './corner_geometry_plan.js';
 
 import type { Object3DLike, ThreeLike, UnknownRecord } from '../../../types';
@@ -186,10 +189,10 @@ export function createCornerConnectorSetup(ctx: CornerOpsEmitContext): CornerCon
   const Dwing = wingD;
   const Dmain = mainD;
   const L = cornerWallL;
-  const connectorDimensions = CORNER_WING_DIMENSIONS.connector;
-  if (!Number.isFinite(Dwing) || Dwing <= connectorDimensions.minFrontLengthM) return null;
-  if (!Number.isFinite(Dmain) || Dmain <= connectorDimensions.minFrontLengthM) return null;
-  if (!Number.isFinite(L) || L <= connectorDimensions.minWallLengthM) return null;
+
+  if (!Number.isFinite(Dwing) || Dwing <= CORNER_CONNECTOR_LAYOUT_POLICY.minFrontLengthM) return null;
+  if (!Number.isFinite(Dmain) || Dmain <= CORNER_CONNECTOR_LAYOUT_POLICY.minFrontLengthM) return null;
+  if (!Number.isFinite(L) || L <= CORNER_CONNECTOR_LAYOUT_POLICY.minWallLengthM) return null;
 
   const showFrontPanel =
     typeof uiAny.cornerCabinetFrontPanel !== 'undefined' ? !!uiAny.cornerCabinetFrontPanel : true;
@@ -218,10 +221,10 @@ export function createCornerConnectorSetup(ctx: CornerOpsEmitContext): CornerCon
   const interiorX = pts.reduce((sum, point) => sum + point.x, 0) / pts.length;
   const interiorZ = pts.reduce((sum, point) => sum + point.z, 0) / pts.length;
 
-  const carcassBackInsetX = connectorDimensions.shellBackInsetXM;
-  const carcassBackInsetZ = connectorDimensions.shellBackInsetZM;
-  const carcassFrontInset = connectorDimensions.shellFrontInsetM;
-  const plateSideInset = ctx.woodThick + connectorDimensions.shellPlateSideInsetExtraM;
+  const carcassBackInsetX = CORNER_CONNECTOR_SHELL_POLICY.shellBackInsetXM;
+  const carcassBackInsetZ = CORNER_CONNECTOR_SHELL_POLICY.shellBackInsetZM;
+  const carcassFrontInset = CORNER_CONNECTOR_SHELL_POLICY.shellFrontInsetM;
+  const plateSideInset = ctx.woodThick + CORNER_CONNECTOR_SHELL_POLICY.shellPlateSideInsetExtraM;
   const plateEdgeInsets = [
     carcassBackInsetX,
     plateSideInset,

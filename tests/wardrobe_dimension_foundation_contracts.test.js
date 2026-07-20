@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 170, statements: 170 }),
+  'static-import': Object.freeze({ importers: 145, statements: 145 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 172, statements: 173 }),
+  total: Object.freeze({ importers: 147, statements: 148 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -155,6 +155,7 @@ const CARCASS_SHELL_DIRECT_CONSUMERS = Object.freeze([
   'esm/native/builder/core_carcass_shell.ts',
   'esm/native/builder/corner_wing_carcass_shell_metrics.ts',
   'esm/native/builder/module_loop_pipeline_hex_cell.ts',
+  'esm/shared/dimensions/corner_system_policy.ts',
 ]);
 const CARCASS_INTERIOR_DIRECT_CONSUMERS = Object.freeze(['esm/native/builder/build_flow_plan.ts']);
 const APPROVED_INTERIOR_GRID_OWNER_IMPORTS = Object.freeze({
@@ -192,6 +193,7 @@ const APPROVED_BASE_LEG_OWNER_IMPORTS = Object.freeze({
     'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM',
     'DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM',
   ]),
+  'esm/shared/dimensions/corner_system_policy.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze([
     'BASE_LEG_DIMENSIONS',
     'BASE_LEG_LAYOUT_POLICY',
@@ -270,6 +272,7 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
     'MATERIAL_THICKNESS_POLICY',
   ]),
   'esm/shared/dimensions/carcass_cornice_render_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/shared/dimensions/corner_system_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/door_mount_thickness_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/door_system_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/front_reveal_frame_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
@@ -617,6 +620,12 @@ const APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_drawers_external_motion.ts': Object.freeze([
     'EXTERNAL_DRAWER_MOTION_POLICY',
   ]),
+  'esm/shared/dimensions/corner_system_policy.ts': Object.freeze([
+    'EXTERNAL_DRAWER_BOX_POLICY',
+    'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
+    'EXTERNAL_DRAWER_MOTION_POLICY',
+    'EXTERNAL_DRAWER_SIZE_POLICY',
+  ]),
   'esm/shared/dimensions/drawer_sketch_policy.ts': Object.freeze([
     'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
     'EXTERNAL_DRAWER_SIZE_POLICY',
@@ -628,6 +637,7 @@ const APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['EXTERNAL_DRAWER_POLICY']),
 });
 const APPROVED_INTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
+  'esm/shared/dimensions/corner_system_policy.ts': Object.freeze(['INTERNAL_DRAWER_LAYOUT_POLICY']),
   'esm/shared/dimensions/drawer_sketch_policy.ts': Object.freeze([
     'INTERNAL_DRAWER_LAYOUT_POLICY',
     'INTERNAL_DRAWER_MOTION_POLICY',
@@ -680,6 +690,10 @@ const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/builder/render_interior_sketch_support_shelf_pins.ts': Object.freeze([
     'INTERIOR_SHELF_PIN_RENDER_POLICY',
+  ]),
+  'esm/shared/dimensions/corner_system_policy.ts': Object.freeze([
+    'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
+    'INTERIOR_SHELF_GEOMETRY_POLICY',
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['INTERIOR_FITTINGS_POLICY']),
 });
@@ -884,6 +898,180 @@ const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
     'shelves.regularDepthM',
   ]),
 });
+const APPROVED_CORNER_SYSTEM_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/corner_connector_door_emit_context.ts': Object.freeze([
+    'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+    'CORNER_CONNECTOR_LAYOUT_POLICY',
+  ]),
+  'esm/native/builder/corner_connector_door_emit_full.ts': Object.freeze([
+    'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+  ]),
+  'esm/native/builder/corner_connector_door_emit_split.ts': Object.freeze([
+    'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+  ]),
+  'esm/native/builder/corner_connector_door_emit_state.ts': Object.freeze([
+    'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+  ]),
+  'esm/native/builder/corner_connector_door_emit_visuals.ts': Object.freeze([
+    'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+  ]),
+  'esm/native/builder/corner_connector_emit_shared.ts': Object.freeze([
+    'CORNER_CONNECTOR_LAYOUT_POLICY',
+    'CORNER_CONNECTOR_SHELL_POLICY',
+  ]),
+  'esm/native/builder/corner_connector_emit_shell_metrics.ts': Object.freeze([
+    'CORNER_CONNECTOR_SHELL_POLICY',
+  ]),
+  'esm/native/builder/corner_connector_emit_shell_panels.ts': Object.freeze([
+    'CORNER_CONNECTOR_SHELL_POLICY',
+  ]),
+  'esm/native/builder/corner_geometry_plan.ts': Object.freeze([
+    'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+    'CORNER_CONNECTOR_HANDLE_POLICY',
+    'CORNER_WING_DRAWER_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_carcass_selectors.ts': Object.freeze(['CORNER_WING_SELECTOR_POLICY']),
+  'esm/native/builder/corner_wing_carcass_shell_ceiling.ts': Object.freeze([
+    'CORNER_WING_CEILING_POLICY',
+    'CORNER_WING_SELECTOR_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_carcass_shell_dividers.ts': Object.freeze([
+    'CORNER_CONNECTOR_SHELL_POLICY',
+    'CORNER_WING_PANEL_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_carcass_shell_panels.ts': Object.freeze([
+    'CORNER_WING_BODY_POLICY',
+    'CORNER_WING_PANEL_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_cell_doors_context.ts': Object.freeze([
+    'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_cell_doors_full.ts': Object.freeze([
+    'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+    'CORNER_WING_DRAWER_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_cell_doors_rendering.ts': Object.freeze([
+    'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_cell_doors_scope.ts': Object.freeze([
+    'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+    'CORNER_WING_CELL_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_cell_doors_split.ts': Object.freeze([
+    'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+    'CORNER_CONNECTOR_HANDLE_POLICY',
+    'CORNER_CONNECTOR_LAYOUT_POLICY',
+    'CORNER_WING_DRAWER_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_cell_doors_split_policy.ts': Object.freeze([
+    'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_cell_doors_state.ts': Object.freeze([
+    'CORNER_CONNECTOR_DOOR_RENDER_POLICY',
+    'CORNER_WING_BODY_POLICY',
+    'CORNER_WING_CELL_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_cell_interiors_cell.ts': Object.freeze(['CORNER_WING_INTERIOR_POLICY']),
+  'esm/native/builder/corner_wing_extension_cells_config.ts': Object.freeze(['CORNER_WING_CELL_POLICY']),
+  'esm/native/builder/corner_wing_extension_cells_dimensions.ts': Object.freeze([
+    'CORNER_WING_BODY_POLICY',
+    'CORNER_WING_CELL_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_extension_emit.ts': Object.freeze([
+    'CORNER_WING_BASE_LEG_POLICY',
+    'CORNER_WING_BODY_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_hex_cell_geometry.ts': Object.freeze(['CORNER_WING_SELECTOR_POLICY']),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CORNER_SYSTEM_POLICY']),
+});
+
+const APPROVED_CORNER_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({
+  'esm/native/builder/corner_connector_cornice_shared.ts': Object.freeze([
+    'connector',
+    'connector.corniceHitHeightClearanceM',
+    'connector.corniceHitMinWidthM',
+  ]),
+  'esm/native/builder/corner_state_normalize_layout.ts': Object.freeze([
+    'connector',
+    'connector.defaultWallLengthM',
+    'connector.doorMinHeightM',
+    'connector.minWallLengthM',
+    'wing',
+    'wing.blindClearanceM',
+    'wing.defaultWidthCm',
+    'wing.minBodyHeightM',
+    'wing.minDepthM',
+  ]),
+  'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze([
+    'connector',
+    'connector.shellWallHeightClearanceM',
+    'panels',
+    'panels.minBlindWidthM',
+    'panels.minCellDepthM',
+    'panels.minWallDepthM',
+    'selector',
+    'selector.fallbackMinWidthM',
+  ]),
+  'esm/native/builder/corner_wing_cell_interiors_shelves.ts': Object.freeze([
+    'interior',
+    'interior.foldedContentsMinWidthM',
+    'interior.foldedContentsWidthClearanceM',
+    'interior.shelfContentsTopClearanceM',
+    'interior.shelfTopPlacementGuardM',
+  ]),
+  'esm/native/builder/corner_wing_cell_interiors_storage.ts': Object.freeze([
+    'drawers',
+    'drawers.drawerShadowDepthM',
+    'drawers.drawerShadowFrontOffsetM',
+    'drawers.drawerShadowHeightM',
+    'drawers.drawerShadowWidthClearanceM',
+    'drawers.externalBoxDepthBackClearanceM',
+    'drawers.externalBoxHeightClearanceM',
+    'drawers.externalBoxOffsetZM',
+    'drawers.externalBoxWidthClearanceM',
+    'drawers.externalFrontOffsetZM',
+    'drawers.externalOpenOffsetZM',
+    'drawers.externalRegularHeightM',
+    'drawers.externalVisualWidthClearanceM',
+    'drawers.hangingClothesWidthClearanceM',
+    'drawers.internalMinDepthM',
+    'drawers.internalMinWidthM',
+    'drawers.rodMinLengthM',
+    'drawers.rodWidthClearanceM',
+    'drawers.shelfOverDrawerDepthClearanceM',
+    'drawers.shelfOverDrawerMinDepthM',
+    'drawers.shoeHeightM',
+  ]),
+  'esm/native/builder/corner_wing_extension_cells_handles.ts': Object.freeze([
+    'cells',
+    'cells.doorsPerCell',
+    'cells.minDoorUnitWidthM',
+    'wing',
+    'wing.minActiveWidthM',
+  ]),
+  'esm/native/builder/post_build_dimensions_corner.ts': Object.freeze([
+    'connector',
+    'connector.defaultWallLengthM',
+    'connector.minWallLengthM',
+    'wing',
+    'wing.defaultWidthCm',
+  ]),
+  'esm/native/features/modules_configuration/corner_cells_ui_defaults.ts': Object.freeze([
+    'cells',
+    'cells.doorsPerCell',
+    'cells.minDoorUnitWidthM',
+    'wing',
+    'wing.defaultWidthCm',
+    'wing.minActiveWidthM',
+  ]),
+  'esm/native/services/canvas_picking_cell_dims_corner_context.ts': Object.freeze([
+    'connector',
+    'connector.defaultWallLengthM',
+    'wing',
+    'wing.defaultWidthCm',
+  ]),
+});
+
 const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/core_storage_compute_custom.ts': Object.freeze([
     'storage',
@@ -1984,6 +2172,53 @@ function collectLegacyInteriorFittingsFieldUsage(sources) {
   return filtered;
 }
 
+function collectLegacyCornerSystemFieldUsage(sources) {
+  return collectLegacyDimensionPolicyFieldUsage(
+    sources,
+    'CORNER_WING_DIMENSIONS',
+    'dimensions/corner_system_policy.js'
+  );
+}
+
+function collectOwnerDependencyStatements(sources, ownerSpecifier) {
+  const statements = new Map();
+  for (const [file, source, analyzedDependencies] of sources) {
+    const relativeFile = file.replaceAll('\\', '/');
+    const dependencies = analyzedDependencies || analyzeModuleDependencies(file, source).imports;
+    for (const dependency of dependencies) {
+      if (!matchesOwnerSpecifier(dependency.specifier, ownerSpecifier)) continue;
+      if (!statements.has(relativeFile)) statements.set(relativeFile, new Set());
+      statements.get(relativeFile).add(dependency.statementStart);
+    }
+  }
+  return Object.fromEntries(
+    [...statements.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([file, starts]) => [file, starts.size])
+  );
+}
+
+function collectModuleReexports(sources) {
+  const dependencies = [];
+  for (const [file, source, analyzedDependencies] of sources) {
+    const analyzed = analyzedDependencies || analyzeModuleDependencies(file, source).imports;
+    for (const dependency of analyzed) {
+      if (!String(dependency.syntax).includes('re-export')) continue;
+      dependencies.push({
+        file: file.replaceAll('\\', '/'),
+        specifier: dependency.specifier,
+        syntax: dependency.syntax,
+        symbols: [...dependency.importedSymbols].sort(),
+      });
+    }
+  }
+  return dependencies.sort((left, right) =>
+    `${left.file}:${left.specifier}:${left.syntax}`.localeCompare(
+      `${right.file}:${right.specifier}:${right.syntax}`
+    )
+  );
+}
+
 function collectMemberPropertyUsage(sources, propertyName) {
   const usage = new Map();
   for (const [file, source] of sources) {
@@ -2423,6 +2658,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   const internalDrawerPolicy = read('esm/shared/dimensions/internal_drawer_policy.ts');
   const interiorFittingsPolicy = read('esm/shared/dimensions/interior_fittings_policy.ts');
   const interiorStoragePolicy = read('esm/shared/dimensions/interior_storage_policy.ts');
+  const cornerSystemPolicy = read('esm/shared/dimensions/corner_system_policy.ts');
   const drawerSketchPolicy = read('esm/shared/dimensions/drawer_sketch_policy.ts');
   const frontRevealFramePolicy = read('esm/shared/dimensions/front_reveal_frame_policy.ts');
   const handlePolicy = read('esm/shared/dimensions/handle_policy.ts');
@@ -2451,6 +2687,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /from '\.\/dimensions\/external_drawer_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/internal_drawer_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/interior_fittings_policy\.js'/u);
+  assert.match(facade, /from '\.\/dimensions\/corner_system_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/drawer_sketch_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/front_reveal_frame_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/handle_policy\.js'/u);
@@ -2594,6 +2831,54 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(interiorStoragePolicy, /export const INTERIOR_STORAGE_POLICY = Object\.freeze/u);
   assert.match(interiorStoragePolicy, /barrierHeightM: meters\(0\.5\)/u);
   assert.match(interiorStoragePolicy, /defaultLowerShelfSlots: DEFAULT_LOWER_SHELF_SLOTS/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_WING_BODY_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_CONNECTOR_LAYOUT_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_CONNECTOR_DOOR_RENDER_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_CONNECTOR_SHELL_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_CONNECTOR_CORNICE_HIT_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_CONNECTOR_HANDLE_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_CONNECTOR_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_WING_INTERIOR_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_WING_PANEL_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_WING_SELECTOR_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_WING_CEILING_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_WING_CELL_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_WING_DRAWER_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_WING_BASE_LEG_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /export const CORNER_SYSTEM_POLICY = Object\.freeze/u);
+  assert.match(cornerSystemPolicy, /defaultWidthCm: WARDROBE_DEFAULTS\.corner\.widthCm/u);
+  assert.match(
+    cornerSystemPolicy,
+    /shellBackPanelThicknessM: CARCASS_SHELL_DIMENSIONS\.backPanelThicknessM/u
+  );
+  assert.match(cornerSystemPolicy, /shellBackInsetXM: CARCASS_SHELL_DIMENSIONS\.sideDepthClearanceM/u);
+  assert.match(cornerSystemPolicy, /shellBackInsetZM: CARCASS_SHELL_DIMENSIONS\.sideDepthClearanceM/u);
+  assert.match(cornerSystemPolicy, /shellFrontInsetM: CARCASS_SHELL_DIMENSIONS\.frontInsetZM/u);
+  assert.match(cornerSystemPolicy, /frontThicknessM: MATERIAL_THICKNESS_POLICY\.wood\.thicknessM/u);
+  assert.match(cornerSystemPolicy, /hitboxThicknessM: MATERIAL_THICKNESS_POLICY\.wood\.thicknessM/u);
+  assert.match(cornerSystemPolicy, /regularShelfDepthM: INTERIOR_SHELF_GEOMETRY_POLICY\.regularDepthM/u);
+  assert.match(
+    cornerSystemPolicy,
+    /shelfContentsTopClearanceM:[\s\S]*INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY\.contentsHeightClearanceM/u
+  );
+  assert.match(
+    cornerSystemPolicy,
+    /foldedContentsWidthClearanceM:[\s\S]*INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY\.contentsWidthClearanceM/u
+  );
+  assert.match(cornerSystemPolicy, /shoeHeightM: EXTERNAL_DRAWER_SIZE_POLICY\.shoeHeightM/u);
+  assert.match(
+    cornerSystemPolicy,
+    /externalFrontOffsetZM: EXTERNAL_DRAWER_FRONT_RENDER_POLICY\.frontOffsetZM/u
+  );
+  assert.match(cornerSystemPolicy, /externalOpenOffsetZM: EXTERNAL_DRAWER_MOTION_POLICY\.openOffsetZM/u);
+  assert.match(
+    cornerSystemPolicy,
+    /externalBoxWidthClearanceM: EXTERNAL_DRAWER_BOX_POLICY\.boxWidthClearanceM/u
+  );
+  assert.match(cornerSystemPolicy, /internalDefaultDepthM: INTERNAL_DRAWER_LAYOUT_POLICY\.defaultDepthM/u);
+  assert.match(cornerSystemPolicy, /insetM: BASE_LEG_LAYOUT_POLICY\.cornerInsetM/u);
+  assert.doesNotMatch(cornerSystemPolicy, /wardrobe_dimension_tokens_shared/u);
+  assert.doesNotMatch(cornerSystemPolicy, /export\s+(?:\*|\{[^}]*\})\s+from/u);
   assert.match(drawerSketchPolicy, /export const DRAWER_SKETCH_SIZING_POLICY = Object\.freeze/u);
   assert.match(drawerSketchPolicy, /export const DRAWER_SKETCH_PREVIEW_RENDER_POLICY = Object\.freeze/u);
   assert.match(drawerSketchPolicy, /export const DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY = Object\.freeze/u);
@@ -2672,6 +2957,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /legacyDimensionNumberView\(EXTERNAL_DRAWER_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(INTERNAL_DRAWER_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(INTERIOR_FITTINGS_POLICY\)/u);
+  assert.match(facade, /CORNER_WING_DIMENSIONS = legacyDimensionNumberView\(CORNER_SYSTEM_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(DRAWER_SKETCH_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(FRONT_REVEAL_FRAME_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(HANDLE_POLICY\)/u);
@@ -2682,6 +2968,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /sketchBoxClassic: SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY/u);
   assert.doesNotMatch(facade, /export const HANDLE_DIMENSIONS = Object\.freeze/u);
   assert.doesNotMatch(facade, /export const INTERIOR_FITTINGS_DIMENSIONS = Object\.freeze/u);
+  assert.doesNotMatch(facade, /export const CORNER_WING_DIMENSIONS = Object\.freeze/u);
   assert.match(facade, /sketch: DRAWER_SKETCH_DIMENSIONS/u);
   assert.match(facade, /external: EXTERNAL_DRAWER_DIMENSIONS/u);
   assert.match(facade, /internal: INTERNAL_DRAWER_DIMENSIONS/u);
@@ -2705,7 +2992,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(decorativeSeparator, /dimensions\/stack_split_render_policy\.js/u);
 
   assert.doesNotMatch(
-    `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}\n${chestStructuralPolicy}\n${materialThicknessPolicy}\n${carcassCorniceRenderPolicy}\n${chestModePolicy}\n${doorSystemPolicy}\n${doorMountThicknessPolicy}\n${doorVisualPolicy}\n${doorTrimPolicy}\n${interiorStoragePolicy}\n${drawerSketchPolicy}\n${frontRevealFramePolicy}`,
+    `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}\n${chestStructuralPolicy}\n${materialThicknessPolicy}\n${carcassCorniceRenderPolicy}\n${chestModePolicy}\n${doorSystemPolicy}\n${doorMountThicknessPolicy}\n${doorVisualPolicy}\n${doorTrimPolicy}\n${interiorStoragePolicy}\n${cornerSystemPolicy}\n${drawerSketchPolicy}\n${frontRevealFramePolicy}`,
     /wardrobe_dimension_tokens_shared/u
   );
 });
@@ -2768,7 +3055,7 @@ test('[dimension-foundation] pure Carcass Shell and Interior consumers use focus
   };
 
   for (const file of CARCASS_SHELL_DIRECT_CONSUMERS) {
-    assertDirectOwner(file, 'CARCASS_SHELL_DIMENSIONS', 'dimensions/carcass_shell_policy.js');
+    assertDirectOwner(file, 'CARCASS_SHELL_DIMENSIONS', 'carcass_shell_policy.js');
   }
   for (const file of CARCASS_INTERIOR_DIRECT_CONSUMERS) {
     assertDirectOwner(file, 'CARCASS_INTERIOR_DIMENSIONS', 'dimensions/carcass_interior_policy.js');
@@ -2948,6 +3235,49 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     },
     'INTERIOR_FITTINGS_POLICY aggregate is imported directly only by the legacy facade'
   );
+  const cornerSystemOwnerImports = collectOwnerImports(analyzedSources, 'corner_system_policy.js');
+  assertApprovedSymbolUsage(
+    cornerSystemOwnerImports,
+    APPROVED_CORNER_SYSTEM_OWNER_IMPORTS,
+    'Corner System owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(cornerSystemOwnerImports)
+        .filter(([, symbols]) => symbols.includes('CORNER_SYSTEM_POLICY'))
+        .map(([file]) => [file, ['CORNER_SYSTEM_POLICY']])
+    ),
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['CORNER_SYSTEM_POLICY'],
+    },
+    'CORNER_SYSTEM_POLICY aggregate is imported directly only by the legacy facade'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(cornerSystemOwnerImports)
+        .filter(([, symbols]) => symbols.includes('CORNER_CONNECTOR_POLICY'))
+        .map(([file]) => [file, ['CORNER_CONNECTOR_POLICY']])
+    ),
+    {},
+    'CORNER_CONNECTOR_POLICY compatibility aggregate has no production importers'
+  );
+  assert.deepEqual(
+    collectOwnerDependencyStatements(analyzedSources, 'corner_system_policy.js'),
+    Object.fromEntries(Object.keys(APPROVED_CORNER_SYSTEM_OWNER_IMPORTS).map(file => [file, 1])),
+    'Corner System transition must retain exactly one owner import statement per approved importer'
+  );
+
+  assert.deepEqual(
+    collectModuleReexports([
+      [
+        'esm/shared/dimensions/corner_system_policy.ts',
+        read('esm/shared/dimensions/corner_system_policy.ts'),
+      ],
+    ]),
+    [],
+    'Corner System owner must not bridge or re-export foreign owners'
+  );
+
   const drawerSketchOwnerImports = collectOwnerImports(analyzedSources, 'drawer_sketch_policy.js');
   assertApprovedSymbolUsage(
     drawerSketchOwnerImports,
@@ -3176,6 +3506,11 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectLegacyInteriorFittingsFieldUsage(analyzedSources),
     APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE,
     'Interior Fittings legacy facade field allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyCornerSystemFieldUsage(analyzedSources),
+    APPROVED_CORNER_SYSTEM_LEGACY_FIELD_USAGE,
+    'Corner System legacy facade field allowlist'
   );
   assertApprovedSymbolUsage(
     collectLegacyDimensionSymbolDependencies(
@@ -4021,6 +4356,113 @@ test('[dimension-foundation] Interior Fittings guards detect aliases, namespace 
       ),
     /review-blocked/u
   );
+});
+
+test('[dimension-foundation] Corner System guards detect legacy aliases, aggregates, computed access, dynamic imports, and owner bridges', () => {
+  const legacySources = [
+    [
+      'esm/native/builder/named_corner_consumer.ts',
+      `
+        import { CORNER_WING_DIMENSIONS as corner } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const oneHop = corner;
+        const connector = oneHop.connector;
+        const { wing: { defaultWidthCm } } = oneHop;
+        export const literal = connector['minWallLengthM'];
+        export const dynamic = connector[key];
+        export { defaultWidthCm };
+      `,
+    ],
+    [
+      'esm/native/builder/namespace_corner_consumer.ts',
+      `
+        import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const { cells: { doorsPerCell } } = dimensions.CORNER_WING_DIMENSIONS;
+        export { doorsPerCell };
+      `,
+    ],
+    [
+      'esm/native/runtime/corner_wildcard.ts',
+      `export * from '../../shared/wardrobe_dimension_tokens_shared.js';`,
+    ],
+    [
+      'esm/native/runtime/corner_dynamic.ts',
+      `export const dimensions = import('../../shared/wardrobe_dimension_tokens_shared.js');`,
+    ],
+  ];
+
+  assert.deepEqual(collectLegacyCornerSystemFieldUsage(legacySources), {
+    'esm/native/builder/named_corner_consumer.ts': [
+      'connector',
+      'connector.<computed>',
+      'connector.minWallLengthM',
+      'wing',
+      'wing.defaultWidthCm',
+    ],
+    'esm/native/builder/namespace_corner_consumer.ts': ['cells', 'cells.doorsPerCell'],
+  });
+  assert.deepEqual(collectDimensionFacadeBroadDependencies(legacySources), [
+    { file: 'esm/native/builder/namespace_corner_consumer.ts', syntax: 'static-import' },
+    { file: 'esm/native/runtime/corner_dynamic.ts', syntax: 'dynamic-import' },
+    { file: 'esm/native/runtime/corner_wildcard.ts', syntax: 'static-re-export' },
+  ]);
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        collectLegacyCornerSystemFieldUsage(legacySources),
+        {},
+        'Corner System fixture legacy field allowlist'
+      ),
+    /review-blocked/u
+  );
+  assert.throws(
+    () =>
+      assertApprovedDimensionFacadeBroadDependencies(collectDimensionFacadeBroadDependencies(legacySources)),
+    /requires review/u
+  );
+
+  const ownerSources = [
+    [
+      'esm/native/builder/new_corner_aggregate_consumer.ts',
+      `import { CORNER_SYSTEM_POLICY } from '../../shared/dimensions/corner_system_policy.js';`,
+    ],
+    [
+      'esm/native/builder/new_corner_namespace_consumer.ts',
+      `import * as corner from '../../shared/dimensions/corner_system_policy.js'; export { corner };`,
+    ],
+    [
+      'esm/native/runtime/corner_owner_dynamic.ts',
+      `export const corner = import('../../shared/dimensions/corner_system_policy.js');`,
+    ],
+    [
+      'esm/native/runtime/corner_owner_bridge.ts',
+      `export { CORNER_WING_BODY_POLICY } from '../../shared/dimensions/corner_system_policy.js';`,
+    ],
+  ];
+  const ownerImports = collectOwnerImports(ownerSources, 'corner_system_policy.js');
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        ownerImports,
+        APPROVED_CORNER_SYSTEM_OWNER_IMPORTS,
+        'Corner System fixture owner consumer allowlist'
+      ),
+    /review-blocked/u
+  );
+
+  const ownerBridge = [
+    [
+      'esm/shared/dimensions/corner_system_policy.ts',
+      `export { MATERIAL_THICKNESS_POLICY } from './material_thickness_policy.js';`,
+    ],
+  ];
+  assert.deepEqual(collectModuleReexports(ownerBridge), [
+    {
+      file: 'esm/shared/dimensions/corner_system_policy.ts',
+      specifier: './material_thickness_policy.js',
+      syntax: 'static-re-export',
+      symbols: ['MATERIAL_THICKNESS_POLICY'],
+    },
+  ]);
 });
 
 test('[dimension-foundation] Drawer Sketch guards detect aliases, namespace access, nested destructuring, computed access, and broad dependencies', () => {

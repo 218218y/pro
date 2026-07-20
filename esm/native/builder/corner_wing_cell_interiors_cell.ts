@@ -1,4 +1,4 @@
-import { CORNER_WING_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_WING_INTERIOR_POLICY } from '../../shared/dimensions/corner_system_policy.js';
 import { readFiniteNumber } from './corner_geometry_plan.js';
 import type { CornerCell } from './corner_wing_cell_shared.js';
 import type {
@@ -54,12 +54,9 @@ export function getCornerCellInnerFacesX(
   if (!Number.isFinite(leftX)) leftX = start + runtime.woodThick;
   if (!Number.isFinite(rightX)) rightX = end - runtime.woodThick;
 
-  if (!(rightX > leftX + CORNER_WING_DIMENSIONS.interior.minInnerFaceGapM)) {
+  if (!(rightX > leftX + CORNER_WING_INTERIOR_POLICY.minInnerFaceGapM)) {
     const cx = c ? c.centerX : (start + end) / 2;
-    const w = Math.max(
-      CORNER_WING_DIMENSIONS.interior.minCellWidthM,
-      (c ? c.width : 0) - runtime.woodThick * 2
-    );
+    const w = Math.max(CORNER_WING_INTERIOR_POLICY.minCellWidthM, (c ? c.width : 0) - runtime.woodThick * 2);
     leftX = cx - w / 2;
     rightX = cx + w / 2;
   }
@@ -73,21 +70,18 @@ export function createCornerWingInteriorCellRuntime(
 ): CornerWingInteriorCellRuntime {
   const cfgCell = cell.cfg;
   const cellKey = cell.key;
-  const cellW = Math.max(CORNER_WING_DIMENSIONS.interior.minCellWidthM, cell.width);
+  const cellW = Math.max(CORNER_WING_INTERIOR_POLICY.minCellWidthM, cell.width);
   const cellCenterX = cell.centerX;
   const facesX = getCornerCellInnerFacesX(runtime, cell.idx);
   const cellInnerLeftX = facesX.leftX;
   const cellInnerRightX = facesX.rightX;
-  const cellInnerW = Math.max(
-    CORNER_WING_DIMENSIONS.interior.minCellWidthM,
-    cellInnerRightX - cellInnerLeftX
-  );
+  const cellInnerW = Math.max(CORNER_WING_INTERIOR_POLICY.minCellWidthM, cellInnerRightX - cellInnerLeftX);
   const cellInnerCenterX = (cellInnerLeftX + cellInnerRightX) / 2;
   const cellShelfW = Math.max(
-    CORNER_WING_DIMENSIONS.interior.minCellWidthM,
-    cellInnerW - CORNER_WING_DIMENSIONS.interior.shelfWidthClearanceM
+    CORNER_WING_INTERIOR_POLICY.minCellWidthM,
+    cellInnerW - CORNER_WING_INTERIOR_POLICY.shelfWidthClearanceM
   );
-  const cellD = Math.max(CORNER_WING_DIMENSIONS.interior.minCellDepthM, cell.depth);
+  const cellD = Math.max(CORNER_WING_INTERIOR_POLICY.minCellDepthM, cell.depth);
   const zShift = cellD - runtime.wingD;
   const __z = (z: number) => z + zShift;
   const __braceSet: Record<number, true> = Object.create(null);
@@ -97,13 +91,13 @@ export function createCornerWingInteriorCellRuntime(
     if (v != null && Number.isInteger(v) && v > 0) __braceSet[v] = true;
   }
   const __internalDepth = Math.max(
-    CORNER_WING_DIMENSIONS.interior.minCellWidthM,
-    cellD - CORNER_WING_DIMENSIONS.interior.internalDepthBackClearanceM
+    CORNER_WING_INTERIOR_POLICY.minCellWidthM,
+    cellD - CORNER_WING_INTERIOR_POLICY.internalDepthBackClearanceM
   );
-  const regularShelfDepth = CORNER_WING_DIMENSIONS.interior.regularShelfDepthM;
+  const regularShelfDepth = CORNER_WING_INTERIOR_POLICY.regularShelfDepthM;
   const __regularDepth = Math.min(__internalDepth, regularShelfDepth);
   const __fullDepthCenterZ =
-    -runtime.wingD + cellD / 2 - CORNER_WING_DIMENSIONS.interior.fullDepthCenterBackInsetM;
+    -runtime.wingD + cellD / 2 - CORNER_WING_INTERIOR_POLICY.fullDepthCenterBackInsetM;
   const __backFaceZ = __fullDepthCenterZ - __internalDepth / 2;
 
   return {
