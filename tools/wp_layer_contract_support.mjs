@@ -7,7 +7,7 @@ const SOURCE_EXTENSIONS = new Set(['.js', '.mjs', '.ts', '.tsx']);
 const IMPORT_KINDS = Object.freeze(['type', 'value', 'dynamic']);
 const COMPOSITION_FILES = new Set(['app_container.ts', 'main.ts', 'release_main.ts']);
 const RATCHET_MODE = 'decrease-only';
-export const LAYER_CONTRACT_VERSION = '2.2';
+export const LAYER_CONTRACT_VERSION = '2.3';
 export const KNOWN_LAYERS = Object.freeze([
   'adapters',
   'boot',
@@ -395,6 +395,10 @@ export function collectLayerContractGraph({ root }) {
         toFile,
         specifier: moduleImport.specifier,
         kind: moduleImport.kind,
+        syntax: moduleImport.syntax,
+        importedSymbols: [...moduleImport.importedSymbols].sort(),
+        exportedSymbols: [...moduleImport.exportedSymbols].sort(),
+        bindings: moduleImport.bindings.map(binding => ({ ...binding })),
         statementKey: `${fromFile}:${moduleImport.statementStart}:${moduleImport.specifier}`,
       });
     }
@@ -450,6 +454,50 @@ function assertNonNegativeBudget(value, label) {
   }
 }
 
+function normalizeSymbolList(value, label) {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error(`wp_layer_contract: ${label} must be a non-empty array`);
+  }
+  const normalized = value.map(symbol => String(symbol || '').trim());
+  if (normalized.some(symbol => !symbol) || new Set(normalized).size !== normalized.length) {
+    throw new Error(`wp_layer_contract: ${label} contains empty or duplicate symbols`);
+  }
+  return normalized.sort();
+}
+
+function sameStringList(left, right) {
+  const normalizedLeft = [...(left || [])].map(String).sort();
+  const normalizedRight = [...(right || [])].map(String).sort();
+  return (
+    normalizedLeft.length === normalizedRight.length &&
+    normalizedLeft.every((value, index) => value === normalizedRight[index])
+  );
+}
+
+function migrationImportKey(fromFile, importSpec) {
+  return `${toPosix(String(fromFile))}::${toPosix(String(importSpec?.toFile || ''))}::${String(
+    importSpec?.kind || ''
+  )}`;
+}
+
+function validateMigrationImportSpec(entry, field, expectedToLayer) {
+  const spec = entry?.[field];
+  const label = `${entry?.fromFile || '<unknown>'}.${field}`;
+  const toFile = toPosix(String(spec?.toFile || ''));
+  if (!toFile.startsWith('esm/') || layerOfRelativeFile(toFile) !== expectedToLayer) {
+    throw new Error(`wp_layer_contract: ${label}.toFile must belong to ${expectedToLayer}`);
+  }
+  if (spec?.kind !== 'type' && spec?.kind !== 'value') {
+    throw new Error(`wp_layer_contract: ${label}.kind must be type or value`);
+  }
+  const expectedSyntax = spec.kind === 'type' ? 'type-import' : 'static-import';
+  if (spec?.syntax !== expectedSyntax) {
+    throw new Error(`wp_layer_contract: ${label}.syntax must be ${expectedSyntax}`);
+  }
+  normalizeSymbolList(spec.importedSymbols, `${label}.importedSymbols`);
+  return { toFile, kind: spec.kind, syntax: spec.syntax };
+}
+
 export function validateLayerContractSchema(contract) {
   if (!contract || contract.version !== LAYER_CONTRACT_VERSION || contract.root !== 'esm') {
     throw new Error(`wp_layer_contract: baseline must use version ${LAYER_CONTRACT_VERSION} and root esm`);
@@ -457,9 +505,12 @@ export function validateLayerContractSchema(contract) {
   if (
     !Array.isArray(contract.rules) ||
     !Array.isArray(contract.facades) ||
-    !Array.isArray(contract.dynamicImportAllowlist)
+    !Array.isArray(contract.dynamicImportAllowlist) ||
+    !Array.isArray(contract.migrationBudgets)
   ) {
-    throw new Error('wp_layer_contract: rules, facades, and dynamicImportAllowlist must be arrays');
+    throw new Error(
+      'wp_layer_contract: rules, facades, dynamicImportAllowlist, and migrationBudgets must be arrays'
+    );
   }
   if (
     contract.ratchet?.mode !== RATCHET_MODE ||
@@ -561,6 +612,56 @@ export function validateLayerContractSchema(contract) {
     }
     dynamicAllowlist.add(key);
   }
+
+  const migrationBudgetKeys = new Set();
+  for (const entry of contract.migrationBudgets) {
+    const fromFile = toPosix(String(entry?.fromFile || ''));
+    const from = String(entry?.from || '');
+    const to = String(entry?.to || '');
+    const rule = rules.get(edgeKey(from, to));
+    if (
+      !known.has(from) ||
+      !known.has(to) ||
+      from === to ||
+      layerOfRelativeFile(fromFile) !== from ||
+      !rule ||
+      rule.decision !== 'allow'
+    ) {
+      throw new Error(
+        `wp_layer_contract: migration budget ${fromFile || '<unknown>'} requires one existing allowed edge`
+      );
+    }
+    if (entry.additionalStatements !== 1) {
+      throw new Error(
+        `wp_layer_contract: migration budget ${fromFile} must authorize exactly one additional statement`
+      );
+    }
+    for (const field of ['owner', 'reason', 'removalCondition']) {
+      if (typeof entry?.[field] !== 'string' || !entry[field].trim()) {
+        throw new Error(`wp_layer_contract: migration budget ${fromFile} requires ${field}`);
+      }
+    }
+    if (typeof entry.reviewedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(entry.reviewedAt)) {
+      throw new Error(`wp_layer_contract: migration budget ${fromFile} requires reviewedAt (YYYY-MM-DD)`);
+    }
+    const added = validateMigrationImportSpec(entry, 'addedImport', to);
+    const companion = validateMigrationImportSpec(entry, 'companionImport', to);
+    const removed = validateMigrationImportSpec(entry, 'removedImport', to);
+    if (
+      added.toFile === companion.toFile ||
+      added.toFile === removed.toFile ||
+      companion.toFile === removed.toFile
+    ) {
+      throw new Error(
+        `wp_layer_contract: migration budget ${fromFile} requires distinct added, companion, and removed targets`
+      );
+    }
+    const key = migrationImportKey(fromFile, added);
+    if (migrationBudgetKeys.has(key)) {
+      throw new Error(`wp_layer_contract: duplicate migration budget for ${key}`);
+    }
+    migrationBudgetKeys.add(key);
+  }
   return contract;
 }
 
@@ -588,11 +689,122 @@ const BUDGET_DIMENSIONS = Object.freeze([
   ['dynamicImportCount', 'maxDynamicImportCount', 'dynamic-import-growth', 'dynamicImporterFiles'],
 ]);
 
+function matchingMigrationImports(graph, fromFile, spec) {
+  return (graph.imports || []).filter(
+    entry => entry.fromFile === fromFile && entry.toFile === spec.toFile && entry.kind === spec.kind
+  );
+}
+
+function migrationImportFailureKind(field, count) {
+  if (field === 'removedImport') return 'migration-legacy-import-restored';
+  return count === 0 ? 'stale-migration-budget' : 'migration-budget-growth';
+}
+
+function evaluateMigrationBudgets(graph, contract) {
+  const failures = [];
+  const approvedStatements = new Map();
+  const statuses = [];
+
+  for (const budget of contract.migrationBudgets) {
+    const fromFile = toPosix(String(budget.fromFile));
+    const edge = edgeKey(budget.from, budget.to);
+    const entryFailures = [];
+    const addedMatches = matchingMigrationImports(graph, fromFile, budget.addedImport);
+    const companionMatches = matchingMigrationImports(graph, fromFile, budget.companionImport);
+    const removedMatches = (graph.imports || []).filter(
+      entry => entry.fromFile === fromFile && entry.toFile === budget.removedImport.toFile
+    );
+
+    for (const [field, matches, expected] of [
+      ['addedImport', addedMatches, budget.addedImport],
+      ['companionImport', companionMatches, budget.companionImport],
+    ]) {
+      if (matches.length !== 1) {
+        entryFailures.push({
+          kind: migrationImportFailureKind(field, matches.length),
+          from: budget.from,
+          to: budget.to,
+          fromFile,
+          field,
+          toFile: expected.toFile,
+          importKind: expected.kind,
+          current: matches.length,
+          expected: 1,
+        });
+        continue;
+      }
+      if (!sameStringList(matches[0].importedSymbols, expected.importedSymbols)) {
+        entryFailures.push({
+          kind: 'migration-import-symbol-drift',
+          from: budget.from,
+          to: budget.to,
+          fromFile,
+          field,
+          toFile: expected.toFile,
+          importKind: expected.kind,
+          currentSymbols: [...(matches[0].importedSymbols || [])].sort(),
+          expectedSymbols: [...expected.importedSymbols].sort(),
+        });
+      }
+    }
+
+    if (removedMatches.length > 0) {
+      entryFailures.push({
+        kind: migrationImportFailureKind('removedImport', removedMatches.length),
+        from: budget.from,
+        to: budget.to,
+        fromFile,
+        field: 'removedImport',
+        toFile: budget.removedImport.toFile,
+        current: removedMatches.length,
+        expected: 0,
+      });
+    }
+
+    failures.push(...entryFailures);
+    if (entryFailures.length === 0) {
+      const added = addedMatches[0];
+      const current = approvedStatements.get(edge) || {
+        all: new Set(),
+        type: new Set(),
+        value: new Set(),
+        dynamic: new Set(),
+      };
+      current.all.add(added.statementKey);
+      current[added.kind].add(added.statementKey);
+      approvedStatements.set(edge, current);
+    }
+    statuses.push({
+      from: budget.from,
+      to: budget.to,
+      fromFile,
+      addedTarget: budget.addedImport.toFile,
+      active: entryFailures.length === 0,
+    });
+  }
+
+  return { failures, approvedStatements, statuses };
+}
+
+function edgeWithMigrationStatementsExcluded(edge, approvedStatements) {
+  const approved = approvedStatements.get(edgeKey(edge.from, edge.to));
+  if (!approved) return edge;
+  return {
+    ...edge,
+    importCount: edge.importCount - approved.all.size,
+    typeImportCount: edge.typeImportCount - approved.type.size,
+    valueImportCount: edge.valueImportCount - approved.value.size,
+    dynamicImportCount: edge.dynamicImportCount - approved.dynamic.size,
+  };
+}
+
 export function evaluateLayerContract(graph, contract) {
   validateLayerContractSchema(contract);
   const ruleMap = new Map(contract.rules.map(rule => [edgeKey(rule.from, rule.to), rule]));
   const currentMap = new Map(graph.edges.map(edge => [edgeKey(edge.from, edge.to), edge]));
   const failures = [];
+  const migrationEvaluation = evaluateMigrationBudgets(graph, contract);
+  failures.push(...migrationEvaluation.failures);
 
   for (const fromFile of graph.unclassifiedSourceFiles || []) {
     failures.push({ kind: 'unclassified-source-file', fromFile });
@@ -637,19 +849,25 @@ export function evaluateLayerContract(graph, contract) {
       failures.push({ kind: 'denied-edge', from: edge.from, to: edge.to });
       continue;
     }
+    const reviewedEdge = edgeWithMigrationStatementsExcluded(edge, migrationEvaluation.approvedStatements);
     for (const [currentField, budgetField, failureKind, importerField] of BUDGET_DIMENSIONS) {
-      if (edge[currentField] <= rule[budgetField]) continue;
+      if (reviewedEdge[currentField] <= rule[budgetField]) continue;
       const importerFiles = Array.isArray(edge[importerField]) ? edge[importerField] : [];
       const approved = new Set((rule.approvedImporters || []).map(value => toPosix(String(value))));
-      failures.push({
+      const failure = {
         kind: failureKind,
         from: edge.from,
         to: edge.to,
-        current: edge[currentField],
+        current: reviewedEdge[currentField],
         budget: rule[budgetField],
         importers: importerFiles,
         newImporters: importerFiles.filter(file => !approved.has(file)),
-      });
+      };
+      if (reviewedEdge[currentField] !== edge[currentField]) {
+        failure.observed = edge[currentField];
+        failure.migrationStatementsExcluded = edge[currentField] - reviewedEdge[currentField];
+      }
+      failures.push(failure);
     }
   }
 
@@ -675,7 +893,12 @@ export function evaluateLayerContract(graph, contract) {
     }
   }
 
-  return { ok: failures.length === 0, failures, edges: graph.edges };
+  return {
+    ok: failures.length === 0,
+    failures,
+    edges: graph.edges,
+    migrationBudgets: migrationEvaluation.statuses,
+  };
 }
 
 function ruleForEdge(edge, previousRule) {
@@ -704,6 +927,10 @@ function ruleForEdge(edge, previousRule) {
 export function buildLayerContractProposal(graph, currentContract) {
   validateLayerContractSchema(currentContract);
   const previousRules = new Map(currentContract.rules.map(rule => [edgeKey(rule.from, rule.to), rule]));
+  const migrationEvaluation = evaluateMigrationBudgets(graph, currentContract);
+  const reviewedEdges = graph.edges.map(edge =>
+    edgeWithMigrationStatementsExcluded(edge, migrationEvaluation.approvedStatements)
+  );
   const observedEdgeKeys = new Set(graph.edges.map(edge => edgeKey(edge.from, edge.to)));
   const facadeByEdge = new Map(
     currentContract.facades.map(facade => [edgeKey(facade.from, facade.to), facade])
@@ -713,7 +940,7 @@ export function buildLayerContractProposal(graph, currentContract) {
       .filter(rule => rule.decision === 'allow')
       .map(rule => [edgeKey(rule.from, rule.to), rule])
   );
-  const nextRules = graph.edges.map(edge =>
+  const nextRules = reviewedEdges.map(edge =>
     ruleForEdge(edge, previousRules.get(edgeKey(edge.from, edge.to)))
   );
   for (const rule of currentContract.rules) {
@@ -743,7 +970,7 @@ export function buildLayerContractProposal(graph, currentContract) {
     );
     return changes.length ? [{ edge: edgeKey(rule.from, rule.to), changes }] : [];
   });
-  const currentEdges = new Map(graph.edges.map(edge => [edgeKey(edge.from, edge.to), edge]));
+  const currentEdges = new Map(reviewedEdges.map(edge => [edgeKey(edge.from, edge.to), edge]));
   const ratchetViolations = currentContract.rules.flatMap(rule => {
     if (rule.decision !== 'allow') return [];
     const edge = currentEdges.get(edgeKey(rule.from, rule.to));
@@ -774,11 +1001,15 @@ export function buildLayerContractProposal(graph, currentContract) {
     rules: nextRules,
     facades: JSON.parse(JSON.stringify(currentContract.facades)),
     dynamicImportAllowlist: JSON.parse(JSON.stringify(currentContract.dynamicImportAllowlist)),
+    migrationBudgets: JSON.parse(JSON.stringify(currentContract.migrationBudgets)),
   };
   validateLayerContractSchema(proposedContract);
 
   const reviewRequired =
-    addedEdges.length > 0 || ratchetViolations.length > 0 || requiresFacadeDecision.length > 0;
+    addedEdges.length > 0 ||
+    ratchetViolations.length > 0 ||
+    requiresFacadeDecision.length > 0 ||
+    migrationEvaluation.failures.length > 0;
 
   return {
     reviewRequired,
@@ -789,6 +1020,7 @@ export function buildLayerContractProposal(graph, currentContract) {
       budgetChanges,
       ratchetViolations,
       requiresFacadeDecision,
+      migrationBudgetFailures: migrationEvaluation.failures,
     },
   };
 }

@@ -1,5 +1,5 @@
 {
-  "version": "2.2",
+  "version": "2.3",
   "root": "esm",
   "ratchet": {
     "mode": "decrease-only",
@@ -787,6 +787,64 @@
       "expression": "url",
       "maxOccurrences": 1,
       "reason": "The browser entry imports the already validated runtime-config URL supplied by the deployment profile."
+    }
+  ],
+  "migrationBudgets": [
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_connector_interior_rod.ts",
+      "additionalStatements": 1,
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER", "MM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_connector_interior_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_CONNECTOR_ATTACH_ROD_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER", "CORNER_CONNECTOR_INTERIOR_DIMENSIONS", "MM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-ownership-migration",
+      "reason": "The attach-rod consumer replaces one legacy facade statement with a narrow policy import plus canonical unit conversions on the existing builder to shared edge.",
+      "reviewedAt": "2026-07-20",
+      "removalCondition": "Remove this entry when the extra units statement is eliminated by a reviewed typed conversion seam or when the consumer no longer needs centimeter and millimeter normalization."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_connector_interior_special_metrics.ts",
+      "additionalStatements": 1,
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_connector_interior_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_CONNECTOR_SPECIAL_POST_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER", "CORNER_CONNECTOR_INTERIOR_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-ownership-migration",
+      "reason": "The special-post metrics consumer replaces one legacy facade statement with a narrow policy import plus the canonical centimeter conversion on the existing builder to shared edge.",
+      "reviewedAt": "2026-07-20",
+      "removalCondition": "Remove this entry when the extra units statement is eliminated by a reviewed typed conversion seam or when the consumer no longer normalizes centimeter input."
     }
   ]
 }

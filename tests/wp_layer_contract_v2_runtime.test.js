@@ -62,14 +62,73 @@ function allowRule(overrides = {}) {
   };
 }
 
-function contract({ rules = [allowRule()], facades = [], dynamicImportAllowlist = [] } = {}) {
+function contract({
+  rules = [allowRule()],
+  facades = [],
+  dynamicImportAllowlist = [],
+  migrationBudgets = [],
+} = {}) {
   return {
-    version: '2.2',
+    version: '2.3',
     root: 'esm',
     ratchet: RATCHET,
     rules,
     facades,
     dynamicImportAllowlist,
+    migrationBudgets,
+  };
+}
+
+function migrationBudget(overrides = {}) {
+  return {
+    from: 'ui',
+    to: 'services',
+    fromFile: 'esm/native/ui/example.ts',
+    additionalStatements: 1,
+    addedImport: {
+      toFile: 'esm/native/services/units.ts',
+      kind: 'value',
+      syntax: 'static-import',
+      importedSymbols: ['CM_PER_METER'],
+    },
+    companionImport: {
+      toFile: 'esm/native/services/policy.ts',
+      kind: 'value',
+      syntax: 'static-import',
+      importedSymbols: ['EXAMPLE_POLICY'],
+    },
+    removedImport: {
+      toFile: 'esm/native/services/legacy_facade.ts',
+      kind: 'value',
+      syntax: 'static-import',
+      importedSymbols: ['CM_PER_METER', 'EXAMPLE_DIMENSIONS'],
+    },
+    owner: 'test-migration',
+    reason: 'One legacy facade statement was split into a direct owner and canonical units import.',
+    reviewedAt: '2026-07-20',
+    removalCondition: 'Remove after the extra units statement is no longer required.',
+    ...overrides,
+  };
+}
+
+function migrationImport({
+  toFile,
+  importedSymbols,
+  statementKey,
+  fromFile = 'esm/native/ui/example.ts',
+  kind = 'value',
+  syntax = kind === 'type' ? 'type-import' : 'static-import',
+}) {
+  return {
+    from: 'ui',
+    to: 'services',
+    fromFile,
+    toFile,
+    specifier: `../services/${path.basename(toFile, path.extname(toFile))}.js`,
+    kind,
+    syntax,
+    importedSymbols,
+    statementKey,
   };
 }
 
@@ -405,6 +464,148 @@ test('changing an existing importer from type-only to runtime import is contract
   );
 });
 
+test('layer contract migration budgets exempt only the reviewed statement and keep the base ratchet unchanged', () => {
+  const budget = migrationBudget();
+  const imports = [
+    migrationImport({
+      toFile: budget.companionImport.toFile,
+      importedSymbols: budget.companionImport.importedSymbols,
+      statementKey: 'policy-statement',
+    }),
+    migrationImport({
+      toFile: budget.addedImport.toFile,
+      importedSymbols: budget.addedImport.importedSymbols,
+      statementKey: 'units-statement',
+    }),
+  ];
+  const graph = {
+    edges: [edge({ importCount: 2, valueImportCount: 2 })],
+    imports,
+  };
+  const baseline = contract({ migrationBudgets: [budget] });
+
+  const report = evaluateLayerContract(graph, baseline);
+  assert.equal(report.ok, true);
+  assert.deepEqual(report.migrationBudgets, [
+    {
+      from: 'ui',
+      to: 'services',
+      fromFile: 'esm/native/ui/example.ts',
+      addedTarget: 'esm/native/services/units.ts',
+      active: true,
+    },
+  ]);
+  assert.equal(baseline.rules[0].maxImportCount, 1);
+  assert.equal(baseline.rules[0].maxValueImportCount, 1);
+
+  const unrelatedGrowth = evaluateLayerContract(
+    {
+      edges: [edge({ importCount: 3, valueImportCount: 3 })],
+      imports: [
+        ...imports,
+        migrationImport({
+          toFile: 'esm/native/services/unrelated.ts',
+          importedSymbols: ['UNRELATED'],
+          statementKey: 'unrelated-statement',
+        }),
+      ],
+    },
+    baseline
+  );
+  assert.deepEqual(
+    unrelatedGrowth.failures
+      .filter(failure => failure.kind.endsWith('import-growth'))
+      .map(failure => [failure.kind, failure.current, failure.observed, failure.migrationStatementsExcluded]),
+    [
+      ['import-growth', 2, 3, 1],
+      ['value-import-growth', 2, 3, 1],
+    ]
+  );
+});
+
+test('layer contract migration budgets fail closed on symbol drift, missing imports, and restored legacy access', () => {
+  const budget = migrationBudget();
+  const baseline = contract({ migrationBudgets: [budget] });
+  const companion = migrationImport({
+    toFile: budget.companionImport.toFile,
+    importedSymbols: budget.companionImport.importedSymbols,
+    statementKey: 'policy-statement',
+  });
+  const added = migrationImport({
+    toFile: budget.addedImport.toFile,
+    importedSymbols: budget.addedImport.importedSymbols,
+    statementKey: 'units-statement',
+  });
+
+  const symbolDrift = evaluateLayerContract(
+    {
+      edges: [edge({ importCount: 2, valueImportCount: 2 })],
+      imports: [{ ...added, importedSymbols: ['CM_PER_METER', 'MM_PER_METER'] }, companion],
+    },
+    baseline
+  );
+  assert.equal(
+    symbolDrift.failures.some(failure => failure.kind === 'migration-import-symbol-drift'),
+    true
+  );
+
+  const missingAdded = evaluateLayerContract({ edges: [edge()], imports: [companion] }, baseline);
+  assert.equal(
+    missingAdded.failures.some(
+      failure => failure.kind === 'stale-migration-budget' && failure.field === 'addedImport'
+    ),
+    true
+  );
+
+  const restoredLegacy = evaluateLayerContract(
+    {
+      edges: [edge({ importCount: 3, valueImportCount: 3 })],
+      imports: [
+        companion,
+        added,
+        migrationImport({
+          toFile: budget.removedImport.toFile,
+          importedSymbols: budget.removedImport.importedSymbols,
+          statementKey: 'legacy-statement',
+        }),
+      ],
+    },
+    baseline
+  );
+  assert.equal(
+    restoredLegacy.failures.some(failure => failure.kind === 'migration-legacy-import-restored'),
+    true
+  );
+});
+
+test('layer contract proposal preserves exact migration budgets without raising reviewed ceilings', () => {
+  const budget = migrationBudget();
+  const current = contract({ migrationBudgets: [budget] });
+  const graph = {
+    edges: [edge({ importCount: 2, valueImportCount: 2 })],
+    imports: [
+      migrationImport({
+        toFile: budget.companionImport.toFile,
+        importedSymbols: budget.companionImport.importedSymbols,
+        statementKey: 'policy-statement',
+      }),
+      migrationImport({
+        toFile: budget.addedImport.toFile,
+        importedSymbols: budget.addedImport.importedSymbols,
+        statementKey: 'units-statement',
+      }),
+    ],
+  };
+
+  const proposal = buildLayerContractProposal(graph, current);
+  assert.equal(proposal.reviewRequired, false);
+  assert.deepEqual(proposal.contract.migrationBudgets, [budget]);
+  assert.deepEqual(proposal.diff.ratchetViolations, []);
+  assert.deepEqual(proposal.diff.migrationBudgetFailures, []);
+  assert.equal(proposal.contract.rules[0].maxImportCount, 1);
+  assert.equal(proposal.contract.rules[0].maxValueImportCount, 1);
+});
+
 test('layer contract schema rejects duplicate rules, unknown layers, invalid budgets, and unsafe facades', () => {
   assert.throws(
     () => validateLayerContractSchema(contract({ rules: [allowRule(), allowRule()] })),
@@ -505,6 +706,42 @@ test('layer contract schema rejects duplicate rules, unknown layers, invalid bud
         })
       ),
     /positive maxOccurrences/
+  );
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          migrationBudgets: [migrationBudget({ additionalStatements: 2 })],
+        })
+      ),
+    /exactly one additional statement/
+  );
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          migrationBudgets: [migrationBudget(), migrationBudget()],
+        })
+      ),
+    /duplicate migration budget/
+  );
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          migrationBudgets: [
+            migrationBudget({
+              companionImport: {
+                toFile: 'esm/native/services/units.ts',
+                kind: 'value',
+                syntax: 'static-import',
+                importedSymbols: ['EXAMPLE_POLICY'],
+              },
+            }),
+          ],
+        })
+      ),
+    /distinct added, companion, and removed targets/
   );
 });
 
