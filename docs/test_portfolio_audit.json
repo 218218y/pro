@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-20T02:37:45.386Z",
+  "generatedAt": "2026-07-20T04:51:33.655Z",
   "totals": {
-    "tests": 1226,
-    "unitRunnerTests": 1218,
+    "tests": 1227,
+    "unitRunnerTests": 1219,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 399,
+    "contract": 400,
     "runtime-unit": 317,
     "integration": 451,
     "e2e-smoke": 9,
@@ -1432,6 +1432,10 @@
     {
       "file": "tests/corner_connector_emit_shell_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/corner_connector_interior_policy_runtime.test.ts",
+      "category": "contract"
     },
     {
       "file": "tests/corner_door_paint_material_refresh_guard.test.js",

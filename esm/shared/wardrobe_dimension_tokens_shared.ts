@@ -26,6 +26,7 @@ import {
 import { STACK_SPLIT_RENDER_POLICY } from './dimensions/stack_split_render_policy.js';
 import { CARCASS_SHELL_DIMENSIONS } from './dimensions/carcass_shell_policy.js';
 import { CORNER_SYSTEM_POLICY } from './dimensions/corner_system_policy.js';
+import { CORNER_CONNECTOR_INTERIOR_POLICY } from './dimensions/corner_connector_interior_policy.js';
 import { CARCASS_INTERIOR_DIMENSIONS } from './dimensions/carcass_interior_policy.js';
 import { BASE_PLINTH_POLICY } from './dimensions/base_plinth_policy.js';
 import {
@@ -588,61 +589,9 @@ export const SKETCH_BOX_DIMENSIONS = Object.freeze({
 
 export const CORNER_WING_DIMENSIONS = legacyDimensionNumberView(CORNER_SYSTEM_POLICY);
 
-export const CORNER_CONNECTOR_INTERIOR_DIMENSIONS = Object.freeze({
-  specialPost: Object.freeze({
-    depthDefaultCm: 55,
-    heightDefaultCm: 180,
-    topCellHeightDefaultCm: 30,
-    depthMinM: 0.05,
-    postInsetClearanceM: 0.02,
-    panelGapEpsilonM: 0.0006,
-    minAvailableHeightM: 0.35,
-    postHeightMinM: 0.2,
-    postOffsetNormMin: 0.05,
-    postOffsetNormMax: 0.95,
-    postClampEdgeInsetM: 0.03,
-    shelfSpanMinM: 0.35,
-    shelfNetMinM: 0.12,
-    shelfTopClearanceM: 0.002,
-    panelMinLengthM: 0.01,
-    shelfPlanMinDimensionM: 0.05,
-    shelfCeilingClearanceM: 0.005,
-    shelfFitToleranceM: 0.002,
-  }),
-  attachRod: Object.freeze({
-    heightDefaultCm: 150,
-    endInsetDefaultCm: 2,
-    radiusDefaultMm: 15,
-    verticalClearanceM: 0.05,
-    minRodLengthM: 0.08,
-    contentsWidthClearanceM: 0.06,
-    contentsWidthMinM: 0.08,
-    contentsBottomClearanceM: 0.02,
-    contentsHeightMinM: 0.55,
-    contentsDepthHintM: 0.32,
-    wallBackClearanceM: 0.08,
-  }),
-  foldedContents: Object.freeze({
-    leftWidthMinM: 0.28,
-    leftDepthMinM: 0.18,
-    surfaceHeightClearanceM: 0.02,
-    surfaceMinHeightM: 0.08,
-    surfaceYOffsetM: 0.002,
-    widthMinM: 0.2,
-    widthClearanceM: 0.06,
-    maxHeightMinM: 0.12,
-    maxHeightMaxM: 0.65,
-    pentagonSafeZMinM: 0.14,
-    pentagonSafeZRatio: 0.35,
-    pentagonSafeZEndClearanceM: 0.18,
-    pentagonSafeWidthMinM: 0.35,
-    pentagonSafeWidthRatio: 0.85,
-    pentagonSafeWidthMaxM: 0.9,
-    pentagonSafeDepthMinM: 0.22,
-    pentagonSafeDepthMaxM: 0.34,
-    pentagonSafeDepthEndClearanceM: 0.12,
-  }),
-});
+export const CORNER_CONNECTOR_INTERIOR_DIMENSIONS = legacyDimensionNumberView(
+  CORNER_CONNECTOR_INTERIOR_POLICY
+);
 
 export { HANDLE_DIMENSIONS };
 

@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 145, statements: 145 }),
+  'static-import': Object.freeze({ importers: 141, statements: 141 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 147, statements: 148 }),
+  total: Object.freeze({ importers: 143, statements: 144 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -983,6 +983,22 @@ const APPROVED_CORNER_SYSTEM_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/builder/corner_wing_hex_cell_geometry.ts': Object.freeze(['CORNER_WING_SELECTOR_POLICY']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CORNER_SYSTEM_POLICY']),
+});
+
+const APPROVED_CORNER_CONNECTOR_INTERIOR_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/corner_connector_interior_rod.ts': Object.freeze([
+    'CORNER_CONNECTOR_ATTACH_ROD_POLICY',
+  ]),
+  'esm/native/builder/corner_connector_interior_special_apply.ts': Object.freeze([
+    'CORNER_CONNECTOR_SPECIAL_POST_POLICY',
+  ]),
+  'esm/native/builder/corner_connector_interior_special_contents.ts': Object.freeze([
+    'CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY',
+  ]),
+  'esm/native/builder/corner_connector_interior_special_metrics.ts': Object.freeze([
+    'CORNER_CONNECTOR_SPECIAL_POST_POLICY',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CORNER_CONNECTOR_INTERIOR_POLICY']),
 });
 
 const APPROVED_CORNER_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({
@@ -3278,6 +3294,42 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     'Corner System owner must not bridge or re-export foreign owners'
   );
 
+  const cornerConnectorInteriorOwnerImports = collectOwnerImports(
+    analyzedSources,
+    'corner_connector_interior_policy.js'
+  );
+  assertApprovedSymbolUsage(
+    cornerConnectorInteriorOwnerImports,
+    APPROVED_CORNER_CONNECTOR_INTERIOR_OWNER_IMPORTS,
+    'Corner Connector Interior owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(cornerConnectorInteriorOwnerImports)
+        .filter(([, symbols]) => symbols.includes('CORNER_CONNECTOR_INTERIOR_POLICY'))
+        .map(([file]) => [file, ['CORNER_CONNECTOR_INTERIOR_POLICY']])
+    ),
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['CORNER_CONNECTOR_INTERIOR_POLICY'],
+    },
+    'CORNER_CONNECTOR_INTERIOR_POLICY aggregate is imported directly only by the legacy facade'
+  );
+  assert.deepEqual(
+    collectOwnerDependencyStatements(analyzedSources, 'corner_connector_interior_policy.js'),
+    Object.fromEntries(Object.keys(APPROVED_CORNER_CONNECTOR_INTERIOR_OWNER_IMPORTS).map(file => [file, 1])),
+    'Corner Connector Interior transition must retain exactly one owner import statement per approved importer'
+  );
+  assert.deepEqual(
+    collectModuleReexports([
+      [
+        'esm/shared/dimensions/corner_connector_interior_policy.ts',
+        read('esm/shared/dimensions/corner_connector_interior_policy.ts'),
+      ],
+    ]),
+    [],
+    'Corner Connector Interior owner must not bridge or re-export another owner'
+  );
+
   const drawerSketchOwnerImports = collectOwnerImports(analyzedSources, 'drawer_sketch_policy.js');
   assertApprovedSymbolUsage(
     drawerSketchOwnerImports,
@@ -3511,6 +3563,24 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectLegacyCornerSystemFieldUsage(analyzedSources),
     APPROVED_CORNER_SYSTEM_LEGACY_FIELD_USAGE,
     'Corner System legacy facade field allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionSymbolDependencies(
+      analyzedSources,
+      'CORNER_CONNECTOR_INTERIOR_DIMENSIONS',
+      'dimensions/corner_connector_interior_policy.js'
+    ),
+    {},
+    'Corner Connector Interior legacy dependency allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectLegacyDimensionPolicyFieldUsage(
+      analyzedSources,
+      'CORNER_CONNECTOR_INTERIOR_DIMENSIONS',
+      'dimensions/corner_connector_interior_policy.js'
+    ),
+    {},
+    'Corner Connector Interior legacy field allowlist'
   );
   assertApprovedSymbolUsage(
     collectLegacyDimensionSymbolDependencies(
@@ -4461,6 +4531,135 @@ test('[dimension-foundation] Corner System guards detect legacy aliases, aggrega
       specifier: './material_thickness_policy.js',
       syntax: 'static-re-export',
       symbols: ['MATERIAL_THICKNESS_POLICY'],
+    },
+  ]);
+});
+
+test('[dimension-foundation] Corner Connector Interior guards detect aliases, aggregates, computed access, dynamic imports, and owner bridges', () => {
+  const legacySources = [
+    [
+      'esm/native/builder/named_corner_connector_interior_consumer.ts',
+      `
+        import { CORNER_CONNECTOR_INTERIOR_DIMENSIONS as interior } from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const oneHop = interior;
+        const post = oneHop.specialPost;
+        const { attachRod: { radiusDefaultMm } } = oneHop;
+        export const literal = post['depthMinM'];
+        export const dynamic = post[key];
+        export { radiusDefaultMm };
+      `,
+    ],
+    [
+      'esm/native/builder/namespace_corner_connector_interior_consumer.ts',
+      `
+        import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+        const { foldedContents: { widthMinM } } = dimensions.CORNER_CONNECTOR_INTERIOR_DIMENSIONS;
+        export { widthMinM };
+      `,
+    ],
+    [
+      'esm/native/runtime/corner_connector_interior_wildcard.ts',
+      `export * from '../../shared/wardrobe_dimension_tokens_shared.js';`,
+    ],
+    [
+      'esm/native/runtime/corner_connector_interior_dynamic.ts',
+      `export const dimensions = import('../../shared/wardrobe_dimension_tokens_shared.js');`,
+    ],
+  ];
+
+  assert.deepEqual(
+    collectLegacyDimensionPolicyFieldUsage(
+      legacySources,
+      'CORNER_CONNECTOR_INTERIOR_DIMENSIONS',
+      'dimensions/corner_connector_interior_policy.js'
+    ),
+    {
+      'esm/native/builder/named_corner_connector_interior_consumer.ts': [
+        'attachRod',
+        'attachRod.radiusDefaultMm',
+        'specialPost',
+        'specialPost.<computed>',
+        'specialPost.depthMinM',
+      ],
+      'esm/native/builder/namespace_corner_connector_interior_consumer.ts': [
+        'foldedContents',
+        'foldedContents.widthMinM',
+      ],
+    }
+  );
+  assert.deepEqual(collectDimensionFacadeBroadDependencies(legacySources), [
+    {
+      file: 'esm/native/builder/namespace_corner_connector_interior_consumer.ts',
+      syntax: 'static-import',
+    },
+    {
+      file: 'esm/native/runtime/corner_connector_interior_dynamic.ts',
+      syntax: 'dynamic-import',
+    },
+    {
+      file: 'esm/native/runtime/corner_connector_interior_wildcard.ts',
+      syntax: 'static-re-export',
+    },
+  ]);
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        collectLegacyDimensionPolicyFieldUsage(
+          legacySources,
+          'CORNER_CONNECTOR_INTERIOR_DIMENSIONS',
+          'dimensions/corner_connector_interior_policy.js'
+        ),
+        {},
+        'Corner Connector Interior fixture legacy field allowlist'
+      ),
+    /review-blocked/u
+  );
+  assert.throws(
+    () =>
+      assertApprovedDimensionFacadeBroadDependencies(collectDimensionFacadeBroadDependencies(legacySources)),
+    /requires review/u
+  );
+
+  const ownerSources = [
+    [
+      'esm/native/builder/new_corner_connector_interior_aggregate_consumer.ts',
+      `import { CORNER_CONNECTOR_INTERIOR_POLICY as interior } from '../../shared/dimensions/corner_connector_interior_policy.js'; export { interior };`,
+    ],
+    [
+      'esm/native/builder/new_corner_connector_interior_namespace_consumer.ts',
+      `import * as interior from '../../shared/dimensions/corner_connector_interior_policy.js'; export { interior };`,
+    ],
+    [
+      'esm/native/runtime/corner_connector_interior_owner_dynamic.ts',
+      `export const interior = import('../../shared/dimensions/corner_connector_interior_policy.js');`,
+    ],
+    [
+      'esm/native/runtime/corner_connector_interior_owner_wildcard.ts',
+      `export * from '../../shared/dimensions/corner_connector_interior_policy.js';`,
+    ],
+  ];
+  assert.throws(
+    () =>
+      assertApprovedSymbolUsage(
+        collectOwnerImports(ownerSources, 'corner_connector_interior_policy.js'),
+        APPROVED_CORNER_CONNECTOR_INTERIOR_OWNER_IMPORTS,
+        'Corner Connector Interior fixture owner consumer allowlist'
+      ),
+    /review-blocked/u
+  );
+
+  const ownerBridge = [
+    [
+      'esm/shared/dimensions/corner_connector_interior_policy.ts',
+      `export { INTERIOR_ROD_POLICY } from './interior_fittings_policy.js';`,
+    ],
+  ];
+  assert.deepEqual(collectModuleReexports(ownerBridge), [
+    {
+      file: 'esm/shared/dimensions/corner_connector_interior_policy.ts',
+      specifier: './interior_fittings_policy.js',
+      syntax: 'static-re-export',
+      symbols: ['INTERIOR_ROD_POLICY'],
     },
   ]);
 });

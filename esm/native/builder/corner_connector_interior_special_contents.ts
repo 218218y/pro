@@ -3,14 +3,12 @@
 // This owner plans and emits folded-clothes surfaces. It deliberately does not
 // create connector geometry or mutate shelf meshes.
 
-import { CORNER_CONNECTOR_INTERIOR_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY } from '../../shared/dimensions/corner_connector_interior_policy.js';
 import type {
   CornerConnectorInteriorEmitters,
   CornerConnectorInteriorFlowParams,
 } from './corner_connector_interior_shared.js';
 import type { FoldedClothesSurfacePlan } from './corner_connector_interior_special_types.js';
-
-const FOLDED_CONTENTS_DIMENSIONS = CORNER_CONNECTOR_INTERIOR_DIMENSIONS.foldedContents;
 
 function emitFoldedClothesPlan(
   plan: FoldedClothesSurfacePlan,
@@ -65,8 +63,8 @@ export function createLeftShelvesContentsPlan(args: {
   const width = Math.abs(postX - wallX);
   const usableDepth = Math.max(0, depth - backInset);
   if (
-    !(width > FOLDED_CONTENTS_DIMENSIONS.leftWidthMinM) ||
-    !(usableDepth > FOLDED_CONTENTS_DIMENSIONS.leftDepthMinM)
+    !(width > CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.leftWidthMinM) ||
+    !(usableDepth > CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.leftDepthMinM)
   )
     return [];
 
@@ -76,19 +74,20 @@ export function createLeftShelvesContentsPlan(args: {
   const plans: FoldedClothesSurfacePlan[] = [];
 
   const firstStop = shelfBottomYs.length ? shelfBottomYs[0] : shelf1BottomY;
-  const floorMaxHeight = firstStop - floorTopY - FOLDED_CONTENTS_DIMENSIONS.surfaceHeightClearanceM;
-  if (floorMaxHeight > FOLDED_CONTENTS_DIMENSIONS.surfaceMinHeightM) {
+  const floorMaxHeight =
+    firstStop - floorTopY - CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceHeightClearanceM;
+  if (floorMaxHeight > CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceMinHeightM) {
     plans.push({
       x: centerX,
-      y: floorTopY + FOLDED_CONTENTS_DIMENSIONS.surfaceYOffsetM,
+      y: floorTopY + CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceYOffsetM,
       z: centerZ,
       width: Math.max(
-        FOLDED_CONTENTS_DIMENSIONS.widthMinM,
-        width - FOLDED_CONTENTS_DIMENSIONS.widthClearanceM
+        CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.widthMinM,
+        width - CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.widthClearanceM
       ),
       maxHeight: Math.max(
-        FOLDED_CONTENTS_DIMENSIONS.maxHeightMinM,
-        Math.min(FOLDED_CONTENTS_DIMENSIONS.maxHeightMaxM, floorMaxHeight)
+        CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.maxHeightMinM,
+        Math.min(CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.maxHeightMaxM, floorMaxHeight)
       ),
       maxDepth: usableDepth,
       op: 'special:leftSurface:floor',
@@ -98,19 +97,19 @@ export function createLeftShelvesContentsPlan(args: {
   for (let i = 0; i < shelfBottomYs.length; i++) {
     const topY = shelfBottomYs[i] + woodThick;
     const nextStop = i + 1 < shelfBottomYs.length ? shelfBottomYs[i + 1] : shelf1BottomY;
-    const maxHeight = nextStop - topY - FOLDED_CONTENTS_DIMENSIONS.surfaceHeightClearanceM;
-    if (maxHeight > FOLDED_CONTENTS_DIMENSIONS.surfaceMinHeightM) {
+    const maxHeight = nextStop - topY - CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceHeightClearanceM;
+    if (maxHeight > CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceMinHeightM) {
       plans.push({
         x: centerX,
-        y: topY + FOLDED_CONTENTS_DIMENSIONS.surfaceYOffsetM,
+        y: topY + CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceYOffsetM,
         z: centerZ,
         width: Math.max(
-          FOLDED_CONTENTS_DIMENSIONS.widthMinM,
-          width - FOLDED_CONTENTS_DIMENSIONS.widthClearanceM
+          CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.widthMinM,
+          width - CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.widthClearanceM
         ),
         maxHeight: Math.max(
-          FOLDED_CONTENTS_DIMENSIONS.maxHeightMinM,
-          Math.min(FOLDED_CONTENTS_DIMENSIONS.maxHeightMaxM, maxHeight)
+          CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.maxHeightMinM,
+          Math.min(CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.maxHeightMaxM, maxHeight)
         ),
         maxDepth: usableDepth,
         op: `special:leftSurface:shelf:${i + 1}`,
@@ -134,39 +133,39 @@ export function createPentagonTopContentsPlan(args: {
   const { mx, L, shelf1Added, shelf1BottomY, shelf2Added, shelf2BottomY, woodThick, ceilBottomY } = args;
   const safeX = mx(-L / 2);
   const safeZ = Math.max(
-    FOLDED_CONTENTS_DIMENSIONS.pentagonSafeZMinM,
+    CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.pentagonSafeZMinM,
     Math.min(
-      L * FOLDED_CONTENTS_DIMENSIONS.pentagonSafeZRatio,
-      L - FOLDED_CONTENTS_DIMENSIONS.pentagonSafeZEndClearanceM
+      L * CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.pentagonSafeZRatio,
+      L - CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.pentagonSafeZEndClearanceM
     )
   );
   const safeW = Math.max(
-    FOLDED_CONTENTS_DIMENSIONS.pentagonSafeWidthMinM,
+    CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.pentagonSafeWidthMinM,
     Math.min(
-      L * FOLDED_CONTENTS_DIMENSIONS.pentagonSafeWidthRatio,
-      FOLDED_CONTENTS_DIMENSIONS.pentagonSafeWidthMaxM
+      L * CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.pentagonSafeWidthRatio,
+      CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.pentagonSafeWidthMaxM
     )
   );
   const safeD = Math.max(
-    FOLDED_CONTENTS_DIMENSIONS.pentagonSafeDepthMinM,
+    CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.pentagonSafeDepthMinM,
     Math.min(
-      FOLDED_CONTENTS_DIMENSIONS.pentagonSafeDepthMaxM,
-      L - FOLDED_CONTENTS_DIMENSIONS.pentagonSafeDepthEndClearanceM
+      CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.pentagonSafeDepthMaxM,
+      L - CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.pentagonSafeDepthEndClearanceM
     )
   );
   const plans: FoldedClothesSurfacePlan[] = [];
 
   if (shelf1Added) {
-    const surfaceY = shelf1BottomY + woodThick + FOLDED_CONTENTS_DIMENSIONS.surfaceYOffsetM;
+    const surfaceY = shelf1BottomY + woodThick + CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceYOffsetM;
     const stopY = shelf2Added ? shelf2BottomY : ceilBottomY;
-    const maxHeight = stopY - surfaceY - FOLDED_CONTENTS_DIMENSIONS.surfaceHeightClearanceM;
-    if (maxHeight > FOLDED_CONTENTS_DIMENSIONS.surfaceMinHeightM) {
+    const maxHeight = stopY - surfaceY - CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceHeightClearanceM;
+    if (maxHeight > CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceMinHeightM) {
       plans.push({
         x: safeX,
         y: surfaceY,
         z: safeZ,
         width: safeW,
-        maxHeight: Math.min(FOLDED_CONTENTS_DIMENSIONS.maxHeightMaxM, maxHeight),
+        maxHeight: Math.min(CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.maxHeightMaxM, maxHeight),
         maxDepth: safeD,
         op: 'special:topContents:lower',
       });
@@ -174,15 +173,16 @@ export function createPentagonTopContentsPlan(args: {
   }
 
   if (shelf2Added) {
-    const surfaceY = shelf2BottomY + woodThick + FOLDED_CONTENTS_DIMENSIONS.surfaceYOffsetM;
-    const maxHeight = ceilBottomY - surfaceY - FOLDED_CONTENTS_DIMENSIONS.surfaceHeightClearanceM;
-    if (maxHeight > FOLDED_CONTENTS_DIMENSIONS.surfaceMinHeightM) {
+    const surfaceY = shelf2BottomY + woodThick + CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceYOffsetM;
+    const maxHeight =
+      ceilBottomY - surfaceY - CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceHeightClearanceM;
+    if (maxHeight > CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.surfaceMinHeightM) {
       plans.push({
         x: safeX,
         y: surfaceY,
         z: safeZ,
         width: safeW,
-        maxHeight: Math.min(FOLDED_CONTENTS_DIMENSIONS.maxHeightMaxM, maxHeight),
+        maxHeight: Math.min(CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY.maxHeightMaxM, maxHeight),
         maxDepth: safeD,
         op: 'special:topContents:upper',
       });

@@ -3,7 +3,7 @@
 // Keep this owner focused on scene mutation/orchestration. Metric policy,
 // polygon math, and folded-content planning live in sibling owners.
 
-import { CORNER_CONNECTOR_INTERIOR_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_CONNECTOR_SPECIAL_POST_POLICY } from '../../shared/dimensions/corner_connector_interior_policy.js';
 import { CORNER_SHELF_GROUP_PART_ID, markShelfBoardUserData } from '../features/part_identity/api.js';
 import type { P2 } from './corner_connector_interior_shared.js';
 import type { CornerConnectorSpecialInteriorFlowParams } from './corner_connector_interior_special_types.js';
@@ -55,7 +55,7 @@ export function applyCornerConnectorSpecialInterior(params: CornerConnectorSpeci
   const enabled = typeof ui.cornerPentSpecialInternal !== 'undefined' ? !!ui.cornerPentSpecialInternal : true;
   if (!enabled) return;
 
-  const specialPostDims = CORNER_CONNECTOR_INTERIOR_DIMENSIONS.specialPost;
+  const specialPostDims = CORNER_CONNECTOR_SPECIAL_POST_POLICY;
 
   const metrics = resolveCornerConnectorSpecialMetrics({
     uiAny,

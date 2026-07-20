@@ -3,11 +3,8 @@
 // Keep the public connector interior seam focused on orchestration while the
 // optional rod / hanger / hanging-clothes policy lives here.
 
-import {
-  CM_PER_METER,
-  CORNER_CONNECTOR_INTERIOR_DIMENSIONS,
-  MM_PER_METER,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CORNER_CONNECTOR_ATTACH_ROD_POLICY } from '../../shared/dimensions/corner_connector_interior_policy.js';
+import { CM_PER_METER, MM_PER_METER } from '../../shared/dimensions/units.js';
 import type {
   CornerConnectorInteriorFlowParams,
   CornerConnectorInteriorEmitters,
@@ -50,26 +47,21 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
   const side = typeof sideRaw === 'string' && sideRaw.toLowerCase() === 'main' ? 'main' : 'wing';
 
   // Default lowered a bit (user feedback): 150cm feels more natural for hanging.
-  const hCmRaw =
-    ui.cornerPentAttachRodHeightCm ?? CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.heightDefaultCm;
+  const hCmRaw = ui.cornerPentAttachRodHeightCm ?? CORNER_CONNECTOR_ATTACH_ROD_POLICY.heightDefaultCm;
   const endInsetCmRaw =
-    ui.cornerPentAttachRodEndInsetCm ?? CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.endInsetDefaultCm;
-  const rMmRaw =
-    ui.cornerPentAttachRodRadiusMm ?? CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.radiusDefaultMm;
+    ui.cornerPentAttachRodEndInsetCm ?? CORNER_CONNECTOR_ATTACH_ROD_POLICY.endInsetDefaultCm;
+  const rMmRaw = ui.cornerPentAttachRodRadiusMm ?? CORNER_CONNECTOR_ATTACH_ROD_POLICY.radiusDefaultMm;
 
   const rodY =
-    readFiniteNumberOr(hCmRaw, CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.heightDefaultCm) /
-      CM_PER_METER +
-    startY;
+    readFiniteNumberOr(hCmRaw, CORNER_CONNECTOR_ATTACH_ROD_POLICY.heightDefaultCm) / CM_PER_METER + startY;
   const endInset =
-    readFiniteNumberOr(endInsetCmRaw, CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.endInsetDefaultCm) /
-    CM_PER_METER;
+    readFiniteNumberOr(endInsetCmRaw, CORNER_CONNECTOR_ATTACH_ROD_POLICY.endInsetDefaultCm) / CM_PER_METER;
   const radius =
-    readFiniteNumberOr(rMmRaw, CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.radiusDefaultMm) / MM_PER_METER;
+    readFiniteNumberOr(rMmRaw, CORNER_CONNECTOR_ATTACH_ROD_POLICY.radiusDefaultMm) / MM_PER_METER;
 
   // Keep the rod inside the usable vertical range.
-  const minY = startY + woodThick + CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.verticalClearanceM;
-  const maxY = startY + wingH - woodThick - CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.verticalClearanceM;
+  const minY = startY + woodThick + CORNER_CONNECTOR_ATTACH_ROD_POLICY.verticalClearanceM;
+  const maxY = startY + wingH - woodThick - CORNER_CONNECTOR_ATTACH_ROD_POLICY.verticalClearanceM;
   const yPos = Math.max(minY, Math.min(maxY, rodY));
 
   // Helper: add a cylinder rod between two points in XZ (horizontal plane), at fixed Y.
@@ -77,7 +69,7 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
     const dx = bx - ax;
     const dz = bz - az;
     const len = Math.sqrt(dx * dx + dz * dz);
-    if (!Number.isFinite(len) || len <= CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.minRodLengthM) return;
+    if (!Number.isFinite(len) || len <= CORNER_CONNECTOR_ATTACH_ROD_POLICY.minRodLengthM) return;
 
     const rod = new THREE.Mesh(
       new THREE.CylinderGeometry(radius, radius, len, 16),
@@ -121,13 +113,12 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
         cornerGroup.add(clothesGroup);
 
         const usableW = Math.max(
-          CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.contentsWidthMinM,
-          len - CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.contentsWidthClearanceM
+          CORNER_CONNECTOR_ATTACH_ROD_POLICY.contentsWidthMinM,
+          len - CORNER_CONNECTOR_ATTACH_ROD_POLICY.contentsWidthClearanceM
         );
         const distToBottom = Math.max(
-          CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.contentsHeightMinM,
-          yPos -
-            (startY + woodThick + CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.contentsBottomClearanceM)
+          CORNER_CONNECTOR_ATTACH_ROD_POLICY.contentsHeightMinM,
+          yPos - (startY + woodThick + CORNER_CONNECTOR_ATTACH_ROD_POLICY.contentsBottomClearanceM)
         );
         // Restrict depth a bit so clothes won't clip too aggressively in the irregular pentagon volume.
         emitHangingClothes(
@@ -137,7 +128,7 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
           usableW,
           clothesGroup,
           distToBottom,
-          CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.contentsDepthHintM,
+          CORNER_CONNECTOR_ATTACH_ROD_POLICY.contentsDepthHintM,
           {
             showContentsEnabled: showContentsEnabled === true,
             doorStyle,
@@ -159,7 +150,7 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
     const midX = (pts[1].x + pts[2].x) / 2;
     // Move inside from the wall so the rod doesn't poke through the side panel.
     const startZ = Math.max(
-      backZ + CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.wallBackClearanceM,
+      backZ + CORNER_CONNECTOR_ATTACH_ROD_POLICY.wallBackClearanceM,
       L - panelThick / 2 - endInset
     );
     addRodBetween(midX, startZ, midX, backZ, 'corner_pent_attach_rod_wing');
@@ -169,7 +160,7 @@ export function applyCornerConnectorAttachRod(params: CornerConnectorAttachRodFl
     const midZ = Dmain / 2;
     // Run toward the open side (x -> 0) while staying inside the volume.
     const startX = wallX + panelThick / 2 + endInset;
-    const endX = Math.min(-CORNER_CONNECTOR_INTERIOR_DIMENSIONS.attachRod.wallBackClearanceM, -endInset);
+    const endX = Math.min(0 - CORNER_CONNECTOR_ATTACH_ROD_POLICY.wallBackClearanceM, -endInset);
     addRodBetween(startX, midZ, endX, midZ, 'corner_pent_attach_rod_main');
   }
 }

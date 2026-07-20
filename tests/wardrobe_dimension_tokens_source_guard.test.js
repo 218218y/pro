@@ -15,6 +15,7 @@ const productDimensionTokenSources = [
   'esm/shared/dimensions/interior_fittings_policy.ts',
   'esm/shared/dimensions/interior_storage_policy.ts',
   'esm/shared/dimensions/corner_system_policy.ts',
+  'esm/shared/dimensions/corner_connector_interior_policy.ts',
   'esm/shared/dimensions/drawer_sketch_policy.ts',
   'esm/shared/dimensions/front_reveal_frame_policy.ts',
   'esm/shared/dimensions/handle_policy.ts',
@@ -406,6 +407,7 @@ test('[dimension tokens] corner wing and connector shell dimensions read canonic
     'CORNER_CONNECTOR_SHELL_POLICY'
   );
   assertLinearDimensionsUseOwnersOrMeters('esm/shared/dimensions/corner_system_policy.ts');
+  assertLinearDimensionsUseOwnersOrMeters('esm/shared/dimensions/corner_connector_interior_policy.ts');
 
   const dividers = read('esm/native/builder/corner_wing_carcass_shell_dividers.ts');
   assert.doesNotMatch(dividers, /Math\.max\(0\.001, woodThick\)/);
@@ -422,6 +424,58 @@ test('[dimension tokens] corner wing and connector shell dimensions read canonic
   const connectorPanels = read('esm/native/builder/corner_connector_emit_shell_panels.ts');
   assert.doesNotMatch(connectorPanels, /len0 <= 0\.01/);
   assert.doesNotMatch(connectorPanels, /len <= 0\.01/);
+});
+
+test('[dimension tokens] Corner Connector Interior consumers use focused owners and direct unit constants', () => {
+  const facade = read('esm/shared/wardrobe_dimension_tokens_shared.ts');
+  assert.match(
+    facade,
+    /CORNER_CONNECTOR_INTERIOR_DIMENSIONS\s*=\s*legacyDimensionNumberView\(\s*CORNER_CONNECTOR_INTERIOR_POLICY\s*\)/u
+  );
+  assert.doesNotMatch(facade, /export const CORNER_CONNECTOR_INTERIOR_DIMENSIONS = Object\.freeze\(\{/u);
+
+  const owner = read('esm/shared/dimensions/corner_connector_interior_policy.ts');
+  assert.doesNotMatch(owner, /^\s*[A-Za-z_$][\w$]*Cm:\s*-?(?:\d|\.\d)/mu);
+  assert.doesNotMatch(owner, /^\s*[A-Za-z_$][\w$]*Mm:\s*-?(?:\d|\.\d)/mu);
+  assertLinearDimensionsUseOwnersOrMeters('esm/shared/dimensions/corner_connector_interior_policy.ts');
+
+  const focusedConsumers = new Map([
+    ['esm/native/builder/corner_connector_interior_rod.ts', ['CORNER_CONNECTOR_ATTACH_ROD_POLICY']],
+    [
+      'esm/native/builder/corner_connector_interior_special_apply.ts',
+      ['CORNER_CONNECTOR_SPECIAL_POST_POLICY'],
+    ],
+    [
+      'esm/native/builder/corner_connector_interior_special_contents.ts',
+      ['CORNER_CONNECTOR_FOLDED_CONTENTS_POLICY'],
+    ],
+    [
+      'esm/native/builder/corner_connector_interior_special_metrics.ts',
+      ['CORNER_CONNECTOR_SPECIAL_POST_POLICY'],
+    ],
+  ]);
+
+  for (const [rel, symbols] of focusedConsumers) {
+    for (const symbol of symbols) assertUsesToken(rel, symbol);
+    assert.doesNotMatch(
+      read(rel),
+      /CORNER_CONNECTOR_INTERIOR_DIMENSIONS/u,
+      `${rel} must not import or alias the legacy aggregate`
+    );
+  }
+
+  const rod = read('esm/native/builder/corner_connector_interior_rod.ts');
+  assert.match(rod, /from '\.\.\/\.\.\/shared\/dimensions\/units\.js';/u);
+  assert.match(rod, /\bCM_PER_METER\b/u);
+  assert.match(rod, /\bMM_PER_METER\b/u);
+  assert.doesNotMatch(rod, /wardrobe_dimension_tokens_shared/u);
+
+  const metrics = read('esm/native/builder/corner_connector_interior_special_metrics.ts');
+  assert.match(metrics, /import \{ CM_PER_METER \} from '\.\.\/\.\.\/shared\/dimensions\/units\.js';/u);
+  assert.doesNotMatch(metrics, /wardrobe_dimension_tokens_shared/u);
+
+  const contents = read('esm/native/builder/corner_connector_interior_special_contents.ts');
+  assert.doesNotMatch(contents, /const\s+\w+\s*=\s*CORNER_CONNECTOR_INTERIOR_POLICY/u);
 });
 
 test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage dimensions are centralized', () => {
@@ -765,7 +819,7 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ],
     [
       'esm/native/builder/corner_connector_interior_special_apply.ts',
-      ['CORNER_CONNECTOR_INTERIOR_DIMENSIONS'],
+      ['CORNER_CONNECTOR_SPECIAL_POST_POLICY'],
     ],
     [
       'esm/native/builder/render_preview_interior_hover_apply.ts',
