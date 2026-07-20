@@ -1,7 +1,9 @@
+import { INTERIOR_ROD_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  INTERIOR_STORAGE_LAYOUT_POLICY,
+} from '../../shared/dimensions/interior_storage_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type { VerticalOccupancyRange } from './canvas_picking_manual_layout_sketch_vertical_stack.js';
 import type {
@@ -72,16 +74,17 @@ function clampUnit(value: number): number {
 
 function shelfThicknessForVariant(variant: unknown, woodThick: number): number {
   const kind = typeof variant === 'string' && variant ? variant : 'regular';
-  if (kind === 'glass') return MATERIAL_DIMENSIONS.glassShelf.thicknessM;
+  if (kind === 'glass') return MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM;
   if (kind === 'double') return Math.max(woodThick, woodThick * 2);
   return woodThick;
 }
 
 function normalizeStorageHeight(heightRaw: unknown, spanH: number, woodThick: number): number {
-  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
   const parsed = typeof heightRaw === 'number' && Number.isFinite(heightRaw) ? heightRaw : null;
-  const requested = parsed != null && parsed > 0 ? parsed : storageDims.barrierHeightM;
-  const minHeight = woodThick * storageDims.minHeightWoodMultiplier + storageDims.minHeightExtraM;
+  const requested = parsed != null && parsed > 0 ? parsed : INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM;
+  const minHeight =
+    woodThick * INTERIOR_STORAGE_LAYOUT_POLICY.minHeightWoodMultiplier +
+    INTERIOR_STORAGE_LAYOUT_POLICY.minHeightExtraM;
   const maxHeight = Math.max(minHeight, spanH);
   return Math.max(minHeight, Math.min(requested, maxHeight));
 }
@@ -270,7 +273,7 @@ export function buildSketchBoxVerticalContentBlockers(
     if (!itemMatchesActiveCell({ ...args, item: rod })) continue;
     const yNorm = readRecordNumber(rod, 'yNorm');
     if (yNorm == null) continue;
-    const radius = INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM;
+    const radius = INTERIOR_ROD_RENDER_POLICY.radiusM;
     const centerY = bottomY + clampUnit(yNorm) * args.targetHeight;
     pushBlocker(blockers, {
       minY: centerY - radius,

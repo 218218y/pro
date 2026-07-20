@@ -1,7 +1,5 @@
-import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_SHELF_GEOMETRY_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 
 export function createSketchModuleShelfPreviewGeometry(args: {
   innerW: number;
@@ -22,8 +20,8 @@ export function createSketchModuleShelfPreviewGeometry(args: {
   const variant = args.variant || 'double';
   const isBrace = variant === 'brace';
   const isDouble = variant === 'double' || !variant;
-  const GLASS_THICK_M = MATERIAL_DIMENSIONS.glassShelf.thicknessM;
-  const shelfDims = INTERIOR_FITTINGS_DIMENSIONS.shelves;
+  const GLASS_THICK_M = MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM;
+  const shelfDims = INTERIOR_SHELF_GEOMETRY_POLICY;
   const h =
     variant === 'glass'
       ? GLASS_THICK_M

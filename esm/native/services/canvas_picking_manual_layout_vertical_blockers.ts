@@ -1,7 +1,15 @@
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_ROD_PLACEMENT_POLICY,
+  INTERIOR_ROD_RENDER_POLICY,
+  INTERIOR_SHELF_GEOMETRY_POLICY,
+} from '../../shared/dimensions/interior_fittings_policy.js';
+import {
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  INTERIOR_STORAGE_CLAMP_POLICY,
+  INTERIOR_STORAGE_GRID_POLICY,
+  INTERIOR_STORAGE_LAYOUT_POLICY,
+} from '../../shared/dimensions/interior_storage_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { buildPresetBackedCustomData } from '../features/interior_layout_presets/api.js';
 import type { VerticalOccupancyRange } from './canvas_picking_manual_layout_sketch_vertical_stack.js';
@@ -60,10 +68,10 @@ function resolveGridDivisions(cfgRef: RecordMap | null, info: RecordMap | null):
   const raw =
     readRecordNumber(info, 'gridDivisions') ??
     readRecordNumber(cfgRef, 'gridDivisions') ??
-    INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+    INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
   return Number.isFinite(raw) && raw > 1
     ? Math.floor(raw)
-    : INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+    : INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
 }
 
 function readBraceShelfSet(cfgRef: RecordMap | null): Set<number> {
@@ -90,9 +98,9 @@ function readShelfVariant(args: {
 
 function shelfThicknessForVariant(variant: unknown, woodThick: number): number {
   const kind = typeof variant === 'string' && variant ? variant : 'regular';
-  if (kind === 'glass') return MATERIAL_DIMENSIONS.glassShelf.thicknessM;
+  if (kind === 'glass') return MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM;
   if (kind === 'double') {
-    return Math.max(woodThick, woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier);
+    return Math.max(woodThick, woodThick * INTERIOR_SHELF_GEOMETRY_POLICY.doubleThicknessMultiplier);
   }
   return woodThick;
 }
@@ -209,7 +217,7 @@ function hasBaseStorageBarrier(cfgRef: RecordMap | null): boolean {
 
 function buildBaseStorageBlockers(args: RangeContext): ManualLayoutVerticalContentBlocker[] {
   if (!hasBaseStorageBarrier(args.cfgRef ?? null)) return [];
-  const height = INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM;
+  const height = INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM;
   const ranges: ManualLayoutVerticalContentBlocker[] = [];
   pushBlocker(ranges, {
     minY: args.bottomY,
@@ -234,10 +242,7 @@ function deriveRodGridIndex(rodOp: RecordMap, divisions: number): number | null 
 
   const yFactor = readRecordNumber(rodOp, 'yFactor');
   if (yFactor == null) return null;
-  return clampGridIndex(
-    (yFactor * divisions) / INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault,
-    divisions
-  );
+  return clampGridIndex((yFactor * divisions) / INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault, divisions);
 }
 
 function pushRodBlocker(
@@ -249,7 +254,7 @@ function pushRodBlocker(
     id?: string | null;
   }
 ): void {
-  const radius = INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM;
+  const radius = INTERIOR_ROD_RENDER_POLICY.radiusM;
   pushBlocker(ranges, {
     minY: args.centerY - radius,
     maxY: args.centerY + radius,
@@ -297,7 +302,7 @@ function buildCustomBaseRodBlockers(
   for (let index = 1; index <= args.divisions; index += 1) {
     if (coveredGridIndexes.has(index) || !rods[index - 1]) continue;
     pushRodBlocker(ranges, {
-      centerY: args.bottomY + index * step + INTERIOR_FITTINGS_DIMENSIONS.rods.defaultYOffsetM,
+      centerY: args.bottomY + index * step + INTERIOR_ROD_PLACEMENT_POLICY.defaultYOffsetM,
       source: 'base',
       index,
       id: `base_rod_${index}`,
@@ -381,10 +386,11 @@ function buildSketchRodBlockers(args: RangeContext): ManualLayoutVerticalContent
 }
 
 function normalizeStorageHeight(heightRaw: unknown, spanH: number, woodThick: number): number | null {
-  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
   const parsed = readNumber(heightRaw);
   if (parsed == null) return null;
-  const minHeight = woodThick * storageDims.minHeightWoodMultiplier + storageDims.minHeightExtraM;
+  const minHeight =
+    woodThick * INTERIOR_STORAGE_LAYOUT_POLICY.minHeightWoodMultiplier +
+    INTERIOR_STORAGE_LAYOUT_POLICY.minHeightExtraM;
   const maxHeight = Math.max(minHeight, spanH);
   return Math.max(minHeight, Math.min(parsed, maxHeight));
 }
@@ -445,16 +451,18 @@ function buildSketchStorageBlockers(args: RangeContext): ManualLayoutVerticalCon
 
 function resolveWoodThick(value: unknown): number {
   const parsed = readNumber(value);
-  return parsed != null && parsed > 0 ? parsed : MATERIAL_DIMENSIONS.wood.thicknessM;
+  return parsed != null && parsed > 0 ? parsed : MATERIAL_THICKNESS_POLICY.wood.thicknessM;
 }
 
 function resolvePad(value: unknown, woodThick: number): number {
   const parsed = readNumber(value);
   if (parsed != null && parsed >= 0) return parsed;
-  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
   return Math.min(
-    storageDims.clampPadMaxM,
-    Math.max(storageDims.clampPadMinM, woodThick * storageDims.clampPadWoodRatio)
+    INTERIOR_STORAGE_CLAMP_POLICY.clampPadMaxM,
+    Math.max(
+      INTERIOR_STORAGE_CLAMP_POLICY.clampPadMinM,
+      woodThick * INTERIOR_STORAGE_CLAMP_POLICY.clampPadWoodRatio
+    )
   );
 }
 

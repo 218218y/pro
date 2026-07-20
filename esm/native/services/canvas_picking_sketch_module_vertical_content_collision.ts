@@ -1,8 +1,9 @@
+import { DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import {
-  DRAWER_DIMENSIONS,
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_ROD_RENDER_POLICY,
+  INTERIOR_SHELF_GEOMETRY_POLICY,
+} from '../../shared/dimensions/interior_fittings_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
   buildManualLayoutSketchExternalDrawerBlockers,
   buildManualLayoutSketchInternalDrawerBlockers,
@@ -39,7 +40,7 @@ function readSketchExtras(cfgRef: RecordMap | null | undefined): RecordMap | nul
 function resolveWoodThick(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0
     ? value
-    : MATERIAL_DIMENSIONS.wood.thicknessM;
+    : MATERIAL_THICKNESS_POLICY.wood.thicknessM;
 }
 
 export function resolveSketchModuleShelfCollisionHeight(args: {
@@ -48,15 +49,15 @@ export function resolveSketchModuleShelfCollisionHeight(args: {
 }): number {
   const woodThick = resolveWoodThick(args.woodThick);
   const variant = typeof args.variant === 'string' && args.variant ? args.variant : 'regular';
-  if (variant === 'glass') return MATERIAL_DIMENSIONS.glassShelf.thicknessM;
+  if (variant === 'glass') return MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM;
   if (variant === 'double') {
-    return Math.max(woodThick, woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier);
+    return Math.max(woodThick, woodThick * INTERIOR_SHELF_GEOMETRY_POLICY.doubleThicknessMultiplier);
   }
   return woodThick;
 }
 
 export function resolveSketchModuleRodCollisionHeight(): number {
-  return INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM * 2;
+  return INTERIOR_ROD_RENDER_POLICY.radiusM * 2;
 }
 
 export function buildSketchModuleDrawerVerticalBlockers(args: {
@@ -159,7 +160,7 @@ export function resolveSketchModuleVerticalRangePlacementAgainstDrawers(args: {
   });
   if (!blockers.length) return { centerY, blocked: false };
 
-  const gapDefault = DRAWER_DIMENSIONS.sketch.verticalStackCollisionGapM;
+  const gapDefault = DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY.verticalStackCollisionGapM;
   const readStackGap = (stack: VerticalOccupancyRange): number =>
     typeof stack.collisionGapM === 'number' && Number.isFinite(stack.collisionGapM)
       ? Math.max(0, stack.collisionGapM)

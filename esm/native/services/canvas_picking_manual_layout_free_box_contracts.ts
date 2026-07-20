@@ -1,9 +1,8 @@
 import type { UnknownRecord } from '../../../types/index.js';
 
-import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_SHELF_GEOMETRY_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
+import { INTERIOR_STORAGE_GRID_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import { asRecord } from '../runtime/record.js';
 
 export type RecordMap = UnknownRecord;
@@ -95,7 +94,7 @@ export function normalizeGridDivisions(value: unknown): number {
   const parsed = readNumber(value);
   return parsed != null && parsed >= 2 && parsed <= 8
     ? Math.round(parsed)
-    : INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+    : INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
 }
 
 export function normalizeShelfVariant(value: unknown): 'regular' | 'double' | 'glass' | 'brace' {
@@ -104,16 +103,16 @@ export function normalizeShelfVariant(value: unknown): 'regular' | 'double' | 'g
 
 export function shelfThicknessForVariant(variant: unknown, woodThick: number): number {
   const normalized = normalizeShelfVariant(variant);
-  if (normalized === 'glass') return MATERIAL_DIMENSIONS.glassShelf.thicknessM;
+  if (normalized === 'glass') return MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM;
   if (normalized === 'double') {
-    return Math.max(woodThick, woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier);
+    return Math.max(woodThick, woodThick * INTERIOR_SHELF_GEOMETRY_POLICY.doubleThicknessMultiplier);
   }
   return woodThick;
 }
 
 export function resolveShelfDepth(args: { variant: string; innerD: number; woodThick: number }): number {
   if (args.variant === 'brace') return args.innerD;
-  return Math.min(args.innerD, Math.max(args.woodThick, INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM));
+  return Math.min(args.innerD, Math.max(args.woodThick, INTERIOR_SHELF_GEOMETRY_POLICY.regularDepthM));
 }
 
 export function normalizeBetween(value: unknown, min: number, max: number, defaultValue: number): number {

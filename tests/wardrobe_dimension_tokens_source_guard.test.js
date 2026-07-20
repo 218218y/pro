@@ -728,6 +728,88 @@ test('[dimension tokens] Builder Interior ownership and render primitives use fo
   assert.deepEqual(remainingHandleConsumers, ['esm/native/builder/build_stack_split_lower_setup.ts']);
 });
 
+test('[dimension tokens] Service Interior and Material readers use focused canonical owners without Sketch Box', () => {
+  const consumers = new Map([
+    [
+      'esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts',
+      ['INTERIOR_SHELF_GEOMETRY_POLICY', 'INTERIOR_STORAGE_GRID_POLICY', 'MATERIAL_THICKNESS_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_manual_layout_vertical_blockers.ts',
+      [
+        'INTERIOR_ROD_PLACEMENT_POLICY',
+        'INTERIOR_ROD_RENDER_POLICY',
+        'INTERIOR_SHELF_GEOMETRY_POLICY',
+        'INTERIOR_STORAGE_BARRIER_POLICY',
+        'INTERIOR_STORAGE_CLAMP_POLICY',
+        'INTERIOR_STORAGE_GRID_POLICY',
+        'INTERIOR_STORAGE_LAYOUT_POLICY',
+        'MATERIAL_THICKNESS_POLICY',
+      ],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_box_content_commit_drawers.ts',
+      ['INTERIOR_SHELF_GEOMETRY_POLICY', 'MATERIAL_THICKNESS_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_box_vertical_content_blockers.ts',
+      [
+        'INTERIOR_ROD_RENDER_POLICY',
+        'INTERIOR_STORAGE_BARRIER_POLICY',
+        'INTERIOR_STORAGE_LAYOUT_POLICY',
+        'MATERIAL_THICKNESS_POLICY',
+      ],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_vertical_content_collision.ts',
+      [
+        'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
+        'INTERIOR_ROD_RENDER_POLICY',
+        'INTERIOR_SHELF_GEOMETRY_POLICY',
+        'MATERIAL_THICKNESS_POLICY',
+      ],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_vertical_content_preview.ts',
+      ['INTERIOR_SHELF_GEOMETRY_POLICY', 'MATERIAL_THICKNESS_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_neighbor_measurements.ts',
+      ['INTERIOR_STORAGE_GRID_POLICY', 'MATERIAL_THICKNESS_POLICY'],
+    ],
+  ]);
+
+  for (const [rel, policies] of consumers) {
+    const source = read(rel);
+    for (const policy of policies) assertUsesToken(rel, policy);
+    assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared/u);
+    assert.doesNotMatch(
+      source,
+      /\b(?:INTERIOR_FITTINGS_DIMENSIONS|MATERIAL_DIMENSIONS|DRAWER_DIMENSIONS|SKETCH_BOX_DIMENSIONS)\b/u
+    );
+    assert.doesNotMatch(
+      source,
+      /\b(?:INTERIOR_FITTINGS_POLICY|INTERIOR_STORAGE_POLICY|DRAWER_SKETCH_POLICY)\b/u
+    );
+    assert.doesNotMatch(source, /import\s+\*\s+as/u);
+    assert.doesNotMatch(source, /export\s+(?:type\s+)?(?:\*|\{)/u);
+  }
+
+  const splitHover = read('esm/native/services/canvas_picking_split_hover_preview_line.ts');
+  assert.match(splitHover, /wardrobe_dimension_tokens_shared/u);
+  assert.match(splitHover, /\bINTERIOR_FITTINGS_DIMENSIONS\b/u);
+  assert.match(splitHover, /\bMATERIAL_DIMENSIONS\b/u);
+  assert.doesNotMatch(splitHover, /\bSKETCH_BOX_DIMENSIONS\b/u);
+
+  const remainingHandleConsumers = listFilesRecursively(path.join(ROOT, 'esm'))
+    .filter(file => {
+      if (file.endsWith('wardrobe_dimension_tokens_shared.ts')) return false;
+      return /\bHANDLE_DIMENSIONS\b/u.test(fs.readFileSync(file, 'utf8'));
+    })
+    .map(file => path.relative(ROOT, file).replaceAll('\\', '/'));
+  assert.deepEqual(remainingHandleConsumers, ['esm/native/builder/build_stack_split_lower_setup.ts']);
+});
+
 test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage dimensions are centralized', () => {
   const tokens = readProductDimensionTokens();
   assert.match(tokens, /doorCutHorizontalOverlapMinM:/);
@@ -1126,7 +1208,6 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
       'esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts',
       ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
     ],
-    ['esm/native/services/canvas_picking_sketch_neighbor_measurements.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
     [
       'esm/native/services/canvas_picking_manual_layout_sketch_tools.ts',
       ['MATERIAL_DIMENSIONS', 'SKETCH_BOX_DIMENSIONS'],
@@ -1134,10 +1215,6 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     [
       'esm/native/services/canvas_picking_click_manual_sketch_free_box.ts',
       ['SKETCH_BOX_DIMENSIONS', 'cmToM'],
-    ],
-    [
-      'esm/native/services/canvas_picking_sketch_module_vertical_content_preview.ts',
-      ['INTERIOR_FITTINGS_DIMENSIONS'],
     ],
     [
       'esm/native/services/canvas_picking_sketch_box_content_commit_doors.ts',

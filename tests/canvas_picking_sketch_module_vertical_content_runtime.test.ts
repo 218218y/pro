@@ -10,7 +10,7 @@ import {
   findNearestSketchModuleShelf,
   findNearestSketchModuleStorageBarrier,
 } from '../esm/native/services/canvas_picking_sketch_module_vertical_content.ts';
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { INTERIOR_SHELF_GEOMETRY_POLICY } from '../esm/shared/dimensions/interior_fittings_policy.ts';
 
 test('sketch module shelf preview keeps brace shelves full-width and regular shelves pin-trimmed', () => {
   const bracePreview = createSketchModuleShelfPreviewGeometry({
@@ -36,7 +36,7 @@ test('sketch module shelf preview keeps brace shelves full-width and regular she
   assert.equal(bracePreview.d, 0.45);
   assert.ok(Math.abs(bracePreview.z - 0.025) < 1e-9);
   assert.equal(regularPreview.variant, 'regular');
-  assert.equal(regularPreview.w, 0.9 - INTERIOR_FITTINGS_DIMENSIONS.shelves.regularWidthClearanceM);
+  assert.equal(regularPreview.w, 0.9 - INTERIOR_SHELF_GEOMETRY_POLICY.regularWidthClearanceM);
   assert.equal(regularPreview.d, 0.35);
 });
 

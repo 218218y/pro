@@ -881,7 +881,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at thirty reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at forty-one reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -971,8 +971,57 @@ test('project migration ledger stays exact at thirty reviewed statements with un
       'esm/shared/dimensions/material_thickness_policy.ts',
     ],
     ['esm/native/builder/render_ops_primitives.ts', 'esm/shared/dimensions/handle_policy.ts'],
+    [
+      'esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts',
+      'esm/shared/dimensions/interior_storage_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_manual_layout_vertical_blockers.ts',
+      'esm/shared/dimensions/interior_storage_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_manual_layout_vertical_blockers.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_box_content_commit_drawers.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_box_vertical_content_blockers.ts',
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_box_vertical_content_blockers.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_vertical_content_collision.ts',
+      'esm/shared/dimensions/drawer_sketch_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_vertical_content_collision.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_vertical_content_preview.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_neighbor_measurements.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
   ];
 
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets.slice(0, 30)),
+    '9f2047a5d47e2f73f4b0f9621ee60d593eea946a439df2b17961902ff375fb42',
+    'the thirty previously reviewed migration entries must remain semantically unchanged'
+  );
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 22)),
     'f77d520ad443232af84217ded9adf59546df8d7fcf530b54ac1152ae5ca5cdd4',
@@ -994,7 +1043,7 @@ test('project migration ledger stays exact at thirty reviewed statements with un
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 30);
+  assert.equal(report.migrationBudgets.length, 41);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
@@ -1003,7 +1052,7 @@ test('project migration ledger stays exact at thirty reviewed statements with un
   const expectedEdges = new Map([
     ['builder>shared', { observed: 246, migration: 27, reviewed: 219, budget: 219 }],
     ['features>shared', { observed: 59, migration: 1, reviewed: 58, budget: 58 }],
-    ['services>shared', { observed: 169, migration: 2, reviewed: 167, budget: 167 }],
+    ['services>shared', { observed: 180, migration: 13, reviewed: 167, budget: 167 }],
   ]);
   for (const [key, expected] of expectedEdges) {
     const [from, to] = key.split('>');
@@ -1464,7 +1513,7 @@ test('repository Drawer and Handle migration ledger entries are exact and additi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools', 'wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 30);
+  assert.equal(baseline.migrationBudgets.length, 41);
 
   const expected = [
     [
@@ -1542,7 +1591,7 @@ test('repository Builder Interior ownership migration entries are exact and addi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 30);
+  assert.equal(baseline.migrationBudgets.length, 41);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 22)),
     'f77d520ad443232af84217ded9adf59546df8d7fcf530b54ac1152ae5ca5cdd4'
@@ -1612,7 +1661,7 @@ test('repository Builder Interior ownership migration entries are exact and addi
   ];
 
   const actual = baseline.migrationBudgets
-    .slice(22)
+    .slice(22, 30)
     .map(entry => [
       entry.fromFile,
       entry.addedImport.toFile,
@@ -1622,7 +1671,7 @@ test('repository Builder Interior ownership migration entries are exact and addi
     ]);
   assert.deepEqual(actual, expected);
 
-  for (const entry of baseline.migrationBudgets.slice(22)) {
+  for (const entry of baseline.migrationBudgets.slice(22, 30)) {
     assert.equal(entry.from, 'builder');
     assert.equal(entry.to, 'shared');
     assert.equal(entry.additionalStatements, 1);
@@ -1636,6 +1685,130 @@ test('repository Builder Interior ownership migration entries are exact and addi
         ? ['HANDLE_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']
         : ['INTERIOR_FITTINGS_DIMENSIONS', 'MATERIAL_DIMENSIONS']),
     ]);
+    assert.equal(entry.reviewedAt, '2026-07-20');
+    assert.equal(entry.reviewBy, '2026-10-18');
+  }
+});
+
+test('repository Service Interior and Material migration entries are exact and additive-only', () => {
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const baseline = JSON.parse(
+    fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
+  );
+  assert.equal(baseline.migrationBudgets.length, 41);
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets.slice(0, 30)),
+    '9f2047a5d47e2f73f4b0f9621ee60d593eea946a439df2b17961902ff375fb42',
+    'the thirty previously reviewed migration entries must remain semantically unchanged'
+  );
+
+  const expected = [
+    [
+      'esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts',
+      'esm/shared/dimensions/interior_storage_policy.ts',
+      ['INTERIOR_STORAGE_GRID_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_SHELF_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+      ['MATERIAL_THICKNESS_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_SHELF_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_manual_layout_vertical_blockers.ts',
+      'esm/shared/dimensions/interior_storage_policy.ts',
+      [
+        'INTERIOR_STORAGE_BARRIER_POLICY',
+        'INTERIOR_STORAGE_CLAMP_POLICY',
+        'INTERIOR_STORAGE_GRID_POLICY',
+        'INTERIOR_STORAGE_LAYOUT_POLICY',
+      ],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_ROD_PLACEMENT_POLICY', 'INTERIOR_ROD_RENDER_POLICY', 'INTERIOR_SHELF_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_manual_layout_vertical_blockers.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+      ['MATERIAL_THICKNESS_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_ROD_PLACEMENT_POLICY', 'INTERIOR_ROD_RENDER_POLICY', 'INTERIOR_SHELF_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_box_content_commit_drawers.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+      ['MATERIAL_THICKNESS_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_SHELF_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_box_vertical_content_blockers.ts',
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_ROD_RENDER_POLICY'],
+      'esm/shared/dimensions/interior_storage_policy.ts',
+      ['INTERIOR_STORAGE_BARRIER_POLICY', 'INTERIOR_STORAGE_LAYOUT_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_box_vertical_content_blockers.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+      ['MATERIAL_THICKNESS_POLICY'],
+      'esm/shared/dimensions/interior_storage_policy.ts',
+      ['INTERIOR_STORAGE_BARRIER_POLICY', 'INTERIOR_STORAGE_LAYOUT_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_vertical_content_collision.ts',
+      'esm/shared/dimensions/drawer_sketch_policy.ts',
+      ['DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_ROD_RENDER_POLICY', 'INTERIOR_SHELF_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_vertical_content_collision.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+      ['MATERIAL_THICKNESS_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_ROD_RENDER_POLICY', 'INTERIOR_SHELF_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_vertical_content_preview.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+      ['MATERIAL_THICKNESS_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_SHELF_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_neighbor_measurements.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+      ['MATERIAL_THICKNESS_POLICY'],
+      'esm/shared/dimensions/interior_storage_policy.ts',
+      ['INTERIOR_STORAGE_GRID_POLICY'],
+    ],
+  ];
+
+  const actual = baseline.migrationBudgets
+    .slice(30)
+    .map(entry => [
+      entry.fromFile,
+      entry.addedImport.toFile,
+      entry.addedImport.importedSymbols,
+      entry.companionImport.toFile,
+      entry.companionImport.importedSymbols,
+    ]);
+  assert.deepEqual(actual, expected);
+
+  for (const entry of baseline.migrationBudgets.slice(30)) {
+    assert.equal(entry.from, 'services');
+    assert.equal(entry.to, 'shared');
+    assert.equal(entry.additionalStatements, 1);
+    assert.equal(entry.addedImport.kind, 'value');
+    assert.equal(entry.addedImport.syntax, 'static-import');
+    assert.equal(entry.companionImport.kind, 'value');
+    assert.equal(entry.companionImport.syntax, 'static-import');
+    assert.equal(entry.removedImport.toFile, 'esm/shared/wardrobe_dimension_tokens_shared.ts');
+    assert.equal(entry.removedImport.kind, 'value');
+    assert.equal(entry.removedImport.syntax, 'static-import');
     assert.equal(entry.reviewedAt, '2026-07-20');
     assert.equal(entry.reviewBy, '2026-10-18');
   }

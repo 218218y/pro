@@ -1,7 +1,5 @@
-import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_STORAGE_GRID_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
   buildManualLayoutSketchExternalDrawerBlockers,
   buildManualLayoutSketchInternalDrawerBlockers,
@@ -62,7 +60,7 @@ function pushRange(
 
 function shelfThicknessForVariant(variant: unknown, woodThick: number): number {
   const kind = typeof variant === 'string' && variant ? variant : 'regular';
-  if (kind === 'glass') return MATERIAL_DIMENSIONS.glassShelf.thicknessM;
+  if (kind === 'glass') return MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM;
   if (kind === 'double' || kind === '') return Math.max(woodThick, woodThick * 2);
   return woodThick;
 }
@@ -79,11 +77,11 @@ function readLayoutShelfState(
   const divisionsRaw =
     readRecordNumber(info, 'gridDivisions') ??
     readRecordNumber(cfgRef, 'gridDivisions') ??
-    INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+    INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
   const divisions =
     Number.isFinite(divisionsRaw) && divisionsRaw > 1
       ? Math.floor(divisionsRaw)
-      : INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+      : INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
   if (!(divisions > 1)) return null;
 
   const isCustom = !!readValue(cfgRef, 'isCustom');

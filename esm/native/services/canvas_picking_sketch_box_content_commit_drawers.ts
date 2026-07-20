@@ -1,7 +1,5 @@
-import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_SHELF_GEOMETRY_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import type { SketchModuleBoxContentLike } from './canvas_picking_manual_layout_sketch_contracts.js';
 import type { SketchBoxContentCommand } from './canvas_picking_sketch_box_content_command.js';
 import {
@@ -40,9 +38,9 @@ function readPositiveNumber(value: unknown): number | null {
 
 function shelfHeightForBoxVariant(variant: unknown, woodThick: number): number {
   const kind = typeof variant === 'string' && variant ? variant : 'regular';
-  if (kind === 'glass') return MATERIAL_DIMENSIONS.glassShelf.thicknessM;
+  if (kind === 'glass') return MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM;
   if (kind === 'double' || !kind) {
-    return Math.max(woodThick, woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier);
+    return Math.max(woodThick, woodThick * INTERIOR_SHELF_GEOMETRY_POLICY.doubleThicknessMultiplier);
   }
   return woodThick;
 }
@@ -74,7 +72,7 @@ function removeBoxShelvesTouchingInternalDrawerCassette(args: {
   const stackBaseY =
     baseNorm != null ? baseNorm * boxHeight : centerNorm != null ? centerNorm * boxHeight - stackH / 2 : null;
   if (stackBaseY == null) return 0;
-  const woodThick = readPositiveNumber(args.woodThick) ?? MATERIAL_DIMENSIONS.wood.thicknessM;
+  const woodThick = readPositiveNumber(args.woodThick) ?? MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const cassette = resolveSketchInternalDrawerCassetteRange({
     baseY: stackBaseY,
     stackH,
