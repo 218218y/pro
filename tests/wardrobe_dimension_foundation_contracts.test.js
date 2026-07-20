@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 126, statements: 126 }),
+  'static-import': Object.freeze({ importers: 120, statements: 120 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 128, statements: 129 }),
+  total: Object.freeze({ importers: 122, statements: 123 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -240,6 +240,13 @@ const APPROVED_CHEST_STRUCTURAL_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_STRUCTURAL_DIMENSIONS']),
 });
 const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/render_interior_custom_ops.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/native/builder/render_interior_custom_ops_shelves.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/native/builder/render_interior_preset_ops.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/native/builder/render_interior_sketch_ops_input.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/native/builder/render_interior_sketch_support_shelves.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
   'esm/native/builder/corner_wing_cell_interiors_shelves.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/render_preview_sketch_pipeline_shared.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/services/canvas_picking_hover_preview_modes_divider.ts': Object.freeze([
@@ -288,14 +295,9 @@ const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/builder/core_layout_compute.ts',
   'esm/native/builder/core_storage_compute_external_drawers.ts',
   'esm/native/builder/post_build_sketch_door_cuts_rebuild.ts',
-  'esm/native/builder/render_interior_custom_ops.ts',
-  'esm/native/builder/render_interior_custom_ops_shelves.ts',
-  'esm/native/builder/render_interior_preset_ops.ts',
   'esm/native/builder/render_interior_rod_clearance.ts',
   'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
   'esm/native/builder/render_interior_sketch_layout_geometry.ts',
-  'esm/native/builder/render_interior_sketch_ops_input.ts',
-  'esm/native/builder/render_interior_sketch_support_shelves.ts',
   'esm/native/builder/render_preview_interior_hover_apply.ts',
   'esm/native/features/sketch_internal_drawer_cassette.ts',
   'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
@@ -328,9 +330,7 @@ const APPROVED_MATERIAL_LEGACY_DEPENDENCIES = Object.freeze(
   )
 );
 const APPROVED_MATERIAL_GLASS_SHELF_ONLY_IMPORTERS = new Set([
-  'esm/native/builder/render_interior_custom_ops_shelves.ts',
   'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
-  'esm/native/builder/render_interior_sketch_support_shelves.ts',
   'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
   'esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts',
   'esm/native/services/canvas_picking_sketch_box_vertical_content_blockers.ts',
@@ -660,6 +660,11 @@ const APPROVED_INTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['INTERNAL_DRAWER_POLICY']),
 });
 const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/render_interior_custom_ops.ts': Object.freeze(['INTERIOR_STORAGE_GRID_POLICY']),
+  'esm/native/builder/render_interior_preset_ops.ts': Object.freeze([
+    'INTERIOR_STORAGE_BARRIER_POLICY',
+    'INTERIOR_STORAGE_GRID_POLICY',
+  ]),
   'esm/native/builder/render_interior_custom_ops_layout.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
   ]),
@@ -686,6 +691,19 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
   'esm/shared/dimensions/interior_fittings_policy.ts': Object.freeze(['INTERIOR_STORAGE_POLICY']),
 });
 const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/render_interior_custom_ops.ts': Object.freeze(['INTERIOR_SHELF_GEOMETRY_POLICY']),
+  'esm/native/builder/render_interior_custom_ops_shelves.ts': Object.freeze([
+    'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
+    'INTERIOR_SHELF_GEOMETRY_POLICY',
+    'INTERIOR_SHELF_PIN_RENDER_POLICY',
+  ]),
+  'esm/native/builder/render_interior_preset_ops.ts': Object.freeze(['INTERIOR_SHELF_GEOMETRY_POLICY']),
+  'esm/native/builder/render_interior_sketch_ops_input.ts': Object.freeze(['INTERIOR_SHELF_GEOMETRY_POLICY']),
+  'esm/native/builder/render_interior_sketch_support_shelves.ts': Object.freeze([
+    'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
+    'INTERIOR_SHELF_GEOMETRY_POLICY',
+  ]),
+  'esm/native/builder/render_ops_primitives.ts': Object.freeze(['INTERIOR_SHELF_ROUNDED_RENDER_POLICY']),
   'esm/native/builder/corner_wing_cell_interiors_shelves.ts': Object.freeze([
     'INTERIOR_SHELF_GEOMETRY_POLICY',
     'INTERIOR_SHELF_PIN_RENDER_POLICY',
@@ -734,31 +752,6 @@ const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
     'rods',
     'rods.defaultYOffsetM',
   ]),
-  'esm/native/builder/render_interior_custom_ops.ts': Object.freeze([
-    'shelves',
-    'shelves.braceWidthClearanceM',
-    'shelves.regularDepthM',
-    'shelves.regularWidthClearanceM',
-  ]),
-  'esm/native/builder/render_interior_custom_ops_shelves.ts': Object.freeze([
-    'pins',
-    'pins.bottomYOffsetM',
-    'pins.edgeOffsetDefaultM',
-    'pins.lengthM',
-    'pins.maxDepthSideClearanceM',
-    'pins.minEdgeOffsetM',
-    'pins.radiusM',
-    'shelves',
-    'shelves.contentsHeightClearanceM',
-    'shelves.contentsWidthClearanceM',
-    'shelves.doubleThicknessMultiplier',
-  ]),
-  'esm/native/builder/render_interior_preset_ops.ts': Object.freeze([
-    'shelves',
-    'shelves.braceWidthClearanceM',
-    'shelves.regularDepthM',
-    'shelves.regularWidthClearanceM',
-  ]),
   'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
     'presets',
     'presets.fullShelfRows',
@@ -787,26 +780,6 @@ const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/render_interior_sketch_boxes_shell_apply.ts': Object.freeze([
     'shelves',
     'shelves.regularDepthM',
-  ]),
-  'esm/native/builder/render_interior_sketch_ops_input.ts': Object.freeze([
-    'shelves',
-    'shelves.braceWidthClearanceM',
-    'shelves.regularDepthM',
-    'shelves.regularWidthClearanceM',
-    'shelves.spanMinHeightM',
-  ]),
-  'esm/native/builder/render_interior_sketch_support_shelves.ts': Object.freeze([
-    'shelves',
-    'shelves.braceWidthClearanceM',
-    'shelves.contentsHeightClearanceM',
-    'shelves.contentsWidthClearanceM',
-    'shelves.doubleThicknessMultiplier',
-    'shelves.regularWidthClearanceM',
-  ]),
-  'esm/native/builder/render_ops_primitives.ts': Object.freeze([
-    'shelves',
-    'shelves.roundedCornerRadiusM',
-    'shelves.roundedCornerSegments',
   ]),
   'esm/native/builder/render_preview_interior_hover_apply.ts': Object.freeze([
     'shelves',
@@ -1051,16 +1024,6 @@ const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
     'storage.barrierWidthClearanceM',
     'storage.barrierWidthMinM',
   ]),
-  'esm/native/builder/render_interior_custom_ops.ts': Object.freeze([
-    'storage',
-    'storage.gridDivisionsDefault',
-  ]),
-  'esm/native/builder/render_interior_preset_ops.ts': Object.freeze([
-    'storage',
-    'storage.barrierFrontZOffsetM',
-    'storage.barrierWidthClearanceM',
-    'storage.gridDivisionsDefault',
-  ]),
   'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['storage', 'storage.barrierHeightM']),
   'esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts': Object.freeze([
     'storage',
@@ -1262,6 +1225,10 @@ const APPROVED_FRONT_REVEAL_OWNER_IMPORTS = Object.freeze({
 const APPROVED_FRONT_REVEAL_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_FRONT_REVEAL_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_HANDLE_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/render_ops_primitives.ts': Object.freeze([
+    'EDGE_HANDLE_SIZE_POLICY',
+    'STANDARD_HANDLE_RENDER_POLICY',
+  ]),
   'esm/native/builder/build_handle_policy.ts': Object.freeze(['EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY']),
   'esm/native/builder/hinged_doors_module_ops_context.ts': Object.freeze([
     'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
@@ -1314,7 +1281,6 @@ const APPROVED_HANDLE_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_HANDLE_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
-  'esm/native/builder/render_ops_primitives.ts': Object.freeze(['HANDLE_DIMENSIONS@static-import']),
 });
 const APPROVED_HANDLE_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze([
@@ -1322,18 +1288,6 @@ const APPROVED_HANDLE_LEGACY_FIELD_USAGE = Object.freeze({
     'edge.defaultGlobalAbsYM',
     'edge.drawerLiftClearanceM',
     'edge.drawerLiftThresholdYM',
-  ]),
-  'esm/native/builder/render_ops_primitives.ts': Object.freeze([
-    'edge',
-    'edge.longLengthM',
-    'edge.renderPrimitiveDoorAnchorInsetM',
-    'edge.shortLengthM',
-    'standard',
-    'standard.doorDepthM',
-    'standard.doorHeightM',
-    'standard.doorOffsetM',
-    'standard.doorWidthM',
-    'standard.frontZM',
   ]),
 });
 const APPROVED_CONTENT_VISUAL_OWNER_IMPORTS = Object.freeze({

@@ -44,7 +44,17 @@ class FakeMesh {
   userData: AnyMap = {};
   castShadow = false;
   receiveShadow = false;
-  position = { set: (_x: number, _y: number, _z: number) => undefined };
+  rotation = { x: 0, y: 0, z: 0 };
+  position = {
+    x: 0,
+    y: 0,
+    z: 0,
+    set: (x: number, y: number, z: number) => {
+      this.position.x = x;
+      this.position.y = y;
+      this.position.z = z;
+    },
+  };
 
   constructor(geometry: unknown, material: unknown) {
     this.geometry = geometry;
@@ -52,24 +62,55 @@ class FakeMesh {
   }
 }
 
-function createRoundedShelfMesh(side: 'left' | 'right' | 'both') {
-  const group = {
-    children: [] as unknown[],
-    add(obj: unknown) {
-      this.children.push(obj);
+class FakeBoxGeometry {
+  args: number[];
+
+  constructor(...args: number[]) {
+    this.args = args;
+  }
+}
+
+class FakeMaterial {
+  options: AnyMap;
+
+  constructor(options: AnyMap = {}) {
+    this.options = options;
+  }
+}
+
+class FakeGroup {
+  children: unknown[] = [];
+  userData: AnyMap = {};
+  rotation = { x: 0, y: 0, z: 0 };
+  position = {
+    x: 0,
+    y: 0,
+    z: 0,
+    set: (x: number, y: number, z: number) => {
+      this.position.x = x;
+      this.position.y = y;
+      this.position.z = z;
     },
   };
+
+  add(obj: unknown) {
+    this.children.push(obj);
+  }
+}
+
+function createPrimitiveHarness() {
+  const group = new FakeGroup();
   const THREE = {
     Vector3: class {},
     Box3: class {},
     CylinderGeometry: class {},
-    MeshStandardMaterial: class {},
-    MeshBasicMaterial: class {},
-    BoxGeometry: class {},
+    MeshStandardMaterial: FakeMaterial,
+    MeshBasicMaterial: FakeMaterial,
+    BoxGeometry: FakeBoxGeometry,
     BufferGeometry: FakeBufferGeometry,
     Float32BufferAttribute: FakeFloat32BufferAttribute,
     Mesh: FakeMesh,
-    Group: class {},
+    Group: FakeGroup,
     DoubleSide: 2,
     FrontSide: 1,
   };
@@ -87,6 +128,11 @@ function createRoundedShelfMesh(side: 'left' | 'right' | 'both') {
     __wardrobeGroup: () => group,
     __matCache: () => ({}),
   });
+  return { App, THREE, group, ops };
+}
+
+function createRoundedShelfMesh(side: 'left' | 'right' | 'both') {
+  const { App, THREE, ops } = createPrimitiveHarness();
 
   const mesh = ops.createBoard({
     App,
@@ -179,5 +225,43 @@ test('rounded shelf omits the hidden cap face that is flush with the remaining c
     hasNegativeXCap(bothRemovedNormals),
     true,
     'both-open shelves still keep their visible left cap'
+  );
+});
+
+test('render primitive handles preserve focused policy dimensions and placement', () => {
+  const { App, THREE, ops } = createPrimitiveHarness();
+
+  const shortEdge = ops.createHandleMesh('edge', 0.5, 2, true, {
+    App,
+    THREE,
+    edgeHandleVariant: 'short',
+    handleColor: '#111111',
+  }) as FakeGroup;
+  const shortProfile = shortEdge.children[0] as FakeGroup;
+  const shortMount = shortProfile.children[0] as FakeMesh;
+  assert.equal(shortProfile.position.x, 0.4975);
+  assert.deepEqual((shortMount.geometry as FakeBoxGeometry).args, [0.0045, 0.2, 0.014]);
+
+  const longEdge = ops.createHandleMesh('edge', 0.5, 2, false, {
+    App,
+    THREE,
+    edgeHandleVariant: 'long',
+    handleColor: '#111111',
+  }) as FakeGroup;
+  const longProfile = longEdge.children[0] as FakeGroup;
+  const longMount = longProfile.children[0] as FakeMesh;
+  assert.equal(longProfile.position.x, -0.4975);
+  assert.deepEqual((longMount.geometry as FakeBoxGeometry).args, [0.0045, 0.4, 0.014]);
+
+  const standard = ops.createHandleMesh('standard', 0.5, 2, true, {
+    App,
+    THREE,
+    handleColor: '#111111',
+  }) as FakeGroup;
+  const standardMesh = standard.children[0] as FakeMesh;
+  assert.deepEqual((standardMesh.geometry as FakeBoxGeometry).args, [0.01, 0.16, 0.02]);
+  assert.deepEqual(
+    [standardMesh.position.x, standardMesh.position.y, standardMesh.position.z],
+    [0.45, 0, 0.02]
   );
 });

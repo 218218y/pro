@@ -1443,6 +1443,242 @@
       },
       "reason": "The sketch door-cut shared rebuild replaces one legacy facade statement with the focused drawer-sketch owner plus the canonical edge-handle placement owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed sketch door-cut composition seam eliminates the extra handle statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_custom_ops.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The custom interior renderer replaces one legacy facade statement with the focused shelf geometry owner plus the canonical interior storage grid owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed custom-interior composition seam eliminates the extra storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_custom_ops.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The custom interior renderer replaces one legacy facade statement with the focused shelf geometry owner plus the canonical material thickness owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed custom-interior composition seam eliminates the extra material statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_custom_ops_shelves.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY",
+          "INTERIOR_SHELF_GEOMETRY_POLICY",
+          "INTERIOR_SHELF_PIN_RENDER_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The custom shelf renderer replaces one legacy facade statement with focused shelf policies plus the canonical material thickness owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed custom-shelf composition seam eliminates the extra material statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_preset_ops.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The preset interior renderer replaces one legacy facade statement with the focused shelf geometry owner plus canonical storage grid and barrier owners on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed preset-interior composition seam eliminates the extra storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_preset_ops.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The preset interior renderer replaces one legacy facade statement with the focused shelf geometry owner plus the canonical material thickness owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed preset-interior composition seam eliminates the extra material statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_sketch_ops_input.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The interior sketch input resolver replaces one legacy facade statement with the focused shelf geometry owner plus the canonical material thickness owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed sketch-input composition seam eliminates the extra material statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_sketch_support_shelves.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY", "INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The interior sketch shelf renderer replaces one legacy facade statement with focused shelf policies plus the canonical material thickness owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed sketch-shelf composition seam eliminates the extra material statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_ops_primitives.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/handle_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EDGE_HANDLE_SIZE_POLICY", "STANDARD_HANDLE_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_ROUNDED_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["HANDLE_DIMENSIONS", "INTERIOR_FITTINGS_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The render primitives owner replaces one legacy facade statement with the focused rounded-shelf owner plus canonical edge and standard handle render owners on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed render-primitives composition seam eliminates the extra handle statement without reintroducing the legacy facade."
     }
   ]
 }

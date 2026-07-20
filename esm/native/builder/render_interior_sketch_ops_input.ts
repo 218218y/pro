@@ -1,7 +1,5 @@
-import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_SHELF_GEOMETRY_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
   resolveSketchModuleDoorFaceSpan,
   resolveSketchModuleInnerFaces,
@@ -37,8 +35,8 @@ import type {
   RenderInteriorSketchOpsContext,
 } from './render_interior_sketch_ops_types.js';
 
-const REGULAR_SHELF_DEPTH = INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM;
-const BRACE_WIDTH_CLEARANCE = INTERIOR_FITTINGS_DIMENSIONS.shelves.braceWidthClearanceM;
+const REGULAR_SHELF_DEPTH = INTERIOR_SHELF_GEOMETRY_POLICY.regularDepthM;
+const BRACE_WIDTH_CLEARANCE = INTERIOR_SHELF_GEOMETRY_POLICY.braceWidthClearanceM;
 
 function resolveInternalDrawersEnabled(input: ReturnType<typeof asSketchInput>): boolean {
   if (!input) throw new TypeError('[render_interior_sketch] input is required');
@@ -92,10 +90,13 @@ export function resolveInteriorSketchExtrasInput(
   const effectiveBottomY = readBuilderRuntimeGeometryNumber(input.effectiveBottomY, 0);
   const effectiveTopY = readBuilderRuntimeGeometryNumber(input.effectiveTopY, 0);
   const spanH = effectiveTopY - effectiveBottomY;
-  if (!(spanH > INTERIOR_FITTINGS_DIMENSIONS.shelves.spanMinHeightM)) return null;
+  if (!(spanH > INTERIOR_SHELF_GEOMETRY_POLICY.spanMinHeightM)) return null;
 
   const innerW = readBuilderRuntimeGeometryNumber(input.innerW, 0);
-  const woodThick = readBuilderRuntimeGeometryNumber(input.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
+  const woodThick = readBuilderRuntimeGeometryNumber(
+    input.woodThick,
+    MATERIAL_THICKNESS_POLICY.wood.thicknessM
+  );
   const shelfThick = readBuilderRuntimeGeometryNumber(input.shelfThick, woodThick);
   const internalDepth = readBuilderRuntimeGeometryNumber(input.internalDepth, 0);
   const internalCenterX = readBuilderRuntimeGeometryNumber(input.internalCenterX, 0);
@@ -116,7 +117,7 @@ export function resolveInteriorSketchExtrasInput(
   const regularDepth = internalDepth > 0 ? Math.min(internalDepth, REGULAR_SHELF_DEPTH) : REGULAR_SHELF_DEPTH;
   const backZ = internalZ - internalDepth / 2;
   const regularShelfWidth =
-    innerW > 0 ? Math.max(0, innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.regularWidthClearanceM) : innerW;
+    innerW > 0 ? Math.max(0, innerW - INTERIOR_SHELF_GEOMETRY_POLICY.regularWidthClearanceM) : innerW;
 
   const faces = resolveSketchModuleInnerFaces({
     group,

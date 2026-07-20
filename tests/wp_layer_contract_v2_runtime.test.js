@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -19,6 +20,21 @@ import {
 } from '../tools/wp_layer_contract_support.mjs';
 
 const TEST_CURRENT_DATE = '2026-07-20';
+
+function stableJson(value) {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value)
+      .sort()
+      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function semanticSha256(value) {
+  return createHash('sha256').update(stableJson(value)).digest('hex');
+}
 
 const RATCHET = Object.freeze({
   mode: 'decrease-only',
@@ -865,7 +881,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at twenty-two reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at thirty reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -932,8 +948,36 @@ test('project migration ledger stays exact at twenty-two reviewed statements wit
       'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts',
       'esm/shared/dimensions/handle_policy.ts',
     ],
+    ['esm/native/builder/render_interior_custom_ops.ts', 'esm/shared/dimensions/interior_storage_policy.ts'],
+    [
+      'esm/native/builder/render_interior_custom_ops.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
+    [
+      'esm/native/builder/render_interior_custom_ops_shelves.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
+    ['esm/native/builder/render_interior_preset_ops.ts', 'esm/shared/dimensions/interior_storage_policy.ts'],
+    [
+      'esm/native/builder/render_interior_preset_ops.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_ops_input.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_support_shelves.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
+    ['esm/native/builder/render_ops_primitives.ts', 'esm/shared/dimensions/handle_policy.ts'],
   ];
 
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets.slice(0, 22)),
+    'f77d520ad443232af84217ded9adf59546df8d7fcf530b54ac1152ae5ca5cdd4',
+    'the twenty-two previously reviewed migration entries must remain semantically unchanged'
+  );
   assert.deepEqual(
     baseline.migrationBudgets.map(entry => [entry.fromFile, entry.addedImport.toFile]),
     expectedEntries
@@ -950,14 +994,14 @@ test('project migration ledger stays exact at twenty-two reviewed statements wit
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 22);
+  assert.equal(report.migrationBudgets.length, 30);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
   );
 
   const expectedEdges = new Map([
-    ['builder>shared', { observed: 238, migration: 19, reviewed: 219, budget: 219 }],
+    ['builder>shared', { observed: 246, migration: 27, reviewed: 219, budget: 219 }],
     ['features>shared', { observed: 59, migration: 1, reviewed: 58, budget: 58 }],
     ['services>shared', { observed: 169, migration: 2, reviewed: 167, budget: 167 }],
   ]);
@@ -1420,7 +1464,7 @@ test('repository Drawer and Handle migration ledger entries are exact and additi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools', 'wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 22);
+  assert.equal(baseline.migrationBudgets.length, 30);
 
   const expected = [
     [
@@ -1468,7 +1512,7 @@ test('repository Drawer and Handle migration ledger entries are exact and additi
   ];
 
   const actual = baseline.migrationBudgets
-    .slice(16)
+    .slice(16, 22)
     .map(entry => [
       entry.fromFile,
       entry.addedImport.toFile,
@@ -1478,7 +1522,7 @@ test('repository Drawer and Handle migration ledger entries are exact and additi
     ]);
   assert.deepEqual(actual, expected);
 
-  for (const entry of baseline.migrationBudgets.slice(16)) {
+  for (const entry of baseline.migrationBudgets.slice(16, 22)) {
     assert.equal(entry.from, 'builder');
     assert.equal(entry.to, 'shared');
     assert.equal(entry.additionalStatements, 1);
@@ -1488,6 +1532,110 @@ test('repository Drawer and Handle migration ledger entries are exact and additi
     assert.equal(entry.companionImport.syntax, 'static-import');
     assert.equal(entry.removedImport.toFile, 'esm/shared/wardrobe_dimension_tokens_shared.ts');
     assert.equal(entry.removedImport.syntax, 'static-import');
+    assert.equal(entry.reviewedAt, '2026-07-20');
+    assert.equal(entry.reviewBy, '2026-10-18');
+  }
+});
+
+test('repository Builder Interior ownership migration entries are exact and additive-only', () => {
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const baseline = JSON.parse(
+    fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
+  );
+  assert.equal(baseline.migrationBudgets.length, 30);
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets.slice(0, 22)),
+    'f77d520ad443232af84217ded9adf59546df8d7fcf530b54ac1152ae5ca5cdd4'
+  );
+
+  const expected = [
+    [
+      'esm/native/builder/render_interior_custom_ops.ts',
+      'esm/shared/dimensions/interior_storage_policy.ts',
+      ['INTERIOR_STORAGE_GRID_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_SHELF_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/builder/render_interior_custom_ops.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+      ['MATERIAL_THICKNESS_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_SHELF_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/builder/render_interior_custom_ops_shelves.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+      ['MATERIAL_THICKNESS_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      [
+        'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
+        'INTERIOR_SHELF_GEOMETRY_POLICY',
+        'INTERIOR_SHELF_PIN_RENDER_POLICY',
+      ],
+    ],
+    [
+      'esm/native/builder/render_interior_preset_ops.ts',
+      'esm/shared/dimensions/interior_storage_policy.ts',
+      ['INTERIOR_STORAGE_BARRIER_POLICY', 'INTERIOR_STORAGE_GRID_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_SHELF_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/builder/render_interior_preset_ops.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+      ['MATERIAL_THICKNESS_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_SHELF_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_ops_input.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+      ['MATERIAL_THICKNESS_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_SHELF_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_support_shelves.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+      ['MATERIAL_THICKNESS_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY', 'INTERIOR_SHELF_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/builder/render_ops_primitives.ts',
+      'esm/shared/dimensions/handle_policy.ts',
+      ['EDGE_HANDLE_SIZE_POLICY', 'STANDARD_HANDLE_RENDER_POLICY'],
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+      ['INTERIOR_SHELF_ROUNDED_RENDER_POLICY'],
+    ],
+  ];
+
+  const actual = baseline.migrationBudgets
+    .slice(22)
+    .map(entry => [
+      entry.fromFile,
+      entry.addedImport.toFile,
+      entry.addedImport.importedSymbols,
+      entry.companionImport.toFile,
+      entry.companionImport.importedSymbols,
+    ]);
+  assert.deepEqual(actual, expected);
+
+  for (const entry of baseline.migrationBudgets.slice(22)) {
+    assert.equal(entry.from, 'builder');
+    assert.equal(entry.to, 'shared');
+    assert.equal(entry.additionalStatements, 1);
+    assert.equal(entry.addedImport.kind, 'value');
+    assert.equal(entry.addedImport.syntax, 'static-import');
+    assert.equal(entry.companionImport.kind, 'value');
+    assert.equal(entry.companionImport.syntax, 'static-import');
+    assert.equal(entry.removedImport.toFile, 'esm/shared/wardrobe_dimension_tokens_shared.ts');
+    assert.deepEqual(entry.removedImport.importedSymbols, [
+      ...(entry.fromFile === 'esm/native/builder/render_ops_primitives.ts'
+        ? ['HANDLE_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS']
+        : ['INTERIOR_FITTINGS_DIMENSIONS', 'MATERIAL_DIMENSIONS']),
+    ]);
     assert.equal(entry.reviewedAt, '2026-07-20');
     assert.equal(entry.reviewBy, '2026-10-18');
   }

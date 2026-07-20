@@ -1,9 +1,10 @@
 import { createDoorEdgeHandleProfile } from './edge_handle_profile.js';
 import { normalizeHandleFinishColor, resolveHandleFinishPalette } from '../features/finish_palette/api.js';
 import {
-  HANDLE_DIMENSIONS,
-  INTERIOR_FITTINGS_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  EDGE_HANDLE_SIZE_POLICY,
+  STANDARD_HANDLE_RENDER_POLICY,
+} from '../../shared/dimensions/handle_policy.js';
+import { INTERIOR_SHELF_ROUNDED_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import { getMirrorRenderTarget } from '../runtime/render_access.js';
 
 import type {
@@ -172,7 +173,7 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     const requested =
       typeof args.roundedShelfRadius === 'number' && Number.isFinite(args.roundedShelfRadius)
         ? args.roundedShelfRadius
-        : INTERIOR_FITTINGS_DIMENSIONS.shelves.roundedCornerRadiusM;
+        : INTERIOR_SHELF_ROUNDED_RENDER_POLICY.roundedCornerRadiusM;
     const maxRadius = Math.max(0, Math.min(w, d) / 2 - 0.001);
     return Math.max(0.001, Math.min(requested, maxRadius));
   }
@@ -181,7 +182,7 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     const raw =
       typeof args.roundedShelfSegments === 'number' && Number.isFinite(args.roundedShelfSegments)
         ? args.roundedShelfSegments
-        : INTERIOR_FITTINGS_DIMENSIONS.shelves.roundedCornerSegments;
+        : INTERIOR_SHELF_ROUNDED_RENDER_POLICY.roundedCornerSegments;
     return Math.max(4, Math.min(48, Math.round(raw)));
   }
 
@@ -560,8 +561,8 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     if (type === 'edge') {
       const handleH =
         opts.edgeHandleVariant === 'long'
-          ? HANDLE_DIMENSIONS.edge.longLengthM
-          : HANDLE_DIMENSIONS.edge.shortLengthM;
+          ? EDGE_HANDLE_SIZE_POLICY.longLengthM
+          : EDGE_HANDLE_SIZE_POLICY.shortLengthM;
       const mat = new THREE.MeshStandardMaterial({
         color: palette.hex,
         emissive: palette.emissiveHex,
@@ -570,8 +571,8 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
         metalness: palette.metalness,
       });
       const xPos = isLeftHinge
-        ? w - HANDLE_DIMENSIONS.edge.renderPrimitiveDoorAnchorInsetM
-        : -w + HANDLE_DIMENSIONS.edge.renderPrimitiveDoorAnchorInsetM;
+        ? w - EDGE_HANDLE_SIZE_POLICY.renderPrimitiveDoorAnchorInsetM
+        : -w + EDGE_HANDLE_SIZE_POLICY.renderPrimitiveDoorAnchorInsetM;
       const profile = createDoorEdgeHandleProfile({
         THREE,
         material: mat,
@@ -584,9 +585,9 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     }
 
     const handleGeo = new THREE.BoxGeometry(
-      HANDLE_DIMENSIONS.standard.doorWidthM,
-      HANDLE_DIMENSIONS.standard.doorHeightM,
-      HANDLE_DIMENSIONS.standard.doorDepthM
+      STANDARD_HANDLE_RENDER_POLICY.doorWidthM,
+      STANDARD_HANDLE_RENDER_POLICY.doorHeightM,
+      STANDARD_HANDLE_RENDER_POLICY.doorDepthM
     );
     const mesh = new THREE.Mesh(
       handleGeo,
@@ -600,9 +601,9 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     );
     mesh.userData = mesh.userData || {};
     mesh.userData.__keepMaterial = true;
-    const offset = HANDLE_DIMENSIONS.standard.doorOffsetM;
+    const offset = STANDARD_HANDLE_RENDER_POLICY.doorOffsetM;
     const xPos = isLeftHinge ? w - offset : -w + offset;
-    mesh.position.set(xPos, 0, HANDLE_DIMENSIONS.standard.frontZM);
+    mesh.position.set(xPos, 0, STANDARD_HANDLE_RENDER_POLICY.frontZM);
     if (__isFn(addOutlines)) addOutlines(mesh);
     handleGroup.add(mesh);
     return handleGroup;

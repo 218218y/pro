@@ -661,10 +661,71 @@ test('[dimension tokens] Drawer and Handle mixed consumers use only focused cano
       return /\bHANDLE_DIMENSIONS\b/u.test(fs.readFileSync(file, 'utf8'));
     })
     .map(file => path.relative(ROOT, file).replaceAll('\\', '/'));
-  assert.deepEqual(remainingHandleConsumers, [
-    'esm/native/builder/build_stack_split_lower_setup.ts',
-    'esm/native/builder/render_ops_primitives.ts',
+  assert.deepEqual(remainingHandleConsumers, ['esm/native/builder/build_stack_split_lower_setup.ts']);
+});
+
+test('[dimension tokens] Builder Interior ownership and render primitives use focused canonical owners', () => {
+  const consumers = new Map([
+    [
+      'esm/native/builder/render_interior_custom_ops.ts',
+      ['INTERIOR_SHELF_GEOMETRY_POLICY', 'INTERIOR_STORAGE_GRID_POLICY', 'MATERIAL_THICKNESS_POLICY'],
+    ],
+    [
+      'esm/native/builder/render_interior_custom_ops_shelves.ts',
+      [
+        'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
+        'INTERIOR_SHELF_GEOMETRY_POLICY',
+        'INTERIOR_SHELF_PIN_RENDER_POLICY',
+        'MATERIAL_THICKNESS_POLICY',
+      ],
+    ],
+    [
+      'esm/native/builder/render_interior_preset_ops.ts',
+      [
+        'INTERIOR_SHELF_GEOMETRY_POLICY',
+        'INTERIOR_STORAGE_BARRIER_POLICY',
+        'INTERIOR_STORAGE_GRID_POLICY',
+        'MATERIAL_THICKNESS_POLICY',
+      ],
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_ops_input.ts',
+      ['INTERIOR_SHELF_GEOMETRY_POLICY', 'MATERIAL_THICKNESS_POLICY'],
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_support_shelves.ts',
+      [
+        'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
+        'INTERIOR_SHELF_GEOMETRY_POLICY',
+        'MATERIAL_THICKNESS_POLICY',
+      ],
+    ],
+    [
+      'esm/native/builder/render_ops_primitives.ts',
+      ['INTERIOR_SHELF_ROUNDED_RENDER_POLICY', 'EDGE_HANDLE_SIZE_POLICY', 'STANDARD_HANDLE_RENDER_POLICY'],
+    ],
   ]);
+
+  for (const [rel, policies] of consumers) {
+    const source = read(rel);
+    for (const policy of policies) assertUsesToken(rel, policy);
+    assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared/u);
+    assert.doesNotMatch(
+      source,
+      /\b(?:INTERIOR_FITTINGS_DIMENSIONS|MATERIAL_DIMENSIONS|HANDLE_DIMENSIONS)\b/u
+    );
+    assert.doesNotMatch(source, /\b(?:INTERIOR_FITTINGS_POLICY|INTERIOR_STORAGE_POLICY|HANDLE_POLICY)\b/u);
+    assert.doesNotMatch(source, /import\s+\*\s+as/u);
+    assert.doesNotMatch(source, /export\s+(?:type\s+)?(?:\*|\{)/u);
+  }
+
+  const remainingHandleConsumers = listFilesRecursively(path.join(ROOT, 'esm'))
+    .filter(file => {
+      if (file.endsWith('wardrobe_dimension_tokens_shared.ts')) return false;
+      return /\bHANDLE_DIMENSIONS\b/u.test(fs.readFileSync(file, 'utf8'));
+    })
+    .map(file => path.relative(ROOT, file).replaceAll('\\', '/'));
+  assert.deepEqual(remainingHandleConsumers, ['esm/native/builder/build_stack_split_lower_setup.ts']);
 });
 
 test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage dimensions are centralized', () => {
@@ -974,7 +1035,15 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
   const expectedTokenUse = new Map([
     ['esm/native/builder/corner_wing_cell_layouts.ts', ['INTERIOR_FITTINGS_DIMENSIONS', 'presetDims']],
     ['esm/native/builder/render_door_ops_hinged.ts', ['HINGED_DOOR_RENDER_POLICY', 'hingedDims']],
-    ['esm/native/builder/render_interior_preset_ops.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
+    [
+      'esm/native/builder/render_interior_preset_ops.ts',
+      [
+        'INTERIOR_SHELF_GEOMETRY_POLICY',
+        'INTERIOR_STORAGE_BARRIER_POLICY',
+        'INTERIOR_STORAGE_GRID_POLICY',
+        'MATERIAL_THICKNESS_POLICY',
+      ],
+    ],
     [
       'esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts',
       ['SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY'],
@@ -982,7 +1051,14 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ['esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts', ['DRAWER_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_drawers_external_plan.ts', ['DRAWER_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_support_shelf_pins.ts', ['INTERIOR_SHELF_PIN_RENDER_POLICY']],
-    ['esm/native/builder/render_interior_sketch_support_shelves.ts', ['INTERIOR_FITTINGS_DIMENSIONS']],
+    [
+      'esm/native/builder/render_interior_sketch_support_shelves.ts',
+      [
+        'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
+        'INTERIOR_SHELF_GEOMETRY_POLICY',
+        'MATERIAL_THICKNESS_POLICY',
+      ],
+    ],
     ['esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts', ['SKETCH_BOX_DIMENSIONS']],
     ['esm/native/builder/render_interior_sketch_support_placement.ts', ['SKETCH_BOX_DIMENSIONS']],
     [

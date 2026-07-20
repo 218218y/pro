@@ -1,7 +1,8 @@
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY,
+  INTERIOR_SHELF_GEOMETRY_POLICY,
+} from '../../shared/dimensions/interior_fittings_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
   SHELF_GROUP_PART_ID,
   createSketchShelfPartId,
@@ -75,12 +76,9 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
   const roundedShelfSide = args.roundedShelfSide || null;
 
   function shelfHeightForVariant(variant: ReturnType<typeof normalizeSketchShelfVariant>): number {
-    if (variant === 'glass') return MATERIAL_DIMENSIONS.glassShelf.thicknessM;
+    if (variant === 'glass') return MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM;
     if (variant === 'double') {
-      return Math.max(
-        shelfThick,
-        shelfThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier
-      );
+      return Math.max(shelfThick, shelfThick * INTERIOR_SHELF_GEOMETRY_POLICY.doubleThicknessMultiplier);
     }
     return shelfThick;
   }
@@ -94,7 +92,7 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
       const nextY = yFromNorm(nextShelf.yNorm);
       if (
         nextY == null ||
-        !(nextY > currentY + INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsHeightClearanceM)
+        !(nextY > currentY + INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsHeightClearanceM)
       ) {
         continue;
       }
@@ -111,7 +109,7 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
       0,
       resolveNextShelfBottomY(shelfY) -
         shelfTopY -
-        INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsHeightClearanceM
+        INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsHeightClearanceM
     );
   }
 
@@ -130,11 +128,13 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
     const boxHere = findBoxAtY(y);
     const baseShelfX = isBrace ? braceCenterX : internalCenterX;
     const baseShelfW = isBrace ? braceShelfWidth : regularShelfWidth;
-    const shelfDims = INTERIOR_FITTINGS_DIMENSIONS.shelves;
     const boxShelfW = boxHere
       ? Math.max(
           0,
-          boxHere.innerW - (isBrace ? shelfDims.braceWidthClearanceM : shelfDims.regularWidthClearanceM)
+          boxHere.innerW -
+            (isBrace
+              ? INTERIOR_SHELF_GEOMETRY_POLICY.braceWidthClearanceM
+              : INTERIOR_SHELF_GEOMETRY_POLICY.regularWidthClearanceM)
         )
       : null;
     const shelfX = boxHere ? boxHere.centerX : baseShelfX;
@@ -201,7 +201,7 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
     );
 
     if (showContentsEnabled && typeof addFoldedClothes === 'function') {
-      const contentsWidth = shelfW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM;
+      const contentsWidth = shelfW - INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM;
       const maxHeight = resolveShelfContentsMaxHeight(y, shelfH);
       if (contentsWidth > 0 && maxHeight > 0) {
         addFoldedClothes(

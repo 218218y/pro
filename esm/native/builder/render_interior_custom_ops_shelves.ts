@@ -1,7 +1,9 @@
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY,
+  INTERIOR_SHELF_GEOMETRY_POLICY,
+  INTERIOR_SHELF_PIN_RENDER_POLICY,
+} from '../../shared/dimensions/interior_fittings_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
   SHELF_GROUP_PART_ID,
   createModuleShelfPartId,
@@ -28,15 +30,15 @@ type RoundedShelfBoardOptions = {
   roundedShelfSide: RemovedFrameSideShelfRounding;
 };
 
-const PIN_RADIUS = INTERIOR_FITTINGS_DIMENSIONS.pins.radiusM;
-const PIN_LEN = INTERIOR_FITTINGS_DIMENSIONS.pins.lengthM;
-const PIN_EDGE_OFFSET_DEFAULT = INTERIOR_FITTINGS_DIMENSIONS.pins.edgeOffsetDefaultM;
-const GLASS_THICK_M = MATERIAL_DIMENSIONS.glassShelf.thicknessM;
+const PIN_RADIUS = INTERIOR_SHELF_PIN_RENDER_POLICY.radiusM;
+const PIN_LEN = INTERIOR_SHELF_PIN_RENDER_POLICY.lengthM;
+const PIN_EDGE_OFFSET_DEFAULT = INTERIOR_SHELF_PIN_RENDER_POLICY.edgeOffsetDefaultM;
+const GLASS_THICK_M = MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM;
 
 function shelfHeightForVariant(variant: ShelfVariant | undefined, shelfThick: number): number {
   if (variant === 'glass') return GLASS_THICK_M;
   if (variant === 'double')
-    return Math.max(shelfThick, shelfThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier);
+    return Math.max(shelfThick, shelfThick * INTERIOR_SHELF_GEOMETRY_POLICY.doubleThicknessMultiplier);
   return shelfThick;
 }
 
@@ -134,12 +136,12 @@ export function createAddCustomGridShelf(args: {
     if (!ensurePinResources()) return;
 
     const shelfBottom = shelfY - shelfH / 2;
-    const yPin = shelfBottom - PIN_RADIUS + INTERIOR_FITTINGS_DIMENSIONS.pins.bottomYOffsetM;
+    const yPin = shelfBottom - PIN_RADIUS + INTERIOR_SHELF_PIN_RENDER_POLICY.bottomYOffsetM;
     const backEdge = shelfZ - shelfDepth / 2;
     const frontEdge = shelfZ + shelfDepth / 2;
-    const maxOff = shelfDepth / 2 - INTERIOR_FITTINGS_DIMENSIONS.pins.maxDepthSideClearanceM;
+    const maxOff = shelfDepth / 2 - INTERIOR_SHELF_PIN_RENDER_POLICY.maxDepthSideClearanceM;
     const edgeOff = Math.max(
-      INTERIOR_FITTINGS_DIMENSIONS.pins.minEdgeOffsetM,
+      INTERIOR_SHELF_PIN_RENDER_POLICY.minEdgeOffsetM,
       Math.min(PIN_EDGE_OFFSET_DEFAULT, maxOff)
     );
     const zBack = backEdge + edgeOff;
@@ -177,7 +179,10 @@ export function createAddCustomGridShelf(args: {
       }
     }
 
-    return Math.max(0, topLimitY - shelfTopY - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsHeightClearanceM);
+    return Math.max(
+      0,
+      topLimitY - shelfTopY - INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsHeightClearanceM
+    );
   }
 
   let glassMat: InteriorMaterialLike | null = null;
@@ -261,7 +266,7 @@ export function createAddCustomGridShelf(args: {
         internalCenterX,
         shelfY + shelfH / 2,
         shelfZ,
-        innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM,
+        innerW - INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM,
         group,
         resolveShelfContentsMaxHeight(gridIndex, shelfY, shelfH),
         shelfDepth,
@@ -321,7 +326,7 @@ export function addCustomBaseShelfContents(args: {
       localGridStep -
       firstShelfH / 2 -
       effectiveBottomY -
-      INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsHeightClearanceM
+      INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsHeightClearanceM
   );
   if (!(maxHeight > 0)) return;
 
@@ -333,7 +338,7 @@ export function addCustomBaseShelfContents(args: {
     internalCenterX,
     effectiveBottomY,
     shelfZ,
-    innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM,
+    innerW - INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM,
     group,
     maxHeight,
     shelfDepth,

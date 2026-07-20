@@ -1,7 +1,6 @@
-import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_SHELF_GEOMETRY_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
+import { INTERIOR_STORAGE_GRID_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import type { RenderInteriorOpsDeps } from './render_interior_ops_contracts.js';
 
 import {
@@ -70,13 +69,13 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
 
     const gridDivisions = readGridDivisions(
       input.gridDivisions,
-      INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault
+      INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault
     );
     const effectiveBottomY = readCustomRenderNumber(input.effectiveBottomY, 0);
     const effectiveTopY = readCustomRenderNumber(input.effectiveTopY, 0);
     const localGridStep = readCustomRenderNumber(input.localGridStep, 0);
     const innerW = readCustomRenderNumber(input.innerW, 0);
-    const woodThick = readCustomRenderNumber(input.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
+    const woodThick = readCustomRenderNumber(input.woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
     const shelfThick = readCustomRenderNumber(input.shelfThick, woodThick);
     const internalDepth = readCustomRenderNumber(input.internalDepth, 0);
     const internalCenterX = readCustomRenderNumber(input.internalCenterX, 0);
@@ -108,13 +107,13 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
       frameSidePartIdPrefix: input.frameSidePartIdPrefix,
     });
 
-    const regularShelfDepthCap = INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM;
+    const regularShelfDepthCap = INTERIOR_SHELF_GEOMETRY_POLICY.regularDepthM;
     const regularDepth =
       internalDepth > 0 ? Math.min(internalDepth, regularShelfDepthCap) : regularShelfDepthCap;
     const backZ = internalZ - internalDepth / 2;
     const regularZ = backZ + regularDepth / 2;
     const regularShelfWidth =
-      innerW > 0 ? Math.max(0, innerW - INTERIOR_FITTINGS_DIMENSIONS.shelves.regularWidthClearanceM) : innerW;
+      innerW > 0 ? Math.max(0, innerW - INTERIOR_SHELF_GEOMETRY_POLICY.regularWidthClearanceM) : innerW;
 
     const threeSurface = readCustomThreeSurface(__three(THREE));
     const moduleFaces = computeCustomModuleInnerFaces({
@@ -129,7 +128,7 @@ export function createBuilderRenderInteriorCustomOps(deps: RenderInteriorOpsDeps
     const braceCenterX = moduleFaces ? (moduleFaces.leftX + moduleFaces.rightX) / 2 : internalCenterX;
     const braceShelfWidth =
       braceInnerWidth > 0
-        ? Math.max(0, braceInnerWidth - INTERIOR_FITTINGS_DIMENSIONS.shelves.braceWidthClearanceM)
+        ? Math.max(0, braceInnerWidth - INTERIOR_SHELF_GEOMETRY_POLICY.braceWidthClearanceM)
         : innerW;
     const leftInnerX = moduleFaces ? moduleFaces.leftX : internalCenterX - innerW / 2;
     const rightInnerX = moduleFaces ? moduleFaces.rightX : internalCenterX + innerW / 2;
