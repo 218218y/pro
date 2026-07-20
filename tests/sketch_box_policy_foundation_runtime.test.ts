@@ -1,0 +1,406 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+
+import { BASE_PLINTH_POLICY } from '../esm/shared/dimensions/base_plinth_policy.ts';
+import {
+  INTERIOR_ROD_CONTENT_CLEARANCE_POLICY,
+  INTERIOR_ROD_RENDER_POLICY,
+  INTERIOR_SHELF_GEOMETRY_POLICY,
+} from '../esm/shared/dimensions/interior_fittings_policy.ts';
+import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
+import {
+  SKETCH_BOX_GEOMETRY_POLICY,
+  SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY,
+  SKETCH_BOX_SELECTOR_GEOMETRY_POLICY,
+  SKETCH_BOX_SHELL_GEOMETRY_POLICY,
+} from '../esm/shared/dimensions/sketch_box_geometry_policy.ts';
+import {
+  SKETCH_BOX_DIVIDER_GEOMETRY_POLICY,
+  SKETCH_BOX_DIVIDER_POLICY,
+  SKETCH_BOX_DIVIDER_REMOVE_HIT_POLICY,
+  SKETCH_BOX_DIVIDER_SNAP_POLICY,
+} from '../esm/shared/dimensions/sketch_box_divider_policy.ts';
+import {
+  SKETCH_BOX_DIMENSION_GROUPING_POLICY,
+  SKETCH_BOX_DIMENSION_OVERLAY_POLICY,
+  SKETCH_BOX_DIMENSION_RENDER_POLICY,
+} from '../esm/shared/dimensions/sketch_box_dimension_overlay_policy.ts';
+import {
+  SKETCH_BOX_ADORNMENT_PREVIEW_POLICY,
+  SKETCH_BOX_BOX_PREVIEW_POLICY,
+  SKETCH_BOX_DOOR_PREVIEW_POLICY,
+  SKETCH_BOX_DRAWER_PREVIEW_POLICY,
+  SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY,
+  SKETCH_BOX_PREVIEW_CORE_POLICY,
+  SKETCH_BOX_PREVIEW_POLICY,
+  SKETCH_BOX_ROD_PREVIEW_POLICY,
+  SKETCH_BOX_SHELF_PREVIEW_POLICY,
+  SKETCH_BOX_STORAGE_PREVIEW_POLICY,
+} from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
+import {
+  SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY,
+  SKETCH_BOX_FREE_ATTACH_INTENT_POLICY,
+  SKETCH_BOX_FREE_PLACEMENT_GAP_POLICY,
+  SKETCH_BOX_FREE_PLACEMENT_POLICY,
+  SKETCH_BOX_FREE_REMOVE_POLICY,
+  SKETCH_BOX_FREE_VERTICAL_POLICY,
+  SKETCH_BOX_FREE_WALL_SNAP_POLICY,
+  SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY,
+} from '../esm/shared/dimensions/sketch_box_free_placement_policy.ts';
+import { SKETCH_BOX_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+
+const EXPECTED_SEMANTIC_HASH = '85e2d05a42ba6ec2ea9bba3ba6f63f6604558b8a0174d64b5df51632cc87354c';
+const EXPECTED_KEYS = Object.freeze({
+  geometry: Object.freeze([
+    'defaultWoodThicknessM',
+    'minOuterWidthM',
+    'minOuterDepthM',
+    'minOuterHeightM',
+    'minInnerDimensionM',
+    'minInnerAdditiveClearanceM',
+    'placementClampPadMinM',
+    'placementClampPadMaxM',
+    'placementClampPadWoodRatio',
+    'defaultOuterWidthM',
+    'defaultOuterDepthM',
+    'defaultOuterHeightM',
+    'maxOuterHeightM',
+    'centerSnapMinM',
+    'centerSnapMaxM',
+    'centerSnapWidthRatio',
+    'centeredEpsilonM',
+    'selectorInnerMinM',
+    'selectorDepthClearanceM',
+    'selectorCenterZInsetM',
+  ]),
+  dividers: Object.freeze([
+    'fallbackWoodThicknessM',
+    'minInnerWidthM',
+    'minInnerWithWoodClearanceM',
+    'dividerHalfMinM',
+    'segmentEdgeEpsilonM',
+    'pickEdgeEpsilonM',
+    'centeredEpsilonM',
+    'defaultCenterNorm',
+    'centerSnapMinM',
+    'centerSnapMaxM',
+    'centerSnapWidthRatio',
+    'removeHitMinM',
+    'removeHitMaxM',
+    'removeHitWidthRatio',
+  ]),
+  dimensionOverlay: Object.freeze([
+    'textScale',
+    'singleWidthLineYOffsetMinM',
+    'singleWidthLineYOffsetMaxM',
+    'singleWidthLineYOffsetHeightRatio',
+    'singleWidthTextYOffsetMinM',
+    'singleWidthTextYOffsetMaxM',
+    'singleWidthTextYOffsetHeightRatio',
+    'singleHeightLineGapMinM',
+    'singleHeightLineGapMaxM',
+    'singleHeightLineGapWidthRatio',
+    'singleHeightTextXOffsetMinM',
+    'singleHeightTextXOffsetMaxM',
+    'singleHeightTextXOffsetWidthRatio',
+    'singleDepthLineGapMinM',
+    'singleDepthLineGapMaxM',
+    'singleDepthLineGapWidthRatio',
+    'singleDepthLineYOffsetMinM',
+    'singleDepthLineYOffsetMaxM',
+    'singleDepthLineYOffsetHeightRatio',
+    'singleDepthTextXOffsetMinM',
+    'singleDepthTextXOffsetMaxM',
+    'singleDepthTextXOffsetWidthRatio',
+    'groupAdjacentToleranceXMinM',
+    'groupAdjacentToleranceXMaxM',
+    'groupAdjacentToleranceYMinM',
+    'groupAdjacentToleranceYMaxM',
+    'groupSpanMergeToleranceMinM',
+    'groupSpanMergeToleranceMaxM',
+    'groupWidthLineYOffsetMinM',
+    'groupWidthLineYOffsetMaxM',
+    'groupWidthLineYOffsetHeightRatio',
+    'groupWidthTextYOffsetMinM',
+    'groupWidthTextYOffsetMaxM',
+    'groupWidthTextYOffsetHeightRatio',
+    'groupWidthSegmentsYOffsetMinM',
+    'groupWidthSegmentsYOffsetMaxM',
+    'groupWidthSegmentsYOffsetHeightRatio',
+    'groupSegmentTextYOffsetMinM',
+    'groupSegmentTextYOffsetMaxM',
+    'groupSegmentTextYOffsetHeightRatio',
+    'groupHeightLineGapMinM',
+    'groupHeightLineGapMaxM',
+    'groupHeightLineGapWidthRatio',
+    'groupHeightTextXOffsetMinM',
+    'groupHeightTextXOffsetMaxM',
+    'groupHeightTextXOffsetWidthRatio',
+    'groupMinHeightDeltaM',
+    'groupMinHeightLineXOffsetMinM',
+    'groupMinHeightLineXOffsetMaxM',
+    'groupMinHeightLineXOffsetWidthRatio',
+    'groupMinHeightTextXOffsetMinM',
+    'groupMinHeightTextXOffsetMaxM',
+    'groupMinHeightTextXOffsetWidthRatio',
+    'groupMinHeightLabelShiftYM',
+    'groupDepthLineGapMinM',
+    'groupDepthLineGapMaxM',
+    'groupDepthLineGapWidthRatio',
+    'groupDepthLineYOffsetMinM',
+    'groupDepthLineYOffsetMaxM',
+    'groupDepthLineYOffsetHeightRatio',
+    'groupDepthTextXOffsetMinM',
+    'groupDepthTextXOffsetMaxM',
+    'groupDepthTextXOffsetWidthRatio',
+    'groupMinDepthDeltaM',
+    'groupMinDepthLineXOffsetMinM',
+    'groupMinDepthLineXOffsetMaxM',
+    'groupMinDepthLineXOffsetWidthRatio',
+    'groupMinDepthLineYOffsetMinM',
+    'groupMinDepthLineYOffsetMaxM',
+    'groupMinDepthLineYOffsetHeightRatio',
+    'groupMinDepthTextXOffsetMinM',
+    'groupMinDepthTextXOffsetMaxM',
+    'groupMinDepthTextXOffsetWidthRatio',
+  ]),
+  preview: Object.freeze([
+    'minScaleM',
+    'removeEpsShelfM',
+    'removeEpsBoxM',
+    'shelfMinWidthM',
+    'shelfHoverMinWidthM',
+    'shelfBraceClearanceM',
+    'shelfRegularClearanceM',
+    'rodRadiusM',
+    'rodMinLengthM',
+    'rodWidthClearanceM',
+    'rodPreviewHeightM',
+    'rodPreviewDepthM',
+    'shelfRemoveNoBoardToleranceMinM',
+    'shelfRemoveNoBoardToleranceMaxM',
+    'shelfRemoveNoBoardToleranceStepRatio',
+    'shelfRemoveBoardToleranceM',
+    'shelfRemoveCornerDrawerToleranceExtraM',
+    'storageBarrierBackInsetM',
+    'storageBarrierDepthClearanceMinM',
+    'storageBarrierDepthClearanceMaxM',
+    'storageBarrierDepthClearanceRatio',
+    'doorMinDimensionM',
+    'doorEdgeEpsilonM',
+    'doorInsetMinM',
+    'doorInsetMaxM',
+    'doorInsetSizeRatio',
+    'doorDoublePairGapMinM',
+    'doorDoublePairGapMaxM',
+    'doorDoublePairGapSizeRatio',
+    'doorDoublePairOuterInsetMinM',
+    'doorDoublePairOuterInsetSizeRatio',
+    'doorThicknessMinM',
+    'doorThicknessMaxM',
+    'doorMinDepthM',
+    'doorBackClearanceMinM',
+    'doorBackClearanceMaxM',
+    'doorBackClearanceDepthRatio',
+    'doorRemoveOffsetMinM',
+    'doorRemoveOffsetWoodRatio',
+    'doorPreviewClearanceM',
+    'frontOverlayWidthClearanceM',
+    'frontOverlayHeightClearanceM',
+    'segmentedDoorVisualClearanceM',
+    'segmentedDoorMinHeightM',
+    'segmentedDoorMinDimensionM',
+    'drawerPreviewThicknessM',
+    'drawerPreviewZOffsetM',
+    'boxFillThicknessMinM',
+    'boxCenterMarkerThicknessMinM',
+    'boxCenterMarkerThicknessMaxM',
+    'rodDefaultHeightM',
+    'rodDefaultDepthM',
+    'rodGuideDepthMinM',
+    'rodGuideDepthExtraM',
+    'rodGuideThicknessMinM',
+    'rodGuideThicknessMaxM',
+    'rodGuideThicknessRatio',
+    'rodGuideZOffsetM',
+    'objectBoxPadXYMinM',
+    'objectBoxPadXYMaxM',
+    'objectBoxPadXYWoodRatio',
+    'objectBoxPadXYDefaultM',
+    'objectBoxPadZMinM',
+    'objectBoxPadZMaxM',
+    'objectBoxPadZRatio',
+    'measurementLabelZOffsetM',
+    'measurementHorizontalLabelOutsideGapM',
+    'measurementTextScaleMin',
+    'measurementTextScaleDefault',
+    'measurementScaleDefaultX',
+    'measurementScaleDefaultY',
+    'measurementScaleCellX',
+    'measurementScaleCellY',
+    'measurementScaleNeighborX',
+    'measurementScaleNeighborY',
+    'slideClearanceMinM',
+    'slideClearanceWoodRatio',
+    'measurementZOffsetMinM',
+    'measurementZOffsetDepthRatio',
+    'measurementTextScale',
+    'adornmentCorniceYOffsetM',
+    'adornmentCorniceZInsetM',
+    'adornmentCorniceWidthExtraM',
+    'adornmentCorniceHeightM',
+    'adornmentCorniceDepthM',
+    'adornmentBaseDefaultHeightM',
+    'adornmentBaseZInsetMaxM',
+    'adornmentBaseZInsetDepthRatio',
+    'adornmentBaseLegWidthClearanceM',
+    'adornmentBaseWidthClearanceM',
+    'adornmentBaseDepthMinM',
+    'adornmentBaseLegDepthM',
+    'adornmentBaseDepthClearanceM',
+  ]),
+  freePlacement: Object.freeze([
+    'verticalSlackDefaultM',
+    'verticalSlackMinM',
+    'verticalSlackMaxM',
+    'verticalSlackHeightRatio',
+    'roomFloorY',
+    'workspaceClampPadMinM',
+    'workspaceClampPadMaxM',
+    'workspaceClampPadHeightRatio',
+    'wallSnapBandMinM',
+    'wallSnapBandMaxM',
+    'wallSnapBandWidthRatio',
+    'removeInsetMinM',
+    'removeInsetMaxM',
+    'removeInsetRatio',
+    'removeInsetHalfRatioMax',
+    'removeHalfMinM',
+    'attachPadMinM',
+    'attachPadMaxM',
+    'attachPadSizeRatio',
+    'attachEdgeMinM',
+    'attachEdgeHalfRatio',
+    'attachIntentMinOverlapMinM',
+    'attachIntentMinOverlapMaxM',
+    'attachIntentMinOverlapRatio',
+    'attachIntentEdgeBandMinM',
+    'attachIntentEdgeBandMaxM',
+    'attachIntentEdgeBandRatio',
+    'attachIntentEdgeDominanceMinM',
+    'attachIntentEdgeDominanceMaxM',
+    'attachIntentEdgeDominanceRatio',
+    'attachIntentOutsideBiasMinM',
+    'attachIntentOutsideBiasMaxM',
+    'attachIntentOutsideBiasRatio',
+    'attachIntentEdgeBiasMinM',
+    'attachIntentEdgeBiasMaxM',
+    'attachIntentEdgeBiasRatio',
+    'attachIntentScoreBiasMinM',
+    'attachIntentScoreBiasMaxM',
+    'attachIntentScoreBiasRatio',
+    'placementGapDefaultM',
+    'placementGapMinM',
+    'placementGapMaxM',
+    'placementGapRatio',
+  ]),
+});
+const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
+function assertNumericLeaves(value: Record<string, unknown>): void {
+  for (const [key, leaf] of Object.entries(value)) {
+    assert.equal(typeof leaf, 'number', `${key} must remain a numeric legacy dimension`);
+  }
+}
+test('Sketch Box compatibility projection preserves the pre-foundation semantic snapshot and key order', () => {
+  assert.deepEqual(Object.keys(SKETCH_BOX_DIMENSIONS), [
+    'geometry',
+    'dividers',
+    'dimensionOverlay',
+    'preview',
+    'freePlacement',
+  ]);
+  let total = 0;
+  for (const section of Object.keys(EXPECTED_KEYS) as Array<keyof typeof EXPECTED_KEYS>) {
+    const branch = SKETCH_BOX_DIMENSIONS[section];
+    assert.deepEqual(Object.keys(branch), EXPECTED_KEYS[section]);
+    assertNumericLeaves(branch);
+    total += Object.keys(branch).length;
+  }
+  assert.equal(total, 243);
+  const serialized = JSON.stringify(SKETCH_BOX_DIMENSIONS);
+  assert.equal(sha256(serialized), EXPECTED_SEMANTIC_HASH);
+  assert.deepEqual(JSON.parse(serialized), SKETCH_BOX_DIMENSIONS);
+});
+test('Sketch Box compatibility projection preserves freeze and aggregate identity', () => {
+  assert.ok(Object.isFrozen(SKETCH_BOX_DIMENSIONS));
+  assert.ok(Object.values(SKETCH_BOX_DIMENSIONS).every(Object.isFrozen));
+  assert.equal(SKETCH_BOX_DIMENSIONS.geometry, SKETCH_BOX_GEOMETRY_POLICY);
+  assert.equal(SKETCH_BOX_DIMENSIONS.dividers, SKETCH_BOX_DIVIDER_POLICY);
+  assert.equal(SKETCH_BOX_DIMENSIONS.dimensionOverlay, SKETCH_BOX_DIMENSION_OVERLAY_POLICY);
+  assert.equal(SKETCH_BOX_DIMENSIONS.preview, SKETCH_BOX_PREVIEW_POLICY);
+  assert.equal(SKETCH_BOX_DIMENSIONS.freePlacement, SKETCH_BOX_FREE_PLACEMENT_POLICY);
+});
+test('all focused Sketch Box policies are frozen', () => {
+  for (const policy of [
+    SKETCH_BOX_SHELL_GEOMETRY_POLICY,
+    SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY,
+    SKETCH_BOX_SELECTOR_GEOMETRY_POLICY,
+    SKETCH_BOX_GEOMETRY_POLICY,
+    SKETCH_BOX_DIVIDER_GEOMETRY_POLICY,
+    SKETCH_BOX_DIVIDER_SNAP_POLICY,
+    SKETCH_BOX_DIVIDER_REMOVE_HIT_POLICY,
+    SKETCH_BOX_DIVIDER_POLICY,
+    SKETCH_BOX_DIMENSION_GROUPING_POLICY,
+    SKETCH_BOX_DIMENSION_RENDER_POLICY,
+    SKETCH_BOX_DIMENSION_OVERLAY_POLICY,
+    SKETCH_BOX_PREVIEW_CORE_POLICY,
+    SKETCH_BOX_SHELF_PREVIEW_POLICY,
+    SKETCH_BOX_ROD_PREVIEW_POLICY,
+    SKETCH_BOX_STORAGE_PREVIEW_POLICY,
+    SKETCH_BOX_DOOR_PREVIEW_POLICY,
+    SKETCH_BOX_DRAWER_PREVIEW_POLICY,
+    SKETCH_BOX_BOX_PREVIEW_POLICY,
+    SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY,
+    SKETCH_BOX_ADORNMENT_PREVIEW_POLICY,
+    SKETCH_BOX_PREVIEW_POLICY,
+    SKETCH_BOX_FREE_VERTICAL_POLICY,
+    SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY,
+    SKETCH_BOX_FREE_WALL_SNAP_POLICY,
+    SKETCH_BOX_FREE_REMOVE_POLICY,
+    SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY,
+    SKETCH_BOX_FREE_ATTACH_INTENT_POLICY,
+    SKETCH_BOX_FREE_PLACEMENT_GAP_POLICY,
+    SKETCH_BOX_FREE_PLACEMENT_POLICY,
+  ])
+    assert.ok(Object.isFrozen(policy));
+});
+test('Sketch Box policies reuse canonical Material, Interior, and Base invariants', () => {
+  assert.equal(
+    SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultWoodThicknessM,
+    MATERIAL_THICKNESS_POLICY.wood.thicknessM
+  );
+  assert.equal(
+    SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.fallbackWoodThicknessM,
+    MATERIAL_THICKNESS_POLICY.wood.thicknessM
+  );
+  assert.equal(
+    SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfBraceClearanceM,
+    INTERIOR_SHELF_GEOMETRY_POLICY.braceWidthClearanceM
+  );
+  assert.equal(
+    SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRegularClearanceM,
+    INTERIOR_SHELF_GEOMETRY_POLICY.regularWidthClearanceM
+  );
+  assert.equal(SKETCH_BOX_ROD_PREVIEW_POLICY.rodRadiusM, INTERIOR_ROD_RENDER_POLICY.radiusM);
+  assert.equal(
+    SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM,
+    INTERIOR_ROD_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM
+  );
+  assert.equal(SKETCH_BOX_DOOR_PREVIEW_POLICY.doorThicknessMaxM, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
+  assert.equal(SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseDefaultHeightM, BASE_PLINTH_POLICY.heightM);
+  assert.equal(
+    SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseDepthMinM,
+    MATERIAL_THICKNESS_POLICY.wood.thicknessM
+  );
+});

@@ -186,6 +186,7 @@ const APPROVED_BASE_PLINTH_OWNER_IMPORTS = Object.freeze({
     'basePlinthCentimetersToMeters',
     'basePlinthMetersToCentimeters',
   ]),
+  'esm/shared/dimensions/sketch_box_preview_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['BASE_PLINTH_POLICY']),
 });
 const APPROVED_BASE_LEG_OWNER_IMPORTS = Object.freeze({
@@ -284,6 +285,9 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/shared/dimensions/door_mount_thickness_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/door_system_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/front_reveal_frame_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/shared/dimensions/sketch_box_divider_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/shared/dimensions/sketch_box_geometry_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/shared/dimensions/sketch_box_preview_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
 
   'esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts': Object.freeze([
@@ -765,6 +769,11 @@ const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/shared/dimensions/corner_system_policy.ts': Object.freeze([
     'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
+    'INTERIOR_SHELF_GEOMETRY_POLICY',
+  ]),
+  'esm/shared/dimensions/sketch_box_preview_policy.ts': Object.freeze([
+    'INTERIOR_ROD_CONTENT_CLEARANCE_POLICY',
+    'INTERIOR_ROD_RENDER_POLICY',
     'INTERIOR_SHELF_GEOMETRY_POLICY',
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['INTERIOR_FITTINGS_POLICY']),

@@ -1975,3 +1975,16 @@ test('repository Stack Split Lower migration entries are exact and additive-only
     assert.match(entry.removalCondition, /Stack Split Lower composition seam/u);
   }
 });
+
+test('repository Sketch Box foundation leaves all migration entries semantically unchanged', () => {
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const baseline = JSON.parse(
+    fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
+  );
+  assert.equal(baseline.migrationBudgets.length, 50);
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets),
+    'abc6215529fd6c20db36ec7b379326187149e9cb7d39ad5f9d9f74e07de360c7',
+    'all fifty reviewed migration entries must remain semantically unchanged'
+  );
+});

@@ -34,6 +34,11 @@ const productDimensionTokenSources = [
   'esm/shared/dimensions/handle_policy.ts',
   'esm/shared/dimensions/content_visual_policy.ts',
   'esm/shared/dimensions/sketch_box_classic_door_visual_policy.ts',
+  'esm/shared/dimensions/sketch_box_geometry_policy.ts',
+  'esm/shared/dimensions/sketch_box_divider_policy.ts',
+  'esm/shared/dimensions/sketch_box_dimension_overlay_policy.ts',
+  'esm/shared/dimensions/sketch_box_preview_policy.ts',
+  'esm/shared/dimensions/sketch_box_free_placement_policy.ts',
 ];
 
 function readProductDimensionTokens() {
@@ -110,6 +115,147 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
   }
 });
 
+test('[dimension tokens] Sketch Box foundation owns policies while all compatibility consumers stay unchanged', () => {
+  const facade = read('esm/shared/wardrobe_dimension_tokens_shared.ts');
+  const focusedPolicyFiles = [
+    'esm/shared/dimensions/sketch_box_geometry_policy.ts',
+    'esm/shared/dimensions/sketch_box_divider_policy.ts',
+    'esm/shared/dimensions/sketch_box_dimension_overlay_policy.ts',
+    'esm/shared/dimensions/sketch_box_preview_policy.ts',
+    'esm/shared/dimensions/sketch_box_free_placement_policy.ts',
+  ];
+  const aggregateOwners = new Map([
+    ['SKETCH_BOX_GEOMETRY_POLICY', focusedPolicyFiles[0]],
+    ['SKETCH_BOX_DIVIDER_POLICY', focusedPolicyFiles[1]],
+    ['SKETCH_BOX_DIMENSION_OVERLAY_POLICY', focusedPolicyFiles[2]],
+    ['SKETCH_BOX_PREVIEW_POLICY', focusedPolicyFiles[3]],
+    ['SKETCH_BOX_FREE_PLACEMENT_POLICY', focusedPolicyFiles[4]],
+  ]);
+
+  assert.match(facade, /geometry:\s*SKETCH_BOX_GEOMETRY_DIMENSIONS/u);
+  assert.match(facade, /dividers:\s*SKETCH_BOX_DIVIDER_DIMENSIONS/u);
+  assert.match(facade, /dimensionOverlay:\s*SKETCH_BOX_DIMENSION_OVERLAY_DIMENSIONS/u);
+  assert.match(facade, /preview:\s*SKETCH_BOX_PREVIEW_DIMENSIONS/u);
+  assert.match(facade, /freePlacement:\s*SKETCH_BOX_FREE_PLACEMENT_DIMENSIONS/u);
+  const projection = facade.slice(
+    facade.indexOf('const SKETCH_BOX_GEOMETRY_DIMENSIONS'),
+    facade.indexOf('export const CORNER_WING_DIMENSIONS')
+  );
+  assert.doesNotMatch(projection, /(?:^|\s)[A-Za-z_$][\w$]*:\s*-?(?:\d|\.\d)/mu);
+  assert.doesNotMatch(
+    projection,
+    /MATERIAL_DIMENSIONS|INTERIOR_FITTINGS_DIMENSIONS|CARCASS_BASE_DIMENSIONS/u
+  );
+
+  for (const file of focusedPolicyFiles) {
+    const source = read(file);
+    assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared/u);
+    assert.doesNotMatch(source, /import\s+\*/u);
+    assert.doesNotMatch(source, /export\s+(?:\*|\{[^}]*\})\s+from/u);
+    assertLinearDimensionsUseOwnersOrMeters(file);
+  }
+
+  const esmFiles = listFilesRecursively(path.join(ROOT, 'esm'))
+    .filter(file => /\.(?:ts|tsx|js|mjs)$/u.test(file))
+    .map(file => path.relative(ROOT, file).replaceAll(path.sep, '/'));
+  for (const [aggregate, owner] of aggregateOwners) {
+    const importers = esmFiles.filter(file => {
+      const source = read(file);
+      return new RegExp(`import[\\s\\S]*?\\b${aggregate}\\b[\\s\\S]*?from`, 'u').test(source);
+    });
+    assert.deepEqual(importers, ['esm/shared/wardrobe_dimension_tokens_shared.ts']);
+    assert.match(read(owner), new RegExp(`export const ${aggregate} = Object\\.freeze`, 'u'));
+  }
+
+  const expectedConsumers = [
+    'esm/native/builder/post_build_sketch_door_cuts_rebuild.ts',
+    'esm/native/builder/render_interior_rod_clearance.ts',
+    'esm/native/builder/render_interior_sketch_boxes.ts',
+    'esm/native/builder/render_interior_sketch_boxes_contents_depth.ts',
+    'esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts',
+    'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts',
+    'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
+    'esm/native/builder/render_interior_sketch_boxes_door_geometry.ts',
+    'esm/native/builder/render_interior_sketch_boxes_fronts_door_layout.ts',
+    'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts',
+    'esm/native/builder/render_interior_sketch_boxes_shell_apply.ts',
+    'esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts',
+    'esm/native/builder/render_interior_sketch_boxes_shell_height.ts',
+    'esm/native/builder/render_interior_sketch_drawers_external_context.ts',
+    'esm/native/builder/render_interior_sketch_layout_dimensions_grouping.ts',
+    'esm/native/builder/render_interior_sketch_layout_dimensions_render.ts',
+    'esm/native/builder/render_interior_sketch_layout_dividers.ts',
+    'esm/native/builder/render_interior_sketch_layout_geometry.ts',
+    'esm/native/builder/render_interior_sketch_support_placement.ts',
+    'esm/native/builder/render_preview_interior_hover_apply.ts',
+    'esm/native/builder/render_preview_sketch_measurements_apply.ts',
+    'esm/native/builder/render_preview_sketch_pipeline_box_content_box.ts',
+    'esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts',
+    'esm/native/builder/render_preview_sketch_pipeline_linear.ts',
+    'esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts',
+    'esm/native/services/canvas_picking_cell_dims_free_box.ts',
+    'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
+    'esm/native/services/canvas_picking_click_manual_sketch_free_box.ts',
+    'esm/native/services/canvas_picking_hover_clearance_measurements.ts',
+    'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
+    'esm/native/services/canvas_picking_internal_drawer_existing_fittings.ts',
+    'esm/native/services/canvas_picking_manual_layout_free_box_content.ts',
+    'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts',
+    'esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts',
+    'esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts',
+    'esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_shared.ts',
+    'esm/native/services/canvas_picking_manual_layout_sketch_tools.ts',
+    'esm/native/services/canvas_picking_selector_internal_metrics.ts',
+    'esm/native/services/canvas_picking_sketch_box_content_commit_doors.ts',
+    'esm/native/services/canvas_picking_sketch_box_divider_measurements.ts',
+    'esm/native/services/canvas_picking_sketch_box_divider_state_match.ts',
+    'esm/native/services/canvas_picking_sketch_box_divider_state_placement.ts',
+    'esm/native/services/canvas_picking_sketch_box_door_preview.ts',
+    'esm/native/services/canvas_picking_sketch_box_runtime_geometry.ts',
+    'esm/native/services/canvas_picking_sketch_box_segments.ts',
+    'esm/native/services/canvas_picking_sketch_box_stack_preview_drawers.ts',
+    'esm/native/services/canvas_picking_sketch_box_stack_preview_ext_drawers.ts',
+    'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts',
+    'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_rod.ts',
+    'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
+    'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_storage.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_gap.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_geometry_vertical.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_geometry_zone.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_placement_attach_candidates.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_placement_intent.ts',
+    'esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts',
+    'esm/native/services/canvas_picking_sketch_module_stack_preview_drawers.ts',
+    'esm/native/services/canvas_picking_sketch_module_stack_preview_ext_drawers.ts',
+    'esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts',
+    'esm/native/services/canvas_picking_sketch_module_surface_commit_vertical.ts',
+    'esm/native/services/canvas_picking_sketch_module_surface_preview_box.ts',
+    'esm/native/services/canvas_picking_sketch_module_surface_preview_content.ts',
+    'esm/native/services/canvas_picking_sketch_module_surface_preview_flow.ts',
+    'esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts',
+    'esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts',
+    'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts',
+  ];
+  const actualConsumers = esmFiles.filter(
+    file =>
+      file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
+      /\bSKETCH_BOX_DIMENSIONS\b/u.test(read(file))
+  );
+  assert.deepEqual(actualConsumers.sort(), expectedConsumers);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 25);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 43);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 1);
+  assert.equal(
+    esmFiles.filter(
+      file =>
+        file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' && /\bHANDLE_DIMENSIONS\b/u.test(read(file))
+    ).length,
+    0
+  );
+});
+
 test('[dimension tokens] library presets and saved preset defaults read canonical dimensions', () => {
   const tokens = readProductDimensionTokens();
   assert.match(tokens, /export const LIBRARY_PRESET_DIMENSIONS = Object\.freeze\(\{/);
@@ -161,8 +307,8 @@ test('[dimension tokens] interior presets and sketch drawer sizing read canonica
 
 test('[dimension tokens] sketch divider, attachment, and free-box measurement overlays are centralized', () => {
   const tokens = readProductDimensionTokens();
-  assert.match(tokens, /dividers: Object\.freeze\(\{/);
-  assert.match(tokens, /dimensionOverlay: Object\.freeze\(\{/);
+  assert.match(tokens, /export const SKETCH_BOX_DIVIDER_POLICY = Object\.freeze\(\{/);
+  assert.match(tokens, /export const SKETCH_BOX_DIMENSION_OVERLAY_POLICY = Object\.freeze\(\{/);
   assert.match(tokens, /attachIntentMinOverlapMinM:/);
   assert.match(tokens, /placementGapDefaultM:/);
 

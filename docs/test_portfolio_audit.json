@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-20T17:39:35.070Z",
+  "generatedAt": "2026-07-20T20:19:56.662Z",
   "totals": {
-    "tests": 1230,
-    "unitRunnerTests": 1222,
+    "tests": 1231,
+    "unitRunnerTests": 1223,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 401,
+    "contract": 402,
     "runtime-unit": 318,
     "integration": 452,
     "e2e-smoke": 9,
@@ -3991,6 +3991,10 @@
     },
     {
       "file": "tests/sketch_box_module_defaults_and_free_click_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_policy_foundation_runtime.test.ts",
       "category": "contract"
     },
     {
