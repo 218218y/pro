@@ -4,7 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-import { buildTsxTestRun, resolveTestIsolationNoneArgument } from '../tools/wp_test_runner_command.mjs';
+import {
+  buildTsxTestRun,
+  resolveTestIsolationNoneArgument,
+  TEST_ISOLATION_NONE_ARGUMENT,
+} from '../tools/wp_test_runner_command.mjs';
+import { readNodeRuntimePolicy } from '../tools/wp_node_runtime_policy.mjs';
 
 const projectRoot = process.cwd();
 const canonicalResolverPath = path.join(projectRoot, 'tools', 'wp_test_runner_command.mjs');
@@ -20,10 +25,10 @@ function collectFiles(root, extensions) {
   return files;
 }
 
-test('test isolation argument resolves from Node 22-style help', () => {
+test('Node 22 experimental-only test isolation is no longer accepted', () => {
   assert.equal(
     resolveTestIsolationNoneArgument('  --experimental-test-isolation=... configure test isolation'),
-    '--experimental-test-isolation=none'
+    null
   );
 });
 
@@ -32,7 +37,7 @@ test('test isolation argument prefers the stable Node 24 flag', () => {
     resolveTestIsolationNoneArgument(
       '  --experimental-test-isolation, --test-isolation=... configure test isolation'
     ),
-    '--test-isolation=none'
+    TEST_ISOLATION_NONE_ARGUMENT
   );
 });
 
@@ -40,14 +45,9 @@ test('test isolation argument is null when Node exposes neither flag', () => {
   assert.equal(resolveTestIsolationNoneArgument('Usage: node [options] [script.js]'), null);
 });
 
-test('current Node isolation argument is feature-detected and passed before test files', () => {
+test('current Node 24 exposes the stable isolation argument before test files', () => {
   const isolationArgument = resolveTestIsolationNoneArgument();
-  assert.ok(
-    isolationArgument === '--test-isolation=none' ||
-      isolationArgument === '--experimental-test-isolation=none' ||
-      isolationArgument === null
-  );
-  if (!isolationArgument) return;
+  assert.equal(isolationArgument, TEST_ISOLATION_NONE_ARGUMENT);
 
   const testRun = buildTsxTestRun(projectRoot, ['tests/example.test.ts'], [isolationArgument]);
   assert.ok(testRun.args.indexOf(isolationArgument) < testRun.args.indexOf('tests/example.test.ts'));
@@ -76,19 +76,28 @@ test('test isolation flags stay out of NODE_OPTIONS and literals stay in the res
     ...collectFiles(path.join(projectRoot, 'tools'), new Set(['.mjs', '.js'])),
     ...collectFiles(path.join(projectRoot, 'tests'), new Set(['.js', '.mjs', '.ts', '.tsx'])),
   ];
-  const literalPattern = /--(?:experimental-)?test-isolation=none/u;
-  const nodeOptionsPattern = /NODE_OPTIONS[^\n\r]{0,240}(?:experimental-)?test-isolation/u;
+  const literalPattern = /--test-isolation=none/u;
+  const experimentalPattern = /--experimental-test-isolation/u;
+  const nodeOptionsPattern = /NODE_OPTIONS[^\n\r]{0,240}test-isolation/u;
 
   for (const filePath of candidates) {
     const source = fs.readFileSync(filePath, 'utf8');
     if (filePath === currentTestPath) continue;
     assert.doesNotMatch(source, nodeOptionsPattern, `${filePath} puts test isolation in NODE_OPTIONS`);
+    assert.doesNotMatch(source, experimentalPattern, `${filePath} restores the retired Node 22 flag`);
     if (filePath === canonicalResolverPath) continue;
     assert.doesNotMatch(source, literalPattern, `${filePath} hard-codes a test isolation argument`);
   }
 });
 
-test('minimum supported Node engine remains explicit', () => {
+test('Node runtime policy is pinned to the Node 24 line', () => {
   const packageJson = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
-  assert.equal(packageJson.engines?.node, '>=22.12.0');
+  const policy = readNodeRuntimePolicy(projectRoot);
+  assert.equal(policy.major, 24);
+  assert.equal(packageJson.engines?.node, policy.engineRange);
+  assert.deepEqual(packageJson.devEngines?.runtime, {
+    name: 'node',
+    version: policy.engineRange,
+    onFail: 'error',
+  });
 });

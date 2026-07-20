@@ -64,8 +64,7 @@ defaults:
 
 env:
   CI: true
-  # Opt JavaScript actions into the newer GitHub Actions runtime now, before
-  # Node.js 24 becomes the platform default.
+  # Keep JavaScript actions on Node 24 consistently during GitHub's 2026 runner migration.
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -84,7 +83,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version-file: '.node-version'
           cache: npm
 
       - name: Install dependencies
@@ -129,7 +128,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version-file: '.node-version'
           cache: npm
 
       - name: Install dependencies
@@ -174,7 +173,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version-file: '.node-version'
           cache: npm
 
       - name: Install dependencies
@@ -207,7 +206,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version-file: '.node-version'
           cache: npm
 
       - name: Install dependencies
@@ -265,7 +264,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version-file: '.node-version'
           cache: npm
 
       - name: Install dependencies
@@ -294,14 +293,10 @@ jobs:
           include-hidden-files: true
           retention-days: 7
 
-  test-runner-node-compat:
-    name: Test Runner compatibility (Node ${{ matrix.node }})
+  test-runner-node-contract:
+    name: Test Runner contract (Node 24)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ['22.12.0', '24']
 
     steps:
       - name: Checkout
@@ -310,13 +305,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: ${{ matrix.node }}
+          node-version-file: '.node-version'
           cache: npm
 
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run Test Runner compatibility contracts
+      - name: Run Node 24 Test Runner contracts
         run: node --test tests/wp_test_runner_command_runtime.test.js tests/wp_serial_tests_runtime.test.js
 
       - name: Check Test Runner tool syntax
@@ -339,7 +334,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version-file: '.node-version'
           cache: npm
 
       - name: Install dependencies
@@ -379,7 +374,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version-file: '.node-version'
           cache: npm
 
       - name: Install dependencies
@@ -398,7 +393,7 @@ jobs:
       - typecheck
       - contracts
       - runtime-tests
-      - test-runner-node-compat
+      - test-runner-node-contract
       - build-smoke
       - audit
       - e2e-critical
@@ -411,7 +406,7 @@ jobs:
           TYPECHECK_RESULT: ${{ needs['typecheck'].result }}
           CONTRACTS_RESULT: ${{ needs['contracts'].result }}
           RUNTIME_TESTS_RESULT: ${{ needs['runtime-tests'].result }}
-          TEST_RUNNER_NODE_COMPAT_RESULT: ${{ needs['test-runner-node-compat'].result }}
+          TEST_RUNNER_NODE_CONTRACT_RESULT: ${{ needs['test-runner-node-contract'].result }}
           BUILD_SMOKE_RESULT: ${{ needs['build-smoke'].result }}
           AUDIT_RESULT: ${{ needs['audit'].result }}
           E2E_CRITICAL_RESULT: ${{ needs['e2e-critical'].result }}
@@ -423,7 +418,7 @@ jobs:
             "typecheck:$TYPECHECK_RESULT" \
             "contracts:$CONTRACTS_RESULT" \
             "runtime-tests:$RUNTIME_TESTS_RESULT" \
-            "test-runner-node-compat:$TEST_RUNNER_NODE_COMPAT_RESULT" \
+            "test-runner-node-contract:$TEST_RUNNER_NODE_CONTRACT_RESULT" \
             "build-smoke:$BUILD_SMOKE_RESULT" \
             "audit:$AUDIT_RESULT" \
             "e2e-critical:$E2E_CRITICAL_RESULT"
@@ -450,7 +445,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version-file: '.node-version'
           cache: npm
 
       - name: Install dependencies
@@ -491,7 +486,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version-file: '.node-version'
           cache: npm
 
       - name: Install dependencies
@@ -538,7 +533,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version-file: '.node-version'
           cache: npm
 
       - name: Install dependencies

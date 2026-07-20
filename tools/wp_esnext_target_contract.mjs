@@ -11,11 +11,13 @@ import {
   ESNEXT_TYPESCRIPT_LIB,
   ESNEXT_TYPESCRIPT_TARGET,
 } from './wp_esnext_target_policy.mjs';
+import { readNodeRuntimePolicy } from './wp_node_runtime_policy.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
-const NODE_ENGINE_FLOOR = '>=22.12.0';
+const NODE_RUNTIME_POLICY = readNodeRuntimePolicy(ROOT);
+const NODE_ENGINE_RANGE = NODE_RUNTIME_POLICY.engineRange;
 const SOURCE_EXTENSION_RE = /\.(?:js|mjs|ts|tsx)$/;
 const REDUNDANT_IMMUTABLE_SORT_PATTERNS = [
   {
@@ -110,12 +112,12 @@ export async function collectEsnextTargetViolations() {
   const packageJson = readJson('package.json');
   const packageLock = readJson('package-lock.json');
 
-  pushMismatch(violations, 'package.json engines.node', packageJson.engines?.node, NODE_ENGINE_FLOOR);
+  pushMismatch(violations, 'package.json engines.node', packageJson.engines?.node, NODE_ENGINE_RANGE);
   pushMismatch(
     violations,
     'package-lock.json root engines.node',
     packageLock.packages?.['']?.engines?.node,
-    NODE_ENGINE_FLOOR
+    NODE_ENGINE_RANGE
   );
   violations.push(...collectRequiredRuntimeApiViolations());
 
@@ -208,7 +210,7 @@ async function main() {
   }
 
   console.log(
-    `[ESNext target contract] OK: Node${NODE_ENGINE_FLOOR}, TypeScript=${ESNEXT_TYPESCRIPT_TARGET}, Vite/Oxc=${ESNEXT_BUILD_TARGET}`
+    `[ESNext target contract] OK: Node ${NODE_RUNTIME_POLICY.version} (${NODE_ENGINE_RANGE}), TypeScript=${ESNEXT_TYPESCRIPT_TARGET}, Vite/Oxc=${ESNEXT_BUILD_TARGET}`
   );
 }
 

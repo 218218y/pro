@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { readNodeRuntimePolicy } from './wp_node_runtime_policy.mjs';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
@@ -14,6 +16,12 @@ const PINNED_DEV_DEPS = [
     name: 'typescript',
     role: 'Type correctness gate and TS7 compiler lane.',
     updatePolicy: 'Keep exact at 7.0.2 until a dedicated TypeScript patch/minor refresh is approved.',
+  },
+  {
+    name: '@types/node',
+    role: 'Node tool/test type surface aligned to the pinned Node runtime major.',
+    updatePolicy: 'Keep exact and on the same major as `.node-version`; refresh with Node runtime updates.',
+    nodeMajorAligned: true,
   },
   {
     name: 'eslint',
@@ -83,6 +91,7 @@ function collectToolchainVersionPolicy() {
   const lockRootDevDependencies = rootLockPackage.devDependencies || {};
   const rows = [];
   const violations = [];
+  const nodeRuntimePolicy = readNodeRuntimePolicy(ROOT);
 
   for (const item of PINNED_DEV_DEPS) {
     const packageJsonVersion = devDependencies[item.name] || null;
@@ -109,6 +118,14 @@ function collectToolchainVersionPolicy() {
         `${item.name} installed lock version (${installedVersion}) does not match package.json (${packageJsonVersion}).`
       );
     }
+    if (item.nodeMajorAligned && exact) {
+      const packageMajor = Number.parseInt(packageJsonVersion.split('.')[0] ?? '', 10);
+      if (packageMajor !== nodeRuntimePolicy.major) {
+        violations.push(
+          `${item.name} major ${packageMajor} does not match the pinned Node major ${nodeRuntimePolicy.major}.`
+        );
+      }
+    }
 
     rows.push({
       ...item,
@@ -133,6 +150,7 @@ function collectToolchainVersionPolicy() {
 
   return {
     rows,
+    nodeRuntimePolicy,
     forbiddenPackages: FORBIDDEN_PACKAGES.map(item => item.name),
     forbiddenPackageLabels: FORBIDDEN_PACKAGES.map(item => item.label),
     violations,
@@ -151,7 +169,7 @@ function createToolchainVersionPolicyMarkdown(policy) {
     '',
     '<!-- Tool-owned report target. Regenerate with: npm run toolchain:version-policy:report -->',
     '',
-    'TypeScript 7 cleanup is complete. Core toolchain packages are intentionally exact-pinned so future patch/minor upgrades happen in a dedicated dependency refresh, not as silent lockfile drift.',
+    'TypeScript 7 cleanup is complete. Core toolchain packages are intentionally exact-pinned so future patch/minor upgrades happen in a dedicated dependency refresh, not as silent lockfile drift. `@types/node` is pinned to the same major as the canonical Node runtime in `.node-version`.',
     '',
     '## Exact pinned packages',
     '',
@@ -181,7 +199,7 @@ function createToolchainVersionPolicyMarkdown(policy) {
     '',
     policy.violations.length
       ? 'Not ready:'
-      : 'Ready: all pinned toolchain versions are exact and removed TS ESLint packages are absent.',
+      : 'Ready: all pinned toolchain versions are exact, `@types/node` matches the pinned Node major, and removed TS ESLint packages are absent.',
     ...policy.violations.map(v => `- ${v}`),
     ''
   );

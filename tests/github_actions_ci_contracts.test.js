@@ -13,12 +13,18 @@ function read(rel) {
 test('GitHub CI keeps required verification split by concern', () => {
   const ci = read('.github/workflows/ci.yml');
 
+  assert.doesNotMatch(ci, /^\s*node-version:\s*/m);
+  assert.equal(
+    (ci.match(/uses:\s*actions\/setup-node@/g) ?? []).length,
+    (ci.match(/node-version-file:\s*['"]\.node-version['"]/g) ?? []).length
+  );
+
   assert.match(ci, /^  strict-gate:/m);
   assert.match(ci, /^  lint:/m);
   assert.match(ci, /^  typecheck:/m);
   assert.match(ci, /^  contracts:/m);
   assert.match(ci, /^  runtime-tests:/m);
-  assert.match(ci, /^  test-runner-node-compat:/m);
+  assert.match(ci, /^  test-runner-node-contract:/m);
   assert.match(ci, /^  build-smoke:/m);
   assert.match(ci, /^  audit:/m);
   assert.match(ci, /^  required-checks:/m);
@@ -40,7 +46,6 @@ test('GitHub CI keeps required verification split by concern', () => {
   assert.match(ci, /strategy:\n      fail-fast: false\n      matrix:\n        shard: \[1, 2\]/);
   assert.match(ci, /run: npm run test -- --shard=\$\{\{ matrix\.shard \}\}\/2/);
   assert.match(ci, /name: runtime-test-diagnostics-shard-\$\{\{ matrix\.shard \}\}-of-2/);
-  assert.match(ci, /node: \['22\.12\.0', '24'\]/);
   assert.match(
     ci,
     /run: node --test tests\/wp_test_runner_command_runtime\.test\.js tests\/wp_serial_tests_runtime\.test\.js/
@@ -50,11 +55,14 @@ test('GitHub CI keeps required verification split by concern', () => {
 
   assert.match(
     ci,
-    /needs:\n      - strict-gate\n      - lint\n      - typecheck\n      - contracts\n      - runtime-tests\n      - test-runner-node-compat\n      - build-smoke\n      - audit/
+    /needs:\n      - strict-gate\n      - lint\n      - typecheck\n      - contracts\n      - runtime-tests\n      - test-runner-node-contract\n      - build-smoke\n      - audit/
   );
   assert.match(ci, /STRICT_GATE_RESULT: \$\{\{ needs\['strict-gate'\]\.result \}\}/);
   assert.match(ci, /RUNTIME_TESTS_RESULT: \$\{\{ needs\['runtime-tests'\]\.result \}\}/);
-  assert.match(ci, /TEST_RUNNER_NODE_COMPAT_RESULT: \$\{\{ needs\['test-runner-node-compat'\]\.result \}\}/);
+  assert.match(
+    ci,
+    /TEST_RUNNER_NODE_CONTRACT_RESULT: \$\{\{ needs\['test-runner-node-contract'\]\.result \}\}/
+  );
   assert.match(ci, /BUILD_SMOKE_RESULT: \$\{\{ needs\['build-smoke'\]\.result \}\}/);
   assert.doesNotMatch(ci, /\$\{\{ needs\.[a-z0-9-]+\.result \}\}/);
 });
@@ -73,6 +81,22 @@ test('GitHub CI keeps the monolithic verify flow as a manual release gate only',
     .filter(line => /^run: npm run (verify|verify:gate|gate:full)\b/.test(line));
 
   assert.deepEqual(monolithicRuns, ['run: npm run gate:full']);
+});
+
+test('all GitHub workflows consume the canonical Node version file', () => {
+  const workflowDirectory = new URL('../.github/workflows/', import.meta.url);
+  const workflowFiles = fs
+    .readdirSync(workflowDirectory)
+    .filter(name => /\.ya?ml$/u.test(name))
+    .sort();
+
+  for (const fileName of workflowFiles) {
+    const source = fs.readFileSync(new URL(fileName, workflowDirectory), 'utf8');
+    const setupNodeCount = (source.match(/uses:\s*actions\/setup-node@/gu) ?? []).length;
+    const versionFileCount = (source.match(/node-version-file:\s*['"]\.node-version['"]/gu) ?? []).length;
+    assert.equal(versionFileCount, setupNodeCount, `${fileName} bypasses .node-version`);
+    assert.doesNotMatch(source, /^\s*node-version:\s*/gmu, `${fileName} pins Node independently`);
+  }
 });
 
 test('manual lint workflow uses the same strict lint standard as CI', () => {

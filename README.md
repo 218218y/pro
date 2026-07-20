@@ -7,6 +7,12 @@ The canonical architecture + rules live here:
 - `docs/README.md` — compact docs index
 - `docs/dev_guide.md` — engineering rules
 
+## Runtime
+
+CI and deployment builds use the exact Node 24 version declared in `.node-version`.
+Local npm commands enforce the Node 24 major through `engines` and `devEngines`,
+while `@types/node` stays on the same major.
+
 ## Quick start
 
 ```bash

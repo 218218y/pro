@@ -3,17 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
+export const TEST_ISOLATION_NONE_ARGUMENT = '--test-isolation=none';
+
 let cachedTestIsolationNoneArgument;
 let testIsolationSupportResolved = false;
 
 function resolveTestIsolationNoneArgumentFromHelp(helpText) {
-  if (/(?:^|[\s,])--test-isolation(?:=|[\s,]|$)/mu.test(helpText)) {
-    return '--test-isolation=none';
-  }
-  if (/(?:^|[\s,])--experimental-test-isolation(?:=|[\s,]|$)/mu.test(helpText)) {
-    return '--experimental-test-isolation=none';
-  }
-  return null;
+  return /(?:^|[\s,])--test-isolation(?:=|[\s,]|$)/mu.test(helpText) ? TEST_ISOLATION_NONE_ARGUMENT : null;
 }
 
 export function resolveTestIsolationNoneArgument(helpText) {
