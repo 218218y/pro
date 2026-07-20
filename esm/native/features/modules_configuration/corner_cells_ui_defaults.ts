@@ -1,7 +1,11 @@
 // Corner-cell UI-derived default layout helpers.
 // Owns corner-side / width / door-count policy so patch + snapshot owners stay focused.
 
-import { CORNER_WING_DIMENSIONS, CM_PER_METER } from '../../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  CORNER_WING_BODY_POLICY,
+  CORNER_WING_CELL_POLICY,
+} from '../../../shared/dimensions/corner_system_policy.js';
+import { CM_PER_METER } from '../../../shared/dimensions/units.js';
 import { isRecord, type UnknownRecord } from './corner_cells_contracts.js';
 
 function readCornerUiRecord(value: unknown): UnknownRecord {
@@ -21,15 +25,14 @@ function readCornerDoorsCountFromUi(uiSnapshot: unknown): number {
 
   let wingLenCm =
     typeof ui.cornerWidth === 'number' && Number.isFinite(ui.cornerWidth) ? ui.cornerWidth : NaN;
-  if (!Number.isFinite(wingLenCm)) wingLenCm = CORNER_WING_DIMENSIONS.wing.defaultWidthCm;
+  if (!Number.isFinite(wingLenCm)) wingLenCm = CORNER_WING_BODY_POLICY.defaultWidthCm;
   if (wingLenCm < 0) wingLenCm = 0;
   const wingLenM = wingLenCm / CM_PER_METER;
-  return wingLenM > CORNER_WING_DIMENSIONS.wing.minActiveWidthM
+  return wingLenM > CORNER_WING_BODY_POLICY.minActiveWidthM
     ? Math.max(
         1,
         Math.round(
-          wingLenM /
-            (CORNER_WING_DIMENSIONS.cells.doorsPerCell * CORNER_WING_DIMENSIONS.cells.minDoorUnitWidthM)
+          wingLenM / (CORNER_WING_CELL_POLICY.doorsPerCell * CORNER_WING_CELL_POLICY.minDoorUnitWidthM)
         )
       )
     : 0;
@@ -43,7 +46,7 @@ export function resolveTopCornerCellDefaultLayoutFromUi(uiSnapshot: unknown, ind
   const cellIndex = Number.isFinite(index) && index >= 0 ? Math.floor(index) : 0;
   const cornerSide = readCornerSideFromUi(uiSnapshot);
   const doors = readCornerDoorsCountFromUi(uiSnapshot);
-  const cellCount = Math.max(1, Math.ceil(Math.max(0, doors) / CORNER_WING_DIMENSIONS.cells.doorsPerCell));
+  const cellCount = Math.max(1, Math.ceil(Math.max(0, doors) / CORNER_WING_CELL_POLICY.doorsPerCell));
   if (cornerSide === 'left' && cellCount > 1) return cellIndex === cellCount - 1 ? 'hanging_top2' : 'shelves';
   return cellIndex === 0 ? 'hanging_top2' : 'shelves';
 }

@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import {
   analyzeModuleDependencies,
   buildLayerContractProposal,
+  collectLayerContractGraph,
   collectNamedModuleExports,
   collectStaticModuleImports,
   collectStaticModuleSpecifiers,
@@ -16,6 +17,8 @@ import {
   layerOfRelativeFile,
   validateLayerContractSchema,
 } from '../tools/wp_layer_contract_support.mjs';
+
+const TEST_CURRENT_DATE = '2026-07-20';
 
 const RATCHET = Object.freeze({
   mode: 'decrease-only',
@@ -106,6 +109,7 @@ function migrationBudget(overrides = {}) {
     owner: 'test-migration',
     reason: 'One legacy facade statement was split into a direct owner and canonical units import.',
     reviewedAt: '2026-07-20',
+    reviewBy: '2026-10-18',
     removalCondition: 'Remove after the extra units statement is no longer required.',
     ...overrides,
   };
@@ -130,6 +134,19 @@ function migrationImport({
     importedSymbols,
     statementKey,
   };
+}
+
+function migrationImportFromSource(source, toFile, statementKey) {
+  const dependencies = analyzeModuleDependencies('example.ts', source).imports;
+  assert.equal(dependencies.length, 1, 'fixture must contain exactly one module dependency');
+  const [dependency] = dependencies;
+  return migrationImport({
+    toFile,
+    importedSymbols: dependency.importedSymbols,
+    statementKey,
+    kind: dependency.kind,
+    syntax: dependency.syntax,
+  });
 }
 
 test('layer contract parser reads AST imports and classifies type, value, and dynamic dependencies', () => {
@@ -484,7 +501,7 @@ test('layer contract migration budgets exempt only the reviewed statement and ke
   };
   const baseline = contract({ migrationBudgets: [budget] });
 
-  const report = evaluateLayerContract(graph, baseline);
+  const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
   assert.deepEqual(report.migrationBudgets, [
     {
@@ -492,6 +509,7 @@ test('layer contract migration budgets exempt only the reviewed statement and ke
       to: 'services',
       fromFile: 'esm/native/ui/example.ts',
       addedTarget: 'esm/native/services/units.ts',
+      reviewBy: '2026-10-18',
       active: true,
     },
   ]);
@@ -510,7 +528,8 @@ test('layer contract migration budgets exempt only the reviewed statement and ke
         }),
       ],
     },
-    baseline
+    baseline,
+    { currentDate: TEST_CURRENT_DATE }
   );
   assert.deepEqual(
     unrelatedGrowth.failures
@@ -520,6 +539,142 @@ test('layer contract migration budgets exempt only the reviewed statement and ke
       ['import-growth', 2, 3, 1],
       ['value-import-growth', 2, 3, 1],
     ]
+  );
+});
+
+test('layer contract migration budgets enforce AST syntax and allow named aliases by source symbol', () => {
+  const budget = migrationBudget();
+  const baseline = contract({ migrationBudgets: [budget] });
+  const companion = migrationImport({
+    toFile: budget.companionImport.toFile,
+    importedSymbols: budget.companionImport.importedSymbols,
+    statementKey: 'policy-statement',
+  });
+  const evaluateAdded = addedImport =>
+    evaluateLayerContract(
+      {
+        edges: [edge({ importCount: 2, valueImportCount: 2 })],
+        imports: [companion, addedImport],
+      },
+      baseline,
+      { currentDate: TEST_CURRENT_DATE }
+    );
+
+  const aliasedNamedImport = migrationImportFromSource(
+    `import { CM_PER_METER as centimetersPerMeter } from '../services/units.js';`,
+    budget.addedImport.toFile,
+    'aliased-units-statement'
+  );
+  assert.equal(evaluateAdded(aliasedNamedImport).ok, true);
+
+  for (const [label, source, expectedSyntax] of [
+    ['static re-export', `export { CM_PER_METER } from '../services/units.js';`, 'static-re-export'],
+    ['wildcard re-export', `export * from '../services/units.js';`, 'static-re-export'],
+    ['type import', `import type { CM_PER_METER } from '../services/units.js';`, 'type-import'],
+    ['dynamic import', `void import('../services/units.js');`, 'dynamic-import'],
+  ]) {
+    const report = evaluateAdded(
+      migrationImportFromSource(source, budget.addedImport.toFile, `${label}-statement`)
+    );
+    assert.equal(report.ok, false, `${label} must not consume a static-import migration budget`);
+    assert.deepEqual(
+      report.failures.find(failure => failure.kind === 'migration-import-syntax-drift'),
+      {
+        kind: 'migration-import-syntax-drift',
+        from: 'ui',
+        to: 'services',
+        fromFile: 'esm/native/ui/example.ts',
+        field: 'addedImport',
+        toFile: 'esm/native/services/units.ts',
+        currentSyntax: expectedSyntax,
+        expectedSyntax: 'static-import',
+      }
+    );
+  }
+
+  const namespaceReport = evaluateAdded(
+    migrationImportFromSource(
+      `import * as units from '../services/units.js';`,
+      budget.addedImport.toFile,
+      'namespace-units-statement'
+    )
+  );
+  assert.equal(
+    namespaceReport.failures.some(failure => failure.kind === 'migration-import-symbol-drift'),
+    true
+  );
+});
+
+test('layer contract migration budget rejects the static re-export regression explicitly', () => {
+  const budget = migrationBudget();
+  const report = evaluateLayerContract(
+    {
+      edges: [edge({ importCount: 2, valueImportCount: 2 })],
+      imports: [
+        migrationImport({
+          toFile: budget.companionImport.toFile,
+          importedSymbols: budget.companionImport.importedSymbols,
+          statementKey: 'policy-statement',
+        }),
+        migrationImportFromSource(
+          `export { CM_PER_METER } from '../services/units.js';`,
+          budget.addedImport.toFile,
+          're-export-statement'
+        ),
+      ],
+    },
+    contract({ migrationBudgets: [budget] }),
+    { currentDate: TEST_CURRENT_DATE }
+  );
+
+  assert.equal(report.ok, false);
+  assert.equal(
+    report.failures.some(
+      failure =>
+        failure.kind === 'migration-import-syntax-drift' &&
+        failure.currentSyntax === 'static-re-export' &&
+        failure.expectedSyntax === 'static-import'
+    ),
+    true
+  );
+  assert.equal(
+    report.failures.some(
+      failure => failure.kind === 'stale-migration-budget' && failure.field === 'addedImport'
+    ),
+    false
+  );
+});
+
+test('layer contract migration budgets keep multiple matching statements as growth', () => {
+  const budget = migrationBudget();
+  const added = migrationImport({
+    toFile: budget.addedImport.toFile,
+    importedSymbols: budget.addedImport.importedSymbols,
+    statementKey: 'units-statement',
+  });
+  const report = evaluateLayerContract(
+    {
+      edges: [edge({ importCount: 3, valueImportCount: 3 })],
+      imports: [
+        migrationImport({
+          toFile: budget.companionImport.toFile,
+          importedSymbols: budget.companionImport.importedSymbols,
+          statementKey: 'policy-statement',
+        }),
+        added,
+        { ...added, statementKey: 'duplicate-units-statement' },
+      ],
+    },
+    contract({ migrationBudgets: [budget] }),
+    { currentDate: TEST_CURRENT_DATE }
+  );
+
+  assert.equal(
+    report.failures.some(
+      failure =>
+        failure.kind === 'migration-budget-growth' && failure.field === 'addedImport' && failure.current === 2
+    ),
+    true
   );
 });
 
@@ -542,14 +697,17 @@ test('layer contract migration budgets fail closed on symbol drift, missing impo
       edges: [edge({ importCount: 2, valueImportCount: 2 })],
       imports: [{ ...added, importedSymbols: ['CM_PER_METER', 'MM_PER_METER'] }, companion],
     },
-    baseline
+    baseline,
+    { currentDate: TEST_CURRENT_DATE }
   );
   assert.equal(
     symbolDrift.failures.some(failure => failure.kind === 'migration-import-symbol-drift'),
     true
   );
 
-  const missingAdded = evaluateLayerContract({ edges: [edge()], imports: [companion] }, baseline);
+  const missingAdded = evaluateLayerContract({ edges: [edge()], imports: [companion] }, baseline, {
+    currentDate: TEST_CURRENT_DATE,
+  });
   assert.equal(
     missingAdded.failures.some(
       failure => failure.kind === 'stale-migration-budget' && failure.field === 'addedImport'
@@ -570,12 +728,132 @@ test('layer contract migration budgets fail closed on symbol drift, missing impo
         }),
       ],
     },
-    baseline
+    baseline,
+    { currentDate: TEST_CURRENT_DATE }
   );
   assert.equal(
     restoredLegacy.failures.some(failure => failure.kind === 'migration-legacy-import-restored'),
     true
   );
+});
+
+test('layer contract migration review deadlines are schema-bounded and evaluator-injectable', () => {
+  assert.throws(
+    () =>
+      validateLayerContractSchema(contract({ migrationBudgets: [migrationBudget({ reviewBy: undefined })] })),
+    /reviewBy must be YYYY-MM-DD/
+  );
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({ migrationBudgets: [migrationBudget({ reviewBy: '2026-07-19' })] })
+      ),
+    /must not be earlier than reviewedAt/
+  );
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({ migrationBudgets: [migrationBudget({ reviewBy: '2026-10-19' })] })
+      ),
+    /must be within 90 days/
+  );
+
+  const budget = migrationBudget();
+  const graph = {
+    edges: [edge({ importCount: 2, valueImportCount: 2 })],
+    imports: [
+      migrationImport({
+        toFile: budget.companionImport.toFile,
+        importedSymbols: budget.companionImport.importedSymbols,
+        statementKey: 'policy-statement',
+      }),
+      migrationImport({
+        toFile: budget.addedImport.toFile,
+        importedSymbols: budget.addedImport.importedSymbols,
+        statementKey: 'units-statement',
+      }),
+    ],
+  };
+  const baseline = contract({ migrationBudgets: [budget] });
+
+  assert.equal(
+    evaluateLayerContract(graph, baseline, { currentDate: '2026-10-18' }).ok,
+    true,
+    'review remains active through reviewBy'
+  );
+  const expired = evaluateLayerContract(graph, baseline, { currentDate: '2026-10-19' });
+  assert.equal(expired.ok, false);
+  assert.deepEqual(
+    expired.failures.find(failure => failure.kind === 'stale-migration-review'),
+    {
+      kind: 'stale-migration-review',
+      from: 'ui',
+      to: 'services',
+      fromFile: 'esm/native/ui/example.ts',
+      reviewedAt: '2026-07-20',
+      reviewBy: '2026-10-18',
+    }
+  );
+});
+
+test('project migration ledger stays exact at seven reviewed statements with unchanged base budgets', () => {
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const baseline = JSON.parse(
+    fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
+  );
+  const expectedEntries = [
+    ['esm/native/builder/corner_connector_interior_rod.ts', 'esm/shared/dimensions/units.ts'],
+    ['esm/native/builder/corner_connector_interior_special_metrics.ts', 'esm/shared/dimensions/units.ts'],
+    ['esm/native/builder/post_build_dimensions_corner.ts', 'esm/shared/dimensions/units.ts'],
+    ['esm/native/builder/post_build_dimensions_corner.ts', 'esm/shared/dimensions/wardrobe_defaults.ts'],
+    [
+      'esm/native/features/modules_configuration/corner_cells_ui_defaults.ts',
+      'esm/shared/dimensions/units.ts',
+    ],
+    ['esm/native/services/canvas_picking_cell_dims_corner_context.ts', 'esm/shared/dimensions/units.ts'],
+    [
+      'esm/native/services/canvas_picking_cell_dims_corner_context.ts',
+      'esm/shared/dimensions/wardrobe_defaults.ts',
+    ],
+  ];
+
+  assert.deepEqual(
+    baseline.migrationBudgets.map(entry => [entry.fromFile, entry.addedImport.toFile]),
+    expectedEntries
+  );
+  assert.equal(
+    baseline.migrationBudgets.every(entry => entry.additionalStatements === 1),
+    true
+  );
+  assert.equal(
+    baseline.migrationBudgets.every(entry => entry.reviewBy === '2026-10-18'),
+    true
+  );
+
+  const graph = collectLayerContractGraph({ root: repositoryRoot });
+  const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
+  assert.equal(report.ok, true);
+  assert.equal(report.migrationBudgets.length, 7);
+  assert.equal(
+    report.migrationBudgets.every(entry => entry.active === true),
+    true
+  );
+
+  const expectedEdges = new Map([
+    ['builder>shared', { observed: 223, migration: 4, reviewed: 219, budget: 219 }],
+    ['features>shared', { observed: 59, migration: 1, reviewed: 58, budget: 58 }],
+    ['services>shared', { observed: 169, migration: 2, reviewed: 167, budget: 167 }],
+  ]);
+  for (const [key, expected] of expectedEdges) {
+    const [from, to] = key.split('>');
+    const edge = graph.edges.find(entry => entry.from === from && entry.to === to);
+    const rule = baseline.rules.find(entry => entry.from === from && entry.to === to);
+    assert.ok(edge, `missing observed edge ${key}`);
+    assert.ok(rule, `missing baseline rule ${key}`);
+    assert.equal(edge.importCount, expected.observed);
+    assert.equal(expected.observed - expected.migration, expected.reviewed);
+    assert.equal(rule.maxImportCount, expected.budget);
+  }
 });
 
 test('layer contract proposal preserves exact migration budgets without raising reviewed ceilings', () => {
@@ -597,7 +875,7 @@ test('layer contract proposal preserves exact migration budgets without raising 
     ],
   };
 
-  const proposal = buildLayerContractProposal(graph, current);
+  const proposal = buildLayerContractProposal(graph, current, { currentDate: TEST_CURRENT_DATE });
   assert.equal(proposal.reviewRequired, false);
   assert.deepEqual(proposal.contract.migrationBudgets, [budget]);
   assert.deepEqual(proposal.diff.ratchetViolations, []);

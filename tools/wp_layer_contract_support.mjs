@@ -474,6 +474,37 @@ function sameStringList(left, right) {
   );
 }
 
+const ISO_DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MAX_MIGRATION_REVIEW_DAYS = 90;
+
+function parseIsoDateOnly(value, label) {
+  if (typeof value !== 'string' || !ISO_DATE_ONLY_PATTERN.test(value)) {
+    throw new Error(`wp_layer_contract: ${label} must be YYYY-MM-DD`);
+  }
+  const [year, month, day] = value.split('-').map(Number);
+  const timestamp = Date.UTC(year, month - 1, day);
+  const parsed = new Date(timestamp);
+  if (parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month - 1 || parsed.getUTCDate() !== day) {
+    throw new Error(`wp_layer_contract: ${label} must be a valid calendar date`);
+  }
+  return timestamp;
+}
+
+function evaluationDateTimestamp(currentDate) {
+  if (typeof currentDate === 'undefined') {
+    const now = new Date();
+    return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  }
+  if (currentDate instanceof Date) {
+    if (!Number.isFinite(currentDate.getTime())) {
+      throw new Error('wp_layer_contract: currentDate must be a valid Date or YYYY-MM-DD');
+    }
+    return Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate());
+  }
+  return parseIsoDateOnly(String(currentDate), 'currentDate');
+}
+
 function migrationImportKey(fromFile, importSpec) {
   return `${toPosix(String(fromFile))}::${toPosix(String(importSpec?.toFile || ''))}::${String(
     importSpec?.kind || ''
@@ -641,8 +672,17 @@ export function validateLayerContractSchema(contract) {
         throw new Error(`wp_layer_contract: migration budget ${fromFile} requires ${field}`);
       }
     }
-    if (typeof entry.reviewedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(entry.reviewedAt)) {
-      throw new Error(`wp_layer_contract: migration budget ${fromFile} requires reviewedAt (YYYY-MM-DD)`);
+    const reviewedAt = parseIsoDateOnly(entry.reviewedAt, `migration budget ${fromFile}.reviewedAt`);
+    const reviewBy = parseIsoDateOnly(entry.reviewBy, `migration budget ${fromFile}.reviewBy`);
+    if (reviewBy < reviewedAt) {
+      throw new Error(
+        `wp_layer_contract: migration budget ${fromFile}.reviewBy must not be earlier than reviewedAt`
+      );
+    }
+    if (reviewBy - reviewedAt > MAX_MIGRATION_REVIEW_DAYS * DAY_MS) {
+      throw new Error(
+        `wp_layer_contract: migration budget ${fromFile}.reviewBy must be within ${MAX_MIGRATION_REVIEW_DAYS} days of reviewedAt`
+      );
     }
     const added = validateMigrationImportSpec(entry, 'addedImport', to);
     const companion = validateMigrationImportSpec(entry, 'companionImport', to);
@@ -690,9 +730,7 @@ const BUDGET_DIMENSIONS = Object.freeze([
 ]);
 
 function matchingMigrationImports(graph, fromFile, spec) {
-  return (graph.imports || []).filter(
-    entry => entry.fromFile === fromFile && entry.toFile === spec.toFile && entry.kind === spec.kind
-  );
+  return (graph.imports || []).filter(entry => entry.fromFile === fromFile && entry.toFile === spec.toFile);
 }
 
 function migrationImportFailureKind(field, count) {
@@ -700,15 +738,26 @@ function migrationImportFailureKind(field, count) {
   return count === 0 ? 'stale-migration-budget' : 'migration-budget-growth';
 }
 
-function evaluateMigrationBudgets(graph, contract) {
+function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
   const failures = [];
   const approvedStatements = new Map();
   const statuses = [];
+  const currentDateMs = evaluationDateTimestamp(currentDate);
 
   for (const budget of contract.migrationBudgets) {
     const fromFile = toPosix(String(budget.fromFile));
     const edge = edgeKey(budget.from, budget.to);
     const entryFailures = [];
+    if (currentDateMs > parseIsoDateOnly(budget.reviewBy, `${fromFile}.reviewBy`)) {
+      entryFailures.push({
+        kind: 'stale-migration-review',
+        from: budget.from,
+        to: budget.to,
+        fromFile,
+        reviewedAt: budget.reviewedAt,
+        reviewBy: budget.reviewBy,
+      });
+    }
     const addedMatches = matchingMigrationImports(graph, fromFile, budget.addedImport);
     const companionMatches = matchingMigrationImports(graph, fromFile, budget.companionImport);
     const removedMatches = (graph.imports || []).filter(
@@ -730,6 +779,32 @@ function evaluateMigrationBudgets(graph, contract) {
           importKind: expected.kind,
           current: matches.length,
           expected: 1,
+        });
+        continue;
+      }
+      if (matches[0].syntax !== expected.syntax) {
+        entryFailures.push({
+          kind: 'migration-import-syntax-drift',
+          from: budget.from,
+          to: budget.to,
+          fromFile,
+          field,
+          toFile: expected.toFile,
+          currentSyntax: matches[0].syntax,
+          expectedSyntax: expected.syntax,
+        });
+        continue;
+      }
+      if (matches[0].kind !== expected.kind) {
+        entryFailures.push({
+          kind: 'migration-import-kind-drift',
+          from: budget.from,
+          to: budget.to,
+          fromFile,
+          field,
+          toFile: expected.toFile,
+          currentKind: matches[0].kind,
+          expectedKind: expected.kind,
         });
         continue;
       }
@@ -779,6 +854,7 @@ function evaluateMigrationBudgets(graph, contract) {
       to: budget.to,
       fromFile,
       addedTarget: budget.addedImport.toFile,
+      reviewBy: budget.reviewBy,
       active: entryFailures.length === 0,
     });
   }
@@ -798,12 +874,12 @@ function edgeWithMigrationStatementsExcluded(edge, approvedStatements) {
   };
 }
 
-export function evaluateLayerContract(graph, contract) {
+export function evaluateLayerContract(graph, contract, options = {}) {
   validateLayerContractSchema(contract);
   const ruleMap = new Map(contract.rules.map(rule => [edgeKey(rule.from, rule.to), rule]));
   const currentMap = new Map(graph.edges.map(edge => [edgeKey(edge.from, edge.to), edge]));
   const failures = [];
-  const migrationEvaluation = evaluateMigrationBudgets(graph, contract);
+  const migrationEvaluation = evaluateMigrationBudgets(graph, contract, options);
   failures.push(...migrationEvaluation.failures);
 
   for (const fromFile of graph.unclassifiedSourceFiles || []) {
@@ -924,10 +1000,10 @@ function ruleForEdge(edge, previousRule) {
   };
 }
 
-export function buildLayerContractProposal(graph, currentContract) {
+export function buildLayerContractProposal(graph, currentContract, options = {}) {
   validateLayerContractSchema(currentContract);
   const previousRules = new Map(currentContract.rules.map(rule => [edgeKey(rule.from, rule.to), rule]));
-  const migrationEvaluation = evaluateMigrationBudgets(graph, currentContract);
+  const migrationEvaluation = evaluateMigrationBudgets(graph, currentContract, options);
   const reviewedEdges = graph.edges.map(edge =>
     edgeWithMigrationStatementsExcluded(edge, migrationEvaluation.approvedStatements)
   );

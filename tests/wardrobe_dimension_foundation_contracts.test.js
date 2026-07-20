@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 141, statements: 141 }),
+  'static-import': Object.freeze({ importers: 138, statements: 138 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 143, statements: 144 }),
+  total: Object.freeze({ importers: 140, statements: 141 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -982,6 +982,18 @@ const APPROVED_CORNER_SYSTEM_OWNER_IMPORTS = Object.freeze({
     'CORNER_WING_BODY_POLICY',
   ]),
   'esm/native/builder/corner_wing_hex_cell_geometry.ts': Object.freeze(['CORNER_WING_SELECTOR_POLICY']),
+  'esm/native/builder/post_build_dimensions_corner.ts': Object.freeze([
+    'CORNER_CONNECTOR_LAYOUT_POLICY',
+    'CORNER_WING_BODY_POLICY',
+  ]),
+  'esm/native/features/modules_configuration/corner_cells_ui_defaults.ts': Object.freeze([
+    'CORNER_WING_BODY_POLICY',
+    'CORNER_WING_CELL_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_cell_dims_corner_context.ts': Object.freeze([
+    'CORNER_CONNECTOR_LAYOUT_POLICY',
+    'CORNER_WING_BODY_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CORNER_SYSTEM_POLICY']),
 });
 
@@ -1064,27 +1076,6 @@ const APPROVED_CORNER_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({
     'cells.minDoorUnitWidthM',
     'wing',
     'wing.minActiveWidthM',
-  ]),
-  'esm/native/builder/post_build_dimensions_corner.ts': Object.freeze([
-    'connector',
-    'connector.defaultWallLengthM',
-    'connector.minWallLengthM',
-    'wing',
-    'wing.defaultWidthCm',
-  ]),
-  'esm/native/features/modules_configuration/corner_cells_ui_defaults.ts': Object.freeze([
-    'cells',
-    'cells.doorsPerCell',
-    'cells.minDoorUnitWidthM',
-    'wing',
-    'wing.defaultWidthCm',
-    'wing.minActiveWidthM',
-  ]),
-  'esm/native/services/canvas_picking_cell_dims_corner_context.ts': Object.freeze([
-    'connector',
-    'connector.defaultWallLengthM',
-    'wing',
-    'wing.defaultWidthCm',
   ]),
 });
 

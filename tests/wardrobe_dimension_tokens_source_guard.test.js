@@ -478,6 +478,51 @@ test('[dimension tokens] Corner Connector Interior consumers use focused owners 
   assert.doesNotMatch(contents, /const\s+\w+\s*=\s*CORNER_CONNECTOR_INTERIOR_POLICY/u);
 });
 
+test('[dimension tokens] Corner dimension/default readers use focused owners and canonical units/defaults', () => {
+  const consumers = new Map([
+    [
+      'esm/native/builder/post_build_dimensions_corner.ts',
+      ['CORNER_CONNECTOR_LAYOUT_POLICY', 'CORNER_WING_BODY_POLICY'],
+    ],
+    [
+      'esm/native/features/modules_configuration/corner_cells_ui_defaults.ts',
+      ['CORNER_WING_BODY_POLICY', 'CORNER_WING_CELL_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_cell_dims_corner_context.ts',
+      ['CORNER_CONNECTOR_LAYOUT_POLICY', 'CORNER_WING_BODY_POLICY'],
+    ],
+  ]);
+
+  for (const [rel, policies] of consumers) {
+    const source = read(rel);
+    for (const policy of policies) assertUsesToken(rel, policy);
+    assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared/u);
+    assert.doesNotMatch(source, /CORNER_WING_DIMENSIONS/u);
+    assert.doesNotMatch(source, /CORNER_SYSTEM_POLICY/u);
+    assert.match(source, /shared\/dimensions\/corner_system_policy\.js/u);
+    assert.match(source, /shared\/dimensions\/units\.js/u);
+  }
+
+  const postBuild = read('esm/native/builder/post_build_dimensions_corner.ts');
+  assert.match(postBuild, /shared\/dimensions\/wardrobe_defaults\.js/u);
+  assert.match(postBuild, /CORNER_CONNECTOR_LAYOUT_POLICY\.defaultWallLengthM/u);
+  assert.match(postBuild, /CORNER_CONNECTOR_LAYOUT_POLICY\.minWallLengthM/u);
+  assert.match(postBuild, /CORNER_WING_BODY_POLICY\.defaultWidthCm/u);
+
+  const uiDefaults = read('esm/native/features/modules_configuration/corner_cells_ui_defaults.ts');
+  assert.match(uiDefaults, /CORNER_WING_BODY_POLICY\.defaultWidthCm/u);
+  assert.match(uiDefaults, /CORNER_WING_BODY_POLICY\.minActiveWidthM/u);
+  assert.match(uiDefaults, /CORNER_WING_CELL_POLICY\.doorsPerCell/u);
+  assert.match(uiDefaults, /CORNER_WING_CELL_POLICY\.minDoorUnitWidthM/u);
+  assert.doesNotMatch(uiDefaults, /wardrobe_defaults/u);
+
+  const canvas = read('esm/native/services/canvas_picking_cell_dims_corner_context.ts');
+  assert.match(canvas, /shared\/dimensions\/wardrobe_defaults\.js/u);
+  assert.match(canvas, /CORNER_CONNECTOR_LAYOUT_POLICY\.defaultWallLengthM/u);
+  assert.match(canvas, /CORNER_WING_BODY_POLICY\.defaultWidthCm/u);
+});
+
 test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage dimensions are centralized', () => {
   const tokens = readProductDimensionTokens();
   assert.match(tokens, /doorCutHorizontalOverlapMinM:/);

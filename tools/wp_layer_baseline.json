@@ -816,7 +816,8 @@
       "owner": "dimension-ownership-migration",
       "reason": "The attach-rod consumer replaces one legacy facade statement with a narrow policy import plus canonical unit conversions on the existing builder to shared edge.",
       "reviewedAt": "2026-07-20",
-      "removalCondition": "Remove this entry when the extra units statement is eliminated by a reviewed typed conversion seam or when the consumer no longer needs centimeter and millimeter normalization."
+      "removalCondition": "Remove this entry when the extra units statement is eliminated by a reviewed typed conversion seam or when the consumer no longer needs centimeter and millimeter normalization.",
+      "reviewBy": "2026-10-18"
     },
     {
       "from": "builder",
@@ -844,7 +845,153 @@
       "owner": "dimension-ownership-migration",
       "reason": "The special-post metrics consumer replaces one legacy facade statement with a narrow policy import plus the canonical centimeter conversion on the existing builder to shared edge.",
       "reviewedAt": "2026-07-20",
-      "removalCondition": "Remove this entry when the extra units statement is eliminated by a reviewed typed conversion seam or when the consumer no longer normalizes centimeter input."
+      "removalCondition": "Remove this entry when the extra units statement is eliminated by a reviewed typed conversion seam or when the consumer no longer normalizes centimeter input.",
+      "reviewBy": "2026-10-18"
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/post_build_dimensions_corner.ts",
+      "additionalStatements": 1,
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_CONNECTOR_LAYOUT_POLICY", "CORNER_WING_BODY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER", "CORNER_WING_DIMENSIONS", "WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-ownership-migration",
+      "reason": "The Corner post-build dimension reader replaces one legacy facade statement with focused Corner policies plus the canonical centimeter conversion on the existing builder to shared edge.",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "removalCondition": "Remove this entry when the extra units statement is eliminated by a reviewed typed conversion seam or the reader no longer converts centimeter inputs."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/post_build_dimensions_corner.ts",
+      "additionalStatements": 1,
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": ["WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_CONNECTOR_LAYOUT_POLICY", "CORNER_WING_BODY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER", "CORNER_WING_DIMENSIONS", "WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-ownership-migration",
+      "reason": "The Corner post-build dimension reader replaces one legacy facade statement with focused Corner policies plus the canonical wardrobe defaults owner on the existing builder to shared edge.",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "removalCondition": "Remove this entry when the post-build reader no longer requires wardrobe defaults or a reviewed ownership seam eliminates the extra statement."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/modules_configuration/corner_cells_ui_defaults.ts",
+      "additionalStatements": 1,
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_WING_BODY_POLICY", "CORNER_WING_CELL_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER", "CORNER_WING_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-ownership-migration",
+      "reason": "The Corner UI-default reader replaces one legacy facade statement with focused Corner policies plus the canonical centimeter conversion on the existing features to shared edge.",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "removalCondition": "Remove this entry when the extra units statement is eliminated by a reviewed typed conversion seam or the UI-default reader no longer converts centimeters."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_cell_dims_corner_context.ts",
+      "additionalStatements": 1,
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_CONNECTOR_LAYOUT_POLICY", "CORNER_WING_BODY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER", "CORNER_WING_DIMENSIONS", "WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-ownership-migration",
+      "reason": "The Canvas Corner context reader replaces one legacy facade statement with focused Corner policies plus the canonical centimeter conversion on the existing services to shared edge.",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "removalCondition": "Remove this entry when the extra units statement is eliminated by a reviewed typed conversion seam or the Canvas context no longer converts centimeters."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_cell_dims_corner_context.ts",
+      "additionalStatements": 1,
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": ["WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CORNER_CONNECTOR_LAYOUT_POLICY", "CORNER_WING_BODY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER", "CORNER_WING_DIMENSIONS", "WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-ownership-migration",
+      "reason": "The Canvas Corner context reader replaces one legacy facade statement with focused Corner policies plus the canonical wardrobe defaults owner on the existing services to shared edge.",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "removalCondition": "Remove this entry when the Canvas context no longer requires wardrobe defaults or a reviewed ownership seam eliminates the extra statement."
     }
   ]
 }
