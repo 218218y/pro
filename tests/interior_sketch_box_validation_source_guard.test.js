@@ -15,6 +15,7 @@ const runtime = fs.readFileSync(
   'utf8'
 );
 const tokens = fs.readFileSync('esm/shared/wardrobe_dimension_tokens_shared.ts', 'utf8');
+const geometryPolicy = fs.readFileSync('esm/shared/dimensions/sketch_box_geometry_policy.ts', 'utf8');
 
 test('[interior-sketch-box] numeric fields expose the same visible validation affordances as structure dims', () => {
   assert.match(component, /aria-invalid=\{validationMessage \? true : undefined\}/);
@@ -69,7 +70,10 @@ test('[interior-sketch-box] reset affordance is an icon-only addon without forci
   assert.match(component, /String\(raw\)\.trim\(\) !== String\(props\.min\)/);
 });
 
-test('[sketch-free-box] standalone free box default dimensions are 60cm wide and 55cm deep at the token source', () => {
-  assert.match(tokens, /defaultOuterWidthM: 0\.6,/);
-  assert.match(tokens, /defaultOuterDepthM: 0\.55,/);
+test('[sketch-free-box] standalone defaults are owned by the focused geometry policy and projected through the facade', () => {
+  assert.match(geometryPolicy, /defaultOuterWidthM: meters\(0\.6\),/);
+  assert.match(geometryPolicy, /defaultOuterDepthM: meters\(0\.55\),/);
+  assert.match(tokens, /geometry: SKETCH_BOX_GEOMETRY_DIMENSIONS,/);
+  assert.doesNotMatch(tokens, /defaultOuterWidthM:\s*(?:meters\()?0\.6/);
+  assert.doesNotMatch(tokens, /defaultOuterDepthM:\s*(?:meters\()?0\.55/);
 });
