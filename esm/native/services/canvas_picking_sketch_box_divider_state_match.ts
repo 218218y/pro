@@ -2,7 +2,10 @@ import type {
   SketchBoxDividerState,
   SketchBoxHorizontalDividerState,
 } from './canvas_picking_sketch_box_dividers_shared.js';
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  SKETCH_BOX_DIVIDER_GEOMETRY_POLICY,
+  SKETCH_BOX_DIVIDER_REMOVE_HIT_POLICY,
+} from '../../shared/dimensions/sketch_box_divider_policy.js';
 import {
   resolveSketchBoxDividerPlacement,
   resolveSketchBoxHorizontalDividerPlacement,
@@ -28,13 +31,13 @@ export function findNearestSketchBoxDivider(args: {
   const dividers = Array.isArray(args.dividers) ? args.dividers : [];
   if (!dividers.length) return null;
   const safeInnerW = Number.isFinite(Number(args.innerW))
-    ? Math.max(SKETCH_BOX_DIMENSIONS.dividers.minInnerWidthM, Number(args.innerW))
-    : SKETCH_BOX_DIMENSIONS.dividers.minInnerWidthM;
+    ? Math.max(SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.minInnerWidthM, Number(args.innerW))
+    : SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.minInnerWidthM;
   const removeEps = Math.max(
-    SKETCH_BOX_DIMENSIONS.dividers.removeHitMinM,
+    SKETCH_BOX_DIVIDER_REMOVE_HIT_POLICY.removeHitMinM,
     Math.min(
-      SKETCH_BOX_DIMENSIONS.dividers.removeHitMaxM,
-      safeInnerW * SKETCH_BOX_DIMENSIONS.dividers.removeHitWidthRatio
+      SKETCH_BOX_DIVIDER_REMOVE_HIT_POLICY.removeHitMaxM,
+      safeInnerW * SKETCH_BOX_DIVIDER_REMOVE_HIT_POLICY.removeHitWidthRatio
     )
   );
   const horizontalDividers = Array.isArray(args.horizontalDividers) ? args.horizontalDividers : [];
@@ -104,13 +107,13 @@ export function findNearestSketchBoxHorizontalDivider(args: {
   const dividers = Array.isArray(args.dividers) ? args.dividers : [];
   if (!dividers.length) return null;
   const safeInnerH = Number.isFinite(Number(args.innerH))
-    ? Math.max(SKETCH_BOX_DIMENSIONS.dividers.minInnerWidthM, Number(args.innerH))
-    : SKETCH_BOX_DIMENSIONS.dividers.minInnerWidthM;
+    ? Math.max(SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.minInnerWidthM, Number(args.innerH))
+    : SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.minInnerWidthM;
   const removeEps = Math.max(
-    SKETCH_BOX_DIMENSIONS.dividers.removeHitMinM,
+    SKETCH_BOX_DIVIDER_REMOVE_HIT_POLICY.removeHitMinM,
     Math.min(
-      SKETCH_BOX_DIMENSIONS.dividers.removeHitMaxM,
-      safeInnerH * SKETCH_BOX_DIMENSIONS.dividers.removeHitWidthRatio
+      SKETCH_BOX_DIVIDER_REMOVE_HIT_POLICY.removeHitMaxM,
+      safeInnerH * SKETCH_BOX_DIVIDER_REMOVE_HIT_POLICY.removeHitWidthRatio
     )
   );
   const verticalDividers = Array.isArray(args.verticalDividers) ? args.verticalDividers : [];

@@ -2,7 +2,10 @@ import type {
   SketchBoxDividerState,
   SketchBoxHorizontalDividerState,
 } from './canvas_picking_sketch_box_dividers_shared.js';
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  SKETCH_BOX_DIVIDER_GEOMETRY_POLICY,
+  SKETCH_BOX_DIVIDER_SNAP_POLICY,
+} from '../../shared/dimensions/sketch_box_divider_policy.js';
 import {
   normalizeSketchBoxDividerXNorm,
   normalizeSketchBoxDividerYNorm,
@@ -23,28 +26,33 @@ function resolveAxisDividerPlacement(args: AxisPlacementArgs): {
   center: number;
   centered: boolean;
 } {
-  const dividerDims = SKETCH_BOX_DIMENSIONS.dividers;
   const boxCenter = Number(args.boxCenter);
   const t =
     Number.isFinite(Number(args.woodThick)) && Number(args.woodThick) > 0
       ? Number(args.woodThick)
-      : dividerDims.fallbackWoodThicknessM;
+      : SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.fallbackWoodThicknessM;
   const span =
     Number.isFinite(Number(args.innerSpan)) && Number(args.innerSpan) > 0
       ? Number(args.innerSpan)
-      : Math.max(dividerDims.minInnerWidthM, t * 2 + dividerDims.minInnerWithWoodClearanceM);
+      : Math.max(
+          SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.minInnerWidthM,
+          t * 2 + SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.minInnerWithWoodClearanceM
+        );
   const minEdge = boxCenter - span / 2;
-  const dividerHalf = Math.min(span / 2, Math.max(t / 2, dividerDims.dividerHalfMinM));
+  const dividerHalf = Math.min(span / 2, Math.max(t / 2, SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.dividerHalfMinM));
   const minCenter = boxCenter - span / 2 + dividerHalf;
   const maxCenter = boxCenter + span / 2 - dividerHalf;
   const finiteCursor = readFiniteNumber(args.cursor);
   const rawCenter =
     finiteCursor != null
       ? finiteCursor
-      : minEdge + (args.dividerNorm ?? dividerDims.defaultCenterNorm) * span;
+      : minEdge + (args.dividerNorm ?? SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.defaultCenterNorm) * span;
   const centerSnapEps = Math.min(
-    dividerDims.centerSnapMaxM,
-    Math.max(dividerDims.centerSnapMinM, span * dividerDims.centerSnapWidthRatio)
+    SKETCH_BOX_DIVIDER_SNAP_POLICY.centerSnapMaxM,
+    Math.max(
+      SKETCH_BOX_DIVIDER_SNAP_POLICY.centerSnapMinM,
+      span * SKETCH_BOX_DIVIDER_SNAP_POLICY.centerSnapWidthRatio
+    )
   );
   const snapToCenter = args.enableCenterSnap === true && Math.abs(rawCenter - boxCenter) <= centerSnapEps;
   const center =
@@ -53,11 +61,14 @@ function resolveAxisDividerPlacement(args: AxisPlacementArgs): {
         ? boxCenter
         : Math.max(minCenter, Math.min(maxCenter, rawCenter))
       : boxCenter;
-  const norm = span > 0 ? Math.max(0, Math.min(1, (center - minEdge) / span)) : dividerDims.defaultCenterNorm;
+  const norm =
+    span > 0
+      ? Math.max(0, Math.min(1, (center - minEdge) / span))
+      : SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.defaultCenterNorm;
   return {
     norm,
     center: Number.isFinite(center) ? center : 0,
-    centered: Math.abs(center - boxCenter) <= dividerDims.centeredEpsilonM,
+    centered: Math.abs(center - boxCenter) <= SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.centeredEpsilonM,
   };
 }
 

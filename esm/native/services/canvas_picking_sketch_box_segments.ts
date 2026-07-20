@@ -1,4 +1,4 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_DIVIDER_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_divider_policy.js';
 import type {
   SketchBoxDividerState,
   SketchBoxHorizontalDividerState,
@@ -18,8 +18,8 @@ import {
 function readSafeSpan(value: unknown): number {
   const numberValue = readFiniteNumber(value);
   return numberValue != null
-    ? Math.max(SKETCH_BOX_DIMENSIONS.dividers.minInnerWidthM, numberValue)
-    : SKETCH_BOX_DIMENSIONS.dividers.minInnerWidthM;
+    ? Math.max(SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.minInnerWidthM, numberValue)
+    : SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.minInnerWidthM;
 }
 function readSafeCenter(value: unknown): number {
   return readFiniteNumber(value) ?? 0;
@@ -28,10 +28,10 @@ function readSafeWoodThick(value: unknown): number {
   const numberValue = readFiniteNumber(value);
   return numberValue != null && numberValue > 0
     ? numberValue
-    : SKETCH_BOX_DIMENSIONS.dividers.fallbackWoodThicknessM;
+    : SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.fallbackWoodThicknessM;
 }
 function dividerHalfFor(span: number, woodThick: number): number {
-  return Math.min(span / 2, Math.max(woodThick / 2, SKETCH_BOX_DIMENSIONS.dividers.dividerHalfMinM));
+  return Math.min(span / 2, Math.max(woodThick / 2, SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.dividerHalfMinM));
 }
 
 export function resolveSketchBoxVerticalSegments(args: {
@@ -68,7 +68,7 @@ export function resolveSketchBoxVerticalSegments(args: {
   });
   const segments: SketchBoxVerticalSegmentState[] = [];
   const pushSegment = (segBottom: number, segTop: number) => {
-    if (!(segTop > segBottom + SKETCH_BOX_DIMENSIONS.dividers.segmentEdgeEpsilonM)) return;
+    if (!(segTop > segBottom + SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.segmentEdgeEpsilonM)) return;
     const centerY = (segBottom + segTop) / 2;
     segments.push({
       index: segments.length,
@@ -161,7 +161,7 @@ export function pickSketchBoxVerticalSegment(args: {
         readSafeCenter(args.boxCenterY) - readSafeSpan(args.innerH) / 2 + norm * readSafeSpan(args.innerH);
   }
   if (!Number.isFinite(targetY)) return segments[0] || null;
-  const eps = SKETCH_BOX_DIMENSIONS.dividers.pickEdgeEpsilonM;
+  const eps = SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.pickEdgeEpsilonM;
   for (const segment of segments)
     if (targetY >= segment.bottomY - eps && targetY <= segment.topY + eps) return segment;
   return (
@@ -228,7 +228,7 @@ export function resolveSketchBoxSegments(args: {
     ? pickSketchBoxVerticalSegment({
         segments: verticalSegments,
         boxCenterY: boxCenterY ?? 0,
-        innerH: innerH ?? SKETCH_BOX_DIMENSIONS.dividers.minInnerWidthM,
+        innerH: innerH ?? SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.minInnerWidthM,
         cursorY: args.cursorY,
         yNorm: args.yNorm,
       })
@@ -250,7 +250,7 @@ export function resolveSketchBoxSegments(args: {
   });
   const segments: SketchBoxSegmentState[] = [];
   const pushSegment = (segLeft: number, segRight: number) => {
-    if (!(segRight > segLeft + SKETCH_BOX_DIMENSIONS.dividers.segmentEdgeEpsilonM)) return;
+    if (!(segRight > segLeft + SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.segmentEdgeEpsilonM)) return;
     const centerX = (segLeft + segRight) / 2;
     segments.push({
       index: segments.length,
@@ -290,7 +290,7 @@ export function pickSketchBoxSegment(args: {
         readSafeCenter(args.boxCenterX) - readSafeSpan(args.innerW) / 2 + norm * readSafeSpan(args.innerW);
   }
   if (!Number.isFinite(targetX)) return segments[0] || null;
-  const eps = SKETCH_BOX_DIMENSIONS.dividers.pickEdgeEpsilonM;
+  const eps = SKETCH_BOX_DIVIDER_GEOMETRY_POLICY.pickEdgeEpsilonM;
   for (const segment of segments)
     if (targetX >= segment.leftX - eps && targetX <= segment.rightX + eps) return segment;
   return (

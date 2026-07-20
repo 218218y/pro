@@ -43,6 +43,15 @@ test('[sketch free box] dimension overlay is rendered from sketch box geometry a
     /const freeBoxDimensionOverlayContext = showDimensions && THREE && addDimensionLine \? \{ THREE, addDimensionLine, entries: \[\] \} : null;/
   );
   assert.match(srcNorm, /renderFreeBoxDimensionsEnabled: !!freeBoxDimensionOverlayContext,/);
+  assert.match(
+    layoutNorm,
+    /import \{ SKETCH_BOX_DIMENSION_GROUPING_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/sketch_box_dimension_overlay_policy\.js';/
+  );
+  assert.match(
+    layoutNorm,
+    /import \{ SKETCH_BOX_DIMENSION_RENDER_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/sketch_box_dimension_overlay_policy\.js';/
+  );
+  assert.doesNotMatch(layoutNorm, /SKETCH_BOX_DIMENSIONS|SKETCH_BOX_DIMENSION_OVERLAY_POLICY/);
   assert.match(layoutNorm, /export const renderSketchFreeBoxDimensions = \(args:/);
   assert.match(layoutNorm, /const heightLineX = centerX \+ halfW \+ heightLineGap;/);
   assert.match(layoutNorm, /const depthLineX = centerX - halfW - depthLineGap;/);
@@ -52,7 +61,7 @@ test('[sketch free box] dimension overlay is rendered from sketch box geometry a
   );
   assert.match(
     layoutNorm,
-    /const depthTextOffset = new THREE\.Vector3\(\s*-overlayRange\(\s*width,\s*SKETCH_BOX_DIMENSIONS\.dimensionOverlay\.singleDepthTextXOffsetMinM,\s*SKETCH_BOX_DIMENSIONS\.dimensionOverlay\.singleDepthTextXOffsetMaxM,\s*SKETCH_BOX_DIMENSIONS\.dimensionOverlay\.singleDepthTextXOffsetWidthRatio\s*\),\s*0,\s*0\s*\);/
+    /const depthTextOffset = new THREE\.Vector3\(\s*-overlayRange\(\s*width,\s*SKETCH_BOX_DIMENSION_RENDER_POLICY\.singleDepthTextXOffsetMinM,\s*SKETCH_BOX_DIMENSION_RENDER_POLICY\.singleDepthTextXOffsetMaxM,\s*SKETCH_BOX_DIMENSION_RENDER_POLICY\.singleDepthTextXOffsetWidthRatio\s*\),\s*0,\s*0\s*\);/
   );
   assert.match(layoutNorm, /export const renderSketchFreeBoxDimensionOverlays = \(args:/);
   assert.match(layoutNorm, /function areSketchFreeBoxDimensionSegmentsAdjacent\(/);

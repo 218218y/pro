@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 111, statements: 111 }),
+  'static-import': Object.freeze({ importers: 105, statements: 105 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 113, statements: 114 }),
+  total: Object.freeze({ importers: 107, statements: 108 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -799,6 +799,32 @@ const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_sketch_module_vertical_content_preview.ts': Object.freeze([
     'INTERIOR_SHELF_GEOMETRY_POLICY',
   ]),
+});
+const APPROVED_SKETCH_BOX_DIVIDER_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/render_interior_sketch_layout_dividers.ts': Object.freeze([
+    'SKETCH_BOX_DIVIDER_GEOMETRY_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_divider_state_match.ts': Object.freeze([
+    'SKETCH_BOX_DIVIDER_GEOMETRY_POLICY',
+    'SKETCH_BOX_DIVIDER_REMOVE_HIT_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_divider_state_placement.ts': Object.freeze([
+    'SKETCH_BOX_DIVIDER_GEOMETRY_POLICY',
+    'SKETCH_BOX_DIVIDER_SNAP_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_segments.ts': Object.freeze([
+    'SKETCH_BOX_DIVIDER_GEOMETRY_POLICY',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_DIVIDER_POLICY']),
+});
+const APPROVED_SKETCH_BOX_DIMENSION_OVERLAY_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/render_interior_sketch_layout_dimensions_grouping.ts': Object.freeze([
+    'SKETCH_BOX_DIMENSION_GROUPING_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_layout_dimensions_render.ts': Object.freeze([
+    'SKETCH_BOX_DIMENSION_RENDER_POLICY',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_DIMENSION_OVERLAY_POLICY']),
 });
 const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/core_storage_compute_custom.ts': Object.freeze(['rods', 'rods.defaultYOffsetM']),
@@ -3229,6 +3255,57 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     APPROVED_SKETCH_BOX_CLASSIC_OWNER_IMPORTS,
     'Sketch Box Classic owner consumer allowlist'
   );
+  const sketchBoxDividerOwnerImports = collectOwnerImports(analyzedSources, 'sketch_box_divider_policy.js');
+  assertApprovedSymbolUsage(
+    sketchBoxDividerOwnerImports,
+    APPROVED_SKETCH_BOX_DIVIDER_OWNER_IMPORTS,
+    'Sketch Box Divider owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(sketchBoxDividerOwnerImports)
+        .filter(([, symbols]) => symbols.includes('SKETCH_BOX_DIVIDER_POLICY'))
+        .map(([file]) => [file, ['SKETCH_BOX_DIVIDER_POLICY']])
+    ),
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['SKETCH_BOX_DIVIDER_POLICY'],
+    },
+    'SKETCH_BOX_DIVIDER_POLICY aggregate is imported directly only by the legacy facade'
+  );
+  assert.deepEqual(
+    collectOwnerDependencyStatements(analyzedSources, 'sketch_box_divider_policy.js'),
+    Object.fromEntries(Object.keys(APPROVED_SKETCH_BOX_DIVIDER_OWNER_IMPORTS).map(file => [file, 1])),
+    'Sketch Box Divider migration must retain exactly one owner statement per approved importer'
+  );
+
+  const sketchBoxDimensionOverlayOwnerImports = collectOwnerImports(
+    analyzedSources,
+    'sketch_box_dimension_overlay_policy.js'
+  );
+  assertApprovedSymbolUsage(
+    sketchBoxDimensionOverlayOwnerImports,
+    APPROVED_SKETCH_BOX_DIMENSION_OVERLAY_OWNER_IMPORTS,
+    'Sketch Box Dimension Overlay owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(sketchBoxDimensionOverlayOwnerImports)
+        .filter(([, symbols]) => symbols.includes('SKETCH_BOX_DIMENSION_OVERLAY_POLICY'))
+        .map(([file]) => [file, ['SKETCH_BOX_DIMENSION_OVERLAY_POLICY']])
+    ),
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['SKETCH_BOX_DIMENSION_OVERLAY_POLICY'],
+    },
+    'SKETCH_BOX_DIMENSION_OVERLAY_POLICY aggregate is imported directly only by the legacy facade'
+  );
+  assert.deepEqual(
+    collectOwnerDependencyStatements(analyzedSources, 'sketch_box_dimension_overlay_policy.js'),
+    Object.fromEntries(
+      Object.keys(APPROVED_SKETCH_BOX_DIMENSION_OVERLAY_OWNER_IMPORTS).map(file => [file, 1])
+    ),
+    'Sketch Box Dimension Overlay migration must retain exactly one owner statement per approved importer'
+  );
+
   assertApprovedSymbolUsage(
     collectShellGridFieldUsage(analyzedSources),
     APPROVED_SHELL_GRID_FIELD_USAGE,

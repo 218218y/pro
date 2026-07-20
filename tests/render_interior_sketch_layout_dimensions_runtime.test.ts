@@ -5,6 +5,15 @@ import {
   renderSketchFreeBoxDimensions,
   renderSketchFreeBoxDimensionOverlays,
 } from '../esm/native/builder/render_interior_sketch_layout_dimensions.js';
+import {
+  areSketchFreeBoxDimensionSegmentsAdjacent,
+  groupSketchFreeBoxDimensionEntries,
+  mergeSketchFreeBoxDimensionSpans,
+} from '../esm/native/builder/render_interior_sketch_layout_dimensions_grouping.js';
+import {
+  SKETCH_BOX_DIMENSION_GROUPING_POLICY,
+  SKETCH_BOX_DIMENSION_RENDER_POLICY,
+} from '../esm/shared/dimensions/sketch_box_dimension_overlay_policy.js';
 
 class Vector3 {
   x: number;
@@ -18,8 +27,14 @@ class Vector3 {
 }
 
 function createRecorder() {
-  const lines: Array<{ start: Vector3; end: Vector3; label: string; textOffset: Vector3; extra?: Vector3 }> =
-    [];
+  const lines: Array<{
+    start: Vector3;
+    end: Vector3;
+    label: string;
+    textOffset: Vector3;
+    scale: number;
+    extra?: Vector3;
+  }> = [];
   return {
     lines,
     addDimensionLine(
@@ -27,10 +42,10 @@ function createRecorder() {
       end: Vector3,
       textOffset: Vector3,
       label: string,
-      _scale: number,
+      scale: number,
       extra?: Vector3
     ) {
-      lines.push({ start, end, label, textOffset, extra });
+      lines.push({ start, end, label, textOffset, scale, extra });
     },
   };
 }
@@ -124,4 +139,95 @@ test('renderSketchFreeBoxDimensionOverlays keeps a hairline placement gap from i
   const labels = recorder.lines.map(line => line.label);
   assert.equal(labels[0], '120');
   assert.deepEqual(labels.slice(0, 3), ['120', '60', '60']);
+});
+
+test('dimension grouping applies focused X/Y adjacency and span-merge tolerance boundaries', () => {
+  const makeSegment = (centerX: number, centerY: number, width = 0.4, height = 0.4) => ({
+    centerX,
+    centerY,
+    centerZ: 0,
+    width,
+    height,
+    depth: 0.3,
+    minX: centerX - width / 2,
+    maxX: centerX + width / 2,
+    bottomY: centerY - height / 2,
+    topY: centerY + height / 2,
+    backZ: -0.15,
+    frontZ: 0.15,
+  });
+
+  const xTolerance = Math.min(
+    SKETCH_BOX_DIMENSION_GROUPING_POLICY.groupAdjacentToleranceXMaxM,
+    Math.max(SKETCH_BOX_DIMENSION_GROUPING_POLICY.groupAdjacentToleranceXMinM, 0.4 * 0.08)
+  );
+  const yTolerance = Math.min(
+    SKETCH_BOX_DIMENSION_GROUPING_POLICY.groupAdjacentToleranceYMaxM,
+    Math.max(SKETCH_BOX_DIMENSION_GROUPING_POLICY.groupAdjacentToleranceYMinM, 0.4 * 0.08)
+  );
+  const left = makeSegment(0, 0);
+  assert.equal(
+    areSketchFreeBoxDimensionSegmentsAdjacent(left, makeSegment(0.4 + xTolerance - 1e-6, 0)),
+    true
+  );
+  assert.equal(
+    areSketchFreeBoxDimensionSegmentsAdjacent(left, makeSegment(0.4 + xTolerance + 1e-6, 0)),
+    false
+  );
+  assert.equal(
+    areSketchFreeBoxDimensionSegmentsAdjacent(left, makeSegment(0, 0.4 + yTolerance - 1e-6)),
+    true
+  );
+  assert.equal(
+    areSketchFreeBoxDimensionSegmentsAdjacent(left, makeSegment(0, 0.4 + yTolerance + 1e-6)),
+    false
+  );
+
+  const groups = groupSketchFreeBoxDimensionEntries([
+    { centerX: 2, centerY: 0, centerZ: 0, width: 0.4, height: 0.4, depth: 0.3 },
+    { centerX: 0, centerY: 0, centerZ: 0, width: 0.4, height: 0.4, depth: 0.3 },
+    { centerX: 0.4 + xTolerance - 1e-6, centerY: 0, centerZ: 0, width: 0.4, height: 0.4, depth: 0.3 },
+  ]);
+  assert.equal(groups.length, 2);
+  assert.deepEqual(
+    groups.map(group => group.map(entry => entry.centerX)),
+    [[0, 0.4 + xTolerance - 1e-6], [2]]
+  );
+
+  const mergeTolerance = SKETCH_BOX_DIMENSION_GROUPING_POLICY.groupSpanMergeToleranceMaxM;
+  assert.deepEqual(
+    mergeSketchFreeBoxDimensionSpans([
+      { min: 0, max: 0.4 },
+      { min: mergeTolerance - 1e-6, max: 0.4 + mergeTolerance - 1e-6 },
+    ]).length,
+    1
+  );
+  assert.equal(
+    mergeSketchFreeBoxDimensionSpans([
+      { min: 0, max: 0.4 },
+      { min: mergeTolerance + 1e-6, max: 0.4 + mergeTolerance + 1e-6 },
+    ]).length,
+    2
+  );
+});
+
+test('grouped dimension rendering preserves call order, focused text scale and negative min-height label shift', () => {
+  const recorder = createRecorder();
+  renderSketchFreeBoxDimensionOverlays({
+    THREE: { Vector3 } as never,
+    addDimensionLine: recorder.addDimensionLine,
+    entries: [
+      { centerX: 0.25, centerY: 0.4, centerZ: 0, width: 0.5, height: 0.8, depth: 0.3 },
+      { centerX: 0.75, centerY: 0.5, centerZ: 0, width: 0.5, height: 1, depth: 0.5 },
+    ],
+  });
+
+  assert.deepEqual(
+    recorder.lines.map(line => line.label),
+    ['100', '50', '50', '100', '80', '50', '30']
+  );
+  assert.ok(recorder.lines.every(line => line.scale === SKETCH_BOX_DIMENSION_RENDER_POLICY.textScale));
+  const minHeightLine = recorder.lines.find(line => line.label === '80');
+  assert.equal(minHeightLine?.extra?.y, SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinHeightLabelShiftYM);
+  assert.ok(Number(minHeightLine?.extra?.y) < 0);
 });

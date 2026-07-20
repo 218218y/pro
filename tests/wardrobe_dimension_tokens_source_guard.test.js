@@ -115,7 +115,7 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
   }
 });
 
-test('[dimension tokens] Sketch Box foundation owns policies while all compatibility consumers stay unchanged', () => {
+test('[dimension tokens] Sketch Box foundation owns policies while remaining compatibility consumers stay exact', () => {
   const facade = read('esm/shared/wardrobe_dimension_tokens_shared.ts');
   const focusedPolicyFiles = [
     'esm/shared/dimensions/sketch_box_geometry_policy.ts',
@@ -182,9 +182,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while all compatibi
     'esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts',
     'esm/native/builder/render_interior_sketch_boxes_shell_height.ts',
     'esm/native/builder/render_interior_sketch_drawers_external_context.ts',
-    'esm/native/builder/render_interior_sketch_layout_dimensions_grouping.ts',
-    'esm/native/builder/render_interior_sketch_layout_dimensions_render.ts',
-    'esm/native/builder/render_interior_sketch_layout_dividers.ts',
     'esm/native/builder/render_interior_sketch_layout_geometry.ts',
     'esm/native/builder/render_interior_sketch_support_placement.ts',
     'esm/native/builder/render_preview_interior_hover_apply.ts',
@@ -208,11 +205,8 @@ test('[dimension tokens] Sketch Box foundation owns policies while all compatibi
     'esm/native/services/canvas_picking_selector_internal_metrics.ts',
     'esm/native/services/canvas_picking_sketch_box_content_commit_doors.ts',
     'esm/native/services/canvas_picking_sketch_box_divider_measurements.ts',
-    'esm/native/services/canvas_picking_sketch_box_divider_state_match.ts',
-    'esm/native/services/canvas_picking_sketch_box_divider_state_placement.ts',
     'esm/native/services/canvas_picking_sketch_box_door_preview.ts',
     'esm/native/services/canvas_picking_sketch_box_runtime_geometry.ts',
-    'esm/native/services/canvas_picking_sketch_box_segments.ts',
     'esm/native/services/canvas_picking_sketch_box_stack_preview_drawers.ts',
     'esm/native/services/canvas_picking_sketch_box_stack_preview_ext_drawers.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts',
@@ -244,8 +238,8 @@ test('[dimension tokens] Sketch Box foundation owns policies while all compatibi
       /\bSKETCH_BOX_DIMENSIONS\b/u.test(read(file))
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 25);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 43);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 22);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 40);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 1);
   assert.equal(
     esmFiles.filter(
@@ -312,13 +306,39 @@ test('[dimension tokens] sketch divider, attachment, and free-box measurement ov
   assert.match(tokens, /attachIntentMinOverlapMinM:/);
   assert.match(tokens, /placementGapDefaultM:/);
 
+  const focusedConsumers = new Map([
+    [
+      'esm/native/builder/render_interior_sketch_layout_dimensions_grouping.ts',
+      ['SKETCH_BOX_DIMENSION_GROUPING_POLICY'],
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_layout_dimensions_render.ts',
+      ['SKETCH_BOX_DIMENSION_RENDER_POLICY'],
+    ],
+    ['esm/native/builder/render_interior_sketch_layout_dividers.ts', ['SKETCH_BOX_DIVIDER_GEOMETRY_POLICY']],
+    [
+      'esm/native/services/canvas_picking_sketch_box_divider_state_match.ts',
+      ['SKETCH_BOX_DIVIDER_GEOMETRY_POLICY', 'SKETCH_BOX_DIVIDER_REMOVE_HIT_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_box_divider_state_placement.ts',
+      ['SKETCH_BOX_DIVIDER_GEOMETRY_POLICY', 'SKETCH_BOX_DIVIDER_SNAP_POLICY'],
+    ],
+    ['esm/native/services/canvas_picking_sketch_box_segments.ts', ['SKETCH_BOX_DIVIDER_GEOMETRY_POLICY']],
+  ]);
+  for (const [rel, symbols] of focusedConsumers) {
+    const source = read(rel);
+    assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared|SKETCH_BOX_DIMENSIONS/u);
+    assert.doesNotMatch(
+      source,
+      /SKETCH_BOX_(?:DIVIDER_POLICY|DIMENSION_OVERLAY_POLICY)\b/u,
+      `${rel} must not import a compatibility aggregate`
+    );
+    assert.doesNotMatch(source, /import\s+\*|export\s+(?:\*|\{[^}]*\})\s+from/u);
+    for (const symbol of symbols) assert.match(source, new RegExp(`\\b${symbol}\\b`, 'u'));
+  }
+
   for (const rel of [
-    'esm/native/builder/render_interior_sketch_layout_dividers.ts',
-    'esm/native/builder/render_interior_sketch_layout_dimensions_grouping.ts',
-    'esm/native/builder/render_interior_sketch_layout_dimensions_render.ts',
-    'esm/native/services/canvas_picking_sketch_box_divider_state_placement.ts',
-    'esm/native/services/canvas_picking_sketch_box_divider_state_match.ts',
-    'esm/native/services/canvas_picking_sketch_box_segments.ts',
     'esm/native/services/canvas_picking_sketch_free_box_placement_intent.ts',
     'esm/native/services/canvas_picking_sketch_free_box_gap.ts',
   ]) {

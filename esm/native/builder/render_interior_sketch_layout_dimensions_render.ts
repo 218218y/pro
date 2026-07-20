@@ -1,4 +1,4 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_DIMENSION_RENDER_POLICY } from '../../shared/dimensions/sketch_box_dimension_overlay_policy.js';
 
 import {
   groupSketchFreeBoxDimensionEntries,
@@ -37,34 +37,34 @@ export const renderSketchFreeBoxDimensions = (args: RenderSketchFreeBoxDimension
     halfH +
     overlayRange(
       height,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleWidthLineYOffsetMinM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleWidthLineYOffsetMaxM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleWidthLineYOffsetHeightRatio
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleWidthLineYOffsetMinM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleWidthLineYOffsetMaxM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleWidthLineYOffsetHeightRatio
     );
   const widthTextOffset = new THREE.Vector3(
     0,
     overlayRange(
       height,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleWidthTextYOffsetMinM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleWidthTextYOffsetMaxM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleWidthTextYOffsetHeightRatio
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleWidthTextYOffsetMinM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleWidthTextYOffsetMaxM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleWidthTextYOffsetHeightRatio
     ),
     0
   );
 
   const heightLineGap = overlayRange(
     width,
-    SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleHeightLineGapMinM,
-    SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleHeightLineGapMaxM,
-    SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleHeightLineGapWidthRatio
+    SKETCH_BOX_DIMENSION_RENDER_POLICY.singleHeightLineGapMinM,
+    SKETCH_BOX_DIMENSION_RENDER_POLICY.singleHeightLineGapMaxM,
+    SKETCH_BOX_DIMENSION_RENDER_POLICY.singleHeightLineGapWidthRatio
   );
   const heightLineX = centerX + halfW + heightLineGap;
   const heightTextOffset = new THREE.Vector3(
     overlayRange(
       width,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleHeightTextXOffsetMinM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleHeightTextXOffsetMaxM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleHeightTextXOffsetWidthRatio
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleHeightTextXOffsetMinM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleHeightTextXOffsetMaxM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleHeightTextXOffsetWidthRatio
     ),
     0,
     0
@@ -72,25 +72,25 @@ export const renderSketchFreeBoxDimensions = (args: RenderSketchFreeBoxDimension
 
   const depthLineGap = overlayRange(
     width,
-    SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleDepthLineGapMinM,
-    SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleDepthLineGapMaxM,
-    SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleDepthLineGapWidthRatio
+    SKETCH_BOX_DIMENSION_RENDER_POLICY.singleDepthLineGapMinM,
+    SKETCH_BOX_DIMENSION_RENDER_POLICY.singleDepthLineGapMaxM,
+    SKETCH_BOX_DIMENSION_RENDER_POLICY.singleDepthLineGapWidthRatio
   );
   const depthLineX = centerX - halfW - depthLineGap;
   const depthLineY =
     centerY +
     overlayRange(
       height,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleDepthLineYOffsetMinM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleDepthLineYOffsetMaxM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleDepthLineYOffsetHeightRatio
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleDepthLineYOffsetMinM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleDepthLineYOffsetMaxM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleDepthLineYOffsetHeightRatio
     );
   const depthTextOffset = new THREE.Vector3(
     -overlayRange(
       width,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleDepthTextXOffsetMinM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleDepthTextXOffsetMaxM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.singleDepthTextXOffsetWidthRatio
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleDepthTextXOffsetMinM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleDepthTextXOffsetMaxM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.singleDepthTextXOffsetWidthRatio
     ),
     0,
     0
@@ -102,7 +102,7 @@ export const renderSketchFreeBoxDimensions = (args: RenderSketchFreeBoxDimension
   const heightTopY = centerY + halfH;
   const backZ = centerZ - halfD;
   const frontZ = centerZ + halfD;
-  const textScale = SKETCH_BOX_DIMENSIONS.dimensionOverlay.textScale;
+  const textScale = SKETCH_BOX_DIMENSION_RENDER_POLICY.textScale;
 
   addDimensionLine(
     new THREE.Vector3(widthLeftX, widthLineY, centerZ),
@@ -167,22 +167,22 @@ export function renderSketchFreeBoxDimensionGroup(args: RenderSketchFreeBoxDimen
   if (!(totalWidth > 0) || !(totalHeight > 0) || !(totalDepth > 0)) return;
 
   const clusterCenterZ = (minBackZ + maxFrontZ) / 2;
-  const textScale = SKETCH_BOX_DIMENSIONS.dimensionOverlay.textScale;
+  const textScale = SKETCH_BOX_DIMENSION_RENDER_POLICY.textScale;
   const widthLineY =
     maxTopY +
     overlayRange(
       totalHeight,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupWidthLineYOffsetMinM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupWidthLineYOffsetMaxM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupWidthLineYOffsetHeightRatio
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupWidthLineYOffsetMinM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupWidthLineYOffsetMaxM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupWidthLineYOffsetHeightRatio
     );
   const widthTextOffset = new THREE.Vector3(
     0,
     overlayRange(
       totalHeight,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupWidthTextYOffsetMinM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupWidthTextYOffsetMaxM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupWidthTextYOffsetHeightRatio
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupWidthTextYOffsetMinM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupWidthTextYOffsetMaxM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupWidthTextYOffsetHeightRatio
     ),
     0
   );
@@ -190,9 +190,9 @@ export function renderSketchFreeBoxDimensionGroup(args: RenderSketchFreeBoxDimen
     maxTopY +
     overlayRange(
       totalHeight,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupWidthSegmentsYOffsetMinM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupWidthSegmentsYOffsetMaxM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupWidthSegmentsYOffsetHeightRatio
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupWidthSegmentsYOffsetMinM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupWidthSegmentsYOffsetMaxM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupWidthSegmentsYOffsetHeightRatio
     );
 
   addDimensionLine(
@@ -211,9 +211,9 @@ export function renderSketchFreeBoxDimensionGroup(args: RenderSketchFreeBoxDimen
       0,
       overlayRange(
         totalHeight,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupSegmentTextYOffsetMinM,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupSegmentTextYOffsetMaxM,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupSegmentTextYOffsetHeightRatio
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupSegmentTextYOffsetMinM,
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupSegmentTextYOffsetMaxM,
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupSegmentTextYOffsetHeightRatio
       ),
       0
     );
@@ -233,17 +233,17 @@ export function renderSketchFreeBoxDimensionGroup(args: RenderSketchFreeBoxDimen
 
   const heightLineGap = overlayRange(
     totalWidth,
-    SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupHeightLineGapMinM,
-    SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupHeightLineGapMaxM,
-    SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupHeightLineGapWidthRatio
+    SKETCH_BOX_DIMENSION_RENDER_POLICY.groupHeightLineGapMinM,
+    SKETCH_BOX_DIMENSION_RENDER_POLICY.groupHeightLineGapMaxM,
+    SKETCH_BOX_DIMENSION_RENDER_POLICY.groupHeightLineGapWidthRatio
   );
   const heightLineX = maxX + heightLineGap;
   const heightTextOffset = new THREE.Vector3(
     overlayRange(
       totalWidth,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupHeightTextXOffsetMinM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupHeightTextXOffsetMaxM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupHeightTextXOffsetWidthRatio
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupHeightTextXOffsetMinM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupHeightTextXOffsetMaxM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupHeightTextXOffsetWidthRatio
     ),
     0,
     0
@@ -260,23 +260,23 @@ export function renderSketchFreeBoxDimensionGroup(args: RenderSketchFreeBoxDimen
   const roundedMaxEntryHeight = Math.round(maxEntryHeight * 100) / 100;
   if (
     roundedMaxEntryHeight - roundedMinEntryHeight >=
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinHeightDeltaM &&
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinHeightDeltaM &&
     mergedWidthSpans.length >= 2
   ) {
     const minHeightLineX =
       heightLineX -
       overlayRange(
         totalWidth,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinHeightLineXOffsetMinM,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinHeightLineXOffsetMaxM,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinHeightLineXOffsetWidthRatio
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinHeightLineXOffsetMinM,
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinHeightLineXOffsetMaxM,
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinHeightLineXOffsetWidthRatio
       );
     const minHeightTextOffset = new THREE.Vector3(
       overlayRange(
         totalWidth,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinHeightTextXOffsetMinM,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinHeightTextXOffsetMaxM,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinHeightTextXOffsetWidthRatio
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinHeightTextXOffsetMinM,
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinHeightTextXOffsetMaxM,
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinHeightTextXOffsetWidthRatio
       ),
       0,
       0
@@ -287,31 +287,31 @@ export function renderSketchFreeBoxDimensionGroup(args: RenderSketchFreeBoxDimen
       minHeightTextOffset,
       (minEntryHeight * 100).toFixed(0),
       textScale,
-      new THREE.Vector3(0, SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinHeightLabelShiftYM, 0)
+      new THREE.Vector3(0, SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinHeightLabelShiftYM, 0)
     );
   }
 
   const depthLineGap = overlayRange(
     totalWidth,
-    SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupDepthLineGapMinM,
-    SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupDepthLineGapMaxM,
-    SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupDepthLineGapWidthRatio
+    SKETCH_BOX_DIMENSION_RENDER_POLICY.groupDepthLineGapMinM,
+    SKETCH_BOX_DIMENSION_RENDER_POLICY.groupDepthLineGapMaxM,
+    SKETCH_BOX_DIMENSION_RENDER_POLICY.groupDepthLineGapWidthRatio
   );
   const depthLineX = minX - depthLineGap;
   const depthLineY =
     minBottomY +
     overlayRange(
       totalHeight,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupDepthLineYOffsetMinM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupDepthLineYOffsetMaxM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupDepthLineYOffsetHeightRatio
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupDepthLineYOffsetMinM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupDepthLineYOffsetMaxM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupDepthLineYOffsetHeightRatio
     );
   const depthTextOffset = new THREE.Vector3(
     -overlayRange(
       totalWidth,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupDepthTextXOffsetMinM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupDepthTextXOffsetMaxM,
-      SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupDepthTextXOffsetWidthRatio
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupDepthTextXOffsetMinM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupDepthTextXOffsetMaxM,
+      SKETCH_BOX_DIMENSION_RENDER_POLICY.groupDepthTextXOffsetWidthRatio
     ),
     0,
     0
@@ -326,24 +326,21 @@ export function renderSketchFreeBoxDimensionGroup(args: RenderSketchFreeBoxDimen
 
   const roundedMinEntryDepth = Math.round(minEntryDepth * 100) / 100;
   const roundedMaxEntryDepth = Math.round(maxEntryDepth * 100) / 100;
-  if (
-    roundedMaxEntryDepth - roundedMinEntryDepth >=
-    SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinDepthDeltaM
-  ) {
+  if (roundedMaxEntryDepth - roundedMinEntryDepth >= SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinDepthDeltaM) {
     const minDepthLineX =
       depthLineX +
       overlayRange(
         totalWidth,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinDepthLineXOffsetMinM,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinDepthLineXOffsetMaxM,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinDepthLineXOffsetWidthRatio
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinDepthLineXOffsetMinM,
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinDepthLineXOffsetMaxM,
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinDepthLineXOffsetWidthRatio
       );
     const minDepthTextOffset = new THREE.Vector3(
       -overlayRange(
         totalWidth,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinDepthTextXOffsetMinM,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinDepthTextXOffsetMaxM,
-        SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinDepthTextXOffsetWidthRatio
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinDepthTextXOffsetMinM,
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinDepthTextXOffsetMaxM,
+        SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinDepthTextXOffsetWidthRatio
       ),
       0,
       0
@@ -354,9 +351,9 @@ export function renderSketchFreeBoxDimensionGroup(args: RenderSketchFreeBoxDimen
         depthLineY -
           overlayRange(
             totalHeight,
-            SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinDepthLineYOffsetMinM,
-            SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinDepthLineYOffsetMaxM,
-            SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinDepthLineYOffsetHeightRatio
+            SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinDepthLineYOffsetMinM,
+            SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinDepthLineYOffsetMaxM,
+            SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinDepthLineYOffsetHeightRatio
           ),
         minBackZ + minEntryDepth
       ),
@@ -365,9 +362,9 @@ export function renderSketchFreeBoxDimensionGroup(args: RenderSketchFreeBoxDimen
         depthLineY -
           overlayRange(
             totalHeight,
-            SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinDepthLineYOffsetMinM,
-            SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinDepthLineYOffsetMaxM,
-            SKETCH_BOX_DIMENSIONS.dimensionOverlay.groupMinDepthLineYOffsetHeightRatio
+            SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinDepthLineYOffsetMinM,
+            SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinDepthLineYOffsetMaxM,
+            SKETCH_BOX_DIMENSION_RENDER_POLICY.groupMinDepthLineYOffsetHeightRatio
           ),
         minBackZ
       ),
