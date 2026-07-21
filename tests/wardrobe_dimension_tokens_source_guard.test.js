@@ -341,13 +341,11 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
     'esm/native/builder/render_preview_interior_hover_apply.ts',
     'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
-    'esm/native/services/canvas_picking_internal_drawer_existing_fittings.ts',
     'esm/native/services/canvas_picking_manual_layout_free_box_content.ts',
     'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
     'esm/native/services/canvas_picking_sketch_module_surface_preview_content.ts',
-    'esm/native/services/canvas_picking_sketch_module_surface_preview_flow.ts',
     'esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts',
     'esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts',
   ];
@@ -358,7 +356,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 2);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 10);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 8);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
     const source = read(file);
@@ -405,7 +403,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
       /SKETCH_BOX_DIMENSIONS\.preview/u.test(read(file))
   );
-  assert.equal(remainingPreviewConsumers.length, 12);
+  assert.equal(remainingPreviewConsumers.length, 10);
   assert.deepEqual(remainingPreviewConsumers.sort(), actualConsumers.sort());
   for (const file of actualConsumers) {
     const branches = new Set(
@@ -1840,7 +1838,7 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ],
     [
       'esm/native/services/canvas_picking_sketch_module_surface_preview_flow.ts',
-      ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+      ['INTERIOR_SHELF_GEOMETRY_POLICY', 'SKETCH_BOX_PREVIEW_CORE_POLICY'],
     ],
     [
       'esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts',

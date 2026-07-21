@@ -3550,6 +3550,64 @@
       },
       "reason": "The Sketch Box vertical rod preview resolver replaces one legacy facade statement with the focused Interior Rod Render owner plus focused Sketch Box Core and Rod Preview owners on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch Box vertical rod-preview composition seam eliminates the extra Interior Rod statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-21",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_internal_drawer_existing_fittings.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_PREVIEW_CORE_POLICY", "SKETCH_BOX_SHELF_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The internal-drawer existing-fitting removal flow replaces one legacy facade statement with focused Interior Storage Barrier and Grid owners plus focused Sketch Box Core and Shelf Preview owners on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed existing-fitting removal composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-21",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_surface_preview_flow.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_PREVIEW_CORE_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch module surface-preview orchestration flow replaces one legacy facade statement with the focused Interior Shelf Geometry owner plus the focused Sketch Box Preview Core owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch module surface-preview orchestration seam eliminates the extra Interior Fittings statement without reintroducing the legacy facade."
     }
   ]
 }

@@ -1,8 +1,12 @@
 import type { ModuleConfigLike } from '../../../types';
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  INTERIOR_STORAGE_GRID_POLICY,
+} from '../../shared/dimensions/interior_storage_policy.js';
+import {
+  SKETCH_BOX_PREVIEW_CORE_POLICY,
+  SKETCH_BOX_SHELF_PREVIEW_POLICY,
+} from '../../shared/dimensions/sketch_box_preview_policy.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import {
   removeManualLayoutBaseRod,
@@ -58,7 +62,7 @@ function readGridDivisions(info: RecordMap | null): number {
   const value = typeof raw === 'number' ? raw : Number(raw);
   return Number.isFinite(value) && value > 0
     ? Math.round(value)
-    : INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+    : INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
 }
 
 function readSketchExtras(cfgRef: RecordMap | null): RecordMap | null {
@@ -80,10 +84,10 @@ function resolveDefaultBoxGeometry(args: {
   depthM?: number | null;
   xNorm?: number | null;
 }) {
-  const outerW = Math.max(SKETCH_BOX_DIMENSIONS.preview.shelfMinWidthM, args.widthM ?? args.innerW);
-  const outerD = Math.max(SKETCH_BOX_DIMENSIONS.preview.minScaleM, args.depthM ?? args.internalDepth);
-  const innerW = Math.max(SKETCH_BOX_DIMENSIONS.preview.minScaleM, outerW - args.woodThick * 2);
-  const innerD = Math.max(SKETCH_BOX_DIMENSIONS.preview.minScaleM, outerD - args.woodThick * 2);
+  const outerW = Math.max(SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfMinWidthM, args.widthM ?? args.innerW);
+  const outerD = Math.max(SKETCH_BOX_PREVIEW_CORE_POLICY.minScaleM, args.depthM ?? args.internalDepth);
+  const innerW = Math.max(SKETCH_BOX_PREVIEW_CORE_POLICY.minScaleM, outerW - args.woodThick * 2);
+  const innerD = Math.max(SKETCH_BOX_PREVIEW_CORE_POLICY.minScaleM, outerD - args.woodThick * 2);
   const xNorm = typeof args.xNorm === 'number' && Number.isFinite(args.xNorm) ? args.xNorm : 0.5;
   const centerX = args.internalCenterX + (xNorm - 0.5) * Math.max(0, args.innerW - outerW);
   return {
@@ -145,7 +149,7 @@ export function resolveInternalDrawerExistingFittingRemoval(
     boxH: 0,
     boxWidthOverrideM: null,
     boxDepthOverrideM: null,
-    storageH: INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM,
+    storageH: INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM,
     boxes: [],
     storageBarriers: readRecordArray(sketchExtras, 'storageBarriers'),
     shelves: readRecordArray(sketchExtras, 'shelves'),
