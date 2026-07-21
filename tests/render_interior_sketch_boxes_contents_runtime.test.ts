@@ -2,6 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { renderSketchBoxContents } from '../esm/native/builder/render_interior_sketch_boxes_contents.ts';
+import {
+  resolveSketchBoxUsableContentCenterZ,
+  resolveSketchBoxUsableContentDepth,
+} from '../esm/native/builder/render_interior_sketch_boxes_contents_depth.ts';
+import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../esm/shared/dimensions/sketch_box_geometry_policy.ts';
+import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
 
 class FakeVector3 {
   x = 0;
@@ -286,4 +292,115 @@ test('removed sketch-box side forces adjacent box shelves to brace and applies r
     shelfPins.map(call => call[6]),
     [false, true]
   );
+});
+
+function createContentDepthShell(overrides: Record<string, unknown> = {}) {
+  return {
+    box: { doors: [{ id: 'door-1', enabled: true }] },
+    boxId: 'box-1',
+    boxPid: 'box_1',
+    isFreePlacement: false,
+    height: 1,
+    halfH: 0.5,
+    centerY: 1,
+    sideH: 0.96,
+    boxMat: {},
+    geometry: {
+      outerW: 0.8,
+      innerW: 0.764,
+      centerX: 0,
+      outerD: 0.55,
+      centerZ: 0,
+      innerBackZ: 0,
+      innerD: 0.5,
+      ...((overrides.geometry as Record<string, unknown> | undefined) ?? {}),
+    },
+    hexGeometry: null,
+    fullDepth: 0.55,
+    backZ: -0.275,
+    innerBottomY: 0.5,
+    innerTopY: 1.5,
+    regularDepth: 0.5,
+    frontZ: 0.3,
+    ...overrides,
+  } as any;
+}
+
+test('usable Sketch Box content depth preserves non-inset and no-door passthrough behavior', () => {
+  const shell = createContentDepthShell();
+  assert.equal(
+    resolveSketchBoxUsableContentDepth({
+      shell,
+      input: { cfgSnapshot: { doorMountMode: 'overlay' } },
+      woodThick: 0.018,
+    }),
+    0.5
+  );
+
+  const noDoorShell = createContentDepthShell({ box: { doors: [] } });
+  assert.equal(
+    resolveSketchBoxUsableContentDepth({
+      shell: noDoorShell,
+      input: { cfgSnapshot: { doorMountMode: 'inset' } },
+      woodThick: 0.018,
+    }),
+    0.5
+  );
+});
+
+test('usable Sketch Box content depth applies focused door clearance and both clamps', () => {
+  const clearance = Math.max(
+    SKETCH_BOX_DOOR_PREVIEW_POLICY.doorBackClearanceMaxM,
+    SKETCH_BOX_DOOR_PREVIEW_POLICY.doorPreviewClearanceM
+  );
+  assert.equal(clearance, SKETCH_BOX_DOOR_PREVIEW_POLICY.doorPreviewClearanceM);
+
+  const inside = resolveSketchBoxUsableContentDepth({
+    shell: createContentDepthShell(),
+    input: { cfgSnapshot: { doorMountMode: 'inset' } },
+    woodThick: 0.018,
+  });
+  assert.ok(Math.abs(inside - 0.275) <= 1e-12);
+
+  const lowerClamped = resolveSketchBoxUsableContentDepth({
+    shell: createContentDepthShell({ geometry: { innerBackZ: 0.27, innerD: 0.5 } }),
+    input: { cfgSnapshot: { doorMountMode: 'inset' } },
+    woodThick: 0.018,
+  });
+  assert.equal(lowerClamped, SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerDimensionM);
+
+  const upperClamped = resolveSketchBoxUsableContentDepth({
+    shell: createContentDepthShell({ geometry: { innerBackZ: -0.4, innerD: 0.5 } }),
+    input: { cfgSnapshot: { doorMountMode: 'inset' } },
+    woodThick: 0.018,
+  });
+  assert.equal(upperClamped, 0.5);
+});
+
+test('usable Sketch Box content depth keeps invalid and boundary inputs unchanged', () => {
+  for (const innerD of [0, -1, Number.NaN, Number.POSITIVE_INFINITY, '0.5']) {
+    const shell = createContentDepthShell({ geometry: { innerD } });
+    assert.equal(
+      resolveSketchBoxUsableContentDepth({
+        shell,
+        input: { cfgSnapshot: { doorMountMode: 'inset' } },
+        woodThick: 0.018,
+      }),
+      0
+    );
+  }
+
+  const invalidWood = resolveSketchBoxUsableContentDepth({
+    shell: createContentDepthShell(),
+    input: { cfgSnapshot: { doorMountMode: 'inset' } },
+    woodThick: Number.NaN,
+  });
+  assert.ok(Number.isNaN(invalidWood));
+});
+
+test('usable Sketch Box content center Z preserves positive and non-positive depth behavior', () => {
+  const shell = createContentDepthShell({ geometry: { innerBackZ: -0.2 } });
+  assert.equal(resolveSketchBoxUsableContentCenterZ(shell, 0.4), 0);
+  assert.equal(resolveSketchBoxUsableContentCenterZ(shell, 0), -0.2);
+  assert.equal(resolveSketchBoxUsableContentCenterZ(shell, -0.4), -0.2);
 });

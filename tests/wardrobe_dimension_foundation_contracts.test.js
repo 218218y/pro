@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 81, statements: 81 }),
+  'static-import': Object.freeze({ importers: 79, statements: 79 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 83, statements: 84 }),
+  total: Object.freeze({ importers: 81, statements: 82 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -826,6 +826,10 @@ const APPROVED_SKETCH_BOX_GEOMETRY_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_layout_geometry.ts': Object.freeze([
     'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
   ]),
+  'esm/native/builder/render_interior_sketch_boxes.ts': Object.freeze(['SKETCH_BOX_SHELL_GEOMETRY_POLICY']),
+  'esm/native/builder/render_interior_sketch_boxes_contents_depth.ts': Object.freeze([
+    'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_GEOMETRY_POLICY']),
 });
 const APPROVED_SKETCH_BOX_DIVIDER_OWNER_IMPORTS = Object.freeze({
@@ -920,6 +924,10 @@ const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/services/canvas_picking_sketch_module_surface_preview_box.ts': Object.freeze([
     'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_boxes.ts': Object.freeze(['SKETCH_BOX_DOOR_PREVIEW_POLICY']),
+  'esm/native/builder/render_interior_sketch_boxes_contents_depth.ts': Object.freeze([
+    'SKETCH_BOX_DOOR_PREVIEW_POLICY',
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_PREVIEW_POLICY']),
 });

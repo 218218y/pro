@@ -2445,6 +2445,64 @@
       },
       "reason": "The free-box hover-context resolver replaces one legacy facade statement with the canonical Free Placement workspace-clamp owner plus the focused Material Thickness fallback owner on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed free-box hover-context composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DOOR_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch Box drawer-span renderer replaces one legacy facade statement with the canonical Shell Geometry owner plus the focused Door Preview owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch Box drawer-span composition seam eliminates the extra Door Preview statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_contents_depth.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DOOR_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch Box usable-content-depth resolver replaces one legacy facade statement with the canonical Door Preview owner plus the focused Shell Geometry minimum owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch Box content-depth composition seam eliminates the extra Shell Geometry statement without reintroducing the legacy facade."
     }
   ]
 }

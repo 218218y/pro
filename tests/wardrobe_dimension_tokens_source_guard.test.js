@@ -140,6 +140,11 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
       ['SKETCH_BOX_SHELL_GEOMETRY_POLICY'],
     ],
     ['esm/native/builder/render_interior_sketch_layout_geometry.ts', ['SKETCH_BOX_SHELL_GEOMETRY_POLICY']],
+    ['esm/native/builder/render_interior_sketch_boxes.ts', ['SKETCH_BOX_SHELL_GEOMETRY_POLICY']],
+    [
+      'esm/native/builder/render_interior_sketch_boxes_contents_depth.ts',
+      ['SKETCH_BOX_SHELL_GEOMETRY_POLICY'],
+    ],
   ]);
   for (const [rel, symbols] of focusedGeometryConsumers) {
     const source = read(rel);
@@ -240,6 +245,8 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
       'esm/native/services/canvas_picking_sketch_module_surface_preview_box.ts',
       ['SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY'],
     ],
+    ['esm/native/builder/render_interior_sketch_boxes.ts', ['SKETCH_BOX_DOOR_PREVIEW_POLICY']],
+    ['esm/native/builder/render_interior_sketch_boxes_contents_depth.ts', ['SKETCH_BOX_DOOR_PREVIEW_POLICY']],
   ]);
   for (const [rel, symbols] of focusedPreviewConsumers) {
     const source = read(rel);
@@ -320,8 +327,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
   const expectedConsumers = [
     'esm/native/builder/post_build_sketch_door_cuts_rebuild.ts',
     'esm/native/builder/render_interior_rod_clearance.ts',
-    'esm/native/builder/render_interior_sketch_boxes.ts',
-    'esm/native/builder/render_interior_sketch_boxes_contents_depth.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
@@ -364,7 +369,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       /\bSKETCH_BOX_DIMENSIONS\b/u.test(read(file))
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 13);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 11);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 25);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 1);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
@@ -408,8 +413,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
   );
   assert.deepEqual(remainingGeometryConsumers.sort(), [
     'esm/native/builder/render_interior_rod_clearance.ts',
-    'esm/native/builder/render_interior_sketch_boxes.ts',
-    'esm/native/builder/render_interior_sketch_boxes_contents_depth.ts',
     'esm/native/builder/render_interior_sketch_boxes_shell_apply.ts',
     'esm/native/services/canvas_picking_click_manual_sketch_free_box.ts',
     'esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts',
@@ -420,9 +423,15 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts',
     'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts',
   ]);
-  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 4);
+  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 2);
   assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/services/')).length, 7);
   assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 1);
+  const remainingPreviewConsumers = esmFiles.filter(
+    file =>
+      file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
+      /SKETCH_BOX_DIMENSIONS\.preview/u.test(read(file))
+  );
+  assert.equal(remainingPreviewConsumers.length, 28);
   assert.equal(
     esmFiles.filter(
       file =>
