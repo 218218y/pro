@@ -1,4 +1,10 @@
-import { DRAWER_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY,
+  DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY,
+  DRAWER_SKETCH_SIZING_POLICY,
+  EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
+} from '../../shared/dimensions/drawer_sketch_policy.js';
+import { SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import {
   buildManualLayoutSketchInternalDrawerBlockers,
   resolveManualLayoutSketchExternalDrawerPlacement,
@@ -45,12 +51,12 @@ export function resolveSketchBoxExternalDrawersPreview(
     selectedDrawerCount:
       selectedDrawerCount != null && selectedDrawerCount > 0
         ? selectedDrawerCount
-        : DRAWER_DIMENSIONS.sketch.externalPreviewDefaultCount,
+        : DRAWER_SKETCH_SIZING_POLICY.externalPreviewDefaultCount,
     drawerHeightM: args.drawerHeightM,
     bottomY: boxBottomY,
     topY: boxTopY,
     pad: woodThick,
-    gap: DRAWER_DIMENSIONS.sketch.verticalStackCollisionGapM,
+    gap: DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY.verticalStackCollisionGapM,
     extDrawers: localExtDrawers,
     readCenterY,
     blockers: buildManualLayoutSketchInternalDrawerBlockers({
@@ -95,18 +101,18 @@ export function resolveSketchBoxExternalDrawersPreview(
   const faceWidth = frontOverlay
     ? frontOverlay.w
     : Math.max(
-        DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM,
+        DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM,
         (activeSegment ? activeSegment.width : targetGeo.innerW) -
-          DRAWER_DIMENSIONS.external.visualWidthClearanceM
+          EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualWidthClearanceM
       );
   const previewW = Math.max(
-    DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM,
-    faceWidth - DRAWER_DIMENSIONS.external.visualWidthClearanceM
+    DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM,
+    faceWidth - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualWidthClearanceM
   );
   const previewZ = frontOverlay
     ? frontOverlay.z
-    : targetGeo.centerZ + targetGeo.outerD / 2 + DRAWER_DIMENSIONS.external.frontOffsetZM;
-  const previewD = frontOverlay ? frontOverlay.d : DRAWER_DIMENSIONS.external.visualThicknessM;
+    : targetGeo.centerZ + targetGeo.outerD / 2 + EXTERNAL_DRAWER_FRONT_RENDER_POLICY.frontOffsetZM;
+  const previewD = frontOverlay ? frontOverlay.d : EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM;
   const clearanceMeasurements = buildSketchBoxStackAwareMeasurementEntries({
     bottomY: boxBottomY + woodThick,
     topY: boxTopY - woodThick,
@@ -130,11 +136,11 @@ export function resolveSketchBoxExternalDrawersPreview(
       previewZ +
       previewD / 2 +
       Math.max(
-        DRAWER_DIMENSIONS.sketch.externalPreviewMeasurementZOffsetMinM,
-        previewD * DRAWER_DIMENSIONS.sketch.externalPreviewMeasurementZOffsetThicknessRatio
+        DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewMeasurementZOffsetMinM,
+        previewD * DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewMeasurementZOffsetThicknessRatio
       ),
     styleKey: 'cell',
-    textScale: SKETCH_BOX_DIMENSIONS.preview.measurementTextScale,
+    textScale: SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale,
   });
   const drawersPreview: RecordMap[] = [];
   const hoverOp: 'add' | 'remove' = blockedReason || placement.op === 'blocked' ? 'add' : placement.op;
@@ -143,8 +149,8 @@ export function resolveSketchBoxExternalDrawersPreview(
     drawersPreview.push({
       y: baseY + i * drawerH + drawerH / 2,
       h: Math.max(
-        DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
-        drawerH - DRAWER_DIMENSIONS.external.visualHeightClearanceM
+        DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
+        drawerH - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM
       ),
     });
   }

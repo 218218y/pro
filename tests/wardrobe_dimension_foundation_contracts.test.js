@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 63, statements: 63 }),
+  'static-import': Object.freeze({ importers: 59, statements: 59 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 65, statements: 66 }),
+  total: Object.freeze({ importers: 61, statements: 62 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -1013,6 +1013,18 @@ const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_drawers_external_context.ts': Object.freeze([
     'SKETCH_BOX_DRAWER_PREVIEW_POLICY',
   ]),
+  'esm/native/services/canvas_picking_sketch_box_stack_preview_drawers.ts': Object.freeze([
+    'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_stack_preview_ext_drawers.ts': Object.freeze([
+    'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_stack_preview_drawers.ts': Object.freeze([
+    'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_stack_preview_ext_drawers.ts': Object.freeze([
+    'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_PREVIEW_POLICY']),
 });
 const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
@@ -1403,6 +1415,24 @@ const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_drawers_external_context.ts': Object.freeze([
     'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
   ]),
+  'esm/native/services/canvas_picking_sketch_box_stack_preview_drawers.ts': Object.freeze([
+    'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_stack_preview_ext_drawers.ts': Object.freeze([
+    'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
+    'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+    'DRAWER_SKETCH_SIZING_POLICY',
+    'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_stack_preview_drawers.ts': Object.freeze([
+    'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_stack_preview_ext_drawers.ts': Object.freeze([
+    'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
+    'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+    'DRAWER_SKETCH_SIZING_POLICY',
+    'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['DRAWER_SKETCH_POLICY']),
 });
 const APPROVED_FRONT_REVEAL_OWNER_IMPORTS = Object.freeze({
@@ -1581,47 +1611,6 @@ const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
     'sketch.externalPreviewVisualMinHeightM',
     'sketch.externalPreviewVisualMinWidthM',
   ]),
-  'esm/native/services/canvas_picking_sketch_box_stack_preview_drawers.ts': Object.freeze([
-    'sketch',
-    'sketch.internalPreviewDepthClearanceM',
-    'sketch.internalPreviewMeasurementZOffsetDepthRatio',
-    'sketch.internalPreviewMeasurementZOffsetMinM',
-    'sketch.internalPreviewMinDepthM',
-    'sketch.internalPreviewMinWidthM',
-    'sketch.internalPreviewWidthClearanceM',
-  ]),
-  'esm/native/services/canvas_picking_sketch_box_stack_preview_ext_drawers.ts': Object.freeze([
-    'sketch',
-    'sketch.externalPreviewDefaultCount',
-    'sketch.externalPreviewMeasurementZOffsetMinM',
-    'sketch.externalPreviewMeasurementZOffsetThicknessRatio',
-    'sketch.externalPreviewVisualMinHeightM',
-    'sketch.externalPreviewVisualMinWidthM',
-    'sketch.verticalStackCollisionGapM',
-  ]),
-  'esm/native/services/canvas_picking_sketch_module_stack_preview_drawers.ts': Object.freeze([
-    'sketch',
-    'sketch.internalPreviewDepthClearanceM',
-    'sketch.internalPreviewMeasurementZOffsetDepthRatio',
-    'sketch.internalPreviewMeasurementZOffsetMinM',
-    'sketch.internalPreviewMinDepthM',
-    'sketch.internalPreviewMinWidthM',
-    'sketch.internalPreviewWidthClearanceM',
-  ]),
-  'esm/native/services/canvas_picking_sketch_module_stack_preview_ext_drawers.ts': Object.freeze([
-    'sketch',
-    'sketch.externalPreviewCenterZInsetM',
-    'sketch.externalPreviewDefaultCount',
-    'sketch.externalPreviewDepthClearanceM',
-    'sketch.externalPreviewFrontZOffsetM',
-    'sketch.externalPreviewMeasurementZOffsetMinM',
-    'sketch.externalPreviewMeasurementZOffsetThicknessRatio',
-    'sketch.externalPreviewMinDepthM',
-    'sketch.externalPreviewMinWidthM',
-    'sketch.externalPreviewVisualMinHeightM',
-    'sketch.externalPreviewVisualMinWidthM',
-    'sketch.verticalStackCollisionGapM',
-  ]),
 });
 const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/core_storage_compute_external_drawers.ts': Object.freeze([
@@ -1646,19 +1635,6 @@ const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({
     'external.frontOffsetZM',
     'external.regularHeightM',
     'external.shoeHeightM',
-    'external.visualHeightClearanceM',
-    'external.visualThicknessM',
-    'external.visualWidthClearanceM',
-  ]),
-  'esm/native/services/canvas_picking_sketch_box_stack_preview_ext_drawers.ts': Object.freeze([
-    'external',
-    'external.frontOffsetZM',
-    'external.visualHeightClearanceM',
-    'external.visualThicknessM',
-    'external.visualWidthClearanceM',
-  ]),
-  'esm/native/services/canvas_picking_sketch_module_stack_preview_ext_drawers.ts': Object.freeze([
-    'external',
     'external.visualHeightClearanceM',
     'external.visualThicknessM',
     'external.visualWidthClearanceM',

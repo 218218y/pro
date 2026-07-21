@@ -1,4 +1,5 @@
-import { DRAWER_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
+import { SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import {
   buildManualLayoutSketchExternalDrawerBlockers,
   resolveManualLayoutSketchInternalDrawerPlacement,
@@ -95,13 +96,13 @@ export function resolveSketchBoxDrawersPreview(
   const hoverRemoveId = blockedReason || placement.op === 'blocked' ? null : placement.removeId;
   const previewX = activeSegment ? activeSegment.centerX : targetGeo.centerX;
   const previewW = Math.max(
-    DRAWER_DIMENSIONS.sketch.internalPreviewMinWidthM,
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewMinWidthM,
     (activeSegment ? activeSegment.width : targetGeo.innerW) -
-      DRAWER_DIMENSIONS.sketch.internalPreviewWidthClearanceM
+      DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewWidthClearanceM
   );
   const previewD = Math.max(
-    DRAWER_DIMENSIONS.sketch.internalPreviewMinDepthM,
-    targetGeo.innerD - DRAWER_DIMENSIONS.sketch.internalPreviewDepthClearanceM
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewMinDepthM,
+    targetGeo.innerD - DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewDepthClearanceM
   );
   const previewZ = targetGeo.innerBackZ + targetGeo.innerD / 2;
   const clearanceMeasurements = buildSketchBoxStackAwareMeasurementEntries({
@@ -127,11 +128,11 @@ export function resolveSketchBoxDrawersPreview(
       previewZ +
       previewD / 2 +
       Math.max(
-        DRAWER_DIMENSIONS.sketch.internalPreviewMeasurementZOffsetMinM,
-        previewD * DRAWER_DIMENSIONS.sketch.internalPreviewMeasurementZOffsetDepthRatio
+        DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewMeasurementZOffsetMinM,
+        previewD * DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewMeasurementZOffsetDepthRatio
       ),
     styleKey: 'cell',
-    textScale: SKETCH_BOX_DIMENSIONS.preview.measurementTextScale,
+    textScale: SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale,
   });
 
   return {

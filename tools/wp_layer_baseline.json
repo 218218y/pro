@@ -3271,6 +3271,132 @@
       },
       "reason": "The Sketch external-drawer render context replaces one legacy facade statement with the canonical Drawer Preview owner plus the focused external drawer preview geometry owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch external-drawer context seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-21",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_stack_preview_drawers.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch Box internal-drawer stack preview replaces one legacy facade statement with the focused Drawer Sketch Internal Preview owner plus the focused Sketch Box Measurement Preview owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch Box internal-drawer stack-preview composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-21",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_stack_preview_ext_drawers.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY",
+          "DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY",
+          "DRAWER_SKETCH_SIZING_POLICY",
+          "EXTERNAL_DRAWER_FRONT_RENDER_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch Box external-drawer stack preview replaces one legacy facade statement with focused Drawer Sketch sizing, collision, external-preview, and External Drawer Front Render policies plus the focused Sketch Box Measurement Preview owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch Box external-drawer stack-preview composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-21",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_stack_preview_drawers.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch module internal-drawer stack preview replaces one legacy facade statement with the focused Drawer Sketch Internal Preview owner plus the focused Sketch Box Measurement Preview owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch module internal-drawer stack-preview composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-21",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_stack_preview_ext_drawers.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY",
+          "DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY",
+          "DRAWER_SKETCH_SIZING_POLICY",
+          "EXTERNAL_DRAWER_FRONT_RENDER_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch module external-drawer stack preview replaces one legacy facade statement with focused Drawer Sketch sizing, collision, external-preview, and External Drawer Front Render policies plus the focused Sketch Box Measurement Preview owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch module external-drawer stack-preview composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
     }
   ]
 }

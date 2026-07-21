@@ -1,4 +1,5 @@
-import { DRAWER_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
+import { SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import {
   buildManualLayoutSketchExternalDrawerBlockers,
   createManualLayoutSketchNormalizedCenterReader,
@@ -106,12 +107,12 @@ export function resolveSketchModuleDrawersPreview(
     !blockedReason && placement.op === 'remove' && placement.removeId ? 'sketch' : '';
 
   const previewW = Math.max(
-    DRAWER_DIMENSIONS.sketch.internalPreviewMinWidthM,
-    innerW - DRAWER_DIMENSIONS.sketch.internalPreviewWidthClearanceM
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewMinWidthM,
+    innerW - DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewWidthClearanceM
   );
   const previewD = Math.max(
-    DRAWER_DIMENSIONS.sketch.internalPreviewMinDepthM,
-    internalDepth - DRAWER_DIMENSIONS.sketch.internalPreviewDepthClearanceM
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewMinDepthM,
+    internalDepth - DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewDepthClearanceM
   );
   const clearanceMeasurements = buildSketchModuleStackAwareMeasurementEntries({
     bottomY,
@@ -132,11 +133,11 @@ export function resolveSketchModuleDrawersPreview(
       internalZ +
       previewD / 2 +
       Math.max(
-        DRAWER_DIMENSIONS.sketch.internalPreviewMeasurementZOffsetMinM,
-        previewD * DRAWER_DIMENSIONS.sketch.internalPreviewMeasurementZOffsetDepthRatio
+        DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewMeasurementZOffsetMinM,
+        previewD * DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalPreviewMeasurementZOffsetDepthRatio
       ),
     styleKey: 'cell',
-    textScale: SKETCH_BOX_DIMENSIONS.preview.measurementTextScale,
+    textScale: SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale,
   });
   const hoverOp: 'add' | 'remove' = blockedReason || op === 'blocked' ? 'add' : op;
   const hoverRemoveId = blockedReason || op === 'blocked' ? null : removeId;
