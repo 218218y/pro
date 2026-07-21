@@ -2851,6 +2851,252 @@
       },
       "reason": "The manual-layout Sketch front-overlay resolver replaces one legacy facade statement with the canonical Door and Drawer Preview owners plus the focused Shell Geometry owner on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch front-overlay composition seam eliminates the extra Shell Geometry statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_rod_clearance.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "INTERIOR_PRESET_ROD_FACTORS_POLICY",
+          "INTERIOR_PRESET_SHELF_ROWS_POLICY",
+          "INTERIOR_ROD_PLACEMENT_POLICY",
+          "INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_SHELL_DIMENSIONS",
+          "CONTENT_VISUAL_DIMENSIONS",
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS",
+          "SKETCH_BOX_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/carcass_interior_grid_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_INTERIOR_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The interior rod-clearance resolver replaces one legacy facade statement with the canonical Interior Fittings anchor plus the focused Carcass Interior Grid owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed rod-clearance composition seam eliminates the extra Carcass Interior Grid statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_rod_clearance.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "INTERIOR_PRESET_ROD_FACTORS_POLICY",
+          "INTERIOR_PRESET_SHELF_ROWS_POLICY",
+          "INTERIOR_ROD_PLACEMENT_POLICY",
+          "INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_SHELL_DIMENSIONS",
+          "CONTENT_VISUAL_DIMENSIONS",
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS",
+          "SKETCH_BOX_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/content_visual_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["FOLDED_CLOTHES_VISUAL_POLICY", "HANGER_VISUAL_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The interior rod-clearance resolver replaces one legacy facade statement with the canonical Interior Fittings anchor plus the focused folded-clothes and hanger visual owners on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed rod-clearance composition seam eliminates the extra Content Visual statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_rod_clearance.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "INTERIOR_PRESET_ROD_FACTORS_POLICY",
+          "INTERIOR_PRESET_SHELF_ROWS_POLICY",
+          "INTERIOR_ROD_PLACEMENT_POLICY",
+          "INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_SHELL_DIMENSIONS",
+          "CONTENT_VISUAL_DIMENSIONS",
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS",
+          "SKETCH_BOX_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The interior rod-clearance resolver replaces one legacy facade statement with the canonical Interior Fittings anchor plus the focused internal drawer Sketch preview owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed rod-clearance composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_rod_clearance.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "INTERIOR_PRESET_ROD_FACTORS_POLICY",
+          "INTERIOR_PRESET_SHELF_ROWS_POLICY",
+          "INTERIOR_ROD_PLACEMENT_POLICY",
+          "INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_SHELL_DIMENSIONS",
+          "CONTENT_VISUAL_DIMENSIONS",
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS",
+          "SKETCH_BOX_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The interior rod-clearance resolver replaces one legacy facade statement with the canonical Interior Fittings anchor plus the focused Interior Storage Barrier owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed rod-clearance composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_rod_clearance.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "INTERIOR_PRESET_ROD_FACTORS_POLICY",
+          "INTERIOR_PRESET_SHELF_ROWS_POLICY",
+          "INTERIOR_ROD_PLACEMENT_POLICY",
+          "INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_SHELL_DIMENSIONS",
+          "CONTENT_VISUAL_DIMENSIONS",
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS",
+          "SKETCH_BOX_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The interior rod-clearance resolver replaces one legacy facade statement with the canonical Interior Fittings anchor plus the focused Material Thickness owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed rod-clearance composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_rod_clearance.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "INTERIOR_PRESET_ROD_FACTORS_POLICY",
+          "INTERIOR_PRESET_SHELF_ROWS_POLICY",
+          "INTERIOR_ROD_PLACEMENT_POLICY",
+          "INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_SHELL_DIMENSIONS",
+          "CONTENT_VISUAL_DIMENSIONS",
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS",
+          "SKETCH_BOX_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The interior rod-clearance resolver replaces one legacy facade statement with the canonical Interior Fittings anchor plus the focused Sketch Box Placement Geometry owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed rod-clearance composition seam eliminates the extra Sketch Box Placement Geometry statement without reintroducing the legacy facade."
     }
   ]
 }

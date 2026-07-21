@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 70, statements: 70 }),
+  'static-import': Object.freeze({ importers: 69, statements: 69 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 72, statements: 73 }),
+  total: Object.freeze({ importers: 71, statements: 72 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -173,11 +173,10 @@ const APPROVED_INTERIOR_GRID_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
     'CARCASS_INTERIOR_GRID_POLICY',
   ]),
+  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['CARCASS_INTERIOR_GRID_POLICY']),
   'esm/shared/dimensions/carcass_shell_policy.ts': Object.freeze(['CARCASS_INTERIOR_GRID_POLICY']),
 });
-const APPROVED_SHELL_GRID_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['drawerGridDivisions']),
-});
+const APPROVED_SHELL_GRID_FIELD_USAGE = Object.freeze({});
 const APPROVED_BASE_PLINTH_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze(['BASE_PLINTH_POLICY']),
@@ -335,6 +334,7 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
+  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
 });
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/builder/core_carcass_shared.ts',
@@ -342,7 +342,6 @@ const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/builder/core_layout_compute.ts',
   'esm/native/builder/core_storage_compute_external_drawers.ts',
   'esm/native/builder/post_build_sketch_door_cuts_rebuild.ts',
-  'esm/native/builder/render_interior_rod_clearance.ts',
   'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
   'esm/native/builder/render_preview_interior_hover_apply.ts',
   'esm/native/features/sketch_internal_drawer_cassette.ts',
@@ -700,6 +699,7 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_custom_ops_layout.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
   ]),
+  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['INTERIOR_STORAGE_BARRIER_POLICY']),
   'esm/native/builder/render_interior_sketch_support_storage.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_CLAMP_POLICY',
@@ -780,6 +780,12 @@ const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
     'INTERIOR_ROD_DEPTH_CLEARANCE_POLICY',
     'INTERIOR_ROD_RENDER_POLICY',
   ]),
+  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
+    'INTERIOR_PRESET_ROD_FACTORS_POLICY',
+    'INTERIOR_PRESET_SHELF_ROWS_POLICY',
+    'INTERIOR_ROD_PLACEMENT_POLICY',
+    'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
+  ]),
   'esm/native/builder/render_interior_sketch_support_materials.ts': Object.freeze([
     'INTERIOR_SHELF_PIN_RENDER_POLICY',
   ]),
@@ -850,6 +856,9 @@ const APPROVED_SKETCH_BOX_GEOMETRY_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/builder/render_interior_sketch_boxes_shell_apply.ts': Object.freeze([
     'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+  ]),
+  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
+    'SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY',
   ]),
   'esm/native/services/canvas_picking_manual_layout_sketch_tools.ts': Object.freeze([
     'SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY',
@@ -996,21 +1005,6 @@ const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
     'presets.storageRodYFactor',
     'rods',
     'rods.defaultYOffsetM',
-  ]),
-  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
-    'presets',
-    'presets.fullShelfRows',
-    'presets.hangingRodYFactor',
-    'presets.hangingShelfRows',
-    'presets.mixedRodYFactor',
-    'presets.splitLowerRodYFactor',
-    'presets.splitShelfRows',
-    'presets.splitUpperRodYFactor',
-    'presets.storageRodYFactor',
-    'rods',
-    'rods.defaultYOffsetM',
-    'shelves',
-    'shelves.contentsHeightClearanceM',
   ]),
   'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts': Object.freeze([
     'rods',
@@ -1233,7 +1227,6 @@ const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
     'storage.barrierWidthClearanceM',
     'storage.barrierWidthMinM',
   ]),
-  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['storage', 'storage.barrierHeightM']),
   'esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts': Object.freeze([
     'storage',
     'storage.barrierWidthClearanceM',
@@ -1337,6 +1330,9 @@ const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
     'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
   ]),
   'esm/native/builder/render_interior_sketch_internal_drawer_cassette.ts': Object.freeze([
+    'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+  ]),
+  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
     'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
   ]),
   'esm/native/builder/render_interior_sketch_shared_external_drawers.ts': Object.freeze([
@@ -1462,6 +1458,10 @@ const APPROVED_CONTENT_VISUAL_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/builder/visuals_contents_hanger.ts': Object.freeze(['HANGER_VISUAL_POLICY']),
   'esm/native/builder/visuals_contents_hanging.ts': Object.freeze(['HANGING_CLOTHES_VISUAL_POLICY']),
+  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
+    'FOLDED_CLOTHES_VISUAL_POLICY',
+    'HANGER_VISUAL_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze([
     'BOOK_CONTENT_VISUAL_POLICY',
     'FOLDED_CLOTHES_VISUAL_POLICY',
@@ -1475,38 +1475,13 @@ const APPROVED_SKETCH_BOX_CLASSIC_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY']),
 });
-const APPROVED_CONTENT_VISUAL_LEGACY_DEPENDENCIES = Object.freeze({
-  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
-    'CONTENT_VISUAL_DIMENSIONS@static-import',
-  ]),
-});
-const APPROVED_CONTENT_VISUAL_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
-    'foldedClothes',
-    'foldedClothes.itemHeightM',
-    'foldedClothes.randomItemsRange',
-    'foldedClothes.stackBaseItems',
-    'hanger',
-    'hanger.barRadiusM',
-    'hanger.barYOffsetM',
-    'hanger.halfWidthM',
-    'hanger.moduleWidthClearanceM',
-    'hanger.rodYOffsetM',
-    'hanger.shoulderDropM',
-    'hanger.shoulderHeightM',
-  ]),
-});
+const APPROVED_CONTENT_VISUAL_LEGACY_DEPENDENCIES = Object.freeze({});
+const APPROVED_CONTENT_VISUAL_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/post_build_sketch_door_cuts_apply.ts': Object.freeze([
     'sketch',
     'sketch.doorCutHorizontalOverlapMinM',
     'sketch.doorCutNoOpToleranceM',
-  ]),
-  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
-    'sketch',
-    'sketch.internalClampPadMaxM',
-    'sketch.internalClampPadMinM',
-    'sketch.internalClampPadWoodRatio',
   ]),
   'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts': Object.freeze([
     'sketch',

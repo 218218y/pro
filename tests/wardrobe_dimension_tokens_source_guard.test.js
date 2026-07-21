@@ -334,7 +334,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
 
   const expectedConsumers = [
     'esm/native/builder/post_build_sketch_door_cuts_rebuild.ts',
-    'esm/native/builder/render_interior_rod_clearance.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
@@ -368,7 +367,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       /\bSKETCH_BOX_DIMENSIONS\b/u.test(read(file))
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 10);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 9);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 18);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
@@ -410,18 +409,20 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
       /SKETCH_BOX_DIMENSIONS\.geometry/u.test(read(file))
   );
-  assert.deepEqual(remainingGeometryConsumers.sort(), [
-    'esm/native/builder/render_interior_rod_clearance.ts',
-  ]);
-  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 1);
-  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/services/')).length, 0);
-  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
+  assert.deepEqual(remainingGeometryConsumers, []);
   const remainingPreviewConsumers = esmFiles.filter(
     file =>
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
       /SKETCH_BOX_DIMENSIONS\.preview/u.test(read(file))
   );
   assert.equal(remainingPreviewConsumers.length, 27);
+  assert.deepEqual(remainingPreviewConsumers.sort(), actualConsumers.sort());
+  for (const file of actualConsumers) {
+    const branches = new Set(
+      Array.from(read(file).matchAll(/SKETCH_BOX_DIMENSIONS\.([A-Za-z0-9_]+)/gu), match => match[1])
+    );
+    assert.deepEqual([...branches], ['preview'], `${file} must use only the Preview branch`);
+  }
   assert.equal(
     esmFiles.filter(
       file =>
@@ -1834,4 +1835,66 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
   const slidingMotion = read('esm/native/platform/render_loop_motion_doors.ts');
   assert.doesNotMatch(slidingMotion, /const overlap = 0\.03/);
   assert.doesNotMatch(slidingMotion, /d\.stackZStep, 0\.055/);
+});
+
+test('[dimension tokens] interior rod clearance uses seven focused owners without compatibility aggregates', () => {
+  const file = 'esm/native/builder/render_interior_rod_clearance.ts';
+  const source = read(file);
+  const expectedImports = Object.freeze([
+    Object.freeze({
+      specifier: '../../shared/dimensions/carcass_interior_grid_policy.js',
+      symbols: Object.freeze(['CARCASS_INTERIOR_GRID_POLICY']),
+    }),
+    Object.freeze({
+      specifier: '../../shared/dimensions/content_visual_policy.js',
+      symbols: Object.freeze(['FOLDED_CLOTHES_VISUAL_POLICY', 'HANGER_VISUAL_POLICY']),
+    }),
+    Object.freeze({
+      specifier: '../../shared/dimensions/drawer_sketch_policy.js',
+      symbols: Object.freeze(['DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY']),
+    }),
+    Object.freeze({
+      specifier: '../../shared/dimensions/interior_fittings_policy.js',
+      symbols: Object.freeze([
+        'INTERIOR_PRESET_ROD_FACTORS_POLICY',
+        'INTERIOR_PRESET_SHELF_ROWS_POLICY',
+        'INTERIOR_ROD_PLACEMENT_POLICY',
+        'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
+      ]),
+    }),
+    Object.freeze({
+      specifier: '../../shared/dimensions/interior_storage_policy.js',
+      symbols: Object.freeze(['INTERIOR_STORAGE_BARRIER_POLICY']),
+    }),
+    Object.freeze({
+      specifier: '../../shared/dimensions/material_thickness_policy.js',
+      symbols: Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+    }),
+    Object.freeze({
+      specifier: '../../shared/dimensions/sketch_box_geometry_policy.js',
+      symbols: Object.freeze(['SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY']),
+    }),
+  ]);
+
+  assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared/u);
+  assert.doesNotMatch(
+    source,
+    /\b(?:CARCASS_SHELL_DIMENSIONS|CONTENT_VISUAL_DIMENSIONS|DRAWER_DIMENSIONS|INTERIOR_FITTINGS_DIMENSIONS|MATERIAL_DIMENSIONS|SKETCH_BOX_DIMENSIONS|CONTENT_VISUAL_POLICY|DRAWER_SKETCH_POLICY|INTERIOR_FITTINGS_POLICY|INTERIOR_STORAGE_POLICY|SKETCH_BOX_GEOMETRY_POLICY)\b/u
+  );
+  assert.doesNotMatch(source, /import\s+\*/u);
+  assert.doesNotMatch(source, /export\s+(?:\*|\{[^}]*\})\s+from/u);
+
+  for (const expected of expectedImports) {
+    const escapedSpecifier = expected.specifier.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+    const matches = Array.from(
+      source.matchAll(new RegExp(`import\\s*\\{([^}]*)\\}\\s*from\\s*['"]${escapedSpecifier}['"];`, 'gu'))
+    );
+    assert.equal(matches.length, 1, `${file} must have one statement for ${expected.specifier}`);
+    const symbols = matches[0][1]
+      .split(',')
+      .map(symbol => symbol.trim())
+      .filter(Boolean)
+      .sort();
+    assert.deepEqual(symbols, [...expected.symbols].sort());
+  }
 });

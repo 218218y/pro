@@ -1,11 +1,18 @@
+import { CARCASS_INTERIOR_GRID_POLICY } from '../../shared/dimensions/carcass_interior_grid_policy.js';
 import {
-  CARCASS_SHELL_DIMENSIONS,
-  CONTENT_VISUAL_DIMENSIONS,
-  DRAWER_DIMENSIONS,
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  FOLDED_CLOTHES_VISUAL_POLICY,
+  HANGER_VISUAL_POLICY,
+} from '../../shared/dimensions/content_visual_policy.js';
+import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
+import {
+  INTERIOR_PRESET_ROD_FACTORS_POLICY,
+  INTERIOR_PRESET_SHELF_ROWS_POLICY,
+  INTERIOR_ROD_PLACEMENT_POLICY,
+  INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY,
+} from '../../shared/dimensions/interior_fittings_policy.js';
+import { INTERIOR_STORAGE_BARRIER_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import { SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M,
@@ -44,7 +51,7 @@ type DrawerRange = {
 function clampSingleHangerScaleForModuleWidth(moduleWidth: unknown): number {
   const width = readRuntimeNumber(moduleWidth);
   if (width == null) return 1;
-  const dims = CONTENT_VISUAL_DIMENSIONS.hanger;
+  const dims = HANGER_VISUAL_POLICY;
   const totalHangerWidth = dims.halfWidthM * 2;
   if (!(totalHangerWidth > 0)) return 1;
   const safeWidth = width - dims.moduleWidthClearanceM;
@@ -53,10 +60,11 @@ function clampSingleHangerScaleForModuleWidth(moduleWidth: unknown): number {
 }
 
 export function resolveSingleHangerRequiredClearance(moduleWidth: unknown): number {
-  const dims = CONTENT_VISUAL_DIMENSIONS.hanger;
+  const dims = HANGER_VISUAL_POLICY;
   const scale = clampSingleHangerScaleForModuleWidth(moduleWidth);
-  const lowestBodyY = -dims.shoulderHeightM - dims.shoulderDropM;
-  const lowestBarY = -dims.shoulderHeightM - dims.barYOffsetM - dims.barRadiusM;
+  const shoulderHeightM: number = dims.shoulderHeightM;
+  const lowestBodyY = -shoulderHeightM - dims.shoulderDropM;
+  const lowestBarY = -shoulderHeightM - dims.barYOffsetM - dims.barRadiusM;
   const lowestLocalY = Math.min(lowestBodyY, lowestBarY, 0);
   return Math.max(0, dims.rodYOffsetM + Math.abs(lowestLocalY) * scale);
 }
@@ -73,10 +81,10 @@ export function canSingleHangerFitBelowRod(args: {
 }
 
 const FOLDED_CLOTHES_BLOCKER_HEIGHT_M =
-  CONTENT_VISUAL_DIMENSIONS.foldedClothes.itemHeightM *
-    (CONTENT_VISUAL_DIMENSIONS.foldedClothes.stackBaseItems +
-      Math.max(0, CONTENT_VISUAL_DIMENSIONS.foldedClothes.randomItemsRange - 1)) +
-  INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsHeightClearanceM;
+  FOLDED_CLOTHES_VISUAL_POLICY.itemHeightM *
+    (FOLDED_CLOTHES_VISUAL_POLICY.stackBaseItems +
+      Math.max(0, FOLDED_CLOTHES_VISUAL_POLICY.randomItemsRange - 1)) +
+  INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsHeightClearanceM;
 
 function isRecord(value: unknown): value is UnknownRecord {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -99,7 +107,7 @@ function readGridDivisions(config: UnknownRecord | null, explicit: unknown): num
   if (explicitDivisions != null && explicitDivisions > 0) return Math.round(explicitDivisions);
   const configDivisions = readRuntimeNumber(config?.gridDivisions);
   if (configDivisions != null && configDivisions > 0) return Math.round(configDivisions);
-  return CARCASS_SHELL_DIMENSIONS.drawerGridDivisions;
+  return CARCASS_INTERIOR_GRID_POLICY.divisions;
 }
 
 function resolveShelfTopY(args: { shelfY: number; shelfThick: number }): number | null {
@@ -179,7 +187,8 @@ function collectPresetBlockers(args: {
   shelfBlockerMode: ShelfBlockerMode;
 }): boolean {
   const { config, layout, effectiveBottomY, localGridStep, blockers, shelfThick, shelfBlockerMode } = args;
-  const preset = INTERIOR_FITTINGS_DIMENSIONS.presets;
+  const presetShelfRows = INTERIOR_PRESET_SHELF_ROWS_POLICY;
+  const presetRodFactors = INTERIOR_PRESET_ROD_FACTORS_POLICY;
   const rods: RodPoint[] = [];
   let hasKnownPreset = false;
 
@@ -203,31 +212,31 @@ function collectPresetBlockers(args: {
   switch (layout) {
     case 'shelves':
       hasKnownPreset = true;
-      addShelves(preset.fullShelfRows);
+      addShelves(presetShelfRows.fullShelfRows);
       break;
     case 'mixed':
       hasKnownPreset = true;
-      addShelves(preset.fullShelfRows);
-      addRod(preset.mixedRodYFactor);
+      addShelves(presetShelfRows.fullShelfRows);
+      addRod(presetRodFactors.mixedRodYFactor);
       break;
     case 'hanging':
     case 'hanging_top2':
       hasKnownPreset = true;
-      addShelves(preset.hangingShelfRows);
-      addRod(preset.hangingRodYFactor);
+      addShelves(presetShelfRows.hangingShelfRows);
+      addRod(presetRodFactors.hangingRodYFactor);
       break;
     case 'hanging_split':
       hasKnownPreset = true;
-      addShelves(preset.splitShelfRows);
-      addRod(preset.splitUpperRodYFactor);
-      addRod(preset.splitLowerRodYFactor);
+      addShelves(presetShelfRows.splitShelfRows);
+      addRod(presetRodFactors.splitUpperRodYFactor);
+      addRod(presetRodFactors.splitLowerRodYFactor);
       break;
     case 'storage':
     case 'storage_shelf':
       hasKnownPreset = true;
-      addShelves(preset.hangingShelfRows);
-      addRod(preset.storageRodYFactor);
-      blockers.push(effectiveBottomY + INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM);
+      addShelves(presetShelfRows.hangingShelfRows);
+      addRod(presetRodFactors.storageRodYFactor);
+      blockers.push(effectiveBottomY + INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM);
       break;
     default:
       break;
@@ -235,7 +244,7 @@ function collectPresetBlockers(args: {
 
   const customData = isRecord(config?.customData) ? config.customData : null;
   if (customData && !!customData.storage) {
-    blockers.push(effectiveBottomY + INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM);
+    blockers.push(effectiveBottomY + INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM);
     hasKnownPreset = true;
   }
 
@@ -284,13 +293,12 @@ function collectCustomBlockers(args: {
   const rods = readBoolArray(customData.rods);
   for (let i = 0; i < rods.length; i += 1) {
     if (!rods[i] || explicitRodGridIndexes.has(i + 1)) continue;
-    const rodY =
-      effectiveBottomY + (i + 1) * localGridStep + INTERIOR_FITTINGS_DIMENSIONS.rods.defaultYOffsetM;
+    const rodY = effectiveBottomY + (i + 1) * localGridStep + INTERIOR_ROD_PLACEMENT_POLICY.defaultYOffsetM;
     if (Number.isFinite(rodY)) blockers.push(rodY);
   }
 
   if (customData.storage) {
-    blockers.push(effectiveBottomY + INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM);
+    blockers.push(effectiveBottomY + INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM);
   }
 
   if (!shelves.length && !rods.length && !rodOps.length && !customData.storage) hasEvidence = false;
@@ -300,15 +308,15 @@ function collectCustomBlockers(args: {
 function resolvePositiveThickness(value: unknown): number {
   const thickness = readRuntimeNumber(value);
   if (thickness != null && thickness > 0) return thickness;
-  return MATERIAL_DIMENSIONS.wood.thicknessM;
+  return MATERIAL_THICKNESS_POLICY.wood.thicknessM;
 }
 
 function resolveSketchInternalDrawerPad(woodThick: number): number {
   return Math.min(
-    DRAWER_DIMENSIONS.sketch.internalClampPadMaxM,
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadMaxM,
     Math.max(
-      DRAWER_DIMENSIONS.sketch.internalClampPadMinM,
-      Math.max(0, woodThick) * DRAWER_DIMENSIONS.sketch.internalClampPadWoodRatio
+      DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadMinM,
+      Math.max(0, woodThick) * DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadWoodRatio
     )
   );
 }
@@ -434,8 +442,7 @@ function collectSketchExtraBlockers(args: {
     const raw = readRuntimeNumber(value);
     if (raw == null) return null;
     const n = Math.max(0, Math.min(1, raw));
-    const geometryDims = SKETCH_BOX_DIMENSIONS.geometry;
-    const pad = geometryDims.placementClampPadMinM;
+    const pad = SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadMinM;
     const lo = effectiveBottomY + pad;
     const hi = effectiveTopY - pad;
     const y = effectiveBottomY + n * span;
@@ -465,7 +472,7 @@ function collectSketchExtraBlockers(args: {
     const barrier = storageBarriers[i];
     const baseY = clampNormY(barrier.yNorm);
     const height =
-      readRuntimeNumber(barrier.heightM ?? barrier.hM) ?? INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM;
+      readRuntimeNumber(barrier.heightM ?? barrier.hM) ?? INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM;
     if (baseY != null) {
       blockers.push(baseY + Math.max(0, height) / 2);
       hasEvidence = true;
