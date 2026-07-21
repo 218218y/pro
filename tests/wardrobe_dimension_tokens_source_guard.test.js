@@ -254,6 +254,7 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
     ],
     ['esm/native/builder/render_interior_sketch_boxes.ts', ['SKETCH_BOX_DOOR_PREVIEW_POLICY']],
     ['esm/native/builder/render_interior_sketch_boxes_contents_depth.ts', ['SKETCH_BOX_DOOR_PREVIEW_POLICY']],
+    ['esm/native/builder/render_interior_sketch_boxes_door_geometry.ts', ['SKETCH_BOX_DOOR_PREVIEW_POLICY']],
     ['esm/native/builder/post_build_sketch_door_cuts_rebuild.ts', ['SKETCH_BOX_DOOR_PREVIEW_POLICY']],
     ['esm/native/services/canvas_picking_sketch_box_door_preview.ts', ['SKETCH_BOX_DOOR_PREVIEW_POLICY']],
   ]);
@@ -337,7 +338,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
-    'esm/native/builder/render_interior_sketch_boxes_door_geometry.ts',
     'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts',
     'esm/native/builder/render_interior_sketch_drawers_external_context.ts',
     'esm/native/builder/render_preview_interior_hover_apply.ts',
@@ -366,7 +366,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       /\bSKETCH_BOX_DIMENSIONS\b/u.test(read(file))
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 8);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 7);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 17);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
@@ -414,7 +414,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
       /SKETCH_BOX_DIMENSIONS\.preview/u.test(read(file))
   );
-  assert.equal(remainingPreviewConsumers.length, 25);
+  assert.equal(remainingPreviewConsumers.length, 24);
   assert.deepEqual(remainingPreviewConsumers.sort(), actualConsumers.sort());
   for (const file of actualConsumers) {
     const branches = new Set(

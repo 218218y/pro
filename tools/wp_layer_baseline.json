@@ -3155,6 +3155,35 @@
       },
       "reason": "The Sketch Box door preview resolver replaces one legacy facade statement with the canonical Door Preview owner plus the focused Material Thickness fallback owner on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Door Preview composition seam eliminates the extra Material Thickness statement for Sketch Box door preview resolver without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_door_geometry.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DOOR_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DOOR_SYSTEM_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_MOUNT_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch Box door-geometry resolver replaces one legacy facade statement with the canonical Door Preview owner plus the focused Hinged Door Mount owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch Box door-geometry composition seam eliminates the extra Hinged Door Mount statement without reintroducing the legacy facade."
     }
   ]
 }

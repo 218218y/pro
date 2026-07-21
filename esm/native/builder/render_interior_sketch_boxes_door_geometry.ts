@@ -1,7 +1,5 @@
-import {
-  DOOR_SYSTEM_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { HINGED_DOOR_MOUNT_POLICY } from '../../shared/dimensions/door_system_policy.js';
+import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import type { ResolvedSketchBoxState } from './render_interior_sketch_boxes_shared.js';
 
 import { asValueRecord } from './render_interior_sketch_shared.js';
@@ -13,15 +11,15 @@ export function resolveSketchBoxDoorMountMode(input: unknown): 'overlay' | 'inse
 }
 
 export function resolveSketchBoxInsetReveal(woodThick: number): number {
-  return Math.min(DOOR_SYSTEM_DIMENSIONS.hinged.insetRevealM, Math.max(0, woodThick / 3));
+  return Math.min(HINGED_DOOR_MOUNT_POLICY.insetRevealM, Math.max(0, woodThick / 3));
 }
 
 export function resolveSketchBoxDoorThickness(woodThick: number): number {
   return Math.max(
-    SKETCH_BOX_DIMENSIONS.preview.doorThicknessMinM,
+    SKETCH_BOX_DOOR_PREVIEW_POLICY.doorThicknessMinM,
     Math.min(
-      SKETCH_BOX_DIMENSIONS.preview.doorThicknessMaxM,
-      Math.max(woodThick, SKETCH_BOX_DIMENSIONS.preview.doorThicknessMinM)
+      SKETCH_BOX_DOOR_PREVIEW_POLICY.doorThicknessMaxM,
+      Math.max(woodThick, SKETCH_BOX_DOOR_PREVIEW_POLICY.doorThicknessMinM)
     )
   );
 }
