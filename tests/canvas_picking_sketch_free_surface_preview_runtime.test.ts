@@ -8,6 +8,11 @@ import {
 import { resolveSketchFreeSurfaceAdornmentPreview } from '../esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts';
 import { decodeSketchFreeBoxPlacementHover } from '../esm/native/services/canvas_picking_sketch_free_box_command.ts';
 import { decodeSketchStructuralCommandHover } from '../esm/native/services/canvas_picking_sketch_structural_command.ts';
+import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
+import {
+  SKETCH_BOX_ADORNMENT_PREVIEW_POLICY,
+  SKETCH_BOX_DOOR_PREVIEW_POLICY,
+} from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
 
 function requireFreeBoxPlacementCommand(value: unknown) {
   const decoded = decodeSketchFreeBoxPlacementHover(value);
@@ -294,4 +299,272 @@ test('sketch free base adornment preview rejects string-encoded current base dim
   assert.equal(command.op, 'add');
   assert.equal(command.baseLegHeightCm, 24);
   assert.equal(command.baseLegWidthCm, 7);
+});
+
+function assertNear(actual: unknown, expected: number, epsilon = 1e-9): void {
+  assert.equal(typeof actual, 'number');
+  assert.ok(Math.abs(Number(actual) - expected) <= epsilon, `${String(actual)} != ${String(expected)}`);
+}
+
+function makeAdornmentTarget(overrides: Record<string, unknown> = {}) {
+  return {
+    boxId: 'adornment-box',
+    partPrefix: 'prefix:adornment-box',
+    targetBox: {},
+    targetGeo: {
+      centerX: 0.2,
+      centerZ: -0.1,
+      outerW: 0.8,
+      innerW: 0.764,
+      outerD: 0.42,
+      innerD: 0.384,
+      innerBackZ: -0.31,
+    },
+    targetCenterY: 1,
+    targetHeight: 0.8,
+    pointerX: 0.2,
+    pointerY: 1,
+    ...overrides,
+  } as any;
+}
+
+test('sketch free cornice adornment keeps toggle, fallback, focused geometry, and host metadata parity', () => {
+  const host = { moduleKey: 3, isBottom: true } as const;
+  const target = makeAdornmentTarget({
+    targetGeo: {
+      ...makeAdornmentTarget().targetGeo,
+      outerW: 0.01,
+    },
+  });
+
+  const fallback = resolveSketchFreeSurfaceAdornmentPreview({
+    tool: 'invalid-cornice-tool',
+    contentKind: 'cornice',
+    host,
+    target,
+    wardrobeBox: wardrobeBox as any,
+    readSketchBoxDividers: () => [],
+    resolveSketchBoxSegments: () => [],
+  });
+  const addCommand = requireStructuralCommand(fallback.hoverRecord);
+  assert.equal(addCommand.kind, 'set-cornice');
+  if (addCommand.kind !== 'set-cornice') assert.fail('Expected set-cornice command');
+  assert.equal(addCommand.corniceType, 'classic');
+  assert.equal(addCommand.freePlacement, true);
+  assert.equal(addCommand.blockedReason, null);
+  assert.equal(fallback.hoverRecord.hostModuleKey, 3);
+  assert.equal(fallback.hoverRecord.hostIsBottom, true);
+  assert.equal(fallback.preview.op, 'add');
+  assert.equal(fallback.preview.kind, 'storage');
+  assertNear(fallback.preview.x, 0.2);
+  assertNear(fallback.preview.y, 1 + 0.8 / 2 + SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentCorniceYOffsetM);
+  assertNear(
+    fallback.preview.z,
+    -0.1 + 0.42 / 2 - SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentCorniceZInsetM
+  );
+  assertNear(fallback.preview.w, SKETCH_BOX_DOOR_PREVIEW_POLICY.doorMinDimensionM);
+  assertNear(fallback.preview.h, SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentCorniceHeightM);
+  assertNear(fallback.preview.d, SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentCorniceDepthM);
+  assertNear(fallback.preview.woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
+
+  const remove = resolveSketchFreeSurfaceAdornmentPreview({
+    tool: 'sketch_box_cornice:wave',
+    contentKind: 'cornice',
+    host,
+    target: makeAdornmentTarget({ targetBox: { hasCornice: true, corniceType: 'wave' } }),
+    wardrobeBox: wardrobeBox as any,
+    readSketchBoxDividers: () => [],
+    resolveSketchBoxSegments: () => [],
+  });
+  const removeCommand = requireStructuralCommand(remove.hoverRecord);
+  assert.equal(removeCommand.kind, 'remove-cornice');
+  assert.equal(remove.preview.op, 'remove');
+
+  const changedType = resolveSketchFreeSurfaceAdornmentPreview({
+    tool: 'sketch_box_cornice:wave',
+    contentKind: 'cornice',
+    host,
+    target: makeAdornmentTarget({ targetBox: { hasCornice: true, corniceType: 'classic' } }),
+    wardrobeBox: wardrobeBox as any,
+    readSketchBoxDividers: () => [],
+    resolveSketchBoxSegments: () => [],
+  });
+  assert.equal(requireStructuralCommand(changedType.hoverRecord).kind, 'set-cornice');
+});
+
+test('sketch free base adornment preserves tool fallback, option equality, none toggle, and payload defaults', () => {
+  const host = { moduleKey: 0, isBottom: false } as const;
+  const common = {
+    contentKind: 'base' as const,
+    host,
+    wardrobeBox: wardrobeBox as any,
+    readSketchBoxDividers: () => [],
+    resolveSketchBoxSegments: () => [],
+  };
+
+  const fallback = resolveSketchFreeSurfaceAdornmentPreview({
+    ...common,
+    tool: 'invalid-base-tool',
+    target: makeAdornmentTarget(),
+  });
+  const fallbackCommand = requireStructuralCommand(fallback.hoverRecord);
+  assert.equal(fallbackCommand.kind, 'set-base');
+  if (fallbackCommand.kind !== 'set-base') assert.fail('Expected set-base command');
+  assert.equal(fallbackCommand.baseType, 'plinth');
+
+  const samePlinth = resolveSketchFreeSurfaceAdornmentPreview({
+    ...common,
+    tool: 'sketch_box_base:plinth@10',
+    target: makeAdornmentTarget({ targetBox: { baseType: 'plinth', basePlinthHeightCm: 10 } }),
+  });
+  assert.equal(requireStructuralCommand(samePlinth.hoverRecord).kind, 'remove-base');
+  assert.equal(samePlinth.preview.op, 'remove');
+
+  const changedPlinth = resolveSketchFreeSurfaceAdornmentPreview({
+    ...common,
+    tool: 'sketch_box_base:plinth@12',
+    target: makeAdornmentTarget({ targetBox: { baseType: 'plinth', basePlinthHeightCm: 10 } }),
+  });
+  const changedCommand = requireStructuralCommand(changedPlinth.hoverRecord);
+  assert.equal(changedCommand.kind, 'set-base');
+  if (changedCommand.kind !== 'set-base') assert.fail('Expected set-base command');
+  assert.equal(changedCommand.basePlinthHeightCm, 12);
+
+  const removeExisting = resolveSketchFreeSurfaceAdornmentPreview({
+    ...common,
+    tool: 'sketch_box_base:none',
+    target: makeAdornmentTarget({ targetBox: { baseType: 'legs' } }),
+  });
+  assert.equal(requireStructuralCommand(removeExisting.hoverRecord).kind, 'remove-base');
+
+  const addLegs = resolveSketchFreeSurfaceAdornmentPreview({
+    ...common,
+    tool: 'sketch_box_base:legs@round@gold@25@8@plain@flush@2@3',
+    target: makeAdornmentTarget(),
+  });
+  const legsCommand = requireStructuralCommand(addLegs.hoverRecord);
+  assert.equal(legsCommand.kind, 'set-base');
+  if (legsCommand.kind !== 'set-base') assert.fail('Expected set-base command');
+  assert.deepEqual(
+    {
+      baseType: legsCommand.baseType,
+      baseLegStyle: legsCommand.baseLegStyle,
+      baseLegColor: legsCommand.baseLegColor,
+      baseLegPlatformMode: legsCommand.baseLegPlatformMode,
+      baseLegPlatformSideMode: legsCommand.baseLegPlatformSideMode,
+      baseLegPlatformSideOverhangCm: legsCommand.baseLegPlatformSideOverhangCm,
+      baseLegPlatformFrontOverhangCm: legsCommand.baseLegPlatformFrontOverhangCm,
+      baseLegHeightCm: legsCommand.baseLegHeightCm,
+      baseLegWidthCm: legsCommand.baseLegWidthCm,
+    },
+    {
+      baseType: 'legs',
+      baseLegStyle: 'round',
+      baseLegColor: 'gold',
+      baseLegPlatformMode: 'plain',
+      baseLegPlatformSideMode: 'flush',
+      baseLegPlatformSideOverhangCm: 2,
+      baseLegPlatformFrontOverhangCm: 3,
+      baseLegHeightCm: 25,
+      baseLegWidthCm: 8,
+    }
+  );
+});
+
+test('sketch free base adornment preserves floor clamp, ratio/max inset, depth/width policies, material forwarding, and front overlay fields', () => {
+  const capturedSegmentArgs: any[] = [];
+  const resolveSegments = (args: any) => {
+    capturedSegmentArgs.push(args);
+    return [{ index: 0, leftX: -0.3, rightX: 0.3, centerX: 0, width: 0.6, xNorm: 0.5 }];
+  };
+  const targetWithDoor = makeAdornmentTarget({
+    targetBox: {
+      baseType: 'none',
+      doors: [{ id: 'door-1', xNorm: 0.5, hinge: 'left', enabled: true, open: false, groove: false }],
+    },
+    targetGeo: {
+      ...makeAdornmentTarget().targetGeo,
+      outerW: 0.06,
+      innerW: 0.024,
+      outerD: 0.04,
+      innerD: 0.004,
+      centerZ: 0,
+      innerBackZ: -0.002,
+    },
+    targetCenterY: 0.2,
+    targetHeight: 0.2,
+  });
+  const preview = resolveSketchFreeSurfaceAdornmentPreview({
+    tool: 'sketch_box_base:legs@round@black@20@8@plain@flush@0@0',
+    contentKind: 'base',
+    host: { moduleKey: 1, isBottom: true },
+    target: targetWithDoor,
+    wardrobeBox: { centerX: 0, centerY: 0.5, centerZ: 0, width: 2, height: 1, depth: 0.6 } as any,
+    readSketchBoxDividers: () => [],
+    resolveSketchBoxSegments: resolveSegments,
+  });
+
+  assert.equal(capturedSegmentArgs.length, 1);
+  assertNear(capturedSegmentArgs[0].woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
+  assert.equal(capturedSegmentArgs[0].boxCenterX, targetWithDoor.targetGeo.centerX);
+  assert.equal(capturedSegmentArgs[0].innerW, targetWithDoor.targetGeo.innerW);
+  assertNear(preview.preview.woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
+  assertNear(
+    preview.preview.z,
+    targetWithDoor.targetGeo.centerZ +
+      Math.min(
+        SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseZInsetMaxM,
+        targetWithDoor.targetGeo.outerD * SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseZInsetDepthRatio
+      )
+  );
+  assertNear(preview.preview.w, SKETCH_BOX_DOOR_PREVIEW_POLICY.doorMinDimensionM);
+  assertNear(preview.preview.d, SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseLegDepthM);
+  assertNear(preview.preview.y, 0.2 - 0.2 / 2 + Number(preview.preview.h) / 2);
+  for (const key of [
+    'frontOverlayX',
+    'frontOverlayY',
+    'frontOverlayZ',
+    'frontOverlayW',
+    'frontOverlayH',
+    'frontOverlayThickness',
+  ]) {
+    assert.equal(typeof preview.preview[key], 'number', `${key} must forward a numeric overlay value`);
+  }
+
+  const maxInset = resolveSketchFreeSurfaceAdornmentPreview({
+    tool: 'sketch_box_base:plinth@10',
+    contentKind: 'base',
+    host: { moduleKey: 1, isBottom: false },
+    target: makeAdornmentTarget({
+      targetGeo: { ...makeAdornmentTarget().targetGeo, outerD: 1 },
+      targetBox: {},
+    }),
+    wardrobeBox: wardrobeBox as any,
+    readSketchBoxDividers: () => [],
+    resolveSketchBoxSegments: () => [],
+  });
+  assertNear(maxInset.preview.z, -0.1 + SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseZInsetMaxM);
+  assertNear(maxInset.preview.w, 0.8 - SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseWidthClearanceM);
+  assertNear(maxInset.preview.d, 1 - SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseDepthClearanceM);
+  for (const key of [
+    'frontOverlayX',
+    'frontOverlayY',
+    'frontOverlayZ',
+    'frontOverlayW',
+    'frontOverlayH',
+    'frontOverlayThickness',
+  ]) {
+    assert.equal(maxInset.preview[key], undefined, `${key} must remain undefined without a front overlay`);
+  }
+
+  const removeMissingHeight = resolveSketchFreeSurfaceAdornmentPreview({
+    tool: 'sketch_box_base:none',
+    contentKind: 'base',
+    host: { moduleKey: 1, isBottom: false },
+    target: makeAdornmentTarget({ targetBox: { baseType: 'plinth', basePlinthHeightCm: '10' } }),
+    wardrobeBox: wardrobeBox as any,
+    readSketchBoxDividers: () => [],
+    resolveSketchBoxSegments: () => [],
+  });
+  assertNear(removeMissingHeight.preview.h, SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseDefaultHeightM);
 });

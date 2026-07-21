@@ -11,7 +11,11 @@ import {
   DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
   DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
 } from '../features/platform_overhang_support.js';
-import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import {
+  SKETCH_BOX_ADORNMENT_PREVIEW_POLICY,
+  SKETCH_BOX_DOOR_PREVIEW_POLICY,
+} from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { resolveSketchBoxVisibleFrontOverlay } from './canvas_picking_manual_layout_sketch_front_overlay.js';
 import { createManualLayoutSketchStructuralCommandHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import {
@@ -93,15 +97,18 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
       preview: {
         kind: 'storage',
         x: targetGeo.centerX,
-        y: targetCenterY + targetHeight / 2 + SKETCH_BOX_DIMENSIONS.preview.adornmentCorniceYOffsetM,
-        z: targetGeo.centerZ + targetGeo.outerD / 2 - SKETCH_BOX_DIMENSIONS.preview.adornmentCorniceZInsetM,
+        y: targetCenterY + targetHeight / 2 + SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentCorniceYOffsetM,
+        z:
+          targetGeo.centerZ +
+          targetGeo.outerD / 2 -
+          SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentCorniceZInsetM,
         w: Math.max(
-          SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM,
-          targetGeo.outerW + SKETCH_BOX_DIMENSIONS.preview.adornmentCorniceWidthExtraM
+          SKETCH_BOX_DOOR_PREVIEW_POLICY.doorMinDimensionM,
+          targetGeo.outerW + SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentCorniceWidthExtraM
         ),
-        h: SKETCH_BOX_DIMENSIONS.preview.adornmentCorniceHeightM,
-        d: SKETCH_BOX_DIMENSIONS.preview.adornmentCorniceDepthM,
-        woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
+        h: SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentCorniceHeightM,
+        d: SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentCorniceDepthM,
+        woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
         op,
       },
     };
@@ -158,7 +165,7 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
   const previewH =
     selectedBase === 'none'
       ? getSketchBoxAdornmentBaseHeight(currentBase, targetBox) ||
-        SKETCH_BOX_DIMENSIONS.preview.adornmentBaseDefaultHeightM
+        SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseDefaultHeightM
       : getSketchBoxAdornmentBaseHeight(
           selectedBase,
           selectedBase === 'plinth'
@@ -177,13 +184,13 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
     dividers: readSketchBoxDividers(targetBox),
     boxCenterX: targetGeo.centerX,
     innerW: targetGeo.innerW,
-    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
+    woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
   });
   const frontOverlay = resolveSketchBoxVisibleFrontOverlay({
     box: targetBox,
     boxCenterY: targetCenterY,
     boxHeight: targetHeight,
-    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
+    woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
     geo: targetGeo,
     segments,
     fullWidth: true,
@@ -229,23 +236,23 @@ export function resolveSketchFreeSurfaceAdornmentPreview(args: {
       z:
         targetGeo.centerZ +
         Math.min(
-          SKETCH_BOX_DIMENSIONS.preview.adornmentBaseZInsetMaxM,
-          targetGeo.outerD * SKETCH_BOX_DIMENSIONS.preview.adornmentBaseZInsetDepthRatio
+          SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseZInsetMaxM,
+          targetGeo.outerD * SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseZInsetDepthRatio
         ),
       w: Math.max(
-        SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM,
+        SKETCH_BOX_DOOR_PREVIEW_POLICY.doorMinDimensionM,
         selectedBase === 'legs'
-          ? targetGeo.outerW - SKETCH_BOX_DIMENSIONS.preview.adornmentBaseLegWidthClearanceM
-          : targetGeo.outerW - SKETCH_BOX_DIMENSIONS.preview.adornmentBaseWidthClearanceM
+          ? targetGeo.outerW - SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseLegWidthClearanceM
+          : targetGeo.outerW - SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseWidthClearanceM
       ),
       h: previewH,
       d: Math.max(
-        SKETCH_BOX_DIMENSIONS.preview.adornmentBaseDepthMinM,
+        SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseDepthMinM,
         selectedBase === 'legs'
-          ? SKETCH_BOX_DIMENSIONS.preview.adornmentBaseLegDepthM
-          : targetGeo.outerD - SKETCH_BOX_DIMENSIONS.preview.adornmentBaseDepthClearanceM
+          ? SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseLegDepthM
+          : targetGeo.outerD - SKETCH_BOX_ADORNMENT_PREVIEW_POLICY.adornmentBaseDepthClearanceM
       ),
-      woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
+      woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
       op,
       frontOverlayX: frontOverlay ? frontOverlay.x : undefined,
       frontOverlayY: frontOverlay ? frontOverlay.y : undefined,

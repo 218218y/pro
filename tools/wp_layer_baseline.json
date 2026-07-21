@@ -3184,6 +3184,35 @@
       },
       "reason": "The Sketch Box door-geometry resolver replaces one legacy facade statement with the canonical Door Preview owner plus the focused Hinged Door Mount owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch Box door-geometry composition seam eliminates the extra Hinged Door Mount statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_ADORNMENT_PREVIEW_POLICY", "SKETCH_BOX_DOOR_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch free-surface adornment preview replaces one legacy facade statement with focused Adornment and Door Preview owners plus the canonical Material Thickness owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed adornment-preview composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
     }
   ]
 }

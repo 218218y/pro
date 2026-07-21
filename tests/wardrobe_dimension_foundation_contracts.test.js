@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 66, statements: 66 }),
+  'static-import': Object.freeze({ importers: 65, statements: 65 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 68, statements: 69 }),
+  total: Object.freeze({ importers: 67, statements: 68 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -338,6 +338,9 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_sketch_box_door_preview.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
+  'esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
   'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
 });
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
@@ -355,7 +358,6 @@ const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts',
   'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts',
   'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
-  'esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts',
 ]);
 const APPROVED_MATERIAL_LEGACY_DEPENDENCIES = Object.freeze(
   Object.fromEntries(
@@ -999,6 +1001,10 @@ const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
     'SKETCH_BOX_DOOR_PREVIEW_POLICY',
   ]),
   'esm/native/services/canvas_picking_sketch_box_door_preview.ts': Object.freeze([
+    'SKETCH_BOX_DOOR_PREVIEW_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts': Object.freeze([
+    'SKETCH_BOX_ADORNMENT_PREVIEW_POLICY',
     'SKETCH_BOX_DOOR_PREVIEW_POLICY',
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_PREVIEW_POLICY']),
