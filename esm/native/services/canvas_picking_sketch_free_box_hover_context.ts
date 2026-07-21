@@ -1,4 +1,5 @@
-import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import { SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY } from '../../shared/dimensions/sketch_box_free_placement_policy.js';
 import {
   asFiniteNumberOrNaN,
   asNumberOrNull,
@@ -56,7 +57,7 @@ export function createSketchFreeBoxHoverContext(
     wardrobeDepth: asNumberOrNull(wardrobeBox.depth) ?? 0,
     backZ: wardrobeBackZ,
     centerX: planeX,
-    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
+    woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
     widthM: args.widthOverrideM,
     depthM: args.depthOverrideM,
   });
@@ -72,10 +73,12 @@ export function createSketchFreeBoxHoverContext(
     return null;
   }
 
-  const freePlacementDims = SKETCH_BOX_DIMENSIONS.freePlacement;
   const workspacePad = Math.min(
-    freePlacementDims.workspaceClampPadMaxM,
-    Math.max(freePlacementDims.workspaceClampPadMinM, boxH * freePlacementDims.workspaceClampPadHeightRatio)
+    SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY.workspaceClampPadMaxM,
+    Math.max(
+      SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY.workspaceClampPadMinM,
+      boxH * SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY.workspaceClampPadHeightRatio
+    )
   );
   const previewX = planeX;
   const previewY = clampSketchFreeBoxCenterYToWorkspace({

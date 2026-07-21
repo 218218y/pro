@@ -15,10 +15,7 @@ import {
   SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY,
   SKETCH_BOX_SHELL_GEOMETRY_POLICY,
 } from '../esm/shared/dimensions/sketch_box_geometry_policy.ts';
-import {
-  MATERIAL_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
 
 test('render interior sketch layout geometry clamps box size and center inside the internal span', () => {
   const geometry = resolveSketchBoxGeometry({
@@ -210,8 +207,8 @@ test('render interior sketch layout geometry rejects string-encoded live numeric
     depthM: '0.35' as any,
   });
 
-  assert.equal(freeGeometry.outerW, SKETCH_BOX_DIMENSIONS.geometry.defaultOuterWidthM);
-  assert.equal(freeGeometry.outerD, SKETCH_BOX_DIMENSIONS.geometry.defaultOuterDepthM);
+  assert.equal(freeGeometry.outerW, SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterWidthM);
+  assert.equal(freeGeometry.outerD, SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterDepthM);
 
   assert.equal(
     clampSketchFreeBoxCenterY({
@@ -237,8 +234,8 @@ test('render interior sketch layout geometry rejects string-encoded runtime plac
     xNorm: 1,
   });
 
-  assert.equal(geometry.outerW, SKETCH_BOX_DIMENSIONS.geometry.minOuterWidthM);
-  assert.equal(geometry.outerD, SKETCH_BOX_DIMENSIONS.geometry.minOuterDepthM);
+  assert.equal(geometry.outerW, SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterWidthM);
+  assert.equal(geometry.outerD, SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterDepthM);
   assert.equal(geometry.centerX, 0);
   assert.equal(geometry.centerZ, 0);
 
@@ -252,10 +249,10 @@ test('render interior sketch layout geometry rejects string-encoded runtime plac
     depthM: null,
   });
 
-  assert.equal(freeGeometry.outerW, SKETCH_BOX_DIMENSIONS.geometry.defaultOuterWidthM);
-  assert.equal(freeGeometry.outerD, SKETCH_BOX_DIMENSIONS.geometry.defaultOuterDepthM);
+  assert.equal(freeGeometry.outerW, SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterWidthM);
+  assert.equal(freeGeometry.outerD, SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterDepthM);
   assert.equal(freeGeometry.centerX, 0);
-  assert.equal(freeGeometry.innerBackZ, MATERIAL_DIMENSIONS.wood.thicknessM);
+  assert.equal(freeGeometry.innerBackZ, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
 
   assert.equal(
     clampSketchFreeBoxCenterY({

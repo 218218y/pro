@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 84, statements: 84 }),
+  'static-import': Object.freeze({ importers: 81, statements: 81 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 86, statements: 87 }),
+  total: Object.freeze({ importers: 83, statements: 84 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -314,6 +314,15 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
+  'esm/native/builder/render_interior_sketch_layout_geometry.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
 });
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/builder/core_carcass_shared.ts',
@@ -323,10 +332,8 @@ const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/builder/post_build_sketch_door_cuts_rebuild.ts',
   'esm/native/builder/render_interior_rod_clearance.ts',
   'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
-  'esm/native/builder/render_interior_sketch_layout_geometry.ts',
   'esm/native/builder/render_preview_interior_hover_apply.ts',
   'esm/native/features/sketch_internal_drawer_cassette.ts',
-  'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
   'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
   'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
   'esm/native/services/canvas_picking_manual_layout_free_box_content.ts',
@@ -339,7 +346,6 @@ const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/services/canvas_picking_sketch_box_door_preview.ts',
   'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts',
   'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
-  'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
   'esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts',
 ]);
 const APPROVED_MATERIAL_LEGACY_DEPENDENCIES = Object.freeze(
@@ -817,6 +823,9 @@ const APPROVED_SKETCH_BOX_GEOMETRY_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts': Object.freeze([
     'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
   ]),
+  'esm/native/builder/render_interior_sketch_layout_geometry.ts': Object.freeze([
+    'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_GEOMETRY_POLICY']),
 });
 const APPROVED_SKETCH_BOX_DIVIDER_OWNER_IMPORTS = Object.freeze({
@@ -865,6 +874,16 @@ const APPROVED_SKETCH_BOX_FREE_PLACEMENT_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/services/canvas_picking_sketch_free_box_placement_intent.ts': Object.freeze([
     'SKETCH_BOX_FREE_ATTACH_INTENT_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_layout_geometry.ts': Object.freeze([
+    'SKETCH_BOX_FREE_VERTICAL_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts': Object.freeze([
+    'SKETCH_BOX_FREE_VERTICAL_POLICY',
+    'SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts': Object.freeze([
+    'SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY',
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_FREE_PLACEMENT_POLICY']),
 });

@@ -58,6 +58,18 @@ function assertLinearDimensionsUseOwnersOrMeters(rel) {
   );
 }
 
+test('[dimension tokens] Preview aggregate guard uses real word boundaries', () => {
+  const aggregatePattern = /\bSKETCH_BOX_PREVIEW_POLICY\b/u;
+  assert.match('SKETCH_BOX_PREVIEW_POLICY', aggregatePattern);
+  assert.doesNotMatch('SKETCH_BOX_PREVIEW_CORE_POLICY', aggregatePattern);
+  assert.doesNotMatch('SKETCH_BOX_DOOR_PREVIEW_POLICY', aggregatePattern);
+  assert.equal(
+    fs.readFileSync(fileURLToPath(import.meta.url)).includes(0x08),
+    false,
+    'the Preview aggregate guard must not contain U+0008 backspace bytes'
+  );
+});
+
 test('[dimension tokens] visual content product dimensions are centralized', () => {
   const tokens = readProductDimensionTokens();
   assert.match(tokens, /export const CONTENT_VISUAL_DIMENSIONS[^=]*= Object\.freeze\(\{/);
@@ -127,6 +139,7 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
       'esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts',
       ['SKETCH_BOX_SHELL_GEOMETRY_POLICY'],
     ],
+    ['esm/native/builder/render_interior_sketch_layout_geometry.ts', ['SKETCH_BOX_SHELL_GEOMETRY_POLICY']],
   ]);
   for (const [rel, symbols] of focusedGeometryConsumers) {
     const source = read(rel);
@@ -162,6 +175,15 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
     [
       'esm/native/services/canvas_picking_sketch_free_box_placement_intent.ts',
       ['SKETCH_BOX_FREE_ATTACH_INTENT_POLICY'],
+    ],
+    ['esm/native/builder/render_interior_sketch_layout_geometry.ts', ['SKETCH_BOX_FREE_VERTICAL_POLICY']],
+    [
+      'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
+      ['SKETCH_BOX_FREE_VERTICAL_POLICY', 'SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
+      ['SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY'],
     ],
   ]);
   for (const [rel, symbols] of focusedFreePlacementConsumers) {
@@ -227,7 +249,7 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
       `${rel} must import the canonical Sketch Box Preview owner`
     );
     assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared|SKETCH_BOX_DIMENSIONS/u);
-    assert.doesNotMatch(source, /SKETCH_BOX_PREVIEW_POLICY/u);
+    assert.doesNotMatch(source, /\bSKETCH_BOX_PREVIEW_POLICY\b/u);
     assert.doesNotMatch(source, /import\s+\*|export\s+(?:\*|\{[^}]*\})\s+from/u);
     const ownerStatements = source.match(
       /from ['"]\.\.\/\.\.\/shared\/dimensions\/sketch_box_preview_policy\.js['"]/gu
@@ -307,10 +329,8 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts',
     'esm/native/builder/render_interior_sketch_boxes_shell_apply.ts',
     'esm/native/builder/render_interior_sketch_drawers_external_context.ts',
-    'esm/native/builder/render_interior_sketch_layout_geometry.ts',
     'esm/native/builder/render_preview_interior_hover_apply.ts',
     'esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts',
-    'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
     'esm/native/services/canvas_picking_click_manual_sketch_free_box.ts',
     'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
     'esm/native/services/canvas_picking_internal_drawer_existing_fittings.ts',
@@ -328,7 +348,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_rod.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_storage.ts',
-    'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
     'esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts',
     'esm/native/services/canvas_picking_sketch_module_stack_preview_drawers.ts',
     'esm/native/services/canvas_picking_sketch_module_stack_preview_ext_drawers.ts',
@@ -345,8 +364,8 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       /\bSKETCH_BOX_DIMENSIONS\b/u.test(read(file))
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 14);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 27);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 13);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 25);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 1);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
     const source = read(file);
@@ -381,11 +400,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
       /SKETCH_BOX_DIMENSIONS\.freePlacement/u.test(read(file))
   );
-  assert.deepEqual(remainingFreePlacementConsumers.sort(), [
-    'esm/native/builder/render_interior_sketch_layout_geometry.ts',
-    'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
-    'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
-  ]);
+  assert.deepEqual(remainingFreePlacementConsumers, []);
   const remainingGeometryConsumers = esmFiles.filter(
     file =>
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
@@ -396,7 +411,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/builder/render_interior_sketch_boxes.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_depth.ts',
     'esm/native/builder/render_interior_sketch_boxes_shell_apply.ts',
-    'esm/native/builder/render_interior_sketch_layout_geometry.ts',
     'esm/native/services/canvas_picking_click_manual_sketch_free_box.ts',
     'esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts',
     'esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts',
@@ -406,7 +420,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts',
     'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts',
   ]);
-  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 5);
+  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 4);
   assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/services/')).length, 7);
   assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 1);
   assert.equal(
@@ -1610,8 +1624,20 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
       ['MATERIAL_DIMENSIONS', 'SKETCH_BOX_DIMENSIONS'],
     ],
     [
+      'esm/native/builder/render_interior_sketch_layout_geometry.ts',
+      ['MATERIAL_THICKNESS_POLICY', 'SKETCH_BOX_FREE_VERTICAL_POLICY', 'SKETCH_BOX_SHELL_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
+      [
+        'MATERIAL_THICKNESS_POLICY',
+        'SKETCH_BOX_FREE_VERTICAL_POLICY',
+        'SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY',
+      ],
+    ],
+    [
       'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
-      ['MATERIAL_DIMENSIONS', 'SKETCH_BOX_DIMENSIONS'],
+      ['MATERIAL_THICKNESS_POLICY', 'SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY'],
     ],
     ['esm/native/platform/render_loop_motion_doors.ts', ['DOOR_SYSTEM_DIMENSIONS', 'WARDROBE_DEFAULTS']],
   ]);

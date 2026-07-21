@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { resolveSketchFreeBoxHoverPlacement } from '../esm/native/services/canvas_picking_sketch_free_boxes.ts';
+import { createSketchFreeBoxHoverContext } from '../esm/native/services/canvas_picking_sketch_free_box_hover_context.ts';
 import {
   clampSketchFreeBoxCenterYToWorkspace,
   getSketchFreePlacementRoomFloorY,
@@ -9,7 +10,10 @@ import {
   isSketchFreeBoxUnderWardrobeColumn,
   isWithinSketchFreePlacementBounds,
 } from '../esm/native/services/canvas_picking_sketch_free_box_geometry_vertical.ts';
-import { SKETCH_BOX_FREE_VERTICAL_POLICY } from '../esm/shared/dimensions/sketch_box_free_placement_policy.ts';
+import {
+  SKETCH_BOX_FREE_VERTICAL_POLICY,
+  SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY,
+} from '../esm/shared/dimensions/sketch_box_free_placement_policy.ts';
 
 type HoverArgs = Parameters<typeof resolveSketchFreeBoxHoverPlacement>[0];
 
@@ -157,4 +161,62 @@ test('focused vertical geometry preserves column and placement boundary inclusiv
     }),
     false
   );
+});
+
+test('free-box hover context preserves focused workspace-pad min, ratio, max, and public shape', () => {
+  const App = {
+    store: {
+      getState: () => ({
+        config: { wardrobeType: 'hinged' },
+        ui: { raw: { doors: 2 } },
+      }),
+    },
+  } as any;
+  const create = (boxH: number) =>
+    createSketchFreeBoxHoverContext({
+      App,
+      planeX: 1.2,
+      planeY: 0.5,
+      boxH,
+      widthOverrideM: null,
+      depthOverrideM: null,
+      wardrobeBox: {
+        centerX: 0,
+        centerY: 1,
+        centerZ: 0,
+        width: 2,
+        height: 2,
+        depth: 0.6,
+      },
+      wardrobeBackZ: -0.3,
+      freeBoxes: [{ id: 'existing' }],
+      projectWorldPointToLocal: () => null,
+    } as any);
+
+  const minimum = create(0.02);
+  const ratio = create(0.2);
+  const maximum = create(1);
+  assert.ok(minimum);
+  assert.ok(ratio);
+  assert.ok(maximum);
+  assert.equal(minimum.workspacePad, SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY.workspaceClampPadMinM);
+  assert.equal(ratio.workspacePad, 0.004);
+  assert.equal(maximum.workspacePad, SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY.workspaceClampPadMaxM);
+  assert.equal(ratio.roomFloorY, SKETCH_BOX_FREE_VERTICAL_POLICY.roomFloorY);
+  assert.equal(ratio.noMainWardrobeSketchMode, false);
+  assert.equal(ratio.blocksFreeAddUnderWardrobe, false);
+  assert.deepEqual(ratio.freeBoxes, [{ id: 'existing' }]);
+  assert.equal(typeof ratio.previewX, 'number');
+  assert.equal(typeof ratio.previewY, 'number');
+  assert.equal(typeof ratio.previewW, 'number');
+  assert.equal(typeof ratio.previewD, 'number');
+  assert.equal(typeof ratio.previewH, 'number');
+});
+
+test('free-box hover context rejects malformed required geometry without changing helper fallbacks', () => {
+  const base = makeArgs({ planeX: 1.2, planeY: 0.5, boxH: 0.4 });
+  assert.equal(createSketchFreeBoxHoverContext({ ...base, planeX: Number.NaN }), null);
+  assert.equal(createSketchFreeBoxHoverContext({ ...base, planeY: Number.POSITIVE_INFINITY }), null);
+  assert.equal(createSketchFreeBoxHoverContext({ ...base, boxH: 0 }), null);
+  assert.equal(createSketchFreeBoxHoverContext({ ...base, wardrobeBackZ: Number.NaN }), null);
 });

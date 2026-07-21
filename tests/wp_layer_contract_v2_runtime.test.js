@@ -881,7 +881,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at fifty reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at fifty-four reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -1048,8 +1048,29 @@ test('project migration ledger stays exact at fifty reviewed statements with unc
       'esm/shared/dimensions/carcass_interior_grid_policy.ts',
     ],
     ['esm/native/builder/build_stack_split_lower_setup.ts', 'esm/shared/dimensions/handle_policy.ts'],
+    [
+      'esm/native/builder/render_interior_sketch_layout_geometry.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_layout_geometry.ts',
+      'esm/shared/dimensions/sketch_box_free_placement_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
   ];
 
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets.slice(0, 50)),
+    'abc6215529fd6c20db36ec7b379326187149e9cb7d39ad5f9d9f74e07de360c7',
+    'the fifty previously reviewed migration entries must remain semantically unchanged'
+  );
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 47)),
     '5bccd600217eaa992d4442c13b85143d25e5d05f79ce92222406a99b39ea5da6',
@@ -1086,16 +1107,16 @@ test('project migration ledger stays exact at fifty reviewed statements with unc
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 50);
+  assert.equal(report.migrationBudgets.length, 54);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
   );
 
   const expectedEdges = new Map([
-    ['builder>shared', { observed: 249, migration: 30, reviewed: 219, budget: 219 }],
+    ['builder>shared', { observed: 251, migration: 32, reviewed: 219, budget: 219 }],
     ['features>shared', { observed: 59, migration: 1, reviewed: 58, budget: 58 }],
-    ['services>shared', { observed: 186, migration: 19, reviewed: 167, budget: 167 }],
+    ['services>shared', { observed: 188, migration: 21, reviewed: 167, budget: 167 }],
   ]);
   for (const [key, expected] of expectedEdges) {
     const [from, to] = key.split('>');
@@ -1556,7 +1577,7 @@ test('repository Drawer and Handle migration ledger entries are exact and additi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools', 'wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 50);
+  assert.equal(baseline.migrationBudgets.length, 54);
 
   const expected = [
     [
@@ -1634,7 +1655,7 @@ test('repository Builder Interior ownership migration entries are exact and addi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 50);
+  assert.equal(baseline.migrationBudgets.length, 54);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 22)),
     'f77d520ad443232af84217ded9adf59546df8d7fcf530b54ac1152ae5ca5cdd4'
@@ -1738,7 +1759,7 @@ test('repository Service Interior and Material migration entries are exact and a
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 50);
+  assert.equal(baseline.migrationBudgets.length, 54);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 30)),
     '9f2047a5d47e2f73f4b0f9621ee60d593eea946a439df2b17961902ff375fb42',
@@ -1862,7 +1883,7 @@ test('repository Split Hover Preview Line migration entries are exact and additi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 50);
+  assert.equal(baseline.migrationBudgets.length, 54);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 41)),
     '3f529bc4b53c478ea6afd6b8ac80202a77cb530189a7bf45f0aada7fc05c9b9c',
@@ -1926,14 +1947,14 @@ test('repository Stack Split Lower migration entries are exact and additive-only
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 50);
+  assert.equal(baseline.migrationBudgets.length, 54);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 47)),
     '5bccd600217eaa992d4442c13b85143d25e5d05f79ce92222406a99b39ea5da6',
     'the forty-seven previously reviewed migration entries must remain semantically unchanged'
   );
 
-  const entries = baseline.migrationBudgets.slice(47);
+  const entries = baseline.migrationBudgets.slice(47, 50);
   assert.deepEqual(
     entries.map(entry => [entry.addedImport.toFile, entry.addedImport.importedSymbols]),
     [
@@ -1976,15 +1997,88 @@ test('repository Stack Split Lower migration entries are exact and additive-only
   }
 });
 
-test('repository Sketch Box foundation leaves all migration entries semantically unchanged', () => {
+test('repository Sketch Box foundation keeps the first fifty migration entries semantically unchanged', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 50);
+  assert.equal(baseline.migrationBudgets.length, 54);
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 50)),
     'abc6215529fd6c20db36ec7b379326187149e9cb7d39ad5f9d9f74e07de360c7',
-    'all fifty reviewed migration entries must remain semantically unchanged'
+    'the fifty previously reviewed migration entries must remain semantically unchanged'
   );
+});
+
+test('repository Free Placement mixed-consumer migration entries are exact and additive-only', () => {
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const baseline = JSON.parse(
+    fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
+  );
+  assert.equal(baseline.migrationBudgets.length, 54);
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets.slice(0, 50)),
+    'abc6215529fd6c20db36ec7b379326187149e9cb7d39ad5f9d9f74e07de360c7',
+    'the fifty previously reviewed migration entries must remain semantically unchanged'
+  );
+
+  const entries = baseline.migrationBudgets.slice(50);
+  assert.deepEqual(
+    entries.map(entry => [
+      entry.fromFile,
+      entry.addedImport.toFile,
+      entry.addedImport.importedSymbols,
+      entry.companionImport.toFile,
+      entry.companionImport.importedSymbols,
+    ]),
+    [
+      [
+        'esm/native/builder/render_interior_sketch_layout_geometry.ts',
+        'esm/shared/dimensions/material_thickness_policy.ts',
+        ['MATERIAL_THICKNESS_POLICY'],
+        'esm/shared/dimensions/sketch_box_geometry_policy.ts',
+        ['SKETCH_BOX_SHELL_GEOMETRY_POLICY'],
+      ],
+      [
+        'esm/native/builder/render_interior_sketch_layout_geometry.ts',
+        'esm/shared/dimensions/sketch_box_free_placement_policy.ts',
+        ['SKETCH_BOX_FREE_VERTICAL_POLICY'],
+        'esm/shared/dimensions/sketch_box_geometry_policy.ts',
+        ['SKETCH_BOX_SHELL_GEOMETRY_POLICY'],
+      ],
+      [
+        'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
+        'esm/shared/dimensions/material_thickness_policy.ts',
+        ['MATERIAL_THICKNESS_POLICY'],
+        'esm/shared/dimensions/sketch_box_free_placement_policy.ts',
+        ['SKETCH_BOX_FREE_VERTICAL_POLICY', 'SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY'],
+      ],
+      [
+        'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
+        'esm/shared/dimensions/material_thickness_policy.ts',
+        ['MATERIAL_THICKNESS_POLICY'],
+        'esm/shared/dimensions/sketch_box_free_placement_policy.ts',
+        ['SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY'],
+      ],
+    ]
+  );
+
+  for (const entry of entries) {
+    assert.equal(entry.additionalStatements, 1);
+    assert.equal(entry.owner, 'dimension-ownership-migration');
+    assert.equal(entry.addedImport.kind, 'value');
+    assert.equal(entry.addedImport.syntax, 'static-import');
+    assert.equal(entry.companionImport.kind, 'value');
+    assert.equal(entry.companionImport.syntax, 'static-import');
+    assert.deepEqual(entry.removedImport, {
+      toFile: 'esm/shared/wardrobe_dimension_tokens_shared.ts',
+      kind: 'value',
+      importedSymbols: ['MATERIAL_DIMENSIONS', 'SKETCH_BOX_DIMENSIONS'],
+      syntax: 'static-import',
+    });
+    assert.equal(entry.reviewedAt, '2026-07-20');
+    assert.equal(entry.reviewBy, '2026-10-18');
+    assert.match(entry.reason, /(?:geometry builder|free-box)/u);
+    assert.match(entry.removalCondition, /without reintroducing the legacy facade/u);
+  }
 });

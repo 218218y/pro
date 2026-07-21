@@ -2329,6 +2329,122 @@
       },
       "reason": "The Stack Split Lower setup replaces one legacy facade statement with the canonical Stack Split default owner plus the focused Handle vertical-placement owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Stack Split Lower composition seam eliminates the extra Handle vertical-placement statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_sketch_layout_geometry.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The shared Sketch Box geometry builder replaces one legacy facade statement with the canonical Shell Geometry owner plus the focused Material Thickness fallback owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch Box geometry composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_sketch_layout_geometry.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_free_placement_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_FREE_VERTICAL_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The shared Sketch Box geometry builder replaces one legacy facade statement with the canonical Shell Geometry owner plus the focused Free Placement vertical-bounds owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch Box geometry composition seam eliminates the extra Free Placement vertical-bounds statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_cell_dims_free_box_hover.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_free_placement_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_FREE_VERTICAL_POLICY", "SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The free-box cell-dim hover resolver replaces one legacy facade statement with the canonical Free Placement clamp owner plus the focused Material Thickness fallback owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed free-box cell-dim hover composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_sketch_free_box_hover_context.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_free_placement_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The free-box hover-context resolver replaces one legacy facade statement with the canonical Free Placement workspace-clamp owner plus the focused Material Thickness fallback owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed free-box hover-context composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
     }
   ]
 }

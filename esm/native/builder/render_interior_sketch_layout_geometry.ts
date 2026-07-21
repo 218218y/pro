@@ -1,5 +1,7 @@
 import { toFiniteNumber, toPositiveNumber, toNormalizedUnit } from './render_interior_sketch_shared.js';
-import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
+import { SKETCH_BOX_FREE_VERTICAL_POLICY } from '../../shared/dimensions/sketch_box_free_placement_policy.js';
 
 export const normalizeSketchShelfVariant = (variant: unknown): 'regular' | 'double' | 'glass' | 'brace' => {
   const raw = typeof variant === 'string' ? variant : '';
@@ -26,22 +28,22 @@ export const resolveSketchBoxGeometry = (args: {
   const depthM = args.depthM;
   const xNormArg = args.xNorm;
 
-  const t = woodThick != null && woodThick > 0 ? woodThick : MATERIAL_DIMENSIONS.wood.thicknessM;
-  const maxW = innerW != null && innerW > 0 ? innerW : SKETCH_BOX_DIMENSIONS.geometry.minOuterWidthM;
+  const t = woodThick != null && woodThick > 0 ? woodThick : MATERIAL_THICKNESS_POLICY.wood.thicknessM;
+  const maxW = innerW != null && innerW > 0 ? innerW : SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterWidthM;
   const baseDepth =
     internalDepth != null && internalDepth > 0
       ? internalDepth
-      : SKETCH_BOX_DIMENSIONS.geometry.minOuterDepthM;
+      : SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterDepthM;
   const minW = Math.min(
     maxW,
     Math.max(
-      SKETCH_BOX_DIMENSIONS.geometry.minOuterWidthM,
-      t * 2 + SKETCH_BOX_DIMENSIONS.geometry.minInnerAdditiveClearanceM
+      SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterWidthM,
+      t * 2 + SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerAdditiveClearanceM
     )
   );
   const minD = Math.max(
-    SKETCH_BOX_DIMENSIONS.geometry.minOuterDepthM,
-    t + SKETCH_BOX_DIMENSIONS.geometry.minInnerAdditiveClearanceM
+    SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterDepthM,
+    t + SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerAdditiveClearanceM
   );
   const clampTo = (value: number, min: number, max: number) =>
     Math.max(Math.min(min, max), Math.min(max, value));
@@ -60,10 +62,10 @@ export const resolveSketchBoxGeometry = (args: {
     centerMaxX > centerMinX ? Math.max(centerMinX, Math.min(centerMaxX, rawCenterX)) : internalCenterX;
   const backZ = internalZ - baseDepth / 2;
   const centerZ = backZ + outerD / 2;
-  const innerWidth = Math.max(SKETCH_BOX_DIMENSIONS.geometry.minInnerDimensionM, outerW - 2 * t);
+  const innerWidth = Math.max(SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerDimensionM, outerW - 2 * t);
   const innerBackZ = backZ + Math.min(t, outerD);
   const innerDepth = Math.max(
-    SKETCH_BOX_DIMENSIONS.geometry.minInnerDimensionM,
+    SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerDimensionM,
     outerD - Math.min(t, outerD)
   );
 
@@ -95,37 +97,37 @@ export const resolveSketchFreeBoxGeometry = (args: {
   const widthM = args.widthM;
   const depthM = args.depthM;
 
-  const t = woodThick != null && woodThick > 0 ? woodThick : MATERIAL_DIMENSIONS.wood.thicknessM;
+  const t = woodThick != null && woodThick > 0 ? woodThick : MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const minW = Math.max(
-    SKETCH_BOX_DIMENSIONS.geometry.minOuterWidthM,
-    t * 2 + SKETCH_BOX_DIMENSIONS.geometry.minInnerAdditiveClearanceM
+    SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterWidthM,
+    t * 2 + SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerAdditiveClearanceM
   );
   const minD = Math.max(
-    SKETCH_BOX_DIMENSIONS.geometry.minOuterDepthM,
-    t + SKETCH_BOX_DIMENSIONS.geometry.minInnerAdditiveClearanceM
+    SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterDepthM,
+    t + SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerAdditiveClearanceM
   );
   const fallbackW = Math.max(
     minW,
     Math.min(
-      SKETCH_BOX_DIMENSIONS.geometry.defaultOuterWidthM,
-      wardrobeWidth > 0 ? wardrobeWidth : SKETCH_BOX_DIMENSIONS.geometry.defaultOuterWidthM
+      SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterWidthM,
+      wardrobeWidth > 0 ? wardrobeWidth : SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterWidthM
     )
   );
   const fallbackD = Math.max(
     minD,
     Math.min(
-      SKETCH_BOX_DIMENSIONS.geometry.defaultOuterDepthM,
-      wardrobeDepth > 0 ? wardrobeDepth : SKETCH_BOX_DIMENSIONS.geometry.defaultOuterDepthM
+      SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterDepthM,
+      wardrobeDepth > 0 ? wardrobeDepth : SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterDepthM
     )
   );
   const widthValue = toPositiveNumber(widthM);
   const depthValue = toPositiveNumber(depthM);
   const outerW = widthValue != null ? Math.max(minW, widthValue) : fallbackW;
   const outerD = depthValue != null ? Math.max(minD, depthValue) : fallbackD;
-  const innerWidth = Math.max(SKETCH_BOX_DIMENSIONS.geometry.minInnerDimensionM, outerW - 2 * t);
+  const innerWidth = Math.max(SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerDimensionM, outerW - 2 * t);
   const innerBackZ = backZ + Math.min(t, outerD);
   const innerDepth = Math.max(
-    SKETCH_BOX_DIMENSIONS.geometry.minInnerDimensionM,
+    SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerDimensionM,
     outerD - Math.min(t, outerD)
   );
 
@@ -142,12 +144,12 @@ export const resolveSketchFreeBoxGeometry = (args: {
 
 export const getSketchFreePlacementVerticalSlack = (wardrobeHeight: number) => {
   const height = toFiniteNumber(wardrobeHeight);
-  if (height == null || !(height > 0)) return SKETCH_BOX_DIMENSIONS.freePlacement.verticalSlackDefaultM;
+  if (height == null || !(height > 0)) return SKETCH_BOX_FREE_VERTICAL_POLICY.verticalSlackDefaultM;
   return Math.max(
-    SKETCH_BOX_DIMENSIONS.freePlacement.verticalSlackMinM,
+    SKETCH_BOX_FREE_VERTICAL_POLICY.verticalSlackMinM,
     Math.min(
-      SKETCH_BOX_DIMENSIONS.freePlacement.verticalSlackMaxM,
-      height * SKETCH_BOX_DIMENSIONS.freePlacement.verticalSlackHeightRatio
+      SKETCH_BOX_FREE_VERTICAL_POLICY.verticalSlackMaxM,
+      height * SKETCH_BOX_FREE_VERTICAL_POLICY.verticalSlackHeightRatio
     )
   );
 };
@@ -169,7 +171,7 @@ export const clampSketchFreeBoxCenterY = (args: {
   if (wardrobeCenterY == null || wardrobeHeight == null || !(wardrobeHeight > 0)) return centerY;
 
   const halfH = boxH / 2;
-  const roomFloorY = SKETCH_BOX_DIMENSIONS.freePlacement.roomFloorY;
+  const roomFloorY = SKETCH_BOX_FREE_VERTICAL_POLICY.roomFloorY;
   const wardrobeFloorY = wardrobeCenterY - wardrobeHeight / 2;
   const ceilingY = wardrobeCenterY + wardrobeHeight / 2;
   const slack = getSketchFreePlacementVerticalSlack(wardrobeHeight);

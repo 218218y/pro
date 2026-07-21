@@ -1,5 +1,9 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
-import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import {
+  SKETCH_BOX_FREE_VERTICAL_POLICY,
+  SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY,
+} from '../../shared/dimensions/sketch_box_free_placement_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { getCfg } from '../kernel/api.js';
 import { readModulesConfigurationListFromConfigSnapshot } from '../features/modules_configuration/modules_config_api.js';
@@ -193,7 +197,7 @@ function resolveFreeBoxSelectorBox(args: { App: AppContainer; box: UnknownRecord
     wardrobeDepth,
     backZ: wardrobeBackZ,
     centerX,
-    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
+    woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
     widthM: readPositiveM(box, 'widthM') ?? readPositiveM(box, 'wM'),
     depthM: readPositiveM(box, 'depthM') ?? readPositiveM(box, 'dM'),
   });
@@ -221,7 +225,7 @@ function buildFreeBoxHoverTarget(args: {
   if (!selectorBox) return null;
   const metrics = readSelectorBoxMetrics(selectorBox);
   if (!metrics) return null;
-  const woodThick = MATERIAL_DIMENSIONS.wood.thicknessM;
+  const woodThick = MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const currentBackZ = metrics.centerZ - metrics.depth / 2;
   const target: InteriorHoverTarget = {
     intersects,
@@ -354,16 +358,18 @@ function resolveTargetDimensionCm(args: {
 }
 
 function resolveFreeBoxWorkspacePad(boxHeightM: number): number {
-  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
   return Math.min(
-    dims.workspaceClampPadMaxM,
-    Math.max(dims.workspaceClampPadMinM, boxHeightM * dims.workspaceClampPadHeightRatio)
+    SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY.workspaceClampPadMaxM,
+    Math.max(
+      SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY.workspaceClampPadMinM,
+      boxHeightM * SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY.workspaceClampPadHeightRatio
+    )
   );
 }
 
 function resolveTargetCenterY(current: SelectorBoxMetrics, targetHeightM: number): number {
   const { centerY, height: currentHeightM } = current;
-  const roomFloorY = SKETCH_BOX_DIMENSIONS.freePlacement.roomFloorY;
+  const roomFloorY = SKETCH_BOX_FREE_VERTICAL_POLICY.roomFloorY;
   const oldPad = resolveFreeBoxWorkspacePad(currentHeightM);
   const newPad = resolveFreeBoxWorkspacePad(targetHeightM);
   const oldBottomY = centerY - currentHeightM / 2;
