@@ -1,4 +1,4 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
 import type {
   CreateInteriorSketchPlacementSupportArgs,
   SketchPlacementSupport,
@@ -27,10 +27,12 @@ export function createInteriorSketchPlacementSupport(
   } = args;
 
   const clampY = (y: number) => {
-    const geometryDims = SKETCH_BOX_DIMENSIONS.geometry;
     const pad = Math.min(
-      geometryDims.placementClampPadMaxM,
-      Math.max(geometryDims.placementClampPadMinM, woodThick * geometryDims.placementClampPadWoodRatio)
+      SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadMaxM,
+      Math.max(
+        SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadMinM,
+        woodThick * SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadWoodRatio
+      )
     );
     const lo = effectiveBottomY + pad;
     const hi = effectiveTopY - pad;

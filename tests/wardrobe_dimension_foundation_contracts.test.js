@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 99, statements: 99 }),
+  'static-import': Object.freeze({ importers: 94, statements: 94 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 101, statements: 102 }),
+  total: Object.freeze({ importers: 96, statements: 97 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -799,6 +799,25 @@ const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_sketch_module_vertical_content_preview.ts': Object.freeze([
     'INTERIOR_SHELF_GEOMETRY_POLICY',
   ]),
+});
+const APPROVED_SKETCH_BOX_GEOMETRY_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts': Object.freeze([
+    'SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_boxes_shell_height.ts': Object.freeze([
+    'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_support_placement.ts': Object.freeze([
+    'SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_runtime_geometry.ts': Object.freeze([
+    'SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY',
+    'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts': Object.freeze([
+    'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_GEOMETRY_POLICY']),
 });
 const APPROVED_SKETCH_BOX_DIVIDER_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_layout_dividers.ts': Object.freeze([
@@ -3278,6 +3297,29 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     APPROVED_SKETCH_BOX_CLASSIC_OWNER_IMPORTS,
     'Sketch Box Classic owner consumer allowlist'
   );
+  const sketchBoxGeometryOwnerImports = collectOwnerImports(analyzedSources, 'sketch_box_geometry_policy.js');
+  assertApprovedSymbolUsage(
+    sketchBoxGeometryOwnerImports,
+    APPROVED_SKETCH_BOX_GEOMETRY_OWNER_IMPORTS,
+    'Sketch Box Geometry owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(sketchBoxGeometryOwnerImports)
+        .filter(([, symbols]) => symbols.includes('SKETCH_BOX_GEOMETRY_POLICY'))
+        .map(([file]) => [file, ['SKETCH_BOX_GEOMETRY_POLICY']])
+    ),
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['SKETCH_BOX_GEOMETRY_POLICY'],
+    },
+    'SKETCH_BOX_GEOMETRY_POLICY aggregate is imported directly only by the legacy facade'
+  );
+  assert.deepEqual(
+    collectOwnerDependencyStatements(analyzedSources, 'sketch_box_geometry_policy.js'),
+    Object.fromEntries(Object.keys(APPROVED_SKETCH_BOX_GEOMETRY_OWNER_IMPORTS).map(file => [file, 1])),
+    'Sketch Box Geometry migration must retain exactly one owner statement per approved importer'
+  );
+
   const sketchBoxDividerOwnerImports = collectOwnerImports(analyzedSources, 'sketch_box_divider_policy.js');
   assertApprovedSymbolUsage(
     sketchBoxDividerOwnerImports,

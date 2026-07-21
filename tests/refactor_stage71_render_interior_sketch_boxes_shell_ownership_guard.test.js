@@ -39,17 +39,25 @@ test('stage 71 render interior sketch box shell ownership split is anchored', ()
     /createBoard\(|renderSketchFreeBoxDimensions|resolveSketchBoxGeometry\(|resolveSketchFreeBoxGeometry\(/
   );
 
+  assert.match(height, /from '\.\.\/\.\.\/shared\/dimensions\/sketch_box_geometry_policy\.js';/);
+  assert.match(height, /SKETCH_BOX_SHELL_GEOMETRY_POLICY/);
+  assert.doesNotMatch(height, /wardrobe_dimension_tokens_shared|SKETCH_BOX_DIMENSIONS/);
   assert.match(height, /export function resolveSketchBoxHeight\(/);
-  assert.match(height, /SKETCH_BOX_DIMENSIONS\.geometry\.minInnerAdditiveClearanceM/);
+  assert.match(height, /SKETCH_BOX_SHELL_GEOMETRY_POLICY\.minInnerAdditiveClearanceM/);
   assert.match(
     height,
-    /const minHeight = args\.woodThick \* 2 \+ SKETCH_BOX_DIMENSIONS\.geometry\.minInnerAdditiveClearanceM;/
+    /const minHeight = args\.woodThick \* 2 \+ SKETCH_BOX_SHELL_GEOMETRY_POLICY\.minInnerAdditiveClearanceM;/
   );
   assert.match(height, /height < minHeight/);
   assert.doesNotMatch(height, /args\.woodThick \* 2 \+ 0\.02/);
   assert.match(height, /!args\.isFreePlacement && height > args\.spanH/);
   assert.doesNotMatch(height, /createBoard|resolveSketchBoxGeometry|renderSketchFreeBoxDimensions/);
 
+  assert.match(geometry, /SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY/);
+  assert.doesNotMatch(
+    geometry,
+    /wardrobe_dimension_tokens_shared|SKETCH_BOX_DIMENSIONS|SKETCH_BOX_GEOMETRY_POLICY/
+  );
   assert.match(geometry, /export function resolveSketchBoxShellGeometry\(/);
   assert.match(geometry, /clampSketchFreeBoxCenterY\(/);
   assert.match(geometry, /resolveSketchFreeBoxGeometry\(/);

@@ -1,4 +1,4 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
 import {
   clampSketchFreeBoxCenterY,
   resolveSketchBoxGeometry,
@@ -11,10 +11,12 @@ import type {
 } from './render_interior_sketch_boxes_shell_types.js';
 
 function resolveSketchBoxPlacementClampPad(woodThick: number): number {
-  const geometryDims = SKETCH_BOX_DIMENSIONS.geometry;
   return Math.min(
-    geometryDims.placementClampPadMaxM,
-    Math.max(geometryDims.placementClampPadMinM, woodThick * geometryDims.placementClampPadWoodRatio)
+    SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadMaxM,
+    Math.max(
+      SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadMinM,
+      woodThick * SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadWoodRatio
+    )
   );
 }
 

@@ -108,6 +108,8 @@ test('render interior sketch support clamps placement, emits shelf pins, and kee
   assert.ok(Math.abs(support.clampY(9) - 1.796) < 1e-9);
   assert.ok(Math.abs((support.yFromNorm(0) ?? 0) - 0.204) < 1e-9);
   assert.ok(Math.abs((support.yFromNorm(1) ?? 0) - 1.796) < 1e-9);
+  assert.ok(Math.abs((support.yFromNorm(-4) ?? 0) - 0.204) < 1e-9);
+  assert.ok(Math.abs((support.yFromNorm(5) ?? 0) - 1.796) < 1e-9);
   assert.equal(support.yFromNorm('0.5'), null);
 
   support.addShelfPins(0, 1, 0, 0.6, 0.02, 0.5, true);

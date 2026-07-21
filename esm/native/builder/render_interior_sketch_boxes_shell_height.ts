@@ -1,4 +1,4 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
 import type { ResolveSketchBoxHeightArgs } from './render_interior_sketch_boxes_shell_types.js';
 
 function readFiniteNumber(value: unknown): number | null {
@@ -9,7 +9,7 @@ export function resolveSketchBoxHeight(args: ResolveSketchBoxHeightArgs): number
   let height = readFiniteNumber(args.rawHeight);
   if (height == null) height = readFiniteNumber(args.defaultHeight);
   if (height == null) return null;
-  const minHeight = args.woodThick * 2 + SKETCH_BOX_DIMENSIONS.geometry.minInnerAdditiveClearanceM;
+  const minHeight = args.woodThick * 2 + SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerAdditiveClearanceM;
   if (height < minHeight) height = minHeight;
   if (!args.isFreePlacement && height > args.spanH) height = args.spanH;
   return height;

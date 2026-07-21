@@ -12,6 +12,10 @@ import {
 import { resolveSketchBoxHeight } from '../esm/native/builder/render_interior_sketch_boxes_shell_height.ts';
 import { resolveSketchBoxShellGeometry } from '../esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts';
 import {
+  SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY,
+  SKETCH_BOX_SHELL_GEOMETRY_POLICY,
+} from '../esm/shared/dimensions/sketch_box_geometry_policy.ts';
+import {
   MATERIAL_DIMENSIONS,
   SKETCH_BOX_DIMENSIONS,
 } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
@@ -33,6 +37,104 @@ test('render interior sketch layout geometry clamps box size and center inside t
   assert.equal(geometry.centerX, 0);
   assert.ok(Math.abs(geometry.innerW - 0.76) < 1e-9);
   assert.ok(Math.abs(geometry.innerD - 0.03) < 1e-9);
+});
+
+test('render sketch box shell height preserves defaults, minimums, and regular/free caps', () => {
+  assert.equal(
+    resolveSketchBoxHeight({
+      rawHeight: 0.8,
+      defaultHeight: 0.4,
+      woodThick: 0.02,
+      spanH: 0.7,
+      isFreePlacement: false,
+    }),
+    0.7
+  );
+  assert.equal(
+    resolveSketchBoxHeight({
+      rawHeight: null,
+      defaultHeight: 0.4,
+      woodThick: 0.02,
+      spanH: 1,
+      isFreePlacement: false,
+    }),
+    0.4
+  );
+  assert.equal(
+    resolveSketchBoxHeight({
+      rawHeight: -1,
+      defaultHeight: 0.4,
+      woodThick: 0.02,
+      spanH: 1,
+      isFreePlacement: false,
+    }),
+    0.02 * 2 + SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerAdditiveClearanceM
+  );
+  assert.equal(
+    resolveSketchBoxHeight({
+      rawHeight: 2,
+      defaultHeight: null,
+      woodThick: 0.02,
+      spanH: 0.7,
+      isFreePlacement: true,
+    }),
+    2
+  );
+  assert.equal(
+    resolveSketchBoxHeight({
+      rawHeight: Number.NaN,
+      defaultHeight: Number.POSITIVE_INFINITY,
+      woodThick: 0.02,
+      spanH: 1,
+      isFreePlacement: false,
+    }),
+    null
+  );
+});
+
+test('render sketch box shell placement keeps min, ratio, and max clamp pads', () => {
+  const createRenderArgs = (woodThick: number) =>
+    ({
+      effectiveBottomY: 0,
+      effectiveTopY: 2,
+      spanH: 2,
+      innerW: 1,
+      woodThick,
+      internalDepth: 0.55,
+      internalCenterX: 0,
+      internalZ: 0,
+      clampY: (y: number) => y,
+    }) as any;
+
+  for (const [woodThick, expectedPad] of [
+    [0.001, SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadMinM],
+    [0.02, 0.004],
+    [0.1, SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.placementClampPadMaxM],
+  ] as const) {
+    const regular = resolveSketchBoxShellGeometry({
+      box: { yNorm: 0, xNorm: 0.5, widthM: 0.4, depthM: 0.3 } as any,
+      isFreePlacement: false,
+      height: 0.2,
+      renderArgs: createRenderArgs(woodThick),
+      freeWardrobeBox: null,
+    });
+    assert.ok(regular);
+    assert.ok(Math.abs(regular.centerY - (0.1 + expectedPad)) < 1e-12);
+    assert.ok(regular.absEntry);
+    assert.equal(regular.absEntry?.y, regular.centerY);
+  }
+
+  const free = resolveSketchBoxShellGeometry({
+    box: { freePlacement: true, absX: 0.2, absY: -2, widthM: 0.4, depthM: 0.3 } as any,
+    isFreePlacement: true,
+    height: 0.2,
+    renderArgs: createRenderArgs(0.02),
+    freeWardrobeBox: { centerX: 0, centerY: 1, centerZ: 0, width: 1, height: 2, depth: 0.55 },
+  });
+  assert.ok(free);
+  assert.ok(Math.abs(free.centerY - 0.104) < 1e-12);
+  assert.equal(free.absEntry, null);
+  assert.ok(Math.abs(free.geometry.innerBackZ - (-0.275 + 0.02)) < 1e-12);
 });
 
 test('render sketch box shell geometry rejects string-encoded live box dimensions', () => {

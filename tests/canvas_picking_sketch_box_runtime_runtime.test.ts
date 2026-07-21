@@ -8,6 +8,11 @@ import {
 } from '../esm/native/services/canvas_picking_sketch_box_runtime.ts';
 import { tryCommitSketchFreePlacementFromHoverWithDeps } from '../esm/native/services/canvas_picking_sketch_box_runtime_commit.ts';
 import { createSketchFreePlacementBoxHoverRecord } from '../esm/native/services/canvas_picking_sketch_free_commit.ts';
+import { resolveSketchFreeBoxGeometry } from '../esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts';
+import {
+  SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY,
+  SKETCH_BOX_SHELL_GEOMETRY_POLICY,
+} from '../esm/shared/dimensions/sketch_box_geometry_policy.ts';
 
 test('sketch-box runtime parses width/depth overrides and rejects unrelated tools', () => {
   assert.deepEqual(__wp_parseSketchBoxToolSpec('sketch_box:60@90@45'), {
@@ -39,6 +44,132 @@ test('sketch-box runtime geometry center-snaps and width-clamps inside the modul
   assert.ok(Math.abs(geo.centerX - 0) <= 1e-9);
   assert.equal(geo.centered, true);
   assert.ok(geo.innerD > 0.02);
+});
+
+test('sketch-box runtime geometry preserves shell minimums, center snap boundaries, and finite fallbacks', () => {
+  const fallback = __wp_resolveSketchBoxGeometry({
+    innerW: Number.NaN,
+    internalCenterX: Number.POSITIVE_INFINITY,
+    internalDepth: Number.NEGATIVE_INFINITY,
+    internalZ: Number.NaN,
+    woodThick: 0,
+  });
+  assert.equal(fallback.outerW, SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterWidthM);
+  assert.equal(fallback.outerD, SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterDepthM);
+  assert.equal(fallback.centerX, 0);
+  assert.equal(Number.isNaN(fallback.centerZ), true);
+
+  const snapEps = Math.min(
+    SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.centerSnapMaxM,
+    Math.max(
+      SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.centerSnapMinM,
+      1 * SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY.centerSnapWidthRatio
+    )
+  );
+  const snapped = __wp_resolveSketchBoxGeometry({
+    innerW: 1,
+    internalCenterX: 0,
+    internalDepth: 0.6,
+    internalZ: 0,
+    woodThick: 0.018,
+    widthM: 0.4,
+    centerXHint: snapEps,
+    enableCenterSnap: true,
+  });
+  assert.equal(snapped.centerX, 0);
+  assert.equal(snapped.centered, true);
+
+  const outsideSnap = __wp_resolveSketchBoxGeometry({
+    innerW: 1,
+    internalCenterX: 0,
+    internalDepth: 0.6,
+    internalZ: 0,
+    woodThick: 0.018,
+    widthM: 0.4,
+    centerXHint: snapEps + 1e-6,
+    enableCenterSnap: true,
+  });
+  assert.ok(Math.abs(outsideSnap.centerX - (snapEps + 1e-6)) < 1e-12);
+  assert.equal(outsideSnap.centered, false);
+
+  const left = __wp_resolveSketchBoxGeometry({
+    innerW: 1,
+    internalCenterX: 0,
+    internalDepth: 0.6,
+    internalZ: 0,
+    woodThick: 0.018,
+    widthM: 0.2,
+    xNorm: 0,
+  });
+  const center = __wp_resolveSketchBoxGeometry({
+    innerW: 1,
+    internalCenterX: 0,
+    internalDepth: 0.6,
+    internalZ: 0,
+    woodThick: 0.018,
+    widthM: 0.2,
+    xNorm: 0.5,
+  });
+  const right = __wp_resolveSketchBoxGeometry({
+    innerW: 1,
+    internalCenterX: 0,
+    internalDepth: 0.6,
+    internalZ: 0,
+    woodThick: 0.018,
+    widthM: 0.2,
+    xNorm: 1,
+  });
+  assert.ok(left.centerX < center.centerX && center.centerX < right.centerX);
+  assert.ok(left.xNorm < center.xNorm && center.xNorm < right.xNorm);
+});
+
+test('free-box geometry preserves fallback clamping without capping explicit dimensions', () => {
+  const fallback = resolveSketchFreeBoxGeometry({
+    wardrobeWidth: 0.3,
+    wardrobeDepth: 0.2,
+    backZ: -0.25,
+    centerX: Number.NaN,
+    woodThick: Number.NaN,
+    widthM: null,
+    depthM: null,
+  });
+  assert.equal(fallback.outerW, 0.3);
+  assert.equal(fallback.outerD, 0.2);
+  assert.equal(fallback.centerX, 0);
+  assert.equal(
+    fallback.innerW,
+    Math.max(
+      SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerDimensionM,
+      fallback.outerW - 2 * SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultWoodThicknessM
+    )
+  );
+
+  const explicit = resolveSketchFreeBoxGeometry({
+    wardrobeWidth: 0.3,
+    wardrobeDepth: 0.2,
+    backZ: -0.25,
+    centerX: 0.4,
+    woodThick: 0.02,
+    widthM: 1.4,
+    depthM: 0.8,
+  });
+  assert.equal(explicit.outerW, 1.4);
+  assert.equal(explicit.outerD, 0.8);
+  assert.equal(explicit.centerX, 0.4);
+  assert.ok(Math.abs(explicit.centerZ - 0.15) < 1e-12);
+  assert.ok(Math.abs(explicit.innerBackZ - -0.23) < 1e-12);
+
+  const rejectedOverrides = resolveSketchFreeBoxGeometry({
+    wardrobeWidth: 1,
+    wardrobeDepth: 0.6,
+    backZ: 0,
+    centerX: 0,
+    woodThick: 0.02,
+    widthM: '1.2' as any,
+    depthM: Number.POSITIVE_INFINITY,
+  });
+  assert.equal(rejectedOverrides.outerW, SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterWidthM);
+  assert.equal(rejectedOverrides.outerD, SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterDepthM);
 });
 
 test('sketch-box runtime geometry rejects string-encoded live overrides', () => {
