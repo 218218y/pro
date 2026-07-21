@@ -1,7 +1,12 @@
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  INTERIOR_STORAGE_PREVIEW_POLICY,
+} from '../../shared/dimensions/interior_storage_policy.js';
+import {
+  SKETCH_BOX_PREVIEW_CORE_POLICY,
+  SKETCH_BOX_SHELF_PREVIEW_POLICY,
+  SKETCH_BOX_STORAGE_PREVIEW_POLICY,
+} from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
@@ -36,7 +41,7 @@ export function resolveSketchBoxStoragePreview(
     pointerY,
     woodThick,
     storageHeight,
-    removeEpsBox = SKETCH_BOX_DIMENSIONS.preview.removeEpsBoxM,
+    removeEpsBox = SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsBoxM,
     pickSketchBoxSegment,
   } = args;
   const {
@@ -50,12 +55,10 @@ export function resolveSketchBoxStoragePreview(
     hasVerticalRoomFor,
   } = state;
 
-  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
-  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
   const barrierHeight =
     storageHeight != null && Number.isFinite(storageHeight) && storageHeight > 0
       ? storageHeight
-      : storageDims.barrierHeightM;
+      : INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM;
   let previewY = clampBoxCenterY(pointerY, barrierHeight / 2);
   let previewSegment: SketchBoxSegmentLike | null = activeSegment;
   let op: 'add' | 'remove' = 'add';
@@ -136,14 +139,14 @@ export function resolveSketchBoxStoragePreview(
   const barrierCenterX = readFiniteSegmentNumber(storageSegment, 'centerX') ?? targetGeo.centerX;
   const barrierWidth = readFiniteSegmentNumber(storageSegment, 'width') ?? targetGeo.innerW;
   const barrierZ = Math.max(
-    targetGeo.innerBackZ + previewDims.storageBarrierBackInsetM,
+    targetGeo.innerBackZ + SKETCH_BOX_STORAGE_PREVIEW_POLICY.storageBarrierBackInsetM,
     targetGeo.innerBackZ +
       targetGeo.innerD -
       Math.min(
-        previewDims.storageBarrierDepthClearanceMaxM,
+        SKETCH_BOX_STORAGE_PREVIEW_POLICY.storageBarrierDepthClearanceMaxM,
         Math.max(
-          previewDims.storageBarrierDepthClearanceMinM,
-          targetGeo.innerD * previewDims.storageBarrierDepthClearanceRatio
+          SKETCH_BOX_STORAGE_PREVIEW_POLICY.storageBarrierDepthClearanceMinM,
+          targetGeo.innerD * SKETCH_BOX_STORAGE_PREVIEW_POLICY.storageBarrierDepthClearanceRatio
         )
       )
   );
@@ -168,11 +171,11 @@ export function resolveSketchBoxStoragePreview(
       y: previewY,
       z: barrierZ,
       w: Math.max(
-        SKETCH_BOX_DIMENSIONS.preview.shelfMinWidthM,
-        barrierWidth - storageDims.barrierWidthClearanceM
+        SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfMinWidthM,
+        barrierWidth - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
       ),
       h: barrierHeight,
-      d: Math.max(storageDims.previewThicknessMinM, woodThick),
+      d: Math.max(INTERIOR_STORAGE_PREVIEW_POLICY.previewThicknessMinM, woodThick),
       woodThick,
       op: blockedReason ? 'blocked' : op,
       blockedReason: blockedReason ?? undefined,

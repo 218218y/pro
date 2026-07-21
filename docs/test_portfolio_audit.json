@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-21T18:42:23.432Z",
+  "generatedAt": "2026-07-21T19:40:17.835Z",
   "totals": {
-    "tests": 1237,
-    "unitRunnerTests": 1229,
+    "tests": 1239,
+    "unitRunnerTests": 1231,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,9 +13,9 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 403,
+    "contract": 404,
     "runtime-unit": 318,
-    "integration": 457,
+    "integration": 458,
     "e2e-smoke": 9,
     "perf-smoke": 9,
     "legacy-migration": 41
@@ -4031,6 +4031,14 @@
     },
     {
       "file": "tests/sketch_box_stacked_content_preview_renderer_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/sketch_box_storage_preview_pair_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_storage_preview_pair_runtime.test.ts",
       "category": "integration"
     },
     {

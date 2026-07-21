@@ -1,7 +1,9 @@
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  INTERIOR_STORAGE_LAYOUT_POLICY,
+  INTERIOR_STORAGE_PREVIEW_POLICY,
+} from '../../shared/dimensions/interior_storage_policy.js';
+import { SKETCH_BOX_STORAGE_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import type { RenderSketchBoxStaticContentsArgs } from './render_interior_sketch_boxes_contents_parts_types.js';
 import type { SketchStorageBarrierExtra } from './render_interior_sketch_shared.js';
 
@@ -19,14 +21,14 @@ export function renderSketchBoxContentStorageBarriers(args: RenderSketchBoxStati
   const { box, boxPid, sideH, geometry, frontZ } = shell;
 
   const boxStorageBarriers = asRecordArray<SketchStorageBarrierExtra>(box.storageBarriers);
-  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
-  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
   for (let barrierIndex = 0; barrierIndex < boxStorageBarriers.length; barrierIndex++) {
     const barrier = boxStorageBarriers[barrierIndex] || null;
     if (!barrier) continue;
     let barrierH = readPositiveNumber(barrier.heightM) ?? readPositiveNumber(barrier.hM);
     if (barrierH == null) continue;
-    const minBarrierH = woodThick * storageDims.minHeightWoodMultiplier + storageDims.minHeightExtraM;
+    const minBarrierH =
+      woodThick * INTERIOR_STORAGE_LAYOUT_POLICY.minHeightWoodMultiplier +
+      INTERIOR_STORAGE_LAYOUT_POLICY.minHeightExtraM;
     barrierH = Math.max(minBarrierH, Math.min(barrierH, Math.max(minBarrierH, sideH)));
     const barrierY = yFromBoxNorm(barrier.yNorm, barrierH / 2);
     if (barrierY == null) continue;
@@ -49,19 +51,20 @@ export function renderSketchBoxContentStorageBarriers(args: RenderSketchBoxStati
       yNorm: barrier.yNorm,
     });
     const barrierW = Math.max(
-      storageDims.barrierWidthMinM,
-      (barrierSegment ? barrierSegment.width : geometry.innerW) - storageDims.barrierWidthClearanceM
+      INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthMinM,
+      (barrierSegment ? barrierSegment.width : geometry.innerW) -
+        INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
     );
     const barrierX = barrierSegment ? barrierSegment.centerX : geometry.centerX;
-    const barrierD = Math.max(storageDims.previewThicknessMinM, woodThick);
+    const barrierD = Math.max(INTERIOR_STORAGE_PREVIEW_POLICY.previewThicknessMinM, woodThick);
     const barrierZ = Math.max(
       geometry.innerBackZ + barrierD / 2,
       frontZ -
         Math.min(
-          previewDims.storageBarrierDepthClearanceMaxM,
+          SKETCH_BOX_STORAGE_PREVIEW_POLICY.storageBarrierDepthClearanceMaxM,
           Math.max(
-            previewDims.storageBarrierDepthClearanceMinM,
-            geometry.innerD * previewDims.storageBarrierDepthClearanceRatio
+            SKETCH_BOX_STORAGE_PREVIEW_POLICY.storageBarrierDepthClearanceMinM,
+            geometry.innerD * SKETCH_BOX_STORAGE_PREVIEW_POLICY.storageBarrierDepthClearanceRatio
           )
         )
     );

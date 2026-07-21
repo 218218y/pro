@@ -881,7 +881,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at eighty-four reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at eighty-seven reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -1172,6 +1172,18 @@ test('project migration ledger stays exact at eighty-four reviewed statements wi
       'esm/native/services/canvas_picking_sketch_module_stack_preview_ext_drawers.ts',
       'esm/shared/dimensions/drawer_sketch_policy.ts',
     ],
+    [
+      'esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts',
+      'esm/shared/dimensions/drawer_sketch_policy.ts',
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts',
+      'esm/shared/dimensions/interior_storage_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_storage.ts',
+      'esm/shared/dimensions/interior_storage_policy.ts',
+    ],
   ];
 
   assert.equal(
@@ -1200,9 +1212,19 @@ test('project migration ledger stays exact at eighty-four reviewed statements wi
     'the eighty previously reviewed migration entries must remain semantically unchanged'
   );
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 84)),
     'b34d8c4209c3c84d9b738094851cb8221089242de68c08b20f8d9a9635979335',
-    'all eighty-four active migration entries must remain semantically stable'
+    'the eighty-four previously reviewed migration entries must remain semantically unchanged'
+  );
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets.slice(0, 85)),
+    '8c99874fb35870ef203054a2f461c052a975194229e11e5c767153c68c32a864',
+    'the eighty-five previously reviewed migration entries must remain semantically unchanged'
+  );
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets),
+    '32edb97832df2b9f8191fbe9f2bc6b19721216aa1e9efd42fcd8a1d126120adb',
+    'all eighty-seven active migration entries must remain semantically stable'
   );
 
   assert.equal(
@@ -1271,16 +1293,16 @@ test('project migration ledger stays exact at eighty-four reviewed statements wi
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 84);
+  assert.equal(report.migrationBudgets.length, 87);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
   );
 
   const expectedEdges = new Map([
-    ['builder>shared', { observed: 264, migration: 45, reviewed: 219, budget: 219 }],
+    ['builder>shared', { observed: 266, migration: 47, reviewed: 219, budget: 219 }],
     ['features>shared', { observed: 59, migration: 1, reviewed: 58, budget: 58 }],
-    ['services>shared', { observed: 204, migration: 37, reviewed: 167, budget: 167 }],
+    ['services>shared', { observed: 205, migration: 38, reviewed: 167, budget: 167 }],
     ['ui>shared', { observed: 28, migration: 1, reviewed: 27, budget: 27 }],
   ]);
   for (const [key, expected] of expectedEdges) {
@@ -1300,7 +1322,7 @@ test('repository Sketch Box Geometry and unit-conversion migration entries are e
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 59)),
     '35a3fc695221ed255ad212ae4d126ad3cd022299e390a4882c2c4731dd359226',
@@ -1399,7 +1421,7 @@ test('repository Sketch Box Shell Apply migration entry is exact and preserves t
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 61)),
     'a931b3e2c5090e4fa5de7c10057194fde44f0ad58409966e1ab203a8be2cdcc0',
@@ -1454,7 +1476,7 @@ test('repository Sketch Box module-context and surface-commit migration entries 
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 62)),
     'df3f1cdc8e66dfd4e1ed2c673b3c0efe459b98d5bbcd34a78fd451f183171dab',
@@ -1990,7 +2012,7 @@ test('repository Drawer and Handle migration ledger entries are exact and additi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools', 'wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
 
   const expected = [
     [
@@ -2068,7 +2090,7 @@ test('repository Builder Interior ownership migration entries are exact and addi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 22)),
     'f77d520ad443232af84217ded9adf59546df8d7fcf530b54ac1152ae5ca5cdd4'
@@ -2172,7 +2194,7 @@ test('repository Service Interior and Material migration entries are exact and a
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 30)),
     '9f2047a5d47e2f73f4b0f9621ee60d593eea946a439df2b17961902ff375fb42',
@@ -2296,7 +2318,7 @@ test('repository Split Hover Preview Line migration entries are exact and additi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 41)),
     '3f529bc4b53c478ea6afd6b8ac80202a77cb530189a7bf45f0aada7fc05c9b9c',
@@ -2360,7 +2382,7 @@ test('repository Stack Split Lower migration entries are exact and additive-only
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 47)),
     '5bccd600217eaa992d4442c13b85143d25e5d05f79ce92222406a99b39ea5da6',
@@ -2415,7 +2437,7 @@ test('repository Sketch Box foundation keeps the first fifty migration entries s
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 50)),
     'abc6215529fd6c20db36ec7b379326187149e9cb7d39ad5f9d9f74e07de360c7',
@@ -2428,7 +2450,7 @@ test('repository Free Placement mixed-consumer migration entries are exact and a
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 50)),
     'abc6215529fd6c20db36ec7b379326187149e9cb7d39ad5f9d9f74e07de360c7',
@@ -2501,7 +2523,7 @@ test('repository Sketch Box Geometry and Door Preview pair migration entries are
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 54)),
     'eba4694fa3dbfb497406d08e5d4d1b01c30d12b66afd6ce5c9519d558fddb552',
@@ -2562,7 +2584,7 @@ test('repository Sketch Box Geometry and Material migration entries are exact an
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 56)),
     'a0ee2c5c18fcc5c5f473df435a270083f7a8dafabbdeb4fa0b5d515def2e20f0',
@@ -2634,7 +2656,7 @@ test('repository Sketch Box front-overlay migration entries are exact and additi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 66)),
     'f9bd1e138abfa089a95d506284de0385784aecdc403447fc20b4c90ff74e251d',
@@ -2695,7 +2717,7 @@ test('repository Sketch Box Material and Door Preview pair entries are exact and
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 74)),
     '33bbc870fa9433d5da70cad13d80bd1e51caeeab1e0b805e04d2bac9d13d30b0',
@@ -2762,7 +2784,7 @@ test('repository Sketch Box Door Geometry migration entry is exact and additive-
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 76)),
     '754ded9a928219d43969ff666d64aa15a855d923669ec94793e6421bbca57d1c',
@@ -2813,12 +2835,12 @@ test('repository Sketch Box Door Geometry migration entry is exact and additive-
   const builderRule = baseline.rules.find(entry => entry.from === 'builder' && entry.to === 'shared');
   assert.ok(builderEdge);
   assert.ok(builderRule);
-  assert.equal(builderEdge.importCount, 262);
+  assert.equal(builderEdge.importCount, 266);
   assert.equal(builderRule.maxImportCount, 219);
   assert.equal(
     report.migrationBudgets.filter(entry => entry.from === 'builder' && entry.to === 'shared' && entry.active)
       .length,
-    43
+    47
   );
 });
 
@@ -2827,7 +2849,7 @@ test('repository interior rod-clearance ownership migration entries are exact an
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 68)),
     '00d8669bb15e2b8bb20805dc668425edb1a03f1ad338df475902a1ff0a13a096',
@@ -2957,7 +2979,7 @@ test('repository Sketch Box Adornment Preview ownership migration entry is exact
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 77)),
     'fd97bcc51a2e7c692099fd63397b594a9e963122ecab566c3457043126878705',
@@ -3006,7 +3028,7 @@ test('repository Sketch Box Drawer Preview context pair migration entries are ex
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 78)),
     '8c597c8bbdc3d30c36e664a18e52936ee725b46645169fba55f68255e4d60b12',
@@ -3089,12 +3111,12 @@ test('repository Sketch Box Drawer Preview context pair migration entries are ex
   const builderRule = baseline.rules.find(entry => entry.from === 'builder' && entry.to === 'shared');
   assert.ok(builderEdge);
   assert.ok(builderRule);
-  assert.equal(builderEdge.importCount, 264);
+  assert.equal(builderEdge.importCount, 266);
   assert.equal(builderRule.maxImportCount, 219);
   assert.equal(
     report.migrationBudgets.filter(entry => entry.from === 'builder' && entry.to === 'shared' && entry.active)
       .length,
-    45
+    47
   );
 });
 
@@ -3103,14 +3125,14 @@ test('repository Sketch Box Measurement stack-preview quartet migration entries 
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 84);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 80)),
     '398633f3cd9da26e88f23ef1f22aa7e88ea4fa1ae5f914b6933693ebd8f1946d',
     'the eighty previously reviewed migration entries must remain semantically unchanged'
   );
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 84)),
     'b34d8c4209c3c84d9b738094851cb8221089242de68c08b20f8d9a9635979335'
   );
 
@@ -3178,7 +3200,7 @@ test('repository Sketch Box Measurement stack-preview quartet migration entries 
     removalCondition: `Remove this entry when a reviewed ${scopeName} external-drawer stack-preview composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade.`,
   });
 
-  assert.deepEqual(baseline.migrationBudgets.slice(80), [
+  assert.deepEqual(baseline.migrationBudgets.slice(80, 84), [
     internalEntry('esm/native/services/canvas_picking_sketch_box_stack_preview_drawers.ts', 'Sketch Box'),
     externalEntry('esm/native/services/canvas_picking_sketch_box_stack_preview_ext_drawers.ts', 'Sketch Box'),
     internalEntry(
@@ -3198,13 +3220,13 @@ test('repository Sketch Box Measurement stack-preview quartet migration entries 
   const servicesRule = baseline.rules.find(entry => entry.from === 'services' && entry.to === 'shared');
   assert.ok(servicesEdge);
   assert.ok(servicesRule);
-  assert.equal(servicesEdge.importCount, 204);
+  assert.equal(servicesEdge.importCount, 205);
   assert.equal(servicesRule.maxImportCount, 167);
   assert.equal(
     report.migrationBudgets.filter(
       entry => entry.from === 'services' && entry.to === 'shared' && entry.active
     ).length,
-    37
+    38
   );
 });
 
@@ -3213,18 +3235,18 @@ test('repository Sketch Box stacked content preview renderer migration entry is 
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.migrationBudgets.length, 85);
+  assert.equal(baseline.migrationBudgets.length, 87);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 84)),
     'b34d8c4209c3c84d9b738094851cb8221089242de68c08b20f8d9a9635979335',
     'the eighty-four previously reviewed migration entries must remain semantically unchanged'
   );
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 85)),
     '8c99874fb35870ef203054a2f461c052a975194229e11e5c767153c68c32a864'
   );
 
-  assert.deepEqual(baseline.migrationBudgets.slice(84), [
+  assert.deepEqual(baseline.migrationBudgets.slice(84, 85), [
     {
       from: 'builder',
       to: 'shared',
@@ -3265,11 +3287,122 @@ test('repository Sketch Box stacked content preview renderer migration entry is 
   const builderRule = baseline.rules.find(entry => entry.from === 'builder' && entry.to === 'shared');
   assert.ok(builderEdge);
   assert.ok(builderRule);
-  assert.equal(builderEdge.importCount, 265);
+  assert.equal(builderEdge.importCount, 266);
   assert.equal(builderRule.maxImportCount, 219);
   assert.equal(
     report.migrationBudgets.filter(entry => entry.from === 'builder' && entry.to === 'shared' && entry.active)
       .length,
-    46
+    47
+  );
+});
+
+test('repository Sketch Box Storage Preview pair migration entries are exact and additive-only', () => {
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const baseline = JSON.parse(
+    fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
+  );
+  assert.equal(baseline.migrationBudgets.length, 87);
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets.slice(0, 85)),
+    '8c99874fb35870ef203054a2f461c052a975194229e11e5c767153c68c32a864',
+    'the eighty-five previously reviewed migration entries must remain semantically unchanged'
+  );
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets),
+    '32edb97832df2b9f8191fbe9f2bc6b19721216aa1e9efd42fcd8a1d126120adb'
+  );
+
+  assert.deepEqual(baseline.migrationBudgets.slice(85), [
+    {
+      from: 'builder',
+      to: 'shared',
+      additionalStatements: 1,
+      owner: 'dimension-ownership-migration',
+      reviewedAt: '2026-07-21',
+      reviewBy: '2026-10-18',
+      fromFile: 'esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts',
+      companionImport: {
+        toFile: 'esm/shared/dimensions/sketch_box_preview_policy.ts',
+        kind: 'value',
+        importedSymbols: ['SKETCH_BOX_STORAGE_PREVIEW_POLICY'],
+        syntax: 'static-import',
+      },
+      removedImport: {
+        toFile: 'esm/shared/wardrobe_dimension_tokens_shared.ts',
+        kind: 'value',
+        importedSymbols: ['INTERIOR_FITTINGS_DIMENSIONS', 'SKETCH_BOX_DIMENSIONS'],
+        syntax: 'static-import',
+      },
+      addedImport: {
+        toFile: 'esm/shared/dimensions/interior_storage_policy.ts',
+        kind: 'value',
+        importedSymbols: [
+          'INTERIOR_STORAGE_BARRIER_POLICY',
+          'INTERIOR_STORAGE_LAYOUT_POLICY',
+          'INTERIOR_STORAGE_PREVIEW_POLICY',
+        ],
+        syntax: 'static-import',
+      },
+      reason:
+        'The Sketch Box storage-barrier renderer replaces one legacy facade statement with focused Interior Storage Barrier, Layout, and Preview owners plus the focused Sketch Box Storage Preview owner on the existing builder to shared edge.',
+      removalCondition:
+        'Remove this entry when a reviewed Sketch Box storage-barrier rendering composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade.',
+    },
+    {
+      from: 'services',
+      to: 'shared',
+      additionalStatements: 1,
+      owner: 'dimension-ownership-migration',
+      reviewedAt: '2026-07-21',
+      reviewBy: '2026-10-18',
+      fromFile: 'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_storage.ts',
+      companionImport: {
+        toFile: 'esm/shared/dimensions/sketch_box_preview_policy.ts',
+        kind: 'value',
+        importedSymbols: [
+          'SKETCH_BOX_PREVIEW_CORE_POLICY',
+          'SKETCH_BOX_SHELF_PREVIEW_POLICY',
+          'SKETCH_BOX_STORAGE_PREVIEW_POLICY',
+        ],
+        syntax: 'static-import',
+      },
+      removedImport: {
+        toFile: 'esm/shared/wardrobe_dimension_tokens_shared.ts',
+        kind: 'value',
+        importedSymbols: ['INTERIOR_FITTINGS_DIMENSIONS', 'SKETCH_BOX_DIMENSIONS'],
+        syntax: 'static-import',
+      },
+      addedImport: {
+        toFile: 'esm/shared/dimensions/interior_storage_policy.ts',
+        kind: 'value',
+        importedSymbols: ['INTERIOR_STORAGE_BARRIER_POLICY', 'INTERIOR_STORAGE_PREVIEW_POLICY'],
+        syntax: 'static-import',
+      },
+      reason:
+        'The Sketch Box vertical storage preview resolver replaces one legacy facade statement with focused Interior Storage Barrier and Preview owners plus focused Sketch Box Core, Shelf, and Storage Preview owners on the existing services to shared edge.',
+      removalCondition:
+        'Remove this entry when a reviewed Sketch Box vertical storage-preview composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade.',
+    },
+  ]);
+
+  const graph = collectLayerContractGraph({ root: repositoryRoot });
+  const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
+  assert.equal(report.ok, true);
+  const builderEdge = graph.edges.find(entry => entry.from === 'builder' && entry.to === 'shared');
+  const servicesEdge = graph.edges.find(entry => entry.from === 'services' && entry.to === 'shared');
+  assert.ok(builderEdge);
+  assert.ok(servicesEdge);
+  assert.equal(builderEdge.importCount, 266);
+  assert.equal(servicesEdge.importCount, 205);
+  assert.equal(
+    report.migrationBudgets.filter(entry => entry.from === 'builder' && entry.to === 'shared' && entry.active)
+      .length,
+    47
+  );
+  assert.equal(
+    report.migrationBudgets.filter(
+      entry => entry.from === 'services' && entry.to === 'shared' && entry.active
+    ).length,
+    38
   );
 });

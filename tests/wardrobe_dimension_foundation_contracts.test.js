@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 58, statements: 58 }),
+  'static-import': Object.freeze({ importers: 56, statements: 56 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 60, statements: 61 }),
+  total: Object.freeze({ importers: 58, statements: 59 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -713,6 +713,15 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
     'INTERIOR_STORAGE_LAYOUT_POLICY',
     'INTERIOR_STORAGE_PREVIEW_POLICY',
   ]),
+  'esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts': Object.freeze([
+    'INTERIOR_STORAGE_BARRIER_POLICY',
+    'INTERIOR_STORAGE_LAYOUT_POLICY',
+    'INTERIOR_STORAGE_PREVIEW_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_storage.ts': Object.freeze([
+    'INTERIOR_STORAGE_BARRIER_POLICY',
+    'INTERIOR_STORAGE_PREVIEW_POLICY',
+  ]),
   'esm/native/services/canvas_picking_manual_layout_free_box_commit.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
   ]),
@@ -1028,6 +1037,14 @@ const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_sketch_module_stack_preview_ext_drawers.ts': Object.freeze([
     'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
   ]),
+  'esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts': Object.freeze([
+    'SKETCH_BOX_STORAGE_PREVIEW_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_storage.ts': Object.freeze([
+    'SKETCH_BOX_PREVIEW_CORE_POLICY',
+    'SKETCH_BOX_SHELF_PREVIEW_POLICY',
+    'SKETCH_BOX_STORAGE_PREVIEW_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_PREVIEW_POLICY']),
 });
 const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
@@ -1268,14 +1285,6 @@ const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
     'storage.barrierWidthClearanceM',
     'storage.barrierWidthMinM',
   ]),
-  'esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts': Object.freeze([
-    'storage',
-    'storage.barrierWidthClearanceM',
-    'storage.barrierWidthMinM',
-    'storage.minHeightExtraM',
-    'storage.minHeightWoodMultiplier',
-    'storage.previewThicknessMinM',
-  ]),
   'esm/native/builder/render_preview_interior_hover_apply.ts': Object.freeze([
     'storage',
     'storage.barrierWidthClearanceM',
@@ -1321,12 +1330,6 @@ const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
   ]),
   'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts': Object.freeze([
     'storage',
-    'storage.barrierWidthClearanceM',
-    'storage.previewThicknessMinM',
-  ]),
-  'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_storage.ts': Object.freeze([
-    'storage',
-    'storage.barrierHeightM',
     'storage.barrierWidthClearanceM',
     'storage.previewThicknessMinM',
   ]),
