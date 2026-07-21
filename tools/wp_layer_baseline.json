@@ -2677,6 +2677,122 @@
       },
       "reason": "The Sketch Box shell-apply renderer replaces one legacy facade statement with the canonical Shell Geometry owner plus the focused Interior Shelf Geometry owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch Box shell composition seam eliminates the extra Interior Shelf Geometry statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["cmToM"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "SKETCH_BOX_DIMENSIONS", "cmToM"],
+        "syntax": "static-import"
+      },
+      "reason": "The manual-layout Sketch hover-module context replaces one legacy facade statement with the canonical Shell Geometry owner plus the focused centimeter-to-meter conversion owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch hover-module context composition seam eliminates the extra Units statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_CLAMP_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "SKETCH_BOX_DIMENSIONS", "cmToM"],
+        "syntax": "static-import"
+      },
+      "reason": "The manual-layout Sketch hover-module context replaces one legacy facade statement with the canonical Shell Geometry owner plus the focused Interior Storage Barrier and Clamp owners on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch hover-module context composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["cmToM"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "SKETCH_BOX_DIMENSIONS", "cmToM"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch module surface-commit shared helper replaces one legacy facade statement with the canonical Shell Geometry owner plus the focused centimeter-to-meter conversion owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch module commit composition seam eliminates the extra Units statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "SKETCH_BOX_DIMENSIONS", "cmToM"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch module surface-commit shared helper replaces one legacy facade statement with the canonical Shell Geometry owner plus the focused Interior Storage Barrier owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch module commit composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
     }
   ]
 }

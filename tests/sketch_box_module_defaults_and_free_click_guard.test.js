@@ -48,7 +48,7 @@ test('module sketch boxes preserve optional width/depth overrides while keeping 
     hoverModule,
     /const depthCm = boxSpec \? Number\(readRecordValue\(boxSpec, 'depthCm'\)\) : NaN;/
   );
-  assert.match(hoverModule, /cmToM,/);
+  assert.match(hoverModule, /import \{ cmToM \} from '\.\.\/\.\.\/shared\/dimensions\/units\.js';/u);
   assert.match(
     hoverModule,
     /if \(Number\.isFinite\(widthCm\) && widthCm > 0\) boxWidthOverrideM = cmToM\(widthCm\);/
@@ -61,7 +61,7 @@ test('module sketch boxes preserve optional width/depth overrides while keeping 
   assert.doesNotMatch(hoverModule, /boxDepthOverrideM = depthCm \/ 100/);
   assert.match(clickMode, /const widthCm = readNumber\(spec \? spec\.widthCm : null\);/);
   assert.match(clickMode, /const depthCm = readNumber\(spec \? spec\.depthCm : null\);/);
-  assert.match(clickMode, /cmToM,/);
+  assert.match(clickMode, /import \{ cmToM \} from '\.\.\/\.\.\/shared\/dimensions\/units\.js';/u);
   assert.match(clickMode, /boxWM: widthCm != null && widthCm > 0 \? cmToM\(widthCm\) : null,/);
   assert.match(clickMode, /boxDM: depthCm != null && depthCm > 0 \? cmToM\(depthCm\) : null,/);
   assert.doesNotMatch(clickMode, /boxWM: widthCm != null && widthCm > 0 \? widthCm \/ 100 : null,/);

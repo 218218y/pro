@@ -6,11 +6,9 @@ import {
   isSketchCommitRecord,
   readSketchCommitNumber,
 } from './canvas_picking_sketch_commit_geometry.js';
-import {
-  cmToM,
-  INTERIOR_FITTINGS_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_STORAGE_BARRIER_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
+import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
+import { cmToM } from '../../shared/dimensions/units.js';
 import type {
   SketchBoxGeometryArgs,
   SketchBoxGeometry,
@@ -88,13 +86,15 @@ export function parseSketchShelfTool(tool: string): { variant: string; shelfDept
 }
 
 export function parseSketchStorageHeight(tool: string): number {
-  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
-  if (!tool.startsWith('sketch_storage:')) return storageDims.barrierHeightM;
+  if (!tool.startsWith('sketch_storage:')) return INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM;
   const raw = tool.slice('sketch_storage:'.length).trim();
   const n = Number(raw);
   return Number.isFinite(n)
-    ? Math.max(storageDims.barrierHeightMinM, Math.min(storageDims.barrierHeightMaxM, cmToM(n)))
-    : storageDims.barrierHeightM;
+    ? Math.max(
+        INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightMinM,
+        Math.min(INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightMaxM, cmToM(n))
+      )
+    : INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM;
 }
 
 export function parseSketchModuleBoxTool(args: {
@@ -108,12 +108,12 @@ export function parseSketchModuleBoxTool(args: {
   const depthCm = readNumber(spec ? spec.depthCm : null);
   const maxHeightM = readNumber(args.maxHeightM);
   const heightCeiling =
-    maxHeightM != null && maxHeightM > 0 ? maxHeightM : SKETCH_BOX_DIMENSIONS.geometry.maxOuterHeightM;
+    maxHeightM != null && maxHeightM > 0 ? maxHeightM : SKETCH_BOX_SHELL_GEOMETRY_POLICY.maxOuterHeightM;
   return {
     boxH:
       heightCm != null
-        ? Math.max(SKETCH_BOX_DIMENSIONS.geometry.minOuterHeightM, Math.min(heightCeiling, cmToM(heightCm)))
-        : SKETCH_BOX_DIMENSIONS.geometry.defaultOuterHeightM,
+        ? Math.max(SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterHeightM, Math.min(heightCeiling, cmToM(heightCm)))
+        : SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterHeightM,
     boxWM: widthCm != null && widthCm > 0 ? cmToM(widthCm) : null,
     boxDM: depthCm != null && depthCm > 0 ? cmToM(depthCm) : null,
   };

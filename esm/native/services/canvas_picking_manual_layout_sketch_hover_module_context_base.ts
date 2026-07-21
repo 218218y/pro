@@ -1,8 +1,9 @@
 import {
-  cmToM,
-  INTERIOR_FITTINGS_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  INTERIOR_STORAGE_CLAMP_POLICY,
+} from '../../shared/dimensions/interior_storage_policy.js';
+import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
+import { cmToM } from '../../shared/dimensions/units.js';
 import { getInternalGridMap } from '../runtime/cache_access.js';
 import { asRecord } from '../runtime/record.js';
 import { isSketchInternalDrawersTool } from '../features/sketch_drawer_sizing.js';
@@ -93,11 +94,12 @@ export function resolveManualLayoutSketchHoverModuleBaseContext(
   const internalZ = selectorMetrics.internalZ;
 
   const spanH = topY - bottomY;
-  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
-  const boxGeometryDims = SKETCH_BOX_DIMENSIONS.geometry;
   const pad = Math.min(
-    storageDims.clampPadMaxM,
-    Math.max(storageDims.clampPadMinM, woodThick * storageDims.clampPadWoodRatio)
+    INTERIOR_STORAGE_CLAMP_POLICY.clampPadMaxM,
+    Math.max(
+      INTERIOR_STORAGE_CLAMP_POLICY.clampPadMinM,
+      woodThick * INTERIOR_STORAGE_CLAMP_POLICY.clampPadWoodRatio
+    )
   );
   let yClamped = Math.max(bottomY + pad, Math.min(topY - pad, hitY));
 
@@ -123,7 +125,7 @@ export function resolveManualLayoutSketchHoverModuleBaseContext(
   const shelfDepthOverrideM = shelfDepthM;
   const boxSpec = isBox ? freeBoxSpec : null;
 
-  let boxH: number = boxGeometryDims.defaultOuterHeightM;
+  let boxH: number = SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterHeightM;
   let boxWidthOverrideM: number | null = null;
   let boxDepthOverrideM: number | null = null;
   if (isBox) {
@@ -131,16 +133,17 @@ export function resolveManualLayoutSketchHoverModuleBaseContext(
     const widthCm = boxSpec ? Number(readRecordValue(boxSpec, 'widthCm')) : NaN;
     const depthCm = boxSpec ? Number(readRecordValue(boxSpec, 'depthCm')) : NaN;
     if (Number.isFinite(heightCm))
-      boxH = Math.max(boxGeometryDims.minOuterHeightM, Math.min(spanH, cmToM(heightCm)));
+      boxH = Math.max(SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterHeightM, Math.min(spanH, cmToM(heightCm)));
     if (Number.isFinite(widthCm) && widthCm > 0) boxWidthOverrideM = cmToM(widthCm);
     if (Number.isFinite(depthCm) && depthCm > 0) boxDepthOverrideM = cmToM(depthCm);
   }
 
-  let storageH: number = storageDims.barrierHeightM;
+  let storageH: number = INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM;
   if (isStorage) {
     const raw = tool.slice('sketch_storage:'.length).trim();
     const n = Number(raw);
-    if (Number.isFinite(n)) storageH = Math.max(storageDims.barrierHeightMinM, Math.min(spanH, cmToM(n)));
+    if (Number.isFinite(n))
+      storageH = Math.max(INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightMinM, Math.min(spanH, cmToM(n)));
   }
 
   if (isBox) {

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-21T09:50:54.229Z",
+  "generatedAt": "2026-07-21T10:36:56.860Z",
   "totals": {
-    "tests": 1232,
-    "unitRunnerTests": 1224,
+    "tests": 1233,
+    "unitRunnerTests": 1225,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 402,
+    "contract": 403,
     "runtime-unit": 318,
     "integration": 453,
     "e2e-smoke": 9,
@@ -803,6 +803,10 @@
     },
     {
       "file": "tests/canvas_picking_sketch_module_surface_commit_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/canvas_picking_sketch_module_surface_commit_shared_runtime.test.ts",
       "category": "contract"
     },
     {
