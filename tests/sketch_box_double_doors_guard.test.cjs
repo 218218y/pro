@@ -99,7 +99,7 @@ test('sketch box renderer splits a segment into mirrored leaves with a tighter c
   );
   assert.match(
     render,
-    /const centerGap = isCenterDoubleDoorPair[\s\S]*SKETCH_BOX_DIMENSIONS\.preview\.doorDoublePairGapMinM[\s\S]*SKETCH_BOX_DIMENSIONS\.preview\.doorDoublePairGapMaxM[\s\S]*SKETCH_BOX_DIMENSIONS\.preview\.doorDoublePairGapSizeRatio/
+    /const centerGap = isCenterDoubleDoorPair[\s\S]*SKETCH_BOX_DOOR_PREVIEW_POLICY\.doorDoublePairGapMinM[\s\S]*SKETCH_BOX_DOOR_PREVIEW_POLICY\.doorDoublePairGapMaxM[\s\S]*SKETCH_BOX_DOOR_PREVIEW_POLICY\.doorDoublePairGapSizeRatio/
   );
   assert.match(render, /const pairOuterInset = isCenterDoubleDoorPair/);
   assert.match(render, /const pivotX = hingeLeft \? doorFaceLeft : doorFaceRight;/);

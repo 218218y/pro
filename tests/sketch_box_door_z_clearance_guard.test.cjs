@@ -65,14 +65,24 @@ function sketchBoxFrontsBundle() {
 }
 
 test('sketch box doors render with front-plane clearance to avoid z-fighting', () => {
+  const doorLayout = fs.readFileSync(
+    path.join(__dirname, '..', 'esm/native/builder/render_interior_sketch_boxes_fronts_door_layout.ts'),
+    'utf8'
+  );
   const src = [
     fs.readFileSync(path.join(__dirname, '..', 'esm/native/builder/render_interior_sketch_ops.ts'), 'utf8'),
     fs.readFileSync(path.join(__dirname, '..', 'esm/native/builder/render_interior_sketch_boxes.ts'), 'utf8'),
     sketchBoxFrontsBundle(),
   ].join('\n');
+
+  assert.match(
+    doorLayout,
+    /import \{ SKETCH_BOX_DOOR_PREVIEW_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/sketch_box_preview_policy\.js';/
+  );
+  assert.doesNotMatch(doorLayout, /SKETCH_BOX_DIMENSIONS/);
   assert.match(
     src,
-    /const doorBackClearanceZ = Math\.max\([\s\S]*SKETCH_BOX_DIMENSIONS\.preview\.doorBackClearanceMinM[\s\S]*SKETCH_BOX_DIMENSIONS\.preview\.doorBackClearanceMaxM[\s\S]*doorD \* SKETCH_BOX_DIMENSIONS\.preview\.doorBackClearanceDepthRatio[\s\S]*\);/
+    /const doorBackClearanceZ = Math\.max\([\s\S]*SKETCH_BOX_DOOR_PREVIEW_POLICY\.doorBackClearanceMinM[\s\S]*SKETCH_BOX_DOOR_PREVIEW_POLICY\.doorBackClearanceMaxM[\s\S]*doorD \* SKETCH_BOX_DOOR_PREVIEW_POLICY\.doorBackClearanceDepthRatio[\s\S]*\);/
   );
   assert.match(
     src,
