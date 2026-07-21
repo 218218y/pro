@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import { rebuildSketchSegmentedDoor } from '../esm/native/builder/post_build_sketch_door_cuts_shared.ts';
 import { applyDoorHandles } from '../esm/native/builder/handles_apply_doors.ts';
 import { HANDLE_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
+import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
 
 class FakeVector3 {
   x: number;
@@ -776,4 +778,53 @@ test('handle refresh applies manual handle position to custom sketch box segment
   assert.equal(handle.userData.partId, topPartId);
   assert.ok(handle.position.x < 0, `expected manual x offset, got ${handle.position.x}`);
   assert.ok(handle.position.y > 0.44 && handle.position.y < 0.46);
+});
+
+test('segmented sketch door rebuild preserves focused threshold, clearance, minimum dimensions, and thickness fallbacks', () => {
+  const createDoor = (frontThickness: unknown, segmentHeight: number) => {
+    const doorGroup = new FakeGroup();
+    doorGroup.userData = {
+      partId: 'focused_policy_door_full',
+      __doorWidth: 0.01,
+      __doorHeight: 0.5,
+      __hingeLeft: true,
+      __wpFrontThickness: frontThickness,
+    };
+    doorGroup.position.set(0, 0.25, 0);
+    rebuildSketchSegmentedDoor({
+      runtime: createBaseRuntime(),
+      g: doorGroup,
+      ud: doorGroup.userData,
+      visibleSegments: [{ yMin: 0, yMax: segmentHeight }],
+      basePartId: 'focused_policy_door_full',
+    });
+    return doorGroup;
+  };
+
+  const exactThresholdHeight =
+    SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorMinHeightM +
+    SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorVisualClearanceM;
+  assert.equal(createDoor(0.03, exactThresholdHeight).children.length, 0);
+  assert.equal(createDoor(0.03, exactThresholdHeight - 1e-9).children.length, 0);
+
+  const rendered = createDoor(0.03, exactThresholdHeight + 1e-9);
+  assert.ok(rendered.children.length >= 1);
+  const renderedSegment = rendered.children[0];
+  assert.equal(renderedSegment.userData.__wpFrontThickness, 0.03);
+  assert.equal(
+    renderedSegment.userData.__doorWidth,
+    SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorMinDimensionM
+  );
+  assert.equal(
+    renderedSegment.userData.__doorHeight,
+    SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorMinDimensionM
+  );
+
+  for (const invalidThickness of [0, -0.01, Number.NaN, Number.POSITIVE_INFINITY]) {
+    const fallback = createDoor(invalidThickness, exactThresholdHeight + 0.1);
+    assert.equal(
+      fallback.children[0]?.userData.__wpFrontThickness,
+      MATERIAL_THICKNESS_POLICY.wood.thicknessM
+    );
+  }
 });

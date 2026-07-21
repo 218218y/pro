@@ -1,4 +1,5 @@
-import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import type { UnknownRecord } from '../../../types';
 import type {
   ResolveSketchBoxSegmentsArgs,
@@ -82,7 +83,7 @@ function isFiniteNumber(value: unknown): value is number {
 }
 
 function clampWoodThick(value: number): number {
-  return isFiniteNumber(value) && value > 0 ? value : MATERIAL_DIMENSIONS.wood.thicknessM;
+  return isFiniteNumber(value) && value > 0 ? value : MATERIAL_THICKNESS_POLICY.wood.thicknessM;
 }
 
 export function resolveSketchBoxDoorPreview(
@@ -188,7 +189,6 @@ export function resolveSketchBoxDoorPreview(
       : contentKind === 'door' && hasDoor
         ? 'remove'
         : 'add';
-  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
   const contentXNorm = doorSegment ? doorSegment.xNorm : 0.5;
   const boxYNorm = doorVerticalSegment ? doorVerticalSegment.yNorm : 0.5;
   const doorId = contentKind === 'double_door' ? '' : existingDoor ? String(existingDoor.door.id || '') : '';
@@ -198,16 +198,23 @@ export function resolveSketchBoxDoorPreview(
   const segmentLeft = doorSegment ? doorSegment.leftX : innerLeft;
   const segmentRight = doorSegment ? doorSegment.rightX : innerRight;
   const leftExt =
-    Math.abs(segmentLeft - innerLeft) <= previewDims.doorEdgeEpsilonM ? safeWoodThick : safeWoodThick / 2;
+    Math.abs(segmentLeft - innerLeft) <= SKETCH_BOX_DOOR_PREVIEW_POLICY.doorEdgeEpsilonM
+      ? safeWoodThick
+      : safeWoodThick / 2;
   const rightExt =
-    Math.abs(segmentRight - innerRight) <= previewDims.doorEdgeEpsilonM ? safeWoodThick : safeWoodThick / 2;
+    Math.abs(segmentRight - innerRight) <= SKETCH_BOX_DOOR_PREVIEW_POLICY.doorEdgeEpsilonM
+      ? safeWoodThick
+      : safeWoodThick / 2;
   const doorLeft = segmentLeft - leftExt;
   const doorRight = segmentRight + rightExt;
-  const doorDepth = Math.max(previewDims.doorMinDepthM, safeWoodThick);
+  const doorDepth = Math.max(SKETCH_BOX_DOOR_PREVIEW_POLICY.doorMinDepthM, safeWoodThick);
   const doorFrontZ = targetGeo.centerZ + targetGeo.outerD / 2;
   const doorBackClearanceZ = Math.max(
-    previewDims.doorBackClearanceMinM,
-    Math.min(previewDims.doorBackClearanceMaxM, doorDepth * previewDims.doorBackClearanceDepthRatio)
+    SKETCH_BOX_DOOR_PREVIEW_POLICY.doorBackClearanceMinM,
+    Math.min(
+      SKETCH_BOX_DOOR_PREVIEW_POLICY.doorBackClearanceMaxM,
+      doorDepth * SKETCH_BOX_DOOR_PREVIEW_POLICY.doorBackClearanceDepthRatio
+    )
   );
   const renderedDoorCenterZ = doorFrontZ + doorDepth / 2 + doorBackClearanceZ;
   const renderedDoorFrontZ = renderedDoorCenterZ + doorDepth / 2;
@@ -217,7 +224,10 @@ export function resolveSketchBoxDoorPreview(
     op === 'remove' || contentKind === 'door_hinge'
       ? renderedDoorFrontZ +
         doorDepth / 2 +
-        Math.max(previewDims.doorRemoveOffsetMinM, safeWoodThick * previewDims.doorRemoveOffsetWoodRatio)
+        Math.max(
+          SKETCH_BOX_DOOR_PREVIEW_POLICY.doorRemoveOffsetMinM,
+          safeWoodThick * SKETCH_BOX_DOOR_PREVIEW_POLICY.doorRemoveOffsetWoodRatio
+        )
       : renderedDoorCenterZ;
   const command: SketchBoxContentCommand =
     contentKind === 'door'
@@ -260,8 +270,14 @@ export function resolveSketchBoxDoorPreview(
       x: (doorLeft + doorRight) / 2,
       y: doorCenterY,
       z: previewDoorZ,
-      w: Math.max(previewDims.doorMinDimensionM, doorRight - doorLeft - previewDims.doorPreviewClearanceM),
-      h: Math.max(previewDims.doorMinDimensionM, doorCellH - previewDims.doorPreviewClearanceM),
+      w: Math.max(
+        SKETCH_BOX_DOOR_PREVIEW_POLICY.doorMinDimensionM,
+        doorRight - doorLeft - SKETCH_BOX_DOOR_PREVIEW_POLICY.doorPreviewClearanceM
+      ),
+      h: Math.max(
+        SKETCH_BOX_DOOR_PREVIEW_POLICY.doorMinDimensionM,
+        doorCellH - SKETCH_BOX_DOOR_PREVIEW_POLICY.doorPreviewClearanceM
+      ),
       d: doorDepth,
       woodThick: safeWoodThick,
       op,

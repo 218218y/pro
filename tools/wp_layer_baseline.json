@@ -3097,6 +3097,64 @@
       },
       "reason": "The interior rod-clearance resolver replaces one legacy facade statement with the canonical Interior Fittings anchor plus the focused Sketch Box Placement Geometry owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed rod-clearance composition seam eliminates the extra Sketch Box Placement Geometry statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/post_build_sketch_door_cuts_rebuild.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DOOR_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The segmented Sketch door rebuild replaces one legacy facade statement with the canonical Door Preview owner plus the focused Material Thickness fallback owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Door Preview composition seam eliminates the extra Material Thickness statement for segmented Sketch door rebuild without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_door_preview.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DOOR_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch Box door preview resolver replaces one legacy facade statement with the canonical Door Preview owner plus the focused Material Thickness fallback owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Door Preview composition seam eliminates the extra Material Thickness statement for Sketch Box door preview resolver without reintroducing the legacy facade."
     }
   ]
 }

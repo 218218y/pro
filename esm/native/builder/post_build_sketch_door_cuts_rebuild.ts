@@ -3,7 +3,8 @@
 // Owns segmented sketch-door rebuild orchestration while focused helpers own segment meta, visuals, and handles.
 
 import { readKey } from './post_build_extras_shared.js';
-import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 
 import { readDoorTrimListForPart } from '../features/door_authoring/api.js';
 import type { RebuildSketchSegmentedDoorArgs } from './post_build_sketch_door_cuts_contracts.js';
@@ -60,7 +61,8 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
   const isLeftHinge = !!readKey(ud, '__hingeLeft');
   const handleAbsY = resolveOriginalDoorHandleAbsY(ud, centerY);
   const thickness =
-    readGeometryUserDataPositiveNumberKey(ud, '__wpFrontThickness') ?? MATERIAL_DIMENSIONS.wood.thicknessM;
+    readGeometryUserDataPositiveNumberKey(ud, '__wpFrontThickness') ??
+    MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const suppressedHandlePartIds: string[] = [];
 
   removeAllChildren(g);
@@ -69,8 +71,8 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
 
   for (let segIndex = 0; segIndex < visibleSegments.length; segIndex++) {
     const seg = visibleSegments[segIndex];
-    const segHeight = seg.yMax - seg.yMin - SKETCH_BOX_DIMENSIONS.preview.segmentedDoorVisualClearanceM;
-    if (!(segHeight > SKETCH_BOX_DIMENSIONS.preview.segmentedDoorMinHeightM)) continue;
+    const segHeight = seg.yMax - seg.yMin - SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorVisualClearanceM;
+    if (!(segHeight > SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorMinHeightM)) continue;
     const segCenterLocalY = (seg.yMin + seg.yMax) / 2 - centerY;
     const segmentPartId = resolveSketchDoorSegmentPartId(partId, visibleSegments.length, segIndex);
     const edgeHandleVariantForClamp =
@@ -83,10 +85,13 @@ export function rebuildSketchSegmentedDoor(args: RebuildSketchSegmentedDoorArgs)
       padding: resolveSegmentHandleClampPadding(edgeHandleVariantForClamp),
     });
     const segmentVisualWidth = Math.max(
-      SKETCH_BOX_DIMENSIONS.preview.segmentedDoorMinDimensionM,
-      width - SKETCH_BOX_DIMENSIONS.preview.segmentedDoorVisualClearanceM
+      SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorMinDimensionM,
+      width - SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorVisualClearanceM
     );
-    const segmentVisualHeight = Math.max(SKETCH_BOX_DIMENSIONS.preview.segmentedDoorMinDimensionM, segHeight);
+    const segmentVisualHeight = Math.max(
+      SKETCH_BOX_DOOR_PREVIEW_POLICY.segmentedDoorMinDimensionM,
+      segHeight
+    );
     const flags = resolveSketchSegmentVisualFlags({ runtime, segmentPartId, sourceUserData: ud });
     const isSegmentRemoved = runtime.isDoorRemoved(segmentPartId);
 

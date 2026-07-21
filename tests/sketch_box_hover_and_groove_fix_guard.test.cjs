@@ -30,7 +30,7 @@ test('free box door remove preview sits in front of the outside door face', () =
   assert.match(src, /const renderedDoorFrontZ = renderedDoorCenterZ \+ doorDepth \/ 2;/);
   assert.match(
     src,
-    /const previewDoorZ[\s\S]*renderedDoorFrontZ[\s\S]*doorDepth \/ 2[\s\S]*Math\.max\(previewDims\.doorRemoveOffsetMinM, safeWoodThick \* previewDims\.doorRemoveOffsetWoodRatio\)/
+    /const previewDoorZ[\s\S]*renderedDoorFrontZ[\s\S]*doorDepth \/ 2[\s\S]*Math\.max\(\s*SKETCH_BOX_DOOR_PREVIEW_POLICY\.doorRemoveOffsetMinM,\s*safeWoodThick \* SKETCH_BOX_DOOR_PREVIEW_POLICY\.doorRemoveOffsetWoodRatio\s*\)/
   );
   assert.match(src, /z: previewDoorZ,/);
 });
@@ -41,7 +41,7 @@ test('module box door remove and hinge previews sit in front of the outside door
   assert.match(src, /const renderedDoorFrontZ = renderedDoorCenterZ \+ doorDepth \/ 2;/);
   assert.match(
     src,
-    /const previewDoorZ[\s\S]*contentKind === 'door_hinge'[\s\S]*renderedDoorFrontZ[\s\S]*doorDepth \/ 2[\s\S]*Math\.max\(previewDims\.doorRemoveOffsetMinM, safeWoodThick \* previewDims\.doorRemoveOffsetWoodRatio\)/
+    /const previewDoorZ[\s\S]*contentKind === 'door_hinge'[\s\S]*renderedDoorFrontZ[\s\S]*doorDepth \/ 2[\s\S]*Math\.max\(\s*SKETCH_BOX_DOOR_PREVIEW_POLICY\.doorRemoveOffsetMinM,\s*safeWoodThick \* SKETCH_BOX_DOOR_PREVIEW_POLICY\.doorRemoveOffsetWoodRatio\s*\)/
   );
   assert.match(src, /z: previewDoorZ,/);
 });
