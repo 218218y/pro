@@ -9,7 +9,8 @@ import {
   createSketchFreePlacementBoxHoverRecord,
 } from './canvas_picking_sketch_free_commit.js';
 import { asRecord } from '../runtime/record.js';
-import { cmToM, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
+import { cmToM } from '../../shared/dimensions/units.js';
 
 type RecordMap = Record<string, unknown>;
 
@@ -133,7 +134,7 @@ export function tryHandleCanvasManualSketchFreeBoxClick(
     const heightCm = readFinitePositiveNumber(freeBoxSpec, 'heightCm');
     const widthCm = readFinitePositiveNumber(freeBoxSpec, 'widthCm');
     const depthCm = readFinitePositiveNumber(freeBoxSpec, 'depthCm');
-    const boxH = Math.max(SKETCH_BOX_DIMENSIONS.geometry.minOuterHeightM, cmToM(heightCm ?? 0));
+    const boxH = Math.max(SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterHeightM, cmToM(heightCm ?? 0));
     const widthOverrideM = widthCm != null ? cmToM(widthCm) : null;
     const depthOverrideM = depthCm != null ? cmToM(depthCm) : null;
 

@@ -2590,6 +2590,64 @@
       },
       "reason": "The Sketch Box door-content commit resolver replaces one legacy facade statement with the canonical Shell Geometry owner plus the focused Material Thickness fallback owner on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch Box door-content composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_click_manual_sketch_free_box.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["cmToM"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DIMENSIONS", "cmToM"],
+        "syntax": "static-import"
+      },
+      "reason": "The manual Sketch free-box click consumer replaces one legacy facade statement with the canonical Shell Geometry owner plus the focused centimeter-to-meter conversion owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed manual free-box click composition seam eliminates the extra Units statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "ui",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["mToCm"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DIMENSIONS", "mToCm"],
+        "syntax": "static-import"
+      },
+      "reason": "The Interior-tab Sketch tool helper replaces one legacy facade statement with the canonical Shell Geometry owner plus the focused meter-to-centimeter conversion owner on the existing UI to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch tool defaults composition seam eliminates the extra Units statement without reintroducing the legacy facade."
     }
   ]
 }

@@ -1,4 +1,5 @@
-import { SKETCH_BOX_DIMENSIONS, mToCm } from '../../../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../../../../shared/dimensions/sketch_box_geometry_policy.js';
+import { mToCm } from '../../../../shared/dimensions/units.js';
 import {
   DEFAULT_BASE_LEG_COLOR,
   DEFAULT_BASE_LEG_HEIGHT_CM,
@@ -74,14 +75,14 @@ export const SKETCH_BOX_HEIGHT_MIN_CM = 5;
 export const SKETCH_BOX_HEIGHT_MAX_CM = 300;
 export const SKETCH_BOX_OPTIONAL_DIM_MIN_CM = 5;
 export const SKETCH_BOX_OPTIONAL_DIM_MAX_CM = 300;
-export const DEFAULT_SKETCH_BOX_HEIGHT_CM = Math.round(
-  mToCm(SKETCH_BOX_DIMENSIONS.geometry.defaultOuterHeightM)
+export const DEFAULT_SKETCH_BOX_HEIGHT_CM: number = Math.round(
+  mToCm(SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterHeightM)
 );
-export const DEFAULT_SKETCH_BOX_WIDTH_CM = Math.round(
-  mToCm(SKETCH_BOX_DIMENSIONS.geometry.defaultOuterWidthM)
+export const DEFAULT_SKETCH_BOX_WIDTH_CM: number = Math.round(
+  mToCm(SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterWidthM)
 );
-export const DEFAULT_SKETCH_BOX_DEPTH_CM = Math.round(
-  mToCm(SKETCH_BOX_DIMENSIONS.geometry.defaultOuterDepthM)
+export const DEFAULT_SKETCH_BOX_DEPTH_CM: number = Math.round(
+  mToCm(SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterDepthM)
 );
 export {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,

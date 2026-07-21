@@ -336,7 +336,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/builder/render_interior_sketch_drawers_external_context.ts',
     'esm/native/builder/render_preview_interior_hover_apply.ts',
     'esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts',
-    'esm/native/services/canvas_picking_click_manual_sketch_free_box.ts',
     'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
     'esm/native/services/canvas_picking_internal_drawer_existing_fittings.ts',
     'esm/native/services/canvas_picking_manual_layout_free_box_content.ts',
@@ -358,7 +357,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/services/canvas_picking_sketch_module_surface_preview_flow.ts',
     'esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts',
     'esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts',
-    'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts',
   ];
   const actualConsumers = esmFiles.filter(
     file =>
@@ -367,8 +365,8 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 11);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 22);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 1);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 21);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
     const source = read(file);
     const facadeImport = source.match(
@@ -411,15 +409,13 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
   assert.deepEqual(remainingGeometryConsumers.sort(), [
     'esm/native/builder/render_interior_rod_clearance.ts',
     'esm/native/builder/render_interior_sketch_boxes_shell_apply.ts',
-    'esm/native/services/canvas_picking_click_manual_sketch_free_box.ts',
     'esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts',
     'esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts',
     'esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts',
-    'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts',
   ]);
   assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 2);
-  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/services/')).length, 4);
-  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 1);
+  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/services/')).length, 3);
+  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingPreviewConsumers = esmFiles.filter(
     file =>
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
@@ -1624,11 +1620,15 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ],
     [
       'esm/native/services/canvas_picking_click_manual_sketch_free_box.ts',
-      ['SKETCH_BOX_DIMENSIONS', 'cmToM'],
+      ['SKETCH_BOX_SHELL_GEOMETRY_POLICY', 'cmToM'],
     ],
     [
       'esm/native/services/canvas_picking_sketch_box_content_commit_doors.ts',
       ['MATERIAL_THICKNESS_POLICY', 'SKETCH_BOX_SHELL_GEOMETRY_POLICY'],
+    ],
+    [
+      'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts',
+      ['SKETCH_BOX_SHELL_GEOMETRY_POLICY', 'mToCm'],
     ],
     [
       'esm/native/builder/render_interior_sketch_layout_geometry.ts',
@@ -1702,6 +1702,38 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
 
   const clickFreeBox = read('esm/native/services/canvas_picking_click_manual_sketch_free_box.ts');
   assert.doesNotMatch(clickFreeBox, /Math\.max\(0\.05, \(heightCm \?\? 0\) \/ 100\)/);
+  assert.match(
+    clickFreeBox,
+    /import \{ SKETCH_BOX_SHELL_GEOMETRY_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/sketch_box_geometry_policy\.js';/u
+  );
+  assert.match(clickFreeBox, /import \{ cmToM \} from '\.\.\/\.\.\/shared\/dimensions\/units\.js';/u);
+  assert.doesNotMatch(
+    clickFreeBox,
+    /wardrobe_dimension_tokens_shared|SKETCH_BOX_DIMENSIONS|SKETCH_BOX_GEOMETRY_POLICY/u
+  );
+  assert.equal((clickFreeBox.match(/from '\.\.\/\.\.\/shared\/dimensions\/units\.js'/gu) ?? []).length, 1);
+  assert.equal(
+    (clickFreeBox.match(/from '\.\.\/\.\.\/shared\/dimensions\/sketch_box_geometry_policy\.js'/gu) ?? [])
+      .length,
+    1
+  );
+
+  const sketchToolHelpers = read('esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts');
+  assert.match(
+    sketchToolHelpers,
+    /import \{ SKETCH_BOX_SHELL_GEOMETRY_POLICY \} from '\.\.\/\.\.\/\.\.\/\.\.\/shared\/dimensions\/sketch_box_geometry_policy\.js';/u
+  );
+  assert.match(
+    sketchToolHelpers,
+    /import \{ mToCm \} from '\.\.\/\.\.\/\.\.\/\.\.\/shared\/dimensions\/units\.js';/u
+  );
+  assert.doesNotMatch(
+    sketchToolHelpers,
+    /wardrobe_dimension_tokens_shared|SKETCH_BOX_DIMENSIONS|SKETCH_BOX_GEOMETRY_POLICY/u
+  );
+  assert.match(sketchToolHelpers, /export const DEFAULT_SKETCH_BOX_HEIGHT_CM: number = Math\.round/u);
+  assert.match(sketchToolHelpers, /export const DEFAULT_SKETCH_BOX_WIDTH_CM: number = Math\.round/u);
+  assert.match(sketchToolHelpers, /export const DEFAULT_SKETCH_BOX_DEPTH_CM: number = Math\.round/u);
 
   const cornerConnectorSpecial = read('esm/native/builder/corner_connector_interior_special_apply.ts');
   assert.doesNotMatch(cornerConnectorSpecial, /len <= 0\.01/);

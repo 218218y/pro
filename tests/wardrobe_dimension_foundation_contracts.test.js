@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 76, statements: 76 }),
+  'static-import': Object.freeze({ importers: 74, statements: 74 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 78, statements: 79 }),
+  total: Object.freeze({ importers: 76, statements: 77 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -843,6 +843,12 @@ const APPROVED_SKETCH_BOX_GEOMETRY_OWNER_IMPORTS = Object.freeze({
     'SKETCH_BOX_SELECTOR_GEOMETRY_POLICY',
   ]),
   'esm/native/services/canvas_picking_sketch_box_content_commit_doors.ts': Object.freeze([
+    'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_click_manual_sketch_free_box.ts': Object.freeze([
+    'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+  ]),
+  'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts': Object.freeze([
     'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_GEOMETRY_POLICY']),

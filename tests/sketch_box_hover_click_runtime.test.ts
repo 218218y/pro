@@ -3,15 +3,31 @@ import assert from 'node:assert/strict';
 
 import { tryHandleCanvasManualSketchFreeBoxClick } from '../esm/native/services/canvas_picking_click_manual_sketch_free_box.ts';
 import { createSketchFreePlacementBoxHoverRecord } from '../esm/native/services/canvas_picking_sketch_free_commit.ts';
+import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../esm/shared/dimensions/sketch_box_geometry_policy.ts';
+import { cmToM, mToCm } from '../esm/shared/dimensions/units.ts';
+import {
+  DEFAULT_SKETCH_BOX_DEPTH_CM,
+  DEFAULT_SKETCH_BOX_HEIGHT_CM,
+  DEFAULT_SKETCH_BOX_WIDTH_CM,
+  mkSketchBoxTool,
+  parseSketchBoxTool,
+} from '../esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts';
 import { readSketchBoxFrontsBundle, readSourceFiles } from './sketch_box_runtime_helpers.ts';
 
 type RecordMap = Record<string, unknown>;
 
 function createFreeBoxClickHarness(overrides: RecordMap = {}) {
   const cfg: RecordMap = {};
-  const calls = {
+  const calls: {
+    placements: number;
+    patches: number;
+    placementArgs: RecordMap | null;
+    planeZ: number | null;
+  } = {
     placements: 0,
     patches: 0,
+    placementArgs: null,
+    planeZ: null,
   };
   const App = {
     actions: {
@@ -43,10 +59,14 @@ function createFreeBoxClickHarness(overrides: RecordMap = {}) {
       __wp_clearSketchHover: () => undefined,
       __wp_parseSketchBoxToolSpec: () => ({ heightCm: 40, widthCm: 45, depthCm: null }),
       __wp_getViewportRoots: () => ({ camera: {}, wardrobeGroup: {} }),
-      __wp_intersectScreenWithLocalZPlane: () => ({ x: 0.1, y: 0.7, z: -0.3 }),
+      __wp_intersectScreenWithLocalZPlane: (planeArgs: { planeZ: number }) => {
+        calls.planeZ = planeArgs.planeZ;
+        return { x: 0.1, y: 0.7, z: -0.3 };
+      },
       __wp_readInteriorModuleConfigRef: () => cfg,
-      __wp_resolveSketchFreeBoxHoverPlacement: () => {
+      __wp_resolveSketchFreeBoxHoverPlacement: (placementArgs: RecordMap) => {
         calls.placements += 1;
+        calls.placementArgs = placementArgs;
         return {
           op: 'add',
           previewX: 0.1,
@@ -60,6 +80,71 @@ function createFreeBoxClickHarness(overrides: RecordMap = {}) {
     } as never,
   };
 }
+
+test('free-box click uses canonical units and Shell Geometry minimums without changing numeric behavior', () => {
+  const { args, calls } = createFreeBoxClickHarness({
+    __wp_parseSketchBoxToolSpec: () => ({ heightCm: 1, widthCm: 45, depthCm: 30 }),
+  });
+
+  assert.equal(tryHandleCanvasManualSketchFreeBoxClick(args), true);
+  assert.equal(calls.planeZ, -0.3);
+  assert.ok(calls.placementArgs);
+  assert.equal(calls.placementArgs.boxH, SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterHeightM);
+  assert.equal(calls.placementArgs.widthOverrideM, cmToM(45));
+  assert.equal(calls.placementArgs.depthOverrideM, cmToM(30));
+});
+
+test('free-box click preserves missing and invalid optional-dimension handling', () => {
+  for (const spec of [
+    { heightCm: 80, widthCm: null, depthCm: null },
+    { heightCm: 0, widthCm: -10, depthCm: Number.NaN },
+    { heightCm: '80', widthCm: '45', depthCm: Number.POSITIVE_INFINITY },
+  ]) {
+    const { args, calls } = createFreeBoxClickHarness({
+      __wp_parseSketchBoxToolSpec: () => spec,
+    });
+    assert.equal(tryHandleCanvasManualSketchFreeBoxClick(args), true);
+    assert.ok(calls.placementArgs);
+    const expectedHeight =
+      typeof spec.heightCm === 'number' && Number.isFinite(spec.heightCm) && spec.heightCm > 0
+        ? Math.max(SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterHeightM, cmToM(spec.heightCm))
+        : SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterHeightM;
+    assert.equal(calls.placementArgs.boxH, expectedHeight);
+    assert.equal(calls.placementArgs.widthOverrideM, null);
+    assert.equal(calls.placementArgs.depthOverrideM, null);
+  }
+});
+
+test('Interior-tab Sketch Box defaults remain plain integer centimeters with stable tool parsing', () => {
+  assert.equal(typeof DEFAULT_SKETCH_BOX_HEIGHT_CM, 'number');
+  assert.equal(typeof DEFAULT_SKETCH_BOX_WIDTH_CM, 'number');
+  assert.equal(typeof DEFAULT_SKETCH_BOX_DEPTH_CM, 'number');
+  assert.equal(
+    DEFAULT_SKETCH_BOX_HEIGHT_CM,
+    Math.round(mToCm(SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterHeightM))
+  );
+  assert.equal(
+    DEFAULT_SKETCH_BOX_WIDTH_CM,
+    Math.round(mToCm(SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterWidthM))
+  );
+  assert.equal(
+    DEFAULT_SKETCH_BOX_DEPTH_CM,
+    Math.round(mToCm(SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterDepthM))
+  );
+  assert.equal(DEFAULT_SKETCH_BOX_HEIGHT_CM, 40);
+  assert.equal(DEFAULT_SKETCH_BOX_WIDTH_CM, 60);
+  assert.equal(DEFAULT_SKETCH_BOX_DEPTH_CM, 55);
+
+  const tool = mkSketchBoxTool(40, 60, 55);
+  assert.equal(tool, 'sketch_box:40@60@55');
+  assert.deepEqual(parseSketchBoxTool(tool), { heightCm: 40, widthCm: 60, depthCm: 55 });
+  assert.deepEqual(parseSketchBoxTool('sketch_box:40@@55'), {
+    heightCm: 40,
+    widthCm: null,
+    depthCm: 55,
+  });
+  assert.equal(parseSketchBoxTool('sketch_box:not-a-number'), null);
+});
 
 test('free-box click fallback does not turn a module hit into a free-placement box', () => {
   const { args, cfg, calls } = createFreeBoxClickHarness({ foundModuleIndex: 0 });
