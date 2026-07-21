@@ -29,6 +29,14 @@ test('stage 71 render interior sketch box shell ownership split is anchored', ()
   );
 
   assert.match(apply, /export function renderSketchBoxShell\(/);
+  assert.match(apply, /from '\.\.\/\.\.\/shared\/dimensions\/interior_fittings_policy\.js';/);
+  assert.match(apply, /from '\.\.\/\.\.\/shared\/dimensions\/sketch_box_geometry_policy\.js';/);
+  assert.match(apply, /INTERIOR_SHELF_GEOMETRY_POLICY\.regularDepthM/);
+  assert.match(apply, /SKETCH_BOX_SHELL_GEOMETRY_POLICY\.minInnerDimensionM/);
+  assert.doesNotMatch(
+    apply,
+    /wardrobe_dimension_tokens_shared|INTERIOR_FITTINGS_DIMENSIONS|SKETCH_BOX_DIMENSIONS|INTERIOR_FITTINGS_POLICY|INTERIOR_SHELF_POLICY|SKETCH_BOX_GEOMETRY_POLICY/
+  );
   assert.match(apply, /resolveSketchBoxHeight\(/);
   assert.match(apply, /resolveSketchBoxShellGeometry\(/);
   assert.match(apply, /resolveSketchBoxShellMaterial\(/);

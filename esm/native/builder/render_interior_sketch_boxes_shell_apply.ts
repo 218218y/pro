@@ -1,7 +1,5 @@
-import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_SHELF_GEOMETRY_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
+import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
 import { resolveHexCellGeometry } from '../features/hex_cell/index.js';
 import type {
   RenderInteriorSketchBoxesArgs,
@@ -76,7 +74,7 @@ export function renderSketchBoxShell(args: {
         centerZ: baseBackZ + hexGeometry.sideDepthM / 2,
         innerBackZ: baseBackZ + Math.min(renderArgs.woodThick, hexGeometry.sideDepthM),
         innerD: Math.max(
-          SKETCH_BOX_DIMENSIONS.geometry.minInnerDimensionM,
+          SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerDimensionM,
           hexGeometry.sideDepthM - Math.min(renderArgs.woodThick, hexGeometry.sideDepthM)
         ),
       }
@@ -103,7 +101,7 @@ export function renderSketchBoxShell(args: {
     innerTopY: geometryResolved.centerY + halfH - renderArgs.woodThick,
     regularDepth:
       geometry.innerD > 0
-        ? Math.min(geometry.innerD, INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM)
+        ? Math.min(geometry.innerD, INTERIOR_SHELF_GEOMETRY_POLICY.regularDepthM)
         : geometry.innerD,
     frontZ,
   };

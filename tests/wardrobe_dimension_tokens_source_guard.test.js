@@ -332,7 +332,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
     'esm/native/builder/render_interior_sketch_boxes_door_geometry.ts',
     'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts',
-    'esm/native/builder/render_interior_sketch_boxes_shell_apply.ts',
     'esm/native/builder/render_interior_sketch_drawers_external_context.ts',
     'esm/native/builder/render_preview_interior_hover_apply.ts',
     'esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts',
@@ -364,7 +363,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       /\bSKETCH_BOX_DIMENSIONS\b/u.test(read(file))
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 11);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 10);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 21);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
@@ -408,12 +407,11 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
   );
   assert.deepEqual(remainingGeometryConsumers.sort(), [
     'esm/native/builder/render_interior_rod_clearance.ts',
-    'esm/native/builder/render_interior_sketch_boxes_shell_apply.ts',
     'esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts',
     'esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts',
     'esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts',
   ]);
-  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 2);
+  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 1);
   assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/services/')).length, 3);
   assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingPreviewConsumers = esmFiles.filter(

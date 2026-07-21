@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 74, statements: 74 }),
+  'static-import': Object.freeze({ importers: 73, statements: 73 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 76, statements: 77 }),
+  total: Object.freeze({ importers: 75, statements: 76 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -749,6 +749,9 @@ const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/builder/render_interior_preset_ops.ts': Object.freeze(['INTERIOR_SHELF_GEOMETRY_POLICY']),
   'esm/native/builder/render_interior_sketch_ops_input.ts': Object.freeze(['INTERIOR_SHELF_GEOMETRY_POLICY']),
+  'esm/native/builder/render_interior_sketch_boxes_shell_apply.ts': Object.freeze([
+    'INTERIOR_SHELF_GEOMETRY_POLICY',
+  ]),
   'esm/native/builder/render_interior_sketch_support_shelves.ts': Object.freeze([
     'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
     'INTERIOR_SHELF_GEOMETRY_POLICY',
@@ -834,6 +837,9 @@ const APPROVED_SKETCH_BOX_GEOMETRY_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/builder/render_interior_sketch_boxes.ts': Object.freeze(['SKETCH_BOX_SHELL_GEOMETRY_POLICY']),
   'esm/native/builder/render_interior_sketch_boxes_contents_depth.ts': Object.freeze([
+    'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_boxes_shell_apply.ts': Object.freeze([
     'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
   ]),
   'esm/native/services/canvas_picking_manual_layout_sketch_tools.ts': Object.freeze([
@@ -993,10 +999,6 @@ const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
     'shelves',
     'shelves.contentsHeightClearanceM',
     'shelves.contentsWidthClearanceM',
-  ]),
-  'esm/native/builder/render_interior_sketch_boxes_shell_apply.ts': Object.freeze([
-    'shelves',
-    'shelves.regularDepthM',
   ]),
   'esm/native/builder/render_preview_interior_hover_apply.ts': Object.freeze([
     'shelves',

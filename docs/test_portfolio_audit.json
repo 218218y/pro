@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-20T20:19:56.662Z",
+  "generatedAt": "2026-07-21T09:50:54.229Z",
   "totals": {
-    "tests": 1231,
-    "unitRunnerTests": 1223,
+    "tests": 1232,
+    "unitRunnerTests": 1224,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -15,7 +15,7 @@
   "categories": {
     "contract": 402,
     "runtime-unit": 318,
-    "integration": 452,
+    "integration": 453,
     "e2e-smoke": 9,
     "perf-smoke": 9,
     "legacy-migration": 41
@@ -3475,6 +3475,10 @@
     },
     {
       "file": "tests/render_interior_sketch_boxes_contents_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/render_interior_sketch_boxes_shell_apply_runtime.test.js",
       "category": "integration"
     },
     {

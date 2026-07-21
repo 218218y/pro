@@ -2648,6 +2648,35 @@
       },
       "reason": "The Interior-tab Sketch tool helper replaces one legacy facade statement with the canonical Shell Geometry owner plus the focused meter-to-centimeter conversion owner on the existing UI to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch tool defaults composition seam eliminates the extra Units statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_shell_apply.ts",
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch Box shell-apply renderer replaces one legacy facade statement with the canonical Shell Geometry owner plus the focused Interior Shelf Geometry owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch Box shell composition seam eliminates the extra Interior Shelf Geometry statement without reintroducing the legacy facade."
     }
   ]
 }
