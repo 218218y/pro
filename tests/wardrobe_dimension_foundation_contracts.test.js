@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 71, statements: 71 }),
+  'static-import': Object.freeze({ importers: 70, statements: 70 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 73, statements: 74 }),
+  total: Object.freeze({ importers: 72, statements: 73 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -332,6 +332,9 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_sketch_box_content_commit_doors.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
+  'esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
 });
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/builder/core_carcass_shared.ts',
@@ -347,7 +350,6 @@ const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
   'esm/native/services/canvas_picking_manual_layout_free_box_content.ts',
   'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts',
-  'esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts',
   'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts',
   'esm/native/services/canvas_picking_sketch_box_door_preview.ts',
   'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts',
@@ -867,6 +869,9 @@ const APPROVED_SKETCH_BOX_GEOMETRY_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts': Object.freeze([
     'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
   ]),
+  'esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts': Object.freeze([
+    'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+  ]),
   'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts': Object.freeze([
     'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
   ]),
@@ -968,6 +973,10 @@ const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_boxes.ts': Object.freeze(['SKETCH_BOX_DOOR_PREVIEW_POLICY']),
   'esm/native/builder/render_interior_sketch_boxes_contents_depth.ts': Object.freeze([
     'SKETCH_BOX_DOOR_PREVIEW_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts': Object.freeze([
+    'SKETCH_BOX_DOOR_PREVIEW_POLICY',
+    'SKETCH_BOX_DRAWER_PREVIEW_POLICY',
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_PREVIEW_POLICY']),
 });

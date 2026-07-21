@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-21T10:36:56.860Z",
+  "generatedAt": "2026-07-21T11:30:32.603Z",
   "totals": {
-    "tests": 1233,
-    "unitRunnerTests": 1225,
+    "tests": 1234,
+    "unitRunnerTests": 1226,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -15,7 +15,7 @@
   "categories": {
     "contract": 403,
     "runtime-unit": 318,
-    "integration": 453,
+    "integration": 454,
     "e2e-smoke": 9,
     "perf-smoke": 9,
     "legacy-migration": 41
@@ -659,6 +659,10 @@
     },
     {
       "file": "tests/canvas_picking_manual_layout_sketch_click_box_metrics_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_manual_layout_sketch_front_overlay_runtime.test.js",
       "category": "integration"
     },
     {

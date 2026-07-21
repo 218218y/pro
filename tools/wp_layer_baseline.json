@@ -2793,6 +2793,64 @@
       },
       "reason": "The Sketch module surface-commit shared helper replaces one legacy facade statement with the canonical Shell Geometry owner plus the focused Interior Storage Barrier owner on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch module commit composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DOOR_PREVIEW_POLICY", "SKETCH_BOX_DRAWER_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The manual-layout Sketch front-overlay resolver replaces one legacy facade statement with the canonical Door and Drawer Preview owners plus the focused Material Thickness fallback owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch front-overlay composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DOOR_PREVIEW_POLICY", "SKETCH_BOX_DRAWER_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The manual-layout Sketch front-overlay resolver replaces one legacy facade statement with the canonical Door and Drawer Preview owners plus the focused Shell Geometry owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch front-overlay composition seam eliminates the extra Shell Geometry statement without reintroducing the legacy facade."
     }
   ]
 }

@@ -347,7 +347,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/services/canvas_picking_internal_drawer_existing_fittings.ts',
     'esm/native/services/canvas_picking_manual_layout_free_box_content.ts',
     'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts',
-    'esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts',
     'esm/native/services/canvas_picking_sketch_box_door_preview.ts',
     'esm/native/services/canvas_picking_sketch_box_stack_preview_drawers.ts',
     'esm/native/services/canvas_picking_sketch_box_stack_preview_ext_drawers.ts',
@@ -370,7 +369,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 10);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 19);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 18);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
     const source = read(file);
@@ -413,17 +412,16 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
   );
   assert.deepEqual(remainingGeometryConsumers.sort(), [
     'esm/native/builder/render_interior_rod_clearance.ts',
-    'esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts',
   ]);
   assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 1);
-  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/services/')).length, 1);
+  assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/services/')).length, 0);
   assert.equal(remainingGeometryConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingPreviewConsumers = esmFiles.filter(
     file =>
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
       /SKETCH_BOX_DIMENSIONS\.preview/u.test(read(file))
   );
-  assert.equal(remainingPreviewConsumers.length, 28);
+  assert.equal(remainingPreviewConsumers.length, 27);
   assert.equal(
     esmFiles.filter(
       file =>
@@ -1748,6 +1746,41 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     assert.doesNotMatch(source, /import\s+\*/u);
     assert.doesNotMatch(source, /export\s+(?:\*|\{[^}]*\})\s+from/u);
   }
+
+  const frontOverlay = read('esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts');
+  assert.match(
+    frontOverlay,
+    /import \{ MATERIAL_THICKNESS_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/material_thickness_policy\.js';/u
+  );
+  assert.match(
+    frontOverlay,
+    /import \{ SKETCH_BOX_SHELL_GEOMETRY_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/sketch_box_geometry_policy\.js';/u
+  );
+  assert.match(
+    frontOverlay,
+    /import \{[\s\S]*SKETCH_BOX_DOOR_PREVIEW_POLICY,[\s\S]*SKETCH_BOX_DRAWER_PREVIEW_POLICY,[\s\S]*\} from '\.\.\/\.\.\/shared\/dimensions\/sketch_box_preview_policy\.js';/u
+  );
+  assert.doesNotMatch(
+    frontOverlay,
+    /wardrobe_dimension_tokens_shared|MATERIAL_DIMENSIONS|SKETCH_BOX_DIMENSIONS|SKETCH_BOX_GEOMETRY_POLICY|SKETCH_BOX_PREVIEW_POLICY/u
+  );
+  assert.equal(
+    (frontOverlay.match(/from '\.\.\/\.\.\/shared\/dimensions\/material_thickness_policy\.js'/gu) ?? [])
+      .length,
+    1
+  );
+  assert.equal(
+    (frontOverlay.match(/from '\.\.\/\.\.\/shared\/dimensions\/sketch_box_geometry_policy\.js'/gu) ?? [])
+      .length,
+    1
+  );
+  assert.equal(
+    (frontOverlay.match(/from '\.\.\/\.\.\/shared\/dimensions\/sketch_box_preview_policy\.js'/gu) ?? [])
+      .length,
+    1
+  );
+  assert.doesNotMatch(frontOverlay, /import\s+\*/u);
+  assert.doesNotMatch(frontOverlay, /export\s+(?:\*|\{[^}]*\})\s+from/u);
 
   const freeBoxHoverContext = read('esm/native/services/canvas_picking_sketch_free_box_hover_context.ts');
   assert.doesNotMatch(freeBoxHoverContext, /boxH \* 0\.02/);
