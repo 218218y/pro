@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-21T11:30:32.603Z",
+  "generatedAt": "2026-07-21T16:44:23.375Z",
   "totals": {
-    "tests": 1234,
-    "unitRunnerTests": 1226,
+    "tests": 1235,
+    "unitRunnerTests": 1227,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -15,7 +15,7 @@
   "categories": {
     "contract": 403,
     "runtime-unit": 318,
-    "integration": 454,
+    "integration": 455,
     "e2e-smoke": 9,
     "perf-smoke": 9,
     "legacy-migration": 41
@@ -3964,6 +3964,10 @@
     {
       "file": "tests/sketch_box_double_doors_guard.test.cjs",
       "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_drawer_preview_context_runtime.test.ts",
+      "category": "integration"
     },
     {
       "file": "tests/sketch_box_drawers_and_cuts_runtime.test.ts",

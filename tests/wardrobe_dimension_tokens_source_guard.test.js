@@ -341,8 +341,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
-    'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts',
-    'esm/native/builder/render_interior_sketch_drawers_external_context.ts',
     'esm/native/builder/render_preview_interior_hover_apply.ts',
     'esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts',
     'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
@@ -368,7 +366,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       /\bSKETCH_BOX_DIMENSIONS\b/u.test(read(file))
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 7);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 5);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 16);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
@@ -416,7 +414,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
       /SKETCH_BOX_DIMENSIONS\.preview/u.test(read(file))
   );
-  assert.equal(remainingPreviewConsumers.length, 23);
+  assert.equal(remainingPreviewConsumers.length, 21);
   assert.deepEqual(remainingPreviewConsumers.sort(), actualConsumers.sort());
   for (const file of actualConsumers) {
     const branches = new Set(

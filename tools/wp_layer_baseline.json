@@ -3213,6 +3213,64 @@
       },
       "reason": "The Sketch free-surface adornment preview replaces one legacy facade statement with focused Adornment and Door Preview owners plus the canonical Material Thickness owner on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed adornment-preview composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DRAWER_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch Box external-drawer render context replaces one legacy facade statement with the canonical Drawer Preview owner plus the focused external drawer preview geometry owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch Box external-drawer context seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-20",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_sketch_drawers_external_context.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DRAWER_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch external-drawer render context replaces one legacy facade statement with the canonical Drawer Preview owner plus the focused external drawer preview geometry owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch external-drawer context seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
     }
   ]
 }

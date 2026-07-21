@@ -56,6 +56,36 @@ test('stage 72 render interior sketch box external drawers ownership split is an
   );
 
   assert.match(context, /export function createSketchBoxExternalDrawersContext\(/);
+  assert.equal(
+    (
+      context.match(
+        /from ['"]\.\.\/\.\.\/shared\/dimensions\/(?:drawer_sketch|sketch_box_preview)_policy\.js['"]/gu
+      ) || []
+    ).length,
+    2,
+    'Sketch Box drawer context must use exactly two focused dimension-owner statements'
+  );
+  assert.match(
+    context,
+    /^import \{ DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/drawer_sketch_policy\.js';$/mu
+  );
+  assert.match(
+    context,
+    /^import \{ SKETCH_BOX_DRAWER_PREVIEW_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/sketch_box_preview_policy\.js';$/mu
+  );
+  assert.doesNotMatch(
+    context,
+    /wardrobe_dimension_tokens_shared|\bDRAWER_DIMENSIONS\b|\bDRAWER_SKETCH_POLICY\b|\bSKETCH_BOX_DIMENSIONS\b|\bSKETCH_BOX_PREVIEW_POLICY\b|import\s+\*\s+as|export\s+(?:type\s+)?(?:\*|\{)/u
+  );
+  const normalizedContext = normalizeSource(context);
+  assert.match(
+    normalizedContext,
+    /const outerD = Math\.max\(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY\.externalPreviewMinDepthM, boxGeo\.outerD\);/u
+  );
+  assert.match(
+    normalizedContext,
+    /const visualT = SKETCH_BOX_DRAWER_PREVIEW_POLICY\.drawerPreviewThicknessM;/u
+  );
   assert.match(context, /asRecordArray<InteriorValueRecord>\(box\.extDrawers\)/);
   assert.match(context, /resolveBuilderMirrorMaterial\(/);
   assert.match(context, /getDrawersArray\(App\)/);

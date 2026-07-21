@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 65, statements: 65 }),
+  'static-import': Object.freeze({ importers: 63, statements: 63 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 67, statements: 68 }),
+  total: Object.freeze({ importers: 65, statements: 66 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -1007,6 +1007,12 @@ const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
     'SKETCH_BOX_ADORNMENT_PREVIEW_POLICY',
     'SKETCH_BOX_DOOR_PREVIEW_POLICY',
   ]),
+  'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts': Object.freeze([
+    'SKETCH_BOX_DRAWER_PREVIEW_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_drawers_external_context.ts': Object.freeze([
+    'SKETCH_BOX_DRAWER_PREVIEW_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_PREVIEW_POLICY']),
 });
 const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
@@ -1391,6 +1397,12 @@ const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_sketch_module_vertical_content_collision.ts': Object.freeze([
     'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
   ]),
+  'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts': Object.freeze([
+    'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_drawers_external_context.ts': Object.freeze([
+    'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['DRAWER_SKETCH_POLICY']),
 });
 const APPROVED_FRONT_REVEAL_OWNER_IMPORTS = Object.freeze({
@@ -1503,10 +1515,6 @@ const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
     'sketch.doorCutHorizontalOverlapMinM',
     'sketch.doorCutNoOpToleranceM',
   ]),
-  'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts': Object.freeze([
-    'sketch',
-    'sketch.externalPreviewMinDepthM',
-  ]),
   'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts': Object.freeze([
     'sketch',
     'sketch.externalPreviewBoxMinDimensionM',
@@ -1515,12 +1523,6 @@ const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
     'sketch.externalPreviewVisualMinHeightM',
     'sketch.externalPreviewVisualMinWidthM',
     'sketch.faceVerticalAlignmentEpsilonM',
-  ]),
-  'esm/native/builder/render_interior_sketch_drawers_external_context.ts': Object.freeze([
-    'sketch',
-    'sketch.externalPreviewDepthClearanceM',
-    'sketch.externalPreviewMinDepthM',
-    'sketch.externalPreviewMinWidthM',
   ]),
   'esm/native/builder/render_interior_sketch_drawers_external_plan.ts': Object.freeze([
     'sketch',

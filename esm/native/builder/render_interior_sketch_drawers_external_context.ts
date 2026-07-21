@@ -1,4 +1,5 @@
-import { DRAWER_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
+import { SKETCH_BOX_DRAWER_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { getDrawersArray } from '../runtime/render_access.js';
 import { resolveDrawerBoxPaintMaterial } from '../features/part_identity/api.js';
 import { resolveBuilderMirrorMaterial } from '../runtime/builder_service_access.js';
@@ -37,13 +38,14 @@ export function createSketchExternalDrawerRenderContext(
 
   if (!extDrawers.length || !THREE) return null;
 
-  const drawerDims = DRAWER_DIMENSIONS.sketch;
-  const outerW = Math.max(drawerDims.externalPreviewMinWidthM, innerW);
+  const outerW = Math.max(DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewMinWidthM, innerW);
   const outerD = Math.max(
-    drawerDims.externalPreviewMinDepthM,
-    moduleDepth > 0 ? moduleDepth : internalDepth + drawerDims.externalPreviewDepthClearanceM
+    DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewMinDepthM,
+    moduleDepth > 0
+      ? moduleDepth
+      : internalDepth + DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewDepthClearanceM
   );
-  const visualT = SKETCH_BOX_DIMENSIONS.preview.drawerPreviewThicknessM;
+  const visualT = SKETCH_BOX_DRAWER_PREVIEW_POLICY.drawerPreviewThicknessM;
   const frontZ =
     toFiniteNumber(readObject<InteriorValueRecord>(input)?.externalFrontZ) ?? Math.max(0, outerD / 2);
   const outlineFn = isFn(input.addOutlines) ? input.addOutlines : null;
