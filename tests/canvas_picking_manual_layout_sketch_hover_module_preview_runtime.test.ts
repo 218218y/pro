@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { SKETCH_BOX_PREVIEW_CORE_POLICY } from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
+import {
+  REMOVE_EPS_BOX,
+  REMOVE_EPS_SHELF,
+} from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_shared.ts';
 import { tryHandleManualLayoutSketchHoverModuleBoxPreview } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_box.ts';
 import { tryHandleManualLayoutSketchHoverModuleStackPreview } from '../esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_stack.ts';
 import { decodeSketchStructuralCommandHover } from '../esm/native/services/canvas_picking_sketch_structural_command.ts';
@@ -148,4 +153,14 @@ test('manual-layout module stack preview routes ext drawers through the focused 
   assert.equal(preview.anchor, ctx.hitSelectorObj);
   assert.equal(preview.kind, 'ext_drawers');
   assert.equal(preview.drawers.length, 4);
+});
+
+test('manual-layout shared remove eps exports retain number shape and focused-owner values', () => {
+  const shelfEpsilon: number = REMOVE_EPS_SHELF;
+  const boxEpsilon: number = REMOVE_EPS_BOX;
+
+  assert.equal(shelfEpsilon, SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM);
+  assert.equal(boxEpsilon, SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsBoxM);
+  assert.equal(typeof shelfEpsilon, 'number');
+  assert.equal(typeof boxEpsilon, 'number');
 });

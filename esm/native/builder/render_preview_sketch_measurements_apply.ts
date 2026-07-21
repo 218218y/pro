@@ -1,5 +1,5 @@
 import type { AppContainer } from '../../../types';
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { getDimLabelEntry } from './render_ops_extras_dimensions.js';
 import type { PreviewGroupLike, SketchPlacementPreviewArgs } from './render_preview_ops_contracts.js';
 import type { RenderPreviewSketchShared } from './render_preview_sketch_shared.js';
@@ -106,36 +106,34 @@ export function applySketchPlacementMeasurements(args: {
     const labelX = readMeasurementNumber(entry.labelX) ?? (startX + endX) / 2;
     const labelY = readMeasurementNumber(entry.labelY) ?? (startY + endY) / 2;
     const labelFaceSign = resolveMeasurementLabelFaceSign(entry, input, z);
-    const labelZ =
-      z +
-      (labelFaceSign >= 0
-        ? SKETCH_BOX_DIMENSIONS.preview.measurementLabelZOffsetM
-        : -SKETCH_BOX_DIMENSIONS.preview.measurementLabelZOffsetM);
+    const measurementLabelZOffsetM: number = SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementLabelZOffsetM;
+    const labelZ = z + (labelFaceSign >= 0 ? measurementLabelZOffsetM : -measurementLabelZOffsetM);
     const labelPoint = mapMeasurementPointToSurface({ plane: surfacePlane, x: labelX, y: labelY, z: labelZ });
     slot.label.position?.set?.(labelPoint.x, labelPoint.y, labelPoint.z);
     orientMeasurementLabelForFace(slot.label, labelFaceSign);
     if (surfacePlane !== 'xy') orientMeasurementLabelForSurface(slot.label, surfacePlane, labelFaceSign);
 
     const textScale = Math.max(
-      SKETCH_BOX_DIMENSIONS.preview.measurementTextScaleMin,
-      readMeasurementNumber(entry.textScale) ?? SKETCH_BOX_DIMENSIONS.preview.measurementTextScaleDefault
+      SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScaleMin,
+      readMeasurementNumber(entry.textScale) ??
+        SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScaleDefault
     );
     if (styleKey === 'cell' || styleKey === 'center') {
       slot.label.scale?.set?.(
-        SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellX * textScale,
-        SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellY * textScale,
+        SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleCellX * textScale,
+        SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleCellY * textScale,
         1
       );
     } else if (styleKey === 'neighbor') {
       slot.label.scale?.set?.(
-        SKETCH_BOX_DIMENSIONS.preview.measurementScaleNeighborX * textScale,
-        SKETCH_BOX_DIMENSIONS.preview.measurementScaleNeighborY * textScale,
+        SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleNeighborX * textScale,
+        SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleNeighborY * textScale,
         1
       );
     } else {
       slot.label.scale?.set?.(
-        SKETCH_BOX_DIMENSIONS.preview.measurementScaleDefaultX * textScale,
-        SKETCH_BOX_DIMENSIONS.preview.measurementScaleDefaultY * textScale,
+        SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleDefaultX * textScale,
+        SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleDefaultY * textScale,
         1
       );
     }

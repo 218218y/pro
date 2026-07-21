@@ -1,4 +1,4 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 
 export type HoverClearanceMeasurementEntry = {
   startX: number;
@@ -35,9 +35,9 @@ function normalizeFaceSign(value: unknown): number | undefined {
 }
 
 function resolveMeasurementLabelWidthScale(styleKey: HoverClearanceMeasurementEntry['styleKey']): number {
-  if (styleKey === 'neighbor') return SKETCH_BOX_DIMENSIONS.preview.measurementScaleNeighborX;
-  if (styleKey === 'default') return SKETCH_BOX_DIMENSIONS.preview.measurementScaleDefaultX;
-  return SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellX;
+  if (styleKey === 'neighbor') return SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleNeighborX;
+  if (styleKey === 'default') return SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleDefaultX;
+  return SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleCellX;
 }
 
 function resolveOutsideHorizontalLabelCenterOutset(
@@ -46,7 +46,8 @@ function resolveOutsideHorizontalLabelCenterOutset(
   textScale: number
 ): number {
   const labelHalfWidth = Math.max(0, resolveMeasurementLabelWidthScale(styleKey) * textScale * 0.5);
-  const safeOutset = labelHalfWidth + SKETCH_BOX_DIMENSIONS.preview.measurementHorizontalLabelOutsideGapM;
+  const safeOutset =
+    labelHalfWidth + SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementHorizontalLabelOutsideGapM;
   return Math.max(0, requestedOutset, safeOutset);
 }
 
@@ -85,10 +86,12 @@ export function resolveCellMeasurementLabelOutsets(
   const textScale =
     typeof textScaleValue === 'number' && Number.isFinite(textScaleValue)
       ? textScaleValue
-      : SKETCH_BOX_DIMENSIONS.preview.measurementTextScaleDefault;
+      : SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScaleDefault;
   return {
-    horizontalLabelOutset: SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellX * textScale * 0.5 + 0.03,
-    verticalLabelOutset: SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellY * textScale * 0.5 + 0.025,
+    horizontalLabelOutset:
+      SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleCellX * textScale * 0.5 + 0.03,
+    verticalLabelOutset:
+      SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleCellY * textScale * 0.5 + 0.025,
   };
 }
 

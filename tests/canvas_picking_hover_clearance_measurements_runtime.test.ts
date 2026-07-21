@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { SKETCH_BOX_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY } from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
+import {
+  buildSketchBoxDividerMeasurementEntries,
+  buildSketchBoxHorizontalDividerMeasurementEntries,
+} from '../esm/native/services/canvas_picking_sketch_box_divider_measurements.ts';
 import {
   buildRectClearanceMeasurementEntries,
   buildStackAwareHorizontalClearanceMeasurementEntries,
@@ -28,7 +32,7 @@ function assertLabelFullyOutsideLeft(
   const halfWidth = (widthScale * textScale) / 2;
   assert.ok(
     Number(entry.labelX) + halfWidth <=
-      outsideEdgeX - SKETCH_BOX_DIMENSIONS.preview.measurementHorizontalLabelOutsideGapM + 1e-9
+      outsideEdgeX - SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementHorizontalLabelOutsideGapM + 1e-9
   );
 }
 
@@ -41,7 +45,7 @@ function assertLabelFullyOutsideRight(
   const halfWidth = (widthScale * textScale) / 2;
   assert.ok(
     Number(entry.labelX) - halfWidth >=
-      outsideEdgeX + SKETCH_BOX_DIMENSIONS.preview.measurementHorizontalLabelOutsideGapM - 1e-9
+      outsideEdgeX + SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementHorizontalLabelOutsideGapM - 1e-9
   );
 }
 
@@ -270,16 +274,130 @@ test('stack-aware horizontal clearance builder emits side and divider-neighbor m
   assert.ok(cellEntries.every(entry => entry.styleKey === 'cell'));
   assert.ok(neighborEntries.every(entry => entry.styleKey === 'neighbor'));
   assert.ok(neighborEntries.every(isHorizontalMeasurement));
-  assertLabelFullyOutsideLeft(cellEntries[0], -0.5, SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellX);
-  assertLabelFullyOutsideRight(cellEntries[1], 0.5, SKETCH_BOX_DIMENSIONS.preview.measurementScaleCellX);
+  assertLabelFullyOutsideLeft(
+    cellEntries[0],
+    -0.5,
+    SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleCellX
+  );
+  assertLabelFullyOutsideRight(
+    cellEntries[1],
+    0.5,
+    SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleCellX
+  );
   assertLabelFullyOutsideLeft(
     neighborEntries[0],
     -0.24,
-    SKETCH_BOX_DIMENSIONS.preview.measurementScaleNeighborX
+    SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleNeighborX
   );
   assertLabelFullyOutsideRight(
     neighborEntries[1],
     0.29,
-    SKETCH_BOX_DIMENSIONS.preview.measurementScaleNeighborX
+    SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementScaleNeighborX
+  );
+});
+
+test('sketch-box divider measurements preserve focused preview Z, scale, and stable role ordering', () => {
+  const dividerDepth = 0.5;
+  const dividerCenterZ = -0.1;
+  const expectedZ =
+    dividerCenterZ +
+    dividerDepth / 2 +
+    Math.max(
+      SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetMinM,
+      dividerDepth * SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetDepthRatio
+    );
+  const entries = buildSketchBoxDividerMeasurementEntries({
+    dividers: [
+      { id: 'left', xNorm: 0.25 },
+      { id: 'active', xNorm: 0.5 },
+      { id: 'right', xNorm: 0.75 },
+    ] as never,
+    boxCenterX: 0,
+    innerW: 1,
+    woodThick: 0.02,
+    dividerCenterX: 0,
+    dividerCenterY: 0.8,
+    dividerHeight: 1.2,
+    dividerCenterZ,
+    dividerDepth,
+    resolveSketchBoxDividerPlacement: ({ boxCenterX, innerW, dividerXNorm }) => ({
+      centerX: boxCenterX - innerW / 2 + Number(dividerXNorm) * innerW,
+    }),
+  });
+
+  assert.deepEqual(
+    entries.map(entry => entry.role),
+    ['cell', 'cell', 'neighbor', 'neighbor']
+  );
+  assert.ok(entries.every(entry => Math.abs(Number(entry.z) - expectedZ) < 1e-12));
+  const cellEntries = entries.filter(entry => entry.role === 'cell');
+  const neighborEntries = entries.filter(entry => entry.role === 'neighbor');
+  assert.ok(
+    cellEntries.every(entry => entry.textScale === SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale)
+  );
+  assert.ok(
+    neighborEntries.every(
+      entry =>
+        Math.abs(
+          Number(entry.textScale) - SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale * 0.94
+        ) < 1e-12
+    )
+  );
+  assert.deepEqual(
+    entries.map(entry => entry.label),
+    ['49 ס"מ', '49 ס"מ', '23 ס"מ', '23 ס"מ']
+  );
+});
+
+test('horizontal sketch-box divider measurements preserve focused preview Z and vertical ordering', () => {
+  const dividerDepth = 0.4;
+  const dividerCenterZ = 0.05;
+  const expectedZ =
+    dividerCenterZ +
+    dividerDepth / 2 +
+    Math.max(
+      SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetMinM,
+      dividerDepth * SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetDepthRatio
+    );
+  const entries = buildSketchBoxHorizontalDividerMeasurementEntries({
+    dividers: [
+      { id: 'bottom', yNorm: 0.25 },
+      { id: 'active', yNorm: 0.5 },
+      { id: 'top', yNorm: 0.75 },
+    ] as never,
+    boxCenterY: 1,
+    innerH: 1.6,
+    woodThick: 0.02,
+    dividerCenterX: 0,
+    dividerWidth: 0.8,
+    dividerCenterY: 1,
+    dividerCenterZ,
+    dividerDepth,
+    resolveSketchBoxHorizontalDividerPlacement: ({ boxCenterY, innerH, dividerYNorm }) => ({
+      centerY: boxCenterY - innerH / 2 + Number(dividerYNorm) * innerH,
+    }),
+  });
+
+  assert.deepEqual(
+    entries.map(entry => entry.role),
+    ['cell', 'cell', 'neighbor', 'neighbor']
+  );
+  assert.ok(entries.every(entry => Math.abs(Number(entry.z) - expectedZ) < 1e-12));
+  const cellEntries = entries.filter(entry => entry.role === 'cell');
+  const neighborEntries = entries.filter(entry => entry.role === 'neighbor');
+  assert.ok(
+    cellEntries.every(entry => entry.textScale === SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale)
+  );
+  assert.ok(
+    neighborEntries.every(
+      entry =>
+        Math.abs(
+          Number(entry.textScale) - SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale * 0.94
+        ) < 1e-12
+    )
+  );
+  assert.deepEqual(
+    entries.map(entry => entry.label),
+    ['79 ס"מ', '79 ס"מ', '38 ס"מ', '38 ס"מ']
   );
 });

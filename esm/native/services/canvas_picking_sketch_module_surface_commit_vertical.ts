@@ -1,5 +1,5 @@
 import type { AppContainer } from '../../../types';
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_PREVIEW_CORE_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { __wp_toast } from './canvas_picking_core_helpers.js';
 import { blockRemovableSideContentBuildIfModuleSideMissing } from './canvas_picking_removable_part_remove_constraints.js';
 import {
@@ -65,7 +65,7 @@ function isShelfCommitBlockedBySketchDrawers(
     totalHeight: args.totalHeight,
     pointerY: args.hitY0,
   });
-  if (match && match.dy <= SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM) return false;
+  if (match && match.dy <= SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM) return false;
 
   return doesSketchModuleVerticalRangeCollideWithDrawers({
     cfgRef: args.cfg,
@@ -89,7 +89,7 @@ function isSketchRodCommitRemovingExistingRod(args: CommitSketchModuleSurfaceToo
     totalHeight: args.totalHeight,
     pointerY: args.hitY0,
   });
-  return !!(match && match.dy <= SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM);
+  return !!(match && match.dy <= SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM);
 }
 
 function isRodCommitBlockedBySketchDrawers(args: CommitSketchModuleSurfaceToolArgs): boolean {
@@ -100,7 +100,7 @@ function isRodCommitBlockedBySketchDrawers(args: CommitSketchModuleSurfaceToolAr
     totalHeight: args.totalHeight,
     pointerY: args.hitY0,
   });
-  if (match && match.dy <= SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM) return false;
+  if (match && match.dy <= SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM) return false;
 
   return doesSketchModuleVerticalRangeCollideWithDrawers({
     cfgRef: args.cfg,
@@ -130,7 +130,7 @@ function resolveStorageCommitPlacementAgainstSketchDrawers(
     totalHeight: args.totalHeight,
     pointerY: yCenterAbs,
   });
-  if (match && match.dy <= SKETCH_BOX_DIMENSIONS.preview.removeEpsBoxM) {
+  if (match && match.dy <= SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsBoxM) {
     return { blocked: false, pointerY: args.hitYClamped };
   }
 
@@ -161,7 +161,7 @@ export function tryCommitSketchModuleVerticalContentTool(args: CommitSketchModul
       yNorm: args.yNorm,
       variant,
       shelfDepthM,
-      removeEps: SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM,
+      removeEps: SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM,
     });
     return true;
   }
@@ -188,7 +188,7 @@ export function tryCommitSketchModuleVerticalContentTool(args: CommitSketchModul
       totalHeight: args.totalHeight,
       pointerY: args.hitY0,
       yNorm: args.yNorm,
-      removeEps: SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM,
+      removeEps: SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM,
     });
     return true;
   }
@@ -208,7 +208,7 @@ export function tryCommitSketchModuleVerticalContentTool(args: CommitSketchModul
       pad: args.pad,
       pointerY: placement.pointerY,
       heightM,
-      removeEps: SKETCH_BOX_DIMENSIONS.preview.removeEpsBoxM,
+      removeEps: SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsBoxM,
       idFactory: () => createRandomId('ss'),
     });
     return true;

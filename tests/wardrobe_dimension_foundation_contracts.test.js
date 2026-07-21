@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 94, statements: 94 }),
+  'static-import': Object.freeze({ importers: 84, statements: 84 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 96, statements: 97 }),
+  total: Object.freeze({ importers: 86, statements: 87 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -867,6 +867,42 @@ const APPROVED_SKETCH_BOX_FREE_PLACEMENT_OWNER_IMPORTS = Object.freeze({
     'SKETCH_BOX_FREE_ATTACH_INTENT_POLICY',
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_FREE_PLACEMENT_POLICY']),
+});
+const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/render_interior_sketch_boxes_fronts_door_layout.ts': Object.freeze([
+    'SKETCH_BOX_DOOR_PREVIEW_POLICY',
+  ]),
+  'esm/native/builder/render_preview_sketch_measurements_apply.ts': Object.freeze([
+    'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
+  ]),
+  'esm/native/builder/render_preview_sketch_pipeline_box_content_box.ts': Object.freeze([
+    'SKETCH_BOX_BOX_PREVIEW_POLICY',
+    'SKETCH_BOX_PREVIEW_CORE_POLICY',
+  ]),
+  'esm/native/builder/render_preview_sketch_pipeline_linear.ts': Object.freeze([
+    'SKETCH_BOX_PREVIEW_CORE_POLICY',
+    'SKETCH_BOX_ROD_PREVIEW_POLICY',
+  ]),
+  'esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts': Object.freeze([
+    'SKETCH_BOX_BOX_PREVIEW_POLICY',
+    'SKETCH_BOX_PREVIEW_CORE_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_hover_clearance_measurements.ts': Object.freeze([
+    'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_manual_layout_sketch_hover_module_preview_shared.ts': Object.freeze([
+    'SKETCH_BOX_PREVIEW_CORE_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_divider_measurements.ts': Object.freeze([
+    'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_surface_commit_vertical.ts': Object.freeze([
+    'SKETCH_BOX_PREVIEW_CORE_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_module_surface_preview_box.ts': Object.freeze([
+    'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_PREVIEW_POLICY']),
 });
 const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/core_storage_compute_custom.ts': Object.freeze(['rods', 'rods.defaultYOffsetM']),
@@ -3395,6 +3431,29 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectOwnerDependencyStatements(analyzedSources, 'sketch_box_free_placement_policy.js'),
     Object.fromEntries(Object.keys(APPROVED_SKETCH_BOX_FREE_PLACEMENT_OWNER_IMPORTS).map(file => [file, 1])),
     'Sketch Box Free Placement migration must retain exactly one owner statement per approved importer'
+  );
+
+  const sketchBoxPreviewOwnerImports = collectOwnerImports(analyzedSources, 'sketch_box_preview_policy.js');
+  assertApprovedSymbolUsage(
+    sketchBoxPreviewOwnerImports,
+    APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS,
+    'Sketch Box Preview owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(sketchBoxPreviewOwnerImports)
+        .filter(([, symbols]) => symbols.includes('SKETCH_BOX_PREVIEW_POLICY'))
+        .map(([file]) => [file, ['SKETCH_BOX_PREVIEW_POLICY']])
+    ),
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['SKETCH_BOX_PREVIEW_POLICY'],
+    },
+    'SKETCH_BOX_PREVIEW_POLICY aggregate is imported directly only by the legacy facade'
+  );
+  assert.deepEqual(
+    collectOwnerDependencyStatements(analyzedSources, 'sketch_box_preview_policy.js'),
+    Object.fromEntries(Object.keys(APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS).map(file => [file, 1])),
+    'Sketch Box Preview migration must retain exactly one owner statement per approved importer'
   );
 
   assertApprovedSymbolUsage(

@@ -1,4 +1,7 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  SKETCH_BOX_BOX_PREVIEW_POLICY,
+  SKETCH_BOX_PREVIEW_CORE_POLICY,
+} from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { readGeometryRuntimeNumber } from './geometry_runtime_contracts.js';
 import type { SketchPlacementPreviewContext } from './render_preview_sketch_pipeline_shared.js';
 
@@ -49,18 +52,18 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
   const padXY =
     Number.isFinite(ctx.woodThick) && ctx.woodThick > 0
       ? Math.min(
-          SKETCH_BOX_DIMENSIONS.preview.objectBoxPadXYMaxM,
+          SKETCH_BOX_BOX_PREVIEW_POLICY.objectBoxPadXYMaxM,
           Math.max(
-            SKETCH_BOX_DIMENSIONS.preview.objectBoxPadXYMinM,
-            ctx.woodThick * SKETCH_BOX_DIMENSIONS.preview.objectBoxPadXYWoodRatio
+            SKETCH_BOX_BOX_PREVIEW_POLICY.objectBoxPadXYMinM,
+            ctx.woodThick * SKETCH_BOX_BOX_PREVIEW_POLICY.objectBoxPadXYWoodRatio
           )
         )
-      : SKETCH_BOX_DIMENSIONS.preview.objectBoxPadXYDefaultM;
+      : SKETCH_BOX_BOX_PREVIEW_POLICY.objectBoxPadXYDefaultM;
   const padZ = Math.max(
-    SKETCH_BOX_DIMENSIONS.preview.objectBoxPadZMinM,
+    SKETCH_BOX_BOX_PREVIEW_POLICY.objectBoxPadZMinM,
     Math.min(
-      SKETCH_BOX_DIMENSIONS.preview.objectBoxPadZMaxM,
-      padXY * SKETCH_BOX_DIMENSIONS.preview.objectBoxPadZRatio
+      SKETCH_BOX_BOX_PREVIEW_POLICY.objectBoxPadZMaxM,
+      padXY * SKETCH_BOX_BOX_PREVIEW_POLICY.objectBoxPadZRatio
     )
   );
   ctx.g.visible = true;
@@ -154,15 +157,15 @@ export function applyObjectBoxesSketchPlacementPreview(ctx: SketchPlacementPrevi
       continue;
     }
     const scaleX = Math.max(
-      SKETCH_BOX_DIMENSIONS.preview.minScaleM,
+      SKETCH_BOX_PREVIEW_CORE_POLICY.minScaleM,
       Math.abs(scaleXValue * (width0 + padXY * 2))
     );
     const scaleY = Math.max(
-      SKETCH_BOX_DIMENSIONS.preview.minScaleM,
+      SKETCH_BOX_PREVIEW_CORE_POLICY.minScaleM,
       Math.abs(scaleYValue * (height0 + padXY * 2))
     );
     const scaleZ = Math.max(
-      SKETCH_BOX_DIMENSIONS.preview.minScaleM,
+      SKETCH_BOX_PREVIEW_CORE_POLICY.minScaleM,
       Math.abs(scaleZValue * (depth0 + padZ * 2))
     );
     if (typeof helper.scale?.set === 'function') helper.scale.set(scaleX, scaleY, scaleZ);

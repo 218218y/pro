@@ -8,7 +8,7 @@ import type {
 } from './render_interior_sketch_boxes_fronts_door_contracts.js';
 
 import { readSketchBoxDoorId } from './render_interior_sketch_shared.js';
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { readGeometryRuntimePositiveNumber } from './geometry_runtime_contracts.js';
 import {
   resolveSketchBoxDoorMountMode,
@@ -41,10 +41,10 @@ export function resolveSketchBoxDoorLayout(args: {
   const hingeLeft = hingeSide === 'left';
   const doorOpen = boxDoor.open === true;
   const doorInset = Math.max(
-    SKETCH_BOX_DIMENSIONS.preview.doorInsetMinM,
+    SKETCH_BOX_DOOR_PREVIEW_POLICY.doorInsetMinM,
     Math.min(
-      SKETCH_BOX_DIMENSIONS.preview.doorInsetMaxM,
-      Math.min(boxGeo.outerW, hM) * SKETCH_BOX_DIMENSIONS.preview.doorInsetSizeRatio
+      SKETCH_BOX_DOOR_PREVIEW_POLICY.doorInsetMaxM,
+      Math.min(boxGeo.outerW, hM) * SKETCH_BOX_DOOR_PREVIEW_POLICY.doorInsetSizeRatio
     )
   );
   const doorSegment = placement.segment || null;
@@ -59,11 +59,11 @@ export function resolveSketchBoxDoorLayout(args: {
   const segmentLeft = doorSegment ? doorSegment.leftX : innerLeft;
   const segmentRight = doorSegment ? doorSegment.rightX : innerRight;
   const leftExt =
-    Math.abs(segmentLeft - innerLeft) <= SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM
+    Math.abs(segmentLeft - innerLeft) <= SKETCH_BOX_DOOR_PREVIEW_POLICY.doorEdgeEpsilonM
       ? woodThick
       : woodThick / 2;
   const rightExt =
-    Math.abs(segmentRight - innerRight) <= SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM
+    Math.abs(segmentRight - innerRight) <= SKETCH_BOX_DOOR_PREVIEW_POLICY.doorEdgeEpsilonM
       ? woodThick
       : woodThick / 2;
   const segmentFrameLeft = segmentLeft - leftExt;
@@ -83,10 +83,10 @@ export function resolveSketchBoxDoorLayout(args: {
   const doorSideInset = isInsetDoorMount ? Math.min(insetReveal, Math.max(0, doorSpanW / 8)) : doorInset;
   const centerGap = isCenterDoubleDoorPair
     ? Math.max(
-        SKETCH_BOX_DIMENSIONS.preview.doorDoublePairGapMinM,
+        SKETCH_BOX_DOOR_PREVIEW_POLICY.doorDoublePairGapMinM,
         Math.min(
-          SKETCH_BOX_DIMENSIONS.preview.doorDoublePairGapMaxM,
-          Math.min(doorSpanW, hM) * SKETCH_BOX_DIMENSIONS.preview.doorDoublePairGapSizeRatio
+          SKETCH_BOX_DOOR_PREVIEW_POLICY.doorDoublePairGapMaxM,
+          Math.min(doorSpanW, hM) * SKETCH_BOX_DOOR_PREVIEW_POLICY.doorDoublePairGapSizeRatio
         )
       )
     : 0;
@@ -95,10 +95,10 @@ export function resolveSketchBoxDoorLayout(args: {
     ? isInsetDoorMount
       ? doorSideInset
       : Math.max(
-          SKETCH_BOX_DIMENSIONS.preview.doorDoublePairOuterInsetMinM,
+          SKETCH_BOX_DOOR_PREVIEW_POLICY.doorDoublePairOuterInsetMinM,
           Math.min(
             doorSideInset,
-            Math.min(doorSpanW, hM) * SKETCH_BOX_DIMENSIONS.preview.doorDoublePairOuterInsetSizeRatio
+            Math.min(doorSpanW, hM) * SKETCH_BOX_DOOR_PREVIEW_POLICY.doorDoublePairOuterInsetSizeRatio
           )
         )
     : doorSideInset;
@@ -112,7 +112,7 @@ export function resolveSketchBoxDoorLayout(args: {
       ? segmentCenterX - centerGap / 2
       : doorSpanRight - pairOuterInset
     : doorSpanRight - doorSideInset;
-  const doorW = Math.max(SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM, doorFaceRight - doorFaceLeft);
+  const doorW = Math.max(SKETCH_BOX_DOOR_PREVIEW_POLICY.doorMinDimensionM, doorFaceRight - doorFaceLeft);
   const doorVerticalSegment = placement.verticalSegment || null;
   const doorCellHeight = doorVerticalSegment
     ? doorVerticalSegment.height
@@ -124,16 +124,16 @@ export function resolveSketchBoxDoorLayout(args: {
     ? Math.min(insetReveal, Math.max(0, doorCellHeight / 8))
     : doorInset;
   const doorH = Math.max(
-    SKETCH_BOX_DIMENSIONS.preview.doorMinDimensionM,
+    SKETCH_BOX_DOOR_PREVIEW_POLICY.doorMinDimensionM,
     doorCellHeight - doorVerticalInset * 2
   );
   const doorD = resolveSketchBoxDoorThickness(woodThick);
   const doorFrontZ = Number.isFinite(shell.frontZ) ? shell.frontZ : boxGeo.centerZ + boxGeo.outerD / 2;
   const doorBackClearanceZ = Math.max(
-    SKETCH_BOX_DIMENSIONS.preview.doorBackClearanceMinM,
+    SKETCH_BOX_DOOR_PREVIEW_POLICY.doorBackClearanceMinM,
     Math.min(
-      SKETCH_BOX_DIMENSIONS.preview.doorBackClearanceMaxM,
-      doorD * SKETCH_BOX_DIMENSIONS.preview.doorBackClearanceDepthRatio
+      SKETCH_BOX_DOOR_PREVIEW_POLICY.doorBackClearanceMaxM,
+      doorD * SKETCH_BOX_DOOR_PREVIEW_POLICY.doorBackClearanceDepthRatio
     )
   );
   const doorZ = isInsetDoorMount

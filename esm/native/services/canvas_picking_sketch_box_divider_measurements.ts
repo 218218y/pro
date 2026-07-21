@@ -1,4 +1,4 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import {
   buildStackAwareHorizontalClearanceMeasurementEntries,
   buildStackAwareVerticalClearanceMeasurementEntries,
@@ -80,11 +80,13 @@ export function buildSketchBoxDividerMeasurementEntries(args: {
   const woodThick = Math.max(0.0001, readFiniteNumber(args.woodThick) ?? 0.018);
   if (dividerCenterX == null || dividerCenterY == null || dividerCenterZ == null) return [];
 
-  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
   const z =
     dividerCenterZ +
     dividerDepth / 2 +
-    Math.max(previewDims.measurementZOffsetMinM, dividerDepth * previewDims.measurementZOffsetDepthRatio);
+    Math.max(
+      SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetMinM,
+      dividerDepth * SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetDepthRatio
+    );
   const dividerTopY = dividerCenterY + dividerHeight / 2;
   const dividerBottomY = dividerCenterY - dividerHeight / 2;
   const overallOutset = Math.max(0.09, Math.min(0.18, dividerHeight * 0.12));
@@ -108,7 +110,7 @@ export function buildSketchBoxDividerMeasurementEntries(args: {
     }),
     z,
     styleKey: 'cell',
-    textScale: previewDims.measurementTextScale,
+    textScale: SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale,
     faceSign: 1,
     viewFaceSign: 1,
     labelFaceSign: 1,
@@ -177,11 +179,13 @@ export function buildSketchBoxHorizontalDividerMeasurementEntries(args: {
   const dividerDepth = Math.max(0.0001, readFiniteNumber(args.dividerDepth) ?? 0);
   const woodThick = Math.max(0.0001, readFiniteNumber(args.woodThick) ?? 0.018);
   if (dividerCenterX == null || dividerCenterY == null || dividerCenterZ == null) return [];
-  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
   const z =
     dividerCenterZ +
     dividerDepth / 2 +
-    Math.max(previewDims.measurementZOffsetMinM, dividerDepth * previewDims.measurementZOffsetDepthRatio);
+    Math.max(
+      SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetMinM,
+      dividerDepth * SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetDepthRatio
+    );
   return buildStackAwareVerticalClearanceMeasurementEntries({
     containerMinY: args.boxCenterY - innerH / 2,
     containerMaxY: args.boxCenterY + innerH / 2,
@@ -198,7 +202,7 @@ export function buildSketchBoxHorizontalDividerMeasurementEntries(args: {
     }),
     z,
     styleKey: 'cell',
-    textScale: previewDims.measurementTextScale,
+    textScale: SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale,
     faceSign: 1,
     viewFaceSign: 1,
     labelFaceSign: 1,

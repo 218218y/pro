@@ -1,4 +1,4 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { createManualLayoutSketchBoxHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import { resolveSketchModuleBoxAction } from './canvas_picking_sketch_module_box_workflow.js';
 import { buildSketchModuleBoxPlacementBlockers } from './canvas_picking_sketch_module_box_blockers.js';
@@ -124,13 +124,15 @@ export function resolveSketchModuleBoxPreviewState(args: {
     }
   }
 
-  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
   const blockedReason = resolvedBoxAction.op === 'blocked' ? 'collision' : null;
   const boxCanSlideHorizontally =
     Number.isFinite(source.innerW) &&
     Number(source.innerW) >
       Number(resolvedBoxAction.outerW) +
-        Math.max(previewDims.slideClearanceMinM, source.woodThick * previewDims.slideClearanceWoodRatio);
+        Math.max(
+          SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.slideClearanceMinM,
+          source.woodThick * SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.slideClearanceWoodRatio
+        );
 
   const clearanceMeasurements = buildRectClearanceMeasurementEntries({
     containerMinX: resolvedBoxAction.centerX - resolvedBoxAction.outerW / 2,
@@ -145,13 +147,13 @@ export function resolveSketchModuleBoxPreviewState(args: {
       resolvedBoxAction.centerZ +
       resolvedBoxAction.outerD / 2 +
       Math.max(
-        previewDims.measurementZOffsetMinM,
-        resolvedBoxAction.outerD * previewDims.measurementZOffsetDepthRatio
+        SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetMinM,
+        resolvedBoxAction.outerD * SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetDepthRatio
       ),
     showTop: true,
     showBottom: true,
     styleKey: 'cell',
-    textScale: previewDims.measurementTextScale,
+    textScale: SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale,
   });
 
   return {

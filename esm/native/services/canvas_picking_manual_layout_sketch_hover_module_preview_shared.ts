@@ -1,10 +1,10 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_PREVIEW_CORE_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import type { ManualLayoutSketchHoverModuleContext } from './canvas_picking_manual_layout_sketch_hover_module_contracts.js';
 import { readNumber } from './canvas_picking_manual_layout_sketch_hover_module_shared.js';
 
-export const REMOVE_EPS_SHELF = SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM;
-export const REMOVE_EPS_BOX = SKETCH_BOX_DIMENSIONS.preview.removeEpsBoxM;
+export const REMOVE_EPS_SHELF: number = SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM;
+export const REMOVE_EPS_BOX: number = SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsBoxM;
 
 export function createManualLayoutSketchHoverHost(ctx: ManualLayoutSketchHoverModuleContext) {
   const { tool, hitModuleKey, isBottom } = ctx;
