@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-21T17:52:36.639Z",
+  "generatedAt": "2026-07-21T18:42:23.432Z",
   "totals": {
-    "tests": 1236,
-    "unitRunnerTests": 1228,
+    "tests": 1237,
+    "unitRunnerTests": 1229,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -15,7 +15,7 @@
   "categories": {
     "contract": 403,
     "runtime-unit": 318,
-    "integration": 456,
+    "integration": 457,
     "e2e-smoke": 9,
     "perf-smoke": 9,
     "legacy-migration": 41
@@ -4028,6 +4028,10 @@
     {
       "file": "tests/sketch_box_segment_doors_fix_guard.test.cjs",
       "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_stacked_content_preview_renderer_runtime.test.ts",
+      "category": "integration"
     },
     {
       "file": "tests/sketch_click_module_key_resolution_guard.test.js",

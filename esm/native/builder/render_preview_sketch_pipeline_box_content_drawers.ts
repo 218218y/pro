@@ -1,6 +1,10 @@
 import type { PreviewDrawerEntry, PreviewMaterialLike } from './render_preview_ops_contracts.js';
 import type { SketchPlacementPreviewContext } from './render_preview_sketch_pipeline_shared.js';
-import { DRAWER_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  DRAWER_SKETCH_PREVIEW_RENDER_POLICY,
+  DRAWER_SKETCH_SIZING_POLICY,
+} from '../../shared/dimensions/drawer_sketch_policy.js';
+import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import {
   readPreviewNumber,
   readPreviewNumberOr,
@@ -45,28 +49,28 @@ function applyDrawersPreview(ctx: SketchPlacementPreviewContext): boolean {
   if (ctx.kind !== 'drawers') return false;
 
   const drawerH = readPreviewPositiveNumber(ctx.input.drawerH);
-  const gap = readPreviewNumberOr(ctx.input.drawerGap, DRAWER_DIMENSIONS.sketch.internalGapM);
+  const gap = readPreviewNumberOr(ctx.input.drawerGap, DRAWER_SKETCH_SIZING_POLICY.internalGapM);
   if (drawerH == null) {
     ctx.g.visible = false;
     return true;
   }
 
   const { material, lineMaterial } = resolvePreviewBodyMaterials(ctx);
-  const y0 = ctx.y + drawerH / 2 + DRAWER_DIMENSIONS.sketch.previewDrawerBottomLiftM;
+  const y0 = ctx.y + drawerH / 2 + DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewDrawerBottomLiftM;
   const y1 = ctx.y + drawerH + gap + drawerH / 2;
   const frontOverlay = ctx.readFrontOverlay(
     ctx.x,
     ctx.y + drawerH + gap / 2 + drawerH / 2,
     ctx.w,
     Math.max(
-      drawerH * DRAWER_DIMENSIONS.sketch.internalStackCount +
+      drawerH * DRAWER_SKETCH_SIZING_POLICY.internalStackCount +
         gap +
-        DRAWER_DIMENSIONS.sketch.previewStackExtraHeightM,
+        DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewStackExtraHeightM,
       readPreviewPositiveNumber(ctx.input.frontOverlayH) ?? 0
     ),
     Math.max(
-      DRAWER_DIMENSIONS.sketch.previewOverlayThicknessMinM,
-      Math.min(ctx.d, DRAWER_DIMENSIONS.sketch.previewOverlayThicknessMaxM)
+      DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewOverlayThicknessMinM,
+      Math.min(ctx.d, DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewOverlayThicknessMaxM)
     )
   );
 
@@ -104,16 +108,16 @@ function applyExternalDrawersPreview(ctx: SketchPlacementPreviewContext): boolea
     .filter((entryH): entryH is number => entryH != null);
   const overlayH = drawerHeights.length
     ? drawerHeights.reduce((sum, entryH) => sum + entryH, 0) +
-      DRAWER_DIMENSIONS.sketch.previewStackExtraHeightM
-    : DRAWER_DIMENSIONS.sketch.previewExternalDefaultHeightM;
+      DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewStackExtraHeightM
+    : DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewExternalDefaultHeightM;
   const frontOverlay = ctx.readFrontOverlay(
     ctx.x,
     ctx.y + overlayH / 2,
     ctx.w,
     overlayH,
     Math.max(
-      DRAWER_DIMENSIONS.sketch.previewOverlayThicknessMinM,
-      Math.min(ctx.d, DRAWER_DIMENSIONS.sketch.previewOverlayThicknessMaxM)
+      DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewOverlayThicknessMinM,
+      Math.min(ctx.d, DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewOverlayThicknessMaxM)
     )
   );
 
@@ -223,13 +227,13 @@ function applyDrawerDividerPreview(ctx: SketchPlacementPreviewContext): boolean 
       ? ctx.ud.__lineBrace || ctx.ud.__lineBox || ctx.ud.__lineShelf
       : ctx.ud.__lineBox || ctx.ud.__lineShelf;
   const dividerT = Math.max(
-    DRAWER_DIMENSIONS.sketch.previewDividerMinM,
+    DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewDividerMinM,
     Math.min(
       Math.max(
-        SKETCH_BOX_DIMENSIONS.preview.doorMinDepthM,
-        (axis === 'horizontal' ? ctx.h : ctx.w) * DRAWER_DIMENSIONS.sketch.previewDividerWidthRatio
+        SKETCH_BOX_DOOR_PREVIEW_POLICY.doorMinDepthM,
+        (axis === 'horizontal' ? ctx.h : ctx.w) * DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewDividerWidthRatio
       ),
-      DRAWER_DIMENSIONS.sketch.previewDividerMaxM
+      DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewDividerMaxM
     )
   );
 
@@ -248,7 +252,7 @@ function applyDrawerDividerPreview(ctx: SketchPlacementPreviewContext): boolean 
     mesh: ctx.shelfA,
     sx: axis === 'horizontal' ? ctx.w : dividerT,
     sy: axis === 'horizontal' ? dividerT : ctx.h,
-    sz: ctx.d + DRAWER_DIMENSIONS.sketch.previewDividerDepthExtraM,
+    sz: ctx.d + DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewDividerDepthExtraM,
     px: ctx.x,
     py: ctx.y,
     pz: ctx.z,
@@ -281,10 +285,10 @@ function applyStoragePreview(ctx: SketchPlacementPreviewContext): boolean {
     ctx.w,
     ctx.h,
     Math.max(
-      DRAWER_DIMENSIONS.sketch.previewOverlayThicknessMinM,
+      DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewOverlayThicknessMinM,
       Math.min(
         ctx.d,
-        ctx.woodThick > 0 ? ctx.woodThick : DRAWER_DIMENSIONS.sketch.previewOverlayThicknessMaxM
+        ctx.woodThick > 0 ? ctx.woodThick : DRAWER_SKETCH_PREVIEW_RENDER_POLICY.previewOverlayThicknessMaxM
       )
     )
   );

@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 59, statements: 59 }),
+  'static-import': Object.freeze({ importers: 58, statements: 58 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 61, statements: 62 }),
+  total: Object.freeze({ importers: 60, statements: 61 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -1013,6 +1013,9 @@ const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_drawers_external_context.ts': Object.freeze([
     'SKETCH_BOX_DRAWER_PREVIEW_POLICY',
   ]),
+  'esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts': Object.freeze([
+    'SKETCH_BOX_DOOR_PREVIEW_POLICY',
+  ]),
   'esm/native/services/canvas_picking_sketch_box_stack_preview_drawers.ts': Object.freeze([
     'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
   ]),
@@ -1433,6 +1436,10 @@ const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
     'DRAWER_SKETCH_SIZING_POLICY',
     'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
   ]),
+  'esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts': Object.freeze([
+    'DRAWER_SKETCH_PREVIEW_RENDER_POLICY',
+    'DRAWER_SKETCH_SIZING_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['DRAWER_SKETCH_POLICY']),
 });
 const APPROVED_FRONT_REVEAL_OWNER_IMPORTS = Object.freeze({
@@ -1560,20 +1567,6 @@ const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
     'sketch.externalPreviewVisualMinDepthM',
     'sketch.externalPreviewVisualMinHeightM',
     'sketch.externalPreviewVisualMinWidthM',
-  ]),
-  'esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts': Object.freeze([
-    'sketch',
-    'sketch.internalGapM',
-    'sketch.internalStackCount',
-    'sketch.previewDividerDepthExtraM',
-    'sketch.previewDividerMaxM',
-    'sketch.previewDividerMinM',
-    'sketch.previewDividerWidthRatio',
-    'sketch.previewDrawerBottomLiftM',
-    'sketch.previewExternalDefaultHeightM',
-    'sketch.previewOverlayThicknessMaxM',
-    'sketch.previewOverlayThicknessMinM',
-    'sketch.previewStackExtraHeightM',
   ]),
   'esm/native/features/sketch_drawer_sizing.ts': Object.freeze([
     'sketch',

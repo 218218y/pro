@@ -3207,3 +3207,69 @@ test('repository Sketch Box Measurement stack-preview quartet migration entries 
     37
   );
 });
+
+test('repository Sketch Box stacked content preview renderer migration entry is exact and additive-only', () => {
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const baseline = JSON.parse(
+    fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
+  );
+  assert.equal(baseline.migrationBudgets.length, 85);
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets.slice(0, 84)),
+    'b34d8c4209c3c84d9b738094851cb8221089242de68c08b20f8d9a9635979335',
+    'the eighty-four previously reviewed migration entries must remain semantically unchanged'
+  );
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets),
+    '8c99874fb35870ef203054a2f461c052a975194229e11e5c767153c68c32a864'
+  );
+
+  assert.deepEqual(baseline.migrationBudgets.slice(84), [
+    {
+      from: 'builder',
+      to: 'shared',
+      additionalStatements: 1,
+      owner: 'dimension-ownership-migration',
+      reviewedAt: '2026-07-21',
+      reviewBy: '2026-10-18',
+      fromFile: 'esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts',
+      companionImport: {
+        toFile: 'esm/shared/dimensions/sketch_box_preview_policy.ts',
+        kind: 'value',
+        importedSymbols: ['SKETCH_BOX_DOOR_PREVIEW_POLICY'],
+        syntax: 'static-import',
+      },
+      removedImport: {
+        toFile: 'esm/shared/wardrobe_dimension_tokens_shared.ts',
+        kind: 'value',
+        importedSymbols: ['DRAWER_DIMENSIONS', 'SKETCH_BOX_DIMENSIONS'],
+        syntax: 'static-import',
+      },
+      addedImport: {
+        toFile: 'esm/shared/dimensions/drawer_sketch_policy.ts',
+        kind: 'value',
+        importedSymbols: ['DRAWER_SKETCH_PREVIEW_RENDER_POLICY', 'DRAWER_SKETCH_SIZING_POLICY'],
+        syntax: 'static-import',
+      },
+      reason:
+        'The Sketch Box stacked content preview renderer replaces one legacy facade statement with focused Drawer Sketch Preview Render and Sizing owners plus the focused Sketch Box Door Preview owner on the existing builder to shared edge.',
+      removalCondition:
+        'Remove this entry when a reviewed Sketch Box stacked content preview composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade.',
+    },
+  ]);
+
+  const graph = collectLayerContractGraph({ root: repositoryRoot });
+  const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
+  assert.equal(report.ok, true);
+  const builderEdge = graph.edges.find(entry => entry.from === 'builder' && entry.to === 'shared');
+  const builderRule = baseline.rules.find(entry => entry.from === 'builder' && entry.to === 'shared');
+  assert.ok(builderEdge);
+  assert.ok(builderRule);
+  assert.equal(builderEdge.importCount, 265);
+  assert.equal(builderRule.maxImportCount, 219);
+  assert.equal(
+    report.migrationBudgets.filter(entry => entry.from === 'builder' && entry.to === 'shared' && entry.active)
+      .length,
+    46
+  );
+});

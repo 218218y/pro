@@ -3397,6 +3397,35 @@
       },
       "reason": "The Sketch module external-drawer stack preview replaces one legacy facade statement with focused Drawer Sketch sizing, collision, external-preview, and External Drawer Front Render policies plus the focused Sketch Box Measurement Preview owner on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch module external-drawer stack-preview composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-21",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DOOR_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_PREVIEW_RENDER_POLICY", "DRAWER_SKETCH_SIZING_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch Box stacked content preview renderer replaces one legacy facade statement with focused Drawer Sketch Preview Render and Sizing owners plus the focused Sketch Box Door Preview owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch Box stacked content preview composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
     }
   ]
 }
