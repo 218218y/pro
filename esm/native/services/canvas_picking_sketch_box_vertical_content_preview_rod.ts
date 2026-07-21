@@ -1,7 +1,8 @@
+import { INTERIOR_ROD_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  SKETCH_BOX_PREVIEW_CORE_POLICY,
+  SKETCH_BOX_ROD_PREVIEW_POLICY,
+} from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import type {
@@ -35,7 +36,7 @@ export function resolveSketchBoxRodPreview(
     targetBox,
     pointerY,
     woodThick,
-    removeEpsShelf = SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM,
+    removeEpsShelf = SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM,
     pickSketchBoxSegment,
   } = args;
   const {
@@ -49,8 +50,7 @@ export function resolveSketchBoxRodPreview(
     hasVerticalRoomFor,
   } = state;
 
-  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
-  const rodRadius = INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM;
+  const rodRadius = INTERIOR_ROD_RENDER_POLICY.radiusM;
   let previewY = clampBoxCenterY(pointerY, rodRadius);
   let previewSegment: SketchBoxSegmentLike | null = activeSegment;
   let op: 'add' | 'remove' = 'add';
@@ -147,9 +147,12 @@ export function resolveSketchBoxRodPreview(
       x: rodCenterX,
       y: previewY,
       z: targetGeo.innerBackZ + targetGeo.innerD / 2,
-      w: Math.max(previewDims.rodMinLengthM, rodWidth - previewDims.rodWidthClearanceM),
-      h: previewDims.rodPreviewHeightM,
-      d: previewDims.rodPreviewDepthM,
+      w: Math.max(
+        SKETCH_BOX_ROD_PREVIEW_POLICY.rodMinLengthM,
+        rodWidth - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
+      ),
+      h: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewHeightM,
+      d: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewDepthM,
       woodThick,
       op: blockedReason ? 'blocked' : op,
       blockedReason: blockedReason ?? undefined,

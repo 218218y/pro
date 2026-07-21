@@ -1,7 +1,5 @@
-import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_ROD_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
+import { SKETCH_BOX_ROD_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import type { RenderSketchBoxStaticContentsArgs } from './render_interior_sketch_boxes_contents_parts_types.js';
 import type { SketchRodExtra } from './render_interior_sketch_shared.js';
 
@@ -26,7 +24,7 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
   for (let ri = 0; ri < boxRods.length; ri++) {
     const rod = boxRods[ri] || null;
     if (!rod) continue;
-    const rodY = yFromBoxNorm(rod.yNorm, INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM);
+    const rodY = yFromBoxNorm(rod.yNorm, INTERIOR_ROD_RENDER_POLICY.radiusM);
     if (rodY == null) continue;
     const rodSegment = resolveSketchBoxSegmentForContent({
       dividers: boxDividers,
@@ -39,19 +37,18 @@ export function renderSketchBoxContentRods(args: RenderSketchBoxStaticContentsAr
       innerH: shell.sideH,
       yNorm: rod.yNorm,
     });
-    const previewDims = SKETCH_BOX_DIMENSIONS.preview;
     const rodLen = Math.max(
-      previewDims.rodMinLengthM,
-      (rodSegment ? rodSegment.width : geometry.innerW) - previewDims.rodWidthClearanceM
+      SKETCH_BOX_ROD_PREVIEW_POLICY.rodMinLengthM,
+      (rodSegment ? rodSegment.width : geometry.innerW) - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
     );
     const rodCenterX = rodSegment ? rodSegment.centerX : geometry.centerX;
     const rodPid = `${boxPid}_rod_${String(rod.id ?? ri)}`;
     const rodMesh = new THREE.Mesh(
       new THREE.CylinderGeometry(
-        INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
-        INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM,
+        INTERIOR_ROD_RENDER_POLICY.radiusM,
+        INTERIOR_ROD_RENDER_POLICY.radiusM,
         rodLen,
-        INTERIOR_FITTINGS_DIMENSIONS.rods.radialSegments
+        INTERIOR_ROD_RENDER_POLICY.radialSegments
       ),
       rodMat
     );

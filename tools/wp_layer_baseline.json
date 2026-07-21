@@ -3492,6 +3492,64 @@
       },
       "reason": "The Sketch Box vertical storage preview resolver replaces one legacy facade statement with focused Interior Storage Barrier and Preview owners plus focused Sketch Box Core, Shelf, and Storage Preview owners on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch Box vertical storage-preview composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-21",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_ROD_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_ROD_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch Box rod renderer replaces one legacy facade statement with the focused Interior Rod Render owner plus the focused Sketch Box Rod Preview owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch Box rod-rendering composition seam eliminates the extra Interior Rod statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-21",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_vertical_content_preview_rod.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_PREVIEW_CORE_POLICY", "SKETCH_BOX_ROD_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_ROD_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch Box vertical rod preview resolver replaces one legacy facade statement with the focused Interior Rod Render owner plus focused Sketch Box Core and Rod Preview owners on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch Box vertical rod-preview composition seam eliminates the extra Interior Rod statement without reintroducing the legacy facade."
     }
   ]
 }

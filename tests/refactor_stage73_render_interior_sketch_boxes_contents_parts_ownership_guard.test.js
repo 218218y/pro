@@ -64,13 +64,25 @@ test('stage 73 render interior sketch box static contents ownership split is anc
 
   assert.match(rods, /export function renderSketchBoxContentRods\(/);
   assert.match(rods, /asRecordArray<SketchRodExtra>\(box\.rods\)/);
-  assert.match(rods, /INTERIOR_FITTINGS_DIMENSIONS\.rods\.radiusM/);
   assert.match(
     rods,
-    /new THREE\.CylinderGeometry\(\s*INTERIOR_FITTINGS_DIMENSIONS\.rods\.radiusM,\s*INTERIOR_FITTINGS_DIMENSIONS\.rods\.radiusM,\s*rodLen,\s*INTERIOR_FITTINGS_DIMENSIONS\.rods\.radialSegments\s*\)/
+    /^import \{ INTERIOR_ROD_RENDER_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/interior_fittings_policy\.js';$/mu
   );
+  assert.match(
+    rods,
+    /^import \{ SKETCH_BOX_ROD_PREVIEW_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/sketch_box_preview_policy\.js';$/mu
+  );
+  assert.match(
+    rods,
+    /new THREE\.CylinderGeometry\(\s*INTERIOR_ROD_RENDER_POLICY\.radiusM,\s*INTERIOR_ROD_RENDER_POLICY\.radiusM,\s*rodLen,\s*INTERIOR_ROD_RENDER_POLICY\.radialSegments\s*\)/
+  );
+  assert.match(rods, /SKETCH_BOX_ROD_PREVIEW_POLICY\.rodMinLengthM/);
+  assert.match(rods, /SKETCH_BOX_ROD_PREVIEW_POLICY\.rodWidthClearanceM/);
   assert.match(rods, /__wpType = 'sketchRod'/);
-  assert.doesNotMatch(rods, /createBoard\(|storageBarriers|normalizeSketchShelfVariant/);
+  assert.doesNotMatch(
+    rods,
+    /createBoard\(|storageBarriers|normalizeSketchShelfVariant|wardrobe_dimension_tokens_shared|\bINTERIOR_FITTINGS_DIMENSIONS\b|\bSKETCH_BOX_DIMENSIONS\b/
+  );
 
   assert.match(types, /export type RenderSketchBoxStaticContentsArgs = RenderSketchBoxContentsArgs/);
   assert.doesNotMatch(types, /export function |createBoard\(|new THREE\.Mesh/);

@@ -113,10 +113,8 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
 
   for (const rel of [
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
-    'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_rod.ts',
     'esm/native/services/canvas_picking_sketch_module_surface_preview_content.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
-    'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts',
   ]) {
     assertUsesToken(rel, 'SKETCH_BOX_DIMENSIONS');
   }
@@ -340,7 +338,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
   }
 
   const expectedConsumers = [
-    'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts',
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
     'esm/native/builder/render_preview_interior_hover_apply.ts',
     'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
@@ -348,7 +345,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/services/canvas_picking_manual_layout_free_box_content.ts',
     'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts',
-    'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_rod.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
     'esm/native/services/canvas_picking_sketch_module_surface_preview_content.ts',
     'esm/native/services/canvas_picking_sketch_module_surface_preview_flow.ts',
@@ -361,8 +357,8 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       /\bSKETCH_BOX_DIMENSIONS\b/u.test(read(file))
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 3);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 11);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 2);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 10);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
     const source = read(file);
@@ -409,7 +405,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
       /SKETCH_BOX_DIMENSIONS\.preview/u.test(read(file))
   );
-  assert.equal(remainingPreviewConsumers.length, 14);
+  assert.equal(remainingPreviewConsumers.length, 12);
   assert.deepEqual(remainingPreviewConsumers.sort(), actualConsumers.sort());
   for (const file of actualConsumers) {
     const branches = new Set(
@@ -600,6 +596,66 @@ test('[dimension tokens] Sketch Box Storage Preview pair uses exactly two focuse
     assert.doesNotMatch(
       source,
       /const\s+\w+\s*=\s*(?:INTERIOR_STORAGE_[A-Z_]+_POLICY|SKETCH_BOX_[A-Z_]+_PREVIEW_POLICY)\s*;/u
+    );
+  }
+});
+
+test('[dimension tokens] Sketch Box Rod Preview pair uses exactly two focused owners', () => {
+  const consumers = new Map([
+    [
+      'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts',
+      {
+        interior: ['INTERIOR_ROD_RENDER_POLICY'],
+        preview: ['SKETCH_BOX_ROD_PREVIEW_POLICY'],
+      },
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_rod.ts',
+      {
+        interior: ['INTERIOR_ROD_RENDER_POLICY'],
+        preview: ['SKETCH_BOX_PREVIEW_CORE_POLICY', 'SKETCH_BOX_ROD_PREVIEW_POLICY'],
+      },
+    ],
+  ]);
+
+  for (const [rel, symbols] of consumers) {
+    const source = read(rel);
+    const dependencies = analyzeModuleDependencies(path.join(ROOT, rel), source).imports;
+    const focusedOwners = dependencies.filter(
+      dependency =>
+        dependency.syntax === 'static-import' &&
+        (dependency.specifier.endsWith('/dimensions/interior_fittings_policy.js') ||
+          dependency.specifier.endsWith('/dimensions/sketch_box_preview_policy.js'))
+    );
+
+    assert.deepEqual(
+      focusedOwners.map(dependency => ({
+        specifier: dependency.specifier,
+        symbols: [...dependency.importedSymbols],
+      })),
+      [
+        {
+          specifier: '../../shared/dimensions/interior_fittings_policy.js',
+          symbols: symbols.interior,
+        },
+        {
+          specifier: '../../shared/dimensions/sketch_box_preview_policy.js',
+          symbols: symbols.preview,
+        },
+      ]
+    );
+    assert.equal(focusedOwners.length, 2);
+    assert.equal(
+      dependencies.some(dependency => dependency.specifier.includes('wardrobe_dimension_tokens_shared')),
+      false
+    );
+    assert.doesNotMatch(
+      source,
+      /\b(?:INTERIOR_FITTINGS_DIMENSIONS|SKETCH_BOX_DIMENSIONS|INTERIOR_ROD_POLICY|SKETCH_BOX_PREVIEW_POLICY)\b|import\s+\*\s+as|import\s*\(|export\s+(?:type\s+)?(?:\*|\{)/u
+    );
+    assert.doesNotMatch(
+      source,
+      /const\s+\w+\s*=\s*(?:INTERIOR_ROD_RENDER_POLICY|SKETCH_BOX_(?:PREVIEW_CORE|ROD_PREVIEW)_POLICY)\s*;/u
     );
   }
 });

@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 56, statements: 56 }),
+  'static-import': Object.freeze({ importers: 54, statements: 54 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 58, statements: 59 }),
+  total: Object.freeze({ importers: 56, statements: 57 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -817,6 +817,12 @@ const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
     'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
     'INTERIOR_SHELF_GEOMETRY_POLICY',
   ]),
+  'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts': Object.freeze([
+    'INTERIOR_ROD_RENDER_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_rod.ts': Object.freeze([
+    'INTERIOR_ROD_RENDER_POLICY',
+  ]),
   'esm/shared/dimensions/sketch_box_preview_policy.ts': Object.freeze([
     'INTERIOR_ROD_CONTENT_CLEARANCE_POLICY',
     'INTERIOR_ROD_RENDER_POLICY',
@@ -1045,6 +1051,13 @@ const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
     'SKETCH_BOX_SHELF_PREVIEW_POLICY',
     'SKETCH_BOX_STORAGE_PREVIEW_POLICY',
   ]),
+  'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts': Object.freeze([
+    'SKETCH_BOX_ROD_PREVIEW_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_rod.ts': Object.freeze([
+    'SKETCH_BOX_PREVIEW_CORE_POLICY',
+    'SKETCH_BOX_ROD_PREVIEW_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_PREVIEW_POLICY']),
 });
 const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
@@ -1063,11 +1076,6 @@ const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
     'presets.storageRodYFactor',
     'rods',
     'rods.defaultYOffsetM',
-  ]),
-  'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts': Object.freeze([
-    'rods',
-    'rods.radialSegments',
-    'rods.radiusM',
   ]),
   'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts': Object.freeze([
     'shelves',
@@ -1107,10 +1115,6 @@ const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts': Object.freeze([
     'shelves',
     'shelves.regularDepthM',
-  ]),
-  'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_rod.ts': Object.freeze([
-    'rods',
-    'rods.radiusM',
   ]),
   'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts': Object.freeze([
     'shelves',

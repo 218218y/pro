@@ -24,17 +24,17 @@ test('Sketch Box Storage Preview pair ledger and layer transition are exact', ()
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(fs.readFileSync(path.join(root, 'tools/wp_layer_baseline.json'), 'utf8'));
 
-  assert.equal(baseline.migrationBudgets.length, 87);
+  assert.equal(baseline.migrationBudgets.length, 89);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 85)),
     '8c99874fb35870ef203054a2f461c052a975194229e11e5c767153c68c32a864'
   );
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 87)),
     '32edb97832df2b9f8191fbe9f2bc6b19721216aa1e9efd42fcd8a1d126120adb'
   );
 
-  assert.deepEqual(baseline.migrationBudgets.slice(85), [
+  assert.deepEqual(baseline.migrationBudgets.slice(85, 87), [
     {
       from: 'builder',
       to: 'shared',
@@ -111,17 +111,17 @@ test('Sketch Box Storage Preview pair ledger and layer transition are exact', ()
   const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-21' });
   assert.equal(report.ok, true);
   const observed = new Map(graph.edges.map(edge => [`${edge.from}>${edge.to}`, edge.importCount]));
-  assert.equal(observed.get('builder>shared'), 266);
-  assert.equal(observed.get('services>shared'), 205);
+  assert.equal(observed.get('builder>shared'), 267);
+  assert.equal(observed.get('services>shared'), 206);
   assert.equal(
     report.migrationBudgets.filter(entry => entry.from === 'builder' && entry.to === 'shared' && entry.active)
       .length,
-    47
+    48
   );
   assert.equal(
     report.migrationBudgets.filter(
       entry => entry.from === 'services' && entry.to === 'shared' && entry.active
     ).length,
-    38
+    39
   );
 });
