@@ -1,4 +1,7 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  SKETCH_BOX_FREE_REMOVE_POLICY,
+  SKETCH_BOX_FREE_WALL_SNAP_POLICY,
+} from '../../shared/dimensions/sketch_box_free_placement_policy.js';
 import { asFiniteNumberOrNaN } from './canvas_picking_sketch_free_box_contracts.js';
 
 export function resolveSketchFreeBoxOutsideWardrobeSnapX(args: {
@@ -25,10 +28,12 @@ export function resolveSketchFreeBoxOutsideWardrobeSnapX(args: {
   const wardrobeMinX = wardrobeCenterX - wardrobeWidth / 2;
   const wardrobeMaxX = wardrobeCenterX + wardrobeWidth / 2;
   const halfW = previewW / 2;
-  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
   const wallBand = Math.max(
-    dims.wallSnapBandMinM,
-    Math.min(dims.wallSnapBandMaxM, previewW * dims.wallSnapBandWidthRatio)
+    SKETCH_BOX_FREE_WALL_SNAP_POLICY.wallSnapBandMinM,
+    Math.min(
+      SKETCH_BOX_FREE_WALL_SNAP_POLICY.wallSnapBandMaxM,
+      previewW * SKETCH_BOX_FREE_WALL_SNAP_POLICY.wallSnapBandWidthRatio
+    )
   );
 
   if (planeX <= wardrobeMinX + wallBand) return wardrobeMinX - halfW;
@@ -69,16 +74,27 @@ export function isWithinSketchFreeBoxRemoveZone(args: {
   const dy = Math.abs(pointY - boxCenterY);
   if (dx > halfW || dy > halfH) return false;
 
-  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
   const insetX = Math.min(
-    halfW * dims.removeInsetHalfRatioMax,
-    Math.max(dims.removeInsetMinM, Math.min(dims.removeInsetMaxM, boxW * dims.removeInsetRatio))
+    halfW * SKETCH_BOX_FREE_REMOVE_POLICY.removeInsetHalfRatioMax,
+    Math.max(
+      SKETCH_BOX_FREE_REMOVE_POLICY.removeInsetMinM,
+      Math.min(
+        SKETCH_BOX_FREE_REMOVE_POLICY.removeInsetMaxM,
+        boxW * SKETCH_BOX_FREE_REMOVE_POLICY.removeInsetRatio
+      )
+    )
   );
   const insetY = Math.min(
-    halfH * dims.removeInsetHalfRatioMax,
-    Math.max(dims.removeInsetMinM, Math.min(dims.removeInsetMaxM, boxH * dims.removeInsetRatio))
+    halfH * SKETCH_BOX_FREE_REMOVE_POLICY.removeInsetHalfRatioMax,
+    Math.max(
+      SKETCH_BOX_FREE_REMOVE_POLICY.removeInsetMinM,
+      Math.min(
+        SKETCH_BOX_FREE_REMOVE_POLICY.removeInsetMaxM,
+        boxH * SKETCH_BOX_FREE_REMOVE_POLICY.removeInsetRatio
+      )
+    )
   );
-  const removeHalfW = Math.max(dims.removeHalfMinM, halfW - insetX);
-  const removeHalfH = Math.max(dims.removeHalfMinM, halfH - insetY);
+  const removeHalfW = Math.max(SKETCH_BOX_FREE_REMOVE_POLICY.removeHalfMinM, halfW - insetX);
+  const removeHalfH = Math.max(SKETCH_BOX_FREE_REMOVE_POLICY.removeHalfMinM, halfH - insetY);
   return dx <= removeHalfW && dy <= removeHalfH;
 }

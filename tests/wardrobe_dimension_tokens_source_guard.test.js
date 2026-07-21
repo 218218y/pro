@@ -99,9 +99,6 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
 
   for (const rel of [
     'esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts',
-    'esm/native/services/canvas_picking_sketch_free_box_geometry_vertical.ts',
-    'esm/native/services/canvas_picking_sketch_free_box_geometry_zone.ts',
-    'esm/native/services/canvas_picking_sketch_free_box_placement_attach_candidates.ts',
     'esm/native/services/canvas_picking_sketch_box_runtime_geometry.ts',
     'esm/native/services/canvas_picking_sketch_box_door_preview.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
@@ -112,6 +109,42 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts',
   ]) {
     assertUsesToken(rel, 'SKETCH_BOX_DIMENSIONS');
+  }
+
+  const focusedFreePlacementConsumers = new Map([
+    [
+      'esm/native/services/canvas_picking_cell_dims_free_box.ts',
+      ['SKETCH_BOX_FREE_VERTICAL_POLICY', 'SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY'],
+    ],
+    ['esm/native/services/canvas_picking_sketch_free_box_gap.ts', ['SKETCH_BOX_FREE_PLACEMENT_GAP_POLICY']],
+    [
+      'esm/native/services/canvas_picking_sketch_free_box_geometry_vertical.ts',
+      ['SKETCH_BOX_FREE_VERTICAL_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_free_box_geometry_zone.ts',
+      ['SKETCH_BOX_FREE_REMOVE_POLICY', 'SKETCH_BOX_FREE_WALL_SNAP_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_free_box_placement_attach_candidates.ts',
+      ['SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY'],
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_free_box_placement_intent.ts',
+      ['SKETCH_BOX_FREE_ATTACH_INTENT_POLICY'],
+    ],
+  ]);
+  for (const [rel, symbols] of focusedFreePlacementConsumers) {
+    const source = read(rel);
+    assert.match(
+      source,
+      /from ['"]\.\.\/\.\.\/shared\/dimensions\/sketch_box_free_placement_policy\.js['"]/u,
+      `${rel} must import the canonical Free Placement owner`
+    );
+    assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared|SKETCH_BOX_DIMENSIONS/u);
+    assert.doesNotMatch(source, /SKETCH_BOX_FREE_PLACEMENT_POLICY/u);
+    assert.doesNotMatch(source, /import\s+\*|export\s+(?:\*|\{[^}]*\})\s+from/u);
+    for (const symbol of symbols) assertUsesToken(rel, symbol);
   }
 });
 
@@ -190,7 +223,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts',
     'esm/native/builder/render_preview_sketch_pipeline_linear.ts',
     'esm/native/builder/render_preview_sketch_pipeline_object_boxes.ts',
-    'esm/native/services/canvas_picking_cell_dims_free_box.ts',
     'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
     'esm/native/services/canvas_picking_click_manual_sketch_free_box.ts',
     'esm/native/services/canvas_picking_hover_clearance_measurements.ts',
@@ -213,13 +245,8 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_rod.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_storage.ts',
-    'esm/native/services/canvas_picking_sketch_free_box_gap.ts',
     'esm/native/services/canvas_picking_sketch_free_box_geometry_box.ts',
-    'esm/native/services/canvas_picking_sketch_free_box_geometry_vertical.ts',
-    'esm/native/services/canvas_picking_sketch_free_box_geometry_zone.ts',
     'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
-    'esm/native/services/canvas_picking_sketch_free_box_placement_attach_candidates.ts',
-    'esm/native/services/canvas_picking_sketch_free_box_placement_intent.ts',
     'esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts',
     'esm/native/services/canvas_picking_sketch_module_stack_preview_drawers.ts',
     'esm/native/services/canvas_picking_sketch_module_stack_preview_ext_drawers.ts',
@@ -239,8 +266,18 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 22);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 40);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 34);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 1);
+  const remainingFreePlacementConsumers = esmFiles.filter(
+    file =>
+      file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
+      /SKETCH_BOX_DIMENSIONS\.freePlacement/u.test(read(file))
+  );
+  assert.deepEqual(remainingFreePlacementConsumers.sort(), [
+    'esm/native/builder/render_interior_sketch_layout_geometry.ts',
+    'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts',
+    'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
+  ]);
   assert.equal(
     esmFiles.filter(
       file =>
@@ -338,12 +375,14 @@ test('[dimension tokens] sketch divider, attachment, and free-box measurement ov
     for (const symbol of symbols) assert.match(source, new RegExp(`\\b${symbol}\\b`, 'u'));
   }
 
-  for (const rel of [
+  assertUsesToken(
     'esm/native/services/canvas_picking_sketch_free_box_placement_intent.ts',
+    'SKETCH_BOX_FREE_ATTACH_INTENT_POLICY'
+  );
+  assertUsesToken(
     'esm/native/services/canvas_picking_sketch_free_box_gap.ts',
-  ]) {
-    assertUsesToken(rel, 'SKETCH_BOX_DIMENSIONS');
-  }
+    'SKETCH_BOX_FREE_PLACEMENT_GAP_POLICY'
+  );
 
   const freeBoxGap = read('esm/native/services/canvas_picking_sketch_free_box_gap.ts');
   assert.doesNotMatch(freeBoxGap, /return 0\.002/);

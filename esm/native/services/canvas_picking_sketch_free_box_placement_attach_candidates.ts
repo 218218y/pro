@@ -1,4 +1,4 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY } from '../../shared/dimensions/sketch_box_free_placement_policy.js';
 import { asFiniteNumberOrNaN } from './canvas_picking_sketch_free_box_contracts.js';
 import {
   addSketchFreeAttachIntentBias,
@@ -54,17 +54,34 @@ export function resolveSketchFreeBoxAttachPlacementCandidates(args: {
   const dx = pointX - targetCenterX;
   const dy = pointY - targetCenterY;
 
-  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
   const padX = Math.max(
-    dims.attachPadMinM,
-    Math.min(dims.attachPadMaxM, Math.max(targetW, previewW) * dims.attachPadSizeRatio)
+    SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY.attachPadMinM,
+    Math.min(
+      SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY.attachPadMaxM,
+      Math.max(targetW, previewW) * SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY.attachPadSizeRatio
+    )
   );
   const padY = Math.max(
-    dims.attachPadMinM,
-    Math.min(dims.attachPadMaxM, Math.max(targetH, previewH) * dims.attachPadSizeRatio)
+    SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY.attachPadMinM,
+    Math.min(
+      SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY.attachPadMaxM,
+      Math.max(targetH, previewH) * SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY.attachPadSizeRatio
+    )
   );
-  const edgeX = Math.min(targetHalfW, Math.max(dims.attachEdgeMinM, targetHalfW * dims.attachEdgeHalfRatio));
-  const edgeY = Math.min(targetHalfH, Math.max(dims.attachEdgeMinM, targetHalfH * dims.attachEdgeHalfRatio));
+  const edgeX = Math.min(
+    targetHalfW,
+    Math.max(
+      SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY.attachEdgeMinM,
+      targetHalfW * SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY.attachEdgeHalfRatio
+    )
+  );
+  const edgeY = Math.min(
+    targetHalfH,
+    Math.max(
+      SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY.attachEdgeMinM,
+      targetHalfH * SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY.attachEdgeHalfRatio
+    )
+  );
 
   const horizontalAlign = resolveSketchFreeSoftAttachAxisCenter({
     rawCenter: pointY,

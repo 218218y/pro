@@ -5,6 +5,14 @@ import {
   doesSketchFreeBoxPartiallyOverlapWardrobe,
   resolveSketchFreeBoxHoverPlacement,
 } from '../esm/native/services/canvas_picking_sketch_free_boxes.ts';
+import {
+  isWithinSketchFreeBoxRemoveZone,
+  resolveSketchFreeBoxOutsideWardrobeSnapX,
+} from '../esm/native/services/canvas_picking_sketch_free_box_geometry_zone.ts';
+import {
+  SKETCH_BOX_FREE_REMOVE_POLICY,
+  SKETCH_BOX_FREE_WALL_SNAP_POLICY,
+} from '../esm/shared/dimensions/sketch_box_free_placement_policy.ts';
 
 type HoverArgs = Parameters<typeof resolveSketchFreeBoxHoverPlacement>[0];
 
@@ -167,4 +175,103 @@ test('free-box placement at the no-main workspace floor is not blocked as under-
   assert.ok(placement);
   assert.equal(placement.op, 'add');
   assert.ok(Math.abs(placement.previewY - 0.206) <= 1e-9);
+});
+
+test('focused wall-snap policy preserves left, right, outside-band, and invalid behavior', () => {
+  const previewW = 0.1;
+  const wallBand = Math.max(
+    SKETCH_BOX_FREE_WALL_SNAP_POLICY.wallSnapBandMinM,
+    Math.min(
+      SKETCH_BOX_FREE_WALL_SNAP_POLICY.wallSnapBandMaxM,
+      previewW * SKETCH_BOX_FREE_WALL_SNAP_POLICY.wallSnapBandWidthRatio
+    )
+  );
+  const leftThreshold = -1 + wallBand;
+  const rightThreshold = 1 - wallBand;
+  assert.equal(
+    resolveSketchFreeBoxOutsideWardrobeSnapX({
+      planeX: leftThreshold,
+      previewW,
+      wardrobeCenterX: 0,
+      wardrobeWidth: 2,
+    }),
+    -1.05
+  );
+  assert.equal(
+    resolveSketchFreeBoxOutsideWardrobeSnapX({
+      planeX: rightThreshold,
+      previewW,
+      wardrobeCenterX: 0,
+      wardrobeWidth: 2,
+    }),
+    1.05
+  );
+  assert.equal(
+    resolveSketchFreeBoxOutsideWardrobeSnapX({
+      planeX: 0,
+      previewW,
+      wardrobeCenterX: 0,
+      wardrobeWidth: 2,
+    }),
+    null
+  );
+  assert.equal(
+    resolveSketchFreeBoxOutsideWardrobeSnapX({
+      planeX: Number.NaN,
+      previewW,
+      wardrobeCenterX: 0,
+      wardrobeWidth: 2,
+    }),
+    null
+  );
+});
+
+test('focused remove-zone policy preserves inset clamps and boundary comparisons', () => {
+  const boxW = 0.4;
+  const boxH = 0.4;
+  const halfW = boxW / 2;
+  const inset = Math.min(
+    halfW * SKETCH_BOX_FREE_REMOVE_POLICY.removeInsetHalfRatioMax,
+    Math.max(
+      SKETCH_BOX_FREE_REMOVE_POLICY.removeInsetMinM,
+      Math.min(
+        SKETCH_BOX_FREE_REMOVE_POLICY.removeInsetMaxM,
+        boxW * SKETCH_BOX_FREE_REMOVE_POLICY.removeInsetRatio
+      )
+    )
+  );
+  const boundary = Math.max(SKETCH_BOX_FREE_REMOVE_POLICY.removeHalfMinM, halfW - inset);
+  assert.equal(
+    isWithinSketchFreeBoxRemoveZone({
+      pointX: boundary,
+      pointY: boundary,
+      boxCenterX: 0,
+      boxCenterY: 0,
+      boxW,
+      boxH,
+    }),
+    true
+  );
+  assert.equal(
+    isWithinSketchFreeBoxRemoveZone({
+      pointX: boundary + 1e-6,
+      pointY: 0,
+      boxCenterX: 0,
+      boxCenterY: 0,
+      boxW,
+      boxH,
+    }),
+    false
+  );
+  assert.equal(
+    isWithinSketchFreeBoxRemoveZone({
+      pointX: 0,
+      pointY: 0,
+      boxCenterX: 0,
+      boxCenterY: 0,
+      boxW: 0,
+      boxH,
+    }),
+    false
+  );
 });

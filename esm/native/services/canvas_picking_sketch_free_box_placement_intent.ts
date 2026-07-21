@@ -1,4 +1,4 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_FREE_ATTACH_INTENT_POLICY } from '../../shared/dimensions/sketch_box_free_placement_policy.js';
 import { asFiniteNumberOrNaN } from './canvas_picking_sketch_free_box_contracts.js';
 
 export function resolveSketchFreeAttachIntent(args: {
@@ -30,7 +30,7 @@ export function resolveSketchFreeAttachIntent(args: {
     return null;
   }
 
-  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
+  const dims = SKETCH_BOX_FREE_ATTACH_INTENT_POLICY;
   const previewHalfW = previewW / 2;
   const previewHalfH = previewH / 2;
   const minOverlap = Math.max(
@@ -104,7 +104,7 @@ export function addSketchFreeAttachIntentBias(args: {
   if (!Number.isFinite(score) || !preferredFixedAxis || args.fixedAxis === preferredFixedAxis) return score;
   const previewW = asFiniteNumberOrNaN(args.previewW);
   const previewH = asFiniteNumberOrNaN(args.previewH);
-  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
+  const dims = SKETCH_BOX_FREE_ATTACH_INTENT_POLICY;
   const bias = Math.max(
     dims.attachIntentScoreBiasMinM,
     Math.min(dims.attachIntentScoreBiasMaxM, Math.max(previewW, previewH) * dims.attachIntentScoreBiasRatio)

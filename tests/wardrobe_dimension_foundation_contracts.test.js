@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 105, statements: 105 }),
+  'static-import': Object.freeze({ importers: 99, statements: 99 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 107, statements: 108 }),
+  total: Object.freeze({ importers: 101, statements: 102 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -825,6 +825,29 @@ const APPROVED_SKETCH_BOX_DIMENSION_OVERLAY_OWNER_IMPORTS = Object.freeze({
     'SKETCH_BOX_DIMENSION_RENDER_POLICY',
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_DIMENSION_OVERLAY_POLICY']),
+});
+const APPROVED_SKETCH_BOX_FREE_PLACEMENT_OWNER_IMPORTS = Object.freeze({
+  'esm/native/services/canvas_picking_cell_dims_free_box.ts': Object.freeze([
+    'SKETCH_BOX_FREE_VERTICAL_POLICY',
+    'SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_box_gap.ts': Object.freeze([
+    'SKETCH_BOX_FREE_PLACEMENT_GAP_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_box_geometry_vertical.ts': Object.freeze([
+    'SKETCH_BOX_FREE_VERTICAL_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_box_geometry_zone.ts': Object.freeze([
+    'SKETCH_BOX_FREE_REMOVE_POLICY',
+    'SKETCH_BOX_FREE_WALL_SNAP_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_box_placement_attach_candidates.ts': Object.freeze([
+    'SKETCH_BOX_FREE_ATTACH_CANDIDATE_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_box_placement_intent.ts': Object.freeze([
+    'SKETCH_BOX_FREE_ATTACH_INTENT_POLICY',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_FREE_PLACEMENT_POLICY']),
 });
 const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/core_storage_compute_custom.ts': Object.freeze(['rods', 'rods.defaultYOffsetM']),
@@ -3304,6 +3327,32 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
       Object.keys(APPROVED_SKETCH_BOX_DIMENSION_OVERLAY_OWNER_IMPORTS).map(file => [file, 1])
     ),
     'Sketch Box Dimension Overlay migration must retain exactly one owner statement per approved importer'
+  );
+
+  const sketchBoxFreePlacementOwnerImports = collectOwnerImports(
+    analyzedSources,
+    'sketch_box_free_placement_policy.js'
+  );
+  assertApprovedSymbolUsage(
+    sketchBoxFreePlacementOwnerImports,
+    APPROVED_SKETCH_BOX_FREE_PLACEMENT_OWNER_IMPORTS,
+    'Sketch Box Free Placement owner consumer allowlist'
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(sketchBoxFreePlacementOwnerImports)
+        .filter(([, symbols]) => symbols.includes('SKETCH_BOX_FREE_PLACEMENT_POLICY'))
+        .map(([file]) => [file, ['SKETCH_BOX_FREE_PLACEMENT_POLICY']])
+    ),
+    {
+      'esm/shared/wardrobe_dimension_tokens_shared.ts': ['SKETCH_BOX_FREE_PLACEMENT_POLICY'],
+    },
+    'SKETCH_BOX_FREE_PLACEMENT_POLICY aggregate is imported directly only by the legacy facade'
+  );
+  assert.deepEqual(
+    collectOwnerDependencyStatements(analyzedSources, 'sketch_box_free_placement_policy.js'),
+    Object.fromEntries(Object.keys(APPROVED_SKETCH_BOX_FREE_PLACEMENT_OWNER_IMPORTS).map(file => [file, 1])),
+    'Sketch Box Free Placement migration must retain exactly one owner statement per approved importer'
   );
 
   assertApprovedSymbolUsage(

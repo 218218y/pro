@@ -325,3 +325,54 @@ test('[cell-dims/free-box] applies from an internal drawer hit that only carries
   assert.equal(freeBox.depthM, 0.4);
   assert.match(calls.toasts[0]?.message || '', /הוחלו מידות מיוחדות על הקופסא/);
 });
+
+test('[cell-dims/free-box] workspace clamp preserves the minimum pad for a tiny floor-aligned box', () => {
+  const { App, state, freeBox } = createFreeBoxHarness({
+    absY: 0.011,
+    heightM: 0.02,
+  });
+  state.ui.raw.cellDimsWidth = '';
+  state.ui.raw.cellDimsDepth = '';
+  state.ui.raw.cellDimsHeight = 3;
+
+  handleCanvasCellDimsClick({
+    App,
+    foundModuleIndex: 0,
+    foundPartId: 'sketch_box_free_0_free-1',
+    hitUserData: {
+      __wpSketchFreePlacement: true,
+      __wpSketchBoxId: 'free-1',
+      __wpSketchModuleKey: 0,
+    },
+    isBottomStack: false,
+    ensureCornerCellConfigRef: () => null,
+  });
+
+  assert.equal(freeBox.heightM, 0.03);
+  assert.ok(Math.abs(Number(freeBox.absY) - 0.016) <= 1e-9);
+});
+
+test('[cell-dims/free-box] unchanged dimensions remain a structural no-op after the focused-owner migration', () => {
+  const { App, state, calls, freeBox } = createFreeBoxHarness();
+  state.ui.raw.cellDimsWidth = 60;
+  state.ui.raw.cellDimsHeight = 80;
+  state.ui.raw.cellDimsDepth = 35;
+
+  handleCanvasCellDimsClick({
+    App,
+    foundModuleIndex: 0,
+    foundPartId: 'sketch_box_free_0_free-1',
+    hitUserData: {
+      __wpSketchFreePlacement: true,
+      __wpSketchBoxId: 'free-1',
+      __wpSketchModuleKey: 0,
+    },
+    isBottomStack: false,
+    ensureCornerCellConfigRef: () => null,
+  });
+
+  assert.equal(freeBox.widthM, 0.6);
+  assert.equal(freeBox.heightM, 0.8);
+  assert.equal(freeBox.depthM, 0.35);
+  assert.equal(calls.toasts.length, 0);
+});

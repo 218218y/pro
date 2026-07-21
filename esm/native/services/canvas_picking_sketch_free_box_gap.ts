@@ -1,4 +1,4 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_FREE_PLACEMENT_GAP_POLICY } from '../../shared/dimensions/sketch_box_free_placement_policy.js';
 import { asFiniteNumberOrNaN } from './canvas_picking_sketch_free_box_contracts.js';
 
 // Keep free boxes visually tight so grouped width labels stay truthful (e.g. 60 + 60 => 120),
@@ -7,7 +7,14 @@ export function resolveSketchFreeBoxPlacementGap(args: { boxW: number; boxH: num
   const boxW = asFiniteNumberOrNaN(args.boxW);
   const boxH = asFiniteNumberOrNaN(args.boxH);
   const minSpan = Math.min(boxW, boxH);
-  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
-  if (!Number.isFinite(minSpan) || !(minSpan > 0)) return dims.placementGapDefaultM;
-  return Math.max(dims.placementGapMinM, Math.min(dims.placementGapMaxM, minSpan * dims.placementGapRatio));
+  if (!Number.isFinite(minSpan) || !(minSpan > 0)) {
+    return SKETCH_BOX_FREE_PLACEMENT_GAP_POLICY.placementGapDefaultM;
+  }
+  return Math.max(
+    SKETCH_BOX_FREE_PLACEMENT_GAP_POLICY.placementGapMinM,
+    Math.min(
+      SKETCH_BOX_FREE_PLACEMENT_GAP_POLICY.placementGapMaxM,
+      minSpan * SKETCH_BOX_FREE_PLACEMENT_GAP_POLICY.placementGapRatio
+    )
+  );
 }

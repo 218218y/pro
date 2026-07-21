@@ -1,6 +1,9 @@
 import type { AppContainer, ModuleConfigLike, UnknownRecord } from '../../../types';
 
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  SKETCH_BOX_FREE_VERTICAL_POLICY,
+  SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY,
+} from '../../shared/dimensions/sketch_box_free_placement_policy.js';
 import {
   assignHexCellToConfig,
   clearHexCellFromConfig,
@@ -96,10 +99,12 @@ function readDimensionM(box: SketchBoxLike, spec: DimSpec): number | null {
 }
 
 function resolveFreeBoxWorkspacePad(boxHeightM: number): number {
-  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
   return Math.min(
-    dims.workspaceClampPadMaxM,
-    Math.max(dims.workspaceClampPadMinM, boxHeightM * dims.workspaceClampPadHeightRatio)
+    SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY.workspaceClampPadMaxM,
+    Math.max(
+      SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY.workspaceClampPadMinM,
+      boxHeightM * SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY.workspaceClampPadHeightRatio
+    )
   );
 }
 
@@ -113,7 +118,7 @@ function clampFreeBoxAboveRoomFloorAfterHeightChange(args: {
   const newHeightM = readDimensionM(box, heightSpec);
   if (centerY == null || newHeightM == null || !(newHeightM > 0)) return false;
 
-  const roomFloorY = SKETCH_BOX_DIMENSIONS.freePlacement.roomFloorY;
+  const roomFloorY = SKETCH_BOX_FREE_VERTICAL_POLICY.roomFloorY;
   const newPad = resolveFreeBoxWorkspacePad(newHeightM);
   const newFloorCenterY = roomFloorY + newPad + newHeightM / 2;
   const oldPad = oldHeightM != null && oldHeightM > 0 ? resolveFreeBoxWorkspacePad(oldHeightM) : newPad;

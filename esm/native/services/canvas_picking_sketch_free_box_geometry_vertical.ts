@@ -1,4 +1,4 @@
-import { SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SKETCH_BOX_FREE_VERTICAL_POLICY } from '../../shared/dimensions/sketch_box_free_placement_policy.js';
 import { asFiniteNumberOrNaN, asNumberOrNull } from './canvas_picking_sketch_free_box_contracts.js';
 
 export function clampSketchFreeBoxCenterY(args: {
@@ -29,16 +29,20 @@ export function clampSketchFreeBoxCenterY(args: {
 
 export function getSketchFreePlacementVerticalSlack(wardrobeHeight: number): number {
   const height = asFiniteNumberOrNaN(wardrobeHeight);
-  const dims = SKETCH_BOX_DIMENSIONS.freePlacement;
-  if (!Number.isFinite(height) || !(height > 0)) return dims.verticalSlackDefaultM;
+  if (!Number.isFinite(height) || !(height > 0)) {
+    return SKETCH_BOX_FREE_VERTICAL_POLICY.verticalSlackDefaultM;
+  }
   return Math.max(
-    dims.verticalSlackMinM,
-    Math.min(dims.verticalSlackMaxM, height * dims.verticalSlackHeightRatio)
+    SKETCH_BOX_FREE_VERTICAL_POLICY.verticalSlackMinM,
+    Math.min(
+      SKETCH_BOX_FREE_VERTICAL_POLICY.verticalSlackMaxM,
+      height * SKETCH_BOX_FREE_VERTICAL_POLICY.verticalSlackHeightRatio
+    )
   );
 }
 
 export function getSketchFreePlacementRoomFloorY(): number {
-  return SKETCH_BOX_DIMENSIONS.freePlacement.roomFloorY;
+  return SKETCH_BOX_FREE_VERTICAL_POLICY.roomFloorY;
 }
 
 export function clampSketchFreeBoxCenterYToWorkspace(args: {
