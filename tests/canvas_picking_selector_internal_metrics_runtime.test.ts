@@ -6,6 +6,8 @@ import {
   readSelectorEnvelopeFromObject,
   resolveSelectorInternalMetrics,
 } from '../esm/native/services/canvas_picking_selector_internal_metrics.ts';
+import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
+import { SKETCH_BOX_SELECTOR_GEOMETRY_POLICY } from '../esm/shared/dimensions/sketch_box_geometry_policy.ts';
 
 test('selector-envelope reader lifts geometry and position fields into a canonical metrics envelope', () => {
   const envelope = readSelectorEnvelopeFromObject({
@@ -88,4 +90,33 @@ test('selector internal metrics prefer explicit info values and otherwise derive
     internalDepth: 0.44,
     internalZ: 0.08,
   });
+});
+
+test('selector internal metrics keep focused-owner defaults and best-effort malformed-value behavior', () => {
+  const metrics = resolveSelectorInternalMetrics({
+    info: {
+      woodThick: '0.03',
+      innerW: 0,
+      internalCenterX: '0.2',
+      internalDepth: Number.POSITIVE_INFINITY,
+      internalZ: Number.NaN,
+    },
+    selectorEnvelope: {
+      positionX: -0.4,
+      positionZ: 0.2,
+      width: 0.04,
+      depth: 0.03,
+    },
+  });
+
+  assert.equal(metrics.woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
+  assert.equal(metrics.innerW, SKETCH_BOX_SELECTOR_GEOMETRY_POLICY.selectorInnerMinM);
+  assert.equal(metrics.internalCenterX, -0.4);
+  assert.equal(metrics.internalDepth, SKETCH_BOX_SELECTOR_GEOMETRY_POLICY.selectorInnerMinM);
+  assert.equal(metrics.internalZ, 0.2 - SKETCH_BOX_SELECTOR_GEOMETRY_POLICY.selectorCenterZInsetM);
+  assert.equal(typeof metrics.woodThick, 'number');
+  assert.equal(typeof metrics.innerW, 'number');
+  assert.equal(typeof metrics.internalCenterX, 'number');
+  assert.equal(typeof metrics.internalDepth, 'number');
+  assert.equal(typeof metrics.internalZ, 'number');
 });

@@ -1,7 +1,8 @@
 import type { UnknownRecord } from '../../../types';
 
 import { asRecord } from '../runtime/record.js';
-import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import { SKETCH_BOX_SELECTOR_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
 
 type RecordMap = UnknownRecord;
 
@@ -106,10 +107,10 @@ export function resolveSelectorInternalMetrics(args: {
   const {
     info,
     selectorEnvelope = null,
-    woodThickDefault = MATERIAL_DIMENSIONS.wood.thicknessM,
-    minInnerSize = SKETCH_BOX_DIMENSIONS.geometry.selectorInnerMinM,
-    depthClearance = SKETCH_BOX_DIMENSIONS.geometry.selectorDepthClearanceM,
-    centerZInset = SKETCH_BOX_DIMENSIONS.geometry.selectorCenterZInsetM,
+    woodThickDefault = MATERIAL_THICKNESS_POLICY.wood.thicknessM,
+    minInnerSize = SKETCH_BOX_SELECTOR_GEOMETRY_POLICY.selectorInnerMinM,
+    depthClearance = SKETCH_BOX_SELECTOR_GEOMETRY_POLICY.selectorDepthClearanceM,
+    centerZInset = SKETCH_BOX_SELECTOR_GEOMETRY_POLICY.selectorCenterZInsetM,
   } = args;
 
   let woodThick = readFiniteNumber(info, 'woodThick') ?? woodThickDefault;

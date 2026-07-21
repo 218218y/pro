@@ -1,5 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { transformSync } from 'esbuild';
+
+import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../esm/shared/dimensions/sketch_box_geometry_policy.ts';
+import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
 
 import {
   SHELF_GROUP_PART_ID,
@@ -1099,4 +1106,232 @@ test('free-placement sketch box inset doors reserve front depth for internal dra
   assert.ok(Math.abs(Number(lower.depth) - (usableDepth - 0.02)) < 1e-9);
   assert.ok(Math.abs(Number(lower.z) - (innerBackZ + usableDepth / 2)) < 1e-9);
   assert.ok(Number(lower.z) + Number(lower.depth) / 2 <= doorBackZ - 0.004 + 1e-9);
+});
+
+type DrawerSpanResult = {
+  segment: Record<string, number> | null;
+  innerW: number;
+  innerCenterX: number;
+  outerW: number;
+  outerCenterX: number;
+  faceW: number;
+  faceCenterX: number;
+};
+
+type DrawerSpanHarness = {
+  order: string[];
+  item: Record<string, unknown> | null;
+  segment: Record<string, number> | null;
+  shellResult: Record<string, unknown>;
+  contentsResult: DrawerSpanResult | null;
+  frontsResult: DrawerSpanResult | null;
+  geometryPolicy: typeof SKETCH_BOX_SHELL_GEOMETRY_POLICY;
+  previewPolicy: typeof SKETCH_BOX_DOOR_PREVIEW_POLICY;
+};
+
+function dataModule(source: string): string {
+  return `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
+}
+
+async function loadInstrumentedSketchBoxRenderer(): Promise<{
+  renderInteriorSketchBoxes(args: Record<string, unknown>): unknown;
+}> {
+  const sourcePath = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../esm/native/builder/render_interior_sketch_boxes.ts'
+  );
+  let source = fs.readFileSync(sourcePath, 'utf8');
+  const modules = new Map<string, string>([
+    [
+      '../../shared/dimensions/sketch_box_geometry_policy.js',
+      dataModule(
+        `export const SKETCH_BOX_SHELL_GEOMETRY_POLICY = ${JSON.stringify(SKETCH_BOX_SHELL_GEOMETRY_POLICY)};`
+      ),
+    ],
+    [
+      '../../shared/dimensions/sketch_box_preview_policy.js',
+      dataModule(
+        `export const SKETCH_BOX_DOOR_PREVIEW_POLICY = ${JSON.stringify(SKETCH_BOX_DOOR_PREVIEW_POLICY)};`
+      ),
+    ],
+    [
+      './render_interior_sketch_boxes_shell.js',
+      dataModule(
+        "export function renderSketchBoxShell() { const h = globalThis.__wpDrawerSpanHarness; h.order.push('Shell'); return h.shellResult; }"
+      ),
+    ],
+    [
+      './render_interior_sketch_boxes_contents.js',
+      dataModule(
+        "export function renderSketchBoxContents(args) { const h = globalThis.__wpDrawerSpanHarness; h.order.push('Contents'); h.contentsResult = args.resolveBoxDrawerSpan(h.item); }"
+      ),
+    ],
+    [
+      './render_interior_sketch_boxes_fronts.js',
+      dataModule(
+        "export function renderSketchBoxFronts(args) { const h = globalThis.__wpDrawerSpanHarness; h.order.push('Fronts'); h.frontsResult = args.resolveBoxDrawerSpan(h.item); }"
+      ),
+    ],
+    [
+      './render_interior_sketch_layout.js',
+      dataModule(
+        'export function readSketchBoxDividers() { return []; } export function readSketchBoxHorizontalDividers() { return []; } export function resolveSketchBoxSegmentForContent() { return globalThis.__wpDrawerSpanHarness.segment; }'
+      ),
+    ],
+  ]);
+  for (const [specifier, replacement] of modules) {
+    source = source.replaceAll(`'${specifier}'`, `'${replacement}'`);
+  }
+  const compiled = transformSync(source, {
+    loader: 'ts',
+    format: 'esm',
+    target: 'es2022',
+    sourcefile: sourcePath,
+  }).code;
+  return (await import(`${dataModule(compiled)}#drawer-span-runtime`)) as {
+    renderInteriorSketchBoxes(args: Record<string, unknown>): unknown;
+  };
+}
+
+function expectedDrawerSpan(args: {
+  segment: Record<string, number> | null;
+  woodThick: number;
+  edgeEpsilon: number;
+}): Omit<DrawerSpanResult, 'segment'> {
+  const innerLeft = -0.5;
+  const innerRight = 0.5;
+  const segmentLeft = args.segment?.leftX ?? innerLeft;
+  const segmentRight = args.segment?.rightX ?? innerRight;
+  const leftExt = Math.abs(segmentLeft - innerLeft) <= args.edgeEpsilon ? args.woodThick : args.woodThick / 2;
+  const rightExt =
+    Math.abs(segmentRight - innerRight) <= args.edgeEpsilon ? args.woodThick : args.woodThick / 2;
+  const outerLeft = segmentLeft - leftExt;
+  const outerRight = segmentRight + rightExt;
+  const outerWidth = Math.max(SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterWidthM, outerRight - outerLeft);
+  return {
+    innerW: args.segment?.width ?? 1,
+    innerCenterX: args.segment?.centerX ?? 0,
+    outerW: outerWidth,
+    outerCenterX: (outerLeft + outerRight) / 2,
+    faceW: outerWidth,
+    faceCenterX: (outerLeft + outerRight) / 2,
+  };
+}
+
+test('renderInteriorSketchBoxes preserves drawer-span edge extensions, epsilon boundaries, minimum widths, and render order', async () => {
+  const renderer = await loadInstrumentedSketchBoxRenderer();
+  const woodThick = 0.018;
+  const epsilon = SKETCH_BOX_DOOR_PREVIEW_POLICY.doorEdgeEpsilonM;
+  const shellState = {
+    box: {},
+    centerY: 0,
+    sideH: 1,
+    innerBottomY: -0.5,
+    innerTopY: 0.5,
+    geometry: { centerX: 0, innerW: 1 },
+  };
+  const harness: DrawerSpanHarness = {
+    order: [],
+    item: { xNorm: 0.5 },
+    segment: null,
+    shellResult: { state: shellState, absEntry: null },
+    contentsResult: null,
+    frontsResult: null,
+    geometryPolicy: SKETCH_BOX_SHELL_GEOMETRY_POLICY,
+    previewPolicy: SKETCH_BOX_DOOR_PREVIEW_POLICY,
+  };
+  const globalWithHarness = globalThis as typeof globalThis & { __wpDrawerSpanHarness?: DrawerSpanHarness };
+  globalWithHarness.__wpDrawerSpanHarness = harness;
+
+  const run = (
+    segment: Record<string, number> | null,
+    item: Record<string, unknown> | null = { xNorm: 0.5 }
+  ) => {
+    harness.order = [];
+    harness.segment = segment;
+    harness.item = item;
+    harness.contentsResult = null;
+    harness.frontsResult = null;
+    renderer.renderInteriorSketchBoxes({
+      boxes: [{}],
+      woodThick,
+      App: {},
+      measureWardrobeLocalBox: () => null,
+    });
+    assert.deepEqual(harness.order, ['Shell', 'Contents', 'Fronts']);
+    assert.deepEqual(harness.frontsResult, harness.contentsResult);
+    assert.ok(harness.contentsResult);
+    return harness.contentsResult;
+  };
+
+  try {
+    const cases = [
+      {
+        name: 'both edges',
+        segment: { leftX: -0.5, rightX: 0.5, width: 1, centerX: 0, index: 0, xNorm: 0.5 },
+      },
+      {
+        name: 'left edge only',
+        segment: { leftX: -0.5, rightX: 0.2, width: 0.7, centerX: -0.15, index: 0, xNorm: 0.35 },
+      },
+      {
+        name: 'right edge only',
+        segment: { leftX: -0.2, rightX: 0.5, width: 0.7, centerX: 0.15, index: 1, xNorm: 0.65 },
+      },
+      {
+        name: 'internal',
+        segment: { leftX: -0.2, rightX: 0.2, width: 0.4, centerX: 0, index: 1, xNorm: 0.5 },
+      },
+    ];
+    for (const fixture of cases) {
+      const actual = run(fixture.segment);
+      const expected = expectedDrawerSpan({ segment: fixture.segment, woodThick, edgeEpsilon: epsilon });
+      assert.deepEqual(actual, { segment: fixture.segment, ...expected }, fixture.name);
+    }
+
+    const fallback = run(null, null);
+    assert.deepEqual(fallback, {
+      segment: null,
+      ...expectedDrawerSpan({ segment: null, woodThick, edgeEpsilon: epsilon }),
+    });
+
+    shellState.geometry.centerX = 0.5;
+    for (const [label, distance, expectsFull] of [
+      ['below', epsilon - 1e-9, true],
+      ['exact', epsilon, true],
+      ['above', epsilon + 1e-9, false],
+    ] as const) {
+      const segment = {
+        leftX: distance,
+        rightX: 0.7,
+        width: 0.7 - distance,
+        centerX: (distance + 0.7) / 2,
+        index: 1,
+        xNorm: 0.35,
+      };
+      const actual = run(segment);
+      const expectedLeftExt = expectsFull ? woodThick : woodThick / 2;
+      const expectedOuterLeft = segment.leftX - expectedLeftExt;
+      const expectedOuterRight = segment.rightX + woodThick / 2;
+      assert.ok(Math.abs(actual.outerW - (expectedOuterRight - expectedOuterLeft)) < 1e-12, label);
+      assert.ok(Math.abs(actual.outerCenterX - (expectedOuterLeft + expectedOuterRight) / 2) < 1e-12, label);
+    }
+    shellState.geometry.centerX = 0;
+
+    const tiny = {
+      leftX: -0.001,
+      rightX: 0.001,
+      width: 0.002,
+      centerX: 0,
+      index: 0,
+      xNorm: 0.5,
+    };
+    const minimum = run(tiny);
+    assert.equal(minimum.outerW, SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterWidthM);
+    assert.equal(minimum.faceW, SKETCH_BOX_SHELL_GEOMETRY_POLICY.minOuterWidthM);
+    assert.equal(minimum.outerCenterX, 0);
+    assert.equal(minimum.faceCenterX, 0);
+  } finally {
+    delete globalWithHarness.__wpDrawerSpanHarness;
+  }
 });

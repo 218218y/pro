@@ -1,4 +1,5 @@
-import { MATERIAL_DIMENSIONS, SKETCH_BOX_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
 import type { SketchBoxContentCommand } from './canvas_picking_sketch_box_content_command.js';
 import {
   readSketchBoxDividers,
@@ -23,14 +24,14 @@ function resolveSegmentContext(
 ) {
   const boxCenterX = readNumber(box.absX) ?? 0;
   const boxCenterY = readNumber(box.absY) ?? 0;
-  const woodThick = MATERIAL_DIMENSIONS.wood.thicknessM;
+  const woodThick = MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const innerW = Math.max(
-    SKETCH_BOX_DIMENSIONS.geometry.minInnerDimensionM,
-    (readNumber(box.widthM) ?? SKETCH_BOX_DIMENSIONS.geometry.defaultOuterWidthM) - woodThick * 2
+    SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerDimensionM,
+    (readNumber(box.widthM) ?? SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterWidthM) - woodThick * 2
   );
   const innerH = Math.max(
-    SKETCH_BOX_DIMENSIONS.geometry.minInnerDimensionM,
-    (readNumber(box.heightM) ?? SKETCH_BOX_DIMENSIONS.geometry.defaultOuterHeightM) - woodThick * 2
+    SKETCH_BOX_SHELL_GEOMETRY_POLICY.minInnerDimensionM,
+    (readNumber(box.heightM) ?? SKETCH_BOX_SHELL_GEOMETRY_POLICY.defaultOuterHeightM) - woodThick * 2
   );
   const dividers = readSketchBoxDividers(box);
   const horizontalDividers = readSketchBoxHorizontalDividers(box);
