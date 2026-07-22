@@ -881,7 +881,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at ninety-two reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at ninety-five reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -1356,6 +1356,8 @@ test('project migration ledger stays exact at ninety-two reviewed statements wit
     true
   );
 
+  // Repository-wide totals are owned here. Historical migration tests below lock only
+  // their closed prefix and exact entries, so later additive migrations cannot stale them.
   const expectedEdges = new Map([
     ['builder>shared', { observed: 267, migration: 48, reviewed: 219, budget: 219 }],
     ['features>shared', { observed: 59, migration: 1, reviewed: 58, budget: 58 }],
@@ -1604,22 +1606,6 @@ test('repository Sketch Box module-context and surface-commit migration entries 
     assert.match(entry.reason, /(?:hover-module context|surface-commit shared helper)/u);
     assert.match(entry.removalCondition, /without reintroducing the legacy facade/u);
   }
-
-  const graph = collectLayerContractGraph({ root: repositoryRoot });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
-  assert.equal(report.ok, true);
-  const serviceEdge = graph.edges.find(entry => entry.from === 'services' && entry.to === 'shared');
-  const serviceRule = baseline.rules.find(entry => entry.from === 'services' && entry.to === 'shared');
-  assert.ok(serviceEdge);
-  assert.ok(serviceRule);
-  assert.equal(serviceEdge.importCount, 200);
-  assert.equal(serviceRule.maxImportCount, 167);
-  assert.equal(
-    report.migrationBudgets.filter(
-      entry => entry.from === 'services' && entry.to === 'shared' && entry.active
-    ).length,
-    33
-  );
 });
 
 test('layer contract proposal preserves exact migration budgets without raising reviewed ceilings', () => {
@@ -2884,21 +2870,6 @@ test('repository Sketch Box Door Geometry migration entry is exact and additive-
     removalCondition:
       'Remove this entry when a reviewed Sketch Box door-geometry composition seam eliminates the extra Hinged Door Mount statement without reintroducing the legacy facade.',
   });
-
-  const graph = collectLayerContractGraph({ root: repositoryRoot });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
-  assert.equal(report.ok, true);
-  const builderEdge = graph.edges.find(entry => entry.from === 'builder' && entry.to === 'shared');
-  const builderRule = baseline.rules.find(entry => entry.from === 'builder' && entry.to === 'shared');
-  assert.ok(builderEdge);
-  assert.ok(builderRule);
-  assert.equal(builderEdge.importCount, 267);
-  assert.equal(builderRule.maxImportCount, 219);
-  assert.equal(
-    report.migrationBudgets.filter(entry => entry.from === 'builder' && entry.to === 'shared' && entry.active)
-      .length,
-    47
-  );
 });
 
 test('repository interior rod-clearance ownership migration entries are exact and additive-only', () => {
@@ -3160,21 +3131,6 @@ test('repository Sketch Box Drawer Preview context pair migration entries are ex
         'Remove this entry when a reviewed Sketch external-drawer context seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade.',
     },
   ]);
-
-  const graph = collectLayerContractGraph({ root: repositoryRoot });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
-  assert.equal(report.ok, true);
-  const builderEdge = graph.edges.find(entry => entry.from === 'builder' && entry.to === 'shared');
-  const builderRule = baseline.rules.find(entry => entry.from === 'builder' && entry.to === 'shared');
-  assert.ok(builderEdge);
-  assert.ok(builderRule);
-  assert.equal(builderEdge.importCount, 267);
-  assert.equal(builderRule.maxImportCount, 219);
-  assert.equal(
-    report.migrationBudgets.filter(entry => entry.from === 'builder' && entry.to === 'shared' && entry.active)
-      .length,
-    47
-  );
 });
 
 test('repository Sketch Box Measurement stack-preview quartet migration entries are exact and additive-only', () => {
@@ -3269,22 +3225,6 @@ test('repository Sketch Box Measurement stack-preview quartet migration entries 
       'Sketch module'
     ),
   ]);
-
-  const graph = collectLayerContractGraph({ root: repositoryRoot });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
-  assert.equal(report.ok, true);
-  const servicesEdge = graph.edges.find(entry => entry.from === 'services' && entry.to === 'shared');
-  const servicesRule = baseline.rules.find(entry => entry.from === 'services' && entry.to === 'shared');
-  assert.ok(servicesEdge);
-  assert.ok(servicesRule);
-  assert.equal(servicesEdge.importCount, 208);
-  assert.equal(servicesRule.maxImportCount, 167);
-  assert.equal(
-    report.migrationBudgets.filter(
-      entry => entry.from === 'services' && entry.to === 'shared' && entry.active
-    ).length,
-    41
-  );
 });
 
 test('repository Sketch Box stacked content preview renderer migration entry is exact and additive-only', () => {
@@ -3336,21 +3276,6 @@ test('repository Sketch Box stacked content preview renderer migration entry is 
         'Remove this entry when a reviewed Sketch Box stacked content preview composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade.',
     },
   ]);
-
-  const graph = collectLayerContractGraph({ root: repositoryRoot });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
-  assert.equal(report.ok, true);
-  const builderEdge = graph.edges.find(entry => entry.from === 'builder' && entry.to === 'shared');
-  const builderRule = baseline.rules.find(entry => entry.from === 'builder' && entry.to === 'shared');
-  assert.ok(builderEdge);
-  assert.ok(builderRule);
-  assert.equal(builderEdge.importCount, 267);
-  assert.equal(builderRule.maxImportCount, 219);
-  assert.equal(
-    report.migrationBudgets.filter(entry => entry.from === 'builder' && entry.to === 'shared' && entry.active)
-      .length,
-    47
-  );
 });
 
 test('repository Sketch Box Storage Preview pair migration entries are exact and additive-only', () => {
@@ -3441,25 +3366,4 @@ test('repository Sketch Box Storage Preview pair migration entries are exact and
         'Remove this entry when a reviewed Sketch Box vertical storage-preview composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade.',
     },
   ]);
-
-  const graph = collectLayerContractGraph({ root: repositoryRoot });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
-  assert.equal(report.ok, true);
-  const builderEdge = graph.edges.find(entry => entry.from === 'builder' && entry.to === 'shared');
-  const servicesEdge = graph.edges.find(entry => entry.from === 'services' && entry.to === 'shared');
-  assert.ok(builderEdge);
-  assert.ok(servicesEdge);
-  assert.equal(builderEdge.importCount, 267);
-  assert.equal(servicesEdge.importCount, 208);
-  assert.equal(
-    report.migrationBudgets.filter(entry => entry.from === 'builder' && entry.to === 'shared' && entry.active)
-      .length,
-    48
-  );
-  assert.equal(
-    report.migrationBudgets.filter(
-      entry => entry.from === 'services' && entry.to === 'shared' && entry.active
-    ).length,
-    41
-  );
 });

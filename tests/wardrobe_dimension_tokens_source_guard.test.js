@@ -399,7 +399,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
       /SKETCH_BOX_DIMENSIONS\.preview/u.test(read(file))
   );
-  assert.equal(remainingPreviewConsumers.length, 8);
+  assert.equal(remainingPreviewConsumers.length, expectedConsumers.length);
   assert.deepEqual(remainingPreviewConsumers.sort(), actualConsumers.sort());
   for (const file of actualConsumers) {
     const branches = new Set(
