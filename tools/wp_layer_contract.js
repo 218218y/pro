@@ -40,22 +40,25 @@ try {
   if (propose) {
     const proposal = buildLayerContractProposal(graph, contract);
     print(proposal);
-    process.exit(proposal.reviewRequired ? 1 : 0);
-  }
-  const report = evaluateLayerContract(graph, contract);
-  if (jsonOutput) print(report);
-  else if (report.ok) {
-    console.log(
-      `Layer contract v${LAYER_CONTRACT_VERSION} OK (${report.edges.length} allowed cross-layer edges)`
-    );
+    // Do not call process.exit() after emitting the large proposal. On CI stdout is
+    // usually a pipe, so an immediate exit can truncate the buffered JSON.
+    process.exitCode = proposal.reviewRequired ? 1 : 0;
   } else {
-    console.error(`Layer contract v${LAYER_CONTRACT_VERSION} failed:`);
-    for (const failure of report.failures) console.error(` - ${JSON.stringify(failure)}`);
+    const report = evaluateLayerContract(graph, contract);
+    if (jsonOutput) print(report);
+    else if (report.ok) {
+      console.log(
+        `Layer contract v${LAYER_CONTRACT_VERSION} OK (${report.edges.length} allowed cross-layer edges)`
+      );
+    } else {
+      console.error(`Layer contract v${LAYER_CONTRACT_VERSION} failed:`);
+      for (const failure of report.failures) console.error(` - ${JSON.stringify(failure)}`);
+    }
+    process.exitCode = report.ok ? 0 : 1;
   }
-  process.exit(report.ok ? 0 : 1);
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
   if (jsonOutput) print({ ok: false, error: message });
   else console.error(message);
-  process.exit(2);
+  process.exitCode = 2;
 }

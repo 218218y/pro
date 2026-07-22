@@ -2038,10 +2038,17 @@ test('layer contract proposal CLI exits nonzero when ratchet growth requires rev
     const result = spawnSync(
       process.execPath,
       [path.join(repositoryRoot, 'tools', 'wp_layer_contract.js'), '--propose', '--baseline', baselinePath],
-      { cwd: repositoryRoot, encoding: 'utf8' }
+      {
+        cwd: repositoryRoot,
+        encoding: 'utf8',
+        maxBuffer: 16 * 1024 * 1024,
+      }
     );
 
+    assert.equal(result.error, undefined);
+    assert.equal(result.signal, null);
     assert.equal(result.status, 1, result.stderr);
+    assert.ok(result.stdout.endsWith('\n'), 'proposal JSON must be flushed completely before exit');
     const proposal = JSON.parse(result.stdout);
     assert.equal(proposal.reviewRequired, true);
     assert.ok(proposal.diff.ratchetViolations.length > 0);
