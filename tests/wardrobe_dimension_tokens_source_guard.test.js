@@ -344,7 +344,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
-    'esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts',
   ];
   const actualConsumers = esmFiles.filter(
     file =>
@@ -353,7 +352,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 2);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 6);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 5);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
     const source = read(file);
@@ -1844,7 +1843,12 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ],
     [
       'esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts',
-      ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+      [
+        'INTERIOR_PRESET_ROD_FACTORS_POLICY',
+        'INTERIOR_ROD_PLACEMENT_POLICY',
+        'INTERIOR_STORAGE_GRID_POLICY',
+        'SKETCH_BOX_ROD_PREVIEW_POLICY',
+      ],
     ],
     [
       'esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts',
@@ -1906,8 +1910,9 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
   assert.match(measurements, /measurementScaleCellX/);
 
   const moduleRodPreview = read('esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts');
-  assert.match(moduleRodPreview, /presetDims\.mixedRodYFactor/);
-  assert.match(moduleRodPreview, /presetDims\.storageRodYFactor/);
+  assert.match(moduleRodPreview, /INTERIOR_PRESET_ROD_FACTORS_POLICY\.mixedRodYFactor/u);
+  assert.match(moduleRodPreview, /INTERIOR_PRESET_ROD_FACTORS_POLICY\.storageRodYFactor/u);
+  assert.doesNotMatch(moduleRodPreview, /\bpresetDims\b/u);
 
   const commitShared = read('esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts');
   assert.match(commitShared, /cmToM\(n\)/);

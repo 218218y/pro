@@ -71,16 +71,16 @@ test('Sketch module surface shelf preview imports are exact focused-owner statem
 test('Sketch module surface shelf preview ledger and layer transition are exact', () => {
   const baseline = JSON.parse(fs.readFileSync(path.join(root, 'tools/wp_layer_baseline.json'), 'utf8'));
 
-  assert.equal(baseline.migrationBudgets.length, 93);
+  assert.ok(baseline.migrationBudgets.length >= 95);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 92)),
     'c3925619d29b30dbd157d10f9afd68f4ed4dfe3b7ebac810a1438aa633a89dfd'
   );
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 93)),
     '0ff50bd06b93e4a303e769b92d5db0a87d775022d9bb1f80d9e5d721023bfa13'
   );
-  assert.deepEqual(baseline.migrationBudgets.slice(92), [
+  assert.deepEqual(baseline.migrationBudgets.slice(92, 93), [
     {
       from: 'services',
       to: 'shared',
@@ -119,12 +119,12 @@ test('Sketch module surface shelf preview ledger and layer transition are exact'
   assert.equal(report.ok, true);
   const observed = new Map(graph.edges.map(edge => [`${edge.from}>${edge.to}`, edge.importCount]));
   assert.equal(observed.get('builder>shared'), 267);
-  assert.equal(observed.get('services>shared'), 210);
+  assert.equal(observed.get('services>shared'), 212);
   assert.equal(
     report.migrationBudgets.filter(
       entry => entry.from === 'services' && entry.to === 'shared' && entry.active
     ).length,
-    43
+    45
   );
 });
 

@@ -112,7 +112,7 @@ test('Sketch Box Storage Preview pair ledger and layer transition are exact', ()
   assert.equal(report.ok, true);
   const observed = new Map(graph.edges.map(edge => [`${edge.from}>${edge.to}`, edge.importCount]));
   assert.equal(observed.get('builder>shared'), 267);
-  assert.equal(observed.get('services>shared'), 210);
+  assert.equal(observed.get('services>shared'), 212);
   assert.equal(
     report.migrationBudgets.filter(entry => entry.from === 'builder' && entry.to === 'shared' && entry.active)
       .length,
@@ -122,6 +122,6 @@ test('Sketch Box Storage Preview pair ledger and layer transition are exact', ()
     report.migrationBudgets.filter(
       entry => entry.from === 'services' && entry.to === 'shared' && entry.active
     ).length,
-    43
+    45
   );
 });

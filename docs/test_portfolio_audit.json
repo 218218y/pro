@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-22T04:48:02.392Z",
+  "generatedAt": "2026-07-22T07:40:00.070Z",
   "totals": {
-    "tests": 1246,
-    "unitRunnerTests": 1238,
+    "tests": 1247,
+    "unitRunnerTests": 1239,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 409,
+    "contract": 410,
     "runtime-unit": 318,
     "integration": 460,
     "e2e-smoke": 9,
@@ -4143,6 +4143,10 @@
     },
     {
       "file": "tests/sketch_module_surface_content_preview_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_module_surface_rod_preview_ownership_contract.test.js",
       "category": "contract"
     },
     {

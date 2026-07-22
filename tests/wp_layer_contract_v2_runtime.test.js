@@ -1208,6 +1208,14 @@ test('project migration ledger stays exact at ninety-two reviewed statements wit
       'esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts',
       'esm/shared/dimensions/interior_storage_policy.ts',
     ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts',
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts',
+      'esm/shared/dimensions/interior_storage_policy.ts',
+    ],
   ];
 
   assert.equal(
@@ -1266,9 +1274,14 @@ test('project migration ledger stays exact at ninety-two reviewed statements wit
     'the ninety-two previously reviewed migration entries must remain semantically unchanged'
   );
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 93)),
     '0ff50bd06b93e4a303e769b92d5db0a87d775022d9bb1f80d9e5d721023bfa13',
-    'all ninety-three active migration entries must remain semantically stable'
+    'the ninety-three previously reviewed migration entries must remain semantically unchanged'
+  );
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets),
+    '998ce4016e780748d6f771d97fdd7e9980f0a2fb4d7995b92a1befb154f85fc0',
+    'all ninety-five active migration entries must remain semantically stable'
   );
 
   assert.equal(
@@ -1337,7 +1350,7 @@ test('project migration ledger stays exact at ninety-two reviewed statements wit
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 93);
+  assert.equal(report.migrationBudgets.length, 95);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
@@ -1346,7 +1359,7 @@ test('project migration ledger stays exact at ninety-two reviewed statements wit
   const expectedEdges = new Map([
     ['builder>shared', { observed: 267, migration: 48, reviewed: 219, budget: 219 }],
     ['features>shared', { observed: 59, migration: 1, reviewed: 58, budget: 58 }],
-    ['services>shared', { observed: 210, migration: 43, reviewed: 167, budget: 167 }],
+    ['services>shared', { observed: 212, migration: 45, reviewed: 167, budget: 167 }],
     ['ui>shared', { observed: 28, migration: 1, reviewed: 27, budget: 27 }],
   ]);
   for (const [key, expected] of expectedEdges) {

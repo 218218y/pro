@@ -3666,6 +3666,64 @@
       },
       "reason": "The Sketch module surface shelf-remove preview flow replaces one legacy facade statement with the focused Interior Storage Grid owner plus focused Sketch Box Measurement and Shelf Preview owners on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch module surface shelf-preview composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-22",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_ROD_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_PRESET_ROD_FACTORS_POLICY", "INTERIOR_ROD_PLACEMENT_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch module surface rod-remove preview flow replaces one legacy facade statement with focused Interior Preset Rod Factors and Rod Placement owners plus the focused Sketch Box Rod Preview owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch module surface rod-preview composition seam eliminates the extra Interior Fittings statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-22",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_ROD_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch module surface rod-remove preview flow replaces one legacy facade statement with the focused Interior Storage Grid owner plus the focused Sketch Box Rod Preview owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch module surface rod-preview composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
     }
   ]
 }
