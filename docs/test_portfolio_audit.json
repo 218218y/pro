@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-22T07:40:00.070Z",
+  "generatedAt": "2026-07-22T09:32:55.341Z",
   "totals": {
-    "tests": 1247,
-    "unitRunnerTests": 1239,
+    "tests": 1248,
+    "unitRunnerTests": 1240,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 410,
+    "contract": 411,
     "runtime-unit": 318,
     "integration": 460,
     "e2e-smoke": 9,
@@ -4007,6 +4007,10 @@
     },
     {
       "file": "tests/sketch_box_manual_dims_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_manual_free_box_preview_pair_ownership_contract.test.js",
       "category": "contract"
     },
     {

@@ -340,8 +340,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
     'esm/native/builder/render_preview_interior_hover_apply.ts',
     'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
-    'esm/native/services/canvas_picking_manual_layout_free_box_content.ts',
-    'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
   ];
@@ -352,7 +350,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 2);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 5);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 3);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
     const source = read(file);

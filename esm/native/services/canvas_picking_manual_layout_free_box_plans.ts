@@ -1,9 +1,14 @@
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_ROD_RENDER_POLICY,
+  INTERIOR_SHELF_GEOMETRY_POLICY,
+} from '../../shared/dimensions/interior_fittings_policy.js';
+import {
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  INTERIOR_STORAGE_GRID_POLICY,
+} from '../../shared/dimensions/interior_storage_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import { SKETCH_BOX_PREVIEW_CORE_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { computeInteriorPresetOps } from '../features/interior_layout_presets/api.js';
 import { asRecord } from '../runtime/record.js';
 import {
@@ -44,7 +49,7 @@ export function resolveManualLayoutFreeBoxShelfGridPlan(args: {
   shelfVariant: string;
   woodThick?: number;
 }): ManualLayoutFreeBoxShelfGridPlan {
-  const woodThick = args.woodThick ?? MATERIAL_DIMENSIONS.wood.thicknessM;
+  const woodThick = args.woodThick ?? MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const state = createSketchBoxVerticalPreviewState({
     host: { tool: 'shelf', moduleKey: null, isBottom: false },
     contentKind: 'shelf',
@@ -75,7 +80,7 @@ export function resolveManualLayoutFreeBoxShelfGridPlan(args: {
   let blockedReason =
     requestedCount <= 0 ||
     !(state.cellHeight > 0) ||
-    step < INTERIOR_FITTINGS_DIMENSIONS.shelves.spanMinHeightM ||
+    step < INTERIOR_SHELF_GEOMETRY_POLICY.spanMinHeightM ||
     !state.hasVerticalRoomFor(shelfH)
       ? 'no-room'
       : null;
@@ -203,7 +208,7 @@ export function resolvePresetLayoutFreeBoxPlan(args: {
   layoutType: string;
   woodThick?: number;
 }): PresetLayoutFreeBoxPlan {
-  const woodThick = args.woodThick ?? MATERIAL_DIMENSIONS.wood.thicknessM;
+  const woodThick = args.woodThick ?? MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const metrics = resolveFreeBoxCellMetrics({
     targetBox: args.targetBox,
     targetGeo: args.targetGeo,
@@ -215,11 +220,11 @@ export function resolvePresetLayoutFreeBoxPlan(args: {
     shelfVariant: 'regular',
   });
   const state = metrics.state;
-  const divs = INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+  const divs = INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
   const step = divs > 0 ? state.cellHeight / divs : 0;
   const ops = computeInteriorPresetOps(args.layoutType);
   const shelfH = shelfThicknessForVariant('regular', woodThick);
-  const rodH = INTERIOR_FITTINGS_DIMENSIONS.rods.radiusM * 2;
+  const rodH = INTERIOR_ROD_RENDER_POLICY.radiusM * 2;
   const shelfDepthM = resolveShelfDepth({ variant: 'regular', innerD: args.targetGeo.innerD, woodThick });
   const shelfYs: number[] = [];
   const shelfYNorms: number[] = [];
@@ -239,7 +244,7 @@ export function resolvePresetLayoutFreeBoxPlan(args: {
   }
   if (
     shelfYs.length &&
-    (step < INTERIOR_FITTINGS_DIMENSIONS.shelves.spanMinHeightM || !state.hasVerticalRoomFor(shelfH))
+    (step < INTERIOR_SHELF_GEOMETRY_POLICY.spanMinHeightM || !state.hasVerticalRoomFor(shelfH))
   ) {
     blockedReason = 'no-room';
   }
@@ -265,7 +270,7 @@ export function resolvePresetLayoutFreeBoxPlan(args: {
           z:
             args.targetGeo.innerBackZ +
             args.targetGeo.innerD +
-            INTERIOR_FITTINGS_DIMENSIONS.storage.barrierFrontZOffsetM,
+            INTERIOR_STORAGE_BARRIER_POLICY.barrierFrontZOffsetM,
         }
       : null;
   const storageYNorm = storageBarrier ? state.boxYNormFromCenter(storageBarrier.y) : null;
@@ -312,7 +317,7 @@ export function resolveBraceShelvesFreeBoxPlan(args: {
   pointerY: number;
   woodThick?: number;
 }): BraceShelvesFreeBoxPlan | null {
-  const woodThick = args.woodThick ?? MATERIAL_DIMENSIONS.wood.thicknessM;
+  const woodThick = args.woodThick ?? MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const metrics = resolveFreeBoxCellMetrics({
     targetBox: args.targetBox,
     targetGeo: args.targetGeo,
@@ -329,7 +334,7 @@ export function resolveBraceShelvesFreeBoxPlan(args: {
     : [];
   let best: BraceShelvesFreeBoxPlan | null = null;
   let bestDy = Infinity;
-  const tolerance = SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM;
+  const tolerance = SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM;
   for (let i = 0; i < shelves.length; i += 1) {
     const shelf = shelves[i];
     const yNorm = readRecordNumber(shelf, 'yNorm');

@@ -1,9 +1,7 @@
 import type { AppContainer } from '../../../types';
-import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { INTERIOR_STORAGE_BARRIER_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import { SKETCH_BOX_SHELF_PREVIEW_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { getThreeMaybe } from '../runtime/three_access.js';
 import { __wp_raycastReuse } from './canvas_picking_core_helpers.js';
 import {
@@ -266,11 +264,11 @@ function writeBraceShelvesHoverPreview(args: {
     y: args.plan.shelfY,
     z: args.plan.previewInternalZ - args.plan.previewInnerD / 2 + args.plan.nextDepthM / 2,
     w: Math.max(
-      SKETCH_BOX_DIMENSIONS.preview.shelfMinWidthM,
+      SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfMinWidthM,
       args.plan.previewW -
         (isBrace
-          ? SKETCH_BOX_DIMENSIONS.preview.shelfBraceClearanceM
-          : SKETCH_BOX_DIMENSIONS.preview.shelfRegularClearanceM)
+          ? SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfBraceClearanceM
+          : SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRegularClearanceM)
     ),
     h: args.plan.nextVariant === 'brace' ? args.plan.previewWoodThick : args.plan.previewWoodThick,
     d: args.plan.nextDepthM,
@@ -301,7 +299,7 @@ function tryHandleShelfGridHover(
       targetHeight: targetContext.target.targetHeight,
       pointerX: targetContext.target.pointerX,
       pointerY: targetContext.target.pointerY,
-      woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
+      woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
       shelfVariant: args.shelfVariant,
       readSketchBoxDividers,
       readSketchBoxHorizontalDividers,
@@ -372,8 +370,8 @@ function tryHandleSingleVerticalHover(
     targetHeight: targetContext.target.targetHeight,
     pointerX: targetContext.target.pointerX,
     pointerY: targetContext.target.pointerY,
-    woodThick: MATERIAL_DIMENSIONS.wood.thicknessM,
-    storageHeight: contentKind === 'storage' ? INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM : null,
+    woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
+    storageHeight: contentKind === 'storage' ? INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM : null,
     readSketchBoxDividers,
     readSketchBoxHorizontalDividers,
     resolveSketchBoxSegments,

@@ -3724,6 +3724,151 @@
       },
       "reason": "The Sketch module surface rod-remove preview flow replaces one legacy facade statement with the focused Interior Storage Grid owner plus the focused Sketch Box Rod Preview owner on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch module surface rod-preview composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-22",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_content.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELF_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "MATERIAL_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The manual free-box content hover flow replaces one legacy facade statement with the focused Interior Storage Barrier owner plus the focused Sketch Box Shelf Preview owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed manual free-box content-preview composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-22",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_content.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELF_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "MATERIAL_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The manual free-box content hover flow replaces one legacy facade statement with the focused Material Thickness owner plus the focused Sketch Box Shelf Preview owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed manual free-box content-preview composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-22",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_PREVIEW_CORE_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "MATERIAL_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_ROD_RENDER_POLICY", "INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The manual free-box planning flow replaces one legacy facade statement with focused Interior Rod Render and Shelf Geometry owners plus the focused Sketch Box Preview Core owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed manual free-box planning composition seam eliminates the extra Interior Fittings statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-22",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_PREVIEW_CORE_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "MATERIAL_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The manual free-box planning flow replaces one legacy facade statement with focused Interior Storage Barrier and Grid owners plus the focused Sketch Box Preview Core owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed manual free-box planning composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-22",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_PREVIEW_CORE_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "MATERIAL_DIMENSIONS", "SKETCH_BOX_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The manual free-box planning flow replaces one legacy facade statement with the focused Material Thickness owner plus the focused Sketch Box Preview Core owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed manual free-box planning composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
     }
   ]
 }
