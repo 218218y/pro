@@ -1,8 +1,9 @@
+import { INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  SKETCH_BOX_DOOR_PREVIEW_POLICY,
+  SKETCH_BOX_SHELF_PREVIEW_POLICY,
+} from '../../shared/dimensions/sketch_box_preview_policy.js';
 import {
   SHELF_GROUP_PART_ID,
   markShelfBoardUserData,
@@ -55,12 +56,12 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
   const removedSideState = readSketchBoxRemovedSideShelfState(args.args.input.cfgSnapshot, boxPid);
   const innerLeftX = geometry.centerX - geometry.innerW / 2;
   const innerRightX = geometry.centerX + geometry.innerW / 2;
-  const sideEdgeEpsilon = SKETCH_BOX_DIMENSIONS.preview.doorEdgeEpsilonM;
+  const sideEdgeEpsilon = SKETCH_BOX_DOOR_PREVIEW_POLICY.doorEdgeEpsilonM;
 
   const boxShelves = asRecordArray<SketchShelfExtra>(box.shelves);
 
   function shelfHeightForVariant(variant: ReturnType<typeof normalizeSketchShelfVariant>): number {
-    if (variant === 'glass') return MATERIAL_DIMENSIONS.glassShelf.thicknessM;
+    if (variant === 'glass') return MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM;
     if (variant === 'double' || !variant) return Math.max(woodThick, woodThick * 2);
     return woodThick;
   }
@@ -75,7 +76,7 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
       const nextY = yFromBoxNorm(nextShelf.yNorm, nextShelfH / 2);
       if (
         nextY == null ||
-        !(nextY > currentY + INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsHeightClearanceM)
+        !(nextY > currentY + INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsHeightClearanceM)
       ) {
         continue;
       }
@@ -91,7 +92,7 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
       0,
       resolveNextShelfBottomY(shelfY) -
         shelfTopY -
-        INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsHeightClearanceM
+        INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsHeightClearanceM
     );
   }
 
@@ -144,10 +145,12 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
     });
     const shelfInnerW = shelfSegment ? shelfSegment.width : geometry.innerW;
     const shelfCenterX = shelfSegment ? shelfSegment.centerX : geometry.centerX;
-    const previewDims = SKETCH_BOX_DIMENSIONS.preview;
     const shelfW = Math.max(
-      previewDims.shelfMinWidthM,
-      shelfInnerW - (isBrace ? previewDims.shelfBraceClearanceM : previewDims.shelfRegularClearanceM)
+      SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfMinWidthM,
+      shelfInnerW -
+        (isBrace
+          ? SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfBraceClearanceM
+          : SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRegularClearanceM)
     );
     const shelfZ = resolveSketchBoxUsableContentCenterZ(shell, shelfDepth);
     const roundedOptions: RoundedShelfBoardOptions | null =
@@ -193,7 +196,7 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
     );
 
     if (args.args.input.showContentsEnabled === true && isFn(args.args.input.addFoldedClothes)) {
-      const contentsWidth = shelfW - INTERIOR_FITTINGS_DIMENSIONS.shelves.contentsWidthClearanceM;
+      const contentsWidth = shelfW - INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY.contentsWidthClearanceM;
       const maxHeight = resolveShelfContentsMaxHeight(shelfY, shelfH);
       if (contentsWidth > 0 && maxHeight > 0) {
         args.args.input.addFoldedClothes(

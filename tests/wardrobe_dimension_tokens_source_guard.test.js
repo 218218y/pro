@@ -111,7 +111,7 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
   const tokens = readProductDimensionTokens();
   assert.match(tokens, /export const SKETCH_BOX_DIMENSIONS = Object\.freeze\(\{/);
 
-  for (const rel of ['esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts']) {
+  for (const rel of ['esm/native/services/canvas_picking_interior_hover_manual_mode.ts']) {
     assertUsesToken(rel, 'SKETCH_BOX_DIMENSIONS');
   }
 
@@ -333,18 +333,14 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     assert.match(read(owner), new RegExp(`export const ${aggregate} = Object\\.freeze`, 'u'));
   }
 
-  const expectedConsumers = [
-    'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts',
-    'esm/native/builder/render_preview_interior_hover_apply.ts',
-    'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
-  ];
+  const expectedConsumers = ['esm/native/services/canvas_picking_interior_hover_manual_mode.ts'];
   const actualConsumers = esmFiles.filter(
     file =>
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
       /\bSKETCH_BOX_DIMENSIONS\b/u.test(read(file))
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 2);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 0);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 1);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
@@ -1796,7 +1792,15 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ],
     [
       'esm/native/builder/render_preview_interior_hover_apply.ts',
-      ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+      [
+        'INTERIOR_SHELF_GEOMETRY_POLICY',
+        'INTERIOR_STORAGE_BARRIER_POLICY',
+        'INTERIOR_STORAGE_PREVIEW_POLICY',
+        'MATERIAL_THICKNESS_POLICY',
+        'SKETCH_BOX_PREVIEW_CORE_POLICY',
+        'SKETCH_BOX_ROD_PREVIEW_POLICY',
+        'SKETCH_BOX_SHELF_PREVIEW_POLICY',
+      ],
     ],
     [
       'esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts',
@@ -1895,8 +1899,9 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
   }
 
   const previewHover = read('esm/native/builder/render_preview_interior_hover_apply.ts');
-  assert.match(previewHover, /previewDims\.rodMinLengthM/);
-  assert.match(previewHover, /storageDims\.barrierWidthClearanceM/);
+  assert.match(previewHover, /SKETCH_BOX_ROD_PREVIEW_POLICY\.rodMinLengthM/u);
+  assert.match(previewHover, /INTERIOR_STORAGE_BARRIER_POLICY\.barrierWidthClearanceM/u);
+  assert.doesNotMatch(previewHover, /\b(?:previewDims|storageDims|shelvesDims)\b/u);
 
   const measurements = read('esm/native/builder/render_preview_sketch_measurements_apply.ts');
   assert.match(measurements, /measurementLabelZOffsetM/);
