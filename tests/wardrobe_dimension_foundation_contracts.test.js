@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 43, statements: 43 }),
+  'static-import': Object.freeze({ importers: 42, statements: 42 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 45, statements: 46 }),
+  total: Object.freeze({ importers: 44, statements: 45 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -249,6 +249,9 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_hover_preview_modes_divider.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
+  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
   'esm/native/services/canvas_picking_sketch_free_box_content_preview_doors.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
@@ -365,7 +368,6 @@ const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/builder/core_layout_compute.ts',
   'esm/native/builder/core_storage_compute_external_drawers.ts',
   'esm/native/features/sketch_internal_drawer_cassette.ts',
-  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
   'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
   'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts',
 ]);
@@ -374,9 +376,7 @@ const APPROVED_MATERIAL_LEGACY_DEPENDENCIES = Object.freeze(
     APPROVED_MATERIAL_LEGACY_IMPORTERS.map(file => [file, ['MATERIAL_DIMENSIONS@static-import']])
   )
 );
-const APPROVED_MATERIAL_GLASS_SHELF_ONLY_IMPORTERS = new Set([
-  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
-]);
+const APPROVED_MATERIAL_GLASS_SHELF_ONLY_IMPORTERS = new Set();
 const APPROVED_MATERIAL_WOOD_AND_GLASS_IMPORTERS = new Set();
 const APPROVED_MATERIAL_LEGACY_FIELD_USAGE = Object.freeze(
   Object.fromEntries(
@@ -741,6 +741,11 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
+  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
+    'INTERIOR_STORAGE_BARRIER_POLICY',
+    'INTERIOR_STORAGE_GRID_POLICY',
+    'INTERIOR_STORAGE_PREVIEW_POLICY',
+  ]),
   'esm/native/services/canvas_picking_manual_layout_free_box_commit.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
   ]),
@@ -863,6 +868,10 @@ const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts': Object.freeze([
     'INTERIOR_PRESET_ROD_FACTORS_POLICY',
     'INTERIOR_ROD_PLACEMENT_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
+    'INTERIOR_ROD_PLACEMENT_POLICY',
+    'INTERIOR_SHELF_GEOMETRY_POLICY',
   ]),
   'esm/shared/dimensions/sketch_box_preview_policy.ts': Object.freeze([
     'INTERIOR_ROD_CONTENT_CLEARANCE_POLICY',
@@ -1129,6 +1138,10 @@ const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_manual_layout_free_box_content.ts': Object.freeze([
     'SKETCH_BOX_SHELF_PREVIEW_POLICY',
   ]),
+  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
+    'SKETCH_BOX_ROD_PREVIEW_POLICY',
+    'SKETCH_BOX_SHELF_PREVIEW_POLICY',
+  ]),
   'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts': Object.freeze([
     'SKETCH_BOX_PREVIEW_CORE_POLICY',
   ]),
@@ -1191,12 +1204,6 @@ const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
     'presets.splitUpperRodYFactor',
     'presets.storageRodLimitFactor',
     'presets.storageRodYFactor',
-  ]),
-  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
-    'rods',
-    'rods.defaultYOffsetM',
-    'shelves',
-    'shelves.doubleThicknessMultiplier',
   ]),
   'esm/native/ui/react/tabs/interior_tab_local_state_shared.ts': Object.freeze([
     'shelves',
@@ -1367,15 +1374,6 @@ const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
     'storage.defaultLowerShelfSlots',
     'storage.gridDivisionsDefault',
   ]),
-  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
-    'storage',
-    'storage.barrierFrontZOffsetM',
-    'storage.barrierHeightM',
-    'storage.barrierWidthClearanceM',
-    'storage.barrierWidthMinM',
-    'storage.gridDivisionsDefault',
-    'storage.previewThicknessMinM',
-  ]),
 });
 const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts': Object.freeze([
@@ -1405,6 +1403,9 @@ const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
     'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
   ]),
   'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
+    'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
     'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
   ]),
   'esm/native/builder/render_interior_sketch_shared_external_drawers.ts': Object.freeze([
@@ -1617,12 +1618,6 @@ const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
     'sketch.internalSideFillerWidthM',
     'sketch.internalWidthClearanceM',
     'sketch.internalWidthMinM',
-  ]),
-  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
-    'sketch',
-    'sketch.internalClampPadMaxM',
-    'sketch.internalClampPadMinM',
-    'sketch.internalClampPadWoodRatio',
   ]),
   'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts': Object.freeze([
     'sketch',

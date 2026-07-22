@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-22T10:10:51.185Z",
+  "generatedAt": "2026-07-22T15:37:58.330Z",
   "totals": {
-    "tests": 1250,
-    "unitRunnerTests": 1242,
+    "tests": 1254,
+    "unitRunnerTests": 1246,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,9 +13,9 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 412,
+    "contract": 414,
     "runtime-unit": 318,
-    "integration": 461,
+    "integration": 463,
     "e2e-smoke": 9,
     "perf-smoke": 9,
     "legacy-migration": 41
@@ -603,6 +603,10 @@
     },
     {
       "file": "tests/canvas_picking_interior_hover_brace_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_interior_hover_manual_mode_runtime.test.ts",
       "category": "integration"
     },
     {
@@ -3934,6 +3938,14 @@
       "category": "integration"
     },
     {
+      "file": "tests/sketch_box_builder_shelf_hover_preview_pair_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_builder_shelf_hover_preview_pair_runtime.test.ts",
+      "category": "integration"
+    },
+    {
       "file": "tests/sketch_box_core_shelf_flow_pair_ownership_contract.test.js",
       "category": "contract"
     },
@@ -4011,6 +4023,10 @@
     },
     {
       "file": "tests/sketch_box_manual_free_box_preview_pair_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_box_manual_interior_hover_final_consumer_ownership_contract.test.js",
       "category": "contract"
     },
     {

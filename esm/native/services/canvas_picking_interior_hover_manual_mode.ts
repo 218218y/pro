@@ -1,10 +1,19 @@
 import { getThreeMaybe } from '../runtime/three_access.js';
+import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import {
-  DRAWER_DIMENSIONS,
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_ROD_PLACEMENT_POLICY,
+  INTERIOR_SHELF_GEOMETRY_POLICY,
+} from '../../shared/dimensions/interior_fittings_policy.js';
+import {
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  INTERIOR_STORAGE_GRID_POLICY,
+  INTERIOR_STORAGE_PREVIEW_POLICY,
+} from '../../shared/dimensions/interior_storage_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import {
+  SKETCH_BOX_ROD_PREVIEW_POLICY,
+  SKETCH_BOX_SHELF_PREVIEW_POLICY,
+} from '../../shared/dimensions/sketch_box_preview_policy.js';
 import {
   __wp_readInteriorModuleConfigRef,
   __wp_resolveInteriorHoverTarget,
@@ -51,7 +60,7 @@ export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowAr
     const ui = readUiState(App);
     const currentToolDivs = readGridDivisions(
       ui.currentGridDivisions,
-      INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault,
+      INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault,
       8
     );
     const shelfVariant = readShelfVariant(ui.currentGridShelfVariant);
@@ -94,10 +103,10 @@ export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowAr
     const savedDivs = readSavedGridDivisions(cfgRef, currentToolDivs);
     const isNewLayout = !cfgRef?.isCustom || savedDivs !== currentToolDivs;
     const pad = Math.min(
-      DRAWER_DIMENSIONS.sketch.internalClampPadMaxM,
+      DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadMaxM,
       Math.max(
-        DRAWER_DIMENSIONS.sketch.internalClampPadMinM,
-        target.woodThick * DRAWER_DIMENSIONS.sketch.internalClampPadWoodRatio
+        DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadMinM,
+        target.woodThick * DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadWoodRatio
       )
     );
     const step = target.spanH / currentToolDivs;
@@ -137,17 +146,14 @@ export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowAr
         anchor: target.hitSelectorObj,
         kind: 'storage',
         x: target.internalCenterX,
-        y: target.bottomY + INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM / 2,
-        z:
-          target.internalZ +
-          target.internalDepth / 2 +
-          INTERIOR_FITTINGS_DIMENSIONS.storage.barrierFrontZOffsetM,
+        y: target.bottomY + INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM / 2,
+        z: target.internalZ + target.internalDepth / 2 + INTERIOR_STORAGE_BARRIER_POLICY.barrierFrontZOffsetM,
         w: Math.max(
-          INTERIOR_FITTINGS_DIMENSIONS.storage.barrierWidthMinM,
-          target.innerW - INTERIOR_FITTINGS_DIMENSIONS.storage.barrierWidthClearanceM
+          INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthMinM,
+          target.innerW - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
         ),
-        h: INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM,
-        d: Math.max(INTERIOR_FITTINGS_DIMENSIONS.storage.previewThicknessMinM, target.woodThick),
+        h: INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM,
+        d: Math.max(INTERIOR_STORAGE_PREVIEW_POLICY.previewThicknessMinM, target.woodThick),
         woodThick: target.woodThick,
         op: hasStorage ? 'remove' : 'add',
       });
@@ -157,7 +163,7 @@ export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowAr
       let gridIndex = Math.ceil(relY / step);
       if (gridIndex < 1) gridIndex = 1;
       if (gridIndex > currentToolDivs) gridIndex = currentToolDivs;
-      const rodY = target.bottomY + gridIndex * step + INTERIOR_FITTINGS_DIMENSIONS.rods.defaultYOffsetM;
+      const rodY = target.bottomY + gridIndex * step + INTERIOR_ROD_PLACEMENT_POLICY.defaultYOffsetM;
       const rods = readCustomData(cfgRef)?.rods;
       const hasRod = Array.isArray(rods) ? !!rods[gridIndex - 1] : false;
       return setPreview(setSketchPreview, {
@@ -169,11 +175,11 @@ export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowAr
         y: Math.max(target.bottomY + pad, Math.min(target.topY - pad, rodY)),
         z: target.internalZ,
         w: Math.max(
-          SKETCH_BOX_DIMENSIONS.preview.rodMinLengthM,
-          target.innerW - SKETCH_BOX_DIMENSIONS.preview.rodWidthClearanceM
+          SKETCH_BOX_ROD_PREVIEW_POLICY.rodMinLengthM,
+          target.innerW - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
         ),
-        h: SKETCH_BOX_DIMENSIONS.preview.rodPreviewHeightM,
-        d: SKETCH_BOX_DIMENSIONS.preview.rodPreviewDepthM,
+        h: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewHeightM,
+        d: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewDepthM,
         woodThick: target.woodThick,
         op: hasRod ? 'remove' : 'add',
       });
@@ -199,17 +205,17 @@ export function tryHandleCanvasManualLayoutHover(args: CanvasInteriorHoverFlowAr
             0,
             target.innerW -
               (isBrace
-                ? SKETCH_BOX_DIMENSIONS.preview.shelfBraceClearanceM
-                : SKETCH_BOX_DIMENSIONS.preview.shelfRegularClearanceM)
+                ? SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfBraceClearanceM
+                : SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRegularClearanceM)
           )
         : target.innerW;
     const h =
       shelfVariant === 'glass'
-        ? MATERIAL_DIMENSIONS.glassShelf.thicknessM
+        ? MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM
         : shelfVariant === 'double'
           ? Math.max(
               target.woodThick,
-              target.woodThick * INTERIOR_FITTINGS_DIMENSIONS.shelves.doubleThicknessMultiplier
+              target.woodThick * INTERIOR_SHELF_GEOMETRY_POLICY.doubleThicknessMultiplier
             )
           : target.woodThick;
     return setPreview(setSketchPreview, {

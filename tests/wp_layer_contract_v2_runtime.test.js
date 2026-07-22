@@ -881,7 +881,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at one hundred and ten reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at one hundred and fourteen reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -1276,6 +1276,22 @@ test('project migration ledger stays exact at one hundred and ten reviewed state
       'esm/native/builder/render_preview_interior_hover_apply.ts',
       'esm/shared/dimensions/material_thickness_policy.ts',
     ],
+    [
+      'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
+      'esm/shared/dimensions/drawer_sketch_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
+      'esm/shared/dimensions/interior_fittings_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
+      'esm/shared/dimensions/interior_storage_policy.ts',
+    ],
+    [
+      'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
+      'esm/shared/dimensions/material_thickness_policy.ts',
+    ],
   ];
 
   assert.equal(
@@ -1354,9 +1370,14 @@ test('project migration ledger stays exact at one hundred and ten reviewed state
     'all one hundred and five active migration entries must remain semantically stable'
   );
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 110)),
     '8d1d7cafcce3d1d360a559daf7a9fa00b92f32139a4f90cf80d6b6f061dfdd2d',
-    'all one hundred and ten active migration entries must remain semantically stable'
+    'the one hundred and ten previously reviewed migration entries must remain semantically unchanged'
+  );
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets),
+    'ee0f595edfec1a9b956d82c4257e160a4d6adf5302d2dcce40667c89720575d1',
+    'all one hundred and fourteen active migration entries must remain semantically stable'
   );
 
   assert.equal(
@@ -1425,7 +1446,7 @@ test('project migration ledger stays exact at one hundred and ten reviewed state
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 110);
+  assert.equal(report.migrationBudgets.length, 114);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
@@ -1436,7 +1457,7 @@ test('project migration ledger stays exact at one hundred and ten reviewed state
   const expectedEdges = new Map([
     ['builder>shared', { observed: 272, migration: 53, reviewed: 219, budget: 219 }],
     ['features>shared', { observed: 59, migration: 1, reviewed: 58, budget: 58 }],
-    ['services>shared', { observed: 222, migration: 55, reviewed: 167, budget: 167 }],
+    ['services>shared', { observed: 226, migration: 59, reviewed: 167, budget: 167 }],
     ['ui>shared', { observed: 28, migration: 1, reviewed: 27, budget: 27 }],
   ]);
   for (const [key, expected] of expectedEdges) {

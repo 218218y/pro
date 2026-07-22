@@ -5,17 +5,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  analyzeModuleDependencies,
-  collectLayerContractGraph,
-  collectNamedModuleExports,
-  evaluateLayerContract,
-} from '../tools/wp_layer_contract_support.mjs';
+import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const shelfRel = 'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts';
 const hoverRel = 'esm/native/builder/render_preview_interior_hover_apply.ts';
-const manualHoverRel = 'esm/native/services/canvas_picking_interior_hover_manual_mode.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 
@@ -31,16 +25,6 @@ function stableJson(value) {
 }
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
-
-function listSourceFiles(dir) {
-  const files = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) files.push(...listSourceFiles(absolute));
-    else if (entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name)) files.push(absolute);
-  }
-  return files;
-}
 
 function focusedDimensionImports(rel) {
   return analyzeModuleDependencies(path.join(root, rel), read(rel))
@@ -159,18 +143,18 @@ const hoverCompanions = [
   'SKETCH_BOX_SHELF_PREVIEW_POLICY',
 ];
 
-test('Builder Shelf/Hover pair ledger transition and repository layer counts are exact', () => {
+test('Builder Shelf/Hover pair historical ledger prefix remains semantically exact', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(baseline.migrationBudgets.length, 110);
+  assert.ok(baseline.migrationBudgets.length >= 110);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 105)),
     'f6b0d938acb9ff1fe2231078dcede6c8c55348683ed48e8d95c5149d1229e24d'
   );
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 110)),
     '8d1d7cafcce3d1d360a559daf7a9fa00b92f32139a4f90cf80d6b6f061dfdd2d'
   );
-  assert.deepEqual(baseline.migrationBudgets.slice(105), [
+  assert.deepEqual(baseline.migrationBudgets.slice(105, 110), [
     migrationEntry({
       fromFile: shelfRel,
       companionSymbols: shelfCompanions,
@@ -222,64 +206,6 @@ test('Builder Shelf/Hover pair ledger transition and repository layer counts are
         'Remove this entry when a reviewed interior layout hover-preview composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade.',
     }),
   ]);
-
-  const graph = collectLayerContractGraph({ root });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-22' });
-  assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.filter(entry => entry.active).length, 110);
-  const observed = new Map(graph.edges.map(edge => [`${edge.from}>${edge.to}`, edge.importCount]));
-  assert.equal(observed.get('builder>shared'), 272);
-  assert.equal(observed.get('features>shared'), 59);
-  assert.equal(observed.get('services>shared'), 222);
-  assert.equal(observed.get('ui>shared'), 28);
-  assert.equal(
-    report.migrationBudgets.filter(entry => entry.active && entry.from === 'builder' && entry.to === 'shared')
-      .length,
-    53
-  );
-});
-
-test('Builder Shelf/Hover pair leaves one exact Sketch Box facade consumer', () => {
-  const esmFiles = listSourceFiles(path.join(root, 'esm'));
-  const facadeDependencies = esmFiles.flatMap(file => {
-    const dependencies = analyzeModuleDependencies(file, fs.readFileSync(file, 'utf8')).imports.filter(
-      dependency => dependency.specifier.includes('wardrobe_dimension_tokens_shared')
-    );
-    return dependencies.map(dependency => ({ file, ...dependency }));
-  });
-  const staticFacadeDependencies = facadeDependencies.filter(
-    dependency => dependency.syntax === 'static-import'
-  );
-  assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 43);
-  assert.equal(staticFacadeDependencies.length, 43);
-  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 45);
-  assert.equal(facadeDependencies.length, 46);
-
-  const sketchBoxConsumers = esmFiles
-    .filter(file => file.replaceAll('\\', '/') !== path.join(root, facadeRel).replaceAll('\\', '/'))
-    .filter(file => /\bSKETCH_BOX_DIMENSIONS\b/u.test(fs.readFileSync(file, 'utf8')))
-    .map(file => path.relative(root, file).replaceAll('\\', '/'))
-    .sort();
-  assert.deepEqual(sketchBoxConsumers, [manualHoverRel]);
-  assert.equal(sketchBoxConsumers.filter(file => file.includes('/builder/')).length, 0);
-  assert.equal(sketchBoxConsumers.filter(file => file.includes('/services/')).length, 1);
-  assert.equal(sketchBoxConsumers.filter(file => file.includes('/ui/')).length, 0);
-  const manualHover = read(manualHoverRel);
-  assert.match(manualHover, /SKETCH_BOX_DIMENSIONS\.preview/u);
-  assert.doesNotMatch(
-    manualHover,
-    /SKETCH_BOX_DIMENSIONS\.(?:geometry|freePlacement)|\bHANDLE_DIMENSIONS\b/u
-  );
-
-  const facadeExports = collectNamedModuleExports(facadeRel, read(facadeRel));
-  assert.equal(
-    new Set(facadeExports.filter(entry => entry.kind === 'value').map(entry => entry.exportedName)).size,
-    89
-  );
-  assert.equal(
-    new Set(facadeExports.filter(entry => entry.kind === 'type').map(entry => entry.exportedName)).size,
-    10
-  );
 });
 
 test('Builder Shelf/Hover pair keeps focused-owner formulas structurally exact', () => {

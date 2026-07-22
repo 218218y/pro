@@ -4194,6 +4194,146 @@
       },
       "reason": "The interior layout hover preview renderer replaces one legacy facade statement with the focused Material Thickness owner plus focused Sketch Box Core, Rod, and Shelf Preview owners on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed interior layout hover-preview composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-22",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_ROD_PREVIEW_POLICY", "SKETCH_BOX_SHELF_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS",
+          "SKETCH_BOX_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The manual interior-hover flow replaces one legacy facade statement with the focused Drawer Sketch Internal Preview owner plus focused Sketch Box Rod and Shelf Preview owners on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed manual interior-hover composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-22",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_ROD_PREVIEW_POLICY", "SKETCH_BOX_SHELF_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS",
+          "SKETCH_BOX_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_ROD_PLACEMENT_POLICY", "INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The manual interior-hover flow replaces one legacy facade statement with focused Interior Rod Placement and Shelf Geometry owners plus focused Sketch Box Rod and Shelf Preview owners on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed manual interior-hover composition seam eliminates the extra Interior Fittings statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-22",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_ROD_PREVIEW_POLICY", "SKETCH_BOX_SHELF_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS",
+          "SKETCH_BOX_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "INTERIOR_STORAGE_BARRIER_POLICY",
+          "INTERIOR_STORAGE_GRID_POLICY",
+          "INTERIOR_STORAGE_PREVIEW_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "reason": "The manual interior-hover flow replaces one legacy facade statement with focused Interior Storage Barrier, Grid, and Preview owners plus focused Sketch Box Rod and Shelf Preview owners on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed manual interior-hover composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-22",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_ROD_PREVIEW_POLICY", "SKETCH_BOX_SHELF_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DRAWER_DIMENSIONS",
+          "INTERIOR_FITTINGS_DIMENSIONS",
+          "MATERIAL_DIMENSIONS",
+          "SKETCH_BOX_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The manual interior-hover flow replaces one legacy facade statement with the focused Material Thickness owner plus focused Sketch Box Rod and Shelf Preview owners on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed manual interior-hover composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
     }
   ]
 }

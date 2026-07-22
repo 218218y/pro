@@ -111,10 +111,6 @@ test('[dimension tokens] sketch box geometry and preview dimensions are centrali
   const tokens = readProductDimensionTokens();
   assert.match(tokens, /export const SKETCH_BOX_DIMENSIONS = Object\.freeze\(\{/);
 
-  for (const rel of ['esm/native/services/canvas_picking_interior_hover_manual_mode.ts']) {
-    assertUsesToken(rel, 'SKETCH_BOX_DIMENSIONS');
-  }
-
   const focusedGeometryConsumers = new Map([
     [
       'esm/native/builder/render_interior_sketch_boxes_shell_geometry.ts',
@@ -333,7 +329,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     assert.match(read(owner), new RegExp(`export const ${aggregate} = Object\\.freeze`, 'u'));
   }
 
-  const expectedConsumers = ['esm/native/services/canvas_picking_interior_hover_manual_mode.ts'];
+  const expectedConsumers = [];
   const actualConsumers = esmFiles.filter(
     file =>
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
@@ -341,7 +337,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 0);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 1);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 0);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
     const source = read(file);
@@ -388,7 +384,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
       /SKETCH_BOX_DIMENSIONS\.preview/u.test(read(file))
   );
-  assert.equal(remainingPreviewConsumers.length, expectedConsumers.length);
+  assert.equal(remainingPreviewConsumers.length, 0);
   assert.deepEqual(remainingPreviewConsumers.sort(), actualConsumers.sort());
   for (const file of actualConsumers) {
     const branches = new Set(
@@ -1809,6 +1805,20 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
         'INTERIOR_STORAGE_BARRIER_POLICY',
         'INTERIOR_STORAGE_CLAMP_POLICY',
         'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+      ],
+    ],
+    [
+      'esm/native/services/canvas_picking_interior_hover_manual_mode.ts',
+      [
+        'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+        'INTERIOR_ROD_PLACEMENT_POLICY',
+        'INTERIOR_SHELF_GEOMETRY_POLICY',
+        'INTERIOR_STORAGE_BARRIER_POLICY',
+        'INTERIOR_STORAGE_GRID_POLICY',
+        'INTERIOR_STORAGE_PREVIEW_POLICY',
+        'MATERIAL_THICKNESS_POLICY',
+        'SKETCH_BOX_ROD_PREVIEW_POLICY',
+        'SKETCH_BOX_SHELF_PREVIEW_POLICY',
       ],
     ],
     [
