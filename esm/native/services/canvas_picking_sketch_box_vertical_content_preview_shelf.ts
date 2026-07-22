@@ -1,8 +1,10 @@
+import { INTERIOR_SHELF_GEOMETRY_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY,
+  SKETCH_BOX_PREVIEW_CORE_POLICY,
+  SKETCH_BOX_SHELF_PREVIEW_POLICY,
+} from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import type { RaycastHitLike } from './canvas_picking_engine.js';
 import { buildSketchBoxStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
@@ -65,7 +67,7 @@ export function resolveSketchBoxShelfPreview(
     shelfDepthOverrideM,
     partPrefix,
     intersects,
-    removeEpsShelf = SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM,
+    removeEpsShelf = SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM,
     pickSketchBoxSegment,
   } = args;
   const {
@@ -87,7 +89,7 @@ export function resolveSketchBoxShelfPreview(
   const isDouble = variant === 'double' || !variant;
   const shelfH =
     variant === 'glass'
-      ? MATERIAL_DIMENSIONS.glassShelf.thicknessM
+      ? MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM
       : isDouble
         ? Math.max(woodThick, woodThick * 2)
         : woodThick;
@@ -132,7 +134,7 @@ export function resolveSketchBoxShelfPreview(
 
   const removeTolerance =
     directShelfHitY != null
-      ? Math.max(removeEpsShelf, SKETCH_BOX_DIMENSIONS.preview.shelfRemoveBoardToleranceM)
+      ? Math.max(removeEpsShelf, SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRemoveBoardToleranceM)
       : removeEpsShelf;
   if (bestDy <= removeTolerance && removePreviewY != null) {
     op = 'remove';
@@ -175,14 +177,16 @@ export function resolveSketchBoxShelfPreview(
       ? Math.min(targetGeo.innerD, Math.max(woodThick, shelfDepthOverrideM))
       : isBrace
         ? targetGeo.innerD
-        : Math.min(targetGeo.innerD, INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM);
+        : Math.min(targetGeo.innerD, INTERIOR_SHELF_GEOMETRY_POLICY.regularDepthM);
   const shelfSegment = previewSegment || activeSegment;
   const shelfCenterX = readFiniteSegmentNumber(shelfSegment, 'centerX') ?? targetGeo.centerX;
   const shelfInnerW = readFiniteSegmentNumber(shelfSegment, 'width') ?? targetGeo.innerW;
-  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
   const previewW = Math.max(
-    previewDims.shelfMinWidthM,
-    shelfInnerW - (isBrace ? previewDims.shelfBraceClearanceM : previewDims.shelfRegularClearanceM)
+    SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfMinWidthM,
+    shelfInnerW -
+      (isBrace
+        ? SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfBraceClearanceM
+        : SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRegularClearanceM)
   );
   const previewZ = targetGeo.innerBackZ + shelfDepth / 2;
   const clearanceMeasurements = buildSketchBoxStackAwareMeasurementEntries({
@@ -207,9 +211,12 @@ export function resolveSketchBoxShelfPreview(
     z:
       previewZ +
       shelfDepth / 2 +
-      Math.max(previewDims.measurementZOffsetMinM, shelfDepth * previewDims.measurementZOffsetDepthRatio),
+      Math.max(
+        SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetMinM,
+        shelfDepth * SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetDepthRatio
+      ),
     styleKey: 'cell',
-    textScale: previewDims.measurementTextScale,
+    textScale: SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale,
   });
 
   return {

@@ -1,8 +1,15 @@
+import { INTERIOR_SHELF_GEOMETRY_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  INTERIOR_STORAGE_PREVIEW_POLICY,
+} from '../../shared/dimensions/interior_storage_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import {
+  SKETCH_BOX_PREVIEW_CORE_POLICY,
+  SKETCH_BOX_ROD_PREVIEW_POLICY,
+  SKETCH_BOX_SHELF_PREVIEW_POLICY,
+  SKETCH_BOX_STORAGE_PREVIEW_POLICY,
+} from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import {
   buildSketchBoxVerticalContentBlockers,
@@ -30,9 +37,9 @@ function rangeDistanceFromY(range: SketchBoxVerticalContentBlocker, y: number): 
 
 function removalToleranceForKind(kind: SketchBoxVerticalContentKind, requestedToleranceM: number): number {
   if (kind === 'storage') {
-    return Math.max(requestedToleranceM, SKETCH_BOX_DIMENSIONS.preview.removeEpsBoxM);
+    return Math.max(requestedToleranceM, SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsBoxM);
   }
-  return Math.max(requestedToleranceM, SKETCH_BOX_DIMENSIONS.preview.removeEpsShelfM);
+  return Math.max(requestedToleranceM, SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM);
 }
 
 function rangesOverlap(args: {
@@ -156,7 +163,6 @@ export function resolveSketchBoxVerticalRemovalPreview(args: {
     removeIdx,
     heightM: blocker.heightM,
   });
-  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
   const centerX = readFiniteSegmentNumber(segment, 'centerX') ?? state.targetGeo.centerX;
   const width = readFiniteSegmentNumber(segment, 'width') ?? state.targetGeo.innerW;
 
@@ -168,9 +174,12 @@ export function resolveSketchBoxVerticalRemovalPreview(args: {
         x: centerX,
         y: centerY,
         z: state.targetGeo.innerBackZ + state.targetGeo.innerD / 2,
-        w: Math.max(previewDims.rodMinLengthM, width - previewDims.rodWidthClearanceM),
-        h: previewDims.rodPreviewHeightM,
-        d: previewDims.rodPreviewDepthM,
+        w: Math.max(
+          SKETCH_BOX_ROD_PREVIEW_POLICY.rodMinLengthM,
+          width - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
+        ),
+        h: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewHeightM,
+        d: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewDepthM,
         woodThick: previewArgs.woodThick,
         op: 'remove',
       },
@@ -178,17 +187,16 @@ export function resolveSketchBoxVerticalRemovalPreview(args: {
   }
 
   if (blocker.kind === 'storage') {
-    const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
     const barrierHeight = blocker.heightM ?? Math.max(0, blocker.maxY - blocker.minY);
     const barrierZ = Math.max(
-      state.targetGeo.innerBackZ + previewDims.storageBarrierBackInsetM,
+      state.targetGeo.innerBackZ + SKETCH_BOX_STORAGE_PREVIEW_POLICY.storageBarrierBackInsetM,
       state.targetGeo.innerBackZ +
         state.targetGeo.innerD -
         Math.min(
-          previewDims.storageBarrierDepthClearanceMaxM,
+          SKETCH_BOX_STORAGE_PREVIEW_POLICY.storageBarrierDepthClearanceMaxM,
           Math.max(
-            previewDims.storageBarrierDepthClearanceMinM,
-            state.targetGeo.innerD * previewDims.storageBarrierDepthClearanceRatio
+            SKETCH_BOX_STORAGE_PREVIEW_POLICY.storageBarrierDepthClearanceMinM,
+            state.targetGeo.innerD * SKETCH_BOX_STORAGE_PREVIEW_POLICY.storageBarrierDepthClearanceRatio
           )
         )
     );
@@ -199,9 +207,12 @@ export function resolveSketchBoxVerticalRemovalPreview(args: {
         x: centerX,
         y: centerY,
         z: barrierZ,
-        w: Math.max(previewDims.shelfMinWidthM, width - storageDims.barrierWidthClearanceM),
+        w: Math.max(
+          SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfMinWidthM,
+          width - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
+        ),
         h: barrierHeight,
-        d: Math.max(storageDims.previewThicknessMinM, previewArgs.woodThick),
+        d: Math.max(INTERIOR_STORAGE_PREVIEW_POLICY.previewThicknessMinM, previewArgs.woodThick),
         woodThick: previewArgs.woodThick,
         op: 'remove',
       },
@@ -215,11 +226,11 @@ export function resolveSketchBoxVerticalRemovalPreview(args: {
       ? Math.min(state.targetGeo.innerD, Math.max(previewArgs.woodThick, blocker.depthM))
       : isBrace
         ? state.targetGeo.innerD
-        : Math.min(state.targetGeo.innerD, INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM);
+        : Math.min(state.targetGeo.innerD, INTERIOR_SHELF_GEOMETRY_POLICY.regularDepthM);
   const shelfHeight =
     blocker.heightM ??
     (variant === 'glass'
-      ? MATERIAL_DIMENSIONS.glassShelf.thicknessM
+      ? MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM
       : variant === 'double'
         ? Math.max(previewArgs.woodThick, previewArgs.woodThick * 2)
         : previewArgs.woodThick);
@@ -232,8 +243,11 @@ export function resolveSketchBoxVerticalRemovalPreview(args: {
       y: centerY,
       z: state.targetGeo.innerBackZ + shelfDepth / 2,
       w: Math.max(
-        previewDims.shelfMinWidthM,
-        width - (isBrace ? previewDims.shelfBraceClearanceM : previewDims.shelfRegularClearanceM)
+        SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfMinWidthM,
+        width -
+          (isBrace
+            ? SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfBraceClearanceM
+            : SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRegularClearanceM)
       ),
       h: shelfHeight,
       d: shelfDepth,
