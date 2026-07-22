@@ -93,17 +93,21 @@ test('Sketch Box Core/Shelf flow pair imports are exact focused-owner statements
 test('Sketch Box Core/Shelf flow pair ledger and layer transition are exact', () => {
   const baseline = JSON.parse(fs.readFileSync(path.join(root, 'tools/wp_layer_baseline.json'), 'utf8'));
 
-  assert.equal(baseline.migrationBudgets.length, 91);
+  assert.equal(baseline.migrationBudgets.length, 92);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 89)),
     'e99df16d69cccb08f23fdd3e00a0097aabe12ee091b59a666fe8d5e67f20eb33'
   );
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 91)),
     '7ff95da1386b7229e5976d89f247a2f010973ba98d50f6a6aecbecf268a2b224'
   );
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets),
+    'c3925619d29b30dbd157d10f9afd68f4ed4dfe3b7ebac810a1438aa633a89dfd'
+  );
 
-  assert.deepEqual(baseline.migrationBudgets.slice(89), [
+  assert.deepEqual(baseline.migrationBudgets.slice(89, 91), [
     {
       from: 'services',
       to: 'shared',
@@ -173,12 +177,12 @@ test('Sketch Box Core/Shelf flow pair ledger and layer transition are exact', ()
   assert.equal(report.ok, true);
   const observed = new Map(graph.edges.map(edge => [`${edge.from}>${edge.to}`, edge.importCount]));
   assert.equal(observed.get('builder>shared'), 267);
-  assert.equal(observed.get('services>shared'), 208);
+  assert.equal(observed.get('services>shared'), 209);
   assert.equal(
     report.migrationBudgets.filter(
       entry => entry.from === 'services' && entry.to === 'shared' && entry.active
     ).length,
-    41
+    42
   );
 });
 

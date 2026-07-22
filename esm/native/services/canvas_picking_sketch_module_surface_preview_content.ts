@@ -1,7 +1,11 @@
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  INTERIOR_STORAGE_PREVIEW_POLICY,
+} from '../../shared/dimensions/interior_storage_policy.js';
+import {
+  SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY,
+  SKETCH_BOX_ROD_PREVIEW_POLICY,
+} from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { buildSketchModuleStackAwareMeasurementEntries } from './canvas_picking_sketch_neighbor_measurements.js';
 import {
   doesSketchModuleVerticalRangeCollideWithDrawers,
@@ -50,8 +54,6 @@ export function resolveSketchModuleContentPreview(args: {
   storageBarriers: ResolveSketchModuleSurfacePreviewArgs['storageBarriers'];
   rods: ResolveSketchModuleSurfacePreviewArgs['rods'];
 }): SketchModuleSurfacePreviewResult {
-  const previewDims = SKETCH_BOX_DIMENSIONS.preview;
-  const storageDims = INTERIOR_FITTINGS_DIMENSIONS.storage;
   const {
     source,
     bottomY,
@@ -181,10 +183,13 @@ export function resolveSketchModuleContentPreview(args: {
         kind: 'storage',
         x: internalCenterX,
         y: storagePreviewY,
-        z: zFront + storageDims.barrierFrontZOffsetM,
-        w: Math.max(storageDims.barrierWidthMinM, innerW - storageDims.barrierWidthClearanceM),
+        z: zFront + INTERIOR_STORAGE_BARRIER_POLICY.barrierFrontZOffsetM,
+        w: Math.max(
+          INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthMinM,
+          innerW - INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
+        ),
         h: storageHPreview,
-        d: Math.max(storageDims.previewThicknessMinM, woodThick),
+        d: Math.max(INTERIOR_STORAGE_PREVIEW_POLICY.previewThicknessMinM, woodThick),
         woodThick,
         op,
         blockedReason: blockedBySketchDrawers ? 'collision' : undefined,
@@ -211,9 +216,12 @@ export function resolveSketchModuleContentPreview(args: {
         x: internalCenterX,
         y: yClamped,
         z: internalZ,
-        w: Math.max(previewDims.rodMinLengthM, innerW - previewDims.rodWidthClearanceM),
-        h: previewDims.rodPreviewHeightM,
-        d: previewDims.rodPreviewDepthM,
+        w: Math.max(
+          SKETCH_BOX_ROD_PREVIEW_POLICY.rodMinLengthM,
+          innerW - SKETCH_BOX_ROD_PREVIEW_POLICY.rodWidthClearanceM
+        ),
+        h: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewHeightM,
+        d: SKETCH_BOX_ROD_PREVIEW_POLICY.rodPreviewDepthM,
         woodThick,
         op,
         blockedReason: blockedBySketchDrawers ? 'collision' : undefined,
@@ -265,9 +273,12 @@ export function resolveSketchModuleContentPreview(args: {
     z:
       shelfPreview.z +
       shelfPreview.d / 2 +
-      Math.max(previewDims.measurementZOffsetMinM, shelfPreview.d * previewDims.measurementZOffsetDepthRatio),
+      Math.max(
+        SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetMinM,
+        shelfPreview.d * SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetDepthRatio
+      ),
     styleKey: 'cell',
-    textScale: previewDims.measurementTextScale,
+    textScale: SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale,
   });
   return {
     handled: true,

@@ -24,7 +24,7 @@ test('Sketch Box Storage Preview pair ledger and layer transition are exact', ()
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(fs.readFileSync(path.join(root, 'tools/wp_layer_baseline.json'), 'utf8'));
 
-  assert.equal(baseline.migrationBudgets.length, 91);
+  assert.equal(baseline.migrationBudgets.length, 92);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 85)),
     '8c99874fb35870ef203054a2f461c052a975194229e11e5c767153c68c32a864'
@@ -112,7 +112,7 @@ test('Sketch Box Storage Preview pair ledger and layer transition are exact', ()
   assert.equal(report.ok, true);
   const observed = new Map(graph.edges.map(edge => [`${edge.from}>${edge.to}`, edge.importCount]));
   assert.equal(observed.get('builder>shared'), 267);
-  assert.equal(observed.get('services>shared'), 208);
+  assert.equal(observed.get('services>shared'), 209);
   assert.equal(
     report.migrationBudgets.filter(entry => entry.from === 'builder' && entry.to === 'shared' && entry.active)
       .length,
@@ -122,6 +122,6 @@ test('Sketch Box Storage Preview pair ledger and layer transition are exact', ()
     report.migrationBudgets.filter(
       entry => entry.from === 'services' && entry.to === 'shared' && entry.active
     ).length,
-    41
+    42
   );
 });
