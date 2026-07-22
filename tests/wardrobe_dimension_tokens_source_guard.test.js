@@ -345,7 +345,6 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
     'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts',
     'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts',
     'esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts',
-    'esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts',
   ];
   const actualConsumers = esmFiles.filter(
     file =>
@@ -354,7 +353,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
   );
   assert.deepEqual(actualConsumers.sort(), expectedConsumers);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/builder/')).length, 2);
-  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 7);
+  assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/services/')).length, 6);
   assert.equal(actualConsumers.filter(file => file.startsWith('esm/native/ui/')).length, 0);
   const remainingCleanPreviewOnlyConsumers = actualConsumers.filter(file => {
     const source = read(file);
@@ -401,7 +400,7 @@ test('[dimension tokens] Sketch Box foundation owns policies while remaining com
       file !== 'esm/shared/wardrobe_dimension_tokens_shared.ts' &&
       /SKETCH_BOX_DIMENSIONS\.preview/u.test(read(file))
   );
-  assert.equal(remainingPreviewConsumers.length, 9);
+  assert.equal(remainingPreviewConsumers.length, 8);
   assert.deepEqual(remainingPreviewConsumers.sort(), actualConsumers.sort());
   for (const file of actualConsumers) {
     const branches = new Set(
@@ -1849,7 +1848,11 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ],
     [
       'esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts',
-      ['SKETCH_BOX_DIMENSIONS', 'INTERIOR_FITTINGS_DIMENSIONS'],
+      [
+        'INTERIOR_STORAGE_GRID_POLICY',
+        'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
+        'SKETCH_BOX_SHELF_PREVIEW_POLICY',
+      ],
     ],
     [
       'esm/native/services/canvas_picking_manual_layout_sketch_tools.ts',

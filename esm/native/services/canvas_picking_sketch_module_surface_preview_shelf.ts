@@ -1,7 +1,8 @@
+import { INTERIOR_STORAGE_GRID_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  SKETCH_BOX_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY,
+  SKETCH_BOX_SHELF_PREVIEW_POLICY,
+} from '../../shared/dimensions/sketch_box_preview_policy.js';
 import { isShelfBoardPartId } from '../features/part_identity/api.js';
 import {
   createSketchModuleShelfPreviewGeometry,
@@ -81,8 +82,7 @@ export function resolveSketchModuleShelfRemovePreview(
       }
       if (op !== 'remove' && cfgRef && typeof cfgRef === 'object') {
         const divisions =
-          readRecordNumber(info, 'gridDivisions') ??
-          INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+          readRecordNumber(info, 'gridDivisions') ?? INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
         if (divisions > 1) {
           const step = spanH / divisions;
           const rel = shelfHitY - bottomY;
@@ -91,18 +91,18 @@ export function resolveSketchModuleShelfRemovePreview(
           if (shelfIndex > divisions - 1) shelfIndex = divisions - 1;
           const targetY = bottomY + shelfIndex * step;
           const epsNoBoard = Math.min(
-            SKETCH_BOX_DIMENSIONS.preview.shelfRemoveNoBoardToleranceMaxM,
+            SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRemoveNoBoardToleranceMaxM,
             Math.max(
-              SKETCH_BOX_DIMENSIONS.preview.shelfRemoveNoBoardToleranceMinM,
-              step * SKETCH_BOX_DIMENSIONS.preview.shelfRemoveNoBoardToleranceStepRatio
+              SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRemoveNoBoardToleranceMinM,
+              step * SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRemoveNoBoardToleranceStepRatio
             )
           );
           const eps = hitFromBoard
-            ? SKETCH_BOX_DIMENSIONS.preview.shelfRemoveBoardToleranceM
+            ? SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRemoveBoardToleranceM
             : isCornerMk && isDrawers
               ? Math.min(
-                  SKETCH_BOX_DIMENSIONS.preview.shelfRemoveNoBoardToleranceMaxM,
-                  epsNoBoard + SKETCH_BOX_DIMENSIONS.preview.shelfRemoveCornerDrawerToleranceExtraM
+                  SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRemoveNoBoardToleranceMaxM,
+                  epsNoBoard + SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRemoveCornerDrawerToleranceExtraM
                 )
               : epsNoBoard;
           if (Math.abs(shelfHitY - targetY) <= eps) {
@@ -179,11 +179,11 @@ export function resolveSketchModuleShelfRemovePreview(
         shelfPreview.z +
         shelfPreview.d / 2 +
         Math.max(
-          SKETCH_BOX_DIMENSIONS.preview.measurementZOffsetMinM,
-          shelfPreview.d * SKETCH_BOX_DIMENSIONS.preview.measurementZOffsetDepthRatio
+          SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetMinM,
+          shelfPreview.d * SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetDepthRatio
         ),
       styleKey: 'cell',
-      textScale: SKETCH_BOX_DIMENSIONS.preview.measurementTextScale,
+      textScale: SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale,
     });
     return {
       handled: true,

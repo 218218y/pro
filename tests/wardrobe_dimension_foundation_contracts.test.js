@@ -8,12 +8,12 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
 const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 51, statements: 51 }),
+  'static-import': Object.freeze({ importers: 50, statements: 50 }),
   'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
   'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-import': Object.freeze({ importers: 0, statements: 0 }),
   'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 53, statements: 54 }),
+  total: Object.freeze({ importers: 52, statements: 53 }),
 });
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
@@ -726,6 +726,9 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_PREVIEW_POLICY',
   ]),
+  'esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts': Object.freeze([
+    'INTERIOR_STORAGE_GRID_POLICY',
+  ]),
   'esm/native/services/canvas_picking_internal_drawer_existing_fittings.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
@@ -1073,6 +1076,10 @@ const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
     'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
     'SKETCH_BOX_ROD_PREVIEW_POLICY',
   ]),
+  'esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts': Object.freeze([
+    'SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY',
+    'SKETCH_BOX_SHELF_PREVIEW_POLICY',
+  ]),
   'esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts': Object.freeze([
     'SKETCH_BOX_ROD_PREVIEW_POLICY',
   ]),
@@ -1351,10 +1358,6 @@ const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
     'storage.previewThicknessMinM',
   ]),
   'esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts': Object.freeze([
-    'storage',
-    'storage.gridDivisionsDefault',
-  ]),
-  'esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts': Object.freeze([
     'storage',
     'storage.gridDivisionsDefault',
   ]),
