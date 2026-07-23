@@ -1,8 +1,9 @@
 // Builder core pure door and sliding computations.
 import {
-  DOOR_SYSTEM_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  HINGED_DOOR_MOUNT_POLICY,
+  SLIDING_DOOR_CONSTRUCTION_POLICY,
+} from '../../shared/dimensions/door_system_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 
 import { readHexCellConfig, resolveDefaultHexDoorWidthCm } from '../features/hex_cell/index.js';
 import { readCorePureNumberArray, readCorePurePositiveNumber } from './core_pure_number_contracts.js';
@@ -31,7 +32,7 @@ type SlidingDoorSpec = {
 export function computeHingedDoorPivotMap(input: unknown) {
   const inp = _asObject(input) || {};
   let totalW = __asNum(inp.totalW, 0);
-  let woodThick = __asNum(inp.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
+  let woodThick = __asNum(inp.woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
   const doorMountMode = inp.doorMountMode === 'inset' ? 'inset' : 'overlay';
   const isInsetDoorMount = doorMountMode === 'inset';
   let singleUnitWidth = __asNum(inp.singleUnitWidth, 0);
@@ -71,7 +72,7 @@ export function computeHingedDoorPivotMap(input: unknown) {
   const OVERLAY_OUTER = woodThick / 2;
   const OVERLAY_INNER = woodThick / 3;
   const OVERLAY_SPECIAL = woodThick / 2;
-  const INSET_REVEAL = DOOR_SYSTEM_DIMENSIONS.hinged.insetRevealM;
+  const INSET_REVEAL = HINGED_DOOR_MOUNT_POLICY.insetRevealM;
 
   for (let mi = 0; mi < modules.length; mi++) {
     const mod = modules[mi];
@@ -104,12 +105,12 @@ export function computeHingedDoorPivotMap(input: unknown) {
     let leafGap =
       modDoors > 1
         ? Math.min(
-            DOOR_SYSTEM_DIMENSIONS.hinged.sameModuleLeafGapMaxM,
-            woodThick / DOOR_SYSTEM_DIMENSIONS.hinged.sameModuleLeafGapWoodDivisor
+            HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapMaxM,
+            woodThick / HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapWoodDivisor
           )
         : 0; // meters
     if (leafGap > 0) {
-      const maxTotalGap = effectiveSpanW * DOOR_SYSTEM_DIMENSIONS.hinged.sameModuleLeafGapSpanRatioMax; // don't eat more than 10% of the span
+      const maxTotalGap = effectiveSpanW * HINGED_DOOR_MOUNT_POLICY.sameModuleLeafGapSpanRatioMax; // don't eat more than 10% of the span
       const totalDesired = (modDoors - 1) * leafGap;
       if (totalDesired > maxTotalGap) leafGap = maxTotalGap / (modDoors - 1);
     }
@@ -196,16 +197,16 @@ export function computeHingedDoorPivotMap(input: unknown) {
 export function computeSlidingDoorSpecs(input: unknown) {
   const inp = _asObject(input) || {};
   let totalW = __asNum(inp.totalW, 0);
-  let woodThick = __asNum(inp.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
-  let numDoors = __asInt(inp.numDoors, DOOR_SYSTEM_DIMENSIONS.sliding.defaultDoorsCount);
+  let woodThick = __asNum(inp.woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
+  let numDoors = __asInt(inp.numDoors, SLIDING_DOOR_CONSTRUCTION_POLICY.defaultDoorsCount);
   if (numDoors < 1) numDoors = 1;
-  let overlap = __asNum(inp.overlap, DOOR_SYSTEM_DIMENSIONS.sliding.overlapM);
-  let railDepth = __asNum(inp.railDepth, DOOR_SYSTEM_DIMENSIONS.sliding.railDepthM);
+  let overlap = __asNum(inp.overlap, SLIDING_DOOR_CONSTRUCTION_POLICY.overlapM);
+  let railDepth = __asNum(inp.railDepth, SLIDING_DOOR_CONSTRUCTION_POLICY.railDepthM);
   let railZ = __asNum(inp.railZ, 0);
 
   let internalWidthForDoors = totalW - 2 * woodThick;
   let doorWidth = (internalWidthForDoors + (numDoors - 1) * overlap) / numDoors;
-  const offsetZ = railDepth / DOOR_SYSTEM_DIMENSIONS.sliding.railTrackLaneDivisor;
+  const offsetZ = railDepth / SLIDING_DOOR_CONSTRUCTION_POLICY.railTrackLaneDivisor;
   let specs: SlidingDoorSpec[] = Array.from<SlidingDoorSpec>({ length: numDoors });
 
   for (let i = 0; i < numDoors; i++) {
@@ -251,41 +252,41 @@ export function computeSlidingDoorSpecs(input: unknown) {
 export function computeSlidingDoorOps(input: unknown) {
   const inp = _asObject(input) || {};
   let totalW = __asNum(inp.totalW, 0);
-  let woodThick = __asNum(inp.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
+  let woodThick = __asNum(inp.woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
   let D = __asNum(inp.depth, __asNum(inp.D, 0));
   let cabinetBodyHeight = __asNum(inp.cabinetBodyHeight, 0);
   let startY = __asNum(inp.startY, 0);
-  let numDoors = __asInt(inp.numDoors, DOOR_SYSTEM_DIMENSIONS.sliding.defaultDoorsCount);
+  let numDoors = __asInt(inp.numDoors, SLIDING_DOOR_CONSTRUCTION_POLICY.defaultDoorsCount);
   if (numDoors < 1) numDoors = 1;
 
-  let overlap = __asNum(inp.overlap, DOOR_SYSTEM_DIMENSIONS.sliding.overlapM);
-  let railHeight = __asNum(inp.railHeight, DOOR_SYSTEM_DIMENSIONS.sliding.railHeightM);
-  let railDepth = __asNum(inp.railDepth, DOOR_SYSTEM_DIMENSIONS.sliding.railDepthM);
+  let overlap = __asNum(inp.overlap, SLIDING_DOOR_CONSTRUCTION_POLICY.overlapM);
+  let railHeight = __asNum(inp.railHeight, SLIDING_DOOR_CONSTRUCTION_POLICY.railHeightM);
+  let railDepth = __asNum(inp.railDepth, SLIDING_DOOR_CONSTRUCTION_POLICY.railDepthM);
 
   const openingBottomY = startY + woodThick;
   const openingTopY = startY + cabinetBodyHeight - woodThick;
   const openingHeight = Math.max(0, openingTopY - openingBottomY);
   const requestedShellClearance = Math.max(
-    DOOR_SYSTEM_DIMENSIONS.sliding.shellClearanceMinM,
+    SLIDING_DOOR_CONSTRUCTION_POLICY.shellClearanceMinM,
     Math.min(
-      DOOR_SYSTEM_DIMENSIONS.sliding.shellClearanceMaxM,
-      woodThick / DOOR_SYSTEM_DIMENSIONS.sliding.shellClearanceWoodDivisor
+      SLIDING_DOOR_CONSTRUCTION_POLICY.shellClearanceMaxM,
+      woodThick / SLIDING_DOOR_CONSTRUCTION_POLICY.shellClearanceWoodDivisor
     )
   );
   const maxShellClearance = Math.max(0, openingHeight / 2 - railHeight);
   const shellClearance = Math.min(requestedShellClearance, maxShellClearance);
 
-  let railZ = D / 2 - railDepth / 2 - DOOR_SYSTEM_DIMENSIONS.sliding.railBackInsetM;
+  let railZ = D / 2 - railDepth / 2 - SLIDING_DOOR_CONSTRUCTION_POLICY.railBackInsetM;
   const topY = openingTopY - shellClearance - railHeight / 2;
   const bottomY = openingBottomY + shellClearance + railHeight / 2;
 
   const doorTopOverlap = Math.min(
-    DOOR_SYSTEM_DIMENSIONS.sliding.doorTopOverlapMaxM,
-    Math.max(0, railHeight - DOOR_SYSTEM_DIMENSIONS.sliding.doorTopOverlapRailInsetM)
+    SLIDING_DOOR_CONSTRUCTION_POLICY.doorTopOverlapMaxM,
+    Math.max(0, railHeight - SLIDING_DOOR_CONSTRUCTION_POLICY.doorTopOverlapRailInsetM)
   );
   const doorBottomY = bottomY + railHeight / 2;
   const doorTopY = topY - railHeight / 2 + doorTopOverlap;
-  const doorHeightNet = Math.max(DOOR_SYSTEM_DIMENSIONS.sliding.doorHeightMinM, doorTopY - doorBottomY);
+  const doorHeightNet = Math.max(SLIDING_DOOR_CONSTRUCTION_POLICY.doorHeightMinM, doorTopY - doorBottomY);
   const doorCenterY = doorBottomY + doorHeightNet / 2;
 
   let specRes = computeSlidingDoorSpecs({
@@ -337,8 +338,8 @@ export function computeSlidingDoorOps(input: unknown) {
       width: totalW - 2 * woodThick,
       topY: topY,
       bottomY: bottomY,
-      lineOffsetY: -railHeight / 2 - DOOR_SYSTEM_DIMENSIONS.sliding.railLineOffsetYExtraM,
-      lineOffsetZ: railDepth / DOOR_SYSTEM_DIMENSIONS.sliding.railTrackLaneDivisor,
+      lineOffsetY: -railHeight / 2 - SLIDING_DOOR_CONSTRUCTION_POLICY.railLineOffsetYExtraM,
+      lineOffsetZ: railDepth / SLIDING_DOOR_CONSTRUCTION_POLICY.railTrackLaneDivisor,
     },
     door: {
       heightNet: doorHeightNet,

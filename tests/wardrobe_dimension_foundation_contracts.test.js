@@ -229,6 +229,7 @@ const APPROVED_CHEST_STRUCTURAL_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_STRUCTURAL_DIMENSIONS']),
 });
 const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/core_doors_compute.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/core_storage_compute_external_drawers.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/render_interior_custom_ops.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/render_interior_custom_ops_shelves.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
@@ -365,7 +366,6 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/builder/core_carcass_shared.ts',
-  'esm/native/builder/core_doors_compute.ts',
   'esm/native/builder/core_layout_compute.ts',
 ]);
 const APPROVED_MATERIAL_LEGACY_DEPENDENCIES = Object.freeze(
@@ -476,6 +476,10 @@ const APPROVED_CHEST_MODE_LEGACY_FIELD_USAGE = Object.freeze({
   ],
 });
 const APPROVED_DOOR_SYSTEM_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/core_doors_compute.ts': Object.freeze([
+    'HINGED_DOOR_MOUNT_POLICY',
+    'SLIDING_DOOR_CONSTRUCTION_POLICY',
+  ]),
   'esm/shared/dimensions/external_drawer_policy.ts': Object.freeze(['HINGED_DOOR_MOUNT_POLICY']),
   'esm/native/builder/render_interior_sketch_boxes_door_geometry.ts': Object.freeze([
     'HINGED_DOOR_MOUNT_POLICY',
@@ -1617,32 +1621,10 @@ const APPROVED_CONTENT_VISUAL_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DOOR_SYSTEM_LEGACY_DEPENDENCIES = Object.freeze({
-  'esm/native/builder/core_doors_compute.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
   'esm/native/builder/visuals_chest_mode_build.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
   'esm/native/platform/render_loop_motion_doors.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
 });
 const APPROVED_DOOR_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/core_doors_compute.ts': [
-    'hinged',
-    'hinged.insetRevealM',
-    'hinged.sameModuleLeafGapMaxM',
-    'hinged.sameModuleLeafGapSpanRatioMax',
-    'hinged.sameModuleLeafGapWoodDivisor',
-    'sliding',
-    'sliding.defaultDoorsCount',
-    'sliding.doorHeightMinM',
-    'sliding.doorTopOverlapMaxM',
-    'sliding.doorTopOverlapRailInsetM',
-    'sliding.overlapM',
-    'sliding.railBackInsetM',
-    'sliding.railDepthM',
-    'sliding.railHeightM',
-    'sliding.railLineOffsetYExtraM',
-    'sliding.railTrackLaneDivisor',
-    'sliding.shellClearanceMaxM',
-    'sliding.shellClearanceMinM',
-    'sliding.shellClearanceWoodDivisor',
-  ],
   'esm/native/builder/visuals_chest_mode_build.ts': ['hinged', 'hinged.insetRevealM'],
   'esm/native/platform/render_loop_motion_doors.ts': [
     'sliding',

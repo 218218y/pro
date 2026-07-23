@@ -1640,6 +1640,7 @@ test('[dimension tokens] Remaining Interior Fittings owner preserves focused pro
 
 test('[dimension tokens] pure Material consumers use the canonical thickness owner', () => {
   const expectedConsumers = [
+    'esm/native/builder/core_doors_compute.ts',
     'esm/native/features/sketch_internal_drawer_cassette.ts',
     'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
     'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts',
@@ -1774,6 +1775,10 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
 
   const expectedTokenUse = new Map([
     ['esm/native/builder/corner_wing_cell_layouts.ts', ['INTERIOR_FITTINGS_DIMENSIONS', 'presetDims']],
+    [
+      'esm/native/builder/core_doors_compute.ts',
+      ['HINGED_DOOR_MOUNT_POLICY', 'MATERIAL_THICKNESS_POLICY', 'SLIDING_DOOR_CONSTRUCTION_POLICY'],
+    ],
     ['esm/native/builder/render_door_ops_hinged.ts', ['HINGED_DOOR_RENDER_POLICY', 'hingedDims']],
     [
       'esm/native/builder/render_interior_preset_ops.ts',

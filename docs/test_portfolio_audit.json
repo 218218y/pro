@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-23T20:08:50.356Z",
+  "generatedAt": "2026-07-23T20:48:10.004Z",
   "totals": {
-    "tests": 1263,
-    "unitRunnerTests": 1255,
+    "tests": 1265,
+    "unitRunnerTests": 1257,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,9 +13,9 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 422,
+    "contract": 423,
     "runtime-unit": 318,
-    "integration": 464,
+    "integration": 465,
     "e2e-smoke": 9,
     "perf-smoke": 9,
     "legacy-migration": 41
@@ -1427,6 +1427,14 @@
     },
     {
       "file": "tests/core_doors_compute_sliding_vertical_clearance_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/core_doors_material_door_system_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/core_doors_material_door_system_runtime.test.ts",
       "category": "integration"
     },
     {
