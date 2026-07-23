@@ -1,8 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../esm/shared/dimensions/drawer_sketch_policy.ts';
+import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
 import {
   fillManualLayoutShelves,
+  isManualLayoutShelfBlockedBySketchDrawers,
   removeManualLayoutBaseRod,
   removeManualLayoutBaseShelf,
   removeManualLayoutSketchExtraByIndex,
@@ -70,6 +73,7 @@ test('manual-layout config ops skip auto-filled shelves that collide with sketch
 
   const customData = cfg.customData as { shelves: boolean[]; shelfVariants: string[] };
   assert.deepEqual(plan.skippedIndexes, [2, 3]);
+  assert.deepEqual(plan.allowedIndexes, [1, 4]);
   assert.equal(plan.builtCount, 2);
   assert.equal(plan.skippedCount, 2);
   assert.deepEqual(customData.shelves, [true, false, false, true]);
@@ -130,6 +134,149 @@ test('manual-layout config ops block adding a single shelf over sketch drawers',
 
   const customData = cfg.customData as { shelves: boolean[]; shelfVariants: string[] };
   assert.deepEqual(result, { changed: false, blockedBySketchDrawers: true });
+  assert.deepEqual(customData.shelves, [false, false]);
+  assert.deepEqual(customData.shelfVariants, ['', '']);
+});
+
+test('manual-layout shelf collision preserves custom pad precedence and all focused policy branches', () => {
+  const policy = DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY;
+  const minWoodThick = policy.internalClampPadMinM / policy.internalClampPadWoodRatio / 2;
+  const ratioWoodThick = MATERIAL_THICKNESS_POLICY.wood.thicknessM;
+  const maxWoodThick = (policy.internalClampPadMaxM / policy.internalClampPadWoodRatio) * 2;
+  const expectedPad = (woodThick: number) =>
+    Math.min(
+      policy.internalClampPadMaxM,
+      Math.max(policy.internalClampPadMinM, woodThick * policy.internalClampPadWoodRatio)
+    );
+  const collides = (args: { yNormC: number; pad?: unknown; woodThick?: unknown }) =>
+    isManualLayoutShelfBlockedBySketchDrawers({
+      cfgRef: {
+        sketchExtras: {
+          drawers: [{ id: 'pad-probe', yNormC: args.yNormC, drawerHeightM: 0.02 }],
+        },
+      },
+      divs: 4,
+      topY: 1,
+      bottomY: 0,
+      shelfIndex: 2,
+      shelfVariant: 'regular',
+      pad: args.pad,
+      woodThick: args.woodThick,
+    });
+
+  assert.equal(expectedPad(minWoodThick), policy.internalClampPadMinM);
+  assert.equal(collides({ yNormC: 0.575, pad: Number.NaN, woodThick: minWoodThick }), false);
+
+  const ratioPad = expectedPad(ratioWoodThick);
+  assert.equal(ratioPad, ratioWoodThick * policy.internalClampPadWoodRatio);
+  assert.equal(collides({ yNormC: 0.575, pad: Number.NaN, woodThick: ratioWoodThick }), true);
+
+  assert.equal(expectedPad(maxWoodThick), policy.internalClampPadMaxM);
+  assert.equal(collides({ yNormC: 0.578, pad: Number.NaN, woodThick: maxWoodThick }), true);
+
+  assert.equal(collides({ yNormC: 0.578, pad: 0, woodThick: ratioWoodThick }), true);
+  assert.equal(collides({ yNormC: 0.578, pad: Number.NaN, woodThick: ratioWoodThick }), false);
+  assert.equal(
+    collides({ yNormC: 0.575, pad: policy.internalClampPadMinM, woodThick: ratioWoodThick }),
+    false
+  );
+
+  for (const invalidPad of [-1, '0', Number.NaN, Number.POSITIVE_INFINITY]) {
+    assert.equal(
+      collides({ yNormC: 0.575, pad: invalidPad, woodThick: ratioWoodThick }),
+      collides({ yNormC: 0.575, pad: ratioPad, woodThick: ratioWoodThick })
+    );
+  }
+});
+
+test('manual-layout shelf collision preserves custom wood thickness and fail-closed fallback inputs', () => {
+  const policy = DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY;
+  const defaultWoodThick = MATERIAL_THICKNESS_POLICY.wood.thicknessM;
+  const customWoodThick = policy.internalClampPadMinM / policy.internalClampPadWoodRatio / 2;
+  const collides = (woodThick: unknown) =>
+    isManualLayoutShelfBlockedBySketchDrawers({
+      cfgRef: {
+        sketchExtras: {
+          drawers: [{ id: 'wood-probe', yNormC: 0.575, drawerHeightM: 0.02 }],
+        },
+      },
+      divs: 4,
+      topY: 1,
+      bottomY: 0,
+      shelfIndex: 2,
+      shelfVariant: 'regular',
+      pad: Number.NaN,
+      woodThick,
+    });
+
+  assert.equal(collides(customWoodThick), false);
+  assert.equal(collides(defaultWoodThick), true);
+  for (const invalidWoodThick of [0, -1, '0.018', Number.NaN, Number.POSITIVE_INFINITY]) {
+    assert.equal(collides(invalidWoodThick), collides(defaultWoodThick));
+  }
+});
+
+test('manual-layout shelf collision distinguishes clear, internal, and external drawer ranges', () => {
+  const base = {
+    divs: 4,
+    topY: 1.2,
+    bottomY: 0,
+    shelfIndex: 2,
+    shelfVariant: 'regular' as const,
+    woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
+  };
+
+  assert.equal(isManualLayoutShelfBlockedBySketchDrawers({ ...base, cfgRef: {} }), false);
+  assert.equal(
+    isManualLayoutShelfBlockedBySketchDrawers({
+      ...base,
+      cfgRef: {
+        sketchExtras: {
+          drawers: [{ id: 'internal', yNormC: 0.5, drawerHeightM: 0.18 }],
+        },
+      },
+    }),
+    true
+  );
+  assert.equal(
+    isManualLayoutShelfBlockedBySketchDrawers({
+      ...base,
+      cfgRef: {
+        sketchExtras: {
+          extDrawers: [{ id: 'external', yNormC: 0.5, count: 1, drawerHeightM: 0.18 }],
+        },
+      },
+    }),
+    true
+  );
+});
+
+test('manual-layout config ops preserve blocked variant-change removal semantics', () => {
+  const cfg: Record<string, unknown> = {
+    isCustom: true,
+    customData: {
+      shelves: [true, false],
+      rods: [],
+      shelfVariants: ['', ''],
+      storage: false,
+    },
+    sketchExtras: {
+      drawers: [{ id: 'internal-drawers', yNormC: 1 / 3, drawerHeightM: 0.18 }],
+    },
+  };
+
+  const result = toggleManualLayoutShelf(cfg, {
+    divs: 3,
+    topY: 1.2,
+    bottomY: 0,
+    reset: false,
+    arrayIdx: 0,
+    shelfVariant: 'glass',
+    woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
+  });
+
+  const customData = cfg.customData as { shelves: boolean[]; shelfVariants: string[] };
+  assert.deepEqual(result, { changed: true, blockedBySketchDrawers: true });
   assert.deepEqual(customData.shelves, [false, false]);
   assert.deepEqual(customData.shelfVariants, ['', '']);
 });

@@ -1,4 +1,5 @@
-import { DRAWER_DIMENSIONS, MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import {
   doesSketchModuleVerticalRangeCollideWithDrawers,
   resolveSketchModuleShelfCollisionHeight,
@@ -47,16 +48,18 @@ function readFiniteNumber(value: unknown): number | null {
 
 function resolveCollisionWoodThick(value: unknown): number {
   const parsed = readFiniteNumber(value);
-  return parsed != null && parsed > 0 ? parsed : MATERIAL_DIMENSIONS.wood.thicknessM;
+  return parsed != null && parsed > 0 ? parsed : MATERIAL_THICKNESS_POLICY.wood.thicknessM;
 }
 
 function resolveCollisionPad(value: unknown, woodThick: number): number {
   const parsed = readFiniteNumber(value);
   if (parsed != null && parsed >= 0) return parsed;
-  const dims = DRAWER_DIMENSIONS.sketch;
   return Math.min(
-    dims.internalClampPadMaxM,
-    Math.max(dims.internalClampPadMinM, woodThick * dims.internalClampPadWoodRatio)
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadMaxM,
+    Math.max(
+      DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadMinM,
+      woodThick * DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalClampPadWoodRatio
+    )
   );
 }
 

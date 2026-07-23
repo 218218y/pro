@@ -1629,6 +1629,7 @@ test('[dimension tokens] Remaining Interior Fittings owner preserves focused pro
 test('[dimension tokens] pure Material consumers use the canonical thickness owner', () => {
   const expectedConsumers = [
     'esm/native/features/sketch_internal_drawer_cassette.ts',
+    'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
     'esm/native/builder/render_preview_sketch_pipeline_shared.ts',
     'esm/native/services/canvas_picking_hover_preview_modes_divider.ts',
     'esm/native/services/canvas_picking_sketch_free_box_content_preview_doors.ts',
@@ -1703,6 +1704,10 @@ test('[dimension tokens] Drawer Sketch owner preserves focused production consum
     ],
     ['esm/native/features/sketch_drawer_sizing.ts', 'DRAWER_SKETCH_SIZING_POLICY'],
     ['esm/native/features/sketch_internal_drawer_cassette.ts', 'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY'],
+    [
+      'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
+      'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+    ],
     ['esm/native/features/sketch_box_regular_external_drawers.ts', 'DRAWER_SKETCH_SIZING_POLICY'],
     [
       'esm/native/services/canvas_picking_drawer_cross_family_preview.ts',

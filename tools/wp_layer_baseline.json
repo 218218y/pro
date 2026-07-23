@@ -4487,6 +4487,35 @@
       },
       "reason": "The Sketch internal drawer cassette feature replaces one legacy facade statement with the focused Drawer Sketch Internal Preview owner plus the canonical Material Thickness owner on the existing features to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch internal drawer cassette composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-23",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The manual-layout shelf collision flow replaces one legacy facade statement with the focused Drawer Sketch Internal Preview owner plus the canonical Material Thickness owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed manual-layout shelf-collision composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
     }
   ]
 }
