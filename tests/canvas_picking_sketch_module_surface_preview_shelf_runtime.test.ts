@@ -290,6 +290,27 @@ test('board and no-board tolerance branches preserve exact focused-owner formula
   );
 });
 
+test('non-finite shelf coordinates fail closed without emitting a preview', () => {
+  const infiniteMatch = resolve({
+    intersects: [shelfBoardHit(Infinity)],
+    yClamped: Infinity,
+    topY: Infinity,
+    spanH: Infinity,
+    shelves: [{ yNorm: 0.5, variant: 'regular' }],
+    cfgRef: null,
+  });
+  assert.equal(infiniteMatch.handled, false);
+  assert.equal(infiniteMatch.result, undefined);
+
+  const nanTarget = resolve({
+    intersects: [shelfBoardHit(Number.NaN)],
+    yClamped: Number.NaN,
+    shelves: [],
+  });
+  assert.equal(nanTarget.handled, false);
+  assert.equal(nanTarget.result, undefined);
+});
+
 test('custom and built-in layout interpretation preserves shelf existence and brace variants', () => {
   assertBaseRemoval(
     resolve({

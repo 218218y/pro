@@ -19,6 +19,10 @@ import {
 } from './canvas_picking_sketch_module_surface_preview_shared.js';
 
 function isWithinInclusiveTolerance(value: number, target: number, tolerance: number): boolean {
+  if (!Number.isFinite(value) || !Number.isFinite(target)) {
+    return Math.abs(value - target) <= tolerance;
+  }
+
   return value >= target - tolerance && value <= target + tolerance;
 }
 
