@@ -1,10 +1,12 @@
 import { _asObject } from './core_pure_shared.js';
 import { readCorePureInteger, readCorePureNumber } from './core_pure_number_contracts.js';
 import {
-  DRAWER_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
+  EXTERNAL_DRAWER_BOX_POLICY,
+  EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
+  EXTERNAL_DRAWER_SIZE_POLICY,
   resolveExternalDrawerGeometry,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+} from '../../shared/dimensions/external_drawer_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 
 export function computeExternalDrawersOpsForModule(input: unknown) {
   const inp = _asObject(input) || {};
@@ -19,11 +21,11 @@ export function computeExternalDrawersOpsForModule(input: unknown) {
   let externalW = readCorePureNumber(inp.externalW, 0);
   let D = readCorePureNumber(inp.depth, readCorePureNumber(inp.D, 0));
   let startY = readCorePureNumber(inp.startY, 0);
-  let woodThick = readCorePureNumber(inp.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
+  let woodThick = readCorePureNumber(inp.woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
   const doorMountMode = inp.doorMountMode === 'inset' ? 'inset' : 'overlay';
 
-  let shoeDrawerHeight = readCorePureNumber(inp.shoeDrawerHeight, DRAWER_DIMENSIONS.external.shoeHeightM);
-  let regDrawerHeight = readCorePureNumber(inp.regDrawerHeight, DRAWER_DIMENSIONS.external.regularHeightM);
+  let shoeDrawerHeight = readCorePureNumber(inp.shoeDrawerHeight, EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM);
+  let regDrawerHeight = readCorePureNumber(inp.regDrawerHeight, EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM);
 
   const hasShoe = !!inp.hasShoe;
   let regCount = readCorePureInteger(inp.regCount, 0);
@@ -69,10 +71,10 @@ export function computeExternalDrawersOpsForModule(input: unknown) {
       dividerKey: keyPrefix + 'div_ext_' + moduleIndex + '_shoe',
       moduleIndex: moduleIndex,
       visualW: visualW,
-      visualH: shoeDrawerHeight - DRAWER_DIMENSIONS.external.visualHeightClearanceM,
+      visualH: shoeDrawerHeight - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM,
       visualT: visualT,
       boxW: boxW,
-      boxH: shoeDrawerHeight - DRAWER_DIMENSIONS.external.boxHeightClearanceM,
+      boxH: shoeDrawerHeight - EXTERNAL_DRAWER_BOX_POLICY.boxHeightClearanceM,
       boxD: boxD,
       boxOffsetZ: boxOffsetZ,
       connectW: connectW,
@@ -96,10 +98,10 @@ export function computeExternalDrawersOpsForModule(input: unknown) {
         dividerKey: keyPrefix + 'div_ext_' + moduleIndex + '_' + (k + 1),
         moduleIndex: moduleIndex,
         visualW: visualW,
-        visualH: regDrawerHeight - DRAWER_DIMENSIONS.external.visualHeightClearanceM,
+        visualH: regDrawerHeight - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM,
         visualT: visualT,
         boxW: boxW,
-        boxH: regDrawerHeight - DRAWER_DIMENSIONS.external.boxHeightClearanceM,
+        boxH: regDrawerHeight - EXTERNAL_DRAWER_BOX_POLICY.boxHeightClearanceM,
         boxD: boxD,
         boxOffsetZ: boxOffsetZ,
         connectW: connectW,

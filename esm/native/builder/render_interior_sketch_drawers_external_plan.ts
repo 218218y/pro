@@ -9,10 +9,8 @@ import {
   resolveSketchExternalDrawerMetrics,
   sketchStackFitsAvailableHeight,
 } from '../features/sketch_drawer_sizing.js';
-import {
-  DRAWER_DIMENSIONS,
-  resolveExternalDrawerGeometry,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
+import { resolveExternalDrawerGeometry } from '../../shared/dimensions/external_drawer_policy.js';
 import { resolveSketchStackCenterYFromNormalizedItem } from '../features/sketch_stack_positioning.js';
 
 import type {
@@ -113,7 +111,6 @@ export function createSketchExternalDrawerOpPlan(
 ): SketchExternalDrawerOpPlan | null {
   const op = asValueRecord(opValue);
   if (!op) return null;
-  const drawerDims = DRAWER_DIMENSIONS.sketch;
 
   const closed = asValueRecord(op.closed);
   const open = asValueRecord(op.open);
@@ -133,13 +130,16 @@ export function createSketchExternalDrawerOpPlan(
   const frontMat = context.resolvePartMaterial(partId);
   const boxMat = context.resolveDrawerBoxMaterial(boxPartId);
   const visualW = Math.max(
-    drawerDims.externalPreviewVisualMinWidthM,
+    DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM,
     readRenderOpNumber(op.visualW) ?? fallbackGeom.visualW
   );
-  const faceW = Math.max(drawerDims.externalPreviewVisualMinWidthM, readRenderOpNumber(op.faceW) ?? visualW);
+  const faceW = Math.max(
+    DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM,
+    readRenderOpNumber(op.faceW) ?? visualW
+  );
   const faceOffsetX = readRenderOpNumber(op.faceOffsetX) ?? 0;
   const visualHRaw = Math.max(
-    drawerDims.externalPreviewVisualMinHeightM,
+    DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
     readRenderOpNumber(op.visualH) ?? fallbackGeom.visualH
   );
   const faceVertical = resolveSketchExternalDrawerFaceVerticalAlignment({
@@ -169,24 +169,27 @@ export function createSketchExternalDrawerOpPlan(
     visualW,
     faceW,
     faceOffsetX,
-    visualH: Math.max(drawerDims.externalPreviewVisualMinHeightM, faceVertical.height),
+    visualH: Math.max(
+      DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
+      faceVertical.height
+    ),
     faceOffsetY: faceVertical.offsetY,
     faceMinY: faceVertical.minY,
     faceMaxY: faceVertical.maxY,
     visualD: Math.max(
-      drawerDims.externalPreviewVisualMinDepthM,
+      DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinDepthM,
       readRenderOpNumber(op.visualT) ?? context.visualT
     ),
     boxW: Math.max(
-      drawerDims.externalPreviewBoxMinDimensionM,
+      DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewBoxMinDimensionM,
       readRenderOpNumber(op.boxW) ?? fallbackGeom.boxW
     ),
     boxH: Math.max(
-      drawerDims.externalPreviewBoxMinDimensionM,
+      DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewBoxMinDimensionM,
       readRenderOpNumber(op.boxH) ?? fallbackGeom.boxH
     ),
     boxD: Math.max(
-      drawerDims.externalPreviewBoxMinDimensionM,
+      DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewBoxMinDimensionM,
       readRenderOpNumber(op.boxD) ?? fallbackGeom.boxD
     ),
     boxOffsetZ: readRenderOpNumber(op.boxOffsetZ) ?? fallbackGeom.boxOffsetZ,

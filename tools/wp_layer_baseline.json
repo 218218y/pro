@@ -4334,6 +4334,101 @@
       },
       "reason": "The manual interior-hover flow replaces one legacy facade statement with the focused Material Thickness owner plus focused Sketch Box Rod and Shelf Preview owners on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed manual interior-hover composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-23",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/core_storage_compute_external_drawers.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/external_drawer_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "EXTERNAL_DRAWER_BOX_POLICY",
+          "EXTERNAL_DRAWER_FRONT_RENDER_POLICY",
+          "EXTERNAL_DRAWER_SIZE_POLICY",
+          "resolveExternalDrawerGeometry"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "MATERIAL_DIMENSIONS", "resolveExternalDrawerGeometry"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The external-drawer core compute flow replaces one legacy facade statement with the focused External Drawer geometry and rendering owners plus the canonical Material Thickness owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed external-drawer compute composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-23",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/external_drawer_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EXTERNAL_DRAWER_SIZE_POLICY", "resolveExternalDrawerGeometry"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "resolveExternalDrawerGeometry"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY",
+          "DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch Box external-drawer planning flow replaces one legacy facade statement with the focused External Drawer geometry owner plus focused Drawer Sketch collision-alignment and external-preview owners on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch Box external-drawer planning composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-23",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/external_drawer_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["resolveExternalDrawerGeometry"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "resolveExternalDrawerGeometry"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch external-drawer planning flow replaces one legacy facade statement with the focused External Drawer geometry owner plus the focused Drawer Sketch external-preview owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch external-drawer planning composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
     }
   ]
 }

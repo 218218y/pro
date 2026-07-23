@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-23T05:16:44.837Z",
+  "generatedAt": "2026-07-23T08:27:31.536Z",
   "totals": {
-    "tests": 1255,
-    "unitRunnerTests": 1247,
+    "tests": 1256,
+    "unitRunnerTests": 1248,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 415,
+    "contract": 416,
     "runtime-unit": 318,
     "integration": 463,
     "e2e-smoke": 9,
@@ -1959,6 +1959,10 @@
     },
     {
       "file": "tests/ext_drawers_hover_preview_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/external_drawer_geometry_ownership_contract.test.js",
       "category": "contract"
     },
     {

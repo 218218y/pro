@@ -1517,6 +1517,10 @@ test('[dimension tokens] External and Internal Drawer owners preserve focused pr
   assert.match(tokens, /doorTopGapM: STACK_SPLIT_POLICY\.seam\.gapM/u);
 
   const expectedConsumers = [
+    ['esm/native/builder/core_storage_compute_external_drawers.ts', 'EXTERNAL_DRAWER_BOX_POLICY'],
+    ['esm/native/builder/core_storage_compute_external_drawers.ts', 'EXTERNAL_DRAWER_FRONT_RENDER_POLICY'],
+    ['esm/native/builder/core_storage_compute_external_drawers.ts', 'EXTERNAL_DRAWER_SIZE_POLICY'],
+    ['esm/native/builder/core_storage_compute_external_drawers.ts', 'resolveExternalDrawerGeometry'],
     ['esm/native/builder/external_drawer_shelf.ts', 'EXTERNAL_DRAWER_SEPARATOR_POLICY'],
     ['esm/native/builder/render_drawer_ops_external.ts', 'EXTERNAL_DRAWER_FRONT_RENDER_POLICY'],
     ['esm/native/builder/render_drawer_ops_external.ts', 'EXTERNAL_DRAWER_CONTENTS_POLICY'],
@@ -1526,6 +1530,12 @@ test('[dimension tokens] External and Internal Drawer owners preserve focused pr
     ],
     ['esm/native/builder/render_interior_sketch_drawers_external_box.ts', 'EXTERNAL_DRAWER_CONTENTS_POLICY'],
     ['esm/native/builder/render_interior_sketch_drawers_external_motion.ts', 'EXTERNAL_DRAWER_MOTION_POLICY'],
+    ['esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts', 'EXTERNAL_DRAWER_SIZE_POLICY'],
+    [
+      'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts',
+      'resolveExternalDrawerGeometry',
+    ],
+    ['esm/native/builder/render_interior_sketch_drawers_external_plan.ts', 'resolveExternalDrawerGeometry'],
   ];
   for (const [file, symbol] of expectedConsumers) assertUsesToken(file, symbol);
 
@@ -1680,6 +1690,18 @@ test('[dimension tokens] Drawer Sketch owner preserves focused production consum
       'esm/native/builder/render_interior_sketch_stack_collision.ts',
       'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
     ],
+    [
+      'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts',
+      'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts',
+      'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_drawers_external_plan.ts',
+      'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+    ],
     ['esm/native/features/sketch_box_regular_external_drawers.ts', 'DRAWER_SKETCH_SIZING_POLICY'],
     [
       'esm/native/services/canvas_picking_drawer_cross_family_preview.ts',
@@ -1742,8 +1764,19 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
       'esm/native/builder/render_interior_sketch_boxes_fronts_door_accents.ts',
       ['SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY'],
     ],
-    ['esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts', ['DRAWER_DIMENSIONS']],
-    ['esm/native/builder/render_interior_sketch_drawers_external_plan.ts', ['DRAWER_DIMENSIONS']],
+    [
+      'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts',
+      [
+        'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
+        'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+        'EXTERNAL_DRAWER_SIZE_POLICY',
+        'resolveExternalDrawerGeometry',
+      ],
+    ],
+    [
+      'esm/native/builder/render_interior_sketch_drawers_external_plan.ts',
+      ['DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY', 'resolveExternalDrawerGeometry'],
+    ],
     ['esm/native/builder/render_interior_sketch_support_shelf_pins.ts', ['INTERIOR_SHELF_PIN_RENDER_POLICY']],
     [
       'esm/native/builder/render_interior_sketch_support_shelves.ts',

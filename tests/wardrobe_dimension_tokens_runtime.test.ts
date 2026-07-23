@@ -106,6 +106,7 @@ import {
   EXTERNAL_DRAWER_POLICY,
   EXTERNAL_DRAWER_SEPARATOR_POLICY,
   EXTERNAL_DRAWER_SIZE_POLICY,
+  resolveExternalDrawerGeometry as resolveExternalDrawerGeometryFromOwner,
 } from '../esm/shared/dimensions/external_drawer_policy.ts';
 import {
   INTERNAL_DRAWER_CONTENTS_POLICY,
@@ -1702,6 +1703,69 @@ test('external drawer compute and fallback geometry share the same dimensional p
   assert.equal(drawer.open.z, geom.zOpen);
 });
 
+test('external drawer focused resolver preserves facade identity, defaults, fallbacks, and full geometry', () => {
+  assert.equal(resolveExternalDrawerGeometry, resolveExternalDrawerGeometryFromOwner);
+
+  const defaults = resolveExternalDrawerGeometryFromOwner();
+  assert.deepEqual(defaults, {
+    zClosed: EXTERNAL_DRAWER_FRONT_RENDER_POLICY.frontOffsetZM,
+    zOpen: EXTERNAL_DRAWER_MOTION_POLICY.openOffsetZM,
+    visualW: -EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualWidthClearanceM,
+    visualT: EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM,
+    visualH:
+      EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM,
+    boxW: -EXTERNAL_DRAWER_BOX_POLICY.boxWidthClearanceM,
+    boxH: EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM - EXTERNAL_DRAWER_BOX_POLICY.boxHeightClearanceM,
+    boxD: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
+    boxOffsetZ: EXTERNAL_DRAWER_BOX_POLICY.boxOffsetZM,
+    connectW: -EXTERNAL_DRAWER_CONNECTOR_POLICY.connectorWidthClearanceM,
+    connectH:
+      EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM - EXTERNAL_DRAWER_CONNECTOR_POLICY.connectorHeightClearanceM,
+    connectD: EXTERNAL_DRAWER_CONNECTOR_POLICY.connectorDepthM,
+    connectZ:
+      EXTERNAL_DRAWER_CONNECTOR_POLICY.connectorFrontZM -
+      EXTERNAL_DRAWER_CONNECTOR_POLICY.connectorDepthM / 2 -
+      EXTERNAL_DRAWER_CONNECTOR_POLICY.connectorBackInsetM,
+  });
+
+  const invalid = resolveExternalDrawerGeometryFromOwner({
+    externalWidthM: Number.NaN,
+    depthM: Number.POSITIVE_INFINITY,
+    woodThicknessM: 'not-a-number',
+    frontZM: Number.NEGATIVE_INFINITY,
+    drawerHeightM: undefined,
+  });
+  assert.deepEqual(invalid, defaults);
+
+  const args = {
+    externalWidthM: 0.93,
+    depthM: 0.61,
+    woodThicknessM: 0.03,
+    frontZM: 0.305,
+    drawerHeightM: 0.29,
+  };
+  const custom = resolveExternalDrawerGeometryFromOwner(args);
+  assert.deepEqual(custom, {
+    zClosed: args.frontZM + EXTERNAL_DRAWER_FRONT_RENDER_POLICY.frontOffsetZM,
+    zOpen: args.frontZM + EXTERNAL_DRAWER_MOTION_POLICY.openOffsetZM,
+    visualW: args.externalWidthM - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualWidthClearanceM,
+    visualT: EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM,
+    visualH: args.drawerHeightM - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM,
+    boxW: args.externalWidthM - EXTERNAL_DRAWER_BOX_POLICY.boxWidthClearanceM,
+    boxH: args.drawerHeightM - EXTERNAL_DRAWER_BOX_POLICY.boxHeightClearanceM,
+    boxD: Math.max(args.woodThicknessM, args.depthM - EXTERNAL_DRAWER_BOX_POLICY.boxDepthBackClearanceM),
+    boxOffsetZ: -args.depthM / 2 + EXTERNAL_DRAWER_BOX_POLICY.boxOffsetZM,
+    connectW: args.externalWidthM - EXTERNAL_DRAWER_CONNECTOR_POLICY.connectorWidthClearanceM,
+    connectH: args.drawerHeightM - EXTERNAL_DRAWER_CONNECTOR_POLICY.connectorHeightClearanceM,
+    connectD: EXTERNAL_DRAWER_CONNECTOR_POLICY.connectorDepthM,
+    connectZ:
+      EXTERNAL_DRAWER_CONNECTOR_POLICY.connectorFrontZM -
+      EXTERNAL_DRAWER_CONNECTOR_POLICY.connectorDepthM / 2 -
+      EXTERNAL_DRAWER_CONNECTOR_POLICY.connectorBackInsetM,
+  });
+  assert.deepEqual(resolveExternalDrawerGeometry(args), custom);
+});
+
 test('sketch drawer tools parse numeric tokens while live state readers reject numeric strings', () => {
   const parsed = parseSketchExternalDrawersTool('sketch_ext_drawers:3@24');
 
@@ -1744,10 +1808,10 @@ test('inset external drawer geometry places the face inside the front frame', ()
     doorMountMode: 'inset',
   });
   const expectedClosedZ =
-    0.275 - DRAWER_DIMENSIONS.external.visualThicknessM / 2 - DOOR_SYSTEM_DIMENSIONS.hinged.insetRevealM;
+    0.275 - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM / 2 - HINGED_DOOR_MOUNT_POLICY.insetRevealM;
 
   assert.equal(geom.zClosed, expectedClosedZ);
-  assert.equal(geom.zOpen, expectedClosedZ + DRAWER_DIMENSIONS.external.openOffsetZM);
+  assert.equal(geom.zOpen, expectedClosedZ + EXTERNAL_DRAWER_MOTION_POLICY.openOffsetZM);
 
   const result = computeExternalDrawersOpsForModule({
     wardrobeType: 'hinged',
@@ -1764,5 +1828,5 @@ test('inset external drawer geometry places the face inside the front frame', ()
 
   const drawer = result.drawers[0] as any;
   assert.equal(drawer.closed.z, expectedClosedZ);
-  assert.equal(drawer.open.z, expectedClosedZ + DRAWER_DIMENSIONS.external.openOffsetZM);
+  assert.equal(drawer.open.z, expectedClosedZ + EXTERNAL_DRAWER_MOTION_POLICY.openOffsetZM);
 });

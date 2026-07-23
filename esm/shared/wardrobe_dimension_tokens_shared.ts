@@ -41,7 +41,11 @@ import { DOOR_SYSTEM_DIMENSIONS as DOOR_SYSTEM_DIMENSIONS_OWNER } from './dimens
 import { DOOR_MOUNT_THICKNESS_DIMENSIONS as DOOR_MOUNT_THICKNESS_DIMENSIONS_OWNER } from './dimensions/door_mount_thickness_policy.js';
 import { DOOR_VISUAL_DIMENSIONS as DOOR_VISUAL_DIMENSIONS_OWNER } from './dimensions/door_visual_policy.js';
 import { DOOR_TRIM_DIMENSIONS as DOOR_TRIM_DIMENSIONS_OWNER } from './dimensions/door_trim_policy.js';
-import { EXTERNAL_DRAWER_POLICY } from './dimensions/external_drawer_policy.js';
+import {
+  EXTERNAL_DRAWER_POLICY,
+  resolveExternalDrawerGeometry,
+  type ExternalDrawerGeometry,
+} from './dimensions/external_drawer_policy.js';
 import { INTERNAL_DRAWER_POLICY } from './dimensions/internal_drawer_policy.js';
 import { INTERIOR_FITTINGS_POLICY } from './dimensions/interior_fittings_policy.js';
 import { DRAWER_SKETCH_POLICY } from './dimensions/drawer_sketch_policy.js';
@@ -359,22 +363,8 @@ export const CORNER_CONNECTOR_INTERIOR_DIMENSIONS = legacyDimensionNumberView(
 );
 
 export { HANDLE_DIMENSIONS };
-
-export type ExternalDrawerGeometry = {
-  zClosed: number;
-  zOpen: number;
-  visualW: number;
-  visualT: number;
-  visualH: number;
-  boxW: number;
-  boxH: number;
-  boxD: number;
-  boxOffsetZ: number;
-  connectW: number;
-  connectH: number;
-  connectD: number;
-  connectZ: number;
-};
+export { resolveExternalDrawerGeometry };
+export type { ExternalDrawerGeometry };
 
 export function normalizeWardrobeDimensionDefaultType(value: unknown): WardrobeDimensionDefaultType {
   return value === 'sliding' ? 'sliding' : 'hinged';
@@ -443,44 +433,4 @@ export function resolveDefaultWardrobeDimensions(value: unknown): {
   perDoorWidthCm: number;
 } {
   return resolveWardrobeTypeDefaults(value);
-}
-
-export function resolveExternalDrawerGeometry(args?: {
-  externalWidthM?: unknown;
-  depthM?: unknown;
-  woodThicknessM?: unknown;
-  frontZM?: unknown;
-  drawerHeightM?: unknown;
-  doorMountMode?: unknown;
-}): ExternalDrawerGeometry {
-  const external = EXTERNAL_DRAWER_DIMENSIONS;
-  const externalWidthM = finiteOr(args?.externalWidthM, 0);
-  const depthM = finiteOr(args?.depthM, 0);
-  const woodThicknessM = finiteOr(args?.woodThicknessM, MATERIAL_DIMENSIONS.wood.thicknessM);
-  const frontZM = finiteOr(args?.frontZM, depthM / 2);
-  const drawerHeightM = finiteOr(args?.drawerHeightM, external.regularHeightM);
-  const connectD = external.connectorDepthM;
-  const visualT = external.visualThicknessM;
-  const isInsetMount = args?.doorMountMode === 'inset';
-  const insetRevealM = isInsetMount
-    ? Math.min(DOOR_SYSTEM_DIMENSIONS.hinged.insetRevealM, Math.max(0, woodThicknessM / 3))
-    : 0;
-  const zClosed = isInsetMount ? frontZM - visualT / 2 - insetRevealM : frontZM + external.frontOffsetZM;
-  const zOpen = isInsetMount ? zClosed + external.openOffsetZM : frontZM + external.openOffsetZM;
-
-  return {
-    zClosed,
-    zOpen,
-    visualW: externalWidthM - external.visualWidthClearanceM,
-    visualT,
-    visualH: drawerHeightM - external.visualHeightClearanceM,
-    boxW: externalWidthM - external.boxWidthClearanceM,
-    boxH: drawerHeightM - external.boxHeightClearanceM,
-    boxD: Math.max(woodThicknessM, depthM - external.boxDepthBackClearanceM),
-    boxOffsetZ: -depthM / 2 + external.boxOffsetZM,
-    connectW: externalWidthM - external.connectorWidthClearanceM,
-    connectH: drawerHeightM - external.connectorHeightClearanceM,
-    connectD,
-    connectZ: external.connectorFrontZM - connectD / 2 - external.connectorBackInsetM,
-  };
 }

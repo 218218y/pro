@@ -229,6 +229,7 @@ const APPROVED_CHEST_STRUCTURAL_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_STRUCTURAL_DIMENSIONS']),
 });
 const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/core_storage_compute_external_drawers.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/render_interior_custom_ops.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/render_interior_custom_ops_shelves.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/render_interior_preset_ops.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
@@ -278,6 +279,7 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/shared/dimensions/corner_system_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/door_mount_thickness_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/door_system_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/shared/dimensions/external_drawer_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/front_reveal_frame_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/sketch_box_divider_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/shared/dimensions/sketch_box_geometry_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
@@ -358,7 +360,6 @@ const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/builder/core_carcass_shared.ts',
   'esm/native/builder/core_doors_compute.ts',
   'esm/native/builder/core_layout_compute.ts',
-  'esm/native/builder/core_storage_compute_external_drawers.ts',
   'esm/native/features/sketch_internal_drawer_cassette.ts',
   'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
   'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts',
@@ -476,6 +477,7 @@ const APPROVED_CHEST_MODE_LEGACY_FIELD_USAGE = Object.freeze({
   ],
 });
 const APPROVED_DOOR_SYSTEM_OWNER_IMPORTS = Object.freeze({
+  'esm/shared/dimensions/external_drawer_policy.ts': Object.freeze(['HINGED_DOOR_MOUNT_POLICY']),
   'esm/native/builder/render_interior_sketch_boxes_door_geometry.ts': Object.freeze([
     'HINGED_DOOR_MOUNT_POLICY',
   ]),
@@ -645,6 +647,12 @@ const APPROVED_DOOR_TRIM_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_DOOR_TRIM_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/build_handle_policy.ts': Object.freeze(['EXTERNAL_DRAWER_SIZE_POLICY']),
+  'esm/native/builder/core_storage_compute_external_drawers.ts': Object.freeze([
+    'EXTERNAL_DRAWER_BOX_POLICY',
+    'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
+    'EXTERNAL_DRAWER_SIZE_POLICY',
+    'resolveExternalDrawerGeometry',
+  ]),
   'esm/native/builder/hinged_doors_module_ops_context.ts': Object.freeze([
     'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
   ]),
@@ -670,6 +678,13 @@ const APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_drawers_external_motion.ts': Object.freeze([
     'EXTERNAL_DRAWER_MOTION_POLICY',
   ]),
+  'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts': Object.freeze([
+    'EXTERNAL_DRAWER_SIZE_POLICY',
+    'resolveExternalDrawerGeometry',
+  ]),
+  'esm/native/builder/render_interior_sketch_drawers_external_plan.ts': Object.freeze([
+    'resolveExternalDrawerGeometry',
+  ]),
   'esm/shared/dimensions/corner_system_policy.ts': Object.freeze([
     'EXTERNAL_DRAWER_BOX_POLICY',
     'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
@@ -684,7 +699,11 @@ const APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
     'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
   ]),
   'esm/shared/dimensions/handle_policy.ts': Object.freeze(['EXTERNAL_DRAWER_SIZE_POLICY']),
-  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['EXTERNAL_DRAWER_POLICY']),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze([
+    'EXTERNAL_DRAWER_POLICY',
+    'ExternalDrawerGeometry',
+    'resolveExternalDrawerGeometry',
+  ]),
 });
 const APPROVED_INTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
   'esm/shared/dimensions/corner_system_policy.ts': Object.freeze(['INTERNAL_DRAWER_LAYOUT_POLICY']),
@@ -1403,6 +1422,13 @@ const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_shared_external_drawers.ts': Object.freeze([
     'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
   ]),
+  'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts': Object.freeze([
+    'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
+    'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_drawers_external_plan.ts': Object.freeze([
+    'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+  ]),
   'esm/native/builder/render_interior_sketch_stack_collision.ts': Object.freeze([
     'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
   ]),
@@ -1576,22 +1602,6 @@ const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
     'sketch.doorCutHorizontalOverlapMinM',
     'sketch.doorCutNoOpToleranceM',
   ]),
-  'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts': Object.freeze([
-    'sketch',
-    'sketch.externalPreviewBoxMinDimensionM',
-    'sketch.externalPreviewMinWidthM',
-    'sketch.externalPreviewVisualMinDepthM',
-    'sketch.externalPreviewVisualMinHeightM',
-    'sketch.externalPreviewVisualMinWidthM',
-    'sketch.faceVerticalAlignmentEpsilonM',
-  ]),
-  'esm/native/builder/render_interior_sketch_drawers_external_plan.ts': Object.freeze([
-    'sketch',
-    'sketch.externalPreviewBoxMinDimensionM',
-    'sketch.externalPreviewVisualMinDepthM',
-    'sketch.externalPreviewVisualMinHeightM',
-    'sketch.externalPreviewVisualMinWidthM',
-  ]),
   'esm/native/features/sketch_drawer_sizing.ts': Object.freeze([
     'sketch',
     'sketch.externalCountMax',
@@ -1624,22 +1634,11 @@ const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
   ]),
 });
 const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/core_storage_compute_external_drawers.ts': Object.freeze([
-    'external',
-    'external.boxHeightClearanceM',
-    'external.regularHeightM',
-    'external.shoeHeightM',
-    'external.visualHeightClearanceM',
-  ]),
   'esm/native/builder/render_drawer_ops_internal.ts': Object.freeze([
     'internal',
     'internal.contentsBottomInsetM',
     'internal.contentsHeightClearanceM',
     'internal.contentsWidthClearanceM',
-  ]),
-  'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts': Object.freeze([
-    'external',
-    'external.shoeHeightM',
   ]),
   'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts': Object.freeze([
     'external',
