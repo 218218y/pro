@@ -25,16 +25,6 @@ function stableJson(value) {
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
-function listSourceFiles(dir) {
-  const files = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) files.push(...listSourceFiles(absolute));
-    else if (entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name)) files.push(absolute);
-  }
-  return files;
-}
-
 const expectedEntry = Object.freeze({
   from: 'services',
   to: 'shared',
@@ -133,33 +123,5 @@ test('manual-layout shelf collision appends exactly Entry 120 after the unchange
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 120)),
     '40c8812b78771efc64e38c69b919ace57a104dabfd1cd79882decbd317d9e170'
-  );
-});
-
-test('manual-layout shelf collision leaves only the approved legacy field consumers', () => {
-  const facadeDependencies = listSourceFiles(path.join(root, 'esm')).flatMap(file =>
-    analyzeModuleDependencies(file, fs.readFileSync(file, 'utf8'))
-      .imports.filter(dependency => dependency.specifier.includes('wardrobe_dimension_tokens_shared'))
-      .map(dependency => ({
-        file: path.relative(root, file).replaceAll('\\', '/'),
-        ...dependency,
-      }))
-  );
-
-  assert.deepEqual(
-    facadeDependencies
-      .filter(dependency => dependency.importedSymbols.includes('DRAWER_DIMENSIONS'))
-      .map(dependency => dependency.file)
-      .sort(),
-    [
-      'esm/native/builder/post_build_sketch_door_cuts_apply.ts',
-      'esm/native/builder/render_drawer_ops_internal.ts',
-      'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts',
-    ]
-  );
-  assert.equal(
-    facadeDependencies.filter(dependency => dependency.importedSymbols.includes('MATERIAL_DIMENSIONS'))
-      .length,
-    4
   );
 });

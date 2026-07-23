@@ -1534,6 +1534,11 @@ test('[dimension tokens] External and Internal Drawer owners preserve focused pr
       'resolveExternalDrawerGeometry',
     ],
     ['esm/native/builder/render_interior_sketch_drawers_external_plan.ts', 'resolveExternalDrawerGeometry'],
+    [
+      'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts',
+      'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
+    ],
+    ['esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts', 'EXTERNAL_DRAWER_SIZE_POLICY'],
   ];
   for (const [file, symbol] of expectedConsumers) assertUsesToken(file, symbol);
 
@@ -1630,6 +1635,7 @@ test('[dimension tokens] pure Material consumers use the canonical thickness own
   const expectedConsumers = [
     'esm/native/features/sketch_internal_drawer_cassette.ts',
     'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
+    'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts',
     'esm/native/builder/render_preview_sketch_pipeline_shared.ts',
     'esm/native/services/canvas_picking_hover_preview_modes_divider.ts',
     'esm/native/services/canvas_picking_sketch_free_box_content_preview_doors.ts',
@@ -1707,6 +1713,10 @@ test('[dimension tokens] Drawer Sketch owner preserves focused production consum
     [
       'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
       'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+    ],
+    [
+      'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts',
+      'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
     ],
     ['esm/native/features/sketch_box_regular_external_drawers.ts', 'DRAWER_SKETCH_SIZING_POLICY'],
     [

@@ -1,5 +1,10 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
-import { DRAWER_DIMENSIONS, MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
+import {
+  EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
+  EXTERNAL_DRAWER_SIZE_POLICY,
+} from '../../shared/dimensions/external_drawer_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { resolveExternalDrawerFitFromBounds } from '../../shared/wardrobe_construction_validation_shared.js';
 import {
@@ -147,7 +152,7 @@ function buildRegularDrawerPreview(args: {
 }): boolean {
   const { App, hoverFns, context, target, drawerType, drawerCount } = args;
   if (!hoverFns.setPreview) return false;
-  const woodThick = MATERIAL_DIMENSIONS.wood.thicknessM;
+  const woodThick = MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const ctx = resolveSketchBoxStackPreviewContext({
     host: { tool: REGULAR_FREE_BOX_TOOL, moduleKey: context.host.moduleKey, isBottom: context.host.isBottom },
     contentKind: 'ext_drawers',
@@ -161,7 +166,7 @@ function buildRegularDrawerPreview(args: {
     pointerY: target.pointerY,
     woodThick,
     selectedDrawerCount: drawerCount,
-    drawerHeightM: DRAWER_DIMENSIONS.external.regularHeightM,
+    drawerHeightM: EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM,
     readSketchBoxDividers: __wp_readSketchBoxDividers,
     readSketchBoxHorizontalDividers: __wp_readSketchBoxHorizontalDividers,
     resolveSketchBoxSegments: __wp_resolveSketchBoxSegments,
@@ -201,8 +206,8 @@ function buildRegularDrawerPreview(args: {
   });
   const blockedReason = op === 'add' && !fit.fitsRequested ? 'no-room' : null;
   const previewOp = blockedReason ? 'blocked' : op;
-  const regH = DRAWER_DIMENSIONS.external.regularHeightM;
-  const shoeH = DRAWER_DIMENSIONS.external.shoeHeightM;
+  const regH = EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM;
+  const shoeH = EXTERNAL_DRAWER_SIZE_POLICY.shoeHeightM;
   const faceCenterX = ctx.frontOverlay
     ? ctx.frontOverlay.x
     : ctx.activeSegment
@@ -214,20 +219,24 @@ function buildRegularDrawerPreview(args: {
       ? ctx.activeSegment.width
       : target.targetGeo.innerW;
   const previewW = Math.max(
-    DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinWidthM,
-    faceWidth - DRAWER_DIMENSIONS.external.visualWidthClearanceM
+    DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinWidthM,
+    faceWidth - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualWidthClearanceM
   );
-  const previewD = ctx.frontOverlay ? ctx.frontOverlay.d : DRAWER_DIMENSIONS.external.visualThicknessM;
+  const previewD = ctx.frontOverlay
+    ? ctx.frontOverlay.d
+    : EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualThicknessM;
   const previewZ = ctx.frontOverlay
     ? ctx.frontOverlay.z
-    : target.targetGeo.centerZ + target.targetGeo.outerD / 2 + DRAWER_DIMENSIONS.external.frontOffsetZM;
+    : target.targetGeo.centerZ +
+      target.targetGeo.outerD / 2 +
+      EXTERNAL_DRAWER_FRONT_RENDER_POLICY.frontOffsetZM;
   const drawers = [];
   if (isShoe) {
     drawers.push({
       y: baseY + shoeH / 2,
       h: Math.max(
-        DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
-        shoeH - DRAWER_DIMENSIONS.external.visualHeightClearanceM
+        DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
+        shoeH - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM
       ),
     });
   } else {
@@ -236,8 +245,8 @@ function buildRegularDrawerPreview(args: {
       drawers.push({
         y: baseY + baseStackOffset + i * regH + regH / 2,
         h: Math.max(
-          DRAWER_DIMENSIONS.sketch.externalPreviewVisualMinHeightM,
-          regH - DRAWER_DIMENSIONS.external.visualHeightClearanceM
+          DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY.externalPreviewVisualMinHeightM,
+          regH - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM
         ),
       });
     }

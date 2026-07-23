@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-23T10:14:58.750Z",
+  "generatedAt": "2026-07-23T15:30:51.206Z",
   "totals": {
-    "tests": 1258,
-    "unitRunnerTests": 1250,
+    "tests": 1260,
+    "unitRunnerTests": 1252,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,9 +13,9 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 418,
+    "contract": 419,
     "runtime-unit": 318,
-    "integration": 463,
+    "integration": 464,
     "e2e-smoke": 9,
     "perf-smoke": 9,
     "legacy-migration": 41
@@ -723,6 +723,10 @@
     },
     {
       "file": "tests/canvas_picking_projection_runtime_box_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/canvas_picking_regular_ext_drawers_free_box_runtime.test.ts",
       "category": "integration"
     },
     {
@@ -3392,6 +3396,10 @@
     {
       "file": "tests/refactor_stage9_test_portfolio_runtime.test.js",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/regular_external_drawers_free_box_ownership_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/removable_frame_side_back_panel_runtime.test.ts",

@@ -359,12 +359,14 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
+  'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
 });
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/builder/core_carcass_shared.ts',
   'esm/native/builder/core_doors_compute.ts',
   'esm/native/builder/core_layout_compute.ts',
-  'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts',
 ]);
 const APPROVED_MATERIAL_LEGACY_DEPENDENCIES = Object.freeze(
   Object.fromEntries(
@@ -662,6 +664,10 @@ const APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
     'EXTERNAL_DRAWER_SIZE_POLICY',
   ]),
   'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
+    'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
+    'EXTERNAL_DRAWER_SIZE_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts': Object.freeze([
     'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
     'EXTERNAL_DRAWER_SIZE_POLICY',
   ]),
@@ -1441,6 +1447,9 @@ const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts': Object.freeze([
     'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
   ]),
+  'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts': Object.freeze([
+    'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
+  ]),
   'esm/native/features/sketch_box_regular_external_drawers.ts': Object.freeze([
     'DRAWER_SKETCH_SIZING_POLICY',
     'EXTERNAL_DRAWER_SIZE_POLICY',
@@ -1611,11 +1620,6 @@ const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
     'sketch.doorCutHorizontalOverlapMinM',
     'sketch.doorCutNoOpToleranceM',
   ]),
-  'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts': Object.freeze([
-    'sketch',
-    'sketch.externalPreviewVisualMinHeightM',
-    'sketch.externalPreviewVisualMinWidthM',
-  ]),
 });
 const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/render_drawer_ops_internal.ts': Object.freeze([
@@ -1623,15 +1627,6 @@ const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({
     'internal.contentsBottomInsetM',
     'internal.contentsHeightClearanceM',
     'internal.contentsWidthClearanceM',
-  ]),
-  'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts': Object.freeze([
-    'external',
-    'external.frontOffsetZM',
-    'external.regularHeightM',
-    'external.shoeHeightM',
-    'external.visualHeightClearanceM',
-    'external.visualThicknessM',
-    'external.visualWidthClearanceM',
   ]),
 });
 const APPROVED_DOOR_SYSTEM_LEGACY_DEPENDENCIES = Object.freeze({
