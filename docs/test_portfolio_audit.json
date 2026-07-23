@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-23T19:42:21.705Z",
+  "generatedAt": "2026-07-23T20:08:50.356Z",
   "totals": {
-    "tests": 1262,
-    "unitRunnerTests": 1254,
+    "tests": 1263,
+    "unitRunnerTests": 1255,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 421,
+    "contract": 422,
     "runtime-unit": 318,
     "integration": 464,
     "e2e-smoke": 9,
@@ -1795,6 +1795,10 @@
     },
     {
       "file": "tests/doors_transient_meta_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/drawer_dimension_ownership_closeout_contract.test.js",
       "category": "contract"
     },
     {

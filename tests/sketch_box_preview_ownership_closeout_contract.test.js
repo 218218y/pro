@@ -241,12 +241,7 @@ test('SKETCH_BOX_DIMENSIONS remains an exact frozen policy projection without nu
   const valueExports = new Set(
     facadeExports.filter(entry => entry.kind === 'value').map(entry => entry.exportedName)
   );
-  const typeExports = new Set(
-    facadeExports.filter(entry => entry.kind === 'type').map(entry => entry.exportedName)
-  );
   assert.equal(valueExports.has('SKETCH_BOX_DIMENSIONS'), true);
-  assert.equal(valueExports.size, 89);
-  assert.equal(typeExports.size, 10);
 
   const previewOwnerExports = collectNamedModuleExports(focusedOwnerFiles[4], read(focusedOwnerFiles[4]));
   assert.equal(

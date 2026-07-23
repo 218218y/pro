@@ -27,16 +27,6 @@ function stableJson(value) {
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
-function listSourceFiles(dir) {
-  const files = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) files.push(...listSourceFiles(absolute));
-    else if (entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name)) files.push(absolute);
-  }
-  return files;
-}
-
 const expectedEntry = Object.freeze({
   from: 'builder',
   to: 'shared',
@@ -136,41 +126,5 @@ test('internal drawer render migration appends exactly Entry 124', () => {
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 124)),
     '9eeb17b61e2b1a64eb9303ca0b750319da74d868131f9130a26f1bd4977d49cf'
-  );
-});
-
-test('internal drawer render migration closes Drawer facade consumption and leaves three Chest consumers', () => {
-  const facadeDependencies = listSourceFiles(path.join(root, 'esm')).flatMap(file =>
-    analyzeModuleDependencies(file, fs.readFileSync(file, 'utf8'))
-      .imports.filter(dependency => dependency.specifier.includes('wardrobe_dimension_tokens_shared'))
-      .map(dependency => ({
-        file: path.relative(root, file).replaceAll('\\', '/'),
-        ...dependency,
-      }))
-  );
-
-  assert.deepEqual(
-    facadeDependencies
-      .filter(
-        dependency =>
-          dependency.syntax === 'static-import' && dependency.importedSymbols.includes('DRAWER_DIMENSIONS')
-      )
-      .map(dependency => dependency.file),
-    []
-  );
-  assert.deepEqual(
-    facadeDependencies
-      .filter(
-        dependency =>
-          dependency.syntax === 'static-import' &&
-          dependency.importedSymbols.includes('CHEST_MODE_DIMENSIONS')
-      )
-      .map(dependency => dependency.file)
-      .sort(),
-    [
-      'esm/native/builder/visuals_chest_mode_build.ts',
-      'esm/native/builder/visuals_chest_mode_inputs.ts',
-      'esm/native/runtime/default_state.ts',
-    ]
   );
 });

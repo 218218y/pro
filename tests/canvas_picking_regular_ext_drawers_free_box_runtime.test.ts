@@ -14,6 +14,7 @@ import {
   SKETCH_BOX_DRAWER_PREVIEW_POLICY,
 } from '../esm/shared/dimensions/sketch_box_preview_policy.js';
 import { resolveSketchFreeBoxGeometry } from '../esm/native/services/canvas_picking_sketch_free_boxes.js';
+import { resolveSketchBoxSegments } from '../esm/native/services/canvas_picking_sketch_box_segments.js';
 import { __wp_readSketchHover } from '../esm/native/services/canvas_picking_local_helpers.js';
 import { tryHandleSketchBoxRegularExternalDrawersHoverPreview } from '../esm/native/services/canvas_picking_regular_ext_drawers_free_box.js';
 
@@ -413,6 +414,27 @@ test('front overlay wins over fallback geometry and narrow faces retain the focu
       SKETCH_BOX_DRAWER_PREVIEW_POLICY.drawerPreviewThicknessM / 2 +
       SKETCH_BOX_DRAWER_PREVIEW_POLICY.drawerPreviewZOffsetM
   );
+
+  const segmentedOverlayBox = createDefaultBox({
+    dividers: [{ id: 'divider-x', xNorm: 0.5 }],
+    extDrawers: [{ id: 'sketch-external-left', xNorm: 0.25, yNormC: 0.5 }],
+  });
+  const segmentedOverlayHarness = createHarness({
+    box: segmentedOverlayBox,
+    pointerX: -0.2,
+    drawerCount: 1,
+  });
+  assert.equal(segmentedOverlayHarness.run(), true);
+  const segmentedOverlayGeometry = resolveDefaultGeometry(segmentedOverlayBox);
+  const [leftSegment] = resolveSketchBoxSegments({
+    dividers: segmentedOverlayBox.dividers as never[],
+    boxCenterX: segmentedOverlayGeometry.centerX,
+    innerW: segmentedOverlayGeometry.innerW,
+    woodThick: MATERIAL_THICKNESS_POLICY.wood.thicknessM,
+  });
+  assert.ok(leftSegment);
+  assertApprox(segmentedOverlayHarness.previews[0]?.x, leftSegment.centerX);
+  assert.ok(Math.abs(leftSegment.centerX - segmentedOverlayGeometry.centerX) > 1e-10);
 
   const narrowHarness = createHarness({
     box: createDefaultBox({ widthM: 0.06 }),
