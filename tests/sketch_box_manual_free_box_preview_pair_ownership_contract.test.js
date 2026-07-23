@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { analyzeModuleDependencies, collectNamedModuleExports } from '../tools/wp_layer_contract_support.mjs';
+import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const contentRel = 'esm/native/services/canvas_picking_manual_layout_free_box_content.ts';
@@ -199,18 +199,6 @@ test('Manual Free Box preview pair closed ledger prefix is exact', () => {
         'Remove this entry when a reviewed manual free-box planning composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade.',
     }),
   ]);
-});
-
-test('Manual Free Box preview pair keeps the public dimension surface stable', () => {
-  const facadeExports = collectNamedModuleExports(facadeRel, read(facadeRel));
-  assert.equal(
-    new Set(facadeExports.filter(entry => entry.kind === 'value').map(entry => entry.exportedName)).size,
-    89
-  );
-  assert.equal(
-    new Set(facadeExports.filter(entry => entry.kind === 'type').map(entry => entry.exportedName)).size,
-    10
-  );
 });
 
 test('Manual Free Box preview pair keeps the focused-owner formulas structurally exact', () => {

@@ -27,6 +27,52 @@ type Measurement = {
   role?: string;
 };
 
+function close(actual: number, expected: number, message: string, epsilon = 1e-12) {
+  assert.ok(Math.abs(actual - expected) <= epsilon, `${message}: ${actual} != ${expected}`);
+}
+
+function centeredLineOffset(width: number): number {
+  const lineGap = Math.max(0.035, Math.min(0.085, width * 0.045));
+  return Math.min(lineGap * 0.9, Math.max(0.008, width / 2 - 0.008));
+}
+
+function assertCellMeasurementTargets(args: {
+  measurements: Measurement[];
+  centerX: number;
+  centerY: number;
+  width: number;
+  height: number;
+  containerMinY: number;
+  containerMaxY: number;
+  z: number;
+}) {
+  const cellEntries = args.measurements.filter(entry => entry.role === 'cell');
+  assert.equal(cellEntries.length, 2);
+  const lineX = args.centerX + centeredLineOffset(args.width);
+  const targetMinY = args.centerY - args.height / 2;
+  const targetMaxY = args.centerY + args.height / 2;
+  for (const entry of cellEntries) {
+    close(entry.startX, lineX, 'cell startX');
+    close(entry.endX, lineX, 'cell endX');
+    close(entry.z ?? Number.NaN, args.z, 'cell z');
+    assert.equal(entry.role, 'cell');
+    assert.equal(entry.styleKey, 'cell');
+    assert.equal(entry.textScale, SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale);
+  }
+  assert.ok(
+    cellEntries.some(
+      entry =>
+        Math.abs(entry.startY - args.containerMinY) <= 1e-12 && Math.abs(entry.endY - targetMinY) <= 1e-12
+    )
+  );
+  assert.ok(
+    cellEntries.some(
+      entry =>
+        Math.abs(entry.startY - targetMaxY) <= 1e-12 && Math.abs(entry.endY - args.containerMaxY) <= 1e-12
+    )
+  );
+}
+
 const shelfBoardHit = (y: number, extraUserData: Record<string, unknown> = {}) => ({
   object: { userData: { partId: 'all_shelves', ...extraUserData } },
   point: { y },
@@ -403,29 +449,17 @@ test('preview geometry and measurement minimum-Z branch preserve focused-owner t
   assert.ok(measurements.length >= 2);
   const expectedZ = -0.275 + 0.04 + SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetMinM;
   assert.ok(measurements.every(entry => Math.abs((entry.z ?? 0) - expectedZ) < 1e-12));
-  assert.ok(
-    measurements
-      .filter(entry => entry.role === 'cell')
-      .every(entry => entry.textScale === SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale)
-  );
   assert.ok(measurements.every(entry => entry.styleKey === 'cell' || entry.styleKey === 'neighbor'));
-
-  const width = preview?.w ?? 0;
-  const lineGap = Math.max(0.035, Math.min(0.085, width * 0.045));
-  const centeredOffset = Math.min(lineGap * 0.9, Math.max(0.008, width / 2 - 0.008));
-  const cell = measurements.find(entry => entry.role === 'cell');
-  assert.ok(cell);
-  assert.ok(Math.abs((cell?.startX ?? 0) - (0.1 + centeredOffset)) < 1e-12);
-  assert.ok(
-    Math.abs(
-      Math.min(cell?.startY ?? 0, cell?.endY ?? 0) -
-        (0.4 + MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM / 2)
-    ) < 1e-12 ||
-      Math.abs(
-        Math.max(cell?.startY ?? 0, cell?.endY ?? 0) -
-          (0.4 - MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM / 2)
-      ) < 1e-12
-  );
+  assertCellMeasurementTargets({
+    measurements,
+    centerX: preview.x as number,
+    centerY: preview.y as number,
+    width: preview.w as number,
+    height: preview.h as number,
+    containerMinY: 0,
+    containerMaxY: 1.2,
+    z: expectedZ,
+  });
 });
 
 test('measurement depth-ratio branch and neighbor clearances remain in the remove preview', () => {
@@ -445,7 +479,32 @@ test('measurement depth-ratio branch and neighbor clearances remain in the remov
   assert.ok(Array.isArray(measurements));
   const expectedZ = -0.275 + 0.45 + 0.45 * SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetDepthRatio;
   assert.ok(measurements.every(entry => Math.abs((entry.z ?? 0) - expectedZ) < 1e-12));
-  assert.ok(measurements.some(entry => entry.role === 'neighbor'));
+  assertCellMeasurementTargets({
+    measurements,
+    centerX: preview?.x as number,
+    centerY: preview?.y as number,
+    width: preview?.w as number,
+    height: preview?.h as number,
+    containerMinY: 0,
+    containerMaxY: 1.2,
+    z: expectedZ,
+  });
+  const neighbor = measurements.find(entry => entry.role === 'neighbor');
+  assert.ok(neighbor);
+  const neighborScale = Math.max(0.74, SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale * 0.94);
+  const neighborMinY = 0.65 * 1.2 - 0.018 / 2;
+  close(
+    neighbor.startX,
+    (preview?.x as number) - centeredLineOffset(preview?.w as number),
+    'neighbor startX'
+  );
+  close(neighbor.endX, neighbor.startX, 'neighbor endX');
+  close(neighbor.startY, (preview?.y as number) + (preview?.h as number) / 2, 'neighbor startY');
+  close(neighbor.endY, neighborMinY, 'neighbor endY');
+  close(neighbor.z ?? Number.NaN, expectedZ, 'neighbor z');
+  assert.equal(neighbor.role, 'neighbor');
+  assert.equal(neighbor.styleKey, 'neighbor');
+  assert.equal(neighbor.textScale, neighborScale);
   assert.equal(result.result?.hoverRecord?.removeKind, 'sketch');
   assert.equal(result.result?.preview?.op, 'remove');
 });

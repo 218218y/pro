@@ -90,6 +90,74 @@ function close(actual: unknown, expected: number, tolerance = 1e-12) {
   assert.ok(Math.abs(Number(actual) - expected) <= tolerance, `${String(actual)} != ${expected}`);
 }
 
+type Measurement = {
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  z?: number;
+  textScale?: number;
+  styleKey?: string;
+  role?: string;
+};
+
+function centeredLineOffset(width: number): number {
+  const lineGap = Math.max(0.035, Math.min(0.085, width * 0.045));
+  return Math.min(lineGap * 0.9, Math.max(0.008, width / 2 - 0.008));
+}
+
+function assertVerticalMeasurementTargets(args: {
+  measurements: Measurement[];
+  centerX: number;
+  centerY: number;
+  width: number;
+  height: number;
+  containerMinY: number;
+  containerMaxY: number;
+  z: number;
+  neighborMinY: number;
+}) {
+  const cellEntries = args.measurements.filter(entry => entry.role === 'cell');
+  assert.equal(cellEntries.length, 2);
+  const cellLineX = args.centerX + centeredLineOffset(args.width);
+  const targetMinY = args.centerY - args.height / 2;
+  const targetMaxY = args.centerY + args.height / 2;
+  for (const entry of cellEntries) {
+    close(entry.startX, cellLineX);
+    close(entry.endX, cellLineX);
+    close(entry.z, args.z);
+    assert.equal(entry.role, 'cell');
+    assert.equal(entry.styleKey, 'cell');
+    assert.equal(entry.textScale, SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale);
+  }
+  assert.ok(
+    cellEntries.some(
+      entry =>
+        Math.abs(entry.startY - args.containerMinY) <= 1e-12 && Math.abs(entry.endY - targetMinY) <= 1e-12
+    )
+  );
+  assert.ok(
+    cellEntries.some(
+      entry =>
+        Math.abs(entry.startY - targetMaxY) <= 1e-12 && Math.abs(entry.endY - args.containerMaxY) <= 1e-12
+    )
+  );
+
+  const neighbor = args.measurements.find(entry => entry.role === 'neighbor');
+  assert.ok(neighbor);
+  close(neighbor.startX, args.centerX - centeredLineOffset(args.width));
+  close(neighbor.endX, neighbor.startX);
+  close(neighbor.startY, targetMaxY);
+  close(neighbor.endY, args.neighborMinY);
+  close(neighbor.z, args.z);
+  assert.equal(neighbor.role, 'neighbor');
+  assert.equal(neighbor.styleKey, 'neighbor');
+  assert.equal(
+    neighbor.textScale,
+    Math.max(0.74, SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale * 0.94)
+  );
+}
+
 test('vertical occupancy matching preserves focused tolerances, exact boundaries, nearest selection, and filters', () => {
   const storage = blocker('storage', -0.1, 0, { id: 'storage' });
   const shelf = blocker('shelf', 1.2, 1.22, { id: 'shelf' });
@@ -454,7 +522,16 @@ test('shelf preview preserves direct-hit filtering, board boundary, cross-remova
   assert.equal(collision?.preview.blockedReason, 'collision');
 
   for (const depth of [0.04, 0.45]) {
-    const measurementArgs = previewArgs({ shelfDepthOverrideM: depth, targetBox: { shelves: [] } });
+    const measurementNeighborYNorm = 0.8;
+    const measurementArgs = previewArgs({
+      shelfDepthOverrideM: depth,
+      targetBox: {
+        id: 'box-vertical',
+        shelves: [{ id: 'neighbor-shelf', yNorm: measurementNeighborYNorm, variant: 'regular' }],
+        rods: [],
+        storageBarriers: [],
+      },
+    });
     const result = resolveSketchBoxShelfPreview(
       measurementArgs,
       createSketchBoxVerticalPreviewState(measurementArgs)
@@ -476,19 +553,24 @@ test('shelf preview preserves direct-hit filtering, board boundary, cross-remova
         SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetMinM,
         expectedDepth * SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetDepthRatio
       );
-    const measurements = result?.preview.clearanceMeasurements as {
-      z?: number;
-      textScale?: number;
-      styleKey?: string;
-    }[];
+    const measurements = result?.preview.clearanceMeasurements as Measurement[];
     assert.ok(measurements.length >= 2);
     assert.ok(measurements.every(entry => Math.abs(Number(entry.z) - expectedMeasurementZ) <= 1e-12));
-    assert.ok(
-      measurements.every(
-        entry => entry.textScale === SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale
-      )
-    );
     assert.ok(measurements.every(entry => entry.styleKey === 'cell' || entry.styleKey === 'neighbor'));
+    const targetBottomY = measurementArgs.targetCenterY - measurementArgs.targetHeight / 2;
+    const neighborCenterY = targetBottomY + measurementNeighborYNorm * measurementArgs.targetHeight;
+    assertVerticalMeasurementTargets({
+      measurements,
+      centerX: result?.preview.x as number,
+      centerY: result?.preview.y as number,
+      width: result?.preview.w as number,
+      height: result?.preview.h as number,
+      containerMinY: targetBottomY + measurementArgs.woodThick,
+      containerMaxY:
+        measurementArgs.targetCenterY + measurementArgs.targetHeight / 2 - measurementArgs.woodThick,
+      z: expectedMeasurementZ,
+      neighborMinY: neighborCenterY - measurementArgs.woodThick / 2,
+    });
     const command = structuralCommand(result?.hoverRecord);
     assert.equal(command.kind, 'add-shelf');
     if (command.kind !== 'add-shelf') assert.fail('Expected add-shelf command');

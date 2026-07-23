@@ -355,6 +355,47 @@ test('focused rod preview preserves every built-in preset factor and grid behavi
   }
 });
 
+test('focused rod preview fails closed for non-positive or non-finite span steps and normalizes invalid grids', () => {
+  const fallbackY =
+    (INTERIOR_PRESET_ROD_FACTORS_POLICY.hangingRodYFactor * 1.2) /
+    INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
+  for (const gridDivisions of ['invalid', Number.NaN]) {
+    const normalized = resolveFocusedRodPreview({
+      yClamped: fallbackY,
+      source: {
+        info: { gridDivisions },
+        cfgRef: { layout: 'hanging', isCustom: false },
+      },
+    });
+    assert.equal(normalized?.hoverRecord?.rodIndex, 4);
+    assert.equal(normalized?.preview?.y, fallbackY);
+    assert.equal(Number.isFinite(normalized?.preview?.y), true);
+  }
+
+  for (const gridDivisions of [0, -3]) {
+    assert.equal(
+      resolveFocusedRodPreview({
+        yClamped: fallbackY,
+        source: {
+          info: { gridDivisions },
+          cfgRef: { layout: 'hanging', isCustom: false },
+        },
+      }),
+      null
+    );
+  }
+
+  for (const spanH of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+    const result = resolveFocusedRodPreview({
+      spanH,
+      topY: spanH,
+      yClamped: 0.5,
+      source: { cfgRef: { layout: 'hanging', isCustom: false } },
+    });
+    assert.equal(result, null);
+  }
+});
+
 test('focused rod preview preserves custom rod-op normalization, clamps, yAdd, covered, and fallback rods', () => {
   const lowClamp = resolveFocusedRodPreview({
     yClamped: 0.45,

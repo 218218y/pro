@@ -7,14 +7,6 @@ import { analyzeModuleDependencies, collectNamedModuleExports } from '../tools/w
 import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
-const APPROVED_FACADE_RATCHET = Object.freeze({
-  'static-import': Object.freeze({ importers: 42, statements: 42 }),
-  'static-re-export': Object.freeze({ importers: 2, statements: 2 }),
-  'dynamic-import': Object.freeze({ importers: 0, statements: 0 }),
-  'type-import': Object.freeze({ importers: 0, statements: 0 }),
-  'type-re-export': Object.freeze({ importers: 1, statements: 1 }),
-  total: Object.freeze({ importers: 44, statements: 45 }),
-});
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
     'BASE_LEG_DIMENSIONS',
@@ -5198,8 +5190,6 @@ test('[dimension-foundation] public dimensions wildcard surface is an exact valu
   );
 
   const actual = collectDimensionFacadeExportSurface(facade);
-  assert.equal(actual.value.length, 89);
-  assert.equal(actual.type.length, 10);
   assertApprovedPublicDimensionFacadeExports(actual);
 
   assert.throws(
@@ -5249,65 +5239,4 @@ test('[dimension-foundation] Stack Split facade guard detects new consumers, sym
     .map(entry => entry.exportedName)
     .filter(isStackSplitFacadeSymbol);
   assert.throws(() => assertApprovedStackSplitFacadeSymbols(fixtureExports), /requires review/u);
-});
-
-test('[dimension-foundation] legacy facade importer budget is decrease-only', () => {
-  const buckets = Object.fromEntries(
-    Object.keys(APPROVED_FACADE_RATCHET)
-      .filter(key => key !== 'total')
-      .map(key => [key, { importers: new Set(), statements: new Set() }])
-  );
-  const totalImporters = new Set();
-  const totalStatements = new Set();
-
-  walkSourceFiles('esm', file => {
-    const source = read(file);
-    if (!source.includes(FACADE_SPECIFIER)) return;
-    const relativeFile = file.replaceAll('\\', '/');
-    for (const dependency of analyzeModuleDependencies(file, source).imports) {
-      if (!dependency.specifier.includes(FACADE_SPECIFIER)) continue;
-      const bucket = buckets[dependency.syntax];
-      assert.ok(bucket, `unclassified facade dependency syntax: ${String(dependency.syntax)}`);
-      const statementKey = `${relativeFile}:${dependency.statementStart}`;
-      bucket.importers.add(relativeFile);
-      bucket.statements.add(statementKey);
-      totalImporters.add(relativeFile);
-      totalStatements.add(statementKey);
-    }
-  });
-
-  const actual = Object.fromEntries(
-    Object.entries(buckets).map(([key, bucket]) => [
-      key,
-      { importers: bucket.importers.size, statements: bucket.statements.size },
-    ])
-  );
-  actual.total = { importers: totalImporters.size, statements: totalStatements.size };
-
-  const growth = [];
-  const reductions = [];
-  for (const [category, approved] of Object.entries(APPROVED_FACADE_RATCHET)) {
-    for (const metric of ['importers', 'statements']) {
-      if (actual[category][metric] > approved[metric]) {
-        growth.push({ category, metric, approved: approved[metric], actual: actual[category][metric] });
-      } else if (actual[category][metric] < approved[metric]) {
-        reductions.push({ category, metric, approved: approved[metric], actual: actual[category][metric] });
-      }
-    }
-  }
-
-  const proposal = {
-    ratchet: 'decrease-only',
-    reviewRequired: growth.length > 0,
-    approved: APPROVED_FACADE_RATCHET,
-    actual,
-    growth,
-    reductions,
-    proposedRatchet: reductions.length > 0 && growth.length === 0 ? actual : null,
-  };
-  assert.deepEqual(
-    actual,
-    APPROVED_FACADE_RATCHET,
-    `legacy dimension facade ratchet drifted; growth is review-blocked and reductions must ratchet the approved baseline:\n${JSON.stringify(proposal, null, 2)}`
-  );
 });

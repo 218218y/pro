@@ -11,9 +11,64 @@ import {
   SKETCH_BOX_ROD_PREVIEW_POLICY,
 } from '../esm/shared/dimensions/sketch_box_preview_policy.js';
 import { resolveSketchModuleContentPreview } from '../esm/native/services/canvas_picking_sketch_module_surface_preview_content.js';
+import { resolveSketchModuleVerticalRangePlacementAgainstDrawers } from '../esm/native/services/canvas_picking_sketch_module_vertical_content_collision.js';
+import { clampSketchModuleStorageCenterY } from '../esm/native/services/canvas_picking_sketch_module_vertical_content_match.js';
 
 const close = (actual: number, expected: number, epsilon = 1e-9) =>
   assert.ok(Math.abs(actual - expected) <= epsilon, `${actual} != ${expected}`);
+
+type Measurement = {
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  z?: number;
+  styleKey?: string;
+  textScale?: number;
+  role?: string;
+};
+
+function centeredLineOffset(width: number): number {
+  const lineGap = Math.max(0.035, Math.min(0.085, width * 0.045));
+  return Math.min(lineGap * 0.9, Math.max(0.008, width / 2 - 0.008));
+}
+
+function assertCellMeasurementTargets(args: {
+  measurements: Measurement[];
+  centerX: number;
+  centerY: number;
+  width: number;
+  height: number;
+  containerMinY: number;
+  containerMaxY: number;
+  z: number;
+}) {
+  const entries = args.measurements.filter(entry => entry.role === 'cell');
+  assert.equal(entries.length, 2);
+  const lineX = args.centerX + centeredLineOffset(args.width);
+  const targetMinY = args.centerY - args.height / 2;
+  const targetMaxY = args.centerY + args.height / 2;
+  for (const entry of entries) {
+    close(entry.startX, lineX);
+    close(entry.endX, lineX);
+    close(entry.z as number, args.z);
+    assert.equal(entry.role, 'cell');
+    assert.equal(entry.styleKey, 'cell');
+    assert.equal(entry.textScale, SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale);
+  }
+  assert.ok(
+    entries.some(
+      entry =>
+        Math.abs(entry.startY - args.containerMinY) <= 1e-9 && Math.abs(entry.endY - targetMinY) <= 1e-9
+    )
+  );
+  assert.ok(
+    entries.some(
+      entry =>
+        Math.abs(entry.startY - targetMaxY) <= 1e-9 && Math.abs(entry.endY - args.containerMaxY) <= 1e-9
+    )
+  );
+}
 
 function makeSource(overrides: Record<string, unknown> = {}) {
   return {
@@ -153,6 +208,35 @@ test('surface content storage preview preserves local remove, placement, and blo
   assert.equal(remove.preview?.h, 0.44);
   assert.equal(remove.hoverRecord, undefined);
 
+  const placementDrawer = { id: 'drawer-placement', yNormC: 0.5, drawerHeightM: 0.18 };
+  const placementHeight = 0.1;
+  const placementPointerY = 0.3;
+  const expectedPlacement = resolveSketchModuleVerticalRangePlacementAgainstDrawers({
+    cfgRef: null,
+    drawers: [placementDrawer],
+    extDrawers: [],
+    bottomY: 0,
+    topY: 1,
+    totalHeight: 1,
+    pad: 0.01,
+    desiredCenterY: placementPointerY,
+    heightM: placementHeight,
+  });
+  assert.ok(expectedPlacement);
+  assert.equal(expectedPlacement?.blocked, false);
+  assert.notEqual(expectedPlacement?.centerY, placementPointerY);
+  const placed = resolveSketchModuleContentPreview(
+    makeArgs({
+      isStorage: true,
+      yClamped: placementPointerY,
+      storageHPreview: placementHeight,
+      source: { drawers: [placementDrawer] },
+    })
+  );
+  close(placed.preview?.y as number, expectedPlacement?.centerY as number);
+  close(placed.hoverRecord?.yNorm as number, expectedPlacement?.centerY as number);
+  assert.equal(placed.preview?.op, 'add');
+
   const blocked = resolveSketchModuleContentPreview(
     makeArgs({
       isStorage: true,
@@ -165,6 +249,27 @@ test('surface content storage preview preserves local remove, placement, and blo
   assert.equal(blocked.preview?.blockedReason, 'collision');
   assert.equal(blocked.hoverRecord?.__wpBlockedReason, 'collision');
   assert.equal(blocked.hoverRecord?.op, 'add');
+
+  const fallbackPointerY = 0.99;
+  const fallbackHeight = 0.3;
+  const expectedFallback = clampSketchModuleStorageCenterY({
+    bottomY: 0,
+    topY: 1,
+    pad: 0.01,
+    heightM: fallbackHeight,
+    pointerY: fallbackPointerY,
+  });
+  const fallback = resolveSketchModuleContentPreview(
+    makeArgs({
+      isStorage: true,
+      yClamped: fallbackPointerY,
+      storageHPreview: fallbackHeight,
+      source: { drawers: [], extDrawers: [] },
+    })
+  );
+  close(fallback.preview?.y as number, expectedFallback);
+  close(fallback.hoverRecord?.yNorm as number, expectedFallback);
+  assert.equal(fallback.preview?.op, 'add');
 });
 
 test('surface content rod preview preserves focused-owner geometry, remove clamp, and collision payload', () => {
@@ -225,32 +330,59 @@ test('surface content shelf measurements preserve focused-owner Z branches, scal
   const minimum = resolveSketchModuleContentPreview(
     makeArgs({ isShelf: true, regularDepth: 0.02, internalDepth: 0.02, backZ: -0.01 })
   );
-  const minimumMeasurements = minimum.preview?.clearanceMeasurements as Array<{
-    z: number;
-    textScale: number;
-  }>;
+  const minimumMeasurements = minimum.preview?.clearanceMeasurements as Measurement[];
   const minExpectedZ =
     (minimum.preview?.z as number) +
     (minimum.preview?.d as number) / 2 +
     SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetMinM;
   assert.ok(minimumMeasurements.length > 0);
-  minimumMeasurements.forEach(entry => {
-    close(entry.z, minExpectedZ);
-    assert.equal(entry.textScale, SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale);
+  assertCellMeasurementTargets({
+    measurements: minimumMeasurements,
+    centerX: minimum.preview?.x as number,
+    centerY: minimum.preview?.y as number,
+    width: minimum.preview?.w as number,
+    height: minimum.preview?.h as number,
+    containerMinY: 0,
+    containerMaxY: 1,
+    z: minExpectedZ,
   });
 
   const ratio = resolveSketchModuleContentPreview(
-    makeArgs({ isShelf: true, regularDepth: 0.4, internalDepth: 0.5, backZ: -0.25 })
+    makeArgs({
+      isShelf: true,
+      regularDepth: 0.4,
+      internalDepth: 0.5,
+      backZ: -0.25,
+      source: { shelves: [{ yNorm: 0.8, variant: 'regular' }] },
+    })
   );
-  const ratioMeasurements = ratio.preview?.clearanceMeasurements as Array<{
-    z: number;
-    textScale: number;
-  }>;
+  const ratioMeasurements = ratio.preview?.clearanceMeasurements as Measurement[];
   const ratioOffset =
     (ratio.preview?.d as number) * SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetDepthRatio;
   assert.ok(ratioOffset > SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementZOffsetMinM);
   const ratioExpectedZ = (ratio.preview?.z as number) + (ratio.preview?.d as number) / 2 + ratioOffset;
   ratioMeasurements.forEach(entry => close(entry.z, ratioExpectedZ));
+  assertCellMeasurementTargets({
+    measurements: ratioMeasurements,
+    centerX: ratio.preview?.x as number,
+    centerY: ratio.preview?.y as number,
+    width: ratio.preview?.w as number,
+    height: ratio.preview?.h as number,
+    containerMinY: 0,
+    containerMaxY: 1,
+    z: ratioExpectedZ,
+  });
+  const neighbor = ratioMeasurements.find(entry => entry.role === 'neighbor');
+  assert.ok(neighbor);
+  const neighborScale = Math.max(0.74, SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY.measurementTextScale * 0.94);
+  close(neighbor.startX, (ratio.preview?.x as number) - centeredLineOffset(ratio.preview?.w as number));
+  close(neighbor.endX, neighbor.startX);
+  close(neighbor.startY, (ratio.preview?.y as number) + (ratio.preview?.h as number) / 2);
+  close(neighbor.endY, 0.8 - 0.018 / 2);
+  close(neighbor.z as number, ratioExpectedZ);
+  assert.equal(neighbor.role, 'neighbor');
+  assert.equal(neighbor.styleKey, 'neighbor');
+  assert.equal(neighbor.textScale, neighborScale);
 
   const blocked = resolveSketchModuleContentPreview(
     makeArgs({

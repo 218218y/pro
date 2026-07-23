@@ -321,6 +321,7 @@ test('focused shelf renderer keeps the exact removed-edge epsilon boundary inclu
 type PreviewVector = { x: number; y: number; z: number; set: (x: number, y: number, z: number) => void };
 type PreviewNode = {
   parent: PreviewNode | null;
+  children: PreviewNode[];
   geometry?: object;
   isGroup?: boolean;
   visible: boolean;
@@ -348,15 +349,22 @@ function vector(): PreviewVector {
 function node(isGroup = false): PreviewNode {
   const value: PreviewNode = {
     parent: null,
+    children: [],
     ...(isGroup ? { isGroup: true } : { geometry: {} }),
     visible: false,
     position: vector(),
     scale: vector(),
     userData: {},
     add(...nodes) {
-      for (const child of nodes) child.parent = value;
+      for (const child of nodes) {
+        if (child.parent && child.parent !== value) child.parent.remove(child);
+        if (!value.children.includes(child)) value.children.push(child);
+        child.parent = value;
+      }
     },
     remove(child) {
+      const index = value.children.indexOf(child);
+      if (index >= 0) value.children.splice(index, 1);
       if (child.parent === value) child.parent = null;
     },
   };
@@ -387,6 +395,7 @@ function createHoverHarness() {
   for (const mesh of [...shelves, ...rods, storage]) {
     const outline = node();
     mesh.userData.__outline = outline;
+    mesh.add(outline);
   }
   group.add(...shelves, ...rods, storage);
   Object.assign(group.userData, {
@@ -425,7 +434,7 @@ function createHoverHarness() {
     assertTHREE: () => ({}),
     getThreeMaybe: () => ({}),
   } as unknown as Parameters<typeof createBuilderRenderInteriorLayoutHoverPreviewOps>[0]);
-  return { previewOps, group, shelves, rods, storage, materials };
+  return { previewOps, root, group, shelves, rods, storage, materials };
 }
 
 function hoverArgs(overrides: Record<string, unknown> = {}) {
@@ -530,6 +539,74 @@ test('focused hover renderer preserves rod and storage clamps, dimensions, and w
   assert.equal(harness.storage.position.x, 2);
   assert.equal(harness.storage.position.y, 5);
   assert.equal(harness.storage.position.z, 6);
+});
+
+test('focused hover renderer repairs parents and keeps stale-outline operations best-effort', () => {
+  const explicitParentHarness = createHoverHarness();
+  const wrongParent = node(true);
+  const anchorParent = node(true);
+  wrongParent.add(explicitParentHarness.group);
+  explicitParentHarness.previewOps.setInteriorLayoutHoverPreview(hoverArgs({ anchorParent }));
+  assert.equal(explicitParentHarness.group.parent, anchorParent);
+  assert.equal(wrongParent.children.includes(explicitParentHarness.group), false);
+  assert.equal(anchorParent.children.includes(explicitParentHarness.group), true);
+
+  const anchorParentHarness = createHoverHarness();
+  const anchorOwner = node(true);
+  const anchor = node();
+  anchorOwner.add(anchor);
+  wrongParent.add(anchorParentHarness.group);
+  anchorParentHarness.previewOps.setInteriorLayoutHoverPreview(hoverArgs({ anchor }));
+  assert.equal(anchorParentHarness.group.parent, anchorOwner);
+
+  const rootFallbackHarness = createHoverHarness();
+  wrongParent.add(rootFallbackHarness.group);
+  rootFallbackHarness.previewOps.setInteriorLayoutHoverPreview(hoverArgs({ anchor: node() }));
+  assert.equal(rootFallbackHarness.group.parent, rootFallbackHarness.root);
+
+  const failedRepairHarness = createHoverHarness();
+  const failingParent = node(true);
+  failingParent.add = () => {
+    throw new Error('parent repair failed');
+  };
+  assert.doesNotThrow(() =>
+    failedRepairHarness.previewOps.setInteriorLayoutHoverPreview(hoverArgs({ anchorParent: failingParent }))
+  );
+  assert.equal(failedRepairHarness.group.visible, true);
+  assert.equal(failedRepairHarness.shelves[0].visible, true);
+
+  const outlineHarness = createHoverHarness();
+  const missingOutlineMesh = outlineHarness.rods[0];
+  const throwingOutlineMesh = outlineHarness.shelves[0];
+  const staleOutlineMesh = outlineHarness.storage;
+  const staleOutline = outlineOf(staleOutlineMesh);
+  delete missingOutlineMesh.userData.__outline;
+  Object.defineProperty(throwingOutlineMesh.userData, '__outline', {
+    configurable: true,
+    get() {
+      throw new Error('stale outline');
+    },
+  });
+  staleOutlineMesh.remove(staleOutline);
+  staleOutline.visible = true;
+
+  assert.doesNotThrow(() =>
+    outlineHarness.previewOps.setInteriorLayoutHoverPreview(hoverArgs({ op: 'remove' }))
+  );
+  assert.equal(throwingOutlineMesh.visible, true);
+  assert.equal(throwingOutlineMesh.material, outlineHarness.materials.remove);
+  assert.equal(missingOutlineMesh.visible, true);
+  assert.equal(staleOutline.visible, true);
+
+  assert.doesNotThrow(() => outlineHarness.previewOps.hideInteriorLayoutHoverPreview({}));
+  assert.equal(outlineHarness.group.visible, false);
+  assert.equal(
+    [...outlineHarness.shelves, ...outlineHarness.rods, outlineHarness.storage].every(
+      mesh => mesh.visible === false
+    ),
+    true
+  );
+  assert.equal(staleOutline.visible, false);
 });
 
 test('focused hover renderer preserves invalid geometry, remove/blocked style, and hide cleanup', () => {

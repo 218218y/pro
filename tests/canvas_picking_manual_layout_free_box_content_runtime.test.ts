@@ -683,20 +683,30 @@ test('manual-layout shelf-grid defaults and span boundary come from focused owne
     ...base,
     targetHeight: spanMin * 2 + woodThick * 2 - 1e-6,
   });
-  const normalizedGrid = resolveManualLayoutFreeBoxShelfGridPlan({
-    ...base,
-    targetHeight: 1,
-    currentGridDivisions: Number.NaN,
-  });
-
   assert.equal(atBoundary.previewWoodThick, woodThick);
   assert.equal(atBoundary.blockedReason, null);
   assert.equal(atBoundary.shelfYs.length, 1);
   assert.equal(belowBoundary.blockedReason, 'no-room');
-  assert.equal(normalizedGrid.shelfYs.length, INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault - 1);
-  assert.equal(normalizedGrid.cellXNormMin, 0);
-  assert.equal(normalizedGrid.cellXNormMax, 1);
-  assert.ok(normalizedGrid.cellYNormMin >= 0 && normalizedGrid.cellYNormMax <= 1);
+  for (const invalidGridDivisions of ['invalid', Number.NaN, 0, -3]) {
+    const normalizedGrid = resolveManualLayoutFreeBoxShelfGridPlan({
+      ...base,
+      targetHeight: 1,
+      currentGridDivisions: invalidGridDivisions,
+    });
+    assert.equal(normalizedGrid.shelfYs.length, INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault - 1);
+    assert.equal(normalizedGrid.cellXNormMin, 0);
+    assert.equal(normalizedGrid.cellXNormMax, 1);
+    assert.ok(normalizedGrid.cellYNormMin >= 0 && normalizedGrid.cellYNormMax <= 1);
+    assert.ok(normalizedGrid.shelfYs.every(Number.isFinite));
+  }
+
+  const zeroSpan = resolveManualLayoutFreeBoxShelfGridPlan({
+    ...base,
+    targetHeight: 0,
+    currentGridDivisions: INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault,
+  });
+  assert.equal(zeroSpan.blockedReason, 'no-room');
+  assert.ok(zeroSpan.shelfYs.every(Number.isFinite));
 });
 
 test('manual-layout preset defaults preserve focused grid, rod, storage and material geometry', () => {

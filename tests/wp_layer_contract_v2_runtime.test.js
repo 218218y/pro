@@ -36,6 +36,16 @@ function semanticSha256(value) {
   return createHash('sha256').update(stableJson(value)).digest('hex');
 }
 
+function listSourceFiles(dir) {
+  const files = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const absolute = path.join(dir, entry.name);
+    if (entry.isDirectory()) files.push(...listSourceFiles(absolute));
+    else if (entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name)) files.push(absolute);
+  }
+  return files;
+}
+
 const RATCHET = Object.freeze({
   mode: 'decrease-only',
   owner: 'architecture-contract',
@@ -1470,6 +1480,38 @@ test('project migration ledger stays exact at one hundred and fourteen reviewed 
     assert.equal(expected.observed - expected.migration, expected.reviewed);
     assert.equal(rule.maxImportCount, expected.budget);
   }
+
+  assert.equal(baseline.rules.length, 52);
+  const proposal = buildLayerContractProposal(graph, baseline, { currentDate: TEST_CURRENT_DATE });
+  assert.equal(proposal.reviewRequired, false);
+  assert.deepEqual(proposal.diff.addedEdges, []);
+  assert.deepEqual(proposal.diff.ratchetViolations, []);
+  assert.deepEqual(proposal.diff.migrationBudgetFailures, []);
+
+  const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
+  const facadeDependencies = listSourceFiles(path.join(repositoryRoot, 'esm')).flatMap(file =>
+    analyzeModuleDependencies(file, fs.readFileSync(file, 'utf8'))
+      .imports.filter(dependency => dependency.specifier.includes('wardrobe_dimension_tokens_shared'))
+      .map(dependency => ({ file, ...dependency }))
+  );
+  const staticFacadeDependencies = facadeDependencies.filter(
+    dependency => dependency.syntax === 'static-import'
+  );
+  assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 42);
+  assert.equal(staticFacadeDependencies.length, 42);
+  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 44);
+  assert.equal(facadeDependencies.length, 45);
+
+  const facadeSource = fs.readFileSync(path.join(repositoryRoot, facadeRel), 'utf8');
+  const facadeExports = collectNamedModuleExports(facadeRel, facadeSource);
+  assert.equal(
+    new Set(facadeExports.filter(entry => entry.kind === 'value').map(entry => entry.exportedName)).size,
+    89
+  );
+  assert.equal(
+    new Set(facadeExports.filter(entry => entry.kind === 'type').map(entry => entry.exportedName)).size,
+    10
+  );
 });
 
 test('repository Sketch Box Geometry and unit-conversion migration entries are exact and grant no UI headroom', () => {

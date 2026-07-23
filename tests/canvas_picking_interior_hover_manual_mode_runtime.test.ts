@@ -226,12 +226,17 @@ test('manual interior hover preserves routing, Free Box priority, hide order, an
 });
 
 test('manual interior hover reads canonical grid defaults and preserves the maximum division', () => {
-  const invalid = createHarness({ gridDivisions: 'invalid', manualTool: 'storage' });
-  assert.equal(invalid.run(), true);
-  assert.equal(
-    invalid.calls.freeBox[0].currentGridDivisions,
-    INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault
-  );
+  for (const invalidGridDivisions of ['invalid', Number.NaN, 0, -3]) {
+    const invalid = createHarness({
+      gridDivisions: invalidGridDivisions,
+      manualTool: 'storage',
+    });
+    assert.equal(invalid.run(), true);
+    assert.equal(
+      invalid.calls.freeBox[0].currentGridDivisions,
+      INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault
+    );
+  }
 
   const maximum = createHarness({ gridDivisions: 8, manualTool: 'storage' });
   assert.equal(maximum.run(), true);

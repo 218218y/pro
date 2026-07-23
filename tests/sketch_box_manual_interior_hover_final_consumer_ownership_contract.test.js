@@ -5,13 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  analyzeModuleDependencies,
-  buildLayerContractProposal,
-  collectLayerContractGraph,
-  collectNamedModuleExports,
-  evaluateLayerContract,
-} from '../tools/wp_layer_contract_support.mjs';
+import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const consumerRel = 'esm/native/services/canvas_picking_interior_hover_manual_mode.ts';
@@ -31,16 +25,6 @@ function stableJson(value) {
 }
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
-
-function listSourceFiles(dir) {
-  const files = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) files.push(...listSourceFiles(absolute));
-    else if (entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name)) files.push(absolute);
-  }
-  return files;
-}
 
 function focusedImports() {
   return analyzeModuleDependencies(path.join(root, consumerRel), read(consumerRel))
@@ -180,100 +164,17 @@ test('Manual Interior Hover imports exactly five focused owners and no aggregate
   );
 });
 
-test('Manual Interior Hover ledger appends exactly four entries after the unchanged 110-entry prefix', () => {
+test('Manual Interior Hover historically locks entries 111-114 after the unchanged 110-entry prefix', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(baseline.migrationBudgets.length, 114);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 110)),
     '8d1d7cafcce3d1d360a559daf7a9fa00b92f32139a4f90cf80d6b6f061dfdd2d'
   );
-  assert.deepEqual(baseline.migrationBudgets.slice(110), expectedEntries);
+  assert.deepEqual(baseline.migrationBudgets.slice(110, 114), expectedEntries);
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 114)),
     'ee0f595edfec1a9b956d82c4257e160a4d6adf5302d2dcce40667c89720575d1'
   );
-});
-
-test('Manual Interior Hover owns current repository layer and facade totals', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  const graph = collectLayerContractGraph({ root });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-22' });
-  assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.filter(entry => entry.active).length, 114);
-
-  const observed = new Map(graph.edges.map(edge => [`${edge.from}>${edge.to}`, edge.importCount]));
-  const activeMigrations = new Map();
-  for (const entry of baseline.migrationBudgets) {
-    const key = `${entry.from}>${entry.to}`;
-    activeMigrations.set(key, (activeMigrations.get(key) ?? 0) + entry.additionalStatements);
-  }
-  assert.deepEqual(
-    ['builder>shared', 'features>shared', 'services>shared', 'ui>shared'].map(key => ({
-      key,
-      observed: observed.get(key),
-      migration: activeMigrations.get(key) ?? 0,
-      reviewed: observed.get(key) - (activeMigrations.get(key) ?? 0),
-      budget: baseline.rules.find(entry => `${entry.from}>${entry.to}` === key)?.maxImportCount,
-    })),
-    [
-      { key: 'builder>shared', observed: 272, migration: 53, reviewed: 219, budget: 219 },
-      { key: 'features>shared', observed: 59, migration: 1, reviewed: 58, budget: 58 },
-      { key: 'services>shared', observed: 226, migration: 59, reviewed: 167, budget: 167 },
-      { key: 'ui>shared', observed: 28, migration: 1, reviewed: 27, budget: 27 },
-    ]
-  );
-  assert.equal(baseline.rules.length, 52);
-  const proposal = buildLayerContractProposal(graph, baseline, { currentDate: '2026-07-22' });
-  assert.equal(proposal.reviewRequired, false);
-  assert.deepEqual(proposal.diff.addedEdges, []);
-  assert.deepEqual(proposal.diff.ratchetViolations, []);
-  assert.deepEqual(proposal.diff.migrationBudgetFailures, []);
-
-  const esmFiles = listSourceFiles(path.join(root, 'esm'));
-  const facadeDependencies = esmFiles.flatMap(file =>
-    analyzeModuleDependencies(file, fs.readFileSync(file, 'utf8'))
-      .imports.filter(dependency => dependency.specifier.includes('wardrobe_dimension_tokens_shared'))
-      .map(dependency => ({ file, ...dependency }))
-  );
-  const staticFacadeDependencies = facadeDependencies.filter(
-    dependency => dependency.syntax === 'static-import'
-  );
-  assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 42);
-  assert.equal(staticFacadeDependencies.length, 42);
-  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 44);
-  assert.equal(facadeDependencies.length, 45);
-
-  const facadeExports = collectNamedModuleExports(facadeRel, read(facadeRel));
-  assert.equal(
-    new Set(facadeExports.filter(entry => entry.kind === 'value').map(entry => entry.exportedName)).size,
-    89
-  );
-  assert.equal(
-    new Set(facadeExports.filter(entry => entry.kind === 'type').map(entry => entry.exportedName)).size,
-    10
-  );
-});
-
-test('Sketch Box facade and branch production-consumer inventories are empty', () => {
-  const esmFiles = listSourceFiles(path.join(root, 'esm'));
-  const facadeAbsolute = path.join(root, facadeRel).replaceAll('\\', '/');
-  const productionFiles = esmFiles.filter(file => file.replaceAll('\\', '/') !== facadeAbsolute);
-  const sketchBoxConsumers = productionFiles.filter(file =>
-    /\bSKETCH_BOX_DIMENSIONS\b/u.test(fs.readFileSync(file, 'utf8'))
-  );
-  assert.deepEqual(sketchBoxConsumers, []);
-
-  for (const pattern of [
-    /SKETCH_BOX_DIMENSIONS\.preview/u,
-    /SKETCH_BOX_DIMENSIONS\.geometry/u,
-    /SKETCH_BOX_DIMENSIONS\.freePlacement/u,
-    /\bHANDLE_DIMENSIONS\b/u,
-  ]) {
-    assert.deepEqual(
-      productionFiles.filter(file => pattern.test(fs.readFileSync(file, 'utf8'))),
-      []
-    );
-  }
 });
 
 test('Manual Interior Hover keeps the ownership formulas structurally exact', () => {
