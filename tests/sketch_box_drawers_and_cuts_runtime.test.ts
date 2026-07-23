@@ -847,10 +847,13 @@ test('sketch external drawers source keeps module faces aligned to real door spa
   );
   assert.match(shared, /drawer\.faceW = faceW;/);
   assert.match(sketchPickMeta, /export function applySketchModulePickMeta\(/);
-  assert.match(src, /const drawerDims = DRAWER_DIMENSIONS\.sketch;/);
   assert.match(
     src,
-    /const faceW = Math\.max\(drawerDims\.externalPreviewVisualMinWidthM, readRenderOpNumber\(op\.faceW\) \?\? visualW\);/
+    /import \{ DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/drawer_sketch_policy\.js';/
+  );
+  assert.match(
+    src,
+    /const faceW = Math\.max\(\s*DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY\.externalPreviewVisualMinWidthM,\s*readRenderOpNumber\(op\.faceW\) \?\? visualW\s*\);/
   );
   assert.doesNotMatch(src, /const faceW = Math\.max\(0\.05, readRenderOpNumber\(op\.faceW\) \?\? visualW\);/);
   assert.match(src, /visualObj\.position\?\.set\?\.\(opPlan\.faceOffsetX, opPlan\.faceOffsetY, 0\);/);

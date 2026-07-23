@@ -355,12 +355,12 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/builder/render_preview_interior_hover_apply.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/native/features/sketch_internal_drawer_cassette.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
 });
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([
   'esm/native/builder/core_carcass_shared.ts',
   'esm/native/builder/core_doors_compute.ts',
   'esm/native/builder/core_layout_compute.ts',
-  'esm/native/features/sketch_internal_drawer_cassette.ts',
   'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
   'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts',
 ]);
@@ -1432,6 +1432,10 @@ const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_stack_collision.ts': Object.freeze([
     'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
   ]),
+  'esm/native/features/sketch_drawer_sizing.ts': Object.freeze(['DRAWER_SKETCH_SIZING_POLICY']),
+  'esm/native/features/sketch_internal_drawer_cassette.ts': Object.freeze([
+    'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+  ]),
   'esm/native/features/sketch_box_regular_external_drawers.ts': Object.freeze([
     'DRAWER_SKETCH_SIZING_POLICY',
     'EXTERNAL_DRAWER_SIZE_POLICY',
@@ -1601,25 +1605,6 @@ const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
     'sketch',
     'sketch.doorCutHorizontalOverlapMinM',
     'sketch.doorCutNoOpToleranceM',
-  ]),
-  'esm/native/features/sketch_drawer_sizing.ts': Object.freeze([
-    'sketch',
-    'sketch.externalCountMax',
-    'sketch.externalCountMin',
-    'sketch.externalDefaultHeightCm',
-    'sketch.heightMaxCm',
-    'sketch.heightMinCm',
-    'sketch.heightTokenEpsilonCm',
-    'sketch.internalDefaultHeightCm',
-    'sketch.internalGapM',
-    'sketch.internalStackCount',
-    'sketch.minRenderHeightM',
-  ]),
-  'esm/native/features/sketch_internal_drawer_cassette.ts': Object.freeze([
-    'sketch',
-    'sketch.internalSideFillerWidthM',
-    'sketch.internalWidthClearanceM',
-    'sketch.internalWidthMinM',
   ]),
   'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts': Object.freeze([
     'sketch',

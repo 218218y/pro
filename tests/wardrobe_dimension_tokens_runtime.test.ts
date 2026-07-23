@@ -200,6 +200,7 @@ import {
   stackSplitCentimetersToMeters,
 } from '../esm/shared/dimensions/stack_split_render_policy.ts';
 import {
+  cmToM,
   centimeters,
   centimetersToMeters,
   metersToWorldUnits,
@@ -224,15 +225,33 @@ import {
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
+  DEFAULT_SKETCH_INTERNAL_DRAWER_GAP_M,
+  DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM,
+  DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M,
   createSketchExternalDrawersTool,
+  createSketchInternalDrawersTool,
+  normalizeSketchDrawerHeightCm,
+  normalizeSketchDrawerHeightM,
   parseSketchExternalDrawersTool,
+  parseSketchInternalDrawersTool,
   readSketchDrawerHeightMFromItem,
   resolveSketchExternalDrawerMetrics,
+  resolveSketchInternalDrawerMetrics,
+  sketchStackFitsAvailableHeight,
+  SKETCH_DRAWER_HEIGHT_MAX_CM,
+  SKETCH_DRAWER_HEIGHT_MIN_CM,
+  SKETCH_EXTERNAL_DRAWER_COUNT_MIN,
   SKETCH_EXTERNAL_DRAWER_COUNT_MAX,
+  SKETCH_INTERNAL_DRAWER_STACK_COUNT,
 } from '../esm/native/features/sketch_drawer_sizing.ts';
 import {
+  resolveSketchInternalDrawerCassetteDrawerWidth,
+  resolveSketchInternalDrawerCassetteFrameOuterWidth,
+  resolveSketchInternalDrawerCassetteRange,
   resolveSketchInternalDrawerCassetteSideFillerWidth,
   resolveSketchInternalDrawerCassetteWoodThick,
+  SKETCH_INTERNAL_DRAWER_CASSETTE_TOUCH_EPSILON_M,
+  verticalRangesTouchOrOverlap,
 } from '../esm/native/features/sketch_internal_drawer_cassette.ts';
 import { computeExternalDrawersOpsForModule } from '../esm/native/builder/core_storage_compute_external_drawers.ts';
 
@@ -1766,36 +1785,188 @@ test('external drawer focused resolver preserves facade identity, defaults, fall
   assert.deepEqual(resolveExternalDrawerGeometry(args), custom);
 });
 
-test('sketch drawer tools parse numeric tokens while live state readers reject numeric strings', () => {
-  const parsed = parseSketchExternalDrawersTool('sketch_ext_drawers:3@24');
+test('sketch drawer sizing preserves focused limits, defaults, token parsing, and live-state rejection', () => {
+  assert.equal(SKETCH_DRAWER_HEIGHT_MIN_CM, DRAWER_SKETCH_SIZING_POLICY.heightMinCm);
+  assert.equal(SKETCH_DRAWER_HEIGHT_MAX_CM, DRAWER_SKETCH_SIZING_POLICY.heightMaxCm);
+  assert.equal(SKETCH_EXTERNAL_DRAWER_COUNT_MIN, DRAWER_SKETCH_SIZING_POLICY.externalCountMin);
+  assert.equal(SKETCH_EXTERNAL_DRAWER_COUNT_MAX, DRAWER_SKETCH_SIZING_POLICY.externalCountMax);
+  assert.equal(DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM, DRAWER_SKETCH_SIZING_POLICY.externalDefaultHeightCm);
+  assert.equal(DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM, DRAWER_SKETCH_SIZING_POLICY.internalDefaultHeightCm);
+  assert.equal(
+    DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M,
+    cmToM(DRAWER_SKETCH_SIZING_POLICY.internalDefaultHeightCm)
+  );
+  assert.equal(DEFAULT_SKETCH_INTERNAL_DRAWER_GAP_M, DRAWER_SKETCH_SIZING_POLICY.internalGapM);
+  assert.equal(SKETCH_INTERNAL_DRAWER_STACK_COUNT, DRAWER_SKETCH_SIZING_POLICY.internalStackCount);
 
-  assert.equal(parsed?.count, 3);
-  assert.equal(parsed?.drawerHeightCm, 24);
-  assert.ok(Math.abs((parsed?.drawerHeightM ?? 0) - 0.24) < 1e-9);
-  assert.equal(createSketchExternalDrawersTool('3', '24'), 'sketch_ext_drawers:3@24');
+  assert.equal(normalizeSketchDrawerHeightCm(-1, 22), DRAWER_SKETCH_SIZING_POLICY.heightMinCm);
+  assert.equal(normalizeSketchDrawerHeightCm(999, 22), DRAWER_SKETCH_SIZING_POLICY.heightMaxCm);
+  assert.equal(normalizeSketchDrawerHeightCm('24.26', 22), 24.3);
+  assert.equal(
+    normalizeSketchDrawerHeightM('0.24', DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M),
+    DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M
+  );
 
-  const metrics = resolveSketchExternalDrawerMetrics({
+  const parsed = parseSketchExternalDrawersTool('sketch_ext_drawers:3@24.26');
+  assert.deepEqual(parsed, {
+    count: 3,
+    drawerHeightCm: 24.3,
+    drawerHeightM: cmToM(24.3),
+  });
+  assert.equal(
+    parseSketchExternalDrawersTool('sketch_ext_drawers:-4')?.count,
+    DRAWER_SKETCH_SIZING_POLICY.externalCountMin
+  );
+  assert.equal(
+    parseSketchExternalDrawersTool('sketch_ext_drawers:99')?.count,
+    DRAWER_SKETCH_SIZING_POLICY.externalCountMax
+  );
+  assert.equal(parseSketchInternalDrawersTool('sketch_int_drawers@18.26')?.drawerHeightCm, 18.3);
+  assert.equal(
+    createSketchExternalDrawersTool('3', DRAWER_SKETCH_SIZING_POLICY.externalDefaultHeightCm),
+    'sketch_ext_drawers:3'
+  );
+  assert.equal(
+    createSketchInternalDrawersTool(DRAWER_SKETCH_SIZING_POLICY.internalDefaultHeightCm),
+    'sketch_int_drawers'
+  );
+
+  const externalMetrics = resolveSketchExternalDrawerMetrics({
     drawerCount: '3',
     drawerHeightM: '0.24',
-  } as any);
-  assert.equal(metrics.drawerCount, 1);
-  assert.equal(metrics.drawerH, DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M);
+  } as never);
+  assert.equal(externalMetrics.drawerCount, 1);
+  assert.equal(externalMetrics.drawerH, DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M);
   assert.equal(
     readSketchDrawerHeightMFromItem({ drawerHeightM: '0.24' }, DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M),
     DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M
   );
+
+  const internalMetrics = resolveSketchInternalDrawerMetrics({
+    drawerHeightM: DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M,
+  });
+  assert.equal(
+    internalMetrics.drawerH,
+    Math.max(DRAWER_SKETCH_SIZING_POLICY.minRenderHeightM, DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M)
+  );
+  assert.equal(internalMetrics.drawerGap, DRAWER_SKETCH_SIZING_POLICY.internalGapM);
+  assert.equal(
+    internalMetrics.stackH,
+    DRAWER_SKETCH_SIZING_POLICY.internalStackCount * internalMetrics.drawerH +
+      DRAWER_SKETCH_SIZING_POLICY.internalGapM
+  );
+  assert.equal(sketchStackFitsAvailableHeight(internalMetrics.stackH, internalMetrics.stackH), true);
+  assert.equal(sketchStackFitsAvailableHeight(internalMetrics.stackH, internalMetrics.stackH - 2e-9), false);
 });
 
-test('sketch internal drawer cassette sizing rejects string-encoded live dimensions', () => {
-  assert.equal(resolveSketchInternalDrawerCassetteWoodThick('0.02'), MATERIAL_DIMENSIONS.wood.thicknessM);
+test('sketch internal drawer cassette preserves focused defaults, ranges, touching, and width clamps', () => {
+  const defaultWood = MATERIAL_THICKNESS_POLICY.wood.thicknessM;
+  const clearance = DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthClearanceM;
+  const minWidth = DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthMinM;
+  const defaultFiller = DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalSideFillerWidthM;
+
+  assert.equal(resolveSketchInternalDrawerCassetteWoodThick(undefined), defaultWood);
+  assert.equal(resolveSketchInternalDrawerCassetteWoodThick(0.024), 0.024);
+  for (const invalid of ['0.02', 0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+    assert.equal(resolveSketchInternalDrawerCassetteWoodThick(invalid), defaultWood);
+  }
+
+  const range = resolveSketchInternalDrawerCassetteRange({
+    baseY: 0.4,
+    stackH: 0.32,
+  });
+  assert.deepEqual(range, {
+    minY: 0.4 - defaultWood,
+    maxY: 0.4 + 0.32 + defaultWood,
+    height: 0.32 + defaultWood * 2,
+    woodThick: defaultWood,
+  });
+
+  assert.equal(
+    verticalRangesTouchOrOverlap({
+      minY: 0,
+      maxY: 0.3,
+      otherMinY: 0.3,
+      otherMaxY: 0.6,
+    }),
+    true
+  );
+  assert.equal(
+    verticalRangesTouchOrOverlap({
+      minY: 0,
+      maxY: 0.3,
+      otherMinY: 0.3 + SKETCH_INTERNAL_DRAWER_CASSETTE_TOUCH_EPSILON_M,
+      otherMaxY: 0.6,
+    }),
+    true
+  );
+  assert.equal(
+    verticalRangesTouchOrOverlap({
+      minY: 0,
+      maxY: 0.3,
+      otherMinY: 0.3 + SKETCH_INTERNAL_DRAWER_CASSETTE_TOUCH_EPSILON_M + 1e-9,
+      otherMaxY: 0.6,
+    }),
+    false
+  );
+
+  const outerWidth = 0.8;
+  assert.equal(resolveSketchInternalDrawerCassetteSideFillerWidth({ outerWidth }), defaultFiller);
   assert.equal(
     resolveSketchInternalDrawerCassetteSideFillerWidth({
-      outerWidth: 0.8,
-      woodThick: 0.02,
+      outerWidth,
+      requestedWidthM: 0.07,
+    }),
+    0.07
+  );
+  const maxFiller = (outerWidth - (defaultWood * 2 + clearance + minWidth)) / 2;
+  assert.equal(
+    resolveSketchInternalDrawerCassetteSideFillerWidth({
+      outerWidth,
+      requestedWidthM: 10,
+    }),
+    maxFiller
+  );
+  assert.equal(
+    resolveSketchInternalDrawerCassetteSideFillerWidth({
+      outerWidth,
       requestedWidthM: '0.08',
     }),
-    DRAWER_DIMENSIONS.sketch.internalSideFillerWidthM
+    defaultFiller
   );
+
+  const frameOuterWidth = outerWidth - defaultFiller * 2;
+  assert.equal(resolveSketchInternalDrawerCassetteFrameOuterWidth({ outerWidth }), frameOuterWidth);
+  assert.equal(
+    resolveSketchInternalDrawerCassetteDrawerWidth({ outerWidth }),
+    Math.max(minWidth, frameOuterWidth - defaultWood * 2 - clearance)
+  );
+  const minimumOuterWidth = defaultWood * 2 + clearance + minWidth;
+  assert.ok(
+    Math.abs(resolveSketchInternalDrawerCassetteDrawerWidth({ outerWidth: minimumOuterWidth }) - minWidth) <=
+      1e-12
+  );
+
+  for (const invalidOuterWidth of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+    assert.equal(
+      resolveSketchInternalDrawerCassetteSideFillerWidth({
+        outerWidth: invalidOuterWidth,
+      }),
+      0
+    );
+    assert.equal(
+      resolveSketchInternalDrawerCassetteFrameOuterWidth({
+        outerWidth: invalidOuterWidth,
+      }),
+      0
+    );
+    assert.equal(
+      resolveSketchInternalDrawerCassetteDrawerWidth({
+        outerWidth: invalidOuterWidth,
+      }),
+      minWidth
+    );
+  }
 });
 
 test('inset external drawer geometry places the face inside the front frame', () => {

@@ -4429,6 +4429,64 @@
       },
       "reason": "The Sketch external-drawer planning flow replaces one legacy facade statement with the focused External Drawer geometry owner plus the focused Drawer Sketch external-preview owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch external-drawer planning composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-23",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/features/sketch_drawer_sizing.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_SIZING_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "cmToM"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["cmToM"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch drawer sizing feature replaces one legacy facade statement with the focused Drawer Sketch Sizing owner plus the canonical centimeter-to-meter conversion on the existing features to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch drawer sizing composition seam eliminates the extra Units statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-23",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/features/sketch_internal_drawer_cassette.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Sketch internal drawer cassette feature replaces one legacy facade statement with the focused Drawer Sketch Internal Preview owner plus the canonical Material Thickness owner on the existing features to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Sketch internal drawer cassette composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
     }
   ]
 }

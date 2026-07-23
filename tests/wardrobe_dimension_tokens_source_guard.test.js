@@ -668,15 +668,13 @@ test('[dimension tokens] interior presets and sketch drawer sizing read canonica
 
   for (const rel of [
     'esm/native/features/interior_layout_presets/ops.ts',
-    'esm/native/features/sketch_drawer_sizing.ts',
     'esm/native/features/modules_configuration/module_defaults.ts',
     'esm/native/features/stack_split/module_config.ts',
   ]) {
-    assertUsesToken(
-      rel,
-      rel.includes('sketch_drawer_sizing') ? 'DRAWER_DIMENSIONS' : 'INTERIOR_FITTINGS_DIMENSIONS'
-    );
+    assertUsesToken(rel, 'INTERIOR_FITTINGS_DIMENSIONS');
   }
+  assertUsesToken('esm/native/features/sketch_drawer_sizing.ts', 'DRAWER_SKETCH_SIZING_POLICY');
+  assertUsesToken('esm/native/features/sketch_drawer_sizing.ts', 'cmToM');
 
   const presetOps = read('esm/native/features/interior_layout_presets/ops.ts');
   assert.doesNotMatch(presetOps, /pushRod\((3\.5|3\.8|4\.6|2\.3|1\.3)/);
@@ -1630,6 +1628,7 @@ test('[dimension tokens] Remaining Interior Fittings owner preserves focused pro
 
 test('[dimension tokens] pure Material consumers use the canonical thickness owner', () => {
   const expectedConsumers = [
+    'esm/native/features/sketch_internal_drawer_cassette.ts',
     'esm/native/builder/render_preview_sketch_pipeline_shared.ts',
     'esm/native/services/canvas_picking_hover_preview_modes_divider.ts',
     'esm/native/services/canvas_picking_sketch_free_box_content_preview_doors.ts',
@@ -1702,6 +1701,8 @@ test('[dimension tokens] Drawer Sketch owner preserves focused production consum
       'esm/native/builder/render_interior_sketch_drawers_external_plan.ts',
       'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
     ],
+    ['esm/native/features/sketch_drawer_sizing.ts', 'DRAWER_SKETCH_SIZING_POLICY'],
+    ['esm/native/features/sketch_internal_drawer_cassette.ts', 'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY'],
     ['esm/native/features/sketch_box_regular_external_drawers.ts', 'DRAWER_SKETCH_SIZING_POLICY'],
     [
       'esm/native/services/canvas_picking_drawer_cross_family_preview.ts',

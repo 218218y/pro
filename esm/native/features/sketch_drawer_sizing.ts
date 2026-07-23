@@ -1,17 +1,18 @@
-import { cmToM, DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_SIZING_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
+import { cmToM } from '../../shared/dimensions/units.js';
 
 export const SKETCH_INTERNAL_DRAWERS_TOOL_ID = 'sketch_int_drawers';
 export const SKETCH_EXTERNAL_DRAWERS_TOOL_PREFIX = 'sketch_ext_drawers:';
 export const SKETCH_DRAWER_HEIGHT_TOOL_SEPARATOR = '@';
 
-export const SKETCH_DRAWER_HEIGHT_MIN_CM: number = DRAWER_DIMENSIONS.sketch.heightMinCm;
-export const SKETCH_DRAWER_HEIGHT_MAX_CM: number = DRAWER_DIMENSIONS.sketch.heightMaxCm;
-export const SKETCH_EXTERNAL_DRAWER_COUNT_MIN: number = DRAWER_DIMENSIONS.sketch.externalCountMin;
-export const SKETCH_EXTERNAL_DRAWER_COUNT_MAX: number = DRAWER_DIMENSIONS.sketch.externalCountMax;
+export const SKETCH_DRAWER_HEIGHT_MIN_CM: number = DRAWER_SKETCH_SIZING_POLICY.heightMinCm;
+export const SKETCH_DRAWER_HEIGHT_MAX_CM: number = DRAWER_SKETCH_SIZING_POLICY.heightMaxCm;
+export const SKETCH_EXTERNAL_DRAWER_COUNT_MIN: number = DRAWER_SKETCH_SIZING_POLICY.externalCountMin;
+export const SKETCH_EXTERNAL_DRAWER_COUNT_MAX: number = DRAWER_SKETCH_SIZING_POLICY.externalCountMax;
 export const DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM: number =
-  DRAWER_DIMENSIONS.sketch.externalDefaultHeightCm;
+  DRAWER_SKETCH_SIZING_POLICY.externalDefaultHeightCm;
 export const DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM: number =
-  DRAWER_DIMENSIONS.sketch.internalDefaultHeightCm;
+  DRAWER_SKETCH_SIZING_POLICY.internalDefaultHeightCm;
 
 export const DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M: number = cmToM(
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM
@@ -19,11 +20,11 @@ export const DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M: number = cmToM(
 export const DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M: number = cmToM(
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM
 );
-export const DEFAULT_SKETCH_INTERNAL_DRAWER_GAP_M: number = DRAWER_DIMENSIONS.sketch.internalGapM;
-export const SKETCH_INTERNAL_DRAWER_STACK_COUNT: number = DRAWER_DIMENSIONS.sketch.internalStackCount;
+export const DEFAULT_SKETCH_INTERNAL_DRAWER_GAP_M: number = DRAWER_SKETCH_SIZING_POLICY.internalGapM;
+export const SKETCH_INTERNAL_DRAWER_STACK_COUNT: number = DRAWER_SKETCH_SIZING_POLICY.internalStackCount;
 
-const MIN_RENDER_DRAWER_HEIGHT_M = DRAWER_DIMENSIONS.sketch.minRenderHeightM;
-const HEIGHT_TOKEN_EPSILON = DRAWER_DIMENSIONS.sketch.heightTokenEpsilonCm;
+const MIN_RENDER_DRAWER_HEIGHT_M = DRAWER_SKETCH_SIZING_POLICY.minRenderHeightM;
+const HEIGHT_TOKEN_EPSILON = DRAWER_SKETCH_SIZING_POLICY.heightTokenEpsilonCm;
 const STACK_FIT_EPSILON_M = 1e-9;
 
 export const SKETCH_INTERNAL_DRAWERS_DIRTY_KEY = '__internalDrawersSketchDirty';

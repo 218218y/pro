@@ -1,4 +1,5 @@
-import { DRAWER_DIMENSIONS, MATERIAL_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 
 export const SKETCH_INTERNAL_DRAWER_CASSETTE_TOUCH_EPSILON_M = 1e-6;
 
@@ -49,16 +50,16 @@ function resolveCassetteDrawerWidthInputs(args: {
   const clearanceM =
     typeof args.clearanceM === 'number' && Number.isFinite(args.clearanceM) && args.clearanceM >= 0
       ? args.clearanceM
-      : DRAWER_DIMENSIONS.sketch.internalWidthClearanceM;
+      : DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthClearanceM;
   const minWidthM =
     typeof args.minWidthM === 'number' && Number.isFinite(args.minWidthM) && args.minWidthM > 0
       ? args.minWidthM
-      : DRAWER_DIMENSIONS.sketch.internalWidthMinM;
+      : DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalWidthMinM;
   return { outerWidth, woodThick, clearanceM, minWidthM };
 }
 
 export function resolveSketchInternalDrawerCassetteWoodThick(value: unknown): number {
-  return readPositiveFinite(value) ?? MATERIAL_DIMENSIONS.wood.thicknessM;
+  return readPositiveFinite(value) ?? MATERIAL_THICKNESS_POLICY.wood.thicknessM;
 }
 
 export function resolveSketchInternalDrawerCassetteRange(
@@ -104,7 +105,8 @@ export function resolveSketchInternalDrawerCassetteSideFillerWidth(args: {
   if (!(outerWidth > 0)) return 0;
 
   const requestedWidthM =
-    readNonNegativeFinite(args.requestedWidthM) ?? DRAWER_DIMENSIONS.sketch.internalSideFillerWidthM;
+    readNonNegativeFinite(args.requestedWidthM) ??
+    DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY.internalSideFillerWidthM;
   if (!(requestedWidthM > 0)) return 0;
 
   const minFrameOuterWidth = woodThick * 2 + clearanceM + minWidthM;
