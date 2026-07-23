@@ -1,9 +1,9 @@
 // Builder core carcass shared preparation and normalization helpers.
-import {
-  CARCASS_BASE_DIMENSIONS,
-  CARCASS_SHELL_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { BASE_LEG_LAYOUT_POLICY } from '../../shared/dimensions/base_leg_policy.js';
+import { BASE_PLATFORM_RENDER_POLICY } from '../../shared/dimensions/base_platform_render_policy.js';
+import { BASE_PLINTH_POLICY } from '../../shared/dimensions/base_plinth_policy.js';
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
 
 import {
   normalizeBaseLegPlatformMode,
@@ -24,10 +24,6 @@ import type { MutableRecord } from './core_pure_shared.js';
 
 export const CARCASS_BACK_INSET_Z: number = CARCASS_SHELL_DIMENSIONS.backInsetZM;
 export const CARCASS_FRONT_INSET_Z: number = CARCASS_SHELL_DIMENSIONS.frontInsetZM;
-
-const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
-const BASE_LEG_LAYOUT_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs;
-const BASE_LEG_PLATFORM_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs.platform;
 
 export type PreparedCarcassInput = {
   totalW: number;
@@ -67,7 +63,7 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
   const totalW = __asNum(inp.totalW, 0);
   const D = __asNum(inp.D, 0);
   const H = __asNum(inp.H, 0);
-  const woodThick = __asNum(inp.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
+  const woodThick = __asNum(inp.woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
   const baseType = typeof inp.baseType === 'string' ? inp.baseType : '';
   const doorsCount = __asInt(inp.doorsCount, 0);
   const hasCornice = !!inp.hasCornice;
@@ -90,10 +86,10 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
   const baseLegPlatformEnabled = baseType === 'legs' && baseLegPlatformMode === 'stage';
   const baseLegTopPlatformOnly = baseLegTopPlatformRequested && baseLegPlatformMode === 'stage';
   const baseLegSuppressTopPlatform = !!inp.baseLegSuppressTopPlatform && baseLegPlatformEnabled;
-  const baseLegBottomPlatformHeight = baseLegPlatformEnabled ? BASE_LEG_PLATFORM_DIMENSIONS.heightM : 0;
+  const baseLegBottomPlatformHeight = baseLegPlatformEnabled ? BASE_PLATFORM_RENDER_POLICY.heightM : 0;
   const baseLegTopPlatformHeight =
     (baseLegPlatformEnabled && !baseLegSuppressTopPlatform) || baseLegTopPlatformOnly
-      ? BASE_LEG_PLATFORM_DIMENSIONS.heightM
+      ? BASE_PLATFORM_RENDER_POLICY.heightM
       : 0;
 
   let baseHeight = 0;
@@ -105,12 +101,12 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     startY = baseHeight;
     base = {
       kind: 'plinth',
-      width: totalW - PLINTH_DIMENSIONS.widthClearanceM,
+      width: totalW - BASE_PLINTH_POLICY.widthClearanceM,
       height: baseHeight,
-      depth: D - PLINTH_DIMENSIONS.depthClearanceM,
+      depth: D - BASE_PLINTH_POLICY.depthClearanceM,
       x: 0,
       y: baseHeight / 2,
-      z: -PLINTH_DIMENSIONS.frontInsetM,
+      z: 0 - BASE_PLINTH_POLICY.frontInsetM,
       partId: 'plinth_color',
     };
   } else if (baseType === 'legs') {
@@ -119,25 +115,25 @@ export function prepareCarcassInput(input: unknown): PreparedCarcassInput {
     startY = baseHeight;
     const pos: MutableRecord[] = [
       {
-        x: -totalW / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
-        z: D / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+        x: -totalW / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+        z: D / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM,
       },
       {
-        x: totalW / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
-        z: D / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+        x: totalW / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+        z: D / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM,
       },
       {
-        x: -totalW / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
-        z: -D / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+        x: -totalW / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+        z: -D / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM,
       },
       {
-        x: totalW / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
-        z: -D / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+        x: totalW / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+        z: -D / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM,
       },
     ];
-    if (doorsCount >= BASE_LEG_LAYOUT_DIMENSIONS.centerSupportDoorsThreshold) {
-      pos.push({ x: 0, z: D / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM });
-      pos.push({ x: 0, z: -D / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM });
+    if (doorsCount >= BASE_LEG_LAYOUT_POLICY.centerSupportDoorsThreshold) {
+      pos.push({ x: 0, z: D / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM });
+      pos.push({ x: 0, z: -D / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM });
     }
     base = {
       kind: 'legs',
@@ -283,11 +279,11 @@ function makeBaseLegPlatformOp(args: {
   frontOverhangM: number;
 }): MutableRecord {
   const frontOverhang = Math.max(0, __asNum(args.frontOverhangM, 0));
-  const platformDepth = Math.max(BASE_LEG_PLATFORM_DIMENSIONS.minDepthM, args.depth + frontOverhang);
+  const platformDepth = Math.max(BASE_PLATFORM_RENDER_POLICY.minDepthM, args.depth + frontOverhang);
   const sideOverhang = args.sideMode === 'flush' ? 0 : Math.max(0, __asNum(args.sideOverhangM, 0));
   return {
     kind: 'leg_platform',
-    width: Math.max(BASE_LEG_PLATFORM_DIMENSIONS.minWidthM, args.width + sideOverhang * 2),
+    width: Math.max(BASE_PLATFORM_RENDER_POLICY.minWidthM, args.width + sideOverhang * 2),
     height: args.height,
     depth: platformDepth,
     x: 0,
@@ -300,7 +296,7 @@ function makeBaseLegPlatformOp(args: {
 function attachBaseLegPlatformOps(params: BaseLegPlatformAttachParams): void {
   const baseRec = _asObject(params.base);
   if (!baseRec) return;
-  const h = BASE_LEG_PLATFORM_DIMENSIONS.heightM;
+  const h = BASE_PLATFORM_RENDER_POLICY.heightM;
   if (!(h > 0)) return;
   const platforms: MutableRecord[] = [
     makeBaseLegPlatformOp({
@@ -339,7 +335,7 @@ function makeTopOnlyBaseLegPlatformOps(args: {
   sideOverhangM: number;
   frontOverhangM: number;
 }): MutableRecord {
-  const h = BASE_LEG_PLATFORM_DIMENSIONS.heightM;
+  const h = BASE_PLATFORM_RENDER_POLICY.heightM;
   return {
     kind: 'leg_platforms',
     platforms:
@@ -385,14 +381,14 @@ function adaptDepthSteppedBase(params: DepthSteppedBaseParams): void {
       const leftBoundary = i === 0 ? -totalW / 2 : internalLeft;
       const rightBoundary = i === moduleWidths.length - 1 ? totalW / 2 : internalLeft + w + woodThick;
       const segW = Math.max(
-        PLINTH_DIMENSIONS.segmentWidthEpsilonM,
-        rightBoundary - leftBoundary - PLINTH_DIMENSIONS.segmentWidthEpsilonM
+        BASE_PLINTH_POLICY.segmentWidthEpsilonM,
+        rightBoundary - leftBoundary - BASE_PLINTH_POLICY.segmentWidthEpsilonM
       );
       const segDepth = Math.max(
-        PLINTH_DIMENSIONS.steppedMinSegmentDepthM,
-        dm - PLINTH_DIMENSIONS.depthClearanceM
+        BASE_PLINTH_POLICY.steppedMinSegmentDepthM,
+        dm - BASE_PLINTH_POLICY.depthClearanceM
       );
-      const segZ = -D / 2 + PLINTH_DIMENSIONS.steppedBackInsetM + segDepth / 2;
+      const segZ = -D / 2 + BASE_PLINTH_POLICY.steppedBackInsetM + segDepth / 2;
 
       segments.push({
         kind: 'plinth',
@@ -447,10 +443,10 @@ function adaptDepthSteppedBase(params: DepthSteppedBaseParams): void {
       const z = __asNum(pRec.z, 0);
       if (z > 0) {
         const dm = depthAtX(x);
-        let newZ = -D / 2 + dm - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM;
-        const backZ = -D / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM;
-        if (newZ < backZ + BASE_LEG_LAYOUT_DIMENSIONS.depthSteppedMinFrontBackGapM)
-          newZ = backZ + BASE_LEG_LAYOUT_DIMENSIONS.depthSteppedMinFrontBackGapM;
+        let newZ = -D / 2 + dm - BASE_LEG_LAYOUT_POLICY.cornerInsetM;
+        const backZ = -D / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM;
+        if (newZ < backZ + BASE_LEG_LAYOUT_POLICY.depthSteppedMinFrontBackGapM)
+          newZ = backZ + BASE_LEG_LAYOUT_POLICY.depthSteppedMinFrontBackGapM;
         pRec.z = newZ;
       }
     }

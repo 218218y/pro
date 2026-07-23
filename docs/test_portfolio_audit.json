@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-23T20:48:10.004Z",
+  "generatedAt": "2026-07-23T21:24:46.860Z",
   "totals": {
-    "tests": 1265,
-    "unitRunnerTests": 1257,
+    "tests": 1267,
+    "unitRunnerTests": 1259,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 423,
+    "contract": 425,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -1424,6 +1424,14 @@
     {
       "file": "tests/contents_pipeline_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/core_carcass_shared_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/core_carcass_shared_ownership_runtime.test.ts",
+      "category": "contract"
     },
     {
       "file": "tests/core_doors_compute_sliding_vertical_clearance_runtime.test.ts",

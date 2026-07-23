@@ -4661,6 +4661,122 @@
       },
       "reason": "The core door geometry flow replaces one legacy facade statement with focused Hinged Door Mount and Sliding Door Construction owners plus the canonical Material Thickness owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed core door geometry composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-23",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/core_carcass_shared.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_BASE_DIMENSIONS", "CARCASS_SHELL_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLINTH_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The core carcass preparation flow replaces one legacy facade statement with the focused Carcass Shell owner plus the focused Base Plinth owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed core carcass preparation composition seam eliminates the extra Base Plinth statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-23",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/core_carcass_shared.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_BASE_DIMENSIONS", "CARCASS_SHELL_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_leg_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_LEG_LAYOUT_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The core carcass preparation flow replaces one legacy facade statement with the focused Carcass Shell owner plus the focused Base Leg Layout owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed core carcass preparation composition seam eliminates the extra Base Leg Layout statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-23",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/core_carcass_shared.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_BASE_DIMENSIONS", "CARCASS_SHELL_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The core carcass preparation flow replaces one legacy facade statement with the focused Carcass Shell owner plus the focused Base Platform Render owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed core carcass preparation composition seam eliminates the extra Base Platform Render statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-23",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/core_carcass_shared.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_BASE_DIMENSIONS", "CARCASS_SHELL_DIMENSIONS", "MATERIAL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The core carcass preparation flow replaces one legacy facade statement with the focused Carcass Shell owner plus the canonical Material Thickness owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed core carcass preparation composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
     }
   ]
 }

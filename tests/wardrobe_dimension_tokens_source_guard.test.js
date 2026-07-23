@@ -1640,6 +1640,7 @@ test('[dimension tokens] Remaining Interior Fittings owner preserves focused pro
 
 test('[dimension tokens] pure Material consumers use the canonical thickness owner', () => {
   const expectedConsumers = [
+    'esm/native/builder/core_carcass_shared.ts',
     'esm/native/builder/core_doors_compute.ts',
     'esm/native/features/sketch_internal_drawer_cassette.ts',
     'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
