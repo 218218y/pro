@@ -18,6 +18,10 @@ import {
   type SketchModuleShelfRemovePreviewState,
 } from './canvas_picking_sketch_module_surface_preview_shared.js';
 
+function isWithinInclusiveTolerance(value: number, target: number, tolerance: number): boolean {
+  return value >= target - tolerance && value <= target + tolerance;
+}
+
 export function resolveSketchModuleShelfRemovePreview(
   args: SketchModuleShelfRemovePreviewArgs
 ): SketchModuleShelfRemovePreviewState {
@@ -71,7 +75,7 @@ export function resolveSketchModuleShelfRemovePreview(
           totalHeight: spanH,
           pointerY: shelfHitY,
         });
-        if (shelfMatch && shelfMatch.dy <= removeEpsShelf) {
+        if (shelfMatch && isWithinInclusiveTolerance(shelfHitY, shelfMatch.yAbs, removeEpsShelf)) {
           op = 'remove';
           shelfRemoveKind = 'sketch';
           shelfRemoveIdx = shelfMatch.index;
@@ -105,7 +109,7 @@ export function resolveSketchModuleShelfRemovePreview(
                   epsNoBoard + SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRemoveCornerDrawerToleranceExtraM
                 )
               : epsNoBoard;
-          if (Math.abs(shelfHitY - targetY) <= eps) {
+          if (isWithinInclusiveTolerance(shelfHitY, targetY, eps)) {
             let exists = false;
             const isCustom = !!readRecordValue(cfgRef, 'isCustom');
             if (isCustom) {

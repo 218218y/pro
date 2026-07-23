@@ -6,6 +6,7 @@ import { INTERIOR_STORAGE_GRID_POLICY } from '../esm/shared/dimensions/interior_
 import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.js';
 import {
   SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY,
+  SKETCH_BOX_PREVIEW_CORE_POLICY,
   SKETCH_BOX_SHELF_PREVIEW_POLICY,
 } from '../esm/shared/dimensions/sketch_box_preview_policy.js';
 import { resolveSketchModuleShelfRemovePreview } from '../esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.js';
@@ -74,35 +75,58 @@ function assertBaseRemoval(result: ReturnType<typeof resolve>, shelfIndex: numbe
   assert.equal(result.result?.hoverRecord?.shelfIndex, shelfIndex);
 }
 
-test('sketch shelf nearest matching preserves exact boundary, overrides, clamps, and hover identity', () => {
-  const exact = resolve({
+test('sketch shelf nearest matching preserves inclusive policy boundaries, overrides, clamps, and hover identity', () => {
+  const tolerance = SKETCH_BOX_PREVIEW_CORE_POLICY.removeEpsShelfM;
+  assert.equal(tolerance, 0.02);
+  const shelf = { yNorm: 0.5, variant: 'glass', depthM: 0.32 };
+  const shelves = [shelf, { yNorm: 0.75, variant: 'regular' }];
+  const atUpperBoundary = resolve({
     bottomY: 0,
     topY: 1,
     spanH: 1,
     pad: 0.1,
-    intersects: [shelfBoardHit(0.515625)],
-    yClamped: 0.515625,
-    shelves: [{ yNorm: 0.5, variant: 'glass', depthM: 0.32 }],
-    removeEpsShelf: 0.015625,
+    intersects: [shelfBoardHit(0.5 + tolerance)],
+    yClamped: 0.5 + tolerance,
+    shelves,
+    cfgRef: null,
+    removeEpsShelf: tolerance,
   });
-  assert.equal(exact.handled, true);
-  assert.equal(exact.result?.hoverRecord?.removeKind, 'sketch');
-  assert.equal(exact.result?.hoverRecord?.removeIdx, 0);
-  assert.equal(exact.result?.preview?.variant, 'glass');
-  assert.equal(exact.shelfDepthOverrideM, 0.32);
-  assert.equal(exact.yClamped, 0.5);
+  assert.equal(atUpperBoundary.handled, true);
+  assert.equal(atUpperBoundary.result?.hoverRecord?.removeKind, 'sketch');
+  assert.equal(atUpperBoundary.result?.hoverRecord?.removeIdx, 0);
+  assert.equal(atUpperBoundary.result?.preview?.variant, 'glass');
+  assert.equal(atUpperBoundary.shelfDepthOverrideM, 0.32);
+  assert.equal(atUpperBoundary.yClamped, 0.5);
 
-  const above = resolve({
+  const atLowerBoundary = resolve({
     bottomY: 0,
     topY: 1,
     spanH: 1,
-    intersects: [shelfBoardHit(0.515626)],
-    yClamped: 0.515626,
-    shelves: [{ yNorm: 0.5, variant: 'glass', depthM: 0.32 }],
+    intersects: [shelfBoardHit(0.5 - tolerance)],
+    yClamped: 0.5 - tolerance,
+    shelves,
     cfgRef: null,
-    removeEpsShelf: 0.015625,
+    removeEpsShelf: tolerance,
   });
-  assert.equal(above.handled, false);
+  assert.equal(atLowerBoundary.handled, true);
+  assert.equal(atLowerBoundary.result?.hoverRecord?.removeKind, 'sketch');
+  assert.equal(atLowerBoundary.result?.hoverRecord?.removeIdx, 0);
+
+  for (const shelfHitY of [0.5 + tolerance + 1e-9, 0.5 - tolerance - 1e-9]) {
+    assert.equal(
+      resolve({
+        bottomY: 0,
+        topY: 1,
+        spanH: 1,
+        intersects: [shelfBoardHit(shelfHitY)],
+        yClamped: shelfHitY,
+        shelves,
+        cfgRef: null,
+        removeEpsShelf: tolerance,
+      }).handled,
+      false
+    );
+  }
 
   const low = resolve({
     bottomY: 0,
@@ -159,27 +183,26 @@ test('base shelf grid resolution preserves explicit/default divisions, rounding,
 
 test('board and no-board tolerance branches preserve exact focused-owner formulas', () => {
   const boardTolerance = SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRemoveBoardToleranceM;
-  assertBaseRemoval(
-    resolve({
-      topY: 1,
-      spanH: 1,
-      info: { gridDivisions: 5 },
-      intersects: [shelfBoardHit(0.2 + boardTolerance)],
-      yClamped: 0.2 + boardTolerance,
-    }),
-    1
-  );
-  assert.equal(
-    resolve({
-      topY: 1,
-      spanH: 1,
-      info: { gridDivisions: 5 },
-      intersects: [shelfBoardHit(0.2 + boardTolerance + 0.000001)],
-      yClamped: 0.2 + boardTolerance + 0.000001,
-      shelves: [],
-    }).handled,
-    false
-  );
+  const boardTargetY = 0.6;
+  for (const shelfHitY of [boardTargetY + boardTolerance, boardTargetY - boardTolerance]) {
+    assertBaseRemoval(
+      resolve({
+        intersects: [shelfBoardHit(shelfHitY)],
+        yClamped: shelfHitY,
+      }),
+      3
+    );
+  }
+  for (const shelfHitY of [boardTargetY + boardTolerance + 1e-9, boardTargetY - boardTolerance - 1e-9]) {
+    assert.equal(
+      resolve({
+        intersects: [shelfBoardHit(shelfHitY)],
+        yClamped: shelfHitY,
+        shelves: [],
+      }).handled,
+      false
+    );
+  }
 
   const cases = [
     {
@@ -192,7 +215,7 @@ test('board and no-board tolerance branches preserve exact focused-owner formula
       spanH: 1.2,
       divisions: 6,
       index: 3,
-      expected: 0.2 * SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRemoveNoBoardToleranceStepRatio,
+      expected: (1.2 / 6) * SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRemoveNoBoardToleranceStepRatio,
     },
     {
       spanH: 1.8,
@@ -204,23 +227,44 @@ test('board and no-board tolerance branches preserve exact focused-owner formula
   for (const item of cases) {
     const step = item.spanH / item.divisions;
     const targetY = item.index * step;
-    const result = resolve({
-      topY: item.spanH,
-      spanH: item.spanH,
-      info: { gridDivisions: item.divisions },
-      intersects: [],
-      yClamped: targetY + item.expected - 1e-12,
-      isCornerKey: () => true,
-    });
-    assertBaseRemoval(result, item.index);
+    for (const shelfHitY of [targetY + item.expected, targetY - item.expected]) {
+      assertBaseRemoval(
+        resolve({
+          topY: item.spanH,
+          spanH: item.spanH,
+          info: { gridDivisions: item.divisions },
+          intersects: [],
+          yClamped: shelfHitY,
+          isCornerKey: () => true,
+        }),
+        item.index
+      );
+    }
+    for (const shelfHitY of [targetY + item.expected + 1e-9, targetY - item.expected - 1e-9]) {
+      assert.equal(
+        resolve({
+          topY: item.spanH,
+          spanH: item.spanH,
+          info: { gridDivisions: item.divisions },
+          intersects: [],
+          yClamped: shelfHitY,
+          isCornerKey: () => true,
+        }).handled,
+        false
+      );
+    }
   }
 
   const ratioEps = (1.2 / 6) * SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRemoveNoBoardToleranceStepRatio;
   const extra = SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRemoveCornerDrawerToleranceExtraM;
+  const extraBoundary = Math.min(
+    SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRemoveNoBoardToleranceMaxM,
+    ratioEps + extra
+  );
   assert.equal(
     resolve({
       intersects: [],
-      yClamped: 0.6 + ratioEps + extra - 0.000001,
+      yClamped: 0.6 + extraBoundary,
       isCornerKey: () => true,
       isDrawers: false,
     }).handled,
@@ -229,11 +273,20 @@ test('board and no-board tolerance branches preserve exact focused-owner formula
   assertBaseRemoval(
     resolve({
       intersects: [],
-      yClamped: 0.6 + ratioEps + extra - 0.000001,
+      yClamped: 0.6 + extraBoundary,
       isCornerKey: () => true,
       isDrawers: true,
     }),
     3
+  );
+  assert.equal(
+    resolve({
+      intersects: [],
+      yClamped: 0.6 + extraBoundary + 1e-9,
+      isCornerKey: () => true,
+      isDrawers: true,
+    }).handled,
+    false
   );
 });
 
