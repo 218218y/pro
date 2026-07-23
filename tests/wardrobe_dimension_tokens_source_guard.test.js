@@ -1429,7 +1429,7 @@ test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage 
   assert.match(tokens, /clampPadWoodRatio:/);
   assertLinearDimensionsUseOwnersOrMeters('esm/shared/dimensions/handle_policy.ts');
 
-  assertUsesToken('esm/native/builder/post_build_sketch_door_cuts_apply.ts', 'DRAWER_DIMENSIONS');
+  assertUsesToken('esm/native/builder/post_build_sketch_door_cuts_apply.ts', 'DRAWER_SKETCH_DOOR_CUT_POLICY');
   for (const rel of [
     'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts',
     'esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts',
@@ -1672,6 +1672,7 @@ test('[dimension tokens] Drawer Sketch owner preserves focused production consum
   }
 
   const expectedConsumers = [
+    ['esm/native/builder/post_build_sketch_door_cuts_apply.ts', 'DRAWER_SKETCH_DOOR_CUT_POLICY'],
     ['esm/native/builder/post_build_sketch_door_cuts_box.ts', 'DRAWER_SKETCH_DOOR_CUT_POLICY'],
     ['esm/native/builder/post_build_sketch_door_cuts_intervals.ts', 'DRAWER_SKETCH_DOOR_CUT_POLICY'],
     ['esm/native/builder/post_build_sketch_door_cuts_modules.ts', 'DRAWER_SKETCH_SIZING_POLICY'],
@@ -1813,6 +1814,10 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     [
       'esm/native/builder/render_interior_sketch_shared_external_drawers.ts',
       ['DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY'],
+    ],
+    [
+      'esm/native/builder/post_build_sketch_door_cuts_apply.ts',
+      ['DRAWER_SKETCH_DOOR_CUT_POLICY', 'HINGED_DOOR_SPLIT_GEOMETRY_POLICY'],
     ],
     ['esm/native/builder/hinged_doors_module_ops_full.ts', ['HINGED_DOOR_SPLIT_GEOMETRY_POLICY']],
     ['esm/native/builder/hinged_doors_module_ops_segments.ts', ['HINGED_DOOR_SPLIT_GEOMETRY_POLICY']],

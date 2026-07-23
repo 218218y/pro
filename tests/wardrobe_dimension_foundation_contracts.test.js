@@ -500,6 +500,9 @@ const APPROVED_DOOR_SYSTEM_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/hinged_doors_module_ops_split_routes.ts': Object.freeze([
     'HINGED_DOOR_SPLIT_GEOMETRY_POLICY',
   ]),
+  'esm/native/builder/post_build_sketch_door_cuts_apply.ts': Object.freeze([
+    'HINGED_DOOR_SPLIT_GEOMETRY_POLICY',
+  ]),
   'esm/native/builder/render_door_ops_hinged.ts': Object.freeze(['HINGED_DOOR_RENDER_POLICY']),
   'esm/native/builder/render_door_ops_sliding.ts': Object.freeze([
     'SLIDING_DOOR_CONSTRUCTION_POLICY',
@@ -1395,6 +1398,7 @@ const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
   ]),
 });
 const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/post_build_sketch_door_cuts_apply.ts': Object.freeze(['DRAWER_SKETCH_DOOR_CUT_POLICY']),
   'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts': Object.freeze([
     'DRAWER_SKETCH_DOOR_CUT_POLICY',
   ]),
@@ -1614,13 +1618,7 @@ const APPROVED_SKETCH_BOX_CLASSIC_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_CONTENT_VISUAL_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_CONTENT_VISUAL_LEGACY_FIELD_USAGE = Object.freeze({});
-const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/post_build_sketch_door_cuts_apply.ts': Object.freeze([
-    'sketch',
-    'sketch.doorCutHorizontalOverlapMinM',
-    'sketch.doorCutNoOpToleranceM',
-  ]),
-});
+const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/render_drawer_ops_internal.ts': Object.freeze([
     'internal',
@@ -1631,7 +1629,6 @@ const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({
 });
 const APPROVED_DOOR_SYSTEM_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/builder/core_doors_compute.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
-  'esm/native/builder/post_build_sketch_door_cuts_apply.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
   'esm/native/builder/visuals_chest_mode_build.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
   'esm/native/platform/render_loop_motion_doors.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
 });
@@ -1656,18 +1653,6 @@ const APPROVED_DOOR_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({
     'sliding.shellClearanceMaxM',
     'sliding.shellClearanceMinM',
     'sliding.shellClearanceWoodDivisor',
-  ],
-  'esm/native/builder/post_build_sketch_door_cuts_apply.ts': [
-    'hinged',
-    'hinged.split',
-    'hinged.split.bottomClampOffsetM',
-    'hinged.split.duplicateCutToleranceHeightRatio',
-    'hinged.split.duplicateCutToleranceMaxM',
-    'hinged.split.duplicateCutToleranceMinM',
-    'hinged.split.minHeightForSplitM',
-    'hinged.split.minSegmentHeightM',
-    'hinged.split.splitGapM',
-    'hinged.split.topClampOffsetM',
   ],
   'esm/native/builder/visuals_chest_mode_build.ts': ['hinged', 'hinged.insetRevealM'],
   'esm/native/platform/render_loop_motion_doors.ts': [

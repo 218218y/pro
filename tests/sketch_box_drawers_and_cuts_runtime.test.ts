@@ -5,6 +5,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { transformSync } from 'esbuild';
 
+import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../esm/shared/dimensions/door_system_policy.ts';
+import { DRAWER_SKETCH_DOOR_CUT_POLICY } from '../esm/shared/dimensions/drawer_sketch_policy.ts';
 import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../esm/shared/dimensions/sketch_box_geometry_policy.ts';
 import { SKETCH_BOX_DOOR_PREVIEW_POLICY } from '../esm/shared/dimensions/sketch_box_preview_policy.ts';
 
@@ -81,6 +83,77 @@ function createSketchBoxDoorForCuts(partId: string, boxId: string): FakeGroup {
   leaf.userData.partId = partId;
   doorGroup.add(leaf);
   return doorGroup;
+}
+
+function createFocusedDoorCutHarness(args: {
+  doors?: Array<{ partId: string; height?: number; width?: number; centerX?: number }>;
+  selectDoorCuts: (partId: string) => {
+    stacks: Array<{ xMin: number; xMax: number; yMin: number; yMax: number }>;
+    splitPosList: number[];
+  };
+  handleType?: string;
+  edgeHandleVariant?: 'short' | 'long';
+}) {
+  const doorSpecs = args.doors ?? [{ partId: 'focused_door_full' }];
+  const doorGroups = doorSpecs.map(spec => {
+    const height = spec.height ?? 1;
+    const width = spec.width ?? 0.6;
+    const group = createSketchBoxDoorForCuts(spec.partId, spec.partId);
+    group.position.set(spec.centerX ?? 0, height / 2, 0);
+    group.userData.__doorHeight = height;
+    group.userData.__doorWidth = width;
+    return group;
+  });
+  const App = {
+    render: {
+      doorsArray: doorGroups.map(group => ({ group, type: 'hinged' })),
+    },
+    services: { uiFeedback: { toast() {} } },
+  } as never;
+  const runtime = {
+    App,
+    THREE: THREE as never,
+    bodyMat: new FakeMaterial(),
+    globalFrontMat: new FakeMaterial(),
+    createDoorVisual: () => new FakeGroup(),
+    createHandleMesh: args.handleType ? () => new FakeGroup() : null,
+    getPartMaterial: () => new FakeMaterial(),
+    getMirrorMaterial: null,
+    resolveHandleType: () => args.handleType ?? 'none',
+    resolveEdgeHandleVariant: () => args.edgeHandleVariant ?? 'short',
+    resolveHandleColor: () => 'black',
+    resolveManualHandlePosition: () => null,
+    resolveCurtain: () => null,
+    resolveSpecial: () => null,
+    doorStyle: 'flat',
+    doorStyleMap: {},
+    groovesMap: {},
+    doorTrimMap: {},
+    resolveMirrorLayout: () => null,
+    isDoorRemoved: () => false,
+  } as never;
+  const suppressedHandlePartIds: string[][] = [];
+
+  applySketchDrawerDoorCuts({
+    App,
+    runtime,
+    selectDoorCuts: (_entry, _group, userData) => {
+      const partId = String(userData.partId || '');
+      const selection = args.selectDoorCuts(partId);
+      return {
+        basePartId: partId,
+        stacks: selection.stacks,
+        splitPosList: selection.splitPosList,
+      };
+    },
+    collectSuppressedHandlePartIds: partIds => suppressedHandlePartIds.push([...partIds]),
+  });
+
+  return { doorGroups, suppressedHandlePartIds };
+}
+
+function countFocusedDoorSegments(group: FakeGroup): number {
+  return group.children.filter(child => child.userData?.__wpSketchDoorSegment === true).length;
 }
 
 function createSketchBoxExternalDrawerForCuts(args: {
@@ -166,6 +239,168 @@ test('sketch drawer door cuts ignore string-encoded split positions from runtime
 
   assert.equal(doorGroup.userData.__wpSketchSegmentedDoor, undefined);
   assert.deepEqual(doorGroup.children, [originalLeaf]);
+});
+
+test('Sketch drawer split thresholds preserve the focused minimum-height, clamp, and segment gates', () => {
+  const splitPolicy = HINGED_DOOR_SPLIT_GEOMETRY_POLICY;
+  const exactMinimum = createFocusedDoorCutHarness({
+    doors: [{ partId: 'split_exact_min_full', height: splitPolicy.minHeightForSplitM }],
+    selectDoorCuts: () => ({ stacks: [], splitPosList: [0.5] }),
+  });
+  assert.equal(countFocusedDoorSegments(exactMinimum.doorGroups[0]!), 0);
+
+  const firstViableHeight = 2 * (splitPolicy.minSegmentHeightM + splitPolicy.splitGapM / 2) + 1e-9;
+  assert.ok(firstViableHeight > splitPolicy.minHeightForSplitM);
+  const aboveMinimum = createFocusedDoorCutHarness({
+    doors: [{ partId: 'split_above_min_full', height: firstViableHeight }],
+    selectDoorCuts: () => ({ stacks: [], splitPosList: [0.5] }),
+  });
+  assert.equal(countFocusedDoorSegments(aboveMinimum.doorGroups[0]!), 2);
+
+  for (const [label, splitPosition] of [
+    ['bottom', 0],
+    ['top', 1],
+  ] as const) {
+    const clamped = createFocusedDoorCutHarness({
+      doors: [{ partId: `split_${label}_clamp_full`, height: 1 }],
+      selectDoorCuts: () => ({ stacks: [], splitPosList: [splitPosition] }),
+    });
+    assert.equal(
+      countFocusedDoorSegments(clamped.doorGroups[0]!),
+      0,
+      `${label} clamp must not emit a segment below the focused minimum height`
+    );
+  }
+
+  const viableEdgeDistance = splitPolicy.minSegmentHeightM + splitPolicy.splitGapM / 2 + 1e-9;
+  for (const [label, splitPosition] of [
+    ['bottom', viableEdgeDistance],
+    ['top', 1 - viableEdgeDistance],
+  ] as const) {
+    const viable = createFocusedDoorCutHarness({
+      doors: [{ partId: `split_${label}_viable_full`, height: 1 }],
+      selectDoorCuts: () => ({ stacks: [], splitPosList: [splitPosition] }),
+    });
+    assert.equal(countFocusedDoorSegments(viable.doorGroups[0]!), 2, label);
+  }
+});
+
+test('Sketch drawer duplicate split filtering keeps the focused inclusive tolerance and segment spacing', () => {
+  const splitPolicy = HINGED_DOOR_SPLIT_GEOMETRY_POLICY;
+  const doorHeight = 1;
+  const duplicateTolerance = Math.max(
+    splitPolicy.duplicateCutToleranceMinM,
+    Math.min(splitPolicy.duplicateCutToleranceMaxM, doorHeight * splitPolicy.duplicateCutToleranceHeightRatio)
+  );
+  const firstCutY = 0.3;
+
+  const exactDuplicate = createFocusedDoorCutHarness({
+    doors: [{ partId: 'split_duplicate_exact_full', height: doorHeight }],
+    selectDoorCuts: () => ({
+      stacks: [],
+      splitPosList: [firstCutY / doorHeight, (firstCutY + duplicateTolerance) / doorHeight],
+    }),
+  });
+  assert.equal(countFocusedDoorSegments(exactDuplicate.doorGroups[0]!), 2);
+
+  const firstSpacingThatCanProduceAnotherVisibleSegment =
+    splitPolicy.minSegmentHeightM + splitPolicy.splitGapM + 1e-9;
+  assert.ok(firstSpacingThatCanProduceAnotherVisibleSegment > duplicateTolerance);
+  const aboveDuplicateAndSegmentGates = createFocusedDoorCutHarness({
+    doors: [{ partId: 'split_duplicate_above_full', height: doorHeight }],
+    selectDoorCuts: () => ({
+      stacks: [],
+      splitPosList: [
+        firstCutY / doorHeight,
+        (firstCutY + firstSpacingThatCanProduceAnotherVisibleSegment) / doorHeight,
+      ],
+    }),
+  });
+  assert.equal(countFocusedDoorSegments(aboveDuplicateAndSegmentGates.doorGroups[0]!), 3);
+});
+
+test('Sketch drawer horizontal-overlap and no-op boundaries preserve strict and inclusive comparisons', () => {
+  const cutPolicy = DRAWER_SKETCH_DOOR_CUT_POLICY;
+  const exactOverlap = createFocusedDoorCutHarness({
+    doors: [{ partId: 'drawer_overlap_exact_full', centerX: -0.3 }],
+    selectDoorCuts: () => ({
+      stacks: [
+        {
+          xMin: -cutPolicy.doorCutHorizontalOverlapMinM,
+          xMax: 0.2,
+          yMin: 0.3,
+          yMax: 0.5,
+        },
+      ],
+      splitPosList: [],
+    }),
+  });
+  assert.equal(countFocusedDoorSegments(exactOverlap.doorGroups[0]!), 0);
+
+  const aboveOverlap = createFocusedDoorCutHarness({
+    doors: [{ partId: 'drawer_overlap_above_full', centerX: -0.3 }],
+    selectDoorCuts: () => ({
+      stacks: [
+        {
+          xMin: -(cutPolicy.doorCutHorizontalOverlapMinM + 1e-9),
+          xMax: 0.2,
+          yMin: 0.3,
+          yMax: 0.5,
+        },
+      ],
+      splitPosList: [],
+    }),
+  });
+  assert.equal(countFocusedDoorSegments(aboveOverlap.doorGroups[0]!), 2);
+
+  const exactNoOp = createFocusedDoorCutHarness({
+    selectDoorCuts: () => ({
+      stacks: [
+        {
+          xMin: -1,
+          xMax: 1,
+          yMin: -0.02,
+          yMax: cutPolicy.doorCutNoOpToleranceM,
+        },
+      ],
+      splitPosList: [],
+    }),
+  });
+  assert.equal(countFocusedDoorSegments(exactNoOp.doorGroups[0]!), 0);
+
+  const aboveNoOp = createFocusedDoorCutHarness({
+    selectDoorCuts: () => ({
+      stacks: [
+        {
+          xMin: -1,
+          xMax: 1,
+          yMin: -0.02,
+          yMax: cutPolicy.doorCutNoOpToleranceM + 1e-9,
+        },
+      ],
+      splitPosList: [],
+    }),
+  });
+  assert.equal(countFocusedDoorSegments(aboveNoOp.doorGroups[0]!), 1);
+});
+
+test('Sketch drawer door cuts collect suppressed handle ids once in door and segment order', () => {
+  const harness = createFocusedDoorCutHarness({
+    doors: [
+      { partId: 'suppressed_first_full', height: 0.6 },
+      { partId: 'suppressed_second_full', height: 0.6 },
+    ],
+    handleType: 'edge',
+    edgeHandleVariant: 'long',
+    selectDoorCuts: () => ({
+      stacks: [{ xMin: -1, xMax: 1, yMin: 0.25, yMax: 0.35 }],
+      splitPosList: [],
+    }),
+  });
+
+  assert.deepEqual(harness.suppressedHandlePartIds, [
+    ['suppressed_first_bot', 'suppressed_first_top', 'suppressed_second_bot', 'suppressed_second_top'],
+  ]);
 });
 
 test('manual split positions segment free-placement sketch box doors without enabling default box cuts', () => {

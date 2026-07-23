@@ -3,7 +3,8 @@
 // Owns door-loop selection and interval application for segmented sketch-door rebuild flows.
 
 import { getDoorsArray } from '../runtime/render_access.js';
-import { DOOR_SYSTEM_DIMENSIONS, DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
+import { DRAWER_SKETCH_DOOR_CUT_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 
 import { asRecord, getDoorEntryGroup, readKey } from './post_build_extras_shared.js';
 import type {
@@ -38,21 +39,23 @@ function appendManualSplitLineCutIntervals(args: {
   const { cuts, doorMin, doorMax, splitPosList } = args;
   if (!Array.isArray(splitPosList) || !splitPosList.length) return;
   const doorHeight = doorMax - doorMin;
-  if (
-    !Number.isFinite(doorHeight) ||
-    !(doorHeight > DOOR_SYSTEM_DIMENSIONS.hinged.split.minHeightForSplitM)
-  ) {
+  if (!Number.isFinite(doorHeight) || !(doorHeight > HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minHeightForSplitM)) {
     return;
   }
 
-  const splitDims = DOOR_SYSTEM_DIMENSIONS.hinged.split;
-  const splitGap = Math.max(0, splitDims.splitGapM);
+  const splitGap = Math.max(0, HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM);
   const halfGap = splitGap / 2;
-  const padAbs = Math.max(splitDims.bottomClampOffsetM, splitDims.topClampOffsetM);
-  const minSegmentHeight = splitDims.minSegmentHeightM;
+  const padAbs = Math.max(
+    HINGED_DOOR_SPLIT_GEOMETRY_POLICY.bottomClampOffsetM,
+    HINGED_DOOR_SPLIT_GEOMETRY_POLICY.topClampOffsetM
+  );
+  const minSegmentHeight = HINGED_DOOR_SPLIT_GEOMETRY_POLICY.minSegmentHeightM;
   const duplicateTolerance = Math.max(
-    splitDims.duplicateCutToleranceMinM,
-    Math.min(splitDims.duplicateCutToleranceMaxM, doorHeight * splitDims.duplicateCutToleranceHeightRatio)
+    HINGED_DOOR_SPLIT_GEOMETRY_POLICY.duplicateCutToleranceMinM,
+    Math.min(
+      HINGED_DOOR_SPLIT_GEOMETRY_POLICY.duplicateCutToleranceMaxM,
+      doorHeight * HINGED_DOOR_SPLIT_GEOMETRY_POLICY.duplicateCutToleranceHeightRatio
+    )
   );
   const rawCutsAbs: number[] = [];
   for (let i = 0; i < splitPosList.length; i += 1) {
@@ -153,7 +156,7 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
     for (let j = 0; j < selectedStacks.length; j++) {
       const stack = selectedStacks[j];
       const overlap = Math.min(doorXMax, stack.xMax) - Math.max(doorXMin, stack.xMin);
-      if (!(overlap > DRAWER_DIMENSIONS.sketch.doorCutHorizontalOverlapMinM)) continue;
+      if (!(overlap > DRAWER_SKETCH_DOOR_CUT_POLICY.doorCutHorizontalOverlapMinM)) continue;
       drawerCutsRaw.push({ yMin: stack.yMin, yMax: stack.yMax });
     }
     const drawerCuts = normalizeSketchDrawerCutIntervals(drawerCutsRaw);
@@ -166,14 +169,14 @@ export function applySketchDrawerDoorCuts(args: ApplySketchDrawerDoorCutsArgs): 
       splitPosList,
     });
     const normalizedCuts = normalizeSketchDrawerCutIntervals(cuts, {
-      minHeight: splitPosList.length ? DOOR_SYSTEM_DIMENSIONS.hinged.split.splitGapM / 2 : undefined,
+      minHeight: splitPosList.length ? HINGED_DOOR_SPLIT_GEOMETRY_POLICY.splitGapM / 2 : undefined,
     });
     if (!normalizedCuts.length) continue;
     const visibleSegments = subtractSketchDrawerIntervals(doorMin, doorMax, normalizedCuts);
     if (
       visibleSegments.length === 1 &&
-      Math.abs(visibleSegments[0].yMin - doorMin) <= DRAWER_DIMENSIONS.sketch.doorCutNoOpToleranceM &&
-      Math.abs(visibleSegments[0].yMax - doorMax) <= DRAWER_DIMENSIONS.sketch.doorCutNoOpToleranceM
+      Math.abs(visibleSegments[0].yMin - doorMin) <= DRAWER_SKETCH_DOOR_CUT_POLICY.doorCutNoOpToleranceM &&
+      Math.abs(visibleSegments[0].yMax - doorMax) <= DRAWER_SKETCH_DOOR_CUT_POLICY.doorCutNoOpToleranceM
     )
       continue;
     rebuildSketchSegmentedDoor({
