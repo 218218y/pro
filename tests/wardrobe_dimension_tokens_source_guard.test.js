@@ -1508,13 +1508,20 @@ test('[dimension tokens] sketch drawer cut, handle placement, rods, and storage 
   assert.doesNotMatch(externalPipeline, /innerW - 0\.025/);
 });
 
-test('[dimension tokens] External and Internal Drawer owners preserve focused production consumption', () => {
+test('[dimension tokens] External, Internal, and drawer-box render owners preserve focused production consumption', () => {
   const tokens = readProductDimensionTokens();
   assert.match(tokens, /export const EXTERNAL_DRAWER_POLICY = Object\.freeze\(\{/u);
   assert.match(tokens, /export const INTERNAL_DRAWER_POLICY = Object\.freeze\(\{/u);
+  assert.match(tokens, /export const INTERNAL_DRAWER_CONTENTS_POLICY = Object\.freeze\(\{/u);
+  assert.match(
+    read('esm/shared/dimensions/chest_mode_policy.ts'),
+    /export const CHEST_MODE_DRAWER_BOX_RENDER_POLICY = Object\.freeze\(\{/u
+  );
   assert.match(tokens, /doorTopGapM: STACK_SPLIT_POLICY\.seam\.gapM/u);
 
   const expectedConsumers = [
+    ['esm/native/builder/render_drawer_ops_internal.ts', 'CHEST_MODE_DRAWER_BOX_RENDER_POLICY'],
+    ['esm/native/builder/render_drawer_ops_internal.ts', 'INTERNAL_DRAWER_CONTENTS_POLICY'],
     ['esm/native/builder/core_storage_compute_external_drawers.ts', 'EXTERNAL_DRAWER_BOX_POLICY'],
     ['esm/native/builder/core_storage_compute_external_drawers.ts', 'EXTERNAL_DRAWER_FRONT_RENDER_POLICY'],
     ['esm/native/builder/core_storage_compute_external_drawers.ts', 'EXTERNAL_DRAWER_SIZE_POLICY'],

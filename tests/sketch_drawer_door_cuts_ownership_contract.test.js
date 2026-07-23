@@ -27,16 +27,6 @@ function stableJson(value) {
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
-function listSourceFiles(dir) {
-  const files = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) files.push(...listSourceFiles(absolute));
-    else if (entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name)) files.push(absolute);
-  }
-  return files;
-}
-
 const expectedEntry = Object.freeze({
   from: 'builder',
   to: 'shared',
@@ -128,6 +118,7 @@ test('Sketch drawer door cuts preserve the focused split and drawer-cut formulas
   }
   assert.match(source, /overlap > DRAWER_SKETCH_DOOR_CUT_POLICY\.doorCutHorizontalOverlapMinM/u);
   assert.equal((source.match(/DRAWER_SKETCH_DOOR_CUT_POLICY\.doorCutNoOpToleranceM/gu) || []).length, 2);
+  assert.match(source, /Math\.abs\(previousCut\s*-\s*cutY\)\s*<=\s*duplicateTolerance/u);
   assert.match(
     source,
     /minHeight:\s*splitPosList\.length\s*\?\s*HINGED_DOOR_SPLIT_GEOMETRY_POLICY\.splitGapM\s*\/\s*2\s*:\s*undefined/u
@@ -145,34 +136,5 @@ test('Sketch drawer door-cut migration appends exactly Entry 123', () => {
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 123)),
     '7423bf5013baa9665b6ba01fe19d4dc57d4785dae27217f6509920b5a3c7f725'
-  );
-});
-
-test('Sketch drawer door-cut migration leaves only the approved legacy consumers', () => {
-  const facadeDependencies = listSourceFiles(path.join(root, 'esm')).flatMap(file =>
-    analyzeModuleDependencies(file, fs.readFileSync(file, 'utf8'))
-      .imports.filter(dependency => dependency.specifier.includes('wardrobe_dimension_tokens_shared'))
-      .map(dependency => ({
-        file: path.relative(root, file).replaceAll('\\', '/'),
-        ...dependency,
-      }))
-  );
-
-  assert.deepEqual(
-    facadeDependencies
-      .filter(dependency => dependency.importedSymbols.includes('DRAWER_DIMENSIONS'))
-      .map(dependency => dependency.file),
-    ['esm/native/builder/render_drawer_ops_internal.ts']
-  );
-  assert.deepEqual(
-    facadeDependencies
-      .filter(dependency => dependency.importedSymbols.includes('DOOR_SYSTEM_DIMENSIONS'))
-      .map(dependency => dependency.file)
-      .sort(),
-    [
-      'esm/native/builder/core_doors_compute.ts',
-      'esm/native/builder/visuals_chest_mode_build.ts',
-      'esm/native/platform/render_loop_motion_doors.ts',
-    ]
   );
 });

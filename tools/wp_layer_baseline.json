@@ -4603,6 +4603,35 @@
       },
       "reason": "The post-build Sketch drawer door-cut application replaces one legacy facade statement with the focused Hinged Door Split Geometry owner plus the focused Drawer Sketch Door Cut owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Sketch drawer door-cut composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-23",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_drawer_ops_internal.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/internal_drawer_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERNAL_DRAWER_CONTENTS_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CHEST_MODE_DIMENSIONS", "DRAWER_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CHEST_MODE_DRAWER_BOX_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The internal-drawer render flow replaces one legacy facade statement with the focused Internal Drawer Contents owner plus the focused Chest Mode Drawer Box Render owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed internal-drawer render composition seam eliminates the extra Chest Mode statement without reintroducing the legacy facade."
     }
   ]
 }

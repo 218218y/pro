@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-23T19:15:41.536Z",
+  "generatedAt": "2026-07-23T19:42:21.705Z",
   "totals": {
-    "tests": 1261,
-    "unitRunnerTests": 1253,
+    "tests": 1262,
+    "unitRunnerTests": 1254,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 420,
+    "contract": 421,
     "runtime-unit": 318,
     "integration": 464,
     "e2e-smoke": 9,
@@ -2143,6 +2143,10 @@
     },
     {
       "file": "tests/interior_tab_workflows_surface_runtime.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/internal_drawer_render_ownership_contract.test.js",
       "category": "contract"
     },
     {

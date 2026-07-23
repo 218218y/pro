@@ -405,11 +405,11 @@ const APPROVED_CORNICE_THETA_CLAMP_M_USAGE = Object.freeze({
 });
 const APPROVED_CHEST_MODE_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/chest_mode_pipeline.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
+  'esm/native/builder/render_drawer_ops_internal.ts': Object.freeze(['CHEST_MODE_DRAWER_BOX_RENDER_POLICY']),
   'esm/native/builder/visuals_chest_mode_drawer_box.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
 });
 const APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES = Object.freeze({
-  'esm/native/builder/render_drawer_ops_internal.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
   'esm/native/builder/visuals_chest_mode_build.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
   'esm/native/builder/visuals_chest_mode_inputs.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
   'esm/native/runtime/api.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
@@ -423,11 +423,6 @@ const APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
 });
 const APPROVED_CHEST_MODE_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/render_drawer_ops_internal.ts': [
-    'drawerBox',
-    'drawerBox.accentStripDepthM',
-    'drawerBox.accentZOffsetM',
-  ],
   'esm/native/builder/visuals_chest_mode_build.ts': [
     'commode',
     'commode.backPanelThicknessM',
@@ -717,6 +712,7 @@ const APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
   ]),
 });
 const APPROVED_INTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/render_drawer_ops_internal.ts': Object.freeze(['INTERNAL_DRAWER_CONTENTS_POLICY']),
   'esm/shared/dimensions/corner_system_policy.ts': Object.freeze(['INTERNAL_DRAWER_LAYOUT_POLICY']),
   'esm/shared/dimensions/drawer_sketch_policy.ts': Object.freeze([
     'INTERNAL_DRAWER_LAYOUT_POLICY',
@@ -1619,14 +1615,7 @@ const APPROVED_SKETCH_BOX_CLASSIC_OWNER_IMPORTS = Object.freeze({
 const APPROVED_CONTENT_VISUAL_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_CONTENT_VISUAL_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({});
-const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/render_drawer_ops_internal.ts': Object.freeze([
-    'internal',
-    'internal.contentsBottomInsetM',
-    'internal.contentsHeightClearanceM',
-    'internal.contentsWidthClearanceM',
-  ]),
-});
+const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DOOR_SYSTEM_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/builder/core_doors_compute.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
   'esm/native/builder/visuals_chest_mode_build.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],

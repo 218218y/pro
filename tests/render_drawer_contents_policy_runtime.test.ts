@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createBuilderRenderDrawerOps } from '../esm/native/builder/render_drawer_ops.ts';
-import { CHEST_MODE_DIMENSIONS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { CHEST_MODE_DRAWER_BOX_RENDER_POLICY } from '../esm/shared/dimensions/chest_mode_policy.ts';
+import { INTERNAL_DRAWER_CONTENTS_POLICY } from '../esm/shared/dimensions/internal_drawer_policy.ts';
 
 class FakeVector3 {
   constructor(
@@ -40,6 +41,70 @@ class FakeMesh extends FakeGroup {
 
 class FakeBoxGeometry {}
 
+const fakeThree = {
+  Group: FakeGroup,
+  Mesh: FakeMesh,
+  Vector3: FakeVector3,
+  BoxGeometry: FakeBoxGeometry,
+};
+
+function assertNear(actual: unknown, expected: number, message?: string): void {
+  assert.equal(typeof actual, 'number', message);
+  assert.ok(Math.abs((actual as number) - expected) < 1e-12, message);
+}
+
+test('internal drawer render fails closed when required inputs are unavailable', () => {
+  const wardrobeGroup = new FakeGroup();
+  const createRenderer = (resolveWardrobeGroup: () => FakeGroup | null) =>
+    createBuilderRenderDrawerOps({
+      __app: input => (input as { App: never }).App,
+      __ops: () => undefined,
+      __wardrobeGroup: () => resolveWardrobeGroup() as never,
+      __reg: () => undefined,
+      __drawers: () => [],
+      getMirrorMaterial: () => null,
+    });
+  const op = { partId: 'drawer_1', width: 0.5, height: 0.2, depth: 0.4 };
+  const createInternalDrawerBox = () => new FakeGroup();
+
+  assert.equal(
+    createRenderer(() => wardrobeGroup).applyInternalDrawersOps({
+      App: {},
+      ops: [op],
+      wardrobeGroup,
+      createInternalDrawerBox,
+    }),
+    false
+  );
+  assert.equal(
+    createRenderer(() => wardrobeGroup).applyInternalDrawersOps({
+      App: {},
+      THREE: fakeThree,
+      wardrobeGroup,
+      createInternalDrawerBox,
+    }),
+    false
+  );
+  assert.equal(
+    createRenderer(() => null).applyInternalDrawersOps({
+      App: {},
+      THREE: fakeThree,
+      ops: [op],
+      createInternalDrawerBox,
+    }),
+    false
+  );
+  assert.equal(
+    createRenderer(() => wardrobeGroup).applyInternalDrawersOps({
+      App: {},
+      THREE: fakeThree,
+      ops: [op],
+      wardrobeGroup,
+    }),
+    false
+  );
+});
+
 test('internal drawer contents receive the explicit build render policy', () => {
   const wardrobeGroup = new FakeGroup();
   const drawers: unknown[] = [];
@@ -75,7 +140,15 @@ test('internal drawer contents receive the explicit build render policy', () => 
 
   assert.equal(result, true);
   assert.equal(foldedCalls.length, 1);
-  const policy = foldedCalls[0]?.[7] as Record<string, any>;
+  const contentsCall = foldedCalls[0]!;
+  assert.equal(contentsCall[0], 0);
+  assertNear(contentsCall[1], -0.2 / 2 + INTERNAL_DRAWER_CONTENTS_POLICY.contentsBottomInsetM);
+  assert.equal(contentsCall[2], 0);
+  assertNear(contentsCall[3], 0.5 - INTERNAL_DRAWER_CONTENTS_POLICY.contentsWidthClearanceM);
+  assert.equal(contentsCall[4], wardrobeGroup.children[0]);
+  assertNear(contentsCall[5], Math.max(0, 0.2 - INTERNAL_DRAWER_CONTENTS_POLICY.contentsHeightClearanceM));
+  assert.equal(contentsCall[6], 0.4);
+  const policy = contentsCall[7] as Record<string, any>;
   assert.equal(policy.showContentsEnabled, true);
   assert.equal(policy.sketchMode, true);
   assert.equal(policy.cfgSnapshot.isLibraryMode, true);
@@ -88,6 +161,7 @@ test('internal drawer body uses separate drawer-box identity and stays white by 
   const wardrobeGroup = new FakeGroup();
   const drawers: unknown[] = [];
   const boxCalls: unknown[][] = [];
+  const foldedCalls: unknown[][] = [];
   const whiteMat = { id: 'white-drawer-body' };
   const frontPaint = { id: 'front-paint' };
   const renderDrawerOps = createBuilderRenderDrawerOps({
@@ -119,6 +193,7 @@ test('internal drawer body uses separate drawer-box identity and stays white by 
     bodyMat: frontPaint,
     sketchMode: true,
     showContentsEnabled: false,
+    addFoldedClothes: (...args: unknown[]) => foldedCalls.push(args),
   });
 
   assert.equal(result, true);
@@ -132,11 +207,12 @@ test('internal drawer body uses separate drawer-box identity and stays white by 
   assert.equal(
     internalDrawer.userData.__frontMaxZ,
     0.4 / 2 +
-      CHEST_MODE_DIMENSIONS.drawerBox.accentZOffsetM +
-      CHEST_MODE_DIMENSIONS.drawerBox.accentStripDepthM / 2
+      CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentZOffsetM +
+      CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentStripDepthM / 2
   );
   assert.equal((drawers[0] as Record<string, unknown>).id, 'drawer_1');
   assert.equal((drawers[0] as Record<string, unknown>).partId, 'drawer_1');
+  assert.deepEqual(foldedCalls, []);
 });
 
 test('internal drawer body accepts explicit drawer-box paint only on its own box id', () => {
@@ -184,6 +260,117 @@ test('internal drawer body accepts explicit drawer-box paint only on its own box
   assert.equal(boxCalls[0]?.[4], boxPaint);
   const internalDrawer = wardrobeGroup.children[0] as FakeGroup;
   assert.equal(internalDrawer.userData.partId, 'drawer_box__drawer_1');
+});
+
+test('internal drawer render preserves valid-op creation, positions, front depth, and drawer identity', () => {
+  const wardrobeGroup = new FakeGroup();
+  const drawers: unknown[] = [];
+  const boxCalls: unknown[][] = [];
+  const registrations: unknown[][] = [];
+  const renderDrawerOps = createBuilderRenderDrawerOps({
+    __app: input => (input as { App: never }).App,
+    __ops: () => undefined,
+    __wardrobeGroup: () => wardrobeGroup as never,
+    __reg: (...args: unknown[]) => registrations.push(args),
+    __drawers: () => drawers as never[],
+    getMirrorMaterial: () => null,
+  });
+
+  const result = renderDrawerOps.applyInternalDrawersOps({
+    App: {},
+    THREE: fakeThree,
+    ops: [
+      {
+        partId: 'drawer_explicit_open',
+        width: 0.5,
+        height: 0.2,
+        depth: 0.4,
+        x: 0.1,
+        y: 0.2,
+        z: 0.3,
+        openZ: 0.9,
+      },
+      { partId: '', width: 0.5, height: 0.2, depth: 0.4 },
+      {
+        partId: 'drawer_fallback_open',
+        width: 0.45,
+        height: 0.18,
+        depth: 0,
+        x: -0.1,
+        y: 0.4,
+        z: -0.1,
+      },
+    ],
+    wardrobeGroup,
+    createInternalDrawerBox: (...args: unknown[]) => {
+      boxCalls.push(args);
+      return new FakeGroup();
+    },
+    showContentsEnabled: false,
+  });
+
+  assert.equal(result, true);
+  assert.equal(boxCalls.length, 2);
+  assert.equal(wardrobeGroup.children.length, 2);
+  assert.equal(registrations.length, 2);
+  assert.equal(drawers.length, 2);
+
+  const firstGroup = wardrobeGroup.children[0] as FakeGroup;
+  const secondGroup = wardrobeGroup.children[1] as FakeGroup;
+  assert.equal(
+    firstGroup.userData.__frontMaxZ,
+    0.4 / 2 +
+      CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentZOffsetM +
+      CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentStripDepthM / 2
+  );
+  assert.equal(secondGroup.userData.__frontMaxZ, 0);
+
+  const firstDrawer = drawers[0] as Record<string, unknown>;
+  const secondDrawer = drawers[1] as Record<string, unknown>;
+  assert.equal(firstDrawer.group, firstGroup);
+  assert.equal(firstDrawer.id, 'drawer_explicit_open');
+  assert.equal(firstDrawer.partId, 'drawer_explicit_open');
+  assert.equal(firstDrawer.isInternal, true);
+  assert.deepEqual(firstDrawer.closed, new FakeVector3(0.1, 0.2, 0.3));
+  assert.deepEqual(firstDrawer.open, new FakeVector3(0.1, 0.2, 0.9));
+  assert.equal(secondDrawer.group, secondGroup);
+  assert.deepEqual(secondDrawer.closed, new FakeVector3(-0.1, 0.4, -0.1));
+  assertNear((secondDrawer.open as FakeVector3).z, -0.1 + 0.25);
+});
+
+test('internal drawer contents floor the available height at zero', () => {
+  const wardrobeGroup = new FakeGroup();
+  const foldedCalls: unknown[][] = [];
+  const renderDrawerOps = createBuilderRenderDrawerOps({
+    __app: input => (input as { App: never }).App,
+    __ops: () => undefined,
+    __wardrobeGroup: () => wardrobeGroup as never,
+    __reg: () => undefined,
+    __drawers: () => [],
+    getMirrorMaterial: () => null,
+  });
+
+  const result = renderDrawerOps.applyInternalDrawersOps({
+    App: {},
+    THREE: fakeThree,
+    ops: [
+      {
+        partId: 'drawer_short',
+        width: 0.2,
+        height: INTERNAL_DRAWER_CONTENTS_POLICY.contentsHeightClearanceM / 2,
+        depth: 0.31,
+      },
+    ],
+    wardrobeGroup,
+    createInternalDrawerBox: () => new FakeGroup(),
+    showContentsEnabled: true,
+    addFoldedClothes: (...args: unknown[]) => foldedCalls.push(args),
+  });
+
+  assert.equal(result, true);
+  assert.equal(foldedCalls.length, 1);
+  assert.equal(foldedCalls[0]?.[5], 0);
+  assert.equal(foldedCalls[0]?.[6], 0.31);
 });
 
 test('internal drawer cassette panels use shelf paint identity and render once per stack', () => {

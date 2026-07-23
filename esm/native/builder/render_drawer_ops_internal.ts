@@ -1,4 +1,5 @@
-import { CHEST_MODE_DIMENSIONS, DRAWER_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CHEST_MODE_DRAWER_BOX_RENDER_POLICY } from '../../shared/dimensions/chest_mode_policy.js';
+import { INTERNAL_DRAWER_CONTENTS_POLICY } from '../../shared/dimensions/internal_drawer_policy.js';
 import { makeDrawerBoxPartId, resolveDrawerBoxPaintMaterial } from '../features/part_identity/api.js';
 import { emitSketchInternalDrawerCassettePanels } from './render_interior_sketch_internal_drawer_cassette.js';
 import type { BuilderCreateBoardFn } from '../../../types';
@@ -149,11 +150,11 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
       if (showContentsEnabled && addFoldedClothes) {
         addFoldedClothes(
           0,
-          -(drawerOp.height || 0) / 2 + DRAWER_DIMENSIONS.internal.contentsBottomInsetM,
+          -(drawerOp.height || 0) / 2 + INTERNAL_DRAWER_CONTENTS_POLICY.contentsBottomInsetM,
           0,
-          (drawerOp.width || 0) - DRAWER_DIMENSIONS.internal.contentsWidthClearanceM,
+          (drawerOp.width || 0) - INTERNAL_DRAWER_CONTENTS_POLICY.contentsWidthClearanceM,
           intBox,
-          Math.max(0, (drawerOp.height || 0) - DRAWER_DIMENSIONS.internal.contentsHeightClearanceM),
+          Math.max(0, (drawerOp.height || 0) - INTERNAL_DRAWER_CONTENTS_POLICY.contentsHeightClearanceM),
           drawerOp.depth,
           {
             showContentsEnabled,
@@ -172,8 +173,9 @@ export function createApplyInternalDrawersOps(deps: BuilderRenderDrawerDeps) {
 function resolveInternalDrawerFrontMaxZ(depth: number): number {
   if (!Number.isFinite(depth) || depth <= 0) return 0;
 
-  const drawerBoxDimensions = CHEST_MODE_DIMENSIONS.drawerBox;
-  const accentFrontLift = drawerBoxDimensions.accentZOffsetM + drawerBoxDimensions.accentStripDepthM / 2;
+  const accentFrontLift =
+    CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentZOffsetM +
+    CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentStripDepthM / 2;
 
   return depth / 2 + Math.max(0, accentFrontLift);
 }
