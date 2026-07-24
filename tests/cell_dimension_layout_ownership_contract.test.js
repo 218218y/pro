@@ -12,7 +12,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const cellOwnerRel = 'esm/shared/dimensions/cell_dimension_policy.ts';
 const comparisonOwnerRel = 'esm/shared/dimensions/wardrobe_layout_comparison_policy.ts';
-const moduleOwnerRel = 'esm/shared/dimensions/wardrobe_layout_policy.ts';
 const previewConsumerRel = 'esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts';
 const helpersConsumerRel = 'esm/native/services/canvas_picking_local_helpers_cell_dims.ts';
 const previewStateRel = 'esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts';
@@ -38,16 +37,6 @@ function stableJson(value) {
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
-function listSourceFiles(dir) {
-  const files = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) files.push(...listSourceFiles(absolute));
-    else if (entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name)) files.push(absolute);
-  }
-  return files;
-}
-
 function exportedNames(rel) {
   const names = [];
   const source = read(rel);
@@ -72,40 +61,6 @@ function directImportSummary(rel) {
       aliases: bindings.filter(binding => binding.importedName !== binding.localName),
     })
   );
-}
-
-function facadeConsumersFor(symbol) {
-  const esmRoot = path.join(root, 'esm');
-  return listSourceFiles(esmRoot)
-    .filter(file => path.relative(root, file).replaceAll('\\', '/') !== facadeRel)
-    .flatMap(file => {
-      const rel = path.relative(root, file).replaceAll('\\', '/');
-      const source = fs.readFileSync(file, 'utf8');
-      return analyzeModuleDependencies(file, source)
-        .imports.filter(
-          dependency =>
-            dependency.specifier.endsWith('/wardrobe_dimension_tokens_shared.js') &&
-            dependency.importedSymbols.includes(symbol)
-        )
-        .map(() => rel);
-    })
-    .sort();
-}
-
-function productionIdentifierFiles(symbol) {
-  const esmRoot = path.join(root, 'esm');
-  return listSourceFiles(esmRoot)
-    .filter(file => path.relative(root, file).replaceAll('\\', '/') !== facadeRel)
-    .filter(file => {
-      let found = false;
-      const source = fs.readFileSync(file, 'utf8');
-      walkAst(createSourceFile(file, source), node => {
-        if (node?.type === 'Identifier' && node.name === symbol) found = true;
-      });
-      return found;
-    })
-    .map(file => path.relative(root, file).replaceAll('\\', '/'))
-    .sort();
 }
 
 const expectedEntry = Object.freeze({
@@ -177,78 +132,6 @@ export const CELL_DIMENSION_PREVIEW_POLICY = Object.freeze({
     assert.deepEqual(analysis.forbiddenModuleSyntax, []);
     assert.doesNotMatch(read(rel), /\b(?:CELL_DIMENSION_POLICY|WARDROBE_CELL_DIMENSION_POLICY)\b/u);
   }
-});
-
-test('Wardrobe Layout facade projects all seven keys directly from focused owners in public order', () => {
-  const facade = read(facadeRel);
-  const imports = directImportSummary(facadeRel).filter(dependency =>
-    [cellOwnerRel, comparisonOwnerRel, moduleOwnerRel].some(rel =>
-      dependency.specifier.endsWith(`/${path.posix.basename(rel).replace(/\.ts$/u, '.js')}`)
-    )
-  );
-  assert.deepEqual(imports, [
-    {
-      specifier: './dimensions/cell_dimension_policy.js',
-      kind: 'value',
-      syntax: 'static-import',
-      importedSymbols: ['CELL_DIMENSION_MATCH_POLICY', 'CELL_DIMENSION_PREVIEW_POLICY'],
-      aliases: [],
-    },
-    {
-      specifier: './dimensions/wardrobe_layout_comparison_policy.js',
-      kind: 'value',
-      syntax: 'static-import',
-      importedSymbols: ['WARDROBE_LAYOUT_COMPARISON_POLICY'],
-      aliases: [],
-    },
-    {
-      specifier: './dimensions/wardrobe_layout_policy.js',
-      kind: 'value',
-      syntax: 'static-import',
-      importedSymbols: ['WARDROBE_MODULE_LAYOUT_POLICY'],
-      aliases: [],
-    },
-  ]);
-
-  const projection = facade.slice(
-    facade.indexOf('export const WARDROBE_LAYOUT_DIMENSIONS'),
-    facade.indexOf('export const WARDROBE_DIMENSION_GUIDE_DIMENSIONS')
-  );
-  assert.deepEqual(
-    Array.from(projection.matchAll(/^  ([A-Za-z_$][\w$]*):/gmu), match => match[1]),
-    [
-      'minSegmentWidthCm',
-      'boundaryFullThicknessMultiplier',
-      'boundarySharedThicknessMultiplier',
-      'autoWidthMatchToleranceCm',
-      'valueEqualityToleranceCm',
-      'cellDimsMatchToleranceCm',
-      'cellDimsPreview',
-    ]
-  );
-  assert.doesNotMatch(projection, /:\s*-?(?:\d|\.\d)/u);
-  for (const field of [
-    'minSegmentWidthCm',
-    'boundaryFullThicknessMultiplier',
-    'boundarySharedThicknessMultiplier',
-  ]) {
-    assert.match(projection, new RegExp(`${field}: WARDROBE_MODULE_LAYOUT_POLICY\\.${field}`, 'u'));
-  }
-  for (const field of ['autoWidthMatchToleranceCm', 'valueEqualityToleranceCm']) {
-    assert.match(projection, new RegExp(`${field}: WARDROBE_LAYOUT_COMPARISON_POLICY\\.${field}`, 'u'));
-  }
-  assert.match(projection, /cellDimsMatchToleranceCm: CELL_DIMENSION_MATCH_POLICY\.toleranceCm/u);
-  assert.match(projection, /cellDimsPreview: CELL_DIMENSION_PREVIEW_POLICY/u);
-
-  const autoWidthFunction = facade.slice(
-    facade.indexOf('export function isAutoWidthForDoors'),
-    facade.indexOf('export function normalizeWardrobeDimensionType')
-  );
-  assert.match(
-    autoWidthFunction,
-    /Math\.abs\(currentWidthCm - expectedWidthCm\) < WARDROBE_LAYOUT_COMPARISON_POLICY\.autoWidthMatchToleranceCm/u
-  );
-  assert.doesNotMatch(autoWidthFunction, /WARDROBE_LAYOUT_DIMENSIONS/u);
 });
 
 test('Cell Dimensions composition imports the exact focused owners while leaf modules receive scalars', () => {
@@ -354,6 +237,8 @@ test('Cell Dimension Match, Preview, and Auto Width literals are fully propagate
   assert.match(freeBoxPreview, /Math\.max\(\s*minDepthM,/u);
   assert.match(freeBoxHover, /const EPS_CM = 1e-6;/u);
   assert.match(freeBoxHover, /const EPS_M = 1e-6;/u);
+  assert.match(freeBoxHover, /innerW: Math\.max\(0\.03, metrics\.width - woodThick \* 2\)/u);
+  assert.match(freeBoxHover, /internalDepth: Math\.max\(0\.03, metrics\.depth - woodThick\)/u);
 
   assert.doesNotMatch(linearWidth, /0\.51/u);
   assert.equal((linearWidth.match(/ctx\.autoWidthMatchToleranceCm/gu) ?? []).length, 2);
@@ -392,15 +277,4 @@ test('The unchanged 131-entry prefix is followed by the reviewed Entry 132 prove
     semanticSha256(baseline.migrationBudgets.slice(0, 132)),
     'e55d258b1696ea16e88e3b2feda047a539197361ea582d00be3917abc1e526d2'
   );
-});
-
-test('current focused inventory has no Wardrobe Layout consumers and four Wardrobe Defaults facade statements', () => {
-  assert.deepEqual(productionIdentifierFiles('WARDROBE_LAYOUT_DIMENSIONS'), []);
-  assert.deepEqual(facadeConsumersFor('WARDROBE_LAYOUT_DIMENSIONS'), []);
-  assert.deepEqual(facadeConsumersFor('WARDROBE_DEFAULTS'), [
-    'esm/native/builder/render_dimension_ops_shared.ts',
-    'esm/native/data/preset_models_data.ts',
-    'esm/native/platform/render_loop_motion_doors.ts',
-    'esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts',
-  ]);
 });

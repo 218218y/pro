@@ -187,6 +187,7 @@ import {
   CELL_DIMENSION_PREVIEW_POLICY,
 } from '../esm/shared/dimensions/cell_dimension_policy.ts';
 import { WARDROBE_LAYOUT_COMPARISON_POLICY } from '../esm/shared/dimensions/wardrobe_layout_comparison_policy.ts';
+import { WARDROBE_MODULE_LAYOUT_POLICY } from '../esm/shared/dimensions/wardrobe_layout_policy.ts';
 import {
   DEFAULT_HINGED_DOORS,
   DEFAULT_SLIDING_DOORS,
@@ -282,6 +283,25 @@ test('wardrobe default tokens preserve hinged and sliding business defaults', ()
 });
 
 test('Wardrobe Layout compatibility projection preserves focused-owner identity and comparison semantics', () => {
+  const expectedKeys = [
+    'minSegmentWidthCm',
+    'boundaryFullThicknessMultiplier',
+    'boundarySharedThicknessMultiplier',
+    'autoWidthMatchToleranceCm',
+    'valueEqualityToleranceCm',
+    'cellDimsMatchToleranceCm',
+    'cellDimsPreview',
+  ];
+  assert.deepEqual(Object.keys(WARDROBE_LAYOUT_DIMENSIONS), expectedKeys);
+  assert.equal(WARDROBE_LAYOUT_DIMENSIONS.minSegmentWidthCm, WARDROBE_MODULE_LAYOUT_POLICY.minSegmentWidthCm);
+  assert.equal(
+    WARDROBE_LAYOUT_DIMENSIONS.boundaryFullThicknessMultiplier,
+    WARDROBE_MODULE_LAYOUT_POLICY.boundaryFullThicknessMultiplier
+  );
+  assert.equal(
+    WARDROBE_LAYOUT_DIMENSIONS.boundarySharedThicknessMultiplier,
+    WARDROBE_MODULE_LAYOUT_POLICY.boundarySharedThicknessMultiplier
+  );
   assert.equal(WARDROBE_LAYOUT_DIMENSIONS.cellDimsPreview, CELL_DIMENSION_PREVIEW_POLICY);
   assert.equal(WARDROBE_LAYOUT_DIMENSIONS.cellDimsMatchToleranceCm, CELL_DIMENSION_MATCH_POLICY.toleranceCm);
   assert.equal(
@@ -292,10 +312,23 @@ test('Wardrobe Layout compatibility projection preserves focused-owner identity 
     WARDROBE_LAYOUT_DIMENSIONS.valueEqualityToleranceCm,
     WARDROBE_LAYOUT_COMPARISON_POLICY.valueEqualityToleranceCm
   );
+  assert.equal(Object.isFrozen(WARDROBE_LAYOUT_DIMENSIONS), true);
+  assert.equal(Object.isFrozen(CELL_DIMENSION_MATCH_POLICY), true);
+  assert.equal(Object.isFrozen(CELL_DIMENSION_PREVIEW_POLICY), true);
+  assert.equal(Object.isFrozen(WARDROBE_MODULE_LAYOUT_POLICY), true);
+  assert.equal(Object.isFrozen(WARDROBE_LAYOUT_COMPARISON_POLICY), true);
+
+  const serialized = JSON.stringify(WARDROBE_LAYOUT_DIMENSIONS);
+  assert.equal(typeof serialized, 'string');
+  const roundTrip = JSON.parse(serialized);
+  assert.deepEqual(Object.keys(roundTrip), expectedKeys);
+  assert.deepEqual(roundTrip, WARDROBE_LAYOUT_DIMENSIONS);
 
   const expectedWidthCm = 160;
   const toleranceCm = WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm;
   assert.equal(isAutoWidthForDoors('hinged', expectedWidthCm + toleranceCm / 2, 4), true);
+  assert.equal(Math.abs(toleranceCm - 0), toleranceCm);
+  assert.equal(isAutoWidthForDoors('hinged', toleranceCm, 0), false);
   assert.equal(isAutoWidthForDoors('hinged', expectedWidthCm + toleranceCm + 0.001, 4), false);
 });
 
