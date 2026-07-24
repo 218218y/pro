@@ -115,17 +115,17 @@ const expectedEntry = Object.freeze({
   owner: 'dimension-ownership-migration',
   reviewedAt: '2026-07-24',
   reviewBy: '2026-10-18',
-  fromFile: helpersConsumerRel,
+  fromFile: previewConsumerRel,
   companionImport: {
     toFile: cellOwnerRel,
     kind: 'value',
-    importedSymbols: ['CELL_DIMENSION_MATCH_POLICY'],
+    importedSymbols: ['CELL_DIMENSION_MATCH_POLICY', 'CELL_DIMENSION_PREVIEW_POLICY'],
     syntax: 'static-import',
   },
   removedImport: {
     toFile: facadeRel,
     kind: 'value',
-    importedSymbols: ['WARDROBE_DEFAULTS', 'WARDROBE_LAYOUT_DIMENSIONS'],
+    importedSymbols: ['WARDROBE_LAYOUT_DIMENSIONS'],
     syntax: 'static-import',
   },
   addedImport: {
@@ -135,9 +135,9 @@ const expectedEntry = Object.freeze({
     syntax: 'static-import',
   },
   reason:
-    'The Cell Dimensions local-hover helper replaces one legacy facade statement with the focused Cell Dimension Match owner plus the canonical Wardrobe Defaults owner on the existing services to shared edge.',
+    'The Cell Dimensions hover-preview composition replaces one legacy facade statement with the focused Cell Dimension Match and Preview owners plus the canonical Wardrobe Defaults owner on the existing services to shared edge.',
   removalCondition:
-    'Remove this entry when a reviewed Cell Dimensions hover composition seam eliminates the extra Wardrobe Defaults statement without reintroducing the legacy facade.',
+    'Remove this entry when a reviewed Cell Dimensions hover-preview composition seam eliminates the extra Wardrobe Defaults statement without reintroducing the legacy facade.',
 });
 
 test('Cell Dimension and Wardrobe Layout Comparison owners are exact, narrow, import-free modules', () => {
@@ -381,7 +381,7 @@ test('Cell Dimension Match, Preview, and Auto Width literals are fully propagate
   }
 });
 
-test('Cell Dimensions migration appends exactly Entry 132 after the unchanged 131-entry prefix', () => {
+test('The unchanged 131-entry prefix is followed by the reviewed Entry 132 provenance for the current Cell Dimensions composition', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 131)),
@@ -390,7 +390,7 @@ test('Cell Dimensions migration appends exactly Entry 132 after the unchanged 13
   assert.deepEqual(baseline.migrationBudgets.slice(131, 132), [expectedEntry]);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 132)),
-    '49cc60fef1a0b5e3a59c9a4c439530cfebb6b38dcff7f8355300139215757d3e'
+    'e55d258b1696ea16e88e3b2feda047a539197361ea582d00be3917abc1e526d2'
   );
 });
 

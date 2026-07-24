@@ -1344,7 +1344,7 @@ test('project migration ledger stays exact at one hundred and thirty-two reviewe
     ['esm/native/builder/core_layout_compute.ts', 'esm/shared/dimensions/material_thickness_policy.ts'],
     ['esm/native/builder/core_layout_compute.ts', 'esm/shared/dimensions/units.ts'],
     [
-      'esm/native/services/canvas_picking_local_helpers_cell_dims.ts',
+      'esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts',
       'esm/shared/dimensions/wardrobe_defaults.ts',
     ],
   ];
@@ -1481,7 +1481,7 @@ test('project migration ledger stays exact at one hundred and thirty-two reviewe
   );
   assert.equal(
     semanticSha256(baseline.migrationBudgets),
-    '49cc60fef1a0b5e3a59c9a4c439530cfebb6b38dcff7f8355300139215757d3e',
+    'e55d258b1696ea16e88e3b2feda047a539197361ea582d00be3917abc1e526d2',
     'all one hundred and thirty-two active migration entries must remain semantically stable'
   );
 

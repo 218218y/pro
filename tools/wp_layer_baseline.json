@@ -4843,17 +4843,17 @@
       "owner": "dimension-ownership-migration",
       "reviewedAt": "2026-07-24",
       "reviewBy": "2026-10-18",
-      "fromFile": "esm/native/services/canvas_picking_local_helpers_cell_dims.ts",
+      "fromFile": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts",
       "companionImport": {
         "toFile": "esm/shared/dimensions/cell_dimension_policy.ts",
         "kind": "value",
-        "importedSymbols": ["CELL_DIMENSION_MATCH_POLICY"],
+        "importedSymbols": ["CELL_DIMENSION_MATCH_POLICY", "CELL_DIMENSION_PREVIEW_POLICY"],
         "syntax": "static-import"
       },
       "removedImport": {
         "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
         "kind": "value",
-        "importedSymbols": ["WARDROBE_DEFAULTS", "WARDROBE_LAYOUT_DIMENSIONS"],
+        "importedSymbols": ["WARDROBE_LAYOUT_DIMENSIONS"],
         "syntax": "static-import"
       },
       "addedImport": {
@@ -4862,8 +4862,8 @@
         "importedSymbols": ["WARDROBE_DEFAULTS"],
         "syntax": "static-import"
       },
-      "reason": "The Cell Dimensions local-hover helper replaces one legacy facade statement with the focused Cell Dimension Match owner plus the canonical Wardrobe Defaults owner on the existing services to shared edge.",
-      "removalCondition": "Remove this entry when a reviewed Cell Dimensions hover composition seam eliminates the extra Wardrobe Defaults statement without reintroducing the legacy facade."
+      "reason": "The Cell Dimensions hover-preview composition replaces one legacy facade statement with the focused Cell Dimension Match and Preview owners plus the canonical Wardrobe Defaults owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Cell Dimensions hover-preview composition seam eliminates the extra Wardrobe Defaults statement without reintroducing the legacy facade."
     }
   ]
 }
