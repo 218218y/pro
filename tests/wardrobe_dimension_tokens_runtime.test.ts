@@ -482,6 +482,19 @@ test('Chest Structural policy preserves every value, aggregate reference, and fa
 
 test('Material Thickness and Cornice render policies preserve values, references, and facade identity', () => {
   assert.equal(MATERIAL_DIMENSIONS, MATERIAL_THICKNESS_POLICY);
+  assert.deepEqual(Object.keys(MATERIAL_DIMENSIONS), ['wood', 'glassShelf']);
+  assert.equal(Object.isFrozen(MATERIAL_DIMENSIONS), true);
+  assert.equal(Object.isFrozen(MATERIAL_DIMENSIONS.wood), true);
+  assert.equal(Object.isFrozen(MATERIAL_DIMENSIONS.glassShelf), true);
+  const serializedMaterialDimensions = JSON.stringify(MATERIAL_DIMENSIONS);
+  assert.equal(typeof serializedMaterialDimensions, 'string');
+  assert.ok(serializedMaterialDimensions);
+  const materialRoundTrip: unknown = JSON.parse(serializedMaterialDimensions);
+  assert.deepEqual(materialRoundTrip, {
+    wood: { thicknessM: MATERIAL_THICKNESS_POLICY.wood.thicknessM },
+    glassShelf: { thicknessM: MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM },
+  });
+  assert.equal(MATERIAL_DIMENSIONS.wood.thicknessM, MATERIAL_DIMENSIONS.glassShelf.thicknessM);
   assert.equal(FACADE_CARCASS_CORNICE_DIMENSIONS, CARCASS_CORNICE_RENDER_POLICY);
   assert.equal(CARCASS_CORNICE_RENDER_POLICY.common, CARCASS_CORNICE_COMMON_POLICY);
   assert.equal(CARCASS_CORNICE_RENDER_POLICY.wave, CARCASS_CORNICE_WAVE_POLICY);

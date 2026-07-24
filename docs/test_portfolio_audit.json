@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-24T00:19:49.655Z",
+  "generatedAt": "2026-07-24T07:46:40.811Z",
   "totals": {
-    "tests": 1269,
-    "unitRunnerTests": 1261,
+    "tests": 1270,
+    "unitRunnerTests": 1262,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 427,
+    "contract": 428,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -2295,6 +2295,10 @@
     },
     {
       "file": "tests/maps_saved_colors_storage_bridge_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/material_dimension_ownership_closeout_contract.test.js",
       "category": "contract"
     },
     {
