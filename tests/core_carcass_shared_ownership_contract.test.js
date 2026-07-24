@@ -82,16 +82,6 @@ const expectedEntries = Object.freeze([
   }),
 ]);
 
-function listSourceFiles(dir) {
-  const files = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) files.push(...listSourceFiles(absolute));
-    else if (entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name)) files.push(absolute);
-  }
-  return files;
-}
-
 function stableJson(value) {
   if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
   if (value && typeof value === 'object') {
@@ -223,50 +213,15 @@ test('Core Carcass Shared maps every migrated field and formula directly to its 
   assert.match(source, /backZ \+ BASE_LEG_LAYOUT_POLICY\.depthSteppedMinFrontBackGapM/u);
 });
 
-test('Core Carcass Shared migration appends exactly Entries 126-129 after the unchanged 125-entry prefix', () => {
+test('Core Carcass Shared historical migration locks Entries 126-129 and the unchanged 125-entry prefix', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(baseline.migrationBudgets.length, 129);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 125)),
     '84e9877bc6ca47028c5e081018b3025b96ea2f040d5d4f1ab838d9c1b0bd47cb'
   );
   assert.deepEqual(baseline.migrationBudgets.slice(125, 129), expectedEntries);
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 129)),
     '7db36f6859327fd852fb251e414c53a5e0de95bf5b30fb38bd5bd0d50cee96b4'
   );
-});
-
-test('Core Carcass Shared migration leaves only the exact legacy facade consumers for its three sections', () => {
-  const facadeDependencies = listSourceFiles(path.join(root, 'esm')).flatMap(file =>
-    analyzeModuleDependencies(file, fs.readFileSync(file, 'utf8'))
-      .imports.filter(
-        dependency =>
-          dependency.syntax === 'static-import' &&
-          dependency.specifier.includes('wardrobe_dimension_tokens_shared')
-      )
-      .map(dependency => ({
-        file: path.relative(root, file).replaceAll('\\', '/'),
-        importedSymbols: dependency.importedSymbols,
-      }))
-  );
-  const consumers = symbol =>
-    facadeDependencies
-      .filter(dependency => dependency.importedSymbols.includes(symbol))
-      .map(dependency => dependency.file)
-      .sort();
-
-  assert.deepEqual(consumers('MATERIAL_DIMENSIONS'), ['esm/native/builder/core_layout_compute.ts']);
-  assert.deepEqual(consumers('CARCASS_BASE_DIMENSIONS'), [
-    'esm/native/builder/corner_connector_emit_shell_base.ts',
-    'esm/native/builder/visuals_chest_mode_build.ts',
-    'esm/native/builder/visuals_chest_mode_inputs.ts',
-    'esm/native/runtime/default_state.ts',
-  ]);
-  assert.deepEqual(consumers('CARCASS_SHELL_DIMENSIONS'), [
-    'esm/native/builder/corner_wing_cornice_path.ts',
-    'esm/native/builder/corner_wing_cornice_profile.ts',
-    'esm/native/builder/corner_wing_cornice_wave.ts',
-    'esm/native/builder/module_loop_pipeline_module_depth.ts',
-  ]);
 });

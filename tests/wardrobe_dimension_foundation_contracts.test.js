@@ -234,6 +234,7 @@ const APPROVED_CHEST_STRUCTURAL_OWNER_IMPORTS = Object.freeze({
 const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/core_carcass_shared.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/core_doors_compute.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/native/builder/core_layout_compute.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/core_storage_compute_external_drawers.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/render_interior_custom_ops.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/render_interior_custom_ops_shelves.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
@@ -368,7 +369,11 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
     'MATERIAL_THICKNESS_POLICY',
   ]),
 });
-const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze(['esm/native/builder/core_layout_compute.ts']);
+const APPROVED_WARDROBE_MODULE_LAYOUT_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/core_layout_compute.ts': Object.freeze(['WARDROBE_MODULE_LAYOUT_POLICY']),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['WARDROBE_MODULE_LAYOUT_POLICY']),
+});
+const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([]);
 const APPROVED_MATERIAL_LEGACY_DEPENDENCIES = Object.freeze(
   Object.fromEntries(
     APPROVED_MATERIAL_LEGACY_IMPORTERS.map(file => [file, ['MATERIAL_DIMENSIONS@static-import']])
@@ -3017,6 +3022,11 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectOwnerImports(analyzedSources, 'material_thickness_policy.js'),
     APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS,
     'Material Thickness owner consumer allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectOwnerImports(analyzedSources, 'wardrobe_layout_policy.js'),
+    APPROVED_WARDROBE_MODULE_LAYOUT_OWNER_IMPORTS,
+    'Wardrobe Module Layout owner consumer allowlist'
   );
   assertApprovedSymbolUsage(
     collectOwnerImports(analyzedSources, 'carcass_cornice_render_policy.js'),

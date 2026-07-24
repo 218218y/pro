@@ -3,6 +3,7 @@
 // domain tokens remain here while consumers move one policy family at a time.
 
 import { CM_PER_METER, MM_PER_METER, clampDimension, cmToM, mToCm } from './dimensions/units.js';
+import { WARDROBE_MODULE_LAYOUT_POLICY } from './dimensions/wardrobe_layout_policy.js';
 import {
   DEFAULT_CHEST_DRAWERS_COUNT,
   DEFAULT_CORNER_DOORS,
@@ -217,9 +218,9 @@ function finiteOr(value: unknown, defaultValue: number): number {
 }
 
 export const WARDROBE_LAYOUT_DIMENSIONS = Object.freeze({
-  minSegmentWidthCm: 1,
-  boundaryFullThicknessMultiplier: 1,
-  boundarySharedThicknessMultiplier: 0.5,
+  minSegmentWidthCm: WARDROBE_MODULE_LAYOUT_POLICY.minSegmentWidthCm,
+  boundaryFullThicknessMultiplier: WARDROBE_MODULE_LAYOUT_POLICY.boundaryFullThicknessMultiplier,
+  boundarySharedThicknessMultiplier: WARDROBE_MODULE_LAYOUT_POLICY.boundarySharedThicknessMultiplier,
   autoWidthMatchToleranceCm: 0.51,
   valueEqualityToleranceCm: 0.0001,
   cellDimsMatchToleranceCm: 0.11,

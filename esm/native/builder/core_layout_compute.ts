@@ -1,9 +1,7 @@
 // Builder core pure layout computations.
-import {
-  CM_PER_METER,
-  MATERIAL_DIMENSIONS,
-  WARDROBE_LAYOUT_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import { CM_PER_METER } from '../../shared/dimensions/units.js';
+import { WARDROBE_MODULE_LAYOUT_POLICY } from '../../shared/dimensions/wardrobe_layout_policy.js';
 
 import { getActiveWidthCmFromConfig } from '../features/special_dims/index.js';
 import {
@@ -47,7 +45,7 @@ export function normalizeModulesConfiguration(
 export function computeModuleLayout(input: unknown) {
   const inp = _asObject(input) || {};
   const totalW = __asNum(inp.totalW, 0);
-  const woodThick = __asNum(inp.woodThick, MATERIAL_DIMENSIONS.wood.thicknessM);
+  const woodThick = __asNum(inp.woodThick, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
 
   const modules = __normalizeModulesStructure(inp.modulesStructure);
   const totalDividersWidth = Math.max(0, modules.length - 1) * woodThick;
@@ -129,7 +127,7 @@ export function computeModuleLayout(input: unknown) {
   let deltaCm = totalWcm - sumSegCm;
 
   if (modules.length > 0 && Number.isFinite(deltaCm) && Math.abs(deltaCm) > 1e-6) {
-    const MIN_SEG_CM = WARDROBE_LAYOUT_DIMENSIONS.minSegmentWidthCm;
+    const MIN_SEG_CM = WARDROBE_MODULE_LAYOUT_POLICY.minSegmentWidthCm;
     let rem = deltaCm;
 
     const _adjust = (indices: number[]) => {
@@ -173,11 +171,11 @@ export function computeModuleLayout(input: unknown) {
     const leftBoundCm =
       i === 0
         ? woodThick * CM_PER_METER
-        : woodThick * CM_PER_METER * WARDROBE_LAYOUT_DIMENSIONS.boundarySharedThicknessMultiplier;
+        : woodThick * CM_PER_METER * WARDROBE_MODULE_LAYOUT_POLICY.boundarySharedThicknessMultiplier;
     const rightBoundCm =
       i === modules.length - 1
         ? woodThick * CM_PER_METER
-        : woodThick * CM_PER_METER * WARDROBE_LAYOUT_DIMENSIONS.boundarySharedThicknessMultiplier;
+        : woodThick * CM_PER_METER * WARDROBE_MODULE_LAYOUT_POLICY.boundarySharedThicknessMultiplier;
 
     const internalCm = Math.max(0, segCm - leftBoundCm - rightBoundCm);
     moduleInternalWidths[i] = internalCm / CM_PER_METER;

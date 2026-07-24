@@ -41,6 +41,7 @@ const productDimensionTokenSources = [
   'esm/shared/dimensions/sketch_box_dimension_overlay_policy.ts',
   'esm/shared/dimensions/sketch_box_preview_policy.ts',
   'esm/shared/dimensions/sketch_box_free_placement_policy.ts',
+  'esm/shared/dimensions/wardrobe_layout_policy.ts',
 ];
 
 function readProductDimensionTokens() {
@@ -858,6 +859,49 @@ test('[dimension tokens] door split and cell dimension hover preview measurement
   const cellDims = read('esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts');
   assert.doesNotMatch(cellDims, /w: Math\.max\(0\.03, Number\(previewTargetBox\.width\) - 0\.006\)/);
   assert.doesNotMatch(cellDims, /woodThick: Math\.max\(0\.004, Math\.min\(0\.01/);
+});
+
+test('[dimension tokens] Core Module Layout uses its focused owner and canonical unit/material sources', () => {
+  const owner = read('esm/shared/dimensions/wardrobe_layout_policy.ts');
+  const facade = read('esm/shared/wardrobe_dimension_tokens_shared.ts');
+  const coreLayout = read('esm/native/builder/core_layout_compute.ts');
+
+  assert.match(owner, /export const WARDROBE_MODULE_LAYOUT_POLICY = Object\.freeze\(\{/u);
+  assert.doesNotMatch(
+    owner,
+    /cellDims|autoWidth|Tolerance|DIMENSION_GUIDE|WARDROBE_DEFAULTS|CM_PER_METER|MM_PER_METER/u
+  );
+  assert.doesNotMatch(
+    owner,
+    /wardrobe_dimension_tokens_shared|import\s+\*|export\s+(?:\*|\{[^}]*\})\s+from/u
+  );
+
+  assert.match(
+    facade,
+    /import \{ WARDROBE_MODULE_LAYOUT_POLICY \} from '\.\/dimensions\/wardrobe_layout_policy\.js';/u
+  );
+  for (const field of [
+    'minSegmentWidthCm',
+    'boundaryFullThicknessMultiplier',
+    'boundarySharedThicknessMultiplier',
+  ]) {
+    assert.match(facade, new RegExp(`${field}: WARDROBE_MODULE_LAYOUT_POLICY\\.${field}`, 'u'));
+  }
+
+  assert.match(
+    coreLayout,
+    /import \{ MATERIAL_THICKNESS_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/material_thickness_policy\.js';/u
+  );
+  assert.match(coreLayout, /import \{ CM_PER_METER \} from '\.\.\/\.\.\/shared\/dimensions\/units\.js';/u);
+  assert.match(
+    coreLayout,
+    /import \{ WARDROBE_MODULE_LAYOUT_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/wardrobe_layout_policy\.js';/u
+  );
+  assert.doesNotMatch(
+    coreLayout,
+    /wardrobe_dimension_tokens_shared|MATERIAL_DIMENSIONS|WARDROBE_LAYOUT_DIMENSIONS|WARDROBE_LAYOUT_POLICY/u
+  );
+  assert.doesNotMatch(coreLayout, /import\s+\*|import\s*\(|export\s+(?:\*|\{[^}]*\})\s+from/u);
 });
 
 test('[dimension tokens] door trim placement and front reveal frame geometry are centralized', () => {

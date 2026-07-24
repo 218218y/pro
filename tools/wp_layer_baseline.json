@@ -4777,6 +4777,64 @@
       },
       "reason": "The core carcass preparation flow replaces one legacy facade statement with the focused Carcass Shell owner plus the canonical Material Thickness owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed core carcass preparation composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-24",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/core_layout_compute.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_layout_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["WARDROBE_MODULE_LAYOUT_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER", "MATERIAL_DIMENSIONS", "WARDROBE_LAYOUT_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The core module-layout flow replaces one legacy facade statement with the focused Wardrobe Module Layout owner plus the canonical Material Thickness owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed core module-layout composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-24",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/core_layout_compute.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_layout_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["WARDROBE_MODULE_LAYOUT_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER", "MATERIAL_DIMENSIONS", "WARDROBE_LAYOUT_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "reason": "The core module-layout flow replaces one legacy facade statement with the focused Wardrobe Module Layout owner plus the canonical centimeter-per-meter unit owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed core module-layout composition seam eliminates the extra Units statement without reintroducing the legacy facade."
     }
   ]
 }
