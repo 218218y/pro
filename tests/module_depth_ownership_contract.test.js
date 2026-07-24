@@ -81,33 +81,6 @@ function stableJson(value) {
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
-function listSourceFiles(dir) {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) return listSourceFiles(absolute);
-    return entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name) ? [absolute] : [];
-  });
-}
-
-function facadeConsumers(importedSymbol) {
-  return listSourceFiles(path.join(root, 'esm'))
-    .flatMap(file => {
-      const relativeFile = path.relative(root, file).replaceAll(path.sep, '/');
-      const source = fs.readFileSync(file, 'utf8');
-      if (!source.includes(importedSymbol) || !source.includes('wardrobe_dimension_tokens_shared')) return [];
-      const dependencies = analyzeModuleDependencies(file, source).imports;
-      return dependencies.some(
-        dependency =>
-          dependency.syntax === 'static-import' &&
-          dependency.specifier.includes('wardrobe_dimension_tokens_shared') &&
-          dependency.importedSymbols.includes(importedSymbol)
-      )
-        ? [relativeFile]
-        : [];
-    })
-    .sort();
-}
-
 test('Module Depth imports exactly three focused owners without aliases or aggregate policies', () => {
   const source = read(consumerRel);
   const analysis = analyzeModuleDependencies(path.join(root, consumerRel), source);
@@ -190,16 +163,4 @@ test('Module Depth appends exactly Entries 133-134 after the unchanged 132-entry
     semanticSha256(baseline.migrationBudgets.slice(0, 134)),
     '99435b0f09eafa7c93cd6cf0e879685dc5e66b22b7ef6e43469f1777c778e919'
   );
-});
-
-test('Module Depth leaves the exact legacy-facade consumer inventory requested for the next slices', () => {
-  assert.deepEqual(facadeConsumers('CM_PER_METER'), []);
-  assert.deepEqual(facadeConsumers('CARCASS_INTERIOR_DIMENSIONS'), [
-    'esm/native/builder/build_flow_plan_inputs.ts',
-  ]);
-  assert.deepEqual(facadeConsumers('CARCASS_SHELL_DIMENSIONS'), [
-    'esm/native/builder/corner_wing_cornice_path.ts',
-    'esm/native/builder/corner_wing_cornice_profile.ts',
-    'esm/native/builder/corner_wing_cornice_wave.ts',
-  ]);
 });

@@ -1,8 +1,6 @@
-import {
-  cmToM,
-  DOOR_SYSTEM_DIMENSIONS,
-  WARDROBE_DEFAULTS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { SLIDING_DOOR_CONSTRUCTION_POLICY } from '../../shared/dimensions/door_system_policy.js';
+import { cmToM } from '../../shared/dimensions/units.js';
+import { WARDROBE_DEFAULTS } from '../../shared/dimensions/wardrobe_defaults.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { readInteger, readNumericInput } from '../../shared/numeric_value_shared.js';
 import type { AppContainer } from '../../../types';
@@ -115,7 +113,7 @@ export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFram
 
     if (d.type !== 'sliding') continue;
 
-    const overlap = DOOR_SYSTEM_DIMENSIONS.sliding.overlapM;
+    const overlap = SLIDING_DOOR_CONSTRUCTION_POLICY.overlapM;
     let doorsCount = Number.isFinite(d.total) ? d.total : NaN;
     if (!Number.isFinite(doorsCount)) {
       const ui = asRecordOrNull(getBuildUIFromPlatform(App));
@@ -127,8 +125,8 @@ export function updateRenderLoopDoorMotions(App: AppContainer, frame: MotionFram
       if (parsed != null) doorsCount = parsed;
     }
     doorsCount =
-      (Number.isFinite(doorsCount) ? doorsCount : DOOR_SYSTEM_DIMENSIONS.sliding.defaultDoorsCount) ||
-      DOOR_SYSTEM_DIMENSIONS.sliding.defaultDoorsCount;
+      (Number.isFinite(doorsCount) ? doorsCount : SLIDING_DOOR_CONSTRUCTION_POLICY.defaultDoorsCount) ||
+      SLIDING_DOOR_CONSTRUCTION_POLICY.defaultDoorsCount;
     const idx = readFiniteNumber(d.index, 0);
 
     const dimsRec = frame.platformDimsFrame;

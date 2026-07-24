@@ -2052,7 +2052,10 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
       'esm/native/services/canvas_picking_sketch_free_box_hover_context.ts',
       ['MATERIAL_THICKNESS_POLICY', 'SKETCH_BOX_FREE_WORKSPACE_CLAMP_POLICY'],
     ],
-    ['esm/native/platform/render_loop_motion_doors.ts', ['DOOR_SYSTEM_DIMENSIONS', 'WARDROBE_DEFAULTS']],
+    [
+      'esm/native/platform/render_loop_motion_doors.ts',
+      ['SLIDING_DOOR_CONSTRUCTION_POLICY', 'WARDROBE_DEFAULTS', 'cmToM'],
+    ],
   ]);
 
   for (const [rel, tokensToFind] of expectedTokenUse) {

@@ -891,7 +891,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at one hundred and thirty-four reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at one hundred and thirty-six reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -1352,6 +1352,8 @@ test('project migration ledger stays exact at one hundred and thirty-four review
       'esm/shared/dimensions/carcass_interior_policy.ts',
     ],
     ['esm/native/builder/module_loop_pipeline_module_depth.ts', 'esm/shared/dimensions/units.ts'],
+    ['esm/native/platform/render_loop_motion_doors.ts', 'esm/shared/dimensions/units.ts'],
+    ['esm/native/platform/render_loop_motion_doors.ts', 'esm/shared/dimensions/wardrobe_defaults.ts'],
   ];
 
   assert.equal(
@@ -1490,9 +1492,14 @@ test('project migration ledger stays exact at one hundred and thirty-four review
     'the one hundred and thirty-two previously reviewed migration entries must remain semantically unchanged'
   );
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 134)),
     '99435b0f09eafa7c93cd6cf0e879685dc5e66b22b7ef6e43469f1777c778e919',
-    'all one hundred and thirty-four active migration entries must remain semantically stable'
+    'the one hundred and thirty-four previously reviewed migration entries must remain semantically unchanged'
+  );
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets),
+    '17c6ec0de239b5bce3d6745b654dd6aa0c3650e626e8ecca360db3ced781ac47',
+    'all one hundred and thirty-six active migration entries must remain semantically stable'
   );
 
   assert.equal(
@@ -1561,7 +1568,7 @@ test('project migration ledger stays exact at one hundred and thirty-four review
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 134);
+  assert.equal(report.migrationBudgets.length, 136);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
@@ -1574,6 +1581,7 @@ test('project migration ledger stays exact at one hundred and thirty-four review
     ['features>shared', { observed: 61, migration: 3, reviewed: 58, budget: 58 }],
     ['services>shared', { observed: 230, migration: 63, reviewed: 167, budget: 167 }],
     ['ui>shared', { observed: 28, migration: 1, reviewed: 27, budget: 27 }],
+    ['platform>shared', { observed: 6, migration: 2, reviewed: 4, budget: 4 }],
   ]);
   for (const [key, expected] of expectedEdges) {
     const [from, to] = key.split('>');
@@ -1602,10 +1610,10 @@ test('project migration ledger stays exact at one hundred and thirty-four review
   const staticFacadeDependencies = facadeDependencies.filter(
     dependency => dependency.syntax === 'static-import'
   );
-  assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 27);
-  assert.equal(staticFacadeDependencies.length, 27);
-  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 29);
-  assert.equal(facadeDependencies.length, 30);
+  assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 26);
+  assert.equal(staticFacadeDependencies.length, 26);
+  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 28);
+  assert.equal(facadeDependencies.length, 29);
 
   const facadeSource = fs.readFileSync(path.join(repositoryRoot, facadeRel), 'utf8');
   const facadeExports = collectNamedModuleExports(facadeRel, facadeSource);

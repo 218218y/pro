@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-24T12:44:56.967Z",
+  "generatedAt": "2026-07-24T14:07:28.975Z",
   "totals": {
-    "tests": 1275,
-    "unitRunnerTests": 1267,
+    "tests": 1277,
+    "unitRunnerTests": 1269,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 433,
+    "contract": 435,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -3600,6 +3600,14 @@
     {
       "file": "tests/render_interior_sketch_visuals_runtime.test.ts",
       "category": "integration"
+    },
+    {
+      "file": "tests/render_loop_door_motion_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/render_loop_door_motion_ownership_runtime.test.ts",
+      "category": "contract"
     },
     {
       "file": "tests/render_loop_idle_one_shot_guard.test.cjs",

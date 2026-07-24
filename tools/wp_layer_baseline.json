@@ -4922,6 +4922,64 @@
       },
       "reason": "The module-depth flow replaces one legacy facade statement with the focused Carcass Shell and Interior owners plus the canonical centimeter-per-meter unit owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed module-depth composition seam eliminates the extra Units statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "platform",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-24",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/platform/render_loop_motion_doors.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SLIDING_DOOR_CONSTRUCTION_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["cmToM", "DOOR_SYSTEM_DIMENSIONS", "WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["cmToM"],
+        "syntax": "static-import"
+      },
+      "reason": "The render-loop door motion flow replaces one legacy facade statement with the focused Sliding Door Construction owner plus the canonical centimeter-to-meter conversion on the existing platform to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed render-loop door-motion composition seam eliminates the extra Units statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "platform",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-24",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/platform/render_loop_motion_doors.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SLIDING_DOOR_CONSTRUCTION_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["cmToM", "DOOR_SYSTEM_DIMENSIONS", "WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": ["WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "reason": "The render-loop door motion flow replaces one legacy facade statement with the focused Sliding Door Construction owner plus the canonical Wardrobe Defaults owner on the existing platform to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed render-loop door-motion composition seam eliminates the extra Wardrobe Defaults statement without reintroducing the legacy facade."
     }
   ]
 }

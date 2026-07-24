@@ -533,6 +533,7 @@ const APPROVED_DOOR_SYSTEM_OWNER_IMPORTS = Object.freeze({
     'SLIDING_DOOR_MOTION_POLICY',
   ]),
   'esm/native/builder/sliding_doors_pipeline.ts': Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY']),
+  'esm/native/platform/render_loop_motion_doors.ts': Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY']),
   'esm/native/runtime/sliding_door_motion.ts': Object.freeze([
     'SLIDING_DOOR_CONSTRUCTION_POLICY',
     'SLIDING_DOOR_MOTION_POLICY',
@@ -1646,15 +1647,9 @@ const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DOOR_SYSTEM_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/builder/visuals_chest_mode_build.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
-  'esm/native/platform/render_loop_motion_doors.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
 });
 const APPROVED_DOOR_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/visuals_chest_mode_build.ts': ['hinged', 'hinged.insetRevealM'],
-  'esm/native/platform/render_loop_motion_doors.ts': [
-    'sliding',
-    'sliding.defaultDoorsCount',
-    'sliding.overlapM',
-  ],
 });
 const APPROVED_CORNICE_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/corner_wing_cornice_path.ts': Object.freeze([
