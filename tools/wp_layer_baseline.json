@@ -4835,6 +4835,35 @@
       },
       "reason": "The core module-layout flow replaces one legacy facade statement with the focused Wardrobe Module Layout owner plus the canonical centimeter-per-meter unit owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed core module-layout composition seam eliminates the extra Units statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "services",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-24",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/services/canvas_picking_local_helpers_cell_dims.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/cell_dimension_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CELL_DIMENSION_MATCH_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["WARDROBE_DEFAULTS", "WARDROBE_LAYOUT_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": ["WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Cell Dimensions local-hover helper replaces one legacy facade statement with the focused Cell Dimension Match owner plus the canonical Wardrobe Defaults owner on the existing services to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Cell Dimensions hover composition seam eliminates the extra Wardrobe Defaults statement without reintroducing the legacy facade."
     }
   ]
 }

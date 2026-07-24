@@ -373,6 +373,21 @@ const APPROVED_WARDROBE_MODULE_LAYOUT_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/core_layout_compute.ts': Object.freeze(['WARDROBE_MODULE_LAYOUT_POLICY']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['WARDROBE_MODULE_LAYOUT_POLICY']),
 });
+const APPROVED_CELL_DIMENSION_OWNER_IMPORTS = Object.freeze({
+  'esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts': Object.freeze([
+    'CELL_DIMENSION_PREVIEW_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_local_helpers_cell_dims.ts': Object.freeze([
+    'CELL_DIMENSION_MATCH_POLICY',
+  ]),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze([
+    'CELL_DIMENSION_MATCH_POLICY',
+    'CELL_DIMENSION_PREVIEW_POLICY',
+  ]),
+});
+const APPROVED_WARDROBE_LAYOUT_COMPARISON_OWNER_IMPORTS = Object.freeze({
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['WARDROBE_LAYOUT_COMPARISON_POLICY']),
+});
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([]);
 const APPROVED_MATERIAL_LEGACY_DEPENDENCIES = Object.freeze(
   Object.fromEntries(
@@ -3027,6 +3042,16 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectOwnerImports(analyzedSources, 'wardrobe_layout_policy.js'),
     APPROVED_WARDROBE_MODULE_LAYOUT_OWNER_IMPORTS,
     'Wardrobe Module Layout owner consumer allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectOwnerImports(analyzedSources, 'cell_dimension_policy.js'),
+    APPROVED_CELL_DIMENSION_OWNER_IMPORTS,
+    'Cell Dimension owner consumer allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectOwnerImports(analyzedSources, 'wardrobe_layout_comparison_policy.js'),
+    APPROVED_WARDROBE_LAYOUT_COMPARISON_OWNER_IMPORTS,
+    'Wardrobe Layout Comparison owner consumer allowlist'
   );
   assertApprovedSymbolUsage(
     collectOwnerImports(analyzedSources, 'carcass_cornice_render_policy.js'),

@@ -3,6 +3,11 @@
 // domain tokens remain here while consumers move one policy family at a time.
 
 import { CM_PER_METER, MM_PER_METER, clampDimension, cmToM, mToCm } from './dimensions/units.js';
+import {
+  CELL_DIMENSION_MATCH_POLICY,
+  CELL_DIMENSION_PREVIEW_POLICY,
+} from './dimensions/cell_dimension_policy.js';
+import { WARDROBE_LAYOUT_COMPARISON_POLICY } from './dimensions/wardrobe_layout_comparison_policy.js';
 import { WARDROBE_MODULE_LAYOUT_POLICY } from './dimensions/wardrobe_layout_policy.js';
 import {
   DEFAULT_CHEST_DRAWERS_COUNT,
@@ -221,19 +226,10 @@ export const WARDROBE_LAYOUT_DIMENSIONS = Object.freeze({
   minSegmentWidthCm: WARDROBE_MODULE_LAYOUT_POLICY.minSegmentWidthCm,
   boundaryFullThicknessMultiplier: WARDROBE_MODULE_LAYOUT_POLICY.boundaryFullThicknessMultiplier,
   boundarySharedThicknessMultiplier: WARDROBE_MODULE_LAYOUT_POLICY.boundarySharedThicknessMultiplier,
-  autoWidthMatchToleranceCm: 0.51,
-  valueEqualityToleranceCm: 0.0001,
-  cellDimsMatchToleranceCm: 0.11,
-  cellDimsPreview: Object.freeze({
-    minWidthM: 0.03,
-    minHeightM: 0.03,
-    widthClearanceM: 0.006,
-    heightClearanceM: 0.006,
-    minDepthM: 0.024,
-    woodThicknessMinM: 0.004,
-    woodThicknessMaxM: 0.01,
-    woodThicknessScale: 0.5,
-  }),
+  autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm,
+  valueEqualityToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.valueEqualityToleranceCm,
+  cellDimsMatchToleranceCm: CELL_DIMENSION_MATCH_POLICY.toleranceCm,
+  cellDimsPreview: CELL_DIMENSION_PREVIEW_POLICY,
 });
 
 export const WARDROBE_DIMENSION_GUIDE_DIMENSIONS = Object.freeze({
@@ -410,7 +406,9 @@ export function isAutoWidthForDoors(value: unknown, widthCm: unknown, doors: unk
   const currentWidthCm = finiteOr(widthCm, 0);
   if (!(currentWidthCm > 0)) return true;
   const expectedWidthCm = resolveAutoWidthForDoors(value, doors);
-  return Math.abs(currentWidthCm - expectedWidthCm) < WARDROBE_LAYOUT_DIMENSIONS.autoWidthMatchToleranceCm;
+  return (
+    Math.abs(currentWidthCm - expectedWidthCm) < WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm
+  );
 }
 
 export function getDefaultWidthForWardrobeType(value: unknown): number {

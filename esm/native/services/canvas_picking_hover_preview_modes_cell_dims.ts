@@ -1,5 +1,5 @@
 import { getThreeMaybe } from '../runtime/three_access.js';
-import { WARDROBE_LAYOUT_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CELL_DIMENSION_PREVIEW_POLICY } from '../../shared/dimensions/cell_dimension_policy.js';
 import {
   __callMaybe,
   __readPreviewSetSketchPlacementPreview,
@@ -62,7 +62,6 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
 
     const previewTargetBox = resolveCellDimsTargetBox(App, target, selectorBox, applyW, applyH, applyD);
     const op = getCellDimsHoverOp(App, target, selectorBox);
-    const previewDims = WARDROBE_LAYOUT_DIMENSIONS.cellDimsPreview;
 
     setPreview({
       App,
@@ -75,12 +74,21 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
       x: Number(previewTargetBox.centerX),
       y: Number(previewTargetBox.centerY),
       z: Number(previewTargetBox.centerZ),
-      w: Math.max(previewDims.minWidthM, Number(previewTargetBox.width) - previewDims.widthClearanceM),
-      boxH: Math.max(previewDims.minHeightM, Number(previewTargetBox.height) - previewDims.heightClearanceM),
-      d: Math.max(previewDims.minDepthM, Number(previewTargetBox.depth)),
+      w: Math.max(
+        CELL_DIMENSION_PREVIEW_POLICY.minWidthM,
+        Number(previewTargetBox.width) - CELL_DIMENSION_PREVIEW_POLICY.widthClearanceM
+      ),
+      boxH: Math.max(
+        CELL_DIMENSION_PREVIEW_POLICY.minHeightM,
+        Number(previewTargetBox.height) - CELL_DIMENSION_PREVIEW_POLICY.heightClearanceM
+      ),
+      d: Math.max(CELL_DIMENSION_PREVIEW_POLICY.minDepthM, Number(previewTargetBox.depth)),
       woodThick: Math.max(
-        previewDims.woodThicknessMinM,
-        Math.min(previewDims.woodThicknessMaxM, Number(target.woodThick) * previewDims.woodThicknessScale)
+        CELL_DIMENSION_PREVIEW_POLICY.woodThicknessMinM,
+        Math.min(
+          CELL_DIMENSION_PREVIEW_POLICY.woodThicknessMaxM,
+          Number(target.woodThick) * CELL_DIMENSION_PREVIEW_POLICY.woodThicknessScale
+        )
       ),
       op,
     });

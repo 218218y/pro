@@ -19,6 +19,7 @@ import {
   HANDLE_DIMENSIONS as FACADE_HANDLE_DIMENSIONS,
   INTERIOR_FITTINGS_DIMENSIONS,
   MATERIAL_DIMENSIONS,
+  WARDROBE_LAYOUT_DIMENSIONS,
   WARDROBE_DEFAULTS as FACADE_WARDROBE_DEFAULTS,
   resolveExternalDrawerGeometry,
 } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
@@ -178,8 +179,14 @@ import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
   getDefaultWidthForWardrobeType,
+  isAutoWidthForDoors,
   resolveDoorMountThicknessesFromConfig,
 } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import {
+  CELL_DIMENSION_MATCH_POLICY,
+  CELL_DIMENSION_PREVIEW_POLICY,
+} from '../esm/shared/dimensions/cell_dimension_policy.ts';
+import { WARDROBE_LAYOUT_COMPARISON_POLICY } from '../esm/shared/dimensions/wardrobe_layout_comparison_policy.ts';
 import {
   DEFAULT_HINGED_DOORS,
   DEFAULT_SLIDING_DOORS,
@@ -272,6 +279,24 @@ test('wardrobe default tokens preserve hinged and sliding business defaults', ()
   assert.equal(getDefaultDoorsForWardrobeType('sliding'), 2);
   assert.equal(getDefaultWidthForWardrobeType('hinged'), 160);
   assert.equal(getDefaultWidthForWardrobeType('sliding'), 160);
+});
+
+test('Wardrobe Layout compatibility projection preserves focused-owner identity and comparison semantics', () => {
+  assert.equal(WARDROBE_LAYOUT_DIMENSIONS.cellDimsPreview, CELL_DIMENSION_PREVIEW_POLICY);
+  assert.equal(WARDROBE_LAYOUT_DIMENSIONS.cellDimsMatchToleranceCm, CELL_DIMENSION_MATCH_POLICY.toleranceCm);
+  assert.equal(
+    WARDROBE_LAYOUT_DIMENSIONS.autoWidthMatchToleranceCm,
+    WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm
+  );
+  assert.equal(
+    WARDROBE_LAYOUT_DIMENSIONS.valueEqualityToleranceCm,
+    WARDROBE_LAYOUT_COMPARISON_POLICY.valueEqualityToleranceCm
+  );
+
+  const expectedWidthCm = 160;
+  const toleranceCm = WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm;
+  assert.equal(isAutoWidthForDoors('hinged', expectedWidthCm + toleranceCm / 2, 4), true);
+  assert.equal(isAutoWidthForDoors('hinged', expectedWidthCm + toleranceCm + 0.001, 4), false);
 });
 
 test('stack split policy preserves business limits, defaults, facade parity, and render geometry', () => {

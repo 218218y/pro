@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-24T07:46:40.811Z",
+  "generatedAt": "2026-07-24T08:45:45.830Z",
   "totals": {
-    "tests": 1270,
-    "unitRunnerTests": 1262,
+    "tests": 1272,
+    "unitRunnerTests": 1264,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 428,
+    "contract": 430,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -875,6 +875,14 @@
     },
     {
       "file": "tests/carcass_pipeline_number_contracts_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cell_dimension_layout_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/cell_dimension_layout_ownership_runtime.test.ts",
       "category": "contract"
     },
     {
