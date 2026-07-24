@@ -1,10 +1,8 @@
 import { getActiveDepthCmFromConfig } from '../features/special_dims/index.js';
 import { resolveHexCellGeometry } from '../features/hex_cell/index.js';
-import {
-  CARCASS_INTERIOR_DIMENSIONS,
-  CARCASS_SHELL_DIMENSIONS,
-  CM_PER_METER,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_INTERIOR_DIMENSIONS } from '../../shared/dimensions/carcass_interior_policy.js';
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
+import { CM_PER_METER } from '../../shared/dimensions/units.js';
 
 import type { ModuleLoopRuntime } from './module_loop_pipeline_runtime.js';
 import type { ModuleConfigLike } from '../../../types/index.js';

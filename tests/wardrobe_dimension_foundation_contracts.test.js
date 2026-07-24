@@ -147,12 +147,14 @@ const CARCASS_SHELL_DIRECT_CONSUMERS = Object.freeze([
   'esm/native/builder/core_carcass_shell.ts',
   'esm/native/builder/corner_wing_carcass_shell_metrics.ts',
   'esm/native/builder/module_loop_pipeline_hex_cell.ts',
+  'esm/native/builder/module_loop_pipeline_module_depth.ts',
   'esm/native/services/canvas_picking_split_hover_preview_line.ts',
   'esm/shared/dimensions/corner_system_policy.ts',
 ]);
 const CARCASS_INTERIOR_DIRECT_CONSUMERS = Object.freeze([
   'esm/native/builder/build_flow_plan.ts',
   'esm/native/builder/build_stack_split_lower_setup.ts',
+  'esm/native/builder/module_loop_pipeline_module_depth.ts',
 ]);
 const APPROVED_INTERIOR_GRID_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/build_wardrobe_flow_context_carcass.ts': Object.freeze([

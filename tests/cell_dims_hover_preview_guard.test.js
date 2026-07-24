@@ -39,7 +39,10 @@ test('[cell-dims-hover] preview resolves the future target box instead of painti
     seam,
     /export \{ tryHandleCellDimsHoverPreview \} from '\.\/canvas_picking_hover_preview_modes_cell_dims\.js';/
   );
-  assert.match(src, /resolveCellDimsTargetBox\(App, target, selectorBox, applyW, applyH, applyD\)/);
+  assert.match(
+    src,
+    /resolveCellDimsTargetBox\(\s*App,\s*target,\s*selectorBox,\s*applyW,\s*applyH,\s*applyD,\s*CELL_DIMENSION_MATCH_POLICY\.toleranceCm,\s*CELL_DIMENSION_PREVIEW_POLICY\.minWidthM,\s*CELL_DIMENSION_PREVIEW_POLICY\.minHeightM,\s*CELL_DIMENSION_PREVIEW_POLICY\.minDepthM\s*\)/
+  );
   assert.match(inputs, /export function readLinearSelectorBoundaryInsetsCm\(/);
   assert.match(inputs, /export function readCellDimsCurrentWidthInputCm\(/);
   assert.match(inputs, /export function toCellDimsPreviewWidthM\(/);
@@ -58,18 +61,19 @@ test('[cell-dims-hover] preview resolves the future target box instead of painti
   );
   assert.match(
     target,
-    /const\s+targetWm\s*=\s*toCellDimsPreviewWidthM\(App,\s*target,\s*previewState\.targetWcm\)/
+    /const\s+targetWm\s*=\s*toCellDimsPreviewWidthM\(App,\s*target,\s*previewState\.targetWcm,\s*minWidthM\)/
   );
   assert.match(
     target,
-    /const\s+targetHm\s*=\s*toCellDimsPreviewHeightM\(previewState\.currentBottomYm,\s*previewState\.targetHcm\)/
+    /const\s+targetHm\s*=\s*toCellDimsPreviewHeightM\(previewState\.currentBottomYm,\s*previewState\.targetHcm,\s*minHeightM\)/
   );
+  assert.match(target, /const\s+targetDm\s*=\s*Math\.max\(minDepthM,\s*previewState\.targetDcm\s*\/\s*100\)/);
   assert.match(target, /centerX:\s*currentMinX\s*\+\s*targetWm\s*\/\s*2/);
   assert.match(target, /centerY:\s*currentBottomYm\s*\+\s*targetHm\s*\/\s*2/);
   assert.match(target, /centerZ:\s*currentBackZ\s*\+\s*targetDm\s*\/\s*2/);
   assert.match(
     src,
-    /const\s+previewTargetBox\s*=\s*resolveCellDimsTargetBox\(App,\s*target,\s*selectorBox,\s*applyW,\s*applyH,\s*applyD\)/
+    /const\s+previewTargetBox\s*=\s*resolveCellDimsTargetBox\(\s*App,\s*target,\s*selectorBox,\s*applyW,\s*applyH,\s*applyD,\s*CELL_DIMENSION_MATCH_POLICY\.toleranceCm,\s*CELL_DIMENSION_PREVIEW_POLICY\.minWidthM,\s*CELL_DIMENSION_PREVIEW_POLICY\.minHeightM,\s*CELL_DIMENSION_PREVIEW_POLICY\.minDepthM\s*\)/
   );
 
   const localHelpersCellDims = fs.readFileSync(

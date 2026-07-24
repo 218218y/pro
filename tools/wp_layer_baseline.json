@@ -4864,6 +4864,64 @@
       },
       "reason": "The Cell Dimensions hover-preview composition replaces one legacy facade statement with the focused Cell Dimension Match and Preview owners plus the canonical Wardrobe Defaults owner on the existing services to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Cell Dimensions hover-preview composition seam eliminates the extra Wardrobe Defaults statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-24",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/module_loop_pipeline_module_depth.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_INTERIOR_DIMENSIONS", "CARCASS_SHELL_DIMENSIONS", "CM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/carcass_interior_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_INTERIOR_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The module-depth flow replaces one legacy facade statement with the focused Carcass Shell owner plus the focused Carcass Interior owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed module-depth composition seam eliminates the extra Carcass Interior statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-24",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/module_loop_pipeline_module_depth.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_INTERIOR_DIMENSIONS", "CARCASS_SHELL_DIMENSIONS", "CM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "reason": "The module-depth flow replaces one legacy facade statement with the focused Carcass Shell and Interior owners plus the canonical centimeter-per-meter unit owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed module-depth composition seam eliminates the extra Units statement without reintroducing the legacy facade."
     }
   ]
 }

@@ -259,7 +259,7 @@ test('canvas picking hover owners stay thin and delegate preview/target/interior
   );
   assert.match(
     hoverModesCellDims,
-    /resolveCellDimsTargetBox\(App, target, selectorBox, applyW, applyH, applyD\)/
+    /resolveCellDimsTargetBox\(App, target, selectorBox, applyW, applyH, applyD, CELL_DIMENSION_MATCH_POLICY\.toleranceCm, CELL_DIMENSION_PREVIEW_POLICY\.minWidthM, CELL_DIMENSION_PREVIEW_POLICY\.minHeightM, CELL_DIMENSION_PREVIEW_POLICY\.minDepthM\)/
   );
   assert.match(hoverModesCellDimsInputs, /export function readLinearSelectorBoundaryInsetsCm\(/);
   assert.match(hoverModesCellDimsInputs, /export function toCellDimsPreviewWidthM\(/);
