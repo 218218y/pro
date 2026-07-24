@@ -5,11 +5,20 @@ import {
   CELL_DIMENSION_MATCH_POLICY,
   CELL_DIMENSION_PREVIEW_POLICY,
 } from '../esm/shared/dimensions/cell_dimension_policy.ts';
+import { WARDROBE_LAYOUT_COMPARISON_POLICY } from '../esm/shared/dimensions/wardrobe_layout_comparison_policy.ts';
+import { WARDROBE_DEFAULTS } from '../esm/shared/dimensions/wardrobe_defaults.ts';
 import { tryHandleCellDimsHoverPreview } from '../esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts';
 import {
   __wp_getCellDimsHoverOp,
   __wp_readCellDimsDraft,
 } from '../esm/native/services/canvas_picking_local_helpers_cell_dims.ts';
+import { resolveCellDimsPreviewState } from '../esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts';
+import {
+  toCellDimsPreviewHeightM,
+  toCellDimsPreviewWidthM,
+} from '../esm/native/services/canvas_picking_hover_preview_modes_cell_dims_inputs.ts';
+import { resolveCellDimsFreeBoxPreviewTargetBox } from '../esm/native/services/canvas_picking_cell_dims_free_box_hover.ts';
+import { applyLinearCellDimsWidthPolicy } from '../esm/native/services/canvas_picking_cell_dims_linear_width.ts';
 
 function assertNear(actual: number, expected: number): void {
   assert.ok(Math.abs(actual - expected) <= 1e-12, `expected ${actual} to equal ${expected}`);
@@ -133,7 +142,16 @@ function matchingHarness(args: {
   };
   return {
     draft: __wp_readCellDimsDraft(App),
-    op: __wp_getCellDimsHoverOp(App, createTarget(args.target), selectorBox),
+    op: __wp_getCellDimsHoverOp(
+      App,
+      createTarget(args.target),
+      selectorBox,
+      {
+        matchToleranceCm: CELL_DIMENSION_MATCH_POLICY.toleranceCm,
+        defaultHingedDepthCm: WARDROBE_DEFAULTS.byType.hinged.depthCm,
+      },
+      selectorBox
+    ),
   };
 }
 
@@ -247,6 +265,92 @@ test('Cell Dimension matching keeps inclusive tolerance for width, height, and d
       'add'
     );
   }
+});
+
+test('Cell Dimension preview-state matching and active/base rollback share the canonical match tolerance', () => {
+  const tolerance = CELL_DIMENSION_MATCH_POLICY.toleranceCm;
+  const resolveWidth = (applyW: number) =>
+    resolveCellDimsPreviewState({
+      currentWcm: tolerance,
+      currentTopAbsCm: 100,
+      currentDcm: 50,
+      currentBottomYm: 0,
+      widthSd: { baseWidthCm: 1 },
+      heightDepthSd: null,
+      applyW,
+      applyH: null,
+      applyD: null,
+      matchToleranceCm: tolerance,
+    }).targetWcm;
+
+  assert.equal(resolveWidth(0.001), 1);
+  assert.equal(resolveWidth(0), 1);
+  assert.equal(resolveWidth(-0.001), -0.001);
+});
+
+test('linear and free-box preview floors receive all three canonical preview minimums', () => {
+  const { App } = createApp();
+  const nonLinearTarget = createTarget({ hitModuleKey: 'corner' });
+  assert.equal(
+    toCellDimsPreviewWidthM(App, nonLinearTarget, 0.1, CELL_DIMENSION_PREVIEW_POLICY.minWidthM),
+    CELL_DIMENSION_PREVIEW_POLICY.minWidthM
+  );
+  assert.equal(
+    toCellDimsPreviewHeightM(0, 0.1, CELL_DIMENSION_PREVIEW_POLICY.minHeightM),
+    CELL_DIMENSION_PREVIEW_POLICY.minHeightM
+  );
+
+  const freeBoxTarget = createTarget({
+    info: {
+      __wpCellDimsFreeBox: true,
+      __wpCellDimsFreeBoxRecord: {},
+    },
+  });
+  const freeBoxPreview = resolveCellDimsFreeBoxPreviewTargetBox(
+    freeBoxTarget,
+    { ...selectorBox, width: 0.01, height: 0.01, depth: 0.01 },
+    null,
+    null,
+    null,
+    CELL_DIMENSION_PREVIEW_POLICY.minWidthM,
+    CELL_DIMENSION_PREVIEW_POLICY.minHeightM,
+    CELL_DIMENSION_PREVIEW_POLICY.minDepthM
+  );
+  assert.ok(freeBoxPreview);
+  assert.equal(freeBoxPreview.width, CELL_DIMENSION_PREVIEW_POLICY.minWidthM);
+  assert.equal(freeBoxPreview.height, CELL_DIMENSION_PREVIEW_POLICY.minHeightM);
+  assert.equal(freeBoxPreview.depth, CELL_DIMENSION_PREVIEW_POLICY.minDepthM);
+});
+
+test('linear auto-width detection keeps an inclusive owner-provided boundary', () => {
+  const tolerance = WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm;
+  const run = (storedWidthCm: number) => {
+    const previous = [{ specialDims: { widthCm: storedWidthCm, baseWidthCm: storedWidthCm } }];
+    const next = [{ ...previous[0], specialDims: { ...previous[0].specialDims } }];
+    return applyLinearCellDimsWidthPolicy(
+      {
+        cfg: { isManualWidth: true },
+        raw: {},
+        idx: 0,
+        applyW: null,
+        moduleCount: 1,
+        doorsPerModule: [1],
+        defaultWidths: [tolerance],
+        prevModsCfg: previous,
+        widthsCurr: [tolerance],
+        baseW: [tolerance],
+        tgtW: tolerance,
+        toggledBackW: false,
+        totalW: tolerance,
+        autoWidthMatchToleranceCm: tolerance,
+      } as any,
+      next,
+      () => next[0]
+    );
+  };
+
+  assert.equal(run(0).unsetManualWidth, true);
+  assert.equal(run(-0.001).unsetManualWidth, false);
 });
 
 test('Cell Dimension matching preserves bottom, custom, Hex Cell, corner, stack, and numeric-input semantics', () => {

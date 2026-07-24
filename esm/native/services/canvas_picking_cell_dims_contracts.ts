@@ -20,6 +20,7 @@ export interface CanvasCellDimsResolvedDrafts {
   applyW: number | null;
   applyH: number | null;
   applyD: number | null;
+  autoWidthMatchToleranceCm: number;
   hexCellMode?: boolean;
   hexCellProtrusionCm?: number | null;
   hexCellDoorWidthCm?: number | null;

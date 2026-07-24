@@ -384,7 +384,10 @@ export function resolveCellDimsFreeBoxPreviewTargetBox(
   selectorBox: SelectorLocalBox,
   applyW: number | null | undefined,
   applyH: number | null | undefined,
-  applyD: number | null | undefined
+  applyD: number | null | undefined,
+  minWidthM: number,
+  minHeightM: number,
+  minDepthM: number
 ): SelectorLocalBox | null {
   if (asRecord(target.info)?.__wpCellDimsFreeBox !== true) return null;
   const current = readSelectorBoxMetrics(selectorBox);
@@ -393,7 +396,7 @@ export function resolveCellDimsFreeBoxPreviewTargetBox(
   const currentHcm = Math.max(0, current.height * 100);
   const currentDcm = Math.max(0, current.depth * 100);
   const targetWm = Math.max(
-    0.03,
+    minWidthM,
     resolveTargetDimensionCm({
       target,
       currentCm: currentWcm,
@@ -403,7 +406,7 @@ export function resolveCellDimsFreeBoxPreviewTargetBox(
     }) / 100
   );
   const targetHm = Math.max(
-    0.03,
+    minHeightM,
     resolveTargetDimensionCm({
       target,
       currentCm: currentHcm,
@@ -413,7 +416,7 @@ export function resolveCellDimsFreeBoxPreviewTargetBox(
     }) / 100
   );
   const targetDm = Math.max(
-    0.024,
+    minDepthM,
     resolveTargetDimensionCm({
       target,
       currentCm: currentDcm,
@@ -439,11 +442,10 @@ function hasFreeBoxDimChange(args: {
   applyW?: number | null;
   applyH?: number | null;
   applyD?: number | null;
+  previewTargetBox: SelectorLocalBox;
 }): boolean {
-  const { target, selectorBox, applyW, applyH, applyD } = args;
-  const next = resolveCellDimsFreeBoxPreviewTargetBox(target, selectorBox, applyW, applyH, applyD);
+  const { selectorBox, previewTargetBox: next } = args;
   const current = readSelectorBoxMetrics(selectorBox);
-  if (!next) return false;
   if (!current) return false;
   return (
     Math.abs(next.width - current.width) > EPS_M ||
@@ -515,6 +517,7 @@ export function resolveCellDimsFreeBoxHoverOp(args: {
   hexCellMode?: boolean | null;
   hexCellProtrusionCm?: number | null;
   hexCellDoorWidthCm?: number | null;
+  previewTargetBox: SelectorLocalBox;
 }): 'add' | 'remove' | null {
   const box = asRecord(asRecord(args.target.info)?.__wpCellDimsFreeBoxRecord);
   if (!box) return null;

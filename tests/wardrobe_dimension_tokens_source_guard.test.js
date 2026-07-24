@@ -854,8 +854,13 @@ test('[dimension tokens] door split and Cell Dimension preview/matching measurem
     'CELL_DIMENSION_PREVIEW_POLICY'
   );
   assertUsesToken(
-    'esm/native/services/canvas_picking_local_helpers_cell_dims.ts',
+    'esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts',
     'CELL_DIMENSION_MATCH_POLICY'
+  );
+  assertUsesToken('esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts', 'WARDROBE_DEFAULTS');
+  assertUsesToken(
+    'esm/native/services/canvas_picking_cell_dims_flow.ts',
+    'WARDROBE_LAYOUT_COMPARISON_POLICY'
   );
 
   const splitHover = read('esm/native/services/canvas_picking_door_split_hover_flow.ts');
@@ -869,12 +874,31 @@ test('[dimension tokens] door split and Cell Dimension preview/matching measurem
   assert.doesNotMatch(cellDims, /woodThick: Math\.max\(0\.004, Math\.min\(0\.01/);
 
   const localHelpers = read('esm/native/services/canvas_picking_local_helpers_cell_dims.ts');
-  assert.match(
-    localHelpers,
-    /import \{ WARDROBE_DEFAULTS \} from '\.\.\/\.\.\/shared\/dimensions\/wardrobe_defaults\.js';/u
-  );
-  assert.match(localHelpers, /const EPS_CM = CELL_DIMENSION_MATCH_POLICY\.toleranceCm/u);
+  assert.match(localHelpers, /const EPS_CM = policy\.matchToleranceCm/u);
+  assert.match(localHelpers, /readRawNumber\(raw, 'depth', policy\.defaultHingedDepthCm\)/u);
   assert.doesNotMatch(localHelpers, /wardrobe_dimension_tokens_shared|WARDROBE_LAYOUT_DIMENSIONS/u);
+  assert.doesNotMatch(
+    localHelpers,
+    /CELL_DIMENSION_MATCH_POLICY|CELL_DIMENSION_PREVIEW_POLICY|WARDROBE_DEFAULTS/u
+  );
+
+  const previewState = read('esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts');
+  const previewInputs = read('esm/native/services/canvas_picking_hover_preview_modes_cell_dims_inputs.ts');
+  const previewTarget = read('esm/native/services/canvas_picking_hover_preview_modes_cell_dims_target.ts');
+  const freeBoxHover = read('esm/native/services/canvas_picking_cell_dims_free_box_hover.ts');
+  const linearWidth = read('esm/native/services/canvas_picking_cell_dims_linear_width.ts');
+  assert.doesNotMatch(previewState, /0\.11/u);
+  assert.doesNotMatch(previewInputs, /0\.03/u);
+  assert.doesNotMatch(previewTarget, /0\.024/u);
+  assert.doesNotMatch(
+    freeBoxHover.slice(
+      freeBoxHover.indexOf('export function resolveCellDimsFreeBoxPreviewTargetBox'),
+      freeBoxHover.indexOf('function hasFreeBoxDimChange')
+    ),
+    /\b(?:0\.03|0\.024)\b/u
+  );
+  assert.doesNotMatch(linearWidth, /0\.51/u);
+  assert.match(linearWidth, /ctx\.autoWidthMatchToleranceCm/u);
 });
 
 test('[dimension tokens] Core Module Layout uses its focused owner and canonical unit/material sources', () => {

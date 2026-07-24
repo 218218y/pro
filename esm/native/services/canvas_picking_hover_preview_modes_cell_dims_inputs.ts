@@ -41,15 +41,16 @@ export function readCellDimsCurrentWidthInputCm(
 export function toCellDimsPreviewWidthM(
   App: AppContainer,
   target: InteriorHoverTarget,
-  targetWidthInputCm: number
+  targetWidthInputCm: number,
+  minWidthM: number
 ): number {
   const boundary = readLinearSelectorBoundaryInsetsCm(App, target);
-  if (!boundary) return Math.max(0.03, Math.max(0, targetWidthInputCm) / 100);
+  if (!boundary) return Math.max(minWidthM, Math.max(0, targetWidthInputCm) / 100);
   const internalCm =
     Math.max(0, targetWidthInputCm) -
     Math.max(0, Number(boundary.leftCm)) -
     Math.max(0, Number(boundary.rightCm));
-  return Math.max(0.03, internalCm / 100);
+  return Math.max(minWidthM, internalCm / 100);
 }
 
 export function readCellDimsCurrentHeightInputCm(selectorBox: SelectorLocalBox): CellDimsCurrentHeightInput {
@@ -58,7 +59,11 @@ export function readCellDimsCurrentHeightInputCm(selectorBox: SelectorLocalBox):
   return { currentBottomYm, currentTopAbsCm };
 }
 
-export function toCellDimsPreviewHeightM(currentBottomYm: number, targetTopAbsCm: number): number {
+export function toCellDimsPreviewHeightM(
+  currentBottomYm: number,
+  targetTopAbsCm: number,
+  minHeightM: number
+): number {
   const targetTopYm = Math.max(0, targetTopAbsCm) / 100;
-  return Math.max(0.03, targetTopYm - Number(currentBottomYm));
+  return Math.max(minHeightM, targetTopYm - Number(currentBottomYm));
 }

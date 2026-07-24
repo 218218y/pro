@@ -5,6 +5,7 @@
 
 import type { UnknownRecord } from '../../../types';
 import type { CanvasCellDimsClickArgs } from './canvas_picking_cell_dims_contracts.js';
+import { WARDROBE_LAYOUT_COMPARISON_POLICY } from '../../shared/dimensions/wardrobe_layout_comparison_policy.js';
 
 import { handleCanvasCornerCellDimsClick } from './canvas_picking_cell_dims_corner.js';
 import { handleCanvasLinearCellDimsClick } from './canvas_picking_cell_dims_linear.js';
@@ -106,6 +107,7 @@ export function handleCanvasCellDimsClick(args: CanvasCellDimsClickArgs): void {
       applyW,
       applyH,
       applyD,
+      autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm,
       hexCellMode,
       hexCellProtrusionCm,
       hexCellDoorWidthCm,

@@ -1,7 +1,6 @@
 import type { AppContainer } from '../../../types';
-import { CELL_DIMENSION_MATCH_POLICY } from '../../shared/dimensions/cell_dimension_policy.js';
-import { WARDROBE_DEFAULTS } from '../../shared/dimensions/wardrobe_defaults.js';
 import type { InteriorHoverTarget } from './canvas_picking_hover_targets.js';
+import type { SelectorLocalBox } from './canvas_picking_hover_preview_modes_shared.js';
 import { __wp_cfg, __wp_isCornerKey, __wp_ui } from './canvas_picking_core_helpers.js';
 import { __wp_readInteriorModuleConfigRef } from './canvas_picking_local_helpers_hover.js';
 import {
@@ -99,14 +98,12 @@ function __wp_readLinearSelectorWidthInputCm(
 export function __wp_getCellDimsHoverOp(
   App: AppContainer,
   target: InteriorHoverTarget,
-  selectorBox: {
-    centerX: number;
-    centerY: number;
-    centerZ: number;
-    width: number;
-    height: number;
-    depth: number;
-  }
+  selectorBox: SelectorLocalBox,
+  policy: {
+    matchToleranceCm: number;
+    defaultHingedDepthCm: number;
+  },
+  freeBoxPreviewTargetBox: SelectorLocalBox
 ): 'add' | 'remove' {
   try {
     const { applyW, applyH, applyD, hexCellMode, hexCellProtrusionCm, hexCellDoorWidthCm } =
@@ -123,17 +120,18 @@ export function __wp_getCellDimsHoverOp(
       hexCellMode,
       hexCellProtrusionCm,
       hexCellDoorWidthCm,
+      previewTargetBox: freeBoxPreviewTargetBox,
     });
     if (freeBoxOp) return freeBoxOp;
 
     const cfg = __wp_cfg(App);
     const ui = __wp_ui(App);
     const raw = readUiRaw(ui);
-    const EPS_CM = CELL_DIMENSION_MATCH_POLICY.toleranceCm;
+    const EPS_CM = policy.matchToleranceCm;
 
     let curW = __wp_readLinearSelectorWidthInputCm(App, target, selectorBox);
     let curH = readRawNumber(raw, 'height', Math.max(0, Number(selectorBox.height) * 100));
-    const topDepthDefault = readRawNumber(raw, 'depth', WARDROBE_DEFAULTS.byType.hinged.depthCm);
+    const topDepthDefault = readRawNumber(raw, 'depth', policy.defaultHingedDepthCm);
     const lowerDepthDefault = raw.stackSplitLowerDepthManual
       ? readRawNumber(raw, 'stackSplitLowerDepth', topDepthDefault)
       : topDepthDefault;

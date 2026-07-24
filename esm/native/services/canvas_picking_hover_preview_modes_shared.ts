@@ -86,7 +86,12 @@ export type EstimateVisibleModuleFrontZFn = (
 export type GetCellDimsHoverOpFn = (
   App: AppContainer,
   target: InteriorHoverTarget,
-  selectorBox: SelectorLocalBox
+  selectorBox: SelectorLocalBox,
+  policy: {
+    matchToleranceCm: number;
+    defaultHingedDepthCm: number;
+  },
+  freeBoxPreviewTargetBox: SelectorLocalBox
 ) => 'add' | 'remove';
 
 export type HoverPreviewModeBaseArgs = {

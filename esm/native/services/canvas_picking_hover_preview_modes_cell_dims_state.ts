@@ -71,7 +71,8 @@ function readPreviewBaseValueCm(
   specialDims: UnknownRecord | null,
   currentValueCm: number,
   baseKey: string,
-  activeKey: string
+  activeKey: string,
+  matchToleranceCm: number
 ): { baseCm: number; activeCm: number; hasActive: boolean } {
   const baseCm = __hasOwnFiniteValue(specialDims, baseKey)
     ? __asNum(specialDims && specialDims[baseKey], currentValueCm)
@@ -81,7 +82,7 @@ function readPreviewBaseValueCm(
     : currentValueCm;
   const hasActive = !!(
     specialDims &&
-    (__hasOwnFiniteValue(specialDims, activeKey) || Math.abs(activeCm - baseCm) > 0.11)
+    (__hasOwnFiniteValue(specialDims, activeKey) || Math.abs(activeCm - baseCm) > matchToleranceCm)
   );
   return { baseCm, activeCm, hasActive };
 }
@@ -96,6 +97,7 @@ export function resolveCellDimsPreviewState(args: {
   applyW: number | null | undefined;
   applyH: number | null | undefined;
   applyD: number | null | undefined;
+  matchToleranceCm: number;
 }): ResolvedCellDimsPreviewState {
   const {
     currentWcm,
@@ -107,13 +109,26 @@ export function resolveCellDimsPreviewState(args: {
     applyW,
     applyH,
     applyD,
+    matchToleranceCm,
   } = args;
-  const EPS_CM = 0.11;
+  const EPS_CM = matchToleranceCm;
   const currentHcm = currentTopAbsCm;
 
-  const widthState = readPreviewBaseValueCm(widthSd, currentWcm, 'baseWidthCm', 'widthCm');
-  const heightState = readPreviewBaseValueCm(heightDepthSd, currentHcm, 'baseHeightCm', 'heightCm');
-  const depthState = readPreviewBaseValueCm(heightDepthSd, currentDcm, 'baseDepthCm', 'depthCm');
+  const widthState = readPreviewBaseValueCm(widthSd, currentWcm, 'baseWidthCm', 'widthCm', matchToleranceCm);
+  const heightState = readPreviewBaseValueCm(
+    heightDepthSd,
+    currentHcm,
+    'baseHeightCm',
+    'heightCm',
+    matchToleranceCm
+  );
+  const depthState = readPreviewBaseValueCm(
+    heightDepthSd,
+    currentDcm,
+    'baseDepthCm',
+    'depthCm',
+    matchToleranceCm
+  );
 
   const matchesTargetW = applyW == null ? true : Math.abs(currentWcm - applyW) <= EPS_CM;
   const matchesTargetH = applyH == null ? true : Math.abs(currentHcm - applyH) <= EPS_CM;

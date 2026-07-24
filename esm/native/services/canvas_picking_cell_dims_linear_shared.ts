@@ -9,6 +9,7 @@ export type ModuleShape = UnknownRecord & { doors?: unknown; specialDims?: unkno
 export type FeedbackShape = { updateEditStateToast?: (message: string, sticky?: boolean) => unknown };
 
 export interface LinearCellDimsContext extends CanvasLinearCellDimsArgs {
+  autoWidthMatchToleranceCm: number;
   idx: number;
   configBucket: ModulesConfigBucketKey;
   moduleCount: number;

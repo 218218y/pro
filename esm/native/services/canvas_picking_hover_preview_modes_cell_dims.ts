@@ -1,5 +1,9 @@
 import { getThreeMaybe } from '../runtime/three_access.js';
-import { CELL_DIMENSION_PREVIEW_POLICY } from '../../shared/dimensions/cell_dimension_policy.js';
+import {
+  CELL_DIMENSION_MATCH_POLICY,
+  CELL_DIMENSION_PREVIEW_POLICY,
+} from '../../shared/dimensions/cell_dimension_policy.js';
+import { WARDROBE_DEFAULTS } from '../../shared/dimensions/wardrobe_defaults.js';
 import {
   __callMaybe,
   __readPreviewSetSketchPlacementPreview,
@@ -60,8 +64,28 @@ export function tryHandleCellDimsHoverPreview(args: CellDimsHoverPreviewArgs): b
       return false;
     }
 
-    const previewTargetBox = resolveCellDimsTargetBox(App, target, selectorBox, applyW, applyH, applyD);
-    const op = getCellDimsHoverOp(App, target, selectorBox);
+    const previewTargetBox = resolveCellDimsTargetBox(
+      App,
+      target,
+      selectorBox,
+      applyW,
+      applyH,
+      applyD,
+      CELL_DIMENSION_MATCH_POLICY.toleranceCm,
+      CELL_DIMENSION_PREVIEW_POLICY.minWidthM,
+      CELL_DIMENSION_PREVIEW_POLICY.minHeightM,
+      CELL_DIMENSION_PREVIEW_POLICY.minDepthM
+    );
+    const op = getCellDimsHoverOp(
+      App,
+      target,
+      selectorBox,
+      {
+        matchToleranceCm: CELL_DIMENSION_MATCH_POLICY.toleranceCm,
+        defaultHingedDepthCm: WARDROBE_DEFAULTS.byType.hinged.depthCm,
+      },
+      previewTargetBox
+    );
 
     setPreview({
       App,

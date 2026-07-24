@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { handleCanvasCellDimsClick } from '../esm/native/services/canvas_picking_cell_dims_flow.ts';
 import { handleCanvasLinearCellDimsClick } from '../esm/native/services/canvas_picking_cell_dims_linear.ts';
 import { readLinearCellDimsTotals } from '../esm/native/services/canvas_picking_cell_dims_linear_context_modules.ts';
+import { WARDROBE_LAYOUT_COMPARISON_POLICY } from '../esm/shared/dimensions/wardrobe_layout_comparison_policy.ts';
 
 function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value));
@@ -116,6 +117,7 @@ test('linear cell-dims seam applies manual width through the canonical snapshot/
     ui: App.store.getState().ui,
     cfg: App.store.getState().config,
     raw: App.store.getState().ui.raw,
+    autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm,
     applyW: 90,
     applyH: null,
     applyD: null,
@@ -197,6 +199,7 @@ test('linear cell-dims seam promotes uniform height through the canonical snapsh
     ui: state.ui,
     cfg: state.config,
     raw: state.ui.raw,
+    autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm,
     applyW: null,
     applyH: 250,
     applyD: null,
@@ -229,6 +232,7 @@ test('linear cell-dims allows a 20cm width target instead of clamping to 40cm', 
     ui: state.ui,
     cfg: state.config,
     raw: state.ui.raw,
+    autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm,
     applyW: 20,
     applyH: null,
     applyD: null,
@@ -254,6 +258,7 @@ test('linear cell-dims blocks height/depth special cells while legs-with-stage i
     ui: state.ui,
     cfg: state.config,
     raw: state.ui.raw,
+    autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm,
     applyW: null,
     applyH: 250,
     applyD: null,
@@ -278,6 +283,7 @@ test('linear cell-dims still allows width special cells while legs-with-stage is
     ui: state.ui,
     cfg: state.config,
     raw: state.ui.raw,
+    autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm,
     applyW: 90,
     applyH: null,
     applyD: null,
@@ -322,6 +328,7 @@ test('linear cell-dims applies lower-stack width/depth through lower configurati
     ui: state.ui,
     cfg: state.config,
     raw: state.ui.raw,
+    autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm,
     isBottomStack: true,
     applyW: 90,
     applyH: 120,
@@ -378,6 +385,7 @@ test('linear cell-dims resolves hinged module signature from ui.raw before stale
     ui: state.ui,
     cfg: state.config,
     raw: state.ui.raw,
+    autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm,
     applyW: 210,
     applyH: null,
     applyD: null,

@@ -15,6 +15,14 @@ const comparisonOwnerRel = 'esm/shared/dimensions/wardrobe_layout_comparison_pol
 const moduleOwnerRel = 'esm/shared/dimensions/wardrobe_layout_policy.ts';
 const previewConsumerRel = 'esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts';
 const helpersConsumerRel = 'esm/native/services/canvas_picking_local_helpers_cell_dims.ts';
+const previewStateRel = 'esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts';
+const previewInputsRel = 'esm/native/services/canvas_picking_hover_preview_modes_cell_dims_inputs.ts';
+const previewTargetRel = 'esm/native/services/canvas_picking_hover_preview_modes_cell_dims_target.ts';
+const freeBoxHoverRel = 'esm/native/services/canvas_picking_cell_dims_free_box_hover.ts';
+const clickFlowRel = 'esm/native/services/canvas_picking_cell_dims_flow.ts';
+const clickContractsRel = 'esm/native/services/canvas_picking_cell_dims_contracts.ts';
+const linearContextRel = 'esm/native/services/canvas_picking_cell_dims_linear_shared.ts';
+const linearWidthRel = 'esm/native/services/canvas_picking_cell_dims_linear_width.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
 function stableJson(value) {
@@ -243,9 +251,10 @@ test('Wardrobe Layout facade projects all seven keys directly from focused owner
   assert.doesNotMatch(autoWidthFunction, /WARDROBE_LAYOUT_DIMENSIONS/u);
 });
 
-test('the two Cell Dimensions consumers use only their exact focused owners without aliases', () => {
+test('Cell Dimensions composition imports the exact focused owners while leaf modules receive scalars', () => {
   const preview = read(previewConsumerRel);
   const helpers = read(helpersConsumerRel);
+  const clickFlow = read(clickFlowRel);
   assert.deepEqual(
     directImportSummary(previewConsumerRel).filter(item => item.specifier.includes('/shared/')),
     [
@@ -253,19 +262,7 @@ test('the two Cell Dimensions consumers use only their exact focused owners with
         specifier: '../../shared/dimensions/cell_dimension_policy.js',
         kind: 'value',
         syntax: 'static-import',
-        importedSymbols: ['CELL_DIMENSION_PREVIEW_POLICY'],
-        aliases: [],
-      },
-    ]
-  );
-  assert.deepEqual(
-    directImportSummary(helpersConsumerRel).filter(item => item.specifier.includes('/shared/')),
-    [
-      {
-        specifier: '../../shared/dimensions/cell_dimension_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['CELL_DIMENSION_MATCH_POLICY'],
+        importedSymbols: ['CELL_DIMENSION_MATCH_POLICY', 'CELL_DIMENSION_PREVIEW_POLICY'],
         aliases: [],
       },
       {
@@ -273,6 +270,22 @@ test('the two Cell Dimensions consumers use only their exact focused owners with
         kind: 'value',
         syntax: 'static-import',
         importedSymbols: ['WARDROBE_DEFAULTS'],
+        aliases: [],
+      },
+    ]
+  );
+  assert.deepEqual(
+    directImportSummary(helpersConsumerRel).filter(item => item.specifier.includes('/shared/')),
+    []
+  );
+  assert.deepEqual(
+    directImportSummary(clickFlowRel).filter(item => item.specifier.includes('/shared/')),
+    [
+      {
+        specifier: '../../shared/dimensions/wardrobe_layout_comparison_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['WARDROBE_LAYOUT_COMPARISON_POLICY'],
         aliases: [],
       },
     ]
@@ -289,14 +302,83 @@ test('the two Cell Dimensions consumers use only their exact focused owners with
   ]) {
     assert.match(preview, new RegExp(`CELL_DIMENSION_PREVIEW_POLICY\\.${field}`, 'u'));
   }
-  assert.match(helpers, /const EPS_CM = CELL_DIMENSION_MATCH_POLICY\.toleranceCm/u);
+  assert.match(preview, /matchToleranceCm: CELL_DIMENSION_MATCH_POLICY\.toleranceCm/u);
+  assert.match(preview, /defaultHingedDepthCm: WARDROBE_DEFAULTS\.byType\.hinged\.depthCm/u);
+  assert.match(helpers, /const EPS_CM = policy\.matchToleranceCm/u);
+  assert.match(helpers, /readRawNumber\(raw, 'depth', policy\.defaultHingedDepthCm\)/u);
+  assert.match(
+    clickFlow,
+    /autoWidthMatchToleranceCm: WARDROBE_LAYOUT_COMPARISON_POLICY\.autoWidthMatchToleranceCm/u
+  );
   for (const source of [preview, helpers]) {
     assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared|WARDROBE_LAYOUT_DIMENSIONS/u);
     assert.doesNotMatch(source, /\b(?:CELL_DIMENSION_POLICY|WARDROBE_MODULE_LAYOUT_POLICY)\b/u);
     assert.doesNotMatch(source, /import\s+\*\s+as|import\s*\(|export\s+(?:type\s+)?(?:\*|\{)/u);
   }
+  assert.doesNotMatch(clickFlow, /wardrobe_dimension_tokens_shared|WARDROBE_LAYOUT_DIMENSIONS/u);
+  assert.doesNotMatch(clickFlow, /import\s+\*\s+as|import\s*\(/u);
   assert.doesNotMatch(preview, /const\s+[A-Za-z_$][\w$]*\s*=\s*CELL_DIMENSION_PREVIEW_POLICY\s*;/u);
-  assert.doesNotMatch(helpers, /const\s+[A-Za-z_$][\w$]*\s*=\s*CELL_DIMENSION_MATCH_POLICY\s*;/u);
+  assert.doesNotMatch(
+    helpers,
+    /CELL_DIMENSION_MATCH_POLICY|CELL_DIMENSION_PREVIEW_POLICY|WARDROBE_DEFAULTS/u
+  );
+});
+
+test('Cell Dimension Match, Preview, and Auto Width literals are fully propagated from composition', () => {
+  const previewState = read(previewStateRel);
+  const previewInputs = read(previewInputsRel);
+  const previewTarget = read(previewTargetRel);
+  const freeBoxHover = read(freeBoxHoverRel);
+  const linearWidth = read(linearWidthRel);
+
+  assert.doesNotMatch(previewState, /0\.11/u);
+  assert.match(previewState, /Math\.abs\(activeCm - baseCm\) > matchToleranceCm/u);
+  assert.match(previewState, /const EPS_CM = matchToleranceCm/u);
+
+  assert.doesNotMatch(previewInputs, /0\.03/u);
+  assert.match(previewInputs, /Math\.max\(minWidthM,/u);
+  assert.match(previewInputs, /Math\.max\(minHeightM,/u);
+  assert.doesNotMatch(previewTarget, /0\.024/u);
+  assert.match(previewTarget, /const targetDm = Math\.max\(minDepthM,/u);
+  assert.match(previewTarget, /matchToleranceCm,/u);
+  assert.match(previewTarget, /previewState\.targetWcm, minWidthM/u);
+  assert.match(previewTarget, /previewState\.targetHcm,\s*minHeightM/u);
+
+  const freeBoxPreview = freeBoxHover.slice(
+    freeBoxHover.indexOf('export function resolveCellDimsFreeBoxPreviewTargetBox'),
+    freeBoxHover.indexOf('function hasFreeBoxDimChange')
+  );
+  assert.doesNotMatch(freeBoxPreview, /\b(?:0\.03|0\.024)\b/u);
+  assert.match(freeBoxPreview, /Math\.max\(\s*minWidthM,/u);
+  assert.match(freeBoxPreview, /Math\.max\(\s*minHeightM,/u);
+  assert.match(freeBoxPreview, /Math\.max\(\s*minDepthM,/u);
+  assert.match(freeBoxHover, /const EPS_CM = 1e-6;/u);
+  assert.match(freeBoxHover, /const EPS_M = 1e-6;/u);
+
+  assert.doesNotMatch(linearWidth, /0\.51/u);
+  assert.equal((linearWidth.match(/ctx\.autoWidthMatchToleranceCm/gu) ?? []).length, 2);
+  assert.match(read(clickContractsRel), /autoWidthMatchToleranceCm: number;/u);
+  assert.match(read(linearContextRel), /autoWidthMatchToleranceCm: number;/u);
+
+  for (const rel of [
+    previewStateRel,
+    previewInputsRel,
+    previewTargetRel,
+    freeBoxHoverRel,
+    helpersConsumerRel,
+    linearWidthRel,
+  ]) {
+    const ownerImports = directImportSummary(rel).filter(dependency =>
+      /(?:cell_dimension_policy|wardrobe_layout_comparison_policy|wardrobe_defaults)\.js$/u.test(
+        dependency.specifier
+      )
+    );
+    assert.deepEqual(ownerImports, [], `${rel} must receive policy scalars from composition`);
+    assert.doesNotMatch(
+      read(rel),
+      /export\s+(?:type\s+)?(?:\*|\{[^}]*\})\s+from|wardrobe_dimension_tokens_shared/u
+    );
+  }
 });
 
 test('Cell Dimensions migration appends exactly Entry 132 after the unchanged 131-entry prefix', () => {

@@ -121,7 +121,10 @@ export function applyLinearCellDimsWidthPolicy(
         looksAuto = false;
         break;
       }
-      if (Math.abs(wcm - defaultWidths[i]) > 0.51 || Math.abs(bwcm - defaultWidths[i]) > 0.51) {
+      if (
+        Math.abs(wcm - defaultWidths[i]) > ctx.autoWidthMatchToleranceCm ||
+        Math.abs(bwcm - defaultWidths[i]) > ctx.autoWidthMatchToleranceCm
+      ) {
         looksAuto = false;
         break;
       }

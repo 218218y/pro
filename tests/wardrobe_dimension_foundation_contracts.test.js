@@ -375,10 +375,8 @@ const APPROVED_WARDROBE_MODULE_LAYOUT_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_CELL_DIMENSION_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts': Object.freeze([
-    'CELL_DIMENSION_PREVIEW_POLICY',
-  ]),
-  'esm/native/services/canvas_picking_local_helpers_cell_dims.ts': Object.freeze([
     'CELL_DIMENSION_MATCH_POLICY',
+    'CELL_DIMENSION_PREVIEW_POLICY',
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze([
     'CELL_DIMENSION_MATCH_POLICY',
@@ -386,6 +384,9 @@ const APPROVED_CELL_DIMENSION_OWNER_IMPORTS = Object.freeze({
   ]),
 });
 const APPROVED_WARDROBE_LAYOUT_COMPARISON_OWNER_IMPORTS = Object.freeze({
+  'esm/native/services/canvas_picking_cell_dims_flow.ts': Object.freeze([
+    'WARDROBE_LAYOUT_COMPARISON_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['WARDROBE_LAYOUT_COMPARISON_POLICY']),
 });
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([]);

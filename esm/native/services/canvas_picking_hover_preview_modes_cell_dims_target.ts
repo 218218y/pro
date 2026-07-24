@@ -19,9 +19,22 @@ export function resolveCellDimsTargetBox(
   selectorBox: SelectorLocalBox,
   applyW: number | null | undefined,
   applyH: number | null | undefined,
-  applyD: number | null | undefined
+  applyD: number | null | undefined,
+  matchToleranceCm: number,
+  minWidthM: number,
+  minHeightM: number,
+  minDepthM: number
 ): CellDimsPreviewTargetBox {
-  const freeBoxTarget = resolveCellDimsFreeBoxPreviewTargetBox(target, selectorBox, applyW, applyH, applyD);
+  const freeBoxTarget = resolveCellDimsFreeBoxPreviewTargetBox(
+    target,
+    selectorBox,
+    applyW,
+    applyH,
+    applyD,
+    minWidthM,
+    minHeightM,
+    minDepthM
+  );
   if (freeBoxTarget) return freeBoxTarget;
 
   const currentWcm = readCellDimsCurrentWidthInputCm(App, target, selectorBox);
@@ -38,14 +51,15 @@ export function resolveCellDimsTargetBox(
     applyW,
     applyH,
     applyD,
+    matchToleranceCm,
   });
 
   const currentMinX = Number(selectorBox.centerX) - Number(selectorBox.width) / 2;
   const currentBackZ = Number(selectorBox.centerZ) - Number(selectorBox.depth) / 2;
 
-  const targetWm = toCellDimsPreviewWidthM(App, target, previewState.targetWcm);
-  const targetHm = toCellDimsPreviewHeightM(previewState.currentBottomYm, previewState.targetHcm);
-  const targetDm = Math.max(0.024, previewState.targetDcm / 100);
+  const targetWm = toCellDimsPreviewWidthM(App, target, previewState.targetWcm, minWidthM);
+  const targetHm = toCellDimsPreviewHeightM(previewState.currentBottomYm, previewState.targetHcm, minHeightM);
+  const targetDm = Math.max(minDepthM, previewState.targetDcm / 100);
 
   return {
     centerX: currentMinX + targetWm / 2,
