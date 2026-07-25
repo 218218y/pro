@@ -173,6 +173,7 @@ const APPROVED_INTERIOR_GRID_OWNER_IMPORTS = Object.freeze({
 const APPROVED_SHELL_GRID_FIELD_USAGE = Object.freeze({});
 const APPROVED_BASE_PLINTH_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/runtime/default_state.ts': Object.freeze(['BASE_PLINTH_POLICY']),
@@ -187,6 +188,7 @@ const APPROVED_BASE_PLINTH_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_BASE_LEG_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
+  'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
   'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
   'esm/native/runtime/default_state.ts': Object.freeze(['BASE_LEG_DIMENSIONS']),
   'esm/native/features/base_leg_support.ts': Object.freeze([
@@ -202,6 +204,7 @@ const APPROVED_BASE_LEG_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_BASE_PLATFORM_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
+  'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
   'esm/native/builder/corner_state_normalize_layout.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
   'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze([
     'BASE_PLATFORM_RENDER_POLICY',
@@ -223,9 +226,7 @@ const APPROVED_BASE_PLATFORM_OWNER_IMPORTS = Object.freeze({
     'DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM',
   ]),
 });
-const APPROVED_BASE_SUPPORT_FACADE_IMPORTS = Object.freeze({
-  'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
-});
+const APPROVED_BASE_SUPPORT_FACADE_IMPORTS = Object.freeze({});
 const APPROVED_DIMENSION_FACADE_BROAD_DEPENDENCIES = Object.freeze([
   Object.freeze({
     file: 'esm/native/features/dimensions/index.ts',

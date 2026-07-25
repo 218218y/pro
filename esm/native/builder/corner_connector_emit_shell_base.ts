@@ -1,13 +1,11 @@
-import { CARCASS_BASE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { BASE_LEG_LAYOUT_POLICY } from '../../shared/dimensions/base_leg_policy.js';
+import { BASE_PLATFORM_RENDER_POLICY } from '../../shared/dimensions/base_platform_render_policy.js';
+import { BASE_PLINTH_POLICY } from '../../shared/dimensions/base_plinth_policy.js';
 import { getBaseLegColorHex, resolveBaseLegGeometrySpec } from '../features/base_leg_support.js';
 import { isCornerMultiColorModeEnabled } from './corner_config_readers.js';
 
 import type { ShapeInputLike, CornerConnectorSetup } from './corner_connector_emit_shared.js';
 import type { CornerConnectorShellMetrics } from './corner_connector_emit_shell_metrics.js';
-
-const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
-const BASE_LEG_LAYOUT_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs;
-const LEG_PLATFORM_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs.platform;
 
 function readPositiveNumber(value: unknown, defaultValue = 0): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : defaultValue;
@@ -32,8 +30,8 @@ export function createCornerConnectorPlinthShape(
   const dvx = p3x - p2x;
   const dvz = p3z - p2z;
   const diagLen = Math.sqrt(dvx * dvx + dvz * dvz);
-  const maxToe = Math.max(0, Math.min(toeInset, diagLen * PLINTH_DIMENSIONS.connectorMaxToeRatio));
-  const toeEndTrim = Math.max(0, Math.min(maxToe, PLINTH_DIMENSIONS.connectorToeEndTrimMaxM));
+  const maxToe = Math.max(0, Math.min(toeInset, diagLen * BASE_PLINTH_POLICY.connectorMaxToeRatio));
+  const toeEndTrim = Math.max(0, Math.min(maxToe, BASE_PLINTH_POLICY.connectorToeEndTrimMaxM));
   const p2TrimX = (() => {
     if (toeEndTrim <= 1e-6) return p2x;
     const ex = p2x;
@@ -50,17 +48,17 @@ export function createCornerConnectorPlinthShape(
     if (!Number.isFinite(len) || len <= 1e-6) return p3z;
     return p3z - (ez / len) * toeEndTrim;
   })();
-  const plinthWallInsetX = PLINTH_DIMENSIONS.connectorWallInsetM;
-  const plinthWallInsetZ = PLINTH_DIMENSIONS.connectorWallInsetM;
+  const plinthWallInsetX: number = BASE_PLINTH_POLICY.connectorWallInsetM;
+  const plinthWallInsetZ: number = BASE_PLINTH_POLICY.connectorWallInsetM;
 
   const shape = new THREE.Shape();
   shape.moveTo(mx(-plinthWallInsetX), plinthWallInsetZ);
   shape.lineTo(mx(-plinthWallInsetX), L);
   shape.lineTo(p2TrimX, p2z);
   if (
-    maxToe > PLINTH_DIMENSIONS.connectorTinyEpsilonM &&
+    maxToe > BASE_PLINTH_POLICY.connectorTinyEpsilonM &&
     Number.isFinite(diagLen) &&
-    diagLen > PLINTH_DIMENSIONS.segmentWidthEpsilonM
+    diagLen > BASE_PLINTH_POLICY.segmentWidthEpsilonM
   ) {
     const nx1 = -dvz / diagLen;
     const nz1 = dvx / diagLen;
@@ -120,7 +118,7 @@ function appendCornerConnectorBase(setup: CornerConnectorSetup, metrics: CornerC
     }
     const plinth = new THREE.Mesh(
       new THREE.ExtrudeGeometry(
-        createCornerConnectorPlinthShape(setup, PLINTH_DIMENSIONS.connectorShapeInsetM),
+        createCornerConnectorPlinthShape(setup, BASE_PLINTH_POLICY.connectorShapeInsetM),
         {
           depth: baseH,
           bevelEnabled: false,
@@ -146,16 +144,16 @@ function appendCornerConnectorBase(setup: CornerConnectorSetup, metrics: CornerC
             legSpec.radialSegments
           );
     const legMat = getMaterial(getBaseLegColorHex(baseLegColor), 'metal');
-    const inset = BASE_LEG_LAYOUT_DIMENSIONS.connectorInsetM;
+    const inset: number = BASE_LEG_LAYOUT_POLICY.connectorInsetM;
     const legPts = [
       { x: mx(-inset), z: inset },
       { x: mx(-inset), z: Math.max(inset, L - inset) },
       { x: mx(Math.min(-inset, -setup.ctx.wingD + inset)), z: Math.max(inset, L - inset) },
       {
-        x: mx(Math.max(-L + inset, -inset - BASE_LEG_LAYOUT_DIMENSIONS.connectorBackInsetM)),
+        x: mx(Math.max(-L + inset, -inset - BASE_LEG_LAYOUT_POLICY.connectorBackInsetM)),
         z: Math.max(inset, Dmain + inset),
       },
-      { x: mx(Math.max(-L + inset, -inset - BASE_LEG_LAYOUT_DIMENSIONS.connectorBackInsetM)), z: inset },
+      { x: mx(Math.max(-L + inset, -inset - BASE_LEG_LAYOUT_POLICY.connectorBackInsetM)), z: inset },
     ];
     for (const point of legPts) {
       const leg = new THREE.Mesh(legGeo, legMat);
@@ -184,7 +182,7 @@ function appendCornerConnectorBase(setup: CornerConnectorSetup, metrics: CornerC
   if (baseType === 'legs' && baseLegPlatformMode === 'stage') {
     const legSupportH = readPositiveNumber(
       baseLegHeightM,
-      Math.max(0, baseH - LEG_PLATFORM_DIMENSIONS.heightM)
+      Math.max(0, baseH - BASE_PLATFORM_RENDER_POLICY.heightM)
     );
     appendLegPlatform(
       'corner_pent_leg_platform_bottom',

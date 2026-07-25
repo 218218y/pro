@@ -5507,6 +5507,64 @@
       },
       "reason": "The root default-state factory replaces one legacy facade statement with the canonical Wardrobe Defaults statement plus the focused Chest Mode Active Defaults and Commode Constraints owners on the existing runtime to shared edge.",
       "removalCondition": "Remove this entry when a reviewed default-state composition seam eliminates the extra Chest Mode statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-25",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_connector_emit_shell_base.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLINTH_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_BASE_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_leg_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_LEG_LAYOUT_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner Connector shell-base flow replaces one legacy facade statement with the focused Base Plinth owner plus the focused Base Leg Layout owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Corner Connector shell-base composition seam eliminates the extra Base Leg Layout statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-25",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_connector_emit_shell_base.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLINTH_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_BASE_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner Connector shell-base flow replaces one legacy facade statement with the focused Base Plinth owner plus the focused Base Platform Render owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Corner Connector shell-base composition seam eliminates the extra Base Platform Render statement without reintroducing the legacy facade."
     }
   ]
 }

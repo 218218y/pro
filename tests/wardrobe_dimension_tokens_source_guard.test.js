@@ -2087,6 +2087,10 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     ],
     ['esm/native/builder/chest_mode_pipeline.ts', ['CHEST_MODE_COMMODE_CONSTRAINTS_POLICY']],
     [
+      'esm/native/builder/corner_connector_emit_shell_base.ts',
+      ['BASE_LEG_LAYOUT_POLICY', 'BASE_PLATFORM_RENDER_POLICY', 'BASE_PLINTH_POLICY'],
+    ],
+    [
       'esm/native/runtime/default_state.ts',
       [
         'BASE_LEG_DIMENSIONS',

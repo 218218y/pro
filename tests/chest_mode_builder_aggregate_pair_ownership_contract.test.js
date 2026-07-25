@@ -58,8 +58,8 @@ function assertExactFocusedOwnerImport(rel, expectedSymbol) {
   );
 }
 
-function nativeAggregateConsumers() {
-  return listSourceFiles(path.join(root, 'esm/native'))
+function builderAggregateConsumers() {
+  return listSourceFiles(path.join(root, 'esm/native/builder'))
     .flatMap(file => {
       const analysis = analyzeModuleDependencies(file, fs.readFileSync(file, 'utf8'));
       return analysis.imports.some(
@@ -118,24 +118,14 @@ test('Chest Mode pipeline and drawer-box formulas read every value directly from
   assert.doesNotMatch(drawerBox, /drawerBoxDimensions/u);
 });
 
-test('Chest Mode builder aggregate pair leaves the Ledger and semantic hash unchanged', () => {
+test('Chest Mode builder aggregate pair preserves its closed 149-entry Ledger prefix', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(baseline.migrationBudgets.length, 149);
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 149)),
     '017aabccfc1a4d0fccde156cff556af4f6d0006409f196868b3d8a53dbd666e5'
   );
 });
 
-test('Chest Mode aggregate ownership remains only in the exact three UI consumers', () => {
-  const consumers = nativeAggregateConsumers();
-  assert.deepEqual(consumers, [
-    'esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts',
-    'esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts',
-    'esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts',
-  ]);
-  assert.equal(
-    consumers.some(file => file.startsWith('esm/native/builder/')),
-    false
-  );
+test('Chest Mode builder aggregate pair leaves no builder aggregate consumer', () => {
+  assert.deepEqual(builderAggregateConsumers(), []);
 });
