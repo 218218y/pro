@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "audit:refactor-closeout": "node tools/wp_refactor_closeout_audit.mjs",
+    "audit:release": "npm audit --omit=dev --audit-level=high",
+    "audit:toolchain": "npm audit --audit-level=high",
     "build:dist": "node tools/wp_build_dist.js",
     "bundle": "npm run release:release",
     "bundle:only": "node tools/wp_bundle.js",

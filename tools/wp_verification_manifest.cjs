@@ -28,7 +28,7 @@ const VERIFICATION_SOURCE_FILES = Object.freeze([
   'vite.config.mjs',
 ]);
 const ROOT_SOURCE_FILE_PATTERN =
-  /^(?:index.*\.html|wp_.*\.(?:js|mjs)|tsconfig.*\.json|.*\.config\.(?:js|cjs|mjs|ts)|jest\.config\.cjs|netlify\.toml|site\.webmanifest)$/;
+  /^(?:index.*\.html|wp_.*\.(?:js|mjs)|tsconfig.*\.json|.*\.config\.(?:js|cjs|mjs|ts)|netlify\.toml|site\.webmanifest)$/;
 const RESULT_STATUSES = new Set(['passed', 'failed', 'environment-blocked', 'runner-blocked']);
 
 function compareCodePoints(left, right) {

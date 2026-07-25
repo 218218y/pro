@@ -31,7 +31,7 @@ on:
         type: boolean
         default: true
       run_audit:
-        description: Run dependency audit
+        description: Run release dependency audit
         required: false
         type: boolean
         default: false
@@ -362,7 +362,7 @@ jobs:
           retention-days: 7
 
   audit:
-    name: Dependency audit
+    name: Release dependency audit
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: github.event_name != 'workflow_dispatch' || inputs.run_audit
@@ -377,11 +377,11 @@ jobs:
           node-version-file: '.node-version'
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
+      - name: Install release dependencies
+        run: npm ci --ignore-scripts --omit=dev
 
-      - name: Audit high severity dependencies
-        run: npm audit --audit-level=high
+      - name: Audit high severity release dependencies
+        run: npm run audit:release
 
   required-checks:
     name: Required checks
@@ -491,6 +491,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --ignore-scripts
+
+      - name: Audit high severity release dependencies
+        run: npm run audit:release
 
       - name: Run full release verification gate
         run: npm run gate:full

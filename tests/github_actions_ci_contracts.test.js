@@ -67,12 +67,32 @@ test('GitHub CI keeps required verification split by concern', () => {
   assert.doesNotMatch(ci, /\$\{\{ needs\.[a-z0-9-]+\.result \}\}/);
 });
 
+test('dependency audit gates release dependencies and keeps full toolchain review explicit', () => {
+  const ci = read('.github/workflows/ci.yml');
+  const pkg = JSON.parse(read('package.json'));
+
+  assert.equal(pkg.scripts['audit:release'], 'npm audit --omit=dev --audit-level=high');
+  assert.equal(pkg.scripts['audit:toolchain'], 'npm audit --audit-level=high');
+
+  assert.match(ci, /^  audit:\n    name: Release dependency audit/m);
+  assert.match(ci, /description: Run release dependency audit/);
+  assert.match(ci, /name: Install release dependencies\n        run: npm ci --ignore-scripts --omit=dev/);
+  assert.equal((ci.match(/run: npm run audit:release/g) ?? []).length, 2);
+  assert.match(ci, /name: Audit high severity release dependencies\n        run: npm run audit:release/);
+  assert.doesNotMatch(ci, /run: npm audit --audit-level=high/);
+  assert.doesNotMatch(ci, /run: npm run audit:toolchain/);
+});
+
 test('GitHub CI keeps the monolithic verify flow as a manual release gate only', () => {
   const ci = read('.github/workflows/ci.yml');
   const pkg = JSON.parse(read('package.json'));
 
   assert.match(ci, /^  release-gate:/m);
   assert.match(ci, /if: github\.event_name == 'workflow_dispatch' && inputs\.run_release_gate/);
+  assert.match(
+    ci,
+    /name: Audit high severity release dependencies\n        run: npm run audit:release\n\n      - name: Run full release verification gate/
+  );
   assert.equal(pkg.scripts['gate:full'], 'npm run verify:gate');
 
   const monolithicRuns = ci

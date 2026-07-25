@@ -98,6 +98,22 @@ npm run perf:smoke
 npm run perf:browser
 ```
 
+## Dependency security and release audit
+
+- The required dependency-security gate is release-scoped: `npm run audit:release` checks only non-development dependencies and fails on high or critical advisories. This is the dependency tree that can ship with or support the production application.
+- `npm run audit:toolchain` reviews the complete lockfile, including build, lint, test, and release tooling. Findings in development-only tools remain visible and must be assessed, but they do not automatically block a release when the release-scoped audit is clean and the vulnerable path is not exposed to untrusted input.
+- Never use `npm audit fix --force` as a routine remediation step. Review the dependency path, the proposed parent-package change, runtime exposure, and release/test coverage before accepting a breaking downgrade or override.
+- A clean release audit does not declare the toolchain risk-free; it proves only that the production dependency set has no advisory at the configured severity. Keep development advisories under review until an upstream-compatible fix is available.
+- Dependency audits require registry advisory data and therefore stay outside deterministic offline gates and release-build scripts. CI owns the blocking release audit; local and manual review owns the full toolchain audit.
+
+Relevant checks:
+
+```bash
+npm run audit:release
+npm run audit:toolchain
+npm explain <package>
+```
+
 ## Browser security headers
 
 - `Content-Security-Policy` enforces only the low-risk `base-uri`, `object-src`, and `frame-ancestors` baseline until measured evidence supports broader enforcement.
