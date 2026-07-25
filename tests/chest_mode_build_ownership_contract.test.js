@@ -315,8 +315,7 @@ test('Chest Mode Build appends exactly Entries 137-142 after the unchanged 136-e
   );
 });
 
-test('Chest Mode Build leaves the exact requested legacy-facade inventories', () => {
-  assert.deepEqual(facadeConsumers('DOOR_SYSTEM_DIMENSIONS'), []);
+test('Chest Mode Build leaves the exact requested Base, Chest Mode, and Door Mount inventories', () => {
   assert.deepEqual(facadeConsumers('CARCASS_BASE_DIMENSIONS'), [
     'esm/native/builder/corner_connector_emit_shell_base.ts',
     'esm/native/builder/visuals_chest_mode_inputs.ts',

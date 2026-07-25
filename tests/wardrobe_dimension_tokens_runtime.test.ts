@@ -694,10 +694,25 @@ test('Chest Mode policy preserves every default, render value, nested reference,
 });
 
 test('Door System policy preserves every value, dependency reference, object shape, and facade identity', () => {
+  assert.deepEqual(Object.keys(DOOR_SYSTEM_DIMENSIONS), ['hinged', 'sliding']);
   assert.equal(DOOR_SYSTEM_DIMENSIONS, OWNER_DOOR_SYSTEM_DIMENSIONS);
   assert.equal(OWNER_DOOR_SYSTEM_DIMENSIONS.hinged, HINGED_DOOR_SYSTEM_POLICY);
   assert.equal(OWNER_DOOR_SYSTEM_DIMENSIONS.sliding, SLIDING_DOOR_SYSTEM_POLICY);
   assert.equal(HINGED_DOOR_SYSTEM_POLICY.split, HINGED_DOOR_SPLIT_POLICY);
+  for (const policy of [
+    DOOR_SYSTEM_DIMENSIONS,
+    HINGED_DOOR_SYSTEM_POLICY,
+    SLIDING_DOOR_SYSTEM_POLICY,
+    HINGED_DOOR_SPLIT_POLICY,
+  ]) {
+    assert.equal(Object.isFrozen(policy), true);
+  }
+  const serializedDoorSystem = JSON.stringify(DOOR_SYSTEM_DIMENSIONS);
+  assert.equal(typeof serializedDoorSystem, 'string');
+  const roundTrippedDoorSystem = JSON.parse(serializedDoorSystem);
+  assert.deepEqual(Object.keys(roundTrippedDoorSystem), ['hinged', 'sliding']);
+  assert.deepEqual(roundTrippedDoorSystem.hinged, DOOR_SYSTEM_DIMENSIONS.hinged);
+  assert.deepEqual(roundTrippedDoorSystem.sliding, DOOR_SYSTEM_DIMENSIONS.sliding);
   assert.equal(HINGED_DOOR_RENDER_POLICY.visualThicknessM, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
   assert.equal(
     SLIDING_DOOR_CONSTRUCTION_POLICY.defaultDoorsCount,

@@ -1,11 +1,11 @@
 # Test portfolio audit
 
-Generated: 2026-07-25T19:10:10.483Z
+Generated: 2026-07-25T19:44:51.267Z
 
 ## Summary
 
-- Test files classified: 1278
-- Canonical unit/runtime runner files: 1270
+- Test files classified: 1279
+- Canonical unit/runtime runner files: 1271
 - Playwright E2E files excluded from unit runner: 8
 - Helpers/fixtures excluded by filename contract: 33
 - Package script test references: 191
@@ -17,7 +17,7 @@ Generated: 2026-07-25T19:10:10.483Z
 
 | Category         | Count |
 | ---------------- | ----: |
-| contract         |   436 |
+| contract         |   437 |
 | runtime-unit     |   318 |
 | integration      |   465 |
 | e2e-smoke        |     9 |

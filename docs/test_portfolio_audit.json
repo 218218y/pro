@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-25T19:10:10.483Z",
+  "generatedAt": "2026-07-25T19:44:51.267Z",
   "totals": {
-    "tests": 1278,
-    "unitRunnerTests": 1270,
+    "tests": 1279,
+    "unitRunnerTests": 1271,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 436,
+    "contract": 437,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -1788,6 +1788,10 @@
     {
       "file": "tests/door_style_overrides_runtime.test.js",
       "category": "integration"
+    },
+    {
+      "file": "tests/door_system_dimension_ownership_closeout_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/door_trim_center_contract_runtime.test.ts",
