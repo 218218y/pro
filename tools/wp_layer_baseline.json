@@ -4980,6 +4980,250 @@
       },
       "reason": "The render-loop door motion flow replaces one legacy facade statement with the focused Sliding Door Construction owner plus the canonical Wardrobe Defaults owner on the existing platform to shared edge.",
       "removalCondition": "Remove this entry when a reviewed render-loop door-motion composition seam eliminates the extra Wardrobe Defaults statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-24",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/visuals_chest_mode_build.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/chest_structural_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CHEST_CASTER_RENDER_POLICY",
+          "CHEST_CONNECTOR_POLICY",
+          "CHEST_DRAWER_GEOMETRY_POLICY",
+          "CHEST_MOTION_POLICY",
+          "CHEST_SHELL_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_BASE_DIMENSIONS",
+          "CHEST_MODE_DIMENSIONS",
+          "DOOR_SYSTEM_DIMENSIONS",
+          "resolveDoorMountThicknessesFromConfig"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLINTH_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Chest Mode build flow replaces one legacy facade statement with the focused Chest Structural owners plus the focused Base Plinth owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Chest Mode build composition seam eliminates the extra Base Plinth statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-24",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/visuals_chest_mode_build.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/chest_structural_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CHEST_CASTER_RENDER_POLICY",
+          "CHEST_CONNECTOR_POLICY",
+          "CHEST_DRAWER_GEOMETRY_POLICY",
+          "CHEST_MOTION_POLICY",
+          "CHEST_SHELL_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_BASE_DIMENSIONS",
+          "CHEST_MODE_DIMENSIONS",
+          "DOOR_SYSTEM_DIMENSIONS",
+          "resolveDoorMountThicknessesFromConfig"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_leg_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_LEG_LAYOUT_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Chest Mode build flow replaces one legacy facade statement with the focused Chest Structural owners plus the focused Base Leg Layout owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Chest Mode build composition seam eliminates the extra Base Leg Layout statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-24",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/visuals_chest_mode_build.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/chest_structural_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CHEST_CASTER_RENDER_POLICY",
+          "CHEST_CONNECTOR_POLICY",
+          "CHEST_DRAWER_GEOMETRY_POLICY",
+          "CHEST_MOTION_POLICY",
+          "CHEST_SHELL_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_BASE_DIMENSIONS",
+          "CHEST_MODE_DIMENSIONS",
+          "DOOR_SYSTEM_DIMENSIONS",
+          "resolveDoorMountThicknessesFromConfig"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Chest Mode build flow replaces one legacy facade statement with the focused Chest Structural owners plus the focused Base Platform Render owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Chest Mode build composition seam eliminates the extra Base Platform Render statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-24",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/visuals_chest_mode_build.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/chest_structural_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CHEST_CASTER_RENDER_POLICY",
+          "CHEST_CONNECTOR_POLICY",
+          "CHEST_DRAWER_GEOMETRY_POLICY",
+          "CHEST_MOTION_POLICY",
+          "CHEST_SHELL_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_BASE_DIMENSIONS",
+          "CHEST_MODE_DIMENSIONS",
+          "DOOR_SYSTEM_DIMENSIONS",
+          "resolveDoorMountThicknessesFromConfig"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CHEST_MODE_COMMODE_CONSTRAINTS_POLICY",
+          "CHEST_MODE_COMMODE_RENDER_POLICY",
+          "CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "reason": "The Chest Mode build flow replaces one legacy facade statement with the focused Chest Structural owners plus the focused Chest Mode Commode and Dimension Guide owners on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Chest Mode build composition seam eliminates the extra Chest Mode policy statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-24",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/visuals_chest_mode_build.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/chest_structural_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CHEST_CASTER_RENDER_POLICY",
+          "CHEST_CONNECTOR_POLICY",
+          "CHEST_DRAWER_GEOMETRY_POLICY",
+          "CHEST_MOTION_POLICY",
+          "CHEST_SHELL_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_BASE_DIMENSIONS",
+          "CHEST_MODE_DIMENSIONS",
+          "DOOR_SYSTEM_DIMENSIONS",
+          "resolveDoorMountThicknessesFromConfig"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_MOUNT_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Chest Mode build flow replaces one legacy facade statement with the focused Chest Structural owners plus the focused Hinged Door Mount owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Chest Mode build composition seam eliminates the extra Hinged Door Mount statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-24",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/visuals_chest_mode_build.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/chest_structural_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CHEST_CASTER_RENDER_POLICY",
+          "CHEST_CONNECTOR_POLICY",
+          "CHEST_DRAWER_GEOMETRY_POLICY",
+          "CHEST_MOTION_POLICY",
+          "CHEST_SHELL_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_BASE_DIMENSIONS",
+          "CHEST_MODE_DIMENSIONS",
+          "DOOR_SYSTEM_DIMENSIONS",
+          "resolveDoorMountThicknessesFromConfig"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["resolveDoorMountThicknessesFromConfig"],
+        "syntax": "static-import"
+      },
+      "reason": "The Chest Mode build flow replaces one legacy facade statement with the focused Chest Structural owners plus the canonical Door Mount Thickness resolver on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Chest Mode build composition seam eliminates the extra Door Mount Thickness statement without reintroducing the legacy facade."
     }
   ]
 }

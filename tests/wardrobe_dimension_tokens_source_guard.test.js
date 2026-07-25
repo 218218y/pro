@@ -2056,6 +2056,24 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
       'esm/native/platform/render_loop_motion_doors.ts',
       ['SLIDING_DOOR_CONSTRUCTION_POLICY', 'WARDROBE_DEFAULTS', 'cmToM'],
     ],
+    [
+      'esm/native/builder/visuals_chest_mode_build.ts',
+      [
+        'BASE_LEG_LAYOUT_POLICY',
+        'BASE_PLATFORM_RENDER_POLICY',
+        'BASE_PLINTH_POLICY',
+        'CHEST_CASTER_RENDER_POLICY',
+        'CHEST_CONNECTOR_POLICY',
+        'CHEST_DRAWER_GEOMETRY_POLICY',
+        'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
+        'CHEST_MODE_COMMODE_RENDER_POLICY',
+        'CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY',
+        'CHEST_MOTION_POLICY',
+        'CHEST_SHELL_POLICY',
+        'HINGED_DOOR_MOUNT_POLICY',
+        'resolveDoorMountThicknessesFromConfig',
+      ],
+    ],
   ]);
 
   for (const [rel, tokensToFind] of expectedTokenUse) {

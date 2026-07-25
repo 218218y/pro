@@ -81,33 +81,6 @@ function stableJson(value) {
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
-function listSourceFiles(dir) {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) return listSourceFiles(absolute);
-    return entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name) ? [absolute] : [];
-  });
-}
-
-function facadeConsumers(importedSymbol) {
-  return listSourceFiles(path.join(root, 'esm'))
-    .flatMap(file => {
-      const relativeFile = path.relative(root, file).replaceAll(path.sep, '/');
-      const source = fs.readFileSync(file, 'utf8');
-      if (!source.includes(importedSymbol) || !source.includes('wardrobe_dimension_tokens_shared')) return [];
-      const dependencies = analyzeModuleDependencies(file, source).imports;
-      return dependencies.some(
-        dependency =>
-          dependency.syntax === 'static-import' &&
-          dependency.specifier.includes('wardrobe_dimension_tokens_shared') &&
-          dependency.importedSymbols.includes(importedSymbol)
-      )
-        ? [relativeFile]
-        : [];
-    })
-    .sort();
-}
-
 test('Render Loop Door Motion imports exactly three focused owners without aliases or aggregate policies', () => {
   const source = read(consumerRel);
   const analysis = analyzeModuleDependencies(path.join(root, consumerRel), source);
@@ -191,19 +164,4 @@ test('Render Loop Door Motion appends exactly Entries 135-136 after the unchange
     semanticSha256(baseline.migrationBudgets.slice(0, 136)),
     '17c6ec0de239b5bce3d6745b654dd6aa0c3650e626e8ecca360db3ced781ac47'
   );
-});
-
-test('Render Loop Door Motion leaves the exact requested legacy-facade inventories', () => {
-  assert.deepEqual(facadeConsumers('DOOR_SYSTEM_DIMENSIONS'), [
-    'esm/native/builder/visuals_chest_mode_build.ts',
-  ]);
-  assert.deepEqual(facadeConsumers('WARDROBE_DEFAULTS'), [
-    'esm/native/builder/render_dimension_ops_shared.ts',
-    'esm/native/data/preset_models_data.ts',
-    'esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts',
-  ]);
-  assert.deepEqual(facadeConsumers('cmToM'), [
-    'esm/native/builder/visuals_chest_mode_inputs.ts',
-    'esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts',
-  ]);
 });

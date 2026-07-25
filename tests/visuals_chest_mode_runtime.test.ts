@@ -12,11 +12,24 @@ import {
   resolveChestModeMaterialPalette,
 } from '../esm/native/builder/visuals_chest_mode_materials.ts';
 import { resolveChestModeBuildInputs } from '../esm/native/builder/visuals_chest_mode_inputs.ts';
+import { BASE_LEG_LAYOUT_POLICY } from '../esm/shared/dimensions/base_leg_policy.ts';
+import { BASE_PLATFORM_RENDER_POLICY } from '../esm/shared/dimensions/base_platform_render_policy.ts';
+import { BASE_PLINTH_POLICY } from '../esm/shared/dimensions/base_plinth_policy.ts';
 import {
-  CARCASS_BASE_DIMENSIONS,
-  CHEST_MODE_DIMENSIONS,
-  MATERIAL_DIMENSIONS,
-} from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+  CHEST_CASTER_RENDER_POLICY,
+  CHEST_CONNECTOR_POLICY,
+  CHEST_DRAWER_GEOMETRY_POLICY,
+  CHEST_MOTION_POLICY,
+  CHEST_SHELL_POLICY,
+} from '../esm/shared/dimensions/chest_structural_policy.ts';
+import {
+  CHEST_MODE_COMMODE_CONSTRAINTS_POLICY,
+  CHEST_MODE_COMMODE_RENDER_POLICY,
+  CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY,
+} from '../esm/shared/dimensions/chest_mode_policy.ts';
+import { HINGED_DOOR_MOUNT_POLICY } from '../esm/shared/dimensions/door_system_policy.ts';
+import { resolveDoorMountThicknessesFromConfig } from '../esm/shared/dimensions/door_mount_thickness_policy.ts';
+import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
 
 class FakeVector3 {
   x: number;
@@ -102,8 +115,8 @@ function assertChestDimensionScales(
 ) {
   const expected = expectedKinds.map(kind =>
     kind === 'total'
-      ? CHEST_MODE_DIMENSIONS.dimensionGuideTextScale.total
-      : CHEST_MODE_DIMENSIONS.dimensionGuideTextScale.segment
+      ? CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.textScale.total
+      : CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.textScale.segment
   );
   assert.deepEqual(actual, expected, message);
 }
@@ -250,10 +263,10 @@ test('visuals chest mode input/material helpers normalize chest-only UI and text
       baseLegHeightM: 0.16,
       baseLegPlatformMode: 'stage',
       baseLegPlatformSideMode: 'overhang',
-      baseLegPlatformSideOverhangM: CARCASS_BASE_DIMENSIONS.legs.platform.sideOverhangM,
-      baseLegPlatformFrontOverhangM: CARCASS_BASE_DIMENSIONS.legs.platform.frontOverhangM,
-      baseLegBottomPlatformHeightM: CARCASS_BASE_DIMENSIONS.legs.platform.heightM,
-      baseLegTopPlatformHeightM: CARCASS_BASE_DIMENSIONS.legs.platform.heightM,
+      baseLegPlatformSideOverhangM: BASE_PLATFORM_RENDER_POLICY.sideOverhangM,
+      baseLegPlatformFrontOverhangM: BASE_PLATFORM_RENDER_POLICY.frontOverhangM,
+      baseLegBottomPlatformHeightM: BASE_PLATFORM_RENDER_POLICY.heightM,
+      baseLegTopPlatformHeightM: BASE_PLATFORM_RENDER_POLICY.heightM,
       colorChoice: '#cccccc',
       customColor: '#00ff00',
       chestCommodeEnabled: false,
@@ -319,7 +332,7 @@ test('visuals chest mode input/material helpers normalize chest-only UI and text
   } as any);
   assert.equal(
     stringMirrorInputs.chestCommodeMirrorHeightCm,
-    CHEST_MODE_DIMENSIONS.commode.defaultMirrorHeightCm
+    CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.defaultMirrorHeightCm
   );
   assert.equal(stringMirrorInputs.chestCommodeMirrorWidthCm, 160);
 
@@ -573,6 +586,30 @@ test('visuals chest mode build creates wide-leg chest drawers, mirror override, 
     { color: '#ffffff', part: 'body', useTexture: false },
     'mirror drawer boxes should keep the independent white drawer-box material instead of becoming mirror material'
   );
+  const thick = resolveDoorMountThicknessesFromConfig(createChestCfg()).frameThicknessM;
+  const expectedDrawerWidth = 1.6 - 2 * thick - CHEST_DRAWER_GEOMETRY_POLICY.drawerWidthClearanceM;
+  const expectedDrawerHeight =
+    (0.9 - (0.15 + BASE_PLATFORM_RENDER_POLICY.heightM) - 2 * thick) / 3 -
+    CHEST_DRAWER_GEOMETRY_POLICY.drawerGapM;
+  assert.equal(mirrorDrawer.userData.__doorWidth, expectedDrawerWidth);
+  assert.equal(mirrorDrawer.userData.__doorHeight, expectedDrawerHeight);
+  assert.equal(
+    mirrorDrawerBox.userData.__doorWidth,
+    expectedDrawerWidth - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxWidthClearanceM
+  );
+  assert.equal(
+    mirrorDrawerBox.userData.__doorHeight,
+    expectedDrawerHeight - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxHeightClearanceM
+  );
+  const connector = mirrorDrawer.children[2];
+  assert.deepEqual(connector.geometry.args, [
+    expectedDrawerWidth - CHEST_CONNECTOR_POLICY.connectorWidthClearanceM,
+    expectedDrawerHeight -
+      CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxHeightClearanceM -
+      CHEST_CONNECTOR_POLICY.connectorHeightClearanceM,
+    CHEST_CONNECTOR_POLICY.connectorDepthM,
+  ]);
+  assert.equal(App.render.drawersArray[1].open.z, CHEST_MOTION_POLICY.openOffsetZM);
 
   const labels = dimensionCalls.map(call => call[3]);
   assert.deepEqual(labels, ['160', '90']);
@@ -614,16 +651,16 @@ test('visuals chest mode builds the rear panel as an inset paintable body board'
   const back = wardrobeGroup.children.find((child: any) => child?.userData?.partId === 'chest_back');
   assert.ok(back);
 
-  const baseH = 0.15 + CARCASS_BASE_DIMENSIONS.legs.platform.heightM;
-  const thick = MATERIAL_DIMENSIONS.wood.thicknessM;
+  const baseH = 0.15 + BASE_PLATFORM_RENDER_POLICY.heightM;
+  const thick = MATERIAL_THICKNESS_POLICY.wood.thicknessM;
   const sideH = 0.9 - baseH - 2 * thick;
   assert.deepEqual(back.geometry.args, [
-    1.6 - 2 * thick - CARCASS_BASE_DIMENSIONS.chest.backPanelWidthClearanceM,
-    sideH - CARCASS_BASE_DIMENSIONS.chest.backPanelHeightClearanceM,
-    CARCASS_BASE_DIMENSIONS.chest.backThicknessM,
+    1.6 - 2 * thick - CHEST_SHELL_POLICY.backPanelWidthClearanceM,
+    sideH - CHEST_SHELL_POLICY.backPanelHeightClearanceM,
+    CHEST_SHELL_POLICY.backThicknessM,
   ]);
   assert.equal(back.position.y, baseH + thick + sideH / 2);
-  assert.equal(back.position.z, -0.45 / 2 + CARCASS_BASE_DIMENSIONS.chest.backInsetM);
+  assert.equal(back.position.z, -0.45 / 2 + CHEST_SHELL_POLICY.backInsetM);
   assert.deepEqual(back.material, { color: '#224466', part: 'front', useTexture: false });
 
   const bottomPlatform = wardrobeGroup.children.find(
@@ -634,11 +671,31 @@ test('visuals chest mode builds the rear panel as an inset paintable body board'
   );
   assert.ok(bottomPlatform);
   assert.ok(topPlatform);
+  const platformDepth = Math.max(
+    BASE_PLATFORM_RENDER_POLICY.minDepthM,
+    0.45 + BASE_PLATFORM_RENDER_POLICY.frontOverhangM
+  );
+  const platformWidth = Math.max(
+    BASE_PLATFORM_RENDER_POLICY.minWidthM,
+    1.6 + BASE_PLATFORM_RENDER_POLICY.sideOverhangM * 2
+  );
+  assert.deepEqual(bottomPlatform.geometry.args, [
+    platformWidth,
+    BASE_PLATFORM_RENDER_POLICY.heightM,
+    platformDepth,
+  ]);
+  assert.deepEqual(topPlatform.geometry.args, [
+    platformWidth,
+    BASE_PLATFORM_RENDER_POLICY.heightM,
+    platformDepth,
+  ]);
   assert.equal(
     bottomPlatform.position.z - bottomPlatform.geometry.args[2] / 2,
     -0.45 / 2,
     'chest leg platform should not protrude backward'
   );
+  assert.equal(bottomPlatform.position.y, 0.15 + BASE_PLATFORM_RENDER_POLICY.heightM / 2);
+  assert.equal(topPlatform.position.y, 0.9 + BASE_PLATFORM_RENDER_POLICY.heightM / 2);
 });
 
 test('visuals chest mode keeps plinth and plain-leg structural base geometry unchanged', () => {
@@ -663,10 +720,14 @@ test('visuals chest mode keeps plinth and plain-leg structural base geometry unc
     (child: any) => child?.userData?.partId === 'chest_plinth'
   );
   assert.ok(plinth);
-  assert.deepEqual(plinth.geometry.args, [1.56, 0.12, 0.4]);
+  assert.deepEqual(plinth.geometry.args, [
+    1.6 - BASE_PLINTH_POLICY.widthClearanceM,
+    0.12,
+    0.45 - BASE_PLINTH_POLICY.depthClearanceM,
+  ]);
   assert.deepEqual(
     { x: plinth.position.x, y: plinth.position.y, z: plinth.position.z },
-    { x: 0, y: 0.06, z: -0.015 }
+    { x: 0, y: 0.12 / 2, z: -BASE_PLINTH_POLICY.frontInsetM }
   );
   assert.equal(
     plinthHarness.wardrobeGroup.children.some((child: any) =>
@@ -700,6 +761,30 @@ test('visuals chest mode keeps plinth and plain-leg structural base geometry unc
       child.geometry.args[2] === 0.05
   );
   assert.equal(plainLegs.length, 6);
+  assert.deepEqual(
+    plainLegs.map((leg: any) => ({ x: leg.position.x, z: leg.position.z })),
+    [
+      {
+        x: -1.6 / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+        z: 0.45 / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+      },
+      {
+        x: 1.6 / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+        z: 0.45 / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+      },
+      {
+        x: -1.6 / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+        z: -0.45 / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+      },
+      {
+        x: 1.6 / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+        z: -0.45 / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+      },
+      { x: 0, z: 0.45 / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM },
+      { x: 0, z: -0.45 / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM },
+    ]
+  );
+  assert.equal(1.6 > BASE_LEG_LAYOUT_POLICY.chestCenterSupportWidthThresholdM, true);
   assert.equal(
     legsHarness.wardrobeGroup.children.some((child: any) =>
       String(child?.userData?.partId || '').startsWith('chest_leg_platform')
@@ -735,9 +820,29 @@ test('visuals chest mode build adds commode back panel, tracked mirror surface, 
 
   assert.ok(back);
   assert.ok(mirror);
-  assert.deepEqual(back.geometry.args, [1.5, 1.1, 0.018]);
-  assert.equal(Math.round(back.position.z * 1000), -214);
-  assert.equal(Math.round(mirror.position.z * 1000), -202);
+  const panelWidth = Math.max(CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.minMirrorWidthCm / 100, 1.5);
+  const panelHeight = Math.max(CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.minMirrorHeightCm / 100, 1.1);
+  const panelThickness = CHEST_MODE_COMMODE_RENDER_POLICY.backPanelThicknessM;
+  const panelCenterZ = -0.45 / 2 + panelThickness / 2 + CHEST_MODE_COMMODE_RENDER_POLICY.backPanelYOffsetM;
+  const mirrorInset = Math.max(
+    0,
+    Math.min(CHEST_MODE_COMMODE_RENDER_POLICY.mirrorInsetM, panelWidth / 2 - 0.01, panelHeight / 2 - 0.01)
+  );
+  const mirrorThickness = CHEST_MODE_COMMODE_RENDER_POLICY.mirrorThicknessM;
+  assert.deepEqual(back.geometry.args, [panelWidth, panelHeight, panelThickness]);
+  assert.equal(back.position.z, panelCenterZ);
+  assert.deepEqual(mirror.geometry.args, [
+    Math.max(0.05, panelWidth - mirrorInset * 2),
+    Math.max(0.05, panelHeight - mirrorInset * 2),
+    mirrorThickness,
+  ]);
+  assert.equal(
+    mirror.position.z,
+    panelCenterZ +
+      panelThickness / 2 +
+      mirrorThickness / 2 +
+      CHEST_MODE_COMMODE_RENDER_POLICY.mirrorSurfaceLiftM
+  );
   assert.equal(mirror.material.mirror, true);
   assert.equal(mirror.userData.__wpMirrorSurface, true);
   assert.equal(App.render.meta.mirrors.includes(mirror), true);
@@ -752,6 +857,11 @@ test('visuals chest mode build adds commode back panel, tracked mirror surface, 
   const heightLines = dimensionCalls.filter(call => call[0].x === call[1].x);
   assert.equal(heightLines.length, 3);
   assert.equal(heightLines[0][0].x < heightLines[2][0].x, true);
+  assert.equal(dimensionCalls[0][0].y, 0.9 + CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.topOffsetM);
+  assert.equal(
+    heightLines[0][0].x,
+    Math.max(1.6, panelWidth) / 2 + CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.sideOffsetM
+  );
 });
 
 test('visuals chest mode commode dimensions do not duplicate mirror width when it follows the chest width', () => {
@@ -1064,8 +1174,20 @@ test('visuals chest mode applies custom overlay frame thickness to the chest car
     (child: any) => child?.userData?.partId === 'chest_drawer_0'
   );
   assert.ok(firstDrawer);
-  assert.ok(Math.abs(Number(firstDrawer.userData.__doorWidth) - (1.6 - 2 * 0.026 - 0.004)) < 1e-9);
-  assert.equal(firstDrawer.userData.__frontMaxZ, 0.45 / 2 + 0.018);
+  const overlayThicknesses = resolveDoorMountThicknessesFromConfig({
+    doorMountMode: 'overlay',
+    overlayFrameThicknessCm: 2.6,
+  });
+  assert.ok(
+    Math.abs(
+      Number(firstDrawer.userData.__doorWidth) -
+        (1.6 - 2 * overlayThicknesses.frameThicknessM - CHEST_DRAWER_GEOMETRY_POLICY.drawerWidthClearanceM)
+    ) < 1e-9
+  );
+  assert.equal(
+    firstDrawer.userData.__frontMaxZ,
+    0.45 / 2 + CHEST_DRAWER_GEOMETRY_POLICY.drawerFrontThicknessM
+  );
 });
 
 test('visuals chest mode uses custom inset door mount thickness and sinks drawer fronts inside the frame', () => {
@@ -1113,20 +1235,34 @@ test('visuals chest mode uses custom inset door mount thickness and sinks drawer
     (child: any) => child?.userData?.partId === 'chest_drawer_0'
   );
   assert.ok(firstDrawer);
-  assert.equal(firstDrawer.userData.__doorWidth, 1.6 - 2 * 0.042 - 0.004);
-  assert.equal(firstDrawer.userData.__frontMaxZ, 0.45 / 2 - 0.003);
+  const insetThicknesses = resolveDoorMountThicknessesFromConfig({
+    doorMountMode: 'inset',
+    insetFrameThicknessCm: 4.2,
+  });
+  const insetReveal = Math.min(
+    HINGED_DOOR_MOUNT_POLICY.insetRevealM,
+    Math.max(0, insetThicknesses.frameThicknessM / 3)
+  );
+  assert.equal(
+    firstDrawer.userData.__doorWidth,
+    1.6 - 2 * insetThicknesses.frameThicknessM - CHEST_DRAWER_GEOMETRY_POLICY.drawerWidthClearanceM
+  );
+  assert.equal(firstDrawer.userData.__frontMaxZ, 0.45 / 2 - insetReveal);
   const front = firstDrawer.children[0];
-  assert.equal(front.position.z, 0.45 / 2 - 0.018 / 2 - 0.003);
+  assert.equal(
+    front.position.z,
+    0.45 / 2 - CHEST_DRAWER_GEOMETRY_POLICY.drawerFrontThicknessM / 2 - insetReveal
+  );
   const connector = firstDrawer.children[2];
-  const connectorDepth = CARCASS_BASE_DIMENSIONS.chest.connectorDepthM;
-  const expectedFrontBackZ = front.position.z - 0.018 / 2;
+  const connectorDepth = CHEST_CONNECTOR_POLICY.connectorDepthM;
+  const expectedFrontBackZ = front.position.z - CHEST_DRAWER_GEOMETRY_POLICY.drawerFrontThicknessM / 2;
   assert.equal(
     connector.position.z,
-    expectedFrontBackZ - CARCASS_BASE_DIMENSIONS.chest.connectorBackInsetM - connectorDepth / 2
+    expectedFrontBackZ - CHEST_CONNECTOR_POLICY.connectorBackInsetM - connectorDepth / 2
   );
   assert.equal(
     connector.position.z + connectorDepth / 2 <=
-      expectedFrontBackZ - CARCASS_BASE_DIMENSIONS.chest.connectorBackInsetM,
+      expectedFrontBackZ - CHEST_CONNECTOR_POLICY.connectorBackInsetM,
     true
   );
 });
@@ -1152,7 +1288,7 @@ test('visuals chest mode wheels base creates four compact casters without leg pl
   assert.equal(inputs.baseLegStyle, 'wheels');
   assert.equal(inputs.baseLegPlatformMode, 'plain');
   assert.equal(inputs.baseLegBottomPlatformHeightM, 0);
-  assert.equal(inputs.baseLegHeightM, CARCASS_BASE_DIMENSIONS.chest.wheels.heightM);
+  assert.equal(inputs.baseLegHeightM, CHEST_CASTER_RENDER_POLICY.heightM);
 
   buildChestOnly(App, {
     renderPolicy: App.__outlineRenderPolicy,
@@ -1188,4 +1324,26 @@ test('visuals chest mode wheels base creates four compact casters without leg pl
   assert.equal(forks.length, 8);
   assert.equal(platforms.length, 0);
   assert.ok(wheels.every((wheel: any) => wheel?.geometry?.type === 'CylinderGeometry'));
+  assert.ok(
+    wheels.every(
+      (wheel: any) =>
+        wheel.geometry.args[0] === CHEST_CASTER_RENDER_POLICY.radiusM &&
+        wheel.geometry.args[1] === CHEST_CASTER_RENDER_POLICY.radiusM &&
+        wheel.geometry.args[2] === CHEST_CASTER_RENDER_POLICY.thicknessM
+    )
+  );
+  plates.forEach((plate: any) =>
+    assert.deepEqual(plate.geometry.args, [
+      CHEST_CASTER_RENDER_POLICY.plateWidthM,
+      CHEST_CASTER_RENDER_POLICY.plateHeightM,
+      CHEST_CASTER_RENDER_POLICY.plateDepthM,
+    ])
+  );
+  forks.forEach((fork: any) =>
+    assert.deepEqual(fork.geometry.args, [
+      CHEST_CASTER_RENDER_POLICY.forkWidthM,
+      CHEST_CASTER_RENDER_POLICY.forkHeightM,
+      CHEST_CASTER_RENDER_POLICY.forkDepthM,
+    ])
+  );
 });

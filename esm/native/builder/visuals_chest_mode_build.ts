@@ -7,12 +7,23 @@ import {
   trackMirrorSurface,
 } from '../runtime/render_access.js';
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
+import { BASE_LEG_LAYOUT_POLICY } from '../../shared/dimensions/base_leg_policy.js';
+import { BASE_PLATFORM_RENDER_POLICY } from '../../shared/dimensions/base_platform_render_policy.js';
+import { BASE_PLINTH_POLICY } from '../../shared/dimensions/base_plinth_policy.js';
 import {
-  CARCASS_BASE_DIMENSIONS,
-  CHEST_MODE_DIMENSIONS,
-  DOOR_SYSTEM_DIMENSIONS,
-  resolveDoorMountThicknessesFromConfig,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+  CHEST_CASTER_RENDER_POLICY,
+  CHEST_CONNECTOR_POLICY,
+  CHEST_DRAWER_GEOMETRY_POLICY,
+  CHEST_MOTION_POLICY,
+  CHEST_SHELL_POLICY,
+} from '../../shared/dimensions/chest_structural_policy.js';
+import {
+  CHEST_MODE_COMMODE_CONSTRAINTS_POLICY,
+  CHEST_MODE_COMMODE_RENDER_POLICY,
+  CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY,
+} from '../../shared/dimensions/chest_mode_policy.js';
+import { HINGED_DOOR_MOUNT_POLICY } from '../../shared/dimensions/door_system_policy.js';
+import { resolveDoorMountThicknessesFromConfig } from '../../shared/dimensions/door_mount_thickness_policy.js';
 import { isBaseLegWheelsStyle, resolveBaseLegGeometrySpec } from '../features/base_leg_support.js';
 import { makeDrawerBoxPartId } from '../features/part_identity/api.js';
 
@@ -47,11 +58,6 @@ import { applyFrontRevealFrames } from './post_build_front_reveal_frames.js';
 import { requireContentsRenderPolicy } from './visuals_contents_shared.js';
 
 import type { BuildContextLike } from '../../../types/index.js';
-
-const PLINTH_DIMENSIONS = CARCASS_BASE_DIMENSIONS.plinth;
-const BASE_LEG_LAYOUT_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs;
-const BASE_LEG_PLATFORM_DIMENSIONS = CARCASS_BASE_DIMENSIONS.legs.platform;
-const CHEST_DIMENSIONS = CARCASS_BASE_DIMENSIONS.chest;
 
 export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOptsLike) {
   App = ensureChestModeApp(App);
@@ -97,7 +103,7 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
   const isInsetDrawerMount = doorMountThicknesses.mode === 'inset';
   const thick = doorMountThicknesses.frameThicknessM;
   const insetReveal = isInsetDrawerMount
-    ? Math.min(DOOR_SYSTEM_DIMENSIONS.hinged.insetRevealM, Math.max(0, thick / 3))
+    ? Math.min(HINGED_DOOR_MOUNT_POLICY.insetRevealM, Math.max(0, thick / 3))
     : 0;
   const legH = inputs.baseLegHeightM;
   const isWheelsBase = isBaseLegWheelsStyle(inputs.baseLegStyle);
@@ -154,41 +160,41 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
   createChestBoard(thick, sideH, D, -totalW / 2 + thick / 2, baseH + thick + sideH / 2, 0, 'chest_left');
   createChestBoard(thick, sideH, D, totalW / 2 - thick / 2, baseH + thick + sideH / 2, 0, 'chest_right');
 
-  const backPanelW = Math.max(0, totalW - 2 * thick - CHEST_DIMENSIONS.backPanelWidthClearanceM);
-  const backPanelH = Math.max(0, sideH - CHEST_DIMENSIONS.backPanelHeightClearanceM);
+  const backPanelW = Math.max(0, totalW - 2 * thick - CHEST_SHELL_POLICY.backPanelWidthClearanceM);
+  const backPanelH = Math.max(0, sideH - CHEST_SHELL_POLICY.backPanelHeightClearanceM);
   const backPanelY = baseH + thick + sideH / 2;
   createChestBoard(
     backPanelW,
     backPanelH,
-    CHEST_DIMENSIONS.backThicknessM,
+    CHEST_SHELL_POLICY.backThicknessM,
     0,
     backPanelY,
-    -D / 2 + CHEST_DIMENSIONS.backInsetM,
+    -D / 2 + CHEST_SHELL_POLICY.backInsetM,
     'chest_back'
   );
 
   if (effectiveBaseType === 'plinth') {
     createChestBoard(
-      totalW - PLINTH_DIMENSIONS.widthClearanceM,
+      totalW - BASE_PLINTH_POLICY.widthClearanceM,
       baseH,
-      D - PLINTH_DIMENSIONS.depthClearanceM,
+      D - BASE_PLINTH_POLICY.depthClearanceM,
       0,
       baseH / 2,
-      -PLINTH_DIMENSIONS.frontInsetM,
+      0 - BASE_PLINTH_POLICY.frontInsetM,
       'chest_plinth'
     );
   } else {
     const createLegPlatform = (y: number, idName: string) => {
-      if (!(BASE_LEG_PLATFORM_DIMENSIONS.heightM > 0) || inputs.baseLegPlatformMode !== 'stage') return;
+      if (!(BASE_PLATFORM_RENDER_POLICY.heightM > 0) || inputs.baseLegPlatformMode !== 'stage') return;
       const platformDepth = Math.max(
-        BASE_LEG_PLATFORM_DIMENSIONS.minDepthM,
+        BASE_PLATFORM_RENDER_POLICY.minDepthM,
         D + Math.max(0, inputs.baseLegPlatformFrontOverhangM)
       );
       const sideOverhang =
         inputs.baseLegPlatformSideMode === 'flush' ? 0 : Math.max(0, inputs.baseLegPlatformSideOverhangM);
       createChestBoard(
-        Math.max(BASE_LEG_PLATFORM_DIMENSIONS.minWidthM, totalW + sideOverhang * 2),
-        BASE_LEG_PLATFORM_DIMENSIONS.heightM,
+        Math.max(BASE_PLATFORM_RENDER_POLICY.minWidthM, totalW + sideOverhang * 2),
+        BASE_PLATFORM_RENDER_POLICY.heightM,
         platformDepth,
         0,
         y,
@@ -201,44 +207,47 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
 
     const positions = [
       {
-        x: -totalW / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
-        z: D / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+        x: -totalW / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+        z: D / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM,
       },
       {
-        x: totalW / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
-        z: D / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+        x: totalW / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+        z: D / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM,
       },
       {
-        x: -totalW / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
-        z: -D / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+        x: -totalW / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+        z: -D / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM,
       },
       {
-        x: totalW / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
-        z: -D / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM,
+        x: totalW / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM,
+        z: -D / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM,
       },
     ];
 
     if (isWheelsBase) {
-      const wheelDims = CHEST_DIMENSIONS.wheels;
       const wheelGeo = new THREE.CylinderGeometry(
-        wheelDims.radiusM,
-        wheelDims.radiusM,
-        wheelDims.thicknessM,
+        CHEST_CASTER_RENDER_POLICY.radiusM,
+        CHEST_CASTER_RENDER_POLICY.radiusM,
+        CHEST_CASTER_RENDER_POLICY.thicknessM,
         24
       );
       const plateGeo = new THREE.BoxGeometry(
-        wheelDims.plateWidthM,
-        wheelDims.plateHeightM,
-        wheelDims.plateDepthM
+        CHEST_CASTER_RENDER_POLICY.plateWidthM,
+        CHEST_CASTER_RENDER_POLICY.plateHeightM,
+        CHEST_CASTER_RENDER_POLICY.plateDepthM
       );
       const forkGeo = new THREE.BoxGeometry(
-        wheelDims.forkWidthM,
-        wheelDims.forkHeightM,
-        wheelDims.forkDepthM
+        CHEST_CASTER_RENDER_POLICY.forkWidthM,
+        CHEST_CASTER_RENDER_POLICY.forkHeightM,
+        CHEST_CASTER_RENDER_POLICY.forkDepthM
       );
-      const wheelCenterY = Math.max(wheelDims.radiusM, legH - wheelDims.plateHeightM - wheelDims.forkHeightM);
-      const plateY = legH - wheelDims.plateHeightM / 2;
-      const forkY = legH - wheelDims.plateHeightM - wheelDims.forkHeightM / 2;
+      const wheelCenterY = Math.max(
+        CHEST_CASTER_RENDER_POLICY.radiusM,
+        legH - CHEST_CASTER_RENDER_POLICY.plateHeightM - CHEST_CASTER_RENDER_POLICY.forkHeightM
+      );
+      const plateY = legH - CHEST_CASTER_RENDER_POLICY.plateHeightM / 2;
+      const forkY =
+        legH - CHEST_CASTER_RENDER_POLICY.plateHeightM - CHEST_CASTER_RENDER_POLICY.forkHeightM / 2;
       positions.forEach((pos, index) => {
         const plate = new THREE.Mesh(plateGeo, palette.legMat);
         plate.position.set(pos.x, plateY, pos.z);
@@ -256,7 +265,8 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
         [-1, 1].forEach(side => {
           const fork = new THREE.Mesh(forkGeo, palette.legMat);
           fork.position.set(
-            pos.x + side * (wheelDims.thicknessM / 2 + wheelDims.forkWidthM / 2),
+            pos.x +
+              side * (CHEST_CASTER_RENDER_POLICY.thicknessM / 2 + CHEST_CASTER_RENDER_POLICY.forkWidthM / 2),
             forkY,
             pos.z
           );
@@ -271,9 +281,9 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
         legSpec.shape === 'square'
           ? new THREE.BoxGeometry(legSpec.width, legH, legSpec.depth)
           : new THREE.CylinderGeometry(legSpec.topRadius, legSpec.bottomRadius, legH, legSpec.radialSegments);
-      if (totalW > BASE_LEG_LAYOUT_DIMENSIONS.chestCenterSupportWidthThresholdM) {
-        positions.push({ x: 0, z: D / 2 - BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM });
-        positions.push({ x: 0, z: -D / 2 + BASE_LEG_LAYOUT_DIMENSIONS.cornerInsetM });
+      if (totalW > BASE_LEG_LAYOUT_POLICY.chestCenterSupportWidthThresholdM) {
+        positions.push({ x: 0, z: D / 2 - BASE_LEG_LAYOUT_POLICY.cornerInsetM });
+        positions.push({ x: 0, z: -D / 2 + BASE_LEG_LAYOUT_POLICY.cornerInsetM });
       }
       positions.forEach(pos => {
         const leg = new THREE.Mesh(legGeo, palette.legMat);
@@ -287,9 +297,9 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
   const innerH = sideH;
   const startY = baseH + thick;
   const singleDrawerTotalH = innerH / drawersCount;
-  const gap = CHEST_DIMENSIONS.drawerGapM;
+  const gap = CHEST_DRAWER_GEOMETRY_POLICY.drawerGapM;
   const drawerFrontH = singleDrawerTotalH - gap;
-  const drawerWidth = totalW - 2 * thick - CHEST_DIMENSIONS.drawerWidthClearanceM;
+  const drawerWidth = totalW - 2 * thick - CHEST_DRAWER_GEOMETRY_POLICY.drawerWidthClearanceM;
 
   for (let i = 0; i < drawersCount; i++) {
     const yCenter = startY + i * singleDrawerTotalH + singleDrawerTotalH / 2;
@@ -304,7 +314,7 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
     const drawerGroup = new THREE.Group();
     drawerGroup.userData = { partId: drawerId, __doorWidth: drawerWidth, __doorHeight: drawerFrontH };
 
-    const frontThickness = CHEST_DIMENSIONS.drawerFrontThicknessM;
+    const frontThickness = CHEST_DRAWER_GEOMETRY_POLICY.drawerFrontThicknessM;
     const frontMesh = createChestDrawerFrontVisual({
       App,
       THREE,
@@ -342,11 +352,11 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
       faceSign: 1,
     });
 
-    const boxH = drawerFrontH - CHEST_DIMENSIONS.drawerBoxHeightClearanceM;
-    const boxD = D - CHEST_DIMENSIONS.drawerBoxDepthClearanceM;
+    const boxH = drawerFrontH - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxHeightClearanceM;
+    const boxD = D - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxDepthClearanceM;
     const boxMesh = createInternalDrawerBox(
       App,
-      drawerWidth - CHEST_DIMENSIONS.drawerBoxWidthClearanceM,
+      drawerWidth - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxWidthClearanceM,
       boxH,
       boxD,
       drawerBoxMat,
@@ -362,19 +372,19 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
       drawerId,
       __wpDrawerBox: true,
       __wpDrawerOwnerPartId: drawerId,
-      __doorWidth: drawerWidth - CHEST_DIMENSIONS.drawerBoxWidthClearanceM,
+      __doorWidth: drawerWidth - CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxWidthClearanceM,
       __doorHeight: boxH,
     };
     drawerGroup.add(boxMesh);
 
-    const connDepth = CHEST_DIMENSIONS.connectorDepthM;
+    const connDepth = CHEST_CONNECTOR_POLICY.connectorDepthM;
     const connZ = isInsetDrawerMount
-      ? frontBackZ - CHEST_DIMENSIONS.connectorBackInsetM - connDepth / 2
-      : D / 2 - connDepth / 2 - CHEST_DIMENSIONS.connectorBackInsetM;
+      ? frontBackZ - CHEST_CONNECTOR_POLICY.connectorBackInsetM - connDepth / 2
+      : D / 2 - connDepth / 2 - CHEST_CONNECTOR_POLICY.connectorBackInsetM;
     const connMesh = new THREE.Mesh(
       new THREE.BoxGeometry(
-        drawerWidth - CHEST_DIMENSIONS.connectorWidthClearanceM,
-        boxH - CHEST_DIMENSIONS.connectorHeightClearanceM,
+        drawerWidth - CHEST_CONNECTOR_POLICY.connectorWidthClearanceM,
+        boxH - CHEST_CONNECTOR_POLICY.connectorHeightClearanceM,
         connDepth
       ),
       drawerBoxMat
@@ -385,8 +395,8 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
       drawerId,
       __wpDrawerBox: true,
       __wpDrawerOwnerPartId: drawerId,
-      __doorWidth: drawerWidth - CHEST_DIMENSIONS.connectorWidthClearanceM,
-      __doorHeight: boxH - CHEST_DIMENSIONS.connectorHeightClearanceM,
+      __doorWidth: drawerWidth - CHEST_CONNECTOR_POLICY.connectorWidthClearanceM,
+      __doorHeight: boxH - CHEST_CONNECTOR_POLICY.connectorHeightClearanceM,
     };
     drawerGroup.add(connMesh);
 
@@ -396,20 +406,25 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
     getDrawersArray(App).push({
       group: drawerGroup,
       closed: new THREE.Vector3(0, yCenter, 0),
-      open: new THREE.Vector3(0, yCenter, CHEST_DIMENSIONS.openOffsetZM),
+      open: new THREE.Vector3(0, yCenter, CHEST_MOTION_POLICY.openOffsetZM),
       id: drawerId,
       dividerKey: drawerId,
     });
   }
 
   if (inputs.chestCommodeEnabled) {
-    const commode = CHEST_MODE_DIMENSIONS.commode;
-    const panelW = Math.max(commode.minMirrorWidthCm / 100, inputs.chestCommodeMirrorWidthM);
-    const panelH = Math.max(commode.minMirrorHeightCm / 100, inputs.chestCommodeMirrorHeightM);
+    const panelW = Math.max(
+      CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.minMirrorWidthCm / 100,
+      inputs.chestCommodeMirrorWidthM
+    );
+    const panelH = Math.max(
+      CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.minMirrorHeightCm / 100,
+      inputs.chestCommodeMirrorHeightM
+    );
     commodeDimensionPanel = { widthM: panelW, heightM: panelH };
-    const panelThickness = commode.backPanelThicknessM;
+    const panelThickness = CHEST_MODE_COMMODE_RENDER_POLICY.backPanelThicknessM;
     const panelCenterY = H + panelH / 2;
-    const panelCenterZ = -D / 2 + panelThickness / 2 + commode.backPanelYOffsetM;
+    const panelCenterZ = -D / 2 + panelThickness / 2 + CHEST_MODE_COMMODE_RENDER_POLICY.backPanelYOffsetM;
 
     const commodeBack = new THREE.Mesh(
       new THREE.BoxGeometry(panelW, panelH, panelThickness),
@@ -420,10 +435,13 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
     if (addOutlines) addOutlines(commodeBack);
     wardrobeGroup.add(commodeBack);
 
-    const inset = Math.max(0, Math.min(commode.mirrorInsetM, panelW / 2 - 0.01, panelH / 2 - 0.01));
+    const inset = Math.max(
+      0,
+      Math.min(CHEST_MODE_COMMODE_RENDER_POLICY.mirrorInsetM, panelW / 2 - 0.01, panelH / 2 - 0.01)
+    );
     const mirrorW = Math.max(0.05, panelW - inset * 2);
     const mirrorH = Math.max(0.05, panelH - inset * 2);
-    const mirrorThickness = commode.mirrorThicknessM;
+    const mirrorThickness = CHEST_MODE_COMMODE_RENDER_POLICY.mirrorThicknessM;
     const mirror = new THREE.Mesh(
       new THREE.BoxGeometry(mirrorW, mirrorH, mirrorThickness),
       getMirrorMaterialFromServices(App, THREE, {
@@ -434,7 +452,10 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
     mirror.position.set(
       0,
       panelCenterY,
-      panelCenterZ + panelThickness / 2 + mirrorThickness / 2 + commode.mirrorSurfaceLiftM
+      panelCenterZ +
+        panelThickness / 2 +
+        mirrorThickness / 2 +
+        CHEST_MODE_COMMODE_RENDER_POLICY.mirrorSurfaceLiftM
     );
     mirror.userData = {
       partId: 'chest_commode_mirror',
@@ -464,17 +485,17 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
   } as BuildContextLike);
 
   if (cfg.showDimensions && addDimensionLine) {
-    const dimensionTextScale = CHEST_MODE_DIMENSIONS.dimensionGuideTextScale;
+    const dimensionTextScale = CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.textScale;
     addDimensionLine(
-      new THREE.Vector3(-totalW / 2, H + CHEST_MODE_DIMENSIONS.dimensionGuideTopOffsetM, 0),
-      new THREE.Vector3(totalW / 2, H + CHEST_MODE_DIMENSIONS.dimensionGuideTopOffsetM, 0),
+      new THREE.Vector3(-totalW / 2, H + CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.topOffsetM, 0),
+      new THREE.Vector3(totalW / 2, H + CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.topOffsetM, 0),
       new THREE.Vector3(0, 0, 0),
       (totalW * 100).toFixed(0),
       dimensionTextScale.total
     );
     if (commodeDimensionPanel) {
-      const sideOffset = CHEST_MODE_DIMENSIONS.dimensionGuideSideOffsetM;
-      const topOffset = CHEST_MODE_DIMENSIONS.dimensionGuideTopOffsetM;
+      const sideOffset = CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.sideOffsetM;
+      const topOffset = CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.topOffsetM;
       const maxPanelW = Math.max(totalW, commodeDimensionPanel.widthM);
       const segmentHeightX = maxPanelW / 2 + sideOffset;
       const totalHeightX = maxPanelW / 2 + sideOffset * 2;
@@ -514,8 +535,8 @@ export function buildChestOnly(App: AppContainer, opts: BuilderBuildChestOnlyOpt
       );
     } else {
       addDimensionLine(
-        new THREE.Vector3(totalW / 2 + CHEST_MODE_DIMENSIONS.dimensionGuideSideOffsetM, 0, 0),
-        new THREE.Vector3(totalW / 2 + CHEST_MODE_DIMENSIONS.dimensionGuideSideOffsetM, H, 0),
+        new THREE.Vector3(totalW / 2 + CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.sideOffsetM, 0, 0),
+        new THREE.Vector3(totalW / 2 + CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY.sideOffsetM, H, 0),
         new THREE.Vector3(0, 0, 0),
         (H * 100).toFixed(0),
         dimensionTextScale.total

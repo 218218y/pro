@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-24T14:07:28.975Z",
+  "generatedAt": "2026-07-25T19:10:10.483Z",
   "totals": {
-    "tests": 1277,
-    "unitRunnerTests": 1269,
+    "tests": 1278,
+    "unitRunnerTests": 1270,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 435,
+    "contract": 436,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -892,6 +892,10 @@
     {
       "file": "tests/cfg_history_platform_runtime_pack.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/chest_mode_build_ownership_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/chest_mode_width_runtime.test.ts",

@@ -175,6 +175,7 @@ const APPROVED_SHELL_GRID_FIELD_USAGE = Object.freeze({});
 const APPROVED_BASE_PLINTH_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/features/base_plinth_support.ts': Object.freeze([
     'BASE_PLINTH_POLICY',
@@ -186,6 +187,7 @@ const APPROVED_BASE_PLINTH_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_BASE_LEG_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
+  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
   'esm/native/features/base_leg_support.ts': Object.freeze([
     'BASE_LEG_DIMENSIONS',
     'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM',
@@ -206,6 +208,7 @@ const APPROVED_BASE_PLATFORM_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_visuals_adornments_normalize.ts': Object.freeze([
     'BASE_PLATFORM_RENDER_POLICY',
   ]),
+  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
   'esm/native/services/canvas_picking_sketch_box_content_commit_adornments.ts': Object.freeze([
     'BASE_PLATFORM_RENDER_POLICY',
   ]),
@@ -220,7 +223,6 @@ const APPROVED_BASE_PLATFORM_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_BASE_SUPPORT_FACADE_IMPORTS = Object.freeze({
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
-  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
   'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
   'esm/native/runtime/default_state.ts': Object.freeze(['BASE_LEG_DIMENSIONS', 'CARCASS_BASE_DIMENSIONS']),
 });
@@ -231,6 +233,13 @@ const APPROVED_DIMENSION_FACADE_BROAD_DEPENDENCIES = Object.freeze([
   }),
 ]);
 const APPROVED_CHEST_STRUCTURAL_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze([
+    'CHEST_CASTER_RENDER_POLICY',
+    'CHEST_CONNECTOR_POLICY',
+    'CHEST_DRAWER_GEOMETRY_POLICY',
+    'CHEST_MOTION_POLICY',
+    'CHEST_SHELL_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_STRUCTURAL_DIMENSIONS']),
 });
 const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
@@ -430,11 +439,15 @@ const APPROVED_CORNICE_THETA_CLAMP_M_USAGE = Object.freeze({
 const APPROVED_CHEST_MODE_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/chest_mode_pipeline.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
   'esm/native/builder/render_drawer_ops_internal.ts': Object.freeze(['CHEST_MODE_DRAWER_BOX_RENDER_POLICY']),
+  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze([
+    'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
+    'CHEST_MODE_COMMODE_RENDER_POLICY',
+    'CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY',
+  ]),
   'esm/native/builder/visuals_chest_mode_drawer_box.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
 });
 const APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES = Object.freeze({
-  'esm/native/builder/visuals_chest_mode_build.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
   'esm/native/builder/visuals_chest_mode_inputs.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
   'esm/native/runtime/api.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
   'esm/native/runtime/default_state.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
@@ -447,21 +460,6 @@ const APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
 });
 const APPROVED_CHEST_MODE_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/visuals_chest_mode_build.ts': [
-    'commode',
-    'commode.backPanelThicknessM',
-    'commode.backPanelYOffsetM',
-    'commode.minMirrorHeightCm',
-    'commode.minMirrorWidthCm',
-    'commode.mirrorInsetM',
-    'commode.mirrorSurfaceLiftM',
-    'commode.mirrorThicknessM',
-    'dimensionGuideSideOffsetM',
-    'dimensionGuideTextScale',
-    'dimensionGuideTextScale.segment',
-    'dimensionGuideTextScale.total',
-    'dimensionGuideTopOffsetM',
-  ],
   'esm/native/builder/visuals_chest_mode_inputs.ts': [
     'commode',
     'commode.defaultMirrorHeightCm',
@@ -533,6 +531,7 @@ const APPROVED_DOOR_SYSTEM_OWNER_IMPORTS = Object.freeze({
     'SLIDING_DOOR_MOTION_POLICY',
   ]),
   'esm/native/builder/sliding_doors_pipeline.ts': Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY']),
+  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['HINGED_DOOR_MOUNT_POLICY']),
   'esm/native/platform/render_loop_motion_doors.ts': Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY']),
   'esm/native/runtime/sliding_door_motion.ts': Object.freeze([
     'SLIDING_DOOR_CONSTRUCTION_POLICY',
@@ -589,6 +588,7 @@ const APPROVED_DOOR_MOUNT_THICKNESS_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/io/project_io_load_helpers_config.ts': Object.freeze(['normalizeDoorMountThicknessCm']),
   'esm/native/runtime/config_selectors_shared.ts': Object.freeze(['normalizeDoorMountThicknessCm']),
+  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['resolveDoorMountThicknessesFromConfig']),
   'esm/native/ui/react/selectors/config_selectors.ts': Object.freeze([
     'resolveDoorMountThicknessesFromConfig',
   ]),
@@ -601,7 +601,6 @@ const APPROVED_DOOR_MOUNT_THICKNESS_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/builder/build_flow_plan_inputs.ts': ['resolveDoorMountThicknessesFromConfig@static-import'],
-  'esm/native/builder/visuals_chest_mode_build.ts': ['resolveDoorMountThicknessesFromConfig@static-import'],
   'esm/native/kernel/kernel_project_capture_payload.ts': ['normalizeDoorMountThicknessCm@static-import'],
 });
 const APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_FIELD_USAGE = Object.freeze({});
@@ -1645,12 +1644,8 @@ const APPROVED_CONTENT_VISUAL_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_CONTENT_VISUAL_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({});
-const APPROVED_DOOR_SYSTEM_LEGACY_DEPENDENCIES = Object.freeze({
-  'esm/native/builder/visuals_chest_mode_build.ts': ['DOOR_SYSTEM_DIMENSIONS@static-import'],
-});
-const APPROVED_DOOR_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/visuals_chest_mode_build.ts': ['hinged', 'hinged.insetRevealM'],
-});
+const APPROVED_DOOR_SYSTEM_LEGACY_DEPENDENCIES = Object.freeze({});
+const APPROVED_DOOR_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_CORNICE_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/builder/corner_wing_cornice_path.ts': Object.freeze([
     'common',
@@ -1708,33 +1703,6 @@ const APPROVED_CORNICE_LEGACY_FIELD_USAGE = Object.freeze({
   ]),
 });
 const APPROVED_CHEST_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze([
-    'backInsetM',
-    'backPanelHeightClearanceM',
-    'backPanelWidthClearanceM',
-    'backThicknessM',
-    'chest',
-    'connectorBackInsetM',
-    'connectorDepthM',
-    'connectorHeightClearanceM',
-    'connectorWidthClearanceM',
-    'drawerBoxDepthClearanceM',
-    'drawerBoxHeightClearanceM',
-    'drawerBoxWidthClearanceM',
-    'drawerFrontThicknessM',
-    'drawerGapM',
-    'drawerWidthClearanceM',
-    'openOffsetZM',
-    'wheels',
-    'wheels.forkDepthM',
-    'wheels.forkHeightM',
-    'wheels.forkWidthM',
-    'wheels.plateDepthM',
-    'wheels.plateHeightM',
-    'wheels.plateWidthM',
-    'wheels.radiusM',
-    'wheels.thicknessM',
-  ]),
   'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['chest', 'wheels', 'wheels.heightM']),
 });
 
