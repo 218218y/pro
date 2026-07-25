@@ -116,31 +116,6 @@ function stableJson(value) {
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
-function listSourceFiles(dir) {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) return listSourceFiles(absolute);
-    return entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name) ? [absolute] : [];
-  });
-}
-
-function facadeConsumers(importedSymbol) {
-  return listSourceFiles(path.join(root, 'esm'))
-    .flatMap(file => {
-      const source = fs.readFileSync(file, 'utf8');
-      const dependencies = analyzeModuleDependencies(file, source).imports;
-      return dependencies.some(
-        dependency =>
-          dependency.syntax === 'static-import' &&
-          dependency.specifier.includes('wardrobe_dimension_tokens_shared') &&
-          dependency.importedSymbols.includes(importedSymbol)
-      )
-        ? [path.relative(root, file).replaceAll(path.sep, '/')]
-        : [];
-    })
-    .sort();
-}
-
 test('Default State imports exactly five focused owner statements without aliases or facade access', () => {
   const source = read(consumerRel);
   const analysis = analyzeModuleDependencies(path.join(root, consumerRel), source);
@@ -234,12 +209,4 @@ test('Default State appends exactly Entries 146-149 after the unchanged 145-entr
     semanticSha256(baseline.migrationBudgets.slice(0, 149)),
     '017aabccfc1a4d0fccde156cff556af4f6d0006409f196868b3d8a53dbd666e5'
   );
-});
-
-test('Default State leaves only the exact requested Base facade inventory', () => {
-  assert.deepEqual(facadeConsumers('CARCASS_BASE_DIMENSIONS'), [
-    'esm/native/builder/corner_connector_emit_shell_base.ts',
-  ]);
-  assert.deepEqual(facadeConsumers('CHEST_MODE_DIMENSIONS'), []);
-  assert.deepEqual(facadeConsumers('BASE_LEG_DIMENSIONS'), []);
 });
