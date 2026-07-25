@@ -8,8 +8,10 @@ import {
   readNodeRuntimePolicy,
 } from '../tools/wp_node_runtime_policy.mjs';
 import {
+  APPROVED_DEV_DEP_VERSIONS,
   collectToolchainVersionPolicy,
   createFormattedToolchainVersionPolicyMarkdown,
+  isTsgolintVersionAlignedWithTypeScript,
 } from '../tools/wp_toolchain_version_policy.mjs';
 
 test('Node runtime policy is exact, aligned, and clean on the active toolchain', () => {
@@ -46,18 +48,40 @@ test('toolchain version policy exact-pins core lint and TypeScript tools', () =>
     assert.equal(row.packageJsonVersion, row.installedVersion);
   }
 
-  assert.deepEqual(Object.fromEntries([...byName].map(([name, row]) => [name, row.packageJsonVersion])), {
+  const expectedVersions = {
     typescript: '7.0.2',
     '@types/node': '24.13.3',
-    eslint: '10.7.0',
-    oxlint: '1.74.0',
-    'oxlint-tsgolint': '0.25.0',
-    'oxc-parser': '0.140.0',
-  });
+    eslint: '10.8.0',
+    oxlint: '1.75.0',
+    'oxlint-tsgolint': '7.0.2001',
+    'oxc-parser': '0.141.0',
+  };
+  assert.deepEqual(APPROVED_DEV_DEP_VERSIONS, expectedVersions);
+  assert.deepEqual(
+    Object.fromEntries([...byName].map(([name, row]) => [name, row.packageJsonVersion])),
+    expectedVersions
+  );
+  assert.deepEqual(
+    Object.fromEntries([...byName].map(([name, row]) => [name, row.approvedVersion])),
+    expectedVersions
+  );
+  assert.equal(policy.tsgolintTypeScriptAligned, true);
   assert.equal(
     byName.get('@types/node').packageJsonVersion.split('.')[0],
     String(policy.nodeRuntimePolicy.major)
   );
+});
+
+test('oxlint-tsgolint version encoding stays aligned with the pinned TypeScript release', () => {
+  assert.equal(isTsgolintVersionAlignedWithTypeScript('7.0.2', '7.0.2000'), true);
+  assert.equal(isTsgolintVersionAlignedWithTypeScript('7.0.2', '7.0.2001'), true);
+  assert.equal(isTsgolintVersionAlignedWithTypeScript('7.0.2', '7.0.2999'), true);
+
+  assert.equal(isTsgolintVersionAlignedWithTypeScript('7.0.2', '0.25.0'), false);
+  assert.equal(isTsgolintVersionAlignedWithTypeScript('7.0.2', '7.0.3001'), false);
+  assert.equal(isTsgolintVersionAlignedWithTypeScript('7.0.2', '7.1.2001'), false);
+  assert.equal(isTsgolintVersionAlignedWithTypeScript('7.0.2', '7.0.2'), false);
+  assert.equal(isTsgolintVersionAlignedWithTypeScript('7.0.2-beta.1', '7.0.2001'), false);
 });
 
 test('toolchain version policy keeps removed TypeScript ESLint packages absent', () => {

@@ -1605,6 +1605,7 @@ test('[dimension tokens] External, Internal, and drawer-box render owners preser
 
   const expectedConsumers = [
     ['esm/native/builder/render_drawer_ops_internal.ts', 'CHEST_MODE_DRAWER_BOX_RENDER_POLICY'],
+    ['esm/native/builder/visuals_chest_mode_drawer_box.ts', 'CHEST_MODE_DRAWER_BOX_RENDER_POLICY'],
     ['esm/native/builder/render_drawer_ops_internal.ts', 'INTERNAL_DRAWER_CONTENTS_POLICY'],
     ['esm/native/builder/core_storage_compute_external_drawers.ts', 'EXTERNAL_DRAWER_BOX_POLICY'],
     ['esm/native/builder/core_storage_compute_external_drawers.ts', 'EXTERNAL_DRAWER_FRONT_RENDER_POLICY'],
@@ -2084,6 +2085,7 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
         'cmToM',
       ],
     ],
+    ['esm/native/builder/chest_mode_pipeline.ts', ['CHEST_MODE_COMMODE_CONSTRAINTS_POLICY']],
     [
       'esm/native/runtime/default_state.ts',
       [

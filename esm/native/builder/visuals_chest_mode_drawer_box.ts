@@ -1,4 +1,4 @@
-import { CHEST_MODE_DIMENSIONS } from '../../shared/dimensions/chest_mode_policy.js';
+import { CHEST_MODE_DRAWER_BOX_RENDER_POLICY } from '../../shared/dimensions/chest_mode_policy.js';
 import type { AppContainer, BuilderCreateInternalDrawerBoxFn } from '../../../types/index.js';
 
 import { ensureChestModeApp, ensureChestModeTHREE } from './visuals_chest_mode_runtime.js';
@@ -35,8 +35,7 @@ export const createInternalDrawerBox: AppAwareCreateInternalDrawerBoxFn = (
   const width = readPositiveRuntimeNumber(w, 'drawer box width');
   const height = readPositiveRuntimeNumber(h, 'drawer box height');
   const depth = readPositiveRuntimeNumber(d, 'drawer box depth');
-  const drawerBoxDimensions = CHEST_MODE_DIMENSIONS.drawerBox;
-  const thickness = drawerBoxDimensions.panelThicknessM;
+  const thickness = CHEST_MODE_DRAWER_BOX_RENDER_POLICY.panelThicknessM;
   const innerH = height;
   const omitFrontPanel = options?.omitFrontPanel === true;
 
@@ -61,18 +60,18 @@ export const createInternalDrawerBox: AppAwareCreateInternalDrawerBoxFn = (
     try {
       const accentW = width;
       const accentH = innerH;
-      const accentZ = depth / 2 + drawerBoxDimensions.accentZOffsetM;
+      const accentZ = depth / 2 + CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentZOffsetM;
       if (
         Number.isFinite(accentW) &&
         Number.isFinite(accentH) &&
-        accentW > drawerBoxDimensions.accentMinWidthM &&
-        accentH > drawerBoxDimensions.accentMinHeightM
+        accentW > CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentMinWidthM &&
+        accentH > CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentMinHeightM
       ) {
         const lineT = Math.min(
-          drawerBoxDimensions.accentThicknessMaxM,
+          CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentThicknessMaxM,
           Math.max(
-            drawerBoxDimensions.accentThicknessMinM,
-            Math.min(accentW, accentH) * drawerBoxDimensions.accentThicknessRatio
+            CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentThicknessMinM,
+            Math.min(accentW, accentH) * CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentThicknessRatio
           )
         );
         if (accentW > lineT * 2 && accentH > lineT * 2) {
@@ -92,17 +91,17 @@ export const createInternalDrawerBox: AppAwareCreateInternalDrawerBoxFn = (
           const addStrip = (sw: number, sh: number, x: number, y: number) => {
             if (!(sw > 0) || !(sh > 0)) return;
             const strip = new THREE.Mesh(
-              new THREE.BoxGeometry(sw, sh, drawerBoxDimensions.accentStripDepthM),
+              new THREE.BoxGeometry(sw, sh, CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentStripDepthM),
               accentMat
             );
             strip.position.set(x, y, accentZ);
-            strip.renderOrder = drawerBoxDimensions.accentRenderOrder;
+            strip.renderOrder = CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentRenderOrder;
             strip.userData = strip.userData || {};
             strip.userData.partId = 'internal_drawer_accent_line';
             group.add(strip);
           };
 
-          const sideH = Math.max(drawerBoxDimensions.accentStripDepthM, accentH - 2 * lineT);
+          const sideH = Math.max(CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentStripDepthM, accentH - 2 * lineT);
           addStrip(accentW, lineT, 0, accentH / 2 - lineT / 2);
           addStrip(accentW, lineT, 0, -(accentH / 2 - lineT / 2));
           addStrip(lineT, sideH, -(accentW / 2 - lineT / 2), 0);
@@ -135,15 +134,15 @@ export const createInternalDrawerBox: AppAwareCreateInternalDrawerBoxFn = (
   if (addHandle && !omitFrontPanel) {
     const handle = new THREE.Mesh(
       new THREE.BoxGeometry(
-        drawerBoxDimensions.handleWidthM,
-        drawerBoxDimensions.handleHeightM,
-        drawerBoxDimensions.handleDepthM
+        CHEST_MODE_DRAWER_BOX_RENDER_POLICY.handleWidthM,
+        CHEST_MODE_DRAWER_BOX_RENDER_POLICY.handleHeightM,
+        CHEST_MODE_DRAWER_BOX_RENDER_POLICY.handleDepthM
       ),
       new THREE.MeshStandardMaterial({ color: 0x555555 })
     );
     handle.userData = handle.userData || {};
     handle.userData.__keepMaterial = true;
-    handle.position.set(0, 0, depth / 2 + drawerBoxDimensions.handleFrontOffsetM);
+    handle.position.set(0, 0, depth / 2 + CHEST_MODE_DRAWER_BOX_RENDER_POLICY.handleFrontOffsetM);
     group.add(handle);
   }
 

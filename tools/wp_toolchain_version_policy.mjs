@@ -11,36 +11,51 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_DOC_RELATIVE_PATH = 'docs/TOOLCHAIN_VERSION_POLICY.md';
 
+const APPROVED_DEV_DEP_VERSIONS = Object.freeze({
+  typescript: '7.0.2',
+  '@types/node': '24.13.3',
+  eslint: '10.8.0',
+  oxlint: '1.75.0',
+  'oxlint-tsgolint': '7.0.2001',
+  'oxc-parser': '0.141.0',
+});
+
 const PINNED_DEV_DEPS = [
   {
     name: 'typescript',
+    approvedVersion: APPROVED_DEV_DEP_VERSIONS['typescript'],
     role: 'Type correctness gate and TS7 compiler lane.',
     updatePolicy: 'Keep exact at 7.0.2 until a dedicated TypeScript patch/minor refresh is approved.',
   },
   {
     name: '@types/node',
+    approvedVersion: APPROVED_DEV_DEP_VERSIONS['@types/node'],
     role: 'Node tool/test type surface aligned to the pinned Node runtime major.',
     updatePolicy: 'Keep exact and on the same major as `.node-version`; refresh with Node runtime updates.',
     nodeMajorAligned: true,
   },
   {
     name: 'eslint',
+    approvedVersion: APPROVED_DEV_DEP_VERSIONS['eslint'],
     role: 'Strict JS/tools/tests/config lint gate.',
     updatePolicy: 'Keep exact; review patch/minor releases in a dedicated lint dependency refresh.',
   },
   {
     name: 'oxlint',
+    approvedVersion: APPROVED_DEV_DEP_VERSIONS['oxlint'],
     role: 'Blocking TS/TSX syntax lint gate.',
     updatePolicy: 'Keep exact while syntax diagnostics are 0; update only with parity report refresh.',
   },
   {
     name: 'oxlint-tsgolint',
+    approvedVersion: APPROVED_DEV_DEP_VERSIONS['oxlint-tsgolint'],
     role: 'Blocking type-aware lint lane.',
     updatePolicy:
-      'Keep exact while type-aware diagnostics are 0; updates require a zero-diagnostic parity run.',
+      'Keep exact and aligned with the pinned TypeScript version; updates require a zero-diagnostic type-aware parity run.',
   },
   {
     name: 'oxc-parser',
+    approvedVersion: APPROVED_DEV_DEP_VERSIONS['oxc-parser'],
     role: 'Internal AST adapter parser.',
     updatePolicy: 'Keep exact; parser updates require `wp_ast_adapter` parity tests.',
   },
@@ -83,6 +98,21 @@ function isExactSemver(value) {
   return /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(String(value || ''));
 }
 
+function isTsgolintVersionAlignedWithTypeScript(typescriptVersion, tsgolintVersion) {
+  const typescriptMatch = /^(\d+)\.(\d+)\.(\d+)$/.exec(String(typescriptVersion || ''));
+  const tsgolintMatch = /^(\d+)\.(\d+)\.(\d+)$/.exec(String(tsgolintVersion || ''));
+  if (!typescriptMatch || !tsgolintMatch) return false;
+
+  const [, typescriptMajor, typescriptMinor, typescriptPatch] = typescriptMatch;
+  const [, tsgolintMajor, tsgolintMinor, tsgolintPatchWithRevision] = tsgolintMatch;
+  if (typescriptMajor !== tsgolintMajor || typescriptMinor !== tsgolintMinor) return false;
+  if (tsgolintPatchWithRevision.length <= 3) return false;
+
+  const tsgolintRevision = tsgolintPatchWithRevision.slice(-3);
+  const encodedTypeScriptPatch = tsgolintPatchWithRevision.slice(0, -3);
+  return encodedTypeScriptPatch === typescriptPatch && /^\d{3}$/.test(tsgolintRevision);
+}
+
 function collectToolchainVersionPolicy() {
   const pkg = readJson('package.json');
   const lock = readJson('package-lock.json');
@@ -103,6 +133,11 @@ function collectToolchainVersionPolicy() {
     const installedMatchesRoot = installedVersion === packageJsonVersion;
 
     if (!packageJsonVersion) violations.push(`${item.name} is missing from package.json devDependencies.`);
+    if (packageJsonVersion && packageJsonVersion !== item.approvedVersion) {
+      violations.push(
+        `${item.name} must use approved version ${item.approvedVersion}; found ${packageJsonVersion}.`
+      );
+    }
     if (packageJsonVersion && !exact)
       violations.push(`${item.name} is not exact in package.json: ${packageJsonVersion}`);
     if (lockRootVersion && !lockExact)
@@ -138,6 +173,18 @@ function collectToolchainVersionPolicy() {
     });
   }
 
+  const typescriptVersion = devDependencies.typescript || null;
+  const tsgolintVersion = devDependencies['oxlint-tsgolint'] || null;
+  const tsgolintTypeScriptAligned = isTsgolintVersionAlignedWithTypeScript(
+    typescriptVersion,
+    tsgolintVersion
+  );
+  if (typescriptVersion && tsgolintVersion && !tsgolintTypeScriptAligned) {
+    violations.push(
+      `oxlint-tsgolint ${tsgolintVersion} is not aligned with TypeScript ${typescriptVersion}.`
+    );
+  }
+
   for (const item of FORBIDDEN_PACKAGES) {
     const name = item.name;
     const presentInPackageJson = Boolean(devDependencies[name] || pkg.dependencies?.[name]);
@@ -150,7 +197,9 @@ function collectToolchainVersionPolicy() {
 
   return {
     rows,
+    approvedVersions: APPROVED_DEV_DEP_VERSIONS,
     nodeRuntimePolicy,
+    tsgolintTypeScriptAligned,
     forbiddenPackages: FORBIDDEN_PACKAGES.map(item => item.name),
     forbiddenPackageLabels: FORBIDDEN_PACKAGES.map(item => item.label),
     violations,
@@ -173,13 +222,13 @@ function createToolchainVersionPolicyMarkdown(policy) {
     '',
     '## Exact pinned packages',
     '',
-    '| Package | package.json | package-lock root | resolved lock package | Role | Future patch/minor policy |',
-    '| --- | --- | --- | --- | --- | --- |',
+    '| Package | Approved version | package.json | package-lock root | resolved lock package | Role | Future patch/minor policy |',
+    '| --- | --- | --- | --- | --- | --- | --- |',
   ];
 
   for (const row of policy.rows) {
     lines.push(
-      `| \`${mdCell(row.name)}\` | \`${mdCell(row.packageJsonVersion)}\` | \`${mdCell(row.lockRootVersion)}\` | \`${mdCell(row.installedVersion)}\` | ${mdCell(row.role)} | ${mdCell(row.updatePolicy)} |`
+      `| \`${mdCell(row.name)}\` | \`${mdCell(row.approvedVersion)}\` | \`${mdCell(row.packageJsonVersion)}\` | \`${mdCell(row.lockRootVersion)}\` | \`${mdCell(row.installedVersion)}\` | ${mdCell(row.role)} | ${mdCell(row.updatePolicy)} |`
     );
   }
 
@@ -192,14 +241,15 @@ function createToolchainVersionPolicyMarkdown(policy) {
     '## Future update check',
     '',
     '- Do not auto-upgrade TypeScript, Oxlint, oxlint-tsgolint, oxc-parser, or ESLint as part of feature work.',
-    '- For a future patch/minor refresh, run the normal quality gates, regenerate lint parity docs, and prove `lint:ts-modern:type-aware` remains at 0 diagnostics.',
+    '- For a future patch/minor refresh, update the approved version in this policy, run the normal quality gates, regenerate lint parity docs, and prove `lint:ts-modern:type-aware` remains at 0 diagnostics.',
     '- `lint:ts-modern:type-aware` is blocking; patch/minor updates must preserve the global zero contract.',
+    '- `oxlint-tsgolint` must encode the pinned TypeScript major, minor, and patch plus its three-digit tsgolint revision.',
     '',
     '## Current status',
     '',
     policy.violations.length
       ? 'Not ready:'
-      : 'Ready: all pinned toolchain versions are exact, `@types/node` matches the pinned Node major, and removed TS ESLint packages are absent.',
+      : 'Ready: all pinned toolchain versions match their approved versions, `@types/node` matches the pinned Node major, `oxlint-tsgolint` is aligned with TypeScript, and removed TS ESLint packages are absent.',
     ...policy.violations.map(v => `- ${v}`),
     ''
   );
@@ -268,7 +318,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 }
 
 export {
+  APPROVED_DEV_DEP_VERSIONS,
   collectToolchainVersionPolicy,
   createToolchainVersionPolicyMarkdown,
   createFormattedToolchainVersionPolicyMarkdown,
+  isTsgolintVersionAlignedWithTypeScript,
 };

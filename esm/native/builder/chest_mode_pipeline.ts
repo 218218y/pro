@@ -4,7 +4,7 @@
 // Best-effort side effects are preserved (render/update/finalize are wrapped)
 // to avoid breaking UX during chest-only edits.
 
-import { CHEST_MODE_DIMENSIONS } from '../../shared/dimensions/chest_mode_policy.js';
+import { CHEST_MODE_COMMODE_CONSTRAINTS_POLICY } from '../../shared/dimensions/chest_mode_policy.js';
 import {
   getDefaultBaseLegWidthCm,
   normalizeBaseLegHeightCm,
@@ -136,7 +136,7 @@ export function buildChestModeIfNeeded(params: BuildChestModeIfNeededParams | nu
     isGroovesEnabled: !!ui.groovesEnabled,
     chestCommodeEnabled: !!ui.chestCommodeEnabled,
     chestCommodeMirrorHeightCm:
-      ui.chestCommodeMirrorHeightCm ?? CHEST_MODE_DIMENSIONS.commode.defaultMirrorHeightCm,
+      ui.chestCommodeMirrorHeightCm ?? CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.defaultMirrorHeightCm,
     chestCommodeMirrorWidthCm: ui.chestCommodeMirrorWidthCm ?? widthCm,
     cfgSnapshot,
     renderPolicy,

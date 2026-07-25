@@ -71,7 +71,7 @@ test('AST adapter uses Oxc parser and parses TS/TSX through stable syntax helper
   assert.equal(countFunctionLikeNodes(source, { astApi }), 1);
 });
 
-test('AST adapter preserves import, dynamic import, member, and optional-chain shapes for callers', () => {
+test('AST adapter preserves import, dynamic import, member, optional-chain, and meta-property shapes for callers', () => {
   const astApi = requireAstAdapter('AST Adapter Runtime Test');
   const source = createSourceFile(
     'imports.ts',
@@ -82,7 +82,11 @@ test('AST adapter preserves import, dynamic import, member, and optional-chain s
       const ctor = THREE.Mesh;
       const optional = app?.store?.value;
       const loaded = import('./lazy.js');
+      function constructable() {
+        return new.target;
+      }
       const url = new URL('./asset.js', import.meta.url);
+      void constructable;
       void localDefault;
     `,
     { astApi }
@@ -93,6 +97,7 @@ test('AST adapter preserves import, dynamic import, member, and optional-chain s
   const dynamicImports = [];
   const propertyNames = [];
   const newUrls = [];
+  const metaProperties = [];
   walkAst(
     source,
     node => {
@@ -104,6 +109,9 @@ test('AST adapter preserves import, dynamic import, member, and optional-chain s
       if (astApi.isPropertyAccessExpression(node)) propertyNames.push(node.name?.text || '');
       if (astApi.isNewExpression(node) && astApi.isIdentifier(node.expression))
         newUrls.push(node.expression.text);
+      if (astApi.isMetaProperty(node)) {
+        metaProperties.push(`${node.meta?.name || ''}.${node.property?.name || ''}`);
+      }
     },
     { astApi }
   );
@@ -114,6 +122,7 @@ test('AST adapter preserves import, dynamic import, member, and optional-chain s
   assert.ok(propertyNames.includes('Mesh'));
   assert.ok(propertyNames.includes('url'));
   assert.deepEqual(newUrls, ['URL']);
+  assert.deepEqual(metaProperties.sort(), ['import.meta', 'new.target']);
 });
 
 test('AST adapter keeps token/code-line metrics independent from tool callers', () => {

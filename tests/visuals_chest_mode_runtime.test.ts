@@ -26,6 +26,7 @@ import {
   CHEST_MODE_COMMODE_CONSTRAINTS_POLICY,
   CHEST_MODE_COMMODE_RENDER_POLICY,
   CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY,
+  CHEST_MODE_DRAWER_BOX_RENDER_POLICY,
 } from '../esm/shared/dimensions/chest_mode_policy.ts';
 import { HINGED_DOOR_MOUNT_POLICY } from '../esm/shared/dimensions/door_system_policy.ts';
 import { resolveDoorMountThicknessesFromConfig } from '../esm/shared/dimensions/door_mount_thickness_policy.ts';
@@ -612,6 +613,151 @@ test('visuals chest mode drawer box requires real positive runtime dimensions', 
       ),
     /positive finite drawer box width is required/
   );
+  assert.throws(
+    () =>
+      createInternalDrawerBox(
+        App,
+        0.7,
+        0,
+        0.4,
+        new FakeMaterial(),
+        new FakeMaterial(),
+        outline,
+        false,
+        false
+      ),
+    /positive finite drawer box height is required/
+  );
+  assert.throws(
+    () =>
+      createInternalDrawerBox(
+        App,
+        0.7,
+        0.18,
+        -0.4,
+        new FakeMaterial(),
+        new FakeMaterial(),
+        outline,
+        false,
+        false
+      ),
+    /positive finite drawer box depth is required/
+  );
+});
+
+test('visuals chest mode drawer box projects panel, accent, divider, and handle geometry from its focused owner', () => {
+  const { App } = createChestApp();
+  const outlined: unknown[] = [];
+  const width = 0.7;
+  const height = 0.18;
+  const depth = 0.4;
+  const box = createInternalDrawerBox(
+    App,
+    width,
+    height,
+    depth,
+    new FakeMaterial(),
+    new FakeMaterial(),
+    mesh => outlined.push(mesh),
+    true,
+    true
+  );
+
+  const [floor, back, front] = box.children as FakeMesh[];
+  assert.deepEqual((floor.geometry as FakeBoxGeometry).args, [
+    width,
+    CHEST_MODE_DRAWER_BOX_RENDER_POLICY.panelThicknessM,
+    depth,
+  ]);
+  assert.deepEqual((back.geometry as FakeBoxGeometry).args, [
+    width,
+    height,
+    CHEST_MODE_DRAWER_BOX_RENDER_POLICY.panelThicknessM,
+  ]);
+  assert.deepEqual((front.geometry as FakeBoxGeometry).args, [
+    width,
+    height,
+    CHEST_MODE_DRAWER_BOX_RENDER_POLICY.panelThicknessM,
+  ]);
+
+  const accents = (box.children as FakeMesh[]).filter(
+    child => child.userData.partId === 'internal_drawer_accent_line'
+  );
+  assert.equal(accents.length, 4);
+  const expectedMaxThickness = Math.min(
+    CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentThicknessMaxM,
+    Math.max(
+      CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentThicknessMinM,
+      Math.min(width, height) * CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentThicknessRatio
+    )
+  );
+  assert.deepEqual((accents[0].geometry as FakeBoxGeometry).args, [
+    width,
+    expectedMaxThickness,
+    CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentStripDepthM,
+  ]);
+  assert.equal(accents[0].position.z, depth / 2 + CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentZOffsetM);
+  assert.equal(
+    accents.every(accent => accent.renderOrder === CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentRenderOrder),
+    true
+  );
+
+  const divider = box.children.at(-2) as FakeMesh;
+  assert.deepEqual((divider.geometry as FakeBoxGeometry).args, [
+    CHEST_MODE_DRAWER_BOX_RENDER_POLICY.panelThicknessM,
+    height,
+    depth - 2 * CHEST_MODE_DRAWER_BOX_RENDER_POLICY.panelThicknessM,
+  ]);
+  const handle = box.children.at(-1) as FakeMesh;
+  assert.deepEqual((handle.geometry as FakeBoxGeometry).args, [
+    CHEST_MODE_DRAWER_BOX_RENDER_POLICY.handleWidthM,
+    CHEST_MODE_DRAWER_BOX_RENDER_POLICY.handleHeightM,
+    CHEST_MODE_DRAWER_BOX_RENDER_POLICY.handleDepthM,
+  ]);
+  assert.equal(handle.position.z, depth / 2 + CHEST_MODE_DRAWER_BOX_RENDER_POLICY.handleFrontOffsetM);
+  assert.equal(handle.userData.__keepMaterial, true);
+  assert.equal(outlined.length, 5);
+});
+
+test('visuals chest mode drawer box preserves accent thresholds, ratio clamp, and omit-front behavior', () => {
+  const { App } = createChestApp();
+  const createBox = (width: number, height: number, omitFrontPanel = false) =>
+    createInternalDrawerBox(
+      App,
+      width,
+      height,
+      0.3,
+      new FakeMaterial(),
+      new FakeMaterial(),
+      () => undefined,
+      false,
+      true,
+      { omitFrontPanel }
+    );
+  const accents = (box: FakeGroup) =>
+    (box.children as FakeMesh[]).filter(child => child.userData.partId === 'internal_drawer_accent_line');
+
+  assert.equal(accents(createBox(CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentMinWidthM, 0.18)).length, 0);
+  assert.equal(accents(createBox(0.2, CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentMinHeightM)).length, 0);
+
+  const ratioWidth = 0.2;
+  const ratioHeight = 0.09;
+  const ratioAccents = accents(createBox(ratioWidth, ratioHeight));
+  assert.equal(ratioAccents.length, 4);
+  assert.equal(
+    (ratioAccents[0].geometry as FakeBoxGeometry).args[1],
+    Math.min(
+      CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentThicknessMaxM,
+      Math.max(
+        CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentThicknessMinM,
+        Math.min(ratioWidth, ratioHeight) * CHEST_MODE_DRAWER_BOX_RENDER_POLICY.accentThicknessRatio
+      )
+    )
+  );
+
+  const omitted = createBox(0.7, 0.18, true);
+  assert.equal(accents(omitted).length, 0);
+  assert.equal(omitted.children.length, 4);
 });
 
 test('visuals chest mode drawer fronts consume door-special mirror and glass maps', () => {

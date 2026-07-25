@@ -438,7 +438,7 @@ const APPROVED_CORNICE_THETA_CLAMP_M_USAGE = Object.freeze({
   'esm/native/builder/corner_wing_cornice_path.ts': Object.freeze(['thetaClampM']),
 });
 const APPROVED_CHEST_MODE_OWNER_IMPORTS = Object.freeze({
-  'esm/native/builder/chest_mode_pipeline.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
+  'esm/native/builder/chest_mode_pipeline.ts': Object.freeze(['CHEST_MODE_COMMODE_CONSTRAINTS_POLICY']),
   'esm/native/builder/render_drawer_ops_internal.ts': Object.freeze(['CHEST_MODE_DRAWER_BOX_RENDER_POLICY']),
   'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze([
     'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
@@ -450,7 +450,9 @@ const APPROVED_CHEST_MODE_OWNER_IMPORTS = Object.freeze({
     'CHEST_MODE_ACTIVE_DEFAULTS_POLICY',
     'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
   ]),
-  'esm/native/builder/visuals_chest_mode_drawer_box.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
+  'esm/native/builder/visuals_chest_mode_drawer_box.ts': Object.freeze([
+    'CHEST_MODE_DRAWER_BOX_RENDER_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
 });
 const APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES = Object.freeze({

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-25T21:00:26.924Z",
+  "generatedAt": "2026-07-25T21:28:18.172Z",
   "totals": {
-    "tests": 1282,
-    "unitRunnerTests": 1274,
+    "tests": 1284,
+    "unitRunnerTests": 1276,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 440,
+    "contract": 442,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -895,6 +895,14 @@
     },
     {
       "file": "tests/chest_mode_build_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/chest_mode_builder_aggregate_pair_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/chest_mode_builder_aggregate_pair_ownership_runtime.test.ts",
       "category": "contract"
     },
     {
