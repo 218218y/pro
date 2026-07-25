@@ -128,33 +128,6 @@ function stableJson(value) {
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
-function listSourceFiles(dir) {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) return listSourceFiles(absolute);
-    return entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name) ? [absolute] : [];
-  });
-}
-
-function facadeConsumers(importedSymbol) {
-  return listSourceFiles(path.join(root, 'esm'))
-    .flatMap(file => {
-      const relativeFile = path.relative(root, file).replaceAll(path.sep, '/');
-      const source = fs.readFileSync(file, 'utf8');
-      if (!source.includes(importedSymbol) || !source.includes('wardrobe_dimension_tokens_shared')) return [];
-      const dependencies = analyzeModuleDependencies(file, source).imports;
-      return dependencies.some(
-        dependency =>
-          dependency.syntax === 'static-import' &&
-          dependency.specifier.includes('wardrobe_dimension_tokens_shared') &&
-          dependency.importedSymbols.includes(importedSymbol)
-      )
-        ? [relativeFile]
-        : [];
-    })
-    .sort();
-}
-
 test('Chest Mode Build imports exactly seven focused owners without aliases or aggregates', () => {
   const source = read(consumerRel);
   const analysis = analyzeModuleDependencies(path.join(root, consumerRel), source);
@@ -313,19 +286,4 @@ test('Chest Mode Build appends exactly Entries 137-142 after the unchanged 136-e
     semanticSha256(baseline.migrationBudgets.slice(0, 142)),
     'e813a8d82fc10b63f077b6b3fba67f9a4db5dc5a308825d871f85e1dcf95a861'
   );
-});
-
-test('Chest Mode Build leaves the exact requested Base, Chest Mode, and Door Mount inventories', () => {
-  assert.deepEqual(facadeConsumers('CARCASS_BASE_DIMENSIONS'), [
-    'esm/native/builder/corner_connector_emit_shell_base.ts',
-    'esm/native/builder/visuals_chest_mode_inputs.ts',
-    'esm/native/runtime/default_state.ts',
-  ]);
-  assert.deepEqual(facadeConsumers('CHEST_MODE_DIMENSIONS'), [
-    'esm/native/builder/visuals_chest_mode_inputs.ts',
-    'esm/native/runtime/default_state.ts',
-  ]);
-  assert.deepEqual(facadeConsumers('resolveDoorMountThicknessesFromConfig'), [
-    'esm/native/builder/build_flow_plan_inputs.ts',
-  ]);
 });

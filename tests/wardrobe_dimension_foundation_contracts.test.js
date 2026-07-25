@@ -209,6 +209,7 @@ const APPROVED_BASE_PLATFORM_OWNER_IMPORTS = Object.freeze({
     'BASE_PLATFORM_RENDER_POLICY',
   ]),
   'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
+  'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
   'esm/native/services/canvas_picking_sketch_box_content_commit_adornments.ts': Object.freeze([
     'BASE_PLATFORM_RENDER_POLICY',
   ]),
@@ -223,7 +224,6 @@ const APPROVED_BASE_PLATFORM_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_BASE_SUPPORT_FACADE_IMPORTS = Object.freeze({
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
-  'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
   'esm/native/runtime/default_state.ts': Object.freeze(['BASE_LEG_DIMENSIONS', 'CARCASS_BASE_DIMENSIONS']),
 });
 const APPROVED_DIMENSION_FACADE_BROAD_DEPENDENCIES = Object.freeze([
@@ -240,6 +240,7 @@ const APPROVED_CHEST_STRUCTURAL_OWNER_IMPORTS = Object.freeze({
     'CHEST_MOTION_POLICY',
     'CHEST_SHELL_POLICY',
   ]),
+  'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['CHEST_CASTER_RENDER_POLICY']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_STRUCTURAL_DIMENSIONS']),
 });
 const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
@@ -444,11 +445,11 @@ const APPROVED_CHEST_MODE_OWNER_IMPORTS = Object.freeze({
     'CHEST_MODE_COMMODE_RENDER_POLICY',
     'CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY',
   ]),
+  'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['CHEST_MODE_COMMODE_CONSTRAINTS_POLICY']),
   'esm/native/builder/visuals_chest_mode_drawer_box.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
 });
 const APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES = Object.freeze({
-  'esm/native/builder/visuals_chest_mode_inputs.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
   'esm/native/runtime/api.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
   'esm/native/runtime/default_state.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
   'esm/native/services/api.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
@@ -460,14 +461,6 @@ const APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
 });
 const APPROVED_CHEST_MODE_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/visuals_chest_mode_inputs.ts': [
-    'commode',
-    'commode.defaultMirrorHeightCm',
-    'commode.maxMirrorHeightCm',
-    'commode.maxMirrorWidthCm',
-    'commode.minMirrorHeightCm',
-    'commode.minMirrorWidthCm',
-  ],
   'esm/native/runtime/default_state.ts': [
     'activeDefaults',
     'activeDefaults.widthCm',
@@ -1702,9 +1695,7 @@ const APPROVED_CORNICE_LEGACY_FIELD_USAGE = Object.freeze({
     'wave.sampleSpacingM',
   ]),
 });
-const APPROVED_CHEST_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['chest', 'wheels', 'wheels.heightM']),
-});
+const APPROVED_CHEST_LEGACY_FIELD_USAGE = Object.freeze({});
 
 function read(relativePath) {
   return fs.readFileSync(relativePath, 'utf8');

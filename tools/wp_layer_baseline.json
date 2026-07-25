@@ -5224,6 +5224,93 @@
       },
       "reason": "The Chest Mode build flow replaces one legacy facade statement with the focused Chest Structural owners plus the canonical Door Mount Thickness resolver on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Chest Mode build composition seam eliminates the extra Door Mount Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-25",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/visuals_chest_mode_inputs.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CHEST_MODE_COMMODE_CONSTRAINTS_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_BASE_DIMENSIONS", "CHEST_MODE_DIMENSIONS", "clampDimension", "cmToM"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Chest Mode input-normalization flow replaces one legacy facade statement with the focused Chest Mode Commode Constraints owner plus the focused Base Platform Render owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Chest Mode input composition seam eliminates the extra Base Platform Render statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-25",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/visuals_chest_mode_inputs.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CHEST_MODE_COMMODE_CONSTRAINTS_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_BASE_DIMENSIONS", "CHEST_MODE_DIMENSIONS", "clampDimension", "cmToM"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/chest_structural_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CHEST_CASTER_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Chest Mode input-normalization flow replaces one legacy facade statement with the focused Chest Mode Commode Constraints owner plus the focused Chest Caster Render owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Chest Mode input composition seam eliminates the extra Chest Caster Render statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-25",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/visuals_chest_mode_inputs.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CHEST_MODE_COMMODE_CONSTRAINTS_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_BASE_DIMENSIONS", "CHEST_MODE_DIMENSIONS", "clampDimension", "cmToM"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["clampDimension", "cmToM"],
+        "syntax": "static-import"
+      },
+      "reason": "The Chest Mode input-normalization flow replaces one legacy facade statement with the focused Chest Mode Commode Constraints owner plus the canonical dimension clamp and centimeter-to-meter conversion on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Chest Mode input composition seam eliminates the extra Units statement without reintroducing the legacy facade."
     }
   ]
 }

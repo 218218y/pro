@@ -30,6 +30,7 @@ import {
 import { HINGED_DOOR_MOUNT_POLICY } from '../esm/shared/dimensions/door_system_policy.ts';
 import { resolveDoorMountThicknessesFromConfig } from '../esm/shared/dimensions/door_mount_thickness_policy.ts';
 import { MATERIAL_THICKNESS_POLICY } from '../esm/shared/dimensions/material_thickness_policy.ts';
+import { cmToM } from '../esm/shared/dimensions/units.ts';
 
 class FakeVector3 {
   x: number;
@@ -272,8 +273,8 @@ test('visuals chest mode input/material helpers normalize chest-only UI and text
       chestCommodeEnabled: false,
       chestCommodeMirrorHeightCm: 100,
       chestCommodeMirrorWidthCm: 160,
-      chestCommodeMirrorHeightM: 1,
-      chestCommodeMirrorWidthM: 1.6,
+      chestCommodeMirrorHeightM: cmToM(100),
+      chestCommodeMirrorWidthM: cmToM(160),
       doorStyle: 'flat',
       isGroovesEnabled: false,
     }
@@ -363,6 +364,113 @@ test('visuals chest mode input/material helpers normalize chest-only UI and text
       } as any),
     /cfgSnapshot is required/
   );
+});
+
+test('visuals chest mode inputs preserve focused base and commode boundary policies', () => {
+  const { App } = createChestApp();
+  const common = {
+    H: 0.9,
+    totalW: 1.6,
+    D: 0.45,
+    drawersCount: 3,
+    cfgSnapshot: createChestCfg(),
+    renderPolicy: App.__outlineRenderPolicy,
+  };
+
+  const plain = resolveChestModeBuildInputs({
+    ...common,
+    baseType: 'legs',
+    baseLegStyle: 'square',
+    baseLegHeightCm: 16,
+    baseLegPlatformMode: 'plain',
+  });
+  assert.equal(plain.baseLegBottomPlatformHeightM, 0);
+  assert.equal(plain.baseLegTopPlatformHeightM, 0);
+  assert.equal(plain.baseLegHeightM, cmToM(16));
+  assert.equal(plain.baseLegHeightCm, 16);
+
+  const plinth = resolveChestModeBuildInputs({
+    ...common,
+    baseType: 'plinth',
+    baseLegStyle: 'square',
+    baseLegPlatformMode: 'stage',
+  });
+  assert.equal(plinth.baseLegBottomPlatformHeightM, 0);
+  assert.equal(plinth.baseLegTopPlatformHeightM, 0);
+
+  const wheels = resolveChestModeBuildInputs({
+    ...common,
+    baseType: 'legs',
+    baseLegStyle: 'wheels',
+    baseLegHeightCm: 16,
+    baseLegPlatformMode: 'stage',
+  });
+  assert.equal(wheels.baseLegPlatformMode, 'plain');
+  assert.equal(wheels.baseLegBottomPlatformHeightM, 0);
+  assert.equal(wheels.baseLegTopPlatformHeightM, 0);
+  assert.equal(wheels.baseLegHeightM, CHEST_CASTER_RENDER_POLICY.heightM);
+  assert.equal(wheels.baseLegHeightCm, Math.round(CHEST_CASTER_RENDER_POLICY.heightM * 1000) / 10);
+
+  const defaults = resolveChestModeBuildInputs(common);
+  assert.equal(
+    defaults.chestCommodeMirrorHeightCm,
+    CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.defaultMirrorHeightCm
+  );
+  assert.equal(defaults.chestCommodeMirrorWidthCm, common.totalW * 100);
+  assert.equal(
+    defaults.chestCommodeMirrorHeightM,
+    cmToM(CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.defaultMirrorHeightCm)
+  );
+  assert.equal(defaults.chestCommodeMirrorWidthM, cmToM(common.totalW * 100));
+
+  const belowMinimum = resolveChestModeBuildInputs({
+    ...common,
+    chestCommodeMirrorHeightCm: CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.minMirrorHeightCm - 1,
+    chestCommodeMirrorWidthCm: CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.minMirrorWidthCm - 1,
+  });
+  assert.equal(
+    belowMinimum.chestCommodeMirrorHeightCm,
+    CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.minMirrorHeightCm
+  );
+  assert.equal(
+    belowMinimum.chestCommodeMirrorWidthCm,
+    CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.minMirrorWidthCm
+  );
+
+  const aboveMaximum = resolveChestModeBuildInputs({
+    ...common,
+    chestCommodeMirrorHeightCm: CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.maxMirrorHeightCm + 1,
+    chestCommodeMirrorWidthCm: CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.maxMirrorWidthCm + 1,
+  });
+  assert.equal(
+    aboveMaximum.chestCommodeMirrorHeightCm,
+    CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.maxMirrorHeightCm
+  );
+  assert.equal(
+    aboveMaximum.chestCommodeMirrorWidthCm,
+    CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.maxMirrorWidthCm
+  );
+
+  for (const [heightCm, widthCm] of [
+    [
+      CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.minMirrorHeightCm,
+      CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.minMirrorWidthCm,
+    ],
+    [
+      CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.maxMirrorHeightCm,
+      CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.maxMirrorWidthCm,
+    ],
+  ]) {
+    const boundary = resolveChestModeBuildInputs({
+      ...common,
+      chestCommodeMirrorHeightCm: heightCm,
+      chestCommodeMirrorWidthCm: widthCm,
+    });
+    assert.equal(boundary.chestCommodeMirrorHeightCm, heightCm);
+    assert.equal(boundary.chestCommodeMirrorWidthCm, widthCm);
+    assert.equal(boundary.chestCommodeMirrorHeightM, cmToM(heightCm));
+    assert.equal(boundary.chestCommodeMirrorWidthM, cmToM(widthCm));
+  }
 });
 
 test('visuals chest mode color resolver reads only from the active cfg snapshot', () => {

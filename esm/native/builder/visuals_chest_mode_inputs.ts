@@ -1,9 +1,7 @@
-import {
-  CARCASS_BASE_DIMENSIONS,
-  CHEST_MODE_DIMENSIONS,
-  clampDimension,
-  cmToM,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { BASE_PLATFORM_RENDER_POLICY } from '../../shared/dimensions/base_platform_render_policy.js';
+import { CHEST_CASTER_RENDER_POLICY } from '../../shared/dimensions/chest_structural_policy.js';
+import { CHEST_MODE_COMMODE_CONSTRAINTS_POLICY } from '../../shared/dimensions/chest_mode_policy.js';
+import { clampDimension, cmToM } from '../../shared/dimensions/units.js';
 import {
   isBaseLegWheelsStyle,
   normalizeBaseLegPlatformMode,
@@ -117,26 +115,24 @@ export function resolveChestModeBuildInputs(opts: BuilderBuildChestOnlyOptsLike)
   const normalizedBaseType = typeof rawBaseType === 'string' ? rawBaseType : '';
   const baseLegPlatformEnabled =
     !isWheelsBase && normalizedBaseType !== 'plinth' && baseLegPlatformMode === 'stage';
-  const baseLegPlatformHeightM = baseLegPlatformEnabled ? CARCASS_BASE_DIMENSIONS.legs.platform.heightM : 0;
+  const baseLegPlatformHeightM = baseLegPlatformEnabled ? BASE_PLATFORM_RENDER_POLICY.heightM : 0;
   const basePlinthHeightCm = normalizeBasePlinthHeightCm(plinthHeightSource);
-  const effectiveBaseLegHeightM = isWheelsBase
-    ? CARCASS_BASE_DIMENSIONS.chest.wheels.heightM
-    : legOptions.heightM;
+  const effectiveBaseLegHeightM = isWheelsBase ? CHEST_CASTER_RENDER_POLICY.heightM : legOptions.heightM;
   const effectiveBaseLegHeightCm = Math.round(effectiveBaseLegHeightM * 1000) / 10;
   const chestCommodeMirrorHeightCm = normalizeChestCommodeDimensionCm(
     chestCommodeMirrorHeightSource,
-    CHEST_MODE_DIMENSIONS.commode.defaultMirrorHeightCm,
+    CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.defaultMirrorHeightCm,
     {
-      min: CHEST_MODE_DIMENSIONS.commode.minMirrorHeightCm,
-      max: CHEST_MODE_DIMENSIONS.commode.maxMirrorHeightCm,
+      min: CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.minMirrorHeightCm,
+      max: CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.maxMirrorHeightCm,
     }
   );
   const chestCommodeMirrorWidthCm = normalizeChestCommodeDimensionCm(
     chestCommodeMirrorWidthSource,
     totalW * 100,
     {
-      min: CHEST_MODE_DIMENSIONS.commode.minMirrorWidthCm,
-      max: CHEST_MODE_DIMENSIONS.commode.maxMirrorWidthCm,
+      min: CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.minMirrorWidthCm,
+      max: CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.maxMirrorWidthCm,
     }
   );
   return {

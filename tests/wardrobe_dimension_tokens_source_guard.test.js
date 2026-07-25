@@ -2074,6 +2074,16 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
         'resolveDoorMountThicknessesFromConfig',
       ],
     ],
+    [
+      'esm/native/builder/visuals_chest_mode_inputs.ts',
+      [
+        'BASE_PLATFORM_RENDER_POLICY',
+        'CHEST_CASTER_RENDER_POLICY',
+        'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
+        'clampDimension',
+        'cmToM',
+      ],
+    ],
   ]);
 
   for (const [rel, tokensToFind] of expectedTokenUse) {
