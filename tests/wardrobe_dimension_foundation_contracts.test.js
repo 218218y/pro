@@ -130,7 +130,6 @@ const APPROVED_STACK_SPLIT_FACADE_IMPORTS = Object.freeze({
   'esm/native/features/library_preset/library_preset_flow_shared.ts': Object.freeze([
     'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
   ]),
-  'esm/native/runtime/default_state.ts': Object.freeze(['DEFAULT_STACK_SPLIT_LOWER_HEIGHT']),
 });
 const APPROVED_STACK_SPLIT_FACADE_REEXPORTS = Object.freeze({
   'esm/native/runtime/api.ts': APPROVED_STACK_SPLIT_FACADE_SYMBOLS,
@@ -176,6 +175,7 @@ const APPROVED_BASE_PLINTH_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/native/runtime/default_state.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/features/base_plinth_support.ts': Object.freeze([
     'BASE_PLINTH_POLICY',
@@ -188,6 +188,7 @@ const APPROVED_BASE_PLINTH_OWNER_IMPORTS = Object.freeze({
 const APPROVED_BASE_LEG_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
   'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
+  'esm/native/runtime/default_state.ts': Object.freeze(['BASE_LEG_DIMENSIONS']),
   'esm/native/features/base_leg_support.ts': Object.freeze([
     'BASE_LEG_DIMENSIONS',
     'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM',
@@ -224,7 +225,6 @@ const APPROVED_BASE_PLATFORM_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_BASE_SUPPORT_FACADE_IMPORTS = Object.freeze({
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['CARCASS_BASE_DIMENSIONS']),
-  'esm/native/runtime/default_state.ts': Object.freeze(['BASE_LEG_DIMENSIONS', 'CARCASS_BASE_DIMENSIONS']),
 });
 const APPROVED_DIMENSION_FACADE_BROAD_DEPENDENCIES = Object.freeze([
   Object.freeze({
@@ -446,12 +446,15 @@ const APPROVED_CHEST_MODE_OWNER_IMPORTS = Object.freeze({
     'CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY',
   ]),
   'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['CHEST_MODE_COMMODE_CONSTRAINTS_POLICY']),
+  'esm/native/runtime/default_state.ts': Object.freeze([
+    'CHEST_MODE_ACTIVE_DEFAULTS_POLICY',
+    'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
+  ]),
   'esm/native/builder/visuals_chest_mode_drawer_box.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
 });
 const APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/runtime/api.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
-  'esm/native/runtime/default_state.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
   'esm/native/services/api.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
   'esm/native/services/api_runtime_base_surface.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
   'esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts': [
@@ -461,12 +464,6 @@ const APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
 });
 const APPROVED_CHEST_MODE_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/runtime/default_state.ts': [
-    'activeDefaults',
-    'activeDefaults.widthCm',
-    'commode',
-    'commode.defaultMirrorHeightCm',
-  ],
   'esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts': [
     'activeDefaults',
     'activeDefaults.baseType',

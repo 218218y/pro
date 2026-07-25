@@ -2084,6 +2084,23 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
         'cmToM',
       ],
     ],
+    [
+      'esm/native/runtime/default_state.ts',
+      [
+        'BASE_LEG_DIMENSIONS',
+        'BASE_PLINTH_POLICY',
+        'CHEST_MODE_ACTIVE_DEFAULTS_POLICY',
+        'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
+        'DEFAULT_CHEST_DRAWERS_COUNT',
+        'DEFAULT_CORNER_DOORS',
+        'DEFAULT_CORNER_WIDTH',
+        'DEFAULT_HEIGHT',
+        'DEFAULT_HINGED_DOORS',
+        'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
+        'DEFAULT_WIDTH',
+        'HINGED_DEFAULT_DEPTH',
+      ],
+    ],
   ]);
 
   for (const [rel, tokensToFind] of expectedTokenUse) {

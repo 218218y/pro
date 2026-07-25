@@ -9,19 +9,22 @@
 import type { RootStateLike } from '../../../types';
 import { DEFAULT_FRONT_COLOR_SHELF_INHERITANCE_MODE } from '../../shared/front_color_shelf_inheritance_shared.js';
 
+import { BASE_LEG_DIMENSIONS } from '../../shared/dimensions/base_leg_policy.js';
+import { BASE_PLINTH_POLICY } from '../../shared/dimensions/base_plinth_policy.js';
+import {
+  CHEST_MODE_ACTIVE_DEFAULTS_POLICY,
+  CHEST_MODE_COMMODE_CONSTRAINTS_POLICY,
+} from '../../shared/dimensions/chest_mode_policy.js';
+import { DEFAULT_STACK_SPLIT_LOWER_HEIGHT } from '../../shared/dimensions/stack_split_policy.js';
 import {
   DEFAULT_CHEST_DRAWERS_COUNT,
   DEFAULT_CORNER_DOORS,
   DEFAULT_CORNER_WIDTH,
   DEFAULT_HEIGHT,
   DEFAULT_HINGED_DOORS,
-  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
   DEFAULT_WIDTH,
   HINGED_DEFAULT_DEPTH,
-  BASE_LEG_DIMENSIONS,
-  CARCASS_BASE_DIMENSIONS,
-  CHEST_MODE_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+} from '../../shared/dimensions/wardrobe_defaults.js';
 
 export function createDefaultState(opts?: { noneMode?: string }): RootStateLike {
   opts = opts && typeof opts === 'object' ? opts : {};
@@ -37,8 +40,8 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
         depth: HINGED_DEFAULT_DEPTH,
         doors: DEFAULT_HINGED_DOORS,
         chestDrawersCount: DEFAULT_CHEST_DRAWERS_COUNT,
-        chestCommodeMirrorHeightCm: CHEST_MODE_DIMENSIONS.commode.defaultMirrorHeightCm,
-        chestCommodeMirrorWidthCm: CHEST_MODE_DIMENSIONS.activeDefaults.widthCm,
+        chestCommodeMirrorHeightCm: CHEST_MODE_COMMODE_CONSTRAINTS_POLICY.defaultMirrorHeightCm,
+        chestCommodeMirrorWidthCm: CHEST_MODE_ACTIVE_DEFAULTS_POLICY.widthCm,
         chestCommodeMirrorWidthManual: false,
         stackSplitLowerHeight: DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
         stackSplitLowerDepth: HINGED_DEFAULT_DEPTH,
@@ -68,7 +71,7 @@ export function createDefaultState(opts?: { noneMode?: string }): RootStateLike 
       baseLegColor: 'black',
       baseLegPlatformMode: 'stage',
       baseLegPlatformSideMode: 'overhang',
-      basePlinthHeightCm: CARCASS_BASE_DIMENSIONS.plinth.heightM * 100,
+      basePlinthHeightCm: BASE_PLINTH_POLICY.heightM * 100,
       baseLegHeightCm: BASE_LEG_DIMENSIONS.defaults.heightCm,
       baseLegWidthCm: BASE_LEG_DIMENSIONS.defaults.taperedWidthCm,
       // Sliding wardrobes: top/bottom rails finish (default requested: nickel).

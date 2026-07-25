@@ -5311,6 +5311,202 @@
       },
       "reason": "The Chest Mode input-normalization flow replaces one legacy facade statement with the focused Chest Mode Commode Constraints owner plus the canonical dimension clamp and centimeter-to-meter conversion on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Chest Mode input composition seam eliminates the extra Units statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-25",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/runtime/default_state.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "DEFAULT_CORNER_DOORS",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_WIDTH",
+          "HINGED_DEFAULT_DEPTH"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "DEFAULT_CORNER_DOORS",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "DEFAULT_WIDTH",
+          "HINGED_DEFAULT_DEPTH",
+          "BASE_LEG_DIMENSIONS",
+          "CARCASS_BASE_DIMENSIONS",
+          "CHEST_MODE_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT"],
+        "syntax": "static-import"
+      },
+      "reason": "The root default-state factory replaces one legacy facade statement with the canonical Wardrobe Defaults statement plus the focused Stack Split default owner on the existing runtime to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed default-state composition seam eliminates the extra Stack Split statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-25",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/runtime/default_state.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "DEFAULT_CORNER_DOORS",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_WIDTH",
+          "HINGED_DEFAULT_DEPTH"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "DEFAULT_CORNER_DOORS",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "DEFAULT_WIDTH",
+          "HINGED_DEFAULT_DEPTH",
+          "BASE_LEG_DIMENSIONS",
+          "CARCASS_BASE_DIMENSIONS",
+          "CHEST_MODE_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_leg_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_LEG_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The root default-state factory replaces one legacy facade statement with the canonical Wardrobe Defaults statement plus the focused Base Leg defaults owner on the existing runtime to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed default-state composition seam eliminates the extra Base Leg statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-25",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/runtime/default_state.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "DEFAULT_CORNER_DOORS",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_WIDTH",
+          "HINGED_DEFAULT_DEPTH"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "DEFAULT_CORNER_DOORS",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "DEFAULT_WIDTH",
+          "HINGED_DEFAULT_DEPTH",
+          "BASE_LEG_DIMENSIONS",
+          "CARCASS_BASE_DIMENSIONS",
+          "CHEST_MODE_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLINTH_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The root default-state factory replaces one legacy facade statement with the canonical Wardrobe Defaults statement plus the focused Base Plinth owner on the existing runtime to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed default-state composition seam eliminates the extra Base Plinth statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-25",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/runtime/default_state.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "DEFAULT_CORNER_DOORS",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_WIDTH",
+          "HINGED_DEFAULT_DEPTH"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "DEFAULT_CORNER_DOORS",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "DEFAULT_WIDTH",
+          "HINGED_DEFAULT_DEPTH",
+          "BASE_LEG_DIMENSIONS",
+          "CARCASS_BASE_DIMENSIONS",
+          "CHEST_MODE_DIMENSIONS"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CHEST_MODE_ACTIVE_DEFAULTS_POLICY", "CHEST_MODE_COMMODE_CONSTRAINTS_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The root default-state factory replaces one legacy facade statement with the canonical Wardrobe Defaults statement plus the focused Chest Mode Active Defaults and Commode Constraints owners on the existing runtime to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed default-state composition seam eliminates the extra Chest Mode statement without reintroducing the legacy facade."
     }
   ]
 }

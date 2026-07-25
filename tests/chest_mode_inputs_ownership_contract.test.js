@@ -88,31 +88,6 @@ function stableJson(value) {
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
-function listSourceFiles(dir) {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const absolute = path.join(dir, entry.name);
-    if (entry.isDirectory()) return listSourceFiles(absolute);
-    return entry.isFile() && /\.(?:js|mjs|ts|tsx)$/u.test(entry.name) ? [absolute] : [];
-  });
-}
-
-function facadeConsumers(importedSymbol) {
-  return listSourceFiles(path.join(root, 'esm'))
-    .flatMap(file => {
-      const source = fs.readFileSync(file, 'utf8');
-      const dependencies = analyzeModuleDependencies(file, source).imports;
-      return dependencies.some(
-        dependency =>
-          dependency.syntax === 'static-import' &&
-          dependency.specifier.includes('wardrobe_dimension_tokens_shared') &&
-          dependency.importedSymbols.includes(importedSymbol)
-      )
-        ? [path.relative(root, file).replaceAll(path.sep, '/')]
-        : [];
-    })
-    .sort();
-}
-
 test('Chest Mode Inputs imports exactly four focused owner statements without aliases or facade access', () => {
   const source = read(consumerRel);
   const analysis = analyzeModuleDependencies(path.join(root, consumerRel), source);
@@ -209,16 +184,4 @@ test('Chest Mode Inputs appends exactly Entries 143-145 after the unchanged 142-
     semanticSha256(baseline.migrationBudgets.slice(0, 145)),
     'd4f939330cd5c5ec1febe5a004598d66f0a0dcc40618591f3fedffb367ea2447'
   );
-});
-
-test('Chest Mode Inputs leaves the exact requested focused-migration inventories', () => {
-  assert.deepEqual(facadeConsumers('CARCASS_BASE_DIMENSIONS'), [
-    'esm/native/builder/corner_connector_emit_shell_base.ts',
-    'esm/native/runtime/default_state.ts',
-  ]);
-  assert.deepEqual(facadeConsumers('CHEST_MODE_DIMENSIONS'), ['esm/native/runtime/default_state.ts']);
-  assert.deepEqual(facadeConsumers('cmToM'), [
-    'esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts',
-  ]);
-  assert.deepEqual(facadeConsumers('clampDimension'), []);
 });

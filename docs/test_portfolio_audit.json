@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-25T20:22:40.935Z",
+  "generatedAt": "2026-07-25T21:00:26.924Z",
   "totals": {
-    "tests": 1280,
-    "unitRunnerTests": 1272,
+    "tests": 1282,
+    "unitRunnerTests": 1274,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 438,
+    "contract": 440,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -1611,6 +1611,14 @@
     },
     {
       "file": "tests/debug_console_surface_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/default_state_dimension_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/default_state_dimension_ownership_runtime.test.ts",
       "category": "contract"
     },
     {
