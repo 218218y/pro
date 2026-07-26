@@ -11,6 +11,7 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ownerRel = 'esm/shared/dimensions/library_preset_policy.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
+const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const stackSplitSpecifier = './stack_split_policy.js';
 const ownerFacadeSpecifier = './dimensions/library_preset_policy.js';
 const stackSplitScalars = Object.freeze([
@@ -350,6 +351,7 @@ function inspectLibraryPresetConsumer(file, source) {
   const violations = [];
   const analysis = analyzeModuleDependencies(file, source);
   const facadeTarget = canonicalModuleTarget(path.join(root, facadeRel));
+  const publicDimensionsTarget = canonicalModuleTarget(path.join(root, publicDimensionsRel));
   const ownerTarget = canonicalModuleTarget(path.join(root, ownerRel));
   const relative = relativePath(file);
   let compatibilityImportCount = 0;
@@ -359,23 +361,61 @@ function inspectLibraryPresetConsumer(file, source) {
     const target = resolveModuleTarget(file, dependency.specifier);
     const bindings = dependency.bindings ?? [];
     const importedSymbols = dependency.importedSymbols ?? [];
+    const exportedSymbols = dependency.exportedSymbols ?? [];
     const compatibilityBindings = bindings.filter(
       binding => binding.importedName === 'LIBRARY_PRESET_DIMENSIONS'
     );
     const focusedSymbols = importedSymbols.filter(symbol => focusedOwnerSymbols.has(symbol));
+    const targetsLegacyFacade = target === facadeTarget;
+    const targetsPublicDimensionsBarrel = target === publicDimensionsTarget;
+    const targetsCompatibilityPath = targetsLegacyFacade || targetsPublicDimensionsBarrel;
     const targetsFocusedOwner = target === ownerTarget;
+    const hasWildcard =
+      importedSymbols.includes('*') || bindings.some(binding => binding.importedName === '*');
+    const importsCompatibilitySymbol =
+      importedSymbols.includes('LIBRARY_PRESET_DIMENSIONS') || compatibilityBindings.length > 0;
+    const exportsCompatibilitySymbol =
+      exportedSymbols.includes('LIBRARY_PRESET_DIMENSIONS') ||
+      bindings.some(binding => binding.exportedName === 'LIBRARY_PRESET_DIMENSIONS');
+    const isDynamicImport = dependency.syntax === 'dynamic-import';
+    const isReExport =
+      dependency.syntax === 'static-re-export' ||
+      exportedSymbols.length > 0 ||
+      bindings.some(binding => binding.exportedName !== null);
+    const compatibilityAttempt =
+      importsCompatibilitySymbol ||
+      exportsCompatibilitySymbol ||
+      (targetsCompatibilityPath && (hasWildcard || isDynamicImport));
 
-    if (compatibilityBindings.length > 0) {
+    if (compatibilityAttempt) {
       compatibilityImportCount += 1;
+      if (!targetsLegacyFacade) {
+        violations.push({
+          kind: 'compatibility-bridge-or-barrel',
+          specifier: dependency.specifier,
+        });
+      }
+      if (hasWildcard && dependency.syntax === 'static-import') {
+        violations.push({ kind: 'compatibility-namespace-import' });
+      }
+      if (isDynamicImport) {
+        violations.push({ kind: 'compatibility-dynamic-import' });
+      }
+      if (isReExport) {
+        violations.push({ kind: 'compatibility-re-export' });
+      }
       const bindingsValid =
         compatibilityBindings.length === 1 &&
+        exportedSymbols.length === 0 &&
         compatibilityBindings[0].localName === 'LIBRARY_PRESET_DIMENSIONS' &&
         compatibilityBindings[0].exportedName === null;
       if (
-        target !== facadeTarget ||
+        !targetsLegacyFacade ||
         dependency.kind !== 'value' ||
         dependency.syntax !== 'static-import' ||
-        !bindingsValid
+        !bindingsValid ||
+        hasWildcard ||
+        isReExport
       ) {
         violations.push({ kind: 'compatibility-import-shape' });
       }
@@ -519,6 +559,7 @@ test('Library Preset consumers stay within the approved universe and use exactly
   }
 
   for (const file of walkSourceFiles(path.join(root, 'esm', 'native'))) {
+    if (relativePath(file) === publicDimensionsRel) continue;
     const source = fs.readFileSync(file, 'utf8');
     const inspection = inspectLibraryPresetConsumer(file, source);
     if (inspection.mode !== 'none') assert.deepEqual(inspection.violations, [], relativePath(file));
@@ -539,6 +580,94 @@ test('Library Preset approved consumers may transition from compatibility to dir
   const focusedInspection = inspectLibraryPresetConsumer(approvedFile, focusedSource);
   assert.equal(focusedInspection.mode, 'focused');
   assert.deepEqual(focusedInspection.violations, []);
+});
+
+test('Library Preset broad compatibility attempts are classified and rejected instead of collapsing to none', () => {
+  const approvedFile = path.join(root, approvedConsumerUniverse[0]);
+  const unapprovedFile = path.join(root, 'esm/native/features/unapproved_library_preset_consumer.ts');
+  const facadeNamespaceSource = [
+    "import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';",
+    'export const preset = dimensions.LIBRARY_PRESET_DIMENSIONS;',
+  ].join('\n');
+  const focusedImport =
+    "import { LIBRARY_PRESET_POLICY } from '../../shared/dimensions/library_preset_policy.js';";
+  const cases = [
+    {
+      name: 'compatibility namespace import from the facade',
+      file: approvedFile,
+      source: facadeNamespaceSource,
+      expectedMode: 'compatibility',
+      expectedKinds: ['compatibility-namespace-import', 'compatibility-import-shape'],
+    },
+    {
+      name: 'compatibility dynamic import from the facade',
+      file: approvedFile,
+      source: "export const dimensions = await import('../../shared/wardrobe_dimension_tokens_shared.js');",
+      expectedMode: 'compatibility',
+      expectedKinds: ['compatibility-dynamic-import', 'compatibility-import-shape'],
+    },
+    {
+      name: 'compatibility namespace import through the public dimensions barrel',
+      file: approvedFile,
+      source: [
+        "import * as dimensions from '../features/dimensions/index.js';",
+        'export const preset = dimensions.LIBRARY_PRESET_DIMENSIONS;',
+      ].join('\n'),
+      expectedMode: 'compatibility',
+      expectedKinds: [
+        'compatibility-bridge-or-barrel',
+        'compatibility-namespace-import',
+        'compatibility-import-shape',
+      ],
+    },
+    {
+      name: 'compatibility wildcard re-export from the facade',
+      file: approvedFile,
+      source: "export * from '../../shared/wardrobe_dimension_tokens_shared.js';",
+      expectedMode: 'compatibility',
+      expectedKinds: ['compatibility-re-export', 'compatibility-import-shape'],
+    },
+    {
+      name: 'compatibility named re-export from the facade',
+      file: approvedFile,
+      source: "export { LIBRARY_PRESET_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';",
+      expectedMode: 'compatibility',
+      expectedKinds: ['compatibility-re-export', 'compatibility-import-shape'],
+    },
+    {
+      name: 'compatibility exported-name alias from the facade',
+      file: approvedFile,
+      source:
+        "export { WARDROBE_DEFAULTS as LIBRARY_PRESET_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';",
+      expectedMode: 'compatibility',
+      expectedKinds: ['compatibility-re-export', 'compatibility-import-shape'],
+    },
+    {
+      name: 'unapproved broad compatibility consumer',
+      file: unapprovedFile,
+      source: facadeNamespaceSource,
+      expectedMode: 'compatibility',
+      expectedKinds: ['compatibility-namespace-import', 'compatibility-import-shape', 'unapproved-consumer'],
+    },
+    {
+      name: 'compatibility namespace and focused owner dual path',
+      file: approvedFile,
+      source: `${facadeNamespaceSource}\n${focusedImport}`,
+      expectedMode: 'dual',
+      expectedKinds: ['compatibility-namespace-import', 'compatibility-import-shape', 'dual-path-consumer'],
+    },
+  ];
+
+  for (const probe of cases) {
+    const inspection = inspectLibraryPresetConsumer(probe.file, probe.source);
+    assert.equal(inspection.mode, probe.expectedMode, probe.name);
+    assert.notEqual(inspection.mode, 'none', probe.name);
+    assert.deepEqual(
+      inspection.violations.map(violation => violation.kind).sort(),
+      [...probe.expectedKinds].sort(),
+      probe.name
+    );
+  }
 });
 
 test('Library Preset owner contract rejects owner/facade drift and invalid future consumer ownership paths', () => {
