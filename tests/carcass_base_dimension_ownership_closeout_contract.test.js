@@ -18,6 +18,12 @@ const platformOwnerRel = 'esm/shared/dimensions/base_platform_render_policy.ts';
 const chestOwnerRel = 'esm/shared/dimensions/chest_structural_policy.ts';
 const facadeAbsolute = path.join(root, facadeRel);
 const publicDimensionsAbsolute = path.join(root, publicDimensionsRel);
+const sourceFileExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
+const runtimeExtensionCandidates = Object.freeze({
+  '.js': Object.freeze(['.ts', '.tsx', '.mts']),
+  '.mjs': Object.freeze(['.mts', '.ts', '.tsx']),
+  '.cjs': Object.freeze(['.cts', '.ts', '.tsx']),
+});
 const esmSourceFiles = listSourceFiles(path.join(root, 'esm'));
 const sourceCache = new Map();
 const sourceFileCache = new Map();
@@ -119,20 +125,48 @@ function memberPath(node) {
   return objectPath && propertyName ? `${objectPath}.${propertyName}` : null;
 }
 
+function stripQueryHash(specifier) {
+  const query = specifier.indexOf('?');
+  const hash = specifier.indexOf('#');
+  const cut = query === -1 ? hash : hash === -1 ? query : Math.min(query, hash);
+  return cut === -1 ? specifier : specifier.slice(0, cut);
+}
+
+function canonicalModuleTarget(file) {
+  return path.normalize(path.resolve(file)).toLowerCase();
+}
+
 function resolveModuleTarget(fromFile, specifier) {
   if (typeof specifier !== 'string') return null;
-  let absolute;
-  if (specifier.startsWith('@/')) absolute = path.join(root, 'esm', specifier.slice(2));
-  else if (specifier.startsWith('.')) absolute = path.resolve(path.dirname(fromFile), specifier);
-  else return null;
-  return path
-    .normalize(absolute)
-    .replace(/\.(?:js|mjs|cjs)$/u, '.ts')
-    .toLowerCase();
+  const cleanSpecifier = stripQueryHash(specifier);
+  let raw;
+  if (cleanSpecifier.startsWith('@/')) raw = path.join(root, 'esm', cleanSpecifier.slice(2));
+  else if (cleanSpecifier.startsWith('.')) {
+    raw = path.resolve(path.dirname(fromFile), cleanSpecifier);
+  } else return null;
+
+  const candidates = [raw];
+  const extension = path.extname(raw).toLowerCase();
+  if (!extension) {
+    candidates.push(...sourceFileExtensions.map(sourceExtension => `${raw}${sourceExtension}`));
+  } else {
+    const replacementExtensions = runtimeExtensionCandidates[extension] ?? [];
+    const stem = raw.slice(0, -extension.length);
+    candidates.push(...replacementExtensions.map(sourceExtension => `${stem}${sourceExtension}`));
+  }
+
+  if (fs.existsSync(raw) && fs.statSync(raw).isDirectory()) {
+    candidates.push(
+      ...sourceFileExtensions.map(sourceExtension => path.join(raw, `index${sourceExtension}`))
+    );
+  }
+
+  const resolved = candidates.find(candidate => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
+  return resolved ? canonicalModuleTarget(resolved) : null;
 }
 
 function isTarget(fromFile, specifier, target) {
-  return resolveModuleTarget(fromFile, specifier) === path.normalize(target).toLowerCase();
+  return resolveModuleTarget(fromFile, specifier) === canonicalModuleTarget(target);
 }
 
 function isApprovedPublicWildcardProjection(file, dependency) {
@@ -318,6 +352,35 @@ test('BASE_LEG_DIMENSIONS cannot be consumed through either compatibility path',
   assert.deepEqual(compatibilityPaths, [publicDimensionsRel]);
 });
 
+test('compatibility targets resolve explicit, extensionless, directory-index, runtime-extension, and alias paths canonically', () => {
+  const probeFile = path.join(root, 'esm/native/services/__carcass_base_compatibility_probe.ts');
+  const publicBarrelSpecifiers = [
+    '../features/dimensions/index.js',
+    '../features/dimensions/index.ts',
+    '../features/dimensions/index',
+    '../features/dimensions',
+    '../features/dimensions/index.mjs',
+    '../features/dimensions/index.cjs',
+    '../features/./dimensions/../dimensions/index?compatibility#guard',
+    '@/native/features/dimensions',
+  ];
+  const facadeSpecifiers = [
+    '../../shared/wardrobe_dimension_tokens_shared.js',
+    '../../shared/wardrobe_dimension_tokens_shared.ts',
+    '../../shared/wardrobe_dimension_tokens_shared',
+    '../../shared/wardrobe_dimension_tokens_shared.mjs',
+    '../../shared/wardrobe_dimension_tokens_shared.cjs',
+    '@/shared/wardrobe_dimension_tokens_shared',
+  ];
+
+  for (const specifier of publicBarrelSpecifiers) {
+    assert.equal(resolveModuleTarget(probeFile, specifier), canonicalModuleTarget(publicDimensionsAbsolute));
+  }
+  for (const specifier of facadeSpecifiers) {
+    assert.equal(resolveModuleTarget(probeFile, specifier), canonicalModuleTarget(facadeAbsolute));
+  }
+});
+
 test('BASE_LEG_DIMENSIONS compatibility guard rejects named, aliased, broad, re-exported, and dynamic access', () => {
   const probeFile = path.join(root, 'esm/native/services/__carcass_base_compatibility_probe.ts');
   const cases = [
@@ -372,6 +435,46 @@ test('BASE_LEG_DIMENSIONS compatibility guard rejects named, aliased, broad, re-
       syntax: 'static-re-export',
       source: "export * from '../../shared/wardrobe_dimension_tokens_shared.js';",
     },
+    {
+      name: 'extensionless named import from public barrel index',
+      syntax: 'static-import',
+      source:
+        "import { BASE_LEG_DIMENSIONS } from '../features/dimensions/index';\nexport const value = BASE_LEG_DIMENSIONS.defaults.heightCm;",
+    },
+    {
+      name: 'extensionless aliased import from public barrel index',
+      syntax: 'static-import',
+      source:
+        "import { BASE_LEG_DIMENSIONS as LEGS } from '../features/dimensions/index';\nexport const value = LEGS.defaults.heightCm;",
+    },
+    {
+      name: 'directory named import from public barrel',
+      syntax: 'static-import',
+      source:
+        "import { BASE_LEG_DIMENSIONS } from '../features/dimensions';\nexport const value = BASE_LEG_DIMENSIONS.defaults.heightCm;",
+    },
+    {
+      name: 'extensionless namespace import from public barrel index',
+      syntax: 'static-import',
+      source:
+        "import * as dimensions from '../features/dimensions/index';\nexport const value = dimensions.BASE_LEG_DIMENSIONS.defaults.heightCm;",
+    },
+    {
+      name: 'extensionless named re-export from public barrel index',
+      syntax: 'static-re-export',
+      source: "export { BASE_LEG_DIMENSIONS } from '../features/dimensions/index';",
+    },
+    {
+      name: 'directory wildcard re-export from public barrel',
+      syntax: 'static-re-export',
+      source: "export * from '../features/dimensions';",
+    },
+    {
+      name: 'extensionless named import from legacy facade',
+      syntax: 'static-import',
+      source:
+        "import { BASE_LEG_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared';\nexport const value = BASE_LEG_DIMENSIONS.defaults.heightCm;",
+    },
   ];
 
   for (const probe of cases) {
@@ -388,7 +491,7 @@ test('BASE_LEG_DIMENSIONS compatibility guard rejects named, aliased, broad, re-
   const aliasInspection = inspectCompatibilitySymbolAccess({
     file: probeFile,
     source:
-      "import { BASE_LEG_DIMENSIONS as LEGS } from '../features/dimensions/index.js';\nexport const value = LEGS.defaults.heightCm;",
+      "import { BASE_LEG_DIMENSIONS as LEGS } from '../features/dimensions/index';\nexport const value = LEGS.defaults.heightCm;",
     symbol: 'BASE_LEG_DIMENSIONS',
   });
   assert.deepEqual(aliasInspection.violations[0].bindings, [
