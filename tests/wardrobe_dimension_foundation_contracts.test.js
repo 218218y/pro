@@ -145,6 +145,9 @@ const CARCASS_SHELL_DIRECT_CONSUMERS = Object.freeze([
   'esm/native/builder/core_carcass_shared.ts',
   'esm/native/builder/core_carcass_shell.ts',
   'esm/native/builder/corner_wing_carcass_shell_metrics.ts',
+  'esm/native/builder/corner_wing_cornice_path.ts',
+  'esm/native/builder/corner_wing_cornice_profile.ts',
+  'esm/native/builder/corner_wing_cornice_wave.ts',
   'esm/native/builder/module_loop_pipeline_hex_cell.ts',
   'esm/native/builder/module_loop_pipeline_module_depth.ts',
   'esm/native/services/canvas_picking_split_hover_preview_line.ts',
@@ -433,6 +436,9 @@ const APPROVED_CARCASS_CORNICE_OWNER_IMPORTS = Object.freeze({
     'CARCASS_CORNICE_RENDER_POLICY',
   ]),
   'esm/native/builder/corner_connector_cornice_wave.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
+  'esm/native/builder/corner_wing_cornice_path.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
+  'esm/native/builder/corner_wing_cornice_profile.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
+  'esm/native/builder/corner_wing_cornice_wave.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CARCASS_CORNICE_RENDER_POLICY']),
 });
 const APPROVED_CORNICE_THETA_CLAMP_M_USAGE = Object.freeze({
@@ -1639,62 +1645,7 @@ const APPROVED_DRAWER_SKETCH_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DRAWER_EXTERNAL_INTERNAL_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DOOR_SYSTEM_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_DOOR_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({});
-const APPROVED_CORNICE_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/corner_wing_cornice_path.ts': Object.freeze([
-    'common',
-    'common.epsilonM',
-    'common.minSegmentLengthM',
-    'common.thetaClampM',
-    'profile',
-    'profile.seamEpsilonM',
-  ]),
-  'esm/native/builder/corner_wing_cornice_profile.ts': Object.freeze([
-    'common',
-    'common.epsilonM',
-    'common.minBoxDimensionM',
-    'common.yLiftM',
-    'profile',
-    'profile.backStepM',
-    'profile.baseBandEpsilonM',
-    'profile.baseHeightM',
-    'profile.baseHeightRatio',
-    'profile.baseSealEpsilonM',
-    'profile.capHeightRatio',
-    'profile.capOutM',
-    'profile.capRiseM',
-    'profile.heightM',
-    'profile.insetOnRoofM',
-    'profile.minOverhangM',
-    'profile.miterEpsilonZM',
-    'profile.overhangXM',
-    'profile.overhangZM',
-    'profile.slopeHeightM',
-    'profile.slopeHeightRatio',
-    'profile.slopeOutM',
-    'profile.step1OutM',
-    'profile.step2OutM',
-    'profile.topLipOutM',
-    'profile.xMaxDefaultM',
-  ]),
-  'esm/native/builder/corner_wing_cornice_wave.ts': Object.freeze([
-    'common',
-    'common.minBoxDimensionM',
-    'common.minSegmentLengthM',
-    'common.yLiftM',
-    'wave',
-    'wave.amplitudeMaxM',
-    'wave.amplitudeMinM',
-    'wave.amplitudeRatio',
-    'wave.cycles',
-    'wave.fallbackWoodThicknessM',
-    'wave.frameThicknessMaxM',
-    'wave.frameThicknessMinM',
-    'wave.maxHeightM',
-    'wave.sampleCountMax',
-    'wave.sampleCountMin',
-    'wave.sampleSpacingM',
-  ]),
-});
+const APPROVED_CORNICE_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_CHEST_LEGACY_FIELD_USAGE = Object.freeze({});
 
 function read(relativePath) {

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-25T23:41:06.605Z",
+  "generatedAt": "2026-07-26T06:39:40.564Z",
   "totals": {
-    "tests": 1286,
-    "unitRunnerTests": 1278,
+    "tests": 1287,
+    "unitRunnerTests": 1279,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 444,
+    "contract": 445,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -1592,6 +1592,10 @@
     {
       "file": "tests/corner_wing_cell_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/corner_wing_cornice_ownership_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/corner_wing_cornice_runtime.test.ts",

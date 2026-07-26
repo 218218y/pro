@@ -1,7 +1,5 @@
-import {
-  CARCASS_CORNICE_DIMENSIONS,
-  CARCASS_SHELL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_CORNICE_RENDER_POLICY } from '../../shared/dimensions/carcass_cornice_render_policy.js';
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
 import type {
   CorniceCtxLike,
   CorniceHelpersLike,
@@ -58,8 +56,8 @@ export function applyCornerWingProfileCornice(args: {
   } = ctx;
   const { __wingBackPanelThick, __wingBackPanelCenterZ } = locals;
   const { readNumFrom } = helpers;
-  const corniceCommon = CARCASS_CORNICE_DIMENSIONS.common;
-  const corniceProfile = CARCASS_CORNICE_DIMENSIONS.profile;
+  const corniceCommon = CARCASS_CORNICE_RENDER_POLICY.common;
+  const corniceProfile = CARCASS_CORNICE_RENDER_POLICY.profile;
   // New cornice profile (matches the upgraded main wardrobe cornice in core_pure.ts):
   // - Multi-layer crown molding profile (single solid shape)
   // - Front + sides only (no back piece)
@@ -68,7 +66,7 @@ export function applyCornerWingProfileCornice(args: {
 
   const overhangX = corniceProfile.overhangXM;
   const overhangZ = corniceProfile.overhangZM;
-  const insetOnRoof = corniceProfile.insetOnRoofM;
+  const insetOnRoof: number = corniceProfile.insetOnRoofM;
   const backStep = corniceProfile.backStepM;
 
   // Tiny anti-z-fight seam bias for miter joins.
@@ -167,6 +165,7 @@ export function applyCornerWingProfileCornice(args: {
         overhangZ,
         seamEps,
         minBoxDimension: corniceCommon.minBoxDimensionM,
+        yLiftM: corniceCommon.yLiftM,
       })
     : buildFlatCornerWingProfileSegments({
         wingW,
@@ -371,6 +370,7 @@ type SegmentedCornerWingProfileSegmentsArgs = {
   overhangZ: number;
   seamEps: number;
   minBoxDimension: number;
+  yLiftM: number;
 };
 
 function buildSegmentedCornerWingProfileSegments(
@@ -459,7 +459,7 @@ function buildSegmentedCornerWingProfileSegments(
               : 0,
         ...(useOuterMiter ? { miterMode: 'outer_extend' as const } : null),
         x: (pathSeg.ax + pathSeg.bx) / 2,
-        y: run.topY + CARCASS_CORNICE_DIMENSIONS.common.yLiftM,
+        y: run.topY + args.yLiftM,
         z: (pathSeg.az + pathSeg.bz) / 2,
       });
     }
@@ -502,7 +502,7 @@ function buildSegmentedCornerWingProfileSegments(
         ...(sideEndZ >= sideStartZ ? { miterEndTrim: sideMiterTrim } : { miterStartTrim: sideMiterTrim }),
         ...(useOuterMiter && sideMiterTrim > 0 ? { miterMode: 'outer_extend' as const } : null),
         x: run.left,
-        y: run.topY + CARCASS_CORNICE_DIMENSIONS.common.yLiftM,
+        y: run.topY + args.yLiftM,
         z: sideCenterZ,
       });
     }
@@ -546,7 +546,7 @@ function buildSegmentedCornerWingProfileSegments(
         ...(sideEndZ >= sideStartZ ? { miterEndTrim: sideMiterTrim } : { miterStartTrim: sideMiterTrim }),
         ...(useOuterMiter && sideMiterTrim > 0 ? { miterMode: 'outer_extend' as const } : null),
         x: run.right,
-        y: run.topY + CARCASS_CORNICE_DIMENSIONS.common.yLiftM,
+        y: run.topY + args.yLiftM,
         z: sideCenterZ,
       });
     }

@@ -1,13 +1,11 @@
-import {
-  CARCASS_CORNICE_DIMENSIONS,
-  CARCASS_SHELL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_CORNICE_RENDER_POLICY } from '../../shared/dimensions/carcass_cornice_render_policy.js';
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
 import type { CornerCell } from './corner_geometry_plan.js';
 import type { CorniceCtxLike, CorniceLocalsLike } from './corner_wing_cornice_contracts.js';
 import { resolveCornerWingCorniceTopY } from './corner_wing_cornice_contracts.js';
 
-const CORNICE_COMMON = CARCASS_CORNICE_DIMENSIONS.common;
-const CORNICE_PROFILE = CARCASS_CORNICE_DIMENSIONS.profile;
+const CORNICE_COMMON = CARCASS_CORNICE_RENDER_POLICY.common;
+const CORNICE_PROFILE = CARCASS_CORNICE_RENDER_POLICY.profile;
 const CORNICE_THETA_CLAMP_RAD = Number(CORNICE_COMMON.thetaClampM);
 
 export const CORNER_CORNICE_EPS = CORNICE_COMMON.epsilonM;

@@ -5565,6 +5565,93 @@
       },
       "reason": "The Corner Connector shell-base flow replaces one legacy facade statement with the focused Base Plinth owner plus the focused Base Platform Render owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Corner Connector shell-base composition seam eliminates the extra Base Platform Render statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-26",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_wing_cornice_path.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_CORNICE_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_CORNICE_DIMENSIONS", "CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner Wing Cornice path flow replaces one legacy facade statement with the focused Carcass Cornice Render owner plus the focused Carcass Shell owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Corner Wing Cornice path composition seam eliminates the extra Carcass Shell statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-26",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_wing_cornice_profile.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_CORNICE_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_CORNICE_DIMENSIONS", "CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner Wing Cornice profile flow replaces one legacy facade statement with the focused Carcass Cornice Render owner plus the focused Carcass Shell owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Corner Wing Cornice profile composition seam eliminates the extra Carcass Shell statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-26",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_wing_cornice_wave.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_CORNICE_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_CORNICE_DIMENSIONS", "CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner Wing Cornice wave flow replaces one legacy facade statement with the focused Carcass Cornice Render owner plus the focused Carcass Shell owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Corner Wing Cornice wave composition seam eliminates the extra Carcass Shell statement without reintroducing the legacy facade."
     }
   ]
 }

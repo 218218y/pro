@@ -1,7 +1,5 @@
-import {
-  CARCASS_CORNICE_DIMENSIONS,
-  CARCASS_SHELL_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_CORNICE_RENDER_POLICY } from '../../shared/dimensions/carcass_cornice_render_policy.js';
+import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
 import type { CorniceCtxLike, CorniceLocalsLike } from './corner_wing_cornice_contracts.js';
 import { getThreeCornice, resolveCornerWingCorniceTopY } from './corner_wing_cornice_contracts.js';
 import {
@@ -36,8 +34,8 @@ export function applyCornerWingWaveCornice(args: { ctx: CorniceCtxLike; locals: 
   // - Front: vertical strip on the roof front edge, TOP is a wave cut (peaks at ends + center).
   // - Sides: vertical strips, straight top, run from front to back (NO back strip).
   // - No top cover (open from above).
-  const corniceCommon = CARCASS_CORNICE_DIMENSIONS.common;
-  const corniceWave = CARCASS_CORNICE_DIMENSIONS.wave;
+  const corniceCommon = CARCASS_CORNICE_RENDER_POLICY.common;
+  const corniceWave = CARCASS_CORNICE_RENDER_POLICY.wave;
   const topY = resolveCornerWingCorniceTopY(ctx, wingH);
   const epsY = corniceCommon.yLiftM; // tiny lift to avoid z-fighting with the roof boards
   const yPlace = topY + epsY;
@@ -82,6 +80,7 @@ export function applyCornerWingWaveCornice(args: { ctx: CorniceCtxLike; locals: 
       maxH,
       waveCycles,
       yPlace,
+      yLiftM: corniceCommon.yLiftM,
       minBoxDimension: corniceCommon.minBoxDimensionM,
       minSegmentLength: corniceCommon.minSegmentLengthM,
       sampleSpacing: corniceWave.sampleSpacingM,
@@ -182,6 +181,7 @@ type SegmentedCornerWingWaveArgs = {
   maxH: number;
   waveCycles: number;
   yPlace: number;
+  yLiftM: number;
   minBoxDimension: number;
   minSegmentLength: number;
   sampleSpacing: number;
@@ -247,7 +247,7 @@ function applySegmentedCornerWingWaveCornice(args: SegmentedCornerWingWaveArgs):
         const mesh = new threeCornice.Mesh(geo, args.corniceMatFor('corner_cornice_front'));
         const center = inwardCornerWaveCenterForPathSegment(pathSeg, args.frameT);
         mesh.rotation.y = cornerWaveRotationForPathSegment(pathSeg);
-        mesh.position.set(center.x, run.topY + CARCASS_CORNICE_DIMENSIONS.common.yLiftM, center.z);
+        mesh.position.set(center.x, run.topY + args.yLiftM, center.z);
         mesh.userData = { partId: 'corner_cornice_front' };
         addMesh(mesh);
         continue;
@@ -257,11 +257,7 @@ function applySegmentedCornerWingWaveCornice(args: SegmentedCornerWingWaveArgs):
       const geo = new threeCornice.BoxGeometry(args.frameT, args.maxH, len);
       const mesh = new threeCornice.Mesh(geo, args.corniceMatFor('corner_cornice_front'));
       mesh.rotation.y = cornerProfileRotationForPathSegment(pathSeg);
-      mesh.position.set(
-        center.x,
-        run.topY + CARCASS_CORNICE_DIMENSIONS.common.yLiftM + args.maxH / 2,
-        center.z
-      );
+      mesh.position.set(center.x, run.topY + args.yLiftM + args.maxH / 2, center.z);
       mesh.userData = { partId: 'corner_cornice_front' };
       addMesh(mesh);
     }
@@ -293,7 +289,7 @@ function addSegmentedCornerWaveSide(params: {
       : 'corner_cornice_side_right';
   const geo = new threeCornice.BoxGeometry(args.frameT, args.maxH, sideDepth);
   const mesh = new threeCornice.Mesh(geo, args.corniceMatFor(partId));
-  mesh.position.set(x, run.topY + CARCASS_CORNICE_DIMENSIONS.common.yLiftM + args.maxH / 2, sideZ);
+  mesh.position.set(x, run.topY + args.yLiftM + args.maxH / 2, sideZ);
   mesh.userData = { partId };
   if (!args.__sketchMode) {
     mesh.castShadow = true;
