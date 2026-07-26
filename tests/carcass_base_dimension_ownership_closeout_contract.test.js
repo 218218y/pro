@@ -135,6 +135,57 @@ function isTarget(fromFile, specifier, target) {
   return resolveModuleTarget(fromFile, specifier) === path.normalize(target).toLowerCase();
 }
 
+function isApprovedPublicWildcardProjection(file, dependency) {
+  return (
+    rel(file) === publicDimensionsRel &&
+    isTarget(file, dependency.specifier, facadeAbsolute) &&
+    dependency.kind === 'value' &&
+    dependency.syntax === 'static-re-export' &&
+    dependency.importedSymbols.length === 1 &&
+    dependency.importedSymbols[0] === '*' &&
+    dependency.exportedSymbols.length === 1 &&
+    dependency.exportedSymbols[0] === '*' &&
+    dependency.bindings.length === 1 &&
+    dependency.bindings[0].importedName === '*' &&
+    dependency.bindings[0].localName === null &&
+    dependency.bindings[0].exportedName === '*'
+  );
+}
+
+function inspectCompatibilitySymbolAccess({ file, source, symbol }) {
+  const violations = [];
+  const approvedProjections = [];
+  const analysis = analyzeModuleDependencies(file, source);
+
+  for (const dependency of analysis.imports) {
+    const targetsFacade = isTarget(file, dependency.specifier, facadeAbsolute);
+    const targetsPublicBarrel = isTarget(file, dependency.specifier, publicDimensionsAbsolute);
+    if (!targetsFacade && !targetsPublicBarrel) continue;
+
+    if (isApprovedPublicWildcardProjection(file, dependency)) {
+      approvedProjections.push(rel(file));
+      continue;
+    }
+
+    const namedSymbolAccess =
+      dependency.importedSymbols.includes(symbol) ||
+      dependency.bindings.some(binding => binding.importedName === symbol || binding.exportedName === symbol);
+    const broadCompatibilityAccess =
+      dependency.syntax === 'dynamic-import' || dependency.importedSymbols.includes('*');
+    if (!namedSymbolAccess && !broadCompatibilityAccess) continue;
+
+    violations.push({
+      file: rel(file),
+      target: targetsFacade ? 'legacy-facade' : 'public-dimensions-barrel',
+      syntax: dependency.syntax,
+      importedSymbols: dependency.importedSymbols,
+      bindings: dependency.bindings,
+    });
+  }
+
+  return { violations, approvedProjections };
+}
+
 function findVariableDeclarator(sourceFile, name) {
   let result = null;
   walkAst(sourceFile, node => {
@@ -231,33 +282,13 @@ test('CARCASS_BASE_DIMENSIONS has no production consumer or facade/barrel bypass
       });
     }
 
-    for (const dependency of analysisFor(file).imports) {
-      const targetsFacade = isTarget(file, dependency.specifier, facadeAbsolute);
-      const targetsDimensionsBarrel = isTarget(file, dependency.specifier, publicDimensionsAbsolute);
-      const exposesCarcassBase =
-        dependency.syntax === 'dynamic-import' ||
-        dependency.importedSymbols.includes('*') ||
-        dependency.importedSymbols.includes('CARCASS_BASE_DIMENSIONS');
-      const approvedCompatibilityProjection =
-        fileRel === publicDimensionsRel &&
-        targetsFacade &&
-        dependency.kind === 'value' &&
-        dependency.syntax === 'static-re-export' &&
-        dependency.importedSymbols.length === 1 &&
-        dependency.importedSymbols[0] === '*';
-
-      if (approvedCompatibilityProjection) {
-        compatibilityPaths.push(fileRel);
-        continue;
-      }
-      if ((targetsFacade || targetsDimensionsBarrel) && exposesCarcassBase) {
-        violations.push({
-          file: fileRel,
-          kind: dependency.syntax,
-          symbols: dependency.importedSymbols,
-        });
-      }
-    }
+    const inspection = inspectCompatibilitySymbolAccess({
+      file,
+      source: sourceFor(file),
+      symbol: 'CARCASS_BASE_DIMENSIONS',
+    });
+    violations.push(...inspection.violations);
+    compatibilityPaths.push(...inspection.approvedProjections);
   }
 
   assert.deepEqual(violations, []);
@@ -271,19 +302,102 @@ test('CARCASS_BASE_DIMENSIONS has no production consumer or facade/barrel bypass
   }
 });
 
-test('BASE_LEG_DIMENSIONS is imported only from its focused owner inventory', () => {
-  const facadeImports = [];
+test('BASE_LEG_DIMENSIONS cannot be consumed through either compatibility path', () => {
+  const violations = [];
+  const compatibilityPaths = [];
   for (const file of esmSourceFiles) {
-    for (const dependency of analysisFor(file).imports) {
-      if (
-        isTarget(file, dependency.specifier, facadeAbsolute) &&
-        dependency.importedSymbols.includes('BASE_LEG_DIMENSIONS')
-      ) {
-        facadeImports.push({ file: rel(file), kind: dependency.kind, syntax: dependency.syntax });
-      }
-    }
+    const inspection = inspectCompatibilitySymbolAccess({
+      file,
+      source: sourceFor(file),
+      symbol: 'BASE_LEG_DIMENSIONS',
+    });
+    violations.push(...inspection.violations);
+    compatibilityPaths.push(...inspection.approvedProjections);
   }
-  assert.deepEqual(facadeImports, []);
+  assert.deepEqual(violations, []);
+  assert.deepEqual(compatibilityPaths, [publicDimensionsRel]);
+});
+
+test('BASE_LEG_DIMENSIONS compatibility guard rejects named, aliased, broad, re-exported, and dynamic access', () => {
+  const probeFile = path.join(root, 'esm/native/services/__carcass_base_compatibility_probe.ts');
+  const cases = [
+    {
+      name: 'named import from public barrel',
+      syntax: 'static-import',
+      source:
+        "import { BASE_LEG_DIMENSIONS } from '../features/dimensions/index.js';\nexport const value = BASE_LEG_DIMENSIONS.defaults.heightCm;",
+    },
+    {
+      name: 'aliased import from public barrel',
+      syntax: 'static-import',
+      source:
+        "import { BASE_LEG_DIMENSIONS as LEGS } from '../features/dimensions/index.js';\nexport const value = LEGS.defaults.heightCm;",
+    },
+    {
+      name: 'namespace import from public barrel',
+      syntax: 'static-import',
+      source:
+        "import * as dimensions from '../features/dimensions/index.js';\nexport const value = dimensions.BASE_LEG_DIMENSIONS.defaults.heightCm;",
+    },
+    {
+      name: 'namespace destructuring from public barrel',
+      syntax: 'static-import',
+      source:
+        "import * as dimensions from '../features/dimensions/index.js';\nconst { BASE_LEG_DIMENSIONS } = dimensions;\nexport const value = BASE_LEG_DIMENSIONS.defaults.heightCm;",
+    },
+    {
+      name: 'named re-export from public barrel',
+      syntax: 'static-re-export',
+      source: "export { BASE_LEG_DIMENSIONS } from '../features/dimensions/index.js';",
+    },
+    {
+      name: 'wildcard re-export from public barrel',
+      syntax: 'static-re-export',
+      source: "export * from '../features/dimensions/index.js';",
+    },
+    {
+      name: 'dynamic import from public barrel',
+      syntax: 'dynamic-import',
+      source:
+        "const dimensions = await import('../features/dimensions/index.js');\nexport const value = dimensions.BASE_LEG_DIMENSIONS.defaults.heightCm;",
+    },
+    {
+      name: 'dynamic destructuring from public barrel',
+      syntax: 'dynamic-import',
+      source:
+        "const { BASE_LEG_DIMENSIONS } = await import('../features/dimensions/index.js');\nexport const value = BASE_LEG_DIMENSIONS.defaults.heightCm;",
+    },
+    {
+      name: 'wildcard bridge from legacy facade',
+      syntax: 'static-re-export',
+      source: "export * from '../../shared/wardrobe_dimension_tokens_shared.js';",
+    },
+  ];
+
+  for (const probe of cases) {
+    const inspection = inspectCompatibilitySymbolAccess({
+      file: probeFile,
+      source: probe.source,
+      symbol: 'BASE_LEG_DIMENSIONS',
+    });
+    assert.deepEqual(inspection.approvedProjections, [], probe.name);
+    assert.equal(inspection.violations.length, 1, probe.name);
+    assert.equal(inspection.violations[0].syntax, probe.syntax, probe.name);
+  }
+
+  const aliasInspection = inspectCompatibilitySymbolAccess({
+    file: probeFile,
+    source:
+      "import { BASE_LEG_DIMENSIONS as LEGS } from '../features/dimensions/index.js';\nexport const value = LEGS.defaults.heightCm;",
+    symbol: 'BASE_LEG_DIMENSIONS',
+  });
+  assert.deepEqual(aliasInspection.violations[0].bindings, [
+    {
+      importedName: 'BASE_LEG_DIMENSIONS',
+      localName: 'LEGS',
+      exportedName: null,
+    },
+  ]);
 });
 
 test('Base Plinth, Base Leg, and Base Platform focused-owner inventories are exact', () => {
