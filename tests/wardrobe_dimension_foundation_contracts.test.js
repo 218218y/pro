@@ -125,7 +125,6 @@ const APPROVED_STACK_SPLIT_FACADE_SYMBOLS = Object.freeze([
   'STACK_SPLIT_SEAM_GAP_M',
 ]);
 const APPROVED_STACK_SPLIT_FACADE_IMPORTS = Object.freeze({
-  'esm/native/builder/build_flow_plan_inputs.ts': Object.freeze(['STACK_SPLIT_SEAM_GAP_M']),
   'esm/native/data/preset_models_data.ts': Object.freeze(['DEFAULT_STACK_SPLIT_LOWER_HEIGHT']),
   'esm/native/features/library_preset/library_preset_flow_shared.ts': Object.freeze([
     'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
@@ -155,6 +154,7 @@ const CARCASS_SHELL_DIRECT_CONSUMERS = Object.freeze([
 ]);
 const CARCASS_INTERIOR_DIRECT_CONSUMERS = Object.freeze([
   'esm/native/builder/build_flow_plan.ts',
+  'esm/native/builder/build_flow_plan_inputs.ts',
   'esm/native/builder/build_stack_split_lower_setup.ts',
   'esm/native/builder/module_loop_pipeline_module_depth.ts',
 ]);
@@ -575,6 +575,7 @@ const DOOR_MOUNT_THICKNESS_FACADE_SYMBOLS = Object.freeze([
   'resolveDoorMountThicknessesFromConfig',
 ]);
 const APPROVED_DOOR_MOUNT_THICKNESS_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/build_flow_plan_inputs.ts': Object.freeze(['resolveDoorMountThicknessesFromConfig']),
   'esm/native/builder/build_input_fingerprint.ts': Object.freeze([
     'DOOR_MOUNT_THICKNESS_CONFIG_KEYS',
     'resolveDoorMountThicknessesFromConfig',
@@ -599,7 +600,6 @@ const APPROVED_DOOR_MOUNT_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': DOOR_MOUNT_THICKNESS_FACADE_SYMBOLS,
 });
 const APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_DEPENDENCIES = Object.freeze({
-  'esm/native/builder/build_flow_plan_inputs.ts': ['resolveDoorMountThicknessesFromConfig@static-import'],
   'esm/native/kernel/kernel_project_capture_payload.ts': ['normalizeDoorMountThicknessCm@static-import'],
 });
 const APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_FIELD_USAGE = Object.freeze({});

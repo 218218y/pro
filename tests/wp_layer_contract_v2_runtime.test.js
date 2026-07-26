@@ -891,7 +891,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at one hundred and fifty-four reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at one hundred and fifty-six reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -1384,6 +1384,8 @@ test('project migration ledger stays exact at one hundred and fifty-four reviewe
     ['esm/native/builder/corner_wing_cornice_path.ts', 'esm/shared/dimensions/carcass_shell_policy.ts'],
     ['esm/native/builder/corner_wing_cornice_profile.ts', 'esm/shared/dimensions/carcass_shell_policy.ts'],
     ['esm/native/builder/corner_wing_cornice_wave.ts', 'esm/shared/dimensions/carcass_shell_policy.ts'],
+    ['esm/native/builder/build_flow_plan_inputs.ts', 'esm/shared/dimensions/door_mount_thickness_policy.ts'],
+    ['esm/native/builder/build_flow_plan_inputs.ts', 'esm/shared/dimensions/stack_split_policy.ts'],
   ];
 
   assert.equal(
@@ -1552,9 +1554,14 @@ test('project migration ledger stays exact at one hundred and fifty-four reviewe
     'the one hundred and fifty-one previously reviewed migration entries must remain semantically unchanged'
   );
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 154)),
     '0398ae9924f577c2f06a0293feac49f8a70eff80274c22717a9624421cdf5ef0',
-    'all one hundred and fifty-four active migration entries must remain semantically stable'
+    'the one hundred and fifty-four previously reviewed migration entries must remain semantically unchanged'
+  );
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets),
+    '9e06d7f0e1df80f0f90cbe281eb4622790a49473ce4f3c0bdef36b0535a3386d',
+    'all one hundred and fifty-six active migration entries must remain semantically stable'
   );
 
   assert.equal(
@@ -1623,7 +1630,7 @@ test('project migration ledger stays exact at one hundred and fifty-four reviewe
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 154);
+  assert.equal(report.migrationBudgets.length, 156);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
@@ -1632,7 +1639,7 @@ test('project migration ledger stays exact at one hundred and fifty-four reviewe
   // Repository-wide totals are owned here. Historical migration tests below lock only
   // their closed prefix and exact entries, so later additive migrations cannot stale them.
   const expectedEdges = new Map([
-    ['builder>shared', { observed: 300, migration: 81, reviewed: 219, budget: 219 }],
+    ['builder>shared', { observed: 302, migration: 83, reviewed: 219, budget: 219 }],
     ['features>shared', { observed: 61, migration: 3, reviewed: 58, budget: 58 }],
     ['services>shared', { observed: 230, migration: 63, reviewed: 167, budget: 167 }],
     ['ui>shared', { observed: 28, migration: 1, reviewed: 27, budget: 27 }],
@@ -1674,10 +1681,10 @@ test('project migration ledger stays exact at one hundred and fifty-four reviewe
   const staticFacadeDependencies = facadeDependencies.filter(
     dependency => dependency.syntax === 'static-import'
   );
-  assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 19);
-  assert.equal(staticFacadeDependencies.length, 19);
-  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 21);
-  assert.equal(facadeDependencies.length, 22);
+  assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 18);
+  assert.equal(staticFacadeDependencies.length, 18);
+  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 20);
+  assert.equal(facadeDependencies.length, 21);
 
   const facadeSource = fs.readFileSync(path.join(repositoryRoot, facadeRel), 'utf8');
   const facadeExports = collectNamedModuleExports(facadeRel, facadeSource);

@@ -19,11 +19,9 @@ import {
   normalizeStackSplitDecorativeSeparatorSideOverhangCm,
 } from '../features/platform_overhang_support.js';
 import { readUiState } from './build_flow_readers.js';
-import {
-  CARCASS_INTERIOR_DIMENSIONS,
-  resolveDoorMountThicknessesFromConfig,
-  STACK_SPLIT_SEAM_GAP_M,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { CARCASS_INTERIOR_DIMENSIONS } from '../../shared/dimensions/carcass_interior_policy.js';
+import { resolveDoorMountThicknessesFromConfig } from '../../shared/dimensions/door_mount_thickness_policy.js';
+import { STACK_SPLIT_SEAM_GAP_M } from '../../shared/dimensions/stack_split_policy.js';
 
 import type { BuildFlowPlanInputs, BuildFlowPlanInputsArgs } from './build_flow_plan_contracts.js';
 import type { UiRawInputsLike } from '../../../types';

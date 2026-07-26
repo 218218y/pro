@@ -5652,6 +5652,72 @@
       },
       "reason": "The Corner Wing Cornice wave flow replaces one legacy facade statement with the focused Carcass Cornice Render owner plus the focused Carcass Shell owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Corner Wing Cornice wave composition seam eliminates the extra Carcass Shell statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-26",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/build_flow_plan_inputs.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/carcass_interior_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_INTERIOR_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_INTERIOR_DIMENSIONS",
+          "resolveDoorMountThicknessesFromConfig",
+          "STACK_SPLIT_SEAM_GAP_M"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["resolveDoorMountThicknessesFromConfig"],
+        "syntax": "static-import"
+      },
+      "reason": "The Build Flow Plan Inputs flow replaces one legacy facade statement with the focused Carcass Interior owner plus the focused Door Mount Thickness owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Build Flow Plan Inputs composition seam eliminates the extra Door Mount Thickness statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-26",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/build_flow_plan_inputs.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/carcass_interior_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_INTERIOR_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "CARCASS_INTERIOR_DIMENSIONS",
+          "resolveDoorMountThicknessesFromConfig",
+          "STACK_SPLIT_SEAM_GAP_M"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["STACK_SPLIT_SEAM_GAP_M"],
+        "syntax": "static-import"
+      },
+      "reason": "The Build Flow Plan Inputs flow replaces one legacy facade statement with the focused Carcass Interior owner plus the focused Stack Split seam owner on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Build Flow Plan Inputs composition seam eliminates the extra Stack Split seam statement without reintroducing the legacy facade."
     }
   ]
 }
