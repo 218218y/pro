@@ -13,9 +13,10 @@ import type {
 import type { StackKey } from './stack_split.js';
 import { readInteger, readNumericInput } from '../../../shared/numeric_value_shared.js';
 import {
-  INTERIOR_FITTINGS_DIMENSIONS,
-  LIBRARY_PRESET_DIMENSIONS,
-} from '../../../shared/wardrobe_dimension_tokens_shared.js';
+  INTERIOR_STORAGE_DEFAULTS_POLICY,
+  INTERIOR_STORAGE_GRID_POLICY,
+} from '../../../shared/dimensions/interior_storage_policy.js';
+import { LIBRARY_PRESET_MODULE_DEFAULTS_POLICY } from '../../../shared/dimensions/library_preset_policy.js';
 
 function isRecord(v: unknown): v is UnknownRecord {
   return !!v && typeof v === 'object' && !Array.isArray(v);
@@ -64,7 +65,7 @@ export function createDefaultTopModuleConfig(i: number): NormalizedTopModuleConf
     hasShoeDrawer: false,
     isCustom: false,
     customData: createDefaultModuleCustomData(),
-    doors: LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount,
+    doors: LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultModuleDoorsCount,
   };
 }
 
@@ -79,11 +80,8 @@ export function normalizeTopModuleConfig(src: unknown, i: number): NormalizedTop
     extDrawersCount: toInt(base.extDrawersCount, 0),
     hasShoeDrawer: !!base.hasShoeDrawer,
     isCustom: !!base.isCustom,
-    customData: cloneModuleCustomData(
-      base.customData,
-      INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault
-    ),
-    doors: toInt(base.doors, LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount),
+    customData: cloneModuleCustomData(base.customData, INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault),
+    doors: toInt(base.doors, LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultModuleDoorsCount),
   };
 }
 
@@ -93,10 +91,10 @@ export function createDefaultLowerModuleConfig(_i: number): ModuleConfigLike {
     extDrawersCount: 0,
     hasShoeDrawer: false,
     isCustom: true,
-    gridDivisions: INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault,
+    gridDivisions: INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault,
     customData: {
-      shelves: Array.from(INTERIOR_FITTINGS_DIMENSIONS.storage.defaultLowerShelfSlots),
-      rods: Array.from({ length: INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault }, () => false),
+      shelves: Array.from(INTERIOR_STORAGE_DEFAULTS_POLICY.defaultLowerShelfSlots),
+      rods: Array.from({ length: INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault }, () => false),
       storage: false,
     },
   };
@@ -110,14 +108,8 @@ export function normalizeLowerModuleConfig(src: unknown, i: number): ModuleConfi
     extDrawersCount: toInt(base.extDrawersCount, 0),
     hasShoeDrawer: !!base.hasShoeDrawer,
     isCustom: !!base.isCustom,
-    gridDivisions: Math.max(
-      1,
-      toInt(base.gridDivisions, INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault)
-    ),
-    customData: cloneModuleCustomData(
-      base.customData,
-      INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault
-    ),
+    gridDivisions: Math.max(1, toInt(base.gridDivisions, INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault)),
+    customData: cloneModuleCustomData(base.customData, INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault),
   };
 
   // Lower stack supports per-cell width/depth, but not height or saved manual height state.
@@ -130,12 +122,12 @@ export function normalizeLowerModuleConfig(src: unknown, i: number): ModuleConfi
 }
 
 function createDefaultModuleCustomData(
-  cellCount: number = INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault
+  cellCount: number = INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault
 ): ModuleCustomDataLike {
   const n =
     Number.isFinite(cellCount) && cellCount > 0
       ? Math.floor(cellCount)
-      : INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault;
+      : INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
   const arr = Array.from({ length: n }, () => false);
   return {
     shelves: arr.slice(),

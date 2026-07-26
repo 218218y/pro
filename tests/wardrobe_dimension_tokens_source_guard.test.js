@@ -659,8 +659,6 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
     'esm/native/features/library_preset/module_defaults.ts',
     'esm/native/features/library_preset/library_preset_flow_shared.ts',
     'esm/native/data/preset_models_data.ts',
-    'esm/native/features/modules_configuration/module_defaults.ts',
-    'esm/native/features/stack_split/module_config.ts',
   ]) {
     assertUsesToken(rel, 'LIBRARY_PRESET_DIMENSIONS');
     const source = read(rel);
@@ -669,6 +667,15 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
       source,
       /\b(?:LIBRARY_PRESET_MODULE_DEFAULTS_POLICY|LIBRARY_PRESET_LAYOUT_POLICY|LIBRARY_PRESET_POLICY)\b/u
     );
+  }
+  for (const rel of [
+    'esm/native/features/modules_configuration/module_defaults.ts',
+    'esm/native/features/stack_split/module_config.ts',
+  ]) {
+    assertUsesToken(rel, 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY');
+    const source = read(rel);
+    assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared/u);
+    assert.doesNotMatch(source, /\b(?:LIBRARY_PRESET_DIMENSIONS|LIBRARY_PRESET_POLICY)\b/u);
   }
 
   const presetData = read('esm/native/data/preset_models_data.ts');
@@ -686,11 +693,19 @@ test('[dimension tokens] interior presets and sketch drawer sizing read canonica
   assert.match(tokens, /export const INTERIOR_PRESET_POLICY = Object\.freeze\(\{/);
   assert.match(tokens, /heightTokenEpsilonCm:/);
 
-  for (const rel of [
-    'esm/native/features/modules_configuration/module_defaults.ts',
-    'esm/native/features/stack_split/module_config.ts',
-  ]) {
-    assertUsesToken(rel, 'INTERIOR_FITTINGS_DIMENSIONS');
+  const focusedStorageConsumers = new Map([
+    ['esm/native/features/modules_configuration/module_defaults.ts', ['INTERIOR_STORAGE_GRID_POLICY']],
+    [
+      'esm/native/features/stack_split/module_config.ts',
+      ['INTERIOR_STORAGE_DEFAULTS_POLICY', 'INTERIOR_STORAGE_GRID_POLICY'],
+    ],
+  ]);
+  for (const [rel, symbols] of focusedStorageConsumers) {
+    for (const symbol of symbols) assertUsesToken(rel, symbol);
+    assert.doesNotMatch(
+      read(rel),
+      /\b(?:INTERIOR_FITTINGS_DIMENSIONS|INTERIOR_FITTINGS_POLICY|INTERIOR_STORAGE_POLICY)\b/u
+    );
   }
   for (const token of [
     'INTERIOR_PRESET_ROD_FACTORS_POLICY',
@@ -1682,6 +1697,9 @@ test('[dimension tokens] Interior Storage owner preserves focused production con
   }
 
   const expectedConsumers = [
+    ['esm/native/features/modules_configuration/module_defaults.ts', 'INTERIOR_STORAGE_GRID_POLICY'],
+    ['esm/native/features/stack_split/module_config.ts', 'INTERIOR_STORAGE_DEFAULTS_POLICY'],
+    ['esm/native/features/stack_split/module_config.ts', 'INTERIOR_STORAGE_GRID_POLICY'],
     ['esm/native/builder/render_interior_custom_ops_layout.ts', 'INTERIOR_STORAGE_BARRIER_POLICY'],
     ['esm/native/builder/render_interior_sketch_support_storage.ts', 'INTERIOR_STORAGE_BARRIER_POLICY'],
     ['esm/native/builder/render_interior_sketch_support_storage.ts', 'INTERIOR_STORAGE_CLAMP_POLICY'],

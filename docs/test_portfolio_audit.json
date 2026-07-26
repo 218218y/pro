@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-26T13:47:46.759Z",
+  "generatedAt": "2026-07-26T17:28:23.943Z",
   "totals": {
-    "tests": 1293,
-    "unitRunnerTests": 1285,
+    "tests": 1294,
+    "unitRunnerTests": 1286,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 451,
+    "contract": 452,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -2200,6 +2200,10 @@
     {
       "file": "tests/interior_sketch_geometry_boundary_runtime.test.ts",
       "category": "integration"
+    },
+    {
+      "file": "tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/interior_tab_local_state_runtime.test.js",

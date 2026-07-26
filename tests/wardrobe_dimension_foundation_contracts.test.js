@@ -406,6 +406,12 @@ const APPROVED_WARDROBE_LAYOUT_COMPARISON_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['WARDROBE_LAYOUT_COMPARISON_POLICY']),
 });
 const APPROVED_LIBRARY_PRESET_OWNER_IMPORTS = Object.freeze({
+  'esm/native/features/modules_configuration/module_defaults.ts': Object.freeze([
+    'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
+  ]),
+  'esm/native/features/stack_split/module_config.ts': Object.freeze([
+    'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['LIBRARY_PRESET_POLICY']),
 });
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([]);
@@ -756,6 +762,13 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
   'esm/native/builder/corner_wing_cell_layouts.ts': Object.freeze(['INTERIOR_STORAGE_BARRIER_POLICY']),
+  'esm/native/features/modules_configuration/module_defaults.ts': Object.freeze([
+    'INTERIOR_STORAGE_GRID_POLICY',
+  ]),
+  'esm/native/features/stack_split/module_config.ts': Object.freeze([
+    'INTERIOR_STORAGE_DEFAULTS_POLICY',
+    'INTERIOR_STORAGE_GRID_POLICY',
+  ]),
   'esm/native/features/interior_layout_presets/ops.ts': Object.freeze(['INTERIOR_STORAGE_BARRIER_POLICY']),
   'esm/native/builder/render_interior_custom_ops.ts': Object.freeze(['INTERIOR_STORAGE_GRID_POLICY']),
   'esm/native/builder/render_interior_preset_ops.ts': Object.freeze([
@@ -1380,17 +1393,7 @@ const APPROVED_CORNER_CONNECTOR_INTERIOR_OWNER_IMPORTS = Object.freeze({
 
 const APPROVED_CORNER_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({});
 
-const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/features/modules_configuration/module_defaults.ts': Object.freeze([
-    'storage',
-    'storage.gridDivisionsDefault',
-  ]),
-  'esm/native/features/stack_split/module_config.ts': Object.freeze([
-    'storage',
-    'storage.defaultLowerShelfSlots',
-    'storage.gridDivisionsDefault',
-  ]),
-});
+const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/post_build_sketch_door_cuts_apply.ts': Object.freeze(['DRAWER_SKETCH_DOOR_CUT_POLICY']),
   'esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts': Object.freeze([
