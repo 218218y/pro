@@ -644,14 +644,31 @@ test('[dimension tokens] Sketch Box Rod Preview pair uses exactly two focused ow
 
 test('[dimension tokens] library presets and saved preset defaults read canonical dimensions', () => {
   const tokens = readProductDimensionTokens();
-  assert.match(tokens, /export const LIBRARY_PRESET_DIMENSIONS = Object\.freeze\(\{/);
+  const owner = read('esm/shared/dimensions/library_preset_policy.ts');
+  assert.match(owner, /export const LIBRARY_PRESET_MODULE_DEFAULTS_POLICY = Object\.freeze\(\{/);
+  assert.match(owner, /export const LIBRARY_PRESET_LAYOUT_POLICY = Object\.freeze\(\{/);
+  assert.match(owner, /export const LIBRARY_PRESET_POLICY = Object\.freeze\(\{/);
+  assert.match(
+    tokens,
+    /import \{ LIBRARY_PRESET_POLICY \} from '\.\/dimensions\/library_preset_policy\.js';/
+  );
+  assert.match(tokens, /export const LIBRARY_PRESET_DIMENSIONS = LIBRARY_PRESET_POLICY;/);
+  assert.doesNotMatch(tokens, /export const LIBRARY_PRESET_DIMENSIONS = Object\.freeze\(\{/);
 
   for (const rel of [
     'esm/native/features/library_preset/module_defaults.ts',
     'esm/native/features/library_preset/library_preset_flow_shared.ts',
     'esm/native/data/preset_models_data.ts',
+    'esm/native/features/modules_configuration/module_defaults.ts',
+    'esm/native/features/stack_split/module_config.ts',
   ]) {
     assertUsesToken(rel, 'LIBRARY_PRESET_DIMENSIONS');
+    const source = read(rel);
+    assert.doesNotMatch(source, /library_preset_policy/u);
+    assert.doesNotMatch(
+      source,
+      /\b(?:LIBRARY_PRESET_MODULE_DEFAULTS_POLICY|LIBRARY_PRESET_LAYOUT_POLICY|LIBRARY_PRESET_POLICY)\b/u
+    );
   }
 
   const presetData = read('esm/native/data/preset_models_data.ts');

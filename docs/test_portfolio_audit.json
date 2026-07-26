@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-26T11:33:39.475Z",
+  "generatedAt": "2026-07-26T13:47:46.759Z",
   "totals": {
-    "tests": 1292,
-    "unitRunnerTests": 1284,
+    "tests": 1293,
+    "unitRunnerTests": 1285,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 450,
+    "contract": 451,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -2320,6 +2320,10 @@
     {
       "file": "tests/library_preset_canonical_materialization_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/library_preset_dimension_owner_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/library_preset_flow_runtime.test.ts",

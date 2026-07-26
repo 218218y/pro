@@ -405,6 +405,9 @@ const APPROVED_WARDROBE_LAYOUT_COMPARISON_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['WARDROBE_LAYOUT_COMPARISON_POLICY']),
 });
+const APPROVED_LIBRARY_PRESET_OWNER_IMPORTS = Object.freeze({
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['LIBRARY_PRESET_POLICY']),
+});
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([]);
 const APPROVED_MATERIAL_LEGACY_DEPENDENCIES = Object.freeze(
   Object.fromEntries(
@@ -2928,6 +2931,11 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectOwnerImports(analyzedSources, 'wardrobe_layout_comparison_policy.js'),
     APPROVED_WARDROBE_LAYOUT_COMPARISON_OWNER_IMPORTS,
     'Wardrobe Layout Comparison owner consumer allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectOwnerImports(analyzedSources, 'library_preset_policy.js'),
+    APPROVED_LIBRARY_PRESET_OWNER_IMPORTS,
+    'Library Preset owner consumer allowlist'
   );
   assertApprovedSymbolUsage(
     collectOwnerImports(analyzedSources, 'carcass_cornice_render_policy.js'),

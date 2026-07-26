@@ -29,6 +29,7 @@ import {
   STACK_SPLIT_POLICY,
   STACK_SPLIT_SEAM_GAP_M,
 } from './dimensions/stack_split_policy.js';
+import { LIBRARY_PRESET_POLICY } from './dimensions/library_preset_policy.js';
 import { STACK_SPLIT_RENDER_POLICY } from './dimensions/stack_split_render_policy.js';
 import { CARCASS_SHELL_DIMENSIONS } from './dimensions/carcass_shell_policy.js';
 import { CORNER_SYSTEM_POLICY } from './dimensions/corner_system_policy.js';
@@ -293,18 +294,7 @@ export const NO_MAIN_SKETCH_DIMENSIONS = Object.freeze({
   minGridSpanM: 0.02,
 });
 
-export const LIBRARY_PRESET_DIMENSIONS = Object.freeze({
-  defaultDoorsCount: 6,
-  defaultModuleDoorsCount: 2,
-  topGridDivisions: 5,
-  lowerGridDivisions: 2,
-  minWidthCm: 20,
-  minLowerDepthCm: STACK_SPLIT_POLICY.limits.lowerDepthMinCm,
-  minLowerHeightCm: STACK_SPLIT_POLICY.limits.minLowerHeightCm,
-  minTopHeightCm: STACK_SPLIT_POLICY.limits.minTopHeightCm,
-  defaultLowerHeightCm: 80,
-  lowerDepthInsetCm: 5,
-});
+export const LIBRARY_PRESET_DIMENSIONS = LIBRARY_PRESET_POLICY;
 
 export const CARCASS_BASE_DIMENSIONS = Object.freeze({
   plinth: BASE_PLINTH_DIMENSIONS,

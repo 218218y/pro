@@ -18,6 +18,7 @@ import {
   FRONT_REVEAL_FRAME_DIMENSIONS as FACADE_FRONT_REVEAL_FRAME_DIMENSIONS,
   HANDLE_DIMENSIONS as FACADE_HANDLE_DIMENSIONS,
   INTERIOR_FITTINGS_DIMENSIONS,
+  LIBRARY_PRESET_DIMENSIONS as FACADE_LIBRARY_PRESET_DIMENSIONS,
   MATERIAL_DIMENSIONS,
   WARDROBE_LAYOUT_DIMENSIONS,
   WARDROBE_DEFAULTS as FACADE_WARDROBE_DEFAULTS,
@@ -202,6 +203,11 @@ import {
   STACK_SPLIT_POLICY,
 } from '../esm/shared/dimensions/stack_split_policy.ts';
 import {
+  LIBRARY_PRESET_LAYOUT_POLICY,
+  LIBRARY_PRESET_MODULE_DEFAULTS_POLICY,
+  LIBRARY_PRESET_POLICY,
+} from '../esm/shared/dimensions/library_preset_policy.ts';
+import {
   DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_FRONT_OVERHANG_CM,
   DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_SIDE_OVERHANG_CM,
   STACK_SPLIT_RENDER_POLICY,
@@ -381,6 +387,75 @@ test('stack split policy preserves business limits, defaults, facade parity, and
     lowerWidthDefaultCm: 50,
     decorativeSeparator: STACK_SPLIT_RENDER_POLICY.decorativeSeparator,
   });
+});
+
+test('Library Preset policies preserve facade identity, focused identities, key order, freeze, and serialization', () => {
+  const moduleDefaultKeys = [
+    'defaultDoorsCount',
+    'defaultModuleDoorsCount',
+    'topGridDivisions',
+    'lowerGridDivisions',
+  ];
+  const layoutKeys = [
+    'minWidthCm',
+    'minLowerDepthCm',
+    'minLowerHeightCm',
+    'minTopHeightCm',
+    'defaultLowerHeightCm',
+    'lowerDepthInsetCm',
+  ];
+  const aggregateKeys = [...moduleDefaultKeys, ...layoutKeys];
+
+  assert.equal(FACADE_LIBRARY_PRESET_DIMENSIONS, LIBRARY_PRESET_POLICY);
+  assert.equal(Object.isFrozen(LIBRARY_PRESET_MODULE_DEFAULTS_POLICY), true);
+  assert.equal(Object.isFrozen(LIBRARY_PRESET_LAYOUT_POLICY), true);
+  assert.equal(Object.isFrozen(LIBRARY_PRESET_POLICY), true);
+  assert.deepEqual(Object.keys(LIBRARY_PRESET_MODULE_DEFAULTS_POLICY), moduleDefaultKeys);
+  assert.deepEqual(Object.keys(LIBRARY_PRESET_LAYOUT_POLICY), layoutKeys);
+  assert.deepEqual(Object.keys(LIBRARY_PRESET_POLICY), aggregateKeys);
+
+  assert.equal(
+    LIBRARY_PRESET_POLICY.defaultDoorsCount,
+    LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultDoorsCount
+  );
+  assert.equal(
+    LIBRARY_PRESET_POLICY.defaultModuleDoorsCount,
+    LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultModuleDoorsCount
+  );
+  assert.equal(
+    LIBRARY_PRESET_POLICY.topGridDivisions,
+    LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.topGridDivisions
+  );
+  assert.equal(
+    LIBRARY_PRESET_POLICY.lowerGridDivisions,
+    LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.lowerGridDivisions
+  );
+  assert.equal(LIBRARY_PRESET_POLICY.minWidthCm, LIBRARY_PRESET_LAYOUT_POLICY.minWidthCm);
+  assert.equal(LIBRARY_PRESET_POLICY.minLowerDepthCm, LIBRARY_PRESET_LAYOUT_POLICY.minLowerDepthCm);
+  assert.equal(LIBRARY_PRESET_POLICY.minLowerHeightCm, LIBRARY_PRESET_LAYOUT_POLICY.minLowerHeightCm);
+  assert.equal(LIBRARY_PRESET_POLICY.minTopHeightCm, LIBRARY_PRESET_LAYOUT_POLICY.minTopHeightCm);
+  assert.equal(LIBRARY_PRESET_POLICY.defaultLowerHeightCm, LIBRARY_PRESET_LAYOUT_POLICY.defaultLowerHeightCm);
+  assert.equal(LIBRARY_PRESET_POLICY.lowerDepthInsetCm, LIBRARY_PRESET_LAYOUT_POLICY.lowerDepthInsetCm);
+
+  assert.deepEqual(LIBRARY_PRESET_POLICY, {
+    defaultDoorsCount: 6,
+    defaultModuleDoorsCount: 2,
+    topGridDivisions: 5,
+    lowerGridDivisions: 2,
+    minWidthCm: 20,
+    minLowerDepthCm: 20,
+    minLowerHeightCm: 20,
+    minTopHeightCm: 40,
+    defaultLowerHeightCm: 80,
+    lowerDepthInsetCm: 5,
+  });
+
+  const serialized = JSON.stringify(FACADE_LIBRARY_PRESET_DIMENSIONS);
+  assert.equal(typeof serialized, 'string');
+  assert.ok(serialized);
+  const roundTrip: unknown = JSON.parse(serialized);
+  assert.deepEqual(Object.keys(roundTrip as Record<string, unknown>), aggregateKeys);
+  assert.deepEqual(roundTrip, LIBRARY_PRESET_POLICY);
 });
 
 test('dimension foundation uses explicit unit constructors and conversions without changing scale', () => {
