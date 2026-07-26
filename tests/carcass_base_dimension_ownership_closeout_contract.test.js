@@ -1,0 +1,443 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { analyzeModuleDependencies, collectNamedModuleExports } from '../tools/wp_layer_contract_support.mjs';
+import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
+const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
+const runtimeApiRel = 'esm/native/runtime/api.ts';
+const servicesApiRel = 'esm/native/services/api.ts';
+const plinthOwnerRel = 'esm/shared/dimensions/base_plinth_policy.ts';
+const legOwnerRel = 'esm/shared/dimensions/base_leg_policy.ts';
+const platformOwnerRel = 'esm/shared/dimensions/base_platform_render_policy.ts';
+const chestOwnerRel = 'esm/shared/dimensions/chest_structural_policy.ts';
+const facadeAbsolute = path.join(root, facadeRel);
+const publicDimensionsAbsolute = path.join(root, publicDimensionsRel);
+const esmSourceFiles = listSourceFiles(path.join(root, 'esm'));
+const sourceCache = new Map();
+const sourceFileCache = new Map();
+const analysisCache = new Map();
+
+const expectedPlinthInventory = Object.freeze({
+  'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/native/features/base_plinth_support.ts': Object.freeze([
+    'BASE_PLINTH_POLICY',
+    'basePlinthCentimetersToMeters',
+    'basePlinthMetersToCentimeters',
+  ]),
+  'esm/native/runtime/default_state.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/shared/dimensions/sketch_box_preview_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  [facadeRel]: Object.freeze(['BASE_PLINTH_POLICY']),
+});
+
+const expectedLegInventory = Object.freeze({
+  'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
+  'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
+  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
+  'esm/native/features/base_leg_support.ts': Object.freeze([
+    'BASE_LEG_DIMENSIONS',
+    'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM',
+    'DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM',
+  ]),
+  'esm/native/runtime/default_state.ts': Object.freeze(['BASE_LEG_DIMENSIONS']),
+  'esm/shared/dimensions/corner_system_policy.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
+  [facadeRel]: Object.freeze(['BASE_LEG_DIMENSIONS', 'BASE_LEG_LAYOUT_POLICY']),
+});
+
+const expectedPlatformInventory = Object.freeze({
+  'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
+  'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
+  'esm/native/builder/corner_state_normalize_layout.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
+  'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze([
+    'BASE_PLATFORM_RENDER_POLICY',
+  ]),
+  'esm/native/builder/render_interior_sketch_visuals_adornments_normalize.ts': Object.freeze([
+    'BASE_PLATFORM_RENDER_POLICY',
+  ]),
+  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
+  'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
+  'esm/native/services/canvas_picking_sketch_box_content_commit_adornments.ts': Object.freeze([
+    'BASE_PLATFORM_RENDER_POLICY',
+  ]),
+  'esm/native/services/canvas_picking_sketch_free_surface_preview_adornments.ts': Object.freeze([
+    'BASE_PLATFORM_RENDER_POLICY',
+  ]),
+  [legOwnerRel]: Object.freeze([
+    'BASE_PLATFORM_RENDER_POLICY',
+    'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM',
+    'DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM',
+  ]),
+});
+
+function listSourceFiles(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const absolute = path.join(dir, entry.name);
+    if (entry.isDirectory()) return listSourceFiles(absolute);
+    return entry.isFile() && /\.(?:[cm]?[jt]sx?)$/u.test(entry.name) ? [absolute] : [];
+  });
+}
+
+function rel(file) {
+  return path.relative(root, file).replaceAll('\\', '/');
+}
+
+function sourceFor(file) {
+  if (!sourceCache.has(file)) sourceCache.set(file, fs.readFileSync(file, 'utf8'));
+  return sourceCache.get(file);
+}
+
+function sourceFileFor(file) {
+  if (!sourceFileCache.has(file)) sourceFileCache.set(file, createSourceFile(file, sourceFor(file)));
+  return sourceFileCache.get(file);
+}
+
+function analysisFor(file) {
+  if (!analysisCache.has(file)) analysisCache.set(file, analyzeModuleDependencies(file, sourceFor(file)));
+  return analysisCache.get(file);
+}
+
+function identifierName(node) {
+  if (node?.type === 'Identifier') return node.name;
+  if (node?.type === 'Literal' && typeof node.value === 'string') return node.value;
+  return null;
+}
+
+function memberPath(node) {
+  if (node?.type === 'Identifier') return node.name;
+  if (node?.type !== 'MemberExpression') return null;
+  const objectPath = memberPath(node.object);
+  const propertyName = identifierName(node.property);
+  return objectPath && propertyName ? `${objectPath}.${propertyName}` : null;
+}
+
+function resolveModuleTarget(fromFile, specifier) {
+  if (typeof specifier !== 'string') return null;
+  let absolute;
+  if (specifier.startsWith('@/')) absolute = path.join(root, 'esm', specifier.slice(2));
+  else if (specifier.startsWith('.')) absolute = path.resolve(path.dirname(fromFile), specifier);
+  else return null;
+  return path
+    .normalize(absolute)
+    .replace(/\.(?:js|mjs|cjs)$/u, '.ts')
+    .toLowerCase();
+}
+
+function isTarget(fromFile, specifier, target) {
+  return resolveModuleTarget(fromFile, specifier) === path.normalize(target).toLowerCase();
+}
+
+function findVariableDeclarator(sourceFile, name) {
+  let result = null;
+  walkAst(sourceFile, node => {
+    if (node?.type === 'VariableDeclarator' && identifierName(node.id) === name) result = node;
+  });
+  return result;
+}
+
+function frozenObjectProperties(node) {
+  assert.equal(node?.type, 'CallExpression');
+  assert.equal(memberPath(node.callee), 'Object.freeze');
+  assert.equal(node.arguments?.length, 1);
+  assert.equal(node.arguments[0]?.type, 'ObjectExpression');
+  return node.arguments[0].properties ?? [];
+}
+
+function ownerInventory(ownerRel) {
+  const ownerAbsolute = path.join(root, ownerRel);
+  const result = {};
+  for (const file of esmSourceFiles) {
+    const dependencies = analysisFor(file).imports.filter(dependency =>
+      isTarget(file, dependency.specifier, ownerAbsolute)
+    );
+    if (!dependencies.length) continue;
+    assert.equal(dependencies.length, 1, `${rel(file)} must use one ${ownerRel} statement`);
+    const [dependency] = dependencies;
+    assert.equal(dependency.kind, 'value', `${rel(file)} must use a value import from ${ownerRel}`);
+    assert.equal(
+      dependency.syntax,
+      'static-import',
+      `${rel(file)} must use a static import from ${ownerRel}`
+    );
+    result[rel(file)] = dependency.importedSymbols;
+
+    for (const binding of dependency.bindings) {
+      const approvedFacadeOwnerAlias =
+        rel(file) === facadeRel &&
+        ((binding.importedName === 'BASE_LEG_DIMENSIONS' &&
+          binding.localName === 'BASE_LEG_DIMENSIONS_OWNER') ||
+          (binding.importedName === 'CHEST_STRUCTURAL_DIMENSIONS' &&
+            binding.localName === 'CHEST_STRUCTURAL_DIMENSIONS_OWNER'));
+      assert.equal(
+        binding.importedName === binding.localName || approvedFacadeOwnerAlias,
+        true,
+        `${rel(file)} aliases ${binding.importedName}`
+      );
+    }
+  }
+  return Object.fromEntries(Object.entries(result).sort(([left], [right]) => left.localeCompare(right)));
+}
+
+function assertDirectLegacyView(sourceFile, name, ownerName) {
+  const declaration = findVariableDeclarator(sourceFile, name);
+  assert.ok(declaration, `missing ${name}`);
+  assert.equal(declaration.parent?.kind, 'const');
+  assert.equal(declaration.init?.type, 'CallExpression');
+  assert.equal(identifierName(declaration.init.callee), 'legacyDimensionNumberView');
+  assert.deepEqual((declaration.init.arguments ?? []).map(identifierName), [ownerName]);
+
+  const forbiddenNodes = [];
+  walkAst(declaration.init, node => {
+    if (
+      node?.type === 'SpreadElement' ||
+      node?.type === 'ObjectExpression' ||
+      (node?.type === 'Literal' && typeof node.value === 'number') ||
+      (node?.type === 'CallExpression' && node !== declaration.init)
+    ) {
+      forbiddenNodes.push(node.type);
+    }
+  });
+  assert.deepEqual(forbiddenNodes, [], name);
+}
+
+test('CARCASS_BASE_DIMENSIONS has no production consumer or facade/barrel bypass', () => {
+  const occurrenceFiles = esmSourceFiles
+    .filter(file => /\bCARCASS_BASE_DIMENSIONS\b/u.test(sourceFor(file)))
+    .map(rel)
+    .sort();
+  assert.deepEqual(occurrenceFiles, [facadeRel]);
+
+  const violations = [];
+  const compatibilityPaths = [];
+  for (const file of esmSourceFiles) {
+    const fileRel = rel(file);
+    if (fileRel !== facadeRel) {
+      walkAst(sourceFileFor(file), node => {
+        if (identifierName(node) === 'CARCASS_BASE_DIMENSIONS') {
+          violations.push({ file: fileRel, kind: node.type, symbol: 'CARCASS_BASE_DIMENSIONS' });
+        }
+        const pathValue = memberPath(node);
+        if (pathValue?.includes('CARCASS_BASE_DIMENSIONS.')) {
+          violations.push({ file: fileRel, kind: 'member-chain', symbol: pathValue });
+        }
+      });
+    }
+
+    for (const dependency of analysisFor(file).imports) {
+      const targetsFacade = isTarget(file, dependency.specifier, facadeAbsolute);
+      const targetsDimensionsBarrel = isTarget(file, dependency.specifier, publicDimensionsAbsolute);
+      const exposesCarcassBase =
+        dependency.syntax === 'dynamic-import' ||
+        dependency.importedSymbols.includes('*') ||
+        dependency.importedSymbols.includes('CARCASS_BASE_DIMENSIONS');
+      const approvedCompatibilityProjection =
+        fileRel === publicDimensionsRel &&
+        targetsFacade &&
+        dependency.kind === 'value' &&
+        dependency.syntax === 'static-re-export' &&
+        dependency.importedSymbols.length === 1 &&
+        dependency.importedSymbols[0] === '*';
+
+      if (approvedCompatibilityProjection) {
+        compatibilityPaths.push(fileRel);
+        continue;
+      }
+      if ((targetsFacade || targetsDimensionsBarrel) && exposesCarcassBase) {
+        violations.push({
+          file: fileRel,
+          kind: dependency.syntax,
+          symbols: dependency.importedSymbols,
+        });
+      }
+    }
+  }
+
+  assert.deepEqual(violations, []);
+  assert.deepEqual(compatibilityPaths, [publicDimensionsRel]);
+
+  for (const apiRel of [runtimeApiRel, servicesApiRel]) {
+    const source = sourceFor(path.join(root, apiRel));
+    const exports = collectNamedModuleExports(apiRel, source).map(entry => entry.exportedName);
+    assert.equal(exports.includes('CARCASS_BASE_DIMENSIONS'), false, apiRel);
+    assert.doesNotMatch(source, /\bCARCASS_BASE_DIMENSIONS\b/u);
+  }
+});
+
+test('BASE_LEG_DIMENSIONS is imported only from its focused owner inventory', () => {
+  const facadeImports = [];
+  for (const file of esmSourceFiles) {
+    for (const dependency of analysisFor(file).imports) {
+      if (
+        isTarget(file, dependency.specifier, facadeAbsolute) &&
+        dependency.importedSymbols.includes('BASE_LEG_DIMENSIONS')
+      ) {
+        facadeImports.push({ file: rel(file), kind: dependency.kind, syntax: dependency.syntax });
+      }
+    }
+  }
+  assert.deepEqual(facadeImports, []);
+});
+
+test('Base Plinth, Base Leg, and Base Platform focused-owner inventories are exact', () => {
+  assert.deepEqual(ownerInventory(plinthOwnerRel), expectedPlinthInventory);
+  assert.deepEqual(ownerInventory(legOwnerRel), expectedLegInventory);
+  assert.deepEqual(ownerInventory(platformOwnerRel), expectedPlatformInventory);
+});
+
+test('Chest Structural aggregate is definition/facade-only while focused subpolicies remain separate', () => {
+  const imports = [];
+  for (const file of esmSourceFiles) {
+    for (const dependency of analysisFor(file).imports) {
+      if (!dependency.importedSymbols.includes('CHEST_STRUCTURAL_DIMENSIONS')) continue;
+      imports.push({
+        file: rel(file),
+        specifier: dependency.specifier,
+        kind: dependency.kind,
+        syntax: dependency.syntax,
+        importedSymbols: dependency.importedSymbols,
+        bindings: dependency.bindings,
+      });
+    }
+  }
+  assert.deepEqual(imports, [
+    {
+      file: facadeRel,
+      specifier: './dimensions/chest_structural_policy.js',
+      kind: 'value',
+      syntax: 'static-import',
+      importedSymbols: ['CHEST_STRUCTURAL_DIMENSIONS'],
+      bindings: [
+        {
+          importedName: 'CHEST_STRUCTURAL_DIMENSIONS',
+          localName: 'CHEST_STRUCTURAL_DIMENSIONS_OWNER',
+          exportedName: null,
+        },
+      ],
+    },
+  ]);
+});
+
+test('Carcass Base owners have only their reviewed dependencies and no facade back-edge', () => {
+  const expectedTargets = new Map([
+    [plinthOwnerRel, ['./units.js']],
+    [platformOwnerRel, ['./units.js']],
+    [legOwnerRel, ['./base_platform_render_policy.js', './units.js']],
+    [chestOwnerRel, ['./units.js']],
+  ]);
+
+  for (const [ownerRel, expectedSpecifiers] of expectedTargets) {
+    const ownerAbsolute = path.join(root, ownerRel);
+    const analysis = analysisFor(ownerAbsolute);
+    assert.deepEqual(
+      [...new Set(analysis.imports.map(dependency => dependency.specifier))],
+      expectedSpecifiers,
+      ownerRel
+    );
+    assert.equal(
+      analysis.imports.some(dependency => isTarget(ownerAbsolute, dependency.specifier, facadeAbsolute)),
+      false,
+      ownerRel
+    );
+    assert.deepEqual(analysis.unresolvedDynamicImports, [], ownerRel);
+    assert.deepEqual(analysis.forbiddenModuleSyntax, [], ownerRel);
+  }
+
+  const legOwner = sourceFileFor(path.join(root, legOwnerRel));
+  const layout = findVariableDeclarator(legOwner, 'BASE_LEG_LAYOUT_POLICY');
+  const layoutProperties = frozenObjectProperties(layout.init);
+  const platform = layoutProperties.find(property => identifierName(property.key) === 'platform');
+  assert.equal(identifierName(platform?.value), 'BASE_PLATFORM_RENDER_POLICY');
+});
+
+test('Chest Structural aggregate is a direct focused-policy projection without copied values', () => {
+  const sourceFile = sourceFileFor(path.join(root, chestOwnerRel));
+  const declaration = findVariableDeclarator(sourceFile, 'CHEST_STRUCTURAL_DIMENSIONS');
+  const properties = frozenObjectProperties(declaration.init);
+  assert.deepEqual(
+    properties.map(property => [identifierName(property.key), memberPath(property.value)]),
+    [
+      ['backThicknessM', 'CHEST_SHELL_POLICY.backThicknessM'],
+      ['backInsetM', 'CHEST_SHELL_POLICY.backInsetM'],
+      ['backPanelWidthClearanceM', 'CHEST_SHELL_POLICY.backPanelWidthClearanceM'],
+      ['backPanelHeightClearanceM', 'CHEST_SHELL_POLICY.backPanelHeightClearanceM'],
+      ['drawerGapM', 'CHEST_DRAWER_GEOMETRY_POLICY.drawerGapM'],
+      ['drawerWidthClearanceM', 'CHEST_DRAWER_GEOMETRY_POLICY.drawerWidthClearanceM'],
+      ['drawerFrontThicknessM', 'CHEST_DRAWER_GEOMETRY_POLICY.drawerFrontThicknessM'],
+      ['drawerShadowLineThicknessM', 'CHEST_DRAWER_GEOMETRY_POLICY.drawerShadowLineThicknessM'],
+      ['drawerBoxWidthClearanceM', 'CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxWidthClearanceM'],
+      ['drawerBoxHeightClearanceM', 'CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxHeightClearanceM'],
+      ['drawerBoxDepthClearanceM', 'CHEST_DRAWER_GEOMETRY_POLICY.drawerBoxDepthClearanceM'],
+      ['connectorDepthM', 'CHEST_CONNECTOR_POLICY.connectorDepthM'],
+      ['connectorBackInsetM', 'CHEST_CONNECTOR_POLICY.connectorBackInsetM'],
+      ['connectorWidthClearanceM', 'CHEST_CONNECTOR_POLICY.connectorWidthClearanceM'],
+      ['connectorHeightClearanceM', 'CHEST_CONNECTOR_POLICY.connectorHeightClearanceM'],
+      ['openOffsetZM', 'CHEST_MOTION_POLICY.openOffsetZM'],
+      ['wheels', 'CHEST_CASTER_RENDER_POLICY'],
+    ]
+  );
+
+  const forbiddenNodes = [];
+  walkAst(declaration.init, node => {
+    if (
+      node?.type === 'SpreadElement' ||
+      (node?.type === 'Literal' && typeof node.value === 'number') ||
+      (node?.type === 'CallExpression' && node !== declaration.init) ||
+      (node?.type === 'ObjectExpression' && node !== declaration.init.arguments[0])
+    ) {
+      forbiddenNodes.push(node.type);
+    }
+  });
+  assert.deepEqual(forbiddenNodes, []);
+});
+
+test('public Carcass Base compatibility views remain direct frozen owner projections', () => {
+  const source = sourceFor(facadeAbsolute);
+  const sourceFile = sourceFileFor(facadeAbsolute);
+  assertDirectLegacyView(sourceFile, 'BASE_LEG_DIMENSIONS', 'BASE_LEG_DIMENSIONS_OWNER');
+  assertDirectLegacyView(sourceFile, 'BASE_PLINTH_DIMENSIONS', 'BASE_PLINTH_POLICY');
+  assertDirectLegacyView(sourceFile, 'BASE_LEG_LAYOUT_DIMENSIONS', 'BASE_LEG_LAYOUT_POLICY');
+  assertDirectLegacyView(sourceFile, 'CHEST_STRUCTURAL_DIMENSIONS', 'CHEST_STRUCTURAL_DIMENSIONS_OWNER');
+
+  const aggregate = findVariableDeclarator(sourceFile, 'CARCASS_BASE_DIMENSIONS');
+  assert.ok(aggregate);
+  assert.equal(aggregate.parent?.kind, 'const');
+  assert.equal(aggregate.parent?.parent?.type, 'ExportNamedDeclaration');
+  const properties = frozenObjectProperties(aggregate.init);
+  assert.deepEqual(
+    properties.map(property => [identifierName(property.key), identifierName(property.value)]),
+    [
+      ['plinth', 'BASE_PLINTH_DIMENSIONS'],
+      ['legs', 'BASE_LEG_LAYOUT_DIMENSIONS'],
+      ['chest', 'CHEST_STRUCTURAL_DIMENSIONS'],
+    ]
+  );
+
+  const forbiddenNodes = [];
+  walkAst(aggregate.init, node => {
+    if (
+      node?.type === 'SpreadElement' ||
+      (node?.type === 'Literal' && typeof node.value === 'number') ||
+      (node?.type === 'CallExpression' && node !== aggregate.init) ||
+      (node?.type === 'ObjectExpression' && node !== aggregate.init.arguments[0])
+    ) {
+      forbiddenNodes.push(node.type);
+    }
+  });
+  assert.deepEqual(forbiddenNodes, []);
+
+  const valueExports = new Set(
+    collectNamedModuleExports(facadeRel, source)
+      .filter(entry => entry.kind === 'value')
+      .map(entry => entry.exportedName)
+  );
+  assert.equal(valueExports.has('CARCASS_BASE_DIMENSIONS'), true);
+  assert.equal(valueExports.has('BASE_LEG_DIMENSIONS'), true);
+});

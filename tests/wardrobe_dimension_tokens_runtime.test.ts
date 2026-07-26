@@ -432,10 +432,20 @@ test('carcass shell and interior policies preserve facade identity and every mig
 });
 
 test('Base Support policies preserve every value and facade nested-object identity', () => {
+  assert.deepEqual(Object.keys(FACADE_CARCASS_BASE_DIMENSIONS), ['plinth', 'legs', 'chest']);
+  assert.deepEqual(Object.keys(FACADE_BASE_LEG_DIMENSIONS), ['defaults', 'limits']);
   assert.equal(FACADE_CARCASS_BASE_DIMENSIONS.plinth, BASE_PLINTH_POLICY);
   assert.equal(FACADE_CARCASS_BASE_DIMENSIONS.legs, BASE_LEG_LAYOUT_POLICY);
   assert.equal(FACADE_CARCASS_BASE_DIMENSIONS.legs.platform, BASE_PLATFORM_RENDER_POLICY);
   assert.equal(FACADE_BASE_LEG_DIMENSIONS, BASE_LEG_DIMENSIONS);
+  assert.equal(BASE_LEG_LAYOUT_POLICY.platform, BASE_PLATFORM_RENDER_POLICY);
+  assert.equal(Object.isFrozen(FACADE_CARCASS_BASE_DIMENSIONS), true);
+  assert.equal(Object.isFrozen(BASE_PLINTH_POLICY), true);
+  assert.equal(Object.isFrozen(BASE_LEG_DIMENSIONS), true);
+  assert.equal(Object.isFrozen(BASE_LEG_DIMENSIONS.defaults), true);
+  assert.equal(Object.isFrozen(BASE_LEG_DIMENSIONS.limits), true);
+  assert.equal(Object.isFrozen(BASE_LEG_LAYOUT_POLICY), true);
+  assert.equal(Object.isFrozen(BASE_PLATFORM_RENDER_POLICY), true);
 
   assert.deepEqual(BASE_PLINTH_POLICY, {
     heightM: 0.08,
@@ -490,11 +500,20 @@ test('Base Support policies preserve every value and facade nested-object identi
       widthMaxCm: 30,
     },
   });
+
+  const serializedCarcassBase = JSON.stringify(FACADE_CARCASS_BASE_DIMENSIONS);
+  const serializedBaseLeg = JSON.stringify(FACADE_BASE_LEG_DIMENSIONS);
+  assert.equal(typeof serializedCarcassBase, 'string');
+  assert.equal(typeof serializedBaseLeg, 'string');
+  assert.deepEqual(JSON.parse(serializedCarcassBase), FACADE_CARCASS_BASE_DIMENSIONS);
+  assert.deepEqual(JSON.parse(serializedBaseLeg), FACADE_BASE_LEG_DIMENSIONS);
 });
 
 test('Chest Structural policy preserves every value, aggregate reference, and facade identity', () => {
   assert.equal(FACADE_CARCASS_BASE_DIMENSIONS.chest, CHEST_STRUCTURAL_DIMENSIONS);
   assert.equal(CHEST_STRUCTURAL_DIMENSIONS.wheels, CHEST_CASTER_RENDER_POLICY);
+  assert.equal(Object.isFrozen(CHEST_STRUCTURAL_DIMENSIONS), true);
+  assert.equal(Object.isFrozen(CHEST_CASTER_RENDER_POLICY), true);
 
   assert.deepEqual(CHEST_SHELL_POLICY, {
     backThicknessM: 0.005,
