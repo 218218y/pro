@@ -1,5 +1,9 @@
 import type { InteriorPresetOpsLike, InteriorRodOpLike } from '../../../../types';
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  INTERIOR_PRESET_ROD_FACTORS_POLICY,
+  INTERIOR_PRESET_SHELF_ROWS_POLICY,
+} from '../../../shared/dimensions/interior_fittings_policy.js';
+import { INTERIOR_STORAGE_BARRIER_POLICY } from '../../../shared/dimensions/interior_storage_policy.js';
 
 // Feature-level pure helpers for canonical interior layout presets.
 //
@@ -15,10 +19,11 @@ import { INTERIOR_FITTINGS_DIMENSIONS } from '../../../shared/wardrobe_dimension
 export function computeInteriorPresetOps(layoutType: unknown): InteriorPresetOpsLike {
   const lt = typeof layoutType === 'string' ? layoutType : 'shelves';
   const ops: InteriorPresetOpsLike = { shelves: [], rods: [] };
-  const preset = INTERIOR_FITTINGS_DIMENSIONS.presets;
+  const presetShelfRows = INTERIOR_PRESET_SHELF_ROWS_POLICY;
+  const presetRodFactors = INTERIOR_PRESET_ROD_FACTORS_POLICY;
 
   const addFullShelfRows = (): void => {
-    ops.shelves = Array.from(preset.fullShelfRows);
+    ops.shelves = Array.from(presetShelfRows.fullShelfRows);
   };
 
   const pushRod = (
@@ -44,26 +49,44 @@ export function computeInteriorPresetOps(layoutType: unknown): InteriorPresetOps
       break;
     case 'mixed':
       addFullShelfRows();
-      pushRod(preset.mixedRodYFactor, false, false);
+      pushRod(presetRodFactors.mixedRodYFactor, false, false);
       break;
     case 'hanging':
     case 'hanging_top2':
-      ops.shelves = Array.from(preset.hangingShelfRows);
-      pushRod(preset.hangingRodYFactor, true, true);
+      ops.shelves = Array.from(presetShelfRows.hangingShelfRows);
+      pushRod(presetRodFactors.hangingRodYFactor, true, true);
       break;
     case 'hanging_split':
-      ops.shelves = Array.from(preset.splitShelfRows);
-      pushRod(preset.splitUpperRodYFactor, true, true, preset.splitUpperRodLimitFactor, 0);
-      pushRod(preset.splitLowerRodYFactor, true, true, preset.splitLowerRodLimitFactor, 0);
+      ops.shelves = Array.from(presetShelfRows.splitShelfRows);
+      pushRod(
+        presetRodFactors.splitUpperRodYFactor,
+        true,
+        true,
+        presetRodFactors.splitUpperRodLimitFactor,
+        0
+      );
+      pushRod(
+        presetRodFactors.splitLowerRodYFactor,
+        true,
+        true,
+        presetRodFactors.splitLowerRodLimitFactor,
+        0
+      );
       break;
     case 'storage':
     case 'storage_shelf': {
-      ops.shelves = Array.from(preset.hangingShelfRows);
-      const barrierH = INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM;
-      pushRod(preset.storageRodYFactor, true, true, preset.storageRodLimitFactor, -barrierH);
+      ops.shelves = Array.from(presetShelfRows.hangingShelfRows);
+      const barrierH: number = INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM;
+      pushRod(
+        presetRodFactors.storageRodYFactor,
+        true,
+        true,
+        presetRodFactors.storageRodLimitFactor,
+        -barrierH
+      );
       ops.storageBarrier = {
         barrierH,
-        zFrontOffset: INTERIOR_FITTINGS_DIMENSIONS.storage.barrierFrontZOffsetM,
+        zFrontOffset: INTERIOR_STORAGE_BARRIER_POLICY.barrierFrontZOffsetM,
       };
       break;
     }

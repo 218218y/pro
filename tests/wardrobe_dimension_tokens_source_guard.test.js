@@ -670,16 +670,27 @@ test('[dimension tokens] interior presets and sketch drawer sizing read canonica
   assert.match(tokens, /heightTokenEpsilonCm:/);
 
   for (const rel of [
-    'esm/native/features/interior_layout_presets/ops.ts',
     'esm/native/features/modules_configuration/module_defaults.ts',
     'esm/native/features/stack_split/module_config.ts',
   ]) {
     assertUsesToken(rel, 'INTERIOR_FITTINGS_DIMENSIONS');
   }
+  for (const token of [
+    'INTERIOR_PRESET_ROD_FACTORS_POLICY',
+    'INTERIOR_PRESET_SHELF_ROWS_POLICY',
+    'INTERIOR_STORAGE_BARRIER_POLICY',
+  ]) {
+    assertUsesToken('esm/native/features/interior_layout_presets/ops.ts', token);
+  }
   assertUsesToken('esm/native/features/sketch_drawer_sizing.ts', 'DRAWER_SKETCH_SIZING_POLICY');
   assertUsesToken('esm/native/features/sketch_drawer_sizing.ts', 'cmToM');
 
   const presetOps = read('esm/native/features/interior_layout_presets/ops.ts');
+  assert.doesNotMatch(
+    presetOps,
+    /\b(?:INTERIOR_FITTINGS_DIMENSIONS|INTERIOR_PRESET_POLICY|INTERIOR_STORAGE_POLICY)\b/u
+  );
+  assert.doesNotMatch(presetOps, /const\s+(?:preset|presetDims)\s*=/u);
   assert.doesNotMatch(presetOps, /pushRod\((3\.5|3\.8|4\.6|2\.3|1\.3)/);
   assert.doesNotMatch(presetOps, /barrierH = 0\.5/);
   assert.doesNotMatch(presetOps, /zFrontOffset: -0\.06/);

@@ -5780,6 +5780,35 @@
       },
       "reason": "The Corner Wing Cell Layouts builder consumer replaces one aggregate compatibility statement with the focused Interior Storage Barrier policy plus the focused Interior Fittings Rod/Preset policies on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Corner Wing Cell Layouts composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-26",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/features/interior_layout_presets/ops.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_PRESET_ROD_FACTORS_POLICY", "INTERIOR_PRESET_SHELF_ROWS_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Interior Layout Presets feature consumer replaces one aggregate compatibility statement with the focused Interior Preset Shelf Rows/Rod Factors policies plus the focused Interior Storage Barrier policy on the existing features to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Interior Layout Presets composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
     }
   ]
 }

@@ -775,14 +775,14 @@ test('Interior Fittings builder pair rejects facade, aliases, aggregates, local 
 
 test('Interior Fittings builder pair appends exact Entries 157-158 after the unchanged 156-entry prefix', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(baseline.migrationBudgets.length, 158);
+  assert.ok(baseline.migrationBudgets.length >= 158);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 156)),
     '9e06d7f0e1df80f0f90cbe281eb4622790a49473ce4f3c0bdef36b0535a3386d'
   );
   assert.deepEqual(baseline.migrationBudgets.slice(156, 158), expectedEntries);
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 158)),
     '7cb5d770d8d0297e4037ecf59eaf417a164495416cf956615c37af75163d0516'
   );
 });
