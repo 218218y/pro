@@ -9,6 +9,7 @@ import { createInterDivider } from '../esm/native/builder/module_loop_pipeline_m
 import { resolveModuleDepthProfile } from '../esm/native/builder/module_loop_pipeline_module_depth.ts';
 import { computeModulesAndLayout } from '../esm/native/builder/module_layout_pipeline.ts';
 import { asModuleList, asNumberList } from '../esm/native/builder/module_loop_pipeline_shared.ts';
+import { runModuleLoopItem } from '../esm/native/builder/module_loop_pipeline_module.ts';
 
 function closeTo(actual: number, expected: number, message: string): void {
   assert.ok(Math.abs(actual - expected) < 1e-9, `${message}: ${actual} !== ${expected}`);
@@ -368,4 +369,55 @@ test('module loop runtime resolvers preserve explicit content snapshots and hang
   assert.equal(foldedCalls[0]?.[7], contentsPolicy);
   assert.equal(hangerCalls[0]?.[5], hangerPolicy);
   assert.equal(hangingClothesCalls[0]?.[7], hangingPolicy);
+});
+
+test('module loop replaces intact doors next to a removed frame side with one fixed front closure', () => {
+  const boardCalls: unknown[][] = [];
+  const hingedOps: unknown[] = [];
+  const App = createApp();
+  App.render = { wardrobeGroup: { add() {} } };
+  App.services = {
+    runtimeCache: {},
+    builder: {
+      renderOps: {
+        applyInteriorPresetOps: () => true,
+      },
+    },
+  };
+  const ctx = createCtx({
+    App,
+    cfg: {
+      wardrobeType: 'hinged',
+      globalHandleType: 'edge',
+      removedDoorsMap: { removed_body_left: true },
+    },
+    layout: {
+      modules: [{ doors: 2 }, { doors: 1 }],
+      moduleCfgList: [{ layout: 'shelves' }, { layout: 'shelves' }],
+      moduleInternalWidths: [0.8, 0.6],
+      singleUnitWidth: 0.4,
+      hingedDoorPivotMap: null,
+    },
+    flags: { __wpStack: 'top', splitDoors: false },
+    create: {
+      createBoard: (...args: unknown[]) => {
+        boardCalls.push(args);
+        return { userData: { partId: args[7] } };
+      },
+    },
+    hinged: { opsList: hingedOps },
+  });
+  const runtime = resolveModuleLoopRuntime(ctx);
+  const state = { currentX: -0.7, globalDoorCounter: 1 };
+
+  runModuleLoopItem(runtime, state, 0);
+
+  assert.equal(boardCalls.filter(call => call[7] === 'body_front_closure_left').length, 1);
+  assert.equal(hingedOps.length, 0, 'the closed side cell must not emit hinged-door operations');
+  assert.equal(state.globalDoorCounter, 3, 'suppressed door ids must stay reserved for later modules');
+  assert.equal(
+    (App.services.runtimeCache as any).__edgeHandleDefaultNoneTop,
+    undefined,
+    'doors replaced by the closure must not author edge-handle defaults'
+  );
 });

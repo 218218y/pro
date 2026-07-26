@@ -7,6 +7,7 @@ import {
 import { createInterDivider } from './module_loop_pipeline_module_dividers.js';
 import { applyEdgeHandleDefaults, registerModuleHitBox } from './module_loop_pipeline_module_registry.js';
 import { applyHexCellGeometryForModule } from './module_loop_pipeline_hex_cell.js';
+import { resolveRemovedFrameSideFrontClosurePlan } from './removed_frame_side_front_closure.js';
 
 import type { ModuleLoopRuntime } from './module_loop_pipeline_runtime.js';
 
@@ -29,8 +30,16 @@ export function runModuleLoopItem(
   writeInternalGridMap(runtime, index, frame, metrics);
 
   const startDoorOfModule = state.globalDoorCounter;
-  applyEdgeHandleDefaults(runtime, frame.modDoors, startDoorOfModule);
-  applyModuleContents(runtime, state, index, frame, metrics, startDoorOfModule);
+  const frontClosurePlan = resolveRemovedFrameSideFrontClosurePlan({
+    cfg: runtime.cfg,
+    moduleIndex: index,
+    modulesLength: runtime.modules.length,
+    frameSidePartIdPrefix: runtime.stackKey === 'bottom' ? 'lower_' : '',
+    startDoorId: startDoorOfModule,
+    moduleDoors: frame.modDoors,
+  });
+  if (!frontClosurePlan) applyEdgeHandleDefaults(runtime, frame.modDoors, startDoorOfModule);
+  applyModuleContents(runtime, state, index, frame, metrics, startDoorOfModule, frontClosurePlan);
 
   state.currentX += frame.modWidth + (index < runtime.modules.length - 1 ? runtime.woodThick : 0);
 }

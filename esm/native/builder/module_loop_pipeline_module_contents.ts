@@ -3,17 +3,24 @@ import { makeRodCreator } from './contents_pipeline.js';
 import { applyInteriorLayout } from './interior_pipeline.js';
 import { appendHingedDoorOpsForModule } from './hinged_doors_pipeline.js';
 import { getWardrobeGroup } from '../runtime/render_access.js';
+import {
+  advanceDoorCounterPastFrontClosure,
+  renderRemovedFrameSideFrontClosure,
+} from './removed_frame_side_front_closure.js';
 
 import type { ModuleLoopRuntime } from './module_loop_pipeline_runtime.js';
 import type { ModuleLoopMutableState } from './module_loop_pipeline_module_contracts.js';
 import type { ModuleVerticalMetrics, ResolvedModuleFrame } from './module_loop_pipeline_module_frame.js';
+import type { RemovedFrameSideFrontClosurePlan } from './removed_frame_side_front_closure.js';
+
 export function applyModuleContents(
   runtime: ModuleLoopRuntime,
   state: ModuleLoopMutableState,
   index: number,
   frame: ResolvedModuleFrame,
   metrics: ModuleVerticalMetrics,
-  startDoorOfModule: number
+  startDoorOfModule: number,
+  frontClosurePlan: RemovedFrameSideFrontClosurePlan | null = null
 ): void {
   const wardrobeGroup = getWardrobeGroup(runtime.App);
 
@@ -152,6 +159,12 @@ export function applyModuleContents(
   });
 
   if (runtime.cfg.wardrobeType !== 'hinged') return;
+
+  if (frontClosurePlan) {
+    renderRemovedFrameSideFrontClosure({ runtime, frame, plan: frontClosurePlan });
+    state.globalDoorCounter = advanceDoorCounterPastFrontClosure(frontClosurePlan);
+    return;
+  }
 
   state.globalDoorCounter = appendHingedDoorOpsForModule({
     App: runtime.App,

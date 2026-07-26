@@ -7,7 +7,16 @@ import {
   getRoundedShelfSideForRemovedFrameSide,
   shouldForceBraceShelvesForRemovedFrameSide,
 } from '../esm/native/builder/removed_frame_side_brace_shelves.ts';
+import {
+  advanceDoorCounterPastFrontClosure,
+  renderRemovedFrameSideFrontClosure,
+  resolveRemovedFrameSideFrontClosurePlan,
+} from '../esm/native/builder/removed_frame_side_front_closure.ts';
 import { handleCanvasRemovablePartRemoveClick } from '../esm/native/services/canvas_picking_removable_part_remove_click.ts';
+
+function closeTo(actual: number, expected: number, message: string): void {
+  assert.ok(Math.abs(actual - expected) < 1e-9, `${message}: ${actual} !== ${expected}`);
+}
 
 test('removed frame side brace policy only applies to the module adjacent to the removed outer side', () => {
   const cfg = { removedDoorsMap: { removed_body_left: true, removed_body_right: true } };
@@ -325,4 +334,227 @@ test('removing both sides of the same sketch box is blocked', () => {
   assert.equal(toasts.length, 1);
   assert.equal(toasts[0]?.type, 'error');
   assert.match(toasts[0]?.message || '', /שתי הדפנות/);
+});
+
+test('front closure plan only replaces intact hinged doors in the end module adjacent to a removed frame side', () => {
+  const cfg = {
+    wardrobeType: 'hinged',
+    removedDoorsMap: {
+      removed_body_left: true,
+      removed_body_right: true,
+    },
+  };
+
+  assert.deepEqual(
+    resolveRemovedFrameSideFrontClosurePlan({
+      cfg,
+      moduleIndex: 0,
+      modulesLength: 3,
+      startDoorId: 1,
+      moduleDoors: 2,
+    }),
+    {
+      side: 'left',
+      partId: 'body_front_closure_left',
+      startDoorId: 1,
+      moduleDoors: 2,
+    }
+  );
+  assert.equal(
+    resolveRemovedFrameSideFrontClosurePlan({
+      cfg,
+      moduleIndex: 1,
+      modulesLength: 3,
+      startDoorId: 3,
+      moduleDoors: 1,
+    }),
+    null
+  );
+  assert.deepEqual(
+    resolveRemovedFrameSideFrontClosurePlan({
+      cfg,
+      moduleIndex: 2,
+      modulesLength: 3,
+      startDoorId: 4,
+      moduleDoors: 1,
+    }),
+    {
+      side: 'right',
+      partId: 'body_front_closure_right',
+      startDoorId: 4,
+      moduleDoors: 1,
+    }
+  );
+
+  assert.equal(
+    resolveRemovedFrameSideFrontClosurePlan({
+      cfg: { ...cfg, wardrobeType: 'sliding' },
+      moduleIndex: 0,
+      modulesLength: 3,
+      startDoorId: 1,
+      moduleDoors: 2,
+    }),
+    null
+  );
+});
+
+test('front closure plan preserves explicit door-removal intent and lower-stack identity', () => {
+  const baseArgs = {
+    moduleIndex: 0,
+    modulesLength: 2,
+    startDoorId: 1,
+    moduleDoors: 2,
+  };
+
+  for (const removedDoorKey of ['removed_d1_full', 'removed_d1_mid2', 'removed_d2_bot']) {
+    assert.equal(
+      resolveRemovedFrameSideFrontClosurePlan({
+        ...baseArgs,
+        cfg: {
+          wardrobeType: 'hinged',
+          removedDoorsMap: {
+            removed_body_left: true,
+            [removedDoorKey]: true,
+          },
+        },
+      }),
+      null,
+      `${removedDoorKey} should keep the existing explicit door-removal behavior`
+    );
+  }
+
+  assert.deepEqual(
+    resolveRemovedFrameSideFrontClosurePlan({
+      ...baseArgs,
+      cfg: {
+        wardrobeType: 'hinged',
+        removedDoorsMap: {
+          removed_body_left: true,
+          removed_d3_full: true,
+          removed_d1_full: false,
+        },
+      },
+    }),
+    {
+      side: 'left',
+      partId: 'body_front_closure_left',
+      startDoorId: 1,
+      moduleDoors: 2,
+    }
+  );
+
+  assert.deepEqual(
+    resolveRemovedFrameSideFrontClosurePlan({
+      cfg: {
+        wardrobeType: 'hinged',
+        removedDoorsMap: { removed_lower_body_right: true },
+      },
+      moduleIndex: 1,
+      modulesLength: 2,
+      frameSidePartIdPrefix: 'lower_',
+      startDoorId: 1001,
+      moduleDoors: 2,
+    }),
+    {
+      side: 'right',
+      partId: 'lower_body_front_closure_right',
+      startDoorId: 1001,
+      moduleDoors: 2,
+    }
+  );
+
+  assert.equal(
+    resolveRemovedFrameSideFrontClosurePlan({
+      cfg: {
+        wardrobeType: 'hinged',
+        removedDoorsMap: {
+          removed_lower_body_right: true,
+          removed_lower_d1001_full: true,
+        },
+      },
+      moduleIndex: 1,
+      modulesLength: 2,
+      frameSidePartIdPrefix: 'lower_',
+      startDoorId: 1001,
+      moduleDoors: 2,
+    }),
+    null
+  );
+
+  assert.deepEqual(
+    resolveRemovedFrameSideFrontClosurePlan({
+      cfg: {
+        wardrobeType: 'hinged',
+        removedDoorsMap: {
+          removed_body_left: true,
+          removed_lower_d1_full: true,
+        },
+      },
+      moduleIndex: 0,
+      modulesLength: 2,
+      startDoorId: 1,
+      moduleDoors: 1,
+    }),
+    {
+      side: 'left',
+      partId: 'body_front_closure_left',
+      startDoorId: 1,
+      moduleDoors: 1,
+    }
+  );
+});
+
+test('front closure is a fixed body board whose back face meets the front edge of the internal shelf volume', () => {
+  const calls: unknown[][] = [];
+  const bodyMat = { id: 'body' };
+  const plan = {
+    side: 'left' as const,
+    partId: 'body_front_closure_left',
+    startDoorId: 7,
+    moduleDoors: 2,
+  };
+  const frame = {
+    modWidth: 0.82,
+    moduleCabinetBodyHeight: 2.2,
+    moduleCenterX: -0.41,
+    moduleInternalDepth: 0.57,
+    moduleInternalZ: -0.01,
+  } as any;
+  const runtime = {
+    cfg: {},
+    woodThick: 0.018,
+    startY: 0.1,
+    bodyMat,
+    createBoard: (...args: unknown[]) => {
+      calls.push(args);
+      return { userData: { partId: args[7] } };
+    },
+  } as any;
+
+  const mesh = renderRemovedFrameSideFrontClosure({ runtime, frame, plan });
+  assert.ok(mesh);
+  assert.equal(calls.length, 1);
+
+  const [width, height, depth, x, y, z, material, partId] = calls[0];
+  closeTo(Number(width), frame.modWidth, 'closure width should equal the internal module opening');
+  closeTo(
+    Number(height),
+    frame.moduleCabinetBodyHeight - 2 * runtime.woodThick,
+    'closure height should fit between cabinet floor and ceiling'
+  );
+  closeTo(Number(depth), runtime.woodThick, 'closure should use carcass board thickness');
+  closeTo(Number(x), frame.moduleCenterX, 'closure should be centered on the module opening');
+  closeTo(
+    Number(y),
+    runtime.startY + frame.moduleCabinetBodyHeight / 2,
+    'closure should be vertically centered in the internal opening'
+  );
+  closeTo(
+    Number(z) - runtime.woodThick / 2,
+    frame.moduleInternalZ + frame.moduleInternalDepth / 2,
+    'closure back face should meet brace-shelf front edge'
+  );
+  assert.equal(material, bodyMat);
+  assert.equal(partId, plan.partId);
+  assert.equal(advanceDoorCounterPastFrontClosure(plan), 9);
 });
