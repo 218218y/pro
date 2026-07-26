@@ -611,16 +611,33 @@ test('Interior Layout Presets rejects facade, aliases, aggregates, recomposition
   }
 });
 
-test('Interior Layout Presets appends exact Entry 159 after the unchanged 158-entry prefix', () => {
+test('Interior Layout Presets locks exact Entry 159 and the historical 159-entry prefix', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(baseline.migrationBudgets.length, 159);
+  assert.ok(baseline.migrationBudgets.length >= 159);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 158)),
     '7cb5d770d8d0297e4037ecf59eaf417a164495416cf956615c37af75163d0516'
   );
   assert.deepEqual(baseline.migrationBudgets[158], expectedEntry159);
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 159)),
+    '7bb983429d5ea9cf6c8f4e6f44f8637a0d2841866d09bf9ddc8515dd230e16a8'
+  );
+
+  const futureLedger = [...baseline.migrationBudgets, { id: 'future-entry-after-159' }];
+  assert.equal(
+    semanticSha256(futureLedger.slice(0, 159)),
+    '7bb983429d5ea9cf6c8f4e6f44f8637a0d2841866d09bf9ddc8515dd230e16a8'
+  );
+
+  const mutatedHistoricalLedger = structuredClone(baseline.migrationBudgets);
+  mutatedHistoricalLedger[158] = {
+    ...mutatedHistoricalLedger[158],
+    reason: 'mutated historical Entry 159',
+  };
+  assert.notDeepEqual(mutatedHistoricalLedger[158], expectedEntry159);
+  assert.notEqual(
+    semanticSha256(mutatedHistoricalLedger.slice(0, 159)),
     '7bb983429d5ea9cf6c8f4e6f44f8637a0d2841866d09bf9ddc8515dd230e16a8'
   );
 });

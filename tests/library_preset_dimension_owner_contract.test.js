@@ -59,14 +59,24 @@ const expectedAggregateProjections = Object.freeze({
   defaultLowerHeightCm: 'LIBRARY_PRESET_LAYOUT_POLICY.defaultLowerHeightCm',
   lowerDepthInsetCm: 'LIBRARY_PRESET_LAYOUT_POLICY.lowerDepthInsetCm',
 });
-const compatibilityConsumers = Object.freeze([
+const approvedConsumerUniverse = Object.freeze([
   'esm/native/data/preset_models_data.ts',
   'esm/native/features/library_preset/module_defaults.ts',
   'esm/native/features/library_preset/library_preset_flow_shared.ts',
   'esm/native/features/modules_configuration/module_defaults.ts',
   'esm/native/features/stack_split/module_config.ts',
 ]);
+const focusedOwnerSymbols = new Set([
+  'LIBRARY_PRESET_LAYOUT_POLICY',
+  'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
+  'LIBRARY_PRESET_POLICY',
+]);
 const sourceExtensions = new Set(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
+const runtimeExtensionCandidates = Object.freeze({
+  '.js': Object.freeze(['.ts', '.tsx', '.mts']),
+  '.mjs': Object.freeze(['.mts', '.ts', '.tsx']),
+  '.cjs': Object.freeze(['.cts', '.ts', '.tsx']),
+});
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
 function stableJson(value) {
@@ -94,6 +104,44 @@ function memberPath(node) {
   const objectPath = memberPath(node.object);
   const propertyName = identifierName(node.property);
   return objectPath && propertyName ? `${objectPath}.${propertyName}` : null;
+}
+
+function stripQueryHash(specifier) {
+  const query = specifier.indexOf('?');
+  const hash = specifier.indexOf('#');
+  const cut = query === -1 ? hash : hash === -1 ? query : Math.min(query, hash);
+  return cut === -1 ? specifier : specifier.slice(0, cut);
+}
+
+function canonicalModuleTarget(file) {
+  return path.normalize(path.resolve(file)).toLowerCase();
+}
+
+function resolveModuleTarget(fromFile, specifier) {
+  if (typeof specifier !== 'string') return null;
+  const cleanSpecifier = stripQueryHash(specifier);
+  let raw;
+  if (cleanSpecifier.startsWith('@/')) raw = path.join(root, 'esm', cleanSpecifier.slice(2));
+  else if (cleanSpecifier.startsWith('.')) raw = path.resolve(path.dirname(fromFile), cleanSpecifier);
+  else return null;
+
+  const candidates = [raw];
+  const extension = path.extname(raw).toLowerCase();
+  if (!extension) {
+    candidates.push(...[...sourceExtensions].map(sourceExtension => `${raw}${sourceExtension}`));
+  } else {
+    const stem = raw.slice(0, -extension.length);
+    candidates.push(
+      ...(runtimeExtensionCandidates[extension] ?? []).map(sourceExtension => `${stem}${sourceExtension}`)
+    );
+  }
+  if (fs.existsSync(raw) && fs.statSync(raw).isDirectory()) {
+    candidates.push(
+      ...[...sourceExtensions].map(sourceExtension => path.join(raw, `index${sourceExtension}`))
+    );
+  }
+  const resolved = candidates.find(candidate => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
+  return resolved ? canonicalModuleTarget(resolved) : null;
 }
 
 function exportedConstInitializer(sourceFile, name) {
@@ -298,32 +346,101 @@ function inspectFacade(source) {
   return { analysis, sourceFile, violations };
 }
 
-function libraryOwnerDependencies(file, source) {
-  return analyzeModuleDependencies(file, source).imports.filter(dependency =>
-    dependency.specifier.includes('library_preset_policy')
-  );
-}
-
-function inspectCompatibilityConsumer(file, source) {
+function inspectLibraryPresetConsumer(file, source) {
   const violations = [];
   const analysis = analyzeModuleDependencies(file, source);
-  const facadeDependencies = analysis.imports.filter(dependency =>
-    dependency.specifier.includes('wardrobe_dimension_tokens_shared')
-  );
-  const libraryFacadeBindings = facadeDependencies.flatMap(dependency =>
-    dependency.bindings.filter(binding => binding.importedName === 'LIBRARY_PRESET_DIMENSIONS')
-  );
-  if (
-    libraryFacadeBindings.length !== 1 ||
-    libraryFacadeBindings[0].localName !== 'LIBRARY_PRESET_DIMENSIONS' ||
-    libraryFacadeBindings[0].exportedName !== null
-  ) {
-    violations.push({ kind: 'compatibility-import-shape' });
+  const facadeTarget = canonicalModuleTarget(path.join(root, facadeRel));
+  const ownerTarget = canonicalModuleTarget(path.join(root, ownerRel));
+  const relative = relativePath(file);
+  let compatibilityImportCount = 0;
+  let focusedImportCount = 0;
+
+  for (const dependency of analysis.imports) {
+    const target = resolveModuleTarget(file, dependency.specifier);
+    const bindings = dependency.bindings ?? [];
+    const importedSymbols = dependency.importedSymbols ?? [];
+    const compatibilityBindings = bindings.filter(
+      binding => binding.importedName === 'LIBRARY_PRESET_DIMENSIONS'
+    );
+    const focusedSymbols = importedSymbols.filter(symbol => focusedOwnerSymbols.has(symbol));
+    const targetsFocusedOwner = target === ownerTarget;
+
+    if (compatibilityBindings.length > 0) {
+      compatibilityImportCount += 1;
+      const bindingsValid =
+        compatibilityBindings.length === 1 &&
+        compatibilityBindings[0].localName === 'LIBRARY_PRESET_DIMENSIONS' &&
+        compatibilityBindings[0].exportedName === null;
+      if (
+        target !== facadeTarget ||
+        dependency.kind !== 'value' ||
+        dependency.syntax !== 'static-import' ||
+        !bindingsValid
+      ) {
+        violations.push({ kind: 'compatibility-import-shape' });
+      }
+    }
+
+    if (targetsFocusedOwner || focusedSymbols.length > 0) {
+      focusedImportCount += 1;
+      if (target !== ownerTarget) {
+        violations.push({ kind: 'focused-bridge-or-barrel', specifier: dependency.specifier });
+        continue;
+      }
+      if (dependency.syntax === 'dynamic-import') {
+        violations.push({ kind: 'focused-dynamic-import' });
+      }
+      if (bindings.some(binding => binding.importedName === '*')) {
+        violations.push({ kind: 'focused-namespace-import' });
+      }
+      if (
+        dependency.syntax !== 'static-import' ||
+        dependency.kind !== 'value' ||
+        !dependency.specifier.endsWith('/library_preset_policy.js')
+      ) {
+        violations.push({ kind: 'focused-import-shape' });
+      }
+      if (
+        bindings.some(
+          binding =>
+            focusedOwnerSymbols.has(binding.importedName) &&
+            (binding.localName !== binding.importedName || binding.exportedName !== null)
+        )
+      ) {
+        violations.push({ kind: 'focused-import-alias' });
+      }
+      if (
+        dependency.syntax === 'static-import' &&
+        (focusedSymbols.length === 0 || importedSymbols.some(symbol => !focusedOwnerSymbols.has(symbol)))
+      ) {
+        violations.push({ kind: 'focused-import-symbol-shape' });
+      }
+    }
   }
-  if (libraryOwnerDependencies(file, source).length > 0) {
-    violations.push({ kind: 'premature-focused-consumer' });
+
+  const isConsumer = compatibilityImportCount > 0 || focusedImportCount > 0;
+  if (isConsumer && !approvedConsumerUniverse.includes(relative)) {
+    violations.push({ kind: 'unapproved-consumer', file: relative });
   }
-  return { analysis, violations };
+  if (compatibilityImportCount > 0 && focusedImportCount > 0) {
+    violations.push({ kind: 'dual-path-consumer' });
+  }
+  if (compatibilityImportCount > 1 || focusedImportCount > 1) {
+    violations.push({ kind: 'duplicate-library-preset-path' });
+  }
+
+  return {
+    analysis,
+    violations,
+    mode:
+      compatibilityImportCount > 0
+        ? focusedImportCount > 0
+          ? 'dual'
+          : 'compatibility'
+        : focusedImportCount > 0
+          ? 'focused'
+          : 'none',
+  };
 }
 
 test('Library Preset owner is one exact file with one exact unaliased Stack Split scalar dependency', () => {
@@ -389,34 +506,50 @@ test('Library Preset facade is an exact direct compatibility alias with its publ
   );
 });
 
-test('Library Preset keeps exactly five unchanged compatibility consumers and no focused consumer', () => {
-  const actualCompatibilityConsumers = [];
-  const focusedConsumers = [];
-  for (const file of walkSourceFiles(path.join(root, 'esm'))) {
-    const source = fs.readFileSync(file, 'utf8');
-    const relative = relativePath(file);
-    const inspection = inspectCompatibilityConsumer(file, source);
-    if (
-      inspection.analysis.imports.some(dependency =>
-        dependency.bindings.some(binding => binding.importedName === 'LIBRARY_PRESET_DIMENSIONS')
-      )
-    ) {
-      actualCompatibilityConsumers.push(relative);
-      assert.deepEqual(inspection.violations, [], relative);
-    }
-    if (libraryOwnerDependencies(file, source).length > 0 && relative !== facadeRel) {
-      focusedConsumers.push(relative);
-    }
+test('Library Preset consumers stay within the approved universe and use exactly one valid ownership path', () => {
+  assert.deepEqual(approvedConsumerUniverse, [
+    'esm/native/data/preset_models_data.ts',
+    'esm/native/features/library_preset/module_defaults.ts',
+    'esm/native/features/library_preset/library_preset_flow_shared.ts',
+    'esm/native/features/modules_configuration/module_defaults.ts',
+    'esm/native/features/stack_split/module_config.ts',
+  ]);
+  for (const relative of approvedConsumerUniverse) {
+    assert.equal(fs.existsSync(path.join(root, relative)), true, relative);
   }
-  actualCompatibilityConsumers.sort();
-  assert.deepEqual(actualCompatibilityConsumers, [...compatibilityConsumers].sort());
-  assert.deepEqual(focusedConsumers, []);
+
+  for (const file of walkSourceFiles(path.join(root, 'esm', 'native'))) {
+    const source = fs.readFileSync(file, 'utf8');
+    const inspection = inspectLibraryPresetConsumer(file, source);
+    if (inspection.mode !== 'none') assert.deepEqual(inspection.violations, [], relativePath(file));
+  }
 });
 
-test('Library Preset owner contract rejects facade access, aggregate imports, aliases, literals, spreads, key drift, copies, legacy views, and premature consumers', () => {
+test('Library Preset approved consumers may transition from compatibility to direct focused ownership', () => {
+  const approvedFile = path.join(root, approvedConsumerUniverse[0]);
+  const compatibilitySource =
+    "import { LIBRARY_PRESET_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';";
+  const focusedSource =
+    "import { LIBRARY_PRESET_POLICY } from '../../shared/dimensions/library_preset_policy.js';";
+
+  const compatibilityInspection = inspectLibraryPresetConsumer(approvedFile, compatibilitySource);
+  assert.equal(compatibilityInspection.mode, 'compatibility');
+  assert.deepEqual(compatibilityInspection.violations, []);
+
+  const focusedInspection = inspectLibraryPresetConsumer(approvedFile, focusedSource);
+  assert.equal(focusedInspection.mode, 'focused');
+  assert.deepEqual(focusedInspection.violations, []);
+});
+
+test('Library Preset owner contract rejects owner/facade drift and invalid future consumer ownership paths', () => {
   const ownerSource = read(ownerRel);
   const facadeSource = read(facadeRel);
-  const consumerFile = path.join(root, compatibilityConsumers[0]);
+  const consumerFile = path.join(root, approvedConsumerUniverse[0]);
+  const unapprovedConsumerFile = path.join(root, 'esm/native/features/unapproved_library_preset_consumer.ts');
+  const compatibilityImport =
+    "import { LIBRARY_PRESET_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';";
+  const focusedImport =
+    "import { LIBRARY_PRESET_POLICY } from '../../shared/dimensions/library_preset_policy.js';";
   const cases = [
     {
       name: 'owner imports facade',
@@ -508,12 +641,62 @@ test('Library Preset owner contract rejects facade access, aggregate imports, al
         ),
     },
     {
-      name: 'premature focused consumer',
-      expectedKind: 'premature-focused-consumer',
+      name: 'sixth consumer outside the approved universe',
+      expectedKind: 'unapproved-consumer',
       inspect: () =>
-        inspectCompatibilityConsumer(
+        inspectLibraryPresetConsumer(
+          unapprovedConsumerFile,
+          "import { LIBRARY_PRESET_POLICY } from '../../shared/dimensions/library_preset_policy.js';"
+        ),
+    },
+    {
+      name: 'consumer imports compatibility and focused paths together',
+      expectedKind: 'dual-path-consumer',
+      inspect: () => inspectLibraryPresetConsumer(consumerFile, `${compatibilityImport}\n${focusedImport}`),
+    },
+    {
+      name: 'focused owner alias',
+      expectedKind: 'focused-import-alias',
+      inspect: () =>
+        inspectLibraryPresetConsumer(
           consumerFile,
-          `${read(compatibilityConsumers[0])}\nimport { LIBRARY_PRESET_POLICY } from '../../shared/dimensions/library_preset_policy.js';`
+          "import { LIBRARY_PRESET_POLICY as libraryPreset } from '../../shared/dimensions/library_preset_policy.js';"
+        ),
+    },
+    {
+      name: 'focused import through public barrel',
+      expectedKind: 'focused-bridge-or-barrel',
+      inspect: () =>
+        inspectLibraryPresetConsumer(
+          consumerFile,
+          "import { LIBRARY_PRESET_POLICY } from '../features/dimensions/index.js';"
+        ),
+    },
+    {
+      name: 'focused import through bridge',
+      expectedKind: 'focused-bridge-or-barrel',
+      inspect: () =>
+        inspectLibraryPresetConsumer(
+          consumerFile,
+          "import { LIBRARY_PRESET_POLICY } from './library_preset_policy_bridge.js';"
+        ),
+    },
+    {
+      name: 'focused namespace import',
+      expectedKind: 'focused-namespace-import',
+      inspect: () =>
+        inspectLibraryPresetConsumer(
+          consumerFile,
+          "import * as libraryPreset from '../../shared/dimensions/library_preset_policy.js';"
+        ),
+    },
+    {
+      name: 'focused dynamic import',
+      expectedKind: 'focused-dynamic-import',
+      inspect: () =>
+        inspectLibraryPresetConsumer(
+          consumerFile,
+          "export const libraryPreset = import('../../shared/dimensions/library_preset_policy.js');"
         ),
     },
   ];
@@ -527,15 +710,31 @@ test('Library Preset owner contract rejects facade access, aggregate imports, al
   }
 });
 
-test('Library Preset owner extraction leaves the 159-entry migration ledger semantically unchanged', () => {
+test('Library Preset owner locks the historical 158- and 159-entry migration prefixes', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(baseline.migrationBudgets.length, 159);
+  assert.ok(baseline.migrationBudgets.length >= 159);
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 158)),
     '7cb5d770d8d0297e4037ecf59eaf417a164495416cf956615c37af75163d0516'
   );
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
+    semanticSha256(baseline.migrationBudgets.slice(0, 159)),
+    '7bb983429d5ea9cf6c8f4e6f44f8637a0d2841866d09bf9ddc8515dd230e16a8'
+  );
+
+  const futureLedger = [...baseline.migrationBudgets, { id: 'future-entry-after-159' }];
+  assert.equal(
+    semanticSha256(futureLedger.slice(0, 159)),
+    '7bb983429d5ea9cf6c8f4e6f44f8637a0d2841866d09bf9ddc8515dd230e16a8'
+  );
+
+  const mutatedHistoricalLedger = structuredClone(baseline.migrationBudgets);
+  mutatedHistoricalLedger[158] = {
+    ...mutatedHistoricalLedger[158],
+    reason: 'mutated historical Entry 159',
+  };
+  assert.notEqual(
+    semanticSha256(mutatedHistoricalLedger.slice(0, 159)),
     '7bb983429d5ea9cf6c8f4e6f44f8637a0d2841866d09bf9ddc8515dd230e16a8'
   );
 });
