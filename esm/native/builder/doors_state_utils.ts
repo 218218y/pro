@@ -3,7 +3,10 @@
 // Centralizes per-door map lookups (hinge dir, split, bottom split, curtain, groove).
 
 import { readCanonicalPositiveIntegerText } from './build_flow_readers.js';
-import { listCanonicalRemovedDoorLookupKeys } from '../../shared/removed_doors_map_keys_shared.js';
+import {
+  listCanonicalRemovedDoorLookupKeys,
+  toCanonicalRemovedDoorPartId,
+} from '../../shared/removed_doors_map_keys_shared.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 
 import type {
@@ -27,6 +30,31 @@ function asRecord(x: unknown): UnknownRecord {
 
 function readBool(v: unknown): boolean {
   return v === true;
+}
+
+const HINGED_DOOR_PART_ID_RE = /^(lower_)?d(\d+)(?:_(?:full|top|bot|mid\d*))?$/i;
+
+export function hasRemovedHingedDoorInRange(args: {
+  cfg: unknown;
+  startDoorId: number;
+  moduleDoors: number;
+  frameSidePartIdPrefix?: unknown;
+}): boolean {
+  const removedDoorsMap = asRecord(asRecord(args.cfg)['removedDoorsMap']);
+  const endDoorId = args.startDoorId + args.moduleDoors - 1;
+  const isLowerStack = args.frameSidePartIdPrefix === 'lower_';
+
+  for (const [rawKey, value] of Object.entries(removedDoorsMap)) {
+    if (value !== true) continue;
+    const canonicalPartId = toCanonicalRemovedDoorPartId(rawKey);
+    const match = HINGED_DOOR_PART_ID_RE.exec(canonicalPartId);
+    if (!match) continue;
+    if (!isLowerStack && match[1]) continue;
+    const doorId = Number(match[2]);
+    if (Number.isInteger(doorId) && doorId >= args.startDoorId && doorId <= endDoorId) return true;
+  }
+
+  return false;
 }
 
 function readPartColorValue(value: unknown): BuilderPartColorValue {

@@ -1,4 +1,4 @@
-import { toCanonicalRemovedDoorPartId } from '../../shared/removed_doors_map_keys_shared.js';
+import { hasRemovedHingedDoorInRange } from './doors_state_utils.js';
 import { getExposedShelfSideForRemovedFrameSide } from './removed_frame_side_brace_shelves.js';
 
 import type { UnknownRecord } from '../../../types/index.js';
@@ -23,8 +23,6 @@ export interface ResolveRemovedFrameSideFrontClosurePlanArgs {
   moduleDoors?: unknown;
 }
 
-const HINGED_DOOR_PART_ID_RE = /^(lower_)?d(\d+)(?:_(?:full|top|bot|mid\d*))?$/i;
-
 function readRecord(value: unknown): UnknownRecord | null {
   return !!value && typeof value === 'object' && !Array.isArray(value) ? (value as UnknownRecord) : null;
 }
@@ -39,29 +37,6 @@ function readRuntimeIndex(value: unknown): number | null {
   if (typeof value !== 'number' || !Number.isFinite(value)) return null;
   const normalized = Math.trunc(value);
   return normalized >= 0 ? normalized : null;
-}
-
-function hasRemovedDoorInModuleRange(
-  cfg: unknown,
-  startDoorId: number,
-  moduleDoors: number,
-  frameSidePartIdPrefix: unknown
-): boolean {
-  const removedDoorsMap = readRecord(readRecord(cfg)?.removedDoorsMap);
-  if (!removedDoorsMap) return false;
-
-  const endDoorId = startDoorId + moduleDoors - 1;
-  const isLowerStack = frameSidePartIdPrefix === 'lower_';
-  for (const [rawKey, value] of Object.entries(removedDoorsMap)) {
-    if (value !== true) continue;
-    const canonicalPartId = toCanonicalRemovedDoorPartId(rawKey);
-    const match = HINGED_DOOR_PART_ID_RE.exec(canonicalPartId);
-    if (!match) continue;
-    if (!isLowerStack && match[1]) continue;
-    const doorId = Number(match[2]);
-    if (Number.isInteger(doorId) && doorId >= startDoorId && doorId <= endDoorId) return true;
-  }
-  return false;
 }
 
 function resolveClosurePartId(
@@ -96,7 +71,14 @@ export function resolveRemovedFrameSideFrontClosurePlan(
 
   // Explicit door removal is the user's stronger instruction. The fixed closure only
   // replaces an otherwise intact hinged-door set next to a removed outer frame side.
-  if (hasRemovedDoorInModuleRange(cfg, startDoorId, moduleDoors, args.frameSidePartIdPrefix)) {
+  if (
+    hasRemovedHingedDoorInRange({
+      cfg,
+      startDoorId,
+      moduleDoors,
+      frameSidePartIdPrefix: args.frameSidePartIdPrefix,
+    })
+  ) {
     return null;
   }
 
