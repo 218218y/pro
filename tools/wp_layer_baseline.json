@@ -5718,6 +5718,68 @@
       },
       "reason": "The Build Flow Plan Inputs flow replaces one legacy facade statement with the focused Carcass Interior owner plus the focused Stack Split seam owner on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Build Flow Plan Inputs composition seam eliminates the extra Stack Split seam statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-26",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/core_storage_compute_custom.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_ROD_PLACEMENT_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Core Storage Compute Custom builder consumer replaces one aggregate compatibility statement with the focused Interior Storage Barrier/Grid policies plus the focused Interior Fittings Rod Placement policy on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Core Storage Compute Custom composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-26",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/corner_wing_cell_layouts.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "INTERIOR_PRESET_ROD_FACTORS_POLICY",
+          "INTERIOR_PRESET_SHELF_ROWS_POLICY",
+          "INTERIOR_ROD_PLACEMENT_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Corner Wing Cell Layouts builder consumer replaces one aggregate compatibility statement with the focused Interior Storage Barrier policy plus the focused Interior Fittings Rod/Preset policies on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Corner Wing Cell Layouts composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
     }
   ]
 }

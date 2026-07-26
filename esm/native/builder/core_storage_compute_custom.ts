@@ -1,10 +1,14 @@
-import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import {
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  INTERIOR_STORAGE_GRID_POLICY,
+} from '../../shared/dimensions/interior_storage_policy.js';
+import { INTERIOR_ROD_PLACEMENT_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import { _asObject, __asArray } from './core_pure_shared.js';
 import type { InteriorCustomOpsLike, InteriorRodOpLike } from './core_pure_shared.js';
 import { readCorePureNumber, readCorePurePositiveInteger } from './core_pure_number_contracts.js';
 
 function readCustomGridDivisions(value: unknown): number {
-  return readCorePurePositiveInteger(value, INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault);
+  return readCorePurePositiveInteger(value, INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault);
 }
 
 function readOptionalCustomNumber(value: unknown): number | null {
@@ -45,7 +49,7 @@ export function computeInteriorCustomOps(customData: unknown, gridDivisions: unk
     }
     const rawYFactor = readOptionalCustomNumber(rec.yFactor);
     if (rawYFactor == null) return null;
-    const mapped = Math.round((rawYFactor * gd) / INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault);
+    const mapped = Math.round((rawYFactor * gd) / INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault);
     return Math.max(1, Math.min(gd, mapped));
   };
 
@@ -88,7 +92,7 @@ export function computeInteriorCustomOps(customData: unknown, gridDivisions: unk
       const rodOp: InteriorRodOpLike = {
         gridIndex: i,
         yFactor: i,
-        yAdd: INTERIOR_FITTINGS_DIMENSIONS.rods.defaultYOffsetM,
+        yAdd: INTERIOR_ROD_PLACEMENT_POLICY.defaultYOffsetM,
         enableHangingClothes: true,
         enableSingleHanger: true,
       };
@@ -99,7 +103,7 @@ export function computeInteriorCustomOps(customData: unknown, gridDivisions: unk
       for (let k = i - 1; k >= 1; k--) {
         if (shelvesArr[k - 1]) {
           limitFactor = i - k;
-          limitAdd = INTERIOR_FITTINGS_DIMENSIONS.rods.defaultYOffsetM;
+          limitAdd = INTERIOR_ROD_PLACEMENT_POLICY.defaultYOffsetM;
           break;
         }
         if (rodsArr[k - 1]) {
@@ -112,8 +116,8 @@ export function computeInteriorCustomOps(customData: unknown, gridDivisions: unk
       if (limitFactor === null && hasStorage) {
         limitFactor = i;
         limitAdd = -(
-          Math.abs(INTERIOR_FITTINGS_DIMENSIONS.rods.defaultYOffsetM) +
-          INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM
+          Math.abs(INTERIOR_ROD_PLACEMENT_POLICY.defaultYOffsetM) +
+          INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM
         );
       }
 
@@ -126,8 +130,8 @@ export function computeInteriorCustomOps(customData: unknown, gridDivisions: unk
 
   if (hasStorage) {
     ops.storageBarrier = {
-      barrierH: INTERIOR_FITTINGS_DIMENSIONS.storage.barrierHeightM,
-      zFrontOffset: INTERIOR_FITTINGS_DIMENSIONS.storage.barrierFrontZOffsetM,
+      barrierH: INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM,
+      zFrontOffset: INTERIOR_STORAGE_BARRIER_POLICY.barrierFrontZOffsetM,
     };
   }
 

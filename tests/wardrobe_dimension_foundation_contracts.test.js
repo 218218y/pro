@@ -748,6 +748,11 @@ const APPROVED_INTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['INTERNAL_DRAWER_POLICY']),
 });
 const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/core_storage_compute_custom.ts': Object.freeze([
+    'INTERIOR_STORAGE_BARRIER_POLICY',
+    'INTERIOR_STORAGE_GRID_POLICY',
+  ]),
+  'esm/native/builder/corner_wing_cell_layouts.ts': Object.freeze(['INTERIOR_STORAGE_BARRIER_POLICY']),
   'esm/native/builder/render_interior_custom_ops.ts': Object.freeze(['INTERIOR_STORAGE_GRID_POLICY']),
   'esm/native/builder/render_interior_preset_ops.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
@@ -850,6 +855,12 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
   ]),
 });
 const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
+  'esm/native/builder/core_storage_compute_custom.ts': Object.freeze(['INTERIOR_ROD_PLACEMENT_POLICY']),
+  'esm/native/builder/corner_wing_cell_layouts.ts': Object.freeze([
+    'INTERIOR_PRESET_ROD_FACTORS_POLICY',
+    'INTERIOR_PRESET_SHELF_ROWS_POLICY',
+    'INTERIOR_ROD_PLACEMENT_POLICY',
+  ]),
   'esm/native/builder/render_interior_custom_ops.ts': Object.freeze(['INTERIOR_SHELF_GEOMETRY_POLICY']),
   'esm/native/builder/render_interior_custom_ops_shelves.ts': Object.freeze([
     'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
@@ -1220,22 +1231,6 @@ const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_PREVIEW_POLICY']),
 });
 const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/core_storage_compute_custom.ts': Object.freeze(['rods', 'rods.defaultYOffsetM']),
-  'esm/native/builder/corner_wing_cell_layouts.ts': Object.freeze([
-    'presets',
-    'presets.fullShelfRows',
-    'presets.hangingRodYFactor',
-    'presets.hangingShelfRows',
-    'presets.mixedRodYFactor',
-    'presets.splitLowerRodYFactor',
-    'presets.splitShelfRows',
-    'presets.splitUpperRodLimitFactor',
-    'presets.splitUpperRodYFactor',
-    'presets.storageRodLimitFactor',
-    'presets.storageRodYFactor',
-    'rods',
-    'rods.defaultYOffsetM',
-  ]),
   'esm/native/features/interior_layout_presets/ops.ts': Object.freeze([
     'presets',
     'presets.fullShelfRows',
@@ -1392,19 +1387,6 @@ const APPROVED_CORNER_CONNECTOR_INTERIOR_OWNER_IMPORTS = Object.freeze({
 const APPROVED_CORNER_SYSTEM_LEGACY_FIELD_USAGE = Object.freeze({});
 
 const APPROVED_INTERIOR_STORAGE_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/builder/core_storage_compute_custom.ts': Object.freeze([
-    'storage',
-    'storage.barrierFrontZOffsetM',
-    'storage.barrierHeightM',
-    'storage.gridDivisionsDefault',
-  ]),
-  'esm/native/builder/corner_wing_cell_layouts.ts': Object.freeze([
-    'storage',
-    'storage.barrierFrontZOffsetM',
-    'storage.barrierHeightM',
-    'storage.barrierWidthClearanceM',
-    'storage.barrierWidthMinM',
-  ]),
   'esm/native/features/interior_layout_presets/ops.ts': Object.freeze([
     'storage',
     'storage.barrierFrontZOffsetM',

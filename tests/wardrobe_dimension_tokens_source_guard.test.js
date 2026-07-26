@@ -1860,7 +1860,21 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
   }
 
   const expectedTokenUse = new Map([
-    ['esm/native/builder/corner_wing_cell_layouts.ts', ['INTERIOR_FITTINGS_DIMENSIONS', 'presetDims']],
+    [
+      'esm/native/builder/core_storage_compute_custom.ts',
+      ['INTERIOR_ROD_PLACEMENT_POLICY', 'INTERIOR_STORAGE_BARRIER_POLICY', 'INTERIOR_STORAGE_GRID_POLICY'],
+    ],
+    [
+      'esm/native/builder/corner_wing_cell_layouts.ts',
+      [
+        'INTERIOR_PRESET_ROD_FACTORS_POLICY',
+        'INTERIOR_PRESET_SHELF_ROWS_POLICY',
+        'INTERIOR_ROD_PLACEMENT_POLICY',
+        'INTERIOR_STORAGE_BARRIER_POLICY',
+        'presetRodFactors',
+        'presetShelfRows',
+      ],
+    ],
     [
       'esm/native/builder/core_doors_compute.ts',
       ['HINGED_DOOR_MOUNT_POLICY', 'MATERIAL_THICKNESS_POLICY', 'SLIDING_DOOR_CONSTRUCTION_POLICY'],
@@ -2112,6 +2126,9 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
   for (const [rel, tokensToFind] of expectedTokenUse) {
     for (const tokenName of tokensToFind) assertUsesToken(rel, tokenName);
   }
+
+  const cornerWingCellLayouts = read('esm/native/builder/corner_wing_cell_layouts.ts');
+  assert.doesNotMatch(cornerWingCellLayouts, /\bpresetDims\b/u);
 
   const previewHover = read('esm/native/builder/render_preview_interior_hover_apply.ts');
   assert.match(previewHover, /SKETCH_BOX_ROD_PREVIEW_POLICY\.rodMinLengthM/u);
