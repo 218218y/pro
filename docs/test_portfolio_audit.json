@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-26T06:39:40.564Z",
+  "generatedAt": "2026-07-26T07:26:47.198Z",
   "totals": {
-    "tests": 1287,
-    "unitRunnerTests": 1279,
+    "tests": 1288,
+    "unitRunnerTests": 1280,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 445,
+    "contract": 446,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -868,6 +868,10 @@
     {
       "file": "tests/carcass_cornice_segmented_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/carcass_cornice_shell_dimension_ownership_closeout_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/carcass_dimension_policy_runtime.test.ts",

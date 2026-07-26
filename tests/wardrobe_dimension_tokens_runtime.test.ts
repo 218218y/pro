@@ -394,6 +394,25 @@ test('dimension foundation uses explicit unit constructors and conversions witho
 test('carcass shell and interior policies preserve facade identity and every migrated value', () => {
   assert.equal(FACADE_CARCASS_SHELL_DIMENSIONS, CARCASS_SHELL_DIMENSIONS);
   assert.equal(FACADE_CARCASS_INTERIOR_DIMENSIONS, CARCASS_INTERIOR_DIMENSIONS);
+  assert.deepEqual(Object.keys(CARCASS_SHELL_DIMENSIONS), [
+    'frontInsetZM',
+    'backInsetZM',
+    'boardMinDimensionM',
+    'boardMinDepthM',
+    'bodyMinDepthM',
+    'bodyMinHeightM',
+    'floorCeilWidthClearanceM',
+    'backPanelWidthClearanceM',
+    'backPanelSegmentWidthClearanceM',
+    'backPanelThicknessM',
+    'backPanelZM',
+    'sideDepthClearanceM',
+    'sideZOffsetM',
+    'internalBackInsetM',
+    'drawerGridDivisions',
+    'drawerSplitGridLineIndex',
+  ]);
+  assert.equal(Object.isFrozen(CARCASS_SHELL_DIMENSIONS), true);
   assert.deepEqual(CARCASS_SHELL_DIMENSIONS, {
     frontInsetZM: 0.005,
     backInsetZM: 0.0078,
@@ -429,6 +448,11 @@ test('carcass shell and interior policies preserve facade identity and every mig
     CARCASS_SHELL_DIMENSIONS.drawerSplitGridLineIndex,
     CARCASS_INTERIOR_GRID_POLICY.drawerSplitLineIndex
   );
+  const serializedCarcassShellDimensions = JSON.stringify(FACADE_CARCASS_SHELL_DIMENSIONS);
+  assert.equal(typeof serializedCarcassShellDimensions, 'string');
+  assert.ok(serializedCarcassShellDimensions);
+  const carcassShellRoundTrip: unknown = JSON.parse(serializedCarcassShellDimensions);
+  assert.deepEqual(carcassShellRoundTrip, CARCASS_SHELL_DIMENSIONS);
 });
 
 test('Base Support policies preserve every value and facade nested-object identity', () => {
@@ -572,10 +596,16 @@ test('Material Thickness and Cornice render policies preserve values, references
     glassShelf: { thicknessM: MATERIAL_THICKNESS_POLICY.glassShelf.thicknessM },
   });
   assert.equal(MATERIAL_DIMENSIONS.wood.thicknessM, MATERIAL_DIMENSIONS.glassShelf.thicknessM);
+  assert.deepEqual(Object.keys(FACADE_CARCASS_CORNICE_DIMENSIONS), ['common', 'wave', 'profile']);
   assert.equal(FACADE_CARCASS_CORNICE_DIMENSIONS, CARCASS_CORNICE_RENDER_POLICY);
   assert.equal(CARCASS_CORNICE_RENDER_POLICY.common, CARCASS_CORNICE_COMMON_POLICY);
   assert.equal(CARCASS_CORNICE_RENDER_POLICY.wave, CARCASS_CORNICE_WAVE_POLICY);
   assert.equal(CARCASS_CORNICE_RENDER_POLICY.profile, CARCASS_CORNICE_PROFILE_POLICY);
+  assert.equal(Object.isFrozen(CARCASS_CORNICE_ANGLE_POLICY), true);
+  assert.equal(Object.isFrozen(CARCASS_CORNICE_COMMON_POLICY), true);
+  assert.equal(Object.isFrozen(CARCASS_CORNICE_WAVE_POLICY), true);
+  assert.equal(Object.isFrozen(CARCASS_CORNICE_PROFILE_POLICY), true);
+  assert.equal(Object.isFrozen(CARCASS_CORNICE_RENDER_POLICY), true);
   assert.equal(CARCASS_CORNICE_WAVE_POLICY.fallbackWoodThicknessM, MATERIAL_THICKNESS_POLICY.wood.thicknessM);
   assert.deepEqual(CARCASS_CORNICE_ANGLE_POLICY, { thetaClampRad: 0.01 });
 
@@ -635,6 +665,11 @@ test('Material Thickness and Cornice render policies preserve values, references
     wave: CARCASS_CORNICE_WAVE_POLICY,
     profile: CARCASS_CORNICE_PROFILE_POLICY,
   });
+  const serializedCarcassCorniceDimensions = JSON.stringify(FACADE_CARCASS_CORNICE_DIMENSIONS);
+  assert.equal(typeof serializedCarcassCorniceDimensions, 'string');
+  assert.ok(serializedCarcassCorniceDimensions);
+  const carcassCorniceRoundTrip: unknown = JSON.parse(serializedCarcassCorniceDimensions);
+  assert.deepEqual(carcassCorniceRoundTrip, CARCASS_CORNICE_RENDER_POLICY);
 });
 
 test('Chest Mode policy preserves every default, render value, nested reference, and facade identity', () => {
