@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-26T08:02:06.959Z",
+  "generatedAt": "2026-07-26T08:43:39.083Z",
   "totals": {
-    "tests": 1289,
-    "unitRunnerTests": 1281,
+    "tests": 1290,
+    "unitRunnerTests": 1282,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 447,
+    "contract": 448,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -883,6 +883,10 @@
     },
     {
       "file": "tests/carcass_door_trim_surfaces_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/carcass_interior_dimension_ownership_closeout_contract.test.js",
       "category": "contract"
     },
     {

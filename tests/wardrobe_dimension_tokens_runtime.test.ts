@@ -437,8 +437,20 @@ test('carcass shell and interior policies preserve facade identity and every mig
     hingedDepthReductionM: 0.03,
     internalBackInsetM: 0.005,
   });
+  assert.deepEqual(Object.keys(FACADE_CARCASS_INTERIOR_DIMENSIONS), [
+    'minTopBodyHeightM',
+    'slidingDepthReductionM',
+    'hingedDepthReductionM',
+    'internalBackInsetM',
+  ]);
+  assert.equal(Object.isFrozen(CARCASS_INTERIOR_DIMENSIONS), true);
   assert.equal(CARCASS_INTERIOR_DIMENSIONS.minTopBodyHeightM, CARCASS_SHELL_DIMENSIONS.bodyMinHeightM);
   assert.equal(CARCASS_INTERIOR_DIMENSIONS.internalBackInsetM, CARCASS_SHELL_DIMENSIONS.internalBackInsetM);
+  const serializedCarcassInteriorDimensions = JSON.stringify(FACADE_CARCASS_INTERIOR_DIMENSIONS);
+  assert.equal(typeof serializedCarcassInteriorDimensions, 'string');
+  assert.ok(serializedCarcassInteriorDimensions);
+  const carcassInteriorRoundTrip: unknown = JSON.parse(serializedCarcassInteriorDimensions);
+  assert.deepEqual(carcassInteriorRoundTrip, CARCASS_INTERIOR_DIMENSIONS);
   assert.deepEqual(CARCASS_INTERIOR_GRID_POLICY, {
     divisions: 6,
     drawerSplitLineIndex: 4,
