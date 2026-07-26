@@ -6,6 +6,7 @@ import {
 } from '../../shared/dimensions/handle_policy.js';
 import { INTERIOR_SHELF_ROUNDED_RENDER_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import { getMirrorRenderTarget } from '../runtime/render_access.js';
+import { applyShelfExposedEdgeMaterials } from './shelf_front_edge_material.js';
 
 import type {
   AppContainer,
@@ -60,6 +61,7 @@ type AddGroupLike = { add: BoundUnknownMethod<[obj: unknown]> };
 type RoundedShelfSide = 'left' | 'right' | 'both';
 
 type RoundedShelfGeometryLike = {
+  addGroup: (start: number, count: number, materialIndex?: number) => unknown;
   getAttribute?: (name: string) => unknown;
   setAttribute?: (name: string, attribute: unknown) => unknown;
   setIndex?: (index: unknown) => unknown;
@@ -69,6 +71,17 @@ type RoundedShelfGeometryLike = {
 };
 
 type RoundedShelfFootprintPoint = { x: number; z: number };
+
+type RoundedShelfMaterialGroup = { start: number; count: number; materialIndex: number };
+
+const BOX_FACE_MATERIAL_INDEX = Object.freeze({
+  positiveX: 0,
+  negativeX: 1,
+  positiveY: 2,
+  negativeY: 3,
+  positiveZ: 4,
+  negativeZ: 5,
+});
 
 type RoundedShelfAttachedSide = 'left' | 'right' | null;
 
@@ -286,6 +299,45 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     return Math.abs(a.x - targetX) <= tolerance && Math.abs(b.x - targetX) <= tolerance;
   }
 
+  function resolveRoundedShelfSideMaterialIndex(
+    a: RoundedShelfFootprintPoint,
+    b: RoundedShelfFootprintPoint,
+    w: number,
+    d: number
+  ): number {
+    // Keep the same six-material order as THREE.BoxGeometry:
+    // +X, -X, +Y, -Y, +Z (front), -Z (back). Curved corner faces continue
+    // the visible front edge, so they intentionally use the +Z material.
+    const tolerance = 1e-7;
+    const left = -w / 2;
+    const right = w / 2;
+    const back = -d / 2;
+    const front = d / 2;
+    const bothAt = (first: number, second: number, target: number) =>
+      Math.abs(first - target) <= tolerance && Math.abs(second - target) <= tolerance;
+
+    if (bothAt(a.z, b.z, front)) return BOX_FACE_MATERIAL_INDEX.positiveZ;
+    if (bothAt(a.z, b.z, back)) return BOX_FACE_MATERIAL_INDEX.negativeZ;
+    if (bothAt(a.x, b.x, right)) return BOX_FACE_MATERIAL_INDEX.positiveX;
+    if (bothAt(a.x, b.x, left)) return BOX_FACE_MATERIAL_INDEX.negativeX;
+    return BOX_FACE_MATERIAL_INDEX.positiveZ;
+  }
+
+  function appendRoundedShelfMaterialGroup(
+    groups: RoundedShelfMaterialGroup[],
+    start: number,
+    count: number,
+    materialIndex: number
+  ): void {
+    if (!(count > 0)) return;
+    const previous = groups[groups.length - 1];
+    if (previous && previous.materialIndex === materialIndex && previous.start + previous.count === start) {
+      previous.count += count;
+      return;
+    }
+    groups.push({ start, count, materialIndex });
+  }
+
   function clampRoundedShelfUv(value: number): number {
     if (!Number.isFinite(value)) return 0;
     if (value < 0) return 0;
@@ -418,6 +470,7 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     const positions: number[] = [];
     const normals: number[] = [];
     const uvs: number[] = [];
+    const materialGroups: RoundedShelfMaterialGroup[] = [];
     const topY = h / 2;
     const bottomY = -h / 2;
     const center: RoundedShelfFootprintPoint = {
@@ -425,6 +478,7 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
       z: points.reduce((sum, point) => sum + point.z, 0) / points.length,
     };
 
+    const topStart = positions.length / 3;
     for (let i = 0; i < points.length; i += 1) {
       const next = points[(i + 1) % points.length];
       pushRoundedShelfPlanarTriangle(
@@ -443,6 +497,17 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
         w,
         d
       );
+    }
+    appendRoundedShelfMaterialGroup(
+      materialGroups,
+      topStart,
+      positions.length / 3 - topStart,
+      BOX_FACE_MATERIAL_INDEX.positiveY
+    );
+
+    const bottomStart = positions.length / 3;
+    for (let i = 0; i < points.length; i += 1) {
+      const next = points[(i + 1) % points.length];
       pushRoundedShelfPlanarTriangle(
         positions,
         normals,
@@ -460,6 +525,12 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
         d
       );
     }
+    appendRoundedShelfMaterialGroup(
+      materialGroups,
+      bottomStart,
+      positions.length / 3 - bottomStart,
+      BOX_FACE_MATERIAL_INDEX.negativeY
+    );
 
     const attachedSide = resolveRoundedShelfAttachedSide(side);
     for (let i = 0; i < points.length; i += 1) {
@@ -478,6 +549,7 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
       const uB = resolveRoundedShelfSideUv(b, dx, dz, w, d);
       const vBottom = 0;
       const vTop = 1;
+      const groupStart = positions.length / 3;
       pushRoundedShelfSideTriangle(
         positions,
         normals,
@@ -517,13 +589,25 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
         nx,
         0,
         nz
+      );
+      appendRoundedShelfMaterialGroup(
+        materialGroups,
+        groupStart,
+        positions.length / 3 - groupStart,
+        resolveRoundedShelfSideMaterialIndex(a, b, w, d)
       );
     }
 
     const geometry = new THREE.BufferGeometry() as RoundedShelfGeometryLike;
+    if (typeof geometry.addGroup !== 'function') {
+      throw new Error('[builder/render_ops] rounded shelf geometry requires THREE.BufferGeometry.addGroup');
+    }
     geometry.setAttribute?.('position', new THREE.Float32BufferAttribute(positions, 3));
     geometry.setAttribute?.('normal', new THREE.Float32BufferAttribute(normals, 3));
     geometry.setAttribute?.('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    for (const group of materialGroups) {
+      geometry.addGroup(group.start, group.count, group.materialIndex);
+    }
     geometry.computeBoundingBox?.();
     geometry.computeBoundingSphere?.();
     return geometry;
@@ -624,7 +708,7 @@ export function createBuilderRenderPrimitiveOps(deps: RenderOpsPrimitiveDeps) {
     const x = __number(args.x);
     const y = __number(args.y);
     const z = __number(args.z);
-    const mat = args.mat || null;
+    const mat = applyShelfExposedEdgeMaterials(args.mat || null, args.shelfExposedSide);
     const partId = args.partId || null;
     const sketchMode = !!args.sketchMode;
     const addOutlines = args.addOutlines;

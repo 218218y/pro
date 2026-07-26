@@ -262,8 +262,16 @@ test('focused shelf renderer preserves removed-side force-brace and left/right/b
   ]);
   assert.equal(split.boards[0].userData.__wpShelfIsBrace, true);
   assert.equal(split.boards[1].userData.__wpShelfIsBrace, true);
-  assert.deepEqual(split.boards[0].args[8], { shape: 'rounded_shelf', roundedShelfSide: 'left' });
-  assert.deepEqual(split.boards[1].args[8], { shape: 'rounded_shelf', roundedShelfSide: 'right' });
+  assert.deepEqual(split.boards[0].args[8], {
+    shelfExposedSide: 'left',
+    shape: 'rounded_shelf',
+    roundedShelfSide: 'left',
+  });
+  assert.deepEqual(split.boards[1].args[8], {
+    shelfExposedSide: 'right',
+    shape: 'rounded_shelf',
+    roundedShelfSide: 'right',
+  });
   assert.deepEqual(
     split.pins.map(call => call[6]),
     [false, false]
@@ -275,7 +283,11 @@ test('focused shelf renderer preserves removed-side force-brace and left/right/b
   });
   renderShelves(full, [{ id: 'both', yNorm: 0.5, xNorm: 0.5, variant: 'regular' }]);
   assert.equal(full.boards[0].userData.__wpShelfIsBrace, true);
-  assert.deepEqual(full.boards[0].args[8], { shape: 'rounded_shelf', roundedShelfSide: 'both' });
+  assert.deepEqual(full.boards[0].args[8], {
+    shelfExposedSide: 'both',
+    shape: 'rounded_shelf',
+    roundedShelfSide: 'both',
+  });
 });
 
 function createBoundaryShelfHarness(offset: number) {

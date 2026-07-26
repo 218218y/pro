@@ -210,6 +210,57 @@ test('materials apply runtime: drawer boxes keep independent white material unle
   assert.equal(drawerBoxChild.material, boxPaint);
 });
 
+test('materials apply runtime recolors the front and removed-side edge of brace shelves', () => {
+  const frontMat = { id: 'cabinet-front' };
+  const whiteMat = { id: 'shelf-white' };
+  const shelfMesh = {
+    isMesh: true,
+    userData: {
+      partId: 'module_shelf_0_g1',
+      __wpShelfGroupPartId: 'all_shelves',
+      __wpShelfVariant: 'brace',
+      __wpShelfIsBrace: true,
+      __wpShelfExposedSide: 'left',
+    },
+    material: { id: 'stale' },
+    children: [],
+  };
+  const App: any = {
+    services: {
+      builder: {
+        renderOps: { createOutlineBinding: () => () => undefined },
+        materials: {
+          getMaterial(color: string, part: string) {
+            if (color === '#ffffff' && part === 'body') return whiteMat;
+            return frontMat;
+          },
+        },
+        handles: { applyHandles() {} },
+      },
+      platform: { triggerRender() {} },
+    },
+    store: {
+      getState() {
+        return {
+          ui: {
+            color: '#334455',
+            customColorPicker: '#ffffff',
+            frontColorShelfInheritanceMode: 'brace',
+          },
+          config: {},
+          runtime: {},
+          mode: {},
+          meta: {},
+        };
+      },
+    },
+    render: { wardrobeGroup: { children: [shelfMesh] } },
+  };
+
+  assert.equal(applyMaterialsFromState(App), true);
+  assert.deepEqual(shelfMesh.material, [whiteMat, frontMat, whiteMat, whiteMat, frontMat, whiteMat]);
+});
+
 test('materials apply runtime resolves global custom texture from canonical cfg only', () => {
   const calls: unknown[][] = [];
   const textureMat = { id: 'front:texture' };

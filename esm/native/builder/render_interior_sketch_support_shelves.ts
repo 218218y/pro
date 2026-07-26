@@ -9,17 +9,12 @@ import {
   markShelfBoardUserData,
   resolveShelfPartMaterial,
 } from '../features/part_identity/api.js';
+import type { BuilderCreateBoardOptions } from '../../../types';
 import type { InteriorValueRecord } from './render_interior_ops_contracts.js';
 import type { ApplySketchShelvesArgs } from './render_interior_sketch_support_contracts.js';
 
 import { readObject, toFiniteNumber } from './render_interior_sketch_shared.js';
 import { normalizeSketchShelfVariant } from './render_interior_sketch_layout.js';
-import type { RemovedFrameSideShelfRounding } from './removed_frame_side_brace_shelves.js';
-
-type RoundedShelfBoardOptions = {
-  shape: 'rounded_shelf';
-  roundedShelfSide: RemovedFrameSideShelfRounding;
-};
 
 function resolveShelfDepth(args: {
   requestedDepth: unknown;
@@ -73,6 +68,7 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
     addShelfPins,
   } = args;
   const forceBraceShelves = args.forceBraceShelves === true;
+  const shelfExposedSide = args.shelfExposedSide || null;
   const roundedShelfSide = args.roundedShelfSide || null;
 
   function shelfHeightForVariant(variant: ReturnType<typeof normalizeSketchShelfVariant>): number {
@@ -160,9 +156,14 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
             getPartColorValue,
             getPartMaterial,
           });
-    const roundedOptions: RoundedShelfBoardOptions | null =
-      isBrace && roundedShelfSide ? { shape: 'rounded_shelf', roundedShelfSide } : null;
-    const mesh = createBoard(shelfW, shelfH, shelfDepth, shelfX, y, shelfZ, mat, shelfPartId, roundedOptions);
+    const shelfOptions: BuilderCreateBoardOptions | null =
+      isBrace && shelfExposedSide
+        ? {
+            shelfExposedSide,
+            ...(roundedShelfSide ? { shape: 'rounded_shelf', roundedShelfSide } : {}),
+          }
+        : null;
+    const mesh = createBoard(shelfW, shelfH, shelfDepth, shelfX, y, shelfZ, mat, shelfPartId, shelfOptions);
 
     const meshRec = readObject<{
       userData?: InteriorValueRecord;
@@ -177,7 +178,8 @@ export function applySketchShelves(args: ApplySketchShelvesArgs): void {
         shelfIndex: i + 1,
         variant,
         isBrace,
-        roundedSide: roundedOptions?.roundedShelfSide,
+        exposedSide: shelfOptions?.shelfExposedSide,
+        roundedSide: shelfOptions?.roundedShelfSide,
       });
     }
 

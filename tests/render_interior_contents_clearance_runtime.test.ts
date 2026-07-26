@@ -321,7 +321,12 @@ test('removed left frame side forces the adjacent preset module shelves to brace
   const shelf = boards.find(board => board.partId === 'module_shelf_0_g1');
   assert.equal(shelf?.width, 1);
   assert.equal(shelf?.depth, 0.55);
-  assert.deepEqual(shelf?.options, { shape: 'rounded_shelf', roundedShelfSide: 'left' });
+  assert.deepEqual(shelf?.options, {
+    shelfExposedSide: 'left',
+    shape: 'rounded_shelf',
+    roundedShelfSide: 'left',
+  });
+  assert.equal(shelf?.userData?.__wpShelfExposedSide, 'left');
   assert.equal(pinObjects.filter(obj => obj.userData?.__kind === 'shelf_pin').length, 0);
 });
 
@@ -366,7 +371,11 @@ test('lower stack preset shelves do not inherit top removed frame side brace pol
   assert.equal(topOnlyShelf?.depth, INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM);
   assert.equal(lowerShelf?.width, 1);
   assert.equal(lowerShelf?.depth, 0.55);
-  assert.deepEqual(lowerShelf?.options, { shape: 'rounded_shelf', roundedShelfSide: 'left' });
+  assert.deepEqual(lowerShelf?.options, {
+    shelfExposedSide: 'left',
+    shape: 'rounded_shelf',
+    roundedShelfSide: 'left',
+  });
 });
 
 test('removed right frame side forces only the last custom module shelves to brace shelves', () => {
@@ -401,6 +410,8 @@ test('removed right frame side forces only the last custom module shelves to bra
   assert.equal(leftShelf?.depth, INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM);
   assert.equal(rightShelf?.width, 1);
   assert.equal(rightShelf?.depth, 0.55);
+  assert.deepEqual(rightShelf?.options, { shelfExposedSide: 'right' });
+  assert.equal(rightShelf?.userData?.__wpShelfExposedSide, 'right');
 });
 
 test('removed frame side keeps custom shelf type while applying brace geometry and rounding', () => {
@@ -432,7 +443,11 @@ test('removed frame side keeps custom shelf type while applying brace geometry a
   assert.equal(doubleShelf?.depth, 0.55);
   assert.equal(doubleShelf?.userData?.__wpShelfVariant, 'double');
   assert.equal(doubleShelf?.userData?.__wpShelfIsBrace, true);
-  assert.deepEqual(doubleShelf?.options, { shape: 'rounded_shelf', roundedShelfSide: 'left' });
+  assert.deepEqual(doubleShelf?.options, {
+    shelfExposedSide: 'left',
+    shape: 'rounded_shelf',
+    roundedShelfSide: 'left',
+  });
 
   assert.equal(glassShelf?.width, 1);
   assert.equal(glassShelf?.height, 0.018);
@@ -440,5 +455,9 @@ test('removed frame side keeps custom shelf type while applying brace geometry a
   assert.equal(glassShelf?.material, glassMat);
   assert.equal(glassShelf?.userData?.__wpShelfVariant, 'glass');
   assert.equal(glassShelf?.userData?.__wpShelfIsBrace, true);
-  assert.deepEqual(glassShelf?.options, { shape: 'rounded_shelf', roundedShelfSide: 'left' });
+  assert.deepEqual(glassShelf?.options, {
+    shelfExposedSide: 'left',
+    shape: 'rounded_shelf',
+    roundedShelfSide: 'left',
+  });
 });

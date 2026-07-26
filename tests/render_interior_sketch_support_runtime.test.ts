@@ -330,6 +330,7 @@ test('removed frame side sketch shelves preserve glass and double variants on fo
     addBraceDarkSeams: () => undefined,
     addShelfPins: (...call: any[]) => pins.push(call),
     forceBraceShelves: true,
+    shelfExposedSide: 'left',
     roundedShelfSide: 'left',
   });
 
@@ -337,7 +338,12 @@ test('removed frame side sketch shelves preserve glass and double variants on fo
   assert.equal(boards[0].call[0], 0.9);
   assert.equal(Number(boards[0].call[1].toFixed(3)), 0.04);
   assert.equal(boards[0].call[2], 0.55);
-  assert.deepEqual(boards[0].call[8], { shape: 'rounded_shelf', roundedShelfSide: 'left' });
+  assert.deepEqual(boards[0].call[8], {
+    shelfExposedSide: 'left',
+    shape: 'rounded_shelf',
+    roundedShelfSide: 'left',
+  });
+  assert.equal(boards[0].mesh.userData.__wpShelfExposedSide, 'left');
   assert.equal(boards[0].mesh.userData.__wpShelfVariant, 'double');
   assert.equal(boards[0].mesh.userData.__wpShelfIsBrace, true);
 
@@ -347,7 +353,11 @@ test('removed frame side sketch shelves preserve glass and double variants on fo
   assert.equal(boards[1].call[6], glassMat);
   assert.equal(boards[1].mesh.userData.__wpShelfVariant, 'glass');
   assert.equal(boards[1].mesh.userData.__wpShelfIsBrace, true);
-  assert.deepEqual(boards[1].call[8], { shape: 'rounded_shelf', roundedShelfSide: 'left' });
+  assert.deepEqual(boards[1].call[8], {
+    shelfExposedSide: 'left',
+    shape: 'rounded_shelf',
+    roundedShelfSide: 'left',
+  });
   assert.deepEqual(
     pins.map(call => call[6]),
     [false, false]

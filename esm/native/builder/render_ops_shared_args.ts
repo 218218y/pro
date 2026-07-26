@@ -79,6 +79,13 @@ export function __boardArgs(x: unknown): BoardArgs {
   if ('sketchMode' in map) next.sketchMode = !!map.sketchMode;
   if (map.shape === 'rounded_shelf' || map.shape === 'box') next.shape = map.shape;
   if (
+    map.shelfExposedSide === 'left' ||
+    map.shelfExposedSide === 'right' ||
+    map.shelfExposedSide === 'both'
+  ) {
+    next.shelfExposedSide = map.shelfExposedSide;
+  }
+  if (
     map.roundedShelfSide === 'left' ||
     map.roundedShelfSide === 'right' ||
     map.roundedShelfSide === 'both'

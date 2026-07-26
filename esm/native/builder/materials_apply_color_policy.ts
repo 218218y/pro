@@ -1,5 +1,9 @@
 import { isFrontColorBraceShelvesOnlyMode } from '../features/front_color_shelf_inheritance.js';
-import { createShelfFrontEdgeMaterials } from './shelf_front_edge_material.js';
+import {
+  createShelfFrontEdgeMaterials,
+  readShelfExposedSide,
+  type ShelfExposedSide,
+} from './shelf_front_edge_material.js';
 import {
   CORNER_SHELF_GROUP_PART_ID,
   SHELF_GROUP_PART_ID,
@@ -92,15 +96,20 @@ export function createPartMaterialResolver(args: {
     return whiteBodyMat || globalFrontMat;
   };
   const getDrawerBoxBaseMat = getWhiteBodyMat;
-  let braceFrontEdgeMat: unknown;
-  const getBraceFrontEdgeMat = () => {
-    if (!braceFrontEdgeMat) {
-      braceFrontEdgeMat = createShelfFrontEdgeMaterials({
-        shelfMaterial: getWhiteBodyMat(),
-        frontEdgeMaterial: globalFrontMat,
-      });
+  const braceFrontEdgeMats = new Map<ShelfExposedSide | 'front', unknown>();
+  const getBraceFrontEdgeMat = (exposedSide: ShelfExposedSide | null) => {
+    const cacheKey = exposedSide || 'front';
+    if (!braceFrontEdgeMats.has(cacheKey)) {
+      braceFrontEdgeMats.set(
+        cacheKey,
+        createShelfFrontEdgeMaterials({
+          shelfMaterial: getWhiteBodyMat(),
+          frontEdgeMaterial: globalFrontMat,
+          exposedSide,
+        })
+      );
     }
-    return braceFrontEdgeMat || globalFrontMat;
+    return braceFrontEdgeMats.get(cacheKey) || globalFrontMat;
   };
   const mapFromCfg = asObject<IndividualColorsMap>(cfg.individualColors);
   const frontColorBraceOnly = isFrontColorBraceShelvesOnlyMode(ui.frontColorShelfInheritanceMode);
@@ -138,7 +147,9 @@ export function createPartMaterialResolver(args: {
     }
     if (typeof effectiveEntry === 'undefined') {
       if (frontColorBraceOnly && shelfLike) {
-        return isBraceShelfUserData(userData) ? getBraceFrontEdgeMat() : getWhiteBodyMat();
+        return isBraceShelfUserData(userData)
+          ? getBraceFrontEdgeMat(readShelfExposedSide(userData?.__wpShelfExposedSide))
+          : getWhiteBodyMat();
       }
       return globalFrontMat;
     }

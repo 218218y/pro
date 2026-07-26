@@ -15,6 +15,7 @@ type ShelfUserDataLike = {
   __wpShelfIndex?: unknown;
   __wpShelfVariant?: unknown;
   __wpShelfIsBrace?: unknown;
+  __wpShelfExposedSide?: unknown;
   __wpShelfRoundedSide?: unknown;
 };
 
@@ -104,6 +105,7 @@ export function markShelfBoardUserData(
     shelfIndex?: unknown;
     variant?: unknown;
     isBrace?: unknown;
+    exposedSide?: unknown;
     roundedSide?: unknown;
   }
 ): void {
@@ -112,6 +114,7 @@ export function markShelfBoardUserData(
   if (typeof args.shelfIndex !== 'undefined') userData.__wpShelfIndex = args.shelfIndex;
   if (typeof args.variant !== 'undefined') userData.__wpShelfVariant = args.variant;
   if (typeof args.isBrace !== 'undefined') userData.__wpShelfIsBrace = !!args.isBrace;
+  if (typeof args.exposedSide !== 'undefined') userData.__wpShelfExposedSide = args.exposedSide;
   if (typeof args.roundedSide !== 'undefined') userData.__wpShelfRoundedSide = args.roundedSide;
 }
 

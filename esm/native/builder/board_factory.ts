@@ -87,6 +87,7 @@ export function makeBoardCreator(args: BoardFactoryArgs | null | undefined): Cre
         addOutlines,
       };
       if (options?.shape) boardArgs.shape = options.shape;
+      if (options?.shelfExposedSide) boardArgs.shelfExposedSide = options.shelfExposedSide;
       if (options?.roundedShelfSide) boardArgs.roundedShelfSide = options.roundedShelfSide;
       if (typeof options?.roundedShelfRadius === 'number') {
         boardArgs.roundedShelfRadius = options.roundedShelfRadius;

@@ -1,4 +1,4 @@
-import type { AppContainer } from '../../../types';
+import type { AppContainer, BuilderCreateBoardOptions } from '../../../types';
 import type {
   InteriorGeometryLike,
   InteriorGroupLike,
@@ -23,12 +23,10 @@ import {
   reportInteriorPresetSoft,
   type InteriorPresetHandleCatch,
 } from './render_interior_preset_ops_shared.js';
-import type { RemovedFrameSideShelfRounding } from './removed_frame_side_brace_shelves.js';
-
-type RoundedShelfBoardOptions = {
-  shape: 'rounded_shelf';
-  roundedShelfSide: RemovedFrameSideShelfRounding;
-};
+import type {
+  RemovedFrameSideShelfExposure,
+  RemovedFrameSideShelfRounding,
+} from './removed_frame_side_brace_shelves.js';
 
 export function createAddGridShelf(args: {
   App: AppContainer;
@@ -61,6 +59,7 @@ export function createAddGridShelf(args: {
   braceShelfWidth: number;
   leftInnerX: number;
   rightInnerX: number;
+  shelfExposedSide?: RemovedFrameSideShelfExposure | null;
   roundedShelfSide?: RemovedFrameSideShelfRounding | null;
   renderOpsHandleCatch: InteriorPresetHandleCatch;
 }): (gridIndex: number) => void {
@@ -94,6 +93,7 @@ export function createAddGridShelf(args: {
     braceShelfWidth,
     leftInnerX,
     rightInnerX,
+    shelfExposedSide,
     roundedShelfSide,
     renderOpsHandleCatch,
   } = args;
@@ -244,8 +244,13 @@ export function createAddGridShelf(args: {
       getPartColorValue,
       getPartMaterial,
     });
-    const roundedOptions: RoundedShelfBoardOptions | null =
-      isBrace && roundedShelfSide ? { shape: 'rounded_shelf', roundedShelfSide } : null;
+    const shelfOptions: BuilderCreateBoardOptions | null =
+      isBrace && shelfExposedSide
+        ? {
+            shelfExposedSide,
+            ...(roundedShelfSide ? { shape: 'rounded_shelf', roundedShelfSide } : {}),
+          }
+        : null;
     const shelfMesh = createBoard(
       shelfW,
       shelfThick,
@@ -255,7 +260,7 @@ export function createAddGridShelf(args: {
       shelfZ,
       shelfMat,
       shelfPartId,
-      roundedOptions
+      shelfOptions
     );
     if (shelfMesh && typeof shelfMesh === 'object') {
       const userData = ((shelfMesh as { userData?: Record<string, unknown> }).userData ||= {});
@@ -264,7 +269,8 @@ export function createAddGridShelf(args: {
         shelfIndex: gridKey,
         variant: isBrace ? 'brace' : 'regular',
         isBrace,
-        roundedSide: roundedOptions?.roundedShelfSide,
+        exposedSide: shelfOptions?.shelfExposedSide,
+        roundedSide: shelfOptions?.roundedShelfSide,
       });
     }
     addShelfPins(y, shelfZ, shelfDepth, shelfThick, isBrace, shelfPartId);

@@ -12,24 +12,34 @@ export type RemovedFrameSideBraceInput = {
   frameSidePartIdPrefix?: unknown;
 };
 
-export type RemovedFrameSideShelfRounding = 'left' | 'right' | 'both';
+export type RemovedFrameSideShelfExposure = 'left' | 'right' | 'both';
+export type RemovedFrameSideShelfRounding = RemovedFrameSideShelfExposure;
 
 function readRuntimeIndex(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) ? Math.floor(value) : -1;
 }
 
 export function shouldForceBraceShelvesForRemovedFrameSide(input: RemovedFrameSideBraceInput): boolean {
+  return getExposedShelfSideForRemovedFrameSide(input) != null;
+}
+
+export function getExposedShelfSideForRemovedFrameSide(
+  input: RemovedFrameSideBraceInput
+): RemovedFrameSideShelfExposure | null {
   const moduleIndex = readRuntimeIndex(input.moduleIndex);
   const modulesLength = readRuntimeIndex(input.modulesLength);
-  if (!(moduleIndex >= 0) || !(modulesLength > 0)) return false;
+  if (!(moduleIndex >= 0) || !(modulesLength > 0)) return null;
 
-  if (moduleIndex === 0 && isRemovedFrameSideOn(input.cfg, 'left', input.frameSidePartIdPrefix)) return true;
-  if (
+  const leftExposed =
+    moduleIndex === 0 && isRemovedFrameSideOn(input.cfg, 'left', input.frameSidePartIdPrefix);
+  const rightExposed =
     moduleIndex === modulesLength - 1 &&
-    isRemovedFrameSideOn(input.cfg, 'right', input.frameSidePartIdPrefix)
-  )
-    return true;
-  return false;
+    isRemovedFrameSideOn(input.cfg, 'right', input.frameSidePartIdPrefix);
+
+  if (leftExposed && rightExposed) return 'both';
+  if (leftExposed) return 'left';
+  if (rightExposed) return 'right';
+  return null;
 }
 
 function shouldRoundRemovedFrameSideShelves(

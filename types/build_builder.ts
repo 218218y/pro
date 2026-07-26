@@ -443,10 +443,12 @@ export type BuilderDimensionLineFn = (
 ) => unknown;
 
 export type BuilderRoundedShelfSide = 'left' | 'right' | 'both';
+export type BuilderShelfExposedSide = 'left' | 'right' | 'both';
 export type BuilderBoardShape = 'box' | 'rounded_shelf';
 
 export interface BuilderCreateBoardOptions extends UnknownRecord {
   shape?: BuilderBoardShape;
+  shelfExposedSide?: BuilderShelfExposedSide | null;
   roundedShelfSide?: BuilderRoundedShelfSide | null;
   roundedShelfRadius?: number;
   roundedShelfSegments?: number;
@@ -516,6 +518,7 @@ export interface BuilderCreateBoardArgsLike extends BuilderRenderCommonArgsLike 
   partId?: unknown;
   sketchMode?: boolean;
   shape?: BuilderBoardShape;
+  shelfExposedSide?: BuilderShelfExposedSide | null;
   roundedShelfSide?: BuilderRoundedShelfSide | null;
   roundedShelfRadius?: number;
   roundedShelfSegments?: number;

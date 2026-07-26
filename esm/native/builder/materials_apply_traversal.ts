@@ -75,7 +75,13 @@ export function applyMaterialsToWardrobeTree(args: {
             ? 'brace'
             : 'regular'
           : '';
-        const cacheKey = `${ownPartId}::${ownStackKey || ''}::${ownStackSplitUnifiedFrame ? 'unified' : 'split'}::${shelfDefaultKey}`;
+        const shelfExposedSide =
+          userData.__wpShelfExposedSide === 'left' ||
+          userData.__wpShelfExposedSide === 'right' ||
+          userData.__wpShelfExposedSide === 'both'
+            ? userData.__wpShelfExposedSide
+            : '';
+        const cacheKey = `${ownPartId}::${ownStackKey || ''}::${ownStackSplitUnifiedFrame ? 'unified' : 'split'}::${shelfDefaultKey}::${shelfExposedSide}`;
         if (!materialCache.has(cacheKey)) {
           const material = getPartMat(ownPartId, ownStackKey, effectiveUserData);
           materialCache.set(cacheKey, material);

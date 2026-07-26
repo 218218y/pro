@@ -213,3 +213,49 @@ test('materials apply traversal can replace shelf face material arrays', () => {
   assert.equal(changed, true);
   assert.equal(shelfMesh.material, edgeMaterials);
 });
+
+test('materials apply traversal keeps exposed-side shelf variants distinct during recoloring', () => {
+  const leftMaterial = ['white', 'front', 'white', 'white', 'front', 'white'];
+  const rightMaterial = ['front', 'white', 'white', 'white', 'front', 'white'];
+  const leftShelf = {
+    isMesh: true,
+    material: { stale: 'left' },
+    userData: {
+      partId: 'shared_shelf_part',
+      __wpShelfGroupPartId: 'all_shelves',
+      __wpShelfVariant: 'brace',
+      __wpShelfIsBrace: true,
+      __wpShelfExposedSide: 'left',
+    },
+    children: [],
+  } as any;
+  const rightShelf = {
+    isMesh: true,
+    material: { stale: 'right' },
+    userData: {
+      partId: 'shared_shelf_part',
+      __wpShelfGroupPartId: 'all_shelves',
+      __wpShelfVariant: 'brace',
+      __wpShelfIsBrace: true,
+      __wpShelfExposedSide: 'right',
+    },
+    children: [],
+  } as any;
+  const calls: string[] = [];
+
+  const changed = applyMaterialsToWardrobeTree({
+    wardrobeGroup: { userData: {}, children: [leftShelf, rightShelf] } as any,
+    getPartMat: (_partId, _stackKey, userData) => {
+      const side = String(userData?.__wpShelfExposedSide || '');
+      calls.push(side);
+      return side === 'left' ? leftMaterial : rightMaterial;
+    },
+    readPartId: value => (typeof value === 'string' ? value : null),
+    readStackKey: () => null,
+  });
+
+  assert.equal(changed, true);
+  assert.deepEqual(calls.sort(), ['left', 'right']);
+  assert.equal(leftShelf.material, leftMaterial);
+  assert.equal(rightShelf.material, rightMaterial);
+});

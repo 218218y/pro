@@ -10,6 +10,7 @@ import {
   markShelfBoardUserData,
   resolveShelfPartMaterial,
 } from '../features/part_identity/api.js';
+import type { BuilderCreateBoardOptions } from '../../../types';
 import type {
   InteriorGroupLike,
   InteriorMaterialLike,
@@ -23,12 +24,10 @@ import {
   type InteriorCustomBraceMetrics,
   type ShelfVariant,
 } from './render_interior_custom_ops_shared.js';
-import type { RemovedFrameSideShelfRounding } from './removed_frame_side_brace_shelves.js';
-
-type RoundedShelfBoardOptions = {
-  shape: 'rounded_shelf';
-  roundedShelfSide: RemovedFrameSideShelfRounding;
-};
+import type {
+  RemovedFrameSideShelfExposure,
+  RemovedFrameSideShelfRounding,
+} from './removed_frame_side_brace_shelves.js';
 
 const PIN_RADIUS = INTERIOR_SHELF_PIN_RENDER_POLICY.radiusM;
 const PIN_LEN = INTERIOR_SHELF_PIN_RENDER_POLICY.lengthM;
@@ -55,7 +54,7 @@ export function createAddCustomGridShelf(args: {
     z: number,
     material: unknown,
     partId: string,
-    options?: RoundedShelfBoardOptions | null
+    options?: BuilderCreateBoardOptions | null
   ) => unknown;
   addFoldedClothes: unknown;
   contentsPolicy: unknown;
@@ -80,6 +79,7 @@ export function createAddCustomGridShelf(args: {
   internalZ: number;
   isInternalDrawersEnabled: boolean;
   activeSlots: unknown[];
+  shelfExposedSide?: RemovedFrameSideShelfExposure | null;
   roundedShelfSide?: RemovedFrameSideShelfRounding | null;
 }) {
   const {
@@ -109,6 +109,7 @@ export function createAddCustomGridShelf(args: {
     internalZ,
     isInternalDrawersEnabled,
     activeSlots,
+    shelfExposedSide,
     roundedShelfSide,
   } = args;
 
@@ -232,10 +233,15 @@ export function createAddCustomGridShelf(args: {
             getPartMaterial,
           });
 
-    const roundedOptions =
-      isBrace && roundedShelfSide ? { shape: 'rounded_shelf' as const, roundedShelfSide } : null;
+    const shelfOptions: BuilderCreateBoardOptions | null =
+      isBrace && shelfExposedSide
+        ? {
+            shelfExposedSide,
+            ...(roundedShelfSide ? { shape: 'rounded_shelf' as const, roundedShelfSide } : {}),
+          }
+        : null;
     const mesh = asMesh(
-      createBoard(shelfW, shelfH, shelfDepth, shelfX, shelfY, shelfZ, material, shelfPartId, roundedOptions)
+      createBoard(shelfW, shelfH, shelfDepth, shelfX, shelfY, shelfZ, material, shelfPartId, shelfOptions)
     );
 
     if (mesh && typeof mesh === 'object') {
@@ -245,7 +251,8 @@ export function createAddCustomGridShelf(args: {
         shelfIndex: gridIndex,
         variant: shelfVariant,
         isBrace,
-        roundedSide: roundedOptions?.roundedShelfSide,
+        exposedSide: shelfOptions?.shelfExposedSide,
+        roundedSide: shelfOptions?.roundedShelfSide,
       });
     }
 

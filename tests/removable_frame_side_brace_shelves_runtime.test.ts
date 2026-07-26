@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   forceShelfIndexesToBrace,
+  getExposedShelfSideForRemovedFrameSide,
   getRoundedShelfSideForRemovedFrameSide,
   shouldForceBraceShelvesForRemovedFrameSide,
 } from '../esm/native/builder/removed_frame_side_brace_shelves.ts';
@@ -15,6 +16,11 @@ test('removed frame side brace policy only applies to the module adjacent to the
   assert.equal(shouldForceBraceShelvesForRemovedFrameSide({ cfg, moduleIndex: 1, modulesLength: 3 }), false);
   assert.equal(shouldForceBraceShelvesForRemovedFrameSide({ cfg, moduleIndex: 2, modulesLength: 3 }), true);
   assert.equal(shouldForceBraceShelvesForRemovedFrameSide({ cfg, moduleIndex: 0, modulesLength: 0 }), false);
+
+  assert.equal(getExposedShelfSideForRemovedFrameSide({ cfg, moduleIndex: 0, modulesLength: 3 }), 'left');
+  assert.equal(getExposedShelfSideForRemovedFrameSide({ cfg, moduleIndex: 1, modulesLength: 3 }), null);
+  assert.equal(getExposedShelfSideForRemovedFrameSide({ cfg, moduleIndex: 2, modulesLength: 3 }), 'right');
+  assert.equal(getExposedShelfSideForRemovedFrameSide({ cfg, moduleIndex: 0, modulesLength: 1 }), 'both');
 });
 
 test('removed frame side shelf rounding only applies when the adjacent removed side is enabled for rounding', () => {
@@ -105,6 +111,7 @@ test('removed frame side brace helpers require runtime numeric indexes and canon
     shouldForceBraceShelvesForRemovedFrameSide({ cfg, moduleIndex: '0', modulesLength: 2 }),
     false
   );
+  assert.equal(getExposedShelfSideForRemovedFrameSide({ cfg, moduleIndex: '0', modulesLength: 2 }), null);
   assert.equal(getRoundedShelfSideForRemovedFrameSide({ cfg, moduleIndex: '0', modulesLength: 2 }), null);
 
   const braceFromStringGrid: Record<number, true> = Object.create(null);

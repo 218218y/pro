@@ -59,6 +59,7 @@ export function applyInteriorSketchOwnedShelves(args: {
     regularDepth: resolved.regularDepth,
     backZ: resolved.backZ,
     forceBraceShelves: resolved.forceBraceShelves,
+    shelfExposedSide: resolved.shelfExposedSide,
     roundedShelfSide: resolved.roundedShelfSide,
     woodThick: resolved.woodThick,
     shelfThick: resolved.shelfThick,

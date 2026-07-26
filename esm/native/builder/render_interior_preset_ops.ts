@@ -21,8 +21,8 @@ import { computePresetModuleInnerFaces } from './render_interior_preset_ops_wall
 import { createAddGridShelf } from './render_interior_preset_ops_shelves.js';
 import {
   forceShelfIndexesToBrace,
+  getExposedShelfSideForRemovedFrameSide,
   getRoundedShelfSideForRemovedFrameSide,
-  shouldForceBraceShelvesForRemovedFrameSide,
 } from './removed_frame_side_brace_shelves.js';
 
 export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps) {
@@ -91,14 +91,13 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
         if (shelfIndex != null) shelfSet[shelfIndex] = true;
       }
     }
-    if (
-      shouldForceBraceShelvesForRemovedFrameSide({
-        cfg: input.cfg,
-        moduleIndex,
-        modulesLength,
-        frameSidePartIdPrefix: input.frameSidePartIdPrefix,
-      })
-    ) {
+    const shelfExposedSide = getExposedShelfSideForRemovedFrameSide({
+      cfg: input.cfg,
+      moduleIndex,
+      modulesLength,
+      frameSidePartIdPrefix: input.frameSidePartIdPrefix,
+    });
+    if (shelfExposedSide) {
       forceShelfIndexesToBrace({ braceSet, shelfSet, gridDivisions });
     }
     const roundedShelfSide = getRoundedShelfSideForRemovedFrameSide({
@@ -173,6 +172,7 @@ export function createBuilderRenderInteriorPresetOps(deps: RenderInteriorOpsDeps
       braceShelfWidth,
       leftInnerX,
       rightInnerX,
+      shelfExposedSide,
       roundedShelfSide,
       renderOpsHandleCatch: __renderOpsHandleCatch,
     });

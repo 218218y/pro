@@ -1,11 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { makeBoardCreator } from '../esm/native/builder/board_factory.ts';
 import { createBuilderRenderPrimitiveOps } from '../esm/native/builder/render_ops_primitives.ts';
 
 type AnyMap = Record<string, any>;
 
 type FakeAttribute = { array: number[]; itemSize: number; count: number };
+type FakeGeometryGroup = { start: number; count: number; materialIndex: number };
 
 class FakeFloat32BufferAttribute implements FakeAttribute {
   array: number[];
@@ -21,12 +23,17 @@ class FakeFloat32BufferAttribute implements FakeAttribute {
 
 class FakeBufferGeometry {
   attributes: Record<string, FakeAttribute> = {};
+  groups: FakeGeometryGroup[] = [];
   boundingBoxComputed = false;
   boundingSphereComputed = false;
 
   setAttribute(name: string, attribute: FakeAttribute) {
     this.attributes[name] = attribute;
     return this;
+  }
+
+  addGroup(start: number, count: number, materialIndex = 0) {
+    this.groups.push({ start, count, materialIndex });
   }
 
   computeBoundingBox() {
@@ -131,10 +138,14 @@ function createPrimitiveHarness() {
   return { App, THREE, group, ops };
 }
 
-function createRoundedShelfMesh(side: 'left' | 'right' | 'both') {
+function createRoundedShelfMesh(
+  side: 'left' | 'right' | 'both',
+  material: unknown = {},
+  shelfExposedSide?: 'left' | 'right' | 'both'
+): FakeMesh {
   const { App, THREE, ops } = createPrimitiveHarness();
 
-  const mesh = ops.createBoard({
+  return ops.createBoard({
     App,
     THREE,
     w: 1,
@@ -143,15 +154,36 @@ function createRoundedShelfMesh(side: 'left' | 'right' | 'both') {
     x: 0,
     y: 0,
     z: 0,
-    mat: {},
+    mat: material,
     partId: `rounded_${side}`,
     shape: 'rounded_shelf',
+    shelfExposedSide,
     roundedShelfSide: side,
     roundedShelfRadius: 0.12,
     roundedShelfSegments: 8,
   }) as FakeMesh;
+}
 
-  return mesh.geometry as FakeBufferGeometry;
+function createSquareShelfMesh(material: unknown, shelfExposedSide?: 'left' | 'right' | 'both'): FakeMesh {
+  const { App, THREE, ops } = createPrimitiveHarness();
+
+  return ops.createBoard({
+    App,
+    THREE,
+    w: 1,
+    h: 0.018,
+    d: 0.55,
+    x: 0,
+    y: 0,
+    z: 0,
+    mat: material,
+    partId: 'square_shelf',
+    shelfExposedSide,
+  }) as FakeMesh;
+}
+
+function createRoundedShelfGeometry(side: 'left' | 'right' | 'both'): FakeBufferGeometry {
+  return createRoundedShelfMesh(side).geometry as FakeBufferGeometry;
 }
 
 function readNormals(geometry: FakeBufferGeometry): number[] {
@@ -161,7 +193,7 @@ function readNormals(geometry: FakeBufferGeometry): number[] {
 }
 
 test('rounded shelf writes explicit flat top and bottom normals instead of recomputing noisy extrude normals', () => {
-  const geometry = createRoundedShelfMesh('left');
+  const geometry = createRoundedShelfGeometry('left');
   const position = geometry.attributes.position;
   const normal = geometry.attributes.normal;
 
@@ -172,11 +204,104 @@ test('rounded shelf writes explicit flat top and bottom normals instead of recom
   assert.equal(geometry.boundingSphereComputed, true);
 
   assert.deepEqual(normal.array.slice(0, 9), [0, 1, 0, 0, 1, 0, 0, 1, 0]);
-  assert.deepEqual(normal.array.slice(9, 18), [0, -1, 0, 0, -1, 0, 0, -1, 0]);
+  const bottomStart = geometry.groups.find(group => group.materialIndex === 3)?.start;
+  assert.equal(typeof bottomStart, 'number');
+  assert.deepEqual(
+    normal.array.slice(bottomStart! * 3, bottomStart! * 3 + 9),
+    [0, -1, 0, 0, -1, 0, 0, -1, 0]
+  );
+});
+
+test('rounded shelf defines complete BoxGeometry-compatible groups for front-edge material arrays', () => {
+  const materials = ['right', 'left', 'top', 'bottom', 'front', 'back'];
+  const expectedMaterialIndices = {
+    left: [1, 2, 3, 4, 5],
+    right: [0, 2, 3, 4, 5],
+    both: [0, 1, 2, 3, 4, 5],
+  } as const;
+
+  for (const side of ['left', 'right', 'both'] as const) {
+    const mesh = createRoundedShelfMesh(side, materials);
+    const geometry = mesh.geometry as FakeBufferGeometry;
+    const position = geometry.attributes.position;
+
+    assert.equal(mesh.material, materials);
+    assert.ok(position, 'rounded shelf must write positions');
+    assert.ok(geometry.groups.length > 0, 'multi-material rounded shelves require geometry groups');
+
+    let nextStart = 0;
+    for (const group of geometry.groups) {
+      assert.equal(group.start, nextStart, 'groups must cover the non-indexed geometry without gaps');
+      assert.ok(group.count > 0);
+      assert.ok(group.materialIndex >= 0 && group.materialIndex < materials.length);
+      nextStart += group.count;
+    }
+    assert.equal(nextStart, position.count, 'every rounded-shelf vertex must belong to one material group');
+    assert.deepEqual(
+      [...new Set(geometry.groups.map(group => group.materialIndex))].sort((a, b) => a - b),
+      expectedMaterialIndices[side],
+      `${side}-open shelf material groups must omit only faces that remain flush with a cabinet side`
+    );
+  }
+});
+
+test('rounded shelf assigns curved exposed corner faces to the front-edge material', () => {
+  const geometry = createRoundedShelfGeometry('left');
+  const position = geometry.attributes.position;
+  assert.ok(position);
+
+  const frontGroups = geometry.groups.filter(group => group.materialIndex === 4);
+  assert.ok(frontGroups.length >= 2, 'straight and curved front-edge spans should both use material index 4');
+  assert.ok(
+    frontGroups.some(group => group.count > 6),
+    'the segmented rounded corner should be grouped with the cabinet-colored front edge'
+  );
+});
+
+test('removed-side shelf edge banding colors the exposed side for square and rounded shelves', () => {
+  const baseMaterials = ['right', 'left', 'top', 'bottom', 'front', 'back'];
+
+  const squareLeft = createSquareShelfMesh(baseMaterials, 'left');
+  assert.deepEqual(squareLeft.material, ['right', 'front', 'top', 'bottom', 'front', 'back']);
+
+  const squareRight = createSquareShelfMesh(baseMaterials, 'right');
+  assert.deepEqual(squareRight.material, ['front', 'left', 'top', 'bottom', 'front', 'back']);
+
+  const roundedBoth = createRoundedShelfMesh('both', baseMaterials, 'both');
+  assert.deepEqual(roundedBoth.material, ['front', 'front', 'top', 'bottom', 'front', 'back']);
+
+  assert.deepEqual(
+    baseMaterials,
+    ['right', 'left', 'top', 'bottom', 'front', 'back'],
+    'per-shelf edge exposure must not mutate the shared material array'
+  );
+
+  const singleMaterial = { id: 'all-shelves' };
+  assert.equal(createSquareShelfMesh(singleMaterial, 'left').material, singleMaterial);
+});
+
+test('board factory forwards removed-side shelf exposure to the render primitive contract', () => {
+  let captured: AnyMap | null = null;
+  const createBoard = makeBoardCreator({
+    THREE: {} as never,
+    sketchMode: false,
+    addOutlines: null,
+    runtime: {
+      createBoard(args) {
+        captured = args as AnyMap;
+        return {} as never;
+      },
+      reportError: null,
+    },
+  });
+
+  createBoard(1, 0.018, 0.55, 0, 0, 0, [], 'shelf', { shelfExposedSide: 'right' });
+
+  assert.equal(captured?.shelfExposedSide, 'right');
 });
 
 test('rounded shelf keeps UVs so textured shelf materials render like regular boards', () => {
-  const geometry = createRoundedShelfMesh('left');
+  const geometry = createRoundedShelfGeometry('left');
   const position = geometry.attributes.position;
   const uv = geometry.attributes.uv;
 
@@ -197,9 +322,9 @@ test('rounded shelf keeps UVs so textured shelf materials render like regular bo
 });
 
 test('rounded shelf omits the hidden cap face that is flush with the remaining cabinet side', () => {
-  const leftRemovedNormals = readNormals(createRoundedShelfMesh('left'));
-  const rightRemovedNormals = readNormals(createRoundedShelfMesh('right'));
-  const bothRemovedNormals = readNormals(createRoundedShelfMesh('both'));
+  const leftRemovedNormals = readNormals(createRoundedShelfGeometry('left'));
+  const rightRemovedNormals = readNormals(createRoundedShelfGeometry('right'));
+  const bothRemovedNormals = readNormals(createRoundedShelfGeometry('both'));
 
   const hasPositiveXCap = (normals: number[]) =>
     normals.some((value, index) => index % 3 === 0 && value > 0.99);

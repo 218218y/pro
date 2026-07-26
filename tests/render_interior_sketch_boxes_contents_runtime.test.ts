@@ -283,7 +283,12 @@ test('removed sketch-box side forces adjacent box shelves to brace and applies r
   assert.equal(leftShelf.args[1], 0.018);
   assert.equal(leftShelf.args[2], args.shell.geometry.innerD);
   assert.equal(leftShelf.args[6], args.args.glassMat);
-  assert.deepEqual(leftShelf.args[8], { shape: 'rounded_shelf', roundedShelfSide: 'left' });
+  assert.deepEqual(leftShelf.args[8], {
+    shelfExposedSide: 'left',
+    shape: 'rounded_shelf',
+    roundedShelfSide: 'left',
+  });
+  assert.equal(leftShelf.userData.__wpShelfExposedSide, 'left');
   assert.equal(rightShelf.userData.__wpShelfIsBrace, false);
   assert.equal(rightShelf.args[2], args.shell.regularDepth);
   assert.equal(rightShelf.args[8], null);

@@ -9,9 +9,13 @@ import {
   markShelfBoardUserData,
   readSketchBoxRemovedSideShelfState,
 } from '../features/part_identity/api.js';
+import type { BuilderCreateBoardOptions } from '../../../types';
 import type { RenderSketchBoxStaticContentsArgs } from './render_interior_sketch_boxes_contents_parts_types.js';
 import type { SketchShelfExtra } from './render_interior_sketch_shared.js';
-import type { RemovedFrameSideShelfRounding } from './removed_frame_side_brace_shelves.js';
+import type {
+  RemovedFrameSideShelfExposure,
+  RemovedFrameSideShelfRounding,
+} from './removed_frame_side_brace_shelves.js';
 
 import { asMesh, asRecordArray } from './render_interior_sketch_shared.js';
 import {
@@ -23,11 +27,6 @@ import {
   resolveSketchBoxUsableContentCenterZ,
   resolveSketchBoxUsableContentDepth,
 } from './render_interior_sketch_boxes_contents_depth.js';
-
-type RoundedShelfBoardOptions = {
-  shape: 'rounded_shelf';
-  roundedShelfSide: RemovedFrameSideShelfRounding;
-};
 
 function readPositiveNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
@@ -125,6 +124,14 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
     const isBrace = forceBraceByRemovedSide || variant === 'brace';
     const isGlass = variant === 'glass';
     const isDouble = variant === 'double' || !variant;
+    const shelfExposedSide: RemovedFrameSideShelfExposure | null =
+      touchesRemovedLeftSide && touchesRemovedRightSide
+        ? 'both'
+        : touchesRemovedLeftSide
+          ? 'left'
+          : touchesRemovedRightSide
+            ? 'right'
+            : null;
     const roundedLeft = forceBraceByRemovedSide && touchesRemovedLeftSide && removedSideState.leftRounded;
     const roundedRight = forceBraceByRemovedSide && touchesRemovedRightSide && removedSideState.rightRounded;
     const roundedShelfSide: RemovedFrameSideShelfRounding | null =
@@ -153,20 +160,15 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
           : SKETCH_BOX_SHELF_PREVIEW_POLICY.shelfRegularClearanceM)
     );
     const shelfZ = resolveSketchBoxUsableContentCenterZ(shell, shelfDepth);
-    const roundedOptions: RoundedShelfBoardOptions | null =
-      isBrace && roundedShelfSide ? { shape: 'rounded_shelf', roundedShelfSide } : null;
+    const shelfOptions: BuilderCreateBoardOptions | null =
+      isBrace && shelfExposedSide
+        ? {
+            shelfExposedSide,
+            ...(roundedShelfSide ? { shape: 'rounded_shelf', roundedShelfSide } : {}),
+          }
+        : null;
     const mesh = asMesh(
-      createBoard(
-        shelfW,
-        shelfH,
-        shelfDepth,
-        shelfCenterX,
-        shelfY,
-        shelfZ,
-        shelfMat,
-        shelfPid,
-        roundedOptions
-      )
+      createBoard(shelfW, shelfH, shelfDepth, shelfCenterX, shelfY, shelfZ, shelfMat, shelfPid, shelfOptions)
     );
     if (mesh && typeof mesh === 'object') {
       mesh.userData = mesh.userData || {};
@@ -175,7 +177,8 @@ export function renderSketchBoxContentShelves(args: RenderSketchBoxStaticContent
         shelfIndex: si + 1,
         variant,
         isBrace,
-        roundedSide: roundedOptions?.roundedShelfSide,
+        exposedSide: shelfOptions?.shelfExposedSide,
+        roundedSide: shelfOptions?.roundedShelfSide,
       });
     }
     if (isGlass && mesh && typeof mesh === 'object') {

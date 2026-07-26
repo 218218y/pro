@@ -299,6 +299,29 @@ test('brace edge front color mode keeps regular shelves white while brace shelve
       'body:#ffffff:flat',
     ]
   );
+  assert.deepEqual(
+    resolveDefault(shelfPartId, null, {
+      __wpShelfGroupPartId: SHELF_GROUP_PART_ID,
+      __wpShelfIsBrace: true,
+      __wpShelfExposedSide: 'left',
+    }),
+    [
+      'body:#ffffff:flat',
+      'front:main',
+      'body:#ffffff:flat',
+      'body:#ffffff:flat',
+      'front:main',
+      'body:#ffffff:flat',
+    ]
+  );
+  assert.deepEqual(
+    resolveDefault(shelfPartId, null, {
+      __wpShelfGroupPartId: SHELF_GROUP_PART_ID,
+      __wpShelfIsBrace: true,
+      __wpShelfExposedSide: 'both',
+    }),
+    ['front:main', 'front:main', 'body:#ffffff:flat', 'body:#ffffff:flat', 'front:main', 'body:#ffffff:flat']
+  );
 
   const resolvePainted = createPartMaterialResolver({
     ui: { frontColorShelfInheritanceMode: 'brace' },
