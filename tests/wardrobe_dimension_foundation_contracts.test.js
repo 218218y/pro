@@ -437,6 +437,9 @@ const APPROVED_LIBRARY_PRESET_OWNER_IMPORTS = Object.freeze({
   'esm/native/features/stack_split/module_config.ts': Object.freeze([
     'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
   ]),
+  'esm/shared/dimensions/preset_models_dimension_defaults_policy.ts': Object.freeze([
+    'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['LIBRARY_PRESET_POLICY']),
 });
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([]);
@@ -2935,6 +2938,116 @@ test('[dimension-foundation] Wardrobe Default Resolution owner preserves the fac
       .sort(),
     [...APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS.type].sort()
   );
+});
+
+test('[dimension-foundation] Preset Models Dimension Defaults owner is a private direct-projection composition', () => {
+  const ownerRel = 'esm/shared/dimensions/preset_models_dimension_defaults_policy.ts';
+  const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
+  const owner = read(ownerRel);
+  const facade = read(facadeRel);
+
+  assert.deepEqual(
+    analyzeModuleDependencies(ownerRel, owner).imports.map(dependency => ({
+      specifier: dependency.specifier,
+      kind: dependency.kind,
+      syntax: dependency.syntax,
+      importedSymbols: dependency.importedSymbols,
+      aliases: dependency.bindings.map(binding => [binding.importedName, binding.localName]),
+    })),
+    [
+      {
+        specifier: './library_preset_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY'],
+        aliases: [['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY', 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY']],
+      },
+      {
+        specifier: './stack_split_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT'],
+        aliases: [['DEFAULT_STACK_SPLIT_LOWER_HEIGHT', 'DEFAULT_STACK_SPLIT_LOWER_HEIGHT']],
+      },
+      {
+        specifier: './wardrobe_defaults.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['WARDROBE_DEFAULTS'],
+        aliases: [['WARDROBE_DEFAULTS', 'WARDROBE_DEFAULTS']],
+      },
+    ]
+  );
+  assert.deepEqual(
+    collectNamedModuleExports(ownerRel, owner).map(entry => [entry.exportedName, entry.kind]),
+    [['PRESET_MODELS_DIMENSION_DEFAULTS_POLICY', 'value']]
+  );
+
+  const sourceFile = createSourceFile(ownerRel, owner);
+  let policyDeclaration = null;
+  walkAst(sourceFile, node => {
+    if (
+      node?.type === 'VariableDeclarator' &&
+      node.id?.type === 'Identifier' &&
+      node.id.name === 'PRESET_MODELS_DIMENSION_DEFAULTS_POLICY'
+    ) {
+      policyDeclaration = node;
+    }
+  });
+  assert.ok(policyDeclaration);
+  assert.equal(policyDeclaration.init?.type, 'CallExpression');
+  assert.equal(policyDeclaration.init?.callee?.type, 'MemberExpression');
+  assert.equal(policyDeclaration.init?.callee?.object?.name, 'Object');
+  assert.equal(policyDeclaration.init?.callee?.property?.name, 'freeze');
+  assert.equal(policyDeclaration.init?.arguments?.length, 1);
+  const policyObject = policyDeclaration.init.arguments[0];
+  assert.equal(policyObject?.type, 'ObjectExpression');
+
+  const memberPath = node => {
+    if (node?.type === 'Identifier') return node.name;
+    if (node?.type !== 'MemberExpression' || node.computed) return null;
+    const objectPath = memberPath(node.object);
+    const propertyName = node.property?.type === 'Identifier' ? node.property.name : null;
+    return objectPath && propertyName ? `${objectPath}.${propertyName}` : null;
+  };
+  assert.deepEqual(
+    policyObject.properties.map(property => [
+      property.key?.name,
+      property.type === 'Property' ? memberPath(property.value) : null,
+    ]),
+    [
+      ['hingedDoorsCount', 'WARDROBE_DEFAULTS.byType.hinged.doorsCount'],
+      ['hingedDepthCm', 'WARDROBE_DEFAULTS.byType.hinged.depthCm'],
+      ['hingedPerDoorWidthCm', 'WARDROBE_DEFAULTS.byType.hinged.perDoorWidthCm'],
+      ['wardrobeHeightCm', 'WARDROBE_DEFAULTS.heightCm'],
+      ['cornerWidthCm', 'WARDROBE_DEFAULTS.corner.widthCm'],
+      ['cornerDoorsCount', 'WARDROBE_DEFAULTS.corner.doorsCount'],
+      ['chestDrawersCount', 'WARDROBE_DEFAULTS.chestDrawersCount'],
+      ['libraryPresetDoorsCount', 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultDoorsCount'],
+      ['libraryPresetModuleDoorsCount', 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultModuleDoorsCount'],
+      ['stackSplitLowerHeightCm', 'DEFAULT_STACK_SPLIT_LOWER_HEIGHT'],
+    ]
+  );
+
+  for (const rel of [
+    facadeRel,
+    'esm/native/features/dimensions/index.ts',
+    'esm/native/runtime/api.ts',
+    'esm/native/services/api.ts',
+    'esm/native/services/api_runtime_base_surface.ts',
+  ]) {
+    assert.equal(
+      analyzeModuleDependencies(rel, read(rel)).imports.some(dependency =>
+        dependency.specifier.includes('preset_models_dimension_defaults_policy')
+      ),
+      false,
+      `${rel} must not expose the private Preset Models composition owner`
+    );
+  }
+
+  const publicExports = collectNamedModuleExports(facadeRel, facade);
+  assert.equal(publicExports.filter(entry => entry.kind === 'value').length, 89);
+  assert.equal(publicExports.filter(entry => entry.kind === 'type').length, 10);
 });
 
 test('[dimension-foundation] Stack Split facade symbols stay on an exact transition allowlist', () => {

@@ -227,6 +227,7 @@ import {
   LIBRARY_PRESET_MODULE_DEFAULTS_POLICY,
   LIBRARY_PRESET_POLICY,
 } from '../esm/shared/dimensions/library_preset_policy.ts';
+import { PRESET_MODELS_DIMENSION_DEFAULTS_POLICY } from '../esm/shared/dimensions/preset_models_dimension_defaults_policy.ts';
 import {
   DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_FRONT_OVERHANG_CM,
   DEFAULT_STACK_SPLIT_DECORATIVE_SEPARATOR_SIDE_OVERHANG_CM,
@@ -508,6 +509,59 @@ test('Library Preset policies preserve facade identity, focused identities, key 
   const roundTrip: unknown = JSON.parse(serialized);
   assert.deepEqual(Object.keys(roundTrip as Record<string, unknown>), aggregateKeys);
   assert.deepEqual(roundTrip, LIBRARY_PRESET_POLICY);
+});
+
+test('Preset Models Dimension Defaults policy preserves canonical projections, freeze, and serialization', () => {
+  const keys = [
+    'hingedDoorsCount',
+    'hingedDepthCm',
+    'hingedPerDoorWidthCm',
+    'wardrobeHeightCm',
+    'cornerWidthCm',
+    'cornerDoorsCount',
+    'chestDrawersCount',
+    'libraryPresetDoorsCount',
+    'libraryPresetModuleDoorsCount',
+    'stackSplitLowerHeightCm',
+  ];
+
+  assert.equal(Object.isFrozen(PRESET_MODELS_DIMENSION_DEFAULTS_POLICY), true);
+  assert.deepEqual(Object.keys(PRESET_MODELS_DIMENSION_DEFAULTS_POLICY), keys);
+  assert.equal(
+    PRESET_MODELS_DIMENSION_DEFAULTS_POLICY.hingedDoorsCount,
+    WARDROBE_DEFAULTS.byType.hinged.doorsCount
+  );
+  assert.equal(
+    PRESET_MODELS_DIMENSION_DEFAULTS_POLICY.hingedDepthCm,
+    WARDROBE_DEFAULTS.byType.hinged.depthCm
+  );
+  assert.equal(
+    PRESET_MODELS_DIMENSION_DEFAULTS_POLICY.hingedPerDoorWidthCm,
+    WARDROBE_DEFAULTS.byType.hinged.perDoorWidthCm
+  );
+  assert.equal(PRESET_MODELS_DIMENSION_DEFAULTS_POLICY.wardrobeHeightCm, WARDROBE_DEFAULTS.heightCm);
+  assert.equal(PRESET_MODELS_DIMENSION_DEFAULTS_POLICY.cornerWidthCm, WARDROBE_DEFAULTS.corner.widthCm);
+  assert.equal(PRESET_MODELS_DIMENSION_DEFAULTS_POLICY.cornerDoorsCount, WARDROBE_DEFAULTS.corner.doorsCount);
+  assert.equal(
+    PRESET_MODELS_DIMENSION_DEFAULTS_POLICY.chestDrawersCount,
+    WARDROBE_DEFAULTS.chestDrawersCount
+  );
+  assert.equal(
+    PRESET_MODELS_DIMENSION_DEFAULTS_POLICY.libraryPresetDoorsCount,
+    LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultDoorsCount
+  );
+  assert.equal(
+    PRESET_MODELS_DIMENSION_DEFAULTS_POLICY.libraryPresetModuleDoorsCount,
+    LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultModuleDoorsCount
+  );
+  assert.equal(
+    PRESET_MODELS_DIMENSION_DEFAULTS_POLICY.stackSplitLowerHeightCm,
+    DEFAULT_STACK_SPLIT_LOWER_HEIGHT
+  );
+
+  const roundTrip: unknown = JSON.parse(JSON.stringify(PRESET_MODELS_DIMENSION_DEFAULTS_POLICY));
+  assert.deepEqual(Object.keys(roundTrip as Record<string, unknown>), keys);
+  assert.deepEqual(roundTrip, PRESET_MODELS_DIMENSION_DEFAULTS_POLICY);
 });
 
 test('dimension foundation uses explicit unit constructors and conversions without changing scale', () => {

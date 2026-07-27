@@ -45,6 +45,7 @@ const productDimensionTokenSources = [
   'esm/shared/dimensions/wardrobe_layout_comparison_policy.ts',
   'esm/shared/dimensions/wardrobe_layout_policy.ts',
   'esm/shared/dimensions/wardrobe_default_resolution_policy.ts',
+  'esm/shared/dimensions/preset_models_dimension_defaults_policy.ts',
 ];
 
 function readProductDimensionTokens() {
@@ -646,6 +647,8 @@ test('[dimension tokens] Sketch Box Rod Preview pair uses exactly two focused ow
 test('[dimension tokens] library presets and saved preset defaults read canonical dimensions', () => {
   const tokens = readProductDimensionTokens();
   const owner = read('esm/shared/dimensions/library_preset_policy.ts');
+  const presetModelsOwnerRel = 'esm/shared/dimensions/preset_models_dimension_defaults_policy.ts';
+  const presetModelsOwner = read(presetModelsOwnerRel);
   assert.match(owner, /export const LIBRARY_PRESET_MODULE_DEFAULTS_POLICY = Object\.freeze\(\{/);
   assert.match(owner, /export const LIBRARY_PRESET_LAYOUT_POLICY = Object\.freeze\(\{/);
   assert.match(owner, /export const LIBRARY_PRESET_POLICY = Object\.freeze\(\{/);
@@ -655,6 +658,76 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
   );
   assert.match(tokens, /export const LIBRARY_PRESET_DIMENSIONS = LIBRARY_PRESET_POLICY;/);
   assert.doesNotMatch(tokens, /export const LIBRARY_PRESET_DIMENSIONS = Object\.freeze\(\{/);
+
+  assert.deepEqual(
+    analyzeModuleDependencies(presetModelsOwnerRel, presetModelsOwner).imports.map(dependency => ({
+      specifier: dependency.specifier,
+      kind: dependency.kind,
+      syntax: dependency.syntax,
+      importedSymbols: dependency.importedSymbols,
+      aliases: dependency.bindings.map(binding => [binding.importedName, binding.localName]),
+    })),
+    [
+      {
+        specifier: './library_preset_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY'],
+        aliases: [['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY', 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY']],
+      },
+      {
+        specifier: './stack_split_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT'],
+        aliases: [['DEFAULT_STACK_SPLIT_LOWER_HEIGHT', 'DEFAULT_STACK_SPLIT_LOWER_HEIGHT']],
+      },
+      {
+        specifier: './wardrobe_defaults.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['WARDROBE_DEFAULTS'],
+        aliases: [['WARDROBE_DEFAULTS', 'WARDROBE_DEFAULTS']],
+      },
+    ]
+  );
+  for (const [field, projection] of [
+    ['hingedDoorsCount', 'WARDROBE_DEFAULTS.byType.hinged.doorsCount'],
+    ['hingedDepthCm', 'WARDROBE_DEFAULTS.byType.hinged.depthCm'],
+    ['hingedPerDoorWidthCm', 'WARDROBE_DEFAULTS.byType.hinged.perDoorWidthCm'],
+    ['wardrobeHeightCm', 'WARDROBE_DEFAULTS.heightCm'],
+    ['cornerWidthCm', 'WARDROBE_DEFAULTS.corner.widthCm'],
+    ['cornerDoorsCount', 'WARDROBE_DEFAULTS.corner.doorsCount'],
+    ['chestDrawersCount', 'WARDROBE_DEFAULTS.chestDrawersCount'],
+    ['libraryPresetDoorsCount', 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultDoorsCount'],
+    ['libraryPresetModuleDoorsCount', 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultModuleDoorsCount'],
+    ['stackSplitLowerHeightCm', 'DEFAULT_STACK_SPLIT_LOWER_HEIGHT'],
+  ]) {
+    assert.match(
+      presetModelsOwner,
+      new RegExp(`${field}:\\s*${projection.replaceAll('.', '\\.')}(?:,|\\s)`, 'u')
+    );
+  }
+  assert.doesNotMatch(
+    presetModelsOwner,
+    /wardrobe_dimension_tokens_shared|LIBRARY_PRESET_POLICY|STACK_SPLIT_POLICY|import\s+\*|import\s*\(/u
+  );
+
+  const nativePresetModelsOwnerDependencies = listFilesRecursively(path.join(ROOT, 'esm/native'))
+    .filter(file => /\.(?:js|mjs|ts|tsx)$/u.test(file))
+    .flatMap(file =>
+      analyzeModuleDependencies(file, fs.readFileSync(file, 'utf8'))
+        .imports.filter(dependency =>
+          dependency.specifier.includes('preset_models_dimension_defaults_policy')
+        )
+        .map(dependency => ({
+          file: path.relative(ROOT, file).replaceAll('\\', '/'),
+          specifier: dependency.specifier,
+          syntax: dependency.syntax,
+          importedSymbols: dependency.importedSymbols,
+        }))
+    );
+  assert.deepEqual(nativePresetModelsOwnerDependencies, []);
 
   for (const rel of ['esm/native/data/preset_models_data.ts']) {
     assertUsesToken(rel, 'LIBRARY_PRESET_DIMENSIONS');
@@ -758,6 +831,28 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
   }
 
   const presetData = read('esm/native/data/preset_models_data.ts');
+  assert.deepEqual(
+    analyzeModuleDependencies('esm/native/data/preset_models_data.ts', presetData)
+      .imports.filter(dependency => dependency.specifier.includes('wardrobe_dimension_tokens_shared'))
+      .map(dependency => ({
+        specifier: dependency.specifier,
+        kind: dependency.kind,
+        syntax: dependency.syntax,
+        importedSymbols: dependency.importedSymbols,
+      })),
+    [
+      {
+        specifier: '../../shared/wardrobe_dimension_tokens_shared.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: [
+          'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
+          'LIBRARY_PRESET_DIMENSIONS',
+          'WARDROBE_DEFAULTS',
+        ],
+      },
+    ]
+  );
   assert.doesNotMatch(presetData, /doors: '4'/);
   assert.doesNotMatch(presetData, /width: '160'/);
   assert.doesNotMatch(presetData, /height: '240'/);
