@@ -11,6 +11,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const moduleOwnerRel = 'esm/shared/dimensions/wardrobe_layout_policy.ts';
 const comparisonOwnerRel = 'esm/shared/dimensions/wardrobe_layout_comparison_policy.ts';
+const defaultResolutionOwnerRel = 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
 const cellOwnerRel = 'esm/shared/dimensions/cell_dimension_policy.ts';
 const previewCompositionRel = 'esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts';
 const clickCompositionRel = 'esm/native/services/canvas_picking_cell_dims_flow.ts';
@@ -105,6 +106,14 @@ function findVariableDeclarator(sourceFile, name) {
   let result = null;
   walkAst(sourceFile, node => {
     if (node?.type === 'VariableDeclarator' && identifierName(node.id) === name) result = node;
+  });
+  return result;
+}
+
+function findFunctionDeclaration(sourceFile, name) {
+  let result = null;
+  walkAst(sourceFile, node => {
+    if (node?.type === 'FunctionDeclaration' && identifierName(node.id) === name) result = node;
   });
   return result;
 }
@@ -245,7 +254,7 @@ export const CELL_DIMENSION_PREVIEW_POLICY = Object.freeze({
 test('focused-owner production inventory is exact and policy objects are not aliased', () => {
   const expected = new Map([
     ['WARDROBE_MODULE_LAYOUT_POLICY', ['esm/native/builder/core_layout_compute.ts', facadeRel]],
-    ['WARDROBE_LAYOUT_COMPARISON_POLICY', [clickCompositionRel, facadeRel]],
+    ['WARDROBE_LAYOUT_COMPARISON_POLICY', [clickCompositionRel, defaultResolutionOwnerRel, facadeRel]],
     ['CELL_DIMENSION_MATCH_POLICY', [previewCompositionRel, facadeRel]],
     ['CELL_DIMENSION_PREVIEW_POLICY', [previewCompositionRel, facadeRel]],
   ]);
@@ -315,15 +324,75 @@ test('public Wardrobe Layout projection is an exact frozen seven-key owner view'
   );
   assert.equal(valueExports.has('WARDROBE_LAYOUT_DIMENSIONS'), true);
 
-  const autoWidthFunction = source.slice(
-    source.indexOf('export function isAutoWidthForDoors'),
-    source.indexOf('export function normalizeWardrobeDimensionType')
+  const defaultResolutionSource = read(defaultResolutionOwnerRel);
+  const defaultResolutionSourceFile = createSourceFile(defaultResolutionOwnerRel, defaultResolutionSource);
+  const autoWidthFunction = findFunctionDeclaration(defaultResolutionSourceFile, 'isAutoWidthForDoors');
+  assert.ok(autoWidthFunction);
+
+  const comparisonOperators = [];
+  const comparisonMembers = [];
+  const forbiddenIdentifiers = [];
+  walkAst(autoWidthFunction, node => {
+    if (node?.type === 'BinaryExpression') comparisonOperators.push(node.operator);
+    const value = memberPath(node);
+    if (value) comparisonMembers.push(value);
+    if (identifierName(node) === 'WARDROBE_LAYOUT_DIMENSIONS') {
+      forbiddenIdentifiers.push('WARDROBE_LAYOUT_DIMENSIONS');
+    }
+  });
+  assert.equal(comparisonOperators.includes('<'), true);
+  assert.equal(comparisonOperators.includes('<='), false);
+  assert.equal(
+    comparisonMembers.includes('WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm'),
+    true
   );
-  assert.match(
-    autoWidthFunction,
-    /Math\.abs\(currentWidthCm - expectedWidthCm\) < WARDROBE_LAYOUT_COMPARISON_POLICY\.autoWidthMatchToleranceCm/u
+  assert.deepEqual(forbiddenIdentifiers, []);
+
+  const facadeReexport = analyzeModuleDependencies(path.join(root, facadeRel), source).imports.filter(
+    dependency => dependency.importedSymbols.includes('isAutoWidthForDoors')
   );
-  assert.doesNotMatch(autoWidthFunction, /WARDROBE_LAYOUT_DIMENSIONS|<=/u);
+  assert.deepEqual(
+    facadeReexport.map(dependency => ({
+      specifier: dependency.specifier,
+      kind: dependency.kind,
+      syntax: dependency.syntax,
+      importedSymbols: dependency.importedSymbols,
+      exportedSymbols: dependency.exportedSymbols,
+    })),
+    [
+      {
+        specifier: './dimensions/wardrobe_default_resolution_policy.js',
+        kind: 'value',
+        syntax: 'static-re-export',
+        importedSymbols: [
+          'normalizeWardrobeDimensionDefaultType',
+          'resolveWardrobeTypeDefaults',
+          'getDefaultDepthForWardrobeType',
+          'getDefaultDoorsForWardrobeType',
+          'getDefaultPerDoorWidthForWardrobeType',
+          'resolveAutoWidthForDoors',
+          'isAutoWidthForDoors',
+          'getDefaultWidthForWardrobeType',
+          'getDefaultHeightForWardrobeType',
+          'getDefaultChestDrawersCount',
+          'resolveDefaultWardrobeDimensions',
+        ],
+        exportedSymbols: [
+          'normalizeWardrobeDimensionDefaultType',
+          'resolveWardrobeTypeDefaults',
+          'getDefaultDepthForWardrobeType',
+          'getDefaultDoorsForWardrobeType',
+          'getDefaultPerDoorWidthForWardrobeType',
+          'resolveAutoWidthForDoors',
+          'isAutoWidthForDoors',
+          'getDefaultWidthForWardrobeType',
+          'getDefaultHeightForWardrobeType',
+          'getDefaultChestDrawersCount',
+          'resolveDefaultWardrobeDimensions',
+        ],
+      },
+    ]
+  );
 });
 
 test('Cell Dimensions leaf modules receive owner values only through explicit composition scalars', () => {

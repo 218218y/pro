@@ -23,7 +23,6 @@ import {
   SLIDING_DEFAULT_PER_DOOR_WIDTH,
   WARDROBE_DEFAULTS as WARDROBE_DEFAULTS_OWNER,
 } from './dimensions/wardrobe_defaults.js';
-import type { WardrobeDimensionDefaultType } from './dimensions/wardrobe_defaults.js';
 import {
   DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
   STACK_SPLIT_POLICY,
@@ -173,6 +172,19 @@ export {
 };
 export type { WardrobeDimensionDefaultType } from './dimensions/wardrobe_defaults.js';
 export {
+  normalizeWardrobeDimensionDefaultType,
+  resolveWardrobeTypeDefaults,
+  getDefaultDepthForWardrobeType,
+  getDefaultDoorsForWardrobeType,
+  getDefaultPerDoorWidthForWardrobeType,
+  resolveAutoWidthForDoors,
+  isAutoWidthForDoors,
+  getDefaultWidthForWardrobeType,
+  getDefaultHeightForWardrobeType,
+  getDefaultChestDrawersCount,
+  resolveDefaultWardrobeDimensions,
+} from './dimensions/wardrobe_default_resolution_policy.js';
+export {
   DOOR_MOUNT_THICKNESS_CONFIG_KEYS,
   getDefaultDoorMountThicknessCm,
   getDefaultDoorMountThicknessM,
@@ -217,11 +229,6 @@ export {
   WARDROBE_WIDTH_MAX,
   WARDROBE_WIDTH_MIN,
 };
-
-function finiteOr(value: unknown, defaultValue: number): number {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : defaultValue;
-}
 
 export const WARDROBE_LAYOUT_DIMENSIONS = Object.freeze({
   minSegmentWidthCm: WARDROBE_MODULE_LAYOUT_POLICY.minSegmentWidthCm,
@@ -352,74 +359,3 @@ export const CORNER_CONNECTOR_INTERIOR_DIMENSIONS = legacyDimensionNumberView(
 export { HANDLE_DIMENSIONS };
 export { resolveExternalDrawerGeometry };
 export type { ExternalDrawerGeometry };
-
-export function normalizeWardrobeDimensionDefaultType(value: unknown): WardrobeDimensionDefaultType {
-  return value === 'sliding' ? 'sliding' : 'hinged';
-}
-
-export function resolveWardrobeTypeDefaults(value: unknown): {
-  widthCm: number;
-  heightCm: number;
-  depthCm: number;
-  doorsCount: number;
-  perDoorWidthCm: number;
-} {
-  const type = normalizeWardrobeDimensionDefaultType(value);
-  const byType = WARDROBE_DEFAULTS.byType[type];
-  return {
-    widthCm: WARDROBE_DEFAULTS.widthCm,
-    heightCm: WARDROBE_DEFAULTS.heightCm,
-    depthCm: byType.depthCm,
-    doorsCount: byType.doorsCount,
-    perDoorWidthCm: byType.perDoorWidthCm,
-  };
-}
-
-export function getDefaultDepthForWardrobeType(value: unknown): number {
-  return resolveWardrobeTypeDefaults(value).depthCm;
-}
-
-export function getDefaultDoorsForWardrobeType(value: unknown): number {
-  return resolveWardrobeTypeDefaults(value).doorsCount;
-}
-
-export function getDefaultPerDoorWidthForWardrobeType(value: unknown): number {
-  return resolveWardrobeTypeDefaults(value).perDoorWidthCm;
-}
-
-export function resolveAutoWidthForDoors(value: unknown, doors: unknown): number {
-  const n = Math.max(0, Math.round(finiteOr(doors, 0)));
-  return n * getDefaultPerDoorWidthForWardrobeType(value);
-}
-
-export function isAutoWidthForDoors(value: unknown, widthCm: unknown, doors: unknown): boolean {
-  const currentWidthCm = finiteOr(widthCm, 0);
-  if (!(currentWidthCm > 0)) return true;
-  const expectedWidthCm = resolveAutoWidthForDoors(value, doors);
-  return (
-    Math.abs(currentWidthCm - expectedWidthCm) < WARDROBE_LAYOUT_COMPARISON_POLICY.autoWidthMatchToleranceCm
-  );
-}
-
-export function getDefaultWidthForWardrobeType(value: unknown): number {
-  const defaults = resolveWardrobeTypeDefaults(value);
-  return defaults.doorsCount * defaults.perDoorWidthCm;
-}
-
-export function getDefaultHeightForWardrobeType(value: unknown): number {
-  return resolveWardrobeTypeDefaults(value).heightCm;
-}
-
-export function getDefaultChestDrawersCount(): number {
-  return WARDROBE_DEFAULTS.chestDrawersCount;
-}
-
-export function resolveDefaultWardrobeDimensions(value: unknown): {
-  widthCm: number;
-  heightCm: number;
-  depthCm: number;
-  doorsCount: number;
-  perDoorWidthCm: number;
-} {
-  return resolveWardrobeTypeDefaults(value);
-}

@@ -7,6 +7,19 @@ import { analyzeModuleDependencies, collectNamedModuleExports } from '../tools/w
 import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const FACADE_SPECIFIER = 'wardrobe_dimension_tokens_shared';
+const WARDROBE_DEFAULT_RESOLUTION_FUNCTIONS = Object.freeze([
+  'normalizeWardrobeDimensionDefaultType',
+  'resolveWardrobeTypeDefaults',
+  'getDefaultDepthForWardrobeType',
+  'getDefaultDoorsForWardrobeType',
+  'getDefaultPerDoorWidthForWardrobeType',
+  'resolveAutoWidthForDoors',
+  'isAutoWidthForDoors',
+  'getDefaultWidthForWardrobeType',
+  'getDefaultHeightForWardrobeType',
+  'getDefaultChestDrawersCount',
+  'resolveDefaultWardrobeDimensions',
+]);
 const APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS = Object.freeze({
   value: Object.freeze([
     'BASE_LEG_DIMENSIONS',
@@ -398,6 +411,9 @@ const APPROVED_CELL_DIMENSION_OWNER_IMPORTS = Object.freeze({
 });
 const APPROVED_WARDROBE_LAYOUT_COMPARISON_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_cell_dims_flow.ts': Object.freeze([
+    'WARDROBE_LAYOUT_COMPARISON_POLICY',
+  ]),
+  'esm/shared/dimensions/wardrobe_default_resolution_policy.ts': Object.freeze([
     'WARDROBE_LAYOUT_COMPARISON_POLICY',
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['WARDROBE_LAYOUT_COMPARISON_POLICY']),
@@ -2813,6 +2829,102 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.doesNotMatch(
     `${units}\n${defaults}\n${limits}\n${stackSplitPolicy}\n${stackSplitRenderPolicy}\n${carcassShellPolicy}\n${carcassInteriorPolicy}\n${carcassInteriorGridPolicy}\n${basePlinthPolicy}\n${baseLegPolicy}\n${basePlatformRenderPolicy}\n${chestStructuralPolicy}\n${materialThicknessPolicy}\n${carcassCorniceRenderPolicy}\n${chestModePolicy}\n${doorSystemPolicy}\n${doorMountThicknessPolicy}\n${doorVisualPolicy}\n${doorTrimPolicy}\n${interiorStoragePolicy}\n${cornerSystemPolicy}\n${drawerSketchPolicy}\n${frontRevealFramePolicy}`,
     /wardrobe_dimension_tokens_shared/u
+  );
+});
+
+test('[dimension-foundation] Wardrobe Default Resolution owner preserves the facade surface directly', () => {
+  const ownerRel = 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
+  const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
+  const owner = read(ownerRel);
+  const facade = read(facadeRel);
+
+  assert.deepEqual(
+    analyzeModuleDependencies(ownerRel, owner).imports.map(dependency => ({
+      specifier: dependency.specifier,
+      kind: dependency.kind,
+      syntax: dependency.syntax,
+      importedSymbols: dependency.importedSymbols,
+      aliases: dependency.bindings.map(binding => [binding.importedName, binding.localName]),
+    })),
+    [
+      {
+        specifier: './wardrobe_defaults.js',
+        kind: 'type',
+        syntax: 'type-import',
+        importedSymbols: ['WardrobeDimensionDefaultType'],
+        aliases: [['WardrobeDimensionDefaultType', 'WardrobeDimensionDefaultType']],
+      },
+      {
+        specifier: './wardrobe_defaults.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['WARDROBE_DEFAULTS'],
+        aliases: [['WARDROBE_DEFAULTS', 'WARDROBE_DEFAULTS']],
+      },
+      {
+        specifier: './wardrobe_layout_comparison_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['WARDROBE_LAYOUT_COMPARISON_POLICY'],
+        aliases: [['WARDROBE_LAYOUT_COMPARISON_POLICY', 'WARDROBE_LAYOUT_COMPARISON_POLICY']],
+      },
+    ]
+  );
+
+  assert.deepEqual(
+    collectNamedModuleExports(ownerRel, owner).map(entry => [entry.exportedName, entry.kind]),
+    WARDROBE_DEFAULT_RESOLUTION_FUNCTIONS.map(name => [name, 'value'])
+  );
+
+  const facadeResolutionDependencies = analyzeModuleDependencies(facadeRel, facade).imports.filter(
+    dependency => dependency.specifier.includes('wardrobe_default_resolution_policy')
+  );
+  assert.deepEqual(
+    facadeResolutionDependencies.map(dependency => ({
+      specifier: dependency.specifier,
+      kind: dependency.kind,
+      syntax: dependency.syntax,
+      importedSymbols: dependency.importedSymbols,
+      exportedSymbols: dependency.exportedSymbols,
+    })),
+    [
+      {
+        specifier: './dimensions/wardrobe_default_resolution_policy.js',
+        kind: 'value',
+        syntax: 'static-re-export',
+        importedSymbols: WARDROBE_DEFAULT_RESOLUTION_FUNCTIONS,
+        exportedSymbols: WARDROBE_DEFAULT_RESOLUTION_FUNCTIONS,
+      },
+    ]
+  );
+
+  const facadeLocalImplementations = [];
+  walkAst(createSourceFile(facadeRel, facade), node => {
+    if (
+      node?.type === 'FunctionDeclaration' &&
+      WARDROBE_DEFAULT_RESOLUTION_FUNCTIONS.includes(node.id?.name)
+    ) {
+      facadeLocalImplementations.push(node.id.name);
+    }
+  });
+  assert.deepEqual(facadeLocalImplementations, []);
+
+  const publicExports = collectNamedModuleExports(facadeRel, facade);
+  assert.equal(publicExports.filter(entry => entry.kind === 'value').length, 89);
+  assert.equal(publicExports.filter(entry => entry.kind === 'type').length, 10);
+  assert.deepEqual(
+    publicExports
+      .filter(entry => entry.kind === 'value')
+      .map(entry => entry.exportedName)
+      .sort(),
+    [...APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS.value].sort()
+  );
+  assert.deepEqual(
+    publicExports
+      .filter(entry => entry.kind === 'type')
+      .map(entry => entry.exportedName)
+      .sort(),
+    [...APPROVED_PUBLIC_DIMENSION_FACADE_EXPORTS.type].sort()
   );
 });
 

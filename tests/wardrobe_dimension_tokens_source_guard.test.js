@@ -44,6 +44,7 @@ const productDimensionTokenSources = [
   'esm/shared/dimensions/cell_dimension_policy.ts',
   'esm/shared/dimensions/wardrobe_layout_comparison_policy.ts',
   'esm/shared/dimensions/wardrobe_layout_policy.ts',
+  'esm/shared/dimensions/wardrobe_default_resolution_policy.ts',
 ];
 
 function readProductDimensionTokens() {
@@ -1026,6 +1027,119 @@ test('[dimension tokens] Core Module Layout uses its focused owner and canonical
     /wardrobe_dimension_tokens_shared|MATERIAL_DIMENSIONS|WARDROBE_LAYOUT_DIMENSIONS|WARDROBE_LAYOUT_POLICY/u
   );
   assert.doesNotMatch(coreLayout, /import\s+\*|import\s*\(|export\s+(?:\*|\{[^}]*\})\s+from/u);
+});
+
+test('[dimension tokens] Wardrobe Default Resolution is defined only by its focused owner while native consumers remain on facades', () => {
+  const ownerRel = 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
+  const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
+  const functionNames = [
+    'normalizeWardrobeDimensionDefaultType',
+    'resolveWardrobeTypeDefaults',
+    'getDefaultDepthForWardrobeType',
+    'getDefaultDoorsForWardrobeType',
+    'getDefaultPerDoorWidthForWardrobeType',
+    'resolveAutoWidthForDoors',
+    'isAutoWidthForDoors',
+    'getDefaultWidthForWardrobeType',
+    'getDefaultHeightForWardrobeType',
+    'getDefaultChestDrawersCount',
+    'resolveDefaultWardrobeDimensions',
+  ];
+  const functionPattern = new RegExp(`(?:export\\s+)?function\\s+(${functionNames.join('|')})\\b`, 'gu');
+  const definitions = [];
+  for (const file of listFilesRecursively(path.join(ROOT, 'esm')).filter(file =>
+    /\.(?:js|mjs|ts|tsx)$/u.test(file)
+  )) {
+    const source = fs.readFileSync(file, 'utf8');
+    for (const match of source.matchAll(functionPattern)) {
+      definitions.push([path.relative(ROOT, file).replaceAll('\\', '/'), match[1]]);
+    }
+  }
+  assert.deepEqual(
+    definitions,
+    functionNames.map(name => [ownerRel, name])
+  );
+
+  const facade = read(facadeRel);
+  assert.doesNotMatch(facade, functionPattern);
+  assert.doesNotMatch(facade, /\bfunction finiteOr\b/u);
+
+  const nativeSources = listFilesRecursively(path.join(ROOT, 'esm/native'))
+    .filter(file => /\.(?:js|mjs|ts|tsx)$/u.test(file))
+    .map(file => [file, fs.readFileSync(file, 'utf8')]);
+  const directOwnerDependencies = nativeSources.flatMap(([file, source]) =>
+    analyzeModuleDependencies(file, source)
+      .imports.filter(dependency => dependency.specifier.includes('wardrobe_default_resolution_policy'))
+      .map(dependency => ({
+        file: path.relative(ROOT, file).replaceAll('\\', '/'),
+        specifier: dependency.specifier,
+        syntax: dependency.syntax,
+        symbols: dependency.importedSymbols,
+      }))
+  );
+  assert.deepEqual(directOwnerDependencies, []);
+
+  const familySymbols = new Set(functionNames);
+  const facadeConsumers = nativeSources.flatMap(([file, source]) =>
+    analyzeModuleDependencies(file, source)
+      .imports.filter(
+        dependency =>
+          dependency.specifier.includes('wardrobe_dimension_tokens_shared') &&
+          dependency.importedSymbols.some(symbol => familySymbols.has(symbol))
+      )
+      .map(dependency => ({
+        file: path.relative(ROOT, file).replaceAll('\\', '/'),
+        syntax: dependency.syntax,
+        symbols: dependency.importedSymbols.filter(symbol => familySymbols.has(symbol)),
+      }))
+  );
+  assert.deepEqual(facadeConsumers, [
+    {
+      file: 'esm/native/builder/state_sanitize_pipeline.ts',
+      syntax: 'static-import',
+      symbols: ['getDefaultDepthForWardrobeType', 'getDefaultDoorsForWardrobeType'],
+    },
+    {
+      file: 'esm/native/features/library_preset/module_defaults.ts',
+      syntax: 'static-import',
+      symbols: ['resolveAutoWidthForDoors'],
+    },
+    {
+      file: 'esm/native/kernel/domain_api_room_section_wardrobe.ts',
+      syntax: 'static-import',
+      symbols: [
+        'getDefaultDepthForWardrobeType',
+        'getDefaultDoorsForWardrobeType',
+        'getDefaultPerDoorWidthForWardrobeType',
+      ],
+    },
+    {
+      file: 'esm/native/platform/platform_services.ts',
+      syntax: 'static-import',
+      symbols: ['getDefaultDepthForWardrobeType'],
+    },
+    {
+      file: 'esm/native/runtime/api.ts',
+      syntax: 'static-re-export',
+      symbols: [
+        'normalizeWardrobeDimensionDefaultType',
+        'getDefaultDepthForWardrobeType',
+        'getDefaultDoorsForWardrobeType',
+        'getDefaultPerDoorWidthForWardrobeType',
+        'getDefaultWidthForWardrobeType',
+        'getDefaultHeightForWardrobeType',
+        'getDefaultChestDrawersCount',
+        'resolveDefaultWardrobeDimensions',
+        'resolveAutoWidthForDoors',
+        'isAutoWidthForDoors',
+      ],
+    },
+  ]);
+
+  const moduleDefaults = read('esm/native/features/library_preset/module_defaults.ts');
+  assert.match(moduleDefaults, /wardrobe_dimension_tokens_shared\.js/u);
+  assert.match(moduleDefaults, /\bresolveAutoWidthForDoors\b/u);
+  assert.doesNotMatch(moduleDefaults, /wardrobe_default_resolution_policy/u);
 });
 
 test('[dimension tokens] door trim placement and front reveal frame geometry are centralized', () => {

@@ -177,12 +177,32 @@ import {
   SKETCH_BOX_CLASSIC_GROOVE_POLICY,
 } from '../esm/shared/dimensions/sketch_box_classic_door_visual_policy.ts';
 import {
+  getDefaultChestDrawersCount,
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
+  getDefaultHeightForWardrobeType,
+  getDefaultPerDoorWidthForWardrobeType,
   getDefaultWidthForWardrobeType,
   isAutoWidthForDoors,
+  normalizeWardrobeDimensionDefaultType,
+  resolveAutoWidthForDoors,
+  resolveDefaultWardrobeDimensions,
   resolveDoorMountThicknessesFromConfig,
+  resolveWardrobeTypeDefaults,
 } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import {
+  getDefaultChestDrawersCount as getDefaultChestDrawersCountFromOwner,
+  getDefaultDepthForWardrobeType as getDefaultDepthForWardrobeTypeFromOwner,
+  getDefaultDoorsForWardrobeType as getDefaultDoorsForWardrobeTypeFromOwner,
+  getDefaultHeightForWardrobeType as getDefaultHeightForWardrobeTypeFromOwner,
+  getDefaultPerDoorWidthForWardrobeType as getDefaultPerDoorWidthForWardrobeTypeFromOwner,
+  getDefaultWidthForWardrobeType as getDefaultWidthForWardrobeTypeFromOwner,
+  isAutoWidthForDoors as isAutoWidthForDoorsFromOwner,
+  normalizeWardrobeDimensionDefaultType as normalizeWardrobeDimensionDefaultTypeFromOwner,
+  resolveAutoWidthForDoors as resolveAutoWidthForDoorsFromOwner,
+  resolveDefaultWardrobeDimensions as resolveDefaultWardrobeDimensionsFromOwner,
+  resolveWardrobeTypeDefaults as resolveWardrobeTypeDefaultsFromOwner,
+} from '../esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
 import {
   CELL_DIMENSION_MATCH_POLICY,
   CELL_DIMENSION_PREVIEW_POLICY,
@@ -270,6 +290,18 @@ import {
 import { computeExternalDrawersOpsForModule } from '../esm/native/builder/core_storage_compute_external_drawers.ts';
 
 test('wardrobe default tokens preserve hinged and sliding business defaults', () => {
+  assert.equal(normalizeWardrobeDimensionDefaultType, normalizeWardrobeDimensionDefaultTypeFromOwner);
+  assert.equal(resolveWardrobeTypeDefaults, resolveWardrobeTypeDefaultsFromOwner);
+  assert.equal(getDefaultDepthForWardrobeType, getDefaultDepthForWardrobeTypeFromOwner);
+  assert.equal(getDefaultDoorsForWardrobeType, getDefaultDoorsForWardrobeTypeFromOwner);
+  assert.equal(getDefaultPerDoorWidthForWardrobeType, getDefaultPerDoorWidthForWardrobeTypeFromOwner);
+  assert.equal(resolveAutoWidthForDoors, resolveAutoWidthForDoorsFromOwner);
+  assert.equal(isAutoWidthForDoors, isAutoWidthForDoorsFromOwner);
+  assert.equal(getDefaultWidthForWardrobeType, getDefaultWidthForWardrobeTypeFromOwner);
+  assert.equal(getDefaultHeightForWardrobeType, getDefaultHeightForWardrobeTypeFromOwner);
+  assert.equal(getDefaultChestDrawersCount, getDefaultChestDrawersCountFromOwner);
+  assert.equal(resolveDefaultWardrobeDimensions, resolveDefaultWardrobeDimensionsFromOwner);
+
   assert.notEqual(FACADE_WARDROBE_DEFAULTS, WARDROBE_DEFAULTS);
   assert.equal(FACADE_WARDROBE_DEFAULTS.widthCm, WARDROBE_DEFAULTS.widthCm);
   assert.equal(FACADE_WARDROBE_DEFAULTS.byType, WARDROBE_DEFAULTS.byType);
@@ -286,6 +318,26 @@ test('wardrobe default tokens preserve hinged and sliding business defaults', ()
   assert.equal(getDefaultDoorsForWardrobeType('sliding'), 2);
   assert.equal(getDefaultWidthForWardrobeType('hinged'), 160);
   assert.equal(getDefaultWidthForWardrobeType('sliding'), 160);
+
+  assert.equal(normalizeWardrobeDimensionDefaultType('unknown'), 'hinged');
+  assert.equal(normalizeWardrobeDimensionDefaultType('sliding'), 'sliding');
+  assert.equal(resolveAutoWidthForDoors('hinged', -1), 0);
+  assert.equal(resolveAutoWidthForDoors('hinged', 'not-a-number'), 0);
+  assert.equal(resolveAutoWidthForDoors('hinged', 1.4), 40);
+  assert.equal(resolveAutoWidthForDoors('hinged', 1.6), 80);
+  assert.equal(isAutoWidthForDoors('hinged', 0, 4), true);
+  assert.equal(isAutoWidthForDoors('hinged', -1, 4), true);
+
+  const resolvedDefaults = resolveWardrobeTypeDefaults('unknown');
+  assert.deepEqual(Object.keys(resolvedDefaults), [
+    'widthCm',
+    'heightCm',
+    'depthCm',
+    'doorsCount',
+    'perDoorWidthCm',
+  ]);
+  assert.deepEqual(resolvedDefaults, resolveWardrobeTypeDefaults('hinged'));
+  assert.deepEqual(resolveDefaultWardrobeDimensions('unknown'), resolvedDefaults);
 });
 
 test('Wardrobe Layout compatibility projection preserves focused-owner identity and comparison semantics', () => {
