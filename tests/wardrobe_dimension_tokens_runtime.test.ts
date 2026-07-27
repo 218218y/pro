@@ -1352,7 +1352,65 @@ test('Interior Fittings policy preserves every value, section identity, and pres
 });
 
 test('Interior Storage policy preserves facade identity, values, frozen defaults, and drawer grid parity', () => {
+  const gridKeys = ['gridDivisionsDefault'];
+  const barrierKeys = [
+    'barrierHeightM',
+    'barrierHeightMinM',
+    'barrierHeightMaxM',
+    'barrierFrontZOffsetM',
+    'barrierWidthMinM',
+    'barrierWidthClearanceM',
+  ];
+  const previewKeys = ['previewThicknessMinM'];
+  const clampKeys = ['clampPadMinM', 'clampPadMaxM', 'clampPadWoodRatio'];
+  const layoutKeys = ['minHeightExtraM', 'minHeightWoodMultiplier'];
+  const defaultsKeys = ['defaultLowerShelfSlots'];
+  const aggregateKeys = [
+    ...gridKeys,
+    ...barrierKeys,
+    ...previewKeys,
+    ...clampKeys,
+    ...layoutKeys,
+    ...defaultsKeys,
+  ];
+
+  assert.deepEqual(Object.keys(INTERIOR_STORAGE_GRID_POLICY), gridKeys);
+  assert.deepEqual(Object.keys(INTERIOR_STORAGE_BARRIER_POLICY), barrierKeys);
+  assert.deepEqual(Object.keys(INTERIOR_STORAGE_PREVIEW_POLICY), previewKeys);
+  assert.deepEqual(Object.keys(INTERIOR_STORAGE_CLAMP_POLICY), clampKeys);
+  assert.deepEqual(Object.keys(INTERIOR_STORAGE_LAYOUT_POLICY), layoutKeys);
+  assert.deepEqual(Object.keys(INTERIOR_STORAGE_DEFAULTS_POLICY), defaultsKeys);
+  assert.deepEqual(Object.keys(INTERIOR_STORAGE_POLICY), aggregateKeys);
+
   assert.equal(INTERIOR_FITTINGS_DIMENSIONS.storage, INTERIOR_STORAGE_POLICY);
+  assert.equal(
+    INTERIOR_STORAGE_POLICY.gridDivisionsDefault,
+    INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault
+  );
+  assert.equal(INTERIOR_STORAGE_POLICY.barrierHeightM, INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightM);
+  assert.equal(INTERIOR_STORAGE_POLICY.barrierHeightMinM, INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightMinM);
+  assert.equal(INTERIOR_STORAGE_POLICY.barrierHeightMaxM, INTERIOR_STORAGE_BARRIER_POLICY.barrierHeightMaxM);
+  assert.equal(
+    INTERIOR_STORAGE_POLICY.barrierFrontZOffsetM,
+    INTERIOR_STORAGE_BARRIER_POLICY.barrierFrontZOffsetM
+  );
+  assert.equal(INTERIOR_STORAGE_POLICY.barrierWidthMinM, INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthMinM);
+  assert.equal(
+    INTERIOR_STORAGE_POLICY.barrierWidthClearanceM,
+    INTERIOR_STORAGE_BARRIER_POLICY.barrierWidthClearanceM
+  );
+  assert.equal(
+    INTERIOR_STORAGE_POLICY.previewThicknessMinM,
+    INTERIOR_STORAGE_PREVIEW_POLICY.previewThicknessMinM
+  );
+  assert.equal(INTERIOR_STORAGE_POLICY.clampPadMinM, INTERIOR_STORAGE_CLAMP_POLICY.clampPadMinM);
+  assert.equal(INTERIOR_STORAGE_POLICY.clampPadMaxM, INTERIOR_STORAGE_CLAMP_POLICY.clampPadMaxM);
+  assert.equal(INTERIOR_STORAGE_POLICY.clampPadWoodRatio, INTERIOR_STORAGE_CLAMP_POLICY.clampPadWoodRatio);
+  assert.equal(INTERIOR_STORAGE_POLICY.minHeightExtraM, INTERIOR_STORAGE_LAYOUT_POLICY.minHeightExtraM);
+  assert.equal(
+    INTERIOR_STORAGE_POLICY.minHeightWoodMultiplier,
+    INTERIOR_STORAGE_LAYOUT_POLICY.minHeightWoodMultiplier
+  );
   assert.equal(
     INTERIOR_STORAGE_POLICY.defaultLowerShelfSlots,
     INTERIOR_STORAGE_DEFAULTS_POLICY.defaultLowerShelfSlots
@@ -1393,6 +1451,13 @@ test('Interior Storage policy preserves facade identity, values, frozen defaults
   ]) {
     assert.equal(Object.isFrozen(policy), true);
   }
+
+  const serialized = JSON.stringify(INTERIOR_FITTINGS_DIMENSIONS.storage);
+  assert.equal(typeof serialized, 'string');
+  assert.ok(serialized);
+  const roundTrip: unknown = JSON.parse(serialized);
+  assert.deepEqual(Object.keys(roundTrip as Record<string, unknown>), aggregateKeys);
+  assert.deepEqual(roundTrip, INTERIOR_STORAGE_POLICY);
 });
 
 test('Drawer Sketch policy preserves facade identity, every value, focused owners, and frozen policies', () => {
