@@ -386,6 +386,50 @@ function assertMutation(source, kind, label) {
   );
 }
 
+function assertHistoricalPresetModelsLedger(migrationBudgets) {
+  assert.ok(migrationBudgets.length >= 163);
+  assert.equal(
+    sha256(stableJson(migrationBudgets.slice(0, 162))),
+    '6f4d890ffaf9346798e02f198f1a61c658b1f496b2640cfe5b1df8e1f8c970bc'
+  );
+  assert.equal(
+    sha256(stableJson(migrationBudgets.slice(0, 163))),
+    '8c4c04e56a8b991d81537127adc69c5dc42b4e7ed3de4fe81258a67b01ad8341'
+  );
+}
+
+function syntheticFutureLedgerEntry(sequence) {
+  return {
+    from: 'services',
+    to: 'shared',
+    additionalStatements: 1,
+    owner: 'synthetic-future-migration',
+    reviewedAt: '2099-01-01',
+    reviewBy: '2099-04-01',
+    fromFile: `esm/native/services/future_consumer_${sequence}.ts`,
+    companionImport: {
+      toFile: 'esm/shared/future_owner.ts',
+      kind: 'value',
+      importedSymbols: [`FUTURE_POLICY_${sequence}`],
+      syntax: 'static-import',
+    },
+    removedImport: {
+      toFile: 'esm/shared/future_facade.ts',
+      kind: 'value',
+      importedSymbols: [`FUTURE_FACADE_${sequence}`],
+      syntax: 'static-import',
+    },
+    addedImport: {
+      toFile: 'esm/shared/future_dependency.ts',
+      kind: 'value',
+      importedSymbols: [`FUTURE_DEPENDENCY_${sequence}`],
+      syntax: 'static-import',
+    },
+    reason: `Synthetic future Ledger entry ${sequence} for historical-prefix proof.`,
+    removalCondition: `Remove synthetic future Ledger entry ${sequence} after its seam closes.`,
+  };
+}
+
 test('Preset Models Data imports only the private composition owner and maps every field exactly once', () => {
   const source = read(consumerRel);
   assert.deepEqual(migrationViolations(source), []);
@@ -526,15 +570,39 @@ test('Preset Models Data ownership mutation probes reject routes, escapes, formu
   assertMutation(rawMutation, 'raw-semantic-fingerprint', 'raw preset semantic drift');
 });
 
-test('Preset Models Data migration does not change the 163-entry Ledger or baseline prefixes', () => {
+test('Preset Models Data migration preserves its historical Ledger prefixes', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(baseline.migrationBudgets.length, 163);
-  assert.equal(
-    sha256(stableJson(baseline.migrationBudgets.slice(0, 162))),
-    '6f4d890ffaf9346798e02f198f1a61c658b1f496b2640cfe5b1df8e1f8c970bc'
-  );
-  assert.equal(
-    sha256(stableJson(baseline.migrationBudgets.slice(0, 163))),
-    '8c4c04e56a8b991d81537127adc69c5dc42b4e7ed3de4fe81258a67b01ad8341'
-  );
+  assertHistoricalPresetModelsLedger(baseline.migrationBudgets);
+});
+
+test('Preset Models Data historical Ledger proof accepts future entries 164 and 165', () => {
+  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
+  const historicalPrefix163 = structuredClone(baseline.migrationBudgets.slice(0, 163));
+  const prefix162Hash = sha256(stableJson(historicalPrefix163.slice(0, 162)));
+  const prefix163Hash = sha256(stableJson(historicalPrefix163.slice(0, 163)));
+  const withFutureEntry = [...historicalPrefix163, syntheticFutureLedgerEntry(164)];
+  const withTwoFutureEntries = [...withFutureEntry, syntheticFutureLedgerEntry(165)];
+
+  assert.equal(historicalPrefix163.length, 163);
+  assert.equal(withFutureEntry.length, 164);
+  assert.equal(withTwoFutureEntries.length, 165);
+  assert.equal(sha256(stableJson(withFutureEntry.slice(0, 162))), prefix162Hash);
+  assert.equal(sha256(stableJson(withFutureEntry.slice(0, 163))), prefix163Hash);
+  assert.equal(sha256(stableJson(withTwoFutureEntries.slice(0, 162))), prefix162Hash);
+  assert.equal(sha256(stableJson(withTwoFutureEntries.slice(0, 163))), prefix163Hash);
+  assert.doesNotThrow(() => assertHistoricalPresetModelsLedger(withFutureEntry));
+  assert.doesNotThrow(() => assertHistoricalPresetModelsLedger(withTwoFutureEntries));
+});
+
+test('Preset Models Data historical Ledger proof rejects Prefix 162 or Prefix 163 mutation', () => {
+  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
+  const historicalPrefix163 = structuredClone(baseline.migrationBudgets.slice(0, 163));
+  const mutatedPrefix162 = structuredClone(historicalPrefix163);
+  const mutatedPrefix163 = structuredClone(historicalPrefix163);
+
+  mutatedPrefix162[161].reason = `${mutatedPrefix162[161].reason} mutated`;
+  mutatedPrefix163[162].reason = `${mutatedPrefix163[162].reason} mutated`;
+
+  assert.throws(() => assertHistoricalPresetModelsLedger(mutatedPrefix162), assert.AssertionError);
+  assert.throws(() => assertHistoricalPresetModelsLedger(mutatedPrefix163), assert.AssertionError);
 });
