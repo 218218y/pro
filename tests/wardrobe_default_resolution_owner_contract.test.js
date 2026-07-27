@@ -12,6 +12,13 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ownerRel = 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
+const approvedNativeConsumerUniverse = new Set([
+  'esm/native/builder/state_sanitize_pipeline.ts',
+  'esm/native/features/library_preset/module_defaults.ts',
+  'esm/native/kernel/domain_api_room_section_wardrobe.ts',
+  'esm/native/platform/platform_services.ts',
+  'esm/native/runtime/api.ts',
+]);
 
 const publicFunctions = Object.freeze([
   'normalizeWardrobeDimensionDefaultType',
@@ -400,18 +407,77 @@ function normalizeModuleTarget(fromFile, specifier) {
 }
 
 const ownerTarget = path.normalize(path.join(root, ownerRel)).toLowerCase();
+const facadeTarget = path.normalize(path.join(root, facadeRel)).toLowerCase();
 
-function nativeOwnerImports(entries) {
-  return entries.flatMap(([file, source]) =>
-    analyzeModuleDependencies(file, source)
-      .imports.filter(dependency => normalizeModuleTarget(file, dependency.specifier) === ownerTarget)
-      .map(dependency => ({
-        file: path.relative(root, file).replaceAll('\\', '/'),
+function inspectNativeOwnerUniverse(entries) {
+  const focusedImports = [];
+  const violations = [];
+  for (const [file, source] of entries) {
+    const rel = path.relative(root, file).replaceAll('\\', '/');
+    const dependencies = analyzeModuleDependencies(file, source).imports;
+    const ownerDependencies = dependencies.filter(
+      dependency => normalizeModuleTarget(file, dependency.specifier) === ownerTarget
+    );
+    const facadeFamilyDependencies = dependencies.filter(
+      dependency =>
+        normalizeModuleTarget(file, dependency.specifier) === facadeTarget &&
+        dependency.importedSymbols.some(symbol => publicFunctionSet.has(symbol))
+    );
+
+    for (const dependency of ownerDependencies) {
+      focusedImports.push({
+        file: rel,
         specifier: dependency.specifier,
+        kind: dependency.kind,
         syntax: dependency.syntax,
         symbols: dependency.importedSymbols,
-      }))
-  );
+      });
+      if (!approvedNativeConsumerUniverse.has(rel)) {
+        violations.push({ kind: 'unapproved-focused-owner-consumer', file: rel });
+      }
+      const allowedSyntax =
+        rel === 'esm/native/runtime/api.ts'
+          ? dependency.syntax === 'static-re-export'
+          : dependency.syntax === 'static-import';
+      if (dependency.kind !== 'value' || !allowedSyntax) {
+        violations.push({
+          kind: 'invalid-focused-owner-dependency',
+          file: rel,
+          dependencyKind: dependency.kind,
+          syntax: dependency.syntax,
+        });
+      }
+      if (
+        dependency.importedSymbols.length === 0 ||
+        dependency.importedSymbols.some(symbol => symbol === '*' || !publicFunctionSet.has(symbol))
+      ) {
+        violations.push({
+          kind: 'invalid-focused-owner-symbols',
+          file: rel,
+          symbols: dependency.importedSymbols,
+        });
+      }
+      for (const binding of dependency.bindings) {
+        const validBinding =
+          dependency.syntax === 'static-re-export'
+            ? binding.localName === null && binding.exportedName === binding.importedName
+            : binding.localName === binding.importedName && binding.exportedName === null;
+        if (!validBinding) {
+          violations.push({
+            kind: 'focused-owner-alias',
+            file: rel,
+            importedName: binding.importedName,
+            localName: binding.localName,
+            exportedName: binding.exportedName,
+          });
+        }
+      }
+    }
+    if (ownerDependencies.length > 0 && facadeFamilyDependencies.length > 0) {
+      violations.push({ kind: 'dual-focused-and-facade-family-import', file: rel });
+    }
+  }
+  return { focusedImports, violations };
 }
 
 test('Wardrobe Default Resolution owner has exact dependencies, exports, signatures, and historical semantics', () => {
@@ -428,12 +494,12 @@ test('legacy dimension facade exposes all eleven functions only by direct identi
   assert.equal(exports.filter(entry => entry.kind === 'type').length, 10);
 });
 
-test('no esm/native consumer imports the focused owner before its migration slice', () => {
+test('approved native consumer universe accepts any direct focused-owner subset without aliases or facade overlap', () => {
   const entries = listSourceFiles(path.join(root, 'esm/native')).map(file => [
     file,
     fs.readFileSync(file, 'utf8'),
   ]);
-  assert.deepEqual(nativeOwnerImports(entries), []);
+  assert.deepEqual(inspectNativeOwnerUniverse(entries).violations, []);
 });
 
 test('owner and facade mutation fixtures reject back-edges, aliases, compatibility policy, semantic drift, wrappers, and early consumers', () => {
@@ -528,15 +594,37 @@ export const resolveAutoWidthForDoors = ownerResolveAutoWidthForDoors;`
     true
   );
 
-  const nativeFixturePath = path.join(root, 'esm/native/features/library_preset/module_defaults.ts');
-  const earlyConsumer = `import { resolveAutoWidthForDoors } from '../../../shared/dimensions/wardrobe_default_resolution_policy.js';
+  const approvedFixturePath = path.join(root, 'esm/native/builder/state_sanitize_pipeline.ts');
+  const approvedFocusedConsumer = `import { getDefaultDepthForWardrobeType } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';
+export const depth = getDefaultDepthForWardrobeType('hinged');`;
+  assert.deepEqual(
+    inspectNativeOwnerUniverse([[approvedFixturePath, approvedFocusedConsumer]]).violations,
+    []
+  );
+
+  const approvedRuntimeReexportPath = path.join(root, 'esm/native/runtime/api.ts');
+  const approvedRuntimeReexport = `export { isAutoWidthForDoors } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';`;
+  assert.deepEqual(
+    inspectNativeOwnerUniverse([[approvedRuntimeReexportPath, approvedRuntimeReexport]]).violations,
+    []
+  );
+
+  const dualFamilyConsumer = `${approvedFocusedConsumer}
+import { getDefaultDoorsForWardrobeType } from '../../shared/wardrobe_dimension_tokens_shared.js';`;
+  assert.equal(
+    inspectNativeOwnerUniverse([[approvedFixturePath, dualFamilyConsumer]]).violations.some(
+      violation => violation.kind === 'dual-focused-and-facade-family-import'
+    ),
+    true
+  );
+
+  const unapprovedFixturePath = path.join(root, 'esm/native/ui/react/tabs/unapproved_default_consumer.ts');
+  const unapprovedFocusedConsumer = `import { resolveAutoWidthForDoors } from '../../../../shared/dimensions/wardrobe_default_resolution_policy.js';
 export const width = resolveAutoWidthForDoors('hinged', 4);`;
-  assert.deepEqual(nativeOwnerImports([[nativeFixturePath, earlyConsumer]]), [
-    {
-      file: 'esm/native/features/library_preset/module_defaults.ts',
-      specifier: '../../../shared/dimensions/wardrobe_default_resolution_policy.js',
-      syntax: 'static-import',
-      symbols: ['resolveAutoWidthForDoors'],
-    },
-  ]);
+  assert.equal(
+    inspectNativeOwnerUniverse([[unapprovedFixturePath, unapprovedFocusedConsumer]]).violations.some(
+      violation => violation.kind === 'unapproved-focused-owner-consumer'
+    ),
+    true
+  );
 });

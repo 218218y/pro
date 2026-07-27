@@ -656,10 +656,7 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
   assert.match(tokens, /export const LIBRARY_PRESET_DIMENSIONS = LIBRARY_PRESET_POLICY;/);
   assert.doesNotMatch(tokens, /export const LIBRARY_PRESET_DIMENSIONS = Object\.freeze\(\{/);
 
-  for (const rel of [
-    'esm/native/features/library_preset/module_defaults.ts',
-    'esm/native/data/preset_models_data.ts',
-  ]) {
+  for (const rel of ['esm/native/data/preset_models_data.ts']) {
     assertUsesToken(rel, 'LIBRARY_PRESET_DIMENSIONS');
     const source = read(rel);
     assert.doesNotMatch(source, /library_preset_policy/u);
@@ -668,6 +665,46 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
       /\b(?:LIBRARY_PRESET_MODULE_DEFAULTS_POLICY|LIBRARY_PRESET_LAYOUT_POLICY|LIBRARY_PRESET_POLICY)\b/u
     );
   }
+
+  const moduleDefaultsRel = 'esm/native/features/library_preset/module_defaults.ts';
+  const moduleDefaultsSource = read(moduleDefaultsRel);
+  const moduleDefaultsOwnershipImports = analyzeModuleDependencies(
+    path.join(ROOT, moduleDefaultsRel),
+    moduleDefaultsSource
+  ).imports.filter(
+    dependency =>
+      dependency.importedSymbols.includes('LIBRARY_PRESET_MODULE_DEFAULTS_POLICY') ||
+      dependency.importedSymbols.includes('resolveAutoWidthForDoors')
+  );
+  assert.deepEqual(
+    moduleDefaultsOwnershipImports.map(dependency => ({
+      specifier: dependency.specifier,
+      kind: dependency.kind,
+      syntax: dependency.syntax,
+      importedSymbols: dependency.importedSymbols,
+      aliases: dependency.bindings.map(binding => [binding.importedName, binding.localName]),
+    })),
+    [
+      {
+        specifier: '../../../shared/dimensions/library_preset_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY'],
+        aliases: [['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY', 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY']],
+      },
+      {
+        specifier: '../../../shared/dimensions/wardrobe_default_resolution_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['resolveAutoWidthForDoors'],
+        aliases: [['resolveAutoWidthForDoors', 'resolveAutoWidthForDoors']],
+      },
+    ]
+  );
+  assert.doesNotMatch(
+    moduleDefaultsSource,
+    /\b(?:LIBRARY_PRESET_DIMENSIONS|LIBRARY_PRESET_POLICY)\b|wardrobe_dimension_tokens_shared/u
+  );
 
   const flowRel = 'esm/native/features/library_preset/library_preset_flow_shared.ts';
   const flowSource = read(flowRel);
@@ -1029,7 +1066,7 @@ test('[dimension tokens] Core Module Layout uses its focused owner and canonical
   assert.doesNotMatch(coreLayout, /import\s+\*|import\s*\(|export\s+(?:\*|\{[^}]*\})\s+from/u);
 });
 
-test('[dimension tokens] Wardrobe Default Resolution is defined only by its focused owner while native consumers remain on facades', () => {
+test('[dimension tokens] Wardrobe Default Resolution is defined only by its focused owner while native consumers follow approved focused or facade paths', () => {
   const ownerRel = 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
   const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
   const functionNames = [
@@ -1077,7 +1114,14 @@ test('[dimension tokens] Wardrobe Default Resolution is defined only by its focu
         symbols: dependency.importedSymbols,
       }))
   );
-  assert.deepEqual(directOwnerDependencies, []);
+  assert.deepEqual(directOwnerDependencies, [
+    {
+      file: 'esm/native/features/library_preset/module_defaults.ts',
+      specifier: '../../../shared/dimensions/wardrobe_default_resolution_policy.js',
+      syntax: 'static-import',
+      symbols: ['resolveAutoWidthForDoors'],
+    },
+  ]);
 
   const familySymbols = new Set(functionNames);
   const facadeConsumers = nativeSources.flatMap(([file, source]) =>
@@ -1098,11 +1142,6 @@ test('[dimension tokens] Wardrobe Default Resolution is defined only by its focu
       file: 'esm/native/builder/state_sanitize_pipeline.ts',
       syntax: 'static-import',
       symbols: ['getDefaultDepthForWardrobeType', 'getDefaultDoorsForWardrobeType'],
-    },
-    {
-      file: 'esm/native/features/library_preset/module_defaults.ts',
-      syntax: 'static-import',
-      symbols: ['resolveAutoWidthForDoors'],
     },
     {
       file: 'esm/native/kernel/domain_api_room_section_wardrobe.ts',
@@ -1137,9 +1176,9 @@ test('[dimension tokens] Wardrobe Default Resolution is defined only by its focu
   ]);
 
   const moduleDefaults = read('esm/native/features/library_preset/module_defaults.ts');
-  assert.match(moduleDefaults, /wardrobe_dimension_tokens_shared\.js/u);
+  assert.match(moduleDefaults, /dimensions\/wardrobe_default_resolution_policy\.js/u);
   assert.match(moduleDefaults, /\bresolveAutoWidthForDoors\b/u);
-  assert.doesNotMatch(moduleDefaults, /wardrobe_default_resolution_policy/u);
+  assert.doesNotMatch(moduleDefaults, /wardrobe_dimension_tokens_shared/u);
 });
 
 test('[dimension tokens] door trim placement and front reveal frame geometry are centralized', () => {

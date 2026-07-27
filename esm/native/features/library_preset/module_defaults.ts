@@ -1,7 +1,5 @@
-import {
-  LIBRARY_PRESET_DIMENSIONS,
-  resolveAutoWidthForDoors,
-} from '../../../shared/wardrobe_dimension_tokens_shared.js';
+import { LIBRARY_PRESET_MODULE_DEFAULTS_POLICY } from '../../../shared/dimensions/library_preset_policy.js';
+import { resolveAutoWidthForDoors } from '../../../shared/dimensions/wardrobe_default_resolution_policy.js';
 
 import type {
   ModuleConfigLike,
@@ -9,7 +7,7 @@ import type {
   NormalizedTopModuleConfigLike,
 } from '../../../../types';
 
-export const LIBRARY_PRESET_DEFAULT_DOORS = LIBRARY_PRESET_DIMENSIONS.defaultDoorsCount;
+export const LIBRARY_PRESET_DEFAULT_DOORS = LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultDoorsCount;
 export const LIBRARY_PRESET_DOOR_WIDTH_CM = resolveAutoWidthForDoors('hinged', 1);
 
 export function calcLibraryPresetAutoWidth(doors: unknown): number {
@@ -45,7 +43,7 @@ function createLibraryModuleConfig(
 
 export function createLibraryTopModuleConfig(doors: number): NormalizedTopModuleConfigLike {
   const base = createLibraryModuleConfig(doors, {
-    gridDivisions: LIBRARY_PRESET_DIMENSIONS.topGridDivisions,
+    gridDivisions: LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.topGridDivisions,
     shelves: [true, true, true, true, false],
   });
   return {
@@ -56,7 +54,7 @@ export function createLibraryTopModuleConfig(doors: number): NormalizedTopModule
     isCustom: !!base.isCustom,
     customData: base.customData || {
       shelves: [true, true, true, true, false],
-      rods: Array.from({ length: LIBRARY_PRESET_DIMENSIONS.topGridDivisions }, () => false),
+      rods: Array.from({ length: LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.topGridDivisions }, () => false),
       storage: false,
     },
     doors: normalizeDoors(base.doors),
@@ -65,7 +63,7 @@ export function createLibraryTopModuleConfig(doors: number): NormalizedTopModule
 
 export function createLibraryLowerModuleConfig(doors: number): ModuleConfigLike {
   return createLibraryModuleConfig(doors, {
-    gridDivisions: LIBRARY_PRESET_DIMENSIONS.lowerGridDivisions,
+    gridDivisions: LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.lowerGridDivisions,
     shelves: [true, false],
   });
 }
@@ -84,13 +82,16 @@ export function buildLibraryModuleCfgs(
   const bottomCfgList: ModulesConfigurationLike = [];
 
   for (let i = 0; i < mcTop; i++) {
-    const doors = topDoorsSig[i] != null ? topDoorsSig[i] : LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount;
+    const doors =
+      topDoorsSig[i] != null ? topDoorsSig[i] : LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultModuleDoorsCount;
     topCfgList.push(createLibraryTopModuleConfig(doors));
   }
 
   for (let i = 0; i < mcBottom; i++) {
     const doors =
-      bottomDoorsSig[i] != null ? bottomDoorsSig[i] : LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount;
+      bottomDoorsSig[i] != null
+        ? bottomDoorsSig[i]
+        : LIBRARY_PRESET_MODULE_DEFAULTS_POLICY.defaultModuleDoorsCount;
     bottomCfgList.push(createLibraryLowerModuleConfig(doors));
   }
 

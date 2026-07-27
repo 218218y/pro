@@ -418,9 +418,18 @@ const APPROVED_WARDROBE_LAYOUT_COMPARISON_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['WARDROBE_LAYOUT_COMPARISON_POLICY']),
 });
+const APPROVED_WARDROBE_DEFAULT_RESOLUTION_OWNER_IMPORTS = Object.freeze({
+  'esm/native/features/library_preset/module_defaults.ts': Object.freeze(['resolveAutoWidthForDoors']),
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(
+    [...WARDROBE_DEFAULT_RESOLUTION_FUNCTIONS].sort()
+  ),
+});
 const APPROVED_LIBRARY_PRESET_OWNER_IMPORTS = Object.freeze({
   'esm/native/features/library_preset/library_preset_flow_shared.ts': Object.freeze([
     'LIBRARY_PRESET_LAYOUT_POLICY',
+  ]),
+  'esm/native/features/library_preset/module_defaults.ts': Object.freeze([
+    'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
   ]),
   'esm/native/features/modules_configuration/module_defaults.ts': Object.freeze([
     'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
@@ -3046,6 +3055,11 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectOwnerImports(analyzedSources, 'wardrobe_layout_comparison_policy.js'),
     APPROVED_WARDROBE_LAYOUT_COMPARISON_OWNER_IMPORTS,
     'Wardrobe Layout Comparison owner consumer allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectOwnerImports(analyzedSources, 'wardrobe_default_resolution_policy.js'),
+    APPROVED_WARDROBE_DEFAULT_RESOLUTION_OWNER_IMPORTS,
+    'Wardrobe Default Resolution owner consumer allowlist'
   );
   assertApprovedSymbolUsage(
     collectOwnerImports(analyzedSources, 'library_preset_policy.js'),

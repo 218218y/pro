@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-27T08:03:43.213Z",
+  "generatedAt": "2026-07-27T08:56:39.374Z",
   "totals": {
-    "tests": 1297,
-    "unitRunnerTests": 1289,
+    "tests": 1298,
+    "unitRunnerTests": 1290,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 455,
+    "contract": 456,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -2340,6 +2340,10 @@
     {
       "file": "tests/library_preset_flow_runtime.test.ts",
       "category": "integration"
+    },
+    {
+      "file": "tests/library_preset_module_defaults_ownership_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/library_preset_runtime.test.ts",
