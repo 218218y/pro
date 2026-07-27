@@ -11,6 +11,7 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ownerRel = 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
+const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const approvedNativeConsumerUniverse = new Set([
   'esm/native/builder/state_sanitize_pipeline.ts',
@@ -408,6 +409,135 @@ function normalizeModuleTarget(fromFile, specifier) {
 
 const ownerTarget = path.normalize(path.join(root, ownerRel)).toLowerCase();
 const facadeTarget = path.normalize(path.join(root, facadeRel)).toLowerCase();
+const publicDimensionsTarget = path.normalize(path.join(root, publicDimensionsRel)).toLowerCase();
+
+function targetsFocusedOwner(file, dependency) {
+  return normalizeModuleTarget(file, dependency.specifier) === ownerTarget;
+}
+
+function targetsLegacyFacade(file, dependency) {
+  return normalizeModuleTarget(file, dependency.specifier) === facadeTarget;
+}
+
+function targetsPublicDimensionsBarrel(file, dependency) {
+  return normalizeModuleTarget(file, dependency.specifier) === publicDimensionsTarget;
+}
+
+function targetsCompatibilityFamily(file, dependency) {
+  return targetsLegacyFacade(file, dependency) || targetsPublicDimensionsBarrel(file, dependency);
+}
+
+function isCompatibilityFamilyAttempt(file, dependency) {
+  if (!targetsCompatibilityFamily(file, dependency)) return false;
+  return (
+    dependency.syntax === 'dynamic-import' ||
+    dependency.importedSymbols.some(symbol => symbol === '*' || publicFunctionSet.has(symbol)) ||
+    dependency.bindings.some(binding => binding.importedName === '*' || binding.localName !== null)
+  );
+}
+
+function hasEscapingFocusedReference(node, derivedBindings) {
+  let found = false;
+  walkAst(node, current => {
+    if (found || current?.type !== 'Identifier' || !derivedBindings.has(current.name)) {
+      return;
+    }
+    const parent = current.parent;
+    const isDirectCall =
+      (parent?.type === 'CallExpression' || parent?.type === 'NewExpression') && parent.callee === current;
+    if (!isDirectCall) found = true;
+  });
+  return found;
+}
+
+function focusedLocalBridgeViolations(file, source, ownerDependencies) {
+  const rel = path.relative(root, file).replaceAll('\\', '/');
+  const focusedBindings = new Set(
+    ownerDependencies
+      .filter(dependency => dependency.syntax === 'static-import')
+      .flatMap(dependency => dependency.bindings)
+      .filter(
+        binding =>
+          binding.localName !== null &&
+          binding.localName === binding.importedName &&
+          publicFunctionSet.has(binding.importedName)
+      )
+      .map(binding => binding.localName)
+  );
+  if (focusedBindings.size === 0) return [];
+
+  const sourceFile = createSourceFile(rel, source);
+  const variableDeclarators = [];
+  walkAst(sourceFile, node => {
+    if (node?.type === 'VariableDeclarator') variableDeclarators.push(node);
+  });
+
+  const derivedBindings = new Set(focusedBindings);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const declarator of variableDeclarators) {
+      const localName = identifierName(declarator.id);
+      if (
+        !localName ||
+        derivedBindings.has(localName) ||
+        !declarator.init ||
+        !hasEscapingFocusedReference(declarator.init, derivedBindings)
+      ) {
+        continue;
+      }
+      derivedBindings.add(localName);
+      changed = true;
+    }
+  }
+
+  const violations = [];
+  const add = (node, detail) => {
+    violations.push({
+      kind: 'focused-owner-local-bridge',
+      file: rel,
+      detail,
+      start: node?.start ?? 0,
+    });
+  };
+  for (const statement of sourceFile.body ?? []) {
+    if (statement.type === 'ExportNamedDeclaration' && statement.source == null) {
+      for (const specifier of statement.specifiers ?? []) {
+        const localName = identifierName(specifier.local);
+        if (localName && derivedBindings.has(localName)) {
+          add(specifier, localName);
+        }
+      }
+      if (statement.declaration?.type === 'VariableDeclaration') {
+        for (const declarator of statement.declaration.declarations ?? []) {
+          const localName = identifierName(declarator.id);
+          if (
+            localName &&
+            derivedBindings.has(localName) &&
+            declarator.init &&
+            hasEscapingFocusedReference(declarator.init, derivedBindings)
+          ) {
+            add(declarator, localName);
+          }
+        }
+      }
+      if (
+        statement.declaration &&
+        statement.declaration.type !== 'VariableDeclaration' &&
+        hasEscapingFocusedReference(statement.declaration, derivedBindings)
+      ) {
+        add(statement.declaration, statement.declaration.type);
+      }
+    }
+    if (
+      statement.type === 'ExportDefaultDeclaration' &&
+      hasEscapingFocusedReference(statement.declaration, derivedBindings)
+    ) {
+      add(statement.declaration, 'default');
+    }
+  }
+  return violations;
+}
 
 function inspectNativeOwnerUniverse(entries) {
   const focusedImports = [];
@@ -415,13 +545,9 @@ function inspectNativeOwnerUniverse(entries) {
   for (const [file, source] of entries) {
     const rel = path.relative(root, file).replaceAll('\\', '/');
     const dependencies = analyzeModuleDependencies(file, source).imports;
-    const ownerDependencies = dependencies.filter(
-      dependency => normalizeModuleTarget(file, dependency.specifier) === ownerTarget
-    );
-    const facadeFamilyDependencies = dependencies.filter(
-      dependency =>
-        normalizeModuleTarget(file, dependency.specifier) === facadeTarget &&
-        dependency.importedSymbols.some(symbol => publicFunctionSet.has(symbol))
+    const ownerDependencies = dependencies.filter(dependency => targetsFocusedOwner(file, dependency));
+    const compatibilityFamilyDependencies = dependencies.filter(dependency =>
+      isCompatibilityFamilyAttempt(file, dependency)
     );
 
     for (const dependency of ownerDependencies) {
@@ -473,7 +599,8 @@ function inspectNativeOwnerUniverse(entries) {
         }
       }
     }
-    if (ownerDependencies.length > 0 && facadeFamilyDependencies.length > 0) {
+    violations.push(...focusedLocalBridgeViolations(file, source, ownerDependencies));
+    if (ownerDependencies.length > 0 && compatibilityFamilyDependencies.length > 0) {
       violations.push({ kind: 'dual-focused-and-facade-family-import', file: rel });
     }
   }
@@ -593,38 +720,124 @@ export const resolveAutoWidthForDoors = ownerResolveAutoWidthForDoors;`
     facadeViolations(facadeCopy).some(violation => violation.kind === 'facade-function-copy'),
     true
   );
+});
 
+test('approved universe rejects local focused-owner bridges and broad compatibility overlap without blocking direct calls', () => {
   const approvedFixturePath = path.join(root, 'esm/native/builder/state_sanitize_pipeline.ts');
-  const approvedFocusedConsumer = `import { getDefaultDepthForWardrobeType } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';
-export const depth = getDefaultDepthForWardrobeType('hinged');`;
-  assert.deepEqual(
-    inspectNativeOwnerUniverse([[approvedFixturePath, approvedFocusedConsumer]]).violations,
-    []
+  const approvedRuntimePath = path.join(root, 'esm/native/runtime/api.ts');
+  const unapprovedFixturePath = path.join(root, 'esm/native/ui/react/tabs/unapproved_default_consumer.ts');
+  const focusedImport = `import { resolveAutoWidthForDoors } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';`;
+  const approvedDirectCall = `${focusedImport}
+export const width = resolveAutoWidthForDoors('hinged', 4);`;
+  const assertViolation = (file, source, expectedKind, label) => {
+    const result = inspectNativeOwnerUniverse([[file, source]]);
+    assert.equal(
+      result.violations.some(violation => violation.kind === expectedKind),
+      true,
+      `${label}: ${JSON.stringify(result.violations)}`
+    );
+  };
+
+  assert.deepEqual(inspectNativeOwnerUniverse([]).violations, []);
+  assert.deepEqual(inspectNativeOwnerUniverse([[approvedFixturePath, approvedDirectCall]]).violations, []);
+
+  assertViolation(
+    approvedFixturePath,
+    `${focusedImport}
+export { resolveAutoWidthForDoors };`,
+    'focused-owner-local-bridge',
+    'two-statement focused bridge'
+  );
+  assertViolation(
+    approvedFixturePath,
+    `${focusedImport}
+const autoWidthResolver = resolveAutoWidthForDoors;
+export { autoWidthResolver };`,
+    'focused-owner-local-bridge',
+    'local alias export'
+  );
+  assertViolation(
+    approvedFixturePath,
+    `${focusedImport}
+export const autoWidthResolver = resolveAutoWidthForDoors;`,
+    'focused-owner-local-bridge',
+    'exported const copy'
+  );
+  assertViolation(
+    approvedFixturePath,
+    `${focusedImport}
+export default resolveAutoWidthForDoors;`,
+    'focused-owner-local-bridge',
+    'default export'
+  );
+  assertViolation(
+    approvedFixturePath,
+    `${focusedImport}
+export const defaultResolvers = { resolveAutoWidthForDoors };`,
+    'focused-owner-local-bridge',
+    'object wrapper export'
   );
 
-  const approvedRuntimeReexportPath = path.join(root, 'esm/native/runtime/api.ts');
+  const runtimeLocalBridge = `import { resolveAutoWidthForDoors } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';
+export { resolveAutoWidthForDoors };`;
+  assertViolation(
+    approvedRuntimePath,
+    runtimeLocalBridge,
+    'focused-owner-local-bridge',
+    'runtime local import-then-export'
+  );
+  assertViolation(
+    approvedRuntimePath,
+    runtimeLocalBridge,
+    'invalid-focused-owner-dependency',
+    'runtime local import is not a direct re-export'
+  );
+
   const approvedRuntimeReexport = `export { isAutoWidthForDoors } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';`;
   assert.deepEqual(
-    inspectNativeOwnerUniverse([[approvedRuntimeReexportPath, approvedRuntimeReexport]]).violations,
+    inspectNativeOwnerUniverse([[approvedRuntimePath, approvedRuntimeReexport]]).violations,
     []
   );
 
-  const dualFamilyConsumer = `${approvedFocusedConsumer}
-import { getDefaultDoorsForWardrobeType } from '../../shared/wardrobe_dimension_tokens_shared.js';`;
-  assert.equal(
-    inspectNativeOwnerUniverse([[approvedFixturePath, dualFamilyConsumer]]).violations.some(
-      violation => violation.kind === 'dual-focused-and-facade-family-import'
-    ),
-    true
+  assertViolation(
+    approvedFixturePath,
+    `${approvedDirectCall}
+import { getDefaultDoorsForWardrobeType } from '../../shared/wardrobe_dimension_tokens_shared.js';`,
+    'dual-focused-and-facade-family-import',
+    'named facade overlap'
+  );
+  assertViolation(
+    approvedFixturePath,
+    `${approvedDirectCall}
+import * as legacyDimensions from '../../shared/wardrobe_dimension_tokens_shared.js';
+export const legacy = legacyDimensions;`,
+    'dual-focused-and-facade-family-import',
+    'namespace facade overlap'
+  );
+  assertViolation(
+    approvedFixturePath,
+    `${approvedDirectCall}
+export async function loadLegacyDimensions() {
+  return import('../../shared/wardrobe_dimension_tokens_shared.js');
+}`,
+    'dual-focused-and-facade-family-import',
+    'dynamic facade overlap'
+  );
+  assertViolation(
+    approvedFixturePath,
+    `${approvedDirectCall}
+import * as publicDimensions from '../features/dimensions/index.js';
+export const legacyDimensions = publicDimensions;`,
+    'dual-focused-and-facade-family-import',
+    'public dimensions barrel namespace overlap'
   );
 
-  const unapprovedFixturePath = path.join(root, 'esm/native/ui/react/tabs/unapproved_default_consumer.ts');
   const unapprovedFocusedConsumer = `import { resolveAutoWidthForDoors } from '../../../../shared/dimensions/wardrobe_default_resolution_policy.js';
 export const width = resolveAutoWidthForDoors('hinged', 4);`;
-  assert.equal(
-    inspectNativeOwnerUniverse([[unapprovedFixturePath, unapprovedFocusedConsumer]]).violations.some(
-      violation => violation.kind === 'unapproved-focused-owner-consumer'
-    ),
-    true
+  assertViolation(
+    unapprovedFixturePath,
+    unapprovedFocusedConsumer,
+    'unapproved-focused-owner-consumer',
+    'consumer outside approved universe'
   );
 });
