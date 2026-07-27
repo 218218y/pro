@@ -443,27 +443,129 @@ function hasEscapingFocusedReference(node, derivedBindings) {
       return;
     }
     const parent = current.parent;
-    const isDirectCall =
-      (parent?.type === 'CallExpression' || parent?.type === 'NewExpression') && parent.callee === current;
+    const isDirectCall = parent?.type === 'CallExpression' && parent.callee === current;
     if (!isDirectCall) found = true;
   });
   return found;
 }
 
-function focusedLocalBridgeViolations(file, source, ownerDependencies) {
-  const rel = path.relative(root, file).replaceAll('\\', '/');
-  const focusedBindings = new Set(
+function focusedRuntimeBindings(ownerDependencies) {
+  return new Set(
     ownerDependencies
-      .filter(dependency => dependency.syntax === 'static-import')
+      .filter(dependency => dependency.kind === 'value' && dependency.syntax === 'static-import')
       .flatMap(dependency => dependency.bindings)
-      .filter(
-        binding =>
-          binding.localName !== null &&
-          binding.localName === binding.importedName &&
-          publicFunctionSet.has(binding.importedName)
-      )
+      .filter(binding => binding.localName !== null && publicFunctionSet.has(binding.importedName))
       .map(binding => binding.localName)
   );
+}
+
+function isTypeOnlyPosition(node) {
+  const runtimeTypeWrappers = new Set([
+    'TSAsExpression',
+    'TSInstantiationExpression',
+    'TSNonNullExpression',
+    'TSSatisfiesExpression',
+  ]);
+  let current = node;
+  while (current?.parent) {
+    const parent = current.parent;
+    if (
+      typeof parent.type === 'string' &&
+      parent.type.startsWith('TS') &&
+      !runtimeTypeWrappers.has(parent.type)
+    ) {
+      return true;
+    }
+    current = parent;
+  }
+  return false;
+}
+
+function isDeclarationIdentifier(node) {
+  const parent = node?.parent;
+  if (!parent) return false;
+  if (
+    (parent.type === 'VariableDeclarator' && parent.id === node) ||
+    ((parent.type === 'FunctionDeclaration' ||
+      parent.type === 'FunctionExpression' ||
+      parent.type === 'ClassDeclaration' ||
+      parent.type === 'ClassExpression') &&
+      parent.id === node) ||
+    (parent.type === 'CatchClause' && parent.param === node)
+  ) {
+    return true;
+  }
+  return (
+    (parent.type === 'FunctionDeclaration' ||
+      parent.type === 'FunctionExpression' ||
+      parent.type === 'ArrowFunctionExpression') &&
+    (parent.params ?? []).includes(node)
+  );
+}
+
+function isRuntimeFocusedReference(node, focusedBindings) {
+  if (
+    node?.type !== 'Identifier' ||
+    !focusedBindings.has(node.name) ||
+    isTypeOnlyPosition(node) ||
+    isDeclarationIdentifier(node)
+  ) {
+    return false;
+  }
+  const parent = node.parent;
+  if (
+    parent?.type === 'ImportSpecifier' ||
+    parent?.type === 'ImportDefaultSpecifier' ||
+    parent?.type === 'ImportNamespaceSpecifier'
+  ) {
+    return false;
+  }
+  if (parent?.type === 'ExportSpecifier' && parent.exported === node && parent.local !== node) {
+    return false;
+  }
+  if (parent?.type === 'MemberExpression' && !parent.computed && parent.property === node) {
+    return false;
+  }
+  if (
+    (parent?.type === 'Property' || parent?.type === 'MethodDefinition') &&
+    !parent.computed &&
+    !parent.shorthand &&
+    parent.key === node
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function focusedReferenceEscapeViolations(file, source, ownerDependencies) {
+  const focusedBindings = focusedRuntimeBindings(ownerDependencies);
+  if (focusedBindings.size === 0) return [];
+
+  const rel = path.relative(root, file).replaceAll('\\', '/');
+  const sourceFile = createSourceFile(rel, source);
+  const violations = [];
+  const seen = new Set();
+  walkAst(sourceFile, node => {
+    if (!isRuntimeFocusedReference(node, focusedBindings)) return;
+    const parent = node.parent;
+    if (parent?.type === 'CallExpression' && parent.callee === node) return;
+    const key = `${node.name}:${node.start ?? 0}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    violations.push({
+      kind: 'focused-owner-reference-escape',
+      file: rel,
+      detail: node.name,
+      parentType: parent?.type ?? null,
+      start: node.start ?? 0,
+    });
+  });
+  return violations;
+}
+
+function focusedLocalBridgeViolations(file, source, ownerDependencies) {
+  const rel = path.relative(root, file).replaceAll('\\', '/');
+  const focusedBindings = focusedRuntimeBindings(ownerDependencies);
   if (focusedBindings.size === 0) return [];
 
   const sourceFile = createSourceFile(rel, source);
@@ -599,6 +701,7 @@ function inspectNativeOwnerUniverse(entries) {
         }
       }
     }
+    violations.push(...focusedReferenceEscapeViolations(file, source, ownerDependencies));
     violations.push(...focusedLocalBridgeViolations(file, source, ownerDependencies));
     if (ownerDependencies.length > 0 && compatibilityFamilyDependencies.length > 0) {
       violations.push({ kind: 'dual-focused-and-facade-family-import', file: rel });
@@ -722,13 +825,17 @@ export const resolveAutoWidthForDoors = ownerResolveAutoWidthForDoors;`
   );
 });
 
-test('approved universe rejects local focused-owner bridges and broad compatibility overlap without blocking direct calls', () => {
+test('approved universe rejects focused reference escapes, local bridges, and broad compatibility overlap without blocking direct calls', () => {
   const approvedFixturePath = path.join(root, 'esm/native/builder/state_sanitize_pipeline.ts');
   const approvedRuntimePath = path.join(root, 'esm/native/runtime/api.ts');
   const unapprovedFixturePath = path.join(root, 'esm/native/ui/react/tabs/unapproved_default_consumer.ts');
   const focusedImport = `import { resolveAutoWidthForDoors } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';`;
   const approvedDirectCall = `${focusedImport}
 export const width = resolveAutoWidthForDoors('hinged', 4);`;
+  const approvedConsumerFunction = `${focusedImport}
+export function calculateWidth(doors: number): number {
+  return resolveAutoWidthForDoors('hinged', doors);
+}`;
   const assertViolation = (file, source, expectedKind, label) => {
     const result = inspectNativeOwnerUniverse([[file, source]]);
     assert.equal(
@@ -737,9 +844,15 @@ export const width = resolveAutoWidthForDoors('hinged', 4);`;
       `${label}: ${JSON.stringify(result.violations)}`
     );
   };
+  const assertReferenceEscape = (source, label) =>
+    assertViolation(approvedFixturePath, source, 'focused-owner-reference-escape', label);
 
   assert.deepEqual(inspectNativeOwnerUniverse([]).violations, []);
   assert.deepEqual(inspectNativeOwnerUniverse([[approvedFixturePath, approvedDirectCall]]).violations, []);
+  assert.deepEqual(
+    inspectNativeOwnerUniverse([[approvedFixturePath, approvedConsumerFunction]]).violations,
+    []
+  );
 
   assertViolation(
     approvedFixturePath,
@@ -776,6 +889,64 @@ export default resolveAutoWidthForDoors;`,
 export const defaultResolvers = { resolveAutoWidthForDoors };`,
     'focused-owner-local-bridge',
     'object wrapper export'
+  );
+
+  assertReferenceEscape(
+    `${focusedImport}
+let resolver;
+resolver = resolveAutoWidthForDoors;
+export { resolver };`,
+    'late assignment and export'
+  );
+  assertReferenceEscape(
+    `${focusedImport}
+registerDefaultResolver(resolveAutoWidthForDoors);`,
+    'standalone callback argument'
+  );
+  assertReferenceEscape(
+    `${focusedImport}
+registry.defaultResolver = resolveAutoWidthForDoors;`,
+    'member assignment'
+  );
+  assertReferenceEscape(
+    `${focusedImport}
+globalThis.defaultResolver = resolveAutoWidthForDoors;`,
+    'global assignment'
+  );
+  assertReferenceEscape(
+    `${focusedImport}
+const resolvers = [resolveAutoWidthForDoors];`,
+    'array storage'
+  );
+  assertReferenceEscape(
+    `${focusedImport}
+const resolvers = { width: resolveAutoWidthForDoors };`,
+    'object storage'
+  );
+  assertReferenceEscape(
+    `${focusedImport}
+export function getResolver() {
+  return resolveAutoWidthForDoors;
+}`,
+    'exported function returns focused reference'
+  );
+  assertReferenceEscape(
+    `${focusedImport}
+function getResolver() {
+  return resolveAutoWidthForDoors;
+}
+export { getResolver };`,
+    'local function exported after returning focused reference'
+  );
+  assertReferenceEscape(
+    `${focusedImport}
+const bound = resolveAutoWidthForDoors.bind(null, 'hinged');`,
+    'bound reference'
+  );
+  assertReferenceEscape(
+    `${focusedImport}
+const same = resolveAutoWidthForDoors === otherResolver;`,
+    'identity comparison'
   );
 
   const runtimeLocalBridge = `import { resolveAutoWidthForDoors } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';
