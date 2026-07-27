@@ -543,31 +543,10 @@ test('Preset Models Dimension Defaults private-owner audit scans all esm and per
   assert.deepEqual(result.violations, []);
   assert.deepEqual(inspectPrivateOwnerUniverse([]), { focusedImports: [], violations: [] });
 
-  const presetDependencies = analyzeModuleDependencies(
-    approvedConsumerRel,
-    read(approvedConsumerRel)
-  ).imports;
-  assert.deepEqual(
-    presetDependencies
-      .filter(dependency => dependency.specifier.includes('wardrobe_dimension_tokens_shared'))
-      .map(dependency => ({
-        specifier: dependency.specifier,
-        kind: dependency.kind,
-        syntax: dependency.syntax,
-        importedSymbols: dependency.importedSymbols,
-      })),
-    [
-      {
-        specifier: '../../shared/wardrobe_dimension_tokens_shared.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: [
-          'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
-          'LIBRARY_PRESET_DIMENSIONS',
-          'WARDROBE_DEFAULTS',
-        ],
-      },
-    ]
+  assert.equal(
+    result.focusedImports.every(entry => approvedConsumerUniverse.has(entry.file)),
+    true,
+    JSON.stringify(result.focusedImports)
   );
 });
 

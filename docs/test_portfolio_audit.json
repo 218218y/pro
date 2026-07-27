@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-27T13:39:33.477Z",
+  "generatedAt": "2026-07-27T20:07:57.523Z",
   "totals": {
-    "tests": 1299,
-    "unitRunnerTests": 1291,
+    "tests": 1300,
+    "unitRunnerTests": 1292,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 457,
+    "contract": 458,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -3032,6 +3032,10 @@
     {
       "file": "tests/post_build_sketch_door_cuts_runtime_assembly.test.ts",
       "category": "integration"
+    },
+    {
+      "file": "tests/preset_models_data_dimension_ownership_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/preset_models_dimension_defaults_owner_contract.test.js",

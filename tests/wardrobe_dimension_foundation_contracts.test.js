@@ -137,9 +137,7 @@ const APPROVED_STACK_SPLIT_FACADE_SYMBOLS = Object.freeze([
   'STACK_SPLIT_MIN_TOP_HEIGHT',
   'STACK_SPLIT_SEAM_GAP_M',
 ]);
-const APPROVED_STACK_SPLIT_FACADE_IMPORTS = Object.freeze({
-  'esm/native/data/preset_models_data.ts': Object.freeze(['DEFAULT_STACK_SPLIT_LOWER_HEIGHT']),
-});
+const APPROVED_STACK_SPLIT_FACADE_IMPORTS = Object.freeze({});
 const APPROVED_STACK_SPLIT_FACADE_REEXPORTS = Object.freeze({
   'esm/native/runtime/api.ts': APPROVED_STACK_SPLIT_FACADE_SYMBOLS,
 });
@@ -441,6 +439,9 @@ const APPROVED_LIBRARY_PRESET_OWNER_IMPORTS = Object.freeze({
     'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['LIBRARY_PRESET_POLICY']),
+});
+const APPROVED_PRESET_MODELS_DIMENSION_DEFAULTS_OWNER_IMPORTS = Object.freeze({
+  'esm/native/data/preset_models_data.ts': Object.freeze(['PRESET_MODELS_DIMENSION_DEFAULTS_POLICY']),
 });
 const APPROVED_MATERIAL_LEGACY_IMPORTERS = Object.freeze([]);
 const APPROVED_MATERIAL_LEGACY_DEPENDENCIES = Object.freeze(
@@ -3178,6 +3179,11 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectOwnerImports(analyzedSources, 'library_preset_policy.js'),
     APPROVED_LIBRARY_PRESET_OWNER_IMPORTS,
     'Library Preset owner consumer allowlist'
+  );
+  assertApprovedSymbolUsage(
+    collectOwnerImports(analyzedSources, 'preset_models_dimension_defaults_policy.js'),
+    APPROVED_PRESET_MODELS_DIMENSION_DEFAULTS_OWNER_IMPORTS,
+    'Preset Models Dimension Defaults owner consumer allowlist'
   );
   assertApprovedSymbolUsage(
     collectOwnerImports(analyzedSources, 'carcass_cornice_render_policy.js'),

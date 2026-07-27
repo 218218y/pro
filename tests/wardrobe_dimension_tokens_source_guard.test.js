@@ -723,21 +723,22 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
         .map(dependency => ({
           file: path.relative(ROOT, file).replaceAll('\\', '/'),
           specifier: dependency.specifier,
+          kind: dependency.kind,
           syntax: dependency.syntax,
           importedSymbols: dependency.importedSymbols,
+          aliases: dependency.bindings.map(binding => [binding.importedName, binding.localName]),
         }))
     );
-  assert.deepEqual(nativePresetModelsOwnerDependencies, []);
-
-  for (const rel of ['esm/native/data/preset_models_data.ts']) {
-    assertUsesToken(rel, 'LIBRARY_PRESET_DIMENSIONS');
-    const source = read(rel);
-    assert.doesNotMatch(source, /library_preset_policy/u);
-    assert.doesNotMatch(
-      source,
-      /\b(?:LIBRARY_PRESET_MODULE_DEFAULTS_POLICY|LIBRARY_PRESET_LAYOUT_POLICY|LIBRARY_PRESET_POLICY)\b/u
-    );
-  }
+  assert.deepEqual(nativePresetModelsOwnerDependencies, [
+    {
+      file: 'esm/native/data/preset_models_data.ts',
+      specifier: '../../shared/dimensions/preset_models_dimension_defaults_policy.js',
+      kind: 'value',
+      syntax: 'static-import',
+      importedSymbols: ['PRESET_MODELS_DIMENSION_DEFAULTS_POLICY'],
+      aliases: [['PRESET_MODELS_DIMENSION_DEFAULTS_POLICY', 'PRESET_MODELS_DIMENSION_DEFAULTS_POLICY']],
+    },
+  ]);
 
   const moduleDefaultsRel = 'esm/native/features/library_preset/module_defaults.ts';
   const moduleDefaultsSource = read(moduleDefaultsRel);
@@ -832,26 +833,28 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
 
   const presetData = read('esm/native/data/preset_models_data.ts');
   assert.deepEqual(
-    analyzeModuleDependencies('esm/native/data/preset_models_data.ts', presetData)
-      .imports.filter(dependency => dependency.specifier.includes('wardrobe_dimension_tokens_shared'))
-      .map(dependency => ({
+    analyzeModuleDependencies('esm/native/data/preset_models_data.ts', presetData).imports.map(
+      dependency => ({
         specifier: dependency.specifier,
         kind: dependency.kind,
         syntax: dependency.syntax,
         importedSymbols: dependency.importedSymbols,
-      })),
+        aliases: dependency.bindings.map(binding => [binding.importedName, binding.localName]),
+      })
+    ),
     [
       {
-        specifier: '../../shared/wardrobe_dimension_tokens_shared.js',
+        specifier: '../../shared/dimensions/preset_models_dimension_defaults_policy.js',
         kind: 'value',
         syntax: 'static-import',
-        importedSymbols: [
-          'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
-          'LIBRARY_PRESET_DIMENSIONS',
-          'WARDROBE_DEFAULTS',
-        ],
+        importedSymbols: ['PRESET_MODELS_DIMENSION_DEFAULTS_POLICY'],
+        aliases: [['PRESET_MODELS_DIMENSION_DEFAULTS_POLICY', 'PRESET_MODELS_DIMENSION_DEFAULTS_POLICY']],
       },
     ]
+  );
+  assert.doesNotMatch(
+    presetData,
+    /wardrobe_dimension_tokens_shared|DEFAULT_STACK_SPLIT_LOWER_HEIGHT|LIBRARY_PRESET_DIMENSIONS|WARDROBE_DEFAULTS|LIBRARY_PRESET_POLICY|STACK_SPLIT_POLICY/u
   );
   assert.doesNotMatch(presetData, /doors: '4'/);
   assert.doesNotMatch(presetData, /width: '160'/);
