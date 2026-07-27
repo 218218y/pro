@@ -850,23 +850,46 @@ test('The feature pair locks Prefix 159, exact Entries 160-161, and Prefix 161 w
   assert.equal(semanticSha256(baseline.migrationBudgets.slice(0, 161)), HISTORICAL_LEDGER_PREFIX_161_HASH);
 });
 
-test('The historical feature-pair Ledger contract accepts a synthetic future Entry 162', () => {
+test('The historical feature-pair Ledger contract accepts a synthetic Entry after Prefix 161', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
+  const historicalPrefix161 = structuredClone(baseline.migrationBudgets.slice(0, 161));
   const futureEntry = {
-    ...structuredClone(baseline.migrationBudgets[160]),
+    ...structuredClone(historicalPrefix161[160]),
     fromFile: 'esm/native/features/future_feature/module_config.ts',
     reason: 'Synthetic future migration entry appended after the historical feature-pair prefix.',
     removalCondition: 'Synthetic future removal condition.',
   };
-  const withFutureEntry = [...structuredClone(baseline.migrationBudgets), futureEntry];
+  const withFutureEntry = [...historicalPrefix161, futureEntry];
 
+  assert.equal(historicalPrefix161.length, 161);
   assert.equal(withFutureEntry.length, 162);
-  assert.equal(
-    semanticSha256(withFutureEntry.slice(0, 161)),
-    semanticSha256(baseline.migrationBudgets.slice(0, 161))
-  );
+  assert.equal(semanticSha256(withFutureEntry.slice(0, 161)), HISTORICAL_LEDGER_PREFIX_161_HASH);
   assert.deepEqual(withFutureEntry.slice(159, 161), expectedEntries);
   assert.doesNotThrow(() => assertHistoricalFeaturePairLedger(withFutureEntry));
+});
+
+test('The historical feature-pair Ledger contract remains valid after multiple later entries', () => {
+  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
+  const historicalPrefix161 = structuredClone(baseline.migrationBudgets.slice(0, 161));
+  const entry162 = {
+    ...structuredClone(historicalPrefix161[160]),
+    fromFile: 'esm/native/features/future_feature/entry_162.ts',
+    reason: 'Synthetic Entry 162.',
+    removalCondition: 'Synthetic Entry 162 removal condition.',
+  };
+  const entry163 = {
+    ...structuredClone(historicalPrefix161[160]),
+    fromFile: 'esm/native/features/future_feature/entry_163.ts',
+    reason: 'Synthetic Entry 163.',
+    removalCondition: 'Synthetic Entry 163 removal condition.',
+  };
+  const extendedLedger = [...historicalPrefix161, entry162, entry163];
+
+  assert.equal(extendedLedger.length, 163);
+  assert.equal(semanticSha256(extendedLedger.slice(0, 159)), HISTORICAL_LEDGER_PREFIX_159_HASH);
+  assert.equal(semanticSha256(extendedLedger.slice(0, 161)), HISTORICAL_LEDGER_PREFIX_161_HASH);
+  assert.deepEqual(extendedLedger.slice(159, 161), expectedEntries);
+  assert.doesNotThrow(() => assertHistoricalFeaturePairLedger(extendedLedger));
 });
 
 test('The historical feature-pair Ledger contract rejects a synthetic Entry 160 mutation', () => {
