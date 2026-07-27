@@ -657,7 +657,6 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
 
   for (const rel of [
     'esm/native/features/library_preset/module_defaults.ts',
-    'esm/native/features/library_preset/library_preset_flow_shared.ts',
     'esm/native/data/preset_models_data.ts',
   ]) {
     assertUsesToken(rel, 'LIBRARY_PRESET_DIMENSIONS');
@@ -668,6 +667,48 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
       /\b(?:LIBRARY_PRESET_MODULE_DEFAULTS_POLICY|LIBRARY_PRESET_LAYOUT_POLICY|LIBRARY_PRESET_POLICY)\b/u
     );
   }
+
+  const flowRel = 'esm/native/features/library_preset/library_preset_flow_shared.ts';
+  const flowSource = read(flowRel);
+  const flowOwnershipImports = analyzeModuleDependencies(path.join(ROOT, flowRel), flowSource).imports.filter(
+    dependency =>
+      dependency.importedSymbols.includes('LIBRARY_PRESET_LAYOUT_POLICY') ||
+      dependency.importedSymbols.includes('DEFAULT_STACK_SPLIT_LOWER_HEIGHT')
+  );
+  assert.deepEqual(
+    flowOwnershipImports.map(dependency => ({
+      specifier: dependency.specifier,
+      kind: dependency.kind,
+      syntax: dependency.syntax,
+      importedSymbols: dependency.importedSymbols,
+      aliases: dependency.bindings
+        .filter(binding =>
+          ['LIBRARY_PRESET_LAYOUT_POLICY', 'DEFAULT_STACK_SPLIT_LOWER_HEIGHT'].includes(binding.importedName)
+        )
+        .map(binding => [binding.importedName, binding.localName]),
+    })),
+    [
+      {
+        specifier: '../../../shared/dimensions/library_preset_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['LIBRARY_PRESET_LAYOUT_POLICY'],
+        aliases: [['LIBRARY_PRESET_LAYOUT_POLICY', 'LIBRARY_PRESET_LAYOUT_POLICY']],
+      },
+      {
+        specifier: '../../../shared/dimensions/stack_split_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT'],
+        aliases: [['DEFAULT_STACK_SPLIT_LOWER_HEIGHT', 'DEFAULT_STACK_SPLIT_LOWER_HEIGHT']],
+      },
+    ]
+  );
+  assert.doesNotMatch(
+    flowSource,
+    /\b(?:LIBRARY_PRESET_DIMENSIONS|LIBRARY_PRESET_POLICY|STACK_SPLIT_POLICY)\b|wardrobe_dimension_tokens_shared/u
+  );
+
   for (const rel of [
     'esm/native/features/modules_configuration/module_defaults.ts',
     'esm/native/features/stack_split/module_config.ts',

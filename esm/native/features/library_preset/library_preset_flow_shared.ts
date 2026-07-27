@@ -27,10 +27,8 @@ import {
   normalizeLibraryStructureSelectForDoors,
   readLibraryPresetUiRawState,
 } from './library_preset_shared.js';
-import {
-  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
-  LIBRARY_PRESET_DIMENSIONS,
-} from '../../../shared/wardrobe_dimension_tokens_shared.js';
+import { LIBRARY_PRESET_LAYOUT_POLICY } from '../../../shared/dimensions/library_preset_policy.js';
+import { DEFAULT_STACK_SPLIT_LOWER_HEIGHT } from '../../../shared/dimensions/stack_split_policy.js';
 import { calcLibraryPresetAutoWidth, LIBRARY_PRESET_DEFAULT_DOORS } from './module_defaults.js';
 
 type LibraryDoorMaps = {
@@ -159,7 +157,7 @@ export function seedBottomDimensions(
   bottomDoorsCount: number;
   topDoorsCount: number;
 } {
-  const minTopCm = LIBRARY_PRESET_DIMENSIONS.minTopHeightCm;
+  const minTopCm = LIBRARY_PRESET_LAYOUT_POLICY.minTopHeightCm;
   const maxBottom = Math.max(0, args.height - minTopCm);
   const libraryDefaultDoors = readLibraryPresetDefaultDoorCount(args.wardrobeType);
   const topDoorsCount = resumeRaw ? normDoorCount(resumeRaw.doors, args.wardrobeType) : libraryDefaultDoors;
@@ -174,8 +172,8 @@ export function seedBottomDimensions(
     Math.abs(args.stackSplitLowerHeight - DEFAULT_STACK_SPLIT_LOWER_HEIGHT) > 0.01;
 
   const defaultBottomH = Math.min(
-    LIBRARY_PRESET_DIMENSIONS.defaultLowerHeightCm,
-    maxBottom || LIBRARY_PRESET_DIMENSIONS.defaultLowerHeightCm
+    LIBRARY_PRESET_LAYOUT_POLICY.defaultLowerHeightCm,
+    maxBottom || LIBRARY_PRESET_LAYOUT_POLICY.defaultLowerHeightCm
   );
   const seededBottomH = resumeRaw
     ? readPositiveNumber(resumeRaw.stackSplitLowerHeight, defaultBottomH)
@@ -183,27 +181,27 @@ export function seedBottomDimensions(
       ? args.stackSplitLowerHeight
       : defaultBottomH;
   const bottomH = Math.max(
-    LIBRARY_PRESET_DIMENSIONS.minLowerHeightCm,
+    LIBRARY_PRESET_LAYOUT_POLICY.minLowerHeightCm,
     Math.min(seededBottomH, maxBottom || seededBottomH)
   );
 
   const defaultBottomD = Math.max(
-    LIBRARY_PRESET_DIMENSIONS.minLowerDepthCm,
-    Math.min(args.depth - LIBRARY_PRESET_DIMENSIONS.lowerDepthInsetCm, args.depth)
+    LIBRARY_PRESET_LAYOUT_POLICY.minLowerDepthCm,
+    Math.min(args.depth - LIBRARY_PRESET_LAYOUT_POLICY.lowerDepthInsetCm, args.depth)
   );
   const seededBottomD = resumeRaw
     ? readPositiveNumber(resumeRaw.stackSplitLowerDepth, defaultBottomD)
     : Number.isFinite(args.stackSplitLowerDepth) && args.stackSplitLowerDepth > 0
       ? args.stackSplitLowerDepth
       : defaultBottomD;
-  const bottomD = Math.max(LIBRARY_PRESET_DIMENSIONS.minLowerDepthCm, seededBottomD);
+  const bottomD = Math.max(LIBRARY_PRESET_LAYOUT_POLICY.minLowerDepthCm, seededBottomD);
 
   const topW = Math.max(
-    LIBRARY_PRESET_DIMENSIONS.minWidthCm,
+    LIBRARY_PRESET_LAYOUT_POLICY.minWidthCm,
     readPositiveNumber(resumeRaw?.width, calcLibraryPresetAutoWidth(topDoorsCount))
   );
   const bottomW = Math.max(
-    LIBRARY_PRESET_DIMENSIONS.minWidthCm,
+    LIBRARY_PRESET_LAYOUT_POLICY.minWidthCm,
     readPositiveNumber(resumeRaw?.stackSplitLowerWidth, topW)
   );
 

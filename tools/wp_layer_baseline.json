@@ -5867,6 +5867,35 @@
       },
       "reason": "The Stack Split feature consumer replaces one combined legacy facade statement with the focused Library Preset Module Defaults policy plus the focused Interior Storage Defaults/Grid policies on the existing features to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Stack Split composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-27",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/features/library_preset/library_preset_flow_shared.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/library_preset_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["LIBRARY_PRESET_LAYOUT_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT", "LIBRARY_PRESET_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT"],
+        "syntax": "static-import"
+      },
+      "reason": "The Library Preset Flow feature consumer replaces one combined legacy facade statement with the focused Library Preset Layout policy plus the focused Stack Split lower-height scalar on the existing features to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Library Preset Flow composition seam eliminates the extra Stack Split statement without reintroducing the legacy facade."
     }
   ]
 }

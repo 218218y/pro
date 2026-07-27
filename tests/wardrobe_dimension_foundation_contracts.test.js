@@ -126,9 +126,6 @@ const APPROVED_STACK_SPLIT_FACADE_SYMBOLS = Object.freeze([
 ]);
 const APPROVED_STACK_SPLIT_FACADE_IMPORTS = Object.freeze({
   'esm/native/data/preset_models_data.ts': Object.freeze(['DEFAULT_STACK_SPLIT_LOWER_HEIGHT']),
-  'esm/native/features/library_preset/library_preset_flow_shared.ts': Object.freeze([
-    'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
-  ]),
 });
 const APPROVED_STACK_SPLIT_FACADE_REEXPORTS = Object.freeze({
   'esm/native/runtime/api.ts': APPROVED_STACK_SPLIT_FACADE_SYMBOLS,
@@ -406,6 +403,9 @@ const APPROVED_WARDROBE_LAYOUT_COMPARISON_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['WARDROBE_LAYOUT_COMPARISON_POLICY']),
 });
 const APPROVED_LIBRARY_PRESET_OWNER_IMPORTS = Object.freeze({
+  'esm/native/features/library_preset/library_preset_flow_shared.ts': Object.freeze([
+    'LIBRARY_PRESET_LAYOUT_POLICY',
+  ]),
   'esm/native/features/modules_configuration/module_defaults.ts': Object.freeze([
     'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
   ]),
