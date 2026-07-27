@@ -625,6 +625,16 @@ const expectedEntries = Object.freeze([
   }),
 ]);
 
+const HISTORICAL_LEDGER_PREFIX_159_HASH = '7bb983429d5ea9cf6c8f4e6f44f8637a0d2841866d09bf9ddc8515dd230e16a8';
+const HISTORICAL_LEDGER_PREFIX_161_HASH = 'acf971df9f7a96ec701270ed81b312863814a092835ce91a9c118779aca5f471';
+
+function assertHistoricalFeaturePairLedger(migrationBudgets) {
+  assert.ok(migrationBudgets.length >= 161);
+  assert.equal(semanticSha256(migrationBudgets.slice(0, 159)), HISTORICAL_LEDGER_PREFIX_159_HASH);
+  assert.deepEqual(migrationBudgets.slice(159, 161), expectedEntries);
+  assert.equal(semanticSha256(migrationBudgets.slice(0, 161)), HISTORICAL_LEDGER_PREFIX_161_HASH);
+}
+
 test('Modules Configuration and Stack Split are exactly one two-file focused-owner migration pair', () => {
   assert.deepEqual(
     consumers.map(consumer => consumer.rel),
@@ -832,16 +842,59 @@ test('The feature pair rejects facade, aggregates, aliases, barrels, bridges, wr
   }
 });
 
-test('The feature pair appends exact Entries 160-161 after the unchanged 159-entry prefix', () => {
+test('The feature pair locks Prefix 159, exact Entries 160-161, and Prefix 161 without owning the current Ledger total', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(baseline.migrationBudgets.length, 161);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 159)),
-    '7bb983429d5ea9cf6c8f4e6f44f8637a0d2841866d09bf9ddc8515dd230e16a8'
-  );
+  assert.ok(baseline.migrationBudgets.length >= 161);
+  assert.equal(semanticSha256(baseline.migrationBudgets.slice(0, 159)), HISTORICAL_LEDGER_PREFIX_159_HASH);
   assert.deepEqual(baseline.migrationBudgets.slice(159, 161), expectedEntries);
+  assert.equal(semanticSha256(baseline.migrationBudgets.slice(0, 161)), HISTORICAL_LEDGER_PREFIX_161_HASH);
+});
+
+test('The historical feature-pair Ledger contract accepts a synthetic future Entry 162', () => {
+  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
+  const futureEntry = {
+    ...structuredClone(baseline.migrationBudgets[160]),
+    fromFile: 'esm/native/features/future_feature/module_config.ts',
+    reason: 'Synthetic future migration entry appended after the historical feature-pair prefix.',
+    removalCondition: 'Synthetic future removal condition.',
+  };
+  const withFutureEntry = [...structuredClone(baseline.migrationBudgets), futureEntry];
+
+  assert.equal(withFutureEntry.length, 162);
   assert.equal(
-    semanticSha256(baseline.migrationBudgets),
-    'acf971df9f7a96ec701270ed81b312863814a092835ce91a9c118779aca5f471'
+    semanticSha256(withFutureEntry.slice(0, 161)),
+    semanticSha256(baseline.migrationBudgets.slice(0, 161))
   );
+  assert.deepEqual(withFutureEntry.slice(159, 161), expectedEntries);
+  assert.doesNotThrow(() => assertHistoricalFeaturePairLedger(withFutureEntry));
+});
+
+test('The historical feature-pair Ledger contract rejects a synthetic Entry 160 mutation', () => {
+  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
+  const mutated = structuredClone(baseline.migrationBudgets);
+  mutated[159].reason = `${mutated[159].reason} Synthetic mutation.`;
+
+  assert.notEqual(semanticSha256(mutated.slice(0, 161)), HISTORICAL_LEDGER_PREFIX_161_HASH);
+  assert.notDeepEqual(mutated.slice(159, 161), expectedEntries);
+  assert.throws(() => assertHistoricalFeaturePairLedger(mutated));
+});
+
+test('The historical feature-pair Ledger contract rejects a synthetic Entry 161 mutation', () => {
+  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
+  const mutated = structuredClone(baseline.migrationBudgets);
+  mutated[160].removalCondition = `${mutated[160].removalCondition} Synthetic mutation.`;
+
+  assert.notEqual(semanticSha256(mutated.slice(0, 161)), HISTORICAL_LEDGER_PREFIX_161_HASH);
+  assert.notDeepEqual(mutated.slice(159, 161), expectedEntries);
+  assert.throws(() => assertHistoricalFeaturePairLedger(mutated));
+});
+
+test('The historical feature-pair Ledger contract detects a synthetic Prefix 159 mutation', () => {
+  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
+  const mutated = structuredClone(baseline.migrationBudgets);
+  mutated[0].reason = `${mutated[0].reason} Synthetic mutation.`;
+
+  assert.notEqual(semanticSha256(mutated.slice(0, 159)), HISTORICAL_LEDGER_PREFIX_159_HASH);
+  assert.equal(semanticSha256(baseline.migrationBudgets.slice(0, 159)), HISTORICAL_LEDGER_PREFIX_159_HASH);
+  assert.throws(() => assertHistoricalFeaturePairLedger(mutated));
 });
