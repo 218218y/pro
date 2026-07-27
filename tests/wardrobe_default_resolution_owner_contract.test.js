@@ -460,11 +460,17 @@ function focusedRuntimeBindings(ownerDependencies) {
 }
 
 function isTypeOnlyPosition(node) {
-  const runtimeTypeWrappers = new Set([
+  const runtimeTsContainers = new Set([
     'TSAsExpression',
     'TSInstantiationExpression',
     'TSNonNullExpression',
     'TSSatisfiesExpression',
+    'TSModuleDeclaration',
+    'TSModuleBlock',
+    'TSEnumDeclaration',
+    'TSEnumBody',
+    'TSEnumMember',
+    'TSParameterProperty',
   ]);
   let current = node;
   while (current?.parent) {
@@ -472,7 +478,7 @@ function isTypeOnlyPosition(node) {
     if (
       typeof parent.type === 'string' &&
       parent.type.startsWith('TS') &&
-      !runtimeTypeWrappers.has(parent.type)
+      !runtimeTsContainers.has(parent.type)
     ) {
       return true;
     }
@@ -947,6 +953,48 @@ const bound = resolveAutoWidthForDoors.bind(null, 'hinged');`,
     `${focusedImport}
 const same = resolveAutoWidthForDoors === otherResolver;`,
     'identity comparison'
+  );
+  assertReferenceEscape(
+    `${focusedImport}
+namespace ResolverBridge {
+  export const resolver = resolveAutoWidthForDoors;
+}
+export { ResolverBridge };`,
+    'runtime namespace stores focused reference'
+  );
+  assertReferenceEscape(
+    `${focusedImport}
+export class ResolverHolder {
+  constructor(public resolver = resolveAutoWidthForDoors) {}
+}`,
+    'parameter property stores focused reference'
+  );
+  assertReferenceEscape(
+    `${focusedImport}
+export enum ResolverEnum {
+  Width = resolveAutoWidthForDoors as unknown as number,
+}`,
+    'runtime enum stores focused reference'
+  );
+
+  const namespaceDirectCall = `${focusedImport}
+namespace PresetWidths {
+  export const fourDoors = resolveAutoWidthForDoors('hinged', 4);
+}
+export { PresetWidths };`;
+  const enumDirectCall = `${focusedImport}
+export enum PresetWidth {
+  FourDoors = resolveAutoWidthForDoors('hinged', 4),
+}`;
+  const parameterPropertyDirectCall = `${focusedImport}
+export class WidthHolder {
+  constructor(public width = resolveAutoWidthForDoors('hinged', 4)) {}
+}`;
+  assert.deepEqual(inspectNativeOwnerUniverse([[approvedFixturePath, namespaceDirectCall]]).violations, []);
+  assert.deepEqual(inspectNativeOwnerUniverse([[approvedFixturePath, enumDirectCall]]).violations, []);
+  assert.deepEqual(
+    inspectNativeOwnerUniverse([[approvedFixturePath, parameterPropertyDirectCall]]).violations,
+    []
   );
 
   const runtimeLocalBridge = `import { resolveAutoWidthForDoors } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';
