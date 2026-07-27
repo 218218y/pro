@@ -16,7 +16,7 @@ const servicesApiRel = 'esm/native/services/api.ts';
 const servicesRuntimeBaseRel = 'esm/native/services/api_runtime_base_surface.ts';
 const approvedConsumerRel = 'esm/native/data/preset_models_data.ts';
 const policySymbol = 'PRESET_MODELS_DIMENSION_DEFAULTS_POLICY';
-const approvedNativeConsumerUniverse = new Set([approvedConsumerRel]);
+const approvedConsumerUniverse = new Set([approvedConsumerRel]);
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
 const expectedDependencies = Object.freeze([
@@ -244,18 +244,69 @@ function normalizeRel(file) {
   return path.relative(root, file).replaceAll('\\', '/');
 }
 
-function normalizeModuleTarget(fromFile, specifier) {
-  if (typeof specifier !== 'string' || !specifier.startsWith('.')) return null;
-  const raw = path.resolve(path.dirname(fromFile), specifier);
-  return path.normalize(raw.replace(/\.(?:js|mjs|cjs)$/u, '.ts')).toLowerCase();
+const moduleResolutionExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs']);
+
+function stripQueryHash(specifier) {
+  const query = specifier.indexOf('?');
+  const hash = specifier.indexOf('#');
+  const cut = query === -1 ? hash : hash === -1 ? query : Math.min(query, hash);
+  return cut === -1 ? specifier : specifier.slice(0, cut);
 }
 
-const ownerTarget = path.normalize(path.join(root, ownerRel)).toLowerCase();
-const facadeTarget = path.normalize(path.join(root, facadeRel)).toLowerCase();
-const publicDimensionsTarget = path.normalize(path.join(root, publicDimensionsRel)).toLowerCase();
+function isFile(candidate) {
+  try {
+    return fs.statSync(candidate).isFile();
+  } catch {
+    return false;
+  }
+}
+
+function isDirectory(candidate) {
+  try {
+    return fs.statSync(candidate).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function canonicalFileTarget(file) {
+  const realFile = fs.realpathSync.native(file);
+  const normalized = path.normalize(realFile);
+  return process.platform === 'win32' ? normalized.toLowerCase() : normalized;
+}
+
+function resolveModuleTarget(fromFile, specifier) {
+  if (typeof specifier !== 'string' || !specifier.startsWith('.')) return null;
+
+  const raw = path.resolve(path.dirname(fromFile), stripQueryHash(specifier));
+  const extension = path.extname(raw).toLowerCase();
+  const candidates = [raw];
+
+  if (!extension) {
+    for (const candidateExtension of moduleResolutionExtensions) {
+      candidates.push(`${raw}${candidateExtension}`);
+    }
+  } else if (extension === '.js' || extension === '.mjs') {
+    const stem = raw.slice(0, -extension.length);
+    candidates.push(`${stem}.ts`, `${stem}.tsx`);
+  }
+
+  if (isDirectory(raw)) {
+    for (const candidateExtension of moduleResolutionExtensions) {
+      candidates.push(path.join(raw, `index${candidateExtension}`));
+    }
+  }
+
+  const resolved = candidates.find(isFile);
+  return resolved ? canonicalFileTarget(resolved) : null;
+}
+
+const ownerTarget = canonicalFileTarget(path.join(root, ownerRel));
+const facadeTarget = canonicalFileTarget(path.join(root, facadeRel));
+const publicDimensionsTarget = canonicalFileTarget(path.join(root, publicDimensionsRel));
 
 function targets(file, dependency, target) {
-  return normalizeModuleTarget(file, dependency.specifier) === target;
+  return resolveModuleTarget(file, dependency.specifier) === target;
 }
 
 function isTypeOnlyPosition(node) {
@@ -343,7 +394,7 @@ function isRuntimePolicyReference(node, bindings) {
   return true;
 }
 
-function inspectNativeOwnerUniverse(entries) {
+function inspectPrivateOwnerUniverse(entries) {
   const focusedImports = [];
   const violations = [];
   for (const [file, source] of entries) {
@@ -363,7 +414,7 @@ function inspectNativeOwnerUniverse(entries) {
         syntax: dependency.syntax,
         symbols: dependency.importedSymbols,
       });
-      if (!approvedNativeConsumerUniverse.has(rel)) {
+      if (!approvedConsumerUniverse.has(rel)) {
         violations.push({ kind: 'unapproved-focused-owner-consumer', file: rel });
       }
       if (
@@ -376,6 +427,14 @@ function inspectNativeOwnerUniverse(entries) {
           file: rel,
           specifier: dependency.specifier,
           dependencyKind: dependency.kind,
+          syntax: dependency.syntax,
+        });
+      }
+      if (dependency.syntax === 'static-re-export' || dependency.exportedSymbols.length > 0) {
+        violations.push({
+          kind: 'private-owner-bridge',
+          file: rel,
+          specifier: dependency.specifier,
           syntax: dependency.syntax,
         });
       }
@@ -464,27 +523,6 @@ function inspectNativeOwnerUniverse(entries) {
   return { focusedImports, violations };
 }
 
-function repositoryOwnerReexportViolations(entries) {
-  const violations = [];
-  for (const [file, source] of entries) {
-    const rel = normalizeRel(file);
-    for (const dependency of analyzeModuleDependencies(file, source).imports) {
-      if (
-        targets(file, dependency, ownerTarget) &&
-        (dependency.syntax === 'static-re-export' || dependency.exportedSymbols.length > 0)
-      ) {
-        violations.push({
-          kind: 'owner-re-export',
-          file: rel,
-          specifier: dependency.specifier,
-          symbols: dependency.exportedSymbols,
-        });
-      }
-    }
-  }
-  return violations;
-}
-
 test('Preset Models Dimension Defaults owner has exact dependencies, projections, exports, and no derived logic', () => {
   assert.deepEqual(ownerViolations(read(ownerRel)), []);
 
@@ -492,24 +530,18 @@ test('Preset Models Dimension Defaults owner has exact dependencies, projections
   assert.equal(facadeExports.filter(entry => entry.kind === 'value').length, 89);
   assert.equal(facadeExports.filter(entry => entry.kind === 'type').length, 10);
 
-  const forbiddenBarrels = [
-    facadeRel,
-    publicDimensionsRel,
-    runtimeApiRel,
-    servicesApiRel,
-    servicesRuntimeBaseRel,
-  ].map(rel => [path.join(root, rel), read(rel)]);
-  assert.deepEqual(repositoryOwnerReexportViolations(forbiddenBarrels), []);
+  for (const rel of [facadeRel, publicDimensionsRel, runtimeApiRel, servicesApiRel, servicesRuntimeBaseRel]) {
+    assert.deepEqual(inspectPrivateOwnerUniverse([[path.join(root, rel), read(rel)]]).violations, []);
+  }
 });
 
-test('Preset Models Dimension Defaults approved native consumer universe is future-safe and permits an empty subset', () => {
-  const nativeEntries = listSourceFiles(path.join(root, 'esm/native')).map(file => [
-    file,
-    fs.readFileSync(file, 'utf8'),
-  ]);
-  const result = inspectNativeOwnerUniverse(nativeEntries);
+test('Preset Models Dimension Defaults private-owner audit scans all esm and permits an empty approved subset', () => {
+  const esmEntries = listSourceFiles(path.join(root, 'esm'))
+    .filter(file => canonicalFileTarget(file) !== ownerTarget)
+    .map(file => [file, fs.readFileSync(file, 'utf8')]);
+  const result = inspectPrivateOwnerUniverse(esmEntries);
   assert.deepEqual(result.violations, []);
-  assert.deepEqual(inspectNativeOwnerUniverse([]), { focusedImports: [], violations: [] });
+  assert.deepEqual(inspectPrivateOwnerUniverse([]), { focusedImports: [], violations: [] });
 
   const presetDependencies = analyzeModuleDependencies(
     approvedConsumerRel,
@@ -595,23 +627,160 @@ test('Preset Models Dimension Defaults owner rejects dependency, literal, arithm
   const facadeWithExport = `${read(facadeRel)}
 export { ${policySymbol} } from './dimensions/preset_models_dimension_defaults_policy.js';
 `;
-  assert.deepEqual(repositoryOwnerReexportViolations([[path.join(root, facadeRel), facadeWithExport]]), [
+  const facadeBridgeResult = inspectPrivateOwnerUniverse([[path.join(root, facadeRel), facadeWithExport]]);
+  assert.equal(
+    facadeBridgeResult.violations.some(violation => violation.kind === 'private-owner-bridge'),
+    true,
+    JSON.stringify(facadeBridgeResult.violations)
+  );
+});
+
+test('Preset Models Dimension Defaults resolver detects extensionless owner, facade, and public-barrel routes', () => {
+  const approvedPath = path.join(root, approvedConsumerRel);
+  const extensionlessOwnerSpecifier = '../../shared/dimensions/preset_models_dimension_defaults_policy';
+
+  assert.equal(resolveModuleTarget(approvedPath, extensionlessOwnerSpecifier), ownerTarget);
+  assert.equal(resolveModuleTarget(approvedPath, `${extensionlessOwnerSpecifier}.js?raw#owner`), ownerTarget);
+  assert.equal(resolveModuleTarget(approvedPath, `${extensionlessOwnerSpecifier}.mjs`), ownerTarget);
+  assert.equal(resolveModuleTarget(approvedPath, '../features/dimensions/'), publicDimensionsTarget);
+  assert.equal(
+    resolveModuleTarget(approvedPath, '../../shared/wardrobe_dimension_tokens_shared'),
+    facadeTarget
+  );
+  assert.equal(resolveModuleTarget(approvedPath, './missing_preset_models_owner'), null);
+  assert.equal(resolveModuleTarget(approvedPath, 'node:path'), null);
+
+  const extensionlessOwnerResult = inspectPrivateOwnerUniverse([
+    [
+      approvedPath,
+      `import { ${policySymbol} } from '${extensionlessOwnerSpecifier}';
+export const doors = ${policySymbol}.hingedDoorsCount;`,
+    ],
+  ]);
+  assert.deepEqual(extensionlessOwnerResult.focusedImports, [
     {
-      kind: 'owner-re-export',
-      file: facadeRel,
-      specifier: './dimensions/preset_models_dimension_defaults_policy.js',
+      file: approvedConsumerRel,
+      specifier: extensionlessOwnerSpecifier,
+      kind: 'value',
+      syntax: 'static-import',
       symbols: [policySymbol],
     },
   ]);
+  assert.equal(
+    extensionlessOwnerResult.violations.some(
+      violation => violation.kind === 'invalid-focused-owner-dependency'
+    ),
+    true,
+    JSON.stringify(extensionlessOwnerResult.violations)
+  );
+
+  for (const specifier of ['../features/dimensions', '../features/dimensions/']) {
+    const result = inspectPrivateOwnerUniverse([
+      [
+        approvedPath,
+        `import { ${policySymbol} } from '${specifier}';
+export const doors = ${policySymbol}.hingedDoorsCount;`,
+      ],
+    ]);
+    assert.equal(
+      result.violations.some(violation => violation.kind === 'public-barrel-owner-import'),
+      true,
+      `${specifier}: ${JSON.stringify(result.violations)}`
+    );
+  }
+
+  const extensionlessFacadeResult = inspectPrivateOwnerUniverse([
+    [
+      approvedPath,
+      `import { ${policySymbol} } from '../../shared/dimensions/preset_models_dimension_defaults_policy.js';
+import { WARDROBE_DEFAULTS } from '../../shared/wardrobe_dimension_tokens_shared';
+export const doors = ${policySymbol}.hingedDoorsCount;`,
+    ],
+  ]);
+  assert.equal(
+    extensionlessFacadeResult.violations.some(
+      violation => violation.kind === 'dual-focused-and-facade-import'
+    ),
+    true,
+    JSON.stringify(extensionlessFacadeResult.violations)
+  );
+});
+
+test('Preset Models Dimension Defaults repository-wide audit rejects arbitrary private-owner bridges', () => {
+  const bridgePath = path.join(root, 'esm/shared/dimensions/preset_models_defaults_bridge.ts');
+  const approvedPath = path.join(root, approvedConsumerRel);
+  const bridgeImport = `import { ${policySymbol} } from './preset_models_dimension_defaults_policy.js';`;
+  const assertBridgeViolation = (source, expectedKind, label) => {
+    const result = inspectPrivateOwnerUniverse([[bridgePath, source]]);
+    assert.equal(
+      result.violations.some(
+        violation =>
+          violation.kind === expectedKind &&
+          violation.file === 'esm/shared/dimensions/preset_models_defaults_bridge.ts'
+      ),
+      true,
+      `${label}: ${JSON.stringify(result.violations)}`
+    );
+    assert.equal(
+      result.violations.some(violation => violation.kind === 'unapproved-focused-owner-consumer'),
+      true,
+      `${label} must remain outside the approved universe: ${JSON.stringify(result.violations)}`
+    );
+  };
+
+  assertBridgeViolation(
+    `export { ${policySymbol} } from './preset_models_dimension_defaults_policy.js';`,
+    'private-owner-bridge',
+    'direct shared re-export'
+  );
+  assertBridgeViolation(
+    `${bridgeImport}
+export { ${policySymbol} };`,
+    'policy-local-re-export',
+    'local import then export'
+  );
+  assertBridgeViolation(
+    `${bridgeImport}
+const defaults = ${policySymbol};
+export { defaults };`,
+    'policy-object-escape',
+    'aliased bridge'
+  );
+  assertBridgeViolation(
+    "export * from './preset_models_dimension_defaults_policy.js';",
+    'private-owner-bridge',
+    'wildcard bridge'
+  );
+
+  const bridgeSource = `export { ${policySymbol} } from './preset_models_dimension_defaults_policy.js';`;
+  const consumerThroughBridge = `import { ${policySymbol} } from '../../shared/dimensions/preset_models_defaults_bridge.js';
+export const doors = ${policySymbol}.hingedDoorsCount;`;
+  const pairResult = inspectPrivateOwnerUniverse([
+    [bridgePath, bridgeSource],
+    [approvedPath, consumerThroughBridge],
+  ]);
+  assert.deepEqual(
+    pairResult.focusedImports.map(entry => entry.file),
+    ['esm/shared/dimensions/preset_models_defaults_bridge.ts']
+  );
+  assert.equal(
+    pairResult.violations.some(
+      violation =>
+        violation.kind === 'private-owner-bridge' &&
+        violation.file === 'esm/shared/dimensions/preset_models_defaults_bridge.ts'
+    ),
+    true,
+    JSON.stringify(pairResult.violations)
+  );
 });
 
 test('Preset Models Dimension Defaults consumer guard permits direct fields and rejects alternate paths and policy escapes', () => {
   const approvedPath = path.join(root, approvedConsumerRel);
   const unapprovedPath = path.join(root, 'esm/native/features/unapproved_preset_models_consumer.ts');
   const focusedImport = `import { ${policySymbol} } from '../../shared/dimensions/preset_models_dimension_defaults_policy.js';`;
-  const inspectApproved = source => inspectNativeOwnerUniverse([[approvedPath, source]]);
+  const inspectApproved = source => inspectPrivateOwnerUniverse([[approvedPath, source]]);
   const assertViolation = (file, source, kind, label) => {
-    const result = inspectNativeOwnerUniverse([[file, source]]);
+    const result = inspectPrivateOwnerUniverse([[file, source]]);
     assert.equal(
       result.violations.some(violation => violation.kind === kind),
       true,
