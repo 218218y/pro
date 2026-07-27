@@ -13,6 +13,7 @@ const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const storageOwnerRel = 'esm/shared/dimensions/interior_storage_policy.ts';
 const fittingsOwnerRel = 'esm/shared/dimensions/interior_fittings_policy.ts';
 const uiShelfConsumerRel = 'esm/native/ui/react/tabs/interior_tab_local_state_shared.ts';
+const approvedUiCompatibilityBranches = new Set(['shelves']);
 const sourceFileExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
 const runtimeExtensionCandidates = Object.freeze({
   '.js': Object.freeze(['.ts', '.tsx', '.mts']),
@@ -291,6 +292,42 @@ function addBinding(set, name) {
   return true;
 }
 
+function directCompatibilityImportRecords(file, analysis) {
+  const rel = normalizeRel(file);
+  if (!rel.startsWith('esm/native/')) return [];
+  return analysis.imports
+    .filter(
+      dependency =>
+        dependency.exportedSymbols.length === 0 &&
+        dependency.importedSymbols.includes('INTERIOR_FITTINGS_DIMENSIONS')
+    )
+    .map(dependency => {
+      const binding = dependency.bindings.find(
+        candidate => candidate.importedName === 'INTERIOR_FITTINGS_DIMENSIONS'
+      );
+      return {
+        file: rel,
+        target: dependencyTarget(file, dependency),
+        kind: dependency.kind,
+        syntax: dependency.syntax,
+        localName: binding?.localName ?? null,
+      };
+    });
+}
+
+function assertApprovedCompatibilityImporterUniverse(imports) {
+  assert.equal(imports.length <= 1, true);
+  for (const entry of imports) {
+    assert.deepEqual(entry, {
+      file: uiShelfConsumerRel,
+      target: facadeTarget,
+      kind: 'value',
+      syntax: 'static-import',
+      localName: 'INTERIOR_FITTINGS_DIMENSIONS',
+    });
+  }
+}
+
 function unwrapObjectFreeze(node) {
   if (
     node?.type !== 'CallExpression' ||
@@ -380,6 +417,22 @@ function inspectProductionSource(file, source) {
 
     if (sourceKind && dependency.kind === 'dynamic') {
       addViolation('compatibility-dynamic', { start: dependency.statementStart }, dependency.specifier);
+    }
+
+    for (const record of directCompatibilityImportRecords(file, { imports: [dependency] })) {
+      const isApprovedUiImport =
+        record.file === uiShelfConsumerRel &&
+        record.target === facadeTarget &&
+        record.kind === 'value' &&
+        record.syntax === 'static-import' &&
+        record.localName === 'INTERIOR_FITTINGS_DIMENSIONS';
+      if (!isApprovedUiImport) {
+        addViolation(
+          'unapproved-compatibility-importer',
+          { start: dependency.statementStart },
+          `${record.file}:${dependency.specifier}`
+        );
+      }
     }
 
     if (sourceKind && !isReExport) {
@@ -490,7 +543,36 @@ function inspectProductionSource(file, source) {
     }
   }
 
+  const addLocalBridgeViolation = (kind, node, exportedName) => {
+    if (!kind) return;
+    addViolation('compatibility-local-bridge', node, `${kind}:${exportedName}`);
+  };
+
   walkAst(sourceFile, node => {
+    if (node?.type === 'ExportNamedDeclaration' && !node.source) {
+      for (const specifier of node.specifiers ?? []) {
+        const localName = identifierName(specifier.local);
+        addLocalBridgeViolation(
+          localName ? expressionKind(specifier.local) : null,
+          specifier,
+          identifierName(specifier.exported) ?? localName ?? 'named'
+        );
+      }
+      if (node.declaration?.type === 'VariableDeclaration') {
+        for (const declaration of node.declaration.declarations ?? []) {
+          addLocalBridgeViolation(
+            expressionKind(declaration.init),
+            declaration,
+            identifierName(declaration.id) ?? 'variable'
+          );
+        }
+      }
+    }
+
+    if (node?.type === 'ExportDefaultDeclaration') {
+      addLocalBridgeViolation(expressionKind(node.declaration), node, 'default');
+    }
+
     if (node?.type === 'MemberExpression') {
       const objectKind = expressionKind(node.object);
       const propertyName = staticMemberName(node);
@@ -502,6 +584,12 @@ function inspectProductionSource(file, source) {
         );
       } else if (objectKind === 'compatibility' && node.computed && propertyName === null) {
         addViolation('compatibility-storage-computed', node, 'dynamic key');
+      } else if (
+        objectKind === 'compatibility' &&
+        rel === uiShelfConsumerRel &&
+        !approvedUiCompatibilityBranches.has(propertyName)
+      ) {
+        addViolation('unapproved-compatibility-branch', node, propertyName ?? 'unknown');
       }
     }
 
@@ -523,11 +611,13 @@ function inspectProductionSource(file, source) {
 
 test('Interior Storage closeout has zero repository compatibility consumers and one approved wildcard', () => {
   const wildcardReExports = [];
+  const compatibilityImporters = [];
   for (const file of listSourceFiles(path.join(root, 'esm'))) {
     const rel = normalizeRel(file);
     const source = fs.readFileSync(file, 'utf8');
     const inspection = inspectProductionSource(file, source);
     assert.deepEqual(inspection.violations, [], rel);
+    compatibilityImporters.push(...directCompatibilityImportRecords(file, inspection.analysis));
 
     for (const dependency of inspection.analysis.imports) {
       if (
@@ -551,6 +641,7 @@ test('Interior Storage closeout has zero repository compatibility consumers and 
       syntax: 'static-re-export',
     },
   ]);
+  assertApprovedCompatibilityImporterUniverse(compatibilityImporters);
 
   const uiSource = read(uiShelfConsumerRel);
   assert.match(uiSource, /INTERIOR_FITTINGS_DIMENSIONS\.shelves\.regularDepthM/u);
@@ -776,6 +867,8 @@ test('Interior Fittings projects the canonical storage aggregate directly and pu
 
 test('Interior Storage closeout rejects compatibility paths, aggregate consumers, aliases, and recomposition', () => {
   const fixtureFile = path.join(root, 'esm/native/features/interior_storage_closeout_fixture.ts');
+  const approvedUiFixtureFile = path.join(root, uiShelfConsumerRel);
+  const approvedUiFacadeSpecifier = '../../../../shared/wardrobe_dimension_tokens_shared.js';
   const cases = [
     {
       name: 'named facade storage access',
@@ -837,6 +930,80 @@ test('Interior Storage closeout rejects compatibility paths, aggregate consumers
         "export { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';",
     },
     {
+      name: 'two-statement named local compatibility bridge',
+      expectedKind: 'compatibility-local-bridge',
+      expectedBridgeSourceKind: 'compatibility',
+      source:
+        "import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport { INTERIOR_FITTINGS_DIMENSIONS };",
+    },
+    {
+      name: 'compatibility alias bridge',
+      expectedKind: 'compatibility-local-bridge',
+      expectedBridgeSourceKind: 'compatibility',
+      source:
+        "import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';\nconst fittings = INTERIOR_FITTINGS_DIMENSIONS;\nexport { fittings };",
+    },
+    {
+      name: 'exported compatibility variable bridge',
+      expectedKind: 'compatibility-local-bridge',
+      expectedBridgeSourceKind: 'compatibility',
+      source:
+        "import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport const dimensions = INTERIOR_FITTINGS_DIMENSIONS;",
+    },
+    {
+      name: 'default compatibility export bridge',
+      expectedKind: 'compatibility-local-bridge',
+      expectedBridgeSourceKind: 'compatibility',
+      source:
+        "import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport default INTERIOR_FITTINGS_DIMENSIONS;",
+    },
+    {
+      name: 'storage alias export bridge',
+      expectedKinds: ['compatibility-storage-member', 'compatibility-local-bridge'],
+      expectedBridgeSourceKind: 'storage',
+      source:
+        "import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';\nconst storage = INTERIOR_FITTINGS_DIMENSIONS.storage;\nexport { storage };",
+    },
+    {
+      name: 'namespace local compatibility bridge',
+      expectedKinds: ['compatibility-namespace', 'compatibility-local-bridge'],
+      expectedBridgeSourceKind: 'namespace',
+      source: "import * as dimensions from './dimensions/index.js';\nexport { dimensions };",
+    },
+    {
+      name: 'local compatibility bridge inside the approved UI path',
+      file: approvedUiFixtureFile,
+      expectedKind: 'compatibility-local-bridge',
+      expectedBridgeSourceKind: 'compatibility',
+      absentKind: 'unapproved-compatibility-importer',
+      source: `import { INTERIOR_FITTINGS_DIMENSIONS } from '${approvedUiFacadeSpecifier}';\nexport { INTERIOR_FITTINGS_DIMENSIONS };`,
+    },
+    {
+      name: 'direct compatibility import outside the approved UI path',
+      expectedKind: 'unapproved-compatibility-importer',
+      source:
+        "import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport const value = 1;",
+    },
+    {
+      name: 'aliased compatibility import inside the approved UI path',
+      file: approvedUiFixtureFile,
+      expectedKind: 'unapproved-compatibility-importer',
+      source: `import { INTERIOR_FITTINGS_DIMENSIONS as fittings } from '${approvedUiFacadeSpecifier}';\nexport const depth = fittings.shelves.regularDepthM;`,
+    },
+    {
+      name: 'public-barrel compatibility import inside the approved UI path',
+      file: approvedUiFixtureFile,
+      expectedKind: 'unapproved-compatibility-importer',
+      source:
+        "import { INTERIOR_FITTINGS_DIMENSIONS } from '../../../features/dimensions/index.js';\nexport const depth = INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM;",
+    },
+    {
+      name: 'unapproved non-storage compatibility branch inside the approved UI path',
+      file: approvedUiFixtureFile,
+      expectedKind: 'unapproved-compatibility-branch',
+      source: `import { INTERIOR_FITTINGS_DIMENSIONS } from '${approvedUiFacadeSpecifier}';\nexport const value = INTERIOR_FITTINGS_DIMENSIONS.rods.topOffsetM;`,
+    },
+    {
       name: 'production aggregate owner import',
       expectedKind: 'aggregate-owner-import',
       source:
@@ -857,22 +1024,51 @@ test('Interior Storage closeout rejects compatibility paths, aggregate consumers
   ];
 
   for (const probe of cases) {
-    const inspection = inspectProductionSource(fixtureFile, probe.source);
-    assert.equal(
-      inspection.violations.some(violation => violation.kind === probe.expectedKind),
-      true,
-      probe.name
-    );
+    const inspection = inspectProductionSource(probe.file ?? fixtureFile, probe.source);
+    for (const expectedKind of probe.expectedKinds ?? [probe.expectedKind]) {
+      assert.equal(
+        inspection.violations.some(violation => violation.kind === expectedKind),
+        true,
+        `${probe.name}: ${expectedKind}`
+      );
+    }
+    if (probe.absentKind) {
+      assert.equal(
+        inspection.violations.some(violation => violation.kind === probe.absentKind),
+        false,
+        `${probe.name}: ${probe.absentKind}`
+      );
+    }
+    if (probe.expectedBridgeSourceKind) {
+      assert.equal(
+        inspection.violations.some(
+          violation =>
+            violation.kind === 'compatibility-local-bridge' &&
+            violation.detail.startsWith(`${probe.expectedBridgeSourceKind}:`)
+        ),
+        true,
+        `${probe.name}: ${probe.expectedBridgeSourceKind}`
+      );
+    }
   }
 });
 
 test('The approved facade shelf consumer is not an Interior Storage violation', () => {
-  const fixtureFile = path.join(root, 'esm/native/ui/interior_storage_closeout_shelf_fixture.ts');
+  const fixtureFile = path.join(root, uiShelfConsumerRel);
   const source =
-    "import { INTERIOR_FITTINGS_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport const depth = INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM;";
+    "import { INTERIOR_FITTINGS_DIMENSIONS } from '../../../../shared/wardrobe_dimension_tokens_shared.js';\nexport const depth = mToCm(INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM);";
   assert.deepEqual(inspectProductionSource(fixtureFile, source).violations, []);
   assert.deepEqual(
     inspectProductionSource(path.join(root, uiShelfConsumerRel), read(uiShelfConsumerRel)).violations,
     []
   );
+});
+
+test('The approved compatibility importer universe remains valid after the UI facade import disappears', () => {
+  const fixtureFile = path.join(root, uiShelfConsumerRel);
+  const inspection = inspectProductionSource(fixtureFile, 'export const depth = 42;');
+  assert.deepEqual(inspection.violations, []);
+  const compatibilityImporters = directCompatibilityImportRecords(fixtureFile, inspection.analysis);
+  assert.deepEqual(compatibilityImporters, []);
+  assert.doesNotThrow(() => assertApprovedCompatibilityImporterUniverse(compatibilityImporters));
 });
