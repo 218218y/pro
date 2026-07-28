@@ -607,6 +607,45 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
     if (routedRootsByLocalName.size === 0) continue;
 
     const sourceFile = createSourceFile(file, source);
+    const transparentExpressionTypes = new Set([
+      'ChainExpression',
+      'ParenthesizedExpression',
+      'TSAsExpression',
+      'TSInstantiationExpression',
+      'TSNonNullExpression',
+      'TSSatisfiesExpression',
+      'TSTypeAssertion',
+    ]);
+    const unwrapExpression = node => {
+      let current = node;
+      while (current?.expression && transparentExpressionTypes.has(current.type)) {
+        current = current.expression;
+      }
+      return current;
+    };
+    const collectBindingNames = node => {
+      const current = unwrapExpression(node);
+      if (!current) return [];
+      if (current.type === 'Identifier') return [current.name];
+      if (current.type === 'AssignmentPattern') return collectBindingNames(current.left);
+      if (current.type === 'RestElement') return collectBindingNames(current.argument);
+      if (current.type === 'ArrayPattern') {
+        return current.elements.flatMap(element => collectBindingNames(element));
+      }
+      if (current.type === 'ObjectPattern') {
+        return current.properties.flatMap(property =>
+          property.type === 'RestElement'
+            ? collectBindingNames(property.argument)
+            : collectBindingNames(property.value)
+        );
+      }
+      return [];
+    };
+    const memberRootIdentifier = node => {
+      let current = unwrapExpression(node);
+      while (current?.type === 'MemberExpression') current = unwrapExpression(current.object);
+      return identifierName(current);
+    };
     const variableDeclarators = sourceFile.body.flatMap(statement => {
       if (statement.type === 'VariableDeclaration') return statement.declarations;
       if (
@@ -617,32 +656,55 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
       }
       return [];
     });
+    const collectTopLevelAssignments = node => {
+      const current = unwrapExpression(node);
+      if (!current) return [];
+      if (current.type === 'SequenceExpression') {
+        return current.expressions.flatMap(expression => collectTopLevelAssignments(expression));
+      }
+      if (current.type !== 'AssignmentExpression' || current.operator !== '=') return [];
+      return [current, ...collectTopLevelAssignments(current.right)];
+    };
+    const topLevelAssignments = [
+      ...sourceFile.body.flatMap(statement =>
+        statement.type === 'ExpressionStatement'
+          ? collectTopLevelAssignments(statement.expression)
+          : statement.type === 'ExportDefaultDeclaration'
+            ? collectTopLevelAssignments(statement.declaration)
+            : []
+      ),
+      ...variableDeclarators.flatMap(declarator => collectTopLevelAssignments(declarator.init)),
+    ];
 
     const directRoots = node => {
-      if (!node) return new Set();
-      if (node.type === 'Identifier') {
-        return new Set(routedRootsByLocalName.get(node.name) ?? []);
+      const current = unwrapExpression(node);
+      if (!current) return new Set();
+      if (current.type === 'Identifier') {
+        return new Set(routedRootsByLocalName.get(current.name) ?? []);
       }
-      if (
-        node.type === 'ParenthesizedExpression' ||
-        node.type === 'TSAsExpression' ||
-        node.type === 'TSSatisfiesExpression' ||
-        node.type === 'TSNonNullExpression' ||
-        node.type === 'TSTypeAssertion'
-      ) {
-        return directRoots(node.expression);
+      if (current.type === 'MemberExpression') {
+        return new Set(routedRootsByLocalName.get(memberRootIdentifier(current)) ?? []);
       }
-      if (node.type === 'ObjectExpression') {
+      if (current.type === 'SequenceExpression') {
+        return directRoots(current.expressions.at(-1));
+      }
+      if (current.type === 'AssignmentExpression' && current.operator === '=') {
+        return directRoots(current.right);
+      }
+      if (current.type === 'ObjectExpression') {
         const roots = new Set();
-        for (const property of node.properties) {
+        for (const property of current.properties) {
+          if (property.computed) {
+            for (const rootName of directRoots(property.key)) roots.add(rootName);
+          }
           const value = property.type === 'SpreadElement' ? property.argument : property.value;
           for (const rootName of directRoots(value)) roots.add(rootName);
         }
         return roots;
       }
-      if (node.type === 'ArrayExpression') {
+      if (current.type === 'ArrayExpression') {
         const roots = new Set();
-        for (const element of node.elements) {
+        for (const element of current.elements) {
           const value = element?.type === 'SpreadElement' ? element.argument : element;
           for (const rootName of directRoots(value)) roots.add(rootName);
         }
@@ -651,21 +713,359 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
       return new Set();
     };
 
+    const mergeRoots = (localName, roots) => {
+      if (!localName || roots.size === 0) return false;
+      const knownRoots = routedRootsByLocalName.get(localName) ?? new Set();
+      let added = false;
+      for (const rootName of roots) {
+        if (knownRoots.has(rootName)) continue;
+        knownRoots.add(rootName);
+        added = true;
+      }
+      routedRootsByLocalName.set(localName, knownRoots);
+      return added;
+    };
+    const initializerByLocalName = new Map();
+    for (const declarator of variableDeclarators) {
+      const localName = identifierName(unwrapExpression(declarator.id));
+      if (localName && declarator.init) initializerByLocalName.set(localName, declarator.init);
+    }
+    const resolveStaticContainer = (node, seen = new Set()) => {
+      const current = unwrapExpression(node);
+      if (current?.type === 'ObjectExpression' || current?.type === 'ArrayExpression') return current;
+      if (current?.type !== 'Identifier' || seen.has(current.name)) return null;
+      const initializer = initializerByLocalName.get(current.name);
+      if (!initializer) return null;
+      return resolveStaticContainer(initializer, new Set(seen).add(current.name));
+    };
+    const propertyName = property => {
+      const key = unwrapExpression(property?.key);
+      if (key?.type === 'Identifier' && !property.computed) return key.name;
+      if (key?.type === 'Literal' && ['number', 'string'].includes(typeof key.value)) {
+        return String(key.value);
+      }
+      return null;
+    };
+    const missingPatternValue = Symbol('missing-pattern-value');
+    const isDefinitelyDefined = node => {
+      if (node === missingPatternValue) return false;
+      const current = unwrapExpression(node);
+      if (!current) return false;
+      if (current.type === 'Identifier' && current.name === 'undefined') return false;
+      if (current.type === 'UnaryExpression' && current.operator === 'void') return false;
+      return [
+        'ArrayExpression',
+        'ArrowFunctionExpression',
+        'ClassExpression',
+        'FunctionExpression',
+        'Literal',
+        'ObjectExpression',
+        'TemplateLiteral',
+      ].includes(current.type);
+    };
+    const collectObjectFacts = (node, seen = new Set()) => {
+      const sourceObject = resolveStaticContainer(node);
+      if (sourceObject?.type !== 'ObjectExpression' || seen.has(sourceObject)) return null;
+      const values = new Map();
+      const unknownRoots = new Set();
+      const nextSeen = new Set(seen).add(sourceObject);
+      for (const property of sourceObject.properties) {
+        if (property.type === 'SpreadElement') {
+          const spreadFacts = collectObjectFacts(property.argument, nextSeen);
+          if (spreadFacts) {
+            for (const [name, value] of spreadFacts.values) values.set(name, value);
+            for (const rootName of spreadFacts.unknownRoots) unknownRoots.add(rootName);
+          } else {
+            for (const rootName of directRoots(property.argument)) unknownRoots.add(rootName);
+          }
+          continue;
+        }
+        const name = propertyName(property);
+        if (name === null) {
+          for (const rootName of directRoots(property.key)) unknownRoots.add(rootName);
+          for (const rootName of directRoots(property.value)) unknownRoots.add(rootName);
+          continue;
+        }
+        values.set(name, property.value);
+      }
+      return { values, unknownRoots };
+    };
+    const collectArrayFacts = (node, seen = new Set()) => {
+      const sourceArray = resolveStaticContainer(node);
+      if (sourceArray?.type !== 'ArrayExpression' || seen.has(sourceArray)) return null;
+      const values = [];
+      const unknownRoots = new Set();
+      const nextSeen = new Set(seen).add(sourceArray);
+      for (const element of sourceArray.elements) {
+        if (element?.type === 'SpreadElement') {
+          const spreadFacts = collectArrayFacts(element.argument, nextSeen);
+          if (spreadFacts) {
+            values.push(...spreadFacts.values);
+            for (const rootName of spreadFacts.unknownRoots) unknownRoots.add(rootName);
+          } else {
+            for (const rootName of directRoots(element.argument)) unknownRoots.add(rootName);
+          }
+        } else {
+          values.push(element ?? missingPatternValue);
+        }
+      }
+      return { values, unknownRoots };
+    };
+    const mergeAllBindingRoots = (pattern, roots) => {
+      let added = false;
+      for (const localName of collectBindingNames(pattern)) {
+        if (mergeRoots(localName, roots)) added = true;
+      }
+      return added;
+    };
+    const mergePatternRoots = (pattern, value, { definitelyDefined = false } = {}) => {
+      const current = unwrapExpression(pattern);
+      if (!current) return false;
+      if (current.type === 'Identifier') {
+        return value === missingPatternValue ? false : mergeRoots(current.name, directRoots(value));
+      }
+      if (current.type === 'AssignmentPattern') {
+        const valueAdded = mergePatternRoots(current.left, value, { definitelyDefined });
+        const defaultAdded = definitelyDefined
+          ? false
+          : mergeAllBindingRoots(current.left, directRoots(current.right));
+        return valueAdded || defaultAdded;
+      }
+      if (current.type === 'RestElement') {
+        return mergePatternRoots(current.argument, value, { definitelyDefined });
+      }
+      if (current.type === 'ObjectPattern') {
+        const sourceFacts = collectObjectFacts(value);
+        if (!sourceFacts) {
+          let added = false;
+          for (const patternProperty of current.properties) {
+            const target =
+              patternProperty.type === 'RestElement' ? patternProperty.argument : patternProperty.value;
+            if (mergePatternRoots(target, value, { definitelyDefined: false })) added = true;
+          }
+          return added;
+        }
+        let added = false;
+        const selectedNames = new Set();
+        for (const patternProperty of current.properties) {
+          if (patternProperty.type === 'RestElement') {
+            const restRoots = new Set(sourceFacts.unknownRoots);
+            for (const [name, sourceValue] of sourceFacts.values) {
+              if (selectedNames.has(name)) continue;
+              for (const rootName of directRoots(sourceValue)) restRoots.add(rootName);
+            }
+            if (mergeAllBindingRoots(patternProperty.argument, restRoots)) added = true;
+            continue;
+          }
+          const name = propertyName(patternProperty);
+          if (name !== null) selectedNames.add(name);
+          const hasSourceValue = name !== null && sourceFacts.values.has(name);
+          const sourceValue = hasSourceValue ? sourceFacts.values.get(name) : missingPatternValue;
+          if (
+            mergePatternRoots(patternProperty.value, sourceValue, {
+              definitelyDefined: hasSourceValue && isDefinitelyDefined(sourceValue),
+            })
+          ) {
+            added = true;
+          }
+          if (mergeAllBindingRoots(patternProperty.value, sourceFacts.unknownRoots)) added = true;
+        }
+        return added;
+      }
+      if (current.type === 'ArrayPattern') {
+        const sourceFacts = collectArrayFacts(value);
+        if (!sourceFacts) {
+          let added = false;
+          for (const element of current.elements) {
+            if (mergePatternRoots(element, value, { definitelyDefined: false })) added = true;
+          }
+          return added;
+        }
+        let added = false;
+        for (let index = 0; index < current.elements.length; index += 1) {
+          const element = current.elements[index];
+          if (unwrapExpression(element)?.type === 'RestElement') {
+            const restRoots = new Set(sourceFacts.unknownRoots);
+            for (const sourceValue of sourceFacts.values.slice(index)) {
+              if (sourceValue === missingPatternValue) continue;
+              for (const rootName of directRoots(sourceValue)) restRoots.add(rootName);
+            }
+            if (mergeAllBindingRoots(element, restRoots)) added = true;
+            continue;
+          }
+          const sourceValue = sourceFacts.values[index] ?? missingPatternValue;
+          const definitelyDefined = isDefinitelyDefined(sourceValue);
+          if (mergePatternRoots(element, sourceValue, { definitelyDefined })) added = true;
+          if (mergeAllBindingRoots(element, sourceFacts.unknownRoots)) added = true;
+        }
+        return added;
+      }
+      return false;
+    };
+
+    let nextObjectIdentity = 1;
+    const objectIdentityByLocalName = new Map();
+    const childIdentityByObjectIdentity = new Map();
+    const parentObjectIdentitiesByChild = new Map();
+    const memberWrites = [];
+    const newObjectIdentity = () => nextObjectIdentity++;
+    const identityForLocalName = localName => {
+      if (!localName) return null;
+      if (!objectIdentityByLocalName.has(localName)) {
+        objectIdentityByLocalName.set(localName, newObjectIdentity());
+      }
+      return objectIdentityByLocalName.get(localName);
+    };
+    const memberPropertyName = member => {
+      const property = unwrapExpression(member?.property);
+      if (property?.type === 'Identifier' && !member.computed) return property.name;
+      if (property?.type === 'Literal' && ['number', 'string'].includes(typeof property.value)) {
+        return String(property.value);
+      }
+      return null;
+    };
+    const setChildIdentity = (parentIdentity, property, childIdentity) => {
+      if (!parentIdentity || property === null || !childIdentity) return;
+      const children = childIdentityByObjectIdentity.get(parentIdentity) ?? new Map();
+      const previousChild = children.get(property);
+      if (previousChild && previousChild !== childIdentity) {
+        const previousParents = parentObjectIdentitiesByChild.get(previousChild);
+        previousParents?.delete(parentIdentity);
+      }
+      children.set(property, childIdentity);
+      childIdentityByObjectIdentity.set(parentIdentity, children);
+      const parents = parentObjectIdentitiesByChild.get(childIdentity) ?? new Set();
+      parents.add(parentIdentity);
+      parentObjectIdentitiesByChild.set(childIdentity, parents);
+    };
+    const assignPatternIdentity = (pattern, identity) => {
+      const current = unwrapExpression(pattern);
+      if (!current) return;
+      if (current.type === 'Identifier') {
+        objectIdentityByLocalName.set(current.name, identity);
+        return;
+      }
+      for (const localName of collectBindingNames(current)) {
+        objectIdentityByLocalName.set(localName, null);
+      }
+    };
+    const evaluateObjectIdentity = node => {
+      const current = unwrapExpression(node);
+      if (!current) return null;
+      if (current.type === 'Identifier') return identityForLocalName(current.name);
+      if (current.type === 'MemberExpression') {
+        const parentIdentity = evaluateObjectIdentity(current.object);
+        const property = memberPropertyName(current);
+        if (!parentIdentity || property === null) return newObjectIdentity();
+        const children = childIdentityByObjectIdentity.get(parentIdentity) ?? new Map();
+        if (!children.has(property)) {
+          setChildIdentity(parentIdentity, property, newObjectIdentity());
+        }
+        return childIdentityByObjectIdentity.get(parentIdentity)?.get(property) ?? null;
+      }
+      if (current.type === 'SequenceExpression') {
+        let identity = null;
+        for (const expression of current.expressions) identity = evaluateObjectIdentity(expression);
+        return identity;
+      }
+      if (current.type === 'AssignmentExpression' && current.operator === '=') {
+        const left = unwrapExpression(current.left);
+        const memberIdentity = left?.type === 'MemberExpression' ? evaluateObjectIdentity(left.object) : null;
+        const identity = evaluateObjectIdentity(current.right);
+        if (left?.type === 'MemberExpression') {
+          setChildIdentity(memberIdentity, memberPropertyName(left), identity);
+          memberWrites.push({ identity: memberIdentity, right: current.right });
+        } else {
+          assignPatternIdentity(left, identity);
+        }
+        return identity;
+      }
+      if (current.type === 'ObjectExpression') {
+        const identity = newObjectIdentity();
+        for (const property of current.properties) {
+          if (property.type === 'SpreadElement') {
+            evaluateObjectIdentity(property.argument);
+            continue;
+          }
+          const childIdentity = evaluateObjectIdentity(property.value);
+          setChildIdentity(identity, propertyName(property), childIdentity);
+        }
+        return identity;
+      }
+      if (current.type === 'ArrayExpression') {
+        const identity = newObjectIdentity();
+        for (let index = 0; index < current.elements.length; index += 1) {
+          const element = current.elements[index];
+          if (element?.type === 'SpreadElement') {
+            evaluateObjectIdentity(element.argument);
+            continue;
+          }
+          const childIdentity = evaluateObjectIdentity(element);
+          setChildIdentity(identity, String(index), childIdentity);
+        }
+        return identity;
+      }
+      return newObjectIdentity();
+    };
+    const executeVariableDeclaration = declaration => {
+      for (const declarator of declaration.declarations) {
+        const identity = declarator.init ? evaluateObjectIdentity(declarator.init) : null;
+        assignPatternIdentity(declarator.id, identity);
+      }
+    };
+    for (const statement of sourceFile.body) {
+      if (statement.type === 'VariableDeclaration') {
+        executeVariableDeclaration(statement);
+      } else if (
+        statement.type === 'ExportNamedDeclaration' &&
+        statement.declaration?.type === 'VariableDeclaration'
+      ) {
+        executeVariableDeclaration(statement.declaration);
+      } else if (statement.type === 'ExpressionStatement') {
+        evaluateObjectIdentity(statement.expression);
+      } else if (statement.type === 'ExportDefaultDeclaration') {
+        evaluateObjectIdentity(statement.declaration);
+      }
+    }
+    const rootsByObjectIdentity = new Map();
+
     let changed = true;
     while (changed) {
       changed = false;
       for (const declarator of variableDeclarators) {
-        const localName = identifierName(declarator.id);
-        if (!localName) continue;
-        const roots = directRoots(declarator.init);
-        if (roots.size === 0) continue;
-        const knownRoots = routedRootsByLocalName.get(localName) ?? new Set();
-        for (const rootName of roots) {
-          if (knownRoots.has(rootName)) continue;
-          knownRoots.add(rootName);
+        if (mergePatternRoots(declarator.id, declarator.init)) changed = true;
+      }
+      for (const assignment of topLevelAssignments) {
+        const left = unwrapExpression(assignment.left);
+        if (left?.type !== 'MemberExpression' && mergePatternRoots(left, assignment.right)) {
           changed = true;
         }
-        routedRootsByLocalName.set(localName, knownRoots);
+      }
+      for (const memberWrite of memberWrites) {
+        if (!memberWrite.identity) continue;
+        const roots = rootsByObjectIdentity.get(memberWrite.identity) ?? new Set();
+        for (const rootName of directRoots(memberWrite.right)) {
+          if (roots.has(rootName)) continue;
+          roots.add(rootName);
+          changed = true;
+        }
+        rootsByObjectIdentity.set(memberWrite.identity, roots);
+      }
+      for (const [childIdentity, parents] of parentObjectIdentitiesByChild) {
+        const childRoots = rootsByObjectIdentity.get(childIdentity) ?? new Set();
+        for (const parentIdentity of parents) {
+          const parentRoots = rootsByObjectIdentity.get(parentIdentity) ?? new Set();
+          for (const rootName of childRoots) {
+            if (parentRoots.has(rootName)) continue;
+            parentRoots.add(rootName);
+            changed = true;
+          }
+          rootsByObjectIdentity.set(parentIdentity, parentRoots);
+        }
+      }
+      for (const [localName, identity] of objectIdentityByLocalName) {
+        if (!identity) continue;
+        if (mergeRoots(localName, new Set(rootsByObjectIdentity.get(identity) ?? []))) changed = true;
       }
     }
 
@@ -695,13 +1095,14 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
         }
         if (statement.declaration?.type === 'VariableDeclaration') {
           for (const declarator of statement.declaration.declarations) {
-            const localName = identifierName(declarator.id);
-            addViolation(
-              statement,
-              localName,
-              localName,
-              new Set(routedRootsByLocalName.get(localName) ?? [])
-            );
+            for (const localName of collectBindingNames(declarator.id)) {
+              addViolation(
+                statement,
+                localName,
+                localName,
+                new Set(routedRootsByLocalName.get(localName) ?? [])
+              );
+            }
           }
         }
       }
@@ -1196,6 +1597,65 @@ test('routed dimension bindings cannot become local compatibility bridges', () =
     'export const WIDTH = DEFAULT_WIDTH;',
     'export const defaults = { width: DEFAULT_WIDTH };',
     'export const defaults = [DEFAULT_WIDTH];',
+    'let WIDTH; WIDTH = (DEFAULT_WIDTH as number)!; export { WIDTH };',
+    'let first; let second; first = second = DEFAULT_WIDTH; export { second };',
+    'let first; let second; (first = DEFAULT_WIDTH, second = first); export { second };',
+    'let inner; const outer = (inner = DEFAULT_WIDTH, inner); export { outer };',
+    [
+      'let first;',
+      'let second;',
+      'second = first as number;',
+      '((first = DEFAULT_WIDTH) satisfies number);',
+      'export default second;',
+    ].join('\n'),
+    ['export const defaults = {};', 'defaults.nested = { widths: [DEFAULT_WIDTH] };'].join('\n'),
+    ['export const defaults = [];', 'defaults[0] = DEFAULT_WIDTH;'].join('\n'),
+    ['let WIDTH;', '({ width: WIDTH } = { width: DEFAULT_WIDTH });', 'export { WIDTH };'].join('\n'),
+    [
+      'const routed = { width: DEFAULT_WIDTH, safe: 1 };',
+      'const { width: WIDTH } = routed;',
+      'export { WIDTH };',
+    ].join('\n'),
+    [
+      'const base = { width: DEFAULT_WIDTH };',
+      'const routed = { ...base };',
+      'const { width: WIDTH } = routed;',
+      'export { WIDTH };',
+    ].join('\n'),
+    ['const [safe, ...rest] = [1, 2, DEFAULT_WIDTH];', 'export { rest };'].join('\n'),
+    [
+      'const routed = { safe: undefined };',
+      'const { safe = DEFAULT_WIDTH } = routed;',
+      'export { safe };',
+    ].join('\n'),
+    ['const [safe = DEFAULT_WIDTH] = [undefined];', 'export { safe };'].join('\n'),
+    [
+      'const defaults = {};',
+      'const forwarded = defaults;',
+      'forwarded.nested = [DEFAULT_WIDTH];',
+      'export { defaults };',
+    ].join('\n'),
+    [
+      'const root = {};',
+      'let first = root;',
+      'const second = first;',
+      'first = {};',
+      'second.width = DEFAULT_WIDTH;',
+      'export { root };',
+    ].join('\n'),
+    [
+      'let root;',
+      'let alias;',
+      'alias = root = {};',
+      'alias.width = DEFAULT_WIDTH;',
+      'export { root };',
+    ].join('\n'),
+    [
+      'const root = { nested: {} };',
+      'const nested = root.nested;',
+      'nested.width = DEFAULT_WIDTH;',
+      'export { root };',
+    ].join('\n'),
     [
       'const chain = [defaults];',
       'const defaults = { width: WIDTH };',
@@ -1213,14 +1673,66 @@ test('routed dimension bindings cannot become local compatibility bridges', () =
   const businessFunctions = [
     "import { WARDROBE_WIDTH_MIN } from '../services/api.js';",
     'export function readBounds() {',
-    '  return { min: WARDROBE_WIDTH_MIN };',
+    '  let assignedMin;',
+    '  assignedMin = WARDROBE_WIDTH_MIN;',
+    '  return { min: assignedMin };',
     '}',
     'export const readDefaults = () => ({ min: WARDROBE_WIDTH_MIN });',
+    'const internalDefaults = {};',
+    'internalDefaults.width = WARDROBE_WIDTH_MIN;',
+    'export function readInternalDefaults() { return { ...internalDefaults }; }',
   ].join('\n');
   assert.deepEqual(
     collectRoutedBindingBridgeViolations(dimensionNames, [{ file: consumerA, source: businessFunctions }]),
     []
   );
+
+  const nonBridgeCases = [
+    ['const root = {};', 'let alias = root;', 'alias = DEFAULT_WIDTH;', 'export { root };'].join('\n'),
+    [
+      'const root = {};',
+      'let alias = root;',
+      'alias = {};',
+      'alias.width = DEFAULT_WIDTH;',
+      'export { root };',
+    ].join('\n'),
+    [
+      'let root = {};',
+      'const alias = root;',
+      'root = {};',
+      'alias.width = DEFAULT_WIDTH;',
+      'export { root };',
+    ].join('\n'),
+    [
+      'const root = { nested: {} };',
+      'const nested = root.nested;',
+      'root.nested = {};',
+      'nested.width = DEFAULT_WIDTH;',
+      'export { root };',
+    ].join('\n'),
+    [
+      'const routed = { width: DEFAULT_WIDTH, safe: 1 };',
+      'const { safe } = routed;',
+      'export { safe };',
+    ].join('\n'),
+    ['const routed = { safe: 1 };', 'const { safe = DEFAULT_WIDTH } = routed;', 'export { safe };'].join(
+      '\n'
+    ),
+    [
+      'const routed = { width: DEFAULT_WIDTH, safe: 1 };',
+      'const { width, ...rest } = routed;',
+      'export { rest };',
+    ].join('\n'),
+    ['const { routed = DEFAULT_WIDTH, safe = 0 } = {};', 'export { safe };'].join('\n'),
+  ];
+  for (const nonBridge of nonBridgeCases) {
+    const source = ["import { DEFAULT_WIDTH } from '../services/api.js';", nonBridge].join('\n');
+    assert.deepEqual(
+      collectRoutedBindingBridgeViolations(dimensionNames, [{ file: consumerA, source }]),
+      [],
+      nonBridge
+    );
+  }
 });
 
 test('manifest and inventory mutation probes fail owner, kind, route, consumer, and removal drift', () => {

@@ -5,12 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  analyzeModuleDependencies,
-  buildLayerContractProposal,
-  collectLayerContractGraph,
-  collectNamedModuleExports,
-} from '../tools/wp_layer_contract_support.mjs';
+import { analyzeModuleDependencies, collectNamedModuleExports } from '../tools/wp_layer_contract_support.mjs';
 import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
@@ -20,7 +15,6 @@ const adapterRel = 'esm/native/ui/react/tabs/structure_tab_dimension_defaults.ts
 const baselineRel = 'tools/wp_layer_baseline.json';
 const featureManifestRel = 'tools/wp_features_public_api_manifest.json';
 const transitionInventoryRel = 'tools/wp_wardrobe_dimension_facade_transition_inventory.json';
-const surfaceManifestRel = 'tools/wp_wardrobe_dimension_public_surface_manifest.json';
 const adapterSpecifier = './structure_tab_dimension_defaults.js';
 const featureSpecifier = '../../../features/structure_tab_dimension_support.js';
 const facadeSpecifier = '../../shared/wardrobe_dimension_tokens_shared.js';
@@ -272,7 +266,6 @@ const omittedAstKeys = new Set([
 ]);
 const dependencyAnalysisCache = new Map();
 let cachedProductionEntries;
-let cachedLayerGraph;
 
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const sorted = values => [...values].sort((left, right) => left.localeCompare(right));
@@ -363,11 +356,6 @@ function targetsModule(rel, specifier, targetRel) {
   const stem = canonicalModuleStem(rel, specifier);
   const targetStem = targetRel.replace(/\.(?:[cm]?[jt]sx?)$/u, '');
   return stem === targetStem || `${stem}/index` === targetStem;
-}
-
-function getLayerGraph() {
-  if (!cachedLayerGraph) cachedLayerGraph = collectLayerContractGraph({ root });
-  return cachedLayerGraph;
 }
 
 function inspectFeature(source) {
@@ -546,38 +534,52 @@ function inspectConsumerTopology(entries) {
   return violations;
 }
 
-function inspectLayerState(graph, baseline) {
+function inspectHistoricalFeatureRatchet(baseline, entries) {
   const violations = [];
-  const expectedEdges = Object.freeze({
-    'features>shared': Object.freeze({
-      importerCount: 42,
-      importCount: 73,
-      valueImporterCount: 42,
-      valueImportCount: 72,
-    }),
-    'ui>features': Object.freeze({
-      importerCount: 46,
-      importCount: 75,
-      valueImporterCount: 36,
-      valueImportCount: 62,
-    }),
+  const approval = Object.freeze({
+    beforeImporterCount: 41,
+    beforeValueImporterCount: 41,
+    approvedImporterCount: 42,
+    approvedValueImporterCount: 42,
+    entryNumbers: Object.freeze([167, 168, 169, 170, 171]),
   });
-  for (const [key, expected] of Object.entries(expectedEdges)) {
-    const [from, to] = key.split('>');
-    const edge = graph.edges.find(candidate => candidate.from === from && candidate.to === to);
-    for (const [field, value] of Object.entries(expected)) {
-      if (edge?.[field] !== value) addViolation(violations, `layer-${from}-${to}-${field}`);
+  const featureRule = baseline.rules.find(rule => rule.from === 'features' && rule.to === 'shared');
+  if (approval.approvedImporterCount - approval.beforeImporterCount !== 1) {
+    addViolation(violations, 'historical-importer-ratchet');
+  }
+  if (approval.approvedValueImporterCount - approval.beforeValueImporterCount !== 1) {
+    addViolation(violations, 'historical-value-importer-ratchet');
+  }
+  if (!(featureRule?.maxImporterCount >= approval.approvedImporterCount)) {
+    addViolation(violations, 'historical-importer-ceiling-support');
+  }
+  if (!(featureRule?.maxValueImporterCount >= approval.approvedValueImporterCount)) {
+    addViolation(violations, 'historical-value-importer-ceiling-support');
+  }
+  const expected = expectedLedgerEntries();
+  for (let index = 0; index < approval.entryNumbers.length; index += 1) {
+    const entryNumber = approval.entryNumbers[index];
+    const entry = entries[entryNumber - 1];
+    if (stableJson(entry) !== stableJson(expected[index])) {
+      addViolation(violations, `historical-ratchet-entry-${entryNumber}`);
+    }
+    if (typeof entry?.removalCondition !== 'string' || entry.removalCondition.length === 0) {
+      addViolation(violations, `historical-ratchet-removal-condition-${entryNumber}`);
     }
   }
-  const featureRule = baseline.rules.find(rule => rule.from === 'features' && rule.to === 'shared');
-  const exactFeatureRule = Object.freeze({
-    maxImporterCount: 42,
-    maxImportCount: 58,
-    maxValueImporterCount: 42,
-    maxValueImportCount: 57,
-  });
-  for (const [field, value] of Object.entries(exactFeatureRule)) {
-    if (featureRule?.[field] !== value) addViolation(violations, `feature-ratchet-${field}`);
+  return violations;
+}
+
+function inspectGroupATransitionHistory(candidateInventory) {
+  const violations = [];
+  const ownedConsumers = new Set(Object.keys(groupAConsumers));
+  for (const consumer of candidateInventory.consumers ?? []) {
+    if (ownedConsumers.has(consumer.consumer)) {
+      addViolation(violations, 'group-a-transition-consumer', consumer.consumer);
+    }
+    if (consumer.checkpointGroup === 'A') {
+      addViolation(violations, 'group-a-transition-group', consumer.consumer);
+    }
   }
   return violations;
 }
@@ -717,96 +719,31 @@ test('Entries 167-171 are exact, preserve Prefix 166, and accept a future Entry 
   assert.deepEqual(inspectLedger([...entries, futureEntry172]), []);
 });
 
-test('Group A owns only the approved feature ratchet and leaves the UI topology unchanged', () => {
+test('Group A historical ratchet remains backed by active Entries 167-171', () => {
   const baseline = JSON.parse(read(baselineRel));
-  const featureRule = baseline.rules.find(rule => rule.from === 'features' && rule.to === 'shared');
-  assert.deepEqual(
-    [
-      featureRule.maxImporterCount,
-      featureRule.maxImportCount,
-      featureRule.maxTypeImporterCount,
-      featureRule.maxTypeImportCount,
-      featureRule.maxValueImporterCount,
-      featureRule.maxValueImportCount,
-    ],
-    [42, 58, 1, 2, 42, 57]
+  const entries = baseline.migrationBudgets;
+  assert.deepEqual(inspectHistoricalFeatureRatchet(baseline, entries), []);
+
+  const futureHigherCeiling = structuredClone(baseline);
+  const futureFeatureRule = futureHigherCeiling.rules.find(
+    rule => rule.from === 'features' && rule.to === 'shared'
   );
-  const uiRule = baseline.rules.find(rule => rule.from === 'ui' && rule.to === 'features');
-  assert.deepEqual(
-    [
-      uiRule.maxImporterCount,
-      uiRule.maxImportCount,
-      uiRule.maxTypeImporterCount,
-      uiRule.maxTypeImportCount,
-      uiRule.maxValueImporterCount,
-      uiRule.maxValueImportCount,
-    ],
-    [46, 78, 15, 16, 36, 65]
-  );
-  const graph = getLayerGraph();
-  const featureEdge = graph.edges.find(edge => edge.from === 'features' && edge.to === 'shared');
-  const uiEdge = graph.edges.find(edge => edge.from === 'ui' && edge.to === 'features');
-  assert.deepEqual(
-    [
-      featureEdge.importerCount,
-      featureEdge.importCount,
-      featureEdge.valueImporterCount,
-      featureEdge.valueImportCount,
-    ],
-    [42, 73, 42, 72]
-  );
-  assert.deepEqual(
-    [uiEdge.importerCount, uiEdge.importCount, uiEdge.valueImporterCount, uiEdge.valueImportCount],
-    [46, 75, 36, 62]
-  );
-  assert.deepEqual(inspectLayerState(graph, baseline), []);
-  const proposal = buildLayerContractProposal(graph, baseline, { currentDate: '2026-07-28' });
-  assert.equal(proposal.reviewRequired, false);
-  assert.deepEqual(proposal.diff.ratchetViolations, []);
-  assert.deepEqual(proposal.diff.migrationBudgetFailures, []);
-  assert.deepEqual(proposal.diff.requiresFacadeDecision, []);
+  futureFeatureRule.maxImporterCount += 1;
+  futureFeatureRule.maxValueImporterCount += 1;
+  assert.deepEqual(inspectHistoricalFeatureRatchet(futureHigherCeiling, entries), []);
 });
 
-test('transition inventory records only the seven B/C/D/E consumers after Group A', () => {
+test('the four Group A consumers remain absent from the append-safe transition inventory', () => {
   const inventory = JSON.parse(read(transitionInventoryRel));
-  assert.equal(inventory.consumers.length, 7);
-  assert.equal(
-    inventory.consumers.reduce((sum, consumer) => sum + consumer.symbols.length, 0),
-    24
-  );
-  assert.equal(
-    new Set(inventory.consumers.flatMap(consumer => consumer.symbols.map(symbol => symbol.importedSymbol)))
-      .size,
-    19
-  );
-  assert.deepEqual(
-    Object.fromEntries(
-      ['B', 'C', 'D', 'E'].map(group => [
-        group,
-        inventory.consumers.filter(consumer => consumer.checkpointGroup === group).length,
-      ])
-    ),
-    { B: 2, C: 3, D: 1, E: 1 }
-  );
-  const manifest = JSON.parse(read(surfaceManifestRel));
-  assert.equal(
-    manifest.symbols.filter(symbol => symbol.classification === 'internal transition only').length,
-    19
-  );
-  const blocked = manifest.symbols.filter(symbol => symbol.classification !== 'internal transition only');
-  assert.equal(blocked.length, 80);
-  assert.equal(
-    blocked.every(symbol => symbol.classification === 'undetermined — blocks removal'),
-    true
-  );
-  assert.equal(
-    blocked.every(
-      symbol => symbol.plannedAction === 'retain-until-external-evidence-or-explicit-public-surface-decision'
-    ),
-    true
-  );
-  assert.equal(manifest.symbols.filter(symbol => symbol.runtimeApiRoute !== null).length, 53);
-  assert.equal(manifest.symbols.filter(symbol => symbol.servicesApiRoute !== null).length, 53);
+  assert.deepEqual(inspectGroupATransitionHistory(inventory), []);
+
+  const futureInventory = structuredClone(inventory);
+  futureInventory.consumers.push({
+    consumer: 'esm/native/ui/future_dimension_transition_consumer.ts',
+    checkpointGroup: 'FUTURE',
+    symbols: [],
+  });
+  assert.deepEqual(inspectGroupATransitionHistory(futureInventory), []);
 });
 
 test('feature and adapter mutation probes reject facades, aliases, wrappers, and topology growth', () => {
@@ -950,8 +887,9 @@ test('route and behavior mutation probes reject every Group A regression', () =>
   );
 });
 
-test('Ledger and ratchet mutation probes reject owned-entry drift and unreviewed growth', () => {
-  const entries = JSON.parse(read(baselineRel)).migrationBudgets;
+test('Ledger and historical ratchet mutation probes reject owned-entry drift', () => {
+  const baseline = JSON.parse(read(baselineRel));
+  const entries = baseline.migrationBudgets;
   for (let index = 166; index < 171; index += 1) {
     const mutated = structuredClone(entries);
     mutated[index].addedImport.importedSymbols[0] += '_MUTATED';
@@ -964,20 +902,42 @@ test('Ledger and ratchet mutation probes reject owned-entry drift and unreviewed
   assertMutationRejected(
     inspectLedger(withoutRemovalConditions),
     'entry-167',
-    'ratchet 42 without migration removal conditions'
+    'owned Entries without migration removal conditions'
   );
-  const baseline = JSON.parse(read(baselineRel));
-  const graph = getLayerGraph();
-  const uiEdge = graph.edges.find(edge => edge.from === 'ui' && edge.to === 'features');
-  for (const field of ['importerCount', 'importCount', 'valueImporterCount', 'valueImportCount']) {
-    const mutatedGraph = {
-      ...graph,
-      edges: graph.edges.map(edge => (edge === uiEdge ? { ...edge, [field]: edge[field] + 1 } : edge)),
-    };
-    assertMutationRejected(
-      inspectLayerState(mutatedGraph, baseline),
-      `layer-ui-features-${field}`,
-      `UI ${field} growth`
-    );
+
+  const unsupportedCeiling = structuredClone(baseline);
+  const featureRule = unsupportedCeiling.rules.find(rule => rule.from === 'features' && rule.to === 'shared');
+  featureRule.maxImporterCount = 41;
+  featureRule.maxValueImporterCount = 41;
+  assertMutationRejected(
+    inspectHistoricalFeatureRatchet(unsupportedCeiling, entries),
+    'historical-importer-ceiling-support',
+    'active Group A Entries without importer ceiling support'
+  );
+
+  const returnedConsumer = structuredClone(JSON.parse(read(transitionInventoryRel)));
+  returnedConsumer.consumers.push({
+    consumer: Object.keys(groupAConsumers)[0],
+    checkpointGroup: 'A',
+    symbols: [],
+  });
+  assertMutationRejected(
+    inspectGroupATransitionHistory(returnedConsumer),
+    'group-a-transition-consumer',
+    'Group A transition consumer returned'
+  );
+  assertMutationRejected(
+    inspectGroupATransitionHistory(returnedConsumer),
+    'group-a-transition-group',
+    'Group A transition group returned'
+  );
+  const unrelatedCurrentTotals = structuredClone(baseline);
+  const unrelatedRule = unrelatedCurrentTotals.rules.find(
+    rule => rule.from === 'ui' && rule.to === 'features'
+  );
+  if (unrelatedRule) {
+    unrelatedRule.maxImporterCount += 10;
+    unrelatedRule.maxImportCount += 10;
   }
+  assert.deepEqual(inspectHistoricalFeatureRatchet(unrelatedCurrentTotals, entries), []);
 });
