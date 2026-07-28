@@ -1697,10 +1697,10 @@ test('project migration ledger stays exact at one hundred and sixty-six reviewed
   const staticFacadeDependencies = facadeDependencies.filter(
     dependency => dependency.syntax === 'static-import'
   );
-  assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 2);
-  assert.equal(staticFacadeDependencies.length, 2);
-  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 4);
-  assert.equal(facadeDependencies.length, 5);
+  assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 1);
+  assert.equal(staticFacadeDependencies.length, 1);
+  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 3);
+  assert.equal(facadeDependencies.length, 4);
 
   const facadeSource = fs.readFileSync(path.join(repositoryRoot, facadeRel), 'utf8');
   const facadeExports = collectNamedModuleExports(facadeRel, facadeSource);

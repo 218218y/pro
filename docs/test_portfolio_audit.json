@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-28T11:06:57.592Z",
+  "generatedAt": "2026-07-28T12:29:16.643Z",
   "totals": {
-    "tests": 1305,
-    "unitRunnerTests": 1297,
+    "tests": 1306,
+    "unitRunnerTests": 1298,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 463,
+    "contract": 464,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -5015,6 +5015,10 @@
     },
     {
       "file": "tests/wardrobe_layout_dimension_ownership_closeout_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wardrobe_sanitization_policy_ownership_contract.test.js",
       "category": "contract"
     },
     {

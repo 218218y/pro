@@ -923,10 +923,10 @@ test('Layer, facade dependency, and proposal counts stay at the current audited 
       .map(dependency => ({ file, ...dependency }))
   );
   const staticFacadeImports = facadeDependencies.filter(dependency => dependency.syntax === 'static-import');
-  assert.equal(new Set(staticFacadeImports.map(dependency => dependency.file)).size, 2);
-  assert.equal(staticFacadeImports.length, 2);
-  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 4);
-  assert.equal(facadeDependencies.length, 5);
+  assert.equal(new Set(staticFacadeImports.map(dependency => dependency.file)).size, 1);
+  assert.equal(staticFacadeImports.length, 1);
+  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 3);
+  assert.equal(facadeDependencies.length, 4);
 
   const proposal = buildLayerContractProposal(graph, baseline, { currentDate: '2026-07-28' });
   assert.equal(proposal.reviewRequired, false);

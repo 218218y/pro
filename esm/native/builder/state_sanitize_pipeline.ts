@@ -5,25 +5,7 @@ import { coerceFiniteInt, coerceFiniteNumber } from '../runtime/num_coerce.js';
 import { syncDimensionRuntimePatch } from '../runtime/dimension_sync_coalescer.js';
 import { metaUiOnly } from '../runtime/meta_profiles_access.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
-import {
-  DEFAULT_HEIGHT,
-  DEFAULT_WIDTH,
-  DEFAULT_CHEST_DRAWERS_COUNT,
-  WARDROBE_CHEST_DRAWERS_MAX,
-  WARDROBE_CHEST_DRAWERS_MIN,
-  WARDROBE_CHEST_HEIGHT_MIN,
-  WARDROBE_CHEST_WIDTH_MIN,
-  WARDROBE_DEPTH_MAX,
-  WARDROBE_DEPTH_MIN,
-  WARDROBE_DOORS_MAX,
-  WARDROBE_HEIGHT_MAX,
-  WARDROBE_HEIGHT_MIN,
-  WARDROBE_SLIDING_DOORS_MIN,
-  WARDROBE_WIDTH_MAX,
-  WARDROBE_WIDTH_MIN,
-  getDefaultDepthForWardrobeType,
-  getDefaultDoorsForWardrobeType,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { WARDROBE_SANITIZATION_POLICY } from '../../shared/dimensions/wardrobe_sanitization_policy.js';
 
 type SanitizedDims = {
   skipBuild: boolean;
@@ -94,49 +76,82 @@ export function sanitizeBuildDimsAndSyncRuntime(args: {
 
   const isChestMode = !!ui.isChestMode;
   const isSliding = typeof cfg.wardrobeType !== 'undefined' && cfg.wardrobeType === 'sliding';
-  const minDoorsAllowed = isSliding ? WARDROBE_SLIDING_DOORS_MIN : 0;
-  const minWLimit = isChestMode ? WARDROBE_CHEST_WIDTH_MIN : WARDROBE_WIDTH_MIN;
-  const minHLimit = isChestMode ? WARDROBE_CHEST_HEIGHT_MIN : WARDROBE_HEIGHT_MIN;
+  const minDoorsAllowed = isSliding
+    ? WARDROBE_SANITIZATION_POLICY.limits.doors.slidingMin
+    : WARDROBE_SANITIZATION_POLICY.limits.doors.min;
+  const minWLimit = isChestMode
+    ? WARDROBE_SANITIZATION_POLICY.limits.width.chestMinCm
+    : WARDROBE_SANITIZATION_POLICY.limits.width.minCm;
+  const minHLimit = isChestMode
+    ? WARDROBE_SANITIZATION_POLICY.limits.height.chestMinCm
+    : WARDROBE_SANITIZATION_POLICY.limits.height.minCm;
 
-  const defaultDepth = getDefaultDepthForWardrobeType(cfg.wardrobeType);
-  const defaultDoors = getDefaultDoorsForWardrobeType(cfg.wardrobeType);
+  const defaultDepth = WARDROBE_SANITIZATION_POLICY.resolveDepthCm(cfg.wardrobeType);
+  const defaultDoors = WARDROBE_SANITIZATION_POLICY.resolveDoorsCount(cfg.wardrobeType);
 
-  const rawWidth = _toNum(raw.width, DEFAULT_WIDTH);
-  const rawHeight = _toNum(raw.height, DEFAULT_HEIGHT);
+  const rawWidth = _toNum(raw.width, WARDROBE_SANITIZATION_POLICY.defaults.widthCm);
+  const rawHeight = _toNum(raw.height, WARDROBE_SANITIZATION_POLICY.defaults.heightCm);
   const rawDepth = _toNum(raw.depth, defaultDepth);
   // Prefer raw['doors'] but fall back to ui.doors (some loaders/flows persist only the normalized field).
   const rawDoors = _toInt(raw['doors'] != null ? raw['doors'] : ui.doors, defaultDoors);
-  const rawChestDrawers = _toInt(raw.chestDrawersCount, DEFAULT_CHEST_DRAWERS_COUNT);
+  const rawChestDrawers = _toInt(
+    raw.chestDrawersCount,
+    WARDROBE_SANITIZATION_POLICY.defaults.chestDrawersCount
+  );
 
   const forceBuild = !!ui.forceBuild;
   const activeId = formatIdentityValue(readIdentityValue(ui.__activeId));
 
   // Mid-edit skip rules (do NOT throw; just skip build to avoid fight with the input field).
   if (!forceBuild) {
-    if (activeId === 'width' && (rawWidth < minWLimit || rawWidth > WARDROBE_WIDTH_MAX)) {
+    if (
+      activeId === 'width' &&
+      (rawWidth < minWLimit || rawWidth > WARDROBE_SANITIZATION_POLICY.limits.width.maxCm)
+    ) {
       return { skipBuild: true, widthCm: 0, heightCm: 0, depthCm: 0, doorsCount: 0, chestDrawersCount: 0 };
     }
-    if (activeId === 'height' && (rawHeight < minHLimit || rawHeight > WARDROBE_HEIGHT_MAX)) {
+    if (
+      activeId === 'height' &&
+      (rawHeight < minHLimit || rawHeight > WARDROBE_SANITIZATION_POLICY.limits.height.maxCm)
+    ) {
       return { skipBuild: true, widthCm: 0, heightCm: 0, depthCm: 0, doorsCount: 0, chestDrawersCount: 0 };
     }
-    if (activeId === 'depth' && (rawDepth < WARDROBE_DEPTH_MIN || rawDepth > WARDROBE_DEPTH_MAX)) {
+    if (
+      activeId === 'depth' &&
+      (rawDepth < WARDROBE_SANITIZATION_POLICY.limits.depth.minCm ||
+        rawDepth > WARDROBE_SANITIZATION_POLICY.limits.depth.maxCm)
+    ) {
       return { skipBuild: true, widthCm: 0, heightCm: 0, depthCm: 0, doorsCount: 0, chestDrawersCount: 0 };
     }
-    if (activeId === 'doors' && (rawDoors < minDoorsAllowed || rawDoors > WARDROBE_DOORS_MAX)) {
+    if (
+      activeId === 'doors' &&
+      (rawDoors < minDoorsAllowed || rawDoors > WARDROBE_SANITIZATION_POLICY.limits.doors.max)
+    ) {
       return { skipBuild: true, widthCm: 0, heightCm: 0, depthCm: 0, doorsCount: 0, chestDrawersCount: 0 };
     }
   }
 
   const isNoMainWardrobe = !isChestMode && !isSliding && rawDoors === 0;
-  const widthCm = isNoMainWardrobe ? 0 : Math.max(minWLimit, Math.min(WARDROBE_WIDTH_MAX, rawWidth));
-  const heightCm = Math.max(minHLimit, Math.min(WARDROBE_HEIGHT_MAX, rawHeight));
-  const depthCm = Math.max(WARDROBE_DEPTH_MIN, Math.min(WARDROBE_DEPTH_MAX, rawDepth));
+  const widthCm = isNoMainWardrobe
+    ? 0
+    : Math.max(minWLimit, Math.min(WARDROBE_SANITIZATION_POLICY.limits.width.maxCm, rawWidth));
+  const heightCm = Math.max(minHLimit, Math.min(WARDROBE_SANITIZATION_POLICY.limits.height.maxCm, rawHeight));
+  const depthCm = Math.max(
+    WARDROBE_SANITIZATION_POLICY.limits.depth.minCm,
+    Math.min(WARDROBE_SANITIZATION_POLICY.limits.depth.maxCm, rawDepth)
+  );
 
-  const doorsCount = Math.max(minDoorsAllowed, Math.min(WARDROBE_DOORS_MAX, rawDoors));
+  const doorsCount = Math.max(
+    minDoorsAllowed,
+    Math.min(WARDROBE_SANITIZATION_POLICY.limits.doors.max, rawDoors)
+  );
 
   const chestDrawersCount = Math.max(
-    WARDROBE_CHEST_DRAWERS_MIN,
-    Math.min(WARDROBE_CHEST_DRAWERS_MAX, rawChestDrawers || DEFAULT_CHEST_DRAWERS_COUNT)
+    WARDROBE_SANITIZATION_POLICY.limits.chestDrawers.min,
+    Math.min(
+      WARDROBE_SANITIZATION_POLICY.limits.chestDrawers.max,
+      rawChestDrawers || WARDROBE_SANITIZATION_POLICY.defaults.chestDrawersCount
+    )
   );
 
   // Keep sanitized dims in sync (build UI snapshot + runtime store).

@@ -1353,11 +1353,6 @@ test('[dimension tokens] Wardrobe Default Resolution is defined only by its focu
   );
   assert.deepEqual(facadeConsumers, [
     {
-      file: 'esm/native/builder/state_sanitize_pipeline.ts',
-      syntax: 'static-import',
-      symbols: ['getDefaultDepthForWardrobeType', 'getDefaultDoorsForWardrobeType'],
-    },
-    {
       file: 'esm/native/runtime/api.ts',
       syntax: 'static-re-export',
       symbols: [

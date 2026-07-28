@@ -18,7 +18,6 @@ const platformConsumerRel = 'esm/native/platform/platform_services.ts';
 const platformPolicySymbol = 'PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const approvedNativeConsumerUniverse = new Set([
-  'esm/native/builder/state_sanitize_pipeline.ts',
   'esm/native/features/library_preset/module_defaults.ts',
   'esm/native/kernel/domain_api_room_section_wardrobe.ts',
   'esm/native/runtime/api.ts',
@@ -1548,7 +1547,7 @@ export const resolveAutoWidthForDoors = ownerResolveAutoWidthForDoors;`
 });
 
 test('approved universe rejects focused reference escapes, local bridges, and broad compatibility overlap without blocking direct calls', () => {
-  const approvedFixturePath = path.join(root, 'esm/native/builder/state_sanitize_pipeline.ts');
+  const approvedFixturePath = path.join(root, 'esm/native/kernel/domain_api_room_section_wardrobe.ts');
   const approvedRuntimePath = path.join(root, 'esm/native/runtime/api.ts');
   const unapprovedFixturePath = path.join(root, 'esm/native/ui/react/tabs/unapproved_default_consumer.ts');
   const focusedImport = `import { resolveAutoWidthForDoors } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';`;
