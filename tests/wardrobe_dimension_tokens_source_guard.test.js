@@ -44,6 +44,7 @@ const productDimensionTokenSources = [
   'esm/shared/dimensions/cell_dimension_policy.ts',
   'esm/shared/dimensions/wardrobe_layout_comparison_policy.ts',
   'esm/shared/dimensions/wardrobe_layout_policy.ts',
+  'esm/shared/dimensions/wardrobe_dimension_guide_policy.ts',
   'esm/shared/dimensions/wardrobe_default_resolution_policy.ts',
   'esm/shared/dimensions/preset_models_dimension_defaults_policy.ts',
 ];
@@ -1056,11 +1057,13 @@ test('[dimension tokens] sketch divider, attachment, and free-box measurement ov
 });
 
 test('[dimension tokens] wardrobe dimension guide offsets are centralized', () => {
-  const tokens = readProductDimensionTokens();
-  assert.match(tokens, /export const WARDROBE_DIMENSION_GUIDE_DIMENSIONS = Object\.freeze\(\{/);
-  assert.match(tokens, /verticalPlacement: Object\.freeze\(\{/);
-  assert.match(tokens, /expandedWidthYOffsetM:/);
-  assert.match(tokens, /smallDepthStartYOffsetM:/);
+  const owner = read('esm/shared/dimensions/wardrobe_dimension_guide_policy.ts');
+  const facade = read('esm/shared/wardrobe_dimension_tokens_shared.ts');
+  assert.match(owner, /export const WARDROBE_DIMENSION_GUIDE_POLICY = Object\.freeze\(\{/);
+  assert.match(owner, /verticalPlacement: Object\.freeze\(\{/);
+  assert.match(owner, /expandedWidthYOffsetM:/);
+  assert.match(owner, /smallDepthStartYOffsetM:/);
+  assert.match(facade, /export const WARDROBE_DIMENSION_GUIDE_DIMENSIONS = WARDROBE_DIMENSION_GUIDE_POLICY;/);
 
   for (const rel of [
     'esm/native/builder/render_dimension_ops_shared.ts',

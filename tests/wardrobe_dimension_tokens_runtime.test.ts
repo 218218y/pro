@@ -20,6 +20,7 @@ import {
   INTERIOR_FITTINGS_DIMENSIONS,
   LIBRARY_PRESET_DIMENSIONS as FACADE_LIBRARY_PRESET_DIMENSIONS,
   MATERIAL_DIMENSIONS,
+  WARDROBE_DIMENSION_GUIDE_DIMENSIONS as FACADE_WARDROBE_DIMENSION_GUIDE_DIMENSIONS,
   WARDROBE_LAYOUT_DIMENSIONS,
   WARDROBE_DEFAULTS as FACADE_WARDROBE_DEFAULTS,
   resolveExternalDrawerGeometry,
@@ -209,6 +210,7 @@ import {
 } from '../esm/shared/dimensions/cell_dimension_policy.ts';
 import { WARDROBE_LAYOUT_COMPARISON_POLICY } from '../esm/shared/dimensions/wardrobe_layout_comparison_policy.ts';
 import { WARDROBE_MODULE_LAYOUT_POLICY } from '../esm/shared/dimensions/wardrobe_layout_policy.ts';
+import { WARDROBE_DIMENSION_GUIDE_POLICY } from '../esm/shared/dimensions/wardrobe_dimension_guide_policy.ts';
 import {
   DEFAULT_HINGED_DOORS,
   DEFAULT_SLIDING_DOORS,
@@ -389,6 +391,129 @@ test('Wardrobe Layout compatibility projection preserves focused-owner identity 
   assert.equal(Math.abs(toleranceCm - 0), toleranceCm);
   assert.equal(isAutoWidthForDoors('hinged', toleranceCm, 0), false);
   assert.equal(isAutoWidthForDoors('hinged', expectedWidthCm + toleranceCm + 0.001, 4), false);
+});
+
+test('Wardrobe Dimension Guide owner preserves facade identity, declaration parity, key order, freeze, and serialization', () => {
+  const ownerDeclarationParity: typeof WARDROBE_DIMENSION_GUIDE_POLICY =
+    FACADE_WARDROBE_DIMENSION_GUIDE_DIMENSIONS;
+  const facadeDeclarationParity: typeof FACADE_WARDROBE_DIMENSION_GUIDE_DIMENSIONS =
+    WARDROBE_DIMENSION_GUIDE_POLICY;
+  assert.equal(ownerDeclarationParity, facadeDeclarationParity);
+  assert.equal(FACADE_WARDROBE_DIMENSION_GUIDE_DIMENSIONS, WARDROBE_DIMENSION_GUIDE_POLICY);
+
+  assert.deepEqual(Object.keys(WARDROBE_DIMENSION_GUIDE_POLICY), [
+    'textScale',
+    'verticalPlacement',
+    'main',
+    'corner',
+  ]);
+  assert.deepEqual(Object.keys(WARDROBE_DIMENSION_GUIDE_POLICY.textScale), ['total', 'cell', 'cornerTotal']);
+  assert.deepEqual(Object.keys(WARDROBE_DIMENSION_GUIDE_POLICY.verticalPlacement), [
+    'totalYOffsetWithCorniceM',
+    'totalYOffsetWithoutCorniceM',
+    'cellYOffsetWithCorniceM',
+    'cellYOffsetWithoutCorniceM',
+  ]);
+  assert.deepEqual(Object.keys(WARDROBE_DIMENSION_GUIDE_POLICY.main), [
+    'totalWidthTextYOffsetM',
+    'cellWidthTextYOffsetM',
+    'heightLineOffsetM',
+    'stackSplitHeightLineOffsetM',
+    'heightTextOffsetM',
+    'cellHeightLineDeltaM',
+    'stackSplitCellHeightLineDeltaM',
+    'cellHeightTextOffsetM',
+    'cellHeightLabelYOffsetM',
+    'depthLineOffsetXM',
+    'depthTextOffsetXM',
+    'depthStartYOffsetM',
+    'depthEndYOffsetM',
+    'smallDepthLineOffsetXM',
+    'smallDepthTextOffsetXM',
+    'smallDepthStartYOffsetM',
+    'smallDepthEndYOffsetM',
+    'minDistinctDepthDeltaCm',
+  ]);
+  assert.deepEqual(Object.keys(WARDROBE_DIMENSION_GUIDE_POLICY.corner), [
+    'connectorWallMinLengthM',
+    'expandedWidthEpsilonM',
+    'expandedWidthYOffsetM',
+    'expandedWidthTextYOffsetM',
+    'wingMinLengthM',
+    'wingTotalTextYOffsetM',
+    'wingCellTextYOffsetM',
+    'connectorDepthMidRatio',
+    'connectorDepthInsetM',
+    'connectorDepthMinM',
+    'connectorHeightLineRatio',
+    'depthStartYOffsetM',
+    'depthEndYOffsetM',
+    'depthTextOffsetZM',
+    'heightTextOffsetZM',
+    'wingHeightLineRatio',
+  ]);
+
+  assert.deepEqual(WARDROBE_DIMENSION_GUIDE_POLICY, {
+    textScale: {
+      total: 1,
+      cell: 0.78,
+      cornerTotal: 0.9,
+    },
+    verticalPlacement: {
+      totalYOffsetWithCorniceM: 0.28,
+      totalYOffsetWithoutCorniceM: 0.23,
+      cellYOffsetWithCorniceM: 0.2,
+      cellYOffsetWithoutCorniceM: 0.15,
+    },
+    main: {
+      totalWidthTextYOffsetM: 0.1,
+      cellWidthTextYOffsetM: 0.07,
+      heightLineOffsetM: 0.3,
+      stackSplitHeightLineOffsetM: 0.54,
+      heightTextOffsetM: 0.1,
+      cellHeightLineDeltaM: 0.12,
+      stackSplitCellHeightLineDeltaM: 0.24,
+      cellHeightTextOffsetM: 0.08,
+      cellHeightLabelYOffsetM: -0.26,
+      depthLineOffsetXM: 0.24,
+      depthTextOffsetXM: 0.2,
+      depthStartYOffsetM: 0.35,
+      depthEndYOffsetM: 0.15,
+      smallDepthLineOffsetXM: 0.16,
+      smallDepthTextOffsetXM: 0.18,
+      smallDepthStartYOffsetM: 0.57,
+      smallDepthEndYOffsetM: 0.37,
+      minDistinctDepthDeltaCm: 1,
+    },
+    corner: {
+      connectorWallMinLengthM: 0.05,
+      expandedWidthEpsilonM: 0.01,
+      expandedWidthYOffsetM: 0.12,
+      expandedWidthTextYOffsetM: 0.1,
+      wingMinLengthM: 0.01,
+      wingTotalTextYOffsetM: 0.1,
+      wingCellTextYOffsetM: 0.07,
+      connectorDepthMidRatio: 0.55,
+      connectorDepthInsetM: 0.08,
+      connectorDepthMinM: 0.2,
+      connectorHeightLineRatio: 0.55,
+      depthStartYOffsetM: 0.35,
+      depthEndYOffsetM: 0.15,
+      depthTextOffsetZM: 0.28,
+      heightTextOffsetZM: 0.46,
+      wingHeightLineRatio: 0.55,
+    },
+  });
+  assert.equal(Object.isFrozen(WARDROBE_DIMENSION_GUIDE_POLICY), true);
+  assert.equal(Object.isFrozen(WARDROBE_DIMENSION_GUIDE_POLICY.textScale), true);
+  assert.equal(Object.isFrozen(WARDROBE_DIMENSION_GUIDE_POLICY.verticalPlacement), true);
+  assert.equal(Object.isFrozen(WARDROBE_DIMENSION_GUIDE_POLICY.main), true);
+  assert.equal(Object.isFrozen(WARDROBE_DIMENSION_GUIDE_POLICY.corner), true);
+
+  const serialized = JSON.stringify(FACADE_WARDROBE_DIMENSION_GUIDE_DIMENSIONS);
+  assert.equal(typeof serialized, 'string');
+  assert.ok(serialized);
+  assert.deepEqual(JSON.parse(serialized), WARDROBE_DIMENSION_GUIDE_POLICY);
 });
 
 test('stack split policy preserves business limits, defaults, facade parity, and render geometry', () => {

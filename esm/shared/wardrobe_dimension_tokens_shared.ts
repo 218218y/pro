@@ -9,6 +9,7 @@ import {
 } from './dimensions/cell_dimension_policy.js';
 import { WARDROBE_LAYOUT_COMPARISON_POLICY } from './dimensions/wardrobe_layout_comparison_policy.js';
 import { WARDROBE_MODULE_LAYOUT_POLICY } from './dimensions/wardrobe_layout_policy.js';
+import { WARDROBE_DIMENSION_GUIDE_POLICY } from './dimensions/wardrobe_dimension_guide_policy.js';
 import {
   DEFAULT_CHEST_DRAWERS_COUNT,
   DEFAULT_CORNER_DOORS,
@@ -240,57 +241,7 @@ export const WARDROBE_LAYOUT_DIMENSIONS = Object.freeze({
   cellDimsPreview: CELL_DIMENSION_PREVIEW_POLICY,
 });
 
-export const WARDROBE_DIMENSION_GUIDE_DIMENSIONS = Object.freeze({
-  textScale: Object.freeze({
-    total: 1,
-    cell: 0.78,
-    cornerTotal: 0.9,
-  }),
-  verticalPlacement: Object.freeze({
-    totalYOffsetWithCorniceM: 0.28,
-    totalYOffsetWithoutCorniceM: 0.23,
-    cellYOffsetWithCorniceM: 0.2,
-    cellYOffsetWithoutCorniceM: 0.15,
-  }),
-  main: Object.freeze({
-    totalWidthTextYOffsetM: 0.1,
-    cellWidthTextYOffsetM: 0.07,
-    heightLineOffsetM: 0.3,
-    stackSplitHeightLineOffsetM: 0.54,
-    heightTextOffsetM: 0.1,
-    cellHeightLineDeltaM: 0.12,
-    stackSplitCellHeightLineDeltaM: 0.24,
-    cellHeightTextOffsetM: 0.08,
-    cellHeightLabelYOffsetM: -0.26,
-    depthLineOffsetXM: 0.24,
-    depthTextOffsetXM: 0.2,
-    depthStartYOffsetM: 0.35,
-    depthEndYOffsetM: 0.15,
-    smallDepthLineOffsetXM: 0.16,
-    smallDepthTextOffsetXM: 0.18,
-    smallDepthStartYOffsetM: 0.57,
-    smallDepthEndYOffsetM: 0.37,
-    minDistinctDepthDeltaCm: 1,
-  }),
-  corner: Object.freeze({
-    connectorWallMinLengthM: 0.05,
-    expandedWidthEpsilonM: 0.01,
-    expandedWidthYOffsetM: 0.12,
-    expandedWidthTextYOffsetM: 0.1,
-    wingMinLengthM: 0.01,
-    wingTotalTextYOffsetM: 0.1,
-    wingCellTextYOffsetM: 0.07,
-    connectorDepthMidRatio: 0.55,
-    connectorDepthInsetM: 0.08,
-    connectorDepthMinM: 0.2,
-    connectorHeightLineRatio: 0.55,
-    depthStartYOffsetM: 0.35,
-    depthEndYOffsetM: 0.15,
-    depthTextOffsetZM: 0.28,
-    heightTextOffsetZM: 0.46,
-    wingHeightLineRatio: 0.55,
-  }),
-});
+export const WARDROBE_DIMENSION_GUIDE_DIMENSIONS = WARDROBE_DIMENSION_GUIDE_POLICY;
 
 export const NO_MAIN_SKETCH_DIMENSIONS = Object.freeze({
   defaultGridDivisions: 6,
