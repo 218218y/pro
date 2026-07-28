@@ -1,0 +1,3361 @@
+{
+  "version": 1,
+  "capturedAtHead": "1bd9eb032b522dcfc7277f02b47cc7e9c23b8e76",
+  "policy": "Inventory every current facade export without treating route presence or repository silence as external-consumer evidence. Undetermined symbols block removal.",
+  "facade": {
+    "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+    "featureCompatibilityRoute": "esm/native/features/dimensions/index.ts"
+  },
+  "evidenceCatalog": {
+    "package-private-no-exports": {
+      "polarity": "negative",
+      "sources": ["package.json"],
+      "result": "The package is private and has no exports map; this is negative evidence only, not proof that deployed source-path consumers do not exist."
+    },
+    "feature-route-not-in-public-manifest": {
+      "polarity": "negative",
+      "sources": ["esm/native/features/dimensions/index.ts", "tools/wp_features_public_api_manifest.json"],
+      "result": "The wildcard dimensions route is absent from the deliberate feature public manifest; this does not prove absence of external source-path consumers."
+    },
+    "no-tracked-dist-contract": {
+      "polarity": "negative",
+      "sources": ["git ls-files dist"],
+      "result": "No tracked dist declaration or bundle is available as an external API contract."
+    },
+    "no-production-feature-route-consumer": {
+      "polarity": "negative",
+      "sources": ["esm/native/features/dimensions/index.ts"],
+      "result": "The production AST graph has no dependency on the feature wildcard route; test fixtures are internal contract evidence only."
+    },
+    "services-entry-is-public-layer-surface": {
+      "polarity": "negative",
+      "sources": ["esm/native/services/api.ts", "tools/wp_public_api_contract.js"],
+      "result": "Services API is a deliberate cross-layer entry, but entry-point exposure alone is not evidence of an external dimension consumer."
+    }
+  },
+  "symbols": [
+    {
+      "name": "BASE_LEG_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/base_leg_policy.ts",
+            "symbols": ["BASE_LEG_DIMENSIONS"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "legacy-number-view-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "CARCASS_BASE_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "composition",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/base_plinth_policy.ts",
+            "symbols": ["BASE_PLINTH_POLICY"]
+          },
+          {
+            "file": "esm/shared/dimensions/base_leg_policy.ts",
+            "symbols": ["BASE_LEG_LAYOUT_POLICY"]
+          },
+          {
+            "file": "esm/shared/dimensions/chest_structural_policy.ts",
+            "symbols": ["CHEST_STRUCTURAL_DIMENSIONS"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "local-composition",
+        "identity": "new-aggregate"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "CARCASS_CORNICE_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+            "symbols": ["CARCASS_CORNICE_RENDER_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "legacy-number-view-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "CARCASS_INTERIOR_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/carcass_interior_policy.ts",
+            "symbols": ["CARCASS_INTERIOR_DIMENSIONS"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "CARCASS_SHELL_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/carcass_shell_policy.ts",
+            "symbols": ["CARCASS_SHELL_DIMENSIONS"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "Centimeters",
+      "kind": "type",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/units.ts",
+            "symbols": ["Centimeters"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "type-re-export",
+        "identity": "declaration-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "CHEST_MODE_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/chest_mode_policy.ts",
+            "symbols": ["CHEST_MODE_DIMENSIONS"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "legacy-number-view-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "clampDimension",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/units.ts",
+            "symbols": ["clampDimension"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "CM_PER_METER",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/units.ts",
+            "symbols": ["CM_PER_METER"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "cmToM",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/units.ts",
+            "symbols": ["cmToM"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "CONTENT_VISUAL_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "composition",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/content_visual_policy.ts",
+            "symbols": [
+              "BOOK_CONTENT_VISUAL_POLICY",
+              "FOLDED_CLOTHES_VISUAL_POLICY",
+              "HANGER_VISUAL_POLICY",
+              "HANGING_CLOTHES_VISUAL_POLICY"
+            ]
+          },
+          {
+            "file": "esm/shared/dimensions/sketch_box_classic_door_visual_policy.ts",
+            "symbols": ["SKETCH_BOX_CLASSIC_DOOR_VISUAL_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "local-composition",
+        "identity": "new-aggregate"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "CORNER_CONNECTOR_INTERIOR_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/corner_connector_interior_policy.ts",
+            "symbols": ["CORNER_CONNECTOR_INTERIOR_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "legacy-number-view-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "CORNER_WING_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/corner_system_policy.ts",
+            "symbols": ["CORNER_SYSTEM_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "legacy-number-view-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "DEFAULT_CHEST_DRAWERS_COUNT",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "symbols": ["DEFAULT_CHEST_DRAWERS_COUNT"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "DEFAULT_CORNER_DOORS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "symbols": ["DEFAULT_CORNER_DOORS"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "DEFAULT_CORNER_WIDTH",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "symbols": ["DEFAULT_CORNER_WIDTH"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "DEFAULT_HEIGHT",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "symbols": ["DEFAULT_HEIGHT"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "DEFAULT_HINGED_DOORS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "symbols": ["DEFAULT_HINGED_DOORS"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "DEFAULT_SLIDING_DOORS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "symbols": ["DEFAULT_SLIDING_DOORS"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export"]
+      },
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/stack_split_policy.ts",
+            "symbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "DEFAULT_WIDTH",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "symbols": ["DEFAULT_WIDTH"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "DOOR_MOUNT_THICKNESS_CONFIG_KEYS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+            "symbols": ["DOOR_MOUNT_THICKNESS_CONFIG_KEYS"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "DOOR_MOUNT_THICKNESS_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+            "symbols": ["DOOR_MOUNT_THICKNESS_DIMENSIONS"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "legacy-number-view-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "DOOR_SYSTEM_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/door_system_policy.ts",
+            "symbols": ["DOOR_SYSTEM_DIMENSIONS"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "legacy-number-view-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "DOOR_TRIM_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/door_trim_policy.ts",
+            "symbols": ["DOOR_TRIM_DIMENSIONS"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "legacy-number-view-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "DOOR_VISUAL_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/door_visual_policy.ts",
+            "symbols": ["DOOR_VISUAL_DIMENSIONS"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "legacy-number-view-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "DoorMountConstructionMode",
+      "kind": "type",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+            "symbols": ["DoorMountConstructionMode"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "type-re-export",
+        "identity": "declaration-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "DoorMountThicknessConfigKey",
+      "kind": "type",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+            "symbols": ["DoorMountThicknessConfigKey"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "type-re-export",
+        "identity": "declaration-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "DoorMountThicknessKind",
+      "kind": "type",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+            "symbols": ["DoorMountThicknessKind"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "type-re-export",
+        "identity": "declaration-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "DRAWER_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "composition",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/drawer_sketch_policy.ts",
+            "symbols": ["DRAWER_SKETCH_POLICY"]
+          },
+          {
+            "file": "esm/shared/dimensions/external_drawer_policy.ts",
+            "symbols": ["EXTERNAL_DRAWER_POLICY"]
+          },
+          {
+            "file": "esm/shared/dimensions/internal_drawer_policy.ts",
+            "symbols": ["INTERNAL_DRAWER_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "local-composition",
+        "identity": "new-aggregate"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "ExternalDrawerGeometry",
+      "kind": "type",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/external_drawer_policy.ts",
+            "symbols": ["ExternalDrawerGeometry"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "imported-type-local-export",
+        "identity": "declaration-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "FRONT_REVEAL_FRAME_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/front_reveal_frame_policy.ts",
+            "symbols": ["FRONT_REVEAL_FRAME_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "legacy-number-view-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "getDefaultChestDrawersCount",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+            "symbols": ["getDefaultChestDrawersCount"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export"]
+      },
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "getDefaultDepthForWardrobeType",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+            "symbols": ["getDefaultDepthForWardrobeType"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "getDefaultDoorMountThicknessCm",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+            "symbols": ["getDefaultDoorMountThicknessCm"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "getDefaultDoorMountThicknessM",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+            "symbols": ["getDefaultDoorMountThicknessM"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "getDefaultDoorsForWardrobeType",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+            "symbols": ["getDefaultDoorsForWardrobeType"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "getDefaultHeightForWardrobeType",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+            "symbols": ["getDefaultHeightForWardrobeType"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export"]
+      },
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "getDefaultPerDoorWidthForWardrobeType",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+            "symbols": ["getDefaultPerDoorWidthForWardrobeType"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "getDefaultWidthForWardrobeType",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+            "symbols": ["getDefaultWidthForWardrobeType"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export"]
+      },
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "getDoorMountThicknessConfigKey",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+            "symbols": ["getDoorMountThicknessConfigKey"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "HANDLE_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/handle_policy.ts",
+            "symbols": ["HANDLE_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "legacy-number-view-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "HINGED_DEFAULT_DEPTH",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "symbols": ["HINGED_DEFAULT_DEPTH"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "HINGED_DEFAULT_PER_DOOR_WIDTH",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "symbols": ["HINGED_DEFAULT_PER_DOOR_WIDTH"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_saved_models_patterns.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "INTERIOR_FITTINGS_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/interior_fittings_policy.ts",
+            "symbols": ["INTERIOR_FITTINGS_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "legacy-number-view-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "isAutoWidthForDoors",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+            "symbols": ["isAutoWidthForDoors"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "LIBRARY_PRESET_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/library_preset_policy.ts",
+            "symbols": ["LIBRARY_PRESET_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "focused-owner-local-alias",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "MATERIAL_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/material_thickness_policy.ts",
+            "symbols": ["MATERIAL_THICKNESS_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "legacy-number-view-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "Meters",
+      "kind": "type",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/units.ts",
+            "symbols": ["Meters"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "type-re-export",
+        "identity": "declaration-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "Millimeters",
+      "kind": "type",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/units.ts",
+            "symbols": ["Millimeters"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "type-re-export",
+        "identity": "declaration-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "MM_PER_METER",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/units.ts",
+            "symbols": ["MM_PER_METER"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "mToCm",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/units.ts",
+            "symbols": ["mToCm"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "NO_MAIN_SKETCH_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/no_main_sketch_policy.ts",
+            "symbols": ["NO_MAIN_SKETCH_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "focused-owner-local-alias",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "normalizeDoorMountThicknessCm",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+            "symbols": ["normalizeDoorMountThicknessCm"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "normalizeWardrobeDimensionDefaultType",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+            "symbols": ["normalizeWardrobeDimensionDefaultType"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export"]
+      },
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "Pixels",
+      "kind": "type",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/units.ts",
+            "symbols": ["Pixels"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "type-re-export",
+        "identity": "declaration-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "resolveAutoWidthForDoors",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+            "symbols": ["resolveAutoWidthForDoors"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_workflows_controller_shared.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "resolveDefaultWardrobeDimensions",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+            "symbols": ["resolveDefaultWardrobeDimensions"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export"]
+      },
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "resolveDoorMountThicknessesFromConfig",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+            "symbols": ["resolveDoorMountThicknessesFromConfig"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "resolveExternalDrawerGeometry",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/external_drawer_policy.ts",
+            "symbols": ["resolveExternalDrawerGeometry"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "resolveWardrobeTypeDefaults",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+            "symbols": ["resolveWardrobeTypeDefaults"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "named-re-export",
+        "identity": "direct-owner-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "SKETCH_BOX_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "composition",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+            "symbols": ["SKETCH_BOX_GEOMETRY_POLICY"]
+          },
+          {
+            "file": "esm/shared/dimensions/sketch_box_divider_policy.ts",
+            "symbols": ["SKETCH_BOX_DIVIDER_POLICY"]
+          },
+          {
+            "file": "esm/shared/dimensions/sketch_box_dimension_overlay_policy.ts",
+            "symbols": ["SKETCH_BOX_DIMENSION_OVERLAY_POLICY"]
+          },
+          {
+            "file": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+            "symbols": ["SKETCH_BOX_PREVIEW_POLICY"]
+          },
+          {
+            "file": "esm/shared/dimensions/sketch_box_free_placement_policy.ts",
+            "symbols": ["SKETCH_BOX_FREE_PLACEMENT_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "local-composition",
+        "identity": "new-aggregate"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "SLIDING_DEFAULT_DEPTH",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "symbols": ["SLIDING_DEFAULT_DEPTH"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export"]
+      },
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "SLIDING_DEFAULT_PER_DOOR_WIDTH",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "symbols": ["SLIDING_DEFAULT_PER_DOOR_WIDTH"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export"]
+      },
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "STACK_SPLIT_LOWER_DEPTH_MAX",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/stack_split_policy.ts",
+            "symbols": ["STACK_SPLIT_LOWER_DEPTH_MAX"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "STACK_SPLIT_LOWER_DEPTH_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/stack_split_policy.ts",
+            "symbols": ["STACK_SPLIT_LOWER_DEPTH_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "STACK_SPLIT_LOWER_DOORS_MAX",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/stack_split_policy.ts",
+            "symbols": ["STACK_SPLIT_LOWER_DOORS_MAX"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "STACK_SPLIT_LOWER_DOORS_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/stack_split_policy.ts",
+            "symbols": ["STACK_SPLIT_LOWER_DOORS_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "STACK_SPLIT_LOWER_HEIGHT_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/stack_split_policy.ts",
+            "symbols": ["STACK_SPLIT_LOWER_HEIGHT_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "STACK_SPLIT_LOWER_WIDTH_MAX",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/stack_split_policy.ts",
+            "symbols": ["STACK_SPLIT_LOWER_WIDTH_MAX"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "STACK_SPLIT_LOWER_WIDTH_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/stack_split_policy.ts",
+            "symbols": ["STACK_SPLIT_LOWER_WIDTH_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "STACK_SPLIT_MIN_TOP_HEIGHT",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/stack_split_policy.ts",
+            "symbols": ["STACK_SPLIT_MIN_TOP_HEIGHT"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "STACK_SPLIT_SEAM_GAP_M",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/stack_split_policy.ts",
+            "symbols": ["STACK_SPLIT_SEAM_GAP_M"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export"]
+      },
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "WARDROBE_CELL_DEPTH_MAX",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_CELL_DEPTH_MAX"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_CELL_DEPTH_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_CELL_DEPTH_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_CELL_DIM_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_CELL_DIM_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "WARDROBE_CELL_HEIGHT_MAX",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_CELL_HEIGHT_MAX"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_CELL_HEIGHT_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_CELL_HEIGHT_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_CELL_WIDTH_MAX",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_CELL_WIDTH_MAX"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_CELL_WIDTH_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_CELL_WIDTH_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_CHEST_DRAWERS_MAX",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_CHEST_DRAWERS_MAX"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_CHEST_DRAWERS_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_CHEST_DRAWERS_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_CHEST_HEIGHT_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_CHEST_HEIGHT_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_CHEST_WIDTH_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_CHEST_WIDTH_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_DEFAULTS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "composition",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "symbols": ["WARDROBE_DEFAULTS"]
+          },
+          {
+            "file": "esm/shared/dimensions/stack_split_policy.ts",
+            "symbols": ["STACK_SPLIT_POLICY"]
+          },
+          {
+            "file": "esm/shared/dimensions/stack_split_render_policy.ts",
+            "symbols": ["STACK_SPLIT_RENDER_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "local-composition",
+        "identity": "new-aggregate"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "WARDROBE_DEPTH_MAX",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_DEPTH_MAX"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_DEPTH_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_DEPTH_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_DIMENSION_GUIDE_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_dimension_guide_policy.ts",
+            "symbols": ["WARDROBE_DIMENSION_GUIDE_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "focused-owner-local-alias",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "WARDROBE_DOORS_MAX",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_DOORS_MAX"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_structure_mutations_shared.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_DOORS_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_DOORS_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "WARDROBE_HEIGHT_MAX",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_HEIGHT_MAX"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_HEIGHT_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_HEIGHT_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_LAYOUT_DIMENSIONS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "composition",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_layout_policy.ts",
+            "symbols": ["WARDROBE_MODULE_LAYOUT_POLICY"]
+          },
+          {
+            "file": "esm/shared/dimensions/wardrobe_layout_comparison_policy.ts",
+            "symbols": ["WARDROBE_LAYOUT_COMPARISON_POLICY"]
+          },
+          {
+            "file": "esm/shared/dimensions/cell_dimension_policy.ts",
+            "symbols": ["CELL_DIMENSION_MATCH_POLICY", "CELL_DIMENSION_PREVIEW_POLICY"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "local-composition",
+        "identity": "new-aggregate"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "WARDROBE_LIMITS",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_LIMITS"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "WARDROBE_SLIDING_DOORS_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_SLIDING_DOORS_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        },
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_structure_mutations_shared.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_WIDTH_MAX",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_WIDTH_MAX"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WARDROBE_WIDTH_MIN",
+      "kind": "value",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/product_limits.ts",
+            "symbols": ["WARDROBE_WIDTH_MIN"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "identity-local-export",
+        "identity": "direct-runtime-reference"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "value",
+        "form": "named-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "value",
+        "baseForm": "named-re-export",
+        "entryForms": ["wildcard-re-export", "representative-named-re-export"]
+      },
+      "internalConsumers": [
+        {
+          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
+          "usage": "value",
+          "route": "facade-runtime-services-api"
+        }
+      ],
+      "externalEvidence": [],
+      "classification": "internal transition only",
+      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+    },
+    {
+      "name": "WardrobeDimensionDefaultType",
+      "kind": "type",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "symbols": ["WardrobeDimensionDefaultType"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "type-re-export",
+        "identity": "declaration-identity"
+      },
+      "runtimeApiRoute": {
+        "file": "esm/native/runtime/api.ts",
+        "kind": "type",
+        "form": "type-re-export"
+      },
+      "servicesApiRoute": {
+        "baseFile": "esm/native/services/api_runtime_base_surface.ts",
+        "entryFile": "esm/native/services/api.ts",
+        "kind": "type",
+        "baseForm": "type-re-export",
+        "entryForms": ["wildcard-re-export"]
+      },
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    },
+    {
+      "name": "WorldUnits",
+      "kind": "type",
+      "canonicalOwner": {
+        "kind": "focused",
+        "exports": [
+          {
+            "file": "esm/shared/dimensions/units.ts",
+            "symbols": ["WorldUnits"]
+          }
+        ]
+      },
+      "facadeDeclaration": {
+        "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "form": "type-re-export",
+        "identity": "declaration-identity"
+      },
+      "runtimeApiRoute": null,
+      "servicesApiRoute": null,
+      "internalConsumers": [],
+      "externalEvidence": [],
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
+    }
+  ]
+}
