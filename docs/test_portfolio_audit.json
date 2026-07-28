@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-27T20:07:57.523Z",
+  "generatedAt": "2026-07-27T21:23:49.782Z",
   "totals": {
-    "tests": 1300,
-    "unitRunnerTests": 1292,
+    "tests": 1301,
+    "unitRunnerTests": 1293,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 458,
+    "contract": 459,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -2331,6 +2331,10 @@
     },
     {
       "file": "tests/library_preset_dimension_owner_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/library_preset_dimension_ownership_closeout_contract.test.js",
       "category": "contract"
     },
     {
