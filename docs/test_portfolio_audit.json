@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-28T09:58:18.952Z",
+  "generatedAt": "2026-07-28T11:06:57.592Z",
   "totals": {
-    "tests": 1304,
-    "unitRunnerTests": 1296,
+    "tests": 1305,
+    "unitRunnerTests": 1297,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 462,
+    "contract": 463,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -2572,6 +2572,10 @@
     {
       "file": "tests/no_main_modules_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/no_main_sketch_dimension_ownership_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/no_main_sketch_workspace_runtime.test.ts",

@@ -1049,11 +1049,24 @@ test('[dimension tokens] sketch divider, attachment, and free-box measurement ov
   const projectionFallback = read(
     'esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts'
   );
-  assert.match(projectionFallback, /WARDROBE_DEFAULTS/);
-  assert.match(projectionFallback, /NO_MAIN_SKETCH_DIMENSIONS/);
+  assert.match(
+    projectionFallback,
+    /import \{ NO_MAIN_SKETCH_WORKSPACE_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/no_main_sketch_workspace_policy\.js';/
+  );
+  assert.doesNotMatch(
+    projectionFallback,
+    /WARDROBE_DEFAULTS|NO_MAIN_SKETCH_DIMENSIONS|wardrobe_dimension_tokens_shared/
+  );
   assert.doesNotMatch(projectionFallback, /, 160\)/);
   assert.doesNotMatch(projectionFallback, /, 240\)/);
   assert.doesNotMatch(projectionFallback, /, 55\)/);
+
+  const noMainBuilder = read('esm/native/builder/build_no_main_sketch_host.ts');
+  assert.match(
+    noMainBuilder,
+    /import \{ NO_MAIN_SKETCH_POLICY \} from '\.\.\/\.\.\/shared\/dimensions\/no_main_sketch_policy\.js';/
+  );
+  assert.doesNotMatch(noMainBuilder, /NO_MAIN_SKETCH_DIMENSIONS|wardrobe_dimension_tokens_shared/);
 });
 
 test('[dimension tokens] wardrobe dimension guide offsets are centralized', () => {

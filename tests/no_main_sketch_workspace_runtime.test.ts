@@ -64,6 +64,7 @@ test('no-main sketch workspace runtime: module config keeps only free-placement 
   });
 
   assert.equal(next.layout, 'shelves');
+  assert.equal(next.gridDivisions, 6);
   assert.equal(next.extDrawersCount, 0);
   assert.equal(next.hasDrawersInside, false);
   assert.deepEqual(next.sketchExtras?.boxes, [
@@ -74,6 +75,43 @@ test('no-main sketch workspace runtime: module config keeps only free-placement 
   assert.deepEqual(next.sketchExtras?.storageBarriers, [{ id: 'barrier-1' }]);
   assert.deepEqual(next.sketchExtras?.rods, [{ id: 'rod-1' }]);
   assert.deepEqual(next.sketchExtras?.drawers, [{ id: 'drawer-1' }]);
+});
+
+test('no-main sketch workspace runtime: disabled sync clears cache and missing config uses canonical minima', () => {
+  const App = createApp();
+  App.services.runtimeCache.noMainSketchWorkspaceMetrics = { stale: true };
+
+  syncNoMainSketchWorkspaceMetrics({
+    App,
+    enabled: false,
+    cfg: null,
+    totalW: 0,
+    H: 0,
+    woodThick: 0.018,
+    internalDepth: 0,
+    internalZ: 0,
+  });
+  assert.equal(App.services.runtimeCache.noMainSketchWorkspaceMetrics, null);
+
+  syncNoMainSketchWorkspaceMetrics({
+    App,
+    enabled: true,
+    cfg: null,
+    totalW: 0,
+    H: 0,
+    woodThick: 0.018,
+    internalDepth: 0,
+    internalZ: 0,
+  });
+  assert.deepEqual(App.services.runtimeCache.noMainSketchWorkspaceMetrics, {
+    centerX: 0,
+    centerY: 0.025,
+    centerZ: 0,
+    width: 1.6,
+    height: 0.05,
+    depth: 0.018,
+    backZ: -0.009,
+  });
 });
 
 test('no-main sketch workspace runtime: cache metrics and no-main workspace box uses canonical free-box workspace span', () => {
@@ -142,6 +180,106 @@ test('no-main sketch workspace runtime: cache metrics and no-main workspace box 
   assert.ok(Math.abs((noMainWorkspaceBox?.width || 0) - 1.82) < 1e-9);
   assert.equal(noMainWorkspaceBox?.height, 2.4);
   assert.equal(noMainWorkspaceBox?.depth, 0.55);
+});
+
+test('no-main sketch workspace runtime: malformed cache/config falls through to canonical fallback and UI conversions', () => {
+  const fallbackApp = createApp({
+    services: {
+      runtimeCache: {
+        noMainSketchWorkspaceMetrics: {
+          centerX: 0,
+          centerY: 1,
+          centerZ: -0.3,
+          width: 0,
+          height: 2,
+          depth: 0.5,
+        },
+      },
+    },
+  });
+  assert.deepEqual(__readNoMainWorkspaceBox(fallbackApp), {
+    centerX: 0,
+    centerY: 1.2,
+    centerZ: -0.275,
+    width: 1.6,
+    height: 2.4,
+    depth: 0.55,
+  });
+
+  const uiOverrideApp = createApp({
+    state: {
+      ui: {
+        doors: 0,
+        width: 190,
+        height: 250,
+        depth: 60,
+        raw: { doors: 0 },
+      },
+      config: { modulesConfiguration: [{ sketchExtras: { boxes: 'invalid' } }] },
+    },
+  });
+  assert.deepEqual(__readNoMainWorkspaceBox(uiOverrideApp), {
+    centerX: 0,
+    centerY: 1.25,
+    centerZ: -0.3,
+    width: 1.9,
+    height: 2.5,
+    depth: 0.6,
+  });
+
+  const optionalBackZApp = createApp({
+    services: {
+      runtimeCache: {
+        noMainSketchWorkspaceMetrics: {
+          centerX: 0.1,
+          centerY: 1.1,
+          centerZ: -0.2,
+          width: 2,
+          height: 2.2,
+          depth: 0.6,
+          backZ: 'invalid',
+        },
+      },
+    },
+  });
+  assert.deepEqual(__readNoMainWorkspaceBox(optionalBackZApp), {
+    centerX: 0.1,
+    centerY: 1.1,
+    centerZ: -0.2,
+    width: 2,
+    height: 2.2,
+    depth: 0.6,
+  });
+});
+
+test('no-main sketch workspace runtime: nonzero or invalid doors reject even valid cached metrics', () => {
+  for (const doors of [1, 'invalid']) {
+    const App = createApp({
+      state: {
+        ui: {
+          doors,
+          width: 0,
+          height: 0,
+          depth: 0,
+          raw: { doors },
+        },
+        config: {},
+      },
+      services: {
+        runtimeCache: {
+          noMainSketchWorkspaceMetrics: {
+            centerX: 0,
+            centerY: 1,
+            centerZ: -0.3,
+            width: 2,
+            height: 2,
+            depth: 0.6,
+          },
+        },
+      },
+    });
+    assert.equal(__readNoMainWorkspaceBox(App), null);
+  }
 });
 
 test('no-main sketch workspace runtime: free-box doors receive the same door visual factory as the main build', () => {

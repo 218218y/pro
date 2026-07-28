@@ -20,6 +20,7 @@ import {
   INTERIOR_FITTINGS_DIMENSIONS,
   LIBRARY_PRESET_DIMENSIONS as FACADE_LIBRARY_PRESET_DIMENSIONS,
   MATERIAL_DIMENSIONS,
+  NO_MAIN_SKETCH_DIMENSIONS as FACADE_NO_MAIN_SKETCH_DIMENSIONS,
   WARDROBE_DIMENSION_GUIDE_DIMENSIONS as FACADE_WARDROBE_DIMENSION_GUIDE_DIMENSIONS,
   WARDROBE_LAYOUT_DIMENSIONS,
   WARDROBE_DEFAULTS as FACADE_WARDROBE_DEFAULTS,
@@ -211,7 +212,10 @@ import {
 import { WARDROBE_LAYOUT_COMPARISON_POLICY } from '../esm/shared/dimensions/wardrobe_layout_comparison_policy.ts';
 import { WARDROBE_MODULE_LAYOUT_POLICY } from '../esm/shared/dimensions/wardrobe_layout_policy.ts';
 import { WARDROBE_DIMENSION_GUIDE_POLICY } from '../esm/shared/dimensions/wardrobe_dimension_guide_policy.ts';
+import { NO_MAIN_SKETCH_POLICY } from '../esm/shared/dimensions/no_main_sketch_policy.ts';
+import { NO_MAIN_SKETCH_WORKSPACE_POLICY } from '../esm/shared/dimensions/no_main_sketch_workspace_policy.ts';
 import {
+  DEFAULT_HEIGHT,
   DEFAULT_HINGED_DOORS,
   DEFAULT_SLIDING_DOORS,
   DEFAULT_WIDTH,
@@ -243,6 +247,7 @@ import {
   metersToWorldUnits,
   millimeters,
   millimetersToCentimeters,
+  mToCm,
   pixels,
   worldUnitsToMeters,
 } from '../esm/shared/dimensions/units.ts';
@@ -514,6 +519,42 @@ test('Wardrobe Dimension Guide owner preserves facade identity, declaration pari
   assert.equal(typeof serialized, 'string');
   assert.ok(serialized);
   assert.deepEqual(JSON.parse(serialized), WARDROBE_DIMENSION_GUIDE_POLICY);
+});
+
+test('No-Main Sketch owners preserve facade identity, declaration parity, focused fallbacks, conversions, and freezes', () => {
+  const ownerDeclarationParity: typeof NO_MAIN_SKETCH_POLICY = FACADE_NO_MAIN_SKETCH_DIMENSIONS;
+  const facadeDeclarationParity: typeof FACADE_NO_MAIN_SKETCH_DIMENSIONS = NO_MAIN_SKETCH_POLICY;
+  assert.equal(ownerDeclarationParity, facadeDeclarationParity);
+  assert.equal(FACADE_NO_MAIN_SKETCH_DIMENSIONS, NO_MAIN_SKETCH_POLICY);
+  assert.equal(NO_MAIN_SKETCH_WORKSPACE_POLICY.noMainSketch, NO_MAIN_SKETCH_POLICY);
+
+  assert.deepEqual(Object.keys(NO_MAIN_SKETCH_POLICY), [
+    'defaultGridDivisions',
+    'workspacePaddingM',
+    'defaultWorkspaceWidthM',
+    'minHostHeightM',
+    'minInnerWidthM',
+    'minGridSpanM',
+  ]);
+  assert.deepEqual(NO_MAIN_SKETCH_POLICY, {
+    defaultGridDivisions: 6,
+    workspacePaddingM: 0.12,
+    defaultWorkspaceWidthM: 1.6,
+    minHostHeightM: 0.05,
+    minInnerWidthM: 0.02,
+    minGridSpanM: 0.02,
+  });
+  assert.deepEqual(NO_MAIN_SKETCH_WORKSPACE_POLICY.fallbackDimensionsCm, {
+    widthCm: DEFAULT_WIDTH,
+    heightCm: DEFAULT_HEIGHT,
+    depthCm: HINGED_DEFAULT_DEPTH,
+  });
+  assert.equal(NO_MAIN_SKETCH_WORKSPACE_POLICY.cmToM, cmToM);
+  assert.equal(NO_MAIN_SKETCH_WORKSPACE_POLICY.mToCm, mToCm);
+  assert.equal(Object.isFrozen(NO_MAIN_SKETCH_POLICY), true);
+  assert.equal(Object.isFrozen(NO_MAIN_SKETCH_WORKSPACE_POLICY), true);
+  assert.equal(Object.isFrozen(NO_MAIN_SKETCH_WORKSPACE_POLICY.fallbackDimensionsCm), true);
+  assert.deepEqual(JSON.parse(JSON.stringify(FACADE_NO_MAIN_SKETCH_DIMENSIONS)), NO_MAIN_SKETCH_POLICY);
 });
 
 test('stack split policy preserves business limits, defaults, facade parity, and render geometry', () => {

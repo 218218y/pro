@@ -10,6 +10,7 @@ import {
 import { WARDROBE_LAYOUT_COMPARISON_POLICY } from './dimensions/wardrobe_layout_comparison_policy.js';
 import { WARDROBE_MODULE_LAYOUT_POLICY } from './dimensions/wardrobe_layout_policy.js';
 import { WARDROBE_DIMENSION_GUIDE_POLICY } from './dimensions/wardrobe_dimension_guide_policy.js';
+import { NO_MAIN_SKETCH_POLICY } from './dimensions/no_main_sketch_policy.js';
 import {
   DEFAULT_CHEST_DRAWERS_COUNT,
   DEFAULT_CORNER_DOORS,
@@ -243,14 +244,7 @@ export const WARDROBE_LAYOUT_DIMENSIONS = Object.freeze({
 
 export const WARDROBE_DIMENSION_GUIDE_DIMENSIONS = WARDROBE_DIMENSION_GUIDE_POLICY;
 
-export const NO_MAIN_SKETCH_DIMENSIONS = Object.freeze({
-  defaultGridDivisions: 6,
-  workspacePaddingM: 0.12,
-  defaultWorkspaceWidthM: 1.6,
-  minHostHeightM: 0.05,
-  minInnerWidthM: 0.02,
-  minGridSpanM: 0.02,
-});
+export const NO_MAIN_SKETCH_DIMENSIONS = NO_MAIN_SKETCH_POLICY;
 
 export const LIBRARY_PRESET_DIMENSIONS = LIBRARY_PRESET_POLICY;
 

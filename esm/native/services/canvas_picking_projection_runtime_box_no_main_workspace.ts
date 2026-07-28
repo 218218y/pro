@@ -1,10 +1,5 @@
 import type { AppContainer, UnknownRecord } from '../../../types';
-import {
-  cmToM,
-  mToCm,
-  NO_MAIN_SKETCH_DIMENSIONS,
-  WARDROBE_DEFAULTS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { NO_MAIN_SKETCH_WORKSPACE_POLICY } from '../../shared/dimensions/no_main_sketch_workspace_policy.js';
 import { getCacheBag } from '../runtime/cache_access.js';
 import { asRecord, getProp } from '../runtime/record.js';
 import { __wp_cfg, __wp_ui } from './canvas_picking_core_helpers.js';
@@ -103,7 +98,12 @@ function __readNoMainWorkspaceWidthCm(App: AppContainer): number | null {
 
     if (!hasFreeBox || !Number.isFinite(minX) || !Number.isFinite(maxX) || !(maxX > minX)) return null;
 
-    return Math.max(0, mToCm(maxX - minX + NO_MAIN_SKETCH_DIMENSIONS.workspacePaddingM));
+    return Math.max(
+      0,
+      NO_MAIN_SKETCH_WORKSPACE_POLICY.mToCm(
+        maxX - minX + NO_MAIN_SKETCH_WORKSPACE_POLICY.noMainSketch.workspacePaddingM
+      )
+    );
   } catch {
     return null;
   }
@@ -134,17 +134,21 @@ export function __readNoMainWorkspaceBox(App: AppContainer): __ProjectionLocalBo
     const rawDepthCm = Math.max(0, __readRawNumber(raw, 'depth', __readUiNumber(ui, 'depth', 0)));
 
     const sketchWidthCm = __readNoMainWorkspaceWidthCm(App);
-    const widthCm = Math.max(rawWidthCm, sketchWidthCm ?? 0, WARDROBE_DEFAULTS.widthCm);
-    const heightCm = Math.max(rawHeightCm, WARDROBE_DEFAULTS.heightCm);
-    const depthCm = Math.max(rawDepthCm, WARDROBE_DEFAULTS.byType.hinged.depthCm);
+    const widthCm = Math.max(
+      rawWidthCm,
+      sketchWidthCm ?? 0,
+      NO_MAIN_SKETCH_WORKSPACE_POLICY.fallbackDimensionsCm.widthCm
+    );
+    const heightCm = Math.max(rawHeightCm, NO_MAIN_SKETCH_WORKSPACE_POLICY.fallbackDimensionsCm.heightCm);
+    const depthCm = Math.max(rawDepthCm, NO_MAIN_SKETCH_WORKSPACE_POLICY.fallbackDimensionsCm.depthCm);
 
     return {
       centerX: 0,
-      centerY: cmToM(heightCm) / 2,
-      centerZ: -cmToM(depthCm) / 2,
-      width: cmToM(widthCm),
-      height: cmToM(heightCm),
-      depth: cmToM(depthCm),
+      centerY: NO_MAIN_SKETCH_WORKSPACE_POLICY.cmToM(heightCm) / 2,
+      centerZ: -NO_MAIN_SKETCH_WORKSPACE_POLICY.cmToM(depthCm) / 2,
+      width: NO_MAIN_SKETCH_WORKSPACE_POLICY.cmToM(widthCm),
+      height: NO_MAIN_SKETCH_WORKSPACE_POLICY.cmToM(heightCm),
+      depth: NO_MAIN_SKETCH_WORKSPACE_POLICY.cmToM(depthCm),
     };
   } catch {
     return null;
