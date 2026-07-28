@@ -891,7 +891,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at one hundred and sixty-six reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at one hundred and seventy-one reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -1646,8 +1646,8 @@ test('project migration ledger stays exact at one hundred and sixty-six reviewed
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 166);
-  assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 105);
+  assert.equal(report.migrationBudgets.length, 171);
+  assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 106);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
@@ -1657,7 +1657,7 @@ test('project migration ledger stays exact at one hundred and sixty-six reviewed
   // their closed prefix and exact entries, so later additive migrations cannot stale them.
   const expectedEdges = new Map([
     ['builder>shared', { observed: 305, migration: 86, reviewed: 219, budget: 219 }],
-    ['features>shared', { observed: 68, migration: 10, reviewed: 58, budget: 58 }],
+    ['features>shared', { observed: 73, migration: 15, reviewed: 58, budget: 58 }],
     ['services>shared', { observed: 230, migration: 63, reviewed: 167, budget: 167 }],
     ['ui>shared', { observed: 27, migration: 1, reviewed: 26, budget: 27 }],
     ['platform>shared', { observed: 6, migration: 2, reviewed: 4, budget: 4 }],

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-28T15:51:54.540Z",
+  "generatedAt": "2026-07-28T19:15:44.035Z",
   "totals": {
-    "tests": 1308,
-    "unitRunnerTests": 1300,
+    "tests": 1309,
+    "unitRunnerTests": 1301,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 466,
+    "contract": 467,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -4700,6 +4700,10 @@
     {
       "file": "tests/structure_tab_dimension_field_shared_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/structure_tab_dimensions_cell_dims_reset_buttons_runtime.test.tsx",

@@ -460,11 +460,11 @@
       "from": "features",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 41,
+      "maxImporterCount": 42,
       "maxImportCount": 58,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 2,
-      "maxValueImporterCount": 41,
+      "maxValueImporterCount": 42,
       "maxValueImportCount": 57,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -6012,6 +6012,265 @@
       },
       "reason": "The Wardrobe Dimension Guide shared render context replaces one combined legacy facade statement with the focused Wardrobe Dimension Guide policy plus the canonical Corner doors default scalar on the existing builder to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Wardrobe Dimension Guide render composition seam eliminates the extra Wardrobe Defaults statement without reintroducing the legacy facade or the aggregate WARDROBE_DEFAULTS object."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-28",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/features/structure_tab_dimension_support.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "STACK_SPLIT_LOWER_DEPTH_MAX",
+          "STACK_SPLIT_LOWER_DEPTH_MIN",
+          "STACK_SPLIT_LOWER_DOORS_MAX",
+          "STACK_SPLIT_LOWER_DOORS_MIN",
+          "STACK_SPLIT_LOWER_HEIGHT_MIN",
+          "STACK_SPLIT_LOWER_WIDTH_MAX",
+          "STACK_SPLIT_LOWER_WIDTH_MIN",
+          "STACK_SPLIT_MIN_TOP_HEIGHT"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["CHEST_MODE_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CHEST_MODE_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Structure Tab Dimension Support feature boundary replaces the Chest Mode symbol group from the legacy shared facade route with its canonical focused owner alongside the other reviewed Structure Tab dimension owner statements, without exposing shared ownership to UI.",
+      "removalCondition": "Remove this entry when a reviewed Structure Tab Dimension Support composition seam eliminates the extra Chest Mode owner statement without reintroducing the legacy facade, a direct shared owner import in UI, copied values, or a general dimension barrel."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-28",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/features/structure_tab_dimension_support.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/product_limits.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "WARDROBE_CELL_DEPTH_MAX",
+          "WARDROBE_CELL_DEPTH_MIN",
+          "WARDROBE_CELL_HEIGHT_MAX",
+          "WARDROBE_CELL_HEIGHT_MIN",
+          "WARDROBE_CELL_WIDTH_MAX",
+          "WARDROBE_CELL_WIDTH_MIN",
+          "WARDROBE_CHEST_DRAWERS_MAX",
+          "WARDROBE_CHEST_DRAWERS_MIN",
+          "WARDROBE_CHEST_HEIGHT_MIN",
+          "WARDROBE_CHEST_WIDTH_MIN",
+          "WARDROBE_DEPTH_MAX",
+          "WARDROBE_DEPTH_MIN",
+          "WARDROBE_DOORS_MAX",
+          "WARDROBE_HEIGHT_MAX",
+          "WARDROBE_HEIGHT_MIN",
+          "WARDROBE_SLIDING_DOORS_MIN",
+          "WARDROBE_WIDTH_MAX",
+          "WARDROBE_WIDTH_MIN"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "STACK_SPLIT_LOWER_DEPTH_MAX",
+          "STACK_SPLIT_LOWER_DEPTH_MIN",
+          "STACK_SPLIT_LOWER_DOORS_MAX",
+          "STACK_SPLIT_LOWER_DOORS_MIN",
+          "STACK_SPLIT_LOWER_HEIGHT_MIN",
+          "STACK_SPLIT_LOWER_WIDTH_MAX",
+          "STACK_SPLIT_LOWER_WIDTH_MIN",
+          "STACK_SPLIT_MIN_TOP_HEIGHT"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "STACK_SPLIT_LOWER_DEPTH_MAX",
+          "STACK_SPLIT_LOWER_DEPTH_MIN",
+          "STACK_SPLIT_LOWER_DOORS_MAX",
+          "STACK_SPLIT_LOWER_DOORS_MIN",
+          "STACK_SPLIT_LOWER_HEIGHT_MIN",
+          "STACK_SPLIT_LOWER_WIDTH_MAX",
+          "STACK_SPLIT_LOWER_WIDTH_MIN",
+          "STACK_SPLIT_MIN_TOP_HEIGHT"
+        ],
+        "syntax": "static-import"
+      },
+      "reason": "The Structure Tab Dimension Support feature boundary replaces the Stack Split symbol group from the legacy shared facade route with its canonical focused owner alongside the other reviewed Structure Tab dimension owner statements, without exposing shared ownership to UI.",
+      "removalCondition": "Remove this entry when a reviewed Structure Tab Dimension Support composition seam eliminates the extra Stack Split owner statement without reintroducing the legacy facade, a direct shared owner import in UI, copied values, or a general dimension barrel."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-28",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/features/structure_tab_dimension_support.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "DEFAULT_CORNER_DOORS",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_WIDTH",
+          "HINGED_DEFAULT_DEPTH",
+          "HINGED_DEFAULT_PER_DOOR_WIDTH"
+        ],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "WARDROBE_CELL_DEPTH_MAX",
+          "WARDROBE_CELL_DEPTH_MIN",
+          "WARDROBE_CELL_HEIGHT_MAX",
+          "WARDROBE_CELL_HEIGHT_MIN",
+          "WARDROBE_CELL_WIDTH_MAX",
+          "WARDROBE_CELL_WIDTH_MIN",
+          "WARDROBE_CHEST_DRAWERS_MAX",
+          "WARDROBE_CHEST_DRAWERS_MIN",
+          "WARDROBE_CHEST_HEIGHT_MIN",
+          "WARDROBE_CHEST_WIDTH_MIN",
+          "WARDROBE_DEPTH_MAX",
+          "WARDROBE_DEPTH_MIN",
+          "WARDROBE_DOORS_MAX",
+          "WARDROBE_HEIGHT_MAX",
+          "WARDROBE_HEIGHT_MIN",
+          "WARDROBE_SLIDING_DOORS_MIN",
+          "WARDROBE_WIDTH_MAX",
+          "WARDROBE_WIDTH_MIN"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/product_limits.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "WARDROBE_CELL_DEPTH_MAX",
+          "WARDROBE_CELL_DEPTH_MIN",
+          "WARDROBE_CELL_HEIGHT_MAX",
+          "WARDROBE_CELL_HEIGHT_MIN",
+          "WARDROBE_CELL_WIDTH_MAX",
+          "WARDROBE_CELL_WIDTH_MIN",
+          "WARDROBE_CHEST_DRAWERS_MAX",
+          "WARDROBE_CHEST_DRAWERS_MIN",
+          "WARDROBE_CHEST_HEIGHT_MIN",
+          "WARDROBE_CHEST_WIDTH_MIN",
+          "WARDROBE_DEPTH_MAX",
+          "WARDROBE_DEPTH_MIN",
+          "WARDROBE_DOORS_MAX",
+          "WARDROBE_HEIGHT_MAX",
+          "WARDROBE_HEIGHT_MIN",
+          "WARDROBE_SLIDING_DOORS_MIN",
+          "WARDROBE_WIDTH_MAX",
+          "WARDROBE_WIDTH_MIN"
+        ],
+        "syntax": "static-import"
+      },
+      "reason": "The Structure Tab Dimension Support feature boundary replaces the Product Limits symbol group from the legacy shared facade route with its canonical focused owner alongside the other reviewed Structure Tab dimension owner statements, without exposing shared ownership to UI.",
+      "removalCondition": "Remove this entry when a reviewed Structure Tab Dimension Support composition seam eliminates the extra Product Limits owner statement without reintroducing the legacy facade, a direct shared owner import in UI, copied values, or a general dimension barrel."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-28",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/features/structure_tab_dimension_support.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["getDefaultDepthForWardrobeType"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "DEFAULT_CORNER_DOORS",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_WIDTH",
+          "HINGED_DEFAULT_DEPTH",
+          "HINGED_DEFAULT_PER_DOOR_WIDTH"
+        ],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "DEFAULT_CORNER_DOORS",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_WIDTH",
+          "HINGED_DEFAULT_DEPTH",
+          "HINGED_DEFAULT_PER_DOOR_WIDTH"
+        ],
+        "syntax": "static-import"
+      },
+      "reason": "The Structure Tab Dimension Support feature boundary replaces the Wardrobe Defaults symbol group from the legacy shared facade route with its canonical focused owner alongside the other reviewed Structure Tab dimension owner statements, without exposing shared ownership to UI.",
+      "removalCondition": "Remove this entry when a reviewed Structure Tab Dimension Support composition seam eliminates the extra Wardrobe Defaults owner statement without reintroducing the legacy facade, a direct shared owner import in UI, copied values, or a general dimension barrel."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-28",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/features/structure_tab_dimension_support.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CHEST_MODE_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["getDefaultDepthForWardrobeType"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["getDefaultDepthForWardrobeType"],
+        "syntax": "static-import"
+      },
+      "reason": "The Structure Tab Dimension Support feature boundary replaces the Default Resolution symbol group from the legacy shared facade route with its canonical focused owner alongside the other reviewed Structure Tab dimension owner statements, without exposing shared ownership to UI.",
+      "removalCondition": "Remove this entry when a reviewed Structure Tab Dimension Support composition seam eliminates the extra Default Resolution owner statement without reintroducing the legacy facade, a direct shared owner import in UI, copied values, or a general dimension barrel."
     }
   ]
 }

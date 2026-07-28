@@ -73,7 +73,7 @@ const moduleExports = loadTsRuntimeModule(srcPath, {
         normalizeStackSplitDecorativeSeparatorFrontOverhangCm: value => normalize(value, 2),
       };
     }
-    if (spec === '../../../services/api.js') {
+    if (spec === './structure_tab_dimension_defaults.js') {
       return {
         DEFAULT_CHEST_DRAWERS_COUNT: 4,
         DEFAULT_CORNER_DOORS: 3,

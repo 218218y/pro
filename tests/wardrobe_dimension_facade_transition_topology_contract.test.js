@@ -46,13 +46,9 @@ const expectedConsumerGroups = Object.freeze({
   'esm/native/ui/export/export_order_pdf_text_details.ts': 'E',
   'esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts': 'B',
   'esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts': 'B',
-  'esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts': 'A',
-  'esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx': 'A',
-  'esm/native/ui/react/tabs/structure_tab_saved_models_patterns.ts': 'A',
   'esm/native/ui/react/tabs/structure_tab_structure_mutations_shared.ts': 'C',
   'esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts': 'C',
   'esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts': 'D',
-  'esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts': 'A',
   'esm/native/ui/react/tabs/structure_tab_workflows_controller_shared.ts': 'C',
 });
 

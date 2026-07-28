@@ -19,8 +19,12 @@ const platformPolicySymbol = 'PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const approvedNativeConsumerUniverse = new Set([
   'esm/native/features/library_preset/module_defaults.ts',
+  'esm/native/features/structure_tab_dimension_support.ts',
   'esm/native/kernel/domain_api_room_section_wardrobe.ts',
   'esm/native/runtime/api.ts',
+]);
+const approvedFocusedLocalNamedExports = new Map([
+  ['esm/native/features/structure_tab_dimension_support.ts', new Set(['getDefaultDepthForWardrobeType'])],
 ]);
 
 const publicFunctions = Object.freeze([
@@ -609,6 +613,14 @@ function focusedReferenceEscapeViolations(file, source, ownerDependencies) {
   walkAst(sourceFile, node => {
     if (!isRuntimeFocusedReference(node, focusedBindings)) return;
     const parent = node.parent;
+    if (
+      parent?.type === 'ExportSpecifier' &&
+      parent.local === node &&
+      identifierName(parent.exported) === node.name &&
+      approvedFocusedLocalNamedExports.get(rel)?.has(node.name)
+    ) {
+      return;
+    }
     if (parent?.type === 'CallExpression' && parent.callee === node) return;
     const key = `${node.name}:${node.start ?? 0}`;
     if (seen.has(key)) return;
@@ -668,6 +680,12 @@ function focusedLocalBridgeViolations(file, source, ownerDependencies) {
       for (const specifier of statement.specifiers ?? []) {
         const localName = identifierName(specifier.local);
         if (localName && derivedBindings.has(localName)) {
+          if (
+            identifierName(specifier.exported) === localName &&
+            approvedFocusedLocalNamedExports.get(rel)?.has(localName)
+          ) {
+            continue;
+          }
           add(specifier, localName);
         }
       }

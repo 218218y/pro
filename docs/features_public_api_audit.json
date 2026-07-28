@@ -26,7 +26,8 @@
     "sketch_internal_drawer_cassette.js",
     "sketch_stack_positioning.js",
     "special_dims/index.js",
-    "stack_split/index.js"
+    "stack_split/index.js",
+    "structure_tab_dimension_support.js"
   ],
   "byFamily": {
     "base_leg_support": ["base_leg_support.js"],
@@ -55,7 +56,8 @@
     "sketch_internal_drawer_cassette": ["sketch_internal_drawer_cassette.js"],
     "sketch_stack_positioning": ["sketch_stack_positioning.js"],
     "special_dims": ["special_dims/index.js"],
-    "stack_split": ["stack_split/index.js"]
+    "stack_split": ["stack_split/index.js"],
+    "structure_tab_dimension_support": ["structure_tab_dimension_support.js"]
   },
   "importSites": [
     {
@@ -1807,8 +1809,8 @@
       "entry": "base_leg_support.js"
     },
     {
-      "file": "esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx",
-      "entry": "hex_cell/index.js"
+      "file": "esm/native/ui/react/tabs/structure_tab_dimension_defaults.ts",
+      "entry": "structure_tab_dimension_support.js"
     },
     {
       "file": "esm/native/ui/react/tabs/structure_tab_dimensions_section_contracts.ts",

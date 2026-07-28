@@ -1,4 +1,4 @@
-import { HINGED_DEFAULT_PER_DOOR_WIDTH } from '../../../services/api.js';
+import { HINGED_DEFAULT_PER_DOOR_WIDTH } from './structure_tab_dimension_defaults.js';
 
 export type StructurePattern = {
   label: string;

@@ -26,7 +26,8 @@
     "sketch_internal_drawer_cassette.js",
     "sketch_stack_positioning.js",
     "special_dims/index.js",
-    "stack_split/index.js"
+    "stack_split/index.js",
+    "structure_tab_dimension_support.js"
   ],
   "families": {
     "base_leg_support": ["base_leg_support.js"],
@@ -55,6 +56,7 @@
     "special_dims": ["special_dims/index.js"],
     "stack_split": ["stack_split/index.js"],
     "sketch_internal_drawer_cassette": ["sketch_internal_drawer_cassette.js"],
-    "platform_overhang_support": ["platform_overhang_support.js"]
+    "platform_overhang_support": ["platform_overhang_support.js"],
+    "structure_tab_dimension_support": ["structure_tab_dimension_support.js"]
   }
 }

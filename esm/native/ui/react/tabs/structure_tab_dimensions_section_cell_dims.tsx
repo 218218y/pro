@@ -4,9 +4,11 @@ import { Button, InlineNotice, ModeToggleButton } from '../components/index.js';
 import { OptionalDimField } from './structure_tab_controls.js';
 import {
   DEFAULT_HEIGHT,
+  HEX_CELL_DEFAULT_PROTRUSION_CM,
   HINGED_DEFAULT_DEPTH,
   HINGED_DEFAULT_PER_DOOR_WIDTH,
-} from '../../../services/api.js';
+  resolveDefaultHexDoorWidthCm,
+} from './structure_tab_dimension_defaults.js';
 import { readStructureDimensionBounds } from './structure_tab_dimension_constraints.js';
 import {
   STRUCTURE_CELL_DIMS_HEX_MODE_BUTTON_TEST_ID,
@@ -20,11 +22,6 @@ import {
   STRUCTURE_CELL_DIMS_SECTION_TEST_ID,
   type StructureDimensionsContentProps,
 } from './structure_tab_dimensions_section_contracts.js';
-import {
-  HEX_CELL_DEFAULT_PROTRUSION_CM,
-  resolveDefaultHexDoorWidthCm,
-} from '../../../features/hex_cell/index.js';
-
 const STRUCTURE_CELL_DIMS_PLACEHOLDER_TEXT = '';
 const STRUCTURE_CELL_DIMS_DEFAULT_WIDTH_STEP_BASE = HINGED_DEFAULT_PER_DOOR_WIDTH * 2;
 

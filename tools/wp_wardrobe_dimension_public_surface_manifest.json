@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "capturedAtHead": "1bd9eb032b522dcfc7277f02b47cc7e9c23b8e76",
+  "capturedAtHead": "81e87b6ebeb2669afc4ade809b7befd2ecdeb5c3",
   "policy": "Inventory every current facade export without treating route presence or repository silence as external-consumer evidence. Undetermined symbols block removal.",
   "facade": {
     "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -220,16 +220,6 @@
           "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
           "usage": "value",
           "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
         }
       ],
       "externalEvidence": [],
@@ -418,16 +408,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "DEFAULT_CORNER_DOORS",
@@ -461,11 +445,6 @@
       "internalConsumers": [
         {
           "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
           "usage": "value",
           "route": "facade-runtime-services-api"
         }
@@ -506,11 +485,6 @@
       "internalConsumers": [
         {
           "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
           "usage": "value",
           "route": "facade-runtime-services-api"
         }
@@ -563,16 +537,6 @@
           "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts",
           "usage": "value",
           "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
         }
       ],
       "externalEvidence": [],
@@ -611,11 +575,6 @@
       "internalConsumers": [
         {
           "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
           "usage": "value",
           "route": "facade-runtime-services-api"
         }
@@ -692,11 +651,6 @@
           "file": "esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts",
           "usage": "value",
           "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
         }
       ],
       "externalEvidence": [],
@@ -740,11 +694,6 @@
         },
         {
           "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
           "usage": "value",
           "route": "facade-runtime-services-api"
         }
@@ -1093,11 +1042,6 @@
           "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
           "usage": "value",
           "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
         }
       ],
       "externalEvidence": [],
@@ -1381,11 +1325,6 @@
           "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts",
           "usage": "value",
           "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
         }
       ],
       "externalEvidence": [],
@@ -1421,21 +1360,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_saved_models_patterns.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "INTERIOR_FITTINGS_DIMENSIONS",
@@ -2039,16 +1967,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "STACK_SPLIT_LOWER_DEPTH_MIN",
@@ -2079,16 +2001,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "STACK_SPLIT_LOWER_DOORS_MAX",
@@ -2119,16 +2035,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "STACK_SPLIT_LOWER_DOORS_MIN",
@@ -2159,16 +2069,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "STACK_SPLIT_LOWER_HEIGHT_MIN",
@@ -2200,11 +2104,6 @@
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
       "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
         {
           "file": "esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts",
           "usage": "value",
@@ -2244,16 +2143,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "STACK_SPLIT_LOWER_WIDTH_MIN",
@@ -2285,11 +2178,6 @@
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
       "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
         {
           "file": "esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts",
           "usage": "value",
@@ -2330,11 +2218,6 @@
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
       "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
         {
           "file": "esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts",
           "usage": "value",
@@ -2408,16 +2291,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_CELL_DEPTH_MIN",
@@ -2448,16 +2325,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_CELL_DIM_MIN",
@@ -2522,16 +2393,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_CELL_HEIGHT_MIN",
@@ -2562,16 +2427,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_CELL_WIDTH_MAX",
@@ -2602,16 +2461,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_CELL_WIDTH_MIN",
@@ -2642,16 +2495,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_CHEST_DRAWERS_MAX",
@@ -2682,16 +2529,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_CHEST_DRAWERS_MIN",
@@ -2725,11 +2566,6 @@
       "internalConsumers": [
         {
           "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
           "usage": "value",
           "route": "facade-runtime-services-api"
         }
@@ -2767,16 +2603,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_CHEST_WIDTH_MIN",
@@ -2807,16 +2637,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_DEFAULTS",
@@ -2879,16 +2703,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_DEPTH_MIN",
@@ -2920,11 +2738,6 @@
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
       "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
         {
           "file": "esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts",
           "usage": "value",
@@ -2989,11 +2802,6 @@
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
       "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
         {
           "file": "esm/native/ui/react/tabs/structure_tab_structure_mutations_shared.ts",
           "usage": "value",
@@ -3067,16 +2875,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_HEIGHT_MIN",
@@ -3107,16 +2909,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_LAYOUT_DIMENSIONS",
@@ -3205,11 +3001,6 @@
       },
       "internalConsumers": [
         {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
-        {
           "file": "esm/native/ui/react/tabs/structure_tab_structure_mutations_shared.ts",
           "usage": "value",
           "route": "facade-runtime-services-api"
@@ -3248,16 +3039,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_WIDTH_MIN",
@@ -3288,16 +3073,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WardrobeDimensionDefaultType",

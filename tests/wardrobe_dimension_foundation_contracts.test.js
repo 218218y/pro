@@ -417,6 +417,7 @@ const APPROVED_WARDROBE_LAYOUT_COMPARISON_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['WARDROBE_LAYOUT_COMPARISON_POLICY']),
 });
 const APPROVED_WARDROBE_DEFAULT_RESOLUTION_OWNER_IMPORTS = Object.freeze({
+  'esm/native/features/structure_tab_dimension_support.ts': Object.freeze(['getDefaultDepthForWardrobeType']),
   'esm/native/features/library_preset/module_defaults.ts': Object.freeze(['resolveAutoWidthForDoors']),
   'esm/native/kernel/domain_api_room_section_wardrobe.ts': Object.freeze([
     'getDefaultDepthForWardrobeType',
@@ -495,6 +496,7 @@ const APPROVED_CORNICE_THETA_CLAMP_M_USAGE = Object.freeze({
   'esm/native/builder/corner_wing_cornice_path.ts': Object.freeze(['thetaClampM']),
 });
 const APPROVED_CHEST_MODE_OWNER_IMPORTS = Object.freeze({
+  'esm/native/features/structure_tab_dimension_support.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
   'esm/native/builder/chest_mode_pipeline.ts': Object.freeze(['CHEST_MODE_COMMODE_CONSTRAINTS_POLICY']),
   'esm/native/builder/render_drawer_ops_internal.ts': Object.freeze(['CHEST_MODE_DRAWER_BOX_RENDER_POLICY']),
   'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze([
@@ -516,6 +518,7 @@ const APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/runtime/api.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
   'esm/native/services/api.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
   'esm/native/services/api_runtime_base_surface.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
+  'esm/native/ui/react/tabs/structure_tab_dimension_defaults.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
   'esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts': [
     'CHEST_MODE_DIMENSIONS@static-import',
   ],

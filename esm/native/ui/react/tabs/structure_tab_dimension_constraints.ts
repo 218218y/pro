@@ -26,7 +26,7 @@ import {
   WARDROBE_WIDTH_MAX,
   WARDROBE_WIDTH_MIN,
   CHEST_MODE_DIMENSIONS,
-} from '../../../services/api.js';
+} from './structure_tab_dimension_defaults.js';
 
 export type StructureDimInputBounds = {
   min?: number;
