@@ -4,6 +4,32 @@ import path from 'node:path';
 
 import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 
+const boundaryPath = path.resolve('esm/native/features/interior_tab_defaults.ts');
+const boundaryExports = loadTsRuntimeModule(boundaryPath, {
+  mocks: {
+    '../../shared/dimensions/interior_fittings_policy.js': {
+      INTERIOR_SHELF_GEOMETRY_POLICY: { regularDepthM: 0.45 },
+    },
+    '../../shared/dimensions/units.js': {
+      mToCm: value => value * 100,
+    },
+    './sketch_drawer_sizing.js': {
+      DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM: 22,
+      DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM: 16.5,
+    },
+    './base_plinth_support.js': {
+      DEFAULT_BASE_PLINTH_HEIGHT_CM: 8,
+    },
+    './base_leg_support.js': {
+      DEFAULT_BASE_LEG_PLATFORM_MODE: 'stage',
+      DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE: 'overhang',
+    },
+    './platform_overhang_support.js': {
+      DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM: 1.5,
+      DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM: 2,
+    },
+  },
+});
 const srcPath = path.resolve('esm/native/ui/react/tabs/interior_tab_local_state_shared.ts');
 const {
   createInteriorTabLocalStateDefaults,
@@ -17,25 +43,7 @@ const {
   INTERIOR_MANUAL_TOOLS,
 } = loadTsRuntimeModule(srcPath, {
   mocks: {
-    '../../../../shared/wardrobe_dimension_tokens_shared.js': {
-      INTERIOR_FITTINGS_DIMENSIONS: { shelves: { regularDepthM: 0.45 } },
-      mToCm: value => value * 100,
-    },
-    '../../../features/sketch_drawer_sizing.js': {
-      DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM: 22,
-      DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM: 16.5,
-    },
-    '../../../features/base_plinth_support.js': {
-      DEFAULT_BASE_PLINTH_HEIGHT_CM: 8,
-    },
-    '../../../features/base_leg_support.js': {
-      DEFAULT_BASE_LEG_PLATFORM_MODE: 'stage',
-      DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE: 'overhang',
-    },
-    '../../../features/platform_overhang_support.js': {
-      DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM: 1.5,
-      DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM: 2,
-    },
+    '../../../features/interior_tab_defaults.js': boundaryExports,
   },
 });
 
@@ -45,6 +53,7 @@ test('[interior-local-state-runtime] defaults stay canonical for drafts/options'
   assert.equal(defaults.sketchBoxHeightCm, 40);
   assert.equal(DEFAULT_SKETCH_STORAGE_HEIGHT_CM, 50);
   assert.equal(DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM, 45);
+  assert.equal(DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM, boundaryExports.DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM);
   assert.equal(DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE, '');
   assert.equal(defaults.sketchStorageHeightCm, DEFAULT_SKETCH_STORAGE_HEIGHT_CM);
   assert.equal(defaults.sketchBoxCorniceType, 'classic');

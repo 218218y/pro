@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-27T21:23:49.782Z",
+  "generatedAt": "2026-07-28T07:36:08.502Z",
   "totals": {
-    "tests": 1301,
-    "unitRunnerTests": 1293,
+    "tests": 1302,
+    "unitRunnerTests": 1294,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 459,
+    "contract": 460,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -2171,6 +2171,10 @@
     },
     {
       "file": "tests/interior_fittings_builder_pair_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/interior_fittings_ui_compatibility_boundary_ownership_contract.test.js",
       "category": "contract"
     },
     {

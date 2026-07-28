@@ -10,6 +10,7 @@
     "front_color_shelf_inheritance.js",
     "hex_cell/index.js",
     "interior_layout_presets/api.js",
+    "interior_tab_defaults.js",
     "library_preset/library_preset.js",
     "manual_handle_position.js",
     "model_record/api.js",
@@ -36,6 +37,7 @@
     "front_color_shelf_inheritance": ["front_color_shelf_inheritance.js"],
     "hex_cell": ["hex_cell/index.js"],
     "interior_layout_presets": ["interior_layout_presets/api.js"],
+    "interior_tab_defaults": ["interior_tab_defaults.js"],
     "library_preset": ["library_preset/library_preset.js"],
     "manual_handle_position": ["manual_handle_position.js"],
     "model_record": ["model_record/api.js"],
@@ -1754,19 +1756,7 @@
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_local_state_shared.ts",
-      "entry": "sketch_drawer_sizing.js"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_local_state_shared.ts",
-      "entry": "base_plinth_support.js"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_local_state_shared.ts",
-      "entry": "base_leg_support.js"
-    },
-    {
-      "file": "esm/native/ui/react/tabs/interior_tab_local_state_shared.ts",
-      "entry": "platform_overhang_support.js"
+      "entry": "interior_tab_defaults.js"
     },
     {
       "file": "esm/native/ui/react/tabs/interior_tab_sections_handles.tsx",

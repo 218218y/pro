@@ -460,11 +460,11 @@
       "from": "features",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 40,
+      "maxImporterCount": 41,
       "maxImportCount": 58,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 2,
-      "maxValueImporterCount": 40,
+      "maxValueImporterCount": 41,
       "maxValueImportCount": 57,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -5925,6 +5925,64 @@
       },
       "reason": "The Library Preset Module Defaults feature consumer replaces one combined legacy facade statement with the focused Library Preset Module Defaults policy plus the focused Wardrobe Default Resolution function on the existing features to shared edge.",
       "removalCondition": "Remove this entry when a reviewed Library Preset Module Defaults composition seam eliminates the extra Wardrobe Default Resolution statement without reintroducing the legacy facade."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-28",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/features/interior_tab_defaults.ts",
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "mToCm"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["mToCm"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Interior Tab defaults feature boundary moves the combined UI facade statement behind a feature-owned composition seam, adding the focused Interior Shelf Geometry owner alongside the canonical units conversion without returning the facade to UI.",
+      "removalCondition": "Remove this entry when a reviewed Interior Tab defaults composition seam eliminates the extra Interior Fittings owner statement without reintroducing the legacy facade or a direct shared owner import in UI."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-28",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/features/interior_tab_defaults.ts",
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_FITTINGS_DIMENSIONS", "mToCm"],
+        "syntax": "static-import"
+      },
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["mToCm"],
+        "syntax": "static-import"
+      },
+      "reason": "The Interior Tab defaults feature boundary moves the combined UI facade statement behind a feature-owned composition seam, adding the canonical meter-to-centimeter conversion alongside the focused Interior Shelf Geometry owner without returning the facade to UI.",
+      "removalCondition": "Remove this entry when a reviewed Interior Tab defaults composition seam eliminates the extra units statement without reintroducing the legacy facade, numeric conversion literals, or a direct shared import in UI."
     }
   ]
 }

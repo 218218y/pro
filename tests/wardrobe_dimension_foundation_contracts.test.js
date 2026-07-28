@@ -901,6 +901,7 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
   ]),
 });
 const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
+  'esm/native/features/interior_tab_defaults.ts': Object.freeze(['INTERIOR_SHELF_GEOMETRY_POLICY']),
   'esm/native/builder/core_storage_compute_custom.ts': Object.freeze(['INTERIOR_ROD_PLACEMENT_POLICY']),
   'esm/native/builder/corner_wing_cell_layouts.ts': Object.freeze([
     'INTERIOR_PRESET_ROD_FACTORS_POLICY',
@@ -1280,12 +1281,7 @@ const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_PREVIEW_POLICY']),
 });
-const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({
-  'esm/native/ui/react/tabs/interior_tab_local_state_shared.ts': Object.freeze([
-    'shelves',
-    'shelves.regularDepthM',
-  ]),
-});
+const APPROVED_INTERIOR_FITTINGS_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_CORNER_SYSTEM_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/corner_connector_door_emit_context.ts': Object.freeze([
     'CORNER_CONNECTOR_DOOR_RENDER_POLICY',

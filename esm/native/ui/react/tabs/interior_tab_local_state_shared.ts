@@ -11,20 +11,16 @@ import type {
   SketchBoxLegPlatformSideMode,
   SketchBoxLegStyle,
 } from './interior_tab_helpers.js';
-import { INTERIOR_FITTINGS_DIMENSIONS, mToCm } from '../../../../shared/wardrobe_dimension_tokens_shared.js';
-import {
-  DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
-  DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM,
-} from '../../../features/sketch_drawer_sizing.js';
-import { DEFAULT_BASE_PLINTH_HEIGHT_CM } from '../../../features/base_plinth_support.js';
-import {
-  DEFAULT_BASE_LEG_PLATFORM_MODE,
-  DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE,
-} from '../../../features/base_leg_support.js';
 import {
   DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM,
+  DEFAULT_BASE_LEG_PLATFORM_MODE,
+  DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE,
   DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM,
-} from '../../../features/platform_overhang_support.js';
+  DEFAULT_BASE_PLINTH_HEIGHT_CM,
+  DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,
+  DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM,
+  DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM,
+} from '../../../features/interior_tab_defaults.js';
 
 export type LayoutTypeOption = { id: LayoutTypeId; label: string; icon: string };
 export type ManualToolOption = { id: ManualToolId; label: string };
@@ -49,7 +45,7 @@ export const INTERIOR_GRID_DIVS: readonly [8, 7, 6, 5, 4, 3, 2] = [8, 7, 6, 5, 4
 export const INTERIOR_EXT_COUNTS: readonly [1, 2, 3, 4, 5] = [1, 2, 3, 4, 5];
 export const DEFAULT_SKETCH_STORAGE_HEIGHT_CM = 50;
 export const DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE = '';
-export const DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM = mToCm(INTERIOR_FITTINGS_DIMENSIONS.shelves.regularDepthM);
+export { DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM };
 
 export const INTERIOR_HANDLE_TYPES: HandleTypeOption[] = [
   { id: 'standard', label: 'סטנדרטית' },

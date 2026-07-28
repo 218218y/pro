@@ -865,6 +865,90 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
   assert.doesNotMatch(presetData, /drawersCount: '4'/);
 });
 
+test('[dimension tokens] Interior Tab consumes the feature-owned defaults boundary', () => {
+  const boundaryRel = 'esm/native/features/interior_tab_defaults.ts';
+  const boundarySource = read(boundaryRel);
+  const boundaryDependencies = analyzeModuleDependencies(boundaryRel, boundarySource).imports;
+  const sharedDependencies = boundaryDependencies.filter(
+    dependency => dependency.syntax === 'static-import' && dependency.specifier.startsWith('../../shared/')
+  );
+
+  assert.deepEqual(
+    sharedDependencies.map(dependency => ({
+      specifier: dependency.specifier,
+      kind: dependency.kind,
+      syntax: dependency.syntax,
+      importedSymbols: dependency.importedSymbols,
+      aliases: dependency.bindings.map(binding => [binding.importedName, binding.localName]),
+    })),
+    [
+      {
+        specifier: '../../shared/dimensions/interior_fittings_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['INTERIOR_SHELF_GEOMETRY_POLICY'],
+        aliases: [['INTERIOR_SHELF_GEOMETRY_POLICY', 'INTERIOR_SHELF_GEOMETRY_POLICY']],
+      },
+      {
+        specifier: '../../shared/dimensions/units.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['mToCm'],
+        aliases: [['mToCm', 'mToCm']],
+      },
+    ]
+  );
+  assert.doesNotMatch(
+    boundarySource,
+    /wardrobe_dimension_tokens_shared|INTERIOR_FITTINGS_DIMENSIONS|INTERIOR_FITTINGS_POLICY|INTERIOR_SHELF_POLICY/u
+  );
+
+  const uiRel = 'esm/native/ui/react/tabs/interior_tab_local_state_shared.ts';
+  const uiSource = read(uiRel);
+  const boundaryImports = analyzeModuleDependencies(uiRel, uiSource).imports.filter(
+    dependency => dependency.specifier === '../../../features/interior_tab_defaults.js'
+  );
+  assert.equal(boundaryImports.length, 1);
+  assert.deepEqual(
+    boundaryImports.map(dependency => ({
+      kind: dependency.kind,
+      syntax: dependency.syntax,
+      importedSymbols: dependency.importedSymbols,
+      aliases: dependency.bindings.map(binding => [binding.importedName, binding.localName]),
+    })),
+    [
+      {
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: [
+          'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM',
+          'DEFAULT_BASE_LEG_PLATFORM_MODE',
+          'DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE',
+          'DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM',
+          'DEFAULT_BASE_PLINTH_HEIGHT_CM',
+          'DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM',
+          'DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM',
+          'DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM',
+        ],
+        aliases: [
+          ['DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM', 'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM'],
+          ['DEFAULT_BASE_LEG_PLATFORM_MODE', 'DEFAULT_BASE_LEG_PLATFORM_MODE'],
+          ['DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE', 'DEFAULT_BASE_LEG_PLATFORM_SIDE_MODE'],
+          ['DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM', 'DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM'],
+          ['DEFAULT_BASE_PLINTH_HEIGHT_CM', 'DEFAULT_BASE_PLINTH_HEIGHT_CM'],
+          ['DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM', 'DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM'],
+          ['DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM', 'DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_CM'],
+          ['DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM', 'DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM'],
+        ],
+      },
+    ]
+  );
+  assert.doesNotMatch(
+    uiSource,
+    /wardrobe_dimension_tokens_shared|INTERIOR_FITTINGS_DIMENSIONS|INTERIOR_SHELF_GEOMETRY_POLICY|INTERIOR_FITTINGS_POLICY/u
+  );
+});
+
 test('[dimension tokens] interior presets and sketch drawer sizing read canonical dimensions', () => {
   const tokens = readProductDimensionTokens();
   assert.match(tokens, /export const INTERIOR_PRESET_POLICY = Object\.freeze\(\{/);

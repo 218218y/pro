@@ -734,6 +734,7 @@ test('Interior Storage closeout has zero repository compatibility consumers and 
   ]);
   assert.equal(typeof uiSource, 'string');
   assert.ok(uiInspection);
+  assert.deepEqual(compatibilityImporters, []);
   assertApprovedUiCompatibilityState(compatibilityImporters, uiSource, uiInspection);
 });
 

@@ -891,7 +891,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at one hundred and sixty-three reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at one hundred and sixty-five reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -1646,7 +1646,7 @@ test('project migration ledger stays exact at one hundred and sixty-three review
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 163);
+  assert.equal(report.migrationBudgets.length, 165);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
@@ -1656,9 +1656,9 @@ test('project migration ledger stays exact at one hundred and sixty-three review
   // their closed prefix and exact entries, so later additive migrations cannot stale them.
   const expectedEdges = new Map([
     ['builder>shared', { observed: 304, migration: 85, reviewed: 219, budget: 219 }],
-    ['features>shared', { observed: 66, migration: 8, reviewed: 58, budget: 58 }],
+    ['features>shared', { observed: 68, migration: 10, reviewed: 58, budget: 58 }],
     ['services>shared', { observed: 230, migration: 63, reviewed: 167, budget: 167 }],
-    ['ui>shared', { observed: 28, migration: 1, reviewed: 27, budget: 27 }],
+    ['ui>shared', { observed: 27, migration: 1, reviewed: 26, budget: 27 }],
     ['platform>shared', { observed: 6, migration: 2, reviewed: 4, budget: 4 }],
     ['runtime>shared', { observed: 36, migration: 4, reviewed: 32, budget: 32 }],
   ]);
@@ -1697,10 +1697,10 @@ test('project migration ledger stays exact at one hundred and sixty-three review
   const staticFacadeDependencies = facadeDependencies.filter(
     dependency => dependency.syntax === 'static-import'
   );
-  assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 10);
-  assert.equal(staticFacadeDependencies.length, 10);
-  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 12);
-  assert.equal(facadeDependencies.length, 13);
+  assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 9);
+  assert.equal(staticFacadeDependencies.length, 9);
+  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 11);
+  assert.equal(facadeDependencies.length, 12);
 
   const facadeSource = fs.readFileSync(path.join(repositoryRoot, facadeRel), 'utf8');
   const facadeExports = collectNamedModuleExports(facadeRel, facadeSource);
@@ -1714,7 +1714,7 @@ test('project migration ledger stays exact at one hundred and sixty-three review
   );
 });
 
-test('repository Sketch Box Geometry and unit-conversion migration entries are exact and grant no UI headroom', () => {
+test('repository Sketch Box Geometry migration entries remain exact after Interior Tab UI consolidation', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -1790,7 +1790,7 @@ test('repository Sketch Box Geometry and unit-conversion migration entries are e
   const uiRule = baseline.rules.find(entry => entry.from === 'ui' && entry.to === 'shared');
   assert.ok(uiEdge);
   assert.ok(uiRule);
-  assert.equal(uiEdge.importCount, 28);
+  assert.equal(uiEdge.importCount, 27);
   assert.equal(uiRule.maxImportCount, 27);
   assert.equal(
     report.migrationBudgets.filter(entry => entry.from === 'ui' && entry.to === 'shared' && entry.active)
@@ -1801,10 +1801,49 @@ test('repository Sketch Box Geometry and unit-conversion migration entries are e
   const growthGraph = structuredClone(graph);
   const growthEdge = growthGraph.edges.find(entry => entry.from === 'ui' && entry.to === 'shared');
   assert.ok(growthEdge);
-  growthEdge.importCount += 1;
-  growthEdge.valueImportCount += 1;
+  growthEdge.importCount += 2;
+  growthEdge.valueImportCount += 2;
+  growthGraph.imports.push({
+    from: 'ui',
+    to: 'shared',
+    fromFile: 'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts',
+    toFile: 'esm/shared/dimensions/material_thickness_policy.ts',
+    specifier: '../../../../shared/dimensions/material_thickness_policy.js',
+    kind: 'value',
+    syntax: 'static-import',
+    importedSymbols: ['MATERIAL_THICKNESS_POLICY'],
+    exportedSymbols: [],
+    bindings: [
+      {
+        importedName: 'MATERIAL_THICKNESS_POLICY',
+        localName: 'MATERIAL_THICKNESS_POLICY',
+        exportedName: null,
+      },
+    ],
+    statementKey: 'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts:synthetic-unreviewed-growth',
+  });
+  growthGraph.imports.push({
+    from: 'ui',
+    to: 'shared',
+    fromFile: 'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts',
+    toFile: 'esm/shared/dimensions/material_thickness_policy.ts',
+    specifier: '../../../../shared/dimensions/material_thickness_policy.js',
+    kind: 'value',
+    syntax: 'static-import',
+    importedSymbols: ['MATERIAL_THICKNESS_POLICY'],
+    exportedSymbols: [],
+    bindings: [
+      {
+        importedName: 'MATERIAL_THICKNESS_POLICY',
+        localName: 'MATERIAL_THICKNESS_POLICY_SECOND',
+        exportedName: null,
+      },
+    ],
+    statementKey:
+      'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts:synthetic-unreviewed-growth-2',
+  });
   const growth = evaluateLayerContract(growthGraph, baseline, { currentDate: TEST_CURRENT_DATE });
-  assert.equal(growth.ok, false, 'the exact UI migration must not grant headroom for another statement');
+  assert.equal(growth.ok, false, 'the historical UI budget must not absorb two unreviewed statements');
   assert.equal(
     growth.failures.some(
       failure => failure.kind === 'import-growth' && failure.from === 'ui' && failure.to === 'shared'
