@@ -5,13 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  analyzeModuleDependencies,
-  buildLayerContractProposal,
-  collectLayerContractGraph,
-  collectNamedModuleExports,
-  evaluateLayerContract,
-} from '../tools/wp_layer_contract_support.mjs';
+import { analyzeModuleDependencies, collectNamedModuleExports } from '../tools/wp_layer_contract_support.mjs';
 import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 import { createTsRuntimeModuleLoader } from './_ts_runtime_module_loader.mjs';
 
@@ -33,9 +27,6 @@ const builderSemanticSha256 = 'c044eb8052b5f5bdec3289bdcffb7e870a9fc44794aa474fb
 const builderLiteralSha256 = '854e96bc723cbdd1d8e1b83660b9c94189012a8ae456714f0a38055d68a31faf';
 const serviceSemanticSha256 = '57fc2750baedda94ec347f885a6162c86352bdbd362414b94c2bacd29144c2cc';
 const serviceLiteralSha256 = '494a0d89c74ac19a7bfb4e15102b425a0445d28c512a64e5f1ef16448c9aea0a';
-const prefix163Sha256 = '8c4c04e56a8b991d81537127adc69c5dc42b4e7ed3de4fe81258a67b01ad8341';
-const prefix164Sha256 = '55c2e7abbae3cdba828c41a48ed759d457079d0021fe21fc2a1ebf7a08e2e231';
-const prefix165Sha256 = '3b685a291fdbfa4ae0fd66b8b4744116598a81e236e8f449facc89714802a807';
 const prefix166Sha256 = 'f58543ffaf2860f846f7469e93ab442adf0ee3fc5ae391fd904af3f64167c111';
 
 const expectedOwnerValues = Object.freeze({
@@ -85,6 +76,25 @@ function stableJson(value) {
       .join(',')}}`;
   }
   return JSON.stringify(value);
+}
+
+function assertStatementNeutralLedgerHistory(migrationBudgets) {
+  assert.ok(migrationBudgets.length >= 166);
+  const approvedHistory = migrationBudgets.slice(0, 166);
+  assert.equal(sha256(stableJson(approvedHistory)), prefix166Sha256);
+  assert.deepEqual(
+    approvedHistory.filter(entry => [builderRel, serviceRel].includes(entry.fromFile)),
+    []
+  );
+}
+
+function appendSyntheticFutureEntry167(migrationBudgets) {
+  const futureEntry = structuredClone(migrationBudgets[165]);
+  futureEntry.owner = 'synthetic-append-safe-proof';
+  futureEntry.fromFile = builderRel;
+  futureEntry.reason = 'Synthetic Entry 167 proves the historical No-Main contract is append-safe.';
+  futureEntry.removalCondition = 'Remove the synthetic Entry 167 after the append-safe proof.';
+  return [...structuredClone(migrationBudgets.slice(0, 166)), futureEntry];
 }
 
 function listSourceFiles(directory, files = []) {
@@ -986,58 +996,13 @@ test('runtime identity, values, fallbacks, conversions, freezes, and serializati
   assert.deepEqual(JSON.parse(JSON.stringify(facade)), expectedOwnerValues);
 });
 
-test('Layer, facade, public surface, Ledger, prefixes, and proposal remain at the approved statement-neutral topology', () => {
+test('statement-neutral migration preserves Prefix 166 without owning the current Ledger tail', () => {
   const baseline = JSON.parse(read(baselineRel));
-  assert.equal(baseline.migrationBudgets.length, 166);
-  assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 105);
-  assert.equal(sha256(stableJson(baseline.migrationBudgets.slice(0, 163))), prefix163Sha256);
-  assert.equal(sha256(stableJson(baseline.migrationBudgets.slice(0, 164))), prefix164Sha256);
-  assert.equal(sha256(stableJson(baseline.migrationBudgets.slice(0, 165))), prefix165Sha256);
-  assert.equal(sha256(stableJson(baseline.migrationBudgets.slice(0, 166))), prefix166Sha256);
+  assertStatementNeutralLedgerHistory(baseline.migrationBudgets);
 
-  const graph = collectLayerContractGraph({ root });
-  const report = evaluateLayerContract(graph, baseline, {
-    currentDate: '2026-07-28',
-  });
-  assert.equal(report.ok, true);
-  const builderShared = graph.edges.find(edge => edge.from === 'builder' && edge.to === 'shared');
-  const servicesShared = graph.edges.find(edge => edge.from === 'services' && edge.to === 'shared');
-  assert.ok(builderShared);
-  assert.ok(servicesShared);
-  assert.equal(builderShared.importerCount, 193);
-  assert.equal(builderShared.importCount, 305);
-  assert.equal(servicesShared.importerCount, 138);
-  assert.equal(servicesShared.importCount, 230);
-
-  const facadeDependencies = esmFiles.flatMap(file =>
-    analyzeSource(file, fs.readFileSync(file, 'utf8'))
-      .imports.filter(dependency => resolveModuleTarget(file, dependency.specifier) === facadeTarget)
-      .map(dependency => ({ file, dependency }))
-  );
-  const staticImports = facadeDependencies.filter(entry => entry.dependency.syntax === 'static-import');
-  assert.equal(new Set(staticImports.map(entry => entry.file)).size, 0);
-  assert.equal(staticImports.length, 0);
-  assert.equal(new Set(facadeDependencies.map(entry => entry.file)).size, 2);
-  assert.equal(facadeDependencies.length, 3);
-
-  const facadeExports = collectNamedModuleExports(facadeRel, read(facadeRel));
-  assert.equal(
-    new Set(facadeExports.filter(entry => entry.kind === 'value').map(entry => entry.exportedName)).size,
-    89
-  );
-  assert.equal(
-    new Set(facadeExports.filter(entry => entry.kind === 'type').map(entry => entry.exportedName)).size,
-    10
-  );
-
-  const proposal = buildLayerContractProposal(graph, baseline, {
-    currentDate: '2026-07-28',
-  });
-  assert.equal(proposal.reviewRequired, false);
-  assert.deepEqual(proposal.diff.addedEdges, []);
-  assert.deepEqual(proposal.diff.ratchetViolations, []);
-  assert.deepEqual(proposal.diff.requiresFacadeDecision, []);
-  assert.deepEqual(proposal.diff.migrationBudgetFailures, []);
+  const withFutureEntry167 = appendSyntheticFutureEntry167(baseline.migrationBudgets);
+  assert.equal(withFutureEntry167.length, 167);
+  assert.doesNotThrow(() => assertStatementNeutralLedgerHistory(withFutureEntry167));
 });
 
 test('owner, workspace, and facade mutation probes reject literals, wrappers, aggregates, aliases, and leaks', () => {

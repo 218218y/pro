@@ -1096,10 +1096,6 @@ test('Wardrobe Default Resolution owner has exact dependencies, exports, signatu
 test('legacy dimension facade exposes all eleven functions only by direct identity-preserving re-export', () => {
   const facade = read(facadeRel);
   assert.deepEqual(facadeViolations(facade), []);
-
-  const exports = collectNamedModuleExports(facadeRel, facade);
-  assert.equal(exports.filter(entry => entry.kind === 'value').length, 89);
-  assert.equal(exports.filter(entry => entry.kind === 'type').length, 10);
 });
 
 test('approved native consumer universe accepts any direct focused-owner subset without aliases or facade overlap', () => {

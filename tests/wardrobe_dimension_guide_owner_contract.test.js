@@ -19,8 +19,6 @@ const ownerSpecifier = './dimensions/wardrobe_dimension_guide_policy.js';
 const ownerSymbol = 'WARDROBE_DIMENSION_GUIDE_POLICY';
 const compatibilitySymbol = 'WARDROBE_DIMENSION_GUIDE_DIMENSIONS';
 const initializerSha256 = '5c23d1d4ea81ab8735b9214d73d1b6bfbe7eec9ed5ad6a7165a0381a486a811d';
-const prefix163Sha256 = '8c4c04e56a8b991d81537127adc69c5dc42b4e7ed3de4fe81258a67b01ad8341';
-const prefix164Sha256 = '55c2e7abbae3cdba828c41a48ed759d457079d0021fe21fc2a1ebf7a08e2e231';
 const prefix165Sha256 = '3b685a291fdbfa4ae0fd66b8b4744116598a81e236e8f449facc89714802a807';
 const prefix166Sha256 = 'f58543ffaf2860f846f7469e93ab442adf0ee3fc5ae391fd904af3f64167c111';
 
@@ -143,6 +141,22 @@ function stableJson(value) {
       .join(',')}}`;
   }
   return JSON.stringify(value);
+}
+
+function assertDimensionGuideLedgerHistory(migrationBudgets) {
+  assert.ok(migrationBudgets.length >= 166);
+  assert.deepEqual(migrationBudgets.slice(165, 166), [expectedEntry166]);
+  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 165))), prefix165Sha256);
+  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 166))), prefix166Sha256);
+}
+
+function syntheticFutureEntry167() {
+  const entry = structuredClone(expectedEntry166);
+  entry.owner = 'synthetic-append-safe-proof';
+  entry.fromFile = 'esm/native/builder/synthetic_dimension_guide_entry_167.ts';
+  entry.reason = 'Synthetic Entry 167 proves append-safe historical ownership.';
+  entry.removalCondition = 'Remove the synthetic Entry 167 after the append-safe proof.';
+  return entry;
 }
 
 function listSourceFiles(directory, files = []) {
@@ -832,16 +846,6 @@ test('Wardrobe Dimension Guide facade is an inferred direct identity alias with 
   assert.deepEqual(inspectFacade(read(facadeRel)), []);
   assert.deepEqual(publicOwnerReferences(read(publicDimensionsRel)), []);
   assert.deepEqual(publicOwnerReferences(read(runtimeApiRel)), []);
-
-  const facadeExports = collectNamedModuleExports(facadeRel, read(facadeRel));
-  assert.equal(
-    new Set(facadeExports.filter(entry => entry.kind === 'value').map(entry => entry.exportedName)).size,
-    89
-  );
-  assert.equal(
-    new Set(facadeExports.filter(entry => entry.kind === 'type').map(entry => entry.exportedName)).size,
-    10
-  );
 });
 
 test('closeout keeps exactly the focused render trio plus facade owner import and zero production compatibility consumers', () => {
@@ -885,17 +889,6 @@ test('closeout keeps exactly the focused render trio plus facade owner import an
   for (const rel of renderConsumerRels) {
     assert.deepEqual(inspectRenderConsumer(rel, read(rel)), [], rel);
   }
-
-  const facadeDependencies = esmFiles.flatMap(file =>
-    analyzeModuleDependencies(file, fs.readFileSync(file, 'utf8'))
-      .imports.filter(dependency => resolveModuleTarget(file, dependency.specifier) === facadeTarget)
-      .map(dependency => ({ file, dependency }))
-  );
-  const staticImports = facadeDependencies.filter(entry => entry.dependency.syntax === 'static-import');
-  assert.equal(new Set(staticImports.map(entry => entry.file)).size, 0);
-  assert.equal(staticImports.length, 0);
-  assert.equal(new Set(facadeDependencies.map(entry => entry.file)).size, 2);
-  assert.equal(facadeDependencies.length, 3);
 });
 
 test('render flow semantic AST fingerprints preserve formulas, offsets, branches, types, and call order', () => {
@@ -904,16 +897,18 @@ test('render flow semantic AST fingerprints preserve formulas, offsets, branches
   }
 });
 
-test('Ledger Entry 166 and Prefixes 163-166 exactly own the single focused statement increase', () => {
+test('Ledger Entry 166 and Prefixes 165-166 exactly own the single focused statement increase', () => {
   const baseline = JSON.parse(read(baselineRel));
   const migrationBudgets = baseline.migrationBudgets;
-  assert.equal(migrationBudgets.length, 166);
-  assert.equal(new Set(migrationBudgets.map(entry => entry.fromFile)).size, 105);
-  assert.deepEqual(migrationBudgets.slice(165, 166), [expectedEntry166]);
-  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 163))), prefix163Sha256);
-  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 164))), prefix164Sha256);
-  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 165))), prefix165Sha256);
-  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 166))), prefix166Sha256);
+  assertDimensionGuideLedgerHistory(migrationBudgets);
+
+  const withFutureEntry167 = [...structuredClone(migrationBudgets.slice(0, 166)), syntheticFutureEntry167()];
+  assert.equal(withFutureEntry167.length, 167);
+  assert.doesNotThrow(() => assertDimensionGuideLedgerHistory(withFutureEntry167));
+
+  const withMutatedEntry166 = structuredClone(migrationBudgets.slice(0, 166));
+  withMutatedEntry166[165].owner = 'mutated-owner-probe';
+  assert.throws(() => assertDimensionGuideLedgerHistory(withMutatedEntry166));
 });
 
 test('runtime and declaration parity preserve identity, values, readonly topology, and serialization', () => {

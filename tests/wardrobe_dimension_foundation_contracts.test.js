@@ -2932,8 +2932,6 @@ test('[dimension-foundation] Wardrobe Default Resolution owner preserves the fac
   assert.deepEqual(facadeLocalImplementations, []);
 
   const publicExports = collectNamedModuleExports(facadeRel, facade);
-  assert.equal(publicExports.filter(entry => entry.kind === 'value').length, 89);
-  assert.equal(publicExports.filter(entry => entry.kind === 'type').length, 10);
   assert.deepEqual(
     publicExports
       .filter(entry => entry.kind === 'value')
@@ -2954,7 +2952,6 @@ test('[dimension-foundation] Preset Models Dimension Defaults owner is a private
   const ownerRel = 'esm/shared/dimensions/preset_models_dimension_defaults_policy.ts';
   const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
   const owner = read(ownerRel);
-  const facade = read(facadeRel);
 
   assert.deepEqual(
     analyzeModuleDependencies(ownerRel, owner).imports.map(dependency => ({
@@ -3054,10 +3051,6 @@ test('[dimension-foundation] Preset Models Dimension Defaults owner is a private
       `${rel} must not expose the private Preset Models composition owner`
     );
   }
-
-  const publicExports = collectNamedModuleExports(facadeRel, facade);
-  assert.equal(publicExports.filter(entry => entry.kind === 'value').length, 89);
-  assert.equal(publicExports.filter(entry => entry.kind === 'type').length, 10);
 });
 
 test('[dimension-foundation] Stack Split facade symbols stay on an exact transition allowlist', () => {

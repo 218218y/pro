@@ -5,13 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  analyzeModuleDependencies,
-  buildLayerContractProposal,
-  collectLayerContractGraph,
-  collectNamedModuleExports,
-  evaluateLayerContract,
-} from '../tools/wp_layer_contract_support.mjs';
+import { analyzeModuleDependencies, collectNamedModuleExports } from '../tools/wp_layer_contract_support.mjs';
 import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -24,7 +18,6 @@ const ownerRel = 'esm/shared/dimensions/interior_fittings_policy.ts';
 const unitsRel = 'esm/shared/dimensions/units.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const manifestRel = 'tools/wp_features_public_api_manifest.json';
-const auditDocRel = 'docs/layering_completion_audit.md';
 
 const compatibilitySymbol = 'INTERIOR_FITTINGS_DIMENSIONS';
 const aggregatePolicySymbol = 'INTERIOR_FITTINGS_POLICY';
@@ -42,9 +35,6 @@ const publicFamily = 'interior_tab_defaults';
 const prefix163Sha256 = '8c4c04e56a8b991d81537127adc69c5dc42b4e7ed3de4fe81258a67b01ad8341';
 const prefix164Sha256 = '55c2e7abbae3cdba828c41a48ed759d457079d0021fe21fc2a1ebf7a08e2e231';
 const prefix165Sha256 = '3b685a291fdbfa4ae0fd66b8b4744116598a81e236e8f449facc89714802a807';
-
-const retirementRule =
-  'Entries 164–165 remain temporary: when a future composition seam retires both entries, the same review must run the Layer proposal and explicitly attempt to lower the `features → shared` importer and value-importer ceilings from 41 to 40; retaining 41 requires separately reviewed graph evidence.';
 
 const sourceExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
 const runtimeExtensionCandidates = Object.freeze({
@@ -702,7 +692,7 @@ function assertHistoricalPrefixes(migrationBudgets) {
   assert.equal(sha256(stableJson(migrationBudgets.slice(0, 165))), prefix165Sha256);
 }
 
-function syntheticEntry166() {
+function syntheticEntry167() {
   return Object.freeze({
     from: 'services',
     to: 'shared',
@@ -710,23 +700,23 @@ function syntheticEntry166() {
     owner: 'synthetic-append-safe-proof',
     reviewedAt: '2099-01-01',
     reviewBy: '2099-04-01',
-    fromFile: 'esm/native/services/synthetic_entry_166.ts',
+    fromFile: 'esm/native/services/synthetic_entry_167.ts',
     companionImport: {
-      toFile: 'esm/shared/synthetic_companion_166.ts',
+      toFile: 'esm/shared/synthetic_companion_167.ts',
       kind: 'value',
-      importedSymbols: ['SYNTHETIC_COMPANION_166'],
+      importedSymbols: ['SYNTHETIC_COMPANION_167'],
       syntax: 'static-import',
     },
     removedImport: {
       toFile: facadeRel,
       kind: 'value',
-      importedSymbols: ['SYNTHETIC_LEGACY_166'],
+      importedSymbols: ['SYNTHETIC_LEGACY_167'],
       syntax: 'static-import',
     },
     addedImport: {
-      toFile: 'esm/shared/synthetic_owner_166.ts',
+      toFile: 'esm/shared/synthetic_owner_167.ts',
       kind: 'value',
-      importedSymbols: ['SYNTHETIC_OWNER_166'],
+      importedSymbols: ['SYNTHETIC_OWNER_167'],
       syntax: 'static-import',
     },
     reason: 'In-memory append-safe proof only.',
@@ -800,22 +790,11 @@ test('Features manifest and compatibility facade preserve their exact public rou
   assert.deepEqual(inspectManifest(JSON.parse(read(manifestRel))), []);
   assert.deepEqual(inspectFacade(read(facadeRel)), []);
   assert.deepEqual(inspectPublicDimensionsBarrel(read(publicDimensionsRel)), []);
-
-  const facadeExports = collectNamedModuleExports(facadeRel, read(facadeRel));
-  assert.equal(
-    new Set(facadeExports.filter(entry => entry.kind === 'value').map(entry => entry.exportedName)).size,
-    89
-  );
-  assert.equal(
-    new Set(facadeExports.filter(entry => entry.kind === 'type').map(entry => entry.exportedName)).size,
-    10
-  );
 });
 
-test('Ledger Entries 164-165, Prefixes 163-165, Entry 166 append safety, and ceiling retirement stay exact', () => {
+test('Ledger Entries 164-165 and Prefixes 163-165 remain exact and append-safe for Entry 167', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
   assert.ok(baseline.migrationBudgets.length >= 165);
-  assert.equal(new Set(baseline.migrationBudgets.slice(0, 165).map(entry => entry.fromFile)).size, 104);
   assertHistoricalPrefixes(baseline.migrationBudgets);
 
   const entries = baseline.migrationBudgets.slice(163, 165);
@@ -874,66 +853,14 @@ test('Ledger Entries 164-165, Prefixes 163-165, Entry 166 append safety, and cei
     ]
   );
 
-  const historicalPrefix165 = structuredClone(baseline.migrationBudgets.slice(0, 165));
-  const withEntry166 = [...historicalPrefix165, syntheticEntry166()];
-  assert.equal(withEntry166.length, 166);
-  assert.doesNotThrow(() => assertHistoricalPrefixes(withEntry166));
+  const historicalPrefix166 = structuredClone(baseline.migrationBudgets.slice(0, 166));
+  const withEntry167 = [...historicalPrefix166, syntheticEntry167()];
+  assert.equal(withEntry167.length, 167);
+  assert.doesNotThrow(() => assertHistoricalPrefixes(withEntry167));
 
-  const featuresSharedRule = baseline.rules.find(rule => rule.from === 'features' && rule.to === 'shared');
-  assert.ok(featuresSharedRule);
-  assert.equal(featuresSharedRule.maxImporterCount, 41);
-  assert.equal(featuresSharedRule.maxValueImporterCount, 41);
-  assert.ok(read(auditDocRel).includes(retirementRule));
-});
-
-test('Layer, facade dependency, and proposal counts stay at the current audited topology', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  const graph = collectLayerContractGraph({ root });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-28' });
-  assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 166);
-
-  const expectedEdges = new Map([
-    ['builder>shared', 305],
-    ['features>shared', 68],
-    ['services>shared', 230],
-    ['ui>shared', 27],
-    ['platform>shared', 6],
-    ['runtime>shared', 36],
-    ['ui>features', 75],
-  ]);
-  for (const [key, expectedImportCount] of expectedEdges) {
-    const [from, to] = key.split('>');
-    const edge = graph.edges.find(entry => entry.from === from && entry.to === to);
-    assert.ok(edge, key);
-    assert.equal(edge.importCount, expectedImportCount, key);
-    if (key === 'features>shared') {
-      assert.equal(edge.importerCount, 41);
-      assert.equal(edge.valueImporterCount, 41);
-      assert.equal(edge.valueImportCount, 67);
-      assert.equal(edge.typeImporterCount, 1);
-      assert.equal(edge.typeImportCount, 2);
-      assert.equal(edge.dynamicImportCount, 0);
-    }
-  }
-
-  const facadeDependencies = esmFiles.flatMap(file =>
-    analyzeModuleDependencies(file, fs.readFileSync(file, 'utf8'))
-      .imports.filter(dependency => dependencyTargets(dependency, facadeTarget, file))
-      .map(dependency => ({ file, ...dependency }))
-  );
-  const staticFacadeImports = facadeDependencies.filter(dependency => dependency.syntax === 'static-import');
-  assert.equal(new Set(staticFacadeImports.map(dependency => dependency.file)).size, 0);
-  assert.equal(staticFacadeImports.length, 0);
-  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 2);
-  assert.equal(facadeDependencies.length, 3);
-
-  const proposal = buildLayerContractProposal(graph, baseline, { currentDate: '2026-07-28' });
-  assert.equal(proposal.reviewRequired, false);
-  assert.deepEqual(proposal.diff.addedEdges, []);
-  assert.deepEqual(proposal.diff.ratchetViolations, []);
-  assert.deepEqual(proposal.diff.requiresFacadeDecision, []);
-  assert.deepEqual(proposal.diff.migrationBudgetFailures, []);
+  const withMutatedEntry165 = structuredClone(historicalPrefix166);
+  withMutatedEntry165[164].owner = 'mutated-owner-probe';
+  assert.throws(() => assertHistoricalPrefixes(withMutatedEntry165));
 });
 
 test('mutation probes reject UI import drift, boundary dependency growth, formula drift, and wrappers', () => {

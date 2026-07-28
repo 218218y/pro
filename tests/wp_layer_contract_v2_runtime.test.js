@@ -1647,6 +1647,7 @@ test('project migration ledger stays exact at one hundred and sixty-six reviewed
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
   assert.equal(report.migrationBudgets.length, 166);
+  assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 105);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true

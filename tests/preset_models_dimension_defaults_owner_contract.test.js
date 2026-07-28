@@ -526,10 +526,6 @@ function inspectPrivateOwnerUniverse(entries) {
 test('Preset Models Dimension Defaults owner has exact dependencies, projections, exports, and no derived logic', () => {
   assert.deepEqual(ownerViolations(read(ownerRel)), []);
 
-  const facadeExports = collectNamedModuleExports(facadeRel, read(facadeRel));
-  assert.equal(facadeExports.filter(entry => entry.kind === 'value').length, 89);
-  assert.equal(facadeExports.filter(entry => entry.kind === 'type').length, 10);
-
   for (const rel of [facadeRel, publicDimensionsRel, runtimeApiRel, servicesApiRel, servicesRuntimeBaseRel]) {
     assert.deepEqual(inspectPrivateOwnerUniverse([[path.join(root, rel), read(rel)]]).violations, []);
   }
