@@ -539,6 +539,14 @@ function inspectFacade(source) {
       violations.push({ kind: 'facade-compatibility-not-const' });
     }
     if (
+      declaration?.id?.type === 'Identifier' &&
+      (declaration.id.typeAnnotation != null ||
+        declaration.id.optional === true ||
+        declaration.id.definite === true)
+    ) {
+      violations.push({ kind: 'facade-compatibility-type-annotation' });
+    }
+    if (
       declarators.length !== 1 ||
       declaration?.id?.type !== 'Identifier' ||
       identifierName(declaration.init) !== 'LIBRARY_PRESET_POLICY'
@@ -990,6 +998,87 @@ export * from '../../../shared/another_dimension_surface.js';
   const reassignmentViolations = inspectFacade(reassignedAlias);
   assert.ok(reassignmentViolations.some(violation => violation.kind === 'facade-compatibility-not-const'));
   assert.ok(reassignmentViolations.some(violation => violation.kind === 'facade-compatibility-reassignment'));
+});
+
+test('facade compatibility declaration preserves inferred owner type without local type layers', () => {
+  const facadeSource = read(facadeRel);
+  const canonicalDeclaration = 'export const LIBRARY_PRESET_DIMENSIONS = LIBRARY_PRESET_POLICY;';
+  assert.deepEqual(inspectFacade(facadeSource), []);
+
+  const sourceFile = createSourceFile(path.join(root, facadeRel), facadeSource);
+  const exportStatement = (sourceFile.body ?? []).find(
+    statement =>
+      statement.type === 'ExportNamedDeclaration' &&
+      statement.declaration?.type === 'VariableDeclaration' &&
+      statement.declaration.declarations.some(
+        declarator => identifierName(declarator.id) === compatibilitySymbol
+      )
+  );
+  const declaration = exportStatement?.declaration?.declarations?.[0];
+  assert.equal(exportStatement?.declaration?.kind, 'const');
+  assert.equal(declaration?.id?.type, 'Identifier');
+  assert.equal(declaration?.id?.typeAnnotation ?? null, null);
+  assert.notEqual(declaration?.id?.optional, true);
+  assert.notEqual(declaration?.id?.definite, true);
+  assert.equal(identifierName(declaration?.init), 'LIBRARY_PRESET_POLICY');
+
+  const annotationCases = [
+    {
+      name: 'unknown annotation',
+      declaration: `export const LIBRARY_PRESET_DIMENSIONS:
+  unknown =
+    LIBRARY_PRESET_POLICY;`,
+    },
+    {
+      name: 'any annotation',
+      declaration: `export const LIBRARY_PRESET_DIMENSIONS:
+  any =
+    LIBRARY_PRESET_POLICY;`,
+    },
+    {
+      name: 'broad object annotation',
+      declaration: `export const LIBRARY_PRESET_DIMENSIONS:
+  Readonly<Record<string, unknown>> =
+    LIBRARY_PRESET_POLICY;`,
+    },
+    {
+      name: 'explicit owner type annotation',
+      declaration: `export const LIBRARY_PRESET_DIMENSIONS:
+  typeof LIBRARY_PRESET_POLICY =
+    LIBRARY_PRESET_POLICY;`,
+    },
+  ];
+  for (const probe of annotationCases) {
+    const source = facadeSource.replace(canonicalDeclaration, probe.declaration);
+    const violations = inspectFacade(source);
+    assert.ok(
+      violations.some(violation => violation.kind === 'facade-compatibility-type-annotation'),
+      `${probe.name}: expected facade-compatibility-type-annotation, got ${JSON.stringify(violations)}`
+    );
+  }
+
+  const initializerWrapperCases = [
+    {
+      name: 'as assertion wrapper',
+      declaration: 'export const LIBRARY_PRESET_DIMENSIONS = LIBRARY_PRESET_POLICY as unknown;',
+    },
+    {
+      name: 'satisfies wrapper',
+      declaration: 'export const LIBRARY_PRESET_DIMENSIONS = LIBRARY_PRESET_POLICY satisfies unknown;',
+    },
+    {
+      name: 'angle-bracket assertion wrapper',
+      declaration: 'export const LIBRARY_PRESET_DIMENSIONS = <unknown>LIBRARY_PRESET_POLICY;',
+    },
+  ];
+  for (const probe of initializerWrapperCases) {
+    const source = facadeSource.replace(canonicalDeclaration, probe.declaration);
+    const violations = inspectFacade(source);
+    assert.ok(
+      violations.some(violation => violation.kind === 'facade-identity-alias'),
+      `${probe.name}: expected facade-identity-alias, got ${JSON.stringify(violations)}`
+    );
+  }
 });
 
 test('Library Preset positive route proofs remain accepted', () => {
