@@ -1,7 +1,5 @@
-import {
-  WARDROBE_DEFAULTS,
-  WARDROBE_DIMENSION_GUIDE_DIMENSIONS,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { WARDROBE_DIMENSION_GUIDE_POLICY } from '../../shared/dimensions/wardrobe_dimension_guide_policy.js';
+import { DEFAULT_CORNER_DOORS } from '../../shared/dimensions/wardrobe_defaults.js';
 import type { AppContainer, BuilderDimensionLineScaleSpec } from '../../../types';
 
 export type Vector3Like = { x: number; y: number; z: number };
@@ -173,10 +171,10 @@ export function createRenderDimensionContext(argsIn: unknown): RenderDimensionCo
   const cornerConnectorActive = isCornerMode ? requireCornerModeBoolean(args, 'cornerConnectorActive') : true;
   const cornerWingDoorCountRaw = isCornerMode
     ? requireCornerModeNumber(args, 'cornerWingDoorCount')
-    : WARDROBE_DEFAULTS.corner.doorsCount;
+    : DEFAULT_CORNER_DOORS;
   const cornerWingDoorCount = Number.isFinite(cornerWingDoorCountRaw)
     ? Math.max(0, Math.round(cornerWingDoorCountRaw))
-    : WARDROBE_DEFAULTS.corner.doorsCount;
+    : DEFAULT_CORNER_DOORS;
   const cornerWingVisible = isCornerMode && cornerWingDoorCount > 0;
   const cornerWallLenM = isCornerMode ? requireCornerModeNumber(args, 'cornerWallLenM') : 0;
   const cornerOffsetXM = isCornerMode ? requireCornerModeNumber(args, 'cornerOffsetXM') : 0;
@@ -229,16 +227,16 @@ export function createRenderDimensionContext(argsIn: unknown): RenderDimensionCo
     yTotal:
       displayH +
       (hasCornice
-        ? WARDROBE_DIMENSION_GUIDE_DIMENSIONS.verticalPlacement.totalYOffsetWithCorniceM
-        : WARDROBE_DIMENSION_GUIDE_DIMENSIONS.verticalPlacement.totalYOffsetWithoutCorniceM),
+        ? WARDROBE_DIMENSION_GUIDE_POLICY.verticalPlacement.totalYOffsetWithCorniceM
+        : WARDROBE_DIMENSION_GUIDE_POLICY.verticalPlacement.totalYOffsetWithoutCorniceM),
     yCells:
       displayH +
       (hasCornice
-        ? WARDROBE_DIMENSION_GUIDE_DIMENSIONS.verticalPlacement.cellYOffsetWithCorniceM
-        : WARDROBE_DIMENSION_GUIDE_DIMENSIONS.verticalPlacement.cellYOffsetWithoutCorniceM),
+        ? WARDROBE_DIMENSION_GUIDE_POLICY.verticalPlacement.cellYOffsetWithCorniceM
+        : WARDROBE_DIMENSION_GUIDE_POLICY.verticalPlacement.cellYOffsetWithoutCorniceM),
     dimsOnLeft,
     depthOnLeft,
-    CELL_DIM_TEXT_SCALE: WARDROBE_DIMENSION_GUIDE_DIMENSIONS.textScale.cell,
+    CELL_DIM_TEXT_SCALE: WARDROBE_DIMENSION_GUIDE_POLICY.textScale.cell,
     vec: (x: number, y: number, z: number) => new THREE.Vector3(x, y, z),
   };
 }

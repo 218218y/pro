@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createBuilderRenderDimensionOps } from '../esm/native/builder/render_dimension_ops.ts';
+import { createRenderDimensionContext } from '../esm/native/builder/render_dimension_ops_shared.ts';
 
 class FakeVector3 {
   x: number;
@@ -13,6 +14,31 @@ class FakeVector3 {
     this.z = z;
   }
 }
+
+test('focused Dimension Guide migration preserves shared fallback, placement, scale, and vector behavior', () => {
+  const makeContext = (hasCornice: boolean) =>
+    createRenderDimensionContext({
+      THREE: { Vector3: FakeVector3 },
+      addDimensionLine: () => undefined,
+      totalW: 1.8,
+      H: 2,
+      D: 0.6,
+      hasCornice,
+    });
+
+  const withCornice = makeContext(true);
+  const withoutCornice = makeContext(false);
+  assert.ok(withCornice);
+  assert.ok(withoutCornice);
+  assert.equal(withCornice.cornerWingDoorCount, 3);
+  assert.equal(withCornice.cornerWingVisible, false);
+  assert.equal(withCornice.CELL_DIM_TEXT_SCALE, 0.78);
+  assert.ok(Math.abs(withCornice.yTotal - 2.28) < 0.000001);
+  assert.ok(Math.abs(withCornice.yCells - 2.2) < 0.000001);
+  assert.ok(Math.abs(withoutCornice.yTotal - 2.23) < 0.000001);
+  assert.ok(Math.abs(withoutCornice.yCells - 2.15) < 0.000001);
+  assert.deepEqual(withCornice.vec(1, 2, 3), new FakeVector3(1, 2, 3));
+});
 
 test('render_dimension_ops emits main-run width/height/depth overlays from the focused main owner', () => {
   const calls: any[] = [];

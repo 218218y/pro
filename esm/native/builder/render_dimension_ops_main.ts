@@ -1,4 +1,4 @@
-import { WARDROBE_DIMENSION_GUIDE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { WARDROBE_DIMENSION_GUIDE_POLICY } from '../../shared/dimensions/wardrobe_dimension_guide_policy.js';
 import type { RenderDimensionContext } from './render_dimension_ops_shared.js';
 
 export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void {
@@ -22,9 +22,9 @@ export function applyMainWardrobeDimensionOps(ctx: RenderDimensionContext): void
     CELL_DIM_TEXT_SCALE,
     vec,
   } = ctx;
-  const guide = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.main;
-  const cornerGuide = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.corner;
-  const guideTextScale = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.textScale;
+  const guide = WARDROBE_DIMENSION_GUIDE_POLICY.main;
+  const cornerGuide = WARDROBE_DIMENSION_GUIDE_POLICY.corner;
+  const guideTextScale = WARDROBE_DIMENSION_GUIDE_POLICY.textScale;
   const hasActiveCornerConnector =
     isCornerMode &&
     cornerConnectorActive &&

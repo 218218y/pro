@@ -14,10 +14,30 @@ const ownerRel = 'esm/shared/dimensions/wardrobe_dimension_guide_policy.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const runtimeApiRel = 'esm/native/runtime/api.ts';
+const baselineRel = 'tools/wp_layer_baseline.json';
 const ownerSpecifier = './dimensions/wardrobe_dimension_guide_policy.js';
 const ownerSymbol = 'WARDROBE_DIMENSION_GUIDE_POLICY';
 const compatibilitySymbol = 'WARDROBE_DIMENSION_GUIDE_DIMENSIONS';
 const initializerSha256 = '5c23d1d4ea81ab8735b9214d73d1b6bfbe7eec9ed5ad6a7165a0381a486a811d';
+const prefix163Sha256 = '8c4c04e56a8b991d81537127adc69c5dc42b4e7ed3de4fe81258a67b01ad8341';
+const prefix164Sha256 = '55c2e7abbae3cdba828c41a48ed759d457079d0021fe21fc2a1ebf7a08e2e231';
+const prefix165Sha256 = '3b685a291fdbfa4ae0fd66b8b4744116598a81e236e8f449facc89714802a807';
+const prefix166Sha256 = 'f58543ffaf2860f846f7469e93ab442adf0ee3fc5ae391fd904af3f64167c111';
+
+const renderConsumerRels = Object.freeze([
+  'esm/native/builder/render_dimension_ops_corner.ts',
+  'esm/native/builder/render_dimension_ops_main.ts',
+  'esm/native/builder/render_dimension_ops_shared.ts',
+]);
+
+const expectedFlowSemanticHashes = Object.freeze({
+  'esm/native/builder/render_dimension_ops_shared.ts':
+    '0f92262600a23bdd4f78dde4dccd0704e81da386236b3777257893c2d5f5f5f2',
+  'esm/native/builder/render_dimension_ops_main.ts':
+    'a907a2edf5466ca546e80207c6462e470c2823766f2c79d912e41c0305dbedef',
+  'esm/native/builder/render_dimension_ops_corner.ts':
+    '7b29f74676f0b12eb7e7970de616a6520ac23494570466cddca3f082df59d293',
+});
 
 const sourceExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
 const runtimeExtensionCandidates = Object.freeze({
@@ -79,20 +99,37 @@ const expectedValues = Object.freeze({
   }),
 });
 
-const expectedCompatibilityConsumers = Object.freeze([
-  Object.freeze({
-    file: 'esm/native/builder/render_dimension_ops_corner.ts',
-    importedSymbols: Object.freeze([compatibilitySymbol]),
-  }),
-  Object.freeze({
-    file: 'esm/native/builder/render_dimension_ops_main.ts',
-    importedSymbols: Object.freeze([compatibilitySymbol]),
-  }),
-  Object.freeze({
-    file: 'esm/native/builder/render_dimension_ops_shared.ts',
-    importedSymbols: Object.freeze(['WARDROBE_DEFAULTS', compatibilitySymbol]),
-  }),
-]);
+const expectedEntry166 = Object.freeze({
+  from: 'builder',
+  to: 'shared',
+  additionalStatements: 1,
+  owner: 'dimension-ownership-migration',
+  reviewedAt: '2026-07-28',
+  reviewBy: '2026-10-18',
+  fromFile: 'esm/native/builder/render_dimension_ops_shared.ts',
+  companionImport: {
+    toFile: 'esm/shared/dimensions/wardrobe_dimension_guide_policy.ts',
+    kind: 'value',
+    importedSymbols: [ownerSymbol],
+    syntax: 'static-import',
+  },
+  removedImport: {
+    toFile: facadeRel,
+    kind: 'value',
+    importedSymbols: ['WARDROBE_DEFAULTS', compatibilitySymbol],
+    syntax: 'static-import',
+  },
+  addedImport: {
+    toFile: 'esm/shared/dimensions/wardrobe_defaults.ts',
+    kind: 'value',
+    importedSymbols: ['DEFAULT_CORNER_DOORS'],
+    syntax: 'static-import',
+  },
+  reason:
+    'The Wardrobe Dimension Guide shared render context replaces one combined legacy facade statement with the focused Wardrobe Dimension Guide policy plus the canonical Corner doors default scalar on the existing builder to shared edge.',
+  removalCondition:
+    'Remove this entry when a reviewed Wardrobe Dimension Guide render composition seam eliminates the extra Wardrobe Defaults statement without reintroducing the legacy facade or the aggregate WARDROBE_DEFAULTS object.',
+});
 
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const sha256 = value => createHash('sha256').update(value).digest('hex');
@@ -167,6 +204,7 @@ function resolveModuleTarget(fromFile, specifier) {
 
 const ownerTarget = canonicalTarget(path.join(root, ownerRel));
 const facadeTarget = canonicalTarget(path.join(root, facadeRel));
+const publicDimensionsTarget = canonicalTarget(path.join(root, publicDimensionsRel));
 
 function identifierName(node) {
   if (node?.type === 'Identifier') return node.name;
@@ -184,6 +222,71 @@ function memberPath(node) {
       : null
     : identifierName(node.property);
   return object && typeof property === 'string' ? `${object}.${property}` : null;
+}
+
+function memberRootIdentifier(node) {
+  let current = node;
+  while (current?.type === 'MemberExpression') current = current.object;
+  return current?.type === 'Identifier' ? current.name : null;
+}
+
+const omittedAstKeys = new Set([
+  'comments',
+  'end',
+  'innerComments',
+  'leadingComments',
+  'loc',
+  'parent',
+  'range',
+  'raw',
+  'start',
+  'trailingComments',
+]);
+
+function semanticAstNode(node) {
+  const pathValue = memberPath(node);
+  if (pathValue?.startsWith(`${compatibilitySymbol}.`)) {
+    return {
+      type: 'SemanticMember',
+      path: pathValue.replace(compatibilitySymbol, ownerSymbol),
+    };
+  }
+  if (pathValue?.startsWith(`${ownerSymbol}.`)) {
+    return { type: 'SemanticMember', path: pathValue };
+  }
+  if (pathValue === 'WARDROBE_DEFAULTS.corner.doorsCount') {
+    return { type: 'SemanticMember', path: 'DEFAULT_CORNER_DOORS' };
+  }
+  if (node?.type === 'Identifier' && [compatibilitySymbol, ownerSymbol].includes(node.name)) {
+    return { type: 'Identifier', name: ownerSymbol };
+  }
+  if (node?.type === 'Identifier' && node.name === 'DEFAULT_CORNER_DOORS') {
+    return { type: 'SemanticMember', path: 'DEFAULT_CORNER_DOORS' };
+  }
+  return null;
+}
+
+function canonicalSemanticAst(value, seen = new WeakSet()) {
+  if (value === null || typeof value !== 'object') return value;
+  const semantic = semanticAstNode(value);
+  if (semantic) return semantic;
+  if (seen.has(value)) return undefined;
+  seen.add(value);
+  if (Array.isArray(value)) return value.map(item => canonicalSemanticAst(item, seen));
+
+  const result = {};
+  for (const key of Object.keys(value).sort()) {
+    if (omittedAstKeys.has(key)) continue;
+    const next = canonicalSemanticAst(value[key], seen);
+    if (next !== undefined) result[key] = next;
+  }
+  return result;
+}
+
+function renderFlowSemanticHash(rel, source) {
+  const sourceFile = createSourceFile(rel, source);
+  const nonImportBody = (sourceFile.body ?? []).filter(statement => statement.type !== 'ImportDeclaration');
+  return sha256(stableJson(canonicalSemanticAst(nonImportBody)));
 }
 
 function exportedConstDeclarator(sourceFile, symbol) {
@@ -446,8 +549,33 @@ function inspectFacade(source) {
   ) {
     addViolation(violations, 'facade-compatibility-export');
   }
-  if (publicExports.some(entry => entry.exportedName === ownerSymbol)) {
+  if (
+    publicExports.some(
+      entry =>
+        entry.exportedName === ownerSymbol ||
+        entry.localName === ownerSymbol ||
+        entry.source === ownerSpecifier
+    )
+  ) {
     addViolation(violations, 'facade-owner-public-leak');
+  }
+  for (const statement of sourceFile.body ?? []) {
+    if (statement.type !== 'ExportNamedDeclaration') continue;
+    for (const specifier of statement.specifiers ?? []) {
+      if (identifierName(specifier.local) === ownerSymbol) {
+        addViolation(violations, 'facade-owner-public-leak');
+      }
+    }
+    if (statement.declaration?.type !== 'VariableDeclaration') continue;
+    for (const declarator of statement.declaration.declarations ?? []) {
+      if (
+        identifierName(declarator.id) !== compatibilitySymbol &&
+        declarator.init?.type === 'Identifier' &&
+        declarator.init.name === ownerSymbol
+      ) {
+        addViolation(violations, 'facade-owner-public-leak');
+      }
+    }
   }
 
   return violations;
@@ -460,11 +588,175 @@ function ownerDependenciesFor(file, source) {
 }
 
 function compatibilityDependenciesFor(file, source) {
-  return analyzeModuleDependencies(file, source).imports.filter(
-    dependency =>
-      resolveModuleTarget(file, dependency.specifier) === facadeTarget &&
+  return analyzeModuleDependencies(file, source).imports.filter(dependency => {
+    const target = resolveModuleTarget(file, dependency.specifier);
+    return (
+      (target === facadeTarget || target === publicDimensionsTarget) &&
       (dependency.importedSymbols.includes(compatibilitySymbol) || dependency.importedSymbols.includes('*'))
+    );
+  });
+}
+
+function dependencyFacts(dependency) {
+  return {
+    specifier: dependency.specifier,
+    kind: dependency.kind,
+    syntax: dependency.syntax,
+    importedSymbols: [...dependency.importedSymbols],
+    bindings: dependency.bindings.map(binding => ({
+      importedName: binding.importedName,
+      localName: binding.localName,
+      exportedName: binding.exportedName,
+    })),
+  };
+}
+
+function exactNamedImport(specifier, symbol, kind = 'value', syntax = 'static-import') {
+  return {
+    specifier,
+    kind,
+    syntax,
+    importedSymbols: [symbol],
+    bindings: [
+      {
+        importedName: symbol,
+        localName: symbol,
+        exportedName: null,
+      },
+    ],
+  };
+}
+
+function isExactPublicDimensionsRoute(file, dependency) {
+  return (
+    relativePath(file) === publicDimensionsRel &&
+    resolveModuleTarget(file, dependency.specifier) === facadeTarget &&
+    dependency.kind === 'value' &&
+    dependency.syntax === 'static-re-export' &&
+    stableJson(dependency.importedSymbols) === stableJson(['*']) &&
+    stableJson(dependency.exportedSymbols) === stableJson(['*'])
   );
+}
+
+function inspectCompatibilitySource(file, source) {
+  const violations = [];
+  const rel = relativePath(file);
+  const sourceFile = createSourceFile(file, source);
+  const analysis = analyzeModuleDependencies(file, source);
+
+  for (const dependency of analysis.imports) {
+    const target = resolveModuleTarget(file, dependency.specifier);
+    const targetsCompatibilityRoute = target === facadeTarget || target === publicDimensionsTarget;
+    const exposesCompatibility =
+      dependency.importedSymbols.includes(compatibilitySymbol) ||
+      (targetsCompatibilityRoute && dependency.importedSymbols.includes('*'));
+
+    if (exposesCompatibility && !isExactPublicDimensionsRoute(file, dependency)) {
+      addViolation(
+        violations,
+        'compatibility-consumer',
+        `${rel}:${dependency.syntax}:${dependency.specifier}`
+      );
+    }
+    if (dependency.syntax === 'dynamic-import' && targetsCompatibilityRoute) {
+      addViolation(violations, 'compatibility-dynamic-route', `${rel}:${dependency.specifier}`);
+    }
+  }
+  if (rel.startsWith('esm/native/') && analysis.unresolvedDynamicImports.length !== 0) {
+    addViolation(
+      violations,
+      'compatibility-unresolved-dynamic-route',
+      stableJson(analysis.unresolvedDynamicImports)
+    );
+  }
+
+  if (rel !== facadeRel) {
+    walkAst(sourceFile, node => {
+      if (node?.type === 'Identifier' && node.name === compatibilitySymbol) {
+        addViolation(violations, 'compatibility-symbol-reference', rel);
+      }
+      if (node?.type === 'Literal' && typeof node.value === 'string' && node.value === compatibilitySymbol) {
+        addViolation(violations, 'compatibility-computed-reference', rel);
+      }
+    });
+  }
+
+  return violations;
+}
+
+function inspectRenderConsumer(rel, source) {
+  const violations = [];
+  const analysis = analyzeModuleDependencies(rel, source);
+  const facts = analysis.imports.map(dependencyFacts);
+  const guideImport = exactNamedImport(
+    '../../shared/dimensions/wardrobe_dimension_guide_policy.js',
+    ownerSymbol
+  );
+  const contextTypeImport = exactNamedImport(
+    './render_dimension_ops_shared.js',
+    'RenderDimensionContext',
+    'type',
+    'type-import'
+  );
+  const expected =
+    rel === 'esm/native/builder/render_dimension_ops_shared.ts'
+      ? [
+          guideImport,
+          exactNamedImport('../../shared/dimensions/wardrobe_defaults.js', 'DEFAULT_CORNER_DOORS'),
+          {
+            specifier: '../../../types',
+            kind: 'type',
+            syntax: 'type-import',
+            importedSymbols: ['AppContainer', 'BuilderDimensionLineScaleSpec'],
+            bindings: [
+              {
+                importedName: 'AppContainer',
+                localName: 'AppContainer',
+                exportedName: null,
+              },
+              {
+                importedName: 'BuilderDimensionLineScaleSpec',
+                localName: 'BuilderDimensionLineScaleSpec',
+                exportedName: null,
+              },
+            ],
+          },
+        ]
+      : [guideImport, contextTypeImport];
+
+  if (stableJson(facts) !== stableJson(expected)) {
+    addViolation(violations, 'render-import-inventory', stableJson(facts));
+  }
+  if (analysis.unresolvedDynamicImports.length !== 0 || analysis.forbiddenModuleSyntax.length !== 0) {
+    addViolation(violations, 'render-dynamic-or-forbidden-import');
+  }
+  if (source.includes(compatibilitySymbol) || source.includes('wardrobe_dimension_tokens_shared')) {
+    addViolation(violations, 'render-compatibility-route');
+  }
+
+  const sourceFile = createSourceFile(rel, source);
+  walkAst(sourceFile, node => {
+    if (node?.type === 'MemberExpression' && node.computed && memberRootIdentifier(node) === ownerSymbol) {
+      addViolation(violations, 'render-computed-owner-access', memberPath(node));
+    }
+  });
+
+  if (rel === 'esm/native/builder/render_dimension_ops_shared.ts') {
+    let scalarReferences = 0;
+    for (const statement of sourceFile.body ?? []) {
+      if (statement.type === 'ImportDeclaration') continue;
+      walkAst(statement, node => {
+        if (node?.type === 'Identifier' && node.name === 'DEFAULT_CORNER_DOORS') {
+          scalarReferences += 1;
+        }
+      });
+    }
+    if (scalarReferences !== 2 || source.includes('WARDROBE_DEFAULTS')) {
+      addViolation(violations, 'shared-corner-default-scalar', String(scalarReferences));
+    }
+  }
+
+  return violations;
 }
 
 function collectOwnerInventory(files) {
@@ -552,8 +844,24 @@ test('Wardrobe Dimension Guide facade is an inferred direct identity alias with 
   );
 });
 
-test('extraction keeps the facade as sole owner consumer and the exact compatibility trio unchanged', () => {
+test('closeout keeps exactly the focused render trio plus facade owner import and zero production compatibility consumers', () => {
+  const exactNativeOwnerImport = file => ({
+    file,
+    specifier: '../../shared/dimensions/wardrobe_dimension_guide_policy.js',
+    kind: 'value',
+    syntax: 'static-import',
+    importedSymbols: [ownerSymbol],
+    bindings: [
+      {
+        importedName: ownerSymbol,
+        localName: ownerSymbol,
+        exportedName: null,
+      },
+    ],
+  });
+
   assert.deepEqual(collectOwnerInventory(esmFiles), [
+    ...renderConsumerRels.map(exactNativeOwnerImport),
     {
       file: facadeRel,
       specifier: ownerSpecifier,
@@ -569,20 +877,14 @@ test('extraction keeps the facade as sole owner consumer and the exact compatibi
       ],
     },
   ]);
+  assert.deepEqual(collectCompatibilityInventory(nativeFiles), []);
   assert.deepEqual(
-    nativeFiles.flatMap(file => ownerDependenciesFor(file, fs.readFileSync(file, 'utf8'))),
+    esmFiles.flatMap(file => inspectCompatibilitySource(file, fs.readFileSync(file, 'utf8'))),
     []
   );
-  assert.deepEqual(
-    collectCompatibilityInventory(nativeFiles),
-    expectedCompatibilityConsumers.map(entry => ({
-      file: entry.file,
-      importedSymbols: [...entry.importedSymbols],
-      kind: 'value',
-      syntax: 'static-import',
-      aliasFree: true,
-    }))
-  );
+  for (const rel of renderConsumerRels) {
+    assert.deepEqual(inspectRenderConsumer(rel, read(rel)), [], rel);
+  }
 
   const facadeDependencies = esmFiles.flatMap(file =>
     analyzeModuleDependencies(file, fs.readFileSync(file, 'utf8'))
@@ -590,10 +892,28 @@ test('extraction keeps the facade as sole owner consumer and the exact compatibi
       .map(dependency => ({ file, dependency }))
   );
   const staticImports = facadeDependencies.filter(entry => entry.dependency.syntax === 'static-import');
-  assert.equal(new Set(staticImports.map(entry => entry.file)).size, 9);
-  assert.equal(staticImports.length, 9);
-  assert.equal(new Set(facadeDependencies.map(entry => entry.file)).size, 11);
-  assert.equal(facadeDependencies.length, 12);
+  assert.equal(new Set(staticImports.map(entry => entry.file)).size, 6);
+  assert.equal(staticImports.length, 6);
+  assert.equal(new Set(facadeDependencies.map(entry => entry.file)).size, 8);
+  assert.equal(facadeDependencies.length, 9);
+});
+
+test('render flow semantic AST fingerprints preserve formulas, offsets, branches, types, and call order', () => {
+  for (const rel of renderConsumerRels) {
+    assert.equal(renderFlowSemanticHash(rel, read(rel)), expectedFlowSemanticHashes[rel], rel);
+  }
+});
+
+test('Ledger Entry 166 and Prefixes 163-166 exactly own the single focused statement increase', () => {
+  const baseline = JSON.parse(read(baselineRel));
+  const migrationBudgets = baseline.migrationBudgets;
+  assert.equal(migrationBudgets.length, 166);
+  assert.equal(new Set(migrationBudgets.map(entry => entry.fromFile)).size, 105);
+  assert.deepEqual(migrationBudgets.slice(165, 166), [expectedEntry166]);
+  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 163))), prefix163Sha256);
+  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 164))), prefix164Sha256);
+  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 165))), prefix165Sha256);
+  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 166))), prefix166Sha256);
 });
 
 test('runtime and declaration parity preserve identity, values, readonly topology, and serialization', () => {
@@ -671,7 +991,7 @@ test('owner mutation probes reject literal, order, freeze, dependency, export, s
   );
 });
 
-test('facade and consumer mutation probes reject wrappers, annotations, aliases, premature migration, and leaks', () => {
+test('facade and closeout mutation probes reject wrappers, annotations, compatibility routes, extra consumers, and public leaks', () => {
   const facadeSource = read(facadeRel);
   const canonicalAlias = `export const ${compatibilitySymbol} = ${ownerSymbol};`;
   assertRejected(
@@ -716,14 +1036,148 @@ test('facade and consumer mutation probes reject wrappers, annotations, aliases,
     'facade-export-const',
     'facade exported later'
   );
+  assertRejected(
+    inspectFacade,
+    `${facadeSource}\nexport { ${ownerSymbol} as ALTERNATE_DIMENSION_GUIDE_POLICY };\n`,
+    'facade-owner-public-leak',
+    'facade alternate owner export'
+  );
 
   const nativeProbeFile = path.join(root, 'esm/native/builder/dimension_guide_probe.ts');
   const focusedProbe = `import { ${ownerSymbol} } from '../../shared/dimensions/wardrobe_dimension_guide_policy.js';\nexport const value = ${ownerSymbol}.textScale.total;`;
-  assert.equal(ownerDependenciesFor(nativeProbeFile, focusedProbe).length, 1);
+  const canonicalOwnerInventory = collectOwnerInventory(esmFiles);
+  const focusedProbeInventory = ownerDependenciesFor(nativeProbeFile, focusedProbe);
+  assert.equal(canonicalOwnerInventory.length, 4);
+  assert.equal(focusedProbeInventory.length, 1);
+  assert.notDeepEqual([...canonicalOwnerInventory, ...focusedProbeInventory], canonicalOwnerInventory);
 
-  const compatibilityProbe = `import { ${compatibilitySymbol} } from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport const value = ${compatibilitySymbol}.main.heightLineOffsetM;`;
-  assert.equal(compatibilityDependenciesFor(nativeProbeFile, compatibilityProbe).length, 1);
+  for (const [label, source] of [
+    [
+      'direct aggregate import',
+      `import { ${compatibilitySymbol} } from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport const value = ${compatibilitySymbol}.main.heightLineOffsetM;`,
+    ],
+    [
+      'extensionless compatibility import',
+      `import { ${compatibilitySymbol} } from '../../shared/wardrobe_dimension_tokens_shared';\nexport const value = ${compatibilitySymbol}.main.heightLineOffsetM;`,
+    ],
+    [
+      'directory-index compatibility import',
+      `import { ${compatibilitySymbol} } from '../features/dimensions';\nexport const value = ${compatibilitySymbol}.main.heightLineOffsetM;`,
+    ],
+    [
+      'namespace computed compatibility import',
+      `import * as dimensions from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport const value = dimensions['${compatibilitySymbol}'];`,
+    ],
+    [
+      'dynamic compatibility import',
+      `export const value = import('../../shared/wardrobe_dimension_tokens_shared.js');`,
+    ],
+    [
+      'unresolved dynamic compatibility import',
+      `const modulePath = '../../shared/' + 'wardrobe_dimension_tokens_shared.js';\nconst symbol = 'WARDROBE_' + 'DIMENSION_GUIDE_DIMENSIONS';\nexport const value = import(modulePath).then(module => module[symbol]);`,
+    ],
+    [
+      'compatibility re-export bridge',
+      `export { ${compatibilitySymbol} } from '../../shared/wardrobe_dimension_tokens_shared.js';`,
+    ],
+    [
+      'compatibility object copy',
+      `import { ${compatibilitySymbol} } from '../../shared/wardrobe_dimension_tokens_shared.js';\nexport const value = { ...${compatibilitySymbol} };`,
+    ],
+  ]) {
+    assert.notDeepEqual(inspectCompatibilitySource(nativeProbeFile, source), [], label);
+  }
+
+  const mainRel = 'esm/native/builder/render_dimension_ops_main.ts';
+  assertRejected(
+    inspectRenderConsumer.bind(null, mainRel),
+    read(mainRel).replace(`import { ${ownerSymbol} }`, `import { ${ownerSymbol} as dimensionGuidePolicy }`),
+    'render-import-inventory',
+    'focused import alias'
+  );
+  assertRejected(
+    inspectRenderConsumer.bind(null, mainRel),
+    `${read(mainRel)}\nimport { DEFAULT_CORNER_DOORS } from '../../shared/dimensions/wardrobe_defaults.js';\n`,
+    'render-import-inventory',
+    'third focused import'
+  );
+  assertRejected(
+    inspectRenderConsumer.bind(null, mainRel),
+    read(mainRel).replace(`${ownerSymbol}.main`, `${ownerSymbol}['main']`),
+    'render-computed-owner-access',
+    'computed owner access'
+  );
+
+  const featureProbeFile = path.join(root, 'esm/native/features/dimensions/guide_bridge.ts');
+  const ownerBridge = `export { ${ownerSymbol} } from '../../../shared/dimensions/wardrobe_dimension_guide_policy.js';`;
+  const ownerBridgeInventory = ownerDependenciesFor(featureProbeFile, ownerBridge);
+  assert.equal(ownerBridgeInventory.length, 1);
+  assert.notDeepEqual([...canonicalOwnerInventory, ...ownerBridgeInventory], canonicalOwnerInventory);
 
   const publicLeak = `${read(runtimeApiRel)}\nexport { ${ownerSymbol} } from '../../shared/dimensions/wardrobe_dimension_guide_policy.js';\n`;
   assert.notDeepEqual(publicOwnerReferences(publicLeak), []);
+});
+
+test('render flow mutation probes reject formula, branch, literal, aggregate, and wrapper drift', () => {
+  const sharedRel = 'esm/native/builder/render_dimension_ops_shared.ts';
+  const mainRel = 'esm/native/builder/render_dimension_ops_main.ts';
+  const cornerRel = 'esm/native/builder/render_dimension_ops_corner.ts';
+  const shared = read(sharedRel);
+  const main = read(mainRel);
+  const corner = read(cornerRel);
+
+  assert.notEqual(
+    renderFlowSemanticHash(sharedRel, shared.replace('Math.max(0, Math.round(', 'Math.min(0, Math.round(')),
+    expectedFlowSemanticHashes[sharedRel]
+  );
+  assert.notEqual(
+    renderFlowSemanticHash(
+      mainRel,
+      main.replace(
+        '!noMainWardrobe || hasActiveCornerConnector',
+        '!noMainWardrobe && hasActiveCornerConnector'
+      )
+    ),
+    expectedFlowSemanticHashes[mainRel]
+  );
+  assert.notEqual(
+    renderFlowSemanticHash(
+      cornerRel,
+      corner.replace(
+        'cornerWingVisible && !!wingGeometry && wingGeometry.wingW',
+        'cornerWingVisible || !!wingGeometry || wingGeometry.wingW'
+      )
+    ),
+    expectedFlowSemanticHashes[cornerRel]
+  );
+  assert.notEqual(
+    renderFlowSemanticHash(cornerRel, corner.replace('fullWm * 100', 'fullWm * 101')),
+    expectedFlowSemanticHashes[cornerRel]
+  );
+
+  assertRejected(
+    inspectRenderConsumer.bind(null, sharedRel),
+    shared.replace('    : DEFAULT_CORNER_DOORS;', '    : 3;'),
+    'shared-corner-default-scalar',
+    'corner default literal'
+  );
+  assert.notEqual(
+    renderFlowSemanticHash(
+      sharedRel,
+      shared.replace(
+        'const cornerWingDoorCountRaw = isCornerMode',
+        `const guideWrapper = { ...${ownerSymbol} };\n  const cornerWingDoorCountRaw = isCornerMode`
+      )
+    ),
+    expectedFlowSemanticHashes[sharedRel]
+  );
+  assertRejected(
+    inspectRenderConsumer.bind(null, sharedRel),
+    shared.replace(
+      "import { DEFAULT_CORNER_DOORS } from '../../shared/dimensions/wardrobe_defaults.js';",
+      "import { WARDROBE_DEFAULTS } from '../../shared/dimensions/wardrobe_defaults.js';"
+    ),
+    'render-import-inventory',
+    'aggregate defaults import'
+  );
 });

@@ -814,8 +814,8 @@ test('Features manifest and compatibility facade preserve their exact public rou
 
 test('Ledger Entries 164-165, Prefixes 163-165, Entry 166 append safety, and ceiling retirement stay exact', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(baseline.migrationBudgets.length, 165);
-  assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 104);
+  assert.ok(baseline.migrationBudgets.length >= 165);
+  assert.equal(new Set(baseline.migrationBudgets.slice(0, 165).map(entry => entry.fromFile)).size, 104);
   assertHistoricalPrefixes(baseline.migrationBudgets);
 
   const entries = baseline.migrationBudgets.slice(163, 165);
@@ -874,7 +874,8 @@ test('Ledger Entries 164-165, Prefixes 163-165, Entry 166 append safety, and cei
     ]
   );
 
-  const withEntry166 = [...structuredClone(baseline.migrationBudgets), syntheticEntry166()];
+  const historicalPrefix165 = structuredClone(baseline.migrationBudgets.slice(0, 165));
+  const withEntry166 = [...historicalPrefix165, syntheticEntry166()];
   assert.equal(withEntry166.length, 166);
   assert.doesNotThrow(() => assertHistoricalPrefixes(withEntry166));
 
@@ -885,15 +886,15 @@ test('Ledger Entries 164-165, Prefixes 163-165, Entry 166 append safety, and cei
   assert.ok(read(auditDocRel).includes(retirementRule));
 });
 
-test('Layer, facade dependency, and proposal counts stay at the approved Stage 1 topology', () => {
+test('Layer, facade dependency, and proposal counts stay at the current audited topology', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
   const graph = collectLayerContractGraph({ root });
   const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-28' });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 165);
+  assert.equal(report.migrationBudgets.length, 166);
 
   const expectedEdges = new Map([
-    ['builder>shared', 304],
+    ['builder>shared', 305],
     ['features>shared', 68],
     ['services>shared', 230],
     ['ui>shared', 27],
@@ -922,10 +923,10 @@ test('Layer, facade dependency, and proposal counts stay at the approved Stage 1
       .map(dependency => ({ file, ...dependency }))
   );
   const staticFacadeImports = facadeDependencies.filter(dependency => dependency.syntax === 'static-import');
-  assert.equal(new Set(staticFacadeImports.map(dependency => dependency.file)).size, 9);
-  assert.equal(staticFacadeImports.length, 9);
-  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 11);
-  assert.equal(facadeDependencies.length, 12);
+  assert.equal(new Set(staticFacadeImports.map(dependency => dependency.file)).size, 6);
+  assert.equal(staticFacadeImports.length, 6);
+  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 8);
+  assert.equal(facadeDependencies.length, 9);
 
   const proposal = buildLayerContractProposal(graph, baseline, { currentDate: '2026-07-28' });
   assert.equal(proposal.reviewRequired, false);

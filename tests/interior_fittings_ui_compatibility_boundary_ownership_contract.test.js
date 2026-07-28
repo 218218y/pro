@@ -713,10 +713,10 @@ test('Interior Tab migration preserves Layer, Facade, public-surface, and ratche
   const graph = collectLayerContractGraph({ root });
   const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-28' });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 165);
+  assert.equal(report.migrationBudgets.length, 166);
 
   const expectedEdges = new Map([
-    ['builder>shared', 304],
+    ['builder>shared', 305],
     ['features>shared', 68],
     ['services>shared', 230],
     ['ui>shared', 27],
@@ -747,10 +747,10 @@ test('Interior Tab migration preserves Layer, Facade, public-surface, and ratche
   const staticFacadeDependencies = facadeDependencies.filter(
     dependency => dependency.syntax === 'static-import'
   );
-  assert.equal(new Set(staticFacadeDependencies.map(entry => entry.file)).size, 9);
-  assert.equal(staticFacadeDependencies.length, 9);
-  assert.equal(new Set(facadeDependencies.map(entry => entry.file)).size, 11);
-  assert.equal(facadeDependencies.length, 12);
+  assert.equal(new Set(staticFacadeDependencies.map(entry => entry.file)).size, 6);
+  assert.equal(staticFacadeDependencies.length, 6);
+  assert.equal(new Set(facadeDependencies.map(entry => entry.file)).size, 8);
+  assert.equal(facadeDependencies.length, 9);
 
   const facadeExports = collectNamedModuleExports(facadeRel, read(facadeRel));
   assert.equal(

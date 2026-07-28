@@ -1070,8 +1070,14 @@ test('[dimension tokens] wardrobe dimension guide offsets are centralized', () =
     'esm/native/builder/render_dimension_ops_main.ts',
     'esm/native/builder/render_dimension_ops_corner.ts',
   ]) {
-    assertUsesToken(rel, 'WARDROBE_DIMENSION_GUIDE_DIMENSIONS');
+    const source = read(rel);
+    assertUsesToken(rel, 'WARDROBE_DIMENSION_GUIDE_POLICY');
+    assert.doesNotMatch(source, /WARDROBE_DIMENSION_GUIDE_DIMENSIONS|wardrobe_dimension_tokens_shared/);
   }
+
+  const shared = read('esm/native/builder/render_dimension_ops_shared.ts');
+  assertUsesToken('esm/native/builder/render_dimension_ops_shared.ts', 'DEFAULT_CORNER_DOORS');
+  assert.doesNotMatch(shared, /WARDROBE_DEFAULTS\.corner\.doorsCount/);
 
   const main = read('esm/native/builder/render_dimension_ops_main.ts');
   assert.doesNotMatch(main, /stackSplitActive \? 0\.54 : 0\.3/);

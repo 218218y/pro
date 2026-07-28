@@ -891,7 +891,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at one hundred and sixty-five reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at one hundred and sixty-six reviewed statements with unchanged base budgets', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -1646,7 +1646,7 @@ test('project migration ledger stays exact at one hundred and sixty-five reviewe
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 165);
+  assert.equal(report.migrationBudgets.length, 166);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
@@ -1655,7 +1655,7 @@ test('project migration ledger stays exact at one hundred and sixty-five reviewe
   // Repository-wide totals are owned here. Historical migration tests below lock only
   // their closed prefix and exact entries, so later additive migrations cannot stale them.
   const expectedEdges = new Map([
-    ['builder>shared', { observed: 304, migration: 85, reviewed: 219, budget: 219 }],
+    ['builder>shared', { observed: 305, migration: 86, reviewed: 219, budget: 219 }],
     ['features>shared', { observed: 68, migration: 10, reviewed: 58, budget: 58 }],
     ['services>shared', { observed: 230, migration: 63, reviewed: 167, budget: 167 }],
     ['ui>shared', { observed: 27, migration: 1, reviewed: 26, budget: 27 }],
@@ -1697,10 +1697,10 @@ test('project migration ledger stays exact at one hundred and sixty-five reviewe
   const staticFacadeDependencies = facadeDependencies.filter(
     dependency => dependency.syntax === 'static-import'
   );
-  assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 9);
-  assert.equal(staticFacadeDependencies.length, 9);
-  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 11);
-  assert.equal(facadeDependencies.length, 12);
+  assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 6);
+  assert.equal(staticFacadeDependencies.length, 6);
+  assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 8);
+  assert.equal(facadeDependencies.length, 9);
 
   const facadeSource = fs.readFileSync(path.join(repositoryRoot, facadeRel), 'utf8');
   const facadeExports = collectNamedModuleExports(facadeRel, facadeSource);

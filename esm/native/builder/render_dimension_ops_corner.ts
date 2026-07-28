@@ -1,8 +1,8 @@
-import { WARDROBE_DIMENSION_GUIDE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { WARDROBE_DIMENSION_GUIDE_POLICY } from '../../shared/dimensions/wardrobe_dimension_guide_policy.js';
 import type { RenderDimensionContext } from './render_dimension_ops_shared.js';
 
-type CornerDimensionGuide = typeof WARDROBE_DIMENSION_GUIDE_DIMENSIONS.corner;
-type CornerVerticalPlacement = typeof WARDROBE_DIMENSION_GUIDE_DIMENSIONS.verticalPlacement;
+type CornerDimensionGuide = typeof WARDROBE_DIMENSION_GUIDE_POLICY.corner;
+type CornerVerticalPlacement = typeof WARDROBE_DIMENSION_GUIDE_POLICY.verticalPlacement;
 
 type CornerWingDimensionGeometry = {
   roomCornerZ: number;
@@ -111,9 +111,9 @@ export function applyCornerDimensionOps(ctx: RenderDimensionContext): void {
     CELL_DIM_TEXT_SCALE,
     vec,
   } = ctx;
-  const guide = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.corner;
-  const guidePlacement = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.verticalPlacement;
-  const guideTextScale = WARDROBE_DIMENSION_GUIDE_DIMENSIONS.textScale;
+  const guide = WARDROBE_DIMENSION_GUIDE_POLICY.corner;
+  const guidePlacement = WARDROBE_DIMENSION_GUIDE_POLICY.verticalPlacement;
+  const guideTextScale = WARDROBE_DIMENSION_GUIDE_POLICY.textScale;
   const wingGeometry = resolveCornerWingDimensionGeometry(ctx, guide, guidePlacement);
   const showCornerWingCabinetWidth =
     cornerWingVisible && !!wingGeometry && wingGeometry.wingW > guide.wingMinLengthM;

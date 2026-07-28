@@ -5983,6 +5983,35 @@
       },
       "reason": "The Interior Tab defaults feature boundary moves the combined UI facade statement behind a feature-owned composition seam, adding the canonical meter-to-centimeter conversion alongside the focused Interior Shelf Geometry owner without returning the facade to UI.",
       "removalCondition": "Remove this entry when a reviewed Interior Tab defaults composition seam eliminates the extra units statement without reintroducing the legacy facade, numeric conversion literals, or a direct shared import in UI."
+    },
+    {
+      "from": "builder",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-28",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/builder/render_dimension_ops_shared.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_dimension_guide_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["WARDROBE_DIMENSION_GUIDE_POLICY"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["WARDROBE_DEFAULTS", "WARDROBE_DIMENSION_GUIDE_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": ["DEFAULT_CORNER_DOORS"],
+        "syntax": "static-import"
+      },
+      "reason": "The Wardrobe Dimension Guide shared render context replaces one combined legacy facade statement with the focused Wardrobe Dimension Guide policy plus the canonical Corner doors default scalar on the existing builder to shared edge.",
+      "removalCondition": "Remove this entry when a reviewed Wardrobe Dimension Guide render composition seam eliminates the extra Wardrobe Defaults statement without reintroducing the legacy facade or the aggregate WARDROBE_DEFAULTS object."
     }
   ]
 }
