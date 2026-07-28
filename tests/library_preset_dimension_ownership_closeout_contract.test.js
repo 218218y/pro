@@ -187,6 +187,99 @@ function findVariableDeclarator(sourceFile, name) {
   return result;
 }
 
+function collectBindingNames(node, names = []) {
+  if (!node) return names;
+  if (node.type === 'Identifier') {
+    names.push(node.name);
+    return names;
+  }
+  if (node.type === 'RestElement') return collectBindingNames(node.argument, names);
+  if (node.type === 'AssignmentPattern') return collectBindingNames(node.left, names);
+  if (node.type === 'ArrayPattern') {
+    for (const element of node.elements ?? []) collectBindingNames(element, names);
+    return names;
+  }
+  if (node.type === 'ObjectPattern') {
+    for (const property of node.properties ?? []) {
+      if (property.type === 'RestElement') collectBindingNames(property.argument, names);
+      else collectBindingNames(property.value, names);
+    }
+  }
+  return names;
+}
+
+function topLevelDeclaredNames(statement) {
+  const declaration = statement?.type === 'ExportNamedDeclaration' ? statement.declaration : statement;
+  if (declaration?.type === 'VariableDeclaration') {
+    return declaration.declarations.flatMap(entry => collectBindingNames(entry.id));
+  }
+  if (declaration?.type === 'FunctionDeclaration' || declaration?.type === 'ClassDeclaration') {
+    return identifierName(declaration.id) ? [identifierName(declaration.id)] : [];
+  }
+  if (statement?.type === 'ImportDeclaration') {
+    return (statement.specifiers ?? []).map(specifier => identifierName(specifier.local)).filter(Boolean);
+  }
+  return [];
+}
+
+function inspectPublicDimensionsBarrel(file, source) {
+  const violations = [];
+  const sourceFile = createSourceFile(file, source);
+  const body = sourceFile.body ?? [];
+  const dependencies = analyze(file, source).imports;
+  const expectedSpecifier = '../../../shared/wardrobe_dimension_tokens_shared.js';
+  const exactRoutes = dependencies.filter(
+    dependency =>
+      dependency.specifier === expectedSpecifier &&
+      dependencyTargets(dependency, facadeTarget, file) &&
+      dependency.kind === 'value' &&
+      dependency.syntax === 'static-re-export' &&
+      dependency.importedSymbols.length === 1 &&
+      dependency.importedSymbols[0] === '*' &&
+      dependency.exportedSymbols.length === 1 &&
+      dependency.exportedSymbols[0] === '*'
+  );
+
+  if (exactRoutes.length !== 1) violations.push({ kind: 'public-barrel-facade-wildcard-missing' });
+  if (dependencies.length !== 1) violations.push({ kind: 'public-barrel-extra-route' });
+
+  for (const statement of body) {
+    const declaredNames = topLevelDeclaredNames(statement);
+    if (declaredNames.includes(compatibilitySymbol)) {
+      violations.push({ kind: 'public-barrel-local-shadow', symbol: compatibilitySymbol });
+    } else if (declaredNames.length > 0) {
+      violations.push({ kind: 'public-barrel-local-declaration', symbols: declaredNames });
+    }
+
+    if (statement.type === 'ExportDefaultDeclaration') {
+      violations.push({ kind: 'public-barrel-default-export' });
+    }
+    if (statement.type === 'ExportNamedDeclaration') {
+      const exportedNames = (statement.specifiers ?? [])
+        .map(specifier => identifierName(specifier.exported))
+        .filter(Boolean);
+      if (statement.source && exportedNames.includes(compatibilitySymbol)) {
+        violations.push({ kind: 'public-barrel-alternate-re-export' });
+      } else if (!statement.source && exportedNames.includes(compatibilitySymbol)) {
+        violations.push({ kind: 'public-barrel-local-shadow', symbol: compatibilitySymbol });
+      }
+    }
+  }
+
+  const routeStatement = body[0];
+  if (
+    body.length !== 1 ||
+    routeStatement?.type !== 'ExportAllDeclaration' ||
+    routeStatement.exportKind === 'type' ||
+    identifierName(routeStatement.source) !== expectedSpecifier ||
+    routeStatement.exported != null
+  ) {
+    violations.push({ kind: 'public-barrel-topology' });
+  }
+
+  return violations;
+}
+
 function frozenObjectProperties(node) {
   assert.equal(node?.type, 'CallExpression');
   assert.equal(memberPath(node.callee), 'Object.freeze');
@@ -416,16 +509,63 @@ function inspectFacade(source) {
   ) {
     violations.push({ kind: 'facade-aggregate-route' });
   }
+
   const sourceFile = createSourceFile(file, source);
-  const declaration = findVariableDeclarator(sourceFile, compatibilitySymbol);
-  if (!declaration) violations.push({ kind: 'facade-compatibility-export-missing' });
-  else if (identifierName(declaration.init) !== 'LIBRARY_PRESET_POLICY') {
-    violations.push({ kind: 'facade-identity-alias' });
-  }
-  const publicExport = collectNamedModuleExports(file, source).find(
+  const inlineDeclarations = (sourceFile.body ?? []).filter(
+    statement =>
+      statement.type === 'ExportNamedDeclaration' &&
+      statement.declaration?.type === 'VariableDeclaration' &&
+      statement.declaration.declarations.some(
+        declarator => identifierName(declarator.id) === compatibilitySymbol
+      )
+  );
+  const publicExports = collectNamedModuleExports(file, source).filter(
     entry => entry.exportedName === compatibilitySymbol && entry.kind === 'value'
   );
-  if (!publicExport) violations.push({ kind: 'facade-public-export-missing' });
+
+  if (inlineDeclarations.length === 0) {
+    violations.push({
+      kind:
+        publicExports.length > 0 ? 'facade-compatibility-not-inline' : 'facade-compatibility-export-missing',
+    });
+  } else if (inlineDeclarations.length !== 1) {
+    violations.push({ kind: 'facade-compatibility-export-duplicate' });
+  } else {
+    const exportStatement = inlineDeclarations[0];
+    const variableDeclaration = exportStatement.declaration;
+    const declarators = variableDeclaration.declarations;
+    const declaration = declarators.find(declarator => identifierName(declarator.id) === compatibilitySymbol);
+    if (variableDeclaration.kind !== 'const') {
+      violations.push({ kind: 'facade-compatibility-not-const' });
+    }
+    if (
+      declarators.length !== 1 ||
+      declaration?.id?.type !== 'Identifier' ||
+      identifierName(declaration.init) !== 'LIBRARY_PRESET_POLICY'
+    ) {
+      violations.push({ kind: 'facade-identity-alias' });
+    }
+    if (
+      publicExports.length !== 1 ||
+      publicExports[0].source !== null ||
+      publicExports[0].statementStart !== Number(exportStatement.start)
+    ) {
+      violations.push({ kind: 'facade-public-export-shape' });
+    }
+  }
+
+  if (publicExports.length === 0) violations.push({ kind: 'facade-public-export-missing' });
+  else if (publicExports.length !== 1) violations.push({ kind: 'facade-public-export-duplicate' });
+
+  walkAst(sourceFile, node => {
+    if (node?.type === 'AssignmentExpression' && identifierName(node.left) === compatibilitySymbol) {
+      violations.push({ kind: 'facade-compatibility-reassignment' });
+    }
+    if (node?.type === 'UpdateExpression' && identifierName(node.argument) === compatibilitySymbol) {
+      violations.push({ kind: 'facade-compatibility-reassignment' });
+    }
+  });
+
   return violations;
 }
 
@@ -766,6 +906,90 @@ test('Library Preset closeout rejects compatibility, bridge, aggregate, and focu
   assert.ok(
     inspectFacade(facadeRemoval).some(violation => violation.kind === 'facade-compatibility-export-missing')
   );
+});
+
+test('public barrel shadowing and mutable facade aliases are rejected while exact routes remain accepted', () => {
+  const publicFile = path.join(root, publicDimensionsRel);
+  const publicSource = read(publicDimensionsRel);
+  assert.deepEqual(inspectPublicDimensionsBarrel(publicFile, publicSource), []);
+
+  const publicBarrelCases = [
+    {
+      name: 'local const compatibility shadow',
+      source: `${publicSource}
+export const LIBRARY_PRESET_DIMENSIONS = Object.freeze({ shadowed: true });
+`,
+      expectedKind: 'public-barrel-local-shadow',
+    },
+    {
+      name: 'local let compatibility shadow',
+      source: `${publicSource}
+export let LIBRARY_PRESET_DIMENSIONS = null;
+`,
+      expectedKind: 'public-barrel-local-shadow',
+    },
+    {
+      name: 'local declaration exported later',
+      source: `${publicSource}
+const LIBRARY_PRESET_DIMENSIONS = Object.freeze({});
+export { LIBRARY_PRESET_DIMENSIONS };
+`,
+      expectedKind: 'public-barrel-local-shadow',
+    },
+    {
+      name: 'explicit alternate compatibility re-export',
+      source: `${publicSource}
+export { LIBRARY_PRESET_DIMENSIONS } from '../../../shared/library_preset_compatibility_bridge.js';
+`,
+      expectedKind: 'public-barrel-alternate-re-export',
+    },
+    {
+      name: 'extra wildcard route',
+      source: `${publicSource}
+export * from '../../../shared/another_dimension_surface.js';
+`,
+      expectedKind: 'public-barrel-extra-route',
+    },
+    {
+      name: 'missing facade wildcard',
+      source: "export * from '../../../shared/another_dimension_surface.js';\n",
+      expectedKind: 'public-barrel-facade-wildcard-missing',
+    },
+  ];
+  for (const probe of publicBarrelCases) {
+    assertProbeRejected({
+      ...probe,
+      file: publicFile,
+      inspect: inspectPublicDimensionsBarrel,
+    });
+  }
+
+  const facadeSource = read(facadeRel);
+  assert.deepEqual(inspectFacade(facadeSource), []);
+
+  const mutableAlias = facadeSource.replace(
+    'export const LIBRARY_PRESET_DIMENSIONS = LIBRARY_PRESET_POLICY;',
+    'export let LIBRARY_PRESET_DIMENSIONS = LIBRARY_PRESET_POLICY;'
+  );
+  assert.ok(
+    inspectFacade(mutableAlias).some(violation => violation.kind === 'facade-compatibility-not-const')
+  );
+
+  const exportedLater = facadeSource.replace(
+    'export const LIBRARY_PRESET_DIMENSIONS = LIBRARY_PRESET_POLICY;',
+    'const LIBRARY_PRESET_DIMENSIONS = LIBRARY_PRESET_POLICY;\nexport { LIBRARY_PRESET_DIMENSIONS };'
+  );
+  assert.ok(
+    inspectFacade(exportedLater).some(violation => violation.kind === 'facade-compatibility-not-inline')
+  );
+
+  const reassignedAlias = facadeSource.replace(
+    'export const LIBRARY_PRESET_DIMENSIONS = LIBRARY_PRESET_POLICY;',
+    'export let LIBRARY_PRESET_DIMENSIONS = LIBRARY_PRESET_POLICY;\nLIBRARY_PRESET_DIMENSIONS = Object.freeze({});'
+  );
+  const reassignmentViolations = inspectFacade(reassignedAlias);
+  assert.ok(reassignmentViolations.some(violation => violation.kind === 'facade-compatibility-not-const'));
+  assert.ok(reassignmentViolations.some(violation => violation.kind === 'facade-compatibility-reassignment'));
 });
 
 test('Library Preset positive route proofs remain accepted', () => {
