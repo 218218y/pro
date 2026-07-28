@@ -26,7 +26,7 @@ import {
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
   getDefaultPerDoorWidthForWardrobeType,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+} from '../../shared/dimensions/wardrobe_default_resolution_policy.js';
 import {
   canonicalizeWardrobeTypeProfileConfigSnapshot,
   cloneUiStateSnapshot,

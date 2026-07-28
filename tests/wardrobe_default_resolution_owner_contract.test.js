@@ -12,6 +12,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ownerRel = 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
+const domainApiRel = 'esm/native/kernel/domain_api_room_section_wardrobe.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const approvedNativeConsumerUniverse = new Set([
   'esm/native/builder/state_sanitize_pipeline.ts',
@@ -36,6 +37,18 @@ const publicFunctions = Object.freeze([
 ]);
 const allFunctions = Object.freeze(['finiteOr', ...publicFunctions]);
 const publicFunctionSet = new Set(publicFunctions);
+const domainApiResolutionFunctions = Object.freeze([
+  'getDefaultDepthForWardrobeType',
+  'getDefaultDoorsForWardrobeType',
+  'getDefaultPerDoorWidthForWardrobeType',
+]);
+const expectedDomainApiCallOrder = Object.freeze([
+  'getDefaultDoorsForWardrobeType',
+  'getDefaultPerDoorWidthForWardrobeType',
+  'getDefaultDepthForWardrobeType',
+]);
+const expectedDomainApiNonImportSemanticHash =
+  '4bbfdbed934f7ef33926812a44a9a33a613fb52cf9f5d9bc0f463c55ca456502';
 const expectedNumericLiterals = Object.freeze([0, 0, 0, 0]);
 const objectReturnType =
   '{ widthCm: number; heightCm: number; depthCm: number; doorsCount: number; perDoorWidthCm: number; }';
@@ -156,6 +169,13 @@ function canonicalSemanticAst(value, seen = new WeakSet()) {
     if (next !== undefined) result[key] = next;
   }
   return result;
+}
+
+function moduleBodySemanticHash(rel, source) {
+  const sourceFile = createSourceFile(rel, source);
+  return semanticSha256(
+    canonicalSemanticAst(sourceFile.body.filter(statement => statement?.type !== 'ImportDeclaration'))
+  );
 }
 
 function identifierName(node) {
@@ -717,6 +737,82 @@ function inspectNativeOwnerUniverse(entries) {
   return { focusedImports, violations };
 }
 
+function inspectDomainApiConsumer(source) {
+  const violations = [];
+  const add = (kind, detail = null) => violations.push({ kind, detail });
+  const file = path.join(root, domainApiRel);
+  const dependencies = analyzeModuleDependencies(file, source).imports;
+  const focusedDependencies = dependencies.filter(dependency => targetsFocusedOwner(file, dependency));
+  const compatibilityDependencies = dependencies.filter(dependency =>
+    targetsCompatibilityFamily(file, dependency)
+  );
+
+  if (focusedDependencies.length !== 1) {
+    add('domain-focused-import-count', focusedDependencies.length);
+  } else {
+    const [dependency] = focusedDependencies;
+    if (
+      dependency.specifier !== '../../shared/dimensions/wardrobe_default_resolution_policy.js' ||
+      dependency.kind !== 'value' ||
+      dependency.syntax !== 'static-import'
+    ) {
+      add('domain-focused-import-shape', {
+        specifier: dependency.specifier,
+        kind: dependency.kind,
+        syntax: dependency.syntax,
+      });
+    }
+    if (stableJson(dependency.importedSymbols) !== stableJson(domainApiResolutionFunctions)) {
+      add('domain-focused-symbol-inventory', dependency.importedSymbols);
+    }
+  }
+
+  if (compatibilityDependencies.length !== 0) {
+    add(
+      'domain-compatibility-overlap',
+      compatibilityDependencies.map(dependency => ({
+        specifier: dependency.specifier,
+        syntax: dependency.syntax,
+        symbols: dependency.importedSymbols,
+      }))
+    );
+  }
+
+  for (const violation of inspectNativeOwnerUniverse([[file, source]]).violations) {
+    add(violation.kind, violation);
+  }
+
+  if (moduleBodySemanticHash(domainApiRel, source) !== expectedDomainApiNonImportSemanticHash) {
+    add('domain-non-import-semantic-hash');
+  }
+
+  const sourceFile = createSourceFile(domainApiRel, source);
+  const initFunction = sourceFile.body.find(
+    statement =>
+      statement?.type === 'FunctionDeclaration' && identifierName(statement.id) === 'initWardrobeTypeDefaults'
+  );
+  if (!initFunction) {
+    add('domain-init-function');
+  } else {
+    const calls = [];
+    walkAst(initFunction, node => {
+      if (
+        node?.type === 'CallExpression' &&
+        node.callee?.type === 'Identifier' &&
+        domainApiResolutionFunctions.includes(node.callee.name)
+      ) {
+        calls.push({ name: node.callee.name, start: node.start ?? 0 });
+      }
+    });
+    const callOrder = calls.sort((left, right) => left.start - right.start).map(call => call.name);
+    if (stableJson(callOrder) !== stableJson(expectedDomainApiCallOrder)) {
+      add('domain-resolution-call-order', callOrder);
+    }
+  }
+
+  return violations;
+}
+
 test('Wardrobe Default Resolution owner has exact dependencies, exports, signatures, and historical semantics', () => {
   assert.equal(ownerRel, 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts');
   assert.deepEqual(ownerViolations(read(ownerRel)), []);
@@ -737,6 +833,143 @@ test('approved native consumer universe accepts any direct focused-owner subset 
     fs.readFileSync(file, 'utf8'),
   ]);
   assert.deepEqual(inspectNativeOwnerUniverse(entries).violations, []);
+});
+
+test('Domain API uses the exact focused resolver trio while preserving profile, fallback, and action-order semantics', () => {
+  assert.deepEqual(inspectDomainApiConsumer(read(domainApiRel)), []);
+});
+
+test('Domain API mutation fixtures reject compatibility routes, aliases, bridges, literals, and flow drift', () => {
+  const source = read(domainApiRel);
+  const focusedSpecifier = '../../shared/dimensions/wardrobe_default_resolution_policy.js';
+  const focusedImport = `import {
+  getDefaultDepthForWardrobeType,
+  getDefaultDoorsForWardrobeType,
+  getDefaultPerDoorWidthForWardrobeType,
+} from '${focusedSpecifier}';`;
+  assert.match(source, new RegExp(focusedSpecifier.replaceAll('.', '\\.'), 'u'));
+  assert.match(source, new RegExp(focusedImport.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
+
+  const assertRejected = (mutated, expectedKind, label) => {
+    const violations = inspectDomainApiConsumer(mutated);
+    assert.equal(
+      violations.some(violation => violation.kind === expectedKind),
+      true,
+      `${label}: ${JSON.stringify(violations)}`
+    );
+  };
+
+  assertRejected(
+    source.replace(focusedSpecifier, '../../shared/wardrobe_dimension_tokens_shared.js'),
+    'domain-focused-import-count',
+    'legacy facade'
+  );
+  assertRejected(
+    source.replace(focusedSpecifier, '../../shared/dimensions/wardrobe_default_resolution_policy'),
+    'domain-focused-import-count',
+    'extensionless owner path'
+  );
+  assertRejected(
+    source.replace(focusedSpecifier, '../../shared/dimensions/index.js'),
+    'domain-focused-import-count',
+    'directory index path'
+  );
+  assertRejected(
+    source.replace(focusedSpecifier, '../features/dimensions/index.js'),
+    'domain-focused-import-count',
+    'public dimensions barrel'
+  );
+  assertRejected(
+    `${source}
+import '../../shared/wardrobe_dimension_tokens_shared.js';
+`,
+    'domain-compatibility-overlap',
+    'side-effect facade import'
+  );
+  assertRejected(
+    `${source}
+import '../features/dimensions/index.js';
+`,
+    'domain-compatibility-overlap',
+    'side-effect public barrel import'
+  );
+  assertRejected(
+    source.replace(
+      'getDefaultDepthForWardrobeType,',
+      'getDefaultDepthForWardrobeType as resolveDefaultDepth,'
+    ),
+    'focused-owner-alias',
+    'focused alias'
+  );
+  assertRejected(
+    source.replace(focusedImport, `import * as resolutionPolicy from '${focusedSpecifier}';`),
+    'domain-focused-symbol-inventory',
+    'namespace import'
+  );
+  assertRejected(
+    source.replace(focusedImport, `const resolutionPolicyPromise = import('${focusedSpecifier}');`),
+    'domain-focused-import-shape',
+    'dynamic import'
+  );
+  assertRejected(
+    source.replace(
+      '  getDefaultPerDoorWidthForWardrobeType,\n',
+      '  getDefaultPerDoorWidthForWardrobeType,\n  resolveAutoWidthForDoors,\n'
+    ),
+    'domain-focused-symbol-inventory',
+    'fourth owner symbol'
+  );
+  assertRejected(
+    source.replace(
+      focusedImport,
+      `${focusedImport}
+export { getDefaultDepthForWardrobeType as domainDefaultDepthResolver };`
+    ),
+    'focused-owner-local-bridge',
+    'local re-export bridge'
+  );
+  assertRejected(
+    source.replace(
+      '  rawPatch.depth = getDefaultDepthForWardrobeType(next);',
+      "  rawPatch.depth = next === 'sliding' ? 60 : 55;"
+    ),
+    'domain-non-import-semantic-hash',
+    'literal default'
+  );
+  assertRejected(
+    source.replace('  rawPatch.width = doorsI * perDoor;', '  rawPatch.width = perDoor;'),
+    'domain-non-import-semantic-hash',
+    'width formula'
+  );
+  assertRejected(
+    source.replace(
+      `  const doorsI = getDefaultDoorsForWardrobeType(next);
+  rawPatch.doors = doorsI;
+
+  const perDoor = getDefaultPerDoorWidthForWardrobeType(next);
+  rawPatch.width = doorsI * perDoor;
+  rawPatch.depth = getDefaultDepthForWardrobeType(next);`,
+      `  const depth = getDefaultDepthForWardrobeType(next);
+  const doorsI = getDefaultDoorsForWardrobeType(next);
+  rawPatch.doors = doorsI;
+
+  const perDoor = getDefaultPerDoorWidthForWardrobeType(next);
+  rawPatch.width = doorsI * perDoor;
+  rawPatch.depth = depth;`
+    ),
+    'domain-resolution-call-order',
+    'resolver call order'
+  );
+  assertRejected(
+    source.replace(
+      `  setCfgWardrobeType(App, next, m);
+  setCfgManualWidth(App, false, m);`,
+      `  setCfgManualWidth(App, false, m);
+  setCfgWardrobeType(App, next, m);`
+    ),
+    'domain-non-import-semantic-hash',
+    'fallback action order'
+  );
 });
 
 test('owner and facade mutation fixtures reject back-edges, aliases, compatibility policy, semantic drift, wrappers, and early consumers', () => {

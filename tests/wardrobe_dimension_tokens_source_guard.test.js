@@ -1325,6 +1325,16 @@ test('[dimension tokens] Wardrobe Default Resolution is defined only by its focu
       syntax: 'static-import',
       symbols: ['resolveAutoWidthForDoors'],
     },
+    {
+      file: 'esm/native/kernel/domain_api_room_section_wardrobe.ts',
+      specifier: '../../shared/dimensions/wardrobe_default_resolution_policy.js',
+      syntax: 'static-import',
+      symbols: [
+        'getDefaultDepthForWardrobeType',
+        'getDefaultDoorsForWardrobeType',
+        'getDefaultPerDoorWidthForWardrobeType',
+      ],
+    },
   ]);
 
   const familySymbols = new Set(functionNames);
@@ -1346,15 +1356,6 @@ test('[dimension tokens] Wardrobe Default Resolution is defined only by its focu
       file: 'esm/native/builder/state_sanitize_pipeline.ts',
       syntax: 'static-import',
       symbols: ['getDefaultDepthForWardrobeType', 'getDefaultDoorsForWardrobeType'],
-    },
-    {
-      file: 'esm/native/kernel/domain_api_room_section_wardrobe.ts',
-      syntax: 'static-import',
-      symbols: [
-        'getDefaultDepthForWardrobeType',
-        'getDefaultDoorsForWardrobeType',
-        'getDefaultPerDoorWidthForWardrobeType',
-      ],
     },
     {
       file: 'esm/native/platform/platform_services.ts',

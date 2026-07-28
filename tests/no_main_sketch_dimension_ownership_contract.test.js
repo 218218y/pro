@@ -1015,10 +1015,10 @@ test('Layer, facade, public surface, Ledger, prefixes, and proposal remain at th
       .map(dependency => ({ file, dependency }))
   );
   const staticImports = facadeDependencies.filter(entry => entry.dependency.syntax === 'static-import');
-  assert.equal(new Set(staticImports.map(entry => entry.file)).size, 4);
-  assert.equal(staticImports.length, 4);
-  assert.equal(new Set(facadeDependencies.map(entry => entry.file)).size, 6);
-  assert.equal(facadeDependencies.length, 7);
+  assert.equal(new Set(staticImports.map(entry => entry.file)).size, 3);
+  assert.equal(staticImports.length, 3);
+  assert.equal(new Set(facadeDependencies.map(entry => entry.file)).size, 5);
+  assert.equal(facadeDependencies.length, 6);
 
   const facadeExports = collectNamedModuleExports(facadeRel, read(facadeRel));
   assert.equal(
