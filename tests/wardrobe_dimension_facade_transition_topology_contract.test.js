@@ -591,6 +591,140 @@ function collectInternalDimensionConsumers(dimensionNames) {
   return { rows, broadRoutes: sortRoutes(broadRoutes) };
 }
 
+function collectRoutedBindingBridgeViolations(dimensionNames, candidates = productionFiles) {
+  const violations = [];
+  for (const candidate of candidates) {
+    const file = typeof candidate === 'string' ? candidate : candidate.file;
+    const source = typeof candidate === 'string' ? sourceFor(file) : candidate.source;
+    const analysis =
+      typeof candidate === 'string' ? analysisFor(file) : analyzeModuleDependencies(file, source);
+    const routedRootsByLocalName = new Map();
+    for (const dependency of analysis.imports) {
+      if (!isTarget(file, dependency.specifier, servicesApiAbsolute)) continue;
+      for (const binding of dependency.bindings) {
+        if (!binding.localName || !dimensionNames.has(binding.importedName)) continue;
+        const roots = routedRootsByLocalName.get(binding.localName) ?? new Set();
+        roots.add(binding.importedName);
+        routedRootsByLocalName.set(binding.localName, roots);
+      }
+    }
+    if (routedRootsByLocalName.size === 0) continue;
+
+    const sourceFile = createSourceFile(file, source);
+    const variableDeclarators = sourceFile.body.flatMap(statement => {
+      if (statement.type === 'VariableDeclaration') return statement.declarations;
+      if (
+        statement.type === 'ExportNamedDeclaration' &&
+        statement.declaration?.type === 'VariableDeclaration'
+      ) {
+        return statement.declaration.declarations;
+      }
+      return [];
+    });
+
+    const directRoots = node => {
+      if (!node) return new Set();
+      if (node.type === 'Identifier') {
+        return new Set(routedRootsByLocalName.get(node.name) ?? []);
+      }
+      if (
+        node.type === 'ParenthesizedExpression' ||
+        node.type === 'TSAsExpression' ||
+        node.type === 'TSSatisfiesExpression' ||
+        node.type === 'TSNonNullExpression' ||
+        node.type === 'TSTypeAssertion'
+      ) {
+        return directRoots(node.expression);
+      }
+      if (node.type === 'ObjectExpression') {
+        const roots = new Set();
+        for (const property of node.properties) {
+          const value = property.type === 'SpreadElement' ? property.argument : property.value;
+          for (const rootName of directRoots(value)) roots.add(rootName);
+        }
+        return roots;
+      }
+      if (node.type === 'ArrayExpression') {
+        const roots = new Set();
+        for (const element of node.elements) {
+          const value = element?.type === 'SpreadElement' ? element.argument : element;
+          for (const rootName of directRoots(value)) roots.add(rootName);
+        }
+        return roots;
+      }
+      return new Set();
+    };
+
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const declarator of variableDeclarators) {
+        const localName = identifierName(declarator.id);
+        if (!localName) continue;
+        const roots = directRoots(declarator.init);
+        if (roots.size === 0) continue;
+        const knownRoots = routedRootsByLocalName.get(localName) ?? new Set();
+        for (const rootName of roots) {
+          if (knownRoots.has(rootName)) continue;
+          knownRoots.add(rootName);
+          changed = true;
+        }
+        routedRootsByLocalName.set(localName, knownRoots);
+      }
+    }
+
+    const addViolation = (statement, exportedName, localName, roots) => {
+      if (roots.size === 0) return;
+      violations.push({
+        type: 'transitive-dimension-local-bridge',
+        consumer: rel(file),
+        exportedName,
+        localName,
+        routedSymbols: sorted(roots),
+        statementStart: Number(statement.start),
+      });
+    };
+
+    for (const statement of sourceFile.body) {
+      if (statement.type === 'ExportNamedDeclaration' && !statement.source) {
+        for (const specifier of statement.specifiers) {
+          const localName = identifierName(specifier.local);
+          const exportedName = identifierName(specifier.exported);
+          addViolation(
+            statement,
+            exportedName,
+            localName,
+            new Set(routedRootsByLocalName.get(localName) ?? [])
+          );
+        }
+        if (statement.declaration?.type === 'VariableDeclaration') {
+          for (const declarator of statement.declaration.declarations) {
+            const localName = identifierName(declarator.id);
+            addViolation(
+              statement,
+              localName,
+              localName,
+              new Set(routedRootsByLocalName.get(localName) ?? [])
+            );
+          }
+        }
+      }
+      if (statement.type === 'ExportDefaultDeclaration') {
+        const localName = identifierName(statement.declaration);
+        addViolation(
+          statement,
+          'default',
+          localName,
+          localName
+            ? new Set(routedRootsByLocalName.get(localName) ?? [])
+            : directRoots(statement.declaration)
+        );
+      }
+    }
+  }
+  return violations.sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right)));
+}
+
 function collectUnapprovedTransitiveBridges(dimensionNames) {
   const violations = [];
   for (const file of productionFiles) {
@@ -695,6 +829,7 @@ function inspectManifest(candidateManifest, actualRows = null, options = {}) {
     if (entry.classification === 'internal transition only') {
       assert.ok(entry.internalConsumers.length > 0, entry.name);
       assert.equal(entry.externalEvidence.length, 0, entry.name);
+      assert.equal(entry.plannedAction, 'migrate-internal-consumers-then-audit-public-route', entry.name);
     }
     if (
       entry.classification === 'external compatibility' ||
@@ -906,6 +1041,11 @@ test('public surface manifest is a typed bijection with canonical owner and rout
   const consumers = collectInternalDimensionConsumers(dimensionNames);
   assert.deepEqual(consumers.broadRoutes, []);
   assert.deepEqual(collectUnapprovedTransitiveBridges(dimensionNames), []);
+  assert.deepEqual(collectRoutedBindingBridgeViolations(dimensionNames), []);
+  assert.deepEqual(
+    sorted(new Set(consumers.rows.map(row => row.consumer))),
+    sorted(Object.keys(expectedConsumerGroups))
+  );
   inspectManifest(manifest, consumers.rows);
 
   const directRuntimeConsumers = productionFiles.flatMap(file => {
@@ -1020,6 +1160,73 @@ test('topology mutation probes reject direct, broad, re-exported, dynamic, alias
   assert.deepEqual(syntheticCompatibilityViolations(probeFile, negativeControl), []);
 });
 
+test('routed dimension bindings cannot become local compatibility bridges', () => {
+  const dimensionNames = new Set(manifest.symbols.map(entry => entry.name));
+  const consumerA = path.join(root, 'esm/native/ui/__dimension_bridge_consumer_a.ts');
+  const consumerB = path.join(root, 'esm/native/ui/__dimension_bridge_consumer_b.ts');
+  const consumerASource = [
+    "import { DEFAULT_WIDTH } from '../services/api.js';",
+    'export { DEFAULT_WIDTH };',
+  ].join('\n');
+  const pairViolations = collectRoutedBindingBridgeViolations(dimensionNames, [
+    {
+      file: consumerA,
+      source: consumerASource,
+    },
+    {
+      file: consumerB,
+      source: [
+        "import { DEFAULT_WIDTH } from './__dimension_bridge_consumer_a.js';",
+        'export function readWidth() { return DEFAULT_WIDTH; }',
+      ].join('\n'),
+    },
+  ]);
+  assert.deepEqual(pairViolations, [
+    {
+      type: 'transitive-dimension-local-bridge',
+      consumer: 'esm/native/ui/__dimension_bridge_consumer_a.ts',
+      exportedName: 'DEFAULT_WIDTH',
+      localName: 'DEFAULT_WIDTH',
+      routedSymbols: ['DEFAULT_WIDTH'],
+      statementStart: consumerASource.indexOf('export { DEFAULT_WIDTH };'),
+    },
+  ]);
+
+  const bridgeCases = [
+    'export { DEFAULT_WIDTH };',
+    'export { DEFAULT_WIDTH as WIDTH };',
+    'export default DEFAULT_WIDTH;',
+    'const WIDTH = DEFAULT_WIDTH; export { WIDTH };',
+    'export const WIDTH = DEFAULT_WIDTH;',
+    'export const defaults = { width: DEFAULT_WIDTH };',
+    'export const defaults = [DEFAULT_WIDTH];',
+    [
+      'const chain = [defaults];',
+      'const defaults = { width: WIDTH };',
+      'const WIDTH = DEFAULT_WIDTH;',
+      'export { chain };',
+    ].join('\n'),
+  ];
+  for (const bridge of bridgeCases) {
+    const source = ["import { DEFAULT_WIDTH } from '../services/api.js';", bridge].join('\n');
+    const violations = collectRoutedBindingBridgeViolations(dimensionNames, [{ file: consumerA, source }]);
+    assert.equal(violations.length, 1, bridge);
+    assert.equal(violations[0].type, 'transitive-dimension-local-bridge', bridge);
+  }
+
+  const businessFunctions = [
+    "import { WARDROBE_WIDTH_MIN } from '../services/api.js';",
+    'export function readBounds() {',
+    '  return { min: WARDROBE_WIDTH_MIN };',
+    '}',
+    'export const readDefaults = () => ({ min: WARDROBE_WIDTH_MIN });',
+  ].join('\n');
+  assert.deepEqual(
+    collectRoutedBindingBridgeViolations(dimensionNames, [{ file: consumerA, source: businessFunctions }]),
+    []
+  );
+});
+
 test('manifest and inventory mutation probes fail owner, kind, route, consumer, and removal drift', () => {
   const dimensionNames = new Set(manifest.symbols.map(entry => entry.name));
   const actualConsumers = collectInternalDimensionConsumers(dimensionNames).rows;
@@ -1101,6 +1308,12 @@ test('manifest and inventory mutation probes fail owner, kind, route, consumer, 
   const emptyAction = structuredClone(manifest);
   emptyAction.symbols[0].plannedAction = '';
   assert.throws(() => inspectManifest(emptyAction, actualConsumers));
+
+  const unsafeInternalAction = structuredClone(manifest);
+  unsafeInternalAction.symbols.find(
+    entry => entry.classification === 'internal transition only'
+  ).plannedAction = 'remove-after-internal-migration';
+  assert.throws(() => inspectManifest(unsafeInternalAction, actualConsumers));
 
   const staleFromNegativeEvidence = structuredClone(manifest);
   const staleCandidate = staleFromNegativeEvidence.symbols.find(
