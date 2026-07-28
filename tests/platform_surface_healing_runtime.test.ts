@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 
 import { installPlatformUtilSurface } from '../esm/native/platform/platform_util.ts';
 import { installPlatformServiceSurface } from '../esm/native/platform/platform_services.ts';
+import { PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY } from '../esm/shared/dimensions/platform_startup_dimension_defaults_policy.ts';
+import { getDefaultDepthForWardrobeType } from '../esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
+import { DEFAULT_HEIGHT, DEFAULT_WIDTH } from '../esm/shared/dimensions/wardrobe_defaults.ts';
 
 test('platform util install heals drifted util/reportError seams while preserving canonical refs', () => {
   const calls: unknown[] = [];
@@ -314,4 +317,68 @@ test('platform getDimsM uses wardrobe-type depth fallback when build/runtime dep
   const slidingApp: any = createApp('sliding');
   installPlatformServiceSurface(slidingApp, () => 1);
   assert.deepEqual(slidingApp.services.platform.getDimsM(), { w: 1.6, h: 2.4, d: 0.6 });
+});
+
+test('platform getDimsM preserves per-axis UI, raw, runtime, and generic fallback precedence', () => {
+  assert.equal(PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY.widthCm, DEFAULT_WIDTH);
+  assert.equal(PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY.heightCm, DEFAULT_HEIGHT);
+  assert.equal(PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY.resolveDepthCm, getDefaultDepthForWardrobeType);
+  assert.equal(Object.isFrozen(PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY), true);
+
+  const createApp = (wardrobeType: unknown, runtime: Record<string, unknown> = {}) => {
+    const App: any = {
+      services: { platform: Object.create(null) },
+      store: {
+        getState: () => ({
+          ui: {},
+          config: { wardrobeType },
+          runtime,
+          mode: {},
+          meta: {},
+        }),
+      },
+      render: Object.create(null),
+      lifecycle: Object.create(null),
+    };
+    installPlatformServiceSurface(App, () => 1);
+    return App;
+  };
+
+  const runtimeApp = createApp('sliding', {
+    wardrobeWidthM: 2.1,
+    wardrobeHeightM: 2.2,
+    wardrobeDepthM: 0.57,
+  });
+  assert.deepEqual(
+    runtimeApp.services.platform.getDimsM({
+      width: '1.8',
+      h: '245',
+      depth: '0.58',
+      raw: { width: 190, height: 250, depth: 59 },
+    }),
+    { w: 1.8, h: 2.45, d: 0.58 }
+  );
+  assert.deepEqual(
+    runtimeApp.services.platform.getDimsM({
+      raw: { width: '190', h: '2.5', d: '59' },
+    }),
+    { w: 1.9, h: 2.5, d: 0.59 }
+  );
+  assert.deepEqual(runtimeApp.services.platform.getDimsM({ width: 'invalid' }), {
+    w: 2.1,
+    h: 2.2,
+    d: 0.57,
+  });
+  assert.deepEqual(runtimeApp.services.platform.getDimsM({ width: 200 }), {
+    w: 2,
+    h: 2.2,
+    d: 0.57,
+  });
+
+  const unknownTypeApp = createApp('future-type', {
+    wardrobeWidthM: Number.NaN,
+    wardrobeHeightM: Number.POSITIVE_INFINITY,
+    wardrobeDepthM: Number.NEGATIVE_INFINITY,
+  });
+  assert.deepEqual(unknownTypeApp.services.platform.getDimsM(), { w: 1.6, h: 2.4, d: 0.55 });
 });

@@ -13,12 +13,14 @@ const ownerRel = 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const domainApiRel = 'esm/native/kernel/domain_api_room_section_wardrobe.ts';
+const platformPolicyRel = 'esm/shared/dimensions/platform_startup_dimension_defaults_policy.ts';
+const platformConsumerRel = 'esm/native/platform/platform_services.ts';
+const platformPolicySymbol = 'PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const approvedNativeConsumerUniverse = new Set([
   'esm/native/builder/state_sanitize_pipeline.ts',
   'esm/native/features/library_preset/module_defaults.ts',
   'esm/native/kernel/domain_api_room_section_wardrobe.ts',
-  'esm/native/platform/platform_services.ts',
   'esm/native/runtime/api.ts',
 ]);
 
@@ -49,6 +51,8 @@ const expectedDomainApiCallOrder = Object.freeze([
 ]);
 const expectedDomainApiNonImportSemanticHash =
   '4bbfdbed934f7ef33926812a44a9a33a613fb52cf9f5d9bc0f463c55ca456502';
+const expectedPlatformNonImportSemanticHash =
+  '0cdd37a1ec1212106c2fd3dc9dec0a1b652c6215d2e48aa0250b1e2006bdf06d';
 const expectedNumericLiterals = Object.freeze([0, 0, 0, 0]);
 const objectReturnType =
   '{ widthCm: number; heightCm: number; depthCm: number; doorsCount: number; perDoorWidthCm: number; }';
@@ -427,9 +431,40 @@ function normalizeModuleTarget(fromFile, specifier) {
   return path.normalize(raw.replace(/\.(?:js|mjs|cjs)$/u, '.ts')).toLowerCase();
 }
 
+function resolveExistingModuleTarget(fromFile, specifier) {
+  if (typeof specifier !== 'string' || !specifier.startsWith('.')) return null;
+  const cleanSpecifier = specifier.replace(/[?#].*$/u, '');
+  const raw = path.resolve(path.dirname(fromFile), cleanSpecifier);
+  const extension = path.extname(raw).toLowerCase();
+  const candidates = [];
+  if (['.js', '.mjs', '.cjs'].includes(extension)) {
+    const stem = raw.slice(0, -extension.length);
+    candidates.push(`${stem}.ts`, `${stem}.tsx`, raw);
+  } else if (extension) {
+    candidates.push(raw);
+  } else {
+    for (const candidateExtension of ['.ts', '.tsx', '.js', '.mjs']) {
+      candidates.push(`${raw}${candidateExtension}`);
+      candidates.push(path.join(raw, `index${candidateExtension}`));
+    }
+  }
+  for (const candidate of candidates) {
+    try {
+      if (fs.statSync(candidate).isFile()) return path.normalize(candidate).toLowerCase();
+    } catch {
+      // Continue through the canonical runtime-extension candidates.
+    }
+  }
+  return null;
+}
+
 const ownerTarget = path.normalize(path.join(root, ownerRel)).toLowerCase();
 const facadeTarget = path.normalize(path.join(root, facadeRel)).toLowerCase();
 const publicDimensionsTarget = path.normalize(path.join(root, publicDimensionsRel)).toLowerCase();
+const platformPolicyTarget = path.normalize(path.join(root, platformPolicyRel)).toLowerCase();
+const wardrobeDefaultsTarget = path
+  .normalize(path.join(root, 'esm/shared/dimensions/wardrobe_defaults.ts'))
+  .toLowerCase();
 
 function targetsFocusedOwner(file, dependency) {
   return normalizeModuleTarget(file, dependency.specifier) === ownerTarget;
@@ -813,6 +848,247 @@ function inspectDomainApiConsumer(source) {
   return violations;
 }
 
+function inspectPlatformPolicy(source) {
+  const violations = [];
+  const add = (kind, detail = null) => violations.push({ kind, detail });
+  const file = path.join(root, platformPolicyRel);
+  const dependencies = analyzeModuleDependencies(file, source).imports;
+  const dependencyFacts = dependencies.map(dependency => ({
+    specifier: dependency.specifier,
+    kind: dependency.kind,
+    syntax: dependency.syntax,
+    symbols: dependency.importedSymbols,
+  }));
+  const expectedDependencies = [
+    {
+      specifier: './wardrobe_default_resolution_policy.js',
+      kind: 'value',
+      syntax: 'static-import',
+      symbols: ['getDefaultDepthForWardrobeType'],
+    },
+    {
+      specifier: './wardrobe_defaults.js',
+      kind: 'value',
+      syntax: 'static-import',
+      symbols: ['DEFAULT_HEIGHT', 'DEFAULT_WIDTH'],
+    },
+  ];
+  if (stableJson(dependencyFacts) !== stableJson(expectedDependencies)) {
+    add('platform-policy-dependencies', dependencyFacts);
+  }
+  for (const dependency of dependencies) {
+    for (const binding of dependency.bindings) {
+      if (binding.localName !== binding.importedName || binding.exportedName !== null) {
+        add('platform-policy-import-alias', binding);
+      }
+    }
+  }
+
+  const exports = collectNamedModuleExports(platformPolicyRel, source).map(entry => ({
+    name: entry.exportedName,
+    kind: entry.kind,
+  }));
+  if (stableJson(exports) !== stableJson([{ name: platformPolicySymbol, kind: 'value' }])) {
+    add('platform-policy-export-inventory', exports);
+  }
+
+  const sourceFile = createSourceFile(platformPolicyRel, source);
+  const nonImports = sourceFile.body.filter(statement => statement?.type !== 'ImportDeclaration');
+  if (nonImports.length !== 1 || nonImports[0]?.type !== 'ExportNamedDeclaration') {
+    add(
+      'platform-policy-top-level-shape',
+      nonImports.map(statement => statement?.type ?? null)
+    );
+  }
+
+  const declarators = [];
+  walkAst(sourceFile, node => {
+    if (node?.type === 'VariableDeclarator' && identifierName(node.id) === platformPolicySymbol) {
+      declarators.push(node);
+    }
+  });
+  if (declarators.length !== 1) {
+    add('platform-policy-declaration-count', declarators.length);
+    return violations;
+  }
+
+  const [declarator] = declarators;
+  if (
+    declarator.parent?.type !== 'VariableDeclaration' ||
+    declarator.parent.kind !== 'const' ||
+    declarator.parent.parent?.type !== 'ExportNamedDeclaration' ||
+    declarator.id?.typeAnnotation
+  ) {
+    add('platform-policy-export-const');
+  }
+  const initializer = declarator.init;
+  if (
+    initializer?.type !== 'CallExpression' ||
+    memberPath(initializer.callee) !== 'Object.freeze' ||
+    initializer.arguments?.length !== 1 ||
+    initializer.arguments[0]?.type !== 'ObjectExpression'
+  ) {
+    add('platform-policy-freeze');
+    return violations;
+  }
+
+  const properties = initializer.arguments[0].properties ?? [];
+  const propertyFacts = properties.map(property => ({
+    type: property?.type ?? null,
+    computed: property?.computed ?? false,
+    shorthand: property?.shorthand ?? false,
+    key: identifierName(property?.key),
+    value: identifierName(property?.value),
+  }));
+  const expectedProperties = [
+    {
+      type: 'Property',
+      computed: false,
+      shorthand: false,
+      key: 'widthCm',
+      value: 'DEFAULT_WIDTH',
+    },
+    {
+      type: 'Property',
+      computed: false,
+      shorthand: false,
+      key: 'heightCm',
+      value: 'DEFAULT_HEIGHT',
+    },
+    {
+      type: 'Property',
+      computed: false,
+      shorthand: false,
+      key: 'resolveDepthCm',
+      value: 'getDefaultDepthForWardrobeType',
+    },
+  ];
+  if (stableJson(propertyFacts) !== stableJson(expectedProperties)) {
+    add('platform-policy-property-shape', propertyFacts);
+  }
+  walkAst(initializer.arguments[0], node => {
+    if (node?.type === 'Literal' && typeof node.value === 'number') {
+      add('platform-policy-numeric-literal', node.value);
+    }
+  });
+  return violations;
+}
+
+function normalizedPlatformBodySemanticHash(source) {
+  const normalized = source
+    .replaceAll(`${platformPolicySymbol}.resolveDepthCm`, 'getDefaultDepthForWardrobeType')
+    .replaceAll(`${platformPolicySymbol}.widthCm`, 'DEFAULT_WIDTH')
+    .replaceAll(`${platformPolicySymbol}.heightCm`, 'DEFAULT_HEIGHT');
+  return moduleBodySemanticHash(platformConsumerRel, normalized);
+}
+
+function inspectPlatformConsumer(source) {
+  const violations = [];
+  const add = (kind, detail = null) => violations.push({ kind, detail });
+  const file = path.join(root, platformConsumerRel);
+  const dependencies = analyzeModuleDependencies(file, source).imports;
+  const policyDependencies = dependencies.filter(
+    dependency => resolveExistingModuleTarget(file, dependency.specifier) === platformPolicyTarget
+  );
+  if (policyDependencies.length !== 1) {
+    add('platform-policy-import-count', policyDependencies.length);
+  } else {
+    const [dependency] = policyDependencies;
+    if (
+      dependency.specifier !== '../../shared/dimensions/platform_startup_dimension_defaults_policy.js' ||
+      dependency.kind !== 'value' ||
+      dependency.syntax !== 'static-import' ||
+      stableJson(dependency.importedSymbols) !== stableJson([platformPolicySymbol])
+    ) {
+      add('platform-policy-import-shape', {
+        specifier: dependency.specifier,
+        kind: dependency.kind,
+        syntax: dependency.syntax,
+        symbols: dependency.importedSymbols,
+      });
+    }
+    for (const binding of dependency.bindings) {
+      if (binding.localName !== platformPolicySymbol || binding.exportedName !== null) {
+        add('platform-policy-consumer-alias', binding);
+      }
+    }
+  }
+
+  const forbiddenTargets = new Set([
+    ownerTarget,
+    wardrobeDefaultsTarget,
+    facadeTarget,
+    publicDimensionsTarget,
+  ]);
+  const forbiddenDependencies = dependencies.filter(dependency =>
+    forbiddenTargets.has(resolveExistingModuleTarget(file, dependency.specifier))
+  );
+  if (forbiddenDependencies.length !== 0) {
+    add(
+      'platform-forbidden-dimension-dependency',
+      forbiddenDependencies.map(dependency => ({
+        specifier: dependency.specifier,
+        syntax: dependency.syntax,
+        symbols: dependency.importedSymbols,
+      }))
+    );
+  }
+
+  const sharedRootPrefix = `${path.normalize(path.join(root, 'esm/shared')).toLowerCase()}${path.sep}`;
+  const sharedDependencies = dependencies.filter(dependency =>
+    resolveExistingModuleTarget(file, dependency.specifier)?.startsWith(sharedRootPrefix)
+  );
+  if (sharedDependencies.length !== 1) {
+    add(
+      'platform-shared-statement-count',
+      sharedDependencies.map(dependency => dependency.specifier)
+    );
+  }
+
+  if (normalizedPlatformBodySemanticHash(source) !== expectedPlatformNonImportSemanticHash) {
+    add('platform-normalized-semantic-hash');
+  }
+
+  const sourceFile = createSourceFile(platformConsumerRel, source);
+  const memberCounts = {
+    widthCm: 0,
+    heightCm: 0,
+    resolveDepthCm: 0,
+  };
+  walkAst(sourceFile, node => {
+    if (node?.type !== 'MemberExpression') return;
+    const pathValue = memberPath(node);
+    const prefix = `${platformPolicySymbol}.`;
+    if (!pathValue?.startsWith(prefix)) return;
+    const member = pathValue.slice(prefix.length);
+    if (Object.prototype.hasOwnProperty.call(memberCounts, member)) {
+      memberCounts[member] += 1;
+    } else {
+      add('platform-policy-unknown-member', member);
+    }
+  });
+  if (stableJson(memberCounts) !== stableJson({ widthCm: 1, heightCm: 1, resolveDepthCm: 1 })) {
+    add('platform-policy-member-inventory', memberCounts);
+  }
+  return violations;
+}
+
+function collectPlatformPolicyConsumers(entries) {
+  return entries.flatMap(([file, source]) =>
+    analyzeModuleDependencies(file, source)
+      .imports.filter(
+        dependency => resolveExistingModuleTarget(file, dependency.specifier) === platformPolicyTarget
+      )
+      .map(dependency => ({
+        file: path.relative(root, file).replaceAll('\\', '/'),
+        specifier: dependency.specifier,
+        kind: dependency.kind,
+        syntax: dependency.syntax,
+        symbols: dependency.importedSymbols,
+      }))
+  );
+}
+
 test('Wardrobe Default Resolution owner has exact dependencies, exports, signatures, and historical semantics', () => {
   assert.equal(ownerRel, 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts');
   assert.deepEqual(ownerViolations(read(ownerRel)), []);
@@ -970,6 +1246,212 @@ export { getDefaultDepthForWardrobeType as domainDefaultDepthResolver };`
     'domain-non-import-semantic-hash',
     'fallback action order'
   );
+});
+
+test('Platform startup dimension policy has the exact pure composition shape and sole focused consumer', () => {
+  assert.deepEqual(inspectPlatformPolicy(read(platformPolicyRel)), []);
+  assert.deepEqual(inspectPlatformConsumer(read(platformConsumerRel)), []);
+
+  const entries = listSourceFiles(path.join(root, 'esm')).map(file => [file, fs.readFileSync(file, 'utf8')]);
+  assert.deepEqual(collectPlatformPolicyConsumers(entries), [
+    {
+      file: platformConsumerRel,
+      specifier: '../../shared/dimensions/platform_startup_dimension_defaults_policy.js',
+      kind: 'value',
+      syntax: 'static-import',
+      symbols: [platformPolicySymbol],
+    },
+  ]);
+
+  for (const publicRel of [facadeRel, publicDimensionsRel, 'esm/native/runtime/api.ts']) {
+    const source = read(publicRel);
+    assert.equal(source.includes(platformPolicySymbol), false, publicRel);
+    assert.equal(source.includes('platform_startup_dimension_defaults_policy'), false, publicRel);
+  }
+});
+
+test('Platform startup dimension mutation fixtures reject dependency drift, compatibility paths, literals, and precedence changes', () => {
+  const policy = read(platformPolicyRel);
+  const consumer = read(platformConsumerRel);
+  const policyImport = `import { ${platformPolicySymbol} } from '../../shared/dimensions/platform_startup_dimension_defaults_policy.js';`;
+  assert.match(consumer, new RegExp(policyImport.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
+
+  const assertPolicyRejected = (mutated, expectedKind, label) => {
+    const violations = inspectPlatformPolicy(mutated);
+    assert.equal(
+      violations.some(violation => violation.kind === expectedKind),
+      true,
+      `${label}: ${JSON.stringify(violations)}`
+    );
+  };
+  const assertConsumerRejected = (mutated, expectedKind, label) => {
+    const violations = inspectPlatformConsumer(mutated);
+    assert.equal(
+      violations.some(violation => violation.kind === expectedKind),
+      true,
+      `${label}: ${JSON.stringify(violations)}`
+    );
+  };
+
+  assertPolicyRejected(
+    `${policy}
+import './units.js';
+`,
+    'platform-policy-dependencies',
+    'additional policy dependency'
+  );
+  assertPolicyRejected(
+    policy.replace('DEFAULT_HEIGHT, DEFAULT_WIDTH', 'DEFAULT_HEIGHT as HEIGHT, DEFAULT_WIDTH'),
+    'platform-policy-import-alias',
+    'policy import alias'
+  );
+  assertPolicyRejected(
+    policy.replace('widthCm: DEFAULT_WIDTH', 'widthCm: 160'),
+    'platform-policy-property-shape',
+    'copied width literal'
+  );
+  assertPolicyRejected(
+    policy.replace('heightCm: DEFAULT_HEIGHT', 'heightCm: 240'),
+    'platform-policy-property-shape',
+    'copied height literal'
+  );
+  assertPolicyRejected(
+    policy.replace(
+      'resolveDepthCm: getDefaultDepthForWardrobeType',
+      'resolveDepthCm: value => getDefaultDepthForWardrobeType(value)'
+    ),
+    'platform-policy-property-shape',
+    'resolver wrapper'
+  );
+  assertPolicyRejected(policy.replace('Object.freeze({', '({'), 'platform-policy-freeze', 'removed freeze');
+  assertPolicyRejected(
+    `${policy}
+export const PLATFORM_STARTUP_DEFAULT_WIDTH = DEFAULT_WIDTH;
+`,
+    'platform-policy-export-inventory',
+    'additional export'
+  );
+
+  assertConsumerRejected(
+    consumer.replace(
+      '../../shared/dimensions/platform_startup_dimension_defaults_policy.js',
+      '../../shared/wardrobe_dimension_tokens_shared.js'
+    ),
+    'platform-policy-import-count',
+    'legacy facade'
+  );
+  assertConsumerRejected(
+    consumer.replace(
+      '../../shared/dimensions/platform_startup_dimension_defaults_policy.js',
+      '../../shared/dimensions/platform_startup_dimension_defaults_policy'
+    ),
+    'platform-policy-import-shape',
+    'extensionless owner path'
+  );
+  assertConsumerRejected(
+    consumer.replace(
+      '../../shared/dimensions/platform_startup_dimension_defaults_policy.js',
+      '../../shared/dimensions/platform_startup_dimension_defaults_policy.js?platform=1#owner'
+    ),
+    'platform-policy-import-shape',
+    'query and hash owner path'
+  );
+  assertConsumerRejected(
+    consumer.replace(
+      '../../shared/dimensions/platform_startup_dimension_defaults_policy.js',
+      '../../shared/dimensions/index.js'
+    ),
+    'platform-policy-import-count',
+    'directory index path'
+  );
+  assertConsumerRejected(
+    consumer.replace(platformPolicySymbol, `${platformPolicySymbol} as PLATFORM_DEFAULTS`),
+    'platform-policy-consumer-alias',
+    'consumer alias'
+  );
+  assertConsumerRejected(
+    consumer.replace(
+      policyImport,
+      `import * as platformDefaults from '../../shared/dimensions/platform_startup_dimension_defaults_policy.js';`
+    ),
+    'platform-policy-import-shape',
+    'namespace import'
+  );
+  assertConsumerRejected(
+    consumer.replace(
+      policyImport,
+      `const platformDefaults = import('../../shared/dimensions/platform_startup_dimension_defaults_policy.js');`
+    ),
+    'platform-policy-import-shape',
+    'dynamic import'
+  );
+  assertConsumerRejected(
+    `${consumer}
+import { DEFAULT_WIDTH } from '../../shared/dimensions/wardrobe_defaults.js';
+`,
+    'platform-forbidden-dimension-dependency',
+    'direct defaults owner'
+  );
+  assertConsumerRejected(
+    `${consumer}
+import { getDefaultDepthForWardrobeType } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';
+`,
+    'platform-forbidden-dimension-dependency',
+    'direct resolution owner'
+  );
+  assertConsumerRejected(
+    `${consumer}
+import '../../shared/wardrobe_dimension_tokens_shared.js';
+`,
+    'platform-forbidden-dimension-dependency',
+    'side-effect facade import'
+  );
+  assertConsumerRejected(
+    consumer.replace(`${platformPolicySymbol}.widthCm`, "cfg.wardrobeType === 'sliding' ? 180 : 160"),
+    'platform-normalized-semantic-hash',
+    'type-dependent width'
+  );
+  assertConsumerRejected(
+    consumer.replace(`${platformPolicySymbol}.heightCm`, '240'),
+    'platform-normalized-semantic-hash',
+    'copied height literal'
+  );
+  assertConsumerRejected(
+    consumer.replace('wVal <= 10', 'wVal < 10'),
+    'platform-normalized-semantic-hash',
+    'meter threshold'
+  );
+  assertConsumerRejected(
+    consumer.replace(
+      `      if (!Number.isFinite(wCm)) wCm = ${platformPolicySymbol}.widthCm;
+      if (!Number.isFinite(hCm)) hCm = ${platformPolicySymbol}.heightCm;`,
+      `      if (!Number.isFinite(hCm)) hCm = ${platformPolicySymbol}.heightCm;
+      if (!Number.isFinite(wCm)) wCm = ${platformPolicySymbol}.widthCm;`
+    ),
+    'platform-normalized-semantic-hash',
+    'fallback order'
+  );
+  assertConsumerRejected(
+    consumer.replace(
+      '      if (!Number.isFinite(wVal)) wVal = readNumberish(ui.w);',
+      '      if (!Number.isFinite(wVal)) wVal = readNumberish(rawUi.w);'
+    ),
+    'platform-normalized-semantic-hash',
+    'top-level precedence'
+  );
+
+  const actualEntries = [
+    [path.join(root, platformConsumerRel), consumer],
+    [
+      path.join(root, 'esm/native/features/platform_defaults_bridge.ts'),
+      `export { ${platformPolicySymbol} } from '../../shared/dimensions/platform_startup_dimension_defaults_policy';`,
+    ],
+    [
+      path.join(root, 'esm/native/features/platform_defaults_query_bridge.ts'),
+      `export { ${platformPolicySymbol} } from '../../shared/dimensions/platform_startup_dimension_defaults_policy.js?bridge=1#owner';`,
+    ],
+  ];
+  assert.equal(collectPlatformPolicyConsumers(actualEntries).length, 3);
 });
 
 test('owner and facade mutation fixtures reject back-edges, aliases, compatibility policy, semantic drift, wrappers, and early consumers', () => {

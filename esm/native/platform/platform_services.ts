@@ -20,11 +20,7 @@ import {
 import { reportError } from '../runtime/errors.js';
 import { installStableSurfaceMethod } from '../runtime/stable_surface_methods.js';
 import { isLifecycleTabHidden } from '../runtime/app_roots_access.js';
-import {
-  DEFAULT_HEIGHT,
-  DEFAULT_WIDTH,
-  getDefaultDepthForWardrobeType,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY } from '../../shared/dimensions/platform_startup_dimension_defaults_policy.js';
 
 import { ensurePlatformPerf, isRecord, readBuildUiSurface } from './platform_shared.js';
 
@@ -123,10 +119,10 @@ export function installPlatformServiceSurface(
       if (!Number.isFinite(dCm) && typeof dd === 'number' && Number.isFinite(dd)) dCm = dd * 100;
 
       const cfg = readConfigStateFromApp(App);
-      const defaultDepth = getDefaultDepthForWardrobeType(cfg.wardrobeType);
+      const defaultDepth = PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY.resolveDepthCm(cfg.wardrobeType);
 
-      if (!Number.isFinite(wCm)) wCm = DEFAULT_WIDTH;
-      if (!Number.isFinite(hCm)) hCm = DEFAULT_HEIGHT;
+      if (!Number.isFinite(wCm)) wCm = PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY.widthCm;
+      if (!Number.isFinite(hCm)) hCm = PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY.heightCm;
       if (!Number.isFinite(dCm)) dCm = defaultDepth;
 
       return { w: wCm / 100, h: hCm / 100, d: dCm / 100 };

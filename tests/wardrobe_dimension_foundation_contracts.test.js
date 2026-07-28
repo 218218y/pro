@@ -423,6 +423,9 @@ const APPROVED_WARDROBE_DEFAULT_RESOLUTION_OWNER_IMPORTS = Object.freeze({
     'getDefaultDoorsForWardrobeType',
     'getDefaultPerDoorWidthForWardrobeType',
   ]),
+  'esm/shared/dimensions/platform_startup_dimension_defaults_policy.ts': Object.freeze([
+    'getDefaultDepthForWardrobeType',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(
     [...WARDROBE_DEFAULT_RESOLUTION_FUNCTIONS].sort()
   ),

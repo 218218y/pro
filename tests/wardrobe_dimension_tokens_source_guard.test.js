@@ -1358,11 +1358,6 @@ test('[dimension tokens] Wardrobe Default Resolution is defined only by its focu
       symbols: ['getDefaultDepthForWardrobeType', 'getDefaultDoorsForWardrobeType'],
     },
     {
-      file: 'esm/native/platform/platform_services.ts',
-      syntax: 'static-import',
-      symbols: ['getDefaultDepthForWardrobeType'],
-    },
-    {
       file: 'esm/native/runtime/api.ts',
       syntax: 'static-re-export',
       symbols: [
