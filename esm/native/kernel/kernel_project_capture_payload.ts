@@ -2,10 +2,7 @@ import type { UnknownRecord } from '../../../types';
 
 import { readUiRawScalarFromCanonicalSnapshot } from '../runtime/ui_raw_selectors.js';
 import { readDoorTrimConfigMap, readMirrorLayoutConfigMap } from '../features/project_config/api.js';
-import {
-  DEFAULT_HINGED_DOORS,
-  normalizeDoorMountThicknessCm,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
+import { PROJECT_CAPTURE_DIMENSION_POLICY } from '../../shared/dimensions/project_capture_dimension_policy.js';
 import { SHOE_DRAWER_AUTO_BASE_PREVIOUS_TYPE_KEY } from '../features/shoe_drawer_base_constraint.js';
 
 import { asString } from './kernel_shared.js';
@@ -68,7 +65,7 @@ function resolvePersistedProjectDoors(
   if (preChestDoors != null) return preChestDoors;
 
   const directDoors = readPositiveInteger(overallDoors);
-  return directDoors != null ? directDoors : DEFAULT_HINGED_DOORS;
+  return directDoors != null ? directDoors : PROJECT_CAPTURE_DIMENSION_POLICY.defaultHingedDoorsCount;
 }
 
 function buildProjectCaptureSettings(
@@ -305,10 +302,18 @@ export function buildKernelProjectCaptureData(args: BuildKernelProjectCaptureDat
     curtainMap: cloneProjectCaptureValue(readCurtainSnapshot(cfgRec.curtainMap), {}),
     doorTrimMap: cloneProjectCaptureValue(readDoorTrimConfigMap(cfgRec.doorTrimMap), {}),
     preChestState: cloneProjectCaptureValue(canonicalCfg.preChestState, null),
-    overlayFrameThicknessCm: normalizeDoorMountThicknessCm(canonicalCfg.overlayFrameThicknessCm),
-    overlayShelfThicknessCm: normalizeDoorMountThicknessCm(canonicalCfg.overlayShelfThicknessCm),
-    insetFrameThicknessCm: normalizeDoorMountThicknessCm(canonicalCfg.insetFrameThicknessCm),
-    insetShelfThicknessCm: normalizeDoorMountThicknessCm(canonicalCfg.insetShelfThicknessCm),
+    overlayFrameThicknessCm: PROJECT_CAPTURE_DIMENSION_POLICY.normalizeDoorMountThicknessCm(
+      canonicalCfg.overlayFrameThicknessCm
+    ),
+    overlayShelfThicknessCm: PROJECT_CAPTURE_DIMENSION_POLICY.normalizeDoorMountThicknessCm(
+      canonicalCfg.overlayShelfThicknessCm
+    ),
+    insetFrameThicknessCm: PROJECT_CAPTURE_DIMENSION_POLICY.normalizeDoorMountThicknessCm(
+      canonicalCfg.insetFrameThicknessCm
+    ),
+    insetShelfThicknessCm: PROJECT_CAPTURE_DIMENSION_POLICY.normalizeDoorMountThicknessCm(
+      canonicalCfg.insetShelfThicknessCm
+    ),
     grooveLinesCount:
       typeof canonicalCfg.grooveLinesCount === 'number' && Number.isFinite(canonicalCfg.grooveLinesCount)
         ? canonicalCfg.grooveLinesCount

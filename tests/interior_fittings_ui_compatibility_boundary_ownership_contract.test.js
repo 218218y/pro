@@ -747,10 +747,10 @@ test('Interior Tab migration preserves Layer, Facade, public-surface, and ratche
   const staticFacadeDependencies = facadeDependencies.filter(
     dependency => dependency.syntax === 'static-import'
   );
-  assert.equal(new Set(staticFacadeDependencies.map(entry => entry.file)).size, 1);
-  assert.equal(staticFacadeDependencies.length, 1);
-  assert.equal(new Set(facadeDependencies.map(entry => entry.file)).size, 3);
-  assert.equal(facadeDependencies.length, 4);
+  assert.equal(new Set(staticFacadeDependencies.map(entry => entry.file)).size, 0);
+  assert.equal(staticFacadeDependencies.length, 0);
+  assert.equal(new Set(facadeDependencies.map(entry => entry.file)).size, 2);
+  assert.equal(facadeDependencies.length, 3);
 
   const facadeExports = collectNamedModuleExports(facadeRel, read(facadeRel));
   assert.equal(

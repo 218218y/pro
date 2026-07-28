@@ -1,9 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 
 import { createKernelProjectCapture } from '../esm/native/kernel/kernel_project_capture.ts';
+import { buildKernelProjectCaptureData } from '../esm/native/kernel/kernel_project_capture_payload.ts';
 import { cloneProjectCaptureValue } from '../esm/native/kernel/kernel_project_capture_shared.ts';
-import { DEFAULT_HINGED_DOORS } from '../esm/shared/wardrobe_dimension_tokens_shared.ts';
+import { DEFAULT_HINGED_DOORS } from '../esm/shared/dimensions/wardrobe_defaults.ts';
 
 test('kernel project capture canonicalizes config lists and detaches mutable snapshot slices', () => {
   const savedNotesSource = [{ id: 'n1', blocks: [{ text: 'first' }] }];
@@ -244,4 +246,195 @@ test('kernel project capture cloning preserves valid branches when unsupported l
     when: '2024-01-02T03:04:05.000Z',
     list: ['keep', null, { widthCm: 21 }],
   });
+});
+
+test('kernel project capture payload preserves exact persisted key order and serialization fingerprint', () => {
+  const uiRec = {
+    raw: {
+      width: 240,
+      height: 260,
+      depth: 60,
+      doors: 5,
+      chestDrawersCount: 4,
+      stackSplitLowerDepthManual: false,
+      stackSplitLowerWidthManual: false,
+      stackSplitLowerDoorsManual: false,
+    },
+  };
+  const payload = buildKernelProjectCaptureData({
+    uiRec,
+    rawAny: uiRec.raw,
+    cfgRec: {},
+    savedNotes: [],
+  });
+
+  assert.deepEqual(Object.keys(payload), [
+    'settings',
+    'toggles',
+    'chestSettings',
+    'modulesConfiguration',
+    'stackSplitLowerModulesConfiguration',
+    'cornerConfiguration',
+    'groovesMap',
+    'grooveLinesCountMap',
+    'splitDoorsMap',
+    'splitDoorsBottomMap',
+    'removedDoorsMap',
+    'roundedFrameSideShelvesMap',
+    'drawerDividersMap',
+    'individualColors',
+    'doorSpecialMap',
+    'doorStyleMap',
+    'mirrorLayoutMap',
+    'savedColors',
+    'handlesMap',
+    'hingeMap',
+    'curtainMap',
+    'doorTrimMap',
+    'preChestState',
+    'overlayFrameThicknessCm',
+    'overlayShelfThicknessCm',
+    'insetFrameThicknessCm',
+    'insetShelfThicknessCm',
+    'grooveLinesCount',
+    'isLibraryMode',
+    'savedNotes',
+    'projectName',
+  ]);
+  assert.deepEqual(Object.keys(payload.settings as Record<string, unknown>), [
+    'doors',
+    'width',
+    'height',
+    'depth',
+    'baseType',
+    'shoeDrawerAutoBasePreviousType',
+    'baseLegStyle',
+    'baseLegColor',
+    'baseLegPlatformMode',
+    'baseLegPlatformSideMode',
+    'basePlinthHeightCm',
+    'baseLegHeightCm',
+    'baseLegWidthCm',
+    'slidingTracksColor',
+    'doorStyle',
+    'corniceType',
+    'color',
+    'customColor',
+    'structureSelection',
+    'wardrobeType',
+    'doorMountMode',
+    'boardMaterial',
+    'isManualWidth',
+    'singleDoorPos',
+    'globalHandleType',
+    'cornerWidth',
+    'cornerSide',
+    'cornerDoors',
+    'cornerHeight',
+    'cornerDepth',
+    'stackSplitEnabled',
+    'stackSplitDecorativeSeparatorEnabled',
+    'stackSplitLowerDepthManual',
+    'stackSplitLowerWidthManual',
+    'stackSplitLowerDoorsManual',
+    'stackSplitLowerDepth',
+    'stackSplitLowerWidth',
+    'stackSplitLowerDoors',
+  ]);
+  assert.deepEqual(Object.keys(payload.toggles as Record<string, unknown>), [
+    'sketchMode',
+    'multiColor',
+    'chestMode',
+    'chestCommode',
+    'cornerMode',
+    'removeDoors',
+    'splitDoors',
+    'grooves',
+    'internalDrawers',
+    'handleControl',
+    'showHanger',
+    'showContents',
+    'hingeDirection',
+    'showDimensions',
+    'addCornice',
+    'notesEnabled',
+    'globalClickMode',
+    'lightingControl',
+    'lightAmb',
+    'lightDir',
+    'lightX',
+    'lightY',
+    'lightZ',
+  ]);
+  assert.deepEqual(Object.keys(payload.chestSettings as Record<string, unknown>), [
+    'drawersCount',
+    'commodeEnabled',
+    'mirrorWidthManual',
+  ]);
+  for (const key of [
+    'overlayFrameThicknessCm',
+    'overlayShelfThicknessCm',
+    'insetFrameThicknessCm',
+    'insetShelfThicknessCm',
+  ]) {
+    assert.equal(payload[key], null);
+    assert.equal(Object.prototype.hasOwnProperty.call(payload.settings, key), false);
+  }
+
+  const serialized = JSON.stringify(payload);
+  assert.equal(serialized.length, 2000);
+  assert.equal(
+    createHash('sha256').update(serialized).digest('hex'),
+    '403b37551d02614895c1c976a9e5d50850541479c58c4dbf50c05532b219a2ed'
+  );
+});
+
+test('kernel project capture preserves chest door precedence and exact thickness normalization', () => {
+  const build = (
+    doors: unknown,
+    isChestMode: boolean,
+    preChestState: unknown,
+    thicknesses: Record<string, unknown> = {}
+  ) => {
+    const raw = {
+      width: 130,
+      height: 95,
+      depth: 45,
+      doors,
+      chestDrawersCount: 4,
+    };
+    return buildKernelProjectCaptureData({
+      uiRec: { isChestMode, raw },
+      rawAny: raw,
+      cfgRec: { preChestState, ...thicknesses },
+      savedNotes: [],
+    });
+  };
+
+  assert.equal((build(0, false, { doors: 9 }).settings as Record<string, unknown>).doors, 0);
+  assert.equal((build(7.9, true, { doors: 5.9 }).settings as Record<string, unknown>).doors, 5);
+  assert.equal((build(7.9, true, { doors: '6' }).settings as Record<string, unknown>).doors, 7);
+  assert.equal(
+    (build(0, true, { doors: Number.POSITIVE_INFINITY }).settings as Record<string, unknown>).doors,
+    4
+  );
+
+  const normalized = build(4, false, null, {
+    overlayFrameThicknessCm: 0.39,
+    overlayShelfThicknessCm: 1.85,
+    insetFrameThicknessCm: 8.1,
+    insetShelfThicknessCm: 'bad',
+  });
+  assert.equal(normalized.overlayFrameThicknessCm, 0.4);
+  assert.equal(normalized.overlayShelfThicknessCm, 1.9);
+  assert.equal(normalized.insetFrameThicknessCm, 8);
+  assert.equal(normalized.insetShelfThicknessCm, null);
+  for (const key of [
+    'overlayFrameThicknessCm',
+    'overlayShelfThicknessCm',
+    'insetFrameThicknessCm',
+    'insetShelfThicknessCm',
+  ]) {
+    assert.equal(Object.prototype.hasOwnProperty.call(normalized.settings, key), false);
+  }
 });

@@ -647,11 +647,12 @@ const APPROVED_DOOR_MOUNT_THICKNESS_OWNER_IMPORTS = Object.freeze({
     'DoorMountThicknessConfigKey',
     'normalizeDoorMountThicknessCm',
   ]),
+  'esm/shared/dimensions/project_capture_dimension_policy.ts': Object.freeze([
+    'normalizeDoorMountThicknessCm',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': DOOR_MOUNT_THICKNESS_FACADE_SYMBOLS,
 });
-const APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_DEPENDENCIES = Object.freeze({
-  'esm/native/kernel/kernel_project_capture_payload.ts': ['normalizeDoorMountThicknessCm@static-import'],
-});
+const APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DOOR_VISUAL_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/visuals_and_contents_door_visual_accent.ts': Object.freeze([
@@ -3688,7 +3689,7 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectLegacyDimensionSymbolDependencies(
       analyzedSources,
       DOOR_MOUNT_THICKNESS_FACADE_SYMBOLS,
-      'dimensions/door_mount_thickness_policy.js'
+      'door_mount_thickness_policy.js'
     ),
     APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_DEPENDENCIES,
     'Door Mount Thickness legacy dependency allowlist'
@@ -3697,7 +3698,7 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectLegacyDimensionPolicyFieldUsage(
       analyzedSources,
       'DOOR_MOUNT_THICKNESS_DIMENSIONS',
-      'dimensions/door_mount_thickness_policy.js'
+      'door_mount_thickness_policy.js'
     ),
     APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_FIELD_USAGE,
     'Door Mount Thickness legacy field allowlist'
@@ -4168,7 +4169,7 @@ test('[dimension-foundation] Door Mount guard detects value/type aliases, namesp
     collectLegacyDimensionSymbolDependencies(
       sources,
       DOOR_MOUNT_THICKNESS_FACADE_SYMBOLS,
-      'dimensions/door_mount_thickness_policy.js'
+      'door_mount_thickness_policy.js'
     ),
     {
       'esm/native/builder/named_door_mount_consumer.ts': [
@@ -4183,7 +4184,7 @@ test('[dimension-foundation] Door Mount guard detects value/type aliases, namesp
     collectLegacyDimensionPolicyFieldUsage(
       sources,
       'DOOR_MOUNT_THICKNESS_DIMENSIONS',
-      'dimensions/door_mount_thickness_policy.js'
+      'door_mount_thickness_policy.js'
     ),
     {
       'esm/native/builder/named_door_mount_consumer.ts': ['<computed>', 'minCm', 'stepCm'],
@@ -4201,7 +4202,7 @@ test('[dimension-foundation] Door Mount guard detects value/type aliases, namesp
         collectLegacyDimensionSymbolDependencies(
           sources,
           DOOR_MOUNT_THICKNESS_FACADE_SYMBOLS,
-          'dimensions/door_mount_thickness_policy.js'
+          'door_mount_thickness_policy.js'
         ),
         {},
         'Door Mount fixture legacy dependency allowlist'

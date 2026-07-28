@@ -16,20 +16,21 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 import { createTsRuntimeModuleLoader } from './_ts_runtime_module_loader.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const ownerRel = 'esm/shared/dimensions/wardrobe_sanitization_policy.ts';
-const consumerRel = 'esm/native/builder/state_sanitize_pipeline.ts';
+const ownerRel = 'esm/shared/dimensions/project_capture_dimension_policy.ts';
+const consumerRel = 'esm/native/kernel/kernel_project_capture_payload.ts';
 const defaultsRel = 'esm/shared/dimensions/wardrobe_defaults.ts';
-const limitsRel = 'esm/shared/dimensions/product_limits.ts';
-const resolutionRel = 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
+const thicknessRel = 'esm/shared/dimensions/door_mount_thickness_policy.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const runtimeApiRel = 'esm/native/runtime/api.ts';
 const baselineRel = 'tools/wp_layer_baseline.json';
-const ownerSymbol = 'WARDROBE_SANITIZATION_POLICY';
-const ownerSpecifier = '../../shared/dimensions/wardrobe_sanitization_policy.js';
-const consumerSemanticSha256 = '332ee90f70f7e5b0a8d4b0e26aba84d51141c13ae0940b5d098ff1ecd7df7788';
-const consumerFunctionSha256 = '3664f3086632093cdec9e39439fc16ad595edc31183ddae51d838b3e43d27b9c';
-const consumerLiteralSha256 = '4cf824373058e8e2b3a587378cb9d347ada77f435f4c5640d5f93f8604c6cbe6';
+const ownerSymbol = 'PROJECT_CAPTURE_DIMENSION_POLICY';
+const ownerSpecifier = '../../shared/dimensions/project_capture_dimension_policy.js';
+const consumerBodySha256 = 'b4b5f860ba20101e8e36d6f46602229f7f7f055378b3428bf77adaca5f85a89c';
+const persistedDoorsSha256 = 'd0b63e533964a4559b69d2224217dfc4f9b9c098714256503bdf9502d88f2fa3';
+const buildPayloadSha256 = '369aca88642d39779075ac6866986f488b911d84bf09773989eb27dbad7d0ff1';
+const returnObjectSha256 = '7b38c82b28a1de4b29c7b189a2d1898a4c50e1183547ffee5e349edbdcea28d7';
+const consumerLiteralSha256 = '517c74b64ba1bc22310d01455d22f9225df5f2e4dae5078fed001c30d605ee31';
 const prefix163Sha256 = '8c4c04e56a8b991d81537127adc69c5dc42b4e7ed3de4fe81258a67b01ad8341';
 const prefix164Sha256 = '55c2e7abbae3cdba828c41a48ed759d457079d0021fe21fc2a1ebf7a08e2e231';
 const prefix165Sha256 = '3b685a291fdbfa4ae0fd66b8b4744116598a81e236e8f449facc89714802a807';
@@ -37,116 +38,34 @@ const prefix166Sha256 = 'f58543ffaf2860f846f7469e93ab442adf0ee3fc5ae391fd904af3f
 
 const expectedOwnerDependencies = Object.freeze([
   Object.freeze({
-    specifier: './wardrobe_default_resolution_policy.js',
+    specifier: './door_mount_thickness_policy.js',
     kind: 'value',
     syntax: 'static-import',
-    symbols: Object.freeze(['getDefaultDepthForWardrobeType', 'getDefaultDoorsForWardrobeType']),
+    symbols: Object.freeze(['normalizeDoorMountThicknessCm']),
   }),
   Object.freeze({
     specifier: './wardrobe_defaults.js',
     kind: 'value',
     syntax: 'static-import',
-    symbols: Object.freeze(['DEFAULT_CHEST_DRAWERS_COUNT', 'DEFAULT_HEIGHT', 'DEFAULT_WIDTH']),
-  }),
-  Object.freeze({
-    specifier: './product_limits.js',
-    kind: 'value',
-    syntax: 'static-import',
-    symbols: Object.freeze([
-      'WARDROBE_CHEST_DRAWERS_MAX',
-      'WARDROBE_CHEST_DRAWERS_MIN',
-      'WARDROBE_CHEST_HEIGHT_MIN',
-      'WARDROBE_CHEST_WIDTH_MIN',
-      'WARDROBE_DEPTH_MAX',
-      'WARDROBE_DEPTH_MIN',
-      'WARDROBE_DOORS_MAX',
-      'WARDROBE_DOORS_MIN',
-      'WARDROBE_HEIGHT_MAX',
-      'WARDROBE_HEIGHT_MIN',
-      'WARDROBE_SLIDING_DOORS_MIN',
-      'WARDROBE_WIDTH_MAX',
-      'WARDROBE_WIDTH_MIN',
-    ]),
+    symbols: Object.freeze(['DEFAULT_HINGED_DOORS']),
   }),
 ]);
-
-const expectedOwnerTree = Object.freeze({
-  defaults: Object.freeze({
-    widthCm: 'DEFAULT_WIDTH',
-    heightCm: 'DEFAULT_HEIGHT',
-    chestDrawersCount: 'DEFAULT_CHEST_DRAWERS_COUNT',
+const expectedOwnerProperties = Object.freeze([
+  Object.freeze({
+    key: 'defaultHingedDoorsCount',
+    value: 'DEFAULT_HINGED_DOORS',
+    shorthand: false,
   }),
-  limits: Object.freeze({
-    width: Object.freeze({
-      minCm: 'WARDROBE_WIDTH_MIN',
-      chestMinCm: 'WARDROBE_CHEST_WIDTH_MIN',
-      maxCm: 'WARDROBE_WIDTH_MAX',
-    }),
-    height: Object.freeze({
-      minCm: 'WARDROBE_HEIGHT_MIN',
-      chestMinCm: 'WARDROBE_CHEST_HEIGHT_MIN',
-      maxCm: 'WARDROBE_HEIGHT_MAX',
-    }),
-    depth: Object.freeze({
-      minCm: 'WARDROBE_DEPTH_MIN',
-      maxCm: 'WARDROBE_DEPTH_MAX',
-    }),
-    doors: Object.freeze({
-      min: 'WARDROBE_DOORS_MIN',
-      slidingMin: 'WARDROBE_SLIDING_DOORS_MIN',
-      max: 'WARDROBE_DOORS_MAX',
-    }),
-    chestDrawers: Object.freeze({
-      min: 'WARDROBE_CHEST_DRAWERS_MIN',
-      max: 'WARDROBE_CHEST_DRAWERS_MAX',
-    }),
+  Object.freeze({
+    key: 'normalizeDoorMountThicknessCm',
+    value: 'normalizeDoorMountThicknessCm',
+    shorthand: true,
   }),
-  resolveDepthCm: 'getDefaultDepthForWardrobeType',
-  resolveDoorsCount: 'getDefaultDoorsForWardrobeType',
-});
-
-const normalizedConsumerReferences = Object.freeze({
-  'defaults.widthCm': 'DEFAULT_WIDTH',
-  'defaults.heightCm': 'DEFAULT_HEIGHT',
-  'defaults.chestDrawersCount': 'DEFAULT_CHEST_DRAWERS_COUNT',
-  'limits.width.minCm': 'WARDROBE_WIDTH_MIN',
-  'limits.width.chestMinCm': 'WARDROBE_CHEST_WIDTH_MIN',
-  'limits.width.maxCm': 'WARDROBE_WIDTH_MAX',
-  'limits.height.minCm': 'WARDROBE_HEIGHT_MIN',
-  'limits.height.chestMinCm': 'WARDROBE_CHEST_HEIGHT_MIN',
-  'limits.height.maxCm': 'WARDROBE_HEIGHT_MAX',
-  'limits.depth.minCm': 'WARDROBE_DEPTH_MIN',
-  'limits.depth.maxCm': 'WARDROBE_DEPTH_MAX',
-  'limits.doors.min': '0',
-  'limits.doors.slidingMin': 'WARDROBE_SLIDING_DOORS_MIN',
-  'limits.doors.max': 'WARDROBE_DOORS_MAX',
-  'limits.chestDrawers.min': 'WARDROBE_CHEST_DRAWERS_MIN',
-  'limits.chestDrawers.max': 'WARDROBE_CHEST_DRAWERS_MAX',
-  resolveDepthCm: 'getDefaultDepthForWardrobeType',
-  resolveDoorsCount: 'getDefaultDoorsForWardrobeType',
-});
-
+]);
 const expectedConsumerReferenceCounts = Object.freeze({
-  'defaults.widthCm': 1,
-  'defaults.heightCm': 1,
-  'defaults.chestDrawersCount': 2,
-  'limits.width.minCm': 1,
-  'limits.width.chestMinCm': 1,
-  'limits.width.maxCm': 2,
-  'limits.height.minCm': 1,
-  'limits.height.chestMinCm': 1,
-  'limits.height.maxCm': 2,
-  'limits.depth.minCm': 2,
-  'limits.depth.maxCm': 2,
-  'limits.doors.min': 1,
-  'limits.doors.slidingMin': 1,
-  'limits.doors.max': 2,
-  'limits.chestDrawers.min': 1,
-  'limits.chestDrawers.max': 1,
-  resolveDepthCm: 1,
-  resolveDoorsCount: 1,
+  defaultHingedDoorsCount: 1,
+  normalizeDoorMountThicknessCm: 4,
 });
-
 const approvedUnresolvedDynamicImports = Object.freeze({
   'esm/entry_pro_main_boot_support.ts': Object.freeze([
     'THREE_PATH',
@@ -180,14 +99,6 @@ const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 const analysisCache = new Map();
 
-function analyzeSource(file, source) {
-  const key = `${path.normalize(file).toLowerCase()}\0${sha256(source)}`;
-  if (!analysisCache.has(key)) {
-    analysisCache.set(key, analyzeModuleDependencies(file, source));
-  }
-  return analysisCache.get(key);
-}
-
 function stableJson(value) {
   if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
   if (value && typeof value === 'object') {
@@ -197,6 +108,14 @@ function stableJson(value) {
       .join(',')}}`;
   }
   return JSON.stringify(value);
+}
+
+function analyzeSource(file, source) {
+  const key = `${path.normalize(file).toLowerCase()}\0${sha256(source)}`;
+  if (!analysisCache.has(key)) {
+    analysisCache.set(key, analyzeModuleDependencies(file, source));
+  }
+  return analysisCache.get(key);
 }
 
 function listSourceFiles(directory, files = []) {
@@ -278,10 +197,10 @@ function resolveModuleTarget(fromFile, specifier) {
 
 const ownerTarget = canonicalTarget(path.join(root, ownerRel));
 const defaultsTarget = canonicalTarget(path.join(root, defaultsRel));
-const limitsTarget = canonicalTarget(path.join(root, limitsRel));
-const resolutionTarget = canonicalTarget(path.join(root, resolutionRel));
+const thicknessTarget = canonicalTarget(path.join(root, thicknessRel));
 const facadeTarget = canonicalTarget(path.join(root, facadeRel));
 const publicDimensionsTarget = canonicalTarget(path.join(root, publicDimensionsRel));
+const runtimeApiTarget = canonicalTarget(path.join(root, runtimeApiRel));
 const sharedRootPrefix = `${path.normalize(path.join(root, 'esm/shared')).toLowerCase()}${path.sep}`;
 
 function identifierName(node) {
@@ -353,61 +272,10 @@ function addViolation(violations, kind, detail = null) {
   violations.push({ kind, detail });
 }
 
-function objectPropertyMap(objectExpression, violations, prefix) {
-  const keys = [];
-  const values = {};
-  for (const property of objectExpression?.properties ?? []) {
-    if (
-      property?.type !== 'Property' ||
-      property.kind !== 'init' ||
-      property.computed ||
-      property.method ||
-      property.shorthand
-    ) {
-      addViolation(violations, `${prefix}-property-shape`);
-      continue;
-    }
-    const key = identifierName(property.key);
-    if (!key) {
-      addViolation(violations, `${prefix}-property-key`);
-      continue;
-    }
-    keys.push(key);
-    values[key] = property.value;
-  }
-  return { keys, values };
-}
-
-function inspectFrozenTree(node, expected, violations, prefix) {
-  const objectExpression = frozenObject(node);
-  if (!objectExpression) {
-    addViolation(violations, `${prefix}-freeze`);
-    return;
-  }
-  const facts = objectPropertyMap(objectExpression, violations, prefix);
-  const expectedKeys = Object.keys(expected);
-  if (stableJson(facts.keys) !== stableJson(expectedKeys)) {
-    addViolation(violations, `${prefix}-key-order`, facts.keys);
-  }
-  for (const key of expectedKeys) {
-    const expectedValue = expected[key];
-    const actualValue = facts.values[key];
-    if (expectedValue && typeof expectedValue === 'object') {
-      inspectFrozenTree(actualValue, expectedValue, violations, `${prefix}.${key}`);
-    } else if (actualValue?.type !== 'Identifier' || actualValue.name !== expectedValue) {
-      addViolation(violations, `${prefix}-identity-projection`, {
-        key,
-        actual: memberPath(actualValue) ?? identifierName(actualValue) ?? actualValue?.type ?? null,
-        expected: expectedValue,
-      });
-    }
-  }
-}
-
 function inspectOwner(source) {
   const violations = [];
-  const sourceFile = createSourceFile(ownerRel, source);
-  const analysis = analyzeSource(path.join(root, ownerRel), source);
+  const file = path.join(root, ownerRel);
+  const analysis = analyzeSource(file, source);
   const dependencies = analysis.imports.map(dependencyFacts);
   if (stableJson(dependencies) !== stableJson(expectedOwnerDependencies)) {
     addViolation(violations, 'owner-dependency-inventory', dependencies);
@@ -423,6 +291,7 @@ function inspectOwner(source) {
     addViolation(violations, 'owner-dynamic-or-forbidden-module-syntax');
   }
 
+  const sourceFile = createSourceFile(ownerRel, source);
   const declaration = exportedConstDeclarator(sourceFile, ownerSymbol);
   const nonImports = (sourceFile.body ?? []).filter(statement => statement.type !== 'ImportDeclaration');
   if (nonImports.length !== 1 || nonImports[0] !== declaration?.statement) {
@@ -458,7 +327,28 @@ function inspectOwner(source) {
     addViolation(violations, 'owner-export-inventory', exports);
   }
 
-  inspectFrozenTree(declaration?.declarator.init, expectedOwnerTree, violations, 'owner');
+  const objectExpression = frozenObject(declaration?.declarator.init);
+  if (!objectExpression) addViolation(violations, 'owner-freeze');
+  const properties = objectExpression?.properties ?? [];
+  const facts = properties.map(property => ({
+    type: property?.type ?? null,
+    computed: property?.computed ?? false,
+    method: property?.method ?? false,
+    shorthand: property?.shorthand ?? false,
+    key: identifierName(property?.key),
+    value: identifierName(property?.value),
+  }));
+  const expectedFacts = expectedOwnerProperties.map(property => ({
+    type: 'Property',
+    computed: false,
+    method: false,
+    shorthand: false,
+    ...property,
+  }));
+  if (stableJson(facts) !== stableJson(expectedFacts)) {
+    addViolation(violations, 'owner-property-shape', facts);
+  }
+
   let freezeCalls = 0;
   let objectExpressions = 0;
   let unsupported = false;
@@ -487,13 +377,11 @@ function inspectOwner(source) {
       unsupported = true;
     }
   });
-  if (freezeCalls !== 8 || objectExpressions !== 8) {
+  if (freezeCalls !== 1 || objectExpressions !== 1) {
     addViolation(violations, 'owner-freeze-count', { freezeCalls, objectExpressions });
   }
   if (unsupported) addViolation(violations, 'owner-wrapper-spread-or-side-effect');
-  if (/\bWARDROBE_(?:DEFAULTS|LIMITS)\b/u.test(source)) {
-    addViolation(violations, 'owner-aggregate-dependency');
-  }
+  if (/\bWARDROBE_DEFAULTS\b/u.test(source)) addViolation(violations, 'owner-defaults-aggregate');
   return violations;
 }
 
@@ -516,25 +404,34 @@ function semanticHash(value) {
 }
 
 function normalizedConsumerSource(source) {
-  let normalized = source;
-  for (const [member, replacement] of Object.entries(normalizedConsumerReferences).sort(
-    (left, right) => right[0].length - left[0].length
-  )) {
-    normalized = normalized.replaceAll(`${ownerSymbol}.${member}`, replacement);
-  }
-  return normalized;
+  return source
+    .replaceAll(`${ownerSymbol}.defaultHingedDoorsCount`, 'DEFAULT_HINGED_DOORS')
+    .replaceAll(`${ownerSymbol}.normalizeDoorMountThicknessCm`, 'normalizeDoorMountThicknessCm');
+}
+
+function findFunction(sourceFile, name) {
+  let result = null;
+  walkAst(sourceFile, node => {
+    if (!result && node?.type === 'FunctionDeclaration' && identifierName(node.id) === name) {
+      result = node;
+    }
+  });
+  return result;
 }
 
 function consumerSemanticFacts(source) {
-  const normalized = normalizedConsumerSource(source);
-  const sourceFile = createSourceFile(consumerRel, normalized);
+  const sourceFile = createSourceFile(consumerRel, normalizedConsumerSource(source));
   const body = (sourceFile.body ?? []).filter(statement => statement.type !== 'ImportDeclaration');
-  const sanitizer = body.find(
-    statement =>
-      statement?.type === 'ExportNamedDeclaration' &&
-      statement.declaration?.type === 'FunctionDeclaration' &&
-      identifierName(statement.declaration.id) === 'sanitizeBuildDimsAndSyncRuntime'
-  )?.declaration;
+  const persistedDoors = findFunction(sourceFile, 'resolvePersistedProjectDoors');
+  const buildPayload = findFunction(sourceFile, 'buildKernelProjectCaptureData');
+  let returnObject = null;
+  if (buildPayload) {
+    walkAst(buildPayload, node => {
+      if (!returnObject && node?.type === 'ReturnStatement' && node.argument?.type === 'ObjectExpression') {
+        returnObject = node.argument;
+      }
+    });
+  }
   const literals = [];
   for (const statement of body) {
     walkAst(statement, node => {
@@ -545,7 +442,9 @@ function consumerSemanticFacts(source) {
   }
   return {
     bodyHash: semanticHash(body),
-    functionHash: sanitizer ? semanticHash(sanitizer) : null,
+    persistedDoorsHash: persistedDoors ? semanticHash(persistedDoors) : null,
+    buildPayloadHash: buildPayload ? semanticHash(buildPayload) : null,
+    returnObjectHash: returnObject ? semanticHash(returnObject) : null,
     literalHash: sha256(stableJson(literals)),
   };
 }
@@ -554,6 +453,11 @@ function dependenciesForTarget(file, source, target) {
   return analyzeSource(file, source).imports.filter(
     dependency => resolveModuleTarget(file, dependency.specifier) === target
   );
+}
+
+function normalizeTypeAnnotation(source, node) {
+  if (!node) return null;
+  return source.slice(node.start, node.end).replace(/^:\s*/u, '').replace(/\s+/gu, ' ').trim();
 }
 
 function inspectConsumer(source) {
@@ -589,12 +493,6 @@ function inspectConsumer(source) {
     stableJson(sharedDependencies.map(dependencyFacts)) !==
     stableJson([
       {
-        specifier: '../../shared/identity_value_shared.js',
-        kind: 'value',
-        syntax: 'static-import',
-        symbols: ['formatIdentityValue', 'readIdentityValue'],
-      },
-      {
         specifier: ownerSpecifier,
         kind: 'value',
         syntax: 'static-import',
@@ -606,10 +504,10 @@ function inspectConsumer(source) {
   }
   const forbiddenTargets = new Set([
     defaultsTarget,
-    limitsTarget,
-    resolutionTarget,
+    thicknessTarget,
     facadeTarget,
     publicDimensionsTarget,
+    runtimeApiTarget,
   ]);
   const forbiddenDependencies = analysis.imports.filter(dependency =>
     forbiddenTargets.has(resolveModuleTarget(file, dependency.specifier))
@@ -662,15 +560,76 @@ function inspectConsumer(source) {
     addViolation(violations, 'consumer-owner-reference-inventory', referenceCounts);
   }
 
+  const exports = collectNamedModuleExports(consumerRel, source).map(entry => ({
+    exportedName: entry.exportedName,
+    kind: entry.kind,
+    localName: entry.localName,
+    source: entry.source,
+  }));
+  if (
+    stableJson(exports) !==
+    stableJson([
+      {
+        exportedName: 'BuildKernelProjectCaptureDataArgs',
+        kind: 'type',
+        localName: 'BuildKernelProjectCaptureDataArgs',
+        source: null,
+      },
+      {
+        exportedName: 'buildKernelProjectCaptureData',
+        kind: 'value',
+        localName: 'buildKernelProjectCaptureData',
+        source: null,
+      },
+    ])
+  ) {
+    addViolation(violations, 'consumer-export-inventory', exports);
+  }
+  const argsInterface = (sourceFile.body ?? [])
+    .map(statement => (statement?.type === 'ExportNamedDeclaration' ? statement.declaration : statement))
+    .find(
+      declaration =>
+        declaration?.type === 'TSInterfaceDeclaration' &&
+        identifierName(declaration.id) === 'BuildKernelProjectCaptureDataArgs'
+    );
+  const interfaceFacts = (argsInterface?.body?.body ?? []).map(property => ({
+    key: identifierName(property.key),
+    optional: Boolean(property.optional),
+    type: normalizeTypeAnnotation(source, property.typeAnnotation),
+  }));
+  if (
+    stableJson(interfaceFacts) !==
+    stableJson([
+      { key: 'uiRec', optional: false, type: 'UnknownRecord' },
+      { key: 'rawAny', optional: false, type: 'UnknownRecord' },
+      { key: 'cfgRec', optional: false, type: 'UnknownRecord' },
+      { key: 'savedNotes', optional: false, type: 'unknown' },
+    ])
+  ) {
+    addViolation(violations, 'consumer-args-declaration', interfaceFacts);
+  }
+  const buildFunction = findFunction(sourceFile, 'buildKernelProjectCaptureData');
+  if (
+    buildFunction?.parent?.type !== 'ExportNamedDeclaration' ||
+    buildFunction.params?.length !== 1 ||
+    identifierName(buildFunction.params[0]) !== 'args' ||
+    normalizeTypeAnnotation(source, buildFunction.params[0]?.typeAnnotation) !==
+      'BuildKernelProjectCaptureDataArgs' ||
+    normalizeTypeAnnotation(source, buildFunction.returnType) !== 'UnknownRecord'
+  ) {
+    addViolation(violations, 'consumer-build-declaration');
+  }
+
   const semanticFacts = consumerSemanticFacts(source);
-  if (semanticFacts.bodyHash !== consumerSemanticSha256) {
-    addViolation(violations, 'consumer-normalized-semantic-hash', semanticFacts.bodyHash);
-  }
-  if (semanticFacts.functionHash !== consumerFunctionSha256) {
-    addViolation(violations, 'consumer-normalized-function-hash', semanticFacts.functionHash);
-  }
-  if (semanticFacts.literalHash !== consumerLiteralSha256) {
-    addViolation(violations, 'consumer-normalized-literal-hash', semanticFacts.literalHash);
+  const expectedSemanticFacts = {
+    bodyHash: consumerBodySha256,
+    persistedDoorsHash: persistedDoorsSha256,
+    buildPayloadHash: buildPayloadSha256,
+    returnObjectHash: returnObjectSha256,
+    literalHash: consumerLiteralSha256,
+  };
+  if (stableJson(semanticFacts) !== stableJson(expectedSemanticFacts)) {
+    addViolation(violations, 'consumer-normalized-semantic-fingerprint', semanticFacts);
   }
   return violations;
 }
@@ -690,8 +649,8 @@ function collectOwnerConsumers(entries) {
 }
 
 function inspectOwnerConsumerUniverse(entries) {
-  const consumers = collectOwnerConsumers(entries);
   const violations = [];
+  const consumers = collectOwnerConsumers(entries);
   const expected = [
     {
       file: consumerRel,
@@ -738,7 +697,7 @@ function inspectOwnerConsumerUniverse(entries) {
         addViolation(violations, 'owner-symbol-outside-inventory', rel);
       }
     });
-    if (source.includes('wardrobe_sanitization_policy')) {
+    if (source.includes('project_capture_dimension_policy')) {
       addViolation(violations, 'owner-route-outside-inventory', rel);
     }
   }
@@ -753,7 +712,7 @@ function publicOwnerLeaks(source, rel) {
       (node?.type === 'Identifier' && node.name === ownerSymbol) ||
       (node?.type === 'Literal' &&
         typeof node.value === 'string' &&
-        (node.value === ownerSymbol || node.value.includes('wardrobe_sanitization_policy')))
+        (node.value === ownerSymbol || node.value.includes('project_capture_dimension_policy')))
     ) {
       leaks.push({ type: node.type, value: node.name ?? node.value });
     }
@@ -773,98 +732,61 @@ function assertRejected(inspect, source, expectedKind, label) {
 const esmFiles = listSourceFiles(path.join(root, 'esm'));
 const esmEntries = esmFiles.map(file => [file, fs.readFileSync(file, 'utf8')]);
 
-test('Wardrobe Sanitization policy has the exact pure composition owner shape', () => {
+test('Project Capture dimension policy has the exact pure composition owner shape', () => {
   const ownerFiles = listSourceFiles(path.join(root, 'esm/shared/dimensions'))
     .map(relativePath)
-    .filter(file => path.basename(file) === 'wardrobe_sanitization_policy.ts');
+    .filter(file => path.basename(file) === 'project_capture_dimension_policy.ts');
   assert.deepEqual(ownerFiles, [ownerRel]);
   assert.deepEqual(inspectOwner(read(ownerRel)), []);
 });
 
-test('Wardrobe Sanitization policy preserves runtime identities, values, key order, and nested freezes', () => {
+test('Project Capture dimension policy preserves scalar value, function identity, key order, and freeze', () => {
   const loader = createTsRuntimeModuleLoader();
   const policy = loader.load(path.join(root, ownerRel))[ownerSymbol];
   const defaults = loader.load(path.join(root, defaultsRel));
-  const limits = loader.load(path.join(root, limitsRel));
-  const resolution = loader.load(path.join(root, resolutionRel));
+  const thickness = loader.load(path.join(root, thicknessRel));
 
-  assert.deepEqual(Object.keys(policy), ['defaults', 'limits', 'resolveDepthCm', 'resolveDoorsCount']);
-  assert.deepEqual(Object.keys(policy.defaults), ['widthCm', 'heightCm', 'chestDrawersCount']);
-  assert.deepEqual(Object.keys(policy.limits), ['width', 'height', 'depth', 'doors', 'chestDrawers']);
-  assert.deepEqual(Object.keys(policy.limits.width), ['minCm', 'chestMinCm', 'maxCm']);
-  assert.deepEqual(Object.keys(policy.limits.height), ['minCm', 'chestMinCm', 'maxCm']);
-  assert.deepEqual(Object.keys(policy.limits.depth), ['minCm', 'maxCm']);
-  assert.deepEqual(Object.keys(policy.limits.doors), ['min', 'slidingMin', 'max']);
-  assert.deepEqual(Object.keys(policy.limits.chestDrawers), ['min', 'max']);
-
-  assert.deepEqual(JSON.parse(JSON.stringify(policy.defaults)), {
-    widthCm: defaults.DEFAULT_WIDTH,
-    heightCm: defaults.DEFAULT_HEIGHT,
-    chestDrawersCount: defaults.DEFAULT_CHEST_DRAWERS_COUNT,
-  });
-  assert.deepEqual(JSON.parse(JSON.stringify(policy.limits)), {
-    width: {
-      minCm: limits.WARDROBE_WIDTH_MIN,
-      chestMinCm: limits.WARDROBE_CHEST_WIDTH_MIN,
-      maxCm: limits.WARDROBE_WIDTH_MAX,
-    },
-    height: {
-      minCm: limits.WARDROBE_HEIGHT_MIN,
-      chestMinCm: limits.WARDROBE_CHEST_HEIGHT_MIN,
-      maxCm: limits.WARDROBE_HEIGHT_MAX,
-    },
-    depth: {
-      minCm: limits.WARDROBE_DEPTH_MIN,
-      maxCm: limits.WARDROBE_DEPTH_MAX,
-    },
-    doors: {
-      min: limits.WARDROBE_DOORS_MIN,
-      slidingMin: limits.WARDROBE_SLIDING_DOORS_MIN,
-      max: limits.WARDROBE_DOORS_MAX,
-    },
-    chestDrawers: {
-      min: limits.WARDROBE_CHEST_DRAWERS_MIN,
-      max: limits.WARDROBE_CHEST_DRAWERS_MAX,
-    },
-  });
-  assert.equal(policy.resolveDepthCm, resolution.getDefaultDepthForWardrobeType);
-  assert.equal(policy.resolveDoorsCount, resolution.getDefaultDoorsForWardrobeType);
-  for (const value of [
-    policy,
-    policy.defaults,
-    policy.limits,
-    policy.limits.width,
-    policy.limits.height,
-    policy.limits.depth,
-    policy.limits.doors,
-    policy.limits.chestDrawers,
-  ]) {
-    assert.equal(Object.isFrozen(value), true);
-  }
+  assert.deepEqual(Object.keys(policy), ['defaultHingedDoorsCount', 'normalizeDoorMountThicknessCm']);
+  assert.equal(policy.defaultHingedDoorsCount, defaults.DEFAULT_HINGED_DOORS);
+  assert.equal(policy.defaultHingedDoorsCount, 4);
+  assert.equal(policy.normalizeDoorMountThicknessCm, thickness.normalizeDoorMountThicknessCm);
+  assert.equal(Object.isFrozen(policy), true);
+  assert.equal(policy.normalizeDoorMountThicknessCm(null), null);
+  assert.equal(policy.normalizeDoorMountThicknessCm(''), null);
+  assert.equal(policy.normalizeDoorMountThicknessCm('bad'), null);
+  assert.equal(policy.normalizeDoorMountThicknessCm(0.39), 0.4);
+  assert.equal(policy.normalizeDoorMountThicknessCm(1.85), 1.9);
+  assert.equal(policy.normalizeDoorMountThicknessCm(8.1), 8);
 });
 
-test('state sanitizer is the sole owner consumer and has no direct aggregate or focused-owner bypass', () => {
+test('Kernel capture is the sole policy consumer and has no facade, direct-owner, or public route', () => {
   assert.deepEqual(inspectOwnerConsumerUniverse(esmEntries), []);
   assert.deepEqual(inspectConsumer(read(consumerRel)), []);
   for (const publicRel of [facadeRel, publicDimensionsRel, runtimeApiRel]) {
     const source = read(publicRel);
     assert.deepEqual(publicOwnerLeaks(source, publicRel), [], publicRel);
-    assert.equal(source.includes('wardrobe_sanitization_policy'), false, publicRel);
+    assert.equal(source.includes('project_capture_dimension_policy'), false, publicRel);
   }
 });
 
-test('normalized sanitizer AST and literal fingerprints preserve branches, precedence, formulas, writes, and order', () => {
+test('normalized capture AST fingerprints preserve fallback, payload shape, normalization order, and literals', () => {
   assert.deepEqual(consumerSemanticFacts(read(consumerRel)), {
-    bodyHash: consumerSemanticSha256,
-    functionHash: consumerFunctionSha256,
+    bodyHash: consumerBodySha256,
+    persistedDoorsHash: persistedDoorsSha256,
+    buildPayloadHash: buildPayloadSha256,
+    returnObjectHash: returnObjectSha256,
     literalHash: consumerLiteralSha256,
   });
 });
 
-test('Layer, facade, public surface, Ledger, prefixes, and proposal remain at the approved statement-neutral topology', () => {
+test('Layer, zero static facade consumers, public surface, Ledger, prefixes, and proposal remain exact', () => {
   const baseline = JSON.parse(read(baselineRel));
   assert.equal(baseline.migrationBudgets.length, 166);
   assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 105);
+  assert.deepEqual(
+    baseline.migrationBudgets.filter(entry => entry.fromFile === consumerRel),
+    []
+  );
   assert.equal(sha256(stableJson(baseline.migrationBudgets.slice(0, 163))), prefix163Sha256);
   assert.equal(sha256(stableJson(baseline.migrationBudgets.slice(0, 164))), prefix164Sha256);
   assert.equal(sha256(stableJson(baseline.migrationBudgets.slice(0, 165))), prefix165Sha256);
@@ -873,10 +795,10 @@ test('Layer, facade, public surface, Ledger, prefixes, and proposal remain at th
   const graph = collectLayerContractGraph({ root });
   const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-28' });
   assert.equal(report.ok, true);
-  const builderShared = graph.edges.find(edge => edge.from === 'builder' && edge.to === 'shared');
-  assert.ok(builderShared);
-  assert.equal(builderShared.importerCount, 193);
-  assert.equal(builderShared.importCount, 305);
+  const kernelShared = graph.edges.find(edge => edge.from === 'kernel' && edge.to === 'shared');
+  assert.ok(kernelShared);
+  assert.equal(kernelShared.importerCount, 15);
+  assert.equal(kernelShared.importCount, 17);
 
   const facadeDependencies = esmEntries.flatMap(([file, source]) =>
     dependenciesForTarget(file, source, facadeTarget).map(dependency => ({ file, dependency }))
@@ -905,7 +827,7 @@ test('Layer, facade, public surface, Ledger, prefixes, and proposal remain at th
   assert.deepEqual(proposal.diff.migrationBudgetFailures, []);
 });
 
-test('owner mutation probes reject dependency drift, literals, wrappers, aggregates, export drift, and freeze drift', () => {
+test('owner mutation probes reject dependencies, aliases, aggregates, literals, wrappers, order, freeze, and exports', () => {
   const owner = read(ownerRel);
   assertRejected(
     inspectOwner,
@@ -915,18 +837,15 @@ test('owner mutation probes reject dependency drift, literals, wrappers, aggrega
   );
   assertRejected(
     inspectOwner,
-    owner.replace('getDefaultDepthForWardrobeType,', 'getDefaultDepthForWardrobeType as resolveDepth,'),
+    owner.replace('normalizeDoorMountThicknessCm }', 'normalizeDoorMountThicknessCm as normalizeThickness }'),
     'owner-import-alias',
-    'import alias'
+    'normalizer alias'
   );
   assertRejected(
     inspectOwner,
     owner.replace(
-      `import {
-  getDefaultDepthForWardrobeType,
-  getDefaultDoorsForWardrobeType,
-} from './wardrobe_default_resolution_policy.js';`,
-      `import * as resolution from './wardrobe_default_resolution_policy.js';`
+      `import { normalizeDoorMountThicknessCm } from './door_mount_thickness_policy.js';`,
+      `import * as doorMount from './door_mount_thickness_policy.js';`
     ),
     'owner-dependency-inventory',
     'namespace import'
@@ -939,36 +858,43 @@ test('owner mutation probes reject dependency drift, literals, wrappers, aggrega
   );
   assertRejected(
     inspectOwner,
-    owner.replace('widthCm: DEFAULT_WIDTH', 'widthCm: 160'),
-    'owner.defaults-identity-projection',
-    'conversion literal'
+    owner.replace("'./wardrobe_defaults.js'", "'../wardrobe_dimension_tokens_shared.js'"),
+    'owner-dependency-inventory',
+    'facade back-edge'
+  );
+  assertRejected(
+    inspectOwner,
+    owner.replace('import { DEFAULT_HINGED_DOORS }', 'import { WARDROBE_DEFAULTS }'),
+    'owner-dependency-inventory',
+    'defaults aggregate'
+  );
+  assertRejected(
+    inspectOwner,
+    owner.replace('defaultHingedDoorsCount: DEFAULT_HINGED_DOORS', 'defaultHingedDoorsCount: 4'),
+    'owner-property-shape',
+    'copied default literal'
   );
   assertRejected(
     inspectOwner,
     owner.replace(
-      'resolveDepthCm: getDefaultDepthForWardrobeType',
-      'resolveDepthCm: value => getDefaultDepthForWardrobeType(value)'
+      'normalizeDoorMountThicknessCm,',
+      'normalizeDoorMountThicknessCm: value => normalizeDoorMountThicknessCm(value),'
     ),
-    'owner-identity-projection',
-    'resolver wrapper'
+    'owner-property-shape',
+    'normalizer wrapper'
   );
   assertRejected(
     inspectOwner,
     owner.replace(
-      `      min: WARDROBE_DOORS_MIN,
-      slidingMin: WARDROBE_SLIDING_DOORS_MIN,`,
-      `      slidingMin: WARDROBE_SLIDING_DOORS_MIN,
-      min: WARDROBE_DOORS_MIN,`
+      `  defaultHingedDoorsCount: DEFAULT_HINGED_DOORS,
+  normalizeDoorMountThicknessCm,`,
+      `  normalizeDoorMountThicknessCm,
+  defaultHingedDoorsCount: DEFAULT_HINGED_DOORS,`
     ),
-    'owner.limits.doors-key-order',
-    'door key order'
+    'owner-property-shape',
+    'property order'
   );
-  assertRejected(
-    inspectOwner,
-    owner.replace('  defaults: Object.freeze({', '  defaults: ({'),
-    'owner.defaults-freeze',
-    'nested freeze'
-  );
+  assertRejected(inspectOwner, owner.replace('Object.freeze({', '({'), 'owner-freeze', 'freeze removal');
   assertRejected(
     inspectOwner,
     `${owner}\nexport default ${ownerSymbol};\n`,
@@ -977,128 +903,94 @@ test('owner mutation probes reject dependency drift, literals, wrappers, aggrega
   );
   assertRejected(
     inspectOwner,
-    `${owner}\nexport type WardrobeSanitizationPolicy = typeof ${ownerSymbol};\n`,
+    `${owner}\nexport type ProjectCaptureDimensionPolicy = typeof ${ownerSymbol};\n`,
     'owner-top-level-topology',
     'type export'
   );
-  assertRejected(
-    inspectOwner,
-    owner.replace(
-      `import { DEFAULT_CHEST_DRAWERS_COUNT, DEFAULT_HEIGHT, DEFAULT_WIDTH } from './wardrobe_defaults.js';`,
-      `import { WARDROBE_DEFAULTS } from './wardrobe_defaults.js';`
-    ),
-    'owner-dependency-inventory',
-    'defaults aggregate'
-  );
-  assertRejected(
-    inspectOwner,
-    owner.replace(
-      `import {
-  WARDROBE_CHEST_DRAWERS_MAX,`,
-      `import {
-  WARDROBE_LIMITS,
-  WARDROBE_CHEST_DRAWERS_MAX,`
-    ),
-    'owner-dependency-inventory',
-    'limits aggregate'
-  );
 });
 
-test('consumer mutation probes reject compatibility routes, extra dependencies, aliases, dynamic routes, and bridges', () => {
+test('consumer mutation probes reject compatibility routes, direct owners, aliases, dynamic imports, and bridges', () => {
   const consumer = read(consumerRel);
   const policyImport = `import { ${ownerSymbol} } from '${ownerSpecifier}';`;
   assert.match(consumer, new RegExp(policyImport.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
 
+  for (const [label, specifier] of [
+    ['facade', '../../shared/wardrobe_dimension_tokens_shared.js'],
+    ['extensionless facade', '../../shared/wardrobe_dimension_tokens_shared'],
+    ['query/hash facade', '../../shared/wardrobe_dimension_tokens_shared.js?capture=1#compat'],
+    ['public directory index', '../features/dimensions'],
+    ['runtime API', '../runtime/api.js'],
+  ]) {
+    assertRejected(
+      inspectConsumer,
+      consumer.replace(ownerSpecifier, specifier),
+      'consumer-owner-import',
+      label
+    );
+  }
   assertRejected(
     inspectConsumer,
-    consumer.replace(ownerSpecifier, '../../shared/wardrobe_dimension_tokens_shared.js'),
-    'consumer-owner-import',
-    'legacy facade'
-  );
-  assertRejected(
-    inspectConsumer,
-    consumer.replace(ownerSpecifier, '../../shared/wardrobe_dimension_tokens_shared'),
-    'consumer-owner-import',
-    'extensionless compatibility path'
-  );
-  assertRejected(
-    inspectConsumer,
-    consumer.replace(ownerSpecifier, '../../shared/wardrobe_dimension_tokens_shared.js?sanitizer=1#compat'),
-    'consumer-owner-import',
-    'query/hash compatibility path'
-  );
-  assertRejected(
-    inspectConsumer,
-    consumer.replace(ownerSpecifier, '../features/dimensions'),
-    'consumer-owner-import',
-    'directory-index public path'
-  );
-  assertRejected(
-    inspectConsumer,
-    consumer.replace(policyImport, `import { ${ownerSymbol} as SANITIZER_POLICY } from '${ownerSpecifier}';`),
+    consumer.replace(
+      policyImport,
+      `import { ${ownerSymbol} as CAPTURE_DIMENSIONS } from '${ownerSpecifier}';`
+    ),
     'consumer-owner-alias',
-    'owner alias'
+    'policy alias'
   );
   assertRejected(
     inspectConsumer,
-    consumer.replace(policyImport, `import * as sanitizerPolicy from '${ownerSpecifier}';`),
+    consumer.replace(policyImport, `import * as captureDimensions from '${ownerSpecifier}';`),
     'consumer-owner-import',
-    'owner namespace'
+    'namespace import'
   );
   assertRejected(
     inspectConsumer,
-    consumer.replace(policyImport, `const sanitizerPolicy = import('${ownerSpecifier}');`),
+    consumer.replace(policyImport, `const captureDimensions = import('${ownerSpecifier}');`),
     'consumer-owner-import',
-    'owner dynamic import'
+    'dynamic import'
   );
   assertRejected(
     inspectConsumer,
     consumer.replace(policyImport, `import '${ownerSpecifier}';`),
     'consumer-owner-import',
-    'owner side-effect import'
+    'side-effect import'
   );
   assertRejected(
     inspectConsumer,
-    `${consumer}\nimport { DEFAULT_WIDTH } from '../../shared/dimensions/wardrobe_defaults.js';\n`,
+    `${consumer}\nimport { DEFAULT_HINGED_DOORS } from '../../shared/dimensions/wardrobe_defaults.js';\n`,
     'consumer-shared-import-inventory',
-    'third shared import'
+    'direct defaults owner'
   );
   assertRejected(
     inspectConsumer,
-    `${consumer}\nimport { WARDROBE_WIDTH_MIN } from '../../shared/dimensions/product_limits.js';\n`,
+    `${consumer}\nimport { normalizeDoorMountThicknessCm } from '../../shared/dimensions/door_mount_thickness_policy.js';\n`,
     'consumer-forbidden-dimension-dependency',
-    'direct limits import'
+    'direct thickness owner'
   );
   assertRejected(
     inspectConsumer,
-    `${consumer}\nimport { getDefaultDepthForWardrobeType } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';\n`,
-    'consumer-forbidden-dimension-dependency',
-    'direct resolution import'
-  );
-  assertRejected(
-    inspectConsumer,
-    consumer.replace(`${ownerSymbol}.limits.width.maxCm`, `${ownerSymbol}['limits'].width.maxCm`),
+    consumer.replace(`${ownerSymbol}.defaultHingedDoorsCount`, `${ownerSymbol}['defaultHingedDoorsCount']`),
     'consumer-computed-owner-access',
-    'computed owner access'
+    'computed access'
   );
   assertRejected(
     inspectConsumer,
-    `${consumer}\nexport const SANITIZER_COPY = { ...${ownerSymbol} };\n`,
+    `${consumer}\nexport const CAPTURE_DIMENSION_COPY = { ...${ownerSymbol} };\n`,
     'consumer-owner-reference-escape',
-    'owner object copy'
+    'object copy'
   );
   assertRejected(
     inspectConsumer,
-    `${consumer}\nexport const { defaults: SANITIZER_DEFAULTS } = ${ownerSymbol};\n`,
+    `${consumer}\nexport const { defaultHingedDoorsCount } = ${ownerSymbol};\n`,
     'consumer-owner-reference-escape',
-    'owner destructuring bridge'
+    'destructuring bridge'
   );
 
   const bridgeEntries = [
     ...esmEntries,
     [
-      path.join(root, 'esm/native/features/wardrobe_sanitization_bridge.ts'),
-      `export { ${ownerSymbol} } from '../../shared/dimensions/wardrobe_sanitization_policy';`,
+      path.join(root, 'esm/native/features/project_capture_dimension_bridge.ts'),
+      `export { ${ownerSymbol} } from '../../shared/dimensions/project_capture_dimension_policy';`,
     ],
   ];
   assertRejected(
@@ -1111,10 +1003,10 @@ test('consumer mutation probes reject compatibility routes, extra dependencies, 
   const splitDynamicEntries = [
     ...esmEntries,
     [
-      path.join(root, 'esm/native/features/wardrobe_sanitization_dynamic_bridge.ts'),
+      path.join(root, 'esm/native/features/project_capture_dimension_dynamic_bridge.ts'),
       `const route =
-  '../../shared/dimensions/' + 'wardrobe_' + 'sanitization_policy.js';
-const symbol = 'WARDROBE_' + 'SANITIZATION_POLICY';
+  '../../shared/dimensions/' + 'project_capture_' + 'dimension_policy.js';
+const symbol = 'PROJECT_CAPTURE_' + 'DIMENSION_POLICY';
 export const policy = import(route).then(module => module[symbol]);`,
     ],
   ];
@@ -1122,15 +1014,15 @@ export const policy = import(route).then(module => module[symbol]);`,
     inspectOwnerConsumerUniverse,
     splitDynamicEntries,
     'universe-unresolved-dynamic-import',
-    'split-string dynamic import bridge'
+    'split-string dynamic bridge'
   );
 
   const splitRequireEntries = [
     ...esmEntries,
     [
-      path.join(root, 'esm/native/features/wardrobe_sanitization_require_bridge.ts'),
+      path.join(root, 'esm/native/features/project_capture_dimension_require_bridge.ts'),
       `const route =
-  '../../shared/dimensions/' + 'wardrobe_' + 'sanitization_policy.js';
+  '../../shared/dimensions/' + 'project_capture_' + 'dimension_policy.js';
 export const policy = require(route);`,
     ],
   ];
@@ -1142,57 +1034,100 @@ export const policy = require(route);`,
   );
 });
 
-test('behavior mutation probes reject fallback, clamp, skip, conversion, wrapper, sync, and operation-order drift', () => {
+test('payload mutation probes reject fallback, normalization, placement, serialization, declaration, and order drift', () => {
   const consumer = read(consumerRel);
-  const semanticMutations = [
+  const mutations = [
     [
-      'resolver wrapper',
+      'non-chest passthrough',
       consumer.replace(
-        `${ownerSymbol}.resolveDepthCm(cfg.wardrobeType)`,
-        `Number(${ownerSymbol}.resolveDepthCm(cfg.wardrobeType))`
+        'if (uiRec.isChestMode !== true) return overallDoors;',
+        'if (uiRec.isChestMode === true) return overallDoors;'
       ),
     ],
-    ['copied conversion literal', consumer.replace(`${ownerSymbol}.defaults.widthCm`, '160')],
+    ['positive minimum', consumer.replace('value < 1', 'value <= 1')],
+    ['integer floor', consumer.replace('return Math.floor(value);', 'return Math.round(value);')],
     [
-      'UI wrapper constant',
-      consumer
-        .replace(
-          `type SanitizedDims = {`,
-          `const SANITIZER_DEFAULT_WIDTH = ${ownerSymbol}.defaults.widthCm;\n\ntype SanitizedDims = {`
-        )
-        .replace(`${ownerSymbol}.defaults.widthCm`, 'SANITIZER_DEFAULT_WIDTH'),
-    ],
-    ['raw/UI door precedence', consumer.replace("raw['doors'] != null", "raw['doors'] || false")],
-    ['chest drawer zero fallback', consumer.replace('rawChestDrawers ||', 'rawChestDrawers ??')],
-    ['force-build bypass', consumer.replace('if (!forceBuild) {', 'if (forceBuild) {')],
-    [
-      'no-main branch',
-      consumer.replace('!isChestMode && !isSliding && rawDoors === 0', '!isChestMode && rawDoors === 0'),
-    ],
-    ['width lower clamp', consumer.replace('Math.max(minWLimit,', 'Math.max(0,')],
-    [
-      'sliding doors minimum',
-      consumer.replace(`${ownerSymbol}.limits.doors.slidingMin`, `${ownerSymbol}.limits.doors.min`),
-    ],
-    ['meter conversion', consumer.replaceAll('/ 100', '/ 10')],
-    [
-      'buildUi write order',
+      'door precedence',
       consumer.replace(
-        `    B.buildUi.width = widthCm;
-    B.buildUi.height = heightCm;`,
-        `    B.buildUi.height = heightCm;
-    B.buildUi.width = widthCm;`
+        `  const preChestDoors = readPositiveInteger(preChest?.doors);
+  if (preChestDoors != null) return preChestDoors;
+
+  const directDoors = readPositiveInteger(overallDoors);`,
+        `  const directDoors = readPositiveInteger(overallDoors);
+  if (directDoors != null) return directDoors;
+
+  const preChestDoors = readPositiveInteger(preChest?.doors);`
+      ),
+    ],
+    ['copied fallback literal', consumer.replace(`${ownerSymbol}.defaultHingedDoorsCount`, '4')],
+    [
+      'type-dependent fallback',
+      consumer.replace(
+        `${ownerSymbol}.defaultHingedDoorsCount`,
+        `cfgRec.wardrobeType === 'sliding' ? 2 : ${ownerSymbol}.defaultHingedDoorsCount`
       ),
     ],
     [
-      'runtime sync removed',
+      'normalizer wrapper',
       consumer.replace(
-        "    syncDimensionRuntimePatch(App, patch, meta, { activeId: forceBuild ? '' : activeId });",
-        '    void patch;\n    void meta;'
+        `${ownerSymbol}.normalizeDoorMountThicknessCm(
+      canonicalCfg.overlayFrameThicknessCm
+    )`,
+        `Number(${ownerSymbol}.normalizeDoorMountThicknessCm(
+      canonicalCfg.overlayFrameThicknessCm
+    ))`
       ),
     ],
+    [
+      'raw config normalization',
+      consumer.replace('canonicalCfg.overlayFrameThicknessCm', 'cfgRec.overlayFrameThicknessCm'),
+    ],
+    [
+      'thickness order',
+      consumer.replace(
+        `    overlayFrameThicknessCm: ${ownerSymbol}.normalizeDoorMountThicknessCm(
+      canonicalCfg.overlayFrameThicknessCm
+    ),
+    overlayShelfThicknessCm: ${ownerSymbol}.normalizeDoorMountThicknessCm(
+      canonicalCfg.overlayShelfThicknessCm
+    ),`,
+        `    overlayShelfThicknessCm: ${ownerSymbol}.normalizeDoorMountThicknessCm(
+      canonicalCfg.overlayShelfThicknessCm
+    ),
+    overlayFrameThicknessCm: ${ownerSymbol}.normalizeDoorMountThicknessCm(
+      canonicalCfg.overlayFrameThicknessCm
+    ),`
+      ),
+    ],
+    [
+      'return key order',
+      consumer.replace(
+        `    settings: buildProjectCaptureSettings(`,
+        `    projectName: asString(uiRec.projectName, ''),\n    settings: buildProjectCaptureSettings(`
+      ),
+    ],
+    [
+      'settings nesting',
+      consumer.replace(
+        `    overlayFrameThicknessCm: ${ownerSymbol}.normalizeDoorMountThicknessCm(`,
+        `    settingsOverlayFrameThicknessCm: ${ownerSymbol}.normalizeDoorMountThicknessCm(`
+      ),
+    ],
+    [
+      'clone source',
+      consumer.replace('cloneProjectCaptureValue(savedNotes, [])', 'cloneProjectCaptureValue([], [])'),
+    ],
+    [
+      'export declaration',
+      consumer.replace(
+        'export function buildKernelProjectCaptureData',
+        'function buildKernelProjectCaptureData'
+      ),
+    ],
+    ['return declaration', consumer.replace('): UnknownRecord {', '): Record<string, unknown> {')],
   ];
-  for (const [label, mutated] of semanticMutations) {
-    assertRejected(inspectConsumer, mutated, 'consumer-normalized-semantic-hash', label);
+  for (const [label, mutated] of mutations) {
+    assert.notEqual(mutated, consumer, `${label} fixture must mutate source`);
+    assertRejected(inspectConsumer, mutated, 'consumer-normalized-semantic-fingerprint', label);
   }
 });

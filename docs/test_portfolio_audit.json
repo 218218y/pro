@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-28T12:29:16.643Z",
+  "generatedAt": "2026-07-28T13:05:59.594Z",
   "totals": {
-    "tests": 1306,
-    "unitRunnerTests": 1298,
+    "tests": 1307,
+    "unitRunnerTests": 1299,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 464,
+    "contract": 465,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -2292,6 +2292,10 @@
     {
       "file": "tests/kernel_install_support_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/kernel_project_capture_dimension_ownership_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/kernel_project_capture_runtime.test.ts",

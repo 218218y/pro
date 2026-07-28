@@ -892,10 +892,10 @@ test('closeout keeps exactly the focused render trio plus facade owner import an
       .map(dependency => ({ file, dependency }))
   );
   const staticImports = facadeDependencies.filter(entry => entry.dependency.syntax === 'static-import');
-  assert.equal(new Set(staticImports.map(entry => entry.file)).size, 1);
-  assert.equal(staticImports.length, 1);
-  assert.equal(new Set(facadeDependencies.map(entry => entry.file)).size, 3);
-  assert.equal(facadeDependencies.length, 4);
+  assert.equal(new Set(staticImports.map(entry => entry.file)).size, 0);
+  assert.equal(staticImports.length, 0);
+  assert.equal(new Set(facadeDependencies.map(entry => entry.file)).size, 2);
+  assert.equal(facadeDependencies.length, 3);
 });
 
 test('render flow semantic AST fingerprints preserve formulas, offsets, branches, types, and call order', () => {
