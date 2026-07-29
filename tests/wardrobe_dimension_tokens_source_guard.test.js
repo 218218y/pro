@@ -1343,6 +1343,28 @@ test('[dimension tokens] Wardrobe Default Resolution is defined only by its focu
     },
   ]);
 
+  const structureTabPolicyRel = 'esm/shared/dimensions/structure_tab_auto_width_policy.ts';
+  assert.deepEqual(
+    analyzeModuleDependencies(structureTabPolicyRel, read(structureTabPolicyRel)).imports.map(dependency => ({
+      specifier: dependency.specifier,
+      kind: dependency.kind,
+      syntax: dependency.syntax,
+      symbols: dependency.importedSymbols,
+      aliases: dependency.bindings
+        .filter(binding => binding.importedName !== binding.localName)
+        .map(binding => [binding.importedName, binding.localName]),
+    })),
+    [
+      {
+        specifier: './wardrobe_default_resolution_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        symbols: ['isAutoWidthForDoors', 'resolveAutoWidthForDoors'],
+        aliases: [],
+      },
+    ]
+  );
+
   const familySymbols = new Set(functionNames);
   const facadeConsumers = nativeSources.flatMap(([file, source]) =>
     analyzeModuleDependencies(file, source)

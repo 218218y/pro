@@ -20,6 +20,9 @@ const featureSpecifier = '../../../features/structure_tab_dimension_support.js';
 const facadeSpecifier = '../../shared/wardrobe_dimension_tokens_shared.js';
 const servicesApiRel = 'esm/native/services/api.ts';
 const hexIndexRel = 'esm/native/features/hex_cell/index.ts';
+const autoWidthPolicySpecifier = '../../shared/dimensions/structure_tab_auto_width_policy.js';
+const autoWidthPolicySymbol = 'STRUCTURE_TAB_AUTO_WIDTH_POLICY';
+const projectedSymbols = Object.freeze(['resolveAutoWidthForDoors', 'isAutoWidthForDoors']);
 
 const ownerGroups = Object.freeze([
   Object.freeze({
@@ -93,7 +96,7 @@ const ownerGroups = Object.freeze([
 ]);
 const sharedSymbols = Object.freeze(ownerGroups.flatMap(group => group.symbols));
 const hexSymbols = Object.freeze(['HEX_CELL_DEFAULT_PROTRUSION_CM', 'resolveDefaultHexDoorWidthCm']);
-const surfaceSymbols = Object.freeze([...sharedSymbols, ...hexSymbols]);
+const surfaceSymbols = Object.freeze([...sharedSymbols, ...projectedSymbols, ...hexSymbols]);
 const dimensionSymbolSet = new Set(surfaceSymbols);
 const groupAConsumers = Object.freeze({
   'esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts': Object.freeze([
@@ -147,6 +150,20 @@ const groupAConsumers = Object.freeze({
     'getDefaultDepthForWardrobeType',
   ]),
 });
+const groupCConsumers = Object.freeze({
+  'esm/native/ui/react/tabs/structure_tab_structure_mutations_shared.ts': Object.freeze([
+    'WARDROBE_DOORS_MAX',
+    'WARDROBE_SLIDING_DOORS_MIN',
+  ]),
+  'esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts': Object.freeze([
+    'isAutoWidthForDoors',
+    'resolveAutoWidthForDoors',
+  ]),
+  'esm/native/ui/react/tabs/structure_tab_workflows_controller_shared.ts': Object.freeze([
+    'resolveAutoWidthForDoors',
+  ]),
+});
+const ownedConsumers = Object.freeze({ ...groupAConsumers, ...groupCConsumers });
 const semanticFingerprints = Object.freeze({
   'esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts': Object.freeze({
     semantic: '536c6ef682c65bb336956c148615c754a7e322c609d84253748b3ec7b6f79392',
@@ -167,6 +184,21 @@ const semanticFingerprints = Object.freeze({
     semantic: 'aa7523369746ed0a4dfb781b64e98c5d7c04689543b4aa9101b8570d5990a5e5',
     literals: '3cc00119df8db0588f8ca29b0d3659dafa6a9692ce43f8351b7413c826bc62ce',
     literalCount: 83,
+  }),
+  'esm/native/ui/react/tabs/structure_tab_structure_mutations_shared.ts': Object.freeze({
+    semantic: '177218aaac4af2405fb407ef5f80c3848b8fd37a44bb02114bb923a90b816d61',
+    literals: '8ba3ffe10ccf1d28a4ea723a4fc31760b26bd7c29f8b721abc7b27361c8a0417',
+    literalCount: 33,
+  }),
+  'esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts': Object.freeze({
+    semantic: 'd3b0326bb9c974bd062d4a49d8bc43ef904970fd8153fb57ca6467fc2257ccaa',
+    literals: 'f95c51642f033da29139a307b894a76ce45d3c483b25edef1be68aa73c70f67d',
+    literalCount: 94,
+  }),
+  'esm/native/ui/react/tabs/structure_tab_workflows_controller_shared.ts': Object.freeze({
+    semantic: '48f9fd3ac19527697b6203fe5f5c87ce692d5a3506387e776f46cc4e7c12aa56',
+    literals: '7e4ee4fd84bd3711cd000f2d857ae823e78693a480ce8c2afd9796189b41bdec',
+    literalCount: 15,
   }),
 });
 const expectedViewStateKeyOrder = Object.freeze({
@@ -371,7 +403,7 @@ function inspectFeature(source) {
     return [{ kind: 'feature-parse', detail: error.message }];
   }
   const shared = analysis.imports.filter(dependency => dependency.specifier.includes('/shared/'));
-  if (shared.length !== 5) addViolation(violations, 'owner-statement-count', shared.length);
+  if (shared.length !== 6) addViolation(violations, 'owner-statement-count', shared.length);
   for (const group of ownerGroups) {
     const matches = shared.filter(dependency => dependency.specifier === group.specifier);
     if (matches.length !== 1) {
@@ -390,6 +422,21 @@ function inspectFeature(source) {
       addViolation(violations, 'owner-symbols', group.family);
     }
   }
+  const autoWidthPolicyDependencies = shared.filter(
+    dependency => dependency.specifier === autoWidthPolicySpecifier
+  );
+  const [autoWidthPolicyDependency] = autoWidthPolicyDependencies;
+  if (
+    autoWidthPolicyDependencies.length !== 1 ||
+    autoWidthPolicyDependency?.kind !== 'value' ||
+    autoWidthPolicyDependency?.syntax !== 'static-import' ||
+    stableJson(autoWidthPolicyDependency?.importedSymbols ?? []) !== stableJson([autoWidthPolicySymbol])
+  ) {
+    addViolation(violations, 'auto-width-policy-import');
+  }
+  if (autoWidthPolicyDependency?.bindings.some(binding => binding.importedName !== binding.localName)) {
+    addViolation(violations, 'auto-width-policy-alias');
+  }
   if (shared.some(dependency => dependency.specifier.includes('wardrobe_dimension_tokens_shared'))) {
     addViolation(violations, 'feature-facade-import');
   }
@@ -402,9 +449,10 @@ function inspectFeature(source) {
   const localExports = exports.filter(entry => entry.source === null);
   const hexExports = exports.filter(entry => entry.source === './hex_cell/index.js');
   if (
-    localExports.length !== 37 ||
+    localExports.length !== 39 ||
     localExports.some(entry => entry.kind !== 'value' || entry.localName !== entry.exportedName) ||
-    stableJson(sorted(localExports.map(entry => entry.exportedName))) !== stableJson(sorted(sharedSymbols))
+    stableJson(sorted(localExports.map(entry => entry.exportedName))) !==
+      stableJson(sorted([...sharedSymbols, ...projectedSymbols]))
   ) {
     addViolation(violations, 'feature-local-export-surface');
   }
@@ -415,10 +463,41 @@ function inspectFeature(source) {
   ) {
     addViolation(violations, 'feature-hex-surface');
   }
+  const projectionStatements = sourceFile.body.filter(
+    statement =>
+      statement.type === 'ExportNamedDeclaration' && statement.declaration?.type === 'VariableDeclaration'
+  );
+  if (projectionStatements.length !== 2) {
+    addViolation(violations, 'auto-width-projection-count');
+  }
+  for (const symbol of projectedSymbols) {
+    const matches = projectionStatements.filter(statement => {
+      const declaration = statement.declaration;
+      const [declarator] = declaration?.declarations ?? [];
+      return declarator?.id?.type === 'Identifier' && declarator.id.name === symbol;
+    });
+    const declaration = matches[0]?.declaration;
+    const [declarator] = declaration?.declarations ?? [];
+    const init = declarator?.init;
+    if (
+      matches.length !== 1 ||
+      declaration?.kind !== 'const' ||
+      declaration?.declarations.length !== 1 ||
+      init?.type !== 'MemberExpression' ||
+      init.computed ||
+      init.optional ||
+      init.object?.type !== 'Identifier' ||
+      init.object.name !== autoWidthPolicySymbol ||
+      init.property?.type !== 'Identifier' ||
+      init.property.name !== symbol
+    ) {
+      addViolation(violations, 'auto-width-direct-projection', symbol);
+    }
+  }
   const allowedBody = sourceFile.body.filter(
     statement => statement.type === 'ImportDeclaration' || statement.type === 'ExportNamedDeclaration'
   );
-  if (sourceFile.body.length !== 7 || allowedBody.length !== sourceFile.body.length) {
+  if (sourceFile.body.length !== 10 || allowedBody.length !== sourceFile.body.length) {
     addViolation(violations, 'feature-copy-wrapper-or-logic');
   }
   return violations;
@@ -453,7 +532,7 @@ function inspectAdapter(source) {
     addViolation(violations, 'adapter-alias-or-surface');
   }
   if (
-    exports.length !== 39 ||
+    exports.length !== 41 ||
     exports.some(entry => entry.source !== featureSpecifier || entry.localName !== entry.exportedName)
   ) {
     addViolation(violations, 'adapter-export-surface');
@@ -497,20 +576,20 @@ function inspectConsumerTopology(entries) {
       rel.startsWith('esm/native/ui/') &&
       dependencies.some(dep => canonicalModuleStem(rel, dep.specifier)?.startsWith('esm/shared/'))
     ) {
-      if (rel === adapterRel || Object.hasOwn(groupAConsumers, rel)) {
-        addViolation(violations, 'direct-group-a-ui-shared-import', rel);
+      if (rel === adapterRel || Object.hasOwn(ownedConsumers, rel)) {
+        addViolation(violations, 'direct-owned-ui-shared-import', rel);
       }
     }
-    if (!Object.hasOwn(groupAConsumers, rel)) continue;
+    if (!Object.hasOwn(ownedConsumers, rel)) continue;
     const adapterDependencies = dependencies.filter(dep => dep.specifier === adapterSpecifier);
-    const expected = groupAConsumers[rel];
+    const expected = ownedConsumers[rel];
     if (
       adapterDependencies.length !== 1 ||
       adapterDependencies[0].kind !== 'value' ||
       adapterDependencies[0].syntax !== 'static-import' ||
       stableJson(sorted(adapterDependencies[0].importedSymbols)) !== stableJson(sorted(expected))
     ) {
-      addViolation(violations, 'group-a-adapter-import', rel);
+      addViolation(violations, 'owned-adapter-import', rel);
     }
     if (
       dependencies.some(
@@ -519,7 +598,7 @@ function inspectConsumerTopology(entries) {
           dep.importedSymbols.some(symbol => dimensionSymbolSet.has(symbol))
       )
     ) {
-      addViolation(violations, 'group-a-services-dimension-import', rel);
+      addViolation(violations, 'owned-services-dimension-import', rel);
     }
     if (
       rel.endsWith('structure_tab_dimensions_section_cell_dims.tsx') &&
@@ -665,18 +744,19 @@ function assertMutationRejected(violations, kind, label) {
   );
 }
 
-test('feature boundary has five exact focused-owner imports and 39 identity-preserving exports', () => {
+test('feature boundary has six exact shared imports and 41 identity-preserving exports', () => {
   const featureFiles = listSourceFiles(path.join(root, 'esm/native/features'))
     .map(file => path.relative(root, file).replaceAll('\\', '/'))
     .filter(rel => path.basename(rel) === 'structure_tab_dimension_support.ts');
   assert.deepEqual(featureFiles, [featureRel]);
   assert.equal(sharedSymbols.length, 37);
-  assert.equal(surfaceSymbols.length, 39);
+  assert.equal([...sharedSymbols, autoWidthPolicySymbol].length, 38);
+  assert.equal(surfaceSymbols.length, 41);
   assert.deepEqual(inspectFeature(read(featureRel)), []);
   assert.deepEqual(inspectAdapter(read(adapterRel)), []);
 });
 
-test('UI adapter is the sole feature-boundary consumer and all four Group A consumers use it', () => {
+test('UI adapter is the sole feature-boundary consumer and all owned Group A/C consumers use it', () => {
   assert.deepEqual(inspectConsumerTopology(productionEntries()), []);
   const featureManifest = JSON.parse(read(featureManifestRel));
   assert.equal(
@@ -688,7 +768,7 @@ test('UI adapter is the sole feature-boundary consumer and all four Group A cons
   ]);
 });
 
-test('normalized Group A AST, literals, pattern data, and view-state key order are unchanged', () => {
+test('normalized Group A/C AST and literal inventories remain unchanged', () => {
   for (const [rel, expected] of Object.entries(semanticFingerprints)) {
     assert.deepEqual(consumerFingerprints(rel), expected, rel);
   }
@@ -708,15 +788,15 @@ test('normalized Group A AST, literals, pattern data, and view-state key order a
   );
 });
 
-test('Entries 167-171 are exact, preserve Prefix 166, and accept a future Entry 172', () => {
+test('Entries 167-171 are exact, preserve Prefix 166, and accept later appended entries', () => {
   const entries = JSON.parse(read(baselineRel)).migrationBudgets;
   assert.equal(entries.length >= 171, true);
   assert.deepEqual(inspectLedger(entries), []);
-  const futureEntry172 = {
+  const futureEntryAfterHistory = {
     ...entries[170],
     fromFile: 'esm/native/features/future_append_safe_dimension_consumer.ts',
   };
-  assert.deepEqual(inspectLedger([...entries, futureEntry172]), []);
+  assert.deepEqual(inspectLedger([...entries, futureEntryAfterHistory]), []);
 });
 
 test('Group A historical ratchet remains backed by active Entries 167-171', () => {
@@ -789,6 +869,21 @@ test('feature and adapter mutation probes reject facades, aliases, wrappers, and
     'extra owner statement'
   );
   assertMutationRejected(
+    inspectFeature(feature.replace(autoWidthPolicySymbol, `${autoWidthPolicySymbol} as AUTO_WIDTH_ALIAS`)),
+    'auto-width-policy-alias',
+    'auto-width policy alias'
+  );
+  assertMutationRejected(
+    inspectFeature(
+      feature.replace(
+        `${autoWidthPolicySymbol}.resolveAutoWidthForDoors`,
+        `(...args) => ${autoWidthPolicySymbol}.resolveAutoWidthForDoors(...args)`
+      )
+    ),
+    'auto-width-direct-projection',
+    'auto-width wrapper'
+  );
+  assertMutationRejected(
     inspectFeature(`${feature}\nexport const COPIED_WIDTH = DEFAULT_WIDTH;\n`),
     'feature-copy-wrapper-or-logic',
     'copied constant'
@@ -843,7 +938,7 @@ test('route and behavior mutation probes reject every Group A regression', () =>
         [constraintsRel]: `${read(constraintsRel)}\nimport { DEFAULT_WIDTH as SHARED_WIDTH } from '@/shared/dimensions/wardrobe_defaults.js';\n`,
       })
     ),
-    'direct-group-a-ui-shared-import',
+    'direct-owned-ui-shared-import',
     'direct shared import'
   );
   assertMutationRejected(
@@ -852,7 +947,7 @@ test('route and behavior mutation probes reject every Group A regression', () =>
         [constraintsRel]: `${read(constraintsRel)}\nimport { DEFAULT_WIDTH as SERVICE_WIDTH } from '@/native/services/api.js';\n`,
       })
     ),
-    'group-a-services-dimension-import',
+    'owned-services-dimension-import',
     'services import'
   );
   assertMutationRejected(

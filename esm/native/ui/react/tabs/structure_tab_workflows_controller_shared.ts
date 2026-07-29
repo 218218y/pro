@@ -8,7 +8,7 @@ import {
   cloneSpecialDims,
 } from '../../../features/special_dims/index.js';
 import { clearHexCellFromConfig } from '../../../features/hex_cell/index.js';
-import { resolveAutoWidthForDoors } from '../../../services/api.js';
+import { resolveAutoWidthForDoors } from './structure_tab_dimension_defaults.js';
 import type {
   CreateStructureTabWorkflowControllerArgs,
   StructureWorkflowOps,

@@ -1,6 +1,6 @@
 import type { UnknownRecord } from '../../../../../types';
 
-import { WARDROBE_DOORS_MAX, WARDROBE_SLIDING_DOORS_MIN } from '../../../services/api.js';
+import { WARDROBE_DOORS_MAX, WARDROBE_SLIDING_DOORS_MIN } from './structure_tab_dimension_defaults.js';
 
 import type { SingleDoorPos } from './structure_tab_library_helpers.js';
 

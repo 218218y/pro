@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "capturedAtHead": "e3e831ceb1129812be5f2d673fb99513da11256f",
+  "capturedAtHead": "d3ddb50f648e972f00f95a275a06bccaafc7e3f0",
   "policy": "Canonical consumer-row inventory for production dimension symbols that currently traverse the facade through runtime and services. The public-surface manifest owns the complete routed and routed-but-unconsumed symbol inventory. Every row is value/type explicit and migration-group owned.",
   "completeRouteInventory": "tools/wp_wardrobe_dimension_public_surface_manifest.json",
   "routeCatalog": {
@@ -78,66 +78,6 @@
       ]
     },
     {
-      "consumer": "esm/native/ui/react/tabs/structure_tab_structure_mutations_shared.ts",
-      "checkpointGroup": "C",
-      "symbols": [
-        {
-          "importedSymbol": "WARDROBE_DOORS_MAX",
-          "originalFacadeSymbol": "WARDROBE_DOORS_MAX",
-          "canonicalFocusedOwner": {
-            "file": "esm/shared/dimensions/product_limits.ts",
-            "symbols": ["WARDROBE_DOORS_MAX"]
-          },
-          "runtimeServicesRoute": "facade-runtime-services-api",
-          "usage": "value",
-          "publicExternalEvidence": [],
-          "migrationDecision": "Checkpoint 2C: consume a feature-owned Structure mutation limit boundary; preserve wardrobe-type and door-count behavior."
-        },
-        {
-          "importedSymbol": "WARDROBE_SLIDING_DOORS_MIN",
-          "originalFacadeSymbol": "WARDROBE_SLIDING_DOORS_MIN",
-          "canonicalFocusedOwner": {
-            "file": "esm/shared/dimensions/product_limits.ts",
-            "symbols": ["WARDROBE_SLIDING_DOORS_MIN"]
-          },
-          "runtimeServicesRoute": "facade-runtime-services-api",
-          "usage": "value",
-          "publicExternalEvidence": [],
-          "migrationDecision": "Checkpoint 2C: consume a feature-owned Structure mutation limit boundary; preserve wardrobe-type and door-count behavior."
-        }
-      ]
-    },
-    {
-      "consumer": "esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts",
-      "checkpointGroup": "C",
-      "symbols": [
-        {
-          "importedSymbol": "isAutoWidthForDoors",
-          "originalFacadeSymbol": "isAutoWidthForDoors",
-          "canonicalFocusedOwner": {
-            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-            "symbols": ["isAutoWidthForDoors"]
-          },
-          "runtimeServicesRoute": "facade-runtime-services-api",
-          "usage": "value",
-          "publicExternalEvidence": [],
-          "migrationDecision": "Checkpoint 2C: route through a feature owner that directly consumes Wardrobe Default Resolution; preserve trigger and transaction order."
-        },
-        {
-          "importedSymbol": "resolveAutoWidthForDoors",
-          "originalFacadeSymbol": "resolveAutoWidthForDoors",
-          "canonicalFocusedOwner": {
-            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-            "symbols": ["resolveAutoWidthForDoors"]
-          },
-          "runtimeServicesRoute": "facade-runtime-services-api",
-          "usage": "value",
-          "publicExternalEvidence": [],
-          "migrationDecision": "Checkpoint 2C: route through a feature owner that directly consumes Wardrobe Default Resolution; preserve trigger and transaction order."
-        }
-      ]
-    },
-    {
       "consumer": "esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts",
       "checkpointGroup": "D",
       "symbols": [
@@ -200,24 +140,6 @@
           "usage": "value",
           "publicExternalEvidence": [],
           "migrationDecision": "Checkpoint 2D: extend the existing Stack Split feature use-case boundary with its coherent defaults and limits; preserve mutation order and module interaction."
-        }
-      ]
-    },
-    {
-      "consumer": "esm/native/ui/react/tabs/structure_tab_workflows_controller_shared.ts",
-      "checkpointGroup": "C",
-      "symbols": [
-        {
-          "importedSymbol": "resolveAutoWidthForDoors",
-          "originalFacadeSymbol": "resolveAutoWidthForDoors",
-          "canonicalFocusedOwner": {
-            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-            "symbols": ["resolveAutoWidthForDoors"]
-          },
-          "runtimeServicesRoute": "facade-runtime-services-api",
-          "usage": "value",
-          "publicExternalEvidence": [],
-          "migrationDecision": "Checkpoint 2C: route through a feature owner that directly consumes Wardrobe Default Resolution; preserve switching, sanitization, and transaction order."
         }
       ]
     }

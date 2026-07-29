@@ -41,6 +41,7 @@ import {
   HINGED_DEFAULT_PER_DOOR_WIDTH,
 } from '../../shared/dimensions/wardrobe_defaults.js';
 import { getDefaultDepthForWardrobeType } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';
+import { STRUCTURE_TAB_AUTO_WIDTH_POLICY } from '../../shared/dimensions/structure_tab_auto_width_policy.js';
 
 export {
   CHEST_MODE_DIMENSIONS,
@@ -81,5 +82,9 @@ export {
   WARDROBE_WIDTH_MAX,
   WARDROBE_WIDTH_MIN,
 };
+
+export const resolveAutoWidthForDoors = STRUCTURE_TAB_AUTO_WIDTH_POLICY.resolveAutoWidthForDoors;
+
+export const isAutoWidthForDoors = STRUCTURE_TAB_AUTO_WIDTH_POLICY.isAutoWidthForDoors;
 
 export { HEX_CELL_DEFAULT_PROTRUSION_CM, resolveDefaultHexDoorWidthCm } from './hex_cell/index.js';

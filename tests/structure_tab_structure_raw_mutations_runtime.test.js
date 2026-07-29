@@ -26,6 +26,10 @@ function loadTsModule(relPath, calls, cache = new Map()) {
           calls.push(['runPerfAction', app, name, meta]);
           return fn();
         },
+      };
+    }
+    if (specifier === './structure_tab_dimension_defaults.js') {
+      return {
         resolveAutoWidthForDoors: (wardrobeType, doors) => {
           const n = Math.max(0, Math.round(Number(doors) || 0));
           return n * (wardrobeType === 'sliding' ? 80 : 40);
@@ -36,10 +40,6 @@ function loadTsModule(relPath, calls, cache = new Map()) {
           const current = Number(width) || 0;
           return !(current > 0) || Math.abs(current - expected) < 0.51;
         },
-      };
-    }
-    if (specifier === './structure_tab_dimension_defaults.js') {
-      return {
         CHEST_MODE_DIMENSIONS: {
           commode: {
             maxMirrorHeightCm: 180,

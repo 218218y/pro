@@ -1,7 +1,8 @@
 import type { AppContainer, MetaActionsNamespaceLike } from '../../../../../types';
 
 import { setManualWidth } from '../actions/room_actions.js';
-import { isAutoWidthForDoors, resolveAutoWidthForDoors, runPerfAction } from '../../../services/api.js';
+import { runPerfAction } from '../../../services/api.js';
+import { isAutoWidthForDoors, resolveAutoWidthForDoors } from './structure_tab_dimension_defaults.js';
 import {
   applyUiRawScalarPatch,
   setUiCellDimsDepth,

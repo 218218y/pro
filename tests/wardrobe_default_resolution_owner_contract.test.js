@@ -16,6 +16,7 @@ const domainApiRel = 'esm/native/kernel/domain_api_room_section_wardrobe.ts';
 const platformPolicyRel = 'esm/shared/dimensions/platform_startup_dimension_defaults_policy.ts';
 const platformConsumerRel = 'esm/native/platform/platform_services.ts';
 const platformPolicySymbol = 'PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY';
+const structureTabAutoWidthPolicyRel = 'esm/shared/dimensions/structure_tab_auto_width_policy.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const approvedNativeConsumerUniverse = new Set([
   'esm/native/features/library_preset/module_defaults.ts',
@@ -1122,6 +1123,33 @@ test('approved native consumer universe accepts any direct focused-owner subset 
     fs.readFileSync(file, 'utf8'),
   ]);
   assert.deepEqual(inspectNativeOwnerUniverse(entries).violations, []);
+});
+
+test('private Structure Tab auto-width composition imports the exact focused owner pair', () => {
+  const analysis = analyzeModuleDependencies(
+    structureTabAutoWidthPolicyRel,
+    read(structureTabAutoWidthPolicyRel)
+  );
+  assert.deepEqual(
+    analysis.imports.map(dependency => ({
+      specifier: dependency.specifier,
+      kind: dependency.kind,
+      syntax: dependency.syntax,
+      symbols: dependency.importedSymbols,
+      aliases: dependency.bindings
+        .filter(binding => binding.importedName !== binding.localName)
+        .map(binding => [binding.importedName, binding.localName]),
+    })),
+    [
+      {
+        specifier: './wardrobe_default_resolution_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        symbols: ['isAutoWidthForDoors', 'resolveAutoWidthForDoors'],
+        aliases: [],
+      },
+    ]
+  );
 });
 
 test('Domain API uses the exact focused resolver trio while preserving profile, fallback, and action-order semantics', () => {

@@ -6271,6 +6271,35 @@
       },
       "reason": "The Structure Tab Dimension Support feature boundary replaces the Default Resolution symbol group from the legacy shared facade route with its canonical focused owner alongside the other reviewed Structure Tab dimension owner statements, without exposing shared ownership to UI.",
       "removalCondition": "Remove this entry when a reviewed Structure Tab Dimension Support composition seam eliminates the extra Default Resolution owner statement without reintroducing the legacy facade, a direct shared owner import in UI, copied values, or a general dimension barrel."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-29",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/features/structure_tab_dimension_support.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["getDefaultDepthForWardrobeType"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["isAutoWidthForDoors", "resolveAutoWidthForDoors"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/structure_tab_auto_width_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["STRUCTURE_TAB_AUTO_WIDTH_POLICY"],
+        "syntax": "static-import"
+      },
+      "reason": "The Structure Tab Dimension Support feature boundary replaces the auto-width function group from the legacy shared facade route with the private Structure Tab Auto Width composition policy alongside the canonical focused default-depth resolver, without exposing shared ownership or function references to UI.",
+      "removalCondition": "Remove this entry when a reviewed Structure Tab Dimension Support composition seam eliminates the extra Structure Tab Auto Width policy statement without reintroducing the legacy facade, a direct shared owner import in UI, escaped function references, copied values, or a general dimension barrel."
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "capturedAtHead": "e3e831ceb1129812be5f2d673fb99513da11256f",
+  "capturedAtHead": "d3ddb50f648e972f00f95a275a06bccaafc7e3f0",
   "policy": "Inventory every current facade export without treating route presence or repository silence as external-consumer evidence. Undetermined symbols block removal.",
   "facade": {
     "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -1368,16 +1368,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "LIBRARY_PRESET_DIMENSIONS",
@@ -1658,21 +1652,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_structure_raw_mutations.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_workflows_controller_shared.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "resolveDefaultWardrobeDimensions",
@@ -2745,16 +2728,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_structure_mutations_shared.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_DOORS_MIN",
@@ -2943,16 +2920,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_structure_mutations_shared.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_WIDTH_MAX",

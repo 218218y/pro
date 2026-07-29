@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-28T19:15:44.035Z",
+  "generatedAt": "2026-07-29T07:20:02.321Z",
   "totals": {
-    "tests": 1309,
-    "unitRunnerTests": 1301,
+    "tests": 1310,
+    "unitRunnerTests": 1302,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 467,
+    "contract": 468,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -4676,6 +4676,10 @@
     {
       "file": "tests/structure_tab_actions_controller_runtime.test.js",
       "category": "integration"
+    },
+    {
+      "file": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/structure_tab_aux_sections_runtime.test.ts",
