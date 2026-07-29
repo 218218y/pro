@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "capturedAtHead": "81e87b6ebeb2669afc4ade809b7befd2ecdeb5c3",
+  "capturedAtHead": "e3e831ceb1129812be5f2d673fb99513da11256f",
   "policy": "Inventory every current facade export without treating route presence or repository silence as external-consumer evidence. Undetermined symbols block removal.",
   "facade": {
     "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -215,16 +215,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "clampDimension",
@@ -442,16 +436,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "DEFAULT_CORNER_WIDTH",
@@ -482,16 +470,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "DEFAULT_HEIGHT",
@@ -525,16 +507,6 @@
       "internalConsumers": [
         {
           "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts",
           "usage": "value",
           "route": "facade-runtime-services-api"
         }
@@ -572,16 +544,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "DEFAULT_SLIDING_DOORS",
@@ -689,11 +655,6 @@
       "internalConsumers": [
         {
           "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
           "usage": "value",
           "route": "facade-runtime-services-api"
         }
@@ -1315,21 +1276,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        },
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_corner.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "HINGED_DEFAULT_PER_DOOR_WIDTH",
@@ -2563,16 +2513,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "WARDROBE_CHEST_HEIGHT_MIN",

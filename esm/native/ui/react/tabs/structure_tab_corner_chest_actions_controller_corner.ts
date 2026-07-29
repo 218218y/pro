@@ -6,14 +6,13 @@ import {
   setUiCornerSide,
   setUiCornerWidth,
 } from '../actions/store_actions.js';
+import { adjustCameraForCorner, resetCameraPreset } from '../../../services/api.js';
 import {
   DEFAULT_CORNER_DOORS,
   DEFAULT_CORNER_WIDTH,
   DEFAULT_HEIGHT,
   HINGED_DEFAULT_DEPTH,
-  adjustCameraForCorner,
-  resetCameraPreset,
-} from '../../../services/api.js';
+} from './structure_tab_dimension_defaults.js';
 import { asFiniteInt, asFiniteNumber, structureTabReportNonFatal } from './structure_tab_shared.js';
 import {
   commitStructureStatePatchWithRecompute,

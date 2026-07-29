@@ -16,6 +16,8 @@ import {
   setUiHeight,
   setUiWidth,
 } from '../actions/store_actions.js';
+import { adjustCameraForChest, resetCameraPreset } from '../../../services/api.js';
+import { normalizeBaseLegPlatformMode, normalizeBaseLegStyle } from '../../../features/base_leg_support.js';
 import {
   CHEST_MODE_DIMENSIONS,
   DEFAULT_HEIGHT,
@@ -23,10 +25,7 @@ import {
   DEFAULT_WIDTH,
   HINGED_DEFAULT_DEPTH,
   WARDROBE_CHEST_DRAWERS_MIN,
-  adjustCameraForChest,
-  resetCameraPreset,
-} from '../../../services/api.js';
-import { normalizeBaseLegPlatformMode, normalizeBaseLegStyle } from '../../../features/base_leg_support.js';
+} from './structure_tab_dimension_defaults.js';
 import { asFiniteInt, asFiniteNumber, structureTabReportNonFatal } from './structure_tab_shared.js';
 import {
   commitStructureStatePatchWithRecompute,
