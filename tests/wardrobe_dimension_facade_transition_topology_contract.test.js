@@ -623,70 +623,373 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
       }
       return current;
     };
-    const collectBindingNames = node => {
+    const collectBindingIdentifiers = node => {
       const current = unwrapExpression(node);
       if (!current) return [];
-      if (current.type === 'Identifier') return [current.name];
-      if (current.type === 'AssignmentPattern') return collectBindingNames(current.left);
-      if (current.type === 'RestElement') return collectBindingNames(current.argument);
+      if (current.type === 'Identifier') return [current];
+      if (current.type === 'AssignmentPattern') return collectBindingIdentifiers(current.left);
+      if (current.type === 'RestElement') return collectBindingIdentifiers(current.argument);
       if (current.type === 'ArrayPattern') {
-        return current.elements.flatMap(element => collectBindingNames(element));
+        return current.elements.flatMap(element => collectBindingIdentifiers(element));
       }
       if (current.type === 'ObjectPattern') {
         return current.properties.flatMap(property =>
           property.type === 'RestElement'
-            ? collectBindingNames(property.argument)
-            : collectBindingNames(property.value)
+            ? collectBindingIdentifiers(property.argument)
+            : collectBindingIdentifiers(property.value)
         );
       }
       return [];
     };
+    const collectBindingNames = node => collectBindingIdentifiers(node).map(identifier => identifier.name);
     const memberRootIdentifier = node => {
       let current = unwrapExpression(node);
       while (current?.type === 'MemberExpression') current = unwrapExpression(current.object);
-      return identifierName(current);
+      return bindingKeyForIdentifier(current);
     };
-    const variableDeclarators = sourceFile.body.flatMap(statement => {
-      if (statement.type === 'VariableDeclaration') return statement.declarations;
-      if (
-        statement.type === 'ExportNamedDeclaration' &&
-        statement.declaration?.type === 'VariableDeclaration'
-      ) {
-        return statement.declaration.declarations;
-      }
-      return [];
+    const walkModuleExecution = ({
+      onVariableDeclaration = () => {},
+      onExpression = () => {},
+      onAssignment = () => {},
+      snapshotBranchState = () => null,
+      restoreBranchState = () => {},
+      joinBranchStates = () => {},
+    } = {}) => {
+      const walkPattern = (node, conditional = false) => {
+        const current = unwrapExpression(node);
+        if (!current) return;
+        if (current.type === 'AssignmentPattern') {
+          walkPattern(current.left, conditional);
+          walkExpression(current.right, true, true);
+          return;
+        }
+        if (current.type === 'RestElement') {
+          walkPattern(current.argument, conditional);
+          return;
+        }
+        if (current.type === 'ArrayPattern') {
+          for (const element of current.elements) walkPattern(element, conditional);
+          return;
+        }
+        if (current.type === 'ObjectPattern') {
+          for (const property of current.properties) {
+            if (property.type === 'RestElement') {
+              walkPattern(property.argument, conditional);
+              continue;
+            }
+            if (property.computed) walkExpression(property.key, true, conditional);
+            walkPattern(property.value, conditional);
+          }
+          return;
+        }
+        if (current.type === 'MemberExpression') walkExpression(current, false, conditional);
+      };
+      const walkClass = (node, conditional = false) => {
+        if (node.superClass) walkExpression(node.superClass, true, conditional);
+        for (const element of node.body?.body ?? []) {
+          if (element.type === 'StaticBlock') {
+            for (const statement of element.body) walkStatement(statement, conditional);
+            continue;
+          }
+          if (element.computed) walkExpression(element.key, true, conditional);
+          if (
+            element.static &&
+            ['AccessorProperty', 'PropertyDefinition', 'FieldDefinition'].includes(element.type) &&
+            element.value
+          ) {
+            walkExpression(element.value, true, conditional);
+          }
+        }
+      };
+      const walkExpression = (node, executedRoot = false, conditional = false) => {
+        const current = unwrapExpression(node);
+        if (!current) return;
+        if (executedRoot) onExpression(current, { conditional });
+        if (['ArrowFunctionExpression', 'FunctionDeclaration', 'FunctionExpression'].includes(current.type)) {
+          return;
+        }
+        const walkChild = (child, childConditional = conditional) =>
+          walkExpression(child, false, childConditional);
+        const walkArguments = args => {
+          for (const argument of args ?? []) {
+            walkChild(argument?.type === 'SpreadElement' ? argument.argument : argument);
+          }
+        };
+        switch (current.type) {
+          case 'AssignmentExpression':
+            if (current.operator === '=') onAssignment(current);
+            walkPattern(current.left, conditional);
+            walkChild(current.right);
+            return;
+          case 'ArrayExpression':
+            for (const element of current.elements) {
+              walkChild(element?.type === 'SpreadElement' ? element.argument : element);
+            }
+            return;
+          case 'ObjectExpression':
+            for (const property of current.properties) {
+              if (property.type === 'SpreadElement') {
+                walkChild(property.argument);
+                continue;
+              }
+              if (property.computed) walkChild(property.key);
+              walkChild(property.value);
+            }
+            return;
+          case 'SequenceExpression':
+            for (const expression of current.expressions) walkChild(expression);
+            return;
+          case 'LogicalExpression':
+            walkChild(current.left);
+            walkChild(current.right, true);
+            return;
+          case 'BinaryExpression':
+            walkChild(current.left);
+            walkChild(current.right);
+            return;
+          case 'ConditionalExpression':
+            walkChild(current.test);
+            walkChild(current.consequent, true);
+            walkChild(current.alternate, true);
+            return;
+          case 'UnaryExpression':
+          case 'UpdateExpression':
+          case 'AwaitExpression':
+          case 'YieldExpression':
+            walkChild(current.argument);
+            return;
+          case 'CallExpression':
+          case 'NewExpression':
+            walkChild(current.callee);
+            walkArguments(current.arguments);
+            return;
+          case 'TemplateLiteral':
+            for (const expression of current.expressions) walkChild(expression);
+            return;
+          case 'TaggedTemplateExpression':
+            walkChild(current.tag);
+            walkChild(current.quasi);
+            return;
+          case 'MemberExpression':
+            walkChild(current.object);
+            if (current.computed) walkChild(current.property);
+            return;
+          case 'ImportExpression':
+            walkChild(current.source);
+            walkChild(current.options);
+            return;
+          case 'ClassDeclaration':
+          case 'ClassExpression':
+            walkClass(current, conditional);
+            return;
+          default:
+            return;
+        }
+      };
+      const walkVariableDeclaration = (declaration, conditional = false) => {
+        onVariableDeclaration(declaration, { conditional });
+        for (const declarator of declaration.declarations) {
+          if (declarator.init) walkExpression(declarator.init, false, conditional);
+          walkPattern(declarator.id, conditional);
+        }
+      };
+      const walkStatement = (statement, conditional = false) => {
+        if (!statement) return;
+        switch (statement.type) {
+          case 'ExpressionStatement':
+            walkExpression(statement.expression, true, conditional);
+            return;
+          case 'VariableDeclaration':
+            walkVariableDeclaration(statement, conditional);
+            return;
+          case 'ExportNamedDeclaration':
+            if (statement.declaration) walkStatement(statement.declaration, conditional);
+            return;
+          case 'ExportDefaultDeclaration':
+            if (statement.declaration?.type === 'FunctionDeclaration') return;
+            if (statement.declaration?.type === 'ClassDeclaration') {
+              walkClass(statement.declaration, conditional);
+              return;
+            }
+            walkExpression(statement.declaration, true, conditional);
+            return;
+          case 'BlockStatement':
+          case 'StaticBlock':
+            for (const child of statement.body) walkStatement(child, conditional);
+            return;
+          case 'IfStatement':
+            walkExpression(statement.test, true, conditional);
+            const baseState = snapshotBranchState();
+            walkStatement(statement.consequent, conditional);
+            const consequentState = snapshotBranchState();
+            restoreBranchState(baseState);
+            if (statement.alternate) walkStatement(statement.alternate, conditional);
+            const alternateState = statement.alternate ? snapshotBranchState() : baseState;
+            joinBranchStates([consequentState, alternateState]);
+            return;
+          case 'SwitchStatement':
+            walkExpression(statement.discriminant, true, conditional);
+            const switchBaseState = snapshotBranchState();
+            const switchExitStates = [];
+            let hasDefaultCase = false;
+            for (const switchCase of statement.cases) {
+              restoreBranchState(switchBaseState);
+              if (switchCase.test) walkExpression(switchCase.test, true, conditional);
+              else hasDefaultCase = true;
+              for (const child of switchCase.consequent) walkStatement(child, conditional);
+              switchExitStates.push(snapshotBranchState());
+            }
+            if (!hasDefaultCase) switchExitStates.push(switchBaseState);
+            joinBranchStates(switchExitStates);
+            return;
+          case 'TryStatement':
+            const tryBaseState = snapshotBranchState();
+            walkStatement(statement.block, conditional);
+            const tryExitState = snapshotBranchState();
+            restoreBranchState(tryBaseState);
+            if (statement.handler) walkStatement(statement.handler, conditional);
+            const catchExitState = statement.handler ? snapshotBranchState() : tryBaseState;
+            joinBranchStates([tryExitState, catchExitState]);
+            walkStatement(statement.finalizer, conditional);
+            return;
+          case 'CatchClause':
+            walkPattern(statement.param, conditional);
+            walkStatement(statement.body, conditional);
+            return;
+          case 'ForStatement':
+            if (statement.init?.type === 'VariableDeclaration') {
+              walkVariableDeclaration(statement.init, conditional);
+            } else {
+              walkExpression(statement.init, true, conditional);
+            }
+            walkExpression(statement.test, true, conditional);
+            walkExpression(statement.update, true, true);
+            walkStatement(statement.body, true);
+            return;
+          case 'ForInStatement':
+          case 'ForOfStatement':
+            if (statement.left?.type === 'VariableDeclaration') {
+              walkVariableDeclaration(statement.left, true);
+            } else {
+              walkPattern(statement.left, true);
+            }
+            walkExpression(statement.right, true, conditional);
+            walkStatement(statement.body, true);
+            return;
+          case 'WhileStatement':
+            walkExpression(statement.test, true, conditional);
+            walkStatement(statement.body, true);
+            return;
+          case 'DoWhileStatement':
+            walkStatement(statement.body, conditional);
+            walkExpression(statement.test, true, conditional);
+            return;
+          case 'LabeledStatement':
+            walkStatement(statement.body, conditional);
+            return;
+          case 'WithStatement':
+            walkExpression(statement.object, true, conditional);
+            walkStatement(statement.body, conditional);
+            return;
+          case 'ClassDeclaration':
+            walkClass(statement, conditional);
+            return;
+          case 'ThrowStatement':
+            walkExpression(statement.argument, true, conditional);
+            return;
+          default:
+            return;
+        }
+      };
+      for (const statement of sourceFile.body) walkStatement(statement);
+    };
+    const variableDeclarators = [];
+    const moduleExecutionAssignments = [];
+    const seenAssignments = new Set();
+    walkModuleExecution({
+      onVariableDeclaration(declaration) {
+        variableDeclarators.push(...declaration.declarations);
+      },
+      onAssignment(assignment) {
+        if (seenAssignments.has(assignment)) return;
+        seenAssignments.add(assignment);
+        moduleExecutionAssignments.push(assignment);
+      },
     });
-    const collectTopLevelAssignments = node => {
-      const current = unwrapExpression(node);
-      if (!current) return [];
-      if (current.type === 'SequenceExpression') {
-        return current.expressions.flatMap(expression => collectTopLevelAssignments(expression));
+    const lexicalScopeTypes = new Set([
+      'BlockStatement',
+      'CatchClause',
+      'ForInStatement',
+      'ForOfStatement',
+      'ForStatement',
+      'StaticBlock',
+      'SwitchStatement',
+    ]);
+    const declarationScope = declarator => {
+      const declaration = declarator.parent;
+      if (declaration?.kind === 'var') return sourceFile;
+      for (let current = declaration?.parent; current; current = current.parent) {
+        if (current === sourceFile || lexicalScopeTypes.has(current.type)) return current;
       }
-      if (current.type !== 'AssignmentExpression' || current.operator !== '=') return [];
-      return [current, ...collectTopLevelAssignments(current.right)];
+      return sourceFile;
     };
-    const topLevelAssignments = [
-      ...sourceFile.body.flatMap(statement =>
-        statement.type === 'ExpressionStatement'
-          ? collectTopLevelAssignments(statement.expression)
-          : statement.type === 'ExportDefaultDeclaration'
-            ? collectTopLevelAssignments(statement.declaration)
-            : []
-      ),
-      ...variableDeclarators.flatMap(declarator => collectTopLevelAssignments(declarator.init)),
-    ];
+    const nestedBindingsByScope = new Map();
+    const addScopeBindings = (scope, pattern) => {
+      const names = collectBindingNames(pattern);
+      if (scope === sourceFile) return;
+      const bindings = nestedBindingsByScope.get(scope) ?? new Set();
+      for (const name of names) bindings.add(name);
+      nestedBindingsByScope.set(scope, bindings);
+    };
+    for (const declarator of variableDeclarators) {
+      addScopeBindings(declarationScope(declarator), declarator.id);
+    }
+    const hasOpaqueExecutionAncestor = node => {
+      for (let current = node.parent; current && current !== sourceFile; current = current.parent) {
+        if (['ArrowFunctionExpression', 'FunctionDeclaration', 'FunctionExpression'].includes(current.type)) {
+          return true;
+        }
+      }
+      return false;
+    };
+    walkAst(sourceFile, node => {
+      if (node.type !== 'CatchClause' || !node.param || hasOpaqueExecutionAncestor(node)) return;
+      addScopeBindings(node, node.param);
+    });
+    const scopeIds = new WeakMap();
+    let nextScopeId = 1;
+    const scopeId = scope => {
+      if (!scopeIds.has(scope)) scopeIds.set(scope, nextScopeId++);
+      return scopeIds.get(scope);
+    };
+    const bindingKeyForIdentifier = node => {
+      const current = unwrapExpression(node);
+      if (current?.type !== 'Identifier') return null;
+      for (let parent = current.parent; parent && parent !== sourceFile; parent = parent.parent) {
+        if (nestedBindingsByScope.get(parent)?.has(current.name)) {
+          return `scope-${scopeId(parent)}:${current.name}`;
+        }
+      }
+      return current.name;
+    };
 
     const directRoots = node => {
       const current = unwrapExpression(node);
       if (!current) return new Set();
       if (current.type === 'Identifier') {
-        return new Set(routedRootsByLocalName.get(current.name) ?? []);
+        return new Set(routedRootsByLocalName.get(bindingKeyForIdentifier(current)) ?? []);
       }
       if (current.type === 'MemberExpression') {
         return new Set(routedRootsByLocalName.get(memberRootIdentifier(current)) ?? []);
       }
       if (current.type === 'SequenceExpression') {
         return directRoots(current.expressions.at(-1));
+      }
+      if (current.type === 'LogicalExpression') {
+        return new Set([...directRoots(current.left), ...directRoots(current.right)]);
+      }
+      if (current.type === 'ConditionalExpression') {
+        return new Set([...directRoots(current.consequent), ...directRoots(current.alternate)]);
       }
       if (current.type === 'AssignmentExpression' && current.operator === '=') {
         return directRoots(current.right);
@@ -727,16 +1030,18 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
     };
     const initializerByLocalName = new Map();
     for (const declarator of variableDeclarators) {
-      const localName = identifierName(unwrapExpression(declarator.id));
+      const identifier = unwrapExpression(declarator.id);
+      const localName = bindingKeyForIdentifier(identifier);
       if (localName && declarator.init) initializerByLocalName.set(localName, declarator.init);
     }
     const resolveStaticContainer = (node, seen = new Set()) => {
       const current = unwrapExpression(node);
       if (current?.type === 'ObjectExpression' || current?.type === 'ArrayExpression') return current;
-      if (current?.type !== 'Identifier' || seen.has(current.name)) return null;
-      const initializer = initializerByLocalName.get(current.name);
+      const bindingKey = bindingKeyForIdentifier(current);
+      if (!bindingKey || seen.has(bindingKey)) return null;
+      const initializer = initializerByLocalName.get(bindingKey);
       if (!initializer) return null;
-      return resolveStaticContainer(initializer, new Set(seen).add(current.name));
+      return resolveStaticContainer(initializer, new Set(seen).add(bindingKey));
     };
     const propertyName = property => {
       const key = unwrapExpression(property?.key);
@@ -813,8 +1118,8 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
     };
     const mergeAllBindingRoots = (pattern, roots) => {
       let added = false;
-      for (const localName of collectBindingNames(pattern)) {
-        if (mergeRoots(localName, roots)) added = true;
+      for (const identifier of collectBindingIdentifiers(pattern)) {
+        if (mergeRoots(bindingKeyForIdentifier(identifier), roots)) added = true;
       }
       return added;
     };
@@ -822,7 +1127,9 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
       const current = unwrapExpression(pattern);
       if (!current) return false;
       if (current.type === 'Identifier') {
-        return value === missingPatternValue ? false : mergeRoots(current.name, directRoots(value));
+        return value === missingPatternValue
+          ? false
+          : mergeRoots(bindingKeyForIdentifier(current), directRoots(value));
       }
       if (current.type === 'AssignmentPattern') {
         const valueAdded = mergePatternRoots(current.left, value, { definitelyDefined });
@@ -905,6 +1212,7 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
 
     let nextObjectIdentity = 1;
     const objectIdentityByLocalName = new Map();
+    const possibleObjectIdentitiesByLocalName = new Map();
     const childIdentityByObjectIdentity = new Map();
     const parentObjectIdentitiesByChild = new Map();
     const memberWrites = [];
@@ -912,9 +1220,84 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
     const identityForLocalName = localName => {
       if (!localName) return null;
       if (!objectIdentityByLocalName.has(localName)) {
-        objectIdentityByLocalName.set(localName, newObjectIdentity());
+        const identity = newObjectIdentity();
+        objectIdentityByLocalName.set(localName, identity);
+        possibleObjectIdentitiesByLocalName.set(localName, new Set([identity]));
       }
       return objectIdentityByLocalName.get(localName);
+    };
+    const possibleIdentitiesForLocalName = localName => {
+      const possible = possibleObjectIdentitiesByLocalName.get(localName);
+      if (possible) return new Set(possible);
+      const current = objectIdentityByLocalName.get(localName);
+      return current ? new Set([current]) : new Set();
+    };
+    const snapshotObjectBindingState = () => ({
+      current: new Map(objectIdentityByLocalName),
+      possible: new Map(
+        [...possibleObjectIdentitiesByLocalName].map(([localName, identities]) => [
+          localName,
+          new Set(identities),
+        ])
+      ),
+      children: new Map(
+        [...childIdentityByObjectIdentity].map(([parentIdentity, properties]) => [
+          parentIdentity,
+          new Map([...properties].map(([property, childIdentities]) => [property, new Set(childIdentities)])),
+        ])
+      ),
+    });
+    const restoreObjectBindingState = state => {
+      objectIdentityByLocalName.clear();
+      possibleObjectIdentitiesByLocalName.clear();
+      childIdentityByObjectIdentity.clear();
+      parentObjectIdentitiesByChild.clear();
+      if (!state) return;
+      for (const [localName, identity] of state.current) {
+        objectIdentityByLocalName.set(localName, identity);
+      }
+      for (const [localName, identities] of state.possible) {
+        possibleObjectIdentitiesByLocalName.set(localName, new Set(identities));
+      }
+      for (const [parentIdentity, properties] of state.children) {
+        const restoredProperties = new Map();
+        for (const [property, childIdentities] of properties) {
+          const restoredChildren = new Set(childIdentities);
+          restoredProperties.set(property, restoredChildren);
+          for (const childIdentity of restoredChildren) {
+            const parents = parentObjectIdentitiesByChild.get(childIdentity) ?? new Set();
+            parents.add(parentIdentity);
+            parentObjectIdentitiesByChild.set(childIdentity, parents);
+          }
+        }
+        childIdentityByObjectIdentity.set(parentIdentity, restoredProperties);
+      }
+    };
+    const joinObjectBindingStates = states => {
+      const joinedPossible = new Map();
+      const joinedChildren = new Map();
+      for (const state of states.filter(Boolean)) {
+        for (const [localName, identities] of state.possible) {
+          const joined = joinedPossible.get(localName) ?? new Set();
+          for (const identity of identities) joined.add(identity);
+          joinedPossible.set(localName, joined);
+        }
+        for (const [parentIdentity, properties] of state.children) {
+          const joinedProperties = joinedChildren.get(parentIdentity) ?? new Map();
+          for (const [property, childIdentities] of properties) {
+            const joinedIdentities = joinedProperties.get(property) ?? new Set();
+            for (const childIdentity of childIdentities) joinedIdentities.add(childIdentity);
+            joinedProperties.set(property, joinedIdentities);
+          }
+          joinedChildren.set(parentIdentity, joinedProperties);
+        }
+      }
+      const finalState = states.findLast(Boolean);
+      restoreObjectBindingState({
+        current: new Map(finalState?.current ?? []),
+        possible: joinedPossible,
+        children: joinedChildren,
+      });
     };
     const memberPropertyName = member => {
       const property = unwrapExpression(member?.property);
@@ -927,56 +1310,82 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
     const setChildIdentity = (parentIdentity, property, childIdentity) => {
       if (!parentIdentity || property === null || !childIdentity) return;
       const children = childIdentityByObjectIdentity.get(parentIdentity) ?? new Map();
-      const previousChild = children.get(property);
-      if (previousChild && previousChild !== childIdentity) {
-        const previousParents = parentObjectIdentitiesByChild.get(previousChild);
-        previousParents?.delete(parentIdentity);
+      const previousChildren = children.get(property) ?? new Set();
+      for (const previousChild of previousChildren) {
+        if (previousChild === childIdentity) continue;
+        parentObjectIdentitiesByChild.get(previousChild)?.delete(parentIdentity);
       }
-      children.set(property, childIdentity);
+      children.set(property, new Set([childIdentity]));
       childIdentityByObjectIdentity.set(parentIdentity, children);
       const parents = parentObjectIdentitiesByChild.get(childIdentity) ?? new Set();
       parents.add(parentIdentity);
       parentObjectIdentitiesByChild.set(childIdentity, parents);
     };
-    const assignPatternIdentity = (pattern, identity) => {
+    const assignPatternIdentity = (pattern, identity, { conditional = false } = {}) => {
       const current = unwrapExpression(pattern);
       if (!current) return;
       if (current.type === 'Identifier') {
-        objectIdentityByLocalName.set(current.name, identity);
+        const bindingKey = bindingKeyForIdentifier(current);
+        objectIdentityByLocalName.set(bindingKey, identity);
+        if (conditional) {
+          const possible = possibleIdentitiesForLocalName(bindingKey);
+          if (identity) possible.add(identity);
+          possibleObjectIdentitiesByLocalName.set(bindingKey, possible);
+        } else {
+          possibleObjectIdentitiesByLocalName.set(bindingKey, identity ? new Set([identity]) : new Set());
+        }
         return;
       }
-      for (const localName of collectBindingNames(current)) {
-        objectIdentityByLocalName.set(localName, null);
+      for (const identifier of collectBindingIdentifiers(current)) {
+        const bindingKey = bindingKeyForIdentifier(identifier);
+        objectIdentityByLocalName.set(bindingKey, null);
+        if (!conditional) possibleObjectIdentitiesByLocalName.set(bindingKey, new Set());
       }
     };
-    const evaluateObjectIdentity = node => {
+    const evaluateObjectIdentity = (node, conditional = false) => {
       const current = unwrapExpression(node);
       if (!current) return null;
-      if (current.type === 'Identifier') return identityForLocalName(current.name);
+      if (current.type === 'Identifier') {
+        return identityForLocalName(bindingKeyForIdentifier(current));
+      }
       if (current.type === 'MemberExpression') {
-        const parentIdentity = evaluateObjectIdentity(current.object);
+        const parentIdentity = evaluateObjectIdentity(current.object, conditional);
+        if (current.computed) evaluateObjectIdentity(current.property, conditional);
         const property = memberPropertyName(current);
         if (!parentIdentity || property === null) return newObjectIdentity();
         const children = childIdentityByObjectIdentity.get(parentIdentity) ?? new Map();
         if (!children.has(property)) {
           setChildIdentity(parentIdentity, property, newObjectIdentity());
         }
-        return childIdentityByObjectIdentity.get(parentIdentity)?.get(property) ?? null;
+        return [...(childIdentityByObjectIdentity.get(parentIdentity)?.get(property) ?? [])].at(-1) ?? null;
       }
       if (current.type === 'SequenceExpression') {
         let identity = null;
-        for (const expression of current.expressions) identity = evaluateObjectIdentity(expression);
+        for (const expression of current.expressions) {
+          identity = evaluateObjectIdentity(expression, conditional);
+        }
         return identity;
       }
       if (current.type === 'AssignmentExpression' && current.operator === '=') {
         const left = unwrapExpression(current.left);
-        const memberIdentity = left?.type === 'MemberExpression' ? evaluateObjectIdentity(left.object) : null;
-        const identity = evaluateObjectIdentity(current.right);
+        const memberIdentity =
+          left?.type === 'MemberExpression' ? evaluateObjectIdentity(left.object, conditional) : null;
+        if (left?.type === 'MemberExpression' && left.computed) {
+          evaluateObjectIdentity(left.property, conditional);
+        }
+        const identity = evaluateObjectIdentity(current.right, conditional);
         if (left?.type === 'MemberExpression') {
-          setChildIdentity(memberIdentity, memberPropertyName(left), identity);
-          memberWrites.push({ identity: memberIdentity, right: current.right });
+          const object = unwrapExpression(left.object);
+          const memberIdentities =
+            object?.type === 'Identifier'
+              ? possibleIdentitiesForLocalName(bindingKeyForIdentifier(object))
+              : new Set(memberIdentity ? [memberIdentity] : []);
+          for (const possibleIdentity of memberIdentities) {
+            setChildIdentity(possibleIdentity, memberPropertyName(left), identity);
+            memberWrites.push({ identity: possibleIdentity, right: current.right });
+          }
         } else {
-          assignPatternIdentity(left, identity);
+          assignPatternIdentity(left, identity, { conditional });
         }
         return identity;
       }
@@ -984,10 +1393,11 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
         const identity = newObjectIdentity();
         for (const property of current.properties) {
           if (property.type === 'SpreadElement') {
-            evaluateObjectIdentity(property.argument);
+            evaluateObjectIdentity(property.argument, conditional);
             continue;
           }
-          const childIdentity = evaluateObjectIdentity(property.value);
+          if (property.computed) evaluateObjectIdentity(property.key, conditional);
+          const childIdentity = evaluateObjectIdentity(property.value, conditional);
           setChildIdentity(identity, propertyName(property), childIdentity);
         }
         return identity;
@@ -997,36 +1407,91 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
         for (let index = 0; index < current.elements.length; index += 1) {
           const element = current.elements[index];
           if (element?.type === 'SpreadElement') {
-            evaluateObjectIdentity(element.argument);
+            evaluateObjectIdentity(element.argument, conditional);
             continue;
           }
-          const childIdentity = evaluateObjectIdentity(element);
+          const childIdentity = evaluateObjectIdentity(element, conditional);
           setChildIdentity(identity, String(index), childIdentity);
         }
         return identity;
       }
+      if (current.type === 'LogicalExpression') {
+        evaluateObjectIdentity(current.left, conditional);
+        const logicalBaseState = snapshotObjectBindingState();
+        evaluateObjectIdentity(current.right, conditional);
+        const logicalRightState = snapshotObjectBindingState();
+        joinObjectBindingStates([logicalBaseState, logicalRightState]);
+        return newObjectIdentity();
+      }
+      if (current.type === 'BinaryExpression') {
+        evaluateObjectIdentity(current.left, conditional);
+        evaluateObjectIdentity(current.right, conditional);
+        return newObjectIdentity();
+      }
+      if (current.type === 'ConditionalExpression') {
+        evaluateObjectIdentity(current.test, conditional);
+        const conditionalBaseState = snapshotObjectBindingState();
+        const consequentIdentity = evaluateObjectIdentity(current.consequent, conditional);
+        const consequentState = snapshotObjectBindingState();
+        restoreObjectBindingState(conditionalBaseState);
+        const alternateIdentity = evaluateObjectIdentity(current.alternate, conditional);
+        const alternateState = snapshotObjectBindingState();
+        joinObjectBindingStates([
+          consequentState,
+          alternateState,
+          ...(conditional ? [conditionalBaseState] : []),
+        ]);
+        return alternateIdentity ?? consequentIdentity ?? newObjectIdentity();
+      }
+      if (
+        ['AwaitExpression', 'UnaryExpression', 'UpdateExpression', 'YieldExpression'].includes(current.type)
+      ) {
+        evaluateObjectIdentity(current.argument, conditional);
+        return newObjectIdentity();
+      }
+      if (current.type === 'CallExpression' || current.type === 'NewExpression') {
+        evaluateObjectIdentity(current.callee, conditional);
+        for (const argument of current.arguments ?? []) {
+          evaluateObjectIdentity(
+            argument?.type === 'SpreadElement' ? argument.argument : argument,
+            conditional
+          );
+        }
+        return newObjectIdentity();
+      }
+      if (current.type === 'TemplateLiteral') {
+        for (const expression of current.expressions) {
+          evaluateObjectIdentity(expression, conditional);
+        }
+        return newObjectIdentity();
+      }
+      if (current.type === 'TaggedTemplateExpression') {
+        evaluateObjectIdentity(current.tag, conditional);
+        evaluateObjectIdentity(current.quasi, conditional);
+        return newObjectIdentity();
+      }
+      if (current.type === 'ImportExpression') {
+        evaluateObjectIdentity(current.source, conditional);
+        evaluateObjectIdentity(current.options, conditional);
+        return newObjectIdentity();
+      }
       return newObjectIdentity();
     };
-    const executeVariableDeclaration = declaration => {
+    const executeVariableDeclaration = (declaration, { conditional = false } = {}) => {
       for (const declarator of declaration.declarations) {
-        const identity = declarator.init ? evaluateObjectIdentity(declarator.init) : null;
-        assignPatternIdentity(declarator.id, identity);
+        const identity = declarator.init ? evaluateObjectIdentity(declarator.init, conditional) : null;
+        assignPatternIdentity(declarator.id, identity, { conditional });
       }
     };
-    for (const statement of sourceFile.body) {
-      if (statement.type === 'VariableDeclaration') {
-        executeVariableDeclaration(statement);
-      } else if (
-        statement.type === 'ExportNamedDeclaration' &&
-        statement.declaration?.type === 'VariableDeclaration'
-      ) {
-        executeVariableDeclaration(statement.declaration);
-      } else if (statement.type === 'ExpressionStatement') {
-        evaluateObjectIdentity(statement.expression);
-      } else if (statement.type === 'ExportDefaultDeclaration') {
-        evaluateObjectIdentity(statement.declaration);
-      }
-    }
+    walkModuleExecution({
+      onVariableDeclaration: executeVariableDeclaration,
+      onExpression(expression, { conditional }) {
+        evaluateObjectIdentity(expression, conditional);
+      },
+      snapshotBranchState: snapshotObjectBindingState,
+      restoreBranchState: restoreObjectBindingState,
+      joinBranchStates: joinObjectBindingStates,
+    });
     const rootsByObjectIdentity = new Map();
 
     let changed = true;
@@ -1035,7 +1500,7 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
       for (const declarator of variableDeclarators) {
         if (mergePatternRoots(declarator.id, declarator.init)) changed = true;
       }
-      for (const assignment of topLevelAssignments) {
+      for (const assignment of moduleExecutionAssignments) {
         const left = unwrapExpression(assignment.left);
         if (left?.type !== 'MemberExpression' && mergePatternRoots(left, assignment.right)) {
           changed = true;
@@ -1063,9 +1528,12 @@ function collectRoutedBindingBridgeViolations(dimensionNames, candidates = produ
           rootsByObjectIdentity.set(parentIdentity, parentRoots);
         }
       }
-      for (const [localName, identity] of objectIdentityByLocalName) {
-        if (!identity) continue;
-        if (mergeRoots(localName, new Set(rootsByObjectIdentity.get(identity) ?? []))) changed = true;
+      for (const [localName, identities] of possibleObjectIdentitiesByLocalName) {
+        for (const identity of identities) {
+          if (mergeRoots(localName, new Set(rootsByObjectIdentity.get(identity) ?? []))) {
+            changed = true;
+          }
+        }
       }
     }
 
@@ -1598,6 +2066,163 @@ test('routed dimension bindings cannot become local compatibility bridges', () =
     'export const defaults = { width: DEFAULT_WIDTH };',
     'export const defaults = [DEFAULT_WIDTH];',
     'let WIDTH; WIDTH = (DEFAULT_WIDTH as number)!; export { WIDTH };',
+    ['let forwarded;', 'if (condition) {', '  forwarded = DEFAULT_WIDTH;', '}', 'export { forwarded };'].join(
+      '\n'
+    ),
+    [
+      'let forwarded;',
+      'if (condition) {',
+      '  forwarded = 1;',
+      '} else {',
+      '  forwarded = DEFAULT_WIDTH;',
+      '}',
+      'export { forwarded };',
+    ].join('\n'),
+    ['let forwarded;', 'condition && (forwarded = DEFAULT_WIDTH);', 'export { forwarded };'].join('\n'),
+    ['let forwarded;', 'condition ? (forwarded = DEFAULT_WIDTH) : undefined;', 'export { forwarded };'].join(
+      '\n'
+    ),
+    [
+      'let forwarded;',
+      'switch (mode) {',
+      "  case 'width':",
+      '    forwarded = DEFAULT_WIDTH;',
+      '    break;',
+      '}',
+      'export { forwarded };',
+    ].join('\n'),
+    [
+      'let forwarded;',
+      'try {',
+      '  doWork();',
+      '} finally {',
+      '  forwarded = DEFAULT_WIDTH;',
+      '}',
+      'export { forwarded };',
+    ].join('\n'),
+    [
+      'let forwarded;',
+      'for (const item of items) {',
+      '  forwarded = DEFAULT_WIDTH;',
+      '}',
+      'export { forwarded };',
+    ].join('\n'),
+    ['export const defaults = {};', 'if (condition) {', '  defaults.width = DEFAULT_WIDTH;', '}'].join('\n'),
+    [
+      'let first;',
+      'let second;',
+      'if (condition) {',
+      '  first = DEFAULT_WIDTH;',
+      '  second = first;',
+      '}',
+      'export { second };',
+    ].join('\n'),
+    [
+      'const root = {};',
+      'let alias;',
+      'if (condition) { alias = root; } else { alias = {}; }',
+      'alias.width = DEFAULT_WIDTH;',
+      'export { root };',
+    ].join('\n'),
+    [
+      'const root = {};',
+      'let alias = root;',
+      'if (condition) { alias = {}; }',
+      'alias.width = DEFAULT_WIDTH;',
+      'export { root };',
+    ].join('\n'),
+    [
+      'const root = { nested: {} };',
+      'if (condition) {',
+      '  root.nested.width = DEFAULT_WIDTH;',
+      '} else {',
+      '  root.nested = {};',
+      '}',
+      'export { root };',
+    ].join('\n'),
+    [
+      'const root = {};',
+      'let alias = root;',
+      'while (condition) { alias = {}; }',
+      'alias.width = DEFAULT_WIDTH;',
+      'export { root };',
+    ].join('\n'),
+    'export const WIDTH = condition ? DEFAULT_WIDTH : 1;',
+    'export const WIDTH = condition && DEFAULT_WIDTH;',
+    [
+      'const root = {};',
+      'let alias = root;',
+      'const { safe = (alias = {}) } = source;',
+      'alias.width = DEFAULT_WIDTH;',
+      'export { root };',
+    ].join('\n'),
+    [
+      'const root = {};',
+      'let alias = root;',
+      'try { mayThrow(); alias = {}; } catch {}',
+      'alias.width = DEFAULT_WIDTH;',
+      'export { root };',
+    ].join('\n'),
+    ['let forwarded;', '{ forwarded = DEFAULT_WIDTH; }', 'export { forwarded };'].join('\n'),
+    [
+      'let forwarded;',
+      'try {',
+      '  throw new Error();',
+      '} catch (error) {',
+      '  forwarded = DEFAULT_WIDTH;',
+      '}',
+      'export { forwarded };',
+    ].join('\n'),
+    ['let forwarded;', 'while (condition) { forwarded = DEFAULT_WIDTH; }', 'export { forwarded };'].join(
+      '\n'
+    ),
+    ['let forwarded;', 'do { forwarded = DEFAULT_WIDTH; } while (condition);', 'export { forwarded };'].join(
+      '\n'
+    ),
+    [
+      'let forwarded;',
+      'for (let index = 0; index < count; index += 1) { forwarded = DEFAULT_WIDTH; }',
+      'export { forwarded };',
+    ].join('\n'),
+    [
+      'let forwarded;',
+      'for (const key in values) { forwarded = DEFAULT_WIDTH; }',
+      'export { forwarded };',
+    ].join('\n'),
+    ['let forwarded;', 'bridge: { forwarded = DEFAULT_WIDTH; }', 'export { forwarded };'].join('\n'),
+    ['let forwarded;', 'with (context) { forwarded = DEFAULT_WIDTH; }', 'export { forwarded };'].join('\n'),
+    [
+      'let forwarded;',
+      'class Bridge { static { forwarded = DEFAULT_WIDTH; } }',
+      'export { forwarded };',
+    ].join('\n'),
+    [
+      'let forwarded;',
+      'class Bridge { static accessor width = (forwarded = DEFAULT_WIDTH); }',
+      'export { forwarded };',
+    ].join('\n'),
+    ['let forwarded;', 'class Bridge { [(forwarded = DEFAULT_WIDTH)]() {} }', 'export { forwarded };'].join(
+      '\n'
+    ),
+    ['let forwarded;', 'const { safe = (forwarded = DEFAULT_WIDTH) } = {};', 'export { forwarded };'].join(
+      '\n'
+    ),
+    [
+      'let forwarded;',
+      'try {',
+      '  throw {};',
+      '} catch ({ safe = (forwarded = DEFAULT_WIDTH) }) {}',
+      'export { forwarded };',
+    ].join('\n'),
+    ['let forwarded;', 'void (forwarded = DEFAULT_WIDTH);', 'export { forwarded };'].join('\n'),
+    ['let forwarded;', 'await (forwarded = DEFAULT_WIDTH);', 'export { forwarded };'].join('\n'),
+    ['let forwarded;', 'consume(forwarded = DEFAULT_WIDTH);', 'export { forwarded };'].join('\n'),
+    ['let forwarded;', 'new Box(forwarded = DEFAULT_WIDTH);', 'export { forwarded };'].join('\n'),
+    ['let forwarded;', '`${(forwarded = DEFAULT_WIDTH)}`;', 'export { forwarded };'].join('\n'),
+    ['let forwarded;', '[forwarded = DEFAULT_WIDTH];', 'export { forwarded };'].join('\n'),
+    ['let forwarded;', '({ value: (forwarded = DEFAULT_WIDTH) });', 'export { forwarded };'].join('\n'),
+    ['let forwarded;', 'target[forwarded = DEFAULT_WIDTH];', 'export { forwarded };'].join('\n'),
+    ['let forwarded;', 'tag`${(forwarded = DEFAULT_WIDTH)}`;', 'export { forwarded };'].join('\n'),
     'let first; let second; first = second = DEFAULT_WIDTH; export { second };',
     'let first; let second; (first = DEFAULT_WIDTH, second = first); export { second };',
     'let inner; const outer = (inner = DEFAULT_WIDTH, inner); export { outer };',
@@ -1681,6 +2306,38 @@ test('routed dimension bindings cannot become local compatibility bridges', () =
     'const internalDefaults = {};',
     'internalDefaults.width = WARDROBE_WIDTH_MIN;',
     'export function readInternalDefaults() { return { ...internalDefaults }; }',
+    'export function readWidth() {',
+    '  if (condition) {',
+    '    return WARDROBE_WIDTH_MIN;',
+    '  }',
+    '  return 0;',
+    '}',
+    'export const readWidthFromArrow = () => {',
+    '  let width;',
+    '  if (condition) {',
+    '    width = WARDROBE_WIDTH_MIN;',
+    '  }',
+    '  return width;',
+    '};',
+    'const deferredDefaults = {};',
+    'function internalWork() {',
+    '  deferredDefaults.width = WARDROBE_WIDTH_MIN;',
+    '}',
+    'export { internalWork };',
+    'export const objectReader = {',
+    '  readWidth() {',
+    '    let width;',
+    '    if (condition) width = WARDROBE_WIDTH_MIN;',
+    '    return width;',
+    '  },',
+    '};',
+    'export class ClassReader {',
+    '  static readWidth() {',
+    '    let width;',
+    '    if (condition) width = WARDROBE_WIDTH_MIN;',
+    '    return width;',
+    '  }',
+    '}',
   ].join('\n');
   assert.deepEqual(
     collectRoutedBindingBridgeViolations(dimensionNames, [{ file: consumerA, source: businessFunctions }]),
@@ -1688,6 +2345,56 @@ test('routed dimension bindings cannot become local compatibility bridges', () =
   );
 
   const nonBridgeCases = [
+    ['let forwarded = 0;', '{ let forwarded; forwarded = DEFAULT_WIDTH; }', 'export { forwarded };'].join(
+      '\n'
+    ),
+    [
+      'let forwarded = 0;',
+      'try { throw 1; } catch (forwarded) { forwarded = DEFAULT_WIDTH; }',
+      'export { forwarded };',
+    ].join('\n'),
+    [
+      'let forwarded = 0;',
+      '{ const DEFAULT_WIDTH = 1; forwarded = DEFAULT_WIDTH; }',
+      'export { forwarded };',
+    ].join('\n'),
+    [
+      'const root = {};',
+      'let alias = root;',
+      'if (condition) { alias = {}; } else { alias = {}; }',
+      'alias.width = DEFAULT_WIDTH;',
+      'export { root };',
+    ].join('\n'),
+    [
+      'const root = {};',
+      'if (condition) {',
+      '  const alias = root;',
+      '} else {',
+      '  const alias = {};',
+      '  alias.width = DEFAULT_WIDTH;',
+      '}',
+      'export { root };',
+    ].join('\n'),
+    [
+      'const root = {};',
+      'let alias = root;',
+      'condition ? (alias = {}) : (alias = {});',
+      'alias.width = DEFAULT_WIDTH;',
+      'export { root };',
+    ].join('\n'),
+    [
+      'const root = {};',
+      'let alias = root;',
+      'switch (mode) {',
+      '  case 1:',
+      '    alias = {};',
+      '    break;',
+      '  default:',
+      '    alias = {};',
+      '}',
+      'alias.width = DEFAULT_WIDTH;',
+      'export { root };',
+    ].join('\n'),
     ['const root = {};', 'let alias = root;', 'alias = DEFAULT_WIDTH;', 'export { root };'].join('\n'),
     [
       'const root = {};',
