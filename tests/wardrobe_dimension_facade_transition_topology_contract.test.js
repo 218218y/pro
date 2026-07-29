@@ -1630,7 +1630,8 @@ function inspectManifest(candidateManifest, actualRows = null, options = {}) {
   const facadeSource = options.facadeSource ?? read(facadeRel);
   const servicesBaseSource = options.servicesBaseSource ?? null;
   const servicesEntrySource = options.servicesEntrySource ?? null;
-  assert.equal(candidateManifest.version, 1);
+  assert.equal(candidateManifest.version, 2);
+  assert.match(candidateManifest.capturedProductionHead, /^[a-f0-9]{40}$/u);
   assert.equal(candidateManifest.facade.file, facadeRel);
   assert.equal(candidateManifest.facade.featureCompatibilityRoute, publicDimensionsRel);
   assert.ok(Array.isArray(candidateManifest.symbols));
@@ -1727,10 +1728,17 @@ function inspectManifest(candidateManifest, actualRows = null, options = {}) {
 
     if (entry.runtimeApiRoute) {
       assert.deepEqual(entry.runtimeApiRoute, {
-        file: runtimeApiRel,
+        routeFile: runtimeApiRel,
+        sourceFile: facadeRel,
+        sourceSymbol: entry.name,
         kind: entry.kind,
         form: entry.kind === 'type' ? 'type-re-export' : 'named-re-export',
+        identity: entry.facadeDeclaration.identity,
+        declarationMode: 'legacy-facade',
       });
+      assert.ok(entry.runtimeReconstruction, entry.name);
+      assert.equal(entry.runtimeReconstruction.target.kind, entry.kind, entry.name);
+      assert.equal(entry.runtimeReconstruction.runtimeIdentity, 'strict', entry.name);
       assert.ok(entry.servicesApiRoute, entry.name);
       assert.equal(entry.servicesApiRoute.baseFile, servicesBaseRel, entry.name);
       assert.equal(entry.servicesApiRoute.entryFile, servicesApiRel, entry.name);
@@ -1751,6 +1759,7 @@ function inspectManifest(candidateManifest, actualRows = null, options = {}) {
         entry.name
       );
     } else {
+      assert.equal(entry.runtimeReconstruction, null, entry.name);
       assert.equal(entry.servicesApiRoute, null, entry.name);
     }
   }
@@ -1810,8 +1819,8 @@ function inspectManifest(candidateManifest, actualRows = null, options = {}) {
 }
 
 function inspectInventory(candidateInventory, actualRows) {
-  assert.equal(candidateInventory.version, 1);
-  assert.equal(candidateInventory.capturedAtHead, manifest.capturedAtHead);
+  assert.equal(candidateInventory.version, 2);
+  assert.equal(candidateInventory.capturedProductionHead, manifest.capturedProductionHead);
   assert.equal(candidateInventory.completeRouteInventory, manifestRel);
   assert.deepEqual(inventoryRows(candidateInventory), actualRows);
   assert.deepEqual(candidateInventory.routeCatalog, {
@@ -2603,7 +2612,7 @@ test('manifest and inventory mutation probes fail owner, kind, route, consumer, 
   assert.throws(() => inspectInventory(changedHop, actualConsumers));
 
   const changedCaptureHead = structuredClone(inventory);
-  changedCaptureHead.capturedAtHead = '0000000000000000000000000000000000000000';
+  changedCaptureHead.capturedProductionHead = '0000000000000000000000000000000000000000';
   assert.throws(() => inspectInventory(changedCaptureHead, actualConsumers));
 
   const changedNegativeEvidence = structuredClone(inventory);
