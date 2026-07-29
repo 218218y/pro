@@ -96,15 +96,19 @@ function contract({
   facades = [],
   dynamicImportAllowlist = [],
   migrationBudgets = [],
+  migrationRetirements = [],
+  compatibilityBudgets = [],
 } = {}) {
   return {
-    version: '2.3',
+    version: '2.4',
     root: 'esm',
     ratchet: RATCHET,
     rules,
     facades,
     dynamicImportAllowlist,
     migrationBudgets,
+    migrationRetirements,
+    compatibilityBudgets,
   };
 }
 
@@ -137,6 +141,38 @@ function migrationBudget(overrides = {}) {
     reviewedAt: '2026-07-20',
     reviewBy: '2026-10-18',
     removalCondition: 'Remove after the extra units statement is no longer required.',
+    ...overrides,
+  };
+}
+
+function compatibilityBudget(overrides = {}) {
+  return {
+    id: 'example-compatibility-route',
+    from: 'ui',
+    to: 'services',
+    fromFile: 'esm/native/ui/example.ts',
+    statement: {
+      toFile: 'esm/native/services/units.ts',
+      kind: 'value',
+      syntax: 'static-import',
+      importedSymbols: ['CM_PER_METER'],
+    },
+    owner: 'test-compatibility-owner',
+    reason: 'Reviewed permanent compatibility route.',
+    reviewedAt: '2026-07-20',
+    nextReviewBy: '2027-07-20',
+    publicSurface: 'ui/example.ts → services/units.ts',
+    ...overrides,
+  };
+}
+
+function migrationRetirement(overrides = {}) {
+  return {
+    entryNumber: 1,
+    retiredAt: '2026-07-29',
+    mode: 'ownership-transferred',
+    reason: 'Permanent compatibility ownership replaces active migration debt.',
+    replacementCompatibilityBudgetId: 'example-compatibility-route',
     ...overrides,
   };
 }
@@ -946,6 +982,64 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
+  assert.equal(baseline.version, '2.4');
+  assert.equal(baseline.migrationRetirements.length, 4);
+  assert.equal(baseline.compatibilityBudgets.length, 4);
+  const runtimeCompatibilityOwner = 'wardrobe-dimension-runtime-public-compatibility';
+  const runtimePublicSurface =
+    'esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts';
+  const runtimeCompatibilityIds = [
+    'runtime-product-limits-public-compatibility',
+    'runtime-wardrobe-defaults-public-compatibility',
+    'runtime-stack-split-public-compatibility',
+    'runtime-default-resolution-public-compatibility',
+  ];
+  assert.deepEqual(
+    baseline.migrationRetirements.map(retirement => ({
+      entryNumber: retirement.entryNumber,
+      retiredAt: retirement.retiredAt,
+      mode: retirement.mode,
+      replacementCompatibilityBudgetId: retirement.replacementCompatibilityBudgetId,
+    })),
+    runtimeCompatibilityIds.map((id, index) => ({
+      entryNumber: 175 + index,
+      retiredAt: '2026-07-29',
+      mode: 'ownership-transferred',
+      replacementCompatibilityBudgetId: id,
+    }))
+  );
+  assert.deepEqual(
+    baseline.compatibilityBudgets.map((budget, index) => ({
+      id: budget.id,
+      from: budget.from,
+      to: budget.to,
+      fromFile: budget.fromFile,
+      statement: budget.statement,
+      owner: budget.owner,
+      reviewedAt: budget.reviewedAt,
+      nextReviewBy: budget.nextReviewBy,
+      publicSurface: budget.publicSurface,
+      historicalAddedImport: baseline.migrationBudgets[174 + index].addedImport,
+    })),
+    runtimeCompatibilityIds.map((id, index) => ({
+      id,
+      from: 'runtime',
+      to: 'shared',
+      fromFile: 'esm/native/runtime/api.ts',
+      statement: baseline.migrationBudgets[174 + index].addedImport,
+      owner: runtimeCompatibilityOwner,
+      reviewedAt: '2026-07-29',
+      nextReviewBy: '2027-07-29',
+      publicSurface: runtimePublicSurface,
+      historicalAddedImport: baseline.migrationBudgets[174 + index].addedImport,
+    }))
+  );
+  assert.equal(
+    semanticSha256(baseline.migrationBudgets),
+    '4f2439c0d05c724a812661c16fe408ea53c434a97f62368eb91e34b9aa1e7d67',
+    'Prefix 178 must remain semantically unchanged when retirement and compatibility arrays are added'
+  );
+
   const expectedEntries = [
     ['esm/native/builder/corner_connector_interior_rod.ts', 'esm/shared/dimensions/units.ts'],
     ['esm/native/builder/corner_connector_interior_special_metrics.ts', 'esm/shared/dimensions/units.ts'],
@@ -1697,10 +1791,32 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
   assert.equal(report.migrationBudgets.length, 178);
+  assert.equal(report.historicalMigrationEntries.length, 178);
+  assert.equal(report.activeMigrationEntries.length, 174);
+  assert.equal(report.retiredMigrationEntries.length, 4);
+  assert.equal(report.compatibilityBudgets.length, 4);
   assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 108);
+  const retiredEntryNumbers = new Set(baseline.migrationRetirements.map(entry => entry.entryNumber));
   assert.equal(
-    report.migrationBudgets.every(entry => entry.active === true),
+    new Set(
+      baseline.migrationBudgets
+        .filter((_, index) => !retiredEntryNumbers.has(index + 1))
+        .map(entry => entry.fromFile)
+    ).size,
+    107
+  );
+  assert.equal(
+    report.migrationBudgets.slice(0, 174).every(entry => entry.active === true),
     true
+  );
+  assert.deepEqual(
+    report.migrationBudgets.slice(174).map(entry => [entry.entryNumber, entry.active, entry.retired]),
+    [
+      [175, false, true],
+      [176, false, true],
+      [177, false, true],
+      [178, false, true],
+    ]
   );
 
   // Repository-wide totals are owned here. Historical migration tests below lock only
@@ -1711,7 +1827,7 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
     ['services>shared', { observed: 230, migration: 63, reviewed: 167, budget: 167 }],
     ['ui>shared', { observed: 27, migration: 1, reviewed: 26, budget: 27 }],
     ['platform>shared', { observed: 6, migration: 2, reviewed: 4, budget: 4 }],
-    ['runtime>shared', { observed: 40, migration: 8, reviewed: 32, budget: 32 }],
+    ['runtime>shared', { observed: 40, migration: 4, compatibility: 4, reviewed: 32, budget: 32 }],
   ]);
   for (const [key, expected] of expectedEdges) {
     const [from, to] = key.split('>');
@@ -1720,9 +1836,46 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
     assert.ok(edge, `missing observed edge ${key}`);
     assert.ok(rule, `missing baseline rule ${key}`);
     assert.equal(edge.importCount, expected.observed);
-    assert.equal(expected.observed - expected.migration, expected.reviewed);
+    const activeMigrationCount = report.activeMigrationEntries.filter(
+      entry => entry.from === from && entry.to === to
+    ).length;
+    const compatibilityCount = report.compatibilityBudgets.filter(
+      entry => entry.from === from && entry.to === to
+    ).length;
+    assert.equal(activeMigrationCount, expected.migration);
+    assert.equal(compatibilityCount, expected.compatibility || 0);
+    assert.equal(expected.observed - expected.migration - (expected.compatibility || 0), expected.reviewed);
     assert.equal(rule.maxImportCount, expected.budget);
   }
+
+  const runtimeSharedEdge = graph.edges.find(entry => entry.from === 'runtime' && entry.to === 'shared');
+  const runtimeSharedRule = baseline.rules.find(entry => entry.from === 'runtime' && entry.to === 'shared');
+  assert.ok(runtimeSharedEdge);
+  assert.ok(runtimeSharedRule);
+  assert.deepEqual(
+    {
+      observedValueStatements: runtimeSharedEdge.valueImportCount,
+      activeMigrationValueStatements: report.activeMigrationEntries.filter(
+        entry => entry.from === 'runtime' && entry.to === 'shared'
+      ).length,
+      compatibilityValueStatements: report.compatibilityBudgets.filter(
+        entry => entry.from === 'runtime' && entry.to === 'shared'
+      ).length,
+      reviewedGeneralValueStatements:
+        runtimeSharedEdge.valueImportCount -
+        report.activeMigrationEntries.filter(entry => entry.from === 'runtime' && entry.to === 'shared')
+          .length -
+        report.compatibilityBudgets.filter(entry => entry.from === 'runtime' && entry.to === 'shared').length,
+      generalValueBudget: runtimeSharedRule.maxValueImportCount,
+    },
+    {
+      observedValueStatements: 39,
+      activeMigrationValueStatements: 4,
+      compatibilityValueStatements: 4,
+      reviewedGeneralValueStatements: 31,
+      generalValueBudget: 31,
+    }
+  );
 
   const featureSharedEdge = graph.edges.find(entry => entry.from === 'features' && entry.to === 'shared');
   const uiFeaturesEdge = graph.edges.find(entry => entry.from === 'ui' && entry.to === 'features');
@@ -1735,12 +1888,8 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
   assert.equal(uiFeaturesEdge.valueImporterCount, 37);
   assert.equal(uiFeaturesEdge.valueImportCount, 63);
 
-  const runtimeSharedEdge = graph.edges.find(entry => entry.from === 'runtime' && entry.to === 'shared');
-  const runtimeSharedRule = baseline.rules.find(entry => entry.from === 'runtime' && entry.to === 'shared');
-  assert.ok(runtimeSharedEdge);
-  assert.ok(runtimeSharedRule);
   assert.equal(runtimeSharedEdge.valueImportCount, 39);
-  assert.equal(runtimeSharedEdge.valueImportCount - 8, 31);
+  assert.equal(runtimeSharedEdge.valueImportCount - 4 - 4, 31);
   assert.equal(runtimeSharedRule.maxValueImportCount, 31);
 
   assert.equal(baseline.rules.length, 52);
@@ -3812,4 +3961,241 @@ test('repository Sketch Box Storage Preview pair migration entries are exact and
         'Remove this entry when a reviewed Sketch Box vertical storage-preview composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade.',
     },
   ]);
+});
+
+test('Layer Contract 2.4 separates historical, active, retired, and compatibility ownership', () => {
+  const budget = migrationBudget();
+  const compatibility = compatibilityBudget();
+  const retirement = migrationRetirement();
+  const added = migrationImport({
+    toFile: budget.addedImport.toFile,
+    importedSymbols: budget.addedImport.importedSymbols,
+    statementKey: 'added',
+  });
+  const companion = migrationImport({
+    toFile: budget.companionImport.toFile,
+    importedSymbols: budget.companionImport.importedSymbols,
+    statementKey: 'companion',
+  });
+  const graph = {
+    edges: [edge()],
+    imports: [added, companion],
+    unresolvedDynamicImports: [],
+    forbiddenModuleSyntax: [],
+    unclassifiedSourceFiles: [],
+  };
+  const report = evaluateLayerContract(
+    graph,
+    contract({
+      migrationBudgets: [budget],
+      migrationRetirements: [retirement],
+      compatibilityBudgets: [compatibility],
+    }),
+    { currentDate: '2027-01-01' }
+  );
+  assert.equal(report.ok, true, JSON.stringify(report.failures));
+  assert.equal(report.historicalMigrationEntries.length, 1);
+  assert.equal(report.activeMigrationEntries.length, 0);
+  assert.equal(report.retiredMigrationEntries.length, 1);
+  assert.equal(report.compatibilityBudgets.length, 1);
+  assert.equal(report.migrationBudgets[0].active, false);
+  assert.equal(report.migrationBudgets[0].retired, true);
+});
+
+test('Layer Contract 2.4 retirement and compatibility ownership fail closed', () => {
+  const budget = migrationBudget();
+  const compatibility = compatibilityBudget();
+  const retirement = migrationRetirement();
+  const added = migrationImport({
+    toFile: budget.addedImport.toFile,
+    importedSymbols: budget.addedImport.importedSymbols,
+    statementKey: 'added',
+  });
+  const companion = migrationImport({
+    toFile: budget.companionImport.toFile,
+    importedSymbols: budget.companionImport.importedSymbols,
+    statementKey: 'companion',
+  });
+  const graph = {
+    edges: [edge()],
+    imports: [added, companion],
+    unresolvedDynamicImports: [],
+    forbiddenModuleSyntax: [],
+    unclassifiedSourceFiles: [],
+  };
+
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          migrationBudgets: [budget],
+          migrationRetirements: [retirement, retirement],
+          compatibilityBudgets: [compatibility],
+        })
+      ),
+    /duplicate migration retirement/
+  );
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          migrationBudgets: [budget],
+          migrationRetirements: [migrationRetirement({ entryNumber: 2 })],
+          compatibilityBudgets: [compatibility],
+        })
+      ),
+    /does not exist/
+  );
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          compatibilityBudgets: [compatibility, { ...compatibility, id: 'duplicate-route' }],
+        })
+      ),
+    /duplicate compatibility statement ownership/
+  );
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          compatibilityBudgets: [
+            compatibilityBudget({
+              statement: { ...compatibility.statement, importedSymbols: ['*'] },
+            }),
+          ],
+        })
+      ),
+    /wildcard requires allowWildcard/
+  );
+
+  const conflict = evaluateLayerContract(
+    graph,
+    contract({ migrationBudgets: [budget], compatibilityBudgets: [compatibility] }),
+    { currentDate: '2026-07-29' }
+  );
+  assert.equal(
+    conflict.failures.some(failure => failure.kind === 'compatibility-active-migration-ownership-conflict'),
+    true
+  );
+
+  const mismatchedTransfer = evaluateLayerContract(
+    graph,
+    contract({
+      migrationBudgets: [budget],
+      migrationRetirements: [retirement],
+      compatibilityBudgets: [
+        compatibilityBudget({
+          statement: { ...compatibility.statement, importedSymbols: ['WRONG_SYMBOL'] },
+        }),
+      ],
+    }),
+    { currentDate: '2027-01-01' }
+  );
+  assert.equal(
+    mismatchedTransfer.failures.some(
+      failure => failure.kind === 'migration-retirement-compatibility-mismatch'
+    ),
+    true
+  );
+
+  const aliasDrift = evaluateLayerContract(
+    { ...graph, imports: [{ ...added, bindings: [{ importedName: 'CM_PER_METER', localName: 'cm' }] }] },
+    contract({ compatibilityBudgets: [compatibility] })
+  );
+  assert.equal(
+    aliasDrift.failures.some(failure => failure.kind === 'compatibility-budget-alias-drift'),
+    true
+  );
+
+  for (const [label, statement, failureKind] of [
+    [
+      'target',
+      { ...compatibility.statement, toFile: 'esm/native/services/other.ts' },
+      'compatibility-budget-statement-missing',
+    ],
+    [
+      'symbols',
+      { ...compatibility.statement, importedSymbols: ['WRONG_SYMBOL'] },
+      'compatibility-budget-statement-missing',
+    ],
+    [
+      'syntax',
+      { ...compatibility.statement, syntax: 'static-re-export' },
+      'compatibility-budget-syntax-drift',
+    ],
+  ]) {
+    const drift = evaluateLayerContract(
+      graph,
+      contract({ compatibilityBudgets: [compatibilityBudget({ statement })] })
+    );
+    assert.equal(
+      drift.failures.some(failure => failure.kind === failureKind),
+      true,
+      `${label} drift must fail exact compatibility ownership`
+    );
+  }
+});
+
+test('Layer Contract 2.4 statement-removed retirement requires absence and compatibility does not hide other growth', () => {
+  const budget = migrationBudget();
+  const added = migrationImport({
+    toFile: budget.addedImport.toFile,
+    importedSymbols: budget.addedImport.importedSymbols,
+    statementKey: 'added',
+  });
+  const graph = {
+    edges: [edge()],
+    imports: [added],
+    unresolvedDynamicImports: [],
+    forbiddenModuleSyntax: [],
+    unclassifiedSourceFiles: [],
+  };
+  const baseline = contract({
+    migrationBudgets: [budget],
+    migrationRetirements: [
+      migrationRetirement({
+        mode: 'statement-removed',
+        replacementCompatibilityBudgetId: null,
+      }),
+    ],
+  });
+  const report = evaluateLayerContract(graph, baseline);
+  assert.equal(
+    report.failures.some(failure => failure.kind === 'migration-retirement-statement-still-present'),
+    true
+  );
+
+  const compatibility = compatibilityBudget();
+  const unrelated = migrationImport({
+    toFile: 'esm/native/services/unrelated.ts',
+    importedSymbols: ['UNRELATED'],
+    statementKey: 'unrelated',
+  });
+  const compatibilityContract = contract({
+    rules: [allowRule({ maxImportCount: 0, maxValueImportCount: 0 })],
+    compatibilityBudgets: [compatibility],
+  });
+  const compatibilityGraph = {
+    edges: [edge({ importCount: 2, valueImportCount: 2 })],
+    imports: [added, unrelated],
+    unresolvedDynamicImports: [],
+    forbiddenModuleSyntax: [],
+    unclassifiedSourceFiles: [],
+  };
+  const growth = evaluateLayerContract(compatibilityGraph, compatibilityContract);
+  assert.deepEqual(
+    growth.failures
+      .filter(failure => failure.kind === 'import-growth' || failure.kind === 'value-import-growth')
+      .map(failure => [failure.kind, failure.current, failure.observed, failure.migrationStatementsExcluded]),
+    [
+      ['import-growth', 1, 2, 1],
+      ['value-import-growth', 1, 2, 1],
+    ]
+  );
+
+  const proposal = buildLayerContractProposal(compatibilityGraph, compatibilityContract);
+  assert.deepEqual(proposal.contract.compatibilityBudgets, [compatibility]);
+  assert.deepEqual(proposal.diff.removedEdges, []);
+  assert.equal(proposal.diff.compatibilityBudgets, 1);
 });

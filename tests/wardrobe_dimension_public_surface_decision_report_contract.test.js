@@ -17,6 +17,10 @@ const servicesEntryRel = 'esm/native/services/api.ts';
 const manifestRel = 'tools/wp_wardrobe_dimension_public_surface_manifest.json';
 const snapshotRel = 'tools/wp_wardrobe_dimension_public_surface_semantic_snapshot.json';
 const reportRel = 'tools/wp_wardrobe_dimension_public_surface_decision_report.json';
+const layerBaselineRel = 'tools/wp_layer_baseline.json';
+const runtimeCompatibilityOwner = 'wardrobe-dimension-runtime-public-compatibility';
+const runtimePublicSurface =
+  'esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts';
 const classification = 'undetermined — blocks removal';
 const plannedAction = 'retain-until-external-evidence-or-explicit-public-surface-decision';
 const sourceFileExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
@@ -92,6 +96,7 @@ const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 const manifest = JSON.parse(read(manifestRel));
 const snapshot = JSON.parse(read(snapshotRel));
+const layerBaseline = JSON.parse(read(layerBaselineRel));
 const checkedReport = JSON.parse(read(reportRel));
 
 function listSourceFiles(dir) {
@@ -185,6 +190,52 @@ function inspectDecisionReportBase(report) {
   ) {
     violations.push({ kind: 'capture' });
   }
+  const expectedCompatibilityRoutes = layerBaseline.compatibilityBudgets.map(budget => {
+    const retirement = layerBaseline.migrationRetirements.find(
+      candidate => candidate.replacementCompatibilityBudgetId === budget.id
+    );
+    return {
+      id: budget.id,
+      entryNumber: retirement?.entryNumber,
+      toFile: budget.statement.toFile,
+      kind: budget.statement.kind,
+      syntax: budget.statement.syntax,
+      importedSymbols: budget.statement.importedSymbols,
+      nextReviewBy: budget.nextReviewBy,
+    };
+  });
+  if (
+    layerBaseline.version !== '2.4' ||
+    report.layerContractOwnership?.schemaVersion !== '2.4' ||
+    report.layerContractOwnership?.historicalMigrationEntries !== 178 ||
+    report.layerContractOwnership?.activeMigrationEntries !== 174 ||
+    report.layerContractOwnership?.retiredMigrationEntries !== 4 ||
+    report.layerContractOwnership?.compatibilityBudgets !== 4 ||
+    report.layerContractOwnership?.historicalUniqueFromFiles !== 108 ||
+    report.layerContractOwnership?.activeUniqueFromFiles !== 107 ||
+    report.layerContractOwnership?.runtime?.owner !== runtimeCompatibilityOwner ||
+    report.layerContractOwnership?.runtime?.publicSurface !== runtimePublicSurface ||
+    JSON.stringify(report.layerContractOwnership?.runtime?.edge) !==
+      JSON.stringify({
+        observedStatements: 40,
+        activeMigrationStatements: 4,
+        compatibilityStatements: 4,
+        reviewedGeneralStatements: 32,
+        generalBudget: 32,
+      }) ||
+    JSON.stringify(report.layerContractOwnership?.runtime?.valueEdge) !==
+      JSON.stringify({
+        observedValueStatements: 39,
+        activeMigrationValueStatements: 4,
+        compatibilityValueStatements: 4,
+        reviewedGeneralValueStatements: 31,
+        generalValueBudget: 31,
+      }) ||
+    JSON.stringify(report.layerContractOwnership?.runtime?.compatibilityRoutes) !==
+      JSON.stringify(expectedCompatibilityRoutes)
+  ) {
+    violations.push({ kind: 'layer-contract-ownership' });
+  }
   if (
     report.summary?.publicSymbols !== 99 ||
     report.summary?.publicValues !== 89 ||
@@ -205,7 +256,28 @@ function inspectDecisionReportBase(report) {
     report.topology?.featureBarrelFacadeDependencies?.statements !== 1 ||
     report.topology?.featureBarrelFacadeDependencies?.form !== 'wildcard-re-export' ||
     report.topology?.totalLegacyFacadeDependencies?.importers !== 1 ||
-    report.topology?.totalLegacyFacadeDependencies?.statements !== 1
+    report.topology?.totalLegacyFacadeDependencies?.statements !== 1 ||
+    JSON.stringify(report.topology?.layerComparison) !==
+      JSON.stringify({
+        edge: 'features → shared',
+        currentWildcard: {
+          physicalStatements: 76,
+          valueStatements: 75,
+          typeStatements: 2,
+          importers: 43,
+          valueImporters: 43,
+          typeImporters: 1,
+        },
+        optionBProjected: {
+          physicalStatements: 76,
+          valueStatements: 75,
+          typeStatements: 3,
+          importers: 43,
+          valueImporters: 43,
+          typeImporters: 2,
+        },
+        facadeDependencyReduction: 0,
+      })
   ) {
     violations.push({ kind: 'topology' });
   }
@@ -268,7 +340,7 @@ function inspectDecisionReportBase(report) {
     violations.push({ kind: 'manifest-policy' });
   }
   if (
-    report.recommendation?.option !== 'B' ||
+    report.recommendation?.option !== 'A' ||
     report.options?.map(option => option.id).join(',') !== 'A,B,C' ||
     report.options?.some(option => option.removalAuthorized !== false)
   ) {
@@ -294,6 +366,7 @@ function inspectDecisionReport(report) {
     manifest: { file: manifestRel, sha256: sha256(read(manifestRel)) },
     semanticSnapshot: { file: snapshotRel, sha256: sha256(read(snapshotRel)) },
     facade: { file: facadeRel, sha256: sha256(read(facadeRel)) },
+    layerBaseline: { file: layerBaselineRel, sha256: sha256(read(layerBaselineRel)) },
   };
   if (JSON.stringify(report.sources) !== JSON.stringify(expectedSources)) {
     violations.push({ kind: 'sources' });
@@ -381,8 +454,11 @@ function inspectDecisionReport(report) {
     !report.options?.[1]?.action.includes('explicit same-facade') ||
     !report.options?.[1]?.action.includes('Do not redirect') ||
     !report.options?.[1]?.dependencyEffect?.includes('remains the sole facade importer') ||
+    !report.options?.[1]?.dependencyEffect?.includes('adds one type statement') ||
+    !report.options?.[1]?.dependencyEffect?.includes('reducing facade dependencies by zero') ||
     !report.options?.[2]?.action.includes('release/semver note') ||
-    !report.recommendation?.rationale?.includes('not facade retirement') ||
+    !report.recommendation?.rationale?.includes('type-ratchet growth') ||
+    !report.recommendation?.rationale?.includes('without reducing a single facade dependency') ||
     JSON.stringify(report.recommendation?.proof) !==
       JSON.stringify({
         source: facadeRel,
@@ -617,9 +693,31 @@ test('decision report mutations reject provenance, parity, evidence, cost, topol
   );
   assertRejected(
     mutateReport(report => {
+      report.layerContractOwnership.runtime.edge.compatibilityStatements = 3;
+    }),
+    'layer-contract-ownership',
+    'compatibility ownership count'
+  );
+  assertRejected(
+    mutateReport(report => {
+      report.layerContractOwnership.runtime.compatibilityRoutes[0].toFile =
+        'esm/shared/dimensions/wrong_owner.ts';
+    }),
+    'layer-contract-ownership',
+    'compatibility route target'
+  );
+  assertRejected(
+    mutateReport(report => {
       report.options[1].action = 'Redirect every export directly to focused owners.';
     }),
     'option-evidence',
     'Option B source'
+  );
+  assertRejected(
+    mutateReport(report => {
+      report.topology.layerComparison.optionBProjected.typeStatements = 2;
+    }),
+    'topology',
+    'Option B type-statement projection'
   );
 });

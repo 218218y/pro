@@ -14,6 +14,130 @@
     "facade": {
       "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
       "sha256": "58aa34c3f761a9b7cda935cc62f427a33831b257c99dcec1e27d9cafbe37a229"
+    },
+    "layerBaseline": {
+      "file": "tools/wp_layer_baseline.json",
+      "sha256": "c47ae890ae676a65d955daf7618eab7159ac4a94c53029d6087b1a16e90cca00"
+    }
+  },
+  "layerContractOwnership": {
+    "schemaVersion": "2.4",
+    "historicalMigrationEntries": 178,
+    "activeMigrationEntries": 174,
+    "retiredMigrationEntries": 4,
+    "compatibilityBudgets": 4,
+    "historicalUniqueFromFiles": 108,
+    "activeUniqueFromFiles": 107,
+    "runtime": {
+      "owner": "wardrobe-dimension-runtime-public-compatibility",
+      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts",
+      "edge": {
+        "observedStatements": 40,
+        "activeMigrationStatements": 4,
+        "compatibilityStatements": 4,
+        "reviewedGeneralStatements": 32,
+        "generalBudget": 32
+      },
+      "valueEdge": {
+        "observedValueStatements": 39,
+        "activeMigrationValueStatements": 4,
+        "compatibilityValueStatements": 4,
+        "reviewedGeneralValueStatements": 31,
+        "generalValueBudget": 31
+      },
+      "compatibilityRoutes": [
+        {
+          "id": "runtime-product-limits-public-compatibility",
+          "entryNumber": 175,
+          "toFile": "esm/shared/dimensions/product_limits.ts",
+          "kind": "value",
+          "syntax": "static-re-export",
+          "importedSymbols": [
+            "WARDROBE_WIDTH_MIN",
+            "WARDROBE_CHEST_WIDTH_MIN",
+            "WARDROBE_WIDTH_MAX",
+            "WARDROBE_HEIGHT_MIN",
+            "WARDROBE_CHEST_HEIGHT_MIN",
+            "WARDROBE_HEIGHT_MAX",
+            "WARDROBE_DEPTH_MIN",
+            "WARDROBE_DEPTH_MAX",
+            "WARDROBE_DOORS_MIN",
+            "WARDROBE_SLIDING_DOORS_MIN",
+            "WARDROBE_DOORS_MAX",
+            "WARDROBE_CHEST_DRAWERS_MIN",
+            "WARDROBE_CHEST_DRAWERS_MAX",
+            "WARDROBE_CELL_DIM_MIN",
+            "WARDROBE_CELL_WIDTH_MIN",
+            "WARDROBE_CELL_WIDTH_MAX",
+            "WARDROBE_CELL_HEIGHT_MIN",
+            "WARDROBE_CELL_HEIGHT_MAX",
+            "WARDROBE_CELL_DEPTH_MIN",
+            "WARDROBE_CELL_DEPTH_MAX"
+          ],
+          "nextReviewBy": "2027-07-29"
+        },
+        {
+          "id": "runtime-wardrobe-defaults-public-compatibility",
+          "entryNumber": 176,
+          "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+          "kind": "value",
+          "syntax": "static-re-export",
+          "importedSymbols": [
+            "DEFAULT_WIDTH",
+            "DEFAULT_HEIGHT",
+            "DEFAULT_CHEST_DRAWERS_COUNT",
+            "HINGED_DEFAULT_DEPTH",
+            "SLIDING_DEFAULT_DEPTH",
+            "DEFAULT_HINGED_DOORS",
+            "DEFAULT_SLIDING_DOORS",
+            "HINGED_DEFAULT_PER_DOOR_WIDTH",
+            "SLIDING_DEFAULT_PER_DOOR_WIDTH",
+            "DEFAULT_CORNER_WIDTH",
+            "DEFAULT_CORNER_DOORS"
+          ],
+          "nextReviewBy": "2027-07-29"
+        },
+        {
+          "id": "runtime-stack-split-public-compatibility",
+          "entryNumber": 177,
+          "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+          "kind": "value",
+          "syntax": "static-re-export",
+          "importedSymbols": [
+            "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+            "STACK_SPLIT_SEAM_GAP_M",
+            "STACK_SPLIT_LOWER_HEIGHT_MIN",
+            "STACK_SPLIT_MIN_TOP_HEIGHT",
+            "STACK_SPLIT_LOWER_DEPTH_MIN",
+            "STACK_SPLIT_LOWER_DEPTH_MAX",
+            "STACK_SPLIT_LOWER_WIDTH_MIN",
+            "STACK_SPLIT_LOWER_WIDTH_MAX",
+            "STACK_SPLIT_LOWER_DOORS_MIN",
+            "STACK_SPLIT_LOWER_DOORS_MAX"
+          ],
+          "nextReviewBy": "2027-07-29"
+        },
+        {
+          "id": "runtime-default-resolution-public-compatibility",
+          "entryNumber": 178,
+          "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+          "kind": "value",
+          "syntax": "static-re-export",
+          "importedSymbols": [
+            "normalizeWardrobeDimensionDefaultType",
+            "getDefaultDepthForWardrobeType",
+            "getDefaultDoorsForWardrobeType",
+            "getDefaultPerDoorWidthForWardrobeType",
+            "getDefaultWidthForWardrobeType",
+            "getDefaultHeightForWardrobeType",
+            "getDefaultChestDrawersCount",
+            "resolveDefaultWardrobeDimensions",
+            "resolveAutoWidthForDoors",
+            "isAutoWidthForDoors"
+          ],
+          "nextReviewBy": "2027-07-29"
+        }
+      ]
     }
   },
   "topology": {
@@ -27,6 +151,26 @@
       "form": "wildcard-re-export"
     },
     "totalLegacyFacadeDependencies": { "importers": 1, "statements": 1 },
+    "layerComparison": {
+      "edge": "features → shared",
+      "currentWildcard": {
+        "physicalStatements": 76,
+        "valueStatements": 75,
+        "typeStatements": 2,
+        "importers": 43,
+        "valueImporters": 43,
+        "typeImporters": 1
+      },
+      "optionBProjected": {
+        "physicalStatements": 76,
+        "valueStatements": 75,
+        "typeStatements": 3,
+        "importers": 43,
+        "valueImporters": 43,
+        "typeImporters": 2
+      },
+      "facadeDependencyReduction": 0
+    },
     "files": {
       "runtime": "esm/native/runtime/api.ts",
       "servicesBase": "esm/native/services/api_runtime_base_surface.ts",
@@ -2465,7 +2609,7 @@
       "name": "explicit-public-barrel",
       "action": "Replace the wildcard feature barrel with an explicit same-facade named value/type inventory while preserving all 89 values and 10 types. Do not redirect adapted or composed symbols to focused owners.",
       "publicSurface": "89 values / 10 types preserved",
-      "dependencyEffect": "The feature barrel remains the sole facade importer; mixed-versus-split statement shape requires separate Layer/Ledger review before implementation.",
+      "dependencyEffect": "The feature barrel remains the sole facade importer. The explicit value/type split adds one type statement and one type importer to features → shared while reducing facade dependencies by zero.",
       "removalAuthorized": false
     },
     {
@@ -2477,8 +2621,8 @@
     }
   ],
   "recommendation": {
-    "option": "B",
-    "rationale": "An explicit same-facade barrel removes wildcard ambiguity while preserving every current public name, runtime identity, and declaration. It is inventory hardening, not facade retirement; retirement remains blocked by the absence of affirmative evidence or a source-path API policy decision.",
+    "option": "A",
+    "rationale": "Compatibility preservation keeps the already guarded wildcard route and all source-path contracts unchanged. Option B would create type-ratchet growth from 2 to 3 type statements and from 1 to 2 type importers without reducing a single facade dependency, so it adds Layer cost without architectural benefit.",
     "proof": {
       "source": "esm/shared/wardrobe_dimension_tokens_shared.ts",
       "valueRuntimeIdentityParity": 89,

@@ -13,6 +13,42 @@ This is a decision-input report, not removal authorization. All 99 public symbol
 - Remaining importer: `esm/native/features/dimensions/index.ts` (wildcard-re-export)
 - Public surface: 89 values / 10 types
 
+## Layer Contract 2.4 ownership
+
+- Historical migration entries: 178
+- Active migration entries: 174
+- Retired migration entries: 4
+- Compatibility budgets: 4
+- Historical unique fromFiles: 108
+- Active migration unique fromFiles: 107
+- Runtime compatibility owner: `wardrobe-dimension-runtime-public-compatibility`
+- Runtime public surface: `esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts`
+
+| Runtime edge     | Observed | Active migration | Compatibility | Reviewed general | General budget |
+| ---------------- | -------: | ---------------: | ------------: | ---------------: | -------------: |
+| Statements       |       40 |                4 |             4 |               32 |             32 |
+| Value statements |       39 |                4 |             4 |               31 |             31 |
+
+| Compatibility budget                              | Retired Entry | Target                                                        | Next review |
+| ------------------------------------------------- | ------------: | ------------------------------------------------------------- | ----------- |
+| `runtime-product-limits-public-compatibility`     |           175 | `esm/shared/dimensions/product_limits.ts`                     | 2027-07-29  |
+| `runtime-wardrobe-defaults-public-compatibility`  |           176 | `esm/shared/dimensions/wardrobe_defaults.ts`                  | 2027-07-29  |
+| `runtime-stack-split-public-compatibility`        |           177 | `esm/shared/dimensions/stack_split_policy.ts`                 | 2027-07-29  |
+| `runtime-default-resolution-public-compatibility` |           178 | `esm/shared/dimensions/wardrobe_default_resolution_policy.ts` | 2027-07-29  |
+
+## Layer comparison
+
+Edge: features → shared
+
+| Topology           | Physical statements | Value statements | Type statements | Importers | Value importers | Type importers |
+| ------------------ | ------------------: | ---------------: | --------------: | --------: | --------------: | -------------: |
+| Current wildcard   |                  76 |               75 |               2 |        43 |              43 |              1 |
+| Option B projected |                  76 |               75 |               3 |        43 |              43 |              2 |
+
+Facade-dependency reduction: 0.
+
+Option B is rejected because it creates type-ratchet growth without dependency reduction.
+
 ## Facade-only groups
 
 | Group                            | Kind  | Form                            | Count | Symbols                                                                                                                                                                                                                                                                                                                                           |
@@ -90,7 +126,7 @@ Replace the wildcard feature barrel with an explicit same-facade named value/typ
 
 Public-surface result: 89 values / 10 types preserved.
 
-Dependency effect: The feature barrel remains the sole facade importer; mixed-versus-split statement shape requires separate Layer/Ledger review before implementation.
+Dependency effect: The feature barrel remains the sole facade importer. The explicit value/type split adds one type statement and one type importer to features → shared while reducing facade dependencies by zero.
 
 ### Option C — retirement
 
@@ -100,6 +136,6 @@ Public-surface result: potentially breaking; no removal is authorized by this re
 
 ## Recommendation
 
-Proceed with Option B. An explicit same-facade barrel removes wildcard ambiguity while preserving every current public name, runtime identity, and declaration. It is inventory hardening, not facade retirement; retirement remains blocked by the absence of affirmative evidence or a source-path API policy decision.
+Proceed with Option A. Compatibility preservation keeps the already guarded wildcard route and all source-path contracts unchanged. Option B would create type-ratchet growth from 2 to 3 type statements and from 1 to 2 type importers without reducing a single facade dependency, so it adds Layer cost without architectural benefit.
 
 Proof: 89/89 value identities, 99/99 declaration fingerprints, 0 removals, and 0 facade-dependency reduction.

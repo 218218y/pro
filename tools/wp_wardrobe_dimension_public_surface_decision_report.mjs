@@ -3,7 +3,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { analyzeModuleDependencies } from './wp_layer_contract_support.mjs';
+import {
+  analyzeModuleDependencies,
+  collectLayerContractGraph,
+  evaluateLayerContract,
+} from './wp_layer_contract_support.mjs';
 
 const toolDir = path.dirname(fileURLToPath(import.meta.url));
 const defaultRoot = path.resolve(toolDir, '..');
@@ -16,6 +20,10 @@ const servicesBaseRel = 'esm/native/services/api_runtime_base_surface.ts';
 const servicesEntryRel = 'esm/native/services/api.ts';
 const reportJsonRel = 'tools/wp_wardrobe_dimension_public_surface_decision_report.json';
 const reportMarkdownRel = 'docs/WARDROBE_DIMENSION_PUBLIC_SURFACE_DECISION_REPORT.md';
+const layerBaselineRel = 'tools/wp_layer_baseline.json';
+const runtimeCompatibilityOwner = 'wardrobe-dimension-runtime-public-compatibility';
+const runtimePublicSurface =
+  'esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts';
 const classification = 'undetermined — blocks removal';
 const plannedAction = 'retain-until-external-evidence-or-explicit-public-surface-decision';
 
@@ -93,6 +101,109 @@ const groupSpecs = Object.freeze([
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 const read = (root, rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 const sorted = values => [...values].sort((left, right) => left.localeCompare(right));
+
+function sameStringList(left, right) {
+  return JSON.stringify([...(left || [])].sort()) === JSON.stringify([...(right || [])].sort());
+}
+
+function buildLayerContractOwnership(root) {
+  const source = read(root, layerBaselineRel);
+  const baseline = JSON.parse(source);
+  const graph = collectLayerContractGraph({ root });
+  const evaluation = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-29' });
+  if (!evaluation.ok) {
+    throw new Error(`Layer Contract ownership is invalid: ${JSON.stringify(evaluation.failures)}`);
+  }
+  const runtimeEdge = graph.edges.find(edge => edge.from === 'runtime' && edge.to === 'shared');
+  if (!runtimeEdge) throw new Error('Missing observed runtime → shared Layer edge');
+  const retirementByEntry = new Map(
+    baseline.migrationRetirements.map(retirement => [retirement.entryNumber, retirement])
+  );
+  const activeEntries = baseline.migrationBudgets.filter((_, index) => !retirementByEntry.has(index + 1));
+  const runtimeActiveEntries = activeEntries.filter(
+    entry => entry.from === 'runtime' && entry.to === 'shared'
+  );
+  const runtimeCompatibilityBudgets = baseline.compatibilityBudgets.filter(
+    budget => budget.from === 'runtime' && budget.to === 'shared'
+  );
+  const runtimeRule = baseline.rules.find(
+    rule => rule.from === 'runtime' && rule.to === 'shared' && rule.decision === 'allow'
+  );
+  if (!runtimeRule) throw new Error('Missing runtime → shared Layer rule');
+
+  const compatibilityRoutes = runtimeCompatibilityBudgets.map(budget => {
+    const retirement = baseline.migrationRetirements.find(
+      candidate => candidate.replacementCompatibilityBudgetId === budget.id
+    );
+    const historicalEntry = retirement ? baseline.migrationBudgets[retirement.entryNumber - 1] : null;
+    const exactTransfer =
+      retirement?.mode === 'ownership-transferred' &&
+      historicalEntry?.from === budget.from &&
+      historicalEntry?.to === budget.to &&
+      historicalEntry?.fromFile === budget.fromFile &&
+      historicalEntry?.addedImport?.toFile === budget.statement?.toFile &&
+      historicalEntry?.addedImport?.kind === budget.statement?.kind &&
+      historicalEntry?.addedImport?.syntax === budget.statement?.syntax &&
+      sameStringList(historicalEntry?.addedImport?.importedSymbols, budget.statement?.importedSymbols);
+    if (!exactTransfer) {
+      throw new Error(
+        `Compatibility budget ${budget.id} does not exactly own its retired migration statement`
+      );
+    }
+    if (budget.owner !== runtimeCompatibilityOwner || budget.publicSurface !== runtimePublicSurface) {
+      throw new Error(`Compatibility budget ${budget.id} has unexpected Runtime public ownership`);
+    }
+    return {
+      id: budget.id,
+      entryNumber: retirement.entryNumber,
+      toFile: budget.statement.toFile,
+      kind: budget.statement.kind,
+      syntax: budget.statement.syntax,
+      importedSymbols: budget.statement.importedSymbols,
+      nextReviewBy: budget.nextReviewBy,
+    };
+  });
+
+  const activeRuntimeValueStatements = runtimeActiveEntries.filter(
+    entry => entry.addedImport.kind === 'value'
+  ).length;
+  const compatibilityRuntimeValueStatements = runtimeCompatibilityBudgets.filter(
+    budget => budget.statement.kind === 'value'
+  ).length;
+  return {
+    source,
+    summary: {
+      schemaVersion: baseline.version,
+      historicalMigrationEntries: baseline.migrationBudgets.length,
+      activeMigrationEntries: activeEntries.length,
+      retiredMigrationEntries: baseline.migrationRetirements.length,
+      compatibilityBudgets: baseline.compatibilityBudgets.length,
+      historicalUniqueFromFiles: new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size,
+      activeUniqueFromFiles: new Set(activeEntries.map(entry => entry.fromFile)).size,
+      runtime: {
+        owner: runtimeCompatibilityOwner,
+        publicSurface: runtimePublicSurface,
+        edge: {
+          observedStatements: runtimeEdge.importCount,
+          activeMigrationStatements: runtimeActiveEntries.length,
+          compatibilityStatements: runtimeCompatibilityBudgets.length,
+          reviewedGeneralStatements:
+            runtimeEdge.importCount - runtimeActiveEntries.length - runtimeCompatibilityBudgets.length,
+          generalBudget: runtimeRule.maxImportCount,
+        },
+        valueEdge: {
+          observedValueStatements: runtimeEdge.valueImportCount,
+          activeMigrationValueStatements: activeRuntimeValueStatements,
+          compatibilityValueStatements: compatibilityRuntimeValueStatements,
+          reviewedGeneralValueStatements:
+            runtimeEdge.valueImportCount - activeRuntimeValueStatements - compatibilityRuntimeValueStatements,
+          generalValueBudget: runtimeRule.maxValueImportCount,
+        },
+        compatibilityRoutes,
+      },
+    },
+  };
+}
 
 function collectNamedReExportedSymbols(root, rel, expectedSymbols) {
   const expected = new Set(expectedSymbols);
@@ -192,6 +303,7 @@ function buildDecisionReport(root = defaultRoot) {
   symbols.sort((left, right) => left.name.localeCompare(right.name));
   const values = symbols.filter(entry => entry.kind === 'value').length;
   const types = symbols.filter(entry => entry.kind === 'type').length;
+  const layerContractOwnership = buildLayerContractOwnership(root);
   return {
     version: 1,
     capturedProductionHead: manifest.capturedProductionHead,
@@ -201,7 +313,9 @@ function buildDecisionReport(root = defaultRoot) {
       manifest: { file: manifestRel, sha256: sha256(manifestSource) },
       semanticSnapshot: { file: snapshotRel, sha256: sha256(snapshotSource) },
       facade: { file: facadeRel, sha256: sha256(read(root, facadeRel)) },
+      layerBaseline: { file: layerBaselineRel, sha256: sha256(layerContractOwnership.source) },
     },
+    layerContractOwnership: layerContractOwnership.summary,
     topology: {
       runtimeFacadeDependencies: 0,
       runtimeDimensionRoutes: runtimeExportedNames.length,
@@ -213,6 +327,26 @@ function buildDecisionReport(root = defaultRoot) {
         form: 'wildcard-re-export',
       },
       totalLegacyFacadeDependencies: { importers: 1, statements: 1 },
+      layerComparison: {
+        edge: 'features → shared',
+        currentWildcard: {
+          physicalStatements: 76,
+          valueStatements: 75,
+          typeStatements: 2,
+          importers: 43,
+          valueImporters: 43,
+          typeImporters: 1,
+        },
+        optionBProjected: {
+          physicalStatements: 76,
+          valueStatements: 75,
+          typeStatements: 3,
+          importers: 43,
+          valueImporters: 43,
+          typeImporters: 2,
+        },
+        facadeDependencyReduction: 0,
+      },
       files: {
         runtime: runtimeRel,
         servicesBase: servicesBaseRel,
@@ -254,7 +388,7 @@ function buildDecisionReport(root = defaultRoot) {
           'Replace the wildcard feature barrel with an explicit same-facade named value/type inventory while preserving all 89 values and 10 types. Do not redirect adapted or composed symbols to focused owners.',
         publicSurface: '89 values / 10 types preserved',
         dependencyEffect:
-          'The feature barrel remains the sole facade importer; mixed-versus-split statement shape requires separate Layer/Ledger review before implementation.',
+          'The feature barrel remains the sole facade importer. The explicit value/type split adds one type statement and one type importer to features → shared while reducing facade dependencies by zero.',
         removalAuthorized: false,
       },
       {
@@ -267,9 +401,9 @@ function buildDecisionReport(root = defaultRoot) {
       },
     ],
     recommendation: {
-      option: 'B',
+      option: 'A',
       rationale:
-        'An explicit same-facade barrel removes wildcard ambiguity while preserving every current public name, runtime identity, and declaration. It is inventory hardening, not facade retirement; retirement remains blocked by the absence of affirmative evidence or a source-path API policy decision.',
+        'Compatibility preservation keeps the already guarded wildcard route and all source-path contracts unchanged. Option B would create type-ratchet growth from 2 to 3 type statements and from 1 to 2 type importers without reducing a single facade dependency, so it adds Layer cost without architectural benefit.',
       proof: {
         source: facadeRel,
         valueRuntimeIdentityParity: 89,
@@ -301,6 +435,41 @@ function renderDecisionReportMarkdown(report) {
     `- Legacy facade dependencies: ${report.topology.totalLegacyFacadeDependencies.importers} importer / ${report.topology.totalLegacyFacadeDependencies.statements} statement`,
     `- Remaining importer: \`${report.topology.featureBarrelFacadeDependencies.file}\` (${report.topology.featureBarrelFacadeDependencies.form})`,
     `- Public surface: ${report.summary.publicValues} values / ${report.summary.publicTypes} types`,
+    '',
+    '## Layer Contract 2.4 ownership',
+    '',
+    `- Historical migration entries: ${report.layerContractOwnership.historicalMigrationEntries}`,
+    `- Active migration entries: ${report.layerContractOwnership.activeMigrationEntries}`,
+    `- Retired migration entries: ${report.layerContractOwnership.retiredMigrationEntries}`,
+    `- Compatibility budgets: ${report.layerContractOwnership.compatibilityBudgets}`,
+    `- Historical unique fromFiles: ${report.layerContractOwnership.historicalUniqueFromFiles}`,
+    `- Active migration unique fromFiles: ${report.layerContractOwnership.activeUniqueFromFiles}`,
+    `- Runtime compatibility owner: \`${report.layerContractOwnership.runtime.owner}\``,
+    `- Runtime public surface: \`${report.layerContractOwnership.runtime.publicSurface}\``,
+    '',
+    '| Runtime edge | Observed | Active migration | Compatibility | Reviewed general | General budget |',
+    '| --- | ---: | ---: | ---: | ---: | ---: |',
+    `| Statements | ${report.layerContractOwnership.runtime.edge.observedStatements} | ${report.layerContractOwnership.runtime.edge.activeMigrationStatements} | ${report.layerContractOwnership.runtime.edge.compatibilityStatements} | ${report.layerContractOwnership.runtime.edge.reviewedGeneralStatements} | ${report.layerContractOwnership.runtime.edge.generalBudget} |`,
+    `| Value statements | ${report.layerContractOwnership.runtime.valueEdge.observedValueStatements} | ${report.layerContractOwnership.runtime.valueEdge.activeMigrationValueStatements} | ${report.layerContractOwnership.runtime.valueEdge.compatibilityValueStatements} | ${report.layerContractOwnership.runtime.valueEdge.reviewedGeneralValueStatements} | ${report.layerContractOwnership.runtime.valueEdge.generalValueBudget} |`,
+    '',
+    '| Compatibility budget | Retired Entry | Target | Next review |',
+    '| --- | ---: | --- | --- |',
+    ...report.layerContractOwnership.runtime.compatibilityRoutes.map(
+      route => `| \`${route.id}\` | ${route.entryNumber} | \`${route.toFile}\` | ${route.nextReviewBy} |`
+    ),
+    '',
+    '## Layer comparison',
+    '',
+    `Edge: ${report.topology.layerComparison.edge}`,
+    '',
+    '| Topology | Physical statements | Value statements | Type statements | Importers | Value importers | Type importers |',
+    '| --- | ---: | ---: | ---: | ---: | ---: | ---: |',
+    `| Current wildcard | ${report.topology.layerComparison.currentWildcard.physicalStatements} | ${report.topology.layerComparison.currentWildcard.valueStatements} | ${report.topology.layerComparison.currentWildcard.typeStatements} | ${report.topology.layerComparison.currentWildcard.importers} | ${report.topology.layerComparison.currentWildcard.valueImporters} | ${report.topology.layerComparison.currentWildcard.typeImporters} |`,
+    `| Option B projected | ${report.topology.layerComparison.optionBProjected.physicalStatements} | ${report.topology.layerComparison.optionBProjected.valueStatements} | ${report.topology.layerComparison.optionBProjected.typeStatements} | ${report.topology.layerComparison.optionBProjected.importers} | ${report.topology.layerComparison.optionBProjected.valueImporters} | ${report.topology.layerComparison.optionBProjected.typeImporters} |`,
+    '',
+    `Facade-dependency reduction: ${report.topology.layerComparison.facadeDependencyReduction}.`,
+    '',
+    'Option B is rejected because it creates type-ratchet growth without dependency reduction.',
     '',
     '## Facade-only groups',
     '',

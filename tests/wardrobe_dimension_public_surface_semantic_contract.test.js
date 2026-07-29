@@ -95,6 +95,15 @@ const runtimeOwnerGroups = Object.freeze([
     ]),
   }),
 ]);
+const runtimeCompatibilityOwner = 'wardrobe-dimension-runtime-public-compatibility';
+const runtimePublicSurface =
+  'esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts';
+const runtimeCompatibilityIds = Object.freeze([
+  'runtime-product-limits-public-compatibility',
+  'runtime-wardrobe-defaults-public-compatibility',
+  'runtime-stack-split-public-compatibility',
+  'runtime-default-resolution-public-compatibility',
+]);
 const ledgerPrefixes = Object.freeze({
   174: 'efd3490f378700da25a431705d0b9e3ce4e66827273b90c51ed534bada7d9549',
   175: '8f40cca696d6f9f8b7152abbb925f8313c09b258ffcd62536be4af8e6881a63d',
@@ -208,6 +217,33 @@ function expectedRuntimeLedgerEntries() {
       removalCondition: `Remove this entry when an explicit public-surface decision retires this Runtime ${removalSubject[index]} or a reviewed compatibility ownership schema supersedes this temporary route migration debt.`,
     };
   });
+}
+
+function expectedRuntimeCompatibilityOwnership() {
+  return runtimeOwnerGroups.map((group, index) => ({
+    retirement: {
+      entryNumber: 175 + index,
+      retiredAt: '2026-07-29',
+      mode: 'ownership-transferred',
+      replacementCompatibilityBudgetId: runtimeCompatibilityIds[index],
+    },
+    budget: {
+      id: runtimeCompatibilityIds[index],
+      from: 'runtime',
+      to: 'shared',
+      fromFile: runtimeRel,
+      statement: {
+        toFile: group.file,
+        kind: 'value',
+        importedSymbols: [...group.symbols],
+        syntax: 'static-re-export',
+      },
+      owner: runtimeCompatibilityOwner,
+      reviewedAt: '2026-07-29',
+      nextReviewBy: '2027-07-29',
+      publicSurface: runtimePublicSurface,
+    },
+  }));
 }
 
 function validateSemanticSnapshot(candidate, candidateManifest = manifest) {
@@ -353,7 +389,7 @@ test('52 Runtime symbols have direct-owner parity while CHEST uses its explicit 
   });
 });
 
-test('Runtime direct-owner route statements and Entries 175-178 are exact and append-safe', () => {
+test('Runtime routes, historical Entries 175-178, and compatibility ownership are exact and append-safe', () => {
   const analysis = analyzeModuleDependencies(
     runtimeRel,
     fs.readFileSync(path.join(root, runtimeRel), 'utf8')
@@ -391,8 +427,40 @@ test('Runtime direct-owner route statements and Entries 175-178 are exact and ap
   assert.deepEqual(defaultsTypeRoute?.importedSymbols, ['WardrobeDimensionDefaultType']);
   assert.equal(defaultsTypeRoute?.syntax, 'type-re-export');
 
-  assert.ok(baseline.migrationBudgets.length >= 178);
+  assert.equal(baseline.version, '2.4');
+  assert.equal(baseline.migrationBudgets.length, 178);
   assert.deepEqual(baseline.migrationBudgets.slice(174, 178), expectedRuntimeLedgerEntries());
+  const expectedOwnership = expectedRuntimeCompatibilityOwnership();
+  assert.deepEqual(
+    baseline.migrationRetirements.map(retirement => ({
+      entryNumber: retirement.entryNumber,
+      retiredAt: retirement.retiredAt,
+      mode: retirement.mode,
+      replacementCompatibilityBudgetId: retirement.replacementCompatibilityBudgetId,
+    })),
+    expectedOwnership.map(entry => entry.retirement)
+  );
+  assert.deepEqual(
+    baseline.compatibilityBudgets.map(budget => ({
+      id: budget.id,
+      from: budget.from,
+      to: budget.to,
+      fromFile: budget.fromFile,
+      statement: budget.statement,
+      owner: budget.owner,
+      reviewedAt: budget.reviewedAt,
+      nextReviewBy: budget.nextReviewBy,
+      publicSurface: budget.publicSurface,
+    })),
+    expectedOwnership.map(entry => entry.budget)
+  );
+  const retiredEntries = new Set(baseline.migrationRetirements.map(retirement => retirement.entryNumber));
+  const activeEntries = baseline.migrationBudgets.filter((_, index) => !retiredEntries.has(index + 1));
+  assert.equal(activeEntries.length, 174);
+  assert.equal(baseline.migrationRetirements.length, 4);
+  assert.equal(baseline.compatibilityBudgets.length, 4);
+  assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 108);
+  assert.equal(new Set(activeEntries.map(entry => entry.fromFile)).size, 107);
   for (const [count, expected] of Object.entries(ledgerPrefixes)) {
     assert.equal(
       sha256(stableJson(baseline.migrationBudgets.slice(0, Number(count)))),

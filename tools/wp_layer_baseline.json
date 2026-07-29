@@ -1,5 +1,5 @@
 {
-  "version": "2.3",
+  "version": "2.4",
   "root": "esm",
   "ratchet": {
     "mode": "decrease-only",
@@ -6639,6 +6639,161 @@
       },
       "reason": "Runtime public API preserves the Wardrobe Default Resolution symbol inventory while routing it directly from the canonical focused owner instead of the legacy dimension facade.",
       "removalCondition": "Remove this entry when an explicit public-surface decision retires this Runtime Default Resolution statement or a reviewed compatibility ownership schema supersedes this temporary route migration debt."
+    }
+  ],
+  "migrationRetirements": [
+    {
+      "entryNumber": 175,
+      "retiredAt": "2026-07-29",
+      "mode": "ownership-transferred",
+      "reason": "Runtime Product Limits remains a reviewed public compatibility route; permanent ownership moved to runtime-product-limits-public-compatibility.",
+      "replacementCompatibilityBudgetId": "runtime-product-limits-public-compatibility"
+    },
+    {
+      "entryNumber": 176,
+      "retiredAt": "2026-07-29",
+      "mode": "ownership-transferred",
+      "reason": "Runtime Wardrobe Defaults remains a reviewed public compatibility route; permanent ownership moved to runtime-wardrobe-defaults-public-compatibility.",
+      "replacementCompatibilityBudgetId": "runtime-wardrobe-defaults-public-compatibility"
+    },
+    {
+      "entryNumber": 177,
+      "retiredAt": "2026-07-29",
+      "mode": "ownership-transferred",
+      "reason": "Runtime Stack Split remains a reviewed public compatibility route; permanent ownership moved to runtime-stack-split-public-compatibility.",
+      "replacementCompatibilityBudgetId": "runtime-stack-split-public-compatibility"
+    },
+    {
+      "entryNumber": 178,
+      "retiredAt": "2026-07-29",
+      "mode": "ownership-transferred",
+      "reason": "Runtime Wardrobe Default Resolution remains a reviewed public compatibility route; permanent ownership moved to runtime-default-resolution-public-compatibility.",
+      "replacementCompatibilityBudgetId": "runtime-default-resolution-public-compatibility"
+    }
+  ],
+  "compatibilityBudgets": [
+    {
+      "id": "runtime-product-limits-public-compatibility",
+      "from": "runtime",
+      "to": "shared",
+      "fromFile": "esm/native/runtime/api.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/product_limits.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "WARDROBE_WIDTH_MIN",
+          "WARDROBE_CHEST_WIDTH_MIN",
+          "WARDROBE_WIDTH_MAX",
+          "WARDROBE_HEIGHT_MIN",
+          "WARDROBE_CHEST_HEIGHT_MIN",
+          "WARDROBE_HEIGHT_MAX",
+          "WARDROBE_DEPTH_MIN",
+          "WARDROBE_DEPTH_MAX",
+          "WARDROBE_DOORS_MIN",
+          "WARDROBE_SLIDING_DOORS_MIN",
+          "WARDROBE_DOORS_MAX",
+          "WARDROBE_CHEST_DRAWERS_MIN",
+          "WARDROBE_CHEST_DRAWERS_MAX",
+          "WARDROBE_CELL_DIM_MIN",
+          "WARDROBE_CELL_WIDTH_MIN",
+          "WARDROBE_CELL_WIDTH_MAX",
+          "WARDROBE_CELL_HEIGHT_MIN",
+          "WARDROBE_CELL_HEIGHT_MAX",
+          "WARDROBE_CELL_DEPTH_MIN",
+          "WARDROBE_CELL_DEPTH_MAX"
+        ],
+        "syntax": "static-re-export"
+      },
+      "owner": "wardrobe-dimension-runtime-public-compatibility",
+      "reason": "Permanently review and preserve the Runtime Product Limits public compatibility statement without treating it as active migration debt.",
+      "reviewedAt": "2026-07-29",
+      "nextReviewBy": "2027-07-29",
+      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+    },
+    {
+      "id": "runtime-wardrobe-defaults-public-compatibility",
+      "from": "runtime",
+      "to": "shared",
+      "fromFile": "esm/native/runtime/api.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "HINGED_DEFAULT_DEPTH",
+          "SLIDING_DEFAULT_DEPTH",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_SLIDING_DOORS",
+          "HINGED_DEFAULT_PER_DOOR_WIDTH",
+          "SLIDING_DEFAULT_PER_DOOR_WIDTH",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_CORNER_DOORS"
+        ],
+        "syntax": "static-re-export"
+      },
+      "owner": "wardrobe-dimension-runtime-public-compatibility",
+      "reason": "Permanently review and preserve the Runtime Wardrobe Defaults public compatibility statement without treating it as active migration debt.",
+      "reviewedAt": "2026-07-29",
+      "nextReviewBy": "2027-07-29",
+      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+    },
+    {
+      "id": "runtime-stack-split-public-compatibility",
+      "from": "runtime",
+      "to": "shared",
+      "fromFile": "esm/native/runtime/api.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "STACK_SPLIT_SEAM_GAP_M",
+          "STACK_SPLIT_LOWER_HEIGHT_MIN",
+          "STACK_SPLIT_MIN_TOP_HEIGHT",
+          "STACK_SPLIT_LOWER_DEPTH_MIN",
+          "STACK_SPLIT_LOWER_DEPTH_MAX",
+          "STACK_SPLIT_LOWER_WIDTH_MIN",
+          "STACK_SPLIT_LOWER_WIDTH_MAX",
+          "STACK_SPLIT_LOWER_DOORS_MIN",
+          "STACK_SPLIT_LOWER_DOORS_MAX"
+        ],
+        "syntax": "static-re-export"
+      },
+      "owner": "wardrobe-dimension-runtime-public-compatibility",
+      "reason": "Permanently review and preserve the Runtime Stack Split public compatibility statement without treating it as active migration debt.",
+      "reviewedAt": "2026-07-29",
+      "nextReviewBy": "2027-07-29",
+      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+    },
+    {
+      "id": "runtime-default-resolution-public-compatibility",
+      "from": "runtime",
+      "to": "shared",
+      "fromFile": "esm/native/runtime/api.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "normalizeWardrobeDimensionDefaultType",
+          "getDefaultDepthForWardrobeType",
+          "getDefaultDoorsForWardrobeType",
+          "getDefaultPerDoorWidthForWardrobeType",
+          "getDefaultWidthForWardrobeType",
+          "getDefaultHeightForWardrobeType",
+          "getDefaultChestDrawersCount",
+          "resolveDefaultWardrobeDimensions",
+          "resolveAutoWidthForDoors",
+          "isAutoWidthForDoors"
+        ],
+        "syntax": "static-re-export"
+      },
+      "owner": "wardrobe-dimension-runtime-public-compatibility",
+      "reason": "Permanently review and preserve the Runtime Wardrobe Default Resolution public compatibility statement without treating it as active migration debt.",
+      "reviewedAt": "2026-07-29",
+      "nextReviewBy": "2027-07-29",
+      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
     }
   ]
 }
