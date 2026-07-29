@@ -1,7 +1,7 @@
 {
   "version": 1,
   "typescriptVersion": "7.0.2",
-  "capturedProductionHead": "59b04f3c9df2b7156a1e97b30d0c158d8aa51553",
+  "capturedProductionHead": "d6a1b554fc35b248889daca5895880a135963cce",
   "surfaceTopology": {
     "facade": {
       "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-29T11:10:37.656Z",
+  "generatedAt": "2026-07-29T11:41:25.291Z",
   "totals": {
-    "tests": 1313,
-    "unitRunnerTests": 1305,
+    "tests": 1314,
+    "unitRunnerTests": 1306,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 471,
+    "contract": 472,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -5027,6 +5027,10 @@
     },
     {
       "file": "tests/wardrobe_dimension_guide_owner_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wardrobe_dimension_public_surface_decision_report_contract.test.js",
       "category": "contract"
     },
     {
