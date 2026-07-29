@@ -138,9 +138,7 @@ const APPROVED_STACK_SPLIT_FACADE_SYMBOLS = Object.freeze([
   'STACK_SPLIT_SEAM_GAP_M',
 ]);
 const APPROVED_STACK_SPLIT_FACADE_IMPORTS = Object.freeze({});
-const APPROVED_STACK_SPLIT_FACADE_REEXPORTS = Object.freeze({
-  'esm/native/runtime/api.ts': APPROVED_STACK_SPLIT_FACADE_SYMBOLS,
-});
+const APPROVED_STACK_SPLIT_FACADE_REEXPORTS = Object.freeze({});
 const APPROVED_STACK_SPLIT_FACADE_WILDCARDS = Object.freeze([
   Object.freeze({
     file: 'esm/native/features/dimensions/index.ts',
@@ -427,6 +425,18 @@ const APPROVED_WARDROBE_DEFAULT_RESOLUTION_OWNER_IMPORTS = Object.freeze({
     'getDefaultDepthForWardrobeType',
     'getDefaultDoorsForWardrobeType',
     'getDefaultPerDoorWidthForWardrobeType',
+  ]),
+  'esm/native/runtime/api.ts': Object.freeze([
+    'getDefaultChestDrawersCount',
+    'getDefaultDepthForWardrobeType',
+    'getDefaultDoorsForWardrobeType',
+    'getDefaultHeightForWardrobeType',
+    'getDefaultPerDoorWidthForWardrobeType',
+    'getDefaultWidthForWardrobeType',
+    'isAutoWidthForDoors',
+    'normalizeWardrobeDimensionDefaultType',
+    'resolveAutoWidthForDoors',
+    'resolveDefaultWardrobeDimensions',
   ]),
   'esm/shared/dimensions/platform_startup_dimension_defaults_policy.ts': Object.freeze([
     'getDefaultDepthForWardrobeType',

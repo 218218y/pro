@@ -149,13 +149,7 @@ function sortRoutes(routes) {
 }
 
 function expectedFacadeRoutes(candidateManifest = manifest) {
-  const runtimeValues = candidateManifest.symbols
-    .filter(entry => entry.runtimeApiRoute?.kind === 'value')
-    .map(entry => entry.name);
-  const runtimeTypes = candidateManifest.symbols
-    .filter(entry => entry.runtimeApiRoute?.kind === 'type')
-    .map(entry => entry.name);
-  return sortRoutes([
+  const routes = [
     {
       fromFile: publicDimensionsRel,
       specifier: '../../../shared/wardrobe_dimension_tokens_shared.js',
@@ -165,25 +159,23 @@ function expectedFacadeRoutes(candidateManifest = manifest) {
       exportedSymbols: ['*'],
       bindings: [['*', null, '*']],
     },
-    {
+  ];
+  for (const kind of ['value', 'type']) {
+    const symbols = candidateManifest.symbols
+      .filter(entry => entry.runtimeApiRoute?.sourceFile === facadeRel && entry.runtimeApiRoute.kind === kind)
+      .map(entry => entry.name);
+    if (symbols.length === 0) continue;
+    routes.push({
       fromFile: runtimeApiRel,
       specifier: '../../shared/wardrobe_dimension_tokens_shared.js',
-      kind: 'value',
-      syntax: 'static-re-export',
-      importedSymbols: sorted(runtimeValues),
-      exportedSymbols: sorted(runtimeValues),
-      bindings: sorted(runtimeValues).map(name => [name, null, name]),
-    },
-    {
-      fromFile: runtimeApiRel,
-      specifier: '../../shared/wardrobe_dimension_tokens_shared.js',
-      kind: 'type',
-      syntax: 'type-re-export',
-      importedSymbols: sorted(runtimeTypes),
-      exportedSymbols: sorted(runtimeTypes),
-      bindings: sorted(runtimeTypes).map(name => [name, null, name]),
-    },
-  ]);
+      kind,
+      syntax: kind === 'type' ? 'type-re-export' : 'static-re-export',
+      importedSymbols: sorted(symbols),
+      exportedSymbols: sorted(symbols),
+      bindings: sorted(symbols).map(name => [name, null, name]),
+    });
+  }
+  return sortRoutes(routes);
 }
 
 function collectProductionTopology() {
@@ -430,8 +422,12 @@ function collectDimensionRouteFromDependency(file, target, dimensionNames) {
 }
 
 function actualRuntimeRouteInventory(dimensionNames) {
-  return collectDimensionRouteFromDependency(runtimeApiAbsolute, facadeAbsolute, dimensionNames)
-    .map(entry => [entry.kind, entry.name])
+  return analysisFor(runtimeApiAbsolute)
+    .imports.flatMap(dependency =>
+      dependency.bindings
+        .filter(binding => dimensionNames.has(binding.exportedName))
+        .map(binding => [dependency.kind, binding.exportedName])
+    )
     .sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right)));
 }
 
@@ -1727,18 +1723,29 @@ function inspectManifest(candidateManifest, actualRows = null, options = {}) {
     }
 
     if (entry.runtimeApiRoute) {
-      assert.deepEqual(entry.runtimeApiRoute, {
-        routeFile: runtimeApiRel,
-        sourceFile: facadeRel,
-        sourceSymbol: entry.name,
-        kind: entry.kind,
-        form: entry.kind === 'type' ? 'type-re-export' : 'named-re-export',
-        identity: entry.facadeDeclaration.identity,
-        declarationMode: 'legacy-facade',
-      });
+      assert.equal(entry.runtimeApiRoute.routeFile, runtimeApiRel, entry.name);
+      assert.equal(entry.runtimeApiRoute.sourceSymbol, entry.name, entry.name);
+      assert.equal(entry.runtimeApiRoute.kind, entry.kind, entry.name);
+      assert.equal(
+        entry.runtimeApiRoute.form,
+        entry.kind === 'type' ? 'type-re-export' : 'named-re-export',
+        entry.name
+      );
+      assert.equal(entry.runtimeApiRoute.identity, entry.facadeDeclaration.identity, entry.name);
       assert.ok(entry.runtimeReconstruction, entry.name);
       assert.equal(entry.runtimeReconstruction.target.kind, entry.kind, entry.name);
       assert.equal(entry.runtimeReconstruction.runtimeIdentity, 'strict', entry.name);
+      if (entry.runtimeReconstruction.status === 'exact-direct-owner-parity') {
+        assert.equal(entry.runtimeApiRoute.sourceFile, entry.runtimeReconstruction.target.file, entry.name);
+        assert.equal(entry.runtimeApiRoute.declarationMode, 'canonical-focused-owner', entry.name);
+      } else if (entry.runtimeReconstruction.status === 'identity-parity-declaration-review') {
+        assert.equal(entry.runtimeApiRoute.sourceFile, facadeRel, entry.name);
+        assert.equal(entry.runtimeApiRoute.declarationMode, 'legacy-facade', entry.name);
+      } else {
+        assert.equal(entry.runtimeReconstruction.status, 'explicit-compatibility-owner', entry.name);
+        assert.match(entry.runtimeApiRoute.sourceFile, /\/dimensions\/compatibility\//u, entry.name);
+        assert.equal(entry.runtimeApiRoute.declarationMode, 'explicit-compatibility-owner', entry.name);
+      }
       assert.ok(entry.servicesApiRoute, entry.name);
       assert.equal(entry.servicesApiRoute.baseFile, servicesBaseRel, entry.name);
       assert.equal(entry.servicesApiRoute.entryFile, servicesApiRel, entry.name);
@@ -1889,7 +1896,7 @@ function syntheticCompatibilityViolations(file, source) {
   ];
 }
 
-test('production facade topology is exactly the two approved compatibility routes', () => {
+test('production facade topology is exactly the approved compatibility routes', () => {
   const topology = collectProductionTopology();
   assert.deepEqual(topology.facadeRoutes, expectedFacadeRoutes());
   assert.deepEqual(
@@ -1931,7 +1938,7 @@ test('transitive compatibility inventory is exact, value/type explicit, and migr
   inspectInventory(inventory, consumers.rows);
 });
 
-test('internal dimension transition closeout leaves only the two public compatibility routes', () => {
+test('internal dimension transition closeout leaves only approved public compatibility routes', () => {
   const dimensionNames = new Set(manifest.symbols.map(entry => entry.name));
   const consumers = collectInternalDimensionConsumers(dimensionNames);
   const topology = collectProductionTopology();
@@ -1953,7 +1960,7 @@ test('internal dimension transition closeout leaves only the two public compatib
   assert.deepEqual(topology.forbiddenModuleSyntax, []);
   assert.deepEqual(topology.unresolvedDynamicImports, expectedDynamicImports());
   assert.deepEqual(topology.facadeRoutes, expectedFacadeRoutes());
-  assert.equal(topology.facadeRoutes.length, 3);
+  assert.equal(topology.facadeRoutes.length, expectedFacadeRoutes().length);
   assert.equal(topology.facadeRoutes.filter(route => route.syntax === 'static-import').length, 0);
 
   assert.equal(manifest.symbols.length, 99);

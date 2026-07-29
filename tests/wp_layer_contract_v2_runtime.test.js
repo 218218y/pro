@@ -676,6 +676,35 @@ test('layer contract migration budget rejects the static re-export regression ex
   );
 });
 
+test('layer contract migration budgets can explicitly own a static named re-export statement', () => {
+  const base = migrationBudget();
+  const budget = migrationBudget({
+    addedImport: { ...base.addedImport, syntax: 'static-re-export' },
+  });
+  const baseline = contract({ migrationBudgets: [budget] });
+  assert.doesNotThrow(() => validateLayerContractSchema(baseline));
+  const report = evaluateLayerContract(
+    {
+      edges: [edge({ importCount: 2, valueImportCount: 2 })],
+      imports: [
+        migrationImport({
+          toFile: budget.companionImport.toFile,
+          importedSymbols: budget.companionImport.importedSymbols,
+          statementKey: 'policy-statement',
+        }),
+        migrationImportFromSource(
+          `export { CM_PER_METER } from '../services/units.js';`,
+          budget.addedImport.toFile,
+          'reviewed-re-export-statement'
+        ),
+      ],
+    },
+    baseline,
+    { currentDate: TEST_CURRENT_DATE }
+  );
+  assert.equal(report.ok, true);
+});
+
 test('layer contract migration budgets diagnose one mixed statement without treating it as statement growth', () => {
   const budget = migrationBudget();
   const baseline = contract({ migrationBudgets: [budget] });
@@ -830,6 +859,27 @@ test('layer contract migration budgets fail closed on symbol drift, missing impo
     restoredLegacy.failures.some(failure => failure.kind === 'migration-legacy-import-restored'),
     true
   );
+
+  const unrelatedLegacySymbol = evaluateLayerContract(
+    {
+      edges: [edge({ importCount: 3, valueImportCount: 3 })],
+      imports: [
+        companion,
+        added,
+        migrationImport({
+          toFile: budget.removedImport.toFile,
+          importedSymbols: ['UNRELATED_COMPATIBILITY_SYMBOL'],
+          statementKey: 'unrelated-legacy-statement',
+        }),
+      ],
+    },
+    baseline,
+    { currentDate: TEST_CURRENT_DATE }
+  );
+  assert.equal(
+    unrelatedLegacySymbol.failures.some(failure => failure.kind === 'migration-legacy-import-restored'),
+    false
+  );
 });
 
 test('layer contract migration review deadlines are schema-bounded and evaluator-injectable', () => {
@@ -891,7 +941,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at one hundred and seventy-four reviewed statements with approved importer ceilings', () => {
+test('project migration ledger stays exact at one hundred and seventy-eight reviewed statements with approved importer ceilings', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -1646,8 +1696,8 @@ test('project migration ledger stays exact at one hundred and seventy-four revie
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 174);
-  assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 107);
+  assert.equal(report.migrationBudgets.length, 178);
+  assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 108);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
@@ -1661,7 +1711,7 @@ test('project migration ledger stays exact at one hundred and seventy-four revie
     ['services>shared', { observed: 230, migration: 63, reviewed: 167, budget: 167 }],
     ['ui>shared', { observed: 27, migration: 1, reviewed: 26, budget: 27 }],
     ['platform>shared', { observed: 6, migration: 2, reviewed: 4, budget: 4 }],
-    ['runtime>shared', { observed: 36, migration: 4, reviewed: 32, budget: 32 }],
+    ['runtime>shared', { observed: 40, migration: 8, reviewed: 32, budget: 32 }],
   ]);
   for (const [key, expected] of expectedEdges) {
     const [from, to] = key.split('>');
@@ -1689,8 +1739,8 @@ test('project migration ledger stays exact at one hundred and seventy-four revie
   const runtimeSharedRule = baseline.rules.find(entry => entry.from === 'runtime' && entry.to === 'shared');
   assert.ok(runtimeSharedEdge);
   assert.ok(runtimeSharedRule);
-  assert.equal(runtimeSharedEdge.valueImportCount, 35);
-  assert.equal(runtimeSharedEdge.valueImportCount - 4, 31);
+  assert.equal(runtimeSharedEdge.valueImportCount, 39);
+  assert.equal(runtimeSharedEdge.valueImportCount - 8, 31);
   assert.equal(runtimeSharedRule.maxValueImportCount, 31);
 
   assert.equal(baseline.rules.length, 52);
@@ -1712,7 +1762,7 @@ test('project migration ledger stays exact at one hundred and seventy-four revie
   assert.equal(new Set(staticFacadeDependencies.map(dependency => dependency.file)).size, 0);
   assert.equal(staticFacadeDependencies.length, 0);
   assert.equal(new Set(facadeDependencies.map(dependency => dependency.file)).size, 2);
-  assert.equal(facadeDependencies.length, 3);
+  assert.equal(facadeDependencies.length, 2);
 
   const facadeSource = fs.readFileSync(path.join(repositoryRoot, facadeRel), 'utf8');
   const facadeExports = collectNamedModuleExports(facadeRel, facadeSource);

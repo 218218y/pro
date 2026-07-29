@@ -536,7 +536,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
           "sourceSymbol": "DEFAULT_CHEST_DRAWERS_COUNT",
           "publicExportedName": "DEFAULT_CHEST_DRAWERS_COUNT",
           "declarationTypeFingerprint": "200687941b90c4c139efa16181ac5c70218395727df7cdf092bb97e2e9f71100"
@@ -586,7 +586,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
           "sourceSymbol": "DEFAULT_CORNER_DOORS",
           "publicExportedName": "DEFAULT_CORNER_DOORS",
           "declarationTypeFingerprint": "841868b8483748bb379b7c8ea254bd014395b968c005212eb0acd20face3cdee"
@@ -636,7 +636,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
           "sourceSymbol": "DEFAULT_CORNER_WIDTH",
           "publicExportedName": "DEFAULT_CORNER_WIDTH",
           "declarationTypeFingerprint": "5f1443bf51bc8f2ad6c88f4acf5f37e1106217af08f7df936070cafdc64bea13"
@@ -686,7 +686,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
           "sourceSymbol": "DEFAULT_HEIGHT",
           "publicExportedName": "DEFAULT_HEIGHT",
           "declarationTypeFingerprint": "c2dea0a4e7508743c4d103e5f9b9276a0f85906ab6db2559833ea2373b946478"
@@ -736,7 +736,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
           "sourceSymbol": "DEFAULT_HINGED_DOORS",
           "publicExportedName": "DEFAULT_HINGED_DOORS",
           "declarationTypeFingerprint": "659b11412ebe2bfafcf7907d1f4fb7587d74daac9d880ba02475b15b749dc8f1"
@@ -786,7 +786,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
           "sourceSymbol": "DEFAULT_SLIDING_DOORS",
           "publicExportedName": "DEFAULT_SLIDING_DOORS",
           "declarationTypeFingerprint": "e10034603a2696995bebddea6eddf0171ecec9c4819e01004de379372f2fc94f"
@@ -836,7 +836,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
           "sourceSymbol": "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
           "publicExportedName": "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
           "declarationTypeFingerprint": "7011f54daf840d1c5e874984395cf1cbbb3253d4d50c004421ae9956a4264efd"
@@ -886,7 +886,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
           "sourceSymbol": "DEFAULT_WIDTH",
           "publicExportedName": "DEFAULT_WIDTH",
           "declarationTypeFingerprint": "37019b98231eded0b15767b80bc56fa6c8244b81333cf83a38c84d58e9f28106"
@@ -1298,7 +1298,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
           "sourceSymbol": "getDefaultChestDrawersCount",
           "publicExportedName": "getDefaultChestDrawersCount",
           "declarationTypeFingerprint": "034bac71ff1664f274f86673b8fef222ddb5c31b3f605f13d0d1266a10be4c35"
@@ -1348,7 +1348,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
           "sourceSymbol": "getDefaultDepthForWardrobeType",
           "publicExportedName": "getDefaultDepthForWardrobeType",
           "declarationTypeFingerprint": "636196407fe3df3610de2b2b565435a3ea4c9a140d479948395af69e9bd8cad3"
@@ -1462,7 +1462,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
           "sourceSymbol": "getDefaultDoorsForWardrobeType",
           "publicExportedName": "getDefaultDoorsForWardrobeType",
           "declarationTypeFingerprint": "a54030410149c89360c541c7dbfe001f556670bdf4ec4c915a862ed6b3982b3f"
@@ -1512,7 +1512,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
           "sourceSymbol": "getDefaultHeightForWardrobeType",
           "publicExportedName": "getDefaultHeightForWardrobeType",
           "declarationTypeFingerprint": "1356a84b710eaced01e7d1ea29dd52247ea30d74ebedc886cc18b0c080301071"
@@ -1562,7 +1562,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
           "sourceSymbol": "getDefaultPerDoorWidthForWardrobeType",
           "publicExportedName": "getDefaultPerDoorWidthForWardrobeType",
           "declarationTypeFingerprint": "cce27ccd6f50b319d69763a14af10861087ea2044a6e6e803dd8a3b1db6280ae"
@@ -1612,7 +1612,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
           "sourceSymbol": "getDefaultWidthForWardrobeType",
           "publicExportedName": "getDefaultWidthForWardrobeType",
           "declarationTypeFingerprint": "fcd2945957db224cee67b56f4234897e70b7a6f0d617de8768b455561fb85f62"
@@ -1726,7 +1726,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
           "sourceSymbol": "HINGED_DEFAULT_DEPTH",
           "publicExportedName": "HINGED_DEFAULT_DEPTH",
           "declarationTypeFingerprint": "44a852233562c6fb589f2592bd175f48399201ec82899411721d978389e2bc0d"
@@ -1776,7 +1776,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
           "sourceSymbol": "HINGED_DEFAULT_PER_DOOR_WIDTH",
           "publicExportedName": "HINGED_DEFAULT_PER_DOOR_WIDTH",
           "declarationTypeFingerprint": "1e798ecfc498924f475433ee8e91cec22c2cdc43d57af787a9b7d21605213b28"
@@ -1858,7 +1858,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
           "sourceSymbol": "isAutoWidthForDoors",
           "publicExportedName": "isAutoWidthForDoors",
           "declarationTypeFingerprint": "f37d9c97625a7c518c3dfa44c9516b08628bc75e0d1a436038be37e7a114717f"
@@ -2164,7 +2164,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
           "sourceSymbol": "normalizeWardrobeDimensionDefaultType",
           "publicExportedName": "normalizeWardrobeDimensionDefaultType",
           "declarationTypeFingerprint": "ec86aed6f3eca0d9f263a3d3f05d751bba7adce5553ca5c91a7997713cef9b4d"
@@ -2246,7 +2246,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
           "sourceSymbol": "resolveAutoWidthForDoors",
           "publicExportedName": "resolveAutoWidthForDoors",
           "declarationTypeFingerprint": "0a016031f3b548e96827eb6d02ccb2c2e6e26290e4050aadb2026ecb2149f73c"
@@ -2296,7 +2296,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
           "sourceSymbol": "resolveDefaultWardrobeDimensions",
           "publicExportedName": "resolveDefaultWardrobeDimensions",
           "declarationTypeFingerprint": "fb152048959524f21e735152b4afefed86c32fee7410b85cc7d9ccc3f6a72c43"
@@ -2494,7 +2494,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
           "sourceSymbol": "SLIDING_DEFAULT_DEPTH",
           "publicExportedName": "SLIDING_DEFAULT_DEPTH",
           "declarationTypeFingerprint": "eb811776b2320acf3bfabbbbaf18630e7613140acead769bb86fde077bbae5e4"
@@ -2544,7 +2544,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
           "sourceSymbol": "SLIDING_DEFAULT_PER_DOOR_WIDTH",
           "publicExportedName": "SLIDING_DEFAULT_PER_DOOR_WIDTH",
           "declarationTypeFingerprint": "f2fffff159930c87d0c2cccd4b6eb471ebf0d5168975bd634228c8b11fbc1e05"
@@ -2594,7 +2594,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
           "sourceSymbol": "STACK_SPLIT_LOWER_DEPTH_MAX",
           "publicExportedName": "STACK_SPLIT_LOWER_DEPTH_MAX",
           "declarationTypeFingerprint": "555bfed851325f32d79a6bcab06dade0bb4889266ef25da7146832649b19987e"
@@ -2644,7 +2644,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
           "sourceSymbol": "STACK_SPLIT_LOWER_DEPTH_MIN",
           "publicExportedName": "STACK_SPLIT_LOWER_DEPTH_MIN",
           "declarationTypeFingerprint": "a96e9ab8c6120c98fb29cff4269de42294b5f9f3be8165e1b9161b23f5cda374"
@@ -2694,7 +2694,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
           "sourceSymbol": "STACK_SPLIT_LOWER_DOORS_MAX",
           "publicExportedName": "STACK_SPLIT_LOWER_DOORS_MAX",
           "declarationTypeFingerprint": "87a13b6ef86e4078eb05d8797ee9c99cc9df5e5dc6ba72dd4948c628f7fbcf81"
@@ -2744,7 +2744,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
           "sourceSymbol": "STACK_SPLIT_LOWER_DOORS_MIN",
           "publicExportedName": "STACK_SPLIT_LOWER_DOORS_MIN",
           "declarationTypeFingerprint": "8438f16daef7884be719fdd712869c2e3003b5a9d0d8627338c14e261139c048"
@@ -2794,7 +2794,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
           "sourceSymbol": "STACK_SPLIT_LOWER_HEIGHT_MIN",
           "publicExportedName": "STACK_SPLIT_LOWER_HEIGHT_MIN",
           "declarationTypeFingerprint": "2123dd477668f473fe5adda19aaf83978fbb00b9a68041ae3b4d189db20c6933"
@@ -2844,7 +2844,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
           "sourceSymbol": "STACK_SPLIT_LOWER_WIDTH_MAX",
           "publicExportedName": "STACK_SPLIT_LOWER_WIDTH_MAX",
           "declarationTypeFingerprint": "2a24a53d99b90191d8fdabe3086a275f0cfd9b0df2757ef2b556e9996bf8d4c2"
@@ -2894,7 +2894,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
           "sourceSymbol": "STACK_SPLIT_LOWER_WIDTH_MIN",
           "publicExportedName": "STACK_SPLIT_LOWER_WIDTH_MIN",
           "declarationTypeFingerprint": "8daeba385ff15ecaa32abe909a2473dc31e1c3f8f74116e4b05991ad148a3de5"
@@ -2944,7 +2944,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
           "sourceSymbol": "STACK_SPLIT_MIN_TOP_HEIGHT",
           "publicExportedName": "STACK_SPLIT_MIN_TOP_HEIGHT",
           "declarationTypeFingerprint": "7f47f4683592c88a0c3971a95783fe6e59e462fca913c7457997b6c52fff6069"
@@ -2994,7 +2994,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/stack_split_policy.ts",
           "sourceSymbol": "STACK_SPLIT_SEAM_GAP_M",
           "publicExportedName": "STACK_SPLIT_SEAM_GAP_M",
           "declarationTypeFingerprint": "2d3eb2cf27fcfd447c3648fa3a292cb5f716c57ec281b1353b1d0ffd99e527ec"
@@ -3044,7 +3044,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_CELL_DEPTH_MAX",
           "publicExportedName": "WARDROBE_CELL_DEPTH_MAX",
           "declarationTypeFingerprint": "553072eca3a241f2213a0f39d1837ceb298ad954103e82f158a1f34165edbd82"
@@ -3094,7 +3094,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_CELL_DEPTH_MIN",
           "publicExportedName": "WARDROBE_CELL_DEPTH_MIN",
           "declarationTypeFingerprint": "bfdcc0ffbc2d90b9bb4600f8d0ab79056c2b5639fbbe359742e0bd97135e5cbf"
@@ -3144,7 +3144,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_CELL_DIM_MIN",
           "publicExportedName": "WARDROBE_CELL_DIM_MIN",
           "declarationTypeFingerprint": "224b389991666cd84450a2d48664d0a578bde608edaa45881af22a6dfe329998"
@@ -3194,7 +3194,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_CELL_HEIGHT_MAX",
           "publicExportedName": "WARDROBE_CELL_HEIGHT_MAX",
           "declarationTypeFingerprint": "c20c9b2d942909f7c35a795c503d6fc53b7ac18ecddac24af8910d6668e4daba"
@@ -3244,7 +3244,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_CELL_HEIGHT_MIN",
           "publicExportedName": "WARDROBE_CELL_HEIGHT_MIN",
           "declarationTypeFingerprint": "22b16056c80a484a1d182ba6eebc91fb2367a48b7f44234df23344444fd2db7f"
@@ -3294,7 +3294,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_CELL_WIDTH_MAX",
           "publicExportedName": "WARDROBE_CELL_WIDTH_MAX",
           "declarationTypeFingerprint": "93686d0b47fa2f93f45e4d4bd0e5798eb25e07c82d72568f250f197395a2c8ec"
@@ -3344,7 +3344,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_CELL_WIDTH_MIN",
           "publicExportedName": "WARDROBE_CELL_WIDTH_MIN",
           "declarationTypeFingerprint": "752271a16c2f97fca5141fbb2fdc5fa95c3a3d30316545b07499571f5063d7c0"
@@ -3394,7 +3394,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_CHEST_DRAWERS_MAX",
           "publicExportedName": "WARDROBE_CHEST_DRAWERS_MAX",
           "declarationTypeFingerprint": "e3cdf0582edb733f1d1a0ce2d683238f5c83970e687504b9024456568b487fb3"
@@ -3444,7 +3444,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_CHEST_DRAWERS_MIN",
           "publicExportedName": "WARDROBE_CHEST_DRAWERS_MIN",
           "declarationTypeFingerprint": "da4eb170ce55d0212a878a073ca4c649f61a1a3d0369acdfc8de63986323a619"
@@ -3494,7 +3494,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_CHEST_HEIGHT_MIN",
           "publicExportedName": "WARDROBE_CHEST_HEIGHT_MIN",
           "declarationTypeFingerprint": "6e5bfadafcdd3d8ad04330190bc35382bc5b914dae69477969a4efade1da6f5e"
@@ -3544,7 +3544,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_CHEST_WIDTH_MIN",
           "publicExportedName": "WARDROBE_CHEST_WIDTH_MIN",
           "declarationTypeFingerprint": "e5d748f68568c15fe97f9b39994b94dbc2a5339a7f6f4a5c4f2c26018b1687c0"
@@ -3636,7 +3636,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_DEPTH_MAX",
           "publicExportedName": "WARDROBE_DEPTH_MAX",
           "declarationTypeFingerprint": "a45756f3aab7bc2a979d61af2f901d7abcfa7256ea563912329232269ec7ab08"
@@ -3686,7 +3686,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_DEPTH_MIN",
           "publicExportedName": "WARDROBE_DEPTH_MIN",
           "declarationTypeFingerprint": "88a6d938131157a7318bad7abb0bbafd7b80ca593363edfd52e4edd6d3ef8f79"
@@ -3768,7 +3768,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_DOORS_MAX",
           "publicExportedName": "WARDROBE_DOORS_MAX",
           "declarationTypeFingerprint": "d2d1a93e0480dc1284ecef66ad0039aa450a0840383061c11acee21baece6d4e"
@@ -3818,7 +3818,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_DOORS_MIN",
           "publicExportedName": "WARDROBE_DOORS_MIN",
           "declarationTypeFingerprint": "8d21c6075bbca254922118c691542ff0282bc35fb9d7eb6231c1e283058e13b4"
@@ -3868,7 +3868,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_HEIGHT_MAX",
           "publicExportedName": "WARDROBE_HEIGHT_MAX",
           "declarationTypeFingerprint": "d9d18c9536428de016ae4b1f190a64b09b74fdd79ac5475b3e4c76a7bd42b523"
@@ -3918,7 +3918,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_HEIGHT_MIN",
           "publicExportedName": "WARDROBE_HEIGHT_MIN",
           "declarationTypeFingerprint": "9c8d5c413e38117d7c5b8333512b82564a7f60ea5548d20ee53924b24d0a31ba"
@@ -4047,7 +4047,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_SLIDING_DOORS_MIN",
           "publicExportedName": "WARDROBE_SLIDING_DOORS_MIN",
           "declarationTypeFingerprint": "a08e75c8c8cb62992bf09bd9e28fd02463eda3b9d2f429076feba34d1832d557"
@@ -4097,7 +4097,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_WIDTH_MAX",
           "publicExportedName": "WARDROBE_WIDTH_MAX",
           "declarationTypeFingerprint": "9bc84f2d9f84d68080579702be396adf69969e6cc83cd9cdccfb459154b114c8"
@@ -4147,7 +4147,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/product_limits.ts",
           "sourceSymbol": "WARDROBE_WIDTH_MIN",
           "publicExportedName": "WARDROBE_WIDTH_MIN",
           "declarationTypeFingerprint": "2829539650d3ad80e340ccae5d9f3594576906a2a7a70e79a2f6996a5da6ce4b"
@@ -4197,7 +4197,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/wardrobe_defaults.ts",
           "sourceSymbol": "WardrobeDimensionDefaultType",
           "publicExportedName": "WardrobeDimensionDefaultType",
           "declarationTypeFingerprint": "7e64c0f08b6a184ad5ba8f66397213fa9f44e7cf2a8eba1036a27a1529717c8a"

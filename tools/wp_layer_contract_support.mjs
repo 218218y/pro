@@ -521,9 +521,10 @@ function validateMigrationImportSpec(entry, field, expectedToLayer) {
   if (spec?.kind !== 'type' && spec?.kind !== 'value') {
     throw new Error(`wp_layer_contract: ${label}.kind must be type or value`);
   }
-  const expectedSyntax = spec.kind === 'type' ? 'type-import' : 'static-import';
-  if (spec?.syntax !== expectedSyntax) {
-    throw new Error(`wp_layer_contract: ${label}.syntax must be ${expectedSyntax}`);
+  const allowedSyntaxes =
+    spec.kind === 'type' ? ['type-import', 'type-re-export'] : ['static-import', 'static-re-export'];
+  if (!allowedSyntaxes.includes(spec?.syntax)) {
+    throw new Error(`wp_layer_contract: ${label}.syntax must be one of ${allowedSyntaxes.join(', ')}`);
   }
   normalizeSymbolList(spec.importedSymbols, `${label}.importedSymbols`);
   return { toFile, kind: spec.kind, syntax: spec.syntax };
@@ -731,6 +732,7 @@ const BUDGET_DIMENSIONS = Object.freeze([
 
 function matchingMigrationStatements(graph, fromFile, spec) {
   const statements = new Map();
+  const expectedSymbols = new Set(spec.importedSymbols || []);
   for (const entry of graph.imports || []) {
     if (entry.fromFile !== fromFile || entry.toFile !== spec.toFile) continue;
     const statementKey = String(entry.statementKey || `${entry.fromFile}:${entry.toFile}:${statements.size}`);
@@ -738,7 +740,26 @@ function matchingMigrationStatements(graph, fromFile, spec) {
     statement.entries.push(entry);
     statements.set(statementKey, statement);
   }
-  return [...statements.values()];
+  return [...statements.values()].filter(statement =>
+    statement.entries.some(
+      entry =>
+        entry.importedSymbols.includes('*') ||
+        entry.importedSymbols.some(symbol => expectedSymbols.has(symbol))
+    )
+  );
+}
+
+function matchingRemovedMigrationStatements(graph, fromFile, spec) {
+  const expectedSymbols = new Set(spec.importedSymbols || []);
+  return matchingMigrationStatements(graph, fromFile, spec).filter(statement =>
+    statement.entries.some(
+      entry =>
+        entry.kind === spec.kind &&
+        entry.syntax === spec.syntax &&
+        (entry.importedSymbols.includes('*') ||
+          entry.importedSymbols.some(symbol => expectedSymbols.has(symbol)))
+    )
+  );
 }
 
 function mixedMigrationStatementDetails(statement) {
@@ -785,9 +806,7 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
     }
     const addedMatches = matchingMigrationStatements(graph, fromFile, budget.addedImport);
     const companionMatches = matchingMigrationStatements(graph, fromFile, budget.companionImport);
-    const removedMatches = (graph.imports || []).filter(
-      entry => entry.fromFile === fromFile && entry.toFile === budget.removedImport.toFile
-    );
+    const removedMatches = matchingRemovedMigrationStatements(graph, fromFile, budget.removedImport);
 
     for (const [field, matches, expected] of [
       ['addedImport', addedMatches, budget.addedImport],

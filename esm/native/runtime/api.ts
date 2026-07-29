@@ -253,21 +253,9 @@ export {
   runPerfAction,
 } from './observability_surface.js';
 
+export { CHEST_MODE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+
 export {
-  DEFAULT_WIDTH,
-  DEFAULT_HEIGHT,
-  DEFAULT_CHEST_DRAWERS_COUNT,
-  CHEST_MODE_DIMENSIONS,
-  HINGED_DEFAULT_DEPTH,
-  SLIDING_DEFAULT_DEPTH,
-  DEFAULT_HINGED_DOORS,
-  DEFAULT_SLIDING_DOORS,
-  HINGED_DEFAULT_PER_DOOR_WIDTH,
-  SLIDING_DEFAULT_PER_DOOR_WIDTH,
-  DEFAULT_CORNER_WIDTH,
-  DEFAULT_CORNER_DOORS,
-  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
-  STACK_SPLIT_SEAM_GAP_M,
   WARDROBE_WIDTH_MIN,
   WARDROBE_CHEST_WIDTH_MIN,
   WARDROBE_WIDTH_MAX,
@@ -288,6 +276,25 @@ export {
   WARDROBE_CELL_HEIGHT_MAX,
   WARDROBE_CELL_DEPTH_MIN,
   WARDROBE_CELL_DEPTH_MAX,
+} from '../../shared/dimensions/product_limits.js';
+
+export {
+  DEFAULT_WIDTH,
+  DEFAULT_HEIGHT,
+  DEFAULT_CHEST_DRAWERS_COUNT,
+  HINGED_DEFAULT_DEPTH,
+  SLIDING_DEFAULT_DEPTH,
+  DEFAULT_HINGED_DOORS,
+  DEFAULT_SLIDING_DOORS,
+  HINGED_DEFAULT_PER_DOOR_WIDTH,
+  SLIDING_DEFAULT_PER_DOOR_WIDTH,
+  DEFAULT_CORNER_WIDTH,
+  DEFAULT_CORNER_DOORS,
+} from '../../shared/dimensions/wardrobe_defaults.js';
+
+export {
+  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
+  STACK_SPLIT_SEAM_GAP_M,
   STACK_SPLIT_LOWER_HEIGHT_MIN,
   STACK_SPLIT_MIN_TOP_HEIGHT,
   STACK_SPLIT_LOWER_DEPTH_MIN,
@@ -296,6 +303,9 @@ export {
   STACK_SPLIT_LOWER_WIDTH_MAX,
   STACK_SPLIT_LOWER_DOORS_MIN,
   STACK_SPLIT_LOWER_DOORS_MAX,
+} from '../../shared/dimensions/stack_split_policy.js';
+
+export {
   normalizeWardrobeDimensionDefaultType,
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
@@ -306,5 +316,6 @@ export {
   resolveDefaultWardrobeDimensions,
   resolveAutoWidthForDoors,
   isAutoWidthForDoors,
-} from '../../shared/wardrobe_dimension_tokens_shared.js';
-export type { WardrobeDimensionDefaultType } from '../../shared/wardrobe_dimension_tokens_shared.js';
+} from '../../shared/dimensions/wardrobe_default_resolution_policy.js';
+
+export type { WardrobeDimensionDefaultType } from '../../shared/dimensions/wardrobe_defaults.js';

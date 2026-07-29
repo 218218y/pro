@@ -7,14 +7,101 @@ import { fileURLToPath } from 'node:url';
 
 import { createTsRuntimeModuleLoader } from './_ts_runtime_module_loader.mjs';
 import { buildWardrobeDimensionPublicSurfaceSemanticSnapshot } from '../tools/wp_wardrobe_dimension_public_surface_semantic.mjs';
+import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const manifestRel = 'tools/wp_wardrobe_dimension_public_surface_manifest.json';
 const snapshotRel = 'tools/wp_wardrobe_dimension_public_surface_semantic_snapshot.json';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
+const runtimeRel = 'esm/native/runtime/api.ts';
+const baseline = JSON.parse(fs.readFileSync(path.join(root, 'tools/wp_layer_baseline.json'), 'utf8'));
 const manifest = JSON.parse(fs.readFileSync(path.join(root, manifestRel), 'utf8'));
 const snapshot = JSON.parse(fs.readFileSync(path.join(root, snapshotRel), 'utf8'));
 const sha256 = value => createHash('sha256').update(value).digest('hex');
+const runtimeOwnerGroups = Object.freeze([
+  Object.freeze({
+    family: 'Product Limits',
+    file: 'esm/shared/dimensions/product_limits.ts',
+    symbols: Object.freeze([
+      'WARDROBE_WIDTH_MIN',
+      'WARDROBE_CHEST_WIDTH_MIN',
+      'WARDROBE_WIDTH_MAX',
+      'WARDROBE_HEIGHT_MIN',
+      'WARDROBE_CHEST_HEIGHT_MIN',
+      'WARDROBE_HEIGHT_MAX',
+      'WARDROBE_DEPTH_MIN',
+      'WARDROBE_DEPTH_MAX',
+      'WARDROBE_DOORS_MIN',
+      'WARDROBE_SLIDING_DOORS_MIN',
+      'WARDROBE_DOORS_MAX',
+      'WARDROBE_CHEST_DRAWERS_MIN',
+      'WARDROBE_CHEST_DRAWERS_MAX',
+      'WARDROBE_CELL_DIM_MIN',
+      'WARDROBE_CELL_WIDTH_MIN',
+      'WARDROBE_CELL_WIDTH_MAX',
+      'WARDROBE_CELL_HEIGHT_MIN',
+      'WARDROBE_CELL_HEIGHT_MAX',
+      'WARDROBE_CELL_DEPTH_MIN',
+      'WARDROBE_CELL_DEPTH_MAX',
+    ]),
+  }),
+  Object.freeze({
+    family: 'Wardrobe Defaults',
+    file: 'esm/shared/dimensions/wardrobe_defaults.ts',
+    symbols: Object.freeze([
+      'DEFAULT_WIDTH',
+      'DEFAULT_HEIGHT',
+      'DEFAULT_CHEST_DRAWERS_COUNT',
+      'HINGED_DEFAULT_DEPTH',
+      'SLIDING_DEFAULT_DEPTH',
+      'DEFAULT_HINGED_DOORS',
+      'DEFAULT_SLIDING_DOORS',
+      'HINGED_DEFAULT_PER_DOOR_WIDTH',
+      'SLIDING_DEFAULT_PER_DOOR_WIDTH',
+      'DEFAULT_CORNER_WIDTH',
+      'DEFAULT_CORNER_DOORS',
+    ]),
+  }),
+  Object.freeze({
+    family: 'Stack Split',
+    file: 'esm/shared/dimensions/stack_split_policy.ts',
+    symbols: Object.freeze([
+      'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
+      'STACK_SPLIT_SEAM_GAP_M',
+      'STACK_SPLIT_LOWER_HEIGHT_MIN',
+      'STACK_SPLIT_MIN_TOP_HEIGHT',
+      'STACK_SPLIT_LOWER_DEPTH_MIN',
+      'STACK_SPLIT_LOWER_DEPTH_MAX',
+      'STACK_SPLIT_LOWER_WIDTH_MIN',
+      'STACK_SPLIT_LOWER_WIDTH_MAX',
+      'STACK_SPLIT_LOWER_DOORS_MIN',
+      'STACK_SPLIT_LOWER_DOORS_MAX',
+    ]),
+  }),
+  Object.freeze({
+    family: 'Wardrobe Default Resolution',
+    file: 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts',
+    symbols: Object.freeze([
+      'normalizeWardrobeDimensionDefaultType',
+      'getDefaultDepthForWardrobeType',
+      'getDefaultDoorsForWardrobeType',
+      'getDefaultPerDoorWidthForWardrobeType',
+      'getDefaultWidthForWardrobeType',
+      'getDefaultHeightForWardrobeType',
+      'getDefaultChestDrawersCount',
+      'resolveDefaultWardrobeDimensions',
+      'resolveAutoWidthForDoors',
+      'isAutoWidthForDoors',
+    ]),
+  }),
+]);
+const ledgerPrefixes = Object.freeze({
+  174: 'efd3490f378700da25a431705d0b9e3ce4e66827273b90c51ed534bada7d9549',
+  175: '8f40cca696d6f9f8b7152abbb925f8313c09b258ffcd62536be4af8e6881a63d',
+  176: 'b48dbe603d55ffd97713f34ae5c3fdd65a4c1ac9b5c64ea2d5e48221153e6852',
+  177: '8c0e1984abcc8daa48b698d01d9ad8bb2fcb2610551402c1147e67076437ae74',
+  178: '4f2439c0d05c724a812661c16fe408ea53c434a97f62368eb91e34b9aa1e7d67',
+});
 
 const compositionShapes = Object.freeze({
   CARCASS_BASE_DIMENSIONS: Object.freeze({
@@ -65,6 +152,64 @@ function runtimeShape(value) {
   return { type: typeof value, value };
 }
 
+function stableJson(value) {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value)
+      .sort()
+      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function expectedRuntimeLedgerEntries() {
+  const reasonSubject = [
+    'Product Limits symbol inventory',
+    'Wardrobe Defaults value inventory',
+    'Stack Split symbol inventory',
+    'Wardrobe Default Resolution symbol inventory',
+  ];
+  const removalSubject = [
+    'Product Limits statement',
+    'Wardrobe Defaults value statement',
+    'Stack Split statement',
+    'Default Resolution statement',
+  ];
+  return runtimeOwnerGroups.map((group, index) => {
+    const companion = runtimeOwnerGroups[(index + 1) % runtimeOwnerGroups.length];
+    return {
+      from: 'runtime',
+      to: 'shared',
+      additionalStatements: 1,
+      owner: 'dimension-public-surface-transition',
+      reviewedAt: '2026-07-29',
+      reviewBy: '2026-10-18',
+      fromFile: runtimeRel,
+      companionImport: {
+        toFile: companion.file,
+        kind: 'value',
+        importedSymbols: [...companion.symbols],
+        syntax: 'static-re-export',
+      },
+      removedImport: {
+        toFile: facadeRel,
+        kind: 'value',
+        importedSymbols: [...group.symbols],
+        syntax: 'static-re-export',
+      },
+      addedImport: {
+        toFile: group.file,
+        kind: 'value',
+        importedSymbols: [...group.symbols],
+        syntax: 'static-re-export',
+      },
+      reason: `Runtime public API preserves the ${reasonSubject[index]} while routing it directly from the canonical focused owner instead of the legacy dimension facade.`,
+      removalCondition: `Remove this entry when an explicit public-surface decision retires this Runtime ${removalSubject[index]} or a reviewed compatibility ownership schema supersedes this temporary route migration debt.`,
+    };
+  });
+}
+
 function validateSemanticSnapshot(candidate, candidateManifest = manifest) {
   assert.equal(candidateManifest.version, 2);
   assert.equal(candidateManifest.symbols.length, 99);
@@ -90,6 +235,7 @@ function validateSemanticSnapshot(candidate, candidateManifest = manifest) {
   assert.deepEqual(candidateManifest.runtimeReconstructionInventory, {
     exactDirectOwnerParity: 52,
     identityOnlyDeclarationReview: 1,
+    explicitCompatibilityOwner: 0,
     specialSymbols: ['CHEST_MODE_DIMENSIONS'],
   });
   assert.equal(candidate.version, 1);
@@ -201,6 +347,67 @@ test('52 Runtime symbols have exact direct-owner declaration parity while CHEST 
     runtimeIdentity: 'strict',
     declarationParity: 'branded-owner/plain-number-compatibility',
   });
+});
+
+test('Runtime direct-owner route statements and Entries 175-178 are exact and append-safe', () => {
+  const analysis = analyzeModuleDependencies(
+    runtimeRel,
+    fs.readFileSync(path.join(root, runtimeRel), 'utf8')
+  );
+  for (const group of runtimeOwnerGroups) {
+    const specifier = `../../shared/${group.file.slice('esm/shared/'.length).replace(/\.ts$/u, '.js')}`;
+    const matches = analysis.imports.filter(
+      dependency => dependency.specifier === specifier && dependency.kind === 'value'
+    );
+    assert.equal(matches.length, 1, group.family);
+    assert.equal(matches[0].syntax, 'static-re-export', group.family);
+    assert.deepEqual(matches[0].importedSymbols, [...group.symbols], group.family);
+    assert.equal(
+      matches[0].bindings.every(
+        binding => binding.localName === null && binding.importedName === binding.exportedName
+      ),
+      true,
+      group.family
+    );
+  }
+  const facadeRoutes = analysis.imports.filter(
+    dependency => dependency.specifier === '../../shared/wardrobe_dimension_tokens_shared.js'
+  );
+  assert.deepEqual(
+    facadeRoutes.map(dependency => [dependency.kind, dependency.syntax, dependency.importedSymbols]),
+    [['value', 'static-re-export', ['CHEST_MODE_DIMENSIONS']]]
+  );
+  const defaultsTypeRoute = analysis.imports.find(
+    dependency =>
+      dependency.specifier === '../../shared/dimensions/wardrobe_defaults.js' && dependency.kind === 'type'
+  );
+  assert.deepEqual(defaultsTypeRoute?.importedSymbols, ['WardrobeDimensionDefaultType']);
+  assert.equal(defaultsTypeRoute?.syntax, 'type-re-export');
+
+  assert.ok(baseline.migrationBudgets.length >= 178);
+  assert.deepEqual(baseline.migrationBudgets.slice(174, 178), expectedRuntimeLedgerEntries());
+  for (const [count, expected] of Object.entries(ledgerPrefixes)) {
+    assert.equal(
+      sha256(stableJson(baseline.migrationBudgets.slice(0, Number(count)))),
+      expected,
+      `Prefix ${count}`
+    );
+  }
+  const futureEntry179 = {
+    ...baseline.migrationBudgets[177],
+    fromFile: 'esm/native/runtime/future_dimension_public_route.ts',
+  };
+  const appended = [...baseline.migrationBudgets, futureEntry179];
+  assert.deepEqual(appended.slice(174, 178), expectedRuntimeLedgerEntries());
+  assert.equal(
+    sha256(stableJson(appended.slice(0, 178))),
+    ledgerPrefixes[178],
+    'Entry 179 must not change historical Prefix 178'
+  );
+
+  const mutated = structuredClone(baseline.migrationBudgets);
+  mutated[174].addedImport.importedSymbols[0] += '_MUTATED';
+  assert.notDeepEqual(mutated.slice(174, 178), expectedRuntimeLedgerEntries());
 });
 
 test('83 identity exports and six compositions preserve runtime identity, freeze, shape, and key order', () => {

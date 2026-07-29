@@ -1347,6 +1347,23 @@ test('[dimension tokens] Wardrobe Default Resolution is defined only by its focu
         'getDefaultPerDoorWidthForWardrobeType',
       ],
     },
+    {
+      file: 'esm/native/runtime/api.ts',
+      specifier: '../../shared/dimensions/wardrobe_default_resolution_policy.js',
+      syntax: 'static-re-export',
+      symbols: [
+        'normalizeWardrobeDimensionDefaultType',
+        'getDefaultDepthForWardrobeType',
+        'getDefaultDoorsForWardrobeType',
+        'getDefaultPerDoorWidthForWardrobeType',
+        'getDefaultWidthForWardrobeType',
+        'getDefaultHeightForWardrobeType',
+        'getDefaultChestDrawersCount',
+        'resolveDefaultWardrobeDimensions',
+        'resolveAutoWidthForDoors',
+        'isAutoWidthForDoors',
+      ],
+    },
   ]);
 
   const structureTabPolicyRel = 'esm/shared/dimensions/structure_tab_auto_width_policy.ts';
@@ -1385,24 +1402,7 @@ test('[dimension tokens] Wardrobe Default Resolution is defined only by its focu
         symbols: dependency.importedSymbols.filter(symbol => familySymbols.has(symbol)),
       }))
   );
-  assert.deepEqual(facadeConsumers, [
-    {
-      file: 'esm/native/runtime/api.ts',
-      syntax: 'static-re-export',
-      symbols: [
-        'normalizeWardrobeDimensionDefaultType',
-        'getDefaultDepthForWardrobeType',
-        'getDefaultDoorsForWardrobeType',
-        'getDefaultPerDoorWidthForWardrobeType',
-        'getDefaultWidthForWardrobeType',
-        'getDefaultHeightForWardrobeType',
-        'getDefaultChestDrawersCount',
-        'resolveDefaultWardrobeDimensions',
-        'resolveAutoWidthForDoors',
-        'isAutoWidthForDoors',
-      ],
-    },
-  ]);
+  assert.deepEqual(facadeConsumers, []);
 
   const moduleDefaults = read('esm/native/features/library_preset/module_defaults.ts');
   assert.match(moduleDefaults, /dimensions\/wardrobe_default_resolution_policy\.js/u);

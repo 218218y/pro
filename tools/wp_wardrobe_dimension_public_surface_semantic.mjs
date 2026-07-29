@@ -82,11 +82,28 @@ function upgradeManifestSchema(root) {
       representativeValueExports: 40,
     },
   };
-  manifest.runtimeReconstructionInventory = {
-    exactDirectOwnerParity: 52,
-    identityOnlyDeclarationReview: 1,
-    specialSymbols: ['CHEST_MODE_DIMENSIONS'],
-  };
+  const runtimeSource = fs.readFileSync(path.join(root, surfaceFiles.runtime), 'utf8');
+  const runtimeRoutes = analyzeModuleDependencies(surfaceFiles.runtime, runtimeSource).imports.filter(
+    dependency => dependency.syntax === 'static-re-export' || dependency.syntax === 'type-re-export'
+  );
+  const routeByExportedName = new Map();
+  for (const dependency of runtimeRoutes) {
+    const sourceFile = path.posix
+      .normalize(path.posix.join(path.posix.dirname(surfaceFiles.runtime), dependency.specifier))
+      .replace(/\.js$/u, '.ts');
+    for (const binding of dependency.bindings) {
+      if (!binding.exportedName || binding.exportedName === '*') continue;
+      routeByExportedName.set(binding.exportedName, {
+        sourceFile,
+        sourceSymbol: binding.importedName,
+        kind: dependency.kind,
+        syntax: dependency.syntax,
+      });
+    }
+  }
+  let exactDirectOwnerParity = 0;
+  let identityOnlyDeclarationReview = 0;
+  let explicitCompatibilityOwner = 0;
   for (const entry of manifest.symbols) {
     if (!entry.runtimeApiRoute) {
       entry.runtimeReconstruction = null;
@@ -94,23 +111,51 @@ function upgradeManifestSchema(root) {
     }
     const [owner] = entry.canonicalOwner.exports;
     const [ownerSymbol] = owner.symbols;
+    const route = routeByExportedName.get(entry.name);
+    if (!route) throw new Error(`Missing Runtime route for ${entry.name}`);
     const isChest = entry.name === 'CHEST_MODE_DIMENSIONS';
+    const isFacadeRoute = route.sourceFile === surfaceFiles.facade;
+    const isCompatibilityRoute = route.sourceFile.includes('/dimensions/compatibility/');
+    const declarationMode = isFacadeRoute
+      ? 'legacy-facade'
+      : isCompatibilityRoute
+        ? 'explicit-compatibility-owner'
+        : 'canonical-focused-owner';
     entry.runtimeApiRoute = {
       routeFile: surfaceFiles.runtime,
-      sourceFile: surfaceFiles.facade,
-      sourceSymbol: entry.name,
-      kind: entry.kind,
+      sourceFile: route.sourceFile,
+      sourceSymbol: route.sourceSymbol,
+      kind: route.kind,
       form: entry.kind === 'type' ? 'type-re-export' : 'named-re-export',
       identity: entry.facadeDeclaration.identity,
-      declarationMode: 'legacy-facade',
+      declarationMode,
     };
+    if (isChest && isCompatibilityRoute) explicitCompatibilityOwner += 1;
+    else if (isChest) identityOnlyDeclarationReview += 1;
+    else exactDirectOwnerParity += 1;
     entry.runtimeReconstruction = {
-      status: isChest ? 'identity-parity-declaration-review' : 'exact-direct-owner-parity',
+      status:
+        isChest && isCompatibilityRoute
+          ? 'explicit-compatibility-owner'
+          : isChest
+            ? 'identity-parity-declaration-review'
+            : 'exact-direct-owner-parity',
       target: { file: owner.file, symbol: ownerSymbol, kind: entry.kind },
       runtimeIdentity: 'strict',
-      declarationParity: isChest ? 'branded-owner/plain-number-compatibility' : 'exact',
+      declarationParity:
+        isChest && isCompatibilityRoute
+          ? 'exact-legacy-number-view'
+          : isChest
+            ? 'branded-owner/plain-number-compatibility'
+            : 'exact',
     };
   }
+  manifest.runtimeReconstructionInventory = {
+    exactDirectOwnerParity,
+    identityOnlyDeclarationReview,
+    explicitCompatibilityOwner,
+    specialSymbols: ['CHEST_MODE_DIMENSIONS'],
+  };
   fs.writeFileSync(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
 
   const inventory = JSON.parse(fs.readFileSync(inventoryFile, 'utf8'));

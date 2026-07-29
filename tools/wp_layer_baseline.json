@@ -6358,6 +6358,287 @@
       },
       "reason": "The Order PDF Dimension Support feature boundary replaces the Wardrobe Default Resolution symbol group from the legacy shared facade route with its canonical focused owner alongside the reviewed Wardrobe Defaults owner statement, without exposing shared ownership to UI.",
       "removalCondition": "Remove this entry when a reviewed Order PDF Dimension Support composition seam eliminates the extra Wardrobe Default Resolution owner statement without reintroducing the legacy facade, a direct shared owner import in UI, copied values, or a general dimension barrel."
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-public-surface-transition",
+      "reviewedAt": "2026-07-29",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/runtime/api.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "HINGED_DEFAULT_DEPTH",
+          "SLIDING_DEFAULT_DEPTH",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_SLIDING_DOORS",
+          "HINGED_DEFAULT_PER_DOOR_WIDTH",
+          "SLIDING_DEFAULT_PER_DOOR_WIDTH",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_CORNER_DOORS"
+        ],
+        "syntax": "static-re-export"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "WARDROBE_WIDTH_MIN",
+          "WARDROBE_CHEST_WIDTH_MIN",
+          "WARDROBE_WIDTH_MAX",
+          "WARDROBE_HEIGHT_MIN",
+          "WARDROBE_CHEST_HEIGHT_MIN",
+          "WARDROBE_HEIGHT_MAX",
+          "WARDROBE_DEPTH_MIN",
+          "WARDROBE_DEPTH_MAX",
+          "WARDROBE_DOORS_MIN",
+          "WARDROBE_SLIDING_DOORS_MIN",
+          "WARDROBE_DOORS_MAX",
+          "WARDROBE_CHEST_DRAWERS_MIN",
+          "WARDROBE_CHEST_DRAWERS_MAX",
+          "WARDROBE_CELL_DIM_MIN",
+          "WARDROBE_CELL_WIDTH_MIN",
+          "WARDROBE_CELL_WIDTH_MAX",
+          "WARDROBE_CELL_HEIGHT_MIN",
+          "WARDROBE_CELL_HEIGHT_MAX",
+          "WARDROBE_CELL_DEPTH_MIN",
+          "WARDROBE_CELL_DEPTH_MAX"
+        ],
+        "syntax": "static-re-export"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/product_limits.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "WARDROBE_WIDTH_MIN",
+          "WARDROBE_CHEST_WIDTH_MIN",
+          "WARDROBE_WIDTH_MAX",
+          "WARDROBE_HEIGHT_MIN",
+          "WARDROBE_CHEST_HEIGHT_MIN",
+          "WARDROBE_HEIGHT_MAX",
+          "WARDROBE_DEPTH_MIN",
+          "WARDROBE_DEPTH_MAX",
+          "WARDROBE_DOORS_MIN",
+          "WARDROBE_SLIDING_DOORS_MIN",
+          "WARDROBE_DOORS_MAX",
+          "WARDROBE_CHEST_DRAWERS_MIN",
+          "WARDROBE_CHEST_DRAWERS_MAX",
+          "WARDROBE_CELL_DIM_MIN",
+          "WARDROBE_CELL_WIDTH_MIN",
+          "WARDROBE_CELL_WIDTH_MAX",
+          "WARDROBE_CELL_HEIGHT_MIN",
+          "WARDROBE_CELL_HEIGHT_MAX",
+          "WARDROBE_CELL_DEPTH_MIN",
+          "WARDROBE_CELL_DEPTH_MAX"
+        ],
+        "syntax": "static-re-export"
+      },
+      "reason": "Runtime public API preserves the Product Limits symbol inventory while routing it directly from the canonical focused owner instead of the legacy dimension facade.",
+      "removalCondition": "Remove this entry when an explicit public-surface decision retires this Runtime Product Limits statement or a reviewed compatibility ownership schema supersedes this temporary route migration debt."
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-public-surface-transition",
+      "reviewedAt": "2026-07-29",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/runtime/api.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "STACK_SPLIT_SEAM_GAP_M",
+          "STACK_SPLIT_LOWER_HEIGHT_MIN",
+          "STACK_SPLIT_MIN_TOP_HEIGHT",
+          "STACK_SPLIT_LOWER_DEPTH_MIN",
+          "STACK_SPLIT_LOWER_DEPTH_MAX",
+          "STACK_SPLIT_LOWER_WIDTH_MIN",
+          "STACK_SPLIT_LOWER_WIDTH_MAX",
+          "STACK_SPLIT_LOWER_DOORS_MIN",
+          "STACK_SPLIT_LOWER_DOORS_MAX"
+        ],
+        "syntax": "static-re-export"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "HINGED_DEFAULT_DEPTH",
+          "SLIDING_DEFAULT_DEPTH",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_SLIDING_DOORS",
+          "HINGED_DEFAULT_PER_DOOR_WIDTH",
+          "SLIDING_DEFAULT_PER_DOOR_WIDTH",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_CORNER_DOORS"
+        ],
+        "syntax": "static-re-export"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "HINGED_DEFAULT_DEPTH",
+          "SLIDING_DEFAULT_DEPTH",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_SLIDING_DOORS",
+          "HINGED_DEFAULT_PER_DOOR_WIDTH",
+          "SLIDING_DEFAULT_PER_DOOR_WIDTH",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_CORNER_DOORS"
+        ],
+        "syntax": "static-re-export"
+      },
+      "reason": "Runtime public API preserves the Wardrobe Defaults value inventory while routing it directly from the canonical focused owner instead of the legacy dimension facade.",
+      "removalCondition": "Remove this entry when an explicit public-surface decision retires this Runtime Wardrobe Defaults value statement or a reviewed compatibility ownership schema supersedes this temporary route migration debt."
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-public-surface-transition",
+      "reviewedAt": "2026-07-29",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/runtime/api.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "normalizeWardrobeDimensionDefaultType",
+          "getDefaultDepthForWardrobeType",
+          "getDefaultDoorsForWardrobeType",
+          "getDefaultPerDoorWidthForWardrobeType",
+          "getDefaultWidthForWardrobeType",
+          "getDefaultHeightForWardrobeType",
+          "getDefaultChestDrawersCount",
+          "resolveDefaultWardrobeDimensions",
+          "resolveAutoWidthForDoors",
+          "isAutoWidthForDoors"
+        ],
+        "syntax": "static-re-export"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "STACK_SPLIT_SEAM_GAP_M",
+          "STACK_SPLIT_LOWER_HEIGHT_MIN",
+          "STACK_SPLIT_MIN_TOP_HEIGHT",
+          "STACK_SPLIT_LOWER_DEPTH_MIN",
+          "STACK_SPLIT_LOWER_DEPTH_MAX",
+          "STACK_SPLIT_LOWER_WIDTH_MIN",
+          "STACK_SPLIT_LOWER_WIDTH_MAX",
+          "STACK_SPLIT_LOWER_DOORS_MIN",
+          "STACK_SPLIT_LOWER_DOORS_MAX"
+        ],
+        "syntax": "static-re-export"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "STACK_SPLIT_SEAM_GAP_M",
+          "STACK_SPLIT_LOWER_HEIGHT_MIN",
+          "STACK_SPLIT_MIN_TOP_HEIGHT",
+          "STACK_SPLIT_LOWER_DEPTH_MIN",
+          "STACK_SPLIT_LOWER_DEPTH_MAX",
+          "STACK_SPLIT_LOWER_WIDTH_MIN",
+          "STACK_SPLIT_LOWER_WIDTH_MAX",
+          "STACK_SPLIT_LOWER_DOORS_MIN",
+          "STACK_SPLIT_LOWER_DOORS_MAX"
+        ],
+        "syntax": "static-re-export"
+      },
+      "reason": "Runtime public API preserves the Stack Split symbol inventory while routing it directly from the canonical focused owner instead of the legacy dimension facade.",
+      "removalCondition": "Remove this entry when an explicit public-surface decision retires this Runtime Stack Split statement or a reviewed compatibility ownership schema supersedes this temporary route migration debt."
+    },
+    {
+      "from": "runtime",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-public-surface-transition",
+      "reviewedAt": "2026-07-29",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/runtime/api.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/product_limits.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "WARDROBE_WIDTH_MIN",
+          "WARDROBE_CHEST_WIDTH_MIN",
+          "WARDROBE_WIDTH_MAX",
+          "WARDROBE_HEIGHT_MIN",
+          "WARDROBE_CHEST_HEIGHT_MIN",
+          "WARDROBE_HEIGHT_MAX",
+          "WARDROBE_DEPTH_MIN",
+          "WARDROBE_DEPTH_MAX",
+          "WARDROBE_DOORS_MIN",
+          "WARDROBE_SLIDING_DOORS_MIN",
+          "WARDROBE_DOORS_MAX",
+          "WARDROBE_CHEST_DRAWERS_MIN",
+          "WARDROBE_CHEST_DRAWERS_MAX",
+          "WARDROBE_CELL_DIM_MIN",
+          "WARDROBE_CELL_WIDTH_MIN",
+          "WARDROBE_CELL_WIDTH_MAX",
+          "WARDROBE_CELL_HEIGHT_MIN",
+          "WARDROBE_CELL_HEIGHT_MAX",
+          "WARDROBE_CELL_DEPTH_MIN",
+          "WARDROBE_CELL_DEPTH_MAX"
+        ],
+        "syntax": "static-re-export"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "normalizeWardrobeDimensionDefaultType",
+          "getDefaultDepthForWardrobeType",
+          "getDefaultDoorsForWardrobeType",
+          "getDefaultPerDoorWidthForWardrobeType",
+          "getDefaultWidthForWardrobeType",
+          "getDefaultHeightForWardrobeType",
+          "getDefaultChestDrawersCount",
+          "resolveDefaultWardrobeDimensions",
+          "resolveAutoWidthForDoors",
+          "isAutoWidthForDoors"
+        ],
+        "syntax": "static-re-export"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "normalizeWardrobeDimensionDefaultType",
+          "getDefaultDepthForWardrobeType",
+          "getDefaultDoorsForWardrobeType",
+          "getDefaultPerDoorWidthForWardrobeType",
+          "getDefaultWidthForWardrobeType",
+          "getDefaultHeightForWardrobeType",
+          "getDefaultChestDrawersCount",
+          "resolveDefaultWardrobeDimensions",
+          "resolveAutoWidthForDoors",
+          "isAutoWidthForDoors"
+        ],
+        "syntax": "static-re-export"
+      },
+      "reason": "Runtime public API preserves the Wardrobe Default Resolution symbol inventory while routing it directly from the canonical focused owner instead of the legacy dimension facade.",
+      "removalCondition": "Remove this entry when an explicit public-surface decision retires this Runtime Default Resolution statement or a reviewed compatibility ownership schema supersedes this temporary route migration debt."
     }
   ]
 }
