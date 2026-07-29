@@ -505,6 +505,16 @@ function evaluationDateTimestamp(currentDate) {
   return parseIsoDateOnly(String(currentDate), 'currentDate');
 }
 
+function isoDateOnlyFromTimestamp(timestamp) {
+  return new Date(timestamp).toISOString().slice(0, 10);
+}
+
+function exactStatementSpecKey(from, to, fromFile, spec) {
+  return `${edgeKey(from, to)}::${toPosix(String(fromFile))}::${toPosix(String(spec?.toFile || ''))}::${String(
+    spec?.kind || ''
+  )}::${String(spec?.syntax || '')}::${[...(spec?.importedSymbols || [])].map(String).sort().join(',')}`;
+}
+
 function migrationImportKey(fromFile, importSpec) {
   return `${toPosix(String(fromFile))}::${toPosix(String(importSpec?.toFile || ''))}::${String(
     importSpec?.kind || ''
@@ -648,6 +658,7 @@ export function validateLayerContractSchema(contract) {
   }
 
   const migrationBudgetKeys = new Set();
+  const migrationBudgetReviewedAt = [];
   for (const entry of contract.migrationBudgets) {
     const fromFile = toPosix(String(entry?.fromFile || ''));
     const from = String(entry?.from || '');
@@ -676,6 +687,7 @@ export function validateLayerContractSchema(contract) {
       }
     }
     const reviewedAt = parseIsoDateOnly(entry.reviewedAt, `migration budget ${fromFile}.reviewedAt`);
+    migrationBudgetReviewedAt.push(reviewedAt);
     const reviewBy = parseIsoDateOnly(entry.reviewBy, `migration budget ${fromFile}.reviewBy`);
     if (reviewBy < reviewedAt) {
       throw new Error(
@@ -707,6 +719,7 @@ export function validateLayerContractSchema(contract) {
   }
 
   const compatibilityIds = new Set();
+  const compatibilityById = new Map();
   const compatibilityStatementKeys = new Set();
   for (const entry of contract.compatibilityBudgets) {
     const id = String(entry?.id || '').trim();
@@ -750,14 +763,20 @@ export function validateLayerContractSchema(contract) {
     if (symbols.includes('*') && entry.allowWildcard !== true) {
       throw new Error(`wp_layer_contract: compatibility budget ${id} wildcard requires allowWildcard: true`);
     }
-    const statementKey = `${fromFile}::${statement.toFile}::${statement.kind}::${statement.syntax}::${symbols.join(',')}`;
+    const statementKey = exactStatementSpecKey(from, to, fromFile, {
+      ...entry.statement,
+      toFile: statement.toFile,
+      importedSymbols: symbols,
+    });
     if (compatibilityStatementKeys.has(statementKey)) {
       throw new Error(`wp_layer_contract: duplicate compatibility statement ownership for ${statementKey}`);
     }
     compatibilityStatementKeys.add(statementKey);
+    compatibilityById.set(id, { entry, reviewedAt, statementKey });
   }
 
   const retirementEntries = new Set();
+  const consolidationStatementKeys = new Set();
   const retirementModes = new Set(['statement-removed', 'statement-consolidated', 'ownership-transferred']);
   for (const retirement of contract.migrationRetirements) {
     const entryNumber = retirement?.entryNumber;
@@ -768,25 +787,109 @@ export function validateLayerContractSchema(contract) {
       throw new Error(`wp_layer_contract: duplicate migration retirement for Entry ${entryNumber}`);
     }
     retirementEntries.add(entryNumber);
-    parseIsoDateOnly(retirement.retiredAt, `migration retirement Entry ${entryNumber}.retiredAt`);
+    const retiredAt = parseIsoDateOnly(
+      retirement.retiredAt,
+      `migration retirement Entry ${entryNumber}.retiredAt`
+    );
+    const migrationBudget = contract.migrationBudgets[entryNumber - 1];
+    if (retiredAt < migrationBudgetReviewedAt[entryNumber - 1]) {
+      throw new Error(
+        `wp_layer_contract: migration retirement Entry ${entryNumber}.retiredAt must not be earlier than migration reviewedAt`
+      );
+    }
     if (!retirementModes.has(retirement.mode)) {
       throw new Error(`wp_layer_contract: migration retirement Entry ${entryNumber} has unsupported mode`);
     }
     if (typeof retirement.reason !== 'string' || !retirement.reason.trim()) {
       throw new Error(`wp_layer_contract: migration retirement Entry ${entryNumber} requires reason`);
     }
-    const replacement = retirement.replacementCompatibilityBudgetId;
+
+    const replacementCompatibilityBudgetId = retirement.replacementCompatibilityBudgetId;
+    const hasReplacementStatement = Object.hasOwn(retirement, 'replacementStatement');
     if (retirement.mode === 'ownership-transferred') {
-      if (typeof replacement !== 'string' || !replacement.trim() || !compatibilityIds.has(replacement)) {
+      if (
+        typeof replacementCompatibilityBudgetId !== 'string' ||
+        !replacementCompatibilityBudgetId.trim() ||
+        !compatibilityIds.has(replacementCompatibilityBudgetId)
+      ) {
         throw new Error(
           `wp_layer_contract: migration retirement Entry ${entryNumber} ownership-transferred requires an existing replacementCompatibilityBudgetId`
         );
       }
-    } else if (replacement !== null) {
+      if (hasReplacementStatement) {
+        throw new Error(
+          `wp_layer_contract: migration retirement Entry ${entryNumber} ownership-transferred does not allow replacementStatement`
+        );
+      }
+      const compatibility = compatibilityById.get(replacementCompatibilityBudgetId);
+      if (compatibility.reviewedAt > retiredAt) {
+        throw new Error(
+          `wp_layer_contract: migration retirement Entry ${entryNumber} ownership-transferred requires compatibility reviewedAt on or before retiredAt`
+        );
+      }
+      continue;
+    }
+
+    if (replacementCompatibilityBudgetId !== null) {
       throw new Error(
         `wp_layer_contract: migration retirement Entry ${entryNumber} ${retirement.mode} requires replacementCompatibilityBudgetId null`
       );
     }
+    if (retirement.mode === 'statement-removed') {
+      if (!hasReplacementStatement || retirement.replacementStatement !== null) {
+        throw new Error(
+          `wp_layer_contract: migration retirement Entry ${entryNumber} statement-removed requires replacementStatement null`
+        );
+      }
+      continue;
+    }
+
+    const replacementStatement = retirement.replacementStatement;
+    if (
+      !replacementStatement ||
+      typeof replacementStatement !== 'object' ||
+      Array.isArray(replacementStatement)
+    ) {
+      throw new Error(
+        `wp_layer_contract: migration retirement Entry ${entryNumber} statement-consolidated requires replacementStatement`
+      );
+    }
+    const replacementFromFile = toPosix(String(replacementStatement.fromFile || ''));
+    if (layerOfRelativeFile(replacementFromFile) !== migrationBudget.from) {
+      throw new Error(
+        `wp_layer_contract: migration retirement Entry ${entryNumber}.replacementStatement.fromFile must belong to ${migrationBudget.from}`
+      );
+    }
+    const replacementSpec = validateMigrationImportSpec(
+      { fromFile: replacementFromFile, replacementStatement },
+      'replacementStatement',
+      migrationBudget.to
+    );
+    const replacementSymbols = normalizeSymbolList(
+      replacementStatement.importedSymbols,
+      `migration retirement Entry ${entryNumber}.replacementStatement.importedSymbols`
+    );
+    if (replacementSymbols.includes('*') && replacementStatement.allowWildcard !== true) {
+      throw new Error(
+        `wp_layer_contract: migration retirement Entry ${entryNumber} replacement wildcard requires allowWildcard: true`
+      );
+    }
+    const replacementKey = exactStatementSpecKey(
+      migrationBudget.from,
+      migrationBudget.to,
+      replacementFromFile,
+      {
+        ...replacementStatement,
+        toFile: replacementSpec.toFile,
+        importedSymbols: replacementSymbols,
+      }
+    );
+    if (consolidationStatementKeys.has(replacementKey)) {
+      throw new Error(
+        `wp_layer_contract: duplicate statement-consolidated replacement ownership for ${replacementKey}`
+      );
+    }
+    consolidationStatementKeys.add(replacementKey);
   }
   return contract;
 }
@@ -950,7 +1053,21 @@ function evaluateExactStatement({ graph, from, to, fromFile, spec, label, allowW
   return { failures, statement: failures.length === 0 ? statement : null };
 }
 
-function evaluateCompatibilityBudgets(graph, contract) {
+function addApprovedStatement(approvedStatements, from, to, statement) {
+  const [entry] = statement.entries;
+  const edge = edgeKey(from, to);
+  const current = approvedStatements.get(edge) || {
+    all: new Set(),
+    type: new Set(),
+    value: new Set(),
+    dynamic: new Set(),
+  };
+  current.all.add(entry.statementKey);
+  current[entry.kind].add(entry.statementKey);
+  approvedStatements.set(edge, current);
+}
+
+function evaluateCompatibilityBudgets(graph, contract, { currentDateMs, currentDate }) {
   const failures = [];
   const approvedStatements = new Map();
   const statuses = [];
@@ -965,19 +1082,39 @@ function evaluateCompatibilityBudgets(graph, contract) {
       label: 'compatibility-budget',
       allowWildcard: budget.allowWildcard === true,
     });
-    failures.push(...result.failures.map(failure => ({ ...failure, compatibilityBudgetId: budget.id })));
-    if (result.statement) {
-      const [entry] = result.statement.entries;
-      const edge = edgeKey(budget.from, budget.to);
-      const current = approvedStatements.get(edge) || {
-        all: new Set(),
-        type: new Set(),
-        value: new Set(),
-        dynamic: new Set(),
-      };
-      current.all.add(entry.statementKey);
-      current[entry.kind].add(entry.statementKey);
-      approvedStatements.set(edge, current);
+    const statementFailures = result.failures.map(failure => ({
+      ...failure,
+      compatibilityBudgetId: budget.id,
+    }));
+    failures.push(...statementFailures);
+
+    const reviewedAtMs = parseIsoDateOnly(budget.reviewedAt, `compatibility budget ${budget.id}.reviewedAt`);
+    const nextReviewByMs = parseIsoDateOnly(
+      budget.nextReviewBy,
+      `compatibility budget ${budget.id}.nextReviewBy`
+    );
+    const reviewEffective = currentDateMs >= reviewedAtMs;
+    const reviewOverdue = currentDateMs > nextReviewByMs;
+    const lifecycleDetails = {
+      compatibilityBudgetId: budget.id,
+      reviewedAt: budget.reviewedAt,
+      nextReviewBy: budget.nextReviewBy,
+      currentDate,
+      fromFile,
+      toFile: budget.statement.toFile,
+    };
+    if (!reviewEffective) {
+      failures.push({ kind: 'compatibility-review-not-effective-yet', ...lifecycleDetails });
+    }
+    if (reviewOverdue) {
+      failures.push({ kind: 'stale-compatibility-review', ...lifecycleDetails });
+    }
+
+    const statementValid = statementFailures.length === 0;
+    const ownershipEffective = statementValid && reviewEffective;
+    const active = ownershipEffective && !reviewOverdue;
+    if (ownershipEffective && result.statement) {
+      addApprovedStatement(approvedStatements, budget.from, budget.to, result.statement);
     }
     statuses.push({
       id: budget.id,
@@ -985,11 +1122,27 @@ function evaluateCompatibilityBudgets(graph, contract) {
       to: budget.to,
       fromFile,
       target: budget.statement.toFile,
+      reviewedAt: budget.reviewedAt,
       nextReviewBy: budget.nextReviewBy,
-      active: result.failures.length === 0,
+      currentDate,
+      statementValid,
+      reviewEffective,
+      reviewOverdue,
+      ownershipEffective,
+      active,
     });
   }
   return { failures, approvedStatements, statuses };
+}
+
+function retirementReplacementKey(budget, retirement) {
+  if (retirement?.mode !== 'statement-consolidated') return null;
+  return exactStatementSpecKey(
+    budget.from,
+    budget.to,
+    retirement.replacementStatement.fromFile,
+    retirement.replacementStatement
+  );
 }
 
 function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
@@ -997,19 +1150,29 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
   const approvedStatements = new Map();
   const statuses = [];
   const currentDateMs = evaluationDateTimestamp(currentDate);
+  const currentDateLabel = isoDateOnlyFromTimestamp(currentDateMs);
   const retirements = new Map(contract.migrationRetirements.map(entry => [entry.entryNumber, entry]));
   const compatibilityById = new Map(contract.compatibilityBudgets.map(entry => [entry.id, entry]));
-  const activeStatementOwners = new Map();
+  const compatibilityEvaluation = evaluateCompatibilityBudgets(graph, contract, {
+    currentDateMs,
+    currentDate: currentDateLabel,
+  });
+  const compatibilityStatementKeys = new Set(
+    contract.compatibilityBudgets
+      .filter((_, index) => compatibilityEvaluation.statuses[index]?.ownershipEffective)
+      .map(budget => exactStatementSpecKey(budget.from, budget.to, budget.fromFile, budget.statement))
+  );
+  const records = [];
 
   for (const [index, budget] of contract.migrationBudgets.entries()) {
     const entryNumber = index + 1;
     const retirement = retirements.get(entryNumber) || null;
     const fromFile = toPosix(String(budget.fromFile));
-    const edge = edgeKey(budget.from, budget.to);
-    const entryFailures = [];
+    const baseFailures = [];
+    const retirementFailures = [];
     const removedMatches = matchingRemovedMigrationStatements(graph, fromFile, budget.removedImport);
     if (removedMatches.length > 0) {
-      entryFailures.push({
+      baseFailures.push({
         kind: 'migration-legacy-import-restored',
         entryNumber,
         from: budget.from,
@@ -1022,20 +1185,35 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
       });
     }
 
+    let retirementEffective = false;
+    let replacementStatementStatus = null;
     if (retirement) {
-      if (retirement.mode === 'ownership-transferred') {
+      const retiredAtMs = parseIsoDateOnly(
+        retirement.retiredAt,
+        `migration retirement Entry ${entryNumber}.retiredAt`
+      );
+      retirementEffective = currentDateMs >= retiredAtMs;
+      if (!retirementEffective) {
+        retirementFailures.push({
+          kind: 'migration-retirement-not-effective-yet',
+          entryNumber,
+          retiredAt: retirement.retiredAt,
+          currentDate: currentDateLabel,
+          fromFile,
+          toFile: budget.addedImport.toFile,
+        });
+      } else if (retirement.mode === 'ownership-transferred') {
         const compatibility = compatibilityById.get(retirement.replacementCompatibilityBudgetId);
         const matchesReplacement =
           compatibility &&
-          compatibility.from === budget.from &&
-          compatibility.to === budget.to &&
-          toPosix(String(compatibility.fromFile)) === fromFile &&
-          compatibility.statement.toFile === budget.addedImport.toFile &&
-          compatibility.statement.kind === budget.addedImport.kind &&
-          compatibility.statement.syntax === budget.addedImport.syntax &&
-          sameStringList(compatibility.statement.importedSymbols, budget.addedImport.importedSymbols);
+          exactStatementSpecKey(
+            compatibility.from,
+            compatibility.to,
+            compatibility.fromFile,
+            compatibility.statement
+          ) === exactStatementSpecKey(budget.from, budget.to, fromFile, budget.addedImport);
         if (!matchesReplacement) {
-          entryFailures.push({
+          retirementFailures.push({
             kind: 'migration-retirement-compatibility-mismatch',
             entryNumber,
             compatibilityBudgetId: retirement.replacementCompatibilityBudgetId,
@@ -1044,11 +1222,11 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
       } else {
         const addedMatches = matchingMigrationStatements(graph, fromFile, budget.addedImport);
         if (addedMatches.length !== 0) {
-          entryFailures.push({
+          retirementFailures.push({
             kind:
               retirement.mode === 'statement-removed'
                 ? 'migration-retirement-statement-still-present'
-                : 'migration-retirement-consolidated-statement-still-exact',
+                : 'migration-retirement-consolidated-statement-still-present',
             entryNumber,
             fromFile,
             toFile: budget.addedImport.toFile,
@@ -1056,7 +1234,100 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
             expected: 0,
           });
         }
+        if (retirement.mode === 'statement-consolidated') {
+          const replacementFromFile = toPosix(String(retirement.replacementStatement.fromFile));
+          const replacementResult = evaluateExactStatement({
+            graph,
+            from: budget.from,
+            to: budget.to,
+            fromFile: replacementFromFile,
+            spec: retirement.replacementStatement,
+            label: 'migration-retirement-consolidation',
+            allowWildcard: retirement.replacementStatement.allowWildcard === true,
+          });
+          const replacementFailures = replacementResult.failures.map(failure => ({
+            ...failure,
+            entryNumber,
+          }));
+          retirementFailures.push(...replacementFailures);
+          replacementStatementStatus = {
+            fromFile: replacementFromFile,
+            toFile: retirement.replacementStatement.toFile,
+            kind: retirement.replacementStatement.kind,
+            syntax: retirement.replacementStatement.syntax,
+            importedSymbols: [...retirement.replacementStatement.importedSymbols],
+            statementValid: replacementFailures.length === 0,
+          };
+        }
       }
+    }
+
+    records.push({
+      entryNumber,
+      budget,
+      retirement,
+      fromFile,
+      baseFailures,
+      retirementFailures,
+      retirementEffective,
+      replacementStatementStatus,
+      retirementValid: Boolean(retirement) && retirementEffective && retirementFailures.length === 0,
+    });
+  }
+
+  // Consolidation ownership is resolved against the final active-debt set. Invalidating one
+  // consolidation can make its historical statement an active owner for another, so converge.
+  let ownershipChanged = true;
+  while (ownershipChanged) {
+    ownershipChanged = false;
+    const activeMigrationOwners = new Map();
+    for (const record of records) {
+      if (record.retirementValid) continue;
+      activeMigrationOwners.set(
+        exactStatementSpecKey(
+          record.budget.from,
+          record.budget.to,
+          record.fromFile,
+          record.budget.addedImport
+        ),
+        record.entryNumber
+      );
+    }
+    for (const record of records) {
+      if (!record.retirementValid || record.retirement?.mode !== 'statement-consolidated') continue;
+      const replacementKey = retirementReplacementKey(record.budget, record.retirement);
+      if (compatibilityStatementKeys.has(replacementKey)) {
+        record.retirementFailures.push({
+          kind: 'migration-retirement-consolidation-compatibility-ownership-conflict',
+          entryNumber: record.entryNumber,
+          fromFile: record.retirement.replacementStatement.fromFile,
+          toFile: record.retirement.replacementStatement.toFile,
+        });
+        record.retirementValid = false;
+        ownershipChanged = true;
+        continue;
+      }
+      const activeOwner = activeMigrationOwners.get(replacementKey);
+      if (activeOwner && activeOwner !== record.entryNumber) {
+        record.retirementFailures.push({
+          kind: 'migration-retirement-consolidation-active-migration-ownership-conflict',
+          entryNumber: record.entryNumber,
+          activeMigrationEntryNumber: activeOwner,
+          fromFile: record.retirement.replacementStatement.fromFile,
+          toFile: record.retirement.replacementStatement.toFile,
+        });
+        record.retirementValid = false;
+        ownershipChanged = true;
+      }
+    }
+  }
+
+  const activeStatementOwners = new Map();
+  for (const record of records) {
+    const { entryNumber, budget, retirement, fromFile, baseFailures, retirementFailures } = record;
+    const edge = edgeKey(budget.from, budget.to);
+    if (record.retirementValid) {
+      const entryFailures = [...baseFailures, ...retirementFailures];
       failures.push(...entryFailures);
       statuses.push({
         entryNumber,
@@ -1067,15 +1338,18 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
         reviewBy: budget.reviewBy,
         active: false,
         retired: true,
+        retirementEffective: true,
         retirementMode: retirement.mode,
         replacementCompatibilityBudgetId: retirement.replacementCompatibilityBudgetId,
+        replacementStatement: record.replacementStatementStatus,
         valid: entryFailures.length === 0,
       });
       continue;
     }
 
+    const activeBudgetFailures = [...baseFailures];
     if (currentDateMs > parseIsoDateOnly(budget.reviewBy, `${fromFile}.reviewBy`)) {
-      entryFailures.push({
+      activeBudgetFailures.push({
         kind: 'stale-migration-review',
         from: budget.from,
         to: budget.to,
@@ -1092,7 +1366,7 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
       ['companionImport', companionMatches, budget.companionImport],
     ]) {
       if (matches.length !== 1) {
-        entryFailures.push({
+        activeBudgetFailures.push({
           kind: migrationImportFailureKind(field, matches.length),
           from: budget.from,
           to: budget.to,
@@ -1108,7 +1382,7 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
       const statement = matches[0];
       const mixedDetails = mixedMigrationStatementDetails(statement);
       if (mixedDetails) {
-        entryFailures.push({
+        activeBudgetFailures.push({
           kind: 'migration-import-mixed-kind-drift',
           from: budget.from,
           to: budget.to,
@@ -1123,7 +1397,7 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
       }
       const [match] = statement.entries;
       if (match.syntax !== expected.syntax) {
-        entryFailures.push({
+        activeBudgetFailures.push({
           kind: 'migration-import-syntax-drift',
           from: budget.from,
           to: budget.to,
@@ -1136,7 +1410,7 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
         continue;
       }
       if (match.kind !== expected.kind) {
-        entryFailures.push({
+        activeBudgetFailures.push({
           kind: 'migration-import-kind-drift',
           from: budget.from,
           to: budget.to,
@@ -1149,7 +1423,7 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
         continue;
       }
       if (!sameStringList(match.importedSymbols, expected.importedSymbols)) {
-        entryFailures.push({
+        activeBudgetFailures.push({
           kind: 'migration-import-symbol-drift',
           from: budget.from,
           to: budget.to,
@@ -1167,32 +1441,33 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
       }
     }
 
-    failures.push(...entryFailures);
-    if (entryFailures.length === 0) {
-      const [added] = addedMatches[0].entries;
-      const current = approvedStatements.get(edge) || {
-        all: new Set(),
-        type: new Set(),
-        value: new Set(),
-        dynamic: new Set(),
-      };
-      current.all.add(added.statementKey);
-      current[added.kind].add(added.statementKey);
-      approvedStatements.set(edge, current);
+    const statementBudgetValid = activeBudgetFailures.length === 0;
+    if (statementBudgetValid) {
+      addApprovedStatement(approvedStatements, budget.from, budget.to, addedMatches[0]);
     }
+    const entryFailures = [...retirementFailures, ...activeBudgetFailures];
+    failures.push(...entryFailures);
     statuses.push({
+      entryNumber,
       from: budget.from,
       to: budget.to,
       fromFile,
       addedTarget: budget.addedImport.toFile,
       reviewBy: budget.reviewBy,
-      active: entryFailures.length === 0,
+      active: true,
+      retired: false,
+      retirementEffective: retirement ? record.retirementEffective : null,
+      retirementMode: retirement?.mode || null,
+      replacementCompatibilityBudgetId: retirement?.replacementCompatibilityBudgetId ?? null,
+      replacementStatement: record.replacementStatementStatus,
+      statementValid: statementBudgetValid,
+      valid: entryFailures.length === 0,
     });
   }
 
-  const compatibilityEvaluation = evaluateCompatibilityBudgets(graph, contract);
   failures.push(...compatibilityEvaluation.failures);
-  for (const budget of contract.compatibilityBudgets) {
+  for (const [index, budget] of contract.compatibilityBudgets.entries()) {
+    if (!compatibilityEvaluation.statuses[index]?.ownershipEffective) continue;
     const matches = matchingMigrationStatements(graph, toPosix(String(budget.fromFile)), budget.statement);
     if (matches.length !== 1) continue;
     const ownerKey = `${edgeKey(budget.from, budget.to)}::${matches[0].statementKey}`;
@@ -1355,7 +1630,7 @@ export function evaluateLayerContract(graph, contract, options = {}) {
     edges: graph.edges,
     migrationBudgets: migrationEvaluation.statuses,
     historicalMigrationEntries: migrationEvaluation.statuses,
-    activeMigrationEntries: migrationEvaluation.statuses.filter(entry => !entry.retired),
+    activeMigrationEntries: migrationEvaluation.statuses.filter(entry => entry.active),
     retiredMigrationEntries: migrationEvaluation.statuses.filter(entry => entry.retired),
     compatibilityBudgets: migrationEvaluation.compatibilityStatuses,
   };
@@ -1388,6 +1663,11 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
   validateLayerContractSchema(currentContract);
   const previousRules = new Map(currentContract.rules.map(rule => [edgeKey(rule.from, rule.to), rule]));
   const migrationEvaluation = evaluateMigrationBudgets(graph, currentContract, options);
+  const compatibilityBlockedProposalEdges = new Set(
+    migrationEvaluation.compatibilityStatuses
+      .filter(status => !status.active)
+      .map(status => edgeKey(status.from, status.to))
+  );
   const reviewedEdges = graph.edges.map(edge =>
     edgeWithApprovedStatementsExcluded(
       edge,
@@ -1406,15 +1686,22 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
       .filter(rule => rule.decision === 'allow')
       .map(rule => [edgeKey(rule.from, rule.to), rule])
   );
-  const nextRules = reviewedEdges.map(edge =>
-    ruleForEdge(edge, previousRules.get(edgeKey(edge.from, edge.to)))
-  );
+  const nextRules = reviewedEdges.map(edge => {
+    const key = edgeKey(edge.from, edge.to);
+    const previousRule = previousRules.get(key);
+    if (previousRule && compatibilityBlockedProposalEdges.has(key)) {
+      return JSON.parse(JSON.stringify(previousRule));
+    }
+    return ruleForEdge(edge, previousRule);
+  });
   for (const rule of currentContract.rules) {
     const key = edgeKey(rule.from, rule.to);
     const requiresFacadeDecision =
       rule.decision === 'allow' && facadeByEdge.has(key) && !observedEdgeKeys.has(key);
+    const requiresCompatibilityReview =
+      rule.decision === 'allow' && compatibilityBlockedProposalEdges.has(key);
     if (
-      (rule.decision === 'deny' || requiresFacadeDecision) &&
+      (rule.decision === 'deny' || requiresFacadeDecision || requiresCompatibilityReview) &&
       !nextRules.some(next => edgeKey(next.from, next.to) === key)
     ) {
       nextRules.push(JSON.parse(JSON.stringify(rule)));
@@ -1490,7 +1777,7 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
       requiresFacadeDecision,
       migrationBudgetFailures: migrationEvaluation.failures,
       historicalMigrationEntries: migrationEvaluation.statuses.length,
-      activeMigrationEntries: migrationEvaluation.statuses.filter(entry => !entry.retired).length,
+      activeMigrationEntries: migrationEvaluation.statuses.filter(entry => entry.active).length,
       retiredMigrationEntries: migrationEvaluation.statuses.filter(entry => entry.retired).length,
       compatibilityBudgets: migrationEvaluation.compatibilityStatuses.length,
     },
