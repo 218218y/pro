@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-29T07:20:02.321Z",
+  "generatedAt": "2026-07-29T07:56:13.565Z",
   "totals": {
-    "tests": 1310,
-    "unitRunnerTests": 1302,
+    "tests": 1311,
+    "unitRunnerTests": 1303,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,7 +13,7 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 468,
+    "contract": 469,
     "runtime-unit": 318,
     "integration": 465,
     "e2e-smoke": 9,
@@ -2656,6 +2656,10 @@
     {
       "file": "tests/order_pdf_diagnostic_classifier_runtime.test.ts",
       "category": "integration"
+    },
+    {
+      "file": "tests/order_pdf_dimension_support_ownership_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/order_pdf_document_fields_runtime.test.ts",

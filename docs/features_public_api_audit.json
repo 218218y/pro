@@ -17,6 +17,7 @@
     "modules_configuration/calc_module_structure.js",
     "modules_configuration/corner_cells_api.js",
     "modules_configuration/modules_config_api.js",
+    "order_pdf_dimension_support.js",
     "part_identity/api.js",
     "platform_overhang_support.js",
     "project_config/api.js",
@@ -47,6 +48,7 @@
       "modules_configuration/corner_cells_api.js",
       "modules_configuration/modules_config_api.js"
     ],
+    "order_pdf_dimension_support": ["order_pdf_dimension_support.js"],
     "part_identity": ["part_identity/api.js"],
     "platform_overhang_support": ["platform_overhang_support.js"],
     "project_config": ["project_config/api.js"],
@@ -1607,6 +1609,10 @@
     {
       "file": "esm/native/services/viewer_measurement_tool_resolution.ts",
       "entry": "part_identity/api.js"
+    },
+    {
+      "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
+      "entry": "order_pdf_dimension_support.js"
     },
     {
       "file": "esm/native/ui/export_canvas.ts",

@@ -42,9 +42,7 @@ const facadeDeclarationForms = new Set([
   'named-re-export',
   'type-re-export',
 ]);
-const expectedConsumerGroups = Object.freeze({
-  'esm/native/ui/export/export_order_pdf_text_details.ts': 'E',
-});
+const expectedConsumerGroups = Object.freeze({});
 
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const manifest = JSON.parse(read(manifestRel));
@@ -2519,10 +2517,18 @@ test('manifest and inventory mutation probes fail owner, kind, route, consumer, 
   assert.throws(() => inspectManifest(emptyAction, actualConsumers));
 
   const unsafeInternalAction = structuredClone(manifest);
-  unsafeInternalAction.symbols.find(
-    entry => entry.classification === 'internal transition only'
-  ).plannedAction = 'remove-after-internal-migration';
-  assert.throws(() => inspectManifest(unsafeInternalAction, actualConsumers));
+  const syntheticInternalEntry = unsafeInternalAction.symbols.find(entry => entry.kind === 'value');
+  const syntheticConsumer = 'esm/native/ui/__future_dimension_consumer.ts';
+  syntheticInternalEntry.internalConsumers = [
+    { file: syntheticConsumer, usage: 'value', route: 'facade-runtime-services-api' },
+  ];
+  syntheticInternalEntry.classification = 'internal transition only';
+  syntheticInternalEntry.plannedAction = 'remove-after-internal-migration';
+  assert.throws(() =>
+    inspectManifest(unsafeInternalAction, [
+      { consumer: syntheticConsumer, symbol: syntheticInternalEntry.name, usage: 'value' },
+    ])
+  );
 
   const staleFromNegativeEvidence = structuredClone(manifest);
   const staleCandidate = staleFromNegativeEvidence.symbols.find(
@@ -2536,17 +2542,22 @@ test('manifest and inventory mutation probes fail owner, kind, route, consumer, 
   futureConsumer.consumers.push({
     consumer: 'esm/native/ui/__future_dimension_consumer.ts',
     checkpointGroup: 'A',
-    symbols: [structuredClone(futureConsumer.consumers[0].symbols[0])],
+    symbols: [
+      {
+        importedSymbol: 'DEFAULT_WIDTH',
+        originalFacadeSymbol: 'DEFAULT_WIDTH',
+        canonicalFocusedOwner: {
+          file: 'esm/shared/dimensions/wardrobe_defaults.ts',
+          symbols: ['DEFAULT_WIDTH'],
+        },
+        runtimeServicesRoute: 'facade-runtime-services-api',
+        usage: 'value',
+        publicExternalEvidence: [],
+        migrationDecision: 'synthetic closeout regression probe',
+      },
+    ],
   });
   assert.throws(() => inspectInventory(futureConsumer, actualConsumers));
-
-  const changedUsage = structuredClone(inventory);
-  changedUsage.consumers[0].symbols[0].usage = 'type';
-  assert.throws(() => inspectInventory(changedUsage, actualConsumers));
-
-  const changedGroup = structuredClone(inventory);
-  changedGroup.consumers[0].checkpointGroup = 'A';
-  assert.throws(() => inspectInventory(changedGroup, actualConsumers));
 
   const changedHop = structuredClone(inventory);
   changedHop.routeCatalog['facade-runtime-services-api'].servicesBase = servicesApiRel;

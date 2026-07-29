@@ -1326,6 +1326,12 @@ test('[dimension tokens] Wardrobe Default Resolution is defined only by its focu
       symbols: ['resolveAutoWidthForDoors'],
     },
     {
+      file: 'esm/native/features/order_pdf_dimension_support.ts',
+      specifier: '../../shared/dimensions/wardrobe_default_resolution_policy.js',
+      syntax: 'static-import',
+      symbols: ['getDefaultDepthForWardrobeType', 'getDefaultDoorsForWardrobeType'],
+    },
+    {
       file: 'esm/native/features/structure_tab_dimension_support.ts',
       specifier: '../../shared/dimensions/wardrobe_default_resolution_policy.js',
       syntax: 'static-import',

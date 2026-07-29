@@ -460,11 +460,11 @@
       "from": "features",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 42,
+      "maxImporterCount": 43,
       "maxImportCount": 58,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 2,
-      "maxValueImporterCount": 42,
+      "maxValueImporterCount": 43,
       "maxValueImportCount": 57,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -698,11 +698,11 @@
       "from": "ui",
       "to": "features",
       "decision": "allow",
-      "maxImporterCount": 46,
+      "maxImporterCount": 47,
       "maxImportCount": 78,
       "maxTypeImporterCount": 15,
       "maxTypeImportCount": 16,
-      "maxValueImporterCount": 36,
+      "maxValueImporterCount": 37,
       "maxValueImportCount": 65,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
@@ -6300,6 +6300,64 @@
       },
       "reason": "The Structure Tab Dimension Support feature boundary replaces the auto-width function group from the legacy shared facade route with the private Structure Tab Auto Width composition policy alongside the canonical focused default-depth resolver, without exposing shared ownership or function references to UI.",
       "removalCondition": "Remove this entry when a reviewed Structure Tab Dimension Support composition seam eliminates the extra Structure Tab Auto Width policy statement without reintroducing the legacy facade, a direct shared owner import in UI, escaped function references, copied values, or a general dimension barrel."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-29",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/features/order_pdf_dimension_support.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["getDefaultDepthForWardrobeType", "getDefaultDoorsForWardrobeType"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["DEFAULT_HEIGHT", "DEFAULT_WIDTH"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": ["DEFAULT_HEIGHT", "DEFAULT_WIDTH"],
+        "syntax": "static-import"
+      },
+      "reason": "The Order PDF Dimension Support feature boundary replaces the Wardrobe Defaults symbol group from the legacy shared facade route with its canonical focused owner alongside the reviewed Wardrobe Default Resolution owner statement, without exposing shared ownership to UI.",
+      "removalCondition": "Remove this entry when a reviewed Order PDF Dimension Support composition seam eliminates the extra Wardrobe Defaults owner statement without reintroducing the legacy facade, a direct shared owner import in UI, copied values, or a general dimension barrel."
+    },
+    {
+      "from": "features",
+      "to": "shared",
+      "additionalStatements": 1,
+      "owner": "dimension-ownership-migration",
+      "reviewedAt": "2026-07-29",
+      "reviewBy": "2026-10-18",
+      "fromFile": "esm/native/features/order_pdf_dimension_support.ts",
+      "companionImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": ["DEFAULT_HEIGHT", "DEFAULT_WIDTH"],
+        "syntax": "static-import"
+      },
+      "removedImport": {
+        "toFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "kind": "value",
+        "importedSymbols": ["getDefaultDepthForWardrobeType", "getDefaultDoorsForWardrobeType"],
+        "syntax": "static-import"
+      },
+      "addedImport": {
+        "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["getDefaultDepthForWardrobeType", "getDefaultDoorsForWardrobeType"],
+        "syntax": "static-import"
+      },
+      "reason": "The Order PDF Dimension Support feature boundary replaces the Wardrobe Default Resolution symbol group from the legacy shared facade route with its canonical focused owner alongside the reviewed Wardrobe Defaults owner statement, without exposing shared ownership to UI.",
+      "removalCondition": "Remove this entry when a reviewed Order PDF Dimension Support composition seam eliminates the extra Wardrobe Default Resolution owner statement without reintroducing the legacy facade, a direct shared owner import in UI, copied values, or a general dimension barrel."
     }
   ]
 }

@@ -17,6 +17,7 @@
     "modules_configuration/calc_module_structure.js",
     "modules_configuration/corner_cells_api.js",
     "modules_configuration/modules_config_api.js",
+    "order_pdf_dimension_support.js",
     "part_identity/api.js",
     "platform_overhang_support.js",
     "project_config/api.js",
@@ -48,6 +49,7 @@
       "modules_configuration/modules_config_api.js"
     ],
     "part_identity": ["part_identity/api.js"],
+    "order_pdf_dimension_support": ["order_pdf_dimension_support.js"],
     "project_config": ["project_config/api.js"],
     "shoe_drawer_base_constraint": ["shoe_drawer_base_constraint.js"],
     "sketch_box_regular_external_drawers": ["sketch_box_regular_external_drawers.js"],

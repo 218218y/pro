@@ -20,11 +20,16 @@ const structureTabAutoWidthPolicyRel = 'esm/shared/dimensions/structure_tab_auto
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const approvedNativeConsumerUniverse = new Set([
   'esm/native/features/library_preset/module_defaults.ts',
+  'esm/native/features/order_pdf_dimension_support.ts',
   'esm/native/features/structure_tab_dimension_support.ts',
   'esm/native/kernel/domain_api_room_section_wardrobe.ts',
   'esm/native/runtime/api.ts',
 ]);
 const approvedFocusedLocalNamedExports = new Map([
+  [
+    'esm/native/features/order_pdf_dimension_support.ts',
+    new Set(['getDefaultDepthForWardrobeType', 'getDefaultDoorsForWardrobeType']),
+  ],
   ['esm/native/features/structure_tab_dimension_support.ts', new Set(['getDefaultDepthForWardrobeType'])],
 ]);
 

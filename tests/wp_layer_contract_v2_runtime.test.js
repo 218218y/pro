@@ -891,7 +891,7 @@ test('layer contract migration review deadlines are schema-bounded and evaluator
   );
 });
 
-test('project migration ledger stays exact at one hundred and seventy-two reviewed statements with unchanged base budgets', () => {
+test('project migration ledger stays exact at one hundred and seventy-four reviewed statements with approved importer ceilings', () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
@@ -1646,8 +1646,8 @@ test('project migration ledger stays exact at one hundred and seventy-two review
   const graph = collectLayerContractGraph({ root: repositoryRoot });
   const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
   assert.equal(report.ok, true);
-  assert.equal(report.migrationBudgets.length, 172);
-  assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 106);
+  assert.equal(report.migrationBudgets.length, 174);
+  assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 107);
   assert.equal(
     report.migrationBudgets.every(entry => entry.active === true),
     true
@@ -1657,7 +1657,7 @@ test('project migration ledger stays exact at one hundred and seventy-two review
   // their closed prefix and exact entries, so later additive migrations cannot stale them.
   const expectedEdges = new Map([
     ['builder>shared', { observed: 305, migration: 86, reviewed: 219, budget: 219 }],
-    ['features>shared', { observed: 74, migration: 16, reviewed: 58, budget: 58 }],
+    ['features>shared', { observed: 76, migration: 18, reviewed: 58, budget: 58 }],
     ['services>shared', { observed: 230, migration: 63, reviewed: 167, budget: 167 }],
     ['ui>shared', { observed: 27, migration: 1, reviewed: 26, budget: 27 }],
     ['platform>shared', { observed: 6, migration: 2, reviewed: 4, budget: 4 }],
@@ -1678,12 +1678,12 @@ test('project migration ledger stays exact at one hundred and seventy-two review
   const uiFeaturesEdge = graph.edges.find(entry => entry.from === 'ui' && entry.to === 'features');
   assert.ok(featureSharedEdge);
   assert.ok(uiFeaturesEdge);
-  assert.equal(featureSharedEdge.importerCount, 42);
-  assert.equal(featureSharedEdge.valueImporterCount, 42);
-  assert.equal(uiFeaturesEdge.importerCount, 46);
-  assert.equal(uiFeaturesEdge.importCount, 75);
-  assert.equal(uiFeaturesEdge.valueImporterCount, 36);
-  assert.equal(uiFeaturesEdge.valueImportCount, 62);
+  assert.equal(featureSharedEdge.importerCount, 43);
+  assert.equal(featureSharedEdge.valueImporterCount, 43);
+  assert.equal(uiFeaturesEdge.importerCount, 47);
+  assert.equal(uiFeaturesEdge.importCount, 76);
+  assert.equal(uiFeaturesEdge.valueImporterCount, 37);
+  assert.equal(uiFeaturesEdge.valueImportCount, 63);
 
   const runtimeSharedEdge = graph.edges.find(entry => entry.from === 'runtime' && entry.to === 'shared');
   const runtimeSharedRule = baseline.rules.find(entry => entry.from === 'runtime' && entry.to === 'shared');

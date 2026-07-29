@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "capturedAtHead": "c7ae1b12821cdfd0f333e2d5c46e3c29994fa4df",
+  "capturedAtHead": "79c86584d6d4c8d77f06491fb6f20fb1ef0e66bc",
   "policy": "Canonical consumer-row inventory for production dimension symbols that currently traverse the facade through runtime and services. The public-surface manifest owns the complete routed and routed-but-unconsumed symbol inventory. Every row is value/type explicit and migration-group owned.",
   "completeRouteInventory": "tools/wp_wardrobe_dimension_public_surface_manifest.json",
   "routeCatalog": {
@@ -22,60 +22,5 @@
     ],
     "note": "Negative repository evidence does not authorize removal; public-surface decisions remain deferred to Checkpoint 3."
   },
-  "consumers": [
-    {
-      "consumer": "esm/native/ui/export/export_order_pdf_text_details.ts",
-      "checkpointGroup": "E",
-      "symbols": [
-        {
-          "importedSymbol": "DEFAULT_HEIGHT",
-          "originalFacadeSymbol": "DEFAULT_HEIGHT",
-          "canonicalFocusedOwner": {
-            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-            "symbols": ["DEFAULT_HEIGHT"]
-          },
-          "runtimeServicesRoute": "facade-runtime-services-api",
-          "usage": "value",
-          "publicExternalEvidence": [],
-          "migrationDecision": "Checkpoint 2E: inject focused wardrobe defaults through the PDF export composition boundary; preserve text bytes, formatting, ordering, and localization."
-        },
-        {
-          "importedSymbol": "DEFAULT_WIDTH",
-          "originalFacadeSymbol": "DEFAULT_WIDTH",
-          "canonicalFocusedOwner": {
-            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-            "symbols": ["DEFAULT_WIDTH"]
-          },
-          "runtimeServicesRoute": "facade-runtime-services-api",
-          "usage": "value",
-          "publicExternalEvidence": [],
-          "migrationDecision": "Checkpoint 2E: inject focused wardrobe defaults through the PDF export composition boundary; preserve text bytes, formatting, ordering, and localization."
-        },
-        {
-          "importedSymbol": "getDefaultDepthForWardrobeType",
-          "originalFacadeSymbol": "getDefaultDepthForWardrobeType",
-          "canonicalFocusedOwner": {
-            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-            "symbols": ["getDefaultDepthForWardrobeType"]
-          },
-          "runtimeServicesRoute": "facade-runtime-services-api",
-          "usage": "value",
-          "publicExternalEvidence": [],
-          "migrationDecision": "Checkpoint 2E: inject focused wardrobe defaults through the PDF export composition boundary; preserve text bytes, formatting, ordering, and localization."
-        },
-        {
-          "importedSymbol": "getDefaultDoorsForWardrobeType",
-          "originalFacadeSymbol": "getDefaultDoorsForWardrobeType",
-          "canonicalFocusedOwner": {
-            "file": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
-            "symbols": ["getDefaultDoorsForWardrobeType"]
-          },
-          "runtimeServicesRoute": "facade-runtime-services-api",
-          "usage": "value",
-          "publicExternalEvidence": [],
-          "migrationDecision": "Checkpoint 2E: inject focused wardrobe defaults through the PDF export composition boundary; preserve text bytes, formatting, ordering, and localization."
-        }
-      ]
-    }
-  ]
+  "consumers": []
 }

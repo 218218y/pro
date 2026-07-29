@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "capturedAtHead": "c7ae1b12821cdfd0f333e2d5c46e3c29994fa4df",
+  "capturedAtHead": "79c86584d6d4c8d77f06491fb6f20fb1ef0e66bc",
   "policy": "Inventory every current facade export without treating route presence or repository silence as external-consumer evidence. Undetermined symbols block removal.",
   "facade": {
     "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -504,16 +504,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "DEFAULT_HINGED_DOORS",
@@ -646,16 +640,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "DOOR_MOUNT_THICKNESS_CONFIG_KEYS",
@@ -992,16 +980,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "getDefaultDoorMountThicknessCm",
@@ -1080,16 +1062,10 @@
         "baseForm": "named-re-export",
         "entryForms": ["wildcard-re-export", "representative-named-re-export"]
       },
-      "internalConsumers": [
-        {
-          "file": "esm/native/ui/export/export_order_pdf_text_details.ts",
-          "usage": "value",
-          "route": "facade-runtime-services-api"
-        }
-      ],
+      "internalConsumers": [],
       "externalEvidence": [],
-      "classification": "internal transition only",
-      "plannedAction": "migrate-internal-consumers-then-audit-public-route"
+      "classification": "undetermined — blocks removal",
+      "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision"
     },
     {
       "name": "getDefaultHeightForWardrobeType",

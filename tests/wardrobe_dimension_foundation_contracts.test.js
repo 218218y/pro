@@ -417,6 +417,10 @@ const APPROVED_WARDROBE_LAYOUT_COMPARISON_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['WARDROBE_LAYOUT_COMPARISON_POLICY']),
 });
 const APPROVED_WARDROBE_DEFAULT_RESOLUTION_OWNER_IMPORTS = Object.freeze({
+  'esm/native/features/order_pdf_dimension_support.ts': Object.freeze([
+    'getDefaultDepthForWardrobeType',
+    'getDefaultDoorsForWardrobeType',
+  ]),
   'esm/native/features/structure_tab_dimension_support.ts': Object.freeze(['getDefaultDepthForWardrobeType']),
   'esm/native/features/library_preset/module_defaults.ts': Object.freeze(['resolveAutoWidthForDoors']),
   'esm/native/kernel/domain_api_room_section_wardrobe.ts': Object.freeze([

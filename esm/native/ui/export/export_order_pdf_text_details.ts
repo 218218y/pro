@@ -9,7 +9,7 @@ import {
   DEFAULT_WIDTH,
   getDefaultDepthForWardrobeType,
   getDefaultDoorsForWardrobeType,
-} from '../../services/api.js';
+} from '../../features/order_pdf_dimension_support.js';
 
 export function createOrderPdfTextDetailsOps(deps: ExportOrderPdfDeps) {
   const {
