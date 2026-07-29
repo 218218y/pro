@@ -9,6 +9,7 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
+const chestCompatibilityRel = 'esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const runtimeApiRel = 'esm/native/runtime/api.ts';
 const servicesBaseRel = 'esm/native/services/api_runtime_base_surface.ts';
@@ -316,6 +317,21 @@ function traceOwnerReference(fromFile, specifier, exportedName, kind, seen = new
     entry => entry.exportedName === exportedName && entry.kind === kind
   );
   assert.ok(exported, `${targetRel} must export ${kind}:${exportedName}`);
+  if (targetRel === chestCompatibilityRel && exportedName === 'CHEST_MODE_DIMENSIONS' && kind === 'value') {
+    const ownerDependency = analysisFor(targetFile).imports.find(
+      dependency =>
+        dependency.specifier === '../chest_mode_policy.js' &&
+        dependency.importedSymbols.includes('CHEST_MODE_DIMENSIONS')
+    );
+    assert.ok(ownerDependency, `${targetRel} must preserve the focused CHEST owner dependency`);
+    return traceOwnerReference(
+      targetFile,
+      ownerDependency.specifier,
+      'CHEST_MODE_DIMENSIONS',
+      'value',
+      nextSeen
+    );
+  }
   if (exported.source) {
     return traceOwnerReference(
       targetFile,

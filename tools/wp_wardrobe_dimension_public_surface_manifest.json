@@ -205,17 +205,17 @@
       },
       "facadeDeclaration": {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-        "form": "legacy-number-view-local-export",
+        "form": "identity-local-export",
         "identity": "direct-runtime-reference"
       },
       "runtimeApiRoute": {
         "routeFile": "esm/native/runtime/api.ts",
-        "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+        "sourceFile": "esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts",
         "sourceSymbol": "CHEST_MODE_DIMENSIONS",
         "kind": "value",
         "form": "named-re-export",
         "identity": "direct-runtime-reference",
-        "declarationMode": "legacy-facade"
+        "declarationMode": "explicit-compatibility-owner"
       },
       "servicesApiRoute": {
         "baseFile": "esm/native/services/api_runtime_base_surface.ts",
@@ -229,14 +229,14 @@
       "classification": "undetermined — blocks removal",
       "plannedAction": "retain-until-external-evidence-or-explicit-public-surface-decision",
       "runtimeReconstruction": {
-        "status": "identity-parity-declaration-review",
+        "status": "explicit-compatibility-owner",
         "target": {
           "file": "esm/shared/dimensions/chest_mode_policy.ts",
           "symbol": "CHEST_MODE_DIMENSIONS",
           "kind": "value"
         },
         "runtimeIdentity": "strict",
-        "declarationParity": "branded-owner/plain-number-compatibility"
+        "declarationParity": "exact-legacy-number-view"
       }
     },
     {
@@ -3785,7 +3785,7 @@
       "runtimeReconstruction": null
     }
   ],
-  "capturedProductionHead": "a98aea19f97dab62b1cffc701422076346734860",
+  "capturedProductionHead": "59b04f3c9df2b7156a1e97b30d0c158d8aa51553",
   "surfaceTopology": {
     "facade": {
       "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -3827,8 +3827,8 @@
   },
   "runtimeReconstructionInventory": {
     "exactDirectOwnerParity": 52,
-    "identityOnlyDeclarationReview": 1,
-    "explicitCompatibilityOwner": 0,
+    "identityOnlyDeclarationReview": 0,
+    "explicitCompatibilityOwner": 1,
     "specialSymbols": ["CHEST_MODE_DIMENSIONS"]
   }
 }

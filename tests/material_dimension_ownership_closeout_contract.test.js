@@ -10,10 +10,7 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const ownerRel = 'esm/shared/dimensions/material_thickness_policy.ts';
-const publicFacadeRels = Object.freeze([
-  'esm/native/features/dimensions/index.ts',
-  'esm/native/runtime/api.ts',
-]);
+const publicFacadeRels = Object.freeze(['esm/native/features/dimensions/index.ts']);
 const facadeAbsolute = path.join(root, facadeRel);
 const publicFacadeAbsolutes = new Set(
   publicFacadeRels.map(rel => path.normalize(path.join(root, rel)).toLowerCase())

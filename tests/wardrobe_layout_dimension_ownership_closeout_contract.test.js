@@ -16,10 +16,7 @@ const cellOwnerRel = 'esm/shared/dimensions/cell_dimension_policy.ts';
 const previewCompositionRel = 'esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts';
 const clickCompositionRel = 'esm/native/services/canvas_picking_cell_dims_flow.ts';
 const helperRel = 'esm/native/services/canvas_picking_local_helpers_cell_dims.ts';
-const publicFacadeRels = Object.freeze([
-  'esm/native/features/dimensions/index.ts',
-  'esm/native/runtime/api.ts',
-]);
+const publicFacadeRels = Object.freeze(['esm/native/features/dimensions/index.ts']);
 const leafRels = Object.freeze([
   'esm/native/services/canvas_picking_hover_preview_modes_cell_dims_state.ts',
   'esm/native/services/canvas_picking_hover_preview_modes_cell_dims_inputs.ts',

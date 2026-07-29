@@ -227,15 +227,19 @@ function validateSemanticSnapshot(candidate, candidateManifest = manifest) {
   const declarationReview = candidateManifest.symbols.filter(
     entry => entry.runtimeReconstruction?.status === 'identity-parity-declaration-review'
   );
+  const compatibilityOwner = candidateManifest.symbols.filter(
+    entry => entry.runtimeReconstruction?.status === 'explicit-compatibility-owner'
+  );
   assert.equal(exactReconstruction.length, 52);
+  assert.deepEqual(declarationReview, []);
   assert.deepEqual(
-    declarationReview.map(entry => entry.name),
+    compatibilityOwner.map(entry => entry.name),
     ['CHEST_MODE_DIMENSIONS']
   );
   assert.deepEqual(candidateManifest.runtimeReconstructionInventory, {
     exactDirectOwnerParity: 52,
-    identityOnlyDeclarationReview: 1,
-    explicitCompatibilityOwner: 0,
+    identityOnlyDeclarationReview: 0,
+    explicitCompatibilityOwner: 1,
     specialSymbols: ['CHEST_MODE_DIMENSIONS'],
   });
   assert.equal(candidate.version, 1);
@@ -308,7 +312,7 @@ test('declaration emission snapshot locks all 99 symbols across five public surf
   validateSemanticSnapshot(snapshot);
 });
 
-test('52 Runtime symbols have exact direct-owner declaration parity while CHEST stays adapted', () => {
+test('52 Runtime symbols have direct-owner parity while CHEST uses its explicit compatibility owner', () => {
   const direct = manifest.symbols.filter(
     entry => entry.runtimeReconstruction?.status === 'exact-direct-owner-parity'
   );
@@ -326,7 +330,7 @@ test('52 Runtime symbols have exact direct-owner declaration parity while CHEST 
   const legacyViews = snapshot.symbols.filter(
     entry => entry.facadeDeclarationForm === 'legacy-number-view-local-export'
   );
-  assert.equal(legacyViews.length, 13);
+  assert.equal(legacyViews.length, 12);
   assert.equal(
     legacyViews.every(
       entry =>
@@ -338,14 +342,14 @@ test('52 Runtime symbols have exact direct-owner declaration parity while CHEST 
   );
   const chestManifest = manifest.symbols.find(entry => entry.name === 'CHEST_MODE_DIMENSIONS');
   assert.deepEqual(chestManifest.runtimeReconstruction, {
-    status: 'identity-parity-declaration-review',
+    status: 'explicit-compatibility-owner',
     target: {
       file: 'esm/shared/dimensions/chest_mode_policy.ts',
       symbol: 'CHEST_MODE_DIMENSIONS',
       kind: 'value',
     },
     runtimeIdentity: 'strict',
-    declarationParity: 'branded-owner/plain-number-compatibility',
+    declarationParity: 'exact-legacy-number-view',
   });
 });
 
@@ -373,10 +377,13 @@ test('Runtime direct-owner route statements and Entries 175-178 are exact and ap
   const facadeRoutes = analysis.imports.filter(
     dependency => dependency.specifier === '../../shared/wardrobe_dimension_tokens_shared.js'
   );
-  assert.deepEqual(
-    facadeRoutes.map(dependency => [dependency.kind, dependency.syntax, dependency.importedSymbols]),
-    [['value', 'static-re-export', ['CHEST_MODE_DIMENSIONS']]]
+  assert.deepEqual(facadeRoutes, []);
+  const compatibilityRoute = analysis.imports.find(
+    dependency =>
+      dependency.specifier === '../../shared/dimensions/compatibility/chest_mode_dimensions_compatibility.js'
   );
+  assert.deepEqual(compatibilityRoute?.importedSymbols, ['CHEST_MODE_DIMENSIONS']);
+  assert.equal(compatibilityRoute?.syntax, 'static-re-export');
   const defaultsTypeRoute = analysis.imports.find(
     dependency =>
       dependency.specifier === '../../shared/dimensions/wardrobe_defaults.js' && dependency.kind === 'type'

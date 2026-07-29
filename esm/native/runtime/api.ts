@@ -253,7 +253,7 @@ export {
   runPerfAction,
 } from './observability_surface.js';
 
-export { CHEST_MODE_DIMENSIONS } from '../../shared/wardrobe_dimension_tokens_shared.js';
+export { CHEST_MODE_DIMENSIONS } from '../../shared/dimensions/compatibility/chest_mode_dimensions_compatibility.js';
 
 export {
   WARDROBE_WIDTH_MIN,

@@ -514,6 +514,9 @@ const APPROVED_CORNICE_THETA_CLAMP_M_USAGE = Object.freeze({
   'esm/native/builder/corner_wing_cornice_path.ts': Object.freeze(['thetaClampM']),
 });
 const APPROVED_CHEST_MODE_OWNER_IMPORTS = Object.freeze({
+  'esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts': Object.freeze([
+    'CHEST_MODE_DIMENSIONS',
+  ]),
   'esm/native/features/structure_tab_dimension_support.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
   'esm/native/builder/chest_mode_pipeline.ts': Object.freeze(['CHEST_MODE_COMMODE_CONSTRAINTS_POLICY']),
   'esm/native/builder/render_drawer_ops_internal.ts': Object.freeze(['CHEST_MODE_DRAWER_BOX_RENDER_POLICY']),
@@ -530,7 +533,6 @@ const APPROVED_CHEST_MODE_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/visuals_chest_mode_drawer_box.ts': Object.freeze([
     'CHEST_MODE_DRAWER_BOX_RENDER_POLICY',
   ]),
-  'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
 });
 const APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES = Object.freeze({
   'esm/native/runtime/api.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
@@ -542,6 +544,7 @@ const APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES = Object.freeze({
   ],
   'esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
   'esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
+  'esm/shared/wardrobe_dimension_tokens_shared.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
 });
 const APPROVED_CHEST_MODE_LEGACY_FIELD_USAGE = Object.freeze({
   'esm/native/ui/react/tabs/structure_tab_corner_chest_actions_controller_chest.ts': [
@@ -2557,7 +2560,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.match(facade, /from '\.\/dimensions\/chest_structural_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/material_thickness_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/carcass_cornice_render_policy\.js'/u);
-  assert.match(facade, /from '\.\/dimensions\/chest_mode_policy\.js'/u);
+  assert.match(facade, /from '\.\/dimensions\/compatibility\/chest_mode_dimensions_compatibility\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/door_system_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/door_mount_thickness_policy\.js'/u);
   assert.match(facade, /from '\.\/dimensions\/door_visual_policy\.js'/u);
@@ -2827,7 +2830,7 @@ test('[dimension-foundation] focused owners hold units, defaults, limits, and st
   assert.doesNotMatch(facade, /export const CARCASS_(?:SHELL|INTERIOR)_DIMENSIONS =/u);
   assert.match(facade, /legacyDimensionNumberView\(MATERIAL_THICKNESS_POLICY\)/u);
   assert.match(facade, /legacyDimensionNumberView\(CARCASS_CORNICE_RENDER_POLICY\)/u);
-  assert.match(facade, /legacyDimensionNumberView\(CHEST_MODE_DIMENSIONS_OWNER\)/u);
+  assert.doesNotMatch(facade, /CHEST_MODE_DIMENSIONS_OWNER/u);
   assert.match(facade, /legacyDimensionNumberView\(DOOR_SYSTEM_DIMENSIONS_OWNER\)/u);
   assert.match(facade, /legacyDimensionNumberView\(\s*DOOR_MOUNT_THICKNESS_DIMENSIONS_OWNER\s*\)/u);
   assert.match(facade, /legacyDimensionNumberView\(DOOR_VISUAL_DIMENSIONS_OWNER\)/u);
@@ -3667,17 +3670,13 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectLegacyDimensionSymbolDependencies(
       analyzedSources,
       'CHEST_MODE_DIMENSIONS',
-      'dimensions/chest_mode_policy.js'
+      'chest_mode_policy.js'
     ),
     APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES,
     'Chest Mode legacy dependency allowlist'
   );
   assertApprovedSymbolUsage(
-    collectLegacyDimensionPolicyFieldUsage(
-      analyzedSources,
-      'CHEST_MODE_DIMENSIONS',
-      'dimensions/chest_mode_policy.js'
-    ),
+    collectLegacyDimensionPolicyFieldUsage(analyzedSources, 'CHEST_MODE_DIMENSIONS', 'chest_mode_policy.js'),
     APPROVED_CHEST_MODE_LEGACY_FIELD_USAGE,
     'Chest Mode legacy field allowlist'
   );
@@ -4053,11 +4052,7 @@ test('[dimension-foundation] Chest Mode guard detects aliases, namespace access,
     ],
   ];
   assert.deepEqual(
-    collectLegacyDimensionPolicyFieldUsage(
-      sources,
-      'CHEST_MODE_DIMENSIONS',
-      'dimensions/chest_mode_policy.js'
-    ),
+    collectLegacyDimensionPolicyFieldUsage(sources, 'CHEST_MODE_DIMENSIONS', 'chest_mode_policy.js'),
     {
       'esm/native/builder/named_chest_mode_consumer.ts': [
         '<computed>',
@@ -4074,11 +4069,7 @@ test('[dimension-foundation] Chest Mode guard detects aliases, namespace access,
   assert.throws(
     () =>
       assertApprovedSymbolUsage(
-        collectLegacyDimensionPolicyFieldUsage(
-          sources,
-          'CHEST_MODE_DIMENSIONS',
-          'dimensions/chest_mode_policy.js'
-        ),
+        collectLegacyDimensionPolicyFieldUsage(sources, 'CHEST_MODE_DIMENSIONS', 'chest_mode_policy.js'),
         {},
         'Chest Mode fixture legacy field allowlist'
       ),

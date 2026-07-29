@@ -1,7 +1,7 @@
 {
   "version": 1,
   "typescriptVersion": "7.0.2",
-  "capturedProductionHead": "a98aea19f97dab62b1cffc701422076346734860",
+  "capturedProductionHead": "59b04f3c9df2b7156a1e97b30d0c158d8aa51553",
   "surfaceTopology": {
     "facade": {
       "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -255,12 +255,12 @@
           "declarationTypeFingerprint": "1be7568c42c8d08a156ba034a57568667a0b2c5a1740a13314f54ad4cb929c39"
         }
       ],
-      "facadeDeclarationForm": "legacy-number-view-local-export",
+      "facadeDeclarationForm": "identity-local-export",
       "runtimeIdentityMode": "direct-runtime-reference",
       "surfaces": {
         "facade": {
           "routeFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts",
           "sourceSymbol": "CHEST_MODE_DIMENSIONS",
           "publicExportedName": "CHEST_MODE_DIMENSIONS",
           "declarationTypeFingerprint": "5b53b3ce3895d926c08448a87304c11f6d6b6ee640c6c67b4b39b1e39f608066"
@@ -274,7 +274,7 @@
         },
         "runtime": {
           "routeFile": "esm/native/runtime/api.ts",
-          "sourceFile": "esm/shared/wardrobe_dimension_tokens_shared.ts",
+          "sourceFile": "esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts",
           "sourceSymbol": "CHEST_MODE_DIMENSIONS",
           "publicExportedName": "CHEST_MODE_DIMENSIONS",
           "declarationTypeFingerprint": "5b53b3ce3895d926c08448a87304c11f6d6b6ee640c6c67b4b39b1e39f608066"

@@ -121,6 +121,9 @@ function upgradeManifestSchema(root) {
       : isCompatibilityRoute
         ? 'explicit-compatibility-owner'
         : 'canonical-focused-owner';
+    if (isChest && isCompatibilityRoute) {
+      entry.facadeDeclaration.form = 'identity-local-export';
+    }
     entry.runtimeApiRoute = {
       routeFile: surfaceFiles.runtime,
       sourceFile: route.sourceFile,
