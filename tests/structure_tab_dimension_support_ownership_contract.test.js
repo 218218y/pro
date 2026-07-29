@@ -163,7 +163,20 @@ const groupCConsumers = Object.freeze({
     'resolveAutoWidthForDoors',
   ]),
 });
-const ownedConsumers = Object.freeze({ ...groupAConsumers, ...groupCConsumers });
+const groupDConsumers = Object.freeze({
+  'esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts': Object.freeze([
+    'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
+    'STACK_SPLIT_LOWER_HEIGHT_MIN',
+    'STACK_SPLIT_LOWER_WIDTH_MIN',
+    'STACK_SPLIT_MIN_TOP_HEIGHT',
+    'WARDROBE_DEPTH_MIN',
+  ]),
+});
+const ownedConsumers = Object.freeze({
+  ...groupAConsumers,
+  ...groupCConsumers,
+  ...groupDConsumers,
+});
 const semanticFingerprints = Object.freeze({
   'esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts': Object.freeze({
     semantic: '536c6ef682c65bb336956c148615c754a7e322c609d84253748b3ec7b6f79392',
@@ -199,6 +212,11 @@ const semanticFingerprints = Object.freeze({
     semantic: '48f9fd3ac19527697b6203fe5f5c87ce692d5a3506387e776f46cc4e7c12aa56',
     literals: '7e4ee4fd84bd3711cd000f2d857ae823e78693a480ce8c2afd9796189b41bdec',
     literalCount: 15,
+  }),
+  'esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts': Object.freeze({
+    semantic: 'ff212c9832e30db785cfc23ec304810c39be56a7452305216834b61da1d0c1de',
+    literals: 'f05d15222da356ad0e5c3ad36c4bd738fa58a2502e03e147340d3c423dc4a8fe',
+    literalCount: 67,
   }),
 });
 const expectedViewStateKeyOrder = Object.freeze({
@@ -756,7 +774,7 @@ test('feature boundary has six exact shared imports and 41 identity-preserving e
   assert.deepEqual(inspectAdapter(read(adapterRel)), []);
 });
 
-test('UI adapter is the sole feature-boundary consumer and all owned Group A/C consumers use it', () => {
+test('UI adapter is the sole feature-boundary consumer and all owned Group A-D consumers use it', () => {
   assert.deepEqual(inspectConsumerTopology(productionEntries()), []);
   const featureManifest = JSON.parse(read(featureManifestRel));
   assert.equal(
@@ -768,7 +786,7 @@ test('UI adapter is the sole feature-boundary consumer and all owned Group A/C c
   ]);
 });
 
-test('normalized Group A/C AST and literal inventories remain unchanged', () => {
+test('normalized Group A-D AST and literal inventories remain unchanged', () => {
   for (const [rel, expected] of Object.entries(semanticFingerprints)) {
     assert.deepEqual(consumerFingerprints(rel), expected, rel);
   }
@@ -918,11 +936,12 @@ test('feature and adapter mutation probes reject facades, aliases, wrappers, and
   );
 });
 
-test('route and behavior mutation probes reject every Group A regression', () => {
+test('route and behavior mutation probes reject owned Structure Tab regressions', () => {
   const constraintsRel = 'esm/native/ui/react/tabs/structure_tab_dimension_constraints.ts';
   const cellRel = 'esm/native/ui/react/tabs/structure_tab_dimensions_section_cell_dims.tsx';
   const patternsRel = 'esm/native/ui/react/tabs/structure_tab_saved_models_patterns.ts';
   const viewRel = 'esm/native/ui/react/tabs/structure_tab_view_state_runtime.ts';
+  const stackSplitRel = 'esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts';
   assertMutationRejected(
     inspectConsumerTopology(
       productionEntries({
@@ -979,6 +998,26 @@ test('route and behavior mutation probes reject every Group A regression', () =>
     ),
     semanticFingerprints[constraintsRel],
     'bounds formula mutation must change its fingerprints'
+  );
+  assertMutationRejected(
+    inspectConsumerTopology(
+      productionEntries({
+        [stackSplitRel]: `${read(stackSplitRel)}\nimport { WARDROBE_DEPTH_MIN as SERVICE_DEPTH_MIN } from '../../../services/api.js';\n`,
+      })
+    ),
+    'owned-services-dimension-import',
+    'Stack Split Services dimension import'
+  );
+  assert.notDeepEqual(
+    consumerFingerprints(
+      stackSplitRel,
+      read(stackSplitRel).replace(
+        'Math.min(DEFAULT_STACK_SPLIT_LOWER_HEIGHT, maxBottom || DEFAULT_STACK_SPLIT_LOWER_HEIGHT)',
+        'Math.min(STACK_SPLIT_LOWER_HEIGHT_MIN, maxBottom || STACK_SPLIT_LOWER_HEIGHT_MIN)'
+      )
+    ),
+    semanticFingerprints[stackSplitRel],
+    'Stack Split lower-height default mutation must change its fingerprints'
   );
 });
 

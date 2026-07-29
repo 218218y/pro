@@ -44,7 +44,6 @@ const facadeDeclarationForms = new Set([
 ]);
 const expectedConsumerGroups = Object.freeze({
   'esm/native/ui/export/export_order_pdf_text_details.ts': 'E',
-  'esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts': 'D',
 });
 
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');

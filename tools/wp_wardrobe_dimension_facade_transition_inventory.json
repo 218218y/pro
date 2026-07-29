@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "capturedAtHead": "d3ddb50f648e972f00f95a275a06bccaafc7e3f0",
+  "capturedAtHead": "c7ae1b12821cdfd0f333e2d5c46e3c29994fa4df",
   "policy": "Canonical consumer-row inventory for production dimension symbols that currently traverse the facade through runtime and services. The public-surface manifest owns the complete routed and routed-but-unconsumed symbol inventory. Every row is value/type explicit and migration-group owned.",
   "completeRouteInventory": "tools/wp_wardrobe_dimension_public_surface_manifest.json",
   "routeCatalog": {
@@ -74,72 +74,6 @@
           "usage": "value",
           "publicExternalEvidence": [],
           "migrationDecision": "Checkpoint 2E: inject focused wardrobe defaults through the PDF export composition boundary; preserve text bytes, formatting, ordering, and localization."
-        }
-      ]
-    },
-    {
-      "consumer": "esm/native/ui/react/tabs/structure_tab_structure_stack_split_mutations.ts",
-      "checkpointGroup": "D",
-      "symbols": [
-        {
-          "importedSymbol": "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
-          "originalFacadeSymbol": "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
-          "canonicalFocusedOwner": {
-            "file": "esm/shared/dimensions/stack_split_policy.ts",
-            "symbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT"]
-          },
-          "runtimeServicesRoute": "facade-runtime-services-api",
-          "usage": "value",
-          "publicExternalEvidence": [],
-          "migrationDecision": "Checkpoint 2D: extend the existing Stack Split feature use-case boundary with its coherent defaults and limits; preserve mutation order and module interaction."
-        },
-        {
-          "importedSymbol": "STACK_SPLIT_LOWER_HEIGHT_MIN",
-          "originalFacadeSymbol": "STACK_SPLIT_LOWER_HEIGHT_MIN",
-          "canonicalFocusedOwner": {
-            "file": "esm/shared/dimensions/stack_split_policy.ts",
-            "symbols": ["STACK_SPLIT_LOWER_HEIGHT_MIN"]
-          },
-          "runtimeServicesRoute": "facade-runtime-services-api",
-          "usage": "value",
-          "publicExternalEvidence": [],
-          "migrationDecision": "Checkpoint 2D: extend the existing Stack Split feature use-case boundary with its coherent defaults and limits; preserve mutation order and module interaction."
-        },
-        {
-          "importedSymbol": "STACK_SPLIT_LOWER_WIDTH_MIN",
-          "originalFacadeSymbol": "STACK_SPLIT_LOWER_WIDTH_MIN",
-          "canonicalFocusedOwner": {
-            "file": "esm/shared/dimensions/stack_split_policy.ts",
-            "symbols": ["STACK_SPLIT_LOWER_WIDTH_MIN"]
-          },
-          "runtimeServicesRoute": "facade-runtime-services-api",
-          "usage": "value",
-          "publicExternalEvidence": [],
-          "migrationDecision": "Checkpoint 2D: extend the existing Stack Split feature use-case boundary with its coherent defaults and limits; preserve mutation order and module interaction."
-        },
-        {
-          "importedSymbol": "STACK_SPLIT_MIN_TOP_HEIGHT",
-          "originalFacadeSymbol": "STACK_SPLIT_MIN_TOP_HEIGHT",
-          "canonicalFocusedOwner": {
-            "file": "esm/shared/dimensions/stack_split_policy.ts",
-            "symbols": ["STACK_SPLIT_MIN_TOP_HEIGHT"]
-          },
-          "runtimeServicesRoute": "facade-runtime-services-api",
-          "usage": "value",
-          "publicExternalEvidence": [],
-          "migrationDecision": "Checkpoint 2D: extend the existing Stack Split feature use-case boundary with its coherent defaults and limits; preserve mutation order and module interaction."
-        },
-        {
-          "importedSymbol": "WARDROBE_DEPTH_MIN",
-          "originalFacadeSymbol": "WARDROBE_DEPTH_MIN",
-          "canonicalFocusedOwner": {
-            "file": "esm/shared/dimensions/product_limits.ts",
-            "symbols": ["WARDROBE_DEPTH_MIN"]
-          },
-          "runtimeServicesRoute": "facade-runtime-services-api",
-          "usage": "value",
-          "publicExternalEvidence": [],
-          "migrationDecision": "Checkpoint 2D: extend the existing Stack Split feature use-case boundary with its coherent defaults and limits; preserve mutation order and module interaction."
         }
       ]
     }

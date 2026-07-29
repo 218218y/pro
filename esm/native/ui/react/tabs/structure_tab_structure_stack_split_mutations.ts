@@ -10,7 +10,7 @@ import {
   STACK_SPLIT_LOWER_WIDTH_MIN,
   STACK_SPLIT_MIN_TOP_HEIGHT,
   WARDROBE_DEPTH_MIN,
-} from '../../../services/api.js';
+} from './structure_tab_dimension_defaults.js';
 import {
   buildRawUiPatch,
   readRawPatch,
