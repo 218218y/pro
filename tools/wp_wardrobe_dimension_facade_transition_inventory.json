@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "capturedAtHead": "79c86584d6d4c8d77f06491fb6f20fb1ef0e66bc",
+  "capturedAtHead": "a98aea19f97dab62b1cffc701422076346734860",
   "policy": "Canonical consumer-row inventory for production dimension symbols that currently traverse the facade through runtime and services. The public-surface manifest owns the complete routed and routed-but-unconsumed symbol inventory. Every row is value/type explicit and migration-group owned.",
   "completeRouteInventory": "tools/wp_wardrobe_dimension_public_surface_manifest.json",
   "routeCatalog": {

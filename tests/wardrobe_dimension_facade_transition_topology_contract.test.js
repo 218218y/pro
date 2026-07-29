@@ -1922,6 +1922,45 @@ test('transitive compatibility inventory is exact, value/type explicit, and migr
   inspectInventory(inventory, consumers.rows);
 });
 
+test('internal dimension transition closeout leaves only the two public compatibility routes', () => {
+  const dimensionNames = new Set(manifest.symbols.map(entry => entry.name));
+  const consumers = collectInternalDimensionConsumers(dimensionNames);
+  const topology = collectProductionTopology();
+  const directRuntimeConsumers = productionFiles.flatMap(file => {
+    if (rel(file) === servicesBaseRel) return [];
+    return collectDimensionRouteFromDependency(file, runtimeApiAbsolute, dimensionNames).map(entry => ({
+      file: rel(file),
+      ...entry,
+    }));
+  });
+
+  assert.deepEqual(inventory.consumers, []);
+  assert.deepEqual(consumers.rows, []);
+  assert.deepEqual(consumers.broadRoutes, []);
+  assert.deepEqual(collectUnapprovedTransitiveBridges(dimensionNames), []);
+  assert.deepEqual(collectRoutedBindingBridgeViolations(dimensionNames), []);
+  assert.deepEqual(directRuntimeConsumers, []);
+  assert.deepEqual(topology.publicBarrelRoutes, []);
+  assert.deepEqual(topology.forbiddenModuleSyntax, []);
+  assert.deepEqual(topology.unresolvedDynamicImports, expectedDynamicImports());
+  assert.deepEqual(topology.facadeRoutes, expectedFacadeRoutes());
+  assert.equal(topology.facadeRoutes.length, 3);
+  assert.equal(topology.facadeRoutes.filter(route => route.syntax === 'static-import').length, 0);
+
+  assert.equal(manifest.symbols.length, 99);
+  assert.equal(manifest.symbols.filter(entry => entry.runtimeApiRoute).length, 53);
+  assert.equal(manifest.symbols.filter(entry => entry.servicesApiRoute).length, 53);
+  assert.equal(
+    manifest.symbols.every(
+      entry =>
+        entry.classification === 'undetermined — blocks removal' &&
+        entry.internalConsumers.length === 0 &&
+        entry.plannedAction === 'retain-until-external-evidence-or-explicit-public-surface-decision'
+    ),
+    true
+  );
+});
+
 test('negative repository evidence never turns an undetermined symbol into a removal decision', () => {
   const packageJson = JSON.parse(read('package.json'));
   const featureManifest = JSON.parse(read('tools/wp_features_public_api_manifest.json'));

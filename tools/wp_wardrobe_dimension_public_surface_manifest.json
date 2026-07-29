@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "capturedAtHead": "79c86584d6d4c8d77f06491fb6f20fb1ef0e66bc",
+  "capturedAtHead": "a98aea19f97dab62b1cffc701422076346734860",
   "policy": "Inventory every current facade export without treating route presence or repository silence as external-consumer evidence. Undetermined symbols block removal.",
   "facade": {
     "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
