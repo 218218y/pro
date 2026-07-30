@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createDefaultState } from '../esm/native/runtime/default_state.ts';
+import * as composedDefaults from '../esm/shared/dimensions/runtime_default_state_dimension_policy.ts';
 import { BASE_LEG_DIMENSIONS } from '../esm/shared/dimensions/base_leg_policy.ts';
 import { BASE_PLINTH_POLICY } from '../esm/shared/dimensions/base_plinth_policy.ts';
 import {
@@ -20,6 +21,21 @@ import {
 } from '../esm/shared/dimensions/wardrobe_defaults.ts';
 
 import type { RootStateLike } from '../types/index.ts';
+
+test('Default State composition owner preserves every canonical runtime binding identity', () => {
+  assert.equal(composedDefaults.BASE_LEG_DIMENSIONS, BASE_LEG_DIMENSIONS);
+  assert.equal(composedDefaults.BASE_PLINTH_POLICY, BASE_PLINTH_POLICY);
+  assert.equal(composedDefaults.CHEST_MODE_ACTIVE_DEFAULTS_POLICY, CHEST_MODE_ACTIVE_DEFAULTS_POLICY);
+  assert.equal(composedDefaults.CHEST_MODE_COMMODE_CONSTRAINTS_POLICY, CHEST_MODE_COMMODE_CONSTRAINTS_POLICY);
+  assert.equal(composedDefaults.DEFAULT_STACK_SPLIT_LOWER_HEIGHT, DEFAULT_STACK_SPLIT_LOWER_HEIGHT);
+  assert.equal(composedDefaults.DEFAULT_CHEST_DRAWERS_COUNT, DEFAULT_CHEST_DRAWERS_COUNT);
+  assert.equal(composedDefaults.DEFAULT_CORNER_DOORS, DEFAULT_CORNER_DOORS);
+  assert.equal(composedDefaults.DEFAULT_CORNER_WIDTH, DEFAULT_CORNER_WIDTH);
+  assert.equal(composedDefaults.DEFAULT_HEIGHT, DEFAULT_HEIGHT);
+  assert.equal(composedDefaults.DEFAULT_HINGED_DOORS, DEFAULT_HINGED_DOORS);
+  assert.equal(composedDefaults.DEFAULT_WIDTH, DEFAULT_WIDTH);
+  assert.equal(composedDefaults.HINGED_DEFAULT_DEPTH, HINGED_DEFAULT_DEPTH);
+});
 
 test('Default State projects all dimension defaults from focused owners without changing state shape', () => {
   const state: RootStateLike = createDefaultState({ noneMode: 'idle' });

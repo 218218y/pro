@@ -9,11 +9,14 @@ import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mj
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const consumerRel = 'esm/native/platform/render_loop_motion_doors.ts';
+const ownerRel = 'esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const doorOwnerRel = 'esm/shared/dimensions/door_system_policy.ts';
 const unitsOwnerRel = 'esm/shared/dimensions/units.ts';
 const defaultsOwnerRel = 'esm/shared/dimensions/wardrobe_defaults.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
+
+const replacementSymbols = Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY', 'WARDROBE_DEFAULTS', 'cmToM']);
 
 const removedImport = Object.freeze({
   toFile: facadeRel,
@@ -81,63 +84,74 @@ function stableJson(value) {
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
-test('Render Loop Door Motion imports exactly three focused owners without aliases or aggregate policies', () => {
+function compactDependencies(analysis) {
+  return analysis.imports.map(({ specifier, kind, syntax, importedSymbols }) => ({
+    specifier,
+    kind,
+    syntax,
+    importedSymbols,
+  }));
+}
+
+test('Render Loop Door Motion consumes one focused composition statement without aliases', () => {
   const source = read(consumerRel);
   const analysis = analyzeModuleDependencies(path.join(root, consumerRel), source);
   const focusedImports = analysis.imports.filter(dependency =>
     dependency.specifier.startsWith('../../shared/dimensions/')
   );
 
-  assert.deepEqual(
-    focusedImports.map(({ specifier, kind, syntax, importedSymbols }) => ({
-      specifier,
-      kind,
-      syntax,
-      importedSymbols,
-    })),
-    [
-      {
-        specifier: '../../shared/dimensions/door_system_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['SLIDING_DOOR_CONSTRUCTION_POLICY'],
-      },
-      {
-        specifier: '../../shared/dimensions/units.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['cmToM'],
-      },
-      {
-        specifier: '../../shared/dimensions/wardrobe_defaults.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['WARDROBE_DEFAULTS'],
-      },
-    ]
-  );
-  assert.equal(focusedImports.length, 3);
+  assert.deepEqual(compactDependencies({ imports: focusedImports }), [
+    {
+      specifier: '../../shared/dimensions/render_loop_door_motion_dimension_policy.js',
+      kind: 'value',
+      syntax: 'static-import',
+      importedSymbols: replacementSymbols,
+    },
+  ]);
   assert.equal(
-    focusedImports.every(dependency =>
-      dependency.bindings.every(binding => binding.importedName === binding.localName)
-    ),
+    focusedImports[0].bindings.every(binding => binding.importedName === binding.localName),
     true
   );
   assert.deepEqual(analysis.unresolvedDynamicImports, []);
   assert.deepEqual(analysis.forbiddenModuleSyntax, []);
   assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared/u);
   assert.doesNotMatch(source, /import\s+\*\s+as|import\s*\(|export\s+(?:type\s+)?(?:\*|\{)/u);
-  assert.doesNotMatch(
-    source,
-    /\b(?:DOOR_SYSTEM_DIMENSIONS|SLIDING_DOOR_SYSTEM_POLICY|WARDROBE_DEFAULTS_OWNER)\b/u
-  );
-  assert.doesNotMatch(
-    source,
-    /const\s+[A-Za-z_$][\w$]*\s*=\s*(?:SLIDING_DOOR_CONSTRUCTION_POLICY|WARDROBE_DEFAULTS)\s*;/u
-  );
 });
 
-test('Render Loop Door Motion preserves focused sliding construction, Units, and Defaults formulas', () => {
+test('Render Loop Door Motion composition owner re-exports exactly three canonical bindings', () => {
+  const source = read(ownerRel);
+  const analysis = analyzeModuleDependencies(path.join(root, ownerRel), source);
+
+  assert.deepEqual(compactDependencies(analysis), [
+    {
+      specifier: './door_system_policy.js',
+      kind: 'value',
+      syntax: 'static-re-export',
+      importedSymbols: ['SLIDING_DOOR_CONSTRUCTION_POLICY'],
+    },
+    {
+      specifier: './units.js',
+      kind: 'value',
+      syntax: 'static-re-export',
+      importedSymbols: ['cmToM'],
+    },
+    {
+      specifier: './wardrobe_defaults.js',
+      kind: 'value',
+      syntax: 'static-re-export',
+      importedSymbols: ['WARDROBE_DEFAULTS'],
+    },
+  ]);
+  assert.equal(
+    analysis.imports.every(dependency =>
+      dependency.bindings.every(binding => binding.importedName === binding.exportedName)
+    ),
+    true
+  );
+  assert.doesNotMatch(source, /const\s|Object\.freeze|=>|function\s/u);
+});
+
+test('Render Loop Door Motion preserves sliding construction, conversion, and Defaults formulas', () => {
   const source = read(consumerRel);
 
   assert.equal((source.match(/SLIDING_DOOR_CONSTRUCTION_POLICY\.overlapM/gu) ?? []).length, 1);
@@ -153,7 +167,7 @@ test('Render Loop Door Motion preserves focused sliding construction, Units, and
   assert.match(source, /d\.originalZ = g\.position \? g\.position\.z : 0;/u);
 });
 
-test('Render Loop Door Motion appends exactly Entries 135-136 after the unchanged 134-entry prefix', () => {
+test('Render Loop Door Motion preserves Entries 135-136 and retires them through one exact group', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 134)),
@@ -163,5 +177,30 @@ test('Render Loop Door Motion appends exactly Entries 135-136 after the unchange
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 136)),
     '17c6ec0de239b5bce3d6745b654dd6aa0c3650e626e8ecca360db3ced781ac47'
+  );
+
+  const group = baseline.migrationConsolidations.find(
+    entry => entry.id === 'platform-door-motion-dimension-consolidation'
+  );
+  assert.ok(group);
+  assert.deepEqual(group.entryNumbers, [135, 136]);
+  assert.deepEqual(group.replacementStatement, {
+    toFile: ownerRel,
+    kind: 'value',
+    syntax: 'static-import',
+    importedSymbols: replacementSymbols,
+  });
+  assert.deepEqual(
+    baseline.migrationRetirements
+      .filter(entry => group.entryNumbers.includes(entry.entryNumber))
+      .map(entry => [entry.entryNumber, entry.mode, entry.replacementConsolidationId]),
+    [
+      [135, 'statement-consolidated', 'platform-door-motion-dimension-consolidation'],
+      [136, 'statement-consolidated', 'platform-door-motion-dimension-consolidation'],
+    ]
+  );
+  assert.deepEqual(
+    new Set(group.absorbedStatements.map(statement => statement.toFile)),
+    new Set([doorOwnerRel, unitsOwnerRel, defaultsOwnerRel])
   );
 });

@@ -17,30 +17,31 @@
     },
     "layerBaseline": {
       "file": "tools/wp_layer_baseline.json",
-      "sha256": "c47ae890ae676a65d955daf7618eab7159ac4a94c53029d6087b1a16e90cca00"
+      "sha256": "bb79eb864138213d052dd7c999ce1a1e33cf0c59ede5dec3152e99ca82f05ed9"
     }
   },
   "layerContractOwnership": {
-    "schemaVersion": "2.4",
+    "schemaVersion": "2.5",
     "historicalMigrationEntries": 178,
-    "activeMigrationEntries": 174,
-    "retiredMigrationEntries": 4,
+    "activeMigrationEntries": 167,
+    "retiredMigrationEntries": 11,
     "compatibilityBudgets": 4,
+    "consolidations": 3,
     "historicalUniqueFromFiles": 108,
-    "activeUniqueFromFiles": 107,
+    "activeUniqueFromFiles": 104,
     "runtime": {
       "owner": "wardrobe-dimension-runtime-public-compatibility",
       "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts",
       "edge": {
-        "observedStatements": 40,
-        "activeMigrationStatements": 4,
+        "observedStatements": 36,
+        "activeMigrationStatements": 0,
         "compatibilityStatements": 4,
         "reviewedGeneralStatements": 32,
         "generalBudget": 32
       },
       "valueEdge": {
-        "observedValueStatements": 39,
-        "activeMigrationValueStatements": 4,
+        "observedValueStatements": 35,
+        "activeMigrationValueStatements": 0,
         "compatibilityValueStatements": 4,
         "reviewedGeneralValueStatements": 31,
         "generalValueBudget": 31

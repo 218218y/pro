@@ -9,22 +9,20 @@
 import type { RootStateLike } from '../../../types';
 import { DEFAULT_FRONT_COLOR_SHELF_INHERITANCE_MODE } from '../../shared/front_color_shelf_inheritance_shared.js';
 
-import { BASE_LEG_DIMENSIONS } from '../../shared/dimensions/base_leg_policy.js';
-import { BASE_PLINTH_POLICY } from '../../shared/dimensions/base_plinth_policy.js';
 import {
+  BASE_LEG_DIMENSIONS,
+  BASE_PLINTH_POLICY,
   CHEST_MODE_ACTIVE_DEFAULTS_POLICY,
   CHEST_MODE_COMMODE_CONSTRAINTS_POLICY,
-} from '../../shared/dimensions/chest_mode_policy.js';
-import { DEFAULT_STACK_SPLIT_LOWER_HEIGHT } from '../../shared/dimensions/stack_split_policy.js';
-import {
   DEFAULT_CHEST_DRAWERS_COUNT,
   DEFAULT_CORNER_DOORS,
   DEFAULT_CORNER_WIDTH,
   DEFAULT_HEIGHT,
   DEFAULT_HINGED_DOORS,
+  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
   DEFAULT_WIDTH,
   HINGED_DEFAULT_DEPTH,
-} from '../../shared/dimensions/wardrobe_defaults.js';
+} from '../../shared/dimensions/runtime_default_state_dimension_policy.js';
 
 export function createDefaultState(opts?: { noneMode?: string }): RootStateLike {
   opts = opts && typeof opts === 'object' ? opts : {};

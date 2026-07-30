@@ -20,7 +20,7 @@ import {
 } from '../tools/wp_layer_contract_support.mjs';
 
 const TEST_CURRENT_DATE = '2026-07-21';
-const LAYER_24_SNAPSHOT_DATE = '2026-07-29';
+const LAYER_25_SNAPSHOT_DATE = '2026-07-29';
 
 function stableJson(value) {
   if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
@@ -99,9 +99,10 @@ function contract({
   migrationBudgets = [],
   migrationRetirements = [],
   compatibilityBudgets = [],
+  migrationConsolidations = [],
 } = {}) {
   return {
-    version: '2.4',
+    version: '2.5',
     root: 'esm',
     ratchet: RATCHET,
     rules,
@@ -110,6 +111,7 @@ function contract({
     migrationBudgets,
     migrationRetirements,
     compatibilityBudgets,
+    migrationConsolidations,
   };
 }
 
@@ -180,7 +182,6 @@ function migrationRetirement(overrides = {}) {
 
 function consolidationReplacementStatement(overrides = {}) {
   return {
-    fromFile: 'esm/native/ui/consolidated.ts',
     toFile: 'esm/native/services/consolidated.ts',
     kind: 'value',
     syntax: 'static-import',
@@ -189,14 +190,46 @@ function consolidationReplacementStatement(overrides = {}) {
   };
 }
 
-function consolidationRetirement(overrides = {}) {
-  return migrationRetirement({
-    mode: 'statement-consolidated',
-    replacementCompatibilityBudgetId: null,
+function absorbedStatement(spec, fromFile = 'esm/native/ui/example.ts') {
+  return {
+    fromFile,
+    toFile: spec.toFile,
+    kind: spec.kind,
+    syntax: spec.syntax,
+    importedSymbols: [...spec.importedSymbols],
+  };
+}
+
+function migrationConsolidation(overrides = {}) {
+  const budget = migrationBudget();
+  return {
+    id: 'example-consolidation',
+    retiredAt: '2026-07-29',
+    entryNumbers: [1],
+    from: budget.from,
+    to: budget.to,
+    fromFile: budget.fromFile,
+    owner: 'test-consolidation-owner',
+    reason: 'Historical focused statements are replaced by one reviewed composition owner.',
     replacementStatement: consolidationReplacementStatement(),
-    reason: 'The historical statement was replaced by one exact consolidated owner statement.',
+    absorbedStatements: [
+      absorbedStatement(budget.addedImport, budget.fromFile),
+      absorbedStatement(budget.companionImport, budget.fromFile),
+    ],
+    evidenceContracts: ['tests/wp_layer_contract_v2_runtime.test.js'],
     ...overrides,
-  });
+  };
+}
+
+function consolidationRetirement(overrides = {}) {
+  return {
+    entryNumber: 1,
+    retiredAt: '2026-07-29',
+    mode: 'statement-consolidated',
+    reason: 'The historical statements were replaced by one exact consolidation group owner.',
+    replacementConsolidationId: 'example-consolidation',
+    ...overrides,
+  };
 }
 
 function layer24Graph(imports, edgeOverrides = {}) {
@@ -1028,9 +1061,10 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
   const baseline = JSON.parse(
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
-  assert.equal(baseline.version, '2.4');
-  assert.equal(baseline.migrationRetirements.length, 4);
+  assert.equal(baseline.version, '2.5');
+  assert.equal(baseline.migrationRetirements.length, 11);
   assert.equal(baseline.compatibilityBudgets.length, 4);
+  assert.equal(baseline.migrationConsolidations.length, 3);
   const runtimeCompatibilityOwner = 'wardrobe-dimension-runtime-public-compatibility';
   const runtimePublicSurface =
     'esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts';
@@ -1041,12 +1075,14 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
     'runtime-default-resolution-public-compatibility',
   ];
   assert.deepEqual(
-    baseline.migrationRetirements.map(retirement => ({
-      entryNumber: retirement.entryNumber,
-      retiredAt: retirement.retiredAt,
-      mode: retirement.mode,
-      replacementCompatibilityBudgetId: retirement.replacementCompatibilityBudgetId,
-    })),
+    baseline.migrationRetirements
+      .filter(retirement => retirement.mode === 'ownership-transferred')
+      .map(retirement => ({
+        entryNumber: retirement.entryNumber,
+        retiredAt: retirement.retiredAt,
+        mode: retirement.mode,
+        replacementCompatibilityBudgetId: retirement.replacementCompatibilityBudgetId,
+      })),
     runtimeCompatibilityIds.map((id, index) => ({
       entryNumber: 175 + index,
       retiredAt: '2026-07-29',
@@ -1834,13 +1870,14 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
   );
 
   const graph = collectLayerContractGraph({ root: repositoryRoot });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: LAYER_24_SNAPSHOT_DATE });
+  const report = evaluateLayerContract(graph, baseline, { currentDate: LAYER_25_SNAPSHOT_DATE });
   assert.equal(report.ok, true, JSON.stringify(report.failures));
   assert.equal(report.migrationBudgets.length, 178);
   assert.equal(report.historicalMigrationEntries.length, 178);
-  assert.equal(report.activeMigrationEntries.length, 174);
-  assert.equal(report.retiredMigrationEntries.length, 4);
+  assert.equal(report.activeMigrationEntries.length, 167);
+  assert.equal(report.retiredMigrationEntries.length, 11);
   assert.equal(report.compatibilityBudgets.length, 4);
+  assert.equal(report.migrationConsolidations.length, 3);
   assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 108);
   const retiredEntryNumbers = new Set(baseline.migrationRetirements.map(entry => entry.entryNumber));
   assert.equal(
@@ -1849,20 +1886,19 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
         .filter((_, index) => !retiredEntryNumbers.has(index + 1))
         .map(entry => entry.fromFile)
     ).size,
-    107
+    104
   );
+  const retiredStatuses = new Map(
+    report.migrationBudgets.map(entry => [entry.entryNumber, [entry.active, entry.retired]])
+  );
+  for (const entryNumber of [61, 135, 136, 146, 147, 148, 149, 175, 176, 177, 178]) {
+    assert.deepEqual(retiredStatuses.get(entryNumber), [false, true]);
+  }
   assert.equal(
-    report.migrationBudgets.slice(0, 174).every(entry => entry.active === true),
+    report.migrationBudgets
+      .filter(entry => !retiredEntryNumbers.has(entry.entryNumber))
+      .every(entry => entry.active === true && entry.retired === false),
     true
-  );
-  assert.deepEqual(
-    report.migrationBudgets.slice(174).map(entry => [entry.entryNumber, entry.active, entry.retired]),
-    [
-      [175, false, true],
-      [176, false, true],
-      [177, false, true],
-      [178, false, true],
-    ]
   );
 
   // Repository-wide totals are owned here. Historical migration tests below lock only
@@ -1871,9 +1907,9 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
     ['builder>shared', { observed: 305, migration: 86, reviewed: 219, budget: 219 }],
     ['features>shared', { observed: 76, migration: 18, reviewed: 58, budget: 58 }],
     ['services>shared', { observed: 230, migration: 63, reviewed: 167, budget: 167 }],
-    ['ui>shared', { observed: 27, migration: 1, reviewed: 26, budget: 27 }],
-    ['platform>shared', { observed: 6, migration: 2, reviewed: 4, budget: 4 }],
-    ['runtime>shared', { observed: 40, migration: 4, compatibility: 4, reviewed: 32, budget: 32 }],
+    ['ui>shared', { observed: 26, migration: 0, reviewed: 26, budget: 27 }],
+    ['platform>shared', { observed: 4, migration: 0, reviewed: 4, budget: 4 }],
+    ['runtime>shared', { observed: 36, migration: 0, compatibility: 4, reviewed: 32, budget: 32 }],
   ]);
   for (const [key, expected] of expectedEdges) {
     const [from, to] = key.split('>');
@@ -1915,8 +1951,8 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
       generalValueBudget: runtimeSharedRule.maxValueImportCount,
     },
     {
-      observedValueStatements: 39,
-      activeMigrationValueStatements: 4,
+      observedValueStatements: 35,
+      activeMigrationValueStatements: 0,
       compatibilityValueStatements: 4,
       reviewedGeneralValueStatements: 31,
       generalValueBudget: 31,
@@ -1934,12 +1970,12 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
   assert.equal(uiFeaturesEdge.valueImporterCount, 37);
   assert.equal(uiFeaturesEdge.valueImportCount, 63);
 
-  assert.equal(runtimeSharedEdge.valueImportCount, 39);
-  assert.equal(runtimeSharedEdge.valueImportCount - 4 - 4, 31);
+  assert.equal(runtimeSharedEdge.valueImportCount, 35);
+  assert.equal(runtimeSharedEdge.valueImportCount - 0 - 4, 31);
   assert.equal(runtimeSharedRule.maxValueImportCount, 31);
 
   assert.equal(baseline.rules.length, 52);
-  const proposal = buildLayerContractProposal(graph, baseline, { currentDate: TEST_CURRENT_DATE });
+  const proposal = buildLayerContractProposal(graph, baseline, { currentDate: LAYER_25_SNAPSHOT_DATE });
   assert.equal(proposal.reviewRequired, false);
   assert.deepEqual(proposal.diff.addedEdges, []);
   assert.deepEqual(proposal.diff.ratchetViolations, []);
@@ -2041,18 +2077,18 @@ test('repository Sketch Box Geometry migration entries remain exact after Interi
   });
 
   const graph = collectLayerContractGraph({ root: repositoryRoot });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
+  const report = evaluateLayerContract(graph, baseline, { currentDate: LAYER_25_SNAPSHOT_DATE });
   assert.equal(report.ok, true);
   const uiEdge = graph.edges.find(entry => entry.from === 'ui' && entry.to === 'shared');
   const uiRule = baseline.rules.find(entry => entry.from === 'ui' && entry.to === 'shared');
   assert.ok(uiEdge);
   assert.ok(uiRule);
-  assert.equal(uiEdge.importCount, 27);
+  assert.equal(uiEdge.importCount, 26);
   assert.equal(uiRule.maxImportCount, 27);
   assert.equal(
     report.migrationBudgets.filter(entry => entry.from === 'ui' && entry.to === 'shared' && entry.active)
       .length,
-    1
+    0
   );
 
   const growthGraph = structuredClone(graph);
@@ -2155,7 +2191,7 @@ test('repository Sketch Box Shell Apply migration entry is exact and preserves t
   });
 
   const graph = collectLayerContractGraph({ root: repositoryRoot });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: TEST_CURRENT_DATE });
+  const report = evaluateLayerContract(graph, baseline, { currentDate: LAYER_25_SNAPSHOT_DATE });
   assert.equal(report.ok, true);
   const budget = report.migrationBudgets.find(
     candidate => candidate.fromFile === entry.fromFile && candidate.addedTarget === entry.addedImport.toFile
@@ -4009,7 +4045,7 @@ test('repository Sketch Box Storage Preview pair migration entries are exact and
   ]);
 });
 
-test('Layer Contract 2.4 separates historical, active, retired, and compatibility ownership', () => {
+test('Layer Contract 2.5 separates historical, active, retired, and compatibility ownership', () => {
   const budget = migrationBudget();
   const compatibility = compatibilityBudget();
   const retirement = migrationRetirement();
@@ -4048,7 +4084,7 @@ test('Layer Contract 2.4 separates historical, active, retired, and compatibilit
   assert.equal(report.migrationBudgets[0].retired, true);
 });
 
-test('Layer Contract 2.4 retirement and compatibility ownership fail closed', () => {
+test('Layer Contract 2.5 retirement and compatibility ownership fail closed', () => {
   const budget = migrationBudget();
   const compatibility = compatibilityBudget();
   const retirement = migrationRetirement();
@@ -4183,7 +4219,7 @@ test('Layer Contract 2.4 retirement and compatibility ownership fail closed', ()
   }
 });
 
-test('Layer Contract 2.4 statement-removed retirement requires absence and compatibility does not hide other growth', () => {
+test('Layer Contract 2.5 statement-removed retirement requires absence and compatibility does not hide other growth', () => {
   const budget = migrationBudget();
   const added = migrationImport({
     toFile: budget.addedImport.toFile,
@@ -4200,14 +4236,15 @@ test('Layer Contract 2.4 statement-removed retirement requires absence and compa
   const baseline = contract({
     migrationBudgets: [budget],
     migrationRetirements: [
-      migrationRetirement({
+      {
+        entryNumber: 1,
+        retiredAt: '2026-07-29',
         mode: 'statement-removed',
-        replacementCompatibilityBudgetId: null,
-        replacementStatement: null,
-      }),
+        reason: 'The historical statement was removed without replacement.',
+      },
     ],
   });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: LAYER_24_SNAPSHOT_DATE });
+  const report = evaluateLayerContract(graph, baseline, { currentDate: LAYER_25_SNAPSHOT_DATE });
   assert.equal(
     report.failures.some(failure => failure.kind === 'migration-retirement-statement-still-present'),
     true
@@ -4247,7 +4284,7 @@ test('Layer Contract 2.4 statement-removed retirement requires absence and compa
   assert.equal(proposal.diff.compatibilityBudgets, 1);
 });
 
-test('Layer Contract 2.4 enforces retirement chronology and distinct retirement mode schemas', () => {
+test('Layer Contract 2.5 enforces retirement chronology and distinct retirement mode schemas', () => {
   const budget = migrationBudget();
   const compatibility = compatibilityBudget();
 
@@ -4283,14 +4320,14 @@ test('Layer Contract 2.4 enforces retirement chronology and distinct retirement 
         contract({
           migrationBudgets: [budget],
           migrationRetirements: [
-            migrationRetirement({
-              mode: 'statement-consolidated',
-              replacementCompatibilityBudgetId: null,
-            }),
+            {
+              ...consolidationRetirement(),
+              replacementConsolidationId: 'missing-consolidation',
+            },
           ],
         })
       ),
-    /statement-consolidated requires replacementStatement/
+    /statement-consolidated requires an existing replacementConsolidationId/
   );
 
   assert.throws(
@@ -4299,14 +4336,17 @@ test('Layer Contract 2.4 enforces retirement chronology and distinct retirement 
         contract({
           migrationBudgets: [budget],
           migrationRetirements: [
-            migrationRetirement({
+            {
+              entryNumber: 1,
+              retiredAt: '2026-07-29',
               mode: 'statement-removed',
+              reason: 'The statement was removed.',
               replacementCompatibilityBudgetId: null,
-            }),
+            },
           ],
         })
       ),
-    /statement-removed requires replacementStatement null/
+    /statement-removed does not allow replacement ownership fields/
   );
 
   assert.throws(
@@ -4318,7 +4358,7 @@ test('Layer Contract 2.4 enforces retirement chronology and distinct retirement 
           migrationRetirements: [migrationRetirement({ replacementStatement: null })],
         })
       ),
-    /ownership-transferred does not allow replacementStatement/
+    /ownership-transferred does not allow replacementConsolidationId or replacementStatement/
   );
 
   assert.throws(
@@ -4327,7 +4367,25 @@ test('Layer Contract 2.4 enforces retirement chronology and distinct retirement 
         contract({
           migrationBudgets: [budget],
           migrationRetirements: [
-            consolidationRetirement({
+            {
+              ...consolidationRetirement(),
+              replacementStatement: consolidationReplacementStatement(),
+            },
+          ],
+          migrationConsolidations: [migrationConsolidation()],
+        })
+      ),
+    /does not allow replacementCompatibilityBudgetId or inline replacementStatement/
+  );
+
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          migrationBudgets: [budget],
+          migrationRetirements: [consolidationRetirement()],
+          migrationConsolidations: [
+            migrationConsolidation({
               replacementStatement: consolidationReplacementStatement({ importedSymbols: ['*'] }),
             }),
           ],
@@ -4337,7 +4395,7 @@ test('Layer Contract 2.4 enforces retirement chronology and distinct retirement 
   );
 });
 
-test('Layer Contract 2.4 compatibility lifecycle is inclusive and blocks stale proposal lowering', () => {
+test('Layer Contract 2.5 compatibility lifecycle is inclusive and blocks stale proposal lowering', () => {
   const compatibility = compatibilityBudget();
   const statement = migrationImport({
     toFile: compatibility.statement.toFile,
@@ -4464,7 +4522,7 @@ test('Layer Contract 2.4 compatibility lifecycle is inclusive and blocks stale p
   assert.equal(proposal.contract.rules[0].maxValueImportCount, 0);
 });
 
-test('Layer Contract 2.4 retirement effective dates preserve active-debt accounting on failure', () => {
+test('Layer Contract 2.5 retirement effective dates preserve active-debt accounting on failure', () => {
   const budget = migrationBudget();
   const compatibility = compatibilityBudget();
   const added = migrationImport({
@@ -4486,7 +4544,7 @@ test('Layer Contract 2.4 retirement effective dates preserve active-debt account
       migrationRetirements: [migrationRetirement({ retiredAt: '2030-01-01' })],
       compatibilityBudgets: [compatibility],
     }),
-    { currentDate: LAYER_24_SNAPSHOT_DATE }
+    { currentDate: LAYER_25_SNAPSHOT_DATE }
   );
   assert.equal(
     future.failures.some(failure => failure.kind === 'migration-retirement-not-effective-yet'),
@@ -4502,10 +4560,10 @@ test('Layer Contract 2.4 retirement effective dates preserve active-debt account
     graph,
     contract({
       migrationBudgets: [budget],
-      migrationRetirements: [migrationRetirement({ retiredAt: LAYER_24_SNAPSHOT_DATE })],
+      migrationRetirements: [migrationRetirement({ retiredAt: LAYER_25_SNAPSHOT_DATE })],
       compatibilityBudgets: [compatibility],
     }),
-    { currentDate: LAYER_24_SNAPSHOT_DATE }
+    { currentDate: LAYER_25_SNAPSHOT_DATE }
   );
   assert.equal(effectiveToday.ok, true, JSON.stringify(effectiveToday.failures));
   assert.equal(effectiveToday.activeMigrationEntries.length, 0);
@@ -4522,7 +4580,7 @@ test('Layer Contract 2.4 retirement effective dates preserve active-debt account
         }),
       ],
     }),
-    { currentDate: LAYER_24_SNAPSHOT_DATE }
+    { currentDate: LAYER_25_SNAPSHOT_DATE }
   );
   assert.equal(
     mismatched.failures.some(failure => failure.kind === 'migration-retirement-compatibility-mismatch'),
@@ -4534,182 +4592,450 @@ test('Layer Contract 2.4 retirement effective dates preserve active-debt account
   assert.equal(mismatched.migrationBudgets[0].retired, false);
 });
 
-test('Layer Contract 2.4 verifies consolidation replacement provenance and failed accounting', () => {
-  const budget = migrationBudget();
+test('Layer Contract 2.5 validates multi-entry consolidation groups and all-or-nothing retirement', () => {
+  const first = migrationBudget();
+  const second = migrationBudget({
+    addedImport: {
+      toFile: 'esm/native/services/other_units.ts',
+      kind: 'value',
+      syntax: 'static-import',
+      importedSymbols: ['OTHER_UNIT'],
+    },
+    reason: 'A second historical statement shares the same consumer and companion statement.',
+  });
   const replacement = consolidationReplacementStatement();
+  const group = migrationConsolidation({
+    id: 'multi-entry-consolidation',
+    entryNumbers: [1, 2],
+    replacementStatement: replacement,
+    absorbedStatements: [
+      absorbedStatement(first.addedImport, first.fromFile),
+      absorbedStatement(first.companionImport, first.fromFile),
+      absorbedStatement(second.addedImport, second.fromFile),
+    ],
+  });
+  const retirements = [
+    consolidationRetirement({ entryNumber: 1, replacementConsolidationId: group.id }),
+    consolidationRetirement({ entryNumber: 2, replacementConsolidationId: group.id }),
+  ];
   const replacementImport = migrationImport({
-    fromFile: replacement.fromFile,
+    fromFile: group.fromFile,
     toFile: replacement.toFile,
     importedSymbols: replacement.importedSymbols,
-    statementKey: 'consolidated',
-    kind: replacement.kind,
-    syntax: replacement.syntax,
+    statementKey: 'replacement',
   });
-  const graph = layer24Graph([replacementImport]);
-  const validContract = contract({
-    migrationBudgets: [budget],
-    migrationRetirements: [consolidationRetirement()],
-  });
-  const valid = evaluateLayerContract(graph, validContract, {
-    currentDate: LAYER_24_SNAPSHOT_DATE,
-  });
+  const valid = evaluateLayerContract(
+    layer24Graph([replacementImport]),
+    contract({
+      migrationBudgets: [first, second],
+      migrationRetirements: retirements,
+      migrationConsolidations: [group],
+    }),
+    { currentDate: LAYER_25_SNAPSHOT_DATE }
+  );
   assert.equal(valid.ok, true, JSON.stringify(valid.failures));
   assert.equal(valid.activeMigrationEntries.length, 0);
-  assert.equal(valid.retiredMigrationEntries.length, 1);
-  assert.deepEqual(valid.retiredMigrationEntries[0].replacementStatement, {
-    fromFile: replacement.fromFile,
-    toFile: replacement.toFile,
-    kind: replacement.kind,
-    syntax: replacement.syntax,
-    importedSymbols: replacement.importedSymbols,
-    statementValid: true,
+  assert.deepEqual(
+    valid.retiredMigrationEntries.map(entry => entry.entryNumber),
+    [1, 2]
+  );
+  assert.deepEqual(valid.migrationConsolidations[0], {
+    consolidationId: group.id,
+    entryNumbers: [1, 2],
+    from: group.from,
+    to: group.to,
+    fromFile: group.fromFile,
+    retiredAt: group.retiredAt,
+    currentDate: LAYER_25_SNAPSHOT_DATE,
+    retirementEffective: true,
+    absorbedStatementsValid: true,
+    replacementStatementValid: true,
+    evidenceContractsValid: true,
+    ownershipConflicts: [],
+    active: true,
+    valid: true,
+    replacementStatement: { fromFile: group.fromFile, ...replacement },
+    absorbedStatements: group.absorbedStatements,
+    evidenceContracts: group.evidenceContracts,
   });
 
-  const invalidProbes = [
-    {
-      label: 'target',
-      retirement: consolidationRetirement({
-        replacementStatement: consolidationReplacementStatement({
-          toFile: 'esm/native/services/other-consolidated.ts',
-        }),
+  const stillPresent = migrationImport({
+    toFile: first.addedImport.toFile,
+    importedSymbols: first.addedImport.importedSymbols,
+    statementKey: 'historical-added',
+  });
+  const invalid = evaluateLayerContract(
+    layer24Graph([replacementImport, stillPresent], { importCount: 2, valueImportCount: 2 }),
+    contract({
+      migrationBudgets: [first, second],
+      migrationRetirements: retirements,
+      migrationConsolidations: [group],
+    }),
+    { currentDate: LAYER_25_SNAPSHOT_DATE }
+  );
+  assert.equal(
+    invalid.failures.some(
+      failure => failure.kind === 'migration-consolidation-absorbed-statement-still-present'
+    ),
+    true
+  );
+  assert.equal(invalid.activeMigrationEntries.length, 2);
+  assert.equal(invalid.retiredMigrationEntries.length, 0);
+
+  const companionStillPresent = migrationImport({
+    toFile: first.companionImport.toFile,
+    importedSymbols: first.companionImport.importedSymbols,
+    statementKey: 'historical-companion',
+  });
+  const companionInvalid = evaluateLayerContract(
+    layer24Graph([replacementImport, companionStillPresent], { importCount: 2, valueImportCount: 2 }),
+    contract({
+      migrationBudgets: [first, second],
+      migrationRetirements: retirements,
+      migrationConsolidations: [group],
+    }),
+    { currentDate: LAYER_25_SNAPSHOT_DATE }
+  );
+  assert.equal(
+    companionInvalid.failures.some(
+      failure => failure.kind === 'migration-consolidation-absorbed-statement-still-present'
+    ),
+    true
+  );
+  assert.equal(companionInvalid.activeMigrationEntries.length, 2);
+  assert.equal(companionInvalid.retiredMigrationEntries.length, 0);
+});
+
+test('Layer Contract 2.5 consolidation schema rejects ambiguous group ownership and missing evidence', () => {
+  const first = migrationBudget();
+  const second = migrationBudget({
+    addedImport: {
+      toFile: 'esm/native/services/other_units.ts',
+      kind: 'value',
+      syntax: 'static-import',
+      importedSymbols: ['OTHER_UNIT'],
+    },
+  });
+  const group = migrationConsolidation({
+    id: 'group-a',
+    entryNumbers: [1, 2],
+    absorbedStatements: [
+      absorbedStatement(first.addedImport),
+      absorbedStatement(first.companionImport),
+      absorbedStatement(second.addedImport),
+    ],
+  });
+  const retirements = [
+    consolidationRetirement({ entryNumber: 1, replacementConsolidationId: group.id }),
+    consolidationRetirement({ entryNumber: 2, replacementConsolidationId: group.id }),
+  ];
+  const base = {
+    migrationBudgets: [first, second],
+    migrationRetirements: retirements,
+    migrationConsolidations: [group],
+  };
+
+  assert.doesNotThrow(() => validateLayerContractSchema(contract(base)), 'same replacement in one group');
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          ...base,
+          migrationConsolidations: [group, { ...group, id: 'group-b', entryNumbers: [2] }],
+        })
+      ),
+    /belongs to multiple consolidations|duplicate migration consolidation replacement ownership/
+  );
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          ...base,
+          migrationConsolidations: [group, { ...group, id: 'group-b', entryNumbers: [1, 2] }],
+        })
+      ),
+    /belongs to multiple consolidations|duplicate migration consolidation replacement ownership/
+  );
+  assert.throws(
+    () => validateLayerContractSchema(contract({ ...base, migrationRetirements: [retirements[0]] })),
+    /missing a matching retirement/
+  );
+
+  const third = migrationBudget({
+    addedImport: {
+      toFile: 'esm/native/services/third_units.ts',
+      kind: 'value',
+      syntax: 'static-import',
+      importedSymbols: ['THIRD_UNIT'],
+    },
+  });
+  const groupOne = migrationConsolidation({
+    id: 'replacement-group-one',
+    entryNumbers: [1],
+    absorbedStatements: [absorbedStatement(first.addedImport), absorbedStatement(first.companionImport)],
+  });
+  const groupTwo = migrationConsolidation({
+    id: 'replacement-group-two',
+    entryNumbers: [2, 3],
+    absorbedStatements: [
+      absorbedStatement(second.addedImport),
+      absorbedStatement(second.companionImport),
+      absorbedStatement(third.addedImport),
+    ],
+  });
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          migrationBudgets: [first, second, third],
+          migrationRetirements: [
+            consolidationRetirement({ entryNumber: 1, replacementConsolidationId: groupOne.id }),
+            consolidationRetirement({ entryNumber: 2, replacementConsolidationId: groupTwo.id }),
+            consolidationRetirement({ entryNumber: 3, replacementConsolidationId: groupTwo.id }),
+          ],
+          migrationConsolidations: [groupOne, groupTwo],
+        })
+      ),
+    /duplicate migration consolidation replacement ownership/
+  );
+
+  const wrongGroup = migrationConsolidation({
+    id: 'wrong-existing-group',
+    entryNumbers: [2],
+    replacementStatement: {
+      ...consolidationReplacementStatement(),
+      toFile: 'esm/native/services/other-consolidated.ts',
+      importedSymbols: ['OTHER_CONSOLIDATED_POLICY'],
+    },
+    absorbedStatements: [absorbedStatement(second.addedImport), absorbedStatement(second.companionImport)],
+  });
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          ...base,
+          migrationRetirements: [
+            { ...retirements[0], replacementConsolidationId: wrongGroup.id },
+            retirements[1],
+          ],
+          migrationConsolidations: [group, wrongGroup],
+        })
+      ),
+    /points to consolidation .* that does not include it|belongs to multiple consolidations/
+  );
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          ...base,
+          migrationBudgets: [first, { ...second, fromFile: 'esm/native/ui/other.ts' }],
+        })
+      ),
+    /must use fromFile/
+  );
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          ...base,
+          migrationBudgets: [
+            first,
+            {
+              ...second,
+              from: 'runtime',
+              fromFile: 'esm/native/runtime/example.ts',
+            },
+          ],
+        })
+      ),
+    /must use edge|requires one existing allowed edge/
+  );
+  assert.throws(
+    () =>
+      validateLayerContractSchema(
+        contract({
+          ...base,
+          migrationConsolidations: [{ ...group, evidenceContracts: ['tests/missing-contract.test.js'] }],
+        })
+      ),
+    /evidence contract does not exist/
+  );
+});
+
+test('Layer Contract 2.5 consolidation exact-statement probes fail closed without partial retirement', () => {
+  const budget = migrationBudget();
+  const replacement = consolidationReplacementStatement();
+  const group = migrationConsolidation();
+  const retirement = consolidationRetirement();
+  const replacementImport = migrationImport({
+    fromFile: group.fromFile,
+    toFile: replacement.toFile,
+    importedSymbols: replacement.importedSymbols,
+    statementKey: 'replacement',
+  });
+  const evaluateProbe = (probeGroup, imports, extra = {}) =>
+    evaluateLayerContract(
+      layer24Graph(imports, { importCount: imports.length, valueImportCount: imports.length }),
+      contract({
+        migrationBudgets: [budget, ...(extra.migrationBudgets || [])],
+        migrationRetirements: [retirement],
+        migrationConsolidations: [probeGroup],
+        compatibilityBudgets: extra.compatibilityBudgets || [],
       }),
-      imports: [replacementImport],
-      failureKind: 'migration-retirement-consolidation-statement-missing',
-    },
-    {
-      label: 'symbols',
-      retirement: consolidationRetirement({
-        replacementStatement: consolidationReplacementStatement({ importedSymbols: ['WRONG_SYMBOL'] }),
-      }),
-      imports: [replacementImport],
-      failureKind: 'migration-retirement-consolidation-statement-missing',
-    },
-    {
-      label: 'kind',
-      retirement: consolidationRetirement({
-        replacementStatement: consolidationReplacementStatement({ kind: 'type', syntax: 'type-import' }),
-      }),
-      imports: [replacementImport],
-      failureKind: 'migration-retirement-consolidation-kind-drift',
-    },
-    {
-      label: 'syntax',
-      retirement: consolidationRetirement({
-        replacementStatement: consolidationReplacementStatement({ syntax: 'static-re-export' }),
-      }),
-      imports: [replacementImport],
-      failureKind: 'migration-retirement-consolidation-syntax-drift',
-    },
-    {
-      label: 'multiple statements',
-      retirement: consolidationRetirement(),
-      imports: [replacementImport, { ...replacementImport, statementKey: 'consolidated-duplicate' }],
-      failureKind: 'migration-retirement-consolidation-statement-growth',
-    },
-    {
-      label: 'alias',
-      retirement: consolidationRetirement(),
-      imports: [
+      { currentDate: extra.currentDate || LAYER_25_SNAPSHOT_DATE }
+    );
+
+  const probes = [
+    ['missing replacement', group, [], 'migration-consolidation-replacement-statement-missing'],
+    [
+      'wrong target',
+      { ...group, replacementStatement: { ...replacement, toFile: 'esm/native/services/unrelated.ts' } },
+      [replacementImport],
+      'migration-consolidation-replacement-statement-missing',
+    ],
+    [
+      'unrelated replacement in another consumer file',
+      group,
+      [{ ...replacementImport, fromFile: 'esm/native/ui/unrelated.ts' }],
+      'migration-consolidation-replacement-statement-missing',
+    ],
+    [
+      'wrong symbols',
+      { ...group, replacementStatement: { ...replacement, importedSymbols: ['UNRELATED'] } },
+      [replacementImport],
+      'migration-consolidation-replacement-statement-missing',
+    ],
+    [
+      'wrong kind',
+      { ...group, replacementStatement: { ...replacement, kind: 'type', syntax: 'type-import' } },
+      [replacementImport],
+      'migration-consolidation-replacement-kind-drift',
+    ],
+    [
+      'wrong syntax',
+      { ...group, replacementStatement: { ...replacement, syntax: 'static-re-export' } },
+      [replacementImport],
+      'migration-consolidation-replacement-syntax-drift',
+    ],
+    [
+      'alias',
+      group,
+      [
         {
           ...replacementImport,
-          bindings: [{ importedName: 'CONSOLIDATED_POLICY', localName: 'consolidatedPolicy' }],
+          bindings: [{ importedName: 'CONSOLIDATED_POLICY', localName: 'aliasPolicy' }],
         },
       ],
-      failureKind: 'migration-retirement-consolidation-alias-drift',
-    },
+      'migration-consolidation-replacement-alias-drift',
+    ],
   ];
-
-  for (const probe of invalidProbes) {
-    const report = evaluateLayerContract(
-      layer24Graph(probe.imports),
-      contract({
-        migrationBudgets: [budget],
-        migrationRetirements: [probe.retirement],
-      }),
-      { currentDate: LAYER_24_SNAPSHOT_DATE }
-    );
+  for (const [label, probeGroup, imports, failureKind] of probes) {
+    const report = evaluateProbe(probeGroup, imports);
     assert.equal(
-      report.failures.some(failure => failure.kind === probe.failureKind),
+      report.failures.some(failure => failure.kind === failureKind),
       true,
-      `${probe.label}: ${JSON.stringify(report.failures)}`
+      `${label}: ${JSON.stringify(report.failures)}`
     );
-    assert.equal(report.activeMigrationEntries.length, 1, `${probe.label} stays active debt`);
-    assert.equal(report.retiredMigrationEntries.length, 0, `${probe.label} is not retired`);
+    assert.equal(report.activeMigrationEntries.length, 1, `${label} keeps the Entry active`);
+    assert.equal(report.retiredMigrationEntries.length, 0, `${label} retires nothing`);
   }
 
+  const future = evaluateProbe(group, [replacementImport], { currentDate: '2026-07-28' });
+  assert.equal(
+    future.failures.some(failure => failure.kind === 'migration-consolidation-not-effective-yet'),
+    true
+  );
+  assert.equal(future.activeMigrationEntries.length, 1);
+  assert.equal(future.retiredMigrationEntries.length, 0);
+
+  const boundary = evaluateProbe(group, [replacementImport], { currentDate: group.retiredAt });
+  assert.equal(boundary.ok, true, JSON.stringify(boundary.failures));
+  assert.equal(boundary.retiredMigrationEntries.length, 1);
+});
+
+test('Layer Contract 2.5 consolidation ownership conflicts block proposal lowering', () => {
+  const budget = migrationBudget();
+  const group = migrationConsolidation();
+  const retirement = consolidationRetirement();
+  const replacement = group.replacementStatement;
+  const replacementImport = migrationImport({
+    fromFile: group.fromFile,
+    toFile: replacement.toFile,
+    importedSymbols: replacement.importedSymbols,
+    statementKey: 'replacement',
+  });
   const compatibility = compatibilityBudget({
-    id: 'consolidated-compatibility-owner',
-    fromFile: replacement.fromFile,
-    statement: {
-      toFile: replacement.toFile,
-      kind: replacement.kind,
-      syntax: replacement.syntax,
-      importedSymbols: replacement.importedSymbols,
-    },
-    publicSurface: 'ui/consolidated.ts → services/consolidated.ts',
+    id: 'replacement-compatibility',
+    fromFile: group.fromFile,
+    statement: { ...replacement },
+  });
+  const compatibilityConflictContract = contract({
+    rules: [allowRule({ maxImportCount: 1, maxValueImportCount: 1 })],
+    migrationBudgets: [budget],
+    migrationRetirements: [retirement],
+    migrationConsolidations: [group],
+    compatibilityBudgets: [compatibility],
   });
   const compatibilityConflict = evaluateLayerContract(
-    graph,
-    contract({
-      migrationBudgets: [budget],
-      migrationRetirements: [consolidationRetirement()],
-      compatibilityBudgets: [compatibility],
-    }),
-    { currentDate: LAYER_24_SNAPSHOT_DATE }
+    layer24Graph([replacementImport]),
+    compatibilityConflictContract,
+    { currentDate: LAYER_25_SNAPSHOT_DATE }
   );
   assert.equal(
     compatibilityConflict.failures.some(
-      failure => failure.kind === 'migration-retirement-consolidation-compatibility-ownership-conflict'
+      failure => failure.kind === 'migration-consolidation-compatibility-ownership-conflict'
     ),
     true
   );
   assert.equal(compatibilityConflict.activeMigrationEntries.length, 1);
   assert.equal(compatibilityConflict.retiredMigrationEntries.length, 0);
 
-  const activeOwnerBudget = migrationBudget({
-    fromFile: replacement.fromFile,
-    addedImport: {
-      toFile: replacement.toFile,
-      kind: replacement.kind,
-      syntax: replacement.syntax,
-      importedSymbols: replacement.importedSymbols,
-    },
+  const activeOwner = migrationBudget({
+    addedImport: { ...replacement },
     companionImport: {
-      toFile: 'esm/native/services/consolidated_companion.ts',
+      toFile: 'esm/native/services/other_companion.ts',
       kind: 'value',
       syntax: 'static-import',
-      importedSymbols: ['CONSOLIDATED_COMPANION'],
+      importedSymbols: ['OTHER_COMPANION'],
     },
     removedImport: {
-      toFile: 'esm/native/services/consolidated_legacy.ts',
+      toFile: 'esm/native/services/other_legacy.ts',
       kind: 'value',
       syntax: 'static-import',
-      importedSymbols: ['CONSOLIDATED_POLICY', 'CONSOLIDATED_COMPANION'],
+      importedSymbols: ['CONSOLIDATED_POLICY', 'OTHER_COMPANION'],
     },
   });
-  const activeOwnerCompanion = migrationImport({
-    fromFile: replacement.fromFile,
-    toFile: activeOwnerBudget.companionImport.toFile,
-    importedSymbols: activeOwnerBudget.companionImport.importedSymbols,
-    statementKey: 'consolidated-companion',
-  });
   const activeOwnerConflict = evaluateLayerContract(
-    layer24Graph([replacementImport, activeOwnerCompanion], {
-      importCount: 2,
-      valueImportCount: 2,
-    }),
+    layer24Graph([replacementImport]),
     contract({
-      migrationBudgets: [budget, activeOwnerBudget],
-      migrationRetirements: [consolidationRetirement()],
+      migrationBudgets: [budget, activeOwner],
+      migrationRetirements: [retirement],
+      migrationConsolidations: [group],
     }),
-    { currentDate: LAYER_24_SNAPSHOT_DATE }
+    { currentDate: LAYER_25_SNAPSHOT_DATE }
   );
   assert.equal(
     activeOwnerConflict.failures.some(
-      failure => failure.kind === 'migration-retirement-consolidation-active-migration-ownership-conflict'
+      failure => failure.kind === 'migration-consolidation-active-migration-ownership-conflict'
     ),
     true
   );
   assert.equal(activeOwnerConflict.activeMigrationEntries.length, 2);
   assert.equal(activeOwnerConflict.retiredMigrationEntries.length, 0);
+
+  const proposal = buildLayerContractProposal(
+    layer24Graph([], { importCount: 0, valueImportCount: 0 }),
+    contract({
+      rules: [allowRule({ maxImportCount: 1, maxValueImportCount: 1 })],
+      migrationBudgets: [budget],
+      migrationRetirements: [retirement],
+      migrationConsolidations: [group],
+    }),
+    { currentDate: LAYER_25_SNAPSHOT_DATE }
+  );
+  assert.equal(proposal.reviewRequired, true);
+  assert.deepEqual(proposal.diff.budgetChanges, []);
+  assert.equal(proposal.contract.rules[0].maxImportCount, 1);
+  assert.equal(proposal.contract.rules[0].maxValueImportCount, 1);
+  assert.deepEqual(proposal.contract.migrationConsolidations, [group]);
 });

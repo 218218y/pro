@@ -1,6 +1,8 @@
-import { SLIDING_DOOR_CONSTRUCTION_POLICY } from '../../shared/dimensions/door_system_policy.js';
-import { cmToM } from '../../shared/dimensions/units.js';
-import { WARDROBE_DEFAULTS } from '../../shared/dimensions/wardrobe_defaults.js';
+import {
+  SLIDING_DOOR_CONSTRUCTION_POLICY,
+  WARDROBE_DEFAULTS,
+  cmToM,
+} from '../../shared/dimensions/render_loop_door_motion_dimension_policy.js';
 import { formatIdentityValue, readIdentityValue } from '../../shared/identity_value_shared.js';
 import { readInteger, readNumericInput } from '../../shared/numeric_value_shared.js';
 import type { AppContainer } from '../../../types';

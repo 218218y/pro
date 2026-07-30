@@ -13,21 +13,22 @@ This is a decision-input report, not removal authorization. All 99 public symbol
 - Remaining importer: `esm/native/features/dimensions/index.ts` (wildcard-re-export)
 - Public surface: 89 values / 10 types
 
-## Layer Contract 2.4 ownership
+## Layer Contract 2.5 ownership
 
 - Historical migration entries: 178
-- Active migration entries: 174
-- Retired migration entries: 4
+- Active migration entries: 167
+- Retired migration entries: 11
 - Compatibility budgets: 4
+- Consolidations: 3
 - Historical unique fromFiles: 108
-- Active migration unique fromFiles: 107
+- Active migration unique fromFiles: 104
 - Runtime compatibility owner: `wardrobe-dimension-runtime-public-compatibility`
 - Runtime public surface: `esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts`
 
 | Runtime edge     | Observed | Active migration | Compatibility | Reviewed general | General budget |
 | ---------------- | -------: | ---------------: | ------------: | ---------------: | -------------: |
-| Statements       |       40 |                4 |             4 |               32 |             32 |
-| Value statements |       39 |                4 |             4 |               31 |             31 |
+| Statements       |       36 |                0 |             4 |               32 |             32 |
+| Value statements |       35 |                0 |             4 |               31 |             31 |
 
 | Compatibility budget                              | Retired Entry | Target                                                        | Next review |
 | ------------------------------------------------- | ------------: | ------------------------------------------------------------- | ----------- |

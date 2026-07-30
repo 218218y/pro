@@ -7,7 +7,7 @@ const SOURCE_EXTENSIONS = new Set(['.js', '.mjs', '.ts', '.tsx']);
 const IMPORT_KINDS = Object.freeze(['type', 'value', 'dynamic']);
 const COMPOSITION_FILES = new Set(['app_container.ts', 'main.ts', 'release_main.ts']);
 const RATCHET_MODE = 'decrease-only';
-export const LAYER_CONTRACT_VERSION = '2.4';
+export const LAYER_CONTRACT_VERSION = '2.5';
 export const KNOWN_LAYERS = Object.freeze([
   'adapters',
   'boot',
@@ -550,10 +550,11 @@ export function validateLayerContractSchema(contract) {
     !Array.isArray(contract.dynamicImportAllowlist) ||
     !Array.isArray(contract.migrationBudgets) ||
     !Array.isArray(contract.migrationRetirements) ||
-    !Array.isArray(contract.compatibilityBudgets)
+    !Array.isArray(contract.compatibilityBudgets) ||
+    !Array.isArray(contract.migrationConsolidations)
   ) {
     throw new Error(
-      'wp_layer_contract: rules, facades, dynamicImportAllowlist, migrationBudgets, migrationRetirements, and compatibilityBudgets must be arrays'
+      'wp_layer_contract: rules, facades, dynamicImportAllowlist, migrationBudgets, migrationRetirements, compatibilityBudgets, and migrationConsolidations must be arrays'
     );
   }
   if (
@@ -775,8 +776,227 @@ export function validateLayerContractSchema(contract) {
     compatibilityById.set(id, { entry, reviewedAt, statementKey });
   }
 
+  const consolidationIds = new Set();
+  const consolidationById = new Map();
+  const consolidationEntryOwners = new Map();
+  const consolidationReplacementKeys = new Set();
+  for (const consolidation of contract.migrationConsolidations) {
+    const id = String(consolidation?.id || '').trim();
+    if (!id || consolidationIds.has(id)) {
+      throw new Error(
+        `wp_layer_contract: migration consolidation id must be non-empty and unique (${id || '<empty>'})`
+      );
+    }
+    consolidationIds.add(id);
+
+    const entryNumbers = consolidation?.entryNumbers;
+    if (
+      !Array.isArray(entryNumbers) ||
+      entryNumbers.length === 0 ||
+      entryNumbers.some(entryNumber => !Number.isInteger(entryNumber)) ||
+      new Set(entryNumbers).size !== entryNumbers.length
+    ) {
+      throw new Error(
+        `wp_layer_contract: migration consolidation ${id}.entryNumbers must be a non-empty unique integer list`
+      );
+    }
+    const from = String(consolidation?.from || '');
+    const to = String(consolidation?.to || '');
+    const fromFile = toPosix(String(consolidation?.fromFile || ''));
+    const rule = rules.get(edgeKey(from, to));
+    if (
+      !known.has(from) ||
+      !known.has(to) ||
+      from === to ||
+      layerOfRelativeFile(fromFile) !== from ||
+      !rule ||
+      rule.decision !== 'allow'
+    ) {
+      throw new Error(`wp_layer_contract: migration consolidation ${id} requires one existing allowed edge`);
+    }
+    for (const field of ['owner', 'reason']) {
+      if (typeof consolidation?.[field] !== 'string' || !consolidation[field].trim()) {
+        throw new Error(`wp_layer_contract: migration consolidation ${id} requires ${field}`);
+      }
+    }
+    const retiredAt = parseIsoDateOnly(consolidation.retiredAt, `migration consolidation ${id}.retiredAt`);
+
+    const budgets = entryNumbers.map(entryNumber => {
+      if (entryNumber < 1 || entryNumber > contract.migrationBudgets.length) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id} entryNumber ${entryNumber} does not exist`
+        );
+      }
+      const previousOwner = consolidationEntryOwners.get(entryNumber);
+      if (previousOwner) {
+        throw new Error(
+          `wp_layer_contract: migration Entry ${entryNumber} belongs to multiple consolidations (${previousOwner}, ${id})`
+        );
+      }
+      consolidationEntryOwners.set(entryNumber, id);
+      return contract.migrationBudgets[entryNumber - 1];
+    });
+    for (const [index, budget] of budgets.entries()) {
+      const entryNumber = entryNumbers[index];
+      if (budget.from !== from || budget.to !== to) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id} Entry ${entryNumber} must use edge ${edgeKey(from, to)}`
+        );
+      }
+      if (toPosix(String(budget.fromFile)) !== fromFile) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id} Entry ${entryNumber} must use fromFile ${fromFile}`
+        );
+      }
+      if (retiredAt < migrationBudgetReviewedAt[entryNumber - 1]) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id}.retiredAt must not be earlier than Entry ${entryNumber} reviewedAt`
+        );
+      }
+    }
+
+    const replacementStatement = consolidation?.replacementStatement;
+    if (
+      !replacementStatement ||
+      typeof replacementStatement !== 'object' ||
+      Array.isArray(replacementStatement)
+    ) {
+      throw new Error(`wp_layer_contract: migration consolidation ${id} requires replacementStatement`);
+    }
+    const replacementSpec = validateMigrationImportSpec(
+      { fromFile, replacementStatement },
+      'replacementStatement',
+      to
+    );
+    const replacementSymbols = normalizeSymbolList(
+      replacementStatement.importedSymbols,
+      `migration consolidation ${id}.replacementStatement.importedSymbols`
+    );
+    if (replacementSymbols.includes('*') && replacementStatement.allowWildcard !== true) {
+      throw new Error(
+        `wp_layer_contract: migration consolidation ${id} replacement wildcard requires allowWildcard: true`
+      );
+    }
+    const replacementKey = exactStatementSpecKey(from, to, fromFile, {
+      ...replacementStatement,
+      toFile: replacementSpec.toFile,
+      importedSymbols: replacementSymbols,
+    });
+    if (consolidationReplacementKeys.has(replacementKey)) {
+      throw new Error(
+        `wp_layer_contract: duplicate migration consolidation replacement ownership for ${replacementKey}`
+      );
+    }
+    consolidationReplacementKeys.add(replacementKey);
+
+    if (!Array.isArray(consolidation.absorbedStatements) || consolidation.absorbedStatements.length === 0) {
+      throw new Error(
+        `wp_layer_contract: migration consolidation ${id}.absorbedStatements must be a non-empty array`
+      );
+    }
+    const historicalStatements = new Map();
+    for (const budget of budgets) {
+      for (const field of ['addedImport', 'companionImport']) {
+        const spec = budget[field];
+        historicalStatements.set(exactStatementSpecKey(from, to, fromFile, spec), spec);
+      }
+    }
+    const absorbedKeys = new Set();
+    const normalizedAbsorbedStatements = [];
+    for (const [index, absorbedStatement] of consolidation.absorbedStatements.entries()) {
+      const absorbedFromFile = toPosix(String(absorbedStatement?.fromFile || ''));
+      if (absorbedFromFile !== fromFile) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id}.absorbedStatements[${index}].fromFile must equal ${fromFile}`
+        );
+      }
+      const absorbedSpec = validateMigrationImportSpec(
+        { fromFile: absorbedFromFile, absorbedStatement },
+        'absorbedStatement',
+        to
+      );
+      const absorbedSymbols = normalizeSymbolList(
+        absorbedStatement.importedSymbols,
+        `migration consolidation ${id}.absorbedStatements[${index}].importedSymbols`
+      );
+      if (absorbedSymbols.includes('*') && absorbedStatement.allowWildcard !== true) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id} absorbed wildcard requires allowWildcard: true`
+        );
+      }
+      const absorbedKey = exactStatementSpecKey(from, to, absorbedFromFile, {
+        ...absorbedStatement,
+        toFile: absorbedSpec.toFile,
+        importedSymbols: absorbedSymbols,
+      });
+      if (absorbedKeys.has(absorbedKey)) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id} contains duplicate absorbed statement ${absorbedKey}`
+        );
+      }
+      if (!historicalStatements.has(absorbedKey)) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id} absorbed statement is not historical group provenance (${absorbedKey})`
+        );
+      }
+      absorbedKeys.add(absorbedKey);
+      normalizedAbsorbedStatements.push({
+        ...absorbedStatement,
+        fromFile: absorbedFromFile,
+        toFile: absorbedSpec.toFile,
+        importedSymbols: absorbedSymbols,
+      });
+    }
+    for (const historicalKey of historicalStatements.keys()) {
+      if (!absorbedKeys.has(historicalKey)) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id} must absorb every unique added and companion statement (${historicalKey})`
+        );
+      }
+    }
+
+    if (!Array.isArray(consolidation.evidenceContracts) || consolidation.evidenceContracts.length === 0) {
+      throw new Error(
+        `wp_layer_contract: migration consolidation ${id}.evidenceContracts must be a non-empty array`
+      );
+    }
+    const evidenceContracts = consolidation.evidenceContracts.map(value => toPosix(String(value || '')));
+    if (
+      evidenceContracts.some(value => !value || !value.startsWith('tests/')) ||
+      new Set(evidenceContracts).size !== evidenceContracts.length
+    ) {
+      throw new Error(
+        `wp_layer_contract: migration consolidation ${id}.evidenceContracts must contain unique tests/ paths`
+      );
+    }
+    for (const evidenceContract of evidenceContracts) {
+      if (!fs.existsSync(path.resolve(process.cwd(), evidenceContract))) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id} evidence contract does not exist: ${evidenceContract}`
+        );
+      }
+    }
+
+    consolidationById.set(id, {
+      consolidation,
+      entryNumbers: [...entryNumbers],
+      from,
+      to,
+      fromFile,
+      retiredAt,
+      replacementKey,
+      replacementStatement: {
+        ...replacementStatement,
+        toFile: replacementSpec.toFile,
+        importedSymbols: replacementSymbols,
+      },
+      absorbedStatements: normalizedAbsorbedStatements,
+      evidenceContracts,
+    });
+  }
+
   const retirementEntries = new Set();
-  const consolidationStatementKeys = new Set();
+  const retirementByEntry = new Map();
   const retirementModes = new Set(['statement-removed', 'statement-consolidated', 'ownership-transferred']);
   for (const retirement of contract.migrationRetirements) {
     const entryNumber = retirement?.entryNumber;
@@ -787,6 +1007,7 @@ export function validateLayerContractSchema(contract) {
       throw new Error(`wp_layer_contract: duplicate migration retirement for Entry ${entryNumber}`);
     }
     retirementEntries.add(entryNumber);
+    retirementByEntry.set(entryNumber, retirement);
     const retiredAt = parseIsoDateOnly(
       retirement.retiredAt,
       `migration retirement Entry ${entryNumber}.retiredAt`
@@ -804,24 +1025,26 @@ export function validateLayerContractSchema(contract) {
       throw new Error(`wp_layer_contract: migration retirement Entry ${entryNumber} requires reason`);
     }
 
-    const replacementCompatibilityBudgetId = retirement.replacementCompatibilityBudgetId;
-    const hasReplacementStatement = Object.hasOwn(retirement, 'replacementStatement');
+    const hasCompatibilityId = Object.hasOwn(retirement, 'replacementCompatibilityBudgetId');
+    const hasConsolidationId = Object.hasOwn(retirement, 'replacementConsolidationId');
+    const hasInlineReplacement = Object.hasOwn(retirement, 'replacementStatement');
     if (retirement.mode === 'ownership-transferred') {
+      const compatibilityId = retirement.replacementCompatibilityBudgetId;
       if (
-        typeof replacementCompatibilityBudgetId !== 'string' ||
-        !replacementCompatibilityBudgetId.trim() ||
-        !compatibilityIds.has(replacementCompatibilityBudgetId)
+        typeof compatibilityId !== 'string' ||
+        !compatibilityId.trim() ||
+        !compatibilityIds.has(compatibilityId)
       ) {
         throw new Error(
           `wp_layer_contract: migration retirement Entry ${entryNumber} ownership-transferred requires an existing replacementCompatibilityBudgetId`
         );
       }
-      if (hasReplacementStatement) {
+      if (hasConsolidationId || hasInlineReplacement) {
         throw new Error(
-          `wp_layer_contract: migration retirement Entry ${entryNumber} ownership-transferred does not allow replacementStatement`
+          `wp_layer_contract: migration retirement Entry ${entryNumber} ownership-transferred does not allow replacementConsolidationId or replacementStatement`
         );
       }
-      const compatibility = compatibilityById.get(replacementCompatibilityBudgetId);
+      const compatibility = compatibilityById.get(compatibilityId);
       if (compatibility.reviewedAt > retiredAt) {
         throw new Error(
           `wp_layer_contract: migration retirement Entry ${entryNumber} ownership-transferred requires compatibility reviewedAt on or before retiredAt`
@@ -830,66 +1053,52 @@ export function validateLayerContractSchema(contract) {
       continue;
     }
 
-    if (replacementCompatibilityBudgetId !== null) {
-      throw new Error(
-        `wp_layer_contract: migration retirement Entry ${entryNumber} ${retirement.mode} requires replacementCompatibilityBudgetId null`
-      );
-    }
     if (retirement.mode === 'statement-removed') {
-      if (!hasReplacementStatement || retirement.replacementStatement !== null) {
+      if (hasCompatibilityId || hasConsolidationId || hasInlineReplacement) {
         throw new Error(
-          `wp_layer_contract: migration retirement Entry ${entryNumber} statement-removed requires replacementStatement null`
+          `wp_layer_contract: migration retirement Entry ${entryNumber} statement-removed does not allow replacement ownership fields`
         );
       }
       continue;
     }
 
-    const replacementStatement = retirement.replacementStatement;
-    if (
-      !replacementStatement ||
-      typeof replacementStatement !== 'object' ||
-      Array.isArray(replacementStatement)
-    ) {
+    if (hasCompatibilityId || hasInlineReplacement) {
       throw new Error(
-        `wp_layer_contract: migration retirement Entry ${entryNumber} statement-consolidated requires replacementStatement`
+        `wp_layer_contract: migration retirement Entry ${entryNumber} statement-consolidated does not allow replacementCompatibilityBudgetId or inline replacementStatement; use replacementConsolidationId`
       );
     }
-    const replacementFromFile = toPosix(String(replacementStatement.fromFile || ''));
-    if (layerOfRelativeFile(replacementFromFile) !== migrationBudget.from) {
+    const consolidationId = String(retirement.replacementConsolidationId || '').trim();
+    if (!hasConsolidationId || !consolidationId || !consolidationById.has(consolidationId)) {
       throw new Error(
-        `wp_layer_contract: migration retirement Entry ${entryNumber}.replacementStatement.fromFile must belong to ${migrationBudget.from}`
+        `wp_layer_contract: migration retirement Entry ${entryNumber} statement-consolidated requires an existing replacementConsolidationId`
       );
     }
-    const replacementSpec = validateMigrationImportSpec(
-      { fromFile: replacementFromFile, replacementStatement },
-      'replacementStatement',
-      migrationBudget.to
-    );
-    const replacementSymbols = normalizeSymbolList(
-      replacementStatement.importedSymbols,
-      `migration retirement Entry ${entryNumber}.replacementStatement.importedSymbols`
-    );
-    if (replacementSymbols.includes('*') && replacementStatement.allowWildcard !== true) {
+    const consolidation = consolidationById.get(consolidationId);
+    if (!consolidation.entryNumbers.includes(entryNumber)) {
       throw new Error(
-        `wp_layer_contract: migration retirement Entry ${entryNumber} replacement wildcard requires allowWildcard: true`
+        `wp_layer_contract: migration retirement Entry ${entryNumber} points to consolidation ${consolidationId} that does not include it`
       );
     }
-    const replacementKey = exactStatementSpecKey(
-      migrationBudget.from,
-      migrationBudget.to,
-      replacementFromFile,
-      {
-        ...replacementStatement,
-        toFile: replacementSpec.toFile,
-        importedSymbols: replacementSymbols,
+  }
+
+  for (const [id, consolidation] of consolidationById) {
+    for (const entryNumber of consolidation.entryNumbers) {
+      const retirement = retirementByEntry.get(entryNumber);
+      if (!retirement) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id} Entry ${entryNumber} is missing a matching retirement`
+        );
       }
-    );
-    if (consolidationStatementKeys.has(replacementKey)) {
-      throw new Error(
-        `wp_layer_contract: duplicate statement-consolidated replacement ownership for ${replacementKey}`
-      );
+      if (
+        retirement.mode !== 'statement-consolidated' ||
+        retirement.replacementConsolidationId !== id ||
+        retirement.retiredAt !== consolidation.consolidation.retiredAt
+      ) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id} Entry ${entryNumber} requires a matching statement-consolidated retirement with the same retiredAt`
+        );
+      }
     }
-    consolidationStatementKeys.add(replacementKey);
   }
   return contract;
 }
@@ -1135,14 +1344,137 @@ function evaluateCompatibilityBudgets(graph, contract, { currentDateMs, currentD
   return { failures, approvedStatements, statuses };
 }
 
-function retirementReplacementKey(budget, retirement) {
-  if (retirement?.mode !== 'statement-consolidated') return null;
-  return exactStatementSpecKey(
-    budget.from,
-    budget.to,
-    retirement.replacementStatement.fromFile,
-    retirement.replacementStatement
-  );
+function evaluateMigrationConsolidations(
+  graph,
+  contract,
+  { currentDateMs, currentDate, compatibilityStatementKeys }
+) {
+  const statuses = [];
+  const byId = new Map();
+  for (const consolidation of contract.migrationConsolidations) {
+    const fromFile = toPosix(String(consolidation.fromFile));
+    const retirementEffective =
+      currentDateMs >=
+      parseIsoDateOnly(consolidation.retiredAt, `migration consolidation ${consolidation.id}.retiredAt`);
+    const groupFailures = [];
+    if (!retirementEffective) {
+      groupFailures.push({
+        kind: 'migration-consolidation-not-effective-yet',
+        consolidationId: consolidation.id,
+        entryNumbers: [...consolidation.entryNumbers],
+        retiredAt: consolidation.retiredAt,
+        currentDate,
+        fromFile,
+      });
+    }
+
+    let absorbedStatementsValid = true;
+    for (const absorbedStatement of consolidation.absorbedStatements) {
+      const matches = matchingMigrationStatements(graph, fromFile, absorbedStatement);
+      if (matches.length === 0) continue;
+      absorbedStatementsValid = false;
+      groupFailures.push({
+        kind: 'migration-consolidation-absorbed-statement-still-present',
+        consolidationId: consolidation.id,
+        entryNumbers: [...consolidation.entryNumbers],
+        from: consolidation.from,
+        to: consolidation.to,
+        fromFile,
+        toFile: absorbedStatement.toFile,
+        importKind: absorbedStatement.kind,
+        syntax: absorbedStatement.syntax,
+        importedSymbols: [...absorbedStatement.importedSymbols],
+        current: matches.length,
+        expected: 0,
+      });
+    }
+
+    const replacementResult = evaluateExactStatement({
+      graph,
+      from: consolidation.from,
+      to: consolidation.to,
+      fromFile,
+      spec: consolidation.replacementStatement,
+      label: 'migration-consolidation-replacement',
+      allowWildcard: consolidation.replacementStatement.allowWildcard === true,
+    });
+    const replacementFailures = replacementResult.failures.map(failure => ({
+      ...failure,
+      consolidationId: consolidation.id,
+      entryNumbers: [...consolidation.entryNumbers],
+    }));
+    groupFailures.push(...replacementFailures);
+    const replacementStatementValid = replacementFailures.length === 0;
+
+    const missingEvidenceContracts = consolidation.evidenceContracts.filter(
+      evidenceContract => !fs.existsSync(path.resolve(process.cwd(), evidenceContract))
+    );
+    const evidenceContractsValid = missingEvidenceContracts.length === 0;
+    if (!evidenceContractsValid) {
+      groupFailures.push({
+        kind: 'migration-consolidation-evidence-contract-missing',
+        consolidationId: consolidation.id,
+        missingEvidenceContracts,
+      });
+    }
+
+    const replacementKey = exactStatementSpecKey(
+      consolidation.from,
+      consolidation.to,
+      fromFile,
+      consolidation.replacementStatement
+    );
+    const ownershipConflicts = [];
+    if (compatibilityStatementKeys.has(replacementKey)) {
+      const conflict = {
+        kind: 'migration-consolidation-compatibility-ownership-conflict',
+        consolidationId: consolidation.id,
+        fromFile,
+        toFile: consolidation.replacementStatement.toFile,
+      };
+      ownershipConflicts.push(conflict);
+      groupFailures.push(conflict);
+    }
+
+    const status = {
+      consolidationId: consolidation.id,
+      entryNumbers: [...consolidation.entryNumbers],
+      from: consolidation.from,
+      to: consolidation.to,
+      fromFile,
+      retiredAt: consolidation.retiredAt,
+      currentDate,
+      retirementEffective,
+      absorbedStatementsValid,
+      replacementStatementValid,
+      evidenceContractsValid,
+      ownershipConflicts,
+      active: false,
+      valid: false,
+      replacementStatement: {
+        fromFile,
+        toFile: consolidation.replacementStatement.toFile,
+        kind: consolidation.replacementStatement.kind,
+        syntax: consolidation.replacementStatement.syntax,
+        importedSymbols: [...consolidation.replacementStatement.importedSymbols],
+      },
+      absorbedStatements: consolidation.absorbedStatements.map(statement => ({
+        fromFile: toPosix(String(statement.fromFile)),
+        toFile: statement.toFile,
+        kind: statement.kind,
+        syntax: statement.syntax,
+        importedSymbols: [...statement.importedSymbols],
+      })),
+      evidenceContracts: [...consolidation.evidenceContracts],
+      failures: groupFailures,
+      replacementKey,
+    };
+    status.valid = groupFailures.length === 0;
+    status.active = status.valid;
+    statuses.push(status);
+    byId.set(consolidation.id, status);
+  }
+  return { statuses, byId };
 }
 
 function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
@@ -1158,10 +1490,15 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
     currentDate: currentDateLabel,
   });
   const compatibilityStatementKeys = new Set(
-    contract.compatibilityBudgets
-      .filter((_, index) => compatibilityEvaluation.statuses[index]?.ownershipEffective)
-      .map(budget => exactStatementSpecKey(budget.from, budget.to, budget.fromFile, budget.statement))
+    contract.compatibilityBudgets.map(budget =>
+      exactStatementSpecKey(budget.from, budget.to, budget.fromFile, budget.statement)
+    )
   );
+  const consolidationEvaluation = evaluateMigrationConsolidations(graph, contract, {
+    currentDateMs,
+    currentDate: currentDateLabel,
+    compatibilityStatementKeys,
+  });
   const records = [];
 
   for (const [index, budget] of contract.migrationBudgets.entries()) {
@@ -1186,14 +1523,18 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
     }
 
     let retirementEffective = false;
-    let replacementStatementStatus = null;
+    let retirementValid = false;
+    let consolidationStatus = null;
     if (retirement) {
       const retiredAtMs = parseIsoDateOnly(
         retirement.retiredAt,
         `migration retirement Entry ${entryNumber}.retiredAt`
       );
       retirementEffective = currentDateMs >= retiredAtMs;
-      if (!retirementEffective) {
+      if (retirement.mode === 'statement-consolidated') {
+        consolidationStatus = consolidationEvaluation.byId.get(retirement.replacementConsolidationId) || null;
+        retirementEffective = consolidationStatus?.retirementEffective === true;
+      } else if (!retirementEffective) {
         retirementFailures.push({
           kind: 'migration-retirement-not-effective-yet',
           entryNumber,
@@ -1219,14 +1560,11 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
             compatibilityBudgetId: retirement.replacementCompatibilityBudgetId,
           });
         }
-      } else {
+      } else if (retirement.mode === 'statement-removed') {
         const addedMatches = matchingMigrationStatements(graph, fromFile, budget.addedImport);
         if (addedMatches.length !== 0) {
           retirementFailures.push({
-            kind:
-              retirement.mode === 'statement-removed'
-                ? 'migration-retirement-statement-still-present'
-                : 'migration-retirement-consolidated-statement-still-present',
+            kind: 'migration-retirement-statement-still-present',
             entryNumber,
             fromFile,
             toFile: budget.addedImport.toFile,
@@ -1234,32 +1572,11 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
             expected: 0,
           });
         }
-        if (retirement.mode === 'statement-consolidated') {
-          const replacementFromFile = toPosix(String(retirement.replacementStatement.fromFile));
-          const replacementResult = evaluateExactStatement({
-            graph,
-            from: budget.from,
-            to: budget.to,
-            fromFile: replacementFromFile,
-            spec: retirement.replacementStatement,
-            label: 'migration-retirement-consolidation',
-            allowWildcard: retirement.replacementStatement.allowWildcard === true,
-          });
-          const replacementFailures = replacementResult.failures.map(failure => ({
-            ...failure,
-            entryNumber,
-          }));
-          retirementFailures.push(...replacementFailures);
-          replacementStatementStatus = {
-            fromFile: replacementFromFile,
-            toFile: retirement.replacementStatement.toFile,
-            kind: retirement.replacementStatement.kind,
-            syntax: retirement.replacementStatement.syntax,
-            importedSymbols: [...retirement.replacementStatement.importedSymbols],
-            statementValid: replacementFailures.length === 0,
-          };
-        }
       }
+      retirementValid =
+        retirement.mode === 'statement-consolidated'
+          ? consolidationStatus?.valid === true && baseFailures.length === 0
+          : retirementEffective && retirementFailures.length === 0 && baseFailures.length === 0;
     }
 
     records.push({
@@ -1270,55 +1587,60 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
       baseFailures,
       retirementFailures,
       retirementEffective,
-      replacementStatementStatus,
-      retirementValid: Boolean(retirement) && retirementEffective && retirementFailures.length === 0,
+      retirementValid,
+      consolidationStatus,
     });
   }
 
-  // Consolidation ownership is resolved against the final active-debt set. Invalidating one
-  // consolidation can make its historical statement an active owner for another, so converge.
+  for (const groupStatus of consolidationEvaluation.statuses) {
+    if (!groupStatus.valid) continue;
+    const groupRecords = groupStatus.entryNumbers.map(entryNumber => records[entryNumber - 1]);
+    if (groupRecords.some(record => record.baseFailures.length > 0)) {
+      groupStatus.valid = false;
+      groupStatus.active = false;
+      for (const record of groupRecords) record.retirementValid = false;
+    }
+  }
+
+  // Resolve consolidation ownership against the final active-debt set. Invalidating one group can make
+  // its historical Entries active owners for another group, so converge without partial retirement.
   let ownershipChanged = true;
   while (ownershipChanged) {
     ownershipChanged = false;
     const activeMigrationOwners = new Map();
     for (const record of records) {
       if (record.retirementValid) continue;
-      activeMigrationOwners.set(
-        exactStatementSpecKey(
-          record.budget.from,
-          record.budget.to,
-          record.fromFile,
-          record.budget.addedImport
-        ),
-        record.entryNumber
+      const key = exactStatementSpecKey(
+        record.budget.from,
+        record.budget.to,
+        record.fromFile,
+        record.budget.addedImport
       );
+      const owners = activeMigrationOwners.get(key) || [];
+      owners.push(record.entryNumber);
+      activeMigrationOwners.set(key, owners);
     }
-    for (const record of records) {
-      if (!record.retirementValid || record.retirement?.mode !== 'statement-consolidated') continue;
-      const replacementKey = retirementReplacementKey(record.budget, record.retirement);
-      if (compatibilityStatementKeys.has(replacementKey)) {
-        record.retirementFailures.push({
-          kind: 'migration-retirement-consolidation-compatibility-ownership-conflict',
-          entryNumber: record.entryNumber,
-          fromFile: record.retirement.replacementStatement.fromFile,
-          toFile: record.retirement.replacementStatement.toFile,
-        });
-        record.retirementValid = false;
-        ownershipChanged = true;
-        continue;
+    for (const groupStatus of consolidationEvaluation.statuses) {
+      if (!groupStatus.valid) continue;
+      const activeOwners = (activeMigrationOwners.get(groupStatus.replacementKey) || []).filter(
+        entryNumber => !groupStatus.entryNumbers.includes(entryNumber)
+      );
+      if (activeOwners.length === 0) continue;
+      const conflict = {
+        kind: 'migration-consolidation-active-migration-ownership-conflict',
+        consolidationId: groupStatus.consolidationId,
+        activeMigrationEntryNumbers: activeOwners,
+        fromFile: groupStatus.fromFile,
+        toFile: groupStatus.replacementStatement.toFile,
+      };
+      groupStatus.ownershipConflicts.push(conflict);
+      groupStatus.failures.push(conflict);
+      groupStatus.valid = false;
+      groupStatus.active = false;
+      for (const entryNumber of groupStatus.entryNumbers) {
+        records[entryNumber - 1].retirementValid = false;
       }
-      const activeOwner = activeMigrationOwners.get(replacementKey);
-      if (activeOwner && activeOwner !== record.entryNumber) {
-        record.retirementFailures.push({
-          kind: 'migration-retirement-consolidation-active-migration-ownership-conflict',
-          entryNumber: record.entryNumber,
-          activeMigrationEntryNumber: activeOwner,
-          fromFile: record.retirement.replacementStatement.fromFile,
-          toFile: record.retirement.replacementStatement.toFile,
-        });
-        record.retirementValid = false;
-        ownershipChanged = true;
-      }
+      ownershipChanged = true;
     }
   }
 
@@ -1340,8 +1662,9 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
         retired: true,
         retirementEffective: true,
         retirementMode: retirement.mode,
-        replacementCompatibilityBudgetId: retirement.replacementCompatibilityBudgetId,
-        replacementStatement: record.replacementStatementStatus,
+        replacementCompatibilityBudgetId: retirement.replacementCompatibilityBudgetId ?? null,
+        replacementConsolidationId: retirement.replacementConsolidationId ?? null,
+        statementValid: true,
         valid: entryFailures.length === 0,
       });
       continue;
@@ -1445,6 +1768,7 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
     if (statementBudgetValid) {
       addApprovedStatement(approvedStatements, budget.from, budget.to, addedMatches[0]);
     }
+    const groupFailures = record.consolidationStatus?.failures || [];
     const entryFailures = [...retirementFailures, ...activeBudgetFailures];
     failures.push(...entryFailures);
     statuses.push({
@@ -1459,12 +1783,16 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
       retirementEffective: retirement ? record.retirementEffective : null,
       retirementMode: retirement?.mode || null,
       replacementCompatibilityBudgetId: retirement?.replacementCompatibilityBudgetId ?? null,
-      replacementStatement: record.replacementStatementStatus,
+      replacementConsolidationId: retirement?.replacementConsolidationId ?? null,
       statementValid: statementBudgetValid,
-      valid: entryFailures.length === 0,
+      consolidationValid: record.consolidationStatus ? record.consolidationStatus.valid : null,
+      valid: entryFailures.length === 0 && groupFailures.length === 0,
     });
   }
 
+  for (const groupStatus of consolidationEvaluation.statuses) {
+    failures.push(...groupStatus.failures);
+  }
   failures.push(...compatibilityEvaluation.failures);
   for (const [index, budget] of contract.compatibilityBudgets.entries()) {
     if (!compatibilityEvaluation.statuses[index]?.ownershipEffective) continue;
@@ -1489,6 +1817,9 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
     compatibilityApprovedStatements: compatibilityEvaluation.approvedStatements,
     statuses,
     compatibilityStatuses: compatibilityEvaluation.statuses,
+    consolidationStatuses: consolidationEvaluation.statuses.map(
+      ({ replacementKey, failures: _, ...status }) => status
+    ),
   };
 }
 
@@ -1633,6 +1964,7 @@ export function evaluateLayerContract(graph, contract, options = {}) {
     activeMigrationEntries: migrationEvaluation.statuses.filter(entry => entry.active),
     retiredMigrationEntries: migrationEvaluation.statuses.filter(entry => entry.retired),
     compatibilityBudgets: migrationEvaluation.compatibilityStatuses,
+    migrationConsolidations: migrationEvaluation.consolidationStatuses,
   };
 }
 
@@ -1668,6 +2000,15 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
       .filter(status => !status.active)
       .map(status => edgeKey(status.from, status.to))
   );
+  const consolidationBlockedProposalEdges = new Set(
+    migrationEvaluation.consolidationStatuses
+      .filter(status => !status.valid)
+      .map(status => edgeKey(status.from, status.to))
+  );
+  const reviewBlockedProposalEdges = new Set([
+    ...compatibilityBlockedProposalEdges,
+    ...consolidationBlockedProposalEdges,
+  ]);
   const reviewedEdges = graph.edges.map(edge =>
     edgeWithApprovedStatementsExcluded(
       edge,
@@ -1689,7 +2030,7 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
   const nextRules = reviewedEdges.map(edge => {
     const key = edgeKey(edge.from, edge.to);
     const previousRule = previousRules.get(key);
-    if (previousRule && compatibilityBlockedProposalEdges.has(key)) {
+    if (previousRule && reviewBlockedProposalEdges.has(key)) {
       return JSON.parse(JSON.stringify(previousRule));
     }
     return ruleForEdge(edge, previousRule);
@@ -1700,8 +2041,13 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
       rule.decision === 'allow' && facadeByEdge.has(key) && !observedEdgeKeys.has(key);
     const requiresCompatibilityReview =
       rule.decision === 'allow' && compatibilityBlockedProposalEdges.has(key);
+    const requiresConsolidationReview =
+      rule.decision === 'allow' && consolidationBlockedProposalEdges.has(key);
     if (
-      (rule.decision === 'deny' || requiresFacadeDecision || requiresCompatibilityReview) &&
+      (rule.decision === 'deny' ||
+        requiresFacadeDecision ||
+        requiresCompatibilityReview ||
+        requiresConsolidationReview) &&
       !nextRules.some(next => edgeKey(next.from, next.to) === key)
     ) {
       nextRules.push(JSON.parse(JSON.stringify(rule)));
@@ -1757,6 +2103,7 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
     migrationBudgets: JSON.parse(JSON.stringify(currentContract.migrationBudgets)),
     migrationRetirements: JSON.parse(JSON.stringify(currentContract.migrationRetirements)),
     compatibilityBudgets: JSON.parse(JSON.stringify(currentContract.compatibilityBudgets)),
+    migrationConsolidations: JSON.parse(JSON.stringify(currentContract.migrationConsolidations)),
   };
   validateLayerContractSchema(proposedContract);
 
@@ -1780,6 +2127,7 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
       activeMigrationEntries: migrationEvaluation.statuses.filter(entry => entry.active).length,
       retiredMigrationEntries: migrationEvaluation.statuses.filter(entry => entry.retired).length,
       compatibilityBudgets: migrationEvaluation.compatibilityStatuses.length,
+      migrationConsolidations: migrationEvaluation.consolidationStatuses.length,
     },
   };
 }

@@ -205,28 +205,29 @@ function inspectDecisionReportBase(report) {
     };
   });
   if (
-    layerBaseline.version !== '2.4' ||
-    report.layerContractOwnership?.schemaVersion !== '2.4' ||
+    layerBaseline.version !== '2.5' ||
+    report.layerContractOwnership?.schemaVersion !== '2.5' ||
     report.layerContractOwnership?.historicalMigrationEntries !== 178 ||
-    report.layerContractOwnership?.activeMigrationEntries !== 174 ||
-    report.layerContractOwnership?.retiredMigrationEntries !== 4 ||
+    report.layerContractOwnership?.activeMigrationEntries !== 167 ||
+    report.layerContractOwnership?.retiredMigrationEntries !== 11 ||
     report.layerContractOwnership?.compatibilityBudgets !== 4 ||
+    report.layerContractOwnership?.consolidations !== 3 ||
     report.layerContractOwnership?.historicalUniqueFromFiles !== 108 ||
-    report.layerContractOwnership?.activeUniqueFromFiles !== 107 ||
+    report.layerContractOwnership?.activeUniqueFromFiles !== 104 ||
     report.layerContractOwnership?.runtime?.owner !== runtimeCompatibilityOwner ||
     report.layerContractOwnership?.runtime?.publicSurface !== runtimePublicSurface ||
     JSON.stringify(report.layerContractOwnership?.runtime?.edge) !==
       JSON.stringify({
-        observedStatements: 40,
-        activeMigrationStatements: 4,
+        observedStatements: 36,
+        activeMigrationStatements: 0,
         compatibilityStatements: 4,
         reviewedGeneralStatements: 32,
         generalBudget: 32,
       }) ||
     JSON.stringify(report.layerContractOwnership?.runtime?.valueEdge) !==
       JSON.stringify({
-        observedValueStatements: 39,
-        activeMigrationValueStatements: 4,
+        observedValueStatements: 35,
+        activeMigrationValueStatements: 0,
         compatibilityValueStatements: 4,
         reviewedGeneralValueStatements: 31,
         generalValueBudget: 31,

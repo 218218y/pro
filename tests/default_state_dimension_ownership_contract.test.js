@@ -9,8 +9,24 @@ import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mj
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const consumerRel = 'esm/native/runtime/default_state.ts';
+const ownerRel = 'esm/shared/dimensions/runtime_default_state_dimension_policy.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
+
+const replacementSymbols = Object.freeze([
+  'BASE_LEG_DIMENSIONS',
+  'BASE_PLINTH_POLICY',
+  'CHEST_MODE_ACTIVE_DEFAULTS_POLICY',
+  'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
+  'DEFAULT_CHEST_DRAWERS_COUNT',
+  'DEFAULT_CORNER_DOORS',
+  'DEFAULT_CORNER_WIDTH',
+  'DEFAULT_HEIGHT',
+  'DEFAULT_HINGED_DOORS',
+  'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
+  'DEFAULT_WIDTH',
+  'HINGED_DEFAULT_DEPTH',
+]);
 
 const companionImport = Object.freeze({
   toFile: 'esm/shared/dimensions/wardrobe_defaults.ts',
@@ -116,58 +132,32 @@ function stableJson(value) {
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
-test('Default State imports exactly five focused owner statements without aliases or facade access', () => {
+function compactDependencies(analysis) {
+  return analysis.imports.map(({ specifier, kind, syntax, importedSymbols }) => ({
+    specifier,
+    kind,
+    syntax,
+    importedSymbols,
+  }));
+}
+
+test('Default State consumes one focused composition statement without aliases or facade access', () => {
   const source = read(consumerRel);
   const analysis = analyzeModuleDependencies(path.join(root, consumerRel), source);
   const focusedImports = analysis.imports.filter(dependency =>
     dependency.specifier.startsWith('../../shared/dimensions/')
   );
 
-  assert.deepEqual(
-    focusedImports.map(({ specifier, kind, syntax, importedSymbols }) => ({
-      specifier,
-      kind,
-      syntax,
-      importedSymbols,
-    })),
-    [
-      {
-        specifier: '../../shared/dimensions/base_leg_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['BASE_LEG_DIMENSIONS'],
-      },
-      {
-        specifier: '../../shared/dimensions/base_plinth_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['BASE_PLINTH_POLICY'],
-      },
-      {
-        specifier: '../../shared/dimensions/chest_mode_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['CHEST_MODE_ACTIVE_DEFAULTS_POLICY', 'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY'],
-      },
-      {
-        specifier: '../../shared/dimensions/stack_split_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT'],
-      },
-      {
-        specifier: '../../shared/dimensions/wardrobe_defaults.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: companionImport.importedSymbols,
-      },
-    ]
-  );
-  assert.equal(focusedImports.length, 5);
+  assert.deepEqual(compactDependencies({ imports: focusedImports }), [
+    {
+      specifier: '../../shared/dimensions/runtime_default_state_dimension_policy.js',
+      kind: 'value',
+      syntax: 'static-import',
+      importedSymbols: replacementSymbols,
+    },
+  ]);
   assert.equal(
-    focusedImports.every(dependency =>
-      dependency.bindings.every(binding => binding.importedName === binding.localName)
-    ),
+    focusedImports[0].bindings.every(binding => binding.importedName === binding.localName),
     true
   );
   assert.deepEqual(analysis.unresolvedDynamicImports, []);
@@ -175,13 +165,54 @@ test('Default State imports exactly five focused owner statements without aliase
   assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared/u);
   assert.doesNotMatch(source, /import\s+\*\s+as|import\s*\(|export\s+(?:type\s+)?(?:\*|\{)/u);
   assert.doesNotMatch(source, /\b(?:CARCASS_BASE_DIMENSIONS|CHEST_MODE_DIMENSIONS)\b/u);
-  assert.doesNotMatch(
-    source,
-    /const\s+[A-Za-z_$][\w$]*\s*=\s*(?:BASE_LEG_DIMENSIONS|BASE_PLINTH_POLICY|CHEST_MODE_ACTIVE_DEFAULTS_POLICY|CHEST_MODE_COMMODE_CONSTRAINTS_POLICY)\s*;/u
-  );
 });
 
-test('Default State maps every dimension default directly to its focused owner', () => {
+test('Default State composition owner re-exports only the five canonical dimension statements', () => {
+  const source = read(ownerRel);
+  const analysis = analyzeModuleDependencies(path.join(root, ownerRel), source);
+
+  assert.deepEqual(compactDependencies(analysis), [
+    {
+      specifier: './base_leg_policy.js',
+      kind: 'value',
+      syntax: 'static-re-export',
+      importedSymbols: ['BASE_LEG_DIMENSIONS'],
+    },
+    {
+      specifier: './base_plinth_policy.js',
+      kind: 'value',
+      syntax: 'static-re-export',
+      importedSymbols: ['BASE_PLINTH_POLICY'],
+    },
+    {
+      specifier: './chest_mode_policy.js',
+      kind: 'value',
+      syntax: 'static-re-export',
+      importedSymbols: ['CHEST_MODE_ACTIVE_DEFAULTS_POLICY', 'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY'],
+    },
+    {
+      specifier: './stack_split_policy.js',
+      kind: 'value',
+      syntax: 'static-re-export',
+      importedSymbols: ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT'],
+    },
+    {
+      specifier: './wardrobe_defaults.js',
+      kind: 'value',
+      syntax: 'static-re-export',
+      importedSymbols: companionImport.importedSymbols,
+    },
+  ]);
+  assert.equal(
+    analysis.imports.every(dependency =>
+      dependency.bindings.every(binding => binding.importedName === binding.exportedName)
+    ),
+    true
+  );
+  assert.doesNotMatch(source, /const\s|Object\.freeze|=>|function\s/u);
+});
+
+test('Default State maps every dimension default through unchanged canonical bindings', () => {
   const source = read(consumerRel);
 
   for (const symbol of companionImport.importedSymbols) {
@@ -198,7 +229,7 @@ test('Default State maps every dimension default directly to its focused owner',
   assert.match(source, /chestCommodeMirrorWidthCm: CHEST_MODE_ACTIVE_DEFAULTS_POLICY\.widthCm/u);
 });
 
-test('Default State appends exactly Entries 146-149 after the unchanged 145-entry prefix', () => {
+test('Default State preserves Entries 146-149 and retires them through one exact consolidation group', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 145)),
@@ -208,5 +239,37 @@ test('Default State appends exactly Entries 146-149 after the unchanged 145-entr
   assert.equal(
     semanticSha256(baseline.migrationBudgets.slice(0, 149)),
     '017aabccfc1a4d0fccde156cff556af4f6d0006409f196868b3d8a53dbd666e5'
+  );
+
+  const group = baseline.migrationConsolidations.find(
+    entry => entry.id === 'runtime-default-state-dimension-consolidation'
+  );
+  assert.ok(group);
+  assert.deepEqual(group.entryNumbers, [146, 147, 148, 149]);
+  assert.deepEqual(group.replacementStatement, {
+    toFile: ownerRel,
+    kind: 'value',
+    syntax: 'static-import',
+    importedSymbols: replacementSymbols,
+  });
+  assert.deepEqual(
+    baseline.migrationRetirements
+      .filter(entry => group.entryNumbers.includes(entry.entryNumber))
+      .map(entry => [entry.entryNumber, entry.mode, entry.replacementConsolidationId]),
+    group.entryNumbers.map(entryNumber => [
+      entryNumber,
+      'statement-consolidated',
+      'runtime-default-state-dimension-consolidation',
+    ])
+  );
+  assert.deepEqual(
+    new Set(group.absorbedStatements.map(statement => statement.toFile)),
+    new Set([
+      'esm/shared/dimensions/base_leg_policy.ts',
+      'esm/shared/dimensions/base_plinth_policy.ts',
+      'esm/shared/dimensions/chest_mode_policy.ts',
+      'esm/shared/dimensions/stack_split_policy.ts',
+      'esm/shared/dimensions/wardrobe_defaults.ts',
+    ])
   );
 });

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { updateRenderLoopDoorMotions } from '../esm/native/platform/render_loop_motion_doors.ts';
+import * as composedDoorMotionDimensions from '../esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts';
 import type { MotionFrameState } from '../esm/native/platform/render_loop_motion_shared.ts';
 import { resolveSlidingDoorTrackOpenPosition } from '../esm/native/runtime/sliding_door_motion.ts';
 import { SLIDING_DOOR_CONSTRUCTION_POLICY } from '../esm/shared/dimensions/door_system_policy.ts';
@@ -88,6 +89,15 @@ function expectedDoorWidth(totalW: number, doorsCount: number): number {
 function expectedOriginalX(totalW: number, doorsCount: number, index: number, doorW: number): number {
   return index * (doorW - SLIDING_DOOR_CONSTRUCTION_POLICY.overlapM) - totalW / 2 + doorW / 2;
 }
+
+test('door-motion composition owner preserves canonical runtime identities', () => {
+  assert.equal(
+    composedDoorMotionDimensions.SLIDING_DOOR_CONSTRUCTION_POLICY,
+    SLIDING_DOOR_CONSTRUCTION_POLICY
+  );
+  assert.equal(composedDoorMotionDimensions.cmToM, cmToM);
+  assert.equal(composedDoorMotionDimensions.WARDROBE_DEFAULTS, WARDROBE_DEFAULTS);
+});
 
 test('sliding initialization preserves count precedence and owner-based door geometry', () => {
   const totalW = 2.4;

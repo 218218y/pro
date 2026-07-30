@@ -1,5 +1,5 @@
 {
-  "version": "2.4",
+  "version": "2.5",
   "root": "esm",
   "ratchet": {
     "mode": "decrease-only",
@@ -6669,6 +6669,55 @@
       "mode": "ownership-transferred",
       "reason": "Runtime Wardrobe Default Resolution remains a reviewed public compatibility route; permanent ownership moved to runtime-default-resolution-public-compatibility.",
       "replacementCompatibilityBudgetId": "runtime-default-resolution-public-compatibility"
+    },
+    {
+      "entryNumber": 146,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "Four focused Runtime default-state migration statements and their canonical Wardrobe Defaults companion were replaced by one reviewed use-case composition owner.",
+      "replacementConsolidationId": "runtime-default-state-dimension-consolidation"
+    },
+    {
+      "entryNumber": 147,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "Four focused Runtime default-state migration statements and their canonical Wardrobe Defaults companion were replaced by one reviewed use-case composition owner.",
+      "replacementConsolidationId": "runtime-default-state-dimension-consolidation"
+    },
+    {
+      "entryNumber": 148,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "Four focused Runtime default-state migration statements and their canonical Wardrobe Defaults companion were replaced by one reviewed use-case composition owner.",
+      "replacementConsolidationId": "runtime-default-state-dimension-consolidation"
+    },
+    {
+      "entryNumber": 149,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "Four focused Runtime default-state migration statements and their canonical Wardrobe Defaults companion were replaced by one reviewed use-case composition owner.",
+      "replacementConsolidationId": "runtime-default-state-dimension-consolidation"
+    },
+    {
+      "entryNumber": 135,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "Two focused Platform door-motion migration statements and their canonical Sliding Door Construction companion were replaced by one reviewed use-case composition owner.",
+      "replacementConsolidationId": "platform-door-motion-dimension-consolidation"
+    },
+    {
+      "entryNumber": 136,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "Two focused Platform door-motion migration statements and their canonical Sliding Door Construction companion were replaced by one reviewed use-case composition owner.",
+      "replacementConsolidationId": "platform-door-motion-dimension-consolidation"
+    },
+    {
+      "entryNumber": 61,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "The Interior-tab Sketch tool Shell Geometry and Units statements were replaced by one reviewed feature-use-case composition owner.",
+      "replacementConsolidationId": "interior-sketch-tools-dimension-consolidation"
     }
   ],
   "compatibilityBudgets": [
@@ -6794,6 +6843,165 @@
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
       "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+    }
+  ],
+  "migrationConsolidations": [
+    {
+      "id": "runtime-default-state-dimension-consolidation",
+      "retiredAt": "2026-07-29",
+      "entryNumbers": [146, 147, 148, 149],
+      "from": "runtime",
+      "to": "shared",
+      "fromFile": "esm/native/runtime/default_state.ts",
+      "owner": "runtime-default-state-dimension-composition",
+      "reason": "Four focused Runtime default-state migration statements and their canonical Wardrobe Defaults companion were replaced by one reviewed use-case composition owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/runtime_default_state_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "BASE_LEG_DIMENSIONS",
+          "BASE_PLINTH_POLICY",
+          "CHEST_MODE_ACTIVE_DEFAULTS_POLICY",
+          "CHEST_MODE_COMMODE_CONSTRAINTS_POLICY",
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "DEFAULT_CORNER_DOORS",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "DEFAULT_WIDTH",
+          "HINGED_DEFAULT_DEPTH"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/runtime/default_state.ts",
+          "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/runtime/default_state.ts",
+          "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+          "kind": "value",
+          "importedSymbols": [
+            "DEFAULT_CHEST_DRAWERS_COUNT",
+            "DEFAULT_CORNER_DOORS",
+            "DEFAULT_CORNER_WIDTH",
+            "DEFAULT_HEIGHT",
+            "DEFAULT_HINGED_DOORS",
+            "DEFAULT_WIDTH",
+            "HINGED_DEFAULT_DEPTH"
+          ],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/runtime/default_state.ts",
+          "toFile": "esm/shared/dimensions/base_leg_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["BASE_LEG_DIMENSIONS"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/runtime/default_state.ts",
+          "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["BASE_PLINTH_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/runtime/default_state.ts",
+          "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["CHEST_MODE_ACTIVE_DEFAULTS_POLICY", "CHEST_MODE_COMMODE_CONSTRAINTS_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        "tests/default_state_dimension_ownership_contract.test.js",
+        "tests/default_state_dimension_ownership_runtime.test.ts"
+      ]
+    },
+    {
+      "id": "platform-door-motion-dimension-consolidation",
+      "retiredAt": "2026-07-29",
+      "entryNumbers": [135, 136],
+      "from": "platform",
+      "to": "shared",
+      "fromFile": "esm/native/platform/render_loop_motion_doors.ts",
+      "owner": "platform-door-motion-dimension-composition",
+      "reason": "Two focused Platform door-motion migration statements and their canonical Sliding Door Construction companion were replaced by one reviewed use-case composition owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": ["SLIDING_DOOR_CONSTRUCTION_POLICY", "WARDROBE_DEFAULTS", "cmToM"]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/platform/render_loop_motion_doors.ts",
+          "toFile": "esm/shared/dimensions/units.ts",
+          "kind": "value",
+          "importedSymbols": ["cmToM"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/platform/render_loop_motion_doors.ts",
+          "toFile": "esm/shared/dimensions/door_system_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["SLIDING_DOOR_CONSTRUCTION_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/platform/render_loop_motion_doors.ts",
+          "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+          "kind": "value",
+          "importedSymbols": ["WARDROBE_DEFAULTS"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        "tests/render_loop_door_motion_ownership_contract.test.js",
+        "tests/render_loop_door_motion_ownership_runtime.test.ts"
+      ]
+    },
+    {
+      "id": "interior-sketch-tools-dimension-consolidation",
+      "retiredAt": "2026-07-29",
+      "entryNumbers": [61],
+      "from": "ui",
+      "to": "shared",
+      "fromFile": "esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts",
+      "owner": "interior-sketch-tools-dimension-composition",
+      "reason": "The Interior-tab Sketch tool Shell Geometry and Units statements were replaced by one reviewed feature-use-case composition owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/interior_sketch_tools_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY", "mToCm"]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts",
+          "toFile": "esm/shared/dimensions/units.ts",
+          "kind": "value",
+          "importedSymbols": ["mToCm"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts",
+          "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        "tests/interior_sketch_tools_dimension_consolidation_contract.test.js",
+        "tests/interior_sketch_tools_dimension_consolidation_runtime.test.ts"
+      ]
     }
   ]
 }

@@ -1,5 +1,7 @@
-import { SKETCH_BOX_SHELL_GEOMETRY_POLICY } from '../../../../shared/dimensions/sketch_box_geometry_policy.js';
-import { mToCm } from '../../../../shared/dimensions/units.js';
+import {
+  SKETCH_BOX_SHELL_GEOMETRY_POLICY,
+  mToCm,
+} from '../../../../shared/dimensions/interior_sketch_tools_dimension_policy.js';
 import {
   DEFAULT_BASE_LEG_COLOR,
   DEFAULT_BASE_LEG_HEIGHT_CM,
