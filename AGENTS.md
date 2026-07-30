@@ -53,6 +53,21 @@ Key stack and shape:
 - An agent or container that already has a supported Node 22 runtime must use it directly; do not install Node 24 merely because `.node-version` records the primary line.
 - Node 23 is intentionally unsupported. Run `npm run check:node-runtime` before dependency installation when runtime compatibility is in doubt.
 
+### Focused offline repair core
+
+When the task is a focused source/architecture repair and the system runtime or `oxc-parser` is unavailable:
+
+1. Do **not** run `npm install`, `npm ci`, Playwright installation, or a full setup as the first response.
+2. Check for the exact archives documented in `vendor/offline/README.md`.
+3. Run `python tools/bootstrap_offline_repair_core.py`.
+4. Run focused Node commands through `python tools/run_offline_node24.py ...`.
+5. Use `--node-only` only when the selected command does not import `tools/wp_ast_adapter.mjs` or `oxc-parser`.
+
+The offline core is deliberately narrow: Node 24 plus the AST adapter runtime. It must not be presented as
+a substitute for TypeScript/TSX, lint, formatting, Vite, esbuild, release or browser-test dependencies.
+If an archive is missing, report its exact path and URL from `vendor/offline/manifest.json`; do not attempt a
+large dependency installation to work around it.
+
 Important directories:
 
 - `esm/boot/*`

@@ -62,3 +62,14 @@ npm run gate:full
 ## Filtered networks / offline
 
 `libs/` contains local copies of essential dependencies (including THREE). In filtered networks, CDNs may be blocked — local libs are the anchor.
+
+For focused source and architecture repairs, the repository also includes a narrow offline bootstrap for the
+primary Node runtime and AST adapter dependencies. Download the pinned archives into `vendor/offline`, then run:
+
+```bash
+python tools/verify_offline_repair_vendor.py
+python tools/bootstrap_offline_repair_core.py
+python tools/run_offline_node24.py --test tests/wp_ast_adapter_runtime.test.js
+```
+
+See `docs/OFFLINE_REPAIR_CORE.md`. This path intentionally does not install the full toolchain.
