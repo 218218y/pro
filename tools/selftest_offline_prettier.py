@@ -32,9 +32,8 @@ def main() -> int:
     if version != str(manifest["prettier"]["version"]):
         raise RuntimeError(f"Unexpected Prettier version: {version}")
 
-    artifacts = core.ROOT / ".artifacts"
-    artifacts.mkdir(parents=True, exist_ok=True)
-    probe_dir = Path(tempfile.mkdtemp(prefix="offline-prettier-", dir=artifacts))
+    probe_root = core.ROOT / "tools"
+    probe_dir = Path(tempfile.mkdtemp(prefix=".offline-prettier-", dir=probe_root))
     try:
         probe = probe_dir / "probe.js"
         probe.write_text("const value={answer:42}\n", encoding="utf-8")

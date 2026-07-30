@@ -42,6 +42,25 @@ python tools/run_offline_prettier.py --check <paths...>
 python tools/run_offline_prettier.py --write <paths...>
 ```
 
+## Optional compiler set: TypeScript 7
+
+TypeScript 7 requires both the common launcher package and one matching native platform package. For Linux
+x64 add:
+
+```text
+vendor/offline/typescript/typescript-7.0.2.tgz
+vendor/offline/typescript/typescript-linux-x64-7.0.2.tgz
+```
+
+Verify, install, and run it independently of Oxc and Prettier:
+
+```bash
+python tools/verify_offline_repair_vendor.py --typescript-only
+python tools/bootstrap_offline_typescript.py
+python tools/run_offline_typescript.py --version
+python tools/selftest_offline_typescript.py
+```
+
 Generated directories are `.tools/node24` and focused package paths under `node_modules`. They are ignored
-by Git. The manifest also defines Linux ARM64 and Windows x64 variants; only the current platform's Node
-archive and Oxc binding are required.
+by Git. The manifest also defines Linux ARM64 and Windows x64 variants; only the current platform's Node,
+Oxc, and TypeScript native archives are required.

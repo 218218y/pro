@@ -7,6 +7,11 @@ import { fileURLToPath } from 'node:url';
 
 import { createSourceFile } from './wp_ast_adapter.mjs';
 import { analyzeModuleDependencies } from './wp_layer_contract_support.mjs';
+import {
+  createLocalTypeScriptVersionMismatchMessage,
+  resolveInstalledTypeScriptVersion,
+  resolvePinnedTypeScriptVersion,
+} from './wp_typescript_resolver.js';
 
 const toolDir = path.dirname(fileURLToPath(import.meta.url));
 const defaultRoot = path.resolve(toolDir, '..');
@@ -423,6 +428,17 @@ class DeclarationGraph {
 }
 
 function emitDeclarations(root, outDir) {
+  const expectedVersion = resolvePinnedTypeScriptVersion(root);
+  const installedVersion = resolveInstalledTypeScriptVersion(root);
+  if (!expectedVersion || !installedVersion) {
+    throw new Error(
+      'Local TypeScript is missing or not pinned. Run `python tools/bootstrap_offline_typescript.py` or `npm ci`.'
+    );
+  }
+  if (expectedVersion !== installedVersion) {
+    throw new Error(createLocalTypeScriptVersionMismatchMessage(expectedVersion, installedVersion));
+  }
+
   const tsc = path.join(root, 'node_modules', 'typescript', 'bin', 'tsc');
   const result = spawnSync(
     process.execPath,

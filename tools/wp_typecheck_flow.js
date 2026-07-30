@@ -57,7 +57,8 @@ export function runTypecheckFlow({
     return {
       ok: false,
       exitCode: 1,
-      reason: 'system-tsc-refused',
+      reason:
+        tscRef.source === 'local-version-mismatch' ? 'local-tsc-version-mismatch' : 'system-tsc-refused',
       errorMessage: `[WP Typecheck] ${tscRef.errorMessage}`,
     };
   }

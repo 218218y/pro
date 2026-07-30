@@ -76,6 +76,12 @@ python tools/run_offline_node24.py --test tests/wp_ast_adapter_runtime.test.js
 python tools/verify_offline_repair_vendor.py --prettier-only
 python tools/bootstrap_offline_prettier.py
 python tools/run_offline_prettier.py --check tools/wp_prettier_changed.mjs
+
+# Optional exact TypeScript 7 compiler slice
+python tools/verify_offline_repair_vendor.py --typescript-only
+python tools/bootstrap_offline_typescript.py
+python tools/run_offline_typescript.py --version
 ```
 
-See `docs/OFFLINE_REPAIR_CORE.md`. These paths intentionally avoid installing the full toolchain.
+See `docs/OFFLINE_REPAIR_CORE.md`. These paths intentionally avoid installing the full toolchain and refuse
+to substitute a different system TypeScript version for the lockfile-pinned compiler.

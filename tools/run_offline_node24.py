@@ -17,6 +17,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Prepare Node only; skip oxc-parser packages when the command does not use the AST adapter",
     )
+    parser.add_argument(
+        "--with-typescript",
+        action="store_true",
+        help="Also install and verify the repository-pinned TypeScript compiler",
+    )
     args, node_args = parser.parse_known_args(argv)
     if node_args[:1] == ["--"]:
         node_args = node_args[1:]
@@ -26,10 +31,18 @@ def main(argv: list[str] | None = None) -> int:
     try:
         manifest = core.load_manifest()
         key = core.platform_key()
-        core.verify_vendor(manifest, key, node=True, ast=not args.node_only)
+        core.verify_vendor(
+            manifest,
+            key,
+            node=True,
+            ast=not args.node_only,
+            typescript=args.with_typescript,
+        )
         executable = core.install_node(manifest, key)
         if not args.node_only:
             core.install_ast(manifest, key, executable)
+        if args.with_typescript:
+            core.install_typescript(manifest, key, executable)
     except core.OfflineCoreError as exc:
         print(f"offline repair core error: {exc}", file=sys.stderr)
         return 2

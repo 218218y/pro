@@ -177,6 +177,31 @@ test('TypeScript resolver exposes node-script, direct-bin, manual-bin and system
   assert.deepEqual(system.argsPrefix, []);
 });
 
+test('TypeScript resolver blocks stale local compilers before typecheck or snapshot emission', () => {
+  const root = tempDir();
+  fs.writeFileSync(
+    path.join(root, 'package.json'),
+    JSON.stringify({ devDependencies: { typescript: '7.0.2' } }),
+    'utf8'
+  );
+  const packageDir = path.join(root, 'node_modules', 'typescript');
+  fs.mkdirSync(path.join(packageDir, 'lib'), { recursive: true });
+  fs.writeFileSync(path.join(packageDir, 'package.json'), JSON.stringify({ version: '5.8.3' }), 'utf8');
+  fs.writeFileSync(path.join(packageDir, 'lib', 'tsc.js'), '// stale compiler stub\n', 'utf8');
+
+  const blocked = resolveTypeScriptTool(root, { node: '/offline/node24', env: {} });
+  assert.equal(blocked.kind, 'blocked');
+  assert.equal(blocked.source, 'local-version-mismatch');
+  assert.match(blocked.errorMessage, /Expected 7\.0\.2, found 5\.8\.3/);
+  assert.match(blocked.errorMessage, /bootstrap_offline_typescript\.py/);
+  assert.match(blocked.errorMessage, /do not regenerate declarations or snapshots/i);
+
+  fs.writeFileSync(path.join(packageDir, 'package.json'), JSON.stringify({ version: '7.0.2' }), 'utf8');
+  const resolved = resolveTypeScriptTool(root, { node: '/offline/node24', env: {} });
+  assert.equal(resolved.kind, 'node-script');
+  assert.equal(resolved.command, '/offline/node24');
+});
+
 test('TypeScript resolver avoids npm .cmd shims on Windows local installs', () => {
   const root = tempDir();
   const packageBin = path.join(root, 'node_modules', 'typescript', 'bin', 'tsc');
@@ -377,7 +402,7 @@ test('package typecheck scripts route through wp_typecheck instead of direct tsc
     if (name === 'typecheck:wp') continue;
     assert.match(
       script,
-      /node tools\/(?:wp_typecheck\.js|wp_typecheck_parallel\.mjs|wp_typecheck_changed\.mjs)|npm run typecheck:all/
+      /(?:node tools\/|python tools\/run_offline_node24\.py .*tools\/)(?:wp_typecheck\.js|wp_typecheck_parallel\.mjs|wp_typecheck_changed\.mjs)|npm run typecheck:all/
     );
     assert.doesNotMatch(script, /\btsc\b/);
   }

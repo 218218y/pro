@@ -70,10 +70,19 @@ When only formatting is needed and Prettier is absent:
 3. Run `python tools/run_offline_prettier.py --check <paths...>` or `--write <paths...>`.
 4. Prefer targeted paths over formatting the entire repository during a focused repair.
 
-The offline toolchain is deliberately narrow: Node 24, the AST adapter runtime, and optional Prettier. It must
-not be presented as a substitute for TypeScript/TSX, lint, Vite, esbuild, release or browser-test dependencies.
-If an archive is missing, report its exact path and URL from `vendor/offline/manifest.json`; do not attempt a
-large dependency installation to work around it.
+When TypeScript typechecking or declaration emission is needed and local TypeScript is absent or stale:
+
+1. Do not use a globally installed compiler and do not set `WP_ALLOW_SYSTEM_TSC=1` for canonical verification.
+2. Run `python tools/verify_offline_repair_vendor.py --typescript-only`.
+3. Run `python tools/bootstrap_offline_typescript.py`.
+4. Confirm `python tools/run_offline_typescript.py --version` reports exactly `Version 7.0.2`.
+5. Run project typechecks through `python tools/run_offline_node24.py --node-only --with-typescript ...`.
+6. Never update declaration snapshots merely to absorb a compiler-version mismatch.
+
+The offline toolchain is deliberately narrow: Node 24, the AST adapter runtime, Prettier, and the exact
+TypeScript compiler pinned by the lockfile. It is not a substitute for TSX execution, lint, Vite, esbuild,
+release or browser-test dependencies. If an archive is missing, report its exact path and URL from
+`vendor/offline/manifest.json`; do not attempt a large dependency installation to work around it.
 
 Important directories:
 

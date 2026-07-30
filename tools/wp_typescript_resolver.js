@@ -11,6 +11,41 @@ export const SYSTEM_TSC_MANUAL_WARNING =
 export const SYSTEM_TSC_CI_REFUSAL_MESSAGE =
   'WP_ALLOW_SYSTEM_TSC=1 is manual-only and is refused in CI/release verification. Run npm ci so local TypeScript is available.';
 
+export const LOCAL_TYPESCRIPT_VERSION_MISMATCH_PREFIX = 'Local TypeScript version mismatch.';
+
+function readJson(pathname, readFileImpl = fs.readFileSync) {
+  try {
+    return JSON.parse(readFileImpl(pathname, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+export function resolvePinnedTypeScriptVersion(root, { readFileImpl = fs.readFileSync } = {}) {
+  const pkg = readJson(path.join(root, 'package.json'), readFileImpl);
+  const value = pkg?.devDependencies?.typescript ?? pkg?.dependencies?.typescript;
+  return typeof value === 'string' && /^\d+\.\d+\.\d+$/.test(value) ? value : null;
+}
+
+export function resolveInstalledTypeScriptVersion(root, { readFileImpl = fs.readFileSync } = {}) {
+  const pkg = readJson(path.join(root, 'node_modules', 'typescript', 'package.json'), readFileImpl);
+  return typeof pkg?.version === 'string' ? pkg.version : null;
+}
+
+export function createLocalTypeScriptVersionMismatchMessage(expected, actual) {
+  return (
+    `${LOCAL_TYPESCRIPT_VERSION_MISMATCH_PREFIX} Expected ${expected}, found ${actual}. ` +
+    'Run `python tools/bootstrap_offline_typescript.py` or `npm ci`; do not regenerate declarations or snapshots with the wrong compiler.'
+  );
+}
+
+export function resolveLocalTypeScriptVersionMismatch(root, options = {}) {
+  const expected = resolvePinnedTypeScriptVersion(root, options);
+  const actual = resolveInstalledTypeScriptVersion(root, options);
+  if (!expected || !actual || expected === actual) return null;
+  return { expected, actual, message: createLocalTypeScriptVersionMismatchMessage(expected, actual) };
+}
+
 function createNodeScriptTool(scriptPath, { node, source, warning = null }) {
   return {
     kind: 'node-script',
@@ -160,6 +195,18 @@ export function resolveTypeScriptTool(
     platform = process.platform,
   } = {}
 ) {
+  const mismatch = resolveLocalTypeScriptVersionMismatch(root);
+  if (mismatch) {
+    return {
+      kind: 'blocked',
+      command: null,
+      argsPrefix: [],
+      source: 'local-version-mismatch',
+      warning: null,
+      errorMessage: mismatch.message,
+    };
+  }
+
   const localTool = resolveLocalTypeScriptTool(root, { node, existsImpl, platform });
   if (localTool) return localTool;
 

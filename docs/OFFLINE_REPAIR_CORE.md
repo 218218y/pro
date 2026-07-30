@@ -9,7 +9,8 @@ smaller trusted set:
 - `oxc-parser 0.141.0`;
 - `@oxc-project/types 0.141.0`;
 - one native Oxc parser binding for the current platform;
-- optionally, lockfile-pinned Prettier `3.9.6`.
+- optionally, lockfile-pinned Prettier `3.9.6`;
+- optionally, lockfile-pinned TypeScript `7.0.2` plus its native platform package.
 
 The bootstrap extracts only explicitly listed archives. It does not invoke npm, resolve dependencies, run
 lifecycle scripts, install Playwright browsers, or install the complete lint/build/release toolchain.
@@ -31,7 +32,17 @@ vendor/offline/ast/binding-linux-x64-gnu-0.141.0.tgz
 vendor/offline/prettier/prettier-3.9.6.tgz
 ```
 
-The filenames match the download basenames. Do not extract or rename the archives.
+### Optional TypeScript 7 slice
+
+```text
+vendor/offline/typescript/typescript-7.0.2.tgz
+vendor/offline/typescript/typescript-linux-x64-7.0.2.tgz
+```
+
+TypeScript 7 is native. The common `typescript` package contains the `tsc` launcher and platform resolver;
+the `@typescript/typescript-linux-x64` package contains the native compiler executable and standard libraries.
+Both archives at the same exact version are required. The filenames match the download basenames. Do not
+extract or rename them.
 
 ## Verify and bootstrap Node/Oxc
 
@@ -102,11 +113,43 @@ npm run format:offline:check
 npm run format:offline
 ```
 
+## Verify and run TypeScript 7 independently
+
+The TypeScript path does not require Oxc or Prettier. It validates the common package and the current
+platform-native package against `package-lock.json`, replaces any stale local compiler, and proves the native
+compiler reports the exact pinned version.
+
+```bash
+python tools/verify_offline_repair_vendor.py --typescript-only
+python tools/bootstrap_offline_typescript.py
+python tools/run_offline_typescript.py --version
+python tools/selftest_offline_typescript.py
+```
+
+Canonical project checks through offline Node 24 and TypeScript 7:
+
+```bash
+npm run typecheck:offline
+npm run typecheck:offline:dist
+npm run typecheck:offline:all
+npm run test:offline:declaration-snapshot
+```
+
+Direct compiler usage:
+
+```bash
+python tools/run_offline_typescript.py -p tsconfig.dist.json --noEmit
+```
+
+Do not set `WP_ALLOW_SYSTEM_TSC=1` for these checks. A system compiler such as TypeScript 5.8.3 is not a valid
+replacement for the repository-pinned TypeScript 7.0.2 compiler, and declaration snapshots must not be
+regenerated to hide that mismatch.
+
 ## Scope boundary
 
-This focused toolchain covers Node-native tests, AST-backed source contracts, layer checks, and formatting.
-It does not provide TSX execution, TypeScript typechecking, ESLint/Oxlint, Vite, release bundling, obfuscation,
-Playwright, or browser binaries.
+This focused toolchain covers Node-native tests, AST-backed source contracts, layer checks, formatting,
+TypeScript typechecking, and declaration emission. It does not provide TSX execution, ESLint/Oxlint, Vite,
+release bundling, obfuscation, Playwright, or browser binaries.
 
 The next most useful offline slice for this repository is `tsx + esbuild`, because a large part of the runtime
 test portfolio is TypeScript. It should be added as its own verified slice rather than smuggled in as an

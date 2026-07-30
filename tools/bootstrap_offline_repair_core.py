@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the repository's focused offline Node, AST and optional Prettier toolchain.
+"""Install the repository's focused offline Node, AST, TypeScript and Prettier toolchain.
 
 The script never invokes npm and never runs package lifecycle scripts. It only
 uses files explicitly listed in vendor/offline/manifest.json and validates them
@@ -165,6 +165,16 @@ def validate_manifest_against_project(manifest: dict) -> None:
         raise OfflineCoreError("vendor/offline/manifest.json has no Prettier package definition")
     _validate_lock_entry(packages, prettier["package"], str(prettier["version"]), "Prettier")
 
+    typescript = manifest.get("typescript")
+    if not isinstance(typescript, dict) or not isinstance(typescript.get("package"), dict):
+        raise OfflineCoreError("vendor/offline/manifest.json has no TypeScript package definition")
+    _validate_lock_entry(packages, typescript["package"], str(typescript["version"]), "TypeScript")
+    platforms = typescript.get("platforms")
+    if not isinstance(platforms, dict) or not platforms:
+        raise OfflineCoreError("vendor/offline/manifest.json has no TypeScript platform definitions")
+    for entry in platforms.values():
+        _validate_lock_entry(packages, entry, str(typescript["version"]), "TypeScript platform")
+
 
 def selected_entries(manifest: dict, key: str) -> tuple[dict, list[dict]]:
     node_entry = manifest["node"]["platforms"].get(key)
@@ -179,6 +189,17 @@ def prettier_entry(manifest: dict) -> dict:
     if not isinstance(entry, dict):
         raise OfflineCoreError("No offline Prettier package definition")
     return entry
+
+
+def typescript_entries(manifest: dict, key: str) -> tuple[dict, dict]:
+    typescript = manifest.get("typescript")
+    if not isinstance(typescript, dict):
+        raise OfflineCoreError("No offline TypeScript package definition")
+    package_entry = typescript.get("package")
+    platform_entry = typescript.get("platforms", {}).get(key)
+    if not isinstance(package_entry, dict) or not isinstance(platform_entry, dict):
+        raise OfflineCoreError(f"No offline TypeScript definition for platform {key}")
+    return package_entry, platform_entry
 
 
 def _verify_npm_archives(entries: list[dict], label: str) -> None:
@@ -200,6 +221,7 @@ def verify_vendor(
     node: bool = True,
     ast: bool = True,
     prettier: bool = False,
+    typescript: bool = False,
 ) -> None:
     validate_manifest_against_project(manifest)
     node_entry, ast_entries = selected_entries(manifest, key)
@@ -219,6 +241,9 @@ def verify_vendor(
 
     if prettier:
         _verify_npm_archives([prettier_entry(manifest)], "Prettier")
+
+    if typescript:
+        _verify_npm_archives(list(typescript_entries(manifest, key)), "TypeScript")
 
 
 def _extract_node_binary(archive: Path, member_name: str, destination: Path) -> None:
@@ -391,6 +416,54 @@ def install_ast(manifest: dict, key: str, node_executable: Path, *, force: bool 
         )
 
 
+def install_typescript(
+    manifest: dict,
+    key: str,
+    node_executable: Path,
+    *,
+    force: bool = False,
+) -> Path:
+    package_entry, platform_entry = typescript_entries(manifest, key)
+    expected_version = str(manifest["typescript"]["version"])
+    package_dir = _install_npm_entry(package_entry, expected_version, force=force)
+    platform_dir = _install_npm_entry(platform_entry, expected_version, force=force)
+
+    launcher = package_dir.joinpath(
+        *_safe_relative_posix(manifest["typescript"]["launcher"], "TypeScript launcher").parts
+    )
+    executable = platform_dir.joinpath(
+        *_safe_relative_posix(platform_entry["executable"], "TypeScript platform executable").parts
+    )
+    if not launcher.is_file():
+        raise OfflineCoreError(
+            f"TypeScript launcher is missing after extraction: {_display_path(launcher)}"
+        )
+    if not executable.is_file():
+        raise OfflineCoreError(
+            f"TypeScript native executable is missing after extraction: {_display_path(executable)}"
+        )
+    if os.name != "nt":
+        launcher.chmod(launcher.stat().st_mode | 0o111)
+        executable.chmod(executable.stat().st_mode | 0o111)
+
+    probe = subprocess.run(
+        [str(node_executable), str(launcher), "--version"],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    actual = probe.stdout.strip()
+    expected_output = f"Version {expected_version}"
+    if probe.returncode != 0 or actual != expected_output:
+        detail = (probe.stderr or probe.stdout).strip()
+        raise OfflineCoreError(
+            f"Offline TypeScript failed verification; expected {expected_output}, got "
+            f"{actual or detail or 'no output'}"
+        )
+    return launcher
+
+
 def install_prettier(manifest: dict, node_executable: Path, *, force: bool = False) -> Path:
     entry = prettier_entry(manifest)
     expected_version = str(manifest["prettier"]["version"])
@@ -427,6 +500,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also install and verify the lockfile-pinned Prettier package",
     )
+    parser.add_argument(
+        "--with-typescript",
+        action="store_true",
+        help="Also install and verify lockfile-pinned TypeScript and its native platform package",
+    )
     parser.add_argument("--force", action="store_true", help="Re-extract even when matching installs exist")
     parser.add_argument("--print-node", action="store_true", help="Print only the installed Node executable path")
     args = parser.parse_args(argv)
@@ -442,6 +520,7 @@ def main(argv: list[str] | None = None) -> int:
             node=want_node,
             ast=want_ast,
             prettier=args.with_prettier,
+            typescript=args.with_typescript,
         )
 
         node_entry, _ = selected_entries(manifest, key)
@@ -456,6 +535,8 @@ def main(argv: list[str] | None = None) -> int:
             install_ast(manifest, key, node_executable, force=args.force)
         if args.with_prettier:
             install_prettier(manifest, node_executable, force=args.force)
+        if args.with_typescript:
+            install_typescript(manifest, key, node_executable, force=args.force)
 
         if args.print_node:
             print(node_executable)
@@ -465,6 +546,8 @@ def main(argv: list[str] | None = None) -> int:
                 installed.append(f"AST adapter dependencies {manifest['ast']['version']}")
             if args.with_prettier:
                 installed.append(f"Prettier {manifest['prettier']['version']}")
+            if args.with_typescript:
+                installed.append(f"TypeScript {manifest['typescript']['version']}")
             print(f"Offline repair toolchain ready for {key}: " + ", ".join(installed))
         return 0
     except OfflineCoreError as exc:

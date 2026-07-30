@@ -79,5 +79,42 @@
       "integrity": "sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g=="
     },
     "executable": "bin/prettier.cjs"
+  },
+  "typescript": {
+    "version": "7.0.2",
+    "package": {
+      "lockPath": "node_modules/typescript",
+      "installPath": "node_modules/typescript",
+      "file": "vendor/offline/typescript/typescript-7.0.2.tgz",
+      "url": "https://registry.npmjs.org/typescript/-/typescript-7.0.2.tgz",
+      "integrity": "sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA=="
+    },
+    "platforms": {
+      "linux-x64": {
+        "lockPath": "node_modules/@typescript/typescript-linux-x64",
+        "installPath": "node_modules/@typescript/typescript-linux-x64",
+        "file": "vendor/offline/typescript/typescript-linux-x64-7.0.2.tgz",
+        "url": "https://registry.npmjs.org/@typescript/typescript-linux-x64/-/typescript-linux-x64-7.0.2.tgz",
+        "integrity": "sha512-EYdf2cNg7rgCWJnxCdJ+F3V39O8ihb37eHAu1LK8oAFizgTQbPOK7zHHXbPt8rX24COqODXeI3sIf0fCXG7H/A==",
+        "executable": "lib/tsc"
+      },
+      "linux-arm64": {
+        "lockPath": "node_modules/@typescript/typescript-linux-arm64",
+        "installPath": "node_modules/@typescript/typescript-linux-arm64",
+        "file": "vendor/offline/typescript/typescript-linux-arm64-7.0.2.tgz",
+        "url": "https://registry.npmjs.org/@typescript/typescript-linux-arm64/-/typescript-linux-arm64-7.0.2.tgz",
+        "integrity": "sha512-Qh4eU4/y3yDjnfjjyPYihMj5/ODIlmt+Bzu17OI+fiSRDW57QmU5SiN63exPRNJPKUzcc1INa1NXdrJ+MqHjUQ==",
+        "executable": "lib/tsc"
+      },
+      "win32-x64": {
+        "lockPath": "node_modules/@typescript/typescript-win32-x64",
+        "installPath": "node_modules/@typescript/typescript-win32-x64",
+        "file": "vendor/offline/typescript/typescript-win32-x64-7.0.2.tgz",
+        "url": "https://registry.npmjs.org/@typescript/typescript-win32-x64/-/typescript-win32-x64-7.0.2.tgz",
+        "integrity": "sha512-0BQ3HkAHHlKLSp1qRvf3SUhGpGsDuhB/jgFw75guyqbxJqEaS0Cw/VFO8i2nHglJUzQCRtMMR/IBAKE3ETMC4g==",
+        "executable": "lib/tsc.exe"
+      }
+    },
+    "launcher": "bin/tsc"
   }
 }
