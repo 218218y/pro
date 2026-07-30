@@ -42,6 +42,27 @@ python tools/run_offline_prettier.py --check <paths...>
 python tools/run_offline_prettier.py --write <paths...>
 ```
 
+## Optional TypeScript runtime-loader set: esbuild
+
+Add the common package and the matching platform package. For Linux x64:
+
+```text
+vendor/offline/esbuild/esbuild-0.28.1.tgz
+vendor/offline/esbuild/linux-x64-0.28.1.tgz
+```
+
+Verify and install:
+
+```bash
+python tools/verify_offline_repair_vendor.py --esbuild-only
+python tools/bootstrap_offline_esbuild.py
+python tools/selftest_offline_esbuild.py
+```
+
+This slice is required by `tests/_ts_runtime_module_loader.mjs` and therefore by the offline declaration
+snapshot contract. The two packages must have the same exact version. The declaration snapshot additionally
+uses the Oxc and TypeScript slices.
+
 ## Optional compiler set: TypeScript 7
 
 TypeScript 7 requires both the common launcher package and one matching native platform package. For Linux
@@ -63,4 +84,4 @@ python tools/selftest_offline_typescript.py
 
 Generated directories are `.tools/node24` and focused package paths under `node_modules`. They are ignored
 by Git. The manifest also defines Linux ARM64 and Windows x64 variants; only the current platform's Node,
-Oxc, and TypeScript native archives are required.
+Oxc, esbuild, and TypeScript native archives are required.

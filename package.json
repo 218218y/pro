@@ -74,6 +74,7 @@
     "report:legacy-fallbacks": "node tools/wp_generated_report_contract.mjs --write --only=legacy-fallbacks",
     "serve": "node tools/serve.js --port 3000",
     "setup:offline:core": "python tools/bootstrap_offline_repair_core.py",
+    "setup:offline:esbuild": "python tools/bootstrap_offline_esbuild.py",
     "setup:offline:prettier": "python tools/bootstrap_offline_prettier.py",
     "serve:dist": "npm run build:dist && node tools/serve.js --port 3000",
     "start:e2e": "vite --configLoader native --host 127.0.0.1 --port 5175 --strictPort",
@@ -253,6 +254,7 @@
     "perf:browser:update-baseline": "node tools/wp_browser_perf_smoke.mjs --update-baseline",
     "test:perf-e2e-runtime-core": "node tools/wp_run_tsx_tests.mjs tests/perf_runtime_surface_runtime.test.ts tests/observability_surface_prod_runtime.test.ts tests/project_ui_action_events_runtime.test.ts tests/wp_browser_perf_support_runtime.test.js tests/export_actions_runtime.test.ts tests/cloud_sync_panel_actions_runtime.test.js tests/project_save_load_controller_singleflight_runtime.test.js",
     "verify:offline:vendor": "python tools/verify_offline_repair_vendor.py",
+    "verify:offline:esbuild": "python tools/verify_offline_repair_vendor.py --esbuild-only",
     "verify:offline:prettier": "python tools/verify_offline_repair_vendor.py --prettier-only",
     "verify:perf-e2e:core": "npm run test:perf-e2e-runtime-core && npm run e2e:smoke:list",
     "verify:perf-e2e:browser": "npm run e2e:smoke:preflight && npm run e2e:smoke && npm run perf:browser",
@@ -328,7 +330,8 @@
     "typecheck:offline": "python tools/run_offline_node24.py --node-only --with-typescript tools/wp_typecheck.js --mode project",
     "typecheck:offline:all": "python tools/run_offline_node24.py --node-only --with-typescript tools/wp_typecheck_parallel.mjs",
     "typecheck:offline:dist": "python tools/run_offline_node24.py --node-only --with-typescript tools/wp_typecheck.js --mode dist",
-    "test:offline:declaration-snapshot": "python tools/run_offline_node24.py --with-typescript --test tests/wardrobe_dimension_public_surface_semantic_contract.test.js"
+    "test:offline:declaration-snapshot": "python tools/run_offline_node24.py --with-typescript --with-esbuild --test tests/wardrobe_dimension_public_surface_semantic_contract.test.js",
+    "test:offline:esbuild": "python tools/selftest_offline_esbuild.py"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

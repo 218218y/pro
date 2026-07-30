@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify offline Node/AST/Prettier/TypeScript archives without installing them."""
+"""Verify offline Node/AST/esbuild/Prettier/TypeScript archives without installing them."""
 
 from __future__ import annotations
 
@@ -17,6 +17,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Validate manifest, .node-version and package-lock alignment without requiring archives",
     )
     parser.add_argument(
+        "--with-esbuild",
+        action="store_true",
+        help="Also require and verify esbuild plus the current platform native package",
+    )
+    parser.add_argument(
         "--with-prettier",
         action="store_true",
         help="Also require and verify the offline Prettier archive",
@@ -27,6 +32,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Also require and verify TypeScript plus the current platform native package",
     )
     group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--esbuild-only",
+        action="store_true",
+        help="Require and verify only Node plus esbuild and its native platform package",
+    )
     group.add_argument(
         "--prettier-only",
         action="store_true",
@@ -43,19 +53,23 @@ def main(argv: list[str] | None = None) -> int:
         key = core.platform_key()
         core.validate_manifest_against_project(manifest)
         core.selected_entries(manifest, key)
+        core.esbuild_entries(manifest, key)
         core.typescript_entries(manifest, key)
         if not args.manifest_only:
             core.verify_vendor(
                 manifest,
                 key,
                 node=True,
-                ast=not args.prettier_only and not args.typescript_only,
+                ast=not args.esbuild_only and not args.prettier_only and not args.typescript_only,
+                esbuild=args.with_esbuild or args.esbuild_only,
                 prettier=args.with_prettier or args.prettier_only,
                 typescript=args.with_typescript or args.typescript_only,
             )
         components = [f"Node {manifest['node']['version']}"]
-        if not args.prettier_only and not args.typescript_only:
+        if not args.esbuild_only and not args.prettier_only and not args.typescript_only:
             components.append(f"Oxc {manifest['ast']['version']}")
+        if args.with_esbuild or args.esbuild_only:
+            components.append(f"esbuild {manifest['esbuild']['version']}")
         if args.with_prettier or args.prettier_only:
             components.append(f"Prettier {manifest['prettier']['version']}")
         if args.with_typescript or args.typescript_only:

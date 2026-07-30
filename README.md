@@ -64,8 +64,8 @@ npm run gate:full
 `libs/` contains local copies of essential dependencies (including THREE). In filtered networks, CDNs may be blocked — local libs are the anchor.
 
 For focused source and architecture repairs, the repository includes a narrow offline bootstrap for the
-primary Node runtime, AST adapter dependencies, and an optional standalone Prettier package. Download the
-pinned archives into `vendor/offline`, then run:
+primary Node runtime, AST adapter dependencies, the esbuild-backed TypeScript runtime loader, and optional
+standalone Prettier and TypeScript packages. Download the pinned archives into `vendor/offline`, then run:
 
 ```bash
 python tools/verify_offline_repair_vendor.py
@@ -76,6 +76,11 @@ python tools/run_offline_node24.py --test tests/wp_ast_adapter_runtime.test.js
 python tools/verify_offline_repair_vendor.py --prettier-only
 python tools/bootstrap_offline_prettier.py
 python tools/run_offline_prettier.py --check tools/wp_prettier_changed.mjs
+
+# Optional esbuild slice used by TS runtime loaders and declaration snapshot tests
+python tools/verify_offline_repair_vendor.py --esbuild-only
+python tools/bootstrap_offline_esbuild.py
+python tools/selftest_offline_esbuild.py
 
 # Optional exact TypeScript 7 compiler slice
 python tools/verify_offline_repair_vendor.py --typescript-only

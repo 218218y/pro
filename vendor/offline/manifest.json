@@ -69,6 +69,46 @@
       }
     }
   },
+  "esbuild": {
+    "version": "0.28.1",
+    "package": {
+      "lockPath": "node_modules/esbuild",
+      "installPath": "node_modules/esbuild",
+      "file": "vendor/offline/esbuild/esbuild-0.28.1.tgz",
+      "url": "https://registry.npmjs.org/esbuild/-/esbuild-0.28.1.tgz",
+      "integrity": "sha512-HrJrvZv5ayxBzPfwphOoNzkzOIIlifzk0KJrGK2c8R4+LKpMtpYLQeUdjnwjWv/LZlkH2laZk+4w78pi99D4Vw=="
+    },
+    "platforms": {
+      "linux-x64": {
+        "lockPath": "node_modules/@esbuild/linux-x64",
+        "installPath": "node_modules/@esbuild/linux-x64",
+        "file": "vendor/offline/esbuild/linux-x64-0.28.1.tgz",
+        "url": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.28.1.tgz",
+        "integrity": "sha512-u/anNYF2mmVOEDwLtnQ1wOr3EZ9sTNGLWrsYGYwHWzGA3Si84IOkHXlbWTD1NB+9/1lcnweYKO54uhxZydNzfA==",
+        "executable": "bin/esbuild",
+        "binarySha256": "0c6588b092a2c291a72bab90659f3c9e0e25e0fe59c9ac12b4dae4d945e5548c"
+      },
+      "linux-arm64": {
+        "lockPath": "node_modules/@esbuild/linux-arm64",
+        "installPath": "node_modules/@esbuild/linux-arm64",
+        "file": "vendor/offline/esbuild/linux-arm64-0.28.1.tgz",
+        "url": "https://registry.npmjs.org/@esbuild/linux-arm64/-/linux-arm64-0.28.1.tgz",
+        "integrity": "sha512-yHs+0uc8+nvEAfAfxrWQKK5peSNzBc4PegcMO0EJ2hT71uA7vB8Ihg2e77R2P7SG5uYjPbHlLLmve4LLLRCf0g==",
+        "executable": "bin/esbuild",
+        "binarySha256": "51e829ba36f36be6d9aea6e329ddc4f9350302339b16aaca96a3cb97f64a8ebb"
+      },
+      "win32-x64": {
+        "lockPath": "node_modules/@esbuild/win32-x64",
+        "installPath": "node_modules/@esbuild/win32-x64",
+        "file": "vendor/offline/esbuild/win32-x64-0.28.1.tgz",
+        "url": "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.28.1.tgz",
+        "integrity": "sha512-bm4Mowrv+GXMlpWX++EcXw/iLyd1o3+bJkC2DkWXYVvgZCqD/bSj9ctZeAMC3cIxgjRVR2Dufaiu4YPxr5gW1A==",
+        "executable": "esbuild.exe",
+        "binarySha256": "ec02ee9b14ab332416fedd10614dfb80eed5304d94f67745067c011934a8c3c3"
+      }
+    },
+    "launcher": "bin/esbuild"
+  },
   "prettier": {
     "version": "3.9.6",
     "package": {

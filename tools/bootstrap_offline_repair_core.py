@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the repository's focused offline Node, AST, TypeScript and Prettier toolchain.
+"""Install the repository's focused offline Node, AST, esbuild, TypeScript and Prettier toolchain.
 
 The script never invokes npm and never runs package lifecycle scripts. It only
 uses files explicitly listed in vendor/offline/manifest.json and validates them
@@ -160,6 +160,16 @@ def validate_manifest_against_project(manifest: dict) -> None:
     for entry in ast_entries:
         _validate_lock_entry(packages, entry, str(manifest["ast"]["version"]), "AST")
 
+    esbuild = manifest.get("esbuild")
+    if not isinstance(esbuild, dict) or not isinstance(esbuild.get("package"), dict):
+        raise OfflineCoreError("vendor/offline/manifest.json has no esbuild package definition")
+    _validate_lock_entry(packages, esbuild["package"], str(esbuild["version"]), "esbuild")
+    esbuild_platforms = esbuild.get("platforms")
+    if not isinstance(esbuild_platforms, dict) or not esbuild_platforms:
+        raise OfflineCoreError("vendor/offline/manifest.json has no esbuild platform definitions")
+    for entry in esbuild_platforms.values():
+        _validate_lock_entry(packages, entry, str(esbuild["version"]), "esbuild platform")
+
     prettier = manifest.get("prettier")
     if not isinstance(prettier, dict) or not isinstance(prettier.get("package"), dict):
         raise OfflineCoreError("vendor/offline/manifest.json has no Prettier package definition")
@@ -191,6 +201,17 @@ def prettier_entry(manifest: dict) -> dict:
     return entry
 
 
+def esbuild_entries(manifest: dict, key: str) -> tuple[dict, dict]:
+    esbuild = manifest.get("esbuild")
+    if not isinstance(esbuild, dict):
+        raise OfflineCoreError("No offline esbuild package definition")
+    package_entry = esbuild.get("package")
+    platform_entry = esbuild.get("platforms", {}).get(key)
+    if not isinstance(package_entry, dict) or not isinstance(platform_entry, dict):
+        raise OfflineCoreError(f"No offline esbuild definition for platform {key}")
+    return package_entry, platform_entry
+
+
 def typescript_entries(manifest: dict, key: str) -> tuple[dict, dict]:
     typescript = manifest.get("typescript")
     if not isinstance(typescript, dict):
@@ -220,6 +241,7 @@ def verify_vendor(
     *,
     node: bool = True,
     ast: bool = True,
+    esbuild: bool = False,
     prettier: bool = False,
     typescript: bool = False,
 ) -> None:
@@ -238,6 +260,9 @@ def verify_vendor(
 
     if ast:
         _verify_npm_archives(ast_entries, "AST")
+
+    if esbuild:
+        _verify_npm_archives(list(esbuild_entries(manifest, key)), "esbuild")
 
     if prettier:
         _verify_npm_archives([prettier_entry(manifest)], "Prettier")
@@ -416,6 +441,92 @@ def install_ast(manifest: dict, key: str, node_executable: Path, *, force: bool 
         )
 
 
+def install_esbuild(
+    manifest: dict,
+    key: str,
+    node_executable: Path,
+    *,
+    force: bool = False,
+) -> Path:
+    package_entry, platform_entry = esbuild_entries(manifest, key)
+    expected_version = str(manifest["esbuild"]["version"])
+    package_dir = _install_npm_entry(package_entry, expected_version, force=force)
+    platform_dir = _install_npm_entry(platform_entry, expected_version, force=force)
+
+    launcher = package_dir.joinpath(
+        *_safe_relative_posix(manifest["esbuild"]["launcher"], "esbuild launcher").parts
+    )
+    executable = platform_dir.joinpath(
+        *_safe_relative_posix(platform_entry["executable"], "esbuild platform executable").parts
+    )
+    expected_binary_sha256 = platform_entry.get("binarySha256")
+    if not isinstance(expected_binary_sha256, str) or not expected_binary_sha256:
+        raise OfflineCoreError(f"No pinned esbuild binary SHA-256 for platform {key}")
+
+    def installed_files_are_valid() -> bool:
+        return (
+            launcher.is_file()
+            and executable.is_file()
+            and _sha256(executable) == expected_binary_sha256
+        )
+
+    if not installed_files_are_valid() and not force:
+        package_dir = _install_npm_entry(package_entry, expected_version, force=True)
+        platform_dir = _install_npm_entry(platform_entry, expected_version, force=True)
+        launcher = package_dir.joinpath(
+            *_safe_relative_posix(manifest["esbuild"]["launcher"], "esbuild launcher").parts
+        )
+        executable = platform_dir.joinpath(
+            *_safe_relative_posix(platform_entry["executable"], "esbuild platform executable").parts
+        )
+
+    if not launcher.is_file():
+        raise OfflineCoreError(f"esbuild launcher is missing after extraction: {_display_path(launcher)}")
+    if not executable.is_file():
+        raise OfflineCoreError(
+            f"esbuild native executable is missing after extraction: {_display_path(executable)}"
+        )
+    actual_binary_sha256 = _sha256(executable)
+    if actual_binary_sha256 != expected_binary_sha256:
+        raise OfflineCoreError(
+            f"esbuild binary SHA-256 mismatch for {_display_path(executable)}\n"
+            f"expected: {expected_binary_sha256}\nactual:   {actual_binary_sha256}"
+        )
+
+    if os.name != "nt":
+        launcher.chmod(launcher.stat().st_mode | 0o111)
+        executable.chmod(executable.stat().st_mode | 0o111)
+
+    probe_script = (
+        "import esbuild from 'esbuild';"
+        "const output=esbuild.transformSync('const answer: number = 42',{loader:'ts'}).code.trim();"
+        "if(esbuild.version!==process.argv[1]) throw new Error('version '+esbuild.version);"
+        "if(!output.includes('const answer = 42')) throw new Error('transform failed: '+output);"
+        "console.log(esbuild.version);"
+    )
+    probe = subprocess.run(
+        [
+            str(node_executable),
+            "--input-type=module",
+            "--eval",
+            probe_script,
+            expected_version,
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    actual = probe.stdout.strip()
+    if probe.returncode != 0 or actual != expected_version:
+        detail = (probe.stderr or probe.stdout).strip()
+        raise OfflineCoreError(
+            f"Offline esbuild failed verification; expected {expected_version}, got "
+            f"{actual or detail or 'no output'}"
+        )
+    return launcher
+
+
 def install_typescript(
     manifest: dict,
     key: str,
@@ -496,6 +607,11 @@ def main(argv: list[str] | None = None) -> int:
     group.add_argument("--node-only", action="store_true", help="Install only the pinned Node runtime")
     group.add_argument("--ast-only", action="store_true", help="Install only AST packages (Node must exist)")
     parser.add_argument(
+        "--with-esbuild",
+        action="store_true",
+        help="Also install and verify lockfile-pinned esbuild and its native platform package",
+    )
+    parser.add_argument(
         "--with-prettier",
         action="store_true",
         help="Also install and verify the lockfile-pinned Prettier package",
@@ -519,6 +635,7 @@ def main(argv: list[str] | None = None) -> int:
             key,
             node=want_node,
             ast=want_ast,
+            esbuild=args.with_esbuild,
             prettier=args.with_prettier,
             typescript=args.with_typescript,
         )
@@ -533,6 +650,8 @@ def main(argv: list[str] | None = None) -> int:
 
         if want_ast:
             install_ast(manifest, key, node_executable, force=args.force)
+        if args.with_esbuild:
+            install_esbuild(manifest, key, node_executable, force=args.force)
         if args.with_prettier:
             install_prettier(manifest, node_executable, force=args.force)
         if args.with_typescript:
@@ -544,6 +663,8 @@ def main(argv: list[str] | None = None) -> int:
             installed = [f"Node {manifest['node']['version']}"]
             if want_ast:
                 installed.append(f"AST adapter dependencies {manifest['ast']['version']}")
+            if args.with_esbuild:
+                installed.append(f"esbuild {manifest['esbuild']['version']}")
             if args.with_prettier:
                 installed.append(f"Prettier {manifest['prettier']['version']}")
             if args.with_typescript:

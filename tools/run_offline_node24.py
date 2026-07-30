@@ -22,6 +22,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also install and verify the repository-pinned TypeScript compiler",
     )
+    parser.add_argument(
+        "--with-esbuild",
+        action="store_true",
+        help="Also install and verify repository-pinned esbuild plus its native binary",
+    )
     args, node_args = parser.parse_known_args(argv)
     if node_args[:1] == ["--"]:
         node_args = node_args[1:]
@@ -36,11 +41,14 @@ def main(argv: list[str] | None = None) -> int:
             key,
             node=True,
             ast=not args.node_only,
+            esbuild=args.with_esbuild,
             typescript=args.with_typescript,
         )
         executable = core.install_node(manifest, key)
         if not args.node_only:
             core.install_ast(manifest, key, executable)
+        if args.with_esbuild:
+            core.install_esbuild(manifest, key, executable)
         if args.with_typescript:
             core.install_typescript(manifest, key, executable)
     except core.OfflineCoreError as exc:

@@ -9,6 +9,7 @@ smaller trusted set:
 - `oxc-parser 0.141.0`;
 - `@oxc-project/types 0.141.0`;
 - one native Oxc parser binding for the current platform;
+- optionally, lockfile-pinned esbuild `0.28.1` plus its native platform package;
 - optionally, lockfile-pinned Prettier `3.9.6`;
 - optionally, lockfile-pinned TypeScript `7.0.2` plus its native platform package.
 
@@ -31,6 +32,16 @@ vendor/offline/ast/binding-linux-x64-gnu-0.141.0.tgz
 ```text
 vendor/offline/prettier/prettier-3.9.6.tgz
 ```
+
+### Optional esbuild runtime slice
+
+```text
+vendor/offline/esbuild/esbuild-0.28.1.tgz
+vendor/offline/esbuild/linux-x64-0.28.1.tgz
+```
+
+Both archives are required. The common package provides the JavaScript API imported by
+`tests/_ts_runtime_module_loader.mjs`; the platform package provides the native executable.
 
 ### Optional TypeScript 7 slice
 
@@ -92,6 +103,25 @@ Core self-test:
 python tools/selftest_offline_repair_core.py
 ```
 
+## Verify and run esbuild independently
+
+The esbuild path does not require Oxc or Prettier. It validates both archives against the lockfile, verifies
+the native executable SHA-256 embedded by the matching common package, and performs a real TypeScript
+transform before returning success.
+
+```bash
+python tools/verify_offline_repair_vendor.py --esbuild-only
+python tools/bootstrap_offline_esbuild.py
+python tools/selftest_offline_esbuild.py
+```
+
+The self-test imports the repository's real `tests/_ts_runtime_module_loader.mjs` and performs a TypeScript
+transform through it. The declaration-snapshot contract additionally needs the Oxc and TypeScript slices:
+
+```bash
+npm run test:offline:declaration-snapshot
+```
+
 ## Verify and run Prettier independently
 
 The formatter path does not require the Oxc archives. It reuses the pinned Node archive and installs only the
@@ -148,9 +178,9 @@ regenerated to hide that mismatch.
 ## Scope boundary
 
 This focused toolchain covers Node-native tests, AST-backed source contracts, layer checks, formatting,
-TypeScript typechecking, and declaration emission. It does not provide TSX execution, ESLint/Oxlint, Vite,
-release bundling, obfuscation, Playwright, or browser binaries.
+TypeScript typechecking, declaration emission, and the esbuild-backed TypeScript runtime loader. It does not
+provide general TSX execution, ESLint/Oxlint, Vite, release bundling, obfuscation, Playwright, or browser
+binaries.
 
-The next most useful offline slice for this repository is `tsx + esbuild`, because a large part of the runtime
-test portfolio is TypeScript. It should be added as its own verified slice rather than smuggled in as an
-unvalidated partial install.
+The next optional expansion is `tsx` itself, because a large part of the runtime test portfolio is TypeScript.
+It should be added as its own verified slice; esbuild is now already available as the required native base.

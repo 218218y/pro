@@ -79,9 +79,18 @@ When TypeScript typechecking or declaration emission is needed and local TypeScr
 5. Run project typechecks through `python tools/run_offline_node24.py --node-only --with-typescript ...`.
 6. Never update declaration snapshots merely to absorb a compiler-version mismatch.
 
-The offline toolchain is deliberately narrow: Node 24, the AST adapter runtime, Prettier, and the exact
-TypeScript compiler pinned by the lockfile. It is not a substitute for TSX execution, lint, Vite, esbuild,
-release or browser-test dependencies. If an archive is missing, report its exact path and URL from
+When a focused test imports `tests/_ts_runtime_module_loader.mjs` or otherwise imports `esbuild`:
+
+1. Do not install the full dependency tree.
+2. Run `python tools/verify_offline_repair_vendor.py --esbuild-only`.
+3. Run `python tools/bootstrap_offline_esbuild.py`.
+4. Run a purely esbuild-backed command through `python tools/run_offline_node24.py --node-only --with-esbuild ...`.
+5. Declaration snapshot checks require Oxc, TypeScript, and esbuild, so run them without `--node-only` and
+   include both `--with-typescript` and `--with-esbuild`.
+
+The offline toolchain is deliberately narrow: Node 24, the AST adapter runtime, esbuild, Prettier, and the
+exact TypeScript compiler pinned by the lockfile. It is not a substitute for general TSX execution, lint,
+Vite, release or browser-test dependencies. If an archive is missing, report its exact path and URL from
 `vendor/offline/manifest.json`; do not attempt a large dependency installation to work around it.
 
 Important directories:
