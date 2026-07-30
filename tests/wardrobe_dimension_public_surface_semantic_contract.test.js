@@ -458,8 +458,8 @@ test('Runtime routes, historical Entries 175-178, and compatibility ownership ar
   );
   const retiredEntries = new Set(baseline.migrationRetirements.map(retirement => retirement.entryNumber));
   const activeEntries = baseline.migrationBudgets.filter((_, index) => !retiredEntries.has(index + 1));
-  assert.equal(activeEntries.length, 149);
-  assert.equal(baseline.migrationRetirements.length, 29);
+  assert.equal(activeEntries.length, 108);
+  assert.equal(baseline.migrationRetirements.length, 70);
   assert.equal(baseline.compatibilityBudgets.length, 4);
   assert.deepEqual(
     baseline.migrationConsolidations.map(group => group.id),
@@ -478,10 +478,20 @@ test('Runtime routes, historical Entries 175-178, and compatibility ownership ar
       'stack-split-module-config-dimension-consolidation',
       'library-preset-flow-dimension-consolidation',
       'library-preset-module-defaults-dimension-consolidation',
+      'split-hover-preview-line-dimension-consolidation',
+      'interior-rod-clearance-dimension-consolidation',
+      'chest-mode-build-dimension-consolidation',
+      'interior-hover-manual-mode-dimension-consolidation',
+      'core-carcass-dimension-consolidation',
+      'stack-split-lower-setup-dimension-consolidation',
+      'manual-layout-free-box-plans-dimension-consolidation',
+      'sketch-box-vertical-content-occupancy-dimension-consolidation',
+      'preview-interior-hover-apply-dimension-consolidation',
+      'chest-mode-inputs-dimension-consolidation',
     ]
   );
   assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 108);
-  assert.equal(new Set(activeEntries.map(entry => entry.fromFile)).size, 93);
+  assert.equal(new Set(activeEntries.map(entry => entry.fromFile)).size, 83);
   for (const [count, expected] of Object.entries(ledgerPrefixes)) {
     assert.equal(
       sha256(stableJson(baseline.migrationBudgets.slice(0, Number(count)))),

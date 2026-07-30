@@ -17,6 +17,8 @@ const servicesBaseApiRel = 'esm/native/services/api_runtime_base_surface.ts';
 const ownerRel = 'esm/shared/dimensions/carcass_interior_policy.ts';
 const shellOwnerRel = 'esm/shared/dimensions/carcass_shell_policy.ts';
 const unitsOwnerRel = 'esm/shared/dimensions/units.ts';
+const stackSplitOwnerRel = 'esm/shared/dimensions/stack_split_lower_setup_dimension_policy.ts';
+const stackSplitConsumerRel = 'esm/native/builder/build_stack_split_lower_setup.ts';
 const facadeAbsolute = path.join(root, facadeRel);
 const publicDimensionsAbsolute = path.join(root, publicDimensionsRel);
 const ownerAbsolute = path.join(root, ownerRel);
@@ -36,7 +38,7 @@ const analysisCache = new Map();
 const expectedOwnerInventory = Object.freeze({
   'esm/native/builder/build_flow_plan.ts': Object.freeze([symbol]),
   'esm/native/builder/build_flow_plan_inputs.ts': Object.freeze([symbol]),
-  'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze([symbol]),
+  [stackSplitOwnerRel]: Object.freeze([symbol]),
   'esm/native/builder/module_loop_pipeline_module_depth.ts': Object.freeze([symbol]),
   [facadeRel]: Object.freeze([symbol]),
 });
@@ -193,13 +195,19 @@ function focusedOwnerInventory() {
     if (!dependencies.length) continue;
     assert.equal(dependencies.length, 1, `${rel(file)} must use one Carcass Interior owner statement`);
     const [dependency] = dependencies;
-    assert.equal(dependency.kind, 'value', `${rel(file)} must use a value import`);
-    assert.equal(dependency.syntax, 'static-import', `${rel(file)} must use a static import`);
-    assert.deepEqual(dependency.importedSymbols, [symbol], `${rel(file)} imports only ${symbol}`);
+    const fileRel = rel(file);
+    const expectedSyntax = fileRel === stackSplitOwnerRel ? 'static-re-export' : 'static-import';
+    assert.equal(dependency.kind, 'value', `${fileRel} must use a value import`);
+    assert.equal(dependency.syntax, expectedSyntax, `${fileRel} must use its reviewed statement form`);
+    assert.deepEqual(dependency.importedSymbols, [symbol], `${fileRel} imports only ${symbol}`);
     assert.deepEqual(
       dependency.bindings,
-      [{ importedName: symbol, localName: symbol, exportedName: null }],
-      `${rel(file)} must not alias or re-export ${symbol}`
+      [
+        expectedSyntax === 'static-re-export'
+          ? { importedName: symbol, localName: null, exportedName: symbol }
+          : { importedName: symbol, localName: symbol, exportedName: null },
+      ],
+      `${fileRel} must preserve ${symbol} identity without aliases`
     );
     result[rel(file)] = dependency.importedSymbols;
   }
@@ -227,7 +235,11 @@ test('Carcass Interior has no legacy-facade or public-barrel consumer, re-export
   assert.deepEqual(compatibility.violations, []);
   assert.deepEqual(compatibility.approvedProjections, [publicDimensionsRel]);
 
-  const expectedOccurrenceFiles = [ownerRel, ...Object.keys(expectedOwnerInventory)].sort();
+  const expectedOccurrenceFiles = [
+    ownerRel,
+    stackSplitConsumerRel,
+    ...Object.keys(expectedOwnerInventory),
+  ].sort();
   const occurrenceFiles = esmSourceFiles
     .filter(file => new RegExp(`\\b${symbol}\\b`, 'u').test(sourceFor(file)))
     .map(rel)

@@ -128,7 +128,7 @@ function stableJson(value) {
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
-test('Chest Mode Build imports exactly seven focused owners without aliases or aggregates', () => {
+test('Chest Mode Build imports its exact use-case owner without aliases or aggregates', () => {
   const source = read(consumerRel);
   const analysis = analyzeModuleDependencies(path.join(root, consumerRel), source);
   const focusedImports = analysis.imports.filter(dependency =>
@@ -144,54 +144,28 @@ test('Chest Mode Build imports exactly seven focused owners without aliases or a
     })),
     [
       {
-        specifier: '../../shared/dimensions/base_leg_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['BASE_LEG_LAYOUT_POLICY'],
-      },
-      {
-        specifier: '../../shared/dimensions/base_platform_render_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['BASE_PLATFORM_RENDER_POLICY'],
-      },
-      {
-        specifier: '../../shared/dimensions/base_plinth_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['BASE_PLINTH_POLICY'],
-      },
-      {
-        specifier: '../../shared/dimensions/chest_structural_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: companionImport.importedSymbols,
-      },
-      {
-        specifier: '../../shared/dimensions/chest_mode_policy.js',
+        specifier: '../../shared/dimensions/chest_mode_build_dimension_policy.js',
         kind: 'value',
         syntax: 'static-import',
         importedSymbols: [
+          'BASE_LEG_LAYOUT_POLICY',
+          'BASE_PLATFORM_RENDER_POLICY',
+          'BASE_PLINTH_POLICY',
+          'CHEST_CASTER_RENDER_POLICY',
+          'CHEST_CONNECTOR_POLICY',
+          'CHEST_DRAWER_GEOMETRY_POLICY',
           'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
           'CHEST_MODE_COMMODE_RENDER_POLICY',
           'CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY',
+          'CHEST_MOTION_POLICY',
+          'CHEST_SHELL_POLICY',
+          'HINGED_DOOR_MOUNT_POLICY',
+          'resolveDoorMountThicknessesFromConfig',
         ],
-      },
-      {
-        specifier: '../../shared/dimensions/door_system_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['HINGED_DOOR_MOUNT_POLICY'],
-      },
-      {
-        specifier: '../../shared/dimensions/door_mount_thickness_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['resolveDoorMountThicknessesFromConfig'],
       },
     ]
   );
-  assert.equal(focusedImports.length, 7);
+  assert.equal(focusedImports.length, 1);
   assert.equal(
     focusedImports.every(dependency =>
       dependency.bindings.every(binding => binding.importedName === binding.localName)

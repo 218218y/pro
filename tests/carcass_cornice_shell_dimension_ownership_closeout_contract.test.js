@@ -15,6 +15,10 @@ const servicesApiRel = 'esm/native/services/api.ts';
 const servicesBaseApiRel = 'esm/native/services/api_runtime_base_surface.ts';
 const corniceOwnerRel = 'esm/shared/dimensions/carcass_cornice_render_policy.ts';
 const shellOwnerRel = 'esm/shared/dimensions/carcass_shell_policy.ts';
+const shellIdentityReexportOwners = new Set([
+  'esm/shared/dimensions/core_carcass_dimension_policy.ts',
+  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts',
+]);
 const facadeAbsolute = path.join(root, facadeRel);
 const publicDimensionsAbsolute = path.join(root, publicDimensionsRel);
 const corniceOwnerAbsolute = path.join(root, corniceOwnerRel);
@@ -49,7 +53,7 @@ const expectedCorniceInventory = Object.freeze({
 
 const expectedShellInventory = Object.freeze({
   'esm/native/builder/carcass_pipeline.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
-  'esm/native/builder/core_carcass_shared.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
+  'esm/shared/dimensions/core_carcass_dimension_policy.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
   'esm/native/builder/core_carcass_shell.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
   'esm/native/builder/corner_wing_carcass_shell_metrics.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
   'esm/native/builder/corner_wing_cornice_path.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
@@ -57,7 +61,7 @@ const expectedShellInventory = Object.freeze({
   'esm/native/builder/corner_wing_cornice_wave.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
   'esm/native/builder/module_loop_pipeline_hex_cell.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
   'esm/native/builder/module_loop_pipeline_module_depth.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
+  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts': Object.freeze([
     'CARCASS_SHELL_DIMENSIONS',
   ]),
   'esm/shared/dimensions/carcass_interior_policy.ts': Object.freeze(['CARCASS_SHELL_DIMENSIONS']),
@@ -249,17 +253,21 @@ function ownerInventory(ownerRel) {
     assert.equal(dependencies.length, 1, `${rel(file)} must use one ${ownerRel} statement`);
     const [dependency] = dependencies;
     assert.equal(dependency.kind, 'value', `${rel(file)} must use a value import from ${ownerRel}`);
+    const fileRel = rel(file);
+    const expectedSyntax = shellIdentityReexportOwners.has(fileRel) ? 'static-re-export' : 'static-import';
     assert.equal(
       dependency.syntax,
-      'static-import',
-      `${rel(file)} must use a static import from ${ownerRel}`
+      expectedSyntax,
+      `${fileRel} must use its reviewed statement form from ${ownerRel}`
     );
     assert.equal(
-      dependency.bindings.every(
-        binding => binding.importedName === binding.localName && binding.exportedName === null
+      dependency.bindings.every(binding =>
+        expectedSyntax === 'static-re-export'
+          ? binding.localName === null && binding.importedName === binding.exportedName
+          : binding.importedName === binding.localName && binding.exportedName === null
       ),
       true,
-      `${rel(file)} must not alias or re-export ${ownerRel}`
+      `${fileRel} must preserve unaliased ${ownerRel} identity`
     );
     result[rel(file)] = dependency.importedSymbols;
   }

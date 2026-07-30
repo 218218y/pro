@@ -13,6 +13,20 @@ const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const runtimeApiRel = 'esm/native/runtime/api.ts';
 const renderLoopDoorMotionOwnerRel = 'esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts';
+const identityReexportOwners = new Set([
+  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts',
+  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts',
+]);
+const identityCompositionRoutes = new Map([
+  [
+    'esm/native/builder/visuals_chest_mode_build.ts',
+    'esm/shared/dimensions/chest_mode_build_dimension_policy.ts',
+  ],
+  [
+    'esm/native/services/canvas_picking_split_hover_preview_line.ts',
+    'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts',
+  ],
+]);
 const ownerAbsolute = path.join(root, ownerRel);
 const facadeAbsolute = path.join(root, facadeRel);
 const publicDimensionsAbsolute = path.join(root, publicDimensionsRel);
@@ -39,6 +53,7 @@ const focusedInventories = new Map([
       'esm/native/builder/hinged_doors_module_ops_context.ts',
       'esm/native/builder/render_interior_sketch_boxes_door_geometry.ts',
       'esm/native/builder/visuals_chest_mode_build.ts',
+      'esm/shared/dimensions/chest_mode_build_dimension_policy.ts',
       'esm/shared/dimensions/door_mount_thickness_policy.ts',
       ownerRel,
       'esm/shared/dimensions/external_drawer_policy.ts',
@@ -56,6 +71,7 @@ const focusedInventories = new Map([
       'esm/native/services/canvas_picking_door_split_click_custom.ts',
       'esm/native/services/canvas_picking_door_split_click_toggle.ts',
       'esm/native/services/canvas_picking_split_hover_preview_line.ts',
+      'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts',
       ownerRel,
     ],
   ],
@@ -347,10 +363,14 @@ test('Door System focused-owner inventory is exact, reviewed, and alias-free', (
     const platformConsumers = consumers.filter(
       consumer => consumer.file === 'esm/native/platform/render_loop_motion_doors.ts'
     );
+    const identityCompositionConsumers = consumers.filter(consumer =>
+      identityCompositionRoutes.has(consumer.file)
+    );
     const directConsumers = consumers.filter(
       consumer =>
         consumer.file !== renderLoopDoorMotionOwnerRel &&
-        consumer.file !== 'esm/native/platform/render_loop_motion_doors.ts'
+        consumer.file !== 'esm/native/platform/render_loop_motion_doors.ts' &&
+        !identityCompositionRoutes.has(consumer.file)
     );
     const usesDoorMotionComposition = symbol === 'SLIDING_DOOR_CONSTRUCTION_POLICY';
 
@@ -360,20 +380,49 @@ test('Door System focused-owner inventory is exact, reviewed, and alias-free', (
       `${symbol} direct consumers must target the focused owner module`
     );
     assert.equal(
-      directConsumers.every(consumer => consumer.kind === 'value' && consumer.syntax === 'static-import'),
+      directConsumers.every(consumer => {
+        const identityReexport = identityReexportOwners.has(consumer.file);
+        return (
+          consumer.kind === 'value' &&
+          consumer.syntax === (identityReexport ? 'static-re-export' : 'static-import')
+        );
+      }),
       true,
-      `${symbol} direct consumers must use static value imports`
+      `${symbol} direct consumers must use their reviewed static statement form`
     );
     assert.equal(
-      directConsumers.every(
-        consumer =>
+      directConsumers.every(consumer => {
+        const identityReexport = identityReexportOwners.has(consumer.file);
+        return (
           consumer.bindings.length === 1 &&
-          consumer.bindings[0].localName === symbol &&
-          consumer.bindings[0].exportedName === null
-      ),
+          consumer.bindings[0].importedName === symbol &&
+          consumer.bindings[0].localName === (identityReexport ? null : symbol) &&
+          consumer.bindings[0].exportedName === (identityReexport ? symbol : null)
+        );
+      }),
       true,
-      `${symbol} direct consumers must not alias or re-export the binding`
+      `${symbol} direct consumers must preserve the binding identity without aliases`
     );
+
+    const expectedIdentityCompositionConsumer = [...identityCompositionRoutes.entries()].find(
+      ([consumerFile]) => consumers.some(consumer => consumer.file === consumerFile)
+    );
+    assert.equal(identityCompositionConsumers.length, expectedIdentityCompositionConsumer ? 1 : 0, symbol);
+    if (expectedIdentityCompositionConsumer) {
+      const [consumerFile, identityOwnerFile] = expectedIdentityCompositionConsumer;
+      const [identityConsumer] = identityCompositionConsumers;
+      assert.equal(identityConsumer.file, consumerFile, symbol);
+      assert.equal(
+        identityConsumer.target,
+        path.normalize(path.join(root, identityOwnerFile)).toLowerCase(),
+        symbol
+      );
+      assert.equal(identityConsumer.kind, 'value', symbol);
+      assert.equal(identityConsumer.syntax, 'static-import', symbol);
+      assert.deepEqual(identityConsumer.bindings, [
+        { importedName: symbol, localName: symbol, exportedName: null },
+      ]);
+    }
 
     assert.equal(compositionConsumers.length, usesDoorMotionComposition ? 1 : 0, symbol);
     assert.equal(platformConsumers.length, usesDoorMotionComposition ? 1 : 0, symbol);

@@ -88,7 +88,7 @@ function stableJson(value) {
 
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
-test('Chest Mode Inputs imports exactly four focused owner statements without aliases or facade access', () => {
+test('Chest Mode Inputs imports its exact use-case owner without aliases or facade access', () => {
   const source = read(consumerRel);
   const analysis = analyzeModuleDependencies(path.join(root, consumerRel), source);
   const focusedImports = analysis.imports.filter(dependency =>
@@ -104,32 +104,20 @@ test('Chest Mode Inputs imports exactly four focused owner statements without al
     })),
     [
       {
-        specifier: '../../shared/dimensions/base_platform_render_policy.js',
+        specifier: '../../shared/dimensions/chest_mode_inputs_dimension_policy.js',
         kind: 'value',
         syntax: 'static-import',
-        importedSymbols: ['BASE_PLATFORM_RENDER_POLICY'],
-      },
-      {
-        specifier: '../../shared/dimensions/chest_structural_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['CHEST_CASTER_RENDER_POLICY'],
-      },
-      {
-        specifier: '../../shared/dimensions/chest_mode_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['CHEST_MODE_COMMODE_CONSTRAINTS_POLICY'],
-      },
-      {
-        specifier: '../../shared/dimensions/units.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['clampDimension', 'cmToM'],
+        importedSymbols: [
+          'BASE_PLATFORM_RENDER_POLICY',
+          'CHEST_CASTER_RENDER_POLICY',
+          'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
+          'clampDimension',
+          'cmToM',
+        ],
       },
     ]
   );
-  assert.equal(focusedImports.length, 4);
+  assert.equal(focusedImports.length, 1);
   assert.equal(
     focusedImports.every(dependency =>
       dependency.bindings.every(binding => binding.importedName === binding.localName)

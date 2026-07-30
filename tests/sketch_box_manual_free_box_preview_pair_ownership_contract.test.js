@@ -60,28 +60,17 @@ test('Manual Free Box preview pair imports exact focused owners without aggregat
   ]);
   assert.deepEqual(focusedDimensionImports(plansRel), [
     {
-      specifier: '../../shared/dimensions/interior_fittings_policy.js',
+      specifier: '../../shared/dimensions/manual_layout_free_box_plans_dimension_policy.js',
       kind: 'value',
       syntax: 'static-import',
-      symbols: ['INTERIOR_ROD_RENDER_POLICY', 'INTERIOR_SHELF_GEOMETRY_POLICY'],
-    },
-    {
-      specifier: '../../shared/dimensions/interior_storage_policy.js',
-      kind: 'value',
-      syntax: 'static-import',
-      symbols: ['INTERIOR_STORAGE_BARRIER_POLICY', 'INTERIOR_STORAGE_GRID_POLICY'],
-    },
-    {
-      specifier: '../../shared/dimensions/material_thickness_policy.js',
-      kind: 'value',
-      syntax: 'static-import',
-      symbols: ['MATERIAL_THICKNESS_POLICY'],
-    },
-    {
-      specifier: '../../shared/dimensions/sketch_box_preview_policy.js',
-      kind: 'value',
-      syntax: 'static-import',
-      symbols: ['SKETCH_BOX_PREVIEW_CORE_POLICY'],
+      symbols: [
+        'INTERIOR_ROD_RENDER_POLICY',
+        'INTERIOR_SHELF_GEOMETRY_POLICY',
+        'INTERIOR_STORAGE_BARRIER_POLICY',
+        'INTERIOR_STORAGE_GRID_POLICY',
+        'MATERIAL_THICKNESS_POLICY',
+        'SKETCH_BOX_PREVIEW_CORE_POLICY',
+      ],
     },
   ]);
 

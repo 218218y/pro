@@ -7847,7 +7847,7 @@
       "evidenceContracts": [
         {
           "path": "tests/order_pdf_dimension_support_ownership_contract.test.js",
-          "sha256": "c46740011f801efe681b222e94316f16d4988629cf56cdd44e78ff03c37195bb"
+          "sha256": "a0cfdb02646b926e7c13791b50090e1d9d299af2b911701076af1f6afc08a4a8"
         },
         {
           "path": "tests/refactor_stage79_order_pdf_export_commands_ownership_guard.test.js",
@@ -8439,11 +8439,11 @@
       "evidenceContracts": [
         {
           "path": "tests/wave_c1_dimension_consolidation_contract.test.js",
-          "sha256": "12d1840d9ab8c3a53b6af2fd10c3bb080d4b0dc4ed116c5d68ba226e5b50095e"
+          "sha256": "0f66810cbb82309e6665b3a8d1838d7de8d19736acaf68c54d1a0a3a789a29ef"
         },
         {
           "path": "tests/wave_c1_dimension_consolidation_runtime.test.ts",
-          "sha256": "9c8b32cadf64d40f2a75d8ef31bc7af342d868a1b41b62fe5c02fcaba5aba7bb"
+          "sha256": "c6e5aea35eff7f1265c02359eb01c10fdf48bb5f0aa9ec77404caa93cf015b37"
         }
       ],
       "replacementProvenance": {
@@ -8581,11 +8581,11 @@
       "evidenceContracts": [
         {
           "path": "tests/wave_c1_dimension_consolidation_contract.test.js",
-          "sha256": "12d1840d9ab8c3a53b6af2fd10c3bb080d4b0dc4ed116c5d68ba226e5b50095e"
+          "sha256": "0f66810cbb82309e6665b3a8d1838d7de8d19736acaf68c54d1a0a3a789a29ef"
         },
         {
           "path": "tests/wave_c1_dimension_consolidation_runtime.test.ts",
-          "sha256": "9c8b32cadf64d40f2a75d8ef31bc7af342d868a1b41b62fe5c02fcaba5aba7bb"
+          "sha256": "c6e5aea35eff7f1265c02359eb01c10fdf48bb5f0aa9ec77404caa93cf015b37"
         }
       ],
       "replacementProvenance": {
@@ -8735,11 +8735,11 @@
       "evidenceContracts": [
         {
           "path": "tests/wave_c1_dimension_consolidation_contract.test.js",
-          "sha256": "12d1840d9ab8c3a53b6af2fd10c3bb080d4b0dc4ed116c5d68ba226e5b50095e"
+          "sha256": "0f66810cbb82309e6665b3a8d1838d7de8d19736acaf68c54d1a0a3a789a29ef"
         },
         {
           "path": "tests/wave_c1_dimension_consolidation_runtime.test.ts",
-          "sha256": "9c8b32cadf64d40f2a75d8ef31bc7af342d868a1b41b62fe5c02fcaba5aba7bb"
+          "sha256": "c6e5aea35eff7f1265c02359eb01c10fdf48bb5f0aa9ec77404caa93cf015b37"
         }
       ],
       "replacementProvenance": {
@@ -8870,11 +8870,11 @@
       "evidenceContracts": [
         {
           "path": "tests/wave_c2_dimension_consolidation_contract.test.js",
-          "sha256": "a71243517df492abdf1663fe61a9cf502691a86d5abbf835b2a71f07b5e4f98d"
+          "sha256": "f082eabfd7cc67bf5b7d46d50d1217d10363c5d33fafc8b7c3a0602c692885e2"
         },
         {
           "path": "tests/wave_c2_dimension_consolidation_runtime.test.ts",
-          "sha256": "bd778d99f1b9325b1613b6e80a7bbfde382b4ed293ba22d999c0f6fbe8d471b7"
+          "sha256": "aa4d3a116e78249624b326ab4a2a9e557c008ea142a677e33c2d260ded05ff49"
         }
       ],
       "replacementProvenance": {
@@ -8979,11 +8979,11 @@
       "evidenceContracts": [
         {
           "path": "tests/wave_c2_dimension_consolidation_contract.test.js",
-          "sha256": "a71243517df492abdf1663fe61a9cf502691a86d5abbf835b2a71f07b5e4f98d"
+          "sha256": "f082eabfd7cc67bf5b7d46d50d1217d10363c5d33fafc8b7c3a0602c692885e2"
         },
         {
           "path": "tests/wave_c2_dimension_consolidation_runtime.test.ts",
-          "sha256": "bd778d99f1b9325b1613b6e80a7bbfde382b4ed293ba22d999c0f6fbe8d471b7"
+          "sha256": "aa4d3a116e78249624b326ab4a2a9e557c008ea142a677e33c2d260ded05ff49"
         }
       ],
       "replacementProvenance": {
@@ -9076,11 +9076,11 @@
       "evidenceContracts": [
         {
           "path": "tests/wave_c3_dimension_consolidation_contract.test.js",
-          "sha256": "c29e99c7401f1a1bb603b87ecdf1c837388a595f895ef4f459b1489002645e09"
+          "sha256": "25424f5b4f14466b0e5607a76c8e26def65aa77d4bd13a1cf5bba6886f4dfe9d"
         },
         {
           "path": "tests/wave_c3_dimension_consolidation_runtime.test.ts",
-          "sha256": "b8f75dce807470233b42dbc9b68c2ed08aaad0877adf77e4c38f08f78e94674c"
+          "sha256": "c375c4ccc8a8cdf08bda22c4b0aac103d7a52900151b1c743cdc187c93f950f8"
         }
       ],
       "replacementProvenance": {
@@ -9169,11 +9169,11 @@
       "evidenceContracts": [
         {
           "path": "tests/wave_c3_dimension_consolidation_contract.test.js",
-          "sha256": "c29e99c7401f1a1bb603b87ecdf1c837388a595f895ef4f459b1489002645e09"
+          "sha256": "25424f5b4f14466b0e5607a76c8e26def65aa77d4bd13a1cf5bba6886f4dfe9d"
         },
         {
           "path": "tests/wave_c3_dimension_consolidation_runtime.test.ts",
-          "sha256": "b8f75dce807470233b42dbc9b68c2ed08aaad0877adf77e4c38f08f78e94674c"
+          "sha256": "c375c4ccc8a8cdf08bda22c4b0aac103d7a52900151b1c743cdc187c93f950f8"
         }
       ],
       "replacementProvenance": {
@@ -9269,11 +9269,11 @@
       "evidenceContracts": [
         {
           "path": "tests/wave_c3_dimension_consolidation_contract.test.js",
-          "sha256": "c29e99c7401f1a1bb603b87ecdf1c837388a595f895ef4f459b1489002645e09"
+          "sha256": "25424f5b4f14466b0e5607a76c8e26def65aa77d4bd13a1cf5bba6886f4dfe9d"
         },
         {
           "path": "tests/wave_c3_dimension_consolidation_runtime.test.ts",
-          "sha256": "b8f75dce807470233b42dbc9b68c2ed08aaad0877adf77e4c38f08f78e94674c"
+          "sha256": "c375c4ccc8a8cdf08bda22c4b0aac103d7a52900151b1c743cdc187c93f950f8"
         }
       ],
       "replacementProvenance": {
@@ -9372,11 +9372,11 @@
       "evidenceContracts": [
         {
           "path": "tests/wave_c3_dimension_consolidation_contract.test.js",
-          "sha256": "c29e99c7401f1a1bb603b87ecdf1c837388a595f895ef4f459b1489002645e09"
+          "sha256": "25424f5b4f14466b0e5607a76c8e26def65aa77d4bd13a1cf5bba6886f4dfe9d"
         },
         {
           "path": "tests/wave_c3_dimension_consolidation_runtime.test.ts",
-          "sha256": "b8f75dce807470233b42dbc9b68c2ed08aaad0877adf77e4c38f08f78e94674c"
+          "sha256": "c375c4ccc8a8cdf08bda22c4b0aac103d7a52900151b1c743cdc187c93f950f8"
         }
       ],
       "replacementProvenance": {
@@ -9468,11 +9468,11 @@
       "evidenceContracts": [
         {
           "path": "tests/wave_c3_dimension_consolidation_contract.test.js",
-          "sha256": "c29e99c7401f1a1bb603b87ecdf1c837388a595f895ef4f459b1489002645e09"
+          "sha256": "25424f5b4f14466b0e5607a76c8e26def65aa77d4bd13a1cf5bba6886f4dfe9d"
         },
         {
           "path": "tests/wave_c3_dimension_consolidation_runtime.test.ts",
-          "sha256": "b8f75dce807470233b42dbc9b68c2ed08aaad0877adf77e4c38f08f78e94674c"
+          "sha256": "c375c4ccc8a8cdf08bda22c4b0aac103d7a52900151b1c743cdc187c93f950f8"
         }
       ],
       "replacementProvenance": {

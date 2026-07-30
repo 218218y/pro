@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the repository's minimal offline Node + AST repair toolchain.
+"""Install the repository's focused offline Node, AST and optional Prettier toolchain.
 
 The script never invokes npm and never runs package lifecycle scripts. It only
 uses files explicitly listed in vendor/offline/manifest.json and validates them
@@ -130,6 +130,19 @@ def _require_file(path: Path, url: str) -> None:
         )
 
 
+def _validate_lock_entry(packages: dict, entry: dict, expected_version: str, label: str) -> None:
+    lock_path = entry["lockPath"]
+    lock_entry = packages.get(lock_path)
+    if not isinstance(lock_entry, dict):
+        raise OfflineCoreError(f"{label} package is absent from package-lock.json: {lock_path}")
+    if lock_entry.get("resolved") != entry["url"]:
+        raise OfflineCoreError(f"Resolved URL mismatch for {lock_path}")
+    if lock_entry.get("integrity") != entry["integrity"]:
+        raise OfflineCoreError(f"Integrity mismatch for {lock_path}")
+    if str(lock_entry.get("version")) != str(expected_version):
+        raise OfflineCoreError(f"Version mismatch for {lock_path}")
+
+
 def validate_manifest_against_project(manifest: dict) -> None:
     pinned_node = NODE_VERSION_PATH.read_text(encoding="utf-8").strip()
     manifest_node = str(manifest["node"]["version"])
@@ -145,16 +158,12 @@ def validate_manifest_against_project(manifest: dict) -> None:
 
     ast_entries = list(manifest["ast"]["packages"]) + list(manifest["ast"]["bindings"].values())
     for entry in ast_entries:
-        lock_path = entry["lockPath"]
-        lock_entry = packages.get(lock_path)
-        if not isinstance(lock_entry, dict):
-            raise OfflineCoreError(f"AST package is absent from package-lock.json: {lock_path}")
-        if lock_entry.get("resolved") != entry["url"]:
-            raise OfflineCoreError(f"Resolved URL mismatch for {lock_path}")
-        if lock_entry.get("integrity") != entry["integrity"]:
-            raise OfflineCoreError(f"Integrity mismatch for {lock_path}")
-        if str(lock_entry.get("version")) != str(manifest["ast"]["version"]):
-            raise OfflineCoreError(f"Version mismatch for {lock_path}")
+        _validate_lock_entry(packages, entry, str(manifest["ast"]["version"]), "AST")
+
+    prettier = manifest.get("prettier")
+    if not isinstance(prettier, dict) or not isinstance(prettier.get("package"), dict):
+        raise OfflineCoreError("vendor/offline/manifest.json has no Prettier package definition")
+    _validate_lock_entry(packages, prettier["package"], str(prettier["version"]), "Prettier")
 
 
 def selected_entries(manifest: dict, key: str) -> tuple[dict, list[dict]]:
@@ -165,7 +174,33 @@ def selected_entries(manifest: dict, key: str) -> tuple[dict, list[dict]]:
     return node_entry, [*manifest["ast"]["packages"], binding_entry]
 
 
-def verify_vendor(manifest: dict, key: str, *, node: bool = True, ast: bool = True) -> None:
+def prettier_entry(manifest: dict) -> dict:
+    entry = manifest.get("prettier", {}).get("package")
+    if not isinstance(entry, dict):
+        raise OfflineCoreError("No offline Prettier package definition")
+    return entry
+
+
+def _verify_npm_archives(entries: list[dict], label: str) -> None:
+    for entry in entries:
+        archive = _root_path(entry["file"], f"{label} archive path")
+        _require_file(archive, entry["url"])
+        actual = _sha512_integrity(archive)
+        if actual != entry["integrity"]:
+            raise OfflineCoreError(
+                f"SHA-512 integrity mismatch for {_display_path(archive)}\n"
+                f"expected: {entry['integrity']}\nactual:   {actual}"
+            )
+
+
+def verify_vendor(
+    manifest: dict,
+    key: str,
+    *,
+    node: bool = True,
+    ast: bool = True,
+    prettier: bool = False,
+) -> None:
     validate_manifest_against_project(manifest)
     node_entry, ast_entries = selected_entries(manifest, key)
 
@@ -180,15 +215,10 @@ def verify_vendor(manifest: dict, key: str, *, node: bool = True, ast: bool = Tr
             )
 
     if ast:
-        for entry in ast_entries:
-            archive = _root_path(entry["file"], "AST archive path")
-            _require_file(archive, entry["url"])
-            actual = _sha512_integrity(archive)
-            if actual != entry["integrity"]:
-                raise OfflineCoreError(
-                    f"SHA-512 integrity mismatch for {_display_path(archive)}\n"
-                    f"expected: {entry['integrity']}\nactual:   {actual}"
-                )
+        _verify_npm_archives(ast_entries, "AST")
+
+    if prettier:
+        _verify_npm_archives([prettier_entry(manifest)], "Prettier")
 
 
 def _extract_node_binary(archive: Path, member_name: str, destination: Path) -> None:
@@ -307,21 +337,37 @@ def _extract_npm_tgz(archive: Path, destination: Path) -> None:
         raise
 
 
+def _installed_package_version(destination: Path) -> str | None:
+    package_json = destination / "package.json"
+    if not package_json.is_file():
+        return None
+    try:
+        value = json.loads(package_json.read_text(encoding="utf-8")).get("version")
+    except (OSError, json.JSONDecodeError):
+        return None
+    return str(value) if value is not None else None
+
+
+def _install_npm_entry(entry: dict, expected_version: str, *, force: bool = False) -> Path:
+    archive = _root_path(entry["file"], "npm archive path")
+    destination = _root_path(entry["installPath"], "npm install path")
+    if not force and _installed_package_version(destination) == expected_version:
+        return destination
+    _extract_npm_tgz(archive, destination)
+    actual_version = _installed_package_version(destination)
+    if actual_version != expected_version:
+        raise OfflineCoreError(
+            f"Extracted package version mismatch at {_display_path(destination)}; "
+            f"expected {expected_version}, got {actual_version or 'missing'}"
+        )
+    return destination
+
+
 def install_ast(manifest: dict, key: str, node_executable: Path, *, force: bool = False) -> None:
     _, entries = selected_entries(manifest, key)
+    expected_version = str(manifest["ast"]["version"])
     for entry in entries:
-        archive = _root_path(entry["file"], "AST archive path")
-        destination = _root_path(entry["installPath"], "AST install path")
-        package_json = destination / "package.json"
-        current_version = None
-        if package_json.is_file() and not force:
-            try:
-                current_version = json.loads(package_json.read_text(encoding="utf-8")).get("version")
-            except (OSError, json.JSONDecodeError):
-                current_version = None
-        if current_version == manifest["ast"]["version"]:
-            continue
-        _extract_npm_tgz(archive, destination)
+        _install_npm_entry(entry, expected_version, force=force)
 
     probe_script = (
         "import fs from 'node:fs';"
@@ -345,11 +391,42 @@ def install_ast(manifest: dict, key: str, node_executable: Path, *, force: bool 
         )
 
 
+def install_prettier(manifest: dict, node_executable: Path, *, force: bool = False) -> Path:
+    entry = prettier_entry(manifest)
+    expected_version = str(manifest["prettier"]["version"])
+    destination = _install_npm_entry(entry, expected_version, force=force)
+    executable = destination.joinpath(
+        *_safe_relative_posix(manifest["prettier"]["executable"], "Prettier executable").parts
+    )
+    if not executable.is_file():
+        raise OfflineCoreError(f"Prettier executable is missing after extraction: {_display_path(executable)}")
+    probe = subprocess.run(
+        [str(node_executable), str(executable), "--version"],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    actual = probe.stdout.strip()
+    if probe.returncode != 0 or actual != expected_version:
+        detail = (probe.stderr or probe.stdout).strip()
+        raise OfflineCoreError(
+            f"Offline Prettier failed verification; expected {expected_version}, got "
+            f"{actual or detail or 'no output'}"
+        )
+    return executable
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--node-only", action="store_true", help="Install only the pinned Node runtime")
     group.add_argument("--ast-only", action="store_true", help="Install only AST packages (Node must exist)")
+    parser.add_argument(
+        "--with-prettier",
+        action="store_true",
+        help="Also install and verify the lockfile-pinned Prettier package",
+    )
     parser.add_argument("--force", action="store_true", help="Re-extract even when matching installs exist")
     parser.add_argument("--print-node", action="store_true", help="Print only the installed Node executable path")
     args = parser.parse_args(argv)
@@ -359,7 +436,13 @@ def main(argv: list[str] | None = None) -> int:
         key = platform_key()
         want_node = not args.ast_only
         want_ast = not args.node_only
-        verify_vendor(manifest, key, node=want_node, ast=want_ast)
+        verify_vendor(
+            manifest,
+            key,
+            node=want_node,
+            ast=want_ast,
+            prettier=args.with_prettier,
+        )
 
         node_entry, _ = selected_entries(manifest, key)
         install_dir = _root_path(manifest["node"]["installDirectory"], "Node install directory")
@@ -371,6 +454,8 @@ def main(argv: list[str] | None = None) -> int:
 
         if want_ast:
             install_ast(manifest, key, node_executable, force=args.force)
+        if args.with_prettier:
+            install_prettier(manifest, node_executable, force=args.force)
 
         if args.print_node:
             print(node_executable)
@@ -378,7 +463,9 @@ def main(argv: list[str] | None = None) -> int:
             installed = [f"Node {manifest['node']['version']}"]
             if want_ast:
                 installed.append(f"AST adapter dependencies {manifest['ast']['version']}")
-            print(f"Offline repair core ready for {key}: " + ", ".join(installed))
+            if args.with_prettier:
+                installed.append(f"Prettier {manifest['prettier']['version']}")
+            print(f"Offline repair toolchain ready for {key}: " + ", ".join(installed))
         return 0
     except OfflineCoreError as exc:
         print(f"offline repair core error: {exc}", file=sys.stderr)

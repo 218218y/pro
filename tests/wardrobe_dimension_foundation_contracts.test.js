@@ -147,7 +147,7 @@ const APPROVED_STACK_SPLIT_FACADE_WILDCARDS = Object.freeze([
 ]);
 const CARCASS_SHELL_DIRECT_CONSUMERS = Object.freeze([
   'esm/native/builder/carcass_pipeline.ts',
-  'esm/native/builder/core_carcass_shared.ts',
+  'esm/shared/dimensions/core_carcass_dimension_policy.ts',
   'esm/native/builder/core_carcass_shell.ts',
   'esm/native/builder/corner_wing_carcass_shell_metrics.ts',
   'esm/native/builder/corner_wing_cornice_path.ts',
@@ -155,13 +155,13 @@ const CARCASS_SHELL_DIRECT_CONSUMERS = Object.freeze([
   'esm/native/builder/corner_wing_cornice_wave.ts',
   'esm/native/builder/module_loop_pipeline_hex_cell.ts',
   'esm/native/builder/module_loop_pipeline_module_depth.ts',
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts',
+  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts',
   'esm/shared/dimensions/corner_system_policy.ts',
 ]);
 const CARCASS_INTERIOR_DIRECT_CONSUMERS = Object.freeze([
   'esm/native/builder/build_flow_plan.ts',
   'esm/native/builder/build_flow_plan_inputs.ts',
-  'esm/native/builder/build_stack_split_lower_setup.ts',
+  'esm/shared/dimensions/stack_split_lower_setup_dimension_policy.ts',
   'esm/native/builder/module_loop_pipeline_module_depth.ts',
 ]);
 const APPROVED_INTERIOR_GRID_OWNER_IMPORTS = Object.freeze({
@@ -169,24 +169,28 @@ const APPROVED_INTERIOR_GRID_OWNER_IMPORTS = Object.freeze({
     'CARCASS_INTERIOR_GRID_POLICY',
   ]),
   'esm/native/builder/module_loop_pipeline_module_frame.ts': Object.freeze(['CARCASS_INTERIOR_GRID_POLICY']),
-  'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze(['CARCASS_INTERIOR_GRID_POLICY']),
+  'esm/shared/dimensions/stack_split_lower_setup_dimension_policy.ts': Object.freeze([
+    'CARCASS_INTERIOR_GRID_POLICY',
+  ]),
   'esm/native/services/canvas_picking_interior_hover_layout_mode.ts': Object.freeze([
     'CARCASS_INTERIOR_GRID_POLICY',
   ]),
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
+  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts': Object.freeze([
     'CARCASS_INTERIOR_GRID_POLICY',
   ]),
-  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['CARCASS_INTERIOR_GRID_POLICY']),
+  'esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts': Object.freeze([
+    'CARCASS_INTERIOR_GRID_POLICY',
+  ]),
   'esm/shared/dimensions/carcass_shell_policy.ts': Object.freeze(['CARCASS_INTERIOR_GRID_POLICY']),
 });
 const APPROVED_SHELL_GRID_FIELD_USAGE = Object.freeze({});
 const APPROVED_BASE_PLINTH_OWNER_IMPORTS = Object.freeze({
-  'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/shared/dimensions/core_carcass_dimension_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
-  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/shared/dimensions/runtime_default_state_dimension_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/features/base_plinth_support.ts': Object.freeze([
     'BASE_PLINTH_POLICY',
     'basePlinthCentimetersToMeters',
@@ -196,9 +200,9 @@ const APPROVED_BASE_PLINTH_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['BASE_PLINTH_POLICY']),
 });
 const APPROVED_BASE_LEG_OWNER_IMPORTS = Object.freeze({
-  'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
+  'esm/shared/dimensions/core_carcass_dimension_policy.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
-  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
+  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
   'esm/shared/dimensions/runtime_default_state_dimension_policy.ts': Object.freeze(['BASE_LEG_DIMENSIONS']),
   'esm/native/features/base_leg_support.ts': Object.freeze([
     'BASE_LEG_DIMENSIONS',
@@ -212,7 +216,7 @@ const APPROVED_BASE_LEG_OWNER_IMPORTS = Object.freeze({
   ]),
 });
 const APPROVED_BASE_PLATFORM_OWNER_IMPORTS = Object.freeze({
-  'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
+  'esm/shared/dimensions/core_carcass_dimension_policy.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
   'esm/native/builder/corner_state_normalize_layout.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
   'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze([
@@ -221,8 +225,12 @@ const APPROVED_BASE_PLATFORM_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_visuals_adornments_normalize.ts': Object.freeze([
     'BASE_PLATFORM_RENDER_POLICY',
   ]),
-  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
-  'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
+  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts': Object.freeze([
+    'BASE_PLATFORM_RENDER_POLICY',
+  ]),
+  'esm/shared/dimensions/chest_mode_inputs_dimension_policy.ts': Object.freeze([
+    'BASE_PLATFORM_RENDER_POLICY',
+  ]),
   'esm/native/services/canvas_picking_sketch_box_content_commit_adornments.ts': Object.freeze([
     'BASE_PLATFORM_RENDER_POLICY',
   ]),
@@ -243,18 +251,20 @@ const APPROVED_DIMENSION_FACADE_BROAD_DEPENDENCIES = Object.freeze([
   }),
 ]);
 const APPROVED_CHEST_STRUCTURAL_OWNER_IMPORTS = Object.freeze({
-  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze([
+  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts': Object.freeze([
     'CHEST_CASTER_RENDER_POLICY',
     'CHEST_CONNECTOR_POLICY',
     'CHEST_DRAWER_GEOMETRY_POLICY',
     'CHEST_MOTION_POLICY',
     'CHEST_SHELL_POLICY',
   ]),
-  'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['CHEST_CASTER_RENDER_POLICY']),
+  'esm/shared/dimensions/chest_mode_inputs_dimension_policy.ts': Object.freeze([
+    'CHEST_CASTER_RENDER_POLICY',
+  ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['CHEST_STRUCTURAL_DIMENSIONS']),
 });
 const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
-  'esm/native/builder/core_carcass_shared.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/shared/dimensions/core_carcass_dimension_policy.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/core_doors_compute.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/core_layout_compute.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/core_storage_compute_external_drawers.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
@@ -270,7 +280,7 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_hover_preview_modes_divider.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
-  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
+  'esm/shared/dimensions/interior_hover_manual_mode_dimension_policy.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
   'esm/native/services/canvas_picking_sketch_free_box_content_preview_doors.ts': Object.freeze([
@@ -320,7 +330,7 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_manual_layout_free_box_content.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
-  'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts': Object.freeze([
+  'esm/shared/dimensions/manual_layout_free_box_plans_dimension_policy.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
   'esm/native/services/canvas_picking_manual_layout_vertical_blockers.ts': Object.freeze([
@@ -341,7 +351,7 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_sketch_neighbor_measurements.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
+  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
   'esm/native/builder/render_interior_sketch_layout_geometry.ts': Object.freeze([
@@ -372,7 +382,7 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
-  'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts': Object.freeze([
+  'esm/shared/dimensions/sketch_box_vertical_content_occupancy_dimension_policy.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
   'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts': Object.freeze([
@@ -381,8 +391,12 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
-  'esm/native/builder/render_preview_interior_hover_apply.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
-  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/shared/dimensions/preview_interior_hover_apply_dimension_policy.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
+  'esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
   'esm/shared/dimensions/sketch_internal_drawer_cassette_dimension_policy.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
@@ -526,12 +540,14 @@ const APPROVED_CHEST_MODE_OWNER_IMPORTS = Object.freeze({
   'esm/shared/dimensions/structure_tab_dimension_policy.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
   'esm/native/builder/chest_mode_pipeline.ts': Object.freeze(['CHEST_MODE_COMMODE_CONSTRAINTS_POLICY']),
   'esm/native/builder/render_drawer_ops_internal.ts': Object.freeze(['CHEST_MODE_DRAWER_BOX_RENDER_POLICY']),
-  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze([
+  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts': Object.freeze([
     'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
     'CHEST_MODE_COMMODE_RENDER_POLICY',
     'CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY',
   ]),
-  'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['CHEST_MODE_COMMODE_CONSTRAINTS_POLICY']),
+  'esm/shared/dimensions/chest_mode_inputs_dimension_policy.ts': Object.freeze([
+    'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
+  ]),
   'esm/shared/dimensions/runtime_default_state_dimension_policy.ts': Object.freeze([
     'CHEST_MODE_ACTIVE_DEFAULTS_POLICY',
     'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
@@ -611,7 +627,7 @@ const APPROVED_DOOR_SYSTEM_OWNER_IMPORTS = Object.freeze({
     'SLIDING_DOOR_MOTION_POLICY',
   ]),
   'esm/native/builder/sliding_doors_pipeline.ts': Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY']),
-  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['HINGED_DOOR_MOUNT_POLICY']),
+  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts': Object.freeze(['HINGED_DOOR_MOUNT_POLICY']),
   'esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts': Object.freeze([
     'SLIDING_DOOR_CONSTRUCTION_POLICY',
   ]),
@@ -637,7 +653,7 @@ const APPROVED_DOOR_SYSTEM_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_door_split_remove_target.ts': Object.freeze([
     'HINGED_DOOR_SPLIT_AUTHORING_POLICY',
   ]),
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
+  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts': Object.freeze([
     'HINGED_DOOR_SPLIT_GEOMETRY_POLICY',
   ]),
   'esm/native/services/doors_runtime_visuals_shared.ts': Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY']),
@@ -671,7 +687,9 @@ const APPROVED_DOOR_MOUNT_THICKNESS_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/io/project_io_load_helpers_config.ts': Object.freeze(['normalizeDoorMountThicknessCm']),
   'esm/native/runtime/config_selectors_shared.ts': Object.freeze(['normalizeDoorMountThicknessCm']),
-  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['resolveDoorMountThicknessesFromConfig']),
+  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts': Object.freeze([
+    'resolveDoorMountThicknessesFromConfig',
+  ]),
   'esm/native/ui/react/selectors/config_selectors.ts': Object.freeze([
     'resolveDoorMountThicknessesFromConfig',
   ]),
@@ -685,6 +703,10 @@ const APPROVED_DOOR_MOUNT_THICKNESS_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': DOOR_MOUNT_THICKNESS_FACADE_SYMBOLS,
 });
+const APPROVED_DOOR_MOUNT_THICKNESS_NON_LEGACY_SPECIFIERS = Object.freeze([
+  'door_mount_thickness_policy.js',
+  'chest_mode_build_dimension_policy.js',
+]);
 const APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_DOOR_VISUAL_OWNER_IMPORTS = Object.freeze({
@@ -772,7 +794,7 @@ const APPROVED_EXTERNAL_DRAWER_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/hinged_doors_module_ops_handle_policy.ts': Object.freeze([
     'EXTERNAL_DRAWER_SIZE_POLICY',
   ]),
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
+  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts': Object.freeze([
     'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
     'EXTERNAL_DRAWER_SIZE_POLICY',
   ]),
@@ -855,7 +877,9 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_custom_ops_layout.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
   ]),
-  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['INTERIOR_STORAGE_BARRIER_POLICY']),
+  'esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts': Object.freeze([
+    'INTERIOR_STORAGE_BARRIER_POLICY',
+  ]),
   'esm/native/builder/render_interior_sketch_support_storage.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_CLAMP_POLICY',
@@ -885,7 +909,7 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
-  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
+  'esm/shared/dimensions/interior_hover_manual_mode_dimension_policy.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
     'INTERIOR_STORAGE_PREVIEW_POLICY',
@@ -896,15 +920,15 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_manual_layout_free_box_content.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
   ]),
-  'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts': Object.freeze([
+  'esm/shared/dimensions/manual_layout_free_box_plans_dimension_policy.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
-  'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts': Object.freeze([
+  'esm/shared/dimensions/sketch_box_vertical_content_occupancy_dimension_policy.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_PREVIEW_POLICY',
   ]),
-  'esm/native/builder/render_preview_interior_hover_apply.ts': Object.freeze([
+  'esm/shared/dimensions/preview_interior_hover_apply_dimension_policy.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_PREVIEW_POLICY',
   ]),
@@ -944,7 +968,7 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_sketch_neighbor_measurements.ts': Object.freeze([
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
+  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
   ]),
 });
@@ -992,7 +1016,7 @@ const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
     'INTERIOR_ROD_DEPTH_CLEARANCE_POLICY',
     'INTERIOR_ROD_RENDER_POLICY',
   ]),
-  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
+  'esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts': Object.freeze([
     'INTERIOR_PRESET_ROD_FACTORS_POLICY',
     'INTERIOR_PRESET_SHELF_ROWS_POLICY',
     'INTERIOR_ROD_PLACEMENT_POLICY',
@@ -1026,7 +1050,7 @@ const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
     'INTERIOR_PRESET_ROD_FACTORS_POLICY',
     'INTERIOR_ROD_PLACEMENT_POLICY',
   ]),
-  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
+  'esm/shared/dimensions/interior_hover_manual_mode_dimension_policy.ts': Object.freeze([
     'INTERIOR_ROD_PLACEMENT_POLICY',
     'INTERIOR_SHELF_GEOMETRY_POLICY',
   ]),
@@ -1040,11 +1064,11 @@ const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts': Object.freeze([
     'INTERIOR_SHELF_GEOMETRY_POLICY',
   ]),
-  'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts': Object.freeze([
+  'esm/shared/dimensions/manual_layout_free_box_plans_dimension_policy.ts': Object.freeze([
     'INTERIOR_ROD_RENDER_POLICY',
     'INTERIOR_SHELF_GEOMETRY_POLICY',
   ]),
-  'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts': Object.freeze([
+  'esm/shared/dimensions/sketch_box_vertical_content_occupancy_dimension_policy.ts': Object.freeze([
     'INTERIOR_SHELF_GEOMETRY_POLICY',
   ]),
   'esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts': Object.freeze([
@@ -1053,7 +1077,7 @@ const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts': Object.freeze([
     'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
   ]),
-  'esm/native/builder/render_preview_interior_hover_apply.ts': Object.freeze([
+  'esm/shared/dimensions/preview_interior_hover_apply_dimension_policy.ts': Object.freeze([
     'INTERIOR_SHELF_GEOMETRY_POLICY',
   ]),
   'esm/native/services/canvas_picking_manual_layout_vertical_blockers.ts': Object.freeze([
@@ -1102,7 +1126,7 @@ const APPROVED_SKETCH_BOX_GEOMETRY_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_boxes_shell_apply.ts': Object.freeze([
     'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
   ]),
-  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
+  'esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts': Object.freeze([
     'SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY',
   ]),
   'esm/native/services/canvas_picking_manual_layout_sketch_tools.ts': Object.freeze([
@@ -1295,14 +1319,14 @@ const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_manual_layout_free_box_content.ts': Object.freeze([
     'SKETCH_BOX_SHELF_PREVIEW_POLICY',
   ]),
-  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
+  'esm/shared/dimensions/interior_hover_manual_mode_dimension_policy.ts': Object.freeze([
     'SKETCH_BOX_ROD_PREVIEW_POLICY',
     'SKETCH_BOX_SHELF_PREVIEW_POLICY',
   ]),
-  'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts': Object.freeze([
+  'esm/shared/dimensions/manual_layout_free_box_plans_dimension_policy.ts': Object.freeze([
     'SKETCH_BOX_PREVIEW_CORE_POLICY',
   ]),
-  'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts': Object.freeze([
+  'esm/shared/dimensions/sketch_box_vertical_content_occupancy_dimension_policy.ts': Object.freeze([
     'SKETCH_BOX_PREVIEW_CORE_POLICY',
     'SKETCH_BOX_ROD_PREVIEW_POLICY',
     'SKETCH_BOX_SHELF_PREVIEW_POLICY',
@@ -1317,7 +1341,7 @@ const APPROVED_SKETCH_BOX_PREVIEW_OWNER_IMPORTS = Object.freeze({
     'SKETCH_BOX_DOOR_PREVIEW_POLICY',
     'SKETCH_BOX_SHELF_PREVIEW_POLICY',
   ]),
-  'esm/native/builder/render_preview_interior_hover_apply.ts': Object.freeze([
+  'esm/shared/dimensions/preview_interior_hover_apply_dimension_policy.ts': Object.freeze([
     'SKETCH_BOX_PREVIEW_CORE_POLICY',
     'SKETCH_BOX_ROD_PREVIEW_POLICY',
     'SKETCH_BOX_SHELF_PREVIEW_POLICY',
@@ -1497,10 +1521,10 @@ const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_internal_drawer_cassette.ts': Object.freeze([
     'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
   ]),
-  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
+  'esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts': Object.freeze([
     'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
   ]),
-  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
+  'esm/shared/dimensions/interior_hover_manual_mode_dimension_policy.ts': Object.freeze([
     'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
   ]),
   'esm/native/builder/render_interior_sketch_shared_external_drawers.ts': Object.freeze([
@@ -1607,7 +1631,7 @@ const APPROVED_FRONT_REVEAL_OWNER_IMPORTS = Object.freeze({
 const APPROVED_FRONT_REVEAL_LEGACY_DEPENDENCIES = Object.freeze({});
 const APPROVED_FRONT_REVEAL_LEGACY_FIELD_USAGE = Object.freeze({});
 const APPROVED_HANDLE_OWNER_IMPORTS = Object.freeze({
-  'esm/native/builder/build_stack_split_lower_setup.ts': Object.freeze([
+  'esm/shared/dimensions/stack_split_lower_setup_dimension_policy.ts': Object.freeze([
     'EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY',
   ]),
   'esm/native/builder/render_ops_primitives.ts': Object.freeze([
@@ -1673,7 +1697,7 @@ const APPROVED_CONTENT_VISUAL_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/builder/visuals_contents_hanger.ts': Object.freeze(['HANGER_VISUAL_POLICY']),
   'esm/native/builder/visuals_contents_hanging.ts': Object.freeze(['HANGING_CLOTHES_VISUAL_POLICY']),
-  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze([
+  'esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts': Object.freeze([
     'FOLDED_CLOTHES_VISUAL_POLICY',
     'HANGER_VISUAL_POLICY',
   ]),
@@ -1728,6 +1752,11 @@ function normalizedSymbolUsage(usage) {
 
 function matchesOwnerSpecifier(specifier, ownerSpecifier) {
   return specifier === ownerSpecifier || specifier.endsWith(`/${ownerSpecifier}`);
+}
+
+function matchesAnyOwnerSpecifier(specifier, ownerSpecifiers) {
+  const candidates = Array.isArray(ownerSpecifiers) ? ownerSpecifiers : [ownerSpecifiers];
+  return candidates.some(ownerSpecifier => matchesOwnerSpecifier(specifier, ownerSpecifier));
 }
 
 function collectOwnerImports(sources, ownerSpecifier) {
@@ -1872,13 +1901,13 @@ function collectDimensionFacadeBroadDependencies(sources) {
   );
 }
 
-function collectLegacyDimensionSymbolDependencies(sources, symbol, ownerSpecifier) {
+function collectLegacyDimensionSymbolDependencies(sources, symbol, ownerSpecifiers) {
   const usage = new Map();
   const approvedSymbols = new Set(Array.isArray(symbol) ? symbol : [symbol]);
   for (const [file, source, analyzedDependencies] of sources) {
     const dependencies = analyzedDependencies || analyzeModuleDependencies(file, source).imports;
     for (const dependency of dependencies) {
-      if (matchesOwnerSpecifier(dependency.specifier, ownerSpecifier)) continue;
+      if (matchesAnyOwnerSpecifier(dependency.specifier, ownerSpecifiers)) continue;
       const matchedSymbols = dependency.importedSymbols.filter(importedSymbol =>
         approvedSymbols.has(importedSymbol)
       );
@@ -3153,7 +3182,7 @@ test('[dimension-foundation] pure Carcass Shell and Interior consumers use focus
     assertDirectOwner(file, 'CARCASS_SHELL_DIMENSIONS', 'carcass_shell_policy.js');
   }
   for (const file of CARCASS_INTERIOR_DIRECT_CONSUMERS) {
-    assertDirectOwner(file, 'CARCASS_INTERIOR_DIMENSIONS', 'dimensions/carcass_interior_policy.js');
+    assertDirectOwner(file, 'CARCASS_INTERIOR_DIMENSIONS', 'carcass_interior_policy.js');
   }
 });
 
@@ -3717,7 +3746,7 @@ test('[dimension-foundation] interior grid and Base Support owner consumers stay
     collectLegacyDimensionSymbolDependencies(
       analyzedSources,
       DOOR_MOUNT_THICKNESS_FACADE_SYMBOLS,
-      'door_mount_thickness_policy.js'
+      APPROVED_DOOR_MOUNT_THICKNESS_NON_LEGACY_SPECIFIERS
     ),
     APPROVED_DOOR_MOUNT_THICKNESS_LEGACY_DEPENDENCIES,
     'Door Mount Thickness legacy dependency allowlist'

@@ -101,7 +101,7 @@ function directFields(source, owner) {
     .sort();
 }
 
-test('Core Carcass Shared imports exactly five focused owners without aliases or aggregates', () => {
+test('Core Carcass Shared imports its exact use-case owner without aliases or aggregates', () => {
   const source = read(consumerRel);
   const analysis = analyzeModuleDependencies(path.join(root, consumerRel), source);
   const focusedImports = analysis.imports.filter(dependency => dependency.specifier.includes('/dimensions/'));
@@ -115,38 +115,20 @@ test('Core Carcass Shared imports exactly five focused owners without aliases or
     })),
     [
       {
-        specifier: '../../shared/dimensions/base_leg_policy.js',
+        specifier: '../../shared/dimensions/core_carcass_dimension_policy.js',
         kind: 'value',
         syntax: 'static-import',
-        importedSymbols: ['BASE_LEG_LAYOUT_POLICY'],
-      },
-      {
-        specifier: '../../shared/dimensions/base_platform_render_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['BASE_PLATFORM_RENDER_POLICY'],
-      },
-      {
-        specifier: '../../shared/dimensions/base_plinth_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['BASE_PLINTH_POLICY'],
-      },
-      {
-        specifier: '../../shared/dimensions/carcass_shell_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['CARCASS_SHELL_DIMENSIONS'],
-      },
-      {
-        specifier: '../../shared/dimensions/material_thickness_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['MATERIAL_THICKNESS_POLICY'],
+        importedSymbols: [
+          'BASE_LEG_LAYOUT_POLICY',
+          'BASE_PLATFORM_RENDER_POLICY',
+          'BASE_PLINTH_POLICY',
+          'CARCASS_SHELL_DIMENSIONS',
+          'MATERIAL_THICKNESS_POLICY',
+        ],
       },
     ]
   );
-  assert.equal(focusedImports.length, 5);
+  assert.equal(focusedImports.length, 1);
   assert.equal(
     focusedImports.every(dependency =>
       dependency.bindings.every(binding => binding.importedName === binding.localName)

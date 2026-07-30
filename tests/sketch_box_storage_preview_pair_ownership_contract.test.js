@@ -108,7 +108,7 @@ test('Sketch Box Storage Preview pair ledger and layer transition are exact', ()
   ]);
 
   const graph = collectLayerContractGraph({ root });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-29' });
+  const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-30' });
   assert.equal(report.ok, true);
   assert.equal(
     report.migrationBudgets.slice(85, 87).every(entry => entry.active),

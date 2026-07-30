@@ -127,6 +127,25 @@ function buildInventory(root = defaultRoot) {
   };
 }
 
+function renderMarkdownTable(headers, rows, rightAlignedColumns = new Set()) {
+  const widths = headers.map((header, index) =>
+    Math.max(3, header.length, ...rows.map(row => String(row[index]).length))
+  );
+  const formatRow = (row, header = false) =>
+    `| ${row
+      .map((cell, index) => {
+        const value = String(cell);
+        return !header && rightAlignedColumns.has(index)
+          ? value.padStart(widths[index])
+          : value.padEnd(widths[index]);
+      })
+      .join(' | ')} |`;
+  const separator = widths.map((width, index) =>
+    rightAlignedColumns.has(index) ? `${'-'.repeat(width - 1)}:` : '-'.repeat(width)
+  );
+  return [formatRow(headers, true), formatRow(separator, true), ...rows.map(row => formatRow(row))];
+}
+
 function renderMarkdown(report) {
   const lines = [
     '# Dimension Migration Retirement Inventory',
@@ -145,16 +164,36 @@ function renderMarkdown(report) {
     '',
     '## Entries',
     '',
-    '| Entry | Layer | Consumer | Added statement | Companion statement | Consumer entries | Signature peers | Disposition |',
-    '| ---: | --- | --- | --- | --- | ---: | ---: | --- |',
-    ...report.entries.map(entry => {
-      const added = `${entry.addedStatement.toFile}#${entry.addedStatement.importedSymbols.join(',')}`;
-      const companion = `${entry.companionStatement.toFile}#${entry.companionStatement.importedSymbols.join(',')}`;
-      return `| ${entry.entryNumber} | ${entry.layer} | \`${entry.fromFile}\` | \`${added}\` | \`${companion}\` | ${entry.consumerEntryCount} | ${entry.matchingSignatureConsumers.length} | ${entry.recommendedDisposition} |`;
-    }),
+    ...renderMarkdownTable(
+      [
+        'Entry',
+        'Layer',
+        'Consumer',
+        'Added statement',
+        'Companion statement',
+        'Consumer entries',
+        'Signature peers',
+        'Disposition',
+      ],
+      report.entries.map(entry => {
+        const added = `${entry.addedStatement.toFile}#${entry.addedStatement.importedSymbols.join(',')}`;
+        const companion = `${entry.companionStatement.toFile}#${entry.companionStatement.importedSymbols.join(',')}`;
+        return [
+          entry.entryNumber,
+          entry.layer,
+          `\`${entry.fromFile}\``,
+          `\`${added}\``,
+          `\`${companion}\``,
+          entry.consumerEntryCount,
+          entry.matchingSignatureConsumers.length,
+          entry.recommendedDisposition,
+        ];
+      }),
+      new Set([0, 5, 6])
+    ),
     '',
   ];
-  return `${lines.join('\n')}\n`;
+  return lines.join('\n');
 }
 
 function parseOutputs(args) {

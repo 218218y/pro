@@ -17,7 +17,7 @@
     },
     "layerBaseline": {
       "file": "tools/wp_layer_baseline.json",
-      "sha256": "e464d375ad0c4316fba9e7fd8223874201973466764d3ea3523cd83d1e56bd83"
+      "sha256": "4fe78f6011d0c469ded982d832c0e04f29807fd7d1b93df8dd63139d9722cdda"
     }
   },
   "layerContractOwnership": {

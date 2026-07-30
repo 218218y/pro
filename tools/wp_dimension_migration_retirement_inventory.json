@@ -5,7 +5,7 @@
   "policy": "This is a captured remaining-debt inventory. It recommends review disposition only and never retires a migration Entry by itself.",
   "source": {
     "file": "tools/wp_layer_baseline.json",
-    "sha256": "878ba7f9673d97ae14b313d24117564a4f418b80efcf3b0d724e8f6f16e1cf9c"
+    "sha256": "4fe78f6011d0c469ded982d832c0e04f29807fd7d1b93df8dd63139d9722cdda"
   },
   "summary": {
     "historicalEntries": 178,

@@ -2901,43 +2901,24 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
   assert.doesNotMatch(slidingMotion, /d\.stackZStep, 0\.055/);
 });
 
-test('[dimension tokens] interior rod clearance uses seven focused owners without compatibility aggregates', () => {
+test('[dimension tokens] interior rod clearance uses one exact identity owner without compatibility aggregates', () => {
   const file = 'esm/native/builder/render_interior_rod_clearance.ts';
+  const ownerFile = 'esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts';
   const source = read(file);
-  const expectedImports = Object.freeze([
-    Object.freeze({
-      specifier: '../../shared/dimensions/carcass_interior_grid_policy.js',
-      symbols: Object.freeze(['CARCASS_INTERIOR_GRID_POLICY']),
-    }),
-    Object.freeze({
-      specifier: '../../shared/dimensions/content_visual_policy.js',
-      symbols: Object.freeze(['FOLDED_CLOTHES_VISUAL_POLICY', 'HANGER_VISUAL_POLICY']),
-    }),
-    Object.freeze({
-      specifier: '../../shared/dimensions/drawer_sketch_policy.js',
-      symbols: Object.freeze(['DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY']),
-    }),
-    Object.freeze({
-      specifier: '../../shared/dimensions/interior_fittings_policy.js',
-      symbols: Object.freeze([
-        'INTERIOR_PRESET_ROD_FACTORS_POLICY',
-        'INTERIOR_PRESET_SHELF_ROWS_POLICY',
-        'INTERIOR_ROD_PLACEMENT_POLICY',
-        'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
-      ]),
-    }),
-    Object.freeze({
-      specifier: '../../shared/dimensions/interior_storage_policy.js',
-      symbols: Object.freeze(['INTERIOR_STORAGE_BARRIER_POLICY']),
-    }),
-    Object.freeze({
-      specifier: '../../shared/dimensions/material_thickness_policy.js',
-      symbols: Object.freeze(['MATERIAL_THICKNESS_POLICY']),
-    }),
-    Object.freeze({
-      specifier: '../../shared/dimensions/sketch_box_geometry_policy.js',
-      symbols: Object.freeze(['SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY']),
-    }),
+  const ownerSource = read(ownerFile);
+  const specifier = '../../shared/dimensions/interior_rod_clearance_dimension_policy.js';
+  const expectedSymbols = Object.freeze([
+    'CARCASS_INTERIOR_GRID_POLICY',
+    'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+    'FOLDED_CLOTHES_VISUAL_POLICY',
+    'HANGER_VISUAL_POLICY',
+    'INTERIOR_PRESET_ROD_FACTORS_POLICY',
+    'INTERIOR_PRESET_SHELF_ROWS_POLICY',
+    'INTERIOR_ROD_PLACEMENT_POLICY',
+    'INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY',
+    'INTERIOR_STORAGE_BARRIER_POLICY',
+    'MATERIAL_THICKNESS_POLICY',
+    'SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY',
   ]);
 
   assert.doesNotMatch(source, /wardrobe_dimension_tokens_shared/u);
@@ -2948,17 +2929,19 @@ test('[dimension tokens] interior rod clearance uses seven focused owners withou
   assert.doesNotMatch(source, /import\s+\*/u);
   assert.doesNotMatch(source, /export\s+(?:\*|\{[^}]*\})\s+from/u);
 
-  for (const expected of expectedImports) {
-    const escapedSpecifier = expected.specifier.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-    const matches = Array.from(
-      source.matchAll(new RegExp(`import\\s*\\{([^}]*)\\}\\s*from\\s*['"]${escapedSpecifier}['"];`, 'gu'))
-    );
-    assert.equal(matches.length, 1, `${file} must have one statement for ${expected.specifier}`);
-    const symbols = matches[0][1]
-      .split(',')
-      .map(symbol => symbol.trim())
-      .filter(Boolean)
-      .sort();
-    assert.deepEqual(symbols, [...expected.symbols].sort());
-  }
+  const escapedSpecifier = specifier.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  const matches = Array.from(
+    source.matchAll(new RegExp(`import\\s*\\{([^}]*)\\}\\s*from\\s*['"]${escapedSpecifier}['"];`, 'gu'))
+  );
+  assert.equal(matches.length, 1, `${file} must have one statement for ${specifier}`);
+  const symbols = matches[0][1]
+    .split(',')
+    .map(symbol => symbol.trim())
+    .filter(Boolean)
+    .sort();
+  assert.deepEqual(symbols, [...expectedSymbols].sort());
+
+  assert.doesNotMatch(ownerSource, /\b(?:const|let|var|function|class)\b|=>|Object\.freeze|import\s/u);
+  assert.equal((ownerSource.match(/export\s*\{/gu) ?? []).length, 7);
+  for (const symbol of expectedSymbols) assert.match(ownerSource, new RegExp(`\\b${symbol}\\b`, 'u'));
 });

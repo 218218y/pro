@@ -46,7 +46,9 @@ const expectedFocusedOwnerRoutes = Object.freeze({
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
-  'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['INTERIOR_STORAGE_BARRIER_POLICY']),
+  'esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts': Object.freeze([
+    'INTERIOR_STORAGE_BARRIER_POLICY',
+  ]),
   'esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_LAYOUT_POLICY',
@@ -58,7 +60,7 @@ const expectedFocusedOwnerRoutes = Object.freeze({
     'INTERIOR_STORAGE_LAYOUT_POLICY',
     'INTERIOR_STORAGE_PREVIEW_POLICY',
   ]),
-  'esm/native/builder/render_preview_interior_hover_apply.ts': Object.freeze([
+  'esm/shared/dimensions/preview_interior_hover_apply_dimension_policy.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_PREVIEW_POLICY',
   ]),
@@ -72,7 +74,7 @@ const expectedFocusedOwnerRoutes = Object.freeze({
     'INTERIOR_STORAGE_DEFAULTS_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
-  'esm/native/services/canvas_picking_interior_hover_manual_mode.ts': Object.freeze([
+  'esm/shared/dimensions/interior_hover_manual_mode_dimension_policy.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
     'INTERIOR_STORAGE_PREVIEW_POLICY',
@@ -90,7 +92,7 @@ const expectedFocusedOwnerRoutes = Object.freeze({
   'esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts': Object.freeze([
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
-  'esm/native/services/canvas_picking_manual_layout_free_box_plans.ts': Object.freeze([
+  'esm/shared/dimensions/manual_layout_free_box_plans_dimension_policy.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
@@ -108,7 +110,7 @@ const expectedFocusedOwnerRoutes = Object.freeze({
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_LAYOUT_POLICY',
   ]),
-  'esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts': Object.freeze([
+  'esm/shared/dimensions/sketch_box_vertical_content_occupancy_dimension_policy.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_PREVIEW_POLICY',
   ]),
@@ -139,7 +141,7 @@ const expectedFocusedOwnerRoutes = Object.freeze({
   'esm/native/services/canvas_picking_sketch_neighbor_measurements.ts': Object.freeze([
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze([
+  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
   ]),
   'esm/shared/dimensions/drawer_sketch_policy.ts': Object.freeze([
@@ -153,6 +155,12 @@ const expectedFocusedOwnerReExports = new Set([
   'esm/shared/dimensions/interior_layout_presets_dimension_policy.ts',
   'esm/shared/dimensions/modules_configuration_defaults_dimension_policy.ts',
   'esm/shared/dimensions/stack_split_module_config_dimension_policy.ts',
+  'esm/shared/dimensions/interior_hover_manual_mode_dimension_policy.ts',
+  'esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts',
+  'esm/shared/dimensions/manual_layout_free_box_plans_dimension_policy.ts',
+  'esm/shared/dimensions/preview_interior_hover_apply_dimension_policy.ts',
+  'esm/shared/dimensions/sketch_box_vertical_content_occupancy_dimension_policy.ts',
+  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts',
 ]);
 
 const expectedPolicyShapes = Object.freeze({

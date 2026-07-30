@@ -60,28 +60,14 @@ test('Builder Shelf/Hover pair imports exact focused owners without aggregate pa
   ]);
   assert.deepEqual(focusedDimensionImports(hoverRel), [
     {
-      specifier: '../../shared/dimensions/interior_fittings_policy.js',
-      kind: 'value',
-      syntax: 'static-import',
-      symbols: ['INTERIOR_SHELF_GEOMETRY_POLICY'],
-    },
-    {
-      specifier: '../../shared/dimensions/interior_storage_policy.js',
-      kind: 'value',
-      syntax: 'static-import',
-      symbols: ['INTERIOR_STORAGE_BARRIER_POLICY', 'INTERIOR_STORAGE_PREVIEW_POLICY'],
-    },
-    {
-      specifier: '../../shared/dimensions/material_thickness_policy.js',
-      kind: 'value',
-      syntax: 'static-import',
-      symbols: ['MATERIAL_THICKNESS_POLICY'],
-    },
-    {
-      specifier: '../../shared/dimensions/sketch_box_preview_policy.js',
+      specifier: '../../shared/dimensions/preview_interior_hover_apply_dimension_policy.js',
       kind: 'value',
       syntax: 'static-import',
       symbols: [
+        'INTERIOR_SHELF_GEOMETRY_POLICY',
+        'INTERIOR_STORAGE_BARRIER_POLICY',
+        'INTERIOR_STORAGE_PREVIEW_POLICY',
+        'MATERIAL_THICKNESS_POLICY',
         'SKETCH_BOX_PREVIEW_CORE_POLICY',
         'SKETCH_BOX_ROD_PREVIEW_POLICY',
         'SKETCH_BOX_SHELF_PREVIEW_POLICY',

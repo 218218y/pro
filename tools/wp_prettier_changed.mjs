@@ -162,7 +162,9 @@ function chunk(items, size) {
 
 function assertPrettierInstalled() {
   if (fs.existsSync(PRETTIER_BIN)) return;
-  fail('[WP Prettier] Prettier is not installed. Run `npm ci` first.');
+  fail(
+    '[WP Prettier] Prettier is not installed. For the focused offline setup, add the pinned archive under vendor/offline/prettier and run `python tools/bootstrap_offline_prettier.py`. Otherwise run `npm ci`.'
+  );
 }
 
 function assertNoPartiallyStagedFiles(files) {

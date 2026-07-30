@@ -40,7 +40,7 @@
       {
         "lockPath": "node_modules/@oxc-project/types",
         "installPath": "node_modules/@oxc-project/types",
-        "file": "vendor/offline/ast/oxc-project-types-0.141.0.tgz",
+        "file": "vendor/offline/ast/types-0.141.0.tgz",
         "url": "https://registry.npmjs.org/@oxc-project/types/-/types-0.141.0.tgz",
         "integrity": "sha512-S4as7z0j0xQkXcJlyY5ehntwK8/wRkQb9Cyqw+J/N2rkWGQGK0SxD6X6DhQTc7qsxVTBxXbxZtBJh3mr3PtIzQ=="
       }
@@ -49,24 +49,35 @@
       "linux-x64": {
         "lockPath": "node_modules/@oxc-parser/binding-linux-x64-gnu",
         "installPath": "node_modules/@oxc-parser/binding-linux-x64-gnu",
-        "file": "vendor/offline/ast/oxc-parser-binding-linux-x64-gnu-0.141.0.tgz",
+        "file": "vendor/offline/ast/binding-linux-x64-gnu-0.141.0.tgz",
         "url": "https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.141.0.tgz",
         "integrity": "sha512-qtyQVAAebFq57B2tifTlel3TgGqUtsYNI/e+p6aya9rN9lOZVTDvr215fGYSA9XWooxzMxDiVxkBLk2jQHbsOQ=="
       },
       "linux-arm64": {
         "lockPath": "node_modules/@oxc-parser/binding-linux-arm64-gnu",
         "installPath": "node_modules/@oxc-parser/binding-linux-arm64-gnu",
-        "file": "vendor/offline/ast/oxc-parser-binding-linux-arm64-gnu-0.141.0.tgz",
+        "file": "vendor/offline/ast/binding-linux-arm64-gnu-0.141.0.tgz",
         "url": "https://registry.npmjs.org/@oxc-parser/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-0.141.0.tgz",
         "integrity": "sha512-vXz2BLAuypA+4MLyBg94pzEo6THVnzYnCtAjXoihIIQo0t2pnp/AmW+SH1EI+4VbuJnC//KplIJ5yyaCGua4jA=="
       },
       "win32-x64": {
         "lockPath": "node_modules/@oxc-parser/binding-win32-x64-msvc",
         "installPath": "node_modules/@oxc-parser/binding-win32-x64-msvc",
-        "file": "vendor/offline/ast/oxc-parser-binding-win32-x64-msvc-0.141.0.tgz",
+        "file": "vendor/offline/ast/binding-win32-x64-msvc-0.141.0.tgz",
         "url": "https://registry.npmjs.org/@oxc-parser/binding-win32-x64-msvc/-/binding-win32-x64-msvc-0.141.0.tgz",
         "integrity": "sha512-HI/wsvbWT5RHHw5c37D0fEgeTd8/1Q4OJs5jUmEBc17VZFG6SsCIe4barq7NsAPPks/JW+3ayi3Rp+PQI5h4Kg=="
       }
     }
+  },
+  "prettier": {
+    "version": "3.9.6",
+    "package": {
+      "lockPath": "node_modules/prettier",
+      "installPath": "node_modules/prettier",
+      "file": "vendor/offline/prettier/prettier-3.9.6.tgz",
+      "url": "https://registry.npmjs.org/prettier/-/prettier-3.9.6.tgz",
+      "integrity": "sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g=="
+    },
+    "executable": "bin/prettier.cjs"
   }
 }

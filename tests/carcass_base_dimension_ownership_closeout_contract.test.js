@@ -17,6 +17,12 @@ const legOwnerRel = 'esm/shared/dimensions/base_leg_policy.ts';
 const platformOwnerRel = 'esm/shared/dimensions/base_platform_render_policy.ts';
 const chestOwnerRel = 'esm/shared/dimensions/chest_structural_policy.ts';
 const runtimeDefaultStateOwnerRel = 'esm/shared/dimensions/runtime_default_state_dimension_policy.ts';
+const identityReexportOwners = new Set([
+  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts',
+  'esm/shared/dimensions/chest_mode_inputs_dimension_policy.ts',
+  'esm/shared/dimensions/core_carcass_dimension_policy.ts',
+  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts',
+]);
 const facadeAbsolute = path.join(root, facadeRel);
 const publicDimensionsAbsolute = path.join(root, publicDimensionsRel);
 const sourceFileExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
@@ -31,25 +37,25 @@ const sourceFileCache = new Map();
 const analysisCache = new Map();
 
 const expectedPlinthInventory = Object.freeze({
-  'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/shared/dimensions/core_carcass_dimension_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
-  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/features/base_plinth_support.ts': Object.freeze([
     'BASE_PLINTH_POLICY',
     'basePlinthCentimetersToMeters',
     'basePlinthMetersToCentimeters',
   ]),
   [runtimeDefaultStateOwnerRel]: Object.freeze(['BASE_PLINTH_POLICY']),
-  'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/shared/dimensions/sketch_box_preview_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   [facadeRel]: Object.freeze(['BASE_PLINTH_POLICY']),
 });
 
 const expectedLegInventory = Object.freeze({
-  'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
+  'esm/shared/dimensions/core_carcass_dimension_policy.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
-  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
+  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
   'esm/native/features/base_leg_support.ts': Object.freeze([
     'BASE_LEG_DIMENSIONS',
     'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM',
@@ -61,7 +67,7 @@ const expectedLegInventory = Object.freeze({
 });
 
 const expectedPlatformInventory = Object.freeze({
-  'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
+  'esm/shared/dimensions/core_carcass_dimension_policy.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
   'esm/native/builder/corner_state_normalize_layout.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
   'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze([
@@ -70,8 +76,12 @@ const expectedPlatformInventory = Object.freeze({
   'esm/native/builder/render_interior_sketch_visuals_adornments_normalize.ts': Object.freeze([
     'BASE_PLATFORM_RENDER_POLICY',
   ]),
-  'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
-  'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['BASE_PLATFORM_RENDER_POLICY']),
+  'esm/shared/dimensions/chest_mode_build_dimension_policy.ts': Object.freeze([
+    'BASE_PLATFORM_RENDER_POLICY',
+  ]),
+  'esm/shared/dimensions/chest_mode_inputs_dimension_policy.ts': Object.freeze([
+    'BASE_PLATFORM_RENDER_POLICY',
+  ]),
   'esm/native/services/canvas_picking_sketch_box_content_commit_adornments.ts': Object.freeze([
     'BASE_PLATFORM_RENDER_POLICY',
   ]),
@@ -250,13 +260,14 @@ function ownerInventory(ownerRel) {
     assert.equal(dependency.kind, 'value', `${rel(file)} must use a value import from ${ownerRel}`);
     const fileRel = rel(file);
     const approvedCompositionReexport =
-      fileRel === runtimeDefaultStateOwnerRel &&
-      ((ownerRel === plinthOwnerRel &&
-        dependency.importedSymbols.length === 1 &&
-        dependency.importedSymbols[0] === 'BASE_PLINTH_POLICY') ||
-        (ownerRel === legOwnerRel &&
+      identityReexportOwners.has(fileRel) ||
+      (fileRel === runtimeDefaultStateOwnerRel &&
+        ((ownerRel === plinthOwnerRel &&
           dependency.importedSymbols.length === 1 &&
-          dependency.importedSymbols[0] === 'BASE_LEG_DIMENSIONS'));
+          dependency.importedSymbols[0] === 'BASE_PLINTH_POLICY') ||
+          (ownerRel === legOwnerRel &&
+            dependency.importedSymbols.length === 1 &&
+            dependency.importedSymbols[0] === 'BASE_LEG_DIMENSIONS')));
     assert.equal(
       dependency.syntax,
       approvedCompositionReexport ? 'static-re-export' : 'static-import',

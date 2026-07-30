@@ -336,8 +336,8 @@ function inspectApprovedRatchets(baseline) {
   if (
     !(featureRule?.maxImporterCount >= 43) ||
     !(featureRule?.maxValueImporterCount >= 43) ||
-    featureRule?.maxImportCount !== 58 ||
-    featureRule?.maxValueImportCount !== 57
+    featureRule?.maxImportCount !== 50 ||
+    featureRule?.maxValueImportCount !== 49
   ) {
     addViolation(violations, 'features-ratchet');
   }

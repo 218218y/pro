@@ -77,7 +77,7 @@ const groups = Object.freeze([
     entries: [126, 127, 128, 129],
     consumer: 'esm/native/builder/core_carcass_shared.ts',
     owner: 'esm/shared/dimensions/core_carcass_dimension_policy.ts',
-    bodySha256: 'be5d0358ba7049038f89c505c743c89f84c99b7576288e882177e3d7076684ee',
+    bodySha256: 'e7d69d51f72c0c23df9233122e956ba788aea89c586c9b39c8bf10edc2540724',
     consumerSpecifier: '../../shared/dimensions/core_carcass_dimension_policy.js',
     symbols: [
       'BASE_LEG_LAYOUT_POLICY',
