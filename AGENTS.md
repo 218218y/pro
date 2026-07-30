@@ -46,6 +46,13 @@ Key stack and shape:
 - many architecture guard tests under `tests/*`
 - custom verification scripts under `tools/*`
 
+### Supported Node runtimes
+
+- Node 24 is the primary development, CI, and deployment line pinned by `.node-version`.
+- Node 22 is a fully supported compatibility line from `22.16.0` onward, pinned by `.node-version-compat`.
+- An agent or container that already has a supported Node 22 runtime must use it directly; do not install Node 24 merely because `.node-version` records the primary line.
+- Node 23 is intentionally unsupported. Run `npm run check:node-runtime` before dependency installation when runtime compatibility is in doubt.
+
 Important directories:
 
 - `esm/boot/*`

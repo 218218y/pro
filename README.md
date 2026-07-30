@@ -9,9 +9,11 @@ The canonical architecture + rules live here:
 
 ## Runtime
 
-CI and deployment builds use the exact Node 24 version declared in `.node-version`.
-Local npm commands enforce the Node 24 major through `engines` and `devEngines`,
-while `@types/node` stays on the same major.
+Node 24 remains the primary development, CI, and deployment runtime through the exact
+version in `.node-version`. Node 22 is also supported from the exact compatibility floor in
+`.node-version-compat`; `engines`, `devEngines`, runtime contracts, and a dedicated CI lane
+accept both supported lines. `@types/node` is intentionally pinned to Node 22, the lowest
+supported runtime, so typechecking cannot silently introduce Node 24-only APIs.
 
 ## Quick start
 

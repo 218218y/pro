@@ -14,10 +14,11 @@ test('GitHub CI keeps required verification split by concern', () => {
   const ci = read('.github/workflows/ci.yml');
 
   assert.doesNotMatch(ci, /^\s*node-version:\s*/m);
-  assert.equal(
-    (ci.match(/uses:\s*actions\/setup-node@/g) ?? []).length,
-    (ci.match(/node-version-file:\s*['"]\.node-version['"]/g) ?? []).length
-  );
+  const setupNodeCount = (ci.match(/uses:\s*actions\/setup-node@/g) ?? []).length;
+  const approvedVersionFileCount = (
+    ci.match(/node-version-file:\s*['"]\.node-version(?:-compat)?['"]/g) ?? []
+  ).length;
+  assert.equal(setupNodeCount, approvedVersionFileCount);
 
   assert.match(ci, /^  strict-gate:/m);
   assert.match(ci, /^  lint:/m);
@@ -25,6 +26,7 @@ test('GitHub CI keeps required verification split by concern', () => {
   assert.match(ci, /^  contracts:/m);
   assert.match(ci, /^  runtime-tests:/m);
   assert.match(ci, /^  test-runner-node-contract:/m);
+  assert.match(ci, /^  node22-compat-contract:/m);
   assert.match(ci, /^  build-smoke:/m);
   assert.match(ci, /^  audit:/m);
   assert.match(ci, /^  required-checks:/m);
@@ -55,7 +57,7 @@ test('GitHub CI keeps required verification split by concern', () => {
 
   assert.match(
     ci,
-    /needs:\n      - strict-gate\n      - lint\n      - typecheck\n      - contracts\n      - runtime-tests\n      - test-runner-node-contract\n      - build-smoke\n      - audit/
+    /needs:\n      - strict-gate\n      - lint\n      - typecheck\n      - contracts\n      - runtime-tests\n      - test-runner-node-contract\n      - node22-compat-contract\n      - build-smoke\n      - audit/
   );
   assert.match(ci, /STRICT_GATE_RESULT: \$\{\{ needs\['strict-gate'\]\.result \}\}/);
   assert.match(ci, /RUNTIME_TESTS_RESULT: \$\{\{ needs\['runtime-tests'\]\.result \}\}/);
@@ -63,6 +65,7 @@ test('GitHub CI keeps required verification split by concern', () => {
     ci,
     /TEST_RUNNER_NODE_CONTRACT_RESULT: \$\{\{ needs\['test-runner-node-contract'\]\.result \}\}/
   );
+  assert.match(ci, /NODE22_COMPAT_CONTRACT_RESULT: \$\{\{ needs\['node22-compat-contract'\]\.result \}\}/);
   assert.match(ci, /BUILD_SMOKE_RESULT: \$\{\{ needs\['build-smoke'\]\.result \}\}/);
   assert.doesNotMatch(ci, /\$\{\{ needs\.[a-z0-9-]+\.result \}\}/);
 });
@@ -103,7 +106,7 @@ test('GitHub CI keeps the monolithic verify flow as a manual release gate only',
   assert.deepEqual(monolithicRuns, ['run: npm run gate:full']);
 });
 
-test('all GitHub workflows consume the canonical Node version file', () => {
+test('all GitHub workflows consume approved centralized Node version files', () => {
   const workflowDirectory = new URL('../.github/workflows/', import.meta.url);
   const workflowFiles = fs
     .readdirSync(workflowDirectory)
@@ -113,10 +116,20 @@ test('all GitHub workflows consume the canonical Node version file', () => {
   for (const fileName of workflowFiles) {
     const source = fs.readFileSync(new URL(fileName, workflowDirectory), 'utf8');
     const setupNodeCount = (source.match(/uses:\s*actions\/setup-node@/gu) ?? []).length;
-    const versionFileCount = (source.match(/node-version-file:\s*['"]\.node-version['"]/gu) ?? []).length;
-    assert.equal(versionFileCount, setupNodeCount, `${fileName} bypasses .node-version`);
+    const versionFileCount = (source.match(/node-version-file:\s*['"]\.node-version(?:-compat)?['"]/gu) ?? [])
+      .length;
+    assert.equal(versionFileCount, setupNodeCount, `${fileName} bypasses approved version files`);
     assert.doesNotMatch(source, /^\s*node-version:\s*/gmu, `${fileName} pins Node independently`);
   }
+});
+
+test('Node 22 compatibility lane uses the dedicated exact version file', () => {
+  const ci = read('.github/workflows/ci.yml');
+  assert.equal(read('.node-version-compat').trim(), '22.16.0');
+  assert.match(ci, /^  node22-compat-contract:\n    name: Node 22 compatibility contracts/m);
+  assert.match(ci, /node-version-file: ['"]\.node-version-compat['"]/);
+  assert.match(ci, /npm run check:node-runtime/);
+  assert.match(ci, /npm run check:esnext-target/);
 });
 
 test('manual lint workflow uses the same strict lint standard as CI', () => {

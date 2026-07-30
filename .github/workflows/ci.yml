@@ -294,7 +294,7 @@ jobs:
           retention-days: 7
 
   test-runner-node-contract:
-    name: Test Runner contract (Node 24)
+    name: Test Runner contract (Node 24 primary)
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -311,8 +311,41 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run Node 24 Test Runner contracts
+      - name: Run primary Test Runner contracts
         run: node --test tests/wp_test_runner_command_runtime.test.js tests/wp_serial_tests_runtime.test.js
+
+      - name: Check Test Runner tool syntax
+        run: |
+          node --check tools/wp_test_runner_command.mjs
+          node --check tools/wp_run_tsx_tests.mjs
+          node --check tools/wp_run_test_file_list.mjs
+          node --check tools/wp_serial_tests.mjs
+
+  node22-compat-contract:
+    name: Node 22 compatibility contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node 22 compatibility runtime
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: '.node-version-compat'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Validate Node runtime and ESNext floor
+        run: |
+          npm run check:node-runtime
+          npm run check:esnext-target
+
+      - name: Run Node 22 compatibility contracts
+        run: node --test tests/wp_test_runner_command_runtime.test.js tests/wp_toolchain_version_policy_runtime.test.js tests/github_actions_ci_contracts.test.js
 
       - name: Check Test Runner tool syntax
         run: |
@@ -394,6 +427,7 @@ jobs:
       - contracts
       - runtime-tests
       - test-runner-node-contract
+      - node22-compat-contract
       - build-smoke
       - audit
       - e2e-critical
@@ -407,6 +441,7 @@ jobs:
           CONTRACTS_RESULT: ${{ needs['contracts'].result }}
           RUNTIME_TESTS_RESULT: ${{ needs['runtime-tests'].result }}
           TEST_RUNNER_NODE_CONTRACT_RESULT: ${{ needs['test-runner-node-contract'].result }}
+          NODE22_COMPAT_CONTRACT_RESULT: ${{ needs['node22-compat-contract'].result }}
           BUILD_SMOKE_RESULT: ${{ needs['build-smoke'].result }}
           AUDIT_RESULT: ${{ needs['audit'].result }}
           E2E_CRITICAL_RESULT: ${{ needs['e2e-critical'].result }}
@@ -419,6 +454,7 @@ jobs:
             "contracts:$CONTRACTS_RESULT" \
             "runtime-tests:$RUNTIME_TESTS_RESULT" \
             "test-runner-node-contract:$TEST_RUNNER_NODE_CONTRACT_RESULT" \
+            "node22-compat-contract:$NODE22_COMPAT_CONTRACT_RESULT" \
             "build-smoke:$BUILD_SMOKE_RESULT" \
             "audit:$AUDIT_RESULT" \
             "e2e-critical:$E2E_CRITICAL_RESULT"

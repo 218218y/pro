@@ -24,7 +24,7 @@ test('local main and site2 use fixed distinct browser origins', () => {
   assert.doesNotMatch(pair, /npm\.cmd/u);
 });
 
-test('dev pair launches npm scripts safely on Windows and Node 24', () => {
+test('dev pair launches npm scripts safely on Windows across supported Node lines', () => {
   assert.deepEqual(
     resolveNpmRunInvocation('start:local', {
       platform: 'win32',

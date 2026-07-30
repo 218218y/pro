@@ -13,7 +13,7 @@ const DEFAULT_DOC_RELATIVE_PATH = 'docs/TOOLCHAIN_VERSION_POLICY.md';
 
 const APPROVED_DEV_DEP_VERSIONS = Object.freeze({
   typescript: '7.0.2',
-  '@types/node': '24.13.3',
+  '@types/node': '22.20.1',
   eslint: '10.8.0',
   oxlint: '1.75.0',
   'oxlint-tsgolint': '7.0.2001',
@@ -30,9 +30,9 @@ const PINNED_DEV_DEPS = [
   {
     name: '@types/node',
     approvedVersion: APPROVED_DEV_DEP_VERSIONS['@types/node'],
-    role: 'Node tool/test type surface aligned to the pinned Node runtime major.',
-    updatePolicy: 'Keep exact and on the same major as `.node-version`; refresh with Node runtime updates.',
-    nodeMajorAligned: true,
+    role: 'Node tool/test type surface aligned to the lowest supported Node runtime major.',
+    updatePolicy: 'Keep exact and on the lowest supported Node major; refresh with runtime support updates.',
+    nodeBaselineAligned: true,
   },
   {
     name: 'eslint',
@@ -153,11 +153,11 @@ function collectToolchainVersionPolicy() {
         `${item.name} installed lock version (${installedVersion}) does not match package.json (${packageJsonVersion}).`
       );
     }
-    if (item.nodeMajorAligned && exact) {
+    if (item.nodeBaselineAligned && exact) {
       const packageMajor = Number.parseInt(packageJsonVersion.split('.')[0] ?? '', 10);
-      if (packageMajor !== nodeRuntimePolicy.major) {
+      if (packageMajor !== nodeRuntimePolicy.typeBaselineMajor) {
         violations.push(
-          `${item.name} major ${packageMajor} does not match the pinned Node major ${nodeRuntimePolicy.major}.`
+          `${item.name} major ${packageMajor} does not match the lowest supported Node major ${nodeRuntimePolicy.typeBaselineMajor}.`
         );
       }
     }
@@ -212,25 +212,52 @@ function mdCell(value) {
     .replace(/\n+/g, '<br>');
 }
 
+function createMarkdownTable(headers, rows) {
+  const normalizedRows = [headers, ...rows].map(row => row.map(mdCell));
+  const widths = headers.map((_, columnIndex) =>
+    Math.max(...normalizedRows.map(row => row[columnIndex].length), 3)
+  );
+  const formatRow = row =>
+    `| ${row.map((cell, columnIndex) => cell.padEnd(widths[columnIndex])).join(' | ')} |`;
+
+  return [
+    formatRow(normalizedRows[0]),
+    formatRow(widths.map(width => '-'.repeat(width))),
+    ...normalizedRows.slice(1).map(formatRow),
+  ];
+}
+
 function createToolchainVersionPolicyMarkdown(policy) {
   const lines = [
     '# Toolchain Version Policy',
     '',
     '<!-- Tool-owned report target. Regenerate with: npm run toolchain:version-policy:report -->',
     '',
-    'TypeScript 7 cleanup is complete. Core toolchain packages are intentionally exact-pinned so future patch/minor upgrades happen in a dedicated dependency refresh, not as silent lockfile drift. `@types/node` is pinned to the same major as the canonical Node runtime in `.node-version`.',
+    'TypeScript 7 cleanup is complete. Core toolchain packages are intentionally exact-pinned so future patch/minor upgrades happen in a dedicated dependency refresh, not as silent lockfile drift. `@types/node` is pinned to the lowest supported Node runtime major so typechecking cannot silently adopt Node 24-only APIs.',
     '',
     '## Exact pinned packages',
     '',
-    '| Package | Approved version | package.json | package-lock root | resolved lock package | Role | Future patch/minor policy |',
-    '| --- | --- | --- | --- | --- | --- | --- |',
+    ...createMarkdownTable(
+      [
+        'Package',
+        'Approved version',
+        'package.json',
+        'package-lock root',
+        'resolved lock package',
+        'Role',
+        'Future patch/minor policy',
+      ],
+      policy.rows.map(row => [
+        `\`${row.name}\``,
+        `\`${row.approvedVersion}\``,
+        `\`${row.packageJsonVersion}\``,
+        `\`${row.lockRootVersion}\``,
+        `\`${row.installedVersion}\``,
+        row.role,
+        row.updatePolicy,
+      ])
+    ),
   ];
-
-  for (const row of policy.rows) {
-    lines.push(
-      `| \`${mdCell(row.name)}\` | \`${mdCell(row.approvedVersion)}\` | \`${mdCell(row.packageJsonVersion)}\` | \`${mdCell(row.lockRootVersion)}\` | \`${mdCell(row.installedVersion)}\` | ${mdCell(row.role)} | ${mdCell(row.updatePolicy)} |`
-    );
-  }
 
   lines.push(
     '',
@@ -249,7 +276,7 @@ function createToolchainVersionPolicyMarkdown(policy) {
     '',
     policy.violations.length
       ? 'Not ready:'
-      : 'Ready: all pinned toolchain versions match their approved versions, `@types/node` matches the pinned Node major, `oxlint-tsgolint` is aligned with TypeScript, and removed TS ESLint packages are absent.',
+      : 'Ready: all pinned toolchain versions match their approved versions, `@types/node` matches the lowest supported Node major, `oxlint-tsgolint` is aligned with TypeScript, and removed TS ESLint packages are absent.',
     ...policy.violations.map(v => `- ${v}`),
     ''
   );

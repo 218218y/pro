@@ -7,18 +7,19 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
-const NODE_VERSION_FILE = '.node-version';
+const PRIMARY_NODE_VERSION_FILE = '.node-version';
+const COMPATIBILITY_NODE_VERSION_FILE = '.node-version-compat';
 const WORKFLOW_DIRECTORY = '.github/workflows';
 
 function readJson(root, relativePath) {
   return JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8'));
 }
 
-export function parsePinnedNodeVersion(rawVersion) {
+export function parsePinnedNodeVersion(rawVersion, versionFile = PRIMARY_NODE_VERSION_FILE) {
   const value = String(rawVersion ?? '').trim();
   const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(value);
   if (!match) {
-    throw new Error(`${NODE_VERSION_FILE} must contain an exact Node version (for example 24.0.0).`);
+    throw new Error(`${versionFile} must contain an exact Node version (for example 24.0.0).`);
   }
   return {
     version: value,
@@ -28,13 +29,71 @@ export function parsePinnedNodeVersion(rawVersion) {
   };
 }
 
+function compareNodeVersions(left, right) {
+  for (const key of ['major', 'minor', 'patch']) {
+    if (left[key] !== right[key]) return left[key] - right[key];
+  }
+  return 0;
+}
+
+function createSupportedRuntimeLine({ version, major, minor, patch }, versionFile, minimumVersion) {
+  return Object.freeze({
+    version,
+    major,
+    minor,
+    patch,
+    versionFile,
+    minimumVersion,
+  });
+}
+
 export function readNodeRuntimePolicy(root = ROOT) {
-  const pinned = parsePinnedNodeVersion(fs.readFileSync(path.join(root, NODE_VERSION_FILE), 'utf8'));
+  const primary = parsePinnedNodeVersion(
+    fs.readFileSync(path.join(root, PRIMARY_NODE_VERSION_FILE), 'utf8'),
+    PRIMARY_NODE_VERSION_FILE
+  );
+  const compatibility = parsePinnedNodeVersion(
+    fs.readFileSync(path.join(root, COMPATIBILITY_NODE_VERSION_FILE), 'utf8'),
+    COMPATIBILITY_NODE_VERSION_FILE
+  );
+
+  if (compatibility.major >= primary.major) {
+    throw new Error(
+      `${COMPATIBILITY_NODE_VERSION_FILE} major must be lower than ${PRIMARY_NODE_VERSION_FILE} major.`
+    );
+  }
+
+  const supportedLines = Object.freeze([
+    createSupportedRuntimeLine(compatibility, COMPATIBILITY_NODE_VERSION_FILE, compatibility.version),
+    createSupportedRuntimeLine(primary, PRIMARY_NODE_VERSION_FILE, `${primary.major}.0.0`),
+  ]);
+  const engineRange = supportedLines.map(line => `>=${line.minimumVersion} <${line.major + 1}`).join(' || ');
+
   return {
-    ...pinned,
-    versionFile: NODE_VERSION_FILE,
-    engineRange: `>=${pinned.major} <${pinned.major + 1}`,
+    ...primary,
+    versionFile: PRIMARY_NODE_VERSION_FILE,
+    compatibilityVersion: compatibility.version,
+    compatibilityMajor: compatibility.major,
+    compatibilityVersionFile: COMPATIBILITY_NODE_VERSION_FILE,
+    supportedMajors: Object.freeze(supportedLines.map(line => line.major)),
+    supportedLines,
+    typeBaselineMajor: Math.min(...supportedLines.map(line => line.major)),
+    engineRange,
   };
+}
+
+export function isSupportedNodeVersion(rawVersion, policy = readNodeRuntimePolicy()) {
+  let version;
+  try {
+    version = parsePinnedNodeVersion(rawVersion, 'Node runtime version');
+  } catch {
+    return false;
+  }
+
+  const line = policy.supportedLines.find(candidate => candidate.major === version.major);
+  if (!line) return false;
+  const minimum = parsePinnedNodeVersion(line.minimumVersion, `${line.versionFile} minimum`);
+  return compareNodeVersions(version, minimum) >= 0;
 }
 
 function pushMismatch(violations, label, actual, expected) {
@@ -54,6 +113,8 @@ function collectWorkflowViolations(root, policy) {
     return violations;
   }
 
+  const allowedVersionFiles = [policy.versionFile, policy.compatibilityVersionFile];
+  const allowedVersionFilePattern = allowedVersionFiles.map(escapeRegExp).join('|');
   const workflowFiles = fs
     .readdirSync(workflowRoot)
     .filter(name => /\.ya?ml$/u.test(name))
@@ -64,20 +125,18 @@ function collectWorkflowViolations(root, policy) {
     const source = fs.readFileSync(path.join(workflowRoot, fileName), 'utf8');
     const setupNodeCount = (source.match(/uses:\s*actions\/setup-node@/gu) ?? []).length;
     const versionFileCount = (
-      source.match(
-        new RegExp(`node-version-file:\\s*['\"]?${escapeRegExp(policy.versionFile)}['\"]?`, 'gu')
-      ) ?? []
+      source.match(new RegExp(`node-version-file:\\s*['"]?(?:${allowedVersionFilePattern})['"]?`, 'gu')) ?? []
     ).length;
     const directVersionCount = (source.match(/^\s*node-version:\s*/gmu) ?? []).length;
 
     if (setupNodeCount !== versionFileCount) {
       violations.push(
-        `${relativePath}: every actions/setup-node step must use node-version-file: '${policy.versionFile}' (${setupNodeCount} setup step(s), ${versionFileCount} version-file reference(s)).`
+        `${relativePath}: every actions/setup-node step must use ${allowedVersionFiles.join(' or ')} (${setupNodeCount} setup step(s), ${versionFileCount} approved version-file reference(s)).`
       );
     }
     if (directVersionCount > 0) {
       violations.push(
-        `${relativePath}: direct node-version literals are forbidden; use ${policy.versionFile}.`
+        `${relativePath}: direct node-version literals are forbidden; use an approved Node version file.`
       );
     }
   }
@@ -98,11 +157,10 @@ export function collectNodeRuntimePolicyViolations({ root = ROOT, currentNodeVer
   const lock = readJson(root, 'package-lock.json');
   const lockRoot = lock.packages?.[''] ?? {};
   const effectiveNodeVersion = String(currentNodeVersion ?? process.versions.node);
-  const currentMajor = Number.parseInt(effectiveNodeVersion.split('.')[0] ?? '', 10);
 
-  if (currentMajor !== policy.major) {
+  if (!isSupportedNodeVersion(effectiveNodeVersion, policy)) {
     violations.push(
-      `current Node runtime ${JSON.stringify(effectiveNodeVersion)} does not match ${policy.versionFile} major ${policy.major}.`
+      `current Node runtime ${JSON.stringify(effectiveNodeVersion)} is outside supported range ${JSON.stringify(policy.engineRange)}.`
     );
   }
 
@@ -135,8 +193,10 @@ export function collectNodeRuntimePolicyViolations({ root = ROOT, currentNodeVer
       continue;
     }
     const typesMajor = Number.parseInt(String(version).split('.')[0] ?? '', 10);
-    if (typesMajor !== policy.major) {
-      violations.push(`${label} major ${typesMajor} does not match the pinned Node major ${policy.major}.`);
+    if (typesMajor !== policy.typeBaselineMajor) {
+      violations.push(
+        `${label} major ${typesMajor} does not match the lowest supported Node major ${policy.typeBaselineMajor}.`
+      );
     }
   }
   if (packageTypesVersion !== lockRootTypesVersion || packageTypesVersion !== lockInstalledTypesVersion) {
@@ -159,7 +219,7 @@ async function main() {
     return;
   }
   console.log(
-    `[Node runtime policy] OK: pinned=${policy.version}, engines=${policy.engineRange}, @types/node major=${policy.major}`
+    `[Node runtime policy] OK: primary=${policy.version}, compatibility=${policy.compatibilityVersion}, engines=${policy.engineRange}, @types/node baseline=${policy.typeBaselineMajor}`
   );
 }
 

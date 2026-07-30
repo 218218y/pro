@@ -4,12 +4,19 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 export const TEST_ISOLATION_NONE_ARGUMENT = '--test-isolation=none';
+export const EXPERIMENTAL_TEST_ISOLATION_NONE_ARGUMENT = '--experimental-test-isolation=none';
 
 let cachedTestIsolationNoneArgument;
 let testIsolationSupportResolved = false;
 
 function resolveTestIsolationNoneArgumentFromHelp(helpText) {
-  return /(?:^|[\s,])--test-isolation(?:=|[\s,]|$)/mu.test(helpText) ? TEST_ISOLATION_NONE_ARGUMENT : null;
+  if (/(?:^|[\s,])--test-isolation(?:=|[\s,]|$)/mu.test(helpText)) {
+    return TEST_ISOLATION_NONE_ARGUMENT;
+  }
+  if (/(?:^|[\s,])--experimental-test-isolation(?:=|[\s,]|$)/mu.test(helpText)) {
+    return EXPERIMENTAL_TEST_ISOLATION_NONE_ARGUMENT;
+  }
+  return null;
 }
 
 export function resolveTestIsolationNoneArgument(helpText) {
