@@ -427,7 +427,7 @@ test('Runtime routes, historical Entries 175-178, and compatibility ownership ar
   assert.deepEqual(defaultsTypeRoute?.importedSymbols, ['WardrobeDimensionDefaultType']);
   assert.equal(defaultsTypeRoute?.syntax, 'type-re-export');
 
-  assert.equal(baseline.version, '2.5');
+  assert.equal(baseline.version, '2.6');
   assert.equal(baseline.migrationBudgets.length, 178);
   assert.deepEqual(baseline.migrationBudgets.slice(174, 178), expectedRuntimeLedgerEntries());
   const expectedOwnership = expectedRuntimeCompatibilityOwnership();
@@ -458,8 +458,8 @@ test('Runtime routes, historical Entries 175-178, and compatibility ownership ar
   );
   const retiredEntries = new Set(baseline.migrationRetirements.map(retirement => retirement.entryNumber));
   const activeEntries = baseline.migrationBudgets.filter((_, index) => !retiredEntries.has(index + 1));
-  assert.equal(activeEntries.length, 167);
-  assert.equal(baseline.migrationRetirements.length, 11);
+  assert.equal(activeEntries.length, 149);
+  assert.equal(baseline.migrationRetirements.length, 29);
   assert.equal(baseline.compatibilityBudgets.length, 4);
   assert.deepEqual(
     baseline.migrationConsolidations.map(group => group.id),
@@ -467,10 +467,21 @@ test('Runtime routes, historical Entries 175-178, and compatibility ownership ar
       'runtime-default-state-dimension-consolidation',
       'platform-door-motion-dimension-consolidation',
       'interior-sketch-tools-dimension-consolidation',
+      'structure-tab-dimension-consolidation',
+      'interior-tab-defaults-dimension-consolidation',
+      'order-pdf-dimension-consolidation',
+      'corner-cells-ui-defaults-dimension-consolidation',
+      'sketch-drawer-sizing-dimension-consolidation',
+      'sketch-internal-drawer-cassette-dimension-consolidation',
+      'interior-layout-presets-dimension-consolidation',
+      'modules-configuration-defaults-dimension-consolidation',
+      'stack-split-module-config-dimension-consolidation',
+      'library-preset-flow-dimension-consolidation',
+      'library-preset-module-defaults-dimension-consolidation',
     ]
   );
   assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 108);
-  assert.equal(new Set(activeEntries.map(entry => entry.fromFile)).size, 104);
+  assert.equal(new Set(activeEntries.map(entry => entry.fromFile)).size, 93);
   for (const [count, expected] of Object.entries(ledgerPrefixes)) {
     assert.equal(
       sha256(stableJson(baseline.migrationBudgets.slice(0, Number(count)))),

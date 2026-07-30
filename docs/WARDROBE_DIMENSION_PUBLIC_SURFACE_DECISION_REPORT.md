@@ -13,22 +13,22 @@ This is a decision-input report, not removal authorization. All 99 public symbol
 - Remaining importer: `esm/native/features/dimensions/index.ts` (wildcard-re-export)
 - Public surface: 89 values / 10 types
 
-## Layer Contract 2.5 ownership
+## Layer Contract 2.6 ownership
 
 - Historical migration entries: 178
-- Active migration entries: 167
-- Retired migration entries: 11
+- Active migration entries: 149
+- Retired migration entries: 29
 - Compatibility budgets: 4
-- Consolidations: 3
+- Consolidations: 14
 - Historical unique fromFiles: 108
-- Active migration unique fromFiles: 104
+- Active migration unique fromFiles: 93
 - Runtime compatibility owner: `wardrobe-dimension-runtime-public-compatibility`
 - Runtime public surface: `esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts`
 
-| Runtime edge     | Observed | Active migration | Compatibility | Reviewed general | General budget |
-| ---------------- | -------: | ---------------: | ------------: | ---------------: | -------------: |
-| Statements       |       36 |                0 |             4 |               32 |             32 |
-| Value statements |       35 |                0 |             4 |               31 |             31 |
+| Runtime edge     | Observed | Active migration | Compatibility | Consolidation | Reviewed general | General budget |
+| ---------------- | -------: | ---------------: | ------------: | ------------: | ---------------: | -------------: |
+| Statements       |       36 |                0 |             4 |             1 |               31 |             32 |
+| Value statements |       35 |                0 |             4 |             1 |               30 |             31 |
 
 | Compatibility budget                              | Retired Entry | Target                                                        | Next review |
 | ------------------------------------------------- | ------------: | ------------------------------------------------------------- | ----------- |

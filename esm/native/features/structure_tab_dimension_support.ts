@@ -1,5 +1,5 @@
-import { CHEST_MODE_DIMENSIONS } from '../../shared/dimensions/chest_mode_policy.js';
 import {
+  CHEST_MODE_DIMENSIONS,
   DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
   STACK_SPLIT_LOWER_DEPTH_MAX,
   STACK_SPLIT_LOWER_DEPTH_MIN,
@@ -9,8 +9,6 @@ import {
   STACK_SPLIT_LOWER_WIDTH_MAX,
   STACK_SPLIT_LOWER_WIDTH_MIN,
   STACK_SPLIT_MIN_TOP_HEIGHT,
-} from '../../shared/dimensions/stack_split_policy.js';
-import {
   WARDROBE_CELL_DEPTH_MAX,
   WARDROBE_CELL_DEPTH_MIN,
   WARDROBE_CELL_HEIGHT_MAX,
@@ -29,8 +27,6 @@ import {
   WARDROBE_SLIDING_DOORS_MIN,
   WARDROBE_WIDTH_MAX,
   WARDROBE_WIDTH_MIN,
-} from '../../shared/dimensions/product_limits.js';
-import {
   DEFAULT_CHEST_DRAWERS_COUNT,
   DEFAULT_CORNER_DOORS,
   DEFAULT_CORNER_WIDTH,
@@ -39,9 +35,9 @@ import {
   DEFAULT_WIDTH,
   HINGED_DEFAULT_DEPTH,
   HINGED_DEFAULT_PER_DOOR_WIDTH,
-} from '../../shared/dimensions/wardrobe_defaults.js';
-import { getDefaultDepthForWardrobeType } from '../../shared/dimensions/wardrobe_default_resolution_policy.js';
-import { STRUCTURE_TAB_AUTO_WIDTH_POLICY } from '../../shared/dimensions/structure_tab_auto_width_policy.js';
+  getDefaultDepthForWardrobeType,
+  STRUCTURE_TAB_AUTO_WIDTH_POLICY,
+} from '../../shared/dimensions/structure_tab_dimension_policy.js';
 
 export {
   CHEST_MODE_DIMENSIONS,

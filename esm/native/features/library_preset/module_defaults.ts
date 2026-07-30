@@ -1,5 +1,7 @@
-import { LIBRARY_PRESET_MODULE_DEFAULTS_POLICY } from '../../../shared/dimensions/library_preset_policy.js';
-import { resolveAutoWidthForDoors } from '../../../shared/dimensions/wardrobe_default_resolution_policy.js';
+import {
+  LIBRARY_PRESET_MODULE_DEFAULTS_POLICY,
+  resolveAutoWidthForDoors,
+} from '../../../shared/dimensions/library_preset_module_defaults_dimension_policy.js';
 
 import type {
   ModuleConfigLike,

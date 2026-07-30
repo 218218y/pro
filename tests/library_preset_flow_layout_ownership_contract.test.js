@@ -13,6 +13,7 @@ const productionRel = 'esm/native/features/library_preset/library_preset_flow_sh
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const libraryOwnerRel = 'esm/shared/dimensions/library_preset_policy.ts';
 const stackSplitOwnerRel = 'esm/shared/dimensions/stack_split_policy.ts';
+const compositionOwnerRel = 'esm/shared/dimensions/library_preset_flow_dimension_policy.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const baselineRel = 'tools/wp_layer_baseline.json';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
@@ -165,6 +166,7 @@ function resolveModuleTarget(fromFile, specifier) {
 const facadeTarget = canonicalModuleTarget(path.join(root, facadeRel));
 const libraryOwnerTarget = canonicalModuleTarget(path.join(root, libraryOwnerRel));
 const stackSplitOwnerTarget = canonicalModuleTarget(path.join(root, stackSplitOwnerRel));
+const compositionOwnerTarget = canonicalModuleTarget(path.join(root, compositionOwnerRel));
 const publicDimensionsTarget = canonicalModuleTarget(path.join(root, publicDimensionsRel));
 
 const omittedAstKeys = new Set([
@@ -239,6 +241,7 @@ function inspectOwnership(file, source) {
       facadeTarget,
       libraryOwnerTarget,
       stackSplitOwnerTarget,
+      compositionOwnerTarget,
       publicDimensionsTarget,
     ].includes(target);
     const relatedSymbols = dependency.importedSymbols.filter(symbol =>
@@ -275,13 +278,13 @@ function inspectOwnership(file, source) {
     }
     if (
       dependency.importedSymbols.includes('LIBRARY_PRESET_LAYOUT_POLICY') &&
-      target !== libraryOwnerTarget
+      target !== compositionOwnerTarget
     ) {
       addViolation('wrong-focused-owner-path', { start: dependency.statementStart }, dependency.specifier);
     }
     if (
       dependency.importedSymbols.includes('DEFAULT_STACK_SPLIT_LOWER_HEIGHT') &&
-      target !== stackSplitOwnerTarget
+      target !== compositionOwnerTarget
     ) {
       addViolation('wrong-focused-owner-path', { start: dependency.statementStart }, dependency.specifier);
     }
@@ -416,7 +419,7 @@ function assertHistoricalLedger(migrationBudgets) {
   assert.equal(semanticSha256(migrationBudgets.slice(0, 162)), HISTORICAL_LEDGER_PREFIX_162_HASH);
 }
 
-test('Library Preset Flow is one exact consumer with two direct focused-owner imports', () => {
+test('Library Preset Flow is one exact consumer with one composition-owner import', () => {
   assert.equal(productionRel, 'esm/native/features/library_preset/library_preset_flow_shared.ts');
   const file = path.join(root, productionRel);
   const source = read(productionRel);
@@ -425,7 +428,7 @@ test('Library Preset Flow is one exact consumer with two direct focused-owner im
 
   const ownershipImports = inspection.analysis.imports.filter(dependency => {
     const target = resolveModuleTarget(file, dependency.specifier);
-    return target === libraryOwnerTarget || target === stackSplitOwnerTarget;
+    return target === compositionOwnerTarget;
   });
   assert.deepEqual(
     ownershipImports.map(dependency => ({
@@ -442,20 +445,15 @@ test('Library Preset Flow is one exact consumer with two direct focused-owner im
     })),
     [
       {
-        specifier: '../../../shared/dimensions/library_preset_policy.js',
+        specifier: '../../../shared/dimensions/library_preset_flow_dimension_policy.js',
         kind: 'value',
         syntax: 'static-import',
-        importedSymbols: ['LIBRARY_PRESET_LAYOUT_POLICY'],
+        importedSymbols: ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT', 'LIBRARY_PRESET_LAYOUT_POLICY'],
         exportedSymbols: [],
-        bindings: [['LIBRARY_PRESET_LAYOUT_POLICY', 'LIBRARY_PRESET_LAYOUT_POLICY', null]],
-      },
-      {
-        specifier: '../../../shared/dimensions/stack_split_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT'],
-        exportedSymbols: [],
-        bindings: [['DEFAULT_STACK_SPLIT_LOWER_HEIGHT', 'DEFAULT_STACK_SPLIT_LOWER_HEIGHT', null]],
+        bindings: [
+          ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT', 'DEFAULT_STACK_SPLIT_LOWER_HEIGHT', null],
+          ['LIBRARY_PRESET_LAYOUT_POLICY', 'LIBRARY_PRESET_LAYOUT_POLICY', null],
+        ],
       },
     ]
   );

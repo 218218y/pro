@@ -16,6 +16,8 @@ const baselineRel = 'tools/wp_layer_baseline.json';
 const featureManifestRel = 'tools/wp_features_public_api_manifest.json';
 const defaultsSpecifier = '../../shared/dimensions/wardrobe_defaults.js';
 const resolutionSpecifier = '../../shared/dimensions/wardrobe_default_resolution_policy.js';
+const compositionOwnerRel = 'esm/shared/dimensions/order_pdf_dimension_policy.ts';
+const compositionSpecifier = '../../shared/dimensions/order_pdf_dimension_policy.js';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const symbols = Object.freeze([
   'DEFAULT_HEIGHT',
@@ -122,22 +124,21 @@ function inspectFeature(source) {
   } catch (error) {
     return [{ kind: 'feature-parse', detail: error.message }];
   }
-  if (analysis.imports.length !== 2) addViolation(violations, 'owner-statement-count');
-  for (const group of ownerGroups) {
-    const matches = analysis.imports.filter(dependency => dependency.specifier === group.specifier);
-    const [dependency] = matches;
-    if (
-      matches.length !== 1 ||
-      dependency?.kind !== 'value' ||
-      dependency?.syntax !== 'static-import' ||
-      stableJson(dependency?.importedSymbols ?? []) !== stableJson(group.symbols)
-    ) {
-      addViolation(violations, 'owner-dependency', group.family);
-    }
-    if (dependency?.bindings.some(binding => binding.importedName !== binding.localName)) {
-      addViolation(violations, 'owner-alias', group.family);
-    }
+  const [dependency] = analysis.imports;
+  if (
+    analysis.imports.length !== 1 ||
+    dependency?.specifier !== compositionSpecifier ||
+    dependency?.kind !== 'value' ||
+    dependency?.syntax !== 'static-import' ||
+    stableJson(sorted(dependency?.importedSymbols ?? [])) !== stableJson(sorted(symbols))
+  ) {
+    addViolation(violations, 'owner-statement-count');
   }
+  if (dependency?.bindings.some(binding => binding.importedName !== binding.localName)) {
+    addViolation(violations, 'owner-alias');
+  }
+  if (dependency?.specifier?.includes('wardrobe_dimension_tokens_shared'))
+    addViolation(violations, 'facade-route');
   if (
     analysis.unresolvedDynamicImports.length ||
     analysis.forbiddenModuleSyntax.length ||
@@ -157,8 +158,8 @@ function inspectFeature(source) {
     addViolation(violations, 'feature-export-surface');
   }
   if (
-    sourceFile.body.length !== 3 ||
-    sourceFile.body.filter(statement => statement.type === 'ImportDeclaration').length !== 2 ||
+    sourceFile.body.length !== 2 ||
+    sourceFile.body.filter(statement => statement.type === 'ImportDeclaration').length !== 1 ||
     sourceFile.body.filter(
       statement =>
         statement.type === 'ExportNamedDeclaration' &&
@@ -167,6 +168,36 @@ function inspectFeature(source) {
     ).length !== 1
   ) {
     addViolation(violations, 'feature-wrapper-copy-or-logic');
+  }
+  return violations;
+}
+
+function inspectCompositionOwner(source) {
+  const violations = [];
+  const analysis = analyzeModuleDependencies(compositionOwnerRel, source);
+  const expected = ownerGroups.map(group => ({
+    specifier: group.specifier.replace('../../shared/dimensions/', './'),
+    symbols: group.symbols,
+  }));
+  if (analysis.imports.length !== 2) addViolation(violations, 'composition-source-count');
+  for (const group of expected) {
+    const matches = analysis.imports.filter(dependency => dependency.specifier === group.specifier);
+    const dependency = matches[0];
+    if (
+      matches.length !== 1 ||
+      dependency?.kind !== 'value' ||
+      dependency?.syntax !== 'static-re-export' ||
+      dependency?.bindings.some(binding => binding.importedName !== binding.exportedName) ||
+      stableJson(sorted(dependency?.importedSymbols ?? [])) !== stableJson(sorted(group.symbols))
+    )
+      addViolation(violations, 'composition-source', group.specifier);
+  }
+  const sourceFile = createSourceFile(compositionOwnerRel, source);
+  if (
+    sourceFile.body.length !== 2 ||
+    sourceFile.body.some(statement => statement.type !== 'ExportNamedDeclaration' || statement.declaration)
+  ) {
+    addViolation(violations, 'composition-owner-logic');
   }
   return violations;
 }
@@ -329,8 +360,9 @@ function assertRejected(violations, kind, label) {
   );
 }
 
-test('Order PDF dimension feature has two exact owners, four direct exports, and one consumer', () => {
+test('Order PDF dimension feature has one exact composition owner, four direct exports, and one consumer', () => {
   assert.deepEqual(inspectFeature(read(featureRel)), []);
+  assert.deepEqual(inspectCompositionOwner(read(compositionOwnerRel)), []);
   assert.deepEqual(inspectTopology(productionEntries()), []);
 
   const featureManifest = JSON.parse(read(featureManifestRel));
@@ -345,16 +377,15 @@ test('Order PDF support preserves owner identities and the consumer AST/literal 
   const depth = () => 60;
   const doors = () => 2;
   const runtime = loadTsRuntimeModule(path.join(root, featureRel), {
-    mock: specifier => {
-      if (specifier === defaultsSpecifier) return { DEFAULT_HEIGHT: 240, DEFAULT_WIDTH: 120 };
-      if (specifier === resolutionSpecifier) {
-        return {
-          getDefaultDepthForWardrobeType: depth,
-          getDefaultDoorsForWardrobeType: doors,
-        };
-      }
-      return undefined;
-    },
+    mock: specifier =>
+      specifier === compositionSpecifier
+        ? {
+            DEFAULT_HEIGHT: 240,
+            DEFAULT_WIDTH: 120,
+            getDefaultDepthForWardrobeType: depth,
+            getDefaultDoorsForWardrobeType: doors,
+          }
+        : undefined,
   });
   assert.equal(runtime.DEFAULT_HEIGHT, 240);
   assert.equal(runtime.DEFAULT_WIDTH, 120);
@@ -381,14 +412,12 @@ test('Entries 173-174 are exact, preserve Prefix 172, and accept append-safe Ent
 test('Order PDF mutation probes reject compatibility routes, aliases, wrappers, growth, and behavior drift', () => {
   const feature = read(featureRel);
   assertRejected(
-    inspectFeature(feature.replace(defaultsSpecifier, '../../shared/wardrobe_dimension_tokens_shared.js')),
-    'owner-dependency',
+    inspectFeature(feature.replace(compositionSpecifier, '../../shared/wardrobe_dimension_tokens_shared.js')),
+    'facade-route',
     'facade route'
   );
   assertRejected(
-    inspectFeature(
-      feature.replace('DEFAULT_HEIGHT, DEFAULT_WIDTH', 'DEFAULT_HEIGHT as HEIGHT, DEFAULT_WIDTH')
-    ),
+    inspectFeature(feature.replace('DEFAULT_HEIGHT,', 'DEFAULT_HEIGHT as HEIGHT,')),
     'owner-alias',
     'owner alias'
   );

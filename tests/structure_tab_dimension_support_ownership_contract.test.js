@@ -21,6 +21,8 @@ const facadeSpecifier = '../../shared/wardrobe_dimension_tokens_shared.js';
 const servicesApiRel = 'esm/native/services/api.ts';
 const hexIndexRel = 'esm/native/features/hex_cell/index.ts';
 const autoWidthPolicySpecifier = '../../shared/dimensions/structure_tab_auto_width_policy.js';
+const compositionOwnerRel = 'esm/shared/dimensions/structure_tab_dimension_policy.ts';
+const compositionOwnerSpecifier = '../../shared/dimensions/structure_tab_dimension_policy.js';
 const autoWidthPolicySymbol = 'STRUCTURE_TAB_AUTO_WIDTH_POLICY';
 const projectedSymbols = Object.freeze(['resolveAutoWidthForDoors', 'isAutoWidthForDoors']);
 
@@ -421,39 +423,24 @@ function inspectFeature(source) {
     return [{ kind: 'feature-parse', detail: error.message }];
   }
   const shared = analysis.imports.filter(dependency => dependency.specifier.includes('/shared/'));
-  if (shared.length !== 6) addViolation(violations, 'owner-statement-count', shared.length);
-  for (const group of ownerGroups) {
-    const matches = shared.filter(dependency => dependency.specifier === group.specifier);
-    if (matches.length !== 1) {
-      addViolation(violations, 'owner-statement', group.family);
-      continue;
-    }
-    const [dependency] = matches;
-    if (dependency.kind !== 'value' || dependency.syntax !== 'static-import') {
-      addViolation(violations, 'owner-import-kind', group.family);
-    }
-    if (dependency.bindings.some(binding => binding.importedName !== binding.localName)) {
-      addViolation(violations, 'owner-alias', group.family);
-    }
-    if (dependency.importedSymbols.includes('*')) addViolation(violations, 'owner-namespace', group.family);
-    if (stableJson(sorted(dependency.importedSymbols)) !== stableJson(sorted(group.symbols))) {
-      addViolation(violations, 'owner-symbols', group.family);
-    }
-  }
-  const autoWidthPolicyDependencies = shared.filter(
-    dependency => dependency.specifier === autoWidthPolicySpecifier
-  );
-  const [autoWidthPolicyDependency] = autoWidthPolicyDependencies;
+  const [compositionDependency] = shared;
   if (
-    autoWidthPolicyDependencies.length !== 1 ||
-    autoWidthPolicyDependency?.kind !== 'value' ||
-    autoWidthPolicyDependency?.syntax !== 'static-import' ||
-    stableJson(autoWidthPolicyDependency?.importedSymbols ?? []) !== stableJson([autoWidthPolicySymbol])
+    shared.length !== 1 ||
+    compositionDependency?.specifier !== compositionOwnerSpecifier ||
+    compositionDependency?.kind !== 'value' ||
+    compositionDependency?.syntax !== 'static-import'
   ) {
-    addViolation(violations, 'auto-width-policy-import');
+    addViolation(violations, 'owner-statement-count', shared.length);
   }
-  if (autoWidthPolicyDependency?.bindings.some(binding => binding.importedName !== binding.localName)) {
-    addViolation(violations, 'auto-width-policy-alias');
+  if (compositionDependency?.bindings.some(binding => binding.importedName !== binding.localName)) {
+    addViolation(violations, 'owner-alias');
+  }
+  if (compositionDependency?.importedSymbols.includes('*')) addViolation(violations, 'owner-namespace');
+  if (
+    stableJson(sorted(compositionDependency?.importedSymbols ?? [])) !==
+    stableJson(sorted([...sharedSymbols, autoWidthPolicySymbol]))
+  ) {
+    addViolation(violations, 'owner-symbols');
   }
   if (shared.some(dependency => dependency.specifier.includes('wardrobe_dimension_tokens_shared'))) {
     addViolation(violations, 'feature-facade-import');
@@ -515,8 +502,53 @@ function inspectFeature(source) {
   const allowedBody = sourceFile.body.filter(
     statement => statement.type === 'ImportDeclaration' || statement.type === 'ExportNamedDeclaration'
   );
-  if (sourceFile.body.length !== 10 || allowedBody.length !== sourceFile.body.length) {
+  if (sourceFile.body.length !== 5 || allowedBody.length !== sourceFile.body.length) {
     addViolation(violations, 'feature-copy-wrapper-or-logic');
+  }
+  return violations;
+}
+
+function inspectCompositionOwner(source) {
+  const violations = [];
+  let analysis;
+  let sourceFile;
+  try {
+    analysis = analyzeModuleDependencies(compositionOwnerRel, source);
+    sourceFile = createSourceFile(compositionOwnerRel, source);
+  } catch (error) {
+    return [{ kind: 'composition-owner-parse', detail: error.message }];
+  }
+  const expected = [
+    ...ownerGroups.map(group => ({
+      specifier: group.specifier.replace('../../shared/dimensions/', './'),
+      symbols: group.symbols,
+    })),
+    {
+      specifier: autoWidthPolicySpecifier.replace('../../shared/dimensions/', './'),
+      symbols: [autoWidthPolicySymbol],
+    },
+  ];
+  if (analysis.imports.length !== expected.length) addViolation(violations, 'composition-source-count');
+  for (const group of expected) {
+    const matches = analysis.imports.filter(dependency => dependency.specifier === group.specifier);
+    const dependency = matches[0];
+    if (
+      matches.length !== 1 ||
+      dependency?.kind !== 'value' ||
+      dependency?.syntax !== 'static-re-export' ||
+      dependency?.bindings.some(binding => binding.importedName !== binding.exportedName) ||
+      stableJson(sorted(dependency?.importedSymbols ?? [])) !== stableJson(sorted(group.symbols))
+    ) {
+      addViolation(violations, 'composition-source-statement', group.specifier);
+    }
+  }
+  if (
+    sourceFile.body.length !== expected.length ||
+    sourceFile.body.some(
+      statement => statement.type !== 'ExportNamedDeclaration' || statement.declaration !== null
+    )
+  ) {
+    addViolation(violations, 'composition-owner-logic');
   }
   return violations;
 }
@@ -762,7 +794,7 @@ function assertMutationRejected(violations, kind, label) {
   );
 }
 
-test('feature boundary has six exact shared imports and 41 identity-preserving exports', () => {
+test('feature boundary has one exact composition import and 41 identity-preserving exports', () => {
   const featureFiles = listSourceFiles(path.join(root, 'esm/native/features'))
     .map(file => path.relative(root, file).replaceAll('\\', '/'))
     .filter(rel => path.basename(rel) === 'structure_tab_dimension_support.ts');
@@ -771,6 +803,7 @@ test('feature boundary has six exact shared imports and 41 identity-preserving e
   assert.equal([...sharedSymbols, autoWidthPolicySymbol].length, 38);
   assert.equal(surfaceSymbols.length, 41);
   assert.deepEqual(inspectFeature(read(featureRel)), []);
+  assert.deepEqual(inspectCompositionOwner(read(compositionOwnerRel)), []);
   assert.deepEqual(inspectAdapter(read(adapterRel)), []);
 });
 
@@ -847,16 +880,13 @@ test('the four Group A consumers remain absent from the append-safe transition i
 test('feature and adapter mutation probes reject facades, aliases, wrappers, and topology growth', () => {
   const feature = read(featureRel);
   assertMutationRejected(
-    inspectFeature(feature.replace(ownerGroups[0].specifier, facadeSpecifier)),
+    inspectFeature(feature.replace(compositionOwnerSpecifier, facadeSpecifier)),
     'feature-facade-import',
     'facade import'
   );
   assertMutationRejected(
     inspectFeature(
-      feature.replace(
-        'import { CHEST_MODE_DIMENSIONS }',
-        'import { CHEST_MODE_DIMENSIONS as CHEST_MODE_DIMENSIONS_ALIAS }'
-      )
+      feature.replace('CHEST_MODE_DIMENSIONS,', 'CHEST_MODE_DIMENSIONS as CHEST_MODE_DIMENSIONS_ALIAS,')
     ),
     'owner-alias',
     'owner alias'
@@ -864,20 +894,25 @@ test('feature and adapter mutation probes reject facades, aliases, wrappers, and
   assertMutationRejected(
     inspectFeature(
       feature.replace(
-        /import \{ CHEST_MODE_DIMENSIONS \} from '[^']+';/u,
-        `import * as chestModeOwner from '${ownerGroups[0].specifier}';`
+        /import \{[\s\S]*?\} from '\.\.\/\.\.\/shared\/dimensions\/structure_tab_dimension_policy\.js';/u,
+        `import * as structureDimensions from '${compositionOwnerSpecifier}';`
       )
     ),
     'owner-namespace',
     'namespace import'
   );
   assertMutationRejected(
-    inspectFeature(`${feature}\nvoid import('${ownerGroups[0].specifier}');\n`),
+    inspectFeature(`${feature}\nvoid import('${compositionOwnerSpecifier}');\n`),
     'feature-dynamic-import',
     'dynamic import'
   );
   assertMutationRejected(
-    inspectFeature(feature.replace(/import \{ CHEST_MODE_DIMENSIONS \} from '[^']+';\r?\n/u, '')),
+    inspectFeature(
+      feature.replace(
+        /import \{[\s\S]*?\} from '\.\.\/\.\.\/shared\/dimensions\/structure_tab_dimension_policy\.js';\r?\n/u,
+        ''
+      )
+    ),
     'owner-statement-count',
     'missing owner statement'
   );
@@ -885,11 +920,6 @@ test('feature and adapter mutation probes reject facades, aliases, wrappers, and
     inspectFeature(`${feature}\nimport { mToCm } from '../../shared/dimensions/units.js';\n`),
     'owner-statement-count',
     'extra owner statement'
-  );
-  assertMutationRejected(
-    inspectFeature(feature.replace(autoWidthPolicySymbol, `${autoWidthPolicySymbol} as AUTO_WIDTH_ALIAS`)),
-    'auto-width-policy-alias',
-    'auto-width policy alias'
   );
   assertMutationRejected(
     inspectFeature(

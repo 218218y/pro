@@ -383,7 +383,9 @@ const APPROVED_MATERIAL_THICKNESS_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/builder/render_preview_interior_hover_apply.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
   'esm/native/builder/render_interior_rod_clearance.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
-  'esm/native/features/sketch_internal_drawer_cassette.ts': Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+  'esm/shared/dimensions/sketch_internal_drawer_cassette_dimension_policy.ts': Object.freeze([
+    'MATERIAL_THICKNESS_POLICY',
+  ]),
   'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts': Object.freeze([
     'MATERIAL_THICKNESS_POLICY',
   ]),
@@ -415,12 +417,16 @@ const APPROVED_WARDROBE_LAYOUT_COMPARISON_OWNER_IMPORTS = Object.freeze({
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['WARDROBE_LAYOUT_COMPARISON_POLICY']),
 });
 const APPROVED_WARDROBE_DEFAULT_RESOLUTION_OWNER_IMPORTS = Object.freeze({
-  'esm/native/features/order_pdf_dimension_support.ts': Object.freeze([
+  'esm/shared/dimensions/order_pdf_dimension_policy.ts': Object.freeze([
     'getDefaultDepthForWardrobeType',
     'getDefaultDoorsForWardrobeType',
   ]),
-  'esm/native/features/structure_tab_dimension_support.ts': Object.freeze(['getDefaultDepthForWardrobeType']),
-  'esm/native/features/library_preset/module_defaults.ts': Object.freeze(['resolveAutoWidthForDoors']),
+  'esm/shared/dimensions/structure_tab_dimension_policy.ts': Object.freeze([
+    'getDefaultDepthForWardrobeType',
+  ]),
+  'esm/shared/dimensions/library_preset_module_defaults_dimension_policy.ts': Object.freeze([
+    'resolveAutoWidthForDoors',
+  ]),
   'esm/native/kernel/domain_api_room_section_wardrobe.ts': Object.freeze([
     'getDefaultDepthForWardrobeType',
     'getDefaultDoorsForWardrobeType',
@@ -454,16 +460,16 @@ const APPROVED_WARDROBE_DEFAULT_RESOLUTION_OWNER_IMPORTS = Object.freeze({
   ),
 });
 const APPROVED_LIBRARY_PRESET_OWNER_IMPORTS = Object.freeze({
-  'esm/native/features/library_preset/library_preset_flow_shared.ts': Object.freeze([
+  'esm/shared/dimensions/library_preset_flow_dimension_policy.ts': Object.freeze([
     'LIBRARY_PRESET_LAYOUT_POLICY',
   ]),
-  'esm/native/features/library_preset/module_defaults.ts': Object.freeze([
+  'esm/shared/dimensions/library_preset_module_defaults_dimension_policy.ts': Object.freeze([
     'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
   ]),
-  'esm/native/features/modules_configuration/module_defaults.ts': Object.freeze([
+  'esm/shared/dimensions/modules_configuration_defaults_dimension_policy.ts': Object.freeze([
     'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
   ]),
-  'esm/native/features/stack_split/module_config.ts': Object.freeze([
+  'esm/shared/dimensions/stack_split_module_config_dimension_policy.ts': Object.freeze([
     'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
   ]),
   'esm/shared/dimensions/preset_models_dimension_defaults_policy.ts': Object.freeze([
@@ -517,7 +523,7 @@ const APPROVED_CHEST_MODE_OWNER_IMPORTS = Object.freeze({
   'esm/shared/dimensions/compatibility/chest_mode_dimensions_compatibility.ts': Object.freeze([
     'CHEST_MODE_DIMENSIONS',
   ]),
-  'esm/native/features/structure_tab_dimension_support.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
+  'esm/shared/dimensions/structure_tab_dimension_policy.ts': Object.freeze(['CHEST_MODE_DIMENSIONS']),
   'esm/native/builder/chest_mode_pipeline.ts': Object.freeze(['CHEST_MODE_COMMODE_CONSTRAINTS_POLICY']),
   'esm/native/builder/render_drawer_ops_internal.ts': Object.freeze(['CHEST_MODE_DRAWER_BOX_RENDER_POLICY']),
   'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze([
@@ -535,6 +541,7 @@ const APPROVED_CHEST_MODE_OWNER_IMPORTS = Object.freeze({
   ]),
 });
 const APPROVED_CHEST_MODE_LEGACY_DEPENDENCIES = Object.freeze({
+  'esm/native/features/structure_tab_dimension_support.ts': ['CHEST_MODE_DIMENSIONS@static-import'],
   'esm/native/runtime/api.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
   'esm/native/services/api.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
   'esm/native/services/api_runtime_base_surface.ts': ['CHEST_MODE_DIMENSIONS@static-re-export'],
@@ -830,14 +837,16 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
   'esm/native/builder/corner_wing_cell_layouts.ts': Object.freeze(['INTERIOR_STORAGE_BARRIER_POLICY']),
-  'esm/native/features/modules_configuration/module_defaults.ts': Object.freeze([
+  'esm/shared/dimensions/modules_configuration_defaults_dimension_policy.ts': Object.freeze([
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
-  'esm/native/features/stack_split/module_config.ts': Object.freeze([
+  'esm/shared/dimensions/stack_split_module_config_dimension_policy.ts': Object.freeze([
     'INTERIOR_STORAGE_DEFAULTS_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
-  'esm/native/features/interior_layout_presets/ops.ts': Object.freeze(['INTERIOR_STORAGE_BARRIER_POLICY']),
+  'esm/shared/dimensions/interior_layout_presets_dimension_policy.ts': Object.freeze([
+    'INTERIOR_STORAGE_BARRIER_POLICY',
+  ]),
   'esm/native/builder/render_interior_custom_ops.ts': Object.freeze(['INTERIOR_STORAGE_GRID_POLICY']),
   'esm/native/builder/render_interior_preset_ops.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
@@ -940,14 +949,16 @@ const APPROVED_INTERIOR_STORAGE_OWNER_IMPORTS = Object.freeze({
   ]),
 });
 const APPROVED_INTERIOR_FITTINGS_OWNER_IMPORTS = Object.freeze({
-  'esm/native/features/interior_tab_defaults.ts': Object.freeze(['INTERIOR_SHELF_GEOMETRY_POLICY']),
+  'esm/shared/dimensions/interior_tab_defaults_dimension_policy.ts': Object.freeze([
+    'INTERIOR_SHELF_GEOMETRY_POLICY',
+  ]),
   'esm/native/builder/core_storage_compute_custom.ts': Object.freeze(['INTERIOR_ROD_PLACEMENT_POLICY']),
   'esm/native/builder/corner_wing_cell_layouts.ts': Object.freeze([
     'INTERIOR_PRESET_ROD_FACTORS_POLICY',
     'INTERIOR_PRESET_SHELF_ROWS_POLICY',
     'INTERIOR_ROD_PLACEMENT_POLICY',
   ]),
-  'esm/native/features/interior_layout_presets/ops.ts': Object.freeze([
+  'esm/shared/dimensions/interior_layout_presets_dimension_policy.ts': Object.freeze([
     'INTERIOR_PRESET_ROD_FACTORS_POLICY',
     'INTERIOR_PRESET_SHELF_ROWS_POLICY',
   ]),
@@ -1428,7 +1439,7 @@ const APPROVED_CORNER_SYSTEM_OWNER_IMPORTS = Object.freeze({
     'CORNER_CONNECTOR_LAYOUT_POLICY',
     'CORNER_WING_BODY_POLICY',
   ]),
-  'esm/native/features/modules_configuration/corner_cells_ui_defaults.ts': Object.freeze([
+  'esm/shared/dimensions/corner_cells_ui_defaults_dimension_policy.ts': Object.freeze([
     'CORNER_WING_BODY_POLICY',
     'CORNER_WING_CELL_POLICY',
   ]),
@@ -1505,8 +1516,10 @@ const APPROVED_DRAWER_SKETCH_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/render_interior_sketch_stack_collision.ts': Object.freeze([
     'DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY',
   ]),
-  'esm/native/features/sketch_drawer_sizing.ts': Object.freeze(['DRAWER_SKETCH_SIZING_POLICY']),
-  'esm/native/features/sketch_internal_drawer_cassette.ts': Object.freeze([
+  'esm/shared/dimensions/sketch_drawer_sizing_dimension_policy.ts': Object.freeze([
+    'DRAWER_SKETCH_SIZING_POLICY',
+  ]),
+  'esm/shared/dimensions/sketch_internal_drawer_cassette_dimension_policy.ts': Object.freeze([
     'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
   ]),
   'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts': Object.freeze([

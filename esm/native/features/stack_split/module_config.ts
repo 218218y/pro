@@ -15,8 +15,8 @@ import { readInteger, readNumericInput } from '../../../shared/numeric_value_sha
 import {
   INTERIOR_STORAGE_DEFAULTS_POLICY,
   INTERIOR_STORAGE_GRID_POLICY,
-} from '../../../shared/dimensions/interior_storage_policy.js';
-import { LIBRARY_PRESET_MODULE_DEFAULTS_POLICY } from '../../../shared/dimensions/library_preset_policy.js';
+  LIBRARY_PRESET_MODULE_DEFAULTS_POLICY,
+} from '../../../shared/dimensions/stack_split_module_config_dimension_policy.js';
 
 function isRecord(v: unknown): v is UnknownRecord {
   return !!v && typeof v === 'object' && !Array.isArray(v);

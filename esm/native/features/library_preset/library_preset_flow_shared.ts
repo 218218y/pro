@@ -27,8 +27,10 @@ import {
   normalizeLibraryStructureSelectForDoors,
   readLibraryPresetUiRawState,
 } from './library_preset_shared.js';
-import { LIBRARY_PRESET_LAYOUT_POLICY } from '../../../shared/dimensions/library_preset_policy.js';
-import { DEFAULT_STACK_SPLIT_LOWER_HEIGHT } from '../../../shared/dimensions/stack_split_policy.js';
+import {
+  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
+  LIBRARY_PRESET_LAYOUT_POLICY,
+} from '../../../shared/dimensions/library_preset_flow_dimension_policy.js';
 import { calcLibraryPresetAutoWidth, LIBRARY_PRESET_DEFAULT_DOORS } from './module_defaults.js';
 
 type LibraryDoorMaps = {

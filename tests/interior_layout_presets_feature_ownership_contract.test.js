@@ -14,6 +14,7 @@ const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const fittingsOwnerRel = 'esm/shared/dimensions/interior_fittings_policy.ts';
 const storageOwnerRel = 'esm/shared/dimensions/interior_storage_policy.ts';
+const compositionOwnerRel = 'esm/shared/dimensions/interior_layout_presets_dimension_policy.ts';
 const sourceFileExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
 const runtimeExtensionCandidates = Object.freeze({
   '.js': Object.freeze(['.ts', '.tsx', '.mts']),
@@ -37,14 +38,13 @@ const allowedOwnerAliases = Object.freeze({
 });
 const expectedImports = Object.freeze([
   Object.freeze({
-    specifier: '../../../shared/dimensions/interior_fittings_policy.js',
-    ownerRel: fittingsOwnerRel,
-    symbols: Object.freeze(['INTERIOR_PRESET_ROD_FACTORS_POLICY', 'INTERIOR_PRESET_SHELF_ROWS_POLICY']),
-  }),
-  Object.freeze({
-    specifier: '../../../shared/dimensions/interior_storage_policy.js',
-    ownerRel: storageOwnerRel,
-    symbols: Object.freeze(['INTERIOR_STORAGE_BARRIER_POLICY']),
+    specifier: '../../../shared/dimensions/interior_layout_presets_dimension_policy.js',
+    ownerRel: compositionOwnerRel,
+    symbols: Object.freeze([
+      'INTERIOR_PRESET_ROD_FACTORS_POLICY',
+      'INTERIOR_PRESET_SHELF_ROWS_POLICY',
+      'INTERIOR_STORAGE_BARRIER_POLICY',
+    ]),
   }),
 ]);
 const expectedMappings = Object.freeze([
@@ -415,7 +415,7 @@ const expectedEntry159 = Object.freeze({
     'Remove this entry when a reviewed Interior Layout Presets composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade.',
 });
 
-test('Interior Layout Presets is exactly one production consumer with two exact focused-owner imports', () => {
+test('Interior Layout Presets is exactly one production consumer with one exact composition-owner import', () => {
   assert.deepEqual([consumerRel], ['esm/native/features/interior_layout_presets/ops.ts']);
   const absolute = path.join(root, consumerRel);
   const inspection = inspectOwnershipViolations(absolute, read(consumerRel));
@@ -450,7 +450,7 @@ test('Interior Layout Presets is exactly one production consumer with two exact 
       })),
     }))
   );
-  assert.equal(focusedImports.length, 2);
+  assert.equal(focusedImports.length, 1);
   assert.doesNotMatch(read(consumerRel), /wardrobe_dimension_tokens_shared/u);
   assert.doesNotMatch(read(consumerRel), /\bINTERIOR_FITTINGS_DIMENSIONS\b/u);
 });
@@ -547,8 +547,8 @@ test('Interior Layout Presets rejects facade, aliases, aggregates, recomposition
         "import { INTERIOR_FITTINGS_DIMENSIONS } from '../../../shared/wardrobe_dimension_tokens_shared.js';\nexport const value = INTERIOR_FITTINGS_DIMENSIONS.presets.fullShelfRows;",
     },
     {
-      name: 'focused owner alias',
-      expectedKind: 'focused-import-shape',
+      name: 'direct focused owner alias bypass',
+      expectedKind: 'owner-bridge-import',
       source:
         "import { INTERIOR_STORAGE_BARRIER_POLICY as storageBarrier } from '../../../shared/dimensions/interior_storage_policy.js';\nexport const value = storageBarrier.barrierHeightM;",
     },

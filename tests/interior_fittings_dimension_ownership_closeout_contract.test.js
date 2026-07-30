@@ -16,6 +16,7 @@ const uiHelpersRel = 'esm/native/ui/react/tabs/interior_tab_helpers.tsx';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const ownerRel = 'esm/shared/dimensions/interior_fittings_policy.ts';
 const unitsRel = 'esm/shared/dimensions/units.ts';
+const compositionOwnerRel = 'esm/shared/dimensions/interior_tab_defaults_dimension_policy.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const manifestRel = 'tools/wp_features_public_api_manifest.json';
 
@@ -29,6 +30,8 @@ const facadeSpecifierFromNative = '../../shared/wardrobe_dimension_tokens_shared
 const publicDimensionsSpecifierFromUi = '../features/dimensions';
 const ownerSpecifierFromBoundary = '../../shared/dimensions/interior_fittings_policy.js';
 const unitsSpecifierFromBoundary = '../../shared/dimensions/units.js';
+const compositionOwnerSpecifierFromBoundary =
+  '../../shared/dimensions/interior_tab_defaults_dimension_policy.js';
 const publicEntry = 'interior_tab_defaults.js';
 const publicFamily = 'interior_tab_defaults';
 
@@ -47,19 +50,13 @@ const runtimeExtensionCandidates = Object.freeze({
 const expectedBoundaryImports = Object.freeze([
   Object.freeze({
     importKind: 'value',
-    source: ownerSpecifierFromBoundary,
+    source: compositionOwnerSpecifierFromBoundary,
     specifiers: Object.freeze([
       Object.freeze({
         type: 'ImportSpecifier',
         imported: geometryPolicySymbol,
         local: geometryPolicySymbol,
       }),
-    ]),
-  }),
-  Object.freeze({
-    importKind: 'value',
-    source: unitsSpecifierFromBoundary,
-    specifiers: Object.freeze([
       Object.freeze({ type: 'ImportSpecifier', imported: 'mToCm', local: 'mToCm' }),
     ]),
   }),
@@ -779,6 +776,41 @@ test('Interior Fittings closeout owns zero compatibility consumers and the sole 
 
 test('Interior Tab feature boundary has the exact side-effect-free topology', () => {
   assert.deepEqual(inspectBoundary(read(boundaryRel)), []);
+});
+
+test('Interior Tab defaults composition owner has exactly two identity re-exports', () => {
+  const dependencies = analyzeModuleDependencies(compositionOwnerRel, read(compositionOwnerRel)).imports;
+  assert.deepEqual(
+    dependencies.map(dependency => ({
+      specifier: dependency.specifier,
+      kind: dependency.kind,
+      syntax: dependency.syntax,
+      importedSymbols: dependency.importedSymbols,
+      exportedSymbols: dependency.exportedSymbols,
+    })),
+    [
+      {
+        specifier: './interior_fittings_policy.js',
+        kind: 'value',
+        syntax: 'static-re-export',
+        importedSymbols: [geometryPolicySymbol],
+        exportedSymbols: [geometryPolicySymbol],
+      },
+      {
+        specifier: './units.js',
+        kind: 'value',
+        syntax: 'static-re-export',
+        importedSymbols: ['mToCm'],
+        exportedSymbols: ['mToCm'],
+      },
+    ]
+  );
+  const sourceFile = createSourceFile(compositionOwnerRel, read(compositionOwnerRel));
+  assert.equal(sourceFile.body.length, 2);
+  assert.equal(
+    sourceFile.body.every(statement => statement.type === 'ExportNamedDeclaration' && !statement.declaration),
+    true
+  );
 });
 
 test('Interior Tab UI has exactly one type import and one eight-symbol boundary import', () => {

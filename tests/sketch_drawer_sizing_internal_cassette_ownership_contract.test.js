@@ -16,22 +16,14 @@ const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const expectedImports = Object.freeze({
   [sizingRel]: Object.freeze([
     Object.freeze({
-      specifier: '../../shared/dimensions/drawer_sketch_policy.js',
-      symbols: Object.freeze(['DRAWER_SKETCH_SIZING_POLICY']),
-    }),
-    Object.freeze({
-      specifier: '../../shared/dimensions/units.js',
-      symbols: Object.freeze(['cmToM']),
+      specifier: '../../shared/dimensions/sketch_drawer_sizing_dimension_policy.js',
+      symbols: Object.freeze(['DRAWER_SKETCH_SIZING_POLICY', 'cmToM']),
     }),
   ]),
   [cassetteRel]: Object.freeze([
     Object.freeze({
-      specifier: '../../shared/dimensions/drawer_sketch_policy.js',
-      symbols: Object.freeze(['DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY']),
-    }),
-    Object.freeze({
-      specifier: '../../shared/dimensions/material_thickness_policy.js',
-      symbols: Object.freeze(['MATERIAL_THICKNESS_POLICY']),
+      specifier: '../../shared/dimensions/sketch_internal_drawer_cassette_dimension_policy.js',
+      symbols: Object.freeze(['DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY', 'MATERIAL_THICKNESS_POLICY']),
     }),
   ]),
 });
@@ -56,7 +48,7 @@ function focusedImports(rel) {
       specifier: dependency.specifier,
       kind: dependency.kind,
       syntax: dependency.syntax,
-      symbols: [...dependency.importedSymbols],
+      symbols: [...dependency.importedSymbols].sort((a, b) => a.localeCompare(b)),
       bindings: dependency.bindings.map(binding => ({
         importedName: binding.importedName,
         localName: binding.localName,
@@ -129,7 +121,7 @@ const expectedEntries = Object.freeze([
   },
 ]);
 
-test('Sketch drawer sizing and cassette import exactly two focused owners without aliases', () => {
+test('Sketch drawer sizing and cassette import one exact composition owner without aliases', () => {
   for (const [rel, expected] of Object.entries(expectedImports)) {
     const imports = focusedImports(rel);
     assert.deepEqual(
@@ -143,11 +135,11 @@ test('Sketch drawer sizing and cassette import exactly two focused owners withou
         specifier: entry.specifier,
         kind: 'value',
         syntax: 'static-import',
-        symbols: [...entry.symbols],
+        symbols: [...entry.symbols].sort((a, b) => a.localeCompare(b)),
       })),
       rel
     );
-    assert.equal(imports.length, 2, `${rel} must keep exactly two focused statements`);
+    assert.equal(imports.length, 1, `${rel} must keep exactly one composition statement`);
     assert.equal(
       imports.every(dependency =>
         dependency.bindings.every(binding => binding.importedName === binding.localName)

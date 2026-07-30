@@ -114,12 +114,9 @@ function buildLayerContractOwnership(root) {
   if (!evaluation.ok) {
     throw new Error(`Layer Contract ownership is invalid: ${JSON.stringify(evaluation.failures)}`);
   }
-  const runtimeEdge = graph.edges.find(edge => edge.from === 'runtime' && edge.to === 'shared');
+  const runtimeEdge = evaluation.edges.find(edge => edge.from === 'runtime' && edge.to === 'shared');
   if (!runtimeEdge) throw new Error('Missing observed runtime → shared Layer edge');
-  const retirementByEntry = new Map(
-    baseline.migrationRetirements.map(retirement => [retirement.entryNumber, retirement])
-  );
-  const activeEntries = baseline.migrationBudgets.filter((_, index) => !retirementByEntry.has(index + 1));
+  const activeEntries = evaluation.activeMigrationEntries;
   const runtimeActiveEntries = activeEntries.filter(
     entry => entry.from === 'runtime' && entry.to === 'shared'
   );
@@ -164,12 +161,6 @@ function buildLayerContractOwnership(root) {
     };
   });
 
-  const activeRuntimeValueStatements = runtimeActiveEntries.filter(
-    entry => entry.addedImport.kind === 'value'
-  ).length;
-  const compatibilityRuntimeValueStatements = runtimeCompatibilityBudgets.filter(
-    budget => budget.statement.kind === 'value'
-  ).length;
   return {
     source,
     summary: {
@@ -185,20 +176,20 @@ function buildLayerContractOwnership(root) {
         owner: runtimeCompatibilityOwner,
         publicSurface: runtimePublicSurface,
         edge: {
-          observedStatements: runtimeEdge.importCount,
-          activeMigrationStatements: runtimeActiveEntries.length,
-          compatibilityStatements: runtimeCompatibilityBudgets.length,
-          reviewedGeneralStatements:
-            runtimeEdge.importCount - runtimeActiveEntries.length - runtimeCompatibilityBudgets.length,
-          generalBudget: runtimeRule.maxImportCount,
+          observedStatements: runtimeEdge.observedStatements,
+          activeMigrationStatements: runtimeEdge.activeMigrationStatements,
+          compatibilityStatements: runtimeEdge.compatibilityStatements,
+          consolidationStatements: runtimeEdge.consolidationStatements,
+          reviewedGeneralStatements: runtimeEdge.reviewedGeneralStatements,
+          generalBudget: runtimeEdge.generalBudget,
         },
         valueEdge: {
-          observedValueStatements: runtimeEdge.valueImportCount,
-          activeMigrationValueStatements: activeRuntimeValueStatements,
-          compatibilityValueStatements: compatibilityRuntimeValueStatements,
-          reviewedGeneralValueStatements:
-            runtimeEdge.valueImportCount - activeRuntimeValueStatements - compatibilityRuntimeValueStatements,
-          generalValueBudget: runtimeRule.maxValueImportCount,
+          observedValueStatements: runtimeEdge.observedValueStatements,
+          activeMigrationValueStatements: runtimeEdge.activeMigrationValueStatements,
+          compatibilityValueStatements: runtimeEdge.compatibilityValueStatements,
+          consolidationValueStatements: runtimeEdge.consolidationValueStatements,
+          reviewedGeneralValueStatements: runtimeEdge.reviewedGeneralValueStatements,
+          generalValueBudget: runtimeEdge.generalValueBudget,
         },
         compatibilityRoutes,
       },
@@ -449,10 +440,10 @@ function renderDecisionReportMarkdown(report) {
     `- Runtime compatibility owner: \`${report.layerContractOwnership.runtime.owner}\``,
     `- Runtime public surface: \`${report.layerContractOwnership.runtime.publicSurface}\``,
     '',
-    '| Runtime edge | Observed | Active migration | Compatibility | Reviewed general | General budget |',
-    '| --- | ---: | ---: | ---: | ---: | ---: |',
-    `| Statements | ${report.layerContractOwnership.runtime.edge.observedStatements} | ${report.layerContractOwnership.runtime.edge.activeMigrationStatements} | ${report.layerContractOwnership.runtime.edge.compatibilityStatements} | ${report.layerContractOwnership.runtime.edge.reviewedGeneralStatements} | ${report.layerContractOwnership.runtime.edge.generalBudget} |`,
-    `| Value statements | ${report.layerContractOwnership.runtime.valueEdge.observedValueStatements} | ${report.layerContractOwnership.runtime.valueEdge.activeMigrationValueStatements} | ${report.layerContractOwnership.runtime.valueEdge.compatibilityValueStatements} | ${report.layerContractOwnership.runtime.valueEdge.reviewedGeneralValueStatements} | ${report.layerContractOwnership.runtime.valueEdge.generalValueBudget} |`,
+    '| Runtime edge | Observed | Active migration | Compatibility | Consolidation | Reviewed general | General budget |',
+    '| --- | ---: | ---: | ---: | ---: | ---: | ---: |',
+    `| Statements | ${report.layerContractOwnership.runtime.edge.observedStatements} | ${report.layerContractOwnership.runtime.edge.activeMigrationStatements} | ${report.layerContractOwnership.runtime.edge.compatibilityStatements} | ${report.layerContractOwnership.runtime.edge.consolidationStatements} | ${report.layerContractOwnership.runtime.edge.reviewedGeneralStatements} | ${report.layerContractOwnership.runtime.edge.generalBudget} |`,
+    `| Value statements | ${report.layerContractOwnership.runtime.valueEdge.observedValueStatements} | ${report.layerContractOwnership.runtime.valueEdge.activeMigrationValueStatements} | ${report.layerContractOwnership.runtime.valueEdge.compatibilityValueStatements} | ${report.layerContractOwnership.runtime.valueEdge.consolidationValueStatements} | ${report.layerContractOwnership.runtime.valueEdge.reviewedGeneralValueStatements} | ${report.layerContractOwnership.runtime.valueEdge.generalValueBudget} |`,
     '',
     '| Compatibility budget | Retired Entry | Target | Next review |',
     '| --- | ---: | --- | --- |',

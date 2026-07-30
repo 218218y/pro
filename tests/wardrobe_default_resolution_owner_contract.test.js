@@ -19,7 +19,6 @@ const platformPolicySymbol = 'PLATFORM_STARTUP_DIMENSION_DEFAULTS_POLICY';
 const structureTabAutoWidthPolicyRel = 'esm/shared/dimensions/structure_tab_auto_width_policy.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const approvedNativeConsumerUniverse = new Set([
-  'esm/native/features/library_preset/module_defaults.ts',
   'esm/native/features/order_pdf_dimension_support.ts',
   'esm/native/features/structure_tab_dimension_support.ts',
   'esm/native/kernel/domain_api_room_section_wardrobe.ts',

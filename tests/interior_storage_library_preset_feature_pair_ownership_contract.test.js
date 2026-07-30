@@ -45,14 +45,9 @@ const consumers = Object.freeze([
     rel: 'esm/native/features/modules_configuration/module_defaults.ts',
     imports: Object.freeze([
       Object.freeze({
-        specifier: '../../../shared/dimensions/interior_storage_policy.js',
-        ownerRel: storageOwnerRel,
-        symbols: Object.freeze(['INTERIOR_STORAGE_GRID_POLICY']),
-      }),
-      Object.freeze({
-        specifier: '../../../shared/dimensions/library_preset_policy.js',
-        ownerRel: libraryOwnerRel,
-        symbols: Object.freeze(['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY']),
+        specifier: '../../../shared/dimensions/modules_configuration_defaults_dimension_policy.js',
+        ownerRel: 'esm/shared/dimensions/modules_configuration_defaults_dimension_policy.ts',
+        symbols: Object.freeze(['INTERIOR_STORAGE_GRID_POLICY', 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY']),
       }),
     ]),
     mappings: Object.freeze([
@@ -102,14 +97,13 @@ const consumers = Object.freeze([
     rel: 'esm/native/features/stack_split/module_config.ts',
     imports: Object.freeze([
       Object.freeze({
-        specifier: '../../../shared/dimensions/interior_storage_policy.js',
-        ownerRel: storageOwnerRel,
-        symbols: Object.freeze(['INTERIOR_STORAGE_DEFAULTS_POLICY', 'INTERIOR_STORAGE_GRID_POLICY']),
-      }),
-      Object.freeze({
-        specifier: '../../../shared/dimensions/library_preset_policy.js',
-        ownerRel: libraryOwnerRel,
-        symbols: Object.freeze(['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY']),
+        specifier: '../../../shared/dimensions/stack_split_module_config_dimension_policy.js',
+        ownerRel: 'esm/shared/dimensions/stack_split_module_config_dimension_policy.ts',
+        symbols: Object.freeze([
+          'INTERIOR_STORAGE_DEFAULTS_POLICY',
+          'INTERIOR_STORAGE_GRID_POLICY',
+          'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
+        ]),
       }),
     ]),
     mappings: Object.freeze([
@@ -635,7 +629,7 @@ function assertHistoricalFeaturePairLedger(migrationBudgets) {
   assert.equal(semanticSha256(migrationBudgets.slice(0, 161)), HISTORICAL_LEDGER_PREFIX_161_HASH);
 }
 
-test('Modules Configuration and Stack Split are exactly one two-file focused-owner migration pair', () => {
+test('Modules Configuration and Stack Split use exactly one composition owner per feature consumer', () => {
   assert.deepEqual(
     consumers.map(consumer => consumer.rel),
     [
@@ -659,7 +653,7 @@ test('Modules Configuration and Stack Split are exactly one two-file focused-own
           canonicalModuleTarget(path.join(root, expected.ownerRel))
       )
     );
-    assert.equal(focusedImports.length, 2, consumer.rel);
+    assert.equal(focusedImports.length, 1, consumer.rel);
     assert.deepEqual(
       focusedImports.map(({ specifier, kind, syntax, importedSymbols, exportedSymbols, bindings }) => ({
         specifier,
@@ -772,8 +766,8 @@ test('The feature pair rejects facade, aggregates, aliases, barrels, bridges, wr
         "import { INTERIOR_FITTINGS_DIMENSIONS, LIBRARY_PRESET_DIMENSIONS } from '../../../shared/wardrobe_dimension_tokens_shared.js';\nexport const value = [INTERIOR_FITTINGS_DIMENSIONS.storage.gridDivisionsDefault, LIBRARY_PRESET_DIMENSIONS.defaultModuleDoorsCount];",
     },
     {
-      name: 'focused owner alias',
-      expectedKind: 'focused-import-shape',
+      name: 'direct focused owner alias bypass',
+      expectedKind: 'owner-bridge-import',
       source:
         "import { INTERIOR_STORAGE_GRID_POLICY as grid } from '../../../shared/dimensions/interior_storage_policy.js';\nexport const value = grid.gridDivisionsDefault;",
     },

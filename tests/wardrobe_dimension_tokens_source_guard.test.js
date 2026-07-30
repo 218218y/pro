@@ -761,18 +761,14 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
     })),
     [
       {
-        specifier: '../../../shared/dimensions/library_preset_policy.js',
+        specifier: '../../../shared/dimensions/library_preset_module_defaults_dimension_policy.js',
         kind: 'value',
         syntax: 'static-import',
-        importedSymbols: ['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY'],
-        aliases: [['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY', 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY']],
-      },
-      {
-        specifier: '../../../shared/dimensions/wardrobe_default_resolution_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['resolveAutoWidthForDoors'],
-        aliases: [['resolveAutoWidthForDoors', 'resolveAutoWidthForDoors']],
+        importedSymbols: ['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY', 'resolveAutoWidthForDoors'],
+        aliases: [
+          ['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY', 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY'],
+          ['resolveAutoWidthForDoors', 'resolveAutoWidthForDoors'],
+        ],
       },
     ]
   );
@@ -802,18 +798,14 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
     })),
     [
       {
-        specifier: '../../../shared/dimensions/library_preset_policy.js',
+        specifier: '../../../shared/dimensions/library_preset_flow_dimension_policy.js',
         kind: 'value',
         syntax: 'static-import',
-        importedSymbols: ['LIBRARY_PRESET_LAYOUT_POLICY'],
-        aliases: [['LIBRARY_PRESET_LAYOUT_POLICY', 'LIBRARY_PRESET_LAYOUT_POLICY']],
-      },
-      {
-        specifier: '../../../shared/dimensions/stack_split_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT'],
-        aliases: [['DEFAULT_STACK_SPLIT_LOWER_HEIGHT', 'DEFAULT_STACK_SPLIT_LOWER_HEIGHT']],
+        importedSymbols: ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT', 'LIBRARY_PRESET_LAYOUT_POLICY'],
+        aliases: [
+          ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT', 'DEFAULT_STACK_SPLIT_LOWER_HEIGHT'],
+          ['LIBRARY_PRESET_LAYOUT_POLICY', 'LIBRARY_PRESET_LAYOUT_POLICY'],
+        ],
       },
     ]
   );
@@ -823,8 +815,8 @@ test('[dimension tokens] library presets and saved preset defaults read canonica
   );
 
   for (const rel of [
-    'esm/native/features/modules_configuration/module_defaults.ts',
-    'esm/native/features/stack_split/module_config.ts',
+    'esm/shared/dimensions/modules_configuration_defaults_dimension_policy.ts',
+    'esm/shared/dimensions/stack_split_module_config_dimension_policy.ts',
   ]) {
     assertUsesToken(rel, 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY');
     const source = read(rel);
@@ -884,18 +876,14 @@ test('[dimension tokens] Interior Tab consumes the feature-owned defaults bounda
     })),
     [
       {
-        specifier: '../../shared/dimensions/interior_fittings_policy.js',
+        specifier: '../../shared/dimensions/interior_tab_defaults_dimension_policy.js',
         kind: 'value',
         syntax: 'static-import',
-        importedSymbols: ['INTERIOR_SHELF_GEOMETRY_POLICY'],
-        aliases: [['INTERIOR_SHELF_GEOMETRY_POLICY', 'INTERIOR_SHELF_GEOMETRY_POLICY']],
-      },
-      {
-        specifier: '../../shared/dimensions/units.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['mToCm'],
-        aliases: [['mToCm', 'mToCm']],
+        importedSymbols: ['INTERIOR_SHELF_GEOMETRY_POLICY', 'mToCm'],
+        aliases: [
+          ['INTERIOR_SHELF_GEOMETRY_POLICY', 'INTERIOR_SHELF_GEOMETRY_POLICY'],
+          ['mToCm', 'mToCm'],
+        ],
       },
     ]
   );
@@ -956,9 +944,12 @@ test('[dimension tokens] interior presets and sketch drawer sizing read canonica
   assert.match(tokens, /heightTokenEpsilonCm:/);
 
   const focusedStorageConsumers = new Map([
-    ['esm/native/features/modules_configuration/module_defaults.ts', ['INTERIOR_STORAGE_GRID_POLICY']],
     [
-      'esm/native/features/stack_split/module_config.ts',
+      'esm/shared/dimensions/modules_configuration_defaults_dimension_policy.ts',
+      ['INTERIOR_STORAGE_GRID_POLICY'],
+    ],
+    [
+      'esm/shared/dimensions/stack_split_module_config_dimension_policy.ts',
       ['INTERIOR_STORAGE_DEFAULTS_POLICY', 'INTERIOR_STORAGE_GRID_POLICY'],
     ],
   ]);
@@ -974,10 +965,13 @@ test('[dimension tokens] interior presets and sketch drawer sizing read canonica
     'INTERIOR_PRESET_SHELF_ROWS_POLICY',
     'INTERIOR_STORAGE_BARRIER_POLICY',
   ]) {
-    assertUsesToken('esm/native/features/interior_layout_presets/ops.ts', token);
+    assertUsesToken('esm/shared/dimensions/interior_layout_presets_dimension_policy.ts', token);
   }
-  assertUsesToken('esm/native/features/sketch_drawer_sizing.ts', 'DRAWER_SKETCH_SIZING_POLICY');
-  assertUsesToken('esm/native/features/sketch_drawer_sizing.ts', 'cmToM');
+  assertUsesToken(
+    'esm/shared/dimensions/sketch_drawer_sizing_dimension_policy.ts',
+    'DRAWER_SKETCH_SIZING_POLICY'
+  );
+  assertUsesToken('esm/shared/dimensions/sketch_drawer_sizing_dimension_policy.ts', 'cmToM');
 
   const presetOps = read('esm/native/features/interior_layout_presets/ops.ts');
   assert.doesNotMatch(
@@ -1320,24 +1314,6 @@ test('[dimension tokens] Wardrobe Default Resolution is defined only by its focu
   );
   assert.deepEqual(directOwnerDependencies, [
     {
-      file: 'esm/native/features/library_preset/module_defaults.ts',
-      specifier: '../../../shared/dimensions/wardrobe_default_resolution_policy.js',
-      syntax: 'static-import',
-      symbols: ['resolveAutoWidthForDoors'],
-    },
-    {
-      file: 'esm/native/features/order_pdf_dimension_support.ts',
-      specifier: '../../shared/dimensions/wardrobe_default_resolution_policy.js',
-      syntax: 'static-import',
-      symbols: ['getDefaultDepthForWardrobeType', 'getDefaultDoorsForWardrobeType'],
-    },
-    {
-      file: 'esm/native/features/structure_tab_dimension_support.ts',
-      specifier: '../../shared/dimensions/wardrobe_default_resolution_policy.js',
-      syntax: 'static-import',
-      symbols: ['getDefaultDepthForWardrobeType'],
-    },
-    {
       file: 'esm/native/kernel/domain_api_room_section_wardrobe.ts',
       specifier: '../../shared/dimensions/wardrobe_default_resolution_policy.js',
       syntax: 'static-import',
@@ -1405,7 +1381,11 @@ test('[dimension tokens] Wardrobe Default Resolution is defined only by its focu
   assert.deepEqual(facadeConsumers, []);
 
   const moduleDefaults = read('esm/native/features/library_preset/module_defaults.ts');
-  assert.match(moduleDefaults, /dimensions\/wardrobe_default_resolution_policy\.js/u);
+  assert.match(moduleDefaults, /dimensions\/library_preset_module_defaults_dimension_policy\.js/u);
+  const moduleDefaultsOwner = read(
+    'esm/shared/dimensions/library_preset_module_defaults_dimension_policy.ts'
+  );
+  assert.match(moduleDefaultsOwner, /from '\.\/wardrobe_default_resolution_policy\.js'/u);
   assert.match(moduleDefaults, /\bresolveAutoWidthForDoors\b/u);
   assert.doesNotMatch(moduleDefaults, /wardrobe_dimension_tokens_shared/u);
 });
@@ -1611,10 +1591,6 @@ test('[dimension tokens] Corner dimension/default readers use focused owners and
       ['CORNER_CONNECTOR_LAYOUT_POLICY', 'CORNER_WING_BODY_POLICY'],
     ],
     [
-      'esm/native/features/modules_configuration/corner_cells_ui_defaults.ts',
-      ['CORNER_WING_BODY_POLICY', 'CORNER_WING_CELL_POLICY'],
-    ],
-    [
       'esm/native/services/canvas_picking_cell_dims_corner_context.ts',
       ['CORNER_CONNECTOR_LAYOUT_POLICY', 'CORNER_WING_BODY_POLICY'],
     ],
@@ -1636,7 +1612,27 @@ test('[dimension tokens] Corner dimension/default readers use focused owners and
   assert.match(postBuild, /CORNER_CONNECTOR_LAYOUT_POLICY\.minWallLengthM/u);
   assert.match(postBuild, /CORNER_WING_BODY_POLICY\.defaultWidthCm/u);
 
-  const uiDefaults = read('esm/native/features/modules_configuration/corner_cells_ui_defaults.ts');
+  const uiDefaultsRel = 'esm/native/features/modules_configuration/corner_cells_ui_defaults.ts';
+  const uiDefaults = read(uiDefaultsRel);
+  const uiDefaultsImports = analyzeModuleDependencies(uiDefaultsRel, uiDefaults).imports.filter(dependency =>
+    dependency.specifier.includes('/shared/dimensions/')
+  );
+  assert.deepEqual(
+    uiDefaultsImports.map(dependency => ({
+      specifier: dependency.specifier,
+      kind: dependency.kind,
+      syntax: dependency.syntax,
+      importedSymbols: dependency.importedSymbols,
+    })),
+    [
+      {
+        specifier: '../../../shared/dimensions/corner_cells_ui_defaults_dimension_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['CM_PER_METER', 'CORNER_WING_BODY_POLICY', 'CORNER_WING_CELL_POLICY'],
+      },
+    ]
+  );
   assert.match(uiDefaults, /CORNER_WING_BODY_POLICY\.defaultWidthCm/u);
   assert.match(uiDefaults, /CORNER_WING_BODY_POLICY\.minActiveWidthM/u);
   assert.match(uiDefaults, /CORNER_WING_CELL_POLICY\.doorsPerCell/u);
@@ -2120,9 +2116,15 @@ test('[dimension tokens] Interior Storage owner preserves focused production con
   }
 
   const expectedConsumers = [
-    ['esm/native/features/modules_configuration/module_defaults.ts', 'INTERIOR_STORAGE_GRID_POLICY'],
-    ['esm/native/features/stack_split/module_config.ts', 'INTERIOR_STORAGE_DEFAULTS_POLICY'],
-    ['esm/native/features/stack_split/module_config.ts', 'INTERIOR_STORAGE_GRID_POLICY'],
+    [
+      'esm/shared/dimensions/modules_configuration_defaults_dimension_policy.ts',
+      'INTERIOR_STORAGE_GRID_POLICY',
+    ],
+    [
+      'esm/shared/dimensions/stack_split_module_config_dimension_policy.ts',
+      'INTERIOR_STORAGE_DEFAULTS_POLICY',
+    ],
+    ['esm/shared/dimensions/stack_split_module_config_dimension_policy.ts', 'INTERIOR_STORAGE_GRID_POLICY'],
     ['esm/native/builder/render_interior_custom_ops_layout.ts', 'INTERIOR_STORAGE_BARRIER_POLICY'],
     ['esm/native/builder/render_interior_sketch_support_storage.ts', 'INTERIOR_STORAGE_BARRIER_POLICY'],
     ['esm/native/builder/render_interior_sketch_support_storage.ts', 'INTERIOR_STORAGE_CLAMP_POLICY'],
@@ -2196,7 +2198,7 @@ test('[dimension tokens] pure Material consumers use the canonical thickness own
   const expectedConsumers = [
     'esm/native/builder/core_carcass_shared.ts',
     'esm/native/builder/core_doors_compute.ts',
-    'esm/native/features/sketch_internal_drawer_cassette.ts',
+    'esm/shared/dimensions/sketch_internal_drawer_cassette_dimension_policy.ts',
     'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
     'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts',
     'esm/native/builder/render_preview_sketch_pipeline_shared.ts',
@@ -2272,8 +2274,11 @@ test('[dimension tokens] Drawer Sketch owner preserves focused production consum
       'esm/native/builder/render_interior_sketch_drawers_external_plan.ts',
       'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY',
     ],
-    ['esm/native/features/sketch_drawer_sizing.ts', 'DRAWER_SKETCH_SIZING_POLICY'],
-    ['esm/native/features/sketch_internal_drawer_cassette.ts', 'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY'],
+    ['esm/shared/dimensions/sketch_drawer_sizing_dimension_policy.ts', 'DRAWER_SKETCH_SIZING_POLICY'],
+    [
+      'esm/shared/dimensions/sketch_internal_drawer_cassette_dimension_policy.ts',
+      'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',
+    ],
     [
       'esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts',
       'DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY',

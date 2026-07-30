@@ -58,34 +58,40 @@ const aggregateMappings = Object.freeze([
 ]);
 const expectedFocusedInventory = Object.freeze([
   Object.freeze({
-    file: 'esm/native/features/library_preset/library_preset_flow_shared.ts',
+    file: 'esm/shared/dimensions/library_preset_flow_dimension_policy.ts',
     symbol: 'LIBRARY_PRESET_LAYOUT_POLICY',
-    specifier: '../../../shared/dimensions/library_preset_policy.js',
+    specifier: './library_preset_policy.js',
+    syntax: 'static-re-export',
   }),
   Object.freeze({
-    file: 'esm/native/features/library_preset/module_defaults.ts',
-    symbol: 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
-    specifier: '../../../shared/dimensions/library_preset_policy.js',
-  }),
-  Object.freeze({
-    file: 'esm/native/features/modules_configuration/module_defaults.ts',
-    symbol: 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
-    specifier: '../../../shared/dimensions/library_preset_policy.js',
-  }),
-  Object.freeze({
-    file: 'esm/native/features/stack_split/module_config.ts',
-    symbol: 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
-    specifier: '../../../shared/dimensions/library_preset_policy.js',
-  }),
-  Object.freeze({
-    file: presetOwnerRel,
+    file: 'esm/shared/dimensions/library_preset_module_defaults_dimension_policy.ts',
     symbol: 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
     specifier: './library_preset_policy.js',
+    syntax: 'static-re-export',
+  }),
+  Object.freeze({
+    file: 'esm/shared/dimensions/modules_configuration_defaults_dimension_policy.ts',
+    symbol: 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
+    specifier: './library_preset_policy.js',
+    syntax: 'static-re-export',
+  }),
+  Object.freeze({
+    file: 'esm/shared/dimensions/preset_models_dimension_defaults_policy.ts',
+    symbol: 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
+    specifier: './library_preset_policy.js',
+    syntax: 'static-import',
+  }),
+  Object.freeze({
+    file: 'esm/shared/dimensions/stack_split_module_config_dimension_policy.ts',
+    symbol: 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
+    specifier: './library_preset_policy.js',
+    syntax: 'static-re-export',
   }),
   Object.freeze({
     file: facadeRel,
     symbol: 'LIBRARY_PRESET_POLICY',
     specifier: './dimensions/library_preset_policy.js',
+    syntax: 'static-import',
   }),
 ]);
 
@@ -297,12 +303,12 @@ function exposesSymbol(dependency, symbol) {
 }
 
 function exactBinding(dependency, symbol) {
-  return (
-    dependency.bindings.length === 1 &&
-    dependency.bindings[0]?.importedName === symbol &&
-    dependency.bindings[0]?.localName === symbol &&
-    dependency.bindings[0]?.exportedName === null
-  );
+  if (dependency.bindings.length !== 1 || dependency.bindings[0]?.importedName !== symbol) return false;
+  const binding = dependency.bindings[0];
+  if (dependency.syntax === 'static-re-export') {
+    return binding.exportedName === symbol && (binding.localName === symbol || binding.localName === null);
+  }
+  return binding.localName === symbol && binding.exportedName === null;
 }
 
 function analyze(file, source) {
@@ -406,22 +412,21 @@ function inspectFocusedModule(file, source) {
       violations.push({ kind: 'focused-owner-namespace-import' });
       continue;
     }
-    if (dependency.syntax.includes('re-export')) {
-      violations.push({ kind: 'focused-owner-re-export' });
+    const symbol = exposedFocusedSymbols[0];
+    const expected = expectedFocusedInventory.find(
+      entry => entry.file === relativePath(file) && entry.symbol === symbol
+    );
+    if (!expected) {
+      violations.push({ kind: 'unapproved-focused-consumer' });
       continue;
     }
-    const symbol = exposedFocusedSymbols[0];
     if (!exactBinding(dependency, symbol)) {
       violations.push({ kind: 'focused-owner-alias' });
       continue;
     }
-    const expected = expectedFocusedInventory.find(
-      entry => entry.file === relativePath(file) && entry.symbol === symbol
-    );
-    if (!expected) violations.push({ kind: 'unapproved-focused-consumer' });
-    else if (
+    if (
       dependency.kind !== 'value' ||
-      dependency.syntax !== 'static-import' ||
+      dependency.syntax !== expected.syntax ||
       dependency.importedSymbols.length !== 1 ||
       dependency.specifier !== expected.specifier
     ) {
@@ -651,7 +656,7 @@ test('Library Preset focused consumer inventory is exact, direct, static, value-
       .map(entry => ({
         ...entry,
         kind: 'value',
-        syntax: 'static-import',
+        syntax: entry.syntax,
         importedSymbols: [entry.symbol],
         exactBinding: true,
       }))

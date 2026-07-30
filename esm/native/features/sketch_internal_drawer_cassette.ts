@@ -1,5 +1,7 @@
-import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
-import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
+import {
+  DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY,
+  MATERIAL_THICKNESS_POLICY,
+} from '../../shared/dimensions/sketch_internal_drawer_cassette_dimension_policy.js';
 
 export const SKETCH_INTERNAL_DRAWER_CASSETTE_TOUCH_EPSILON_M = 1e-6;
 

@@ -13,6 +13,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const policyRel = 'esm/shared/dimensions/structure_tab_auto_width_policy.ts';
 const ownerRel = 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
 const featureRel = 'esm/native/features/structure_tab_dimension_support.ts';
+const compositionRel = 'esm/shared/dimensions/structure_tab_dimension_policy.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const runtimeApiRel = 'esm/native/runtime/api.ts';
 const servicesBaseRel = 'esm/native/services/api_runtime_base_surface.ts';
@@ -20,10 +21,51 @@ const servicesApiRel = 'esm/native/services/api.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const baselineRel = 'tools/wp_layer_baseline.json';
 const ownerSpecifier = './wardrobe_default_resolution_policy.js';
-const featurePolicySpecifier = '../../shared/dimensions/structure_tab_auto_width_policy.js';
+const featurePolicySpecifier = '../../shared/dimensions/structure_tab_dimension_policy.js';
+const compositionPolicySpecifier = './structure_tab_auto_width_policy.js';
 const adapterFeatureSpecifier = '../../../features/structure_tab_dimension_support.js';
 const policySymbol = 'STRUCTURE_TAB_AUTO_WIDTH_POLICY';
 const functionNames = Object.freeze(['resolveAutoWidthForDoors', 'isAutoWidthForDoors']);
+const featureCompositionSymbols = Object.freeze([
+  'CHEST_MODE_DIMENSIONS',
+  'DEFAULT_STACK_SPLIT_LOWER_HEIGHT',
+  'STACK_SPLIT_LOWER_DEPTH_MAX',
+  'STACK_SPLIT_LOWER_DEPTH_MIN',
+  'STACK_SPLIT_LOWER_DOORS_MAX',
+  'STACK_SPLIT_LOWER_DOORS_MIN',
+  'STACK_SPLIT_LOWER_HEIGHT_MIN',
+  'STACK_SPLIT_LOWER_WIDTH_MAX',
+  'STACK_SPLIT_LOWER_WIDTH_MIN',
+  'STACK_SPLIT_MIN_TOP_HEIGHT',
+  'WARDROBE_CELL_DEPTH_MAX',
+  'WARDROBE_CELL_DEPTH_MIN',
+  'WARDROBE_CELL_HEIGHT_MAX',
+  'WARDROBE_CELL_HEIGHT_MIN',
+  'WARDROBE_CELL_WIDTH_MAX',
+  'WARDROBE_CELL_WIDTH_MIN',
+  'WARDROBE_CHEST_DRAWERS_MAX',
+  'WARDROBE_CHEST_DRAWERS_MIN',
+  'WARDROBE_CHEST_HEIGHT_MIN',
+  'WARDROBE_CHEST_WIDTH_MIN',
+  'WARDROBE_DEPTH_MAX',
+  'WARDROBE_DEPTH_MIN',
+  'WARDROBE_DOORS_MAX',
+  'WARDROBE_HEIGHT_MAX',
+  'WARDROBE_HEIGHT_MIN',
+  'WARDROBE_SLIDING_DOORS_MIN',
+  'WARDROBE_WIDTH_MAX',
+  'WARDROBE_WIDTH_MIN',
+  'DEFAULT_CHEST_DRAWERS_COUNT',
+  'DEFAULT_CORNER_DOORS',
+  'DEFAULT_CORNER_WIDTH',
+  'DEFAULT_HEIGHT',
+  'DEFAULT_HINGED_DOORS',
+  'DEFAULT_WIDTH',
+  'HINGED_DEFAULT_DEPTH',
+  'HINGED_DEFAULT_PER_DOOR_WIDTH',
+  'getDefaultDepthForWardrobeType',
+  policySymbol,
+]);
 const prefix171 = '2fadcd1f9b416aefc7f79d4d074b52eac9e64dea5bc1dd35e486a843264a0088';
 const prefix172 = '3ab71bc2e36c7c225c754defcd9734e2a62dd44a96139eea00d8d26e059add5f';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
@@ -210,6 +252,13 @@ function inspectPolicyRoute(entries) {
       specifier: featurePolicySpecifier,
       kind: 'value',
       syntax: 'static-import',
+      symbols: [...featureCompositionSymbols],
+    },
+    {
+      file: compositionRel,
+      specifier: compositionPolicySpecifier,
+      kind: 'value',
+      syntax: 'static-re-export',
       symbols: [policySymbol],
     },
   ];

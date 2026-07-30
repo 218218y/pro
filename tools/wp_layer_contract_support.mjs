@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 
 import { createSourceFile, walkAst } from './wp_ast_adapter.mjs';
@@ -7,7 +8,7 @@ const SOURCE_EXTENSIONS = new Set(['.js', '.mjs', '.ts', '.tsx']);
 const IMPORT_KINDS = Object.freeze(['type', 'value', 'dynamic']);
 const COMPOSITION_FILES = new Set(['app_container.ts', 'main.ts', 'release_main.ts']);
 const RATCHET_MODE = 'decrease-only';
-export const LAYER_CONTRACT_VERSION = '2.5';
+export const LAYER_CONTRACT_VERSION = '2.6';
 export const KNOWN_LAYERS = Object.freeze([
   'adapters',
   'boot',
@@ -448,6 +449,67 @@ export function collectLayerContractGraph({ root }) {
   };
 }
 
+function resolveVirtualRelativeImport(fromFile, specifier, sourceFiles) {
+  if (typeof specifier !== 'string' || !specifier.startsWith('.')) return null;
+  const raw = toPosix(
+    path.posix.normalize(path.posix.join(path.posix.dirname(fromFile), stripQueryHash(specifier)))
+  );
+  const candidates = [raw];
+  const extension = path.posix.extname(raw);
+  if (!extension) {
+    for (const ext of SOURCE_EXTENSIONS) candidates.push(`${raw}${ext}`);
+  } else if (extension === '.js' || extension === '.mjs') {
+    const stem = raw.slice(0, -extension.length);
+    candidates.push(`${stem}.ts`, `${stem}.tsx`);
+  }
+  const existing = candidates.find(candidate => Object.hasOwn(sourceFiles, candidate));
+  if (existing) return existing;
+  if (extension === '.js' || extension === '.mjs') return `${raw.slice(0, -extension.length)}.ts`;
+  return raw;
+}
+
+function collectResolvedFileModuleGraph(relativeFile, sourceFiles = null) {
+  const fromFile = toPosix(String(relativeFile));
+  const absoluteFile = path.resolve(process.cwd(), fromFile);
+  const virtualSource = sourceFiles && Object.hasOwn(sourceFiles, fromFile) ? sourceFiles[fromFile] : null;
+  if (virtualSource === null && (!fs.existsSync(absoluteFile) || !fs.statSync(absoluteFile).isFile())) {
+    return { exists: false, imports: [], sourceText: '', sourceFile: null };
+  }
+  const sourceText = virtualSource === null ? fs.readFileSync(absoluteFile, 'utf8') : String(virtualSource);
+  const analysis = analyzeModuleDependencies(absoluteFile, sourceText);
+  const from = layerOfRelativeFile(fromFile);
+  const imports = [];
+  for (const moduleImport of analysis.imports) {
+    const resolved =
+      virtualSource === null
+        ? resolveRelativeImport(absoluteFile, moduleImport.specifier)
+        : resolveVirtualRelativeImport(fromFile, moduleImport.specifier, sourceFiles);
+    if (!resolved) continue;
+    const toFile =
+      virtualSource === null ? toPosix(path.relative(process.cwd(), resolved)) : toPosix(resolved);
+    if (!toFile.startsWith('esm/')) continue;
+    imports.push({
+      from,
+      to: layerOfRelativeFile(toFile),
+      fromFile,
+      toFile,
+      specifier: moduleImport.specifier,
+      kind: moduleImport.kind,
+      syntax: moduleImport.syntax,
+      importedSymbols: [...moduleImport.importedSymbols].sort(),
+      exportedSymbols: [...moduleImport.exportedSymbols].sort(),
+      bindings: moduleImport.bindings.map(binding => ({ ...binding })),
+      statementKey: `${fromFile}:${moduleImport.statementStart}:${moduleImport.specifier}`,
+    });
+  }
+  return {
+    exists: true,
+    imports,
+    sourceText,
+    sourceFile: createSourceFile(absoluteFile, sourceText, { label: 'wp_layer_contract_provenance' }),
+  };
+}
+
 function assertNonNegativeBudget(value, label) {
   if (!Number.isInteger(value) || value < 0) {
     throw new Error(`wp_layer_contract: ${label} must be a non-negative integer`);
@@ -472,6 +534,23 @@ function sameStringList(left, right) {
     normalizedLeft.length === normalizedRight.length &&
     normalizedLeft.every((value, index) => value === normalizedRight[index])
   );
+}
+
+function sha256File(absoluteFile) {
+  return createHash('sha256').update(fs.readFileSync(absoluteFile)).digest('hex');
+}
+
+function statementCoverageKey(spec) {
+  return `${toPosix(String(spec?.toFile || ''))}::${String(spec?.kind || '')}::${[
+    ...(spec?.importedSymbols || []),
+  ]
+    .map(String)
+    .sort()
+    .join(',')}`;
+}
+
+function unionStatementSymbols(statements) {
+  return [...new Set(statements.flatMap(statement => statement.importedSymbols || []).map(String))].sort();
 }
 
 const ISO_DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -955,24 +1034,101 @@ export function validateLayerContractSchema(contract) {
       }
     }
 
+    const replacementProvenance = consolidation?.replacementProvenance;
+    if (
+      !replacementProvenance ||
+      typeof replacementProvenance !== 'object' ||
+      Array.isArray(replacementProvenance)
+    ) {
+      throw new Error(`wp_layer_contract: migration consolidation ${id} requires replacementProvenance`);
+    }
+    const provenanceMode = String(replacementProvenance.mode || '');
+    if (provenanceMode !== 'identity-reexport' && provenanceMode !== 'reviewed-composition') {
+      throw new Error(
+        `wp_layer_contract: migration consolidation ${id}.replacementProvenance.mode must be identity-reexport or reviewed-composition`
+      );
+    }
+    const provenanceOwnerFile = toPosix(String(replacementProvenance.ownerFile || ''));
+    if (provenanceOwnerFile !== replacementSpec.toFile) {
+      throw new Error(
+        `wp_layer_contract: migration consolidation ${id}.replacementProvenance.ownerFile must equal replacementStatement.toFile`
+      );
+    }
+    if (
+      !Array.isArray(replacementProvenance.sourceStatements) ||
+      replacementProvenance.sourceStatements.length === 0
+    ) {
+      throw new Error(
+        `wp_layer_contract: migration consolidation ${id}.replacementProvenance.sourceStatements must be a non-empty array`
+      );
+    }
+    const provenanceStatementKeys = new Set();
+    const normalizedSourceStatements = [];
+    for (const [index, sourceStatement] of replacementProvenance.sourceStatements.entries()) {
+      const sourceSpec = validateMigrationImportSpec(
+        { fromFile: provenanceOwnerFile, sourceStatement },
+        'sourceStatement',
+        to
+      );
+      const sourceSymbols = normalizeSymbolList(
+        sourceStatement.importedSymbols,
+        `migration consolidation ${id}.replacementProvenance.sourceStatements[${index}].importedSymbols`
+      );
+      if (sourceSymbols.includes('*') && sourceStatement.allowWildcard !== true) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id} provenance wildcard requires allowWildcard: true`
+        );
+      }
+      const sourceKey = exactStatementSpecKey(to, to, provenanceOwnerFile, {
+        ...sourceStatement,
+        toFile: sourceSpec.toFile,
+        importedSymbols: sourceSymbols,
+      });
+      if (provenanceStatementKeys.has(sourceKey)) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id} contains duplicate provenance source statement ${sourceKey}`
+        );
+      }
+      provenanceStatementKeys.add(sourceKey);
+      normalizedSourceStatements.push({
+        ...sourceStatement,
+        toFile: sourceSpec.toFile,
+        kind: sourceSpec.kind,
+        syntax: sourceSpec.syntax,
+        importedSymbols: sourceSymbols,
+      });
+    }
+
     if (!Array.isArray(consolidation.evidenceContracts) || consolidation.evidenceContracts.length === 0) {
       throw new Error(
         `wp_layer_contract: migration consolidation ${id}.evidenceContracts must be a non-empty array`
       );
     }
-    const evidenceContracts = consolidation.evidenceContracts.map(value => toPosix(String(value || '')));
+    const evidenceContracts = consolidation.evidenceContracts.map((value, index) => {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        throw new Error(
+          `wp_layer_contract: migration consolidation ${id}.evidenceContracts[${index}] must contain path and sha256`
+        );
+      }
+      return {
+        path: toPosix(String(value.path || '')),
+        sha256: String(value.sha256 || '').toLowerCase(),
+      };
+    });
     if (
-      evidenceContracts.some(value => !value || !value.startsWith('tests/')) ||
-      new Set(evidenceContracts).size !== evidenceContracts.length
+      evidenceContracts.some(
+        value => !value.path || !value.path.startsWith('tests/') || !/^[a-f0-9]{64}$/u.test(value.sha256)
+      ) ||
+      new Set(evidenceContracts.map(value => value.path)).size !== evidenceContracts.length
     ) {
       throw new Error(
-        `wp_layer_contract: migration consolidation ${id}.evidenceContracts must contain unique tests/ paths`
+        `wp_layer_contract: migration consolidation ${id}.evidenceContracts must contain unique tests/ paths and exact SHA-256 values`
       );
     }
     for (const evidenceContract of evidenceContracts) {
-      if (!fs.existsSync(path.resolve(process.cwd(), evidenceContract))) {
+      if (!fs.existsSync(path.resolve(process.cwd(), evidenceContract.path))) {
         throw new Error(
-          `wp_layer_contract: migration consolidation ${id} evidence contract does not exist: ${evidenceContract}`
+          `wp_layer_contract: migration consolidation ${id} evidence contract does not exist: ${evidenceContract.path}`
         );
       }
     }
@@ -991,6 +1147,11 @@ export function validateLayerContractSchema(contract) {
         importedSymbols: replacementSymbols,
       },
       absorbedStatements: normalizedAbsorbedStatements,
+      replacementProvenance: {
+        mode: provenanceMode,
+        ownerFile: provenanceOwnerFile,
+        sourceStatements: normalizedSourceStatements,
+      },
       evidenceContracts,
     });
   }
@@ -1344,6 +1505,136 @@ function evaluateCompatibilityBudgets(graph, contract, { currentDateMs, currentD
   return { failures, approvedStatements, statuses };
 }
 
+function evaluateConsolidationProvenance(graph, consolidation) {
+  const provenance = consolidation.replacementProvenance;
+  const ownerGraph = collectResolvedFileModuleGraph(provenance.ownerFile, graph.sourceFiles || null);
+  const failures = [];
+  if (!ownerGraph.exists) {
+    failures.push({
+      kind: 'migration-consolidation-provenance-owner-missing',
+      consolidationId: consolidation.id,
+      ownerFile: provenance.ownerFile,
+    });
+    return { valid: false, failures, ownerGraph, sourceStatementStatuses: [] };
+  }
+
+  const sourceStatementStatuses = [];
+  const ownedStatementKeys = new Set();
+  for (const sourceStatement of provenance.sourceStatements) {
+    const result = evaluateExactStatement({
+      graph: ownerGraph,
+      from: consolidation.to,
+      to: consolidation.to,
+      fromFile: provenance.ownerFile,
+      spec: sourceStatement,
+      label: 'migration-consolidation-provenance-source',
+      allowWildcard: sourceStatement.allowWildcard === true,
+    });
+    const sourceFailures = result.failures.map(failure => ({
+      ...failure,
+      consolidationId: consolidation.id,
+      ownerFile: provenance.ownerFile,
+    }));
+    failures.push(...sourceFailures);
+    if (result.statement) ownedStatementKeys.add(result.statement.statementKey);
+    if (provenance.mode === 'identity-reexport' && sourceStatement.syntax !== 'static-re-export') {
+      failures.push({
+        kind: 'migration-consolidation-provenance-identity-syntax-drift',
+        consolidationId: consolidation.id,
+        ownerFile: provenance.ownerFile,
+        toFile: sourceStatement.toFile,
+        currentSyntax: sourceStatement.syntax,
+        expectedSyntax: 'static-re-export',
+      });
+    }
+    sourceStatementStatuses.push({
+      toFile: sourceStatement.toFile,
+      kind: sourceStatement.kind,
+      syntax: sourceStatement.syntax,
+      importedSymbols: [...sourceStatement.importedSymbols],
+      valid: sourceFailures.length === 0,
+    });
+  }
+
+  const observedStatementKeys = new Set(ownerGraph.imports.map(entry => entry.statementKey));
+  const extraStatementKeys = [...observedStatementKeys].filter(key => !ownedStatementKeys.has(key));
+  if (extraStatementKeys.length > 0) {
+    failures.push({
+      kind: 'migration-consolidation-provenance-extra-source-dependency',
+      consolidationId: consolidation.id,
+      ownerFile: provenance.ownerFile,
+      statementKeys: extraStatementKeys.sort(),
+    });
+  }
+
+  const ownerExports = collectNamedModuleExports(provenance.ownerFile, ownerGraph.sourceText)
+    .filter(entry => entry.kind === consolidation.replacementStatement.kind)
+    .map(entry => entry.exportedName)
+    .filter(Boolean)
+    .sort();
+  if (!sameStringList(ownerExports, consolidation.replacementStatement.importedSymbols)) {
+    failures.push({
+      kind: 'migration-consolidation-provenance-export-drift',
+      consolidationId: consolidation.id,
+      ownerFile: provenance.ownerFile,
+      currentSymbols: ownerExports,
+      expectedSymbols: [...consolidation.replacementStatement.importedSymbols].sort(),
+    });
+  }
+
+  const absorbedCoverage = new Map();
+  for (const statement of consolidation.absorbedStatements) {
+    const key = statementCoverageKey(statement);
+    absorbedCoverage.set(key, (absorbedCoverage.get(key) || 0) + 1);
+  }
+  const sourceCoverage = new Map();
+  for (const statement of provenance.sourceStatements) {
+    const key = statementCoverageKey(statement);
+    sourceCoverage.set(key, (sourceCoverage.get(key) || 0) + 1);
+  }
+  const coverageMismatch =
+    [...absorbedCoverage].some(([key, count]) => count !== 1 || sourceCoverage.get(key) !== 1) ||
+    [...sourceCoverage].some(([key, count]) => count !== 1 || absorbedCoverage.get(key) !== 1);
+  const absorbedSymbols = unionStatementSymbols(consolidation.absorbedStatements);
+  const sourceSymbols = unionStatementSymbols(provenance.sourceStatements);
+  const identitySymbolMismatch =
+    provenance.mode === 'identity-reexport' &&
+    (!sameStringList(absorbedSymbols, sourceSymbols) ||
+      !sameStringList(sourceSymbols, consolidation.replacementStatement.importedSymbols));
+  if (coverageMismatch || identitySymbolMismatch) {
+    failures.push({
+      kind: 'migration-consolidation-provenance-mismatch',
+      consolidationId: consolidation.id,
+      ownerFile: provenance.ownerFile,
+      absorbedSymbols,
+      sourceSymbols,
+      replacementSymbols: [...consolidation.replacementStatement.importedSymbols].sort(),
+    });
+  }
+
+  if (provenance.mode === 'identity-reexport') {
+    const invalidTopLevel = (ownerGraph.sourceFile?.body || []).filter(
+      node =>
+        !((node.type === 'ExportNamedDeclaration' || node.type === 'ExportAllDeclaration') && node.source)
+    );
+    if (invalidTopLevel.length > 0) {
+      failures.push({
+        kind: 'migration-consolidation-provenance-identity-owner-body-drift',
+        consolidationId: consolidation.id,
+        ownerFile: provenance.ownerFile,
+        statementTypes: invalidTopLevel.map(node => node.type),
+      });
+    }
+  }
+
+  return {
+    valid: failures.length === 0,
+    failures,
+    ownerGraph,
+    sourceStatementStatuses,
+  };
+}
+
 function evaluateMigrationConsolidations(
   graph,
   contract,
@@ -1406,15 +1697,41 @@ function evaluateMigrationConsolidations(
     groupFailures.push(...replacementFailures);
     const replacementStatementValid = replacementFailures.length === 0;
 
-    const missingEvidenceContracts = consolidation.evidenceContracts.filter(
-      evidenceContract => !fs.existsSync(path.resolve(process.cwd(), evidenceContract))
-    );
-    const evidenceContractsValid = missingEvidenceContracts.length === 0;
-    if (!evidenceContractsValid) {
+    const provenanceResult = evaluateConsolidationProvenance(graph, consolidation);
+    groupFailures.push(...provenanceResult.failures);
+    const replacementProvenanceValid = provenanceResult.valid;
+
+    const missingEvidenceContracts = consolidation.evidenceContracts
+      .filter(evidenceContract => !fs.existsSync(path.resolve(process.cwd(), evidenceContract.path)))
+      .map(evidenceContract => evidenceContract.path);
+    const evidenceHashMismatches = consolidation.evidenceContracts.flatMap(evidenceContract => {
+      const absoluteFile = path.resolve(process.cwd(), evidenceContract.path);
+      if (!fs.existsSync(absoluteFile)) return [];
+      const actualSha256 = sha256File(absoluteFile);
+      return actualSha256 === evidenceContract.sha256
+        ? []
+        : [
+            {
+              path: evidenceContract.path,
+              expectedSha256: evidenceContract.sha256,
+              actualSha256,
+            },
+          ];
+    });
+    const evidenceContractsValid =
+      missingEvidenceContracts.length === 0 && evidenceHashMismatches.length === 0;
+    if (missingEvidenceContracts.length > 0) {
       groupFailures.push({
         kind: 'migration-consolidation-evidence-contract-missing',
         consolidationId: consolidation.id,
         missingEvidenceContracts,
+      });
+    }
+    if (evidenceHashMismatches.length > 0) {
+      groupFailures.push({
+        kind: 'migration-consolidation-evidence-contract-hash-mismatch',
+        consolidationId: consolidation.id,
+        evidenceHashMismatches,
       });
     }
 
@@ -1447,6 +1764,7 @@ function evaluateMigrationConsolidations(
       retirementEffective,
       absorbedStatementsValid,
       replacementStatementValid,
+      replacementProvenanceValid,
       evidenceContractsValid,
       ownershipConflicts,
       active: false,
@@ -1465,9 +1783,21 @@ function evaluateMigrationConsolidations(
         syntax: statement.syntax,
         importedSymbols: [...statement.importedSymbols],
       })),
-      evidenceContracts: [...consolidation.evidenceContracts],
+      replacementProvenance: {
+        mode: consolidation.replacementProvenance.mode,
+        ownerFile: consolidation.replacementProvenance.ownerFile,
+        sourceStatements: consolidation.replacementProvenance.sourceStatements.map(statement => ({
+          toFile: statement.toFile,
+          kind: statement.kind,
+          syntax: statement.syntax,
+          importedSymbols: [...statement.importedSymbols],
+        })),
+        sourceStatementStatuses: provenanceResult.sourceStatementStatuses,
+      },
+      evidenceContracts: consolidation.evidenceContracts.map(evidenceContract => ({ ...evidenceContract })),
       failures: groupFailures,
       replacementKey,
+      replacementMatch: replacementResult.statement,
     };
     status.valid = groupFailures.length === 0;
     status.active = status.valid;
@@ -1480,6 +1810,7 @@ function evaluateMigrationConsolidations(
 function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
   const failures = [];
   const approvedStatements = new Map();
+  const consolidationApprovedStatements = new Map();
   const statuses = [];
   const currentDateMs = evaluationDateTimestamp(currentDate);
   const currentDateLabel = isoDateOnlyFromTimestamp(currentDateMs);
@@ -1642,6 +1973,16 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
       }
       ownershipChanged = true;
     }
+  }
+
+  for (const groupStatus of consolidationEvaluation.statuses) {
+    if (!groupStatus.valid || !groupStatus.replacementMatch) continue;
+    addApprovedStatement(
+      consolidationApprovedStatements,
+      groupStatus.from,
+      groupStatus.to,
+      groupStatus.replacementMatch
+    );
   }
 
   const activeStatementOwners = new Map();
@@ -1815,10 +2156,11 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
     failures,
     approvedStatements,
     compatibilityApprovedStatements: compatibilityEvaluation.approvedStatements,
+    consolidationApprovedStatements,
     statuses,
     compatibilityStatuses: compatibilityEvaluation.statuses,
     consolidationStatuses: consolidationEvaluation.statuses.map(
-      ({ replacementKey, failures: _, ...status }) => status
+      ({ replacementKey, replacementMatch, failures: _, ...status }) => status
     ),
   };
 }
@@ -1852,6 +2194,73 @@ function mergeApprovedStatements(...collections) {
     }
   }
   return merged;
+}
+
+function approvedStatementCount(collection, edge, kind = 'all') {
+  return collection.get(edgeKey(edge.from, edge.to))?.[kind]?.size || 0;
+}
+
+function edgeOwnershipReport(edge, rule, migrationEvaluation) {
+  const merged = mergeApprovedStatements(
+    migrationEvaluation.approvedStatements,
+    migrationEvaluation.compatibilityApprovedStatements,
+    migrationEvaluation.consolidationApprovedStatements
+  );
+  const mergedForEdge = merged.get(edgeKey(edge.from, edge.to));
+  const reviewedGeneralStatements = edge.importCount - (mergedForEdge?.all.size || 0);
+  const reviewedGeneralValueStatements = edge.valueImportCount - (mergedForEdge?.value.size || 0);
+  const reviewedGeneralTypeStatements = edge.typeImportCount - (mergedForEdge?.type.size || 0);
+  return {
+    ...edge,
+    observedStatements: edge.importCount,
+    activeMigrationStatements: approvedStatementCount(migrationEvaluation.approvedStatements, edge),
+    compatibilityStatements: approvedStatementCount(
+      migrationEvaluation.compatibilityApprovedStatements,
+      edge
+    ),
+    consolidationStatements: approvedStatementCount(
+      migrationEvaluation.consolidationApprovedStatements,
+      edge
+    ),
+    reviewedGeneralStatements,
+    generalBudget: rule?.maxImportCount ?? null,
+    observedValueStatements: edge.valueImportCount,
+    activeMigrationValueStatements: approvedStatementCount(
+      migrationEvaluation.approvedStatements,
+      edge,
+      'value'
+    ),
+    compatibilityValueStatements: approvedStatementCount(
+      migrationEvaluation.compatibilityApprovedStatements,
+      edge,
+      'value'
+    ),
+    consolidationValueStatements: approvedStatementCount(
+      migrationEvaluation.consolidationApprovedStatements,
+      edge,
+      'value'
+    ),
+    reviewedGeneralValueStatements,
+    generalValueBudget: rule?.maxValueImportCount ?? null,
+    observedTypeStatements: edge.typeImportCount,
+    activeMigrationTypeStatements: approvedStatementCount(
+      migrationEvaluation.approvedStatements,
+      edge,
+      'type'
+    ),
+    compatibilityTypeStatements: approvedStatementCount(
+      migrationEvaluation.compatibilityApprovedStatements,
+      edge,
+      'type'
+    ),
+    consolidationTypeStatements: approvedStatementCount(
+      migrationEvaluation.consolidationApprovedStatements,
+      edge,
+      'type'
+    ),
+    reviewedGeneralTypeStatements,
+    generalTypeBudget: rule?.maxTypeImportCount ?? null,
+  };
 }
 
 export function evaluateLayerContract(graph, contract, options = {}) {
@@ -1909,7 +2318,8 @@ export function evaluateLayerContract(graph, contract, options = {}) {
       edge,
       mergeApprovedStatements(
         migrationEvaluation.approvedStatements,
-        migrationEvaluation.compatibilityApprovedStatements
+        migrationEvaluation.compatibilityApprovedStatements,
+        migrationEvaluation.consolidationApprovedStatements
       )
     );
     for (const [currentField, budgetField, failureKind, importerField] of BUDGET_DIMENSIONS) {
@@ -1958,13 +2368,16 @@ export function evaluateLayerContract(graph, contract, options = {}) {
   return {
     ok: failures.length === 0,
     failures,
-    edges: graph.edges,
+    edges: graph.edges.map(edge =>
+      edgeOwnershipReport(edge, ruleMap.get(edgeKey(edge.from, edge.to)), migrationEvaluation)
+    ),
     migrationBudgets: migrationEvaluation.statuses,
     historicalMigrationEntries: migrationEvaluation.statuses,
     activeMigrationEntries: migrationEvaluation.statuses.filter(entry => entry.active),
     retiredMigrationEntries: migrationEvaluation.statuses.filter(entry => entry.retired),
     compatibilityBudgets: migrationEvaluation.compatibilityStatuses,
     migrationConsolidations: migrationEvaluation.consolidationStatuses,
+    consolidationApprovedStatements: migrationEvaluation.consolidationApprovedStatements,
   };
 }
 
@@ -2014,7 +2427,8 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
       edge,
       mergeApprovedStatements(
         migrationEvaluation.approvedStatements,
-        migrationEvaluation.compatibilityApprovedStatements
+        migrationEvaluation.compatibilityApprovedStatements,
+        migrationEvaluation.consolidationApprovedStatements
       )
     )
   );

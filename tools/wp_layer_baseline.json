@@ -1,5 +1,5 @@
 {
-  "version": "2.5",
+  "version": "2.6",
   "root": "esm",
   "ratchet": {
     "mode": "decrease-only",
@@ -6643,32 +6643,46 @@
   ],
   "migrationRetirements": [
     {
-      "entryNumber": 175,
+      "entryNumber": 5,
       "retiredAt": "2026-07-29",
-      "mode": "ownership-transferred",
-      "reason": "Runtime Product Limits remains a reviewed public compatibility route; permanent ownership moved to runtime-product-limits-public-compatibility.",
-      "replacementCompatibilityBudgetId": "runtime-product-limits-public-compatibility"
+      "mode": "statement-consolidated",
+      "reason": "The reviewed feature dimension statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "corner-cells-ui-defaults-dimension-consolidation"
     },
     {
-      "entryNumber": 176,
+      "entryNumber": 61,
       "retiredAt": "2026-07-29",
-      "mode": "ownership-transferred",
-      "reason": "Runtime Wardrobe Defaults remains a reviewed public compatibility route; permanent ownership moved to runtime-wardrobe-defaults-public-compatibility.",
-      "replacementCompatibilityBudgetId": "runtime-wardrobe-defaults-public-compatibility"
+      "mode": "statement-consolidated",
+      "reason": "The Interior-tab Sketch tool Shell Geometry and Units statements were replaced by one reviewed feature-use-case composition owner.",
+      "replacementConsolidationId": "interior-sketch-tools-dimension-consolidation"
     },
     {
-      "entryNumber": 177,
+      "entryNumber": 118,
       "retiredAt": "2026-07-29",
-      "mode": "ownership-transferred",
-      "reason": "Runtime Stack Split remains a reviewed public compatibility route; permanent ownership moved to runtime-stack-split-public-compatibility.",
-      "replacementCompatibilityBudgetId": "runtime-stack-split-public-compatibility"
+      "mode": "statement-consolidated",
+      "reason": "The reviewed feature dimension statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "sketch-drawer-sizing-dimension-consolidation"
     },
     {
-      "entryNumber": 178,
+      "entryNumber": 119,
       "retiredAt": "2026-07-29",
-      "mode": "ownership-transferred",
-      "reason": "Runtime Wardrobe Default Resolution remains a reviewed public compatibility route; permanent ownership moved to runtime-default-resolution-public-compatibility.",
-      "replacementCompatibilityBudgetId": "runtime-default-resolution-public-compatibility"
+      "mode": "statement-consolidated",
+      "reason": "The reviewed feature dimension statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "sketch-internal-drawer-cassette-dimension-consolidation"
+    },
+    {
+      "entryNumber": 135,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "Two focused Platform door-motion migration statements and their canonical Sliding Door Construction companion were replaced by one reviewed use-case composition owner.",
+      "replacementConsolidationId": "platform-door-motion-dimension-consolidation"
+    },
+    {
+      "entryNumber": 136,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "Two focused Platform door-motion migration statements and their canonical Sliding Door Construction companion were replaced by one reviewed use-case composition owner.",
+      "replacementConsolidationId": "platform-door-motion-dimension-consolidation"
     },
     {
       "entryNumber": 146,
@@ -6699,25 +6713,137 @@
       "replacementConsolidationId": "runtime-default-state-dimension-consolidation"
     },
     {
-      "entryNumber": 135,
+      "entryNumber": 159,
       "retiredAt": "2026-07-29",
       "mode": "statement-consolidated",
-      "reason": "Two focused Platform door-motion migration statements and their canonical Sliding Door Construction companion were replaced by one reviewed use-case composition owner.",
-      "replacementConsolidationId": "platform-door-motion-dimension-consolidation"
+      "reason": "The reviewed feature dimension statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-layout-presets-dimension-consolidation"
     },
     {
-      "entryNumber": 136,
+      "entryNumber": 160,
       "retiredAt": "2026-07-29",
       "mode": "statement-consolidated",
-      "reason": "Two focused Platform door-motion migration statements and their canonical Sliding Door Construction companion were replaced by one reviewed use-case composition owner.",
-      "replacementConsolidationId": "platform-door-motion-dimension-consolidation"
+      "reason": "The reviewed feature dimension statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "modules-configuration-defaults-dimension-consolidation"
     },
     {
-      "entryNumber": 61,
+      "entryNumber": 161,
       "retiredAt": "2026-07-29",
       "mode": "statement-consolidated",
-      "reason": "The Interior-tab Sketch tool Shell Geometry and Units statements were replaced by one reviewed feature-use-case composition owner.",
-      "replacementConsolidationId": "interior-sketch-tools-dimension-consolidation"
+      "reason": "The reviewed feature dimension statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "stack-split-module-config-dimension-consolidation"
+    },
+    {
+      "entryNumber": 162,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed feature dimension statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "library-preset-flow-dimension-consolidation"
+    },
+    {
+      "entryNumber": 163,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed feature dimension statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "library-preset-module-defaults-dimension-consolidation"
+    },
+    {
+      "entryNumber": 164,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "The Interior Tab shelf-geometry and units statements were consolidated behind one exact identity-preserving defaults owner.",
+      "replacementConsolidationId": "interior-tab-defaults-dimension-consolidation"
+    },
+    {
+      "entryNumber": 165,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "The Interior Tab shelf-geometry and units statements were consolidated behind one exact identity-preserving defaults owner.",
+      "replacementConsolidationId": "interior-tab-defaults-dimension-consolidation"
+    },
+    {
+      "entryNumber": 167,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "The six reviewed Structure Tab dimension statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "structure-tab-dimension-consolidation"
+    },
+    {
+      "entryNumber": 168,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "The six reviewed Structure Tab dimension statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "structure-tab-dimension-consolidation"
+    },
+    {
+      "entryNumber": 169,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "The six reviewed Structure Tab dimension statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "structure-tab-dimension-consolidation"
+    },
+    {
+      "entryNumber": 170,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "The six reviewed Structure Tab dimension statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "structure-tab-dimension-consolidation"
+    },
+    {
+      "entryNumber": 171,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "The six reviewed Structure Tab dimension statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "structure-tab-dimension-consolidation"
+    },
+    {
+      "entryNumber": 172,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "The six reviewed Structure Tab dimension statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "structure-tab-dimension-consolidation"
+    },
+    {
+      "entryNumber": 173,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "The Order PDF defaults and default-resolution statements were consolidated behind one exact identity-preserving owner.",
+      "replacementConsolidationId": "order-pdf-dimension-consolidation"
+    },
+    {
+      "entryNumber": 174,
+      "retiredAt": "2026-07-29",
+      "mode": "statement-consolidated",
+      "reason": "The Order PDF defaults and default-resolution statements were consolidated behind one exact identity-preserving owner.",
+      "replacementConsolidationId": "order-pdf-dimension-consolidation"
+    },
+    {
+      "entryNumber": 175,
+      "retiredAt": "2026-07-29",
+      "mode": "ownership-transferred",
+      "reason": "Runtime Product Limits remains a reviewed public compatibility route; permanent ownership moved to runtime-product-limits-public-compatibility.",
+      "replacementCompatibilityBudgetId": "runtime-product-limits-public-compatibility"
+    },
+    {
+      "entryNumber": 176,
+      "retiredAt": "2026-07-29",
+      "mode": "ownership-transferred",
+      "reason": "Runtime Wardrobe Defaults remains a reviewed public compatibility route; permanent ownership moved to runtime-wardrobe-defaults-public-compatibility.",
+      "replacementCompatibilityBudgetId": "runtime-wardrobe-defaults-public-compatibility"
+    },
+    {
+      "entryNumber": 177,
+      "retiredAt": "2026-07-29",
+      "mode": "ownership-transferred",
+      "reason": "Runtime Stack Split remains a reviewed public compatibility route; permanent ownership moved to runtime-stack-split-public-compatibility.",
+      "replacementCompatibilityBudgetId": "runtime-stack-split-public-compatibility"
+    },
+    {
+      "entryNumber": 178,
+      "retiredAt": "2026-07-29",
+      "mode": "ownership-transferred",
+      "reason": "Runtime Wardrobe Default Resolution remains a reviewed public compatibility route; permanent ownership moved to runtime-default-resolution-public-compatibility.",
+      "replacementCompatibilityBudgetId": "runtime-default-resolution-public-compatibility"
     }
   ],
   "compatibilityBudgets": [
@@ -6920,9 +7046,59 @@
         }
       ],
       "evidenceContracts": [
-        "tests/default_state_dimension_ownership_contract.test.js",
-        "tests/default_state_dimension_ownership_runtime.test.ts"
-      ]
+        {
+          "path": "tests/default_state_dimension_ownership_contract.test.js",
+          "sha256": "f22eac746984f85a9498681543b2d816ffaf1340718002158fefd2dfc96a0c1c"
+        },
+        {
+          "path": "tests/default_state_dimension_ownership_runtime.test.ts",
+          "sha256": "50c7a50b1a2f177a335bc6a8b6571e12c5b41e77c9d81872432a7ab78b2bc7de"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/runtime_default_state_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/base_leg_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["BASE_LEG_DIMENSIONS"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["BASE_PLINTH_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["CHEST_MODE_ACTIVE_DEFAULTS_POLICY", "CHEST_MODE_COMMODE_CONSTRAINTS_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": [
+              "DEFAULT_CHEST_DRAWERS_COUNT",
+              "DEFAULT_CORNER_DOORS",
+              "DEFAULT_CORNER_WIDTH",
+              "DEFAULT_HEIGHT",
+              "DEFAULT_HINGED_DOORS",
+              "DEFAULT_WIDTH",
+              "HINGED_DEFAULT_DEPTH"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "platform-door-motion-dimension-consolidation",
@@ -6963,9 +7139,39 @@
         }
       ],
       "evidenceContracts": [
-        "tests/render_loop_door_motion_ownership_contract.test.js",
-        "tests/render_loop_door_motion_ownership_runtime.test.ts"
-      ]
+        {
+          "path": "tests/render_loop_door_motion_ownership_contract.test.js",
+          "sha256": "5a5c44d413adaa62965d5740b1eed9150292a391bb1fbe19e5bb55bfaca4e2e4"
+        },
+        {
+          "path": "tests/render_loop_door_motion_ownership_runtime.test.ts",
+          "sha256": "0d4715b15c78301ac2200f8c824bc119b235e2bd647ea12a8809165dcdf5aa1c"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/door_system_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["SLIDING_DOOR_CONSTRUCTION_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/units.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["cmToM"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["WARDROBE_DEFAULTS"]
+          }
+        ]
+      }
     },
     {
       "id": "interior-sketch-tools-dimension-consolidation",
@@ -6999,9 +7205,873 @@
         }
       ],
       "evidenceContracts": [
-        "tests/interior_sketch_tools_dimension_consolidation_contract.test.js",
-        "tests/interior_sketch_tools_dimension_consolidation_runtime.test.ts"
-      ]
+        {
+          "path": "tests/interior_sketch_tools_dimension_consolidation_contract.test.js",
+          "sha256": "72cab945e8d529522d5ce24cf332917a1c37a9bab7035973ada7127eb7bb2c42"
+        },
+        {
+          "path": "tests/interior_sketch_tools_dimension_consolidation_runtime.test.ts",
+          "sha256": "62376d756038321c2b04c657b32fcae8bd6dadd3c828c6d395ff9113100388fa"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/interior_sketch_tools_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/units.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["mToCm"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "structure-tab-dimension-consolidation",
+      "retiredAt": "2026-07-29",
+      "entryNumbers": [167, 168, 169, 170, 171, 172],
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/structure_tab_dimension_support.ts",
+      "owner": "structure-tab-dimension-consolidation",
+      "reason": "Six focused dimension statements and their reviewed companions were replaced by one exact identity-preserving Structure Tab use-case owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/structure_tab_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "CHEST_MODE_DIMENSIONS",
+          "DEFAULT_CHEST_DRAWERS_COUNT",
+          "DEFAULT_CORNER_DOORS",
+          "DEFAULT_CORNER_WIDTH",
+          "DEFAULT_HEIGHT",
+          "DEFAULT_HINGED_DOORS",
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "DEFAULT_WIDTH",
+          "HINGED_DEFAULT_DEPTH",
+          "HINGED_DEFAULT_PER_DOOR_WIDTH",
+          "STACK_SPLIT_LOWER_DEPTH_MAX",
+          "STACK_SPLIT_LOWER_DEPTH_MIN",
+          "STACK_SPLIT_LOWER_DOORS_MAX",
+          "STACK_SPLIT_LOWER_DOORS_MIN",
+          "STACK_SPLIT_LOWER_HEIGHT_MIN",
+          "STACK_SPLIT_LOWER_WIDTH_MAX",
+          "STACK_SPLIT_LOWER_WIDTH_MIN",
+          "STACK_SPLIT_MIN_TOP_HEIGHT",
+          "STRUCTURE_TAB_AUTO_WIDTH_POLICY",
+          "WARDROBE_CELL_DEPTH_MAX",
+          "WARDROBE_CELL_DEPTH_MIN",
+          "WARDROBE_CELL_HEIGHT_MAX",
+          "WARDROBE_CELL_HEIGHT_MIN",
+          "WARDROBE_CELL_WIDTH_MAX",
+          "WARDROBE_CELL_WIDTH_MIN",
+          "WARDROBE_CHEST_DRAWERS_MAX",
+          "WARDROBE_CHEST_DRAWERS_MIN",
+          "WARDROBE_CHEST_HEIGHT_MIN",
+          "WARDROBE_CHEST_WIDTH_MIN",
+          "WARDROBE_DEPTH_MAX",
+          "WARDROBE_DEPTH_MIN",
+          "WARDROBE_DOORS_MAX",
+          "WARDROBE_HEIGHT_MAX",
+          "WARDROBE_HEIGHT_MIN",
+          "WARDROBE_SLIDING_DOORS_MIN",
+          "WARDROBE_WIDTH_MAX",
+          "WARDROBE_WIDTH_MIN",
+          "getDefaultDepthForWardrobeType"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/features/structure_tab_dimension_support.ts",
+          "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["CHEST_MODE_DIMENSIONS"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/structure_tab_dimension_support.ts",
+          "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+          "kind": "value",
+          "importedSymbols": [
+            "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+            "STACK_SPLIT_LOWER_DEPTH_MAX",
+            "STACK_SPLIT_LOWER_DEPTH_MIN",
+            "STACK_SPLIT_LOWER_DOORS_MAX",
+            "STACK_SPLIT_LOWER_DOORS_MIN",
+            "STACK_SPLIT_LOWER_HEIGHT_MIN",
+            "STACK_SPLIT_LOWER_WIDTH_MAX",
+            "STACK_SPLIT_LOWER_WIDTH_MIN",
+            "STACK_SPLIT_MIN_TOP_HEIGHT"
+          ],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/structure_tab_dimension_support.ts",
+          "toFile": "esm/shared/dimensions/product_limits.ts",
+          "kind": "value",
+          "importedSymbols": [
+            "WARDROBE_CELL_DEPTH_MAX",
+            "WARDROBE_CELL_DEPTH_MIN",
+            "WARDROBE_CELL_HEIGHT_MAX",
+            "WARDROBE_CELL_HEIGHT_MIN",
+            "WARDROBE_CELL_WIDTH_MAX",
+            "WARDROBE_CELL_WIDTH_MIN",
+            "WARDROBE_CHEST_DRAWERS_MAX",
+            "WARDROBE_CHEST_DRAWERS_MIN",
+            "WARDROBE_CHEST_HEIGHT_MIN",
+            "WARDROBE_CHEST_WIDTH_MIN",
+            "WARDROBE_DEPTH_MAX",
+            "WARDROBE_DEPTH_MIN",
+            "WARDROBE_DOORS_MAX",
+            "WARDROBE_HEIGHT_MAX",
+            "WARDROBE_HEIGHT_MIN",
+            "WARDROBE_SLIDING_DOORS_MIN",
+            "WARDROBE_WIDTH_MAX",
+            "WARDROBE_WIDTH_MIN"
+          ],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/structure_tab_dimension_support.ts",
+          "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+          "kind": "value",
+          "importedSymbols": [
+            "DEFAULT_CHEST_DRAWERS_COUNT",
+            "DEFAULT_CORNER_DOORS",
+            "DEFAULT_CORNER_WIDTH",
+            "DEFAULT_HEIGHT",
+            "DEFAULT_HINGED_DOORS",
+            "DEFAULT_WIDTH",
+            "HINGED_DEFAULT_DEPTH",
+            "HINGED_DEFAULT_PER_DOOR_WIDTH"
+          ],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/structure_tab_dimension_support.ts",
+          "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["getDefaultDepthForWardrobeType"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/structure_tab_dimension_support.ts",
+          "toFile": "esm/shared/dimensions/structure_tab_auto_width_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["STRUCTURE_TAB_AUTO_WIDTH_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/structure_tab_dimension_support_ownership_contract.test.js",
+          "sha256": "68a3d57547376dc62a4bf4702fc6e971f870a24ac2833bc2c8fe2a0dd70296d6"
+        },
+        {
+          "path": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
+          "sha256": "ede5fca2bdb658c2164cb4af082267ab95527fa02ab84860e9a03bb924558c31"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/structure_tab_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["CHEST_MODE_DIMENSIONS"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": [
+              "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+              "STACK_SPLIT_LOWER_DEPTH_MAX",
+              "STACK_SPLIT_LOWER_DEPTH_MIN",
+              "STACK_SPLIT_LOWER_DOORS_MAX",
+              "STACK_SPLIT_LOWER_DOORS_MIN",
+              "STACK_SPLIT_LOWER_HEIGHT_MIN",
+              "STACK_SPLIT_LOWER_WIDTH_MAX",
+              "STACK_SPLIT_LOWER_WIDTH_MIN",
+              "STACK_SPLIT_MIN_TOP_HEIGHT"
+            ]
+          },
+          {
+            "toFile": "esm/shared/dimensions/product_limits.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": [
+              "WARDROBE_CELL_DEPTH_MAX",
+              "WARDROBE_CELL_DEPTH_MIN",
+              "WARDROBE_CELL_HEIGHT_MAX",
+              "WARDROBE_CELL_HEIGHT_MIN",
+              "WARDROBE_CELL_WIDTH_MAX",
+              "WARDROBE_CELL_WIDTH_MIN",
+              "WARDROBE_CHEST_DRAWERS_MAX",
+              "WARDROBE_CHEST_DRAWERS_MIN",
+              "WARDROBE_CHEST_HEIGHT_MIN",
+              "WARDROBE_CHEST_WIDTH_MIN",
+              "WARDROBE_DEPTH_MAX",
+              "WARDROBE_DEPTH_MIN",
+              "WARDROBE_DOORS_MAX",
+              "WARDROBE_HEIGHT_MAX",
+              "WARDROBE_HEIGHT_MIN",
+              "WARDROBE_SLIDING_DOORS_MIN",
+              "WARDROBE_WIDTH_MAX",
+              "WARDROBE_WIDTH_MIN"
+            ]
+          },
+          {
+            "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": [
+              "DEFAULT_CHEST_DRAWERS_COUNT",
+              "DEFAULT_CORNER_DOORS",
+              "DEFAULT_CORNER_WIDTH",
+              "DEFAULT_HEIGHT",
+              "DEFAULT_HINGED_DOORS",
+              "DEFAULT_WIDTH",
+              "HINGED_DEFAULT_DEPTH",
+              "HINGED_DEFAULT_PER_DOOR_WIDTH"
+            ]
+          },
+          {
+            "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["getDefaultDepthForWardrobeType"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/structure_tab_auto_width_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["STRUCTURE_TAB_AUTO_WIDTH_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "interior-tab-defaults-dimension-consolidation",
+      "retiredAt": "2026-07-29",
+      "entryNumbers": [164, 165],
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/interior_tab_defaults.ts",
+      "owner": "interior-tab-defaults-dimension-consolidation",
+      "reason": "The focused shelf geometry and unit conversion statements were replaced by one exact identity-preserving Interior Tab defaults owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/interior_tab_defaults_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY", "mToCm"]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/features/interior_tab_defaults.ts",
+          "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/interior_tab_defaults.ts",
+          "toFile": "esm/shared/dimensions/units.ts",
+          "kind": "value",
+          "importedSymbols": ["mToCm"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/interior_fittings_ui_compatibility_boundary_ownership_contract.test.js",
+          "sha256": "f6a208efe8fb63dbc61c54342a68508864d4f5643a03b7320db07aa2e00f7454"
+        },
+        {
+          "path": "tests/interior_tab_local_state_runtime.test.js",
+          "sha256": "efe40c0f2fb48a92972cfdd5e97b8e7f4f19524acbc90012974039d8dd41b3b9"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/interior_tab_defaults_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/units.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["mToCm"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "order-pdf-dimension-consolidation",
+      "retiredAt": "2026-07-29",
+      "entryNumbers": [173, 174],
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/order_pdf_dimension_support.ts",
+      "owner": "order-pdf-dimension-consolidation",
+      "reason": "The focused wardrobe defaults and default-resolution statements were replaced by one exact identity-preserving Order PDF owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/order_pdf_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "DEFAULT_HEIGHT",
+          "DEFAULT_WIDTH",
+          "getDefaultDepthForWardrobeType",
+          "getDefaultDoorsForWardrobeType"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/features/order_pdf_dimension_support.ts",
+          "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+          "kind": "value",
+          "importedSymbols": ["DEFAULT_HEIGHT", "DEFAULT_WIDTH"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/order_pdf_dimension_support.ts",
+          "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["getDefaultDepthForWardrobeType", "getDefaultDoorsForWardrobeType"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/order_pdf_dimension_support_ownership_contract.test.js",
+          "sha256": "f69f8870450e582df4c4588cfaad8bf34358f2683e94eb65bcb6ca0323d950b7"
+        },
+        {
+          "path": "tests/refactor_stage79_order_pdf_export_commands_ownership_guard.test.js",
+          "sha256": "7fe48915e42c34115cf64cca53233562df248a656adc746589bed18a0a984e7c"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/order_pdf_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["DEFAULT_HEIGHT", "DEFAULT_WIDTH"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["getDefaultDepthForWardrobeType", "getDefaultDoorsForWardrobeType"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "corner-cells-ui-defaults-dimension-consolidation",
+      "retiredAt": "2026-07-29",
+      "entryNumbers": [5],
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/modules_configuration/corner_cells_ui_defaults.ts",
+      "owner": "corner-cells-ui-defaults-dimension-consolidation",
+      "reason": "The focused statements for this feature use case were replaced by one exact identity-preserving composition owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/corner_cells_ui_defaults_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": ["CM_PER_METER", "CORNER_WING_BODY_POLICY", "CORNER_WING_CELL_POLICY"]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/features/modules_configuration/corner_cells_ui_defaults.ts",
+          "toFile": "esm/shared/dimensions/units.ts",
+          "kind": "value",
+          "importedSymbols": ["CM_PER_METER"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/modules_configuration/corner_cells_ui_defaults.ts",
+          "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["CORNER_WING_BODY_POLICY", "CORNER_WING_CELL_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/corner_cells_ui_defaults_dimension_consolidation_contract.test.js",
+          "sha256": "33d3761da9f2e45f535937a64b3348ba3fb6accbdb17f712a4ba5bd8a230b785"
+        },
+        {
+          "path": "tests/corner_dimension_defaults_pilot_runtime.test.ts",
+          "sha256": "3a1dd2fb06df058195a689d70d1c20fa2430a4a16bf0719a76215c1730de4d37"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/corner_cells_ui_defaults_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/units.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["CM_PER_METER"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/corner_system_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["CORNER_WING_BODY_POLICY", "CORNER_WING_CELL_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "sketch-drawer-sizing-dimension-consolidation",
+      "retiredAt": "2026-07-29",
+      "entryNumbers": [118],
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/sketch_drawer_sizing.ts",
+      "owner": "sketch-drawer-sizing-dimension-consolidation",
+      "reason": "The focused statements for this feature use case were replaced by one exact identity-preserving composition owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/sketch_drawer_sizing_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": ["DRAWER_SKETCH_SIZING_POLICY", "cmToM"]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/features/sketch_drawer_sizing.ts",
+          "toFile": "esm/shared/dimensions/units.ts",
+          "kind": "value",
+          "importedSymbols": ["cmToM"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/sketch_drawer_sizing.ts",
+          "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["DRAWER_SKETCH_SIZING_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/sketch_drawer_dimension_consolidations_contract.test.js",
+          "sha256": "abcda65f4cc0d11434d3c4251c3dce342d8dd89816d53390b0558edad13d0ed7"
+        },
+        {
+          "path": "tests/sketch_drawer_sizing_internal_cassette_ownership_contract.test.js",
+          "sha256": "1f7a93ecaaadca032c41d7a885e81aeabadbf0992e14298d7d72e144a3aca28f"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/sketch_drawer_sizing_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/units.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["cmToM"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["DRAWER_SKETCH_SIZING_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "sketch-internal-drawer-cassette-dimension-consolidation",
+      "retiredAt": "2026-07-29",
+      "entryNumbers": [119],
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/sketch_internal_drawer_cassette.ts",
+      "owner": "sketch-internal-drawer-cassette-dimension-consolidation",
+      "reason": "The focused statements for this feature use case were replaced by one exact identity-preserving composition owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/sketch_internal_drawer_cassette_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY", "MATERIAL_THICKNESS_POLICY"]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/features/sketch_internal_drawer_cassette.ts",
+          "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/sketch_internal_drawer_cassette.ts",
+          "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/sketch_drawer_dimension_consolidations_contract.test.js",
+          "sha256": "abcda65f4cc0d11434d3c4251c3dce342d8dd89816d53390b0558edad13d0ed7"
+        },
+        {
+          "path": "tests/render_interior_sketch_internal_drawer_cassette_runtime.test.ts",
+          "sha256": "81a3d8818b286e663714c3bf7ea3bee35fe27835d0dde5df73744f6197cab1e8"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/sketch_internal_drawer_cassette_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["MATERIAL_THICKNESS_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "interior-layout-presets-dimension-consolidation",
+      "retiredAt": "2026-07-29",
+      "entryNumbers": [159],
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/interior_layout_presets/ops.ts",
+      "owner": "interior-layout-presets-dimension-consolidation",
+      "reason": "The focused statements for this feature use case were replaced by one exact identity-preserving composition owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/interior_layout_presets_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "INTERIOR_PRESET_ROD_FACTORS_POLICY",
+          "INTERIOR_PRESET_SHELF_ROWS_POLICY",
+          "INTERIOR_STORAGE_BARRIER_POLICY"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/features/interior_layout_presets/ops.ts",
+          "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/interior_layout_presets/ops.ts",
+          "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["INTERIOR_PRESET_ROD_FACTORS_POLICY", "INTERIOR_PRESET_SHELF_ROWS_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/interior_layout_presets_dimension_consolidation_contract.test.js",
+          "sha256": "7bf5622c8623a2f132b543771c0eb5c32b1b1cca1bedf87742ada55f5ba6d7b0"
+        },
+        {
+          "path": "tests/interior_layout_presets_feature_ownership_contract.test.js",
+          "sha256": "c97988632781382a1af4ddf626d143fc8e5bf501f31de3c73467a6ae8ded61b8"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/interior_layout_presets_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["INTERIOR_PRESET_ROD_FACTORS_POLICY", "INTERIOR_PRESET_SHELF_ROWS_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "modules-configuration-defaults-dimension-consolidation",
+      "retiredAt": "2026-07-29",
+      "entryNumbers": [160],
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/modules_configuration/module_defaults.ts",
+      "owner": "modules-configuration-defaults-dimension-consolidation",
+      "reason": "The focused statements for this feature use case were replaced by one exact identity-preserving composition owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/modules_configuration_defaults_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": ["INTERIOR_STORAGE_GRID_POLICY", "LIBRARY_PRESET_MODULE_DEFAULTS_POLICY"]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/features/modules_configuration/module_defaults.ts",
+          "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["INTERIOR_STORAGE_GRID_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/modules_configuration/module_defaults.ts",
+          "toFile": "esm/shared/dimensions/library_preset_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["LIBRARY_PRESET_MODULE_DEFAULTS_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/module_config_dimension_consolidations_contract.test.js",
+          "sha256": "dc54e1cb8771bdbe30349cfef8ed259bbf56d0c0c4cc053607e2029edf5d303c"
+        },
+        {
+          "path": "tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js",
+          "sha256": "a350e4e279e76b5e36afc2c512966cc7ea6edafc869b632bddf8af3c258efd4f"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/modules_configuration_defaults_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["INTERIOR_STORAGE_GRID_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/library_preset_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["LIBRARY_PRESET_MODULE_DEFAULTS_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "stack-split-module-config-dimension-consolidation",
+      "retiredAt": "2026-07-29",
+      "entryNumbers": [161],
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/stack_split/module_config.ts",
+      "owner": "stack-split-module-config-dimension-consolidation",
+      "reason": "The focused statements for this feature use case were replaced by one exact identity-preserving composition owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/stack_split_module_config_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "INTERIOR_STORAGE_DEFAULTS_POLICY",
+          "INTERIOR_STORAGE_GRID_POLICY",
+          "LIBRARY_PRESET_MODULE_DEFAULTS_POLICY"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/features/stack_split/module_config.ts",
+          "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["INTERIOR_STORAGE_DEFAULTS_POLICY", "INTERIOR_STORAGE_GRID_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/stack_split/module_config.ts",
+          "toFile": "esm/shared/dimensions/library_preset_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["LIBRARY_PRESET_MODULE_DEFAULTS_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/module_config_dimension_consolidations_contract.test.js",
+          "sha256": "dc54e1cb8771bdbe30349cfef8ed259bbf56d0c0c4cc053607e2029edf5d303c"
+        },
+        {
+          "path": "tests/preset_stack_runtime_hardening.test.ts",
+          "sha256": "b435721752932db9a648bbfdb0cc82c0873373d07441fedbf32e0dced7ca4f77"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/stack_split_module_config_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["INTERIOR_STORAGE_DEFAULTS_POLICY", "INTERIOR_STORAGE_GRID_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/library_preset_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["LIBRARY_PRESET_MODULE_DEFAULTS_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "library-preset-flow-dimension-consolidation",
+      "retiredAt": "2026-07-29",
+      "entryNumbers": [162],
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/library_preset/library_preset_flow_shared.ts",
+      "owner": "library-preset-flow-dimension-consolidation",
+      "reason": "The focused statements for this feature use case were replaced by one exact identity-preserving composition owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/library_preset_flow_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT", "LIBRARY_PRESET_LAYOUT_POLICY"]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/features/library_preset/library_preset_flow_shared.ts",
+          "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/library_preset/library_preset_flow_shared.ts",
+          "toFile": "esm/shared/dimensions/library_preset_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["LIBRARY_PRESET_LAYOUT_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/library_preset_dimension_consolidations_contract.test.js",
+          "sha256": "6670db9d1d9f7b285375ad2c50a9d614a8071022efa3d70673eac6b08f016545"
+        },
+        {
+          "path": "tests/library_preset_flow_layout_ownership_contract.test.js",
+          "sha256": "6aec8c78cff0245baf108642684d8bd0795313aa32f70b0082e96fbef2e2a4b4"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/library_preset_flow_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/library_preset_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["LIBRARY_PRESET_LAYOUT_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "library-preset-module-defaults-dimension-consolidation",
+      "retiredAt": "2026-07-29",
+      "entryNumbers": [163],
+      "from": "features",
+      "to": "shared",
+      "fromFile": "esm/native/features/library_preset/module_defaults.ts",
+      "owner": "library-preset-module-defaults-dimension-consolidation",
+      "reason": "The focused statements for this feature use case were replaced by one exact identity-preserving composition owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/library_preset_module_defaults_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": ["LIBRARY_PRESET_MODULE_DEFAULTS_POLICY", "resolveAutoWidthForDoors"]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/features/library_preset/module_defaults.ts",
+          "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["resolveAutoWidthForDoors"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/features/library_preset/module_defaults.ts",
+          "toFile": "esm/shared/dimensions/library_preset_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["LIBRARY_PRESET_MODULE_DEFAULTS_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/library_preset_dimension_consolidations_contract.test.js",
+          "sha256": "6670db9d1d9f7b285375ad2c50a9d614a8071022efa3d70673eac6b08f016545"
+        },
+        {
+          "path": "tests/library_preset_module_defaults_ownership_contract.test.js",
+          "sha256": "452c13857fff65ffa60a7af1267308fe52e4e9a1f07d3449e6044f19d8517c3b"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/library_preset_module_defaults_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/wardrobe_default_resolution_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["resolveAutoWidthForDoors"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/library_preset_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["LIBRARY_PRESET_MODULE_DEFAULTS_POLICY"]
+          }
+        ]
+      }
     }
   ]
 }

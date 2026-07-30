@@ -205,15 +205,15 @@ function inspectDecisionReportBase(report) {
     };
   });
   if (
-    layerBaseline.version !== '2.5' ||
-    report.layerContractOwnership?.schemaVersion !== '2.5' ||
+    layerBaseline.version !== '2.6' ||
+    report.layerContractOwnership?.schemaVersion !== '2.6' ||
     report.layerContractOwnership?.historicalMigrationEntries !== 178 ||
-    report.layerContractOwnership?.activeMigrationEntries !== 167 ||
-    report.layerContractOwnership?.retiredMigrationEntries !== 11 ||
+    report.layerContractOwnership?.activeMigrationEntries !== 149 ||
+    report.layerContractOwnership?.retiredMigrationEntries !== 29 ||
     report.layerContractOwnership?.compatibilityBudgets !== 4 ||
-    report.layerContractOwnership?.consolidations !== 3 ||
+    report.layerContractOwnership?.consolidations !== 14 ||
     report.layerContractOwnership?.historicalUniqueFromFiles !== 108 ||
-    report.layerContractOwnership?.activeUniqueFromFiles !== 104 ||
+    report.layerContractOwnership?.activeUniqueFromFiles !== 93 ||
     report.layerContractOwnership?.runtime?.owner !== runtimeCompatibilityOwner ||
     report.layerContractOwnership?.runtime?.publicSurface !== runtimePublicSurface ||
     JSON.stringify(report.layerContractOwnership?.runtime?.edge) !==
@@ -221,7 +221,8 @@ function inspectDecisionReportBase(report) {
         observedStatements: 36,
         activeMigrationStatements: 0,
         compatibilityStatements: 4,
-        reviewedGeneralStatements: 32,
+        consolidationStatements: 1,
+        reviewedGeneralStatements: 31,
         generalBudget: 32,
       }) ||
     JSON.stringify(report.layerContractOwnership?.runtime?.valueEdge) !==
@@ -229,7 +230,8 @@ function inspectDecisionReportBase(report) {
         observedValueStatements: 35,
         activeMigrationValueStatements: 0,
         compatibilityValueStatements: 4,
-        reviewedGeneralValueStatements: 31,
+        consolidationValueStatements: 1,
+        reviewedGeneralValueStatements: 30,
         generalValueBudget: 31,
       }) ||
     JSON.stringify(report.layerContractOwnership?.runtime?.compatibilityRoutes) !==

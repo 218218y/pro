@@ -13,6 +13,7 @@ const productionRel = 'esm/native/features/library_preset/module_defaults.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const libraryOwnerRel = 'esm/shared/dimensions/library_preset_policy.ts';
 const defaultResolutionOwnerRel = 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
+const compositionOwnerRel = 'esm/shared/dimensions/library_preset_module_defaults_dimension_policy.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const baselineRel = 'tools/wp_layer_baseline.json';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
@@ -207,6 +208,7 @@ function resolveModuleTarget(fromFile, specifier) {
 const facadeTarget = canonicalModuleTarget(path.join(root, facadeRel));
 const libraryOwnerTarget = canonicalModuleTarget(path.join(root, libraryOwnerRel));
 const defaultResolutionOwnerTarget = canonicalModuleTarget(path.join(root, defaultResolutionOwnerRel));
+const compositionOwnerTarget = canonicalModuleTarget(path.join(root, compositionOwnerRel));
 const publicDimensionsTarget = canonicalModuleTarget(path.join(root, publicDimensionsRel));
 
 function isImportIdentifier(node) {
@@ -249,6 +251,7 @@ function inspectOwnership(file, source) {
       facadeTarget,
       libraryOwnerTarget,
       defaultResolutionOwnerTarget,
+      compositionOwnerTarget,
       publicDimensionsTarget,
     ].includes(target);
     const relatedSymbols = dependency.importedSymbols.filter(
@@ -305,13 +308,13 @@ function inspectOwnership(file, source) {
     }
     if (
       dependency.importedSymbols.includes('LIBRARY_PRESET_MODULE_DEFAULTS_POLICY') &&
-      target !== libraryOwnerTarget
+      target !== compositionOwnerTarget
     ) {
       addViolation('wrong-focused-owner-path', { start: dependency.statementStart }, dependency.specifier);
     }
     if (
       dependency.importedSymbols.includes('resolveAutoWidthForDoors') &&
-      target !== defaultResolutionOwnerTarget
+      target !== compositionOwnerTarget
     ) {
       addViolation('wrong-focused-owner-path', { start: dependency.statementStart }, dependency.specifier);
     }
@@ -474,7 +477,7 @@ function assertHistoricalLedger(migrationBudgets) {
   assert.equal(semanticSha256(migrationBudgets.slice(0, 163)), HISTORICAL_LEDGER_PREFIX_163_HASH);
 }
 
-test('Library Preset Module Defaults is one exact consumer with two direct focused-owner imports', () => {
+test('Library Preset Module Defaults is one exact consumer with one composition-owner import', () => {
   const source = read(productionRel);
   const inspection = inspectOwnership(path.join(root, productionRel), source);
   assert.deepEqual(inspection.violations, []);
@@ -498,18 +501,14 @@ test('Library Preset Module Defaults is one exact consumer with two direct focus
     })),
     [
       {
-        specifier: '../../../shared/dimensions/library_preset_policy.js',
+        specifier: '../../../shared/dimensions/library_preset_module_defaults_dimension_policy.js',
         kind: 'value',
         syntax: 'static-import',
-        importedSymbols: ['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY'],
-        bindings: [['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY', 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY', null]],
-      },
-      {
-        specifier: '../../../shared/dimensions/wardrobe_default_resolution_policy.js',
-        kind: 'value',
-        syntax: 'static-import',
-        importedSymbols: ['resolveAutoWidthForDoors'],
-        bindings: [['resolveAutoWidthForDoors', 'resolveAutoWidthForDoors', null]],
+        importedSymbols: ['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY', 'resolveAutoWidthForDoors'],
+        bindings: [
+          ['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY', 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY', null],
+          ['resolveAutoWidthForDoors', 'resolveAutoWidthForDoors', null],
+        ],
       },
     ]
   );

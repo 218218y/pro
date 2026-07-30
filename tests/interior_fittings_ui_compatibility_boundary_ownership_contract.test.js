@@ -14,9 +14,11 @@ const uiRel = 'esm/native/ui/react/tabs/interior_tab_local_state_shared.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const ownerRel = 'esm/shared/dimensions/interior_fittings_policy.ts';
 const unitsRel = 'esm/shared/dimensions/units.ts';
+const compositionOwnerRel = 'esm/shared/dimensions/interior_tab_defaults_dimension_policy.ts';
 const boundarySpecifier = '../../../features/interior_tab_defaults.js';
 const ownerSpecifier = '../../shared/dimensions/interior_fittings_policy.js';
 const unitsSpecifier = '../../shared/dimensions/units.js';
+const compositionOwnerSpecifier = '../../shared/dimensions/interior_tab_defaults_dimension_policy.js';
 const depthSymbol = 'DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM';
 const ownerSymbol = 'INTERIOR_SHELF_GEOMETRY_POLICY';
 const compatibilitySymbol = 'INTERIOR_FITTINGS_DIMENSIONS';
@@ -39,17 +41,10 @@ const expectedBoundarySymbols = Object.freeze([
 ]);
 const expectedBoundaryDependencies = Object.freeze([
   Object.freeze({
-    specifier: ownerSpecifier,
+    specifier: compositionOwnerSpecifier,
     kind: 'value',
     syntax: 'static-import',
-    importedSymbols: Object.freeze([ownerSymbol]),
-    exportedSymbols: Object.freeze([]),
-  }),
-  Object.freeze({
-    specifier: unitsSpecifier,
-    kind: 'value',
-    syntax: 'static-import',
-    importedSymbols: Object.freeze(['mToCm']),
+    importedSymbols: Object.freeze([ownerSymbol, 'mToCm']),
     exportedSymbols: Object.freeze([]),
   }),
   Object.freeze({
@@ -505,12 +500,38 @@ function expectedLedgerEntries() {
   ];
 }
 
-test('Interior Tab feature boundary has two focused shared dependencies and seven exact re-exports', () => {
+test('Interior Tab feature boundary has one focused composition dependency and seven exact re-exports', () => {
   const source = read(boundaryRel);
   assert.deepEqual(inspectBoundary(source), []);
   assert.equal(
     memberPath(findVariable(createSourceFile(boundaryRel, source), depthSymbol)?.init?.arguments?.[0]),
     `${ownerSymbol}.regularDepthM`
+  );
+});
+
+test('Interior Tab defaults composition owner is an exact identity-only two-source boundary', () => {
+  const facts = dependencyFacts(compositionOwnerRel, read(compositionOwnerRel));
+  assert.deepEqual(facts, [
+    {
+      specifier: './interior_fittings_policy.js',
+      kind: 'value',
+      syntax: 'static-re-export',
+      importedSymbols: [ownerSymbol],
+      exportedSymbols: [ownerSymbol],
+    },
+    {
+      specifier: './units.js',
+      kind: 'value',
+      syntax: 'static-re-export',
+      importedSymbols: ['mToCm'],
+      exportedSymbols: ['mToCm'],
+    },
+  ]);
+  const sourceFile = createSourceFile(compositionOwnerRel, read(compositionOwnerRel));
+  assert.equal(sourceFile.body.length, 2);
+  assert.equal(
+    sourceFile.body.every(statement => statement.type === 'ExportNamedDeclaration' && !statement.declaration),
+    true
   );
 });
 
@@ -539,7 +560,9 @@ test('Interior Fittings compatibility aggregate has zero native production consu
 test('Interior Tab boundary rejects direct owners, facade routes, aliases, wrappers, and formula drift', () => {
   const source = read(boundaryRel);
   assertViolation(
-    inspectBoundary(source.replace(ownerSpecifier, '../../shared/wardrobe_dimension_tokens_shared.js')),
+    inspectBoundary(
+      source.replace(compositionOwnerSpecifier, '../../shared/wardrobe_dimension_tokens_shared.js')
+    ),
     'feature-boundary-facade-import',
     'feature facade import'
   );
@@ -554,22 +577,22 @@ test('Interior Tab boundary rejects direct owners, facade routes, aliases, wrapp
     'owner alias'
   );
   assertViolation(
-    inspectBoundary(source.replace('mToCm }', 'mToCm as convertToCm }')),
+    inspectBoundary(source.replace('mToCm,', 'mToCm as convertToCm,')),
     'units-alias',
     'mToCm alias'
   );
   assertViolation(
     inspectBoundary(
       source.replace(
-        `import { ${ownerSymbol} } from '${ownerSpecifier}';`,
-        `import * as interiorFittings from '${ownerSpecifier}';`
+        `import {\n  ${ownerSymbol},\n  mToCm,\n} from '${compositionOwnerSpecifier}';`,
+        `import * as interiorFittings from '${compositionOwnerSpecifier}';`
       )
     ),
     'namespace-import',
     'namespace import'
   );
   assertViolation(
-    inspectBoundary(`${source}\nvoid import('${ownerSpecifier}');\n`),
+    inspectBoundary(`${source}\nvoid import('${compositionOwnerSpecifier}');\n`),
     'dynamic-import',
     'dynamic import'
   );
@@ -606,7 +629,7 @@ test('Interior Tab boundary rejects direct owners, facade routes, aliases, wrapp
     'numeric conversion literal'
   );
   assertViolation(
-    inspectBoundary(source.replace(ownerSpecifier, '../dimensions/index.js')),
+    inspectBoundary(source.replace(compositionOwnerSpecifier, '../dimensions/index.js')),
     'boundary-dependency-inventory',
     'public dimensions barrel'
   );

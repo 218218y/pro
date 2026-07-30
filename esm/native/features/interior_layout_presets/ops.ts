@@ -2,8 +2,8 @@ import type { InteriorPresetOpsLike, InteriorRodOpLike } from '../../../../types
 import {
   INTERIOR_PRESET_ROD_FACTORS_POLICY,
   INTERIOR_PRESET_SHELF_ROWS_POLICY,
-} from '../../../shared/dimensions/interior_fittings_policy.js';
-import { INTERIOR_STORAGE_BARRIER_POLICY } from '../../../shared/dimensions/interior_storage_policy.js';
+  INTERIOR_STORAGE_BARRIER_POLICY,
+} from '../../../shared/dimensions/interior_layout_presets_dimension_policy.js';
 
 // Feature-level pure helpers for canonical interior layout presets.
 //

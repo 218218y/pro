@@ -1,5 +1,7 @@
-import { INTERIOR_SHELF_GEOMETRY_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
-import { mToCm } from '../../shared/dimensions/units.js';
+import {
+  INTERIOR_SHELF_GEOMETRY_POLICY,
+  mToCm,
+} from '../../shared/dimensions/interior_tab_defaults_dimension_policy.js';
 
 export {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_CM,

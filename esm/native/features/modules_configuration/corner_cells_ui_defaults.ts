@@ -2,10 +2,10 @@
 // Owns corner-side / width / door-count policy so patch + snapshot owners stay focused.
 
 import {
+  CM_PER_METER,
   CORNER_WING_BODY_POLICY,
   CORNER_WING_CELL_POLICY,
-} from '../../../shared/dimensions/corner_system_policy.js';
-import { CM_PER_METER } from '../../../shared/dimensions/units.js';
+} from '../../../shared/dimensions/corner_cells_ui_defaults_dimension_policy.js';
 import { isRecord, type UnknownRecord } from './corner_cells_contracts.js';
 
 function readCornerUiRecord(value: unknown): UnknownRecord {

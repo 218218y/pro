@@ -72,6 +72,29 @@ const focusedOwnerSymbols = new Set([
   'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
   'LIBRARY_PRESET_POLICY',
 ]);
+const approvedCompositionRoutes = Object.freeze({
+  'esm/native/features/library_preset/library_preset_flow_shared.ts': Object.freeze({
+    specifier: '../../../shared/dimensions/library_preset_flow_dimension_policy.js',
+    symbols: Object.freeze(['DEFAULT_STACK_SPLIT_LOWER_HEIGHT', 'LIBRARY_PRESET_LAYOUT_POLICY']),
+  }),
+  'esm/native/features/library_preset/module_defaults.ts': Object.freeze({
+    specifier: '../../../shared/dimensions/library_preset_module_defaults_dimension_policy.js',
+    symbols: Object.freeze(['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY', 'resolveAutoWidthForDoors']),
+  }),
+  'esm/native/features/modules_configuration/module_defaults.ts': Object.freeze({
+    specifier: '../../../shared/dimensions/modules_configuration_defaults_dimension_policy.js',
+    symbols: Object.freeze(['INTERIOR_STORAGE_GRID_POLICY', 'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY']),
+  }),
+  'esm/native/features/stack_split/module_config.ts': Object.freeze({
+    specifier: '../../../shared/dimensions/stack_split_module_config_dimension_policy.js',
+    symbols: Object.freeze([
+      'INTERIOR_STORAGE_DEFAULTS_POLICY',
+      'INTERIOR_STORAGE_GRID_POLICY',
+      'LIBRARY_PRESET_MODULE_DEFAULTS_POLICY',
+    ]),
+  }),
+});
+
 const sourceExtensions = new Set(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
 const runtimeExtensionCandidates = Object.freeze({
   '.js': Object.freeze(['.ts', '.tsx', '.mts']),
@@ -354,6 +377,7 @@ function inspectLibraryPresetConsumer(file, source) {
   const publicDimensionsTarget = canonicalModuleTarget(path.join(root, publicDimensionsRel));
   const ownerTarget = canonicalModuleTarget(path.join(root, ownerRel));
   const relative = relativePath(file);
+  const approvedCompositionRoute = approvedCompositionRoutes[relative] ?? null;
   let compatibilityImportCount = 0;
   let focusedImportCount = 0;
 
@@ -423,6 +447,20 @@ function inspectLibraryPresetConsumer(file, source) {
 
     if (targetsFocusedOwner || focusedSymbols.length > 0) {
       focusedImportCount += 1;
+      const isApprovedCompositionRoute =
+        approvedCompositionRoute !== null &&
+        dependency.specifier === approvedCompositionRoute.specifier &&
+        dependency.kind === 'value' &&
+        dependency.syntax === 'static-import' &&
+        stableJson(dependency.importedSymbols) === stableJson(approvedCompositionRoute.symbols) &&
+        dependency.bindings.length === approvedCompositionRoute.symbols.length &&
+        dependency.bindings.every(
+          (binding, index) =>
+            binding.importedName === approvedCompositionRoute.symbols[index] &&
+            binding.localName === approvedCompositionRoute.symbols[index] &&
+            binding.exportedName === null
+        );
+      if (isApprovedCompositionRoute) continue;
       if (target !== ownerTarget) {
         violations.push({ kind: 'focused-bridge-or-barrel', specifier: dependency.specifier });
         continue;

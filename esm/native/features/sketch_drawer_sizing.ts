@@ -1,5 +1,7 @@
-import { DRAWER_SKETCH_SIZING_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
-import { cmToM } from '../../shared/dimensions/units.js';
+import {
+  cmToM,
+  DRAWER_SKETCH_SIZING_POLICY,
+} from '../../shared/dimensions/sketch_drawer_sizing_dimension_policy.js';
 
 export const SKETCH_INTERNAL_DRAWERS_TOOL_ID = 'sketch_int_drawers';
 export const SKETCH_EXTERNAL_DRAWERS_TOOL_PREFIX = 'sketch_ext_drawers:';

@@ -3,8 +3,10 @@
 // Centralize the default per-module shape so kernel/builder/UI don't duplicate it.
 
 import type { ModuleCustomDataLike, NormalizedTopModuleConfigLike } from '../../../../types';
-import { INTERIOR_STORAGE_GRID_POLICY } from '../../../shared/dimensions/interior_storage_policy.js';
-import { LIBRARY_PRESET_MODULE_DEFAULTS_POLICY } from '../../../shared/dimensions/library_preset_policy.js';
+import {
+  INTERIOR_STORAGE_GRID_POLICY,
+  LIBRARY_PRESET_MODULE_DEFAULTS_POLICY,
+} from '../../../shared/dimensions/modules_configuration_defaults_dimension_policy.js';
 
 export const DEFAULT_MODULE_CELL_COUNT = INTERIOR_STORAGE_GRID_POLICY.gridDivisionsDefault;
 
