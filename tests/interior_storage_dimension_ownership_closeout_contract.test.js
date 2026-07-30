@@ -778,7 +778,7 @@ test('Interior Storage focused ownership is exactly 33 direct unaliased static v
       })),
       dependency.importedSymbols.map(symbol => ({
         importedName: symbol,
-        localName: symbol,
+        localName: expectedSyntax === 'static-re-export' ? null : symbol,
         exportedName: expectedSyntax === 'static-re-export' ? symbol : null,
       })),
       rel
