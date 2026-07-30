@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-07-30T13:29:57.044Z",
+  "generatedAt": "2026-07-30T15:43:35.773Z",
   "totals": {
-    "tests": 1329,
-    "unitRunnerTests": 1321,
+    "tests": 1330,
+    "unitRunnerTests": 1322,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
-    "packageTestReferences": 191,
+    "packageTestReferences": 192,
     "catalogTestReferences": 352,
-    "totalTestReferences": 543,
+    "totalTestReferences": 544,
     "catalogGroups": 29,
     "catalogScriptBindings": 29,
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 482,
+    "contract": 483,
     "runtime-unit": 321,
     "integration": 466,
     "e2e-smoke": 9,
@@ -2679,6 +2679,10 @@
     },
     {
       "file": "tests/observability_surface_prod_runtime.test.ts",
+      "category": "contract"
+    },
+    {
+      "file": "tests/offline_repair_toolchain_contracts.test.js",
       "category": "contract"
     },
     {
