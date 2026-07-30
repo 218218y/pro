@@ -116,7 +116,7 @@ test('Sketch module surface content preview ledger and layer transition are exac
   ]);
 
   const graph = collectLayerContractGraph({ root });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-22' });
+  const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-29' });
   assert.equal(report.ok, true);
   assert.equal(
     report.migrationBudgets.slice(91, 92).every(entry => entry.active),

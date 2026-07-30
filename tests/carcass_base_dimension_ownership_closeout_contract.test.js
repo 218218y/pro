@@ -16,6 +16,7 @@ const plinthOwnerRel = 'esm/shared/dimensions/base_plinth_policy.ts';
 const legOwnerRel = 'esm/shared/dimensions/base_leg_policy.ts';
 const platformOwnerRel = 'esm/shared/dimensions/base_platform_render_policy.ts';
 const chestOwnerRel = 'esm/shared/dimensions/chest_structural_policy.ts';
+const runtimeDefaultStateOwnerRel = 'esm/shared/dimensions/runtime_default_state_dimension_policy.ts';
 const facadeAbsolute = path.join(root, facadeRel);
 const publicDimensionsAbsolute = path.join(root, publicDimensionsRel);
 const sourceFileExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
@@ -39,7 +40,7 @@ const expectedPlinthInventory = Object.freeze({
     'basePlinthCentimetersToMeters',
     'basePlinthMetersToCentimeters',
   ]),
-  'esm/native/runtime/default_state.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  [runtimeDefaultStateOwnerRel]: Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/shared/dimensions/sketch_box_preview_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   [facadeRel]: Object.freeze(['BASE_PLINTH_POLICY']),
@@ -54,7 +55,7 @@ const expectedLegInventory = Object.freeze({
     'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM',
     'DEFAULT_BASE_LEG_PLATFORM_SIDE_OVERHANG_CM',
   ]),
-  'esm/native/runtime/default_state.ts': Object.freeze(['BASE_LEG_DIMENSIONS']),
+  [runtimeDefaultStateOwnerRel]: Object.freeze(['BASE_LEG_DIMENSIONS']),
   'esm/shared/dimensions/corner_system_policy.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
   [facadeRel]: Object.freeze(['BASE_LEG_DIMENSIONS', 'BASE_LEG_LAYOUT_POLICY']),
 });
@@ -247,16 +248,34 @@ function ownerInventory(ownerRel) {
     assert.equal(dependencies.length, 1, `${rel(file)} must use one ${ownerRel} statement`);
     const [dependency] = dependencies;
     assert.equal(dependency.kind, 'value', `${rel(file)} must use a value import from ${ownerRel}`);
+    const fileRel = rel(file);
+    const approvedCompositionReexport =
+      fileRel === runtimeDefaultStateOwnerRel &&
+      ((ownerRel === plinthOwnerRel &&
+        dependency.importedSymbols.length === 1 &&
+        dependency.importedSymbols[0] === 'BASE_PLINTH_POLICY') ||
+        (ownerRel === legOwnerRel &&
+          dependency.importedSymbols.length === 1 &&
+          dependency.importedSymbols[0] === 'BASE_LEG_DIMENSIONS'));
     assert.equal(
       dependency.syntax,
-      'static-import',
-      `${rel(file)} must use a static import from ${ownerRel}`
+      approvedCompositionReexport ? 'static-re-export' : 'static-import',
+      `${fileRel} must use its reviewed statement form from ${ownerRel}`
     );
-    result[rel(file)] = dependency.importedSymbols;
+    result[fileRel] = dependency.importedSymbols;
 
     for (const binding of dependency.bindings) {
+      if (approvedCompositionReexport) {
+        assert.equal(binding.localName, null, `${fileRel} must not create a local owner alias`);
+        assert.equal(
+          binding.importedName === binding.exportedName,
+          true,
+          `${fileRel} must preserve ${binding.importedName} identity`
+        );
+        continue;
+      }
       const approvedFacadeOwnerAlias =
-        rel(file) === facadeRel &&
+        fileRel === facadeRel &&
         ((binding.importedName === 'BASE_LEG_DIMENSIONS' &&
           binding.localName === 'BASE_LEG_DIMENSIONS_OWNER') ||
           (binding.importedName === 'CHEST_STRUCTURAL_DIMENSIONS' &&
@@ -264,7 +283,7 @@ function ownerInventory(ownerRel) {
       assert.equal(
         binding.importedName === binding.localName || approvedFacadeOwnerAlias,
         true,
-        `${rel(file)} aliases ${binding.importedName}`
+        `${fileRel} aliases ${binding.importedName}`
       );
     }
   }

@@ -151,7 +151,7 @@ test('Sketch module surface rod preview ledger and layer transition are exact', 
   ]);
 
   const graph = collectLayerContractGraph({ root });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-22' });
+  const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-29' });
   assert.equal(report.ok, true);
   assert.equal(
     report.migrationBudgets.slice(93, 95).every(entry => entry.active),

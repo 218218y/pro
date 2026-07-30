@@ -185,7 +185,7 @@ const APPROVED_BASE_PLINTH_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/builder/corner_wing_carcass_shell_floor_base.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_PLINTH_POLICY']),
-  'esm/native/runtime/default_state.ts': Object.freeze(['BASE_PLINTH_POLICY']),
+  'esm/shared/dimensions/runtime_default_state_dimension_policy.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/services/canvas_picking_split_hover_preview_line.ts': Object.freeze(['BASE_PLINTH_POLICY']),
   'esm/native/features/base_plinth_support.ts': Object.freeze([
     'BASE_PLINTH_POLICY',
@@ -199,7 +199,7 @@ const APPROVED_BASE_LEG_OWNER_IMPORTS = Object.freeze({
   'esm/native/builder/core_carcass_shared.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
   'esm/native/builder/corner_connector_emit_shell_base.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
   'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['BASE_LEG_LAYOUT_POLICY']),
-  'esm/native/runtime/default_state.ts': Object.freeze(['BASE_LEG_DIMENSIONS']),
+  'esm/shared/dimensions/runtime_default_state_dimension_policy.ts': Object.freeze(['BASE_LEG_DIMENSIONS']),
   'esm/native/features/base_leg_support.ts': Object.freeze([
     'BASE_LEG_DIMENSIONS',
     'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM',
@@ -526,7 +526,7 @@ const APPROVED_CHEST_MODE_OWNER_IMPORTS = Object.freeze({
     'CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY',
   ]),
   'esm/native/builder/visuals_chest_mode_inputs.ts': Object.freeze(['CHEST_MODE_COMMODE_CONSTRAINTS_POLICY']),
-  'esm/native/runtime/default_state.ts': Object.freeze([
+  'esm/shared/dimensions/runtime_default_state_dimension_policy.ts': Object.freeze([
     'CHEST_MODE_ACTIVE_DEFAULTS_POLICY',
     'CHEST_MODE_COMMODE_CONSTRAINTS_POLICY',
   ]),
@@ -605,7 +605,9 @@ const APPROVED_DOOR_SYSTEM_OWNER_IMPORTS = Object.freeze({
   ]),
   'esm/native/builder/sliding_doors_pipeline.ts': Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY']),
   'esm/native/builder/visuals_chest_mode_build.ts': Object.freeze(['HINGED_DOOR_MOUNT_POLICY']),
-  'esm/native/platform/render_loop_motion_doors.ts': Object.freeze(['SLIDING_DOOR_CONSTRUCTION_POLICY']),
+  'esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts': Object.freeze([
+    'SLIDING_DOOR_CONSTRUCTION_POLICY',
+  ]),
   'esm/native/runtime/sliding_door_motion.ts': Object.freeze([
     'SLIDING_DOOR_CONSTRUCTION_POLICY',
     'SLIDING_DOOR_MOTION_POLICY',
@@ -1113,7 +1115,7 @@ const APPROVED_SKETCH_BOX_GEOMETRY_OWNER_IMPORTS = Object.freeze({
   'esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts': Object.freeze([
     'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
   ]),
-  'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts': Object.freeze([
+  'esm/shared/dimensions/interior_sketch_tools_dimension_policy.ts': Object.freeze([
     'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
   ]),
   'esm/shared/wardrobe_dimension_tokens_shared.ts': Object.freeze(['SKETCH_BOX_GEOMETRY_POLICY']),

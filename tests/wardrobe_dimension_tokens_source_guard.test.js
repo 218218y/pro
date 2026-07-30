@@ -2803,19 +2803,79 @@ test('[dimension tokens] final preview/sketch/drawer/interior sweep reads canoni
     1
   );
 
-  const sketchToolHelpers = read('esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts');
-  assert.match(
-    sketchToolHelpers,
-    /import \{ SKETCH_BOX_SHELL_GEOMETRY_POLICY \} from '\.\.\/\.\.\/\.\.\/\.\.\/shared\/dimensions\/sketch_box_geometry_policy\.js';/u
-  );
-  assert.match(
-    sketchToolHelpers,
-    /import \{ mToCm \} from '\.\.\/\.\.\/\.\.\/\.\.\/shared\/dimensions\/units\.js';/u
+  const sketchToolHelpersRel = 'esm/native/ui/react/tabs/interior_tab_helpers_sketch_tools.ts';
+  const sketchToolHelpers = read(sketchToolHelpersRel);
+  const sketchToolDimensionDependencies = analyzeModuleDependencies(
+    path.join(ROOT, sketchToolHelpersRel),
+    sketchToolHelpers
+  ).imports.filter(dependency => dependency.specifier.includes('/shared/dimensions/'));
+  assert.deepEqual(
+    sketchToolDimensionDependencies.map(({ specifier, kind, syntax, importedSymbols, bindings }) => ({
+      specifier,
+      kind,
+      syntax,
+      importedSymbols,
+      bindings,
+    })),
+    [
+      {
+        specifier: '../../../../shared/dimensions/interior_sketch_tools_dimension_policy.js',
+        kind: 'value',
+        syntax: 'static-import',
+        importedSymbols: ['SKETCH_BOX_SHELL_GEOMETRY_POLICY', 'mToCm'],
+        bindings: [
+          {
+            importedName: 'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+            localName: 'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+            exportedName: null,
+          },
+          { importedName: 'mToCm', localName: 'mToCm', exportedName: null },
+        ],
+      },
+    ]
   );
   assert.doesNotMatch(
     sketchToolHelpers,
-    /wardrobe_dimension_tokens_shared|SKETCH_BOX_DIMENSIONS|SKETCH_BOX_GEOMETRY_POLICY/u
+    /wardrobe_dimension_tokens_shared|SKETCH_BOX_DIMENSIONS|SKETCH_BOX_GEOMETRY_POLICY|dimensions\/(?:sketch_box_geometry_policy|units)\.js/u
   );
+
+  const sketchToolDimensionOwnerRel = 'esm/shared/dimensions/interior_sketch_tools_dimension_policy.ts';
+  const sketchToolDimensionOwner = read(sketchToolDimensionOwnerRel);
+  assert.deepEqual(
+    analyzeModuleDependencies(
+      path.join(ROOT, sketchToolDimensionOwnerRel),
+      sketchToolDimensionOwner
+    ).imports.map(({ specifier, kind, syntax, importedSymbols, bindings }) => ({
+      specifier,
+      kind,
+      syntax,
+      importedSymbols,
+      bindings,
+    })),
+    [
+      {
+        specifier: './sketch_box_geometry_policy.js',
+        kind: 'value',
+        syntax: 'static-re-export',
+        importedSymbols: ['SKETCH_BOX_SHELL_GEOMETRY_POLICY'],
+        bindings: [
+          {
+            importedName: 'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+            localName: null,
+            exportedName: 'SKETCH_BOX_SHELL_GEOMETRY_POLICY',
+          },
+        ],
+      },
+      {
+        specifier: './units.js',
+        kind: 'value',
+        syntax: 'static-re-export',
+        importedSymbols: ['mToCm'],
+        bindings: [{ importedName: 'mToCm', localName: null, exportedName: 'mToCm' }],
+      },
+    ]
+  );
+  assert.doesNotMatch(sketchToolDimensionOwner, /\b(?:const|let|var|function|class)\b|=>|Object\.freeze/u);
   assert.match(sketchToolHelpers, /export const DEFAULT_SKETCH_BOX_HEIGHT_CM: number = Math\.round/u);
   assert.match(sketchToolHelpers, /export const DEFAULT_SKETCH_BOX_WIDTH_CM: number = Math\.round/u);
   assert.match(sketchToolHelpers, /export const DEFAULT_SKETCH_BOX_DEPTH_CM: number = Math\.round/u);

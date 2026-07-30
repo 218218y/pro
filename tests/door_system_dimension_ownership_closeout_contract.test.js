@@ -12,6 +12,7 @@ const ownerRel = 'esm/shared/dimensions/door_system_policy.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const runtimeApiRel = 'esm/native/runtime/api.ts';
+const renderLoopDoorMotionOwnerRel = 'esm/shared/dimensions/render_loop_door_motion_dimension_policy.ts';
 const ownerAbsolute = path.join(root, ownerRel);
 const facadeAbsolute = path.join(root, facadeRel);
 const publicDimensionsAbsolute = path.join(root, publicDimensionsRel);
@@ -75,6 +76,7 @@ const focusedInventories = new Map([
       'esm/native/builder/render_door_ops_sliding.ts',
       'esm/native/builder/sliding_doors_pipeline.ts',
       'esm/native/platform/render_loop_motion_doors.ts',
+      renderLoopDoorMotionOwnerRel,
       'esm/native/runtime/sliding_door_motion.ts',
       'esm/native/services/doors_runtime_visuals_shared.ts',
       ownerRel,
@@ -333,7 +335,7 @@ test('Door System aggregate objects remain definition/facade-only with no aggreg
   );
 });
 
-test('Door System focused-owner production inventory is exact, static, direct, and alias-free', () => {
+test('Door System focused-owner inventory is exact, reviewed, and alias-free', () => {
   for (const [symbol, expectedFiles] of focusedInventories) {
     const consumers = importedConsumers(symbol);
     assert.deepEqual(
@@ -341,26 +343,68 @@ test('Door System focused-owner production inventory is exact, static, direct, a
       [...expectedFiles].sort(),
       symbol
     );
+    const compositionConsumers = consumers.filter(consumer => consumer.file === renderLoopDoorMotionOwnerRel);
+    const platformConsumers = consumers.filter(
+      consumer => consumer.file === 'esm/native/platform/render_loop_motion_doors.ts'
+    );
+    const directConsumers = consumers.filter(
+      consumer =>
+        consumer.file !== renderLoopDoorMotionOwnerRel &&
+        consumer.file !== 'esm/native/platform/render_loop_motion_doors.ts'
+    );
+    const usesDoorMotionComposition = symbol === 'SLIDING_DOOR_CONSTRUCTION_POLICY';
+
     assert.equal(
-      consumers.every(consumer => consumer.target === path.normalize(ownerAbsolute).toLowerCase()),
+      directConsumers.every(consumer => consumer.target === path.normalize(ownerAbsolute).toLowerCase()),
       true,
-      `${symbol} must come directly from the focused owner module`
+      `${symbol} direct consumers must target the focused owner module`
     );
     assert.equal(
-      consumers.every(consumer => consumer.kind === 'value' && consumer.syntax === 'static-import'),
+      directConsumers.every(consumer => consumer.kind === 'value' && consumer.syntax === 'static-import'),
       true,
-      `${symbol} must use static value imports`
+      `${symbol} direct consumers must use static value imports`
     );
     assert.equal(
-      consumers.every(
+      directConsumers.every(
         consumer =>
           consumer.bindings.length === 1 &&
           consumer.bindings[0].localName === symbol &&
           consumer.bindings[0].exportedName === null
       ),
       true,
-      `${symbol} must not be aliased or re-exported`
+      `${symbol} direct consumers must not alias or re-export the binding`
     );
+
+    assert.equal(compositionConsumers.length, usesDoorMotionComposition ? 1 : 0, symbol);
+    assert.equal(platformConsumers.length, usesDoorMotionComposition ? 1 : 0, symbol);
+    if (usesDoorMotionComposition) {
+      const [compositionConsumer] = compositionConsumers;
+      assert.equal(compositionConsumer.target, path.normalize(ownerAbsolute).toLowerCase());
+      assert.equal(compositionConsumer.kind, 'value');
+      assert.equal(compositionConsumer.syntax, 'static-re-export');
+      assert.deepEqual(compositionConsumer.bindings, [
+        {
+          importedName: symbol,
+          localName: null,
+          exportedName: symbol,
+        },
+      ]);
+
+      const [platformConsumer] = platformConsumers;
+      assert.equal(
+        platformConsumer.target,
+        path.normalize(path.join(root, renderLoopDoorMotionOwnerRel)).toLowerCase()
+      );
+      assert.equal(platformConsumer.kind, 'value');
+      assert.equal(platformConsumer.syntax, 'static-import');
+      assert.deepEqual(platformConsumer.bindings, [
+        {
+          importedName: symbol,
+          localName: symbol,
+          exportedName: null,
+        },
+      ]);
+    }
   }
 });
 
