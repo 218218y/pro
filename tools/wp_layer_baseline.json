@@ -7372,7 +7372,7 @@
       "evidenceContracts": [
         {
           "path": "tests/structure_tab_dimension_support_ownership_contract.test.js",
-          "sha256": "68a3d57547376dc62a4bf4702fc6e971f870a24ac2833bc2c8fe2a0dd70296d6"
+          "sha256": "385bb5553fe6d92d60c5e51433edf4ca76e3eb956e5bf2ee724542ee5cbf3248"
         },
         {
           "path": "tests/structure_tab_auto_width_policy_ownership_contract.test.js",
@@ -7494,7 +7494,7 @@
       "evidenceContracts": [
         {
           "path": "tests/interior_fittings_ui_compatibility_boundary_ownership_contract.test.js",
-          "sha256": "f6a208efe8fb63dbc61c54342a68508864d4f5643a03b7320db07aa2e00f7454"
+          "sha256": "22d8e448b94b7dc5b752217146bff76081494861255e0b93bb6d4562cfc20ae3"
         },
         {
           "path": "tests/interior_tab_local_state_runtime.test.js",
@@ -7559,7 +7559,7 @@
       "evidenceContracts": [
         {
           "path": "tests/order_pdf_dimension_support_ownership_contract.test.js",
-          "sha256": "f69f8870450e582df4c4588cfaad8bf34358f2683e94eb65bcb6ca0323d950b7"
+          "sha256": "c46740011f801efe681b222e94316f16d4988629cf56cdd44e78ff03c37195bb"
         },
         {
           "path": "tests/refactor_stage79_order_pdf_export_commands_ownership_guard.test.js",
@@ -7619,7 +7619,7 @@
       "evidenceContracts": [
         {
           "path": "tests/corner_cells_ui_defaults_dimension_consolidation_contract.test.js",
-          "sha256": "33d3761da9f2e45f535937a64b3348ba3fb6accbdb17f712a4ba5bd8a230b785"
+          "sha256": "695ab7f06c1420b7d738c9366491bf84bef693d2f90eeb925fba13ea541bb04f"
         },
         {
           "path": "tests/corner_dimension_defaults_pilot_runtime.test.ts",
@@ -7679,11 +7679,11 @@
       "evidenceContracts": [
         {
           "path": "tests/sketch_drawer_dimension_consolidations_contract.test.js",
-          "sha256": "abcda65f4cc0d11434d3c4251c3dce342d8dd89816d53390b0558edad13d0ed7"
+          "sha256": "f93c5ffd7c7fc84cb65daa7ec76b56f1bf6f8a645084bb94b17e5820a320df86"
         },
         {
           "path": "tests/sketch_drawer_sizing_internal_cassette_ownership_contract.test.js",
-          "sha256": "1f7a93ecaaadca032c41d7a885e81aeabadbf0992e14298d7d72e144a3aca28f"
+          "sha256": "5b2b047d5adfbdb7247b455e7bc1b85e3e5cb2046397b6550321594bb57f0489"
         }
       ],
       "replacementProvenance": {
@@ -7739,7 +7739,7 @@
       "evidenceContracts": [
         {
           "path": "tests/sketch_drawer_dimension_consolidations_contract.test.js",
-          "sha256": "abcda65f4cc0d11434d3c4251c3dce342d8dd89816d53390b0558edad13d0ed7"
+          "sha256": "f93c5ffd7c7fc84cb65daa7ec76b56f1bf6f8a645084bb94b17e5820a320df86"
         },
         {
           "path": "tests/render_interior_sketch_internal_drawer_cassette_runtime.test.ts",
@@ -7803,7 +7803,7 @@
       "evidenceContracts": [
         {
           "path": "tests/interior_layout_presets_dimension_consolidation_contract.test.js",
-          "sha256": "7bf5622c8623a2f132b543771c0eb5c32b1b1cca1bedf87742ada55f5ba6d7b0"
+          "sha256": "8b01905b8c4ee8c93ecc6673b1cdbb504a1984f1854df99c09fd5482abd9707c"
         },
         {
           "path": "tests/interior_layout_presets_feature_ownership_contract.test.js",
@@ -7863,11 +7863,11 @@
       "evidenceContracts": [
         {
           "path": "tests/module_config_dimension_consolidations_contract.test.js",
-          "sha256": "dc54e1cb8771bdbe30349cfef8ed259bbf56d0c0c4cc053607e2029edf5d303c"
+          "sha256": "a232e13d173076b5f11714568e652fecabafe8f9fcac50376172c0babdf68143"
         },
         {
           "path": "tests/interior_storage_library_preset_feature_pair_ownership_contract.test.js",
-          "sha256": "a350e4e279e76b5e36afc2c512966cc7ea6edafc869b632bddf8af3c258efd4f"
+          "sha256": "8a2c6f734745edede3c6c4484490c9146b2205873e7fc3dd670c56377eed2764"
         }
       ],
       "replacementProvenance": {
@@ -7927,7 +7927,7 @@
       "evidenceContracts": [
         {
           "path": "tests/module_config_dimension_consolidations_contract.test.js",
-          "sha256": "dc54e1cb8771bdbe30349cfef8ed259bbf56d0c0c4cc053607e2029edf5d303c"
+          "sha256": "a232e13d173076b5f11714568e652fecabafe8f9fcac50376172c0babdf68143"
         },
         {
           "path": "tests/preset_stack_runtime_hardening.test.ts",
@@ -7987,7 +7987,7 @@
       "evidenceContracts": [
         {
           "path": "tests/library_preset_dimension_consolidations_contract.test.js",
-          "sha256": "6670db9d1d9f7b285375ad2c50a9d614a8071022efa3d70673eac6b08f016545"
+          "sha256": "c536f3219abc91a546a5aabaefe5e671a414a259efa8245795aaa7de229a5a45"
         },
         {
           "path": "tests/library_preset_flow_layout_ownership_contract.test.js",
@@ -8047,7 +8047,7 @@
       "evidenceContracts": [
         {
           "path": "tests/library_preset_dimension_consolidations_contract.test.js",
-          "sha256": "6670db9d1d9f7b285375ad2c50a9d614a8071022efa3d70673eac6b08f016545"
+          "sha256": "c536f3219abc91a546a5aabaefe5e671a414a259efa8245795aaa7de229a5a45"
         },
         {
           "path": "tests/library_preset_module_defaults_ownership_contract.test.js",

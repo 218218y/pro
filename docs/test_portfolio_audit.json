@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-29T11:41:25.291Z",
+  "generatedAt": "2026-07-30T08:54:42.797Z",
   "totals": {
-    "tests": 1314,
-    "unitRunnerTests": 1306,
+    "tests": 1321,
+    "unitRunnerTests": 1313,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,9 +13,9 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 472,
+    "contract": 478,
     "runtime-unit": 318,
-    "integration": 465,
+    "integration": 466,
     "e2e-smoke": 9,
     "perf-smoke": 9,
     "legacy-migration": 41
@@ -1510,6 +1510,10 @@
       "category": "contract"
     },
     {
+      "file": "tests/corner_cells_ui_defaults_dimension_consolidation_contract.test.js",
+      "category": "contract"
+    },
+    {
       "file": "tests/corner_configuration_stack_patch_runtime.test.ts",
       "category": "runtime-unit"
     },
@@ -2186,6 +2190,10 @@
       "category": "contract"
     },
     {
+      "file": "tests/interior_layout_presets_dimension_consolidation_contract.test.js",
+      "category": "contract"
+    },
+    {
       "file": "tests/interior_layout_presets_feature_ownership_contract.test.js",
       "category": "contract"
     },
@@ -2211,6 +2219,14 @@
     },
     {
       "file": "tests/interior_sketch_geometry_boundary_runtime.test.ts",
+      "category": "integration"
+    },
+    {
+      "file": "tests/interior_sketch_tools_dimension_consolidation_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/interior_sketch_tools_dimension_consolidation_runtime.test.ts",
       "category": "integration"
     },
     {
@@ -2344,6 +2360,10 @@
     {
       "file": "tests/library_preset_canonical_materialization_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/library_preset_dimension_consolidations_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/library_preset_dimension_owner_contract.test.js",
@@ -2524,6 +2544,10 @@
     {
       "file": "tests/models_service_runtime.test.ts",
       "category": "integration"
+    },
+    {
+      "file": "tests/module_config_dimension_consolidations_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/module_depth_ownership_contract.test.js",
@@ -4283,6 +4307,10 @@
     },
     {
       "file": "tests/sketch_click_module_key_resolution_guard.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/sketch_drawer_dimension_consolidations_contract.test.js",
       "category": "contract"
     },
     {

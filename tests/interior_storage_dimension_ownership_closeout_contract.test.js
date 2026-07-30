@@ -32,7 +32,7 @@ const publicStorageSymbols = new Set([...focusedPolicySymbols, 'INTERIOR_STORAGE
 const forbiddenApiExports = new Set([...publicStorageSymbols, 'INTERIOR_FITTINGS_DIMENSIONS']);
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
-const expectedFocusedOwnerImports = Object.freeze({
+const expectedFocusedOwnerRoutes = Object.freeze({
   'esm/native/builder/core_storage_compute_custom.ts': Object.freeze([
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
@@ -62,11 +62,13 @@ const expectedFocusedOwnerImports = Object.freeze({
     'INTERIOR_STORAGE_BARRIER_POLICY',
     'INTERIOR_STORAGE_PREVIEW_POLICY',
   ]),
-  'esm/native/features/interior_layout_presets/ops.ts': Object.freeze(['INTERIOR_STORAGE_BARRIER_POLICY']),
-  'esm/native/features/modules_configuration/module_defaults.ts': Object.freeze([
+  'esm/shared/dimensions/interior_layout_presets_dimension_policy.ts': Object.freeze([
+    'INTERIOR_STORAGE_BARRIER_POLICY',
+  ]),
+  'esm/shared/dimensions/modules_configuration_defaults_dimension_policy.ts': Object.freeze([
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
-  'esm/native/features/stack_split/module_config.ts': Object.freeze([
+  'esm/shared/dimensions/stack_split_module_config_dimension_policy.ts': Object.freeze([
     'INTERIOR_STORAGE_DEFAULTS_POLICY',
     'INTERIOR_STORAGE_GRID_POLICY',
   ]),
@@ -146,6 +148,12 @@ const expectedFocusedOwnerImports = Object.freeze({
   ]),
   [fittingsOwnerRel]: Object.freeze(['INTERIOR_STORAGE_POLICY']),
 });
+
+const expectedFocusedOwnerReExports = new Set([
+  'esm/shared/dimensions/interior_layout_presets_dimension_policy.ts',
+  'esm/shared/dimensions/modules_configuration_defaults_dimension_policy.ts',
+  'esm/shared/dimensions/stack_split_module_config_dimension_policy.ts',
+]);
 
 const expectedPolicyShapes = Object.freeze({
   INTERIOR_STORAGE_GRID_POLICY: Object.freeze(['gridDivisionsDefault']),
@@ -738,7 +746,7 @@ test('Interior Storage closeout has zero repository compatibility consumers and 
   assertApprovedUiCompatibilityState(compatibilityImporters, uiSource, uiInspection);
 });
 
-test('Interior Storage focused ownership is exactly 33 direct unaliased static value imports', () => {
+test('Interior Storage focused ownership is exactly 33 direct unaliased static value routes', () => {
   const actual = {};
   let statements = 0;
 
@@ -753,9 +761,14 @@ test('Interior Storage focused ownership is exactly 33 direct unaliased static v
     assert.equal(dependencies.length, 1, rel);
     const dependency = dependencies[0];
     statements += 1;
+    const expectedSyntax = expectedFocusedOwnerReExports.has(rel) ? 'static-re-export' : 'static-import';
     assert.equal(dependency.kind, 'value', rel);
-    assert.equal(dependency.syntax, 'static-import', rel);
-    assert.deepEqual(dependency.exportedSymbols, [], rel);
+    assert.equal(dependency.syntax, expectedSyntax, rel);
+    assert.deepEqual(
+      dependency.exportedSymbols,
+      expectedSyntax === 'static-re-export' ? dependency.importedSymbols : [],
+      rel
+    );
     assert.equal(dependency.importedSymbols.includes('*'), false, rel);
     assert.deepEqual(
       dependency.bindings.map(binding => ({
@@ -766,7 +779,7 @@ test('Interior Storage focused ownership is exactly 33 direct unaliased static v
       dependency.importedSymbols.map(symbol => ({
         importedName: symbol,
         localName: symbol,
-        exportedName: null,
+        exportedName: expectedSyntax === 'static-re-export' ? symbol : null,
       })),
       rel
     );
@@ -778,7 +791,7 @@ test('Interior Storage focused ownership is exactly 33 direct unaliased static v
   assert.deepEqual(
     Object.fromEntries(Object.entries(actual).sort(([left], [right]) => left.localeCompare(right))),
     Object.fromEntries(
-      Object.entries(expectedFocusedOwnerImports)
+      Object.entries(expectedFocusedOwnerRoutes)
         .sort(([left], [right]) => left.localeCompare(right))
         .map(([rel, symbols]) => [rel, [...symbols]])
     )

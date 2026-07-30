@@ -17,7 +17,7 @@
     },
     "layerBaseline": {
       "file": "tools/wp_layer_baseline.json",
-      "sha256": "5d13b0641bdc0b0b2c1afab38ec41848721c7522d4f4a87e59814d089a62b876"
+      "sha256": "1f5f56379baa9be99ba060245662b324bb45a95e3dc65f39ccb05a4d0b5d33db"
     }
   },
   "layerContractOwnership": {
@@ -153,10 +153,7 @@
       "statements": 1,
       "form": "wildcard-re-export"
     },
-    "totalLegacyFacadeDependencies": {
-      "importers": 1,
-      "statements": 1
-    },
+    "totalLegacyFacadeDependencies": { "importers": 1, "statements": 1 },
     "layerComparison": {
       "edge": "features → shared",
       "currentWildcard": {
@@ -363,10 +360,7 @@
       "canonicalOwner": {
         "kind": "focused",
         "exports": [
-          {
-            "file": "esm/shared/dimensions/base_leg_policy.ts",
-            "symbols": ["BASE_LEG_DIMENSIONS"]
-          }
+          { "file": "esm/shared/dimensions/base_leg_policy.ts", "symbols": ["BASE_LEG_DIMENSIONS"] }
         ]
       },
       "facadeDeclaration": {
@@ -411,14 +405,8 @@
       "canonicalOwner": {
         "kind": "composition",
         "exports": [
-          {
-            "file": "esm/shared/dimensions/base_plinth_policy.ts",
-            "symbols": ["BASE_PLINTH_POLICY"]
-          },
-          {
-            "file": "esm/shared/dimensions/base_leg_policy.ts",
-            "symbols": ["BASE_LEG_LAYOUT_POLICY"]
-          },
+          { "file": "esm/shared/dimensions/base_plinth_policy.ts", "symbols": ["BASE_PLINTH_POLICY"] },
+          { "file": "esm/shared/dimensions/base_leg_policy.ts", "symbols": ["BASE_LEG_LAYOUT_POLICY"] },
           {
             "file": "esm/shared/dimensions/chest_structural_policy.ts",
             "symbols": ["CHEST_STRUCTURAL_DIMENSIONS"]
@@ -573,10 +561,7 @@
       "canonicalOwner": {
         "kind": "focused",
         "exports": [
-          {
-            "file": "esm/shared/dimensions/carcass_shell_policy.ts",
-            "symbols": ["CARCASS_SHELL_DIMENSIONS"]
-          }
+          { "file": "esm/shared/dimensions/carcass_shell_policy.ts", "symbols": ["CARCASS_SHELL_DIMENSIONS"] }
         ]
       },
       "facadeDeclaration": {
@@ -620,12 +605,7 @@
       "group": "type-re-exports",
       "canonicalOwner": {
         "kind": "focused",
-        "exports": [
-          {
-            "file": "esm/shared/dimensions/units.ts",
-            "symbols": ["Centimeters"]
-          }
-        ]
+        "exports": [{ "file": "esm/shared/dimensions/units.ts", "symbols": ["Centimeters"] }]
       },
       "facadeDeclaration": {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -668,12 +648,7 @@
       "group": "identity-local-exports",
       "canonicalOwner": {
         "kind": "focused",
-        "exports": [
-          {
-            "file": "esm/shared/dimensions/units.ts",
-            "symbols": ["clampDimension"]
-          }
-        ]
+        "exports": [{ "file": "esm/shared/dimensions/units.ts", "symbols": ["clampDimension"] }]
       },
       "facadeDeclaration": {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -716,12 +691,7 @@
       "group": "identity-local-exports",
       "canonicalOwner": {
         "kind": "focused",
-        "exports": [
-          {
-            "file": "esm/shared/dimensions/units.ts",
-            "symbols": ["CM_PER_METER"]
-          }
-        ]
+        "exports": [{ "file": "esm/shared/dimensions/units.ts", "symbols": ["CM_PER_METER"] }]
       },
       "facadeDeclaration": {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -764,12 +734,7 @@
       "group": "identity-local-exports",
       "canonicalOwner": {
         "kind": "focused",
-        "exports": [
-          {
-            "file": "esm/shared/dimensions/units.ts",
-            "symbols": ["cmToM"]
-          }
-        ]
+        "exports": [{ "file": "esm/shared/dimensions/units.ts", "symbols": ["cmToM"] }]
       },
       "facadeDeclaration": {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -938,10 +903,7 @@
       "canonicalOwner": {
         "kind": "focused",
         "exports": [
-          {
-            "file": "esm/shared/dimensions/corner_system_policy.ts",
-            "symbols": ["CORNER_SYSTEM_POLICY"]
-          }
+          { "file": "esm/shared/dimensions/corner_system_policy.ts", "symbols": ["CORNER_SYSTEM_POLICY"] }
         ]
       },
       "facadeDeclaration": {
@@ -1082,10 +1044,7 @@
       "canonicalOwner": {
         "kind": "focused",
         "exports": [
-          {
-            "file": "esm/shared/dimensions/door_system_policy.ts",
-            "symbols": ["DOOR_SYSTEM_DIMENSIONS"]
-          }
+          { "file": "esm/shared/dimensions/door_system_policy.ts", "symbols": ["DOOR_SYSTEM_DIMENSIONS"] }
         ]
       },
       "facadeDeclaration": {
@@ -1130,10 +1089,7 @@
       "canonicalOwner": {
         "kind": "focused",
         "exports": [
-          {
-            "file": "esm/shared/dimensions/door_trim_policy.ts",
-            "symbols": ["DOOR_TRIM_DIMENSIONS"]
-          }
+          { "file": "esm/shared/dimensions/door_trim_policy.ts", "symbols": ["DOOR_TRIM_DIMENSIONS"] }
         ]
       },
       "facadeDeclaration": {
@@ -1178,10 +1134,7 @@
       "canonicalOwner": {
         "kind": "focused",
         "exports": [
-          {
-            "file": "esm/shared/dimensions/door_visual_policy.ts",
-            "symbols": ["DOOR_VISUAL_DIMENSIONS"]
-          }
+          { "file": "esm/shared/dimensions/door_visual_policy.ts", "symbols": ["DOOR_VISUAL_DIMENSIONS"] }
         ]
       },
       "facadeDeclaration": {
@@ -1370,18 +1323,12 @@
       "canonicalOwner": {
         "kind": "composition",
         "exports": [
-          {
-            "file": "esm/shared/dimensions/drawer_sketch_policy.ts",
-            "symbols": ["DRAWER_SKETCH_POLICY"]
-          },
+          { "file": "esm/shared/dimensions/drawer_sketch_policy.ts", "symbols": ["DRAWER_SKETCH_POLICY"] },
           {
             "file": "esm/shared/dimensions/external_drawer_policy.ts",
             "symbols": ["EXTERNAL_DRAWER_POLICY"]
           },
-          {
-            "file": "esm/shared/dimensions/internal_drawer_policy.ts",
-            "symbols": ["INTERNAL_DRAWER_POLICY"]
-          }
+          { "file": "esm/shared/dimensions/internal_drawer_policy.ts", "symbols": ["INTERNAL_DRAWER_POLICY"] }
         ]
       },
       "facadeDeclaration": {
@@ -1436,10 +1383,7 @@
       "canonicalOwner": {
         "kind": "focused",
         "exports": [
-          {
-            "file": "esm/shared/dimensions/external_drawer_policy.ts",
-            "symbols": ["ExternalDrawerGeometry"]
-          }
+          { "file": "esm/shared/dimensions/external_drawer_policy.ts", "symbols": ["ExternalDrawerGeometry"] }
         ]
       },
       "facadeDeclaration": {
@@ -1675,12 +1619,7 @@
       "group": "legacy-number-view-local-exports",
       "canonicalOwner": {
         "kind": "focused",
-        "exports": [
-          {
-            "file": "esm/shared/dimensions/handle_policy.ts",
-            "symbols": ["HANDLE_POLICY"]
-          }
-        ]
+        "exports": [{ "file": "esm/shared/dimensions/handle_policy.ts", "symbols": ["HANDLE_POLICY"] }]
       },
       "facadeDeclaration": {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -1772,10 +1711,7 @@
       "canonicalOwner": {
         "kind": "focused",
         "exports": [
-          {
-            "file": "esm/shared/dimensions/library_preset_policy.ts",
-            "symbols": ["LIBRARY_PRESET_POLICY"]
-          }
+          { "file": "esm/shared/dimensions/library_preset_policy.ts", "symbols": ["LIBRARY_PRESET_POLICY"] }
         ]
       },
       "facadeDeclaration": {
@@ -1867,12 +1803,7 @@
       "group": "type-re-exports",
       "canonicalOwner": {
         "kind": "focused",
-        "exports": [
-          {
-            "file": "esm/shared/dimensions/units.ts",
-            "symbols": ["Meters"]
-          }
-        ]
+        "exports": [{ "file": "esm/shared/dimensions/units.ts", "symbols": ["Meters"] }]
       },
       "facadeDeclaration": {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -1915,12 +1846,7 @@
       "group": "type-re-exports",
       "canonicalOwner": {
         "kind": "focused",
-        "exports": [
-          {
-            "file": "esm/shared/dimensions/units.ts",
-            "symbols": ["Millimeters"]
-          }
-        ]
+        "exports": [{ "file": "esm/shared/dimensions/units.ts", "symbols": ["Millimeters"] }]
       },
       "facadeDeclaration": {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -1963,12 +1889,7 @@
       "group": "identity-local-exports",
       "canonicalOwner": {
         "kind": "focused",
-        "exports": [
-          {
-            "file": "esm/shared/dimensions/units.ts",
-            "symbols": ["MM_PER_METER"]
-          }
-        ]
+        "exports": [{ "file": "esm/shared/dimensions/units.ts", "symbols": ["MM_PER_METER"] }]
       },
       "facadeDeclaration": {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -2011,12 +1932,7 @@
       "group": "identity-local-exports",
       "canonicalOwner": {
         "kind": "focused",
-        "exports": [
-          {
-            "file": "esm/shared/dimensions/units.ts",
-            "symbols": ["mToCm"]
-          }
-        ]
+        "exports": [{ "file": "esm/shared/dimensions/units.ts", "symbols": ["mToCm"] }]
       },
       "facadeDeclaration": {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -2060,10 +1976,7 @@
       "canonicalOwner": {
         "kind": "focused",
         "exports": [
-          {
-            "file": "esm/shared/dimensions/no_main_sketch_policy.ts",
-            "symbols": ["NO_MAIN_SKETCH_POLICY"]
-          }
+          { "file": "esm/shared/dimensions/no_main_sketch_policy.ts", "symbols": ["NO_MAIN_SKETCH_POLICY"] }
         ]
       },
       "facadeDeclaration": {
@@ -2155,12 +2068,7 @@
       "group": "type-re-exports",
       "canonicalOwner": {
         "kind": "focused",
-        "exports": [
-          {
-            "file": "esm/shared/dimensions/units.ts",
-            "symbols": ["Pixels"]
-          }
-        ]
+        "exports": [{ "file": "esm/shared/dimensions/units.ts", "symbols": ["Pixels"] }]
       },
       "facadeDeclaration": {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -2432,14 +2340,8 @@
       "canonicalOwner": {
         "kind": "composition",
         "exports": [
-          {
-            "file": "esm/shared/dimensions/wardrobe_defaults.ts",
-            "symbols": ["WARDROBE_DEFAULTS"]
-          },
-          {
-            "file": "esm/shared/dimensions/stack_split_policy.ts",
-            "symbols": ["STACK_SPLIT_POLICY"]
-          },
+          { "file": "esm/shared/dimensions/wardrobe_defaults.ts", "symbols": ["WARDROBE_DEFAULTS"] },
+          { "file": "esm/shared/dimensions/stack_split_policy.ts", "symbols": ["STACK_SPLIT_POLICY"] },
           {
             "file": "esm/shared/dimensions/stack_split_render_policy.ts",
             "symbols": ["STACK_SPLIT_RENDER_POLICY"]
@@ -2616,12 +2518,7 @@
       "group": "identity-local-exports",
       "canonicalOwner": {
         "kind": "focused",
-        "exports": [
-          {
-            "file": "esm/shared/dimensions/product_limits.ts",
-            "symbols": ["WARDROBE_LIMITS"]
-          }
-        ]
+        "exports": [{ "file": "esm/shared/dimensions/product_limits.ts", "symbols": ["WARDROBE_LIMITS"] }]
       },
       "facadeDeclaration": {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",
@@ -2664,12 +2561,7 @@
       "group": "type-re-exports",
       "canonicalOwner": {
         "kind": "focused",
-        "exports": [
-          {
-            "file": "esm/shared/dimensions/units.ts",
-            "symbols": ["WorldUnits"]
-          }
-        ]
+        "exports": [{ "file": "esm/shared/dimensions/units.ts", "symbols": ["WorldUnits"] }]
       },
       "facadeDeclaration": {
         "file": "esm/shared/wardrobe_dimension_tokens_shared.ts",

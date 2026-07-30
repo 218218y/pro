@@ -28,7 +28,6 @@ const boundarySpecifier = '../../../features/interior_tab_defaults.js';
 const uiHelpersSpecifier = './interior_tab_helpers.js';
 const facadeSpecifierFromNative = '../../shared/wardrobe_dimension_tokens_shared.js';
 const publicDimensionsSpecifierFromUi = '../features/dimensions';
-const ownerSpecifierFromBoundary = '../../shared/dimensions/interior_fittings_policy.js';
 const unitsSpecifierFromBoundary = '../../shared/dimensions/units.js';
 const compositionOwnerSpecifierFromBoundary =
   '../../shared/dimensions/interior_tab_defaults_dimension_policy.js';
@@ -362,7 +361,6 @@ function inspectBoundary(source) {
   }
 
   const expectedTopology = [
-    'ImportDeclaration',
     'ImportDeclaration',
     'ExportNamedDeclaration',
     'ExportNamedDeclaration',
