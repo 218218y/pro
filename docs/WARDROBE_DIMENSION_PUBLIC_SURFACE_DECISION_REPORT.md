@@ -16,12 +16,12 @@ This is a decision-input report, not removal authorization. All 99 public symbol
 ## Layer Contract 2.7 ownership
 
 - Historical migration entries: 178
-- Active migration entries: 108
-- Retired migration entries: 70
+- Active migration entries: 0
+- Retired migration entries: 178
 - Compatibility budgets: 4
 - Consolidations: 24
 - Historical unique fromFiles: 108
-- Active migration unique fromFiles: 83
+- Active migration unique fromFiles: 0
 - Runtime compatibility owner: `wardrobe-dimension-runtime-public-compatibility`
 - Runtime public surface: `esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts`
 

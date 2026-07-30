@@ -17,19 +17,19 @@
     },
     "layerBaseline": {
       "file": "tools/wp_layer_baseline.json",
-      "sha256": "4fe78f6011d0c469ded982d832c0e04f29807fd7d1b93df8dd63139d9722cdda"
+      "sha256": "ad74aa41db97d420382926b02bed1e4519153da14022f2974edf6024ef39d2fa"
     }
   },
   "layerContractOwnership": {
     "schemaVersion": "2.7",
     "historicalMigrationEntries": 178,
-    "activeMigrationEntries": 108,
-    "retiredMigrationEntries": 70,
+    "activeMigrationEntries": 0,
+    "retiredMigrationEntries": 178,
     "compatibilityBudgets": 4,
-    "reviewedOwnershipBudgets": 0,
+    "reviewedOwnershipBudgets": 108,
     "consolidations": 24,
     "historicalUniqueFromFiles": 108,
-    "activeUniqueFromFiles": 83,
+    "activeUniqueFromFiles": 0,
     "runtime": {
       "owner": "wardrobe-dimension-runtime-public-compatibility",
       "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts",

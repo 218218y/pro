@@ -223,11 +223,11 @@
       "to": "shared",
       "decision": "allow",
       "maxImporterCount": 193,
-      "maxImportCount": 219,
+      "maxImportCount": 213,
       "maxTypeImporterCount": 0,
       "maxTypeImportCount": 0,
       "maxValueImporterCount": 193,
-      "maxValueImportCount": 219,
+      "maxValueImportCount": 213,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Builder consumes environment-neutral construction, dimension, identity, and visual policy tokens."
@@ -685,11 +685,11 @@
       "to": "shared",
       "decision": "allow",
       "maxImporterCount": 138,
-      "maxImportCount": 167,
+      "maxImportCount": 163,
       "maxTypeImporterCount": 0,
       "maxTypeImportCount": 0,
       "maxValueImporterCount": 138,
-      "maxValueImportCount": 167,
+      "maxValueImportCount": 163,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Services orchestrate persistence and UI-independent workflows over shared domain contracts."
@@ -6643,6 +6643,34 @@
   ],
   "migrationRetirements": [
     {
+      "entryNumber": 1,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-1-reviewed-ownership"
+    },
+    {
+      "entryNumber": 2,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-2-reviewed-ownership"
+    },
+    {
+      "entryNumber": 3,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-3-reviewed-ownership"
+    },
+    {
+      "entryNumber": 4,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-4-reviewed-ownership"
+    },
+    {
       "entryNumber": 5,
       "retiredAt": "2026-07-29",
       "mode": "statement-consolidated",
@@ -6650,11 +6678,788 @@
       "replacementConsolidationId": "corner-cells-ui-defaults-dimension-consolidation"
     },
     {
+      "entryNumber": 6,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-6-reviewed-ownership"
+    },
+    {
+      "entryNumber": 7,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-7-reviewed-ownership"
+    },
+    {
+      "entryNumber": 8,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-8-reviewed-ownership"
+    },
+    {
+      "entryNumber": 9,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-9-reviewed-ownership"
+    },
+    {
+      "entryNumber": 10,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-10-reviewed-ownership"
+    },
+    {
+      "entryNumber": 11,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-11-reviewed-ownership"
+    },
+    {
+      "entryNumber": 12,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-12-reviewed-ownership"
+    },
+    {
+      "entryNumber": 13,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-13-reviewed-ownership"
+    },
+    {
+      "entryNumber": 14,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-14-reviewed-ownership"
+    },
+    {
+      "entryNumber": 15,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-15-reviewed-ownership"
+    },
+    {
+      "entryNumber": 16,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-16-reviewed-ownership"
+    },
+    {
+      "entryNumber": 17,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-17-reviewed-ownership"
+    },
+    {
+      "entryNumber": 18,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-18-reviewed-ownership"
+    },
+    {
+      "entryNumber": 19,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-19-reviewed-ownership"
+    },
+    {
+      "entryNumber": 20,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-20-reviewed-ownership"
+    },
+    {
+      "entryNumber": 21,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-21-reviewed-ownership"
+    },
+    {
+      "entryNumber": 22,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-22-reviewed-ownership"
+    },
+    {
+      "entryNumber": 23,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-23-reviewed-ownership"
+    },
+    {
+      "entryNumber": 24,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-24-reviewed-ownership"
+    },
+    {
+      "entryNumber": 25,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-25-reviewed-ownership"
+    },
+    {
+      "entryNumber": 26,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-26-reviewed-ownership"
+    },
+    {
+      "entryNumber": 27,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-27-reviewed-ownership"
+    },
+    {
+      "entryNumber": 28,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-28-reviewed-ownership"
+    },
+    {
+      "entryNumber": 29,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-29-reviewed-ownership"
+    },
+    {
+      "entryNumber": 30,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-30-reviewed-ownership"
+    },
+    {
+      "entryNumber": 31,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-31-reviewed-ownership"
+    },
+    {
+      "entryNumber": 32,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-32-reviewed-ownership"
+    },
+    {
+      "entryNumber": 33,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-33-reviewed-ownership"
+    },
+    {
+      "entryNumber": 34,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-34-reviewed-ownership"
+    },
+    {
+      "entryNumber": 35,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-35-reviewed-ownership"
+    },
+    {
+      "entryNumber": 36,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-36-reviewed-ownership"
+    },
+    {
+      "entryNumber": 37,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-37-reviewed-ownership"
+    },
+    {
+      "entryNumber": 38,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-38-reviewed-ownership"
+    },
+    {
+      "entryNumber": 39,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-39-reviewed-ownership"
+    },
+    {
+      "entryNumber": 40,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-40-reviewed-ownership"
+    },
+    {
+      "entryNumber": 41,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-41-reviewed-ownership"
+    },
+    {
+      "entryNumber": 42,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
+    },
+    {
+      "entryNumber": 43,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
+    },
+    {
+      "entryNumber": 44,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
+    },
+    {
+      "entryNumber": 45,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
+    },
+    {
+      "entryNumber": 46,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
+    },
+    {
+      "entryNumber": 47,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
+    },
+    {
+      "entryNumber": 48,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "stack-split-lower-setup-dimension-consolidation"
+    },
+    {
+      "entryNumber": 49,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "stack-split-lower-setup-dimension-consolidation"
+    },
+    {
+      "entryNumber": 50,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "stack-split-lower-setup-dimension-consolidation"
+    },
+    {
+      "entryNumber": 51,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-51-reviewed-ownership"
+    },
+    {
+      "entryNumber": 52,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-52-reviewed-ownership"
+    },
+    {
+      "entryNumber": 53,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-53-reviewed-ownership"
+    },
+    {
+      "entryNumber": 54,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-54-reviewed-ownership"
+    },
+    {
+      "entryNumber": 55,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-55-reviewed-ownership"
+    },
+    {
+      "entryNumber": 56,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-56-reviewed-ownership"
+    },
+    {
+      "entryNumber": 57,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-57-reviewed-ownership"
+    },
+    {
+      "entryNumber": 58,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-58-reviewed-ownership"
+    },
+    {
+      "entryNumber": 59,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-59-reviewed-ownership"
+    },
+    {
+      "entryNumber": 60,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-60-reviewed-ownership"
+    },
+    {
       "entryNumber": 61,
       "retiredAt": "2026-07-29",
       "mode": "statement-consolidated",
       "reason": "The Interior-tab Sketch tool Shell Geometry and Units statements were replaced by one reviewed feature-use-case composition owner.",
       "replacementConsolidationId": "interior-sketch-tools-dimension-consolidation"
+    },
+    {
+      "entryNumber": 62,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-62-reviewed-ownership"
+    },
+    {
+      "entryNumber": 63,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-63-reviewed-ownership"
+    },
+    {
+      "entryNumber": 64,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-64-reviewed-ownership"
+    },
+    {
+      "entryNumber": 65,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-65-reviewed-ownership"
+    },
+    {
+      "entryNumber": 66,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-66-reviewed-ownership"
+    },
+    {
+      "entryNumber": 67,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-67-reviewed-ownership"
+    },
+    {
+      "entryNumber": 68,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-68-reviewed-ownership"
+    },
+    {
+      "entryNumber": 69,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
+    },
+    {
+      "entryNumber": 70,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
+    },
+    {
+      "entryNumber": 71,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
+    },
+    {
+      "entryNumber": 72,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
+    },
+    {
+      "entryNumber": 73,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
+    },
+    {
+      "entryNumber": 74,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
+    },
+    {
+      "entryNumber": 75,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-75-reviewed-ownership"
+    },
+    {
+      "entryNumber": 76,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-76-reviewed-ownership"
+    },
+    {
+      "entryNumber": 77,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-77-reviewed-ownership"
+    },
+    {
+      "entryNumber": 78,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-78-reviewed-ownership"
+    },
+    {
+      "entryNumber": 79,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-79-reviewed-ownership"
+    },
+    {
+      "entryNumber": 80,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-80-reviewed-ownership"
+    },
+    {
+      "entryNumber": 81,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-81-reviewed-ownership"
+    },
+    {
+      "entryNumber": 82,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-82-reviewed-ownership"
+    },
+    {
+      "entryNumber": 83,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-83-reviewed-ownership"
+    },
+    {
+      "entryNumber": 84,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-84-reviewed-ownership"
+    },
+    {
+      "entryNumber": 85,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-85-reviewed-ownership"
+    },
+    {
+      "entryNumber": 86,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-86-reviewed-ownership"
+    },
+    {
+      "entryNumber": 87,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-87-reviewed-ownership"
+    },
+    {
+      "entryNumber": 88,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-88-reviewed-ownership"
+    },
+    {
+      "entryNumber": 89,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-89-reviewed-ownership"
+    },
+    {
+      "entryNumber": 90,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-90-reviewed-ownership"
+    },
+    {
+      "entryNumber": 91,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-91-reviewed-ownership"
+    },
+    {
+      "entryNumber": 92,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-92-reviewed-ownership"
+    },
+    {
+      "entryNumber": 93,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-93-reviewed-ownership"
+    },
+    {
+      "entryNumber": 94,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-94-reviewed-ownership"
+    },
+    {
+      "entryNumber": 95,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-95-reviewed-ownership"
+    },
+    {
+      "entryNumber": 96,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-96-reviewed-ownership"
+    },
+    {
+      "entryNumber": 97,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-97-reviewed-ownership"
+    },
+    {
+      "entryNumber": 98,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "manual-layout-free-box-plans-dimension-consolidation"
+    },
+    {
+      "entryNumber": 99,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "manual-layout-free-box-plans-dimension-consolidation"
+    },
+    {
+      "entryNumber": 100,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "manual-layout-free-box-plans-dimension-consolidation"
+    },
+    {
+      "entryNumber": 101,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "sketch-box-vertical-content-occupancy-dimension-consolidation"
+    },
+    {
+      "entryNumber": 102,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "sketch-box-vertical-content-occupancy-dimension-consolidation"
+    },
+    {
+      "entryNumber": 103,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "sketch-box-vertical-content-occupancy-dimension-consolidation"
+    },
+    {
+      "entryNumber": 104,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-104-reviewed-ownership"
+    },
+    {
+      "entryNumber": 105,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-105-reviewed-ownership"
+    },
+    {
+      "entryNumber": 106,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-106-reviewed-ownership"
+    },
+    {
+      "entryNumber": 107,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-107-reviewed-ownership"
+    },
+    {
+      "entryNumber": 108,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "preview-interior-hover-apply-dimension-consolidation"
+    },
+    {
+      "entryNumber": 109,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "preview-interior-hover-apply-dimension-consolidation"
+    },
+    {
+      "entryNumber": 110,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "preview-interior-hover-apply-dimension-consolidation"
+    },
+    {
+      "entryNumber": 111,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-hover-manual-mode-dimension-consolidation"
+    },
+    {
+      "entryNumber": 112,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-hover-manual-mode-dimension-consolidation"
+    },
+    {
+      "entryNumber": 113,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-hover-manual-mode-dimension-consolidation"
+    },
+    {
+      "entryNumber": 114,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-hover-manual-mode-dimension-consolidation"
+    },
+    {
+      "entryNumber": 115,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-115-reviewed-ownership"
+    },
+    {
+      "entryNumber": 116,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-116-reviewed-ownership"
+    },
+    {
+      "entryNumber": 117,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-117-reviewed-ownership"
     },
     {
       "entryNumber": 118,
@@ -6671,6 +7476,111 @@
       "replacementConsolidationId": "sketch-internal-drawer-cassette-dimension-consolidation"
     },
     {
+      "entryNumber": 120,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-120-reviewed-ownership"
+    },
+    {
+      "entryNumber": 121,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-121-reviewed-ownership"
+    },
+    {
+      "entryNumber": 122,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-122-reviewed-ownership"
+    },
+    {
+      "entryNumber": 123,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-123-reviewed-ownership"
+    },
+    {
+      "entryNumber": 124,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-124-reviewed-ownership"
+    },
+    {
+      "entryNumber": 125,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-125-reviewed-ownership"
+    },
+    {
+      "entryNumber": 126,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "core-carcass-dimension-consolidation"
+    },
+    {
+      "entryNumber": 127,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "core-carcass-dimension-consolidation"
+    },
+    {
+      "entryNumber": 128,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "core-carcass-dimension-consolidation"
+    },
+    {
+      "entryNumber": 129,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "core-carcass-dimension-consolidation"
+    },
+    {
+      "entryNumber": 130,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-130-reviewed-ownership"
+    },
+    {
+      "entryNumber": 131,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-131-reviewed-ownership"
+    },
+    {
+      "entryNumber": 132,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-132-reviewed-ownership"
+    },
+    {
+      "entryNumber": 133,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-133-reviewed-ownership"
+    },
+    {
+      "entryNumber": 134,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-134-reviewed-ownership"
+    },
+    {
       "entryNumber": 135,
       "retiredAt": "2026-07-29",
       "mode": "statement-consolidated",
@@ -6683,6 +7593,69 @@
       "mode": "statement-consolidated",
       "reason": "Two focused Platform door-motion migration statements and their canonical Sliding Door Construction companion were replaced by one reviewed use-case composition owner.",
       "replacementConsolidationId": "platform-door-motion-dimension-consolidation"
+    },
+    {
+      "entryNumber": 137,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
+    },
+    {
+      "entryNumber": 138,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
+    },
+    {
+      "entryNumber": 139,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
+    },
+    {
+      "entryNumber": 140,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
+    },
+    {
+      "entryNumber": 141,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
+    },
+    {
+      "entryNumber": 142,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
+    },
+    {
+      "entryNumber": 143,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-inputs-dimension-consolidation"
+    },
+    {
+      "entryNumber": 144,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-inputs-dimension-consolidation"
+    },
+    {
+      "entryNumber": 145,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-inputs-dimension-consolidation"
     },
     {
       "entryNumber": 146,
@@ -6711,6 +7684,69 @@
       "mode": "statement-consolidated",
       "reason": "Four focused Runtime default-state migration statements and their canonical Wardrobe Defaults companion were replaced by one reviewed use-case composition owner.",
       "replacementConsolidationId": "runtime-default-state-dimension-consolidation"
+    },
+    {
+      "entryNumber": 150,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-150-reviewed-ownership"
+    },
+    {
+      "entryNumber": 151,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-151-reviewed-ownership"
+    },
+    {
+      "entryNumber": 152,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-152-reviewed-ownership"
+    },
+    {
+      "entryNumber": 153,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-153-reviewed-ownership"
+    },
+    {
+      "entryNumber": 154,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-154-reviewed-ownership"
+    },
+    {
+      "entryNumber": 155,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-155-reviewed-ownership"
+    },
+    {
+      "entryNumber": 156,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-156-reviewed-ownership"
+    },
+    {
+      "entryNumber": 157,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-157-reviewed-ownership"
+    },
+    {
+      "entryNumber": 158,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-158-reviewed-ownership"
     },
     {
       "entryNumber": 159,
@@ -6760,6 +7796,13 @@
       "mode": "statement-consolidated",
       "reason": "The Interior Tab shelf-geometry and units statements were consolidated behind one exact identity-preserving defaults owner.",
       "replacementConsolidationId": "interior-tab-defaults-dimension-consolidation"
+    },
+    {
+      "entryNumber": 166,
+      "retiredAt": "2026-07-30",
+      "mode": "ownership-reviewed",
+      "reason": "The historical migration statement is retained as a canonical direct focused import under reviewed internal ownership.",
+      "replacementReviewedOwnershipBudgetId": "dimension-migration-entry-166-reviewed-ownership"
     },
     {
       "entryNumber": 167,
@@ -6844,293 +7887,6 @@
       "mode": "ownership-transferred",
       "reason": "Runtime Wardrobe Default Resolution remains a reviewed public compatibility route; permanent ownership moved to runtime-default-resolution-public-compatibility.",
       "replacementCompatibilityBudgetId": "runtime-default-resolution-public-compatibility"
-    },
-    {
-      "entryNumber": 42,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
-    },
-    {
-      "entryNumber": 43,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
-    },
-    {
-      "entryNumber": 44,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
-    },
-    {
-      "entryNumber": 45,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
-    },
-    {
-      "entryNumber": 46,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
-    },
-    {
-      "entryNumber": 47,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
-    },
-    {
-      "entryNumber": 69,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
-    },
-    {
-      "entryNumber": 70,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
-    },
-    {
-      "entryNumber": 71,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
-    },
-    {
-      "entryNumber": 72,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
-    },
-    {
-      "entryNumber": 73,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
-    },
-    {
-      "entryNumber": 74,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
-    },
-    {
-      "entryNumber": 137,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
-    },
-    {
-      "entryNumber": 138,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
-    },
-    {
-      "entryNumber": 139,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
-    },
-    {
-      "entryNumber": 140,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
-    },
-    {
-      "entryNumber": 141,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
-    },
-    {
-      "entryNumber": 142,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
-    },
-    {
-      "entryNumber": 111,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "interior-hover-manual-mode-dimension-consolidation"
-    },
-    {
-      "entryNumber": 112,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "interior-hover-manual-mode-dimension-consolidation"
-    },
-    {
-      "entryNumber": 113,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "interior-hover-manual-mode-dimension-consolidation"
-    },
-    {
-      "entryNumber": 114,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "interior-hover-manual-mode-dimension-consolidation"
-    },
-    {
-      "entryNumber": 126,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "core-carcass-dimension-consolidation"
-    },
-    {
-      "entryNumber": 127,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "core-carcass-dimension-consolidation"
-    },
-    {
-      "entryNumber": 128,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "core-carcass-dimension-consolidation"
-    },
-    {
-      "entryNumber": 129,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "core-carcass-dimension-consolidation"
-    },
-    {
-      "entryNumber": 48,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "stack-split-lower-setup-dimension-consolidation"
-    },
-    {
-      "entryNumber": 49,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "stack-split-lower-setup-dimension-consolidation"
-    },
-    {
-      "entryNumber": 50,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "stack-split-lower-setup-dimension-consolidation"
-    },
-    {
-      "entryNumber": 98,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "manual-layout-free-box-plans-dimension-consolidation"
-    },
-    {
-      "entryNumber": 99,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "manual-layout-free-box-plans-dimension-consolidation"
-    },
-    {
-      "entryNumber": 100,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "manual-layout-free-box-plans-dimension-consolidation"
-    },
-    {
-      "entryNumber": 101,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "sketch-box-vertical-content-occupancy-dimension-consolidation"
-    },
-    {
-      "entryNumber": 102,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "sketch-box-vertical-content-occupancy-dimension-consolidation"
-    },
-    {
-      "entryNumber": 103,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "sketch-box-vertical-content-occupancy-dimension-consolidation"
-    },
-    {
-      "entryNumber": 108,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "preview-interior-hover-apply-dimension-consolidation"
-    },
-    {
-      "entryNumber": 109,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "preview-interior-hover-apply-dimension-consolidation"
-    },
-    {
-      "entryNumber": 110,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "preview-interior-hover-apply-dimension-consolidation"
-    },
-    {
-      "entryNumber": 143,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "chest-mode-inputs-dimension-consolidation"
-    },
-    {
-      "entryNumber": 144,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "chest-mode-inputs-dimension-consolidation"
-    },
-    {
-      "entryNumber": 145,
-      "retiredAt": "2026-07-30",
-      "mode": "statement-consolidated",
-      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
-      "replacementConsolidationId": "chest-mode-inputs-dimension-consolidation"
     }
   ],
   "compatibilityBudgets": [
@@ -7258,7 +8014,2838 @@
       "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
     }
   ],
-  "reviewedOwnershipBudgets": [],
+  "reviewedOwnershipBudgets": [
+    {
+      "id": "dimension-migration-entry-3-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/post_build_dimensions_corner.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-4-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/post_build_dimensions_corner.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": ["WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-6-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_cell_dims_corner_context.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-7-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_cell_dims_corner_context.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": ["WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-9-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_wing_carcass_shell_floor_base.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLINTH_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-10-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_wing_carcass_shell_floor_base.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-15-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_state_normalize_layout.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-16-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_state_normalize_layout.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": ["WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-130-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/core_layout_compute.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-131-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/core_layout_compute.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-133-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/module_loop_pipeline_module_depth.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/carcass_interior_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_INTERIOR_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-134-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/module_loop_pipeline_module_depth.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-150-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_connector_emit_shell_base.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/base_leg_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_LEG_LAYOUT_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-151-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_connector_emit_shell_base.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-155-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/build_flow_plan_inputs.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["resolveDoorMountThicknessesFromConfig"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-156-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/build_flow_plan_inputs.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["STACK_SPLIT_SEAM_GAP_M"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+          "sha256": "4023c5ed9d9d4e0d7ec64d05576eb2a1dd212e8fa3129ad42b6e3534b22f2aea"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-11-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_wing_cell_interiors_shelves.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY", "INTERIOR_SHELF_PIN_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-12-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_wing_cell_interiors_shelves.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-23-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_custom_ops.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-24-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_custom_ops.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-26-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_preset_ops.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-27-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_preset_ops.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-31-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-32-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_contracts.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-33-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_vertical_blockers.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "INTERIOR_STORAGE_BARRIER_POLICY",
+          "INTERIOR_STORAGE_CLAMP_POLICY",
+          "INTERIOR_STORAGE_GRID_POLICY",
+          "INTERIOR_STORAGE_LAYOUT_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-34-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_vertical_blockers.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-36-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_vertical_content_blockers.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_ROD_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-37-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_vertical_content_blockers.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-94-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_PRESET_ROD_FACTORS_POLICY", "INTERIOR_ROD_PLACEMENT_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-95-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_surface_preview_rod.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-96-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_content.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-97-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_content.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-104-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-105-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_vertical_content_preview_shelf.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-106-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-107-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_contents_parts_shelves.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "619440e43a65ba238111bb676365c32ef39baa7be52a9c8b9f285bfaa80931a9"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-38-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_vertical_content_collision.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_sketch_geometry_reviewed_ownership_contract.test.js",
+          "sha256": "9192990ff7a92a7914961e604c80b3becd5814db1e256327fed7f8c693252bfd"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-39-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_vertical_content_collision.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_sketch_geometry_reviewed_ownership_contract.test.js",
+          "sha256": "9192990ff7a92a7914961e604c80b3becd5814db1e256327fed7f8c693252bfd"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-51-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_layout_geometry.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_sketch_geometry_reviewed_ownership_contract.test.js",
+          "sha256": "9192990ff7a92a7914961e604c80b3becd5814db1e256327fed7f8c693252bfd"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-52-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_layout_geometry.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/sketch_box_free_placement_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_FREE_VERTICAL_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_sketch_geometry_reviewed_ownership_contract.test.js",
+          "sha256": "9192990ff7a92a7914961e604c80b3becd5814db1e256327fed7f8c693252bfd"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-63-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["cmToM"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_sketch_geometry_reviewed_ownership_contract.test.js",
+          "sha256": "9192990ff7a92a7914961e604c80b3becd5814db1e256327fed7f8c693252bfd"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-64-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_sketch_hover_module_context_base.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_CLAMP_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_sketch_geometry_reviewed_ownership_contract.test.js",
+          "sha256": "9192990ff7a92a7914961e604c80b3becd5814db1e256327fed7f8c693252bfd"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-65-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["cmToM"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_sketch_geometry_reviewed_ownership_contract.test.js",
+          "sha256": "9192990ff7a92a7914961e604c80b3becd5814db1e256327fed7f8c693252bfd"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-66-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_surface_commit_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_sketch_geometry_reviewed_ownership_contract.test.js",
+          "sha256": "9192990ff7a92a7914961e604c80b3becd5814db1e256327fed7f8c693252bfd"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-67-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_sketch_geometry_reviewed_ownership_contract.test.js",
+          "sha256": "9192990ff7a92a7914961e604c80b3becd5814db1e256327fed7f8c693252bfd"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-68-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_sketch_front_overlay.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_sketch_geometry_reviewed_ownership_contract.test.js",
+          "sha256": "9192990ff7a92a7914961e604c80b3becd5814db1e256327fed7f8c693252bfd"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-18-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/hinged_doors_module_ops_context.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/external_drawer_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EXTERNAL_DRAWER_FRONT_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_drawer_handle_reviewed_ownership_contract.test.js",
+          "sha256": "176d174a63442abaa7bb437e6d9be934012cfe8099c5de97b9adf38bff8aa571"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-19-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/hinged_doors_module_ops_context.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/handle_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_drawer_handle_reviewed_ownership_contract.test.js",
+          "sha256": "176d174a63442abaa7bb437e6d9be934012cfe8099c5de97b9adf38bff8aa571"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-121-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_drawer_handle_reviewed_ownership_contract.test.js",
+          "sha256": "176d174a63442abaa7bb437e6d9be934012cfe8099c5de97b9adf38bff8aa571"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-122-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_d_drawer_handle_reviewed_ownership_contract.test.js",
+          "sha256": "176d174a63442abaa7bb437e6d9be934012cfe8099c5de97b9adf38bff8aa571"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-25-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_custom_ops_shelves.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-28-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_ops_input.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-29-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_support_shelves.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-35-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_content_commit_drawers.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-40-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_vertical_content_preview.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-41-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_neighbor_measurements.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-53-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_cell_dims_free_box_hover.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-54-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_free_box_hover_context.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-57-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_sketch_tools.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-58-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_selector_internal_metrics.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-59-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_content_commit_doors.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-75-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/post_build_sketch_door_cuts_rebuild.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-76-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_door_preview.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-78-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_free_surface_preview_adornment_preview.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-115-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/core_storage_compute_external_drawers.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-120-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_config_ops_shelf.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-125-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/core_doors_compute.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+          "sha256": "4ea7421428d50c4a0ecfa828011483b068e7e00421570115628df114d26eedfc"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-13-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_wing_cell_interiors_storage.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_ROD_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "a238223a8bb04e91fdef96556a16f252629f44a15295dcadd298ef245e565228"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-62-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_shell_apply.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "a238223a8bb04e91fdef96556a16f252629f44a15295dcadd298ef245e565228"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-86-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_contents_parts_barriers.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "INTERIOR_STORAGE_BARRIER_POLICY",
+          "INTERIOR_STORAGE_LAYOUT_POLICY",
+          "INTERIOR_STORAGE_PREVIEW_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "a238223a8bb04e91fdef96556a16f252629f44a15295dcadd298ef245e565228"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-87-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_vertical_content_preview_storage.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "a238223a8bb04e91fdef96556a16f252629f44a15295dcadd298ef245e565228"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-88-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_contents_parts_rods.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_ROD_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "a238223a8bb04e91fdef96556a16f252629f44a15295dcadd298ef245e565228"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-89-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_vertical_content_preview_rod.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_ROD_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "a238223a8bb04e91fdef96556a16f252629f44a15295dcadd298ef245e565228"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-90-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_internal_drawer_existing_fittings.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "a238223a8bb04e91fdef96556a16f252629f44a15295dcadd298ef245e565228"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-91-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_surface_preview_flow.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "a238223a8bb04e91fdef96556a16f252629f44a15295dcadd298ef245e565228"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-92-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_surface_preview_content.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "a238223a8bb04e91fdef96556a16f252629f44a15295dcadd298ef245e565228"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-93-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "a238223a8bb04e91fdef96556a16f252629f44a15295dcadd298ef245e565228"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-157-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/core_storage_compute_custom.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_GRID_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "a238223a8bb04e91fdef96556a16f252629f44a15295dcadd298ef245e565228"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-158-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_wing_cell_layouts.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_interior_storage_reviewed_ownership_contract.test.js",
+          "sha256": "a238223a8bb04e91fdef96556a16f252629f44a15295dcadd298ef245e565228"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-14-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_wing_extension_cells_handles.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/handle_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-17-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/build_handle_policy.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/external_drawer_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EXTERNAL_DRAWER_SIZE_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-20-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/hinged_doors_module_ops_handle_policy.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/external_drawer_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EXTERNAL_DRAWER_SIZE_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-21-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/post_build_sketch_door_cuts_rebuild_handles.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_DOOR_CUT_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-22-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/post_build_sketch_door_cuts_rebuild_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/handle_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-30-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_ops_primitives.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/handle_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["EDGE_HANDLE_SIZE_POLICY", "STANDARD_HANDLE_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-55-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_DOOR_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-56-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_contents_depth.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["SKETCH_BOX_SHELL_GEOMETRY_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-77-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_door_geometry.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/door_system_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["HINGED_DOOR_MOUNT_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-79-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_context.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-80-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_drawers_external_context.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-81-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_stack_preview_drawers.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-82-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_stack_preview_ext_drawers.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY",
+          "DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY",
+          "DRAWER_SKETCH_SIZING_POLICY",
+          "EXTERNAL_DRAWER_FRONT_RENDER_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-83-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_stack_preview_drawers.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-84-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_module_stack_preview_ext_drawers.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY",
+          "DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY",
+          "DRAWER_SKETCH_SIZING_POLICY",
+          "EXTERNAL_DRAWER_FRONT_RENDER_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-85-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_preview_sketch_pipeline_box_content_drawers.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_PREVIEW_RENDER_POLICY", "DRAWER_SKETCH_SIZING_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-116-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": [
+          "DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY",
+          "DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY"
+        ],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-117-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_sketch_drawers_external_plan.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-123-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/post_build_sketch_door_cuts_apply.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["DRAWER_SKETCH_DOOR_CUT_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-124-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_drawer_ops_internal.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CHEST_MODE_DRAWER_BOX_RENDER_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+          "sha256": "b3c1fecb6337b962b1bf669a4efd407ae1eb785ff96f693884c128006c1cce5e"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-1-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_connector_interior_rod.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER", "MM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_remaining_reviewed_ownership_contract.test.js",
+          "sha256": "299253e43850436275d03c1369cde4a9bf381b770ce775dd17570699748141c0"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-2-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_connector_interior_special_metrics.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["CM_PER_METER"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_remaining_reviewed_ownership_contract.test.js",
+          "sha256": "299253e43850436275d03c1369cde4a9bf381b770ce775dd17570699748141c0"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-8-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_connector_cornice_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/carcass_cornice_render_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_CORNICE_COMMON_POLICY"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_remaining_reviewed_ownership_contract.test.js",
+          "sha256": "299253e43850436275d03c1369cde4a9bf381b770ce775dd17570699748141c0"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-60-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_click_manual_sketch_free_box.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/units.ts",
+        "kind": "value",
+        "importedSymbols": ["cmToM"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_remaining_reviewed_ownership_contract.test.js",
+          "sha256": "299253e43850436275d03c1369cde4a9bf381b770ce775dd17570699748141c0"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-132-reviewed-ownership",
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": ["WARDROBE_DEFAULTS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_remaining_reviewed_ownership_contract.test.js",
+          "sha256": "299253e43850436275d03c1369cde4a9bf381b770ce775dd17570699748141c0"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-152-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_wing_cornice_path.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_remaining_reviewed_ownership_contract.test.js",
+          "sha256": "299253e43850436275d03c1369cde4a9bf381b770ce775dd17570699748141c0"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-153-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_wing_cornice_profile.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_remaining_reviewed_ownership_contract.test.js",
+          "sha256": "299253e43850436275d03c1369cde4a9bf381b770ce775dd17570699748141c0"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-154-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/corner_wing_cornice_wave.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+        "kind": "value",
+        "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_remaining_reviewed_ownership_contract.test.js",
+          "sha256": "299253e43850436275d03c1369cde4a9bf381b770ce775dd17570699748141c0"
+        }
+      ]
+    },
+    {
+      "id": "dimension-migration-entry-166-reviewed-ownership",
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_dimension_ops_shared.ts",
+      "statement": {
+        "toFile": "esm/shared/dimensions/wardrobe_defaults.ts",
+        "kind": "value",
+        "importedSymbols": ["DEFAULT_CORNER_DOORS"],
+        "syntax": "static-import"
+      },
+      "owner": "dimension-reviewed-ownership",
+      "reason": "The consumer already uses the canonical direct focused import for this use case; a composition owner would be a cosmetic wrapper that would not reduce statement count or improve semantic ownership.",
+      "reviewedAt": "2026-07-30",
+      "nextReviewBy": "2026-10-28",
+      "evidenceContracts": [
+        {
+          "path": "tests/helpers/dimension_reviewed_ownership_contract_helper.mjs",
+          "sha256": "32fbb3defcb4cd146ecd496e7bdac1d911d73b28cefb341cbd6388fc2d2fe5e0"
+        },
+        {
+          "path": "tests/wave_e_remaining_reviewed_ownership_contract.test.js",
+          "sha256": "299253e43850436275d03c1369cde4a9bf381b770ce775dd17570699748141c0"
+        }
+      ]
+    }
+  ],
   "migrationConsolidations": [
     {
       "id": "runtime-default-state-dimension-consolidation",

@@ -208,13 +208,13 @@ function inspectDecisionReportBase(report) {
     layerBaseline.version !== '2.7' ||
     report.layerContractOwnership?.schemaVersion !== '2.7' ||
     report.layerContractOwnership?.historicalMigrationEntries !== 178 ||
-    report.layerContractOwnership?.activeMigrationEntries !== 108 ||
-    report.layerContractOwnership?.retiredMigrationEntries !== 70 ||
+    report.layerContractOwnership?.activeMigrationEntries !== 0 ||
+    report.layerContractOwnership?.retiredMigrationEntries !== 178 ||
     report.layerContractOwnership?.compatibilityBudgets !== 4 ||
-    report.layerContractOwnership?.reviewedOwnershipBudgets !== 0 ||
+    report.layerContractOwnership?.reviewedOwnershipBudgets !== 108 ||
     report.layerContractOwnership?.consolidations !== 24 ||
     report.layerContractOwnership?.historicalUniqueFromFiles !== 108 ||
-    report.layerContractOwnership?.activeUniqueFromFiles !== 83 ||
+    report.layerContractOwnership?.activeUniqueFromFiles !== 0 ||
     report.layerContractOwnership?.runtime?.owner !== runtimeCompatibilityOwner ||
     report.layerContractOwnership?.runtime?.publicSurface !== runtimePublicSurface ||
     JSON.stringify(report.layerContractOwnership?.runtime?.edge) !==

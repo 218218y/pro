@@ -1087,9 +1087,9 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
     fs.readFileSync(path.join(repositoryRoot, 'tools/wp_layer_baseline.json'), 'utf8')
   );
   assert.equal(baseline.version, '2.7');
-  assert.equal(baseline.migrationRetirements.length, 70);
+  assert.equal(baseline.migrationRetirements.length, 178);
   assert.equal(baseline.compatibilityBudgets.length, 4);
-  assert.deepEqual(baseline.reviewedOwnershipBudgets, []);
+  assert.equal(baseline.reviewedOwnershipBudgets.length, 108);
   assert.equal(baseline.migrationConsolidations.length, 24);
   const runtimeCompatibilityOwner = 'wardrobe-dimension-runtime-public-compatibility';
   const runtimePublicSurface =
@@ -1900,10 +1900,10 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
   assert.equal(report.ok, true, JSON.stringify(report.failures));
   assert.equal(report.migrationBudgets.length, 178);
   assert.equal(report.historicalMigrationEntries.length, 178);
-  assert.equal(report.activeMigrationEntries.length, 108);
-  assert.equal(report.retiredMigrationEntries.length, 70);
+  assert.equal(report.activeMigrationEntries.length, 0);
+  assert.equal(report.retiredMigrationEntries.length, 178);
   assert.equal(report.compatibilityBudgets.length, 4);
-  assert.deepEqual(report.reviewedOwnershipBudgets, []);
+  assert.equal(report.reviewedOwnershipBudgets.length, 108);
   assert.equal(report.migrationConsolidations.length, 24);
   assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 108);
   const retiredEntryNumbers = new Set(baseline.migrationRetirements.map(entry => entry.entryNumber));
@@ -1913,7 +1913,7 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
         .filter((_, index) => !retiredEntryNumbers.has(index + 1))
         .map(entry => entry.fromFile)
     ).size,
-    83
+    0
   );
   const retiredStatuses = new Map(
     report.migrationBudgets.map(entry => [entry.entryNumber, [entry.active, entry.retired]])
@@ -1931,21 +1931,86 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
   // Repository-wide totals are owned here. Historical migration tests below lock only
   // their closed prefix and exact entries, so later additive migrations cannot stale them.
   const expectedEdges = new Map([
-    ['builder>shared', { observed: 280, migration: 61, consolidation: 6, reviewed: 213, budget: 219 }],
-    ['features>shared', { observed: 61, migration: 0, consolidation: 11, reviewed: 50, budget: 50 }],
-    ['services>shared', { observed: 214, migration: 47, consolidation: 4, reviewed: 163, budget: 167 }],
-    ['ui>shared', { observed: 26, migration: 0, consolidation: 1, reviewed: 25, budget: 25 }],
-    ['platform>shared', { observed: 4, migration: 0, consolidation: 1, reviewed: 3, budget: 3 }],
+    [
+      'builder>shared',
+      {
+        observed: 280,
+        migration: 0,
+        compatibility: 0,
+        consolidation: 6,
+        reviewedOwnership: 61,
+        reviewedGeneral: 213,
+        budget: 213,
+      },
+    ],
+    [
+      'features>shared',
+      {
+        observed: 61,
+        migration: 0,
+        compatibility: 0,
+        consolidation: 11,
+        reviewedOwnership: 0,
+        reviewedGeneral: 50,
+        budget: 50,
+      },
+    ],
+    [
+      'services>shared',
+      {
+        observed: 214,
+        migration: 0,
+        compatibility: 0,
+        consolidation: 4,
+        reviewedOwnership: 47,
+        reviewedGeneral: 163,
+        budget: 163,
+      },
+    ],
+    [
+      'ui>shared',
+      {
+        observed: 26,
+        migration: 0,
+        compatibility: 0,
+        consolidation: 1,
+        reviewedOwnership: 0,
+        reviewedGeneral: 25,
+        budget: 25,
+      },
+    ],
+    [
+      'platform>shared',
+      {
+        observed: 4,
+        migration: 0,
+        compatibility: 0,
+        consolidation: 1,
+        reviewedOwnership: 0,
+        reviewedGeneral: 3,
+        budget: 3,
+      },
+    ],
     [
       'runtime>shared',
-      { observed: 36, migration: 0, compatibility: 4, consolidation: 1, reviewed: 31, budget: 31 },
+      {
+        observed: 36,
+        migration: 0,
+        compatibility: 4,
+        consolidation: 1,
+        reviewedOwnership: 0,
+        reviewedGeneral: 31,
+        budget: 31,
+      },
     ],
   ]);
   for (const [key, expected] of expectedEdges) {
     const [from, to] = key.split('>');
     const edge = graph.edges.find(entry => entry.from === from && entry.to === to);
+    const ownershipEdge = report.edges.find(entry => entry.from === from && entry.to === to);
     const rule = baseline.rules.find(entry => entry.from === from && entry.to === to);
     assert.ok(edge, `missing observed edge ${key}`);
+    assert.ok(ownershipEdge, `missing ownership edge ${key}`);
     assert.ok(rule, `missing baseline rule ${key}`);
     assert.equal(edge.importCount, expected.observed);
     const activeMigrationCount = report.activeMigrationEntries.filter(
@@ -1956,11 +2021,20 @@ test('project migration ledger stays exact at one hundred and seventy-eight revi
     ).length;
     const consolidationCount = report.consolidationApprovedStatements.get(key)?.all.size || 0;
     assert.equal(activeMigrationCount, expected.migration);
-    assert.equal(compatibilityCount, expected.compatibility || 0);
-    assert.equal(consolidationCount, expected.consolidation || 0);
+    assert.equal(compatibilityCount, expected.compatibility);
+    assert.equal(consolidationCount, expected.consolidation);
+    assert.equal(ownershipEdge.activeMigrationStatements, expected.migration);
+    assert.equal(ownershipEdge.compatibilityStatements, expected.compatibility);
+    assert.equal(ownershipEdge.consolidationStatements, expected.consolidation);
+    assert.equal(ownershipEdge.reviewedOwnershipStatements, expected.reviewedOwnership);
+    assert.equal(ownershipEdge.reviewedGeneralStatements, expected.reviewedGeneral);
     assert.equal(
-      expected.observed - expected.migration - (expected.compatibility || 0) - (expected.consolidation || 0),
-      expected.reviewed
+      expected.migration +
+        expected.compatibility +
+        expected.consolidation +
+        expected.reviewedOwnership +
+        expected.reviewedGeneral,
+      expected.observed
     );
     assert.equal(rule.maxImportCount, expected.budget);
   }

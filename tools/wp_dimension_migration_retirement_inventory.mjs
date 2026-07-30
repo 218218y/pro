@@ -9,7 +9,21 @@ const defaultRoot = path.resolve(toolDir, '..');
 const baselineRel = 'tools/wp_layer_baseline.json';
 const reportJsonRel = 'tools/wp_dimension_migration_retirement_inventory.json';
 const reportMarkdownRel = 'docs/DIMENSION_MIGRATION_RETIREMENT_INVENTORY.md';
-const capturedAt = '2026-07-29';
+const capturedAt = '2026-07-30';
+const previousCapturedSnapshot = Object.freeze({
+  capturedCheckpoint: '4G',
+  capturedAt: '2026-07-29',
+  summary: Object.freeze({
+    historicalEntries: 178,
+    activeEntries: 149,
+    activeFromFiles: 93,
+    multiEntryConsumers: 35,
+    multiEntryConsumerEntries: 91,
+    singleEntryConsumers: 58,
+    singleEntryConsumerEntries: 58,
+    exactImportSetSignatures: 81,
+  }),
+});
 
 const read = (root, rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 const sha256 = value => createHash('sha256').update(value).digest('hex');
@@ -56,10 +70,8 @@ function buildInventory(root = defaultRoot) {
   for (const [fromFile, entries] of entriesByConsumer) {
     const exactStatements = new Map();
     for (const entry of entries) {
-      for (const field of ['addedImport', 'companionImport']) {
-        const statement = normalizedStatement(entry[field]);
-        exactStatements.set(stableJson(statement), statement);
-      }
+      const statement = normalizedStatement(entry.addedImport);
+      exactStatements.set(stableJson(statement), statement);
     }
     const importSet = [...exactStatements.values()].sort((left, right) =>
       stableJson(left).localeCompare(stableJson(right))
@@ -101,18 +113,19 @@ function buildInventory(root = defaultRoot) {
   const multiEntryConsumers = [...entriesByConsumer.values()].filter(entries => entries.length > 1);
   const singleEntryConsumers = [...entriesByConsumer.values()].filter(entries => entries.length === 1);
   return {
-    version: 1,
-    capturedCheckpoint: '4G',
+    version: 2,
+    capturedCheckpoint: '4J',
     capturedAt,
     policy:
-      'This is a captured remaining-debt inventory. It recommends review disposition only and never retires a migration Entry by itself.',
+      'This is the current remaining-debt inventory. It recommends review disposition only and never retires a migration Entry by itself.',
+    previousCapturedSnapshot,
     source: { file: baselineRel, sha256: sha256(baselineSource) },
     summary: {
       historicalEntries: baseline.migrationBudgets.length,
       activeEntries: activeEntries.length,
       activeFromFiles: entriesByConsumer.size,
-      multiEntryConsumers: multiEntryConsumers.length,
-      multiEntryConsumerEntries: multiEntryConsumers.flat().length,
+      twoEntryConsumers: multiEntryConsumers.length,
+      twoEntryConsumerEntries: multiEntryConsumers.flat().length,
       singleEntryConsumers: singleEntryConsumers.length,
       singleEntryConsumerEntries: singleEntryConsumers.flat().length,
       exactImportSetSignatures: consumersBySignature.size,
@@ -150,17 +163,26 @@ function renderMarkdown(report) {
   const lines = [
     '# Dimension Migration Retirement Inventory',
     '',
-    `Captured checkpoint: ${report.capturedCheckpoint} (${report.capturedAt})`,
+    `Current checkpoint: ${report.capturedCheckpoint} (${report.capturedAt})`,
     '',
     report.policy,
     '',
-    '## Locked summary',
+    '## Current summary',
     '',
     `- Active Entries: ${report.summary.activeEntries}`,
     `- Active fromFiles: ${report.summary.activeFromFiles}`,
-    `- Multi-entry consumers: ${report.summary.multiEntryConsumers} / ${report.summary.multiEntryConsumerEntries} Entries`,
+    `- Two-entry consumers: ${report.summary.twoEntryConsumers} / ${report.summary.twoEntryConsumerEntries} Entries`,
     `- Single-entry consumers: ${report.summary.singleEntryConsumers} / ${report.summary.singleEntryConsumerEntries} Entries`,
-    `- Exact import-set signatures: ${report.summary.exactImportSetSignatures}`,
+    `- Exact active added-import signatures: ${report.summary.exactImportSetSignatures}`,
+    '',
+    '## Previous captured snapshot',
+    '',
+    `- Checkpoint: ${report.previousCapturedSnapshot.capturedCheckpoint} (${report.previousCapturedSnapshot.capturedAt})`,
+    `- Active Entries: ${report.previousCapturedSnapshot.summary.activeEntries}`,
+    `- Active fromFiles: ${report.previousCapturedSnapshot.summary.activeFromFiles}`,
+    `- Multi-entry consumers: ${report.previousCapturedSnapshot.summary.multiEntryConsumers} / ${report.previousCapturedSnapshot.summary.multiEntryConsumerEntries} Entries`,
+    `- Single-entry consumers: ${report.previousCapturedSnapshot.summary.singleEntryConsumers} / ${report.previousCapturedSnapshot.summary.singleEntryConsumerEntries} Entries`,
+    `- Exact import-set signatures: ${report.previousCapturedSnapshot.summary.exactImportSetSignatures}`,
     '',
     '## Entries',
     '',

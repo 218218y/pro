@@ -458,9 +458,10 @@ test('Runtime routes, historical Entries 175-178, and compatibility ownership ar
   );
   const retiredEntries = new Set(baseline.migrationRetirements.map(retirement => retirement.entryNumber));
   const activeEntries = baseline.migrationBudgets.filter((_, index) => !retiredEntries.has(index + 1));
-  assert.equal(activeEntries.length, 108);
-  assert.equal(baseline.migrationRetirements.length, 70);
+  assert.equal(activeEntries.length, 0);
+  assert.equal(baseline.migrationRetirements.length, 178);
   assert.equal(baseline.compatibilityBudgets.length, 4);
+  assert.equal(baseline.reviewedOwnershipBudgets.length, 108);
   assert.deepEqual(
     baseline.migrationConsolidations.map(group => group.id),
     [
@@ -491,7 +492,7 @@ test('Runtime routes, historical Entries 175-178, and compatibility ownership ar
     ]
   );
   assert.equal(new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size, 108);
-  assert.equal(new Set(activeEntries.map(entry => entry.fromFile)).size, 83);
+  assert.equal(new Set(activeEntries.map(entry => entry.fromFile)).size, 0);
   for (const [count, expected] of Object.entries(ledgerPrefixes)) {
     assert.equal(
       sha256(stableJson(baseline.migrationBudgets.slice(0, Number(count)))),

@@ -1,24 +1,24 @@
 {
-  "generatedAt": "2026-07-30T15:43:35.773Z",
+  "generatedAt": "2026-07-30T17:13:29.390Z",
   "totals": {
-    "tests": 1330,
-    "unitRunnerTests": 1322,
+    "tests": 1340,
+    "unitRunnerTests": 1332,
     "e2eTests": 8,
-    "nonTestRuntimeFiles": 33,
-    "packageTestReferences": 192,
+    "nonTestRuntimeFiles": 34,
+    "packageTestReferences": 193,
     "catalogTestReferences": 352,
-    "totalTestReferences": 544,
+    "totalTestReferences": 545,
     "catalogGroups": 29,
     "catalogScriptBindings": 29,
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 483,
+    "contract": 492,
     "runtime-unit": 321,
     "integration": 466,
     "e2e-smoke": 9,
     "perf-smoke": 9,
-    "legacy-migration": 42
+    "legacy-migration": 43
   },
   "failures": {
     "missingTestRefs": [],
@@ -1756,6 +1756,10 @@
     {
       "file": "tests/design_tab_view_state_runtime.test.js",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/dimension_migration_final_closeout_contract.test.js",
+      "category": "legacy-migration"
     },
     {
       "file": "tests/dimension_migration_retirement_inventory_contract.test.js",
@@ -5112,6 +5116,42 @@
     {
       "file": "tests/wave_c3_dimension_consolidation_runtime.test.ts",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wave_d_corner_layout_reviewed_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave_d_drawer_handle_reviewed_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave_d_interior_storage_reviewed_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave_d_sketch_geometry_reviewed_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave_e_drawer_sketch_reviewed_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave_e_interior_storage_reviewed_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave_e_material_thickness_reviewed_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave_e_remaining_reviewed_ownership_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave_e_single_entry_family_inventory_contract.test.js",
+      "category": "contract"
     },
     {
       "file": "tests/wave1_write_access_cleanup_guard.test.js",

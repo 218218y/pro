@@ -1,28 +1,28 @@
 # Test portfolio audit
 
-Generated: 2026-07-30T15:43:35.773Z
+Generated: 2026-07-30T17:13:29.390Z
 
 ## Summary
 
-- Test files classified: 1330
-- Canonical unit/runtime runner files: 1322
+- Test files classified: 1340
+- Canonical unit/runtime runner files: 1332
 - Playwright E2E files excluded from unit runner: 8
-- Helpers/fixtures excluded by filename contract: 33
-- Package script test references: 192
+- Helpers/fixtures excluded by filename contract: 34
+- Package script test references: 193
 - Catalog test references: 352
-- Total explicit test references: 544
+- Total explicit test references: 545
 - Catalog groups: 29
 - Catalog-backed package scripts: 29
 - Primary non-overlapping portfolio groups: 5
 
 | Category         | Count |
 | ---------------- | ----: |
-| contract         |   483 |
+| contract         |   492 |
 | runtime-unit     |   321 |
 | integration      |   466 |
 | e2e-smoke        |     9 |
 | perf-smoke       |     9 |
-| legacy-migration |    42 |
+| legacy-migration |    43 |
 
 ## Guard results
 

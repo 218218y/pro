@@ -1,13 +1,13 @@
 # Test group catalog
 
-Generated: 2026-07-30T15:43:35.615Z
+Generated: 2026-07-30T17:21:25.839Z
 
 ## Summary
 
 - Catalog groups: 29
 - Package script bindings owned by the catalog: 29
 - Catalog test-file references: 352
-- Direct package.json test-file references still remaining: 192
+- Direct package.json test-file references still remaining: 193
 - Catalog definition issues: 0
 - Package binding issues: 0
 

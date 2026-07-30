@@ -11,24 +11,38 @@ const reportRel = 'tools/wp_dimension_migration_retirement_inventory.json';
 const markdownRel = 'docs/DIMENSION_MIGRATION_RETIREMENT_INVENTORY.md';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
-test('Checkpoint 4G retirement inventory is a complete captured bijection over 149 active Entries', () => {
+test('Checkpoint 4J retirement inventory locks the final zero-active ledger', () => {
   const generated = buildInventory(root);
   const checkedIn = JSON.parse(read(reportRel));
   assert.deepEqual(checkedIn, generated);
   assert.equal(read(markdownRel), renderMarkdown(generated));
   assert.deepEqual(generated.summary, {
     historicalEntries: 178,
-    activeEntries: 149,
-    activeFromFiles: 93,
-    multiEntryConsumers: 35,
-    multiEntryConsumerEntries: 91,
-    singleEntryConsumers: 58,
-    singleEntryConsumerEntries: 58,
-    exactImportSetSignatures: 81,
+    activeEntries: 0,
+    activeFromFiles: 0,
+    twoEntryConsumers: 0,
+    twoEntryConsumerEntries: 0,
+    singleEntryConsumers: 0,
+    singleEntryConsumerEntries: 0,
+    exactImportSetSignatures: 0,
   });
-  assert.equal(generated.entries.length, 149);
-  assert.equal(new Set(generated.entries.map(entry => entry.entryNumber)).size, 149);
-  assert.equal(new Set(generated.entries.map(entry => entry.fromFile)).size, 93);
+  assert.equal(generated.entries.length, 0);
+  assert.equal(new Set(generated.entries.map(entry => entry.entryNumber)).size, 0);
+  assert.equal(new Set(generated.entries.map(entry => entry.fromFile)).size, 0);
+  assert.deepEqual(generated.previousCapturedSnapshot, {
+    capturedCheckpoint: '4G',
+    capturedAt: '2026-07-29',
+    summary: {
+      historicalEntries: 178,
+      activeEntries: 149,
+      activeFromFiles: 93,
+      multiEntryConsumers: 35,
+      multiEntryConsumerEntries: 91,
+      singleEntryConsumers: 58,
+      singleEntryConsumerEntries: 58,
+      exactImportSetSignatures: 81,
+    },
+  });
   assert.equal(
     generated.entries.every(entry => /^[a-f0-9]{64}$/u.test(entry.exactImportSetSignature)),
     true
@@ -43,7 +57,7 @@ test('Checkpoint 4G retirement inventory is a complete captured bijection over 1
   );
 });
 
-test('Inventory recommendations never mutate or retire Layer migration debt', () => {
+test('Current inventory recommendations never mutate or retire Layer migration debt', () => {
   const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
   const generated = buildInventory(root);
   assert.equal(baseline.migrationBudgets.length, 178);
