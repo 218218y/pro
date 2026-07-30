@@ -13,22 +13,22 @@ This is a decision-input report, not removal authorization. All 99 public symbol
 - Remaining importer: `esm/native/features/dimensions/index.ts` (wildcard-re-export)
 - Public surface: 89 values / 10 types
 
-## Layer Contract 2.6 ownership
+## Layer Contract 2.7 ownership
 
 - Historical migration entries: 178
-- Active migration entries: 149
-- Retired migration entries: 29
+- Active migration entries: 108
+- Retired migration entries: 70
 - Compatibility budgets: 4
-- Consolidations: 14
+- Consolidations: 24
 - Historical unique fromFiles: 108
-- Active migration unique fromFiles: 93
+- Active migration unique fromFiles: 83
 - Runtime compatibility owner: `wardrobe-dimension-runtime-public-compatibility`
 - Runtime public surface: `esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts`
 
 | Runtime edge     | Observed | Active migration | Compatibility | Consolidation | Reviewed general | General budget |
 | ---------------- | -------: | ---------------: | ------------: | ------------: | ---------------: | -------------: |
-| Statements       |       36 |                0 |             4 |             1 |               31 |             32 |
-| Value statements |       35 |                0 |             4 |             1 |               30 |             31 |
+| Statements       |       36 |                0 |             4 |             1 |               31 |             31 |
+| Value statements |       35 |                0 |             4 |             1 |               30 |             30 |
 
 | Compatibility budget                              | Retired Entry | Target                                                        | Next review |
 | ------------------------------------------------- | ------------: | ------------------------------------------------------------- | ----------- |
@@ -37,14 +37,15 @@ This is a decision-input report, not removal authorization. All 99 public symbol
 | `runtime-stack-split-public-compatibility`        |           177 | `esm/shared/dimensions/stack_split_policy.ts`                 | 2027-07-29  |
 | `runtime-default-resolution-public-compatibility` |           178 | `esm/shared/dimensions/wardrobe_default_resolution_policy.ts` | 2027-07-29  |
 
-## Layer comparison
+## Public snapshot and current Layer topology
 
-Edge: features → shared
+- capturedPublicSurfaceSnapshot: commit `d6a1b554fc35b248889daca5895880a135963cce`, 89 values / 10 types; public routes changed since capture: false.
+- currentRepositoryLayerTopology edge: features → shared.
 
 | Topology           | Physical statements | Value statements | Type statements | Importers | Value importers | Type importers |
 | ------------------ | ------------------: | ---------------: | --------------: | --------: | --------------: | -------------: |
-| Current wildcard   |                  76 |               75 |               2 |        43 |              43 |              1 |
-| Option B projected |                  76 |               75 |               3 |        43 |              43 |              2 |
+| Current repository |                  61 |               60 |               2 |        43 |              43 |              1 |
+| Option B projected |                  61 |               60 |               3 |        43 |              43 |              2 |
 
 Facade-dependency reduction: 0.
 

@@ -1,10 +1,12 @@
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
 import { getWardrobeGroup } from '../runtime/render_access.js';
 import { writeStackSplitLowerTopY } from '../runtime/cache_access.js';
-import { CARCASS_INTERIOR_DIMENSIONS } from '../../shared/dimensions/carcass_interior_policy.js';
-import { CARCASS_INTERIOR_GRID_POLICY } from '../../shared/dimensions/carcass_interior_grid_policy.js';
-import { EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY } from '../../shared/dimensions/handle_policy.js';
-import { DEFAULT_STACK_SPLIT_LOWER_HEIGHT } from '../../shared/dimensions/stack_split_policy.js';
+import {
+  CARCASS_INTERIOR_DIMENSIONS,
+  CARCASS_INTERIOR_GRID_POLICY,
+  DEFAULT_STACK_SPLIT_LOWER_HEIGHT,
+  EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY,
+} from '../../shared/dimensions/stack_split_lower_setup_dimension_policy.js';
 import { applyCarcassAndGetCabinetMetrics } from './carcass_pipeline.js';
 import { computeModulesAndLayout } from './module_layout_pipeline.js';
 import { readFiniteNumberArray, readRecord } from './build_flow_readers.js';

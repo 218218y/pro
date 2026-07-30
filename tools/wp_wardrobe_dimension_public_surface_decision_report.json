@@ -17,18 +17,19 @@
     },
     "layerBaseline": {
       "file": "tools/wp_layer_baseline.json",
-      "sha256": "1f5f56379baa9be99ba060245662b324bb45a95e3dc65f39ccb05a4d0b5d33db"
+      "sha256": "e464d375ad0c4316fba9e7fd8223874201973466764d3ea3523cd83d1e56bd83"
     }
   },
   "layerContractOwnership": {
-    "schemaVersion": "2.6",
+    "schemaVersion": "2.7",
     "historicalMigrationEntries": 178,
-    "activeMigrationEntries": 149,
-    "retiredMigrationEntries": 29,
+    "activeMigrationEntries": 108,
+    "retiredMigrationEntries": 70,
     "compatibilityBudgets": 4,
-    "consolidations": 14,
+    "reviewedOwnershipBudgets": 0,
+    "consolidations": 24,
     "historicalUniqueFromFiles": 108,
-    "activeUniqueFromFiles": 93,
+    "activeUniqueFromFiles": 83,
     "runtime": {
       "owner": "wardrobe-dimension-runtime-public-compatibility",
       "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts",
@@ -37,16 +38,18 @@
         "activeMigrationStatements": 0,
         "compatibilityStatements": 4,
         "consolidationStatements": 1,
+        "reviewedOwnershipStatements": 0,
         "reviewedGeneralStatements": 31,
-        "generalBudget": 32
+        "generalBudget": 31
       },
       "valueEdge": {
         "observedValueStatements": 35,
         "activeMigrationValueStatements": 0,
         "compatibilityValueStatements": 4,
         "consolidationValueStatements": 1,
+        "reviewedOwnershipValueStatements": 0,
         "reviewedGeneralValueStatements": 30,
-        "generalValueBudget": 31
+        "generalValueBudget": 30
       },
       "compatibilityRoutes": [
         {
@@ -144,6 +147,32 @@
     }
   },
   "topology": {
+    "capturedPublicSurfaceSnapshot": {
+      "capturedProductionHead": "d6a1b554fc35b248889daca5895880a135963cce",
+      "semanticSnapshotFile": "tools/wp_wardrobe_dimension_public_surface_semantic_snapshot.json",
+      "publicValues": 89,
+      "publicTypes": 10,
+      "publicRoutesChangedSinceCapture": false
+    },
+    "currentRepositoryLayerTopology": {
+      "edge": "features → shared",
+      "physicalStatements": 61,
+      "valueStatements": 60,
+      "typeStatements": 2,
+      "importers": 43,
+      "valueImporters": 43,
+      "typeImporters": 1
+    },
+    "optionBProjectedLayerTopology": {
+      "edge": "features → shared",
+      "physicalStatements": 61,
+      "valueStatements": 60,
+      "typeStatements": 3,
+      "importers": 43,
+      "valueImporters": 43,
+      "typeImporters": 2
+    },
+    "facadeDependencyReduction": 0,
     "runtimeFacadeDependencies": 0,
     "runtimeDimensionRoutes": 53,
     "servicesDimensionRoutes": 53,
@@ -154,26 +183,6 @@
       "form": "wildcard-re-export"
     },
     "totalLegacyFacadeDependencies": { "importers": 1, "statements": 1 },
-    "layerComparison": {
-      "edge": "features → shared",
-      "currentWildcard": {
-        "physicalStatements": 76,
-        "valueStatements": 75,
-        "typeStatements": 2,
-        "importers": 43,
-        "valueImporters": 43,
-        "typeImporters": 1
-      },
-      "optionBProjected": {
-        "physicalStatements": 76,
-        "valueStatements": 75,
-        "typeStatements": 3,
-        "importers": 43,
-        "valueImporters": 43,
-        "typeImporters": 2
-      },
-      "facadeDependencyReduction": 0
-    },
     "files": {
       "runtime": "esm/native/runtime/api.ts",
       "servicesBase": "esm/native/services/api_runtime_base_surface.ts",

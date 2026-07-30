@@ -1,19 +1,15 @@
 import { getThreeMaybe } from '../runtime/three_access.js';
-import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
 import {
+  DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY,
   INTERIOR_ROD_PLACEMENT_POLICY,
   INTERIOR_SHELF_GEOMETRY_POLICY,
-} from '../../shared/dimensions/interior_fittings_policy.js';
-import {
   INTERIOR_STORAGE_BARRIER_POLICY,
   INTERIOR_STORAGE_GRID_POLICY,
   INTERIOR_STORAGE_PREVIEW_POLICY,
-} from '../../shared/dimensions/interior_storage_policy.js';
-import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
-import {
+  MATERIAL_THICKNESS_POLICY,
   SKETCH_BOX_ROD_PREVIEW_POLICY,
   SKETCH_BOX_SHELF_PREVIEW_POLICY,
-} from '../../shared/dimensions/sketch_box_preview_policy.js';
+} from '../../shared/dimensions/interior_hover_manual_mode_dimension_policy.js';
 import {
   __wp_readInteriorModuleConfigRef,
   __wp_resolveInteriorHoverTarget,

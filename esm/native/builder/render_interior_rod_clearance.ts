@@ -1,18 +1,16 @@
-import { CARCASS_INTERIOR_GRID_POLICY } from '../../shared/dimensions/carcass_interior_grid_policy.js';
 import {
+  CARCASS_INTERIOR_GRID_POLICY,
+  DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY,
   FOLDED_CLOTHES_VISUAL_POLICY,
   HANGER_VISUAL_POLICY,
-} from '../../shared/dimensions/content_visual_policy.js';
-import { DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY } from '../../shared/dimensions/drawer_sketch_policy.js';
-import {
   INTERIOR_PRESET_ROD_FACTORS_POLICY,
   INTERIOR_PRESET_SHELF_ROWS_POLICY,
   INTERIOR_ROD_PLACEMENT_POLICY,
   INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY,
-} from '../../shared/dimensions/interior_fittings_policy.js';
-import { INTERIOR_STORAGE_BARRIER_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
-import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
-import { SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY } from '../../shared/dimensions/sketch_box_geometry_policy.js';
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  MATERIAL_THICKNESS_POLICY,
+  SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY,
+} from '../../shared/dimensions/interior_rod_clearance_dimension_policy.js';
 import {
   DEFAULT_SKETCH_EXTERNAL_DRAWER_HEIGHT_M,
   DEFAULT_SKETCH_INTERNAL_DRAWER_HEIGHT_M,

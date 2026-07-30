@@ -1,15 +1,13 @@
-import { INTERIOR_SHELF_GEOMETRY_POLICY } from '../../shared/dimensions/interior_fittings_policy.js';
 import {
+  INTERIOR_SHELF_GEOMETRY_POLICY,
   INTERIOR_STORAGE_BARRIER_POLICY,
   INTERIOR_STORAGE_PREVIEW_POLICY,
-} from '../../shared/dimensions/interior_storage_policy.js';
-import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
-import {
+  MATERIAL_THICKNESS_POLICY,
   SKETCH_BOX_PREVIEW_CORE_POLICY,
   SKETCH_BOX_ROD_PREVIEW_POLICY,
   SKETCH_BOX_SHELF_PREVIEW_POLICY,
   SKETCH_BOX_STORAGE_PREVIEW_POLICY,
-} from '../../shared/dimensions/sketch_box_preview_policy.js';
+} from '../../shared/dimensions/sketch_box_vertical_content_occupancy_dimension_policy.js';
 import { createManualLayoutSketchBoxContentHoverRecord } from './canvas_picking_manual_layout_sketch_hover_state.js';
 import {
   buildSketchBoxVerticalContentBlockers,

@@ -1,5 +1,5 @@
 {
-  "version": "2.6",
+  "version": "2.7",
   "root": "esm",
   "ratchet": {
     "mode": "decrease-only",
@@ -461,11 +461,11 @@
       "to": "shared",
       "decision": "allow",
       "maxImporterCount": 43,
-      "maxImportCount": 58,
+      "maxImportCount": 50,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 2,
       "maxValueImporterCount": 43,
-      "maxValueImportCount": 57,
+      "maxValueImportCount": 49,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Feature policies build on environment-neutral shared domain contracts and tokens."
@@ -615,11 +615,11 @@
       "to": "shared",
       "decision": "allow",
       "maxImporterCount": 2,
-      "maxImportCount": 4,
+      "maxImportCount": 3,
       "maxTypeImporterCount": 0,
       "maxTypeImportCount": 0,
       "maxValueImporterCount": 2,
-      "maxValueImportCount": 4,
+      "maxValueImportCount": 3,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Platform persistence uses shared identity and door-key normalization contracts."
@@ -629,11 +629,11 @@
       "to": "shared",
       "decision": "allow",
       "maxImporterCount": 20,
-      "maxImportCount": 32,
+      "maxImportCount": 31,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 1,
       "maxValueImporterCount": 20,
-      "maxValueImportCount": 31,
+      "maxValueImportCount": 30,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "Runtime primitives consume environment-neutral shared normalization and policy contracts."
@@ -726,12 +726,12 @@
       "from": "ui",
       "to": "shared",
       "decision": "allow",
-      "maxImporterCount": 25,
-      "maxImportCount": 27,
+      "maxImporterCount": 24,
+      "maxImportCount": 25,
       "maxTypeImporterCount": 1,
       "maxTypeImportCount": 1,
-      "maxValueImporterCount": 25,
-      "maxValueImportCount": 27,
+      "maxValueImporterCount": 24,
+      "maxValueImportCount": 25,
       "maxDynamicImporterCount": 0,
       "maxDynamicImportCount": 0,
       "reason": "UI formatting and controllers consume environment-neutral shared display and domain contracts."
@@ -6844,6 +6844,293 @@
       "mode": "ownership-transferred",
       "reason": "Runtime Wardrobe Default Resolution remains a reviewed public compatibility route; permanent ownership moved to runtime-default-resolution-public-compatibility.",
       "replacementCompatibilityBudgetId": "runtime-default-resolution-public-compatibility"
+    },
+    {
+      "entryNumber": 42,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
+    },
+    {
+      "entryNumber": 43,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
+    },
+    {
+      "entryNumber": 44,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
+    },
+    {
+      "entryNumber": 45,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
+    },
+    {
+      "entryNumber": 46,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
+    },
+    {
+      "entryNumber": 47,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "split-hover-preview-line-dimension-consolidation"
+    },
+    {
+      "entryNumber": 69,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
+    },
+    {
+      "entryNumber": 70,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
+    },
+    {
+      "entryNumber": 71,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
+    },
+    {
+      "entryNumber": 72,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
+    },
+    {
+      "entryNumber": 73,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
+    },
+    {
+      "entryNumber": 74,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-rod-clearance-dimension-consolidation"
+    },
+    {
+      "entryNumber": 137,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
+    },
+    {
+      "entryNumber": 138,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
+    },
+    {
+      "entryNumber": 139,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
+    },
+    {
+      "entryNumber": 140,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
+    },
+    {
+      "entryNumber": 141,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
+    },
+    {
+      "entryNumber": 142,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-build-dimension-consolidation"
+    },
+    {
+      "entryNumber": 111,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-hover-manual-mode-dimension-consolidation"
+    },
+    {
+      "entryNumber": 112,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-hover-manual-mode-dimension-consolidation"
+    },
+    {
+      "entryNumber": 113,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-hover-manual-mode-dimension-consolidation"
+    },
+    {
+      "entryNumber": 114,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "interior-hover-manual-mode-dimension-consolidation"
+    },
+    {
+      "entryNumber": 126,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "core-carcass-dimension-consolidation"
+    },
+    {
+      "entryNumber": 127,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "core-carcass-dimension-consolidation"
+    },
+    {
+      "entryNumber": 128,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "core-carcass-dimension-consolidation"
+    },
+    {
+      "entryNumber": 129,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "core-carcass-dimension-consolidation"
+    },
+    {
+      "entryNumber": 48,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "stack-split-lower-setup-dimension-consolidation"
+    },
+    {
+      "entryNumber": 49,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "stack-split-lower-setup-dimension-consolidation"
+    },
+    {
+      "entryNumber": 50,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "stack-split-lower-setup-dimension-consolidation"
+    },
+    {
+      "entryNumber": 98,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "manual-layout-free-box-plans-dimension-consolidation"
+    },
+    {
+      "entryNumber": 99,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "manual-layout-free-box-plans-dimension-consolidation"
+    },
+    {
+      "entryNumber": 100,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "manual-layout-free-box-plans-dimension-consolidation"
+    },
+    {
+      "entryNumber": 101,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "sketch-box-vertical-content-occupancy-dimension-consolidation"
+    },
+    {
+      "entryNumber": 102,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "sketch-box-vertical-content-occupancy-dimension-consolidation"
+    },
+    {
+      "entryNumber": 103,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "sketch-box-vertical-content-occupancy-dimension-consolidation"
+    },
+    {
+      "entryNumber": 108,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "preview-interior-hover-apply-dimension-consolidation"
+    },
+    {
+      "entryNumber": 109,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "preview-interior-hover-apply-dimension-consolidation"
+    },
+    {
+      "entryNumber": 110,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "preview-interior-hover-apply-dimension-consolidation"
+    },
+    {
+      "entryNumber": 143,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-inputs-dimension-consolidation"
+    },
+    {
+      "entryNumber": 144,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-inputs-dimension-consolidation"
+    },
+    {
+      "entryNumber": 145,
+      "retiredAt": "2026-07-30",
+      "mode": "statement-consolidated",
+      "reason": "The reviewed focused statements were consolidated behind one exact identity-preserving use-case owner.",
+      "replacementConsolidationId": "chest-mode-inputs-dimension-consolidation"
     }
   ],
   "compatibilityBudgets": [
@@ -6883,7 +7170,7 @@
       "reason": "Permanently review and preserve the Runtime Product Limits public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
     },
     {
       "id": "runtime-wardrobe-defaults-public-compatibility",
@@ -6912,7 +7199,7 @@
       "reason": "Permanently review and preserve the Runtime Wardrobe Defaults public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
     },
     {
       "id": "runtime-stack-split-public-compatibility",
@@ -6940,7 +7227,7 @@
       "reason": "Permanently review and preserve the Runtime Stack Split public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
     },
     {
       "id": "runtime-default-resolution-public-compatibility",
@@ -6968,9 +7255,10 @@
       "reason": "Permanently review and preserve the Runtime Wardrobe Default Resolution public compatibility statement without treating it as active migration debt.",
       "reviewedAt": "2026-07-29",
       "nextReviewBy": "2027-07-29",
-      "publicSurface": "esm/native/runtime/api.ts → esm/native/services/api_runtime_base_surface.ts → esm/native/services/api.ts"
+      "publicSurface": "esm/native/runtime/api.ts \u2192 esm/native/services/api_runtime_base_surface.ts \u2192 esm/native/services/api.ts"
     }
   ],
+  "reviewedOwnershipBudgets": [],
   "migrationConsolidations": [
     {
       "id": "runtime-default-state-dimension-consolidation",
@@ -8069,6 +8357,1151 @@
             "kind": "value",
             "syntax": "static-re-export",
             "importedSymbols": ["LIBRARY_PRESET_MODULE_DEFAULTS_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "split-hover-preview-line-dimension-consolidation",
+      "retiredAt": "2026-07-30",
+      "entryNumbers": [42, 43, 44, 45, 46, 47],
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+      "owner": "split-hover-preview-line-dimension-consolidation-owner",
+      "reason": "The reviewed split hover preview line dimension consolidation statements were replaced by one exact identity-preserving use-case owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "BASE_PLINTH_POLICY",
+          "CARCASS_INTERIOR_GRID_POLICY",
+          "CARCASS_SHELL_DIMENSIONS",
+          "EXTERNAL_DRAWER_FRONT_RENDER_POLICY",
+          "EXTERNAL_DRAWER_SIZE_POLICY",
+          "HINGED_DOOR_SPLIT_GEOMETRY_POLICY",
+          "INTERIOR_STORAGE_BARRIER_POLICY",
+          "MATERIAL_THICKNESS_POLICY"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+          "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["BASE_PLINTH_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+          "toFile": "esm/shared/dimensions/carcass_interior_grid_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["CARCASS_INTERIOR_GRID_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+          "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+          "toFile": "esm/shared/dimensions/door_system_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["HINGED_DOOR_SPLIT_GEOMETRY_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+          "toFile": "esm/shared/dimensions/external_drawer_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["EXTERNAL_DRAWER_FRONT_RENDER_POLICY", "EXTERNAL_DRAWER_SIZE_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+          "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_split_hover_preview_line.ts",
+          "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/wave_c1_dimension_consolidation_contract.test.js",
+          "sha256": "12d1840d9ab8c3a53b6af2fd10c3bb080d4b0dc4ed116c5d68ba226e5b50095e"
+        },
+        {
+          "path": "tests/wave_c1_dimension_consolidation_runtime.test.ts",
+          "sha256": "9c8b32cadf64d40f2a75d8ef31bc7af342d868a1b41b62fe5c02fcaba5aba7bb"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/split_hover_preview_line_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["BASE_PLINTH_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/carcass_interior_grid_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["CARCASS_INTERIOR_GRID_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/door_system_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["HINGED_DOOR_SPLIT_GEOMETRY_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/external_drawer_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["EXTERNAL_DRAWER_FRONT_RENDER_POLICY", "EXTERNAL_DRAWER_SIZE_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["MATERIAL_THICKNESS_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "interior-rod-clearance-dimension-consolidation",
+      "retiredAt": "2026-07-30",
+      "entryNumbers": [69, 70, 71, 72, 73, 74],
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_interior_rod_clearance.ts",
+      "owner": "interior-rod-clearance-dimension-consolidation-owner",
+      "reason": "The reviewed interior rod clearance dimension consolidation statements were replaced by one exact identity-preserving use-case owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "CARCASS_INTERIOR_GRID_POLICY",
+          "DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY",
+          "FOLDED_CLOTHES_VISUAL_POLICY",
+          "HANGER_VISUAL_POLICY",
+          "INTERIOR_PRESET_ROD_FACTORS_POLICY",
+          "INTERIOR_PRESET_SHELF_ROWS_POLICY",
+          "INTERIOR_ROD_PLACEMENT_POLICY",
+          "INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY",
+          "INTERIOR_STORAGE_BARRIER_POLICY",
+          "MATERIAL_THICKNESS_POLICY",
+          "SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/builder/render_interior_rod_clearance.ts",
+          "toFile": "esm/shared/dimensions/carcass_interior_grid_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["CARCASS_INTERIOR_GRID_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/render_interior_rod_clearance.ts",
+          "toFile": "esm/shared/dimensions/content_visual_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["FOLDED_CLOTHES_VISUAL_POLICY", "HANGER_VISUAL_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/render_interior_rod_clearance.ts",
+          "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/render_interior_rod_clearance.ts",
+          "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+          "kind": "value",
+          "importedSymbols": [
+            "INTERIOR_PRESET_ROD_FACTORS_POLICY",
+            "INTERIOR_PRESET_SHELF_ROWS_POLICY",
+            "INTERIOR_ROD_PLACEMENT_POLICY",
+            "INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY"
+          ],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/render_interior_rod_clearance.ts",
+          "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/render_interior_rod_clearance.ts",
+          "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/render_interior_rod_clearance.ts",
+          "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/wave_c1_dimension_consolidation_contract.test.js",
+          "sha256": "12d1840d9ab8c3a53b6af2fd10c3bb080d4b0dc4ed116c5d68ba226e5b50095e"
+        },
+        {
+          "path": "tests/wave_c1_dimension_consolidation_runtime.test.ts",
+          "sha256": "9c8b32cadf64d40f2a75d8ef31bc7af342d868a1b41b62fe5c02fcaba5aba7bb"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/interior_rod_clearance_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/carcass_interior_grid_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["CARCASS_INTERIOR_GRID_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/content_visual_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["FOLDED_CLOTHES_VISUAL_POLICY", "HANGER_VISUAL_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": [
+              "INTERIOR_PRESET_ROD_FACTORS_POLICY",
+              "INTERIOR_PRESET_SHELF_ROWS_POLICY",
+              "INTERIOR_ROD_PLACEMENT_POLICY",
+              "INTERIOR_SHELF_CONTENT_CLEARANCE_POLICY"
+            ]
+          },
+          {
+            "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["MATERIAL_THICKNESS_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/sketch_box_geometry_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["SKETCH_BOX_PLACEMENT_GEOMETRY_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "chest-mode-build-dimension-consolidation",
+      "retiredAt": "2026-07-30",
+      "entryNumbers": [137, 138, 139, 140, 141, 142],
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/visuals_chest_mode_build.ts",
+      "owner": "chest-mode-build-dimension-consolidation-owner",
+      "reason": "The reviewed chest mode build dimension consolidation statements were replaced by one exact identity-preserving use-case owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/chest_mode_build_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "BASE_LEG_LAYOUT_POLICY",
+          "BASE_PLATFORM_RENDER_POLICY",
+          "BASE_PLINTH_POLICY",
+          "CHEST_CASTER_RENDER_POLICY",
+          "CHEST_CONNECTOR_POLICY",
+          "CHEST_DRAWER_GEOMETRY_POLICY",
+          "CHEST_MODE_COMMODE_CONSTRAINTS_POLICY",
+          "CHEST_MODE_COMMODE_RENDER_POLICY",
+          "CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY",
+          "CHEST_MOTION_POLICY",
+          "CHEST_SHELL_POLICY",
+          "HINGED_DOOR_MOUNT_POLICY",
+          "resolveDoorMountThicknessesFromConfig"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/builder/visuals_chest_mode_build.ts",
+          "toFile": "esm/shared/dimensions/base_leg_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["BASE_LEG_LAYOUT_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/visuals_chest_mode_build.ts",
+          "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/visuals_chest_mode_build.ts",
+          "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["BASE_PLINTH_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/visuals_chest_mode_build.ts",
+          "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+          "kind": "value",
+          "importedSymbols": [
+            "CHEST_MODE_COMMODE_CONSTRAINTS_POLICY",
+            "CHEST_MODE_COMMODE_RENDER_POLICY",
+            "CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY"
+          ],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/visuals_chest_mode_build.ts",
+          "toFile": "esm/shared/dimensions/chest_structural_policy.ts",
+          "kind": "value",
+          "importedSymbols": [
+            "CHEST_CASTER_RENDER_POLICY",
+            "CHEST_CONNECTOR_POLICY",
+            "CHEST_DRAWER_GEOMETRY_POLICY",
+            "CHEST_MOTION_POLICY",
+            "CHEST_SHELL_POLICY"
+          ],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/visuals_chest_mode_build.ts",
+          "toFile": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["resolveDoorMountThicknessesFromConfig"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/visuals_chest_mode_build.ts",
+          "toFile": "esm/shared/dimensions/door_system_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["HINGED_DOOR_MOUNT_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/wave_c1_dimension_consolidation_contract.test.js",
+          "sha256": "12d1840d9ab8c3a53b6af2fd10c3bb080d4b0dc4ed116c5d68ba226e5b50095e"
+        },
+        {
+          "path": "tests/wave_c1_dimension_consolidation_runtime.test.ts",
+          "sha256": "9c8b32cadf64d40f2a75d8ef31bc7af342d868a1b41b62fe5c02fcaba5aba7bb"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/chest_mode_build_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/base_leg_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["BASE_LEG_LAYOUT_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["BASE_PLINTH_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": [
+              "CHEST_MODE_COMMODE_CONSTRAINTS_POLICY",
+              "CHEST_MODE_COMMODE_RENDER_POLICY",
+              "CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY"
+            ]
+          },
+          {
+            "toFile": "esm/shared/dimensions/chest_structural_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": [
+              "CHEST_CASTER_RENDER_POLICY",
+              "CHEST_CONNECTOR_POLICY",
+              "CHEST_DRAWER_GEOMETRY_POLICY",
+              "CHEST_MOTION_POLICY",
+              "CHEST_SHELL_POLICY"
+            ]
+          },
+          {
+            "toFile": "esm/shared/dimensions/door_mount_thickness_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["resolveDoorMountThicknessesFromConfig"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/door_system_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["HINGED_DOOR_MOUNT_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "interior-hover-manual-mode-dimension-consolidation",
+      "retiredAt": "2026-07-30",
+      "entryNumbers": [111, 112, 113, 114],
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts",
+      "owner": "interior-hover-manual-mode-dimension-consolidation-owner",
+      "reason": "The reviewed interior hover manual mode dimension consolidation statements were replaced by one exact identity-preserving use-case owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/interior_hover_manual_mode_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY",
+          "INTERIOR_ROD_PLACEMENT_POLICY",
+          "INTERIOR_SHELF_GEOMETRY_POLICY",
+          "INTERIOR_STORAGE_BARRIER_POLICY",
+          "INTERIOR_STORAGE_GRID_POLICY",
+          "INTERIOR_STORAGE_PREVIEW_POLICY",
+          "MATERIAL_THICKNESS_POLICY",
+          "SKETCH_BOX_ROD_PREVIEW_POLICY",
+          "SKETCH_BOX_SHELF_PREVIEW_POLICY"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts",
+          "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts",
+          "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["INTERIOR_ROD_PLACEMENT_POLICY", "INTERIOR_SHELF_GEOMETRY_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts",
+          "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+          "kind": "value",
+          "importedSymbols": [
+            "INTERIOR_STORAGE_BARRIER_POLICY",
+            "INTERIOR_STORAGE_GRID_POLICY",
+            "INTERIOR_STORAGE_PREVIEW_POLICY"
+          ],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts",
+          "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_interior_hover_manual_mode.ts",
+          "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["SKETCH_BOX_ROD_PREVIEW_POLICY", "SKETCH_BOX_SHELF_PREVIEW_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/wave_c2_dimension_consolidation_contract.test.js",
+          "sha256": "a71243517df492abdf1663fe61a9cf502691a86d5abbf835b2a71f07b5e4f98d"
+        },
+        {
+          "path": "tests/wave_c2_dimension_consolidation_runtime.test.ts",
+          "sha256": "bd778d99f1b9325b1613b6e80a7bbfde382b4ed293ba22d999c0f6fbe8d471b7"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/interior_hover_manual_mode_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/drawer_sketch_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["INTERIOR_ROD_PLACEMENT_POLICY", "INTERIOR_SHELF_GEOMETRY_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": [
+              "INTERIOR_STORAGE_BARRIER_POLICY",
+              "INTERIOR_STORAGE_GRID_POLICY",
+              "INTERIOR_STORAGE_PREVIEW_POLICY"
+            ]
+          },
+          {
+            "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["MATERIAL_THICKNESS_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["SKETCH_BOX_ROD_PREVIEW_POLICY", "SKETCH_BOX_SHELF_PREVIEW_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "core-carcass-dimension-consolidation",
+      "retiredAt": "2026-07-30",
+      "entryNumbers": [126, 127, 128, 129],
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/core_carcass_shared.ts",
+      "owner": "core-carcass-dimension-consolidation-owner",
+      "reason": "The reviewed core carcass dimension consolidation statements were replaced by one exact identity-preserving use-case owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/core_carcass_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "BASE_LEG_LAYOUT_POLICY",
+          "BASE_PLATFORM_RENDER_POLICY",
+          "BASE_PLINTH_POLICY",
+          "CARCASS_SHELL_DIMENSIONS",
+          "MATERIAL_THICKNESS_POLICY"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/builder/core_carcass_shared.ts",
+          "toFile": "esm/shared/dimensions/base_leg_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["BASE_LEG_LAYOUT_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/core_carcass_shared.ts",
+          "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/core_carcass_shared.ts",
+          "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["BASE_PLINTH_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/core_carcass_shared.ts",
+          "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/core_carcass_shared.ts",
+          "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/wave_c2_dimension_consolidation_contract.test.js",
+          "sha256": "a71243517df492abdf1663fe61a9cf502691a86d5abbf835b2a71f07b5e4f98d"
+        },
+        {
+          "path": "tests/wave_c2_dimension_consolidation_runtime.test.ts",
+          "sha256": "bd778d99f1b9325b1613b6e80a7bbfde382b4ed293ba22d999c0f6fbe8d471b7"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/core_carcass_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/base_leg_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["BASE_LEG_LAYOUT_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/base_plinth_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["BASE_PLINTH_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/carcass_shell_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["CARCASS_SHELL_DIMENSIONS"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["MATERIAL_THICKNESS_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "stack-split-lower-setup-dimension-consolidation",
+      "retiredAt": "2026-07-30",
+      "entryNumbers": [48, 49, 50],
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/build_stack_split_lower_setup.ts",
+      "owner": "stack-split-lower-setup-dimension-consolidation-owner",
+      "reason": "The reviewed stack split lower setup dimension consolidation statements were replaced by one exact identity-preserving use-case owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/stack_split_lower_setup_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "CARCASS_INTERIOR_DIMENSIONS",
+          "CARCASS_INTERIOR_GRID_POLICY",
+          "DEFAULT_STACK_SPLIT_LOWER_HEIGHT",
+          "EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/builder/build_stack_split_lower_setup.ts",
+          "toFile": "esm/shared/dimensions/carcass_interior_grid_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["CARCASS_INTERIOR_GRID_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/build_stack_split_lower_setup.ts",
+          "toFile": "esm/shared/dimensions/carcass_interior_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["CARCASS_INTERIOR_DIMENSIONS"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/build_stack_split_lower_setup.ts",
+          "toFile": "esm/shared/dimensions/handle_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/build_stack_split_lower_setup.ts",
+          "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/wave_c3_dimension_consolidation_contract.test.js",
+          "sha256": "c29e99c7401f1a1bb603b87ecdf1c837388a595f895ef4f459b1489002645e09"
+        },
+        {
+          "path": "tests/wave_c3_dimension_consolidation_runtime.test.ts",
+          "sha256": "b8f75dce807470233b42dbc9b68c2ed08aaad0877adf77e4c38f08f78e94674c"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/stack_split_lower_setup_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/carcass_interior_grid_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["CARCASS_INTERIOR_GRID_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/carcass_interior_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["CARCASS_INTERIOR_DIMENSIONS"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/handle_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["EDGE_HANDLE_VERTICAL_PLACEMENT_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/stack_split_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["DEFAULT_STACK_SPLIT_LOWER_HEIGHT"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "manual-layout-free-box-plans-dimension-consolidation",
+      "retiredAt": "2026-07-30",
+      "entryNumbers": [98, 99, 100],
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts",
+      "owner": "manual-layout-free-box-plans-dimension-consolidation-owner",
+      "reason": "The reviewed manual layout free box plans dimension consolidation statements were replaced by one exact identity-preserving use-case owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/manual_layout_free_box_plans_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "INTERIOR_ROD_RENDER_POLICY",
+          "INTERIOR_SHELF_GEOMETRY_POLICY",
+          "INTERIOR_STORAGE_BARRIER_POLICY",
+          "INTERIOR_STORAGE_GRID_POLICY",
+          "MATERIAL_THICKNESS_POLICY",
+          "SKETCH_BOX_PREVIEW_CORE_POLICY"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts",
+          "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["INTERIOR_ROD_RENDER_POLICY", "INTERIOR_SHELF_GEOMETRY_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts",
+          "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_GRID_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts",
+          "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_manual_layout_free_box_plans.ts",
+          "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["SKETCH_BOX_PREVIEW_CORE_POLICY"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/wave_c3_dimension_consolidation_contract.test.js",
+          "sha256": "c29e99c7401f1a1bb603b87ecdf1c837388a595f895ef4f459b1489002645e09"
+        },
+        {
+          "path": "tests/wave_c3_dimension_consolidation_runtime.test.ts",
+          "sha256": "b8f75dce807470233b42dbc9b68c2ed08aaad0877adf77e4c38f08f78e94674c"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/manual_layout_free_box_plans_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["INTERIOR_ROD_RENDER_POLICY", "INTERIOR_SHELF_GEOMETRY_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_GRID_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["MATERIAL_THICKNESS_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["SKETCH_BOX_PREVIEW_CORE_POLICY"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "sketch-box-vertical-content-occupancy-dimension-consolidation",
+      "retiredAt": "2026-07-30",
+      "entryNumbers": [101, 102, 103],
+      "from": "services",
+      "to": "shared",
+      "fromFile": "esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts",
+      "owner": "sketch-box-vertical-content-occupancy-dimension-consolidation-owner",
+      "reason": "The reviewed sketch box vertical content occupancy dimension consolidation statements were replaced by one exact identity-preserving use-case owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/sketch_box_vertical_content_occupancy_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "INTERIOR_SHELF_GEOMETRY_POLICY",
+          "INTERIOR_STORAGE_BARRIER_POLICY",
+          "INTERIOR_STORAGE_PREVIEW_POLICY",
+          "MATERIAL_THICKNESS_POLICY",
+          "SKETCH_BOX_PREVIEW_CORE_POLICY",
+          "SKETCH_BOX_ROD_PREVIEW_POLICY",
+          "SKETCH_BOX_SHELF_PREVIEW_POLICY",
+          "SKETCH_BOX_STORAGE_PREVIEW_POLICY"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts",
+          "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts",
+          "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_PREVIEW_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts",
+          "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/services/canvas_picking_sketch_box_vertical_content_occupancy.ts",
+          "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+          "kind": "value",
+          "importedSymbols": [
+            "SKETCH_BOX_PREVIEW_CORE_POLICY",
+            "SKETCH_BOX_ROD_PREVIEW_POLICY",
+            "SKETCH_BOX_SHELF_PREVIEW_POLICY",
+            "SKETCH_BOX_STORAGE_PREVIEW_POLICY"
+          ],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/wave_c3_dimension_consolidation_contract.test.js",
+          "sha256": "c29e99c7401f1a1bb603b87ecdf1c837388a595f895ef4f459b1489002645e09"
+        },
+        {
+          "path": "tests/wave_c3_dimension_consolidation_runtime.test.ts",
+          "sha256": "b8f75dce807470233b42dbc9b68c2ed08aaad0877adf77e4c38f08f78e94674c"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/sketch_box_vertical_content_occupancy_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_PREVIEW_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["MATERIAL_THICKNESS_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": [
+              "SKETCH_BOX_PREVIEW_CORE_POLICY",
+              "SKETCH_BOX_ROD_PREVIEW_POLICY",
+              "SKETCH_BOX_SHELF_PREVIEW_POLICY",
+              "SKETCH_BOX_STORAGE_PREVIEW_POLICY"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "preview-interior-hover-apply-dimension-consolidation",
+      "retiredAt": "2026-07-30",
+      "entryNumbers": [108, 109, 110],
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/render_preview_interior_hover_apply.ts",
+      "owner": "preview-interior-hover-apply-dimension-consolidation-owner",
+      "reason": "The reviewed preview interior hover apply dimension consolidation statements were replaced by one exact identity-preserving use-case owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/preview_interior_hover_apply_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "INTERIOR_SHELF_GEOMETRY_POLICY",
+          "INTERIOR_STORAGE_BARRIER_POLICY",
+          "INTERIOR_STORAGE_PREVIEW_POLICY",
+          "MATERIAL_THICKNESS_POLICY",
+          "SKETCH_BOX_PREVIEW_CORE_POLICY",
+          "SKETCH_BOX_ROD_PREVIEW_POLICY",
+          "SKETCH_BOX_SHELF_PREVIEW_POLICY"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/builder/render_preview_interior_hover_apply.ts",
+          "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/render_preview_interior_hover_apply.ts",
+          "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_PREVIEW_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/render_preview_interior_hover_apply.ts",
+          "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["MATERIAL_THICKNESS_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/render_preview_interior_hover_apply.ts",
+          "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+          "kind": "value",
+          "importedSymbols": [
+            "SKETCH_BOX_PREVIEW_CORE_POLICY",
+            "SKETCH_BOX_ROD_PREVIEW_POLICY",
+            "SKETCH_BOX_SHELF_PREVIEW_POLICY"
+          ],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/wave_c3_dimension_consolidation_contract.test.js",
+          "sha256": "c29e99c7401f1a1bb603b87ecdf1c837388a595f895ef4f459b1489002645e09"
+        },
+        {
+          "path": "tests/wave_c3_dimension_consolidation_runtime.test.ts",
+          "sha256": "b8f75dce807470233b42dbc9b68c2ed08aaad0877adf77e4c38f08f78e94674c"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/preview_interior_hover_apply_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/interior_fittings_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["INTERIOR_SHELF_GEOMETRY_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/interior_storage_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["INTERIOR_STORAGE_BARRIER_POLICY", "INTERIOR_STORAGE_PREVIEW_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/material_thickness_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["MATERIAL_THICKNESS_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/sketch_box_preview_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": [
+              "SKETCH_BOX_PREVIEW_CORE_POLICY",
+              "SKETCH_BOX_ROD_PREVIEW_POLICY",
+              "SKETCH_BOX_SHELF_PREVIEW_POLICY"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "chest-mode-inputs-dimension-consolidation",
+      "retiredAt": "2026-07-30",
+      "entryNumbers": [143, 144, 145],
+      "from": "builder",
+      "to": "shared",
+      "fromFile": "esm/native/builder/visuals_chest_mode_inputs.ts",
+      "owner": "chest-mode-inputs-dimension-consolidation-owner",
+      "reason": "The reviewed chest mode inputs dimension consolidation statements were replaced by one exact identity-preserving use-case owner.",
+      "replacementStatement": {
+        "toFile": "esm/shared/dimensions/chest_mode_inputs_dimension_policy.ts",
+        "kind": "value",
+        "syntax": "static-import",
+        "importedSymbols": [
+          "BASE_PLATFORM_RENDER_POLICY",
+          "CHEST_CASTER_RENDER_POLICY",
+          "CHEST_MODE_COMMODE_CONSTRAINTS_POLICY",
+          "clampDimension",
+          "cmToM"
+        ]
+      },
+      "absorbedStatements": [
+        {
+          "fromFile": "esm/native/builder/visuals_chest_mode_inputs.ts",
+          "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/visuals_chest_mode_inputs.ts",
+          "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["CHEST_MODE_COMMODE_CONSTRAINTS_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/visuals_chest_mode_inputs.ts",
+          "toFile": "esm/shared/dimensions/chest_structural_policy.ts",
+          "kind": "value",
+          "importedSymbols": ["CHEST_CASTER_RENDER_POLICY"],
+          "syntax": "static-import"
+        },
+        {
+          "fromFile": "esm/native/builder/visuals_chest_mode_inputs.ts",
+          "toFile": "esm/shared/dimensions/units.ts",
+          "kind": "value",
+          "importedSymbols": ["clampDimension", "cmToM"],
+          "syntax": "static-import"
+        }
+      ],
+      "evidenceContracts": [
+        {
+          "path": "tests/wave_c3_dimension_consolidation_contract.test.js",
+          "sha256": "c29e99c7401f1a1bb603b87ecdf1c837388a595f895ef4f459b1489002645e09"
+        },
+        {
+          "path": "tests/wave_c3_dimension_consolidation_runtime.test.ts",
+          "sha256": "b8f75dce807470233b42dbc9b68c2ed08aaad0877adf77e4c38f08f78e94674c"
+        }
+      ],
+      "replacementProvenance": {
+        "mode": "identity-reexport",
+        "ownerFile": "esm/shared/dimensions/chest_mode_inputs_dimension_policy.ts",
+        "sourceStatements": [
+          {
+            "toFile": "esm/shared/dimensions/base_platform_render_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["BASE_PLATFORM_RENDER_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/chest_mode_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["CHEST_MODE_COMMODE_CONSTRAINTS_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/chest_structural_policy.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["CHEST_CASTER_RENDER_POLICY"]
+          },
+          {
+            "toFile": "esm/shared/dimensions/units.ts",
+            "kind": "value",
+            "syntax": "static-re-export",
+            "importedSymbols": ["clampDimension", "cmToM"]
           }
         ]
       }

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-30T08:54:42.797Z",
+  "generatedAt": "2026-07-30T11:33:55.610Z",
   "totals": {
-    "tests": 1321,
-    "unitRunnerTests": 1313,
+    "tests": 1329,
+    "unitRunnerTests": 1321,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 33,
     "packageTestReferences": 191,
@@ -13,12 +13,12 @@
     "primaryCatalogGroups": 5
   },
   "categories": {
-    "contract": 478,
-    "runtime-unit": 318,
+    "contract": 482,
+    "runtime-unit": 321,
     "integration": 466,
     "e2e-smoke": 9,
     "perf-smoke": 9,
-    "legacy-migration": 41
+    "legacy-migration": 42
   },
   "failures": {
     "missingTestRefs": [],
@@ -1756,6 +1756,10 @@
     {
       "file": "tests/design_tab_view_state_runtime.test.js",
       "category": "runtime-unit"
+    },
+    {
+      "file": "tests/dimension_migration_retirement_inventory_contract.test.js",
+      "category": "legacy-migration"
     },
     {
       "file": "tests/display_text_shared_runtime.test.ts",
@@ -5082,6 +5086,30 @@
       "category": "contract"
     },
     {
+      "file": "tests/wave_c1_dimension_consolidation_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave_c1_dimension_consolidation_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wave_c2_dimension_consolidation_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave_c2_dimension_consolidation_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
+      "file": "tests/wave_c3_dimension_consolidation_contract.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wave_c3_dimension_consolidation_runtime.test.ts",
+      "category": "runtime-unit"
+    },
+    {
       "file": "tests/wave1_write_access_cleanup_guard.test.js",
       "category": "contract"
     },
@@ -5139,6 +5167,10 @@
     },
     {
       "file": "tests/wp_generated_report_contract_runtime.test.js",
+      "category": "contract"
+    },
+    {
+      "file": "tests/wp_layer_contract_reviewed_ownership_runtime.test.js",
       "category": "contract"
     },
     {

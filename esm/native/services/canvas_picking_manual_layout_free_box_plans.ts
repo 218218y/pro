@@ -2,13 +2,11 @@ import { formatIdentityValue, readIdentityValue } from '../../shared/identity_va
 import {
   INTERIOR_ROD_RENDER_POLICY,
   INTERIOR_SHELF_GEOMETRY_POLICY,
-} from '../../shared/dimensions/interior_fittings_policy.js';
-import {
   INTERIOR_STORAGE_BARRIER_POLICY,
   INTERIOR_STORAGE_GRID_POLICY,
-} from '../../shared/dimensions/interior_storage_policy.js';
-import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
-import { SKETCH_BOX_PREVIEW_CORE_POLICY } from '../../shared/dimensions/sketch_box_preview_policy.js';
+  MATERIAL_THICKNESS_POLICY,
+  SKETCH_BOX_PREVIEW_CORE_POLICY,
+} from '../../shared/dimensions/manual_layout_free_box_plans_dimension_policy.js';
 import { computeInteriorPresetOps } from '../features/interior_layout_presets/api.js';
 import { asRecord } from '../runtime/record.js';
 import {

@@ -110,7 +110,7 @@ function buildLayerContractOwnership(root) {
   const source = read(root, layerBaselineRel);
   const baseline = JSON.parse(source);
   const graph = collectLayerContractGraph({ root });
-  const evaluation = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-29' });
+  const evaluation = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-30' });
   if (!evaluation.ok) {
     throw new Error(`Layer Contract ownership is invalid: ${JSON.stringify(evaluation.failures)}`);
   }
@@ -169,6 +169,7 @@ function buildLayerContractOwnership(root) {
       activeMigrationEntries: activeEntries.length,
       retiredMigrationEntries: baseline.migrationRetirements.length,
       compatibilityBudgets: baseline.compatibilityBudgets.length,
+      reviewedOwnershipBudgets: baseline.reviewedOwnershipBudgets.length,
       consolidations: baseline.migrationConsolidations.length,
       historicalUniqueFromFiles: new Set(baseline.migrationBudgets.map(entry => entry.fromFile)).size,
       activeUniqueFromFiles: new Set(activeEntries.map(entry => entry.fromFile)).size,
@@ -180,6 +181,7 @@ function buildLayerContractOwnership(root) {
           activeMigrationStatements: runtimeEdge.activeMigrationStatements,
           compatibilityStatements: runtimeEdge.compatibilityStatements,
           consolidationStatements: runtimeEdge.consolidationStatements,
+          reviewedOwnershipStatements: runtimeEdge.reviewedOwnershipStatements,
           reviewedGeneralStatements: runtimeEdge.reviewedGeneralStatements,
           generalBudget: runtimeEdge.generalBudget,
         },
@@ -188,6 +190,7 @@ function buildLayerContractOwnership(root) {
           activeMigrationValueStatements: runtimeEdge.activeMigrationValueStatements,
           compatibilityValueStatements: runtimeEdge.compatibilityValueStatements,
           consolidationValueStatements: runtimeEdge.consolidationValueStatements,
+          reviewedOwnershipValueStatements: runtimeEdge.reviewedOwnershipValueStatements,
           reviewedGeneralValueStatements: runtimeEdge.reviewedGeneralValueStatements,
           generalValueBudget: runtimeEdge.generalValueBudget,
         },
@@ -296,6 +299,25 @@ function buildDecisionReport(root = defaultRoot) {
   const values = symbols.filter(entry => entry.kind === 'value').length;
   const types = symbols.filter(entry => entry.kind === 'type').length;
   const layerContractOwnership = buildLayerContractOwnership(root);
+  const currentLayerGraph = collectLayerContractGraph({ root });
+  const currentFeatureSharedEdge = currentLayerGraph.edges.find(
+    edge => edge.from === 'features' && edge.to === 'shared'
+  );
+  if (!currentFeatureSharedEdge) throw new Error('Missing current features → shared Layer topology');
+  const currentRepositoryLayerTopology = {
+    edge: 'features → shared',
+    physicalStatements: currentFeatureSharedEdge.importCount,
+    valueStatements: currentFeatureSharedEdge.valueImportCount,
+    typeStatements: currentFeatureSharedEdge.typeImportCount,
+    importers: currentFeatureSharedEdge.importerCount,
+    valueImporters: currentFeatureSharedEdge.valueImporterCount,
+    typeImporters: currentFeatureSharedEdge.typeImporterCount,
+  };
+  const optionBProjectedLayerTopology = {
+    ...currentRepositoryLayerTopology,
+    typeStatements: currentRepositoryLayerTopology.typeStatements + 1,
+    typeImporters: currentRepositoryLayerTopology.typeImporters + 1,
+  };
   return {
     version: 1,
     capturedProductionHead: manifest.capturedProductionHead,
@@ -309,6 +331,16 @@ function buildDecisionReport(root = defaultRoot) {
     },
     layerContractOwnership: layerContractOwnership.summary,
     topology: {
+      capturedPublicSurfaceSnapshot: {
+        capturedProductionHead: manifest.capturedProductionHead,
+        semanticSnapshotFile: snapshotRel,
+        publicValues: manifest.symbols.filter(entry => entry.kind === 'value').length,
+        publicTypes: manifest.symbols.filter(entry => entry.kind === 'type').length,
+        publicRoutesChangedSinceCapture: false,
+      },
+      currentRepositoryLayerTopology,
+      optionBProjectedLayerTopology,
+      facadeDependencyReduction: 0,
       runtimeFacadeDependencies: 0,
       runtimeDimensionRoutes: runtimeExportedNames.length,
       servicesDimensionRoutes: servicesExportedNames.length,
@@ -319,26 +351,6 @@ function buildDecisionReport(root = defaultRoot) {
         form: 'wildcard-re-export',
       },
       totalLegacyFacadeDependencies: { importers: 1, statements: 1 },
-      layerComparison: {
-        edge: 'features → shared',
-        currentWildcard: {
-          physicalStatements: 76,
-          valueStatements: 75,
-          typeStatements: 2,
-          importers: 43,
-          valueImporters: 43,
-          typeImporters: 1,
-        },
-        optionBProjected: {
-          physicalStatements: 76,
-          valueStatements: 75,
-          typeStatements: 3,
-          importers: 43,
-          valueImporters: 43,
-          typeImporters: 2,
-        },
-        facadeDependencyReduction: 0,
-      },
       files: {
         runtime: runtimeRel,
         servicesBase: servicesBaseRel,
@@ -451,16 +463,17 @@ function renderDecisionReportMarkdown(report) {
       route => `| \`${route.id}\` | ${route.entryNumber} | \`${route.toFile}\` | ${route.nextReviewBy} |`
     ),
     '',
-    '## Layer comparison',
+    '## Public snapshot and current Layer topology',
     '',
-    `Edge: ${report.topology.layerComparison.edge}`,
+    `- capturedPublicSurfaceSnapshot: commit \`${report.topology.capturedPublicSurfaceSnapshot.capturedProductionHead}\`, ${report.topology.capturedPublicSurfaceSnapshot.publicValues} values / ${report.topology.capturedPublicSurfaceSnapshot.publicTypes} types; public routes changed since capture: ${report.topology.capturedPublicSurfaceSnapshot.publicRoutesChangedSinceCapture}.`,
+    `- currentRepositoryLayerTopology edge: ${report.topology.currentRepositoryLayerTopology.edge}.`,
     '',
     '| Topology | Physical statements | Value statements | Type statements | Importers | Value importers | Type importers |',
     '| --- | ---: | ---: | ---: | ---: | ---: | ---: |',
-    `| Current wildcard | ${report.topology.layerComparison.currentWildcard.physicalStatements} | ${report.topology.layerComparison.currentWildcard.valueStatements} | ${report.topology.layerComparison.currentWildcard.typeStatements} | ${report.topology.layerComparison.currentWildcard.importers} | ${report.topology.layerComparison.currentWildcard.valueImporters} | ${report.topology.layerComparison.currentWildcard.typeImporters} |`,
-    `| Option B projected | ${report.topology.layerComparison.optionBProjected.physicalStatements} | ${report.topology.layerComparison.optionBProjected.valueStatements} | ${report.topology.layerComparison.optionBProjected.typeStatements} | ${report.topology.layerComparison.optionBProjected.importers} | ${report.topology.layerComparison.optionBProjected.valueImporters} | ${report.topology.layerComparison.optionBProjected.typeImporters} |`,
+    `| Current repository | ${report.topology.currentRepositoryLayerTopology.physicalStatements} | ${report.topology.currentRepositoryLayerTopology.valueStatements} | ${report.topology.currentRepositoryLayerTopology.typeStatements} | ${report.topology.currentRepositoryLayerTopology.importers} | ${report.topology.currentRepositoryLayerTopology.valueImporters} | ${report.topology.currentRepositoryLayerTopology.typeImporters} |`,
+    `| Option B projected | ${report.topology.optionBProjectedLayerTopology.physicalStatements} | ${report.topology.optionBProjectedLayerTopology.valueStatements} | ${report.topology.optionBProjectedLayerTopology.typeStatements} | ${report.topology.optionBProjectedLayerTopology.importers} | ${report.topology.optionBProjectedLayerTopology.valueImporters} | ${report.topology.optionBProjectedLayerTopology.typeImporters} |`,
     '',
-    `Facade-dependency reduction: ${report.topology.layerComparison.facadeDependencyReduction}.`,
+    `Facade-dependency reduction: ${report.topology.facadeDependencyReduction}.`,
     '',
     'Option B is rejected because it creates type-ratchet growth without dependency reduction.',
     '',
@@ -502,7 +515,7 @@ function renderDecisionReportMarkdown(report) {
     `Proof: ${report.recommendation.proof.valueRuntimeIdentityParity}/89 value identities, ${report.recommendation.proof.declarationFingerprintParity}/99 declaration fingerprints, ${report.recommendation.proof.removals} removals, and ${report.recommendation.proof.facadeDependencyReduction} facade-dependency reduction.`,
     '',
   ];
-  return `${lines.join('\n')}\n`;
+  return `${lines.join('\n').replace(/\n+$/u, '')}\n`;
 }
 
 async function formatGenerated(value, targetRel) {

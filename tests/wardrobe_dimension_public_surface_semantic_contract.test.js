@@ -427,7 +427,7 @@ test('Runtime routes, historical Entries 175-178, and compatibility ownership ar
   assert.deepEqual(defaultsTypeRoute?.importedSymbols, ['WardrobeDimensionDefaultType']);
   assert.equal(defaultsTypeRoute?.syntax, 'type-re-export');
 
-  assert.equal(baseline.version, '2.6');
+  assert.equal(baseline.version, '2.7');
   assert.equal(baseline.migrationBudgets.length, 178);
   assert.deepEqual(baseline.migrationBudgets.slice(174, 178), expectedRuntimeLedgerEntries());
   const expectedOwnership = expectedRuntimeCompatibilityOwnership();

@@ -6,17 +6,16 @@ import type { ModulesConfigBucketKey } from '../features/modules_configuration/m
 import { readCornerConfigurationCellForStack } from '../features/modules_configuration/corner_cells_api.js';
 import { __wp_asRecord, __wp_cfg, __wp_isCornerKey, __wp_toModuleKey } from './canvas_picking_core_shared.js';
 import type { SplitHoverDoorBounds } from './canvas_picking_split_hover_bounds.js';
-import { BASE_PLINTH_POLICY } from '../../shared/dimensions/base_plinth_policy.js';
-import { CARCASS_INTERIOR_GRID_POLICY } from '../../shared/dimensions/carcass_interior_grid_policy.js';
-import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
-import { HINGED_DOOR_SPLIT_GEOMETRY_POLICY } from '../../shared/dimensions/door_system_policy.js';
 import {
+  BASE_PLINTH_POLICY,
+  CARCASS_INTERIOR_GRID_POLICY,
+  CARCASS_SHELL_DIMENSIONS,
   EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
   EXTERNAL_DRAWER_SIZE_POLICY,
-} from '../../shared/dimensions/external_drawer_policy.js';
-import { INTERIOR_STORAGE_BARRIER_POLICY } from '../../shared/dimensions/interior_storage_policy.js';
-import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
-
+  HINGED_DOOR_SPLIT_GEOMETRY_POLICY,
+  INTERIOR_STORAGE_BARRIER_POLICY,
+  MATERIAL_THICKNESS_POLICY,
+} from '../../shared/dimensions/split_hover_preview_line_dimension_policy.js';
 function clampSplitHoverLineY(
   bounds: SplitHoverDoorBounds,
   y: unknown,

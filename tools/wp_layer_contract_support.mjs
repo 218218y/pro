@@ -8,7 +8,7 @@ const SOURCE_EXTENSIONS = new Set(['.js', '.mjs', '.ts', '.tsx']);
 const IMPORT_KINDS = Object.freeze(['type', 'value', 'dynamic']);
 const COMPOSITION_FILES = new Set(['app_container.ts', 'main.ts', 'release_main.ts']);
 const RATCHET_MODE = 'decrease-only';
-export const LAYER_CONTRACT_VERSION = '2.6';
+export const LAYER_CONTRACT_VERSION = '2.7';
 export const KNOWN_LAYERS = Object.freeze([
   'adapters',
   'boot',
@@ -630,10 +630,11 @@ export function validateLayerContractSchema(contract) {
     !Array.isArray(contract.migrationBudgets) ||
     !Array.isArray(contract.migrationRetirements) ||
     !Array.isArray(contract.compatibilityBudgets) ||
+    !Array.isArray(contract.reviewedOwnershipBudgets) ||
     !Array.isArray(contract.migrationConsolidations)
   ) {
     throw new Error(
-      'wp_layer_contract: rules, facades, dynamicImportAllowlist, migrationBudgets, migrationRetirements, compatibilityBudgets, and migrationConsolidations must be arrays'
+      'wp_layer_contract: rules, facades, dynamicImportAllowlist, migrationBudgets, migrationRetirements, compatibilityBudgets, reviewedOwnershipBudgets, and migrationConsolidations must be arrays'
     );
   }
   if (
@@ -853,6 +854,124 @@ export function validateLayerContractSchema(contract) {
     }
     compatibilityStatementKeys.add(statementKey);
     compatibilityById.set(id, { entry, reviewedAt, statementKey });
+  }
+
+  const reviewedOwnershipIds = new Set();
+  const reviewedOwnershipById = new Map();
+  const reviewedOwnershipStatementKeys = new Set();
+  for (const entry of contract.reviewedOwnershipBudgets) {
+    const id = String(entry?.id || '').trim();
+    const from = String(entry?.from || '');
+    const to = String(entry?.to || '');
+    const fromFile = toPosix(String(entry?.fromFile || ''));
+    const rule = rules.get(edgeKey(from, to));
+    if (!id || reviewedOwnershipIds.has(id)) {
+      throw new Error(
+        `wp_layer_contract: reviewed ownership budget id must be non-empty and unique (${id || '<empty>'})`
+      );
+    }
+    reviewedOwnershipIds.add(id);
+    if (
+      !known.has(from) ||
+      !known.has(to) ||
+      from === to ||
+      layerOfRelativeFile(fromFile) !== from ||
+      !rule ||
+      rule.decision !== 'allow'
+    ) {
+      throw new Error(
+        `wp_layer_contract: reviewed ownership budget ${id} requires one existing allowed edge`
+      );
+    }
+    for (const field of ['owner', 'reason']) {
+      if (typeof entry?.[field] !== 'string' || !entry[field].trim()) {
+        throw new Error(`wp_layer_contract: reviewed ownership budget ${id} requires ${field}`);
+      }
+    }
+    const reviewedAt = parseIsoDateOnly(entry.reviewedAt, `reviewed ownership budget ${id}.reviewedAt`);
+    const nextReviewBy = parseIsoDateOnly(entry.nextReviewBy, `reviewed ownership budget ${id}.nextReviewBy`);
+    if (nextReviewBy < reviewedAt) {
+      throw new Error(
+        `wp_layer_contract: reviewed ownership budget ${id}.nextReviewBy must not be earlier than reviewedAt`
+      );
+    }
+    const statement = validateMigrationImportSpec({ fromFile, statement: entry.statement }, 'statement', to);
+    if (statement.syntax !== 'static-import' && statement.syntax !== 'type-import') {
+      throw new Error(
+        `wp_layer_contract: reviewed ownership budget ${id} must own a direct static import, not ${statement.syntax}`
+      );
+    }
+    const symbols = normalizeSymbolList(
+      entry.statement.importedSymbols,
+      `reviewed ownership budget ${id}.statement.importedSymbols`
+    );
+    if (symbols.includes('*')) {
+      throw new Error(`wp_layer_contract: reviewed ownership budget ${id} does not allow wildcard ownership`);
+    }
+    const statementKey = exactStatementSpecKey(from, to, fromFile, {
+      ...entry.statement,
+      toFile: statement.toFile,
+      importedSymbols: symbols,
+    });
+    if (reviewedOwnershipStatementKeys.has(statementKey)) {
+      throw new Error(
+        `wp_layer_contract: duplicate reviewed ownership statement ownership for ${statementKey}`
+      );
+    }
+    if (compatibilityStatementKeys.has(statementKey)) {
+      throw new Error(
+        `wp_layer_contract: reviewed ownership budget ${id} conflicts with compatibility ownership for ${statementKey}`
+      );
+    }
+    reviewedOwnershipStatementKeys.add(statementKey);
+
+    if (!Array.isArray(entry.evidenceContracts) || entry.evidenceContracts.length === 0) {
+      throw new Error(
+        `wp_layer_contract: reviewed ownership budget ${id}.evidenceContracts must be a non-empty array`
+      );
+    }
+    const evidenceContracts = entry.evidenceContracts.map((value, index) => {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        throw new Error(
+          `wp_layer_contract: reviewed ownership budget ${id}.evidenceContracts[${index}] must contain path and sha256`
+        );
+      }
+      return {
+        path: toPosix(String(value.path || '')),
+        sha256: String(value.sha256 || '').toLowerCase(),
+      };
+    });
+    if (
+      evidenceContracts.some(
+        value => !value.path || !value.path.startsWith('tests/') || !/^[a-f0-9]{64}$/u.test(value.sha256)
+      ) ||
+      new Set(evidenceContracts.map(value => value.path)).size !== evidenceContracts.length
+    ) {
+      throw new Error(
+        `wp_layer_contract: reviewed ownership budget ${id}.evidenceContracts must contain unique tests/ paths and exact SHA-256 values`
+      );
+    }
+    for (const evidenceContract of evidenceContracts) {
+      if (!fs.existsSync(path.resolve(process.cwd(), evidenceContract.path))) {
+        throw new Error(
+          `wp_layer_contract: reviewed ownership budget ${id} evidence contract does not exist: ${evidenceContract.path}`
+        );
+      }
+    }
+    reviewedOwnershipById.set(id, {
+      entry,
+      reviewedAt,
+      nextReviewBy,
+      statementKey,
+      statement: {
+        ...entry.statement,
+        toFile: statement.toFile,
+        kind: statement.kind,
+        syntax: statement.syntax,
+        importedSymbols: symbols,
+      },
+      evidenceContracts,
+    });
   }
 
   const consolidationIds = new Set();
@@ -1156,9 +1275,22 @@ export function validateLayerContractSchema(contract) {
     });
   }
 
+  for (const [id, ownership] of reviewedOwnershipById) {
+    if (consolidationReplacementKeys.has(ownership.statementKey)) {
+      throw new Error(
+        `wp_layer_contract: reviewed ownership budget ${id} conflicts with migration consolidation ownership for ${ownership.statementKey}`
+      );
+    }
+  }
+
   const retirementEntries = new Set();
   const retirementByEntry = new Map();
-  const retirementModes = new Set(['statement-removed', 'statement-consolidated', 'ownership-transferred']);
+  const retirementModes = new Set([
+    'statement-removed',
+    'statement-consolidated',
+    'ownership-transferred',
+    'ownership-reviewed',
+  ]);
   for (const retirement of contract.migrationRetirements) {
     const entryNumber = retirement?.entryNumber;
     if (!Number.isInteger(entryNumber) || entryNumber < 1 || entryNumber > contract.migrationBudgets.length) {
@@ -1188,6 +1320,7 @@ export function validateLayerContractSchema(contract) {
 
     const hasCompatibilityId = Object.hasOwn(retirement, 'replacementCompatibilityBudgetId');
     const hasConsolidationId = Object.hasOwn(retirement, 'replacementConsolidationId');
+    const hasReviewedOwnershipId = Object.hasOwn(retirement, 'replacementReviewedOwnershipBudgetId');
     const hasInlineReplacement = Object.hasOwn(retirement, 'replacementStatement');
     if (retirement.mode === 'ownership-transferred') {
       const compatibilityId = retirement.replacementCompatibilityBudgetId;
@@ -1200,9 +1333,9 @@ export function validateLayerContractSchema(contract) {
           `wp_layer_contract: migration retirement Entry ${entryNumber} ownership-transferred requires an existing replacementCompatibilityBudgetId`
         );
       }
-      if (hasConsolidationId || hasInlineReplacement) {
+      if (hasConsolidationId || hasReviewedOwnershipId || hasInlineReplacement) {
         throw new Error(
-          `wp_layer_contract: migration retirement Entry ${entryNumber} ownership-transferred does not allow replacementConsolidationId or replacementStatement`
+          `wp_layer_contract: migration retirement Entry ${entryNumber} ownership-transferred does not allow replacementConsolidationId, replacementReviewedOwnershipBudgetId, or replacementStatement`
         );
       }
       const compatibility = compatibilityById.get(compatibilityId);
@@ -1214,8 +1347,44 @@ export function validateLayerContractSchema(contract) {
       continue;
     }
 
-    if (retirement.mode === 'statement-removed') {
+    if (retirement.mode === 'ownership-reviewed') {
+      const reviewedOwnershipId = String(retirement.replacementReviewedOwnershipBudgetId || '').trim();
+      if (
+        !hasReviewedOwnershipId ||
+        !reviewedOwnershipId ||
+        !reviewedOwnershipById.has(reviewedOwnershipId)
+      ) {
+        throw new Error(
+          `wp_layer_contract: migration retirement Entry ${entryNumber} ownership-reviewed requires an existing replacementReviewedOwnershipBudgetId`
+        );
+      }
       if (hasCompatibilityId || hasConsolidationId || hasInlineReplacement) {
+        throw new Error(
+          `wp_layer_contract: migration retirement Entry ${entryNumber} ownership-reviewed does not allow compatibility, consolidation, or inline replacement ownership`
+        );
+      }
+      const reviewedOwnership = reviewedOwnershipById.get(reviewedOwnershipId);
+      if (reviewedOwnership.reviewedAt > retiredAt) {
+        throw new Error(
+          `wp_layer_contract: migration retirement Entry ${entryNumber} ownership-reviewed requires ownership reviewedAt on or before retiredAt`
+        );
+      }
+      const migrationStatementKey = exactStatementSpecKey(
+        migrationBudget.from,
+        migrationBudget.to,
+        migrationBudget.fromFile,
+        migrationBudget.addedImport
+      );
+      if (reviewedOwnership.statementKey !== migrationStatementKey) {
+        throw new Error(
+          `wp_layer_contract: migration retirement Entry ${entryNumber} ownership-reviewed statement must exactly match historical addedImport`
+        );
+      }
+      continue;
+    }
+
+    if (retirement.mode === 'statement-removed') {
+      if (hasCompatibilityId || hasConsolidationId || hasReviewedOwnershipId || hasInlineReplacement) {
         throw new Error(
           `wp_layer_contract: migration retirement Entry ${entryNumber} statement-removed does not allow replacement ownership fields`
         );
@@ -1223,9 +1392,9 @@ export function validateLayerContractSchema(contract) {
       continue;
     }
 
-    if (hasCompatibilityId || hasInlineReplacement) {
+    if (hasCompatibilityId || hasReviewedOwnershipId || hasInlineReplacement) {
       throw new Error(
-        `wp_layer_contract: migration retirement Entry ${entryNumber} statement-consolidated does not allow replacementCompatibilityBudgetId or inline replacementStatement; use replacementConsolidationId`
+        `wp_layer_contract: migration retirement Entry ${entryNumber} statement-consolidated does not allow compatibility, reviewed ownership, or inline replacement fields; use replacementConsolidationId`
       );
     }
     const consolidationId = String(retirement.replacementConsolidationId || '').trim();
@@ -1496,6 +1665,112 @@ function evaluateCompatibilityBudgets(graph, contract, { currentDateMs, currentD
       nextReviewBy: budget.nextReviewBy,
       currentDate,
       statementValid,
+      reviewEffective,
+      reviewOverdue,
+      ownershipEffective,
+      active,
+    });
+  }
+  return { failures, approvedStatements, statuses };
+}
+
+function evaluateReviewedOwnershipBudgets(graph, contract, { currentDateMs, currentDate }) {
+  const failures = [];
+  const approvedStatements = new Map();
+  const statuses = [];
+  for (const budget of contract.reviewedOwnershipBudgets) {
+    const fromFile = toPosix(String(budget.fromFile));
+    const result = evaluateExactStatement({
+      graph,
+      from: budget.from,
+      to: budget.to,
+      fromFile,
+      spec: budget.statement,
+      label: 'reviewed-ownership-budget',
+      allowWildcard: false,
+    });
+    const statementFailures = result.failures.map(failure => ({
+      ...failure,
+      reviewedOwnershipBudgetId: budget.id,
+    }));
+    failures.push(...statementFailures);
+
+    const reviewedAtMs = parseIsoDateOnly(
+      budget.reviewedAt,
+      `reviewed ownership budget ${budget.id}.reviewedAt`
+    );
+    const nextReviewByMs = parseIsoDateOnly(
+      budget.nextReviewBy,
+      `reviewed ownership budget ${budget.id}.nextReviewBy`
+    );
+    const reviewEffective = currentDateMs >= reviewedAtMs;
+    const reviewOverdue = currentDateMs > nextReviewByMs;
+    const lifecycleDetails = {
+      reviewedOwnershipBudgetId: budget.id,
+      reviewedAt: budget.reviewedAt,
+      nextReviewBy: budget.nextReviewBy,
+      currentDate,
+      fromFile,
+      toFile: budget.statement.toFile,
+    };
+    if (!reviewEffective) {
+      failures.push({ kind: 'reviewed-ownership-review-not-effective-yet', ...lifecycleDetails });
+    }
+    if (reviewOverdue) {
+      failures.push({ kind: 'stale-reviewed-ownership-review', ...lifecycleDetails });
+    }
+
+    const missingEvidenceContracts = budget.evidenceContracts
+      .filter(evidenceContract => !fs.existsSync(path.resolve(process.cwd(), evidenceContract.path)))
+      .map(evidenceContract => evidenceContract.path);
+    const evidenceHashMismatches = budget.evidenceContracts.flatMap(evidenceContract => {
+      const absoluteFile = path.resolve(process.cwd(), evidenceContract.path);
+      if (!fs.existsSync(absoluteFile)) return [];
+      const actualSha256 = sha256File(absoluteFile);
+      return actualSha256 === evidenceContract.sha256
+        ? []
+        : [
+            {
+              path: evidenceContract.path,
+              expectedSha256: evidenceContract.sha256,
+              actualSha256,
+            },
+          ];
+    });
+    const evidenceContractsValid =
+      missingEvidenceContracts.length === 0 && evidenceHashMismatches.length === 0;
+    if (missingEvidenceContracts.length > 0) {
+      failures.push({
+        kind: 'reviewed-ownership-evidence-contract-missing',
+        reviewedOwnershipBudgetId: budget.id,
+        missingEvidenceContracts,
+      });
+    }
+    if (evidenceHashMismatches.length > 0) {
+      failures.push({
+        kind: 'reviewed-ownership-evidence-contract-hash-mismatch',
+        reviewedOwnershipBudgetId: budget.id,
+        evidenceHashMismatches,
+      });
+    }
+
+    const statementValid = statementFailures.length === 0;
+    const ownershipEffective = statementValid && evidenceContractsValid && reviewEffective;
+    const active = ownershipEffective && !reviewOverdue;
+    if (ownershipEffective && result.statement) {
+      addApprovedStatement(approvedStatements, budget.from, budget.to, result.statement);
+    }
+    statuses.push({
+      id: budget.id,
+      from: budget.from,
+      to: budget.to,
+      fromFile,
+      target: budget.statement.toFile,
+      reviewedAt: budget.reviewedAt,
+      nextReviewBy: budget.nextReviewBy,
+      currentDate,
+      statementValid,
+      evidenceContractsValid,
       reviewEffective,
       reviewOverdue,
       ownershipEffective,
@@ -1816,7 +2091,12 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
   const currentDateLabel = isoDateOnlyFromTimestamp(currentDateMs);
   const retirements = new Map(contract.migrationRetirements.map(entry => [entry.entryNumber, entry]));
   const compatibilityById = new Map(contract.compatibilityBudgets.map(entry => [entry.id, entry]));
+  const reviewedOwnershipById = new Map(contract.reviewedOwnershipBudgets.map(entry => [entry.id, entry]));
   const compatibilityEvaluation = evaluateCompatibilityBudgets(graph, contract, {
+    currentDateMs,
+    currentDate: currentDateLabel,
+  });
+  const reviewedOwnershipEvaluation = evaluateReviewedOwnershipBudgets(graph, contract, {
     currentDateMs,
     currentDate: currentDateLabel,
   });
@@ -1830,6 +2110,9 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
     currentDate: currentDateLabel,
     compatibilityStatementKeys,
   });
+  const reviewedOwnershipStatusById = new Map(
+    reviewedOwnershipEvaluation.statuses.map(status => [status.id, status])
+  );
   const records = [];
 
   for (const [index, budget] of contract.migrationBudgets.entries()) {
@@ -1889,6 +2172,33 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
             kind: 'migration-retirement-compatibility-mismatch',
             entryNumber,
             compatibilityBudgetId: retirement.replacementCompatibilityBudgetId,
+          });
+        }
+      } else if (retirement.mode === 'ownership-reviewed') {
+        const reviewedOwnership = reviewedOwnershipById.get(retirement.replacementReviewedOwnershipBudgetId);
+        const reviewedStatus = reviewedOwnershipStatusById.get(
+          retirement.replacementReviewedOwnershipBudgetId
+        );
+        const matchesReplacement =
+          reviewedOwnership &&
+          exactStatementSpecKey(
+            reviewedOwnership.from,
+            reviewedOwnership.to,
+            reviewedOwnership.fromFile,
+            reviewedOwnership.statement
+          ) === exactStatementSpecKey(budget.from, budget.to, fromFile, budget.addedImport);
+        if (!matchesReplacement) {
+          retirementFailures.push({
+            kind: 'migration-retirement-reviewed-ownership-mismatch',
+            entryNumber,
+            reviewedOwnershipBudgetId: retirement.replacementReviewedOwnershipBudgetId,
+          });
+        }
+        if (!reviewedStatus?.ownershipEffective) {
+          retirementFailures.push({
+            kind: 'migration-retirement-reviewed-ownership-not-effective',
+            entryNumber,
+            reviewedOwnershipBudgetId: retirement.replacementReviewedOwnershipBudgetId,
           });
         }
       } else if (retirement.mode === 'statement-removed') {
@@ -2005,6 +2315,7 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
         retirementMode: retirement.mode,
         replacementCompatibilityBudgetId: retirement.replacementCompatibilityBudgetId ?? null,
         replacementConsolidationId: retirement.replacementConsolidationId ?? null,
+        replacementReviewedOwnershipBudgetId: retirement.replacementReviewedOwnershipBudgetId ?? null,
         statementValid: true,
         valid: entryFailures.length === 0,
       });
@@ -2125,6 +2436,7 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
       retirementMode: retirement?.mode || null,
       replacementCompatibilityBudgetId: retirement?.replacementCompatibilityBudgetId ?? null,
       replacementConsolidationId: retirement?.replacementConsolidationId ?? null,
+      replacementReviewedOwnershipBudgetId: retirement?.replacementReviewedOwnershipBudgetId ?? null,
       statementValid: statementBudgetValid,
       consolidationValid: record.consolidationStatus ? record.consolidationStatus.valid : null,
       valid: entryFailures.length === 0 && groupFailures.length === 0,
@@ -2135,6 +2447,7 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
     failures.push(...groupStatus.failures);
   }
   failures.push(...compatibilityEvaluation.failures);
+  failures.push(...reviewedOwnershipEvaluation.failures);
   for (const [index, budget] of contract.compatibilityBudgets.entries()) {
     if (!compatibilityEvaluation.statuses[index]?.ownershipEffective) continue;
     const matches = matchingMigrationStatements(graph, toPosix(String(budget.fromFile)), budget.statement);
@@ -2152,13 +2465,33 @@ function evaluateMigrationBudgets(graph, contract, { currentDate } = {}) {
     }
   }
 
+  for (const [index, budget] of contract.reviewedOwnershipBudgets.entries()) {
+    const status = reviewedOwnershipEvaluation.statuses[index];
+    if (!status?.ownershipEffective) continue;
+    const matches = matchingMigrationStatements(graph, toPosix(String(budget.fromFile)), budget.statement);
+    if (matches.length !== 1) continue;
+    const ownerKey = `${edgeKey(budget.from, budget.to)}::${matches[0].statementKey}`;
+    const migrationEntryNumber = activeStatementOwners.get(ownerKey);
+    if (migrationEntryNumber) {
+      failures.push({
+        kind: 'reviewed-ownership-active-migration-conflict',
+        reviewedOwnershipBudgetId: budget.id,
+        migrationEntryNumber,
+        fromFile: budget.fromFile,
+        toFile: budget.statement.toFile,
+      });
+    }
+  }
+
   return {
     failures,
     approvedStatements,
     compatibilityApprovedStatements: compatibilityEvaluation.approvedStatements,
+    reviewedOwnershipApprovedStatements: reviewedOwnershipEvaluation.approvedStatements,
     consolidationApprovedStatements,
     statuses,
     compatibilityStatuses: compatibilityEvaluation.statuses,
+    reviewedOwnershipStatuses: reviewedOwnershipEvaluation.statuses,
     consolidationStatuses: consolidationEvaluation.statuses.map(
       ({ replacementKey, replacementMatch, failures: _, ...status }) => status
     ),
@@ -2204,6 +2537,7 @@ function edgeOwnershipReport(edge, rule, migrationEvaluation) {
   const merged = mergeApprovedStatements(
     migrationEvaluation.approvedStatements,
     migrationEvaluation.compatibilityApprovedStatements,
+    migrationEvaluation.reviewedOwnershipApprovedStatements,
     migrationEvaluation.consolidationApprovedStatements
   );
   const mergedForEdge = merged.get(edgeKey(edge.from, edge.to));
@@ -2220,6 +2554,10 @@ function edgeOwnershipReport(edge, rule, migrationEvaluation) {
     ),
     consolidationStatements: approvedStatementCount(
       migrationEvaluation.consolidationApprovedStatements,
+      edge
+    ),
+    reviewedOwnershipStatements: approvedStatementCount(
+      migrationEvaluation.reviewedOwnershipApprovedStatements,
       edge
     ),
     reviewedGeneralStatements,
@@ -2240,6 +2578,11 @@ function edgeOwnershipReport(edge, rule, migrationEvaluation) {
       edge,
       'value'
     ),
+    reviewedOwnershipValueStatements: approvedStatementCount(
+      migrationEvaluation.reviewedOwnershipApprovedStatements,
+      edge,
+      'value'
+    ),
     reviewedGeneralValueStatements,
     generalValueBudget: rule?.maxValueImportCount ?? null,
     observedTypeStatements: edge.typeImportCount,
@@ -2255,6 +2598,11 @@ function edgeOwnershipReport(edge, rule, migrationEvaluation) {
     ),
     consolidationTypeStatements: approvedStatementCount(
       migrationEvaluation.consolidationApprovedStatements,
+      edge,
+      'type'
+    ),
+    reviewedOwnershipTypeStatements: approvedStatementCount(
+      migrationEvaluation.reviewedOwnershipApprovedStatements,
       edge,
       'type'
     ),
@@ -2319,6 +2667,7 @@ export function evaluateLayerContract(graph, contract, options = {}) {
       mergeApprovedStatements(
         migrationEvaluation.approvedStatements,
         migrationEvaluation.compatibilityApprovedStatements,
+        migrationEvaluation.reviewedOwnershipApprovedStatements,
         migrationEvaluation.consolidationApprovedStatements
       )
     );
@@ -2376,6 +2725,7 @@ export function evaluateLayerContract(graph, contract, options = {}) {
     activeMigrationEntries: migrationEvaluation.statuses.filter(entry => entry.active),
     retiredMigrationEntries: migrationEvaluation.statuses.filter(entry => entry.retired),
     compatibilityBudgets: migrationEvaluation.compatibilityStatuses,
+    reviewedOwnershipBudgets: migrationEvaluation.reviewedOwnershipStatuses,
     migrationConsolidations: migrationEvaluation.consolidationStatuses,
     consolidationApprovedStatements: migrationEvaluation.consolidationApprovedStatements,
   };
@@ -2413,6 +2763,11 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
       .filter(status => !status.active)
       .map(status => edgeKey(status.from, status.to))
   );
+  const reviewedOwnershipBlockedProposalEdges = new Set(
+    migrationEvaluation.reviewedOwnershipStatuses
+      .filter(status => !status.active)
+      .map(status => edgeKey(status.from, status.to))
+  );
   const consolidationBlockedProposalEdges = new Set(
     migrationEvaluation.consolidationStatuses
       .filter(status => !status.valid)
@@ -2420,6 +2775,7 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
   );
   const reviewBlockedProposalEdges = new Set([
     ...compatibilityBlockedProposalEdges,
+    ...reviewedOwnershipBlockedProposalEdges,
     ...consolidationBlockedProposalEdges,
   ]);
   const reviewedEdges = graph.edges.map(edge =>
@@ -2428,6 +2784,7 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
       mergeApprovedStatements(
         migrationEvaluation.approvedStatements,
         migrationEvaluation.compatibilityApprovedStatements,
+        migrationEvaluation.reviewedOwnershipApprovedStatements,
         migrationEvaluation.consolidationApprovedStatements
       )
     )
@@ -2455,12 +2812,15 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
       rule.decision === 'allow' && facadeByEdge.has(key) && !observedEdgeKeys.has(key);
     const requiresCompatibilityReview =
       rule.decision === 'allow' && compatibilityBlockedProposalEdges.has(key);
+    const requiresReviewedOwnershipReview =
+      rule.decision === 'allow' && reviewedOwnershipBlockedProposalEdges.has(key);
     const requiresConsolidationReview =
       rule.decision === 'allow' && consolidationBlockedProposalEdges.has(key);
     if (
       (rule.decision === 'deny' ||
         requiresFacadeDecision ||
         requiresCompatibilityReview ||
+        requiresReviewedOwnershipReview ||
         requiresConsolidationReview) &&
       !nextRules.some(next => edgeKey(next.from, next.to) === key)
     ) {
@@ -2517,6 +2877,7 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
     migrationBudgets: JSON.parse(JSON.stringify(currentContract.migrationBudgets)),
     migrationRetirements: JSON.parse(JSON.stringify(currentContract.migrationRetirements)),
     compatibilityBudgets: JSON.parse(JSON.stringify(currentContract.compatibilityBudgets)),
+    reviewedOwnershipBudgets: JSON.parse(JSON.stringify(currentContract.reviewedOwnershipBudgets)),
     migrationConsolidations: JSON.parse(JSON.stringify(currentContract.migrationConsolidations)),
   };
   validateLayerContractSchema(proposedContract);
@@ -2541,6 +2902,7 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
       activeMigrationEntries: migrationEvaluation.statuses.filter(entry => entry.active).length,
       retiredMigrationEntries: migrationEvaluation.statuses.filter(entry => entry.retired).length,
       compatibilityBudgets: migrationEvaluation.compatibilityStatuses.length,
+      reviewedOwnershipBudgets: migrationEvaluation.reviewedOwnershipStatuses.length,
       migrationConsolidations: migrationEvaluation.consolidationStatuses.length,
     },
   };

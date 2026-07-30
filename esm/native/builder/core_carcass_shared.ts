@@ -1,10 +1,11 @@
 // Builder core carcass shared preparation and normalization helpers.
-import { BASE_LEG_LAYOUT_POLICY } from '../../shared/dimensions/base_leg_policy.js';
-import { BASE_PLATFORM_RENDER_POLICY } from '../../shared/dimensions/base_platform_render_policy.js';
-import { BASE_PLINTH_POLICY } from '../../shared/dimensions/base_plinth_policy.js';
-import { CARCASS_SHELL_DIMENSIONS } from '../../shared/dimensions/carcass_shell_policy.js';
-import { MATERIAL_THICKNESS_POLICY } from '../../shared/dimensions/material_thickness_policy.js';
-
+import {
+  BASE_LEG_LAYOUT_POLICY,
+  BASE_PLATFORM_RENDER_POLICY,
+  BASE_PLINTH_POLICY,
+  CARCASS_SHELL_DIMENSIONS,
+  MATERIAL_THICKNESS_POLICY,
+} from '../../shared/dimensions/core_carcass_dimension_policy.js';
 import {
   normalizeBaseLegPlatformMode,
   normalizeBaseLegPlatformSideMode,

@@ -7,23 +7,21 @@ import {
   trackMirrorSurface,
 } from '../runtime/render_access.js';
 import { getBuilderRenderOps } from '../runtime/builder_service_access.js';
-import { BASE_LEG_LAYOUT_POLICY } from '../../shared/dimensions/base_leg_policy.js';
-import { BASE_PLATFORM_RENDER_POLICY } from '../../shared/dimensions/base_platform_render_policy.js';
-import { BASE_PLINTH_POLICY } from '../../shared/dimensions/base_plinth_policy.js';
 import {
+  BASE_LEG_LAYOUT_POLICY,
+  BASE_PLATFORM_RENDER_POLICY,
+  BASE_PLINTH_POLICY,
   CHEST_CASTER_RENDER_POLICY,
   CHEST_CONNECTOR_POLICY,
   CHEST_DRAWER_GEOMETRY_POLICY,
-  CHEST_MOTION_POLICY,
-  CHEST_SHELL_POLICY,
-} from '../../shared/dimensions/chest_structural_policy.js';
-import {
   CHEST_MODE_COMMODE_CONSTRAINTS_POLICY,
   CHEST_MODE_COMMODE_RENDER_POLICY,
   CHEST_MODE_DIMENSION_GUIDE_RENDER_POLICY,
-} from '../../shared/dimensions/chest_mode_policy.js';
-import { HINGED_DOOR_MOUNT_POLICY } from '../../shared/dimensions/door_system_policy.js';
-import { resolveDoorMountThicknessesFromConfig } from '../../shared/dimensions/door_mount_thickness_policy.js';
+  CHEST_MOTION_POLICY,
+  CHEST_SHELL_POLICY,
+  HINGED_DOOR_MOUNT_POLICY,
+  resolveDoorMountThicknessesFromConfig,
+} from '../../shared/dimensions/chest_mode_build_dimension_policy.js';
 import { isBaseLegWheelsStyle, resolveBaseLegGeometrySpec } from '../features/base_leg_support.js';
 import { makeDrawerBoxPartId } from '../features/part_identity/api.js';
 

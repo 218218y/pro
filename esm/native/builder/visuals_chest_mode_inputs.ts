@@ -1,7 +1,10 @@
-import { BASE_PLATFORM_RENDER_POLICY } from '../../shared/dimensions/base_platform_render_policy.js';
-import { CHEST_CASTER_RENDER_POLICY } from '../../shared/dimensions/chest_structural_policy.js';
-import { CHEST_MODE_COMMODE_CONSTRAINTS_POLICY } from '../../shared/dimensions/chest_mode_policy.js';
-import { clampDimension, cmToM } from '../../shared/dimensions/units.js';
+import {
+  BASE_PLATFORM_RENDER_POLICY,
+  CHEST_CASTER_RENDER_POLICY,
+  CHEST_MODE_COMMODE_CONSTRAINTS_POLICY,
+  clampDimension,
+  cmToM,
+} from '../../shared/dimensions/chest_mode_inputs_dimension_policy.js';
 import {
   isBaseLegWheelsStyle,
   normalizeBaseLegPlatformMode,

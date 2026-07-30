@@ -205,15 +205,16 @@ function inspectDecisionReportBase(report) {
     };
   });
   if (
-    layerBaseline.version !== '2.6' ||
-    report.layerContractOwnership?.schemaVersion !== '2.6' ||
+    layerBaseline.version !== '2.7' ||
+    report.layerContractOwnership?.schemaVersion !== '2.7' ||
     report.layerContractOwnership?.historicalMigrationEntries !== 178 ||
-    report.layerContractOwnership?.activeMigrationEntries !== 149 ||
-    report.layerContractOwnership?.retiredMigrationEntries !== 29 ||
+    report.layerContractOwnership?.activeMigrationEntries !== 108 ||
+    report.layerContractOwnership?.retiredMigrationEntries !== 70 ||
     report.layerContractOwnership?.compatibilityBudgets !== 4 ||
-    report.layerContractOwnership?.consolidations !== 14 ||
+    report.layerContractOwnership?.reviewedOwnershipBudgets !== 0 ||
+    report.layerContractOwnership?.consolidations !== 24 ||
     report.layerContractOwnership?.historicalUniqueFromFiles !== 108 ||
-    report.layerContractOwnership?.activeUniqueFromFiles !== 93 ||
+    report.layerContractOwnership?.activeUniqueFromFiles !== 83 ||
     report.layerContractOwnership?.runtime?.owner !== runtimeCompatibilityOwner ||
     report.layerContractOwnership?.runtime?.publicSurface !== runtimePublicSurface ||
     JSON.stringify(report.layerContractOwnership?.runtime?.edge) !==
@@ -222,8 +223,9 @@ function inspectDecisionReportBase(report) {
         activeMigrationStatements: 0,
         compatibilityStatements: 4,
         consolidationStatements: 1,
+        reviewedOwnershipStatements: 0,
         reviewedGeneralStatements: 31,
-        generalBudget: 32,
+        generalBudget: 31,
       }) ||
     JSON.stringify(report.layerContractOwnership?.runtime?.valueEdge) !==
       JSON.stringify({
@@ -231,8 +233,9 @@ function inspectDecisionReportBase(report) {
         activeMigrationValueStatements: 0,
         compatibilityValueStatements: 4,
         consolidationValueStatements: 1,
+        reviewedOwnershipValueStatements: 0,
         reviewedGeneralValueStatements: 30,
-        generalValueBudget: 31,
+        generalValueBudget: 30,
       }) ||
     JSON.stringify(report.layerContractOwnership?.runtime?.compatibilityRoutes) !==
       JSON.stringify(expectedCompatibilityRoutes)
@@ -260,27 +263,35 @@ function inspectDecisionReportBase(report) {
     report.topology?.featureBarrelFacadeDependencies?.form !== 'wildcard-re-export' ||
     report.topology?.totalLegacyFacadeDependencies?.importers !== 1 ||
     report.topology?.totalLegacyFacadeDependencies?.statements !== 1 ||
-    JSON.stringify(report.topology?.layerComparison) !==
+    JSON.stringify(report.topology?.capturedPublicSurfaceSnapshot) !==
+      JSON.stringify({
+        capturedProductionHead: manifest.capturedProductionHead,
+        semanticSnapshotFile: snapshotRel,
+        publicValues: 89,
+        publicTypes: 10,
+        publicRoutesChangedSinceCapture: false,
+      }) ||
+    JSON.stringify(report.topology?.currentRepositoryLayerTopology) !==
       JSON.stringify({
         edge: 'features → shared',
-        currentWildcard: {
-          physicalStatements: 76,
-          valueStatements: 75,
-          typeStatements: 2,
-          importers: 43,
-          valueImporters: 43,
-          typeImporters: 1,
-        },
-        optionBProjected: {
-          physicalStatements: 76,
-          valueStatements: 75,
-          typeStatements: 3,
-          importers: 43,
-          valueImporters: 43,
-          typeImporters: 2,
-        },
-        facadeDependencyReduction: 0,
-      })
+        physicalStatements: 61,
+        valueStatements: 60,
+        typeStatements: 2,
+        importers: 43,
+        valueImporters: 43,
+        typeImporters: 1,
+      }) ||
+    JSON.stringify(report.topology?.optionBProjectedLayerTopology) !==
+      JSON.stringify({
+        edge: 'features → shared',
+        physicalStatements: 61,
+        valueStatements: 60,
+        typeStatements: 3,
+        importers: 43,
+        valueImporters: 43,
+        typeImporters: 2,
+      }) ||
+    report.topology?.facadeDependencyReduction !== 0
   ) {
     violations.push({ kind: 'topology' });
   }
@@ -718,7 +729,7 @@ test('decision report mutations reject provenance, parity, evidence, cost, topol
   );
   assertRejected(
     mutateReport(report => {
-      report.topology.layerComparison.optionBProjected.typeStatements = 2;
+      report.topology.optionBProjectedLayerTopology.typeStatements = 2;
     }),
     'topology',
     'Option B type-statement projection'
