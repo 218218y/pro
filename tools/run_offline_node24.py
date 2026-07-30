@@ -27,6 +27,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also install and verify repository-pinned esbuild plus its native binary",
     )
+    parser.add_argument(
+        "--with-tsx",
+        action="store_true",
+        help="Also install and verify repository-pinned TSX and its esbuild runtime",
+    )
     args, node_args = parser.parse_known_args(argv)
     if node_args[:1] == ["--"]:
         node_args = node_args[1:]
@@ -42,12 +47,15 @@ def main(argv: list[str] | None = None) -> int:
             node=True,
             ast=not args.node_only,
             esbuild=args.with_esbuild,
+            tsx=args.with_tsx,
             typescript=args.with_typescript,
         )
         executable = core.install_node(manifest, key)
         if not args.node_only:
             core.install_ast(manifest, key, executable)
-        if args.with_esbuild:
+        if args.with_tsx:
+            core.install_tsx(manifest, key, executable)
+        elif args.with_esbuild:
             core.install_esbuild(manifest, key, executable)
         if args.with_typescript:
             core.install_typescript(manifest, key, executable)

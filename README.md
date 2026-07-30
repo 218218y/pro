@@ -65,7 +65,7 @@ npm run gate:full
 
 For focused source and architecture repairs, the repository includes a narrow offline bootstrap for the
 primary Node runtime, AST adapter dependencies, the esbuild-backed TypeScript runtime loader, and optional
-standalone Prettier and TypeScript packages. Download the pinned archives into `vendor/offline`, then run:
+standalone TSX, Prettier, and TypeScript packages. Download the pinned archives into `vendor/offline`, then run:
 
 ```bash
 python tools/verify_offline_repair_vendor.py
@@ -81,6 +81,11 @@ python tools/run_offline_prettier.py --check tools/wp_prettier_changed.mjs
 python tools/verify_offline_repair_vendor.py --esbuild-only
 python tools/bootstrap_offline_esbuild.py
 python tools/selftest_offline_esbuild.py
+
+# Optional TSX runtime-test slice (reuses the offline esbuild packages)
+python tools/verify_offline_repair_vendor.py --tsx-only
+python tools/bootstrap_offline_tsx.py
+python tools/run_offline_tsx_tests.py tests/wave_c1_dimension_consolidation_runtime.test.ts
 
 # Optional exact TypeScript 7 compiler slice
 python tools/verify_offline_repair_vendor.py --typescript-only

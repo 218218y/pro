@@ -109,6 +109,18 @@
     },
     "launcher": "bin/esbuild"
   },
+  "tsx": {
+    "version": "4.23.1",
+    "package": {
+      "lockPath": "node_modules/tsx",
+      "installPath": "node_modules/tsx",
+      "file": "vendor/offline/tsx/tsx-4.23.1.tgz",
+      "url": "https://registry.npmjs.org/tsx/-/tsx-4.23.1.tgz",
+      "integrity": "sha512-GQHnkIfxyx1wYCOS/wonik5MVRZU9hi1TEZmzGZSCJB1y9YgoZ8H6itNE/u4suE+yLmOzuE4E5S4TZ/ZX2wcWQ=="
+    },
+    "esbuildRange": "~0.28.0",
+    "executable": "dist/cli.mjs"
+  },
   "prettier": {
     "version": "3.9.6",
     "package": {

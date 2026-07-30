@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the repository's focused offline Node, AST, esbuild, TypeScript and Prettier toolchain.
+"""Install the repository's focused offline Node, AST, esbuild, TSX, TypeScript and Prettier toolchain.
 
 The script never invokes npm and never runs package lifecycle scripts. It only
 uses files explicitly listed in vendor/offline/manifest.json and validates them
@@ -143,6 +143,17 @@ def _validate_lock_entry(packages: dict, entry: dict, expected_version: str, lab
         raise OfflineCoreError(f"Version mismatch for {lock_path}")
 
 
+def _tilde_range_accepts(version: str, requirement: str) -> bool:
+    if not requirement.startswith("~"):
+        return False
+    try:
+        actual = tuple(int(part) for part in version.split("."))
+        minimum = tuple(int(part) for part in requirement[1:].split("."))
+    except ValueError:
+        return False
+    return len(actual) == 3 and len(minimum) == 3 and actual[:2] == minimum[:2] and actual >= minimum
+
+
 def validate_manifest_against_project(manifest: dict) -> None:
     pinned_node = NODE_VERSION_PATH.read_text(encoding="utf-8").strip()
     manifest_node = str(manifest["node"]["version"])
@@ -169,6 +180,22 @@ def validate_manifest_against_project(manifest: dict) -> None:
         raise OfflineCoreError("vendor/offline/manifest.json has no esbuild platform definitions")
     for entry in esbuild_platforms.values():
         _validate_lock_entry(packages, entry, str(esbuild["version"]), "esbuild platform")
+
+    tsx = manifest.get("tsx")
+    if not isinstance(tsx, dict) or not isinstance(tsx.get("package"), dict):
+        raise OfflineCoreError("vendor/offline/manifest.json has no TSX package definition")
+    _validate_lock_entry(packages, tsx["package"], str(tsx["version"]), "TSX")
+    tsx_lock_entry = packages.get(tsx["package"]["lockPath"])
+    expected_esbuild_range = tsx.get("esbuildRange")
+    if not isinstance(expected_esbuild_range, str) or not expected_esbuild_range:
+        raise OfflineCoreError("vendor/offline/manifest.json has no TSX esbuild dependency range")
+    if tsx_lock_entry.get("dependencies", {}).get("esbuild") != expected_esbuild_range:
+        raise OfflineCoreError("TSX esbuild dependency range does not match package-lock.json")
+    if not _tilde_range_accepts(str(esbuild["version"]), expected_esbuild_range):
+        raise OfflineCoreError(
+            f"Offline esbuild {esbuild['version']} does not satisfy TSX dependency "
+            f"{expected_esbuild_range}"
+        )
 
     prettier = manifest.get("prettier")
     if not isinstance(prettier, dict) or not isinstance(prettier.get("package"), dict):
@@ -198,6 +225,13 @@ def prettier_entry(manifest: dict) -> dict:
     entry = manifest.get("prettier", {}).get("package")
     if not isinstance(entry, dict):
         raise OfflineCoreError("No offline Prettier package definition")
+    return entry
+
+
+def tsx_entry(manifest: dict) -> dict:
+    entry = manifest.get("tsx", {}).get("package")
+    if not isinstance(entry, dict):
+        raise OfflineCoreError("No offline TSX package definition")
     return entry
 
 
@@ -242,6 +276,7 @@ def verify_vendor(
     node: bool = True,
     ast: bool = True,
     esbuild: bool = False,
+    tsx: bool = False,
     prettier: bool = False,
     typescript: bool = False,
 ) -> None:
@@ -261,8 +296,11 @@ def verify_vendor(
     if ast:
         _verify_npm_archives(ast_entries, "AST")
 
-    if esbuild:
+    if esbuild or tsx:
         _verify_npm_archives(list(esbuild_entries(manifest, key)), "esbuild")
+
+    if tsx:
+        _verify_npm_archives([tsx_entry(manifest)], "TSX")
 
     if prettier:
         _verify_npm_archives([prettier_entry(manifest)], "Prettier")
@@ -527,6 +565,56 @@ def install_esbuild(
     return launcher
 
 
+def install_tsx(
+    manifest: dict,
+    key: str,
+    node_executable: Path,
+    *,
+    force: bool = False,
+) -> Path:
+    install_esbuild(manifest, key, node_executable, force=force)
+    entry = tsx_entry(manifest)
+    expected_version = str(manifest["tsx"]["version"])
+    destination = _install_npm_entry(entry, expected_version, force=force)
+    executable = destination.joinpath(
+        *_safe_relative_posix(manifest["tsx"]["executable"], "TSX executable").parts
+    )
+    if not executable.is_file():
+        raise OfflineCoreError(f"TSX executable is missing after extraction: {_display_path(executable)}")
+    if os.name != "nt":
+        executable.chmod(executable.stat().st_mode | 0o111)
+
+    artifacts = ROOT / ".artifacts"
+    artifacts.mkdir(parents=True, exist_ok=True)
+    probe_dir = Path(tempfile.mkdtemp(prefix="offline-tsx-", dir=artifacts))
+    try:
+        probe_file = probe_dir / "probe.ts"
+        probe_file.write_text(
+            "const answer: number = 42;\n"
+            "if (answer !== 42) throw new Error('TSX transform failed');\n"
+            "console.log('tsx-runtime-ok');\n",
+            encoding="utf-8",
+        )
+        probe = subprocess.run(
+            [str(node_executable), "--import", "tsx", str(probe_file)],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    finally:
+        shutil.rmtree(probe_dir, ignore_errors=True)
+
+    actual = probe.stdout.strip()
+    if probe.returncode != 0 or actual != "tsx-runtime-ok":
+        detail = (probe.stderr or probe.stdout).strip()
+        raise OfflineCoreError(
+            f"Offline TSX failed verification; expected tsx-runtime-ok, got "
+            f"{actual or detail or 'no output'}"
+        )
+    return executable
+
+
 def install_typescript(
     manifest: dict,
     key: str,
@@ -612,6 +700,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Also install and verify lockfile-pinned esbuild and its native platform package",
     )
     parser.add_argument(
+        "--with-tsx",
+        action="store_true",
+        help="Also install and verify lockfile-pinned TSX using the offline esbuild slice",
+    )
+    parser.add_argument(
         "--with-prettier",
         action="store_true",
         help="Also install and verify the lockfile-pinned Prettier package",
@@ -636,6 +729,7 @@ def main(argv: list[str] | None = None) -> int:
             node=want_node,
             ast=want_ast,
             esbuild=args.with_esbuild,
+            tsx=args.with_tsx,
             prettier=args.with_prettier,
             typescript=args.with_typescript,
         )
@@ -650,7 +744,9 @@ def main(argv: list[str] | None = None) -> int:
 
         if want_ast:
             install_ast(manifest, key, node_executable, force=args.force)
-        if args.with_esbuild:
+        if args.with_tsx:
+            install_tsx(manifest, key, node_executable, force=args.force)
+        elif args.with_esbuild:
             install_esbuild(manifest, key, node_executable, force=args.force)
         if args.with_prettier:
             install_prettier(manifest, node_executable, force=args.force)
@@ -663,8 +759,10 @@ def main(argv: list[str] | None = None) -> int:
             installed = [f"Node {manifest['node']['version']}"]
             if want_ast:
                 installed.append(f"AST adapter dependencies {manifest['ast']['version']}")
-            if args.with_esbuild:
+            if args.with_esbuild or args.with_tsx:
                 installed.append(f"esbuild {manifest['esbuild']['version']}")
+            if args.with_tsx:
+                installed.append(f"TSX {manifest['tsx']['version']}")
             if args.with_prettier:
                 installed.append(f"Prettier {manifest['prettier']['version']}")
             if args.with_typescript:

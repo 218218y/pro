@@ -10,6 +10,7 @@ smaller trusted set:
 - `@oxc-project/types 0.141.0`;
 - one native Oxc parser binding for the current platform;
 - optionally, lockfile-pinned esbuild `0.28.1` plus its native platform package;
+- optionally, lockfile-pinned TSX `4.23.1`, reusing that exact esbuild slice;
 - optionally, lockfile-pinned Prettier `3.9.6`;
 - optionally, lockfile-pinned TypeScript `7.0.2` plus its native platform package.
 
@@ -42,6 +43,16 @@ vendor/offline/esbuild/linux-x64-0.28.1.tgz
 
 Both archives are required. The common package provides the JavaScript API imported by
 `tests/_ts_runtime_module_loader.mjs`; the platform package provides the native executable.
+
+### Optional TSX runtime-test slice
+
+```text
+vendor/offline/tsx/tsx-4.23.1.tgz
+```
+
+TSX is a single JavaScript package in this lockfile and depends on `esbuild ~0.28.0`; the already-vendored
+`esbuild 0.28.1` satisfies that exact dependency range. The macOS-only `fsevents` dependency is optional and
+is not part of this Linux/Windows-focused slice.
 
 ### Optional TypeScript 7 slice
 
@@ -122,6 +133,21 @@ transform through it. The declaration-snapshot contract additionally needs the O
 npm run test:offline:declaration-snapshot
 ```
 
+## Verify and run TSX tests independently
+
+The TSX path installs the single lockfile-pinned TSX archive and reuses the existing esbuild common and
+platform packages. It never invokes `npx`, npm resolution, or lifecycle scripts.
+
+```bash
+python tools/verify_offline_repair_vendor.py --tsx-only
+python tools/bootstrap_offline_tsx.py
+python tools/run_offline_tsx_tests.py tests/wave_c1_dimension_consolidation_runtime.test.ts
+python tools/selftest_offline_tsx.py
+```
+
+The self-test runs both the Wave C1 TypeScript runtime identity test and the declaration-snapshot contract.
+That combined proof requires the Node, Oxc, esbuild, TSX, and TypeScript archives already documented here.
+
 ## Verify and run Prettier independently
 
 The formatter path does not require the Oxc archives. It reuses the pinned Node archive and installs only the
@@ -178,9 +204,6 @@ regenerated to hide that mismatch.
 ## Scope boundary
 
 This focused toolchain covers Node-native tests, AST-backed source contracts, layer checks, formatting,
-TypeScript typechecking, declaration emission, and the esbuild-backed TypeScript runtime loader. It does not
-provide general TSX execution, ESLint/Oxlint, Vite, release bundling, obfuscation, Playwright, or browser
-binaries.
-
-The next optional expansion is `tsx` itself, because a large part of the runtime test portfolio is TypeScript.
-It should be added as its own verified slice; esbuild is now already available as the required native base.
+TypeScript typechecking, declaration emission, the esbuild-backed TypeScript runtime loader, and focused
+`.ts`/`.tsx` runtime tests through TSX. It does not provide ESLint/Oxlint, Vite, release bundling,
+obfuscation, Playwright, or browser binaries.

@@ -88,9 +88,18 @@ When a focused test imports `tests/_ts_runtime_module_loader.mjs` or otherwise i
 5. Declaration snapshot checks require Oxc, TypeScript, and esbuild, so run them without `--node-only` and
    include both `--with-typescript` and `--with-esbuild`.
 
-The offline toolchain is deliberately narrow: Node 24, the AST adapter runtime, esbuild, Prettier, and the
-exact TypeScript compiler pinned by the lockfile. It is not a substitute for general TSX execution, lint,
-Vite, release or browser-test dependencies. If an archive is missing, report its exact path and URL from
+When a focused runtime test is a `.ts` or `.tsx` file:
+
+1. Do not fall back to `npx --yes tsx` and do not install the full dependency tree.
+2. Run `python tools/verify_offline_repair_vendor.py --tsx-only`.
+3. Run `python tools/bootstrap_offline_tsx.py`.
+4. Run tests through `python tools/run_offline_tsx_tests.py <test-files...>`.
+5. Use `python tools/selftest_offline_tsx.py` to prove both a Wave C runtime identity test and the declaration
+   snapshot path before relying on the slice.
+
+The offline toolchain is deliberately narrow: Node 24, the AST adapter runtime, esbuild, TSX, Prettier, and
+the exact TypeScript compiler pinned by the lockfile. It is not a substitute for lint, Vite, release,
+Playwright, or browser-test dependencies. If an archive is missing, report its exact path and URL from
 `vendor/offline/manifest.json`; do not attempt a large dependency installation to work around it.
 
 Important directories:

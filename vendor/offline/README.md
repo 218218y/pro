@@ -63,6 +63,23 @@ This slice is required by `tests/_ts_runtime_module_loader.mjs` and therefore by
 snapshot contract. The two packages must have the same exact version. The declaration snapshot additionally
 uses the Oxc and TypeScript slices.
 
+## Optional TypeScript runtime-test set: TSX
+
+Add one archive; it reuses the esbuild files listed above:
+
+```text
+vendor/offline/tsx/tsx-4.23.1.tgz
+```
+
+Verify, install, and run focused TypeScript tests:
+
+```bash
+python tools/verify_offline_repair_vendor.py --tsx-only
+python tools/bootstrap_offline_tsx.py
+python tools/run_offline_tsx_tests.py tests/wave_c1_dimension_consolidation_runtime.test.ts
+python tools/selftest_offline_tsx.py
+```
+
 ## Optional compiler set: TypeScript 7
 
 TypeScript 7 requires both the common launcher package and one matching native platform package. For Linux
@@ -84,4 +101,5 @@ python tools/selftest_offline_typescript.py
 
 Generated directories are `.tools/node24` and focused package paths under `node_modules`. They are ignored
 by Git. The manifest also defines Linux ARM64 and Windows x64 variants; only the current platform's Node,
-Oxc, esbuild, and TypeScript native archives are required.
+Oxc, esbuild, and TypeScript native archives are required. TSX itself is platform-neutral and uses the
+matching esbuild platform package.

@@ -331,7 +331,11 @@
     "typecheck:offline:all": "python tools/run_offline_node24.py --node-only --with-typescript tools/wp_typecheck_parallel.mjs",
     "typecheck:offline:dist": "python tools/run_offline_node24.py --node-only --with-typescript tools/wp_typecheck.js --mode dist",
     "test:offline:declaration-snapshot": "python tools/run_offline_node24.py --with-typescript --with-esbuild --test tests/wardrobe_dimension_public_surface_semantic_contract.test.js",
-    "test:offline:esbuild": "python tools/selftest_offline_esbuild.py"
+    "test:offline:esbuild": "python tools/selftest_offline_esbuild.py",
+    "setup:offline:tsx": "python tools/bootstrap_offline_tsx.py",
+    "verify:offline:tsx": "python tools/verify_offline_repair_vendor.py --tsx-only",
+    "test:offline:tsx": "python tools/selftest_offline_tsx.py",
+    "test:offline:wave-c-runtime": "python tools/run_offline_tsx_tests.py tests/wave_c1_dimension_consolidation_runtime.test.ts"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

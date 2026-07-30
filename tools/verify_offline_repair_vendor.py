@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify offline Node/AST/esbuild/Prettier/TypeScript archives without installing them."""
+"""Verify offline Node/AST/esbuild/TSX/Prettier/TypeScript archives without installing them."""
 
 from __future__ import annotations
 
@@ -22,6 +22,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Also require and verify esbuild plus the current platform native package",
     )
     parser.add_argument(
+        "--with-tsx",
+        action="store_true",
+        help="Also require and verify TSX plus its esbuild runtime",
+    )
+    parser.add_argument(
         "--with-prettier",
         action="store_true",
         help="Also require and verify the offline Prettier archive",
@@ -36,6 +41,11 @@ def main(argv: list[str] | None = None) -> int:
         "--esbuild-only",
         action="store_true",
         help="Require and verify only Node plus esbuild and its native platform package",
+    )
+    group.add_argument(
+        "--tsx-only",
+        action="store_true",
+        help="Require and verify only Node plus TSX and its esbuild runtime",
     )
     group.add_argument(
         "--prettier-only",
@@ -54,22 +64,33 @@ def main(argv: list[str] | None = None) -> int:
         core.validate_manifest_against_project(manifest)
         core.selected_entries(manifest, key)
         core.esbuild_entries(manifest, key)
+        core.tsx_entry(manifest)
         core.typescript_entries(manifest, key)
         if not args.manifest_only:
             core.verify_vendor(
                 manifest,
                 key,
                 node=True,
-                ast=not args.esbuild_only and not args.prettier_only and not args.typescript_only,
+                ast=not (
+                    args.esbuild_only
+                    or args.tsx_only
+                    or args.prettier_only
+                    or args.typescript_only
+                ),
                 esbuild=args.with_esbuild or args.esbuild_only,
+                tsx=args.with_tsx or args.tsx_only,
                 prettier=args.with_prettier or args.prettier_only,
                 typescript=args.with_typescript or args.typescript_only,
             )
         components = [f"Node {manifest['node']['version']}"]
-        if not args.esbuild_only and not args.prettier_only and not args.typescript_only:
+        if not (
+            args.esbuild_only or args.tsx_only or args.prettier_only or args.typescript_only
+        ):
             components.append(f"Oxc {manifest['ast']['version']}")
-        if args.with_esbuild or args.esbuild_only:
+        if args.with_esbuild or args.esbuild_only or args.with_tsx or args.tsx_only:
             components.append(f"esbuild {manifest['esbuild']['version']}")
+        if args.with_tsx or args.tsx_only:
+            components.append(f"TSX {manifest['tsx']['version']}")
         if args.with_prettier or args.prettier_only:
             components.append(f"Prettier {manifest['prettier']['version']}")
         if args.with_typescript or args.typescript_only:
