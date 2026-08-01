@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -27,8 +28,6 @@ test('offline TypeScript manifest is exact, native, and lockfile-backed', () => 
 
   const expected = {
     'linux-x64': ['node_modules/@typescript/typescript-linux-x64', 'lib/tsc'],
-    'linux-arm64': ['node_modules/@typescript/typescript-linux-arm64', 'lib/tsc'],
-    'win32-x64': ['node_modules/@typescript/typescript-win32-x64', 'lib/tsc.exe'],
   };
   assert.deepEqual(Object.keys(typescript.platforms).sort(), Object.keys(expected).sort());
   for (const [platform, [lockPath, executable]] of Object.entries(expected)) {
@@ -53,8 +52,6 @@ test('offline esbuild manifest is exact, native, hashed, and lockfile-backed', (
 
   const expected = {
     'linux-x64': ['node_modules/@esbuild/linux-x64', 'bin/esbuild'],
-    'linux-arm64': ['node_modules/@esbuild/linux-arm64', 'bin/esbuild'],
-    'win32-x64': ['node_modules/@esbuild/win32-x64', 'esbuild.exe'],
   };
   assert.deepEqual(Object.keys(esbuild.platforms).sort(), Object.keys(expected).sort());
   for (const [platform, [lockPath, executable]] of Object.entries(expected)) {
@@ -65,6 +62,94 @@ test('offline esbuild manifest is exact, native, hashed, and lockfile-backed', (
     assert.match(entry.binarySha256, /^[a-f0-9]{64}$/u);
     assertLockEntry(entry, esbuild.version, lock.packages);
   }
+});
+
+test('offline native manifests and archives are scoped to Linux x64 glibc', () => {
+  const manifest = readJson('vendor/offline/manifest.json');
+  const nativePlatformMaps = [
+    manifest.node.platforms,
+    manifest.ast.bindings,
+    manifest.esbuild.platforms,
+    manifest.typescript.platforms,
+  ];
+
+  for (const platforms of nativePlatformMaps) {
+    assert.deepEqual(Object.keys(platforms), ['linux-x64']);
+  }
+
+  const manifestText = JSON.stringify(manifest);
+  assert.doesNotMatch(manifestText, /win32-x64|linux-arm64|win-x64|msvc/u);
+
+  const archiveNames = fs.readdirSync(path.join(root, 'vendor/offline'), { recursive: true });
+  assert.deepEqual(
+    archiveNames.filter(name => /win32|win-x64|windows|arm64/iu.test(name)),
+    []
+  );
+
+  for (const wrapper of [
+    'bootstrap_offline_repair_core.bat',
+    'bootstrap_offline_prettier.bat',
+    'bootstrap_offline_typescript.bat',
+    'bootstrap_offline_esbuild.bat',
+    'bootstrap_offline_tsx.bat',
+  ]) {
+    assert.equal(fs.existsSync(path.join(root, 'tools', wrapper)), false);
+  }
+});
+
+test('offline platform selection rejects Windows before archive lookup or download guidance', () => {
+  const probe = String.raw`
+from pathlib import Path
+import sys
+from unittest.mock import patch
+
+sys.path.insert(0, str(Path.cwd() / "tools"))
+import bootstrap_offline_repair_core as core
+import verify_offline_repair_vendor as verify
+
+cases = (
+    ("linux", "x86_64", True, "linux-x64"),
+    ("linux", "aarch64", True, core.UNSUPPORTED_PLATFORM_MESSAGE),
+    ("linux", "x86_64", False, core.UNSUPPORTED_PLATFORM_MESSAGE),
+    ("win32", "AMD64", False, core.UNSUPPORTED_PLATFORM_MESSAGE),
+    ("darwin", "x86_64", False, core.UNSUPPORTED_PLATFORM_MESSAGE),
+)
+for system, machine, glibc, expected in cases:
+    with (
+        patch.object(core.sys, "platform", system),
+        patch.object(core.platform, "machine", return_value=machine),
+        patch.object(core, "_is_glibc_linux", return_value=glibc),
+    ):
+        try:
+            actual = core.platform_key()
+        except core.OfflineCoreError as error:
+            actual = str(error)
+        if actual != expected:
+            raise AssertionError(f"{system}/{machine}/glibc={glibc}: {actual!r}")
+
+with (
+    patch.object(core.sys, "platform", "win32"),
+    patch.object(core.platform, "machine", return_value="AMD64"),
+    patch.object(core, "_require_file", side_effect=AssertionError("archive lookup attempted")),
+):
+    result = verify.main([])
+if result != 2:
+    raise AssertionError(f"unexpected verifier status: {result}")
+print("platform-matrix-ok")
+`;
+  const result = spawnSync(process.env.PYTHON ?? 'python', ['-c', probe], {
+    cwd: root,
+    encoding: 'utf8',
+    env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' },
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(result.stdout.trim(), 'platform-matrix-ok');
+  assert.equal(
+    result.stderr.trim(),
+    'offline vendor verification error: Offline repair vendor supports Linux x64 glibc only'
+  );
+  assert.doesNotMatch(result.stderr, /https?:\/\/|archive|download/iu);
 });
 
 test('offline TypeScript scripts use the pinned compiler and preserve declaration snapshots', () => {

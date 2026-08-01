@@ -10,20 +10,6 @@
         "sha256": "55aa7153f9d88f28d765fcdad5ae6945b5c0f98a36881703817e4c450fa76742",
         "archiveMember": "node-v24.18.0-linux-x64/bin/node",
         "installedExecutable": "bin/node"
-      },
-      "linux-arm64": {
-        "file": "vendor/offline/node/node-v24.18.0-linux-arm64.tar.xz",
-        "url": "https://nodejs.org/download/release/v24.18.0/node-v24.18.0-linux-arm64.tar.xz",
-        "sha256": "58c9520501f6ae2b52d5b210444e24b9d0c029a58c5011b797bc1fe7105886f6",
-        "archiveMember": "node-v24.18.0-linux-arm64/bin/node",
-        "installedExecutable": "bin/node"
-      },
-      "win32-x64": {
-        "file": "vendor/offline/node/node-v24.18.0-win-x64.zip",
-        "url": "https://nodejs.org/download/release/v24.18.0/node-v24.18.0-win-x64.zip",
-        "sha256": "0ae68406b42d7725661da979b1403ec9926da205c6770827f33aac9d8f26e821",
-        "archiveMember": "node-v24.18.0-win-x64/node.exe",
-        "installedExecutable": "node.exe"
       }
     }
   },
@@ -52,20 +38,6 @@
         "file": "vendor/offline/ast/binding-linux-x64-gnu-0.141.0.tgz",
         "url": "https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.141.0.tgz",
         "integrity": "sha512-qtyQVAAebFq57B2tifTlel3TgGqUtsYNI/e+p6aya9rN9lOZVTDvr215fGYSA9XWooxzMxDiVxkBLk2jQHbsOQ=="
-      },
-      "linux-arm64": {
-        "lockPath": "node_modules/@oxc-parser/binding-linux-arm64-gnu",
-        "installPath": "node_modules/@oxc-parser/binding-linux-arm64-gnu",
-        "file": "vendor/offline/ast/binding-linux-arm64-gnu-0.141.0.tgz",
-        "url": "https://registry.npmjs.org/@oxc-parser/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-0.141.0.tgz",
-        "integrity": "sha512-vXz2BLAuypA+4MLyBg94pzEo6THVnzYnCtAjXoihIIQo0t2pnp/AmW+SH1EI+4VbuJnC//KplIJ5yyaCGua4jA=="
-      },
-      "win32-x64": {
-        "lockPath": "node_modules/@oxc-parser/binding-win32-x64-msvc",
-        "installPath": "node_modules/@oxc-parser/binding-win32-x64-msvc",
-        "file": "vendor/offline/ast/binding-win32-x64-msvc-0.141.0.tgz",
-        "url": "https://registry.npmjs.org/@oxc-parser/binding-win32-x64-msvc/-/binding-win32-x64-msvc-0.141.0.tgz",
-        "integrity": "sha512-HI/wsvbWT5RHHw5c37D0fEgeTd8/1Q4OJs5jUmEBc17VZFG6SsCIe4barq7NsAPPks/JW+3ayi3Rp+PQI5h4Kg=="
       }
     }
   },
@@ -87,24 +59,6 @@
         "integrity": "sha512-u/anNYF2mmVOEDwLtnQ1wOr3EZ9sTNGLWrsYGYwHWzGA3Si84IOkHXlbWTD1NB+9/1lcnweYKO54uhxZydNzfA==",
         "executable": "bin/esbuild",
         "binarySha256": "0c6588b092a2c291a72bab90659f3c9e0e25e0fe59c9ac12b4dae4d945e5548c"
-      },
-      "linux-arm64": {
-        "lockPath": "node_modules/@esbuild/linux-arm64",
-        "installPath": "node_modules/@esbuild/linux-arm64",
-        "file": "vendor/offline/esbuild/linux-arm64-0.28.1.tgz",
-        "url": "https://registry.npmjs.org/@esbuild/linux-arm64/-/linux-arm64-0.28.1.tgz",
-        "integrity": "sha512-yHs+0uc8+nvEAfAfxrWQKK5peSNzBc4PegcMO0EJ2hT71uA7vB8Ihg2e77R2P7SG5uYjPbHlLLmve4LLLRCf0g==",
-        "executable": "bin/esbuild",
-        "binarySha256": "51e829ba36f36be6d9aea6e329ddc4f9350302339b16aaca96a3cb97f64a8ebb"
-      },
-      "win32-x64": {
-        "lockPath": "node_modules/@esbuild/win32-x64",
-        "installPath": "node_modules/@esbuild/win32-x64",
-        "file": "vendor/offline/esbuild/win32-x64-0.28.1.tgz",
-        "url": "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.28.1.tgz",
-        "integrity": "sha512-bm4Mowrv+GXMlpWX++EcXw/iLyd1o3+bJkC2DkWXYVvgZCqD/bSj9ctZeAMC3cIxgjRVR2Dufaiu4YPxr5gW1A==",
-        "executable": "esbuild.exe",
-        "binarySha256": "ec02ee9b14ab332416fedd10614dfb80eed5304d94f67745067c011934a8c3c3"
       }
     },
     "launcher": "bin/esbuild"
@@ -149,22 +103,6 @@
         "url": "https://registry.npmjs.org/@typescript/typescript-linux-x64/-/typescript-linux-x64-7.0.2.tgz",
         "integrity": "sha512-EYdf2cNg7rgCWJnxCdJ+F3V39O8ihb37eHAu1LK8oAFizgTQbPOK7zHHXbPt8rX24COqODXeI3sIf0fCXG7H/A==",
         "executable": "lib/tsc"
-      },
-      "linux-arm64": {
-        "lockPath": "node_modules/@typescript/typescript-linux-arm64",
-        "installPath": "node_modules/@typescript/typescript-linux-arm64",
-        "file": "vendor/offline/typescript/typescript-linux-arm64-7.0.2.tgz",
-        "url": "https://registry.npmjs.org/@typescript/typescript-linux-arm64/-/typescript-linux-arm64-7.0.2.tgz",
-        "integrity": "sha512-Qh4eU4/y3yDjnfjjyPYihMj5/ODIlmt+Bzu17OI+fiSRDW57QmU5SiN63exPRNJPKUzcc1INa1NXdrJ+MqHjUQ==",
-        "executable": "lib/tsc"
-      },
-      "win32-x64": {
-        "lockPath": "node_modules/@typescript/typescript-win32-x64",
-        "installPath": "node_modules/@typescript/typescript-win32-x64",
-        "file": "vendor/offline/typescript/typescript-win32-x64-7.0.2.tgz",
-        "url": "https://registry.npmjs.org/@typescript/typescript-win32-x64/-/typescript-win32-x64-7.0.2.tgz",
-        "integrity": "sha512-0BQ3HkAHHlKLSp1qRvf3SUhGpGsDuhB/jgFw75guyqbxJqEaS0Cw/VFO8i2nHglJUzQCRtMMR/IBAKE3ETMC4g==",
-        "executable": "lib/tsc.exe"
       }
     },
     "launcher": "bin/tsc"

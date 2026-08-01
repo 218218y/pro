@@ -4,6 +4,11 @@ This directory stores manually downloaded archives used by focused repair tasks.
 `npm install`, never resolves packages, and never executes lifecycle scripts. Every file is validated against
 `vendor/offline/manifest.json`, `.node-version`, and `package-lock.json` before extraction.
 
+The native offline vendor is intentionally limited to Linux x64 with glibc. Windows, macOS, musl Linux, and
+ARM hosts fail immediately with `Offline repair vendor supports Linux x64 glibc only`; the tools do not look
+for an archive or offer a download URL on those platforms. Prettier and TSX remain platform-neutral packages,
+but their offline launch path still depends on the vendored Linux x64 Node runtime (and esbuild for TSX).
+
 ## Core set: Node 24 + Oxc AST adapter
 
 Minimum set for the usual ChatGPT/Linux x64 glibc environment:
@@ -100,6 +105,5 @@ python tools/selftest_offline_typescript.py
 ```
 
 Generated directories are `.tools/node24` and focused package paths under `node_modules`. They are ignored
-by Git. The manifest also defines Linux ARM64 and Windows x64 variants; only the current platform's Node,
-Oxc, esbuild, and TypeScript native archives are required. TSX itself is platform-neutral and uses the
-matching esbuild platform package.
+by Git. The manifest defines only the Linux x64 Node, Oxc, esbuild, and TypeScript native archives that are
+actually shipped in this directory. TSX itself is platform-neutral and uses the Linux x64 esbuild package.

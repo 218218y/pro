@@ -8,14 +8,16 @@ smaller trusted set:
 - repository-pinned Node `24.18.0`;
 - `oxc-parser 0.141.0`;
 - `@oxc-project/types 0.141.0`;
-- one native Oxc parser binding for the current platform;
-- optionally, lockfile-pinned esbuild `0.28.1` plus its native platform package;
+- the Linux x64 glibc native Oxc parser binding;
+- optionally, lockfile-pinned esbuild `0.28.1` plus its Linux x64 native package;
 - optionally, lockfile-pinned TSX `4.23.1`, reusing that exact esbuild slice;
 - optionally, lockfile-pinned Prettier `3.9.6`;
-- optionally, lockfile-pinned TypeScript `7.0.2` plus its native platform package.
+- optionally, lockfile-pinned TypeScript `7.0.2` plus its Linux x64 native package.
 
 The bootstrap extracts only explicitly listed archives. It does not invoke npm, resolve dependencies, run
-lifecycle scripts, install Playwright browsers, or install the complete lint/build/release toolchain.
+lifecycle scripts, install Playwright browsers, or install the complete lint/build/release toolchain. The
+offline vendor supports Linux x64 with glibc only. Windows, macOS, musl Linux, and ARM fail before archive
+lookup with `Offline repair vendor supports Linux x64 glibc only`.
 
 ## Required archives for Linux x64
 
@@ -50,9 +52,9 @@ Both archives are required. The common package provides the JavaScript API impor
 vendor/offline/tsx/tsx-4.23.1.tgz
 ```
 
-TSX is a single JavaScript package in this lockfile and depends on `esbuild ~0.28.0`; the already-vendored
-`esbuild 0.28.1` satisfies that exact dependency range. The macOS-only `fsevents` dependency is optional and
-is not part of this Linux/Windows-focused slice.
+TSX is a platform-neutral JavaScript package in this lockfile and depends on `esbuild ~0.28.0`; the
+already-vendored Linux x64 `esbuild 0.28.1` satisfies that exact dependency range. The macOS-only `fsevents`
+dependency is optional and is not part of this Linux-only slice.
 
 ### Optional TypeScript 7 slice
 
@@ -71,12 +73,6 @@ extract or rename them.
 ```bash
 python tools/verify_offline_repair_vendor.py
 python tools/bootstrap_offline_repair_core.py
-```
-
-Windows convenience command:
-
-```bat
-tools\bootstrap_offline_repair_core.bat
 ```
 
 Linux convenience command:
@@ -171,7 +167,7 @@ npm run format:offline
 
 ## Verify and run TypeScript 7 independently
 
-The TypeScript path does not require Oxc or Prettier. It validates the common package and the current
+The TypeScript path does not require Oxc or Prettier. It validates the common package and the Linux x64
 platform-native package against `package-lock.json`, replaces any stale local compiler, and proves the native
 compiler reports the exact pinned version.
 
@@ -206,4 +202,5 @@ regenerated to hide that mismatch.
 This focused toolchain covers Node-native tests, AST-backed source contracts, layer checks, formatting,
 TypeScript typechecking, declaration emission, the esbuild-backed TypeScript runtime loader, and focused
 `.ts`/`.tsx` runtime tests through TSX. It does not provide ESLint/Oxlint, Vite, release bundling,
-obfuscation, Playwright, or browser binaries.
+obfuscation, Playwright, or browser binaries. `package-lock.json` remains cross-platform for normal installs;
+only the checked-in `vendor/offline` repair path is Linux x64 glibc-only.

@@ -65,7 +65,9 @@ npm run gate:full
 
 For focused source and architecture repairs, the repository includes a narrow offline bootstrap for the
 primary Node runtime, AST adapter dependencies, the esbuild-backed TypeScript runtime loader, and optional
-standalone TSX, Prettier, and TypeScript packages. Download the pinned archives into `vendor/offline`, then run:
+standalone TSX, Prettier, and TypeScript packages. This vendored repair path supports Linux x64 with glibc
+only; it rejects Windows, macOS, musl, and ARM before archive lookup. Download the pinned archives into
+`vendor/offline`, then run:
 
 ```bash
 python tools/verify_offline_repair_vendor.py

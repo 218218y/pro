@@ -26,6 +26,8 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "vendor" / "offline" / "manifest.json"
 LOCK_PATH = ROOT / "package-lock.json"
 NODE_VERSION_PATH = ROOT / ".node-version"
+SUPPORTED_PLATFORM_KEY = "linux-x64"
+UNSUPPORTED_PLATFORM_MESSAGE = "Offline repair vendor supports Linux x64 glibc only"
 
 
 class OfflineCoreError(RuntimeError):
@@ -50,35 +52,28 @@ def load_manifest() -> dict:
 
 def platform_key() -> str:
     machine = platform.machine().lower()
-    if machine in {"x86_64", "amd64"}:
-        arch = "x64"
-    elif machine in {"aarch64", "arm64"}:
-        arch = "arm64"
-    else:
-        raise OfflineCoreError(f"Unsupported CPU architecture: {platform.machine()}")
-
-    if sys.platform.startswith("linux"):
-        if _is_musl_linux():
-            raise OfflineCoreError(
-                "This offline bundle supports glibc Linux only; a musl-specific Oxc binding is required."
-            )
-        return f"linux-{arch}"
-    if os.name == "nt":
-        return f"win32-{arch}"
-    raise OfflineCoreError(f"Unsupported operating system: {sys.platform}")
+    if (
+        not sys.platform.startswith("linux")
+        or machine not in {"x86_64", "amd64"}
+        or not _is_glibc_linux()
+    ):
+        raise OfflineCoreError(UNSUPPORTED_PLATFORM_MESSAGE)
+    return SUPPORTED_PLATFORM_KEY
 
 
-def _is_musl_linux() -> bool:
+def _is_glibc_linux() -> bool:
     if not sys.platform.startswith("linux"):
         return False
     libc_name, _ = platform.libc_ver()
     if libc_name:
-        return libc_name.lower() == "musl"
+        normalized_name = libc_name.lower()
+        return "glibc" in normalized_name or "gnu libc" in normalized_name
     ldd = shutil.which("ldd")
     if not ldd:
         return False
     probe = subprocess.run([ldd, "--version"], text=True, capture_output=True, check=False)
-    return "musl" in (probe.stdout + probe.stderr).lower()
+    output = (probe.stdout + probe.stderr).lower()
+    return probe.returncode == 0 and ("glibc" in output or "gnu libc" in output)
 
 
 def _safe_relative_posix(value: str, label: str) -> PurePosixPath:

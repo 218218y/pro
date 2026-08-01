@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify offline Node/AST/esbuild/TSX/Prettier/TypeScript archives without installing them."""
+"""Verify the Linux x64 glibc offline repair archives without installing them."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--with-esbuild",
         action="store_true",
-        help="Also require and verify esbuild plus the current platform native package",
+        help="Also require and verify esbuild plus the Linux x64 native package",
     )
     parser.add_argument(
         "--with-tsx",
@@ -34,7 +34,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--with-typescript",
         action="store_true",
-        help="Also require and verify TypeScript plus the current platform native package",
+        help="Also require and verify TypeScript plus the Linux x64 native package",
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
