@@ -2311,7 +2311,32 @@ test('repository Sketch Box Shell Apply migration entry is exact and preserves t
     candidate => candidate.fromFile === entry.fromFile && candidate.addedTarget === entry.addedImport.toFile
   );
   assert.ok(budget);
-  assert.equal(budget.active, true);
+  assert.deepEqual(
+    {
+      active: budget.active,
+      retired: budget.retired,
+      retirementMode: budget.retirementMode,
+      replacementReviewedOwnershipBudgetId: budget.replacementReviewedOwnershipBudgetId,
+    },
+    {
+      active: false,
+      retired: true,
+      retirementMode: 'ownership-reviewed',
+      replacementReviewedOwnershipBudgetId: 'dimension-migration-entry-62-reviewed-ownership',
+    }
+  );
+  const replacement = report.reviewedOwnershipBudgets.find(
+    owner => owner.id === 'dimension-migration-entry-62-reviewed-ownership'
+  );
+  assert.ok(replacement);
+  assert.deepEqual(
+    {
+      active: replacement.active,
+      statementValid: replacement.statementValid,
+      evidenceContractsValid: replacement.evidenceContractsValid,
+    },
+    { active: true, statementValid: true, evidenceContractsValid: true }
+  );
 });
 
 test('repository Sketch Box module-context and surface-commit migration entries are exact', () => {

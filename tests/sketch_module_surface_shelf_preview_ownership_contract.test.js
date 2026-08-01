@@ -117,10 +117,37 @@ test('Sketch module surface shelf preview ledger and layer transition are exact'
   const graph = collectLayerContractGraph({ root });
   const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-30' });
   assert.equal(report.ok, true);
-  assert.equal(
-    report.migrationBudgets.slice(92, 93).every(entry => entry.active),
-    true
+  const entryNumbers = [93];
+  assert.deepEqual(
+    report.migrationBudgets.slice(92, 93).map(entry => ({
+      entryNumber: entry.entryNumber,
+      active: entry.active,
+      retired: entry.retired,
+      retirementMode: entry.retirementMode,
+      replacementReviewedOwnershipBudgetId: entry.replacementReviewedOwnershipBudgetId,
+    })),
+    entryNumbers.map(entryNumber => ({
+      entryNumber,
+      active: false,
+      retired: true,
+      retirementMode: 'ownership-reviewed',
+      replacementReviewedOwnershipBudgetId: `dimension-migration-entry-${entryNumber}-reviewed-ownership`,
+    }))
   );
+  for (const entryNumber of entryNumbers) {
+    const replacement = report.reviewedOwnershipBudgets.find(
+      budget => budget.id === `dimension-migration-entry-${entryNumber}-reviewed-ownership`
+    );
+    assert.ok(replacement);
+    assert.deepEqual(
+      {
+        active: replacement.active,
+        statementValid: replacement.statementValid,
+        evidenceContractsValid: replacement.evidenceContractsValid,
+      },
+      { active: true, statementValid: true, evidenceContractsValid: true }
+    );
+  }
 });
 
 test('Sketch module surface shelf preview formulas remain structurally exact', () => {

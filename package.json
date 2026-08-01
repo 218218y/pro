@@ -16,6 +16,7 @@
     "check:esnext-target": "node tools/wp_esnext_target_contract.mjs",
     "check:gate": "node tools/wp_check.js --strict --gate",
     "check:generated-reports": "node tools/wp_generated_report_contract.mjs --check",
+    "check:dimension-ledger-closeout": "node tools/check_dimension_ledger_closeout.mjs",
     "check:verification-summary": "node tools/wp_generated_report_contract.mjs --check --only=verification-summary",
     "check:script-duplicates": "node tools/wp_script_duplicate_audit.mjs --check --expect-groups 0",
     "check:site-profiles": "node tools/wp_site_profile_contract.mjs && node tools/wp_generate_runtime_config.mjs --check",

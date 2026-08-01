@@ -5,11 +5,15 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+import { resolveTestIsolationNoneArgument } from './wp_test_runner_command.mjs';
+
 const label = 'check:dimension-ledger-closeout';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const npmCommand = process.platform === 'win32' ? (process.env.ComSpec ?? 'cmd.exe') : 'npm';
 const gitCommand = process.platform === 'win32' ? 'git.exe' : 'git';
 const npmArgs = (...args) => (process.platform === 'win32' ? ['/d', '/s', '/c', 'npm.cmd', ...args] : args);
+const testIsolationArgument = resolveTestIsolationNoneArgument();
+const nodeTestArgs = file => [...(testIsolationArgument ? [testIsolationArgument] : []), '--test', file];
 const finalEvidenceContracts = Object.freeze([
   Object.freeze({
     path: 'tests/helpers/dimension_reviewed_ownership_contract_helper.mjs',
@@ -71,27 +75,19 @@ const steps = Object.freeze([
   {
     name: 'Final migration closeout contract',
     command: process.execPath,
-    args: ['--test-isolation=none', '--test', 'tests/dimension_migration_final_closeout_contract.test.js'],
+    args: nodeTestArgs('tests/dimension_migration_final_closeout_contract.test.js'),
     timeoutMs: 60_000,
   },
   {
     name: 'Retirement inventory contract',
     command: process.execPath,
-    args: [
-      '--test-isolation=none',
-      '--test',
-      'tests/dimension_migration_retirement_inventory_contract.test.js',
-    ],
+    args: nodeTestArgs('tests/dimension_migration_retirement_inventory_contract.test.js'),
     timeoutMs: 60_000,
   },
   {
     name: 'Public surface decision contract',
     command: process.execPath,
-    args: [
-      '--test-isolation=none',
-      '--test',
-      'tests/wardrobe_dimension_public_surface_decision_report_contract.test.js',
-    ],
+    args: nodeTestArgs('tests/wardrobe_dimension_public_surface_decision_report_contract.test.js'),
     timeoutMs: 60_000,
   },
   {
