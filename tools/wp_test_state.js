@@ -1,5 +1,6 @@
 import { listTestFiles } from './wp_test_shared.js';
 import { isPlaywrightE2ETestFile } from './wp_test_file_classifier.js';
+import { createBalancedTestShardPlan, estimateTestShardCost } from './wp_test_shard_policy.js';
 
 function readFlagValue(argv, name) {
   const inlinePrefix = `${name}=`;
@@ -51,15 +52,17 @@ export function matchesPattern(filePath, pattern) {
   return String(filePath).toLowerCase().includes(String(pattern).toLowerCase());
 }
 
-export function selectShardFiles(files, shard) {
+export function selectShardFiles(files, shard, options = {}) {
   if (!shard) return files.slice();
-  return files.filter((_, index) => index % shard.total === shard.index - 1);
+  return createBalancedTestShardPlan(files, shard.total, options)[shard.index - 1].files;
 }
 
 export function selectRunnableTests({ projectRoot, pattern, shard }) {
   const allFiles = listTestFiles(projectRoot).filter(filePath => matchesPattern(filePath, pattern));
   const runnableFiles = allFiles.filter(filePath => !isPlaywrightE2ETestFile(filePath, projectRoot));
-  const files = selectShardFiles(runnableFiles, shard);
+  const files = selectShardFiles(runnableFiles, shard, {
+    costForFile: filePath => estimateTestShardCost(filePath, projectRoot),
+  });
   return {
     allFiles,
     runnableFiles,

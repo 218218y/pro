@@ -12,6 +12,8 @@ function read(rel) {
 
 test('GitHub CI keeps required verification split by concern', () => {
   const ci = read('.github/workflows/ci.yml');
+  const runtimeTestsSection = ci.match(/^  runtime-tests:[\s\S]*?(?=^  test-runner-node-contract:)/m)?.[0];
+  assert.ok(runtimeTestsSection, 'runtime-tests job is missing');
 
   assert.doesNotMatch(ci, /^\s*node-version:\s*/m);
   const setupNodeCount = (ci.match(/uses:\s*actions\/setup-node@/g) ?? []).length;
@@ -45,9 +47,10 @@ test('GitHub CI keeps required verification split by concern', () => {
   assert.match(ci, /name: typecheck-diagnostics-\$\{\{ matrix\.shard \}\}/);
   assert.match(ci, /run: npm run contract:layers/);
   assert.match(ci, /run: npm run contract:api/);
-  assert.match(ci, /strategy:\n      fail-fast: false\n      matrix:\n        shard: \[1, 2\]/);
-  assert.match(ci, /run: npm run test -- --shard=\$\{\{ matrix\.shard \}\}\/2/);
-  assert.match(ci, /name: runtime-test-diagnostics-shard-\$\{\{ matrix\.shard \}\}-of-2/);
+  assert.match(runtimeTestsSection, /name: Runtime tests \(\$\{\{ matrix\.shard \}\}\/3\)/);
+  assert.match(runtimeTestsSection, /matrix:\n        shard: \[1, 2, 3\]/);
+  assert.match(runtimeTestsSection, /run: npm run test -- --shard=\$\{\{ matrix\.shard \}\}\/3/);
+  assert.match(runtimeTestsSection, /name: runtime-test-diagnostics-shard-\$\{\{ matrix\.shard \}\}-of-3/);
   assert.match(
     ci,
     /run: node --test tests\/wp_test_runner_command_runtime\.test\.js tests\/wp_serial_tests_runtime\.test\.js/

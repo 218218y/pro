@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
   parseTestArgs,
@@ -12,6 +13,11 @@ import {
   createNoTestsMessage,
   createRunBanner,
 } from '../tools/wp_test_state.js';
+import {
+  createBalancedTestShardPlan,
+  estimateTestShardCost,
+  KNOWN_SLOW_TEST_COSTS,
+} from '../tools/wp_test_shard_policy.js';
 import { getNodeArgs } from '../tools/wp_test_shared.js';
 import { ensureDistBuilt, extractFailedTestNames, runTestFlow } from '../tools/wp_test_flow.js';
 import { formatNodeTestOutputForConsole, isNodeTestSummaryDiagnosticLine } from '../tools/wp_test_console.js';
@@ -80,7 +86,7 @@ test('test selection filters by pattern and skips playwright e2e specs', () => {
   assert.match(createRunBanner({ files: allSelected.files, flags: ['forced tsx'] }), /forced tsx/);
 });
 
-test('test selection shards the canonical runnable file list without overlap', () => {
+test('test selection cost-balances three shards without overlap', () => {
   const root = tempDir();
   fs.mkdirSync(path.join(root, 'tests', 'unit'), { recursive: true });
   fs.mkdirSync(path.join(root, 'tests', 'e2e'), { recursive: true });
@@ -90,16 +96,51 @@ test('test selection shards the canonical runnable file list without overlap', (
   fs.writeFileSync(path.join(root, 'tests', 'e2e', 'smoke.spec.ts'), 'export {}\n', 'utf8');
 
   const allSelected = selectRunnableTests({ projectRoot: root, pattern: '', shard: null });
-  const shardOne = selectRunnableTests({ projectRoot: root, pattern: '', shard: { index: 1, total: 2 } });
-  const shardTwo = selectRunnableTests({ projectRoot: root, pattern: '', shard: { index: 2, total: 2 } });
+  const shards = [1, 2, 3].map(index =>
+    selectRunnableTests({ projectRoot: root, pattern: '', shard: { index, total: 3 } })
+  );
 
   assert.equal(allSelected.files.length, 5);
-  assert.equal(shardOne.skippedE2E, 1);
-  assert.equal(shardOne.totalRunnableFiles, 5);
-  assert.equal(shardOne.files.length + shardTwo.files.length, allSelected.files.length);
-  assert.deepEqual([...shardOne.files, ...shardTwo.files].sort(), allSelected.files);
-  assert.equal(shardOne.files.filter(file => shardTwo.files.includes(file)).length, 0);
+  assert.equal(shards[0].skippedE2E, 1);
+  assert.equal(shards[0].totalRunnableFiles, 5);
+  assert.deepEqual(shards.flatMap(shard => shard.files).sort(), allSelected.files);
+  assert.equal(new Set(shards.flatMap(shard => shard.files)).size, allSelected.files.length);
   assert.deepEqual(selectShardFiles(['a', 'b', 'c', 'd'], { index: 2, total: 2 }), ['b', 'd']);
+});
+
+test('test shard planner uses measured costs instead of file count or alphabetical position', () => {
+  const files = ['heavy-a', 'heavy-b', 'heavy-c', 'light-a', 'light-b', 'light-c'];
+  const costs = new Map([
+    ['heavy-a', 10],
+    ['heavy-b', 9],
+    ['heavy-c', 8],
+    ['light-a', 1],
+    ['light-b', 1],
+    ['light-c', 1],
+  ]);
+  const plan = createBalancedTestShardPlan(files, 3, {
+    costForFile: file => costs.get(file),
+  });
+
+  assert.deepEqual(
+    plan.map(shard => shard.estimatedCost),
+    [10, 10, 10]
+  );
+  assert.ok(plan.every(shard => shard.files.some(file => file.startsWith('heavy-'))));
+  assert.deepEqual(plan.flatMap(shard => shard.files).sort(), files.slice().sort());
+  assert.throws(
+    () => createBalancedTestShardPlan(['invalid'], 1, { costForFile: () => 0 }),
+    /invalid test shard cost/
+  );
+});
+
+test('measured slow-test shard costs reference live canonical tests', () => {
+  const projectRoot = fileURLToPath(new URL('..', import.meta.url));
+  for (const [relativePath, expectedCost] of Object.entries(KNOWN_SLOW_TEST_COSTS)) {
+    const absolutePath = path.resolve(projectRoot, relativePath);
+    assert.equal(fs.existsSync(absolutePath), true, `${relativePath} is missing`);
+    assert.equal(estimateTestShardCost(absolutePath, projectRoot), expectedCost);
+  }
 });
 
 test('test flow derives tsx loader when ts tests exist and dist build is missing', () => {

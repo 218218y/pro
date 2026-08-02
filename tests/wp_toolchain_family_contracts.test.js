@@ -235,6 +235,15 @@ const TOOLCHAIN_FAMILIES = [
         forbiddenNeedles: ['export function ensureDistBuilt('],
       },
       {
+        path: 'tools/wp_test_shard_policy.js',
+        requiredNeedles: [
+          'export const KNOWN_SLOW_TEST_COSTS',
+          'export function estimateTestShardCost(',
+          'export function createBalancedTestShardPlan(',
+        ],
+        forbiddenNeedles: ['spawnSync(', 'export function runTestFlow('],
+      },
+      {
         path: 'tools/wp_test_flow.js',
         requiredNeedles: ['export function ensureDistBuilt(', 'export function runTestFlow('],
         forbiddenNeedles: ['export function parseTestArgs('],

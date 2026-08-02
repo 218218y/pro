@@ -48,7 +48,9 @@ Use browser/E2E only when the changed surface needs browser proof or touches a u
 
 ## CI runtime sharding
 
-`npm run test` is the canonical all-runtime-test entrypoint. CI may split that same file list with `npm run test -- --shard=N/M` to reduce wall-clock time across GitHub runners, but the shards must partition the canonical runnable list without semantic duplication or omitted files.
+`npm run test` is the canonical all-runtime-test entrypoint. CI splits that same file list into three cost-balanced shards with `npm run test -- --shard=N/3` to reduce wall-clock time across GitHub runners. `tools/wp_test_shard_policy.js` uses measured costs for proven slow outliers and a deterministic file-size fallback for ordinary or newly added tests, then assigns files with least-loaded bin packing. The shards must still partition the canonical runnable list without semantic duplication or omitted files.
+
+Do not replace the cost policy with alphabetical round-robin or three hand-maintained file lists. When repeated CI runs show a durable imbalance, profile the full Node 24 runtime suite, update only measured outliers in `KNOWN_SLOW_TEST_COSTS`, and keep the fallback for unprofiled files. Machine-specific absolute times may vary; the tracked values are relative scheduling costs.
 
 Use concern-specific `test:*` scripts and verify lanes for targeted local validation. Do not rebuild the required CI runtime lane by stitching those scripts together, because many of them intentionally overlap.
 
