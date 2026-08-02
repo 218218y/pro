@@ -7,9 +7,9 @@ smaller trusted set:
 
 - repository-pinned Node `24.18.0`;
 - active project parser `oxc-parser 0.142.x` from `package-lock.json`;
-- signed offline fallback `oxc-parser 0.141.0`;
-- offline `@oxc-project/types 0.141.0`;
-- the Linux x64 glibc native Oxc parser binding for the fallback;
+- signed offline Oxc bundle whose exact version is declared in `vendor/offline/manifest.json`;
+- matching offline `@oxc-project/types`;
+- the matching Linux x64 glibc native Oxc parser binding;
 - optionally, lockfile-pinned esbuild `0.28.1` plus its Linux x64 native package;
 - optionally, lockfile-pinned TSX `4.23.1`, reusing that exact esbuild slice;
 - optionally, lockfile-pinned Prettier `3.9.6`;
@@ -26,9 +26,9 @@ lookup with `Offline repair vendor supports Linux x64 glibc only`.
 
 ```text
 vendor/offline/node/node-v24.18.0-linux-x64.tar.xz
-vendor/offline/ast/oxc-parser-0.141.0.tgz
-vendor/offline/ast/types-0.141.0.tgz
-vendor/offline/ast/binding-linux-x64-gnu-0.141.0.tgz
+vendor/offline/ast/oxc-parser-<AST_VERSION>.tgz
+vendor/offline/ast/types-<AST_VERSION>.tgz
+vendor/offline/ast/binding-linux-x64-gnu-<AST_VERSION>.tgz
 ```
 
 ### Optional Prettier slice
@@ -92,7 +92,26 @@ Use the repository command rather than editing the version and generated policy 
 npm run deps:update:oxc
 ```
 
-The active parser is bounded to `>=0.142.0 <0.143.0`, so reviewed `0.142.x` patches may advance while `0.143.0` remains blocked pending a new AST compatibility review. The signed `0.141.0` offline fallback remains valid because both versions are inside the manifest compatibility window and both run `tests/wp_ast_adapter_runtime.test.js`. Refresh the offline archives separately when desired; an active parser update no longer requires an immediate binary-vendor replacement.
+The active parser is bounded to `>=0.142.0 <0.143.0`, so reviewed `0.142.x` patches may advance while `0.143.0` remains blocked pending a new AST compatibility review. The signed offline bundle may lag inside the reviewed manifest window, but it can be synchronized to the exact active lockfile version with:
+
+```bash
+npm run vendor:offline:oxc:refresh
+npm run vendor:offline:oxc:check
+```
+
+The refresh command downloads only the official npm tarballs recorded in `package-lock.json`, verifies their SHA-512 integrity and embedded package name/version, updates `vendor/offline/manifest.json`, and removes superseded Oxc archives only after the new bundle is complete.
+
+### Direct 0.142.0 archive URLs
+
+For manual download of the current Linux x64 glibc bundle:
+
+```text
+https://registry.npmjs.org/oxc-parser/-/oxc-parser-0.142.0.tgz
+https://registry.npmjs.org/@oxc-project/types/-/types-0.142.0.tgz
+https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.142.0.tgz
+```
+
+Place them under `vendor/offline/ast/` without renaming them, then run `npm run vendor:offline:oxc:adopt`. The command verifies the downloaded archives against `package-lock.json`, updates the manifest and removes the superseded files without downloading them again.
 
 ## Run focused Node commands
 

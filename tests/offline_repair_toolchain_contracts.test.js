@@ -89,7 +89,7 @@ test('offline AST fallback is signed independently and compatible with the activ
   assert.equal(pkg.devDependencies['oxc-parser'], '>=0.142.0 <0.143.0');
   assert.equal(lock.packages[''].devDependencies['oxc-parser'], pkg.devDependencies['oxc-parser']);
   assert.equal(isVersionInBoundedRange(activeVersion, '>=0.142.0 <0.143.0'), true);
-  assert.equal(ast.version, '0.141.0');
+  assert.match(ast.version, /^0\.(?:141|142)\.\d+$/u);
   assert.equal(ast.compatibleProjectRange, '>=0.141.0 <0.143.0');
   assert.equal(isVersionInBoundedRange(activeVersion, ast.compatibleProjectRange), true);
   assert.equal(isVersionInBoundedRange(ast.version, ast.compatibleProjectRange), true);
@@ -109,6 +109,27 @@ test('offline AST fallback is signed independently and compatible with the activ
     assert.match(entry.url, new RegExp(ast.version.replaceAll('.', '\\.'), 'u'));
     assert.match(entry.integrity, /^sha512-[A-Za-z0-9+/]+={0,2}$/u);
   }
+});
+
+test('offline Oxc vendor refresh command validates the checked-in bundle without network access', () => {
+  const pkg = readJson('package.json');
+  assert.equal(pkg.scripts['vendor:offline:oxc:refresh'], 'node tools/wp_refresh_offline_oxc_vendor.mjs');
+  assert.equal(
+    pkg.scripts['vendor:offline:oxc:adopt'],
+    'node tools/wp_refresh_offline_oxc_vendor.mjs --adopt-existing'
+  );
+  assert.equal(
+    pkg.scripts['vendor:offline:oxc:check'],
+    'node tools/wp_refresh_offline_oxc_vendor.mjs --check'
+  );
+
+  const result = spawnSync(process.execPath, ['tools/wp_refresh_offline_oxc_vendor.mjs', '--check'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /offline 0\.(?:141|142)\.\d+; active 0\.142\.\d+/u);
 });
 
 test('offline AST compatibility window accepts reviewed patches and rejects a boundary crossing', () => {

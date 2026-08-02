@@ -14,12 +14,12 @@ Minimum set for the usual ChatGPT/Linux x64 glibc environment:
 
 ```text
 vendor/offline/node/node-v24.18.0-linux-x64.tar.xz
-vendor/offline/ast/oxc-parser-0.141.0.tgz
-vendor/offline/ast/types-0.141.0.tgz
-vendor/offline/ast/binding-linux-x64-gnu-0.141.0.tgz
+vendor/offline/ast/oxc-parser-<AST_VERSION>.tgz
+vendor/offline/ast/types-<AST_VERSION>.tgz
+vendor/offline/ast/binding-linux-x64-gnu-<AST_VERSION>.tgz
 ```
 
-The names above intentionally match the filenames emitted by the official download URLs. Do not prepend package scopes or rename them. The project may use a newer active `oxc-parser` from `package-lock.json`; this fallback remains valid only inside `ast.compatibleProjectRange` and is exercised by the same AST adapter runtime contract.
+The names above intentionally match the filenames emitted by the official download URLs. Do not prepend package scopes or rename them. The project may use a newer active `oxc-parser` from `package-lock.json`; the offline bundle remains valid only inside `ast.compatibleProjectRange` and is exercised by the same AST adapter runtime contract. To synchronize it to the active lockfile version automatically, run `npm run vendor:offline:oxc:refresh`. When the three official tarballs were downloaded manually, run `npm run vendor:offline:oxc:adopt` instead. Then validate the local archives with `npm run vendor:offline:oxc:check`.
 
 Verify and install:
 

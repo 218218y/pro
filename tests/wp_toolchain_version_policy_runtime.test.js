@@ -88,7 +88,7 @@ test('toolchain version policy allows bounded compatible updates', () => {
   const offlineManifest = JSON.parse(fs.readFileSync('vendor/offline/manifest.json', 'utf8'));
   const activeOxcVersion = byName.get('oxc-parser').resolvedVersion;
   assert.equal(isVersionWithinBounds(activeOxcVersion, '0.142.0', '0.143.0'), true);
-  assert.equal(offlineManifest.ast.version, '0.141.0');
+  assert.match(offlineManifest.ast.version, /^0\.(?:141|142)\.\d+$/u);
   assert.equal(offlineManifest.ast.compatibleProjectRange, '>=0.141.0 <0.143.0');
   assert.equal(isVersionWithinBounds(activeOxcVersion, '0.141.0', '0.143.0'), true);
   assert.equal(isVersionWithinBounds(offlineManifest.ast.version, '0.141.0', '0.143.0'), true);
