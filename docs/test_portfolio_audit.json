@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-02T00:04:30.271Z",
+  "generatedAt": "2026-08-02T00:54:49.904Z",
   "totals": {
     "tests": 1340,
     "unitRunnerTests": 1332,
     "e2eTests": 8,
     "nonTestRuntimeFiles": 34,
-    "packageTestReferences": 193,
+    "packageTestReferences": 196,
     "catalogTestReferences": 352,
-    "totalTestReferences": 545,
+    "totalTestReferences": 548,
     "catalogGroups": 29,
     "catalogScriptBindings": 29,
     "primaryCatalogGroups": 5
