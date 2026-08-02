@@ -46,10 +46,18 @@ export function buildCarcassCornice(prepared: PreparedCarcassInput): MutableReco
     return buildSegmentedCornice(prepared, corniceTypeNorm);
   }
 
+  const corniceParams: CorniceParams = {
+    totalW,
+    D,
+    woodThick: prepared.woodThick,
+    topY: topSurfaceY,
+    removedLeftFrameSide: prepared.removedLeftFrameSide,
+    removedRightFrameSide: prepared.removedRightFrameSide,
+  };
   if (corniceTypeNorm === 'wave') {
-    return buildWaveCornice({ totalW, D, woodThick: prepared.woodThick, topY: topSurfaceY });
+    return buildWaveCornice(corniceParams);
   }
-  return buildProfileCornice({ totalW, D, woodThick: prepared.woodThick, topY: topSurfaceY });
+  return buildProfileCornice(corniceParams);
 }
 
 type CorniceParams = {
@@ -57,7 +65,21 @@ type CorniceParams = {
   D: number;
   woodThick: number;
   topY: number;
+  removedLeftFrameSide: boolean;
+  removedRightFrameSide: boolean;
 };
+
+type CorniceOuterBoundsInput = Pick<
+  CorniceParams,
+  'totalW' | 'woodThick' | 'removedLeftFrameSide' | 'removedRightFrameSide'
+>;
+
+function resolveCorniceOuterBounds(input: CorniceOuterBoundsInput): { left: number; right: number } {
+  return {
+    left: -input.totalW / 2 + (input.removedLeftFrameSide ? input.woodThick : 0),
+    right: input.totalW / 2 - (input.removedRightFrameSide ? input.woodThick : 0),
+  };
+}
 
 type CorniceSideClosure = {
   startDepth: number;
@@ -171,11 +193,12 @@ function buildCorniceRuns(prepared: PreparedCarcassInput): CorniceRun[] {
 
   const runs: CorniceRun[] = [];
   let internalLeft = -totalW / 2 + woodThick;
+  const outerBounds = resolveCorniceOuterBounds(prepared);
 
   for (let i = 0; i < moduleWidths.length; i++) {
     const moduleWidth = moduleWidths[i];
-    const left = i === 0 ? -totalW / 2 : internalLeft;
-    const right = i === moduleWidths.length - 1 ? totalW / 2 : internalLeft + moduleWidth + woodThick;
+    const left = i === 0 ? outerBounds.left : internalLeft;
+    const right = i === moduleWidths.length - 1 ? outerBounds.right : internalLeft + moduleWidth + woodThick;
     const moduleDepth = moduleDepths ? moduleDepths[i] : D;
     const fallbackDepth = Math.max(woodThick, typeof moduleDepth === 'number' ? moduleDepth : D);
     const footprint = buildModuleCorniceFootprint(prepared, i, left, right, fallbackDepth);
@@ -211,8 +234,12 @@ function buildCorniceRuns(prepared: PreparedCarcassInput): CorniceRun[] {
 
   for (let i = 0; i < runs.length; i++) {
     const run = runs[i];
-    run.leftSide = resolveRunSideClosure(run, runs[i - 1]);
-    run.rightSide = resolveRunSideClosure(run, runs[i + 1]);
+    run.leftSide =
+      run.startIndex === 0 && prepared.removedLeftFrameSide ? null : resolveRunSideClosure(run, runs[i - 1]);
+    run.rightSide =
+      run.endIndex === moduleWidths.length - 1 && prepared.removedRightFrameSide
+        ? null
+        : resolveRunSideClosure(run, runs[i + 1]);
   }
 
   return runs.filter(run => run.right - run.left > CORNICE_EPS);
@@ -574,17 +601,18 @@ function resolveProfileSideEndZ(args: {
 }
 
 function buildWaveCornice(params: CorniceParams): MutableRecord {
-  const { totalW, D, woodThick, topY } = params;
+  const { D, woodThick, topY, removedLeftFrameSide, removedRightFrameSide } = params;
+  const { left, right } = resolveCorniceOuterBounds(params);
   const segments = buildWaveCorniceSection({
-    left: -totalW / 2,
-    right: totalW / 2,
+    left,
+    right,
     globalD: D,
     depth: D,
     woodThick,
     topY,
-    frontPath: [{ ax: -totalW / 2, az: D / 2, bx: totalW / 2, bz: D / 2 }],
-    leftSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
-    rightSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
+    frontPath: [{ ax: left, az: D / 2, bx: right, bz: D / 2 }],
+    leftSide: removedLeftFrameSide ? null : { startDepth: CARCASS_BACK_INSET_Z, internal: false },
+    rightSide: removedRightFrameSide ? null : { startDepth: CARCASS_BACK_INSET_Z, internal: false },
   });
 
   return buildCorniceEnvelope({
@@ -684,17 +712,18 @@ function buildWaveCorniceSection(params: CorniceSectionParams): MutableRecord[] 
 }
 
 function buildProfileCornice(params: CorniceParams): MutableRecord {
-  const { totalW, D, topY, woodThick } = params;
+  const { D, topY, woodThick, removedLeftFrameSide, removedRightFrameSide } = params;
+  const { left, right } = resolveCorniceOuterBounds(params);
   const segments = buildProfileCorniceSection({
-    left: -totalW / 2,
-    right: totalW / 2,
+    left,
+    right,
     globalD: D,
     depth: D,
     woodThick,
     topY,
-    frontPath: [{ ax: -totalW / 2, az: D / 2, bx: totalW / 2, bz: D / 2 }],
-    leftSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
-    rightSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
+    frontPath: [{ ax: left, az: D / 2, bx: right, bz: D / 2 }],
+    leftSide: removedLeftFrameSide ? null : { startDepth: CARCASS_BACK_INSET_Z, internal: false },
+    rightSide: removedRightFrameSide ? null : { startDepth: CARCASS_BACK_INSET_Z, internal: false },
   });
 
   return buildCorniceEnvelope({

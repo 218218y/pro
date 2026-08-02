@@ -22,13 +22,6 @@ export function runModuleLoopItem(
   const mod = runtime.modules[index];
   const frame = resolveModuleFrame(runtime, state, index, mod?.doors);
 
-  registerModuleHitBox(runtime, state, index, frame);
-  createInterDivider(runtime, state, index, frame);
-  applyHexCellGeometryForModule(runtime, state, index, frame);
-
-  const metrics = resolveModuleVerticalMetrics(runtime, frame);
-  writeInternalGridMap(runtime, index, frame, metrics);
-
   const startDoorOfModule = state.globalDoorCounter;
   const frontClosurePlan = resolveRemovedFrameSideFrontClosurePlan({
     cfg: runtime.cfg,
@@ -38,6 +31,14 @@ export function runModuleLoopItem(
     startDoorId: startDoorOfModule,
     moduleDoors: frame.modDoors,
   });
+
+  registerModuleHitBox(runtime, state, index, frame);
+  createInterDivider(runtime, state, index, frame, frontClosurePlan);
+  applyHexCellGeometryForModule(runtime, state, index, frame);
+
+  const metrics = resolveModuleVerticalMetrics(runtime, frame);
+  writeInternalGridMap(runtime, index, frame, metrics);
+
   if (!frontClosurePlan) applyEdgeHandleDefaults(runtime, frame.modDoors, startDoorOfModule);
   applyModuleContents(runtime, state, index, frame, metrics, startDoorOfModule, frontClosurePlan);
 

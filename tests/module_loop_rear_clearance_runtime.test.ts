@@ -339,3 +339,129 @@ test('hex-cell diagonal panel renders as stationary glass visual when glass styl
   assert.equal(typeof glassVisual!.userData.__doorWidth, 'number');
   assert.equal(glassVisual!.children[0].userData.partId, 'hex_cell_1_diag_left');
 });
+
+test('overlay divider next to a fixed left front closure reaches the cabinet front plane', () => {
+  const calls: unknown[][] = [];
+  const runtime = {
+    cfg: { wardrobeType: 'hinged', doorMountMode: 'overlay', removedDoorsMap: { removed_body_left: true } },
+    stackKey: 'top',
+    D: 0.6,
+    woodThick: 0.018,
+    startY: 0,
+    cabinetBodyHeight: 2.4,
+    modules: [{ doors: 1 }, { doors: 1 }],
+    moduleCfgList: [{}, {}],
+    moduleIsCustom: [false, false],
+    moduleBodyHeights: [2.4, 2.4],
+    createBoard: (...args: unknown[]) => {
+      calls.push(args);
+      return { args };
+    },
+    getPartMaterial: (partId: string) => ({ partId }),
+  } as any;
+  const state = { currentX: -0.5, globalDoorCounter: 1 } as any;
+  const frame = {
+    modDoors: 1,
+    modWidth: 0.5,
+    moduleInternalDepth: 0.57,
+    moduleInternalZ: -0.01,
+    moduleTotalDepth: 0.6,
+  } as any;
+  const frontClosurePlan = {
+    side: 'left' as const,
+    partId: 'body_front_closure_left',
+    startDoorId: 1,
+    moduleDoors: 1,
+  };
+
+  createInterDivider(runtime, state, 0, frame, frontClosurePlan);
+
+  assert.equal(calls.length, 1);
+  const depth = Number(calls[0][2]);
+  const z = Number(calls[0][5]);
+  closeTo(z + depth / 2, runtime.D / 2, 'divider should continue alongside the closure to the front');
+  closeTo(
+    z - depth / 2,
+    -runtime.D / 2 + CARCASS_SHELL_DIMENSIONS.sideDepthClearanceM,
+    'front-extended divider should keep the carcass rear clearance'
+  );
+});
+
+test('lower overlay divider detects an intact right-side front closure in the next module', () => {
+  const calls: unknown[][] = [];
+  const runtime = {
+    cfg: {
+      wardrobeType: 'hinged',
+      doorMountMode: 'overlay',
+      removedDoorsMap: { removed_lower_body_right: true },
+    },
+    stackKey: 'bottom',
+    D: 0.6,
+    woodThick: 0.018,
+    startY: 0,
+    cabinetBodyHeight: 2.4,
+    modules: [{ doors: 1 }, { doors: 2 }],
+    moduleCfgList: [{}, {}],
+    moduleIsCustom: [false, false],
+    moduleBodyHeights: [2.4, 2.4],
+    createBoard: (...args: unknown[]) => {
+      calls.push(args);
+      return { args };
+    },
+    getPartMaterial: (partId: string) => ({ partId }),
+  } as any;
+  const state = { currentX: -0.5, globalDoorCounter: 1001 } as any;
+  const frame = {
+    modDoors: 1,
+    modWidth: 0.5,
+    moduleInternalDepth: 0.57,
+    moduleInternalZ: -0.01,
+    moduleTotalDepth: 0.6,
+  } as any;
+
+  createInterDivider(runtime, state, 0, frame, null);
+
+  assert.equal(calls.length, 1);
+  const depth = Number(calls[0][2]);
+  const z = Number(calls[0][5]);
+  closeTo(z + depth / 2, runtime.D / 2, 'divider should reach the front next to the right closure');
+});
+
+test('explicit right-door removal keeps the overlay divider at its normal internal depth', () => {
+  const calls: unknown[][] = [];
+  const runtime = {
+    cfg: {
+      wardrobeType: 'hinged',
+      doorMountMode: 'overlay',
+      removedDoorsMap: { removed_body_right: true, removed_d2_full: true },
+    },
+    stackKey: 'top',
+    D: 0.6,
+    woodThick: 0.018,
+    startY: 0,
+    cabinetBodyHeight: 2.4,
+    modules: [{ doors: 1 }, { doors: 1 }],
+    moduleCfgList: [{}, {}],
+    moduleIsCustom: [false, false],
+    moduleBodyHeights: [2.4, 2.4],
+    createBoard: (...args: unknown[]) => {
+      calls.push(args);
+      return { args };
+    },
+    getPartMaterial: (partId: string) => ({ partId }),
+  } as any;
+  const state = { currentX: -0.5, globalDoorCounter: 1 } as any;
+  const frame = {
+    modDoors: 1,
+    modWidth: 0.5,
+    moduleInternalDepth: 0.57,
+    moduleInternalZ: -0.01,
+    moduleTotalDepth: 0.6,
+  } as any;
+
+  createInterDivider(runtime, state, 0, frame, null);
+
+  assert.equal(calls.length, 1);
+  closeTo(Number(calls[0][2]), frame.moduleInternalDepth);
+  closeTo(Number(calls[0][5]), frame.moduleInternalZ);
+});

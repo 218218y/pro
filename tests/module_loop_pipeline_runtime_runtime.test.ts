@@ -413,6 +413,13 @@ test('module loop replaces intact doors next to a removed frame side with one fi
   runModuleLoopItem(runtime, state, 0);
 
   assert.equal(boardCalls.filter(call => call[7] === 'body_front_closure_left').length, 1);
+  const divider = boardCalls.find(call => call[7] === 'divider_inter_0');
+  assert.ok(divider, 'the boundary next to the fixed closure should still render its divider');
+  closeTo(
+    Number(divider[5]) + Number(divider[2]) / 2,
+    ctx.dims.D / 2,
+    'the divider next to the closure should continue to the cabinet front plane'
+  );
   assert.equal(hingedOps.length, 0, 'the closed side cell must not emit hinged-door operations');
   assert.equal(state.globalDoorCounter, 3, 'suppressed door ids must stay reserved for later modules');
   assert.equal(

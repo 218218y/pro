@@ -457,3 +457,147 @@ test('wave cornice follows a hex-cell roof footprint with straight diagonal fill
     'the waved door front and both diagonal fillers should share the main front paint part'
   );
 });
+
+function corniceSegmentLeftEdge(segment: AnyRecord): number {
+  return Number(segment.x) - Number(segment.length ?? segment.width) / 2;
+}
+
+function corniceSegmentRightEdge(segment: AnyRecord): number {
+  return Number(segment.x) + Number(segment.length ?? segment.width) / 2;
+}
+
+const REMOVED_SIDE_CORNICE_BASE = {
+  totalW: 2,
+  D: 0.6,
+  H: 2.4,
+  woodThick: 0.018,
+  doorsCount: 4,
+  baseType: '',
+  hasCornice: true,
+};
+
+test('classic cornice trims to the inner face and omits the floating return on a removed left side', () => {
+  const ops = asRecord(
+    computeCarcassOps({
+      ...REMOVED_SIDE_CORNICE_BASE,
+      corniceType: 'classic',
+      cfg: { removedDoorsMap: { removed_body_left: true } },
+    })
+  );
+  const segments = asSegments(asRecord(ops.cornice).segments);
+  const fronts = frontProfileSegments(segments);
+  assert.equal(fronts.length, 1);
+  assert.ok(
+    Math.abs(
+      corniceSegmentLeftEdge(fronts[0]) -
+        (-REMOVED_SIDE_CORNICE_BASE.totalW / 2 + REMOVED_SIDE_CORNICE_BASE.woodThick)
+    ) < 1e-9,
+    'classic front cornice should stop at the exposed inner side face'
+  );
+  assert.equal(
+    segments.filter(seg => seg.kind === 'cornice_profile_seg' && Number(seg.rotationY) === 0).length,
+    1,
+    'only the intact right-side return should remain'
+  );
+});
+
+test('wave cornice trims to the inner face and omits the floating return on a removed right side', () => {
+  const ops = asRecord(
+    computeCarcassOps({
+      ...REMOVED_SIDE_CORNICE_BASE,
+      corniceType: 'wave',
+      cfg: { removedDoorsMap: { removed_body_right: true } },
+    })
+  );
+  const segments = asSegments(asRecord(ops.cornice).segments);
+  const front = segments.find(seg => seg.kind === 'cornice_wave_front');
+  assert.ok(front);
+  assert.ok(
+    Math.abs(
+      corniceSegmentRightEdge(front) -
+        (REMOVED_SIDE_CORNICE_BASE.totalW / 2 - REMOVED_SIDE_CORNICE_BASE.woodThick)
+    ) < 1e-9,
+    'wave front cornice should stop at the exposed inner side face'
+  );
+  assert.equal(
+    segments.some(seg => seg.partId === 'cornice_wave_side_right'),
+    false,
+    'removed right side must not emit a floating wave return'
+  );
+  assert.equal(
+    segments.some(seg => seg.partId === 'cornice_wave_side_left'),
+    true,
+    'intact left side should retain its return'
+  );
+});
+
+test('segmented cornice applies removed-side trimming to the first and last roof runs', () => {
+  const moduleWidth = moduleInternalWidth(
+    REMOVED_SIDE_CORNICE_BASE.totalW,
+    REMOVED_SIDE_CORNICE_BASE.woodThick,
+    2
+  );
+  const ops = asRecord(
+    computeCarcassOps({
+      ...REMOVED_SIDE_CORNICE_BASE,
+      corniceType: 'classic',
+      moduleInternalWidths: [moduleWidth, moduleWidth],
+      moduleHeightsTotal: [2.2, 2.4],
+      moduleDepthsTotal: [0.6, 0.6],
+      cfg: {
+        removedDoorsMap: {
+          removed_body_left: true,
+          removed_body_right: true,
+        },
+      },
+    })
+  );
+  const cornice = asRecord(ops.cornice);
+  assert.equal(cornice.mode, 'profile_open_back_segmented');
+  const fronts = frontProfileSegments(asSegments(cornice.segments)).sort((a, b) => Number(a.x) - Number(b.x));
+  assert.equal(fronts.length, 2);
+  assert.ok(
+    Math.abs(
+      corniceSegmentLeftEdge(fronts[0]) -
+        (-REMOVED_SIDE_CORNICE_BASE.totalW / 2 + REMOVED_SIDE_CORNICE_BASE.woodThick)
+    ) < 1e-9,
+    'first segmented run should start at the left inner face'
+  );
+  assert.ok(
+    Math.abs(
+      corniceSegmentRightEdge(fronts[1]) -
+        (REMOVED_SIDE_CORNICE_BASE.totalW / 2 - REMOVED_SIDE_CORNICE_BASE.woodThick)
+    ) < 1e-9,
+    'last segmented run should end at the right inner face'
+  );
+});
+
+test('lower-stack removed-side identity trims only when the lower side is removed', () => {
+  const upperOnly = asRecord(
+    computeCarcassOps({
+      ...REMOVED_SIDE_CORNICE_BASE,
+      corniceType: 'wave',
+      frameSidePartIdPrefix: 'lower_',
+      cfg: { removedDoorsMap: { removed_body_left: true } },
+    })
+  );
+  const lowerRemoved = asRecord(
+    computeCarcassOps({
+      ...REMOVED_SIDE_CORNICE_BASE,
+      corniceType: 'wave',
+      frameSidePartIdPrefix: 'lower_',
+      cfg: { removedDoorsMap: { removed_lower_body_left: true } },
+    })
+  );
+
+  const upperOnlySegments = asSegments(asRecord(upperOnly.cornice).segments);
+  const lowerSegments = asSegments(asRecord(lowerRemoved.cornice).segments);
+  assert.equal(
+    upperOnlySegments.some(seg => seg.partId === 'cornice_wave_side_left'),
+    true
+  );
+  assert.equal(
+    lowerSegments.some(seg => seg.partId === 'cornice_wave_side_left'),
+    false
+  );
+});
