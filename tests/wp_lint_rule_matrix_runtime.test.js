@@ -94,7 +94,7 @@ test('package promotes modern lint without retired aliases', () => {
   assert.equal(pkg.devDependencies.eslint, '^10.8.0');
   assert.equal(pkg.devDependencies.oxlint, '^1.75.0');
   assert.equal(pkg.devDependencies['oxlint-tsgolint'], '7.0.2001');
-  assert.equal(pkg.devDependencies['oxc-parser'], '0.141.0');
+  assert.equal(pkg.devDependencies['oxc-parser'], '>=0.142.0 <0.143.0');
   assert.equal(pkg.scripts.lint, 'npm run lint:modern');
   assert.equal(
     pkg.scripts['lint:modern'],

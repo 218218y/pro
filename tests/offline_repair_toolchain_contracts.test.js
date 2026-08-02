@@ -15,6 +15,20 @@ function assertLockEntry(manifestEntry, expectedVersion, packages) {
   assert.equal(lockEntry.integrity, manifestEntry.integrity);
 }
 
+function isVersionInBoundedRange(version, range) {
+  const match = /^>=(\d+\.\d+\.\d+) <(\d+\.\d+\.\d+)$/u.exec(range);
+  if (!match) return false;
+  const parse = value => value.split('.').map(Number);
+  const compare = (left, right) => {
+    for (let index = 0; index < 3; index += 1) {
+      if (left[index] !== right[index]) return left[index] - right[index];
+    }
+    return 0;
+  };
+  const actual = parse(version);
+  return compare(actual, parse(match[1])) >= 0 && compare(actual, parse(match[2])) < 0;
+}
+
 test('offline TypeScript manifest is exact, native, and lockfile-backed', () => {
   const manifest = readJson('vendor/offline/manifest.json');
   const pkg = readJson('package.json');
@@ -62,6 +76,70 @@ test('offline esbuild manifest is exact, native, hashed, and lockfile-backed', (
     assert.match(entry.binarySha256, /^[a-f0-9]{64}$/u);
     assertLockEntry(entry, esbuild.version, lock.packages);
   }
+});
+
+test('offline AST fallback is signed independently and compatible with the active parser', () => {
+  const manifest = readJson('vendor/offline/manifest.json');
+  const pkg = readJson('package.json');
+  const lock = readJson('package-lock.json');
+  const ast = manifest.ast;
+  const activeParser = lock.packages['node_modules/oxc-parser'];
+  const activeVersion = activeParser.version;
+
+  assert.equal(pkg.devDependencies['oxc-parser'], '>=0.142.0 <0.143.0');
+  assert.equal(lock.packages[''].devDependencies['oxc-parser'], pkg.devDependencies['oxc-parser']);
+  assert.equal(isVersionInBoundedRange(activeVersion, '>=0.142.0 <0.143.0'), true);
+  assert.equal(ast.version, '0.141.0');
+  assert.equal(ast.compatibleProjectRange, '>=0.141.0 <0.143.0');
+  assert.equal(isVersionInBoundedRange(activeVersion, ast.compatibleProjectRange), true);
+  assert.equal(isVersionInBoundedRange(ast.version, ast.compatibleProjectRange), true);
+  assert.equal(lock.packages['node_modules/@oxc-project/types'].version, activeVersion);
+  assert.equal(activeParser.dependencies['@oxc-project/types'], `^${activeVersion}`);
+  for (const [packageName, expectedVersion] of Object.entries(activeParser.optionalDependencies)) {
+    assert.equal(expectedVersion, activeVersion, `${packageName} must match the active parser`);
+    assert.equal(
+      lock.packages[`node_modules/${packageName}`]?.version,
+      activeVersion,
+      `${packageName} lock entry must match the active parser`
+    );
+  }
+
+  for (const entry of [...ast.packages, ...Object.values(ast.bindings)]) {
+    assert.match(entry.file, new RegExp(ast.version.replaceAll('.', '\\.'), 'u'));
+    assert.match(entry.url, new RegExp(ast.version.replaceAll('.', '\\.'), 'u'));
+    assert.match(entry.integrity, /^sha512-[A-Za-z0-9+/]+={0,2}$/u);
+  }
+});
+
+test('offline AST compatibility window accepts reviewed patches and rejects a boundary crossing', () => {
+  const probe = String.raw`
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path.cwd() / "tools"))
+import bootstrap_offline_repair_core as core
+
+assert core._bounded_range_accepts("0.141.0", ">=0.141.0 <0.143.0")
+assert core._bounded_range_accepts("0.142.9", ">=0.141.0 <0.143.0")
+assert not core._bounded_range_accepts("0.143.0", ">=0.141.0 <0.143.0")
+manifest = core.load_manifest()
+manifest["ast"]["compatibleProjectRange"] = ">=0.141.0 <0.142.0"
+try:
+    core.validate_manifest_against_project(manifest)
+except core.OfflineCoreError as error:
+    assert "Project oxc-parser" in str(error)
+else:
+    raise AssertionError("incompatible active parser was accepted")
+print("ast-window-ok")
+`;
+  const result = spawnSync(process.env.PYTHON ?? 'python', ['-c', probe], {
+    cwd: root,
+    encoding: 'utf8',
+    env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' },
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(result.stdout.trim(), 'ast-window-ok');
 });
 
 test('offline native manifests and archives are scoped to Linux x64 glibc', () => {

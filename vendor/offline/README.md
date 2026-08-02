@@ -1,15 +1,14 @@
 # Offline focused-tool archives
 
 This directory stores manually downloaded archives used by focused repair tasks. The bootstrap never runs
-`npm install`, never resolves packages, and never executes lifecycle scripts. Every file is validated against
-`vendor/offline/manifest.json`, `.node-version`, and `package-lock.json` before extraction.
+`npm install`, never resolves packages, and never executes lifecycle scripts. Every file is validated against `vendor/offline/manifest.json`, `.node-version`, its pinned checksum, and `package-lock.json` where the offline slice is lock-coupled. The Oxc AST slice is a separately signed compatibility fallback: its version may lag the active parser while both remain inside the reviewed manifest window and pass the same adapter contract.
 
 The native offline vendor is intentionally limited to Linux x64 with glibc. Windows, macOS, musl Linux, and
 ARM hosts fail immediately with `Offline repair vendor supports Linux x64 glibc only`; the tools do not look
 for an archive or offer a download URL on those platforms. Prettier and TSX remain platform-neutral packages,
 but their offline launch path still depends on the vendored Linux x64 Node runtime (and esbuild for TSX).
 
-## Core set: Node 24 + Oxc AST adapter
+## Core set: Node 24 + Oxc AST compatibility fallback
 
 Minimum set for the usual ChatGPT/Linux x64 glibc environment:
 
@@ -20,8 +19,7 @@ vendor/offline/ast/types-0.141.0.tgz
 vendor/offline/ast/binding-linux-x64-gnu-0.141.0.tgz
 ```
 
-The names above intentionally match the filenames emitted by the official download URLs. Do not prepend
-package scopes or rename them.
+The names above intentionally match the filenames emitted by the official download URLs. Do not prepend package scopes or rename them. The project may use a newer active `oxc-parser` from `package-lock.json`; this fallback remains valid only inside `ast.compatibleProjectRange` and is exercised by the same AST adapter runtime contract.
 
 Verify and install:
 

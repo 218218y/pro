@@ -3,7 +3,8 @@
 
 The script never invokes npm and never runs package lifecycle scripts. It only
 uses files explicitly listed in vendor/offline/manifest.json and validates them
-against .node-version, package-lock.json and pinned checksums before extraction.
+against .node-version, the active toolchain compatibility window, package-lock.json
+where applicable, and pinned checksums before extraction.
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -138,6 +140,24 @@ def _validate_lock_entry(packages: dict, entry: dict, expected_version: str, lab
         raise OfflineCoreError(f"Version mismatch for {lock_path}")
 
 
+def _bounded_range_accepts(version: str, requirement: str) -> bool:
+    match = re.fullmatch(r">=(\d+\.\d+\.\d+) <(\d+\.\d+\.\d+)", requirement)
+    if match is None:
+        return False
+    try:
+        actual = tuple(int(part) for part in version.split("."))
+        minimum = tuple(int(part) for part in match.group(1).split("."))
+        maximum = tuple(int(part) for part in match.group(2).split("."))
+    except ValueError:
+        return False
+    return (
+        len(actual) == 3
+        and len(minimum) == 3
+        and len(maximum) == 3
+        and minimum <= actual < maximum
+    )
+
+
 def _tilde_range_accepts(version: str, requirement: str) -> bool:
     if not requirement.startswith("~"):
         return False
@@ -162,9 +182,30 @@ def validate_manifest_against_project(manifest: dict) -> None:
     if not isinstance(packages, dict):
         raise OfflineCoreError("package-lock.json has no packages map")
 
-    ast_entries = list(manifest["ast"]["packages"]) + list(manifest["ast"]["bindings"].values())
+    ast = manifest.get("ast")
+    if not isinstance(ast, dict):
+        raise OfflineCoreError("vendor/offline/manifest.json has no AST fallback definition")
+    offline_ast_version = str(ast.get("version", ""))
+    compatible_project_range = str(ast.get("compatibleProjectRange", ""))
+    project_ast_version = str(packages.get("node_modules/oxc-parser", {}).get("version", ""))
+    if not _bounded_range_accepts(offline_ast_version, compatible_project_range):
+        raise OfflineCoreError(
+            f"Offline AST version {offline_ast_version} is outside compatibility range {compatible_project_range}"
+        )
+    if not _bounded_range_accepts(project_ast_version, compatible_project_range):
+        raise OfflineCoreError(
+            f"Project oxc-parser {project_ast_version} is outside offline AST compatibility range {compatible_project_range}"
+        )
+    ast_entries = list(ast.get("packages", [])) + list(ast.get("bindings", {}).values())
     for entry in ast_entries:
-        _validate_lock_entry(packages, entry, str(manifest["ast"]["version"]), "AST")
+        if offline_ast_version not in str(entry.get("url", "")):
+            raise OfflineCoreError(
+                f"Offline AST URL does not match fallback version: {entry.get('url')}"
+            )
+        if offline_ast_version not in str(entry.get("file", "")):
+            raise OfflineCoreError(
+                f"Offline AST archive name does not match fallback version: {entry.get('file')}"
+            )
 
     esbuild = manifest.get("esbuild")
     if not isinstance(esbuild, dict) or not isinstance(esbuild.get("package"), dict):

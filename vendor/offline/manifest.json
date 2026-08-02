@@ -15,6 +15,7 @@
   },
   "ast": {
     "version": "0.141.0",
+    "compatibleProjectRange": ">=0.141.0 <0.143.0",
     "packages": [
       {
         "lockPath": "node_modules/oxc-parser",

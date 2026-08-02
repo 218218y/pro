@@ -6,9 +6,10 @@ The full project toolchain is intentionally large. Most focused architecture and
 smaller trusted set:
 
 - repository-pinned Node `24.18.0`;
-- `oxc-parser 0.141.0`;
-- `@oxc-project/types 0.141.0`;
-- the Linux x64 glibc native Oxc parser binding;
+- active project parser `oxc-parser 0.142.x` from `package-lock.json`;
+- signed offline fallback `oxc-parser 0.141.0`;
+- offline `@oxc-project/types 0.141.0`;
+- the Linux x64 glibc native Oxc parser binding for the fallback;
 - optionally, lockfile-pinned esbuild `0.28.1` plus its Linux x64 native package;
 - optionally, lockfile-pinned TSX `4.23.1`, reusing that exact esbuild slice;
 - optionally, lockfile-pinned Prettier `3.9.6`;
@@ -81,8 +82,17 @@ Linux convenience command:
 tools/bootstrap_offline_repair_core.sh
 ```
 
-The core bootstrap verifies the Node version and SHA-256, all Oxc lockfile URLs and SHA-512 integrity values,
-the extracted Node executable, and a real Oxc parse operation.
+The core bootstrap verifies the Node version and SHA-256, the signed offline Oxc archive URLs and SHA-512 integrity values, the reviewed compatibility window against the active lockfile parser, the extracted Node executable, and a real Oxc parse operation. The offline fallback is intentionally independent from the active npm resolution so a reviewed online patch update does not invalidate emergency repair tooling.
+
+## Update the active Oxc parser
+
+Use the repository command rather than editing the version and generated policy files separately:
+
+```bash
+npm run deps:update:oxc
+```
+
+The active parser is bounded to `>=0.142.0 <0.143.0`, so reviewed `0.142.x` patches may advance while `0.143.0` remains blocked pending a new AST compatibility review. The signed `0.141.0` offline fallback remains valid because both versions are inside the manifest compatibility window and both run `tests/wp_ast_adapter_runtime.test.js`. Refresh the offline archives separately when desired; an active parser update no longer requires an immediate binary-vendor replacement.
 
 ## Run focused Node commands
 

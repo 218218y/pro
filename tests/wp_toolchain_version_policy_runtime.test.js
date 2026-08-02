@@ -69,7 +69,7 @@ test('toolchain version policy allows bounded compatible updates', () => {
     eslint: '^10.8.0',
     oxlint: '^1.75.0',
     'oxlint-tsgolint': '7.0.2001',
-    'oxc-parser': '0.141.0',
+    'oxc-parser': '>=0.142.0 <0.143.0',
   };
   assert.deepEqual(APPROVED_DEV_DEP_RANGES, expectedRanges);
   assert.deepEqual(
@@ -86,7 +86,12 @@ test('toolchain version policy allows bounded compatible updates', () => {
     policy.nodeRuntimePolicy.typeBaselineMajor
   );
   const offlineManifest = JSON.parse(fs.readFileSync('vendor/offline/manifest.json', 'utf8'));
-  assert.equal(byName.get('oxc-parser').resolvedVersion, offlineManifest.ast.version);
+  const activeOxcVersion = byName.get('oxc-parser').resolvedVersion;
+  assert.equal(isVersionWithinBounds(activeOxcVersion, '0.142.0', '0.143.0'), true);
+  assert.equal(offlineManifest.ast.version, '0.141.0');
+  assert.equal(offlineManifest.ast.compatibleProjectRange, '>=0.141.0 <0.143.0');
+  assert.equal(isVersionWithinBounds(activeOxcVersion, '0.141.0', '0.143.0'), true);
+  assert.equal(isVersionWithinBounds(offlineManifest.ast.version, '0.141.0', '0.143.0'), true);
 });
 
 test('bounded toolchain windows accept reviewed updates and reject boundary crossings', () => {
@@ -132,6 +137,13 @@ test('dependency refresh scripts synchronize generated toolchain policy docs', (
       `${scriptName} must refresh generated dependency policy docs`
     );
   }
+  assert.match(scripts['deps:update:recommended'] || '', /npm update .*oxc-parser/u);
+  assert.equal(
+    scripts['deps:update:oxc'],
+    'npm update oxc-parser && npm run deps:update:sync-generated && npm run deps:update:oxc:verify'
+  );
+  assert.match(scripts['deps:update:oxc:verify'] || '', /wp_ast_adapter_runtime\.test\.js/u);
+  assert.match(scripts['deps:update:oxc:verify'] || '', /offline_repair_toolchain_contracts\.test\.js/u);
 });
 
 test('toolchain version policy generated docs are current', async () => {
