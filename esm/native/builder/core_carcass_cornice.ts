@@ -234,12 +234,8 @@ function buildCorniceRuns(prepared: PreparedCarcassInput): CorniceRun[] {
 
   for (let i = 0; i < runs.length; i++) {
     const run = runs[i];
-    run.leftSide =
-      run.startIndex === 0 && prepared.removedLeftFrameSide ? null : resolveRunSideClosure(run, runs[i - 1]);
-    run.rightSide =
-      run.endIndex === moduleWidths.length - 1 && prepared.removedRightFrameSide
-        ? null
-        : resolveRunSideClosure(run, runs[i + 1]);
+    run.leftSide = resolveRunSideClosure(run, runs[i - 1]);
+    run.rightSide = resolveRunSideClosure(run, runs[i + 1]);
   }
 
   return runs.filter(run => run.right - run.left > CORNICE_EPS);
@@ -601,7 +597,7 @@ function resolveProfileSideEndZ(args: {
 }
 
 function buildWaveCornice(params: CorniceParams): MutableRecord {
-  const { D, woodThick, topY, removedLeftFrameSide, removedRightFrameSide } = params;
+  const { D, woodThick, topY } = params;
   const { left, right } = resolveCorniceOuterBounds(params);
   const segments = buildWaveCorniceSection({
     left,
@@ -611,8 +607,8 @@ function buildWaveCornice(params: CorniceParams): MutableRecord {
     woodThick,
     topY,
     frontPath: [{ ax: left, az: D / 2, bx: right, bz: D / 2 }],
-    leftSide: removedLeftFrameSide ? null : { startDepth: CARCASS_BACK_INSET_Z, internal: false },
-    rightSide: removedRightFrameSide ? null : { startDepth: CARCASS_BACK_INSET_Z, internal: false },
+    leftSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
+    rightSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
   });
 
   return buildCorniceEnvelope({
@@ -712,7 +708,7 @@ function buildWaveCorniceSection(params: CorniceSectionParams): MutableRecord[] 
 }
 
 function buildProfileCornice(params: CorniceParams): MutableRecord {
-  const { D, topY, woodThick, removedLeftFrameSide, removedRightFrameSide } = params;
+  const { D, topY, woodThick } = params;
   const { left, right } = resolveCorniceOuterBounds(params);
   const segments = buildProfileCorniceSection({
     left,
@@ -722,8 +718,8 @@ function buildProfileCornice(params: CorniceParams): MutableRecord {
     woodThick,
     topY,
     frontPath: [{ ax: left, az: D / 2, bx: right, bz: D / 2 }],
-    leftSide: removedLeftFrameSide ? null : { startDepth: CARCASS_BACK_INSET_Z, internal: false },
-    rightSide: removedRightFrameSide ? null : { startDepth: CARCASS_BACK_INSET_Z, internal: false },
+    leftSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
+    rightSide: { startDepth: CARCASS_BACK_INSET_Z, internal: false },
   });
 
   return buildCorniceEnvelope({

@@ -476,74 +476,132 @@ const REMOVED_SIDE_CORNICE_BASE = {
   hasCornice: true,
 };
 
-test('classic cornice trims to the inner face and omits the floating return on a removed left side', () => {
-  const ops = asRecord(
+function profileSideSegments(segments: AnyRecord[]): AnyRecord[] {
+  return segments.filter(seg => seg.kind === 'cornice_profile_seg' && Number(seg.rotationY) === 0);
+}
+
+function waveSideSegment(segments: AnyRecord[], partId: string): AnyRecord {
+  const side = segments.find(seg => seg.kind === 'cornice_wave_side' && seg.partId === partId);
+  assert.ok(side, `expected ${partId}`);
+  return side;
+}
+
+function assertApprox(actual: number, expected: number, message: string): void {
+  assert.ok(Math.abs(actual - expected) < 1e-9, `${message}: expected ${expected}, got ${actual}`);
+}
+
+test('classic cornice keeps the left return and shifts the complete terminal shape inward when the left frame side is removed', () => {
+  const intact = asRecord(
+    computeCarcassOps({
+      ...REMOVED_SIDE_CORNICE_BASE,
+      corniceType: 'classic',
+    })
+  );
+  const removed = asRecord(
     computeCarcassOps({
       ...REMOVED_SIDE_CORNICE_BASE,
       corniceType: 'classic',
       cfg: { removedDoorsMap: { removed_body_left: true } },
     })
   );
-  const segments = asSegments(asRecord(ops.cornice).segments);
-  const fronts = frontProfileSegments(segments);
-  assert.equal(fronts.length, 1);
-  assert.ok(
-    Math.abs(
-      corniceSegmentLeftEdge(fronts[0]) -
-        (-REMOVED_SIDE_CORNICE_BASE.totalW / 2 + REMOVED_SIDE_CORNICE_BASE.woodThick)
-    ) < 1e-9,
-    'classic front cornice should stop at the exposed inner side face'
+
+  const intactSegments = asSegments(asRecord(intact.cornice).segments);
+  const removedSegments = asSegments(asRecord(removed.cornice).segments);
+  const intactFront = frontProfileSegments(intactSegments)[0];
+  const removedFront = frontProfileSegments(removedSegments)[0];
+  assert.ok(intactFront && removedFront);
+
+  assertApprox(
+    corniceSegmentLeftEdge(removedFront),
+    corniceSegmentLeftEdge(intactFront) + REMOVED_SIDE_CORNICE_BASE.woodThick,
+    'removed-left classic front should shorten by exactly the removed side thickness'
   );
-  assert.equal(
-    segments.filter(seg => seg.kind === 'cornice_profile_seg' && Number(seg.rotationY) === 0).length,
-    1,
-    'only the intact right-side return should remain'
+  assertApprox(
+    corniceSegmentRightEdge(removedFront),
+    corniceSegmentRightEdge(intactFront),
+    'removed-left classic front should preserve the intact right terminal'
   );
+
+  const intactSides = profileSideSegments(intactSegments).sort((a, b) => Number(a.x) - Number(b.x));
+  const removedSides = profileSideSegments(removedSegments).sort((a, b) => Number(a.x) - Number(b.x));
+  assert.equal(removedSides.length, 2, 'both classic terminal returns should remain');
+  assertApprox(
+    Number(removedSides[0].x),
+    Number(intactSides[0].x) + REMOVED_SIDE_CORNICE_BASE.woodThick,
+    'left classic return should move onto the roof by the removed side thickness'
+  );
+  assertApprox(
+    Number(removedSides[1].x),
+    Number(intactSides[1].x),
+    'right classic return should stay unchanged'
+  );
+  assert.equal(removedSides[0].length, intactSides[0].length);
+  assert.deepEqual(removedSides[0].profile, intactSides[0].profile);
 });
 
-test('wave cornice trims to the inner face and omits the floating return on a removed right side', () => {
-  const ops = asRecord(
+test('wave cornice keeps the right return and shifts it inward together with the shortened front', () => {
+  const intact = asRecord(
+    computeCarcassOps({
+      ...REMOVED_SIDE_CORNICE_BASE,
+      corniceType: 'wave',
+    })
+  );
+  const removed = asRecord(
     computeCarcassOps({
       ...REMOVED_SIDE_CORNICE_BASE,
       corniceType: 'wave',
       cfg: { removedDoorsMap: { removed_body_right: true } },
     })
   );
-  const segments = asSegments(asRecord(ops.cornice).segments);
-  const front = segments.find(seg => seg.kind === 'cornice_wave_front');
-  assert.ok(front);
-  assert.ok(
-    Math.abs(
-      corniceSegmentRightEdge(front) -
-        (REMOVED_SIDE_CORNICE_BASE.totalW / 2 - REMOVED_SIDE_CORNICE_BASE.woodThick)
-    ) < 1e-9,
-    'wave front cornice should stop at the exposed inner side face'
+
+  const intactSegments = asSegments(asRecord(intact.cornice).segments);
+  const removedSegments = asSegments(asRecord(removed.cornice).segments);
+  const intactFront = intactSegments.find(seg => seg.kind === 'cornice_wave_front');
+  const removedFront = removedSegments.find(seg => seg.kind === 'cornice_wave_front');
+  assert.ok(intactFront && removedFront);
+
+  assertApprox(
+    corniceSegmentLeftEdge(removedFront),
+    corniceSegmentLeftEdge(intactFront),
+    'removed-right wave front should preserve the intact left terminal'
   );
-  assert.equal(
-    segments.some(seg => seg.partId === 'cornice_wave_side_right'),
-    false,
-    'removed right side must not emit a floating wave return'
+  assertApprox(
+    corniceSegmentRightEdge(removedFront),
+    corniceSegmentRightEdge(intactFront) - REMOVED_SIDE_CORNICE_BASE.woodThick,
+    'removed-right wave front should shorten by exactly the removed side thickness'
   );
-  assert.equal(
-    segments.some(seg => seg.partId === 'cornice_wave_side_left'),
-    true,
-    'intact left side should retain its return'
+
+  const intactLeft = waveSideSegment(intactSegments, 'cornice_wave_side_left');
+  const intactRight = waveSideSegment(intactSegments, 'cornice_wave_side_right');
+  const removedLeft = waveSideSegment(removedSegments, 'cornice_wave_side_left');
+  const removedRight = waveSideSegment(removedSegments, 'cornice_wave_side_right');
+  assertApprox(Number(removedLeft.x), Number(intactLeft.x), 'left wave return should stay unchanged');
+  assertApprox(
+    Number(removedRight.x),
+    Number(intactRight.x) - REMOVED_SIDE_CORNICE_BASE.woodThick,
+    'right wave return should move onto the roof by the removed side thickness'
   );
+  assert.equal(removedRight.width, intactRight.width);
+  assert.equal(removedRight.depth, intactRight.depth);
 });
 
-test('segmented cornice applies removed-side trimming to the first and last roof runs', () => {
+test('segmented cornice shifts both exterior returns inward while preserving the stepped terminal geometry', () => {
   const moduleWidth = moduleInternalWidth(
     REMOVED_SIDE_CORNICE_BASE.totalW,
     REMOVED_SIDE_CORNICE_BASE.woodThick,
     2
   );
-  const ops = asRecord(
+  const common = {
+    ...REMOVED_SIDE_CORNICE_BASE,
+    corniceType: 'classic',
+    moduleInternalWidths: [moduleWidth, moduleWidth],
+    moduleHeightsTotal: [2.2, 2.4],
+    moduleDepthsTotal: [0.6, 0.6],
+  };
+  const intact = asRecord(computeCarcassOps(common));
+  const removed = asRecord(
     computeCarcassOps({
-      ...REMOVED_SIDE_CORNICE_BASE,
-      corniceType: 'classic',
-      moduleInternalWidths: [moduleWidth, moduleWidth],
-      moduleHeightsTotal: [2.2, 2.4],
-      moduleDepthsTotal: [0.6, 0.6],
+      ...common,
       cfg: {
         removedDoorsMap: {
           removed_body_left: true,
@@ -552,27 +610,42 @@ test('segmented cornice applies removed-side trimming to the first and last roof
       },
     })
   );
-  const cornice = asRecord(ops.cornice);
-  assert.equal(cornice.mode, 'profile_open_back_segmented');
-  const fronts = frontProfileSegments(asSegments(cornice.segments)).sort((a, b) => Number(a.x) - Number(b.x));
-  assert.equal(fronts.length, 2);
-  assert.ok(
-    Math.abs(
-      corniceSegmentLeftEdge(fronts[0]) -
-        (-REMOVED_SIDE_CORNICE_BASE.totalW / 2 + REMOVED_SIDE_CORNICE_BASE.woodThick)
-    ) < 1e-9,
-    'first segmented run should start at the left inner face'
+
+  const intactSegments = asSegments(asRecord(intact.cornice).segments);
+  const removedCornice = asRecord(removed.cornice);
+  const removedSegments = asSegments(removedCornice.segments);
+  assert.equal(removedCornice.mode, 'profile_open_back_segmented');
+
+  const intactFronts = frontProfileSegments(intactSegments).sort((a, b) => Number(a.x) - Number(b.x));
+  const removedFronts = frontProfileSegments(removedSegments).sort((a, b) => Number(a.x) - Number(b.x));
+  assert.equal(removedFronts.length, 2);
+  assertApprox(
+    corniceSegmentLeftEdge(removedFronts[0]),
+    corniceSegmentLeftEdge(intactFronts[0]) + REMOVED_SIDE_CORNICE_BASE.woodThick,
+    'first segmented front should shorten at the removed left side'
   );
-  assert.ok(
-    Math.abs(
-      corniceSegmentRightEdge(fronts[1]) -
-        (REMOVED_SIDE_CORNICE_BASE.totalW / 2 - REMOVED_SIDE_CORNICE_BASE.woodThick)
-    ) < 1e-9,
-    'last segmented run should end at the right inner face'
+  assertApprox(
+    corniceSegmentRightEdge(removedFronts[1]),
+    corniceSegmentRightEdge(intactFronts[1]) - REMOVED_SIDE_CORNICE_BASE.woodThick,
+    'last segmented front should shorten at the removed right side'
+  );
+
+  const intactSides = profileSideSegments(intactSegments).sort((a, b) => Number(a.x) - Number(b.x));
+  const removedSides = profileSideSegments(removedSegments).sort((a, b) => Number(a.x) - Number(b.x));
+  assert.equal(removedSides.length, intactSides.length, 'segmented exterior returns must not be deleted');
+  assertApprox(
+    Number(removedSides[0].x),
+    Number(intactSides[0].x) + REMOVED_SIDE_CORNICE_BASE.woodThick,
+    'segmented left exterior return should shift inward'
+  );
+  assertApprox(
+    Number(removedSides[removedSides.length - 1].x),
+    Number(intactSides[intactSides.length - 1].x) - REMOVED_SIDE_CORNICE_BASE.woodThick,
+    'segmented right exterior return should shift inward'
   );
 });
 
-test('lower-stack removed-side identity trims only when the lower side is removed', () => {
+test('lower-stack removed-side identity shifts only the matching lower cornice return', () => {
   const upperOnly = asRecord(
     computeCarcassOps({
       ...REMOVED_SIDE_CORNICE_BASE,
@@ -592,12 +665,13 @@ test('lower-stack removed-side identity trims only when the lower side is remove
 
   const upperOnlySegments = asSegments(asRecord(upperOnly.cornice).segments);
   const lowerSegments = asSegments(asRecord(lowerRemoved.cornice).segments);
-  assert.equal(
-    upperOnlySegments.some(seg => seg.partId === 'cornice_wave_side_left'),
-    true
+  const upperLeft = waveSideSegment(upperOnlySegments, 'cornice_wave_side_left');
+  const lowerLeft = waveSideSegment(lowerSegments, 'cornice_wave_side_left');
+  assertApprox(
+    Number(lowerLeft.x),
+    Number(upperLeft.x) + REMOVED_SIDE_CORNICE_BASE.woodThick,
+    'lower removed-left identity should move only the lower cornice terminal inward'
   );
-  assert.equal(
-    lowerSegments.some(seg => seg.partId === 'cornice_wave_side_left'),
-    false
-  );
+  assert.equal(lowerLeft.width, upperLeft.width);
+  assert.equal(lowerLeft.depth, upperLeft.depth);
 });
