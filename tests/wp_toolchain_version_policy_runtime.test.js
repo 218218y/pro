@@ -8,10 +8,11 @@ import {
   readNodeRuntimePolicy,
 } from '../tools/wp_node_runtime_policy.mjs';
 import {
-  APPROVED_DEV_DEP_VERSIONS,
+  APPROVED_DEV_DEP_RANGES,
   collectToolchainVersionPolicy,
   createFormattedToolchainVersionPolicyMarkdown,
   isTsgolintVersionAlignedWithTypeScript,
+  isVersionWithinBounds,
 } from '../tools/wp_toolchain_version_policy.mjs';
 
 test('Node runtime policy is exact, aligned, and clean on the active toolchain', () => {
@@ -48,7 +49,7 @@ test('Node runtime policy accepts supported lines and rejects loose or unsupport
   );
 });
 
-test('toolchain version policy exact-pins core lint and TypeScript tools', () => {
+test('toolchain version policy allows bounded compatible updates', () => {
   const policy = collectToolchainVersionPolicy();
   assert.deepEqual(policy.violations, []);
 
@@ -56,33 +57,43 @@ test('toolchain version policy exact-pins core lint and TypeScript tools', () =>
   for (const name of ['typescript', '@types/node', 'eslint', 'oxlint', 'oxlint-tsgolint', 'oxc-parser']) {
     const row = byName.get(name);
     assert.ok(row, `${name} should be tracked`);
-    assert.match(row.packageJsonVersion, /^\d+\.\d+\.\d+$/);
-    assert.equal(row.packageJsonVersion, row.lockRootVersion);
-    assert.equal(row.packageJsonVersion, row.installedVersion);
+    assert.equal(row.packageJsonRange, row.approvedRange);
+    assert.equal(row.lockRootRange, row.packageJsonRange);
+    assert.match(row.resolvedVersion, /^\d+\.\d+\.\d+$/);
+    assert.equal(row.resolvedWithinApprovedRange, true);
   }
 
-  const expectedVersions = {
+  const expectedRanges = {
     typescript: '7.0.2',
-    '@types/node': '22.20.1',
-    eslint: '10.8.0',
-    oxlint: '1.75.0',
+    '@types/node': '^22.20.1',
+    eslint: '^10.8.0',
+    oxlint: '^1.75.0',
     'oxlint-tsgolint': '7.0.2001',
-    'oxc-parser': '0.141.0',
+    'oxc-parser': '>=0.141.0 <0.143.0',
   };
-  assert.deepEqual(APPROVED_DEV_DEP_VERSIONS, expectedVersions);
+  assert.deepEqual(APPROVED_DEV_DEP_RANGES, expectedRanges);
   assert.deepEqual(
-    Object.fromEntries([...byName].map(([name, row]) => [name, row.packageJsonVersion])),
-    expectedVersions
+    Object.fromEntries([...byName].map(([name, row]) => [name, row.packageJsonRange])),
+    expectedRanges
   );
   assert.deepEqual(
-    Object.fromEntries([...byName].map(([name, row]) => [name, row.approvedVersion])),
-    expectedVersions
+    Object.fromEntries([...byName].map(([name, row]) => [name, row.approvedRange])),
+    expectedRanges
   );
   assert.equal(policy.tsgolintTypeScriptAligned, true);
   assert.equal(
-    byName.get('@types/node').packageJsonVersion.split('.')[0],
-    String(policy.nodeRuntimePolicy.typeBaselineMajor)
+    Number.parseInt(byName.get('@types/node').resolvedVersion.split('.')[0], 10),
+    policy.nodeRuntimePolicy.typeBaselineMajor
   );
+});
+
+test('bounded toolchain windows accept reviewed updates and reject boundary crossings', () => {
+  assert.equal(isVersionWithinBounds('7.0.2', '7.0.2', '7.1.0'), true);
+  assert.equal(isVersionWithinBounds('7.0.99', '7.0.2', '7.1.0'), true);
+  assert.equal(isVersionWithinBounds('7.1.0', '7.0.2', '7.1.0'), false);
+  assert.equal(isVersionWithinBounds('0.142.0', '0.141.0', '0.143.0'), true);
+  assert.equal(isVersionWithinBounds('0.143.0', '0.141.0', '0.143.0'), false);
+  assert.equal(isVersionWithinBounds('latest', '1.0.0', '2.0.0'), false);
 });
 
 test('oxlint-tsgolint version encoding stays aligned with the pinned TypeScript release', () => {

@@ -10,6 +10,7 @@ const ROOT = path.resolve(__dirname, '..');
 const PRIMARY_NODE_VERSION_FILE = '.node-version';
 const COMPATIBILITY_NODE_VERSION_FILE = '.node-version-compat';
 const WORKFLOW_DIRECTORY = '.github/workflows';
+const NODE_TYPES_MINIMUM_VERSION = '22.20.1';
 
 function readJson(root, relativePath) {
   return JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8'));
@@ -78,6 +79,8 @@ export function readNodeRuntimePolicy(root = ROOT) {
     supportedMajors: Object.freeze(supportedLines.map(line => line.major)),
     supportedLines,
     typeBaselineMajor: Math.min(...supportedLines.map(line => line.major)),
+    typeDeclarationMinimumVersion: NODE_TYPES_MINIMUM_VERSION,
+    typeDeclarationRange: `^${NODE_TYPES_MINIMUM_VERSION}`,
     engineRange,
   };
 }
@@ -180,29 +183,35 @@ export function collectNodeRuntimePolicyViolations({ root = ROOT, currentNodeVer
   );
   pushMismatch(violations, 'package-lock.json root engines.node', lockRoot.engines?.node, policy.engineRange);
 
-  const packageTypesVersion = pkg.devDependencies?.['@types/node'] ?? null;
-  const lockRootTypesVersion = lockRoot.devDependencies?.['@types/node'] ?? null;
+  const packageTypesRange = pkg.devDependencies?.['@types/node'] ?? null;
+  const lockRootTypesRange = lockRoot.devDependencies?.['@types/node'] ?? null;
   const lockInstalledTypesVersion = lock.packages?.['node_modules/@types/node']?.version ?? null;
-  for (const [label, version] of [
-    ['package.json @types/node', packageTypesVersion],
-    ['package-lock root @types/node', lockRootTypesVersion],
-    ['package-lock installed @types/node', lockInstalledTypesVersion],
-  ]) {
-    if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/u.test(String(version ?? ''))) {
-      violations.push(`${label} must be exact-pinned; received ${JSON.stringify(version)}.`);
-      continue;
-    }
-    const typesMajor = Number.parseInt(String(version).split('.')[0] ?? '', 10);
-    if (typesMajor !== policy.typeBaselineMajor) {
+
+  pushMismatch(violations, 'package.json @types/node range', packageTypesRange, policy.typeDeclarationRange);
+  pushMismatch(
+    violations,
+    'package-lock root @types/node range',
+    lockRootTypesRange,
+    policy.typeDeclarationRange
+  );
+
+  let installedTypes = null;
+  try {
+    installedTypes = parsePinnedNodeVersion(lockInstalledTypesVersion, 'package-lock installed @types/node');
+  } catch (error) {
+    violations.push(error instanceof Error ? error.message : String(error));
+  }
+  if (installedTypes) {
+    const minimumTypes = parsePinnedNodeVersion(policy.typeDeclarationMinimumVersion, '@types/node minimum');
+    if (installedTypes.major !== policy.typeBaselineMajor) {
       violations.push(
-        `${label} major ${typesMajor} does not match the lowest supported Node major ${policy.typeBaselineMajor}.`
+        `package-lock installed @types/node major ${installedTypes.major} does not match the lowest supported Node major ${policy.typeBaselineMajor}.`
+      );
+    } else if (compareNodeVersions(installedTypes, minimumTypes) < 0) {
+      violations.push(
+        `package-lock installed @types/node ${installedTypes.version} is below supported minimum ${minimumTypes.version}.`
       );
     }
-  }
-  if (packageTypesVersion !== lockRootTypesVersion || packageTypesVersion !== lockInstalledTypesVersion) {
-    violations.push(
-      `@types/node versions must match across package.json and package-lock (${packageTypesVersion}, ${lockRootTypesVersion}, ${lockInstalledTypesVersion}).`
-    );
   }
 
   violations.push(...collectWorkflowViolations(root, policy));
@@ -219,7 +228,7 @@ async function main() {
     return;
   }
   console.log(
-    `[Node runtime policy] OK: primary=${policy.version}, compatibility=${policy.compatibilityVersion}, engines=${policy.engineRange}, @types/node baseline=${policy.typeBaselineMajor}`
+    `[Node runtime policy] OK: primary=${policy.version}, compatibility=${policy.compatibilityVersion}, engines=${policy.engineRange}, @types/node range=${policy.typeDeclarationRange}`
   );
 }
 

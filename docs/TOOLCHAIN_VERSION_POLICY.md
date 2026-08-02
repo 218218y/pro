@@ -2,18 +2,18 @@
 
 <!-- Tool-owned report target. Regenerate with: npm run toolchain:version-policy:report -->
 
-TypeScript 7 cleanup is complete. Core toolchain packages are intentionally exact-pinned so future patch/minor upgrades happen in a dedicated dependency refresh, not as silent lockfile drift. `@types/node` is pinned to the lowest supported Node runtime major so typechecking cannot silently adopt Node 24-only APIs.
+Most core toolchain manifests use bounded compatibility ranges, while `package-lock.json` still records one exact resolved version for reproducible installs. TypeScript and `oxlint-tsgolint` remain deliberately exact because the offline repair vendor and declaration snapshots are version-coupled. This permits reviewed patch/minor refreshes where safe without weakening major-version or compatibility boundaries. `@types/node` remains on the lowest supported Node runtime major so typechecking cannot silently adopt Node 24-only APIs while the Node 22 compatibility lane exists.
 
-## Exact pinned packages
+## Bounded toolchain ranges
 
-| Package           | Approved version | package.json | package-lock root | resolved lock package | Role                                                                            | Future patch/minor policy                                                                                           |
-| ----------------- | ---------------- | ------------ | ----------------- | --------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `typescript`      | `7.0.2`          | `7.0.2`      | `7.0.2`           | `7.0.2`               | Type correctness gate and TS7 compiler lane.                                    | Keep exact at 7.0.2 until a dedicated TypeScript patch/minor refresh is approved.                                   |
-| `@types/node`     | `22.20.1`        | `22.20.1`    | `22.20.1`         | `22.20.1`             | Node tool/test type surface aligned to the lowest supported Node runtime major. | Keep exact and on the lowest supported Node major; refresh with runtime support updates.                            |
-| `eslint`          | `10.8.0`         | `10.8.0`     | `10.8.0`          | `10.8.0`              | Strict JS/tools/tests/config lint gate.                                         | Keep exact; review patch/minor releases in a dedicated lint dependency refresh.                                     |
-| `oxlint`          | `1.75.0`         | `1.75.0`     | `1.75.0`          | `1.75.0`              | Blocking TS/TSX syntax lint gate.                                               | Keep exact while syntax diagnostics are 0; update only with parity report refresh.                                  |
-| `oxlint-tsgolint` | `7.0.2001`       | `7.0.2001`   | `7.0.2001`        | `7.0.2001`            | Blocking type-aware lint lane.                                                  | Keep exact and aligned with the pinned TypeScript version; updates require a zero-diagnostic type-aware parity run. |
-| `oxc-parser`      | `0.141.0`        | `0.141.0`    | `0.141.0`         | `0.141.0`             | Internal AST adapter parser.                                                    | Keep exact; parser updates require `wp_ast_adapter` parity tests.                                                   |
+| Package           | Approved manifest range | package.json         | package-lock root    | resolved lock package | Allowed resolved window | Role                                                                            | Update policy                                                                                                                |
+| ----------------- | ----------------------- | -------------------- | -------------------- | --------------------- | ----------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `typescript`      | `7.0.2`                 | `7.0.2`              | `7.0.2`              | `7.0.2`               | `=7.0.2`                | Type correctness gate and TS7 compiler lane.                                    | Keep the compiler exact because the offline repair vendor and declaration snapshots are built against this version.          |
+| `@types/node`     | `^22.20.1`              | `^22.20.1`           | `^22.20.1`           | `22.20.1`             | `>=22.20.1 <23.0.0`     | Node tool/test type surface aligned to the lowest supported Node runtime major. | Allow newer Node 22 declaration releases while Node 22 remains the compatibility floor. Node 24 remains the primary runtime. |
+| `eslint`          | `^10.8.0`               | `^10.8.0`            | `^10.8.0`            | `10.8.0`              | `>=10.8.0 <11.0.0`      | Strict JS/tools/tests/config lint gate.                                         | Allow ESLint 10 patch/minor releases; major upgrades require a lint policy review.                                           |
+| `oxlint`          | `^1.75.0`               | `^1.75.0`            | `^1.75.0`            | `1.75.0`              | `>=1.75.0 <2.0.0`       | Blocking TS/TSX syntax lint gate.                                               | Allow Oxlint 1.x patch/minor releases while the syntax and type-aware lanes remain at zero diagnostics.                      |
+| `oxlint-tsgolint` | `7.0.2001`              | `7.0.2001`           | `7.0.2001`           | `7.0.2001`            | `=7.0.2001`             | Blocking type-aware lint lane.                                                  | Keep this exact because it is encoded for the pinned TypeScript compiler; refresh both together.                             |
+| `oxc-parser`      | `>=0.141.0 <0.143.0`    | `>=0.141.0 <0.143.0` | `>=0.141.0 <0.143.0` | `0.141.0`             | `>=0.141.0 <0.143.0`    | Internal AST adapter parser.                                                    | Allow the reviewed 0.141.x-0.142.x parser window; later 0.x minors require AST parity review.                                |
 
 ## Removed packages that must stay absent
 
@@ -21,13 +21,14 @@ TypeScript 7 cleanup is complete. Core toolchain packages are intentionally exac
 - TS ESLint plugin package
 - TypeScript 6 compatibility package
 
-## Future update check
+## Dependency refresh workflow
 
-- Do not auto-upgrade TypeScript, Oxlint, oxlint-tsgolint, oxc-parser, or ESLint as part of feature work.
-- For a future patch/minor refresh, update the approved version in this policy, run the normal quality gates, regenerate lint parity docs, and prove `lint:ts-modern:type-aware` remains at 0 diagnostics.
-- `lint:ts-modern:type-aware` is blocking; patch/minor updates must preserve the global zero contract.
-- `oxlint-tsgolint` must encode the pinned TypeScript major, minor, and patch plus its three-digit tsgolint revision.
+- `npm update` may advance direct and transitive packages only inside the declared manifest ranges.
+- The exact resolved versions remain committed in `package-lock.json`; CI uses `npm ci` and therefore remains reproducible.
+- A dependency refresh must run the toolchain policy, lint, typecheck, build, and relevant runtime/contract tests.
+- Major releases and versions outside the documented windows still require an explicit compatibility review.
+- `oxlint-tsgolint` must encode the resolved TypeScript major, minor, and patch plus its three-digit tsgolint revision.
 
 ## Current status
 
-Ready: all pinned toolchain versions match their approved versions, `@types/node` matches the lowest supported Node major, `oxlint-tsgolint` is aligned with TypeScript, and removed TS ESLint packages are absent.
+Ready: all toolchain manifest ranges are approved, resolved lock versions are inside their compatibility windows, `@types/node` matches the lowest supported Node major, `oxlint-tsgolint` is aligned with TypeScript, and removed TS ESLint packages are absent.

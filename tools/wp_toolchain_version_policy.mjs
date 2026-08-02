@@ -11,53 +11,71 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_DOC_RELATIVE_PATH = 'docs/TOOLCHAIN_VERSION_POLICY.md';
 
-const APPROVED_DEV_DEP_VERSIONS = Object.freeze({
+const APPROVED_DEV_DEP_RANGES = Object.freeze({
   typescript: '7.0.2',
-  '@types/node': '22.20.1',
-  eslint: '10.8.0',
-  oxlint: '1.75.0',
+  '@types/node': '^22.20.1',
+  eslint: '^10.8.0',
+  oxlint: '^1.75.0',
   'oxlint-tsgolint': '7.0.2001',
-  'oxc-parser': '0.141.0',
+  'oxc-parser': '>=0.141.0 <0.143.0',
 });
 
-const PINNED_DEV_DEPS = [
+const TOOLCHAIN_DEV_DEPS = [
   {
     name: 'typescript',
-    approvedVersion: APPROVED_DEV_DEP_VERSIONS['typescript'],
+    approvedRange: APPROVED_DEV_DEP_RANGES.typescript,
+    minVersion: '7.0.2',
+    maxExclusiveVersion: '7.1.0',
+    exactResolvedVersion: '7.0.2',
     role: 'Type correctness gate and TS7 compiler lane.',
-    updatePolicy: 'Keep exact at 7.0.2 until a dedicated TypeScript patch/minor refresh is approved.',
+    updatePolicy:
+      'Keep the compiler exact because the offline repair vendor and declaration snapshots are built against this version.',
   },
   {
     name: '@types/node',
-    approvedVersion: APPROVED_DEV_DEP_VERSIONS['@types/node'],
+    approvedRange: APPROVED_DEV_DEP_RANGES['@types/node'],
+    minVersion: '22.20.1',
+    maxExclusiveVersion: '23.0.0',
     role: 'Node tool/test type surface aligned to the lowest supported Node runtime major.',
-    updatePolicy: 'Keep exact and on the lowest supported Node major; refresh with runtime support updates.',
+    updatePolicy:
+      'Allow newer Node 22 declaration releases while Node 22 remains the compatibility floor. Node 24 remains the primary runtime.',
     nodeBaselineAligned: true,
   },
   {
     name: 'eslint',
-    approvedVersion: APPROVED_DEV_DEP_VERSIONS['eslint'],
+    approvedRange: APPROVED_DEV_DEP_RANGES.eslint,
+    minVersion: '10.8.0',
+    maxExclusiveVersion: '11.0.0',
     role: 'Strict JS/tools/tests/config lint gate.',
-    updatePolicy: 'Keep exact; review patch/minor releases in a dedicated lint dependency refresh.',
+    updatePolicy: 'Allow ESLint 10 patch/minor releases; major upgrades require a lint policy review.',
   },
   {
     name: 'oxlint',
-    approvedVersion: APPROVED_DEV_DEP_VERSIONS['oxlint'],
+    approvedRange: APPROVED_DEV_DEP_RANGES.oxlint,
+    minVersion: '1.75.0',
+    maxExclusiveVersion: '2.0.0',
     role: 'Blocking TS/TSX syntax lint gate.',
-    updatePolicy: 'Keep exact while syntax diagnostics are 0; update only with parity report refresh.',
+    updatePolicy:
+      'Allow Oxlint 1.x patch/minor releases while the syntax and type-aware lanes remain at zero diagnostics.',
   },
   {
     name: 'oxlint-tsgolint',
-    approvedVersion: APPROVED_DEV_DEP_VERSIONS['oxlint-tsgolint'],
+    approvedRange: APPROVED_DEV_DEP_RANGES['oxlint-tsgolint'],
+    minVersion: '7.0.2001',
+    maxExclusiveVersion: '7.1.0',
+    exactResolvedVersion: '7.0.2001',
     role: 'Blocking type-aware lint lane.',
     updatePolicy:
-      'Keep exact and aligned with the pinned TypeScript version; updates require a zero-diagnostic type-aware parity run.',
+      'Keep this exact because it is encoded for the pinned TypeScript compiler; refresh both together.',
   },
   {
     name: 'oxc-parser',
-    approvedVersion: APPROVED_DEV_DEP_VERSIONS['oxc-parser'],
+    approvedRange: APPROVED_DEV_DEP_RANGES['oxc-parser'],
+    minVersion: '0.141.0',
+    maxExclusiveVersion: '0.143.0',
     role: 'Internal AST adapter parser.',
-    updatePolicy: 'Keep exact; parser updates require `wp_ast_adapter` parity tests.',
+    updatePolicy:
+      'Allow the reviewed 0.141.x-0.142.x parser window; later 0.x minors require AST parity review.',
   },
 ];
 
@@ -94,8 +112,29 @@ function parseArgs(argv) {
   return args;
 }
 
-function isExactSemver(value) {
-  return /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(String(value || ''));
+function parseExactSemver(value) {
+  const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(String(value || ''));
+  if (!match) return null;
+  return {
+    major: Number(match[1]),
+    minor: Number(match[2]),
+    patch: Number(match[3]),
+  };
+}
+
+function compareSemver(left, right) {
+  for (const key of ['major', 'minor', 'patch']) {
+    if (left[key] !== right[key]) return left[key] - right[key];
+  }
+  return 0;
+}
+
+function isVersionWithinBounds(version, minVersion, maxExclusiveVersion) {
+  const parsed = parseExactSemver(version);
+  const min = parseExactSemver(minVersion);
+  const max = parseExactSemver(maxExclusiveVersion);
+  if (!parsed || !min || !max) return false;
+  return compareSemver(parsed, min) >= 0 && compareSemver(parsed, max) < 0;
 }
 
 function isTsgolintVersionAlignedWithTypeScript(typescriptVersion, tsgolintVersion) {
@@ -123,65 +162,68 @@ function collectToolchainVersionPolicy() {
   const violations = [];
   const nodeRuntimePolicy = readNodeRuntimePolicy(ROOT);
 
-  for (const item of PINNED_DEV_DEPS) {
-    const packageJsonVersion = devDependencies[item.name] || null;
-    const lockRootVersion = lockRootDevDependencies[item.name] || null;
-    const installedVersion = lock.packages?.[`node_modules/${item.name}`]?.version || null;
-    const exact = isExactSemver(packageJsonVersion);
-    const lockExact = isExactSemver(lockRootVersion);
-    const lockMatchesPackageJson = packageJsonVersion === lockRootVersion;
-    const installedMatchesRoot = installedVersion === packageJsonVersion;
+  for (const item of TOOLCHAIN_DEV_DEPS) {
+    const packageJsonRange = devDependencies[item.name] || null;
+    const lockRootRange = lockRootDevDependencies[item.name] || null;
+    const resolvedVersion = lock.packages?.[`node_modules/${item.name}`]?.version || null;
+    const manifestRangeApproved = packageJsonRange === item.approvedRange;
+    const lockRangeMatchesManifest = packageJsonRange === lockRootRange;
+    const resolvedWithinApprovedRange = item.exactResolvedVersion
+      ? resolvedVersion === item.exactResolvedVersion
+      : isVersionWithinBounds(resolvedVersion, item.minVersion, item.maxExclusiveVersion);
+    const allowedResolvedSpec = item.exactResolvedVersion
+      ? `=${item.exactResolvedVersion}`
+      : `>=${item.minVersion} <${item.maxExclusiveVersion}`;
 
-    if (!packageJsonVersion) violations.push(`${item.name} is missing from package.json devDependencies.`);
-    if (packageJsonVersion && packageJsonVersion !== item.approvedVersion) {
+    if (!packageJsonRange) violations.push(`${item.name} is missing from package.json devDependencies.`);
+    if (packageJsonRange && !manifestRangeApproved) {
       violations.push(
-        `${item.name} must use approved version ${item.approvedVersion}; found ${packageJsonVersion}.`
+        `${item.name} must use approved range ${item.approvedRange}; found ${packageJsonRange}.`
       );
     }
-    if (packageJsonVersion && !exact)
-      violations.push(`${item.name} is not exact in package.json: ${packageJsonVersion}`);
-    if (lockRootVersion && !lockExact)
-      violations.push(`${item.name} is not exact in package-lock root: ${lockRootVersion}`);
-    if (!lockRootVersion) violations.push(`${item.name} is missing from package-lock root devDependencies.`);
-    if (packageJsonVersion && lockRootVersion && !lockMatchesPackageJson) {
+    if (!lockRootRange) violations.push(`${item.name} is missing from package-lock root devDependencies.`);
+    if (packageJsonRange && lockRootRange && !lockRangeMatchesManifest) {
       violations.push(
-        `${item.name} package.json (${packageJsonVersion}) does not match package-lock root (${lockRootVersion}).`
+        `${item.name} package.json range (${packageJsonRange}) does not match package-lock root (${lockRootRange}).`
       );
     }
-    if (packageJsonVersion && installedVersion && !installedMatchesRoot) {
+    if (!resolvedVersion) {
+      violations.push(`${item.name} is missing from the resolved package-lock tree.`);
+    } else if (!resolvedWithinApprovedRange) {
       violations.push(
-        `${item.name} installed lock version (${installedVersion}) does not match package.json (${packageJsonVersion}).`
+        `${item.name} resolved version ${resolvedVersion} does not satisfy approved policy ${allowedResolvedSpec}.`
       );
     }
-    if (item.nodeBaselineAligned && exact) {
-      const packageMajor = Number.parseInt(packageJsonVersion.split('.')[0] ?? '', 10);
-      if (packageMajor !== nodeRuntimePolicy.typeBaselineMajor) {
+    if (item.nodeBaselineAligned && resolvedVersion) {
+      const parsed = parseExactSemver(resolvedVersion);
+      if (!parsed || parsed.major !== nodeRuntimePolicy.typeBaselineMajor) {
         violations.push(
-          `${item.name} major ${packageMajor} does not match the lowest supported Node major ${nodeRuntimePolicy.typeBaselineMajor}.`
+          `${item.name} major ${parsed?.major ?? 'unknown'} does not match the lowest supported Node major ${nodeRuntimePolicy.typeBaselineMajor}.`
         );
       }
     }
 
     rows.push({
       ...item,
-      packageJsonVersion,
-      lockRootVersion,
-      installedVersion,
-      exact,
-      lockMatchesPackageJson,
-      installedMatchesRoot,
+      packageJsonRange,
+      lockRootRange,
+      resolvedVersion,
+      manifestRangeApproved,
+      lockRangeMatchesManifest,
+      resolvedWithinApprovedRange,
+      allowedResolvedSpec,
     });
   }
 
-  const typescriptVersion = devDependencies.typescript || null;
-  const tsgolintVersion = devDependencies['oxlint-tsgolint'] || null;
+  const typescriptVersion = lock.packages?.['node_modules/typescript']?.version || null;
+  const tsgolintVersion = lock.packages?.['node_modules/oxlint-tsgolint']?.version || null;
   const tsgolintTypeScriptAligned = isTsgolintVersionAlignedWithTypeScript(
     typescriptVersion,
     tsgolintVersion
   );
   if (typescriptVersion && tsgolintVersion && !tsgolintTypeScriptAligned) {
     violations.push(
-      `oxlint-tsgolint ${tsgolintVersion} is not aligned with TypeScript ${typescriptVersion}.`
+      `oxlint-tsgolint ${tsgolintVersion} is not aligned with resolved TypeScript ${typescriptVersion}.`
     );
   }
 
@@ -197,7 +239,7 @@ function collectToolchainVersionPolicy() {
 
   return {
     rows,
-    approvedVersions: APPROVED_DEV_DEP_VERSIONS,
+    approvedRanges: APPROVED_DEV_DEP_RANGES,
     nodeRuntimePolicy,
     tsgolintTypeScriptAligned,
     forbiddenPackages: FORBIDDEN_PACKAGES.map(item => item.name),
@@ -208,7 +250,7 @@ function collectToolchainVersionPolicy() {
 
 function mdCell(value) {
   return String(value == null ? '' : value)
-    .replace(/\|/g, '\\|')
+    .replace(/\|/g, '\|')
     .replace(/\n+/g, '<br>');
 }
 
@@ -233,26 +275,28 @@ function createToolchainVersionPolicyMarkdown(policy) {
     '',
     '<!-- Tool-owned report target. Regenerate with: npm run toolchain:version-policy:report -->',
     '',
-    'TypeScript 7 cleanup is complete. Core toolchain packages are intentionally exact-pinned so future patch/minor upgrades happen in a dedicated dependency refresh, not as silent lockfile drift. `@types/node` is pinned to the lowest supported Node runtime major so typechecking cannot silently adopt Node 24-only APIs.',
+    'Most core toolchain manifests use bounded compatibility ranges, while `package-lock.json` still records one exact resolved version for reproducible installs. TypeScript and `oxlint-tsgolint` remain deliberately exact because the offline repair vendor and declaration snapshots are version-coupled. This permits reviewed patch/minor refreshes where safe without weakening major-version or compatibility boundaries. `@types/node` remains on the lowest supported Node runtime major so typechecking cannot silently adopt Node 24-only APIs while the Node 22 compatibility lane exists.',
     '',
-    '## Exact pinned packages',
+    '## Bounded toolchain ranges',
     '',
     ...createMarkdownTable(
       [
         'Package',
-        'Approved version',
+        'Approved manifest range',
         'package.json',
         'package-lock root',
         'resolved lock package',
+        'Allowed resolved window',
         'Role',
-        'Future patch/minor policy',
+        'Update policy',
       ],
       policy.rows.map(row => [
         `\`${row.name}\``,
-        `\`${row.approvedVersion}\``,
-        `\`${row.packageJsonVersion}\``,
-        `\`${row.lockRootVersion}\``,
-        `\`${row.installedVersion}\``,
+        `\`${row.approvedRange}\``,
+        `\`${row.packageJsonRange}\``,
+        `\`${row.lockRootRange}\``,
+        `\`${row.resolvedVersion}\``,
+        `\`${row.allowedResolvedSpec}\``,
         row.role,
         row.updatePolicy,
       ])
@@ -265,18 +309,19 @@ function createToolchainVersionPolicyMarkdown(policy) {
     '',
     ...policy.forbiddenPackageLabels.map(label => `- ${label}`),
     '',
-    '## Future update check',
+    '## Dependency refresh workflow',
     '',
-    '- Do not auto-upgrade TypeScript, Oxlint, oxlint-tsgolint, oxc-parser, or ESLint as part of feature work.',
-    '- For a future patch/minor refresh, update the approved version in this policy, run the normal quality gates, regenerate lint parity docs, and prove `lint:ts-modern:type-aware` remains at 0 diagnostics.',
-    '- `lint:ts-modern:type-aware` is blocking; patch/minor updates must preserve the global zero contract.',
-    '- `oxlint-tsgolint` must encode the pinned TypeScript major, minor, and patch plus its three-digit tsgolint revision.',
+    '- `npm update` may advance direct and transitive packages only inside the declared manifest ranges.',
+    '- The exact resolved versions remain committed in `package-lock.json`; CI uses `npm ci` and therefore remains reproducible.',
+    '- A dependency refresh must run the toolchain policy, lint, typecheck, build, and relevant runtime/contract tests.',
+    '- Major releases and versions outside the documented windows still require an explicit compatibility review.',
+    '- `oxlint-tsgolint` must encode the resolved TypeScript major, minor, and patch plus its three-digit tsgolint revision.',
     '',
     '## Current status',
     '',
     policy.violations.length
       ? 'Not ready:'
-      : 'Ready: all pinned toolchain versions match their approved versions, `@types/node` matches the lowest supported Node major, `oxlint-tsgolint` is aligned with TypeScript, and removed TS ESLint packages are absent.',
+      : 'Ready: all toolchain manifest ranges are approved, resolved lock versions are inside their compatibility windows, `@types/node` matches the lowest supported Node major, `oxlint-tsgolint` is aligned with TypeScript, and removed TS ESLint packages are absent.',
     ...policy.violations.map(v => `- ${v}`),
     ''
   );
@@ -345,9 +390,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 }
 
 export {
-  APPROVED_DEV_DEP_VERSIONS,
+  APPROVED_DEV_DEP_RANGES,
   collectToolchainVersionPolicy,
   createToolchainVersionPolicyMarkdown,
   createFormattedToolchainVersionPolicyMarkdown,
   isTsgolintVersionAlignedWithTypeScript,
+  isVersionWithinBounds,
 };
