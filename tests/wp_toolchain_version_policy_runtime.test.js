@@ -69,7 +69,7 @@ test('toolchain version policy allows bounded compatible updates', () => {
     eslint: '^10.8.0',
     oxlint: '^1.75.0',
     'oxlint-tsgolint': '7.0.2001',
-    'oxc-parser': '>=0.141.0 <0.143.0',
+    'oxc-parser': '0.141.0',
   };
   assert.deepEqual(APPROVED_DEV_DEP_RANGES, expectedRanges);
   assert.deepEqual(
@@ -85,6 +85,8 @@ test('toolchain version policy allows bounded compatible updates', () => {
     Number.parseInt(byName.get('@types/node').resolvedVersion.split('.')[0], 10),
     policy.nodeRuntimePolicy.typeBaselineMajor
   );
+  const offlineManifest = JSON.parse(fs.readFileSync('vendor/offline/manifest.json', 'utf8'));
+  assert.equal(byName.get('oxc-parser').resolvedVersion, offlineManifest.ast.version);
 });
 
 test('bounded toolchain windows accept reviewed updates and reject boundary crossings', () => {
@@ -116,6 +118,20 @@ test('toolchain version policy keeps removed TypeScript ESLint packages absent',
     'TypeScript 6 compatibility package',
   ]);
   assert.equal(policy.forbiddenPackages.length, 3);
+});
+
+test('dependency refresh scripts synchronize generated toolchain policy docs', () => {
+  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+  const scripts = pkg.scripts || {};
+
+  assert.equal(scripts['deps:update:sync-generated'], 'npm run toolchain:version-policy:report');
+  for (const scriptName of ['deps:update:safe', 'deps:update:recommended']) {
+    assert.match(
+      scripts[scriptName] || '',
+      /&& npm run deps:update:sync-generated$/u,
+      `${scriptName} must refresh generated dependency policy docs`
+    );
+  }
 });
 
 test('toolchain version policy generated docs are current', async () => {

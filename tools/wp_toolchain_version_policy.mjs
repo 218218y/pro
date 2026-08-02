@@ -17,7 +17,7 @@ const APPROVED_DEV_DEP_RANGES = Object.freeze({
   eslint: '^10.8.0',
   oxlint: '^1.75.0',
   'oxlint-tsgolint': '7.0.2001',
-  'oxc-parser': '>=0.141.0 <0.143.0',
+  'oxc-parser': '0.141.0',
 });
 
 const TOOLCHAIN_DEV_DEPS = [
@@ -72,10 +72,11 @@ const TOOLCHAIN_DEV_DEPS = [
     name: 'oxc-parser',
     approvedRange: APPROVED_DEV_DEP_RANGES['oxc-parser'],
     minVersion: '0.141.0',
-    maxExclusiveVersion: '0.143.0',
-    role: 'Internal AST adapter parser.',
+    maxExclusiveVersion: '0.142.0',
+    exactResolvedVersion: '0.141.0',
+    role: 'Internal AST adapter parser and offline repair dependency.',
     updatePolicy:
-      'Allow the reviewed 0.141.x-0.142.x parser window; later 0.x minors require AST parity review.',
+      'Keep this exact until the lockfile, offline AST archives, manifest checksums, and parser parity tests are refreshed together.',
   },
 ];
 
@@ -275,7 +276,7 @@ function createToolchainVersionPolicyMarkdown(policy) {
     '',
     '<!-- Tool-owned report target. Regenerate with: npm run toolchain:version-policy:report -->',
     '',
-    'Most core toolchain manifests use bounded compatibility ranges, while `package-lock.json` still records one exact resolved version for reproducible installs. TypeScript and `oxlint-tsgolint` remain deliberately exact because the offline repair vendor and declaration snapshots are version-coupled. This permits reviewed patch/minor refreshes where safe without weakening major-version or compatibility boundaries. `@types/node` remains on the lowest supported Node runtime major so typechecking cannot silently adopt Node 24-only APIs while the Node 22 compatibility lane exists.',
+    'Most core toolchain manifests use bounded compatibility ranges, while `package-lock.json` still records one exact resolved version for reproducible installs. TypeScript, `oxlint-tsgolint`, and `oxc-parser` remain deliberately exact because the offline repair vendor and declaration snapshots are version-coupled. This permits reviewed patch/minor refreshes where safe without weakening major-version or compatibility boundaries. `@types/node` remains on the lowest supported Node runtime major so typechecking cannot silently adopt Node 24-only APIs while the Node 22 compatibility lane exists.',
     '',
     '## Bounded toolchain ranges',
     '',
@@ -312,10 +313,12 @@ function createToolchainVersionPolicyMarkdown(policy) {
     '## Dependency refresh workflow',
     '',
     '- `npm update` may advance direct and transitive packages only inside the declared manifest ranges.',
+    '- The repository `deps:update:safe` and `deps:update:recommended` scripts regenerate this report after a successful lockfile refresh.',
     '- The exact resolved versions remain committed in `package-lock.json`; CI uses `npm ci` and therefore remains reproducible.',
     '- A dependency refresh must run the toolchain policy, lint, typecheck, build, and relevant runtime/contract tests.',
     '- Major releases and versions outside the documented windows still require an explicit compatibility review.',
     '- `oxlint-tsgolint` must encode the resolved TypeScript major, minor, and patch plus its three-digit tsgolint revision.',
+    '- `oxc-parser` may advance only when the lockfile and signed offline AST vendor archives are refreshed and verified together.',
     '',
     '## Current status',
     '',
