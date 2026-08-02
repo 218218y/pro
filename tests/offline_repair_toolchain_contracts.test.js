@@ -132,10 +132,13 @@ test('offline Oxc vendor refresh command validates the checked-in bundle without
   assert.match(result.stdout, /offline 0\.(?:141|142)\.\d+; active 0\.142\.\d+/u);
 });
 
-test('offline AST compatibility window accepts reviewed patches and rejects a boundary crossing', () => {
+test('offline AST compatibility window validates fallback and active parser boundaries independently', () => {
   const probe = String.raw`
+from copy import deepcopy
+import json
 from pathlib import Path
 import sys
+import tempfile
 
 sys.path.insert(0, str(Path.cwd() / "tools"))
 import bootstrap_offline_repair_core as core
@@ -143,14 +146,33 @@ import bootstrap_offline_repair_core as core
 assert core._bounded_range_accepts("0.141.0", ">=0.141.0 <0.143.0")
 assert core._bounded_range_accepts("0.142.9", ">=0.141.0 <0.143.0")
 assert not core._bounded_range_accepts("0.143.0", ">=0.141.0 <0.143.0")
+
 manifest = core.load_manifest()
-manifest["ast"]["compatibleProjectRange"] = ">=0.141.0 <0.142.0"
+offline_boundary_manifest = deepcopy(manifest)
+offline_boundary_manifest["ast"]["version"] = "0.143.0"
 try:
-    core.validate_manifest_against_project(manifest)
+    core.validate_manifest_against_project(offline_boundary_manifest)
 except core.OfflineCoreError as error:
-    assert "Project oxc-parser" in str(error)
+    assert "Offline AST version 0.143.0" in str(error)
 else:
-    raise AssertionError("incompatible active parser was accepted")
+    raise AssertionError("incompatible offline fallback was accepted")
+
+lock = json.loads(core.LOCK_PATH.read_text(encoding="utf-8"))
+lock["packages"]["node_modules/oxc-parser"]["version"] = "0.143.0"
+with tempfile.TemporaryDirectory() as temp_dir:
+    original_lock_path = core.LOCK_PATH
+    test_lock_path = Path(temp_dir) / "package-lock.json"
+    test_lock_path.write_text(json.dumps(lock), encoding="utf-8")
+    core.LOCK_PATH = test_lock_path
+    try:
+        core.validate_manifest_against_project(manifest)
+    except core.OfflineCoreError as error:
+        assert "Project oxc-parser 0.143.0" in str(error)
+    else:
+        raise AssertionError("incompatible active parser was accepted")
+    finally:
+        core.LOCK_PATH = original_lock_path
+
 print("ast-window-ok")
 `;
   const result = spawnSync(process.env.PYTHON ?? 'python', ['-c', probe], {
