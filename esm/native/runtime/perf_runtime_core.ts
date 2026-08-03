@@ -13,7 +13,7 @@ import type {
 } from './perf_runtime_surface_types.js';
 import { getConfigRootMaybe } from './app_roots_access.js';
 import { getWindowMaybe } from './browser_env_surface.js';
-import { getBrowserTimers } from './browser_env_timers.js';
+import { requestAnimationFrameMaybe } from './browser_env_timers.js';
 import { getDepMaybe } from './deps_access.js';
 import { asRecord } from './record.js';
 import { normalizeUnknownError } from './error_normalization.js';
@@ -47,7 +47,7 @@ function nowMs(): number {
       return performance.now();
     }
   } catch {
-    // Use the wall-clock fallback when the browser timing surface is unavailable.
+    // Use wall-clock time when the browser timing surface is unavailable.
   }
   return Date.now();
 }
@@ -520,12 +520,14 @@ export function runPerfInteractionWait<T>(App: AppContainer, name: string, run: 
 }
 
 function waitForAnimationFrame(App: AppContainer): Promise<void> {
+  const requestFrame = requestAnimationFrameMaybe(App);
+  if (!requestFrame) return Promise.resolve();
+
   return new Promise(resolve => {
-    const timers = getBrowserTimers(App);
     try {
-      timers.requestAnimationFrame(() => resolve());
+      requestFrame(() => resolve());
     } catch {
-      timers.setTimeout(() => resolve(), 0);
+      resolve();
     }
   });
 }
@@ -539,7 +541,7 @@ export async function markPerfRenderSettle(
     kind: 'render-settle',
     detail: {
       reason: normalizeName(reason, 'render-change'),
-      ...(asRecord<Record<string, unknown>>(detail) || {}),
+      ...asRecord<Record<string, unknown>>(detail),
     },
   });
   await waitForAnimationFrame(App);

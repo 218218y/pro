@@ -1,15 +1,15 @@
 # Legacy / fallback audit
 
-Generated at: 2026-08-03T11:14:01.775Z
+Generated at: 2026-08-03T11:33:38.736Z
 
 ## Summary
 
 - Source root: `esm`
-- Total categorized occurrences: **9**
-- Files with occurrences: **5**
+- Total categorized occurrences: **8**
+- Files with occurrences: **4**
 - Category counts:
   - `runtime-default`: **0**
-  - `domain-default`: **1**
+  - `domain-default`: **0**
   - `error-message-default`: **0**
   - `framework-default`: **2**
   - `browser-adapter`: **0**
@@ -36,7 +36,6 @@ Generated at: 2026-08-03T11:14:01.775Z
 ## Hot files
 
 - `esm/test_no_side_effects_on_import.mjs` - **5** (test-fixture: 5)
-- `esm/native/runtime/perf_runtime_core.ts` - **1** (domain-default: 1)
 - `esm/native/ui/react/overlay_pdf_host.tsx` - **1** (framework-default: 1)
 - `esm/native/ui/react/sidebar_app.tsx` - **1** (framework-default: 1)
 - `esm/test_imports.mjs` - **1** (test-fixture: 1)

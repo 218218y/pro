@@ -224,7 +224,7 @@ export function resetBrowserPerformanceMetrics(App: AppContainer): void {
 
 export function getBrowserPerformanceMetrics(App: AppContainer): WardrobeProBrowserPerfMetrics {
   const state = getBrowserMetricState(App);
-  const longTaskSamples = state.longTaskSamplesMs.slice().sort((left, right) => left - right);
+  const longTaskSamples = state.longTaskSamplesMs.toSorted((left, right) => left - right);
   const renderSettleSamples = getPerfEntries(App, 'render.settle')
     .filter(entry => entry.kind === 'render-settle')
     .map(entry => entry.uxTotalMs)

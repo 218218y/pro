@@ -373,6 +373,27 @@ test('perf runtime separates interaction wait from code phases and records rende
   assert.equal(createPerfConsoleSurface(app).getBrowserMetrics().renderSettle.count, 2);
 });
 
+test('perf render settle does not borrow host timeout queues when animation frames are unavailable', async () => {
+  let timeoutCount = 0;
+  const app = {
+    deps: {
+      config: {},
+      browser: {
+        setTimeout() {
+          timeoutCount += 1;
+          return 1;
+        },
+      },
+    },
+    services: {},
+  } as any;
+
+  const settled = await markPerfRenderSettle(app, 'build', { reason: 'no-frame-runtime' });
+
+  assert.equal(settled?.kind, 'render-settle');
+  assert.equal(timeoutCount, 0);
+});
+
 test('perf runtime attributes only the overlapping portion of an early interaction wait', () => {
   const originalPerformance = Object.getOwnPropertyDescriptor(globalThis, 'performance');
   let now = 0;

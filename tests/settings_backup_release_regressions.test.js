@@ -101,6 +101,9 @@ function loadSettingsBackupModule() {
         }
         return { message: fallback || 'Unexpected error' };
       },
+      buildPerfEntryOptionsFromActionResult: () => ({}),
+      runPerfAction: async (_app, _name, run) => await run(),
+      runPerfPhase: async (_app, _name, _phase, run) => await run(),
       beginOwnedAsyncFamilyFlight: ({ owner, flights, key, run }) => {
         const active = owner ? flights.get(owner) : null;
         if (active) {

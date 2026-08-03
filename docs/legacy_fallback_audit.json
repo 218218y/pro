@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-03T11:14:01.775Z",
+  "generatedAt": "2026-08-03T11:33:38.736Z",
   "sourceRoot": "esm",
   "summary": {
-    "totalOccurrences": 9,
-    "totalFiles": 5,
+    "totalOccurrences": 8,
+    "totalFiles": 4,
     "byCategory": {
       "runtime-default": 0,
-      "domain-default": 1,
+      "domain-default": 0,
       "error-message-default": 0,
       "framework-default": 2,
       "browser-adapter": 0,
@@ -18,12 +18,6 @@
       "unknown": 0
     },
     "byFile": {
-      "esm/native/runtime/perf_runtime_core.ts": {
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
       "esm/native/ui/react/overlay_pdf_host.tsx": {
         "total": 1,
         "categories": {
@@ -58,13 +52,6 @@
         }
       },
       {
-        "file": "esm/native/runtime/perf_runtime_core.ts",
-        "total": 1,
-        "categories": {
-          "domain-default": 1
-        }
-      },
-      {
         "file": "esm/native/ui/react/overlay_pdf_host.tsx",
         "total": 1,
         "categories": {
@@ -89,13 +76,6 @@
   },
   "allowlistComparison": null,
   "occurrences": [
-    {
-      "file": "esm/native/runtime/perf_runtime_core.ts",
-      "line": 50,
-      "term": "fallback",
-      "category": "domain-default",
-      "text": "// Use the wall-clock fallback when the browser timing surface is unavailable."
-    },
     {
       "file": "esm/native/ui/react/overlay_pdf_host.tsx",
       "line": 58,
