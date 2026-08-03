@@ -1,5 +1,5 @@
 import type { AppContainer } from '../../../types';
-import { buildPerfEntryOptionsFromActionResult, runPerfAction } from '../services/api.js';
+import { buildPerfEntryOptionsFromActionResult, runPerfAction, runPerfPhase } from '../services/api.js';
 import { runAppConfirmedActionFamilySingleFlight } from './confirmed_action_family_runtime.js';
 import { runAppActionFamilySingleFlight, type AppActionFamilyFlight } from './action_family_singleflight.js';
 import type { SettingsBackupActionResult } from './settings_backup_contracts.js';
@@ -47,15 +47,13 @@ type SettingsBackupPerfActionRunner = <T>(
 ) => Promise<T>;
 
 export const runSettingsBackupPerfAction: SettingsBackupPerfActionRunner = async (App, name, run) => {
-  if (typeof runPerfAction !== 'function') {
-    return await run();
+  const isRootAction = name === 'settingsBackup.import' || name === 'settingsBackup.export';
+  if (!isRootAction) {
+    return await runPerfPhase(App, name, name.split('.').at(-1) || 'step', run);
   }
 
   return await runPerfAction(App, name, run, {
-    resolveEndOptions: result =>
-      typeof buildPerfEntryOptionsFromActionResult === 'function'
-        ? buildPerfEntryOptionsFromActionResult(result)
-        : undefined,
+    resolveEndOptions: result => buildPerfEntryOptionsFromActionResult(result),
   });
 };
 

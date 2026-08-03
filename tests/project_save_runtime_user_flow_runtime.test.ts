@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { runEnsureSaveProjectAction } from '../esm/native/ui/project_save_runtime.ts';
 import { runProjectUiSaveAction } from '../esm/native/ui/react/project_ui_action_controller_save.ts';
 import type { ProjectSaveAcceptedResult } from '../esm/native/runtime/project_save_action_result.ts';
+import { getPerfEntries } from '../esm/native/runtime/perf_runtime_surface.ts';
 
 function assertAcceptedSave(value: unknown): ProjectSaveAcceptedResult {
   assert.equal(!!value && typeof value === 'object', true);
@@ -142,6 +143,47 @@ test('project save runtime: successful save downloads normalized json and clears
   assert.equal(dirtyCalls[0].meta?.source, 'saveProject');
   assert.equal(dirtyCalls[0].meta?.uiOnly, true);
   assert.deepEqual(toasts, [{ message: 'הפרויקט נשמר בהצלחה!', type: 'success' }]);
+  assert.deepEqual(
+    [
+      ['project.save.export', 'phase', 'export'],
+      ['project.save.prompt', 'interaction-wait', 'prompt'],
+      ['project.save.download', 'phase', 'download'],
+      ['project.save.commit', 'phase', 'commit'],
+    ].map(([name, kind, phase]) => {
+      const entry = getPerfEntries(App, name).at(-1);
+      return { name, expectedKind: kind, expectedPhase: phase, kind: entry?.kind, phase: entry?.phase };
+    }),
+    [
+      {
+        name: 'project.save.export',
+        expectedKind: 'phase',
+        expectedPhase: 'export',
+        kind: 'phase',
+        phase: 'export',
+      },
+      {
+        name: 'project.save.prompt',
+        expectedKind: 'interaction-wait',
+        expectedPhase: 'prompt',
+        kind: 'interaction-wait',
+        phase: 'prompt',
+      },
+      {
+        name: 'project.save.download',
+        expectedKind: 'phase',
+        expectedPhase: 'download',
+        kind: 'phase',
+        phase: 'download',
+      },
+      {
+        name: 'project.save.commit',
+        expectedKind: 'phase',
+        expectedPhase: 'commit',
+        kind: 'phase',
+        phase: 'commit',
+      },
+    ]
+  );
 });
 
 test('project save runtime: blank/cancelled prompt stays quiet and does not download or mutate dirty state', async () => {

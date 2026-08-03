@@ -264,13 +264,25 @@ export interface WardrobeProDebugConsoleSurface {
   [k: string]: unknown;
 }
 
+export type WardrobeProPerfEntryKind =
+  'action' | 'phase' | 'interaction-wait' | 'render-settle' | 'browser-metric' | 'mark';
+
+export type WardrobeProPerfMetricUnit = 'ms' | 'score' | 'count';
+
 export interface WardrobeProPerfEntry {
   id: string;
   name: string;
+  kind: WardrobeProPerfEntryKind;
+  parentId?: string;
+  phase?: string;
   startTime: number;
   endTime: number;
-  durationMs: number;
+  uxTotalMs: number;
+  codeExecutionMs: number;
+  interactionWaitMs: number;
   status: 'ok' | 'error' | 'mark';
+  metricValue?: number;
+  metricUnit?: WardrobeProPerfMetricUnit;
   detail?: unknown;
   error?: string;
 }
@@ -281,16 +293,56 @@ export interface WardrobeProPerfMetricSummary {
   errorCount: number;
   markCount: number;
   errorRate: number;
-  totalMs: number;
-  averageMs: number;
-  minMs: number;
-  maxMs: number;
-  p50Ms: number;
-  p95Ms: number;
-  lastDurationMs: number;
+  uxTotalMs: number;
+  uxAverageMs: number;
+  uxMinMs: number;
+  uxMaxMs: number;
+  uxP50Ms: number;
+  uxP95Ms: number;
+  codeExecutionTotalMs: number;
+  codeExecutionAverageMs: number;
+  codeExecutionMinMs: number;
+  codeExecutionMaxMs: number;
+  codeExecutionP50Ms: number;
+  codeExecutionP95Ms: number;
+  interactionWaitTotalMs: number;
+  interactionWaitAverageMs: number;
+  interactionWaitP95Ms: number;
+  lastUxTotalMs: number;
+  lastCodeExecutionMs: number;
+  lastInteractionWaitMs: number;
   lastStatus: WardrobeProPerfEntry['status'] | null;
   lastError?: string;
   lastUpdatedAt: number;
+}
+
+export interface WardrobeProBrowserPerfMetrics {
+  observerSupported: boolean;
+  supportedEntryTypes: string[];
+  cls: {
+    value: number;
+    entryCount: number;
+    lastUpdatedAt: number;
+  };
+  lcp: {
+    valueMs: number;
+    entryCount: number;
+    lastUpdatedAt: number;
+  };
+  longTasks: {
+    count: number;
+    totalMs: number;
+    maxMs: number;
+    p95Ms: number;
+    lastUpdatedAt: number;
+  };
+  renderSettle: {
+    count: number;
+    totalMs: number;
+    maxMs: number;
+    p95Ms: number;
+    lastUpdatedAt: number;
+  };
 }
 
 export interface WardrobeProPerfStateFingerprint {
@@ -324,6 +376,7 @@ export interface WardrobeProPerfConsoleSurface {
   getEntries: (name?: string) => WardrobeProPerfEntry[];
   clear: () => void;
   getSummary: () => Record<string, WardrobeProPerfMetricSummary>;
+  getBrowserMetrics: () => WardrobeProBrowserPerfMetrics;
   getStateFingerprint?: () => WardrobeProPerfStateFingerprint | null;
   getStoreDebugStats?: () => StoreDebugStats | null;
   resetStoreDebugStats?: () => StoreDebugStats | null;

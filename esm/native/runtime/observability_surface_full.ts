@@ -26,7 +26,11 @@ import {
   resetRenderRuntimeDebugStats,
   resetStoreDebugStats,
   markPerfPoint,
+  markPerfRenderSettle,
+  recordPerfMetric,
   runPerfAction,
+  runPerfInteractionWait,
+  runPerfPhase,
   runWithPerfSpan,
   startPerfSpan,
 } from './perf_runtime_surface.js';
@@ -51,7 +55,11 @@ export {
   resetRenderRuntimeDebugStats,
   resetStoreDebugStats,
   markPerfPoint,
+  markPerfRenderSettle,
+  recordPerfMetric,
   runPerfAction,
+  runPerfInteractionWait,
+  runPerfPhase,
   runWithPerfSpan,
   startPerfSpan,
 };

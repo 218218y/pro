@@ -1042,7 +1042,7 @@ import {
     assert.match(browserPerfSupport, /export function rankRuntimeRecoveryDebt\(/);
     assert.match(browserPerfSupport, /export function rankRuntimeRecoveryHangover\(/);
     assert.match(browserPerfSupport, /export function rankRuntimeStatusTransitions\(/);
-    assert.match(browserPerfSupport, /runtimeDomainBudgetMs/);
+    assert.match(browserPerfSupport, /runtimeDomainCodeExecutionBudgetMs/);
     assert.match(browserPerfSupport, /runtimeRecoveryDebtBudgetMs/);
     assert.match(browserPerfSupport, /runtimeRecoveryHangoverBudget/);
     assert.match(browserPerfSupport, /storePressureBudget/);

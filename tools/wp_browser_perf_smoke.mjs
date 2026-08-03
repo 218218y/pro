@@ -19,6 +19,7 @@ import {
   readCabinetDoorDrawerLayoutProjectSubset,
 } from '../tests/e2e/helpers/cabinet_door_drawer_layout_fixture.js';
 import {
+  createBrowserMetricSummaryFromEntries,
   createBrowserPerfBaseline,
   createPerfDomainSummary,
   createPerfSummaryFromEntries,
@@ -389,14 +390,49 @@ function mergeRuntimeDiagnostics(existing, incoming, limit = 60) {
   return merged.slice(-Math.max(1, limit));
 }
 
+function mergeBrowserMetrics(existing, incoming) {
+  const before = existing && typeof existing === 'object' ? existing : {};
+  const next = incoming && typeof incoming === 'object' ? incoming : {};
+  const mergeDurationMetric = (left, right) => ({
+    count: (Number(left?.count) || 0) + (Number(right?.count) || 0),
+    totalMs: (Number(left?.totalMs) || 0) + (Number(right?.totalMs) || 0),
+    maxMs: Math.max(Number(left?.maxMs) || 0, Number(right?.maxMs) || 0),
+    p95Ms: Math.max(Number(left?.p95Ms) || 0, Number(right?.p95Ms) || 0),
+    lastUpdatedAt: Math.max(Number(left?.lastUpdatedAt) || 0, Number(right?.lastUpdatedAt) || 0),
+  });
+  return {
+    observerSupported: before.observerSupported === true || next.observerSupported === true,
+    supportedEntryTypes: Array.from(
+      new Set([
+        ...(Array.isArray(before.supportedEntryTypes) ? before.supportedEntryTypes : []),
+        ...(Array.isArray(next.supportedEntryTypes) ? next.supportedEntryTypes : []),
+      ])
+    ).sort((left, right) => String(left).localeCompare(String(right))),
+    cls: {
+      value: Math.max(Number(before.cls?.value) || 0, Number(next.cls?.value) || 0),
+      entryCount: (Number(before.cls?.entryCount) || 0) + (Number(next.cls?.entryCount) || 0),
+      lastUpdatedAt: Math.max(Number(before.cls?.lastUpdatedAt) || 0, Number(next.cls?.lastUpdatedAt) || 0),
+    },
+    lcp: {
+      valueMs: Math.max(Number(before.lcp?.valueMs) || 0, Number(next.lcp?.valueMs) || 0),
+      entryCount: (Number(before.lcp?.entryCount) || 0) + (Number(next.lcp?.entryCount) || 0),
+      lastUpdatedAt: Math.max(Number(before.lcp?.lastUpdatedAt) || 0, Number(next.lcp?.lastUpdatedAt) || 0),
+    },
+    longTasks: mergeDurationMetric(before.longTasks, next.longTasks),
+    renderSettle: mergeDurationMetric(before.renderSettle, next.renderSettle),
+  };
+}
+
 async function captureSessionArtifacts(page, result) {
-  const [entries, events, diagnostics] = await Promise.all([
+  const [entries, events, diagnostics, browserMetrics] = await Promise.all([
     page.evaluate(() => window.__WP_PERF__?.getEntries?.() || []),
     page.evaluate(() => window.__WP_PROJECT_ACTION_EVENTS__ || []),
     page.evaluate(() => window.__WP_PERF__?.getErrorHistory?.() || []),
+    page.evaluate(() => window.__WP_PERF__?.getBrowserMetrics?.() || null),
   ]);
   result.windowPerfEntries.push(...entries);
   result.projectActionEvents.push(...events);
+  result.windowBrowserMetrics = mergeBrowserMetrics(result.windowBrowserMetrics, browserMetrics);
   if (Array.isArray(diagnostics)) {
     const bucket = result.runtimeIssues || (result.runtimeIssues = {});
     bucket.diagnostics = mergeRuntimeDiagnostics(bucket.diagnostics, diagnostics, 60);
@@ -1908,7 +1944,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
   await installClipboardCapture(page);
 
   const result = {
-    version: 11,
+    version: 12,
     generatedAt: new Date().toISOString(),
     browserPerfRoomId,
     cloudSyncRestIsolated: true,
@@ -1925,6 +1961,7 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     windowPerfRecoverySequenceSummary: {},
     windowPerfRecoveryDebtSummary: {},
     windowPerfRecoveryHangoverSummary: {},
+    windowBrowserMetrics: {},
     windowStoreDebugStats: null,
     windowStoreDebugSummary: {},
     windowStoreDebugTopSources: [],
@@ -3046,6 +3083,10 @@ async function confirmRestoreLastSessionModalWithAutosave(page, filePath) {
     );
 
     await captureSessionArtifacts(page, result);
+    result.windowBrowserMetrics = createBrowserMetricSummaryFromEntries(
+      result.windowPerfEntries,
+      result.windowBrowserMetrics
+    );
     result.windowPerfSummary = createPerfSummaryFromEntries(result.windowPerfEntries);
     result.stateIntegritySummary = createStateIntegritySummary(result.stateIntegrityChecks);
     result.windowPerfPressureSummary = createRepeatedMetricPressureSummary(

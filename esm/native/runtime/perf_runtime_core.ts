@@ -1,20 +1,33 @@
 import type {
   AppContainer,
   WardrobeProPerfEntry,
+  WardrobeProPerfEntryKind,
   WardrobeProPerfMetricSummary,
 } from '../../../types/index.js';
 
-import type { PerfActionOptions, PerfEntryOptions, PerfSpanOptions } from './perf_runtime_surface_types.js';
+import type {
+  PerfActionOptions,
+  PerfEntryOptions,
+  PerfMetricUnit,
+  PerfSpanOptions,
+} from './perf_runtime_surface_types.js';
 import { getConfigRootMaybe } from './app_roots_access.js';
 import { getWindowMaybe } from './browser_env_surface.js';
+import { getBrowserTimers } from './browser_env_timers.js';
 import { getDepMaybe } from './deps_access.js';
 import { asRecord } from './record.js';
 import { normalizeUnknownError } from './error_normalization.js';
 
+type MeasuredPerfKind = Exclude<WardrobeProPerfEntryKind, 'browser-metric' | 'mark'>;
+
 type PerfRuntimeSpanRecord = {
   id: string;
   name: string;
+  kind: MeasuredPerfKind;
+  phase?: string;
+  parentId?: string;
   startTime: number;
+  interactionWaitIntervals: Array<{ startTime: number; endTime: number }>;
   detail?: unknown;
 };
 
@@ -34,7 +47,7 @@ function nowMs(): number {
       return performance.now();
     }
   } catch {
-    // ignore
+    // Use the wall-clock fallback when the browser timing surface is unavailable.
   }
   return Date.now();
 }
@@ -50,8 +63,16 @@ function normalizeName(value: unknown, defaultName = 'unknown'): string {
   return typeof value === 'string' && value.trim() ? value.trim() : defaultName;
 }
 
+function normalizePhase(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
 function normalizeStatus(value: unknown): 'ok' | 'error' | 'mark' {
   return value === 'error' || value === 'mark' ? value : 'ok';
+}
+
+function normalizeMeasuredKind(value: unknown): MeasuredPerfKind {
+  return value === 'phase' || value === 'interaction-wait' || value === 'render-settle' ? value : 'action';
 }
 
 function normalizeErrorMessage(error: unknown): string | undefined {
@@ -190,7 +211,7 @@ function emitPerfEntry(App: AppContainer, entry: WardrobeProPerfEntry): void {
   try {
     dispatch.call(win, new CustomEvent('wardrobepro:perf-entry', { detail: entry }));
   } catch {
-    // ignore event failures
+    // Diagnostics must never affect the measured operation.
   }
 }
 
@@ -208,6 +229,57 @@ function percentile(sortedValues: number[], ratio: number): number {
   return sortedValues[index] || 0;
 }
 
+function calculateInteractionWaitOverlap(action: PerfRuntimeSpanRecord, actionEndTime: number): number {
+  const intervals = action.interactionWaitIntervals
+    .map(interval => ({
+      startTime: Math.max(action.startTime, interval.startTime),
+      endTime: Math.min(actionEndTime, interval.endTime),
+    }))
+    .filter(interval => interval.endTime > interval.startTime)
+    .sort((left, right) => left.startTime - right.startTime);
+
+  let total = 0;
+  let activeStart = 0;
+  let activeEnd = 0;
+  let hasActiveInterval = false;
+  for (const interval of intervals) {
+    if (!hasActiveInterval) {
+      activeStart = interval.startTime;
+      activeEnd = interval.endTime;
+      hasActiveInterval = true;
+      continue;
+    }
+    if (interval.startTime <= activeEnd) {
+      activeEnd = Math.max(activeEnd, interval.endTime);
+      continue;
+    }
+    total += activeEnd - activeStart;
+    activeStart = interval.startTime;
+    activeEnd = interval.endTime;
+  }
+  if (hasActiveInterval) total += activeEnd - activeStart;
+  return roundDuration(total);
+}
+
+function findParentActionSpan(
+  store: PerfRuntimeStore,
+  childName: string,
+  explicitParentId: string | undefined
+): PerfRuntimeSpanRecord | null {
+  if (explicitParentId) {
+    const explicit = store.inflight.get(explicitParentId);
+    if (explicit?.kind === 'action') return explicit;
+  }
+
+  let selected: PerfRuntimeSpanRecord | null = null;
+  for (const candidate of store.inflight.values()) {
+    if (candidate.kind !== 'action') continue;
+    if (childName !== candidate.name && !childName.startsWith(`${candidate.name}.`)) continue;
+    if (!selected || candidate.startTime > selected.startTime) selected = candidate;
+  }
+  return selected;
+}
+
 export function markPerfPoint(
   App: AppContainer,
   name: string,
@@ -217,10 +289,39 @@ export function markPerfPoint(
   return pushPerfEntry(App, {
     id: `mark-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     name: normalizeName(name),
+    kind: 'mark',
     startTime: stamp,
     endTime: stamp,
-    durationMs: 0,
+    uxTotalMs: 0,
+    codeExecutionMs: 0,
+    interactionWaitMs: 0,
     status: 'mark',
+    ...(typeof options.detail !== 'undefined' ? { detail: options.detail } : {}),
+    ...(normalizeErrorMessage(options.error) ? { error: normalizeErrorMessage(options.error) } : {}),
+  });
+}
+
+export function recordPerfMetric(
+  App: AppContainer,
+  name: string,
+  metricValue: number,
+  metricUnit: PerfMetricUnit,
+  options: PerfEntryOptions = {}
+): WardrobeProPerfEntry {
+  const stamp = roundDuration(nowMs());
+  return pushPerfEntry(App, {
+    id: `metric-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    name: normalizeName(name),
+    kind: 'browser-metric',
+    startTime: stamp,
+    endTime: stamp,
+    uxTotalMs: 0,
+    codeExecutionMs: 0,
+    interactionWaitMs: 0,
+    status: normalizeStatus(options.status),
+    metricValue:
+      metricUnit === 'score' ? Number(Math.max(0, metricValue).toFixed(4)) : roundDuration(metricValue),
+    metricUnit,
     ...(typeof options.detail !== 'undefined' ? { detail: options.detail } : {}),
     ...(normalizeErrorMessage(options.error) ? { error: normalizeErrorMessage(options.error) } : {}),
   });
@@ -229,10 +330,17 @@ export function markPerfPoint(
 export function startPerfSpan(App: AppContainer, name: string, options: PerfSpanOptions = {}): string {
   const store = getPerfRuntimeStore(App);
   const id = `span-${store.nextId++}`;
+  const normalizedName = normalizeName(name);
+  const kind = normalizeMeasuredKind(options.kind);
+  const parent = kind === 'action' ? null : findParentActionSpan(store, normalizedName, options.parentId);
   store.inflight.set(id, {
     id,
-    name: normalizeName(name),
+    name: normalizedName,
+    kind,
     startTime: nowMs(),
+    interactionWaitIntervals: [],
+    ...(normalizePhase(options.phase) ? { phase: normalizePhase(options.phase) } : {}),
+    ...(parent ? { parentId: parent.id } : {}),
     ...(typeof options.detail !== 'undefined' ? { detail: options.detail } : {}),
   });
   return id;
@@ -248,12 +356,42 @@ export function endPerfSpan(
   if (!span) return null;
   store.inflight.delete(spanId);
   const endTime = nowMs();
+  const uxTotalMs = roundDuration(endTime - span.startTime);
+  const parent =
+    span.kind === 'interaction-wait'
+      ? findParentActionSpan(store, span.name, span.parentId)
+      : span.parentId
+        ? store.inflight.get(span.parentId) || null
+        : null;
+  if (span.kind === 'interaction-wait' && parent?.kind === 'action') {
+    parent.interactionWaitIntervals.push({ startTime: span.startTime, endTime });
+  }
+  const interactionWaitMs =
+    span.kind === 'interaction-wait'
+      ? uxTotalMs
+      : span.kind === 'action'
+        ? calculateInteractionWaitOverlap(span, endTime)
+        : 0;
+  const codeExecutionMs =
+    span.kind === 'action'
+      ? roundDuration(Math.max(0, uxTotalMs - interactionWaitMs))
+      : span.kind === 'phase'
+        ? uxTotalMs
+        : 0;
+
+  const parentId = parent?.id || span.parentId;
+
   const entry: WardrobeProPerfEntry = {
     id: span.id,
     name: span.name,
+    kind: span.kind,
+    ...(parentId ? { parentId } : {}),
+    ...(span.phase ? { phase: span.phase } : {}),
     startTime: roundDuration(span.startTime),
     endTime: roundDuration(endTime),
-    durationMs: roundDuration(endTime - span.startTime),
+    uxTotalMs,
+    codeExecutionMs,
+    interactionWaitMs,
     status: normalizeStatus(options.status),
     ...(typeof mergePerfDetail(options.detail, span.detail) !== 'undefined'
       ? { detail: mergePerfDetail(options.detail, span.detail) }
@@ -288,13 +426,24 @@ function isPromiseLike<T>(value: unknown): value is PromiseLike<T> {
   );
 }
 
+function scheduleActionRenderSettle(
+  App: AppContainer,
+  actionName: string,
+  option: boolean | string | undefined
+): void {
+  const shouldSettle = option === true || typeof option === 'string' || actionName.startsWith('viewer.');
+  if (!shouldSettle) return;
+  const reason = typeof option === 'string' && option.trim() ? option.trim() : actionName;
+  void markPerfRenderSettle(App, reason);
+}
+
 export function runPerfAction<T>(
   App: AppContainer,
   name: string,
   run: () => T,
   options: PerfActionOptions<T> = {}
 ): T {
-  const spanId = startPerfSpan(App, name, options);
+  const spanId = startPerfSpan(App, name, { ...options, kind: 'action' });
   try {
     const result = run();
     if (isPromiseLike<T>(result)) {
@@ -302,6 +451,7 @@ export function runPerfAction<T>(
         resolved => {
           const endOptions = options.resolveEndOptions?.(resolved) || { status: 'ok' as const };
           endPerfSpan(App, spanId, endOptions);
+          scheduleActionRenderSettle(App, normalizeName(name), options.settleAfterRender);
           return resolved;
         },
         error => {
@@ -312,11 +462,89 @@ export function runPerfAction<T>(
     }
     const endOptions = options.resolveEndOptions?.(result) || { status: 'ok' as const };
     endPerfSpan(App, spanId, endOptions);
+    scheduleActionRenderSettle(App, normalizeName(name), options.settleAfterRender);
     return result;
   } catch (error) {
     endPerfSpan(App, spanId, { status: 'error', error });
     throw error;
   }
+}
+
+export function runPerfPhase<T>(App: AppContainer, name: string, phase: string, run: () => T): T {
+  const spanId = startPerfSpan(App, name, { kind: 'phase', phase });
+  try {
+    const result = run();
+    if (isPromiseLike<T>(result)) {
+      return Promise.resolve(result).then(
+        resolved => {
+          endPerfSpan(App, spanId, { status: 'ok' });
+          return resolved;
+        },
+        error => {
+          endPerfSpan(App, spanId, { status: 'error', error });
+          throw error;
+        }
+      ) as T;
+    }
+    endPerfSpan(App, spanId, { status: 'ok' });
+    return result;
+  } catch (error) {
+    endPerfSpan(App, spanId, { status: 'error', error });
+    throw error;
+  }
+}
+
+export function runPerfInteractionWait<T>(App: AppContainer, name: string, run: () => T): T {
+  const phase = normalizeName(name).split('.').at(-1) || 'interactionWait';
+  const spanId = startPerfSpan(App, name, { kind: 'interaction-wait', phase });
+  try {
+    const result = run();
+    if (isPromiseLike<T>(result)) {
+      return Promise.resolve(result).then(
+        resolved => {
+          endPerfSpan(App, spanId, { status: 'ok' });
+          return resolved;
+        },
+        error => {
+          endPerfSpan(App, spanId, { status: 'error', error });
+          throw error;
+        }
+      ) as T;
+    }
+    endPerfSpan(App, spanId, { status: 'ok' });
+    return result;
+  } catch (error) {
+    endPerfSpan(App, spanId, { status: 'error', error });
+    throw error;
+  }
+}
+
+function waitForAnimationFrame(App: AppContainer): Promise<void> {
+  return new Promise(resolve => {
+    const timers = getBrowserTimers(App);
+    try {
+      timers.requestAnimationFrame(() => resolve());
+    } catch {
+      timers.setTimeout(() => resolve(), 0);
+    }
+  });
+}
+
+export async function markPerfRenderSettle(
+  App: AppContainer,
+  reason: string,
+  detail?: unknown
+): Promise<WardrobeProPerfEntry | null> {
+  const spanId = startPerfSpan(App, 'render.settle', {
+    kind: 'render-settle',
+    detail: {
+      reason: normalizeName(reason, 'render-change'),
+      ...(asRecord<Record<string, unknown>>(detail) || {}),
+    },
+  });
+  await waitForAnimationFrame(App);
+  await waitForAnimationFrame(App);
+  return endPerfSpan(App, spanId, { status: 'ok' });
 }
 
 export function getPerfEntries(App: AppContainer, name?: string): WardrobeProPerfEntry[] {
@@ -331,17 +559,28 @@ export function clearPerfEntries(App: AppContainer): void {
   store.inflight.clear();
 }
 
+function summarizeValues(values: number[]) {
+  const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);
+  const count = sorted.length;
+  const total = roundDuration(sorted.reduce((sum, value) => sum + value, 0));
+  return {
+    total,
+    average: count > 0 ? roundDuration(total / count) : 0,
+    min: count > 0 ? roundDuration(sorted[0]) : 0,
+    max: count > 0 ? roundDuration(sorted[count - 1]) : 0,
+    p50: count > 0 ? roundDuration(percentile(sorted, 0.5)) : 0,
+    p95: count > 0 ? roundDuration(percentile(sorted, 0.95)) : 0,
+  };
+}
+
 function summarizeEntries(entries: WardrobeProPerfEntry[]): WardrobeProPerfMetricSummary {
-  const durations = entries
-    .map(entry => (typeof entry.durationMs === 'number' ? entry.durationMs : 0))
-    .filter(value => Number.isFinite(value))
-    .sort((a, b) => a - b);
-  const count = durations.length;
+  const ux = summarizeValues(entries.map(entry => entry.uxTotalMs));
+  const code = summarizeValues(entries.map(entry => entry.codeExecutionMs));
+  const interaction = summarizeValues(entries.map(entry => entry.interactionWaitMs));
+  const count = entries.length;
   const okCount = entries.filter(entry => entry.status === 'ok').length;
   const errorCount = entries.filter(entry => entry.status === 'error').length;
   const markCount = entries.filter(entry => entry.status === 'mark').length;
-  const totalMs = roundDuration(durations.reduce((sum, value) => sum + value, 0));
-  const averageMs = count > 0 ? roundDuration(totalMs / count) : 0;
   const lastEntry = entries.length ? entries[entries.length - 1] : null;
   return {
     count,
@@ -349,13 +588,24 @@ function summarizeEntries(entries: WardrobeProPerfEntry[]): WardrobeProPerfMetri
     errorCount,
     markCount,
     errorRate: count > 0 ? roundDuration((errorCount / count) * 100) : 0,
-    totalMs,
-    averageMs,
-    minMs: count > 0 ? roundDuration(durations[0]) : 0,
-    maxMs: count > 0 ? roundDuration(durations[count - 1]) : 0,
-    p50Ms: count > 0 ? roundDuration(percentile(durations, 0.5)) : 0,
-    p95Ms: count > 0 ? roundDuration(percentile(durations, 0.95)) : 0,
-    lastDurationMs: lastEntry ? roundDuration(lastEntry.durationMs) : 0,
+    uxTotalMs: ux.total,
+    uxAverageMs: ux.average,
+    uxMinMs: ux.min,
+    uxMaxMs: ux.max,
+    uxP50Ms: ux.p50,
+    uxP95Ms: ux.p95,
+    codeExecutionTotalMs: code.total,
+    codeExecutionAverageMs: code.average,
+    codeExecutionMinMs: code.min,
+    codeExecutionMaxMs: code.max,
+    codeExecutionP50Ms: code.p50,
+    codeExecutionP95Ms: code.p95,
+    interactionWaitTotalMs: interaction.total,
+    interactionWaitAverageMs: interaction.average,
+    interactionWaitP95Ms: interaction.p95,
+    lastUxTotalMs: lastEntry ? roundDuration(lastEntry.uxTotalMs) : 0,
+    lastCodeExecutionMs: lastEntry ? roundDuration(lastEntry.codeExecutionMs) : 0,
+    lastInteractionWaitMs: lastEntry ? roundDuration(lastEntry.interactionWaitMs) : 0,
     lastStatus: lastEntry?.status || null,
     ...(lastEntry?.error ? { lastError: lastEntry.error } : {}),
     lastUpdatedAt: lastEntry ? roundDuration(lastEntry.endTime) : 0,
@@ -364,7 +614,12 @@ function summarizeEntries(entries: WardrobeProPerfEntry[]): WardrobeProPerfMetri
 
 export function getPerfSummary(App: AppContainer): Record<string, WardrobeProPerfMetricSummary> {
   const out: Record<string, WardrobeProPerfMetricSummary> = {};
-  const groups = Map.groupBy(getPerfRuntimeStore(App).entries, entry => entry.name);
+  const groups = new Map<string, WardrobeProPerfEntry[]>();
+  for (const entry of getPerfRuntimeStore(App).entries) {
+    const group = groups.get(entry.name);
+    if (group) group.push(entry);
+    else groups.set(entry.name, [entry]);
+  }
   for (const [name, entries] of groups) out[name] = summarizeEntries(entries);
   return out;
 }

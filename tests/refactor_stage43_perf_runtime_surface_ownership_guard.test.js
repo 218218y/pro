@@ -7,7 +7,7 @@ function read(file) {
 }
 
 function lineCount(source) {
-  return source.split(/\r\n|\r|\n/).length;
+  return source.trimEnd().split(/\r\n|\r|\n/).length;
 }
 
 test('stage 43 perf runtime ownership split is anchored', () => {
@@ -16,6 +16,7 @@ test('stage 43 perf runtime ownership split is anchored', () => {
   const stateFingerprint = read('esm/native/runtime/perf_runtime_state_fingerprint.ts');
   const debugSurfaces = read('esm/native/runtime/perf_runtime_debug_surfaces.ts');
   const typeSeam = read('esm/native/runtime/perf_runtime_surface_types.ts');
+  const browserObserver = read('esm/native/runtime/perf_runtime_browser_observer.ts');
 
   assert.ok(
     lineCount(facade) <= 160,
@@ -24,6 +25,7 @@ test('stage 43 perf runtime ownership split is anchored', () => {
 
   for (const modulePath of [
     './perf_runtime_core.js',
+    './perf_runtime_browser_observer.js',
     './perf_runtime_debug_surfaces.js',
     './perf_runtime_state_fingerprint.js',
   ]) {
@@ -33,6 +35,10 @@ test('stage 43 perf runtime ownership split is anchored', () => {
   for (const publicExport of [
     'buildPerfEntryOptionsFromActionResult',
     'markPerfPoint',
+    'markPerfRenderSettle',
+    'recordPerfMetric',
+    'runPerfInteractionWait',
+    'runPerfPhase',
     'startPerfSpan',
     'endPerfSpan',
     'runPerfAction',
@@ -64,6 +70,17 @@ test('stage 43 perf runtime ownership split is anchored', () => {
     'action-result performance classification must live in perf_runtime_core.ts'
   );
   assert.ok(core.includes('getPerfSummary'), 'metric aggregation must live in perf_runtime_core.ts');
+  assert.ok(
+    core.includes('interactionWaitMs'),
+    'core timing must separate interaction wait from code execution'
+  );
+  assert.ok(
+    browserObserver.includes('PerformanceObserver'),
+    'browser metrics must stay on the focused observer seam'
+  );
+  assert.ok(browserObserver.includes('layout-shift'), 'browser observer must collect CLS');
+  assert.ok(browserObserver.includes('largest-contentful-paint'), 'browser observer must collect LCP');
+  assert.ok(browserObserver.includes('longtask'), 'browser observer must collect Long Tasks');
 
   assert.ok(
     stateFingerprint.includes('getPerfStateFingerprint'),

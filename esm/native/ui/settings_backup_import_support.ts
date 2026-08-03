@@ -12,7 +12,7 @@ import {
   patchViaActions,
   planImportedModelsCollectionsMutation,
   readFileTextResultViaBrowser,
-  runPerfAction,
+  runPerfPhase,
   renderModelUiViaActionsOrThrow,
   transactCloudCollectionsViaServiceOrThrow,
   writeColorSwatchesOrderOrThrow,
@@ -134,7 +134,7 @@ function buildImportedColorConfigPatch(mutation: ImportedColorMutation): Unknown
 }
 
 function runSettingsBackupImportPerfStep<T>(App: AppContainer, metricName: string, run: () => T): T {
-  return typeof runPerfAction === 'function' ? runPerfAction(App, metricName, run) : run();
+  return runPerfPhase(App, metricName, metricName.split('.').at(-1) || 'step', run);
 }
 
 async function publishImportedColorMutation(

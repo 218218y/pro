@@ -7,6 +7,8 @@ import {
   getUiFeedback,
   markPerfPoint,
   metaUiOnly,
+  runPerfInteractionWait,
+  runPerfPhase,
   observeAsyncOperation,
   reportError,
   reuseAsyncOperationHandle,
@@ -110,29 +112,35 @@ function runPreparedProjectSaveFlow(
 
   return runPromptedAction<ProjectSaveActionResult>({
     request: () =>
-      requestPromptFromFeedback(
-        promptDeps,
-        'בחר שם לקובץ השמירה:',
-        prepared.defaultName,
-        'שמירה לא זמינה כרגע (prompt)'
+      runPerfInteractionWait(App, 'project.save.prompt', () =>
+        requestPromptFromFeedback(
+          promptDeps,
+          'בחר שם לקובץ השמירה:',
+          prepared.defaultName,
+          'שמירה לא זמינה כרגע (prompt)'
+        )
       ),
     onRequestError: message => buildProjectSaveFailureResult('error', message),
     onCancelled: () => buildProjectSaveFailureResult('cancelled'),
     normalizeValue: value => String(value || '').trim(),
     runSubmitted: fileName => {
       const normalizedFileName = normalizeDownloadFilename(fileName, prepared.defaultName, '.json');
-      const downloadResult = downloadJsonTextResultViaBrowser(
-        { docMaybe: doc, winMaybe: win },
-        normalizedFileName,
-        prepared.exported.jsonStr
+      const downloadResult = runPerfPhase(App, 'project.save.download', 'download', () =>
+        downloadJsonTextResultViaBrowser(
+          { docMaybe: doc, winMaybe: win },
+          normalizedFileName,
+          prepared.exported.jsonStr
+        )
       );
       if (downloadResult.ok === false) {
         return buildProjectSaveDownloadFailureResult(downloadResult);
       }
 
       try {
-        const meta = metaUiOnly(App, undefined, 'saveProject');
-        setDirtyViaActions(App, false, meta);
+        runPerfPhase(App, 'project.save.commit', 'commit', () => {
+          const meta = metaUiOnly(App, undefined, 'saveProject');
+          setDirtyViaActions(App, false, meta);
+        });
       } catch (error) {
         reportProjectSaveRuntimeNonFatal(App, 'saveProject.clearDirty', error);
       }
@@ -164,7 +172,9 @@ export function runEnsureSaveProjectAction(
         return active ? reuseAsyncOperationHandle(active) : buildProjectSaveFailureResult('busy');
       }
 
-      const prepared = prepareProjectSaveExport(App);
+      const prepared = runPerfPhase(App, 'project.save.export', 'export', () =>
+        prepareProjectSaveExport(App)
+      );
       if (prepared.ok === false) {
         actionFamily.release();
         return prepared.result;

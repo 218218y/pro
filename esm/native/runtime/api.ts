@@ -248,9 +248,13 @@ export {
 export {
   buildPerfEntryOptionsFromActionResult,
   markPerfPoint,
+  markPerfRenderSettle,
+  recordPerfMetric,
   startPerfSpan,
   endPerfSpan,
   runPerfAction,
+  runPerfInteractionWait,
+  runPerfPhase,
 } from './observability_surface.js';
 
 export { CHEST_MODE_DIMENSIONS } from '../../shared/dimensions/compatibility/chest_mode_dimensions_compatibility.js';

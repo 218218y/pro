@@ -16,8 +16,12 @@ import {
   getRuntimeErrorHistory,
   getStoreDebugStats,
   isNonErrorPerfResultReason,
+  installPerfRuntimeSurface,
   markPerfPoint,
+  markPerfRenderSettle,
   runPerfAction,
+  runPerfInteractionWait,
+  runPerfPhase,
   runWithPerfSpan,
   startPerfSpan,
 } from '../esm/native/runtime/perf_runtime_surface.ts';
@@ -109,7 +113,10 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
   const ended = endPerfSpan(app, spanId);
   assert.equal(ended?.name, 'project.load');
   assert.equal(ended?.status, 'ok');
-  assert.equal(typeof ended?.durationMs, 'number');
+  assert.equal(ended?.kind, 'action');
+  assert.equal(typeof ended?.uxTotalMs, 'number');
+  assert.equal(typeof ended?.codeExecutionMs, 'number');
+  assert.equal(ended?.interactionWaitMs, 0);
 
   await runWithPerfSpan(app, 'cloudSync.floatingSync.toggle', async () => true);
   await assert.rejects(async () => {
@@ -147,7 +154,8 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
   assert.ok(summary['project.restoreLastSession']);
   assert.ok(summary['project.load.invalid']);
   assert.ok(summary['project.save'].count >= 1);
-  assert.ok(summary['project.save'].maxMs >= 0);
+  assert.ok(summary['project.save'].codeExecutionMaxMs >= 0);
+  assert.ok(summary['project.save'].uxMaxMs >= summary['project.save'].codeExecutionMaxMs);
   assert.equal(summary['project.save'].errorCount, 1);
   assert.equal(summary['project.save'].lastStatus, 'error');
   assert.match(String(summary['project.save'].lastError || ''), /boom/);
@@ -169,6 +177,7 @@ test('perf runtime surface records marks, spans, summaries, and errors', async (
   const surface = createPerfConsoleSurface(app);
   assert.equal(typeof surface.start, 'function');
   assert.equal(typeof surface.getSummary, 'function');
+  assert.equal(typeof surface.getBrowserMetrics, 'function');
   assert.equal(typeof surface.getStateFingerprint, 'function');
   assert.equal(typeof surface.getStoreDebugStats, 'function');
   assert.equal(typeof surface.getErrorHistory, 'function');
@@ -305,4 +314,191 @@ test('perf runtime surface classifies non-error action results as marks and keep
       },
     }
   );
+});
+
+test('perf runtime separates interaction wait from code phases and records render settle', async () => {
+  let rafCount = 0;
+  const app = {
+    deps: {
+      config: {},
+      browser: {
+        requestAnimationFrame(callback: FrameRequestCallback) {
+          rafCount += 1;
+          callback(rafCount * 16);
+          return rafCount;
+        },
+        setTimeout(callback: () => void) {
+          callback();
+          return 1;
+        },
+      },
+    },
+    services: {},
+  } as any;
+
+  await runPerfAction(app, 'settingsBackup.import', async () => {
+    await runPerfInteractionWait(app, 'settingsBackup.import.confirm', async () => {
+      await new Promise(resolve => setTimeout(resolve, 8));
+      return true;
+    });
+    return runPerfPhase(app, 'settingsBackup.import.parse', 'parse', () => JSON.parse('{"ok":true}'));
+  });
+
+  const action = getPerfEntries(app, 'settingsBackup.import').at(-1);
+  const wait = getPerfEntries(app, 'settingsBackup.import.confirm').at(-1);
+  const phase = getPerfEntries(app, 'settingsBackup.import.parse').at(-1);
+  assert.equal(action?.kind, 'action');
+  assert.equal(wait?.kind, 'interaction-wait');
+  assert.equal(wait?.codeExecutionMs, 0);
+  assert.ok((wait?.interactionWaitMs || 0) > 0);
+  assert.equal(phase?.kind, 'phase');
+  assert.equal(phase?.phase, 'parse');
+  assert.equal(phase?.interactionWaitMs, 0);
+  assert.equal(phase?.codeExecutionMs, phase?.uxTotalMs);
+  assert.ok((action?.interactionWaitMs || 0) > 0);
+  assert.ok((action?.codeExecutionMs || 0) < (action?.uxTotalMs || 0));
+
+  const settled = await markPerfRenderSettle(app, 'build', { reason: 'unit-test' });
+  assert.equal(settled?.kind, 'render-settle');
+  assert.equal(settled?.codeExecutionMs, 0);
+  assert.equal(rafCount, 2);
+  assert.equal(createPerfConsoleSurface(app).getBrowserMetrics().renderSettle.count, 1);
+
+  await runPerfAction(app, 'viewer.image.change', async () => true);
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const viewerSettles = getPerfEntries(app, 'render.settle').filter(
+    entry => (entry.detail as { reason?: string } | undefined)?.reason === 'viewer.image.change'
+  );
+  assert.equal(viewerSettles.length, 1);
+  assert.equal(createPerfConsoleSurface(app).getBrowserMetrics().renderSettle.count, 2);
+});
+
+test('perf runtime attributes only the overlapping portion of an early interaction wait', () => {
+  const originalPerformance = Object.getOwnPropertyDescriptor(globalThis, 'performance');
+  let now = 0;
+  Object.defineProperty(globalThis, 'performance', {
+    configurable: true,
+    value: { now: () => now },
+  });
+  try {
+    const app = { deps: { config: {} }, services: {} } as any;
+    const waitId = startPerfSpan(app, 'project.save.prompt', { kind: 'interaction-wait' });
+    now = 50;
+    const actionId = startPerfSpan(app, 'project.save');
+    now = 80;
+    const wait = endPerfSpan(app, waitId);
+    now = 100;
+    const action = endPerfSpan(app, actionId);
+
+    assert.equal(wait?.parentId, action?.id);
+    assert.equal(wait?.interactionWaitMs, 80);
+    assert.equal(action?.uxTotalMs, 50);
+    assert.equal(action?.interactionWaitMs, 30);
+    assert.equal(action?.codeExecutionMs, 20);
+  } finally {
+    if (originalPerformance) Object.defineProperty(globalThis, 'performance', originalPerformance);
+    else Reflect.deleteProperty(globalThis, 'performance');
+  }
+});
+
+test('perf runtime unions overlapping interaction waits before subtracting code time', () => {
+  const originalPerformance = Object.getOwnPropertyDescriptor(globalThis, 'performance');
+  let now = 0;
+  Object.defineProperty(globalThis, 'performance', {
+    configurable: true,
+    value: { now: () => now },
+  });
+  try {
+    const app = { deps: { config: {} }, services: {} } as any;
+    const actionId = startPerfSpan(app, 'design.savedColor.add');
+    now = 10;
+    const firstWaitId = startPerfSpan(app, 'design.savedColor.add.prompt', { kind: 'interaction-wait' });
+    now = 30;
+    const secondWaitId = startPerfSpan(app, 'design.savedColor.add.confirm', {
+      kind: 'interaction-wait',
+    });
+    now = 50;
+    endPerfSpan(app, firstWaitId);
+    now = 70;
+    endPerfSpan(app, secondWaitId);
+    now = 100;
+    const action = endPerfSpan(app, actionId);
+
+    assert.equal(action?.uxTotalMs, 100);
+    assert.equal(action?.interactionWaitMs, 60);
+    assert.equal(action?.codeExecutionMs, 40);
+  } finally {
+    if (originalPerformance) Object.defineProperty(globalThis, 'performance', originalPerformance);
+    else Reflect.deleteProperty(globalThis, 'performance');
+  }
+});
+
+test('perf runtime observes CLS, LCP, and Long Tasks through PerformanceObserver', () => {
+  type ObserverCallback = (list: { getEntries: () => PerformanceEntry[] }) => void;
+  class FakePerformanceObserver {
+    static supportedEntryTypes = ['layout-shift', 'largest-contentful-paint', 'longtask'];
+    static observers: FakePerformanceObserver[] = [];
+    callback: ObserverCallback;
+    type = '';
+
+    constructor(callback: ObserverCallback) {
+      this.callback = callback;
+      FakePerformanceObserver.observers.push(this);
+    }
+
+    observe(options: PerformanceObserverInit) {
+      this.type = String(options.type || options.entryTypes?.[0] || '');
+    }
+
+    disconnect() {}
+
+    static emit(type: string, entries: PerformanceEntry[]) {
+      for (const observer of FakePerformanceObserver.observers.filter(item => item.type === type)) {
+        observer.callback({ getEntries: () => entries });
+      }
+    }
+  }
+
+  const app = { deps: { config: {} }, services: {} } as any;
+  const win = { PerformanceObserver: FakePerformanceObserver } as unknown as Window;
+  const surface = installPerfRuntimeSurface(app, win);
+  assert.ok(surface);
+
+  FakePerformanceObserver.emit('layout-shift', [
+    { entryType: 'layout-shift', name: '', startTime: 100, duration: 0, value: 0.04 } as any,
+    { entryType: 'layout-shift', name: '', startTime: 500, duration: 0, value: 0.03 } as any,
+    {
+      entryType: 'layout-shift',
+      name: '',
+      startTime: 700,
+      duration: 0,
+      value: 0.5,
+      hadRecentInput: true,
+    } as any,
+  ]);
+  FakePerformanceObserver.emit('largest-contentful-paint', [
+    {
+      entryType: 'largest-contentful-paint',
+      name: '',
+      startTime: 1200,
+      duration: 0,
+      renderTime: 1200,
+      size: 42,
+    } as any,
+  ]);
+  FakePerformanceObserver.emit('longtask', [
+    { entryType: 'longtask', name: 'self', startTime: 300, duration: 75 } as any,
+    { entryType: 'longtask', name: 'self', startTime: 600, duration: 120 } as any,
+  ]);
+
+  const metrics = surface?.getBrowserMetrics();
+  assert.equal(metrics?.observerSupported, true);
+  assert.equal(metrics?.cls.value, 0.07);
+  assert.equal(metrics?.cls.entryCount, 2);
+  assert.equal(metrics?.lcp.valueMs, 1200);
+  assert.equal(metrics?.longTasks.count, 2);
+  assert.equal(metrics?.longTasks.totalMs, 195);
+  assert.equal(metrics?.longTasks.p95Ms, 120);
+  assert.equal(getPerfEntries(app, 'browser.cls').at(-1)?.kind, 'browser-metric');
+  assert.equal(getPerfEntries(app, 'browser.longTask').length, 2);
 });

@@ -1,6 +1,6 @@
 import type { AppContainer } from '../../../types';
 
-import { runPerfAction } from '../services/api.js';
+import { runPerfInteractionWait } from '../services/api.js';
 import { requestAppConfirmation } from './feedback_confirm_runtime.js';
 import { runConfirmedAction } from './feedback_action_runtime.js';
 import { runAppActionFamilySingleFlight, type AppActionFamilyFlight } from './action_family_singleflight.js';
@@ -42,8 +42,8 @@ export function runAppConfirmedActionFamilySingleFlight<Result, Key extends stri
     run: () =>
       runConfirmedAction<Result>({
         request: () =>
-          requestPerfName && typeof runPerfAction === 'function'
-            ? runPerfAction(app, requestPerfName, () => requestAppConfirmation(app, title, message))
+          requestPerfName && typeof runPerfInteractionWait === 'function'
+            ? runPerfInteractionWait(app, requestPerfName, () => requestAppConfirmation(app, title, message))
             : requestAppConfirmation(app, title, message),
         onRequestError,
         onCancelled,

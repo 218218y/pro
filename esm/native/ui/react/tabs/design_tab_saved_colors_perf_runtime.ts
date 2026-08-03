@@ -1,6 +1,6 @@
 import type { ActionMetaLike, AppContainer } from '../../../../../types';
 
-import { runPerfAction } from '../../../services/api.js';
+import { runPerfInteractionWait, runPerfPhase } from '../../../services/api.js';
 
 function readActionMetaSource(meta: ActionMetaLike | undefined): string {
   const source = meta && typeof meta === 'object' ? meta.source : '';
@@ -20,5 +20,8 @@ export function readSavedColorPerfMetricPrefix(
 }
 
 export function runSavedColorPerfStep<T>(app: AppContainer, metricName: string, run: () => T): T {
-  return runPerfAction(app, metricName, run);
+  const phase = metricName.split('.').at(-1) || 'step';
+  return phase === 'prompt' || phase === 'confirm'
+    ? runPerfInteractionWait(app, metricName, run)
+    : runPerfPhase(app, metricName, phase, run);
 }

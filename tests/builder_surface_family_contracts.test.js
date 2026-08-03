@@ -746,6 +746,8 @@ test('[builder-surface-family] orchestration owners remain thin around canonical
       /export function ensureSchedulerDebouncedRunner\(/,
       /export function requestBuildRuntime\(/,
       /export function runPendingBuildRuntime\(/,
+      /markPerfRenderSettle/,
+      /markBuildRenderSettle\(App, execReason, immediate, forceBuild\)/,
     ],
     'scheduler runtime owner'
   );

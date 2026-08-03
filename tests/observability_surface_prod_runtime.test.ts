@@ -19,7 +19,11 @@ import {
   installObservabilityForBuild,
   installPerfRuntimeSurface,
   markPerfPoint,
+  markPerfRenderSettle,
+  recordPerfMetric,
   runPerfAction,
+  runPerfInteractionWait,
+  runPerfPhase,
   runWithPerfSpan,
   startPerfSpan,
 } from '../esm/native/runtime/observability_surface_prod.ts';
@@ -37,7 +41,10 @@ test('prod observability surface stays no-op and preserves app actions', async (
   assert.equal(mark.status, 'mark');
   assert.equal(mark.startTime, 0);
   assert.equal(mark.endTime, 0);
-  assert.equal(mark.durationMs, 0);
+  assert.equal(mark.kind, 'mark');
+  assert.equal(mark.uxTotalMs, 0);
+  assert.equal(mark.codeExecutionMs, 0);
+  assert.equal(mark.interactionWaitMs, 0);
   assert.deepEqual(mark.detail, { source: 'test' });
 
   const spanId = startPerfSpan(app, 'project.load');
@@ -58,10 +65,23 @@ test('prod observability surface stays no-op and preserves app actions', async (
 
   const wrapped = await runWithPerfSpan(app, 'project.wrap', async () => 42);
   assert.equal(wrapped, 42);
+  assert.equal(
+    runPerfPhase(app, 'project.wrap.parse', 'parse', () => 7),
+    7
+  );
+  assert.equal(
+    runPerfInteractionWait(app, 'project.wrap.confirm', () => true),
+    true
+  );
+  assert.equal(await markPerfRenderSettle(app, 'project.wrap'), null);
+  const metric = recordPerfMetric(app, 'browser.cls', 0.1, 'score');
+  assert.equal(metric.kind, 'browser-metric');
+  assert.equal(metric.metricValue, 0.1);
 
   const surface = createPerfConsoleSurface(app);
   assert.deepEqual(surface.getEntries(), []);
   assert.deepEqual(surface.getSummary(), {});
+  assert.equal(surface.getBrowserMetrics().observerSupported, false);
   assert.equal(surface.end('noop-span'), null);
   assert.equal(surface.getStateFingerprint?.(), null);
   assert.deepEqual(surface.getErrorHistory?.(), []);

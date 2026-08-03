@@ -6,6 +6,7 @@ import type {
   RenderFollowThroughBudgetSummaryLike,
   RenderFollowThroughDebugStatsLike,
   StoreDebugStats,
+  WardrobeProBrowserPerfMetrics,
   WardrobeProPerfConsoleSurface,
   WardrobeProPerfEntry,
   WardrobeProPerfMetricSummary,
@@ -20,11 +21,20 @@ import {
   getPerfSummary,
   isNonErrorPerfResultReason,
   markPerfPoint,
+  markPerfRenderSettle,
+  recordPerfMetric,
   runPerfAction,
+  runPerfInteractionWait,
+  runPerfPhase,
   runWithPerfSpan,
   startPerfSpan,
 } from './perf_runtime_core.js';
 import { getErrorsServiceMaybe } from './errors_access.js';
+import {
+  getBrowserPerformanceMetrics,
+  installBrowserPerformanceObservers,
+  resetBrowserPerformanceMetrics,
+} from './perf_runtime_browser_observer.js';
 import {
   getBuildRuntimeDebugBudget,
   getBuildRuntimeDebugStats,
@@ -52,10 +62,14 @@ export {
   getStoreDebugStats,
   isNonErrorPerfResultReason,
   markPerfPoint,
+  markPerfRenderSettle,
+  recordPerfMetric,
   resetBuildRuntimeDebugStats,
   resetRenderRuntimeDebugStats,
   resetStoreDebugStats,
   runPerfAction,
+  runPerfInteractionWait,
+  runPerfPhase,
   runWithPerfSpan,
   startPerfSpan,
 };
@@ -85,9 +99,13 @@ export function createPerfConsoleSurface(App: AppContainer): WardrobeProPerfCons
     },
     clear(): void {
       clearPerfEntries(App);
+      resetBrowserPerformanceMetrics(App);
     },
     getSummary(): Record<string, WardrobeProPerfMetricSummary> {
       return getPerfSummary(App);
+    },
+    getBrowserMetrics(): WardrobeProBrowserPerfMetrics {
+      return getBrowserPerformanceMetrics(App);
     },
     getStateFingerprint(): WardrobeProPerfStateFingerprint | null {
       return getPerfStateFingerprint(App);
@@ -121,13 +139,13 @@ export function createPerfConsoleSurface(App: AppContainer): WardrobeProPerfCons
     },
   };
 }
-
 export function installPerfRuntimeSurface(
   App: AppContainer,
   win: Window | null | undefined
 ): WardrobeProPerfConsoleSurface | null {
   try {
     if (!win || typeof win !== 'object') return null;
+    installBrowserPerformanceObservers(App, win);
     const surface = createPerfConsoleSurface(App);
     Object.defineProperty(win, '__WP_PERF__', {
       configurable: true,

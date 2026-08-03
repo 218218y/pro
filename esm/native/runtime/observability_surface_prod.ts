@@ -6,6 +6,7 @@ import type {
   RenderFollowThroughBudgetSummaryLike,
   RenderFollowThroughDebugStatsLike,
   StoreDebugStats,
+  WardrobeProBrowserPerfMetrics,
   WardrobeProDebugConsoleSurface,
   WardrobeProPerfConsoleSurface,
   WardrobeProPerfEntry,
@@ -22,14 +23,20 @@ type PerfEntryOptions = {
   detail?: unknown;
   status?: 'ok' | 'error' | 'mark';
   error?: unknown;
+  metricValue?: number;
+  metricUnit?: 'ms' | 'score' | 'count';
 };
 
 type PerfSpanOptions = {
   detail?: unknown;
+  kind?: 'action' | 'phase' | 'interaction-wait' | 'render-settle';
+  phase?: string;
+  parentId?: string;
 };
 
 type PerfActionOptions<T> = PerfSpanOptions & {
   resolveEndOptions?: ((result: T) => PerfEntryOptions | void) | undefined;
+  settleAfterRender?: boolean | string;
 };
 
 function normalizeNoopPerfEntryName(name: string): string {
@@ -45,9 +52,12 @@ function createNoopEntry(
   return {
     id: 'noop',
     name: normalizeNoopPerfEntryName(name),
+    kind: status === 'mark' ? 'mark' : 'action',
     startTime: 0,
     endTime: 0,
-    durationMs: 0,
+    uxTotalMs: 0,
+    codeExecutionMs: 0,
+    interactionWaitMs: 0,
     status,
     ...(typeof detail !== 'undefined' ? { detail } : {}),
   };
@@ -121,6 +131,37 @@ export function runPerfAction<T>(
   return run();
 }
 
+export function recordPerfMetric(
+  _App: AppContainer,
+  name: string,
+  metricValue: number,
+  metricUnit: 'ms' | 'score' | 'count',
+  options: PerfEntryOptions = {}
+): WardrobeProPerfEntry {
+  return {
+    ...createNoopEntry(name, options.status === 'error' ? 'error' : 'ok', options.detail),
+    kind: 'browser-metric',
+    metricValue: Number.isFinite(metricValue) ? metricValue : 0,
+    metricUnit,
+  };
+}
+
+export function runPerfPhase<T>(_App: AppContainer, _name: string, _phase: string, run: () => T): T {
+  return run();
+}
+
+export function runPerfInteractionWait<T>(_App: AppContainer, _name: string, run: () => T): T {
+  return run();
+}
+
+export async function markPerfRenderSettle(
+  _App: AppContainer,
+  _reason: string,
+  _detail?: unknown
+): Promise<WardrobeProPerfEntry | null> {
+  return null;
+}
+
 export function getPerfEntries(_App: AppContainer, _name?: string): WardrobeProPerfEntry[] {
   return [];
 }
@@ -188,6 +229,16 @@ export function createPerfConsoleSurface(App: AppContainer): WardrobeProPerfCons
     clear(): void {},
     getSummary(): Record<string, WardrobeProPerfMetricSummary> {
       return {};
+    },
+    getBrowserMetrics(): WardrobeProBrowserPerfMetrics {
+      return {
+        observerSupported: false,
+        supportedEntryTypes: [],
+        cls: { value: 0, entryCount: 0, lastUpdatedAt: 0 },
+        lcp: { valueMs: 0, entryCount: 0, lastUpdatedAt: 0 },
+        longTasks: { count: 0, totalMs: 0, maxMs: 0, p95Ms: 0, lastUpdatedAt: 0 },
+        renderSettle: { count: 0, totalMs: 0, maxMs: 0, p95Ms: 0, lastUpdatedAt: 0 },
+      };
     },
     getStateFingerprint(): WardrobeProPerfStateFingerprint | null {
       return null;

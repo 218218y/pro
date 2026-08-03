@@ -44,16 +44,37 @@ function createDurationSummary(samplesIn) {
   };
 }
 
+const PERF_ENTRY_KINDS = new Set([
+  'action',
+  'phase',
+  'interaction-wait',
+  'render-settle',
+  'browser-metric',
+  'mark',
+]);
+
 function normalizePerfEntry(entry) {
   if (!entry || typeof entry !== 'object') return null;
   const name = typeof entry.name === 'string' && entry.name.trim() ? entry.name.trim() : null;
-  if (!name) return null;
+  const kind = typeof entry.kind === 'string' && PERF_ENTRY_KINDS.has(entry.kind) ? entry.kind : null;
+  if (!name || !kind) return null;
   const status = entry.status === 'error' || entry.status === 'mark' ? entry.status : 'ok';
-  const durationMs = Number.isFinite(entry.durationMs) ? Number(entry.durationMs) : 0;
+  const uxTotalMs = Number.isFinite(entry.uxTotalMs) ? Number(entry.uxTotalMs) : null;
+  const codeExecutionMs = Number.isFinite(entry.codeExecutionMs) ? Number(entry.codeExecutionMs) : null;
+  const interactionWaitMs = Number.isFinite(entry.interactionWaitMs) ? Number(entry.interactionWaitMs) : null;
+  if (uxTotalMs === null || codeExecutionMs === null || interactionWaitMs === null) return null;
   return {
+    id: typeof entry.id === 'string' ? entry.id : '',
     name,
+    kind,
     status,
-    durationMs: roundDuration(durationMs),
+    uxTotalMs: roundDuration(uxTotalMs),
+    codeExecutionMs: roundDuration(codeExecutionMs),
+    interactionWaitMs: roundDuration(interactionWaitMs),
+    ...(typeof entry.parentId === 'string' && entry.parentId ? { parentId: entry.parentId } : {}),
+    ...(typeof entry.phase === 'string' && entry.phase ? { phase: entry.phase } : {}),
+    ...(Number.isFinite(entry.metricValue) ? { metricValue: Number(entry.metricValue) } : {}),
+    ...(typeof entry.metricUnit === 'string' ? { metricUnit: entry.metricUnit } : {}),
     error:
       typeof entry.error === 'string' && entry.error.trim()
         ? entry.error.trim()
@@ -64,32 +85,111 @@ function normalizePerfEntry(entry) {
 }
 
 function summarizePerfEntries(entries) {
-  const durations = entries
-    .map(entry => (Number.isFinite(entry.durationMs) ? Number(entry.durationMs) : 0))
-    .filter(value => Number.isFinite(value))
-    .sort((left, right) => left - right);
-  const count = durations.length;
+  const ux = createDurationSummary(entries.map(entry => entry.uxTotalMs));
+  const code = createDurationSummary(entries.map(entry => entry.codeExecutionMs));
+  const interaction = createDurationSummary(entries.map(entry => entry.interactionWaitMs));
+  const count = entries.length;
   const okCount = entries.filter(entry => entry.status === 'ok').length;
   const errorCount = entries.filter(entry => entry.status === 'error').length;
   const markCount = entries.filter(entry => entry.status === 'mark').length;
-  const totalMs = roundDuration(durations.reduce((sum, value) => sum + value, 0));
-  const averageMs = count > 0 ? roundDuration(totalMs / count) : 0;
+  const kinds = Array.from(new Set(entries.map(entry => entry.kind))).sort((left, right) =>
+    left.localeCompare(right)
+  );
+  const actionableCount = entries.filter(entry => entry.kind === 'action' || entry.kind === 'phase').length;
   const lastEntry = entries.length ? entries[entries.length - 1] : null;
   return {
     count,
     okCount,
     errorCount,
     markCount,
+    actionableCount,
+    kinds,
     errorRate: count > 0 ? roundDuration((errorCount / count) * 100) : 0,
-    totalMs,
-    averageMs,
-    minMs: count > 0 ? roundDuration(durations[0]) : 0,
-    maxMs: count > 0 ? roundDuration(durations[count - 1]) : 0,
-    p50Ms: count > 0 ? roundDuration(percentile(durations, 0.5)) : 0,
-    p95Ms: count > 0 ? roundDuration(percentile(durations, 0.95)) : 0,
-    lastDurationMs: lastEntry ? roundDuration(lastEntry.durationMs) : 0,
+    uxTotalMs: ux.totalMs,
+    uxAverageMs: ux.avgMs,
+    uxMinMs: ux.samplesMs.length ? Math.min(...ux.samplesMs) : 0,
+    uxMaxMs: ux.maxMs,
+    uxP50Ms: ux.samplesMs.length
+      ? roundDuration(
+          percentile(
+            [...ux.samplesMs].sort((left, right) => left - right),
+            0.5
+          )
+        )
+      : 0,
+    uxP95Ms: ux.p95Ms,
+    codeExecutionTotalMs: code.totalMs,
+    codeExecutionAverageMs: code.avgMs,
+    codeExecutionMinMs: code.samplesMs.length ? Math.min(...code.samplesMs) : 0,
+    codeExecutionMaxMs: code.maxMs,
+    codeExecutionP50Ms: code.samplesMs.length
+      ? roundDuration(
+          percentile(
+            [...code.samplesMs].sort((left, right) => left - right),
+            0.5
+          )
+        )
+      : 0,
+    codeExecutionP95Ms: code.p95Ms,
+    interactionWaitTotalMs: interaction.totalMs,
+    interactionWaitAverageMs: interaction.avgMs,
+    interactionWaitP95Ms: interaction.p95Ms,
+    lastUxTotalMs: lastEntry ? roundDuration(lastEntry.uxTotalMs) : 0,
+    lastCodeExecutionMs: lastEntry ? roundDuration(lastEntry.codeExecutionMs) : 0,
+    lastInteractionWaitMs: lastEntry ? roundDuration(lastEntry.interactionWaitMs) : 0,
     lastStatus: lastEntry?.status || null,
     ...(lastEntry?.error ? { lastError: lastEntry.error } : {}),
+  };
+}
+
+export function createBrowserMetricSummaryFromEntries(entries, metadata = {}) {
+  const normalizedEntries = (Array.isArray(entries) ? entries : []).map(normalizePerfEntry).filter(Boolean);
+  const metricValues = name =>
+    normalizedEntries
+      .filter(entry => entry.kind === 'browser-metric' && entry.name === name)
+      .map(entry => entry.metricValue)
+      .filter(Number.isFinite)
+      .map(Number);
+  const clsValues = metricValues('browser.cls');
+  const lcpValues = metricValues('browser.lcp');
+  const longTaskSummary = createDurationSummary(metricValues('browser.longTask'));
+  const renderSettleSummary = createDurationSummary(
+    normalizedEntries
+      .filter(entry => entry.kind === 'render-settle' && entry.name === 'render.settle')
+      .map(entry => entry.uxTotalMs)
+  );
+  const source = metadata && typeof metadata === 'object' ? metadata : {};
+  return {
+    observerSupported: source.observerSupported === true,
+    supportedEntryTypes: Array.isArray(source.supportedEntryTypes)
+      ? Array.from(new Set(source.supportedEntryTypes.map(item => String(item || '')).filter(Boolean))).sort(
+          (left, right) => left.localeCompare(right)
+        )
+      : [],
+    cls: {
+      value: clsValues.length ? roundDuration(Math.max(...clsValues)) : 0,
+      entryCount: clsValues.length,
+      lastUpdatedAt: roundDuration(Number(source.cls?.lastUpdatedAt) || 0),
+    },
+    lcp: {
+      valueMs: lcpValues.length ? roundDuration(Math.max(...lcpValues)) : 0,
+      entryCount: lcpValues.length,
+      lastUpdatedAt: roundDuration(Number(source.lcp?.lastUpdatedAt) || 0),
+    },
+    longTasks: {
+      count: longTaskSummary.count,
+      totalMs: longTaskSummary.totalMs,
+      maxMs: longTaskSummary.maxMs,
+      p95Ms: longTaskSummary.p95Ms,
+      lastUpdatedAt: roundDuration(Number(source.longTasks?.lastUpdatedAt) || 0),
+    },
+    renderSettle: {
+      count: renderSettleSummary.count,
+      totalMs: renderSettleSummary.totalMs,
+      maxMs: renderSettleSummary.maxMs,
+      p95Ms: renderSettleSummary.p95Ms,
+      lastUpdatedAt: roundDuration(Number(source.renderSettle?.lastUpdatedAt) || 0),
+    },
   };
 }
 
@@ -140,10 +240,10 @@ function groupNormalizedPerfEntries(entries) {
   return groups;
 }
 
-function averageDuration(entries) {
+function averageCodeExecution(entries) {
   if (!Array.isArray(entries) || !entries.length) return 0;
   const totalMs = entries.reduce(
-    (sum, entry) => sum + (Number.isFinite(entry?.durationMs) ? Number(entry.durationMs) : 0),
+    (sum, entry) => sum + (Number.isFinite(entry?.codeExecutionMs) ? Number(entry.codeExecutionMs) : 0),
     0
   );
   return roundDuration(totalMs / entries.length);
@@ -175,11 +275,13 @@ function createPerfDomainBucket(name) {
     name,
     metricCount: 0,
     entryCount: 0,
-    totalMs: 0,
+    uxTotalMs: 0,
+    codeExecutionTotalMs: 0,
+    interactionWaitTotalMs: 0,
     errorCount: 0,
     markCount: 0,
-    maxP95Ms: 0,
-    maxDurationMs: 0,
+    maxCodeExecutionP95Ms: 0,
+    maxCodeExecutionMs: 0,
     pressureMetricCount: 0,
     worstDriftPct: 0,
     requiredMetricCount: 0,
@@ -221,11 +323,20 @@ export function createPerfDomainSummary(
     const bucket = getOrCreatePerfDomainBucket(summary, domain);
     bucket.metricCount += 1;
     bucket.entryCount += Number(item?.count) || 0;
-    bucket.totalMs = roundDuration(bucket.totalMs + (Number(item?.totalMs) || 0));
+    bucket.uxTotalMs = roundDuration(bucket.uxTotalMs + (Number(item?.uxTotalMs) || 0));
+    bucket.codeExecutionTotalMs = roundDuration(
+      bucket.codeExecutionTotalMs + (Number(item?.codeExecutionTotalMs) || 0)
+    );
+    bucket.interactionWaitTotalMs = roundDuration(
+      bucket.interactionWaitTotalMs + (Number(item?.interactionWaitTotalMs) || 0)
+    );
     bucket.errorCount += Number(item?.errorCount) || 0;
     bucket.markCount += Number(item?.markCount) || 0;
-    bucket.maxP95Ms = Math.max(bucket.maxP95Ms, Number(item?.p95Ms) || 0);
-    bucket.maxDurationMs = Math.max(bucket.maxDurationMs, Number(item?.maxMs) || 0);
+    bucket.maxCodeExecutionP95Ms = Math.max(
+      bucket.maxCodeExecutionP95Ms,
+      Number(item?.codeExecutionP95Ms) || 0
+    );
+    bucket.maxCodeExecutionMs = Math.max(bucket.maxCodeExecutionMs, Number(item?.codeExecutionMaxMs) || 0);
     bucket.metrics.push(name);
   }
 
@@ -238,9 +349,11 @@ export function createPerfDomainSummary(
 
   for (const bucket of Object.values(summary)) {
     bucket.metrics = bucket.metrics.slice().sort((left, right) => left.localeCompare(right));
-    bucket.totalMs = roundDuration(bucket.totalMs);
-    bucket.maxP95Ms = roundDuration(bucket.maxP95Ms);
-    bucket.maxDurationMs = roundDuration(bucket.maxDurationMs);
+    bucket.uxTotalMs = roundDuration(bucket.uxTotalMs);
+    bucket.codeExecutionTotalMs = roundDuration(bucket.codeExecutionTotalMs);
+    bucket.interactionWaitTotalMs = roundDuration(bucket.interactionWaitTotalMs);
+    bucket.maxCodeExecutionP95Ms = roundDuration(bucket.maxCodeExecutionP95Ms);
+    bucket.maxCodeExecutionMs = roundDuration(bucket.maxCodeExecutionMs);
     bucket.worstDriftPct = roundDuration(bucket.worstDriftPct);
   }
 
@@ -257,8 +370,10 @@ export function rankPerfDomains(summary, limit = 5) {
       missingRequiredMetricCount: Number(item?.missingRequiredMetricCount) || 0,
       underfilledRequiredMetricCount: Number(item?.underfilledRequiredMetricCount) || 0,
       worstDriftPct: Number(item?.worstDriftPct) || 0,
-      totalMs: Number(item?.totalMs) || 0,
-      maxP95Ms: Number(item?.maxP95Ms) || 0,
+      uxTotalMs: Number(item?.uxTotalMs) || 0,
+      codeExecutionTotalMs: Number(item?.codeExecutionTotalMs) || 0,
+      interactionWaitTotalMs: Number(item?.interactionWaitTotalMs) || 0,
+      maxCodeExecutionP95Ms: Number(item?.maxCodeExecutionP95Ms) || 0,
     }))
     .filter(item => item.metricCount > 0 || item.missingRequiredMetricCount > 0)
     .sort((left, right) => {
@@ -270,17 +385,22 @@ export function rankPerfDomains(summary, limit = 5) {
         return right.underfilledRequiredMetricCount - left.underfilledRequiredMetricCount;
       }
       if (right.worstDriftPct !== left.worstDriftPct) return right.worstDriftPct - left.worstDriftPct;
-      if (right.totalMs !== left.totalMs) return right.totalMs - left.totalMs;
-      if (right.maxP95Ms !== left.maxP95Ms) return right.maxP95Ms - left.maxP95Ms;
+      if (right.codeExecutionTotalMs !== left.codeExecutionTotalMs) {
+        return right.codeExecutionTotalMs - left.codeExecutionTotalMs;
+      }
+      if (right.maxCodeExecutionP95Ms !== left.maxCodeExecutionP95Ms) {
+        return right.maxCodeExecutionP95Ms - left.maxCodeExecutionP95Ms;
+      }
+      if (right.uxTotalMs !== left.uxTotalMs) return right.uxTotalMs - left.uxTotalMs;
       return left.name.localeCompare(right.name);
     });
   return rows.slice(0, Math.max(1, limit));
 }
 
-export function createRuntimeDomainBudget(summary) {
+export function createRuntimeDomainCodeExecutionBudget(summary) {
   const budget = {};
   for (const [name, item] of Object.entries(summary || {})) {
-    const totalMs = Number.isFinite(item?.totalMs) ? Number(item.totalMs) : 0;
+    const totalMs = Number.isFinite(item?.codeExecutionTotalMs) ? Number(item.codeExecutionTotalMs) : 0;
     budget[name] = Math.max(Math.ceil(totalMs * 1.35 + 50), 150);
   }
   return budget;
@@ -311,24 +431,27 @@ export function createRepeatedMetricPressureSummary(
   const summary = {};
   const groups = groupNormalizedPerfEntries(entries);
   for (const [name, groupedEntries] of groups.entries()) {
+    const actionableEntries = groupedEntries.filter(
+      entry => entry.kind === 'action' || entry.kind === 'phase'
+    );
     const minimumCount = readRepeatedMetricMinimumCount(name, minimumCounts);
-    if (groupedEntries.length < minimumCount) continue;
-    const halfCount = Math.max(1, Math.floor(groupedEntries.length / 2));
-    const firstEntries = groupedEntries.slice(0, halfCount);
-    const lastEntries = groupedEntries.slice(groupedEntries.length - halfCount);
-    const firstAvgMs = averageDuration(firstEntries);
-    const lastAvgMs = averageDuration(lastEntries);
+    if (actionableEntries.length < minimumCount) continue;
+    const halfCount = Math.max(1, Math.floor(actionableEntries.length / 2));
+    const firstEntries = actionableEntries.slice(0, halfCount);
+    const lastEntries = actionableEntries.slice(actionableEntries.length - halfCount);
+    const firstAvgMs = averageCodeExecution(firstEntries);
+    const lastAvgMs = averageCodeExecution(lastEntries);
     const driftMs = roundDuration(lastAvgMs - firstAvgMs);
     const driftPct = firstAvgMs > 0 ? roundDuration((driftMs / firstAvgMs) * 100) : 0;
-    const durations = groupedEntries
-      .map(entry => (Number.isFinite(entry.durationMs) ? Number(entry.durationMs) : 0))
+    const durations = actionableEntries
+      .map(entry => (Number.isFinite(entry.codeExecutionMs) ? Number(entry.codeExecutionMs) : 0))
       .sort((left, right) => left - right);
     summary[name] = {
-      count: groupedEntries.length,
+      count: actionableEntries.length,
       minimumCount,
-      okCount: groupedEntries.filter(entry => entry.status === 'ok').length,
-      errorCount: groupedEntries.filter(entry => entry.status === 'error').length,
-      markCount: groupedEntries.filter(entry => entry.status === 'mark').length,
+      okCount: actionableEntries.filter(entry => entry.status === 'ok').length,
+      errorCount: actionableEntries.filter(entry => entry.status === 'error').length,
+      markCount: actionableEntries.filter(entry => entry.status === 'mark').length,
       firstAvgMs,
       lastAvgMs,
       driftMs,
@@ -2037,7 +2160,7 @@ export function createRuntimeRecoveryDebtSummary(entries) {
     for (let index = 0; index < groupedEntries.length; index += 1) {
       const entry = groupedEntries[index] || {};
       const status = entry.status || 'ok';
-      const durationMs = Number.isFinite(entry.durationMs) ? Number(entry.durationMs) : 0;
+      const durationMs = Number.isFinite(entry.codeExecutionMs) ? Number(entry.codeExecutionMs) : 0;
       if (!openEpisode) {
         if (status !== 'ok') {
           disruptionCount += 1;
@@ -2149,7 +2272,7 @@ export function createRuntimeRecoveryHangoverSummary(entries) {
 
     for (const entry of groupedEntries) {
       const status = entry?.status || 'ok';
-      const durationMs = Number.isFinite(entry?.durationMs) ? Number(entry.durationMs) : 0;
+      const durationMs = Number.isFinite(entry?.codeExecutionMs) ? Number(entry.codeExecutionMs) : 0;
       if (status !== 'ok') {
         disruptionCount += openEpisode ? 0 : 1;
         openEpisode = true;
@@ -2479,17 +2602,26 @@ export function rankBrowserPerfHotspots(summary, limit = 5) {
     .map(([name, item]) => ({
       name,
       count: Number(item?.count) || 0,
+      actionableCount: Number(item?.actionableCount) || 0,
       errorCount: Number(item?.errorCount) || 0,
-      totalMs: Number(item?.totalMs) || 0,
-      p95Ms: Number(item?.p95Ms) || 0,
-      maxMs: Number(item?.maxMs) || 0,
+      codeExecutionTotalMs: Number(item?.codeExecutionTotalMs) || 0,
+      codeExecutionP95Ms: Number(item?.codeExecutionP95Ms) || 0,
+      codeExecutionMaxMs: Number(item?.codeExecutionMaxMs) || 0,
+      uxTotalMs: Number(item?.uxTotalMs) || 0,
+      interactionWaitTotalMs: Number(item?.interactionWaitTotalMs) || 0,
     }))
-    .filter(item => item.count > 0)
+    .filter(item => item.actionableCount > 0)
     .sort((left, right) => {
       if (right.errorCount !== left.errorCount) return right.errorCount - left.errorCount;
-      if (right.totalMs !== left.totalMs) return right.totalMs - left.totalMs;
-      if (right.p95Ms !== left.p95Ms) return right.p95Ms - left.p95Ms;
-      if (right.maxMs !== left.maxMs) return right.maxMs - left.maxMs;
+      if (right.codeExecutionTotalMs !== left.codeExecutionTotalMs) {
+        return right.codeExecutionTotalMs - left.codeExecutionTotalMs;
+      }
+      if (right.codeExecutionP95Ms !== left.codeExecutionP95Ms) {
+        return right.codeExecutionP95Ms - left.codeExecutionP95Ms;
+      }
+      if (right.codeExecutionMaxMs !== left.codeExecutionMaxMs) {
+        return right.codeExecutionMaxMs - left.codeExecutionMaxMs;
+      }
       if (right.count !== left.count) return right.count - left.count;
       return left.name.localeCompare(right.name);
     });
@@ -2502,19 +2634,37 @@ const SAVED_COLOR_PHASES = [
   { op: 'delete', total: 'design.savedColor.delete', dialog: 'design.savedColor.delete.confirm' },
 ];
 
-function readPerfAverage(summary, name) {
+function readPerfField(summary, name, field) {
   const item = summary && summary[name];
-  return Number.isFinite(Number(item?.averageMs)) ? Number(item.averageMs) : 0;
+  return Number.isFinite(Number(item?.[field])) ? Number(item[field]) : 0;
 }
 
-function readPerfP95(summary, name) {
-  const item = summary && summary[name];
-  return Number.isFinite(Number(item?.p95Ms)) ? Number(item.p95Ms) : 0;
+function readPerfUxAverage(summary, name) {
+  return readPerfField(summary, name, 'uxAverageMs');
+}
+
+function readPerfUxP95(summary, name) {
+  return readPerfField(summary, name, 'uxP95Ms');
+}
+
+function readPerfCodeAverage(summary, name) {
+  return readPerfField(summary, name, 'codeExecutionAverageMs');
+}
+
+function readPerfCodeP95(summary, name) {
+  return readPerfField(summary, name, 'codeExecutionP95Ms');
+}
+
+function readPerfInteractionAverage(summary, name) {
+  return readPerfField(summary, name, 'interactionWaitAverageMs');
+}
+
+function readPerfInteractionP95(summary, name) {
+  return readPerfField(summary, name, 'interactionWaitP95Ms');
 }
 
 function readPerfCount(summary, name) {
-  const item = summary && summary[name];
-  return Number.isFinite(Number(item?.count)) ? Number(item.count) : 0;
+  return readPerfField(summary, name, 'count');
 }
 
 function readSavedColorPhaseBottleneck(dialogAvgMs, codeAvgMs, storageAvgMs, patchAvgMs) {
@@ -2527,28 +2677,34 @@ function readSavedColorPhaseBottleneck(dialogAvgMs, codeAvgMs, storageAvgMs, pat
 
 export function createSavedColorPhaseBreakdown(summary) {
   return SAVED_COLOR_PHASES.map(phase => {
-    const totalAvgMs = readPerfAverage(summary, phase.total);
-    const dialogAvgMs = readPerfAverage(summary, phase.dialog);
-    const prepareAvgMs = readPerfAverage(summary, `${phase.total}.prepare`);
-    const orderAvgMs = readPerfAverage(summary, `${phase.total}.order`);
-    const mutationAvgMs = readPerfAverage(summary, `${phase.total}.mutation`);
-    const patchAvgMs = readPerfAverage(summary, `${phase.total}.patch`);
-    const storageAvgMs = readPerfAverage(summary, `${phase.total}.storage`);
-    const codeAvgMs = Math.max(0, roundDuration(totalAvgMs - dialogAvgMs));
+    const uxTotalAvgMs = readPerfUxAverage(summary, phase.total);
+    const interactionWaitAvgMs = readPerfInteractionAverage(summary, phase.dialog);
+    const prepareAvgMs = readPerfCodeAverage(summary, `${phase.total}.prepare`);
+    const orderAvgMs = readPerfCodeAverage(summary, `${phase.total}.order`);
+    const mutationAvgMs = readPerfCodeAverage(summary, `${phase.total}.mutation`);
+    const patchAvgMs = readPerfCodeAverage(summary, `${phase.total}.patch`);
+    const storageAvgMs = readPerfCodeAverage(summary, `${phase.total}.storage`);
+    const codeExecutionAvgMs = readPerfCodeAverage(summary, phase.total);
     return {
       op: phase.op,
       count: readPerfCount(summary, phase.total),
-      totalAvgMs,
-      totalP95Ms: readPerfP95(summary, phase.total),
-      dialogAvgMs,
-      dialogP95Ms: readPerfP95(summary, phase.dialog),
-      codeAvgMs,
+      uxTotalAvgMs,
+      uxTotalP95Ms: readPerfUxP95(summary, phase.total),
+      interactionWaitAvgMs,
+      interactionWaitP95Ms: readPerfInteractionP95(summary, phase.dialog),
+      codeExecutionAvgMs,
+      codeExecutionP95Ms: readPerfCodeP95(summary, phase.total),
       prepareAvgMs,
       orderAvgMs,
       mutationAvgMs,
       patchAvgMs,
       storageAvgMs,
-      bottleneck: readSavedColorPhaseBottleneck(dialogAvgMs, codeAvgMs, storageAvgMs, patchAvgMs),
+      bottleneck: readSavedColorPhaseBottleneck(
+        interactionWaitAvgMs,
+        codeExecutionAvgMs,
+        storageAvgMs,
+        patchAvgMs
+      ),
     };
   }).filter(item => item.count > 0);
 }
@@ -2590,23 +2746,24 @@ export function createSettingsBackupImportPhaseBreakdown(summary) {
   ].reduce((sum, name) => sum + readPerfCount(summary, name), 0);
   if (phaseMetricCount <= 0) return [];
 
-  const totalAvgMs = readPerfAverage(summary, total);
-  const confirmAvgMs = readPerfAverage(summary, 'settingsBackup.import.confirm');
-  const readFileAvgMs = readPerfAverage(summary, 'settingsBackup.import.readFile');
-  const parseAvgMs = readPerfAverage(summary, 'settingsBackup.import.parse');
-  const modelsMergeAvgMs = readPerfAverage(summary, 'settingsBackup.import.models.merge');
-  const colorsAvgMs = readPerfAverage(summary, 'settingsBackup.import.colors');
-  const modelsFinalizeAvgMs = readPerfAverage(summary, 'settingsBackup.import.models.finalize');
-  const storageWriteAvgMs = readPerfAverage(summary, 'settingsBackup.import.storage.write');
-  const codeAvgMs = Math.max(0, roundDuration(totalAvgMs - confirmAvgMs));
+  const uxTotalAvgMs = readPerfUxAverage(summary, total);
+  const confirmAvgMs = readPerfInteractionAverage(summary, 'settingsBackup.import.confirm');
+  const readFileAvgMs = readPerfCodeAverage(summary, 'settingsBackup.import.readFile');
+  const parseAvgMs = readPerfCodeAverage(summary, 'settingsBackup.import.parse');
+  const modelsMergeAvgMs = readPerfCodeAverage(summary, 'settingsBackup.import.models.merge');
+  const colorsAvgMs = readPerfCodeAverage(summary, 'settingsBackup.import.colors');
+  const modelsFinalizeAvgMs = readPerfCodeAverage(summary, 'settingsBackup.import.models.finalize');
+  const storageWriteAvgMs = readPerfCodeAverage(summary, 'settingsBackup.import.storage.write');
+  const codeExecutionAvgMs = readPerfCodeAverage(summary, total);
   const row = {
     op: 'import',
     count,
-    totalAvgMs,
-    totalP95Ms: readPerfP95(summary, total),
+    uxTotalAvgMs,
+    uxTotalP95Ms: readPerfUxP95(summary, total),
     confirmAvgMs,
-    confirmP95Ms: readPerfP95(summary, 'settingsBackup.import.confirm'),
-    codeAvgMs,
+    confirmP95Ms: readPerfInteractionP95(summary, 'settingsBackup.import.confirm'),
+    codeExecutionAvgMs,
+    codeExecutionP95Ms: readPerfCodeP95(summary, total),
     readFileAvgMs,
     parseAvgMs,
     modelsMergeAvgMs,
@@ -2618,7 +2775,7 @@ export function createSettingsBackupImportPhaseBreakdown(summary) {
   return [
     {
       ...row,
-      bottleneck: readSettingsBackupImportBottleneck(row),
+      bottleneck: readSettingsBackupImportBottleneck({ ...row, codeAvgMs: codeExecutionAvgMs }),
     },
   ];
 }
@@ -2887,6 +3044,11 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
       );
     }
   }
+  const browserMetrics = result.windowBrowserMetrics || {};
+  lines.push('', '## Browser responsiveness metrics', '');
+  lines.push(
+    `- observerSupported=${browserMetrics.observerSupported === true}, CLS=${Number(browserMetrics.cls?.value) || 0} (${Number(browserMetrics.cls?.entryCount) || 0} shifts), LCP=${formatMs(Number(browserMetrics.lcp?.valueMs) || 0)}, Long Tasks=${Number(browserMetrics.longTasks?.count) || 0} / total=${formatMs(Number(browserMetrics.longTasks?.totalMs) || 0)} / p95=${formatMs(Number(browserMetrics.longTasks?.p95Ms) || 0)}, render-settle=${Number(browserMetrics.renderSettle?.count) || 0} / p95=${formatMs(Number(browserMetrics.renderSettle?.p95Ms) || 0)}`
+  );
   lines.push('', '## Runtime perf summary', '');
   lines.push(`Required metrics present: ${presentRequiredMetrics.length}/${requiredMetrics.length}`);
   lines.push('', '### Required metric coverage', '');
@@ -2900,7 +3062,7 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
     lines.push('', '### Saved colors phase breakdown', '');
     for (const item of savedColorPhaseRows) {
       lines.push(
-        `- ${item.op}: totalAvg=${formatMs(item.totalAvgMs)}, totalP95=${formatMs(item.totalP95Ms)}, dialogAvg=${formatMs(item.dialogAvgMs)}, dialogP95=${formatMs(item.dialogP95Ms)}, codeAvg≈${formatMs(item.codeAvgMs)}, prepare=${formatMs(item.prepareAvgMs)}, order=${formatMs(item.orderAvgMs)}, mutation=${formatMs(item.mutationAvgMs)}, patch=${formatMs(item.patchAvgMs)}, storage=${formatMs(item.storageAvgMs)}, bottleneck=${item.bottleneck}`
+        `- ${item.op}: uxAvg=${formatMs(item.uxTotalAvgMs)}, uxP95=${formatMs(item.uxTotalP95Ms)}, interactionWaitAvg=${formatMs(item.interactionWaitAvgMs)}, interactionWaitP95=${formatMs(item.interactionWaitP95Ms)}, codeAvg=${formatMs(item.codeExecutionAvgMs)}, codeP95=${formatMs(item.codeExecutionP95Ms)}, prepare=${formatMs(item.prepareAvgMs)}, order=${formatMs(item.orderAvgMs)}, mutation=${formatMs(item.mutationAvgMs)}, patch=${formatMs(item.patchAvgMs)}, storage=${formatMs(item.storageAvgMs)}, bottleneck=${item.bottleneck}`
       );
     }
   }
@@ -2909,7 +3071,7 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
     lines.push('', '### Settings backup import phase breakdown', '');
     for (const item of settingsBackupImportPhaseRows) {
       lines.push(
-        `- ${item.op}: totalAvg=${formatMs(item.totalAvgMs)}, totalP95=${formatMs(item.totalP95Ms)}, confirmAvg=${formatMs(item.confirmAvgMs)}, confirmP95=${formatMs(item.confirmP95Ms)}, codeAvg≈${formatMs(item.codeAvgMs)}, readFile=${formatMs(item.readFileAvgMs)}, parse=${formatMs(item.parseAvgMs)}, modelsMerge=${formatMs(item.modelsMergeAvgMs)}, colors=${formatMs(item.colorsAvgMs)}, modelsFinalize=${formatMs(item.modelsFinalizeAvgMs)}, storageWrite=${formatMs(item.storageWriteAvgMs)} x${item.storageWriteCount}, bottleneck=${item.bottleneck}`
+        `- ${item.op}: uxAvg=${formatMs(item.uxTotalAvgMs)}, uxP95=${formatMs(item.uxTotalP95Ms)}, confirmWaitAvg=${formatMs(item.confirmAvgMs)}, confirmWaitP95=${formatMs(item.confirmP95Ms)}, codeAvg=${formatMs(item.codeExecutionAvgMs)}, codeP95=${formatMs(item.codeExecutionP95Ms)}, readFile=${formatMs(item.readFileAvgMs)}, parse=${formatMs(item.parseAvgMs)}, modelsMerge=${formatMs(item.modelsMergeAvgMs)}, colors=${formatMs(item.colorsAvgMs)}, modelsFinalize=${formatMs(item.modelsFinalizeAvgMs)}, storageWrite=${formatMs(item.storageWriteAvgMs)} x${item.storageWriteCount}, bottleneck=${item.bottleneck}`
       );
     }
   }
@@ -3047,7 +3209,7 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
     for (const item of domainRows) {
       const detail = domainSummary[item.name];
       lines.push(
-        `- ${item.name}: required=${detail.presentRequiredMetricCount}/${detail.requiredMetricCount}, metrics=${detail.metricCount}, entries=${detail.entryCount}, errors=${detail.errorCount}, marks=${detail.markCount}, total=${formatMs(detail.totalMs)}, maxP95=${formatMs(detail.maxP95Ms)}, worstDrift=${detail.worstDriftPct}%`
+        `- ${item.name}: required=${detail.presentRequiredMetricCount}/${detail.requiredMetricCount}, metrics=${detail.metricCount}, entries=${detail.entryCount}, errors=${detail.errorCount}, marks=${detail.markCount}, uxTotal=${formatMs(detail.uxTotalMs)}, codeTotal=${formatMs(detail.codeExecutionTotalMs)}, interactionWait=${formatMs(detail.interactionWaitTotalMs)}, maxCodeP95=${formatMs(detail.maxCodeExecutionP95Ms)}, worstCodeDrift=${detail.worstDriftPct}%`
       );
     }
   }
@@ -3057,7 +3219,7 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   } else {
     for (const item of hotspots) {
       lines.push(
-        `- ${item.name}: total=${formatMs(item.totalMs)}, p95=${formatMs(item.p95Ms)}, max=${formatMs(item.maxMs)}, count=${item.count}, errors=${item.errorCount}`
+        `- ${item.name}: codeTotal=${formatMs(item.codeExecutionTotalMs)}, codeP95=${formatMs(item.codeExecutionP95Ms)}, codeMax=${formatMs(item.codeExecutionMaxMs)}, uxTotal=${formatMs(item.uxTotalMs)}, interactionWait=${formatMs(item.interactionWaitTotalMs)}, count=${item.count}, errors=${item.errorCount}`
       );
     }
   }
@@ -3065,23 +3227,46 @@ export function summarizeBrowserPerfResult(result, contracts = {}) {
   for (const name of keyNames) {
     const item = perfSummary[name];
     lines.push(
-      `- ${name}: count=${item.count}, ok=${item.okCount ?? 0}, error=${item.errorCount ?? 0}, mark=${item.markCount ?? 0}, avg=${formatMs(item.averageMs)}, p95=${formatMs(item.p95Ms)}, max=${formatMs(item.maxMs)}${item.lastError ? `, lastError=${item.lastError}` : ''}`
+      `- ${name}: count=${item.count}, kinds=${(item.kinds || []).join('+') || 'none'}, ok=${item.okCount ?? 0}, error=${item.errorCount ?? 0}, mark=${item.markCount ?? 0}, uxAvg=${formatMs(item.uxAverageMs)}, uxP95=${formatMs(item.uxP95Ms)}, codeAvg=${formatMs(item.codeExecutionAverageMs)}, codeP95=${formatMs(item.codeExecutionP95Ms)}, waitAvg=${formatMs(item.interactionWaitAverageMs)}${item.lastError ? `, lastError=${item.lastError}` : ''}`
     );
   }
   lines.push('', '## Recent runtime entries', '');
   for (const entry of (result.windowPerfEntries || []).slice(-15)) {
-    lines.push(`- ${entry.name}: ${formatMs(entry.durationMs)} [${entry.status}]`);
+    lines.push(
+      `- ${entry.name}: kind=${entry.kind}, ux=${formatMs(entry.uxTotalMs)}, code=${formatMs(entry.codeExecutionMs)}, interactionWait=${formatMs(entry.interactionWaitMs)} [${entry.status}]`
+    );
   }
   return `${lines.join('\n')}\n`;
 }
 
-export function createRuntimeMetricBudget(summary) {
+export function createRuntimeUxBudget(summary) {
   const budget = {};
   for (const [name, item] of Object.entries(summary || {})) {
-    const p95 = item && Number.isFinite(item.p95Ms) ? Number(item.p95Ms) : 0;
+    const p95 = item && Number.isFinite(item.uxP95Ms) ? Number(item.uxP95Ms) : 0;
     budget[name] = Math.max(Math.ceil(p95 * 1.35 + 25), 100);
   }
   return budget;
+}
+
+export function createRuntimeCodeExecutionBudget(summary) {
+  const budget = {};
+  for (const [name, item] of Object.entries(summary || {})) {
+    if ((Number(item?.actionableCount) || 0) < 1) continue;
+    const p95 = item && Number.isFinite(item.codeExecutionP95Ms) ? Number(item.codeExecutionP95Ms) : 0;
+    budget[name] = Math.max(Math.ceil(p95 * 1.35 + 10), 50);
+  }
+  return budget;
+}
+
+export function createBrowserMetricBudget(metrics) {
+  const value = metrics && typeof metrics === 'object' ? metrics : {};
+  return {
+    maxCls: Math.max(Number(((Number(value.cls?.value) || 0) * 1.35 + 0.02).toFixed(4)), 0.1),
+    maxLcpMs: Math.max(Math.ceil((Number(value.lcp?.valueMs) || 0) * 1.35 + 250), 2500),
+    maxLongTaskCount: Math.max(Math.ceil((Number(value.longTasks?.count) || 0) * 1.4 + 2), 5),
+    maxLongTaskP95Ms: Math.max(Math.ceil((Number(value.longTasks?.p95Ms) || 0) * 1.35 + 10), 60),
+    maxRenderSettleP95Ms: Math.max(Math.ceil((Number(value.renderSettle?.p95Ms) || 0) * 1.35 + 10), 50),
+  };
 }
 
 export function createBrowserPerfBaseline(result, contracts = {}) {
@@ -3153,13 +3338,15 @@ export function createBrowserPerfBaseline(result, contracts = {}) {
   const requiredJourneyNames = readRequiredUserJourneyNames(contracts, null, userJourneySummary);
   const requiredJourneyMinimumCounts = readRequiredUserJourneyMinimumStepCounts(contracts, null);
   return {
-    version: 18,
+    version: 19,
     generatedAt: new Date().toISOString(),
-    budgetMs: budget,
-    runtimeBudgetMs: createRuntimeMetricBudget(perfSummary),
+    uxJourneyBudgetMs: budget,
+    runtimeUxBudgetMs: createRuntimeUxBudget(perfSummary),
+    runtimeCodeExecutionBudgetMs: createRuntimeCodeExecutionBudget(perfSummary),
     runtimeDriftBudgetPct: createRuntimeDriftBudgetPct(pressureSummary),
-    runtimeDomainBudgetMs: createRuntimeDomainBudget(domainSummary),
+    runtimeDomainCodeExecutionBudgetMs: createRuntimeDomainCodeExecutionBudget(domainSummary),
     runtimeDomainDriftBudgetPct: createRuntimeDomainDriftBudgetPct(domainSummary),
+    browserMetricBudget: createBrowserMetricBudget(result.windowBrowserMetrics),
     runtimeRecoveryDebtBudgetMs: createRuntimeRecoveryDebtBudgetMs(recoveryDebtSummary),
     runtimeRecoveryHangoverBudget: createRuntimeRecoveryHangoverBudget(recoveryHangoverSummary),
     storePressureBudget: createStorePressureBudget(storeFlowSummary),
@@ -3185,7 +3372,14 @@ export function createBrowserPerfBaseline(result, contracts = {}) {
 
 export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
   const failures = [];
-  const budget = baseline && typeof baseline === 'object' ? baseline.budgetMs || {} : {};
+  if (!baseline || typeof baseline !== 'object') {
+    failures.push('Browser perf baseline missing; generate a fresh schema-v19 baseline');
+  } else if (baseline.version !== 19) {
+    failures.push(
+      `Browser perf baseline schema mismatch (expected 19, got ${String(baseline.version ?? 'missing')})`
+    );
+  }
+  const budget = baseline && typeof baseline === 'object' ? baseline.uxJourneyBudgetMs || {} : {};
   for (const [name, durationMs] of Object.entries(result.userFlow || {})) {
     const maxMs = budget[name];
     if (typeof maxMs === 'number' && durationMs > maxMs) {
@@ -3193,11 +3387,57 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
     }
   }
 
+  const browserMetricBudget =
+    baseline && typeof baseline === 'object' ? baseline.browserMetricBudget || {} : {};
+  const browserMetrics = result.windowBrowserMetrics || {};
+  if (
+    browserMetricBudget.maxCls != null &&
+    Number(browserMetrics.cls?.value || 0) > browserMetricBudget.maxCls
+  ) {
+    failures.push(
+      `CLS exceeded budget (${Number(browserMetrics.cls?.value || 0)} > ${browserMetricBudget.maxCls})`
+    );
+  }
+  if (
+    browserMetricBudget.maxLcpMs != null &&
+    Number(browserMetrics.lcp?.valueMs || 0) > browserMetricBudget.maxLcpMs
+  ) {
+    failures.push(
+      `LCP exceeded budget (${formatMs(Number(browserMetrics.lcp?.valueMs || 0))} > ${formatMs(browserMetricBudget.maxLcpMs)})`
+    );
+  }
+  if (
+    browserMetricBudget.maxLongTaskCount != null &&
+    Number(browserMetrics.longTasks?.count || 0) > browserMetricBudget.maxLongTaskCount
+  ) {
+    failures.push(
+      `Long Task count exceeded budget (${Number(browserMetrics.longTasks?.count || 0)} > ${browserMetricBudget.maxLongTaskCount})`
+    );
+  }
+  if (
+    browserMetricBudget.maxLongTaskP95Ms != null &&
+    Number(browserMetrics.longTasks?.p95Ms || 0) > browserMetricBudget.maxLongTaskP95Ms
+  ) {
+    failures.push(
+      `Long Task p95 exceeded budget (${formatMs(Number(browserMetrics.longTasks?.p95Ms || 0))} > ${formatMs(browserMetricBudget.maxLongTaskP95Ms)})`
+    );
+  }
+  if (
+    browserMetricBudget.maxRenderSettleP95Ms != null &&
+    Number(browserMetrics.renderSettle?.p95Ms || 0) > browserMetricBudget.maxRenderSettleP95Ms
+  ) {
+    failures.push(
+      `render-settle p95 exceeded budget (${formatMs(Number(browserMetrics.renderSettle?.p95Ms || 0))} > ${formatMs(browserMetricBudget.maxRenderSettleP95Ms)})`
+    );
+  }
+
   const runtimeSummary =
     result.windowPerfSummary && Object.keys(result.windowPerfSummary).length
       ? result.windowPerfSummary
       : createPerfSummaryFromEntries(result.windowPerfEntries);
-  const runtimeBudget = baseline && typeof baseline === 'object' ? baseline.runtimeBudgetMs || {} : {};
+  const runtimeUxBudget = baseline && typeof baseline === 'object' ? baseline.runtimeUxBudgetMs || {} : {};
+  const runtimeCodeExecutionBudget =
+    baseline && typeof baseline === 'object' ? baseline.runtimeCodeExecutionBudgetMs || {} : {};
   const requiredNames = Array.isArray(baseline?.requiredRuntimeMetrics)
     ? baseline.requiredRuntimeMetrics
     : Array.isArray(contracts.requiredRuntimeMetrics)
@@ -3217,11 +3457,20 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
     }
   }
 
-  for (const [name, maxMs] of Object.entries(runtimeBudget)) {
+  for (const [name, maxMs] of Object.entries(runtimeUxBudget)) {
     const item = runtimeSummary[name];
     if (!item || typeof maxMs !== 'number') continue;
-    if (item.p95Ms > maxMs) {
-      failures.push(`${name} runtime p95 exceeded budget (${formatMs(item.p95Ms)} > ${formatMs(maxMs)})`);
+    if (item.uxP95Ms > maxMs) {
+      failures.push(`${name} UX p95 exceeded budget (${formatMs(item.uxP95Ms)} > ${formatMs(maxMs)})`);
+    }
+  }
+  for (const [name, maxMs] of Object.entries(runtimeCodeExecutionBudget)) {
+    const item = runtimeSummary[name];
+    if (!item || typeof maxMs !== 'number') continue;
+    if (item.codeExecutionP95Ms > maxMs) {
+      failures.push(
+        `${name} code-execution p95 exceeded budget (${formatMs(item.codeExecutionP95Ms)} > ${formatMs(maxMs)})`
+      );
     }
   }
 
@@ -3256,13 +3505,13 @@ export function evaluateBrowserPerfBaseline(result, baseline, contracts = {}) {
     }
   }
   const runtimeDomainBudget =
-    baseline && typeof baseline === 'object' ? baseline.runtimeDomainBudgetMs || {} : {};
+    baseline && typeof baseline === 'object' ? baseline.runtimeDomainCodeExecutionBudgetMs || {} : {};
   for (const [name, maxMs] of Object.entries(runtimeDomainBudget)) {
     const item = domainSummary[name];
     if (!item || typeof maxMs !== 'number') continue;
-    if (item.totalMs > maxMs) {
+    if (item.codeExecutionTotalMs > maxMs) {
       failures.push(
-        `${name} runtime domain total exceeded budget (${formatMs(item.totalMs)} > ${formatMs(maxMs)})`
+        `${name} runtime domain code total exceeded budget (${formatMs(item.codeExecutionTotalMs)} > ${formatMs(maxMs)})`
       );
     }
   }

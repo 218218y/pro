@@ -10,7 +10,7 @@ import type {
   BuildStateLike,
 } from '../../../types/index.js';
 
-import { assertApp, reportError } from '../runtime/api.js';
+import { assertApp, markPerfRenderSettle, reportError } from '../runtime/api.js';
 import {
   ensureSchedulerState,
   normalizeSchedulerDeps,
@@ -84,6 +84,19 @@ type BuildThenableResult = {
 
 function isBuildThenableResult(value: unknown): value is BuildThenableResult {
   return !!value && typeof value === 'object' && typeof (value as { then?: unknown }).then === 'function';
+}
+
+function markBuildRenderSettle(
+  App: AppContainer,
+  reason: string,
+  immediate: boolean,
+  forceBuild: boolean
+): void {
+  void markPerfRenderSettle(App, 'build', {
+    reason,
+    immediate,
+    forceBuild,
+  });
 }
 
 function stagePendingBuildState(
@@ -227,6 +240,7 @@ function executePendingBuild(
               'ok'
             );
           }
+          markBuildRenderSettle(App, execReason, immediate, forceBuild);
           return value;
         },
         error => {
@@ -254,6 +268,7 @@ function executePendingBuild(
         'ok'
       );
     }
+    markBuildRenderSettle(App, execReason, immediate, forceBuild);
     return result;
   } catch (error) {
     if (shouldMeasureBuildExecution) {

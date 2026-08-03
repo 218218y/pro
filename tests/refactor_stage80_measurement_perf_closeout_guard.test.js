@@ -20,8 +20,8 @@ function readJson(file) {
 }
 
 const GUARD_FILE = 'tests/refactor_stage80_measurement_perf_closeout_guard.test.js';
-const CSS_IMPORTANT_RATCHET_CEILING = 1;
-const CSS_Z_INDEX_RATCHET_CEILING = 41;
+const CSS_IMPORTANT_RATCHET_CEILING = 0;
+const CSS_Z_INDEX_RATCHET_CEILING = 40;
 
 test('post-closeout guards use capability names instead of continuing numbered stages', () => {
   const numberedPostCloseoutGuards = fs
@@ -172,6 +172,9 @@ test('stage 80 measurement and performance closeout is anchored', () => {
   assert.match(browserBaselineDoc, /## Store write pressure/);
   assert.match(browserBaselineDoc, /## Builder scheduling pressure/);
   assert.match(browserBaselineDoc, /## Runtime perf summary/);
+  assert.match(browserBaselineDoc, /Schema: 19/);
+  assert.match(browserBaselineDoc, /interactionWaitMs/);
+  assert.match(browserBaselineDoc, /codeExecutionMs/);
 
   assert.match(progress, /Stage 80/);
   assert.match(workmap, /Stage 80 - Measurement and performance guard closeout retained/);

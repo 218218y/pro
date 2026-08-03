@@ -9,6 +9,7 @@ import {
 } from './project_load_action_result.js';
 import { loadProjectDataActionResultViaService } from './project_io_access.js';
 import { resolveProjectFileLoadInput } from './project_file_input_resolver.js';
+import { runPerfPhase } from './perf_runtime_core.js';
 
 function clearFileInputValue(target: { value?: string } | null): void {
   if (!target) return;
@@ -41,14 +42,16 @@ export async function loadProjectFileInput(
 
     let text = '';
     try {
-      text = await readProjectFileText(file, App);
+      text = await runPerfPhase(App, 'project.load.readFile', 'readFile', () =>
+        readProjectFileText(file, App)
+      );
     } catch (error) {
       return buildProjectLoadActionErrorResult(error, '[WardrobePro] Failed reading project file.');
     }
 
     let data: unknown;
     try {
-      data = JSON.parse(text);
+      data = runPerfPhase(App, 'project.load.parse', 'parse', () => JSON.parse(text));
     } catch {
       return { ok: false, reason: 'invalid' };
     }
@@ -56,16 +59,18 @@ export async function loadProjectFileInput(
       return { ok: false, reason: 'invalid' };
     }
 
-    return await settleProjectLoadActionResult(
-      normalizeProjectLoadActionResult(
-        loadProjectDataActionResultViaService(
-          App,
-          data,
-          { toast: false, meta: { source: 'load.file' } },
-          'not-installed',
-          '[WardrobePro] Project file load failed.'
-        ),
-        'not-installed'
+    return await runPerfPhase(App, 'project.load.apply', 'apply', () =>
+      settleProjectLoadActionResult(
+        normalizeProjectLoadActionResult(
+          loadProjectDataActionResultViaService(
+            App,
+            data,
+            { toast: false, meta: { source: 'load.file' } },
+            'not-installed',
+            '[WardrobePro] Project file load failed.'
+          ),
+          'not-installed'
+        )
       )
     );
   } finally {

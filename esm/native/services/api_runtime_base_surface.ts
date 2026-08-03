@@ -207,9 +207,13 @@ export {
   // Runtime perf helpers consumed by UI through the services public surface
   buildPerfEntryOptionsFromActionResult,
   markPerfPoint,
+  markPerfRenderSettle,
+  recordPerfMetric,
   startPerfSpan,
   endPerfSpan,
   runPerfAction,
+  runPerfInteractionWait,
+  runPerfPhase,
 } from '../runtime/api.js';
 
 export type { WardrobeDimensionDefaultType } from '../runtime/api.js';

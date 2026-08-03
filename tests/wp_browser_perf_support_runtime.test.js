@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   classifyRuntimeMetricDomain,
+  createBrowserMetricSummaryFromEntries,
   createBrowserPerfBaseline,
   createPerfDomainSummary,
   createPerfSummaryFromEntries,
@@ -50,6 +51,173 @@ import {
   rankRuntimeStatusTransitions,
   summarizeBrowserPerfResult,
 } from '../tools/wp_browser_perf_support.js';
+
+let perfEntrySequence = 0;
+
+function perfEntry(name, codeExecutionMs, status = 'ok', extras = {}) {
+  const interactionWaitMs = Number(extras.interactionWaitMs || 0);
+  const uxTotalMs = Number(extras.uxTotalMs ?? Number(codeExecutionMs) + interactionWaitMs);
+  const kind = extras.kind || (status === 'mark' ? 'mark' : 'action');
+  return {
+    id: `test-perf-${++perfEntrySequence}`,
+    name,
+    kind,
+    startTime: 0,
+    endTime: uxTotalMs,
+    uxTotalMs,
+    codeExecutionMs: Number(codeExecutionMs),
+    interactionWaitMs,
+    status,
+    ...extras,
+  };
+}
+
+function perfSummary({
+  kind = 'action',
+  count = 1,
+  okCount = count,
+  errorCount = 0,
+  markCount = 0,
+  actionableCount = kind === 'action' || kind === 'phase' ? count : 0,
+  uxAverageMs = 0,
+  uxP95Ms = uxAverageMs,
+  uxTotalMs = uxAverageMs * count,
+  uxMinMs = uxAverageMs,
+  uxMaxMs = uxP95Ms,
+  uxP50Ms = uxAverageMs,
+  codeExecutionAverageMs = uxAverageMs,
+  codeExecutionP95Ms = codeExecutionAverageMs,
+  codeExecutionTotalMs = codeExecutionAverageMs * count,
+  codeExecutionMinMs = codeExecutionAverageMs,
+  codeExecutionMaxMs = codeExecutionP95Ms,
+  codeExecutionP50Ms = codeExecutionAverageMs,
+  interactionWaitAverageMs = Math.max(0, uxAverageMs - codeExecutionAverageMs),
+  interactionWaitP95Ms = interactionWaitAverageMs,
+  interactionWaitTotalMs = interactionWaitAverageMs * count,
+  lastUxTotalMs = uxAverageMs,
+  lastCodeExecutionMs = codeExecutionAverageMs,
+  lastInteractionWaitMs = interactionWaitAverageMs,
+  lastStatus = errorCount > 0 && okCount === 0
+    ? 'error'
+    : markCount > 0 && actionableCount === 0
+      ? 'mark'
+      : 'ok',
+  lastError,
+} = {}) {
+  return {
+    count,
+    okCount,
+    errorCount,
+    markCount,
+    actionableCount,
+    kinds: [kind],
+    errorRate: count > 0 ? Number(((errorCount / count) * 100).toFixed(2)) : 0,
+    uxTotalMs,
+    uxAverageMs,
+    uxMinMs,
+    uxMaxMs,
+    uxP50Ms,
+    uxP95Ms,
+    codeExecutionTotalMs,
+    codeExecutionAverageMs,
+    codeExecutionMinMs,
+    codeExecutionMaxMs,
+    codeExecutionP50Ms,
+    codeExecutionP95Ms,
+    interactionWaitTotalMs,
+    interactionWaitAverageMs,
+    interactionWaitP95Ms,
+    lastUxTotalMs,
+    lastCodeExecutionMs,
+    lastInteractionWaitMs,
+    lastStatus,
+    ...(lastError ? { lastError } : {}),
+  };
+}
+
+function baseline19(overrides = {}) {
+  return {
+    version: 19,
+    uxJourneyBudgetMs: {},
+    runtimeUxBudgetMs: {},
+    runtimeCodeExecutionBudgetMs: {},
+    runtimeDriftBudgetPct: {},
+    runtimeDomainCodeExecutionBudgetMs: {},
+    runtimeDomainDriftBudgetPct: {},
+    browserMetricBudget: {},
+    runtimeRecoveryDebtBudgetMs: {},
+    runtimeRecoveryHangoverBudget: {},
+    storePressureBudget: {},
+    buildPressureBudget: {},
+    userJourneyBudget: {},
+    userJourneyDiagnosisBudget: {},
+    requiredRuntimeMetrics: [],
+    requiredRuntimeDomains: [],
+    requiredRuntimeMetricMinimumCounts: {},
+    requiredProjectActions: [],
+    requiredUserJourneys: [],
+    requiredUserJourneyMinimumStepCounts: {},
+    requiredRuntimeOutcomeCoverage: {},
+    requiredRuntimeStatusTransitions: {},
+    requiredRuntimeRecoverySequences: {},
+    requiredStateIntegrityChecks: [],
+    ...overrides,
+  };
+}
+
+test('browser perf support rebuilds exact browser metrics from all captured entries', () => {
+  const longTasks = Array.from({ length: 20 }, (_, index) =>
+    perfEntry('browser.longTask', 0, 'ok', {
+      kind: 'browser-metric',
+      metricValue: index + 1,
+      metricUnit: 'ms',
+      uxTotalMs: 0,
+    })
+  );
+  const metrics = createBrowserMetricSummaryFromEntries(
+    [
+      perfEntry('browser.cls', 0, 'ok', {
+        kind: 'browser-metric',
+        metricValue: 0.04,
+        metricUnit: 'score',
+        uxTotalMs: 0,
+      }),
+      perfEntry('browser.cls', 0, 'ok', {
+        kind: 'browser-metric',
+        metricValue: 0.09,
+        metricUnit: 'score',
+        uxTotalMs: 0,
+      }),
+      perfEntry('browser.lcp', 0, 'ok', {
+        kind: 'browser-metric',
+        metricValue: 1200,
+        metricUnit: 'ms',
+        uxTotalMs: 0,
+      }),
+      ...longTasks,
+      perfEntry('render.settle', 0, 'ok', {
+        kind: 'render-settle',
+        uxTotalMs: 16,
+      }),
+      perfEntry('render.settle', 0, 'ok', {
+        kind: 'render-settle',
+        uxTotalMs: 32,
+      }),
+    ],
+    { observerSupported: true, supportedEntryTypes: ['longtask', 'layout-shift', 'longtask'] }
+  );
+
+  assert.equal(metrics.observerSupported, true);
+  assert.deepEqual(metrics.supportedEntryTypes, ['layout-shift', 'longtask']);
+  assert.deepEqual(metrics.cls, { value: 0.09, entryCount: 2, lastUpdatedAt: 0 });
+  assert.equal(metrics.lcp.valueMs, 1200);
+  assert.equal(metrics.longTasks.count, 20);
+  assert.equal(metrics.longTasks.totalMs, 210);
+  assert.equal(metrics.longTasks.p95Ms, 19);
+  assert.equal(metrics.longTasks.maxMs, 20);
+  assert.equal(metrics.renderSettle.count, 2);
+  assert.equal(metrics.renderSettle.p95Ms, 32);
+});
 
 test('browser perf support summarizes runtime issues and perf metrics canonically', () => {
   const result = {
@@ -274,64 +442,132 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
       },
     ],
     windowPerfSummary: {
-      'project.save': {
-        count: 1,
-        okCount: 1,
-        errorCount: 0,
-        markCount: 0,
-        totalMs: 25,
-        averageMs: 25,
-        p95Ms: 25,
-        maxMs: 25,
-      },
-      'project.load': {
+      'project.save': perfSummary({ count: 1, uxAverageMs: 25 }),
+      'project.load': perfSummary({
         count: 2,
         okCount: 1,
         errorCount: 1,
-        markCount: 0,
-        totalMs: 55,
-        averageMs: 27.5,
-        p95Ms: 35,
-        maxMs: 35,
-      },
-      'design.savedColor.add': {
+        uxAverageMs: 27.5,
+        uxP95Ms: 35,
+        uxTotalMs: 55,
+        codeExecutionAverageMs: 27.5,
+        codeExecutionP95Ms: 35,
+        codeExecutionTotalMs: 55,
+      }),
+      'design.savedColor.add': perfSummary({
         count: 2,
-        okCount: 2,
-        errorCount: 0,
-        markCount: 0,
-        totalMs: 640,
-        averageMs: 320,
-        p95Ms: 340,
-        maxMs: 340,
-      },
-      'design.savedColor.add.prompt': {
+        uxAverageMs: 320,
+        uxP95Ms: 340,
+        uxTotalMs: 640,
+        codeExecutionAverageMs: 20,
+        codeExecutionP95Ms: 22,
+        codeExecutionTotalMs: 40,
+        interactionWaitAverageMs: 300,
+        interactionWaitP95Ms: 320,
+        interactionWaitTotalMs: 600,
+      }),
+      'design.savedColor.add.prompt': perfSummary({
+        kind: 'interaction-wait',
         count: 2,
-        okCount: 2,
-        errorCount: 0,
-        markCount: 0,
-        totalMs: 600,
-        averageMs: 300,
-        p95Ms: 320,
-        maxMs: 320,
-      },
-      'design.savedColor.add.prepare': { count: 2, averageMs: 1, p95Ms: 1 },
-      'design.savedColor.add.order': { count: 2, averageMs: 1, p95Ms: 1 },
-      'design.savedColor.add.mutation': { count: 2, averageMs: 4, p95Ms: 5 },
-      'design.savedColor.add.patch': { count: 2, averageMs: 2, p95Ms: 3 },
-      'design.savedColor.add.storage': { count: 2, averageMs: 1, p95Ms: 1 },
-      'settingsBackup.import': { count: 2, averageMs: 280, p95Ms: 300, totalMs: 560 },
-      'settingsBackup.import.confirm': { count: 2, averageMs: 210, p95Ms: 230 },
-      'settingsBackup.import.readFile': { count: 2, averageMs: 12, p95Ms: 15 },
-      'settingsBackup.import.parse': { count: 2, averageMs: 2, p95Ms: 3 },
-      'settingsBackup.import.models.merge': { count: 2, averageMs: 18, p95Ms: 20 },
-      'settingsBackup.import.colors': { count: 2, averageMs: 16, p95Ms: 18 },
-      'settingsBackup.import.models.finalize': { count: 2, averageMs: 9, p95Ms: 10 },
-      'settingsBackup.import.storage.write': { count: 4, averageMs: 1, p95Ms: 2 },
+        uxAverageMs: 300,
+        uxP95Ms: 320,
+        uxTotalMs: 600,
+        codeExecutionAverageMs: 0,
+        codeExecutionP95Ms: 0,
+        codeExecutionTotalMs: 0,
+        interactionWaitAverageMs: 300,
+        interactionWaitP95Ms: 320,
+        interactionWaitTotalMs: 600,
+      }),
+      'design.savedColor.add.prepare': perfSummary({ kind: 'phase', count: 2, uxAverageMs: 1 }),
+      'design.savedColor.add.order': perfSummary({ kind: 'phase', count: 2, uxAverageMs: 1 }),
+      'design.savedColor.add.mutation': perfSummary({
+        kind: 'phase',
+        count: 2,
+        uxAverageMs: 4,
+        uxP95Ms: 5,
+        codeExecutionP95Ms: 5,
+      }),
+      'design.savedColor.add.patch': perfSummary({
+        kind: 'phase',
+        count: 2,
+        uxAverageMs: 2,
+        uxP95Ms: 3,
+        codeExecutionP95Ms: 3,
+      }),
+      'design.savedColor.add.storage': perfSummary({ kind: 'phase', count: 2, uxAverageMs: 1 }),
+      'settingsBackup.import': perfSummary({
+        count: 2,
+        uxAverageMs: 280,
+        uxP95Ms: 300,
+        uxTotalMs: 560,
+        codeExecutionAverageMs: 70,
+        codeExecutionP95Ms: 75,
+        codeExecutionTotalMs: 140,
+        interactionWaitAverageMs: 210,
+        interactionWaitP95Ms: 230,
+        interactionWaitTotalMs: 420,
+      }),
+      'settingsBackup.import.confirm': perfSummary({
+        kind: 'interaction-wait',
+        count: 2,
+        uxAverageMs: 210,
+        uxP95Ms: 230,
+        uxTotalMs: 420,
+        codeExecutionAverageMs: 0,
+        codeExecutionP95Ms: 0,
+        codeExecutionTotalMs: 0,
+        interactionWaitAverageMs: 210,
+        interactionWaitP95Ms: 230,
+        interactionWaitTotalMs: 420,
+      }),
+      'settingsBackup.import.readFile': perfSummary({
+        kind: 'phase',
+        count: 2,
+        uxAverageMs: 12,
+        uxP95Ms: 15,
+        codeExecutionP95Ms: 15,
+      }),
+      'settingsBackup.import.parse': perfSummary({
+        kind: 'phase',
+        count: 2,
+        uxAverageMs: 2,
+        uxP95Ms: 3,
+        codeExecutionP95Ms: 3,
+      }),
+      'settingsBackup.import.models.merge': perfSummary({
+        kind: 'phase',
+        count: 2,
+        uxAverageMs: 18,
+        uxP95Ms: 20,
+        codeExecutionP95Ms: 20,
+      }),
+      'settingsBackup.import.colors': perfSummary({
+        kind: 'phase',
+        count: 2,
+        uxAverageMs: 16,
+        uxP95Ms: 18,
+        codeExecutionP95Ms: 18,
+      }),
+      'settingsBackup.import.models.finalize': perfSummary({
+        kind: 'phase',
+        count: 2,
+        uxAverageMs: 9,
+        uxP95Ms: 10,
+        codeExecutionP95Ms: 10,
+      }),
+      'settingsBackup.import.storage.write': perfSummary({
+        kind: 'phase',
+        count: 4,
+        uxAverageMs: 1,
+        uxP95Ms: 2,
+        codeExecutionP95Ms: 2,
+      }),
     },
     windowPerfEntries: [
-      { name: 'project.save', durationMs: 25, status: 'ok' },
-      { name: 'project.load', durationMs: 20, status: 'ok' },
-      { name: 'project.load', durationMs: 35, status: 'error', error: 'invalid' },
+      perfEntry('project.save', 25, 'ok'),
+      perfEntry('project.load', 20, 'ok'),
+      perfEntry('project.load', 35, 'error', { error: 'invalid' }),
     ],
   };
 
@@ -452,7 +688,10 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
     md,
     /project\.load: debtCount=1, totalDebt=35ms, avgDebt=35ms, p95Debt=35ms, maxDebt=35ms, maxDebtEntries=1, unresolved=1/
   );
-  assert.match(md, /project\.save: count=1, ok=1, error=0, mark=0/);
+  assert.match(
+    md,
+    /project\.save: count=1, kinds=action, ok=1, error=0, mark=0, uxAvg=25ms, uxP95=25ms, codeAvg=25ms, codeP95=25ms, waitAvg=0ms/
+  );
   assert.match(md, /Required metric coverage/);
   assert.match(md, /State integrity checks/);
   assert.match(md, /pressure\.loops\.keep-user-state: ok/);
@@ -460,43 +699,76 @@ test('browser perf support summarizes runtime issues and perf metrics canonicall
   assert.match(md, /Saved colors phase breakdown/);
   assert.match(
     md,
-    /add: totalAvg=320ms, totalP95=340ms, dialogAvg=300ms, dialogP95=320ms, codeAvg≈20ms, prepare=1ms, order=1ms, mutation=4ms, patch=2ms, storage=1ms, bottleneck=feedback-wait/
+    /add: uxAvg=320ms, uxP95=340ms, interactionWaitAvg=300ms, interactionWaitP95=320ms, codeAvg=20ms, codeP95=22ms, prepare=1ms, order=1ms, mutation=4ms, patch=2ms, storage=1ms, bottleneck=feedback-wait/
   );
   assert.match(md, /Settings backup import phase breakdown/);
   assert.match(
     md,
-    /import: totalAvg=280ms, totalP95=300ms, confirmAvg=210ms, confirmP95=230ms, codeAvg≈70ms, readFile=12ms, parse=2ms, modelsMerge=18ms, colors=16ms, modelsFinalize=9ms, storageWrite=1ms x4, bottleneck=confirm-wait/
+    /import: uxAvg=280ms, uxP95=300ms, confirmWaitAvg=210ms, confirmWaitP95=230ms, codeAvg=70ms, codeP95=75ms, readFile=12ms, parse=2ms, modelsMerge=18ms, colors=16ms, modelsFinalize=9ms, storageWrite=1ms x4, bottleneck=confirm-wait/
   );
   assert.match(md, /Sustained-use pressure signals/);
   assert.match(md, /Runtime domains/);
   assert.match(
     md,
-    /project: required=1\/1, metrics=2, entries=3, errors=1, marks=0, total=80ms, maxP95=35ms, worstDrift=0%/
+    /project: required=1\/1, metrics=2, entries=3, errors=1, marks=0, uxTotal=80ms, codeTotal=80ms, interactionWait=0ms, maxCodeP95=35ms, worstCodeDrift=0%/
   );
   assert.match(md, /Hotspot candidates/);
-  assert.match(md, /project.save: total=25ms, p95=25ms, max=25ms, count=1, errors=0/);
+  assert.match(
+    md,
+    /project.load: codeTotal=55ms, codeP95=35ms, codeMax=35ms, uxTotal=55ms, interactionWait=0ms, count=2, errors=1/
+  );
 });
 
 test('browser perf support explains saved color user wait versus app pipeline cost', () => {
   const rows = createSavedColorPhaseBreakdown({
-    'design.savedColor.add': { count: 3, averageMs: 330, p95Ms: 380 },
-    'design.savedColor.add.prompt': { count: 3, averageMs: 305, p95Ms: 360 },
-    'design.savedColor.add.prepare': { count: 3, averageMs: 1, p95Ms: 1 },
-    'design.savedColor.add.order': { count: 3, averageMs: 0, p95Ms: 0 },
-    'design.savedColor.add.mutation': { count: 3, averageMs: 3, p95Ms: 4 },
-    'design.savedColor.add.patch': { count: 3, averageMs: 2, p95Ms: 3 },
-    'design.savedColor.add.storage': { count: 3, averageMs: 1, p95Ms: 1 },
+    'design.savedColor.add': perfSummary({
+      count: 3,
+      uxAverageMs: 330,
+      uxP95Ms: 380,
+      codeExecutionAverageMs: 25,
+      codeExecutionP95Ms: 30,
+      interactionWaitAverageMs: 305,
+      interactionWaitP95Ms: 360,
+    }),
+    'design.savedColor.add.prompt': perfSummary({
+      kind: 'interaction-wait',
+      count: 3,
+      uxAverageMs: 305,
+      uxP95Ms: 360,
+      codeExecutionAverageMs: 0,
+      codeExecutionP95Ms: 0,
+      interactionWaitAverageMs: 305,
+      interactionWaitP95Ms: 360,
+    }),
+    'design.savedColor.add.prepare': perfSummary({ kind: 'phase', count: 3, uxAverageMs: 1 }),
+    'design.savedColor.add.order': perfSummary({ kind: 'phase', count: 3, uxAverageMs: 0 }),
+    'design.savedColor.add.mutation': perfSummary({
+      kind: 'phase',
+      count: 3,
+      uxAverageMs: 3,
+      uxP95Ms: 4,
+      codeExecutionP95Ms: 4,
+    }),
+    'design.savedColor.add.patch': perfSummary({
+      kind: 'phase',
+      count: 3,
+      uxAverageMs: 2,
+      uxP95Ms: 3,
+      codeExecutionP95Ms: 3,
+    }),
+    'design.savedColor.add.storage': perfSummary({ kind: 'phase', count: 3, uxAverageMs: 1 }),
   });
 
   assert.deepEqual(rows, [
     {
       op: 'add',
       count: 3,
-      totalAvgMs: 330,
-      totalP95Ms: 380,
-      dialogAvgMs: 305,
-      dialogP95Ms: 360,
-      codeAvgMs: 25,
+      uxTotalAvgMs: 330,
+      uxTotalP95Ms: 380,
+      interactionWaitAvgMs: 305,
+      interactionWaitP95Ms: 360,
+      codeExecutionAvgMs: 25,
+      codeExecutionP95Ms: 30,
       prepareAvgMs: 1,
       orderAvgMs: 0,
       mutationAvgMs: 3,
@@ -509,25 +781,79 @@ test('browser perf support explains saved color user wait versus app pipeline co
 
 test('browser perf support explains settings backup import confirmation wait versus import pipeline cost', () => {
   const rows = createSettingsBackupImportPhaseBreakdown({
-    'settingsBackup.import': { count: 3, averageMs: 340, p95Ms: 370 },
-    'settingsBackup.import.confirm': { count: 3, averageMs: 260, p95Ms: 300 },
-    'settingsBackup.import.readFile': { count: 3, averageMs: 12, p95Ms: 15 },
-    'settingsBackup.import.parse': { count: 3, averageMs: 2, p95Ms: 3 },
-    'settingsBackup.import.models.merge': { count: 3, averageMs: 20, p95Ms: 22 },
-    'settingsBackup.import.colors': { count: 3, averageMs: 18, p95Ms: 20 },
-    'settingsBackup.import.models.finalize': { count: 3, averageMs: 8, p95Ms: 9 },
-    'settingsBackup.import.storage.write': { count: 6, averageMs: 1, p95Ms: 2 },
+    'settingsBackup.import': perfSummary({
+      count: 3,
+      uxAverageMs: 340,
+      uxP95Ms: 370,
+      codeExecutionAverageMs: 80,
+      codeExecutionP95Ms: 90,
+      interactionWaitAverageMs: 260,
+      interactionWaitP95Ms: 300,
+    }),
+    'settingsBackup.import.confirm': perfSummary({
+      kind: 'interaction-wait',
+      count: 3,
+      uxAverageMs: 260,
+      uxP95Ms: 300,
+      codeExecutionAverageMs: 0,
+      codeExecutionP95Ms: 0,
+      interactionWaitAverageMs: 260,
+      interactionWaitP95Ms: 300,
+    }),
+    'settingsBackup.import.readFile': perfSummary({
+      kind: 'phase',
+      count: 3,
+      uxAverageMs: 12,
+      uxP95Ms: 15,
+      codeExecutionP95Ms: 15,
+    }),
+    'settingsBackup.import.parse': perfSummary({
+      kind: 'phase',
+      count: 3,
+      uxAverageMs: 2,
+      uxP95Ms: 3,
+      codeExecutionP95Ms: 3,
+    }),
+    'settingsBackup.import.models.merge': perfSummary({
+      kind: 'phase',
+      count: 3,
+      uxAverageMs: 20,
+      uxP95Ms: 22,
+      codeExecutionP95Ms: 22,
+    }),
+    'settingsBackup.import.colors': perfSummary({
+      kind: 'phase',
+      count: 3,
+      uxAverageMs: 18,
+      uxP95Ms: 20,
+      codeExecutionP95Ms: 20,
+    }),
+    'settingsBackup.import.models.finalize': perfSummary({
+      kind: 'phase',
+      count: 3,
+      uxAverageMs: 8,
+      uxP95Ms: 9,
+      codeExecutionP95Ms: 9,
+    }),
+    'settingsBackup.import.storage.write': perfSummary({
+      kind: 'phase',
+      count: 6,
+      uxAverageMs: 1,
+      uxP95Ms: 2,
+      codeExecutionP95Ms: 2,
+    }),
   });
 
   assert.deepEqual(rows, [
     {
       op: 'import',
       count: 3,
-      totalAvgMs: 340,
-      totalP95Ms: 370,
+      uxTotalAvgMs: 340,
+      uxTotalP95Ms: 370,
       confirmAvgMs: 260,
       confirmP95Ms: 300,
-      codeAvgMs: 80,
+      codeExecutionAvgMs: 80,
+      codeExecutionP95Ms: 90,
       readFileAvgMs: 12,
       parseAvgMs: 2,
       modelsMergeAvgMs: 20,
@@ -542,9 +868,36 @@ test('browser perf support explains settings backup import confirmation wait ver
 
 test('browser perf support ranks hotspot candidates by errors and time cost', () => {
   const hotspots = rankBrowserPerfHotspots({
-    'export.copy': { count: 2, errorCount: 1, totalMs: 80, p95Ms: 45, maxMs: 50 },
-    'project.load': { count: 1, errorCount: 0, totalMs: 150, p95Ms: 150, maxMs: 150 },
-    'orderPdf.open': { count: 4, errorCount: 0, totalMs: 200, p95Ms: 70, maxMs: 90 },
+    'export.copy': perfSummary({
+      count: 2,
+      errorCount: 1,
+      okCount: 1,
+      codeExecutionTotalMs: 80,
+      codeExecutionAverageMs: 40,
+      codeExecutionP95Ms: 45,
+      codeExecutionMaxMs: 50,
+    }),
+    'project.load': perfSummary({
+      count: 1,
+      codeExecutionTotalMs: 150,
+      codeExecutionAverageMs: 150,
+      codeExecutionP95Ms: 150,
+      codeExecutionMaxMs: 150,
+    }),
+    'orderPdf.open': perfSummary({
+      count: 4,
+      codeExecutionTotalMs: 200,
+      codeExecutionAverageMs: 50,
+      codeExecutionP95Ms: 70,
+      codeExecutionMaxMs: 90,
+    }),
+    'design.savedColor.add.prompt': perfSummary({
+      kind: 'interaction-wait',
+      count: 2,
+      uxAverageMs: 400,
+      interactionWaitAverageMs: 400,
+      codeExecutionAverageMs: 0,
+    }),
   });
 
   assert.deepEqual(
@@ -555,9 +908,9 @@ test('browser perf support ranks hotspot candidates by errors and time cost', ()
 
 test('browser perf support can rebuild metric summaries from raw entries', () => {
   const summary = createPerfSummaryFromEntries([
-    { name: 'export.copy', durationMs: 10, status: 'ok' },
-    { name: 'export.copy', durationMs: 30, status: 'error', error: 'clipboard' },
-    { name: 'orderPdf.open', durationMs: 55, status: 'ok' },
+    perfEntry('export.copy', 10, 'ok'),
+    perfEntry('export.copy', 30, 'error', { error: 'clipboard' }),
+    perfEntry('orderPdf.open', 55, 'ok'),
   ]);
 
   assert.deepEqual(summary['export.copy'], {
@@ -565,30 +918,43 @@ test('browser perf support can rebuild metric summaries from raw entries', () =>
     okCount: 1,
     errorCount: 1,
     markCount: 0,
+    actionableCount: 2,
+    kinds: ['action'],
     errorRate: 50,
-    totalMs: 40,
-    averageMs: 20,
-    minMs: 10,
-    maxMs: 30,
-    p50Ms: 10,
-    p95Ms: 30,
-    lastDurationMs: 30,
+    uxTotalMs: 40,
+    uxAverageMs: 20,
+    uxMinMs: 10,
+    uxMaxMs: 30,
+    uxP50Ms: 10,
+    uxP95Ms: 30,
+    codeExecutionTotalMs: 40,
+    codeExecutionAverageMs: 20,
+    codeExecutionMinMs: 10,
+    codeExecutionMaxMs: 30,
+    codeExecutionP50Ms: 10,
+    codeExecutionP95Ms: 30,
+    interactionWaitTotalMs: 0,
+    interactionWaitAverageMs: 0,
+    interactionWaitP95Ms: 0,
+    lastUxTotalMs: 30,
+    lastCodeExecutionMs: 30,
+    lastInteractionWaitMs: 0,
     lastStatus: 'error',
     lastError: 'clipboard',
   });
-  assert.equal(summary['orderPdf.open'].p95Ms, 55);
+  assert.equal(summary['orderPdf.open'].codeExecutionP95Ms, 55);
 });
 
 test('browser perf support summarizes repeated-action pressure and ranks drift-heavy metrics', () => {
   const pressure = createRepeatedMetricPressureSummary(
     [
-      { name: 'export.copy', durationMs: 10, status: 'ok' },
-      { name: 'export.copy', durationMs: 14, status: 'ok' },
-      { name: 'export.copy', durationMs: 22, status: 'ok' },
-      { name: 'export.copy', durationMs: 30, status: 'error' },
-      { name: 'orderPdf.open', durationMs: 25, status: 'ok' },
-      { name: 'orderPdf.open', durationMs: 26, status: 'ok' },
-      { name: 'orderPdf.open', durationMs: 27, status: 'ok' },
+      perfEntry('export.copy', 10, 'ok'),
+      perfEntry('export.copy', 14, 'ok'),
+      perfEntry('export.copy', 22, 'ok'),
+      perfEntry('export.copy', 30, 'error'),
+      perfEntry('orderPdf.open', 25, 'ok'),
+      perfEntry('orderPdf.open', 26, 'ok'),
+      perfEntry('orderPdf.open', 27, 'ok'),
     ],
     { 'export.copy': 4, 'orderPdf.open': 3 }
   );
@@ -642,12 +1008,12 @@ test('browser perf support summarizes mixed runtime outcomes canonically and ran
 
 test('browser perf support summarizes runtime status transitions canonically and baseline evaluation enforces recovery transitions', () => {
   const transitionSummary = createRuntimeStatusTransitionSummary([
-    { name: 'project.load', durationMs: 20, status: 'ok' },
-    { name: 'project.load', durationMs: 30, status: 'error' },
-    { name: 'project.load', durationMs: 25, status: 'ok' },
-    { name: 'project.restoreLastSession', durationMs: 18, status: 'ok' },
-    { name: 'project.restoreLastSession', durationMs: 0, status: 'mark' },
-    { name: 'project.restoreLastSession', durationMs: 22, status: 'ok' },
+    perfEntry('project.load', 20, 'ok'),
+    perfEntry('project.load', 30, 'error'),
+    perfEntry('project.load', 25, 'ok'),
+    perfEntry('project.restoreLastSession', 18, 'ok'),
+    perfEntry('project.restoreLastSession', 0, 'mark'),
+    perfEntry('project.restoreLastSession', 22, 'ok'),
   ]);
 
   assert.deepEqual(transitionSummary['project.load'], {
@@ -678,15 +1044,15 @@ test('browser perf support summarizes runtime status transitions canonically and
     runtimeIssues: { pageErrors: [], consoleErrors: [] },
     projectActionEvents: [],
     windowPerfEntries: [
-      { name: 'project.load', durationMs: 20, status: 'ok' },
-      { name: 'project.load', durationMs: 30, status: 'error' },
-      { name: 'project.load', durationMs: 25, status: 'ok' },
-      { name: 'project.restoreLastSession', durationMs: 18, status: 'ok' },
-      { name: 'project.restoreLastSession', durationMs: 0, status: 'mark' },
-      { name: 'project.restoreLastSession', durationMs: 22, status: 'ok' },
-      { name: 'settingsBackup.import', durationMs: 12, status: 'ok' },
-      { name: 'settingsBackup.import', durationMs: 8, status: 'error' },
-      { name: 'settingsBackup.import', durationMs: 11, status: 'ok' },
+      perfEntry('project.load', 20, 'ok'),
+      perfEntry('project.load', 30, 'error'),
+      perfEntry('project.load', 25, 'ok'),
+      perfEntry('project.restoreLastSession', 18, 'ok'),
+      perfEntry('project.restoreLastSession', 0, 'mark'),
+      perfEntry('project.restoreLastSession', 22, 'ok'),
+      perfEntry('settingsBackup.import', 12, 'ok'),
+      perfEntry('settingsBackup.import', 8, 'error'),
+      perfEntry('settingsBackup.import', 11, 'ok'),
     ],
   };
 
@@ -723,12 +1089,12 @@ test('browser perf support summarizes runtime status transitions canonically and
   const broken = {
     ...clean,
     windowPerfEntries: [
-      { name: 'project.load', durationMs: 20, status: 'ok' },
-      { name: 'project.load', durationMs: 30, status: 'error' },
-      { name: 'project.restoreLastSession', durationMs: 18, status: 'ok' },
-      { name: 'project.restoreLastSession', durationMs: 0, status: 'mark' },
-      { name: 'settingsBackup.import', durationMs: 12, status: 'ok' },
-      { name: 'settingsBackup.import', durationMs: 8, status: 'error' },
+      perfEntry('project.load', 20, 'ok'),
+      perfEntry('project.load', 30, 'error'),
+      perfEntry('project.restoreLastSession', 18, 'ok'),
+      perfEntry('project.restoreLastSession', 0, 'mark'),
+      perfEntry('settingsBackup.import', 12, 'ok'),
+      perfEntry('settingsBackup.import', 8, 'error'),
     ],
   };
   const failures = evaluateBrowserPerfBaseline(broken, baseline, {
@@ -755,16 +1121,16 @@ test('browser perf support summarizes runtime status transitions canonically and
 
 test('browser perf support summarizes runtime recovery proveout canonically and baseline evaluation enforces clean recovery windows', () => {
   const entries = [
-    { name: 'project.load', durationMs: 20, status: 'ok' },
-    { name: 'project.load', durationMs: 30, status: 'error' },
-    { name: 'project.load', durationMs: 25, status: 'ok' },
-    { name: 'project.load', durationMs: 24, status: 'ok' },
-    { name: 'project.load', durationMs: 23, status: 'ok' },
-    { name: 'settingsBackup.import', durationMs: 12, status: 'ok' },
-    { name: 'settingsBackup.import', durationMs: 8, status: 'error' },
-    { name: 'settingsBackup.import', durationMs: 11, status: 'ok' },
-    { name: 'settingsBackup.import', durationMs: 10, status: 'ok' },
-    { name: 'settingsBackup.import', durationMs: 9, status: 'ok' },
+    perfEntry('project.load', 20, 'ok'),
+    perfEntry('project.load', 30, 'error'),
+    perfEntry('project.load', 25, 'ok'),
+    perfEntry('project.load', 24, 'ok'),
+    perfEntry('project.load', 23, 'ok'),
+    perfEntry('settingsBackup.import', 12, 'ok'),
+    perfEntry('settingsBackup.import', 8, 'error'),
+    perfEntry('settingsBackup.import', 11, 'ok'),
+    perfEntry('settingsBackup.import', 10, 'ok'),
+    perfEntry('settingsBackup.import', 9, 'ok'),
   ];
 
   const summary = createRuntimeRecoverySequenceSummary(entries);
@@ -822,18 +1188,18 @@ test('browser perf support summarizes runtime recovery proveout canonically and 
   const broken = {
     ...clean,
     windowPerfEntries: [
-      { name: 'project.load', durationMs: 20, status: 'ok' },
-      { name: 'project.load', durationMs: 30, status: 'error' },
-      { name: 'project.load', durationMs: 25, status: 'ok' },
-      { name: 'project.load', durationMs: 31, status: 'ok' },
-      { name: 'project.load', durationMs: 28, status: 'error' },
-      { name: 'project.load', durationMs: 24, status: 'ok' },
-      { name: 'project.load', durationMs: 23, status: 'ok' },
-      { name: 'settingsBackup.import', durationMs: 12, status: 'ok' },
-      { name: 'settingsBackup.import', durationMs: 8, status: 'error' },
-      { name: 'settingsBackup.import', durationMs: 11, status: 'ok' },
-      { name: 'settingsBackup.import', durationMs: 10, status: 'ok' },
-      { name: 'settingsBackup.import', durationMs: 9, status: 'ok' },
+      perfEntry('project.load', 20, 'ok'),
+      perfEntry('project.load', 30, 'error'),
+      perfEntry('project.load', 25, 'ok'),
+      perfEntry('project.load', 31, 'ok'),
+      perfEntry('project.load', 28, 'error'),
+      perfEntry('project.load', 24, 'ok'),
+      perfEntry('project.load', 23, 'ok'),
+      perfEntry('settingsBackup.import', 12, 'ok'),
+      perfEntry('settingsBackup.import', 8, 'error'),
+      perfEntry('settingsBackup.import', 11, 'ok'),
+      perfEntry('settingsBackup.import', 10, 'ok'),
+      perfEntry('settingsBackup.import', 9, 'ok'),
     ],
   };
   const failures = evaluateBrowserPerfBaseline(broken, baseline, {
@@ -856,16 +1222,16 @@ test('browser perf support summarizes runtime recovery proveout canonically and 
 
 test('browser perf support summarizes runtime recovery hangover canonically and baseline evaluation enforces hangover budgets', () => {
   const entries = [
-    { name: 'project.load', durationMs: 10, status: 'ok' },
-    { name: 'project.load', durationMs: 10, status: 'ok' },
-    { name: 'project.load', durationMs: 4, status: 'error' },
-    { name: 'project.load', durationMs: 20, status: 'ok' },
-    { name: 'project.load', durationMs: 18, status: 'ok' },
-    { name: 'project.load', durationMs: 11, status: 'ok' },
-    { name: 'project.load', durationMs: 5, status: 'error' },
-    { name: 'project.load', durationMs: 22, status: 'ok' },
-    { name: 'project.load', durationMs: 21, status: 'ok' },
-    { name: 'project.load', durationMs: 12, status: 'ok' },
+    perfEntry('project.load', 10, 'ok'),
+    perfEntry('project.load', 10, 'ok'),
+    perfEntry('project.load', 4, 'error'),
+    perfEntry('project.load', 20, 'ok'),
+    perfEntry('project.load', 18, 'ok'),
+    perfEntry('project.load', 11, 'ok'),
+    perfEntry('project.load', 5, 'error'),
+    perfEntry('project.load', 22, 'ok'),
+    perfEntry('project.load', 21, 'ok'),
+    perfEntry('project.load', 12, 'ok'),
   ];
 
   const summary = createRuntimeRecoveryHangoverSummary(entries);
@@ -925,16 +1291,16 @@ test('browser perf support summarizes runtime recovery hangover canonically and 
   const broken = {
     ...clean,
     windowPerfEntries: [
-      { name: 'project.load', durationMs: 10, status: 'ok' },
-      { name: 'project.load', durationMs: 10, status: 'ok' },
-      { name: 'project.load', durationMs: 4, status: 'error' },
-      { name: 'project.load', durationMs: 50, status: 'ok' },
-      { name: 'project.load', durationMs: 48, status: 'ok' },
-      { name: 'project.load', durationMs: 11, status: 'ok' },
-      { name: 'project.load', durationMs: 5, status: 'error' },
-      { name: 'project.load', durationMs: 52, status: 'ok' },
-      { name: 'project.load', durationMs: 49, status: 'ok' },
-      { name: 'project.load', durationMs: 12, status: 'ok' },
+      perfEntry('project.load', 10, 'ok'),
+      perfEntry('project.load', 10, 'ok'),
+      perfEntry('project.load', 4, 'error'),
+      perfEntry('project.load', 50, 'ok'),
+      perfEntry('project.load', 48, 'ok'),
+      perfEntry('project.load', 11, 'ok'),
+      perfEntry('project.load', 5, 'error'),
+      perfEntry('project.load', 52, 'ok'),
+      perfEntry('project.load', 49, 'ok'),
+      perfEntry('project.load', 12, 'ok'),
     ],
   };
   const failures = evaluateBrowserPerfBaseline(broken, baseline, {
@@ -955,14 +1321,14 @@ test('browser perf support summarizes runtime recovery hangover canonically and 
 
 test('browser perf support summarizes runtime recovery debt canonically and baseline evaluation enforces debt budgets', () => {
   const entries = [
-    { name: 'project.load', durationMs: 12, status: 'ok' },
-    { name: 'project.load', durationMs: 8, status: 'error' },
-    { name: 'project.load', durationMs: 14, status: 'ok' },
-    { name: 'project.load', durationMs: 6, status: 'error' },
-    { name: 'project.load', durationMs: 16, status: 'ok' },
-    { name: 'project.restoreLastSession', durationMs: 0, status: 'mark' },
-    { name: 'project.restoreLastSession', durationMs: 20, status: 'ok' },
-    { name: 'settingsBackup.import', durationMs: 5, status: 'error' },
+    perfEntry('project.load', 12, 'ok'),
+    perfEntry('project.load', 8, 'error'),
+    perfEntry('project.load', 14, 'ok'),
+    perfEntry('project.load', 6, 'error'),
+    perfEntry('project.load', 16, 'ok'),
+    perfEntry('project.restoreLastSession', 0, 'mark'),
+    perfEntry('project.restoreLastSession', 20, 'ok'),
+    perfEntry('settingsBackup.import', 5, 'error'),
   ];
 
   const summary = createRuntimeRecoveryDebtSummary(entries);
@@ -1050,14 +1416,14 @@ test('browser perf support summarizes runtime recovery debt canonically and base
   const broken = {
     ...clean,
     windowPerfEntries: [
-      { name: 'project.load', durationMs: 12, status: 'ok' },
-      { name: 'project.load', durationMs: 8, status: 'error' },
-      { name: 'project.load', durationMs: 70, status: 'ok' },
-      { name: 'project.load', durationMs: 6, status: 'error' },
-      { name: 'project.load', durationMs: 71, status: 'ok' },
-      { name: 'project.restoreLastSession', durationMs: 0, status: 'mark' },
-      { name: 'project.restoreLastSession', durationMs: 20, status: 'ok' },
-      { name: 'settingsBackup.import', durationMs: 5, status: 'error' },
+      perfEntry('project.load', 12, 'ok'),
+      perfEntry('project.load', 8, 'error'),
+      perfEntry('project.load', 70, 'ok'),
+      perfEntry('project.load', 6, 'error'),
+      perfEntry('project.load', 71, 'ok'),
+      perfEntry('project.restoreLastSession', 0, 'mark'),
+      perfEntry('project.restoreLastSession', 20, 'ok'),
+      perfEntry('settingsBackup.import', 5, 'error'),
     ],
   };
   const failures = evaluateBrowserPerfBaseline(broken, baseline, {
@@ -1159,10 +1525,10 @@ test('browser perf support baseline evaluation enforces sustained-use drift budg
     runtimeIssues: { pageErrors: [], consoleErrors: [] },
     projectActionEvents: [],
     windowPerfEntries: [
-      { name: 'export.copy', durationMs: 20, status: 'ok' },
-      { name: 'export.copy', durationMs: 21, status: 'ok' },
-      { name: 'export.copy', durationMs: 24, status: 'ok' },
-      { name: 'export.copy', durationMs: 25, status: 'ok' },
+      perfEntry('export.copy', 20, 'ok'),
+      perfEntry('export.copy', 21, 'ok'),
+      perfEntry('export.copy', 24, 'ok'),
+      perfEntry('export.copy', 25, 'ok'),
     ],
   };
 
@@ -1186,10 +1552,10 @@ test('browser perf support baseline evaluation enforces sustained-use drift budg
   const drifted = {
     ...clean,
     windowPerfEntries: [
-      { name: 'export.copy', durationMs: 20, status: 'ok' },
-      { name: 'export.copy', durationMs: 21, status: 'ok' },
-      { name: 'export.copy', durationMs: 52, status: 'ok' },
-      { name: 'export.copy', durationMs: 59, status: 'ok' },
+      perfEntry('export.copy', 20, 'ok'),
+      perfEntry('export.copy', 21, 'ok'),
+      perfEntry('export.copy', 52, 'ok'),
+      perfEntry('export.copy', 59, 'ok'),
     ],
   };
   const failures = evaluateBrowserPerfBaseline(drifted, baseline, {
@@ -1209,9 +1575,39 @@ test('browser perf support baseline evaluation enforces mixed outcome coverage f
     runtimeIssues: { pageErrors: [], consoleErrors: [] },
     projectActionEvents: [],
     windowPerfSummary: {
-      'project.load': { count: 2, okCount: 1, errorCount: 1, markCount: 0, p95Ms: 40 },
-      'project.restoreLastSession': { count: 2, okCount: 1, errorCount: 0, markCount: 1, p95Ms: 35 },
-      'settingsBackup.import': { count: 3, okCount: 2, errorCount: 1, markCount: 0, p95Ms: 30 },
+      'project.load': perfSummary({
+        kind: 'action',
+        count: 2,
+        okCount: 1,
+        errorCount: 1,
+        markCount: 0,
+        uxAverageMs: 40,
+        uxP95Ms: 40,
+        codeExecutionAverageMs: 40,
+        codeExecutionP95Ms: 40,
+      }),
+      'project.restoreLastSession': perfSummary({
+        kind: 'action',
+        count: 2,
+        okCount: 1,
+        errorCount: 0,
+        markCount: 1,
+        uxAverageMs: 35,
+        uxP95Ms: 35,
+        codeExecutionAverageMs: 35,
+        codeExecutionP95Ms: 35,
+      }),
+      'settingsBackup.import': perfSummary({
+        kind: 'action',
+        count: 3,
+        okCount: 2,
+        errorCount: 1,
+        markCount: 0,
+        uxAverageMs: 30,
+        uxP95Ms: 30,
+        codeExecutionAverageMs: 30,
+        codeExecutionP95Ms: 30,
+      }),
     },
     windowPerfEntries: [],
   };
@@ -1248,9 +1644,39 @@ test('browser perf support baseline evaluation enforces mixed outcome coverage f
   const broken = {
     ...clean,
     windowPerfSummary: {
-      'project.load': { count: 1, okCount: 1, errorCount: 0, markCount: 0, p95Ms: 40 },
-      'project.restoreLastSession': { count: 2, okCount: 2, errorCount: 0, markCount: 0, p95Ms: 35 },
-      'settingsBackup.import': { count: 2, okCount: 1, errorCount: 1, markCount: 0, p95Ms: 30 },
+      'project.load': perfSummary({
+        kind: 'action',
+        count: 1,
+        okCount: 1,
+        errorCount: 0,
+        markCount: 0,
+        uxAverageMs: 40,
+        uxP95Ms: 40,
+        codeExecutionAverageMs: 40,
+        codeExecutionP95Ms: 40,
+      }),
+      'project.restoreLastSession': perfSummary({
+        kind: 'action',
+        count: 2,
+        okCount: 2,
+        errorCount: 0,
+        markCount: 0,
+        uxAverageMs: 35,
+        uxP95Ms: 35,
+        codeExecutionAverageMs: 35,
+        codeExecutionP95Ms: 35,
+      }),
+      'settingsBackup.import': perfSummary({
+        kind: 'action',
+        count: 2,
+        okCount: 1,
+        errorCount: 1,
+        markCount: 0,
+        uxAverageMs: 30,
+        uxP95Ms: 30,
+        codeExecutionAverageMs: 30,
+        codeExecutionP95Ms: 30,
+      }),
     },
   };
   const failures = evaluateBrowserPerfBaseline(broken, baseline, {
@@ -1292,8 +1718,28 @@ test('browser perf support baseline evaluation enforces runtime issues, required
       { action: 'load', ok: true, pending: false },
     ],
     windowPerfSummary: {
-      'project.save': { count: 2, okCount: 2, errorCount: 0, markCount: 0, p95Ms: 30 },
-      'project.load': { count: 1, okCount: 1, errorCount: 0, markCount: 0, p95Ms: 35 },
+      'project.save': perfSummary({
+        kind: 'action',
+        count: 2,
+        okCount: 2,
+        errorCount: 0,
+        markCount: 0,
+        uxAverageMs: 30,
+        uxP95Ms: 30,
+        codeExecutionAverageMs: 30,
+        codeExecutionP95Ms: 30,
+      }),
+      'project.load': perfSummary({
+        kind: 'action',
+        count: 1,
+        okCount: 1,
+        errorCount: 0,
+        markCount: 0,
+        uxAverageMs: 35,
+        uxP95Ms: 35,
+        codeExecutionAverageMs: 35,
+        codeExecutionP95Ms: 35,
+      }),
     },
     windowPerfEntries: [],
   };
@@ -1323,7 +1769,17 @@ test('browser perf support baseline evaluation enforces runtime issues, required
     },
     projectActionEvents: [{ action: 'save', ok: false, pending: false, reason: 'error' }],
     windowPerfSummary: {
-      'project.save': { count: 1, okCount: 0, errorCount: 1, markCount: 0, p95Ms: 999 },
+      'project.save': perfSummary({
+        kind: 'action',
+        count: 1,
+        okCount: 0,
+        errorCount: 1,
+        markCount: 0,
+        uxAverageMs: 999,
+        uxP95Ms: 999,
+        codeExecutionAverageMs: 999,
+        codeExecutionP95Ms: 999,
+      }),
     },
   };
   const failures = evaluateBrowserPerfBaseline(noisy, baseline, {
@@ -1336,11 +1792,55 @@ test('browser perf support baseline evaluation enforces runtime issues, required
   });
   assert.ok(failures.some(item => /project.save runtime count below required coverage/.test(item)));
   assert.ok(failures.some(item => /Missing runtime perf metric: project.load/.test(item)));
-  assert.ok(failures.some(item => /project.save runtime p95 exceeded budget/.test(item)));
+  assert.ok(failures.some(item => /project.save code-execution p95 exceeded budget/.test(item)));
   assert.ok(failures.some(item => /project.save recorded runtime errors/.test(item)));
   assert.ok(failures.some(item => /Missing project action event: load/.test(item)));
   assert.ok(failures.some(item => /Project action did not complete successfully: save/.test(item)));
   assert.ok(failures.some(item => /Runtime issues detected/.test(item)));
+});
+
+test('browser perf support rejects old baselines and enforces UX and code budgets independently', () => {
+  const result = {
+    userFlow: {},
+    runtimeIssues: { pageErrors: [], consoleErrors: [] },
+    projectActionEvents: [],
+    windowPerfEntries: [],
+    windowPerfSummary: {
+      'project.save': perfSummary({
+        kind: 'action',
+        uxAverageMs: 500,
+        uxP95Ms: 500,
+        codeExecutionAverageMs: 20,
+        codeExecutionP95Ms: 20,
+        interactionWaitAverageMs: 480,
+        interactionWaitP95Ms: 480,
+        interactionWaitTotalMs: 480,
+      }),
+    },
+  };
+
+  const schemaFailures = evaluateBrowserPerfBaseline(result, { ...baseline19(), version: 18 });
+  assert.ok(schemaFailures.some(item => /schema mismatch \(expected 19, got 18\)/.test(item)));
+
+  const uxFailures = evaluateBrowserPerfBaseline(
+    result,
+    baseline19({
+      runtimeUxBudgetMs: { 'project.save': 400 },
+      runtimeCodeExecutionBudgetMs: { 'project.save': 50 },
+    })
+  );
+  assert.ok(uxFailures.some(item => /project\.save UX p95 exceeded budget/.test(item)));
+  assert.ok(!uxFailures.some(item => /project\.save code-execution p95 exceeded budget/.test(item)));
+
+  const codeFailures = evaluateBrowserPerfBaseline(
+    result,
+    baseline19({
+      runtimeUxBudgetMs: { 'project.save': 600 },
+      runtimeCodeExecutionBudgetMs: { 'project.save': 10 },
+    })
+  );
+  assert.ok(!codeFailures.some(item => /project\.save UX p95 exceeded budget/.test(item)));
+  assert.ok(codeFailures.some(item => /project\.save code-execution p95 exceeded budget/.test(item)));
 });
 
 test('browser perf support groups runtime metrics into stable domains and ranks domain risk', () => {
@@ -1349,20 +1849,20 @@ test('browser perf support groups runtime metrics into stable domains and ranks 
   assert.equal(classifyRuntimeMetricDomain('mystery.metric'), 'other');
 
   const runtimeSummary = createPerfSummaryFromEntries([
-    { name: 'export.copy', durationMs: 20, status: 'ok' },
-    { name: 'export.copy', durationMs: 30, status: 'error', error: 'clipboard' },
-    { name: 'orderPdf.open', durationMs: 60, status: 'ok' },
-    { name: 'project.load', durationMs: 40, status: 'ok' },
+    perfEntry('export.copy', 20, 'ok'),
+    perfEntry('export.copy', 30, 'error', { error: 'clipboard' }),
+    perfEntry('orderPdf.open', 60, 'ok'),
+    perfEntry('project.load', 40, 'ok'),
   ]);
   const pressureSummary = createRepeatedMetricPressureSummary(
     [
-      { name: 'export.copy', durationMs: 20, status: 'ok' },
-      { name: 'export.copy', durationMs: 22, status: 'ok' },
-      { name: 'export.copy', durationMs: 34, status: 'ok' },
-      { name: 'export.copy', durationMs: 40, status: 'ok' },
-      { name: 'orderPdf.open', durationMs: 50, status: 'ok' },
-      { name: 'orderPdf.open', durationMs: 51, status: 'ok' },
-      { name: 'orderPdf.open', durationMs: 52, status: 'ok' },
+      perfEntry('export.copy', 20, 'ok'),
+      perfEntry('export.copy', 22, 'ok'),
+      perfEntry('export.copy', 34, 'ok'),
+      perfEntry('export.copy', 40, 'ok'),
+      perfEntry('orderPdf.open', 50, 'ok'),
+      perfEntry('orderPdf.open', 51, 'ok'),
+      perfEntry('orderPdf.open', 52, 'ok'),
     ],
     { 'export.copy': 4, 'orderPdf.open': 3 }
   );
@@ -1377,11 +1877,13 @@ test('browser perf support groups runtime metrics into stable domains and ranks 
     name: 'export',
     metricCount: 1,
     entryCount: 2,
-    totalMs: 50,
+    uxTotalMs: 50,
+    codeExecutionTotalMs: 50,
+    interactionWaitTotalMs: 0,
     errorCount: 1,
     markCount: 0,
-    maxP95Ms: 30,
-    maxDurationMs: 30,
+    maxCodeExecutionP95Ms: 30,
+    maxCodeExecutionMs: 30,
     pressureMetricCount: 1,
     worstDriftPct: 76.19,
     requiredMetricCount: 1,
@@ -2346,7 +2848,7 @@ test('browser perf support baseline evaluation enforces journey diagnosis budget
     ],
     runtimeIssues: { pageErrors: [], consoleErrors: [] },
     projectActionEvents: [],
-    windowPerfEntries: [{ name: 'project.load', durationMs: 20, status: 'ok' }],
+    windowPerfEntries: [perfEntry('project.load', 20, 'ok')],
     windowStoreFlowPressureSummary: {
       'cabinet-core.configure': {
         durationMs: 380,
@@ -2513,7 +3015,7 @@ test('browser perf support baseline evaluation enforces required customer journe
     ],
     runtimeIssues: { pageErrors: [], consoleErrors: [] },
     projectActionEvents: [],
-    windowPerfEntries: [{ name: 'project.load', durationMs: 20, status: 'ok' }],
+    windowPerfEntries: [perfEntry('project.load', 20, 'ok')],
     windowStoreFlowPressureSummary: {
       'project.save-load.roundtrip': {
         durationMs: 410,
@@ -2602,7 +3104,7 @@ test('browser perf support baseline evaluation enforces customer journey budgets
     ],
     runtimeIssues: { pageErrors: [], consoleErrors: [] },
     projectActionEvents: [],
-    windowPerfEntries: [{ name: 'project.load', durationMs: 20, status: 'ok' }],
+    windowPerfEntries: [perfEntry('project.load', 20, 'ok')],
     windowStoreFlowPressureSummary: {
       'cabinet-core.configure': {
         durationMs: 380,
@@ -2704,11 +3206,11 @@ test('browser perf support baseline evaluation enforces domain coverage and doma
     runtimeIssues: { pageErrors: [], consoleErrors: [] },
     projectActionEvents: [],
     windowPerfEntries: [
-      { name: 'project.load', durationMs: 70, status: 'ok' },
-      { name: 'export.copy', durationMs: 20, status: 'ok' },
-      { name: 'export.copy', durationMs: 21, status: 'ok' },
-      { name: 'export.copy', durationMs: 23, status: 'ok' },
-      { name: 'export.copy', durationMs: 24, status: 'ok' },
+      perfEntry('project.load', 70, 'ok'),
+      perfEntry('export.copy', 20, 'ok'),
+      perfEntry('export.copy', 21, 'ok'),
+      perfEntry('export.copy', 23, 'ok'),
+      perfEntry('export.copy', 24, 'ok'),
     ],
   };
   const baseline = createBrowserPerfBaseline(clean, {
@@ -2734,7 +3236,7 @@ test('browser perf support baseline evaluation enforces domain coverage and doma
 
   const missingDomain = {
     ...clean,
-    windowPerfEntries: [{ name: 'project.load', durationMs: 40, status: 'ok' }],
+    windowPerfEntries: [perfEntry('project.load', 40, 'ok')],
   };
   const missingFailures = evaluateBrowserPerfBaseline(missingDomain, baseline, {
     requiredRuntimeMetrics: ['project.load', 'export.copy'],
@@ -2750,11 +3252,11 @@ test('browser perf support baseline evaluation enforces domain coverage and doma
   const bloated = {
     ...clean,
     windowPerfEntries: [
-      { name: 'project.load', durationMs: 70, status: 'ok' },
-      { name: 'export.copy', durationMs: 80, status: 'ok' },
-      { name: 'export.copy', durationMs: 82, status: 'ok' },
-      { name: 'export.copy', durationMs: 84, status: 'ok' },
-      { name: 'export.copy', durationMs: 86, status: 'ok' },
+      perfEntry('project.load', 70, 'ok'),
+      perfEntry('export.copy', 80, 'ok'),
+      perfEntry('export.copy', 82, 'ok'),
+      perfEntry('export.copy', 84, 'ok'),
+      perfEntry('export.copy', 86, 'ok'),
     ],
   };
   const bloatedFailures = evaluateBrowserPerfBaseline(bloated, baseline, {
@@ -2766,7 +3268,7 @@ test('browser perf support baseline evaluation enforces domain coverage and doma
     requiredUserJourneyMinimumStepCounts: {},
     happyPathMetricsWithoutErrors: [],
   });
-  assert.ok(bloatedFailures.some(item => /export runtime domain total exceeded budget/.test(item)));
+  assert.ok(bloatedFailures.some(item => /export runtime domain code total exceeded budget/.test(item)));
 });
 
 test('browser perf support baseline evaluation enforces store pressure budgets', () => {
@@ -2774,7 +3276,7 @@ test('browser perf support baseline evaluation enforces store pressure budgets',
     userFlow: {},
     runtimeIssues: { pageErrors: [], consoleErrors: [] },
     projectActionEvents: [],
-    windowPerfEntries: [{ name: 'project.load', durationMs: 20, status: 'ok' }],
+    windowPerfEntries: [perfEntry('project.load', 20, 'ok')],
     windowStoreFlowPressureSummary: {
       'project.save-load.roundtrip': {
         durationMs: 440,

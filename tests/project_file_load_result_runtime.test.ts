@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { loadProjectFileInput, readProjectFileText } from '../esm/native/io/project_file_ingress_command.ts';
+import { getPerfEntries } from '../esm/native/runtime/perf_runtime_surface.ts';
 
 function createNamedBlob(name: string, text = '{}'): Blob & { name: string } {
   const blob = new Blob([text], { type: 'application/json' }) as Blob & { name: string };
@@ -35,6 +36,17 @@ test('project file ingress returns actual ProjectIO load results and clears lega
     { data: { settings: {} }, opts: { toast: false, meta: { source: 'load.file' } } },
   ]);
   assert.equal(target.value, '');
+  assert.deepEqual(
+    ['project.load.readFile', 'project.load.parse', 'project.load.apply'].map(name => {
+      const entry = getPerfEntries(App, name).at(-1);
+      return { name, kind: entry?.kind, phase: entry?.phase, status: entry?.status };
+    }),
+    [
+      { name: 'project.load.readFile', kind: 'phase', phase: 'readFile', status: 'ok' },
+      { name: 'project.load.parse', kind: 'phase', phase: 'parse', status: 'ok' },
+      { name: 'project.load.apply', kind: 'phase', phase: 'apply', status: 'ok' },
+    ]
+  );
 });
 
 test('project file ingress reports invalid JSON and missing install without pretending load succeeded', async () => {
