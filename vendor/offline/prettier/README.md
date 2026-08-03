@@ -1,18 +1,18 @@
 # Prettier offline archive
 
-Download the lockfile-pinned archive and save it here without extracting it:
-
-```text
-prettier-3.9.6.tgz
-```
-
-Then run:
+`package-lock.json` owns the required Prettier archive. Print the exact official URL and destination path with:
 
 ```bash
-python tools/verify_offline_repair_vendor.py --prettier-only
-python tools/bootstrap_offline_prettier.py
-python tools/selftest_offline_prettier.py
+node tools/wp_refresh_offline_npm_vendor.mjs --component prettier --print-downloads
 ```
 
-The expected URL and SHA-512 integrity are stored in `../manifest.json` and cross-checked against
-`package-lock.json`.
+Synchronize automatically, or adopt a file downloaded manually:
+
+```bash
+node tools/wp_refresh_offline_npm_vendor.mjs --component prettier
+node tools/wp_refresh_offline_npm_vendor.mjs --component prettier --adopt-existing
+node tools/wp_refresh_offline_npm_vendor.mjs --component prettier --check
+```
+
+The archive is kept untouched and is verified against lockfile SHA-512 integrity and embedded package
+name/version before the manifest is updated.

@@ -65,13 +65,13 @@
     "launcher": "bin/esbuild"
   },
   "tsx": {
-    "version": "4.23.1",
+    "version": "4.23.5",
     "package": {
       "lockPath": "node_modules/tsx",
       "installPath": "node_modules/tsx",
-      "file": "vendor/offline/tsx/tsx-4.23.1.tgz",
-      "url": "https://registry.npmjs.org/tsx/-/tsx-4.23.1.tgz",
-      "integrity": "sha512-GQHnkIfxyx1wYCOS/wonik5MVRZU9hi1TEZmzGZSCJB1y9YgoZ8H6itNE/u4suE+yLmOzuE4E5S4TZ/ZX2wcWQ=="
+      "file": "vendor/offline/tsx/tsx-4.23.5.tgz",
+      "url": "https://registry.npmjs.org/tsx/-/tsx-4.23.5.tgz",
+      "integrity": "sha512-rw55FUaqOoI7RvlQwLbhO4nSDApnQ4/CykPuiQ/EPvtrX3WA9Ig55jIt9VvbBJbzJuj12ueRu4PMZ2SxPVbihg=="
     },
     "esbuildRange": "~0.28.0",
     "executable": "dist/cli.mjs"

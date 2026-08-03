@@ -1,19 +1,19 @@
 # Offline esbuild archives
 
-For ChatGPT/Linux x64, download these exact lockfile-pinned archives and keep their original filenames:
-
-```text
-vendor/offline/esbuild/esbuild-0.28.1.tgz
-vendor/offline/esbuild/linux-x64-0.28.1.tgz
-```
-
-Do not extract or rename them. Verify and install with:
+`package-lock.json` owns the common esbuild package and matching Linux x64 native package. Print the exact
+official URLs and destination paths with:
 
 ```bash
-python tools/verify_offline_repair_vendor.py --esbuild-only
-python tools/bootstrap_offline_esbuild.py
-python tools/selftest_offline_esbuild.py
+node tools/wp_refresh_offline_npm_vendor.mjs --component esbuild --print-downloads
 ```
 
-The common `esbuild` package provides the JavaScript API used by runtime-test loaders. The matching
-`@esbuild/<platform>` archive provides the native executable. Both exact `0.28.1` archives are required.
+Synchronize automatically, or adopt files downloaded manually:
+
+```bash
+node tools/wp_refresh_offline_npm_vendor.mjs --component esbuild
+node tools/wp_refresh_offline_npm_vendor.mjs --component esbuild --adopt-existing
+node tools/wp_refresh_offline_npm_vendor.mjs --component esbuild --check
+```
+
+The synchronizer requires aligned versions, validates both SHA-512 values and package metadata, and derives
+the native `bin/esbuild` SHA-256 from the verified platform archive before updating the manifest.

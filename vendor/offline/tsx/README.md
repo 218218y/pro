@@ -1,17 +1,26 @@
 # Offline TSX archive
 
-Download the exact lockfile-pinned TSX package without extracting or renaming it:
+`package-lock.json` owns the required TSX version, official npm URL, integrity, and esbuild dependency range.
+Do not edit `vendor/offline/manifest.json` or this file when TSX advances.
 
-```text
-https://registry.npmjs.org/tsx/-/tsx-4.23.1.tgz
+Print the exact URL and destination path:
+
+```bash
+npm run vendor:offline:tsx:downloads
 ```
 
-Save it exactly as:
+Automatic download or adoption of an already present valid archive:
 
-```text
-vendor/offline/tsx/tsx-4.23.1.tgz
+```bash
+npm run vendor:offline:tsx:refresh
+npm run vendor:offline:tsx:check
 ```
 
-TSX uses the already-vendored `esbuild 0.28.1` common package and current-platform native binary. No separate
-`fsevents` archive is needed on Linux or Windows; it is an optional macOS dependency and is deliberately not
-part of this focused offline slice.
+For a manual/no-network update, download the untouched `.tgz` to the printed path and run:
+
+```bash
+npm run vendor:offline:tsx:adopt
+```
+
+The synchronizer verifies SHA-512 integrity and embedded package metadata, updates the manifest atomically,
+checks the lockfile-declared esbuild range, and removes superseded TSX archives after success.

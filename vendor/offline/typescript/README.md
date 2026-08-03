@@ -1,21 +1,21 @@
 # Offline TypeScript archives
 
-TypeScript 7 is a native compiler. The common `typescript` package contains the `tsc` launcher and platform
-resolver, while one `@typescript/typescript-<platform>` package contains the native `tsc` executable and
-standard libraries.
-Both matching version `7.0.2` archives are required.
+TypeScript 7 uses a common launcher package plus the matching Linux x64 native compiler package.
+`package-lock.json` owns both exact versions, URLs, and integrity values.
 
-For Linux x64 place these files here without extracting or renaming them:
-
-```text
-vendor/offline/typescript/typescript-7.0.2.tgz
-vendor/offline/typescript/typescript-linux-x64-7.0.2.tgz
-```
-
-Then run:
+Print the required official URLs and destination paths with:
 
 ```bash
-python tools/verify_offline_repair_vendor.py --typescript-only
-python tools/bootstrap_offline_typescript.py
-python tools/selftest_offline_typescript.py
+node tools/wp_refresh_offline_npm_vendor.mjs --component typescript --print-downloads
 ```
+
+Synchronize automatically, or adopt files downloaded manually:
+
+```bash
+node tools/wp_refresh_offline_npm_vendor.mjs --component typescript
+node tools/wp_refresh_offline_npm_vendor.mjs --component typescript --adopt-existing
+node tools/wp_refresh_offline_npm_vendor.mjs --component typescript --check
+```
+
+The synchronizer enforces aligned package versions, verifies both archives and the native `lib/tsc` layout,
+and updates the manifest atomically.

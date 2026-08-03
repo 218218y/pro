@@ -10,10 +10,10 @@ smaller trusted set:
 - signed offline Oxc bundle whose exact version is declared in `vendor/offline/manifest.json`;
 - matching offline `@oxc-project/types`;
 - the matching Linux x64 glibc native Oxc parser binding;
-- optionally, lockfile-pinned esbuild `0.28.1` plus its Linux x64 native package;
-- optionally, lockfile-pinned TSX `4.23.1`, reusing that exact esbuild slice;
-- optionally, lockfile-pinned Prettier `3.9.6`;
-- optionally, lockfile-pinned TypeScript `7.0.2` plus its Linux x64 native package.
+- optionally, lockfile-pinned esbuild plus its Linux x64 native package;
+- optionally, lockfile-pinned TSX, reusing the compatible esbuild slice;
+- optionally, lockfile-pinned Prettier;
+- optionally, lockfile-pinned TypeScript 7 plus its Linux x64 native package.
 
 The bootstrap extracts only explicitly listed archives. It does not invoke npm, resolve dependencies, run
 lifecycle scripts, install Playwright browsers, or install the complete lint/build/release toolchain. The
@@ -34,14 +34,14 @@ vendor/offline/ast/binding-linux-x64-gnu-<AST_VERSION>.tgz
 ### Optional Prettier slice
 
 ```text
-vendor/offline/prettier/prettier-3.9.6.tgz
+vendor/offline/prettier/prettier-<LOCKFILE_VERSION>.tgz
 ```
 
 ### Optional esbuild runtime slice
 
 ```text
-vendor/offline/esbuild/esbuild-0.28.1.tgz
-vendor/offline/esbuild/linux-x64-0.28.1.tgz
+vendor/offline/esbuild/esbuild-<LOCKFILE_VERSION>.tgz
+vendor/offline/esbuild/linux-x64-<LOCKFILE_VERSION>.tgz
 ```
 
 Both archives are required. The common package provides the JavaScript API imported by
@@ -50,18 +50,18 @@ Both archives are required. The common package provides the JavaScript API impor
 ### Optional TSX runtime-test slice
 
 ```text
-vendor/offline/tsx/tsx-4.23.1.tgz
+vendor/offline/tsx/tsx-<LOCKFILE_VERSION>.tgz
 ```
 
-TSX is a platform-neutral JavaScript package in this lockfile and depends on `esbuild ~0.28.0`; the
-already-vendored Linux x64 `esbuild 0.28.1` satisfies that exact dependency range. The macOS-only `fsevents`
-dependency is optional and is not part of this Linux-only slice.
+TSX is a platform-neutral JavaScript package and reuses the exact esbuild dependency range recorded in
+`package-lock.json`. The synchronizer rejects an incompatible vendored esbuild version. The macOS-only
+`fsevents` dependency is optional and is not part of this Linux-only slice.
 
 ### Optional TypeScript 7 slice
 
 ```text
-vendor/offline/typescript/typescript-7.0.2.tgz
-vendor/offline/typescript/typescript-linux-x64-7.0.2.tgz
+vendor/offline/typescript/typescript-<LOCKFILE_VERSION>.tgz
+vendor/offline/typescript/typescript-linux-x64-<LOCKFILE_VERSION>.tgz
 ```
 
 TypeScript 7 is native. The common `typescript` package contains the `tsc` launcher and platform resolver;
@@ -112,6 +112,33 @@ https://registry.npmjs.org/@oxc-parser/binding-linux-x64-gnu/-/binding-linux-x64
 ```
 
 Place them under `vendor/offline/ast/` without renaming them, then run `npm run vendor:offline:oxc:adopt`. The command verifies the downloaded archives against `package-lock.json`, updates the manifest and removes the superseded files without downloading them again.
+
+## Synchronize lockfile-backed offline packages
+
+The npm-backed slices (`esbuild`, `tsx`, `prettier`, and `typescript`) are synchronized from
+`package-lock.json`; their versions are not maintained separately in tests or documentation. The refresh
+command first adopts a correctly named archive that is already present, otherwise it downloads the official
+npm tarball. It verifies SHA-512 integrity, embedded package name/version, native executable layout, and the
+esbuild binary hash before atomically updating `vendor/offline/manifest.json`. Superseded archives are removed
+only after the complete replacement set is verified.
+
+```bash
+npm run vendor:offline:packages:refresh
+npm run vendor:offline:packages:check
+```
+
+For a TSX-only update:
+
+```bash
+npm run vendor:offline:tsx:downloads
+npm run vendor:offline:tsx:refresh
+npm run vendor:offline:tsx:check
+```
+
+When downloads are performed manually, run `npm run vendor:offline:tsx:downloads` to print the exact official
+URL and destination path, place the untouched `.tgz` there, then run `npm run vendor:offline:tsx:adopt`.
+`npm run deps:update:sync-generated` now runs the package synchronizer, so the normal dependency-update flows
+refresh these offline slices automatically instead of leaving the manifest and contracts stale.
 
 ## Run focused Node commands
 

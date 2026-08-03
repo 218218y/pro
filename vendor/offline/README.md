@@ -28,12 +28,28 @@ python tools/verify_offline_repair_vendor.py
 python tools/bootstrap_offline_repair_core.py
 ```
 
+## Keep npm-backed slices synchronized
+
+`package-lock.json` is the single source of truth for esbuild, TSX, Prettier, and TypeScript. Do not edit their
+manifest versions or download URLs by hand.
+
+```bash
+npm run vendor:offline:packages:downloads
+npm run vendor:offline:packages:refresh
+npm run vendor:offline:packages:check
+```
+
+`downloads` prints exact official URLs and destination paths. `refresh` adopts valid files already present and
+downloads only missing targets. For a completely manual/no-network flow, place the files first and run
+`npm run vendor:offline:packages:adopt`. All archives are checked against lockfile integrity and embedded npm
+metadata before the manifest is replaced; old `.tgz` files are cleaned only after success.
+
 ## Optional formatter set: Prettier
 
 Add one additional archive:
 
 ```text
-vendor/offline/prettier/prettier-3.9.6.tgz
+vendor/offline/prettier/prettier-<LOCKFILE_VERSION>.tgz
 ```
 
 Verify, install, and run it independently of Oxc:
@@ -50,8 +66,8 @@ python tools/run_offline_prettier.py --write <paths...>
 Add the common package and the matching platform package. For Linux x64:
 
 ```text
-vendor/offline/esbuild/esbuild-0.28.1.tgz
-vendor/offline/esbuild/linux-x64-0.28.1.tgz
+vendor/offline/esbuild/esbuild-<LOCKFILE_VERSION>.tgz
+vendor/offline/esbuild/linux-x64-<LOCKFILE_VERSION>.tgz
 ```
 
 Verify and install:
@@ -71,7 +87,7 @@ uses the Oxc and TypeScript slices.
 Add one archive; it reuses the esbuild files listed above:
 
 ```text
-vendor/offline/tsx/tsx-4.23.1.tgz
+vendor/offline/tsx/tsx-<LOCKFILE_VERSION>.tgz
 ```
 
 Verify, install, and run focused TypeScript tests:
@@ -89,8 +105,8 @@ TypeScript 7 requires both the common launcher package and one matching native p
 x64 add:
 
 ```text
-vendor/offline/typescript/typescript-7.0.2.tgz
-vendor/offline/typescript/typescript-linux-x64-7.0.2.tgz
+vendor/offline/typescript/typescript-<LOCKFILE_VERSION>.tgz
+vendor/offline/typescript/typescript-linux-x64-<LOCKFILE_VERSION>.tgz
 ```
 
 Verify, install, and run it independently of Oxc and Prettier:

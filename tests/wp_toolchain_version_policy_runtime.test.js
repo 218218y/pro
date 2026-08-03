@@ -125,11 +125,22 @@ test('toolchain version policy keeps removed TypeScript ESLint packages absent',
   assert.equal(policy.forbiddenPackages.length, 3);
 });
 
-test('dependency refresh scripts synchronize generated toolchain policy docs', () => {
+test('dependency refresh scripts synchronize policy docs and offline package vendors', () => {
   const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
   const scripts = pkg.scripts || {};
 
-  assert.equal(scripts['deps:update:sync-generated'], 'npm run toolchain:version-policy:report');
+  assert.equal(
+    scripts['deps:update:sync-generated'],
+    'npm run toolchain:version-policy:report && npm run vendor:offline:packages:refresh'
+  );
+  assert.equal(
+    scripts['vendor:offline:packages:refresh'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --all'
+  );
+  assert.equal(
+    scripts['vendor:offline:packages:check'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --all --check'
+  );
   for (const scriptName of ['deps:update:safe', 'deps:update:recommended']) {
     assert.match(
       scripts[scriptName] || '',

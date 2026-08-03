@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 const root = process.cwd();
@@ -35,7 +36,7 @@ test('offline TypeScript manifest is exact, native, and lockfile-backed', () => 
   const lock = readJson('package-lock.json');
   const typescript = manifest.typescript;
 
-  assert.equal(typescript.version, '7.0.2');
+  assert.equal(typescript.version, lock.packages['node_modules/typescript'].version);
   assert.equal(pkg.devDependencies.typescript, typescript.version);
   assert.equal(typescript.launcher, 'bin/tsc');
   assertLockEntry(typescript.package, typescript.version, lock.packages);
@@ -59,8 +60,8 @@ test('offline esbuild manifest is exact, native, hashed, and lockfile-backed', (
   const lock = readJson('package-lock.json');
   const esbuild = manifest.esbuild;
 
-  assert.equal(esbuild.version, '0.28.1');
-  assert.equal(pkg.devDependencies.esbuild, `^${esbuild.version}`);
+  assert.equal(esbuild.version, lock.packages['node_modules/esbuild'].version);
+  assert.equal(pkg.devDependencies.esbuild, lock.packages[''].devDependencies.esbuild);
   assert.equal(esbuild.launcher, 'bin/esbuild');
   assertLockEntry(esbuild.package, esbuild.version, lock.packages);
 
@@ -130,6 +131,138 @@ test('offline Oxc vendor refresh command validates the checked-in bundle without
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /offline 0\.(?:141|142)\.\d+; active 0\.142\.\d+/u);
+});
+
+test('offline npm vendor synchronizer adopts lockfile packages and cleans superseded archives', () => {
+  const pkg = readJson('package.json');
+  const lock = readJson('package-lock.json');
+  const manifest = readJson('vendor/offline/manifest.json');
+  const tool = path.join(root, 'tools/wp_refresh_offline_npm_vendor.mjs');
+
+  assert.equal(
+    pkg.scripts['vendor:offline:packages:refresh'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --all'
+  );
+  assert.equal(
+    pkg.scripts['vendor:offline:packages:adopt'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --all --adopt-existing'
+  );
+  assert.equal(
+    pkg.scripts['vendor:offline:packages:check'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --all --check'
+  );
+  assert.equal(
+    pkg.scripts['vendor:offline:packages:downloads'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --all --print-downloads'
+  );
+  assert.equal(
+    pkg.scripts['vendor:offline:tsx:adopt'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --component tsx --adopt-existing'
+  );
+  assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:packages:refresh/u);
+
+  const checkedIn = spawnSync(process.execPath, [tool, '--all', '--check'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  assert.equal(checkedIn.status, 0, checkedIn.stderr || checkedIn.stdout);
+  for (const component of ['esbuild', 'tsx', 'prettier', 'typescript']) {
+    assert.match(checkedIn.stdout, new RegExp(`OK: ${component} `, 'u'));
+  }
+
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'offline-npm-vendor-'));
+  try {
+    const fixtureVendor = path.join(fixtureRoot, 'vendor/offline/tsx');
+    fs.mkdirSync(fixtureVendor, { recursive: true });
+    fs.copyFileSync(path.join(root, 'package-lock.json'), path.join(fixtureRoot, 'package-lock.json'));
+    fs.copyFileSync(
+      path.join(root, manifest.tsx.package.file),
+      path.join(fixtureVendor, path.basename(manifest.tsx.package.file))
+    );
+    fs.writeFileSync(path.join(fixtureVendor, 'tsx-0.0.0.tgz'), 'superseded');
+
+    const staleManifest = structuredClone(manifest);
+    staleManifest.tsx = {
+      ...staleManifest.tsx,
+      version: '0.0.0',
+      package: {
+        ...staleManifest.tsx.package,
+        file: 'vendor/offline/tsx/tsx-0.0.0.tgz',
+        url: 'https://registry.npmjs.org/tsx/-/tsx-0.0.0.tgz',
+        integrity: `sha512-${'A'.repeat(86)}==`,
+      },
+    };
+    fs.writeFileSync(
+      path.join(fixtureRoot, 'vendor/offline/manifest.json'),
+      `${JSON.stringify(staleManifest, null, 2)}\n`
+    );
+
+    const adopt = spawnSync(
+      process.execPath,
+      [tool, '--root', fixtureRoot, '--component', 'tsx', '--adopt-existing'],
+      { cwd: root, encoding: 'utf8' }
+    );
+    assert.equal(adopt.status, 0, adopt.stderr || adopt.stdout);
+    assert.match(adopt.stdout, /adopting vendor\/offline\/tsx\/tsx-/u);
+
+    const synced = JSON.parse(
+      fs.readFileSync(path.join(fixtureRoot, 'vendor/offline/manifest.json'), 'utf8')
+    );
+    const lockEntry = lock.packages['node_modules/tsx'];
+    assert.equal(synced.tsx.version, lockEntry.version);
+    assert.equal(synced.tsx.package.url, lockEntry.resolved);
+    assert.equal(synced.tsx.package.integrity, lockEntry.integrity);
+    assert.equal(synced.tsx.esbuildRange, lockEntry.dependencies.esbuild);
+    assert.equal(fs.existsSync(path.join(fixtureVendor, 'tsx-0.0.0.tgz')), false);
+
+    const check = spawnSync(
+      process.execPath,
+      [tool, '--root', fixtureRoot, '--component', 'tsx', '--check'],
+      { cwd: root, encoding: 'utf8' }
+    );
+    assert.equal(check.status, 0, check.stderr || check.stdout);
+
+    const downloads = spawnSync(
+      process.execPath,
+      [tool, '--root', fixtureRoot, '--component', 'tsx', '--print-downloads'],
+      { cwd: root, encoding: 'utf8' }
+    );
+    assert.equal(downloads.status, 0, downloads.stderr || downloads.stdout);
+    assert.match(
+      downloads.stdout,
+      new RegExp(lockEntry.resolved.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u')
+    );
+    assert.match(downloads.stdout, /vendor\/offline\/tsx\/tsx-/u);
+
+    const incompatibleManifest = structuredClone(synced);
+    incompatibleManifest.esbuild.version = '0.29.0';
+    fs.writeFileSync(
+      path.join(fixtureRoot, 'vendor/offline/manifest.json'),
+      `${JSON.stringify(incompatibleManifest, null, 2)}\n`
+    );
+    const incompatible = spawnSync(
+      process.execPath,
+      [tool, '--root', fixtureRoot, '--component', 'tsx', '--check'],
+      { cwd: root, encoding: 'utf8' }
+    );
+    assert.notEqual(incompatible.status, 0);
+    assert.match(incompatible.stderr, /does not satisfy TSX dependency/u);
+    fs.writeFileSync(
+      path.join(fixtureRoot, 'vendor/offline/manifest.json'),
+      `${JSON.stringify(synced, null, 2)}\n`
+    );
+
+    fs.appendFileSync(path.join(fixtureRoot, synced.tsx.package.file), 'tamper');
+    const tampered = spawnSync(
+      process.execPath,
+      [tool, '--root', fixtureRoot, '--component', 'tsx', '--check'],
+      { cwd: root, encoding: 'utf8' }
+    );
+    assert.notEqual(tampered.status, 0);
+    assert.match(tampered.stderr, /integrity mismatch/u);
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
 });
 
 test('offline AST compatibility window validates fallback and active parser boundaries independently', () => {
@@ -314,13 +447,13 @@ test('offline TSX manifest is exact, lockfile-backed, and reuses pinned esbuild'
   const tsx = manifest.tsx;
   const lockEntry = lock.packages[tsx.package.lockPath];
 
-  assert.equal(tsx.version, '4.23.1');
+  assert.equal(tsx.version, lockEntry.version);
   assert.equal(pkg.devDependencies.tsx, lock.packages[''].devDependencies.tsx);
   assert.equal(tsx.executable, 'dist/cli.mjs');
   assert.equal(tsx.esbuildRange, '~0.28.0');
   assertLockEntry(tsx.package, tsx.version, lock.packages);
   assert.equal(lockEntry.dependencies.esbuild, tsx.esbuildRange);
-  assert.equal(manifest.esbuild.version, '0.28.1');
+  assert.equal(manifest.esbuild.version, lock.packages['node_modules/esbuild'].version);
   assert.equal(lock.packages['node_modules/esbuild'].version, manifest.esbuild.version);
 });
 
