@@ -10,6 +10,7 @@ import { DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY } from '../esm/shared/dimensions/
 import {
   EXTERNAL_DRAWER_BOX_POLICY,
   EXTERNAL_DRAWER_FRONT_RENDER_POLICY,
+  EXTERNAL_DRAWER_SIZE_POLICY,
   resolveExternalDrawerGeometry,
 } from '../esm/shared/dimensions/external_drawer_policy.ts';
 
@@ -139,6 +140,16 @@ test('external drawer core preserves shoe-first ordering, sizing, and regular dr
   assert.equal(shoe?.boxH, 0.19 - EXTERNAL_DRAWER_BOX_POLICY.boxHeightClearanceM);
   assert.equal(firstRegular?.visualH, 0.24 - EXTERNAL_DRAWER_FRONT_RENDER_POLICY.visualHeightClearanceM);
   assert.equal(firstRegular?.boxH, 0.24 - EXTERNAL_DRAWER_BOX_POLICY.boxHeightClearanceM);
+
+  const sixRegularDrawers = computeExternalDrawersOpsForModule({
+    wardrobeType: 'hinged',
+    externalW: 0.9,
+    depth: 0.58,
+    regDrawerHeight: EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM,
+    regCount: 6,
+  });
+  assert.equal(sixRegularDrawers.drawers.length, 6);
+  assertApprox(sixRegularDrawers.drawerHeightTotal, 6 * EXTERNAL_DRAWER_SIZE_POLICY.regularHeightM);
 
   assert.deepEqual(
     computeExternalDrawersOpsForModule({

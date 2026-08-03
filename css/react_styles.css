@@ -2095,6 +2095,19 @@
   line-height: 1;
 }
 
+/* External drawer count choices always stay on one compact row, including option 6. */
+#reactSidebarRoot .wp-row.wp-r-ext-drawer-count-row {
+  flex-wrap: nowrap;
+  width: 100%;
+  min-width: 0;
+}
+
+#reactSidebarRoot .wp-row.wp-r-ext-drawer-count-row > .btn.btn-count {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: 6px;
+}
+
 /* --------------------------------------------------------------------------
  * Interior tab: Handles (match current grouping)
  * - Global handle (3 buttons) always visible

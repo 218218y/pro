@@ -42,7 +42,7 @@ export const INTERIOR_MANUAL_TOOLS: ManualToolOption[] = [
 ];
 
 export const INTERIOR_GRID_DIVS: readonly [8, 7, 6, 5, 4, 3, 2] = [8, 7, 6, 5, 4, 3, 2];
-export const INTERIOR_EXT_COUNTS: readonly [1, 2, 3, 4, 5] = [1, 2, 3, 4, 5];
+export const INTERIOR_EXT_COUNTS: readonly [1, 2, 3, 4, 5, 6] = [1, 2, 3, 4, 5, 6];
 export const DEFAULT_SKETCH_STORAGE_HEIGHT_CM = 50;
 export const DEFAULT_SKETCH_SHELF_DEPTH_OVERRIDE = '';
 export { DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM };

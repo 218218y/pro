@@ -17,6 +17,7 @@ import {
   type SketchDrawerHeightDraftController,
 } from './interior_tab_sketch_drawer_height_field.js';
 import type { InteriorSketchDrawersSectionProps } from './interior_layout_sketch_section_types.js';
+import { INTERIOR_EXT_COUNTS } from './interior_tab_local_state_shared.js';
 
 export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSectionProps): ReactElement {
   const { isSketchExtDrawersControlsOpen } = props;
@@ -86,10 +87,15 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
           </div>
 
           <div
-            className={cx('wp-row', 'wp-gap-5', isSketchExtDrawersControlsOpen ? '' : 'hidden')}
+            className={cx(
+              'wp-row',
+              'wp-gap-5',
+              'wp-r-ext-drawer-count-row',
+              isSketchExtDrawersControlsOpen ? '' : 'hidden'
+            )}
             style={{ marginTop: 8, marginBottom: 10 }}
           >
-            {[1, 2, 3, 4, 5].map(n => (
+            {INTERIOR_EXT_COUNTS.map(n => (
               <CountBtn
                 key={n}
                 selected={isSketchExternalDrawersToolActive && props.sketchExtDrawerCount === n}
@@ -98,6 +104,7 @@ export function InteriorSketchDrawersSection(props: InteriorSketchDrawersSection
                   props.setSketchExtDrawersPanelOpen(true);
                   props.enterSketchExtDrawersTool(n, props.sketchExtDrawerHeightCm);
                 }}
+                testId={`interior-sketch-external-drawers-count-${n}-button`}
               >
                 {n}
               </CountBtn>

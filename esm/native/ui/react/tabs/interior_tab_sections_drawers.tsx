@@ -195,7 +195,14 @@ export function InteriorExternalDrawersSection(
         </OptionBtn>
       </div>
 
-      <div className={cx('wp-row', 'wp-gap-5', showRegularCountButtons ? '' : 'hidden')}>
+      <div
+        className={cx(
+          'wp-row',
+          'wp-gap-5',
+          'wp-r-ext-drawer-count-row',
+          showRegularCountButtons ? '' : 'hidden'
+        )}
+      >
         {props.extCounts.map(n => (
           <CountBtn
             key={n}

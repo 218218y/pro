@@ -59,6 +59,9 @@ import { buildSketchExternalDrawerCollisionRanges } from '../esm/native/builder/
 
 test('regular external drawer count parsing is limited to tool/UI counts', () => {
   assert.equal(normalizeSketchBoxRegularExternalDrawerCount('3'), 3);
+  assert.equal(normalizeSketchBoxRegularExternalDrawerCount(6), 6);
+  assert.equal(normalizeSketchBoxRegularExternalDrawerCount(99), 6);
+  assert.equal(normalizeStoredSketchBoxRegularExternalDrawerCount(6), 6);
   assert.equal(normalizeStoredSketchBoxRegularExternalDrawerCount('3'), 0);
   assert.equal(
     getSketchBoxRegularExternalDrawerStackHeight('3'),

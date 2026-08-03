@@ -98,7 +98,7 @@ test('[interior-local-state-runtime] defaults stay canonical for drafts/options'
     ['shelf', 'rod', 'storage']
   );
   assert.deepEqual(Array.from(INTERIOR_GRID_DIVS), [8, 7, 6, 5, 4, 3, 2]);
-  assert.deepEqual(Array.from(INTERIOR_EXT_COUNTS), [1, 2, 3, 4, 5]);
+  assert.deepEqual(Array.from(INTERIOR_EXT_COUNTS), [1, 2, 3, 4, 5, 6]);
   assert.deepEqual(
     Array.from(INTERIOR_HANDLE_TYPES, item => item.id),
     ['standard', 'edge', 'none']

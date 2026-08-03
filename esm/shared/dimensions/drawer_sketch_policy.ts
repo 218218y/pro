@@ -17,7 +17,7 @@ export const DRAWER_SKETCH_SIZING_POLICY = Object.freeze({
   internalDefaultHeightCm: metersToCentimeters(INTERNAL_DRAWER_LAYOUT_POLICY.defaultSingleDrawerHeightM),
   heightTokenEpsilonCm: centimeters(0.0001),
   externalCountMin: 1,
-  externalCountMax: 5,
+  externalCountMax: 6,
   externalPreviewDefaultCount: 3,
   minRenderHeightM: INTERNAL_DRAWER_LAYOUT_POLICY.minDrawerHeightM,
   internalGapM: INTERNAL_DRAWER_LAYOUT_POLICY.betweenDrawersGapM,

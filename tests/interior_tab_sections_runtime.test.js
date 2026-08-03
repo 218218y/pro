@@ -493,7 +493,7 @@ test('[interior-tab-sections-runtime] drawers and handles sections keep canonica
       isExtDrawerMode: false,
       extDrawerType: 'regular',
       extDrawerCount: 3,
-      extCounts: [2, 3, 4],
+      extCounts: [1, 2, 3, 4, 5, 6],
       enterExtDrawer: noop,
       exitExtDrawer: noop,
       sketchControls: createSketchExternalDrawerControls({
@@ -509,7 +509,29 @@ test('[interior-tab-sections-runtime] drawers and handles sections keep canonica
   assert.match(externalHtml, /מגירות חיצוניות לפי סקיצה/);
   assert.match(externalHtml, /גובה מגירה חיצונית/);
   assert.match(externalHtml, /wp-r-sketch-drawer-height-reset-btn/);
+  assert.match(externalHtml, /wp-r-ext-drawer-count-row/);
+  assert.match(externalHtml, /data-testid="interior-external-drawers-count-6-button"/);
   assert.doesNotMatch(externalHtml, /בחר סוג מגירות ואז לחץ על תא כדי ליישם/);
+
+  const sketchHtml = renderToStaticMarkup(
+    React.createElement(
+      InteriorLayoutSketchToolsPanel,
+      createLayoutProps({ sketchExtDrawersPanelOpen: true })
+    )
+  );
+  assert.match(sketchHtml, /data-testid="interior-sketch-external-drawers-count-6-button"/);
+  assert.match(sketchHtml, /wp-r-ext-drawer-count-row/);
+
+  const css = fs.readFileSync(path.resolve('css/react_styles.css'), 'utf8');
+  assert.match(
+    css,
+    /\.wp-row\.wp-r-ext-drawer-count-row\s*\{[\s\S]*?flex-wrap:\s*nowrap;[\s\S]*?min-width:\s*0;/
+  );
+  assert.match(
+    css,
+    /\.wp-row\.wp-r-ext-drawer-count-row\s*>\s*\.btn\.btn-count\s*\{[\s\S]*?flex:\s*1 1 0;[\s\S]*?min-width:\s*0;/
+  );
+
   const internalHtml = renderToStaticMarkup(
     React.createElement(InteriorInternalDrawersSection, {
       internalDrawersEnabled: true,

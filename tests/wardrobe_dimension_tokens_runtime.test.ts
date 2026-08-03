@@ -1780,7 +1780,7 @@ test('Drawer Sketch policy preserves facade identity, every value, focused owner
     internalDefaultHeightCm: 16.5,
     heightTokenEpsilonCm: 0.0001,
     externalCountMin: 1,
-    externalCountMax: 5,
+    externalCountMax: 6,
     externalPreviewDefaultCount: 3,
     minRenderHeightM: 0.01,
     internalGapM: 0.03,

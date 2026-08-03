@@ -20,9 +20,9 @@ const compositionOwnerSpecifier = '../../shared/dimensions/interior_tab_defaults
 const depthSymbol = 'DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM';
 const ownerSymbol = 'INTERIOR_SHELF_GEOMETRY_POLICY';
 const compatibilitySymbol = 'INTERIOR_FITTINGS_DIMENSIONS';
-const expectedUiSemanticFingerprint = '79d940c75bcbb0ab6a3cffad85a29fca5736b267aac082074f86fdf655939dfa';
+const expectedUiSemanticFingerprint = 'f16e56048cf07f84bc3efbb762107b6473ca6ce0ddf57beed0a3981714d7a934';
 const expectedUiLiteralInventoryFingerprint =
-  '3727d19fe3ae740e7f6336c07e0ac5d02ad839d82bc686ba309763e70bdd732b';
+  '2a4f0188a66b4a12d2c650b08aa460070ed15a87d065f523d79056bf1c7f92db';
 const prefix163Sha256 = '8c4c04e56a8b991d81537127adc69c5dc42b4e7ed3de4fe81258a67b01ad8341';
 const prefix164Sha256 = '55c2e7abbae3cdba828c41a48ed759d457079d0021fe21fc2a1ebf7a08e2e231';
 const prefix165Sha256 = '3b685a291fdbfa4ae0fd66b8b4744116598a81e236e8f449facc89714802a807';
