@@ -90,15 +90,36 @@ if ($linkedProjectRef -ne $ProjectRef) {
 function Invoke-SupabaseCli {
   param([Parameter(Mandatory = $true)][string[]]$Arguments)
 
-  $output = @(& npx --yes supabase@latest @Arguments 2>&1)
-  $exitCode = $LASTEXITCODE
+  # Windows PowerShell 5.1 converts native stderr into ErrorRecord objects.
+  # Supabase CLI writes progress messages such as "Initialising login role..."
+  # to stderr even when the command succeeds. Temporarily use Continue so those
+  # messages can be captured; the native process exit code remains authoritative.
+  $previousErrorActionPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    $rawOutput = @(& npx --yes supabase@latest @Arguments 2>&1)
+    $exitCode = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+  }
+
+  $output = @(
+    $rawOutput | ForEach-Object {
+      if ($_ -is [System.Management.Automation.ErrorRecord]) {
+        [string]$_.Exception.Message
+      } else {
+        [string]$_
+      }
+    }
+  )
+
   foreach ($line in $output) {
-    Write-Host ([string]$line)
+    Write-Host $line
   }
   if ($exitCode -ne 0) {
     throw "Supabase CLI failed with exit code $exitCode"
   }
-  return @($output | ForEach-Object { [string]$_ })
+  return $output
 }
 
 function Test-MigrationApplied {

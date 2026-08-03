@@ -205,6 +205,11 @@ test('migration history repair is explicit, scoped, and never re-executes produc
   assert.doesNotMatch(repair, /ConvertFrom-Json/u);
   assert.match(repair, /\[regex\]::Matches/u);
   assert.match(repair, /\$versionOccurrences\.Count -ge 2/u);
+  assert.match(repair, /\$previousErrorActionPreference = \$ErrorActionPreference/u);
+  assert.match(repair, /\$ErrorActionPreference = 'Continue'/u);
+  assert.match(repair, /\$exitCode = \$LASTEXITCODE/u);
+  assert.match(repair, /\$_ -is \[System\.Management\.Automation\.ErrorRecord\]/u);
+  assert.match(repair, /if \(\$exitCode -ne 0\)/u);
   assert.doesNotMatch(repair, /[^\x00-\x7f]/u);
 
   const repairPolicy = Object.fromEntries(
