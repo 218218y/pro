@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -28,6 +29,21 @@ function isVersionInBoundedRange(version, range) {
   };
   const actual = parse(version);
   return compare(actual, parse(match[1])) >= 0 && compare(actual, parse(match[2])) < 0;
+}
+
+function platformConstraintAccepts(values, target) {
+  if (!Array.isArray(values) || values.length === 0) return true;
+  const allowed = values.filter(value => !value.startsWith('!'));
+  const blocked = values.filter(value => value.startsWith('!')).map(value => value.slice(1));
+  return !blocked.includes(target) && (allowed.length === 0 || allowed.includes(target));
+}
+
+function supportsLinuxX64Glibc(lockEntry) {
+  return (
+    platformConstraintAccepts(lockEntry.os, 'linux') &&
+    platformConstraintAccepts(lockEntry.cpu, 'x64') &&
+    platformConstraintAccepts(lockEntry.libc, 'glibc')
+  );
 }
 
 test('offline TypeScript manifest is exact, native, and lockfile-backed', () => {
@@ -160,6 +176,7 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
     'node tools/wp_refresh_offline_npm_vendor.mjs --component tsx --adopt-existing'
   );
   assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:packages:refresh/u);
+  assert.match(pkg.scripts['deps:update:sync-generated'], /vendor:offline:tsx-tests:refresh/u);
 
   const checkedIn = spawnSync(process.execPath, [tool, '--all', '--check'], {
     cwd: root,
@@ -260,6 +277,144 @@ test('offline npm vendor synchronizer adopts lockfile packages and cleans supers
     );
     assert.notEqual(tampered.status, 0);
     assert.match(tampered.stderr, /integrity mismatch/u);
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+});
+
+test('offline TSX-test workspace profile is lock-derived and Linux x64 glibc only', () => {
+  const pkg = readJson('package.json');
+  const lock = readJson('package-lock.json');
+  const manifest = readJson('vendor/offline/manifest.json');
+  const profile = manifest.workspace.profiles['tsx-tests'];
+  const tool = path.join(root, 'tools/wp_refresh_offline_npm_vendor.mjs');
+
+  assert.deepEqual(manifest.workspace.platform, {
+    key: 'linux-x64',
+    os: 'linux',
+    cpu: 'x64',
+    libc: 'glibc',
+  });
+  assert.equal(
+    manifest.workspace.lockfileSha256,
+    crypto
+      .createHash('sha256')
+      .update(fs.readFileSync(path.join(root, 'package-lock.json')))
+      .digest('hex')
+  );
+  assert.deepEqual(profile.rootDependencies, Object.keys(pkg.dependencies).sort());
+  assert.equal(profile.packageCount, profile.packages.length);
+  assert.ok(profile.packageCount > profile.rootDependencies.length);
+
+  const names = new Set(profile.packages.map(entry => entry.name));
+  for (const requiredName of [
+    'react',
+    'react-dom',
+    'scheduler',
+    'three',
+    'zustand',
+    'pdf-lib',
+    'pdfjs-dist',
+    '@supabase/supabase-js',
+    '@napi-rs/canvas-linux-x64-gnu',
+  ]) {
+    assert.ok(names.has(requiredName), `${requiredName} must be present in the TSX-test profile`);
+  }
+
+  for (const entry of profile.packages) {
+    assertLockEntry(entry, entry.version, lock.packages);
+    assert.equal(entry.installPath, entry.lockPath);
+    assert.equal(supportsLinuxX64Glibc(lock.packages[entry.lockPath]), true, entry.lockPath);
+    assert.doesNotMatch(entry.lockPath, /darwin|win32|arm64|musl/u);
+    assert.match(entry.file, /^vendor\/offline\/runtime\//u);
+  }
+
+  assert.equal(
+    pkg.scripts['vendor:offline:tsx-tests:plan'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --profile tsx-tests --sync-plan'
+  );
+  assert.equal(
+    pkg.scripts['vendor:offline:tsx-tests:check-plan'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --profile tsx-tests --check-plan'
+  );
+  assert.equal(
+    pkg.scripts['vendor:offline:tsx-tests:downloads'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --profile tsx-tests --print-downloads --missing-only'
+  );
+  assert.equal(
+    pkg.scripts['vendor:offline:tsx-tests:refresh'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --profile tsx-tests'
+  );
+  assert.equal(
+    pkg.scripts['vendor:offline:tsx-tests:adopt'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --profile tsx-tests --adopt-existing'
+  );
+  assert.equal(
+    pkg.scripts['vendor:offline:tsx-tests:check'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --profile tsx-tests --check'
+  );
+
+  const planCheck = spawnSync(process.execPath, [tool, '--profile', 'tsx-tests', '--check-plan'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  assert.equal(planCheck.status, 0, planCheck.stderr || planCheck.stdout);
+  assert.match(planCheck.stdout, /workspace plan tsx-tests/u);
+
+  const downloads = spawnSync(
+    process.execPath,
+    [tool, '--profile', 'tsx-tests', '--print-downloads', '--missing-only'],
+    { cwd: root, encoding: 'utf8' }
+  );
+  assert.equal(downloads.status, 0, downloads.stderr || downloads.stdout);
+  assert.match(downloads.stdout, /react-\d+\.\d+\.\d+\.tgz/u);
+  assert.match(downloads.stdout, /vendor\/offline\/runtime\/react-/u);
+  assert.doesNotMatch(downloads.stdout, /vendor\/offline\/(?:tsx|esbuild)\//u);
+
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'offline-workspace-vendor-'));
+  try {
+    const fixtureLock = structuredClone(lock);
+    fixtureLock.packages[''] = {
+      ...fixtureLock.packages[''],
+      dependencies: { tsx: pkg.devDependencies.tsx },
+      devDependencies: {},
+    };
+    fs.mkdirSync(path.join(fixtureRoot, 'vendor/offline/runtime'), { recursive: true });
+    fs.writeFileSync(
+      path.join(fixtureRoot, 'package-lock.json'),
+      `${JSON.stringify(fixtureLock, null, 2)}\n`
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, 'vendor/offline/manifest.json'),
+      `${JSON.stringify(manifest, null, 2)}\n`
+    );
+    const fixtureArchives = [
+      [manifest.tsx.package.file, `runtime/tsx-${manifest.tsx.version}.tgz`],
+      [manifest.esbuild.package.file, `runtime/esbuild-${manifest.esbuild.version}.tgz`],
+      [
+        manifest.esbuild.platforms['linux-x64'].file,
+        `runtime/esbuild__linux-x64-${manifest.esbuild.version}.tgz`,
+      ],
+    ];
+    for (const [source, target] of fixtureArchives) {
+      fs.copyFileSync(path.join(root, source), path.join(fixtureRoot, 'vendor/offline', target));
+    }
+    fs.writeFileSync(path.join(fixtureRoot, 'vendor/offline/runtime/stale-0.0.0.tgz'), 'stale');
+
+    const adopt = spawnSync(
+      process.execPath,
+      [tool, '--root', fixtureRoot, '--profile', 'tsx-tests', '--adopt-existing'],
+      { cwd: root, encoding: 'utf8' }
+    );
+    assert.equal(adopt.status, 0, adopt.stderr || adopt.stdout);
+    assert.match(adopt.stdout, /workspace tsx-tests \(3 packages\)/u);
+
+    const fixtureManifest = JSON.parse(
+      fs.readFileSync(path.join(fixtureRoot, 'vendor/offline/manifest.json'), 'utf8')
+    );
+    assert.deepEqual(fixtureManifest.workspace.profiles['tsx-tests'].rootDependencies, ['tsx']);
+    assert.equal(fixtureManifest.workspace.profiles['tsx-tests'].packageCount, 3);
+    assert.equal(fs.existsSync(path.join(fixtureRoot, 'vendor/offline/runtime/stale-0.0.0.tgz')), false);
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }
@@ -457,10 +612,18 @@ test('offline TSX manifest is exact, lockfile-backed, and reuses pinned esbuild'
   assert.equal(lock.packages['node_modules/esbuild'].version, manifest.esbuild.version);
 });
 
-test('offline TSX scripts run focused TypeScript tests without npx or a full install', () => {
+test('offline TSX scripts install the lock-derived runtime profile without npx or npm', () => {
   const pkg = readJson('package.json');
   assert.equal(pkg.scripts['setup:offline:tsx'], 'python tools/bootstrap_offline_tsx.py');
+  assert.equal(
+    pkg.scripts['setup:offline:tsx:engine'],
+    'python tools/bootstrap_offline_tsx.py --engine-only'
+  );
   assert.equal(pkg.scripts['verify:offline:tsx'], 'python tools/verify_offline_repair_vendor.py --tsx-only');
+  assert.equal(
+    pkg.scripts['verify:offline:tsx:engine'],
+    'python tools/verify_offline_repair_vendor.py --tsx-engine-only'
+  );
   assert.equal(pkg.scripts['test:offline:tsx'], 'python tools/selftest_offline_tsx.py');
   assert.match(
     pkg.scripts['test:offline:wave-c-runtime'],
@@ -470,12 +633,19 @@ test('offline TSX scripts run focused TypeScript tests without npx or a full ins
   const bootstrap = fs.readFileSync(path.join(root, 'tools/bootstrap_offline_repair_core.py'), 'utf8');
   const selfTest = fs.readFileSync(path.join(root, 'tools/selftest_offline_tsx.py'), 'utf8');
   const runner = fs.readFileSync(path.join(root, 'tools/run_offline_tsx_tests.py'), 'utf8');
+  const nodeRunner = fs.readFileSync(path.join(root, 'tools/run_offline_node24.py'), 'utf8');
   assert.match(bootstrap, /def install_tsx\(/u);
+  assert.match(bootstrap, /def install_workspace_profile\(/u);
+  assert.match(bootstrap, /workspace-runtime-ok/u);
   assert.match(bootstrap, /def _tilde_range_accepts\(/u);
   assert.match(bootstrap, /--import", "tsx"/u);
   assert.match(selfTest, /wave_c1_dimension_consolidation_runtime\.test\.ts/u);
+  assert.match(selfTest, /design_tab_sections_runtime\.test\.tsx/u);
   assert.match(selfTest, /wardrobe_dimension_public_surface_semantic_contract\.test\.js/u);
   assert.match(runner, /tools\/wp_run_tsx_tests\.mjs/u);
+  assert.match(runner, /install_workspace_profile/u);
+  assert.match(nodeRunner, /--with-runtime/u);
+  assert.match(nodeRunner, /install_workspace_profile/u);
   assert.doesNotMatch(bootstrap, /subprocess\.(?:run|Popen)\(\s*\[\s*['"](?:npm|npx)/u);
 });
 

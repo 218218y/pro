@@ -153,6 +153,82 @@ test('Cloud Sync retention is bounded, dry-run first, and owned outside browser 
   assert.doesNotMatch(preflightSql, /^\s*(?:insert|update|delete|alter|drop|create|grant|revoke)\b/imu);
 });
 
+test('Cloud Sync keeps the complete production migration chain in source control', () => {
+  const historicalPairs = [
+    ['supabase/migrations/20260713110031_signed_room_cloud_sync_schema.sql', 'docs/supabase_cloud_sync.sql'],
+    [
+      'supabase/migrations/20260713110043_copy_legacy_cloud_sync_rows.sql',
+      'docs/supabase_cloud_sync_multi_store.sql',
+    ],
+    [
+      'supabase/migrations/20260713110150_tighten_cloud_sync_service_role_privileges.sql',
+      'docs/supabase_cloud_sync_legacy_lockdown.sql',
+    ],
+  ];
+
+  for (const [migration, canonicalSource] of historicalPairs) {
+    assert.deepEqual(readFileSync(migration), readFileSync(canonicalSource));
+  }
+
+  assert.match(
+    read('supabase/migrations/202607160001_cloud_sync_retention.sql'),
+    /create or replace function wp_cloud_sync_private\.run_retention/u
+  );
+  assert.match(
+    read('supabase/migrations/202607160002_cloud_sync_room_expiry.sql'),
+    /p_allow_create boolean/u
+  );
+});
+
+test('migration history repair is explicit, scoped, and never re-executes production SQL', () => {
+  const repair = read('tools/wp_supabase_cloud_sync_repair_history.ps1');
+  const setup = read('docs/supabase_cloud_sync_setup.md');
+
+  for (const version of [
+    '20260713110031',
+    '20260713110043',
+    '20260713110150',
+    '202607160001',
+    '202607160002',
+  ]) {
+    assert.match(repair, new RegExp(version, 'u'));
+  }
+
+  assert.match(repair, /\[switch\]\$Apply/u);
+  assert.match(repair, /Linked Supabase project/u);
+  assert.match(repair, /migration',\s*'list',\s*'--linked'/u);
+  assert.match(repair, /migration',\s*'repair'/u);
+  assert.match(repair, /'--status',\s*'applied'/u);
+  assert.match(repair, /'db',\s*'push',\s*'--linked',\s*'--dry-run'/u);
+  assert.match(repair, /supabase\/\.temp\/project-ref/u);
+  assert.match(repair, /supabase\/\.temp\/linked-project\.json/u);
+  assert.match(repair, /\[regex\]::Matches/u);
+  assert.match(repair, /\$versionOccurrences\.Count -ge 2/u);
+  assert.doesNotMatch(repair, /[^\x00-\x7f]/u);
+
+  const repairPolicy = Object.fromEntries(
+    [...repair.matchAll(/Version = '(\d+)'[\s\S]*?Repair = \$(true|false)/gu)].map(match => [
+      match[1],
+      match[2] === 'true',
+    ])
+  );
+  assert.deepEqual(repairPolicy, {
+    20260713110031: false,
+    20260713110043: false,
+    20260713110150: false,
+    202607160001: true,
+    202607160002: true,
+  });
+  assert.doesNotMatch(repair, /functions',\s*'deploy|secrets',\s*'set'/u);
+  assert.doesNotMatch(repair, /run_retention\s*\(|cron\.(?:schedule|unschedule)/u);
+  assert.doesNotMatch(repair, /execute_sql|psql|supabase_migrations\.schema_migrations/u);
+
+  assert.match(setup, /One-time Bargig production history closeout/u);
+  assert.match(setup, /wp_supabase_cloud_sync_repair_history\.ps1 -Apply/u);
+  assert.match(setup, /never executes migration SQL/u);
+  assert.match(setup, /supabase db push --linked/u);
+});
+
 test('browser Cloud Sync has one gateway route and no direct table or PostgREST authority', () => {
   const config = read('wp_runtime_config.mjs');
   const gateway = read('esm/native/services/cloud_sync_gateway.ts');

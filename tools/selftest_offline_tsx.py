@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prove the offline TSX slice on a Wave C runtime identity test and declaration snapshot."""
+"""Prove offline TSX transformation, React SSR runtime, and declaration loading."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import bootstrap_offline_repair_core as core
 
 
 WAVE_C_RUNTIME_TEST = "tests/wave_c1_dimension_consolidation_runtime.test.ts"
+REACT_TSX_RUNTIME_TEST = "tests/design_tab_sections_runtime.test.tsx"
 DECLARATION_SNAPSHOT_TEST = "tests/wardrobe_dimension_public_surface_semantic_contract.test.js"
 
 
@@ -30,19 +31,22 @@ def main() -> int:
             ast=True,
             tsx=True,
             typescript=True,
+            workspace_profile_name="tsx-tests",
         )
         node = core.install_node(manifest, key)
         core.install_ast(manifest, key, node)
         core.install_tsx(manifest, key, node, force=True)
+        core.install_workspace_profile(manifest, key, node, "tsx-tests", force=True)
         core.install_typescript(manifest, key, node)
 
         run([str(node), "tools/wp_run_tsx_tests.mjs", WAVE_C_RUNTIME_TEST])
+        run([str(node), "tools/wp_run_tsx_tests.mjs", REACT_TSX_RUNTIME_TEST])
         run([str(node), "--test", DECLARATION_SNAPSHOT_TEST])
     except (core.OfflineCoreError, RuntimeError) as exc:
         print(f"offline TSX self-test error: {exc}", file=sys.stderr)
         return 2
 
-    print("Offline TSX self-test passed: Wave C runtime identity and declaration snapshot.")
+    print("Offline TSX self-test passed: TSX identity, React SSR, and declaration snapshot.")
     return 0
 
 

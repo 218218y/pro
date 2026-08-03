@@ -9,6 +9,14 @@ import zlib from 'node:zlib';
 
 const SUPPORTED_COMPONENTS = Object.freeze(['esbuild', 'tsx', 'prettier', 'typescript']);
 const COMPONENT_SET = new Set(SUPPORTED_COMPONENTS);
+const SUPPORTED_PROFILES = Object.freeze(['tsx-tests']);
+const PROFILE_SET = new Set(SUPPORTED_PROFILES);
+const LINUX_X64_GLIBC = Object.freeze({
+  key: 'linux-x64',
+  os: 'linux',
+  cpu: 'x64',
+  libc: 'glibc',
+});
 
 function fail(message) {
   throw new Error(`[offline-npm-vendor] ${message}`);
@@ -63,6 +71,13 @@ function parseTarEntries(buffer) {
   return entries;
 }
 
+function packageNameFromLockPath(lockPath) {
+  const marker = 'node_modules/';
+  const markerIndex = lockPath.lastIndexOf(marker);
+  if (markerIndex < 0) fail(`invalid npm lock path: ${lockPath}`);
+  return lockPath.slice(markerIndex + marker.length);
+}
+
 function targetFromLock(packages, lockPath, directory) {
   const lockEntry = packages[lockPath];
   if (!lockEntry) fail(`${lockPath} is missing from package-lock.json`);
@@ -80,7 +95,7 @@ function targetFromLock(packages, lockPath, directory) {
   return {
     lockPath,
     installPath: lockPath,
-    packageName: lockPath.slice('node_modules/'.length),
+    packageName: packageNameFromLockPath(lockPath),
     version: lockEntry.version,
     url: lockEntry.resolved,
     integrity: lockEntry.integrity,
@@ -88,6 +103,54 @@ function targetFromLock(packages, lockPath, directory) {
     file: `vendor/offline/${directory}/${fileName}`,
     lockEntry,
   };
+}
+
+function platformConstraintAccepts(values, target) {
+  if (!Array.isArray(values) || values.length === 0) return true;
+  const allowed = values.filter(value => typeof value === 'string' && !value.startsWith('!'));
+  const blocked = values
+    .filter(value => typeof value === 'string' && value.startsWith('!'))
+    .map(value => value.slice(1));
+  return !blocked.includes(target) && (allowed.length === 0 || allowed.includes(target));
+}
+
+function supportsLinuxX64Glibc(lockEntry) {
+  return (
+    platformConstraintAccepts(lockEntry.os, LINUX_X64_GLIBC.os) &&
+    platformConstraintAccepts(lockEntry.cpu, LINUX_X64_GLIBC.cpu) &&
+    platformConstraintAccepts(lockEntry.libc, LINUX_X64_GLIBC.libc)
+  );
+}
+
+function dependencyCandidates(lockPath, dependencyName) {
+  const candidates = [];
+  let current = lockPath;
+  while (current) {
+    candidates.push(`${current}/node_modules/${dependencyName}`);
+    const markerIndex = current.lastIndexOf('/node_modules/');
+    if (markerIndex < 0) break;
+    current = current.slice(0, markerIndex);
+  }
+  candidates.push(`node_modules/${dependencyName}`);
+  return [...new Set(candidates.filter(candidate => !candidate.startsWith('node_modules/node_modules/')))];
+}
+
+function resolveDependencyLockPath(packages, fromLockPath, dependencyName) {
+  if (!fromLockPath) {
+    const rootPath = `node_modules/${dependencyName}`;
+    return packages[rootPath] ? rootPath : null;
+  }
+  return dependencyCandidates(fromLockPath, dependencyName).find(candidate => packages[candidate]) ?? null;
+}
+
+function profileArchiveFile(target) {
+  const safeName = target.packageName.replace(/^@/u, '').replaceAll('/', '__');
+  return `vendor/offline/runtime/${safeName}-${target.version}.tgz`;
+}
+
+function profileTargetFromLock(packages, lockPath) {
+  const target = targetFromLock(packages, lockPath, 'runtime');
+  return { ...target, file: profileArchiveFile(target) };
 }
 
 function toManifestEntry(target) {
@@ -235,6 +298,97 @@ function buildComponent(lock, component) {
   fail(`unsupported component: ${component}`);
 }
 
+function buildTsxTestsProfile(lock, lockfileSha256) {
+  const packages = lock.packages;
+  if (!packages || typeof packages !== 'object') fail('package-lock.json has no packages map');
+  const rootPackage = packages[''];
+  if (!rootPackage || typeof rootPackage !== 'object') {
+    fail('package-lock.json has no root package entry');
+  }
+
+  const rootDependencies = Object.keys(rootPackage.dependencies ?? {}).sort();
+  const queue = [];
+  for (const dependencyName of rootDependencies) {
+    const lockPath = resolveDependencyLockPath(packages, '', dependencyName);
+    if (!lockPath) fail(`profile root dependency is absent from package-lock.json: ${dependencyName}`);
+    queue.push(lockPath);
+  }
+
+  const selected = new Set();
+  while (queue.length > 0) {
+    const lockPath = queue.shift();
+    if (selected.has(lockPath)) continue;
+    const lockEntry = packages[lockPath];
+    if (!lockEntry || typeof lockEntry !== 'object') fail(`missing lock entry: ${lockPath}`);
+    if (!supportsLinuxX64Glibc(lockEntry)) {
+      fail(`required profile package is incompatible with Linux x64 glibc: ${lockPath}`);
+    }
+    selected.add(lockPath);
+
+    const optionalDependencies = lockEntry.optionalDependencies ?? {};
+    const dependencies = {
+      ...(lockEntry.dependencies ?? {}),
+      ...optionalDependencies,
+    };
+    for (const dependencyName of Object.keys(dependencies)) {
+      const dependencyPath = resolveDependencyLockPath(packages, lockPath, dependencyName);
+      if (!dependencyPath) {
+        if (Object.hasOwn(optionalDependencies, dependencyName)) continue;
+        fail(`${lockPath} dependency is absent from package-lock.json: ${dependencyName}`);
+      }
+      const dependencyEntry = packages[dependencyPath];
+      if (!supportsLinuxX64Glibc(dependencyEntry)) {
+        if (Object.hasOwn(optionalDependencies, dependencyName)) continue;
+        fail(`${lockPath} requires an incompatible package: ${dependencyPath}`);
+      }
+      queue.push(dependencyPath);
+    }
+
+    for (const dependencyName of Object.keys(lockEntry.peerDependencies ?? {})) {
+      if (lockEntry.peerDependenciesMeta?.[dependencyName]?.optional) continue;
+      const dependencyPath = resolveDependencyLockPath(packages, lockPath, dependencyName);
+      if (!dependencyPath) continue;
+      if (supportsLinuxX64Glibc(packages[dependencyPath])) queue.push(dependencyPath);
+    }
+  }
+
+  const targets = [...selected]
+    .sort((left, right) => left.localeCompare(right))
+    .map(lockPath => profileTargetFromLock(packages, lockPath));
+  const archiveOwners = new Map();
+  for (const target of targets) {
+    const existing = archiveOwners.get(target.file);
+    if (existing && (existing.url !== target.url || existing.integrity !== target.integrity)) {
+      fail(`workspace archive path collision: ${existing.lockPath} and ${target.lockPath}`);
+    }
+    archiveOwners.set(target.file, target);
+  }
+  return {
+    profile: 'tsx-tests',
+    directory: 'runtime',
+    version: lock.lockfileVersion,
+    lockfileSha256,
+    rootDependencies,
+    targets,
+    createManifestEntry() {
+      return {
+        rootDependencies,
+        packageCount: targets.length,
+        packages: targets.map(target => ({
+          name: target.packageName,
+          version: target.version,
+          ...toManifestEntry(target),
+        })),
+      };
+    },
+  };
+}
+
+function buildProfile(lock, profile, lockfileSha256) {
+  if (profile === 'tsx-tests') return buildTsxTestsProfile(lock, lockfileSha256);
+  fail(`unsupported profile: ${profile}`);
+}
+
 function download(url, redirectsLeft = 5) {
   return new Promise((resolve, reject) => {
     const request = https.get(
@@ -338,10 +492,52 @@ function verifyComponentManifest(manifest, definition, buffers) {
   }
 }
 
+function expectedWorkspaceManifest(manifest, definition) {
+  const workspace = structuredClone(manifest.workspace ?? {});
+  workspace.platform = { ...LINUX_X64_GLIBC };
+  workspace.lockfileSha256 = definition.lockfileSha256;
+  workspace.profiles = { ...(workspace.profiles ?? {}) };
+  workspace.profiles[definition.profile] = definition.createManifestEntry();
+  return workspace;
+}
+
+function verifyProfileManifest(manifest, definition) {
+  const workspace = manifest.workspace;
+  if (!workspace || typeof workspace !== 'object') fail('manifest has no workspace definition');
+  if (JSON.stringify(workspace.platform) !== JSON.stringify(LINUX_X64_GLIBC)) {
+    fail('manifest workspace platform must be Linux x64 glibc only');
+  }
+  if (workspace.lockfileSha256 !== definition.lockfileSha256) {
+    fail('manifest workspace lockfileSha256 is stale; run --sync-plan');
+  }
+  const actual = workspace.profiles?.[definition.profile];
+  if (!actual || typeof actual !== 'object') {
+    fail(`manifest has no workspace profile ${definition.profile}`);
+  }
+  const expected = definition.createManifestEntry();
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    fail(`manifest workspace profile ${definition.profile} is stale; run --sync-plan`);
+  }
+}
+
 function staleArchives(root, definition) {
   const directory = path.join(root, 'vendor', 'offline', definition.directory);
   if (!fs.existsSync(directory)) return [];
   const keep = new Set(definition.targets.map(target => target.fileName));
+  return fs
+    .readdirSync(directory)
+    .filter(name => name.endsWith('.tgz') && !keep.has(name))
+    .map(name => path.join(directory, name));
+}
+
+function staleProfileArchives(root, definition) {
+  const directory = path.join(root, 'vendor', 'offline', definition.directory);
+  if (!fs.existsSync(directory)) return [];
+  const keep = new Set(
+    definition.targets
+      .filter(target => target.file.startsWith(`vendor/offline/${definition.directory}/`))
+      .map(target => path.basename(target.file))
+  );
   return fs
     .readdirSync(directory)
     .filter(name => name.endsWith('.tgz') && !keep.has(name))
@@ -368,6 +564,14 @@ function checkComponent(root, manifest, definition) {
   console.log(`[offline-npm-vendor] OK: ${definition.component} ${definition.version}`);
 }
 
+function checkProfile(root, manifest, definition) {
+  verifyProfileManifest(manifest, definition);
+  readAndVerifyArchives(root, definition);
+  console.log(
+    `[offline-npm-vendor] OK: workspace ${definition.profile} (${definition.targets.length} packages)`
+  );
+}
+
 function writeManifestAtomically(manifestPath, manifest) {
   const temporary = `${manifestPath}.tmp-${process.pid}`;
   fs.writeFileSync(temporary, `${JSON.stringify(manifest, null, 2)}\n`);
@@ -376,6 +580,12 @@ function writeManifestAtomically(manifestPath, manifest) {
 
 function removeSupersededArchives(root, definition) {
   for (const archivePath of staleArchives(root, definition)) fs.rmSync(archivePath, { force: true });
+}
+
+function removeSupersededProfileArchives(root, definition) {
+  for (const archivePath of staleProfileArchives(root, definition)) {
+    fs.rmSync(archivePath, { force: true });
+  }
 }
 
 async function acquireArchive(root, target, { adoptExisting }) {
@@ -439,10 +649,58 @@ async function refresh(root, manifestPath, manifest, definitions, { adoptExistin
   }
 }
 
+function syncProfilePlans(manifestPath, manifest, definitions) {
+  const nextManifest = structuredClone(manifest);
+  for (const definition of definitions) {
+    nextManifest.workspace = expectedWorkspaceManifest(nextManifest, definition);
+    verifyProfileManifest(nextManifest, definition);
+  }
+  writeManifestAtomically(manifestPath, nextManifest);
+  for (const definition of definitions) {
+    console.log(
+      `[offline-npm-vendor] planned workspace ${definition.profile} (${definition.targets.length} packages)`
+    );
+  }
+}
+
+async function refreshProfiles(root, manifestPath, manifest, definitions, { adoptExisting }) {
+  const offlineRoot = path.join(root, 'vendor', 'offline');
+  fs.mkdirSync(offlineRoot, { recursive: true });
+  const staging = fs.mkdtempSync(path.join(offlineRoot, '.workspace-vendor-refresh-'));
+  const nextManifest = structuredClone(manifest);
+  try {
+    for (const definition of definitions) {
+      for (const target of definition.targets) {
+        const buffer = await acquireArchive(root, target, { adoptExisting });
+        const stagedPath = path.join(staging, target.file);
+        fs.mkdirSync(path.dirname(stagedPath), { recursive: true });
+        fs.writeFileSync(stagedPath, buffer);
+      }
+      nextManifest.workspace = expectedWorkspaceManifest(nextManifest, definition);
+      verifyProfileManifest(nextManifest, definition);
+    }
+
+    for (const definition of definitions) {
+      for (const target of definition.targets) {
+        const targetPath = path.join(root, target.file);
+        fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+        fs.copyFileSync(path.join(staging, target.file), targetPath);
+      }
+    }
+    writeManifestAtomically(manifestPath, nextManifest);
+    for (const definition of definitions) removeSupersededProfileArchives(root, definition);
+    for (const definition of definitions) checkProfile(root, nextManifest, definition);
+  } finally {
+    fs.rmSync(staging, { recursive: true, force: true });
+  }
+}
+
 function parseArguments(argv) {
-  const selected = [];
+  const selectedComponents = [];
+  const selectedProfiles = [];
   let mode = 'refresh';
   let root = process.cwd();
+  let missingOnly = false;
   const setMode = next => {
     if (mode !== 'refresh' && mode !== next) fail('choose only one mode');
     mode = next;
@@ -450,19 +708,31 @@ function parseArguments(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === '--all') {
-      selected.push(...SUPPORTED_COMPONENTS);
+      selectedComponents.push(...SUPPORTED_COMPONENTS);
     } else if (argument === '--component') {
       const component = argv[++index];
       if (!component) fail('--component requires a value');
-      selected.push(component);
+      selectedComponents.push(component);
     } else if (argument.startsWith('--component=')) {
-      selected.push(argument.slice('--component='.length));
+      selectedComponents.push(argument.slice('--component='.length));
+    } else if (argument === '--profile') {
+      const profile = argv[++index];
+      if (!profile) fail('--profile requires a value');
+      selectedProfiles.push(profile);
+    } else if (argument.startsWith('--profile=')) {
+      selectedProfiles.push(argument.slice('--profile='.length));
     } else if (argument === '--check') {
       setMode('check');
+    } else if (argument === '--check-plan') {
+      setMode('check-plan');
+    } else if (argument === '--sync-plan') {
+      setMode('sync-plan');
     } else if (argument === '--adopt-existing') {
       setMode('adopt');
     } else if (argument === '--print-downloads') {
       setMode('downloads');
+    } else if (argument === '--missing-only') {
+      missingOnly = true;
     } else if (argument === '--root') {
       const value = argv[++index];
       if (!value) fail('--root requires a value');
@@ -471,37 +741,98 @@ function parseArguments(argv) {
       fail(`unknown argument: ${argument}`);
     }
   }
-  if (selected.length === 0) fail('select --all or at least one --component');
-  const components = [...new Set(selected)];
+  if (selectedComponents.length === 0 && selectedProfiles.length === 0) {
+    fail('select --all, at least one --component, or at least one --profile');
+  }
+  const components = [...new Set(selectedComponents)];
   for (const component of components) {
     if (!COMPONENT_SET.has(component)) {
       fail(`unsupported component ${component}; choose ${SUPPORTED_COMPONENTS.join(', ')}`);
     }
   }
-  return { components, mode, root };
+  const profiles = [...new Set(selectedProfiles)];
+  for (const profile of profiles) {
+    if (!PROFILE_SET.has(profile)) {
+      fail(`unsupported profile ${profile}; choose ${SUPPORTED_PROFILES.join(', ')}`);
+    }
+  }
+  if ((mode === 'check-plan' || mode === 'sync-plan') && components.length > 0) {
+    fail(`${mode} supports workspace profiles only`);
+  }
+  if (missingOnly && mode !== 'downloads') fail('--missing-only requires --print-downloads');
+  return { components, profiles, mode, root, missingOnly };
+}
+
+function archiveIsCurrent(root, target) {
+  const archivePath = path.join(root, target.file);
+  if (!fs.existsSync(archivePath)) return false;
+  try {
+    verifyArchive(fs.readFileSync(archivePath), target);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function printDownloads(root, definitions, { missingOnly }) {
+  for (const definition of definitions) {
+    const label = definition.component
+      ? `${definition.component} ${definition.version}`
+      : `workspace ${definition.profile} (${definition.targets.length} packages)`;
+    console.log(`[offline-npm-vendor] ${label}`);
+    for (const target of definition.targets) {
+      if (missingOnly && archiveIsCurrent(root, target)) continue;
+      console.log(`${target.url} -> ${target.file}`);
+    }
+  }
 }
 
 async function main() {
-  const { components, mode, root } = parseArguments(process.argv.slice(2));
+  const { components, profiles, mode, root, missingOnly } = parseArguments(process.argv.slice(2));
   const manifestPath = path.join(root, 'vendor', 'offline', 'manifest.json');
   const lockPath = path.join(root, 'package-lock.json');
   const manifest = readJson(manifestPath);
-  const lock = readJson(lockPath);
-  const definitions = components.map(component => buildComponent(lock, component));
+  const lockBuffer = fs.readFileSync(lockPath);
+  const lock = JSON.parse(lockBuffer.toString('utf8'));
+  const lockfileSha256 = sha256Hex(lockBuffer);
+  const componentDefinitions = components.map(component => buildComponent(lock, component));
+  const profileDefinitions = profiles.map(profile => buildProfile(lock, profile, lockfileSha256));
+  const allDefinitions = [...componentDefinitions, ...profileDefinitions];
 
   if (mode === 'downloads') {
-    for (const definition of definitions) {
-      console.log(`[offline-npm-vendor] ${definition.component} ${definition.version}`);
-      for (const target of definition.targets) console.log(`${target.url} -> ${target.file}`);
+    printDownloads(root, allDefinitions, { missingOnly });
+    return;
+  }
+  if (mode === 'check-plan') {
+    for (const definition of profileDefinitions) verifyProfileManifest(manifest, definition);
+    for (const definition of profileDefinitions) {
+      console.log(
+        `[offline-npm-vendor] OK: workspace plan ${definition.profile} (${definition.targets.length} packages)`
+      );
     }
+    return;
+  }
+  if (mode === 'sync-plan') {
+    syncProfilePlans(manifestPath, manifest, profileDefinitions);
     return;
   }
   if (mode === 'check') {
     verifyTsxEsbuildCompatibility(manifest);
-    for (const definition of definitions) checkComponent(root, manifest, definition);
+    for (const definition of componentDefinitions) checkComponent(root, manifest, definition);
+    for (const definition of profileDefinitions) checkProfile(root, manifest, definition);
     return;
   }
-  await refresh(root, manifestPath, manifest, definitions, { adoptExisting: mode === 'adopt' });
+  if (componentDefinitions.length > 0) {
+    await refresh(root, manifestPath, manifest, componentDefinitions, {
+      adoptExisting: mode === 'adopt',
+    });
+  }
+  if (profileDefinitions.length > 0) {
+    const currentManifest = readJson(manifestPath);
+    await refreshProfiles(root, manifestPath, currentManifest, profileDefinitions, {
+      adoptExisting: mode === 'adopt',
+    });
+  }
 }
 
 main().catch(error => {

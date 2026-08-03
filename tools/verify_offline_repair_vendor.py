@@ -45,7 +45,12 @@ def main(argv: list[str] | None = None) -> int:
     group.add_argument(
         "--tsx-only",
         action="store_true",
-        help="Require and verify only Node plus TSX and its esbuild runtime",
+        help="Require Node, TSX, esbuild, and the Linux TSX-test runtime profile",
+    )
+    group.add_argument(
+        "--tsx-engine-only",
+        action="store_true",
+        help="Require only Node plus TSX and esbuild, without project runtime packages",
     )
     group.add_argument(
         "--prettier-only",
@@ -74,23 +79,38 @@ def main(argv: list[str] | None = None) -> int:
                 ast=not (
                     args.esbuild_only
                     or args.tsx_only
+                    or args.tsx_engine_only
                     or args.prettier_only
                     or args.typescript_only
                 ),
                 esbuild=args.with_esbuild or args.esbuild_only,
-                tsx=args.with_tsx or args.tsx_only,
+                tsx=args.with_tsx or args.tsx_only or args.tsx_engine_only,
                 prettier=args.with_prettier or args.prettier_only,
                 typescript=args.with_typescript or args.typescript_only,
+                workspace_profile_name="tsx-tests" if args.tsx_only else None,
             )
         components = [f"Node {manifest['node']['version']}"]
         if not (
-            args.esbuild_only or args.tsx_only or args.prettier_only or args.typescript_only
+            args.esbuild_only
+            or args.tsx_only
+            or args.tsx_engine_only
+            or args.prettier_only
+            or args.typescript_only
         ):
             components.append(f"Oxc {manifest['ast']['version']}")
-        if args.with_esbuild or args.esbuild_only or args.with_tsx or args.tsx_only:
+        if (
+            args.with_esbuild
+            or args.esbuild_only
+            or args.with_tsx
+            or args.tsx_only
+            or args.tsx_engine_only
+        ):
             components.append(f"esbuild {manifest['esbuild']['version']}")
-        if args.with_tsx or args.tsx_only:
+        if args.with_tsx or args.tsx_only or args.tsx_engine_only:
             components.append(f"TSX {manifest['tsx']['version']}")
+        if args.tsx_only:
+            count = manifest["workspace"]["profiles"]["tsx-tests"]["packageCount"]
+            components.append(f"TSX-test runtime {count} packages")
         if args.with_prettier or args.prettier_only:
             components.append(f"Prettier {manifest['prettier']['version']}")
         if args.with_typescript or args.typescript_only:

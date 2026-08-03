@@ -6,7 +6,9 @@ This directory stores manually downloaded archives used by focused repair tasks.
 The native offline vendor is intentionally limited to Linux x64 with glibc. Windows, macOS, musl Linux, and
 ARM hosts fail immediately with `Offline repair vendor supports Linux x64 glibc only`; the tools do not look
 for an archive or offer a download URL on those platforms. Prettier and TSX remain platform-neutral packages,
-but their offline launch path still depends on the vendored Linux x64 Node runtime (and esbuild for TSX).
+but their offline launch path still depends on the vendored Linux x64 Node runtime (and esbuild for TSX). A
+separate lockfile-derived `tsx-tests` workspace profile supplies project runtime dependencies required by
+React, Three.js, PDF, Supabase, and other `.ts`/`.tsx` tests.
 
 ## Core set: Node 24 + Oxc AST compatibility fallback
 
@@ -82,22 +84,51 @@ This slice is required by `tests/_ts_runtime_module_loader.mjs` and therefore by
 snapshot contract. The two packages must have the same exact version. The declaration snapshot additionally
 uses the Oxc and TypeScript slices.
 
-## Optional TypeScript runtime-test set: TSX
+## Optional TypeScript runtime-test set: TSX + project runtime profile
 
-Add one archive; it reuses the esbuild files listed above:
+The TSX engine adds one archive and reuses the esbuild files listed above:
 
 ```text
 vendor/offline/tsx/tsx-<LOCKFILE_VERSION>.tgz
 ```
 
-Verify, install, and run focused TypeScript tests:
+TSX itself can transform dependency-free tests, but UI and service tests also import production packages. The
+complete Linux-only dependency closure is generated into `manifest.workspace.profiles.tsx-tests` from
+`package-lock.json` and stored under `vendor/offline/runtime/`.
+
+Prepare the plan and print only missing archives:
+
+```bash
+npm run vendor:offline:tsx-tests:plan
+npm run vendor:offline:tsx-tests:downloads
+```
+
+Download automatically, or place every printed archive manually and adopt it:
+
+```bash
+npm run vendor:offline:tsx-tests:refresh
+# or: npm run vendor:offline:tsx-tests:adopt
+npm run vendor:offline:tsx-tests:check
+```
+
+Verify, install, and run complete TypeScript tests:
 
 ```bash
 python tools/verify_offline_repair_vendor.py --tsx-only
 python tools/bootstrap_offline_tsx.py
-python tools/run_offline_tsx_tests.py tests/wave_c1_dimension_consolidation_runtime.test.ts
+python tools/run_offline_tsx_tests.py tests/design_tab_sections_runtime.test.tsx
 python tools/selftest_offline_tsx.py
 ```
+
+To validate only the TSX/esbuild engine before downloading the project runtime closure:
+
+```bash
+python tools/verify_offline_repair_vendor.py --tsx-engine-only
+python tools/bootstrap_offline_tsx.py --engine-only
+```
+
+Plain JavaScript tests that import production packages can use the same profile through
+`python tools/run_offline_node24.py --with-runtime ...`.
 
 ## Optional compiler set: TypeScript 7
 
@@ -119,5 +150,6 @@ python tools/selftest_offline_typescript.py
 ```
 
 Generated directories are `.tools/node24` and focused package paths under `node_modules`. They are ignored
-by Git. The manifest defines only the Linux x64 Node, Oxc, esbuild, and TypeScript native archives that are
-actually shipped in this directory. TSX itself is platform-neutral and uses the Linux x64 esbuild package.
+by Git. The manifest defines only Linux x64 glibc native archives for the offline path. TSX itself is
+platform-neutral, uses the Linux x64 esbuild package, and installs its project runtime profile without npm or
+lifecycle scripts.

@@ -131,7 +131,7 @@ test('dependency refresh scripts synchronize policy docs and offline package ven
 
   assert.equal(
     scripts['deps:update:sync-generated'],
-    'npm run toolchain:version-policy:report && npm run vendor:offline:packages:refresh'
+    'npm run toolchain:version-policy:report && npm run vendor:offline:packages:refresh && npm run vendor:offline:tsx-tests:refresh'
   );
   assert.equal(
     scripts['vendor:offline:packages:refresh'],
@@ -140,6 +140,10 @@ test('dependency refresh scripts synchronize policy docs and offline package ven
   assert.equal(
     scripts['vendor:offline:packages:check'],
     'node tools/wp_refresh_offline_npm_vendor.mjs --all --check'
+  );
+  assert.equal(
+    scripts['vendor:offline:tsx-tests:check-plan'],
+    'node tools/wp_refresh_offline_npm_vendor.mjs --profile tsx-tests --check-plan'
   );
   for (const scriptName of ['deps:update:safe', 'deps:update:recommended']) {
     assert.match(

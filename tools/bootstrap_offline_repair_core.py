@@ -248,6 +248,46 @@ def validate_manifest_against_project(manifest: dict) -> None:
     for entry in platforms.values():
         _validate_lock_entry(packages, entry, str(typescript["version"]), "TypeScript platform")
 
+    workspace = manifest.get("workspace")
+    if workspace is not None:
+        if not isinstance(workspace, dict):
+            raise OfflineCoreError("vendor/offline/manifest.json has an invalid workspace definition")
+        expected_platform = {
+            "key": SUPPORTED_PLATFORM_KEY,
+            "os": "linux",
+            "cpu": "x64",
+            "libc": "glibc",
+        }
+        if workspace.get("platform") != expected_platform:
+            raise OfflineCoreError("Offline workspace profiles must target Linux x64 glibc only")
+        expected_lockfile_sha256 = _sha256(LOCK_PATH)
+        if workspace.get("lockfileSha256") != expected_lockfile_sha256:
+            raise OfflineCoreError(
+                "Offline workspace plan is stale for package-lock.json; run "
+                "npm run vendor:offline:tsx-tests:plan"
+            )
+        profiles = workspace.get("profiles")
+        if not isinstance(profiles, dict):
+            raise OfflineCoreError("Offline workspace definition has no profiles map")
+        for profile_name, profile in profiles.items():
+            if not isinstance(profile, dict):
+                raise OfflineCoreError(f"Invalid offline workspace profile: {profile_name}")
+            entries = profile.get("packages")
+            if not isinstance(entries, list) or not entries:
+                raise OfflineCoreError(f"Offline workspace profile {profile_name} has no packages")
+            if profile.get("packageCount") != len(entries):
+                raise OfflineCoreError(
+                    f"Offline workspace profile {profile_name} packageCount is stale"
+                )
+            for entry in entries:
+                version = str(entry.get("version", ""))
+                _validate_lock_entry(
+                    packages,
+                    entry,
+                    version,
+                    f"workspace profile {profile_name}",
+                )
+
 
 def selected_entries(manifest: dict, key: str) -> tuple[dict, list[dict]]:
     node_entry = manifest["node"]["platforms"].get(key)
@@ -293,16 +333,49 @@ def typescript_entries(manifest: dict, key: str) -> tuple[dict, dict]:
     return package_entry, platform_entry
 
 
-def _verify_npm_archives(entries: list[dict], label: str) -> None:
+def workspace_profile(manifest: dict, key: str, profile_name: str = "tsx-tests") -> dict:
+    workspace = manifest.get("workspace")
+    if not isinstance(workspace, dict):
+        raise OfflineCoreError("No offline workspace definition")
+    platform_definition = workspace.get("platform")
+    if not isinstance(platform_definition, dict) or platform_definition.get("key") != key:
+        raise OfflineCoreError(f"No offline workspace definition for platform {key}")
+    profile = workspace.get("profiles", {}).get(profile_name)
+    if not isinstance(profile, dict):
+        raise OfflineCoreError(f"No offline workspace profile named {profile_name}")
+    entries = profile.get("packages")
+    if not isinstance(entries, list) or not entries:
+        raise OfflineCoreError(f"Offline workspace profile {profile_name} has no packages")
+    return profile
+
+
+def _verify_npm_archives(
+    entries: list[dict],
+    label: str,
+    *,
+    missing_command: str | None = None,
+) -> None:
+    missing: list[dict] = []
     for entry in entries:
         archive = _root_path(entry["file"], f"{label} archive path")
-        _require_file(archive, entry["url"])
+        if not archive.is_file():
+            missing.append(entry)
+            continue
         actual = _sha512_integrity(archive)
         if actual != entry["integrity"]:
             raise OfflineCoreError(
                 f"SHA-512 integrity mismatch for {_display_path(archive)}\n"
                 f"expected: {entry['integrity']}\nactual:   {actual}"
             )
+    if missing:
+        first = missing[0]
+        guidance = f"\nRun:\n{missing_command}" if missing_command else ""
+        raise OfflineCoreError(
+            f"{label} is missing {len(missing)} archive(s).\n"
+            f"First missing archive: {first['file']}\n"
+            f"Download it from:\n{first['url']}\n"
+            f"and save it at that exact repository path.{guidance}"
+        )
 
 
 def verify_vendor(
@@ -315,6 +388,7 @@ def verify_vendor(
     tsx: bool = False,
     prettier: bool = False,
     typescript: bool = False,
+    workspace_profile_name: str | None = None,
 ) -> None:
     validate_manifest_against_project(manifest)
     node_entry, ast_entries = selected_entries(manifest, key)
@@ -343,6 +417,14 @@ def verify_vendor(
 
     if typescript:
         _verify_npm_archives(list(typescript_entries(manifest, key)), "TypeScript")
+
+    if workspace_profile_name:
+        profile = workspace_profile(manifest, key, workspace_profile_name)
+        _verify_npm_archives(
+            profile["packages"],
+            f"workspace {workspace_profile_name}",
+            missing_command="npm run vendor:offline:tsx-tests:downloads",
+        )
 
 
 def _extract_node_binary(archive: Path, member_name: str, destination: Path) -> None:
@@ -485,6 +567,120 @@ def _install_npm_entry(entry: dict, expected_version: str, *, force: bool = Fals
             f"expected {expected_version}, got {actual_version or 'missing'}"
         )
     return destination
+
+
+def _workspace_stamp_path(profile_name: str) -> Path:
+    safe_name = re.sub(r"[^a-zA-Z0-9_.-]+", "-", profile_name)
+    return ROOT / "node_modules" / f".offline-workspace-{safe_name}.json"
+
+
+def _protected_offline_install_paths(manifest: dict, key: str) -> set[str]:
+    protected: set[str] = set()
+    _, ast_entries = selected_entries(manifest, key)
+    entries = [
+        *ast_entries,
+        *esbuild_entries(manifest, key),
+        tsx_entry(manifest),
+        prettier_entry(manifest),
+        *typescript_entries(manifest, key),
+    ]
+    for entry in entries:
+        install_path = entry.get("installPath")
+        if isinstance(install_path, str):
+            protected.add(install_path)
+    return protected
+
+
+def _remove_stale_workspace_packages(
+    manifest: dict,
+    key: str,
+    profile_name: str,
+    current_paths: set[str],
+) -> None:
+    stamp_path = _workspace_stamp_path(profile_name)
+    if not stamp_path.is_file():
+        return
+    try:
+        previous = json.loads(stamp_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return
+    previous_paths = previous.get("installPaths")
+    if not isinstance(previous_paths, list):
+        return
+    protected = _protected_offline_install_paths(manifest, key)
+    for install_path in previous_paths:
+        if not isinstance(install_path, str):
+            continue
+        if install_path in current_paths or install_path in protected:
+            continue
+        destination = _root_path(install_path, "stale workspace install path")
+        if destination.exists():
+            shutil.rmtree(destination)
+
+
+def _write_workspace_stamp(profile_name: str, profile: dict) -> None:
+    stamp_path = _workspace_stamp_path(profile_name)
+    stamp_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "profile": profile_name,
+        "packageCount": len(profile["packages"]),
+        "installPaths": [entry["installPath"] for entry in profile["packages"]],
+    }
+    temporary = stamp_path.with_name(f"{stamp_path.name}.tmp-{os.getpid()}")
+    temporary.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    temporary.replace(stamp_path)
+
+
+def install_workspace_profile(
+    manifest: dict,
+    key: str,
+    node_executable: Path,
+    profile_name: str = "tsx-tests",
+    *,
+    force: bool = False,
+) -> None:
+    profile = workspace_profile(manifest, key, profile_name)
+    entries = sorted(
+        profile["packages"],
+        key=lambda entry: (entry["installPath"].count("/node_modules/"), entry["installPath"]),
+    )
+    current_paths = {entry["installPath"] for entry in entries}
+    _remove_stale_workspace_packages(manifest, key, profile_name, current_paths)
+    for entry in entries:
+        _install_npm_entry(entry, str(entry["version"]), force=force)
+
+    if profile_name == "tsx-tests":
+        roots = profile.get("rootDependencies", [])
+        probe_script = (
+            "const roots=JSON.parse(process.argv[1]);"
+            "for(const name of roots){if(!import.meta.resolve(name)) throw new Error('unresolved '+name);}"
+            "const React=(await import('react')).default;"
+            "const {renderToStaticMarkup}=await import('react-dom/server');"
+            "const html=renderToStaticMarkup(React.createElement('span',null,'offline-runtime-ok'));"
+            "if(!html.includes('offline-runtime-ok')) throw new Error('React SSR probe failed');"
+            "console.log('workspace-runtime-ok');"
+        )
+        probe = subprocess.run(
+            [
+                str(node_executable),
+                "--input-type=module",
+                "--eval",
+                probe_script,
+                json.dumps(roots),
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if probe.returncode != 0 or probe.stdout.strip() != "workspace-runtime-ok":
+            detail = (probe.stderr or probe.stdout).strip()
+            raise OfflineCoreError(
+                "Offline workspace packages were extracted but the TSX runtime profile failed "
+                f"verification:\n{detail or 'no output'}"
+            )
+
+    _write_workspace_stamp(profile_name, profile)
 
 
 def install_ast(manifest: dict, key: str, node_executable: Path, *, force: bool = False) -> None:

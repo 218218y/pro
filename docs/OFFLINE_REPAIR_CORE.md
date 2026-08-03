@@ -12,11 +12,14 @@ smaller trusted set:
 - the matching Linux x64 glibc native Oxc parser binding;
 - optionally, lockfile-pinned esbuild plus its Linux x64 native package;
 - optionally, lockfile-pinned TSX, reusing the compatible esbuild slice;
+- a generated `tsx-tests` profile containing every production runtime dependency and transitive package
+  needed by `.ts`/`.tsx` tests on Linux x64 glibc;
 - optionally, lockfile-pinned Prettier;
 - optionally, lockfile-pinned TypeScript 7 plus its Linux x64 native package.
 
-The bootstrap extracts only explicitly listed archives. It does not invoke npm, resolve dependencies, run
-lifecycle scripts, install Playwright browsers, or install the complete lint/build/release toolchain. The
+The bootstrap extracts only explicitly listed archives. The workspace profile is resolved ahead of time from
+`package-lock.json`; installation itself does not invoke npm, resolve packages, run lifecycle scripts, install
+Playwright browsers, or install the complete lint/build/release toolchain. The
 offline vendor supports Linux x64 with glibc only. Windows, macOS, musl Linux, and ARM fail before archive
 lookup with `Offline repair vendor supports Linux x64 glibc only`.
 
@@ -56,6 +59,17 @@ vendor/offline/tsx/tsx-<LOCKFILE_VERSION>.tgz
 TSX is a platform-neutral JavaScript package and reuses the exact esbuild dependency range recorded in
 `package-lock.json`. The synchronizer rejects an incompatible vendored esbuild version. The macOS-only
 `fsevents` dependency is optional and is not part of this Linux-only slice.
+
+The TSX archive is only the transformer/loader. Tests importing project UI or services additionally need the
+generated workspace closure under:
+
+```text
+vendor/offline/runtime/*.tgz
+```
+
+That list is derived from every production dependency, including transitive and required peer dependencies.
+TSX and esbuild remain separate focused toolchain slices. Platform filtering keeps only Linux x64 glibc packages such as
+`@napi-rs/canvas-linux-x64-gnu`; Windows, macOS, ARM, and musl variants never enter the profile.
 
 ### Optional TypeScript 7 slice
 
@@ -140,6 +154,23 @@ URL and destination path, place the untouched `.tgz` there, then run `npm run ve
 `npm run deps:update:sync-generated` now runs the package synchronizer, so the normal dependency-update flows
 refresh these offline slices automatically instead of leaving the manifest and contracts stale.
 
+The TSX-test workspace profile has an independent plan/check flow. Plan operations do not require downloaded
+archives and therefore catch stale dependency graphs immediately after a lockfile change:
+
+```bash
+npm run vendor:offline:tsx-tests:plan
+npm run vendor:offline:tsx-tests:check-plan
+npm run vendor:offline:tsx-tests:downloads
+```
+
+`downloads` prints only missing or invalid archives with their exact official npm URL and repository path.
+For automatic download use `npm run vendor:offline:tsx-tests:refresh`. For manual downloads, place every file
+at the printed path and run `npm run vendor:offline:tsx-tests:adopt`. Both paths verify SHA-512 integrity and
+embedded package metadata, update the manifest atomically, and remove obsolete runtime archives only after a
+complete successful replacement. The manifest stores a SHA-256 fingerprint of `package-lock.json`; any lockfile
+change blocks a stale workspace plan until it is regenerated. `deps:update:sync-generated` refreshes this
+profile as well.
+
 ## Run focused Node commands
 
 AST-dependent test:
@@ -158,6 +189,13 @@ Node-only command:
 
 ```bash
 python tools/run_offline_node24.py --node-only --version
+```
+
+Node tests that import production packages can opt into the same Linux-only runtime profile without using
+TSX:
+
+```bash
+python tools/run_offline_node24.py --with-runtime --test tests/interior_tab_sections_runtime.test.js
 ```
 
 Core self-test:
@@ -185,20 +223,30 @@ transform through it. The declaration-snapshot contract additionally needs the O
 npm run test:offline:declaration-snapshot
 ```
 
-## Verify and run TSX tests independently
+## Verify and run TSX tests with project runtime dependencies
 
-The TSX path installs the single lockfile-pinned TSX archive and reuses the existing esbuild common and
-platform packages. It never invokes `npx`, npm resolution, or lifecycle scripts.
+The TSX path installs the lockfile-pinned TSX archive, reuses the existing esbuild common and platform
+packages, and extracts the generated `tsx-tests` workspace profile. This closes the gap where TSX could
+transform a test but then failed with `ERR_MODULE_NOT_FOUND` for `react`, `three`, `zustand`, PDF packages, or
+Supabase. It never invokes `npx`, npm resolution, or lifecycle scripts during installation.
 
 ```bash
 python tools/verify_offline_repair_vendor.py --tsx-only
 python tools/bootstrap_offline_tsx.py
-python tools/run_offline_tsx_tests.py tests/wave_c1_dimension_consolidation_runtime.test.ts
+python tools/run_offline_tsx_tests.py tests/design_tab_sections_runtime.test.tsx
 python tools/selftest_offline_tsx.py
 ```
 
-The self-test runs both the Wave C1 TypeScript runtime identity test and the declaration-snapshot contract.
-That combined proof requires the Node, Oxc, esbuild, TSX, and TypeScript archives already documented here.
+The self-test runs a dependency-free Wave C identity test, a React/React DOM SSR `.tsx` test, and the
+declaration-snapshot contract. That combined proof requires the Node, Oxc, esbuild, TSX, TypeScript, and
+workspace runtime archives documented here.
+
+Before downloading the workspace closure, the engine can still be validated independently:
+
+```bash
+python tools/verify_offline_repair_vendor.py --tsx-engine-only
+python tools/bootstrap_offline_tsx.py --engine-only
+```
 
 ## Verify and run Prettier independently
 
@@ -256,7 +304,8 @@ regenerated to hide that mismatch.
 ## Scope boundary
 
 This focused toolchain covers Node-native tests, AST-backed source contracts, layer checks, formatting,
-TypeScript typechecking, declaration emission, the esbuild-backed TypeScript runtime loader, and focused
-`.ts`/`.tsx` runtime tests through TSX. It does not provide ESLint/Oxlint, Vite, release bundling,
+TypeScript typechecking, declaration emission, the esbuild-backed TypeScript runtime loader, and repository
+`.ts`/`.tsx` runtime tests whose production dependencies are represented in the lock-derived workspace
+profile. It does not provide ESLint/Oxlint, Vite, release bundling,
 obfuscation, Playwright, or browser binaries. `package-lock.json` remains cross-platform for normal installs;
 only the checked-in `vendor/offline` repair path is Linux x64 glibc-only.

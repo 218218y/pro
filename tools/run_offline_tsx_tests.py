@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run repository TypeScript tests through pinned offline Node, Oxc, esbuild, and TSX."""
+"""Run TypeScript tests through pinned offline Node, Oxc, TSX, and runtime packages."""
 
 from __future__ import annotations
 
@@ -22,10 +22,18 @@ def main(argv: list[str] | None = None) -> int:
     try:
         manifest = core.load_manifest()
         key = core.platform_key()
-        core.verify_vendor(manifest, key, node=True, ast=True, tsx=True)
+        core.verify_vendor(
+            manifest,
+            key,
+            node=True,
+            ast=True,
+            tsx=True,
+            workspace_profile_name="tsx-tests",
+        )
         node = core.install_node(manifest, key)
         core.install_ast(manifest, key, node)
         core.install_tsx(manifest, key, node)
+        core.install_workspace_profile(manifest, key, node, "tsx-tests")
     except core.OfflineCoreError as exc:
         print(f"offline TSX test runner error: {exc}", file=sys.stderr)
         return 2

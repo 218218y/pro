@@ -51,11 +51,50 @@ The current deployment keeps `verify_jwt = true` and therefore invokes the funct
 
 Migrating to publishable/secret keys is a separate cutover: set `verify_jwt = false`, validate the publishable key in the handler (prefer the current `@supabase/server` publishable auth mode), move server access from `SUPABASE_SERVICE_ROLE_KEY` to `SUPABASE_SECRET_KEYS`, deploy and verify, then replace the browser key. See [Supabase's API-key migration guide](https://supabase.com/docs/guides/getting-started/migrating-to-new-api-keys).
 
+## Migration history contract
+
+The canonical production migration chain lives under `supabase/migrations/` and contains all five versions recorded or deployed for Cloud Sync:
+
+- `20260713110031_signed_room_cloud_sync_schema.sql`
+- `20260713110043_copy_legacy_cloud_sync_rows.sql`
+- `20260713110150_tighten_cloud_sync_service_role_privileges.sql`
+- `202607160001_cloud_sync_retention.sql`
+- `202607160002_cloud_sync_room_expiry.sql`
+
+The first three files are byte-for-byte historical copies of their reviewed operator SQL files under `docs/`. Do not edit an applied migration. Change the schema only through a new migration.
+
+For a fresh linked project, use `supabase db push --linked` so the SQL and `supabase_migrations.schema_migrations` are updated together. If a reviewed migration was applied manually through SQL Editor for a staged production rollout, immediately mark that exact version as applied with `supabase migration repair`; the repair command changes migration history only and does not execute SQL.
+
+### One-time Bargig production history closeout
+
+The Bargig production schema, Edge Function, lease reconciliation, seven-day dry-run, active schedule, and post-schedule execution were verified before this closeout. The retention SQL already exists remotely, so it must not be executed again merely to populate migration history.
+
+From the repository root, authenticate and link once if needed:
+
+```powershell
+npx --yes supabase@latest login
+npx --yes supabase@latest link --project-ref paqzrxrvowwndevqptdk
+```
+
+Run the non-mutating check first:
+
+```powershell
+.\tools\wp_supabase_cloud_sync_repair_history.ps1
+```
+
+Then perform the one-time history repair:
+
+```powershell
+.\tools\wp_supabase_cloud_sync_repair_history.ps1 -Apply
+```
+
+The helper validates the complete local five-migration chain, verifies the linked project ref, repairs only missing versions `202607160001` and `202607160002`, lists migration history again, and finishes with `supabase db push --linked --dry-run`. It never executes migration SQL, changes retention settings, deploys the Edge Function, or modifies the Cron schedule. Re-running it after success is safe and becomes a verification-only operation.
+
 ## New deployment
 
 1. Apply `docs/supabase_cloud_sync.sql` as one migration.
 2. Run `docs/supabase_cloud_sync_retention_preflight.sql`. Stop if any invalid base/path, over-limit family, missing planned policy, or public-family anomaly count is nonzero.
-3. Apply the versioned migrations `supabase/migrations/202607160001_cloud_sync_retention.sql` and then `supabase/migrations/202607160002_cloud_sync_room_expiry.sql`. They create the server-only retention owner, restrict room-family paths, backfill leases, make deletion terminal for old room tokens, and leave the Bargig deletion policy disabled.
+3. Apply the versioned migrations `supabase/migrations/202607160001_cloud_sync_retention.sql` and then `supabase/migrations/202607160002_cloud_sync_room_expiry.sql`. They create the server-only retention owner, restrict room-family paths, backfill leases, make deletion terminal for old room tokens, and leave the Bargig deletion policy disabled. When these files are applied manually for staged rollout control, mark each successfully applied version in migration history before continuing; do not rerun the SQL merely to create the history row.
 4. Run `docs/supabase_cloud_sync_retention_verify.sql`. Review the dry-run counts; this verification never deletes data.
 5. Configure the Edge Function secrets. Generate a fresh random token secret of at least 32 characters and keep it out of source control:
 

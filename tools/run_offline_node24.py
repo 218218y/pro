@@ -32,6 +32,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also install and verify repository-pinned TSX and its esbuild runtime",
     )
+    parser.add_argument(
+        "--with-runtime",
+        action="store_true",
+        help="Also install the Linux x64 project runtime profile for tests importing production packages",
+    )
     args, node_args = parser.parse_known_args(argv)
     if node_args[:1] == ["--"]:
         node_args = node_args[1:]
@@ -49,6 +54,7 @@ def main(argv: list[str] | None = None) -> int:
             esbuild=args.with_esbuild,
             tsx=args.with_tsx,
             typescript=args.with_typescript,
+            workspace_profile_name="tsx-tests" if args.with_runtime else None,
         )
         executable = core.install_node(manifest, key)
         if not args.node_only:
@@ -59,6 +65,8 @@ def main(argv: list[str] | None = None) -> int:
             core.install_esbuild(manifest, key, executable)
         if args.with_typescript:
             core.install_typescript(manifest, key, executable)
+        if args.with_runtime:
+            core.install_workspace_profile(manifest, key, executable, "tsx-tests")
     except core.OfflineCoreError as exc:
         print(f"offline repair core error: {exc}", file=sys.stderr)
         return 2
