@@ -9,28 +9,12 @@ import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mj
 import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
-const corniceOwnerRel = 'esm/shared/dimensions/carcass_cornice_render_policy.ts';
-const shellOwnerRel = 'esm/shared/dimensions/carcass_shell_policy.ts';
 const consumers = Object.freeze([
   'esm/native/builder/corner_wing_cornice_path.ts',
   'esm/native/builder/corner_wing_cornice_profile.ts',
   'esm/native/builder/corner_wing_cornice_wave.ts',
 ]);
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
-
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
 function identifierName(node) {
   if (node?.type === 'Identifier') return node.name;
@@ -75,46 +59,6 @@ function subtreeContainsOwner(node) {
   });
   return found;
 }
-
-const removedImport = Object.freeze({
-  toFile: facadeRel,
-  kind: 'value',
-  importedSymbols: ['CARCASS_CORNICE_DIMENSIONS', 'CARCASS_SHELL_DIMENSIONS'],
-  syntax: 'static-import',
-});
-
-function expectedEntry({ fromFile, flow }) {
-  return {
-    from: 'builder',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-26',
-    reviewBy: '2026-10-18',
-    fromFile,
-    companionImport: {
-      toFile: corniceOwnerRel,
-      kind: 'value',
-      importedSymbols: ['CARCASS_CORNICE_RENDER_POLICY'],
-      syntax: 'static-import',
-    },
-    removedImport,
-    addedImport: {
-      toFile: shellOwnerRel,
-      kind: 'value',
-      importedSymbols: ['CARCASS_SHELL_DIMENSIONS'],
-      syntax: 'static-import',
-    },
-    reason: `The Corner Wing Cornice ${flow} flow replaces one legacy facade statement with the focused Carcass Cornice Render owner plus the focused Carcass Shell owner on the existing builder to shared edge.`,
-    removalCondition: `Remove this entry when a reviewed Corner Wing Cornice ${flow} composition seam eliminates the extra Carcass Shell statement without reintroducing the legacy facade.`,
-  };
-}
-
-const expectedEntries = Object.freeze([
-  expectedEntry({ fromFile: consumers[0], flow: 'path' }),
-  expectedEntry({ fromFile: consumers[1], flow: 'profile' }),
-  expectedEntry({ fromFile: consumers[2], flow: 'wave' }),
-]);
 
 test('Corner Wing Cornice trio imports exactly the focused Cornice Render and Carcass Shell owners', () => {
   for (const consumerRel of consumers) {
@@ -234,17 +178,4 @@ test('Corner Wing Cornice migration introduces no copied policy, wrapper, merge,
       `${consumerRel} numeric literal inventory`
     );
   }
-});
-
-test('Corner Wing Cornice appends exactly Entries 152-154 after the unchanged 151-entry prefix', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 151)),
-    'e9e9c2b5c6446497ce5f8d3c9b4258b99a33ea23846a2f998c11375d10e03897'
-  );
-  assert.deepEqual(baseline.migrationBudgets.slice(151, 154), expectedEntries);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 154)),
-    '0398ae9924f577c2f06a0293feac49f8a70eff80274c22717a9624421cdf5ef0'
-  );
 });

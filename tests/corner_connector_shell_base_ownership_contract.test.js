@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,77 +8,7 @@ import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mj
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const consumerRel = 'esm/native/builder/corner_connector_emit_shell_base.ts';
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
-const plinthOwnerRel = 'esm/shared/dimensions/base_plinth_policy.ts';
-const legOwnerRel = 'esm/shared/dimensions/base_leg_policy.ts';
-const platformOwnerRel = 'esm/shared/dimensions/base_platform_render_policy.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
-
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
-
-const removedImport = Object.freeze({
-  toFile: facadeRel,
-  kind: 'value',
-  importedSymbols: ['CARCASS_BASE_DIMENSIONS'],
-  syntax: 'static-import',
-});
-
-function expectedEntry({ toFile, importedSymbol, reason, removalCondition }) {
-  return {
-    from: 'builder',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-25',
-    reviewBy: '2026-10-18',
-    fromFile: consumerRel,
-    companionImport: {
-      toFile: plinthOwnerRel,
-      kind: 'value',
-      importedSymbols: ['BASE_PLINTH_POLICY'],
-      syntax: 'static-import',
-    },
-    removedImport,
-    addedImport: {
-      toFile,
-      kind: 'value',
-      importedSymbols: [importedSymbol],
-      syntax: 'static-import',
-    },
-    reason,
-    removalCondition,
-  };
-}
-
-const expectedEntries = Object.freeze([
-  expectedEntry({
-    toFile: legOwnerRel,
-    importedSymbol: 'BASE_LEG_LAYOUT_POLICY',
-    reason:
-      'The Corner Connector shell-base flow replaces one legacy facade statement with the focused Base Plinth owner plus the focused Base Leg Layout owner on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed Corner Connector shell-base composition seam eliminates the extra Base Leg Layout statement without reintroducing the legacy facade.',
-  }),
-  expectedEntry({
-    toFile: platformOwnerRel,
-    importedSymbol: 'BASE_PLATFORM_RENDER_POLICY',
-    reason:
-      'The Corner Connector shell-base flow replaces one legacy facade statement with the focused Base Plinth owner plus the focused Base Platform Render owner on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed Corner Connector shell-base composition seam eliminates the extra Base Platform Render statement without reintroducing the legacy facade.',
-  }),
-]);
 
 test('Corner Connector shell-base imports exactly the three focused Base owners', () => {
   const source = read(consumerRel);
@@ -163,18 +92,5 @@ test('Corner Connector shell-base reads every migrated field directly from its s
   assert.match(
     source,
     /readPositiveNumber\(\s*baseLegHeightM,\s*Math\.max\(0, baseH - BASE_PLATFORM_RENDER_POLICY\.heightM\)\s*\)/u
-  );
-});
-
-test('Corner Connector shell-base appends exactly Entries 150-151 after the unchanged 149-entry prefix', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 149)),
-    '017aabccfc1a4d0fccde156cff556af4f6d0006409f196868b3d8a53dbd666e5'
-  );
-  assert.deepEqual(baseline.migrationBudgets.slice(149, 151), expectedEntries);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 151)),
-    'e9e9c2b5c6446497ce5f8d3c9b4258b99a33ea23846a2f998c11375d10e03897'
   );
 });

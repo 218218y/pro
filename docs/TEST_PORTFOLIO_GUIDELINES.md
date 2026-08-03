@@ -29,6 +29,12 @@ Remove or rewrite tests when they only preserve old migration steps, historical 
 
 Guard tests may check strings/imports/line counts for canonical ownership, but they must stay narrow. If a guard needs paragraphs of explanation, the doc or owner map probably needs cleanup instead.
 
+A local ownership test must inspect only the source files and behavior it owns. Repository-wide Layer Contract collection belongs to `tests/helpers/repository_layer_contract_fixture.mjs`, which memoizes one graph and evaluation for central Layer Contract/closeout tests. Do not call the graph collector from individual ownership tests or from another helper. When a ledger entry names an exact consumer, analyze that consumer directly instead of walking all of `esm`.
+
+Historical ledger prefixes are protected centrally by the final migration closeout and its exact inventory fingerprint. Local ownership tests should protect current imports, aliases, formulas, and behavior; they should not copy historical `migrationBudgets` prefixes or rerun the global closeout. This separation keeps failures attributable: a behavior regression fails its owner test, while ledger drift fails one central contract.
+
+Layer proposal output is concise by default so CI logs show the decision instead of dumping the full baseline. Use `node tools/wp_layer_contract.js --propose --json` only when the complete machine-readable proposal is needed. CLI tests must use a minimal `--root` fixture rather than scanning the production tree merely to verify argument handling or exit codes.
+
 Current guard strings that must remain available live in `docs/layering_completion_audit.md`.
 
 ## Verification strategy
@@ -70,6 +76,7 @@ The audit is not a snapshot test for every assertion. It protects the control pl
 - files with `legacy` in the name must state their purpose as migration, compatibility, cleanup, root, guard, audit, contract, or surface coverage;
 - refactor stage guard tests must be reachable through the canonical `tools/wp_test_group_catalog.mjs` group used by one short package facade;
 - named test groups must not contain duplicate or missing files.
+- repository-wide Layer Contract collection must remain behind the one cached central fixture.
 
 Large named groups belong in `tools/wp_test_group_catalog.mjs`, not in multi-thousand-character `package.json` commands. Each group declares its package-script binding, verification `kind`, canonical `owners`, execution `environment`, runner (`node-test`, `tsx-test`, or `serial-tsx`), portfolio role, optional serial policy, and file membership. `tools/wp_test_group.mjs` validates every member before spawning the matching canonical runner, and the portfolio audit reads the same catalog as its source of truth.
 

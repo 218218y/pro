@@ -1,19 +1,21 @@
 {
-  "generatedAt": "2026-08-03T17:08:05.919Z",
+  "generatedAt": "2026-08-03T17:58:14.405Z",
   "totals": {
-    "tests": 1337,
-    "unitRunnerTests": 1329,
+    "tests": 1336,
+    "unitRunnerTests": 1328,
     "e2eTests": 8,
-    "nonTestRuntimeFiles": 35,
+    "nonTestRuntimeFiles": 36,
     "packageTestReferences": 199,
     "catalogTestReferences": 352,
     "totalTestReferences": 551,
     "catalogGroups": 29,
     "catalogScriptBindings": 29,
-    "primaryCatalogGroups": 5
+    "primaryCatalogGroups": 5,
+    "directRepositoryLayerScanTests": 0,
+    "historicalMigrationPrefixTests": 0
   },
   "categories": {
-    "contract": 487,
+    "contract": 486,
     "runtime-unit": 322,
     "integration": 466,
     "e2e-smoke": 9,
@@ -30,6 +32,8 @@
     "duplicateRunnerFiles": [],
     "e2eIncludedInUnitRunner": [],
     "helpersIncludedInUnitRunner": [],
+    "directRepositoryLayerScanTests": [],
+    "historicalMigrationPrefixTests": [],
     "missingFromUnitRunner": []
   },
   "records": [
@@ -4304,10 +4308,6 @@
     {
       "file": "tests/sketch_box_stacked_content_preview_renderer_runtime.test.ts",
       "category": "integration"
-    },
-    {
-      "file": "tests/sketch_box_storage_preview_pair_ownership_contract.test.js",
-      "category": "contract"
     },
     {
       "file": "tests/sketch_box_storage_preview_pair_runtime.test.ts",

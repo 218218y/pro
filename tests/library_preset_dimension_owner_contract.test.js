@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -113,8 +112,6 @@ function stableJson(value) {
   }
   return JSON.stringify(value);
 }
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
 function identifierName(node) {
   if (node?.type === 'Identifier') return node.name;
@@ -542,33 +539,4 @@ test('Library Preset consumers stay within the approved universe and use exactly
     const inspection = inspectLibraryPresetConsumer(file, source);
     if (inspection.mode !== 'none') assert.deepEqual(inspection.violations, [], relativePath(file));
   }
-});
-
-test('Library Preset owner locks the historical 158- and 159-entry migration prefixes', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.ok(baseline.migrationBudgets.length >= 159);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 158)),
-    '7cb5d770d8d0297e4037ecf59eaf417a164495416cf956615c37af75163d0516'
-  );
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 159)),
-    '7bb983429d5ea9cf6c8f4e6f44f8637a0d2841866d09bf9ddc8515dd230e16a8'
-  );
-
-  const futureLedger = [...baseline.migrationBudgets, { id: 'future-entry-after-159' }];
-  assert.equal(
-    semanticSha256(futureLedger.slice(0, 159)),
-    '7bb983429d5ea9cf6c8f4e6f44f8637a0d2841866d09bf9ddc8515dd230e16a8'
-  );
-
-  const mutatedHistoricalLedger = structuredClone(baseline.migrationBudgets);
-  mutatedHistoricalLedger[158] = {
-    ...mutatedHistoricalLedger[158],
-    reason: 'mutated historical Entry 159',
-  };
-  assert.notEqual(
-    semanticSha256(mutatedHistoricalLedger.slice(0, 159)),
-    '7bb983429d5ea9cf6c8f4e6f44f8637a0d2841866d09bf9ddc8515dd230e16a8'
-  );
 });

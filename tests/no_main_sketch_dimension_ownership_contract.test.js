@@ -15,7 +15,6 @@ const workspacePolicyRel = 'esm/shared/dimensions/no_main_sketch_workspace_polic
 const builderRel = 'esm/native/builder/build_no_main_sketch_host.ts';
 const serviceRel = 'esm/native/services/canvas_picking_projection_runtime_box_no_main_workspace.ts';
 
-const baselineRel = 'tools/wp_layer_baseline.json';
 const ownerSymbol = 'NO_MAIN_SKETCH_POLICY';
 const workspacePolicySymbol = 'NO_MAIN_SKETCH_WORKSPACE_POLICY';
 const compatibilitySymbol = 'NO_MAIN_SKETCH_DIMENSIONS';
@@ -25,8 +24,6 @@ const builderSemanticSha256 = 'c044eb8052b5f5bdec3289bdcffb7e870a9fc44794aa474fb
 const builderLiteralSha256 = '854e96bc723cbdd1d8e1b83660b9c94189012a8ae456714f0a38055d68a31faf';
 const serviceSemanticSha256 = '57fc2750baedda94ec347f885a6162c86352bdbd362414b94c2bacd29144c2cc';
 const serviceLiteralSha256 = '494a0d89c74ac19a7bfb4e15102b425a0445d28c512a64e5f1ef16448c9aea0a';
-const prefix166Sha256 = 'f58543ffaf2860f846f7469e93ab442adf0ee3fc5ae391fd904af3f64167c111';
-
 const expectedOwnerValues = Object.freeze({
   defaultGridDivisions: 6,
   workspacePaddingM: 0.12,
@@ -59,25 +56,6 @@ function stableJson(value) {
       .join(',')}}`;
   }
   return JSON.stringify(value);
-}
-
-function assertStatementNeutralLedgerHistory(migrationBudgets) {
-  assert.ok(migrationBudgets.length >= 166);
-  const approvedHistory = migrationBudgets.slice(0, 166);
-  assert.equal(sha256(stableJson(approvedHistory)), prefix166Sha256);
-  assert.deepEqual(
-    approvedHistory.filter(entry => [builderRel, serviceRel].includes(entry.fromFile)),
-    []
-  );
-}
-
-function appendSyntheticFutureEntry167(migrationBudgets) {
-  const futureEntry = structuredClone(migrationBudgets[165]);
-  futureEntry.owner = 'synthetic-append-safe-proof';
-  futureEntry.fromFile = builderRel;
-  futureEntry.reason = 'Synthetic Entry 167 proves the historical No-Main contract is append-safe.';
-  futureEntry.removalCondition = 'Remove the synthetic Entry 167 after the append-safe proof.';
-  return [...structuredClone(migrationBudgets.slice(0, 166)), futureEntry];
 }
 
 function listSourceFiles(directory, files = []) {
@@ -562,13 +540,4 @@ test('runtime values, fallbacks, conversions, freezes, and serialization remain 
   assert.equal(Object.isFrozen(owner), true);
   assert.equal(Object.isFrozen(workspace), true);
   assert.equal(Object.isFrozen(workspace.fallbackDimensionsCm), true);
-});
-
-test('statement-neutral migration preserves Prefix 166 without owning the current Ledger tail', () => {
-  const baseline = JSON.parse(read(baselineRel));
-  assertStatementNeutralLedgerHistory(baseline.migrationBudgets);
-
-  const withFutureEntry167 = appendSyntheticFutureEntry167(baseline.migrationBudgets);
-  assert.equal(withFutureEntry167.length, 167);
-  assert.doesNotThrow(() => assertStatementNeutralLedgerHistory(withFutureEntry167));
 });

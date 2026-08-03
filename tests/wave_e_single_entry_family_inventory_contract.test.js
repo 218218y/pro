@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { collectLayerContractGraph } from '../tools/wp_layer_contract_support.mjs';
+import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const baseline = JSON.parse(fs.readFileSync(path.join(root, 'tools/wp_layer_baseline.json'), 'utf8'));
@@ -24,16 +24,10 @@ const repeatedFamilies = Object.freeze({
   EXTERNAL_DRAWER_SIZE_POLICY: 2,
 });
 const sorted = values => [...values].sort();
-const exactKey = statement =>
-  JSON.stringify({
-    from: statement.from,
-    to: statement.to,
-    fromFile: statement.fromFile,
-    toFile: statement.toFile,
-    kind: statement.kind,
-    syntax: statement.syntax,
-    importedSymbols: sorted(statement.importedSymbols),
-  });
+const sourceTarget = (fromFile, specifier) =>
+  path.posix
+    .normalize(path.posix.join(path.posix.dirname(fromFile), specifier.split(/[?#]/u, 1)[0]))
+    .replace(/\.js$/u, '.ts');
 
 test('Wave E inventory locks all 58 single-entry consumers and recurring focused surfaces', () => {
   assert.equal(waveEEntryNumbers.length, 58);
@@ -63,24 +57,16 @@ test('Wave E inventory locks all 58 single-entry consumers and recurring focused
     true
   );
 
-  const graph = collectLayerContractGraph({ root });
-  const graphByKey = new Map();
-  for (const statement of graph.imports) {
-    const key = exactKey(statement);
-    const list = graphByKey.get(key) ?? [];
-    list.push(statement);
-    graphByKey.set(key, list);
-  }
   for (const entry of entries) {
-    const matches =
-      graphByKey.get(
-        exactKey({
-          from: entry.from,
-          to: entry.to,
-          fromFile: entry.fromFile,
-          ...entry.addedImport,
-        })
-      ) ?? [];
+    const source = fs.readFileSync(path.join(root, entry.fromFile), 'utf8');
+    const matches = analyzeModuleDependencies(entry.fromFile, source).imports.filter(
+      dependency =>
+        dependency.kind === entry.addedImport.kind &&
+        dependency.syntax === entry.addedImport.syntax &&
+        sourceTarget(entry.fromFile, dependency.specifier) === entry.addedImport.toFile &&
+        JSON.stringify(sorted(dependency.importedSymbols)) ===
+          JSON.stringify(sorted(entry.addedImport.importedSymbols))
+    );
     assert.equal(matches.length, 1, `Entry ${entry.entryNumber} exact import count`);
     assert.equal(
       matches[0].bindings.every(

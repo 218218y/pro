@@ -12,8 +12,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const consumerRel = 'esm/native/features/interior_layout_presets/ops.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
-const fittingsOwnerRel = 'esm/shared/dimensions/interior_fittings_policy.ts';
-const storageOwnerRel = 'esm/shared/dimensions/interior_storage_policy.ts';
 const compositionOwnerRel = 'esm/shared/dimensions/interior_layout_presets_dimension_policy.ts';
 const sourceFileExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
 const runtimeExtensionCandidates = Object.freeze({
@@ -383,38 +381,6 @@ function sourceFacts() {
   };
 }
 
-const expectedEntry159 = Object.freeze({
-  from: 'features',
-  to: 'shared',
-  additionalStatements: 1,
-  owner: 'dimension-ownership-migration',
-  reviewedAt: '2026-07-26',
-  reviewBy: '2026-10-18',
-  fromFile: consumerRel,
-  companionImport: {
-    toFile: fittingsOwnerRel,
-    kind: 'value',
-    importedSymbols: ['INTERIOR_PRESET_ROD_FACTORS_POLICY', 'INTERIOR_PRESET_SHELF_ROWS_POLICY'],
-    syntax: 'static-import',
-  },
-  removedImport: {
-    toFile: facadeRel,
-    kind: 'value',
-    importedSymbols: ['INTERIOR_FITTINGS_DIMENSIONS'],
-    syntax: 'static-import',
-  },
-  addedImport: {
-    toFile: storageOwnerRel,
-    kind: 'value',
-    importedSymbols: ['INTERIOR_STORAGE_BARRIER_POLICY'],
-    syntax: 'static-import',
-  },
-  reason:
-    'The Interior Layout Presets feature consumer replaces one aggregate compatibility statement with the focused Interior Preset Shelf Rows/Rod Factors policies plus the focused Interior Storage Barrier policy on the existing features to shared edge.',
-  removalCondition:
-    'Remove this entry when a reviewed Interior Layout Presets composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade.',
-});
-
 test('Interior Layout Presets is exactly one production consumer with one exact composition-owner import', () => {
   assert.deepEqual([consumerRel], ['esm/native/features/interior_layout_presets/ops.ts']);
   const absolute = path.join(root, consumerRel);
@@ -536,35 +502,4 @@ test('Interior Layout Presets preserves numeric literals, signature, ops shape, 
     /presetRodFactors\.splitUpperRodLimitFactor,\s*0\s*\);[\s\S]*presetRodFactors\.splitLowerRodLimitFactor,\s*0\s*\);/u
   );
   assert.match(facts.source, /presetRodFactors\.storageRodLimitFactor,\s*-barrierH\s*\);/u);
-});
-
-test('Interior Layout Presets locks exact Entry 159 and the historical 159-entry prefix', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.ok(baseline.migrationBudgets.length >= 159);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 158)),
-    '7cb5d770d8d0297e4037ecf59eaf417a164495416cf956615c37af75163d0516'
-  );
-  assert.deepEqual(baseline.migrationBudgets[158], expectedEntry159);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 159)),
-    '7bb983429d5ea9cf6c8f4e6f44f8637a0d2841866d09bf9ddc8515dd230e16a8'
-  );
-
-  const futureLedger = [...baseline.migrationBudgets, { id: 'future-entry-after-159' }];
-  assert.equal(
-    semanticSha256(futureLedger.slice(0, 159)),
-    '7bb983429d5ea9cf6c8f4e6f44f8637a0d2841866d09bf9ddc8515dd230e16a8'
-  );
-
-  const mutatedHistoricalLedger = structuredClone(baseline.migrationBudgets);
-  mutatedHistoricalLedger[158] = {
-    ...mutatedHistoricalLedger[158],
-    reason: 'mutated historical Entry 159',
-  };
-  assert.notDeepEqual(mutatedHistoricalLedger[158], expectedEntry159);
-  assert.notEqual(
-    semanticSha256(mutatedHistoricalLedger.slice(0, 159)),
-    '7bb983429d5ea9cf6c8f4e6f44f8637a0d2841866d09bf9ddc8515dd230e16a8'
-  );
 });

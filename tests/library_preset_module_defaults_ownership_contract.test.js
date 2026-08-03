@@ -15,7 +15,6 @@ const libraryOwnerRel = 'esm/shared/dimensions/library_preset_policy.ts';
 const defaultResolutionOwnerRel = 'esm/shared/dimensions/wardrobe_default_resolution_policy.ts';
 const compositionOwnerRel = 'esm/shared/dimensions/library_preset_module_defaults_dimension_policy.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
-const baselineRel = 'tools/wp_layer_baseline.json';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
 const fieldCounts = Object.freeze({
@@ -435,48 +434,6 @@ function sourceFacts(source) {
   };
 }
 
-const expectedEntry163 = Object.freeze({
-  from: 'features',
-  to: 'shared',
-  additionalStatements: 1,
-  owner: 'dimension-ownership-migration',
-  reviewedAt: '2026-07-27',
-  reviewBy: '2026-10-18',
-  fromFile: productionRel,
-  companionImport: {
-    toFile: libraryOwnerRel,
-    kind: 'value',
-    importedSymbols: ['LIBRARY_PRESET_MODULE_DEFAULTS_POLICY'],
-    syntax: 'static-import',
-  },
-  removedImport: {
-    toFile: facadeRel,
-    kind: 'value',
-    importedSymbols: ['LIBRARY_PRESET_DIMENSIONS', 'resolveAutoWidthForDoors'],
-    syntax: 'static-import',
-  },
-  addedImport: {
-    toFile: defaultResolutionOwnerRel,
-    kind: 'value',
-    importedSymbols: ['resolveAutoWidthForDoors'],
-    syntax: 'static-import',
-  },
-  reason:
-    'The Library Preset Module Defaults feature consumer replaces one combined legacy facade statement with the focused Library Preset Module Defaults policy plus the focused Wardrobe Default Resolution function on the existing features to shared edge.',
-  removalCondition:
-    'Remove this entry when a reviewed Library Preset Module Defaults composition seam eliminates the extra Wardrobe Default Resolution statement without reintroducing the legacy facade.',
-});
-
-const HISTORICAL_LEDGER_PREFIX_162_HASH = '6f4d890ffaf9346798e02f198f1a61c658b1f496b2640cfe5b1df8e1f8c970bc';
-const HISTORICAL_LEDGER_PREFIX_163_HASH = '8c4c04e56a8b991d81537127adc69c5dc42b4e7ed3de4fe81258a67b01ad8341';
-
-function assertHistoricalLedger(migrationBudgets) {
-  assert.ok(migrationBudgets.length >= 163);
-  assert.equal(semanticSha256(migrationBudgets.slice(0, 162)), HISTORICAL_LEDGER_PREFIX_162_HASH);
-  assert.deepEqual(migrationBudgets[162], expectedEntry163);
-  assert.equal(semanticSha256(migrationBudgets.slice(0, 163)), HISTORICAL_LEDGER_PREFIX_163_HASH);
-}
-
 test('Library Preset Module Defaults is one exact consumer with one composition-owner import', () => {
   const source = read(productionRel);
   const inspection = inspectOwnership(path.join(root, productionRel), source);
@@ -544,23 +501,4 @@ test('Library Preset Module Defaults preserves exports, helpers, signatures, sha
     collectNamedModuleExports(productionRel, source).map(entry => [entry.exportedName, entry.kind]),
     expectedExports.map(name => [name, 'value'])
   );
-});
-
-test('Library Preset Module Defaults locks Prefix 162, exact Entry 163, and Prefix 163 append-safely', () => {
-  const baseline = JSON.parse(read(baselineRel));
-  assertHistoricalLedger(baseline.migrationBudgets);
-
-  const historicalPrefix163 = structuredClone(baseline.migrationBudgets.slice(0, 163));
-  const futureEntry164 = {
-    ...structuredClone(historicalPrefix163[162]),
-    fromFile: 'esm/native/features/future_feature/entry_164.ts',
-    reason: 'Synthetic Entry 164 appended after Prefix 163.',
-    removalCondition: 'Synthetic Entry 164 removal condition.',
-  };
-  const extendedLedger = [...historicalPrefix163, futureEntry164];
-  assert.equal(extendedLedger.length, 164);
-  assert.equal(semanticSha256(extendedLedger.slice(0, 162)), HISTORICAL_LEDGER_PREFIX_162_HASH);
-  assert.deepEqual(extendedLedger[162], expectedEntry163);
-  assert.equal(semanticSha256(extendedLedger.slice(0, 163)), HISTORICAL_LEDGER_PREFIX_163_HASH);
-  assert.doesNotThrow(() => assertHistoricalLedger(extendedLedger));
 });

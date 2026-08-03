@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,7 +8,6 @@ import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mj
 import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const cellOwnerRel = 'esm/shared/dimensions/cell_dimension_policy.ts';
 const comparisonOwnerRel = 'esm/shared/dimensions/wardrobe_layout_comparison_policy.ts';
 const previewConsumerRel = 'esm/native/services/canvas_picking_hover_preview_modes_cell_dims.ts';
@@ -23,19 +21,6 @@ const clickContractsRel = 'esm/native/services/canvas_picking_cell_dims_contract
 const linearContextRel = 'esm/native/services/canvas_picking_cell_dims_linear_shared.ts';
 const linearWidthRel = 'esm/native/services/canvas_picking_cell_dims_linear_width.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
-
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
 function exportedNames(rel) {
   const names = [];
@@ -62,38 +47,6 @@ function directImportSummary(rel) {
     })
   );
 }
-
-const expectedEntry = Object.freeze({
-  from: 'services',
-  to: 'shared',
-  additionalStatements: 1,
-  owner: 'dimension-ownership-migration',
-  reviewedAt: '2026-07-24',
-  reviewBy: '2026-10-18',
-  fromFile: previewConsumerRel,
-  companionImport: {
-    toFile: cellOwnerRel,
-    kind: 'value',
-    importedSymbols: ['CELL_DIMENSION_MATCH_POLICY', 'CELL_DIMENSION_PREVIEW_POLICY'],
-    syntax: 'static-import',
-  },
-  removedImport: {
-    toFile: facadeRel,
-    kind: 'value',
-    importedSymbols: ['WARDROBE_LAYOUT_DIMENSIONS'],
-    syntax: 'static-import',
-  },
-  addedImport: {
-    toFile: 'esm/shared/dimensions/wardrobe_defaults.ts',
-    kind: 'value',
-    importedSymbols: ['WARDROBE_DEFAULTS'],
-    syntax: 'static-import',
-  },
-  reason:
-    'The Cell Dimensions hover-preview composition replaces one legacy facade statement with the focused Cell Dimension Match and Preview owners plus the canonical Wardrobe Defaults owner on the existing services to shared edge.',
-  removalCondition:
-    'Remove this entry when a reviewed Cell Dimensions hover-preview composition seam eliminates the extra Wardrobe Defaults statement without reintroducing the legacy facade.',
-});
 
 test('Cell Dimension and Wardrobe Layout Comparison owners are exact, narrow, import-free modules', () => {
   assert.equal(
@@ -264,17 +217,4 @@ test('Cell Dimension Match, Preview, and Auto Width literals are fully propagate
       /export\s+(?:type\s+)?(?:\*|\{[^}]*\})\s+from|wardrobe_dimension_tokens_shared/u
     );
   }
-});
-
-test('The unchanged 131-entry prefix is followed by the reviewed Entry 132 provenance for the current Cell Dimensions composition', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 131)),
-    'f8b2ec4b773b4d1c01f4a4a0dd519c43bcf01fb2b96d34e075d21bb2b55b6687'
-  );
-  assert.deepEqual(baseline.migrationBudgets.slice(131, 132), [expectedEntry]);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 132)),
-    'e55d258b1696ea16e88e3b2feda047a539197361ea582d00be3917abc1e526d2'
-  );
 });

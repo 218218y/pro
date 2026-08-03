@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,84 +8,8 @@ import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mj
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const consumerRel = 'esm/native/builder/core_layout_compute.ts';
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const layoutOwnerRel = 'esm/shared/dimensions/wardrobe_layout_policy.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
-
-const removedImport = Object.freeze({
-  toFile: facadeRel,
-  kind: 'value',
-  importedSymbols: ['CM_PER_METER', 'MATERIAL_DIMENSIONS', 'WARDROBE_LAYOUT_DIMENSIONS'],
-  syntax: 'static-import',
-});
-
-const expectedEntries = Object.freeze([
-  {
-    from: 'builder',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-24',
-    reviewBy: '2026-10-18',
-    fromFile: consumerRel,
-    companionImport: {
-      toFile: layoutOwnerRel,
-      kind: 'value',
-      importedSymbols: ['WARDROBE_MODULE_LAYOUT_POLICY'],
-      syntax: 'static-import',
-    },
-    removedImport,
-    addedImport: {
-      toFile: 'esm/shared/dimensions/material_thickness_policy.ts',
-      kind: 'value',
-      importedSymbols: ['MATERIAL_THICKNESS_POLICY'],
-      syntax: 'static-import',
-    },
-    reason:
-      'The core module-layout flow replaces one legacy facade statement with the focused Wardrobe Module Layout owner plus the canonical Material Thickness owner on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed core module-layout composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade.',
-  },
-  {
-    from: 'builder',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-24',
-    reviewBy: '2026-10-18',
-    fromFile: consumerRel,
-    companionImport: {
-      toFile: layoutOwnerRel,
-      kind: 'value',
-      importedSymbols: ['WARDROBE_MODULE_LAYOUT_POLICY'],
-      syntax: 'static-import',
-    },
-    removedImport,
-    addedImport: {
-      toFile: 'esm/shared/dimensions/units.ts',
-      kind: 'value',
-      importedSymbols: ['CM_PER_METER'],
-      syntax: 'static-import',
-    },
-    reason:
-      'The core module-layout flow replaces one legacy facade statement with the focused Wardrobe Module Layout owner plus the canonical centimeter-per-meter unit owner on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed core module-layout composition seam eliminates the extra Units statement without reintroducing the legacy facade.',
-  },
-]);
-
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
 function directFields(source, owner) {
   return Array.from(source.matchAll(new RegExp(`\\b${owner}\\.([A-Za-z_$][\\w$]*)`, 'gu')), match => match[1])
@@ -183,17 +106,4 @@ test('Core Module Layout maps Material, Units, minimum, and shared boundaries di
     2
   );
   assert.match(source, /moduleInternalWidths\[i\] = internalCm \/ CM_PER_METER/u);
-});
-
-test('Core Module Layout migration appends exactly Entries 130-131 after the unchanged 129-entry prefix', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 129)),
-    '7db36f6859327fd852fb251e414c53a5e0de95bf5b30fb38bd5bd0d50cee96b4'
-  );
-  assert.deepEqual(baseline.migrationBudgets.slice(129, 131), expectedEntries);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 131)),
-    'f8b2ec4b773b4d1c01f4a4a0dd519c43bcf01fb2b96d34e075d21bb2b55b6687'
-  );
 });

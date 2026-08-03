@@ -2615,12 +2615,15 @@ function edgeOwnershipReport(edge, rule, migrationEvaluation) {
   };
 }
 
+const migrationEvaluationOverride = Symbol('migrationEvaluationOverride');
+
 export function evaluateLayerContract(graph, contract, options = {}) {
   validateLayerContractSchema(contract);
   const ruleMap = new Map(contract.rules.map(rule => [edgeKey(rule.from, rule.to), rule]));
   const currentMap = new Map(graph.edges.map(edge => [edgeKey(edge.from, edge.to), edge]));
   const failures = [];
-  const migrationEvaluation = evaluateMigrationBudgets(graph, contract, options);
+  const migrationEvaluation =
+    options[migrationEvaluationOverride] ?? evaluateMigrationBudgets(graph, contract, options);
   failures.push(...migrationEvaluation.failures);
 
   for (const fromFile of graph.unclassifiedSourceFiles || []) {
@@ -2761,7 +2764,8 @@ function ruleForEdge(edge, previousRule) {
 export function buildLayerContractProposal(graph, currentContract, options = {}) {
   validateLayerContractSchema(currentContract);
   const previousRules = new Map(currentContract.rules.map(rule => [edgeKey(rule.from, rule.to), rule]));
-  const migrationEvaluation = evaluateMigrationBudgets(graph, currentContract, options);
+  const migrationEvaluation =
+    options[migrationEvaluationOverride] ?? evaluateMigrationBudgets(graph, currentContract, options);
   const compatibilityBlockedProposalEdges = new Set(
     migrationEvaluation.compatibilityStatuses
       .filter(status => !status.active)
@@ -2912,6 +2916,15 @@ export function buildLayerContractProposal(graph, currentContract, options = {})
       reviewedOwnershipBudgets: migrationEvaluation.reviewedOwnershipStatuses.length,
       migrationConsolidations: migrationEvaluation.consolidationStatuses.length,
     },
+  };
+}
+
+export function evaluateLayerContractAndProposal(graph, contract, options = {}) {
+  const migrationEvaluation = evaluateMigrationBudgets(graph, contract, options);
+  const sharedOptions = { ...options, [migrationEvaluationOverride]: migrationEvaluation };
+  return {
+    report: evaluateLayerContract(graph, contract, sharedOptions),
+    proposal: buildLayerContractProposal(graph, contract, sharedOptions),
   };
 }
 

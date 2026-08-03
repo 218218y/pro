@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 import { readTestGroupFiles } from '../tools/wp_test_group_catalog.mjs';
+import {
+  collectDirectRepositoryLayerScanTests,
+  collectHistoricalMigrationPrefixTests,
+} from '../tools/wp_test_portfolio_audit.mjs';
 
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 
@@ -36,4 +40,12 @@ test('stage guard portfolio has one package facade backed by the canonical test-
     assert.ok(fs.existsSync(file), `${file} should exist`);
     assert.ok(files.includes(file), `${file} should belong to refactor-stage-guards`);
   }
+});
+
+test('repository-wide layer collection is centralized behind the cached fixture', () => {
+  assert.deepEqual(collectDirectRepositoryLayerScanTests(), []);
+});
+
+test('historical migration prefixes are centralized in the final closeout fingerprint', () => {
+  assert.deepEqual(collectHistoricalMigrationPrefixTests(), []);
 });

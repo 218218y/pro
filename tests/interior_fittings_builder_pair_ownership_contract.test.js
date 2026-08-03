@@ -516,65 +516,6 @@ function objectKeys(node) {
   return (node?.properties ?? []).map(property => identifierName(property.key));
 }
 
-const removedImport = Object.freeze({
-  toFile: facadeRel,
-  kind: 'value',
-  importedSymbols: ['INTERIOR_FITTINGS_DIMENSIONS'],
-  syntax: 'static-import',
-});
-
-function expectedEntry({ fromFile, companionSymbols, addedSymbols, reason, removalCondition }) {
-  return {
-    from: 'builder',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-26',
-    reviewBy: '2026-10-18',
-    fromFile,
-    companionImport: {
-      toFile: fittingsOwnerRel,
-      kind: 'value',
-      importedSymbols: companionSymbols,
-      syntax: 'static-import',
-    },
-    removedImport,
-    addedImport: {
-      toFile: storageOwnerRel,
-      kind: 'value',
-      importedSymbols: addedSymbols,
-      syntax: 'static-import',
-    },
-    reason,
-    removalCondition,
-  };
-}
-
-const expectedEntries = Object.freeze([
-  expectedEntry({
-    fromFile: consumers[0].rel,
-    companionSymbols: ['INTERIOR_ROD_PLACEMENT_POLICY'],
-    addedSymbols: ['INTERIOR_STORAGE_BARRIER_POLICY', 'INTERIOR_STORAGE_GRID_POLICY'],
-    reason:
-      'The Core Storage Compute Custom builder consumer replaces one aggregate compatibility statement with the focused Interior Storage Barrier/Grid policies plus the focused Interior Fittings Rod Placement policy on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed Core Storage Compute Custom composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade.',
-  }),
-  expectedEntry({
-    fromFile: consumers[1].rel,
-    companionSymbols: [
-      'INTERIOR_PRESET_ROD_FACTORS_POLICY',
-      'INTERIOR_PRESET_SHELF_ROWS_POLICY',
-      'INTERIOR_ROD_PLACEMENT_POLICY',
-    ],
-    addedSymbols: ['INTERIOR_STORAGE_BARRIER_POLICY'],
-    reason:
-      'The Corner Wing Cell Layouts builder consumer replaces one aggregate compatibility statement with the focused Interior Storage Barrier policy plus the focused Interior Fittings Rod/Preset policies on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed Corner Wing Cell Layouts composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade.',
-  }),
-]);
-
 test('Interior Fittings builder pair is exactly two production files with two exact focused-owner imports each', () => {
   assert.deepEqual(
     consumers.map(consumer => consumer.rel),
@@ -695,18 +636,4 @@ test('Interior Fittings builder pair preserves numeric literals, function signat
   for (const layout of ['hanging', 'hanging_top2', 'hanging_split', 'storage', 'storage_shelf']) {
     assert.match(cornerSource, new RegExp(`case '${layout}':`, 'u'));
   }
-});
-
-test('Interior Fittings builder pair appends exact Entries 157-158 after the unchanged 156-entry prefix', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.ok(baseline.migrationBudgets.length >= 158);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 156)),
-    '9e06d7f0e1df80f0f90cbe281eb4622790a49473ce4f3c0bdef36b0535a3386d'
-  );
-  assert.deepEqual(baseline.migrationBudgets.slice(156, 158), expectedEntries);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 158)),
-    '7cb5d770d8d0297e4037ecf59eaf417a164495416cf956615c37af75163d0516'
-  );
 });

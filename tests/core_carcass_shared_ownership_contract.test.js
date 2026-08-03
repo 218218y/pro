@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,91 +8,7 @@ import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mj
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const consumerRel = 'esm/native/builder/core_carcass_shared.ts';
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
-const shellOwnerRel = 'esm/shared/dimensions/carcass_shell_policy.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
-
-const removedImport = Object.freeze({
-  toFile: facadeRel,
-  kind: 'value',
-  importedSymbols: ['CARCASS_BASE_DIMENSIONS', 'CARCASS_SHELL_DIMENSIONS', 'MATERIAL_DIMENSIONS'],
-  syntax: 'static-import',
-});
-
-function expectedEntry({ toFile, importedSymbol, reason, removalCondition }) {
-  return {
-    from: 'builder',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-23',
-    reviewBy: '2026-10-18',
-    fromFile: consumerRel,
-    companionImport: {
-      toFile: shellOwnerRel,
-      kind: 'value',
-      importedSymbols: ['CARCASS_SHELL_DIMENSIONS'],
-      syntax: 'static-import',
-    },
-    removedImport,
-    addedImport: {
-      toFile,
-      kind: 'value',
-      importedSymbols: [importedSymbol],
-      syntax: 'static-import',
-    },
-    reason,
-    removalCondition,
-  };
-}
-
-const expectedEntries = Object.freeze([
-  expectedEntry({
-    toFile: 'esm/shared/dimensions/base_plinth_policy.ts',
-    importedSymbol: 'BASE_PLINTH_POLICY',
-    reason:
-      'The core carcass preparation flow replaces one legacy facade statement with the focused Carcass Shell owner plus the focused Base Plinth owner on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed core carcass preparation composition seam eliminates the extra Base Plinth statement without reintroducing the legacy facade.',
-  }),
-  expectedEntry({
-    toFile: 'esm/shared/dimensions/base_leg_policy.ts',
-    importedSymbol: 'BASE_LEG_LAYOUT_POLICY',
-    reason:
-      'The core carcass preparation flow replaces one legacy facade statement with the focused Carcass Shell owner plus the focused Base Leg Layout owner on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed core carcass preparation composition seam eliminates the extra Base Leg Layout statement without reintroducing the legacy facade.',
-  }),
-  expectedEntry({
-    toFile: 'esm/shared/dimensions/base_platform_render_policy.ts',
-    importedSymbol: 'BASE_PLATFORM_RENDER_POLICY',
-    reason:
-      'The core carcass preparation flow replaces one legacy facade statement with the focused Carcass Shell owner plus the focused Base Platform Render owner on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed core carcass preparation composition seam eliminates the extra Base Platform Render statement without reintroducing the legacy facade.',
-  }),
-  expectedEntry({
-    toFile: 'esm/shared/dimensions/material_thickness_policy.ts',
-    importedSymbol: 'MATERIAL_THICKNESS_POLICY',
-    reason:
-      'The core carcass preparation flow replaces one legacy facade statement with the focused Carcass Shell owner plus the canonical Material Thickness owner on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed core carcass preparation composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade.',
-  }),
-]);
-
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
 
 function directFields(source, owner) {
   return Array.from(source.matchAll(new RegExp(`\\b${owner}\\.([A-Za-z_$][\\w$]*)`, 'gu')), match => match[1])
@@ -193,17 +108,4 @@ test('Core Carcass Shared maps every migrated field and formula directly to its 
   assert.match(source, /-D \/ 2 \+ BASE_PLINTH_POLICY\.steppedBackInsetM \+ segDepth \/ 2/u);
   assert.match(source, /-D \/ 2 \+ dm - BASE_LEG_LAYOUT_POLICY\.cornerInsetM/u);
   assert.match(source, /backZ \+ BASE_LEG_LAYOUT_POLICY\.depthSteppedMinFrontBackGapM/u);
-});
-
-test('Core Carcass Shared historical migration locks Entries 126-129 and the unchanged 125-entry prefix', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 125)),
-    '84e9877bc6ca47028c5e081018b3025b96ea2f040d5d4f1ab838d9c1b0bd47cb'
-  );
-  assert.deepEqual(baseline.migrationBudgets.slice(125, 129), expectedEntries);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 129)),
-    '7db36f6859327fd852fb251e414c53a5e0de95bf5b30fb38bd5bd0d50cee96b4'
-  );
 });

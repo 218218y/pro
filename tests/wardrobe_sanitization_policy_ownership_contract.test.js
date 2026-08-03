@@ -18,14 +18,11 @@ const resolutionRel = 'esm/shared/dimensions/wardrobe_default_resolution_policy.
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const runtimeApiRel = 'esm/native/runtime/api.ts';
-const baselineRel = 'tools/wp_layer_baseline.json';
 const ownerSymbol = 'WARDROBE_SANITIZATION_POLICY';
 const ownerSpecifier = '../../shared/dimensions/wardrobe_sanitization_policy.js';
 const consumerSemanticSha256 = '332ee90f70f7e5b0a8d4b0e26aba84d51141c13ae0940b5d098ff1ecd7df7788';
 const consumerFunctionSha256 = '3664f3086632093cdec9e39439fc16ad595edc31183ddae51d838b3e43d27b9c';
 const consumerLiteralSha256 = '4cf824373058e8e2b3a587378cb9d347ada77f435f4c5640d5f93f8604c6cbe6';
-const prefix166Sha256 = 'f58543ffaf2860f846f7469e93ab442adf0ee3fc5ae391fd904af3f64167c111';
-
 const expectedOwnerDependencies = Object.freeze([
   Object.freeze({
     specifier: './wardrobe_default_resolution_policy.js',
@@ -188,25 +185,6 @@ function stableJson(value) {
       .join(',')}}`;
   }
   return JSON.stringify(value);
-}
-
-function assertStatementNeutralLedgerHistory(migrationBudgets) {
-  assert.ok(migrationBudgets.length >= 166);
-  const approvedHistory = migrationBudgets.slice(0, 166);
-  assert.equal(sha256(stableJson(approvedHistory)), prefix166Sha256);
-  assert.deepEqual(
-    approvedHistory.filter(entry => entry.fromFile === consumerRel),
-    []
-  );
-}
-
-function appendSyntheticFutureEntry167(migrationBudgets) {
-  const futureEntry = structuredClone(migrationBudgets[165]);
-  futureEntry.owner = 'synthetic-append-safe-proof';
-  futureEntry.fromFile = consumerRel;
-  futureEntry.reason = 'Synthetic Entry 167 proves the historical Sanitization contract is append-safe.';
-  futureEntry.removalCondition = 'Remove the synthetic Entry 167 after the append-safe proof.';
-  return [...structuredClone(migrationBudgets.slice(0, 166)), futureEntry];
 }
 
 function listSourceFiles(directory, files = []) {
@@ -869,15 +847,6 @@ test('normalized sanitizer AST and literal fingerprints preserve branches, prece
     functionHash: consumerFunctionSha256,
     literalHash: consumerLiteralSha256,
   });
-});
-
-test('statement-neutral migration preserves Prefix 166 without owning the current Ledger tail', () => {
-  const baseline = JSON.parse(read(baselineRel));
-  assertStatementNeutralLedgerHistory(baseline.migrationBudgets);
-
-  const withFutureEntry167 = appendSyntheticFutureEntry167(baseline.migrationBudgets);
-  assert.equal(withFutureEntry167.length, 167);
-  assert.doesNotThrow(() => assertStatementNeutralLedgerHistory(withFutureEntry167));
 });
 
 test('owner mutation probes reject dependency drift, literals, wrappers, aggregates, export drift, and freeze drift', () => {

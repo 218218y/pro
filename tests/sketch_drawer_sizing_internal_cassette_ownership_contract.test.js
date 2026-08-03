@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,7 +7,6 @@ import { fileURLToPath } from 'node:url';
 import { analyzeModuleDependencies, collectNamedModuleExports } from '../tools/wp_layer_contract_support.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const sizingRel = 'esm/native/features/sketch_drawer_sizing.ts';
 const cassetteRel = 'esm/native/features/sketch_internal_drawer_cassette.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
@@ -28,19 +26,6 @@ const expectedImports = Object.freeze({
   ]),
 });
 
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
-
 function focusedImports(rel) {
   return analyzeModuleDependencies(path.join(root, rel), read(rel))
     .imports.filter(dependency => dependency.specifier.includes('/dimensions/'))
@@ -55,71 +40,6 @@ function focusedImports(rel) {
       })),
     }));
 }
-
-const expectedEntries = Object.freeze([
-  {
-    from: 'features',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-23',
-    reviewBy: '2026-10-18',
-    fromFile: sizingRel,
-    companionImport: {
-      toFile: 'esm/shared/dimensions/drawer_sketch_policy.ts',
-      kind: 'value',
-      importedSymbols: ['DRAWER_SKETCH_SIZING_POLICY'],
-      syntax: 'static-import',
-    },
-    removedImport: {
-      toFile: facadeRel,
-      kind: 'value',
-      importedSymbols: ['DRAWER_DIMENSIONS', 'cmToM'],
-      syntax: 'static-import',
-    },
-    addedImport: {
-      toFile: 'esm/shared/dimensions/units.ts',
-      kind: 'value',
-      importedSymbols: ['cmToM'],
-      syntax: 'static-import',
-    },
-    reason:
-      'The Sketch drawer sizing feature replaces one legacy facade statement with the focused Drawer Sketch Sizing owner plus the canonical centimeter-to-meter conversion on the existing features to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed Sketch drawer sizing composition seam eliminates the extra Units statement without reintroducing the legacy facade.',
-  },
-  {
-    from: 'features',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-23',
-    reviewBy: '2026-10-18',
-    fromFile: cassetteRel,
-    companionImport: {
-      toFile: 'esm/shared/dimensions/drawer_sketch_policy.ts',
-      kind: 'value',
-      importedSymbols: ['DRAWER_SKETCH_INTERNAL_PREVIEW_POLICY'],
-      syntax: 'static-import',
-    },
-    removedImport: {
-      toFile: facadeRel,
-      kind: 'value',
-      importedSymbols: ['DRAWER_DIMENSIONS', 'MATERIAL_DIMENSIONS'],
-      syntax: 'static-import',
-    },
-    addedImport: {
-      toFile: 'esm/shared/dimensions/material_thickness_policy.ts',
-      kind: 'value',
-      importedSymbols: ['MATERIAL_THICKNESS_POLICY'],
-      syntax: 'static-import',
-    },
-    reason:
-      'The Sketch internal drawer cassette feature replaces one legacy facade statement with the focused Drawer Sketch Internal Preview owner plus the canonical Material Thickness owner on the existing features to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed Sketch internal drawer cassette composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade.',
-  },
-]);
 
 test('Sketch drawer sizing and cassette import one exact composition owner without aliases', () => {
   for (const [rel, expected] of Object.entries(expectedImports)) {
@@ -216,19 +136,5 @@ test('Sketch drawer sizing and cassette keep their public module surfaces', () =
       ['value', 'resolveSketchInternalDrawerCassetteFrameOuterWidth'],
       ['value', 'resolveSketchInternalDrawerCassetteDrawerWidth'],
     ]
-  );
-});
-
-test('Sketch drawer sizing and cassette append exactly entries 118-119 after the unchanged prefix', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.ok(baseline.migrationBudgets.length >= 119);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 117)),
-    '7f6b6f681f71b979353ba75aaffe776ac13f8b339f90d6bb56bcb77452fb24d8'
-  );
-  assert.deepEqual(baseline.migrationBudgets.slice(117, 119), expectedEntries);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 119)),
-    'e10f08c6cebfb73ed1ff89676e5bf8bc982d659bf566f218ac52dc89607d53a4'
   );
 });

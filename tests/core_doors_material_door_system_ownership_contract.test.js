@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,9 +8,6 @@ import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mj
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const consumerRel = 'esm/native/builder/core_doors_compute.ts';
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
-const doorOwnerRel = 'esm/shared/dimensions/door_system_policy.ts';
-const materialOwnerRel = 'esm/shared/dimensions/material_thickness_policy.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
 const hingedFields = Object.freeze([
@@ -35,51 +31,6 @@ const slidingFields = Object.freeze([
   'railLineOffsetYExtraM',
   'railTrackLaneDivisor',
 ]);
-
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
-
-const expectedEntry = Object.freeze({
-  from: 'builder',
-  to: 'shared',
-  additionalStatements: 1,
-  owner: 'dimension-ownership-migration',
-  reviewedAt: '2026-07-23',
-  reviewBy: '2026-10-18',
-  fromFile: consumerRel,
-  companionImport: {
-    toFile: doorOwnerRel,
-    kind: 'value',
-    importedSymbols: ['HINGED_DOOR_MOUNT_POLICY', 'SLIDING_DOOR_CONSTRUCTION_POLICY'],
-    syntax: 'static-import',
-  },
-  removedImport: {
-    toFile: facadeRel,
-    kind: 'value',
-    importedSymbols: ['DOOR_SYSTEM_DIMENSIONS', 'MATERIAL_DIMENSIONS'],
-    syntax: 'static-import',
-  },
-  addedImport: {
-    toFile: materialOwnerRel,
-    kind: 'value',
-    importedSymbols: ['MATERIAL_THICKNESS_POLICY'],
-    syntax: 'static-import',
-  },
-  reason:
-    'The core door geometry flow replaces one legacy facade statement with focused Hinged Door Mount and Sliding Door Construction owners plus the canonical Material Thickness owner on the existing builder to shared edge.',
-  removalCondition:
-    'Remove this entry when a reviewed core door geometry composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade.',
-});
 
 test('Core Doors imports exactly its two focused owner statements without aliases or aggregates', () => {
   const source = read(consumerRel);
@@ -168,18 +119,5 @@ test('Core Doors historical contract locks all seventeen Door System fields and 
   assert.match(
     source,
     /lineOffsetY: -railHeight \/ 2 - SLIDING_DOOR_CONSTRUCTION_POLICY\.railLineOffsetYExtraM/u
-  );
-});
-
-test('Core Doors historical migration contract locks Entry 125 and its unchanged 124-entry prefix', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 124)),
-    '9eeb17b61e2b1a64eb9303ca0b750319da74d868131f9130a26f1bd4977d49cf'
-  );
-  assert.deepEqual(baseline.migrationBudgets.slice(124, 125), [expectedEntry]);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 125)),
-    '84e9877bc6ca47028c5e081018b3025b96ea2f040d5d4f1ab838d9c1b0bd47cb'
   );
 });

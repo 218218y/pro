@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,87 +8,7 @@ import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mj
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const consumerRel = 'esm/native/services/canvas_picking_regular_ext_drawers_free_box.ts';
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
-const externalOwnerRel = 'esm/shared/dimensions/external_drawer_policy.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
-
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
-
-const expectedEntries = Object.freeze([
-  {
-    from: 'services',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-23',
-    reviewBy: '2026-10-18',
-    fromFile: consumerRel,
-    companionImport: {
-      toFile: externalOwnerRel,
-      kind: 'value',
-      importedSymbols: ['EXTERNAL_DRAWER_FRONT_RENDER_POLICY', 'EXTERNAL_DRAWER_SIZE_POLICY'],
-      syntax: 'static-import',
-    },
-    removedImport: {
-      toFile: facadeRel,
-      kind: 'value',
-      importedSymbols: ['DRAWER_DIMENSIONS', 'MATERIAL_DIMENSIONS'],
-      syntax: 'static-import',
-    },
-    addedImport: {
-      toFile: 'esm/shared/dimensions/drawer_sketch_policy.ts',
-      kind: 'value',
-      importedSymbols: ['DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY'],
-      syntax: 'static-import',
-    },
-    reason:
-      'The regular external-drawer free-box hover flow replaces one legacy facade statement with focused External Drawer size and front-render owners plus the focused Drawer Sketch External Preview owner on the existing services to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed regular external-drawer free-box preview composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade.',
-  },
-  {
-    from: 'services',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-23',
-    reviewBy: '2026-10-18',
-    fromFile: consumerRel,
-    companionImport: {
-      toFile: externalOwnerRel,
-      kind: 'value',
-      importedSymbols: ['EXTERNAL_DRAWER_FRONT_RENDER_POLICY', 'EXTERNAL_DRAWER_SIZE_POLICY'],
-      syntax: 'static-import',
-    },
-    removedImport: {
-      toFile: facadeRel,
-      kind: 'value',
-      importedSymbols: ['DRAWER_DIMENSIONS', 'MATERIAL_DIMENSIONS'],
-      syntax: 'static-import',
-    },
-    addedImport: {
-      toFile: 'esm/shared/dimensions/material_thickness_policy.ts',
-      kind: 'value',
-      importedSymbols: ['MATERIAL_THICKNESS_POLICY'],
-      syntax: 'static-import',
-    },
-    reason:
-      'The regular external-drawer free-box hover flow replaces one legacy facade statement with focused External Drawer size and front-render owners plus the canonical Material Thickness owner on the existing services to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed regular external-drawer free-box preview composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade.',
-  },
-]);
 
 test('regular external-drawer free-box hover imports exactly three focused owners without aliases', () => {
   const source = read(consumerRel);
@@ -156,18 +75,4 @@ test('regular external-drawer free-box preview keeps focused sizing and geometry
   );
   assert.match(source, /EXTERNAL_DRAWER_FRONT_RENDER_POLICY\.frontOffsetZM/u);
   assert.match(source, /EXTERNAL_DRAWER_FRONT_RENDER_POLICY\.visualHeightClearanceM/u);
-});
-
-test('regular external-drawer free-box migration appends exactly entries 121-122', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.ok(baseline.migrationBudgets.length >= 122);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 120)),
-    '40c8812b78771efc64e38c69b919ace57a104dabfd1cd79882decbd317d9e170'
-  );
-  assert.deepEqual(baseline.migrationBudgets.slice(120, 122), expectedEntries);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 122)),
-    '60b9ef2947cfea12ddc16423ead76437ff6db645889aed2818e41f6733f9a112'
-  );
 });

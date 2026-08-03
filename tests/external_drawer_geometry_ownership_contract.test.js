@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,7 +7,6 @@ import { fileURLToPath } from 'node:url';
 import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const ownerRel = 'esm/shared/dimensions/external_drawer_policy.ts';
 const consumerImports = Object.freeze({
   'esm/native/builder/core_storage_compute_external_drawers.ts': Object.freeze([
@@ -52,19 +50,6 @@ const consumerImports = Object.freeze({
 });
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
-
 function focusedImports(rel) {
   return analyzeModuleDependencies(path.join(root, rel), read(rel))
     .imports.filter(dependency => dependency.specifier.includes('/dimensions/'))
@@ -79,107 +64,6 @@ function focusedImports(rel) {
       })),
     }));
 }
-
-const expectedEntries = Object.freeze([
-  {
-    from: 'builder',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-23',
-    reviewBy: '2026-10-18',
-    fromFile: 'esm/native/builder/core_storage_compute_external_drawers.ts',
-    companionImport: {
-      toFile: ownerRel,
-      kind: 'value',
-      importedSymbols: [
-        'EXTERNAL_DRAWER_BOX_POLICY',
-        'EXTERNAL_DRAWER_FRONT_RENDER_POLICY',
-        'EXTERNAL_DRAWER_SIZE_POLICY',
-        'resolveExternalDrawerGeometry',
-      ],
-      syntax: 'static-import',
-    },
-    removedImport: {
-      toFile: facadeRel,
-      kind: 'value',
-      importedSymbols: ['DRAWER_DIMENSIONS', 'MATERIAL_DIMENSIONS', 'resolveExternalDrawerGeometry'],
-      syntax: 'static-import',
-    },
-    addedImport: {
-      toFile: 'esm/shared/dimensions/material_thickness_policy.ts',
-      kind: 'value',
-      importedSymbols: ['MATERIAL_THICKNESS_POLICY'],
-      syntax: 'static-import',
-    },
-    reason:
-      'The external-drawer core compute flow replaces one legacy facade statement with the focused External Drawer geometry and rendering owners plus the canonical Material Thickness owner on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed external-drawer compute composition seam eliminates the extra Material Thickness statement without reintroducing the legacy facade.',
-  },
-  {
-    from: 'builder',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-23',
-    reviewBy: '2026-10-18',
-    fromFile: 'esm/native/builder/render_interior_sketch_boxes_fronts_drawers_plan.ts',
-    companionImport: {
-      toFile: ownerRel,
-      kind: 'value',
-      importedSymbols: ['EXTERNAL_DRAWER_SIZE_POLICY', 'resolveExternalDrawerGeometry'],
-      syntax: 'static-import',
-    },
-    removedImport: {
-      toFile: facadeRel,
-      kind: 'value',
-      importedSymbols: ['DRAWER_DIMENSIONS', 'resolveExternalDrawerGeometry'],
-      syntax: 'static-import',
-    },
-    addedImport: {
-      toFile: 'esm/shared/dimensions/drawer_sketch_policy.ts',
-      kind: 'value',
-      importedSymbols: ['DRAWER_SKETCH_COLLISION_ALIGNMENT_POLICY', 'DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY'],
-      syntax: 'static-import',
-    },
-    reason:
-      'The Sketch Box external-drawer planning flow replaces one legacy facade statement with the focused External Drawer geometry owner plus focused Drawer Sketch collision-alignment and external-preview owners on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed Sketch Box external-drawer planning composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade.',
-  },
-  {
-    from: 'builder',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-23',
-    reviewBy: '2026-10-18',
-    fromFile: 'esm/native/builder/render_interior_sketch_drawers_external_plan.ts',
-    companionImport: {
-      toFile: ownerRel,
-      kind: 'value',
-      importedSymbols: ['resolveExternalDrawerGeometry'],
-      syntax: 'static-import',
-    },
-    removedImport: {
-      toFile: facadeRel,
-      kind: 'value',
-      importedSymbols: ['DRAWER_DIMENSIONS', 'resolveExternalDrawerGeometry'],
-      syntax: 'static-import',
-    },
-    addedImport: {
-      toFile: 'esm/shared/dimensions/drawer_sketch_policy.ts',
-      kind: 'value',
-      importedSymbols: ['DRAWER_SKETCH_EXTERNAL_PREVIEW_POLICY'],
-      syntax: 'static-import',
-    },
-    reason:
-      'The Sketch external-drawer planning flow replaces one legacy facade statement with the focused External Drawer geometry owner plus the focused Drawer Sketch external-preview owner on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed Sketch external-drawer planning composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade.',
-  },
-]);
 
 test('External Drawer consumers import only their exact focused owners without aliases or aggregates', () => {
   for (const [rel, expected] of Object.entries(consumerImports)) {
@@ -242,18 +126,4 @@ test('External Drawer consumers import only their exact focused owners without a
     ownerSource.indexOf('export function resolveExternalDrawerGeometry')
   );
   assert.doesNotMatch(resolverSource, /\bEXTERNAL_DRAWER_POLICY\b/u);
-});
-
-test('External Drawer migration appends exactly entries 115-117 after the unchanged 114-entry prefix', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.ok(baseline.migrationBudgets.length >= 117);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 114)),
-    'ee0f595edfec1a9b956d82c4257e160a4d6adf5302d2dcce40667c89720575d1'
-  );
-  assert.deepEqual(baseline.migrationBudgets.slice(114, 117), expectedEntries);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 117)),
-    '7f6b6f681f71b979353ba75aaffe776ac13f8b339f90d6bb56bcb77452fb24d8'
-  );
 });

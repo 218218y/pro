@@ -17,7 +17,7 @@ const nodeTestArgs = file => [...(testIsolationArgument ? [testIsolationArgument
 const finalEvidenceContracts = Object.freeze([
   Object.freeze({
     path: 'tests/helpers/dimension_reviewed_ownership_contract_helper.mjs',
-    sha256: '8c545995212543857ac73ae6fc353c666eafde2d47e9189938980622303f0a0f',
+    sha256: 'ce197000e87717990c429b065fa95f9127ffc936d665f08b9db45411016249e3',
   }),
   Object.freeze({
     path: 'tests/wave_d_interior_storage_reviewed_ownership_contract.test.js',
@@ -62,18 +62,6 @@ for (const evidence of finalEvidenceContracts) {
 }
 
 const steps = Object.freeze([
-  {
-    name: 'Layer contract',
-    command: npmCommand,
-    args: npmArgs('run', 'contract:layers'),
-    timeoutMs: 180_000,
-  },
-  {
-    name: 'Layer proposal',
-    command: npmCommand,
-    args: npmArgs('run', 'contract:layers:propose'),
-    timeoutMs: 180_000,
-  },
   {
     name: 'Final migration closeout contract',
     command: process.execPath,

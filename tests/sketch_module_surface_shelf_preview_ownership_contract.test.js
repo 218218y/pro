@@ -1,28 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  analyzeModuleDependencies,
-  collectLayerContractGraph,
-  evaluateLayerContract,
-} from '../tools/wp_layer_contract_support.mjs';
-
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
+import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rel = 'esm/native/services/canvas_picking_sketch_module_surface_preview_shelf.ts';
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
@@ -66,88 +48,6 @@ test('Sketch module surface shelf preview imports are exact focused-owner statem
     source,
     /const\s+\w+\s*=\s*(?:INTERIOR_STORAGE_GRID_POLICY|SKETCH_BOX_(?:MEASUREMENT|SHELF)_PREVIEW_POLICY)\s*;/u
   );
-});
-
-test('Sketch module surface shelf preview ledger and layer transition are exact', () => {
-  const baseline = JSON.parse(fs.readFileSync(path.join(root, 'tools/wp_layer_baseline.json'), 'utf8'));
-
-  assert.ok(baseline.migrationBudgets.length >= 95);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 92)),
-    'c3925619d29b30dbd157d10f9afd68f4ed4dfe3b7ebac810a1438aa633a89dfd'
-  );
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 93)),
-    '0ff50bd06b93e4a303e769b92d5db0a87d775022d9bb1f80d9e5d721023bfa13'
-  );
-  assert.deepEqual(baseline.migrationBudgets.slice(92, 93), [
-    {
-      from: 'services',
-      to: 'shared',
-      additionalStatements: 1,
-      owner: 'dimension-ownership-migration',
-      reviewedAt: '2026-07-22',
-      reviewBy: '2026-10-18',
-      fromFile: rel,
-      companionImport: {
-        toFile: 'esm/shared/dimensions/sketch_box_preview_policy.ts',
-        kind: 'value',
-        importedSymbols: ['SKETCH_BOX_MEASUREMENT_PREVIEW_POLICY', 'SKETCH_BOX_SHELF_PREVIEW_POLICY'],
-        syntax: 'static-import',
-      },
-      removedImport: {
-        toFile: 'esm/shared/wardrobe_dimension_tokens_shared.ts',
-        kind: 'value',
-        importedSymbols: ['INTERIOR_FITTINGS_DIMENSIONS', 'SKETCH_BOX_DIMENSIONS'],
-        syntax: 'static-import',
-      },
-      addedImport: {
-        toFile: 'esm/shared/dimensions/interior_storage_policy.ts',
-        kind: 'value',
-        importedSymbols: ['INTERIOR_STORAGE_GRID_POLICY'],
-        syntax: 'static-import',
-      },
-      reason:
-        'The Sketch module surface shelf-remove preview flow replaces one legacy facade statement with the focused Interior Storage Grid owner plus focused Sketch Box Measurement and Shelf Preview owners on the existing services to shared edge.',
-      removalCondition:
-        'Remove this entry when a reviewed Sketch module surface shelf-preview composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade.',
-    },
-  ]);
-
-  const graph = collectLayerContractGraph({ root });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-30' });
-  assert.equal(report.ok, true);
-  const entryNumbers = [93];
-  assert.deepEqual(
-    report.migrationBudgets.slice(92, 93).map(entry => ({
-      entryNumber: entry.entryNumber,
-      active: entry.active,
-      retired: entry.retired,
-      retirementMode: entry.retirementMode,
-      replacementReviewedOwnershipBudgetId: entry.replacementReviewedOwnershipBudgetId,
-    })),
-    entryNumbers.map(entryNumber => ({
-      entryNumber,
-      active: false,
-      retired: true,
-      retirementMode: 'ownership-reviewed',
-      replacementReviewedOwnershipBudgetId: `dimension-migration-entry-${entryNumber}-reviewed-ownership`,
-    }))
-  );
-  for (const entryNumber of entryNumbers) {
-    const replacement = report.reviewedOwnershipBudgets.find(
-      budget => budget.id === `dimension-migration-entry-${entryNumber}-reviewed-ownership`
-    );
-    assert.ok(replacement);
-    assert.deepEqual(
-      {
-        active: replacement.active,
-        statementValid: replacement.statementValid,
-        evidenceContractsValid: replacement.evidenceContractsValid,
-      },
-      { active: true, statementValid: true, evidenceContractsValid: true }
-    );
-  }
 });
 
 test('Sketch module surface shelf preview formulas remain structurally exact', () => {

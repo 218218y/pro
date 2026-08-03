@@ -15,7 +15,6 @@ const libraryOwnerRel = 'esm/shared/dimensions/library_preset_policy.ts';
 const stackSplitOwnerRel = 'esm/shared/dimensions/stack_split_policy.ts';
 const compositionOwnerRel = 'esm/shared/dimensions/library_preset_flow_dimension_policy.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
-const baselineRel = 'tools/wp_layer_baseline.json';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
 const sourceFileExtensions = Object.freeze(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.mts', '.cts', '.jsx']);
@@ -377,48 +376,6 @@ function sourceFacts(source) {
   };
 }
 
-const expectedEntry162 = Object.freeze({
-  from: 'features',
-  to: 'shared',
-  additionalStatements: 1,
-  owner: 'dimension-ownership-migration',
-  reviewedAt: '2026-07-27',
-  reviewBy: '2026-10-18',
-  fromFile: productionRel,
-  companionImport: {
-    toFile: libraryOwnerRel,
-    kind: 'value',
-    importedSymbols: ['LIBRARY_PRESET_LAYOUT_POLICY'],
-    syntax: 'static-import',
-  },
-  removedImport: {
-    toFile: facadeRel,
-    kind: 'value',
-    importedSymbols: ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT', 'LIBRARY_PRESET_DIMENSIONS'],
-    syntax: 'static-import',
-  },
-  addedImport: {
-    toFile: stackSplitOwnerRel,
-    kind: 'value',
-    importedSymbols: ['DEFAULT_STACK_SPLIT_LOWER_HEIGHT'],
-    syntax: 'static-import',
-  },
-  reason:
-    'The Library Preset Flow feature consumer replaces one combined legacy facade statement with the focused Library Preset Layout policy plus the focused Stack Split lower-height scalar on the existing features to shared edge.',
-  removalCondition:
-    'Remove this entry when a reviewed Library Preset Flow composition seam eliminates the extra Stack Split statement without reintroducing the legacy facade.',
-});
-
-const HISTORICAL_LEDGER_PREFIX_161_HASH = 'acf971df9f7a96ec701270ed81b312863814a092835ce91a9c118779aca5f471';
-const HISTORICAL_LEDGER_PREFIX_162_HASH = '6f4d890ffaf9346798e02f198f1a61c658b1f496b2640cfe5b1df8e1f8c970bc';
-
-function assertHistoricalLedger(migrationBudgets) {
-  assert.ok(migrationBudgets.length >= 162);
-  assert.equal(semanticSha256(migrationBudgets.slice(0, 161)), HISTORICAL_LEDGER_PREFIX_161_HASH);
-  assert.deepEqual(migrationBudgets[161], expectedEntry162);
-  assert.equal(semanticSha256(migrationBudgets.slice(0, 162)), HISTORICAL_LEDGER_PREFIX_162_HASH);
-}
-
 test('Library Preset Flow is one exact consumer with one composition-owner import', () => {
   assert.equal(productionRel, 'esm/native/features/library_preset/library_preset_flow_shared.ts');
   const file = path.join(root, productionRel);
@@ -497,23 +454,4 @@ test('Library Preset Flow preserves literals, signatures, return shape, formulas
     collectNamedModuleExports(productionRel, source).map(entry => [entry.exportedName, entry.kind]),
     expectedPublicExports
   );
-});
-
-test('Library Preset Flow locks Prefix 161, exact Entry 162, and Prefix 162 append-safely', () => {
-  const baseline = JSON.parse(read(baselineRel));
-  assertHistoricalLedger(baseline.migrationBudgets);
-
-  const historicalPrefix162 = structuredClone(baseline.migrationBudgets.slice(0, 162));
-  const entry163 = {
-    ...structuredClone(historicalPrefix162[161]),
-    fromFile: 'esm/native/features/future_library_preset/entry_163.ts',
-    reason: 'Synthetic Entry 163 after the Library Preset Flow historical prefix.',
-    removalCondition: 'Synthetic Entry 163 removal condition.',
-  };
-  const extendedLedger = [...historicalPrefix162, entry163];
-  assert.equal(extendedLedger.length, 163);
-  assert.equal(semanticSha256(extendedLedger.slice(0, 161)), HISTORICAL_LEDGER_PREFIX_161_HASH);
-  assert.deepEqual(extendedLedger[161], expectedEntry162);
-  assert.equal(semanticSha256(extendedLedger.slice(0, 162)), HISTORICAL_LEDGER_PREFIX_162_HASH);
-  assert.doesNotThrow(() => assertHistoricalLedger(extendedLedger));
 });

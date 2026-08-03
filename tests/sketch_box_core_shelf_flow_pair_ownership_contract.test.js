@@ -1,28 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  analyzeModuleDependencies,
-  collectLayerContractGraph,
-  evaluateLayerContract,
-} from '../tools/wp_layer_contract_support.mjs';
-
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
+import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
@@ -86,120 +68,6 @@ test('Sketch Box Core/Shelf flow pair imports are exact focused-owner statements
     assert.doesNotMatch(
       source,
       /const\s+\w+\s*=\s*(?:INTERIOR_(?:STORAGE|SHELF)_[A-Z_]+_POLICY|SKETCH_BOX_(?:PREVIEW_CORE|SHELF_PREVIEW)_POLICY)\s*;/u
-    );
-  }
-});
-
-test('Sketch Box Core/Shelf flow pair ledger and layer transition are exact', () => {
-  const baseline = JSON.parse(fs.readFileSync(path.join(root, 'tools/wp_layer_baseline.json'), 'utf8'));
-
-  assert.ok(baseline.migrationBudgets.length >= 92);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 89)),
-    'e99df16d69cccb08f23fdd3e00a0097aabe12ee091b59a666fe8d5e67f20eb33'
-  );
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 91)),
-    '7ff95da1386b7229e5976d89f247a2f010973ba98d50f6a6aecbecf268a2b224'
-  );
-
-  assert.deepEqual(baseline.migrationBudgets.slice(89, 91), [
-    {
-      from: 'services',
-      to: 'shared',
-      additionalStatements: 1,
-      owner: 'dimension-ownership-migration',
-      reviewedAt: '2026-07-21',
-      reviewBy: '2026-10-18',
-      fromFile: 'esm/native/services/canvas_picking_internal_drawer_existing_fittings.ts',
-      companionImport: {
-        toFile: 'esm/shared/dimensions/sketch_box_preview_policy.ts',
-        kind: 'value',
-        importedSymbols: ['SKETCH_BOX_PREVIEW_CORE_POLICY', 'SKETCH_BOX_SHELF_PREVIEW_POLICY'],
-        syntax: 'static-import',
-      },
-      removedImport: {
-        toFile: 'esm/shared/wardrobe_dimension_tokens_shared.ts',
-        kind: 'value',
-        importedSymbols: ['INTERIOR_FITTINGS_DIMENSIONS', 'SKETCH_BOX_DIMENSIONS'],
-        syntax: 'static-import',
-      },
-      addedImport: {
-        toFile: 'esm/shared/dimensions/interior_storage_policy.ts',
-        kind: 'value',
-        importedSymbols: ['INTERIOR_STORAGE_BARRIER_POLICY', 'INTERIOR_STORAGE_GRID_POLICY'],
-        syntax: 'static-import',
-      },
-      reason:
-        'The internal-drawer existing-fitting removal flow replaces one legacy facade statement with focused Interior Storage Barrier and Grid owners plus focused Sketch Box Core and Shelf Preview owners on the existing services to shared edge.',
-      removalCondition:
-        'Remove this entry when a reviewed existing-fitting removal composition seam eliminates the extra Interior Storage statement without reintroducing the legacy facade.',
-    },
-    {
-      from: 'services',
-      to: 'shared',
-      additionalStatements: 1,
-      owner: 'dimension-ownership-migration',
-      reviewedAt: '2026-07-21',
-      reviewBy: '2026-10-18',
-      fromFile: 'esm/native/services/canvas_picking_sketch_module_surface_preview_flow.ts',
-      companionImport: {
-        toFile: 'esm/shared/dimensions/sketch_box_preview_policy.ts',
-        kind: 'value',
-        importedSymbols: ['SKETCH_BOX_PREVIEW_CORE_POLICY'],
-        syntax: 'static-import',
-      },
-      removedImport: {
-        toFile: 'esm/shared/wardrobe_dimension_tokens_shared.ts',
-        kind: 'value',
-        importedSymbols: ['INTERIOR_FITTINGS_DIMENSIONS', 'SKETCH_BOX_DIMENSIONS'],
-        syntax: 'static-import',
-      },
-      addedImport: {
-        toFile: 'esm/shared/dimensions/interior_fittings_policy.ts',
-        kind: 'value',
-        importedSymbols: ['INTERIOR_SHELF_GEOMETRY_POLICY'],
-        syntax: 'static-import',
-      },
-      reason:
-        'The Sketch module surface-preview orchestration flow replaces one legacy facade statement with the focused Interior Shelf Geometry owner plus the focused Sketch Box Preview Core owner on the existing services to shared edge.',
-      removalCondition:
-        'Remove this entry when a reviewed Sketch module surface-preview orchestration seam eliminates the extra Interior Fittings statement without reintroducing the legacy facade.',
-    },
-  ]);
-
-  const graph = collectLayerContractGraph({ root });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-30' });
-  assert.equal(report.ok, true);
-  const entryNumbers = [90, 91];
-  assert.deepEqual(
-    report.migrationBudgets.slice(89, 91).map(entry => ({
-      entryNumber: entry.entryNumber,
-      active: entry.active,
-      retired: entry.retired,
-      retirementMode: entry.retirementMode,
-      replacementReviewedOwnershipBudgetId: entry.replacementReviewedOwnershipBudgetId,
-    })),
-    entryNumbers.map(entryNumber => ({
-      entryNumber,
-      active: false,
-      retired: true,
-      retirementMode: 'ownership-reviewed',
-      replacementReviewedOwnershipBudgetId: `dimension-migration-entry-${entryNumber}-reviewed-ownership`,
-    }))
-  );
-  for (const entryNumber of entryNumbers) {
-    const replacement = report.reviewedOwnershipBudgets.find(
-      budget => budget.id === `dimension-migration-entry-${entryNumber}-reviewed-ownership`
-    );
-    assert.ok(replacement);
-    assert.deepEqual(
-      {
-        active: replacement.active,
-        statementValid: replacement.statementValid,
-        evidenceContractsValid: replacement.evidenceContractsValid,
-      },
-      { active: true, statementValid: true, evidenceContractsValid: true }
     );
   }
 });

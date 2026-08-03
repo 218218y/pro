@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,12 +11,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const boundaryRel = 'esm/native/features/interior_tab_defaults.ts';
 const uiRel = 'esm/native/ui/react/tabs/interior_tab_local_state_shared.ts';
 const uiHelpersRel = 'esm/native/ui/react/tabs/interior_tab_helpers.tsx';
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
-const ownerRel = 'esm/shared/dimensions/interior_fittings_policy.ts';
-const unitsRel = 'esm/shared/dimensions/units.ts';
 const compositionOwnerRel = 'esm/shared/dimensions/interior_tab_defaults_dimension_policy.ts';
-
-const compatibilitySymbol = 'INTERIOR_FITTINGS_DIMENSIONS';
 
 const geometryPolicySymbol = 'INTERIOR_SHELF_GEOMETRY_POLICY';
 const depthDefaultSymbol = 'DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM';
@@ -27,10 +21,6 @@ const uiHelpersSpecifier = './interior_tab_helpers.js';
 const unitsSpecifierFromBoundary = '../../shared/dimensions/units.js';
 const compositionOwnerSpecifierFromBoundary =
   '../../shared/dimensions/interior_tab_defaults_dimension_policy.js';
-
-const prefix163Sha256 = '8c4c04e56a8b991d81537127adc69c5dc42b4e7ed3de4fe81258a67b01ad8341';
-const prefix164Sha256 = '55c2e7abbae3cdba828c41a48ed759d457079d0021fe21fc2a1ebf7a08e2e231';
-const prefix165Sha256 = '3b685a291fdbfa4ae0fd66b8b4744116598a81e236e8f449facc89714802a807';
 
 const expectedBoundaryImports = Object.freeze([
   Object.freeze({
@@ -121,8 +111,6 @@ const expectedUiImports = Object.freeze([
 ]);
 
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
-const sha256 = value => createHash('sha256').update(value).digest('hex');
-
 function stableJson(value) {
   if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
   if (value && typeof value === 'object') {
@@ -367,45 +355,6 @@ function inspectUiImports(source) {
   return violations;
 }
 
-function assertHistoricalPrefixes(migrationBudgets) {
-  assert.ok(migrationBudgets.length >= 165);
-  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 163))), prefix163Sha256);
-  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 164))), prefix164Sha256);
-  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 165))), prefix165Sha256);
-}
-
-function syntheticEntry167() {
-  return Object.freeze({
-    from: 'services',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'synthetic-append-safe-proof',
-    reviewedAt: '2099-01-01',
-    reviewBy: '2099-04-01',
-    fromFile: 'esm/native/services/synthetic_entry_167.ts',
-    companionImport: {
-      toFile: 'esm/shared/synthetic_companion_167.ts',
-      kind: 'value',
-      importedSymbols: ['SYNTHETIC_COMPANION_167'],
-      syntax: 'static-import',
-    },
-    removedImport: {
-      toFile: facadeRel,
-      kind: 'value',
-      importedSymbols: ['SYNTHETIC_LEGACY_167'],
-      syntax: 'static-import',
-    },
-    addedImport: {
-      toFile: 'esm/shared/synthetic_owner_167.ts',
-      kind: 'value',
-      importedSymbols: ['SYNTHETIC_OWNER_167'],
-      syntax: 'static-import',
-    },
-    reason: 'In-memory append-safe proof only.',
-    removalCondition: 'Remove the in-memory proof after the assertion.',
-  });
-}
-
 function assertRejected(inspect, source, expectedKind, label) {
   const violations = inspect(source);
   assert.equal(
@@ -457,77 +406,6 @@ test('Interior Tab defaults composition owner has exactly two identity re-export
 test('Interior Tab UI has exactly one type import and one eight-symbol boundary import', () => {
   assert.deepEqual(inspectUiImports(read(uiRel)), []);
   assert.ok(canonicalFileTarget(path.join(root, uiHelpersRel)));
-});
-
-test('Ledger Entries 164-165 and Prefixes 163-165 remain exact and append-safe for Entry 167', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.ok(baseline.migrationBudgets.length >= 165);
-  assertHistoricalPrefixes(baseline.migrationBudgets);
-
-  const entries = baseline.migrationBudgets.slice(163, 165);
-  assert.deepEqual(
-    entries.map(entry => ({
-      from: entry.from,
-      to: entry.to,
-      fromFile: entry.fromFile,
-      companionFile: entry.companionImport.toFile,
-      companionSymbols: entry.companionImport.importedSymbols,
-      addedFile: entry.addedImport.toFile,
-      addedSymbols: entry.addedImport.importedSymbols,
-      removedFile: entry.removedImport.toFile,
-      removedSymbols: entry.removedImport.importedSymbols,
-      additionalStatements: entry.additionalStatements,
-      owner: entry.owner,
-      reviewedAt: entry.reviewedAt,
-      reviewBy: entry.reviewBy,
-      removalCondition: entry.removalCondition,
-    })),
-    [
-      {
-        from: 'features',
-        to: 'shared',
-        fromFile: boundaryRel,
-        companionFile: unitsRel,
-        companionSymbols: ['mToCm'],
-        addedFile: ownerRel,
-        addedSymbols: [geometryPolicySymbol],
-        removedFile: facadeRel,
-        removedSymbols: [compatibilitySymbol, 'mToCm'],
-        additionalStatements: 1,
-        owner: 'dimension-ownership-migration',
-        reviewedAt: '2026-07-28',
-        reviewBy: '2026-10-18',
-        removalCondition:
-          'Remove this entry when a reviewed Interior Tab defaults composition seam eliminates the extra Interior Fittings owner statement without reintroducing the legacy facade or a direct shared owner import in UI.',
-      },
-      {
-        from: 'features',
-        to: 'shared',
-        fromFile: boundaryRel,
-        companionFile: ownerRel,
-        companionSymbols: [geometryPolicySymbol],
-        addedFile: unitsRel,
-        addedSymbols: ['mToCm'],
-        removedFile: facadeRel,
-        removedSymbols: [compatibilitySymbol, 'mToCm'],
-        additionalStatements: 1,
-        owner: 'dimension-ownership-migration',
-        reviewedAt: '2026-07-28',
-        reviewBy: '2026-10-18',
-        removalCondition:
-          'Remove this entry when a reviewed Interior Tab defaults composition seam eliminates the extra units statement without reintroducing the legacy facade, numeric conversion literals, or a direct shared import in UI.',
-      },
-    ]
-  );
-
-  const historicalPrefix166 = structuredClone(baseline.migrationBudgets.slice(0, 166));
-  const withEntry167 = [...historicalPrefix166, syntheticEntry167()];
-  assert.equal(withEntry167.length, 167);
-  assert.doesNotThrow(() => assertHistoricalPrefixes(withEntry167));
-
-  const withMutatedEntry165 = structuredClone(historicalPrefix166);
-  withMutatedEntry165[164].owner = 'mutated-owner-probe';
-  assert.throws(() => assertHistoricalPrefixes(withMutatedEntry165));
 });
 
 test('mutation probes reject UI import drift, boundary dependency growth, formula drift, and wrappers', () => {

@@ -45,63 +45,6 @@ const focusedImports = Object.freeze([
   }),
 ]);
 
-const removedImport = Object.freeze({
-  toFile: facadeRel,
-  kind: 'value',
-  importedSymbols: [
-    'CARCASS_INTERIOR_DIMENSIONS',
-    'resolveDoorMountThicknessesFromConfig',
-    'STACK_SPLIT_SEAM_GAP_M',
-  ],
-  syntax: 'static-import',
-});
-
-function expectedEntry({ toFile, importedSymbol, reason, removalCondition }) {
-  return {
-    from: 'builder',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-26',
-    reviewBy: '2026-10-18',
-    fromFile: consumerRel,
-    companionImport: {
-      toFile: interiorOwnerRel,
-      kind: 'value',
-      importedSymbols: ['CARCASS_INTERIOR_DIMENSIONS'],
-      syntax: 'static-import',
-    },
-    removedImport,
-    addedImport: {
-      toFile,
-      kind: 'value',
-      importedSymbols: [importedSymbol],
-      syntax: 'static-import',
-    },
-    reason,
-    removalCondition,
-  };
-}
-
-const expectedEntries = Object.freeze([
-  expectedEntry({
-    toFile: doorMountOwnerRel,
-    importedSymbol: 'resolveDoorMountThicknessesFromConfig',
-    reason:
-      'The Build Flow Plan Inputs flow replaces one legacy facade statement with the focused Carcass Interior owner plus the focused Door Mount Thickness owner on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed Build Flow Plan Inputs composition seam eliminates the extra Door Mount Thickness statement without reintroducing the legacy facade.',
-  }),
-  expectedEntry({
-    toFile: stackSplitOwnerRel,
-    importedSymbol: 'STACK_SPLIT_SEAM_GAP_M',
-    reason:
-      'The Build Flow Plan Inputs flow replaces one legacy facade statement with the focused Carcass Interior owner plus the focused Stack Split seam owner on the existing builder to shared edge.',
-    removalCondition:
-      'Remove this entry when a reviewed Build Flow Plan Inputs composition seam eliminates the extra Stack Split seam statement without reintroducing the legacy facade.',
-  }),
-]);
-
 const expectedReturnKeys = Object.freeze([
   'uiState',
   'rawUi',
@@ -416,18 +359,5 @@ test('Build Flow Plan Inputs preserves numeric literals, public signature, and e
   assert.deepEqual(
     facts.returnObject.properties.map(property => identifierName(property.key)),
     expectedReturnKeys
-  );
-});
-
-test('Build Flow Plan Inputs appends exactly Entries 155-156 after the unchanged 154-entry prefix', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 154)),
-    '0398ae9924f577c2f06a0293feac49f8a70eff80274c22717a9624421cdf5ef0'
-  );
-  assert.deepEqual(baseline.migrationBudgets.slice(154, 156), expectedEntries);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 156)),
-    '9e06d7f0e1df80f0f90cbe281eb4622790a49473ce4f3c0bdef36b0535a3386d'
   );
 });

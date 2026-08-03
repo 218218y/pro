@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,55 +8,7 @@ import { analyzeModuleDependencies } from '../tools/wp_layer_contract_support.mj
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const consumerRel = 'esm/native/builder/post_build_sketch_door_cuts_apply.ts';
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
-const doorOwnerRel = 'esm/shared/dimensions/door_system_policy.ts';
-const drawerOwnerRel = 'esm/shared/dimensions/drawer_sketch_policy.ts';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
-
-function stableJson(value) {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
-
-const expectedEntry = Object.freeze({
-  from: 'builder',
-  to: 'shared',
-  additionalStatements: 1,
-  owner: 'dimension-ownership-migration',
-  reviewedAt: '2026-07-23',
-  reviewBy: '2026-10-18',
-  fromFile: consumerRel,
-  companionImport: {
-    toFile: doorOwnerRel,
-    kind: 'value',
-    importedSymbols: ['HINGED_DOOR_SPLIT_GEOMETRY_POLICY'],
-    syntax: 'static-import',
-  },
-  removedImport: {
-    toFile: facadeRel,
-    kind: 'value',
-    importedSymbols: ['DOOR_SYSTEM_DIMENSIONS', 'DRAWER_DIMENSIONS'],
-    syntax: 'static-import',
-  },
-  addedImport: {
-    toFile: drawerOwnerRel,
-    kind: 'value',
-    importedSymbols: ['DRAWER_SKETCH_DOOR_CUT_POLICY'],
-    syntax: 'static-import',
-  },
-  reason:
-    'The post-build Sketch drawer door-cut application replaces one legacy facade statement with the focused Hinged Door Split Geometry owner plus the focused Drawer Sketch Door Cut owner on the existing builder to shared edge.',
-  removalCondition:
-    'Remove this entry when a reviewed Sketch drawer door-cut composition seam eliminates the extra Drawer Sketch statement without reintroducing the legacy facade.',
-});
 
 test('Sketch drawer door cuts import exactly the two focused owners without aliases', () => {
   const source = read(consumerRel);
@@ -122,19 +73,5 @@ test('Sketch drawer door cuts preserve the focused split and drawer-cut formulas
   assert.match(
     source,
     /minHeight:\s*splitPosList\.length\s*\?\s*HINGED_DOOR_SPLIT_GEOMETRY_POLICY\.splitGapM\s*\/\s*2\s*:\s*undefined/u
-  );
-});
-
-test('Sketch drawer door-cut migration appends exactly Entry 123', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assert.ok(baseline.migrationBudgets.length >= 123);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 122)),
-    '60b9ef2947cfea12ddc16423ead76437ff6db645889aed2818e41f6733f9a112'
-  );
-  assert.deepEqual(baseline.migrationBudgets.slice(122, 123), [expectedEntry]);
-  assert.equal(
-    semanticSha256(baseline.migrationBudgets.slice(0, 123)),
-    '7423bf5013baa9665b6ba01fe19d4dc57d4785dae27217f6509920b5a3c7f725'
   );
 });

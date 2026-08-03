@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { TEST_GROUP_CATALOG } from './wp_test_group_catalog.mjs';
 import { buildTestGroupCatalogReport } from './wp_test_group_catalog_report.mjs';
@@ -23,6 +24,9 @@ const mdOut = getArgValue('--md-out');
 const shouldPrint = !args.has('--no-print');
 const PACKAGE_TEST_REF_RE =
   /tests\/[^\s"']+?(?:\.test\.(?:js|tsx|ts|mjs|cjs)|\.spec\.(?:js|tsx|ts|mjs|cjs))/g;
+const REPOSITORY_LAYER_GRAPH_CALL = 'collectLayerContractGraph(';
+const REPOSITORY_LAYER_GRAPH_OWNER = 'tests/helpers/repository_layer_contract_fixture.mjs';
+const HISTORICAL_MIGRATION_PREFIX_ACCESS = 'migrationBudgets.slice';
 
 function walk(dir) {
   const entries = [];
@@ -91,7 +95,31 @@ function collectCatalogTestRefs() {
   return refs;
 }
 
-function buildReport() {
+export function collectDirectRepositoryLayerScanTests(projectRoot = ROOT, testFiles = null) {
+  const files =
+    testFiles ??
+    walk(path.join(projectRoot, 'tests'))
+      .filter(file => /\.(?:js|cjs|mjs|ts|tsx)$/u.test(file))
+      .map(file => path.relative(projectRoot, file).split(path.sep).join('/'));
+  return files.filter(
+    file =>
+      file !== REPOSITORY_LAYER_GRAPH_OWNER &&
+      fs.readFileSync(path.join(projectRoot, file), 'utf8').includes(REPOSITORY_LAYER_GRAPH_CALL)
+  );
+}
+
+export function collectHistoricalMigrationPrefixTests(projectRoot = ROOT, testFiles = null) {
+  const files =
+    testFiles ??
+    listCanonicalTestFiles(projectRoot).map(file =>
+      path.relative(projectRoot, file).split(path.sep).join('/')
+    );
+  return files.filter(file =>
+    fs.readFileSync(path.join(projectRoot, file), 'utf8').includes(HISTORICAL_MIGRATION_PREFIX_ACCESS)
+  );
+}
+
+export function buildReport() {
   const groupCatalogReport = buildTestGroupCatalogReport(ROOT);
   const tests = listCanonicalTestFiles(ROOT).map(normalize);
   const nonTestRuntimeFiles = (fs.existsSync(TEST_ROOT) ? walk(TEST_ROOT) : [])
@@ -143,6 +171,8 @@ function buildReport() {
   );
   const e2eIncludedInUnitRunner = unitRunnerFiles.filter(file => e2eFiles.includes(file));
   const helpersIncludedInUnitRunner = unitRunnerFiles.filter(file => nonTestRuntimeFiles.includes(file));
+  const directRepositoryLayerScanTests = collectDirectRepositoryLayerScanTests(ROOT, tests);
+  const historicalMigrationPrefixTests = collectHistoricalMigrationPrefixTests(ROOT, tests);
   return {
     generatedAt: new Date().toISOString(),
     totals: {
@@ -156,6 +186,8 @@ function buildReport() {
       catalogGroups: groupCatalogReport.summary.groups,
       catalogScriptBindings: groupCatalogReport.summary.scriptBindings,
       primaryCatalogGroups: groupCatalogReport.summary.portfolioRoles.primary || 0,
+      directRepositoryLayerScanTests: directRepositoryLayerScanTests.length,
+      historicalMigrationPrefixTests: historicalMigrationPrefixTests.length,
     },
     categories,
     failures: {
@@ -168,6 +200,8 @@ function buildReport() {
       duplicateRunnerFiles,
       e2eIncludedInUnitRunner,
       helpersIncludedInUnitRunner,
+      directRepositoryLayerScanTests,
+      historicalMigrationPrefixTests,
       missingFromUnitRunner: tests.filter(file => !e2eFiles.includes(file) && !unitRunnerFileSet.has(file)),
     },
     records,
@@ -188,6 +222,8 @@ function renderMarkdown(report) {
     `- Catalog groups: ${report.totals.catalogGroups}`,
     `- Catalog-backed package scripts: ${report.totals.catalogScriptBindings}`,
     `- Primary non-overlapping portfolio groups: ${report.totals.primaryCatalogGroups}`,
+    `- Tests directly invoking the repository layer graph: ${report.totals.directRepositoryLayerScanTests}`,
+    `- Tests copying historical migration-ledger prefixes: ${report.totals.historicalMigrationPrefixTests}`,
     ''
   );
   lines.push('| Category | Count |', '|---|---:|');
@@ -215,6 +251,12 @@ function renderMarkdown(report) {
     `| Unit runner excludes helpers/fixtures | ${report.failures.helpersIncludedInUnitRunner.length} |`
   );
   lines.push(
+    `| Repository layer graph is owned only by the cached central fixture | ${report.failures.directRepositoryLayerScanTests.length} |`
+  );
+  lines.push(
+    `| Historical migration prefixes are owned only by the final closeout fingerprint | ${report.failures.historicalMigrationPrefixTests.length} |`
+  );
+  lines.push(
     `| Every non-E2E test reaches the unit runner | ${report.failures.missingFromUnitRunner.length} |`,
     ''
   );
@@ -240,21 +282,25 @@ function renderMarkdown(report) {
   return lines.join('\n');
 }
 
-const report = buildReport();
-const failures = Object.values(report.failures).reduce((sum, items) => sum + items.length, 0);
-if (jsonOut) fs.writeFileSync(jsonOut, `${JSON.stringify(report, null, 2)}\n`);
-if (mdOut) fs.writeFileSync(mdOut, renderMarkdown(report));
-if (shouldPrint) {
-  console.log(
-    `[test-portfolio-audit] tests=${report.totals.tests} refs=${report.totals.totalTestReferences} (package=${report.totals.packageTestReferences}, catalog=${report.totals.catalogTestReferences})`
-  );
-  for (const [category, count] of Object.entries(report.categories)) console.log(`- ${category}: ${count}`);
+function main() {
+  const report = buildReport();
+  const failures = Object.values(report.failures).reduce((sum, items) => sum + items.length, 0);
+  if (jsonOut) fs.writeFileSync(jsonOut, `${JSON.stringify(report, null, 2)}\n`);
+  if (mdOut) fs.writeFileSync(mdOut, renderMarkdown(report));
+  if (shouldPrint) {
+    console.log(
+      `[test-portfolio-audit] tests=${report.totals.tests} refs=${report.totals.totalTestReferences} (package=${report.totals.packageTestReferences}, catalog=${report.totals.catalogTestReferences})`
+    );
+    for (const [category, count] of Object.entries(report.categories)) console.log(`- ${category}: ${count}`);
+  }
+  if (failures) {
+    console.error(`[test-portfolio-audit] FAILED with ${failures} issue(s)`);
+    for (const [key, items] of Object.entries(report.failures))
+      if (items.length) console.error(`- ${key}: ${items.length}`);
+    process.exitCode = 1;
+    return;
+  }
+  console.log('[test-portfolio-audit] ok');
 }
-if (failures) {
-  console.error(`[test-portfolio-audit] FAILED with ${failures} issue(s)`);
-  for (const [key, items] of Object.entries(report.failures))
-    if (items.length) console.error(`- ${key}: ${items.length}`);
-  process.exit(1);
-}
-console.log('[test-portfolio-audit] ok');
-process.exit(0);
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();

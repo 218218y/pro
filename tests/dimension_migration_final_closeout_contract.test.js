@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { collectLayerContractGraph, evaluateLayerContract } from '../tools/wp_layer_contract_support.mjs';
+import { createRepositoryLayerContractFixture } from './helpers/repository_layer_contract_fixture.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = rel => JSON.parse(fs.readFileSync(path.join(root, rel), 'utf8'));
@@ -24,12 +24,19 @@ const stableJson = value => {
   return JSON.stringify(value);
 };
 const semanticSha256 = value => createHash('sha256').update(stableJson(value)).digest('hex');
+const repositoryLayerContract = createRepositoryLayerContractFixture({
+  root,
+  currentDate: '2026-07-30',
+});
 
-test('Checkpoint 4J closes all 178 historical Entries without changing the historical fingerprint', () => {
-  const baseline = readJson('tools/wp_layer_baseline.json');
-  const graph = collectLayerContractGraph({ root });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-30' });
+test('Checkpoint 4J closes all 178 historical Entries with one clean proposal and unchanged fingerprint', () => {
+  const { baseline, proposal, report } = repositoryLayerContract();
   assert.equal(report.ok, true, JSON.stringify(report.failures));
+  assert.equal(proposal.reviewRequired, false);
+  assert.deepEqual(proposal.diff.addedEdges, []);
+  assert.deepEqual(proposal.diff.budgetChanges, []);
+  assert.deepEqual(proposal.diff.ratchetViolations, []);
+  assert.deepEqual(proposal.diff.migrationBudgetFailures, []);
 
   assert.equal(baseline.migrationBudgets.length, 178);
   assert.equal(baseline.migrationRetirements.length, 178);
@@ -58,9 +65,7 @@ test('Checkpoint 4J closes all 178 historical Entries without changing the histo
 });
 
 test('reviewed ownership and general ownership are decomposed exactly on every closed dimension edge', () => {
-  const baseline = readJson('tools/wp_layer_baseline.json');
-  const graph = collectLayerContractGraph({ root });
-  const report = evaluateLayerContract(graph, baseline, { currentDate: '2026-07-30' });
+  const { report } = repositoryLayerContract();
   const expected = new Map([
     ['builder>shared', [280, 0, 0, 6, 61, 213, 213]],
     ['services>shared', [214, 0, 0, 4, 47, 163, 163]],

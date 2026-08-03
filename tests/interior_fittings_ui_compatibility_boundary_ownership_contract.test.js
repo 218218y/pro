@@ -11,22 +11,14 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const boundaryRel = 'esm/native/features/interior_tab_defaults.ts';
 const uiRel = 'esm/native/ui/react/tabs/interior_tab_local_state_shared.ts';
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
-const ownerRel = 'esm/shared/dimensions/interior_fittings_policy.ts';
-const unitsRel = 'esm/shared/dimensions/units.ts';
 const compositionOwnerRel = 'esm/shared/dimensions/interior_tab_defaults_dimension_policy.ts';
 const boundarySpecifier = '../../../features/interior_tab_defaults.js';
 const compositionOwnerSpecifier = '../../shared/dimensions/interior_tab_defaults_dimension_policy.js';
 const depthSymbol = 'DEFAULT_SKETCH_SHELF_DEPTH_EDIT_CM';
 const ownerSymbol = 'INTERIOR_SHELF_GEOMETRY_POLICY';
-const compatibilitySymbol = 'INTERIOR_FITTINGS_DIMENSIONS';
 const expectedUiSemanticFingerprint = 'f16e56048cf07f84bc3efbb762107b6473ca6ce0ddf57beed0a3981714d7a934';
 const expectedUiLiteralInventoryFingerprint =
   '2a4f0188a66b4a12d2c650b08aa460070ed15a87d065f523d79056bf1c7f92db';
-const prefix163Sha256 = '8c4c04e56a8b991d81537127adc69c5dc42b4e7ed3de4fe81258a67b01ad8341';
-const prefix164Sha256 = '55c2e7abbae3cdba828c41a48ed759d457079d0021fe21fc2a1ebf7a08e2e231';
-const prefix165Sha256 = '3b685a291fdbfa4ae0fd66b8b4744116598a81e236e8f449facc89714802a807';
-
 const expectedBoundarySymbols = Object.freeze([
   'DEFAULT_BASE_LEG_PLATFORM_FRONT_OVERHANG_CM',
   'DEFAULT_BASE_LEG_PLATFORM_MODE',
@@ -387,103 +379,6 @@ function assertViolation(violations, kind, label) {
   );
 }
 
-function assertHistoricalInteriorTabLedger(migrationBudgets) {
-  assert.ok(migrationBudgets.length >= 165);
-  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 163))), prefix163Sha256);
-  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 164))), prefix164Sha256);
-  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 165))), prefix165Sha256);
-}
-
-function syntheticFutureEntry167() {
-  return {
-    from: 'services',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'synthetic-future-migration',
-    reviewedAt: '2099-01-01',
-    reviewBy: '2099-04-01',
-    fromFile: 'esm/native/services/future_consumer_167.ts',
-    companionImport: {
-      toFile: 'esm/shared/future_companion.ts',
-      kind: 'value',
-      importedSymbols: ['FUTURE_COMPANION_167'],
-      syntax: 'static-import',
-    },
-    removedImport: {
-      toFile: 'esm/shared/future_facade.ts',
-      kind: 'value',
-      importedSymbols: ['FUTURE_FACADE_167'],
-      syntax: 'static-import',
-    },
-    addedImport: {
-      toFile: 'esm/shared/future_owner.ts',
-      kind: 'value',
-      importedSymbols: ['FUTURE_OWNER_167'],
-      syntax: 'static-import',
-    },
-    reason: 'Synthetic Entry 167 proves append-safe historical ownership.',
-    removalCondition: 'Remove the synthetic Entry 167 after the append-safe proof.',
-  };
-}
-
-function expectedLedgerEntries() {
-  const common = {
-    from: 'features',
-    to: 'shared',
-    additionalStatements: 1,
-    owner: 'dimension-ownership-migration',
-    reviewedAt: '2026-07-28',
-    reviewBy: '2026-10-18',
-    fromFile: boundaryRel,
-    removedImport: {
-      toFile: facadeRel,
-      kind: 'value',
-      importedSymbols: [compatibilitySymbol, 'mToCm'],
-      syntax: 'static-import',
-    },
-  };
-  return [
-    {
-      ...common,
-      companionImport: {
-        toFile: unitsRel,
-        kind: 'value',
-        importedSymbols: ['mToCm'],
-        syntax: 'static-import',
-      },
-      addedImport: {
-        toFile: ownerRel,
-        kind: 'value',
-        importedSymbols: [ownerSymbol],
-        syntax: 'static-import',
-      },
-      reason:
-        'The Interior Tab defaults feature boundary moves the combined UI facade statement behind a feature-owned composition seam, adding the focused Interior Shelf Geometry owner alongside the canonical units conversion without returning the facade to UI.',
-      removalCondition:
-        'Remove this entry when a reviewed Interior Tab defaults composition seam eliminates the extra Interior Fittings owner statement without reintroducing the legacy facade or a direct shared owner import in UI.',
-    },
-    {
-      ...common,
-      companionImport: {
-        toFile: ownerRel,
-        kind: 'value',
-        importedSymbols: [ownerSymbol],
-        syntax: 'static-import',
-      },
-      addedImport: {
-        toFile: unitsRel,
-        kind: 'value',
-        importedSymbols: ['mToCm'],
-        syntax: 'static-import',
-      },
-      reason:
-        'The Interior Tab defaults feature boundary moves the combined UI facade statement behind a feature-owned composition seam, adding the canonical meter-to-centimeter conversion alongside the focused Interior Shelf Geometry owner without returning the facade to UI.',
-      removalCondition:
-        'Remove this entry when a reviewed Interior Tab defaults composition seam eliminates the extra units statement without reintroducing the legacy facade, numeric conversion literals, or a direct shared import in UI.',
-    },
-  ];
-}
-
 test('Interior Tab feature boundary has one focused composition dependency and seven exact re-exports', () => {
   const source = read(boundaryRel);
   assert.deepEqual(inspectBoundary(source), []);
@@ -546,20 +441,4 @@ test('Interior Tab boundary rejects missing or extra owner re-exports', () => {
     'boundary-dependency-inventory',
     'extra boundary re-export'
   );
-});
-
-test('Interior Tab migration owns exact Ledger Entries 164 and 165 and remains append-safe for Entry 167', () => {
-  const baseline = JSON.parse(read('tools/wp_layer_baseline.json'));
-  assertHistoricalInteriorTabLedger(baseline.migrationBudgets);
-  assert.deepEqual(baseline.migrationBudgets.slice(163, 165), expectedLedgerEntries());
-
-  const historicalPrefix166 = structuredClone(baseline.migrationBudgets.slice(0, 166));
-  const withFutureEntry167 = [...historicalPrefix166, syntheticFutureEntry167()];
-  assert.equal(historicalPrefix166.length, 166);
-  assert.equal(withFutureEntry167.length, 167);
-  assert.doesNotThrow(() => assertHistoricalInteriorTabLedger(withFutureEntry167));
-
-  const withMutatedEntry164 = structuredClone(historicalPrefix166);
-  withMutatedEntry164[163].owner = 'mutated-owner-probe';
-  assert.throws(() => assertHistoricalInteriorTabLedger(withMutatedEntry164));
 });

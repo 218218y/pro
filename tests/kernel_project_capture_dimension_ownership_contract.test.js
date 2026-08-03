@@ -17,7 +17,6 @@ const thicknessRel = 'esm/shared/dimensions/door_mount_thickness_policy.ts';
 const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const publicDimensionsRel = 'esm/native/features/dimensions/index.ts';
 const runtimeApiRel = 'esm/native/runtime/api.ts';
-const baselineRel = 'tools/wp_layer_baseline.json';
 const ownerSymbol = 'PROJECT_CAPTURE_DIMENSION_POLICY';
 const ownerSpecifier = '../../shared/dimensions/project_capture_dimension_policy.js';
 const consumerBodySha256 = 'b4b5f860ba20101e8e36d6f46602229f7f7f055378b3428bf77adaca5f85a89c';
@@ -25,8 +24,6 @@ const persistedDoorsSha256 = 'd0b63e533964a4559b69d2224217dfc4f9b9c098714256503b
 const buildPayloadSha256 = '369aca88642d39779075ac6866986f488b911d84bf09773989eb27dbad7d0ff1';
 const returnObjectSha256 = '7b38c82b28a1de4b29c7b189a2d1898a4c50e1183547ffee5e349edbdcea28d7';
 const consumerLiteralSha256 = '517c74b64ba1bc22310d01455d22f9225df5f2e4dae5078fed001c30d605ee31';
-const prefix166Sha256 = 'f58543ffaf2860f846f7469e93ab442adf0ee3fc5ae391fd904af3f64167c111';
-
 const expectedOwnerDependencies = Object.freeze([
   Object.freeze({
     specifier: './door_mount_thickness_policy.js',
@@ -91,25 +88,6 @@ function stableJson(value) {
       .join(',')}}`;
   }
   return JSON.stringify(value);
-}
-
-function assertStatementNeutralLedgerHistory(migrationBudgets) {
-  assert.ok(migrationBudgets.length >= 166);
-  const approvedHistory = migrationBudgets.slice(0, 166);
-  assert.equal(sha256(stableJson(approvedHistory)), prefix166Sha256);
-  assert.deepEqual(
-    approvedHistory.filter(entry => entry.fromFile === consumerRel),
-    []
-  );
-}
-
-function appendSyntheticFutureEntry167(migrationBudgets) {
-  const futureEntry = structuredClone(migrationBudgets[165]);
-  futureEntry.owner = 'synthetic-append-safe-proof';
-  futureEntry.fromFile = consumerRel;
-  futureEntry.reason = 'Synthetic Entry 167 proves the historical Project Capture contract is append-safe.';
-  futureEntry.removalCondition = 'Remove the synthetic Entry 167 after the append-safe proof.';
-  return [...structuredClone(migrationBudgets.slice(0, 166)), futureEntry];
 }
 
 function analyzeSource(file, source) {
@@ -680,15 +658,6 @@ test('normalized capture AST fingerprints preserve fallback, payload shape, norm
     returnObjectHash: returnObjectSha256,
     literalHash: consumerLiteralSha256,
   });
-});
-
-test('statement-neutral migration preserves Prefix 166 without owning the current Ledger tail', () => {
-  const baseline = JSON.parse(read(baselineRel));
-  assertStatementNeutralLedgerHistory(baseline.migrationBudgets);
-
-  const withFutureEntry167 = appendSyntheticFutureEntry167(baseline.migrationBudgets);
-  assert.equal(withFutureEntry167.length, 167);
-  assert.doesNotThrow(() => assertStatementNeutralLedgerHistory(withFutureEntry167));
 });
 
 test('owner mutation probes reject dependencies, aliases, aggregates, literals, wrappers, order, freeze, and exports', () => {

@@ -10,16 +10,9 @@ import { createSourceFile, walkAst } from '../tools/wp_ast_adapter.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ownerRel = 'esm/shared/dimensions/wardrobe_dimension_guide_policy.ts';
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
-
-const baselineRel = 'tools/wp_layer_baseline.json';
-
 const ownerSymbol = 'WARDROBE_DIMENSION_GUIDE_POLICY';
 const compatibilitySymbol = 'WARDROBE_DIMENSION_GUIDE_DIMENSIONS';
 const initializerSha256 = '5c23d1d4ea81ab8735b9214d73d1b6bfbe7eec9ed5ad6a7165a0381a486a811d';
-const prefix165Sha256 = '3b685a291fdbfa4ae0fd66b8b4744116598a81e236e8f449facc89714802a807';
-const prefix166Sha256 = 'f58543ffaf2860f846f7469e93ab442adf0ee3fc5ae391fd904af3f64167c111';
-
 const renderConsumerRels = Object.freeze([
   'esm/native/builder/render_dimension_ops_corner.ts',
   'esm/native/builder/render_dimension_ops_main.ts',
@@ -89,38 +82,6 @@ const expectedValues = Object.freeze({
   }),
 });
 
-const expectedEntry166 = Object.freeze({
-  from: 'builder',
-  to: 'shared',
-  additionalStatements: 1,
-  owner: 'dimension-ownership-migration',
-  reviewedAt: '2026-07-28',
-  reviewBy: '2026-10-18',
-  fromFile: 'esm/native/builder/render_dimension_ops_shared.ts',
-  companionImport: {
-    toFile: 'esm/shared/dimensions/wardrobe_dimension_guide_policy.ts',
-    kind: 'value',
-    importedSymbols: [ownerSymbol],
-    syntax: 'static-import',
-  },
-  removedImport: {
-    toFile: facadeRel,
-    kind: 'value',
-    importedSymbols: ['WARDROBE_DEFAULTS', compatibilitySymbol],
-    syntax: 'static-import',
-  },
-  addedImport: {
-    toFile: 'esm/shared/dimensions/wardrobe_defaults.ts',
-    kind: 'value',
-    importedSymbols: ['DEFAULT_CORNER_DOORS'],
-    syntax: 'static-import',
-  },
-  reason:
-    'The Wardrobe Dimension Guide shared render context replaces one combined legacy facade statement with the focused Wardrobe Dimension Guide policy plus the canonical Corner doors default scalar on the existing builder to shared edge.',
-  removalCondition:
-    'Remove this entry when a reviewed Wardrobe Dimension Guide render composition seam eliminates the extra Wardrobe Defaults statement without reintroducing the legacy facade or the aggregate WARDROBE_DEFAULTS object.',
-});
-
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 
@@ -133,22 +94,6 @@ function stableJson(value) {
       .join(',')}}`;
   }
   return JSON.stringify(value);
-}
-
-function assertDimensionGuideLedgerHistory(migrationBudgets) {
-  assert.ok(migrationBudgets.length >= 166);
-  assert.deepEqual(migrationBudgets.slice(165, 166), [expectedEntry166]);
-  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 165))), prefix165Sha256);
-  assert.equal(sha256(stableJson(migrationBudgets.slice(0, 166))), prefix166Sha256);
-}
-
-function syntheticFutureEntry167() {
-  const entry = structuredClone(expectedEntry166);
-  entry.owner = 'synthetic-append-safe-proof';
-  entry.fromFile = 'esm/native/builder/synthetic_dimension_guide_entry_167.ts';
-  entry.reason = 'Synthetic Entry 167 proves append-safe historical ownership.';
-  entry.removalCondition = 'Remove the synthetic Entry 167 after the append-safe proof.';
-  return entry;
 }
 
 function listSourceFiles(directory, files = []) {
@@ -576,20 +521,6 @@ test('render flow semantic AST fingerprints preserve formulas, offsets, branches
   for (const rel of renderConsumerRels) {
     assert.equal(renderFlowSemanticHash(rel, read(rel)), expectedFlowSemanticHashes[rel], rel);
   }
-});
-
-test('Ledger Entry 166 and Prefixes 165-166 exactly own the single focused statement increase', () => {
-  const baseline = JSON.parse(read(baselineRel));
-  const migrationBudgets = baseline.migrationBudgets;
-  assertDimensionGuideLedgerHistory(migrationBudgets);
-
-  const withFutureEntry167 = [...structuredClone(migrationBudgets.slice(0, 166)), syntheticFutureEntry167()];
-  assert.equal(withFutureEntry167.length, 167);
-  assert.doesNotThrow(() => assertDimensionGuideLedgerHistory(withFutureEntry167));
-
-  const withMutatedEntry166 = structuredClone(migrationBudgets.slice(0, 166));
-  withMutatedEntry166[165].owner = 'mutated-owner-probe';
-  assert.throws(() => assertDimensionGuideLedgerHistory(withMutatedEntry166));
 });
 
 test('owner mutation probes reject literal, order, freeze, dependency, export, spread, and side-effect drift', () => {

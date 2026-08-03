@@ -12,13 +12,11 @@ import { loadTsRuntimeModule } from './_ts_runtime_module_loader.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const featureRel = 'esm/native/features/order_pdf_dimension_support.ts';
 const consumerRel = 'esm/native/ui/export/export_order_pdf_text_details.ts';
-const baselineRel = 'tools/wp_layer_baseline.json';
 const featureManifestRel = 'tools/wp_features_public_api_manifest.json';
 const defaultsSpecifier = '../../shared/dimensions/wardrobe_defaults.js';
 const resolutionSpecifier = '../../shared/dimensions/wardrobe_default_resolution_policy.js';
 const compositionOwnerRel = 'esm/shared/dimensions/order_pdf_dimension_policy.ts';
 const compositionSpecifier = '../../shared/dimensions/order_pdf_dimension_policy.js';
-const facadeRel = 'esm/shared/wardrobe_dimension_tokens_shared.ts';
 const symbols = Object.freeze([
   'DEFAULT_HEIGHT',
   'DEFAULT_WIDTH',
@@ -39,9 +37,6 @@ const ownerGroups = Object.freeze([
     symbols: Object.freeze(['getDefaultDepthForWardrobeType', 'getDefaultDoorsForWardrobeType']),
   }),
 ]);
-const prefix172 = '3ab71bc2e36c7c225c754defcd9734e2a62dd44a96139eea00d8d26e059add5f';
-const prefix173 = '186dbd51fb69d94ba7d0c06d0e1c6effaff174ffb3f56e8af9b494d32c0427ba';
-const prefix174 = 'efd3490f378700da25a431705d0b9e3ce4e66827273b90c51ed534bada7d9549';
 const read = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 
 function stableJson(value) {
@@ -220,12 +215,22 @@ function canonicalModuleStem(rel, specifier) {
   return resolved === null ? null : path.posix.normalize(resolved).replace(/\.(?:[cm]?[jt]sx?)$/u, '');
 }
 
+const dependencyCache = new Map();
+
+function dependenciesFor(rel, source) {
+  const cached = dependencyCache.get(rel);
+  if (cached?.source === source) return cached.dependencies;
+  const dependencies = analyzeModuleDependencies(rel, source).imports;
+  dependencyCache.set(rel, { source, dependencies });
+  return dependencies;
+}
+
 function inspectTopology(entries) {
   const violations = [];
   const target = featureRel.replace(/\.(?:[cm]?[jt]sx?)$/u, '');
   const consumers = [];
   for (const [rel, source] of entries) {
-    const dependencies = analyzeModuleDependencies(rel, source).imports;
+    const dependencies = dependenciesFor(rel, source);
     const matches = dependencies.filter(
       dependency => canonicalModuleStem(rel, dependency.specifier) === target
     );
@@ -256,7 +261,7 @@ function inspectTopology(entries) {
     addViolation(violations, 'feature-consumer-inventory', consumers);
   }
   const consumerSource = entries.find(([rel]) => rel === consumerRel)?.[1] ?? '';
-  const consumerDependencies = analyzeModuleDependencies(consumerRel, consumerSource).imports;
+  const consumerDependencies = dependenciesFor(consumerRel, consumerSource);
   const servicesDimensions = consumerDependencies.filter(
     dependency =>
       dependency.specifier.includes('/services/api') &&
@@ -266,90 +271,17 @@ function inspectTopology(entries) {
   return violations;
 }
 
+let cachedProductionEntries = null;
+
 function productionEntries(overrides = {}) {
-  return listSourceFiles(path.join(root, 'esm')).map(file => {
-    const rel = path.relative(root, file).replaceAll('\\', '/');
-    return [rel, Object.hasOwn(overrides, rel) ? overrides[rel] : fs.readFileSync(file, 'utf8')];
-  });
-}
-
-function expectedEntries() {
-  return ownerGroups.map((group, index) => {
-    const companion = ownerGroups[(index + 1) % ownerGroups.length];
-    return {
-      from: 'features',
-      to: 'shared',
-      additionalStatements: 1,
-      owner: 'dimension-ownership-migration',
-      reviewedAt: '2026-07-29',
-      reviewBy: '2026-10-18',
-      fromFile: featureRel,
-      companionImport: {
-        toFile: companion.file,
-        kind: 'value',
-        importedSymbols: [...companion.symbols],
-        syntax: 'static-import',
-      },
-      removedImport: {
-        toFile: facadeRel,
-        kind: 'value',
-        importedSymbols: [...group.symbols],
-        syntax: 'static-import',
-      },
-      addedImport: {
-        toFile: group.file,
-        kind: 'value',
-        importedSymbols: [...group.symbols],
-        syntax: 'static-import',
-      },
-      reason: `The Order PDF Dimension Support feature boundary replaces the ${group.family} symbol group from the legacy shared facade route with its canonical focused owner alongside the reviewed ${companion.family} owner statement, without exposing shared ownership to UI.`,
-      removalCondition: `Remove this entry when a reviewed Order PDF Dimension Support composition seam eliminates the extra ${group.family} owner statement without reintroducing the legacy facade, a direct shared owner import in UI, copied values, or a general dimension barrel.`,
-    };
-  });
-}
-
-function inspectLedger(entries) {
-  const violations = [];
-  if (entries.length < 174) addViolation(violations, 'ledger-history-length');
-  const expectedPrefixes = new Map([
-    [172, prefix172],
-    [173, prefix173],
-    [174, prefix174],
+  cachedProductionEntries ??= listSourceFiles(path.join(root, 'esm')).map(file => [
+    path.relative(root, file).replaceAll('\\', '/'),
+    fs.readFileSync(file, 'utf8'),
   ]);
-  for (const [count, expected] of expectedPrefixes) {
-    const actual = sha256(stableJson(entries.slice(0, count)));
-    if (actual !== expected) addViolation(violations, `prefix-${count}`, actual);
-  }
-  const expected = expectedEntries();
-  for (let index = 0; index < expected.length; index += 1) {
-    if (stableJson(entries[172 + index]) !== stableJson(expected[index])) {
-      addViolation(violations, `entry-${173 + index}`);
-    }
-  }
-  return violations;
-}
-
-function inspectApprovedRatchets(baseline) {
-  const violations = [];
-  const featureRule = baseline.rules.find(rule => rule.from === 'features' && rule.to === 'shared');
-  const uiRule = baseline.rules.find(rule => rule.from === 'ui' && rule.to === 'features');
-  if (
-    featureRule?.maxImporterCount !== 42 ||
-    featureRule?.maxValueImporterCount !== 42 ||
-    featureRule?.maxImportCount !== 49 ||
-    featureRule?.maxValueImportCount !== 48
-  ) {
-    addViolation(violations, 'features-ratchet');
-  }
-  if (
-    !(uiRule?.maxImporterCount >= 47) ||
-    !(uiRule?.maxValueImporterCount >= 37) ||
-    uiRule?.maxImportCount !== 76 ||
-    uiRule?.maxValueImportCount !== 63
-  ) {
-    addViolation(violations, 'ui-ratchet');
-  }
-  return violations;
+  return cachedProductionEntries.map(([rel, source]) => [
+    rel,
+    Object.hasOwn(overrides, rel) ? overrides[rel] : source,
+  ]);
 }
 
 test('Order PDF dimension feature has one exact composition owner, four direct exports, and one consumer', () => {
@@ -390,18 +322,7 @@ test('Order PDF support preserves owner identities and the consumer AST/literal 
   });
 });
 
-test('Entries 173-174 are exact, preserve Prefix 172, and accept append-safe Entry 175', () => {
-  const baseline = JSON.parse(read(baselineRel));
-  assert.deepEqual(inspectLedger(baseline.migrationBudgets), []);
-  assert.deepEqual(inspectApprovedRatchets(baseline), []);
-  const futureEntry175 = {
-    ...baseline.migrationBudgets[173],
-    fromFile: 'esm/native/features/future_append_safe_dimension_consumer.ts',
-  };
-  assert.deepEqual(inspectLedger([...baseline.migrationBudgets, futureEntry175]), []);
-});
-
-test('Order PDF mutation probes keep the focused route, topology, behavior, and ratchet enforceable', () => {
+test('Order PDF mutation probes keep the focused route, topology, and behavior enforceable', () => {
   const featureSource = read(featureRel);
   assert.equal(
     inspectFeature(
@@ -451,11 +372,4 @@ test('Order PDF mutation probes keep the focused route, topology, behavior, and 
     'return defaultValue;'
   );
   assert.notDeepEqual(consumerFingerprint(behaviorDrift), consumerFingerprint());
-
-  const ratchetDrift = JSON.parse(read(baselineRel));
-  ratchetDrift.rules.find(rule => rule.from === 'features' && rule.to === 'shared').maxImportCount += 1;
-  assert.equal(
-    inspectApprovedRatchets(ratchetDrift).some(violation => violation.kind === 'features-ratchet'),
-    true
-  );
 });

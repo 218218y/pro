@@ -1,23 +1,25 @@
 # Test portfolio audit
 
-Generated: 2026-08-03T17:08:05.919Z
+Generated: 2026-08-03T17:58:14.405Z
 
 ## Summary
 
-- Test files classified: 1337
-- Canonical unit/runtime runner files: 1329
+- Test files classified: 1336
+- Canonical unit/runtime runner files: 1328
 - Playwright E2E files excluded from unit runner: 8
-- Helpers/fixtures excluded by filename contract: 35
+- Helpers/fixtures excluded by filename contract: 36
 - Package script test references: 199
 - Catalog test references: 352
 - Total explicit test references: 551
 - Catalog groups: 29
 - Catalog-backed package scripts: 29
 - Primary non-overlapping portfolio groups: 5
+- Tests directly invoking the repository layer graph: 0
+- Tests copying historical migration-ledger prefixes: 0
 
 | Category         | Count |
 | ---------------- | ----: |
-| contract         |   487 |
+| contract         |   486 |
 | runtime-unit     |   322 |
 | integration      |   466 |
 | e2e-smoke        |     9 |
@@ -37,6 +39,8 @@ Generated: 2026-08-03T17:08:05.919Z
 | Unit runner has no duplicate files                                                    |        0 |
 | Unit runner excludes Playwright E2E                                                   |        0 |
 | Unit runner excludes helpers/fixtures                                                 |        0 |
+| Repository layer graph is owned only by the cached central fixture                    |        0 |
+| Historical migration prefixes are owned only by the final closeout fingerprint        |        0 |
 | Every non-E2E test reaches the unit runner                                            |        0 |
 
 ## Policy
