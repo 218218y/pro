@@ -1,5 +1,11 @@
 import { readFile } from 'node:fs/promises';
 import {
+  isOrderPdfChunkHttpFailure,
+  isOrderPdfChunkRequest,
+} from '../../support/order_pdf_diagnostic_classifier.js';
+
+export { isOrderPdfChunkHttpFailure, isOrderPdfChunkRequest };
+import {
   expect,
   type Download,
   type Locator,
@@ -1267,17 +1273,6 @@ type OrderPdfChunkFailure = {
   url: string;
   detail: string;
 };
-
-export function isOrderPdfChunkRequest(request: Request): boolean {
-  return (
-    request.resourceType() === 'script' &&
-    /OrderPdfInPlaceEditorOverlay|OrderPdf|order_pdf|order-pdf/u.test(request.url())
-  );
-}
-
-export function isOrderPdfChunkHttpFailure(response: Response): boolean {
-  return response.status() >= 400 && isOrderPdfChunkRequest(response.request());
-}
 
 async function readOrderPdfEditorOpen(page: Page): Promise<boolean | null> {
   return await page.evaluate(() => {

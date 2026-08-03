@@ -8,7 +8,9 @@ runtime dependencies.
 The profile is generated from `package-lock.json`; do not edit package versions, URLs, integrity values, or the
 package list by hand. The profile starts from every production dependency, follows normal, optional, and
 required peer dependencies, and keeps only packages compatible with Linux x64 glibc.
-Windows, macOS, ARM, and musl native packages are excluded.
+Windows, macOS, ARM, and musl native packages are excluded. Playwright packages and browser binaries are
+also intentionally excluded: browserless runtime helpers must remain separated from the E2E-only modules
+that import `@playwright/test`.
 
 Synchronize or validate the download plan without requiring archives:
 
@@ -42,3 +44,15 @@ The workspace definition also records a SHA-256 fingerprint of `package-lock.jso
 invalidates a stale plan before tests run. TSX and esbuild remain in their existing focused directories rather
 than being duplicated here. Superseded runtime archives are removed only after a complete replacement profile
 has been validated.
+
+Run the complete browserless package-family smoke test after bootstrap:
+
+```bash
+npm run test:offline:tsx-runtime-smoke
+```
+
+A focused Order PDF classifier regression check is also available:
+
+```bash
+npm run test:offline:order-pdf-diagnostic
+```

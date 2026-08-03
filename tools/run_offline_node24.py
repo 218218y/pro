@@ -4,10 +4,10 @@
 from __future__ import annotations
 
 import argparse
-import subprocess
 import sys
 
 import bootstrap_offline_repair_core as core
+import offline_process_runner as process_runner
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -71,8 +71,10 @@ def main(argv: list[str] | None = None) -> int:
         print(f"offline repair core error: {exc}", file=sys.stderr)
         return 2
 
-    completed = subprocess.run([str(executable), *node_args], cwd=core.ROOT, check=False)
-    return completed.returncode
+    return process_runner.run_isolated(
+        [str(executable), *node_args],
+        cwd=core.ROOT,
+    )
 
 
 if __name__ == "__main__":

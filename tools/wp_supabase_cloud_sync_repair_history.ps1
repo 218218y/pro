@@ -133,6 +133,7 @@ function Test-MigrationApplied {
   )
 
   $escapedVersion = [regex]::Escape($Version)
+  $versionPattern = "(?<!\d)$escapedVersion(?!\d)"
   foreach ($line in @($MigrationList)) {
     if ($null -eq $line) {
       continue
@@ -143,11 +144,17 @@ function Test-MigrationApplied {
       continue
     }
 
-    $versionOccurrences = [regex]::Matches(
-      $lineText,
-      "(?<!\d)$escapedVersion(?!\d)"
-    )
-    if ($versionOccurrences.Count -ge 2) {
+    # Supabase migration list has Local, Remote, and Time columns. A pending
+    # migration can repeat its version in the Time column, so counting version
+    # occurrences produces a false positive. Parse only Local and Remote.
+    $columns = @($lineText -split '\|')
+    if ($columns.Count -lt 2) {
+      continue
+    }
+
+    $localColumn = [string]$columns[0]
+    $remoteColumn = [string]$columns[1]
+    if (($localColumn -match $versionPattern) -and ($remoteColumn -match $versionPattern)) {
       return $true
     }
   }

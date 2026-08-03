@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-08-03T03:34:23.157Z",
+  "generatedAt": "2026-08-03T05:02:09.156Z",
   "totals": {
-    "tests": 1340,
-    "unitRunnerTests": 1332,
+    "tests": 1341,
+    "unitRunnerTests": 1333,
     "e2eTests": 8,
-    "nonTestRuntimeFiles": 34,
-    "packageTestReferences": 197,
+    "nonTestRuntimeFiles": 35,
+    "packageTestReferences": 199,
     "catalogTestReferences": 352,
-    "totalTestReferences": 549,
+    "totalTestReferences": 551,
     "catalogGroups": 29,
     "catalogScriptBindings": 29,
     "primaryCatalogGroups": 5
   },
   "categories": {
     "contract": 492,
-    "runtime-unit": 321,
+    "runtime-unit": 322,
     "integration": 466,
     "e2e-smoke": 9,
     "perf-smoke": 9,
@@ -2688,6 +2688,10 @@
     {
       "file": "tests/offline_repair_toolchain_contracts.test.js",
       "category": "contract"
+    },
+    {
+      "file": "tests/offline_tsx_runtime_smoke.test.tsx",
+      "category": "runtime-unit"
     },
     {
       "file": "tests/order_pdf_details_runtime.test.ts",

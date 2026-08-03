@@ -203,12 +203,16 @@ test('migration history repair is explicit, scoped, and never re-executes produc
   assert.match(repair, /supabase\/\.temp\/project-ref/u);
   assert.match(repair, /project metadata only/u);
   assert.doesNotMatch(repair, /ConvertFrom-Json/u);
-  assert.match(repair, /\[regex\]::Matches/u);
   assert.match(repair, /\[AllowNull\(\)\]/u);
   assert.match(repair, /\[AllowEmptyCollection\(\)\]/u);
   assert.match(repair, /\[object\[\]\]\$MigrationList = @\(\)/u);
   assert.match(repair, /IsNullOrWhiteSpace\(\$lineText\)/u);
-  assert.match(repair, /\$versionOccurrences\.Count -ge 2/u);
+  assert.match(repair, /\$columns = @\(\$lineText -split '\\|'/u);
+  assert.match(repair, /\$localColumn = \[string\]\$columns\[0\]/u);
+  assert.match(repair, /\$remoteColumn = \[string\]\$columns\[1\]/u);
+  assert.match(repair, /\$localColumn -match \$versionPattern/u);
+  assert.match(repair, /\$remoteColumn -match \$versionPattern/u);
+  assert.doesNotMatch(repair, /versionOccurrences|Count -ge 2/u);
   assert.match(repair, /\$previousErrorActionPreference = \$ErrorActionPreference/u);
   assert.match(repair, /\$ErrorActionPreference = 'Continue'/u);
   assert.match(repair, /\$exitCode = \$LASTEXITCODE/u);

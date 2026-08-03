@@ -1,21 +1,24 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type { Request, Response } from '@playwright/test';
+import {
+  isOrderPdfChunkHttpFailure,
+  isOrderPdfChunkRequest,
+  type OrderPdfRequestLike,
+  type OrderPdfResponseLike,
+} from './support/order_pdf_diagnostic_classifier.js';
 
-import { isOrderPdfChunkHttpFailure, isOrderPdfChunkRequest } from './e2e/helpers/project_flows.js';
-
-function requestFixture(resourceType: string, url: string): Request {
+function requestFixture(resourceType: string, url: string): OrderPdfRequestLike {
   return {
     resourceType: () => resourceType,
     url: () => url,
-  } as unknown as Request;
+  };
 }
 
-function responseFixture(status: number, request: Request): Response {
+function responseFixture(status: number, request: OrderPdfRequestLike): OrderPdfResponseLike {
   return {
     request: () => request,
     status: () => status,
-  } as unknown as Response;
+  };
 }
 
 test('Order PDF diagnostic classifier accepts the canonical release chunk request', () => {

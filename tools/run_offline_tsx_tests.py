@@ -3,10 +3,10 @@
 
 from __future__ import annotations
 
-import subprocess
 import sys
 
 import bootstrap_offline_repair_core as core
+import offline_process_runner as process_runner
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -38,12 +38,10 @@ def main(argv: list[str] | None = None) -> int:
         print(f"offline TSX test runner error: {exc}", file=sys.stderr)
         return 2
 
-    completed = subprocess.run(
+    return process_runner.run_isolated(
         [str(node), "tools/wp_run_tsx_tests.mjs", *test_args],
         cwd=core.ROOT,
-        check=False,
     )
-    return completed.returncode
 
 
 if __name__ == "__main__":

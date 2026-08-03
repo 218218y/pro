@@ -361,11 +361,10 @@ test('offline TSX-test workspace profile is lock-derived and Linux x64 glibc onl
   assert.equal(planCheck.status, 0, planCheck.stderr || planCheck.stdout);
   assert.match(planCheck.stdout, /workspace plan tsx-tests/u);
 
-  const downloads = spawnSync(
-    process.execPath,
-    [tool, '--profile', 'tsx-tests', '--print-downloads', '--missing-only'],
-    { cwd: root, encoding: 'utf8' }
-  );
+  const downloads = spawnSync(process.execPath, [tool, '--profile', 'tsx-tests', '--print-downloads'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
   assert.equal(downloads.status, 0, downloads.stderr || downloads.stdout);
   assert.match(downloads.stdout, /react-\d+\.\d+\.\d+\.tgz/u);
   assert.match(downloads.stdout, /vendor\/offline\/runtime\/react-/u);
@@ -614,6 +613,7 @@ test('offline TSX manifest is exact, lockfile-backed, and reuses pinned esbuild'
 
 test('offline TSX scripts install the lock-derived runtime profile without npx or npm', () => {
   const pkg = readJson('package.json');
+  const manifest = readJson('vendor/offline/manifest.json');
   assert.equal(pkg.scripts['setup:offline:tsx'], 'python tools/bootstrap_offline_tsx.py');
   assert.equal(
     pkg.scripts['setup:offline:tsx:engine'],
@@ -634,18 +634,72 @@ test('offline TSX scripts install the lock-derived runtime profile without npx o
   const selfTest = fs.readFileSync(path.join(root, 'tools/selftest_offline_tsx.py'), 'utf8');
   const runner = fs.readFileSync(path.join(root, 'tools/run_offline_tsx_tests.py'), 'utf8');
   const nodeRunner = fs.readFileSync(path.join(root, 'tools/run_offline_node24.py'), 'utf8');
+  const processRunner = fs.readFileSync(path.join(root, 'tools/offline_process_runner.py'), 'utf8');
   assert.match(bootstrap, /def install_tsx\(/u);
   assert.match(bootstrap, /def install_workspace_profile\(/u);
   assert.match(bootstrap, /workspace-runtime-ok/u);
   assert.match(bootstrap, /def _tilde_range_accepts\(/u);
   assert.match(bootstrap, /--import", "tsx"/u);
-  assert.match(selfTest, /wave_c1_dimension_consolidation_runtime\.test\.ts/u);
-  assert.match(selfTest, /design_tab_sections_runtime\.test\.tsx/u);
-  assert.match(selfTest, /wardrobe_dimension_public_surface_semantic_contract\.test\.js/u);
+  assert.match(selfTest, /offline_tsx_runtime_smoke\.test\.tsx/u);
+  assert.match(selfTest, /"--import",\s*"tsx",\s*"--test"/u);
+  assert.match(selfTest, /process_runner\.run_isolated/u);
+  assert.doesNotMatch(selfTest, /tools\/wp_run_tsx_tests\.mjs/u);
+  assert.doesNotMatch(selfTest, /install_(?:tsx|workspace_profile)\([^\n]*force=True/u);
+  assert.doesNotMatch(selfTest, /\["\/bin\/sh"/u);
   assert.match(runner, /tools\/wp_run_tsx_tests\.mjs/u);
   assert.match(runner, /install_workspace_profile/u);
+  assert.match(runner, /process_runner\.run_isolated/u);
   assert.match(nodeRunner, /--with-runtime/u);
   assert.match(nodeRunner, /install_workspace_profile/u);
+  assert.match(nodeRunner, /process_runner\.run_isolated/u);
+  assert.match(processRunner, /_PR_SET_CHILD_SUBREAPER = 36/u);
+  assert.match(processRunner, /libc\.prctl\(_PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0\)/u);
+  assert.match(processRunner, /start_new_session=True/u);
+  assert.match(processRunner, /os\.killpg\(process_group_id, signal\.SIGTERM\)/u);
+  assert.match(processRunner, /os\.killpg\(process_group_id, signal\.SIGKILL\)/u);
+  assert.match(processRunner, /os\.waitpid\(-1, os\.WNOHANG\)/u);
+  assert.match(processRunner, /finally:\s*terminate_process_group\(process\.pid\)\s*reap_descendants\(\)/u);
+  assert.equal(
+    pkg.scripts['test:offline:tsx-runtime-smoke'],
+    'python tools/run_offline_tsx_tests.py tests/offline_tsx_runtime_smoke.test.tsx'
+  );
+  assert.equal(
+    pkg.scripts['test:offline:order-pdf-diagnostic'],
+    'python tools/run_offline_tsx_tests.py tests/order_pdf_diagnostic_classifier_runtime.test.ts'
+  );
+
+  const runtimeSmoke = fs.readFileSync(path.join(root, 'tests/offline_tsx_runtime_smoke.test.tsx'), 'utf8');
+  for (const packageName of [
+    '@pdf-lib/fontkit',
+    '@supabase/supabase-js',
+    'pdf-lib',
+    'pdfjs-dist/legacy/build/pdf.mjs',
+    'react',
+    'react-dom/server',
+    'three',
+    'zustand/vanilla',
+  ]) {
+    assert.match(runtimeSmoke, new RegExp(`from ['"]${packageName.replaceAll('/', '\\/')}['"]`, 'u'));
+  }
+  assert.doesNotMatch(runtimeSmoke, /@playwright\/test/u);
+
+  const classifier = fs.readFileSync(
+    path.join(root, 'tests/support/order_pdf_diagnostic_classifier.ts'),
+    'utf8'
+  );
+  const classifierTest = fs.readFileSync(
+    path.join(root, 'tests/order_pdf_diagnostic_classifier_runtime.test.ts'),
+    'utf8'
+  );
+  const e2eHelper = fs.readFileSync(path.join(root, 'tests/e2e/helpers/project_flows.ts'), 'utf8');
+  assert.doesNotMatch(classifier, /@playwright\/test/u);
+  assert.doesNotMatch(classifierTest, /@playwright\/test/u);
+  assert.match(classifierTest, /support\/order_pdf_diagnostic_classifier\.js/u);
+  assert.match(e2eHelper, /support\/order_pdf_diagnostic_classifier\.js/u);
+  assert.doesNotMatch(
+    manifest.workspace.profiles['tsx-tests'].packages.map(entry => entry.name).join('\n'),
+    /^(?:@playwright\/test|playwright|playwright-core)$/mu
+  );
   assert.doesNotMatch(bootstrap, /subprocess\.(?:run|Popen)\(\s*\[\s*['"](?:npm|npx)/u);
 });
 

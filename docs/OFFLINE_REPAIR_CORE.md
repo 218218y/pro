@@ -237,9 +237,16 @@ python tools/run_offline_tsx_tests.py tests/design_tab_sections_runtime.test.tsx
 python tools/selftest_offline_tsx.py
 ```
 
-The self-test runs a dependency-free Wave C identity test, a React/React DOM SSR `.tsx` test, and the
-declaration-snapshot contract. That combined proof requires the Node, Oxc, esbuild, TSX, TypeScript, and
-workspace runtime archives documented here.
+The TSX self-test runs one composite `.tsx` smoke test that loads React/React DOM SSR, Three.js, Zustand,
+PDF-Lib, PDF.js, Supabase, fontkit, and the browserless Order PDF classifier. It uses one isolated Node process
+group and closes any native esbuild service that outlives the test leader, preventing intermittent Linux hangs
+caused by retained stdout/stderr descriptors. Matching installs are reused; destructive replacement remains an
+explicit bootstrap `--force` operation.
+
+The compiler-heavy declaration snapshot remains an independent TypeScript proof under
+`npm run test:offline:declaration-snapshot`; it is intentionally not mixed into the TSX runtime verifier. The
+Order PDF classifier is separated from the Playwright E2E helper, so the runtime proof does not require
+`@playwright/test`, `playwright`, browser packages, or downloaded browser binaries.
 
 Before downloading the workspace closure, the engine can still be validated independently:
 

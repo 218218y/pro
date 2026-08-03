@@ -1,23 +1,15 @@
 #!/usr/bin/env python3
-"""Prove offline TSX transformation, React SSR runtime, and declaration loading."""
+"""Prove the complete browserless Linux runtime through pinned offline TSX."""
 
 from __future__ import annotations
 
-import subprocess
 import sys
 
 import bootstrap_offline_repair_core as core
+import offline_process_runner as process_runner
 
 
-WAVE_C_RUNTIME_TEST = "tests/wave_c1_dimension_consolidation_runtime.test.ts"
-REACT_TSX_RUNTIME_TEST = "tests/design_tab_sections_runtime.test.tsx"
-DECLARATION_SNAPSHOT_TEST = "tests/wardrobe_dimension_public_surface_semantic_contract.test.js"
-
-
-def run(command: list[str]) -> None:
-    completed = subprocess.run(command, cwd=core.ROOT, check=False)
-    if completed.returncode != 0:
-        raise RuntimeError(f"Command failed ({completed.returncode}): {' '.join(command)}")
+RUNTIME_SMOKE_TEST = "tests/offline_tsx_runtime_smoke.test.tsx"
 
 
 def main() -> int:
@@ -30,23 +22,29 @@ def main() -> int:
             node=True,
             ast=True,
             tsx=True,
-            typescript=True,
             workspace_profile_name="tsx-tests",
         )
         node = core.install_node(manifest, key)
         core.install_ast(manifest, key, node)
-        core.install_tsx(manifest, key, node, force=True)
-        core.install_workspace_profile(manifest, key, node, "tsx-tests", force=True)
-        core.install_typescript(manifest, key, node)
+        core.install_tsx(manifest, key, node)
+        core.install_workspace_profile(manifest, key, node, "tsx-tests")
 
-        run([str(node), "tools/wp_run_tsx_tests.mjs", WAVE_C_RUNTIME_TEST])
-        run([str(node), "tools/wp_run_tsx_tests.mjs", REACT_TSX_RUNTIME_TEST])
-        run([str(node), "--test", DECLARATION_SNAPSHOT_TEST])
+        # TSX/esbuild may leave a native service alive after the Node test leader exits.
+        # The shared isolated runner closes that process group deterministically.
+        returncode = process_runner.run_isolated(
+            [str(node), "--import", "tsx", "--test", RUNTIME_SMOKE_TEST],
+            cwd=core.ROOT,
+        )
+        if returncode != 0:
+            raise RuntimeError(f"Offline TSX runtime smoke failed ({returncode})")
     except (core.OfflineCoreError, RuntimeError) as exc:
         print(f"offline TSX self-test error: {exc}", file=sys.stderr)
         return 2
 
-    print("Offline TSX self-test passed: TSX identity, React SSR, and declaration snapshot.")
+    print(
+        "Offline TSX self-test passed: the complete browserless Linux runtime profile "
+        "loaded in one TSX process."
+    )
     return 0
 
 
