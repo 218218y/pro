@@ -560,6 +560,23 @@ print("platform-matrix-ok")
   assert.doesNotMatch(result.stderr, /https?:\/\/|archive|download/iu);
 });
 
+test('generated report checks can install their formatter through the offline Node runner', () => {
+  const pkg = readJson('package.json');
+  assert.equal(
+    pkg.scripts['check:generated-reports:offline'],
+    'python tools/run_offline_node24.py --with-prettier tools/wp_generated_report_contract.mjs --check'
+  );
+  assert.equal(
+    pkg.scripts['report:generated:offline'],
+    'python tools/run_offline_node24.py --with-prettier tools/wp_generated_report_contract.mjs --write'
+  );
+
+  const nodeRunner = fs.readFileSync(path.join(root, 'tools/run_offline_node24.py'), 'utf8');
+  assert.match(nodeRunner, /--with-prettier/u);
+  assert.match(nodeRunner, /prettier=args\.with_prettier/u);
+  assert.match(nodeRunner, /core\.install_prettier\(manifest, executable\)/u);
+});
+
 test('offline TypeScript scripts use the pinned compiler and preserve declaration snapshots', () => {
   const pkg = readJson('package.json');
   assert.equal(pkg.scripts['setup:offline:typescript'], 'python tools/bootstrap_offline_typescript.py');

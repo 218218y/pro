@@ -744,6 +744,10 @@ import {
   );
   const smoke = readSource('../tests/e2e/smoke.spec.ts', import.meta.url);
   const smokeHelpers = readSource('../tests/e2e/helpers/project_flows.ts', import.meta.url);
+  const orderPdfDiagnosticClassifier = readSource(
+    '../tests/support/order_pdf_diagnostic_classifier.ts',
+    import.meta.url
+  );
   const designTabColorSection = readSource(
     '../esm/native/ui/react/tabs/design_tab_color_section.tsx',
     import.meta.url
@@ -956,12 +960,15 @@ import {
     assert.match(smokeHelpers, /LazyErrorBoundary rendered an import failure/);
     assert.match(smokeHelpers, /an Order PDF chunk request failed/);
     assert.match(smokeHelpers, /the editor mounted but is not visible/);
+    assert.match(smokeHelpers, /from '..\/..\/support\/order_pdf_diagnostic_classifier\.js'/u);
+    assert.match(smokeHelpers, /if \(!isOrderPdfChunkRequest\(request\)\) return;/u);
+    assert.match(smokeHelpers, /if \(!isOrderPdfChunkHttpFailure\(response\)\) return;/u);
     assert.match(
-      smokeHelpers,
+      orderPdfDiagnosticClassifier,
       /request\.resourceType\(\) === 'script' &&[\s\S]*OrderPdfInPlaceEditorOverlay/u
     );
-    assert.match(smokeHelpers, /response\.status\(\) >= 400/u);
-    assert.doesNotMatch(smokeHelpers, /response\.ok\(\)/u);
+    assert.match(orderPdfDiagnosticClassifier, /response\.status\(\) >= 400/u);
+    assert.doesNotMatch(orderPdfDiagnosticClassifier, /response\.ok\(\)/u);
     assert.doesNotMatch(smoke, /export-open-pdf-button/);
     assert.match(smoke, /openOrderPdfOverlayFromExport\(/);
     assert.match(smoke, /closeOrderPdfOverlay\(/);

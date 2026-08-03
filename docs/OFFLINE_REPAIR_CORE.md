@@ -276,6 +276,17 @@ npm run format:offline:check
 npm run format:offline
 ```
 
+Generated-report verification also imports Prettier as a library. In a clean chat workspace, use the offline
+Node runner so the formatter package is installed before report generators are spawned:
+
+```bash
+npm run check:generated-reports:offline
+npm run report:generated:offline
+```
+
+The regular `check:generated-reports` and `report:generated` commands remain available for a normal
+`npm install` workspace.
+
 ## Verify and run TypeScript 7 independently
 
 The TypeScript path does not require Oxc or Prettier. It validates the common package and the Linux x64

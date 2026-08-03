@@ -23,6 +23,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Also install and verify the repository-pinned TypeScript compiler",
     )
     parser.add_argument(
+        "--with-prettier",
+        action="store_true",
+        help="Also install and verify the repository-pinned Prettier package",
+    )
+    parser.add_argument(
         "--with-esbuild",
         action="store_true",
         help="Also install and verify repository-pinned esbuild plus its native binary",
@@ -53,6 +58,7 @@ def main(argv: list[str] | None = None) -> int:
             ast=not args.node_only,
             esbuild=args.with_esbuild,
             tsx=args.with_tsx,
+            prettier=args.with_prettier,
             typescript=args.with_typescript,
             workspace_profile_name="tsx-tests" if args.with_runtime else None,
         )
@@ -65,6 +71,8 @@ def main(argv: list[str] | None = None) -> int:
             core.install_esbuild(manifest, key, executable)
         if args.with_typescript:
             core.install_typescript(manifest, key, executable)
+        if args.with_prettier:
+            core.install_prettier(manifest, executable)
         if args.with_runtime:
             core.install_workspace_profile(manifest, key, executable, "tsx-tests")
     except core.OfflineCoreError as exc:

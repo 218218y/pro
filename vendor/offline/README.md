@@ -130,6 +130,16 @@ python tools/bootstrap_offline_tsx.py --engine-only
 Plain JavaScript tests that import production packages can use the same profile through
 `python tools/run_offline_node24.py --with-runtime ...`.
 
+Generated report checks use Prettier as an imported library, not only as a CLI. Run them in a clean offline
+workspace with:
+
+```bash
+npm run check:generated-reports:offline
+npm run report:generated:offline
+```
+
+These commands install the pinned Prettier archive and the offline AST packages before spawning report tools.
+
 ## Optional compiler set: TypeScript 7
 
 TypeScript 7 requires both the common launcher package and one matching native platform package. For Linux
