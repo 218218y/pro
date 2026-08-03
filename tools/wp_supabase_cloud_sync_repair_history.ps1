@@ -124,14 +124,27 @@ function Invoke-SupabaseCli {
 
 function Test-MigrationApplied {
   param(
-    [Parameter(Mandatory = $true)][string[]]$MigrationList,
+    [Parameter(Mandatory = $false)]
+    [AllowNull()]
+    [AllowEmptyCollection()]
+    [object[]]$MigrationList = @(),
+
     [Parameter(Mandatory = $true)][string]$Version
   )
 
   $escapedVersion = [regex]::Escape($Version)
-  foreach ($line in $MigrationList) {
+  foreach ($line in @($MigrationList)) {
+    if ($null -eq $line) {
+      continue
+    }
+
+    $lineText = [string]$line
+    if ([string]::IsNullOrWhiteSpace($lineText)) {
+      continue
+    }
+
     $versionOccurrences = [regex]::Matches(
-      [string]$line,
+      $lineText,
       "(?<!\d)$escapedVersion(?!\d)"
     )
     if ($versionOccurrences.Count -ge 2) {

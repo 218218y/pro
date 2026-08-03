@@ -204,6 +204,10 @@ test('migration history repair is explicit, scoped, and never re-executes produc
   assert.match(repair, /project metadata only/u);
   assert.doesNotMatch(repair, /ConvertFrom-Json/u);
   assert.match(repair, /\[regex\]::Matches/u);
+  assert.match(repair, /\[AllowNull\(\)\]/u);
+  assert.match(repair, /\[AllowEmptyCollection\(\)\]/u);
+  assert.match(repair, /\[object\[\]\]\$MigrationList = @\(\)/u);
+  assert.match(repair, /IsNullOrWhiteSpace\(\$lineText\)/u);
   assert.match(repair, /\$versionOccurrences\.Count -ge 2/u);
   assert.match(repair, /\$previousErrorActionPreference = \$ErrorActionPreference/u);
   assert.match(repair, /\$ErrorActionPreference = 'Continue'/u);
